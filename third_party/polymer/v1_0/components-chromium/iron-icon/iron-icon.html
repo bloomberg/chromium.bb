@@ -30,17 +30,16 @@ Example setting size to 32px x 32px:
     </style>
 
 The iron elements include several sets of icons.
-To use the default set of icons, import  `iron-icons.html` and use the `icon` attribute to specify an icon:
+To use the default set of icons, import `iron-icons.html` and use the `icon` attribute to specify an icon:
 
-    &lt;!-- import default iconset and iron-icon --&gt;
     <link rel="import" href="/components/iron-icons/iron-icons.html">
 
     <iron-icon icon="menu"></iron-icon>
 
-To use a different built-in set of icons, import  `iron-icons/<iconset>-icons.html`, and
-specify the icon as `<iconset>:<icon>`. For example:
+To use a different built-in set of icons, import the specific `iron-icons/<iconset>-icons.html`, and
+specify the icon as `<iconset>:<icon>`. For example, to use a communication icon, you would
+use:
 
-    &lt;!-- import communication iconset and iron-icon --&gt;
     <link rel="import" href="/components/iron-icons/communication-icons.html">
 
     <iron-icon icon="communication:email"></iron-icon>
@@ -91,7 +90,6 @@ Custom property | Description | Default
   </style>
 
   <template>
-    <iron-meta id="meta" type="iconset"></iron-meta>
   </template>
 
   </dom-module>

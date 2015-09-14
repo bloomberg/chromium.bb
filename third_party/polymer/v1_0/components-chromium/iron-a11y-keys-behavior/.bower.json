@@ -37,6 +37,6 @@
     "commit": "cf833eab5c55a26c5aa92e56d3fcb079120ce66a"
   },
   "_source": "git://github.com/PolymerElements/iron-a11y-keys-behavior.git",
-  "_target": "~1.0.0",
+  "_target": "^1.0.0",
   "_originalSource": "PolymerElements/iron-a11y-keys-behavior"
 }

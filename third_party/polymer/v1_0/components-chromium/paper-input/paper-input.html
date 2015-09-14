@@ -48,32 +48,29 @@ style this element.
 -->
 
 </head><body><dom-module id="paper-input">
-
-  <style>
-
-    :host {
-      display: block;
-    }
-
-    input::-webkit-input-placeholder {
-      color: var(--paper-input-container-color, --secondary-text-color);
-    }
-
-    input:-moz-placeholder {
-      color: var(--paper-input-container-color, --secondary-text-color);
-    }
-
-    input::-moz-placeholder {
-      color: var(--paper-input-container-color, --secondary-text-color);
-    }
-
-    input:-ms-input-placeholder {
-      color: var(--paper-input-container-color, --secondary-text-color);
-    }
-
-  </style>
-
   <template>
+
+    <style>
+      :host {
+        display: block;
+      }
+
+      input::-webkit-input-placeholder {
+        color: var(--paper-input-container-color, --secondary-text-color);
+      }
+
+      input:-moz-placeholder {
+        color: var(--paper-input-container-color, --secondary-text-color);
+      }
+
+      input::-moz-placeholder {
+        color: var(--paper-input-container-color, --secondary-text-color);
+      }
+
+      input:-ms-input-placeholder {
+        color: var(--paper-input-container-color, --secondary-text-color);
+      }
+    </style>
 
     <paper-input-container no-label-float="[[noLabelFloat]]" always-float-label="[[_computeAlwaysFloatLabel(alwaysFloatLabel,placeholder)]]" auto-validate$="[[autoValidate]]" disabled$="[[disabled]]" invalid="[[invalid]]">
 
@@ -96,7 +93,6 @@ style this element.
     </paper-input-container>
 
   </template>
-
 </dom-module>
 
 <script src="paper-input-extracted.js"></script></body></html>

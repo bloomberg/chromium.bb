@@ -43,7 +43,8 @@
        */
       invalid: {
         type: Boolean,
-        value: false
+        value: false,
+        notify: true
       },
 
       /**
@@ -307,10 +308,20 @@
 
     /**
      * Validates the input element and sets an error style if needed.
+     *
+     * @return {boolean}
      */
-     validate: function() {
-       return this.inputElement.validate();
-     },
+    validate: function() {
+      return this.inputElement.validate();
+    },
+
+    /**
+     * If `autoValidate` is true, then validates the element.
+     */
+    _handleAutoValidate: function() {
+      if (this.autoValidate)
+        this.validate();
+    },
 
     /**
      * Restores the cursor to its original position after updating the value.

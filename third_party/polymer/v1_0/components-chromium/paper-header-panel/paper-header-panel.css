@@ -9,21 +9,16 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 */
 
 :host {
-  @apply(--layout-vertical);
-
-  position: relative;
-  height: 100%;
-}
-
-/**
- * Default paper header panel shadow
- */
-:root {
   --paper-header-panel-shadow: {
     height: 6px;
     bottom: -6px;
     box-shadow: inset 0px 5px 6px -3px rgba(0, 0, 0, 0.4);
   };
+
+  @apply(--layout-vertical);
+
+  position: relative;
+  height: 100%;
 }
 
 #mainContainer {
@@ -106,26 +101,19 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 #dropShadow {
   @apply(--paper-header-panel-shadow);
 
-  -webkit-transition: opacity 0.5s, -webkit-transform 0.5s;
-  transition: opacity 0.5s, transform 0.5s;
-
-  -webkit-transform: scale3d(1, 0, 1);
-  transform: scale3d(1, 0, 1);
-
-  -webkit-transform-origin: left top;
-  transform-origin: left top;
-
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   height: 6px;
+  pointer-events: none;
+
+  -webkit-transition: opacity 0.5s;
+  transition: opacity 0.5s;
+
   opacity: 0;
 }
 
 #dropShadow.has-shadow {
   opacity: 1;
-
-  -webkit-transform: scale3d(1, 1, 1);
-  transform: scale3d(1, 1, 1);
 }

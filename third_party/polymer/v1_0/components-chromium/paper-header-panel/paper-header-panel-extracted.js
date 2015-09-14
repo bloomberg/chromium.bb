@@ -32,7 +32,7 @@
        * the scrollable element which you can use to access scroll info such as
        * `scrollTop`.
        *
-       *     <paper-header-panel on-content-scroll="{{scrollHandler}}">
+       *     <paper-header-panel on-content-scroll="scrollHandler">
        *       ...
        *     </paper-header-panel>
        *

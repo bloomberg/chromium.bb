@@ -28,25 +28,21 @@ Custom property | Description | Default
 `--paper-input-char-counter` | Mixin applied to the element | `{}`
 -->
 </head><body><dom-module id="paper-input-char-counter">
-
-  <style>
-
-    :host {
-      display: inline-block;
-      float: right;
-
-      @apply(--paper-font-caption);
-      @apply(--paper-input-char-counter);
-    }
-
-  </style>
-
   <template>
+
+    <style>
+      :host {
+        display: inline-block;
+        float: right;
+
+        @apply(--paper-font-caption);
+        @apply(--paper-input-char-counter);
+      }
+    </style>
 
     <span>[[_charCounterStr]]</span>
 
   </template>
-
 </dom-module>
 
 <script src="paper-input-char-counter-extracted.js"></script></body></html>

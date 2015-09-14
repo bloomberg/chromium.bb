@@ -84,6 +84,9 @@
   }
 
   function tap(node) {
+    // Respect nodes that are disabled in the UI.
+    if (window.getComputedStyle(node)['pointer-events'] === 'none')
+      return;
     var xy = middleOfNode(node);
     down(node, xy);
     up(node, xy);

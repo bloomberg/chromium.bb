@@ -28,6 +28,12 @@ Example:
       <paper-tooltip for="btn">Tooltip text</paper-tooltip>
     </div>
 
+The tooltip can be positioned on the top|bottom|left|right of the anchor using
+the `position` attribute. The default position is bottom.
+
+    <paper-tooltip for="btn" position="left">Tooltip text</paper-tooltip>
+    <paper-tooltip for="btn" position="top">Tooltip text</paper-tooltip>
+
 ### Styling
 
 The following custom properties and mixins are available for styling:
@@ -45,39 +51,41 @@ Custom property | Description | Default
 -->
 
 </head><body><dom-module id="paper-tooltip">
-  <style>
-    :host {
-      display: block;
-      position: absolute;
-      outline: none;
-      z-index: 1002;
-    }
-
-    #tooltip {
-      display: block;
-      outline: none;
-      @apply(--paper-font-common-base);
-      font-size: 10px;
-
-      background-color: var(--paper-tooltip-background, #616161);
-      opacity: var(--paper-tooltip-opacity, 0.9);
-      color: var(--paper-tooltip-text-color, white);
-
-      padding: 8px;
-      border-radius: 2px;
-
-      @apply(--paper-tooltip);
-    }
-
-    /* Thanks IE 10. */
-    .hidden {
-      display: none !important;
-    }
-  </style>
   <template>
+    <style>
+      :host {
+        display: block;
+        position: absolute;
+        outline: none;
+        z-index: 1002;
+      }
+
+      #tooltip {
+        display: block;
+        outline: none;
+        @apply(--paper-font-common-base);
+        font-size: 10px;
+
+        background-color: var(--paper-tooltip-background, #616161);
+        opacity: var(--paper-tooltip-opacity, 0.9);
+        color: var(--paper-tooltip-text-color, white);
+
+        padding: 8px;
+        border-radius: 2px;
+
+        @apply(--paper-tooltip);
+      }
+
+      /* Thanks IE 10. */
+      .hidden {
+        display: none !important;
+      }
+    </style>
+
     <div id="tooltip" class="hidden">
       <content></content>
     </div>
   </template>
+
   </dom-module>
 <script src="paper-tooltip-extracted.js"></script></body></html>

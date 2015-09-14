@@ -13,8 +13,7 @@ Polymer({
        */
       secondaryProgress: {
         type: Number,
-        value: 0,
-        notify: true
+        value: 0
       },
 
       /**
@@ -23,8 +22,7 @@ Polymer({
       secondaryRatio: {
         type: Number,
         value: 0,
-        readOnly: true,
-        observer: '_secondaryRatioChanged'
+        readOnly: true
       },
 
       /**
@@ -33,21 +31,32 @@ Polymer({
       indeterminate: {
         type: Boolean,
         value: false,
-        notify: true,
         observer: '_toggleIndeterminate'
+      },
+
+      /**
+       * True if the progress is disabled.
+       */
+      disabled: {
+        type: Boolean,
+        value: false,
+        reflectToAttribute: true,
+        observer: '_disabledChanged'
       }
     },
 
     observers: [
-      '_ratioChanged(ratio)',
-      '_secondaryProgressChanged(secondaryProgress, min, max)'
+      '_progressChanged(secondaryProgress, value, min, max)'
     ],
 
-    _toggleIndeterminate: function() {
+    hostAttributes: {
+      role: 'progressbar'
+    },
+
+    _toggleIndeterminate: function(indeterminate) {
       // If we use attribute/class binding, the animation sometimes doesn't translate properly
       // on Safari 7.1. So instead, we toggle the class here in the update method.
-      this.toggleClass('indeterminate', this.indeterminate, this.$.activeProgress);
-      this.toggleClass('indeterminate', this.indeterminate, this.$.indeterminateSplitter);
+      this.toggleClass('indeterminate', indeterminate, this.$.primaryProgress);
     },
 
     _transformProgress: function(progress, ratio) {
@@ -55,17 +64,34 @@ Polymer({
       progress.style.transform = progress.style.webkitTransform = transform;
     },
 
-    _ratioChanged: function(ratio) {
-      this._transformProgress(this.$.activeProgress, ratio);
+    _mainRatioChanged: function(ratio) {
+      this._transformProgress(this.$.primaryProgress, ratio);
     },
 
-    _secondaryRatioChanged: function(secondaryRatio) {
+    _progressChanged: function(secondaryProgress, value, min, max) {
+      secondaryProgress = this._clampValue(secondaryProgress);
+      value = this._clampValue(value);
+
+      var secondaryRatio = this._calcRatio(secondaryProgress) * 100;
+      var mainRatio = this._calcRatio(value) * 100;
+
+      this._setSecondaryRatio(secondaryRatio);
       this._transformProgress(this.$.secondaryProgress, secondaryRatio);
+      this._transformProgress(this.$.primaryProgress, mainRatio);
+
+      this.secondaryProgress = secondaryProgress;
+
+      this.setAttribute('aria-valuenow', value);
+      this.setAttribute('aria-valuemin', min);
+      this.setAttribute('aria-valuemax', max);
     },
 
-    _secondaryProgressChanged: function() {
-      this.secondaryProgress = this._clampValue(this.secondaryProgress);
-      this._setSecondaryRatio(this._calcRatio(this.secondaryProgress) * 100);
+    _disabledChanged: function(disabled) {
+      this.$.progressContainer.setAttribute('aria-disabled', disabled ? 'true' : 'false');
+    },
+
+    _hideSecondaryProgress: function(secondaryRatio) {
+      return secondaryRatio === 0;
     }
 
   });

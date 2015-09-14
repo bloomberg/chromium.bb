@@ -32,6 +32,11 @@ style this element.
 
 </head><body><dom-module id="paper-textarea">
   <template>
+    <style>
+      :host {
+        display: block;
+      }
+    </style>
 
     <paper-input-container no-label-float$="[[noLabelFloat]]" always-float-label="[[_computeAlwaysFloatLabel(alwaysFloatLabel,placeholder)]]" auto-validate$="[[autoValidate]]" disabled$="[[disabled]]" invalid="[[invalid]]">
 
@@ -50,7 +55,6 @@ style this element.
     </paper-input-container>
 
   </template>
-
 </dom-module>
 
 <script src="paper-textarea-extracted.js"></script></body></html>

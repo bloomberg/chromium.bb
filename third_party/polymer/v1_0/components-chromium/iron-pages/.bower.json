@@ -37,6 +37,6 @@
     "commit": "ca6e7892786d60d8cb6935d8376b27c3851fdbf5"
   },
   "_source": "git://github.com/PolymerElements/iron-pages.git",
-  "_target": "~1.0.0",
+  "_target": "^1.0.0",
   "_originalSource": "PolymerElements/iron-pages"
 }

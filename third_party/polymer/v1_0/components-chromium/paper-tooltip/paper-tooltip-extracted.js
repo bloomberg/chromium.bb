@@ -1,5 +1,4 @@
-
-    Polymer({
+Polymer({
       is: 'paper-tooltip',
 
       hostAttributes: {
@@ -22,8 +21,35 @@
         },
 
         /**
+         * Positions the tooltip to the top, right, bottom, left of its content.
+         */
+        position: {
+          type: String,
+          value: 'bottom'
+        },
+
+        /**
+         * If true, no parts of the tooltip will ever be shown offscreen.
+         */
+        fitToVisibleBounds: {
+          type: Boolean,
+          value: false
+        },
+
+        /**
          * The spacing between the top of the tooltip and the element it is
          * anchored to.
+         */
+        offset: {
+          type: Number,
+          value: 14
+        },
+
+        /**
+         * This property is deprecated, but left over so that it doesn't
+         * break exiting code. Please use `offset` instead. If both `offset` and
+         * `marginTop` are provided, `marginTop` will be ignored.
+         * @deprecated since version 1.0.3
          */
         marginTop: {
           type: Number,
@@ -100,10 +126,13 @@
         if (this._showing)
           return;
 
+        if (Polymer.dom(this).textContent.trim() === '')
+          return;
+
         this.cancelAnimation();
 
         this.toggleClass('hidden', false, this.$.tooltip);
-        this._setPosition();
+        this.updatePosition();
         this._showing = true;
 
         this.playAnimation('entry');
@@ -121,18 +150,70 @@
         this._target = this.target;
       },
 
-      _setPosition: function() {
+      updatePosition: function() {
         if (!this._target)
           return;
+
+        var offset = this.offset;
+        // If a marginTop has been provided by the user (pre 1.0.3), use it.
+        if (this.marginTop != 14 && this.offset == 14)
+          offset = this.marginTop;
 
         var parentRect = this.offsetParent.getBoundingClientRect();
         var targetRect = this._target.getBoundingClientRect();
         var thisRect = this.getBoundingClientRect();
 
-        var centerOffset = (targetRect.width - thisRect.width) / 2;
+        var horizontalCenterOffset = (targetRect.width - thisRect.width) / 2;
+        var verticalCenterOffset = (targetRect.height - thisRect.height) / 2;
 
-        this.style.left = targetRect.left - parentRect.left + centerOffset + 'px';
-        this.style.top = targetRect.top - parentRect.top + targetRect.height + this.marginTop + 'px';
+        var targetLeft = targetRect.left - parentRect.left;
+        var targetTop = targetRect.top - parentRect.top;
+
+        var tooltipLeft, tooltipTop;
+
+        switch (this.position) {
+          case 'top':
+            tooltipLeft = targetLeft + horizontalCenterOffset;
+            tooltipTop = targetTop - thisRect.height - offset;
+            break;
+          case 'bottom':
+            tooltipLeft = targetLeft + horizontalCenterOffset;
+            tooltipTop = targetTop + targetRect.height + offset;
+            break;
+          case 'left':
+            tooltipLeft = targetLeft - thisRect.width - offset;
+            tooltipTop = targetTop + verticalCenterOffset;
+            break;
+          case 'right':
+            tooltipLeft = targetLeft + targetRect.width + offset;
+            tooltipTop = targetTop + verticalCenterOffset;
+            break;
+        }
+
+        // TODO(noms): This should use IronFitBehavior if possible.
+        if (this.fitToVisibleBounds) {
+          // Clip the left/right side.
+          if (tooltipLeft + thisRect.width > window.innerWidth) {
+            this.style.right = '0px';
+            this.style.left = 'auto';
+          } else {
+            this.style.left = Math.max(0, tooltipLeft) + 'px';
+            this.style.right = 'auto';
+          }
+
+          // Clip the top/bottom side.
+          if (tooltipTop + thisRect.height > window.innerHeight) {
+            this.style.bottom = '0px';
+            this.style.top = 'auto';
+          } else {
+            this.style.top = Math.max(0, tooltipTop) + 'px';
+            this.style.bottom = 'auto';
+          }
+        } else {
+          this.style.left = tooltipLeft + 'px';
+          this.style.top = tooltipTop + 'px';
+        }
+
       },
 
       _onAnimationFinish: function() {
@@ -140,5 +221,4 @@
           this.toggleClass('hidden', true, this.$.tooltip);
         }
       },
-    })
-  
+    });

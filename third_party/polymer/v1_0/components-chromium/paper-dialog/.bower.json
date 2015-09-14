@@ -39,6 +39,6 @@
     "commit": "1339718c67ef50add5221dd63d35e03a54fb619f"
   },
   "_source": "git://github.com/PolymerElements/paper-dialog.git",
-  "_target": "~1.0.0",
+  "_target": "^1.0.0",
   "_originalSource": "PolymerElements/paper-dialog"
 }

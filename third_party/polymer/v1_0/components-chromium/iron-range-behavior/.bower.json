@@ -35,6 +35,6 @@
     "commit": "a743ac0b204a8e76466c2dba349ab2180c9f15f5"
   },
   "_source": "git://github.com/PolymerElements/iron-range-behavior.git",
-  "_target": "~1.0.0",
+  "_target": "^1.0.0",
   "_originalSource": "PolymerElements/iron-range-behavior"
 }

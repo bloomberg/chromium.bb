@@ -25,7 +25,7 @@ item is displayed in the control. If no item is selected, the `label` is
 displayed instead.
 
 The child element with the class `dropdown-content` will be used as the dropdown
-menu. It could be a `paper-menu` or element that triggers `iron-activate` when
+menu. It could be a `paper-menu` or element that triggers `iron-select` when
 selecting its children.
 
 Example:
@@ -121,16 +121,14 @@ respectively.
 
   </style>
   <template>
-    <paper-menu-button id="menuButton" vertical-align="top" horizontal-align="right" vertical-offset="[[_computeMenuVerticalOffset(noLabelFloat)]]" disabled="[[disabled]]" no-animations="[[noAnimations]]" on-iron-activate="_onIronActivate" opened="{{opened}}">
+    <paper-menu-button id="menuButton" vertical-align="top" horizontal-align="right" vertical-offset="[[_computeMenuVerticalOffset(noLabelFloat)]]" disabled="[[disabled]]" no-animations="[[noAnimations]]" on-iron-select="_onIronSelect" opened="{{opened}}">
       <div class="dropdown-trigger">
         <paper-ripple></paper-ripple>
         <paper-input readonly="" disabled="[[disabled]]" value="[[selectedItemLabel]]" placeholder="[[placeholder]]" always-float-label="[[alwaysFloatLabel]]" no-label-float="[[noLabelFloat]]" label="[[label]]">
           <iron-icon icon="arrow-drop-down" suffix=""></iron-icon>
         </paper-input>
       </div>
-      <div class="dropdown-content">
-        <content select=".dropdown-content"></content>
-      </div>
+      <content id="content" select=".dropdown-content"></content>
     </paper-menu-button>
   </template>
 </dom-module>

@@ -2,7 +2,8 @@ Polymer({
       is: 'paper-toggle-button',
 
       behaviors: [
-        Polymer.PaperInkyFocusBehavior
+        Polymer.PaperInkyFocusBehavior,
+        Polymer.IronCheckedElementBehavior
       ],
 
       hostAttributes: {
@@ -22,34 +23,6 @@ Polymer({
          *
          * @event iron-change
          */
-        /**
-         * Gets or sets the state, `true` is checked and `false` is unchecked.
-         *
-         * @attribute checked
-         * @type boolean
-         * @default false
-         */
-        checked: {
-          type: Boolean,
-          value: false,
-          reflectToAttribute: true,
-          notify: true,
-          observer: '_checkedChanged'
-        },
-
-        /**
-         * If true, the button toggles the active state with each tap or press
-         * of the spacebar.
-         *
-         * @attribute toggles
-         * @type boolean
-         * @default true
-         */
-        toggles: {
-          type: Boolean,
-          value: true,
-          reflectToAttribute: true
-        }
       },
 
       listeners: {
@@ -68,11 +41,6 @@ Polymer({
         if (this._isReady) {
           this.checked = this.active;
         }
-      },
-
-      _checkedChanged: function(checked) {
-        this.active = this.checked;
-        this.fire('iron-change');
       },
 
       _ontrack: function(event) {

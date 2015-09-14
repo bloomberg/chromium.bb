@@ -40,15 +40,6 @@ Polymer({
     },
   },
 
-  /** @override */
-  attached: function() {
-    // HACK(dschuyler): paper-checkbox 1.0.6 will hide the label
-    // if the content is empty.
-    // TODO(dschuyler): rework settings checkbox to use content
-    // rather than spans.
-    this.$.checkbox.$.checkboxLabel.hidden = false;
-  },
-
   toggle: function() {
     this.checked = !this.checked;
   },

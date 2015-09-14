@@ -150,17 +150,6 @@ Polymer({
       return valid;
     },
 
-    _update: function() {
-      this.$.mirror.innerHTML = this._valueForMirror();
-
-      var textarea = this.textarea;
-      // If the value of the textarea was updated imperatively, then we
-      // need to manually update bindValue as well.
-      if (textarea && this.bindValue != textarea.value) {
-        this.bindValue = textarea.value;
-      }
-    },
-
     _bindValueChanged: function() {
       var textarea = this.textarea;
       if (!textarea) {
@@ -168,14 +157,13 @@ Polymer({
       }
 
       textarea.value = this.bindValue;
-      this._update();
+      this.$.mirror.innerHTML = this._valueForMirror();
       // manually notify because we don't want to notify until after setting value
       this.fire('bind-value-changed', {value: this.bindValue});
     },
 
     _onInput: function(event) {
       this.bindValue = event.path ? event.path[0].value : event.target.value;
-      this._update();
     },
 
     _constrain: function(tokens) {

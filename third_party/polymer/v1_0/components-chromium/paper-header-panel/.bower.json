@@ -1,6 +1,6 @@
 {
   "name": "paper-header-panel",
-  "version": "1.0.3",
+  "version": "1.0.5",
   "description": "A header and content wrapper for layout with headers",
   "authors": [
     "The Polymer Authors"
@@ -32,13 +32,13 @@
     "webcomponentsjs": "webcomponents/webcomponentsjs#^0.7.0",
     "paper-styles": "PolymerElements/paper-styles#^1.0.0"
   },
-  "_release": "1.0.3",
+  "_release": "1.0.5",
   "_resolution": {
     "type": "version",
-    "tag": "v1.0.3",
-    "commit": "7226d1f4d14cffa9d1866464dc461e03676f1dcc"
+    "tag": "v1.0.5",
+    "commit": "830cb114d6aacac721f9d4365dd6fe1883df39d0"
   },
   "_source": "git://github.com/PolymerElements/paper-header-panel.git",
-  "_target": "~1.0.0",
+  "_target": "^1.0.0",
   "_originalSource": "PolymerElements/paper-header-panel"
 }

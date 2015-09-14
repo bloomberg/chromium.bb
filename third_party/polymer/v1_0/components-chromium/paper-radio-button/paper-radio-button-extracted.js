@@ -2,7 +2,8 @@ Polymer({
       is: 'paper-radio-button',
 
       behaviors: [
-        Polymer.PaperInkyFocusBehavior
+        Polymer.PaperInkyFocusBehavior,
+        Polymer.IronCheckedElementBehavior
       ],
 
       hostAttributes: {
@@ -24,38 +25,30 @@ Polymer({
          * @event iron-change
          */
 
-        /**
-         * Gets or sets the state, `true` is checked and `false` is unchecked.
-         */
-        checked: {
-          type: Boolean,
-          value: false,
-          reflectToAttribute: true,
-          notify: true,
-          observer: '_checkedChanged'
-        },
-
-        /**
-         * If true, the button toggles the active state with each tap or press
-         * of the spacebar.
-         */
-        toggles: {
-          type: Boolean,
-          value: true,
-          reflectToAttribute: true
-        }
+         ariaActiveAttribute: {
+           value: 'aria-checked'
+         }
       },
 
       attached: function() {
-        var trimmedText = Polymer.dom(this).textContent.trim();
-        if (trimmedText === '') {
-          this.$.radioLabel.hidden = true;
-        }
-        // Don't stomp over a user-set aria-label.
-        if (trimmedText !== '' && !this.getAttribute('aria-label')) {
-          this.setAttribute('aria-label', trimmedText);
-        }
         this._isReady = true;
+
+        // Don't stomp over a user-set aria-label.
+        if (!this.getAttribute('aria-label')) {
+          this.updateAriaLabel();
+        }
+      },
+
+      /**
+       * Update the checkbox aria-label. This is a temporary workaround not
+       * being able to observe changes in <content>
+       * (see: https://github.com/Polymer/polymer/issues/1773)
+       *
+       * Call this if you manually change the contents of the checkbox
+       * and want the aria-label to match the new contents.
+       */
+      updateAriaLabel: function() {
+        this.setAttribute('aria-label', Polymer.dom(this).textContent.trim());
       },
 
       _buttonStateChanged: function() {
@@ -65,11 +58,5 @@ Polymer({
         if (this._isReady) {
           this.checked = this.active;
         }
-      },
-
-      _checkedChanged: function() {
-        this.setAttribute('aria-checked', this.checked ? 'true' : 'false');
-        this.active = this.checked;
-        this.fire('iron-change');
       }
     });

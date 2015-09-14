@@ -37,6 +37,6 @@
     "commit": "92713b61eb8eec378db63af61b73341453b8180d"
   },
   "_source": "git://github.com/PolymerElements/paper-drawer-panel.git",
-  "_target": "~1.0.0",
+  "_target": "^1.0.0",
   "_originalSource": "PolymerElements/paper-drawer-panel"
 }

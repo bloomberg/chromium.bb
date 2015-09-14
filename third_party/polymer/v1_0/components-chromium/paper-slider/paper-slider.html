@@ -50,6 +50,7 @@ Custom property | Description | Default
 `--paper-slider-knob-start-color` | The fill color of the knob at the far left | `transparent`
 `--paper-slider-knob-start-border-color` | The border color of the knob at the far left | `#c8c8c8`
 `--paper-slider-pin-start-color` | The color of the pin at the far left | `#c8c8c8`
+`--paper-slider-height` | Height of the progress bar | `2px`
 
 @group Paper Elements
 @element paper-slider
@@ -65,7 +66,7 @@ Custom property | Description | Default
     <div id="sliderContainer" class$="[[_getClassNames(disabled, pin, snaps, immediateValue, min, expand, dragging, transiting, editable)]]">
 
       <div class="bar-container">
-        <paper-progress class$="[[_getProgressClass(transiting)]]" id="sliderBar" aria-hidden="true" min="[[min]]" max="[[max]]" step="[[step]]" value="[[immediateValue]]" secondary-progress="[[secondaryProgress]]" on-down="_bardown" on-up="_resetKnob" on-track="_onTrack">
+        <paper-progress disabled$="[[disabled]]" id="sliderBar" aria-hidden="true" min="[[min]]" max="[[max]]" step="[[step]]" value="[[immediateValue]]" secondary-progress="[[secondaryProgress]]" on-down="_bardown" on-up="_resetKnob" on-track="_onTrack">
         </paper-progress>
       </div>
 

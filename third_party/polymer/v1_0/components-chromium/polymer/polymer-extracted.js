@@ -218,7 +218,11 @@ if (!this._template) {
 this._notes = [];
 } else {
 Polymer.Annotations.prepElement = this._prepElement.bind(this);
+if (this._template._content && this._template._content._notes) {
+this._notes = this._template._content._notes;
+} else {
 this._notes = Polymer.Annotations.parseAnnotations(this._template);
+}
 this._processAnnotations(this._notes);
 Polymer.Annotations.prepElement = null;
 }
@@ -665,9 +669,9 @@ gd = gobj[dep];
 if (gd && gd[name]) {
 gd[name] = (gd[name] || 1) - 1;
 gd._count = (gd._count || 1) - 1;
-}
 if (gd._count === 0) {
 node.removeEventListener(dep, this.handleNative);
+}
 }
 }
 }
@@ -1638,6 +1642,9 @@ name: arg,
 model: this._modelForPath(arg)
 };
 var fc = arg[0];
+if (fc === '-') {
+fc = arg[1];
+}
 if (fc >= '0' && fc <= '9') {
 fc = '#';
 }
@@ -2168,7 +2175,7 @@ MIXIN_RULE: 1000
 OPEN_BRACE: '{',
 CLOSE_BRACE: '}',
 _rx: {
-comments: /\/\*[^*]*\*+([^\/*][^*]*\*+)*\//gim,
+comments: /\/\*[^*]*\*+([^/*][^*]*\*+)*\//gim,
 port: /@import[^;]*;/gim,
 customProp: /(?:^|[\s;])--[^;{]*?:[^{};]*?(?:[;\n]|$)/gim,
 mixinProp: /(?:^|[\s;])--[^;{]*?:[^{;]*?{[^}]*?}(?:[;\n]|$)?/gim,
@@ -2184,7 +2191,8 @@ return api;
 }();
 Polymer.StyleUtil = function () {
 return {
-MODULE_STYLES_SELECTOR: 'style, link[rel=import][type~=css]',
+MODULE_STYLES_SELECTOR: 'style, link[rel=import][type~=css], template',
+INCLUDE_ATTR: 'include',
 toCssText: function (rules, callback, preserveProperties) {
 if (typeof rules === 'string') {
 rules = this.parser.parse(rules);
@@ -2211,6 +2219,9 @@ clearStyleRules: function (style) {
 style.__cssRules = null;
 },
 forEachStyleRule: function (node, callback) {
+if (!node) {
+return;
+}
 var s = node.parsedSelector;
 var skipRules = false;
 if (node.type === this.ruleTypes.STYLE_RULE) {
@@ -2239,27 +2250,49 @@ afterNode = n$[n$.length - 1];
 target.insertBefore(style, afterNode && afterNode.nextSibling || target.firstChild);
 return style;
 },
-cssFromModule: function (moduleId) {
+cssFromModules: function (moduleIds, warnIfNotFound) {
+var modules = moduleIds.trim().split(' ');
+var cssText = '';
+for (var i = 0; i < modules.length; i++) {
+cssText += this.cssFromModule(modules[i], warnIfNotFound);
+}
+return cssText;
+},
+cssFromModule: function (moduleId, warnIfNotFound) {
 var m = Polymer.DomModule.import(moduleId);
 if (m && !m._cssText) {
-var cssText = '';
-var e$ = Array.prototype.slice.call(m.querySelectorAll(this.MODULE_STYLES_SELECTOR));
-for (var i = 0, e; i < e$.length; i++) {
-e = e$[i];
-if (e.localName === 'style') {
-e = e.__appliedElement || e;
-e.parentNode.removeChild(e);
-} else {
-e = e.import && e.import.body;
+m._cssText = this._cssFromElement(m);
 }
-if (e) {
-cssText += Polymer.ResolveUrl.resolveCss(e.textContent, e.ownerDocument);
-}
-}
-m._cssText = cssText;
+if (!m && warnIfNotFound) {
+console.warn('Could not find style data in module named', moduleId);
 }
 return m && m._cssText || '';
 },
+_cssFromElement: function (element) {
+var cssText = '';
+var content = element.content || element;
+var e$ = Array.prototype.slice.call(content.querySelectorAll(this.MODULE_STYLES_SELECTOR));
+for (var i = 0, e; i < e$.length; i++) {
+e = e$[i];
+if (e.localName === 'template') {
+cssText += this._cssFromElement(e);
+} else {
+if (e.localName === 'style') {
+var include = e.getAttribute(this.INCLUDE_ATTR);
+if (include) {
+cssText += this.cssFromModules(include, true);
+}
+e = e.__appliedElement || e;
+e.parentNode.removeChild(e);
+cssText += this.resolveCss(e.textContent, element.ownerDocument);
+} else if (e.import && e.import.body) {
+cssText += this.resolveCss(e.import.body.textContent, e.import);
+}
+}
+}
+return cssText;
+},
+resolveCss: Polymer.ResolveUrl.resolveCss,
 parser: Polymer.CssParse,
 ruleTypes: Polymer.CssParse.types
 };
@@ -3160,7 +3193,8 @@ var styleTransformer = Polymer.StyleTransformer;
 Polymer({
 is: 'custom-style',
 extends: 'style',
-created: function () {
+properties: { include: String },
+ready: function () {
 this._tryApply();
 },
 attached: function () {
@@ -3172,7 +3206,7 @@ if (this.parentNode && this.parentNode.localName !== 'dom-module') {
 this._appliesToDocument = true;
 var e = this.__appliedElement || this;
 styleDefaults.addStyle(e);
-if (e.textContent) {
+if (e.textContent || this.include) {
 this._apply();
 } else {
 var observer = new MutationObserver(function () {
@@ -3186,16 +3220,26 @@ observer.observe(e, { childList: true });
 },
 _apply: function () {
 var e = this.__appliedElement || this;
+if (this.include) {
+e.textContent = styleUtil.cssFromModules(this.include, true) + e.textContent;
+}
+if (e.textContent) {
+styleUtil.forEachStyleRule(styleUtil.rulesForStyle(e), function (rule) {
+styleTransformer.documentRule(rule);
+});
+this._applyCustomProperties(e);
+}
+},
+_applyCustomProperties: function (element) {
 this._computeStyleProperties();
 var props = this._styleProperties;
-var self = this;
-e.textContent = styleUtil.toCssText(styleUtil.rulesForStyle(e), function (rule) {
+var rules = styleUtil.rulesForStyle(element);
+element.textContent = styleUtil.toCssText(rules, function (rule) {
 var css = rule.cssText = rule.parsedCssText;
 if (rule.propertyInfo && rule.propertyInfo.cssText) {
 css = cssParse.removeCustomPropAssignment(css);
 rule.cssText = propertyUtils.valueForProperties(css, props);
 }
-styleTransformer.documentRule(rule);
 });
 }
 });
@@ -3523,29 +3567,36 @@ items.push(store[key]);
 return items;
 },
 _applySplices: function (splices) {
-var keySplices = [];
-for (var i = 0; i < splices.length; i++) {
-var j, o, key, s = splices[i];
+var keyMap = {}, key, i;
+splices.forEach(function (s) {
+s.addedKeys = [];
+for (i = 0; i < s.removed.length; i++) {
+key = this.getKey(s.removed[i]);
+keyMap[key] = keyMap[key] ? null : -1;
+}
+for (i = 0; i < s.addedCount; i++) {
+var item = this.userArray[s.index + i];
+key = this.getKey(item);
+key = key === undefined ? this.add(item) : key;
+keyMap[key] = keyMap[key] ? null : 1;
+s.addedKeys.push(key);
+}
+}, this);
 var removed = [];
-for (j = 0; j < s.removed.length; j++) {
-o = s.removed[j];
-key = this.remove(o);
+var added = [];
+for (var key in keyMap) {
+if (keyMap[key] < 0) {
+this.removeKey(key);
 removed.push(key);
 }
-var added = [];
-for (j = 0; j < s.addedCount; j++) {
-o = this.userArray[s.index + j];
-key = this.add(o);
+if (keyMap[key] > 0) {
 added.push(key);
 }
-keySplices.push({
-index: s.index,
-removed: removed,
-removedItems: s.removed,
-added: added
-});
 }
-return keySplices;
+return [{
+removed: removed,
+added: added
+}];
 }
 };
 Polymer.Collection.get = function (userArray) {
@@ -3640,11 +3691,13 @@ this.collection = null;
 } else {
 this._error(this._logf('dom-repeat', 'expected array for `items`,' + ' found', this.items));
 }
-this._splices = [];
+this._keySplices = [];
+this._indexSplices = [];
 this._needFullRefresh = true;
 this._debounceTemplate(this._render);
 } else if (change.path == 'items.splices') {
-this._splices = this._splices.concat(change.value.keySplices);
+this._keySplices = this._keySplices.concat(change.value.keySplices);
+this._indexSplices = this._indexSplices.concat(change.value.indexSplices);
 this._debounceTemplate(this._render);
 } else {
 var subpath = change.path.slice(6);
@@ -3681,16 +3734,17 @@ this._applyFullRefresh();
 this._needFullRefresh = false;
 } else {
 if (this._sortFn) {
-this._applySplicesUserSort(this._splices);
+this._applySplicesUserSort(this._keySplices);
 } else {
 if (this._filterFn) {
 this._applyFullRefresh();
 } else {
-this._applySplicesArrayOrder(this._splices);
+this._applySplicesArrayOrder(this._indexSplices);
 }
 }
 }
-this._splices = [];
+this._keySplices = [];
+this._indexSplices = [];
 var keyToIdx = this._keyToInstIdx = {};
 for (var i = 0; i < this._instances.length; i++) {
 var inst = this._instances[i];
@@ -3741,6 +3795,9 @@ this._instances.splice(keys.length, this._instances.length - keys.length);
 _keySort: function (a, b) {
 return this.collection.getKey(a) - this.collection.getKey(b);
 },
+_numericSort: function (a, b) {
+return a - b;
+},
 _applySplicesUserSort: function (splices) {
 var c = this.collection;
 var instances = this._instances;
@@ -3768,7 +3825,7 @@ addedKeys.push(key);
 }
 }
 if (removedIdxs.length) {
-removedIdxs.sort();
+removedIdxs.sort(this._numericSort);
 for (var i = removedIdxs.length - 1; i >= 0; i--) {
 var idx = removedIdxs[i];
 if (idx !== undefined) {
@@ -3828,10 +3885,10 @@ pool.push(inst);
 }
 }
 this._instances.splice(s.index, s.removed.length);
-for (var i = 0; i < s.added.length; i++) {
+for (var i = 0; i < s.addedKeys.length; i++) {
 var inst = {
 isPlaceholder: true,
-key: s.added[i]
+key: s.addedKeys[i]
 };
 this._instances.splice(s.index + i, 0, inst);
 }
@@ -3940,14 +3997,18 @@ is: 'array-selector',
 properties: {
 items: {
 type: Array,
-observer: '_resetSelection'
+observer: 'clearSelection'
 },
 multi: {
 type: Boolean,
 value: false,
-observer: '_resetSelection'
+observer: 'clearSelection'
 },
 selected: {
+type: Object,
+notify: true
+},
+selectedItem: {
 type: Object,
 notify: true
 },
@@ -3956,7 +4017,7 @@ type: Boolean,
 value: false
 }
 },
-_resetSelection: function () {
+clearSelection: function () {
 if (Array.isArray(this.selected)) {
 for (var i = 0; i < this.selected.length; i++) {
 this.unlinkPaths('selected.' + i);
@@ -3973,6 +4034,7 @@ this._selectedColl = Polymer.Collection.get(this.selected);
 this.selected = null;
 this._selectedColl = null;
 }
+this.selectedItem = null;
 },
 isSelected: function (item) {
 if (this.multi) {
@@ -3990,7 +4052,9 @@ this.unlinkPaths('selected.' + skey);
 }
 } else {
 this.selected = null;
+this.selectedItem = null;
 this.unlinkPaths('selected');
+this.unlinkPaths('selectedItem');
 }
 },
 select: function (item) {
@@ -4010,8 +4074,10 @@ this.linkPaths('selected.' + skey, 'items.' + key);
 if (this.toggle && item == this.selected) {
 this.deselect();
 } else {
-this.linkPaths('selected', 'items.' + key);
 this.selected = item;
+this.selectedItem = item;
+this.linkPaths('selected', 'items.' + key);
+this.linkPaths('selectedItem', 'items.' + key);
 }
 }
 }

@@ -36,7 +36,7 @@
         /**
          * The last selected item. An item is selected if the dropdown menu has
          * a child with class `dropdown-content`, and that child triggers an
-         * `iron-activate` event with the selected `item` in the `detail`.
+         * `iron-select` event with the selected `item` in the `detail`.
          */
         selectedItem: {
           type: Object,
@@ -110,6 +110,24 @@
         'aria-haspopup': 'true'
       },
 
+      attached: function() {
+        // NOTE(cdata): Due to timing, a preselected value in a `IronSelectable`
+        // child will cause an `iron-select` event to fire while the element is
+        // still in a `DocumentFragment`. This has the effect of causing
+        // handlers not to fire. So, we double check this value on attached:
+        var contentElement = this.contentElement;
+        if (contentElement && contentElement.selectedItem) {
+          this._setSelectedItem(contentElement.selectedItem);
+        }
+      },
+
+      /**
+       * The content element that is contained by the dropdown menu, if any.
+       */
+      get contentElement() {
+        return Polymer.dom(this.$.content).getDistributedNodes()[0];
+      },
+
       /**
        * Show the dropdown content.
        */
@@ -125,11 +143,11 @@
       },
 
       /**
-       * A handler that is called when `iron-activate` is fired.
+       * A handler that is called when `iron-select` is fired.
        *
-       * @param {CustomEvent} event An `iron-activate` event.
+       * @param {CustomEvent} event An `iron-select` event.
        */
-      _onIronActivate: function(event) {
+      _onIronSelect: function(event) {
         this._setSelectedItem(event.detail.item);
       },
 
