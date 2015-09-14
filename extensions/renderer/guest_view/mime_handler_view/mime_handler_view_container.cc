@@ -23,6 +23,7 @@
 #include "gin/wrappable.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
+#include "third_party/WebKit/public/web/WebRemoteFrame.h"
 #include "third_party/WebKit/public/web/WebView.h"
 
 namespace extensions {
@@ -235,8 +236,18 @@ void MimeHandlerViewContainer::PostMessage(v8::Isolate* isolate,
 
   v8::Context::Scope context_scope(
       render_frame()->GetWebFrame()->mainWorldScriptContext());
-  v8::Local<v8::Object> guest_proxy_window =
-      guest_proxy_frame->mainWorldScriptContext()->Global();
+
+  // TODO(lazyboy,nasko): The WebLocalFrame branch is not used when running
+  // on top of out-of-process iframes. Remove it once the code is converted.
+  v8::Local<v8::Object> guest_proxy_window;
+  if (guest_proxy_frame->isWebLocalFrame()) {
+    guest_proxy_window =
+        guest_proxy_frame->mainWorldScriptContext()->Global();
+  } else {
+    guest_proxy_window = guest_proxy_frame->toWebRemoteFrame()
+                             ->deprecatedMainWorldScriptContext()
+                             ->Global();
+  }
   gin::Dictionary window_object(isolate, guest_proxy_window);
   v8::Local<v8::Function> post_message;
   if (!window_object.Get(std::string(kPostMessageName), &post_message))
@@ -247,7 +258,7 @@ void MimeHandlerViewContainer::PostMessage(v8::Isolate* isolate,
       // Post the message to any domain inside the browser plugin. The embedder
       // should already know what is embedded.
       gin::StringToV8(isolate, "*")};
-  guest_proxy_frame->callFunctionEvenIfScriptDisabled(
+  render_frame()->GetWebFrame()->callFunctionEvenIfScriptDisabled(
       post_message.As<v8::Function>(),
       guest_proxy_window,
       arraysize(args),
