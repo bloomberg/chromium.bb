@@ -55,7 +55,7 @@
       },
       'includes': [ '../../build/jni_generator.gypi' ],
     },
-    { 
+    {
       'target_name': 'android_resource_type_java',
       'type': 'none',
       'variables': {
@@ -191,4 +191,25 @@
       'includes': [ '../../build/apk_test.gypi' ],
     },
   ],
+  'conditions': [
+    ['test_isolation_mode != "noop"',
+      {
+        'targets': [
+          {
+            'target_name': 'ui_android_unittests_apk_run',
+            'type': 'none',
+            'dependencies': [
+              'ui_android_unittests_apk',
+            ],
+            'includes': [
+              '../../build/isolate.gypi',
+            ],
+            'sources': [
+              'ui_android_unittests_apk.isolate',
+            ],
+          },
+        ]
+      }
+    ],
+  ]
 }
