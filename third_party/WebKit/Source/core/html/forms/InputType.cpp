@@ -760,10 +760,14 @@ void InputType::applyStep(const Decimal& current, int count, AnyStepHandling any
         exceptionState.throwDOMException(InvalidStateError, "This form element does not have an allowed value step.");
         return;
     }
+    // TODO(tkent): We should do nothing if minimum > maximum, or there is no
+    // valid values between minimum and maximum.
+    // https://html.spec.whatwg.org/multipage/forms.html#dom-input-stepup
 
     EventQueueScope scope;
     const Decimal step = stepRange.step();
 
+    Decimal newValue = current;
     const AtomicString& stepString = element().fastGetAttribute(stepAttr);
     if (!equalIgnoringCase(stepString, "any") && stepRange.stepMismatch(current)) {
         // Snap-to-step / clamping steps
@@ -775,42 +779,31 @@ void InputType::applyStep(const Decimal& current, int count, AnyStepHandling any
         //
 
         ASSERT(!step.isZero());
-        Decimal newValue;
         const Decimal base = stepRange.stepBase();
-        if (count < 0)
-            newValue = base + ((current - base) / step).floor() * step;
-        else if (count > 0)
-            newValue = base + ((current - base) / step).ceil() * step;
-        else
-            newValue = current;
-
-        if (newValue < stepRange.minimum())
-            newValue = stepRange.minimum();
-        if (newValue > stepRange.maximum())
-            newValue = stepRange.maximum();
-
-        setValueAsDecimal(newValue, count == 1 || count == -1 ? eventBehavior : DispatchNoEvent, IGNORE_EXCEPTION);
-        if (count > 1) {
-            applyStep(newValue, count - 1, AnyIsDefaultStep, eventBehavior, IGNORE_EXCEPTION);
-            return;
+        if (count < 0) {
+            newValue = base + ((newValue - base) / step).floor() * step;
+            ++count;
+        } else if (count > 0) {
+            newValue = base + ((newValue - base) / step).ceil() * step;
+            --count;
         }
-        if (count < -1) {
-            applyStep(newValue, count + 1, AnyIsDefaultStep, eventBehavior, IGNORE_EXCEPTION);
-            return;
-        }
-    } else {
-        Decimal newValue = current + stepRange.step() * count;
-
-        if (!equalIgnoringCase(stepString, "any"))
-            newValue = stepRange.alignValueForStep(current, newValue);
-
-        if (newValue > stepRange.maximum())
-            newValue = newValue - stepRange.step();
-        else if (newValue < stepRange.minimum())
-            newValue = newValue + stepRange.step();
-
-        setValueAsDecimal(newValue, eventBehavior, exceptionState);
     }
+    newValue = newValue + stepRange.step() * count;
+
+    if (!equalIgnoringCase(stepString, "any"))
+        newValue = stepRange.alignValueForStep(current, newValue);
+
+    // TODO(tkent): The following code doesn't clamp newValue if difference
+    // between newValue and the limit is greater than 1 step.
+    // e.g. <input type=number value=0 step=1 max=10> and stepUp(100)
+    //      ==> newValue==100, maximum==10
+    if (newValue > stepRange.maximum())
+        newValue = newValue - stepRange.step();
+    else if (newValue < stepRange.minimum())
+        newValue = newValue + stepRange.step();
+
+    setValueAsDecimal(newValue, eventBehavior, exceptionState);
+
     if (AXObjectCache* cache = element().document().existingAXObjectCache())
         cache->handleValueChanged(&element());
 }

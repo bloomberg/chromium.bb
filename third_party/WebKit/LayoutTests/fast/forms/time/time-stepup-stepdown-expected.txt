@@ -24,12 +24,20 @@ Step=any
 PASS stepUp("20:13", "any", null) threw exception InvalidStateError: Failed to execute 'stepUp' on 'HTMLInputElement': This form element does not have an allowed value step..
 PASS stepDown("20:13", "any", null) threw exception InvalidStateError: Failed to execute 'stepDown' on 'HTMLInputElement': This form element does not have an allowed value step..
 Overflow/underflow
-PASS stepUp("20:13", "3.40282346e+38", null) is "23:59:59.999"
-PASS stepDown("20:13", "3.40282346e+38", null) is "00:00:00"
+FAIL stepUp("20:13", "3.40282346e+38", null) should be 20:13. Was 00:00:00.
+FAIL stepDown("20:13", "3.40282346e+38", null) should be 20:13. Was 00:00:00.
 PASS stepUp("20:13", "1", "20:13") is "20:13:00"
 PASS stepDown("20:13", "1", "20:13") is "20:13:00"
 PASS stepUp("23:59", null, null) is "23:59"
 PASS stepDown("00:00", null, null) is "00:00"
+
+Step-mismatched initial values
+FAIL stepUp("20:13", "86400.000", null, 65536) should be 20:13. Was 00:00.
+FAIL stepUp("20:13", "86400.001", null, 65536) should be 20:13. Was 00:01:05.535.
+PASS stepUp("20:13", "600", null, 1) is "20:20"
+PASS stepUp("20:13", "600", null, 2) is "20:30"
+PASS stepDown("20:13", "600", null, 1) is "20:10"
+PASS stepDown("20:13", "600", null, 2) is "20:00"
 
 PASS successfullyParsed is true
 

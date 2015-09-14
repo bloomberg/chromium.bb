@@ -25,8 +25,8 @@ Step=any
 PASS stepUp("2010-02-10", "any", null) threw exception InvalidStateError: Failed to execute 'stepUp' on 'HTMLInputElement': This form element does not have an allowed value step..
 PASS stepDown("2010-02-10", "any", null) threw exception InvalidStateError: Failed to execute 'stepDown' on 'HTMLInputElement': This form element does not have an allowed value step..
 Overflow/underflow
-PASS stepUp("2010-02-10", "3.40282346e+38", null) is "275760-09-13"
-PASS stepDown("2010-02-10", "3.40282346e+38", null) is "1970-01-01"
+FAIL stepUp("2010-02-10", "3.40282346e+38", null) should be 2010-02-10. Was 1970-01-01.
+FAIL stepDown("2010-02-10", "3.40282346e+38", null) should be 2010-02-10. Was 1970-01-01.
 PASS stepUp("2010-02-10", "1", "2010-02-10") is "2010-02-10"
 PASS stepDown("2010-02-10", "1", "2010-02-10") is "2010-02-10"
 

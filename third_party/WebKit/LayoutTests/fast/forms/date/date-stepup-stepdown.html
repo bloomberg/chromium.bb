@@ -59,8 +59,8 @@ debug('Step=any');
 shouldThrow('stepUp("2010-02-10", "any", null)');
 shouldThrow('stepDown("2010-02-10", "any", null)');
 debug('Overflow/underflow');
-shouldBeEqualToString('stepUp("2010-02-10", "3.40282346e+38", null)', '275760-09-13');
-shouldBeEqualToString('stepDown("2010-02-10", "3.40282346e+38", null)', '1970-01-01');
+shouldBeEqualToString('stepUp("2010-02-10", "3.40282346e+38", null)', '2010-02-10');
+shouldBeEqualToString('stepDown("2010-02-10", "3.40282346e+38", null)', '2010-02-10');
 shouldBeEqualToString('stepUp("2010-02-10", "1", "2010-02-10")', '2010-02-10');
 shouldBeEqualToString('stepDown("2010-02-10", "1", "2010-02-10")', '2010-02-10');
 

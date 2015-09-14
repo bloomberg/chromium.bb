@@ -58,12 +58,23 @@ debug('Step=any');
 shouldThrow('stepUp("20:13", "any", null)');
 shouldThrow('stepDown("20:13", "any", null)');
 debug('Overflow/underflow');
-shouldBeEqualToString('stepUp("20:13", "3.40282346e+38", null)', '23:59:59.999');
-shouldBeEqualToString('stepDown("20:13", "3.40282346e+38", null)', '00:00:00');
+shouldBeEqualToString('stepUp("20:13", "3.40282346e+38", null)', '20:13');
+shouldBeEqualToString('stepDown("20:13", "3.40282346e+38", null)', '20:13');
 shouldBeEqualToString('stepUp("20:13", "1", "20:13")', '20:13:00');
 shouldBeEqualToString('stepDown("20:13", "1", "20:13")', '20:13:00');
 shouldBeEqualToString('stepUp("23:59", null, null)', '23:59');
 shouldBeEqualToString('stepDown("00:00", null, null)', '00:00');
+
+debug('');
+debug('Step-mismatched initial values');
+// There are no step-match values in 00:00 - 23:59:59.999.  stepUp()
+// should do nothing.
+shouldBeEqualToString('stepUp("20:13", "86400.000", null, 65536)', '20:13');
+shouldBeEqualToString('stepUp("20:13", "86400.001", null, 65536)', '20:13');
+shouldBeEqualToString('stepUp("20:13", "600", null, 1)', '20:20');
+shouldBeEqualToString('stepUp("20:13", "600", null, 2)', '20:30');
+shouldBeEqualToString('stepDown("20:13", "600", null, 1)', '20:10');
+shouldBeEqualToString('stepDown("20:13", "600", null, 2)', '20:00');
 
 debug('');
 </script>
