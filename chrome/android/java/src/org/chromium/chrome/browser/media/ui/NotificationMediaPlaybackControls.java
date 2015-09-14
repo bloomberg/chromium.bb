@@ -434,7 +434,20 @@ public class NotificationMediaPlaybackControls {
             mMediaSession.setFlags(MediaSessionCompat.FLAG_HANDLES_MEDIA_BUTTONS
                     | MediaSessionCompat.FLAG_HANDLES_TRANSPORT_CONTROLS);
             mMediaSession.setCallback(mMediaSessionCallback);
-            mMediaSession.setActive(true);
+
+            // TODO(mlamouri): the following code is to work around a bug that hopefully
+            // MediaSessionCompat will handle directly. see b/24051980.
+            try {
+                mMediaSession.setActive(true);
+            } catch (NullPointerException e) {
+                // Some versions of KitKat do not support AudioManager.registerMediaButtonIntent
+                // with a PendingIntent. They will throw a NullPointerException, in which case
+                // they should be able to activate a MediaSessionCompat with only transport
+                // controls.
+                mMediaSession.setActive(false);
+                mMediaSession.setFlags(MediaSessionCompat.FLAG_HANDLES_TRANSPORT_CONTROLS);
+                mMediaSession.setActive(true);
+            }
         }
 
         mMediaSession.setMetadata(createMetadata());
