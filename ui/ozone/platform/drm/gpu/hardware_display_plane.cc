@@ -82,6 +82,7 @@ bool HardwareDisplayPlane::Initialize(DrmDevice* drm,
         drmModeGetProperty(drm->get_fd(), plane_props->props[i]));
     if (property && !strcmp(property->name, kTypePropName)) {
       type_ = GetPlaneType(plane_props->prop_values[i]);
+      break;
     }
   }
 
