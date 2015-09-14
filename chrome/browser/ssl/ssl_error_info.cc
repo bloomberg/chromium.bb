@@ -157,12 +157,17 @@ SSLErrorInfo SSLErrorInfo::CreateError(ErrorType error_type,
       short_description = l10n_util::GetStringUTF16(
           IDS_ERRORPAGES_DETAILS_PINNING_FAILURE);
       break;
+    case CERT_UNABLE_TO_CHECK_REVOCATION:
+      details = l10n_util::GetStringUTF16(
+          IDS_CERT_ERROR_UNABLE_TO_CHECK_REVOCATION_DETAILS);
+      short_description = l10n_util::GetStringUTF16(
+          IDS_CERT_ERROR_UNABLE_TO_CHECK_REVOCATION_DESCRIPTION);
+      break;
     case UNKNOWN:
       details = l10n_util::GetStringUTF16(IDS_CERT_ERROR_UNKNOWN_ERROR_DETAILS);
       short_description =
           l10n_util::GetStringUTF16(IDS_CERT_ERROR_UNKNOWN_ERROR_DESCRIPTION);
       break;
-    case CERT_UNABLE_TO_CHECK_REVOCATION:  // Deprecated.
     default:
       NOTREACHED();
   }

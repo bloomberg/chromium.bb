@@ -2710,6 +2710,13 @@ Even if you have downloaded files from this website before, the website might ha
         Server's certificate contains errors.
       </message>
 
+      <message name="IDS_CERT_ERROR_UNABLE_TO_CHECK_REVOCATION_DETAILS" desc="Details for being unable to check revocation status of an X509 certificate">
+        This server could not prove that it is <ph name="DOMAIN">&lt;strong&gt;$1<ex>paypal.com</ex>&lt;/strong&gt;</ph>; its security certificate might be revoked. This may be caused by a misconfiguration or an attacker intercepting your connection.
+      </message>
+      <message name="IDS_CERT_ERROR_UNABLE_TO_CHECK_REVOCATION_DESCRIPTION" desc="Description for being unable to check revocation status of an X509 certificate">
+        Server's certificate cannot be checked.
+      </message>
+
       <message name="IDS_CERT_ERROR_NO_REVOCATION_MECHANISM_DETAILS" desc="Details for not finding a revocation mechanism in an X509 certificate">
         This server could not prove that it is <ph name="DOMAIN">&lt;strong&gt;$1<ex>paypal.com</ex>&lt;/strong&gt;</ph>; its security certificate might be revoked. This may be caused by a misconfiguration or an attacker intercepting your connection.
       </message>
