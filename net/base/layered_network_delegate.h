@@ -68,6 +68,7 @@ class NET_EXPORT LayeredNetworkDelegate : public NetworkDelegate {
                               int64_t bytes_received) final;
   void OnCompleted(URLRequest* request, bool started) final;
   void OnURLRequestDestroyed(URLRequest* request) final;
+  void OnURLRequestJobOrphaned(URLRequest* request) final;
   void OnPACScriptError(int line_number, const base::string16& error) final;
   AuthRequiredResponse OnAuthRequired(URLRequest* request,
                                       const AuthChallengeInfo& auth_info,

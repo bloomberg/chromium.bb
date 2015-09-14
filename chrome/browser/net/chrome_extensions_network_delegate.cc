@@ -109,6 +109,7 @@ class ChromeExtensionsNetworkDelegateImpl
   void OnResponseStarted(net::URLRequest* request) override;
   void OnCompleted(net::URLRequest* request, bool started) override;
   void OnURLRequestDestroyed(net::URLRequest* request) override;
+  void OnURLRequestJobOrphaned(net::URLRequest* request) override;
   void OnPACScriptError(int line_number, const base::string16& error) override;
   net::NetworkDelegate::AuthRequiredResponse OnAuthRequired(
       net::URLRequest* request,
@@ -236,6 +237,12 @@ void ChromeExtensionsNetworkDelegateImpl::OnURLRequestDestroyed(
       profile_, request);
 }
 
+void ChromeExtensionsNetworkDelegateImpl::OnURLRequestJobOrphaned(
+    net::URLRequest* request) {
+  ExtensionWebRequestEventRouter::GetInstance()->OnURLRequestJobOrphaned(
+      profile_, request);
+}
+
 void ChromeExtensionsNetworkDelegateImpl::OnPACScriptError(
     int line_number,
     const base::string16& error) {
@@ -337,6 +344,10 @@ void ChromeExtensionsNetworkDelegate::OnCompleted(
 }
 
 void ChromeExtensionsNetworkDelegate::OnURLRequestDestroyed(
+    net::URLRequest* request) {
+}
+
+void ChromeExtensionsNetworkDelegate::OnURLRequestJobOrphaned(
     net::URLRequest* request) {
 }
 

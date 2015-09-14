@@ -882,6 +882,9 @@ void URLRequest::PrepareToRestart() {
 }
 
 void URLRequest::OrphanJob() {
+  if (network_delegate_)
+    network_delegate_->NotifyURLRequestJobOrphaned(this);
+
   // When calling this function, please check that URLRequestHttpJob is
   // not in between calling NetworkDelegate::NotifyHeadersReceived receiving
   // the call back. This is currently guaranteed by the following strategies:
