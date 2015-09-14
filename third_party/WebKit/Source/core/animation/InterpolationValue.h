@@ -16,13 +16,13 @@ class InterpolationType;
 struct InterpolationComponentValue {
     ALLOW_ONLY_INLINE_ALLOCATION();
 
-    InterpolationComponentValue(PassOwnPtr<InterpolableValue> interpolableValue = nullptr, PassRefPtr<NonInterpolableValue> nonInterpolableValue = nullptr)
+    InterpolationComponentValue(PassOwnPtr<InterpolableValue> interpolableValue = nullptr, PassRefPtrWillBeRawPtr<NonInterpolableValue> nonInterpolableValue = nullptr)
         : interpolableValue(interpolableValue)
         , nonInterpolableValue(nonInterpolableValue)
     { }
 
     OwnPtr<InterpolableValue> interpolableValue;
-    RefPtr<NonInterpolableValue> nonInterpolableValue;
+    RefPtrWillBePersistent<NonInterpolableValue> nonInterpolableValue;
 };
 
 class InterpolationValue {
