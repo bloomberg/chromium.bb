@@ -2605,6 +2605,71 @@ TEST_P(SpdySessionTest, TestYieldingSlowReads) {
   EXPECT_TRUE(data.AllReadDataConsumed());
 }
 
+// Regression test for https://crbug.com/531570.
+// Test the case where DoRead() takes long but returns synchronously.
+TEST_P(SpdySessionTest, TestYieldingSlowSynchronousReads) {
+  session_deps_.host_resolver->set_synchronous_mode(true);
+  session_deps_.time_func = SlowReads;
+
+  BufferedSpdyFramer framer(spdy_util_.spdy_version(), false);
+
+  scoped_ptr<SpdyFrame> req1(
+      spdy_util_.ConstructSpdyGet(nullptr, 0, false, 1, MEDIUM, true));
+  MockWrite writes[] = {
+      CreateMockWrite(*req1, 0),
+  };
+
+  scoped_ptr<SpdyFrame> partial_data_frame(
+      framer.CreateDataFrame(1, "foo ", 4, DATA_FLAG_NONE));
+  scoped_ptr<SpdyFrame> finish_data_frame(
+      framer.CreateDataFrame(1, "bar", 3, DATA_FLAG_FIN));
+
+  scoped_ptr<SpdyFrame> resp1(
+      spdy_util_.ConstructSpdyGetSynReply(nullptr, 0, 1));
+
+  MockRead reads[] = {
+      CreateMockRead(*resp1, 1), MockRead(ASYNC, ERR_IO_PENDING, 2),
+      CreateMockRead(*partial_data_frame, 3, SYNCHRONOUS),
+      CreateMockRead(*partial_data_frame, 4, SYNCHRONOUS),
+      CreateMockRead(*partial_data_frame, 5, SYNCHRONOUS),
+      CreateMockRead(*finish_data_frame, 6, SYNCHRONOUS),
+      MockRead(ASYNC, 0, 7)  // EOF
+  };
+
+  // Create SpdySession and SpdyStream and send the request.
+  SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
+  session_deps_.socket_factory->AddSocketDataProvider(&data);
+
+  CreateNetworkSession();
+  CreateInsecureSpdySession();
+
+  base::WeakPtr<SpdyStream> spdy_stream1 = CreateStreamSynchronously(
+      SPDY_REQUEST_RESPONSE_STREAM, session_, test_url_, MEDIUM, BoundNetLog());
+  ASSERT_TRUE(spdy_stream1.get() != nullptr);
+  EXPECT_EQ(0u, spdy_stream1->stream_id());
+  test::StreamDelegateDoNothing delegate1(spdy_stream1);
+  spdy_stream1->SetDelegate(&delegate1);
+
+  scoped_ptr<SpdyHeaderBlock> headers1(
+      spdy_util_.ConstructGetHeaderBlock(kDefaultURL));
+  spdy_stream1->SendRequestHeaders(headers1.Pass(), NO_MORE_DATA_TO_SEND);
+  EXPECT_TRUE(spdy_stream1->HasUrlFromHeaders());
+
+  // Run until 1st read.
+  EXPECT_EQ(0u, delegate1.stream_id());
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(1u, delegate1.stream_id());
+
+  // Read all the data and verify SpdySession::DoReadLoop has posted a task.
+  data.CompleteRead();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ("foo foo foo bar", delegate1.TakeReceivedData());
+  EXPECT_FALSE(spdy_stream1);
+
+  EXPECT_TRUE(data.AllWriteDataConsumed());
+  EXPECT_TRUE(data.AllReadDataConsumed());
+}
+
 // Test that SpdySession::DoReadLoop yields while reading the
 // data. This test makes 32k + 1 bytes of data available on the socket
 // for reading. It then verifies that DoRead has yielded even though

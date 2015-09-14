@@ -1398,9 +1398,9 @@ int SpdySession::DoReadLoop(ReadState expected_read_state, int result) {
     if (result == ERR_IO_PENDING)
       break;
 
-    if (bytes_read_without_yielding > kYieldAfterBytesRead ||
-        time_func_() > yield_after_time) {
-      read_state_ = READ_STATE_DO_READ;
+    if (read_state_ == READ_STATE_DO_READ &&
+        (bytes_read_without_yielding > kYieldAfterBytesRead ||
+         time_func_() > yield_after_time)) {
       base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE,
           base::Bind(&SpdySession::PumpReadLoop, weak_factory_.GetWeakPtr(),
