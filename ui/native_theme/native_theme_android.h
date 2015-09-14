@@ -14,7 +14,15 @@ class NativeThemeAndroid : public NativeThemeBase {
  public:
   static NativeThemeAndroid* instance();
 
+  // NativeThemeBase:
+  gfx::Size GetPartSize(Part part,
+                        State state,
+                        const ExtraParams& extra) const override;
   SkColor GetSystemColor(ColorId color_id) const override;
+
+ protected:
+  // NativeThemeBase:
+  void AdjustCheckboxRadioRectForPadding(SkRect* rect) const override;
 
  private:
   NativeThemeAndroid();

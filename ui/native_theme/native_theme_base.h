@@ -141,6 +141,13 @@ class NATIVE_THEME_EXPORT NativeThemeBase : public NativeTheme {
       double progress,
       const gfx::Rect& rect) const {}
 
+  // Shrinks checkbox/radio button rect, if necessary, to make room for padding
+  // and drop shadow.
+  // TODO(mohsen): This is needed because checkboxes/radio buttons on Android
+  // have different padding from those on desktop Chrome. Get rid of this when
+  // crbug.com/530746 is resolved.
+  virtual void AdjustCheckboxRadioRectForPadding(SkRect* rect) const;
+
   void set_scrollbar_button_length(unsigned int length) {
     scrollbar_button_length_ = length;
   }
