@@ -14312,6 +14312,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram
+    name="History.ClearBrowsingData.PasswordsDeletion.AdditionalDatatypesCount">
+  <owner>msramek@chromium.org</owner>
+  <summary>
+    Recorded when the user deletes their passwords in the ClearBrowsingData
+    dialog. Counts how many other data types were selected for deletion.
+  </summary>
+</histogram>
+
 <histogram name="History.ClearBrowsingData.UserDeletedCookieOrCache"
     enum="CookieOrCacheDeletion">
   <owner>msramek@chromium.org</owner>

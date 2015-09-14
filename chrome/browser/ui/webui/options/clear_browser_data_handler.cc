@@ -9,6 +9,7 @@
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/metrics/sparse_histogram.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string16.h"
 #include "base/values.h"
@@ -228,6 +229,27 @@ void ClearBrowserDataHandler::HandleClearBrowserData(
   UMA_HISTOGRAM_ENUMERATION(
       "History.ClearBrowsingData.UserDeletedCookieOrCacheFromDialog",
       choice, BrowsingDataRemover::MAX_CHOICE_VALUE);
+
+  // Record the circumstances under which passwords are deleted.
+  if (prefs->GetBoolean(prefs::kDeletePasswords)) {
+    static const char* other_types[] = {
+        prefs::kDeleteBrowsingHistory,
+        prefs::kDeleteDownloadHistory,
+        prefs::kDeleteCache,
+        prefs::kDeleteCookies,
+        prefs::kDeleteFormData,
+        prefs::kDeleteHostedAppsData,
+        prefs::kDeauthorizeContentLicenses,
+    };
+    static size_t num_other_types = arraysize(other_types);
+    int checked_other_types = std::count_if(
+        other_types,
+        other_types + num_other_types,
+        [prefs](const std::string& pref) { return prefs->GetBoolean(pref); });
+    UMA_HISTOGRAM_SPARSE_SLOWLY(
+        "History.ClearBrowsingData.PasswordsDeletion.AdditionalDatatypesCount",
+        checked_other_types);
+  }
 
   // BrowsingDataRemover deletes itself when done.
   int period_selected = prefs->GetInteger(prefs::kDeleteTimePeriod);
