@@ -65,6 +65,9 @@ class PageInfo {
                             base::TimeDelta delay);
 
  private:
+  // Checks if the current frame is an error page.
+  bool IsErrorPage(blink::WebLocalFrame* frame);
+
   // Captures the thumbnail and text contents for indexing for the given load
   // ID.  Kicks off analysis of the captured text.
   void CapturePageInfo(content::RenderFrame* render_frame,
@@ -98,8 +101,8 @@ class ChromeRenderViewObserver : public content::RenderViewObserver,
   // RenderViewObserver implementation.
   bool OnMessageReceived(const IPC::Message& message) override;
   void DidStartLoading() override;
-  void DidStopLoading() override;
   void DidStartProvisionalLoad(blink::WebLocalFrame* frame) override;
+  void DidFinishLoad(blink::WebLocalFrame* frame) override;
   void DidCommitProvisionalLoad(blink::WebLocalFrame* frame,
                                 bool is_new_navigation) override;
   void Navigate(const GURL& url) override;

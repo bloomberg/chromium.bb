@@ -111,6 +111,11 @@ void PageInfo::CapturePageInfoLater(CaptureType capture_type,
                  render_frame, capture_type));
 }
 
+bool PageInfo::IsErrorPage(WebLocalFrame* frame) {
+  WebDataSource* ds = frame->dataSource();
+  return ds && ds->hasUnreachableURL();
+}
+
 void PageInfo::CapturePageInfo(RenderFrame* render_frame,
                                CaptureType capture_type) {
   if (!render_frame)
@@ -124,11 +129,7 @@ void PageInfo::CapturePageInfo(RenderFrame* render_frame,
   if (frame->isViewSourceModeEnabled())
     return;
 
-  // Don't index/capture pages that failed to load.  This only checks the top
-  // level frame so the thumbnail may contain a frame that failed to load.
-  // TODO(dglazkov): Verify that this is actually necessary.
-  WebDataSource* ds = frame->dataSource();
-  if (ds && ds->hasUnreachableURL())
+  if (IsErrorPage(frame))
     return;
 
   // Don't index/capture pages that are being prerendered.
@@ -148,8 +149,6 @@ void PageInfo::CapturePageInfo(RenderFrame* render_frame,
 
 void PageInfo::CaptureText(WebLocalFrame* frame, base::string16* content) {
   content->clear();
-  if (!frame)
-    return;
 
   // get the contents of the frame
   *content = frame->contentAsText(kMaxIndexChars);
@@ -318,22 +317,20 @@ void ChromeRenderViewObserver::DidStartLoading() {
   }
 }
 
-void ChromeRenderViewObserver::DidStopLoading() {
-  WebFrame* main_frame = render_view()->GetWebView()->mainFrame();
-
-  // Remote frames don't host a document, so return early if that's the case.
-  if (main_frame->isWebRemoteFrame())
+void ChromeRenderViewObserver::DidFinishLoad(blink::WebLocalFrame* frame) {
+  // Don't do anything for subframes.
+  if (frame->parent())
     return;
 
-  GURL osdd_url = main_frame->document().openSearchDescriptionURL();
+  GURL osdd_url = frame->document().openSearchDescriptionURL();
   if (!osdd_url.is_empty()) {
     Send(new ChromeViewHostMsg_PageHasOSDD(
-        routing_id(), main_frame->document().url(), osdd_url,
+        routing_id(), frame->document().url(), osdd_url,
         search_provider::AUTODETECTED_PROVIDER));
   }
 
   // Don't capture pages including refresh meta tag.
-  if (HasRefreshMetaTag(main_frame))
+  if (HasRefreshMetaTag(frame))
     return;
 
   page_info_.CapturePageInfoLater(
