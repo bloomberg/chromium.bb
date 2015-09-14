@@ -44,10 +44,9 @@ namespace sandbox {
 //
 //   // Simplified code follows; in practice, it is important to avoid calling
 //   // any C++ destructors after starting the sandbox.
-//   CodeGen::Program program;
-//   gen.Compile(dag, program);
+//   CodeGen::Program program = gen.Compile(dag);
 //   const struct sock_fprog prog = {
-//     static_cast<unsigned short>(program->size()), &program[0] };
+//     static_cast<unsigned short>(program.size()), &program[0] };
 //   prctl(PR_SET_SECCOMP, SECCOMP_MODE_FILTER, &prog);
 //
 class SANDBOX_EXPORT CodeGen {
@@ -78,7 +77,7 @@ class SANDBOX_EXPORT CodeGen {
 
   // Compile linearizes the instruction DAG rooted at |head| into a
   // program that can be executed by a BPF virtual machine.
-  void Compile(Node head, Program* program);
+  Program Compile(Node head);
 
  private:
   using MemoKey = base::Tuple<uint16_t, uint32_t, Node, Node>;

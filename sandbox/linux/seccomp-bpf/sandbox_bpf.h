@@ -91,13 +91,13 @@ class SANDBOX_EXPORT SandboxBPF {
   // directly suitable as a return value for a trap handler.
   static intptr_t ForwardSyscall(const struct arch_seccomp_data& args);
 
+ private:
+  friend class SandboxBPFTestRunner;
+
   // Assembles a BPF filter program from the current policy. After calling this
   // function, you must not call any other sandboxing function.
-  // Typically, AssembleFilter() is only used by unit tests and by sandbox
-  // internals. It should not be used by production code.
-  scoped_ptr<CodeGen::Program> AssembleFilter();
+  CodeGen::Program AssembleFilter();
 
- private:
   // Assembles and installs a filter based on the policy that has previously
   // been configured with SetSandboxPolicy().
   void InstallFilter(bool must_sync_threads);

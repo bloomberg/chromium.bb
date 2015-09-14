@@ -98,7 +98,7 @@ PolicyCompiler::PolicyCompiler(const Policy* policy, TrapRegistry* registry)
 PolicyCompiler::~PolicyCompiler() {
 }
 
-scoped_ptr<CodeGen::Program> PolicyCompiler::Compile() {
+CodeGen::Program PolicyCompiler::Compile() {
   CHECK(policy_->InvalidSyscall()->IsDeny())
       << "Policies should deny invalid system calls";
 
@@ -117,9 +117,7 @@ scoped_ptr<CodeGen::Program> PolicyCompiler::Compile() {
   }
 
   // Assemble the BPF filter program.
-  scoped_ptr<CodeGen::Program> program(new CodeGen::Program());
-  gen_.Compile(AssemblePolicy(), program.get());
-  return program.Pass();
+  return gen_.Compile(AssemblePolicy());
 }
 
 void PolicyCompiler::DangerousSetEscapePC(uint64_t escapepc) {

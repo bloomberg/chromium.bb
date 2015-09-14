@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "sandbox/linux/bpf_dsl/bpf_dsl_forward.h"
 #include "sandbox/linux/bpf_dsl/codegen.h"
 #include "sandbox/linux/bpf_dsl/trap_registry.h"
@@ -32,7 +31,7 @@ class SANDBOX_EXPORT PolicyCompiler {
 
   // Compile registers any trap handlers needed by the policy and
   // compiles the policy to a BPF program, which it returns.
-  scoped_ptr<CodeGen::Program> Compile();
+  CodeGen::Program Compile();
 
   // DangerousSetEscapePC sets the "escape PC" that is allowed to issue any
   // system calls, regardless of policy.

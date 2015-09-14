@@ -64,7 +64,7 @@ class PolicyEmulator {
   PolicyEmulator(const golden::Golden& golden, const Policy& policy)
       : program_() {
     TestTrapRegistry traps;
-    program_ = *PolicyCompiler(&policy, &traps).Compile();
+    program_ = PolicyCompiler(&policy, &traps).Compile();
 
     // TODO(mdempsky): Generalize to more arches.
     const char* expected = nullptr;
