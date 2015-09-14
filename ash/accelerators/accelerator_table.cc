@@ -472,4 +472,32 @@ const AcceleratorAction kActionsNeedingWindow[] = {
 
 const size_t kActionsNeedingWindowLength = arraysize(kActionsNeedingWindow);
 
+const AcceleratorAction kActionsKeepingMenuOpen[] = {
+    MEDIA_NEXT_TRACK,
+    MEDIA_PLAY_PAUSE,
+    MEDIA_PREV_TRACK,
+    NEXT_IME,
+    PREVIOUS_IME,
+    PRINT_UI_HIERARCHIES,
+    SWITCH_IME,
+    TAKE_PARTIAL_SCREENSHOT,
+    TAKE_SCREENSHOT,
+#if defined(OS_CHROMEOS)
+    BRIGHTNESS_DOWN,
+    BRIGHTNESS_UP,
+    DISABLE_CAPS_LOCK,
+    KEYBOARD_BRIGHTNESS_DOWN,
+    KEYBOARD_BRIGHTNESS_UP,
+    SILENCE_SPOKEN_FEEDBACK,
+    TOGGLE_CAPS_LOCK,
+    TOGGLE_SPOKEN_FEEDBACK,
+    TOGGLE_WIFI,
+    VOLUME_DOWN,
+    VOLUME_MUTE,
+    VOLUME_UP,
+#endif  // defined(OS_CHROMEOS)
+};
+
+const size_t kActionsKeepingMenuOpenLength = arraysize(kActionsKeepingMenuOpen);
+
 }  // namespace ash

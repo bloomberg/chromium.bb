@@ -73,6 +73,16 @@ class VIEWS_EXPORT ViewsDelegate {
   };
 #endif
 
+  enum class ProcessMenuAcceleratorResult {
+    // The accelerator was handled while the menu was showing. No further action
+    // is needed and the menu should be kept open.
+    LEAVE_MENU_OPEN,
+
+    // The accelerator was not handled. Menu should be closed and the
+    // accelerator will be reposted to be handled after the menu closes.
+    CLOSE_MENU
+  };
+
   virtual ~ViewsDelegate();
 
   // Returns the ViewsDelegate instance if there is one, or nullptr otherwise.
@@ -101,6 +111,13 @@ class VIEWS_EXPORT ViewsDelegate {
                                      int item_index,
                                      int item_count,
                                      bool has_submenu);
+
+  // If |accelerator| can be processed while a menu is showing, it will be
+  // processed now and LEAVE_MENU_OPEN is returned. Otherwise, |accelerator|
+  // will be reposted for processing later after the menu closes and CLOSE_MENU
+  // will be returned.
+  virtual ProcessMenuAcceleratorResult ProcessAcceleratorWhileMenuShowing(
+      const ui::Accelerator& accelerator);
 
 #if defined(OS_WIN)
   // Retrieves the default window icon to use for windows if none is specified.

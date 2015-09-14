@@ -21,6 +21,7 @@
 #include "ui/base/ui_base_switches.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/screen.h"
+#include "ui/views/controls/menu/menu_controller.h"
 #include "ui/views/widget/native_widget.h"
 #include "ui/views/widget/widget.h"
 
@@ -52,6 +53,7 @@
 #endif
 
 #if defined(USE_ASH)
+#include "ash/accelerators/accelerator_controller.h"
 #include "ash/shell.h"
 #include "ash/wm/window_state.h"
 #include "chrome/browser/ui/ash/ash_init.h"
@@ -125,6 +127,14 @@ int GetAppbarAutohideEdgesOnWorkerThread(HMONITOR monitor) {
   return edges;
 }
 #endif
+
+#if defined(USE_ASH)
+void ProcessAcceleratorNow(const ui::Accelerator& accelerator) {
+  // TODO(afakhry): See if we need here to send the accelerator to the
+  // FocusManager of the active window in a follow-up CL.
+  ash::Shell::GetInstance()->accelerator_controller()->Process(accelerator);
+}
+#endif  // defined(USE_ASH)
 
 }  // namespace
 
@@ -218,6 +228,30 @@ void ChromeViewsDelegate::NotifyAccessibilityEvent(
   AutomationManagerAura::GetInstance()->HandleEvent(
       GetProfileForWindow(view->GetWidget()), view, event_type);
 #endif
+}
+
+views::ViewsDelegate::ProcessMenuAcceleratorResult
+ChromeViewsDelegate::ProcessAcceleratorWhileMenuShowing(
+    const ui::Accelerator& accelerator) {
+#if defined(USE_ASH)
+  ash::AcceleratorController* accelerator_controller =
+      ash::Shell::GetInstance()->accelerator_controller();
+
+  accelerator_controller->accelerator_history()->StoreCurrentAccelerator(
+      accelerator);
+  if (accelerator_controller->ShouldCloseMenuAndRepostAccelerator(
+          accelerator)) {
+    base::MessageLoopForUI::current()->PostTask(
+        FROM_HERE,
+        base::Bind(ProcessAcceleratorNow, accelerator));
+    return views::ViewsDelegate::ProcessMenuAcceleratorResult::CLOSE_MENU;
+  }
+
+  ProcessAcceleratorNow(accelerator);
+  return views::ViewsDelegate::ProcessMenuAcceleratorResult::LEAVE_MENU_OPEN;
+#else
+  return views::ViewsDelegate::ProcessMenuAcceleratorResult::LEAVE_MENU_OPEN;
+#endif  // defined(USE_ASH)
 }
 
 #if defined(OS_WIN)

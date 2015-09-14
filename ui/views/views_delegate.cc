@@ -54,6 +54,12 @@ void ViewsDelegate::NotifyMenuItemFocused(const base::string16& menu_name,
                                           bool has_submenu) {
 }
 
+ViewsDelegate::ProcessMenuAcceleratorResult
+ViewsDelegate::ProcessAcceleratorWhileMenuShowing(
+    const ui::Accelerator& accelerator) {
+  return ProcessMenuAcceleratorResult::LEAVE_MENU_OPEN;
+}
+
 #if defined(OS_WIN)
 HICON ViewsDelegate::GetDefaultWindowIcon() const {
   return nullptr;

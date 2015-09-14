@@ -10,7 +10,6 @@
 
 #include "base/run_loop.h"
 #include "ui/aura/client/screen_position_client.h"
-#include "ui/aura/env.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_tree_host.h"
@@ -29,7 +28,7 @@
 #include "ui/views/controls/menu/menu_message_pump_dispatcher_win.h"
 #include "ui/views/win/hwnd_util.h"
 #else
-#include "ui/views/controls/menu/menu_event_dispatcher.h"
+#include "ui/views/controls/menu/menu_key_event_handler.h"
 #endif
 
 using aura::client::ScreenPositionClient;
@@ -103,7 +102,7 @@ MenuMessageLoop* MenuMessageLoop::Create() {
   return new MenuMessageLoopAura;
 }
 
-MenuMessageLoopAura::MenuMessageLoopAura() : owner_(NULL) {
+MenuMessageLoopAura::MenuMessageLoopAura() : owner_(nullptr) {
 }
 
 MenuMessageLoopAura::~MenuMessageLoopAura() {
@@ -157,29 +156,26 @@ void MenuMessageLoopAura::Run(MenuController* controller,
     run_loop.Run();
   }
 #else
-  internal::MenuEventDispatcher event_dispatcher(controller);
-  scoped_ptr<ui::ScopedEventDispatcher> dispatcher_override;
-  if (ui::PlatformEventSource::GetInstance()) {
-    dispatcher_override =
-        ui::PlatformEventSource::GetInstance()->OverrideDispatcher(
-            &event_dispatcher);
-  }
+  scoped_ptr<ActivationChangeObserverImpl> observer;
   if (root) {
-    scoped_ptr<ActivationChangeObserverImpl> observer;
     if (!nested_menu)
       observer.reset(new ActivationChangeObserverImpl(controller, root));
-    aura::client::DispatcherRunLoop run_loop(
-        aura::client::GetDispatcherClient(root), NULL);
-    message_loop_quit_ = run_loop.QuitClosure();
-    run_loop.Run();
-  } else {
-    base::MessageLoopForUI* loop = base::MessageLoopForUI::current();
-    base::MessageLoop::ScopedNestableTaskAllower allow(loop);
-    base::RunLoop run_loop;
-    message_loop_quit_ = run_loop.QuitClosure();
-    run_loop.Run();
   }
-#endif
+
+  scoped_ptr<MenuKeyEventHandler> menu_event_filter;
+  if (!nested_menu) {
+    // If this is a nested menu, then the MenuKeyEventHandler would have been
+    // created already in the top parent menu. So no need to recreate it here.
+    menu_event_filter.reset(new MenuKeyEventHandler);
+  }
+
+  base::MessageLoopForUI* loop = base::MessageLoopForUI::current();
+  base::MessageLoop::ScopedNestableTaskAllower allow(loop);
+  base::RunLoop run_loop;
+  message_loop_quit_ = run_loop.QuitClosure();
+
+  run_loop.Run();
+#endif  // defined(OS_WIN)
 }
 
 void MenuMessageLoopAura::QuitNow() {

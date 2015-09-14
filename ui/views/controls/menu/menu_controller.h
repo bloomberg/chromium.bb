@@ -188,6 +188,7 @@ class VIEWS_EXPORT MenuController : public WidgetObserver {
   friend class internal::MenuMessagePumpDispatcher;
   friend class internal::MenuRunnerImpl;
   friend class test::MenuControllerTest;
+  friend class MenuKeyEventHandler;
   friend class MenuHostRootView;
   friend class MenuItemView;
   friend class SubmenuView;

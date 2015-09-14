@@ -787,6 +787,16 @@ void AcceleratorController::SetScreenshotDelegate(
   screenshot_delegate_ = screenshot_delegate.Pass();
 }
 
+bool AcceleratorController::ShouldCloseMenuAndRepostAccelerator(
+    const ui::Accelerator& accelerator) const {
+  auto itr = accelerators_.find(accelerator);
+  if (itr == accelerators_.end())
+    return false;  // Menu shouldn't be closed for an invalid accelerator.
+
+  AcceleratorAction action = itr->second;
+  return actions_keeping_menu_open_.count(action) == 0;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // AcceleratorController, ui::AcceleratorTarget implementation:
 
@@ -831,6 +841,8 @@ void AcceleratorController::Init() {
     actions_allowed_in_app_mode_.insert(kActionsAllowedInAppMode[i]);
   for (size_t i = 0; i < kActionsNeedingWindowLength; ++i)
     actions_needing_window_.insert(kActionsNeedingWindow[i]);
+  for (size_t i = 0; i < kActionsKeepingMenuOpenLength; ++i)
+    actions_keeping_menu_open_.insert(kActionsKeepingMenuOpen[i]);
 
   RegisterAccelerators(kAcceleratorData, kAcceleratorDataLength);
 

@@ -117,6 +117,10 @@ class ASH_EXPORT AcceleratorController : public ui::AcceleratorTarget {
     return &exit_warning_handler_;
   }
 
+  // Returns true if the menu should close in order to perform the accelerator.
+  bool ShouldCloseMenuAndRepostAccelerator(
+      const ui::Accelerator& accelerator) const;
+
   ui::AcceleratorHistory* accelerator_history() {
     return accelerator_history_.get();
   }
@@ -203,6 +207,8 @@ class ASH_EXPORT AcceleratorController : public ui::AcceleratorTarget {
   std::set<int> actions_allowed_in_app_mode_;
   // Actions disallowed if there are no windows.
   std::set<int> actions_needing_window_;
+  // Actions that can be performed without closing the menu (if one is present).
+  std::set<int> actions_keeping_menu_open_;
 
   DISALLOW_COPY_AND_ASSIGN(AcceleratorController);
 };

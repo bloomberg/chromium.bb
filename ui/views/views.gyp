@@ -374,6 +374,8 @@
       'controls/menu/menu_config_aura.cc',
       'controls/menu/menu_event_dispatcher.cc',
       'controls/menu/menu_event_dispatcher.h',
+      'controls/menu/menu_key_event_handler.cc',
+      'controls/menu/menu_key_event_handler.h',
       'controls/menu/menu_message_loop_aura.cc',
       'controls/menu/menu_message_loop_aura.h',
       'controls/native/native_view_host_aura.cc',

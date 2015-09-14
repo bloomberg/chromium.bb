@@ -229,6 +229,10 @@ ASH_EXPORT extern const size_t kActionsAllowedInAppModeLength;
 ASH_EXPORT extern const AcceleratorAction kActionsNeedingWindow[];
 ASH_EXPORT extern const size_t kActionsNeedingWindowLength;
 
+// Actions that can be performed while keeping the menu open.
+ASH_EXPORT extern const AcceleratorAction kActionsKeepingMenuOpen[];
+ASH_EXPORT extern const size_t kActionsKeepingMenuOpenLength;
+
 }  // namespace ash
 
 #endif  // ASH_ACCELERATORS_ACCELERATOR_TABLE_H_
