@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.customtabs;
 
+import static org.chromium.base.test.util.Restriction.RESTRICTION_TYPE_NON_LOW_END_DEVICE;
+
 import android.app.Application;
 import android.app.Instrumentation;
 import android.app.PendingIntent;
@@ -29,6 +31,7 @@ import android.widget.ImageButton;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.library_loader.LibraryProcessType;
+import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
@@ -532,6 +535,7 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
      * only one in the navigation history.
      */
     @SmallTest
+    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
     public void testPrecreatedRenderer() {
         CustomTabsConnection connection = warmUpAndWait();
         ICustomTabsCallback cb = new CustomTabsTestUtils.DummyCallback();
