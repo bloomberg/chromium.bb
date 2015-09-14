@@ -22,6 +22,9 @@ gaia.chromeOSLogin.registerHtml5Listener = function() {
   };
   window.addEventListener('message', onMessage);
   window.addEventListener("popstate", function(e) { goBack(); });
+  window.postMessage({
+      type: 'gaia_saml_api',
+      call: {method: 'initialize', requestedVersion: 1}}, '/');
 }
 
 gaia.chromeOSLogin.clearOldAttempts = function() {
@@ -36,10 +39,19 @@ gaia.chromeOSLogin.attemptLogin = function(email, password) {
   var msg = {
     'method': 'attemptLogin',
     'email': email,
-    'password': password,
   };
   gaia.chromeOSLogin.parent_webview_.postMessage(msg,
       gaia.chromeOSLogin.parent_webview_url_);
+
+  // SAML credential passing api for password.
+  window.postMessage(
+      {type: 'gaia_saml_api',
+       call: {method: 'add',
+              token: 'token',
+              user: email,
+              passwordBytes: password,
+              keyType: 'KEY_TYPE_PASSWORD_PLAIN'}
+      }, '/');
 };
 
 gaia.chromeOSLogin.backButton = function(show) {

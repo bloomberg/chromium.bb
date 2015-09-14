@@ -512,13 +512,10 @@ cr.define('cr.login', function() {
     var msg = e.data;
     if (msg.method == 'attemptLogin') {
       this.email_ = msg.email;
-      this.password_ = msg.password;
       this.chooseWhatToSync_ = msg.chooseWhatToSync;
       // We need to dispatch only first event, before user enters password.
-      if (!msg.password) {
-        this.dispatchEvent(
-            new CustomEvent('attemptLogin', {detail: msg.email}));
-      }
+      this.dispatchEvent(
+          new CustomEvent('attemptLogin', {detail: msg.email}));
     } else if (msg.method == 'dialogShown') {
       this.dispatchEvent(new Event('dialogShown'));
     } else if (msg.method == 'dialogHidden') {
@@ -578,13 +575,6 @@ cr.define('cr.login', function() {
         this.samlApiUsedCallback();
       }
       this.password_ = this.samlHandler_.apiPasswordBytes;
-      this.onAuthCompleted_();
-      return;
-    }
-
-    // TODO(achuith): Eliminate this branch when credential passing api is
-    // stable on prod. crbug.com/467778.
-    if (this.authFlow != AuthFlow.SAML) {
       this.onAuthCompleted_();
       return;
     }
