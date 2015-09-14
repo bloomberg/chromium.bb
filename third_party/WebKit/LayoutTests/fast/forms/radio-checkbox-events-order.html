@@ -5,8 +5,10 @@
 <body>
 <input type="checkbox" id="checkbox-btn1" onclick="doClickAction(event)" onchange="doChangeAction(event)"/>
 <input type="checkbox" id="checkbox-btn2" onclick="doClickAction(event); event.preventDefault()" onchange="doChangeAction(event)"/>
+<input type="checkbox" id="checkbox-btn3" onclick="this.value = this.checked;" onchange="message = 'changed';"/>
 <input type="radio" id="radio-btn1" onclick="doClickAction(event)" onchange="doChangeAction(event)"/>
 <input type="radio" id="radio-btn2" onclick="doClickAction(event); event.preventDefault()" onchange="doChangeAction(event)"/>
+<input type="radio" id="radio-btn3" onclick="this.value = this.checked;" onchange="message = 'changed';"/>
 <script>
 description('Tests the order of onclick and onchange');
 var message = '';
@@ -25,9 +27,12 @@ function doChangeAction(e)
 
 var checkbox1 = document.getElementById('checkbox-btn1');
 var checkbox2 = document.getElementById('checkbox-btn2');
+var checkbox3 = document.getElementById('checkbox-btn3');
 var radio1 = document.getElementById('radio-btn1');
 var radio2 = document.getElementById('radio-btn2');
+var radio3 = document.getElementById('radio-btn3');
 
+debug('Tests for checkboxes:');
 message = '';
 checkbox1.click();
 shouldBeEqualToString('message', 'changed');
@@ -63,6 +68,13 @@ eventSender.keyDown(' ');
 shouldBeEqualToString('message', 'clicked');
 shouldBeFalse('checkbox2.checked');
 
+debug('Updating |value| in click handler:');
+message = '';
+checkbox3.click();
+shouldBeEqualToString('message', 'changed');
+
+debug('');
+debug('Tests for radio buttons:');
 message = '';
 radio1.click();
 shouldBeEqualToString('message', 'changed');
@@ -98,5 +110,9 @@ eventSender.keyDown(' ');
 shouldBeEqualToString('message', 'clicked');
 shouldBeFalse('radio2.checked');
 
+debug('Updating |value| in click handler:');
+message = '';
+radio3.click();
+shouldBeEqualToString('message', 'changed');
 </script>
 </body>
