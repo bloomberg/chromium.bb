@@ -76,8 +76,7 @@ void InlineFlowBoxPainter::paintFillLayer(const PaintInfo& paintInfo, const Colo
         BoxPainter::paintFillLayerExtended(*boxModel, paintInfo, c, fillLayer, rect, BackgroundBleedNone, &m_inlineFlowBox, rect.size(), op);
     } else if (m_inlineFlowBox.layoutObject().style()->boxDecorationBreak() == DCLONE) {
         GraphicsContextStateSaver stateSaver(*paintInfo.context);
-        // TODO(chrishtr): this should be pixel-snapped.
-        paintInfo.context->clip(FloatRect(LayoutRect(rect.x(), rect.y(), m_inlineFlowBox.width(), m_inlineFlowBox.height())));
+        paintInfo.context->clip(pixelSnappedIntRect(rect));
         BoxPainter::paintFillLayerExtended(*boxModel, paintInfo, c, fillLayer, rect, BackgroundBleedNone, &m_inlineFlowBox, rect.size(), op);
     } else {
         // We have a fill image that spans multiple lines.
@@ -86,7 +85,7 @@ void InlineFlowBoxPainter::paintFillLayer(const PaintInfo& paintInfo, const Colo
         LayoutRect imageStripPaintRect = paintRectForImageStrip(rect.location(), frameSize, m_inlineFlowBox.layoutObject().style()->direction());
         GraphicsContextStateSaver stateSaver(*paintInfo.context);
         // TODO(chrishtr): this should likely be pixel-snapped.
-        paintInfo.context->clip(FloatRect(LayoutRect(rect.x(), rect.y(), m_inlineFlowBox.width(), m_inlineFlowBox.height())));
+        paintInfo.context->clip(pixelSnappedIntRect(rect));
         BoxPainter::paintFillLayerExtended(*boxModel, paintInfo, c, fillLayer, imageStripPaintRect, BackgroundBleedNone, &m_inlineFlowBox, rect.size(), op);
     }
 }
@@ -160,9 +159,9 @@ LayoutRect InlineFlowBoxPainter::paintRectForImageStrip(const LayoutPoint& paint
 }
 
 
-InlineFlowBoxPainter::BorderPaintingType InlineFlowBoxPainter::getBorderPaintType(const LayoutRect& adjustedFrameRect, LayoutRect& adjustedClipRect) const
+InlineFlowBoxPainter::BorderPaintingType InlineFlowBoxPainter::getBorderPaintType(const LayoutRect& adjustedFrameRect, IntRect& adjustedClipRect) const
 {
-    adjustedClipRect = adjustedFrameRect;
+    adjustedClipRect = pixelSnappedIntRect(adjustedFrameRect);
     if (m_inlineFlowBox.parent() && m_inlineFlowBox.layoutObject().style()->hasBorderDecoration()) {
         const NinePieceImage& borderImage = m_inlineFlowBox.layoutObject().style()->borderImage();
         StyleImage* borderImageSource = borderImage.image();
@@ -177,7 +176,7 @@ InlineFlowBoxPainter::BorderPaintingType InlineFlowBoxPainter::getBorderPaintTyp
             return PaintBordersWithoutClip;
 
         // We have a border image that spans multiple lines.
-        adjustedClipRect = clipRectForNinePieceImageStrip(&m_inlineFlowBox, borderImage, adjustedFrameRect);
+        adjustedClipRect = pixelSnappedIntRect(clipRectForNinePieceImageStrip(&m_inlineFlowBox, borderImage, adjustedFrameRect));
         return PaintBordersWithClip;
     }
     return DontPaintBorders;
@@ -206,7 +205,7 @@ void InlineFlowBoxPainter::paintBoxDecorationBackground(const PaintInfo& paintIn
 
     DrawingRecorder recorder(*paintInfo.context, m_inlineFlowBox, DisplayItem::BoxDecorationBackground, pixelSnappedIntRect(cullRect));
 
-    LayoutRect frameRect = roundedFrameRectClampedToLineTopAndBottomIfNeeded();
+    LayoutRect frameRect = frameRectClampedToLineTopAndBottomIfNeeded();
 
     // Move x/y to our coordinates.
     LayoutRect localRect(frameRect);
@@ -215,7 +214,7 @@ void InlineFlowBoxPainter::paintBoxDecorationBackground(const PaintInfo& paintIn
 
     LayoutRect adjustedFrameRect = LayoutRect(adjustedPaintOffset, frameRect.size());
 
-    LayoutRect adjustedClipRect;
+    IntRect adjustedClipRect;
     BorderPaintingType borderPaintingType = getBorderPaintType(adjustedFrameRect, adjustedClipRect);
 
     // Shadow comes first and is behind the background and border.
@@ -237,8 +236,7 @@ void InlineFlowBoxPainter::paintBoxDecorationBackground(const PaintInfo& paintIn
         // but it isn't even clear how this should work at all.
         LayoutRect imageStripPaintRect = paintRectForImageStrip(adjustedPaintOffset, frameRect.size(), LTR);
         GraphicsContextStateSaver stateSaver(*paintInfo.context);
-        // TODO(chrishtr): this should be pixel-snapped.
-        paintInfo.context->clip(FloatRect(adjustedClipRect));
+        paintInfo.context->clip(adjustedClipRect);
         BoxPainter::paintBorder(*toLayoutBoxModelObject(LineLayoutPaintShim::layoutObjectFrom(m_inlineFlowBox.boxModelObject())), paintInfo, imageStripPaintRect, m_inlineFlowBox.layoutObject().styleRef(m_inlineFlowBox.isFirstLineStyle()));
         break;
     }
@@ -249,7 +247,7 @@ void InlineFlowBoxPainter::paintMask(const PaintInfo& paintInfo, const LayoutPoi
     if (!paintInfo.shouldPaintWithinRoot(&m_inlineFlowBox.layoutObject()) || m_inlineFlowBox.layoutObject().style()->visibility() != VISIBLE || paintInfo.phase != PaintPhaseMask)
         return;
 
-    LayoutRect frameRect = roundedFrameRectClampedToLineTopAndBottomIfNeeded();
+    LayoutRect frameRect = frameRectClampedToLineTopAndBottomIfNeeded();
 
     // Move x/y to our coordinates.
     LayoutRect localRect(frameRect);
@@ -309,10 +307,10 @@ void InlineFlowBoxPainter::paintMask(const PaintInfo& paintInfo, const LayoutPoi
         paintInfo.context->endLayer();
 }
 
-LayoutRect InlineFlowBoxPainter::roundedFrameRectClampedToLineTopAndBottomIfNeeded() const
+// This method should not be needed. See crbug.com/530659.
+LayoutRect InlineFlowBoxPainter::frameRectClampedToLineTopAndBottomIfNeeded() const
 {
-    // Pixel snap rect painting.
-    LayoutRect rect(m_inlineFlowBox.roundedFrameRect());
+    LayoutRect rect(m_inlineFlowBox.frameRect());
 
     bool noQuirksMode = m_inlineFlowBox.layoutObject().document().inNoQuirksMode();
     if (!noQuirksMode && !m_inlineFlowBox.hasTextChildren() && !(m_inlineFlowBox.descendantsHaveSameLineHeightAndBaseline() && m_inlineFlowBox.hasTextDescendants())) {

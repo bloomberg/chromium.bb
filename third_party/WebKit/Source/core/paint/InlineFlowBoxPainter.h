@@ -15,6 +15,7 @@ namespace blink {
 class Color;
 class FillLayer;
 class InlineFlowBox;
+class IntRect;
 class LayoutPoint;
 class LayoutRect;
 class LayoutSize;
@@ -28,13 +29,14 @@ public:
     InlineFlowBoxPainter(InlineFlowBox& inlineFlowBox) : m_inlineFlowBox(inlineFlowBox) { }
     void paint(const PaintInfo&, const LayoutPoint& paintOffset, const LayoutUnit lineTop, const LayoutUnit lineBottom);
 
+    LayoutRect frameRectClampedToLineTopAndBottomIfNeeded() const;
+
 private:
     void paintBoxDecorationBackground(const PaintInfo&, const LayoutPoint& paintOffset, const LayoutRect& cullRect);
     void paintMask(const PaintInfo&, const LayoutPoint& paintOffset);
     void paintFillLayers(const PaintInfo&, const Color&, const FillLayer&, const LayoutRect&, SkXfermode::Mode op = SkXfermode::kSrcOver_Mode);
     void paintFillLayer(const PaintInfo&, const Color&, const FillLayer&, const LayoutRect&, SkXfermode::Mode op);
     void paintBoxShadow(const PaintInfo&, const ComputedStyle&, ShadowStyle, const LayoutRect& paintRect);
-    LayoutRect roundedFrameRectClampedToLineTopAndBottomIfNeeded() const;
     LayoutRect paintRectForImageStrip(const LayoutPoint& paintOffset, const LayoutSize& frameSize, TextDirection) const;
 
     enum BorderPaintingType {
@@ -42,7 +44,7 @@ private:
         PaintBordersWithoutClip,
         PaintBordersWithClip
     };
-    BorderPaintingType getBorderPaintType(const LayoutRect& adjustedFrameRect, LayoutRect& adjustedClipRect) const;
+    BorderPaintingType getBorderPaintType(const LayoutRect& adjustedFrameRect, IntRect& adjustedClipRect) const;
 
     InlineFlowBox& m_inlineFlowBox;
 };

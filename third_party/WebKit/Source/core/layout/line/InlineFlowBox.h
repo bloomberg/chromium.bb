@@ -115,7 +115,7 @@ public:
 
     void clearTruncation() override;
 
-    IntRect roundedFrameRect() const;
+    LayoutRect frameRect() const;
 
     void paint(const PaintInfo&, const LayoutPoint&, LayoutUnit lineTop, LayoutUnit lineBottom) override;
     bool nodeAtPoint(HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, LayoutUnit lineTop, LayoutUnit lineBottom) override;

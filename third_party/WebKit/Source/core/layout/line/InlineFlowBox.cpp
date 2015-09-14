@@ -73,16 +73,9 @@ LayoutUnit InlineFlowBox::getFlowSpacingLogicalWidth()
     return totWidth;
 }
 
-IntRect InlineFlowBox::roundedFrameRect() const
+LayoutRect InlineFlowBox::frameRect() const
 {
-    // Begin by snapping the x and y coordinates to the nearest pixel.
-    int snappedX = x().round();
-    int snappedY = y().round();
-
-    int snappedMaxX = (x() + width()).round();
-    int snappedMaxY = (y() + height()).round();
-
-    return IntRect(snappedX, snappedY, snappedMaxX - snappedX, snappedMaxY - snappedY);
+    return LayoutRect(topLeft(), size());
 }
 
 static void setHasTextDescendantsOnAncestors(InlineFlowBox* box)
@@ -1022,29 +1015,14 @@ bool InlineFlowBox::nodeAtPoint(HitTestResult& result, const HitTestLocation& lo
             return false;
     }
 
-    // Now check ourselves. Pixel snap hit testing.
-    LayoutRect frameRect(roundedFrameRect());
-    LayoutUnit minX = frameRect.x();
-    LayoutUnit minY = frameRect.y();
-    LayoutUnit width = frameRect.width();
-    LayoutUnit height = frameRect.height();
+    // Now check ourselves.
+    LayoutRect rect = InlineFlowBoxPainter(*this).frameRectClampedToLineTopAndBottomIfNeeded();
 
-    // Constrain our hit testing to the line top and bottom if necessary.
-    bool noQuirksMode = layoutObject().document().inNoQuirksMode();
-    if (!noQuirksMode && !hasTextChildren() && !(descendantsHaveSameLineHeightAndBaseline() && hasTextDescendants())) {
-        RootInlineBox& rootBox = root();
-        LayoutUnit& top = isHorizontal() ? minY : minX;
-        LayoutUnit& logicalHeight = isHorizontal() ? height : width;
-        LayoutUnit bottom = std::min(rootBox.lineBottom(), top + logicalHeight);
-        top = std::max(rootBox.lineTop(), top);
-        logicalHeight = bottom - top;
-    }
-
-    // Move x/y to our coordinates.
-    LayoutRect rect(minX, minY, width, height);
     flipForWritingMode(rect);
     rect.moveBy(accumulatedOffset);
 
+    //  Pixel snap hit testing.
+    rect = LayoutRect(pixelSnappedIntRect(rect));
     if (visibleToHitTestRequest(result.hitTestRequest()) && locationInContainer.intersects(rect)) {
         layoutObject().updateHitTestResult(result, flipForWritingMode(locationInContainer.point() - toLayoutSize(accumulatedOffset))); // Don't add in m_topLeft here, we want coords in the containing block's space.
         if (!result.addNodeToListBasedTestResult(layoutObject().node(), locationInContainer, rect))
