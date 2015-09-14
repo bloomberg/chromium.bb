@@ -80,92 +80,15 @@ using installer::Product;
 using installer::ProductState;
 using installer::Products;
 
+const wchar_t kGoogleUpdatePipeName[] = L"\\\\.\\pipe\\GoogleCrashServices\\";
+const wchar_t kSystemPrincipalSid[] = L"S-1-5-18";
+
 const MINIDUMP_TYPE kLargerDumpType = static_cast<MINIDUMP_TYPE>(
     MiniDumpWithProcessThreadData |  // Get PEB and TEB.
     MiniDumpWithUnloadedModules |  // Get unloaded modules when available.
     MiniDumpWithIndirectlyReferencedMemory);  // Get memory referenced by stack.
 
 namespace {
-
-const wchar_t kGoogleUpdatePipeName[] = L"\\\\.\\pipe\\GoogleCrashServices\\";
-const wchar_t kSystemPrincipalSid[] = L"S-1-5-18";
-const wchar_t kDisplayVersion[] = L"DisplayVersion";
-const wchar_t kMsiDisplayVersionOverwriteDelay[] = L"10";  // seconds as string
-
-// Overwrite an existing DisplayVersion as written by the MSI installer
-// with the real version number of Chrome.
-LONG OverwriteDisplayVersion(const base::string16& path,
-                             const base::string16& value,
-                             REGSAM wowkey) {
-  base::win::RegKey key;
-  LONG result = 0;
-  base::string16 existing;
-  if ((result = key.Open(HKEY_LOCAL_MACHINE, path.c_str(),
-                         KEY_QUERY_VALUE | KEY_SET_VALUE | wowkey))
-      != ERROR_SUCCESS) {
-    LOG(ERROR) << "Failed to set DisplayVersion: " << path << " not found";
-    return result;
-  }
-  if ((result = key.ReadValue(kDisplayVersion, &existing)) != ERROR_SUCCESS) {
-    LOG(ERROR) << "Failed to set DisplayVersion: " << kDisplayVersion
-               << " not found under " << path;
-    return result;
-  }
-  if ((result = key.WriteValue(kDisplayVersion, value.c_str()))
-      != ERROR_SUCCESS) {
-    LOG(ERROR) << "Failed to set DisplayVersion: " << kDisplayVersion
-               << " could not be written under " << path;
-    return result;
-  }
-  VLOG(1) << "Set DisplayVersion at " << path << " to " << value
-          << " from " << existing;
-  return ERROR_SUCCESS;
-}
-
-LONG OverwriteDisplayVersions(const base::string16& product,
-                              const base::string16& value) {
-  // The version is held in two places.  Frist change it in the MSI Installer
-  // registry entry.  It is held under a "squashed guid" key.
-  base::string16 reg_path = base::StringPrintf(
-      L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Installer\\UserData\\"
-      L"%ls\\Products\\%ls\\InstallProperties", kSystemPrincipalSid,
-      installer::GuidToSquid(product));
-  LONG result1 = OverwriteDisplayVersion(reg_path, value, KEY_WOW64_64KEY);
-
-  // The display version also exists under the Unininstall registry key with
-  // the original guid.  Check both WOW64_64 and WOW64_32.
-  reg_path = base::StringPrintf(
-      L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\{%ls}",
-      product);
-  LONG result2 = OverwriteDisplayVersion(reg_path, value, KEY_WOW64_64KEY);
-  if (result2 != ERROR_SUCCESS)
-    result2 = OverwriteDisplayVersion(reg_path, value, KEY_WOW64_32KEY);
-
-  return result1 != ERROR_SUCCESS ? result1 : result2;
-}
-
-void DelayedOverwriteDisplayVersions(const base::FilePath& setup_exe,
-                                     const std::string& id,
-                                     const Version& version) {
-  // This process has to be able to exit so we launch ourselves with
-  // instructions on what to do and then return.
-  base::CommandLine command_line(setup_exe);
-  command_line.AppendSwitchASCII(installer::switches::kSetDisplayVersionProduct,
-                                 id);
-  command_line.AppendSwitchASCII(installer::switches::kSetDisplayVersionValue,
-                                 version.GetString());
-  command_line.AppendSwitchNative(installer::switches::kDelay,
-                                  kMsiDisplayVersionOverwriteDelay);
-
-  base::LaunchOptions launch_options;
-  launch_options.force_breakaway_from_job_ = true;
-  base::Process writer = base::LaunchProcess(command_line, launch_options);
-  if (!writer.IsValid()) {
-    PLOG(ERROR) << "Failed to set DisplayVersion: "
-                << "could not launch subprocess to make desired changes."
-                << " <<" << command_line.GetCommandLineString() << ">>";
-  }
-}
 
 // Returns NULL if no compressed archive is available for processing, otherwise
 // returns a patch helper configured to uncompress and patch.
@@ -997,18 +920,6 @@ bool HandleNonInstallCmdLineOptions(const InstallationState& original_state,
                                     const base::CommandLine& cmd_line,
                                     InstallerState* installer_state,
                                     int* exit_code) {
-  // This option is independent of all others so doesn't belong in the if/else
-  // block below.
-  if (cmd_line.HasSwitch(installer::switches::kDelay)) {
-    const std::string delay_seconds_string(
-        cmd_line.GetSwitchValueASCII(installer::switches::kDelay));
-    int delay_seconds;
-    if (base::StringToInt(delay_seconds_string, &delay_seconds) &&
-        delay_seconds > 0) {
-      base::PlatformThread::Sleep(base::TimeDelta::FromSeconds(delay_seconds));
-    }
-  }
-
   // TODO(gab): Add a local |status| variable which each block below sets;
   // only determine the |exit_code| from |status| at the end (this will allow
   // this method to validate that
@@ -1252,15 +1163,6 @@ bool HandleNonInstallCmdLineOptions(const InstallationState& original_state,
     bool updates_enabled = GoogleUpdateSettings::ReenableAutoupdates();
     *exit_code = updates_enabled ? installer::REENABLE_UPDATES_SUCCEEDED :
                                    installer::REENABLE_UPDATES_FAILED;
-  } else if (cmd_line.HasSwitch(
-                 installer::switches::kSetDisplayVersionProduct)) {
-    const base::string16 registry_product(
-        cmd_line.GetSwitchValueNative(
-            installer::switches::kSetDisplayVersionProduct));
-    const base::string16 registry_value(
-        cmd_line.GetSwitchValueNative(
-            installer::switches::kSetDisplayVersionValue));
-    *exit_code = OverwriteDisplayVersions(registry_product, registry_value);
   } else {
     handled = false;
   }
@@ -1651,24 +1553,13 @@ InstallStatus InstallProductsHelper(const InstallationState& original_state,
     }
   }
 
-  // If the installation completed successfully...
-  if (InstallUtil::GetInstallReturnCode(install_status) == 0) {
-    // Update the DisplayVersion created by an MSI-based install.
-    std::string install_id;
-    if (prefs.GetString(installer::master_preferences::kMsiProductId,
-                        &install_id)) {
-      base::FilePath new_setup =
-          installer_state.GetInstallerDirectory(*installer_version)
-          .Append(kSetupExe);
-      DelayedOverwriteDisplayVersions(
-          new_setup, install_id, *installer_version);
-    }
-    // Return the path to the directory containing the newly installed
-    // setup.exe and uncompressed archive if the caller requested it.
-    if (installer_directory) {
-      *installer_directory =
-          installer_state.GetInstallerDirectory(*installer_version);
-    }
+  // If installation completed successfully, return the path to the directory
+  // containing the newly installed setup.exe and uncompressed archive if the
+  // caller requested it.
+  if (installer_directory &&
+      InstallUtil::GetInstallReturnCode(install_status) == 0) {
+    *installer_directory =
+        installer_state.GetInstallerDirectory(*installer_version);
   }
 
   // temp_path's dtor will take care of deleting or scheduling itself for

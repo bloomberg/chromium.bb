@@ -84,9 +84,6 @@ extern const char kMakeChromeDefault[];
 extern const char kMakeChromeDefaultForUser[];
 // Boolean. Expect to be run by an MSI installer. Cmd line override present.
 extern const char kMsi[];
-// String. The MSI Product ID under which the MSI stores its information.  This
-// is used to update the DisplayVersion to match Chrome's version number.
-extern const char kMsiProductId[];
 // Boolean. Support installing multiple products at once.
 extern const char kMultiInstall[];
 // Boolean. Show EULA dialog before install.

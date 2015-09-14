@@ -172,11 +172,6 @@ TEST(SetupUtilTest, ScopedTokenPrivilegeAlreadyEnabled) {
   ASSERT_FALSE(CurrentProcessHasPrivilege(kTestedPrivilege));
 }
 
-TEST(SetupUtilTest, GuidToSquid) {
-  ASSERT_EQ(installer::GuidToSquid(L"EDA620E3-AA98-3846-B81E-3493CB2E0E02"),
-            L"3E026ADE89AA64838BE14339BCE2E020");
-}
-
 const char kAdjustProcessPriority[] = "adjust-process-priority";
 
 PriorityClassChangeResult DoProcessPriorityAdjustment() {
