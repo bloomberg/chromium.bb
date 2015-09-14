@@ -60,7 +60,6 @@ class LayerImpl;
 class LayerTreeImpl;
 class MemoryHistory;
 class PageScaleAnimation;
-class PaintTimeCounter;
 class PictureLayerImpl;
 class RasterTilePriorityQueue;
 class TileTaskWorkerPool;
@@ -462,9 +461,6 @@ class CC_EXPORT LayerTreeHostImpl
   FrameRateCounter* fps_counter() {
     return fps_counter_.get();
   }
-  PaintTimeCounter* paint_time_counter() {
-    return paint_time_counter_.get();
-  }
   MemoryHistory* memory_history() {
     return memory_history_.get();
   }
@@ -761,7 +757,6 @@ class CC_EXPORT LayerTreeHostImpl
   scoped_ptr<PageScaleAnimation> page_scale_animation_;
 
   scoped_ptr<FrameRateCounter> fps_counter_;
-  scoped_ptr<PaintTimeCounter> paint_time_counter_;
   scoped_ptr<MemoryHistory> memory_history_;
   scoped_ptr<DebugRectHistory> debug_rect_history_;
 

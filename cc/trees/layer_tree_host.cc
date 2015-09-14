@@ -563,7 +563,6 @@ void LayerTreeHost::SetDebugState(const LayerTreeDebugState& debug_state) {
       debug_state_.RecordRenderingStats());
 
   SetNeedsCommit();
-  proxy_->SetDebugState(debug_state);
 }
 
 void LayerTreeHost::SetHasGpuRasterizationTrigger(bool has_trigger) {

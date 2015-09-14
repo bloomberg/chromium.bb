@@ -30,7 +30,6 @@
 #include "cc/debug/devtools_instrumentation.h"
 #include "cc/debug/frame_rate_counter.h"
 #include "cc/debug/frame_viewer_instrumentation.h"
-#include "cc/debug/paint_time_counter.h"
 #include "cc/debug/rendering_stats_instrumentation.h"
 #include "cc/debug/traced_value.h"
 #include "cc/input/page_scale_animation.h"
@@ -205,7 +204,6 @@ LayerTreeHostImpl::LayerTreeHostImpl(
       pinch_gesture_active_(false),
       pinch_gesture_end_should_clear_scrolling_layer_(false),
       fps_counter_(FrameRateCounter::Create(proxy_->HasImplThread())),
-      paint_time_counter_(PaintTimeCounter::Create()),
       memory_history_(MemoryHistory::Create()),
       debug_rect_history_(DebugRectHistory::Create()),
       texture_mailbox_deleter_(new TextureMailboxDeleter(GetTaskRunner())),
@@ -1923,16 +1921,6 @@ void LayerTreeHostImpl::ActivateSyncTree() {
   if (!tree_activation_callback_.is_null())
     tree_activation_callback_.Run();
 
-  if (debug_state_.continuous_painting) {
-    const RenderingStats& stats =
-        rendering_stats_instrumentation_->GetRenderingStats();
-    // TODO(hendrikw): This requires a different metric when we commit directly
-    // to the active tree.  See crbug.com/429311.
-    paint_time_counter_->SavePaintTime(
-        stats.commit_to_activate_duration.GetLastTimeDelta() +
-        stats.draw_duration.GetLastTimeDelta());
-  }
-
   scoped_ptr<PendingPageScaleAnimation> pending_page_scale_animation =
       active_tree_->TakePendingPageScaleAnimation();
   if (pending_page_scale_animation) {
@@ -3268,8 +3256,6 @@ void LayerTreeHostImpl::SetDebugState(
     const LayerTreeDebugState& new_debug_state) {
   if (LayerTreeDebugState::Equal(debug_state_, new_debug_state))
     return;
-  if (debug_state_.continuous_painting != new_debug_state.continuous_painting)
-    paint_time_counter_->ClearHistory();
 
   debug_state_ = new_debug_state;
   UpdateTileManagerMemoryPolicy(ActualManagedMemoryPolicy());

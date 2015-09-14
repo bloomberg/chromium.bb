@@ -630,20 +630,6 @@ bool ThreadProxy::SupportsImplScrolling() const {
   return true;
 }
 
-void ThreadProxy::SetDebugState(const LayerTreeDebugState& debug_state) {
-  Proxy::ImplThreadTaskRunner()->PostTask(
-      FROM_HERE,
-      base::Bind(&ThreadProxy::SetDebugStateOnImplThread,
-                 impl_thread_weak_ptr_,
-                 debug_state));
-}
-
-void ThreadProxy::SetDebugStateOnImplThread(
-    const LayerTreeDebugState& debug_state) {
-  DCHECK(IsImplThread());
-  impl().scheduler->SetContinuousPainting(debug_state.continuous_painting);
-}
-
 void ThreadProxy::FinishAllRenderingOnImplThread(CompletionEvent* completion) {
   TRACE_EVENT0("cc", "ThreadProxy::FinishAllRenderingOnImplThread");
   DCHECK(IsImplThread());

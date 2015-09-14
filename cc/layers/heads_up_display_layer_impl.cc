@@ -13,7 +13,6 @@
 #include "base/trace_event/trace_event_argument.h"
 #include "cc/debug/debug_colors.h"
 #include "cc/debug/frame_rate_counter.h"
-#include "cc/debug/paint_time_counter.h"
 #include "cc/output/begin_frame_args.h"
 #include "cc/output/renderer.h"
 #include "cc/quads/texture_draw_quad.h"
@@ -245,20 +244,6 @@ void HeadsUpDisplayLayerImpl::UpdateHudContents() {
       fps_counter->GetMinAndMaxFPS(&fps_graph_.min, &fps_graph_.max);
     }
 
-    if (debug_state.continuous_painting) {
-      PaintTimeCounter* paint_time_counter =
-          layer_tree_impl()->paint_time_counter();
-      base::TimeDelta latest, min, max;
-
-      if (paint_time_counter->End())
-        latest = **paint_time_counter->End();
-      paint_time_counter->GetMinAndMaxPaintTime(&min, &max);
-
-      paint_time_graph_.value = latest.InMillisecondsF();
-      paint_time_graph_.min = min.InMillisecondsF();
-      paint_time_graph_.max = max.InMillisecondsF();
-    }
-
     if (debug_state.ShowMemoryStats()) {
       MemoryHistory* memory_history = layer_tree_impl()->memory_history();
       if (memory_history->End())
@@ -282,21 +267,13 @@ void HeadsUpDisplayLayerImpl::DrawHudContents(SkCanvas* canvas) {
     }
   }
 
-  SkRect area = SkRect::MakeEmpty();
-  if (debug_state.continuous_painting) {
-    area = DrawPaintTimeDisplay(
-        canvas, layer_tree_impl()->paint_time_counter(), 0, 0);
-  } else if (debug_state.show_fps_counter) {
-    // Don't show the FPS display when continuous painting is enabled, because
-    // it would show misleading numbers.
-    area =
-        DrawFPSDisplay(canvas, layer_tree_impl()->frame_rate_counter(), 0, 0);
-  }
+  if (!debug_state.show_fps_counter)
+    return;
 
-  if (debug_state.show_fps_counter || debug_state.continuous_painting) {
-    area = DrawGpuRasterizationStatus(canvas, 0, area.bottom(),
-                                      SkMaxScalar(area.width(), 150));
-  }
+  SkRect area =
+      DrawFPSDisplay(canvas, layer_tree_impl()->frame_rate_counter(), 0, 0);
+  DrawGpuRasterizationStatus(canvas, 0, area.bottom(),
+                             SkMaxScalar(area.width(), 150));
 
   if (debug_state.ShowMemoryStats())
     DrawMemoryDisplay(canvas, 0, area.bottom(), SkMaxScalar(area.width(), 150));
@@ -617,92 +594,6 @@ SkRect HeadsUpDisplayLayerImpl::DrawGpuRasterizationStatus(SkCanvas* canvas,
            left + kPadding, top + kFontHeight + kPadding);
   DrawText(canvas, &paint, status, SkPaint::kRight_Align, kFontHeight,
            gpu_status_pos);
-
-  return area;
-}
-
-SkRect HeadsUpDisplayLayerImpl::DrawPaintTimeDisplay(
-    SkCanvas* canvas,
-    const PaintTimeCounter* paint_time_counter,
-    int right,
-    int top) const {
-  const int kPadding = 4;
-  const int kFontHeight = 14;
-
-  const int kGraphWidth =
-      base::saturated_cast<int>(paint_time_counter->HistorySize());
-  const int kGraphHeight = 40;
-
-  SkPaint paint = CreatePaint();
-
-  const std::string title = "Compositor frame time (ms)";
-  int title_text_width = MeasureText(&paint, title, kFontHeight);
-  int contents_width = std::max(title_text_width, kGraphWidth);
-
-  const int width = contents_width + 2 * kPadding;
-  const int height =
-      kFontHeight + kGraphHeight + 4 * kPadding + 2 + kFontHeight + kPadding;
-  const int left = bounds().width() - width - right;
-
-  const SkRect area = SkRect::MakeXYWH(left, top, width, height);
-
-  DrawGraphBackground(canvas, &paint, area);
-
-  SkRect text_bounds = SkRect::MakeXYWH(left + kPadding, top + kPadding,
-                                        contents_width, kFontHeight);
-  SkRect text_bounds2 =
-      SkRect::MakeXYWH(left + kPadding, text_bounds.bottom() + kPadding,
-                       contents_width, kFontHeight);
-  SkRect graph_bounds = SkRect::MakeXYWH(left + (width - kGraphWidth) / 2,
-                                         text_bounds2.bottom() + 2 * kPadding,
-                                         kGraphWidth, kGraphHeight);
-
-  const std::string value_text =
-      base::StringPrintf("%.1f", paint_time_graph_.value);
-  const std::string min_max_text = base::StringPrintf(
-      "%.1f-%.1f", paint_time_graph_.min, paint_time_graph_.max);
-
-  paint.setColor(DebugColors::PaintTimeDisplayTextAndGraphColor());
-  DrawText(canvas, &paint, title, SkPaint::kLeft_Align, kFontHeight,
-           text_bounds.left(), text_bounds.bottom());
-  DrawText(canvas,
-           &paint,
-           value_text,
-           SkPaint::kLeft_Align,
-           kFontHeight,
-           text_bounds2.left(),
-           text_bounds2.bottom());
-  DrawText(canvas,
-           &paint,
-           min_max_text,
-           SkPaint::kRight_Align,
-           kFontHeight,
-           text_bounds2.right(),
-           text_bounds2.bottom());
-
-  paint.setColor(DebugColors::PaintTimeDisplayTextAndGraphColor());
-  for (PaintTimeCounter::RingBufferType::Iterator it =
-           paint_time_counter->End();
-       it;
-       --it) {
-    double pt = it->InMillisecondsF();
-
-    if (pt == 0.0)
-      continue;
-
-    double p = pt / paint_time_graph_.current_upper_bound;
-    if (p > 1.0)
-      p = 1.0;
-
-    canvas->drawRect(
-        SkRect::MakeXYWH(graph_bounds.left() + it.index(),
-                         graph_bounds.bottom() - p * graph_bounds.height(),
-                         1,
-                         p * graph_bounds.height()),
-        paint);
-  }
-
-  DrawGraphLines(canvas, &paint, graph_bounds, paint_time_graph_);
 
   return area;
 }

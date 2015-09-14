@@ -42,7 +42,6 @@ class LayerTreeSettings;
 class MemoryHistory;
 class OutputSurface;
 class PageScaleAnimation;
-class PaintTimeCounter;
 class PictureLayerImpl;
 class Proxy;
 class ResourceProvider;
@@ -83,7 +82,6 @@ class CC_EXPORT LayerTreeImpl {
   ResourceProvider* resource_provider() const;
   TileManager* tile_manager() const;
   FrameRateCounter* frame_rate_counter() const;
-  PaintTimeCounter* paint_time_counter() const;
   MemoryHistory* memory_history() const;
   gfx::Size device_viewport_size() const;
   float device_scale_factor() const;

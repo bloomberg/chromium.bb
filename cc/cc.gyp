@@ -131,8 +131,6 @@
         'debug/micro_benchmark_controller_impl.h',
         'debug/micro_benchmark_impl.cc',
         'debug/micro_benchmark_impl.h',
-        'debug/paint_time_counter.cc',
-        'debug/paint_time_counter.h',
         'debug/picture_debug_util.cc',
         'debug/picture_debug_util.h',
         'debug/picture_record_benchmark.cc',

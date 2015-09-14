@@ -111,10 +111,6 @@ class CC_EXPORT HeadsUpDisplayLayerImpl : public LayerImpl {
                                     int right,
                                     int top,
                                     int width) const;
-  SkRect DrawPaintTimeDisplay(SkCanvas* canvas,
-                              const PaintTimeCounter* paint_time_counter,
-                              int top,
-                              int right) const;
   void DrawDebugRect(SkCanvas* canvas,
                      SkPaint* paint,
                      const DebugRect& rect,

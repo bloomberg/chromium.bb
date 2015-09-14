@@ -829,12 +829,6 @@ void RenderWidgetCompositor::setShowDebugBorders(bool show) {
   layer_tree_host_->SetDebugState(debug_state);
 }
 
-void RenderWidgetCompositor::setContinuousPaintingEnabled(bool enabled) {
-  cc::LayerTreeDebugState debug_state = layer_tree_host_->debug_state();
-  debug_state.continuous_painting = enabled;
-  layer_tree_host_->SetDebugState(debug_state);
-}
-
 void RenderWidgetCompositor::setShowScrollBottleneckRects(bool show) {
   cc::LayerTreeDebugState debug_state = layer_tree_host_->debug_state();
   debug_state.show_touch_event_handler_rects = show;

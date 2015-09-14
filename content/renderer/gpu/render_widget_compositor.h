@@ -127,7 +127,6 @@ class CONTENT_EXPORT RenderWidgetCompositor
   virtual void setShowFPSCounter(bool show);
   virtual void setShowPaintRects(bool show);
   virtual void setShowDebugBorders(bool show);
-  virtual void setContinuousPaintingEnabled(bool enabled);
   virtual void setShowScrollBottleneckRects(bool show);
 
   virtual void updateTopControlsState(blink::WebTopControlsState constraints,

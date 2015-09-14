@@ -134,10 +134,6 @@ class CC_EXPORT Scheduler : public BeginFrameObserverBase {
   scoped_refptr<base::trace_event::ConvertableToTraceFormat> AsValue() const;
   void AsValueInto(base::trace_event::TracedValue* value) const override;
 
-  void SetContinuousPainting(bool continuous_painting) {
-    state_machine_.SetContinuousPainting(continuous_painting);
-  }
-
   void SetChildrenNeedBeginFrames(bool children_need_begin_frames);
   void SetVideoNeedsBeginFrames(bool video_needs_begin_frames);
 

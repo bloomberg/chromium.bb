@@ -12,7 +12,6 @@ namespace cc {
 LayerTreeDebugState::LayerTreeDebugState()
     : show_fps_counter(false),
       show_debug_borders(false),
-      continuous_painting(false),
       show_paint_rects(false),
       show_property_changed_rects(false),
       show_surface_damage_rects(false),
@@ -35,12 +34,11 @@ void LayerTreeDebugState::SetRecordRenderingStats(bool enabled) {
 }
 
 bool LayerTreeDebugState::RecordRenderingStats() const {
-  return record_rendering_stats_ || continuous_painting;
+  return record_rendering_stats_;
 }
 
 bool LayerTreeDebugState::ShowHudInfo() const {
-  return show_fps_counter || continuous_painting ||
-         ShowHudRects();
+  return show_fps_counter || ShowHudRects();
 }
 
 bool LayerTreeDebugState::ShowHudRects() const {
@@ -52,7 +50,7 @@ bool LayerTreeDebugState::ShowHudRects() const {
 }
 
 bool LayerTreeDebugState::ShowMemoryStats() const {
-  return show_fps_counter || continuous_painting;
+  return show_fps_counter;
 }
 
 bool LayerTreeDebugState::Equal(const LayerTreeDebugState& a,
@@ -60,7 +58,6 @@ bool LayerTreeDebugState::Equal(const LayerTreeDebugState& a,
   return (
       a.show_fps_counter == b.show_fps_counter &&
       a.show_debug_borders == b.show_debug_borders &&
-      a.continuous_painting == b.continuous_painting &&
       a.show_paint_rects == b.show_paint_rects &&
       a.show_property_changed_rects == b.show_property_changed_rects &&
       a.show_surface_damage_rects == b.show_surface_damage_rects &&
@@ -84,7 +81,6 @@ LayerTreeDebugState LayerTreeDebugState::Unite(const LayerTreeDebugState& a,
 
   r.show_fps_counter |= b.show_fps_counter;
   r.show_debug_borders |= b.show_debug_borders;
-  r.continuous_painting |= b.continuous_painting;
 
   r.show_paint_rects |= b.show_paint_rects;
   r.show_property_changed_rects |= b.show_property_changed_rects;

@@ -43,7 +43,6 @@ class FakeProxy : public Proxy {
   void Stop() override {}
   void ForceSerializeOnSwapBuffers() override {}
   bool SupportsImplScrolling() const override;
-  void SetDebugState(const LayerTreeDebugState& debug_state) override {}
   bool MainFrameWillHappenForTesting() override;
   void SetChildrenNeedBeginFrames(bool children_need_begin_frames) override {}
   void SetAuthoritativeVSyncInterval(const base::TimeDelta& interval) override {

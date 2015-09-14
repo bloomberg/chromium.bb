@@ -851,10 +851,6 @@ FrameRateCounter* LayerTreeImpl::frame_rate_counter() const {
   return layer_tree_host_impl_->fps_counter();
 }
 
-PaintTimeCounter* LayerTreeImpl::paint_time_counter() const {
-  return layer_tree_host_impl_->paint_time_counter();
-}
-
 MemoryHistory* LayerTreeImpl::memory_history() const {
   return layer_tree_host_impl_->memory_history();
 }

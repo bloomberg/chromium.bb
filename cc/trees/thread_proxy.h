@@ -174,7 +174,6 @@ class CC_EXPORT ThreadProxy : public Proxy,
   void Stop() override;
   void ForceSerializeOnSwapBuffers() override;
   bool SupportsImplScrolling() const override;
-  void SetDebugState(const LayerTreeDebugState& debug_state) override;
   bool MainFrameWillHappenForTesting() override;
   void SetChildrenNeedBeginFrames(bool children_need_begin_frames) override;
   void SetAuthoritativeVSyncInterval(const base::TimeDelta& interval) override;
@@ -284,7 +283,6 @@ class CC_EXPORT ThreadProxy : public Proxy,
   void SetSwapUsedIncompleteTileOnImplThread(bool used_incomplete_tile);
   void MainThreadHasStoppedFlingingOnImplThread();
   void SetInputThrottledUntilCommitOnImplThread(bool is_throttled);
-  void SetDebugStateOnImplThread(const LayerTreeDebugState& debug_state);
   void SetDeferCommitsOnImplThread(bool defer_commits) const;
   void PostFrameTimingEvents(
       scoped_ptr<FrameTimingTracker::CompositeTimingSet> composite_events,

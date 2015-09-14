@@ -49,7 +49,6 @@ SchedulerStateMachine::SchedulerStateMachine(const SchedulerSettings& settings)
       impl_latency_takes_priority_(false),
       main_thread_missed_last_deadline_(false),
       skip_next_begin_main_frame_to_reduce_latency_(false),
-      continuous_painting_(false),
       children_need_begin_frames_(false),
       defer_commits_(false),
       video_needs_begin_frames_(false),
@@ -242,7 +241,6 @@ void SchedulerStateMachine::AsValueInto(
                     main_thread_missed_last_deadline_);
   state->SetBoolean("skip_next_begin_main_frame_to_reduce_latency",
                     skip_next_begin_main_frame_to_reduce_latency_);
-  state->SetBoolean("continuous_painting", continuous_painting_);
   state->SetBoolean("children_need_begin_frames", children_need_begin_frames_);
   state->SetBoolean("video_needs_begin_frames", video_needs_begin_frames_);
   state->SetBoolean("defer_commits", defer_commits_);
@@ -627,8 +625,6 @@ void SchedulerStateMachine::WillCommit(bool commit_has_no_updates) {
   // This post-commit work is common to both completed and aborted commits.
   pending_tree_is_ready_for_activation_ = false;
 
-  if (continuous_painting_)
-    needs_begin_main_frame_ = true;
   last_commit_had_no_updates_ = commit_has_no_updates;
 }
 

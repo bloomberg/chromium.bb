@@ -110,7 +110,6 @@ class WebLayerTreeViewImpl : public blink::WebLayerTreeView,
   virtual void setShowFPSCounter(bool) {}
   virtual void setShowPaintRects(bool) {}
   virtual void setShowDebugBorders(bool) {}
-  virtual void setContinuousPaintingEnabled(bool) {}
   virtual void setShowScrollBottleneckRects(bool) {}
 
  private:

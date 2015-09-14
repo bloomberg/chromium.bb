@@ -110,8 +110,6 @@ class CC_EXPORT SingleThreadProxy : public Proxy,
       scoped_ptr<FrameTimingTracker::MainFrameTimingSet> main_frame_events)
       override;
 
-  void SetDebugState(const LayerTreeDebugState& debug_state) override {}
-
   void RequestNewOutputSurface();
 
   // Called by the legacy path where RenderWidget does the scheduling.

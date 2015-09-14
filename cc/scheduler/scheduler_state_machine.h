@@ -251,10 +251,6 @@ class CC_EXPORT SchedulerStateMachine {
   // True if we need to abort draws to make forward progress.
   bool PendingDrawsShouldBeAborted() const;
 
-  void SetContinuousPainting(bool continuous_painting) {
-    continuous_painting_ = continuous_painting;
-  }
-
   bool CouldSendBeginMainFrame() const;
 
   void SetDeferCommits(bool defer_commits);
@@ -337,7 +333,6 @@ class CC_EXPORT SchedulerStateMachine {
   bool impl_latency_takes_priority_;
   bool main_thread_missed_last_deadline_;
   bool skip_next_begin_main_frame_to_reduce_latency_;
-  bool continuous_painting_;
   bool children_need_begin_frames_;
   bool defer_commits_;
   bool video_needs_begin_frames_;
