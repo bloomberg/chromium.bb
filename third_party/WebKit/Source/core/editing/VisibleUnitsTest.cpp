@@ -7,6 +7,8 @@
 
 #include "core/editing/EditingTestBase.h"
 #include "core/editing/VisiblePosition.h"
+#include "core/layout/line/InlineBox.h"
+#include <ostream> // NOLINT
 
 namespace blink {
 
@@ -33,6 +35,13 @@ VisiblePositionInComposedTree createVisiblePositionInComposedTree(Node& anchor, 
 }
 
 } // namespace
+
+std::ostream& operator<<(std::ostream& ostream, const InlineBoxPosition& inlineBoxPosition)
+{
+    if (!inlineBoxPosition.inlineBox)
+        return ostream << "null";
+    return ostream << inlineBoxPosition.inlineBox->layoutObject().node() << "@" << inlineBoxPosition.offsetInBox;
+}
 
 class VisibleUnitsTest : public EditingTestBase {
 };
@@ -97,6 +106,37 @@ TEST_F(VisibleUnitsTest, characterBefore)
 
     EXPECT_EQ('4', characterBefore(createVisiblePositionInDOMTree(*five, 0)));
     EXPECT_EQ('1', characterBefore(createVisiblePositionInComposedTree(*five, 0)));
+}
+
+TEST_F(VisibleUnitsTest, computeInlineBoxPosition)
+{
+    const char* bodyContent = "<p id=host><b id=one>1</b><b id=two>22</b></p><b id=three>333</b>";
+    const char* shadowContent = "<b id=four>4444</b><content select=#two></content><content select=#one></content><b id=five>5555</b>";
+    setBodyContent(bodyContent);
+    RefPtrWillBeRawPtr<ShadowRoot> shadowRoot = setShadowContent(shadowContent, "host");
+    updateLayoutAndStyleForPainting();
+
+    Node* one = document().getElementById("one")->firstChild();
+    Node* two = document().getElementById("two")->firstChild();
+    Node* three = document().getElementById("three")->firstChild();
+    Node* four = shadowRoot->getElementById("four")->firstChild();
+    Node* five = shadowRoot->getElementById("five")->firstChild();
+
+    EXPECT_EQ(computeInlineBoxPosition(PositionInComposedTree(one, 0), TextAffinity::Downstream), computeInlineBoxPosition(createVisiblePositionInComposedTree(*one, 0)));
+    EXPECT_EQ(computeInlineBoxPosition(PositionInComposedTree(one, 1), TextAffinity::Downstream), computeInlineBoxPosition(createVisiblePositionInComposedTree(*one, 1)));
+
+    EXPECT_EQ(computeInlineBoxPosition(PositionInComposedTree(two, 0), TextAffinity::Downstream), computeInlineBoxPosition(createVisiblePositionInComposedTree(*two, 0)));
+    EXPECT_EQ(computeInlineBoxPosition(PositionInComposedTree(two, 1), TextAffinity::Downstream), computeInlineBoxPosition(createVisiblePositionInComposedTree(*two, 1)));
+    EXPECT_EQ(computeInlineBoxPosition(PositionInComposedTree(two, 2), TextAffinity::Downstream), computeInlineBoxPosition(createVisiblePositionInComposedTree(*two, 2)));
+
+    EXPECT_EQ(computeInlineBoxPosition(PositionInComposedTree(three, 0), TextAffinity::Downstream), computeInlineBoxPosition(createVisiblePositionInComposedTree(*three, 0)));
+    EXPECT_EQ(computeInlineBoxPosition(PositionInComposedTree(three, 1), TextAffinity::Downstream), computeInlineBoxPosition(createVisiblePositionInComposedTree(*three, 1)));
+
+    EXPECT_EQ(computeInlineBoxPosition(PositionInComposedTree(four, 0), TextAffinity::Downstream), computeInlineBoxPosition(createVisiblePositionInComposedTree(*four, 0)));
+    EXPECT_EQ(computeInlineBoxPosition(PositionInComposedTree(four, 1), TextAffinity::Downstream), computeInlineBoxPosition(createVisiblePositionInComposedTree(*four, 1)));
+
+    EXPECT_EQ(computeInlineBoxPosition(PositionInComposedTree(five, 0), TextAffinity::Downstream), computeInlineBoxPosition(createVisiblePositionInComposedTree(*five, 0)));
+    EXPECT_EQ(computeInlineBoxPosition(PositionInComposedTree(five, 1), TextAffinity::Downstream), computeInlineBoxPosition(createVisiblePositionInComposedTree(*five, 1)));
 }
 
 TEST_F(VisibleUnitsTest, endOfDocument)

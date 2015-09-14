@@ -2066,6 +2066,11 @@ InlineBoxPosition computeInlineBoxPosition(const VisiblePosition& position)
     return computeInlineBoxPosition(position.deepEquivalent(), position.affinity());
 }
 
+InlineBoxPosition computeInlineBoxPosition(const VisiblePositionInComposedTree& position)
+{
+    return computeInlineBoxPosition(position.deepEquivalent(), position.affinity());
+}
+
 InlineBoxPosition computeInlineBoxPosition(const Position& position, TextAffinity affinity, TextDirection primaryDirection)
 {
     return computeInlineBoxPositionAlgorithm<EditingStrategy>(position, affinity, primaryDirection);

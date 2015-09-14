@@ -57,7 +57,22 @@ struct InlineBoxPosition {
         : inlineBox(inlineBox), offsetInBox(offsetInBox)
     {
     }
+
+    bool operator==(const InlineBoxPosition& other) const
+    {
+        return inlineBox == other.inlineBox && offsetInBox == other.offsetInBox;
+    }
+
+    bool operator!=(const InlineBoxPosition& other) const
+    {
+        return !operator==(other);
+    }
 };
+
+// The print for |InlineBoxPosition| is available only for testing
+// in "webkit_unit_tests", and implemented in
+// "core/editing/VisibleUnitsTest.cpp".
+std::ostream& operator<<(std::ostream&, const InlineBoxPosition&);
 
 // Position
 // mostForward/BackwardCaretPosition are used for moving back and forth between
@@ -208,6 +223,7 @@ CORE_EXPORT InlineBoxPosition computeInlineBoxPosition(const Position&, TextAffi
 CORE_EXPORT InlineBoxPosition computeInlineBoxPosition(const PositionInComposedTree&, TextAffinity);
 CORE_EXPORT InlineBoxPosition computeInlineBoxPosition(const PositionInComposedTree&, TextAffinity, TextDirection primaryDirection);
 CORE_EXPORT InlineBoxPosition computeInlineBoxPosition(const VisiblePosition&);
+CORE_EXPORT InlineBoxPosition computeInlineBoxPosition(const VisiblePositionInComposedTree&);
 
 // Rect is local to the returned layoutObject
 CORE_EXPORT LayoutRect localCaretRectOfPosition(const PositionWithAffinity&, LayoutObject*&);
