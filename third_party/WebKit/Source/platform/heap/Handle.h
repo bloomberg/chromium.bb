@@ -288,6 +288,46 @@ public:
     Persistent(const Member<U>& other) : Parent(other) { }
     template<typename U>
     Persistent(const RawPtr<U>& other) : Parent(other.get()) { }
+
+    template<typename U>
+    Persistent& operator=(U* other)
+    {
+        Parent::operator=(other);
+        return *this;
+    }
+
+    Persistent& operator=(std::nullptr_t)
+    {
+        Parent::operator=(nullptr);
+        return *this;
+    }
+
+    Persistent& operator=(const Persistent& other)
+    {
+        Parent::operator=(other);
+        return *this;
+    }
+
+    template<typename U>
+    Persistent& operator=(const Persistent<U>& other)
+    {
+        Parent::operator=(other);
+        return *this;
+    }
+
+    template<typename U>
+    Persistent& operator=(const Member<U>& other)
+    {
+        Parent::operator=(other);
+        return *this;
+    }
+
+    template<typename U>
+    Persistent& operator=(const RawPtr<U>& other)
+    {
+        Parent::operator=(other);
+        return *this;
+    }
 };
 
 // WeakPersistent is a way to create a weak pointer from an off-heap object
@@ -316,6 +356,46 @@ public:
     WeakPersistent(const Member<U>& other) : Parent(other) { }
     template<typename U>
     WeakPersistent(const RawPtr<U>& other) : Parent(other.get()) { }
+
+    template<typename U>
+    WeakPersistent& operator=(U* other)
+    {
+        Parent::operator=(other);
+        return *this;
+    }
+
+    WeakPersistent& operator=(std::nullptr_t)
+    {
+        Parent::operator=(nullptr);
+        return *this;
+    }
+
+    WeakPersistent& operator=(const WeakPersistent& other)
+    {
+        Parent::operator=(other);
+        return *this;
+    }
+
+    template<typename U>
+    WeakPersistent& operator=(const WeakPersistent<U>& other)
+    {
+        Parent::operator=(other);
+        return *this;
+    }
+
+    template<typename U>
+    WeakPersistent& operator=(const Member<U>& other)
+    {
+        Parent::operator=(other);
+        return *this;
+    }
+
+    template<typename U>
+    WeakPersistent& operator=(const RawPtr<U>& other)
+    {
+        Parent::operator=(other);
+        return *this;
+    }
 };
 
 // Unlike Persistent, we can destruct a CrossThreadPersistent in a thread
@@ -335,6 +415,46 @@ public:
     CrossThreadPersistent(const Member<U>& other) : Parent(other) { }
     template<typename U>
     CrossThreadPersistent(const RawPtr<U>& other) : Parent(other.get()) { }
+
+    template<typename U>
+    CrossThreadPersistent& operator=(U* other)
+    {
+        Parent::operator=(other);
+        return *this;
+    }
+
+    CrossThreadPersistent& operator=(std::nullptr_t)
+    {
+        Parent::operator=(nullptr);
+        return *this;
+    }
+
+    CrossThreadPersistent& operator=(const CrossThreadPersistent& other)
+    {
+        Parent::operator=(other);
+        return *this;
+    }
+
+    template<typename U>
+    CrossThreadPersistent& operator=(const CrossThreadPersistent<U>& other)
+    {
+        Parent::operator=(other);
+        return *this;
+    }
+
+    template<typename U>
+    CrossThreadPersistent& operator=(const Member<U>& other)
+    {
+        Parent::operator=(other);
+        return *this;
+    }
+
+    template<typename U>
+    CrossThreadPersistent& operator=(const RawPtr<U>& other)
+    {
+        Parent::operator=(other);
+        return *this;
+    }
 };
 
 // Combines the behavior of CrossThreadPersistent and WeakPersistent.
@@ -353,6 +473,46 @@ public:
     CrossThreadWeakPersistent(const Member<U>& other) : Parent(other) { }
     template<typename U>
     CrossThreadWeakPersistent(const RawPtr<U>& other) : Parent(other.get()) { }
+
+    template<typename U>
+    CrossThreadWeakPersistent& operator=(U* other)
+    {
+        Parent::operator=(other);
+        return *this;
+    }
+
+    CrossThreadWeakPersistent& operator=(std::nullptr_t)
+    {
+        Parent::operator=(nullptr);
+        return *this;
+    }
+
+    CrossThreadWeakPersistent& operator=(const CrossThreadWeakPersistent& other)
+    {
+        Parent::operator=(other);
+        return *this;
+    }
+
+    template<typename U>
+    CrossThreadWeakPersistent& operator=(const CrossThreadWeakPersistent<U>& other)
+    {
+        Parent::operator=(other);
+        return *this;
+    }
+
+    template<typename U>
+    CrossThreadWeakPersistent& operator=(const Member<U>& other)
+    {
+        Parent::operator=(other);
+        return *this;
+    }
+
+    template<typename U>
+    CrossThreadWeakPersistent& operator=(const RawPtr<U>& other)
+    {
+        Parent::operator=(other);
+        return *this;
+    }
 };
 
 template<typename Collection>
