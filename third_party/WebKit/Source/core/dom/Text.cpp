@@ -33,7 +33,6 @@
 #include "core/dom/NodeTraversal.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/events/ScopedEventQueue.h"
-#include "core/html/HTMLTableCellElement.h"
 #include "core/layout/LayoutText.h"
 #include "core/layout/LayoutTextCombine.h"
 #include "core/layout/svg/LayoutSVGInlineText.h"
@@ -238,28 +237,6 @@ PassRefPtrWillBeRawPtr<Node> Text::cloneNode(bool /*deep*/)
     return cloneWithData(data());
 }
 
-static inline bool hasGeneratedAnonymousTableCells(const LayoutObject& parent)
-{
-    // We're checking whether the table part has generated anonymous table
-    // part wrappers to hold its contents, so inspecting its first child will suffice.
-    LayoutObject* child = parent.slowFirstChild();
-    if (!child || !child->isAnonymous())
-        return false;
-    if (child->isTableCell())
-        return true;
-    if (child->isTableSection() || child->isTableRow())
-        return hasGeneratedAnonymousTableCells(*child);
-    return false;
-}
-
-static inline bool nodeAllowsAdjacentWhitespace(Node* node)
-{
-    if (!node)
-        return true;
-    const ComputedStyle* style = node->ensureComputedStyle();
-    return style && style->originalDisplay() != TABLE_CELL && !isHTMLTableCellElement(node);
-}
-
 static inline bool canHaveWhitespaceChildren(const LayoutObject& parent, Text* text)
 {
     // <button> should allow whitespace even though LayoutFlexibleBox doesn't.
@@ -273,10 +250,6 @@ static inline bool canHaveWhitespaceChildren(const LayoutObject& parent, Text* t
         || parent.isSVGContainer()
         || parent.isSVGImage()
         || parent.isSVGShape()) {
-        // Allow whitespace when the text is inside a table, section or row element that
-        // has generated anonymous table cells to hold its contents.
-        if (hasGeneratedAnonymousTableCells(parent))
-            return nodeAllowsAdjacentWhitespace(text->previousSibling()) && nodeAllowsAdjacentWhitespace(text->nextSibling());
         return false;
     }
     return true;

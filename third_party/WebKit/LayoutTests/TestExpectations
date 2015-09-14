@@ -247,6 +247,25 @@ crbug.com/352405 virtual/threaded/animations/transition-and-animation-1.html [ P
 
 crbug.com/529123 inspector/sources/debugger-breakpoints/debugger-reload-breakpoints-with-source-maps.html [ Pass Failure ]
 
+crbug.com/473832 css2.1/20110323/dynamic-top-change-002.htm [ NeedsRebaseline ]
+crbug.com/473832 fast/block/float/float-not-removed-from-pre-block.html [ NeedsRebaseline ]
+crbug.com/473832 fast/css-generated-content/015.html [ NeedsRebaseline ]
+crbug.com/473832 fast/css-generated-content/table-before-after-child-add.html [ NeedsRebaseline ]
+crbug.com/473832 fast/table/add-before-anonymous-child.html [ NeedsRebaseline ]
+crbug.com/473832 fast/table/table-after-child-in-table.html [ NeedsRebaseline ]
+crbug.com/473832 fast/table/table-before-child-in-table.html [ NeedsRebaseline ]
+crbug.com/473832 fast/table/table-cell-after-child-in-table.html [ NeedsRebaseline ]
+crbug.com/473832 fast/table/table-display-types-strict.html [ NeedsRebaseline ]
+crbug.com/473832 fast/table/table-display-types-vertical.html [ NeedsRebaseline ]
+crbug.com/473832 fast/table/table-display-types.html [ NeedsRebaseline ]
+crbug.com/473832 fast/table/table-row-after-child-in-table.html [ NeedsRebaseline ]
+crbug.com/473832 fast/table/table-row-before-after-content-around-table-cell.html [ NeedsRebaseline ]
+crbug.com/473832 fast/table/table-row-split2.html [ NeedsRebaseline ]
+crbug.com/473832 fast/table/table-section-split2.html [ NeedsRebaseline ]
+crbug.com/473832 tables/mozilla/bugs/bug2479-1.html [ NeedsRebaseline ]
+crbug.com/473832 tables/mozilla/bugs/bug30985.html [ NeedsRebaseline ]
+crbug.com/473832 tables/mozilla/bugs/bug72359.xml [ NeedsRebaseline ]
+
 crbug.com/524009 inspector/sources/debugger-pause/debugger-pause-in-internal.html [ NeedsManualRebaseline ]
 
 crbug.com/531571 virtual/gpu/fast/canvas/canvas-incremental-repaint.html [ NeedsManualRebaseline ]

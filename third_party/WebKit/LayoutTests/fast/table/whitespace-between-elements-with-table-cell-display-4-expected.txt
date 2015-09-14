@@ -1,5 +1,0 @@
-crbug.com/515771: Form elements with a table cell display should not interfere with allowing whitespace between adjacent siblings.
-
-There should be two words (with space between them) below.
-
-two words
