@@ -180,7 +180,7 @@ public:
     bool paintRenderingResultsToImageData(int&, int&, SourceDrawingBuffer, WTF::ArrayBufferContents&);
 
     int sampleCount() const { return m_sampleCount; }
-    bool explicitResolveOfMultisampleData() const { return m_multisampleMode == ExplicitResolve; }
+    bool explicitResolveOfMultisampleData() const { return m_antiAliasingMode == MSAAExplicitResolve; }
 
     // Bind to m_drawFramebufferBinding or m_readFramebufferBinding if it's not 0.
     // Otherwise, bind to the default FBO.
@@ -281,13 +281,14 @@ private:
     bool m_contentsChangeCommitted;
     bool m_bufferClearNeeded;
 
-    enum MultisampleMode {
+    enum AntialiasingMode {
         None,
-        ImplicitResolve,
-        ExplicitResolve,
+        MSAAImplicitResolve,
+        MSAAExplicitResolve,
+        ScreenSpaceAntialiasing,
     };
 
-    MultisampleMode m_multisampleMode;
+    AntialiasingMode m_antiAliasingMode;
 
     WebGraphicsContext3D::Attributes m_actualAttributes;
     unsigned m_internalColorFormat;

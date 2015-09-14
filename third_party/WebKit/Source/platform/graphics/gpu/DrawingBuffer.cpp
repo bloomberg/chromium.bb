@@ -154,7 +154,7 @@ DrawingBuffer::DrawingBuffer(PassOwnPtr<WebGraphicsContext3D> context,
     , m_contentsChanged(true)
     , m_contentsChangeCommitted(false)
     , m_bufferClearNeeded(false)
-    , m_multisampleMode(None)
+    , m_antiAliasingMode(None)
     , m_internalColorFormat(0)
     , m_colorFormat(0)
     , m_internalRenderbufferFormat(0)
@@ -249,7 +249,7 @@ bool DrawingBuffer::prepareMailbox(WebExternalTextureMailbox* outMailbox, WebExt
         return false;
 
     // Resolve the multisampled buffer into m_colorBuffer texture.
-    if (m_multisampleMode != None)
+    if (m_antiAliasingMode != None)
         commit();
 
     if (bitmap) {
@@ -288,7 +288,7 @@ bool DrawingBuffer::prepareMailbox(WebExternalTextureMailbox* outMailbox, WebExt
         // If this stops being true at some point, we should track the current framebuffer binding in the DrawingBuffer and restore
         // it after attaching the new back buffer here.
         m_context->bindFramebuffer(GL_FRAMEBUFFER, m_fbo);
-        if (m_multisampleMode == ImplicitResolve)
+        if (m_antiAliasingMode == MSAAImplicitResolve)
             m_context->framebufferTexture2DMultisampleEXT(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_colorBuffer.textureId, 0, m_sampleCount);
         else
             m_context->framebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_colorBuffer.textureId, 0);
@@ -430,12 +430,15 @@ bool DrawingBuffer::initialize(const IntSize& size)
     m_context->getIntegerv(GL_MAX_TEXTURE_SIZE, &m_maxTextureSize);
 
     int maxSampleCount = 0;
-    m_multisampleMode = None;
+    m_antiAliasingMode = None;
     if (m_requestedAttributes.antialias && m_multisampleExtensionSupported) {
         m_context->getIntegerv(GL_MAX_SAMPLES_ANGLE, &maxSampleCount);
-        m_multisampleMode = ExplicitResolve;
-        if (m_extensionsUtil->supportsExtension("GL_EXT_multisampled_render_to_texture"))
-            m_multisampleMode = ImplicitResolve;
+        m_antiAliasingMode = MSAAExplicitResolve;
+        if (m_extensionsUtil->supportsExtension("GL_EXT_multisampled_render_to_texture")) {
+            m_antiAliasingMode = MSAAImplicitResolve;
+        } else if (m_extensionsUtil->supportsExtension("GL_CHROMIUM_screen_space_antialiasing")) {
+            m_antiAliasingMode = ScreenSpaceAntialiasing;
+        }
     }
     m_sampleCount = std::min(4, maxSampleCount);
 
@@ -443,7 +446,7 @@ bool DrawingBuffer::initialize(const IntSize& size)
 
     m_context->bindFramebuffer(GL_FRAMEBUFFER, m_fbo);
     m_colorBuffer.textureId = createColorTexture();
-    if (m_multisampleMode == ImplicitResolve)
+    if (m_antiAliasingMode == MSAAImplicitResolve)
         m_context->framebufferTexture2DMultisampleEXT(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_colorBuffer.textureId, 0, m_sampleCount);
     else
         m_context->framebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_colorBuffer.textureId, 0);
@@ -482,7 +485,7 @@ bool DrawingBuffer::copyToPlatformTexture(WebGraphicsContext3D* context, Platfor
     GLenum destType, GLint level, bool premultiplyAlpha, bool flipY, SourceDrawingBuffer sourceBuffer)
 {
     if (m_contentsChanged) {
-        if (m_multisampleMode != None) {
+        if (m_antiAliasingMode != None) {
             commit();
             restoreFramebufferBindings();
         }
@@ -620,7 +623,7 @@ unsigned DrawingBuffer::createColorTexture()
 void DrawingBuffer::createSecondaryBuffers()
 {
     // create a multisample FBO
-    if (m_multisampleMode == ExplicitResolve) {
+    if (m_antiAliasingMode == MSAAExplicitResolve) {
         m_multisampleFBO = m_context->createFramebuffer();
         m_context->bindFramebuffer(GL_FRAMEBUFFER, m_multisampleFBO);
         m_multisampleColorBuffer = m_context->createRenderbuffer();
@@ -636,14 +639,14 @@ bool DrawingBuffer::resizeFramebuffer(const IntSize& size)
 
     allocateTextureMemory(&m_colorBuffer, size);
 
-    if (m_multisampleMode == ImplicitResolve)
+    if (m_antiAliasingMode == MSAAImplicitResolve)
         m_context->framebufferTexture2DMultisampleEXT(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_colorBuffer.textureId, 0, m_sampleCount);
     else
         m_context->framebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_colorBuffer.textureId, 0);
 
     m_context->bindTexture(GL_TEXTURE_2D, 0);
 
-    if (m_multisampleMode != ExplicitResolve)
+    if (m_antiAliasingMode != MSAAExplicitResolve)
         resizeDepthStencil(size);
     if (m_context->checkFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
         return false;
@@ -653,7 +656,7 @@ bool DrawingBuffer::resizeFramebuffer(const IntSize& size)
 
 bool DrawingBuffer::resizeMultisampleFramebuffer(const IntSize& size)
 {
-    if (m_multisampleMode == ExplicitResolve) {
+    if (m_antiAliasingMode == MSAAExplicitResolve) {
         m_context->bindFramebuffer(GL_FRAMEBUFFER, m_multisampleFBO);
 
         m_context->bindRenderbuffer(GL_RENDERBUFFER, m_multisampleColorBuffer);
@@ -680,9 +683,9 @@ void DrawingBuffer::resizeDepthStencil(const IntSize& size)
         if (!m_depthStencilBuffer)
             m_depthStencilBuffer = m_context->createRenderbuffer();
         m_context->bindRenderbuffer(GL_RENDERBUFFER, m_depthStencilBuffer);
-        if (m_multisampleMode == ImplicitResolve)
+        if (m_antiAliasingMode == MSAAImplicitResolve)
             m_context->renderbufferStorageMultisampleEXT(GL_RENDERBUFFER, m_sampleCount, GL_DEPTH24_STENCIL8_OES, size.width(), size.height());
-        else if (m_multisampleMode == ExplicitResolve)
+        else if (m_antiAliasingMode == MSAAExplicitResolve)
             m_context->renderbufferStorageMultisampleCHROMIUM(GL_RENDERBUFFER, m_sampleCount, GL_DEPTH24_STENCIL8_OES, size.width(), size.height());
         else
             m_context->renderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8_OES, size.width(), size.height());
@@ -693,9 +696,9 @@ void DrawingBuffer::resizeDepthStencil(const IntSize& size)
             if (!m_depthBuffer)
                 m_depthBuffer = m_context->createRenderbuffer();
             m_context->bindRenderbuffer(GL_RENDERBUFFER, m_depthBuffer);
-            if (m_multisampleMode == ImplicitResolve)
+            if (m_antiAliasingMode == MSAAImplicitResolve)
                 m_context->renderbufferStorageMultisampleEXT(GL_RENDERBUFFER, m_sampleCount, GL_DEPTH_COMPONENT16, size.width(), size.height());
-            else if (m_multisampleMode == ExplicitResolve)
+            else if (m_antiAliasingMode == MSAAExplicitResolve)
                 m_context->renderbufferStorageMultisampleCHROMIUM(GL_RENDERBUFFER, m_sampleCount, GL_DEPTH_COMPONENT16, size.width(), size.height());
             else
                 m_context->renderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT16, size.width(), size.height());
@@ -705,9 +708,9 @@ void DrawingBuffer::resizeDepthStencil(const IntSize& size)
             if (!m_stencilBuffer)
                 m_stencilBuffer = m_context->createRenderbuffer();
             m_context->bindRenderbuffer(GL_RENDERBUFFER, m_stencilBuffer);
-            if (m_multisampleMode == ImplicitResolve)
+            if (m_antiAliasingMode == MSAAImplicitResolve)
                 m_context->renderbufferStorageMultisampleEXT(GL_RENDERBUFFER, m_sampleCount, GL_STENCIL_INDEX8, size.width(), size.height());
-            else if (m_multisampleMode == ExplicitResolve)
+            else if (m_antiAliasingMode == MSAAExplicitResolve)
                 m_context->renderbufferStorageMultisampleCHROMIUM(GL_RENDERBUFFER, m_sampleCount, GL_STENCIL_INDEX8, size.width(), size.height());
             else
                 m_context->renderbufferStorage(GL_RENDERBUFFER, GL_STENCIL_INDEX8, size.width(), size.height());
@@ -815,6 +818,9 @@ void DrawingBuffer::commit()
     }
 
     m_context->bindFramebuffer(GL_FRAMEBUFFER, m_fbo);
+    if (m_antiAliasingMode == ScreenSpaceAntialiasing) {
+        m_context->applyScreenSpaceAntialiasingCHROMIUM();
+    }
     m_contentsChangeCommitted = true;
 }
 
@@ -844,7 +850,7 @@ void DrawingBuffer::restoreFramebufferBindings()
 
 bool DrawingBuffer::multisample() const
 {
-    return m_multisampleMode != None;
+    return m_antiAliasingMode != None;
 }
 
 void DrawingBuffer::bind(GLenum target)

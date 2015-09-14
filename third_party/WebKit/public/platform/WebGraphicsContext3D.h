@@ -376,6 +376,9 @@ public:
 
     virtual WebString getTranslatedShaderSourceANGLE(WebGLId shader) = 0;
 
+    // GL_CHROMIUM_screen_space_antialiasing
+    virtual void applyScreenSpaceAntialiasingCHROMIUM() { }
+
     // GL_CHROMIUM_iosurface
     virtual void texImageIOSurface2DCHROMIUM(WGC3Denum target, WGC3Dint width, WGC3Dint height, WGC3Duint ioSurfaceId, WGC3Duint plane) { }
 
