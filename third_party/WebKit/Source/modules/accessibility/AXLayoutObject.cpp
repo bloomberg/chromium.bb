@@ -2080,9 +2080,9 @@ void AXLayoutObject::setValue(const String& string)
 
     LayoutBoxModelObject* layoutObject = toLayoutBoxModelObject(m_layoutObject);
     if (layoutObject->isTextField() && isHTMLInputElement(*node()))
-        toHTMLInputElement(*node()).setValue(string);
+        toHTMLInputElement(*node()).setValue(string, DispatchInputAndChangeEvent);
     else if (layoutObject->isTextArea() && isHTMLTextAreaElement(*node()))
-        toHTMLTextAreaElement(*node()).setValue(string);
+        toHTMLTextAreaElement(*node()).setValue(string, DispatchInputAndChangeEvent);
 }
 
 //
