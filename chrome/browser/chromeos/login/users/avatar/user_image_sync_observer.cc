@@ -14,6 +14,7 @@
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/prefs/pref_service_syncable.h"
+#include "chrome/browser/prefs/pref_service_syncable_util.h"
 #include "chrome/common/pref_names.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_image/default_user_images.h"
@@ -81,7 +82,7 @@ void UserImageSyncObserver::RemoveObserver(Observer* observer) {
 }
 
 void UserImageSyncObserver::OnProfileGained(Profile* profile) {
-  prefs_ = PrefServiceSyncable::FromProfile(profile);
+  prefs_ = PrefServiceSyncableFromProfile(profile);
   pref_change_registrar_.reset(new PrefChangeRegistrar);
   pref_change_registrar_->Init(prefs_);
   pref_change_registrar_->Add(kUserImageInfo,

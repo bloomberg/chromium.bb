@@ -2283,6 +2283,8 @@
       'browser/prefs/pref_service_syncable_factory.cc',
       'browser/prefs/pref_service_syncable_factory.h',
       'browser/prefs/pref_service_syncable_observer.h',
+      'browser/prefs/pref_service_syncable_util.cc',
+      'browser/prefs/pref_service_syncable_util.h',
       'browser/prefs/profile_pref_store_manager.cc',
       'browser/prefs/profile_pref_store_manager.h',
       'browser/prefs/session_startup_pref.cc',

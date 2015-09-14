@@ -28,6 +28,7 @@
 #include "chrome/browser/chromeos/system/input_device_settings.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/prefs/pref_service_syncable.h"
+#include "chrome/browser/prefs/pref_service_syncable_util.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/chromeos_switches.h"
@@ -325,7 +326,7 @@ void Preferences::InitUserPrefs(PrefServiceSyncable* prefs) {
 void Preferences::Init(Profile* profile, const user_manager::User* user) {
   DCHECK(profile);
   DCHECK(user);
-  PrefServiceSyncable* prefs = PrefServiceSyncable::FromProfile(profile);
+  PrefServiceSyncable* prefs = PrefServiceSyncableFromProfile(profile);
   // This causes OnIsSyncingChanged to be called when the value of
   // PrefService::IsSyncing() changes.
   prefs->AddObserver(this);

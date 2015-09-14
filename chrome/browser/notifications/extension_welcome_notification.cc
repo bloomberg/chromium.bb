@@ -14,6 +14,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/prefs/pref_service_syncable.h"
+#include "chrome/browser/prefs/pref_service_syncable_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/common/pref_names.h"
@@ -164,7 +165,7 @@ ExtensionWelcomeNotification* ExtensionWelcomeNotification::Create(
 ExtensionWelcomeNotification::~ExtensionWelcomeNotification() {
   if (delayed_notification_) {
     delayed_notification_.reset();
-    PrefServiceSyncable::FromProfile(profile_)->RemoveObserver(this);
+    PrefServiceSyncableFromProfile(profile_)->RemoveObserver(this);
   } else {
     HideWelcomeNotification();
   }
@@ -173,7 +174,7 @@ ExtensionWelcomeNotification::~ExtensionWelcomeNotification() {
 void ExtensionWelcomeNotification::OnIsSyncingChanged() {
   DCHECK(delayed_notification_);
   PrefServiceSyncable* const pref_service_syncable =
-      PrefServiceSyncable::FromProfile(profile_);
+      PrefServiceSyncableFromProfile(profile_);
   if (pref_service_syncable->IsSyncing()) {
     pref_service_syncable->RemoveObserver(this);
     scoped_ptr<Notification> previous_notification(
@@ -186,7 +187,7 @@ void ExtensionWelcomeNotification::ShowWelcomeNotificationIfNecessary(
     const Notification& notification) {
   if ((notification.notifier_id() == notifier_id_) && !delayed_notification_) {
     PrefServiceSyncable* const pref_service_syncable =
-        PrefServiceSyncable::FromProfile(profile_);
+        PrefServiceSyncableFromProfile(profile_);
     if (pref_service_syncable->IsSyncing()) {
       PrefService* const pref_service = profile_->GetPrefs();
       if (!UserHasDismissedWelcomeNotification()) {

@@ -17,6 +17,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/prefs/pref_service_syncable.h"
+#include "chrome/browser/prefs/pref_service_syncable_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/common/chrome_paths.h"
@@ -121,7 +122,7 @@ void ExternalPrefLoader::StartLoading() {
       (profile_ && profile_->IsSyncAllowed())) {
     if (!PostLoadIfPrioritySyncReady()) {
       DCHECK(profile_);
-      PrefServiceSyncable* prefs = PrefServiceSyncable::FromProfile(profile_);
+      PrefServiceSyncable* prefs = PrefServiceSyncableFromProfile(profile_);
       DCHECK(prefs);
       syncable_pref_observer_.Add(prefs);
       ProfileSyncService* service =
@@ -159,7 +160,7 @@ bool ExternalPrefLoader::PostLoadIfPrioritySyncReady() {
   DCHECK(options_ & DELAY_LOAD_UNTIL_PRIORITY_SYNC);
   DCHECK(profile_);
 
-  PrefServiceSyncable* prefs = PrefServiceSyncable::FromProfile(profile_);
+  PrefServiceSyncable* prefs = PrefServiceSyncableFromProfile(profile_);
   DCHECK(prefs);
   if (prefs->IsPrioritySyncing()) {
     PostLoadAndRemoveObservers();
@@ -170,7 +171,7 @@ bool ExternalPrefLoader::PostLoadIfPrioritySyncReady() {
 }
 
 void ExternalPrefLoader::PostLoadAndRemoveObservers() {
-  PrefServiceSyncable* prefs = PrefServiceSyncable::FromProfile(profile_);
+  PrefServiceSyncable* prefs = PrefServiceSyncableFromProfile(profile_);
   DCHECK(prefs);
   syncable_pref_observer_.Remove(prefs);
 

@@ -13,6 +13,7 @@
 #include "base/test/test_simple_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "chrome/browser/notifications/notification.h"
+#include "chrome/browser/prefs/pref_service_syncable_util.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_pref_service_syncable.h"
@@ -149,7 +150,7 @@ class ExtensionWelcomeNotificationTest : public testing::Test {
   }
 
   void StartPreferenceSyncing() const {
-    PrefServiceSyncable::FromProfile(profile_.get())
+    PrefServiceSyncableFromProfile(profile_.get())
         ->GetSyncableService(syncer::PREFERENCES)
         ->MergeDataAndStartSyncing(syncer::PREFERENCES,
                                    syncer::SyncDataList(),

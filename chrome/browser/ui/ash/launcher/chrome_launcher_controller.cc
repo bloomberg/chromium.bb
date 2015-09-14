@@ -33,6 +33,7 @@
 #include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/prefs/pref_service_syncable.h"
+#include "chrome/browser/prefs/pref_service_syncable_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/app_sync_ui_state.h"
@@ -478,7 +479,7 @@ void ChromeLauncherController::Init() {
 #if defined(OS_CHROMEOS)
     SetVirtualKeyboardBehaviorFromPrefs();
 #endif  // defined(OS_CHROMEOS)
-    PrefServiceSyncable* prefs = PrefServiceSyncable::FromProfile(profile_);
+    PrefServiceSyncable* prefs = PrefServiceSyncableFromProfile(profile_);
     if (!prefs->FindPreference(prefs::kShelfAlignmentLocal)->HasUserSetting() ||
         !prefs->FindPreference(prefs::kShelfAutoHideBehaviorLocal)->
             HasUserSetting()) {
@@ -1238,7 +1239,7 @@ void ChromeLauncherController::OnDisplayConfigurationChanged() {
 }
 
 void ChromeLauncherController::OnIsSyncingChanged() {
-  PrefServiceSyncable* prefs = PrefServiceSyncable::FromProfile(profile_);
+  PrefServiceSyncable* prefs = PrefServiceSyncableFromProfile(profile_);
   MaybePropagatePrefToLocal(prefs,
                             prefs::kShelfAlignmentLocal,
                             prefs::kShelfAlignment);
@@ -2102,7 +2103,7 @@ void ChromeLauncherController::ReleaseProfile() {
 
   extensions::ExtensionRegistry::Get(profile_)->RemoveObserver(this);
 
-  PrefServiceSyncable::FromProfile(profile_)->RemoveObserver(this);
+  PrefServiceSyncableFromProfile(profile_)->RemoveObserver(this);
 
   pref_change_registrar_.RemoveAll();
 }

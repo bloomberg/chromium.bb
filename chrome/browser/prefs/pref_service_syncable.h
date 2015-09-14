@@ -11,7 +11,6 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 
 class PrefServiceSyncableObserver;
-class Profile;
 
 namespace syncer {
 class SyncableService;
@@ -22,18 +21,6 @@ class SyncableService;
 // this PrefService.
 class PrefServiceSyncable : public PrefService {
  public:
-  // PrefServiceSyncable is a PrefService with added integration for
-  // sync, and knowledge of how to create an incognito
-  // PrefService. For code that does not need to know about the sync
-  // integration, you should use only the plain PrefService type.
-  //
-  // For this reason, Profile does not expose an accessor for the
-  // PrefServiceSyncable type. Instead, you can use the utilities
-  // below to retrieve the PrefServiceSyncable (or its incognito
-  // version) from a Profile.
-  static PrefServiceSyncable* FromProfile(Profile* profile);
-  static PrefServiceSyncable* IncognitoFromProfile(Profile* profile);
-
   // You may wish to use PrefServiceFactory or one of its subclasses
   // for simplified construction.
   PrefServiceSyncable(

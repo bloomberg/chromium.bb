@@ -15,20 +15,8 @@
 #include "base/value_conversions.h"
 #include "chrome/browser/prefs/pref_model_associator.h"
 #include "chrome/browser/prefs/pref_service_syncable_observer.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/prefs/prefs_tab_helper.h"
 #include "components/pref_registry/pref_registry_syncable.h"
-
-// static
-PrefServiceSyncable* PrefServiceSyncable::FromProfile(Profile* profile) {
-  return static_cast<PrefServiceSyncable*>(profile->GetPrefs());
-}
-
-// static
-PrefServiceSyncable* PrefServiceSyncable::IncognitoFromProfile(
-    Profile* profile) {
-  return static_cast<PrefServiceSyncable*>(profile->GetOffTheRecordPrefs());
-}
 
 PrefServiceSyncable::PrefServiceSyncable(
     PrefNotifierImpl* pref_notifier,

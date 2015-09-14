@@ -8,6 +8,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "chrome/browser/prefs/pref_service_syncable_util.h"
 #include "chrome/browser/prefs/synced_pref_change_registrar.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/pref_names.h"
@@ -103,7 +104,7 @@ class SyncedPrefChangeRegistrarTest : public InProcessBrowserTest {
 #endif
 
   void SetUpOnMainThread() override {
-    prefs_ = PrefServiceSyncable::FromProfile(browser()->profile());
+    prefs_ = PrefServiceSyncableFromProfile(browser()->profile());
     syncer_ = prefs_->GetSyncableService(syncer::PREFERENCES);
     syncer_->MergeDataAndStartSyncing(
         syncer::PREFERENCES,

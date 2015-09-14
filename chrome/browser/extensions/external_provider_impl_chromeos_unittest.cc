@@ -14,6 +14,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_service_test_base.h"
 #include "chrome/browser/prefs/pref_service_syncable.h"
+#include "chrome/browser/prefs/pref_service_syncable_util.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
@@ -192,7 +193,7 @@ TEST_F(ExternalProviderImplChromeOSTest, PriorityCompleted) {
   service_->CheckForExternalUpdates();
 
   // Priority sync completed.
-  PrefServiceSyncable::FromProfile(profile_.get())
+  PrefServiceSyncableFromProfile(profile_.get())
       ->GetSyncableService(syncer::PRIORITY_PREFERENCES)
       ->MergeDataAndStartSyncing(syncer::PRIORITY_PREFERENCES,
                                  syncer::SyncDataList(),

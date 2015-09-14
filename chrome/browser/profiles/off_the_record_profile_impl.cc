@@ -29,6 +29,7 @@
 #include "chrome/browser/plugins/plugin_prefs.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/prefs/pref_service_syncable.h"
+#include "chrome/browser/prefs/pref_service_syncable_util.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ssl/chrome_ssl_host_state_delegate.h"
 #include "chrome/browser/ssl/chrome_ssl_host_state_delegate_factory.h"
@@ -111,7 +112,7 @@ void NotifyOTRProfileDestroyedOnIOThread(void* original_profile,
 
 OffTheRecordProfileImpl::OffTheRecordProfileImpl(Profile* real_profile)
     : profile_(real_profile),
-      prefs_(PrefServiceSyncable::IncognitoFromProfile(real_profile)),
+      prefs_(PrefServiceSyncableIncognitoFromProfile(real_profile)),
       start_time_(Time::Now()) {
   // Register on BrowserContext.
   user_prefs::UserPrefs::Set(this, prefs_);

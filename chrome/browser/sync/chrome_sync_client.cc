@@ -10,6 +10,7 @@
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/prefs/pref_service_syncable.h"
+#include "chrome/browser/prefs/pref_service_syncable_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/sync/profile_sync_components_factory_impl.h"
@@ -136,11 +137,13 @@ ChromeSyncClient::GetSyncableServiceForType(syncer::ModelType type) {
           ->GetDeviceInfoSyncableService()
           ->AsWeakPtr();
     case syncer::PREFERENCES:
-      return PrefServiceSyncable::FromProfile(
-          profile_)->GetSyncableService(syncer::PREFERENCES)->AsWeakPtr();
+      return PrefServiceSyncableFromProfile(profile_)
+          ->GetSyncableService(syncer::PREFERENCES)
+          ->AsWeakPtr();
     case syncer::PRIORITY_PREFERENCES:
-      return PrefServiceSyncable::FromProfile(profile_)->GetSyncableService(
-          syncer::PRIORITY_PREFERENCES)->AsWeakPtr();
+      return PrefServiceSyncableFromProfile(profile_)
+          ->GetSyncableService(syncer::PRIORITY_PREFERENCES)
+          ->AsWeakPtr();
     case syncer::AUTOFILL:
     case syncer::AUTOFILL_PROFILE:
     case syncer::AUTOFILL_WALLET_DATA:

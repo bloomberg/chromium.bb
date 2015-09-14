@@ -12,6 +12,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/prefs/pref_service_syncable.h"
+#include "chrome/browser/prefs/pref_service_syncable_util.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/prefs/synced_pref_change_registrar.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
@@ -54,7 +55,7 @@ PrefMetricsService::PrefMetricsService(Profile* profile)
       weak_factory_(this) {
   RecordLaunchPrefs();
 
-  PrefServiceSyncable* prefs = PrefServiceSyncable::FromProfile(profile_);
+  PrefServiceSyncable* prefs = PrefServiceSyncableFromProfile(profile_);
   synced_pref_change_registrar_.reset(new SyncedPrefChangeRegistrar(prefs));
 
   RegisterSyncedPrefObservers();
@@ -176,7 +177,7 @@ void PrefMetricsService::OnPrefChanged(
     const LogHistogramValueCallback& callback,
     const std::string& path,
     bool from_sync) {
-  PrefServiceSyncable* prefs = PrefServiceSyncable::FromProfile(profile_);
+  PrefServiceSyncable* prefs = PrefServiceSyncableFromProfile(profile_);
   const PrefService::Preference* pref = prefs->FindPreference(path.c_str());
   DCHECK(pref);
   std::string source_name(
