@@ -16,9 +16,9 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.provider.Browser;
 import android.support.v7.app.AlertDialog;
+import android.text.SpannableString;
 import android.text.method.LinkMovementMethod;
 import android.text.style.ClickableSpan;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -28,6 +28,7 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.TextView.OnEditorActionListener;
 
+import org.chromium.base.Log;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
@@ -40,7 +41,7 @@ import org.chromium.ui.text.SpanApplier.SpanInfo;
  */
 public class PassphraseDialogFragment extends DialogFragment implements OnClickListener {
 
-    private static final String TAG = "PassphraseDialogFragment";
+    private static final String TAG = "cr.Sync.UI";
 
     /**
      * A listener for passphrase events.
@@ -83,55 +84,14 @@ public class PassphraseDialogFragment extends DialogFragment implements OnClickL
         View v = inflater.inflate(R.layout.sync_enter_passphrase, null);
 
         TextView promptText = (TextView) v.findViewById(R.id.prompt_text);
-        final EditText passphrase = (EditText) v.findViewById(R.id.passphrase);
-        final Context context = passphrase.getContext();
+        promptText.setText(getPromptText());
+
         TextView resetText = (TextView) v.findViewById(R.id.reset_text);
-        ProfileSyncService profileSyncService = ProfileSyncService.get();
-        String accountName = profileSyncService.getCurrentSignedInAccountText() + "\n\n";
-        resetText.setText(SpanApplier.applySpans(
-                context.getString(R.string.sync_passphrase_reset_instructions),
-                new SpanInfo("<link>", "</link>", new ClickableSpan() {
-                    @Override
-                    public void onClick(View view) {
-                        recordPassphraseDialogDismissal(PASSPHRASE_DIALOG_RESET_LINK);
-                        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(
-                                context.getText(R.string.sync_dashboard_url).toString()));
-                        intent.putExtra(Browser.EXTRA_APPLICATION_ID,
-                                context.getPackageName());
-                        intent.putExtra(Browser.EXTRA_CREATE_NEW_TAB, true);
-                        intent.setPackage(context.getPackageName());
-                        context.startActivity(intent);
-                        Activity activity = getActivity();
-                        if (activity != null) activity.finish();
-                    }
-                })));
+        resetText.setText(getResetText());
         resetText.setMovementMethod(LinkMovementMethod.getInstance());
         resetText.setVisibility(View.VISIBLE);
-        PassphraseType passphraseType = profileSyncService.getPassphraseType();
-        if (profileSyncService.hasExplicitPassphraseTime()) {
-            switch (passphraseType) {
-                case FROZEN_IMPLICIT_PASSPHRASE:
-                    promptText.setText(accountName + profileSyncService
-                            .getSyncEnterGooglePassphraseBodyWithDateText());
-                    break;
-                case CUSTOM_PASSPHRASE:
-                    promptText.setText(accountName + profileSyncService
-                            .getSyncEnterCustomPassphraseBodyWithDateText());
-                    break;
-                case IMPLICIT_PASSPHRASE: // Falling through intentionally.
-                case KEYSTORE_PASSPHRASE: // Falling through intentionally.
-                default:
-                    Log.w(TAG, "Found incorrect passphrase type "
-                            + passphraseType
-                            + ". Falling back to default string.");
-                    promptText.setText(accountName
-                            + profileSyncService.getSyncEnterCustomPassphraseBodyText());
-                    break;
-            }
-        } else {
-            promptText.setText(accountName
-                    + profileSyncService.getSyncEnterCustomPassphraseBodyText());
-        }
+
+        EditText passphrase = (EditText) v.findViewById(R.id.passphrase);
         passphrase.setHint(R.string.sync_enter_custom_passphrase_hint);
         passphrase.setOnEditorActionListener(new OnEditorActionListener() {
             @Override
@@ -177,6 +137,48 @@ public class PassphraseDialogFragment extends DialogFragment implements OnClickL
         if (which == AlertDialog.BUTTON_NEGATIVE) {
             handleCancel();
         }
+    }
+
+    private String getPromptText() {
+        ProfileSyncService pss = ProfileSyncService.get();
+        String accountName = pss.getCurrentSignedInAccountText() + "\n\n";
+        PassphraseType passphraseType = pss.getPassphraseType();
+        if (pss.hasExplicitPassphraseTime()) {
+            switch (passphraseType) {
+                case FROZEN_IMPLICIT_PASSPHRASE:
+                    return accountName + pss.getSyncEnterGooglePassphraseBodyWithDateText();
+                case CUSTOM_PASSPHRASE:
+                    return accountName + pss.getSyncEnterCustomPassphraseBodyWithDateText();
+                case IMPLICIT_PASSPHRASE: // Falling through intentionally.
+                case KEYSTORE_PASSPHRASE: // Falling through intentionally.
+                default:
+                    Log.w(TAG, "Found incorrect passphrase type " + passphraseType
+                                    + ". Falling back to default string.");
+                    return accountName + pss.getSyncEnterCustomPassphraseBodyText();
+            }
+        }
+        return accountName + pss.getSyncEnterCustomPassphraseBodyText();
+    }
+
+    private SpannableString getResetText() {
+        final Context context = getActivity();
+        return SpanApplier.applySpans(
+                context.getString(R.string.sync_passphrase_reset_instructions),
+                new SpanInfo("<link>", "</link>", new ClickableSpan() {
+                    @Override
+                    public void onClick(View view) {
+                        recordPassphraseDialogDismissal(PASSPHRASE_DIALOG_RESET_LINK);
+                        Uri syncDashboardUrl = Uri.parse(
+                                context.getText(R.string.sync_dashboard_url).toString());
+                        Intent intent = new Intent(Intent.ACTION_VIEW, syncDashboardUrl);
+                        intent.putExtra(Browser.EXTRA_APPLICATION_ID, context.getPackageName());
+                        intent.putExtra(Browser.EXTRA_CREATE_NEW_TAB, true);
+                        intent.setPackage(context.getPackageName());
+                        context.startActivity(intent);
+                        Activity activity = getActivity();
+                        if (activity != null) activity.finish();
+                    }
+                }));
     }
 
     /**
