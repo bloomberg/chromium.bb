@@ -2021,10 +2021,11 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
     }
 
     /**
-     * Restores the WebContents from its saved state.
+     * Restores the WebContents from its saved state.  This should only be called if the tab is
+     * frozen with a saved TabState, and NOT if it was frozen for a lazy load.
      * @return Whether or not the restoration was successful.
      */
-    public boolean unfreezeContents() {
+    protected boolean unfreezeContents() {
         try {
             TraceEvent.begin("Tab.unfreezeContents");
             assert mFrozenContentsState != null;
@@ -2375,7 +2376,7 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
     /**
      * @return Parameters that should be used for a lazily loaded Tab.  May be null.
      */
-    protected LoadUrlParams getPendingLoadParams() {
+    private LoadUrlParams getPendingLoadParams() {
         return mPendingLoadParams;
     }
 

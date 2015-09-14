@@ -398,7 +398,7 @@ public abstract class TabModelBase extends TabModelJniBridge {
         return currentTab != null ? currentTab.getId() : Tab.INVALID_TAB_ID;
     }
 
-    private boolean hasVaildTab() {
+    private boolean hasValidTab() {
         if (mTabs.size() <= 0) return false;
         for (int i = 0; i < mTabs.size(); i++) {
             if (!mTabs.get(i).isClosing()) return true;
@@ -417,7 +417,7 @@ public abstract class TabModelBase extends TabModelJniBridge {
                 mModelDelegate.selectModel(isIncognito());
             }
 
-            if (!hasVaildTab()) {
+            if (!hasValidTab()) {
                 mIndex = INVALID_TAB_INDEX;
             } else {
                 mIndex = MathUtils.clamp(i, 0, mTabs.size() - 1);

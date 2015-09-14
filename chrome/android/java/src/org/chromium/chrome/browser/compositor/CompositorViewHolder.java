@@ -870,7 +870,7 @@ public class CompositorViewHolder extends FrameLayout
     }
 
     private void setTab(Tab tab) {
-        if (tab != null && tab.isFrozen()) tab.unfreezeContents();
+        if (tab != null) tab.loadIfNeeded();
 
         View newView = tab != null ? tab.getView() : null;
         if (mView == newView) return;

@@ -1144,13 +1144,23 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
     @Override
     public void onDestroyInternal() {
         if (mLayoutManager != null) mLayoutManager.removeOverviewModeObserver(this);
-        if (mTabModelSelectorTabObserver != null) mTabModelSelectorTabObserver.destroy();
+
+        if (mTabModelSelectorTabObserver != null) {
+            mTabModelSelectorTabObserver.destroy();
+            mTabModelSelectorTabObserver = null;
+        }
+
         if (mTabModelObserver != null) {
             for (TabModel model : mTabModelSelectorImpl.getModels()) {
                 model.removeObserver(mTabModelObserver);
             }
         }
-        if (mUndoBarPopupController != null) mUndoBarPopupController.destroy();
+
+        if (mUndoBarPopupController != null) {
+            mUndoBarPopupController.destroy();
+            mUndoBarPopupController = null;
+        }
+
         super.onDestroyInternal();
     }
 

@@ -46,7 +46,7 @@ public abstract class MultiActivityTestBase extends InstrumentationTestCase
     private Map<String, BaseParameter> mAvailableParameters;
 
     /** Defines one gigantic link spanning the whole page that creates a new window with URL_4. */
-    protected static final String HREF_LINK = UrlUtils.encodeHtmlDataUri(
+    public static final String HREF_LINK = UrlUtils.encodeHtmlDataUri(
             "<html>"
             + "  <head>"
             + "    <title>href link page</title>"

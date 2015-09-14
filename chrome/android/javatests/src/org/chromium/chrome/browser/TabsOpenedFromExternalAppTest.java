@@ -8,16 +8,26 @@ import android.content.Intent;
 import android.net.Uri;
 import android.provider.Browser;
 import android.test.FlakyTest;
+import android.test.suitebuilder.annotation.MediumTest;
 import android.text.TextUtils;
+import android.view.ContextMenu;
 import android.view.KeyEvent;
+import android.view.View;
 
 import junit.framework.Assert;
 
+import org.chromium.base.BaseSwitches;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
+import org.chromium.chrome.R;
+import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.test.ChromeTabbedActivityTestBase;
+import org.chromium.chrome.test.MultiActivityTestBase;
+import org.chromium.chrome.test.util.ApplicationTestUtils;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.TestHttpServerClient;
 import org.chromium.content.browser.test.util.Criteria;
@@ -25,12 +35,13 @@ import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.DOMUtils;
 import org.chromium.content.browser.test.util.JavaScriptUtils;
 import org.chromium.content.browser.test.util.KeyUtils;
+import org.chromium.content.browser.test.util.TouchCommon;
 
+import java.util.concurrent.Callable;
 import java.util.concurrent.TimeoutException;
 
 /**
- * Test the behavior of tabs when opening a URL from an external app, more specifically how we reuse
- * tabs.
+ * Test the behavior of tabs when opening a URL from an external app.
  */
 public class TabsOpenedFromExternalAppTest extends ChromeTabbedActivityTestBase {
 
@@ -436,5 +447,100 @@ public class TabsOpenedFromExternalAppTest extends ChromeTabbedActivityTestBase 
         assertEquals("Incorrect number of tabs open", originalTabCount + 1, newTabCount);
         assertEquals("Selected tab is not on the right URL.", url2,
                 getActivity().getActivityTab().getUrl());
+    }
+
+
+    private static class TestTabObserver extends EmptyTabObserver {
+        private ContextMenu mContextMenu;
+
+        @Override
+        public void onContextMenuShown(Tab tab, ContextMenu menu) {
+            mContextMenu = menu;
+        }
+    }
+
+    /**
+     * Catches regressions for https://crbug.com/495877.
+     */
+    @MediumTest
+    @CommandLineFlags.Add(BaseSwitches.ENABLE_LOW_END_DEVICE_MODE)
+    public void testBackgroundSvelteTabIsSelectedAfterClosingExternalTab() throws Exception {
+        // Start up Chrome and immediately close its tab -- it gets in the way.
+        startMainActivityFromLauncher();
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                TabModelUtils.closeTabByIndex(getActivity().getCurrentTabModel(), 0);
+            }
+        });
+        assertTrue(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                return getActivity().getTabModelSelector().getTotalTabCount() == 0;
+            }
+        }));
+
+        // Open a tab via an external application.
+        final Intent intent = new Intent(
+                Intent.ACTION_VIEW, Uri.parse(MultiActivityTestBase.HREF_LINK));
+        intent.setClassName(getInstrumentation().getTargetContext().getPackageName(),
+                ChromeTabbedActivity.class.getName());
+        intent.putExtra(Browser.EXTRA_APPLICATION_ID, "com.legit.totes");
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        getInstrumentation().getTargetContext().startActivity(intent);
+
+        assertTrue(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                return getActivity().getTabModelSelector().getTotalTabCount() == 1;
+            }
+        }));
+        ApplicationTestUtils.assertWaitForPageScaleFactorMatch(getActivity(), 0.5f, false);
+
+        // Long press the center of the page, which should bring up the context menu.
+        final TestTabObserver observer = new TestTabObserver();
+        getActivity().getActivityTab().addObserver(observer);
+        assertNull(observer.mContextMenu);
+        final View view = ThreadUtils.runOnUiThreadBlocking(new Callable<View>() {
+            @Override
+            public View call() throws Exception {
+                return getActivity().getActivityTab().getContentViewCore().getContainerView();
+            }
+        });
+        TouchCommon.longPressView(view, view.getWidth() / 2, view.getHeight() / 2);
+        assertTrue(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                return observer.mContextMenu != null;
+            }
+        }));
+        getActivity().getActivityTab().removeObserver(observer);
+
+        // Select the "open in new tab" option.
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                assertTrue(observer.mContextMenu.performIdentifierAction(
+                        R.id.contextmenu_open_in_new_tab, 0));
+            }
+        });
+
+        // The second tab should open in the background.
+        assertTrue(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                return getActivity().getTabModelSelector().getTotalTabCount() == 2;
+            }
+        }));
+
+        // Hitting "back" should close the tab, minimize Chrome, and select the background tab.
+        // Confirm that the number of tabs is correct and that closing the tab didn't cause a crash.
+        getActivity().onBackPressed();
+        assertTrue(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                return getActivity().getTabModelSelector().getTotalTabCount() == 1;
+            }
+        }));
     }
 }
