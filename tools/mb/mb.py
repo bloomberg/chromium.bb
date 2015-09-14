@@ -135,6 +135,9 @@ class MetaBuildWrapper(object):
 
   def CmdGen(self):
     vals = self.GetConfig()
+
+    self.ClobberIfNeeded(vals)
+
     if vals['type'] == 'gn':
       return self.RunGNGen(vals)
     if vals['type'] == 'gyp':
@@ -290,7 +293,7 @@ class MetaBuildWrapper(object):
       'type': None,
       'gn_args': [],
       'gyp_config': [],
-      'gyp_defines': [],
+      'gyp_defines': '',
       'gyp_crosscompile': False,
     }
 
@@ -327,6 +330,33 @@ class MetaBuildWrapper(object):
       if 'mixins' in mixin_vals:
         self.FlattenMixins(mixin_vals['mixins'], vals, visited)
     return vals
+
+  def ClobberIfNeeded(self, vals):
+    path = self.args.path[0]
+    build_dir = self.ToAbsPath(path)
+    mb_type_path = os.path.join(build_dir, 'mb_type')
+    needs_clobber = False
+    new_mb_type = vals['type']
+    if self.Exists(build_dir):
+      if self.Exists(mb_type_path):
+        old_mb_type = self.ReadFile(mb_type_path)
+        if old_mb_type != new_mb_type:
+          self.Print("Build type mismatch: was %s, will be %s, clobbering %s" %
+                     (old_mb_type, new_mb_type, path))
+          needs_clobber = True
+      else:
+        # There is no 'mb_type' file in the build directory, so this probably
+        # means that the prior build(s) were not done through mb, and we
+        # have no idea if this was a GYP build or a GN build. Clobber it
+        # to be safe.
+        self.Print("%s/mb_type missing, clobbering to be safe" % path)
+        needs_clobber = True
+
+    if needs_clobber:
+      self.RemoveDirectory(build_dir)
+
+    self.MaybeMakeDirectory(build_dir)
+    self.WriteFile(mb_type_path, new_mb_type)
 
   def RunGNGen(self, vals):
     path = self.args.path[0]
@@ -820,6 +850,17 @@ class MetaBuildWrapper(object):
   def RemoveFile(self, path):
     # This function largely exists so it can be overriden for testing.
     os.remove(path)
+
+  def RemoveDirectory(self, abs_path):
+    if sys.platform == 'win32':
+      # In other places in chromium, we often have to retry this command
+      # because we're worried about other processes still holding on to
+      # file handles, but when MB is invoked, it will be early enough in the
+      # build that their should be no other processes to interfere. We
+      # can change this if need be.
+      self.Run(['cmd.exe', '/c', 'rmdir', '/q', '/s', abs_path])
+    else:
+      shutil.rmtree(abs_path, ignore_errors=True)
 
   def TempFile(self, mode='w'):
     # This function largely exists so it can be overriden for testing.

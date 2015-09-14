@@ -25,6 +25,7 @@ class FakeMBW(mb.MetaBuildWrapper):
     self.platform = 'linux2'
     self.chromium_src_dir = '/fake_src'
     self.default_config = '/fake_src/tools/mb/mb_config.pyl'
+    self.rmdirs = []
 
   def ExpandUser(self, path):
     return '$HOME/%s' % path
@@ -33,7 +34,7 @@ class FakeMBW(mb.MetaBuildWrapper):
     return self.files.get(path) is not None
 
   def MaybeMakeDirectory(self, path):
-    pass
+    self.files[path] = True
 
   def ReadFile(self, path):
     return self.files[path]
@@ -64,6 +65,12 @@ class FakeMBW(mb.MetaBuildWrapper):
   def RemoveFile(self, path):
     del self.files[path]
 
+  def RemoveDirectory(self, path):
+    self.rmdirs.append(path)
+    files_to_delete = [f for f in self.files if f.startswith(path)]
+    for f in files_to_delete:
+      self.files[f] = None
+
 
 class FakeFile(object):
   def __init__(self, files):
@@ -84,6 +91,7 @@ TEST_CONFIG = """\
   'configs': {
     'gyp_rel_bot': ['gyp', 'rel', 'goma'],
     'gn_debug': ['gn', 'debug'],
+    'gyp_debug': ['gyp', 'debug'],
     'gn_rel_bot': ['gn', 'rel', 'goma'],
     'private': ['gyp', 'rel', 'fake_feature1'],
     'unsupported': ['gn', 'fake_feature2'],
@@ -92,6 +100,7 @@ TEST_CONFIG = """\
     'fake_master': {
       'fake_builder': 'gyp_rel_bot',
       'fake_gn_builder': 'gn_rel_bot',
+      'fake_gyp_builder': 'gyp_debug',
     },
   },
   'mixins': {
@@ -116,6 +125,7 @@ TEST_CONFIG = """\
     },
     'debug': {
       'gn_args': 'is_debug=true',
+      'gyp_config': 'Debug',
     },
   },
   'private_configs': ['private'],
@@ -145,6 +155,37 @@ class UnitTest(unittest.TestCase):
     if err is not None:
       self.assertEqual(mbw.err, err)
     return mbw
+
+  def test_clobber(self):
+    files = {
+      '/fake_src/out/Debug': None,
+      '/fake_src/out/Debug/mb_type': None,
+    }
+    mbw = self.fake_mbw(files)
+
+    # The first time we run this, the build dir doesn't exist, so no clobber.
+    self.check(['gen', '-c', 'gn_debug', '//out/Debug'], mbw=mbw, ret=0)
+    self.assertEqual(mbw.rmdirs, [])
+    self.assertTrue(mbw.files['/fake_src/out/Debug/mb_type'], 'gn')
+
+    # The second time we run this, the build dir exists and matches, so no
+    # clobber.
+    self.check(['gen', '-c', 'gn_debug', '//out/Debug'], mbw=mbw, ret=0)
+    self.assertEqual(mbw.rmdirs, [])
+    self.assertEqual(mbw.files['/fake_src/out/Debug/mb_type'], 'gn')
+
+    # Now we switch build types; this should result in a clobber.
+    self.check(['gen', '-c', 'gyp_debug', '//out/Debug'], mbw=mbw, ret=0)
+    self.assertEqual(mbw.rmdirs, ['/fake_src/out/Debug'])
+    self.assertEqual(mbw.files['/fake_src/out/Debug/mb_type'], 'gyp')
+
+    # Now we delete mb_type; this checks the case where the build dir
+    # exists but wasn't populated by mb; this should also result in a clobber.
+    del mbw.files['/fake_src/out/Debug/mb_type']
+    self.check(['gen', '-c', 'gyp_debug', '//out/Debug'], mbw=mbw, ret=0)
+    self.assertEqual(mbw.rmdirs,
+                     ['/fake_src/out/Debug', '/fake_src/out/Debug'])
+    self.assertEqual(mbw.files['/fake_src/out/Debug/mb_type'], 'gyp')
 
   def test_gn_analyze(self):
     files = {'/tmp/in.json': """{\
