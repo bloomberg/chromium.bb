@@ -73,7 +73,8 @@ static void ReadYV16Data(scoped_ptr<uint8[]>* data) {
   ReadData(FILE_PATH_LITERAL("bali_640x360_P422.yuv"), kYUV16Size, data);
 }
 
-#if !defined(ARCH_CPU_ARM_FAMILY) && !defined(ARCH_CPU_MIPS_FAMILY)
+#if !defined(ARCH_CPU_ARM_FAMILY) && !defined(ARCH_CPU_MIPS_FAMILY) && \
+    !defined(OS_ANDROID)
 static void ReadYV12AData(scoped_ptr<uint8[]>* data) {
   ReadData(FILE_PATH_LITERAL("bali_640x360_P420_alpha.yuv"), kYUVA12Size, data);
 }
@@ -529,6 +530,7 @@ TEST(YUVConvertTest, DownScaleYUVToRGB32WithRect) {
 }
 
 #if !defined(ARCH_CPU_ARM_FAMILY) && !defined(ARCH_CPU_MIPS_FAMILY)
+#if !defined(OS_ANDROID)
 TEST(YUVConvertTest, YUVAtoARGB_MMX_MatchReference) {
   // Allocate all surfaces.
   scoped_ptr<uint8[]> yuv_bytes;
@@ -570,6 +572,7 @@ TEST(YUVConvertTest, YUVAtoARGB_MMX_MatchReference) {
                    rgb_converted_bytes_ref.get(),
                    kRGBSizeConverted));
 }
+#endif  // !defined(OS_ANDROID)
 
 TEST(YUVConvertTest, RGB32ToYUV_SSE2_MatchReference) {
   base::CPU cpu;
