@@ -167,7 +167,7 @@ class WebContents;
 
 // Whether the instance should use a custom transition when animating into and
 // out of AppKit Fullscreen.
-- (BOOL)shouldUseCustomAppKitFullscreenTransition;
+- (BOOL)shouldUseCustomAppKitFullscreenTransition:(BOOL)enterFullScreen;
 
 - (content::WebContents*)webContents;
 - (PermissionBubbleManager*)permissionBubbleManager;

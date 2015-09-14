@@ -1078,7 +1078,14 @@ willPositionSheet:(NSWindow*)sheet
   return YES;
 }
 
-- (BOOL)shouldUseCustomAppKitFullscreenTransition {
+- (BOOL)shouldUseCustomAppKitFullscreenTransition:(BOOL)enterFullScreen {
+  // We are temporary disabling exit fullscreen animation because it only
+  // works on OSX 10.10.
+  // TODO(spqchan): Fix exit fullscreen animation so that it works on all
+  // OSX versions.
+  if (!enterFullScreen)
+    return NO;
+
   if (base::mac::IsOSMountainLionOrEarlier())
     return NO;
 
@@ -1101,7 +1108,7 @@ willPositionSheet:(NSWindow*)sheet
 - (NSArray*)customWindowsToEnterFullScreenForWindow:(NSWindow*)window {
   DCHECK([window isEqual:self.window]);
 
-  if (![self shouldUseCustomAppKitFullscreenTransition])
+  if (![self shouldUseCustomAppKitFullscreenTransition:YES])
     return nil;
 
   FramedBrowserWindow* framedBrowserWindow =
@@ -1114,7 +1121,7 @@ willPositionSheet:(NSWindow*)sheet
 - (NSArray*)customWindowsToExitFullScreenForWindow:(NSWindow*)window {
   DCHECK([window isEqual:self.window]);
 
-  if (![self shouldUseCustomAppKitFullscreenTransition])
+  if (![self shouldUseCustomAppKitFullscreenTransition:NO])
     return nil;
 
   FramedBrowserWindow* framedBrowserWindow =
