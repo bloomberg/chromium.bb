@@ -26,4 +26,8 @@ layer at (0,0) size 800x600
           LayoutTableRow (anonymous) at (0,2) size 104x200
             LayoutTableCell (anonymous) at (2,2) size 100x200 [r=0 c=0 rs=1 cs=1]
               LayoutBlockFlow {TR} at (0,0) size 100x100 [bgcolor=#008000]
+              LayoutBlockFlow (anonymous) at (0,100) size 100x0
+                LayoutText {#text} at (0,0) size 0x0
               LayoutBlockFlow {TR} at (0,100) size 100x100 [bgcolor=#0000FF]
+              LayoutBlockFlow (anonymous) at (0,200) size 100x0
+                LayoutText {#text} at (0,0) size 0x0
