@@ -478,12 +478,7 @@ typedef struct AVProbeData {
 #define AVFMT_NOGENSEARCH   0x4000 /**< Format does not allow to fall back on generic search */
 #define AVFMT_NO_BYTE_SEEK  0x8000 /**< Format does not allow seeking by bytes */
 #define AVFMT_ALLOW_FLUSH  0x10000 /**< Format allows flushing. If not set, the muxer will not receive a NULL packet in the write_packet function. */
-#if LIBAVFORMAT_VERSION_MAJOR <= 54
-#define AVFMT_TS_NONSTRICT 0x8020000 //we try to be compatible to the ABIs of ffmpeg and major forks
-#else
-#define AVFMT_TS_NONSTRICT 0x20000
-#endif
-                                   /**< Format does not require strictly
+#define AVFMT_TS_NONSTRICT 0x20000 /**< Format does not require strictly
                                         increasing timestamps, but they must
                                         still be monotonic */
 #define AVFMT_TS_NEGATIVE  0x40000 /**< Format allows muxing negative
@@ -1015,7 +1010,6 @@ typedef struct AVStream {
     /**
      * Number of packets to buffer for codec probing
      */
-#define MAX_PROBE_PACKETS 2500
     int probe_packets;
 
     /**
@@ -1171,6 +1165,8 @@ typedef struct AVStream {
      * - decoding: Set by libavformat to calculate sample_aspect_ratio internally
      */
     AVRational display_aspect_ratio;
+
+    struct FFFrac *priv_pts;
 } AVStream;
 
 AVRational av_stream_get_r_frame_rate(const AVStream *s);
@@ -1395,6 +1391,7 @@ typedef struct AVFormatContext {
 #define AVFMT_FLAG_KEEP_SIDE_DATA 0x40000 ///< Don't merge side data but keep it separate.
 #define AVFMT_FLAG_FAST_SEEK   0x80000 ///< Enable fast, but inaccurate seeks for some formats
 
+#if FF_API_PROBESIZE_32
     /**
      * @deprecated deprecated in favor of probesize2
      */
@@ -1405,6 +1402,7 @@ typedef struct AVFormatContext {
      */
     attribute_deprecated
     int max_analyze_duration;
+#endif
 
     const uint8_t *key;
     int keylen;
@@ -1757,7 +1755,11 @@ typedef struct AVFormatContext {
      * via AVOptions (NO direct access).
      * Can be set to 0 to let avformat choose using a heuristic.
      */
+#if FF_API_PROBESIZE_32
     int64_t max_analyze_duration2;
+#else
+    int64_t max_analyze_duration;
+#endif
 
     /**
      * Maximum size of the data read from input for determining
@@ -1765,7 +1767,11 @@ typedef struct AVFormatContext {
      * Demuxing only, set by the caller before avformat_open_input()
      * via AVOptions (NO direct access).
      */
+#if FF_API_PROBESIZE_32
     int64_t probesize2;
+#else
+    int64_t probesize;
+#endif
 
     /**
      * dump format separator.

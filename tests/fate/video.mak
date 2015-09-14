@@ -144,6 +144,21 @@ fate-dxa-scummvm: CMD = framecrc -i $(TARGET_SAMPLES)/dxa/scummvm.dxa -pix_fmt r
 FATE_VIDEO-$(call DEMDEC, DXA, DXA) += $(FATE_DXA)
 fate-dxa: $(FATE_DXA)
 
+FATE_DXV += fate-dxv-dxt1
+fate-dxv-dxt1: CMD = framecrc -i $(TARGET_SAMPLES)/dxv/dxv-na.mov
+
+FATE_DXV += fate-dxv-dxt5
+fate-dxv-dxt5: CMD = framecrc -i $(TARGET_SAMPLES)/dxv/dxv-wa.mov
+
+FATE_DXV += fate-dxv3-dxt1
+fate-dxv3-dxt1: CMD = framecrc -i $(TARGET_SAMPLES)/dxv/dxv3-nqna.mov
+
+FATE_DXV += fate-dxv3-dxt5
+fate-dxv3-dxt5: CMD = framecrc -i $(TARGET_SAMPLES)/dxv/dxv3-nqwa.mov
+
+FATE_VIDEO-$(call DEMDEC, MOV, DXV) += $(FATE_DXV)
+fate-dxv: $(FATE_DXV)
+
 FATE_VIDEO-$(call DEMDEC, SEGAFILM, CINEPAK) += fate-film-cvid
 fate-film-cvid: CMD = framecrc -i $(TARGET_SAMPLES)/film/logo-capcom.cpk -an
 
@@ -167,6 +182,21 @@ fate-id-cin-video: CMD = framecrc -i $(TARGET_SAMPLES)/idcin/idlog-2MB.cin -pix_
 
 FATE_VIDEO-$(call ENCDEC, ROQ PGMYUV, ROQ IMAGE2) += fate-idroq-video-encode
 fate-idroq-video-encode: CMD = md5 -f image2 -vcodec pgmyuv -i $(TARGET_SAMPLES)/ffmpeg-synthetic/vsynth1/%02d.pgm -r 30 -sws_flags +bitexact -vf pad=512:512:80:112 -f roq -t 0.2
+
+FATE_HAP += fate-hap1
+fate-hap1: CMD = framecrc -i $(TARGET_SAMPLES)/hap/hap1.mov
+
+FATE_HAP += fate-hap5
+fate-hap5: CMD = framecrc -i $(TARGET_SAMPLES)/hap/hap5.mov
+
+FATE_HAP += fate-hapy
+fate-hapy: CMD = framecrc -i $(TARGET_SAMPLES)/hap/hapy.mov
+
+FATE_HAP += fate-hap-chunk
+fate-hap-chunk: CMD = framecrc -i $(TARGET_SAMPLES)/hap/hapy-12-chunks.mov
+
+FATE_SAMPLES_AVCONV-$(call DEMDEC, MOV, HAP) += $(FATE_HAP)
+fate-hap: $(FATE_HAP)
 
 FATE_IFF-$(CONFIG_IFF_BYTERUN1_DECODER) += fate-iff-byterun1
 fate-iff-byterun1: CMD = framecrc -i $(TARGET_SAMPLES)/iff/ASH.LBM -pix_fmt rgb24
@@ -278,7 +308,10 @@ FATE_VIDEO-$(call DEMDEC, TMV, TMV) += fate-tmv
 fate-tmv: CMD = framecrc -i $(TARGET_SAMPLES)/tmv/pop-partial.tmv -pix_fmt rgb24
 
 FATE_TXD += fate-txd-16bpp
-fate-txd-16bpp: CMD = framecrc -i $(TARGET_SAMPLES)/txd/misc.txd -pix_fmt bgra -an
+fate-txd-16bpp: CMD = framecrc -i $(TARGET_SAMPLES)/txd/misc.txd -an
+
+FATE_TXD += fate-txd-odd
+fate-txd-odd: CMD = framecrc -i $(TARGET_SAMPLES)/txd/odd.txd -an
 
 FATE_TXD += fate-txd-pal8
 fate-txd-pal8: CMD = framecrc -i $(TARGET_SAMPLES)/txd/outro.txd -pix_fmt rgb24 -an

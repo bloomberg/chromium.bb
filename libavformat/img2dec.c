@@ -609,6 +609,17 @@ static int bmp_probe(AVProbeData *p)
     return AVPROBE_SCORE_EXTENSION / 4;
 }
 
+static int dds_probe(AVProbeData *p)
+{
+    const uint8_t *b = p->buf;
+
+    if (   AV_RB64(b) == 0x444453207c000000
+        && AV_RL32(b +  8)
+        && AV_RL32(b + 12))
+        return AVPROBE_SCORE_MAX - 1;
+    return 0;
+}
+
 static int dpx_probe(AVProbeData *p)
 {
     const uint8_t *b = p->buf;
@@ -649,18 +660,14 @@ static int j2k_probe(AVProbeData *p)
 static int jpeg_probe(AVProbeData *p)
 {
     const uint8_t *b = p->buf;
-    int i, state = 0xD8, exif_size = 0;
+    int i, state = 0xD8;
 
     if (AV_RB16(b) != 0xFFD8 ||
         AV_RB32(b) == 0xFFD8FFF7)
     return 0;
 
     b += 2;
-    if (AV_RB16(b) == 0xFFE1 && AV_RB32(b + 4) == AV_RB32("Exif")) {
-        exif_size = AV_RB16(b + 2) + 2;
-        b += exif_size;
-    }
-    for (i = 0; i + exif_size < p->buf_size - 2; i++) {
+    for (i = 0; i < p->buf_size - 3; i++) {
         int c;
         if (b[i] != 0xFF)
             continue;
@@ -689,6 +696,24 @@ static int jpeg_probe(AVProbeData *p)
                 return 0;
             state = 0xD9;
             break;
+        case 0xE0:
+        case 0xE1:
+        case 0xE2:
+        case 0xE3:
+        case 0xE4:
+        case 0xE5:
+        case 0xE6:
+        case 0xE7:
+        case 0xE8:
+        case 0xE9:
+        case 0xEA:
+        case 0xEB:
+        case 0xEC:
+        case 0xED:
+        case 0xEE:
+        case 0xEF:
+            i += AV_RB16(&b[i + 2]) + 1;
+            break;
         default:
             if (  (c >= 0x02 && c <= 0xBF)
                 || c == 0xC8)
@@ -714,9 +739,15 @@ static int qdraw_probe(AVProbeData *p)
 {
     const uint8_t *b = p->buf;
 
-    if (!b[10] && AV_RB32(b+11) == 0x1102ff0c && !b[15] ||
-        p->buf_size >= 528 && !b[522] && AV_RB32(b+523) == 0x1102ff0c && !b[527])
-        return AVPROBE_SCORE_EXTENSION + 1;
+    if (   p->buf_size >= 528
+        && (AV_RB64(b + 520) & 0xFFFFFFFFFFFF) == 0x001102ff0c00
+        && AV_RB16(b + 520)
+        && AV_RB16(b + 518))
+        return AVPROBE_SCORE_MAX * 3 / 4;
+    if (   (AV_RB64(b + 8) & 0xFFFFFFFFFFFF) == 0x001102ff0c00
+        && AV_RB16(b + 8)
+        && AV_RB16(b + 6))
+        return AVPROBE_SCORE_EXTENSION / 4;
     return 0;
 }
 
@@ -799,6 +830,7 @@ AVInputFormat ff_image_ ## imgname ## _pipe_demuxer = {\
 };
 
 IMAGEAUTO_DEMUXER(bmp,     AV_CODEC_ID_BMP)
+IMAGEAUTO_DEMUXER(dds,     AV_CODEC_ID_DDS)
 IMAGEAUTO_DEMUXER(dpx,     AV_CODEC_ID_DPX)
 IMAGEAUTO_DEMUXER(exr,     AV_CODEC_ID_EXR)
 IMAGEAUTO_DEMUXER(j2k,     AV_CODEC_ID_JPEG2000)

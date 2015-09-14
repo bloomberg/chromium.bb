@@ -61,7 +61,7 @@
  * @param num must be >= 0
  * @param den must be >= 1
  */
-static void frac_init(AVFrac *f, int64_t val, int64_t num, int64_t den)
+static void frac_init(FFFrac *f, int64_t val, int64_t num, int64_t den)
 {
     num += (den >> 1);
     if (num >= den) {
@@ -79,7 +79,7 @@ static void frac_init(AVFrac *f, int64_t val, int64_t num, int64_t den)
  * @param f fractional number
  * @param incr increment, can be positive or negative
  */
-static void frac_add(AVFrac *f, int64_t incr)
+static void frac_add(FFFrac *f, int64_t incr)
 {
     int64_t num, den;
 
@@ -250,10 +250,23 @@ static int init_muxer(AVFormatContext *s, AVDictionary **options)
         (ret = av_opt_set_dict2(s->priv_data, &tmp, AV_OPT_SEARCH_CHILDREN)) < 0)
         goto fail;
 
+    if (s->nb_streams && s->streams[0]->codec->flags & AV_CODEC_FLAG_BITEXACT) {
+        if (!(s->flags & AVFMT_FLAG_BITEXACT)) {
 #if FF_API_LAVF_BITEXACT
-    if (s->nb_streams && s->streams[0]->codec->flags & CODEC_FLAG_BITEXACT)
-        s->flags |= AVFMT_FLAG_BITEXACT;
+            av_log(s, AV_LOG_WARNING,
+                   "Setting the AVFormatContext to bitexact mode, because "
+                   "the AVCodecContext is in that mode. This behavior will "
+                   "change in the future. To keep the current behavior, set "
+                   "AVFormatContext.flags |= AVFMT_FLAG_BITEXACT.\n");
+            s->flags |= AVFMT_FLAG_BITEXACT;
+#else
+            av_log(s, AV_LOG_WARNING,
+                   "The AVFormatContext is not in set to bitexact mode, only "
+                   "the AVCodecContext. If this is not intended, set "
+                   "AVFormatContext.flags |= AVFMT_FLAG_BITEXACT.\n");
 #endif
+        }
+    }
 
     // some sanity checks
     if (s->nb_streams == 0 && !(of->flags & AVFMT_NOSTREAMS)) {
@@ -348,7 +361,7 @@ FF_ENABLE_DEPRECATION_WARNINGS
         }
 
         if (of->flags & AVFMT_GLOBALHEADER &&
-            !(codec->flags & CODEC_FLAG_GLOBAL_HEADER))
+            !(codec->flags & AV_CODEC_FLAG_GLOBAL_HEADER))
             av_log(s, AV_LOG_WARNING,
                    "Codec for stream %d does not use global headers "
                    "but container format requires global headers\n", i);
@@ -414,13 +427,19 @@ static int init_pts(AVFormatContext *s)
         default:
             break;
         }
+
+        if (!st->priv_pts)
+            st->priv_pts = av_mallocz(sizeof(*st->priv_pts));
+        if (!st->priv_pts)
+            return AVERROR(ENOMEM);
+
         if (den != AV_NOPTS_VALUE) {
             if (den <= 0)
                 return AVERROR_INVALIDDATA;
 
 #if FF_API_LAVF_FRAC
 FF_DISABLE_DEPRECATION_WARNINGS
-            frac_init(&st->pts, 0, 0, den);
+            frac_init(st->priv_pts, 0, 0, den);
 FF_ENABLE_DEPRECATION_WARNINGS
 #endif
         }
@@ -508,7 +527,7 @@ static int compute_pkt_fields2(AVFormatContext *s, AVStream *st, AVPacket *pkt)
 FF_DISABLE_DEPRECATION_WARNINGS
         pkt->dts =
 //        pkt->pts= st->cur_dts;
-            pkt->pts = st->pts.val;
+            pkt->pts = st->priv_pts->val;
 FF_ENABLE_DEPRECATION_WARNINGS
 #endif
     }
@@ -548,7 +567,7 @@ FF_ENABLE_DEPRECATION_WARNINGS
     st->cur_dts = pkt->dts;
 #if FF_API_LAVF_FRAC
 FF_DISABLE_DEPRECATION_WARNINGS
-    st->pts.val = pkt->dts;
+    st->priv_pts->val = pkt->dts;
 FF_ENABLE_DEPRECATION_WARNINGS
 #endif
 
@@ -564,8 +583,8 @@ FF_ENABLE_DEPRECATION_WARNINGS
          * had the real timestamps from the encoder */
 #if FF_API_LAVF_FRAC
 FF_DISABLE_DEPRECATION_WARNINGS
-        if (frame_size >= 0 && (pkt->size || st->pts.num != st->pts.den >> 1 || st->pts.val)) {
-            frac_add(&st->pts, (int64_t)st->time_base.den * frame_size);
+        if (frame_size >= 0 && (pkt->size || st->priv_pts->num != st->priv_pts->den >> 1 || st->priv_pts->val)) {
+            frac_add(st->priv_pts, (int64_t)st->time_base.den * frame_size);
 FF_ENABLE_DEPRECATION_WARNINGS
 #endif
         }
@@ -573,7 +592,7 @@ FF_ENABLE_DEPRECATION_WARNINGS
     case AVMEDIA_TYPE_VIDEO:
 #if FF_API_LAVF_FRAC
 FF_DISABLE_DEPRECATION_WARNINGS
-        frac_add(&st->pts, (int64_t)st->time_base.den * st->codec->time_base.num);
+        frac_add(st->priv_pts, (int64_t)st->time_base.den * st->codec->time_base.num);
 FF_ENABLE_DEPRECATION_WARNINGS
 #endif
         break;
@@ -661,8 +680,13 @@ static int write_packet(AVFormatContext *s, AVPacket *pkt)
         ret = s->oformat->write_packet(s, pkt);
     }
 
-    if (s->flush_packets && s->pb && ret >= 0 && s->flags & AVFMT_FLAG_FLUSH_PACKETS)
-        avio_flush(s->pb);
+    if (s->pb && ret >= 0) {
+        if (s->flush_packets && s->flags & AVFMT_FLAG_FLUSH_PACKETS)
+            avio_flush(s->pb);
+        if (s->pb->error < 0)
+            ret = s->pb->error;
+    }
+
 
     if (did_split)
         av_packet_merge_side_data(pkt);
@@ -737,11 +761,6 @@ int ff_interleave_add_packet(AVFormatContext *s, AVPacket *pkt,
     if (!this_pktl)
         return AVERROR(ENOMEM);
     this_pktl->pkt = *pkt;
-#if FF_API_DESTRUCT_PACKET
-FF_DISABLE_DEPRECATION_WARNINGS
-    pkt->destruct  = NULL;           // do not free original but only the copy
-FF_ENABLE_DEPRECATION_WARNINGS
-#endif
     pkt->buf       = NULL;
     pkt->side_data = NULL;
     pkt->side_data_elems = 0;
@@ -1065,7 +1084,8 @@ int ff_write_chained(AVFormatContext *dst, int dst_stream, AVPacket *pkt,
     pkt->buf = local_pkt.buf;
 #if FF_API_DESTRUCT_PACKET
 FF_DISABLE_DEPRECATION_WARNINGS
-    pkt->destruct = local_pkt.destruct;
+    pkt->side_data       = local_pkt.side_data;
+    pkt->side_data_elems = local_pkt.side_data_elems;
 FF_ENABLE_DEPRECATION_WARNINGS
 #endif
     return ret;

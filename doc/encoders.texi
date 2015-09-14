@@ -1342,6 +1342,88 @@ disabled
 A description of some of the currently available video encoders
 follows.
 
+@section libopenh264
+
+Cisco libopenh264 H.264/MPEG-4 AVC encoder wrapper.
+
+This encoder requires the presence of the libopenh264 headers and
+library during configuration. You need to explicitly configure the
+build with @code{--enable-libopenh264}. The library is detected using
+@command{pkg-config}.
+
+For more information about the library see
+@url{http://www.openh264.org}.
+
+@subsection Options
+
+The following FFmpeg global options affect the configurations of the
+libopenh264 encoder.
+
+@table @option
+@item b
+Set the bitrate (as a number of bits per second).
+
+@item g
+Set the GOP size.
+
+@item maxrate
+Set the max bitrate (as a number of bits per second).
+
+@item flags +global_header
+Set global header in the bitstream.
+
+@item slices
+Set the number of slices, used in parallelized encoding. Default value
+is 0. This is only used when @option{slice_mode} is set to
+@samp{fixed}.
+
+@item slice_mode
+Set slice mode. Can assume one of the follwing possible values:
+
+@table @samp
+@item fixed
+a fixed number of slices
+@item rowmb
+one slice per row of macroblocks
+@item auto
+automatic number of slices according to number of thread
+@end table
+
+Default value is @samp{auto}.
+
+@item loopfilter
+Enable loop filter, if set to 1 (automatically enabled). To disable
+set a value of 0.
+
+@item profile
+Set profile restrictions. If set to the value of @samp{main} enable
+CABAC (set the @code{SEncParamExt.iEntropyCodingModeFlag} flag to 1).
+@end table
+
+@section jpeg2000
+
+The native jpeg 2000 encoder is lossy by default, the @code{-q:v}
+option can be used to set the encoding quality. Lossless encoding
+can be selected with @code{-pred 1}.
+
+@subsection Options
+
+@table @option
+@item format
+Can be set to either @code{j2k} or @code{jp2} (the default) that
+allows to store non-rgb pix_fmts.
+
+@end table
+
+@section snow
+
+@subsection Options
+
+@table @option
+@item iterative_dia_size
+dia size for the iterative motion estimation
+@end table
+
 @section libtheora
 
 libtheora Theora encoder wrapper.
@@ -1550,6 +1632,18 @@ Enable frame parallel decodability features.
 @item aq-mode
 Set adaptive quantization mode (0: off (default), 1: variance 2: complexity, 3:
 cyclic refresh).
+@item colorspace @emph{color-space}
+Set input color space. The VP9 bitstream supports signaling the following
+colorspaces:
+@table @option
+@item @samp{rgb} @emph{sRGB}
+@item @samp{bt709} @emph{bt709}
+@item @samp{unspecified} @emph{unknown}
+@item @samp{bt470bg} @emph{bt601}
+@item @samp{smpte170m} @emph{smpte170}
+@item @samp{smpte240m} @emph{smpte240}
+@item @samp{bt2020_ncl} @emph{bt2020}
+@end table
 @end table
 
 @end table
@@ -2287,6 +2381,30 @@ Setting a higher @option{bits_per_mb} limit will improve the speed.
 
 For the fastest encoding speed set the @option{qscale} parameter (4 is the
 recommended value) and do not set a size constraint.
+
+@section libkvazaar
+
+Kvazaar H.265/HEVC encoder.
+
+Requires the presence of the libkvazaar headers and library during
+configuration. You need to explicitly configure the build with
+@option{--enable-libkvazaar}.
+
+@subsection Options
+
+@table @option
+
+@item b
+Set target video bitrate in bit/s and enable rate control.
+
+@item threads
+Set number of encoding threads.
+
+@item kvazaar-params
+Set kvazaar parameters as a list of @var{name}=@var{value} pairs separated
+by commas (,). See kvazaar documentation for a list of options.
+
+@end table
 
 @c man end VIDEO ENCODERS
 

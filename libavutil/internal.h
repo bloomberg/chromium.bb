@@ -238,8 +238,8 @@ void avpriv_request_sample(void *avc,
 #if HAVE_LIBC_MSVCRT
 #include <crtversion.h>
 #if defined(_VC_CRT_MAJOR_VERSION) && _VC_CRT_MAJOR_VERSION < 14
-#pragma comment(linker, "/include:"EXTERN_PREFIX"avpriv_strtod")
-#pragma comment(linker, "/include:"EXTERN_PREFIX"avpriv_snprintf")
+#pragma comment(linker, "/include:" EXTERN_PREFIX "avpriv_strtod")
+#pragma comment(linker, "/include:" EXTERN_PREFIX "avpriv_snprintf")
 #endif
 
 #define avpriv_open ff_open
@@ -248,6 +248,12 @@ void avpriv_request_sample(void *avc,
 #else
 #define PTRDIFF_SPECIFIER "td"
 #define SIZE_SPECIFIER "zu"
+#endif
+
+#ifdef DEBUG
+#   define ff_dlog(ctx, ...) av_log(ctx, AV_LOG_DEBUG, __VA_ARGS__)
+#else
+#   define ff_dlog(ctx, ...) do { if (0) av_log(ctx, AV_LOG_DEBUG, __VA_ARGS__); } while (0)
 #endif
 
 /**
@@ -270,10 +276,8 @@ static av_always_inline av_const int avpriv_mirror(int x, int w)
     return x;
 }
 
-#if FF_API_GET_CHANNEL_LAYOUT_COMPAT
-uint64_t ff_get_channel_layout(const char *name, int compat);
-#endif
-
 void ff_check_pixfmt_descriptors(void);
+
+extern const uint8_t ff_reverse[256];
 
 #endif /* AVUTIL_INTERNAL_H */

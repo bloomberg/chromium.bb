@@ -67,11 +67,7 @@ enum Jpeg2000Quantsty { // quantization style
     JPEG2000_QSTY_SE    // scalar expounded
 };
 
-#define JPEG2000_MAX_CBLKW 64
-#define JPEG2000_MAX_CBLKH 64
-
-
-#define JPEG2000_MAX_DECLEVELS 32
+#define JPEG2000_MAX_DECLEVELS 33
 #define JPEG2000_MAX_RESLEVELS (JPEG2000_MAX_DECLEVELS + 1)
 
 #define JPEG2000_MAX_PASSES 100
@@ -123,9 +119,10 @@ enum Jpeg2000Quantsty { // quantization style
 #define JPEG2000_PGOD_CPRL      0x04  // Component-position-resolution level-layer progression
 
 typedef struct Jpeg2000T1Context {
-    int data[JPEG2000_MAX_CBLKW][JPEG2000_MAX_CBLKH];
-    int flags[JPEG2000_MAX_CBLKW + 2][JPEG2000_MAX_CBLKH + 2];
+    int data[6144];
+    uint16_t flags[6156];
     MqcState mqc;
+    int stride;
 } Jpeg2000T1Context;
 
 typedef struct Jpeg2000TgtNode {
@@ -186,6 +183,7 @@ typedef struct Jpeg2000Prec {
     Jpeg2000TgtNode *zerobits;
     Jpeg2000TgtNode *cblkincl;
     Jpeg2000Cblk *cblk;
+    int decoded_layers;
     uint16_t coord[2][2]; // border coordinates {{x0, x1}, {y0, y1}}
 } Jpeg2000Prec; // precinct
 
@@ -217,7 +215,7 @@ typedef struct Jpeg2000Component {
 /* misc tools */
 static inline int ff_jpeg2000_ceildivpow2(int a, int b)
 {
-    return (a + (1 << b) - 1) >> b;
+    return -(((int64_t)(-a)) >> b);
 }
 
 static inline int ff_jpeg2000_ceildiv(int a, int b)

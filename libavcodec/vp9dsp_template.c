@@ -1078,12 +1078,12 @@ def_hor_up(32)
 #endif /* BIT_DEPTH != 12 */
 
 #if BIT_DEPTH != 8
-void vp9dsp_intrapred_init_10(VP9DSPContext *dsp);
+void ff_vp9dsp_intrapred_init_10(VP9DSPContext *dsp);
 #endif
 #if BIT_DEPTH != 10
 static
 #endif
-av_cold void FUNC(vp9dsp_intrapred_init)(VP9DSPContext *dsp)
+av_cold void FUNC(ff_vp9dsp_intrapred_init)(VP9DSPContext *dsp)
 {
 #define init_intra_pred_bd_aware(tx, sz) \
     dsp->intra_pred[tx][TM_VP8_PRED]          = tm_##sz##_c; \
@@ -1092,7 +1092,7 @@ av_cold void FUNC(vp9dsp_intrapred_init)(VP9DSPContext *dsp)
     dsp->intra_pred[tx][DC_129_PRED]          = dc_129_##sz##_c
 
 #if BIT_DEPTH == 12
-    vp9dsp_intrapred_init_10(dsp);
+    ff_vp9dsp_intrapred_init_10(dsp);
 #define init_intra_pred(tx, sz) \
     init_intra_pred_bd_aware(tx, sz)
 #else
@@ -1131,8 +1131,8 @@ static void type_a##_##type_b##_##sz##x##sz##_add_c(uint8_t *_dst, \
 \
     stride /= sizeof(pixel); \
     if (has_dconly && eob == 1) { \
-        const int t  = (((block[0] * 11585 + (1 << 13)) >> 14) \
-                                   * 11585 + (1 << 13)) >> 14; \
+        const int t  = ((((dctint) block[0] * 11585 + (1 << 13)) >> 14) \
+                                            * 11585 + (1 << 13)) >> 14; \
         block[0] = 0; \
         for (i = 0; i < sz; i++) { \
             for (j = 0; j < sz; j++) \
@@ -1186,7 +1186,7 @@ static av_always_inline void idct4_1d(const dctcoef *in, ptrdiff_t stride,
 static av_always_inline void iadst4_1d(const dctcoef *in, ptrdiff_t stride,
                                        dctcoef *out, int pass)
 {
-    int t0, t1, t2, t3;
+    dctint t0, t1, t2, t3;
 
     t0 =  5283 * IN(0) + 15212 * IN(2) +  9929 * IN(3);
     t1 =  9929 * IN(0) -  5283 * IN(2) - 15212 * IN(3);
@@ -2317,15 +2317,15 @@ filter_fn_set(avg)
 #undef bilinf_fn_2d
 
 #if BIT_DEPTH != 8
-void vp9dsp_mc_init_10(VP9DSPContext *dsp);
+void ff_vp9dsp_mc_init_10(VP9DSPContext *dsp);
 #endif
 #if BIT_DEPTH != 10
 static
 #endif
-av_cold void FUNC(vp9dsp_mc_init)(VP9DSPContext *dsp)
+av_cold void FUNC(ff_vp9dsp_mc_init)(VP9DSPContext *dsp)
 {
 #if BIT_DEPTH == 12
-    vp9dsp_mc_init_10(dsp);
+    ff_vp9dsp_mc_init_10(dsp);
 #else /* BIT_DEPTH == 12 */
 
 #define init_fpel(idx1, idx2, sz, type) \
@@ -2555,12 +2555,12 @@ scaled_filter_fn_set(avg)
 #undef scaled_bilinf_fn
 
 #if BIT_DEPTH != 8
-void vp9dsp_scaled_mc_init_10(VP9DSPContext *dsp);
+void ff_vp9dsp_scaled_mc_init_10(VP9DSPContext *dsp);
 #endif
 #if BIT_DEPTH != 10
 static
 #endif
-av_cold void FUNC(vp9dsp_scaled_mc_init)(VP9DSPContext *dsp)
+av_cold void FUNC(ff_vp9dsp_scaled_mc_init)(VP9DSPContext *dsp)
 {
 #define init_scaled_bd_aware(idx1, idx2, sz, type) \
     dsp->smc[idx1][FILTER_8TAP_SMOOTH ][idx2] = type##_scaled_smooth_##sz##_c; \
@@ -2568,7 +2568,7 @@ av_cold void FUNC(vp9dsp_scaled_mc_init)(VP9DSPContext *dsp)
     dsp->smc[idx1][FILTER_8TAP_SHARP  ][idx2] = type##_scaled_sharp_##sz##_c
 
 #if BIT_DEPTH == 12
-    vp9dsp_scaled_mc_init_10(dsp);
+    ff_vp9dsp_scaled_mc_init_10(dsp);
 #define init_scaled(a,b,c,d) init_scaled_bd_aware(a,b,c,d)
 #else
 #define init_scaled(idx1, idx2, sz, type) \
@@ -2593,9 +2593,9 @@ av_cold void FUNC(vp9dsp_scaled_mc_init)(VP9DSPContext *dsp)
 
 av_cold void FUNC(ff_vp9dsp_init)(VP9DSPContext *dsp)
 {
-    FUNC(vp9dsp_intrapred_init)(dsp);
+    FUNC(ff_vp9dsp_intrapred_init)(dsp);
     vp9dsp_itxfm_init(dsp);
     vp9dsp_loopfilter_init(dsp);
-    FUNC(vp9dsp_mc_init)(dsp);
-    FUNC(vp9dsp_scaled_mc_init)(dsp);
+    FUNC(ff_vp9dsp_mc_init)(dsp);
+    FUNC(ff_vp9dsp_scaled_mc_init)(dsp);
 }
