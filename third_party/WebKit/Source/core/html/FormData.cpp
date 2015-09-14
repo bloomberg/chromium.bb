@@ -52,7 +52,7 @@ public:
         if (m_current >= m_formData->size())
             return false;
 
-        const FormData::Entry& entry = m_formData->entries()[m_current++];
+        const FormData::Entry& entry = *m_formData->entries()[m_current++];
         key = m_formData->decode(entry.key());
         if (entry.isString()) {
             value.setUSVString(m_formData->decode(entry.data()));
@@ -131,7 +131,7 @@ void FormData::deleteEntry(const String& name)
     const CString keyData = encodeAndNormalize(name);
     size_t i = 0;
     while (i < m_entries.size()) {
-        if (m_entries[i].key() == keyData) {
+        if (m_entries[i]->key() == keyData) {
             m_entries.remove(i);
         } else {
             ++i;
@@ -144,13 +144,13 @@ void FormData::get(const String& name, FormDataEntryValue& result)
     if (m_opaque)
         return;
     const CString encodedName = encodeAndNormalize(name);
-    for (const Entry& entry : entries()) {
-        if (entry.key() == encodedName) {
-            if (entry.isString()) {
-                result.setUSVString(decode(entry.data()));
+    for (const auto& entry : entries()) {
+        if (entry->key() == encodedName) {
+            if (entry->isString()) {
+                result.setUSVString(decode(entry->data()));
             } else {
-                ASSERT(entry.isFile());
-                result.setFile(entry.file());
+                ASSERT(entry->isFile());
+                result.setFile(entry->file());
             }
             return;
         }
@@ -165,15 +165,15 @@ HeapVector<FormDataEntryValue> FormData::getAll(const String& name)
         return results;
 
     const CString encodedName = encodeAndNormalize(name);
-    for (const Entry& entry : entries()) {
-        if (entry.key() != encodedName)
+    for (const auto& entry : entries()) {
+        if (entry->key() != encodedName)
             continue;
         FormDataEntryValue value;
-        if (entry.isString()) {
-            value.setUSVString(decode(entry.data()));
+        if (entry->isString()) {
+            value.setUSVString(decode(entry->data()));
         } else {
-            ASSERT(entry.isFile());
-            value.setFile(entry.file());
+            ASSERT(entry->isFile());
+            value.setFile(entry->file());
         }
         results.append(value);
     }
@@ -185,8 +185,8 @@ bool FormData::has(const String& name)
     if (m_opaque)
         return false;
     const CString keyData = encodeAndNormalize(name);
-    for (const Entry& entry : entries()) {
-        if (entry.key() == keyData)
+    for (const auto& entry : entries()) {
+        if (entry->key() == keyData)
             return true;
     }
     return false;
@@ -194,21 +194,22 @@ bool FormData::has(const String& name)
 
 void FormData::set(const String& name, const String& value)
 {
-    setEntry(Entry(encodeAndNormalize(name), encodeAndNormalize(value)));
+    setEntry(new Entry(encodeAndNormalize(name), encodeAndNormalize(value)));
 }
 
 void FormData::set(const String& name, Blob* blob, const String& filename)
 {
-    setEntry(Entry(encodeAndNormalize(name), blob, filename));
+    setEntry(new Entry(encodeAndNormalize(name), blob, filename));
 }
 
-void FormData::setEntry(const Entry& entry)
+void FormData::setEntry(const Entry* entry)
 {
-    const CString keyData = entry.key();
+    ASSERT(entry);
+    const CString keyData = entry->key();
     bool found = false;
     size_t i = 0;
     while (i < m_entries.size()) {
-        if (m_entries[i].key() != keyData) {
+        if (m_entries[i]->key() != keyData) {
             ++i;
         } else if (found) {
             m_entries.remove(i);
@@ -224,17 +225,17 @@ void FormData::setEntry(const Entry& entry)
 
 void FormData::appendData(const String& key, const String& value)
 {
-    m_entries.append(Entry(encodeAndNormalize(key), encodeAndNormalize(value)));
+    m_entries.append(new Entry(encodeAndNormalize(key), encodeAndNormalize(value)));
 }
 
 void FormData::appendData(const String& key, int value)
 {
-    m_entries.append(Entry(encodeAndNormalize(key), encodeAndNormalize(String::number(value))));
+    appendData(key, String::number(value));
 }
 
 void FormData::appendBlob(const String& key, Blob* blob, const String& filename)
 {
-    m_entries.append(Entry(encodeAndNormalize(key), blob, filename));
+    m_entries.append(new Entry(encodeAndNormalize(key), blob, filename));
 }
 
 CString FormData::encodeAndNormalize(const String& string) const
@@ -252,8 +253,8 @@ PassRefPtr<EncodedFormData> FormData::encodeFormData(EncodedFormData::EncodingTy
 {
     RefPtr<EncodedFormData> formData = EncodedFormData::create();
     Vector<char> encodedData;
-    for (const Entry& entry : entries())
-        FormDataEncoder::addKeyValuePairAsFormData(encodedData, entry.key(), entry.data(), encodingType);
+    for (const auto& entry : entries())
+        FormDataEncoder::addKeyValuePairAsFormData(encodedData, entry->key(), entry->data(), encodingType);
     formData->appendData(encodedData.data(), encodedData.size());
     return formData.release();
 }
@@ -263,29 +264,29 @@ PassRefPtr<EncodedFormData> FormData::encodeMultiPartFormData()
     RefPtr<EncodedFormData> formData = EncodedFormData::create();
     formData->setBoundary(FormDataEncoder::generateUniqueBoundaryString());
     Vector<char> encodedData;
-    for (const Entry& entry : entries()) {
+    for (const auto& entry : entries()) {
         Vector<char> header;
-        FormDataEncoder::beginMultiPartHeader(header, formData->boundary().data(), entry.key());
+        FormDataEncoder::beginMultiPartHeader(header, formData->boundary().data(), entry->key());
 
         // If the current type is blob, then we also need to include the
         // filename.
-        if (entry.blob()) {
+        if (entry->blob()) {
             String name;
-            if (entry.blob()->isFile()) {
-                File* file = toFile(entry.blob());
+            if (entry->blob()->isFile()) {
+                File* file = toFile(entry->blob());
                 // For file blob, use the filename (or relative path if it is
                 // present) as the name.
                 name = file->webkitRelativePath().isEmpty() ? file->name() : file->webkitRelativePath();
 
                 // If a filename is passed in FormData.append(), use it instead
                 // of the file blob's name.
-                if (!entry.filename().isNull())
-                    name = entry.filename();
+                if (!entry->filename().isNull())
+                    name = entry->filename();
             } else {
                 // For non-file blob, use the filename if it is passed in
                 // FormData.append().
-                if (!entry.filename().isNull())
-                    name = entry.filename();
+                if (!entry->filename().isNull())
+                    name = entry->filename();
                 else
                     name = "blob";
             }
@@ -297,10 +298,10 @@ PassRefPtr<EncodedFormData> FormData::encodeMultiPartFormData()
             // Add the content type if available, or "application/octet-stream"
             // otherwise (RFC 1867).
             String contentType;
-            if (entry.blob()->type().isEmpty())
+            if (entry->blob()->type().isEmpty())
                 contentType = "application/octet-stream";
             else
-                contentType = entry.blob()->type();
+                contentType = entry->blob()->type();
             FormDataEncoder::addContentTypeToMultiPartHeader(header, contentType.latin1());
         }
 
@@ -308,19 +309,19 @@ PassRefPtr<EncodedFormData> FormData::encodeMultiPartFormData()
 
         // Append body
         formData->appendData(header.data(), header.size());
-        if (entry.blob()) {
-            if (entry.blob()->hasBackingFile()) {
-                File* file = toFile(entry.blob());
+        if (entry->blob()) {
+            if (entry->blob()->hasBackingFile()) {
+                File* file = toFile(entry->blob());
                 // Do not add the file if the path is empty.
                 if (!file->path().isEmpty())
                     formData->appendFile(file->path());
                 if (!file->fileSystemURL().isEmpty())
                     formData->appendFileSystemURL(file->fileSystemURL());
             } else {
-                formData->appendBlob(entry.blob()->uuid(), entry.blob()->blobDataHandle());
+                formData->appendBlob(entry->blob()->uuid(), entry->blob()->blobDataHandle());
             }
         } else {
-            formData->appendData(entry.data().data(), entry.data().length());
+            formData->appendData(entry->data().data(), entry->data().length());
         }
         formData->appendData("\r\n", 2);
     }

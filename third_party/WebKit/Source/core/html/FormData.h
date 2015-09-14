@@ -80,7 +80,7 @@ public:
 
     const WTF::TextEncoding& encoding() const { return m_encoding; }
     class Entry;
-    const HeapVector<Entry>& entries() const { return m_entries; }
+    const HeapVector<Member<const Entry>>& entries() const { return m_entries; }
     size_t size() const { return m_entries.size(); }
     // TODO(tkent): Rename appendFoo functions to |append| for consistency with
     // public function.
@@ -95,19 +95,20 @@ public:
 private:
     explicit FormData(const WTF::TextEncoding&);
     explicit FormData(HTMLFormElement*);
-    void setEntry(const Entry&);
+    void setEntry(const Entry*);
     CString encodeAndNormalize(const String& key) const;
     IterationSource* startIteration(ScriptState*, ExceptionState&) override;
 
     WTF::TextEncoding m_encoding;
-    HeapVector<Entry> m_entries;
+    // Entry pointers in m_entries never be nullptr.
+    HeapVector<Member<const Entry>> m_entries;
     bool m_opaque;
 };
 
 // Represents entry, which is a pair of a name and a value.
 // https://xhr.spec.whatwg.org/#concept-formdata-entry
-class FormData::Entry {
-    ALLOW_ONLY_INLINE_ALLOCATION();
+// Entry objects are immutable.
+class FormData::Entry : public GarbageCollectedFinalized<FormData::Entry> {
 public:
     Entry(const CString& key, const CString& data) : m_key(key), m_data(data) { }
     Entry(const CString& key, Blob* blob, const String& filename) : m_key(key), m_blob(blob), m_filename(filename) { }
@@ -122,14 +123,12 @@ public:
     const String& filename() const { return m_filename; }
 
 private:
-    CString m_key;
-    CString m_data;
-    Member<Blob> m_blob;
-    String m_filename;
+    const CString m_key;
+    const CString m_data;
+    const Member<Blob> m_blob;
+    const String m_filename;
 };
 
 } // namespace blink
-
-WTF_ALLOW_INIT_WITH_MEM_FUNCTIONS(blink::FormData::Entry);
 
 #endif // FormData_h
