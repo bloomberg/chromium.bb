@@ -131,12 +131,12 @@ all other OS specific variables will be false.
   <release seq="1" allow_pseudo="false">
     <messages fallback_to_english="true">
       <!-- The default value for HTTP Accept-Language header. -->
-      <message name="IDS_IOS_ACCEPT_LANGUAGES" use_name_for_id="true">
+      <message name="IDS_IOS_ACCEPT_LANGUAGES" translateable="false">
         en-US,en
       </message>
 
       <!-- The default value for |WebPreference::default_encoding|. -->
-      <message name="IDS_IOS_DEFAULT_ENCODING" use_name_for_id="true">
+      <message name="IDS_IOS_DEFAULT_ENCODING" translateable="false">
         windows-1252
       </message>
 
