@@ -9,6 +9,9 @@
 
 #include "content/common/content_export.h"
 #include "content/common/resource_request_body.h"
+#include "content/common/service_worker/service_worker_types.h"
+#include "content/public/common/request_context_frame_type.h"
+#include "content/public/common/request_context_type.h"
 #include "content/public/common/resource_type.h"
 
 namespace blink {
@@ -30,6 +33,19 @@ int GetLoadFlagsForWebURLRequest(const blink::WebURLRequest& request);
 // in a ResourceRequestBody structure. Returns an empty scoped_refptr
 // if the request body is not present.
 scoped_refptr<ResourceRequestBody> GetRequestBodyForWebURLRequest(
+    const blink::WebURLRequest& request);
+
+// Helper functions to convert enums from the blink type to the content
+// type.
+FetchRequestMode GetFetchRequestModeForWebURLRequest(
+    const blink::WebURLRequest& request);
+FetchCredentialsMode GetFetchCredentialsModeForWebURLRequest(
+    const blink::WebURLRequest& request);
+FetchRedirectMode GetFetchRedirectModeForWebURLRequest(
+    const blink::WebURLRequest& request);
+RequestContextFrameType GetRequestContextFrameTypeForWebURLRequest(
+    const blink::WebURLRequest& request);
+RequestContextType GetRequestContextTypeForWebURLRequest(
     const blink::WebURLRequest& request);
 
 // Generates a WebURLError based on |reason|.
