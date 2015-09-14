@@ -1237,4 +1237,33 @@ TEST_F(TaskQueueManagerTest, UnregisterTaskQueue_WithDelayedTasks) {
   ASSERT_THAT(run_order, ElementsAre(1, 3));
 }
 
+void PostTestTasksFromNestedMessageLoop(
+    base::MessageLoop* message_loop,
+    scoped_refptr<base::SingleThreadTaskRunner> main_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> wake_up_runner,
+    std::vector<int>* run_order) {
+  base::MessageLoop::ScopedNestableTaskAllower allow(message_loop);
+  main_runner->PostNonNestableTask(FROM_HERE,
+                                   base::Bind(&TestTask, 1, run_order));
+  // The following should never get executed.
+  wake_up_runner->PostTask(FROM_HERE, base::Bind(&TestTask, 2, run_order));
+  message_loop->RunUntilIdle();
+}
+
+TEST_F(TaskQueueManagerTest, DeferredNonNestableTaskDoesNotTriggerWakeUp) {
+  // This test checks that running (i.e., deferring) a non-nestable task in a
+  // nested run loop does not trigger the pumping of an on-wakeup queue.
+  InitializeWithRealMessageLoop(2u);
+  runners_[1]->SetPumpPolicy(TaskQueue::PumpPolicy::AFTER_WAKEUP);
+
+  std::vector<int> run_order;
+  runners_[0]->PostTask(
+      FROM_HERE,
+      base::Bind(&PostTestTasksFromNestedMessageLoop, message_loop_.get(),
+                 runners_[0], runners_[1], base::Unretained(&run_order)));
+
+  message_loop_->RunUntilIdle();
+  ASSERT_THAT(run_order, ElementsAre(1));
+}
+
 }  // namespace scheduler

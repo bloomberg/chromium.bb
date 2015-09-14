@@ -281,9 +281,17 @@ void TaskQueueManager::DoWork(bool decrement_pending_dowork_count) {
     if (!SelectQueueToService(&queue))
       break;
 
-    if (ProcessTaskFromWorkQueue(queue, &previous_task))
-      return;  // The TaskQueueManager got deleted, we must bail out.
-
+    switch (ProcessTaskFromWorkQueue(queue, &previous_task)) {
+      case ProcessTaskResult::DEFERRED:
+        // If a task was deferred, try again with another task. Note that this
+        // means deferred tasks (i.e. non-nestable tasks) will never trigger
+        // queue wake-ups.
+        continue;
+      case ProcessTaskResult::EXECUTED:
+        break;
+      case ProcessTaskResult::TASK_QUEUE_MANAGER_DELETED:
+        return;  // The TaskQueueManager got deleted, we must bail out.
+    }
     bool should_trigger_wakeup = queue->wakeup_policy() ==
                                  TaskQueue::WakeupPolicy::CAN_WAKE_OTHER_QUEUES;
     UpdateWorkQueues(should_trigger_wakeup, &previous_task);
@@ -315,7 +323,7 @@ void TaskQueueManager::DidQueueTask(
   task_annotator_.DidQueueTask("TaskQueueManager::PostTask", pending_task);
 }
 
-bool TaskQueueManager::ProcessTaskFromWorkQueue(
+TaskQueueManager::ProcessTaskResult TaskQueueManager::ProcessTaskFromWorkQueue(
     internal::TaskQueueImpl* queue,
     internal::TaskQueueImpl::Task* out_previous_task) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
@@ -333,33 +341,34 @@ bool TaskQueueManager::ProcessTaskFromWorkQueue(
     // task is associated with. See http://crbug.com/522843.
     main_task_runner_->PostNonNestableTask(pending_task.posted_from,
                                            pending_task.task);
-  } else {
-    TRACE_TASK_EXECUTION("TaskQueueManager::ProcessTaskFromWorkQueue",
-                         pending_task);
-    if (queue->GetShouldNotifyObservers()) {
-      FOR_EACH_OBSERVER(base::MessageLoop::TaskObserver, task_observers_,
-                        WillProcessTask(pending_task));
-      queue->NotifyWillProcessTask(pending_task);
-    }
-    TRACE_EVENT1(disabled_by_default_tracing_category_,
-                 "Run Task From Queue", "queue", queue->GetName());
-    task_annotator_.RunTask("TaskQueueManager::PostTask", pending_task);
-
-    // Detect if the TaskQueueManager just got deleted.  If this happens we must
-    // not access any member variables after this point.
-    if (protect->HasOneRef())
-      return true;
-
-    if (queue->GetShouldNotifyObservers()) {
-      FOR_EACH_OBSERVER(base::MessageLoop::TaskObserver, task_observers_,
-                        DidProcessTask(pending_task));
-      queue->NotifyDidProcessTask(pending_task);
-    }
-
-    pending_task.task.Reset();
-    *out_previous_task = pending_task;
+    return ProcessTaskResult::DEFERRED;
   }
-  return false;
+
+  TRACE_TASK_EXECUTION("TaskQueueManager::ProcessTaskFromWorkQueue",
+                       pending_task);
+  if (queue->GetShouldNotifyObservers()) {
+    FOR_EACH_OBSERVER(base::MessageLoop::TaskObserver, task_observers_,
+                      WillProcessTask(pending_task));
+    queue->NotifyWillProcessTask(pending_task);
+  }
+  TRACE_EVENT1(disabled_by_default_tracing_category_,
+               "Run Task From Queue", "queue", queue->GetName());
+  task_annotator_.RunTask("TaskQueueManager::PostTask", pending_task);
+
+  // Detect if the TaskQueueManager just got deleted.  If this happens we must
+  // not access any member variables after this point.
+  if (protect->HasOneRef())
+    return ProcessTaskResult::TASK_QUEUE_MANAGER_DELETED;
+
+  if (queue->GetShouldNotifyObservers()) {
+    FOR_EACH_OBSERVER(base::MessageLoop::TaskObserver, task_observers_,
+                      DidProcessTask(pending_task));
+    queue->NotifyDidProcessTask(pending_task);
+  }
+
+  pending_task.task.Reset();
+  *out_previous_task = pending_task;
+  return ProcessTaskResult::EXECUTED;
 }
 
 bool TaskQueueManager::RunsTasksOnCurrentThread() const {

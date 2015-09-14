@@ -37,9 +37,7 @@ class SCHEDULER_EXPORT TaskQueueImpl final : public TaskQueue {
 
     int enqueue_order() const {
 #ifndef NDEBUG
-      // Temporarily commenting out this DCHECK for breaking multiple tests:
-      // (crbug.com/530593)
-      // DCHECK(enqueue_order_set_);
+      DCHECK(enqueue_order_set_);
 #endif
       return enqueue_order_;
     }

@@ -134,9 +134,13 @@ class SCHEDULER_EXPORT TaskQueueManager
 
   // Runs a single nestable task from the |queue|. On exit, |out_task| will
   // contain the task which was executed. Non-nestable task are reposted on the
-  // run loop. The queue must not be empty. Returns true if the TaskQueueManager
-  // got deleted, and false otherwise.
-  bool ProcessTaskFromWorkQueue(
+  // run loop. The queue must not be empty.
+  enum class ProcessTaskResult {
+    DEFERRED,
+    EXECUTED,
+    TASK_QUEUE_MANAGER_DELETED
+  };
+  ProcessTaskResult ProcessTaskFromWorkQueue(
       internal::TaskQueueImpl* queue,
       internal::TaskQueueImpl::Task* out_previous_task);
 
