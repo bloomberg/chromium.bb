@@ -59,7 +59,7 @@ private:
         ASSERT(result);
         ASSERT(&result->type() == &m_type);
         ASSERT(result->nonInterpolableValue() == m_nonInterpolableValue.get());
-        m_start->interpolate(*m_end, fraction, result->interpolableValue());
+        m_start->interpolate(*m_end, fraction, *result->mutableComponent().interpolableValue);
     }
 
     double interpolateUnderlyingFraction(double start, double end, double fraction) const final { return blend(start, end, fraction); }

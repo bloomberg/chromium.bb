@@ -13,6 +13,18 @@ namespace blink {
 
 class InterpolationType;
 
+struct InterpolationComponentValue {
+    ALLOW_ONLY_INLINE_ALLOCATION();
+
+    InterpolationComponentValue(PassOwnPtr<InterpolableValue> interpolableValue = nullptr, PassRefPtr<NonInterpolableValue> nonInterpolableValue = nullptr)
+        : interpolableValue(interpolableValue)
+        , nonInterpolableValue(nonInterpolableValue)
+    { }
+
+    OwnPtr<InterpolableValue> interpolableValue;
+    RefPtr<NonInterpolableValue> nonInterpolableValue;
+};
+
 class InterpolationValue {
 public:
     static PassOwnPtr<InterpolationValue> create(const InterpolationType& type, PassOwnPtr<InterpolableValue> interpolableValue, PassRefPtrWillBeRawPtr<NonInterpolableValue> nonInterpolableValue = nullptr)
@@ -22,28 +34,25 @@ public:
 
     PassOwnPtr<InterpolationValue> clone() const
     {
-        return create(m_type, m_interpolableValue->clone(), m_nonInterpolableValue);
+        return create(m_type, m_component.interpolableValue->clone(), m_component.nonInterpolableValue);
     }
 
     const InterpolationType& type() const { return m_type; }
-    const InterpolableValue& interpolableValue() const { return *m_interpolableValue; }
-    InterpolableValue& interpolableValue() { return *m_interpolableValue; }
-    const NonInterpolableValue* nonInterpolableValue() const { return m_nonInterpolableValue.get(); }
+    const InterpolableValue& interpolableValue() const { return *m_component.interpolableValue; }
+    const NonInterpolableValue* nonInterpolableValue() const { return m_component.nonInterpolableValue.get(); }
+
+    InterpolationComponentValue& mutableComponent() { return m_component; }
 
 private:
     InterpolationValue(const InterpolationType& type, PassOwnPtr<InterpolableValue> interpolableValue, PassRefPtrWillBeRawPtr<NonInterpolableValue> nonInterpolableValue = nullptr)
         : m_type(type)
-        , m_interpolableValue(interpolableValue)
-        , m_nonInterpolableValue(nonInterpolableValue)
+        , m_component(interpolableValue, nonInterpolableValue)
     {
-        ASSERT(this->m_interpolableValue);
+        ASSERT(m_component.interpolableValue);
     }
 
     const InterpolationType& m_type;
-    OwnPtr<InterpolableValue> m_interpolableValue;
-    RefPtrWillBePersistent<NonInterpolableValue> m_nonInterpolableValue;
-
-    friend class InterpolationType;
+    InterpolationComponentValue m_component;
 };
 
 } // namespace blink

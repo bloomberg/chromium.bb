@@ -45,6 +45,7 @@ private:
     bool maybeCachePairwiseConversion(const StyleResolverState*, const InterpolationValue* underlyingValue) const;
     PassOwnPtr<InterpolationValue> convertSingleKeyframe(const CSSPropertySpecificKeyframe&, const StyleResolverState&, const InterpolationValue* underlyingValue) const;
     void setFlagIfInheritUsed(StyleResolverState&) const;
+    double underlyingFraction() const;
 
     const Vector<const InterpolationType*>& m_interpolationTypes;
     const CSSPropertySpecificKeyframe* m_startKeyframe;

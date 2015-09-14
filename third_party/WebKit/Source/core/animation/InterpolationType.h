@@ -6,6 +6,7 @@
 #define InterpolationType_h
 
 #include "core/animation/InterpolableValue.h"
+#include "core/animation/InterpolationValue.h"
 #include "core/animation/NonInterpolableValue.h"
 #include "core/animation/PrimitiveInterpolation.h"
 #include "core/animation/StringKeyframe.h"
@@ -46,7 +47,12 @@ public:
         OwnPtr<InterpolationValue> endValue = maybeConvertSingle(endKeyframe, state, conversionCheckers);
         if (!endValue)
             return nullptr;
-        return PairwisePrimitiveInterpolation::create(*this, startValue->m_interpolableValue.release(), endValue->m_interpolableValue.release(), startValue->m_nonInterpolableValue.release());
+        ASSERT(!startValue->nonInterpolableValue());
+        ASSERT(!endValue->nonInterpolableValue());
+        return PairwisePrimitiveInterpolation::create(*this,
+            startValue->mutableComponent().interpolableValue.release(),
+            endValue->mutableComponent().interpolableValue.release(),
+            nullptr);
     }
 
     virtual PassOwnPtr<InterpolationValue> maybeConvertSingle(const CSSPropertySpecificKeyframe& keyframe, const StyleResolverState* state, ConversionCheckers& conversionCheckers) const
