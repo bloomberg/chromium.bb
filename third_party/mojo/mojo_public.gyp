@@ -104,7 +104,6 @@
         'src/mojo/public/cpp/bindings/array.h',
         'src/mojo/public/cpp/bindings/binding.h',
         'src/mojo/public/cpp/bindings/callback.h',
-        'src/mojo/public/cpp/bindings/interface_impl.h',
         'src/mojo/public/cpp/bindings/interface_ptr.h',
         'src/mojo/public/cpp/bindings/interface_request.h',
         'src/mojo/public/cpp/bindings/message.h',
