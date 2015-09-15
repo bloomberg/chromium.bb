@@ -282,10 +282,6 @@ class CONTENT_EXPORT ServiceWorkerDispatcher : public WorkerThread::Observer {
   WorkerObjectMap service_workers_;
   RegistrationObjectMap registrations_;
 
-  // A map for ServiceWorkers that are associated to a particular document
-  // (e.g. as .current).
-  WorkerToProviderMap worker_to_provider_;
-
   scoped_refptr<ThreadSafeSender> thread_safe_sender_;
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
 

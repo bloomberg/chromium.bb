@@ -47,6 +47,7 @@ ServiceWorkerHandleReference* ServiceWorkerProviderContext::controller() {
 bool ServiceWorkerProviderContext::GetRegistrationInfoAndVersionAttributes(
     ServiceWorkerRegistrationObjectInfo* info,
     ServiceWorkerVersionAttributes* attrs) {
+  DCHECK(!main_thread_task_runner_->RunsTasksOnCurrentThread());
   base::AutoLock lock(lock_);
   if (!registration_)
     return false;
@@ -112,32 +113,6 @@ void ServiceWorkerProviderContext::OnDisassociateRegistration() {
   registration_.reset();
 }
 
-void ServiceWorkerProviderContext::OnServiceWorkerStateChanged(
-    int handle_id,
-    blink::WebServiceWorkerState state) {
-  base::AutoLock lock(lock_);
-  DCHECK(main_thread_task_runner_->RunsTasksOnCurrentThread());
-
-  ServiceWorkerHandleReference* which = NULL;
-  if (handle_id == controller_handle_id())
-    which = controller_.get();
-  else if (handle_id == active_handle_id())
-    which = active_.get();
-  else if (handle_id == waiting_handle_id())
-    which = waiting_.get();
-  else if (handle_id == installing_handle_id())
-    which = installing_.get();
-
-  // We should only get messages for ServiceWorkers associated with
-  // this provider.
-  DCHECK(which);
-
-  which->set_state(state);
-
-  // TODO(kinuko): We can forward the message to other threads here
-  // when we support navigator.serviceWorker in dedicated workers.
-}
-
 void ServiceWorkerProviderContext::OnSetControllerServiceWorker(
     const ServiceWorkerObjectInfo& info) {
   DCHECK(main_thread_task_runner_->RunsTasksOnCurrentThread());
@@ -150,24 +125,6 @@ void ServiceWorkerProviderContext::OnSetControllerServiceWorker(
 
   // TODO(kinuko): We can forward the message to other threads here
   // when we support navigator.serviceWorker in dedicated workers.
-}
-
-int ServiceWorkerProviderContext::installing_handle_id() const {
-  DCHECK(main_thread_task_runner_->RunsTasksOnCurrentThread());
-  return installing_ ? installing_->info().handle_id
-                     : kInvalidServiceWorkerHandleId;
-}
-
-int ServiceWorkerProviderContext::waiting_handle_id() const {
-  DCHECK(main_thread_task_runner_->RunsTasksOnCurrentThread());
-  return waiting_ ? waiting_->info().handle_id
-                  : kInvalidServiceWorkerHandleId;
-}
-
-int ServiceWorkerProviderContext::active_handle_id() const {
-  DCHECK(main_thread_task_runner_->RunsTasksOnCurrentThread());
-  return active_ ? active_->info().handle_id
-                 : kInvalidServiceWorkerHandleId;
 }
 
 int ServiceWorkerProviderContext::controller_handle_id() const {

@@ -220,10 +220,6 @@ void ServiceWorkerDispatcher::RemoveProviderContext(
   DCHECK(provider_context);
   DCHECK(ContainsKey(provider_contexts_, provider_context->provider_id()));
   provider_contexts_.erase(provider_context->provider_id());
-  worker_to_provider_.erase(provider_context->installing_handle_id());
-  worker_to_provider_.erase(provider_context->waiting_handle_id());
-  worker_to_provider_.erase(provider_context->active_handle_id());
-  worker_to_provider_.erase(provider_context->controller_handle_id());
 }
 
 void ServiceWorkerDispatcher::AddProviderClient(
@@ -347,12 +343,6 @@ void ServiceWorkerDispatcher::OnAssociateRegistration(
   if (provider == provider_contexts_.end())
     return;
   provider->second->OnAssociateRegistration(info, attrs);
-  if (attrs.installing.handle_id != kInvalidServiceWorkerHandleId)
-    worker_to_provider_[attrs.installing.handle_id] = provider->second;
-  if (attrs.waiting.handle_id != kInvalidServiceWorkerHandleId)
-    worker_to_provider_[attrs.waiting.handle_id] = provider->second;
-  if (attrs.active.handle_id != kInvalidServiceWorkerHandleId)
-    worker_to_provider_[attrs.active.handle_id] = provider->second;
 }
 
 void ServiceWorkerDispatcher::OnDisassociateRegistration(
@@ -361,10 +351,6 @@ void ServiceWorkerDispatcher::OnDisassociateRegistration(
   ProviderContextMap::iterator provider = provider_contexts_.find(provider_id);
   if (provider == provider_contexts_.end())
     return;
-  worker_to_provider_.erase(provider->second->installing_handle_id());
-  worker_to_provider_.erase(provider->second->waiting_handle_id());
-  worker_to_provider_.erase(provider->second->active_handle_id());
-  worker_to_provider_.erase(provider->second->controller_handle_id());
   provider->second->OnDisassociateRegistration();
 }
 
@@ -640,10 +626,6 @@ void ServiceWorkerDispatcher::OnServiceWorkerStateChanged(
   WorkerObjectMap::iterator worker = service_workers_.find(handle_id);
   if (worker != service_workers_.end())
     worker->second->OnStateChanged(state);
-
-  WorkerToProviderMap::iterator provider = worker_to_provider_.find(handle_id);
-  if (provider != worker_to_provider_.end())
-    provider->second->OnServiceWorkerStateChanged(handle_id, state);
 }
 
 void ServiceWorkerDispatcher::OnSetVersionAttributes(
@@ -660,21 +642,6 @@ void ServiceWorkerDispatcher::OnSetVersionAttributes(
   ProviderContextMap::iterator provider = provider_contexts_.find(provider_id);
   if (provider != provider_contexts_.end() &&
       provider->second->registration_handle_id() == registration_handle_id) {
-    if (mask.installing_changed()) {
-      worker_to_provider_.erase(provider->second->installing_handle_id());
-      if (attrs.installing.handle_id != kInvalidServiceWorkerHandleId)
-        worker_to_provider_[attrs.installing.handle_id] = provider->second;
-    }
-    if (mask.waiting_changed()) {
-      worker_to_provider_.erase(provider->second->waiting_handle_id());
-      if (attrs.waiting.handle_id != kInvalidServiceWorkerHandleId)
-        worker_to_provider_[attrs.waiting.handle_id] = provider->second;
-    }
-    if (mask.active_changed()) {
-      worker_to_provider_.erase(provider->second->active_handle_id());
-      if (attrs.active.handle_id != kInvalidServiceWorkerHandleId)
-        worker_to_provider_[attrs.active.handle_id] = provider->second;
-    }
     provider->second->SetVersionAttributes(mask, attrs);
   }
 
@@ -713,12 +680,8 @@ void ServiceWorkerDispatcher::OnSetControllerServiceWorker(
                "Provider ID", provider_id);
 
   ProviderContextMap::iterator provider = provider_contexts_.find(provider_id);
-  if (provider != provider_contexts_.end()) {
-    worker_to_provider_.erase(provider->second->controller_handle_id());
-    if (info.handle_id != kInvalidServiceWorkerHandleId)
-      worker_to_provider_[info.handle_id] = provider->second;
+  if (provider != provider_contexts_.end())
     provider->second->OnSetControllerServiceWorker(info);
-  }
 
   ProviderClientMap::iterator found = provider_clients_.find(provider_id);
   if (found != provider_clients_.end()) {

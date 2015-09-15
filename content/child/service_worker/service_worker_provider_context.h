@@ -29,8 +29,8 @@ struct ServiceWorkerProviderContextDeleter;
 class ThreadSafeSender;
 
 // An instance of this class holds information related to Document/Worker.
-// Created and destructed on the main thread. Some functions can be called
-// on the worker thread (eg. GetVersionAttributes).
+// Created and destructed on the main thread. Unless otherwise noted, all
+// methods are called on the main thread.
 class ServiceWorkerProviderContext
     : public base::RefCountedThreadSafe<ServiceWorkerProviderContext,
                                         ServiceWorkerProviderContextDeleter> {
@@ -41,34 +41,19 @@ class ServiceWorkerProviderContext
   void OnAssociateRegistration(const ServiceWorkerRegistrationObjectInfo& info,
                                const ServiceWorkerVersionAttributes& attrs);
   void OnDisassociateRegistration();
-  void OnServiceWorkerStateChanged(int handle_id,
-                                   blink::WebServiceWorkerState state);
   void OnSetControllerServiceWorker(const ServiceWorkerObjectInfo& info);
 
   int provider_id() const { return provider_id_; }
 
   ServiceWorkerHandleReference* controller();
 
+  // Called on the worker thread.
   bool GetRegistrationInfoAndVersionAttributes(
       ServiceWorkerRegistrationObjectInfo* info,
       ServiceWorkerVersionAttributes* attrs);
+
   void SetVersionAttributes(ChangedVersionAttributesMask mask,
                             const ServiceWorkerVersionAttributes& attrs);
-
-  // Gets the handle ID of the installing Service Worker, or
-  // kInvalidServiceWorkerHandleId if the provider does not have a
-  // installing Service Worker.
-  int installing_handle_id() const;
-
-  // Gets the handle ID of the waiting Service Worker, or
-  // kInvalidServiceWorkerHandleId if the provider does not have a
-  // waiting Service Worker.
-  int waiting_handle_id() const;
-
-  // Gets the handle ID of the active Service Worker, or
-  // kInvalidServiceWorkerHandleId if the provider does not have an active
-  // Service Worker.
-  int active_handle_id() const;
 
   // Gets the handle ID of the controller Service Worker, or
   // kInvalidServiceWorkerHandleId if the provider is not controlled
