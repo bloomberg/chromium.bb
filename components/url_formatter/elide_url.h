@@ -64,8 +64,22 @@ base::string16 ElideHost(const GURL& host_url,
 // - Omits the port if it is the default for the scheme.
 //
 // Do not use this for URLs which will be parsed or sent to other applications.
+//
+// Generally, set prefer this function to
+// |FormatUrlForSecurityDisplayOmitScheme| unless there is plenty of indication
+// as to whether the origin is secure elsewhere in the UX. For example, in
+// Chrome's Origin Info Bubble, there are icons and strings indicating origin
+// (non-)security. But in the HTTP Basic Auth prompt (for example), the scheme
+// may be the only indicator.
 base::string16 FormatUrlForSecurityDisplay(const GURL& origin,
                                            const std::string& languages);
+
+// Just like |FormatUrlForSecurityDisplay|, but also:
+//
+// - Omits the scheme if SchemeIsHTTPOrHTTPS().
+base::string16 FormatUrlForSecurityDisplayOmitScheme(
+    const GURL& origin,
+    const std::string& languages);
 
 }  // namespace url_formatter
 

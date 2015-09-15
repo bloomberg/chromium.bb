@@ -103,6 +103,53 @@ void SplitHost(const GURL& url,
 }
 
 #endif  // !defined(OS_ANDROID)
+
+base::string16 FormatUrlForSecurityDisplayInternal(const GURL& url,
+                                                   const std::string& languages,
+                                                   bool omit_scheme) {
+  if (!url.is_valid() || url.is_empty() || !url.IsStandard())
+    return url_formatter::FormatUrl(url, languages);
+
+  const base::string16 colon(base::ASCIIToUTF16(":"));
+  const base::string16 scheme_separator(
+      base::ASCIIToUTF16(url::kStandardSchemeSeparator));
+
+  if (url.SchemeIsFile()) {
+    return base::ASCIIToUTF16(url::kFileScheme) + scheme_separator +
+           base::UTF8ToUTF16(url.path());
+  }
+
+  if (url.SchemeIsFileSystem()) {
+    const GURL* inner_url = url.inner_url();
+    if (inner_url->SchemeIsFile()) {
+      return base::ASCIIToUTF16(url::kFileSystemScheme) + colon +
+             FormatUrlForSecurityDisplayInternal(*inner_url, languages,
+                                                 false /*omit_scheme*/) +
+             base::UTF8ToUTF16(url.path());
+    }
+    return base::ASCIIToUTF16(url::kFileSystemScheme) + colon +
+           FormatUrlForSecurityDisplayInternal(*inner_url, languages,
+                                               false /*omit_scheme*/);
+  }
+
+  const GURL origin = url.GetOrigin();
+  const std::string& scheme = origin.scheme();
+  const std::string& host = origin.host();
+
+  base::string16 result;
+  if (!omit_scheme || !url.SchemeIsHTTPOrHTTPS())
+    result = base::UTF8ToUTF16(scheme) + scheme_separator;
+  result += base::UTF8ToUTF16(host);
+
+  const int port = origin.IntPort();
+  const int default_port = url::DefaultPortForScheme(
+      scheme.c_str(), static_cast<int>(scheme.length()));
+  if (port != url::PORT_UNSPECIFIED && port != default_port)
+    result += colon + base::UTF8ToUTF16(origin.port());
+
+  return result;
+}
+
 }  // namespace
 
 namespace url_formatter {
@@ -311,43 +358,13 @@ base::string16 ElideHost(const GURL& url,
 
 base::string16 FormatUrlForSecurityDisplay(const GURL& url,
                                            const std::string& languages) {
-  if (!url.is_valid() || url.is_empty() || !url.IsStandard())
-    return url_formatter::FormatUrl(url, languages);
-
-  const base::string16 colon(base::ASCIIToUTF16(":"));
-  const base::string16 scheme_separator(
-      base::ASCIIToUTF16(url::kStandardSchemeSeparator));
-
-  if (url.SchemeIsFile()) {
-    return base::ASCIIToUTF16(url::kFileScheme) + scheme_separator +
-           base::UTF8ToUTF16(url.path());
-  }
-
-  if (url.SchemeIsFileSystem()) {
-    const GURL* inner_url = url.inner_url();
-    if (inner_url->SchemeIsFile()) {
-      return base::ASCIIToUTF16(url::kFileSystemScheme) + colon +
-             FormatUrlForSecurityDisplay(*inner_url, languages) +
-             base::UTF8ToUTF16(url.path());
-    }
-    return base::ASCIIToUTF16(url::kFileSystemScheme) + colon +
-           FormatUrlForSecurityDisplay(*inner_url, languages);
-  }
-
-  const GURL origin = url.GetOrigin();
-  const std::string& scheme = origin.scheme();
-  const std::string& host = origin.host();
-
-  base::string16 result = base::UTF8ToUTF16(scheme);
-  result += scheme_separator;
-  result += base::UTF8ToUTF16(host);
-
-  const int port = origin.IntPort();
-  const int default_port = url::DefaultPortForScheme(
-      scheme.c_str(), static_cast<int>(scheme.length()));
-  if (port != url::PORT_UNSPECIFIED && port != default_port)
-    result += colon + base::UTF8ToUTF16(origin.port());
-
-  return result;
+  return FormatUrlForSecurityDisplayInternal(url, languages, false);
 }
+
+base::string16 FormatUrlForSecurityDisplayOmitScheme(
+    const GURL& url,
+    const std::string& languages) {
+  return FormatUrlForSecurityDisplayInternal(url, languages, true);
+}
+
 }  // namespace url_formatter

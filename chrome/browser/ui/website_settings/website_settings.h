@@ -226,6 +226,8 @@ class WebsiteSettings : public TabSpecificContentSettings::SiteDataObserver {
 
   bool did_revoke_user_ssl_decisions_;
 
+  Profile* profile_;
+
   DISALLOW_COPY_AND_ASSIGN(WebsiteSettings);
 };
 

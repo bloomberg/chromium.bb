@@ -63,6 +63,8 @@ void GetSavePasswordDialogTitleTextAndLinkRange(
   // URL differs or not.
   if (!SameDomainOrHost(user_visible_url, form_origin_url)) {
     title_id = IDS_SAVE_PASSWORD_TITLE;
+    // TODO(palmer): Look into passing real language prefs here, not "".
+    // crbug.com/498069.
     replacements.push_back(url_formatter::FormatUrlForSecurityDisplay(
         form_origin_url, std::string()));
   }
@@ -90,6 +92,7 @@ void GetManagePasswordsDialogTitleText(const GURL& user_visible_url,
   // (i.e. the one seen in the omnibox) and the managed password origin URL
   // differ or not.
   if (!SameDomainOrHost(user_visible_url, password_origin_url)) {
+    // TODO(palmer): Look into passing real language prefs here, not "".
     base::string16 formatted_url = url_formatter::FormatUrlForSecurityDisplay(
         password_origin_url, std::string());
     *title = l10n_util::GetStringFUTF16(

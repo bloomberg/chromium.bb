@@ -200,7 +200,8 @@ base::string16 JavaScriptDialogManager::GetTitle(
 
   // Otherwise, return the formatted URL.
   base::string16 url_string =
-      url_formatter::FormatUrlForSecurityDisplay(origin_url, accept_lang);
+      url_formatter::FormatUrlForSecurityDisplayOmitScheme(origin_url,
+                                                           accept_lang);
 
   return l10n_util::GetStringFUTF16(
       is_alert ? IDS_JAVASCRIPT_ALERT_TITLE
