@@ -172,7 +172,9 @@ public class SessionWrapper {
         assert !mNamespaces.contains(namespace);
         if (!mApiClient.isConnected() && !mApiClient.isConnecting()) return;
 
-        if (!mApplicationMetadata.isNamespaceSupported(namespace)) return;
+        // If application metadata is null, register the callback anyway.
+        if (mApplicationMetadata != null
+                && !mApplicationMetadata.isNamespaceSupported(namespace)) return;
 
         try {
             Cast.CastApi.setMessageReceivedCallbacks(mApiClient, namespace, mMessageChannel);
@@ -374,6 +376,7 @@ public class SessionWrapper {
             jsonReceiver.put("volume", jsonVolume);
             jsonReceiver.put("isActiveInput", Cast.CastApi.getActiveInputState(mApiClient));
             jsonReceiver.put("displayStatus", null);
+            jsonReceiver.put("receiverType", "cast");
 
             JSONObject jsonMessage = new JSONObject();
             jsonMessage.put("sessionId", mSessionId);
