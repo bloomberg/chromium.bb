@@ -120,11 +120,13 @@ class OomPriorityManager {
   // discarding a particular tab from about:discards.
   bool CanDiscardTab(int64 target_web_contents_id) const;
 
-  static bool CompareTabStats(TabStats first, TabStats second);
-
   // Called by the memory pressure listener when the memory pressure rises.
   void OnMemoryPressure(
       base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level);
+
+  // Returns true if |first| is considered less desirable to be killed than
+  // |second|.
+  static bool CompareTabStats(TabStats first, TabStats second);
 
   // Timer to periodically update the stats of the renderers.
   base::RepeatingTimer<OomPriorityManager> update_timer_;

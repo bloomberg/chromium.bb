@@ -336,75 +336,6 @@ int OomPriorityManager::GetTabCount() const {
   return tab_count;
 }
 
-// Returns true if |first| is considered less desirable to be killed
-// than |second|.
-bool OomPriorityManager::CompareTabStats(TabStats first, TabStats second) {
-  // Being currently selected is most important to protect.
-  if (first.is_selected != second.is_selected)
-    return first.is_selected;
-
-  // Protect streaming audio and video conferencing tabs as these are similar to
-  // active tabs.
-  if (first.is_playing_audio != second.is_playing_audio)
-    return first.is_playing_audio;
-
-  // Tab with internal web UI like NTP or Settings are good choices to discard,
-  // so protect non-Web UI and let the other conditionals finish the sort.
-  if (first.is_internal_page != second.is_internal_page)
-    return !first.is_internal_page;
-
-  // Being pinned is important to protect.
-  if (first.is_pinned != second.is_pinned)
-    return first.is_pinned;
-
-  // Being an app is important too, as you're the only visible surface in the
-  // window and we don't want to discard that.
-  if (first.is_app != second.is_app)
-    return first.is_app;
-
-  // TODO(jamescook): Incorporate sudden_termination_allowed into the sort
-  // order.  We don't do this now because pages with unload handlers set
-  // sudden_termination_allowed false, and that covers too many common pages
-  // with ad networks and statistics scripts.  Ideally we would like to check
-  // for beforeUnload handlers, which are likely to present a dialog asking
-  // if the user wants to discard state.  crbug.com/123049
-
-  // Being more recently active is more important.
-  return first.last_active > second.last_active;
-}
-
-// This function is called when |update_timer_| fires. It will adjust the clock
-// if needed (if we detect that the machine was asleep) and will fire the stats
-// updating on ChromeOS via the delegate.
-void OomPriorityManager::UpdateTimerCallback() {
-  // If we shutting down, do not do anything.
-  if (g_browser_process->IsShuttingDown())
-    return;
-
-  if (BrowserList::GetInstance(chrome::HOST_DESKTOP_TYPE_ASH)->empty() &&
-      BrowserList::GetInstance(chrome::HOST_DESKTOP_TYPE_NATIVE)->empty())
-    return;
-
-  // Check for a discontinuity in time caused by the machine being suspended.
-  if (!last_adjust_time_.is_null()) {
-    TimeDelta suspend_time = TimeTicks::Now() - last_adjust_time_;
-    if (suspend_time.InSeconds() > kSuspendThresholdSeconds) {
-      // We were probably suspended, move our event timers forward in time so
-      // when we subtract them out later we are counting "uptime".
-      start_time_ += suspend_time;
-      if (!last_discard_time_.is_null())
-        last_discard_time_ += suspend_time;
-    }
-  }
-  last_adjust_time_ = TimeTicks::Now();
-
-#if defined(OS_CHROMEOS)
-  TabStatsList stats_list = GetTabStats();
-  // This starts the CrOS specific OOM adjustments in /proc/<pid>/oom_score_adj.
-  delegate_->AdjustOomPriorities(stats_list);
-#endif
-}
-
 void OomPriorityManager::AddTabStats(BrowserList* browser_list,
                                      bool active_desktop,
                                      TabStatsList* stats_list) {
@@ -446,19 +377,36 @@ void OomPriorityManager::AddTabStats(BrowserList* browser_list,
   }
 }
 
-void OomPriorityManager::OnMemoryPressure(
-    base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level) {
-  // If we are shutting down, do not do anything.
+// This function is called when |update_timer_| fires. It will adjust the clock
+// if needed (if we detect that the machine was asleep) and will fire the stats
+// updating on ChromeOS via the delegate.
+void OomPriorityManager::UpdateTimerCallback() {
+  // If we shutting down, do not do anything.
   if (g_browser_process->IsShuttingDown())
     return;
 
-  // For the moment we only do something when we reach a critical state.
-  if (memory_pressure_level ==
-      base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL) {
-    LogMemoryAndDiscardTab();
+  if (BrowserList::GetInstance(chrome::HOST_DESKTOP_TYPE_ASH)->empty() &&
+      BrowserList::GetInstance(chrome::HOST_DESKTOP_TYPE_NATIVE)->empty())
+    return;
+
+  // Check for a discontinuity in time caused by the machine being suspended.
+  if (!last_adjust_time_.is_null()) {
+    TimeDelta suspend_time = TimeTicks::Now() - last_adjust_time_;
+    if (suspend_time.InSeconds() > kSuspendThresholdSeconds) {
+      // We were probably suspended, move our event timers forward in time so
+      // when we subtract them out later we are counting "uptime".
+      start_time_ += suspend_time;
+      if (!last_discard_time_.is_null())
+        last_discard_time_ += suspend_time;
+    }
   }
-  // TODO(skuhne): If more memory pressure levels are introduced, we might
-  // consider to call PurgeBrowserMemory() before CRITICAL is reached.
+  last_adjust_time_ = TimeTicks::Now();
+
+#if defined(OS_CHROMEOS)
+  TabStatsList stats_list = GetTabStats();
+  // This starts the CrOS specific OOM adjustments in /proc/<pid>/oom_score_adj.
+  delegate_->AdjustOomPriorities(stats_list);
+#endif
 }
 
 bool OomPriorityManager::CanDiscardTab(int64 target_web_contents_id) const {
@@ -480,6 +428,57 @@ bool OomPriorityManager::CanDiscardTab(int64 target_web_contents_id) const {
     return false;
 
   return true;
+}
+
+void OomPriorityManager::OnMemoryPressure(
+    base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level) {
+  // If we are shutting down, do not do anything.
+  if (g_browser_process->IsShuttingDown())
+    return;
+
+  // For the moment we only do something when we reach a critical state.
+  if (memory_pressure_level ==
+      base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL) {
+    LogMemoryAndDiscardTab();
+  }
+  // TODO(skuhne): If more memory pressure levels are introduced, we might
+  // consider to call PurgeBrowserMemory() before CRITICAL is reached.
+}
+
+// static
+bool OomPriorityManager::CompareTabStats(TabStats first, TabStats second) {
+  // Being currently selected is most important to protect.
+  if (first.is_selected != second.is_selected)
+    return first.is_selected;
+
+  // Protect streaming audio and video conferencing tabs as these are similar to
+  // active tabs.
+  if (first.is_playing_audio != second.is_playing_audio)
+    return first.is_playing_audio;
+
+  // Tab with internal web UI like NTP or Settings are good choices to discard,
+  // so protect non-Web UI and let the other conditionals finish the sort.
+  if (first.is_internal_page != second.is_internal_page)
+    return !first.is_internal_page;
+
+  // Being pinned is important to protect.
+  if (first.is_pinned != second.is_pinned)
+    return first.is_pinned;
+
+  // Being an app is important too, as you're the only visible surface in the
+  // window and we don't want to discard that.
+  if (first.is_app != second.is_app)
+    return first.is_app;
+
+  // TODO(jamescook): Incorporate sudden_termination_allowed into the sort
+  // order.  We don't do this now because pages with unload handlers set
+  // sudden_termination_allowed false, and that covers too many common pages
+  // with ad networks and statistics scripts.  Ideally we would like to check
+  // for beforeUnload handlers, which are likely to present a dialog asking
+  // if the user wants to discard state.  crbug.com/123049
+
+  // Being more recently active is more important.
+  return first.last_active > second.last_active;
 }
 
 }  // namespace memory
