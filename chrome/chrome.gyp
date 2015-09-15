@@ -588,7 +588,6 @@
             'shortcut_source_java',
             '../base/base.gyp:base',
             '../chrome/android/chrome_apk.gyp:custom_tabs_service_aidl',
-            '../components/components.gyp:app_restrictions_resources',
             '../components/components.gyp:bookmarks_java',
             '../components/components.gyp:dom_distiller_core_java',
             '../components/components.gyp:enhanced_bookmarks_java_enums_srcjar',
@@ -596,7 +595,6 @@
             '../components/components.gyp:invalidation_java',
             '../components/components.gyp:navigation_interception_java',
             '../components/components.gyp:offline_pages_enums_java',
-            '../components/components.gyp:policy_java',
             '../components/components.gyp:precache_java',
             '../components/components.gyp:safe_json_java',
             '../components/components.gyp:service_tab_launcher_java',
@@ -641,9 +639,10 @@
             ],
           },
           'conditions': [
-            ['configuration_policy != 1', {
-              'dependencies!': [
+            ['configuration_policy == 1', {
+              'dependencies': [
                 '../components/components.gyp:app_restrictions_resources',
+                '../components/components.gyp:policy_java',
               ],
             }],
           ],

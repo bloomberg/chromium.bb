@@ -1082,8 +1082,12 @@
           'conditions': [
             ['OS=="android"', {
               'dependencies': [
-                'components.gyp:policy_java',
                 '../build/android/ndk.gyp:cpu_features',
+              ],
+            }],
+            ['OS=="android" and configuration_policy == 1', {
+              'dependencies': [
+                'components.gyp:policy_java',
               ],
             }],
             ['use_openssl==1', {
@@ -1668,10 +1672,16 @@
           'type': 'none',
           'dependencies': [
             'components.gyp:invalidation_java',
-            'components.gyp:policy_java',
             '../base/base.gyp:base_java',
             '../base/base.gyp:base_java_test_support',
             '../testing/android/junit/junit_test.gyp:junit_test_support',
+          ],
+          'conditions': [
+            ['configuration_policy == 1', {
+              'dependencies': [
+                'components.gyp:policy_java',
+              ],
+            }],
           ],
           'variables': {
             'main_class': 'org.chromium.testing.local.JunitTestMain',

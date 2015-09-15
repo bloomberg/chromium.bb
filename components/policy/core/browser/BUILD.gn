@@ -88,9 +88,11 @@ source_set("unit_tests") {
     "url_blacklist_policy_handler_unittest.cc",
   ]
   deps = [
-    "//components/policy:policy_component_test_support",
     "//components/url_formatter",
     "//testing/gmock",
     "//testing/gtest",
   ]
+  if (enable_configuration_policy) {
+    deps += [ "//components/policy:policy_component_test_support" ]
+  }
 }

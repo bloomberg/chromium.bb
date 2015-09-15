@@ -10,7 +10,6 @@
       'type': 'static_library',
       'dependencies': [
         '../base/base.gyp:base',
-        '../components/components.gyp:policy_component_test_support',
         '../net/net.gyp:net_test_support',
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
@@ -114,6 +113,11 @@
             ['exclude', '^host/'],
           ]
         }],
+        ['configuration_policy == 1', {
+          'dependencies': [
+            '../components/components.gyp:policy_component_test_support',
+          ],
+        }],
       ],
     },
     {
@@ -176,7 +180,6 @@
         '../base/base.gyp:base',
         '../base/base.gyp:base_i18n',
         '../base/base.gyp:test_support_base',
-        '../components/components.gyp:policy',
         '../ipc/ipc.gyp:ipc',
         '../net/net.gyp:net_test_support',
         '../ppapi/ppapi.gyp:ppapi_cpp',
@@ -396,6 +399,11 @@
         [ 'OS == "linux" and use_allocator!="none"', {
           'dependencies': [
             '../base/allocator/allocator.gyp:allocator',
+          ],
+        }],
+        ['configuration_policy == 1', {
+          'dependencies': [
+            '../components/components.gyp:policy',
           ],
         }],
       ],  # end of 'conditions'

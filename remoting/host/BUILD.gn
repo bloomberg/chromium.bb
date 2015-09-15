@@ -439,7 +439,6 @@ if (is_mac) {  # TODO(GYP) Mac build of remoting host.
       deps = [
         "//base",
         "//base:i18n",
-        "//components/policy",
         "//components/policy:policy_component_common",
         "//net",
         "//remoting/base",
@@ -447,6 +446,10 @@ if (is_mac) {  # TODO(GYP) Mac build of remoting host.
         "//remoting/proto",
         "//third_party/webrtc/modules/desktop_capture",
       ]
+
+      if (enable_configuration_policy) {
+        deps += [ "//components/policy" ]
+      }
 
       if (enable_webrtc) {
         deps += [ "//third_party/libjingle:libjingle_webrtc" ]

@@ -261,8 +261,10 @@ source_set("unit_tests") {
   }
 
   deps = [
-    "//components/policy:policy_component_test_support",
     "//testing/gmock",
     "//testing/gtest",
   ]
+  if (enable_configuration_policy) {
+    deps += [ "//components/policy:policy_component_test_support" ]
+  }
 }
