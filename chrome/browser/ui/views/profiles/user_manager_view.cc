@@ -75,6 +75,7 @@ class ReauthDelegate : public views::DialogDelegateView,
   void DeleteDelegate() override;
   base::string16 GetWindowTitle() const override;
   int GetDialogButtons() const override;
+  views::View* GetInitiallyFocusedView() override;
 
   // UserManager::ReauthObserver:
   void CloseReauthDialog() override;
@@ -136,6 +137,10 @@ base::string16 ReauthDelegate::GetWindowTitle() const {
 
 int ReauthDelegate::GetDialogButtons() const {
   return ui::DIALOG_BUTTON_NONE;
+}
+
+views::View* ReauthDelegate::GetInitiallyFocusedView() {
+  return static_cast<views::View*>(web_view_);
 }
 
 void ReauthDelegate::CloseReauthDialog() {
