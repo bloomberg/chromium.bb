@@ -1372,7 +1372,7 @@ void LayoutGrid::layoutGridItems()
     for (const auto& row : sizingData.rowTracks)
         setLogicalHeight(logicalHeight() + row.baseSize());
 
-    LayoutUnit height = logicalHeight() + borderAndPaddingLogicalHeight();
+    LayoutUnit height = logicalHeight() + borderAndPaddingLogicalHeight() + scrollbarLogicalHeight();
     if (hasLineIfEmpty())
         height = std::max(height, minimumLogicalHeightForEmptyLine());
 
