@@ -2200,6 +2200,9 @@ TEST_P(GLES2DecoderTest, ProduceAndConsumeTextureCHROMIUM) {
   DoBindTexture(GL_TEXTURE_2D, kNewClientId, kNewServiceId);
 
   // Assigns and binds original service size texture ID.
+  EXPECT_CALL(*gl_, BindTexture(GL_TEXTURE_2D, 0))
+      .Times(1)
+      .RetiresOnSaturation();
   EXPECT_CALL(*gl_, DeleteTextures(1, _)).Times(1).RetiresOnSaturation();
   EXPECT_CALL(*gl_, BindTexture(GL_TEXTURE_2D, kServiceTextureId))
       .Times(1)

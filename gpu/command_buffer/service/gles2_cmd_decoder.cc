@@ -3516,9 +3516,8 @@ void GLES2DecoderImpl::DeleteTexturesHelper(
         framebuffer_state_.clear_state_dirty = true;
       }
       // Unbind texture_ref from texture_ref units.
-      for (size_t jj = 0; jj < state_.texture_units.size(); ++jj) {
-        state_.texture_units[jj].Unbind(texture_ref);
-      }
+      state_.UnbindTexture(texture_ref);
+
       // Unbind from current framebuffers.
       if (supports_separate_framebuffer_binds) {
         if (framebuffer_state_.bound_read_framebuffer.get()) {
@@ -13068,7 +13067,8 @@ void GLES2DecoderImpl::DoCopySubTextureCHROMIUM(
   bool unpack_premultiply_alpha_change =
       (unpack_premultiply_alpha ^ unpack_unmultiply_alpha) != 0;
   if (image && !unpack_flip_y && !unpack_premultiply_alpha_change) {
-    glBindTexture(GL_TEXTURE_2D, dest_texture->service_id());
+    ScopedTextureBinder binder(
+        &state_, dest_texture->service_id(), GL_TEXTURE_2D);
     if (image->CopyTexSubImage(GL_TEXTURE_2D, gfx::Point(xoffset, yoffset),
                                gfx::Rect(x, y, width, height))) {
       return;

@@ -27,6 +27,7 @@
 
 using ::gfx::MockGLInterface;
 using ::testing::_;
+using ::testing::AnyNumber;
 using ::testing::DoAll;
 using ::testing::InSequence;
 using ::testing::Invoke;
@@ -1126,10 +1127,21 @@ bool GLES2DecoderTestBase::DoIsTexture(GLuint client_id) {
 
 void GLES2DecoderTestBase::DoDeleteTexture(
     GLuint client_id, GLuint service_id) {
-  EXPECT_CALL(*gl_, DeleteTextures(1, Pointee(service_id)))
-      .Times(1)
-      .RetiresOnSaturation();
-  GenHelper<cmds::DeleteTexturesImmediate>(client_id);
+
+  {
+    InSequence s;
+
+    // Calling DoDeleteTexture will unbind the texture from any texture units
+    // it's currently bound to.
+    EXPECT_CALL(*gl_, BindTexture(_, 0))
+      .Times(AnyNumber());
+
+    EXPECT_CALL(*gl_, DeleteTextures(1, Pointee(service_id)))
+        .Times(1)
+        .RetiresOnSaturation();
+
+    GenHelper<cmds::DeleteTexturesImmediate>(client_id);
+  }
 }
 
 void GLES2DecoderTestBase::DoBindTexImage2DCHROMIUM(GLenum target,

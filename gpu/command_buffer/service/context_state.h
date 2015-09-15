@@ -81,24 +81,6 @@ struct GPU_EXPORT TextureUnit {
     NOTREACHED();
     return NULL;
   }
-
-  void Unbind(TextureRef* texture) {
-    if (bound_texture_2d.get() == texture) {
-      bound_texture_2d = NULL;
-    }
-    if (bound_texture_cube_map.get() == texture) {
-      bound_texture_cube_map = NULL;
-    }
-    if (bound_texture_external_oes.get() == texture) {
-      bound_texture_external_oes = NULL;
-    }
-    if (bound_texture_3d.get() == texture) {
-      bound_texture_3d = NULL;
-    }
-    if (bound_texture_2d_array.get() == texture) {
-      bound_texture_2d_array = NULL;
-    }
-  }
 };
 
 class GPU_EXPORT Vec4 {
@@ -233,6 +215,8 @@ struct GPU_EXPORT ContextState {
 
   void SetBoundBuffer(GLenum target, Buffer* buffer);
   void RemoveBoundBuffer(Buffer* buffer);
+
+  void UnbindTexture(TextureRef* texture);
 
   #include "gpu/command_buffer/service/context_state_autogen.h"
 

@@ -500,6 +500,53 @@ void ContextState::RemoveBoundBuffer(Buffer* buffer) {
   }
 }
 
+void ContextState::UnbindTexture(TextureRef* texture) {
+  GLuint active_unit = active_texture_unit;
+  for (size_t jj = 0; jj < texture_units.size(); ++jj) {
+    TextureUnit& unit = texture_units[jj];
+    if (unit.bound_texture_2d.get() == texture) {
+      unit.bound_texture_2d = NULL;
+      if (active_unit != jj) {
+        glActiveTexture(GL_TEXTURE0 + jj);
+        active_unit = jj;
+      }
+      glBindTexture(GL_TEXTURE_2D, 0);
+    } else if (unit.bound_texture_cube_map.get() == texture) {
+      unit.bound_texture_cube_map = NULL;
+      if (active_unit != jj) {
+        glActiveTexture(GL_TEXTURE0 + jj);
+        active_unit = jj;
+      }
+      glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+    } else if (unit.bound_texture_external_oes.get() == texture) {
+      unit.bound_texture_external_oes = NULL;
+      if (active_unit != jj) {
+        glActiveTexture(GL_TEXTURE0 + jj);
+        active_unit = jj;
+      }
+      glBindTexture(GL_TEXTURE_EXTERNAL_OES, 0);
+    } else if (unit.bound_texture_3d.get() == texture) {
+      unit.bound_texture_3d = NULL;
+      if (active_unit != jj) {
+        glActiveTexture(GL_TEXTURE0 + jj);
+        active_unit = jj;
+      }
+      glBindTexture(GL_TEXTURE_3D, 0);
+    } else if (unit.bound_texture_2d_array.get() == texture) {
+      unit.bound_texture_2d_array = NULL;
+      if (active_unit != jj) {
+        glActiveTexture(GL_TEXTURE0 + jj);
+        active_unit = jj;
+      }
+      glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
+    }
+  }
+
+  if (active_unit != active_texture_unit) {
+    glActiveTexture(GL_TEXTURE0 + active_texture_unit);
+  }
+}
+
 // Include the auto-generated part of this file. We split this because it means
 // we can easily edit the non-auto generated parts right here in this file
 // instead of having to edit some template or the code generator.
