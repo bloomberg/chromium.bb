@@ -66,7 +66,8 @@ class FakeCIDBConnection(object):
            'start_time': datetime.datetime.now(),
            'master_build_id' : master_build_id,
            'deadline': deadline,
-           'status': status}
+           'status': status,
+           'finish_time': datetime.datetime.now()}
     self.buildTable.append(row)
     return build_id
 
@@ -218,6 +219,7 @@ class FakeCIDBConnection(object):
     if end_date is not None:
       build_configs = [b for b in build_configs
                        if 'finish_time' in b and
+                       b['finish_time'] and
                        b['finish_time'].date() <= end_date]
     if starting_build_number is not None:
       build_configs = [b for b in build_configs

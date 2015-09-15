@@ -199,6 +199,22 @@ class CLStatsEngine(object):
       )
     return false_rejection_rate
 
+  def GetBuildRunTimes(self, builds):
+    """Gets the elapsed run times of the completed builds within |builds|.
+
+    Args:
+      builds: Iterable of build statuses as returned by cidb.
+
+    Returns:
+      A list of the elapsed times (in seconds) of the builds that completed.
+    """
+    times = []
+    for b in builds:
+      if b['finish_time']:
+        td = (b['finish_time'] - b['start_time']).total_seconds()
+        times.append(td)
+    return times
+
   def Summarize(self, build_type):
     """Process, print, and return a summary of statistics.
 
@@ -229,6 +245,8 @@ class CLStatsEngine(object):
       logging.info('%d of %d runs passed.', total_passed, len(self.builds))
     else:
       logging.info('No runs included.')
+
+    build_times_sec = sorted(self.GetBuildRunTimes(self.builds))
 
     build_reason_counts = {}
     for reasons in self.reasons.values():
@@ -387,6 +405,13 @@ class CLStatsEngine(object):
     logging.info('  90th percentile: %.2f hours',
                  numpy.percentile(cq_handle_times, 90) / 3600.0)
     logging.info('')
+
+    # Log some statistics about cq-master run-time.
+    logging.info('CQ-master run time:')
+    logging.info('  50th percentile: %.2f hours',
+                 numpy.percentile(build_times_sec, 50) / 3600.0)
+    logging.info('  90th percenfile: %.2f hours',
+                 numpy.percentile(build_times_sec, 90) / 3600.0)
 
     for bot_type, patches in summary['bad_cl_candidates'].items():
       logging.info('%d bad patch candidates were rejected by the %s',
