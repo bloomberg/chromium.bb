@@ -10,6 +10,10 @@
 #include "cc/base/rolling_time_delta_history.h"
 #include "components/scheduler/scheduler_export.h"
 
+namespace base {
+class TickClock;
+}
+
 namespace scheduler {
 
 // Estimates the cost of running tasks based on historical timing data.
@@ -27,12 +31,13 @@ class SCHEDULER_EXPORT TaskCostEstimator
   void WillProcessTask(const base::PendingTask& pending_task) override;
   void DidProcessTask(const base::PendingTask& pending_task) override;
 
- protected:
-  // Virtual for testing.
-  virtual base::TimeTicks Now();
+  void Clear();
+
+  void SetTimeSourceForTesting(scoped_ptr<base::TickClock> time_source);
 
  private:
   cc::RollingTimeDeltaHistory rolling_time_delta_history_;
+  scoped_ptr<base::TickClock> time_source_;
   int outstanding_task_count_;
   double estimation_percentile_;
   base::TimeTicks task_start_time_;

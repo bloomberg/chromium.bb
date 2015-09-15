@@ -13,6 +13,7 @@
 #include "components/scheduler/renderer/deadline_task_runner.h"
 #include "components/scheduler/renderer/renderer_scheduler.h"
 #include "components/scheduler/renderer/task_cost_estimator.h"
+#include "components/scheduler/renderer/user_model.h"
 #include "components/scheduler/scheduler_export.h"
 
 namespace base {
@@ -61,23 +62,30 @@ class SCHEDULER_EXPORT RendererSchedulerImpl : public RendererScheduler,
   void ResumeTimerQueue() override;
   void SetTimerQueueSuspensionWhenBackgroundedEnabled(bool enabled) override;
 
+  // Test helpers.
   SchedulerHelper* GetSchedulerHelperForTesting();
+  TaskCostEstimator* GetLoadingTaskCostEstimatorForTesting();
+  TaskCostEstimator* GetTimerTaskCostEstimatorForTesting();
   base::TimeTicks CurrentIdleTaskDeadlineForTesting() const;
 
  private:
   friend class RendererSchedulerImplTest;
   friend class RendererSchedulerImplForTest;
 
-  // Keep RendererSchedulerImpl::PolicyToString in sync with this enum.
-  enum class Policy {
-    NORMAL,
-    COMPOSITOR_PRIORITY,
-    COMPOSITOR_CRITICAL_PATH_PRIORITY,
-    TOUCHSTART_PRIORITY,
-    LOADING_PRIORITY,
-    // Must be the last entry.
-    POLICY_COUNT,
-    FIRST_POLICY = NORMAL,
+  struct Policy {
+    Policy();
+
+    TaskQueue::QueuePriority compositor_queue_priority;
+    TaskQueue::QueuePriority loading_queue_priority;
+    TaskQueue::QueuePriority timer_queue_priority;
+    TaskQueue::QueuePriority default_queue_priority;
+
+    bool operator==(const Policy& other) const {
+      return compositor_queue_priority == other.compositor_queue_priority &&
+             loading_queue_priority == other.loading_queue_priority &&
+             timer_queue_priority == other.timer_queue_priority &&
+             default_queue_priority == other.default_queue_priority;
+    }
   };
 
   class PollableNeedsUpdateFlag {
@@ -113,13 +121,9 @@ class SCHEDULER_EXPORT RendererSchedulerImpl : public RendererScheduler,
       base::TimeTicks optional_now) const;
   scoped_refptr<base::trace_event::ConvertableToTraceFormat> AsValueLocked(
       base::TimeTicks optional_now) const;
-  static const char* PolicyToString(Policy policy);
 
   static bool ShouldPrioritizeInputEvent(
       const blink::WebInputEvent& web_input_event);
-
-  // The time we should stay in a priority-escalated mode after an input event.
-  static const int kPriorityEscalationAfterInputMillis = 100;
 
   // The amount of time which idle periods can continue being scheduled when the
   // renderer has been hidden, before going to sleep for good.
@@ -137,7 +141,7 @@ class SCHEDULER_EXPORT RendererSchedulerImpl : public RendererScheduler,
   static const int kIdlePeriodStarvationThresholdMillis = 10000;
 
   // The amount of time to wait before suspending shared timers after the
-  // renderer has been backgrounded. This is use donly if background suspension
+  // renderer has been backgrounded. This is used only if background suspension
   // of shared timers is enabled.
   static const int kSuspendTimersWhenBackgroundedDelayMillis = 5 * 60 * 1000;
 
@@ -167,20 +171,18 @@ class SCHEDULER_EXPORT RendererSchedulerImpl : public RendererScheduler,
   // early out if |update_type| is MAY_EARLY_OUT_IF_POLICY_UNCHANGED.
   virtual void UpdatePolicyLocked(UpdateType update_type);
 
-  // Returns the amount of time left in the current input escalated priority
-  // policy.  Can be called from any thread.
-  base::TimeDelta TimeLeftInInputEscalatedPolicy(base::TimeTicks now) const;
+  // Helper for computing the use case. |expected_usecase_duration| will be
+  // filled with the amount of time after which the use case should be updated
+  // again. If the duration is zero, a new use case update should not be
+  // scheduled. Must be called with |any_thread_lock_| held. Can be called from
+  // any thread.
+  UseCase ComputeCurrentUseCase(
+      base::TimeTicks now,
+      base::TimeDelta* expected_use_case_duration) const;
 
-  // Helper for computing the new policy. |new_policy_duration| will be filled
-  // with the amount of time after which the policy should be updated again. If
-  // the duration is zero, a new policy update will not be scheduled. Must be
-  // called with |any_thread_lock_| held. Can be called from any thread.
-  Policy ComputeNewPolicy(base::TimeTicks now,
-                          base::TimeDelta* new_policy_duration) const;
-
-  // Works out if compositor tasks would be prioritized based on the current
-  // input signals.  Can be called from any thread.
-  bool InputSignalsSuggestCompositorPriority(base::TimeTicks now) const;
+  // Works out if a gesture appears to be in progress based on the current
+  // input signals. Can be called from any thread.
+  bool InputSignalsSuggestGestureInProgress(base::TimeTicks now) const;
 
   // An input event of some sort happened, the policy may need updating.
   void UpdateForInputEventOnCompositorThread(blink::WebInputEvent::Type type,
@@ -194,6 +196,10 @@ class SCHEDULER_EXPORT RendererSchedulerImpl : public RendererScheduler,
   // background/foreground signal.
   void SuspendTimerQueueWhenBackgrounded();
   void ResumeTimerQueueWhenForegrounded();
+
+  // The task cost estimators and the UserModel need to be reset upon page
+  // nagigation. This function does that. Must be called from the main thread.
+  void ResetForNavigationLocked();
 
   SchedulerHelper helper_;
   IdleHelper idle_helper_;
@@ -215,47 +221,51 @@ class SCHEDULER_EXPORT RendererSchedulerImpl : public RendererScheduler,
     MainThreadOnly();
     ~MainThreadOnly();
 
-    TaskCostEstimator timer_task_cost_estimator_;
-    cc::RollingTimeDeltaHistory short_idle_period_duration_;
-    Policy current_policy_;
-    base::TimeTicks current_policy_expiration_time_;
-    base::TimeTicks estimated_next_frame_begin_;
-    base::TimeDelta expected_short_idle_period_duration_;
-    int timer_queue_suspend_count_;  // TIMER_TASK_QUEUE suspended if non-zero.
-    bool renderer_hidden_;
-    bool renderer_backgrounded_;
-    bool timer_queue_suspension_when_backgrounded_enabled_;
-    bool timer_queue_suspended_when_backgrounded_;
-    bool was_shutdown_;
+    TaskCostEstimator loading_task_cost_estimator;
+    TaskCostEstimator timer_task_cost_estimator;
+    cc::RollingTimeDeltaHistory short_idle_period_duration;
+    UseCase current_use_case;
+    Policy current_policy;
+    base::TimeTicks current_policy_expiration_time;
+    base::TimeTicks estimated_next_frame_begin;
+    base::TimeDelta expected_short_idle_period_duration;
+    int timer_queue_suspend_count;  // TIMER_TASK_QUEUE suspended if non-zero.
+    bool renderer_hidden;
+    bool renderer_backgrounded;
+    bool timer_queue_suspension_when_backgrounded_enabled;
+    bool timer_queue_suspended_when_backgrounded;
+    bool was_shutdown;
+    bool loading_tasks_seem_expensive;
+    bool timer_tasks_seem_expensive;
+    bool touchstart_expected_soon;
+    bool have_seen_a_begin_main_frame;
   };
 
   struct AnyThread {
     AnyThread();
 
-    base::TimeTicks last_input_signal_time_;
-    base::TimeTicks last_idle_period_end_time_;
-    base::TimeTicks rails_loading_priority_deadline_;
-    int pending_main_thread_input_event_count_;
-    bool awaiting_touch_start_response_;
-    bool in_idle_period_;
-    bool begin_main_frame_on_critical_path_;
-    bool timer_tasks_seem_expensive_;
+    base::TimeTicks last_idle_period_end_time;
+    base::TimeTicks rails_loading_priority_deadline;
+    UserModel user_model;
+    bool awaiting_touch_start_response;
+    bool in_idle_period;
+    bool begin_main_frame_on_critical_path;
   };
 
   struct CompositorThreadOnly {
     CompositorThreadOnly();
     ~CompositorThreadOnly();
 
-    blink::WebInputEvent::Type last_input_type_;
-    scoped_ptr<base::ThreadChecker> compositor_thread_checker_;
+    blink::WebInputEvent::Type last_input_type;
+    scoped_ptr<base::ThreadChecker> compositor_thread_checker;
 
     void CheckOnValidThread() {
 #if DCHECK_IS_ON()
       // We don't actually care which thread this called from, just so long as
       // its consistent.
-      if (!compositor_thread_checker_)
-        compositor_thread_checker_.reset(new base::ThreadChecker());
-      DCHECK(compositor_thread_checker_->CalledOnValidThread());
+      if (!compositor_thread_checker)
+        compositor_thread_checker.reset(new base::ThreadChecker());
+      DCHECK(compositor_thread_checker->CalledOnValidThread());
 #endif
     }
   };

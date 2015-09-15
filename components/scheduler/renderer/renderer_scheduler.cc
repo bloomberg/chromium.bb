@@ -34,4 +34,37 @@ scoped_ptr<RendererScheduler> RendererScheduler::Create() {
       SchedulerTaskRunnerDelegateImpl::Create(message_loop)));
 }
 
+// static
+const char* RendererScheduler::UseCaseToString(UseCase use_case) {
+  switch (use_case) {
+    case UseCase::NONE:
+      return "none";
+    case UseCase::COMPOSITOR_GESTURE:
+      return "compositor_gesture";
+    case UseCase::MAIN_THREAD_GESTURE:
+      return "main_thread_gesture";
+    case UseCase::TOUCHSTART:
+      return "touchstart";
+    case UseCase::LOADING:
+      return "loading";
+    default:
+      NOTREACHED();
+      return nullptr;
+  }
+}
+
+// static
+const char* RendererScheduler::InputEventStateToString(
+    InputEventState input_event_state) {
+  switch (input_event_state) {
+    case InputEventState::EVENT_CONSUMED_BY_COMPOSITOR:
+      return "event_consumed_by_compositor";
+    case InputEventState::EVENT_FORWARDED_TO_MAIN_THREAD:
+      return "event_forwarded_to_main_thread";
+    default:
+      NOTREACHED();
+      return nullptr;
+  }
+}
+
 }  // namespace scheduler
