@@ -170,6 +170,7 @@ const char kInvalidIdError[] = "Invalid id";
 const char kInvalidManifestError[] = "Invalid manifest";
 const char kNoPreviousBeginInstallWithManifestError[] =
     "* does not match a previous call to beginInstallWithManifest3";
+const char kBlockedByPolicyError[] = "Blocked by policy";
 const char kUserCancelledError[] = "User cancelled install";
 const char kIncognitoError[] =
     "Apps cannot be installed in guest/incognito mode";
@@ -298,6 +299,18 @@ void WebstorePrivateBeginInstallWithManifest3Function::OnWebstoreParseSuccess(
     OnWebstoreParseFailure(details().id,
                            WebstoreInstallHelper::Delegate::MANIFEST_ERROR,
                            kInvalidManifestError);
+    return;
+  }
+
+  // Check the management policy before the installation process begins
+  bool allow = ExtensionSystem::Get(chrome_details_.GetProfile())->
+      management_policy()->UserMayLoad(extension_.get(),
+                                       NULL);
+  if (!allow) {
+    Respond(BuildResponse(api::webstore_private::RESULT_BLOCKED_BY_POLICY,
+                          kBlockedByPolicyError));
+    // Matches the AddRef in Run().
+    Release();
     return;
   }
 
