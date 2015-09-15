@@ -40,6 +40,11 @@ void PrefServiceSyncableFactory::SetRecommendedPolicies(
 }
 #endif
 
+void PrefServiceSyncableFactory::SetPrefModelAssociatorClient(
+    PrefModelAssociatorClient* pref_model_associator_client) {
+  pref_model_associator_client_ = pref_model_associator_client;
+}
+
 scoped_ptr<PrefServiceSyncable> PrefServiceSyncableFactory::CreateSyncable(
     user_prefs::PrefRegistrySyncable* pref_registry) {
   TRACE_EVENT0("browser", "PrefServiceSyncableFactory::CreateSyncable");
@@ -57,6 +62,7 @@ scoped_ptr<PrefServiceSyncable> PrefServiceSyncableFactory::CreateSyncable(
                              pref_notifier),
           user_prefs_.get(),
           pref_registry,
+          pref_model_associator_client_,
           read_error_callback_,
           async_));
   return pref_service.Pass();

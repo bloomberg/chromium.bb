@@ -2269,6 +2269,8 @@
     'chrome_browser_pref_sources': [
       'browser/prefs/browser_prefs.cc',
       'browser/prefs/browser_prefs.h',
+      'browser/prefs/chrome_pref_model_associator_client.cc',
+      'browser/prefs/chrome_pref_model_associator_client.h',
       'browser/prefs/chrome_pref_service_factory.cc',
       'browser/prefs/chrome_pref_service_factory.h',
       'browser/prefs/command_line_pref_store.cc',
@@ -2279,6 +2281,7 @@
       'browser/prefs/pref_metrics_service.h',
       'browser/prefs/pref_model_associator.cc',
       'browser/prefs/pref_model_associator.h',
+      'browser/prefs/pref_model_associator_client.h',
       'browser/prefs/pref_service_syncable.cc',
       'browser/prefs/pref_service_syncable.h',
       'browser/prefs/pref_service_syncable_factory.cc',

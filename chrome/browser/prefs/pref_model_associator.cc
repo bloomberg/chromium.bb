@@ -13,10 +13,8 @@
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/prefs/pref_model_associator_client.h"
 #include "chrome/browser/prefs/pref_service_syncable.h"
-#include "chrome/common/pref_names.h"
-#include "components/content_settings/core/browser/website_settings_info.h"
-#include "components/content_settings/core/browser/website_settings_registry.h"
 #include "sync/api/sync_change.h"
 #include "sync/api/sync_error_factory.h"
 #include "sync/protocol/preference_specifics.pb.h"
@@ -49,41 +47,16 @@ sync_pb::PreferenceSpecifics* GetMutableSpecifics(
   }
 }
 
-// List of migrated preference name pairs. If a preference is migrated
-// (meaning renamed) adding the old and new preference names here will ensure
-// that the sync engine knows how to deal with the synced values coming in
-// with the old name. Preference migration itself doesn't happen here. It may
-// happen in session_startup_pref.cc.
-const struct MigratedPreferences {
-  const char* const old_name;
-  const char* const new_name;
-} kMigratedPreferences[] = {
-  { prefs::kURLsToRestoreOnStartupOld, prefs::kURLsToRestoreOnStartup },
-};
-
-std::string GetOldMigratedPreferenceName(const char* preference_name) {
-  for (size_t i = 0; i < arraysize(kMigratedPreferences); ++i) {
-    if (!strcmp(kMigratedPreferences[i].new_name, preference_name))
-      return kMigratedPreferences[i].old_name;
-  }
-  return std::string();
-}
-
-std::string GetNewMigratedPreferenceName(const char* old_preference_name) {
-  for (size_t i = 0; i < arraysize(kMigratedPreferences); ++i) {
-    if (!strcmp(kMigratedPreferences[i].old_name, old_preference_name))
-      return kMigratedPreferences[i].new_name;
-  }
-  return std::string();
-}
-
 }  // namespace
 
-PrefModelAssociator::PrefModelAssociator(syncer::ModelType type)
+PrefModelAssociator::PrefModelAssociator(
+    const PrefModelAssociatorClient* client,
+    syncer::ModelType type)
     : models_associated_(false),
       processing_syncer_changes_(false),
       pref_service_(NULL),
-      type_(type) {
+      type_(type),
+      client_(client) {
   DCHECK(CalledOnValidThread());
   DCHECK(type_ == PREFERENCES || type_ == PRIORITY_PREFERENCES);
 }
@@ -108,10 +81,11 @@ void PrefModelAssociator::InitPrefAndAssociate(
 
   if (sync_pref.IsValid()) {
     const sync_pb::PreferenceSpecifics& preference = GetSpecifics(sync_pref);
+    std::string old_pref_name;
     DCHECK(pref_name == preference.name() ||
-           (IsMigratedPreference(pref_name.c_str()) &&
-            preference.name() ==
-                GetOldMigratedPreferenceName(pref_name.c_str())));
+           (client_ &&
+            client_->IsMigratedPreference(pref_name, &old_pref_name) &&
+            preference.name() == old_pref_name));
     base::JSONReader reader;
     scoped_ptr<base::Value> sync_value(reader.ReadToValue(preference.value()));
     if (!sync_value.get()) {
@@ -149,12 +123,11 @@ void PrefModelAssociator::InitPrefAndAssociate(
           return;
         }
 
-        if (IsMigratedPreference(pref_name.c_str())) {
+        std::string old_pref_name;
+        if (client_ &&
+            client_->IsMigratedPreference(pref_name, &old_pref_name)) {
           // This preference has been migrated from an old version that must be
           // kept in sync on older versions of Chrome.
-          std::string old_pref_name =
-              GetOldMigratedPreferenceName(pref_name.c_str());
-
           if (preference.name() == old_pref_name) {
             DCHECK(migrated_preference_list);
             // If the name the syncer has is the old pre-migration value, then
@@ -249,12 +222,14 @@ syncer::SyncMergeResult PrefModelAssociator::MergeDataAndStartSyncing(
     std::string sync_pref_name = preference.name();
 
     if (remaining_preferences.count(sync_pref_name) == 0) {
-      if (IsOldMigratedPreference(sync_pref_name.c_str())) {
+      std::string new_pref_name;
+      if (client_ &&
+          client_->IsOldMigratedPreference(sync_pref_name, &new_pref_name)) {
         // This old pref name is not syncable locally anymore but we accept
         // changes from other Chrome installs of previous versions and migrate
         // them to the new name. Note that we will be merging any differences
         // between the new and old values and sync'ing them back.
-        sync_pref_name = GetNewMigratedPreferenceName(sync_pref_name.c_str());
+        sync_pref_name = new_pref_name;
       } else {
         // We're not syncing this preference locally, ignore the sync data.
         // TODO(zea): Eventually we want to be able to have the syncable service
@@ -318,15 +293,12 @@ scoped_ptr<base::Value> PrefModelAssociator::MergePreference(
     const base::Value& server_value) {
   // This function special cases preferences individually, so don't attempt
   // to merge for all migrated values.
-  if (name == prefs::kURLsToRestoreOnStartup ||
-      name == prefs::kURLsToRestoreOnStartupOld) {
-    return make_scoped_ptr(MergeListValues(local_value, server_value));
-  }
-
-  content_settings::WebsiteSettingsRegistry* registry =
-      content_settings::WebsiteSettingsRegistry::GetInstance();
-  for (const content_settings::WebsiteSettingsInfo* info : *registry) {
-    if (info->pref_name() == name)
+  if (client_) {
+    std::string new_pref_name;
+    DCHECK(!client_->IsOldMigratedPreference(name, &new_pref_name));
+    if (client_->IsMergeableListPreference(name))
+      return make_scoped_ptr(MergeListValues(local_value, server_value));
+    if (client_->IsMergeableDictionaryPreference(name))
       return make_scoped_ptr(MergeDictionaryValues(local_value, server_value));
   }
 
@@ -421,17 +393,6 @@ base::Value* PrefModelAssociator::MergeDictionaryValues(
   return result;
 }
 
-// static
-bool PrefModelAssociator::IsMigratedPreference(const char* preference_name) {
-  return !GetOldMigratedPreferenceName(preference_name).empty();
-}
-
-// static
-bool PrefModelAssociator::IsOldMigratedPreference(
-    const char* old_preference_name) {
-  return !GetNewMigratedPreferenceName(old_preference_name).empty();
-}
-
 // Note: This will build a model of all preferences registered as syncable
 // with user controlled data. We do not track any information for preferences
 // not registered locally as syncable and do not inform the syncer of
@@ -482,15 +443,14 @@ syncer::SyncError PrefModelAssociator::ProcessSyncChanges(
     // want to sync. For example if the user is syncing a Mac client and a
     // Windows client, the Windows client does not support
     // kConfirmToQuitEnabled. Ignore updates from these preferences.
-    const char* pref_name = name.c_str();
-    std::string new_name;
+    std::string pref_name = pref_specifics.name();
+    std::string new_pref_name;
     // We migrated this preference name, so do as if the name had not changed.
-    if (IsOldMigratedPreference(pref_name)) {
-      new_name = GetNewMigratedPreferenceName(pref_name);
-      pref_name = new_name.c_str();
+    if (client_ && client_->IsOldMigratedPreference(name, &new_pref_name)) {
+      pref_name = new_pref_name;
     }
 
-    if (!IsPrefRegistered(pref_name))
+    if (!IsPrefRegistered(pref_name.c_str()))
       continue;
 
     if (iter->change_type() == syncer::SyncChange::ACTION_DELETE) {
@@ -511,11 +471,11 @@ syncer::SyncError PrefModelAssociator::ProcessSyncChanges(
     // policy controlled.
     pref_service_->Set(pref_name, *value);
 
-    NotifySyncedPrefObservers(name, true /*from_sync*/);
+    NotifySyncedPrefObservers(pref_specifics.name(), true /*from_sync*/);
 
     // Keep track of any newly synced preferences.
     if (iter->change_type() == syncer::SyncChange::ACTION_ADD) {
-      synced_preferences_.insert(name);
+      synced_preferences_.insert(pref_specifics.name());
     }
   }
   return syncer::SyncError();
@@ -556,6 +516,12 @@ void PrefModelAssociator::RemoveSyncedPrefObserver(const std::string& name,
     return;
   SyncedPrefObserverList* observers = observer_iter->second;
   observers->RemoveObserver(observer);
+}
+
+void PrefModelAssociator::SetPrefModelAssociatorClientForTesting(
+    const PrefModelAssociatorClient* client) {
+  DCHECK(!client_);
+  client_ = client;
 }
 
 std::set<std::string> PrefModelAssociator::registered_preferences() const {
@@ -619,8 +585,8 @@ void PrefModelAssociator::ProcessPrefChange(const std::string& name) {
                            sync_data));
     // This preference has been migrated from an old version that must be kept
     // in sync on older versions of Chrome.
-    if (IsMigratedPreference(name.c_str())) {
-      std::string old_pref_name = GetOldMigratedPreferenceName(name.c_str());
+    std::string old_pref_name;
+    if (client_ && client_->IsMigratedPreference(name, &old_pref_name)) {
       if (!CreatePrefSyncData(old_pref_name,
                               *preference->GetValue(),
                               &sync_data)) {

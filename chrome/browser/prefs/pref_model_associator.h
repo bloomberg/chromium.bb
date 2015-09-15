@@ -19,6 +19,7 @@
 #include "sync/api/sync_data.h"
 #include "sync/api/syncable_service.h"
 
+class PrefModelAssociatorClient;
 class PrefRegistrySyncable;
 class PrefServiceSyncable;
 
@@ -37,7 +38,11 @@ class PrefModelAssociator
     : public syncer::SyncableService,
       public base::NonThreadSafe {
  public:
-  explicit PrefModelAssociator(syncer::ModelType type);
+  // Constructs a PrefModelAssociator initializing the |client_| and |type_|
+  // instance variable. The |client| is not owned by this object and the caller
+  // must ensure that it oulives the PrefModelAssociator.
+  PrefModelAssociator(const PrefModelAssociatorClient* client,
+                      syncer::ModelType type);
   ~PrefModelAssociator() override;
 
   // See description above field for details.
@@ -80,10 +85,9 @@ class PrefModelAssociator
   // value always takes precedence. Note that only certain preferences will
   // actually be merged, all others will return a copy of the server value. See
   // the method's implementation for details.
-  static scoped_ptr<base::Value> MergePreference(
-      const std::string& name,
-      const base::Value& local_value,
-      const base::Value& server_value);
+  scoped_ptr<base::Value> MergePreference(const std::string& name,
+                                          const base::Value& local_value,
+                                          const base::Value& server_value);
 
   // Fills |sync_data| with a sync representation of the preference data
   // provided.
@@ -106,6 +110,13 @@ class PrefModelAssociator
   // Removes a SyncedPrefObserver from a pref's list of observers.
   void RemoveSyncedPrefObserver(const std::string& name,
                                 SyncedPrefObserver* observer);
+
+  // Returns the PrefModelAssociatorClient for this object.
+  const PrefModelAssociatorClient* client() const { return client_; }
+
+  // Set the PrefModelAssociatorClient to use for that object during tests.
+  void SetPrefModelAssociatorClientForTesting(
+      const PrefModelAssociatorClient* client);
 
  protected:
   friend class PrefServiceSyncableTest;
@@ -131,11 +142,6 @@ class PrefModelAssociator
       const base::Value& from_value, const base::Value& to_value);
   static base::Value* MergeDictionaryValues(const base::Value& from_value,
                                             const base::Value& to_value);
-
-  // Returns whether a given preference name is a new name of a migrated
-  // preference. Exposed here for testing.
-  static bool IsMigratedPreference(const char* preference_name);
-  static bool IsOldMigratedPreference(const char* old_preference_name);
 
   // Do we have an active association between the preferences and sync models?
   // Set when start syncing, reset in StopSyncing. While this is not set, we
@@ -186,6 +192,7 @@ class PrefModelAssociator
   void NotifySyncedPrefObservers(const std::string& path, bool from_sync) const;
 
   SyncedPrefObserverMap synced_pref_observers_;
+  const PrefModelAssociatorClient* client_;  // Weak.
 
   DISALLOW_COPY_AND_ASSIGN(PrefModelAssociator);
 };

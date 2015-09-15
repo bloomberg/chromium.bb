@@ -25,6 +25,7 @@
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/prefs/chrome_pref_model_associator_client.h"
 #include "chrome/browser/prefs/command_line_pref_store.h"
 #include "chrome/browser/prefs/pref_model_associator.h"
 #include "chrome/browser/prefs/pref_service_syncable.h"
@@ -449,6 +450,8 @@ void PrepareFactory(
       new CommandLinePrefStore(base::CommandLine::ForCurrentProcess())));
   factory->set_read_error_callback(base::Bind(&HandleReadError));
   factory->set_user_prefs(user_pref_store);
+  factory->SetPrefModelAssociatorClient(
+      ChromePrefModelAssociatorClient::GetInstance());
 }
 
 }  // namespace

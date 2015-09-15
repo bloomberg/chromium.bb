@@ -23,17 +23,19 @@ PrefServiceSyncable::PrefServiceSyncable(
     PrefValueStore* pref_value_store,
     PersistentPrefStore* user_prefs,
     user_prefs::PrefRegistrySyncable* pref_registry,
+    const PrefModelAssociatorClient* pref_model_associator_client,
     base::Callback<void(PersistentPrefStore::PrefReadError)>
         read_error_callback,
     bool async)
-  : PrefService(pref_notifier,
-                pref_value_store,
-                user_prefs,
-                pref_registry,
-                read_error_callback,
-                async),
-    pref_sync_associator_(syncer::PREFERENCES),
-    priority_pref_sync_associator_(syncer::PRIORITY_PREFERENCES) {
+    : PrefService(pref_notifier,
+                  pref_value_store,
+                  user_prefs,
+                  pref_registry,
+                  read_error_callback,
+                  async),
+      pref_sync_associator_(pref_model_associator_client, syncer::PREFERENCES),
+      priority_pref_sync_associator_(pref_model_associator_client,
+                                     syncer::PRIORITY_PREFERENCES) {
   pref_sync_associator_.SetPrefService(this);
   priority_pref_sync_associator_.SetPrefService(this);
 
@@ -88,6 +90,7 @@ PrefServiceSyncable* PrefServiceSyncable::CreateIncognitoPrefService(
                                             pref_notifier),
       incognito_pref_store,
       forked_registry.get(),
+      pref_sync_associator_.client(),
       read_error_callback_,
       false);
   return incognito_service;
@@ -146,6 +149,15 @@ void PrefServiceSyncable::RemoveSyncedPrefObserver(
     SyncedPrefObserver* observer) {
   pref_sync_associator_.RemoveSyncedPrefObserver(name, observer);
   priority_pref_sync_associator_.RemoveSyncedPrefObserver(name, observer);
+}
+
+// Set the PrefModelAssociatorClient to use for that object during tests.
+void PrefServiceSyncable::SetPrefModelAssociatorClientForTesting(
+    const PrefModelAssociatorClient* pref_model_associator_client) {
+  pref_sync_associator_.SetPrefModelAssociatorClientForTesting(
+      pref_model_associator_client);
+  priority_pref_sync_associator_.SetPrefModelAssociatorClientForTesting(
+      pref_model_associator_client);
 }
 
 void PrefServiceSyncable::AddRegisteredSyncablePreference(

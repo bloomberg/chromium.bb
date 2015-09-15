@@ -13,6 +13,7 @@
 #include "chrome/browser/prefs/synced_pref_observer.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 
+class PrefModelAssociatorClient;
 class PrefServiceSyncableObserver;
 
 namespace syncer {
@@ -26,13 +27,15 @@ class PrefServiceSyncable : public PrefService {
  public:
   // You may wish to use PrefServiceFactory or one of its subclasses
   // for simplified construction.
-  PrefServiceSyncable(PrefNotifierImpl* pref_notifier,
-                      PrefValueStore* pref_value_store,
-                      PersistentPrefStore* user_prefs,
-                      user_prefs::PrefRegistrySyncable* pref_registry,
-                      base::Callback<void(PersistentPrefStore::PrefReadError)>
-                          read_error_callback,
-                      bool async);
+  PrefServiceSyncable(
+      PrefNotifierImpl* pref_notifier,
+      PrefValueStore* pref_value_store,
+      PersistentPrefStore* user_prefs,
+      user_prefs::PrefRegistrySyncable* pref_registry,
+      const PrefModelAssociatorClient* pref_model_associato_client,
+      base::Callback<void(PersistentPrefStore::PrefReadError)>
+          read_error_callback,
+      bool async);
   ~PrefServiceSyncable() override;
 
   // Creates an incognito copy of the pref service that shares most pref stores
@@ -76,6 +79,11 @@ class PrefServiceSyncable : public PrefService {
                              SyncedPrefObserver* observer);
   void RemoveSyncedPrefObserver(const std::string& name,
                                 SyncedPrefObserver* observer);
+
+ protected:
+  // Set the PrefModelAssociatorClient to use for that object during tests.
+  void SetPrefModelAssociatorClientForTesting(
+      const PrefModelAssociatorClient* pref_model_associator_client);
 
  private:
   friend class PrefModelAssociator;

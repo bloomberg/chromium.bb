@@ -20,15 +20,16 @@ TestingPrefServiceBase<PrefServiceSyncable, user_prefs::PrefRegistrySyncable>::
     : PrefServiceSyncable(
           pref_notifier,
           new PrefValueStore(managed_prefs,
-                             NULL,  // supervised_user_prefs
-                             NULL,  // extension_prefs
-                             NULL,  // command_line_prefs
+                             nullptr,  // supervised_user_prefs
+                             nullptr,  // extension_prefs
+                             nullptr,  // command_line_prefs
                              user_prefs,
                              recommended_prefs,
                              pref_registry->defaults().get(),
                              pref_notifier),
           user_prefs,
           pref_registry,
+          nullptr,  // pref_model_associator_client
           base::Bind(&TestingPrefServiceBase<
               PrefServiceSyncable,
               user_prefs::PrefRegistrySyncable>::HandleReadError),

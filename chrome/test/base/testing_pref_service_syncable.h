@@ -9,6 +9,8 @@
 #include "base/prefs/testing_pref_service.h"
 #include "chrome/browser/prefs/pref_service_syncable.h"
 
+class PrefModelAssociatorClient;
+
 namespace user_prefs {
 class PrefRegistrySyncable;
 }
@@ -30,6 +32,8 @@ class TestingPrefServiceSyncable
   // you would do all registrations before constructing it, passing it
   // a PrefRegistry via its constructor (or via e.g. PrefServiceFactory).
   user_prefs::PrefRegistrySyncable* registry();
+
+  using PrefServiceSyncable::SetPrefModelAssociatorClientForTesting;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestingPrefServiceSyncable);

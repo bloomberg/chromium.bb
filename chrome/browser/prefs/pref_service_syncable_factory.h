@@ -7,6 +7,7 @@
 
 #include "base/prefs/pref_service_factory.h"
 
+class PrefModelAssociatorClient;
 class PrefServiceSyncable;
 
 namespace base {
@@ -38,11 +39,15 @@ class PrefServiceSyncableFactory : public base::PrefServiceFactory {
                               policy::BrowserPolicyConnector* connector);
 #endif
 
+  void SetPrefModelAssociatorClient(
+      PrefModelAssociatorClient* pref_model_associator_client);
 
   scoped_ptr<PrefServiceSyncable> CreateSyncable(
       user_prefs::PrefRegistrySyncable* registry);
 
  private:
+  PrefModelAssociatorClient* pref_model_associator_client_;
+
   DISALLOW_COPY_AND_ASSIGN(PrefServiceSyncableFactory);
 };
 
