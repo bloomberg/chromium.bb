@@ -555,6 +555,10 @@ void OffTheRecordProfileImpl::UpdateDefaultZoomLevel() {
   double default_zoom_level =
       profile_->GetZoomLevelPrefs()->GetDefaultZoomLevelPref();
   host_zoom_map->SetDefaultZoomLevel(default_zoom_level);
+  // HostZoomMap does not trigger zoom notification events when the default
+  // zoom level is set, so we need to do it here.
+  ui_zoom::ZoomEventManager::GetForBrowserContext(this)
+      ->OnDefaultZoomLevelChanged();
 }
 
 PrefProxyConfigTracker* OffTheRecordProfileImpl::CreateProxyConfigTracker() {
