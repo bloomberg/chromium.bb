@@ -1368,7 +1368,7 @@ def _CheckAndroidCrLogUsage(input_api, output_api):
       input_api.re.MULTILINE)
   log_name_pattern = input_api.re.compile(r'^cr[.\w]*')
 
-  REF_MSG = ('See base/android/java/src/org/chromium/base/README_logging.md '
+  REF_MSG = ('See docs/android_logging.md '
             'or contact dgn@chromium.org for more info.')
   sources = lambda x: input_api.FilterSourceFile(x, white_list=(r'.*\.java$',))
 
