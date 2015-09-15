@@ -147,6 +147,7 @@ void AnimationTimeline::serviceAnimations(TimingUpdateReason reason)
     }
 
     ASSERT(m_outdatedAnimationCount == 0);
+    ASSERT(m_lastCurrentTimeInternal == currentTimeInternal());
 
 #if ENABLE(ASSERT)
     for (const auto& animation : m_animationsNeedingUpdate)
@@ -271,7 +272,16 @@ void AnimationTimeline::pauseAnimationsForTesting(double pauseTime)
 
 bool AnimationTimeline::needsAnimationTimingUpdate()
 {
-    return m_animationsNeedingUpdate.size() && currentTimeInternal() != m_lastCurrentTimeInternal;
+    if (currentTimeInternal() == m_lastCurrentTimeInternal)
+        return false;
+
+    // We allow m_lastCurrentTimeInternal to advance here when there
+    // are no animations to allow animations spawned during style
+    // recalc to not invalidate this flag.
+    if (m_animationsNeedingUpdate.isEmpty())
+        m_lastCurrentTimeInternal = currentTimeInternal();
+
+    return !m_animationsNeedingUpdate.isEmpty();
 }
 
 void AnimationTimeline::clearOutdatedAnimation(Animation* animation)

@@ -58,34 +58,15 @@ void DocumentAnimations::updateAnimationTimingForAnimationFrame(Document& docume
     updateAnimationTiming(document, TimingUpdateForAnimationFrame);
 }
 
+bool DocumentAnimations::needsAnimationTimingUpdate(const Document& document)
+{
+    return document.timeline().hasOutdatedAnimation() || document.timeline().needsAnimationTimingUpdate();
+}
+
 void DocumentAnimations::updateAnimationTimingIfNeeded(Document& document)
 {
-    if (needsOutdatedAnimationUpdate(document) || document.timeline().needsAnimationTimingUpdate())
+    if (needsAnimationTimingUpdate(document))
         updateAnimationTiming(document, TimingUpdateOnDemand);
-}
-
-void DocumentAnimations::updateAnimationTimingForGetComputedStyle(Node& node, CSSPropertyID property)
-{
-    if (!node.isElementNode())
-        return;
-    const Element& element = toElement(node);
-    if (const ComputedStyle* style = element.computedStyle()) {
-        bool isTransformProperty = property == CSSPropertyRotate
-            || property == CSSPropertyScale
-            || property == CSSPropertyTransform
-            || property == CSSPropertyTranslate;
-        if ((property == CSSPropertyOpacity && style->isRunningOpacityAnimationOnCompositor())
-            || (isTransformProperty && style->isRunningTransformAnimationOnCompositor())
-            || (property == CSSPropertyWebkitFilter && style->isRunningFilterAnimationOnCompositor())
-            || (property == CSSPropertyBackdropFilter && style->isRunningBackdropFilterAnimationOnCompositor())) {
-            updateAnimationTiming(element.document(), TimingUpdateOnDemand);
-        }
-    }
-}
-
-bool DocumentAnimations::needsOutdatedAnimationUpdate(const Document& document)
-{
-    return document.timeline().hasOutdatedAnimation();
 }
 
 void DocumentAnimations::updateCompositorAnimations(Document& document)

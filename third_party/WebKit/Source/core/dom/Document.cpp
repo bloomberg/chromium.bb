@@ -1501,7 +1501,7 @@ bool Document::needsFullLayoutTreeUpdate() const
     // FIXME: The childNeedsDistributionRecalc bit means either self or children, we should fix that.
     if (childNeedsDistributionRecalc())
         return true;
-    if (DocumentAnimations::needsOutdatedAnimationUpdate(*this))
+    if (DocumentAnimations::needsAnimationTimingUpdate(*this))
         return true;
     return false;
 }
@@ -1765,7 +1765,7 @@ void Document::updateLayoutTree(StyleRecalcChange change)
         clearFocusedElementSoon();
     layoutView()->clearHitTestCache();
 
-    ASSERT(!m_timeline->hasOutdatedAnimation());
+    ASSERT(!DocumentAnimations::needsAnimationTimingUpdate(*this));
 
     TRACE_EVENT_END1("blink,devtools.timeline", "UpdateLayoutTree", "elementCount", m_styleRecalcElementCounter);
     InspectorInstrumentation::didRecalculateStyle(cookie, m_styleRecalcElementCounter);

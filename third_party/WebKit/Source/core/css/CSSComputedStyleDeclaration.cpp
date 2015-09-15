@@ -26,7 +26,6 @@
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/CSSPropertyNames.h"
-#include "core/animation/DocumentAnimations.h"
 #include "core/css/CSSPrimitiveValueMappings.h"
 #include "core/css/CSSPropertyMetadata.h"
 #include "core/css/CSSSelector.h"
@@ -545,9 +544,6 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValu
     const ComputedStyle* style;
 
     Document& document = styledNode->document();
-
-    // A timing update may be required if a compositor animation is running.
-    DocumentAnimations::updateAnimationTimingForGetComputedStyle(*styledNode, propertyID);
 
     document.updateLayoutTreeForNodeIfNeeded(styledNode);
 
