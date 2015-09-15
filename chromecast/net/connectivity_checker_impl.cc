@@ -113,10 +113,13 @@ void ConnectivityCheckerImpl::Check() {
 
   timeout_.Reset(base::Bind(&ConnectivityCheckerImpl::OnUrlRequestTimeout,
                             this));
+  // Exponential backoff for timeout in 3, 6 and 12 sec.
+  const int timeout = kRequestTimeoutInSeconds
+                      << (check_errors_ > 2 ? 2 : check_errors_);
   base::MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
       timeout_.callback(),
-      base::TimeDelta::FromSeconds(kRequestTimeoutInSeconds));
+      base::TimeDelta::FromSeconds(timeout));
 }
 
 void ConnectivityCheckerImpl::OnNetworkChanged(
