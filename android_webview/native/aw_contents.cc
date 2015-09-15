@@ -180,7 +180,7 @@ AwBrowserPermissionRequestDelegate* AwBrowserPermissionRequestDelegate::FromID(
       content::WebContents::FromRenderFrameHost(
           content::RenderFrameHost::FromID(render_process_id,
                                            render_frame_id)));
-  return implicit_cast<AwBrowserPermissionRequestDelegate*>(aw_contents);
+  return aw_contents;
 }
 
 AwContents::AwContents(scoped_ptr<WebContents> web_contents)

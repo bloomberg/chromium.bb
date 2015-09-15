@@ -63,7 +63,7 @@ SkColor TestPaint(View* view) {
   bitmap.allocN32Pixels(1, 1);
   EXPECT_TRUE(sk_canvas->readPixels(&bitmap, center.x(), center.y()));
   initial_pixel = bitmap.getColor(0, 0);
-  EXPECT_EQ(implicit_cast<SkColor>(SK_ColorTRANSPARENT), initial_pixel);
+  EXPECT_EQ(static_cast<SkColor>(SK_ColorTRANSPARENT), initial_pixel);
 
   view->Paint(ui::CanvasPainter(&canvas, 1.f).context());
 
@@ -83,7 +83,7 @@ void TestPaintAllStates(CustomButton* button, bool verify) {
     button->SetState(state);
     SkColor color = TestPaint(button);
     if (verify)
-      EXPECT_NE(implicit_cast<SkColor>(SK_ColorTRANSPARENT), color);
+      EXPECT_NE(static_cast<SkColor>(SK_ColorTRANSPARENT), color);
   }
 }
 

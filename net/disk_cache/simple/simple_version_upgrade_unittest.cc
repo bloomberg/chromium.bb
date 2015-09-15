@@ -56,9 +56,9 @@ TEST(SimpleVersionUpgradeTest, FailsToMigrateBackwards) {
   data.unused_must_be_zero1 = 0;
   data.unused_must_be_zero2 = 0;
   const base::FilePath file_name = cache_path.AppendASCII(kFakeIndexFileName);
-  ASSERT_EQ(implicit_cast<int>(sizeof(data)),
-            base::WriteFile(
-                file_name, reinterpret_cast<const char*>(&data), sizeof(data)));
+  ASSERT_EQ(static_cast<int>(sizeof(data)),
+            base::WriteFile(file_name, reinterpret_cast<const char*>(&data),
+                            sizeof(data)));
   EXPECT_FALSE(disk_cache::UpgradeSimpleCacheOnDisk(cache_dir.path()));
 }
 
@@ -70,9 +70,9 @@ TEST(SimpleVersionUpgradeTest, FakeIndexVersionGetsUpdated) {
   WriteFakeIndexFileV5(cache_path);
   const std::string file_contents("incorrectly serialized data");
   const base::FilePath index_file = cache_path.AppendASCII(kIndexFileName);
-  ASSERT_EQ(implicit_cast<int>(file_contents.size()),
-            base::WriteFile(
-                index_file, file_contents.data(), file_contents.size()));
+  ASSERT_EQ(
+      static_cast<int>(file_contents.size()),
+      base::WriteFile(index_file, file_contents.data(), file_contents.size()));
 
   // Upgrade.
   ASSERT_TRUE(disk_cache::UpgradeSimpleCacheOnDisk(cache_path));
@@ -97,9 +97,9 @@ TEST(SimpleVersionUpgradeTest, UpgradeV5V6IndexMustDisappear) {
   WriteFakeIndexFileV5(cache_path);
   const std::string file_contents("incorrectly serialized data");
   const base::FilePath index_file = cache_path.AppendASCII(kIndexFileName);
-  ASSERT_EQ(implicit_cast<int>(file_contents.size()),
-            base::WriteFile(
-                index_file, file_contents.data(), file_contents.size()));
+  ASSERT_EQ(
+      static_cast<int>(file_contents.size()),
+      base::WriteFile(index_file, file_contents.data(), file_contents.size()));
 
   // Create a few entry-like files.
   const uint64 kEntries = 5;
@@ -109,11 +109,10 @@ TEST(SimpleVersionUpgradeTest, UpgradeV5V6IndexMustDisappear) {
           base::StringPrintf("%016" PRIx64 "_%1d", entry_hash, index);
       std::string entry_contents =
           file_contents +
-          base::StringPrintf(" %" PRIx64, implicit_cast<uint64>(entry_hash));
-      ASSERT_EQ(implicit_cast<int>(entry_contents.size()),
+          base::StringPrintf(" %" PRIx64, static_cast<uint64>(entry_hash));
+      ASSERT_EQ(static_cast<int>(entry_contents.size()),
                 base::WriteFile(cache_path.AppendASCII(file_name),
-                                     entry_contents.data(),
-                                     entry_contents.size()));
+                                entry_contents.data(), entry_contents.size()));
     }
   }
 
@@ -128,7 +127,7 @@ TEST(SimpleVersionUpgradeTest, UpgradeV5V6IndexMustDisappear) {
           base::StringPrintf("%016" PRIx64 "_%1d", entry_hash, index);
       std::string expected_contents =
           file_contents +
-          base::StringPrintf(" %" PRIx64, implicit_cast<uint64>(entry_hash));
+          base::StringPrintf(" %" PRIx64, static_cast<uint64>(entry_hash));
       std::string real_contents;
       EXPECT_TRUE(base::ReadFileToString(cache_path.AppendASCII(file_name),
                                          &real_contents));

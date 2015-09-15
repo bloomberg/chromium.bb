@@ -38,7 +38,7 @@
         addObserver:self
            selector:@selector(onWindowWillStartLiveResize:)
                name:NSWindowWillStartLiveResizeNotification
-             object:implicit_cast<ui::BaseWindow*>(nativeAppWindow)
+             object:static_cast<ui::BaseWindow*>(nativeAppWindow)
                         ->GetNativeWindow()];
   }
   return self;

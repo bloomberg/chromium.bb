@@ -78,7 +78,7 @@ class AppShimHostTest : public testing::Test,
   }
 
   void SimulateDisconnect() {
-    implicit_cast<IPC::Listener*>(host_.release())->OnChannelError();
+    static_cast<IPC::Listener*>(host_.release())->OnChannelError();
   }
 
  protected:
@@ -128,7 +128,7 @@ TEST_F(AppShimHostTest, TestLaunchAppWithHandler) {
   apps::AppShimHandler::RegisterHandler(kTestAppId, this);
   LaunchApp(apps::APP_SHIM_LAUNCH_NORMAL);
   EXPECT_EQ(kTestAppId,
-            implicit_cast<apps::AppShimHandler::Host*>(host())->GetAppId());
+            static_cast<apps::AppShimHandler::Host*>(host())->GetAppId());
   EXPECT_EQ(apps::APP_SHIM_LAUNCH_SUCCESS, GetLaunchResult());
   EXPECT_EQ(1, launch_count_);
   EXPECT_EQ(1, launch_now_count_);
@@ -136,8 +136,8 @@ TEST_F(AppShimHostTest, TestLaunchAppWithHandler) {
   EXPECT_EQ(0, close_count_);
 
   // A second OnAppLaunchComplete is ignored.
-  implicit_cast<apps::AppShimHandler::Host*>(host())->
-      OnAppLaunchComplete(apps::APP_SHIM_LAUNCH_APP_NOT_FOUND);
+  static_cast<apps::AppShimHandler::Host*>(host())
+      ->OnAppLaunchComplete(apps::APP_SHIM_LAUNCH_APP_NOT_FOUND);
   EXPECT_EQ(apps::APP_SHIM_LAUNCH_SUCCESS, GetLaunchResult());
 
   EXPECT_TRUE(host()->ReceiveMessage(
@@ -157,7 +157,7 @@ TEST_F(AppShimHostTest, TestNoLaunchNow) {
   apps::AppShimHandler::RegisterHandler(kTestAppId, this);
   LaunchApp(apps::APP_SHIM_LAUNCH_REGISTER_ONLY);
   EXPECT_EQ(kTestAppId,
-            implicit_cast<apps::AppShimHandler::Host*>(host())->GetAppId());
+            static_cast<apps::AppShimHandler::Host*>(host())->GetAppId());
   EXPECT_EQ(apps::APP_SHIM_LAUNCH_SUCCESS, GetLaunchResult());
   EXPECT_EQ(1, launch_count_);
   EXPECT_EQ(0, launch_now_count_);

@@ -465,9 +465,7 @@ class scoped_ptr<T[], D> {
   //   (C++98 [expr.delete]p3). If you're doing this, fix your code.
   // - it cannot be const-qualified differently from T per unique_ptr spec
   //   (http://cplusplus.github.com/LWG/lwg-active.html#2118). Users wanting
-  //   to work around this may use implicit_cast<const T*>().
-  //   However, because of the first bullet in this comment, users MUST
-  //   NOT use implicit_cast<Base*>() to upcast the static type of the array.
+  //   to work around this may use const_cast<const T*>().
   explicit scoped_ptr(element_type* array) : impl_(array) {}
 
   // Constructor.  Allows construction from a nullptr.

@@ -11,10 +11,9 @@ namespace ui {
 bool PageTransitionCoreTypeIs(PageTransition lhs,
                               PageTransition rhs) {
   // Expect the rhs to be a compile time constant without qualifiers.
-  DCHECK(PageTransitionGetQualifier(rhs) == 0 &&
-      PageTransitionIsValidType(rhs));
-  return implicit_cast<int>(PageTransitionStripQualifier(lhs)) ==
-      implicit_cast<int>(PageTransitionStripQualifier(rhs));
+  DCHECK_EQ(PageTransitionGetQualifier(rhs), 0);
+  DCHECK(PageTransitionIsValidType(rhs));
+  return PageTransitionStripQualifier(lhs) == PageTransitionStripQualifier(rhs);
 }
 
 PageTransition PageTransitionStripQualifier(PageTransition type) {

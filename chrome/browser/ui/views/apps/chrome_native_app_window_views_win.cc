@@ -57,8 +57,7 @@ bool ChromeNativeAppWindowViewsWin::IsRunningInAsh() {
   if (!ash::Shell::HasInstance())
     return false;
 
-  views::Widget* widget =
-      implicit_cast<views::WidgetDelegate*>(this)->GetWidget();
+  views::Widget* widget = GetWidget();
   chrome::HostDesktopType host_desktop_type =
       chrome::GetHostDesktopTypeForNativeWindow(widget->GetNativeWindow());
   return host_desktop_type == chrome::HOST_DESKTOP_TYPE_ASH;

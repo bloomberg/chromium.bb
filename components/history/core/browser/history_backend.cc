@@ -1367,7 +1367,8 @@ void HistoryBackend::QueryFilteredURLs(int result_count,
 
   // Limit to the top |result_count| results.
   std::sort(data.begin(), data.end(), PageUsageData::Predicate);
-  if (result_count && implicit_cast<int>(data.size()) > result_count)
+  DCHECK_GE(result_count, 0);
+  if (result_count && data.size() > static_cast<size_t>(result_count))
     data.resize(result_count);
 
   for (size_t i = 0; i < data.size(); ++i) {

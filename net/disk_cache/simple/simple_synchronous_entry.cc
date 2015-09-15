@@ -939,7 +939,7 @@ int SimpleSynchronousEntry::InitializeForOpen(
     scoped_ptr<char[]> key(new char[header.key_length]);
     int key_read_result = files_[i].Read(sizeof(header), key.get(),
                                          header.key_length);
-    if (key_read_result != implicit_cast<int>(header.key_length)) {
+    if (key_read_result != base::checked_cast<int>(header.key_length)) {
       DLOG(WARNING) << "Cannot read key from entry.";
       RecordSyncOpenResult(cache_type_, OPEN_ENTRY_CANT_READ_KEY, had_index);
       return net::ERR_FAILED;
@@ -1018,7 +1018,7 @@ bool SimpleSynchronousEntry::InitializeCreatedFile(
 
   bytes_written = files_[file_index].Write(sizeof(header), key_.data(),
                                            key_.size());
-  if (bytes_written != implicit_cast<int>(key_.size())) {
+  if (bytes_written != base::checked_cast<int>(key_.size())) {
     *out_result = CREATE_ENTRY_CANT_WRITE_KEY;
     return false;
   }
@@ -1248,7 +1248,7 @@ bool SimpleSynchronousEntry::InitializeSparseFile() {
 
   int key_write_result = sparse_file_.Write(sizeof(header), key_.data(),
                                             key_.size());
-  if (key_write_result != implicit_cast<int>(key_.size())) {
+  if (key_write_result != base::checked_cast<int>(key_.size())) {
     DLOG(WARNING) << "Could not write sparse file key";
     return false;
   }
@@ -1378,7 +1378,7 @@ bool SimpleSynchronousEntry::WriteSparseRange(SparseRange* range,
     int bytes_written = sparse_file_.Write(range->file_offset - sizeof(header),
                                            reinterpret_cast<char*>(&header),
                                            sizeof(header));
-    if (bytes_written != implicit_cast<int>(sizeof(header))) {
+    if (bytes_written != base::checked_cast<int>(sizeof(header))) {
       DLOG(WARNING) << "Could not rewrite sparse range header.";
       return false;
     }
@@ -1413,7 +1413,7 @@ bool SimpleSynchronousEntry::AppendSparseRange(int64 offset,
   int bytes_written = sparse_file_.Write(sparse_tail_offset_,
                                          reinterpret_cast<char*>(&header),
                                          sizeof(header));
-  if (bytes_written != implicit_cast<int>(sizeof(header))) {
+  if (bytes_written != base::checked_cast<int>(sizeof(header))) {
     DLOG(WARNING) << "Could not append sparse range header.";
     return false;
   }

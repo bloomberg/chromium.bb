@@ -11,6 +11,7 @@
 #include "base/base_export.h"
 #include "base/basictypes.h"
 #include "base/logging.h"
+#include "base/template_util.h"
 
 namespace base {
 namespace android {
@@ -178,7 +179,8 @@ class ScopedJavaLocalRef : public JavaRef<T> {
 
   template<typename U>
   void Reset(JNIEnv* env, U obj) {
-    implicit_cast<T>(obj);  // Ensure U is assignable to T
+    static_assert(base::is_convertible<U, T>::value,
+                  "U must be convertible to T");
     env_ = this->SetNewLocalRef(env, obj);
   }
 
@@ -242,7 +244,8 @@ class ScopedJavaGlobalRef : public JavaRef<T> {
 
   template<typename U>
   void Reset(JNIEnv* env, U obj) {
-    implicit_cast<T>(obj);  // Ensure U is assignable to T
+    static_assert(base::is_convertible<U, T>::value,
+                  "U must be convertible to T");
     this->SetNewGlobalRef(env, obj);
   }
 

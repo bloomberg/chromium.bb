@@ -61,7 +61,7 @@ TEST(UrlUtilitiesTest, Unescape) {
                                    "%2B%3D%7B%5B%7D%5D%7C%5C%3A%3B%22%27%3C%2C"
                                    "%3E%2E%3F%2F"));
   for (int c = 0; c < 256; ++c) {
-    std::string unescaped_char(1, implicit_cast<unsigned char>(c));
+    std::string unescaped_char(1, static_cast<unsigned char>(c));
     std::string escaped_char = base::StringPrintf("%%%02X", c);
     EXPECT_EQ(unescaped_char, UrlUtilities::Unescape(escaped_char))
         << "escaped_char = " << escaped_char;
@@ -75,7 +75,7 @@ TEST(UrlUtilitiesTest, Unescape) {
             UrlUtilities::Unescape("~`!@#$^&*()_-+={[}]|\\:;\"'<,>.?/"));
   for (int c = 0; c < 256; ++c) {
     if (c != '%') {
-      std::string just_char(1, implicit_cast<unsigned char>(c));
+      std::string just_char(1, static_cast<unsigned char>(c));
       EXPECT_EQ(just_char, UrlUtilities::Unescape(just_char));
     }
   }

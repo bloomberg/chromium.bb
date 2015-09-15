@@ -12,6 +12,7 @@
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/sha1.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
@@ -276,7 +277,7 @@ class CacheStorage::SimpleCacheLoader : public CacheStorage::CacheLoader {
       const BoolCallback& callback,
       const scoped_refptr<base::SingleThreadTaskRunner>& original_task_runner) {
     int bytes_written = base::WriteFile(tmp_path, data.c_str(), data.size());
-    if (bytes_written != implicit_cast<int>(data.size())) {
+    if (bytes_written != base::checked_cast<int>(data.size())) {
       base::DeleteFile(tmp_path, /* recursive */ false);
       original_task_runner->PostTask(FROM_HERE, base::Bind(callback, false));
     }

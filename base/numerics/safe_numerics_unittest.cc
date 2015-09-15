@@ -673,9 +673,9 @@ TEST(SafeNumerics, IsValueInRangeForNumericType) {
   EXPECT_TRUE(IsValueInRangeForNumericType<int32_t>(
       std::numeric_limits<int32_t>::min()));
   EXPECT_TRUE(IsValueInRangeForNumericType<int32_t>(
-      implicit_cast<int64_t>(std::numeric_limits<int32_t>::min())));
+      static_cast<int64_t>(std::numeric_limits<int32_t>::min())));
   EXPECT_FALSE(IsValueInRangeForNumericType<int32_t>(
-      implicit_cast<int64_t>(std::numeric_limits<int32_t>::min()) - 1));
+      static_cast<int64_t>(std::numeric_limits<int32_t>::min()) - 1));
   EXPECT_FALSE(IsValueInRangeForNumericType<int32_t>(
       std::numeric_limits<int64_t>::min()));
 
@@ -715,7 +715,7 @@ TEST(SafeNumerics, IsValueInRangeForNumericType) {
   EXPECT_TRUE(IsValueInRangeForNumericType<int64_t>(
       std::numeric_limits<int32_t>::min()));
   EXPECT_TRUE(IsValueInRangeForNumericType<int64_t>(
-      implicit_cast<int64_t>(std::numeric_limits<int32_t>::min())));
+      static_cast<int64_t>(std::numeric_limits<int32_t>::min())));
   EXPECT_TRUE(IsValueInRangeForNumericType<int64_t>(
       std::numeric_limits<int64_t>::min()));
 }

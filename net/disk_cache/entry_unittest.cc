@@ -2718,7 +2718,7 @@ TEST_F(DiskCacheEntryTest, SimpleCacheNoEOF) {
 
   // Truncate the file such that the length isn't sufficient to have an EOF
   // record.
-  int kTruncationBytes = -implicit_cast<int>(sizeof(disk_cache::SimpleFileEOF));
+  int kTruncationBytes = -static_cast<int>(sizeof(disk_cache::SimpleFileEOF));
   const base::FilePath entry_path = cache_path_.AppendASCII(
       disk_cache::simple_util::GetFilenameFromKeyAndFileIndex(key, 0));
   const int64 invalid_size =

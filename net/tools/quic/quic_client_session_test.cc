@@ -130,7 +130,7 @@ TEST_P(ToolsQuicClientSessionTest, InvalidPacketReceived) {
   IPEndPoint client_address(TestPeerIPAddress(), kTestPort);
 
   EXPECT_CALL(*connection_, ProcessUdpPacket(server_address, client_address, _))
-      .WillRepeatedly(Invoke(implicit_cast<MockConnection*>(connection_),
+      .WillRepeatedly(Invoke(static_cast<MockConnection*>(connection_),
                              &MockConnection::ReallyProcessUdpPacket));
   EXPECT_CALL(*connection_, OnCanWrite()).Times(AnyNumber());
   EXPECT_CALL(*connection_, OnError(_)).Times(1);
@@ -167,7 +167,7 @@ TEST_P(ToolsQuicClientSessionTest, InvalidFramedPacketReceived) {
   IPEndPoint client_address(TestPeerIPAddress(), kTestPort);
 
   EXPECT_CALL(*connection_, ProcessUdpPacket(server_address, client_address, _))
-      .WillRepeatedly(Invoke(implicit_cast<MockConnection*>(connection_),
+      .WillRepeatedly(Invoke(static_cast<MockConnection*>(connection_),
                              &MockConnection::ReallyProcessUdpPacket));
   EXPECT_CALL(*connection_, OnError(_)).Times(1);
 

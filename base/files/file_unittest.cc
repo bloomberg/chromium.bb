@@ -517,7 +517,7 @@ TEST(FileTest, MemoryCorruption) {
     // Test that changing the checksum value is detected.
     base::File file;
     EXPECT_NE(file.file_.file_memory_checksum_,
-              implicit_cast<unsigned int>(file.GetPlatformFile()));
+              static_cast<unsigned int>(file.GetPlatformFile()));
     file.file_.file_memory_checksum_ = file.GetPlatformFile();
     EXPECT_DEATH(file.IsValid(), "");
 
