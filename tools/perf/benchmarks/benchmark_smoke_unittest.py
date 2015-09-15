@@ -150,10 +150,6 @@ def load_tests(loader, standard_tests, pattern):
     if sys.modules[benchmark.__module__] in _ANDROID_BLACK_LIST_MODULES:
       method._disabled_strings.append('android')
 
-    # TODO(bashi): Remove once crrev.com/1266833004 is landed.
-    if benchmark.Name() == 'memory.blink_memory_mobile':
-      method._disabled_strings.append('android')
-
     setattr(BenchmarkSmokeTest, benchmark.Name(), method)
 
     suite.addTest(BenchmarkSmokeTest(benchmark.Name()))
