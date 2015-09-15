@@ -10,6 +10,7 @@
         'checkbox/compiled_resources.gyp:*',
         'internet_page/compiled_resources.gyp:*',
         'languages_page/compiled_resources.gyp:*',
+        'on_startup_page/compiled_resources.gyp:*',
         'prefs/compiled_resources.gyp:*'
       ],
     },

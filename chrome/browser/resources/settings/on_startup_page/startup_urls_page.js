@@ -56,10 +56,13 @@ Polymer({
     if (!value)
       return;
     this.push('prefs.session.startup_urls.value', value);
-    this.newUrl = undefined;
+    this.newUrl = '';
   },
 
-  /** @private */
+  /**
+   * @param {!{model: !{index: number}}} e
+   * @private
+   */
   onRemoveUrlTap_: function(e) {
     this.splice('prefs.session.startup_urls.value', e.model.index, 1);
   },
