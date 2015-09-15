@@ -60,6 +60,12 @@ void RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
   policy::PolicyStatisticsCollector::RegisterPrefs(registry);
 #endif
 
+  // Preferences related to the browser state manager.
+  registry->RegisterStringPref(ios::prefs::kBrowserStateLastUsed,
+                               std::string());
+  registry->RegisterIntegerPref(ios::prefs::kBrowserStatesNumCreated, 1);
+  registry->RegisterListPref(ios::prefs::kBrowserStatesLastActive);
+
   ios::GetChromeBrowserProvider()->RegisterLocalState(registry);
 }
 

@@ -13,6 +13,9 @@ namespace prefs {
 // preference.
 
 const char kAcceptLanguages[] = "intl.accept_languages";
+const char kBrowserStateLastUsed[] = "profile.last_used";
+const char kBrowserStatesLastActive[] = "profile.last_active_profiles";
+const char kBrowserStatesNumCreated[] = "profile.profiles_created";
 const char kDefaultCharset[] = "intl.charset_default";
 const char kEnableDoNotTrack[] = "enable_do_not_track";
 const char kHttpServerProperties[] = "net.http_server_properties";

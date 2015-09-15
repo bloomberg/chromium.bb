@@ -11,6 +11,9 @@ namespace prefs {
 // Preferences in ios::prefs:: are temporary shared with desktop Chrome.
 // Non-shared preferences should be in the prefs:: namespace (no ios::).
 extern const char kAcceptLanguages[];
+extern const char kBrowserStateLastUsed[];
+extern const char kBrowserStatesLastActive[];
+extern const char kBrowserStatesNumCreated[];
 extern const char kDefaultCharset[];
 extern const char kEnableDoNotTrack[];
 extern const char kHttpServerProperties[];
