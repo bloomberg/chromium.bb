@@ -371,9 +371,6 @@ void RenderWidgetCompositor::Initialize() {
         &settings.initial_debug_state.slow_down_raster_scale_factor);
   }
 
-  settings.invert_viewport_scroll_order =
-      cmd->HasSwitch(switches::kInvertViewportScrollOrder);
-
   settings.strict_layer_property_change_checking =
       cmd->HasSwitch(cc::switches::kStrictLayerPropertyChangeChecking);
 

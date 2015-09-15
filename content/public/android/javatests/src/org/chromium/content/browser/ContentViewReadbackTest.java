@@ -89,7 +89,7 @@ public class ContentViewReadbackTest extends ContentShellTestBase {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                getContentViewCore().flingViewport(SystemClock.uptimeMillis(), 0, -100);
+                getContentViewCore().flingViewport(SystemClock.uptimeMillis(), 0, -1000);
             }
         });
         assertWaitForYScroll(previousYScroll);

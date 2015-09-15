@@ -477,9 +477,6 @@ const char kEnableUserMediaScreenCapturing[] =
 // pinch gestures.
 const char kEnableViewport[]                = "enable-viewport";
 
-// Enables experiment to scroll the inner viewport first in some situations.
-const char kInvertViewportScrollOrder[] = "invert-viewport-scroll-order";
-
 // Enable the Vtune profiler support.
 const char kEnableVtune[]                   = "enable-vtune-support";
 

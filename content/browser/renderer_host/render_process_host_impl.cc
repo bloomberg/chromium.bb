@@ -1329,7 +1329,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kEnableTouchEditing,
     switches::kEnableUnsafeES3APIs,
     switches::kEnableViewport,
-    switches::kInvertViewportScrollOrder,
     switches::kEnableVtune,
     switches::kEnableWebBluetooth,
     switches::kEnableWebGLDraftExtensions,
