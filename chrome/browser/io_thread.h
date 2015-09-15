@@ -380,6 +380,7 @@ class IOThread : public content::BrowserThreadDelegate {
 
   // Returns true if QUIC should enable alternative services.
   static bool ShouldQuicEnableAlternativeServices(
+      const base::CommandLine& command_line,
       const VariationParameters& quic_trial_params);
 
   // Returns the maximum number of QUIC connections with high packet loss in a

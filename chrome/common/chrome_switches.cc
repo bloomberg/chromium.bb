@@ -519,6 +519,9 @@ const char kEnableQuic[]                    = "enable-quic";
 // This only has an effect if QUIC protocol is enabled.
 const char kEnableQuicPortSelection[]       = "enable-quic-port-selection";
 
+// Enables support for HTTP alternative services.
+const char kEnableAlternativeServices[] = "enable-alternative-services";
+
 // Enables save password prompt bubble.
 const char kEnableSavePasswordBubble[]      = "enable-save-password-bubble";
 

@@ -152,6 +152,7 @@ extern const char kEnablePushApiBackgroundMode[];
 extern const char kDisablePushApiBackgroundMode[];
 extern const char kEnableQuic[];
 extern const char kEnableQuicPortSelection[];
+extern const char kEnableAlternativeServices[];
 extern const char kEnableSavePasswordBubble[];
 extern const char kEnableSdchPersistence[];
 extern const char kEnableSessionCrashedBubble[];

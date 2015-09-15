@@ -1134,6 +1134,8 @@ void IOThread::ConfigureQuicGlobals(
   bool enable_quic_for_proxies = ShouldEnableQuicForProxies(
       command_line, quic_trial_group, quic_allowed_by_policy);
   globals->enable_quic_for_proxies.set(enable_quic_for_proxies);
+  globals->use_alternative_services.set(
+      ShouldQuicEnableAlternativeServices(command_line, quic_trial_params));
   if (enable_quic) {
     globals->enable_insecure_quic.set(
         ShouldEnableInsecureQuic(command_line, quic_trial_params));
@@ -1159,8 +1161,6 @@ void IOThread::ConfigureQuicGlobals(
         ShouldQuicDisableDiskCache(quic_trial_params));
     globals->quic_prefer_aes.set(
         ShouldQuicPreferAes(quic_trial_params));
-    globals->use_alternative_services.set(
-        ShouldQuicEnableAlternativeServices(quic_trial_params));
     int max_number_of_lossy_connections = GetQuicMaxNumberOfLossyConnections(
         quic_trial_params);
     if (max_number_of_lossy_connections != 0) {
@@ -1372,9 +1372,12 @@ bool IOThread::ShouldQuicPreferAes(
 }
 
 bool IOThread::ShouldQuicEnableAlternativeServices(
+    const base::CommandLine& command_line,
     const VariationParameters& quic_trial_params) {
-  return base::LowerCaseEqualsASCII(
-      GetVariationParam(quic_trial_params, "use_alternative_services"), "true");
+  return command_line.HasSwitch(switches::kEnableAlternativeServices) ||
+         base::LowerCaseEqualsASCII(
+             GetVariationParam(quic_trial_params, "use_alternative_services"),
+             "true");
 }
 
 int IOThread::GetQuicMaxNumberOfLossyConnections(

@@ -200,6 +200,27 @@ TEST_F(IOThreadTest, EnableQuicFromCommandLine) {
   EXPECT_FALSE(IOThread::ShouldEnableQuicForDataReductionProxy());
 }
 
+TEST_F(IOThreadTest, EnableAlternativeServicesFromCommandLineWithQuicDisabled) {
+  command_line_.AppendSwitch("enable-alternative-services");
+
+  ConfigureQuicGlobals();
+  net::HttpNetworkSession::Params params;
+  InitializeNetworkSessionParams(&params);
+  EXPECT_FALSE(params.enable_quic);
+  EXPECT_TRUE(params.use_alternative_services);
+}
+
+TEST_F(IOThreadTest, EnableAlternativeServicesFromCommandLineWithQuicEnabled) {
+  command_line_.AppendSwitch("enable-quic");
+  command_line_.AppendSwitch("enable-alternative-services");
+
+  ConfigureQuicGlobals();
+  net::HttpNetworkSession::Params params;
+  InitializeNetworkSessionParams(&params);
+  EXPECT_TRUE(params.enable_quic);
+  EXPECT_TRUE(params.use_alternative_services);
+}
+
 TEST_F(IOThreadTest, EnableInsecureQuicFromFieldTrialParams) {
   field_trial_group_ = "Enabled";
   field_trial_params_["enable_insecure_quic"] = "true";
