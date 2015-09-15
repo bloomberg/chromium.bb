@@ -102,6 +102,7 @@ class TestDelegate : public CertificateProviderService::Delegate {
     EXPECT_EQ(expected_request_type_, RequestType::SIGN);
     last_sign_request_id_ = sign_request_id;
     last_extension_id_ = extension_id;
+    last_certificate_ = certificate;
     expected_request_type_ = RequestType::NONE;
     return true;
   }
@@ -115,11 +116,13 @@ class TestDelegate : public CertificateProviderService::Delegate {
     last_extension_id_.clear();
     last_sign_request_id_ = -1;
     last_cert_request_id_ = -1;
+    last_certificate_ = nullptr;
     expected_request_type_ = expected_request_type;
   }
 
   int last_sign_request_id_ = -1;
   int last_cert_request_id_ = -1;
+  scoped_refptr<net::X509Certificate> last_certificate_;
   std::string last_extension_id_;
   std::set<std::string> provider_extensions_;
   RequestType expected_request_type_ = RequestType::NONE;
@@ -445,6 +448,8 @@ TEST_F(CertificateProviderServiceTest, SignRequest) {
   const int sign_request_id = test_delegate_->last_sign_request_id_;
   EXPECT_EQ(TestDelegate::RequestType::NONE,
             test_delegate_->expected_request_type_);
+  EXPECT_TRUE(
+      cert_info1_.certificate->Equals(test_delegate_->last_certificate_.get()));
 
   // No signature received until the extension replied to the service.
   EXPECT_TRUE(received_signature.empty());

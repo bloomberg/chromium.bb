@@ -161,9 +161,8 @@ IN_PROC_BROWSER_TEST_F(CertificateProviderApiTest, Basic) {
   // Start an HTTPS test server that requests a client certificate.
   net::SpawnedTestServer::SSLOptions ssl_options;
   ssl_options.request_client_certificate = true;
-  net::SpawnedTestServer https_server(
-      net::SpawnedTestServer::TYPE_HTTPS, ssl_options,
-      base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
+  net::SpawnedTestServer https_server(net::SpawnedTestServer::TYPE_HTTPS,
+                                      ssl_options, base::FilePath());
   ASSERT_TRUE(https_server.Start());
 
   extensions::ResultCatcher catcher;
