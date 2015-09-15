@@ -9506,6 +9506,9 @@
         "hwqual": false,
         "image_test": false,
         "important": true,
+        "sign_types": [
+            "base"
+        ],
         "sync_chrome": false,
         "upload_gce_images": true,
         "vm_tests": [

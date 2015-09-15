@@ -2311,6 +2311,7 @@ def GetConfig():
       _release, 'lakitu-release',
       _base_configs['lakitu'],
       vm_tests=[constants.SMOKE_SUITE_TEST_TYPE],
+      sign_types=['base'],
       important=True,
   )
 
