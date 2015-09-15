@@ -50,6 +50,19 @@ enum SkipEmptySectionsValue { DoNotSkipEmptySections, SkipEmptySections };
 // LayoutTableSection. Thus LayoutTable helps keep consistency across
 // LayoutTableSection. See e.g. m_column below.
 //
+// LayoutTable expects only 3 types of children:
+// - zero or more LayoutTableCol
+// - zero or more LayoutTableCaption
+// - zero or more LayoutTableSection
+// This is aligned with what HTML5 expects:
+// https://html.spec.whatwg.org/multipage/tables.html#the-table-element
+// with one difference: we allow more than one caption as we follow what
+// CSS expects (https://bugs.webkit.org/show_bug.cgi?id=69773).
+// Those expectations are enforced by LayoutTable::addChild, that wraps unknown
+// children into an anonymous LayoutTableSection. This is what the "generate
+// missing child wrapper" step in CSS mandates in
+// http://www.w3.org/TR/CSS21/tables.html#anonymous-boxes.
+//
 // TODO(jchaffraix): Explain more of the class structure.
 class CORE_EXPORT LayoutTable final : public LayoutBlock {
 public:
@@ -358,7 +371,10 @@ private:
     // See colToEffCol for converting an absolute column index into an
     // index into |m_columns|.
     mutable Vector<ColumnStruct> m_columns;
+
+    // The captions associated with this object.
     mutable Vector<LayoutTableCaption*> m_captions;
+
     mutable Vector<LayoutTableCol*> m_columnLayoutObjects;
 
     mutable LayoutTableSection* m_head;

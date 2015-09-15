@@ -26,6 +26,22 @@ namespace blink {
 
 class LayoutTable;
 
+// LayoutTableCaption is used to represent a table caption
+// (display: table-caption).
+//
+// Table captions are full block-flows, which is why they inherit from
+// LayoutBlockFlow. This is the only internal table part that allows margins.
+// All other elements simply ignore it to satisfy the table model.
+//
+// This class is very simple as the logic for handling the caption is done in
+// LayoutTable. In particular, the placement and sizing is done in
+// LayoutTable::layoutCaption. The function is called at different timing
+// depending on the 'caption-side' property: "top" is laid out before table row
+// groups when "bottom" ones are laid out after. This ensures that "top"
+// captions are visually before the row groups and "bottom" ones are after.
+//
+// See http://www.w3.org/TR/CSS21/tables.html#caption-position for the
+// positioning.
 class LayoutTableCaption final : public LayoutBlockFlow {
 public:
     explicit LayoutTableCaption(Element*);
