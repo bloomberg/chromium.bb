@@ -41,6 +41,11 @@
     'gn_release_trybot_x86': ['gn', 'release_trybot', 'x86'],
     'gyp_debug_bot': ['gyp', 'debug_bot'],
     'gyp_debug_bot_x86': ['gyp', 'debug_bot', 'x86'],
+    'gyp_official_bot': ['gyp', 'official', 'goma'],
+    'gyp_official_bot_minimal_symbols': ['gyp', 'official', 'minimal_symbols', 'goma'],
+    'gyp_official_bot_minimal_symbols_android': ['gyp', 'official', 'minimal_symbols', 'goma', 'android'],
+    'gyp_official_bot_minimal_symbols_android_arm64': ['gyp', 'official', 'minimal_symbols', 'goma', 'android', 'arm64'],
+    'gyp_official_bot_minimal_symbols_x86': ['gyp', 'official', 'minimal_symbols', 'goma', 'x86'],
     'gyp_release_bot_arm': ['gyp', 'release_bot', 'arm', 'crosscompile'],
     'gyp_release_trybot': ['gyp', 'release_trybot'],
 
@@ -102,6 +107,11 @@
     'arm': {
       'gn_args': 'target_cpu="arm"',
       'gyp_defines': 'target_arch=arm',
+    },
+
+    'arm64': {
+      'gn_args': 'target_cpu="arm64"',
+      'gyp_defines': 'target_arch=arm64',
     },
 
     'arm_float': {
@@ -241,6 +251,12 @@
       'gyp_defines': 'target_arch=unknown',
     },
 
+    'official': {
+      'gn_args': 'is_chrome_branded is_official_build=true is_debug=false is_component_build=false',
+      'gyp_defines': 'branding="Chrome" buildtype="Official" component=static_library',
+      'gyp_config': 'Release',
+    },
+
     'release': {
       'gn_args': 'is_debug=false',
       'gyp_config': 'Release',
@@ -330,6 +346,14 @@
       'Chromium Mojo Linux': 'gn_release_bot',
       'Chromium Mojo Windows 7 Perf': 'gn_release_bot_minimal_symbols_x86',
     },
+    'chromium.perf': {
+      'Android Builder': 'gyp_official_bot_minimal_symbols_android',
+      'Android arm64 Builder': 'gyp_official_bot_minimal_symbols_android_arm64',
+      'Win Builder': 'gyp_official_bot_minimal_symbols_x86',
+      'Win x64 Builder': 'gyp_official_bot_minimal_symbols',
+      'Mac Builder': 'gyp_official_bot',
+      'Linux Builder': 'gyp_official_bot',
+    },
     'chromium.win': {
       # Windows bots take too long to link w/ full symbols and time out.
       'Win x64 GN': 'gn_release_bot_minimal_symbols',
@@ -411,6 +435,14 @@
       'mac_chromium_gn_dbg': 'gn_debug_static_bot',
       'mac_chromium_gn_rel': 'gn_release_trybot',
       'mac_chromium_gn_upload': 'gn_release_bot',
+    },
+    'tryserver.chromium.perf': {
+      'android_perf_bisect_builder': 'gyp_official_bot_minimal_symbols_android',
+      'android_arm64_perf_bisect_builder': 'gyp_official_bot_minimal_symbols_android_arm64',
+      'linux_perf_bisect_builder': 'gyp_official_bot',
+      'mac_perf_bisect_builder': 'gyp_official_bot',
+      'win_perf_bisect_builder': 'gyp_official_bot_minimal_symbols_x86',
+      'winx64_bisect_builder': 'gyp_official_bot_minimal_symbols',
     },
     'tryserver.chromium.win': {
       'win_chromium_gn_x64_dbg': 'gn_debug_bot_minimal_symbols',
