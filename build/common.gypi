@@ -513,10 +513,6 @@
       # builds.
       'use_custom_libcxx%': 0,
 
-      # Use system libc++ instead of the default C++ library, usually libstdc++.
-      # This is intended for iOS builds only.
-      'use_system_libcxx%': 0,
-
       # Set to true to instrument the code with function call logger.
       # See src/third_party/cygprofile/cyg-profile.cc for details.
       'order_profiling%': 0,
@@ -874,7 +870,6 @@
           'safe_browsing%': 0,
           'enable_supervised_users%': 0,
           'enable_task_manager%': 0,
-          'use_system_libcxx%': 1,
           'enable_media_router%': 0,
         }],
 
@@ -1198,7 +1193,6 @@
     'use_instrumented_libraries%': '<(use_instrumented_libraries)',
     'use_prebuilt_instrumented_libraries%': '<(use_prebuilt_instrumented_libraries)',
     'use_custom_libcxx%': '<(use_custom_libcxx)',
-    'use_system_libcxx%': '<(use_system_libcxx)',
     'order_profiling%': '<(order_profiling)',
     'order_text_section%': '<(order_text_section)',
     'enable_extensions%': '<(enable_extensions)',
@@ -5403,6 +5397,7 @@
         'xcode_settings' : {
           'CLANG_CXX_LANGUAGE_STANDARD': 'c++11',
           'ENABLE_BITCODE': 'NO',
+          'CLANG_CXX_LIBRARY': 'libc++',  # -stdlib=libc++
 
           'conditions': [
             # Older Xcodes do not support -Wno-deprecated-register, so pass an
@@ -5432,20 +5427,6 @@
             }],
             ['target_subarch=="both"', {
               'VALID_ARCHS': ['arm64', 'armv7', 'x86_64', 'i386'],
-            }],
-            ['use_system_libcxx==1', {
-              'target_conditions': [
-                # Only use libc++ when building target for iOS not when building
-                # tools for the host (OS X) as Mac targets OS X SDK 10.6 which
-                # does not support libc++.
-                ['_toolset=="target"', {
-                  'CLANG_CXX_LIBRARY': 'libc++',  # -stdlib=libc++
-                }]
-              ],
-            }, {
-              # The default for deployment target of 7.0+ is libc++, so force
-              # the old behavior unless libc++ is enabled.
-              'CLANG_CXX_LIBRARY': 'libstdc++',  # -stdlib=libstdc++
             }],
           ],
         },
