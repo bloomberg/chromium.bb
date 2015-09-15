@@ -5,3 +5,8 @@
 paper-radio-button {
   display: block;
 }
+
+.button-row {
+  display: flex;
+  margin-top: 25px;
+}
