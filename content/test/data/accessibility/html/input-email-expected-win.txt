@@ -1,3 +1,3 @@
-ROLE_SYSTEM_DOCUMENT READONLY FOCUSABLE
-++IA2_ROLE_SECTION
-++++ROLE_SYSTEM_TEXT FOCUSABLE text-input-type:email
+ROLE_SYSTEM_DOCUMENT READONLY FOCUSABLE n_selections=0
+++IA2_ROLE_SECTION n_selections=0
+++++ROLE_SYSTEM_TEXT FOCUSABLE text-input-type:email caret_offset=0 n_selections=0

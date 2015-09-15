@@ -1,0 +1,4 @@
+android.webkit.WebView focusable focused scrollable
+++android.widget.EditText clickable editable_text name='Single line.' text_change_added_count=12
+++android.widget.EditText clickable editable_text multiline name='Multiple
+lines.' text_change_added_count=15

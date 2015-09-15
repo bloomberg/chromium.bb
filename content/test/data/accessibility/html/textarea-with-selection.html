@@ -10,9 +10,14 @@
 <html>
 <body>
 
-<textarea rows="4" cols="50">
+<textarea rows="4" cols="50" autofocus>
 The textarea tag defines a multi-line text input control.
 </textarea>
 
+  <script>
+    var textarea = document.querySelector('textarea');
+    textarea.selectionStart = 0;
+    textarea.selectionEnd = textarea.textLength;
+  </script>
 </body>
 </html>

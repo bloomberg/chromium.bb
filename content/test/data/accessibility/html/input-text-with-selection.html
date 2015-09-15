@@ -11,6 +11,11 @@
 <!DOCTYPE html>
 <html>
   <body>
-    <input type="text" placeholder="Name" autofocus>
+    <input type="text" value="Selection">
+    <script>
+      var input = document.querySelector("input");
+      input.focus();
+      input.setSelectionRange(3, 5);
+    </script>
   </body>
 </html>
