@@ -301,6 +301,7 @@ void WebEmbeddedWorkerImpl::onScriptLoaderFinished()
         m_workerContextClient->workerContextFailedToStart();
         return;
     }
+    m_workerContextClient->workerScriptLoaded();
 
     Platform::current()->histogramCustomCounts("ServiceWorker.ScriptSize", m_mainScriptLoader->script().length(), 1000, 5000000, 50);
     if (m_mainScriptLoader->cachedMetadata())
