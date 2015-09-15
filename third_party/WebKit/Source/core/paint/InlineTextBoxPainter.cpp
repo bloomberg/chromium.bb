@@ -15,10 +15,10 @@
 #include "core/layout/LayoutTheme.h"
 #include "core/layout/line/InlineTextBox.h"
 #include "core/paint/BoxPainter.h"
+#include "core/paint/LayoutObjectDrawingRecorder.h"
 #include "core/paint/PaintInfo.h"
 #include "core/paint/TextPainter.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
-#include "platform/graphics/paint/DrawingRecorder.h"
 #include "wtf/Optional.h"
 
 namespace blink {
@@ -80,18 +80,18 @@ void InlineTextBoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& 
         return;
     }
 
-    // The text clip phase already has a DrawingRecorder. Text clips are initiated only in BoxPainter::paintLayerExtended, which is already
-    // within a DrawingRecorder.
-    Optional<DrawingRecorder> drawingRecorder;
+    // The text clip phase already has a LayoutObjectDrawingRecorder. Text clips are initiated only in BoxPainter::paintLayerExtended,
+    // which is already within a LayoutObjectDrawingRecorder.
+    Optional<LayoutObjectDrawingRecorder> drawingRecorder;
     if (paintInfo.phase != PaintPhaseTextClip) {
-        if (DrawingRecorder::useCachedDrawingIfPossible(*paintInfo.context, m_inlineTextBox, DisplayItem::paintPhaseToDrawingType(paintInfo.phase)))
+        if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(*paintInfo.context, m_inlineTextBox, paintInfo.phase, paintOffset))
             return;
         LayoutRect paintRect(logicalVisualOverflow);
         m_inlineTextBox.logicalRectToPhysicalRect(paintRect);
         if (paintInfo.phase != PaintPhaseSelection && (haveSelection || paintsMarkerHighlights(m_inlineTextBox.layoutObject())))
             paintRect.unite(m_inlineTextBox.localSelectionRect(m_inlineTextBox.start(), m_inlineTextBox.start() + m_inlineTextBox.len()));
         paintRect.moveBy(adjustedPaintOffset);
-        drawingRecorder.emplace(*paintInfo.context, m_inlineTextBox, DisplayItem::paintPhaseToDrawingType(paintInfo.phase), FloatRect(paintRect));
+        drawingRecorder.emplace(*paintInfo.context, m_inlineTextBox, paintInfo.phase, paintRect, paintOffset);
     }
 
     if (m_inlineTextBox.truncation() != cNoTruncation) {
