@@ -109,7 +109,7 @@ void AddClipNodeIfNeeded(const DataForRecursion<LayerType>& data_from_ancestor,
   if (layer->has_render_surface()) {
     if (ancestor_clips_subtree && layer->num_unclipped_descendants() > 0)
       data_for_children->ancestor_clips_subtree = true;
-    else if (!ancestor_clips_subtree && !layer->num_unclipped_descendants())
+    else if (!ancestor_clips_subtree)
       has_unclipped_surface = true;
   } else {
     data_for_children->ancestor_clips_subtree = ancestor_clips_subtree;

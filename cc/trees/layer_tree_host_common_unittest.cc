@@ -7889,6 +7889,9 @@ TEST_F(LayerTreeHostCommonTest,
 
   test_layer->SetDrawsContent(true);
   render_surface->SetClipParent(clip_parent);
+  scoped_ptr<std::set<LayerImpl*>> clip_children(new std::set<LayerImpl*>);
+  clip_children->insert(render_surface);
+  clip_parent->SetClipChildren(clip_children.release());
   SetLayerPropertiesForTesting(root, identity_matrix, gfx::Point3F(),
                                gfx::PointF(), gfx::Size(30, 30), true, false,
                                true);
@@ -7907,7 +7910,7 @@ TEST_F(LayerTreeHostCommonTest,
 
   ExecuteCalculateDrawProperties(root);
 
-  EXPECT_EQ(gfx::Rect(-4, -4, 30, 30), test_layer->clip_rect());
+  EXPECT_EQ(gfx::Rect(30, 30), test_layer->clip_rect());
 }
 
 }  // namespace
