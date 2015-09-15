@@ -29,8 +29,9 @@ void LayoutTestHTMLViewer::Initialize(mojo::ApplicationImpl* app) {
 }
 
 void LayoutTestHTMLViewer::TestFinished() {
-  web_view::LayoutTestRunnerPtr test_runner_ptr;
+  test_interfaces_->ResetAll();
 
+  web_view::LayoutTestRunnerPtr test_runner_ptr;
   mojo::URLRequestPtr request(mojo::URLRequest::New());
   request->url = mojo::String::From("mojo:web_view_test_runner");
   app()->ConnectToService(request.Pass(), &test_runner_ptr);

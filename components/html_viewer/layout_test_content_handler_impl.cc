@@ -9,6 +9,7 @@
 #include "components/html_viewer/html_widget.h"
 #include "components/html_viewer/web_test_delegate_impl.h"
 #include "components/test_runner/web_frame_test_proxy.h"
+#include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebTestingSupport.h"
 #include "third_party/WebKit/public/web/WebView.h"
 
@@ -16,7 +17,12 @@ namespace html_viewer {
 
 class TestHTMLFrame : public HTMLFrame {
  public:
-  explicit TestHTMLFrame(HTMLFrame::CreateParams* params) : HTMLFrame(params) {}
+  explicit TestHTMLFrame(HTMLFrame::CreateParams* params)
+      : HTMLFrame(params), test_interfaces_(nullptr) {}
+
+  void set_test_interfaces(test_runner::WebTestInterfaces* test_interfaces) {
+    test_interfaces_ = test_interfaces;
+  }
 
  protected:
   ~TestHTMLFrame() override {}
@@ -26,7 +32,11 @@ class TestHTMLFrame : public HTMLFrame {
   void didClearWindowObject(blink::WebLocalFrame* frame) override {
     HTMLFrame::didClearWindowObject(frame);
     blink::WebTestingSupport::injectInternalsObject(frame);
+    DCHECK(test_interfaces_);
+    test_interfaces_->BindTo(frame);
   }
+
+  test_runner::WebTestInterfaces* test_interfaces_;
 
   DISALLOW_COPY_AND_ASSIGN(TestHTMLFrame);
 };
@@ -76,6 +86,7 @@ HTMLFrame* LayoutTestContentHandlerImpl::CreateHTMLFrame(
   using ProxyType =
       test_runner::WebFrameTestProxy<TestHTMLFrame, HTMLFrame::CreateParams*>;
   ProxyType* proxy = new ProxyType(params);
+  proxy->set_test_interfaces(test_interfaces_);
 
   web_widget_proxy_->SetInterfaces(test_interfaces_);
   web_widget_proxy_->SetDelegate(test_delegate_);

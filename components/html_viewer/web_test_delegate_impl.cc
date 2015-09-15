@@ -247,7 +247,7 @@ void WebTestDelegateImpl::SetLocale(const std::string& locale) {
 
 void WebTestDelegateImpl::TestFinished() {
   std::cout << "Content-Type: text/plain\n";
-  std::cout << (proxy_ ? proxy_->CaptureTree(false, false) : dump_tree_);
+  std::cout << proxy_->CaptureTree(false, false);
   std::cout << "#EOF\n";
 
   test_interfaces_->SetTestIsRunning(false);
@@ -337,9 +337,6 @@ blink::WebPlugin* WebTestDelegateImpl::CreatePluginPlaceholder(
 
 void WebTestDelegateImpl::OnWebTestProxyBaseDestroy(
     test_runner::WebTestProxyBase* base) {
-  DCHECK_EQ(proxy_, base);
-  dump_tree_ = proxy_->CaptureTree(false, false);
-  proxy_ = nullptr;
 }
 
 }  // namespace html_viewer
