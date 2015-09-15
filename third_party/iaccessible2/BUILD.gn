@@ -12,6 +12,16 @@ midl("iaccessible2") {
   ]
 }
 
+config("IAccessible2Proxy_warnings") {
+  if (is_clang) {
+    cflags = [
+      # MIDL generated code has a habit of omitting optional braces.
+      "-Wno-missing-braces",
+      "-Wno-incompatible-pointer-types",
+    ]
+  }
+}
+
 # Generate a proxy DLL from the generated code.
 shared_library("IAccessible2Proxy") {
   sources = [
@@ -20,15 +30,6 @@ shared_library("IAccessible2Proxy") {
     "IAccessible2Proxy.def",
   ]
 
-  config("IAccessible2Proxy_warnings") {
-    if (is_clang) {
-      cflags = [
-        # MIDL generated code has a habit of omitting optional braces.
-        "-Wno-missing-braces",
-        "-Wno-incompatible-pointer-types",
-      ]
-    }
-  }
   configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [ "//build/config/compiler:no_chromium_code" ]
   configs += [ ":IAccessible2Proxy_warnings" ]
