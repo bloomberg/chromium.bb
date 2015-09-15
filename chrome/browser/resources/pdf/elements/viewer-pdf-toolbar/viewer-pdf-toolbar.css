@@ -40,7 +40,7 @@ viewer-toolbar-dropdown {
 paper-progress {
   --paper-progress-active-color: rgb(50, 54, 57);
   --paper-progress-container-color: rgb(34, 36, 38);
-  height: 48px;
+  --paper-progress-height: 48px;
   position: absolute;
   width: 100%;
 }
