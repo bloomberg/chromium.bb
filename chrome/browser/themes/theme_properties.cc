@@ -85,14 +85,6 @@ const color_utils::HSL kDefaultTintFrameIncognito = { -1, 0.2f, 0.35f };
 const color_utils::HSL kDefaultTintFrameIncognitoInactive = { -1, 0.3f, 0.6f };
 const color_utils::HSL kDefaultTintBackgroundTab = { -1, 0.5, 0.75 };
 
-// Default display properties.
-const int kDefaultDisplayPropertyNTPAlignment =
-    ThemeProperties::ALIGN_CENTER;
-const int kDefaultDisplayPropertyNTPTiling =
-    ThemeProperties::NO_REPEAT;
-// By default, we do not use the ntp alternate logo.
-const int kDefaultDisplayPropertyNTPAlternateLogo = 0;
-
 // ----------------------------------------------------------------------------
 // Defaults for properties which are not stored in the browser theme pack.
 
@@ -108,75 +100,6 @@ const SkColor kDefaultColorToolbarBezel = SkColorSetRGB(204, 204, 204);
 const SkColor kDefaultColorToolbarStroke = SkColorSetRGB(103, 103, 103);
 const SkColor kDefaultColorToolbarStrokeInactive = SkColorSetRGB(163, 163, 163);
 #endif  // OS_MACOSX
-
-// ----------------------------------------------------------------------------
-// Defaults for layout properties which are not stored in the browser theme
-// pack. The array indices here are the values of
-// ui::MaterialDesignController::Mode, see
-// ui/base/resource/material_design/material_design_controller.h
-
-// Additional horizontal padding applied on the trailing edge of icon-label
-// views.
-const int kIconLabelViewTrailingPadding[] = {2, 8, 8};
-
-// The horizontal space between the edge and a bubble
-const int kLocationBarBubbleHorizontalPadding[] = {1, 5, 5};
-
-// The additional vertical padding of a bubble.
-const int kLocationBarBubbleVerticalPadding[] = {1, 3, 3};
-
-// The height to be occupied by the LocationBar. For
-// MaterialDesignController::NON_MATERIAL the height is determined from image
-// assets.
-const int kLocationBarHeight[] = {0, 28, 32};
-
-// Space between items in the location bar, as well as between items and the
-// edges.
-const int kLocationBarHorizontalPadding[] = {3, 6, 6};
-
-// The Vertical padding of items in the location bar.
-const int kLocationBarVerticalPadding[] = {2, 6, 6};
-
-// The number of pixels in the omnibox dropdown border image interior to
-// the actual border.
-const int kOmniboxDropdownBorderInterior[] = {6, 0, 0};
-
-// In an omnibox dropdown row, the minimum distance between the top and
-// bottom of the row's icon and the top or bottom of the row edge.
-const int kOmniboxDropdownMinIconVerticalPadding[] = {2, 4, 8};
-
-// In an omnibox dropdown row, the minimum distance between the top and
-// bottom of the row's text and the top or bottom of the row edge.
-const int kOmniboxDropdownMinTextVerticalPadding[] = {3, 4, 8};
-
-// The spacing between a ToolbarButton's image and its border.
-const int kToolbarButtonBorderInset[] = {2, 6, 6};
-
-// The minimum bottom vertical padding of the toolbar.
-const int kToolbarViewBottomVerticalPadding[] = {5, 5, 5};
-
-// Non-ash uses a rounded content area with no shadow in the assets.
-const int kToolbarViewContentShadowHeight[] = {0, 0, 0};
-
-// Ash doesn't use a rounded content area and its top edge has an extra shadow.
-const int kToolbarViewContentShadowHeightAsh[] = {2, 0, 0};
-
-// Additional horizontal padding between the elements in the toolbar.
-const int kToolbarViewElementPadding[] = {0, 0, 8};
-
-// Padding between the right-edge of the location bar and browser actions.
-const int kToolbarViewLocationBarRightPadding[] = {0, 4, 8};
-
-// The edge graphics have some built-in spacing/shadowing, so we have to adjust
-// our spacing to make it match.
-const int kToolbarViewLeftEdgeSpacing[] = {3, 4, 8};
-const int kToolbarViewRightEdgeSpacing[] = {2, 4, 8};
-
-// The horizontal space between most items.
-const int kToolbarViewStandardSpacing[] = {3, 4, 8};
-
-// The minimum top vertical padding of the toolbar.
-const int kToolbarViewTopVerticalPadding[] = {5, 4, 4};
 
 // ----------------------------------------------------------------------------
 
@@ -392,58 +315,5 @@ SkColor ThemeProperties::GetDefaultColor(int id) {
     default:
       // Return a debugging red color.
       return SK_ColorRED;
-  }
-}
-
-// static
-int ThemeProperties::GetDefaultDisplayProperty(int id) {
-  int mode = ui::MaterialDesignController::GetMode();
-  switch (id) {
-    case NTP_BACKGROUND_ALIGNMENT:
-      return kDefaultDisplayPropertyNTPAlignment;
-    case NTP_BACKGROUND_TILING:
-      return kDefaultDisplayPropertyNTPTiling;
-    case NTP_LOGO_ALTERNATE:
-      return kDefaultDisplayPropertyNTPAlternateLogo;
-    case PROPERTY_ICON_LABEL_VIEW_TRAILING_PADDING:
-      return kIconLabelViewTrailingPadding[mode];
-    case PROPERTY_LOCATION_BAR_BUBBLE_HORIZONTAL_PADDING:
-      return kLocationBarBubbleHorizontalPadding[mode];
-    case PROPERTY_LOCATION_BAR_BUBBLE_VERTICAL_PADDING:
-      return kLocationBarBubbleVerticalPadding[mode];
-    case PROPERTY_LOCATION_BAR_HEIGHT:
-      return kLocationBarHeight[mode];
-    case PROPERTY_LOCATION_BAR_HORIZONTAL_PADDING:
-      return kLocationBarHorizontalPadding[mode];
-    case PROPERTY_LOCATION_BAR_VERTICAL_PADDING:
-      return kLocationBarVerticalPadding[mode];
-    case PROPERTY_OMNIBOX_DROPDOWN_BORDER_INTERIOR:
-      return kOmniboxDropdownBorderInterior[mode];
-    case PROPERTY_OMNIBOX_DROPDOWN_MIN_ICON_VERTICAL_PADDING:
-      return kOmniboxDropdownMinIconVerticalPadding[mode];
-    case PROPERTY_OMNIBOX_DROPDOWN_MIN_TEXT_VERTICAL_PADDING:
-      return kOmniboxDropdownMinTextVerticalPadding[mode];
-    case PROPERTY_TOOLBAR_BUTTON_BORDER_INSET:
-      return kToolbarButtonBorderInset[mode];
-    case PROPERTY_TOOLBAR_VIEW_BOTTOM_VERTICAL_PADDING:
-      return kToolbarViewBottomVerticalPadding[mode];
-    case PROPERTY_TOOLBAR_VIEW_CONTENT_SHADOW_HEIGHT:
-      return kToolbarViewContentShadowHeight[mode];
-    case PROPERTY_TOOLBAR_VIEW_CONTENT_SHADOW_HEIGHT_ASH:
-      return kToolbarViewContentShadowHeightAsh[mode];
-    case PROPERTY_TOOLBAR_VIEW_ELEMENT_PADDING:
-      return kToolbarViewElementPadding[mode];
-    case PROPERTY_TOOLBAR_VIEW_LEFT_EDGE_SPACING:
-      return kToolbarViewLeftEdgeSpacing[mode];
-    case PROPERTY_TOOLBAR_VIEW_LOCATION_BAR_RIGHT_PADDING:
-      return kToolbarViewLocationBarRightPadding[mode];
-    case PROPERTY_TOOLBAR_VIEW_RIGHT_EDGE_SPACING:
-      return kToolbarViewRightEdgeSpacing[mode];
-    case PROPERTY_TOOLBAR_VIEW_STANDARD_SPACING:
-      return kToolbarViewStandardSpacing[mode];
-    case PROPERTY_TOOLBAR_VIEW_TOP_VERTICAL_PADDING:
-      return kToolbarViewTopVerticalPadding[mode];
-    default:
-      return -1;
   }
 }

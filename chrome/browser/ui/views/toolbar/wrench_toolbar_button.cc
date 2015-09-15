@@ -8,9 +8,9 @@
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
-#include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/views/extensions/browser_action_drag_data.h"
+#include "chrome/browser/ui/views/layout_constants.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "extensions/common/feature_switch.h"
 #include "grit/theme_resources.h"
@@ -53,9 +53,8 @@ gfx::Size WrenchToolbarButton::GetPreferredSize() const {
     gfx::Size size(image()->GetPreferredSize());
     ui::ThemeProvider* provider = GetThemeProvider();
     if (provider && provider->UsingSystemTheme()) {
-      int inset = provider->GetDisplayProperty(
-          ThemeProperties::PROPERTY_TOOLBAR_BUTTON_BORDER_INSET);
-      size.Enlarge(2 * inset, 2 * inset);
+      gfx::Insets insets(GetLayoutInsets(TOOLBAR_BUTTON));
+      size.Enlarge(insets.width(), insets.height());
     }
     return size;
   }

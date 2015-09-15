@@ -16,7 +16,7 @@
 #include "base/i18n/bidi_line_iterator.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
-#include "chrome/browser/themes/theme_properties.h"
+#include "chrome/browser/ui/views/layout_constants.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_popup_contents_view.h"
 #include "chrome/grit/generated_resources.h"
@@ -353,8 +353,7 @@ void OmniboxResultView::PaintMatch(const AutocompleteMatch& match,
             GetMirroredXInView(x), y, answer_icon_size, answer_icon_size, true);
         // See TODO in Layout().
         x += answer_icon_size +
-             location_bar_view_->GetThemeProvider()->GetDisplayProperty(
-                 ThemeProperties::PROPERTY_ICON_LABEL_VIEW_TRAILING_PADDING);
+             GetLayoutConstant(ICON_LABEL_VIEW_TRAILING_PADDING);
       }
     } else {
       x = DrawRenderText(match, separator_rendertext_.get(), false, canvas,
@@ -608,27 +607,15 @@ void OmniboxResultView::InitContentsRenderTextIfNecessary() const {
 }
 
 void OmniboxResultView::Layout() {
-  const gfx::ImageSkia icon = GetIcon();
-  // TODO(jonross): Currently |location_bar_view_| provides the correct
-  // ThemeProvider, as it is loaded on the BrowserFrame widget. The root widget
-  // for OmniboxResultView is AutocompletePopupWidget, which is not loading the
-  // theme. We should update the omnibox code to also track its own
-  // ThemeProvider in order to reduce dependancy on LocationBarView.
-  ui::ThemeProvider* theme_provider = location_bar_view_->GetThemeProvider();
-  // |theme_provider| can be null when animations are running during shutdown,
-  // after OmniboxResultView has been removed from the tree of Views.
-  if (!theme_provider)
-    return;
-  const int horizontal_padding = theme_provider->GetDisplayProperty(
-      ThemeProperties::PROPERTY_LOCATION_BAR_HORIZONTAL_PADDING);
-  const int trailing_padding = theme_provider->GetDisplayProperty(
-      ThemeProperties::PROPERTY_ICON_LABEL_VIEW_TRAILING_PADDING);
-
+  const int horizontal_padding =
+      GetLayoutConstant(LOCATION_BAR_HORIZONTAL_PADDING);
   const int start_x = StartMargin() + horizontal_padding;
   const int end_x = width() - EndMargin() - horizontal_padding;
 
+  const gfx::ImageSkia icon = GetIcon();
   icon_bounds_.SetRect(
-      start_x + ((icon.width() == default_icon_size_) ? 0 : trailing_padding),
+      start_x + ((icon.width() == default_icon_size_) ?
+          0 : GetLayoutConstant(ICON_LABEL_VIEW_TRAILING_PADDING)),
       (GetContentLineHeight() - icon.height()) / 2,
       icon.width(), icon.height());
 
@@ -721,14 +708,9 @@ int OmniboxResultView::GetAnswerLineHeight() const {
 }
 
 int OmniboxResultView::GetContentLineHeight() const {
-  ui::ThemeProvider* theme_provider = location_bar_view_->GetThemeProvider();
-  const int min_icon_vertical_padding = theme_provider->GetDisplayProperty(
-      ThemeProperties::PROPERTY_OMNIBOX_DROPDOWN_MIN_ICON_VERTICAL_PADDING);
-  const int min_text_vertical_padding = theme_provider->GetDisplayProperty(
-      ThemeProperties::PROPERTY_OMNIBOX_DROPDOWN_MIN_TEXT_VERTICAL_PADDING);
-
-  return std::max(default_icon_size_ + (min_icon_vertical_padding * 2),
-                  GetTextHeight() + (min_text_vertical_padding * 2));
+  return std::max(
+      default_icon_size_ + GetLayoutInsets(OMNIBOX_DROPDOWN_ICON).height(),
+      GetTextHeight() + GetLayoutInsets(OMNIBOX_DROPDOWN_TEXT).height());
 }
 
 scoped_ptr<gfx::RenderText> OmniboxResultView::CreateAnswerLine(

@@ -2212,6 +2212,8 @@
       'browser/ui/views/infobars/infobar_view.cc',
       'browser/ui/views/infobars/infobar_view.h',
       'browser/ui/views/infobars/save_password_infobar.cc',
+      'browser/ui/views/layout_constants.cc',
+      'browser/ui/views/layout_constants.h',
       'browser/ui/views/load_complete_listener.cc',
       'browser/ui/views/load_complete_listener.h',
       'browser/ui/views/location_bar/bubble_icon_view.cc',

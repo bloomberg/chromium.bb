@@ -8,7 +8,7 @@
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
-#include "chrome/browser/themes/theme_properties.h"
+#include "chrome/browser/ui/views/layout_constants.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "ui/accessibility/ax_view_state.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -59,9 +59,9 @@ gfx::Size ToolbarButton::GetPreferredSize() const {
   gfx::Size size(image()->GetPreferredSize());
   gfx::Size label_size = label()->GetPreferredSize();
   if (label_size.width() > 0) {
-    const int horizontal_item_padding = GetThemeProvider()->GetDisplayProperty(
-        ThemeProperties::PROPERTY_LOCATION_BAR_HORIZONTAL_PADDING);
-    size.Enlarge(label_size.width() + horizontal_item_padding, 0);
+    size.Enlarge(
+        label_size.width() + GetLayoutConstant(LOCATION_BAR_HORIZONTAL_PADDING),
+        0);
   }
   // For non-material assets the entire size of the button is captured in the
   // image resource. For Material Design the excess whitespace is being removed
@@ -69,9 +69,8 @@ gfx::Size ToolbarButton::GetPreferredSize() const {
   if (ui::MaterialDesignController::IsModeMaterial()) {
     ui::ThemeProvider* provider = GetThemeProvider();
     if (provider && provider->UsingSystemTheme()) {
-      int inset = provider->GetDisplayProperty(
-          ThemeProperties::PROPERTY_TOOLBAR_BUTTON_BORDER_INSET);
-      size.Enlarge(2 * inset, 2 * inset);
+      gfx::Insets insets(GetLayoutInsets(TOOLBAR_BUTTON));
+      size.Enlarge(insets.width(), insets.height());
     }
   }
   return size;
@@ -190,12 +189,8 @@ ToolbarButton::CreateDefaultBorder() const {
       views::LabelButton::CreateDefaultBorder();
 
   ui::ThemeProvider* provider = GetThemeProvider();
-  if (provider && provider->UsingSystemTheme()) {
-    // Theme provided insets.
-    int inset = provider->GetDisplayProperty(
-        ThemeProperties::PROPERTY_TOOLBAR_BUTTON_BORDER_INSET);
-    border->set_insets(gfx::Insets(inset, inset, inset, inset));
-  }
+  if (provider && provider->UsingSystemTheme())
+    border->set_insets(GetLayoutInsets(TOOLBAR_BUTTON));
 
   return border.Pass();
 }
