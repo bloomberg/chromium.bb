@@ -1381,6 +1381,9 @@ void Document::didChangeVisibilityState()
     for (DocumentVisibilityObserver* observer : m_visibilityObservers)
         observer->didChangeVisibilityState(state);
 
+    if (state == PageVisibilityStateVisible)
+        timeline().setAllCompositorPending();
+
     if (hidden() && m_canvasFontCache)
         m_canvasFontCache->pruneAll();
 }

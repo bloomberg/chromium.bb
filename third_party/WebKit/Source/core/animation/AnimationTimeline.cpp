@@ -249,10 +249,11 @@ void AnimationTimeline::setCurrentTimeInternal(double currentTime)
     for (const auto& animation : m_animations) {
         // The Player needs a timing update to pick up a new time.
         animation->setOutdated();
-        // Any corresponding compositor animation will need to be restarted. Marking the
-        // effect changed forces this.
-        animation->setCompositorPending(true);
     }
+
+    // Any corresponding compositor animation will need to be restarted. Marking the
+    // effect changed forces this.
+    setAllCompositorPending(true);
 }
 
 double AnimationTimeline::effectiveTime()
@@ -299,10 +300,15 @@ void AnimationTimeline::setPlaybackRate(double playbackRate)
         : document()->animationClock().currentTime() - currentTime / playbackRate;
     m_zeroTimeInitialized = true;
 
+    // Corresponding compositor animation may need to be restarted to pick up
+    // the new playback rate. Marking the effect changed forces this.
+    setAllCompositorPending(true);
+}
+
+void AnimationTimeline::setAllCompositorPending(bool sourceChanged)
+{
     for (const auto& animation : m_animations) {
-        // Corresponding compositor animation may need to be restarted to pick up
-        // the new playback rate. Marking the effect changed forces this.
-        animation->setCompositorPending(true);
+        animation->setCompositorPending(sourceChanged);
     }
 }
 

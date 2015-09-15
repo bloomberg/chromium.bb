@@ -83,6 +83,7 @@ public:
     double effectiveTime();
     void pauseAnimationsForTesting(double);
 
+    void setAllCompositorPending(bool sourceChanged = false);
     void setOutdatedAnimation(Animation*);
     void clearOutdatedAnimation(Animation*);
     bool hasOutdatedAnimation() const { return m_outdatedAnimationCount > 0; }
