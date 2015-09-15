@@ -112,12 +112,11 @@ void FileInputType::appendToFormData(FormData& formData, bool isMultipart) const
     unsigned numFiles = fileList->length();
     if (!isMultipart) {
         // Send only the basenames.
-        // 4.10.16.4 and 4.10.16.6 sections in HTML5.
 
-        // Unlike the multipart case, we have no special handling for the empty
-        // fileList because Netscape doesn't support for non-multipart
-        // submission of file inputs, and Firefox doesn't add "name=" query
-        // parameter.
+        if (numFiles == 0) {
+            formData.append(element().name(), "");
+            return;
+        }
         for (unsigned i = 0; i < numFiles; ++i)
             formData.append(element().name(), fileList->item(i)->name());
         return;

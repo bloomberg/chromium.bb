@@ -3,6 +3,7 @@
 <body>
 <form method="GET" action="get-file-upload.html" enctype="application/x-www-form-urlencoded">
   <input type="file" name="file" id="file">
+  <input type="file" name="nofile">
   <input type="hidden" name="submitted" value="true">
 </form>
 <pre id='console'></pre>
@@ -18,10 +19,12 @@ function startOrVerify()
     var query = window.location.search;
     if (query.indexOf('submitted=true') != -1) {
         // Verify the result
-        if (query.indexOf('file=') != -1)
-            log('PASS: ' + query);
+        if (query.indexOf('file=get-file-upload.html&') == -1)
+            log('FAIL: No file=get-file-upload.html; ' + query);
+        else if (query.indexOf('nofile=&') == -1)
+            log('FAIL: No nofile=; ' + query);
         else
-            log('FAIL: ' + query);
+            log('PASS: ' + query);
         testRunner.notifyDone();
     } else {
         // Start the test
