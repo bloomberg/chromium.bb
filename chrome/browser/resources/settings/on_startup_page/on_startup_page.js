@@ -49,11 +49,6 @@ Polymer({
   },
 
   /** @private */
-  onBackTap_: function() {
-    this.$.pages.back();
-  },
-
-  /** @private */
   onSetPagesTap_: function() {
     this.$.pages.setSubpageChain(['startup-urls']);
   },

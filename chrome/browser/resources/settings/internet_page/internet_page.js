@@ -47,11 +47,6 @@ Polymer({
     },
   },
 
-  /** @private */
-  onBackTap_: function() {
-    this.$.pages.back();
-  },
-
   /**
    * @param {!{detail: !CrOnc.NetworkStateProperties}} event
    * @private

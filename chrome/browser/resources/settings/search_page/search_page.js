@@ -79,11 +79,6 @@ Polymer({
   },
 
   /** @private */
-  onBackTap_: function() {
-    this.$.pages.back();
-  },
-
-  /** @private */
   onSearchEnginesTap_: function() {
     this.$.pages.setSubpageChain(['search-engines']);
   },

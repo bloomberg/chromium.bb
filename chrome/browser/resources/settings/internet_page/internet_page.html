@@ -2,6 +2,7 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/neon-animatable.html">
 <link rel="import" href="chrome://resources/cr_elements/v1_0/network/cr_onc_types.html">
 <link rel="import" href="chrome://md-settings/settings_page/settings_animated_pages.html">
+<link rel="import" href="chrome://md-settings/settings_page/settings_subheader.html">
 <link rel="import" href="internet_detail_page.html">
 <link rel="import" href="internet_known_networks_page.html">
 <link rel="import" href="network_summary.html">
@@ -18,21 +19,16 @@
         </network-summary>
       </neon-animatable>
       <neon-animatable id="network-detail">
-        <div class="subheader">
-          <paper-icon-button icon="arrow-back" on-tap="onBackTap_">
-          </paper-icon-button>
-          <div i18n-content="internetDetailPageTitle"></div>
-        </div>
+        <settings-subheader i18n-values="page-title:internetDetailPageTitle">
+        </settings-subheader>
         <cr-settings-internet-detail-page guid="[[detailGuid]]"
             on-close="onBackTap_">
         </cr-settings-internet-detail-page>
       </neon-animatable>
       <neon-animatable id="known-networks">
-        <div class="subheader">
-          <paper-icon-button icon="arrow-back" on-tap="onBackTap_">
-          </paper-icon-button>
-          <div i18n-content="internetKnownNetworksPageTitle"></div>
-        </div>
+        <settings-subheader
+            i18n-values="page-title:internetKnownNetworksPageTitle">
+        </settings-subheader>
         <cr-settings-internet-known-networks-page
             network-type="[[knownNetworksType]]"
             on-show-detail="onShowDetail_">

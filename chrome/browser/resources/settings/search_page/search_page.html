@@ -4,6 +4,7 @@
 <link rel="import" href="chrome://md-settings/checkbox/checkbox.html">
 <link rel="import" href="chrome://md-settings/search_engines_page/search_engines_page.html">
 <link rel="import" href="chrome://md-settings/settings_page/settings_animated_pages.html">
+<link rel="import" href="chrome://md-settings/settings_page/settings_subheader.html">
 
 <dom-module id="cr-settings-search-page">
   <link rel="import" type="css"
@@ -29,11 +30,8 @@
         </div>
       </neon-animatable>
       <neon-animatable id="search-engines">
-        <div class="subheader">
-          <paper-icon-button icon="arrow-back" on-tap="onBackTap_">
-          </paper-icon-button>
-          <h2 i18n-content="searchEnginesLabel"></h2>
-        </div>
+        <settings-subheader i18n-values="page-title:searchEnginesLabel">
+        </settings-subheader>
         <cr-settings-search-engines-page></cr-settings-search-engines-page>
         <cr-button class="search-engines-advanced"
             i18n-content="advancedPageTitle"
@@ -42,11 +40,8 @@
       </neon-animatable>
       <neon-animatable id="search-engines-advanced">
         <!-- This sub-subpage is purely a placeholder to provide an example. -->
-        <div class="subheader">
-          <paper-icon-button icon="arrow-back" on-tap="onBackTap_">
-          </paper-icon-button>
-          <h2 i18n-content="searchEnginesLabel"></h2>
-        </div>
+        <settings-subheader i18n-values="page-title:searchEnginesLabel">
+        </settings-subheader>
         <p i18n-content="searchExplanation"></p>
       </neon-animatable>
     </cr-settings-animated-pages>

@@ -40,11 +40,6 @@ Polymer({
   },
 
   /** @private */
-  onBackTap_: function() {
-    this.$.pages.back();
-  },
-
-  /** @private */
   onManageCertificatesTap_: function() {
     this.$.pages.setSubpageChain(['manage-certificates']);
   },

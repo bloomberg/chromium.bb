@@ -5,6 +5,8 @@
 <link rel="import" href="chrome://resources/cr_elements/v1_0/cr_button/cr_button.html">
 <link rel="import" href="chrome://md-settings/certificate_manager_page/certificate_manager_page.html">
 <link rel="import" href="chrome://md-settings/checkbox/checkbox.html">
+<link rel="import" href="chrome://md-settings/settings_page/settings_animated_pages.html">
+<link rel="import" href="chrome://md-settings/settings_page/settings_subheader.html">
 <link rel="import" href="chrome://md-settings/site_settings_page/site_settings_page.html">
 
 <dom-module id="cr-settings-privacy-page">
@@ -79,20 +81,14 @@
         </div>
       </neon-animatable>
       <neon-animatable id="manage-certificates">
-        <div class="subheader">
-          <paper-icon-button icon="arrow-back" on-tap="onBackTap_">
-          </paper-icon-button>
-          <div i18n-content="manageCertificates"></div>
-        </div>
+        <settings-subheader i18n-values="page-title:manageCertificates">
+        </settings-subheader>
         <cr-settings-certificate-manager-page>
         </cr-settings-certificate-manager-page>
       </neon-animatable>
       <neon-animatable id="site-settings">
-        <div class="subheader">
-          <paper-icon-button icon="arrow-back" on-tap="onBackTap_">
-          </paper-icon-button>
-          <div i18n-content="siteSettings"></div>
-        </div>
+        <settings-subheader i18n-values="page-title:siteSettings">
+        </settings-subheader>
         <cr-settings-site-settings-page></cr-settings-site-settings-page>
       </neon-animatable>
     </cr-settings-animated-pages>

@@ -40,6 +40,16 @@ Polymer({
     },
   },
 
+  /** @override */
+  created: function() {
+    this.addEventListener('subpage-back', function() {
+      assert(this.currentRoute.section == this.section);
+      assert(this.currentRoute.subpage.length >= 1);
+
+      this.setSubpageChain(this.currentRoute.subpage.slice(0, -1));
+    }.bind(this));
+  },
+
   /** @private */
   currentRouteChanged_: function(newRoute, oldRoute) {
     // route.section is only non-empty when the user is within a subpage.
@@ -84,15 +94,5 @@ Polymer({
       section: subpage.length > 0 ? this.section : '',
       subpage: subpage,
     };
-  },
-
-  /**
-   * Subpages should use this method to go backwards up the heirarchy.
-   */
-  back: function() {
-    assert(this.currentRoute.section == this.section);
-    assert(this.currentRoute.subpage.length >= 1);
-
-    this.setSubpageChain(this.currentRoute.subpage.slice(0, -1));
   },
 });

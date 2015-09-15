@@ -5,6 +5,7 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-radio-group/paper-radio-group.html">
 <link rel="import" href="chrome://md-settings/on_startup_page/startup_urls_page.html">
 <link rel="import" href="chrome://md-settings/settings_page/settings_animated_pages.html">
+<link rel="import" href="chrome://md-settings/settings_page/settings_subheader.html">
 
 <dom-module id="cr-settings-on-startup-page">
   <link rel="import" type="css"
@@ -37,11 +38,8 @@
         </div>
       </neon-animatable>
       <neon-animatable id="startup-urls">
-        <div class="subheader">
-          <paper-icon-button icon="arrow-back" on-tap="onBackTap_">
-          </paper-icon-button>
-          <h2 i18n-content="onStartupSetPages"></h2>
-        </div>
+        <settings-subheader i18n-values="page-title:onStartupSetPages">
+        </settings-subheader>
         <cr-settings-startup-urls-page prefs="{{prefs}}">
         </cr-settings-startup-urls-page>
       </neon-animatable>
