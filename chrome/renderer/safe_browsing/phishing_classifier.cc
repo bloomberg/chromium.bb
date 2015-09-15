@@ -222,8 +222,6 @@ void PhishingClassifier::CheckNoPendingClassification() {
   if (!done_callback_.is_null() || page_text_) {
     LOG(ERROR) << "Classification in progress, missing call to "
                << "CancelPendingClassification";
-    UMA_HISTOGRAM_COUNTS("SBClientPhishing.CheckNoPendingClassificationFailed",
-                         1);
   }
 }
 

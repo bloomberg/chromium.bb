@@ -38717,7 +38717,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="SBClientPhishing.CancelClassificationReason"
     enum="SBClientPhishingCancelClassificationReason">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>nparker@chromium.org</owner>
   <summary>
     The counts for various reasons why an in-progress phishing classification
     was canceled.
@@ -38725,7 +38725,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="SBClientPhishing.CheckNoPendingClassificationFailed">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>noelutz@chromium.org</owner>
+  <obsolete>
+    Removed in M47.
+  </obsolete>
   <summary>
     The number of times client-side phishing classifier expected to have no
     pending classifications running but that check failed.
@@ -38733,7 +38736,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="SBClientPhishing.ClassificationStart" enum="BooleanHit">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>noelutz@chromium.org</owner>
   <summary>
     The number of pages that we could have possibly classified (essentially the
     number of top page navigations by users with SBClientPhishing enabled). The
@@ -38754,7 +38757,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="SBClientPhishing.ClientModelStatus"
     enum="SBClientPhishingClientModelStatus">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>nparker@chromium.org</owner>
   <summary>
     The counts for various model status codes that we get after loading a new
     client-side phishing model.
@@ -38810,12 +38813,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="SBClientPhishing.GrabPhishingThumbnail" units="ms">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>noelutz@chromium.org</owner>
+  <obsolete>
+    Removed in M47
+  </obsolete>
   <summary>Time spent generating the thumbnail.</summary>
 </histogram>
 
 <histogram name="SBClientPhishing.IllegalFeatureValue">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>nparker@chromium.org</owner>
   <summary>
     The number of features which were omitted from phishing classification
     because they were added with an illegal value.  This would indicate a bug.
@@ -38856,7 +38862,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="SBClientPhishing.ReportLimitSkipped" enum="BooleanHit">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>noelutz@chromium.org</owner>
   <summary>
     The number of phishing classifications that were previously cached as being
     phishing but that will get re-classified (to possibly fix false positives).
@@ -38864,7 +38870,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="SBClientPhishing.RequestNotSerialized">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>noelutz@chromium.org</owner>
   <summary>
     The number of phishing classifier pingbacks that were skipped because
     serializing the request protocol buffer to string failed.
@@ -38872,7 +38878,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="SBClientPhishing.RequestSatisfiedFromCache" enum="BooleanHit">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>noelutz@chromium.org</owner>
   <summary>
     The number of times that a cached phishing classification result was used,
     rather than pinging the server.
@@ -38881,7 +38887,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="SBClientPhishing.ScorerCreationStatus"
     enum="SBClientPhishingScorerCreationStatus">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>noelutz@chromium.org</owner>
   <summary>
     Records the status when we create a scorer object for the client-side
     phishing detection classifier.
@@ -38889,7 +38895,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="SBClientPhishing.TermFeatureBreakIterError">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>noelutz@chromium.org</owner>
   <summary>
     The number of phishing classifications that were aborted because the term
     feature extractor failed to initialize an ICU break iterator.
@@ -38897,21 +38903,21 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="SBClientPhishing.TermFeatureChunkTime" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>noelutz@chromium.org</owner>
   <summary>
     The time that an individual chunk of term feature extraction work took.
   </summary>
 </histogram>
 
 <histogram name="SBClientPhishing.TermFeatureIterations">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>noelutz@chromium.org</owner>
   <summary>
     The number of iterations that the term feature extractor took to finish.
   </summary>
 </histogram>
 
 <histogram name="SBClientPhishing.TermFeatureTimeout">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>noelutz@chromium.org</owner>
   <summary>
     The number of phishing classification that were aborted because term feature
     extraction took too long.
@@ -38919,7 +38925,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="SBClientPhishing.TermFeatureTotalTime" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>noelutz@chromium.org</owner>
   <summary>
     The time that the term feature extarctor took to finish, summed across all
     chunks of work.
@@ -38927,7 +38933,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="SBClientPhishing.TooManyFeatures">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>noelutz@chromium.org</owner>
   <summary>
     The number of times that the limit on the number of phishing classifier
     features for a page was reached.  This may indicate a bug, or that
@@ -38936,7 +38942,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="SBClientPhishing.URLFeatureTime" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>noelutz@chromium.org</owner>
   <summary>
     The time taken to extract URL features for the phishing classifier.
   </summary>
@@ -70612,6 +70618,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="5" label="MODEL_PARSE_ERROR"/>
   <int value="6" label="MODEL_MISSING_FIELDS"/>
   <int value="7" label="MODEL_INVALID_VERSION_NUMBER"/>
+  <int value="8" label="BAD_HASH_IDS"/>
 </enum>
 
 <enum name="SBClientPhishingScorerCreationStatus" type="int">
