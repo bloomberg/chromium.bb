@@ -121,7 +121,7 @@ final class CronetChunkedOutputStream extends CronetOutputStream {
 
         @Override
         public void read(final UploadDataSink uploadDataSink, final ByteBuffer byteBuffer) {
-            int availableSpace = byteBuffer.capacity() - byteBuffer.position();
+            final int availableSpace = byteBuffer.remaining();
             if (availableSpace < mBuffer.position()) {
                 // byteBuffer does not have enough capacity, so only put a portion
                 // of mBuffer in it.

@@ -529,12 +529,14 @@ public class CronetUrlRequestTest extends CronetTestBase {
     }
 
     /**
-     * Checks that the buffer is updated correctly, when starting at an offset.
+     * Checks that the buffer is updated correctly, when starting at an offset,
+     * when using legacy read() API.
      */
     @SmallTest
     @Feature({"Cronet"})
-    public void testSimpleGetBufferUpdates() throws Exception {
+    public void testLegacySimpleGetBufferUpdates() throws Exception {
         TestUrlRequestListener listener = new TestUrlRequestListener();
+        listener.mLegacyReadByteBufferAdjustment = true;
         listener.setAutoAdvance(false);
         // Since the default method is "GET", the expected response body is also
         // "GET".
@@ -615,6 +617,92 @@ public class CronetUrlRequestTest extends CronetTestBase {
         testSimpleGet();
     }
 
+    /**
+     * Checks that the buffer is updated correctly, when starting at an offset.
+     */
+    @SmallTest
+    @Feature({"Cronet"})
+    public void testSimpleGetBufferUpdates() throws Exception {
+        TestUrlRequestListener listener = new TestUrlRequestListener();
+        listener.setAutoAdvance(false);
+        // Since the default method is "GET", the expected response body is also
+        // "GET".
+        UrlRequest urlRequest = mActivity.mUrlRequestContext.createRequest(
+                NativeTestServer.getEchoMethodURL(), listener, listener.getExecutor());
+        urlRequest.start();
+        listener.waitForNextStep();
+
+        ByteBuffer readBuffer = ByteBuffer.allocateDirect(5);
+        readBuffer.put("FOR".getBytes());
+        assertEquals(3, readBuffer.position());
+
+        // Read first two characters of the response ("GE"). It's theoretically
+        // possible to need one read per character, though in practice,
+        // shouldn't happen.
+        while (listener.mResponseAsString.length() < 2) {
+            assertFalse(listener.isDone());
+            listener.startNextRead(urlRequest, readBuffer);
+            listener.waitForNextStep();
+        }
+
+        // Make sure the two characters were read.
+        assertEquals("GE", listener.mResponseAsString);
+
+        // Check the contents of the entire buffer. The first 3 characters
+        // should not have been changed, and the last two should be the first
+        // two characters from the response.
+        assertEquals("FORGE", bufferContentsToString(readBuffer, 0, 5));
+        // The limit and position should be 5.
+        assertEquals(5, readBuffer.limit());
+        assertEquals(5, readBuffer.position());
+
+        assertEquals(ResponseStep.ON_READ_COMPLETED, listener.mResponseStep);
+
+        // Start reading from position 3. Since the only remaining character
+        // from the response is a "T", when the read completes, the buffer
+        // should contain "FORTE", with a position() of 4 and a limit() of 5.
+        readBuffer.position(3);
+        listener.startNextRead(urlRequest, readBuffer);
+        listener.waitForNextStep();
+
+        // Make sure all three characters of the response have now been read.
+        assertEquals("GET", listener.mResponseAsString);
+
+        // Check the entire contents of the buffer. Only the third character
+        // should have been modified.
+        assertEquals("FORTE", bufferContentsToString(readBuffer, 0, 5));
+
+        // Make sure position and limit were updated correctly.
+        assertEquals(4, readBuffer.position());
+        assertEquals(5, readBuffer.limit());
+
+        assertEquals(ResponseStep.ON_READ_COMPLETED, listener.mResponseStep);
+
+        // One more read attempt. The request should complete.
+        readBuffer.position(1);
+        readBuffer.limit(5);
+        listener.startNextRead(urlRequest, readBuffer);
+        listener.waitForNextStep();
+
+        assertEquals(200, listener.mResponseInfo.getHttpStatusCode());
+        assertEquals("GET", listener.mResponseAsString);
+        checkResponseInfo(listener.mResponseInfo, NativeTestServer.getEchoMethodURL(), 200, "OK");
+
+        // Check that buffer contents were not modified.
+        assertEquals("FORTE", bufferContentsToString(readBuffer, 0, 5));
+
+        // Position should not have been modified, since nothing was read.
+        assertEquals(1, readBuffer.position());
+        // Limit should be unchanged as always.
+        assertEquals(5, readBuffer.limit());
+
+        assertEquals(ResponseStep.ON_SUCCEEDED, listener.mResponseStep);
+
+        // Make sure there are no other pending messages, which would trigger
+        // asserts in TestURLRequestListener.
+        testSimpleGet();
+    }
+
     @SmallTest
     @Feature({"Cronet"})
     public void testBadBuffers() throws Exception {
@@ -630,7 +718,7 @@ public class CronetUrlRequestTest extends CronetTestBase {
         try {
             ByteBuffer readBuffer = ByteBuffer.allocateDirect(4);
             readBuffer.put("full".getBytes());
-            urlRequest.read(readBuffer);
+            urlRequest.readNew(readBuffer);
             fail("Exception not thrown");
         } catch (IllegalArgumentException e) {
             assertEquals("ByteBuffer is already full.",
@@ -640,7 +728,7 @@ public class CronetUrlRequestTest extends CronetTestBase {
         // Try to read using a non-direct buffer.
         try {
             ByteBuffer readBuffer = ByteBuffer.allocate(5);
-            urlRequest.read(readBuffer);
+            urlRequest.readNew(readBuffer);
             fail("Exception not thrown");
         } catch (IllegalArgumentException e) {
             assertEquals("byteBuffer must be a direct ByteBuffer.",
@@ -650,7 +738,7 @@ public class CronetUrlRequestTest extends CronetTestBase {
         // Finish the request with a direct ByteBuffer.
         listener.setAutoAdvance(true);
         ByteBuffer readBuffer = ByteBuffer.allocateDirect(5);
-        urlRequest.read(readBuffer);
+        urlRequest.readNew(readBuffer);
         listener.blockForDone();
         assertEquals(200, listener.mResponseInfo.getHttpStatusCode());
         assertEquals("GET", listener.mResponseAsString);
@@ -1346,7 +1434,7 @@ public class CronetUrlRequestTest extends CronetTestBase {
         // Shutdown the executor, so posting the task will throw an exception.
         listener.shutdownExecutor();
         ByteBuffer readBuffer = ByteBuffer.allocateDirect(5);
-        urlRequest.read(readBuffer);
+        urlRequest.readNew(readBuffer);
         // Listener will never be called again because executor is shutdown,
         // but request will be destroyed from network thread.
         requestDestroyed.block();

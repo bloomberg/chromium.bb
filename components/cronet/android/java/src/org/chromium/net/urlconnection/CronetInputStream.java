@@ -75,6 +75,9 @@ class CronetInputStream extends InputStream {
 
             // Requests more data from CronetHttpURLConnection.
             mHttpURLConnection.getMoreData(mBuffer);
+            if (mBuffer != null) {
+                mBuffer.flip();
+            }
         }
     }
 

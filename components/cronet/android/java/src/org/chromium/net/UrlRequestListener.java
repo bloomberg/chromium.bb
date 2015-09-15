@@ -64,7 +64,9 @@ public abstract class UrlRequestListener {
      * @param request Request that received data.
      * @param info Response information.
      * @param byteBuffer The buffer that was passed in to
-     *     {@link UrlRequest#read}, now containing the received data.
+     *     {@link UrlRequest#read}, now containing the received data. The
+     *     buffer's position is updated to the end of the received data. The
+     *     buffer's limit is not changed.
      */
     public abstract void onReadCompleted(
             UrlRequest request, ResponseInfo info, ByteBuffer byteBuffer);

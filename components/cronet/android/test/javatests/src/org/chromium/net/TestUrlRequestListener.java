@@ -37,8 +37,12 @@ class TestUrlRequestListener extends UrlRequestListener {
     public boolean mOnErrorCalled = false;
 
     public int mHttpResponseDataLength = 0;
-    public byte[] mLastDataReceivedAsBytes;
     public String mResponseAsString = "";
+
+    // Expect legacy read() API to be used on UrlRequest.
+    // TODO(pauljensen): Remove when all callers of UrlRequest.read() are
+    // transitioned to UrlRequest.readNew();
+    public boolean mLegacyReadByteBufferAdjustment = false;
 
     private static final int READ_BUFFER_SIZE = 32 * 1024;
 
@@ -60,6 +64,9 @@ class TestUrlRequestListener extends UrlRequestListener {
     private final ExecutorService mExecutorService = Executors.newSingleThreadExecutor(
             new ExecutorThreadFactory());
     private Thread mExecutorThread;
+
+    // position() of ByteBuffer prior to readNew() call.
+    private int mBufferPositionBeforeRead;
 
     private class ExecutorThreadFactory implements ThreadFactory {
         public Thread newThread(Runnable r) {
@@ -154,20 +161,31 @@ class TestUrlRequestListener extends UrlRequestListener {
             ByteBuffer byteBuffer) {
         assertEquals(mExecutorThread, Thread.currentThread());
         assertFalse(request.isDone());
-        assertTrue(byteBuffer.remaining() > 0);
         assertTrue(mResponseStep == ResponseStep.ON_RESPONSE_STARTED
                    || mResponseStep == ResponseStep.ON_READ_COMPLETED);
         assertNull(mError);
 
         mResponseStep = ResponseStep.ON_READ_COMPLETED;
 
-        // Make a slice of ByteBuffer, so can read from it without affecting
-        // position, which allows tests to check the state of the buffer.
-        ByteBuffer slice = byteBuffer.slice();
-        mHttpResponseDataLength += slice.remaining();
-        mLastDataReceivedAsBytes = new byte[slice.remaining()];
-        slice.get(mLastDataReceivedAsBytes);
-        mResponseAsString += new String(mLastDataReceivedAsBytes);
+        final byte[] lastDataReceivedAsBytes;
+        if (mLegacyReadByteBufferAdjustment) {
+            // Make a slice of ByteBuffer, so can read from it without affecting
+            // position, which allows tests to check the state of the buffer.
+            ByteBuffer slice = byteBuffer.slice();
+            mHttpResponseDataLength += slice.remaining();
+            lastDataReceivedAsBytes = new byte[slice.remaining()];
+            slice.get(lastDataReceivedAsBytes);
+        } else {
+            final int bytesRead = byteBuffer.position() - mBufferPositionBeforeRead;
+            mHttpResponseDataLength += bytesRead;
+            lastDataReceivedAsBytes = new byte[bytesRead];
+            // Rewind |byteBuffer.position()| to pre-read() position.
+            byteBuffer.position(mBufferPositionBeforeRead);
+            // This restores |byteBuffer.position()| to its value on entrance to
+            // this function.
+            byteBuffer.get(lastDataReceivedAsBytes);
+        }
+        mResponseAsString += new String(lastDataReceivedAsBytes);
 
         if (maybeThrowCancelOrPause(request)) {
             return;
@@ -208,7 +226,12 @@ class TestUrlRequestListener extends UrlRequestListener {
     }
 
     public void startNextRead(UrlRequest request) {
-        request.read(ByteBuffer.allocateDirect(READ_BUFFER_SIZE));
+        startNextRead(request, ByteBuffer.allocateDirect(READ_BUFFER_SIZE));
+    }
+
+    public void startNextRead(UrlRequest request, ByteBuffer buffer) {
+        mBufferPositionBeforeRead = buffer.position();
+        request.readNew(buffer);
     }
 
     public boolean isDone() {

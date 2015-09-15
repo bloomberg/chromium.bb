@@ -153,8 +153,8 @@ final class CronetBufferedOutputStream extends CronetOutputStream {
 
         @Override
         public void read(UploadDataSink uploadDataSink, ByteBuffer byteBuffer) {
-            int availableSpace = byteBuffer.capacity() - byteBuffer.position();
-            if (availableSpace < mBuffer.limit() - mBuffer.position()) {
+            final int availableSpace = byteBuffer.remaining();
+            if (availableSpace < mBuffer.remaining()) {
                 byteBuffer.put(mBuffer.array(), mBuffer.position(), availableSpace);
                 mBuffer.position(mBuffer.position() + availableSpace);
             } else {

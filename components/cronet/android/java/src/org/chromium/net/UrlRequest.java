@@ -106,12 +106,41 @@ public interface UrlRequest {
      *     request calls back into the {@link URLRequestListener}. If the
      *     request is cancelled before such a call occurs, it's never safe to
      *     use the buffer again.
+     * @deprecated Use readNew() instead though note that it updates the
+     *     buffer's position not limit.
      */
     // TODO(mmenke):  Should we add some ugliness to allow reclaiming the buffer
     //     on cancellation?  If it's a C++-allocated buffer, then the consumer
     //     can never safely free it, unless they put off cancelling a request
     //     until a callback has been invoked.
-    public void read(ByteBuffer buffer);
+    // TODO(pauljensen): Switch all callers to call readNew().
+    @Deprecated public void read(ByteBuffer buffer);
+
+    /**
+     * Attempts to read part of the response body into the provided buffer.
+     * Must only be called at most once in response to each invocation of the
+     * {@link UrlRequestListener#onResponseStarted onResponseStarted} and {@link
+     * UrlRequestListener#onReadCompleted onReadCompleted} methods of the {@link
+     * UrlRequestListener}. Each call will result in an asynchronous call to
+     * either the {@link UrlRequestListener UrlRequestListener's}
+     * {@link UrlRequestListener#onReadCompleted onReadCompleted} method if data
+     * is read, its {@link UrlRequestListener#onSucceeded onSucceeded} method if
+     * there's no more data to read, or its {@link UrlRequestListener#onFailed
+     * onFailed} method if there's an error.
+     *
+     * @param buffer {@link ByteBuffer} to write response body to. Must be a
+     *     direct ByteBuffer. The embedder must not read or modify buffer's
+     *     position, limit, or data between its position and limit until the
+     *     request calls back into the {@link URLRequestListener}. If the
+     *     request is cancelled before such a call occurs, it's never safe to
+     *     use the buffer again.
+     */
+    // TODO(mmenke):  Should we add some ugliness to allow reclaiming the buffer
+    //     on cancellation?  If it's a C++-allocated buffer, then the consumer
+    //     can never safely free it, unless they put off cancelling a request
+    //     until a callback has been invoked.
+    // TODO(pauljensen): Rename to read() once original read() is removed.
+    public void readNew(ByteBuffer buffer);
 
     /**
      * Cancels the request.
