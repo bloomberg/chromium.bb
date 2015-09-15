@@ -13,6 +13,8 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ShortcutHelper;
 
+import java.util.Map;
+
 /**
  * Stores data about an installed web app. Uses SharedPreferences to persist the data to disk.
  * Before this class is used, the web app must be registered in {@link WebappRegistry}.
@@ -45,8 +47,13 @@ public class WebappDataStorage {
         new AsyncTask<Void, Void, Void>() {
             @Override
             protected final Void doInBackground(Void... nothing) {
-                assert storage.getLastUsedTime() != INVALID_LAST_USED;
-                storage.updateLastUsedTime();
+                if (storage.getLastUsedTime() == INVALID_LAST_USED) {
+                    // If the last used time is invalid then assert that there is no data
+                    // in the WebappDataStorage which needs to be cleaned up.
+                    assert storage.getAllData().isEmpty();
+                } else {
+                    storage.updateLastUsedTime();
+                }
                 return null;
             }
         }.execute();
@@ -133,6 +140,10 @@ public class WebappDataStorage {
     private long getLastUsedTime() {
         assert !ThreadUtils.runningOnUiThread();
         return mPreferences.getLong(KEY_LAST_USED, INVALID_LAST_USED);
+    }
+
+    private Map<String, ?> getAllData() {
+        return mPreferences.getAll();
     }
 
     /**
