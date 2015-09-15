@@ -317,9 +317,9 @@ if (is_android) {
     apptest_outputs = [
       "clipboard",
       "clipboard_apptests",
+      "mus_apptests",
       "resource_provider",
       "resource_provider_apptests",
-      "view_manager_apptests",
       "network_service",
       "network_service_apptests",
     ]
