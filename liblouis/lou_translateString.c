@@ -1350,9 +1350,9 @@ for_selectRule ()
 		  case CTO_ExactDots:
 		    return;
 		  case CTO_NoCross:
-if (dontContract || (mode & noContractions))
+		    if (dontContract || (mode & noContractions))
 		      break;
-		    		    if (syllableBreak ())
+		    if (syllableBreak ())
 		      break;
 		    return;
 		  case CTO_Context:
