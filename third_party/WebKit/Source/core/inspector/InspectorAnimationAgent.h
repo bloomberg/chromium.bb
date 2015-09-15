@@ -42,7 +42,8 @@ public:
     void setTiming(ErrorString*, const String& animationId, double duration, double delay) override;
 
     // API for InspectorInstrumentation
-    void didCreateAnimation(Animation*);
+    void didCreateAnimation(unsigned);
+    void didStartAnimation(Animation*);
     void didCancelAnimation(Animation*);
     void didClearDocumentOfWindowObject(LocalFrame*);
 
@@ -68,7 +69,6 @@ private:
     RawPtrWillBeMember<InspectorDOMAgent> m_domAgent;
     PersistentHeapHashMapWillBeHeapHashMap<String, Member<Animation>> m_idToAnimation;
     WillBeHeapHashMap<String, AnimationType> m_idToAnimationType;
-    double m_latestStartTime;
 };
 
 }

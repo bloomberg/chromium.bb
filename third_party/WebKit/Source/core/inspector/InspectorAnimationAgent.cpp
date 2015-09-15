@@ -36,7 +36,6 @@ InspectorAnimationAgent::InspectorAnimationAgent(InspectorPageAgent* pageAgent, 
     : InspectorBaseAgent<InspectorAnimationAgent, InspectorFrontend::Animation>("Animation")
     , m_pageAgent(pageAgent)
     , m_domAgent(domAgent)
-    , m_latestStartTime(std::numeric_limits<double>::min())
 {
 }
 
@@ -235,21 +234,17 @@ void InspectorAnimationAgent::setTiming(ErrorString* errorString, const String& 
     }
 }
 
-void InspectorAnimationAgent::didCreateAnimation(Animation* animation)
+void InspectorAnimationAgent::didCreateAnimation(unsigned sequenceNumber)
+{
+    frontend()->animationCreated(String::number(sequenceNumber));
+}
+
+void InspectorAnimationAgent::didStartAnimation(Animation* animation)
 {
     const String& animationId = String::number(animation->sequenceNumber());
     if (m_idToAnimation.get(animationId))
         return;
-
-    double threshold = 1000;
-    bool reset = normalizedStartTime(*animation) - threshold > m_latestStartTime;
-    m_latestStartTime = normalizedStartTime(*animation);
-    if (reset) {
-        m_idToAnimation.clear();
-        m_idToAnimationType.clear();
-    }
-
-    frontend()->animationCreated(buildObjectForAnimation(*animation), reset);
+    frontend()->animationStarted(buildObjectForAnimation(*animation));
 }
 
 void InspectorAnimationAgent::didCancelAnimation(Animation* animation)

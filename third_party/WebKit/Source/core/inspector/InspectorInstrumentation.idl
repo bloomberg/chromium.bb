@@ -417,7 +417,10 @@ interface InspectorInstrumentation {
     void traceAsyncCallbackCompleted(const InspectorInstrumentationCookie&);
 
     [Animation, Inline=FastReturn]
-    void didCreateAnimation(Document*, Animation* player);
+    void didCreateAnimation(Document*, unsigned);
+
+    [Animation, Inline=FastReturn]
+    void didStartAnimation(Document*, Animation* player);
 
     [Animation, Inline=FastReturn]
     void didCancelAnimation(Document*, Animation* player);

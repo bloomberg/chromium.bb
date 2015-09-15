@@ -106,6 +106,7 @@ Animation::Animation(ExecutionContext* executionContext, AnimationTimeline& time
         }
         m_content->attach(this);
     }
+    InspectorInstrumentation::didCreateAnimation(m_timeline->document(), m_sequenceNumber);
 }
 
 Animation::~Animation()
@@ -1055,7 +1056,7 @@ Animation::PlayStateUpdateScope::~PlayStateUpdateScope()
     m_animation->endUpdatingState();
 
     if (oldPlayState != newPlayState && newPlayState == Running)
-        InspectorInstrumentation::didCreateAnimation(m_animation->timeline()->document(), m_animation);
+        InspectorInstrumentation::didStartAnimation(m_animation->timeline()->document(), m_animation);
 }
 
 bool Animation::addEventListener(const AtomicString& eventType, PassRefPtrWillBeRawPtr<EventListener> listener, bool useCapture)
