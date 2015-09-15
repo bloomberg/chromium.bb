@@ -367,9 +367,12 @@ void MemoryDumpManager::FinalizeDumpAndAddToTrace(
     return;
   }
 
-  scoped_refptr<ConvertableToTraceFormat> event_value(new TracedValue());
-  pmd_async_state->process_memory_dump.AsValueInto(
-      static_cast<TracedValue*>(event_value.get()));
+  TracedValue* traced_value = new TracedValue();
+  scoped_refptr<ConvertableToTraceFormat> event_value(traced_value);
+  pmd_async_state->process_memory_dump.AsValueInto(traced_value);
+  traced_value->SetString("level_of_detail",
+                          MemoryDumpLevelOfDetailToString(
+                              pmd_async_state->req_args.level_of_detail));
   const char* const event_name =
       MemoryDumpTypeToString(pmd_async_state->req_args.dump_type);
 
