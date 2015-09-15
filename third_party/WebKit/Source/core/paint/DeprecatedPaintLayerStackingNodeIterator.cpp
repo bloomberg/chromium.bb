@@ -59,7 +59,7 @@ DeprecatedPaintLayerStackingNode* DeprecatedPaintLayerStackingNodeIterator::next
 
     if (m_remainingChildren & NormalFlowChildren) {
         for (; m_currentNormalFlowChild; m_currentNormalFlowChild = m_currentNormalFlowChild->nextSibling()) {
-            if (!m_currentNormalFlowChild->stackingNode()->isTreatedAsStackingContextForPainting() && !m_currentNormalFlowChild->isReflection()) {
+            if (!m_currentNormalFlowChild->stackingNode()->isTreatedAsOrStackingContext() && !m_currentNormalFlowChild->isReflection()) {
                 DeprecatedPaintLayer* normalFlowChild = m_currentNormalFlowChild;
                 m_currentNormalFlowChild = m_currentNormalFlowChild->nextSibling();
                 return normalFlowChild->stackingNode();
@@ -96,7 +96,7 @@ DeprecatedPaintLayerStackingNode* DeprecatedPaintLayerStackingNodeReverseIterato
 
     if (m_remainingChildren & NormalFlowChildren) {
         for (; m_currentNormalFlowChild; m_currentNormalFlowChild = m_currentNormalFlowChild->previousSibling()) {
-            if (!m_currentNormalFlowChild->stackingNode()->isTreatedAsStackingContextForPainting() && !m_currentNormalFlowChild->isReflection()) {
+            if (!m_currentNormalFlowChild->stackingNode()->isTreatedAsOrStackingContext() && !m_currentNormalFlowChild->isReflection()) {
                 DeprecatedPaintLayer* normalFlowChild = m_currentNormalFlowChild;
                 m_currentNormalFlowChild = m_currentNormalFlowChild->previousSibling();
                 return normalFlowChild->stackingNode();

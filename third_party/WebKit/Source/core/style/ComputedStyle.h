@@ -1232,13 +1232,25 @@ public:
     // See CSS 2.1, Appendix E for more details.
     bool isStackingContext() const { return !hasAutoZIndex(); }
 
-    // Some elements are "treated as if they create a new stacking context" for the purpose
-    // of painting and hit testing. However they don't determine the stacking of the stacking
-    // context underneath them. That means that they are painted atomically.
-    bool isTreatedAsStackingContextForPainting() const
+    // Some elements are "treated as if they create a new stacking context" for
+    // the purpose of painting and hit testing. This means that they are painted
+    // atomically (like a stacking context) but they don't determine the
+    // stacking of the elements underneath them (stacking contexts or elements
+    // "treated as stacking context"). See DeprecatedPaintLayerStackingNode for
+    // more about painting order.
+    bool isTreatedAsStackingContext() const
     {
-        // FIXME: Floating objects are also considered stacking contexts for painting.
-        return isStackingContext() || position() != StaticPosition;
+        // FIXME: Floating objects are also considered stacking contexts.
+        return position() != StaticPosition;
+    }
+
+    // Returns true if  an element is a stacking context or "treated as a
+    // stacking context". Most callers care about this as it follows the
+    // painting order where we collect anything that returns true from this
+    // function under the enclosing stacking context.
+    bool isTreatedAsOrStackingContext() const
+    {
+        return isStackingContext() || isTreatedAsStackingContext();
     }
 
     bool hasAutoZIndex() const { return m_box->hasAutoZIndex(); }

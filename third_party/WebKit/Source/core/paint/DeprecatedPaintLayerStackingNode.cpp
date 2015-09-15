@@ -53,7 +53,7 @@
 namespace blink {
 
 // FIXME: This should not require DeprecatedPaintLayer. There is currently a cycle where
-// in order to determine if we shoulBeTreatedAsStackingContextForPainting() we have to ask the paint
+// in order to determine if we shoulBeTreatedAsStackingContext() we have to ask the paint
 // layer about some of its state.
 DeprecatedPaintLayerStackingNode::DeprecatedPaintLayerStackingNode(LayoutBoxModelObject& layoutObject)
     : m_layoutObject(layoutObject)
@@ -62,7 +62,7 @@ DeprecatedPaintLayerStackingNode::DeprecatedPaintLayerStackingNode(LayoutBoxMode
     , m_stackingParent(0)
 #endif
 {
-    m_isTreatedAsStackingContextForPainting = shouldBeTreatedAsStackingContextForPainting();
+    m_isTreatedAsOrStackingContext = shouldBeTreatedAsOrStackingContext();
 
     // Non-stacking contexts should have empty z-order lists. As this is already the case,
     // there is no need to dirty / recompute these lists.
@@ -137,7 +137,7 @@ void DeprecatedPaintLayerStackingNode::rebuildZOrderLists()
 
         // FIXME: Some non-LayoutBoxModeObject can have position != static and thus would be treated like
         // stacking context. However we can't store them in the lists unless they have a DeprecatedPaintLayer.
-        if (descendant->styleRef().isTreatedAsStackingContextForPainting() && descendant->hasLayer()) {
+        if (descendant->styleRef().isTreatedAsOrStackingContext() && descendant->hasLayer()) {
             OwnPtr<Vector<DeprecatedPaintLayerStackingNode*>>& buffer = (descendant->style()->zIndex() >= 0) ? m_posZOrderList : m_negZOrderList;
             if (!buffer)
                 buffer = adoptPtr(new Vector<DeprecatedPaintLayerStackingNode*>);
@@ -242,13 +242,13 @@ void DeprecatedPaintLayerStackingNode::updateStackingNodesAfterStyleChange(const
         clearZOrderLists();
 }
 
-void DeprecatedPaintLayerStackingNode::updateIsTreatedAsStackingContextForPainting()
+void DeprecatedPaintLayerStackingNode::updateIsTreatedAsStackingContext()
 {
-    bool isTreatedAsStackingContextForPainting = shouldBeTreatedAsStackingContextForPainting();
-    if (isTreatedAsStackingContextForPainting == this->isTreatedAsStackingContextForPainting())
+    bool isTreatedAsOrStackingContext = shouldBeTreatedAsOrStackingContext();
+    if (isTreatedAsOrStackingContext == this->isTreatedAsOrStackingContext())
         return;
 
-    m_isTreatedAsStackingContextForPainting = isTreatedAsStackingContextForPainting;
+    m_isTreatedAsOrStackingContext = isTreatedAsOrStackingContext;
     if (!layoutObject().documentBeingDestroyed() && !layer()->isRootLayer())
         compositor()->setNeedsCompositingUpdate(CompositingUpdateRebuildTree);
     dirtyStackingContextZOrderLists();

@@ -58,8 +58,8 @@ class DeprecatedPaintLayerCompositor;
 class ComputedStyle;
 class LayoutBoxModelObject;
 
-// DeprecatedPaintLayerStackingNode represents anything that is treated as a
-// stacking context.
+// DeprecatedPaintLayerStackingNode represents anything that is a stacking
+// context or treated as a stacking context.
 //
 // Stacking contexts are the basis for the CSS painting algorithm. The paint
 // order is determined by walking stacking contexts (or elements treated like a
@@ -108,8 +108,8 @@ public:
     bool hasPositiveZOrderList() const { return posZOrderList() && posZOrderList()->size(); }
     bool hasNegativeZOrderList() const { return negZOrderList() && negZOrderList()->size(); }
 
-    bool isTreatedAsStackingContextForPainting() const { return m_isTreatedAsStackingContextForPainting; }
-    void updateIsTreatedAsStackingContextForPainting();
+    bool isTreatedAsOrStackingContext() const { return m_isTreatedAsOrStackingContext; }
+    void updateIsTreatedAsStackingContext();
 
     void updateStackingNodesAfterStyleChange(const ComputedStyle* oldStyle);
 
@@ -151,7 +151,7 @@ private:
     void setStackingParent(DeprecatedPaintLayerStackingNode* stackingParent) { m_stackingParent = stackingParent; }
 #endif
 
-    bool shouldBeTreatedAsStackingContextForPainting() const { return layoutObject().style()->isTreatedAsStackingContextForPainting(); }
+    bool shouldBeTreatedAsOrStackingContext() const { return layoutObject().style()->isTreatedAsOrStackingContext(); }
 
     bool isDirtyStackingContext() const { return m_zOrderListsDirty && isStackingContext(); }
 
@@ -168,8 +168,16 @@ private:
     OwnPtr<Vector<DeprecatedPaintLayerStackingNode*>> m_posZOrderList;
     OwnPtr<Vector<DeprecatedPaintLayerStackingNode*>> m_negZOrderList;
 
+    // This boolean caches whether the z-order lists above are dirty.
+    // It is only ever set for stacking contexts, as no other element can
+    // have z-order lists.
     unsigned m_zOrderListsDirty : 1;
-    unsigned m_isTreatedAsStackingContextForPainting : 1;
+
+    // This attribute caches whether the element was a stacking context or
+    // was treated like a stacking context, so that we can do comparison against
+    // it during style change (styleDidChange in particular), as we have lost
+    // the previous style information.
+    unsigned m_isTreatedAsOrStackingContext: 1;
 
 #if ENABLE(ASSERT)
     unsigned m_layerListMutationAllowed : 1;

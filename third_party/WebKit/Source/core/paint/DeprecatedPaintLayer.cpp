@@ -863,7 +863,7 @@ LayoutPoint DeprecatedPaintLayer::computeOffsetFromTransformedAncestor() const
 
 DeprecatedPaintLayer* DeprecatedPaintLayer::compositingContainer() const
 {
-    if (!stackingNode()->isTreatedAsStackingContextForPainting())
+    if (!stackingNode()->isTreatedAsOrStackingContext())
         return parent();
     if (DeprecatedPaintLayerStackingNode* ancestorStackingNode = stackingNode()->ancestorStackingContextNode())
         return ancestorStackingNode->layer();
@@ -1120,10 +1120,10 @@ void DeprecatedPaintLayer::addChild(DeprecatedPaintLayer* child, DeprecatedPaint
 
     setNeedsCompositingInputsUpdate();
 
-    if (!child->stackingNode()->isTreatedAsStackingContextForPainting() && !layoutObject()->documentBeingDestroyed())
+    if (!child->stackingNode()->isTreatedAsOrStackingContext() && !layoutObject()->documentBeingDestroyed())
         compositor()->setNeedsCompositingUpdate(CompositingUpdateRebuildTree);
 
-    if (child->stackingNode()->isTreatedAsStackingContextForPainting() || child->firstChild()) {
+    if (child->stackingNode()->isTreatedAsOrStackingContext() || child->firstChild()) {
         // Dirty the z-order list in which we are contained. The ancestorStackingContextNode() can be null in the
         // case where we're building up generated content layers. This is ok, since the lists will start
         // off dirty in that case anyway.
@@ -1152,10 +1152,10 @@ DeprecatedPaintLayer* DeprecatedPaintLayer::removeChild(DeprecatedPaintLayer* ol
     if (m_last == oldChild)
         m_last = oldChild->previousSibling();
 
-    if (!oldChild->stackingNode()->isTreatedAsStackingContextForPainting() && !layoutObject()->documentBeingDestroyed())
+    if (!oldChild->stackingNode()->isTreatedAsOrStackingContext() && !layoutObject()->documentBeingDestroyed())
         compositor()->setNeedsCompositingUpdate(CompositingUpdateRebuildTree);
 
-    if (oldChild->stackingNode()->isTreatedAsStackingContextForPainting() || oldChild->firstChild()) {
+    if (oldChild->stackingNode()->isTreatedAsOrStackingContext() || oldChild->firstChild()) {
         // Dirty the z-order list in which we are contained.  When called via the
         // reattachment process in removeOnlyThisLayer, the layer may already be disconnected
         // from the main layer tree, so we need to null-check the
@@ -2502,7 +2502,7 @@ void DeprecatedPaintLayer::styleChanged(StyleDifference diff, const ComputedStyl
     if (attemptDirectCompositingUpdate(diff, oldStyle))
         return;
 
-    m_stackingNode->updateIsTreatedAsStackingContextForPainting();
+    m_stackingNode->updateIsTreatedAsStackingContext();
     m_stackingNode->updateStackingNodesAfterStyleChange(oldStyle);
 
     if (m_scrollableArea)
