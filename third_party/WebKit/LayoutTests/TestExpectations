@@ -170,6 +170,14 @@ crbug.com/518993 [ Win ] imported/web-platform-tests/user-timing/test_user_timin
 crbug.com/518995 media/track/media-element-move-to-new-document-assert.html [ Failure Pass ]
 crbug.com/518998 media/video-poster-after-loadedmetadata.html [ ImageOnlyFailure Pass ]
 
+crbug.com/529038 compositing/layer-creation/should-invoke-deferred-compositing.html [ NeedsRebaseline ]
+crbug.com/529038 compositing/repaint/clipping-should-not-repaint-composited-descendants.html [ NeedsRebaseline ]
+crbug.com/529038 fast/repaint/dont-invalidate-root-layer-when-composited-layer-becomes-visible.html [ NeedsRebaseline ]
+crbug.com/529038 fast/repaint/video-mute-repaint.html [ NeedsRebaseline ]
+crbug.com/529038 fast/repaint/video-unmute-repaint.html [ NeedsRebaseline ]
+crbug.com/529038 media/video-paint-invalidation.html [ NeedsRebaseline ]
+crbug.com/529038 fast/canvas/canvas-composite-repaint-by-all-imagesource.html [ NeedsRebaseline ]
+
 crbug.com/526594 [ Win10 ] plugins/webview-plugin-lifecycle.html [ ImageOnlyFailure ]
 crbug.com/518999 [ Win7 Debug ] plugins/webview-plugin-lifecycle.html [ ImageOnlyFailure Pass ]
 
@@ -974,7 +982,8 @@ crbug.com/510002 [ XP ] http/tests/cachestorage/serviceworker/cache-put.html [ P
 # If you see wider INPUT elements or narrower TEXTAREA elements, you may do just
 # rebaseline. See crbug.com/508768#c6
 crbug.com/509025 [ Yosemite ] compositing/layer-creation/compositing-reason-removed.html [ Failure ]
-crbug.com/509025 [ Yosemite ] compositing/layer-creation/should-invoke-deferred-compositing.html [ Failure ]
+# TODO(chrishtr): uncomment after fixing crbug.com/529038
+#crbug.com/509025 [ Yosemite ] compositing/layer-creation/should-invoke-deferred-compositing.html [ Failure ]
 crbug.com/509025 [ Yosemite ] compositing/overflow/fixed-scroll-in-empty-root-layer.html [ Failure ]
 crbug.com/509025 [ Yosemite ] compositing/overflow/text-color-change.html [ Failure ]
 crbug.com/509025 [ Yosemite ] compositing/overflow/text-match-highlight.html [ Failure ]
@@ -1012,7 +1021,8 @@ crbug.com/509025 [ Yosemite ] fast/text/missing-glyph-in-combining-character-seq
 crbug.com/509025 [ Yosemite ] http/tests/misc/acid2.html [ Failure ]
 crbug.com/509025 [ Yosemite ] http/tests/navigation/navigation-redirect-schedule-crash.html [ Failure ]
 crbug.com/509025 [ Yosemite ] http/tests/security/contentTypeOptions/nosniff-script-without-content-type-blocked.html [ Failure ]
-crbug.com/509025 [ Yosemite ] media/video-paint-invalidation.html [ Failure ]
+# TODO(chrishtr): uncomment after fixing crbug.com/529038
+#crbug.com/509025 [ Yosemite ] media/video-paint-invalidation.html [ Failure ]
 crbug.com/509025 [ Yosemite ] svg/custom/absolute-sized-content-with-resources.xhtml [ Failure ]
 crbug.com/509025 [ Yosemite ] svg/custom/bug78807.svg [ Failure ]
 crbug.com/509025 [ Yosemite ] svg/text/text-rescale.html [ Failure ]
