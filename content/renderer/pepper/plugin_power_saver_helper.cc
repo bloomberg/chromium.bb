@@ -15,10 +15,7 @@
 #include "content/public/renderer/plugin_instance_throttler.h"
 #include "content/public/renderer/render_frame.h"
 #include "ppapi/shared_impl/ppapi_constants.h"
-#include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
-#include "third_party/WebKit/public/web/WebPluginParams.h"
-#include "third_party/WebKit/public/web/WebView.h"
 
 namespace content {
 
@@ -32,6 +29,7 @@ enum PeripheralHeuristicDecision {
   HEURISTIC_DECISION_ESSENTIAL_CROSS_ORIGIN_BIG = 2,
   HEURISTIC_DECISION_ESSENTIAL_CROSS_ORIGIN_WHITELISTED = 3,
   HEURISTIC_DECISION_ESSENTIAL_CROSS_ORIGIN_TINY = 4,
+  HEURISTIC_DECISION_ESSENTIAL_UNKNOWN_SIZE = 5,
   HEURISTIC_DECISION_NUM_ITEMS
 };
 
@@ -51,10 +49,10 @@ void RecordDecisionMetric(PeripheralHeuristicDecision decision) {
 }  // namespace
 
 PluginPowerSaverHelper::PeripheralPlugin::PeripheralPlugin(
-    const GURL& content_origin,
+    const url::Origin& content_origin,
     const base::Closure& unthrottle_callback)
-    : content_origin(content_origin), unthrottle_callback(unthrottle_callback) {
-}
+    : content_origin(content_origin),
+      unthrottle_callback(unthrottle_callback) {}
 
 PluginPowerSaverHelper::PeripheralPlugin::~PeripheralPlugin() {
 }
@@ -98,7 +96,7 @@ bool PluginPowerSaverHelper::OnMessageReceived(const IPC::Message& message) {
 }
 
 void PluginPowerSaverHelper::OnUpdatePluginContentOriginWhitelist(
-    const std::set<GURL>& origin_whitelist) {
+    const std::set<url::Origin>& origin_whitelist) {
   origin_whitelist_ = origin_whitelist;
 
   // Check throttled plugin instances to see if any can be unthrottled.
@@ -114,20 +112,19 @@ void PluginPowerSaverHelper::OnUpdatePluginContentOriginWhitelist(
 }
 
 void PluginPowerSaverHelper::RegisterPeripheralPlugin(
-    const GURL& content_origin,
+    const url::Origin& content_origin,
     const base::Closure& unthrottle_callback) {
-  DCHECK_EQ(content_origin.GetOrigin(), content_origin);
   peripheral_plugins_.push_back(
       PeripheralPlugin(content_origin, unthrottle_callback));
 }
 
 bool PluginPowerSaverHelper::ShouldThrottleContent(
-    const GURL& content_origin,
+    const url::Origin& main_frame_origin,
+    const url::Origin& content_origin,
     const std::string& plugin_module_name,
     int width,
     int height,
     bool* cross_origin_main_content) const {
-  DCHECK_EQ(content_origin.GetOrigin(), content_origin);
   if (cross_origin_main_content)
     *cross_origin_main_content = false;
 
@@ -142,23 +139,13 @@ bool PluginPowerSaverHelper::ShouldThrottleContent(
     return false;
   }
 
-  if (width <= 0 || height <= 0)
+  if (main_frame_origin.IsSameOriginWith(content_origin)) {
+    RecordDecisionMetric(HEURISTIC_DECISION_ESSENTIAL_SAME_ORIGIN);
     return false;
-
-  // TODO(alexmos): Update this to use the origin of the RemoteFrame when 426512
-  // is fixed. For now, case 3 in the class level comment doesn't work in
-  // --site-per-process mode.
-  blink::WebFrame* main_frame =
-      render_frame()->GetWebFrame()->view()->mainFrame();
-  if (main_frame->isWebRemoteFrame()) {
-    RecordDecisionMetric(HEURISTIC_DECISION_PERIPHERAL);
-    return true;
   }
 
-  // All same-origin plugin content is essential.
-  GURL main_frame_origin = GURL(main_frame->document().url()).GetOrigin();
-  if (content_origin == main_frame_origin) {
-    RecordDecisionMetric(HEURISTIC_DECISION_ESSENTIAL_SAME_ORIGIN);
+  if (width <= 0 || height <= 0) {
+    RecordDecisionMetric(HEURISTIC_DECISION_ESSENTIAL_UNKNOWN_SIZE);
     return false;
   }
 
@@ -188,8 +175,7 @@ bool PluginPowerSaverHelper::ShouldThrottleContent(
 }
 
 void PluginPowerSaverHelper::WhitelistContentOrigin(
-    const GURL& content_origin) {
-  DCHECK_EQ(content_origin.GetOrigin(), content_origin);
+    const url::Origin& content_origin) {
   if (origin_whitelist_.insert(content_origin).second) {
     Send(new FrameHostMsg_PluginContentOriginAllowed(
         render_frame()->GetRoutingID(), content_origin));

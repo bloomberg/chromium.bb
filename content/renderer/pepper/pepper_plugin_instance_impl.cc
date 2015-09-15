@@ -119,6 +119,7 @@
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_skia_rep.h"
 #include "ui/gfx/range/range.h"
+#include "url/origin.h"
 #include "v8/include/v8.h"
 
 #if defined(OS_CHROMEOS)
@@ -1608,7 +1609,7 @@ void PepperPluginInstanceImpl::SendDidChangeView() {
     }
 
     if (throttler_) {
-      throttler_->Initialize(render_frame_, plugin_url_.GetOrigin(),
+      throttler_->Initialize(render_frame_, url::Origin(plugin_url_),
                              module()->name(), unobscured_rect_.size());
     }
   }

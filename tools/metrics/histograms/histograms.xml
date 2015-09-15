@@ -68316,6 +68316,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="2" label="Essential Cross-Origin Big"/>
   <int value="3" label="Essential Cross-Origin Whitelisted"/>
   <int value="4" label="Essential Cross-Origin Tiny"/>
+  <int value="5" label="Essential Unknown Size"/>
 </enum>
 
 <enum name="PluginPowerSaverPosterParamPresence" type="int">

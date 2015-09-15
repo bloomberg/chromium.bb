@@ -50,7 +50,7 @@ void PluginContentOriginWhitelist::DidNavigateMainFrame(
 }
 
 void PluginContentOriginWhitelist::OnPluginContentOriginAllowed(
-    const GURL& content_origin) {
+    const url::Origin& content_origin) {
   whitelist_.insert(content_origin);
 
   web_contents()->SendToAllFrames(

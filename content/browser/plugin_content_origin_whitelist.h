@@ -8,7 +8,7 @@
 #include <set>
 
 #include "content/public/browser/web_contents_observer.h"
-#include "url/gurl.h"
+#include "url/origin.h"
 
 namespace content {
 
@@ -39,9 +39,9 @@ class PluginContentOriginWhitelist : public WebContentsObserver {
       const LoadCommittedDetails& details,
       const FrameNavigateParams& params) override;
 
-  void OnPluginContentOriginAllowed(const GURL& content_origin);
+  void OnPluginContentOriginAllowed(const url::Origin& content_origin);
 
-  std::set<GURL> whitelist_;
+  std::set<url::Origin> whitelist_;
 
   DISALLOW_COPY_AND_ASSIGN(PluginContentOriginWhitelist);
 };

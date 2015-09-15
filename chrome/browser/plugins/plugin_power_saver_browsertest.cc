@@ -14,6 +14,9 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/ppapi_test_utils.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
+#include "net/test/embedded_test_server/http_request.h"
+#include "net/test/embedded_test_server/http_response.h"
 #include "ppapi/shared_impl/ppapi_switches.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "ui/base/window_open_disposition.h"
@@ -92,10 +95,25 @@ void VerifyPluginMarkedEssential(content::WebContents* contents,
   EXPECT_TRUE(PluginLoaded(contents, element_id));
 }
 
+scoped_ptr<net::test_server::HttpResponse> RespondWithHTML(
+    const std::string& html,
+    const net::test_server::HttpRequest& request) {
+  scoped_ptr<net::test_server::BasicHttpResponse> response(
+      new net::test_server::BasicHttpResponse());
+  response->set_content_type("text/html");
+  response->set_content(html);
+  return response.Pass();
+}
+
 }  // namespace
 
 class PluginPowerSaverBrowserTest : public InProcessBrowserTest {
  public:
+  void SetUpOnMainThread() override {
+    InProcessBrowserTest::SetUpOnMainThread();
+    ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  }
+
   void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitch(switches::kEnablePluginPowerSaver);
     command_line->AppendSwitch(switches::kEnablePepperTesting);
@@ -107,10 +125,11 @@ class PluginPowerSaverBrowserTest : public InProcessBrowserTest {
   }
 
  protected:
-  void LoadHTML(const char* html) {
-    std::string url_str = "data:text/html;charset=utf-8,";
-    url_str.append(html);
-    ui_test_utils::NavigateToURL(browser(), GURL(url_str));
+  void LoadHTML(const std::string& html) {
+    ASSERT_TRUE(embedded_test_server()->Started());
+    embedded_test_server()->RegisterRequestHandler(
+        base::Bind(&RespondWithHTML, html));
+    ui_test_utils::NavigateToURL(browser(), embedded_test_server()->base_url());
     EXPECT_TRUE(content::WaitForRenderFrameReady(
         GetActiveWebContents()->GetMainFrame()));
   }
@@ -257,13 +276,15 @@ IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest, ExpandingSmallPlugin) {
 }
 
 IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest, BackgroundTabPlugins) {
-  std::string url_str =
-      "data:text/html;charset=utf-8,"
-      "<object id='same_origin' type='application/x-ppapi-tests'></object>"
+  std::string html =
+      "<object id='same_origin' data='fake.swf' "
+      "    type='application/x-ppapi-tests'></object>"
       "<object id='small_cross_origin' data='http://otherorigin.com/fake1.swf' "
-      "   type='application/x-ppapi-tests' width='400' height='100'></object>";
+      "    type='application/x-ppapi-tests' width='400' height='100'></object>";
+  embedded_test_server()->RegisterRequestHandler(
+      base::Bind(&RespondWithHTML, html));
   ui_test_utils::NavigateToURLWithDisposition(
-      browser(), GURL(url_str), NEW_BACKGROUND_TAB,
+      browser(), embedded_test_server()->base_url(), NEW_BACKGROUND_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
 
   ASSERT_EQ(2, browser()->tab_strip_model()->count());

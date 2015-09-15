@@ -11,7 +11,7 @@
 #include "base/callback.h"
 #include "content/common/content_export.h"
 #include "content/public/renderer/render_frame_observer.h"
-#include "url/gurl.h"
+#include "url/origin.h"
 
 namespace blink {
 struct WebPluginParams;
@@ -26,7 +26,7 @@ class CONTENT_EXPORT PluginPowerSaverHelper : public RenderFrameObserver {
   ~PluginPowerSaverHelper() override;
 
   // See RenderFrame for documentation.
-  void RegisterPeripheralPlugin(const GURL& content_origin,
+  void RegisterPeripheralPlugin(const url::Origin& content_origin,
                                 const base::Closure& unthrottle_callback);
 
   // Returns true if this plugin should have power saver enabled.
@@ -40,13 +40,16 @@ class CONTENT_EXPORT PluginPowerSaverHelper : public RenderFrameObserver {
   //  - Cross-origin:  a.com -> b.com/iframe.html -> b.com/plugin.swf
   //  - Same-origin:   a.com -> b.com/iframe-to-a.html -> a.com/plugin.swf
   //
+  // |main_frame_origin| is the origin of the main frame.
+  //
   // |content_origin| is the origin of the plugin content.
   //
   // |width| and |height| are zoom and device scale independent logical pixels.
   //
   // |cross_origin_main_content| may be NULL. It is set to true if the
   // plugin content is cross-origin but still the "main attraction" of the page.
-  bool ShouldThrottleContent(const GURL& content_origin,
+  bool ShouldThrottleContent(const url::Origin& main_frame_origin,
+                             const url::Origin& content_origin,
                              const std::string& plugin_module_name,
                              int width,
                              int height,
@@ -54,15 +57,15 @@ class CONTENT_EXPORT PluginPowerSaverHelper : public RenderFrameObserver {
 
   // Whitelists a |content_origin| so its content will never be throttled in
   // this RenderFrame. Whitelist is cleared by top level navigation.
-  void WhitelistContentOrigin(const GURL& content_origin);
+  void WhitelistContentOrigin(const url::Origin& content_origin);
 
  private:
   struct PeripheralPlugin {
-    PeripheralPlugin(const GURL& content_origin,
+    PeripheralPlugin(const url::Origin& content_origin,
                      const base::Closure& unthrottle_callback);
     ~PeripheralPlugin();
 
-    GURL content_origin;
+    url::Origin content_origin;
     base::Closure unthrottle_callback;
   };
 
@@ -79,12 +82,12 @@ class CONTENT_EXPORT PluginPowerSaverHelper : public RenderFrameObserver {
   bool OnMessageReceived(const IPC::Message& message) override;
 
   void OnUpdatePluginContentOriginWhitelist(
-      const std::set<GURL>& origin_whitelist);
+      const std::set<url::Origin>& origin_whitelist);
 
   OverrideForTesting override_for_testing_;
 
   // Local copy of the whitelist for the entire tab.
-  std::set<GURL> origin_whitelist_;
+  std::set<url::Origin> origin_whitelist_;
 
   // Set of peripheral plugins eligible to be unthrottled ex post facto.
   std::vector<PeripheralPlugin> peripheral_plugins_;

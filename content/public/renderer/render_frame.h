@@ -31,6 +31,10 @@ namespace gfx {
 class Range;
 }
 
+namespace url {
+class Origin;
+}
+
 namespace v8 {
 template <typename T> class Local;
 class Context;
@@ -122,7 +126,7 @@ class CONTENT_EXPORT RenderFrame : public IPC::Listener,
   // whitelist is later updated and includes |content_origin|, then
   // |unthrottle_callback| will be called.
   virtual void RegisterPeripheralPlugin(
-      const GURL& content_origin,
+      const url::Origin& content_origin,
       const base::Closure& unthrottle_callback) = 0;
 #endif
 

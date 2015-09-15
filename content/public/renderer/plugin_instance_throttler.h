@@ -18,7 +18,6 @@ namespace gfx {
 class Size;
 }
 
-class GURL;
 class SkBitmap;
 
 namespace content {

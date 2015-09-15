@@ -15,10 +15,12 @@
 #include "ppapi/shared_impl/ppapi_constants.h"
 #include "third_party/WebKit/public/platform/WebRect.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
+#include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebPluginContainer.h"
 #include "third_party/WebKit/public/web/WebPluginParams.h"
+#include "third_party/WebKit/public/web/WebView.h"
 #include "ui/gfx/color_utils.h"
-#include "url/gurl.h"
+#include "url/origin.h"
 
 namespace content {
 
@@ -158,7 +160,7 @@ void PluginInstanceThrottlerImpl::SetWebPlugin(
 
 void PluginInstanceThrottlerImpl::Initialize(
     RenderFrameImpl* frame,
-    const GURL& content_origin,
+    const url::Origin& content_origin,
     const std::string& plugin_module_name,
     const gfx::Size& unobscured_size) {
   DCHECK(unobscured_size_.IsEmpty());
@@ -170,8 +172,8 @@ void PluginInstanceThrottlerImpl::Initialize(
     bool cross_origin_main_content = false;
     float zoom_factor = GetWebPlugin()->container()->pageZoomFactor();
     if (!helper->ShouldThrottleContent(
-            content_origin, plugin_module_name,
-            roundf(unobscured_size.width() / zoom_factor),
+            frame->GetWebFrame()->top()->securityOrigin(), content_origin,
+            plugin_module_name, roundf(unobscured_size.width() / zoom_factor),
             roundf(unobscured_size.height() / zoom_factor),
             &cross_origin_main_content)) {
       DCHECK_NE(THROTTLER_STATE_MARKED_ESSENTIAL, state_);

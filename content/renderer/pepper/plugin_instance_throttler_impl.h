@@ -21,6 +21,10 @@ class WebInputEvent;
 struct WebRect;
 }
 
+namespace url {
+class Origin;
+}
+
 namespace content {
 
 class PepperWebPluginImpl;
@@ -55,7 +59,7 @@ class CONTENT_EXPORT PluginInstanceThrottlerImpl
   }
 
   void Initialize(RenderFrameImpl* frame,
-                  const GURL& content_origin,
+                  const url::Origin& content_origin,
                   const std::string& plugin_module_name,
                   const gfx::Size& unobscured_size);
 

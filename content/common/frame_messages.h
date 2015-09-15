@@ -681,7 +681,7 @@ IPC_MESSAGE_ROUTED4(FrameMsg_FailedNavigation,
 #if defined(ENABLE_PLUGINS)
 // Notifies the renderer of updates to the Plugin Power Saver origin whitelist.
 IPC_MESSAGE_ROUTED1(FrameMsg_UpdatePluginContentOriginWhitelist,
-                    std::set<GURL> /* origin_whitelist */)
+                    std::set<url::Origin> /* origin_whitelist */)
 #endif  // defined(ENABLE_PLUGINS)
 
 // -----------------------------------------------------------------------------
@@ -907,7 +907,7 @@ IPC_SYNC_MESSAGE_CONTROL4_3(FrameHostMsg_GetPluginInfo,
 // is specific to a top level frame, and is cleared when the whitelisting
 // RenderFrame is destroyed.
 IPC_MESSAGE_ROUTED1(FrameHostMsg_PluginContentOriginAllowed,
-                    GURL /* content_origin */)
+                    url::Origin /* content_origin */)
 
 // A renderer sends this to the browser process when it wants to
 // create a plugin.  The browser will create the plugin process if

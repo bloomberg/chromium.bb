@@ -29,6 +29,9 @@
 #include "third_party/WebKit/public/web/WebScriptSource.h"
 #include "third_party/WebKit/public/web/WebSerializedScriptValue.h"
 #include "third_party/WebKit/public/web/WebView.h"
+#include "url/gurl.h"
+#include "url/origin.h"
+
 using base::UserMetricsAction;
 using content::PluginInstanceThrottler;
 using content::RenderThread;
@@ -45,7 +48,7 @@ void LoadablePluginPlaceholder::BlockForPowerSaverPoster() {
   is_blocked_for_power_saver_poster_ = true;
 
   render_frame()->RegisterPeripheralPlugin(
-      GURL(GetPluginParams().url).GetOrigin(),
+      url::Origin(GURL(GetPluginParams().url)),
       base::Bind(&LoadablePluginPlaceholder::MarkPluginEssential,
                  weak_factory_.GetWeakPtr(),
                  PluginInstanceThrottler::UNTHROTTLE_METHOD_BY_WHITELIST));

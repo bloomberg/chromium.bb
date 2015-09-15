@@ -716,7 +716,7 @@ RenderFrameImpl::RenderFrameImpl(const CreateParams& params)
       is_detaching_(false),
       proxy_routing_id_(MSG_ROUTING_NONE),
 #if defined(ENABLE_PLUGINS)
-      plugin_power_saver_helper_(NULL),
+      plugin_power_saver_helper_(nullptr),
 #endif
       cookie_jar_(this),
       selection_text_offset_(0),
@@ -760,6 +760,7 @@ RenderFrameImpl::RenderFrameImpl(const CreateParams& params)
 #endif
 
 #if defined(ENABLE_PLUGINS)
+  // Manages its own lifetime.
   plugin_power_saver_helper_ = new PluginPowerSaverHelper(this);
 #endif
 
@@ -1961,7 +1962,7 @@ ServiceRegistry* RenderFrameImpl::GetServiceRegistry() {
 
 #if defined(ENABLE_PLUGINS)
 void RenderFrameImpl::RegisterPeripheralPlugin(
-    const GURL& content_origin,
+    const url::Origin& content_origin,
     const base::Closure& unthrottle_callback) {
   return plugin_power_saver_helper_->RegisterPeripheralPlugin(
       content_origin, unthrottle_callback);

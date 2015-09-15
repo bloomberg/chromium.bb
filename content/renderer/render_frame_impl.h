@@ -84,6 +84,10 @@ namespace mojo {
 class ServiceProvider;
 }
 
+namespace url {
+class Origin;
+}
+
 namespace content {
 
 class ChildFrameCompositingHelper;
@@ -347,7 +351,7 @@ class CONTENT_EXPORT RenderFrameImpl
   ServiceRegistry* GetServiceRegistry() override;
 #if defined(ENABLE_PLUGINS)
   void RegisterPeripheralPlugin(
-      const GURL& content_origin,
+      const url::Origin& content_origin,
       const base::Closure& unthrottle_callback) override;
   PluginPowerSaverHelper* plugin_power_saver_helper() {
     return plugin_power_saver_helper_;
