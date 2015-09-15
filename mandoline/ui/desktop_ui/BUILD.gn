@@ -27,6 +27,8 @@ source_set("lib") {
     "browser_manager.h",
     "browser_window.cc",
     "browser_window.h",
+    "toolbar_view.cc",
+    "toolbar_view.h",
   ]
 
   deps = [

@@ -14,6 +14,7 @@
 #include "components/web_view/frame_devtools_agent.h"
 #include "components/web_view/frame_tree.h"
 #include "components/web_view/pending_web_view_load.h"
+#include "components/web_view/url_request_cloneable.h"
 #include "mojo/application/public/cpp/application_impl.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
 #include "url/gurl.h"
@@ -27,6 +28,8 @@ bool EnableRemoteDebugging() {
 }
 
 }  // namespace
+
+using web_view::mojom::ButtonState;
 
 ////////////////////////////////////////////////////////////////////////////////
 // WebViewImpl, public:
@@ -74,17 +77,64 @@ void WebViewImpl::OnLoad() {
       frame_tree_client, frame_connection.Pass(), client_properties));
 }
 
+void WebViewImpl::LoadRequestImpl(mojo::URLRequestPtr request) {
+  client_->BackForwardChanged(
+      back_list_.empty() ? ButtonState::BUTTON_STATE_DISABLED
+                         : ButtonState::BUTTON_STATE_ENABLED,
+      forward_list_.empty() ? ButtonState::BUTTON_STATE_DISABLED
+                            : ButtonState::BUTTON_STATE_ENABLED);
+
+  current_page_request_.reset(new URLRequestCloneable(request.Pass()));
+  pending_load_.reset(new PendingWebViewLoad(this));
+  pending_load_->Init(current_page_request_->Clone());
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // WebViewImpl, WebView implementation:
 
 void WebViewImpl::LoadRequest(mojo::URLRequestPtr request) {
-  pending_load_.reset(new PendingWebViewLoad(this));
-  pending_load_->Init(request.Pass());
+  // Clear the forward list when performing a top level load request.
+  forward_list_.clear();
+
+  if (current_page_request_) {
+    // TODO(erg): This doesn't deal with redirect chains. If you navigate to a
+    // site, and it 300s, we put both the url which caused the 300 and the
+    // target url here, when we should not add the redirect url to the back
+    // list.
+    back_list_.push_back(current_page_request_.Pass());
+  }
+
+  LoadRequestImpl(request.Pass());
 }
 
 void WebViewImpl::GetViewTreeClient(
     mojo::InterfaceRequest<mojo::ViewTreeClient> view_tree_client) {
   mojo::ViewTreeConnection::Create(this, view_tree_client.Pass());
+}
+
+void WebViewImpl::GoBack() {
+  if (back_list_.empty())
+    return;
+
+  // Take the current page request and put it in the forward list.
+  forward_list_.push_back(current_page_request_.Pass());
+
+  mojo::URLRequestPtr new_request = back_list_.back()->Clone();
+  back_list_.resize(back_list_.size() - 1);
+
+  LoadRequestImpl(new_request.Pass());
+}
+
+void WebViewImpl::GoForward() {
+  if (forward_list_.empty())
+    return;
+
+  back_list_.push_back(current_page_request_.Pass());
+
+  mojo::URLRequestPtr new_request = forward_list_.back()->Clone();
+  forward_list_.resize(forward_list_.size() - 1);
+
+  LoadRequestImpl(new_request.Pass());
 }
 
 ////////////////////////////////////////////////////////////////////////////////

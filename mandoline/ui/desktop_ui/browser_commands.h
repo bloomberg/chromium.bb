@@ -11,6 +11,8 @@ enum class BrowserCommand : uint32_t {
   CLOSE,
   FOCUS_OMNIBOX,
   NEW_WINDOW,
+  GO_BACK,
+  GO_FORWARD,
 };
 
 }  // namespace mandoline
