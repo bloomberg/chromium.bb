@@ -3109,6 +3109,12 @@
         # TODO: Enable on Windows too, http://crbug.com/404525
         'variables': { 'clang_warning_flags': ['-Wexit-time-destructors']},
       }],
+      ['"<!(python <(DEPTH)/tools/clang/scripts/update.py --print-revision)"!="245965-1"', {
+        # TODO(thakis): Move this to the global clang_warning_flags block once
+        # clang is rolled far enough that the pinned clang understands this flag
+        # TODO(thakis): Consider enabling this?
+        'variables': { 'clang_warning_flags': ['-Wno-bitfield-width']},
+      }],
       ['chromium_code==0', {
         'variables': {
           'clang_warning_flags': [
