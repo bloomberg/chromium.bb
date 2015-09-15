@@ -299,9 +299,9 @@ void Printer::AnnotatePreferredMultilineAssignment(const BinaryOpNode* binop) {
   // things, but not flags things.
   if (binop->op().value() == "=" && ident && list) {
     const base::StringPiece lhs = ident->value().value();
-    if (lhs == "data" || lhs == "datadeps" || lhs == "deps" ||
-        lhs == "inputs" || lhs == "outputs" || lhs == "public" ||
-        lhs == "public_deps" || lhs == "sources") {
+    if (lhs == "data" || lhs == "datadeps" || lhs == "data_deps" ||
+        lhs == "deps" || lhs == "inputs" || lhs == "outputs" ||
+        lhs == "public" || lhs == "public_deps" || lhs == "sources") {
       const_cast<ListNode*>(list)->set_prefer_multiline(true);
     }
   }

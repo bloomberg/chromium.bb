@@ -517,7 +517,7 @@ if (target_cpu == "x64") {
 ```
 
 If a 64-bit target wants to depend on a 32-bit binary, it would specify
-a dependency using `datadeps` (data deps are like deps that are only
+a dependency using `data_deps` (data deps are like deps that are only
 needed at runtime and aren't linked, since you can't link a 32-bit and a
 64-bit library).
 
@@ -526,7 +526,7 @@ executable("my_program") {
   ...
   if (target_cpu == "x64") {
     # The 64-bit build needs this 32-bit helper.
-    datadeps = [ ":helper(//toolchains:32)" ]
+    data_deps = [ ":helper(//toolchains:32)" ]
   }
 }
 

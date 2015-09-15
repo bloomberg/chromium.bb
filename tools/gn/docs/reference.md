@@ -3518,7 +3518,7 @@
   A list of target labels.
 
   Specifies dependencies of a target that are not actually linked into
-  the current target. Such dependencies will built and will be available
+  the current target. Such dependencies will be built and will be available
   at runtime.
 
   This is normally used for things like plugins or helper programs that

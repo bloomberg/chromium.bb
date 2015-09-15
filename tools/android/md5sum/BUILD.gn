@@ -4,13 +4,13 @@
 
 # GYP: //tools/android/md5sum/md5sum.gyp:md5sum
 group("md5sum") {
-  datadeps = [
+  data_deps = [
     ":md5sum_prepare_dist($default_toolchain)",
     ":md5sum_copy_host($host_toolchain)",
   ]
 
-  # TODO(cjhopman): Remove once group datadeps are fixed.
-  deps = datadeps
+  # TODO(cjhopman): Remove once group data_deps are fixed.
+  deps = data_deps
 }
 
 # GYP: //tools/android/md5sum/md5sum.gyp:md5sum_bin_device (and md5sum_bin_host)
