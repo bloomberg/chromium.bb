@@ -42,10 +42,4 @@
     readonly attribute float radiusY;
     readonly attribute float rotationAngle;
     readonly attribute float force;
-
-    // Non-standard APIs
-    [DeprecateAs=PrefixedTouchRadiusX, ImplementedAs=radiusX] readonly attribute float webkitRadiusX;
-    [DeprecateAs=PrefixedTouchRadiusY, ImplementedAs=radiusY] readonly attribute float webkitRadiusY;
-    [DeprecateAs=PrefixedTouchRotationAngle, ImplementedAs=rotationAngle] readonly attribute float webkitRotationAngle;
-    [DeprecateAs=PrefixedTouchForce, ImplementedAs=force] readonly attribute float webkitForce;
 };

@@ -5434,10 +5434,6 @@ interface Touch
     getter screenX
     getter screenY
     getter target
-    getter webkitForce
-    getter webkitRadiusX
-    getter webkitRadiusY
-    getter webkitRotationAngle
     method constructor
 interface TouchEvent
     getter altKey

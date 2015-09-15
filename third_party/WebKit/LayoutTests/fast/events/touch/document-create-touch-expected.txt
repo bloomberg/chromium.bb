@@ -1,7 +1,3 @@
-CONSOLE WARNING: 'Touch.webkitRadiusX' is deprecated and will be removed in M47, around November 2015. Please use 'Touch.radiusX' instead.
-CONSOLE WARNING: 'Touch.webkitRadiusY' is deprecated and will be removed in M47, around November 2015. Please use 'Touch.radiusY' instead.
-CONSOLE WARNING: 'Touch.webkitRotationAngle' is deprecated and will be removed in M47, around November 2015. Please use 'Touch.rotationAngle' instead.
-CONSOLE WARNING: 'Touch.webkitForce' is deprecated and will be removed in M47, around November 2015. Please use 'Touch.force' instead.
 This tests support for the document.createTouch API.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
@@ -19,10 +15,6 @@ PASS touch.radiusX is 5
 PASS touch.radiusY is 3
 PASS touch.rotationAngle is 10
 PASS touch.force is 10
-PASS touch.webkitRadiusX is 5
-PASS touch.webkitRadiusY is 3
-PASS touch.webkitRotationAngle is 10
-PASS touch.webkitForce is 10
 PASS emptyTouch is non-null.
 PASS emptyTouch.target is null
 PASS emptyTouch.identifier is 0
@@ -34,10 +26,6 @@ PASS emptyTouch.radiusX is 0
 PASS emptyTouch.radiusY is 0
 PASS emptyTouch.rotationAngle is 0
 PASS emptyTouch.force is 0
-PASS emptyTouch.webkitRadiusX is 0
-PASS emptyTouch.webkitRadiusY is 0
-PASS emptyTouch.webkitRotationAngle is 0
-PASS emptyTouch.webkitForce is 0
 PASS badParamsTouch is non-null.
 PASS badParamsTouch.target is null
 PASS badParamsTouch.identifier is 0
@@ -49,10 +37,6 @@ PASS badParamsTouch.radiusX is 0
 PASS badParamsTouch.radiusY is 0
 PASS badParamsTouch.rotationAngle is 0
 PASS badParamsTouch.force is 0
-PASS badParamsTouch.webkitRadiusX is 0
-PASS badParamsTouch.webkitRadiusY is 0
-PASS badParamsTouch.webkitRotationAngle is 0
-PASS badParamsTouch.webkitForce is 0
 PASS detachedTouch = document.implementation.createDocument('a', 'b').createTouch() is non-null.
 PASS detachedTouch.target is null
 PASS detachedTouch.identifier is 0
@@ -64,10 +48,6 @@ PASS detachedTouch.radiusX is 0
 PASS detachedTouch.radiusY is 0
 PASS detachedTouch.rotationAngle is 0
 PASS detachedTouch.force is 0
-PASS detachedTouch.webkitRadiusX is 0
-PASS detachedTouch.webkitRadiusY is 0
-PASS detachedTouch.webkitRotationAngle is 0
-PASS detachedTouch.webkitForce is 0
 PASS successfullyParsed is true
 
 TEST COMPLETE

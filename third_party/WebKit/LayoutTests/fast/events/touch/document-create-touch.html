@@ -35,10 +35,6 @@ shouldBe("touch.radiusX", "5");
 shouldBe("touch.radiusY", "3");
 shouldBe("touch.rotationAngle", "10");
 shouldBe("touch.force", "10");
-shouldBe("touch.webkitRadiusX", "5");
-shouldBe("touch.webkitRadiusY", "3");
-shouldBe("touch.webkitRotationAngle", "10");
-shouldBe("touch.webkitForce", "10");
 
 var emptyTouch = document.createTouch();
 shouldBeNonNull("emptyTouch");
@@ -52,10 +48,6 @@ shouldBe("emptyTouch.radiusX", "0");
 shouldBe("emptyTouch.radiusY", "0");
 shouldBe("emptyTouch.rotationAngle", "0");
 shouldBe("emptyTouch.force", "0");
-shouldBe("emptyTouch.webkitRadiusX", "0");
-shouldBe("emptyTouch.webkitRadiusY", "0");
-shouldBe("emptyTouch.webkitRotationAngle", "0");
-shouldBe("emptyTouch.webkitForce", "0");
 
 // Try invoking with incorrect parameter types.
 var badParamsTouch = document.createTouch(function(x) { return x; }, 12, 'a', 'b', 'c', function(x) { return x; }, 104, 'a', 'b', 'c', 'd');
@@ -70,10 +62,6 @@ shouldBe("badParamsTouch.radiusX", "0");
 shouldBe("badParamsTouch.radiusY", "0");
 shouldBe("badParamsTouch.rotationAngle", "0");
 shouldBe("badParamsTouch.force", "0");
-shouldBe("badParamsTouch.webkitRadiusX", "0");
-shouldBe("badParamsTouch.webkitRadiusY", "0");
-shouldBe("badParamsTouch.webkitRotationAngle", "0");
-shouldBe("badParamsTouch.webkitForce", "0");
 
 // Should not crash when invoked on a detached Document.
 var detachedTouch;
@@ -88,10 +76,6 @@ shouldBe("detachedTouch.radiusX", "0");
 shouldBe("detachedTouch.radiusY", "0");
 shouldBe("detachedTouch.rotationAngle", "0");
 shouldBe("detachedTouch.force", "0");
-shouldBe("detachedTouch.webkitRadiusX", "0");
-shouldBe("detachedTouch.webkitRadiusY", "0");
-shouldBe("detachedTouch.webkitRotationAngle", "0");
-shouldBe("detachedTouch.webkitForce", "0");
 
 isSuccessfullyParsed();
 </script>

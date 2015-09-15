@@ -46,8 +46,8 @@ function verifyTouchPoint(list, point, x, y, id, rx, ry)
     shouldBe("lastEvent." + list + "[" + point + "].clientY", y.toString());
     shouldBe("lastEvent." + list + "[" + point + "].identifier", id.toString());
     if (eventSender.setTouchPointRadius) {
-        shouldBe("lastEvent." + list + "[" + point + "].webkitRadiusX", rx.toString());
-        shouldBe("lastEvent." + list + "[" + point + "].webkitRadiusY", ry.toString());
+        shouldBe("lastEvent." + list + "[" + point + "].radiusX", rx.toString());
+        shouldBe("lastEvent." + list + "[" + point + "].radiusY", ry.toString());
     }
 }
 
