@@ -47,6 +47,7 @@
 #include "core/page/ValidationMessageClient.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
 #include "core/paint/DeprecatedPaintLayer.h"
+#include "platform/MemoryPurgeController.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/plugins/PluginData.h"
 #include "wtf/RefCountedLeakCounter.h"
@@ -159,6 +160,14 @@ ScrollingCoordinator* Page::scrollingCoordinator()
         m_scrollingCoordinator = ScrollingCoordinator::create(this);
 
     return m_scrollingCoordinator.get();
+}
+
+MemoryPurgeController& Page::memoryPurgeController()
+{
+    if (!m_memoryPurgeController)
+        m_memoryPurgeController = MemoryPurgeController::create();
+
+    return *m_memoryPurgeController;
 }
 
 String Page::mainThreadScrollingReasonsAsText()
@@ -557,9 +566,9 @@ DEFINE_TRACE(Page)
     visitor->trace(m_validationMessageClient);
     visitor->trace(m_multisamplingChangedObservers);
     visitor->trace(m_frameHost);
+    visitor->trace(m_memoryPurgeController);
     HeapSupplementable<Page>::trace(visitor);
 #endif
-    visitor->trace(m_memoryPurgeController);
     PageLifecycleNotifier::trace(visitor);
 }
 

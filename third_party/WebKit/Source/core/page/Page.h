@@ -32,7 +32,6 @@
 #include "core/page/PageLifecycleNotifier.h"
 #include "core/page/PageLifecycleObserver.h"
 #include "core/page/PageVisibilityState.h"
-#include "platform/MemoryPurgeController.h"
 #include "platform/Supplementable.h"
 #include "platform/geometry/LayoutRect.h"
 #include "platform/geometry/Region.h"
@@ -58,6 +57,7 @@ class EditorClient;
 class FocusController;
 class Frame;
 class FrameHost;
+class MemoryPurgeController;
 class PluginData;
 class PointerLockController;
 class ScrollingCoordinator;
@@ -205,7 +205,7 @@ public:
 
     static void networkStateChanged(bool online);
 
-    MemoryPurgeController& memoryPurgeController() { return m_memoryPurgeController; }
+    MemoryPurgeController& memoryPurgeController();
 
     DECLARE_TRACE();
     void willBeDestroyed();
@@ -277,7 +277,7 @@ private:
     // FIXME: Most of the members of Page should move onto FrameHost.
     OwnPtrWillBeMember<FrameHost> m_frameHost;
 
-    MemoryPurgeController m_memoryPurgeController;
+    OwnPtrWillBeMember<MemoryPurgeController> m_memoryPurgeController;
 };
 
 extern template class CORE_EXTERN_TEMPLATE_EXPORT WillBeHeapSupplement<Page>;

@@ -41,9 +41,13 @@ public:
 // for reducing memory consumption and notifies its clients.
 // Since we want to control memory per tab, MemoryPurgeController is owned by
 // Page.
-class PLATFORM_EXPORT MemoryPurgeController {
+class PLATFORM_EXPORT MemoryPurgeController final : public NoBaseWillBeGarbageCollected<MemoryPurgeController> {
+    DECLARE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(MemoryPurgeController);
 public:
-    MemoryPurgeController();
+    static PassOwnPtrWillBeRawPtr<MemoryPurgeController> create()
+    {
+        return adoptPtrWillBeNoop(new MemoryPurgeController);
+    }
 
     void registerClient(MemoryPurgeClient* client)
     {
@@ -63,6 +67,8 @@ public:
     DECLARE_TRACE();
 
 private:
+    MemoryPurgeController();
+
     void purgeMemory(MemoryPurgeMode);
 
     WillBeHeapHashSet<RawPtrWillBeWeakMember<MemoryPurgeClient>> m_clients;

@@ -14,6 +14,8 @@ MemoryPurgeController::MemoryPurgeController()
 {
 }
 
+DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(MemoryPurgeController);
+
 void MemoryPurgeController::purgeMemory(MemoryPurgeMode purgeMode)
 {
     for (auto& client : m_clients)
