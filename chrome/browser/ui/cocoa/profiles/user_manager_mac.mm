@@ -232,6 +232,12 @@ class ReauthDialogDelegate : public UserManager::ReauthDialogObserver,
   constrained_window_->CloseWebContentsModalDialog();
 }
 
+- (void)dealloc {
+  constrained_window_->CloseWebContentsModalDialog();
+
+  [super dealloc];
+}
+
 @end
 
 // Window controller for the User Manager view.
@@ -289,6 +295,13 @@ class ReauthDialogDelegate : public UserManager::ReauthDialogObserver,
     window.contentView = webContents_->GetNativeView();
     webContentsDelegate_.reset(new UserManagerWebContentsDelegate());
     webContents_->SetDelegate(webContentsDelegate_.get());
+
+    web_modal::WebContentsModalDialogManager::CreateForWebContents(
+        webContents_.get());
+    modal_manager_delegate_.reset(
+        new UserManagerModalManagerDelegate([[self window] contentView]));
+    web_modal::WebContentsModalDialogManager::FromWebContents(
+        webContents_.get())->SetDelegate(modal_manager_delegate_.get());
 
     [[NSNotificationCenter defaultCenter]
         addObserver:self
@@ -351,14 +364,6 @@ class ReauthDialogDelegate : public UserManager::ReauthDialogObserver,
 }
 
 - (void)showReauthDialogWithProfile:(Profile*)profile email:(std::string)email {
-  // Make sure there's a WebContentsModalDialogManager for this UserManager's
-  // web contents.
-  web_modal::WebContentsModalDialogManager::CreateForWebContents(
-      webContents_.get());
-  modal_manager_delegate_.reset(
-      new UserManagerModalManagerDelegate([[self window] contentView]));
-  web_modal::WebContentsModalDialogManager::FromWebContents(
-      webContents_.get())->SetDelegate(modal_manager_delegate_.get());
   reauth_window_controller_.reset(
       [[ReauthDialogWindowController alloc]
           initWithProfile:profile
