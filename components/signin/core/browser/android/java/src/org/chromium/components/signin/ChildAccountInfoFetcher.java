@@ -30,14 +30,15 @@ public final class ChildAccountInfoFetcher {
     }
 
     @CalledByNative
-    private static void fetch(final long nativeAccountFetcherService, final String accountId) {
+    private static void fetch(final long nativeAccountFetcherService, final String accountId,
+            final String accountName) {
         Context app = ApplicationStatus.getApplicationContext();
         assert app != null;
         AccountManagerHelper helper = AccountManagerHelper.get(app);
         Account[] accounts = helper.getGoogleAccounts();
         Account candidate_account = null;
         for (Account account : accounts) {
-            if (account.name.equals(accountId)) {
+            if (account.name.equals(accountName)) {
                 candidate_account = account;
                 break;
             }

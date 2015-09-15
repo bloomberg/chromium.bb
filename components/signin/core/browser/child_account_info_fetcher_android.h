@@ -16,9 +16,6 @@ class ChildAccountInfoFetcherAndroid {
  public:
   static void StartFetchingChildAccountInfo(AccountFetcherService* service,
                                             const std::string& account_id);
-  static void SetIsChildAccount(AccountFetcherService* service,
-                                std::string account_id,
-                                bool is_child_account);
   // Register JNI methods.
   static bool Register(JNIEnv* env);
 

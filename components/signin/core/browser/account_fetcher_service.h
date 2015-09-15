@@ -61,7 +61,6 @@ class AccountFetcherService : public KeyedService,
 
   void FetchUserInfoBeforeSignin(const std::string& account_id);
 
- protected:
   AccountTrackerService* account_tracker_service() const {
     return account_tracker_service_;
   }
@@ -72,7 +71,6 @@ class AccountFetcherService : public KeyedService,
  private:
   friend class AccountInfoFetcher;
   friend class ChildAccountInfoFetcherImpl;
-  friend class ChildAccountInfoFetcherAndroid;
 
   void RefreshAllAccountInfo(bool only_fetch_if_invalid);
   void RefreshAllAccountsAndScheduleNext();
