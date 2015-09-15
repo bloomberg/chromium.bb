@@ -73,6 +73,14 @@ class TabRestoreServiceClient {
   // Returns whether a given URL should be tracked for restoring.
   virtual bool ShouldTrackURLForRestore(const GURL& url) = 0;
 
+  // Returns the extension app ID for the given WebContents, or the empty string
+  // if there is no such ID (e.g., if extensions are not supported by the
+  // embedder).
+  // TODO(blundell): Replace the usage of WebContents here with the cross-
+  // platform interface that will abstract it. crbug.com/530174
+  virtual std::string GetExtensionAppIDForWebContents(
+      content::WebContents* web_contents) = 0;
+
   // Get the sequenced worker pool for running tasks on the backend thread as
   // long as the system is not shutting down.
   virtual base::SequencedWorkerPool* GetBlockingPool() = 0;

@@ -20,10 +20,6 @@
 #include "content/public/browser/session_storage_namespace.h"
 #include "content/public/browser/web_contents.h"
 
-#if defined(ENABLE_EXTENSIONS)
-#include "chrome/browser/extensions/tab_helper.h"
-#endif
-
 using content::NavigationController;
 using content::NavigationEntry;
 using content::WebContents;
@@ -399,17 +395,8 @@ void TabRestoreServiceHelper::PopulateTab(
     tab->current_navigation_index = 0;
   tab->tabstrip_index = index;
 
-#if defined(ENABLE_EXTENSIONS)
-  extensions::TabHelper* extensions_tab_helper =
-      extensions::TabHelper::FromWebContents(controller->GetWebContents());
-  // extensions_tab_helper is NULL in some browser tests.
-  if (extensions_tab_helper) {
-    const extensions::Extension* extension =
-        extensions_tab_helper->extension_app();
-    if (extension)
-      tab->extension_app_id = extension->id();
-  }
-#endif
+  tab->extension_app_id =
+      client_->GetExtensionAppIDForWebContents(controller->GetWebContents());
 
   tab->user_agent_override =
       controller->GetWebContents()->GetUserAgentOverride();

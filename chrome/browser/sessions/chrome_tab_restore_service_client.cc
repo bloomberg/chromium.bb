@@ -11,6 +11,7 @@
 #include "content/public/browser/browser_thread.h"
 
 #if defined(ENABLE_EXTENSIONS)
+#include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_metrics.h"
 #include "extensions/browser/extension_registry.h"
@@ -88,6 +89,25 @@ ChromeTabRestoreServiceClient::FindTabRestoreServiceDelegateWithID(
 
 bool ChromeTabRestoreServiceClient::ShouldTrackURLForRestore(const GURL& url) {
   return ::ShouldTrackURLForRestore(url);
+}
+
+std::string ChromeTabRestoreServiceClient::GetExtensionAppIDForWebContents(
+    content::WebContents* web_contents) {
+  std::string extension_app_id;
+
+#if defined(ENABLE_EXTENSIONS)
+  extensions::TabHelper* extensions_tab_helper =
+      extensions::TabHelper::FromWebContents(web_contents);
+  // extensions_tab_helper is NULL in some browser tests.
+  if (extensions_tab_helper) {
+    const extensions::Extension* extension =
+        extensions_tab_helper->extension_app();
+    if (extension)
+      extension_app_id = extension->id();
+  }
+#endif
+
+  return extension_app_id;
 }
 
 base::SequencedWorkerPool* ChromeTabRestoreServiceClient::GetBlockingPool() {
