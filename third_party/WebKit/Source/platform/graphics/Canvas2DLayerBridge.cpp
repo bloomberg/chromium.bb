@@ -35,6 +35,7 @@
 #include "platform/graphics/ExpensiveCanvasHeuristicParameters.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/graphics/ImageBuffer.h"
+#include "platform/graphics/gpu/SharedContextRateLimiter.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebCompositorSupport.h"
 #include "public/platform/WebGraphicsContext3D.h"
@@ -47,6 +48,7 @@
 namespace {
 enum {
     InvalidMailboxIndex = -1,
+    MaxCanvasAnimationBacklog = 2, // Make sure the the GPU is never more than two animation frames behind.
 };
 
 DEFINE_DEBUG_ONLY_GLOBAL(WTF::RefCountedLeakCounter, canvas2DLayerBridgeInstanceCounter, ("Canvas2DLayerBridge"));
@@ -94,12 +96,12 @@ Canvas2DLayerBridge::Canvas2DLayerBridge(PassOwnPtr<WebGraphicsContext3DProvider
     , m_msaaSampleCount(msaaSampleCount)
     , m_bytesAllocated(0)
     , m_haveRecordedDrawCommands(false)
-    , m_framesPending(0)
     , m_destructionInProgress(false)
-    , m_rateLimitingEnabled(false)
     , m_filterQuality(kLow_SkFilterQuality)
     , m_isHidden(false)
     , m_isDeferralEnabled(true)
+    , m_isRegisteredTaskObserver(false)
+    , m_renderingTaskCompletedForCurrentFrame(false)
     , m_lastImageId(0)
     , m_lastFilter(GL_LINEAR)
     , m_opacityMode(opacityMode)
@@ -114,7 +116,6 @@ Canvas2DLayerBridge::Canvas2DLayerBridge(PassOwnPtr<WebGraphicsContext3DProvider
     m_layer->setOpaque(opacityMode == Opaque);
     m_layer->setBlendBackgroundColor(opacityMode != Opaque);
     GraphicsLayer::registerContentsLayer(m_layer->layer());
-    m_layer->setRateLimitContext(m_rateLimitingEnabled);
     m_layer->setNearestNeighbor(m_filterQuality == kNone_SkFilterQuality);
     startRecording();
 #ifndef NDEBUG
@@ -182,7 +183,6 @@ void Canvas2DLayerBridge::setImageBuffer(ImageBuffer* imageBuffer)
 void Canvas2DLayerBridge::beginDestruction()
 {
     ASSERT(!m_destructionInProgress);
-    setRateLimitingEnabled(false);
     m_recorder.clear();
     m_imageBuffer = nullptr;
     m_destructionInProgress = true;
@@ -196,7 +196,16 @@ void Canvas2DLayerBridge::beginDestruction()
     m_layer->layer()->removeFromParent();
     // To anyone who ever hits this assert: Please update crbug.com/344666
     // with repro steps.
+    unregisterTaskObserver();
     ASSERT(!m_bytesAllocated);
+}
+
+void Canvas2DLayerBridge::unregisterTaskObserver()
+{
+    if (m_isRegisteredTaskObserver) {
+        Platform::current()->currentThread()->removeTaskObserver(this);
+        m_isRegisteredTaskObserver = false;
+    }
 }
 
 void Canvas2DLayerBridge::setFilterQuality(SkFilterQuality filterQuality)
@@ -240,17 +249,11 @@ void Canvas2DLayerBridge::skipQueuedDrawCommands()
         startRecording();
         m_haveRecordedDrawCommands = false;
     }
-    // Stop triggering the rate limiter if SkDeferredCanvas is detecting
-    // and optimizing overdraw.
-    setRateLimitingEnabled(false);
-}
 
-void Canvas2DLayerBridge::setRateLimitingEnabled(bool enabled)
-{
-    ASSERT(!m_destructionInProgress);
-    if (m_rateLimitingEnabled != enabled) {
-        m_rateLimitingEnabled = enabled;
-        m_layer->setRateLimitContext(m_rateLimitingEnabled);
+    if (m_isDeferralEnabled) {
+        unregisterTaskObserver();
+        if (m_rateLimiter)
+            m_rateLimiter->reset();
     }
 }
 
@@ -258,7 +261,6 @@ void Canvas2DLayerBridge::flushRecordingOnly()
 {
     ASSERT(!m_destructionInProgress);
     if (m_haveRecordedDrawCommands && m_surface) {
-        TRACE_EVENT0("cc", "Canvas2DLayerBridge::flush");
         RefPtr<SkPicture> picture = adoptRef(m_recorder->endRecording());
         picture->playback(m_surface->getCanvas());
         if (m_isDeferralEnabled)
@@ -271,6 +273,7 @@ void Canvas2DLayerBridge::flush()
 {
     if (!m_surface)
         return;
+    TRACE_EVENT0("cc", "Canvas2DLayerBridge::flush");
     flushRecordingOnly();
     m_surface->getCanvas()->flush();
 }
@@ -278,7 +281,8 @@ void Canvas2DLayerBridge::flush()
 void Canvas2DLayerBridge::flushGpu()
 {
     flush();
-    if (WebGraphicsContext3D* webContext = context())
+    WebGraphicsContext3D* webContext = context();
+    if (isAccelerated() && webContext)
         webContext->flush();
 }
 
@@ -305,7 +309,6 @@ bool Canvas2DLayerBridge::checkSurfaceValid()
         }
         if (m_imageBuffer)
             m_imageBuffer->notifySurfaceInvalid();
-        setRateLimitingEnabled(false);
     }
     return m_surface;
 }
@@ -497,8 +500,13 @@ void Canvas2DLayerBridge::didDraw(const FloatRect& rect)
         m_haveRecordedDrawCommands = true;
         IntRect pixelBounds = enclosingIntRect(rect);
         m_recordingPixelCount += pixelBounds.width() * pixelBounds.height();
-        if (m_recordingPixelCount >= (m_size.width() * m_size.height() * ExpensiveCanvasHeuristicParameters::ExpensiveOverdrawThreshold))
+        if (m_recordingPixelCount >= (m_size.width() * m_size.height() * ExpensiveCanvasHeuristicParameters::ExpensiveOverdrawThreshold)) {
             disableDeferral();
+        }
+    }
+    if (!m_isRegisteredTaskObserver) {
+        Platform::current()->currentThread()->addTaskObserver(this);
+        m_isRegisteredTaskObserver = true;
     }
 }
 
@@ -506,15 +514,41 @@ void Canvas2DLayerBridge::finalizeFrame(const FloatRect &dirtyRect)
 {
     ASSERT(!m_destructionInProgress);
     m_layer->layer()->invalidateRect(enclosingIntRect(dirtyRect));
-    m_framesPending++;
-    if (m_framesPending > 1) {
-        // Turn on the rate limiter if this layer tends to accumulate a
-        // non-discardable multi-frame backlog of draw commands.
-        setRateLimitingEnabled(true);
+    if (m_rateLimiter)
+        m_rateLimiter->reset();
+    m_renderingTaskCompletedForCurrentFrame = false;
+}
+
+void Canvas2DLayerBridge::didProcessTask()
+{
+    TRACE_EVENT0("cc", "Canvas2DLayerBridge::didProcessTask");
+    ASSERT(m_isRegisteredTaskObserver);
+    // If m_renderTaskProcessedForCurrentFrame is already set to true,
+    // it means that rendering tasks are not synchronized with the compositor
+    // (i.e. not using requestAnimationFrame), so we are at risk of posting
+    // a multi-frame backlog to the GPU
+    if (m_renderingTaskCompletedForCurrentFrame) {
+        if (isAccelerated()) {
+            flushGpu();
+            if (!m_rateLimiter) {
+                m_rateLimiter = SharedContextRateLimiter::create(MaxCanvasAnimationBacklog);
+            }
+        } else {
+            flush();
+        }
     }
-    if (m_rateLimitingEnabled) {
-        flush();
+
+    if (m_rateLimiter) {
+        m_rateLimiter->tick();
     }
+
+    m_renderingTaskCompletedForCurrentFrame = true;
+    unregisterTaskObserver();
+}
+
+void Canvas2DLayerBridge::willProcessTask()
+{
+    ASSERT_NOT_REACHED();
 }
 
 PassRefPtr<SkImage> Canvas2DLayerBridge::newImageSnapshot()

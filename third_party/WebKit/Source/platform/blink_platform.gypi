@@ -642,6 +642,8 @@
       'graphics/filters/SpotLightSource.h',
       'graphics/gpu/AcceleratedImageBufferSurface.cpp',
       'graphics/gpu/AcceleratedImageBufferSurface.h',
+      'graphics/gpu/SharedContextRateLimiter.cpp',
+      'graphics/gpu/SharedContextRateLimiter.h',
       'graphics/gpu/DrawingBuffer.cpp',
       'graphics/gpu/DrawingBuffer.h',
       'graphics/gpu/Extensions3DUtil.cpp',

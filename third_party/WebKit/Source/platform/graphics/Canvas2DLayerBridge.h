@@ -32,6 +32,7 @@
 #include "public/platform/WebExternalTextureLayer.h"
 #include "public/platform/WebExternalTextureLayerClient.h"
 #include "public/platform/WebExternalTextureMailbox.h"
+#include "public/platform/WebThread.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/skia/include/core/SkImage.h"
 #include "wtf/Deque.h"
@@ -47,8 +48,9 @@ class Canvas2DLayerBridgeTest;
 class ImageBuffer;
 class WebGraphicsContext3D;
 class WebGraphicsContext3DProvider;
+class SharedContextRateLimiter;
 
-class PLATFORM_EXPORT Canvas2DLayerBridge : public WebExternalTextureLayerClient, public RefCounted<Canvas2DLayerBridge> {
+class PLATFORM_EXPORT Canvas2DLayerBridge : public WebExternalTextureLayerClient, public WebThread::TaskObserver, public RefCounted<Canvas2DLayerBridge> {
     WTF_MAKE_NONCOPYABLE(Canvas2DLayerBridge);
 public:
     static PassRefPtr<Canvas2DLayerBridge> create(const IntSize&, OpacityMode, int msaaSampleCount);
@@ -77,8 +79,6 @@ public:
     bool writePixels(const SkImageInfo&, const void* pixels, size_t rowBytes, int x, int y);
     void flush();
     void flushGpu();
-
-    void limitPendingFrames();
     bool isHidden() { return m_isHidden; }
 
     void beginDestruction();
@@ -87,28 +87,32 @@ public:
 
 private:
     Canvas2DLayerBridge(PassOwnPtr<WebGraphicsContext3DProvider>, PassRefPtr<SkSurface>, int, OpacityMode);
-    void setRateLimitingEnabled(bool);
     WebGraphicsContext3D* context();
     void startRecording();
     void skipQueuedDrawCommands();
     void flushRecordingOnly();
+    void unregisterTaskObserver();
+
+    // WebThread::TaskOberver implementation
+    void willProcessTask() override;
+    void didProcessTask() override;
 
     OwnPtr<SkPictureRecorder> m_recorder;
     RefPtr<SkSurface> m_surface;
     int m_initialSurfaceSaveCount;
     OwnPtr<WebExternalTextureLayer> m_layer;
     OwnPtr<WebGraphicsContext3DProvider> m_contextProvider;
+    OwnPtr<SharedContextRateLimiter> m_rateLimiter;
     ImageBuffer* m_imageBuffer;
     int m_msaaSampleCount;
     size_t m_bytesAllocated;
     bool m_haveRecordedDrawCommands;
-    int m_framesPending;
-    int m_framesSinceMailboxRelease;
     bool m_destructionInProgress;
-    bool m_rateLimitingEnabled;
     SkFilterQuality m_filterQuality;
     bool m_isHidden;
     bool m_isDeferralEnabled;
+    bool m_isRegisteredTaskObserver;
+    bool m_renderingTaskCompletedForCurrentFrame;
 
     friend class Canvas2DLayerBridgeTest;
 
