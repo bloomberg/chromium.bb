@@ -52,8 +52,6 @@
       'browser/android/chrome_application.h',
       'browser/android/chrome_jni_registrar.cc',
       'browser/android/chrome_jni_registrar.h',
-      'browser/android/chrome_main_delegate_staging_android.cc',
-      'browser/android/chrome_main_delegate_staging_android.h',
       'browser/android/chrome_media_client_android.cc',
       'browser/android/chrome_media_client_android.h',
       'browser/android/chrome_startup_flags.cc',
