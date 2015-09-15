@@ -20,11 +20,12 @@
 #include "chrome/common/url_constants.h"
 #include "components/gcm_driver/gcm_client.h"
 #include "components/gcm_driver/gcm_driver.h"
+#include "components/gcm_driver/gcm_internals_constants.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_controller.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/browser/web_ui_message_handler.h"
-#include "grit/browser_resources.h"
+#include "grit/components_resources.h"
 
 namespace {
 
@@ -150,60 +151,65 @@ void GcmInternalsUIMessageHandler::ReturnResults(
     const gcm::GCMClient::GCMStatistics* stats) const {
   base::DictionaryValue results;
   base::DictionaryValue* device_info = new base::DictionaryValue();
-  results.Set("deviceInfo", device_info);
+  results.Set(gcm_driver::kDeviceInfo, device_info);
 
-  device_info->SetBoolean("profileServiceCreated", profile_service != NULL);
-  device_info->SetBoolean("gcmEnabled",
+  device_info->SetBoolean(gcm_driver::kProfileServiceCreated,
+                          profile_service != NULL);
+  device_info->SetBoolean(gcm_driver::kGcmEnabled,
                           gcm::GCMProfileService::IsGCMEnabled(profile));
   if (stats) {
-    results.SetBoolean("isRecording", stats->is_recording);
-    device_info->SetBoolean("gcmClientCreated", stats->gcm_client_created);
-    device_info->SetString("gcmClientState", stats->gcm_client_state);
-    device_info->SetBoolean("connectionClientCreated",
+    results.SetBoolean(gcm_driver::kIsRecording, stats->is_recording);
+    device_info->SetBoolean(gcm_driver::kGcmClientCreated,
+                            stats->gcm_client_created);
+    device_info->SetString(gcm_driver::kGcmClientState,
+                           stats->gcm_client_state);
+    device_info->SetBoolean(gcm_driver::kConnectionClientCreated,
                             stats->connection_client_created);
-    device_info->SetString("registeredAppIds",
+    device_info->SetString(gcm_driver::kRegisteredAppIds,
                            base::JoinString(stats->registered_app_ids, ","));
     if (stats->connection_client_created)
-      device_info->SetString("connectionState", stats->connection_state);
+      device_info->SetString(gcm_driver::kConnectionState,
+                             stats->connection_state);
     if (stats->android_id > 0) {
-      device_info->SetString("androidId",
+      device_info->SetString(
+          gcm_driver::kAndroidId,
           base::StringPrintf("0x%" PRIx64, stats->android_id));
     }
-    device_info->SetInteger("sendQueueSize", stats->send_queue_size);
-    device_info->SetInteger("resendQueueSize", stats->resend_queue_size);
+    device_info->SetInteger(gcm_driver::kSendQueueSize, stats->send_queue_size);
+    device_info->SetInteger(gcm_driver::kResendQueueSize,
+                            stats->resend_queue_size);
 
     if (stats->recorded_activities.checkin_activities.size() > 0) {
       base::ListValue* checkin_info = new base::ListValue();
-      results.Set("checkinInfo", checkin_info);
+      results.Set(gcm_driver::kCheckinInfo, checkin_info);
       SetCheckinInfo(stats->recorded_activities.checkin_activities,
                      checkin_info);
     }
     if (stats->recorded_activities.connection_activities.size() > 0) {
       base::ListValue* connection_info = new base::ListValue();
-      results.Set("connectionInfo", connection_info);
+      results.Set(gcm_driver::kConnectionInfo, connection_info);
       SetConnectionInfo(stats->recorded_activities.connection_activities,
                         connection_info);
     }
     if (stats->recorded_activities.registration_activities.size() > 0) {
       base::ListValue* registration_info = new base::ListValue();
-      results.Set("registrationInfo", registration_info);
+      results.Set(gcm_driver::kRegistrationInfo, registration_info);
       SetRegistrationInfo(stats->recorded_activities.registration_activities,
                           registration_info);
     }
     if (stats->recorded_activities.receiving_activities.size() > 0) {
       base::ListValue* receive_info = new base::ListValue();
-      results.Set("receiveInfo", receive_info);
+      results.Set(gcm_driver::kReceiveInfo, receive_info);
       SetReceivingInfo(stats->recorded_activities.receiving_activities,
                        receive_info);
     }
     if (stats->recorded_activities.sending_activities.size() > 0) {
       base::ListValue* send_info = new base::ListValue();
-      results.Set("sendInfo", send_info);
+      results.Set(gcm_driver::kSendInfo, send_info);
       SetSendingInfo(stats->recorded_activities.sending_activities, send_info);
     }
   }
-  web_ui()->CallJavascriptFunction("gcmInternals.setGcmInternalsInfo",
-                                   results);
+  web_ui()->CallJavascriptFunction(gcm_driver::kSetGcmInternalsInfo, results);
 }
 
 void GcmInternalsUIMessageHandler::RequestAllInfo(
@@ -271,11 +277,11 @@ void GcmInternalsUIMessageHandler::RequestGCMStatisticsFinished(
 
 void GcmInternalsUIMessageHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
-      "getGcmInternalsInfo",
+      gcm_driver::kGetGcmInternalsInfo,
       base::Bind(&GcmInternalsUIMessageHandler::RequestAllInfo,
                  weak_ptr_factory_.GetWeakPtr()));
   web_ui()->RegisterMessageCallback(
-      "setGcmInternalsRecording",
+      gcm_driver::kSetGcmInternalsRecording,
       base::Bind(&GcmInternalsUIMessageHandler::SetRecording,
                  weak_ptr_factory_.GetWeakPtr()));
 }
@@ -291,9 +297,11 @@ GCMInternalsUI::GCMInternalsUI(content::WebUI* web_ui)
   html_source->SetJsonPath("strings.js");
 
   // Add required resources.
-  html_source->AddResourcePath("gcm_internals.css", IDR_GCM_INTERNALS_CSS);
-  html_source->AddResourcePath("gcm_internals.js", IDR_GCM_INTERNALS_JS);
-  html_source->SetDefaultResource(IDR_GCM_INTERNALS_HTML);
+  html_source->AddResourcePath(gcm_driver::kGcmInternalsCSS,
+                               IDR_GCM_DRIVER_GCM_INTERNALS_CSS);
+  html_source->AddResourcePath(gcm_driver::kGcmInternalsJS,
+                               IDR_GCM_DRIVER_GCM_INTERNALS_JS);
+  html_source->SetDefaultResource(IDR_GCM_DRIVER_GCM_INTERNALS_HTML);
 
   Profile* profile = Profile::FromWebUI(web_ui);
   content::WebUIDataSource::Add(profile, html_source);
