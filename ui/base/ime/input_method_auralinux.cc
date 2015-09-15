@@ -91,9 +91,11 @@ void InputMethodAuraLinux::DispatchKeyEvent(ui::KeyEvent* event) {
   }
 
   bool should_stop_propagation = false;
+  // Note: |client| could be NULL because DispatchKeyEventPostIME could have
+  // changed the text input client.
   TextInputClient* client = GetTextInputClient();
   // Processes the result text before composition for sync mode.
-  if (!result_text_.empty()) {
+  if (client && !result_text_.empty()) {
     if (filtered && NeedInsertChar()) {
       for (const auto ch : result_text_)
         client->InsertChar(ch, event->flags());
@@ -109,7 +111,7 @@ void InputMethodAuraLinux::DispatchKeyEvent(ui::KeyEvent* event) {
     should_stop_propagation = true;
   }
 
-  if (composition_changed_ && !IsTextInputTypeNone()) {
+  if (client && composition_changed_ && !IsTextInputTypeNone()) {
     // If composition changed, does SetComposition if composition is not empty.
     // And ClearComposition if composition is empty.
     if (!composition_.text.empty())
@@ -121,7 +123,7 @@ void InputMethodAuraLinux::DispatchKeyEvent(ui::KeyEvent* event) {
 
   // Makes sure the cached composition is cleared after committing any text or
   // cleared composition.
-  if (!client->HasCompositionText())
+  if (client && !client->HasCompositionText())
     composition_.Clear();
 
   if (!filtered) {
