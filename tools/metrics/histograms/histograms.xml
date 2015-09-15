@@ -13829,6 +13829,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="GoogleSearch.AccessPoint" enum="SearchAccessPoint">
+  <obsolete>
+    Deprecated 2015/08.
+  </obsolete>
   <owner>kmadhusu@chromium.org</owner>
   <summary>
     Counts number of Google searches from various access points in the browser.

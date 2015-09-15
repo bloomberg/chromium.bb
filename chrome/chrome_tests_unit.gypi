@@ -100,8 +100,6 @@
       'browser/file_select_helper_unittest.cc',
       'browser/geolocation/geolocation_permission_context_unittest.cc',
       'browser/global_keyboard_shortcuts_mac_unittest.mm',
-      'browser/google/google_search_counter_android_unittest.cc',
-      'browser/google/google_search_counter_unittest.cc',
       'browser/google/google_update_settings_unittest.cc',
       'browser/google/google_update_win_unittest.cc',
       'browser/history/android/android_cache_database_unittest.cc',
