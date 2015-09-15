@@ -51,6 +51,16 @@ class NavigationManager {
   // attempted page load.  |rewriter| must not be null.
   virtual void AddTransientURLRewriter(
       BrowserURLRewriter::URLRewriter rewriter) = 0;
+
+  // Returns the number of items in the NavigationManager, excluding
+  // pending and transient entries.
+  virtual int GetEntryCount() const = 0;
+
+  // Returns the committed NavigationItem at |index|.
+  virtual NavigationItem* GetItemAtIndex(size_t index) const = 0;
+
+  // Returns the index from which web would go back/forward or reload.
+  virtual int GetCurrentEntryIndex() const = 0;
 };
 
 }  // namespace web

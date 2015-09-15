@@ -143,23 +143,10 @@ NavigationItem* NavigationManagerImpl::GetLastCommittedItem() const {
   return [entry navigationItem];
 }
 
-NavigationItem* NavigationManagerImpl::GetItemAtIndex(size_t index) const {
-  NSArray* entries =  [session_controller_ entries];
-  return index < entries.count ? [entries[index] navigationItem] : nullptr;
-}
-
-int NavigationManagerImpl::GetCurrentEntryIndex() const {
-  return [session_controller_ currentNavigationIndex];
-}
-
 int NavigationManagerImpl::GetLastCommittedEntryIndex() const {
   if (![[session_controller_ entries] count])
     return -1;
   return [session_controller_ currentNavigationIndex];
-}
-
-int NavigationManagerImpl::GetEntryCount() const {
-  return [[session_controller_ entries] count];
 }
 
 bool NavigationManagerImpl::RemoveEntryAtIndex(int index) {
@@ -200,6 +187,19 @@ void NavigationManagerImpl::AddTransientURLRewriter(
         new std::vector<BrowserURLRewriter::URLRewriter>());
   }
   transient_url_rewriters_->push_back(rewriter);
+}
+
+int NavigationManagerImpl::GetEntryCount() const {
+  return [[session_controller_ entries] count];
+}
+
+NavigationItem* NavigationManagerImpl::GetItemAtIndex(size_t index) const {
+  NSArray* entries = [session_controller_ entries];
+  return index < entries.count ? [entries[index] navigationItem] : nullptr;
+}
+
+int NavigationManagerImpl::GetCurrentEntryIndex() const {
+  return [session_controller_ currentNavigationIndex];
 }
 
 scoped_ptr<std::vector<BrowserURLRewriter::URLRewriter>>
