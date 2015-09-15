@@ -310,6 +310,7 @@ class SmoothnessToughScrollingCases(perf_benchmark.PerfBenchmark):
   def Name(cls):
     return 'smoothness.tough_scrolling_cases'
 
+@benchmark.Disabled('android')  # http://crbug.com/531593
 class SmoothnessToughImageDecodeCases(perf_benchmark.PerfBenchmark):
   test = smoothness.Smoothness
   page_set = page_sets.ToughImageDecodeCasesPageSet
