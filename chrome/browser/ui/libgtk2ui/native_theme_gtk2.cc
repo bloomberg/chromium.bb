@@ -224,6 +224,9 @@ void NativeThemeGtk2::PaintMenuItemBackground(
 }
 
 SkColor NativeThemeGtk2::GetSystemColor(ColorId color_id) const {
+  if (color_id == kColorId_BlueButtonShadowColor)
+    return SK_ColorTRANSPARENT;
+
   const SkColor kPositiveTextColor = SkColorSetRGB(0x0b, 0x80, 0x43);
   const SkColor kNegativeTextColor = SkColorSetRGB(0xc5, 0x39, 0x29);
 
@@ -287,26 +290,24 @@ SkColor NativeThemeGtk2::GetSystemColor(ColorId color_id) const {
     case kColorId_ButtonBackgroundColor:
       return GetBGColor(GetButton(), NORMAL);
     case kColorId_ButtonEnabledColor:
-      return GetTextColor(GetButton(), NORMAL);
     case kColorId_BlueButtonEnabledColor:
-      return GetTextColor(GetBlueButton(), NORMAL);
+      return GetTextColor(GetButton(), NORMAL);
     case kColorId_ButtonDisabledColor:
-      return GetTextColor(GetButton(), INSENSITIVE);
     case kColorId_BlueButtonDisabledColor:
-      return GetTextColor(GetBlueButton(), INSENSITIVE);
+      return GetTextColor(GetButton(), INSENSITIVE);
     case kColorId_ButtonHighlightColor:
       return GetBaseColor(GetButton(), SELECTED);
     case kColorId_ButtonHoverColor:
-      return GetTextColor(GetButton(), PRELIGHT);
     case kColorId_BlueButtonHoverColor:
-      return GetTextColor(GetBlueButton(), PRELIGHT);
+      return GetTextColor(GetButton(), PRELIGHT);
     case kColorId_ButtonHoverBackgroundColor:
       return GetBGColor(GetButton(), PRELIGHT);
     case kColorId_BlueButtonPressedColor:
-      return GetTextColor(GetBlueButton(), ACTIVE);
+      return GetTextColor(GetButton(), ACTIVE);
     case kColorId_BlueButtonShadowColor:
-      return SK_ColorTRANSPARENT;
-      // return GetTextColor(GetButton(), NORMAL);
+      // Should be handled in GetSystemColor().
+      NOTREACHED();
+      return GetTextColor(GetButton(), NORMAL);
 
     // Textfield
     case kColorId_TextfieldDefaultColor:
@@ -475,15 +476,6 @@ GtkWidget* NativeThemeGtk2::GetButton() const {
     fake_button_.Own(gtk_button_new());
 
   return fake_button_.get();
-}
-
-GtkWidget* NativeThemeGtk2::GetBlueButton() const {
-  if (!fake_bluebutton_.get()) {
-    fake_bluebutton_.Own(gtk_button_new());
-    TurnButtonBlue(fake_bluebutton_.get());
-  }
-
-  return fake_bluebutton_.get();
 }
 
 GtkWidget* NativeThemeGtk2::GetTree() const {
