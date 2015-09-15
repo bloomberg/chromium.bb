@@ -212,7 +212,7 @@ public class ChromeMediaRouter {
         }
 
         final String mediaRouteId = createMediaRouteId(presentationId, sinkId, sourceId);
-        new CreateRouteRequest(sourceId, sinkId, presentationId, requestId, this).start(
+        new CreateRouteRequest(sourceId, sinkId, mediaRouteId, requestId, this).start(
                 mAndroidMediaRouter,
                 mApplicationContext,
                 new Cast.Listener() {

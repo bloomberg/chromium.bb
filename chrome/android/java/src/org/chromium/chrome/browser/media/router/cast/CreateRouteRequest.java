@@ -48,7 +48,7 @@ public class CreateRouteRequest implements GoogleApiClient.ConnectionCallbacks,
     private final String mSourceUrn;
     private final MediaSource mMediaSource;
     private final String mSinkId;
-    private final String mPresentationId;
+    private final String mRouteId;
     private final int mRequestId;
     private final ChromeMediaRouter mMediaRouter;
 
@@ -60,7 +60,7 @@ public class CreateRouteRequest implements GoogleApiClient.ConnectionCallbacks,
      * Initializes the request.
      * @param sourceUrn The URN defining the application to launch on the Cast device
      * @param sinkUrn The URN identifying the selected Cast device
-     * @param presentationId The presentation id assigned to the route by {@link ChromeMediaRouter}
+     * @param routeId The id assigned to the route by {@link ChromeMediaRouter}
      * @param requestId The id of the route creation request for tracking by
      * {@link ChromeMediaRouter}
      * @param router The instance of {@link ChromeMediaRouter} handling the request
@@ -68,13 +68,13 @@ public class CreateRouteRequest implements GoogleApiClient.ConnectionCallbacks,
     public CreateRouteRequest(
             String sourceUrn,
             String sinkUrn,
-            String presentationId,
+            String routeId,
             int requestId,
             ChromeMediaRouter router) {
         mSourceUrn = sourceUrn;
         mMediaSource = MediaSource.from(sourceUrn);
         mSinkId = sinkUrn;
-        mPresentationId = presentationId;
+        mRouteId = routeId;
         mRequestId = requestId;
         mMediaRouter = router;
     }
@@ -206,16 +206,14 @@ public class CreateRouteRequest implements GoogleApiClient.ConnectionCallbacks,
     private void reportSuccess(Cast.ApplicationConnectionResult result) {
         if (mState != STATE_LAUNCH_SUCCEEDED) throwInvalidState();
 
-        String mediaRouteId = ChromeMediaRouter.createMediaRouteId(
-                mPresentationId, mSinkId, mSourceUrn);
         mMediaRouter.onRouteCreated(
-                mediaRouteId,
+                mRouteId,
                 mRequestId,
                 new SessionWrapper(
                         mApiClient,
                         result,
                         CastDevice.getFromBundle(mRoute.getExtras()),
-                        mediaRouteId,
+                        mRouteId,
                         mMediaRouter),
                 result.getWasLaunched());
 
