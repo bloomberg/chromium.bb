@@ -99,7 +99,7 @@ bool HardwareDisplayPlaneManager::Initialize(DrmDevice* drm) {
 
     std::vector<uint32_t> supported_formats(formats_size);
     for (uint32_t j = 0; j < formats_size; j++)
-      supported_formats.push_back(drm_plane->formats[j]);
+      supported_formats[j] = drm_plane->formats[j];
 
     if (plane->Initialize(drm, supported_formats, false, false)) {
       // CRTC controllers always assume they have a cursor plane and the cursor
