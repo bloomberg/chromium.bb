@@ -241,8 +241,6 @@ crbug.com/529123 inspector/sources/debugger-breakpoints/debugger-reload-breakpoi
 
 crbug.com/524009 inspector/sources/debugger-pause/debugger-pause-in-internal.html [ NeedsManualRebaseline ]
 
-crbug.com/531571 virtual/gpu/fast/canvas/canvas-incremental-repaint.html [ NeedsRebaseline ]
-
 # TODO(ojan): These tests aren't flaky. See crbug.com/517144.
 # Release trybots run asserts, but the main waterfall ones don't. So, even
 # though this is a non-flaky assert failure, we need to mark it [ Pass Crash ].
