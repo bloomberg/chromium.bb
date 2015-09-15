@@ -1535,7 +1535,6 @@
     # Ozone platforms to include in the build.
     'ozone_platform_caca%': 0,
     'ozone_platform_cast%': 0,
-    'ozone_platform_drm%': 0,
     'ozone_platform_egltest%': 0,
     'ozone_platform_gbm%': 0,
     'ozone_platform_ozonex%': 0,
@@ -2380,7 +2379,6 @@
         # Build all platforms whose deps are in install-build-deps.sh.
         # Only these platforms will be compile tested by buildbots.
         'ozone_platform_gbm%': 1,
-        'ozone_platform_drm%': 1,
         'ozone_platform_test%': 1,
         'ozone_platform_egltest%': 1,
       }],

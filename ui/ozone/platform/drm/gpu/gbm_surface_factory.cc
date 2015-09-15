@@ -24,9 +24,9 @@
 namespace ui {
 
 GbmSurfaceFactory::GbmSurfaceFactory(bool allow_surfaceless)
-    : DrmSurfaceFactory(nullptr),
-      allow_surfaceless_(allow_surfaceless),
-      drm_device_manager_(nullptr) {}
+    : allow_surfaceless_(allow_surfaceless),
+      drm_device_manager_(nullptr),
+      screen_manager_(nullptr) {}
 
 GbmSurfaceFactory::~GbmSurfaceFactory() {
   DCHECK(thread_checker_.CalledOnValidThread());

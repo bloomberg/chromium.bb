@@ -5,7 +5,8 @@
 #ifndef UI_OZONE_PLATFORM_DRM_GPU_GBM_SURFACE_FACTORY_H_
 #define UI_OZONE_PLATFORM_DRM_GPU_GBM_SURFACE_FACTORY_H_
 
-#include "ui/ozone/platform/drm/gpu/drm_surface_factory.h"
+#include "base/threading/thread_checker.h"
+#include "ui/ozone/public/surface_factory_ozone.h"
 
 namespace ui {
 
@@ -14,7 +15,7 @@ class DrmWindow;
 class GbmDevice;
 class ScreenManager;
 
-class GbmSurfaceFactory : public DrmSurfaceFactory {
+class GbmSurfaceFactory : public SurfaceFactoryOzone {
  public:
   GbmSurfaceFactory(bool allow_surfaceless);
   ~GbmSurfaceFactory() override;
@@ -47,6 +48,9 @@ class GbmSurfaceFactory : public DrmSurfaceFactory {
   bool allow_surfaceless_;
 
   DrmDeviceManager* drm_device_manager_;  // Not owned.
+  ScreenManager* screen_manager_;         // Not owned.
+
+  base::ThreadChecker thread_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(GbmSurfaceFactory);
 };

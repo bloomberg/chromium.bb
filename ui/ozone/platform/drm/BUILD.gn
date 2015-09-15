@@ -18,10 +18,10 @@ pkg_config("libdrm") {
   packages = [ "libdrm" ]
 }
 
-source_set("drm_common") {
+source_set("gbm") {
   sources = [
-    "common/client_native_pixmap_factory_drm.cc",
-    "common/client_native_pixmap_factory_drm.h",
+    "common/client_native_pixmap_factory_gbm.cc",
+    "common/client_native_pixmap_factory_gbm.h",
     "common/drm_util.cc",
     "common/drm_util.h",
     "common/scoped_drm_types.cc",
@@ -45,14 +45,22 @@ source_set("drm_common") {
     "gpu/drm_gpu_display_manager.h",
     "gpu/drm_gpu_platform_support.cc",
     "gpu/drm_gpu_platform_support.h",
-    "gpu/drm_surface.cc",
-    "gpu/drm_surface.h",
-    "gpu/drm_surface_factory.cc",
-    "gpu/drm_surface_factory.h",
     "gpu/drm_vsync_provider.cc",
     "gpu/drm_vsync_provider.h",
     "gpu/drm_window.cc",
     "gpu/drm_window.h",
+    "gpu/gbm_buffer.cc",
+    "gpu/gbm_buffer.h",
+    "gpu/gbm_buffer_base.cc",
+    "gpu/gbm_buffer_base.h",
+    "gpu/gbm_device.cc",
+    "gpu/gbm_device.h",
+    "gpu/gbm_surface.cc",
+    "gpu/gbm_surface.h",
+    "gpu/gbm_surface_factory.cc",
+    "gpu/gbm_surface_factory.h",
+    "gpu/gbm_surfaceless.cc",
+    "gpu/gbm_surfaceless.h",
     "gpu/hardware_display_controller.cc",
     "gpu/hardware_display_controller.h",
     "gpu/hardware_display_plane.cc",
@@ -89,24 +97,16 @@ source_set("drm_common") {
     "host/drm_window_host.h",
     "host/drm_window_host_manager.cc",
     "host/drm_window_host_manager.h",
+    "ozone_platform_gbm.cc",
+    "ozone_platform_gbm.h",
   ]
 
-  defines = [ "OZONE_IMPLEMENTATION" ]
-
-  if (use_drm_atomic) {
-    defines += [ "USE_DRM_ATOMIC" ]
-    sources += [
-      "gpu/hardware_display_plane_atomic.cc",
-      "gpu/hardware_display_plane_atomic.h",
-      "gpu/hardware_display_plane_manager_atomic.cc",
-      "gpu/hardware_display_plane_manager_atomic.h",
-    ]
-  }
-
   deps = [
+    ":drm_common",
     "//base",
-    "//skia",
     "//ipc",
+    "//skia",
+    "//third_party/minigbm",
     "//ui/base",
     "//ui/display/types",
     "//ui/display/util",
@@ -119,93 +119,53 @@ source_set("drm_common") {
     "//ui/gfx/geometry",
   ]
 
+  configs = [ ":libdrm" ]
+
+  public_configs = [ "//third_party/khronos:khronos_headers" ]
+
+  defines = []
+
+  if (use_drm_atomic) {
+    defines += [ "USE_DRM_ATOMIC" ]
+    sources += [
+      "gpu/hardware_display_plane_atomic.cc",
+      "gpu/hardware_display_plane_atomic.h",
+      "gpu/hardware_display_plane_manager_atomic.cc",
+      "gpu/hardware_display_plane_manager_atomic.h",
+    ]
+  }
+
+  if (use_mesa_platform_null) {
+    defines += [ "USE_MESA_PLATFORM_NULL" ]
+  }
+
+  if (use_vgem_map) {
+    defines += [ "USE_VGEM_MAP" ]
+
+    sources += [
+      "gpu/client_native_pixmap_vgem.cc",
+      "gpu/client_native_pixmap_vgem.h",
+    ]
+  }
+}
+
+source_set("gbm_unittests") {
+  testonly = true
+  sources = [
+    "gpu/drm_window_unittest.cc",
+    "gpu/hardware_display_controller_unittest.cc",
+    "gpu/hardware_display_plane_manager_unittest.cc",
+    "gpu/screen_manager_unittest.cc",
+    "test/mock_drm_device.cc",
+    "test/mock_drm_device.h",
+  ]
+
+  deps = [
+    "//skia",
+    "//testing/gtest",
+    "//ui/gfx",
+    "//ui/ozone",
+  ]
+
   public_configs = [ ":libdrm" ]
-}
-
-if (ozone_platform_drm) {
-  source_set("drm") {
-    sources = [
-      "ozone_platform_drm.cc",
-      "ozone_platform_drm.h",
-    ]
-
-    deps = [
-      ":drm_common",
-      "//base",
-      "//skia",
-      "//ui/events/ozone:events_ozone_evdev",
-      "//ui/events/ozone:events_ozone_layout",
-    ]
-  }
-
-  source_set("drm_unittests") {
-    testonly = true
-    sources = [
-      "gpu/drm_surface_unittest.cc",
-      "gpu/drm_window_unittest.cc",
-      "gpu/hardware_display_controller_unittest.cc",
-      "gpu/hardware_display_plane_manager_unittest.cc",
-      "gpu/screen_manager_unittest.cc",
-      "test/mock_drm_device.cc",
-      "test/mock_drm_device.h",
-    ]
-
-    deps = [
-      "//skia",
-      "//testing/gtest",
-      "//ui/gfx",
-      "//ui/ozone",
-    ]
-
-    public_configs = [ ":libdrm" ]
-  }
-}
-
-if (ozone_platform_gbm) {
-  source_set("gbm") {
-    sources = [
-      "common/client_native_pixmap_factory_gbm.cc",
-      "common/client_native_pixmap_factory_gbm.h",
-      "gpu/gbm_buffer.cc",
-      "gpu/gbm_buffer.h",
-      "gpu/gbm_buffer_base.cc",
-      "gpu/gbm_buffer_base.h",
-      "gpu/gbm_device.cc",
-      "gpu/gbm_device.h",
-      "gpu/gbm_surface.cc",
-      "gpu/gbm_surface.h",
-      "gpu/gbm_surface_factory.cc",
-      "gpu/gbm_surface_factory.h",
-      "gpu/gbm_surfaceless.cc",
-      "gpu/gbm_surfaceless.h",
-      "ozone_platform_gbm.cc",
-      "ozone_platform_gbm.h",
-    ]
-
-    deps = [
-      ":drm_common",
-      "//base",
-      "//skia",
-      "//third_party/minigbm",
-      "//ui/events/ozone:events_ozone_evdev",
-      "//ui/events/ozone:events_ozone_layout",
-    ]
-
-    public_configs = [ "//third_party/khronos:khronos_headers" ]
-
-    defines = []
-
-    if (use_mesa_platform_null) {
-      defines += [ "USE_MESA_PLATFORM_NULL" ]
-    }
-
-    if (use_vgem_map) {
-      defines += [ "USE_VGEM_MAP" ]
-
-      sources += [
-        "gpu/client_native_pixmap_vgem.cc",
-        "gpu/client_native_pixmap_vgem.h",
-      ]
-    }
-  }
 }
