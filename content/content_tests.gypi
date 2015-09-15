@@ -525,6 +525,7 @@
       'browser/renderer_host/input/touch_action_filter_unittest.cc',
       'browser/renderer_host/input/touch_emulator_unittest.cc',
       'browser/renderer_host/input/touch_event_queue_unittest.cc',
+      'browser/renderer_host/input/web_input_event_builders_mac_unittest.mm',
       'browser/renderer_host/input/web_input_event_unittest.cc',
       'browser/renderer_host/input/web_input_event_util_unittest.cc',
       'browser/renderer_host/media/audio_input_device_manager_unittest.cc',

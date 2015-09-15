@@ -1230,6 +1230,8 @@
       'browser/renderer_host/input/ui_touch_selection_helper.h',
       'browser/renderer_host/input/web_input_event_builders_android.cc',
       'browser/renderer_host/input/web_input_event_builders_android.h',
+      'browser/renderer_host/input/web_input_event_builders_mac.mm',
+      'browser/renderer_host/input/web_input_event_builders_mac.h',
       'browser/renderer_host/input/web_input_event_builders_win.cc',
       'browser/renderer_host/input/web_input_event_builders_win.h',
       'browser/renderer_host/input/web_input_event_util.cc',

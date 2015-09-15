@@ -15,6 +15,7 @@
 #include "ui/events/event_constants.h"
 #include "ui/events/gesture_detection/gesture_event_data.h"
 #include "ui/events/gesture_detection/motion_event.h"
+#include "ui/events/keycodes/dom/keycode_converter.h"
 #include "ui/gfx/geometry/safe_integer_conversions.h"
 
 using blink::WebGestureEvent;
@@ -185,6 +186,21 @@ int WebEventModifiersToEventFlags(int modifiers) {
     flags |= ui::EF_IS_REPEAT;
 
   return flags;
+}
+
+blink::WebInputEvent::Modifiers DomCodeToWebInputEventModifiers(
+    ui::DomCode code) {
+  switch (ui::KeycodeConverter::DomCodeToLocation(code)) {
+    case ui::DomKeyLocation::LEFT:
+      return blink::WebInputEvent::IsLeft;
+    case ui::DomKeyLocation::RIGHT:
+      return blink::WebInputEvent::IsRight;
+    case ui::DomKeyLocation::NUMPAD:
+      return blink::WebInputEvent::IsKeyPad;
+    case ui::DomKeyLocation::STANDARD:
+      break;
+  }
+  return static_cast<blink::WebInputEvent::Modifiers>(0);
 }
 
 }  // namespace content
