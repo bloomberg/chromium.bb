@@ -8,6 +8,10 @@
 #include "base/test/test_suite.h"
 #include "build/build_config.h"
 #include "media/base/media.h"
+#include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/public/platform/WebScheduler.h"
+#include "third_party/WebKit/public/platform/WebTaskRunner.h"
+#include "third_party/WebKit/public/platform/WebThread.h"
 #include "third_party/WebKit/public/web/WebKit.h"
 
 #if defined(OS_ANDROID)
@@ -20,6 +24,55 @@
 #include "gin/v8_initializer.h"
 #endif
 
+class SimpleWebTaskRunner : public blink::WebTaskRunner {
+ public:
+  virtual void postTask(const blink::WebTraceLocation& ignored, Task* task) {
+    base::MessageLoop::current()->PostTask(FROM_HERE, base::Bind(&RunIt, task));
+  }
+
+  void postDelayedTask(const blink::WebTraceLocation&,
+                       Task* task,
+                       long long delayMs) override {
+    base::MessageLoop::current()->PostDelayedTask(
+        FROM_HERE, base::Bind(&RunIt, base::Owned(task)),
+        base::TimeDelta::FromMilliseconds(delayMs));
+  };
+
+ private:
+  static void RunIt(Task* task) { task->run(); }
+};
+
+class SimpleWebScheduler : public blink::WebScheduler {
+ public:
+  SimpleWebScheduler(blink::WebTaskRunner* task_runner)
+      : task_runner_(task_runner) {}
+  blink::WebTaskRunner* loadingTaskRunner() override { return task_runner_; }
+
+  blink::WebTaskRunner* timerTaskRunner() override { return task_runner_; }
+
+ private:
+  blink::WebTaskRunner* task_runner_;
+};
+
+class CurrentThreadMock : public blink::WebThread {
+ public:
+  CurrentThreadMock() : m_taskRunner(), m_webScheduler(&m_taskRunner) {}
+
+  ~CurrentThreadMock() override {}
+
+  blink::WebTaskRunner* taskRunner() override { return &m_taskRunner; }
+
+  bool isCurrentThread() const override { return true; }
+
+  blink::PlatformThreadId threadId() const override { return 17; }
+
+  blink::WebScheduler* scheduler() const override { return &m_webScheduler; }
+
+ private:
+  SimpleWebTaskRunner m_taskRunner;
+  mutable SimpleWebScheduler m_webScheduler;
+};
+
 class TestBlinkPlatformSupport : NON_EXPORTED_BASE(public blink::Platform) {
  public:
   virtual ~TestBlinkPlatformSupport();
@@ -28,6 +81,10 @@ class TestBlinkPlatformSupport : NON_EXPORTED_BASE(public blink::Platform) {
                                              size_t length) override;
   virtual const unsigned char* getTraceCategoryEnabledFlag(
       const char* categoryName) override;
+  blink::WebThread* currentThread() override { return &m_currentThread; }
+
+ private:
+  CurrentThreadMock m_currentThread;
 };
 
 TestBlinkPlatformSupport::~TestBlinkPlatformSupport() {}
