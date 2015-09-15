@@ -32,10 +32,10 @@ using autofill::PasswordForm;
 namespace password_manager {
 
 // The current version number of the login database schema.
-const int kCurrentVersionNumber = 14;
+const int kCurrentVersionNumber = 15;
 // The oldest version of the schema such that a legacy Chrome client using that
 // version can still read/write the current database.
-static const int kCompatibleVersionNumber = 14;
+const int kCompatibleVersionNumber = 14;
 
 base::Pickle SerializeVector(const std::vector<base::string16>& vec) {
   base::Pickle p;
@@ -461,13 +461,11 @@ bool LoginDatabase::MigrateOldVersionsAsNeeded() {
                        "ADD COLUMN possible_usernames BLOB")) {
         return false;
       }
-      meta_table_.SetVersionNumber(2);
     // Fall through.
     case 2:
       if (!db_.Execute("ALTER TABLE logins ADD COLUMN times_used INTEGER")) {
         return false;
       }
-      meta_table_.SetVersionNumber(3);
     // Fall through.
     case 3:
       // We need to check if the column exists because of
@@ -476,20 +474,17 @@ bool LoginDatabase::MigrateOldVersionsAsNeeded() {
           !db_.Execute("ALTER TABLE logins ADD COLUMN form_data BLOB")) {
         return false;
       }
-      meta_table_.SetVersionNumber(4);
     // Fall through.
     case 4:
       if (!db_.Execute(
               "ALTER TABLE logins ADD COLUMN use_additional_auth INTEGER")) {
         return false;
       }
-      meta_table_.SetVersionNumber(5);
     // Fall through.
     case 5:
       if (!db_.Execute("ALTER TABLE logins ADD COLUMN date_synced INTEGER")) {
         return false;
       }
-      meta_table_.SetVersionNumber(6);
     // Fall through.
     case 6:
       if (!db_.Execute("ALTER TABLE logins ADD COLUMN display_name VARCHAR") ||
@@ -499,12 +494,10 @@ bool LoginDatabase::MigrateOldVersionsAsNeeded() {
           !db_.Execute("ALTER TABLE logins ADD COLUMN is_zero_click INTEGER")) {
         return false;
       }
-      meta_table_.SetVersionNumber(7);
     // Fall through.
     case 7: {
       // Keep version 8 around even though no changes are made. See
       // crbug.com/423716 for context.
-      meta_table_.SetVersionNumber(8);
       // Fall through.
     }
     case 8: {
@@ -517,7 +510,6 @@ bool LoginDatabase::MigrateOldVersionsAsNeeded() {
       s.BindInt64(1, base::Time::kTimeTToMicrosecondsOffset);
       if (!s.Run())
         return false;
-      meta_table_.SetVersionNumber(9);
       // Fall through.
     }
     case 9: {
@@ -544,10 +536,9 @@ bool LoginDatabase::MigrateOldVersionsAsNeeded() {
               ("CREATE TABLE logins(" + fields_to_copy + ")").c_str()) ||
           !db_.Execute(copy_data_query("logins_data", "logins").c_str()) ||
           !db_.Execute("DROP TABLE logins_data") ||
-          !CreateIndexOnSignonRealm(&db_, "logins"))
+          !CreateIndexOnSignonRealm(&db_, "logins")) {
         return false;
-
-      meta_table_.SetVersionNumber(10);
+      }
       // Fall through.
     }
     case 10: {
@@ -570,7 +561,6 @@ bool LoginDatabase::MigrateOldVersionsAsNeeded() {
           !CreateIndexOnSignonRealm(&db_, "logins")) {
         return false;
       }
-      meta_table_.SetVersionNumber(11);
       // Fall through.
     }
     case 11:
@@ -578,11 +568,9 @@ bool LoginDatabase::MigrateOldVersionsAsNeeded() {
               "ALTER TABLE logins ADD COLUMN "
               "generation_upload_status INTEGER"))
         return false;
-      meta_table_.SetVersionNumber(12);
       // Fall through.
     case 12:
       // The stats table was added. Nothing to do really.
-      meta_table_.SetVersionNumber(13);
       // Fall through.
     case 13: {
       // Rename avatar_url -> icon_url. Note that if the original version was
@@ -605,9 +593,15 @@ bool LoginDatabase::MigrateOldVersionsAsNeeded() {
           return false;
         }
       }
-      meta_table_.SetVersionNumber(14);
       // Fall through.
     }
+    case 14:
+      // No change of schema. Version 15 was introduced to force all databases
+      // through an otherwise no-op migration process that will, however, now
+      // correctly set the 'compatible version number'. Previously, it was
+      // always being set to (and forever left at) version 1.
+      // Fall through.
+
     // -------------------------------------------------------------------------
     // DO NOT FORGET to update |kCompatibleVersionNumber| if you add a migration
     // step that is a breaking change. This is needed so that an older version
@@ -615,7 +609,9 @@ bool LoginDatabase::MigrateOldVersionsAsNeeded() {
     // database, as opposed to failing on the first database operation.
     // -------------------------------------------------------------------------
     case kCurrentVersionNumber:
-      // Already up to date
+      // Already up to date.
+      meta_table_.SetVersionNumber(kCurrentVersionNumber);
+      meta_table_.SetCompatibleVersionNumber(kCompatibleVersionNumber);
       return true;
     default:
       NOTREACHED();

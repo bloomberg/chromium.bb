@@ -1480,6 +1480,18 @@ void LoginDatabaseMigrationTest::MigrationToVCurrent(
           urls, testing::ElementsAre("", "https://www.google.com/icon"));
     }
   }
+
+  {
+    // On versions < 15 |kCompatibleVersionNumber| was set to 1, but
+    // the migration should bring it to the correct value.
+    sql::Connection db;
+    sql::MetaTable meta_table;
+    ASSERT_TRUE(db.Open(database_path_));
+    ASSERT_TRUE(
+        meta_table.Init(&db, kCurrentVersionNumber, kCompatibleVersionNumber));
+    EXPECT_EQ(password_manager::kCompatibleVersionNumber,
+              meta_table.GetCompatibleVersionNumber());
+  }
   DestroyDatabase();
 }
 
