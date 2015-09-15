@@ -235,7 +235,8 @@ public class ChromeDownloadDelegate
                 String dirName = (String) result[1];
                 String fullDirPath = (String) result[2];
                 Boolean fileExists = (Boolean) result[3];
-                if (!checkExternalStorageAndNotify(fullDirPath, externalStorageState)) {
+                if (!checkExternalStorageAndNotify(
+                        fileName, fullDirPath, externalStorageState)) {
                     return;
                 }
                 String url = sanitizeDownloadUrl(downloadInfo);
@@ -401,20 +402,20 @@ public class ChromeDownloadDelegate
      * @return Whether external storage is ok for downloading.
      */
     private boolean checkExternalStorageAndNotify(
-            String fullDirPath, String externalStorageStatus) {
+            String filename, String fullDirPath, String externalStorageStatus) {
         if (fullDirPath == null) {
-            alertDownloadFailure(R.string.download_no_sdcard_dlg_title);
+            Log.e(TAG, "Download failed: no SD card");
+            alertDownloadFailure(filename);
             return false;
         }
         if (!externalStorageStatus.equals(Environment.MEDIA_MOUNTED)) {
-            int title;
             // Check to see if the SDCard is busy, same as the music app
             if (externalStorageStatus.equals(Environment.MEDIA_SHARED)) {
-                title = R.string.download_sdcard_busy_dlg_title;
+                Log.e(TAG, "Download failed: SD card unavailable");
             } else {
-                title = R.string.download_no_sdcard_dlg_title;
+                Log.e(TAG, "Download failed: no SD card");
             }
-            alertDownloadFailure(title);
+            alertDownloadFailure(filename);
             return false;
         }
         return true;
@@ -423,10 +424,11 @@ public class ChromeDownloadDelegate
     /**
      * Alerts user of download failure.
      *
-     * @param code Error resource ID.
+     * @param fileName Name of the download file.
      */
-    private void alertDownloadFailure(int resId) {
-        Toast.makeText(mContext, resId, Toast.LENGTH_SHORT).show();
+    private void alertDownloadFailure(String fileName) {
+        DownloadManagerService.getDownloadManagerService(
+                mContext.getApplicationContext()).onDownloadFailed(fileName);
     }
 
     /**
