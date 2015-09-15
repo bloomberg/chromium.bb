@@ -32,6 +32,29 @@
 
 namespace blink {
 
+// LayoutInline is the LayoutObject associated with display: inline.
+// This is called an "inline box" in CSS 2.1.
+// http://www.w3.org/TR/CSS2/visuren.html#inline-boxes
+//
+// It is also the base class for content that behaves in similar way (like
+// quotes and "display: ruby").
+//
+// Note that LayoutInline is always 'inline-level' but other LayoutObject
+// can be 'inline-level', which is why it's stored as a boolean on LayoutObject
+// (see LayoutObject::isInline()).
+//
+// For performance and memory consumption, this class ignores some inline-boxes
+// during line layout because they don't impact layout (they still exist and are
+// inserted into the layout tree). An example of this is
+//             <span><span>Text</span></span>
+// where the 2 spans have the same size as the inner text-node so they can be
+// ignored for layout purpose, generating a single inline-box instead of 3.
+// One downside of this optimization is that we have extra work to do when
+// asking for bounding rects (see generateLineBoxRects).
+// This optimization is called "culled inline" in the code.
+//
+// LayoutInlines are expected to be laid out by their containing
+// LayoutBlockFlow. See LayoutBlockFlow::layoutInlineChildren.
 class CORE_EXPORT LayoutInline : public LayoutBoxModelObject {
 public:
     explicit LayoutInline(Element*);
