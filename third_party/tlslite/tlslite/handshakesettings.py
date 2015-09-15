@@ -112,6 +112,9 @@ class HandshakeSettings(object):
     @ivar alertAfterHandshake: If true, the server will send a fatal
     alert immediately after the handshake completes.
 
+    @type enableChannelID: bool
+    @ivar enableChannelID: If true, the server supports channel ID.
+
     @type enableExtendedMasterSecret: bool
     @ivar enableExtendedMasterSecret: If true, the server supports the extended
     master secret TLS extension and will negotiated it with supporting clients.
@@ -140,6 +143,7 @@ class HandshakeSettings(object):
         self.tlsIntoleranceType = 'alert'
         self.useExperimentalTackExtension = False
         self.alertAfterHandshake = False
+        self.enableChannelID = True
         self.enableExtendedMasterSecret = True
         self.supportedTokenBindingParams = []
 
@@ -159,6 +163,7 @@ class HandshakeSettings(object):
         other.tlsIntolerant = self.tlsIntolerant
         other.tlsIntoleranceType = self.tlsIntoleranceType
         other.alertAfterHandshake = self.alertAfterHandshake
+        other.enableChannelID = self.enableChannelID
         other.enableExtendedMasterSecret = self.enableExtendedMasterSecret
         other.supportedTokenBindingParams = self.supportedTokenBindingParams
 

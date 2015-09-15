@@ -1326,7 +1326,8 @@ class TLSConnection(TLSRecordLayer):
         serverHello.create(self.version, getRandomBytes(32), sessionID, \
                             cipherSuite, CertificateType.x509, tackExt,
                             nextProtos)
-        serverHello.channel_id = clientHello.channel_id
+        serverHello.channel_id = \
+            clientHello.channel_id and settings.enableChannelID
         serverHello.extended_master_secret = \
             clientHello.extended_master_secret and \
             settings.enableExtendedMasterSecret
@@ -1391,7 +1392,7 @@ class TLSConnection(TLSRecordLayer):
         for result in self._serverFinished(premasterSecret, 
                                 clientHello.random, serverHello.random,
                                 cipherSuite, settings.cipherImplementations,
-                                nextProtos, clientHello.channel_id,
+                                nextProtos, serverHello.channel_id,
                                 serverHello.extended_master_secret):
                 if result in (0,1): yield result
                 else: break
