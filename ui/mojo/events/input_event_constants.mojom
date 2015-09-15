@@ -12,7 +12,6 @@ enum EventType {
   POINTER_DOWN,
   POINTER_MOVE,
   POINTER_UP,
-  WHEEL,
 };
 
 // This mirrors ui::EventFlags
@@ -42,14 +41,6 @@ enum MouseEventFlags {
 };
 
 enum PointerKind {
-  MOUSE,
-  PEN,
   TOUCH,
-};
-
-enum WheelMode {
-  PIXEL,
-  LINE,
-  PAGE,
-  SCALING,
+  MOUSE,
 };

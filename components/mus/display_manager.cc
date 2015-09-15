@@ -81,6 +81,15 @@ void DrawViewTree(cc::RenderPass* pass,
                        bounds_at_origin /* visible_rect */, view->surface_id());
 }
 
+float ConvertUIWheelValueToMojoValue(int offset) {
+  // Mojo's event type takes a value between -1 and 1. Normalize by allowing
+  // up to 20 of ui's offset. This is a bit arbitrary.
+  return std::max(
+      -1.0f, std::min(1.0f, static_cast<float>(offset) /
+                                (20 * static_cast<float>(
+                                          ui::MouseWheelEvent::kWheelDelta))));
+}
+
 }  // namespace
 
 // static
@@ -257,6 +266,16 @@ void DefaultDisplayManager::OnDamageRect(const gfx::Rect& damaged_region) {
 
 void DefaultDisplayManager::DispatchEvent(ui::Event* event) {
   mojo::EventPtr mojo_event(mojo::Event::From(*event));
+  if (event->IsMouseWheelEvent()) {
+    // Mojo's event type has a different meaning for wheel events. Convert
+    // between the two.
+    ui::MouseWheelEvent* wheel_event = static_cast<ui::MouseWheelEvent*>(event);
+    DCHECK(mojo_event->pointer_data);
+    mojo_event->pointer_data->horizontal_wheel =
+        ConvertUIWheelValueToMojoValue(wheel_event->x_offset());
+    mojo_event->pointer_data->horizontal_wheel =
+        ConvertUIWheelValueToMojoValue(wheel_event->y_offset());
+  }
   delegate_->OnEvent(mojo_event.Pass());
 
   switch (event->type()) {

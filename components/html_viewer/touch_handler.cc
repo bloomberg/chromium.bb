@@ -15,33 +15,17 @@
 namespace html_viewer {
 namespace {
 
-// TODO(rjkroege): Gesture recognition currently happens in the html_viewer.
-// In phase2, it will be relocated to MUS. Update this code at that time.
 void SetPropertiesFromEvent(const mojo::Event& event,
                             ui::PointerProperties* properties) {
   properties->id = event.pointer_data->pointer_id;
-  properties->x = event.pointer_data->location->x;
-  properties->y = event.pointer_data->location->y;
-  properties->raw_x = event.pointer_data->location->screen_x;
-  properties->raw_y = event.pointer_data->location->screen_y;
-
-  if (event.pointer_data->kind == mojo::POINTER_KIND_TOUCH ||
-      event.pointer_data->kind == mojo::POINTER_KIND_PEN) {
-    properties->pressure = event.pointer_data->brush_data->pressure;
-
-    // TODO(rjkroege): vary orientation for width, height.
-    properties->SetAxesAndOrientation(event.pointer_data->brush_data->width,
-                                      event.pointer_data->brush_data->height,
-                                      0.0);
-  } else {
-    if (event.flags & mojo::EVENT_FLAGS_LEFT_MOUSE_BUTTON ||
-        event.flags & mojo::EVENT_FLAGS_MIDDLE_MOUSE_BUTTON ||
-        event.flags & mojo::EVENT_FLAGS_MIDDLE_MOUSE_BUTTON) {
-      properties->pressure = 0.5;
-    } else {
-      properties->pressure = 0.0;
-    }
-  }
+  properties->x = event.pointer_data->x;
+  properties->y = event.pointer_data->y;
+  properties->raw_x = event.pointer_data->screen_x;
+  properties->raw_y = event.pointer_data->screen_y;
+  properties->pressure = event.pointer_data->pressure;
+  properties->SetAxesAndOrientation(event.pointer_data->radius_major,
+                                    event.pointer_data->radius_minor,
+                                    event.pointer_data->orientation);
   // TODO(sky): Add support for tool_type.
 }
 

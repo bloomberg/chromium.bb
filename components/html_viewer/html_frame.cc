@@ -631,12 +631,10 @@ void HTMLFrame::OnViewDestroyed(View* view) {
 void HTMLFrame::OnViewInputEvent(View* view, const mojo::EventPtr& event) {
   if (event->pointer_data) {
     // Blink expects coordintes to be in DIPs.
-    event->pointer_data->location->x /= global_state()->device_pixel_ratio();
-    event->pointer_data->location->y /= global_state()->device_pixel_ratio();
-    event->pointer_data->location->screen_x /=
-        global_state()->device_pixel_ratio();
-    event->pointer_data->location->screen_y /=
-        global_state()->device_pixel_ratio();
+    event->pointer_data->x /= global_state()->device_pixel_ratio();
+    event->pointer_data->y /= global_state()->device_pixel_ratio();
+    event->pointer_data->screen_x /= global_state()->device_pixel_ratio();
+    event->pointer_data->screen_y /= global_state()->device_pixel_ratio();
   }
 
   blink::WebWidget* web_widget = GetWebWidget();
