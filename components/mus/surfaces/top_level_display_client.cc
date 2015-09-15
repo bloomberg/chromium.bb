@@ -23,8 +23,7 @@ TopLevelDisplayClient::TopLevelDisplayClient(
     gfx::AcceleratedWidget widget,
     const scoped_refptr<gles2::GpuState>& gpu_state,
     const scoped_refptr<SurfacesState>& surfaces_state)
-    : gpu_state_(gpu_state),
-      surfaces_state_(surfaces_state),
+    : surfaces_state_(surfaces_state),
       factory_(surfaces_state->manager(), this),
       cc_id_(static_cast<uint64_t>(surfaces_state->next_id_namespace()) << 32) {
   factory_.Create(cc_id_);
@@ -45,8 +44,6 @@ TopLevelDisplayClient::TopLevelDisplayClient(
   // TODO(fsamuel): Plumb the proper device scale factor.
   display_->SetSurfaceId(cc_id_, 1.f /* device_scale_factor */);
 }
-
-void TopLevelDisplayClient::OnContextCreated() {}
 
 TopLevelDisplayClient::~TopLevelDisplayClient() {
   if (display_) {

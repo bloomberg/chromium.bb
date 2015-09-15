@@ -54,13 +54,11 @@ class TopLevelDisplayClient : public cc::DisplayClient,
   void SetMemoryPolicy(const cc::ManagedMemoryPolicy& policy) override;
 
   // SurfacesContextProviderDelegate:
-  void OnContextCreated();
   void OnVSyncParametersUpdated(int64_t timebase, int64_t interval) override;
 
   // SurfaceFactoryClient implementation.
   void ReturnResources(const cc::ReturnedResourceArray& resources) override;
 
-  scoped_refptr<gles2::GpuState> gpu_state_;
   scoped_refptr<SurfacesState> surfaces_state_;
   cc::SurfaceFactory factory_;
   cc::SurfaceId cc_id_;

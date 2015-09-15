@@ -79,7 +79,6 @@ class SurfacesContextProvider : public cc::ContextProvider,
   LostContextCallback lost_context_callback_;
 
   SurfacesContextProviderDelegate* delegate_;
-  scoped_refptr<gles2::GpuState> state_;
   gfx::AcceleratedWidget widget_;
   scoped_ptr<gles2::CommandBufferLocal> command_buffer_local_;
 

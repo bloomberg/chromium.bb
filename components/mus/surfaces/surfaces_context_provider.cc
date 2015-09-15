@@ -29,10 +29,10 @@ SurfacesContextProvider::SurfacesContextProvider(
     SurfacesContextProviderDelegate* delegate,
     gfx::AcceleratedWidget widget,
     const scoped_refptr<gles2::GpuState>& state)
-    : delegate_(delegate), state_(state), widget_(widget) {
+    : delegate_(delegate), widget_(widget) {
   capabilities_.gpu.image = true;
   command_buffer_local_.reset(
-      new gles2::CommandBufferLocal(this, widget_, state_));
+      new gles2::CommandBufferLocal(this, widget_, state));
 }
 
 // This is called when we have an accelerated widget.
