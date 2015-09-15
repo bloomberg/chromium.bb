@@ -1359,17 +1359,18 @@ public class ChromeBrowserProvider extends ContentProvider {
     }
 
     private boolean hasPermission(String permission) {
+        boolean isSystemOrGoogleCaller = ExternalAuthUtils.getInstance().isCallerValid(
+                getContext(), ExternalAuthUtils.FLAG_SHOULD_BE_GOOGLE_SIGNED
+                        | ExternalAuthUtils.FLAG_SHOULD_BE_SYSTEM);
+        if (isSystemOrGoogleCaller) return true;
+
         if (BuildInfo.isMncOrLater()) {
             return getContext().checkCallingOrSelfPermission(
                     getReadWritePermissionNameForBookmarkFolders())
                     == PackageManager.PERMISSION_GRANTED;
         } else {
-            boolean hasPermission = getContext().checkCallingOrSelfPermission(permission)
+            return getContext().checkCallingOrSelfPermission(permission)
                     == PackageManager.PERMISSION_GRANTED;
-            boolean isSystemOrGoogleCaller = ExternalAuthUtils.getInstance().isCallerValid(
-                    getContext(), ExternalAuthUtils.FLAG_SHOULD_BE_GOOGLE_SIGNED
-                            | ExternalAuthUtils.FLAG_SHOULD_BE_SYSTEM);
-            return hasPermission || isSystemOrGoogleCaller;
         }
     }
 
