@@ -87,6 +87,9 @@
   <message name="IDS_SETTINGS_HOME_PAGE_NTP" desc="Description of the New Tab Page when set as the home page.">
     New Tab Page
   </message>
+  <message name="IDS_SETTINGS_OPEN_THIS_PAGE" desc="Label of the input box for the home page.">
+    Open this page:
+  </message>
   <message name="IDS_SETTINGS_CHANGE_HOME_PAGE" desc="Label of the control to change the home page.">
     Change
   </message>

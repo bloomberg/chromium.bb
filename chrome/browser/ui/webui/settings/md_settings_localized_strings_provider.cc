@@ -81,6 +81,8 @@ void AddAppearanceStrings(content::WebUIDataSource* html_source) {
   html_source->AddLocalizedString(
       "homePageNtp", IDS_SETTINGS_HOME_PAGE_NTP);
   html_source->AddLocalizedString(
+      "openThisPage", IDS_SETTINGS_OPEN_THIS_PAGE);
+  html_source->AddLocalizedString(
       "changeHomePage", IDS_SETTINGS_CHANGE_HOME_PAGE);
   html_source->AddLocalizedString(
       "themesGalleryUrl", IDS_THEMES_GALLERY_URL);
