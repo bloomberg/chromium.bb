@@ -106,24 +106,10 @@ void FileInputType::restoreFormControlState(const FormControlState& state)
     filesChosen(filesFromFormControlState(state));
 }
 
-void FileInputType::appendToFormData(FormData& formData, bool isMultipart) const
+void FileInputType::appendToFormData(FormData& formData, bool) const
 {
     FileList* fileList = element().files();
     unsigned numFiles = fileList->length();
-    if (!isMultipart) {
-        // Send only the basenames.
-
-        if (numFiles == 0) {
-            formData.append(element().name(), "");
-            return;
-        }
-        for (unsigned i = 0; i < numFiles; ++i)
-            formData.append(element().name(), fileList->item(i)->name());
-        return;
-    }
-
-    // If no filename at all is entered, return successful but empty.
-    // Null would be more logical, but Netscape posts an empty file. Argh.
     if (numFiles == 0) {
         formData.append(element().name(), File::create(""));
         return;

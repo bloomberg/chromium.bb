@@ -249,7 +249,7 @@ PassRefPtr<EncodedFormData> FormData::encodeFormData(EncodedFormData::EncodingTy
     RefPtr<EncodedFormData> formData = EncodedFormData::create();
     Vector<char> encodedData;
     for (const auto& entry : entries())
-        FormDataEncoder::addKeyValuePairAsFormData(encodedData, entry->name(), entry->value(), encodingType);
+        FormDataEncoder::addKeyValuePairAsFormData(encodedData, entry->name(), entry->isFile() ? encodeAndNormalize(entry->file()->name()) : entry->value(), encodingType);
     formData->appendData(encodedData.data(), encodedData.size());
     return formData.release();
 }
