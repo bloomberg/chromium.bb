@@ -106,6 +106,9 @@ OSStatus CertDatabase::Notifier::KeychainCallback(
     case kSecTrustSettingsChangedEvent:
       that->cert_db_->NotifyObserversOfCACertChanged(NULL);
       break;
+
+    default:
+      break;
   }
 
   return errSecSuccess;
