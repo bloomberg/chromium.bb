@@ -32,7 +32,6 @@ if (enable_plugins && !is_linux) {
 
     deps = [
       "//content:export",
-      "//content/public/common",
       "//mojo/application/public/interfaces",
       "//skia",
       "//third_party/npapi",
