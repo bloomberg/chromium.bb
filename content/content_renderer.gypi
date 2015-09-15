@@ -337,8 +337,6 @@
       'renderer/push_messaging/push_messaging_dispatcher.h',
       'renderer/raster_worker_pool.cc',
       'renderer/raster_worker_pool.h',
-      'renderer/render_font_warmup_win.cc',
-      'renderer/render_font_warmup_win.h',
       'renderer/render_frame_impl.cc',
       'renderer/render_frame_impl.h',
       'renderer/render_frame_proxy.cc',

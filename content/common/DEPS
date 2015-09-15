@@ -60,6 +60,7 @@ include_rules = [
   "+third_party/WebKit/public/web/WebTreeScopeType.h",
   "+third_party/WebKit/public/web/WebWindowFeatures.h",
   "+third_party/WebKit/public/web/mac/WebScrollbarTheme.h",
+  "+third_party/WebKit/public/web/win/WebFontRendering.h"
 ]
 
 specific_include_rules = {

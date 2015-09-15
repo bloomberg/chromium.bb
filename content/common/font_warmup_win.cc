@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/render_font_warmup_win.h"
+#include "content/common/font_warmup_win.h"
 
 #include <dwrite.h>
 
@@ -20,7 +20,7 @@ namespace content {
 
 namespace {
 
-SkFontMgr* g_warmup_fontmgr = NULL;
+SkFontMgr* g_warmup_fontmgr = nullptr;
 
 base::win::IATPatchFunction g_iat_patch_open_sc_manager;
 base::win::IATPatchFunction g_iat_patch_close_service_handle;
@@ -30,28 +30,31 @@ base::win::IATPatchFunction g_iat_patch_nt_connect_port;
 
 // These are from ntddk.h
 #if !defined(STATUS_ACCESS_DENIED)
-#define STATUS_ACCESS_DENIED   ((NTSTATUS)0xC0000022L)
+#define STATUS_ACCESS_DENIED ((NTSTATUS)0xC0000022L)
 #endif
 
 typedef LONG NTSTATUS;
+
+const uintptr_t kFakeSCMHandle = 0xdead0001;
+const uintptr_t kFakeServiceHandle = 0xdead0002;
 
 SC_HANDLE WINAPI OpenSCManagerWPatch(const wchar_t* machine_name,
                                      const wchar_t* database_name,
                                      DWORD access_mask) {
   ::SetLastError(0);
-  return reinterpret_cast<SC_HANDLE>(0xdeadbeef);
+  return reinterpret_cast<SC_HANDLE>(kFakeSCMHandle);
 }
 
 SC_HANDLE WINAPI OpenServiceWPatch(SC_HANDLE sc_manager,
                                    const wchar_t* service_name,
                                    DWORD access_mask) {
   ::SetLastError(0);
-  return reinterpret_cast<SC_HANDLE>(0xdeadbabe);
+  return reinterpret_cast<SC_HANDLE>(kFakeServiceHandle);
 }
 
 BOOL WINAPI CloseServiceHandlePatch(SC_HANDLE service_handle) {
-  if (service_handle != reinterpret_cast<SC_HANDLE>(0xdeadbabe) &&
-      service_handle != reinterpret_cast<SC_HANDLE>(0xdeadbeef))
+  if (service_handle != reinterpret_cast<SC_HANDLE>(kFakeServiceHandle) &&
+      service_handle != reinterpret_cast<SC_HANDLE>(kFakeSCMHandle))
     CHECK(false);
   ::SetLastError(0);
   return TRUE;
@@ -60,7 +63,7 @@ BOOL WINAPI CloseServiceHandlePatch(SC_HANDLE service_handle) {
 BOOL WINAPI StartServiceWPatch(SC_HANDLE service,
                                DWORD args,
                                const wchar_t** arg_vectors) {
-  if (service != reinterpret_cast<SC_HANDLE>(0xdeadbabe))
+  if (service != reinterpret_cast<SC_HANDLE>(kFakeServiceHandle))
     CHECK(false);
   ::SetLastError(ERROR_ACCESS_DENIED);
   return FALSE;
@@ -101,29 +104,32 @@ void PatchServiceManagerCalls() {
   if (is_patched)
     return;
   const char* service_provider_dll =
-      (base::win::GetVersion() >= base::win::VERSION_WIN8 ?
-          "api-ms-win-service-management-l1-1-0.dll" : "advapi32.dll");
+      (base::win::GetVersion() >= base::win::VERSION_WIN8
+           ? "api-ms-win-service-management-l1-1-0.dll"
+           : "advapi32.dll");
 
   is_patched = true;
 
-  DWORD patched = g_iat_patch_open_sc_manager.Patch(L"dwrite.dll",
-      service_provider_dll, "OpenSCManagerW", OpenSCManagerWPatch);
+  DWORD patched =
+      g_iat_patch_open_sc_manager.Patch(L"dwrite.dll", service_provider_dll,
+                                        "OpenSCManagerW", OpenSCManagerWPatch);
   DCHECK(patched == 0);
 
-  patched = g_iat_patch_close_service_handle.Patch(L"dwrite.dll",
-      service_provider_dll, "CloseServiceHandle", CloseServiceHandlePatch);
+  patched = g_iat_patch_close_service_handle.Patch(
+      L"dwrite.dll", service_provider_dll, "CloseServiceHandle",
+      CloseServiceHandlePatch);
   DCHECK(patched == 0);
 
-  patched = g_iat_patch_open_service.Patch(L"dwrite.dll",
-      service_provider_dll, "OpenServiceW", OpenServiceWPatch);
+  patched = g_iat_patch_open_service.Patch(L"dwrite.dll", service_provider_dll,
+                                           "OpenServiceW", OpenServiceWPatch);
   DCHECK(patched == 0);
 
-  patched = g_iat_patch_start_service.Patch(L"dwrite.dll",
-      service_provider_dll, "StartServiceW", StartServiceWPatch);
+  patched = g_iat_patch_start_service.Patch(
+      L"dwrite.dll", service_provider_dll, "StartServiceW", StartServiceWPatch);
   DCHECK(patched == 0);
 
-  patched = g_iat_patch_nt_connect_port.Patch(L"dwrite.dll",
-      "ntdll.dll", "NtAlpcConnectPort", NtALpcConnectPortPatch);
+  patched = g_iat_patch_nt_connect_port.Patch(
+      L"dwrite.dll", "ntdll.dll", "NtAlpcConnectPort", NtALpcConnectPortPatch);
   DCHECK(patched == 0);
 }
 
@@ -152,10 +158,9 @@ void CreateDirectWriteFactory(IDWriteFactory** factory) {
     base::debug::Alias(&get_proc_address_get_last_error);
     CHECK(false);
   }
-  CHECK(SUCCEEDED(
-      dwrite_create_factory_proc(DWRITE_FACTORY_TYPE_ISOLATED,
-                                 __uuidof(IDWriteFactory),
-                                 reinterpret_cast<IUnknown**>(factory))));
+  CHECK(SUCCEEDED(dwrite_create_factory_proc(
+      DWRITE_FACTORY_TYPE_ISOLATED, __uuidof(IDWriteFactory),
+      reinterpret_cast<IUnknown**>(factory))));
 }
 
 HRESULT STDMETHODCALLTYPE StubFontCollection(IDWriteFactory* factory,
@@ -163,7 +168,7 @@ HRESULT STDMETHODCALLTYPE StubFontCollection(IDWriteFactory* factory,
                                              BOOL checkUpdates) {
   // We always return pre-created font collection from here.
   IDWriteFontCollection* custom_collection = GetCustomFontCollection(factory);
-  DCHECK(custom_collection != NULL);
+  DCHECK(custom_collection != nullptr);
   *col = custom_collection;
   return S_OK;
 }
