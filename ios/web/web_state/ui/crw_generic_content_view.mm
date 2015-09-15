@@ -8,6 +8,8 @@
 #include "base/mac/scoped_nsobject.h"
 
 @interface CRWGenericContentView () {
+  // The size of the view's bounds at the last call to |-layoutSubviews|.
+  CGSize _lastLayoutSize;
   // Backing objectect for |self.scrollView|.
   base::scoped_nsobject<UIScrollView> _scrollView;
   // Backing object for |self.view|.
@@ -22,6 +24,7 @@
   self = [super initWithFrame:CGRectZero];
   if (self) {
     DCHECK(view);
+    _lastLayoutSize = CGSizeZero;
     _view.reset([view retain]);
     _scrollView.reset([[UIScrollView alloc] initWithFrame:CGRectZero]);
     [self addSubview:_scrollView];
@@ -59,6 +62,11 @@
 - (void)layoutSubviews {
   [super layoutSubviews];
 
+  // Early return if the bounds' size hasn't changed since the last layout.
+  if (CGSizeEqualToSize(_lastLayoutSize, self.bounds.size))
+    return;
+  _lastLayoutSize = self.bounds.size;
+
   // scrollView layout.
   self.scrollView.frame = self.bounds;
 
@@ -69,7 +77,7 @@
   self.view.frame = CGRectMake(0.0, 0.0, viewSize.width, viewSize.height);
 
   // UIScrollViews only scroll vertically if the content size's height is
-  // creater than that of its content rect.
+  // greater than that of its content rect.
   if (viewSize.height <= CGRectGetHeight(contentRect)) {
     CGFloat singlePixel = 1.0f / [[UIScreen mainScreen] scale];
     viewSize.height = CGRectGetHeight(contentRect) + singlePixel;
