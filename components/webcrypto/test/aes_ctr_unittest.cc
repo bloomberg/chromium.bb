@@ -15,14 +15,6 @@ namespace webcrypto {
 
 namespace {
 
-bool SupportsAesCtr() {
-#if defined(USE_OPENSSL)
-  return true;
-#else
-  return false;
-#endif
-}
-
 // Creates an AES-CTR algorithm for encryption/decryption.
 blink::WebCryptoAlgorithm CreateAesCtrAlgorithm(
     const std::vector<uint8_t>& counter,
@@ -37,11 +29,6 @@ blink::WebCryptoAlgorithm CreateAesCtrAlgorithm(
 class WebCryptoAesCtrTest : public WebCryptoTestBase {};
 
 TEST_F(WebCryptoAesCtrTest, EncryptDecryptKnownAnswer) {
-  if (!SupportsAesCtr()) {
-    LOG(WARNING) << "Skipping test because AES-CTR is not supported";
-    return;
-  }
-
   scoped_ptr<base::ListValue> tests;
   ASSERT_TRUE(ReadJsonTestFileToList("aes_ctr.json", &tests));
 
@@ -84,11 +71,6 @@ TEST_F(WebCryptoAesCtrTest, EncryptDecryptKnownAnswer) {
 
 // The counter block must be exactly 16 bytes.
 TEST_F(WebCryptoAesCtrTest, InvalidCounterBlockLength) {
-  if (!SupportsAesCtr()) {
-    LOG(WARNING) << "Skipping test because AES-CTR is not supported";
-    return;
-  }
-
   const unsigned int kBadCounterBlockLengthBytes[] = {0, 15, 17};
 
   blink::WebCryptoKey key = ImportSecretKeyFromRaw(
@@ -114,11 +96,6 @@ TEST_F(WebCryptoAesCtrTest, InvalidCounterBlockLength) {
 
 // The counter length cannot be less than 1 or greater than 128.
 TEST_F(WebCryptoAesCtrTest, InvalidCounterLength) {
-  if (!SupportsAesCtr()) {
-    LOG(WARNING) << "Skipping test because AES-CTR is not supported";
-    return;
-  }
-
   const uint8_t kBadCounterLengthBits[] = {0, 129};
 
   blink::WebCryptoKey key = ImportSecretKeyFromRaw(
@@ -151,11 +128,6 @@ TEST_F(WebCryptoAesCtrTest, InvalidCounterLength) {
 // Using a 4-bit counter it is possible to encrypt 16 blocks. However the 17th
 // block would end up wrapping back to the starting value.
 TEST_F(WebCryptoAesCtrTest, OverflowAndRepeatCounter) {
-  if (!SupportsAesCtr()) {
-    LOG(WARNING) << "Skipping test because AES-CTR is not supported";
-    return;
-  }
-
   const uint8_t kCounterLengthBits = 4;
   const uint8_t kStartCounter[] = {0, 1, 15};
 

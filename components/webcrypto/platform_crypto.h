@@ -11,7 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "third_party/WebKit/public/platform/WebCrypto.h"
 
-// The definitions for these methods lives in either nss/ or openssl/
+// The definitions for these methods live in openssl/
 namespace webcrypto {
 
 class AlgorithmImplementation;

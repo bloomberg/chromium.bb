@@ -14,7 +14,7 @@
 namespace webcrypto {
 
 // Wrapper around the Blink WebCrypto asynchronous interface, which forwards to
-// the synchronous platform (NSS or OpenSSL) implementation.
+// the synchronous OpenSSL implementation.
 //
 // WebCryptoImpl is threadsafe.
 //

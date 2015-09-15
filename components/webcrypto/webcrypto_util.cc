@@ -199,9 +199,11 @@ Status GetRsaKeyGenParameters(
     unsigned int* modulus_length_bits) {
   *modulus_length_bits = params->modulusLengthBits();
 
-  // Limit key sizes to those supported by NSS:
+  // Limit the RSA key sizes to:
   //   * Multiple of 8 bits
   //   * 256 bits to 16K bits
+  // This corresponds to the values that NSS would allow, which was relevant
+  // back when Chromium's WebCrypto supported both OpenSSL and NSS.
   if (*modulus_length_bits < 256 || *modulus_length_bits > 16384 ||
       (*modulus_length_bits % 8) != 0) {
     return Status::ErrorGenerateRsaUnsupportedModulus();
@@ -212,8 +214,8 @@ Status GetRsaKeyGenParameters(
     return Status::ErrorGenerateKeyPublicExponent();
   }
 
-  // OpenSSL hangs when given bad public exponents, whereas NSS simply fails. To
-  // avoid feeding OpenSSL data that will hang use a whitelist.
+  // OpenSSL hangs when given bad public exponents. Use a whitelist to avoid
+  // feeding OpenSSL data that could hang.
   if (*public_exponent != 3 && *public_exponent != 65537)
     return Status::ErrorGenerateKeyPublicExponent();
 

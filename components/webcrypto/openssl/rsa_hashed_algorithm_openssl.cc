@@ -110,8 +110,7 @@ Status ImportRsaPrivateKey(const blink::WebCryptoAlgorithm& algorithm,
     return Status::OperationError();
   }
 
-  // TODO(eroman): This should really be a DataError, however for compatibility
-  //               with NSS it is an OperationError.
+  // TODO(eroman): This should be a DataError.
   if (!RSA_check_key(rsa.get()))
     return Status::OperationError();
 

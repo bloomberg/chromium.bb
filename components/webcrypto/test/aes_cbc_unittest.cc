@@ -50,11 +50,12 @@ class WebCryptoAesCbcTest : public WebCryptoTestBase {};
 TEST_F(WebCryptoAesCbcTest, InputTooLarge) {
   std::vector<uint8_t> output;
 
-  // Give an input that is too large (would cause integer overflow when
-  // narrowing to an int). Note that both OpenSSL and NSS operate on signed int
-  // lengths.
   std::vector<uint8_t> iv(16);
 
+  // Give an input that is too large. It would cause integer overflow when
+  // narrowing the ciphertext size to an int, since OpenSSL operates on signed
+  // int lengths NOT unsigned.
+  //
   // Pretend the input is large. Don't pass data pointer as NULL in case that
   // is special cased; the implementation shouldn't actually dereference the
   // data.
@@ -478,9 +479,6 @@ TEST_F(WebCryptoAesCbcTest, GenerateKeyEmptyUsages) {
 // key pair (using SPKI format for public key, PKCS8 format for private key).
 // Then unwrap the wrapped key pair and verify that the key data is the same.
 TEST_F(WebCryptoAesCbcTest, WrapUnwrapRoundtripSpkiPkcs8) {
-  if (!SupportsRsaPrivateKeyImport())
-    return;
-
   // Generate the wrapping key.
   blink::WebCryptoKey wrapping_key;
   ASSERT_EQ(Status::Success(),

@@ -43,11 +43,6 @@ class WebCryptoRsaOaepTest : public WebCryptoTestBase {};
 // Import a PKCS#8 private key that uses RSAPrivateKey with the
 // id-rsaEncryption OID.
 TEST_F(WebCryptoRsaOaepTest, ImportPkcs8WithRsaEncryption) {
-  if (!SupportsRsaOaep()) {
-    LOG(WARNING) << "RSA-OAEP support not present; skipping.";
-    return;
-  }
-
   blink::WebCryptoKey private_key;
   ASSERT_EQ(Status::Success(),
             ImportKey(blink::WebCryptoKeyFormatPkcs8,
@@ -59,11 +54,6 @@ TEST_F(WebCryptoRsaOaepTest, ImportPkcs8WithRsaEncryption) {
 }
 
 TEST_F(WebCryptoRsaOaepTest, ImportPublicJwkWithNoAlg) {
-  if (!SupportsRsaOaep()) {
-    LOG(WARNING) << "RSA-OAEP support not present; skipping.";
-    return;
-  }
-
   scoped_ptr<base::DictionaryValue> jwk(CreatePublicKeyJwkDict());
 
   blink::WebCryptoKey public_key;
@@ -76,11 +66,6 @@ TEST_F(WebCryptoRsaOaepTest, ImportPublicJwkWithNoAlg) {
 }
 
 TEST_F(WebCryptoRsaOaepTest, ImportPublicJwkWithMatchingAlg) {
-  if (!SupportsRsaOaep()) {
-    LOG(WARNING) << "RSA-OAEP support not present; skipping.";
-    return;
-  }
-
   scoped_ptr<base::DictionaryValue> jwk(CreatePublicKeyJwkDict());
   jwk->SetString("alg", "RSA-OAEP");
 
@@ -94,11 +79,6 @@ TEST_F(WebCryptoRsaOaepTest, ImportPublicJwkWithMatchingAlg) {
 }
 
 TEST_F(WebCryptoRsaOaepTest, ImportPublicJwkWithMismatchedAlgFails) {
-  if (!SupportsRsaOaep()) {
-    LOG(WARNING) << "RSA-OAEP support not present; skipping.";
-    return;
-  }
-
   scoped_ptr<base::DictionaryValue> jwk(CreatePublicKeyJwkDict());
   jwk->SetString("alg", "RSA-OAEP-512");
 
@@ -112,11 +92,6 @@ TEST_F(WebCryptoRsaOaepTest, ImportPublicJwkWithMismatchedAlgFails) {
 }
 
 TEST_F(WebCryptoRsaOaepTest, ImportPublicJwkWithMismatchedTypeFails) {
-  if (!SupportsRsaOaep()) {
-    LOG(WARNING) << "RSA-OAEP support not present; skipping.";
-    return;
-  }
-
   scoped_ptr<base::DictionaryValue> jwk(CreatePublicKeyJwkDict());
   jwk->SetString("kty", "oct");
   jwk->SetString("alg", "RSA-OAEP");
@@ -131,11 +106,6 @@ TEST_F(WebCryptoRsaOaepTest, ImportPublicJwkWithMismatchedTypeFails) {
 }
 
 TEST_F(WebCryptoRsaOaepTest, ExportPublicJwk) {
-  if (!SupportsRsaOaep()) {
-    LOG(WARNING) << "RSA-OAEP support not present; skipping.";
-    return;
-  }
-
   struct TestData {
     blink::WebCryptoAlgorithmId hash_alg;
     const char* expected_jwk_alg;
@@ -170,11 +140,6 @@ TEST_F(WebCryptoRsaOaepTest, ExportPublicJwk) {
 }
 
 TEST_F(WebCryptoRsaOaepTest, EncryptDecryptKnownAnswerTest) {
-  if (!SupportsRsaOaep()) {
-    LOG(WARNING) << "RSA-OAEP support not present; skipping.";
-    return;
-  }
-
   scoped_ptr<base::ListValue> tests;
   ASSERT_TRUE(ReadJsonTestFileToList("rsa_oaep.json", &tests));
 
@@ -224,11 +189,6 @@ TEST_F(WebCryptoRsaOaepTest, EncryptDecryptKnownAnswerTest) {
 }
 
 TEST_F(WebCryptoRsaOaepTest, EncryptWithLargeMessageFails) {
-  if (!SupportsRsaOaep()) {
-    LOG(WARNING) << "RSA-OAEP support not present; skipping.";
-    return;
-  }
-
   const blink::WebCryptoAlgorithmId kHash = blink::WebCryptoAlgorithmIdSha1;
   const size_t kHashSize = 20;
 
@@ -285,11 +245,6 @@ TEST_F(WebCryptoRsaOaepTest, EncryptWithLargeMessageFails) {
 // uses OAEP with SHA-512, since it requires 1040 bits to encode
 // (2 * hash size + 2 padding bytes).
 TEST_F(WebCryptoRsaOaepTest, EncryptWithLargeDigestFails) {
-  if (!SupportsRsaOaep()) {
-    LOG(WARNING) << "RSA-OAEP support not present; skipping.";
-    return;
-  }
-
   const blink::WebCryptoAlgorithmId kHash = blink::WebCryptoAlgorithmIdSha512;
 
   scoped_ptr<base::DictionaryValue> jwk(CreatePublicKeyJwkDict());
@@ -316,11 +271,6 @@ TEST_F(WebCryptoRsaOaepTest, EncryptWithLargeDigestFails) {
 }
 
 TEST_F(WebCryptoRsaOaepTest, DecryptWithLargeMessageFails) {
-  if (!SupportsRsaOaep()) {
-    LOG(WARNING) << "RSA-OAEP support not present; skipping.";
-    return;
-  }
-
   blink::WebCryptoKey private_key;
   ASSERT_EQ(Status::Success(),
             ImportKey(blink::WebCryptoKeyFormatPkcs8,
@@ -344,11 +294,6 @@ TEST_F(WebCryptoRsaOaepTest, DecryptWithLargeMessageFails) {
 }
 
 TEST_F(WebCryptoRsaOaepTest, WrapUnwrapRawKey) {
-  if (!SupportsRsaOaep()) {
-    LOG(WARNING) << "RSA-OAEP support not present; skipping.";
-    return;
-  }
-
   blink::WebCryptoAlgorithm import_algorithm = CreateRsaHashedImportAlgorithm(
       blink::WebCryptoAlgorithmIdRsaOaep, blink::WebCryptoAlgorithmIdSha1);
   blink::WebCryptoKey public_key;
@@ -401,11 +346,6 @@ TEST_F(WebCryptoRsaOaepTest, WrapUnwrapRawKey) {
 }
 
 TEST_F(WebCryptoRsaOaepTest, WrapUnwrapJwkSymKey) {
-  if (!SupportsRsaOaep()) {
-    LOG(WARNING) << "RSA-OAEP support not present; skipping.";
-    return;
-  }
-
   // The public and private portions of a 2048-bit RSA key with the
   // id-rsaEncryption OID
   const char kPublicKey2048SpkiDerHex[] =
@@ -506,11 +446,6 @@ TEST_F(WebCryptoRsaOaepTest, WrapUnwrapJwkSymKey) {
 }
 
 TEST_F(WebCryptoRsaOaepTest, ImportExportJwkRsaPublicKey) {
-  if (!SupportsRsaOaep()) {
-    LOG(WARNING) << "RSA-OAEP support not present; skipping.";
-    return;
-  }
-
   struct TestCase {
     const blink::WebCryptoAlgorithmId hash;
     const blink::WebCryptoKeyUsageMask usage;

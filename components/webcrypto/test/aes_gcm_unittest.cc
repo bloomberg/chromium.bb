@@ -21,7 +21,6 @@ blink::WebCryptoAlgorithm CreateAesGcmAlgorithm(
     const std::vector<uint8_t>& iv,
     const std::vector<uint8_t>& additional_data,
     unsigned int tag_length_bits) {
-  EXPECT_TRUE(SupportsAesGcm());
   return blink::WebCryptoAlgorithm::adoptParamsAndCreate(
       blink::WebCryptoAlgorithmIdAesGcm,
       new blink::WebCryptoAesGcmParams(
@@ -33,7 +32,6 @@ blink::WebCryptoAlgorithm CreateAesGcmAlgorithm(
 
 blink::WebCryptoAlgorithm CreateAesGcmKeyGenAlgorithm(
     unsigned short key_length_bits) {
-  EXPECT_TRUE(SupportsAesGcm());
   return CreateAesKeyGenAlgorithm(blink::WebCryptoAlgorithmIdAesGcm,
                                   key_length_bits);
 }
@@ -45,7 +43,6 @@ Status AesGcmEncrypt(const blink::WebCryptoKey& key,
                      const std::vector<uint8_t>& plain_text,
                      std::vector<uint8_t>* cipher_text,
                      std::vector<uint8_t>* authentication_tag) {
-  EXPECT_TRUE(SupportsAesGcm());
   blink::WebCryptoAlgorithm algorithm =
       CreateAesGcmAlgorithm(iv, additional_data, tag_length_bits);
 
@@ -82,7 +79,6 @@ Status AesGcmDecrypt(const blink::WebCryptoKey& key,
                      const std::vector<uint8_t>& cipher_text,
                      const std::vector<uint8_t>& authentication_tag,
                      std::vector<uint8_t>* plain_text) {
-  EXPECT_TRUE(SupportsAesGcm());
   blink::WebCryptoAlgorithm algorithm =
       CreateAesGcmAlgorithm(iv, additional_data, tag_length_bits);
 
@@ -101,11 +97,6 @@ Status AesGcmDecrypt(const blink::WebCryptoKey& key,
 class WebCryptoAesGcmTest : public WebCryptoTestBase {};
 
 TEST_F(WebCryptoAesGcmTest, GenerateKeyBadLength) {
-  if (!SupportsAesGcm()) {
-    LOG(WARNING) << "AES GCM not supported, skipping tests";
-    return;
-  }
-
   const unsigned short kKeyLen[] = {0, 127, 257};
   blink::WebCryptoKey key;
   for (size_t i = 0; i < arraysize(kKeyLen); ++i) {
@@ -117,23 +108,12 @@ TEST_F(WebCryptoAesGcmTest, GenerateKeyBadLength) {
 }
 
 TEST_F(WebCryptoAesGcmTest, GenerateKeyEmptyUsage) {
-  if (!SupportsAesGcm()) {
-    LOG(WARNING) << "AES GCM not supported, skipping tests";
-    return;
-  }
-
   blink::WebCryptoKey key;
   EXPECT_EQ(Status::ErrorCreateKeyEmptyUsages(),
             GenerateSecretKey(CreateAesGcmKeyGenAlgorithm(256), true, 0, &key));
 }
 
 TEST_F(WebCryptoAesGcmTest, ImportExportJwk) {
-  // Some Linux test runners may not have a new enough version of NSS.
-  if (!SupportsAesGcm()) {
-    LOG(WARNING) << "AES GCM not supported, skipping tests";
-    return;
-  }
-
   const blink::WebCryptoAlgorithm algorithm =
       CreateAlgorithm(blink::WebCryptoAlgorithmIdAesGcm);
 
@@ -153,12 +133,6 @@ TEST_F(WebCryptoAesGcmTest, ImportExportJwk) {
 //   * Test decryption with empty input
 //   * Test decryption with tag length of 0.
 TEST_F(WebCryptoAesGcmTest, SampleSets) {
-  // Some Linux test runners may not have a new enough version of NSS.
-  if (!SupportsAesGcm()) {
-    LOG(WARNING) << "AES GCM not supported, skipping tests";
-    return;
-  }
-
   scoped_ptr<base::ListValue> tests;
   ASSERT_TRUE(ReadJsonTestFileToList("aes_gcm.json", &tests));
 

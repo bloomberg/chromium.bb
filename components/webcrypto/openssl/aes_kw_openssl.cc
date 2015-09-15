@@ -36,9 +36,8 @@ Status AesKwEncryptDecrypt(EncryptOrDecrypt mode,
                            const blink::WebCryptoKey& key,
                            const CryptoData& data,
                            std::vector<uint8_t>* buffer) {
-  // These length checks are done so the returned error matches that of NSS
-  // implementation. Other than giving a more specific error, these are not
-  // required.
+  // These length checks are done in order to give a more specific error. These
+  // are not required for correctness.
   if ((mode == ENCRYPT && data.byte_length() < 16) ||
       (mode == DECRYPT && data.byte_length() < 24)) {
     return Status::ErrorDataTooSmall();

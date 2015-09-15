@@ -97,9 +97,6 @@ TEST_F(WebCryptoRsaSsaTest, ImportExportSpki) {
 }
 
 TEST_F(WebCryptoRsaSsaTest, ImportExportPkcs8) {
-  if (!SupportsRsaPrivateKeyImport())
-    return;
-
   // Passing case: Import a valid RSA key in PKCS#8 format.
   blink::WebCryptoKey key;
   ASSERT_EQ(Status::Success(),
@@ -142,9 +139,6 @@ TEST_F(WebCryptoRsaSsaTest, ImportExportPkcs8) {
 //
 //   PKCS8 --> JWK --> PKCS8
 TEST_F(WebCryptoRsaSsaTest, ImportRsaPrivateKeyJwkToPkcs8RoundTrip) {
-  if (!SupportsRsaPrivateKeyImport())
-    return;
-
   blink::WebCryptoKey key;
   ASSERT_EQ(Status::Success(),
             ImportKey(blink::WebCryptoKeyFormatPkcs8,
@@ -205,9 +199,6 @@ TEST_F(WebCryptoRsaSsaTest, ImportRsaPrivateKeyJwkToPkcs8RoundTrip) {
 // be imported correctly, however every key after that would actually import
 // the first key.
 TEST_F(WebCryptoRsaSsaTest, ImportMultipleRSAPrivateKeysJwk) {
-  if (!SupportsRsaPrivateKeyImport())
-    return;
-
   scoped_ptr<base::ListValue> key_list;
   ASSERT_TRUE(ReadJsonTestFileToList("rsa_private_keys.json", &key_list));
 
@@ -265,9 +256,6 @@ TEST_F(WebCryptoRsaSsaTest, ImportMultipleRSAPrivateKeysJwk) {
 // that the second import retrieves the first key. See http://crbug.com/378315
 // for how that could happen.
 TEST_F(WebCryptoRsaSsaTest, ImportJwkExistingModulusAndInvalid) {
-  if (!SupportsRsaPrivateKeyImport())
-    return;
-
   scoped_ptr<base::ListValue> key_list;
   ASSERT_TRUE(ReadJsonTestFileToList("rsa_private_keys.json", &key_list));
 
@@ -351,32 +339,30 @@ TEST_F(WebCryptoRsaSsaTest, GenerateKeyPairRsa) {
   EXPECT_EQ(Status::Success(), ExportKey(blink::WebCryptoKeyFormatSpki,
                                          public_key, &public_key_spki));
 
-  if (SupportsRsaPrivateKeyImport()) {
-    public_key = blink::WebCryptoKey::createNull();
-    ASSERT_EQ(
-        Status::Success(),
-        ImportKey(blink::WebCryptoKeyFormatSpki, CryptoData(public_key_spki),
-                  CreateRsaHashedImportAlgorithm(
-                      blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5,
-                      blink::WebCryptoAlgorithmIdSha256),
-                  true, public_usages, &public_key));
-    EXPECT_EQ(modulus_length,
-              public_key.algorithm().rsaHashedParams()->modulusLengthBits());
+  public_key = blink::WebCryptoKey::createNull();
+  ASSERT_EQ(
+      Status::Success(),
+      ImportKey(blink::WebCryptoKeyFormatSpki, CryptoData(public_key_spki),
+                CreateRsaHashedImportAlgorithm(
+                    blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5,
+                    blink::WebCryptoAlgorithmIdSha256),
+                true, public_usages, &public_key));
+  EXPECT_EQ(modulus_length,
+            public_key.algorithm().rsaHashedParams()->modulusLengthBits());
 
-    std::vector<uint8_t> private_key_pkcs8;
-    EXPECT_EQ(Status::Success(), ExportKey(blink::WebCryptoKeyFormatPkcs8,
-                                           private_key, &private_key_pkcs8));
-    private_key = blink::WebCryptoKey::createNull();
-    ASSERT_EQ(
-        Status::Success(),
-        ImportKey(blink::WebCryptoKeyFormatPkcs8, CryptoData(private_key_pkcs8),
-                  CreateRsaHashedImportAlgorithm(
-                      blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5,
-                      blink::WebCryptoAlgorithmIdSha256),
-                  true, private_usages, &private_key));
-    EXPECT_EQ(modulus_length,
-              private_key.algorithm().rsaHashedParams()->modulusLengthBits());
-  }
+  std::vector<uint8_t> private_key_pkcs8;
+  EXPECT_EQ(Status::Success(), ExportKey(blink::WebCryptoKeyFormatPkcs8,
+                                         private_key, &private_key_pkcs8));
+  private_key = blink::WebCryptoKey::createNull();
+  ASSERT_EQ(
+      Status::Success(),
+      ImportKey(blink::WebCryptoKeyFormatPkcs8, CryptoData(private_key_pkcs8),
+                CreateRsaHashedImportAlgorithm(
+                    blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5,
+                    blink::WebCryptoAlgorithmIdSha256),
+                true, private_usages, &private_key));
+  EXPECT_EQ(modulus_length,
+            private_key.algorithm().rsaHashedParams()->modulusLengthBits());
 
   // Fail with bad modulus.
   algorithm = CreateRsaHashedKeyGenAlgorithm(
@@ -503,9 +489,9 @@ TEST_F(WebCryptoRsaSsaTest, GenerateKeyPairRsaBadModulusLength) {
 }
 
 // Try generating RSA key pairs using unsupported public exponents. Only
-// exponents of 3 and 65537 are supported. While both OpenSSL and NSS can
-// support other values, OpenSSL hangs when given invalid exponents, so use a
-// whitelist to validate the parameters.
+// exponents of 3 and 65537 are supported. Although OpenSSL can support other
+// values, it can also hang when given invalid exponents. To avoid hanging, use
+// a whitelist of known safe exponents.
 TEST_F(WebCryptoRsaSsaTest, GenerateKeyPairRsaBadExponent) {
   const unsigned int modulus_length = 1024;
 
@@ -534,9 +520,6 @@ TEST_F(WebCryptoRsaSsaTest, GenerateKeyPairRsaBadExponent) {
 }
 
 TEST_F(WebCryptoRsaSsaTest, SignVerifyFailures) {
-  if (!SupportsRsaPrivateKeyImport())
-    return;
-
   // Import a key pair.
   blink::WebCryptoAlgorithm import_algorithm =
       CreateRsaHashedImportAlgorithm(blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5,
@@ -642,9 +625,6 @@ TEST_F(WebCryptoRsaSsaTest, SignVerifyFailures) {
 }
 
 TEST_F(WebCryptoRsaSsaTest, SignVerifyKnownAnswer) {
-  if (!SupportsRsaPrivateKeyImport())
-    return;
-
   scoped_ptr<base::ListValue> tests;
   ASSERT_TRUE(ReadJsonTestFileToList("pkcs1v15_sign.json", &tests));
 
@@ -821,9 +801,6 @@ TEST_F(WebCryptoRsaSsaTest, GenerateKeyPairEmptyUsages) {
 }
 
 TEST_F(WebCryptoRsaSsaTest, ImportKeyEmptyUsages) {
-  if (!SupportsRsaPrivateKeyImport())
-    return;
-
   blink::WebCryptoKey public_key;
   blink::WebCryptoKey private_key;
 
@@ -1010,9 +987,6 @@ TEST_F(WebCryptoRsaSsaTest, ImportRsaSsaJwkBadUsageFailFast) {
 
 // Imports invalid JWK/SPKI/PKCS8 data and verifies that it fails as expected.
 TEST_F(WebCryptoRsaSsaTest, ImportInvalidKeyData) {
-  if (!SupportsRsaPrivateKeyImport())
-    return;
-
   scoped_ptr<base::ListValue> tests;
   ASSERT_TRUE(ReadJsonTestFileToList("bad_rsa_keys.json", &tests));
 

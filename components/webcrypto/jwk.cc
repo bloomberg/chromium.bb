@@ -17,9 +17,7 @@
 #include "components/webcrypto/webcrypto_util.h"
 
 // TODO(eroman): The algorithm-specific logic in this file for AES and RSA
-// should be moved into the corresponding AlgorithmImplementation file. It
-// exists in this file to avoid duplication between OpenSSL and NSS
-// implementations.
+// should be moved into the corresponding AlgorithmImplementation file.
 
 // JSON Web Key Format (JWK) is defined by:
 // http://tools.ietf.org/html/draft-ietf-jose-json-web-key

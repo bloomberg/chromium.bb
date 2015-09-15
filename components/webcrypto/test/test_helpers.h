@@ -58,12 +58,6 @@ bool operator!=(const CryptoData& a, const CryptoData& b);
 // Gives a human-readable description of |status| and any error it represents.
 std::string StatusToString(const Status& status);
 
-// TODO(eroman): For Linux builds using system NSS, AES-GCM and RSA-OAEP, and
-// RSA key import are a runtime dependency.
-bool SupportsAesGcm();
-bool SupportsRsaOaep();
-bool SupportsRsaPrivateKeyImport();
-
 blink::WebCryptoAlgorithm CreateRsaHashedKeyGenAlgorithm(
     blink::WebCryptoAlgorithmId algorithm_id,
     const blink::WebCryptoAlgorithmId hash_id,

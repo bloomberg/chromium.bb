@@ -63,7 +63,7 @@ namespace {
 //                 threads is silly.
 //
 // * WebCryptoAlgorithm and WebCryptoKey are threadsafe (however the key's
-//   handle(), which wraps an NSS/OpenSSL type, may not be and should only be
+//   handle(), which wraps an OpenSSL type, may not be and should only be
 //   used from the webcrypto thread).
 //
 // * blink::WebCryptoResult is not threadsafe and should only be operated on

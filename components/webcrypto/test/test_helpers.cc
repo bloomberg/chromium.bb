@@ -26,14 +26,6 @@
 #include "third_party/WebKit/public/platform/WebCryptoKeyAlgorithm.h"
 #include "third_party/re2/re2/re2.h"
 
-#if !defined(USE_OPENSSL)
-#include <nss.h>
-#include <pk11pub.h>
-
-#include "crypto/nss_util.h"
-#include "crypto/scoped_nss_types.h"
-#endif
-
 namespace webcrypto {
 
 // static
@@ -98,47 +90,6 @@ std::string StatusToString(const Status& status) {
   if (!status.error_details().empty())
     result += ": " + status.error_details();
   return result;
-}
-
-bool SupportsAesGcm() {
-  std::vector<uint8_t> key_raw(16, 0);
-
-  blink::WebCryptoKey key;
-  Status status = ImportKey(blink::WebCryptoKeyFormatRaw, CryptoData(key_raw),
-                            CreateAlgorithm(blink::WebCryptoAlgorithmIdAesGcm),
-                            true, blink::WebCryptoKeyUsageEncrypt, &key);
-
-  if (status.IsError())
-    EXPECT_EQ(blink::WebCryptoErrorTypeNotSupported, status.error_type());
-  return status.IsSuccess();
-}
-
-bool SupportsRsaOaep() {
-#if defined(USE_OPENSSL)
-  return true;
-#else
-  crypto::EnsureNSSInit();
-// TODO(eroman): Exclude version test for OS_CHROMEOS
-#if defined(USE_NSS_CERTS)
-  if (!NSS_VersionCheck("3.16.2"))
-    return false;
-#endif
-  crypto::ScopedPK11Slot slot(PK11_GetInternalKeySlot());
-  return !!PK11_DoesMechanism(slot.get(), CKM_RSA_PKCS_OAEP);
-#endif
-}
-
-bool SupportsRsaPrivateKeyImport() {
-// TODO(eroman): Exclude version test for OS_CHROMEOS
-#if !defined(USE_OPENSSL) && defined(USE_NSS_CERTS)
-  crypto::EnsureNSSInit();
-  if (!NSS_VersionCheck("3.16.2")) {
-    LOG(WARNING) << "RSA key import is not supported by this version of NSS. "
-                    "Skipping some tests";
-    return false;
-  }
-#endif
-  return true;
 }
 
 blink::WebCryptoAlgorithm CreateRsaHashedKeyGenAlgorithm(
