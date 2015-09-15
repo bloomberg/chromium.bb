@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_GFX_VECTOR_ICONS_PUBLIC2_H_
-#define UI_GFX_VECTOR_ICONS_PUBLIC2_H_
+#ifndef UI_GFX_VECTOR_ICONS_PUBLIC_H_
+#define UI_GFX_VECTOR_ICONS_PUBLIC_H_
 
 #include "build/build_config.h"
 
@@ -18,4 +18,4 @@ enum class VectorIconId {
 }  // namespace gfx
 #endif
 
-#endif  // UI_GFX_VECTOR_ICONS_PUBLIC2_H_
+#endif  // UI_GFX_VECTOR_ICONS_PUBLIC_H_
