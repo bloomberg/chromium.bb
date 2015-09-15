@@ -18,7 +18,6 @@
 #include "mojo/application/public/interfaces/content_handler.mojom.h"
 #include "mojo/common/weak_binding_set.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
-#include "mojo/shell/application_fetcher.h"
 #include "mojo/shell/application_loader.h"
 #include "mojo/shell/application_manager.h"
 #include "mojo/shell/capability_filter_unittest.mojom.h"
@@ -285,30 +284,35 @@ class TestFetcher : public Fetcher {
   DISALLOW_COPY_AND_ASSIGN(TestFetcher);
 };
 
-class TestApplicationFetcher : public ApplicationFetcher {
+class TestApplicationManagerDelegate : public ApplicationManager::Delegate {
  public:
-   TestApplicationFetcher() {}
-   ~TestApplicationFetcher() override {}
+   TestApplicationManagerDelegate() {}
+   ~TestApplicationManagerDelegate() override {}
 
    void set_use_test_fetcher(bool use_test_fetcher) {
      use_test_fetcher_ = use_test_fetcher;
    }
 
  private:
-  // Overridden from ApplicationFetcher:
-  void SetApplicationManager(ApplicationManager* manager) override {}
-  GURL ResolveURL(const GURL& url) override {
+  // Overridden from ApplicationManager::Delegate:
+  GURL ResolveMappings(const GURL& url) override {
     return url;
   }
-  void FetchRequest(URLRequestPtr request,
-                    const Fetcher::FetchCallback& loader_callback) override {
-    if (use_test_fetcher_)
-      new TestFetcher(GURL(request->url), loader_callback);
+  GURL ResolveMojoURL(const GURL& url) override {
+    return url;
+  }
+  bool CreateFetcher(const GURL& url,
+                     const Fetcher::FetchCallback& loader_callback) override {
+    if (use_test_fetcher_) {
+      new TestFetcher(url, loader_callback);
+      return true;
+    }
+    return false;
   }
 
   bool use_test_fetcher_;
 
-  DISALLOW_COPY_AND_ASSIGN(TestApplicationFetcher);
+  DISALLOW_COPY_AND_ASSIGN(TestApplicationManagerDelegate);
 };
 
 class TestLoader : public ApplicationLoader {
@@ -330,9 +334,7 @@ class TestLoader : public ApplicationLoader {
 
 class CapabilityFilterTest : public testing::Test {
  public:
-   CapabilityFilterTest()
-      : test_application_fetcher_(nullptr),
-        validator_(nullptr) {}
+   CapabilityFilterTest() : validator_(nullptr) {}
    ~CapabilityFilterTest() override {}
 
  protected:
@@ -389,20 +391,18 @@ class CapabilityFilterTest : public testing::Test {
   }
   ConnectionValidator* validator() { return validator_; }
   void set_use_test_fetcher() {
-    test_application_fetcher_->set_use_test_fetcher(true);
+    test_delegate_.set_use_test_fetcher(true);
   }
 
   // Overridden from testing::Test:
   void SetUp() override {
-    test_application_fetcher_ = new TestApplicationFetcher;
-    application_manager_.reset(
-        new ApplicationManager(make_scoped_ptr(test_application_fetcher_)));
+    application_manager_.reset(new ApplicationManager(&test_delegate_));
     CreateLoader<ServiceApplication>("test:service");
     CreateLoader<ServiceApplication>("test:service2");
   }
   void TearDown() override {
     application_manager_.reset();
-    test_application_fetcher_->set_use_test_fetcher(false);
+    test_delegate_.set_use_test_fetcher(false);
   }
 
  private:
@@ -411,8 +411,8 @@ class CapabilityFilterTest : public testing::Test {
     return scoped_ptr<ApplicationDelegate>(new T);
   }
 
-  TestApplicationFetcher* test_application_fetcher_;
   base::ShadowingAtExitManager at_exit_;
+  TestApplicationManagerDelegate test_delegate_;
   base::MessageLoop loop_;
   scoped_ptr<ApplicationManager> application_manager_;
   ConnectionValidator* validator_;

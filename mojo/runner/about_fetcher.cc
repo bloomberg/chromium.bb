@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/fetcher/about_fetcher.h"
+#include "mojo/runner/about_fetcher.h"
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
@@ -11,7 +11,7 @@
 #include "base/message_loop/message_loop.h"
 
 namespace mojo {
-namespace fetcher {
+namespace runner {
 namespace {
 
 void RunFetcherCallback(const shell::Fetcher::FetchCallback& callback,
@@ -107,5 +107,5 @@ bool AboutFetcher::PeekFirstLine(std::string* line) {
   return false;
 }
 
-}  // namespace fetcher
+}  // namespace runner
 }  // namespace mojo

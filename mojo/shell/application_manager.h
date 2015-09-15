@@ -16,6 +16,8 @@
 #include "mojo/application/public/interfaces/shell.mojom.h"
 #include "mojo/public/cpp/bindings/interface_ptr_info.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
+#include "mojo/services/network/public/interfaces/network_service.mojom.h"
+#include "mojo/services/network/public/interfaces/url_loader_factory.mojom.h"
 #include "mojo/services/updater/updater.mojom.h"
 #include "mojo/shell/application_loader.h"
 #include "mojo/shell/capability_filter.h"
@@ -33,12 +35,31 @@ class SequencedWorkerPool;
 namespace mojo {
 namespace shell {
 
-class ApplicationFetcher;
 class ApplicationInstance;
 class ContentHandlerConnection;
 
 class ApplicationManager {
  public:
+  class Delegate {
+   public:
+    // Gives the delegate a chance to apply any mappings for the specified url.
+    // This should not resolve 'mojo' urls, that is done by ResolveMojoURL().
+    virtual GURL ResolveMappings(const GURL& url) = 0;
+
+    // Used to map a url with the scheme 'mojo' to the appropriate url. Return
+    // |url| if the scheme is not 'mojo'.
+    virtual GURL ResolveMojoURL(const GURL& url) = 0;
+
+    // Asks the delegate to create a Fetcher for the specified url. Return
+    // true on success, false if the default fetcher should be created.
+    virtual bool CreateFetcher(
+        const GURL& url,
+        const Fetcher::FetchCallback& loader_callback) = 0;
+
+   protected:
+    virtual ~Delegate() {}
+  };
+
   // API for testing.
   class TestAPI {
    public:
@@ -56,7 +77,7 @@ class ApplicationManager {
     DISALLOW_COPY_AND_ASSIGN(TestAPI);
   };
 
-  explicit ApplicationManager(scoped_ptr<ApplicationFetcher> fetcher);
+  explicit ApplicationManager(Delegate* delegate);
   ~ApplicationManager();
 
   // Loads a service if necessary and establishes a new client connection.
@@ -112,6 +133,7 @@ class ApplicationManager {
   void set_blocking_pool(base::SequencedWorkerPool* blocking_pool) {
     blocking_pool_ = blocking_pool;
   }
+  void set_disable_cache(bool disable_cache) { disable_cache_ = disable_cache; }
   // Sets a Loader to be used for a specific url.
   void SetLoaderForURL(scoped_ptr<ApplicationLoader> loader, const GURL& url);
   // Sets a Loader to be used for a specific url scheme.
@@ -159,7 +181,7 @@ class ApplicationManager {
   // may be different from |(*params)->app_url()| because of mappings and
   // resolution rules.
   // Takes the contents of |params| only when it returns true.
-  void ConnectToApplicationWithLoader(
+  bool ConnectToApplicationWithLoader(
       scoped_ptr<ConnectToApplicationParams>* params,
       const GURL& resolved_url,
       ApplicationLoader* loader);
@@ -172,11 +194,13 @@ class ApplicationManager {
   // the requested application before any mappings/resolution have been applied.
   // The corresponding URLRequest struct in |params| has been taken.
   void HandleFetchCallback(scoped_ptr<ConnectToApplicationParams> params,
+                           NativeApplicationCleanup cleanup,
                            scoped_ptr<Fetcher> fetcher);
 
   void RunNativeApplication(InterfaceRequest<Application> application_request,
                             bool start_sandboxed,
                             const NativeRunnerFactory::Options& options,
+                            NativeApplicationCleanup cleanup,
                             scoped_ptr<Fetcher> fetcher,
                             const base::FilePath& file_path,
                             bool path_exists);
@@ -192,8 +216,8 @@ class ApplicationManager {
       InterfaceRequest<Application> application_request,
       URLResponsePtr url_response);
 
-  // Returns the appropriate loader for |url|, or the default loader if there is
-  // no loader configured for the URL.
+  // Returns the appropriate loader for |url|, or null if there is no loader
+  // configured for the URL.
   ApplicationLoader* GetLoaderForURL(const GURL& url);
 
   void CleanupRunner(NativeRunner* runner);
@@ -202,7 +226,7 @@ class ApplicationManager {
       const GURL& application_url,
       const std::string& interface_name);
 
-  scoped_ptr<ApplicationFetcher> const fetcher_;
+  Delegate* const delegate_;
   // Loader management.
   // Loaders are chosen in the order they are listed here.
   URLToLoaderMap url_to_loader_;
@@ -217,9 +241,12 @@ class ApplicationManager {
   URLToNativeOptionsMap url_to_native_options_;
 
   base::SequencedWorkerPool* blocking_pool_;
+  NetworkServicePtr network_service_;
+  URLLoaderFactoryPtr url_loader_factory_;
   updater::UpdaterPtr updater_;
   MimeTypeToURLMap mime_type_to_url_;
   ScopedVector<NativeRunner> native_runners_;
+  bool disable_cache_;
   // Counter used to assign ids to content_handlers.
   uint32_t content_handler_id_counter_;
   base::WeakPtrFactory<ApplicationManager> weak_ptr_factory_;

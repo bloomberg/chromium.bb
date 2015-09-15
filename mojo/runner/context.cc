@@ -29,15 +29,15 @@
 #include "mojo/common/tracing_impl.h"
 #include "mojo/edk/embedder/embedder.h"
 #include "mojo/edk/embedder/simple_platform_support.h"
-#include "mojo/fetcher/base_application_fetcher.h"
+#include "mojo/runner/about_fetcher.h"
 #include "mojo/runner/in_process_native_runner.h"
 #include "mojo/runner/out_of_process_native_runner.h"
 #include "mojo/runner/switches.h"
 #include "mojo/services/tracing/public/cpp/switches.h"
 #include "mojo/services/tracing/public/interfaces/tracing.mojom.h"
 #include "mojo/shell/application_loader.h"
+#include "mojo/shell/application_manager.h"
 #include "mojo/shell/connect_to_application_params.h"
-#include "mojo/shell/query_util.h"
 #include "mojo/shell/switches.h"
 #include "mojo/util/filename_util.h"
 #include "url/gurl.h"
@@ -58,6 +58,57 @@ class Setup {
  private:
   DISALLOW_COPY_AND_ASSIGN(Setup);
 };
+
+bool ConfigureURLMappings(const base::CommandLine& command_line,
+                          Context* context) {
+  URLResolver* resolver = context->url_resolver();
+
+  // Configure the resolution of unknown mojo: URLs.
+  GURL base_url;
+  if (!command_line.HasSwitch(switches::kUseUpdater)) {
+    // Use the shell's file root if the base was not specified.
+    base_url = context->ResolveShellFileURL(std::string());
+  }
+
+  if (base_url.is_valid())
+    resolver->SetMojoBaseURL(base_url);
+
+  // The network service and updater must be loaded from the filesystem.
+  // This mapping is done before the command line URL mapping are processed, so
+  // that it can be overridden.
+  resolver->AddURLMapping(GURL("mojo:network_service"),
+                          context->ResolveShellFileURL(
+                              "file:network_service/network_service.mojo"));
+  resolver->AddURLMapping(
+      GURL("mojo:updater"),
+      context->ResolveShellFileURL("file:updater/updater.mojo"));
+
+  // Command line URL mapping.
+  std::vector<URLResolver::OriginMapping> origin_mappings =
+      URLResolver::GetOriginMappings(command_line.argv());
+  for (const auto& origin_mapping : origin_mappings)
+    resolver->AddOriginMapping(GURL(origin_mapping.origin),
+                               GURL(origin_mapping.base_url));
+
+  if (command_line.HasSwitch(switches::kURLMappings)) {
+    const std::string mappings =
+        command_line.GetSwitchValueASCII(switches::kURLMappings);
+
+    base::StringPairs pairs;
+    if (!base::SplitStringIntoKeyValuePairs(mappings, '=', ',', &pairs))
+      return false;
+    using StringPair = std::pair<std::string, std::string>;
+    for (const StringPair& pair : pairs) {
+      const GURL from(pair.first);
+      const GURL to = context->ResolveCommandLineURL(pair.second);
+      if (!from.is_valid() || !to.is_valid())
+        return false;
+      resolver->AddURLMapping(from, to);
+    }
+  }
+
+  return true;
+}
 
 void InitContentHandlers(shell::ApplicationManager* manager,
                          const base::CommandLine& command_line) {
@@ -179,10 +230,21 @@ class TracingServiceProvider : public ServiceProvider {
 
 }  // namespace
 
-Context::Context(const base::FilePath& shell_file_root)
-    : application_manager_(new shell::ApplicationManager(make_scoped_ptr(
-          new fetcher::BaseApplicationFetcher(shell_file_root)))),
-      main_entry_time_(base::Time::Now()) {}
+Context::Context()
+    : application_manager_(this), main_entry_time_(base::Time::Now()) {
+  DCHECK(!base::MessageLoop::current());
+
+  // By default assume that the local apps reside alongside the shell.
+  // TODO(ncbray): really, this should be passed in rather than defaulting.
+  // This default makes sense for desktop but not Android.
+  base::FilePath shell_dir;
+  PathService::Get(base::DIR_MODULE, &shell_dir);
+  SetShellFileRoot(shell_dir);
+
+  base::FilePath cwd;
+  PathService::Get(base::DIR_CURRENT, &cwd);
+  SetCommandLineCWD(cwd);
+}
 
 Context::~Context() {
   DCHECK(!base::MessageLoop::current());
@@ -194,6 +256,24 @@ void Context::EnsureEmbedderIsInitialized() {
   setup.Get();
 }
 
+void Context::SetShellFileRoot(const base::FilePath& path) {
+  shell_file_root_ =
+      util::AddTrailingSlashIfNeeded(util::FilePathToFileURL(path));
+}
+
+GURL Context::ResolveShellFileURL(const std::string& path) {
+  return shell_file_root_.Resolve(path);
+}
+
+void Context::SetCommandLineCWD(const base::FilePath& path) {
+  command_line_cwd_ =
+      util::AddTrailingSlashIfNeeded(util::FilePathToFileURL(path));
+}
+
+GURL Context::ResolveCommandLineURL(const std::string& path) {
+  return command_line_cwd_.Resolve(path);
+}
+
 bool Context::Init() {
   TRACE_EVENT0("mojo_shell", "Context::Init");
   const base::CommandLine& command_line =
@@ -202,6 +282,13 @@ bool Context::Init() {
   EnsureEmbedderIsInitialized();
   task_runners_.reset(
       new TaskRunners(base::MessageLoop::current()->task_runner()));
+
+  // TODO(vtl): Probably these failures should be checked before |Init()|, and
+  // this function simply shouldn't fail.
+  if (!shell_file_root_.is_valid())
+    return false;
+  if (!ConfigureURLMappings(command_line, this))
+    return false;
 
   // TODO(vtl): This should be MASTER, not NONE.
   embedder::InitIPCSupport(
@@ -213,18 +300,21 @@ bool Context::Init() {
     runner_factory.reset(new OutOfProcessNativeRunnerFactory(this));
   else
     runner_factory.reset(new InProcessNativeRunnerFactory(this));
-  application_manager_->set_blocking_pool(task_runners_->blocking_pool());
-  application_manager_->set_native_runner_factory(runner_factory.Pass());
+  application_manager_.set_blocking_pool(task_runners_->blocking_pool());
+  application_manager_.set_native_runner_factory(runner_factory.Pass());
+  application_manager_.set_disable_cache(
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableCache));
 
-  InitContentHandlers(application_manager_.get(), command_line);
-  InitNativeOptions(application_manager_.get(), command_line);
+  InitContentHandlers(&application_manager_, command_line);
+  InitNativeOptions(&application_manager_, command_line);
 
   ServiceProviderPtr service_provider_ptr;
   ServiceProviderPtr tracing_service_provider_ptr;
   new TracingServiceProvider(GetProxy(&tracing_service_provider_ptr));
   mojo::URLRequestPtr request(mojo::URLRequest::New());
   request->url = mojo::String::From("mojo:tracing");
-  application_manager_->ConnectToApplication(
+  application_manager_.ConnectToApplication(
       nullptr, request.Pass(), std::string(), GetProxy(&service_provider_ptr),
       tracing_service_provider_ptr.Pass(),
       shell::GetPermissiveCapabilityFilter(), base::Closure(),
@@ -245,23 +335,37 @@ bool Context::Init() {
     collector->SetShellMainEntryPointTime(main_entry_time_.ToInternalValue());
   }
 
-  InitDevToolsServiceIfNeeded(application_manager_.get(), command_line);
+  InitDevToolsServiceIfNeeded(&application_manager_, command_line);
 
   return true;
 }
 
 void Context::Shutdown() {
-  // Actions triggered by ApplicationManager's destructor may require a current
-  // message loop, so we should destruct it explicitly now as ~Context() occurs
-  // post message loop shutdown.
-  application_manager_.reset();
-
   TRACE_EVENT0("mojo_shell", "Context::Shutdown");
   DCHECK_EQ(base::MessageLoop::current()->task_runner(),
             task_runners_->shell_runner());
   embedder::ShutdownIPCSupport();
   // We'll quit when we get OnShutdownComplete().
   base::MessageLoop::current()->Run();
+}
+
+GURL Context::ResolveMappings(const GURL& url) {
+  return url_resolver_.ApplyMappings(url);
+}
+
+GURL Context::ResolveMojoURL(const GURL& url) {
+  return url_resolver_.ResolveMojoURL(url);
+}
+
+bool Context::CreateFetcher(
+    const GURL& url,
+    const shell::Fetcher::FetchCallback& loader_callback) {
+  if (url.SchemeIs(AboutFetcher::kAboutScheme)) {
+    AboutFetcher::Start(url, loader_callback);
+    return true;
+  }
+
+  return false;
 }
 
 void Context::OnShutdownComplete() {
@@ -278,7 +382,7 @@ void Context::Run(const GURL& url) {
   app_urls_.insert(url);
   mojo::URLRequestPtr request(mojo::URLRequest::New());
   request->url = mojo::String::From(url.spec());
-  application_manager_->ConnectToApplication(
+  application_manager_.ConnectToApplication(
       nullptr, request.Pass(), std::string(), GetProxy(&services),
       exposed_services.Pass(), shell::GetPermissiveCapabilityFilter(),
       base::Bind(&Context::OnApplicationEnd, base::Unretained(this), url),

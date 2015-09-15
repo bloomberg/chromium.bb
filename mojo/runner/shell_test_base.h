@@ -45,7 +45,8 @@ class ShellTestBase : public testing::Test {
   Context* shell_context() { return &shell_context_; }
 
  private:
-  base::FilePath GetTestAppFilePath() const;
+  // Set up the test applications so that mojo: URL resolves to those.
+  void SetUpTestApplications();
 
   Context shell_context_;
   base::MessageLoop message_loop_;

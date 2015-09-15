@@ -30,15 +30,16 @@ JNIEnv* InitEnv() {
 
 }  // namespace
 
-base::FilePath ShellTestBase::GetTestAppFilePath() const {
+void ShellTestBase::SetUpTestApplications() {
   // Extract mojo applications, and set the resolve base URL to the directory
   // containing those.
   JNIEnv* env = InitEnv();
   base::android::ScopedJavaLocalRef<jstring> service_dir(
       Java_ShellTestBase_extractMojoApplications(
           env, base::android::GetApplicationContext()));
-  return base::FilePath(
-      base::android::ConvertJavaStringToUTF8(env, service_dir.obj()));
+  shell_context_.url_resolver()->SetMojoBaseURL(
+      mojo::util::FilePathToFileURL(base::FilePath(
+          base::android::ConvertJavaStringToUTF8(env, service_dir.obj()))));
 }
 
 }  // namespace test
