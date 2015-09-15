@@ -220,7 +220,10 @@ void WebGLTexture::generateMipmapLevelInfo()
             GLsizei height = info0.height;
             GLsizei depth = info0.depth;
             GLint levelCount = computeLevelCount(width, height, depth);
-            size_t maxLevel = m_isWebGL2OrHigher ? std::min(m_maxLevel, m_baseLevel + levelCount - 1) : m_baseLevel + levelCount - 1;
+            size_t maxLevel = 0;
+            if (m_baseLevel + levelCount > 0)
+                maxLevel = m_baseLevel + levelCount - 1;
+            maxLevel = m_isWebGL2OrHigher ? std::min(m_maxLevel, maxLevel) : maxLevel;
             ASSERT(maxLevel < m_info[ii].size());
             for (size_t level = m_baseLevel + 1; level <= maxLevel; ++level) {
                 width = std::max(1, width >> 1);
@@ -406,7 +409,10 @@ void WebGLTexture::update()
     else {
         const LevelInfo& base = m_info[0][m_baseLevel];
         size_t levelCount = computeLevelCount(base.width, base.height, base.depth);
-        size_t maxLevel = m_isWebGL2OrHigher ? std::min(m_maxLevel, m_baseLevel + levelCount - 1) : m_baseLevel + levelCount - 1;
+        size_t maxLevel = 0;
+        if (m_baseLevel + levelCount > 0)
+            maxLevel = m_baseLevel + levelCount - 1;
+        maxLevel = m_isWebGL2OrHigher ? std::min(m_maxLevel, maxLevel) : maxLevel;
         for (size_t ii = 0; ii < m_info.size() && m_isComplete; ++ii) {
             const LevelInfo& info0 = m_info[ii][m_baseLevel];
             if (!info0.valid
