@@ -825,7 +825,7 @@ class WaitForLoaded : public EmbeddedWorkerInstance::Listener {
  public:
   WaitForLoaded(const base::Closure& quit) : quit_(quit) {}
 
-  void OnScriptLoaded() override {
+  void OnThreadStarted() override {
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, quit_);
   }
   bool OnMessageReceived(const IPC::Message& message) override { return false; }

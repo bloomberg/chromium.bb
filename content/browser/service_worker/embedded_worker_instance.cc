@@ -366,8 +366,12 @@ void EmbeddedWorkerInstance::OnReadyForInspection() {
     devtools_proxy_->NotifyWorkerReadyForInspection();
 }
 
-void EmbeddedWorkerInstance::OnScriptLoaded(int thread_id) {
+void EmbeddedWorkerInstance::OnScriptLoaded() {
   starting_phase_ = SCRIPT_LOADED;
+}
+
+void EmbeddedWorkerInstance::OnThreadStarted(int thread_id) {
+  starting_phase_ = THREAD_STARTED;
   if (!start_timing_.is_null()) {
     if (network_accessed_for_script_) {
       UMA_HISTOGRAM_TIMES("EmbeddedWorkerInstance.ScriptLoadWithNetworkAccess",
@@ -382,7 +386,7 @@ void EmbeddedWorkerInstance::OnScriptLoaded(int thread_id) {
     start_timing_ = base::TimeTicks::Now();
   }
   thread_id_ = thread_id;
-  FOR_EACH_OBSERVER(Listener, listener_list_, OnScriptLoaded());
+  FOR_EACH_OBSERVER(Listener, listener_list_, OnThreadStarted());
 
   mojo::ServiceProviderPtr exposed_services;
   service_registry_->Bind(GetProxy(&exposed_services));
@@ -537,6 +541,8 @@ std::string EmbeddedWorkerInstance::StartingPhaseToString(StartingPhase phase) {
       return "Script loaded";
     case SCRIPT_EVALUATED:
       return "Script evaluated";
+    case THREAD_STARTED:
+      return "Thread started";
     case STARTING_PHASE_MAX_VALUE:
       NOTREACHED();
   }

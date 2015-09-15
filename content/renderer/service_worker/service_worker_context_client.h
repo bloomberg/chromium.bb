@@ -98,6 +98,7 @@ class ServiceWorkerContextClient
 
   // Called on the main thread.
   virtual void workerContextFailedToStart();
+  virtual void workerScriptLoaded();
 
   virtual void workerContextStarted(blink::WebServiceWorkerContextProxy* proxy);
   virtual void didEvaluateWorkerScript(bool success);

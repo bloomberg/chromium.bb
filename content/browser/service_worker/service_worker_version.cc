@@ -1158,7 +1158,7 @@ template <typename CallbackType>
 ServiceWorkerVersion::PendingRequest<CallbackType>::~PendingRequest() {
 }
 
-void ServiceWorkerVersion::OnScriptLoaded() {
+void ServiceWorkerVersion::OnThreadStarted() {
   if (running_status() == STOPPING)
     return;
   DCHECK_EQ(STARTING, running_status());

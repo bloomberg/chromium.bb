@@ -56649,6 +56649,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="4" label="SCRIPT_DOWNLOADING"/>
   <int value="5" label="SCRIPT_LOADED"/>
   <int value="6" label="SCRIPT_EVALUATED"/>
+  <int value="7" label="THREAD_STARTED"/>
 </enum>
 
 <enum name="EnhancedBookmarkViewMode" type="int">

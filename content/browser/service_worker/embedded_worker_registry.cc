@@ -79,16 +79,25 @@ void EmbeddedWorkerRegistry::OnWorkerReadyForInspection(
   found->second->OnReadyForInspection();
 }
 
-void EmbeddedWorkerRegistry::OnWorkerScriptLoaded(
-    int process_id,
-    int thread_id,
-    int embedded_worker_id ) {
+void EmbeddedWorkerRegistry::OnWorkerScriptLoaded(int process_id,
+                                                  int embedded_worker_id) {
   WorkerInstanceMap::iterator found = worker_map_.find(embedded_worker_id);
   DCHECK(found != worker_map_.end());
   DCHECK_EQ(found->second->process_id(), process_id);
   if (found == worker_map_.end() || found->second->process_id() != process_id)
     return;
-  found->second->OnScriptLoaded(thread_id);
+  found->second->OnScriptLoaded();
+}
+
+void EmbeddedWorkerRegistry::OnWorkerThreadStarted(int process_id,
+                                                   int thread_id,
+                                                   int embedded_worker_id) {
+  WorkerInstanceMap::iterator found = worker_map_.find(embedded_worker_id);
+  DCHECK(found != worker_map_.end());
+  DCHECK_EQ(found->second->process_id(), process_id);
+  if (found == worker_map_.end() || found->second->process_id() != process_id)
+    return;
+  found->second->OnThreadStarted(thread_id);
 }
 
 void EmbeddedWorkerRegistry::OnWorkerScriptLoadFailed(int process_id,

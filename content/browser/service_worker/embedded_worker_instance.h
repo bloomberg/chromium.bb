@@ -66,13 +66,14 @@ class CONTENT_EXPORT EmbeddedWorkerInstance {
     SCRIPT_DOWNLOADING,
     SCRIPT_LOADED,
     SCRIPT_EVALUATED,
+    THREAD_STARTED,  // Happens after SENT_START_WORKER and before SCRIPT_LOADED
     STARTING_PHASE_MAX_VALUE,
   };
 
   class Listener {
    public:
     virtual ~Listener() {}
-    virtual void OnScriptLoaded() {}
+    virtual void OnThreadStarted() {}
     virtual void OnStarting() {}
     virtual void OnStarted() {}
     virtual void OnStopping() {}
@@ -187,8 +188,12 @@ class CONTENT_EXPORT EmbeddedWorkerInstance {
   void OnReadyForInspection();
 
   // Called back from Registry when the worker instance has ack'ed that
-  // it finished loading the script and has started a worker thread.
-  void OnScriptLoaded(int thread_id);
+  // it finished loading the script.
+  void OnScriptLoaded();
+
+  // Called back from Registry when the worker instance has ack'ed that
+  // it has started a worker thread.
+  void OnThreadStarted(int thread_id);
 
   // Called back from Registry when the worker instance has ack'ed that
   // it failed to load the script.

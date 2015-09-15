@@ -397,7 +397,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
   ~ServiceWorkerVersion() override;
 
   // EmbeddedWorkerInstance::Listener overrides:
-  void OnScriptLoaded() override;
+  void OnThreadStarted() override;
   void OnStarting() override;
   void OnStarted() override;
   void OnStopping() override;

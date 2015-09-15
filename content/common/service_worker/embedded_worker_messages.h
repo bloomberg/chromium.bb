@@ -52,9 +52,13 @@ IPC_MESSAGE_CONTROL1(EmbeddedWorkerMsg_StopWorker,
 IPC_MESSAGE_CONTROL1(EmbeddedWorkerHostMsg_WorkerReadyForInspection,
                      int /* embedded_worker_id */)
 
-// Renderer -> Browser message to indicate that the worker has loadedd the
+// Renderer -> Browser message to indicate that the worker has loaded the
 // script.
-IPC_MESSAGE_CONTROL3(EmbeddedWorkerHostMsg_WorkerScriptLoaded,
+IPC_MESSAGE_CONTROL1(EmbeddedWorkerHostMsg_WorkerScriptLoaded,
+                     int /* embedded_worker_id */)
+
+// Renderer -> Browser message to indicate that the worker thread is started.
+IPC_MESSAGE_CONTROL3(EmbeddedWorkerHostMsg_WorkerThreadStarted,
                      int /* embedded_worker_id */,
                      int /* thread_id */,
                      int /* provider_id */)

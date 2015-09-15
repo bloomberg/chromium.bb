@@ -185,6 +185,8 @@ bool ServiceWorkerDispatcherHost::OnMessageReceived(
                         OnWorkerReadyForInspection)
     IPC_MESSAGE_HANDLER(EmbeddedWorkerHostMsg_WorkerScriptLoaded,
                         OnWorkerScriptLoaded)
+    IPC_MESSAGE_HANDLER(EmbeddedWorkerHostMsg_WorkerThreadStarted,
+                        OnWorkerThreadStarted)
     IPC_MESSAGE_HANDLER(EmbeddedWorkerHostMsg_WorkerScriptLoadFailed,
                         OnWorkerScriptLoadFailed)
     IPC_MESSAGE_HANDLER(EmbeddedWorkerHostMsg_WorkerScriptEvaluated,
@@ -889,12 +891,23 @@ void ServiceWorkerDispatcherHost::OnWorkerReadyForInspection(
   registry->OnWorkerReadyForInspection(render_process_id_, embedded_worker_id);
 }
 
-void ServiceWorkerDispatcherHost::OnWorkerScriptLoaded(
-    int embedded_worker_id,
-    int thread_id,
-    int provider_id) {
+void ServiceWorkerDispatcherHost::OnWorkerScriptLoaded(int embedded_worker_id) {
   TRACE_EVENT0("ServiceWorker",
                "ServiceWorkerDispatcherHost::OnWorkerScriptLoaded");
+  if (!GetContext())
+    return;
+
+  EmbeddedWorkerRegistry* registry = GetContext()->embedded_worker_registry();
+  if (!registry->CanHandle(embedded_worker_id))
+    return;
+  registry->OnWorkerScriptLoaded(render_process_id_, embedded_worker_id);
+}
+
+void ServiceWorkerDispatcherHost::OnWorkerThreadStarted(int embedded_worker_id,
+                                                        int thread_id,
+                                                        int provider_id) {
+  TRACE_EVENT0("ServiceWorker",
+               "ServiceWorkerDispatcherHost::OnWorkerThreadStarted");
   if (!GetContext())
     return;
 
@@ -911,8 +924,8 @@ void ServiceWorkerDispatcherHost::OnWorkerScriptLoaded(
   EmbeddedWorkerRegistry* registry = GetContext()->embedded_worker_registry();
   if (!registry->CanHandle(embedded_worker_id))
     return;
-  registry->OnWorkerScriptLoaded(
-      render_process_id_, thread_id, embedded_worker_id);
+  registry->OnWorkerThreadStarted(render_process_id_, thread_id,
+                                  embedded_worker_id);
 }
 
 void ServiceWorkerDispatcherHost::OnWorkerScriptLoadFailed(

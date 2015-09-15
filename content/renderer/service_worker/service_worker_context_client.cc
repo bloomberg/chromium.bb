@@ -335,6 +335,13 @@ void ServiceWorkerContextClient::workerContextFailedToStart() {
       WorkerContextDestroyed(embedded_worker_id_);
 }
 
+void ServiceWorkerContextClient::workerScriptLoaded() {
+  DCHECK(main_thread_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(!proxy_);
+
+  Send(new EmbeddedWorkerHostMsg_WorkerScriptLoaded(embedded_worker_id_));
+}
+
 void ServiceWorkerContextClient::workerContextStarted(
     blink::WebServiceWorkerContextProxy* proxy) {
   DCHECK(!worker_task_runner_.get());
@@ -368,7 +375,7 @@ void ServiceWorkerContextClient::workerContextStarted(
 
   SetRegistrationInServiceWorkerGlobalScope();
 
-  Send(new EmbeddedWorkerHostMsg_WorkerScriptLoaded(
+  Send(new EmbeddedWorkerHostMsg_WorkerThreadStarted(
       embedded_worker_id_, WorkerThread::GetCurrentId(),
       provider_context_->provider_id()));
 
