@@ -47,6 +47,7 @@ class LocalFrame;
 class GranularityStrategy;
 class GraphicsContext;
 class HTMLFormElement;
+class SelectionEditor;
 class Text;
 
 enum EUserTriggered { NotUserTriggered = 0, UserTriggered = 1 };
@@ -56,16 +57,15 @@ enum RevealExtentOption {
     DoNotRevealExtent
 };
 
-class CORE_EXPORT FrameSelection final : public NoBaseWillBeGarbageCollectedFinalized<FrameSelection>, public VisibleSelectionChangeObserver, private CaretBase {
+class CORE_EXPORT FrameSelection final : public NoBaseWillBeGarbageCollectedFinalized<FrameSelection>, private CaretBase {
     WTF_MAKE_NONCOPYABLE(FrameSelection);
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(FrameSelection);
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(FrameSelection);
 public:
     static PassOwnPtrWillBeRawPtr<FrameSelection> create(LocalFrame* frame = nullptr)
     {
         return adoptPtrWillBeNoop(new FrameSelection(frame));
     }
-    virtual ~FrameSelection();
+    ~FrameSelection();
 
     enum EAlteration { AlterationMove, AlterationExtend };
     enum CursorAlignOnScroll { AlignCursorOnScrollIfNeeded, AlignCursorOnScrollAlways };
@@ -93,6 +93,7 @@ public:
         ResetCaretBlink
     };
 
+    LocalFrame* frame() const { return m_frame; }
     Element* rootEditableElement() const { return selection().rootEditableElement(); }
     Element* rootEditableElementOrDocumentElement() const;
     ContainerNode* rootEditableElementOrTreeScopeRootNode() const;
@@ -105,13 +106,13 @@ public:
     void moveTo(const VisiblePosition&, const VisiblePosition&, EUserTriggered = NotUserTriggered);
     void moveTo(const Position&, TextAffinity, EUserTriggered = NotUserTriggered);
 
-    const VisibleSelection& selection() const { return m_selection; }
+    const VisibleSelection& selection() const;
     void setSelection(const VisibleSelection&, SetSelectionOptions = CloseTyping | ClearTypingStyle, CursorAlignOnScroll = AlignCursorOnScrollIfNeeded, TextGranularity = CharacterGranularity);
     void setSelection(const VisibleSelection& selection, TextGranularity granularity) { setSelection(selection, CloseTyping | ClearTypingStyle, AlignCursorOnScrollIfNeeded, granularity); }
     // TODO(yosin) We should get rid of |Range| version of |setSelectedRagne()|
     // for Oilpan.
     bool setSelectedRange(Range*, TextAffinity, DirectionalOption = NonDirectional, SetSelectionOptions = CloseTyping | ClearTypingStyle);
-    bool setSelectedRange(const EphemeralRange&, TextAffinity, DirectionalOption = NonDirectional, SetSelectionOptions = CloseTyping | ClearTypingStyle);
+    bool setSelectedRange(const EphemeralRange&, TextAffinity, DirectionalOption = NonDirectional, FrameSelection::SetSelectionOptions = CloseTyping | ClearTypingStyle);
     void selectAll();
     void clear();
     void prepareForDestruction();
@@ -156,7 +157,6 @@ public:
     IntRect absoluteCaretBounds();
 
     void didChangeFocus();
-    void willBeModified(EAlteration, SelectionDirection);
 
     bool isNone() const { return selection().isNone(); }
     bool isCaret() const { return selection().isCaret(); }
@@ -228,16 +228,10 @@ public:
     bool shouldShowBlockCursor() const { return m_shouldShowBlockCursor; }
     void setShouldShowBlockCursor(bool);
 
-    // VisibleSelectionChangeObserver interface.
-    void didChangeVisibleSelection() override;
-
     DECLARE_VIRTUAL_TRACE();
 
 private:
     explicit FrameSelection(LocalFrame*);
-
-    // TODO(yosin) We should use capitalized name for |EPositionType|.
-    enum EPositionType { START, END, BASE, EXTENT }; // NOLINT
 
     template <typename Strategy>
     bool containsAlgorithm(const LayoutPoint&);
@@ -246,24 +240,6 @@ private:
     void setNonDirectionalSelectionIfNeededAlgorithm(const VisibleSelection&, TextGranularity, EndPointsAdjustmentMode);
 
     void respondToNodeModification(Node&, bool baseRemoved, bool extentRemoved, bool startRemoved, bool endRemoved);
-    TextDirection directionOfEnclosingBlock();
-    TextDirection directionOfSelection();
-
-    VisiblePosition positionForPlatform(bool isGetStart) const;
-    VisiblePosition startForPlatform() const;
-    VisiblePosition endForPlatform() const;
-    VisiblePosition nextWordPositionForPlatform(const VisiblePosition&);
-
-    VisiblePosition modifyExtendingRight(TextGranularity);
-    VisiblePosition modifyExtendingForward(TextGranularity);
-    VisiblePosition modifyMovingRight(TextGranularity);
-    VisiblePosition modifyMovingForward(TextGranularity);
-    VisiblePosition modifyExtendingLeft(TextGranularity);
-    VisiblePosition modifyExtendingBackward(TextGranularity);
-    VisiblePosition modifyMovingLeft(TextGranularity);
-    VisiblePosition modifyMovingBackward(TextGranularity);
-
-    LayoutUnit lineDirectionPointForBlockDirectionNavigation(EPositionType);
 
     void notifyAccessibilityForSelectionChange();
     void notifyCompositorForSelectionChange();
@@ -278,30 +254,17 @@ private:
     void setCaretVisibility(CaretVisibility);
     bool shouldBlinkCaret() const;
 
-    bool dispatchSelectStart();
-
     void updateSelectionIfNeeded(const Position& base, const Position& extent, const Position& start, const Position& end);
-
-    void startObservingVisibleSelectionChange();
-    void stopObservingVisibleSelectionChangeIfNecessary();
 
     VisibleSelection validateSelection(const VisibleSelection&);
 
     GranularityStrategy* granularityStrategy();
 
     RawPtrWillBeMember<LocalFrame> m_frame;
+    const OwnPtrWillBeMember<SelectionEditor> m_selectionEditor;
 
-    LayoutUnit m_xPosForVerticalArrowNavigation;
-
-    VisibleSelection m_selection;
-    bool m_observingVisibleSelection;
     VisiblePosition m_originalBase; // Used to store base before the adjustment at bidi boundary
     TextGranularity m_granularity;
-
-    // The range specified by the user, which may not be visually canonicalized (hence "logical").
-    // This will be invalidated if the underlying VisibleSelection changes. If that happens, this variable will
-    // become null, in which case logical positions == visible positions.
-    RefPtrWillBeMember<Range> m_logicalRange;
 
     RefPtrWillBeMember<Node> m_previousCaretNode; // The last node which painted the caret. Retained for clearing the old caret when it moves.
     LayoutRect m_previousCaretRect;

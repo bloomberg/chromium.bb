@@ -1314,6 +1314,8 @@
             'editing/RenderedPosition.h',
             'editing/SelectionController.cpp',
             'editing/SelectionController.h',
+            'editing/SelectionEditor.cpp',
+            'editing/SelectionEditor.h',
             'editing/SelectionType.h',
             'editing/SurroundingText.cpp',
             'editing/SurroundingText.h',
