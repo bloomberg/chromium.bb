@@ -289,6 +289,9 @@ bool SchedulerStateMachine::PendingActivationsShouldBeForced() const {
 }
 
 bool SchedulerStateMachine::ShouldBeginOutputSurfaceCreation() const {
+  if (!visible_)
+    return false;
+
   // Don't try to initialize too early.
   if (!can_start_)
     return false;
