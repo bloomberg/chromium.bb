@@ -538,6 +538,12 @@ class BuildStagesAndFailureTest(CIDBIntegrationTest):
       bot_db.InsertFailure(build_stage_id, type(e).__name__, str(e), category)
       self.assertTrue(bot_db.HasBuildStageFailed(build_stage_id))
 
+    failures = bot_db.GetSlaveFailures(master_build_id)
+    self.assertEqual(len(failures),
+                     len(constants.EXCEPTION_CATEGORY_ALL_CATEGORIES))
+    for f in failures:
+      self.assertEqual(f['build_id'], build_id)
+
     slave_stages = bot_db.GetSlaveStages(master_build_id)
     self.assertEqual(len(slave_stages), 1)
     self.assertEqual(slave_stages[0]['status'], 'pass')
