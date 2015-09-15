@@ -258,7 +258,7 @@ TEST_F(VideoFrameCompositorTest, OpacityChanged) {
   EXPECT_FALSE(opaque());
   EXPECT_EQ(1, opacity_changed_count());
 
-  EXPECT_FALSE(
+  EXPECT_TRUE(
       compositor()->UpdateCurrentFrame(base::TimeTicks(), base::TimeTicks()));
   RenderFrame();
   EXPECT_FALSE(opaque());
@@ -285,9 +285,7 @@ TEST_F(VideoFrameCompositorTest, VideoRendererSinkFrameDropped) {
   EXPECT_CALL(*this, Render(_, _, _)).WillRepeatedly(Return(opaque_frame));
   StartVideoRendererSink();
 
-  // The first UpdateCurrentFrame() after a background render, which starting
-  // the sink does automatically, won't report a dropped frame.
-  EXPECT_FALSE(
+  EXPECT_TRUE(
       compositor()->UpdateCurrentFrame(base::TimeTicks(), base::TimeTicks()));
 
   // Another call should trigger a dropped frame callback.
