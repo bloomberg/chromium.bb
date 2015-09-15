@@ -56,6 +56,22 @@ struct ConfigurationInfo {
   array<InterfaceInfo> interfaces;
 };
 
+struct WebUsbFunctionSubset {
+  uint8 first_interface;
+  array<string> origins;
+};
+
+struct WebUsbConfigurationSubset {
+  uint8 configuration_value;
+  array<string> origins;
+  array<WebUsbFunctionSubset> functions;
+};
+
+struct WebUsbDescriptorSet {
+  array<string> origins;
+  array<WebUsbConfigurationSubset> configurations;
+};
+
 struct DeviceInfo {
   string guid;
   uint8 usb_version_major;
@@ -73,6 +89,7 @@ struct DeviceInfo {
   string? product_name;
   string? serial_number;
   array<ConfigurationInfo> configurations;
+  WebUsbDescriptorSet? webusb_allowed_origins;
 };
 
 struct ControlTransferParams {
