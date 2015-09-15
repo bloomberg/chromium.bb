@@ -4,14 +4,16 @@
 {
     'targets': [
         {
-          # Depend on this target to use public blink API headers for things
-          # like enums and public structures without actually linking against any Blink
-          # libraries.
-          'target_name': 'blink_headers',
-          'type': 'none',
-          'direct_dependent_settings': {
-            'include_dirs': [ '..' ],
-          },
+            # Depend on this target to use public blink API headers for things
+            # like enums and public structures without actually linking against any Blink
+            # libraries.
+            'target_name': 'blink_headers',
+            'type': 'none',
+            'direct_dependent_settings': {
+              'include_dirs': [ '..' ],
+            },
+            'includes': [ 'blink_headers.gypi' ],
+            'sources': ['<@(blink_public_sources)'],
         },
     ],
     'conditions': [
