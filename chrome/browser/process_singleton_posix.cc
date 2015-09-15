@@ -112,17 +112,6 @@ const int kMaxACKMessageLength = arraysize(kShutdownToken) - 1;
 
 const char kLockDelimiter = '-';
 
-// Set a file descriptor to be non-blocking.
-// Return 0 on success, -1 on failure.
-int SetNonBlocking(int fd) {
-  int flags = fcntl(fd, F_GETFL, 0);
-  if (-1 == flags)
-    return flags;
-  if (flags & O_NONBLOCK)
-    return 0;
-  return fcntl(fd, F_SETFL, flags | O_NONBLOCK);
-}
-
 // Set the close-on-exec bit on a file descriptor.
 // Returns 0 on success, -1 on failure.
 int SetCloseOnExec(int fd) {
@@ -232,7 +221,7 @@ int SetupSocketOnly() {
   int sock = socket(PF_UNIX, SOCK_STREAM, 0);
   PCHECK(sock >= 0) << "socket() failed";
 
-  int rv = SetNonBlocking(sock);
+  int rv = net::SetNonBlocking(sock);
   DCHECK_EQ(0, rv) << "Failed to make non-blocking socket.";
   rv = SetCloseOnExec(sock);
   DCHECK_EQ(0, rv) << "Failed to set CLOEXEC on socket.";
@@ -601,7 +590,7 @@ void ProcessSingleton::LinuxWatcher::OnFileCanReadWithoutBlocking(int fd) {
     PLOG(ERROR) << "accept() failed";
     return;
   }
-  int rv = SetNonBlocking(connection_socket);
+  int rv = net::SetNonBlocking(connection_socket);
   DCHECK_EQ(0, rv) << "Failed to make non-blocking socket.";
   SocketReader* reader = new SocketReader(this,
                                           ui_message_loop_,
