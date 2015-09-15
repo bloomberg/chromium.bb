@@ -108,10 +108,15 @@ public class AppBannerManager extends EmptyTabObserver {
      * @param packageName Name of the package that is being advertised.
      */
     @CalledByNative
-    private void fetchAppDetails(String url, String packageName, String referrer, int iconSize) {
+    private void fetchAppDetails(
+            String url, String packageName, String referrer, int iconSizeInDp) {
         if (sAppDetailsDelegate == null) return;
+
+        Context context = ApplicationStatus.getApplicationContext();
+        int iconSizeInPx = Math.round(
+                context.getResources().getDisplayMetrics().density * iconSizeInDp);
         sAppDetailsDelegate.getAppDetailsAsynchronously(
-                createAppDetailsObserver(), url, packageName, referrer, iconSize);
+                createAppDetailsObserver(), url, packageName, referrer, iconSizeInPx);
     }
 
     private AppDetailsDelegate.Observer createAppDetailsObserver() {
