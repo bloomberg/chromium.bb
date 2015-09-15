@@ -59,6 +59,9 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
       scheduler::RendererScheduler* renderer_scheduler);
   virtual ~RendererBlinkPlatformImpl();
 
+  // Shutdown must be called just prior to shutting down blink.
+  void Shutdown();
+
   void set_plugin_refresh_allowed(bool plugin_refresh_allowed) {
     plugin_refresh_allowed_ = plugin_refresh_allowed;
   }

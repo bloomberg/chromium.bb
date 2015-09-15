@@ -123,9 +123,9 @@ blink::Platform*
   return blink_platform_impl_.get();
 }
 
-scheduler::RendererScheduler*
-    RenderViewTest::RendererBlinkPlatformImplNoSandbox::Scheduler() const {
-  return renderer_scheduler_.get();
+void RenderViewTest::RendererBlinkPlatformImplNoSandbox::Shutdown() {
+  renderer_scheduler_->Shutdown();
+  blink_platform_impl_->Shutdown();
 }
 
 RenderViewTest::RenderViewTest()
@@ -296,7 +296,7 @@ void RenderViewTest::TearDown() {
   autorelease_pool_.reset(NULL);
 #endif
 
-  blink_platform_impl_.Scheduler()->Shutdown();
+  blink_platform_impl_.Shutdown();
   blink::shutdown();
 
   platform_->PlatformUninitialize();

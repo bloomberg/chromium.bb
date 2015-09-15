@@ -263,6 +263,15 @@ RendererBlinkPlatformImpl::~RendererBlinkPlatformImpl() {
   WebFileSystemImpl::DeleteThreadSpecificInstance();
 }
 
+void RendererBlinkPlatformImpl::Shutdown() {
+#if !defined(OS_ANDROID) && !defined(OS_WIN)
+  // SandboxSupport contains a map of WebFontFamily objects, which hold
+  // WebCStrings, which become invalidated when blink is shut down. Hence, we
+  // need to clear that map now, just before blink::shutdown() is called.
+  sandbox_support_.reset();
+#endif
+}
+
 //------------------------------------------------------------------------------
 
 blink::WebThread* RendererBlinkPlatformImpl::currentThread() {

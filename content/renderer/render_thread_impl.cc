@@ -864,8 +864,10 @@ void RenderThreadImpl::Shutdown() {
   // the message loop after this.
   renderer_scheduler_->Shutdown();
   main_message_loop_.reset();
-  if (blink_platform_impl_)
+  if (blink_platform_impl_) {
+    blink_platform_impl_->Shutdown();
     blink::shutdown();
+  }
 
   lazy_tls.Pointer()->Set(NULL);
 }
