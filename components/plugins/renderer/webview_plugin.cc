@@ -48,7 +48,7 @@ WebViewPlugin::WebViewPlugin(content::RenderView* render_view,
                              const WebPreferences& preferences)
     : content::RenderViewObserver(render_view),
       delegate_(delegate),
-      container_(NULL),
+      container_(nullptr),
       web_view_(WebView::create(this)),
       finished_loading_(false),
       focused_(false) {
@@ -137,9 +137,10 @@ bool WebViewPlugin::initialize(WebPluginContainer* container) {
 void WebViewPlugin::destroy() {
   if (delegate_) {
     delegate_->PluginDestroyed();
-    delegate_ = NULL;
+    delegate_ = nullptr;
   }
-  container_ = NULL;
+  container_ = nullptr;
+  content::RenderViewObserver::Observe(nullptr);
   base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);
 }
 
