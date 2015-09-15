@@ -816,18 +816,14 @@ void BlinkTestRunner::CaptureDump() {
     }
   }
 #ifndef NDEBUG
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableSlimmingPaint) ||
-      !base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableSlimmingPaint)) {
-      // Force a layout/paint by the end of the test to ensure test coverage of
-      // incremental painting in slimming paint mode.
-      proxy()->LayoutAndPaintAsyncThen(base::Bind(
-          &BlinkTestRunner::CaptureDumpComplete, base::Unretained(this)));
-      return;
-  }
-#endif
+    // Force a layout/paint by the end of the test to ensure test coverage of
+    // incremental painting.
+    proxy()->LayoutAndPaintAsyncThen(base::Bind(
+        &BlinkTestRunner::CaptureDumpComplete, base::Unretained(this)));
+    return;
+#else
   CaptureDumpComplete();
+#endif
 }
 
 void BlinkTestRunner::CaptureDumpPixels(const SkBitmap& snapshot) {

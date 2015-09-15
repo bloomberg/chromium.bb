@@ -477,14 +477,7 @@ WebPreferences RenderViewHostImpl::ComputeWebkitPrefs() {
   prefs.touch_adjustment_enabled =
       !command_line.HasSwitch(switches::kDisableTouchAdjustment);
 
-  const std::string slimming_group =
-      base::FieldTrialList::FindFullName("SlimmingPaint");
-  prefs.slimming_paint_enabled =
-      (command_line.HasSwitch(switches::kEnableSlimmingPaint) ||
-      !command_line.HasSwitch(switches::kDisableSlimmingPaint)) &&
-      (slimming_group != "DisableSlimmingPaint");
   prefs.slimming_paint_v2_enabled =
-      prefs.slimming_paint_enabled &&
       command_line.HasSwitch(switches::kEnableSlimmingPaintV2);
 
 #if defined(OS_MACOSX) || defined(OS_CHROMEOS)

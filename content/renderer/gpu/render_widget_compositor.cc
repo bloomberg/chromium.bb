@@ -244,12 +244,9 @@ void RenderWidgetCompositor::Initialize() {
       !cmd->HasSwitch(cc::switches::kDisableMainFrameBeforeActivation);
   settings.accelerated_animation_enabled =
       compositor_deps_->IsThreadedAnimationEnabled();
-  const std::string slimming_group =
-      base::FieldTrialList::FindFullName("SlimmingPaint");
-  settings.use_display_lists =
-      (cmd->HasSwitch(switches::kEnableSlimmingPaint) ||
-      !cmd->HasSwitch(switches::kDisableSlimmingPaint)) &&
-      (slimming_group != "DisableSlimmingPaint");
+
+  settings.use_display_lists = true;
+
   if (cmd->HasSwitch(switches::kEnableCompositorAnimationTimelines)) {
     settings.use_compositor_animation_timelines = true;
     blink::WebRuntimeFeatures::enableCompositorAnimationTimelines(true);
