@@ -4591,7 +4591,7 @@
               '<(DEPTH)/buildtools/third_party/libc++/libc++.gyp:libcxx_proxy',
             ],
           }],
-          ['order_profiling!=0 and (chromeos==1 or OS=="linux" or OS=="android")', {
+          ['order_profiling!=0 and OS=="android"', {
             'target_conditions' : [
               # crazy_linker has an upstream gyp file we can't edit, and we
               # don't want to instrument it.
@@ -4604,7 +4604,7 @@
                 ],
                 'defines': ['CYGPROFILE_INSTRUMENTATION'],
               }],
-              ['_toolset=="target" and OS=="android"', {
+              ['_toolset=="target"', {
                 'cflags': [
                   # Avoids errors with current NDK:
                   # "third_party/android_tools/ndk/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86_64/bin/../lib/gcc/arm-linux-androideabi/4.6/include/arm_neon.h:3426:3: error: argument must be a constant"
