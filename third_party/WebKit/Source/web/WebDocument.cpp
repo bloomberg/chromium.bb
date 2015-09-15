@@ -267,15 +267,6 @@ WebString WebDocument::outgoingReferrer()
     return WebString(unwrap<Document>()->outgoingReferrer());
 }
 
-WebElement WebDocument::createElement(const WebString& tagName)
-{
-    TrackExceptionState exceptionState;
-    WebElement element(unwrap<Document>()->createElement(tagName, exceptionState));
-    if (exceptionState.hadException())
-        return WebElement();
-    return element;
-}
-
 WebAXObject WebDocument::accessibilityObject() const
 {
     const Document* document = constUnwrap<Document>();

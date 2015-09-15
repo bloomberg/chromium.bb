@@ -113,7 +113,6 @@ public:
     BLINK_EXPORT WebDOMEvent createEvent(const WebString& eventType);
     BLINK_EXPORT WebReferrerPolicy referrerPolicy() const;
     BLINK_EXPORT WebString outgoingReferrer();
-    BLINK_EXPORT WebElement createElement(const WebString& tagName);
 
     // Accessibility support. These methods should only be called on the
     // top-level document, because one accessibility cache spans all of
