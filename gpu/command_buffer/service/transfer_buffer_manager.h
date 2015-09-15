@@ -12,7 +12,6 @@
 #include "base/compiler_specific.h"
 #include "base/containers/hash_tables.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/shared_memory.h"
 #include "base/trace_event/memory_dump_provider.h"
 #include "gpu/command_buffer/common/command_buffer_shared.h"
 

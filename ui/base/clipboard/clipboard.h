@@ -11,7 +11,6 @@
 
 #include "base/compiler_specific.h"
 #include "base/lazy_instance.h"
-#include "base/memory/shared_memory.h"
 #include "base/process/process.h"
 #include "base/strings/string16.h"
 #include "base/synchronization/lock.h"

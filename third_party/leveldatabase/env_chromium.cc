@@ -11,7 +11,6 @@
 
 #include "base/files/file_util.h"
 #include "base/lazy_instance.h"
-#include "base/memory/shared_memory.h"
 #include "base/metrics/histogram.h"
 #include "base/process/process_metrics.h"
 #include "base/stl_util.h"

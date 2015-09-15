@@ -4,7 +4,6 @@
 
 #include "cc/resources/video_resource_updater.h"
 
-#include "base/memory/shared_memory.h"
 #include "cc/resources/resource_provider.h"
 #include "cc/test/fake_output_surface.h"
 #include "cc/test/fake_output_surface_client.h"

@@ -11,7 +11,6 @@
 
 #include "base/callback.h"
 #include "base/memory/scoped_vector.h"
-#include "base/memory/shared_memory.h"
 #include "base/scoped_observer.h"
 #include "extensions/common/user_script.h"
 #include "extensions/renderer/script_injection.h"

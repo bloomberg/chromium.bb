@@ -34,7 +34,6 @@
 #include "base/android/jni_android.h"
 #include "content/browser/android/child_process_launcher_android.h"
 #elif defined(OS_POSIX)
-#include "base/memory/shared_memory.h"
 #include "base/memory/singleton.h"
 #include "content/browser/renderer_host/render_sandbox_host_linux.h"
 #include "content/browser/zygote_host/zygote_host_impl_linux.h"
@@ -92,7 +91,7 @@ void OnChildProcessStartedAndroid(const NotifyCallback& callback,
   } else {
     BrowserThread::PostTask(
         client_thread_id, FROM_HERE, callback_on_client_thread);
- }
+  }
 }
 #endif
 

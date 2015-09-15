@@ -7,7 +7,6 @@
 
 #include <vector>
 
-#include "base/memory/shared_memory.h"
 #include "gpu/command_buffer/common/command_buffer.h"
 #include "ppapi/c/pp_graphics_3d.h"
 #include "ppapi/c/pp_instance.h"
@@ -67,7 +66,7 @@ class PPAPI_PROXY_EXPORT Graphics3D : public PPB_Graphics3D_Shared {
 
 class PPB_Graphics3D_Proxy : public InterfaceProxy {
  public:
-  PPB_Graphics3D_Proxy(Dispatcher* dispatcher);
+  explicit PPB_Graphics3D_Proxy(Dispatcher* dispatcher);
   ~PPB_Graphics3D_Proxy();
 
   static PP_Resource CreateProxyResource(

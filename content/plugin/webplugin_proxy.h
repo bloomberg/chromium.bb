@@ -10,7 +10,6 @@
 #include "base/containers/hash_tables.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/shared_memory.h"
 #include "base/memory/weak_ptr.h"
 #include "content/child/npapi/webplugin.h"
 #include "ipc/ipc_message.h"

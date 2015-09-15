@@ -5,7 +5,6 @@
 // IPC messages for WebRTC logging.
 // Multiply-included message file, hence no include guard.
 
-#include "base/memory/shared_memory.h"
 #include "chrome/common/media/webrtc_logging_message_data.h"
 #include "ipc/ipc_message_macros.h"
 

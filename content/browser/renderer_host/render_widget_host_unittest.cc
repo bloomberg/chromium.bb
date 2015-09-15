@@ -7,7 +7,6 @@
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/shared_memory.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/timer/timer.h"
@@ -199,6 +198,7 @@ class MockRenderWidgetHost : public RenderWidgetHostImpl {
   bool new_content_rendering_timeout_fired_;
   WebInputEvent::Type acked_touch_event_type_;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(MockRenderWidgetHost);
 };
 
@@ -215,7 +215,7 @@ class RenderWidgetHostProcess : public MockRenderProcessHost {
 
   bool HasConnection() const override { return true; }
 
- protected:
+ private:
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostProcess);
 };
 
@@ -319,6 +319,7 @@ class TestView : public TestRenderWidgetHostView {
   InputEventAckState ack_result_;
   blink::WebScreenInfo screen_info_;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(TestView);
 };
 
