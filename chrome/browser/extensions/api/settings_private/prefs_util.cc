@@ -49,6 +49,8 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
   (*s_whitelist)["enable_do_not_track"] =
       settings_private::PrefType::PREF_TYPE_BOOLEAN;
   (*s_whitelist)["homepage"] = settings_private::PrefType::PREF_TYPE_URL;
+  (*s_whitelist)["homepage_is_newtabpage"] =
+      settings_private::PrefType::PREF_TYPE_BOOLEAN;
   (*s_whitelist)["net.network_prediction_options"] =
       settings_private::PrefType::PREF_TYPE_NUMBER;
   (*s_whitelist)["safebrowsing.enabled"] =
