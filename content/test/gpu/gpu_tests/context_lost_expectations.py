@@ -18,7 +18,7 @@ class ContextLostExpectations(GpuTestExpectations):
 
     # Win8 Release NVIDIA bot.
     self.Skip('ContextLost.WebGLContextLostFromSelectElement',
-              ['win', 'release', 'nvidia'], bug=528139)
+              ['win8', 'release', 'nvidia'], bug=524808)
 
     # Flaky on Mac 10.7 and 10.8 resulting in crashes during browser
     # startup, so skip this test in those configurations.

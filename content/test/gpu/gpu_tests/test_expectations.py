@@ -8,8 +8,9 @@ import urlparse
 # Valid expectation conditions are:
 #
 # Operating systems:
-#     win, xp, vista, win7, mac, leopard, snowleopard, lion, mountainlion,
-#     mavericks, yosemite, linux, chromeos, android
+#     win, xp, vista, win7, win8, win10, mac, leopard, snowleopard,
+#     lion, mountainlion, mavericks, yosemite, linux, chromeos,
+#     android
 #
 # Browser types:
 #     android-webview-shell, android-content-shell, debug, release
@@ -18,7 +19,7 @@ import urlparse
 #   self.Fail('gl-enable-vertex-attrib.html',
 #       ['mac', 'release'], bug=123)
 
-OS_CONDITIONS = ['win', 'xp', 'vista', 'win7',
+OS_CONDITIONS = ['win', 'xp', 'vista', 'win7', 'win8', 'win10',
                  'mac', 'leopard', 'snowleopard', 'lion', 'mountainlion',
                  'mavericks', 'yosemite', 'linux', 'chromeos', 'android']
 
