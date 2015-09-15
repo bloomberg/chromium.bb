@@ -9,12 +9,12 @@
   },
   #
   'conditions': [
-    ['OS=="Linux"', {
+    ['OS=="Ubuntu"', {
       'variables': {
         'command': [
           'python',
           'hello_world.py',
-          'Linux',
+          'Ubuntu',
         ],
       },
     }],

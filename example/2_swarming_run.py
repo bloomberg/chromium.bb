@@ -4,10 +4,12 @@
 # can be found in the LICENSE file.
 
 """Runs hello_world.py, through hello_world.isolate, remotely on a Swarming
-slave.
+bot.
 
 It first 'compiles' hello_world.isolate into hello_word.isolated, then requests
 via swarming.py to archives, run and collect results for this task.
+
+It generates example_result.json as a task summary.
 """
 
 import os
@@ -25,25 +27,8 @@ def main():
   options = common.parse_args(use_isolate_server=True, use_swarming=True)
   tempdir = tempfile.mkdtemp(prefix=u'hello_world')
   try:
-    # All the files are put in a temporary directory. This is optional and
-    # simply done so the current directory doesn't have the following files
-    # created:
-    # - hello_world.isolated
-    # - hello_world.isolated.state
-    isolated = os.path.join(tempdir, 'hello_world.isolated')
-
-    common.note(
-        'Creating hello_world.isolated. Note that this doesn\'t archives '
-        'anything.')
-    common.run(
-        [
-          'isolate.py',
-          'check',
-          '--isolate', os.path.join('payload', 'hello_world.isolate'),
-          '--isolated', isolated,
-          '--config-variable', 'OS', options.swarming_os,
-        ], options.verbose)
-
+    isolated, _ = common.isolate(
+        tempdir, options.isolate_server, options.swarming_os, options.verbose)
     common.note(
         'Running the job remotely. This:\n'
         ' - archives to %s\n'
@@ -56,6 +41,8 @@ def main():
       '--isolate-server', options.isolate_server,
       '--dimension', 'os', options.swarming_os,
       '--task-name', options.task_name,
+      '--task-summary-json', 'example_result.json',
+      '--decorate',
       isolated,
     ]
     if options.idempotent:
@@ -63,6 +50,9 @@ def main():
     if options.priority is not None:
       cmd.extend(('--priority', str(options.priority)))
     common.run(cmd, options.verbose)
+    with open('example_result.json', 'rb') as f:
+      print('example_result.json content:')
+      print(f.read())
     return 0
   except subprocess.CalledProcessError as e:
     return e.returncode

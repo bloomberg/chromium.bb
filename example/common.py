@@ -4,6 +4,7 @@
 
 import datetime
 import getpass
+import hashlib
 import optparse
 import os
 import subprocess
@@ -19,7 +20,7 @@ import colorama
 CHROMIUM_SWARMING_OSES = {
     'darwin': 'Mac',
     'cygwin': 'Windows',
-    'linux2': 'Linux',
+    'linux2': 'Ubuntu',
     'win32': 'Windows',
 }
 
@@ -99,3 +100,26 @@ def capture(cmd):
       (colorama.Fore.GREEN, ' '.join(cmd), colorama.Fore.RESET))
   cmd = [sys.executable, os.path.join('..', cmd[0])] + cmd[1:]
   return subprocess.check_output(cmd)
+
+
+def isolate(tempdir, isolate_server, swarming_os, verbose):
+  """Archives the payload."""
+  # All the files are put in a temporary directory. This is optional and
+  # simply done so the current directory doesn't have the following files
+  # created:
+  # - hello_world.isolated
+  # - hello_world.isolated.state
+  isolated = os.path.join(tempdir, 'hello_world.isolated')
+  note('Archiving to %s' % isolate_server)
+  run(
+      [
+        'isolate.py',
+        'archive',
+        '--isolate', os.path.join('payload', 'hello_world.isolate'),
+        '--isolated', isolated,
+        '--isolate-server', isolate_server,
+        '--config-variable', 'OS', swarming_os,
+      ], verbose)
+  with open(isolated, 'rb') as f:
+    hashval = hashlib.sha1(f.read()).hexdigest()
+  return isolated, hashval
