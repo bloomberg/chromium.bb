@@ -55,6 +55,10 @@ std::string ConvertJavaStringToUTF8(const JavaRef<jstring>& str) {
   return ConvertJavaStringToUTF8(AttachCurrentThread(), str.obj());
 }
 
+std::string ConvertJavaStringToUTF8(JNIEnv* env, const JavaRef<jstring>& str) {
+  return ConvertJavaStringToUTF8(env, str.obj());
+}
+
 ScopedJavaLocalRef<jstring> ConvertUTF8ToJavaString(
     JNIEnv* env,
     const base::StringPiece& str) {
@@ -98,6 +102,10 @@ string16 ConvertJavaStringToUTF16(JNIEnv* env, jstring str) {
 
 string16 ConvertJavaStringToUTF16(const JavaRef<jstring>& str) {
   return ConvertJavaStringToUTF16(AttachCurrentThread(), str.obj());
+}
+
+string16 ConvertJavaStringToUTF16(JNIEnv* env, const JavaRef<jstring>& str) {
+  return ConvertJavaStringToUTF16(env, str.obj());
 }
 
 ScopedJavaLocalRef<jstring> ConvertUTF16ToJavaString(
