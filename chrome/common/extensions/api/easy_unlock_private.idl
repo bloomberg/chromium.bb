@@ -161,6 +161,9 @@ namespace easyUnlockPrivate {
     // Whether all data needed to use Easy unlock service has been loaded for
     // the user.
     boolean dataReady;
+
+    // Whether the |kEnableBluetoothLowEnergyDiscovery| switch is enabled.
+    boolean bleDiscoveryEnabled;
   };
 
   // A range.

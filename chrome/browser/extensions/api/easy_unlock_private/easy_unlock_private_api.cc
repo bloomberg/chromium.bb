@@ -883,6 +883,10 @@ bool EasyUnlockPrivateGetUserInfoFunction::RunSync() {
 
     users[0]->device_user_id = proximity_auth::CalculateDeviceUserId(
         EasyUnlockService::GetDeviceId(), user_id);
+
+    users[0]->ble_discovery_enabled =
+        base::CommandLine::ForCurrentProcess()->HasSwitch(
+            proximity_auth::switches::kEnableBluetoothLowEnergyDiscovery);
   }
   results_ = easy_unlock_private::GetUserInfo::Results::Create(users);
   return true;
