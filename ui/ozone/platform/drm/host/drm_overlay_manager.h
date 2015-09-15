@@ -13,7 +13,8 @@ class DrmGpuPlatformSupportHost;
 
 class DrmOverlayManager : public OverlayManagerOzone {
  public:
-  DrmOverlayManager(DrmGpuPlatformSupportHost* platform_support_host);
+  DrmOverlayManager(bool allow_surfaceless,
+                    DrmGpuPlatformSupportHost* platform_support_host);
   ~DrmOverlayManager() override;
 
   // OverlayManagerOzone:
@@ -23,6 +24,7 @@ class DrmOverlayManager : public OverlayManagerOzone {
 
  private:
   DrmGpuPlatformSupportHost* platform_support_host_;
+  bool allow_surfaceless_;
   bool is_supported_;
 
   DISALLOW_COPY_AND_ASSIGN(DrmOverlayManager);

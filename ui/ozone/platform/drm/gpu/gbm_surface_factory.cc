@@ -13,6 +13,7 @@
 #include "ui/ozone/platform/drm/gpu/drm_window.h"
 #include "ui/ozone/platform/drm/gpu/gbm_buffer.h"
 #include "ui/ozone/platform/drm/gpu/gbm_device.h"
+#include "ui/ozone/platform/drm/gpu/gbm_surface.h"
 #include "ui/ozone/platform/drm/gpu/gbm_surfaceless.h"
 #include "ui/ozone/platform/drm/gpu/hardware_display_controller.h"
 #include "ui/ozone/platform/drm/gpu/screen_manager.h"
@@ -22,8 +23,10 @@
 
 namespace ui {
 
-GbmSurfaceFactory::GbmSurfaceFactory()
-    : drm_device_manager_(nullptr), screen_manager_(nullptr) {}
+GbmSurfaceFactory::GbmSurfaceFactory(bool allow_surfaceless)
+    : allow_surfaceless_(allow_surfaceless),
+      drm_device_manager_(nullptr),
+      screen_manager_(nullptr) {}
 
 GbmSurfaceFactory::~GbmSurfaceFactory() {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -78,14 +81,25 @@ scoped_ptr<SurfaceOzoneCanvas> GbmSurfaceFactory::CreateCanvasForWidget(
 
 scoped_ptr<SurfaceOzoneEGL> GbmSurfaceFactory::CreateEGLSurfaceForWidget(
     gfx::AcceleratedWidget widget) {
-  NOTREACHED();
-  return nullptr;
+  DCHECK(thread_checker_.CalledOnValidThread());
+  scoped_refptr<GbmDevice> gbm = GetGbmDevice(widget);
+  DCHECK(gbm);
+
+  scoped_ptr<GbmSurface> surface(
+      new GbmSurface(screen_manager_->GetWindow(widget), gbm));
+  if (!surface->Initialize())
+    return nullptr;
+
+  return surface.Pass();
 }
 
 scoped_ptr<SurfaceOzoneEGL>
 GbmSurfaceFactory::CreateSurfacelessEGLSurfaceForWidget(
     gfx::AcceleratedWidget widget) {
   DCHECK(thread_checker_.CalledOnValidThread());
+  if (!allow_surfaceless_)
+    return nullptr;
+
   return make_scoped_ptr(new GbmSurfaceless(screen_manager_->GetWindow(widget),
                                             drm_device_manager_));
 }
@@ -118,7 +132,7 @@ scoped_refptr<ui::NativePixmap> GbmSurfaceFactory::CreateNativePixmap(
 
 bool GbmSurfaceFactory::CanShowPrimaryPlaneAsOverlay() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  return true;
+  return allow_surfaceless_;
 }
 
 scoped_refptr<GbmDevice> GbmSurfaceFactory::GetGbmDevice(

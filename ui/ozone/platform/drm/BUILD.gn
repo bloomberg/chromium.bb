@@ -55,6 +55,8 @@ source_set("gbm") {
     "gpu/gbm_buffer_base.h",
     "gpu/gbm_device.cc",
     "gpu/gbm_device.h",
+    "gpu/gbm_surface.cc",
+    "gpu/gbm_surface.h",
     "gpu/gbm_surface_factory.cc",
     "gpu/gbm_surface_factory.h",
     "gpu/gbm_surfaceless.cc",
@@ -131,6 +133,10 @@ source_set("gbm") {
       "gpu/hardware_display_plane_manager_atomic.cc",
       "gpu/hardware_display_plane_manager_atomic.h",
     ]
+  }
+
+  if (use_mesa_platform_null) {
+    defines += [ "USE_MESA_PLATFORM_NULL" ]
   }
 
   if (use_vgem_map) {

@@ -17,7 +17,7 @@ class ScreenManager;
 
 class GbmSurfaceFactory : public SurfaceFactoryOzone {
  public:
-  GbmSurfaceFactory();
+  GbmSurfaceFactory(bool allow_surfaceless);
   ~GbmSurfaceFactory() override;
 
   void InitializeGpu(DrmDeviceManager* drm_device_manager,
@@ -44,6 +44,8 @@ class GbmSurfaceFactory : public SurfaceFactoryOzone {
 
  private:
   scoped_refptr<GbmDevice> GetGbmDevice(gfx::AcceleratedWidget widget);
+
+  bool allow_surfaceless_;
 
   DrmDeviceManager* drm_device_manager_;  // Not owned.
   ScreenManager* screen_manager_;         // Not owned.

@@ -13,8 +13,10 @@
 namespace ui {
 
 DrmOverlayManager::DrmOverlayManager(
+    bool allow_surfaceless,
     DrmGpuPlatformSupportHost* platform_support_host)
-    : platform_support_host_(platform_support_host) {
+    : platform_support_host_(platform_support_host),
+      allow_surfaceless_(allow_surfaceless) {
   is_supported_ = base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kOzoneTestSingleOverlaySupport);
 }
@@ -31,7 +33,7 @@ scoped_ptr<OverlayCandidatesOzone> DrmOverlayManager::CreateOverlayCandidates(
 }
 
 bool DrmOverlayManager::CanShowPrimaryPlaneAsOverlay() {
-  return true;
+  return allow_surfaceless_;
 }
 
 }  // namespace ui
