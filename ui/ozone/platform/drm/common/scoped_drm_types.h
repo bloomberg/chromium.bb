@@ -16,7 +16,7 @@ typedef struct _drmModeObjectProperties drmModeObjectProperties;
 typedef struct _drmModePlane drmModePlane;
 typedef struct _drmModePlaneRes drmModePlaneRes;
 typedef struct _drmModeProperty drmModePropertyRes;
-typedef struct _drmModePropertySet drmModePropertySet;
+typedef struct _drmModeAtomicReq drmModeAtomicReq;
 typedef struct _drmModePropertyBlob drmModePropertyBlobRes;
 typedef struct _drmModeRes drmModeRes;
 
@@ -47,8 +47,8 @@ struct OZONE_EXPORT DrmPropertyDeleter {
   void operator()(drmModePropertyRes* property) const;
 };
 #if defined(USE_DRM_ATOMIC)
-struct OZONE_EXPORT DrmPropertySetDeleter {
-  void operator()(drmModePropertySet* property) const;
+struct OZONE_EXPORT DrmAtomicReqDeleter {
+  void operator()(drmModeAtomicReq* property) const;
 };
 #endif  // defined(USE_DRM_ATOMIC)
 struct OZONE_EXPORT DrmPropertyBlobDeleter {
@@ -68,8 +68,7 @@ typedef scoped_ptr<drmModePlane, DrmPlaneDeleter> ScopedDrmPlanePtr;
 typedef scoped_ptr<drmModePlaneRes, DrmPlaneResDeleter> ScopedDrmPlaneResPtr;
 typedef scoped_ptr<drmModePropertyRes, DrmPropertyDeleter> ScopedDrmPropertyPtr;
 #if defined(USE_DRM_ATOMIC)
-typedef scoped_ptr<drmModePropertySet, DrmPropertySetDeleter>
-    ScopedDrmPropertySetPtr;
+typedef scoped_ptr<drmModeAtomicReq, DrmAtomicReqDeleter> ScopedDrmAtomicReqPtr;
 #endif  // defined(USE_DRM_ATOMIC)
 typedef scoped_ptr<drmModePropertyBlobRes, DrmPropertyBlobDeleter>
     ScopedDrmPropertyBlobPtr;

@@ -20,7 +20,7 @@ const float kFixedPointScaleValue = 65536.0f;
 
 HardwareDisplayPlaneList::HardwareDisplayPlaneList() {
 #if defined(USE_DRM_ATOMIC)
-  atomic_property_set.reset(drmModePropertySetAlloc());
+  atomic_property_set.reset(drmModeAtomicAlloc());
 #endif  // defined(USE_DRM_ATOMIC)
 }
 

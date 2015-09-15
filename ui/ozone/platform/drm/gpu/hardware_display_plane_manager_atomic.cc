@@ -81,7 +81,7 @@ bool HardwareDisplayPlaneManagerAtomic::Commit(
     PLOG(ERROR) << "Failed to commit properties";
     return false;
   }
-  plane_list->atomic_property_set.reset(drmModePropertySetAlloc());
+  plane_list->atomic_property_set.reset(drmModeAtomicAlloc());
   return true;
 }
 

@@ -547,15 +547,15 @@ bool DrmDevice::CloseBufferHandle(uint32_t handle) {
                    &close_request);
 }
 
-bool DrmDevice::CommitProperties(drmModePropertySet* properties,
+bool DrmDevice::CommitProperties(drmModeAtomicReq* properties,
                                  uint32_t flags,
                                  uint32_t crtc_count,
                                  bool is_sync,
                                  const PageFlipCallback& callback) {
 #if defined(USE_DRM_ATOMIC)
   uint64_t id = page_flip_manager_->GetNextId();
-  if (!drmModePropertySetCommit(file_.GetPlatformFile(), flags,
-                                reinterpret_cast<void*>(id), properties)) {
+  if (!drmModeAtomicCommit(file_.GetPlatformFile(), properties, flags,
+                           reinterpret_cast<void*>(id))) {
     if (flags & DRM_MODE_ATOMIC_TEST_ONLY)
       return true;
     page_flip_manager_->RegisterCallback(id, crtc_count, callback);

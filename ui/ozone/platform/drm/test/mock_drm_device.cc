@@ -240,7 +240,7 @@ bool MockDrmDevice::CloseBufferHandle(uint32_t handle) {
   return true;
 }
 
-bool MockDrmDevice::CommitProperties(drmModePropertySet* properties,
+bool MockDrmDevice::CommitProperties(drmModeAtomicReq* properties,
                                      uint32_t flags,
                                      uint32_t crtc_count,
                                      bool is_sync,

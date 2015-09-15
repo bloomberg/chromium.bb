@@ -155,7 +155,7 @@ class OZONE_EXPORT DrmDevice : public base::RefCountedThreadSafe<DrmDevice> {
 
   virtual bool CloseBufferHandle(uint32_t handle);
 
-  virtual bool CommitProperties(drmModePropertySet* properties,
+  virtual bool CommitProperties(drmModeAtomicReq* properties,
                                 uint32_t flags,
                                 uint32_t crtc_count,
                                 bool is_sync,

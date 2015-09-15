@@ -63,7 +63,7 @@ struct OZONE_EXPORT HardwareDisplayPlaneList {
   std::vector<PageFlipInfo> legacy_page_flips;
 
 #if defined(USE_DRM_ATOMIC)
-  ScopedDrmPropertySetPtr atomic_property_set;
+  ScopedDrmAtomicReqPtr atomic_property_set;
 #endif  // defined(USE_DRM_ATOMIC)
 };
 

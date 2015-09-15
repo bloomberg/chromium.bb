@@ -19,7 +19,7 @@ class HardwareDisplayPlaneAtomic : public HardwareDisplayPlane {
   HardwareDisplayPlaneAtomic(uint32_t plane_id, uint32_t possible_crtcs);
   ~HardwareDisplayPlaneAtomic() override;
 
-  bool SetPlaneData(drmModePropertySet* property_set,
+  bool SetPlaneData(drmModeAtomicReq* property_set,
                     uint32_t crtc_id,
                     uint32_t framebuffer,
                     const gfx::Rect& crtc_rect,

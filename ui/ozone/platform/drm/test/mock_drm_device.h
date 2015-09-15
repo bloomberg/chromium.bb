@@ -106,7 +106,7 @@ class MockDrmDevice : public ui::DrmDevice {
   bool MapDumbBuffer(uint32_t handle, size_t size, void** pixels) override;
   bool UnmapDumbBuffer(void* pixels, size_t size) override;
   bool CloseBufferHandle(uint32_t handle) override;
-  bool CommitProperties(drmModePropertySet* properties,
+  bool CommitProperties(drmModeAtomicReq* properties,
                         uint32_t flags,
                         uint32_t crtc_count,
                         bool is_sync,

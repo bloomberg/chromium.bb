@@ -51,32 +51,33 @@ HardwareDisplayPlaneAtomic::HardwareDisplayPlaneAtomic(uint32_t plane_id,
 HardwareDisplayPlaneAtomic::~HardwareDisplayPlaneAtomic() {
 }
 
-bool HardwareDisplayPlaneAtomic::SetPlaneData(drmModePropertySet* property_set,
+bool HardwareDisplayPlaneAtomic::SetPlaneData(drmModeAtomicReq* property_set,
                                               uint32_t crtc_id,
                                               uint32_t framebuffer,
                                               const gfx::Rect& crtc_rect,
                                               const gfx::Rect& src_rect) {
-  int plane_set_error =
-      drmModePropertySetAdd(property_set, plane_id_, crtc_prop_.id, crtc_id) ||
-      drmModePropertySetAdd(property_set, plane_id_, fb_prop_.id,
-                            framebuffer) ||
-      drmModePropertySetAdd(property_set, plane_id_, crtc_x_prop_.id,
-                            crtc_rect.x()) ||
-      drmModePropertySetAdd(property_set, plane_id_, crtc_y_prop_.id,
-                            crtc_rect.y()) ||
-      drmModePropertySetAdd(property_set, plane_id_, crtc_w_prop_.id,
-                            crtc_rect.width()) ||
-      drmModePropertySetAdd(property_set, plane_id_, crtc_h_prop_.id,
-                            crtc_rect.height()) ||
-      drmModePropertySetAdd(property_set, plane_id_, src_x_prop_.id,
-                            src_rect.x()) ||
-      drmModePropertySetAdd(property_set, plane_id_, src_y_prop_.id,
-                            src_rect.x()) ||
-      drmModePropertySetAdd(property_set, plane_id_, src_w_prop_.id,
-                            src_rect.width()) ||
-      drmModePropertySetAdd(property_set, plane_id_, src_h_prop_.id,
-                            src_rect.height());
-  if (plane_set_error) {
+  int plane_set_succeeded =
+      drmModeAtomicAddProperty(property_set, plane_id_, crtc_prop_.id,
+                               crtc_id) &&
+      drmModeAtomicAddProperty(property_set, plane_id_, fb_prop_.id,
+                               framebuffer) &&
+      drmModeAtomicAddProperty(property_set, plane_id_, crtc_x_prop_.id,
+                               crtc_rect.x()) &&
+      drmModeAtomicAddProperty(property_set, plane_id_, crtc_y_prop_.id,
+                               crtc_rect.y()) &&
+      drmModeAtomicAddProperty(property_set, plane_id_, crtc_w_prop_.id,
+                               crtc_rect.width()) &&
+      drmModeAtomicAddProperty(property_set, plane_id_, crtc_h_prop_.id,
+                               crtc_rect.height()) &&
+      drmModeAtomicAddProperty(property_set, plane_id_, src_x_prop_.id,
+                               src_rect.x()) &&
+      drmModeAtomicAddProperty(property_set, plane_id_, src_y_prop_.id,
+                               src_rect.x()) &&
+      drmModeAtomicAddProperty(property_set, plane_id_, src_w_prop_.id,
+                               src_rect.width()) &&
+      drmModeAtomicAddProperty(property_set, plane_id_, src_h_prop_.id,
+                               src_rect.height());
+  if (!plane_set_succeeded) {
     PLOG(ERROR) << "Failed to set plane data";
     return false;
   }
