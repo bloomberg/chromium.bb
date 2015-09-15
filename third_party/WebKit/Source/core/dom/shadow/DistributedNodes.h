@@ -40,7 +40,23 @@ namespace blink {
 class DistributedNodes final {
     DISALLOW_ALLOCATION();
 public:
-    DistributedNodes() { m_nodes.reserveInitialCapacity(32); }
+    DistributedNodes()
+    {
+#if !ENABLE(OILPAN)
+        // The reserveInitialCapacity(32) was introduced in r157725 just to
+        // prevent a regression in micro-benchmarks without doing serious
+        // performance measurement. This may be working well in non-oilpan,
+        // but in oilpan this regresses performance of benchmarks that create
+        // a lot of elements that have a shadow root but don't have any
+        // distributed nodes. This is because the vector buffer adds a
+        // substantial amount of pressures on Oilpan's heap and increases
+        // GC frequency. On the other hand, there is few disadvantage in
+        // not calling reserveInitialCapacity(32) since Oilpan implements
+        // a smart allocator that can expand/shrink vectors without reallocating
+        // the contents.
+        m_nodes.reserveInitialCapacity(32);
+#endif
+    }
 
     PassRefPtrWillBeRawPtr<Node> first() const { return m_nodes.first(); }
     PassRefPtrWillBeRawPtr<Node> last() const { return m_nodes.last(); }
@@ -59,8 +75,6 @@ public:
     Node* previousTo(const Node*) const;
 
     void swap(DistributedNodes& other);
-
-    const WillBeHeapVector<RefPtrWillBeMember<Node>>& nodes() const { return m_nodes; }
 
     DECLARE_TRACE();
 
