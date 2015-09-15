@@ -8,7 +8,6 @@
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
 #include "content/public/renderer/media_stream_video_sink.h"
-#include "content/renderer/media/webrtc/peer_connection_dependency_factory.h"
 #include "content/renderer/media/webrtc/webrtc_video_capturer_adapter.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
 #include "third_party/libjingle/source/talk/app/webrtc/mediastreaminterface.h"
@@ -17,21 +16,22 @@
 namespace content {
 
 class MediaStreamVideoTrack;
+class PeerConnectionDependencyFactory;
 
-// WebRtcVideoTrackAdapter is an adapter between a
+// MediaStreamVideoWebRtcSink is an adapter between a
 // content::MediaStreamVideoTrack object and a webrtc VideoTrack that is
 // currently sent on a PeerConnection.
 // The responsibility of the class is to create and own a representation of a
-// webrtc VideoTrack that can be added and removed from a RTCPeerConnection.
-// An instance of WebRtcVideoTrackAdapter is created when a VideoTrack is
-// added to an RTCPeerConnection object.
+// webrtc VideoTrack that can be added and removed from a RTCPeerConnection. An
+// instance of MediaStreamVideoWebRtcSink is created when a VideoTrack is added
+// to an RTCPeerConnection object.
 // Instances of this class is owned by the WebRtcMediaStreamAdapter object that
 // created it.
-class WebRtcVideoTrackAdapter : public MediaStreamVideoSink {
+class MediaStreamVideoWebRtcSink : public MediaStreamVideoSink {
  public:
-  WebRtcVideoTrackAdapter(const blink::WebMediaStreamTrack& track,
-                          PeerConnectionDependencyFactory* factory);
-  ~WebRtcVideoTrackAdapter() override;
+  MediaStreamVideoWebRtcSink(const blink::WebMediaStreamTrack& track,
+                             PeerConnectionDependencyFactory* factory);
+  ~MediaStreamVideoWebRtcSink() override;
 
   webrtc::VideoTrackInterface* webrtc_video_track() {
     return video_track_.get();
@@ -51,7 +51,7 @@ class WebRtcVideoTrackAdapter : public MediaStreamVideoSink {
   class WebRtcVideoSourceAdapter;
   scoped_refptr<WebRtcVideoSourceAdapter> source_adapter_;
 
-  DISALLOW_COPY_AND_ASSIGN(WebRtcVideoTrackAdapter);
+  DISALLOW_COPY_AND_ASSIGN(MediaStreamVideoWebRtcSink);
 };
 
 }  // namespace content

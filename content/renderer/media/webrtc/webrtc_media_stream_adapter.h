@@ -10,13 +10,13 @@
 #include "base/memory/scoped_vector.h"
 #include "content/common/content_export.h"
 #include "content/renderer/media/media_stream.h"
-#include "content/renderer/media/webrtc/webrtc_video_track_adapter.h"
 #include "third_party/WebKit/public/platform/WebMediaStream.h"
 #include "third_party/libjingle/source/talk/app/webrtc/mediastreaminterface.h"
 
 namespace content {
 
 class PeerConnectionDependencyFactory;
+class MediaStreamVideoWebRtcSink;
 
 // WebRtcMediaStreamAdapter is an adapter between a blink::WebMediaStream
 // object and a webrtc MediaStreams that is currently sent on a PeerConnection.
@@ -50,14 +50,14 @@ class CONTENT_EXPORT WebRtcMediaStreamAdapter
   void CreateAudioTrack(const blink::WebMediaStreamTrack& track);
   void CreateVideoTrack(const blink::WebMediaStreamTrack& track);
 
-  blink::WebMediaStream web_stream_;
+  const blink::WebMediaStream web_stream_;
 
   // Pointer to a PeerConnectionDependencyFactory, owned by the RenderThread.
   // It's valid for the lifetime of RenderThread.
-  PeerConnectionDependencyFactory* factory_;
+  PeerConnectionDependencyFactory* const factory_;
 
   scoped_refptr<webrtc::MediaStreamInterface> webrtc_media_stream_;
-  ScopedVector<WebRtcVideoTrackAdapter> video_adapters_;
+  ScopedVector<MediaStreamVideoWebRtcSink> video_adapters_;
 
   DISALLOW_COPY_AND_ASSIGN (WebRtcMediaStreamAdapter);
 };
