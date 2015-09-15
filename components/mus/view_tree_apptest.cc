@@ -513,7 +513,7 @@ class ViewTreeAppTest : public mojo::test::ApplicationTestBase,
     ApplicationTestBase::SetUp();
     client_factory_.reset(new ViewTreeClientFactory(application_impl()));
     mojo::URLRequestPtr request(mojo::URLRequest::New());
-    request->url = mojo::String::From("mojo:view_manager");
+    request->url = mojo::String::From("mojo:mus");
 
     mojo::ViewTreeHostFactoryPtr factory;
     application_impl()->ConnectToService(request.Pass(), &factory);

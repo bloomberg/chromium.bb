@@ -79,7 +79,7 @@ class BitmapUploader : public mojo::SurfaceClient {
 
     mojo::ServiceProviderPtr gpu_service_provider;
     mojo::URLRequestPtr request2(mojo::URLRequest::New());
-    request2->url = mojo::String::From("mojo:view_manager");
+    request2->url = mojo::String::From("mojo:mus");
     shell->ConnectToApplication(request2.Pass(),
                                 mojo::GetProxy(&gpu_service_provider), nullptr,
                                 nullptr, base::Bind(&OnGotContentHandlerID));

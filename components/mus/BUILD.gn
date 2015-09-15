@@ -188,7 +188,7 @@ test("view_manager_unittests") {
 }
 
 mojo_native_application("apptests") {
-  output_name = "view_manager_apptests"
+  output_name = "mus_apptests"
   testonly = true
 
   sources = [

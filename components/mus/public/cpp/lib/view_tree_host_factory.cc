@@ -25,7 +25,7 @@ void CreateSingleViewTreeHost(ApplicationImpl* app,
                               ViewTreeHostPtr* host) {
   mojo::ViewTreeHostFactoryPtr factory;
   mojo::URLRequestPtr request(mojo::URLRequest::New());
-  request->url = "mojo:view_manager";
+  request->url = "mojo:mus";
   app->ConnectToService(request.Pass(), &factory);
   CreateViewTreeHost(factory.get(), mojo::ViewTreeHostClientPtr(), delegate,
                      host);

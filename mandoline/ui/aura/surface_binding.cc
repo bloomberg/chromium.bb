@@ -123,7 +123,7 @@ SurfaceBinding::PerConnectionState::~PerConnectionState() {
 void SurfaceBinding::PerConnectionState::Init() {
   mojo::ServiceProviderPtr service_provider;
   mojo::URLRequestPtr request(mojo::URLRequest::New());
-  request->url = mojo::String::From("mojo:view_manager");
+  request->url = mojo::String::From("mojo:mus");
   shell_->ConnectToApplication(request.Pass(), GetProxy(&service_provider),
                                nullptr, nullptr,
                                base::Bind(&OnGotContentHandlerID));

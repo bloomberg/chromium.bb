@@ -59,7 +59,7 @@ void ConfigureAndroidServices(Context* context) {
       make_scoped_ptr(new UIApplicationLoader(
           make_scoped_ptr(new view_manager::AndroidLoader()),
           g_java_message_loop.Get().get())),
-      GURL("mojo:view_manager"));
+      GURL("mojo:mus"));
 
   // Android handler is bundled with the Mojo shell, because it uses the
   // MojoShell application as the JNI bridge to bootstrap execution of other

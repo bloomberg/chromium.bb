@@ -22,7 +22,7 @@ void InitCoreServicesForContext(mojo::runner::Context* context) {
 #endif
 #if !defined(OS_ANDROID)
   // On Android, these are Java apps which are loaded in the shell process.
-  manager->RegisterApplicationPackageAlias(GURL("mojo:view_manager"),
+  manager->RegisterApplicationPackageAlias(GURL("mojo:mus"),
                                            GURL("mojo:core_services"),
                                            "Surfaces");
   manager->RegisterApplicationPackageAlias(

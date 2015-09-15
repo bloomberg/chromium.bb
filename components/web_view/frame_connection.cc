@@ -94,7 +94,7 @@ void FrameConnection::Init(mojo::ApplicationImpl* app,
   mojo::Array<mojo::String> view_manager_interfaces;
   view_manager_interfaces.push_back(mojo::Gpu::Name_);
   view_manager_interfaces.push_back(mojo::ViewTreeHostFactory::Name_);
-  filter->filter.insert("mojo:view_manager", view_manager_interfaces.Pass());
+  filter->filter.insert("mojo:mus", view_manager_interfaces.Pass());
 
   mojo::Array<mojo::String> test_runner_interfaces;
   test_runner_interfaces.push_back(LayoutTestRunner::Name_);

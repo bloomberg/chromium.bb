@@ -34,7 +34,7 @@ void InitializeWebLayerTreeView(WebLayerTreeViewImpl* web_layer_tree_view,
                                 blink::WebWidget* widget) {
   DCHECK(view);
   mojo::URLRequestPtr request(mojo::URLRequest::New());
-  request->url = mojo::String::From("mojo:view_manager");
+  request->url = mojo::String::From("mojo:mus");
   mojo::GpuPtr gpu_service;
   app->ConnectToService(request.Pass(), &gpu_service);
   web_layer_tree_view->Initialize(gpu_service.Pass(), view, widget);
