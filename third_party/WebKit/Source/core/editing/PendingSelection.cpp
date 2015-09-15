@@ -19,7 +19,7 @@
  */
 
 #include "config.h"
-#include "core/layout/PendingSelection.h"
+#include "core/editing/PendingSelection.h"
 
 #include "core/dom/Document.h"
 #include "core/editing/EditingUtilities.h"
@@ -31,25 +31,15 @@
 
 namespace blink {
 
-PendingSelection::PendingSelection()
-    : m_hasPendingSelection(false)
-    , m_shouldShowBlockCursor(false)
+PendingSelection::PendingSelection(FrameSelection& frameSelection)
+    : m_frameSelection(&frameSelection)
+    , m_hasPendingSelection(false)
 {
-    clear();
 }
 
-void PendingSelection::setSelection(const FrameSelection& selection)
+const VisibleSelection& PendingSelection::visibleSelection() const
 {
-    m_selection = selection.selection();
-    m_shouldShowBlockCursor = selection.shouldShowBlockCursor();
-    m_hasPendingSelection = true;
-}
-
-void PendingSelection::clear()
-{
-    m_hasPendingSelection = false;
-    m_selection = VisibleSelection();
-    m_shouldShowBlockCursor = false;
+    return m_frameSelection->selection();
 }
 
 template <typename Strategy>
@@ -57,13 +47,13 @@ bool PendingSelection::isInDocumentAlgorithm(const Document& document) const
 {
     using PositionType = typename Strategy::PositionType;
 
-    PositionType start = Strategy::selectionStart(m_selection);
+    PositionType start = Strategy::selectionStart(visibleSelection());
     if (start.isNotNull() && (!start.inDocument() || start.document() != document))
         return false;
-    PositionType end = Strategy::selectionEnd(m_selection);
+    PositionType end = Strategy::selectionEnd(visibleSelection());
     if (end.isNotNull() && (!end.inDocument() || end.document() != document))
         return false;
-    PositionType extent = Strategy::selectionExtent(m_selection);
+    PositionType extent = Strategy::selectionExtent(visibleSelection());
     if (extent.isNotNull() && (!extent.inDocument() || extent.document() != document))
         return false;
     return true;
@@ -81,17 +71,17 @@ VisibleSelection PendingSelection::calcVisibleSelectionAlgorithm() const
 {
     using PositionType = typename Strategy::PositionType;
 
-    PositionType start = Strategy::selectionStart(m_selection);
-    PositionType end = Strategy::selectionEnd(m_selection);
-    SelectionType selectionType = Strategy::selectionType(m_selection);
-    TextAffinity affinity = m_selection.affinity();
+    PositionType start = Strategy::selectionStart(visibleSelection());
+    PositionType end = Strategy::selectionEnd(visibleSelection());
+    SelectionType selectionType = Strategy::selectionType(visibleSelection());
+    TextAffinity affinity = visibleSelection().affinity();
 
-    bool paintBlockCursor = m_shouldShowBlockCursor && selectionType == SelectionType::CaretSelection && !isLogicalEndOfLine(createVisiblePositionInDOMTree(end, affinity));
+    bool paintBlockCursor = m_frameSelection->shouldShowBlockCursor() && selectionType == SelectionType::CaretSelection && !isLogicalEndOfLine(createVisiblePositionInDOMTree(end, affinity));
     VisibleSelection selection;
     if (enclosingTextFormControl(start.computeContainerNode())) {
         // TODO(yosin) We should use |PositionMoveType::Character| to avoid
         // ending paint at middle of character.
-        PositionType endPosition = paintBlockCursor ? nextPositionOf(Strategy::selectionExtent(m_selection), PositionMoveType::CodePoint) : end;
+        PositionType endPosition = paintBlockCursor ? nextPositionOf(Strategy::selectionExtent(visibleSelection()), PositionMoveType::CodePoint) : end;
         selection.setWithoutValidation(start, endPosition);
         return selection;
     }
@@ -114,19 +104,17 @@ void PendingSelection::commitAlgorithm(LayoutView& layoutView)
     if (!hasPendingSelection())
         return;
     ASSERT(!layoutView.needsLayout());
+    m_hasPendingSelection = false;
 
     // Skip if pending VisibilePositions became invalid before we reach here.
-    if (!isInDocument(layoutView.document())) {
-        clear();
+    if (!isInDocument(layoutView.document()))
         return;
-    }
 
-    // Construct a new VisibleSolution, since m_selection is not necessarily
+    // Construct a new VisibleSolution, since visibleSelection() is not necessarily
     // valid, and the following steps assume a valid selection.
     // See <https://bugs.webkit.org/show_bug.cgi?id=69563> and
     // <rdar://problem/10232866>.
     VisibleSelection selection = calcVisibleSelectionAlgorithm<Strategy>();
-    clear();
 
     if (!selection.isRange()) {
         layoutView.clearSelection();
@@ -170,7 +158,7 @@ void PendingSelection::commit(LayoutView& layoutView)
 
 DEFINE_TRACE(PendingSelection)
 {
-    visitor->trace(m_selection);
+    visitor->trace(m_frameSelection);
 }
 
 } // namespace blink

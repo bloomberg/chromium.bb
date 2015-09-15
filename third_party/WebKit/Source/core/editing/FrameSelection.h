@@ -48,6 +48,7 @@ class GranularityStrategy;
 class GraphicsContext;
 class HTMLFormElement;
 class SelectionEditor;
+class PendingSelection;
 class Text;
 
 enum EUserTriggered { NotUserTriggered = 0, UserTriggered = 1 };
@@ -174,6 +175,8 @@ public:
     void didMergeTextNodes(const Text& oldNode, unsigned offset);
     void didSplitTextNode(const Text& oldNode);
 
+    bool isApperanceDirty() const;
+    void commitAppearanceIfNeeded(LayoutView&);
     void updateAppearance(ResetCaretBlinkOption = None);
     void setCaretVisible(bool caretIsVisible) { setCaretVisibility(caretIsVisible ? Visible : Hidden); }
     bool isCaretBoundsDirty() const { return m_caretRectDirty; }
@@ -261,6 +264,7 @@ private:
     GranularityStrategy* granularityStrategy();
 
     RawPtrWillBeMember<LocalFrame> m_frame;
+    const OwnPtrWillBeMember<PendingSelection> m_pendingSelection;
     const OwnPtrWillBeMember<SelectionEditor> m_selectionEditor;
 
     VisiblePosition m_originalBase; // Used to store base before the adjustment at bidi boundary

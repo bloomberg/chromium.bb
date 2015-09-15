@@ -64,7 +64,6 @@ LayoutView::LayoutView(Document* document)
     , m_hitTestCount(0)
     , m_hitTestCacheHits(0)
     , m_hitTestCache(HitTestCache::create())
-    , m_pendingSelection(PendingSelection::create())
 {
     // init LayoutObject attributes
     setInline(false);
@@ -763,18 +762,14 @@ void LayoutView::clearSelection()
     setSelection(0, -1, 0, -1, PaintInvalidationNewMinusOld);
 }
 
-void LayoutView::setSelection(const FrameSelection& selection)
+bool LayoutView::hasPendingSelection() const
 {
-    // No need to create a pending clearSelection() to be executed in PendingSelection::commit()
-    // if there's no selection, since it's no-op. This is a frequent code path worth to optimize.
-    if (selection.isNone() && !m_selectionStart && !m_selectionEnd && !hasPendingSelection())
-        return;
-    m_pendingSelection->setSelection(selection);
+    return m_frameView->frame().selection().isApperanceDirty();
 }
 
 void LayoutView::commitPendingSelection()
 {
-    m_pendingSelection->commit(*this);
+    m_frameView->frame().selection().commitAppearanceIfNeeded(*this);
 }
 
 LayoutObject* LayoutView::selectionStart()

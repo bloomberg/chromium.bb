@@ -35,33 +35,33 @@ class LayoutView;
 class PendingSelection final : public NoBaseWillBeGarbageCollected<PendingSelection> {
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(PendingSelection);
 public:
-    static PassOwnPtrWillBeRawPtr<PendingSelection> create()
+    static PassOwnPtrWillBeRawPtr<PendingSelection> create(FrameSelection& frameSelection)
     {
-        return adoptPtrWillBeNoop(new PendingSelection);
+        return adoptPtrWillBeNoop(new PendingSelection(frameSelection));
     }
 
     bool hasPendingSelection() const { return m_hasPendingSelection; }
-    void setSelection(const FrameSelection&);
+    void setHasPendingSelection() { m_hasPendingSelection = true; }
     void commit(LayoutView&);
 
     DECLARE_TRACE();
 
 private:
-    PendingSelection();
+    PendingSelection(FrameSelection&);
+
+    const VisibleSelection& visibleSelection() const;
 
     template <typename Strategy>
     bool isInDocumentAlgorithm(const Document&) const;
 
     template <typename Strategy>
     VisibleSelection calcVisibleSelectionAlgorithm() const;
-    void clear();
     template <typename Strategy>
     void commitAlgorithm(LayoutView&);
     bool isInDocument(const Document&) const;
 
-    VisibleSelection m_selection;
+    RawPtrWillBeMember<FrameSelection> m_frameSelection;
     bool m_hasPendingSelection : 1;
-    bool m_shouldShowBlockCursor : 1;
 };
 
 } // namespace blink

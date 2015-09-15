@@ -30,7 +30,6 @@
 #include "core/layout/LayoutBlockFlow.h"
 #include "core/layout/LayoutState.h"
 #include "core/layout/PaintInvalidationState.h"
-#include "core/layout/PendingSelection.h"
 #include "platform/PODFreeListArena.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/heap/Handle.h"
@@ -112,8 +111,7 @@ public:
     enum SelectionPaintInvalidationMode { PaintInvalidationNewXOROld, PaintInvalidationNewMinusOld };
     void setSelection(LayoutObject* start, int startPos, LayoutObject*, int endPos, SelectionPaintInvalidationMode = PaintInvalidationNewXOROld);
     void clearSelection();
-    void setSelection(const FrameSelection&);
-    bool hasPendingSelection() const { return m_pendingSelection->hasPendingSelection(); }
+    bool hasPendingSelection() const;
     void commitPendingSelection();
     LayoutObject* selectionStart();
     LayoutObject* selectionEnd();
@@ -228,8 +226,6 @@ private:
     unsigned m_hitTestCount;
     unsigned m_hitTestCacheHits;
     OwnPtrWillBePersistent<HitTestCache> m_hitTestCache;
-
-    OwnPtrWillBePersistent<PendingSelection> m_pendingSelection;
 };
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutView, isLayoutView());

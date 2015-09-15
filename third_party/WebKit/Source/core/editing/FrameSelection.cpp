@@ -41,6 +41,7 @@
 #include "core/editing/Editor.h"
 #include "core/editing/GranularityStrategy.h"
 #include "core/editing/InputMethodController.h"
+#include "core/editing/PendingSelection.h"
 #include "core/editing/RenderedPosition.h"
 #include "core/editing/SelectionController.h"
 #include "core/editing/SelectionEditor.h"
@@ -92,6 +93,7 @@ static inline bool shouldAlwaysUseDirectionalSelection(LocalFrame* frame)
 
 FrameSelection::FrameSelection(LocalFrame* frame)
     : m_frame(frame)
+    , m_pendingSelection(PendingSelection::create(*this))
     , m_selectionEditor(SelectionEditor::create(*this))
     , m_granularity(CharacterGranularity)
     , m_previousCaretVisibility(Hidden)
@@ -925,6 +927,16 @@ inline static bool shouldStopBlinkingDueToTypingCommand(LocalFrame* frame)
     return frame->editor().lastEditCommand() && frame->editor().lastEditCommand()->shouldStopCaretBlinking();
 }
 
+bool FrameSelection::isApperanceDirty() const
+{
+    return m_pendingSelection->hasPendingSelection();
+}
+
+void FrameSelection::commitAppearanceIfNeeded(LayoutView& layoutView)
+{
+    return m_pendingSelection->commit(layoutView);
+}
+
 void FrameSelection::updateAppearance(ResetCaretBlinkOption option)
 {
     // Paint a block cursor instead of a caret in overtype mode unless the caret is at the end of a line (in this case
@@ -958,8 +970,9 @@ void FrameSelection::updateAppearance(ResetCaretBlinkOption option)
         setCaretRectNeedsUpdate();
 
     LayoutView* view = m_frame->contentLayoutObject();
-    if (view)
-        view->setSelection(*this);
+    if (!view)
+        return;
+    m_pendingSelection->setHasPendingSelection();
 }
 
 void FrameSelection::setCaretVisibility(CaretVisibility visibility)
