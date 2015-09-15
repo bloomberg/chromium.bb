@@ -39,7 +39,7 @@ class FakeMBW(mb.MetaBuildWrapper):
   def ReadFile(self, path):
     return self.files[path]
 
-  def WriteFile(self, path, contents):
+  def WriteFile(self, path, contents, force_verbose=False):
     self.files[path] = contents
 
   def Call(self, cmd, env=None):

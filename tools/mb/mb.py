@@ -63,11 +63,8 @@ class MetaBuildWrapper(object):
       subp.add_argument('-n', '--dryrun', action='store_true',
                         help='Do a dry run (i.e., do nothing, just print '
                              'the commands that will run)')
-      subp.add_argument('-q', '--quiet', action='store_true',
-                        help='Do not print anything on success, '
-                             'just return an exit code.')
-      subp.add_argument('-v', '--verbose', action='count',
-                        help='verbose logging (may specify multiple times).')
+      subp.add_argument('-v', '--verbose', action='store_true',
+                        help='verbose logging')
 
     parser = argparse.ArgumentParser(prog='mb')
     subps = parser.add_subparsers()
@@ -111,9 +108,6 @@ class MetaBuildWrapper(object):
                       default=self.default_config,
                       help='path to config file '
                           '(default is //tools/mb/mb_config.pyl)')
-    subp.add_argument('-q', '--quiet', action='store_true',
-                      help='Do not print anything on success, '
-                           'just return an exit code.')
     subp.set_defaults(func=self.CmdValidate)
 
     subp = subps.add_parser('help',
@@ -235,8 +229,7 @@ class MetaBuildWrapper(object):
       raise MBErr(('mb config file %s has problems:' % self.args.config_file) +
                     '\n  ' + '\n  '.join(errs))
 
-    if not self.args.quiet:
-      self.Print('mb config file %s looks ok.' % self.args.config_file)
+    self.Print('mb config file %s looks ok.' % self.args.config_file)
     return 0
 
   def GetConfig(self):
@@ -389,6 +382,11 @@ class MetaBuildWrapper(object):
       cmd.append('--runtime-deps-list-file=%s' % gn_runtime_deps_path)
 
     ret, _, _ = self.Run(cmd)
+    if ret:
+        # If `gn gen` failed, we should exit early rather than trying to
+        # generate isolates. Run() will have already logged any error output.
+        self.Print('GN gen failed: %d' % ret)
+        return ret
 
     for target in swarming_targets:
       if gn_isolate_map[target]['type'] == 'gpu_browser_test':
@@ -437,7 +435,6 @@ class MetaBuildWrapper(object):
         },
         isolate_path + 'd.gen.json',
       )
-
 
     return ret
 
@@ -502,53 +499,6 @@ class MetaBuildWrapper(object):
       self.Print()
 
     return ret
-
-  def RunGNIsolate(self, vals):
-    build_path = self.args.path[0]
-    inp = self.ReadInputJSON(['targets'])
-    if self.args.verbose:
-      self.Print()
-      self.Print('isolate input:')
-      self.PrintJSON(inp)
-      self.Print()
-    output_path = self.args.output_path[0]
-
-    for target in inp['targets']:
-      runtime_deps_path = self.ToAbsPath(build_path, target + '.runtime_deps')
-
-      if not self.Exists(runtime_deps_path):
-        self.WriteFailureAndRaise('"%s" does not exist' % runtime_deps_path,
-                                  output_path)
-
-      command, extra_files = self.GetIsolateCommand(target, vals, None)
-
-      runtime_deps = self.ReadFile(runtime_deps_path).splitlines()
-
-
-      isolate_path = self.ToAbsPath(build_path, target + '.isolate')
-      self.WriteFile(isolate_path,
-        pprint.pformat({
-          'variables': {
-            'command': command,
-            'files': sorted(runtime_deps + extra_files),
-          }
-        }) + '\n')
-
-      self.WriteJSON(
-        {
-          'args': [
-            '--isolated',
-            self.ToSrcRelPath('%s/%s.isolated' % (build_path, target)),
-            '--isolate',
-            self.ToSrcRelPath('%s/%s.isolate' % (build_path, target)),
-          ],
-          'dir': self.chromium_src_dir,
-          'version': 1,
-        },
-        isolate_path + 'd.gen.json',
-      )
-
-    return 0
 
   def GetIsolateCommand(self, target, vals, gn_isolate_map):
     # This needs to mirror the settings in //build/config/ui.gni:
@@ -713,7 +663,7 @@ class MetaBuildWrapper(object):
     try:
       cmd = self.GNCmd('refs', self.args.path[0]) + [
           '@%s' % response_file.name, '--all', '--as=output']
-      ret, out, _ = self.Run(cmd)
+      ret, out, _ = self.Run(cmd, force_verbose=False)
       if ret and not 'The input matches no targets' in out:
         self.WriteFailureAndRaise('gn refs returned %d: %s' % (ret, out),
                                   output_path)
@@ -725,7 +675,7 @@ class MetaBuildWrapper(object):
 
       cmd = self.GNCmd('refs', self.args.path[0]) + [
           '@%s' % response_file.name, '--all']
-      ret, out, _ = self.Run(cmd)
+      ret, out, _ = self.Run(cmd, force_verbose=False)
       if ret and not 'The input matches no targets' in out:
         self.WriteFailureAndRaise('gn refs returned %d: %s' % (ret, out),
                                   output_path)
@@ -746,15 +696,15 @@ class MetaBuildWrapper(object):
       # and both would be listed in the input, but we would only need
       # to specify target X as a build_target (whereas both X and Y are
       # targets). I'm not sure if that optimization is generally worth it.
-      self.WriteJSON({'targets': sorted(matching_targets),
-                      'build_targets': sorted(matching_targets),
+      self.WriteJSON({'targets': sorted(set(matching_targets)),
+                      'build_targets': sorted(set(matching_targets)),
                       'status': 'Found dependency'}, output_path)
     else:
       self.WriteJSON({'targets': [],
                       'build_targets': [],
                       'status': 'No dependency'}, output_path)
 
-    if not ret and self.args.verbose:
+    if self.args.verbose:
       outp = json.loads(self.ReadFile(output_path))
       self.Print()
       self.Print('analyze output:')
@@ -784,12 +734,13 @@ class MetaBuildWrapper(object):
 
   def WriteFailureAndRaise(self, msg, output_path):
     if output_path:
-      self.WriteJSON({'error': msg}, output_path)
+      self.WriteJSON({'error': msg}, output_path, force_verbose=True)
     raise MBErr(msg)
 
-  def WriteJSON(self, obj, path):
+  def WriteJSON(self, obj, path, force_verbose=False):
     try:
-      self.WriteFile(path, json.dumps(obj, indent=2, sort_keys=True) + '\n')
+      self.WriteFile(path, json.dumps(obj, indent=2, sort_keys=True) + '\n',
+                     force_verbose=force_verbose)
     except Exception as e:
       raise MBErr('Error %s writing to the output path "%s"' %
                  (e, path))
@@ -806,14 +757,15 @@ class MetaBuildWrapper(object):
     # This function largely exists so it can be overridden for testing.
     print(*args, **kwargs)
 
-  def Run(self, cmd, env=None):
+  def Run(self, cmd, env=None, force_verbose=True):
     # This function largely exists so it can be overridden for testing.
-    if self.args.dryrun or self.args.verbose:
+    if self.args.dryrun or self.args.verbose or force_verbose:
       self.PrintCmd(cmd)
     if self.args.dryrun:
       return 0, '', ''
+
     ret, out, err = self.Call(cmd, env=env)
-    if self.args.verbose:
+    if self.args.verbose or force_verbose:
       if out:
         self.Print(out, end='')
       if err:
@@ -866,9 +818,9 @@ class MetaBuildWrapper(object):
     # This function largely exists so it can be overriden for testing.
     return tempfile.NamedTemporaryFile(mode=mode, delete=False)
 
-  def WriteFile(self, path, contents):
+  def WriteFile(self, path, contents, force_verbose=False):
     # This function largely exists so it can be overriden for testing.
-    if self.args.dryrun or self.args.verbose:
+    if self.args.dryrun or self.args.verbose or force_verbose:
       self.Print('\nWriting """\\\n%s""" to %s.\n' % (contents, path))
     with open(path, 'w') as fp:
       return fp.write(contents)
