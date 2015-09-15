@@ -68,29 +68,19 @@ bool UsbDeviceFilter::Matches(scoped_refptr<UsbDevice> device) const {
   }
 
   if (interface_class_set_) {
-    const UsbConfigDescriptor* config = device->GetActiveConfiguration();
-    if (!config) {
-      return false;
-    }
-
-    // TODO(reillyg): Check device configuration if the class is not defined at
-    // a per-interface level. This is not really important because most devices
-    // have per-interface classes. The only counter-examples I know of are hubs.
-
-    bool foundMatch = false;
-    for (const UsbInterfaceDescriptor& iface : config->interfaces) {
-      if (iface.interface_class == interface_class_ &&
-          (!interface_subclass_set_ ||
-           (iface.interface_subclass == interface_subclass_ &&
-            (!interface_protocol_set_ ||
-             iface.interface_protocol == interface_protocol_)))) {
-        foundMatch = true;
+    for (const UsbConfigDescriptor& config : device->configurations()) {
+      for (const UsbInterfaceDescriptor& iface : config.interfaces) {
+        if (iface.interface_class == interface_class_ &&
+            (!interface_subclass_set_ ||
+             (iface.interface_subclass == interface_subclass_ &&
+              (!interface_protocol_set_ ||
+               iface.interface_protocol == interface_protocol_)))) {
+          return true;
+        }
       }
     }
 
-    if (!foundMatch) {
-      return false;
-    }
+    return false;
   }
 
   return true;

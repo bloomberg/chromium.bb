@@ -19,9 +19,9 @@
 #include "components/user_manager/fake_user_manager.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "device/core/device_client.h"
+#include "device/usb/mock_usb_device.h"
 #include "device/usb/mock_usb_service.h"
 #include "device/usb/usb_descriptors.h"
-#include "device/usb/usb_device.h"
 #include "device/usb/usb_service.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension_builder.h"
@@ -44,43 +44,6 @@ const char kPrinterAppExistsDelegateIDTemplate[] =
 
 const char kPrinterAppNotFoundDelegateIDTemplate[] =
     "system.printer.no_printer_provider_found/%s:%s";
-
-class FakeUsbDevice : public device::UsbDevice {
- public:
-  FakeUsbDevice(uint16 vendor_id, uint16 product_id, uint8 interface_class)
-      : device::UsbDevice(vendor_id,
-                          product_id,
-                          base::ASCIIToUTF16("Google"),
-                          base::ASCIIToUTF16("A product"),
-                          base::ASCIIToUTF16("")) {
-    config_.reset(new device::UsbConfigDescriptor);
-    device::UsbInterfaceDescriptor interface;
-    interface.interface_number = 1;
-    interface.interface_class = interface_class;
-    config_->interfaces.push_back(interface);
-  }
-
- private:
-  ~FakeUsbDevice() override {}
-
-  // device::UsbDevice overrides:
-  void Open(const OpenCallback& callback) override {
-    ADD_FAILURE() << "Not reached";
-  }
-
-  bool Close(scoped_refptr<device::UsbDeviceHandle> handle) override {
-    ADD_FAILURE() << "Not reached";
-    return false;
-  }
-
-  const device::UsbConfigDescriptor* GetActiveConfiguration() override {
-    return config_.get();
-  }
-
-  scoped_ptr<device::UsbConfigDescriptor> config_;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeUsbDevice);
-};
 
 class FakeDeviceClient : public device::DeviceClient {
  public:
@@ -152,8 +115,13 @@ class PrinterDetectorAppSearchEnabledTest : public testing::Test {
   void InvokeUsbAdded(uint16 vendor_id,
                       uint16 product_id,
                       uint8 interface_class) {
+    device::UsbInterfaceDescriptor interface;
+    interface.interface_number = 1;
+    interface.interface_class = interface_class;
+    device::UsbConfigDescriptor config;
+    config.interfaces.push_back(interface);
     usb_service_.AddDevice(
-        new FakeUsbDevice(vendor_id, product_id, interface_class));
+        new device::MockUsbDevice(vendor_id, product_id, config));
   }
 
   // Creates a test extension with the provided permissions.

@@ -38,6 +38,13 @@ MockUsbDevice::MockUsbDevice(uint16 vendor_id,
   webusb_landing_page_ = webusb_landing_page;
 }
 
+MockUsbDevice::MockUsbDevice(uint16 vendor_id,
+                             uint16 product_id,
+                             const UsbConfigDescriptor& configuration)
+    : MockUsbDevice(vendor_id, product_id) {
+  configurations_.push_back(configuration);
+}
+
 MockUsbDevice::~MockUsbDevice() {
 }
 

@@ -26,13 +26,14 @@ class UsbFilterTest : public testing::Test {
     interface.interface_class = 0xFF;
     interface.interface_subclass = 0x42;
     interface.interface_protocol = 0x01;
-    config_.interfaces.push_back(interface);
 
-    android_phone_ = new MockUsbDevice(0x18d1, 0x4ee2);
+    UsbConfigDescriptor config;
+    config.interfaces.push_back(interface);
+
+    android_phone_ = new MockUsbDevice(0x18d1, 0x4ee2, config);
   }
 
  protected:
-  UsbConfigDescriptor config_;
   scoped_refptr<MockUsbDevice> android_phone_;
 };
 
@@ -70,16 +71,12 @@ TEST_F(UsbFilterTest, MatchProductIdNegative) {
 TEST_F(UsbFilterTest, MatchInterfaceClass) {
   UsbDeviceFilter filter;
   filter.SetInterfaceClass(0xff);
-  EXPECT_CALL(*android_phone_.get(), GetActiveConfiguration())
-      .WillOnce(Return(&config_));
   ASSERT_TRUE(filter.Matches(android_phone_));
 }
 
 TEST_F(UsbFilterTest, MatchInterfaceClassNegative) {
   UsbDeviceFilter filter;
   filter.SetInterfaceClass(0xe0);
-  EXPECT_CALL(*android_phone_.get(), GetActiveConfiguration())
-      .WillOnce(Return(&config_));
   ASSERT_FALSE(filter.Matches(android_phone_));
 }
 
@@ -87,8 +84,6 @@ TEST_F(UsbFilterTest, MatchInterfaceSubclass) {
   UsbDeviceFilter filter;
   filter.SetInterfaceClass(0xff);
   filter.SetInterfaceSubclass(0x42);
-  EXPECT_CALL(*android_phone_.get(), GetActiveConfiguration())
-      .WillOnce(Return(&config_));
   ASSERT_TRUE(filter.Matches(android_phone_));
 }
 
@@ -96,8 +91,6 @@ TEST_F(UsbFilterTest, MatchInterfaceSubclassNegative) {
   UsbDeviceFilter filter;
   filter.SetInterfaceClass(0xff);
   filter.SetInterfaceSubclass(0x01);
-  EXPECT_CALL(*android_phone_.get(), GetActiveConfiguration())
-      .WillOnce(Return(&config_));
   ASSERT_FALSE(filter.Matches(android_phone_));
 }
 
@@ -106,8 +99,6 @@ TEST_F(UsbFilterTest, MatchInterfaceProtocol) {
   filter.SetInterfaceClass(0xff);
   filter.SetInterfaceSubclass(0x42);
   filter.SetInterfaceProtocol(0x01);
-  EXPECT_CALL(*android_phone_.get(), GetActiveConfiguration())
-      .WillOnce(Return(&config_));
   ASSERT_TRUE(filter.Matches(android_phone_));
 }
 
@@ -116,8 +107,6 @@ TEST_F(UsbFilterTest, MatchInterfaceProtocolNegative) {
   filter.SetInterfaceClass(0xff);
   filter.SetInterfaceSubclass(0x42);
   filter.SetInterfaceProtocol(0x02);
-  EXPECT_CALL(*android_phone_.get(), GetActiveConfiguration())
-      .WillOnce(Return(&config_));
   ASSERT_FALSE(filter.Matches(android_phone_));
 }
 

@@ -28,6 +28,9 @@ class MockUsbDevice : public UsbDevice {
                 const std::string& product_string,
                 const std::string& serial_number,
                 const GURL& webusb_landing_page);
+  MockUsbDevice(uint16 vendor_id,
+                uint16 product_id,
+                const UsbConfigDescriptor& configuration);
 
   MOCK_METHOD1(Open, void(const OpenCallback&));
   MOCK_METHOD1(Close, bool(scoped_refptr<UsbDeviceHandle>));
