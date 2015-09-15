@@ -22,6 +22,15 @@ class IPC_EXPORT BrokerableAttachment : public MessageAttachment {
   struct IPC_EXPORT AttachmentId {
     uint8_t nonce[kNonceSize];
 
+    // Default constructor returns an unguessable random nonce.
+    AttachmentId();
+
+    // Constructs an AttachmentId from a buffer.
+    AttachmentId(const char* start_address, size_t size);
+
+    // Writes the nonce into a buffer.
+    void SerializeToBuffer(char* start_address, size_t size);
+
     bool operator==(const AttachmentId& rhs) const {
       for (size_t i = 0; i < kNonceSize; ++i) {
         if (nonce[i] != rhs.nonce[i])
@@ -64,6 +73,7 @@ class IPC_EXPORT BrokerableAttachment : public MessageAttachment {
   virtual BrokerableType GetBrokerableType() const = 0;
 
  protected:
+  BrokerableAttachment();
   BrokerableAttachment(const AttachmentId& id, bool needs_brokering);
   ~BrokerableAttachment() override;
 

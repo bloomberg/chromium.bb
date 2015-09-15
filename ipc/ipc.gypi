@@ -24,6 +24,7 @@
           'attachment_broker_unprivileged_win.h',
           'brokerable_attachment.cc',
           'brokerable_attachment.h',
+          'brokerable_attachment_win.cc',
           'handle_attachment_win.cc',
           'handle_attachment_win.h',
           'handle_win.cc',
