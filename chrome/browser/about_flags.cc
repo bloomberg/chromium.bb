@@ -1675,13 +1675,6 @@ const Experiment kExperiments[] = {
      SINGLE_VALUE_TYPE(
          switches::kEnableMessageCenterAlwaysScrollUpUponNotificationRemoval)},
 #endif
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
-    {"enable-md-settings",
-     IDS_FLAGS_ENABLE_MATERIAL_DESIGN_SETTINGS_NAME,
-     IDS_FLAGS_ENABLE_MATERIAL_DESIGN_SETTINGS_DESCRIPTION,
-     kOsDesktop,
-     SINGLE_VALUE_TYPE(switches::kEnableMaterialDesignSettings)},
-#endif
 #if defined(OS_CHROMEOS)
     {"memory-pressure-thresholds",
      IDS_FLAGS_MEMORY_PRESSURE_THRESHOLD_NAME,

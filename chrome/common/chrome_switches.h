@@ -133,7 +133,6 @@ extern const char kEnableFeatures[];
 extern const char kEnableInsecureQuic[];
 extern const char kEnableMaterialDesignDownloads[];
 extern const char kEnableMaterialDesignExtensions[];
-extern const char kEnableMaterialDesignSettings[];
 extern const char kEnableMediaRouter[];
 extern const char kEnableNaCl[];
 extern const char kEnableNavigationTracing[];
@@ -404,7 +403,6 @@ extern const char kDisableNewTaskManager[];
 
 bool AboutInSettingsEnabled();
 bool MdExtensionsEnabled();
-bool MdSettingsEnabled();
 bool MediaRouterEnabled();
 bool PdfMaterialUIEnabled();
 bool SettingsWindowEnabled();

@@ -394,10 +394,8 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<IdentityInternalsUI>;
   if (url.host() == chrome::kChromeUINewTabHost)
     return &NewWebUI<NewTabUI>;
-  if (url.host() == chrome::kChromeUIMdSettingsHost &&
-      ::switches::MdSettingsEnabled()) {
+  if (url.host() == chrome::kChromeUIMdSettingsHost)
     return &NewWebUI<settings::MdSettingsUI>;
-  }
   // If the material design extensions page is enabled, it gets its own host.
   // Otherwise, it's handled by the uber settings page.
   if (url.host() == chrome::kChromeUIExtensionsHost &&

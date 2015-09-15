@@ -455,9 +455,6 @@ const char kEnableMaterialDesignDownloads[] = "enable-md-downloads";
 // Enables the Material Design version of chrome://extensions.
 const char kEnableMaterialDesignExtensions[] = "enable-md-extensions";
 
-// Enables the material design Settings feature.
-const char kEnableMaterialDesignSettings[]  = "enable-md-settings";
-
 // Enables Media Router.
 const char kEnableMediaRouter[]             = "enable-media-router";
 
@@ -1333,11 +1330,6 @@ bool AboutInSettingsEnabled() {
 bool MdExtensionsEnabled() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       ::switches::kEnableMaterialDesignExtensions);
-}
-
-bool MdSettingsEnabled() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      ::switches::kEnableMaterialDesignSettings);
 }
 
 bool MediaRouterEnabled() {
