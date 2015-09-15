@@ -43,7 +43,7 @@ const char kTestAndroidRealm2[] = "android://hash@com.example.two.android/";
 class MockPasswordManagerClient
     : public password_manager::StubPasswordManagerClient {
  public:
-  MOCK_CONST_METHOD0(IsSavingEnabledForCurrentPage, bool());
+  MOCK_CONST_METHOD0(IsSavingAndFillingEnabledForCurrentPage, bool());
   MOCK_CONST_METHOD0(IsOffTheRecord, bool());
   MOCK_CONST_METHOD0(DidLastPageLoadEncounterSSLErrors, bool());
   MOCK_METHOD1(NotifyUserAutoSigninPtr,
@@ -170,7 +170,7 @@ class CredentialManagerDispatcherTest
     client_.reset(new MockPasswordManagerClient(store_.get()));
     dispatcher_.reset(new TestCredentialManagerDispatcher(
         web_contents(), client_.get(), &stub_driver_));
-    ON_CALL(*client_, IsSavingEnabledForCurrentPage())
+    ON_CALL(*client_, IsSavingAndFillingEnabledForCurrentPage())
         .WillByDefault(testing::Return(true));
     ON_CALL(*client_, IsOffTheRecord()).WillByDefault(testing::Return(false));
     ON_CALL(*client_, DidLastPageLoadEncounterSSLErrors())
@@ -318,7 +318,7 @@ TEST_F(CredentialManagerDispatcherTest, CredentialManagerOnStore) {
 TEST_F(CredentialManagerDispatcherTest,
        CredentialManagerSignInWithSavingDisabledForCurrentPage) {
   CredentialInfo info(form_, CredentialType::CREDENTIAL_TYPE_PASSWORD);
-  EXPECT_CALL(*client_, IsSavingEnabledForCurrentPage())
+  EXPECT_CALL(*client_, IsSavingAndFillingEnabledForCurrentPage())
       .WillRepeatedly(testing::Return(false));
   EXPECT_CALL(
       *client_,

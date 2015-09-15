@@ -10,19 +10,38 @@
 
 namespace {
 
-const char kFieldTrialName[] = "PasswordManagerSettingsMigration";
-const char kEnabledGroupName[] = "PasswordManagerSettingsMigration.Enable";
-const char kDisableGroupName[] = "PasswordManagerSettingsMigration.Disable";
+const char kPasswordManagerSettingMigrationFieldTrialName[] =
+    "PasswordManagerSettingsMigration";
+const char kEnabledPasswordManagerSettingsMigrationGroupName[] =
+    "PasswordManagerSettingsMigration.Enable";
+const char kDisablePasswordManagerSettingsMigrationGroupName[] =
+    "PasswordManagerSettingsMigration.Disable";
+
+const char kPasswordManagerSettingsBehaviourChangeFieldTrialName[] =
+    "PasswordManagerSettingsBehaviourChange";
+const char kPasswordManagerSettingsBehaviourChangeEnabledGroupName[] =
+    "PasswordManagerSettingsBehaviourChange.Active";
+const char kPasswordManagerSettingsBehaviourChangeDisabledGroupName[] =
+    "PasswordManagerSettingsBehaviourChange.NotActive";
 
 }  // namespace
+
+namespace password_manager {
 
 class PasswordManagerSettingsMigrationExperimentTest : public testing::Test {
  public:
   PasswordManagerSettingsMigrationExperimentTest()
       : field_trial_list_(nullptr) {}
 
-  void EnforceExperimentGroup(const char* name) {
-    ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(kFieldTrialName, name));
+  void EnforcePasswordManagerSettingMigrationExperimentGroup(const char* name) {
+    ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
+        kPasswordManagerSettingMigrationFieldTrialName, name));
+  }
+
+  void EnforcePasswordManagerSettingsBehaviourChangeExperimentGroup(
+      const char* name) {
+    ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
+        kPasswordManagerSettingsBehaviourChangeFieldTrialName, name));
   }
 
  protected:
@@ -32,11 +51,29 @@ class PasswordManagerSettingsMigrationExperimentTest : public testing::Test {
 };
 
 TEST_F(PasswordManagerSettingsMigrationExperimentTest, IsSettingsMigrationOn) {
-  EnforceExperimentGroup(kEnabledGroupName);
+  EnforcePasswordManagerSettingMigrationExperimentGroup(
+      kEnabledPasswordManagerSettingsMigrationGroupName);
   EXPECT_TRUE(IsSettingsMigrationActive());
 }
 
 TEST_F(PasswordManagerSettingsMigrationExperimentTest, IsSettingsMigrationOff) {
-  EnforceExperimentGroup(kDisableGroupName);
+  EnforcePasswordManagerSettingsBehaviourChangeExperimentGroup(
+      kDisablePasswordManagerSettingsMigrationGroupName);
   EXPECT_FALSE(IsSettingsMigrationActive());
 }
+
+TEST_F(PasswordManagerSettingsMigrationExperimentTest,
+       IsBehaviourChangeEnabled) {
+  EnforcePasswordManagerSettingsBehaviourChangeExperimentGroup(
+      kPasswordManagerSettingsBehaviourChangeEnabledGroupName);
+  EXPECT_TRUE(IsSettingsBehaviorChangeActive());
+}
+
+TEST_F(PasswordManagerSettingsMigrationExperimentTest,
+       IsBehaviourChangeDisabled) {
+  EnforcePasswordManagerSettingsBehaviourChangeExperimentGroup(
+      kPasswordManagerSettingsBehaviourChangeDisabledGroupName);
+  EXPECT_FALSE(IsSettingsBehaviorChangeActive());
+}
+
+}  // namespace password_manager

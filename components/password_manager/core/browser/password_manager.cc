@@ -176,7 +176,7 @@ PasswordManager::~PasswordManager() {
 }
 
 void PasswordManager::GenerationAvailableForForm(const PasswordForm& form) {
-  DCHECK(client_->IsSavingEnabledForCurrentPage());
+  DCHECK(client_->IsSavingAndFillingEnabledForCurrentPage());
 
   PasswordFormManager* form_manager = GetMatchingPendingManager(form);
   if (form_manager) {
@@ -189,7 +189,7 @@ void PasswordManager::SetHasGeneratedPasswordForForm(
     password_manager::PasswordManagerDriver* driver,
     const PasswordForm& form,
     bool password_is_generated) {
-  DCHECK(client_->IsSavingEnabledForCurrentPage());
+  DCHECK(client_->IsSavingAndFillingEnabledForCurrentPage());
 
   PasswordFormManager* form_manager = GetMatchingPendingManager(form);
   if (form_manager) {
@@ -214,7 +214,8 @@ void PasswordManager::SetHasGeneratedPasswordForForm(
 }
 
 void PasswordManager::ProvisionallySavePassword(const PasswordForm& form) {
-  bool is_saving_enabled = client_->IsSavingEnabledForCurrentPage();
+  bool is_saving_and_filling_enabled =
+      client_->IsSavingAndFillingEnabledForCurrentPage();
 
   scoped_ptr<BrowserSavePasswordProgressLogger> logger;
   if (client_->IsLoggingActive()) {
@@ -224,7 +225,7 @@ void PasswordManager::ProvisionallySavePassword(const PasswordForm& form) {
                             form);
   }
 
-  if (!is_saving_enabled) {
+  if (!is_saving_and_filling_enabled) {
     RecordFailure(SAVING_DISABLED, form.origin, logger.get());
     return;
   }
@@ -439,8 +440,7 @@ void PasswordManager::CreatePendingLoginManagers(
     logger->LogMessage(Logger::STRING_CREATE_LOGIN_MANAGERS_METHOD);
   }
 
-  if (client_->DidLastPageLoadEncounterSSLErrors() ||
-      !client_->IsPasswordManagementEnabledForCurrentPage())
+  if (!client_->IsFillingEnabledForCurrentPage())
     return;
 
   if (logger) {

@@ -51,7 +51,7 @@ void PasswordGenerationManager::DetectAccountCreationForms(
 // (1) Password sync is enabled, and
 // (2) Password saving is enabled.
 bool PasswordGenerationManager::IsGenerationEnabled() const {
-  if (!client_->IsSavingEnabledForCurrentPage()) {
+  if (!client_->IsSavingAndFillingEnabledForCurrentPage()) {
     VLOG(2) << "Generation disabled because password saving is disabled";
     return false;
   }

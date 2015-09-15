@@ -50,15 +50,14 @@ class PasswordManagerClient {
   // The default return value is false.
   virtual bool IsAutomaticPasswordSavingEnabled() const;
 
-  // If the password manager should work for the current page. Default
-  // always returns true.
-  virtual bool IsPasswordManagementEnabledForCurrentPage() const;
+  // Is saving new data for password autofill and filling of saved data enabled
+  // for the current profile and page? For example, saving is disabled in
+  // Incognito mode.
+  virtual bool IsSavingAndFillingEnabledForCurrentPage() const;
 
-  // Is saving new data for password autofill enabled for the current profile
-  // and page? For example, saving new data is disabled in Incognito mode,
-  // whereas filling data is not. Also, saving data is disabled in the presence
-  // of SSL errors on a page.
-  virtual bool IsSavingEnabledForCurrentPage() const;
+  // Checks if filling is enabled for the current page. Filling is disabled when
+  // password manager is disabled, or in the presence of SSL errors on a page.
+  virtual bool IsFillingEnabledForCurrentPage() const;
 
   // Informs the embedder of a password form that can be saved or updated in
   // password store if the user allows it. The embedder is not required to

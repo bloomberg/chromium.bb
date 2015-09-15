@@ -6,9 +6,21 @@
 
 #include "base/metrics/field_trial.h"
 
+namespace password_manager {
+
 bool IsSettingsMigrationActive() {
   const char kFieldTrialName[] = "PasswordManagerSettingsMigration";
   const char kEnabledGroupName[] = "PasswordManagerSettingsMigration.Enable";
   return base::FieldTrialList::FindFullName(kFieldTrialName) ==
          kEnabledGroupName;
 }
+
+bool IsSettingsBehaviorChangeActive() {
+  const char kFieldTrialName[] = "PasswordManagerSettingsBehaviourChange";
+  const char kEnabledGroupName[] =
+      "PasswordManagerSettingsBehaviourChange.Active";
+  return base::FieldTrialList::FindFullName(kFieldTrialName) ==
+         kEnabledGroupName;
+}
+
+}  // namespace password_manager

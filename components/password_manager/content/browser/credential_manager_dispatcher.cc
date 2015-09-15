@@ -59,7 +59,7 @@ void CredentialManagerDispatcher::OnStore(
       new CredentialManagerMsg_AcknowledgeStore(
           web_contents()->GetRenderViewHost()->GetRoutingID(), request_id));
 
-  if (!client_->IsSavingEnabledForCurrentPage())
+  if (!client_->IsSavingAndFillingEnabledForCurrentPage())
     return;
 
   scoped_ptr<autofill::PasswordForm> form(CreatePasswordFormFromCredentialInfo(
@@ -75,7 +75,7 @@ void CredentialManagerDispatcher::OnStore(
 
 void CredentialManagerDispatcher::OnProvisionalSaveComplete() {
   DCHECK(form_manager_);
-  if (client_->IsSavingEnabledForCurrentPage()) {
+  if (client_->IsSavingAndFillingEnabledForCurrentPage()) {
     client_->PromptUserToSaveOrUpdatePassword(
         form_manager_.Pass(), CredentialSourceType::CREDENTIAL_SOURCE_API,
         false);

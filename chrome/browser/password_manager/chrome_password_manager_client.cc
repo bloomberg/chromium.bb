@@ -35,6 +35,7 @@
 #include "components/password_manager/core/browser/password_form_manager.h"
 #include "components/password_manager/core/browser/password_manager_internals_service.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
+#include "components/password_manager/core/browser/password_manager_settings_migration_experiment.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
 #include "components/password_manager/core/common/credential_manager_types.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
@@ -142,9 +143,9 @@ ChromePasswordManagerClient::ChromePasswordManagerClient(
       PasswordManagerInternalsServiceFactory::GetForBrowserContext(profile_);
   if (service)
     can_use_log_router_ = service->RegisterClient(this);
-  saving_passwords_enabled_.Init(
+  saving_and_filling_passwords_enabled_.Init(
       password_manager::prefs::kPasswordManagerSavingEnabled, GetPrefs());
-  ReportMetrics(*saving_passwords_enabled_, this, profile_);
+  ReportMetrics(*saving_and_filling_passwords_enabled_, this, profile_);
 }
 
 ChromePasswordManagerClient::~ChromePasswordManagerClient() {
@@ -189,8 +190,17 @@ bool ChromePasswordManagerClient::IsPasswordManagementEnabledForCurrentPage()
   return is_enabled;
 }
 
-bool ChromePasswordManagerClient::IsSavingEnabledForCurrentPage() const {
-  return *saving_passwords_enabled_ && !IsOffTheRecord() &&
+bool ChromePasswordManagerClient::IsSavingAndFillingEnabledForCurrentPage()
+    const {
+  // TODO(melandory): remove saving_and_filling_passwords_enabled_ check from
+  // here once we decide to switch to new settings behavior for everyone.
+  return *saving_and_filling_passwords_enabled_ && !IsOffTheRecord() &&
+         IsFillingEnabledForCurrentPage();
+}
+
+bool ChromePasswordManagerClient::IsFillingEnabledForCurrentPage() const {
+  return (!password_manager::IsSettingsBehaviorChangeActive() ||
+          *saving_and_filling_passwords_enabled_) &&
          !DidLastPageLoadEncounterSSLErrors() &&
          IsPasswordManagementEnabledForCurrentPage();
 }

@@ -10,11 +10,11 @@ bool PasswordManagerClient::IsAutomaticPasswordSavingEnabled() const {
   return false;
 }
 
-bool PasswordManagerClient::IsPasswordManagementEnabledForCurrentPage() const {
+bool PasswordManagerClient::IsSavingAndFillingEnabledForCurrentPage() const {
   return true;
 }
 
-bool PasswordManagerClient::IsSavingEnabledForCurrentPage() const {
+bool PasswordManagerClient::IsFillingEnabledForCurrentPage() const {
   return true;
 }
 

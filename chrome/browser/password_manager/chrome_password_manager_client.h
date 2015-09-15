@@ -46,8 +46,8 @@ class ChromePasswordManagerClient
 
   // PasswordManagerClient implementation.
   bool IsAutomaticPasswordSavingEnabled() const override;
-  bool IsPasswordManagementEnabledForCurrentPage() const override;
-  bool IsSavingEnabledForCurrentPage() const override;
+  bool IsSavingAndFillingEnabledForCurrentPage() const override;
+  bool IsFillingEnabledForCurrentPage() const override;
   bool PromptUserToSaveOrUpdatePassword(
       scoped_ptr<password_manager::PasswordFormManager> form_to_save,
       password_manager::CredentialSourceType type,
@@ -117,6 +117,11 @@ class ChromePasswordManagerClient
   // in the screens coordinate system.
   gfx::RectF GetBoundsInScreenSpace(const gfx::RectF& bounds);
 
+  // Checks if the current page fulfils the conditions for the password manager
+  // to be active on it, for example Sync credentials are not saved or auto
+  // filled.
+  bool IsPasswordManagementEnabledForCurrentPage() const;
+
   // Causes the password generation UI to be shown for the specified form.
   // The popup will be anchored at |element_bounds|. The generated password
   // will be no longer than |max_length|.
@@ -162,8 +167,8 @@ class ChromePasswordManagerClient
   bool can_use_log_router_;
 
   // Set to false to disable password saving (will no longer ask if you
-  // want to save passwords but will continue to fill passwords).
-  BooleanPrefMember saving_passwords_enabled_;
+  // want to save passwords and also won't fill the passwords).
+  BooleanPrefMember saving_and_filling_passwords_enabled_;
 
   const password_manager::SyncStoreResultFilter credentials_filter_;
 
