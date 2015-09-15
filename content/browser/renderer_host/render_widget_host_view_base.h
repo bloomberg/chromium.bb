@@ -164,6 +164,11 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
   virtual void OnSwapCompositorFrame(uint32 output_surface_id,
                                      scoped_ptr<cc::CompositorFrame> frame) {}
 
+  // This method exists to allow removing of displayed graphics, after a new
+  // page has been loaded, to prevent the displayed URL from being out of sync
+  // with what is visible on screen.
+  virtual void ClearCompositorFrame() = 0;
+
   // Because the associated remote WebKit instance can asynchronously
   // prevent-default on a dispatched touch event, the touch events are queued in
   // the GestureRecognizer until invocation of ProcessAckedTouchEvent releases

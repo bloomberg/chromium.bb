@@ -1563,6 +1563,11 @@ void RenderWidgetHostViewMac::OnSwapCompositorFrame(
   }
 }
 
+void RenderWidgetHostViewMac::ClearCompositorFrame() {
+  if (delegated_frame_host_)
+    delegated_frame_host_->ClearDelegatedFrame();
+}
+
 void RenderWidgetHostViewMac::GetScreenInfo(blink::WebScreenInfo* results) {
   *results = GetWebScreenInfo(GetNativeView());
 }

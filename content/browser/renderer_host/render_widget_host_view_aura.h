@@ -183,6 +183,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   void UnlockMouse() override;
   void OnSwapCompositorFrame(uint32 output_surface_id,
                              scoped_ptr<cc::CompositorFrame> frame) override;
+  void ClearCompositorFrame() override;
   void DidStopFlinging() override;
   void OnDidNavigateMainFrameToNewPage() override;
   uint32_t GetSurfaceIdNamespace() override;

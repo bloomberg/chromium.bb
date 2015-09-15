@@ -13,6 +13,10 @@ namespace content {
 // How long to wait before we consider a renderer hung.
 CONTENT_EXPORT extern const int64 kHungRendererDelayMs;
 
+// How long to wait for newly loaded content to send a compositor frame
+// before clearing previously displayed graphics.
+extern const int64 kNewContentRenderingDelayMs;
+
 // The maximum plugin width and height.
 extern const uint16 kMaxPluginSideLength;
 // The maximum plugin size, defined as the number of pixels occupied by the

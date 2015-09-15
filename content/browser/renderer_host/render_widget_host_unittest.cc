@@ -139,7 +139,8 @@ class MockRenderWidgetHost : public RenderWidgetHostImpl {
             GpuSurfaceTracker::Get()->AddSurfaceForRenderer(process->GetID(),
                                                             routing_id),
             false),
-        unresponsive_timer_fired_(false) {
+        unresponsive_timer_fired_(false),
+        new_content_rendering_timeout_fired_(false) {
     acked_touch_event_type_ = blink::WebInputEvent::Undefined;
   }
 
@@ -164,6 +165,10 @@ class MockRenderWidgetHost : public RenderWidgetHostImpl {
     return unresponsive_timer_fired_;
   }
 
+  bool new_content_rendering_timeout_fired() const {
+    return new_content_rendering_timeout_fired_;
+  }
+
   void DisableGestureDebounce() {
     input_router_.reset(new InputRouterImpl(
         process_, this, this, routing_id_, InputRouterImpl::Config()));
@@ -186,7 +191,12 @@ class MockRenderWidgetHost : public RenderWidgetHostImpl {
     unresponsive_timer_fired_ = true;
   }
 
+  void NotifyNewContentRenderingTimeoutForTesting() override {
+    new_content_rendering_timeout_fired_ = true;
+  }
+
   bool unresponsive_timer_fired_;
+  bool new_content_rendering_timeout_fired_;
   WebInputEvent::Type acked_touch_event_type_;
 
   DISALLOW_COPY_AND_ASSIGN(MockRenderWidgetHost);
@@ -1090,6 +1100,31 @@ TEST_F(RenderWidgetHostTest, MultipleInputEvents) {
       TimeDelta::FromMicroseconds(20));
   base::MessageLoop::current()->Run();
   EXPECT_TRUE(host_->unresponsive_timer_fired());
+}
+
+// Test that the rendering timeout for newly loaded content fires
+// when enough time passes without receiving a new compositor frame.
+TEST_F(RenderWidgetHostTest, NewContentRenderingTimeout) {
+  host_->set_new_content_rendering_delay_for_testing(
+      base::TimeDelta::FromMicroseconds(10));
+
+  // Test immediate start and stop, ensuring that the timeout doesn't fire.
+  host_->StartNewContentRenderingTimeout();
+  host_->StopNewContentRenderingTimeout();
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, base::MessageLoop::QuitClosure(),
+      TimeDelta::FromMicroseconds(20));
+  base::MessageLoop::current()->Run();
+
+  EXPECT_FALSE(host_->new_content_rendering_timeout_fired());
+
+  // Test with a long delay to ensure that it does fire this time.
+  host_->StartNewContentRenderingTimeout();
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, base::MessageLoop::QuitClosure(),
+      TimeDelta::FromMicroseconds(20));
+  base::MessageLoop::current()->Run();
+  EXPECT_TRUE(host_->new_content_rendering_timeout_fired());
 }
 
 std::string GetInputMessageTypes(RenderWidgetHostProcess* process) {

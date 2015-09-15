@@ -480,6 +480,11 @@ void DelegatedFrameHost::SwapDelegatedFrame(
   // Note: the frame may have been evicted immediately.
 }
 
+void DelegatedFrameHost::ClearDelegatedFrame() {
+  if (frame_provider_.get() || !surface_id_.is_null())
+    EvictDelegatedFrame();
+}
+
 void DelegatedFrameHost::SendDelegatedFrameAck(uint32 output_surface_id) {
   cc::CompositorFrameAck ack;
   if (!surface_returned_resources_.empty())

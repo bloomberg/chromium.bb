@@ -14,6 +14,8 @@ const int64 kHungRendererDelayMs = 5000;
 const int64 kHungRendererDelayMs = 30000;
 #endif
 
+const int64 kNewContentRenderingDelayMs = 2000;
+
 const uint16 kMaxPluginSideLength = 1 << 15;
 // 8m pixels.
 const uint32 kMaxPluginSize = 8 << 20;

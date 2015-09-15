@@ -127,6 +127,7 @@ class CONTENT_EXPORT DelegatedFrameHost
       float frame_device_scale_factor,
       const std::vector<ui::LatencyInfo>& latency_info,
       std::vector<uint32_t>* satisfies_sequences);
+  void ClearDelegatedFrame();
   void WasHidden();
   void WasShown(const ui::LatencyInfo& latency_info);
   void WasResized();

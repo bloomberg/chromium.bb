@@ -323,6 +323,7 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   void EndFrameSubscription() override;
   void OnSwapCompositorFrame(uint32 output_surface_id,
                              scoped_ptr<cc::CompositorFrame> frame) override;
+  void ClearCompositorFrame() override;
   BrowserAccessibilityManager* CreateBrowserAccessibilityManager(
       BrowserAccessibilityDelegate* delegate) override;
   gfx::Point AccessibilityOriginInScreen(const gfx::Rect& bounds) override;

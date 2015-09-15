@@ -148,6 +148,8 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
     : view_(NULL),
       hung_renderer_delay_(
           base::TimeDelta::FromMilliseconds(kHungRendererDelayMs)),
+      new_content_rendering_delay_(
+          base::TimeDelta::FromMilliseconds(kNewContentRenderingDelayMs)),
       renderer_initialized_(false),
       delegate_(delegate),
       process_(process),
@@ -208,6 +210,10 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
         base::Bind(&RenderWidgetHostImpl::RendererIsUnresponsive,
                    weak_factory_.GetWeakPtr())));
   }
+
+  new_content_rendering_timeout_.reset(new TimeoutMonitor(
+      base::Bind(&RenderWidgetHostImpl::ClearDisplayedGraphics,
+                 weak_factory_.GetWeakPtr())));
 }
 
 RenderWidgetHostImpl::~RenderWidgetHostImpl() {
@@ -907,6 +913,16 @@ void RenderWidgetHostImpl::StopHangMonitorTimeout() {
   RendererIsResponsive();
 }
 
+void RenderWidgetHostImpl::StartNewContentRenderingTimeout() {
+  if (new_content_rendering_timeout_)
+    new_content_rendering_timeout_->Start(new_content_rendering_delay_);
+}
+
+void RenderWidgetHostImpl::StopNewContentRenderingTimeout() {
+  if (new_content_rendering_timeout_)
+    new_content_rendering_timeout_->Stop();
+}
+
 void RenderWidgetHostImpl::ForwardMouseEvent(const WebMouseEvent& mouse_event) {
   ForwardMouseEventWithLatencyInfo(mouse_event, ui::LatencyInfo());
 }
@@ -1387,6 +1403,12 @@ void RenderWidgetHostImpl::RendererIsResponsive() {
   }
 }
 
+void RenderWidgetHostImpl::ClearDisplayedGraphics() {
+  NotifyNewContentRenderingTimeoutForTesting();
+  if (view_)
+    view_->ClearCompositorFrame();
+}
+
 void RenderWidgetHostImpl::OnRenderViewReady() {
   SendScreenRects();
   WasResized();
@@ -1466,6 +1488,9 @@ bool RenderWidgetHostImpl::OnSwapCompositorFrame(
   // This trace event is used in
   // chrome/browser/extensions/api/cast_streaming/performance_test.cc
   TRACE_EVENT0("test_fps,benchmark", "OnSwapCompositorFrame");
+
+  StopNewContentRenderingTimeout();
+
   ViewHostMsg_SwapCompositorFrame::Param param;
   if (!ViewHostMsg_SwapCompositorFrame::Read(&message, &param))
     return false;

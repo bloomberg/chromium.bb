@@ -1188,6 +1188,10 @@ void RenderWidgetHostViewAura::OnSwapCompositorFrame(
                    ConvertSelectionBound(frame->metadata.selection.end));
 }
 
+void RenderWidgetHostViewAura::ClearCompositorFrame() {
+  delegated_frame_host_->ClearDelegatedFrame();
+}
+
 void RenderWidgetHostViewAura::DidStopFlinging() {
   selection_controller_client_->OnScrollCompleted();
 }

@@ -1150,6 +1150,10 @@ void RenderWidgetHostViewAndroid::OnSwapCompositorFrame(
   InternalSwapCompositorFrame(output_surface_id, frame.Pass());
 }
 
+void RenderWidgetHostViewAndroid::ClearCompositorFrame() {
+  DestroyDelegatedContent();
+}
+
 void RenderWidgetHostViewAndroid::RetainFrame(
     uint32 output_surface_id,
     scoped_ptr<cc::CompositorFrame> frame) {

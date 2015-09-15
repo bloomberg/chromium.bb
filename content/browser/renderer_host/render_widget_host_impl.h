@@ -116,6 +116,11 @@ class CONTENT_EXPORT RenderWidgetHostImpl
     hung_renderer_delay_ = delay;
   }
 
+  void set_new_content_rendering_delay_for_testing(
+      const base::TimeDelta& delay) {
+    new_content_rendering_delay_ = delay;
+  }
+
   // RenderWidgetHost implementation.
   void UpdateTextDirection(blink::WebTextDirection direction) override;
   void NotifyTextDirection() override;
@@ -257,6 +262,14 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // Stops all existing hang monitor timeouts and assumes the renderer is
   // responsive.
   void StopHangMonitorTimeout();
+
+  // Starts the rendering timeout, which will clear displayed graphics if
+  // a new compositor frame is not received before it expires.
+  void StartNewContentRenderingTimeout();
+
+  // Stops the rendering timeout and prevents it from clearing any displayed
+  // graphics.
+  void StopNewContentRenderingTimeout();
 
   // Forwards the given message to the renderer. These are called by the view
   // when it has received a message.
@@ -492,6 +505,10 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   virtual void NotifyRendererUnresponsive() {}
   virtual void NotifyRendererResponsive() {}
 
+  // Callback for notification that we failed to receive any rendered graphics
+  // from a newly loaded page. Used for testing.
+  virtual void NotifyNewContentRenderingTimeoutForTesting() {}
+
   // Called when auto-resize resulted in the renderer size changing.
   virtual void OnRenderAutoResized(const gfx::Size& new_size) {}
 
@@ -552,6 +569,10 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // This value indicates how long to wait before we consider a renderer hung.
   base::TimeDelta hung_renderer_delay_;
 
+  // This value indicates how long to wait for a new compositor frame from a
+  // renderer process before clearing any previously displayed content.
+  base::TimeDelta new_content_rendering_delay_;
+
  private:
   friend class MockRenderWidgetHost;
 
@@ -560,6 +581,10 @@ class CONTENT_EXPORT RenderWidgetHostImpl
 
   // Called by |hang_monitor_timeout_| on delayed response from the renderer.
   void RendererIsUnresponsive();
+
+  // Called by |new_content_rendering_timeout_| if a renderer has loaded new
+  // content but failed to produce a compositor frame in a defined time.
+  void ClearDisplayedGraphics();
 
   // Called if we know the renderer is responsive. When we currently think the
   // renderer is unresponsive, this will clear that state and call
@@ -789,6 +814,8 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   scoped_ptr<InputRouter> input_router_;
 
   scoped_ptr<TimeoutMonitor> hang_monitor_timeout_;
+
+  scoped_ptr<TimeoutMonitor> new_content_rendering_timeout_;
 
 #if defined(OS_WIN)
   std::list<HWND> dummy_windows_for_activation_;
