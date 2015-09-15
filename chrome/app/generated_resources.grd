@@ -6820,9 +6820,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_WEBRTC_LOGS_LOG_LOCAL_FILE_LABEL_FORMAT" desc="Format for local log entry label on chrome://webrtc-logs">
         Local file:
       </message>
-      <message name="IDS_WEBRTC_LOGS_LOG_LOCAL_FILE_FORMAT" desc="Format for file in local log entry on chrome://webrtc-logs">
-        <ph name="WEBRTC_LOG_LOCAL_FILE">$1<ex>/path/to/file</ex></ph>
-      </message>
       <message name="IDS_WEBRTC_LOGS_NO_LOCAL_LOG_FILE_MESSAGE" desc="The explanatory message for chrome://webrtc-logs when there is no local log file">
         No local log file.
       </message>

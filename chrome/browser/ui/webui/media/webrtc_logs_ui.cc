@@ -47,8 +47,6 @@ content::WebUIDataSource* CreateWebRtcLogsUIHTMLSource() {
                              IDS_WEBRTC_LOGS_LOG_HEADER_FORMAT);
   source->AddLocalizedString("webrtcLogLocalFileLabelFormat",
                              IDS_WEBRTC_LOGS_LOG_LOCAL_FILE_LABEL_FORMAT);
-  source->AddLocalizedString("webrtcLogLocalFileFormat",
-                             IDS_WEBRTC_LOGS_LOG_LOCAL_FILE_FORMAT);
   source->AddLocalizedString("noLocalLogFileMessage",
                              IDS_WEBRTC_LOGS_NO_LOCAL_LOG_FILE_MESSAGE);
   source->AddLocalizedString("webrtcLogUploadTimeFormat",

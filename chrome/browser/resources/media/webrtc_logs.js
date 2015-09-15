@@ -45,9 +45,7 @@ function updateWebRtcLogsList(uploads, version) {
           loadTimeData.getString('webrtcLogLocalFileLabelFormat') + ' ';
       var localFileLink = document.createElement('a');
       localFileLink.href = 'file://' + upload['local_file'];
-      localFileLink.textContent =
-          loadTimeData.getStringF('webrtcLogLocalFileFormat',
-                                  upload['local_file']);
+      localFileLink.textContent = upload['local_file'];
       localFileLine.appendChild(localFileLink);
     }
     logBlock.appendChild(localFileLine);
