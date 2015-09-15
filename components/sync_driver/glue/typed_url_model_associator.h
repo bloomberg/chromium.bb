@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SYNC_GLUE_TYPED_URL_MODEL_ASSOCIATOR_H_
-#define CHROME_BROWSER_SYNC_GLUE_TYPED_URL_MODEL_ASSOCIATOR_H_
+#ifndef COMPONENTS_SYNC_DRIVER_GLUE_TYPED_URL_MODEL_ASSOCIATOR_H_
+#define COMPONENTS_SYNC_DRIVER_GLUE_TYPED_URL_MODEL_ASSOCIATOR_H_
 
 #include <map>
 #include <string>
@@ -175,7 +175,6 @@ class TypedUrlModelAssociator : public sync_driver::AssociatorInterface {
   virtual void ClearErrorStats();
 
  private:
-
   // Helper routine that actually does the work of associating models.
   syncer::SyncError DoAssociateModels(
       syncer::SyncMergeResult* local_merge_result,
@@ -206,4 +205,4 @@ class TypedUrlModelAssociator : public sync_driver::AssociatorInterface {
 
 }  // namespace browser_sync
 
-#endif  // CHROME_BROWSER_SYNC_GLUE_TYPED_URL_MODEL_ASSOCIATOR_H_
+#endif  // COMPONENTS_SYNC_DRIVER_GLUE_TYPED_URL_MODEL_ASSOCIATOR_H_

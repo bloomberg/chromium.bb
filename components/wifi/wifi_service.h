@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_UTILITY_WIFI_WIFI_SERVICE_H_
-#define CHROME_UTILITY_WIFI_WIFI_SERVICE_H_
+#ifndef COMPONENTS_WIFI_WIFI_SERVICE_H_
+#define COMPONENTS_WIFI_WIFI_SERVICE_H_
 
 #include <list>
 #include <set>
@@ -140,4 +140,4 @@ class WIFI_EXPORT WiFiService {
 
 }  // namespace wifi
 
-#endif  // CHROME_UTILITY_WIFI_WIFI_SERVICE_H_
+#endif  // COMPONENTS_WIFI_WIFI_SERVICE_H_

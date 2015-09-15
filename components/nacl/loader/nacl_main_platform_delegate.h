@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_NACL_NACL_MAIN_PLATFORM_DELEGATE_H_
-#define CHROME_NACL_NACL_MAIN_PLATFORM_DELEGATE_H_
+#ifndef COMPONENTS_NACL_LOADER_NACL_MAIN_PLATFORM_DELEGATE_H_
+#define COMPONENTS_NACL_LOADER_NACL_MAIN_PLATFORM_DELEGATE_H_
 
 #include "base/basictypes.h"
 
@@ -22,4 +22,4 @@ class NaClMainPlatformDelegate {
   DISALLOW_COPY_AND_ASSIGN(NaClMainPlatformDelegate);
 };
 
-#endif  // CHROME_NACL_NACL_MAIN_PLATFORM_DELEGATE_H_
+#endif  // COMPONENTS_NACL_LOADER_NACL_MAIN_PLATFORM_DELEGATE_H_

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_OFFLINE_PAGES_OFFLINE_PAGE_METADATA_STORE_IMPL_H_
-#define CHROME_BROWSER_OFFLINE_PAGES_OFFLINE_PAGE_METADATA_STORE_IMPL_H_
+#ifndef COMPONENTS_OFFLINE_PAGES_OFFLINE_PAGE_METADATA_STORE_IMPL_H_
+#define COMPONENTS_OFFLINE_PAGES_OFFLINE_PAGE_METADATA_STORE_IMPL_H_
 
 #include <vector>
 
@@ -64,4 +64,4 @@ class OfflinePageMetadataStoreImpl : public OfflinePageMetadataStore {
 
 }  // namespace offline_pages
 
-#endif  // CHROME_BROWSER_OFFLINE_PAGES_OFFLINE_PAGE_METADATA_STORE_IMPL_H_
+#endif  // COMPONENTS_OFFLINE_PAGES_OFFLINE_PAGE_METADATA_STORE_IMPL_H_

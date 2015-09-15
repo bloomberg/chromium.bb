@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMEOS_PAIRING_BLUETOOTH_HOST_PAIRING_CONTROLLER_H_
-#define CHROMEOS_PAIRING_BLUETOOTH_HOST_PAIRING_CONTROLLER_H_
+#ifndef COMPONENTS_PAIRING_BLUETOOTH_HOST_PAIRING_CONTROLLER_H_
+#define COMPONENTS_PAIRING_BLUETOOTH_HOST_PAIRING_CONTROLLER_H_
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -119,4 +119,4 @@ class BluetoothHostPairingController
 
 }  // namespace pairing_chromeos
 
-#endif  // CHROMEOS_PAIRING_BLUETOOTH_HOST_PAIRING_CONTROLLER_H_
+#endif  // COMPONENTS_PAIRING_BLUETOOTH_HOST_PAIRING_CONTROLLER_H_

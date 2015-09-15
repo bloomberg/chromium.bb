@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_NACL_NACL_LISTENER_H_
-#define CHROME_NACL_NACL_LISTENER_H_
+#ifndef COMPONENTS_NACL_LOADER_NACL_LISTENER_H_
+#define COMPONENTS_NACL_LOADER_NACL_LISTENER_H_
 
 #include <map>
 #include <vector>
@@ -115,4 +115,4 @@ class NaClListener : public IPC::Listener {
   DISALLOW_COPY_AND_ASSIGN(NaClListener);
 };
 
-#endif  // CHROME_NACL_NACL_LISTENER_H_
+#endif  // COMPONENTS_NACL_LOADER_NACL_LISTENER_H_

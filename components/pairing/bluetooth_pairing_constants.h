@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMEOS_PAIRING_BLUETOOTH_PAIRING_CONSTANTS_H_
-#define CHROMEOS_PAIRING_BLUETOOTH_PAIRING_CONSTANTS_H_
+#ifndef COMPONENTS_PAIRING_BLUETOOTH_PAIRING_CONSTANTS_H_
+#define COMPONENTS_PAIRING_BLUETOOTH_PAIRING_CONSTANTS_H_
 
 namespace pairing_chromeos {
 
@@ -21,4 +21,4 @@ enum {
 
 }  // namespace pairing_chromeos
 
-#endif  // CHROMEOS_PAIRING_BLUETOOTH_PAIRING_CONSTANTS_H_
+#endif  // COMPONENTS_PAIRING_BLUETOOTH_PAIRING_CONSTANTS_H_
