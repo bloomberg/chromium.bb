@@ -448,9 +448,14 @@ class RunIsolatedJsonTest(RunIsolatedTestBase):
     self.assertNotIn('ISOLATED_OUTDIR', sub_cmd[2])
     self.assertEqual([(sub_cmd, {'detached': True})], self.popen_calls)
     expected = {
-      u'isolated': u'e0a0fffa0910dd09e7ef4c89496116f60317e6c4',
-      u'isolatedserver': u'http://localhost:1',
-      u'namespace': u'default-gzip',
+      u'exit_code': 0,
+      u'internal_failure': None,
+      u'outputs_ref': {
+        u'isolated': u'e0a0fffa0910dd09e7ef4c89496116f60317e6c4',
+        u'isolatedserver': u'http://localhost:1',
+        u'namespace': u'default-gzip',
+      },
+      u'version': 1,
     }
     self.assertEqual(expected, tools.read_json(out))
 
