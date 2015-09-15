@@ -14,6 +14,11 @@
             "group_name": "Enabled"
         }
     ],
+    "EnableGoogleCachedCopyTextExperiment": [
+        {
+            "group_name": "Button"
+        }
+    ],
     "ExtensionDeveloperModeWarning": [
         {
             "group_name": "Enabled"

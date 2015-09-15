@@ -29,6 +29,11 @@
             "group_name": "Default"
         }
     ],
+    "EnableGoogleCachedCopyTextExperiment": [
+        {
+            "group_name": "Button"
+        }
+    ],
     "EnableSessionCrashedBubbleUI": [
         {
             "group_name": "Enabled"
