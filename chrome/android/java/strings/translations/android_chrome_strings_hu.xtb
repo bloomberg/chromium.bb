@@ -113,6 +113,7 @@
 <translation id="2718352093833049315">Csak Wi-Fi-n</translation>
 <translation id="2748463065602559597">Ön egy biztonságos Google Chrome-oldalt lát.</translation>
 <translation id="2770465223704140727">Eltávolítás a listából</translation>
+<translation id="278029852808208386">Nem találhatók Bluetooth-eszközök. <ph name="BEGIN_LINK" />Újbóli keresés<ph name="END_LINK" /></translation>
 <translation id="2816165854387457183">Lassú kapcsolat észlelve.</translation>
 <translation id="2842985007712546952">Szülőmappa</translation>
 <translation id="2870560284913253234">Webhely</translation>
@@ -190,6 +191,7 @@ A keresési kifejezés módosításához hosszú nyomva tartással hajthat végr
 <translation id="4099578267706723511">Használati statisztikák és hibajelentések küldésével segíthet a Google-nak a Chrome fejlesztésében.</translation>
 <translation id="411254640334432676">A letöltés sikertelen.</translation>
 <translation id="4113030288477039509">A rendszergazdája kezeli</translation>
+<translation id="4116939199945053760">A(z) <ph name="SITE" /> <ph name="BEGIN_LINK" />párosítást kér a következővel<ph name="END_LINK" />:</translation>
 <translation id="4165986682804962316">Webhelybeállítások</translation>
 <translation id="4170011742729630528">A szolgáltatás nem érhető el, próbálja újra később.</translation>
 <translation id="4195643157523330669">Megnyitás új lapon</translation>
@@ -203,6 +205,7 @@ A keresési kifejezés módosításához hosszú nyomva tartással hajthat végr
 <translation id="4307992518367153382">Alapok</translation>
 <translation id="4333969446981951071">Az alkalmazás használatával Ön elfogadja a Chrome <ph name="BEGIN_LINK1" />Általános Szerződési Feltételeit<ph name="END_LINK1" /> és az <ph name="BEGIN_LINK2" />Adatvédelmi közleményt<ph name="END_LINK2" />.</translation>
 <translation id="4351244548802238354">Párbeszédablak bezárása</translation>
+<translation id="4357362091209756047">Nem látja eszközét? <ph name="BEGIN_LINK1" />Keressen újra<ph name="END_LINK1" />, vagy <ph name="BEGIN_LINK2" />kérjen segítséget<ph name="END_LINK2" />.</translation>
 <translation id="4376501731284077108">Nem kezelt</translation>
 <translation id="4378154925671717803">Telefon</translation>
 <translation id="4412992751769744546">Harmadik felektől származó cookie-k engedélyezése</translation>
@@ -290,6 +293,7 @@ Ehhez elég elindítani a Chrome-ot számítógépén, megnyitni a menüt, majd 
 <translation id="5626134646977739690">Név:</translation>
 <translation id="5626370437647899551">Google-fiók hozzáadása</translation>
 <translation id="563535393368633106">Kérdezzen rá hozzáférés előtt (ajánlott)</translation>
+<translation id="5643573370311148178"><ph name="BEGIN_LINK" />Súgó<ph name="END_LINK" /></translation>
 <translation id="5646376287012673985">Tartózkodási hely</translation>
 <translation id="5659593005791499971">E-mail</translation>
 <translation id="5668404140385795438">Webhely nagyításelutasítási kérelmének felülbírálata</translation>
@@ -310,6 +314,7 @@ Mindazonáltal Ön nem lesz láthatatlan. Az inkognitómód használatával nem 
 <translation id="5771382037724542929">Lecseréli a meglévő <ph name="FILE_NAME" /> fájlt itt: <ph name="DIRECTORY_NAME" />?</translation>
 <translation id="5804241973901381774">Engedélyek</translation>
 <translation id="5806294296882899667">Hiba az alapértelmezett mappa betöltésekor</translation>
+<translation id="5817918615728894473">Párosítás</translation>
 <translation id="5832934273103296195">Kibontva – Kattintson az összecsukáshoz</translation>
 <translation id="583891442612896534">A Chrome nem tudja elérni a Google szervereit az adatok tömörítése céljából. Az adatforgalmi megtakarítás korlátozva lehet.</translation>
 <translation id="5860033963881614850">Kikapcsolva</translation>
@@ -332,7 +337,6 @@ Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jel
 <translation id="6040143037577758943">Bezárás</translation>
 <translation id="6042308850641462728">Hosszabban</translation>
 <translation id="605721222689873409">ÉÉ</translation>
-<translation id="6060567974409584397">Érintse meg, hogy visszatérjen a laphoz</translation>
 <translation id="6066720739967032277">Telefonja Áttekintés képernyőjén a lapokat a legutóbbi alkalmazásokkal együtt találja. Ezt a <ph name="BEGIN_LINK" />Beállítások<ph name="END_LINK" /> között módosíthatja.</translation>
 <translation id="6075798973483050474">Kezdőoldal szerkesztése</translation>
 <translation id="6108923351542677676">A telepítés folyamatban...</translation>
@@ -380,6 +384,7 @@ Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jel
 <translation id="6698801883190606802">Szinkronizálás kezelése</translation>
 <translation id="6699351163704950317">Minden mentett oldal</translation>
 <translation id="6710213216561001401">Előző</translation>
+<translation id="6720988912937197322">A mentett oldal nem érhető el offline módban</translation>
 <translation id="6738867403308150051">Letöltés…</translation>
 <translation id="6770414673596662518">A Chrome Biztonságos Böngészés rendszere is segít a rosszindulatú oldalak észlelésében, valamint megvédi Önt az adathalászattól, a rosszindulatú programoktól és az ártalmas letöltésektől.</translation>
 <translation id="6784675033504223784">A(z) „<ph name="SEARCH_TERM" />” keresése</translation>
@@ -393,7 +398,6 @@ Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jel
 <translation id="6850830437481525139"><ph name="TAB_COUNT" /> lap bezárva</translation>
 <translation id="6857778194843072568">Csak Wi-Fi-hálózaton keresztül küldjön</translation>
 <translation id="6868088497967843822">Jelentkezzen be, hogy könyvjelzőit, előzményeit, jelszavait és más beállításait az összes eszközén elérje.</translation>
-<translation id="6935223586406308151">A(z) <ph name="DOMAIN_NAME" /> hozzáadva a kezdőképernyőhöz</translation>
 <translation id="6945221475159498467">Kiválasztás</translation>
 <translation id="6963766334940102469">Könyvjelzők törlése</translation>
 <translation id="6964496835063002391">Adjon hozzá egy fiókot</translation>
@@ -522,6 +526,7 @@ Az új engedélyek beszerzéséhez kapcsolódjon az internethez, és játssza le
 <translation id="8719023831149562936">Nem lehet átsugározni a jelenlegi lapot</translation>
 <translation id="8725066075913043281">Újrapróbálás</translation>
 <translation id="8730621377337864115">Kész</translation>
+<translation id="8737542153238017984">A mentett oldal nem érhető el offline módban. A tárhely már majdnem megtelt.</translation>
 <translation id="8793430725658173476">URL másolása</translation>
 <translation id="8798099450830957504">Alapértelmezett</translation>
 <translation id="8820817407110198400">Könyvjelzők</translation>
@@ -552,6 +557,7 @@ Az új engedélyek beszerzéséhez kapcsolódjon az internethez, és játssza le
 <translation id="9133515669113036225">Az eszközhitelesítési adatok visszaállítása</translation>
 <translation id="9137013805542155359">Eredeti megjelenítése</translation>
 <translation id="9156605176886108508">Nincsenek könyvjelzőmappák</translation>
+<translation id="9192643434065497760">A párosítás engedélyezéséhez kapcsolja be a Bluetooth-t az <ph name="BEGIN_LINK" />eszköz beállításaiban<ph name="END_LINK" />.</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="932327136139879170">Főoldal</translation>
 <translation id="938850635132480979">Hiba: <ph name="ERROR_CODE" /></translation>

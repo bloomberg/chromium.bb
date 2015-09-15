@@ -113,6 +113,7 @@
 <translation id="2718352093833049315">‏في شبكة Wi-Fi فقط</translation>
 <translation id="2748463065602559597">‏أنت تعرض صفحة Google Chrome آمنة.</translation>
 <translation id="2770465223704140727">إزالة من القائمة</translation>
+<translation id="278029852808208386">لم يتم العثور على أجهزة بلوتوث. <ph name="BEGIN_LINK" />ابحث مرة أخرى<ph name="END_LINK" />.</translation>
 <translation id="2816165854387457183">تم اكتشاف اتصال بطيء بالإنترنت.</translation>
 <translation id="2842985007712546952">المجلد الرئيسي</translation>
 <translation id="2870560284913253234">الموقع</translation>
@@ -188,6 +189,7 @@
 <translation id="4099578267706723511">‏ساعد في تحسين Chrome عن طريق إرسال إحصاءات الاستخدام وتقارير الأعطال إلى Google.</translation>
 <translation id="411254640334432676">فشلت عملية التنزيل</translation>
 <translation id="4113030288477039509">يديره المسؤول</translation>
+<translation id="4116939199945053760">يود <ph name="SITE" /> أن <ph name="BEGIN_LINK" />يقترن  مع<ph name="END_LINK" />:</translation>
 <translation id="4165986682804962316">إعدادات الموقع</translation>
 <translation id="4170011742729630528">الخدمة غير متاحة، أعد المحاولة لاحقًا.</translation>
 <translation id="4195643157523330669">فتح الإشارة في علامة تبويب جديدة</translation>
@@ -201,6 +203,7 @@
 <translation id="4307992518367153382">أساسيّات</translation>
 <translation id="4333969446981951071">‏باستخدامك هذا التطبيق، توافق على <ph name="BEGIN_LINK1" />بنود خدمة<ph name="END_LINK1" /> Chrome و<ph name="BEGIN_LINK2" />إشعار الخصوصية<ph name="END_LINK2" />.</translation>
 <translation id="4351244548802238354">إغلاق مربع الحوار</translation>
+<translation id="4357362091209756047">ألا ترى جهازك؟ <ph name="BEGIN_LINK1" />ابحث مرة أخرى<ph name="END_LINK1" /> أو <ph name="BEGIN_LINK2" />احصل على مساعدة<ph name="END_LINK2" /> .</translation>
 <translation id="4376501731284077108">غير مُتحكم فيه</translation>
 <translation id="4378154925671717803">الهاتف</translation>
 <translation id="4412992751769744546">السماح لملفات تعريف ارتباط الجهات الخارجية</translation>
@@ -288,6 +291,7 @@
 <translation id="5626134646977739690">الاسم:</translation>
 <translation id="5626370437647899551">‏إضافة حساب Google</translation>
 <translation id="563535393368633106">اسأل قبل الدخول (موصى به)</translation>
+<translation id="5643573370311148178"><ph name="BEGIN_LINK" />مساعدة<ph name="END_LINK" /></translation>
 <translation id="5646376287012673985">الموقع</translation>
 <translation id="5659593005791499971">البريد الإلكتروني</translation>
 <translation id="5668404140385795438">تجاوز طلب موقع الويب لمنع التكبير</translation>
@@ -308,6 +312,7 @@
 <translation id="5771382037724542929">هل تريد استبدال <ph name="FILE_NAME" /> الموجود في <ph name="DIRECTORY_NAME" />؟</translation>
 <translation id="5804241973901381774">الأذونات</translation>
 <translation id="5806294296882899667">حدث خطأ أثناء تحميل المجلد الافتراضي</translation>
+<translation id="5817918615728894473">إقران</translation>
 <translation id="5832934273103296195">تم التوسيع - انقر للتصغير</translation>
 <translation id="583891442612896534">‏لا يمكن لمتصفح Chrome الوصول إلى خوادم Google لضغط البيانات. قد تكون خيارات توفير البيانات محدودة.</translation>
 <translation id="5860033963881614850">إيقاف</translation>
@@ -330,7 +335,6 @@
 <translation id="6040143037577758943">إغلاق</translation>
 <translation id="6042308850641462728">المزيد</translation>
 <translation id="605721222689873409">العام</translation>
-<translation id="6060567974409584397">المس للرجوع إلى علامة التبويب</translation>
 <translation id="6066720739967032277">اطلع على علامات التبويب باستخدام تطبيقات أخرى حديثة على شاشة نظرة عامة على هاتفك. يمكنك التحكم في ذلك عن طريق <ph name="BEGIN_LINK" />الإعدادات<ph name="END_LINK" />.</translation>
 <translation id="6075798973483050474">تعديل الصفحة الرئيسية</translation>
 <translation id="6108923351542677676">الإعداد قيد التقدّم…</translation>
@@ -378,6 +382,7 @@
 <translation id="6698801883190606802">إدارة البيانات المتزامنة</translation>
 <translation id="6699351163704950317">جميع الصفحات التي تم حفظها</translation>
 <translation id="6710213216561001401">السابق</translation>
+<translation id="6720988912937197322">الصفحة المحفوظة غير متوفر في وضع عدم الاتصال</translation>
 <translation id="6738867403308150051">جارٍ التنزيل…</translation>
 <translation id="6770414673596662518">‏سيتم استخدام نظام التصفح الآمن من Chrome أيضًا في اكتشاف الصفحات الضارة وحمايتك من التصيّد، والبرامج الضارة، والتنزيلات التي تلحق أذى بالجهاز.</translation>
 <translation id="6784675033504223784">بحث عن "<ph name="SEARCH_TERM" />"</translation>
@@ -391,7 +396,6 @@
 <translation id="6850830437481525139"><ph name="TAB_COUNT" /> من علامات التبويب المغلقة</translation>
 <translation id="6857778194843072568">‏الإرسال عبر Wi-Fi فقط</translation>
 <translation id="6868088497967843822">سجّل الدخول للحصول على الإشارات المرجعية، والسجل، وكلمات المرور، والإعدادات الأخرى على كل أجهزتك.</translation>
-<translation id="6935223586406308151">تمت إضافة <ph name="DOMAIN_NAME" /> إلى شاشتك الرئيسية</translation>
 <translation id="6945221475159498467">تحديد</translation>
 <translation id="6963766334940102469">حذف الإشارات المرجعية</translation>
 <translation id="6964496835063002391">إضافة حساب</translation>
@@ -520,6 +524,7 @@
 <translation id="8719023831149562936">تعذر إرسال علامة التبويب الحالية باستخدام الشعاع</translation>
 <translation id="8725066075913043281">أعد المحاولة</translation>
 <translation id="8730621377337864115">تم</translation>
+<translation id="8737542153238017984">الصفحة المحفوظة غير متوفرة في وضع عدم الاتصال. سعة التخزين ممتلئة.</translation>
 <translation id="8793430725658173476">‏نسخ عنوان URL</translation>
 <translation id="8798099450830957504">الافتراضي</translation>
 <translation id="8820817407110198400">إشارات</translation>
@@ -550,6 +555,7 @@
 <translation id="9133515669113036225">إعادة تعيين بيانات اعتماد الجهاز</translation>
 <translation id="9137013805542155359">إظهار الصفحة الأصلية</translation>
 <translation id="9156605176886108508">ليس هناك أي مجلدات للإشارات المرجعية</translation>
+<translation id="9192643434065497760">شغّل البلوتوث من <ph name="BEGIN_LINK" />إعدادات الجهاز<ph name="END_LINK" /> للسماح بالإقران.</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="932327136139879170">الصفحة الرئيسية</translation>
 <translation id="938850635132480979">الخطأ: <ph name="ERROR_CODE" /></translation>

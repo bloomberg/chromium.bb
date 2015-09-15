@@ -596,6 +596,7 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 <translation id="4442582539341804154">Włącz blokadę w przypadku bezczynności lub zawieszenia działania urządzenia</translation>
 <translation id="4445684791305970001">Wyłącza narzędzia dla programistów i konsolę JavaScript. Jeśli włączysz to ustawienie, niemożliwe będzie uzyskanie dostępu do narzędzi dla programistów i dokonanie przeglądu elementów witryny. Wszelkie skróty klawiszowe oraz pozycje w menu aplikacji i menu kontekstowym umożliwiające otwarcie narzędzi dla programistów lub konsoli JavaScript będą nieaktywne. Wyłączenie lub nieskonfigurowanie tej opcji umożliwi korzystanie z narzędzi dla programistów i konsoli JavaScript.</translation>
 <translation id="4467952432486360968">Blokuj pliki cookie innych firm</translation>
+<translation id="4474167089968829729">Włącz zapisywanie haseł w menadżerze haseł</translation>
 <translation id="4480694116501920047">Wymuś stosowanie filtru SafeSearch</translation>
 <translation id="4482640907922304445">Powoduje pokazanie przycisku strony startowej na pasku narzędzi <ph name="PRODUCT_NAME" />. Jeśli włączysz to ustawienie, przycisk strony startowej będzie zawsze widoczny. W przypadku wyłączenia ustawienia przycisk nigdy nie jest widoczny. Jeśli ustawienie jest włączone lub wyłączone, użytkownicy nie mogą go zmienić ani zastąpić w <ph name="PRODUCT_NAME" />. W przypadku nieskonfigurowania tej zasady użytkownik będzie mógł wybrać, czy chce, aby przycisk strony startowej był pokazywany.</translation>
 <translation id="4492287494009043413">Wyłącza tworzenie zrzutów ekranu</translation>
@@ -993,6 +994,17 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
           Ta zasada jest opcjonalna. Jeśli nie jest ustawiona, żądania wyszukiwań są wysyłane przy użyciu metody GET.
 
           Ta zasada jest uwzględniana tylko wtedy, gdy włączona jest zasada „DefaultSearchProviderEnabled”.</translation>
+<translation id="6365608006609079612">
+          Jeśli to ustawienie jest włączone, <ph name="PRODUCT_NAME" /> może zapamiętywać hasła użytkowników i podpowiadać
+          je automatycznie przy następnym logowaniu się na stronie.
+
+          Jeśli to ustawienie jest wyłączone, użytkownicy nie mogą zapisywać nowych haseł,
+          ale mogą używać haseł zapisanych wcześniej.
+
+          Włączenia ani wyłączenia tej zasady użytkownicy nie mogą zmienić ani zastąpić
+          w <ph name="PRODUCT_NAME" />. Jeśli ta
+          zasada nie jest ustawiona, zapisywanie haseł jest dozwolone (ale
+          użytkownik może je wyłączyć).</translation>
 <translation id="6367755442345892511">Czy użytkownik ma mieć możliwość skonfigurowania kanału wersji</translation>
 <translation id="6368011194414932347">Konfiguruj adres URL strony startowej</translation>
 <translation id="6368403635025849609">Zezwalaj na wykonywanie kodu JavaScript w tych witrynach</translation>

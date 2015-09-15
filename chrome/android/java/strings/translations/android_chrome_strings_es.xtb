@@ -113,6 +113,7 @@
 <translation id="2718352093833049315">Solo en Wi-Fi</translation>
 <translation id="2748463065602559597">Estás viendo una página de Google Chrome segura.</translation>
 <translation id="2770465223704140727">Eliminar de la lista</translation>
+<translation id="278029852808208386">No se han encontrado dispositivos Bluetooth. <ph name="BEGIN_LINK" />Repite la búsqueda<ph name="END_LINK" />.</translation>
 <translation id="2816165854387457183">Conexión lenta detectada.</translation>
 <translation id="2842985007712546952">Carpeta principal</translation>
 <translation id="2870560284913253234">Sitio</translation>
@@ -190,6 +191,7 @@ Para ajustar el término de búsqueda, mantén pulsado el texto para seleccionar
 <translation id="4099578267706723511">Ayuda a mejorar Chrome enviando estadísticas de uso e informes sobre fallos.</translation>
 <translation id="411254640334432676">Error de descarga.</translation>
 <translation id="4113030288477039509">Administrado por tu administrador</translation>
+<translation id="4116939199945053760"><ph name="SITE" /> quiere <ph name="BEGIN_LINK" />vincularse con<ph name="END_LINK" />:</translation>
 <translation id="4165986682804962316">Configuración del sitio</translation>
 <translation id="4170011742729630528">El servicio no está disponible. Vuelve a intentarlo más tarde.</translation>
 <translation id="4195643157523330669">Abrir en una pestaña nueva</translation>
@@ -203,6 +205,7 @@ Para ajustar el término de búsqueda, mantén pulsado el texto para seleccionar
 <translation id="4307992518367153382">Básica</translation>
 <translation id="4333969446981951071">Al utilizar esta aplicación, aceptas las <ph name="BEGIN_LINK1" />Condiciones de servicio<ph name="END_LINK1" /> y el <ph name="BEGIN_LINK2" />Aviso de privacidad<ph name="END_LINK2" /> de Chrome.</translation>
 <translation id="4351244548802238354">Cerrar cuadro de diálogo</translation>
+<translation id="4357362091209756047">¿No aparece tu dispositivo? <ph name="BEGIN_LINK1" />Repite la búsqueda<ph name="END_LINK1" /> u <ph name="BEGIN_LINK2" />obtén ayuda<ph name="END_LINK2" />.</translation>
 <translation id="4376501731284077108">Sin control</translation>
 <translation id="4378154925671717803">Teléfono</translation>
 <translation id="4412992751769744546">Permitir cookies de terceros</translation>
@@ -290,6 +293,7 @@ Solo tienes que abrir Chrome en tu ordenador, ir al menú y seleccionar "Iniciar
 <translation id="5626134646977739690">Nombre:</translation>
 <translation id="5626370437647899551">Añadir una cuenta de Google</translation>
 <translation id="563535393368633106">Preguntar antes de acceder (recomendado)</translation>
+<translation id="5643573370311148178"><ph name="BEGIN_LINK" />Ayuda<ph name="END_LINK" />.</translation>
 <translation id="5646376287012673985">Ubicación</translation>
 <translation id="5659593005791499971">Correo electrónico</translation>
 <translation id="5668404140385795438">Ignorar la solicitud de un sitio web para no ampliar la imagen</translation>
@@ -310,6 +314,7 @@ No obstante, tus acciones no serán totalmente invisibles. El uso del modo incó
 <translation id="5771382037724542929">¿Quieres sustituir el archivo <ph name="FILE_NAME" /> de <ph name="DIRECTORY_NAME" />?</translation>
 <translation id="5804241973901381774">Permisos</translation>
 <translation id="5806294296882899667">Error al cargar la carpeta predeterminada</translation>
+<translation id="5817918615728894473">Vincular</translation>
 <translation id="5832934273103296195">Vista expandida (hacer clic para contraerla)</translation>
 <translation id="583891442612896534">Chrome no puede acceder a los servidores de Google para comprimir los datos. El ahorro de datos puede estar limitado.</translation>
 <translation id="5860033963881614850">No</translation>
@@ -332,7 +337,6 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="6040143037577758943">Cerrar</translation>
 <translation id="6042308850641462728">Más</translation>
 <translation id="605721222689873409">AA</translation>
-<translation id="6060567974409584397">Toca para volver a la pestaña</translation>
 <translation id="6066720739967032277">Consulta tus pestañas con otras aplicaciones recientes en la pantalla Visión general de tu teléfono. Puedes controlar esta opción en la <ph name="BEGIN_LINK" />configuración<ph name="END_LINK" />.</translation>
 <translation id="6075798973483050474">Editar página principal</translation>
 <translation id="6108923351542677676">Configuración en curso…</translation>
@@ -380,6 +384,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="6698801883190606802">Administrar datos sincronizados</translation>
 <translation id="6699351163704950317">Todas las páginas guardadas</translation>
 <translation id="6710213216561001401">Anterior</translation>
+<translation id="6720988912937197322">La página guardada no está disponible sin conexión</translation>
 <translation id="6738867403308150051">Descargando…</translation>
 <translation id="6770414673596662518">El sistema de navegación segura de Chrome también se utilizará para detectar páginas maliciosas y para proteger al usuario de la suplantación de identidad, del software malicioso y de las descargas peligrosas.</translation>
 <translation id="6784675033504223784">Busca "<ph name="SEARCH_TERM" />"</translation>
@@ -393,7 +398,6 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="6850830437481525139"><ph name="TAB_COUNT" /> pestañas cerradas</translation>
 <translation id="6857778194843072568">Enviar solo por Wi-Fi</translation>
 <translation id="6868088497967843822">Inicia sesión para ver tus marcadores, tu historial, tus contraseñas y otras opciones en todos tus dispositivos</translation>
-<translation id="6935223586406308151"><ph name="DOMAIN_NAME" /> se ha añadido a tu pantalla de inicio</translation>
 <translation id="6945221475159498467">Seleccionar</translation>
 <translation id="6963766334940102469">Eliminar marcadores</translation>
 <translation id="6964496835063002391">Añadir una cuenta</translation>
@@ -522,6 +526,7 @@ Para obtener nuevas licencias, conéctate a Internet y reproduce el contenido de
 <translation id="8719023831149562936">No se puede compartir la pestaña actual.</translation>
 <translation id="8725066075913043281">Volver a intentarlo</translation>
 <translation id="8730621377337864115">Listo</translation>
+<translation id="8737542153238017984">La página guardada no está disponible sin conexión. El almacenamiento está casi lleno.</translation>
 <translation id="8793430725658173476">Copiar URL</translation>
 <translation id="8798099450830957504">Predeterminado</translation>
 <translation id="8820817407110198400">Marcadores</translation>
@@ -552,6 +557,7 @@ Para obtener nuevas licencias, conéctate a Internet y reproduce el contenido de
 <translation id="9133515669113036225">Restablecer credenciales del dispositivo</translation>
 <translation id="9137013805542155359">Mostrar original</translation>
 <translation id="9156605176886108508">No hay carpetas de marcadores</translation>
+<translation id="9192643434065497760">Activa el Bluetooth en los <ph name="BEGIN_LINK" />ajustes del dispositivo<ph name="END_LINK" /> para permitir la vinculación.</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="932327136139879170">Página principal</translation>
 <translation id="938850635132480979">Error: <ph name="ERROR_CODE" /></translation>

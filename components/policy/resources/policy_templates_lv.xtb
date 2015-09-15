@@ -708,6 +708,7 @@
 
       Ja šis iestatījums ir atspējots vai nav iestatīts, izstrādātāju rīkus un JavaScript konsoli varēs lietot.</translation>
 <translation id="4467952432486360968">Bloķē trešo pušu sīkfailus</translation>
+<translation id="4474167089968829729">Iespējot paroļu saglabāšanu paroļu pārvaldniekā</translation>
 <translation id="4480694116501920047">Drošas meklēšanas piespiedu izmantošana</translation>
 <translation id="4482640907922304445"><ph name="PRODUCT_NAME" /> rīkjoslā rāda pogu Sākums.
 
@@ -1162,6 +1163,17 @@
           Šī politika nav obligāta. Ja tā nav iestatīta, meklēšanas pieprasījums tiks nosūtīts, izmantojot metodi GET.
 
           Šī politika ir spēkā tikai tad, ja ir iespējota politika “DefaultSearchProviderEnabled”.</translation>
+<translation id="6365608006609079612">
+          Ja šis iestatījums ir iespējots, lietotāji var iestatīt, lai pārlūks <ph name="PRODUCT_NAME" /> iegaumētu paroles
+          un ievietotu tās automātiski nākamreiz, kad lietotājs pieteiksies vietnē.
+
+          Ja šis iestatījums ir atspējots, lietotāji nevar saglabāt jaunas paroles, 
+          taču joprojām var izmantot paroles, kuras iepriekš tika saglabātas.
+
+          Ja šī politika ir iespējota vai atspējota, lietotāji nevar to mainīt vai ignorēt
+          pārlūkā <ph name="PRODUCT_NAME" />. Ja šī politika
+          nav iestatīta, ir atļauts saglabāt paroles (taču saglabāšanu var izslēgt
+          lietotājs).</translation>
 <translation id="6367755442345892511">Vai lietotājam ir jābūt iespējai konfigurēt izlaišanas kanālu</translation>
 <translation id="6368011194414932347">Konfigurē sākumlapas URL</translation>
 <translation id="6368403635025849609">Atļauj izmantot JavaScript šajās vietnēs</translation>

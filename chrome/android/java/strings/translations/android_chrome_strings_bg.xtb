@@ -113,6 +113,7 @@
 <translation id="2718352093833049315">Само при Wi-Fi</translation>
 <translation id="2748463065602559597">Преглеждате защитена страница в Google Chrome.</translation>
 <translation id="2770465223704140727">Премахване от списъка</translation>
+<translation id="278029852808208386">Няма намерени устройства с Bluetooth. <ph name="BEGIN_LINK" />Потърсете отново<ph name="END_LINK" />.</translation>
 <translation id="2816165854387457183">Открита е бавна връзка.</translation>
 <translation id="2842985007712546952">Основна папка</translation>
 <translation id="2870560284913253234">Сайт</translation>
@@ -190,6 +191,7 @@
 <translation id="4099578267706723511">Помогнете за подобряването на Chrome, като изпращате до Google статистически данни за употребата и сигнали за сривове.</translation>
 <translation id="411254640334432676">Изтеглянето не бе успешно.</translation>
 <translation id="4113030288477039509">Управлява се от администратора ви</translation>
+<translation id="4116939199945053760"><ph name="SITE" /> иска <ph name="BEGIN_LINK" />да се сдвои със<ph name="END_LINK" />:</translation>
 <translation id="4165986682804962316">Настройки за сайта</translation>
 <translation id="4170011742729630528">Няма достъп до услугата. Опитайте отново по-късно.</translation>
 <translation id="4195643157523330669">Отваряне в нов раздел</translation>
@@ -203,6 +205,7 @@
 <translation id="4307992518367153382">Основни положения</translation>
 <translation id="4333969446981951071">С използването на това приложение приемате <ph name="BEGIN_LINK1" />Общите условия<ph name="END_LINK1" /> и <ph name="BEGIN_LINK2" />Съобщението за поверителност<ph name="END_LINK2" /> на Chrome.</translation>
 <translation id="4351244548802238354">Затваряне на диалоговия прозорец</translation>
+<translation id="4357362091209756047">Не виждате устройството си? <ph name="BEGIN_LINK1" />Потърсете отново<ph name="END_LINK1" /> или <ph name="BEGIN_LINK2" />получете помощ<ph name="END_LINK2" />.</translation>
 <translation id="4376501731284077108">Без контрол</translation>
 <translation id="4378154925671717803">Телефон</translation>
 <translation id="4412992751769744546">Разрешаване на „бисквитките“ на трети страни</translation>
@@ -290,6 +293,7 @@
 <translation id="5626134646977739690">Име:</translation>
 <translation id="5626370437647899551">Добавяне на профил в Google</translation>
 <translation id="563535393368633106">Извеждане на запитване преди осъществяване на достъп (препоръчително)</translation>
+<translation id="5643573370311148178"><ph name="BEGIN_LINK" />Помощ<ph name="END_LINK" />.</translation>
 <translation id="5646376287012673985">Местоположение</translation>
 <translation id="5659593005791499971">Имейл</translation>
 <translation id="5668404140385795438">Отмяна на искането на уебсайта да не се допуска увеличаване на мащаба</translation>
@@ -310,6 +314,7 @@
 <translation id="5771382037724542929">Искате ли да замените съществуващия файл „<ph name="FILE_NAME" />“ в/ъв „<ph name="DIRECTORY_NAME" />“?</translation>
 <translation id="5804241973901381774">Разрешения</translation>
 <translation id="5806294296882899667">Грешка при зареждането на стандартната папка</translation>
+<translation id="5817918615728894473">Сдвояване</translation>
 <translation id="5832934273103296195">Разгънато – Кликнете за свиване</translation>
 <translation id="583891442612896534">Chrome не може да установи връзка с компресиращите сървъри на Google. Икономията на данни може да е ограничена.</translation>
 <translation id="5860033963881614850">Изключено</translation>
@@ -332,7 +337,6 @@
 <translation id="6040143037577758943">Затваряне</translation>
 <translation id="6042308850641462728">Още</translation>
 <translation id="605721222689873409">ГГ</translation>
-<translation id="6060567974409584397">Докоснете, за да се върнете към раздела</translation>
 <translation id="6066720739967032277">Виждайте разделите си с други скорошни приложения на екрана за общ преглед на телефона си. Можете да контролирате тази функция от <ph name="BEGIN_LINK" />Настройки<ph name="END_LINK" />.</translation>
 <translation id="6075798973483050474">Редактиране на началната страница</translation>
 <translation id="6108923351542677676">Извършва се настройване…</translation>
@@ -380,6 +384,7 @@
 <translation id="6698801883190606802">Управление на синхронизираните данни</translation>
 <translation id="6699351163704950317">Всички запазени страници</translation>
 <translation id="6710213216561001401">Предишна</translation>
+<translation id="6720988912937197322">Запазената страница не е налице офлайн</translation>
 <translation id="6738867403308150051">Изтегля се…</translation>
 <translation id="6770414673596662518">Системата на Chrome за безопасно сърфиране ще се използва също за откриване на злонамерени страници и за да ви защитава от фишинг, злонамерен софтуер и опасни изтегляния.</translation>
 <translation id="6784675033504223784">Търсене на „<ph name="SEARCH_TERM" />“</translation>
@@ -393,7 +398,6 @@
 <translation id="6850830437481525139">Затворихте <ph name="TAB_COUNT" /> раздела</translation>
 <translation id="6857778194843072568">Да се изпращат само при Wi-Fi</translation>
 <translation id="6868088497967843822">Влезте в профила си, за да получите своите отметки, история, пароли и други настройки на всичките си устройства</translation>
-<translation id="6935223586406308151">Домейнът <ph name="DOMAIN_NAME" /> бе добавен към началния ви екран</translation>
 <translation id="6945221475159498467">Изберете</translation>
 <translation id="6963766334940102469">Изтриване на отметките</translation>
 <translation id="6964496835063002391">Добавяне на профил</translation>
@@ -522,6 +526,7 @@
 <translation id="8719023831149562936">Текущият раздел не може да се излъчи</translation>
 <translation id="8725066075913043281">Опитайте отново</translation>
 <translation id="8730621377337864115">Готово</translation>
+<translation id="8737542153238017984">Запазената страница не е налице офлайн. Хранилището е почти пълно.</translation>
 <translation id="8793430725658173476">Копиране на URL адреса</translation>
 <translation id="8798099450830957504">По подразбиране</translation>
 <translation id="8820817407110198400">Отметки</translation>
@@ -552,6 +557,7 @@
 <translation id="9133515669113036225">Нулиране на идентификационните данни на устройството</translation>
 <translation id="9137013805542155359">Показване на оригинала</translation>
 <translation id="9156605176886108508">Няма папки с отметки</translation>
+<translation id="9192643434065497760">Включете Bluetooth от <ph name="BEGIN_LINK" />настройките на устройството<ph name="END_LINK" />, за да разрешите сдвояването.</translation>
 <translation id="9206873250291191720">А</translation>
 <translation id="932327136139879170">Начална страница</translation>
 <translation id="938850635132480979">Грешка: <ph name="ERROR_CODE" /></translation>

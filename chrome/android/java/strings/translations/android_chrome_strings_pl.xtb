@@ -113,6 +113,7 @@
 <translation id="2718352093833049315">Tylko przez Wi-Fi</translation>
 <translation id="2748463065602559597">Przeglądasz bezpieczną stronę Google Chrome.</translation>
 <translation id="2770465223704140727">Usuń z listy</translation>
+<translation id="278029852808208386">Nie znaleziono urządzeń Bluetooth. <ph name="BEGIN_LINK" />Wyszukaj ponownie<ph name="END_LINK" />.</translation>
 <translation id="2816165854387457183">Wykryto wolne połączenie.</translation>
 <translation id="2842985007712546952">Folder nadrzędny</translation>
 <translation id="2870560284913253234">Witryna</translation>
@@ -190,6 +191,7 @@ Aby dostosować wyszukiwane hasło, naciśnij je i przytrzymaj, by je zaznaczyć
 <translation id="4099578267706723511">Pomóż ulepszyć Chrome, wysyłając do Google statystyki użytkowania i raporty o awariach.</translation>
 <translation id="411254640334432676">Błąd pobierania.</translation>
 <translation id="4113030288477039509">Zarządzany przez administratora</translation>
+<translation id="4116939199945053760"><ph name="SITE" /> chce <ph name="BEGIN_LINK" />sparować się z<ph name="END_LINK" />:</translation>
 <translation id="4165986682804962316">Ustawienia witryny</translation>
 <translation id="4170011742729630528">Usługa jest niedostępna. Spróbuj ponownie później.</translation>
 <translation id="4195643157523330669">Otwórz w nowej karcie</translation>
@@ -203,6 +205,7 @@ Aby dostosować wyszukiwane hasło, naciśnij je i przytrzymaj, by je zaznaczyć
 <translation id="4307992518367153382">Podstawy</translation>
 <translation id="4333969446981951071">Korzystając z tej aplikacji, akceptujesz <ph name="BEGIN_LINK1" />Warunki korzystania z Chrome<ph name="END_LINK1" /> oraz <ph name="BEGIN_LINK2" />Informacje na temat ochrony prywatności w Chrome<ph name="END_LINK2" />.</translation>
 <translation id="4351244548802238354">Zamknij okno</translation>
+<translation id="4357362091209756047">Nie widzisz swojego urządzenia? <ph name="BEGIN_LINK1" />Wyszukaj ponownie<ph name="END_LINK1" /> lub <ph name="BEGIN_LINK2" />skorzystaj z pomocy<ph name="END_LINK2" />.</translation>
 <translation id="4376501731284077108">Brak kontroli</translation>
 <translation id="4378154925671717803">Telefon</translation>
 <translation id="4412992751769744546">Zezwalaj na pliki cookie innych firm</translation>
@@ -290,6 +293,7 @@ Wystarczy uruchomić Chrome na komputerze i w menu wybrać „Zaloguj się w Chr
 <translation id="5626134646977739690">Nazwa:</translation>
 <translation id="5626370437647899551">Dodaj konto Google</translation>
 <translation id="563535393368633106">Pytaj przed uzyskaniem dostępu (zalecane)</translation>
+<translation id="5643573370311148178"><ph name="BEGIN_LINK" />Pomoc<ph name="END_LINK" />.</translation>
 <translation id="5646376287012673985">Lokalizacja</translation>
 <translation id="5659593005791499971">E-mail</translation>
 <translation id="5668404140385795438">Zignoruj żądanie strony, gdy chce zapobiec powiększeniu widoku</translation>
@@ -310,6 +314,7 @@ To jednak nie oznacza, że Cię nie widać. Nawet gdy przejdziesz w tryb incogni
 <translation id="5771382037724542929">Chcesz zastąpić istniejący plik <ph name="FILE_NAME" /> w folderze <ph name="DIRECTORY_NAME" />?</translation>
 <translation id="5804241973901381774">Uprawnienia</translation>
 <translation id="5806294296882899667">Błąd przy ładowaniu domyślnego</translation>
+<translation id="5817918615728894473">Sparuj</translation>
 <translation id="5832934273103296195">Rozwinięty – kliknij, by zwinąć</translation>
 <translation id="583891442612896534">Chrome nie może połączyć się z serwerami Google kompresującymi dane. Oszczędność użycia danych może być ograniczona.</translation>
 <translation id="5860033963881614850">Wyłączone</translation>
@@ -332,7 +337,6 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="6040143037577758943">Zamknij</translation>
 <translation id="6042308850641462728">Więcej</translation>
 <translation id="605721222689873409">RR</translation>
-<translation id="6060567974409584397">Kliknij, by wrócić do karty</translation>
 <translation id="6066720739967032277">Karty znajdziesz teraz obok ostatnio używanych aplikacji na ekranie Przegląd na telefonie. Opcje wyświetlania możesz określić w <ph name="BEGIN_LINK" />Ustawieniach<ph name="END_LINK" />.</translation>
 <translation id="6075798973483050474">Edytuj stronę główną</translation>
 <translation id="6108923351542677676">Trwa konfigurowanie…</translation>
@@ -380,6 +384,7 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="6698801883190606802">Zarządzaj synchronizowanymi danymi</translation>
 <translation id="6699351163704950317">Wszystkie zapisane strony</translation>
 <translation id="6710213216561001401">Wstecz</translation>
+<translation id="6720988912937197322">Zapisana strona nie jest dostępna w trybie offline</translation>
 <translation id="6738867403308150051">Pobieram…</translation>
 <translation id="6770414673596662518">System Bezpieczne przeglądanie w Chrome jest też używany do wykrywania złośliwych stron oraz ochrony przed wyłudzaniem informacji, złośliwym oprogramowaniem i szkodliwymi plikami do pobrania.</translation>
 <translation id="6784675033504223784">Szukaj „<ph name="SEARCH_TERM" />”</translation>
@@ -393,7 +398,6 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="6850830437481525139">Zamknięte karty: <ph name="TAB_COUNT" /></translation>
 <translation id="6857778194843072568">Wysyłaj tylko przez Wi-Fi</translation>
 <translation id="6868088497967843822">Zaloguj się, by korzystać z zakładek, historii, haseł i innych ustawień na wszystkich swoich urządzeniach</translation>
-<translation id="6935223586406308151">Domena <ph name="DOMAIN_NAME" /> została dodana do ekranu głównego</translation>
 <translation id="6945221475159498467">Wybierz</translation>
 <translation id="6963766334940102469">Usuń zakładki</translation>
 <translation id="6964496835063002391">Dodaj konto</translation>
@@ -522,6 +526,7 @@ Aby otrzymać nowe licencje, połącz się z internetem i odtwórz pobrane treś
 <translation id="8719023831149562936">Nie można przesłać bieżącej karty</translation>
 <translation id="8725066075913043281">Spróbuj ponownie</translation>
 <translation id="8730621377337864115">Gotowe</translation>
+<translation id="8737542153238017984">Zapisana strona nie jest dostępna w trybie offline. Pamięć jest prawie pełna.</translation>
 <translation id="8793430725658173476">Kopiuj URL</translation>
 <translation id="8798099450830957504">Domyślny</translation>
 <translation id="8820817407110198400">Zakładki</translation>
@@ -552,6 +557,7 @@ Aby otrzymać nowe licencje, połącz się z internetem i odtwórz pobrane treś
 <translation id="9133515669113036225">Zresetuj dane logowania na urządzeniu</translation>
 <translation id="9137013805542155359">Pokaż tekst oryginalny</translation>
 <translation id="9156605176886108508">Brak folderów zakładek</translation>
+<translation id="9192643434065497760">Włącz Bluetooth w <ph name="BEGIN_LINK" />ustawieniach urządzenia<ph name="END_LINK" />, by umożliwić parowanie.</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="932327136139879170">Strona główna</translation>
 <translation id="938850635132480979">Błąd: <ph name="ERROR_CODE" /></translation>

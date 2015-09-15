@@ -113,6 +113,7 @@
 <translation id="2718352093833049315">Лише у Wi-Fi</translation>
 <translation id="2748463065602559597">Ви переглядаєте безпечну сторінку Google Chrome.</translation>
 <translation id="2770465223704140727">Видалити зі списку</translation>
+<translation id="278029852808208386">Пристроїв Bluetooth не знайдено. <ph name="BEGIN_LINK" />Пошукайте ще раз<ph name="END_LINK" />.</translation>
 <translation id="2816165854387457183">Виявлено повільне з’єднання.</translation>
 <translation id="2842985007712546952">Батьківська папка</translation>
 <translation id="2870560284913253234">Сайт</translation>
@@ -190,6 +191,7 @@
 <translation id="4099578267706723511">Допоможіть покращити Chrome, надсилаючи статистику та звіти про збої в Google.</translation>
 <translation id="411254640334432676">Не завантажено.</translation>
 <translation id="4113030288477039509">Керується адміністратором</translation>
+<translation id="4116939199945053760"><ph name="BEGIN_LINK" />Підключити<ph name="END_LINK" /> сайт <ph name="SITE" /> до:</translation>
 <translation id="4165986682804962316">Налаштування сайту</translation>
 <translation id="4170011742729630528">Служба не доступна. Повторіть спробу пізніше.</translation>
 <translation id="4195643157523330669">Відкрити в новій вкладці</translation>
@@ -203,6 +205,7 @@
 <translation id="4307992518367153382">Основи</translation>
 <translation id="4333969446981951071">Користуючись цим додатком, ви приймаєте <ph name="BEGIN_LINK1" />Умови використання<ph name="END_LINK1" /> та <ph name="BEGIN_LINK2" />Примітку про конфіденційність<ph name="END_LINK2" /> Chrome.</translation>
 <translation id="4351244548802238354">Закрити діалогове вікно</translation>
+<translation id="4357362091209756047">Не бачите свого пристрою? <ph name="BEGIN_LINK1" />Пошукайте ще раз<ph name="END_LINK1" /> або <ph name="BEGIN_LINK2" />перегляньте довідку<ph name="END_LINK2" />.</translation>
 <translation id="4376501731284077108">Без контролю</translation>
 <translation id="4378154925671717803">Телефон</translation>
 <translation id="4412992751769744546">Дозволити сторонні файли cookie</translation>
@@ -290,6 +293,7 @@
 <translation id="5626134646977739690">Ім'я:</translation>
 <translation id="5626370437647899551">Додати обліковий запис Google</translation>
 <translation id="563535393368633106">Запитувати дозволу, перш ніж надавати доступ (рекомендується)</translation>
+<translation id="5643573370311148178"><ph name="BEGIN_LINK" />Довідка<ph name="END_LINK" />.</translation>
 <translation id="5646376287012673985">Місцезнаходження</translation>
 <translation id="5659593005791499971">Електронна пошта</translation>
 <translation id="5668404140385795438">Відхиляти запит веб-сайту, щоб забороняти масштабування</translation>
@@ -310,6 +314,7 @@
 <translation id="5771382037724542929">Замінити наявний файл "<ph name="FILE_NAME" />" у каталозі "<ph name="DIRECTORY_NAME" />"?</translation>
 <translation id="5804241973901381774">Дозволи</translation>
 <translation id="5806294296882899667">Не вдалося завантажити папку за умовчанням</translation>
+<translation id="5817918615728894473">Підключити</translation>
 <translation id="5832934273103296195">Розгорнуто – натисніть, щоб згорнути</translation>
 <translation id="583891442612896534">Chrome не може зв’язатись із серверами Google для стиснення даних. Можливо, у вас обмежене заощадження даних.</translation>
 <translation id="5860033963881614850">Вимк.</translation>
@@ -332,7 +337,6 @@
 <translation id="6040143037577758943">Закрити</translation>
 <translation id="6042308850641462728">Більше</translation>
 <translation id="605721222689873409">РР</translation>
-<translation id="6060567974409584397">Торкніться, щоб повернутися на вкладку</translation>
 <translation id="6066720739967032277">Переглядайте вкладки та нещодавно відкриті додатки на екрані огляду свого телефона. Цією функцією можна керувати в <ph name="BEGIN_LINK" />налаштуваннях<ph name="END_LINK" />.</translation>
 <translation id="6075798973483050474">Змінити домашню сторінку</translation>
 <translation id="6108923351542677676">Виконується налаштування…</translation>
@@ -380,6 +384,7 @@
 <translation id="6698801883190606802">Керування синхронізованими даними</translation>
 <translation id="6699351163704950317">Усі збережені сторінки</translation>
 <translation id="6710213216561001401">Попереднє</translation>
+<translation id="6720988912937197322">Збережена сторінка недоступна в режимі офлайн</translation>
 <translation id="6738867403308150051">Завантаження…</translation>
 <translation id="6770414673596662518">Система Безпечного перегляду Chrome також використовується для виявлення шкідливих сторінок і захисту від фішингу, зловмисного програмного забезпечення та небезпечних завантажень.</translation>
 <translation id="6784675033504223784">Шукати "<ph name="SEARCH_TERM" />"</translation>
@@ -393,7 +398,6 @@
 <translation id="6850830437481525139">Закрито вкладок: <ph name="TAB_COUNT" /></translation>
 <translation id="6857778194843072568">Надсилати лише через Wi-Fi</translation>
 <translation id="6868088497967843822">Увійдіть в обліковий запис, щоб мати доступ до своїх закладок, історії, паролів та інших налаштувань на всіх своїх пристроях</translation>
-<translation id="6935223586406308151"><ph name="DOMAIN_NAME" /> додано на головний екран</translation>
 <translation id="6945221475159498467">Вибрати</translation>
 <translation id="6963766334940102469">Видалити закладки</translation>
 <translation id="6964496835063002391">Додати обліковий запис</translation>
@@ -522,6 +526,7 @@
 <translation id="8719023831149562936">Неможливо передати дані поточної вкладки</translation>
 <translation id="8725066075913043281">Повторити спробу</translation>
 <translation id="8730621377337864115">Готово</translation>
+<translation id="8737542153238017984">Збережена сторінка недоступна в режимі офлайн. Пам’ять майже заповнена.</translation>
 <translation id="8793430725658173476">Копіювати URL-адресу</translation>
 <translation id="8798099450830957504">За умовчанням</translation>
 <translation id="8820817407110198400">Закладки</translation>
@@ -552,6 +557,7 @@
 <translation id="9133515669113036225">Скинути облікові дані пристрою</translation>
 <translation id="9137013805542155359">Показати оригінал</translation>
 <translation id="9156605176886108508">Немає папок із закладками</translation>
+<translation id="9192643434065497760">Щоб підключити, увімкніть Bluetooth у <ph name="BEGIN_LINK" />налаштуваннях пристрою<ph name="END_LINK" />.</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="932327136139879170">Домашня сторінка</translation>
 <translation id="938850635132480979">Помилка: <ph name="ERROR_CODE" /></translation>

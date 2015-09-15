@@ -3,6 +3,7 @@
 <translationbundle lang="id">
 <translation id="1000498691615767391">Pilih yang akan dibuka</translation>
 <translation id="1000916256947465293">Secara otomatis masuk ke situs web menggunakan kredensial yang tersimpan. Saat fitur dinonaktifkan, Anda akan diminta untuk verifikasi setiap saat sebelum masuk ke situs web.</translation>
+<translation id="1005274289863221750">Menggunakan mikrofon dan kamera Anda</translation>
 <translation id="1007233996198401083">Tidak dapat tersambung.</translation>
 <translation id="1007408791287232274">Tidak dapat memuat perangkat.</translation>
 <translation id="1008557486741366299">Jangan Sekarang</translation>
@@ -21,11 +22,14 @@
 <translation id="1029595648591494741">Coba "<ph name="EXTENSION_NAME" />"?</translation>
 <translation id="1031362278801463162">Memuat pratinjau</translation>
 <translation id="1031460590482534116">Terjadi kesalahan ketika mencoba menyimpan sertifikat klien. Kesalahan <ph name="ERROR_NUMBER" /> (<ph name="ERROR_NAME" />).</translation>
+<translation id="1033780634303702874">Mengakses perangkat seri Anda</translation>
 <translation id="1035094536595558507">Tampilan slide</translation>
 <translation id="1035590878859356651">Bookmark laman ini...</translation>
 <translation id="1036348656032585052">Matikan</translation>
+<translation id="1036511912703768636">Akses salah satu perangkat USB ini</translation>
 <translation id="1038168778161626396">Khusus Penyandi</translation>
 <translation id="1038842779957582377">nama tidak diketahui</translation>
+<translation id="1040931876666128942">Notifikasi WebUsb</translation>
 <translation id="1042174272890264476">Komputer Anda juga dilengkapi dengan perpustakaan RLZ <ph name="SHORT_PRODUCT_NAME" /> yang tertanam di dalamnya. RLZ menetapkan tag tak unik dan tidak dapat diidentifikasi secara pribadi untuk mengukur penelusuran dan penggunaan <ph name="SHORT_PRODUCT_NAME" /> yang didorong oleh kampanye promosi tertentu. Biasanya label ini muncul di kueri Google Penelusuran di <ph name="PRODUCT_NAME" />.</translation>
 <translation id="1042574203789536285"><ph name="URL" /> ingin menyimpan data berukuran besar pada perangkat Anda secara permanen.</translation>
 <translation id="1045157690796831147">Transliterasi (namaskar → നമസ്കാരം)</translation>
@@ -37,9 +41,9 @@
 <translation id="1054153489933238809">Buka &amp;Gambar Asli di Tab Baru</translation>
 <translation id="1055806300943943258">Menelusuri perangkat USB dan Bluetooth...</translation>
 <translation id="1056898198331236512">Peringatan</translation>
+<translation id="1056982457359827501">Mengaktifan iklan BLE di Chrome Apps. Iklan BLE mungkin dapat mengganggu penggunaan reguler fitur Bluetooth Hemat Energi.</translation>
 <translation id="1058325955712687476">Mengaktifkan Layanan Keterlibatan Situs, yang merekam interaksi dengan situs dan mengalokasikan sumber daya yang sesuai.</translation>
 <translation id="1058418043520174283"><ph name="INDEX" /> dari <ph name="COUNT" /></translation>
-<translation id="1059059430032922484">Membaca dan mengubah apa pun yang Anda ketik, termasuk tombol untuk beralih tugas seperti ALT+TAB</translation>
 <translation id="10614374240317010">Jangan pernah disimpan</translation>
 <translation id="1062407476771304334">Ganti</translation>
 <translation id="1062866675591297858">Mengelola pengguna yang dilindungi milik Anda menggunakan <ph name="BEGIN_LINK" />Dasbor Pengguna yang Dilindungi<ph name="END_LINK" />.</translation>
@@ -193,6 +197,7 @@
 <translation id="1274997165432133392">Cookie dan data situs lain</translation>
 <translation id="1275718070701477396">Dipilih</translation>
 <translation id="1278049586634282054">Periksa tampilan:</translation>
+<translation id="1278813325885878377">Keyboard QWERTY Magyar</translation>
 <translation id="1285320974508926690">Jangan pernah terjemahkan situs ini</translation>
 <translation id="1285484354230578868">Simpan data di akun Google Drive Anda</translation>
 <translation id="1286637972568390913">Nonaktifkan dukungan dekode video perangkat keras WebRTC.</translation>
@@ -420,6 +425,7 @@
 
 <ph name="EXTENSION_NAME" /></translation>
 <translation id="1587275751631642843">Konsol &amp;JavaScript</translation>
+<translation id="158809615184981282">Keyboard Faeroe</translation>
 <translation id="1588343017533984630">Menonaktifkan pembuatan shim aplikasi di Mac saat membuat aplikasi yang dihost.</translation>
 <translation id="1588870296199743671">Buka Tautan Dengan...</translation>
 <translation id="1589055389569595240">Tampilkan Ejaan dan Grammar</translation>
@@ -509,7 +515,6 @@
 <translation id="169515659049020177">Shift</translation>
 <translation id="1697068104427956555">Pilih area kotak pada gambar.</translation>
 <translation id="1697532407822776718">Anda sudah siap!</translation>
-<translation id="1698647588772720278">Menonaktifkan Ekstensi Media Terenkripsi yang mengawali.</translation>
 <translation id="1699395855685456105">Revisi perangkat keras:</translation>
 <translation id="1701062906490865540">Hapus orang ini</translation>
 <translation id="1702534956030472451">Barat</translation>
@@ -719,6 +724,7 @@
 <translation id="2045969484888636535">Lanjutkan pencekalan cookie</translation>
 <translation id="2046040965693081040">Gunakan Laman Saat Ini</translation>
 <translation id="204622017488417136">Perangkat Anda akan dikembalikan ke versi Chrome yang terpasang sebelumnya. Semua akun pengguna dan data lokal akan dihapus. Tindakan ini tidak dapat diurungkan.</translation>
+<translation id="2048182445208425546">Mengakses lalu lintas jaringan Anda</translation>
 <translation id="2049137146490122801">Akses ke file lokal pada komputer Anda dinonaktifkan oleh administrator.</translation>
 <translation id="204914487372604757">Buat pintasan</translation>
 <translation id="2049639323467105390">Perangkat ini dikelola oleh <ph name="DOMAIN" />.</translation>
@@ -826,6 +832,7 @@
 <translation id="220138918934036434">Sembunyikan tombol</translation>
 <translation id="2202898655984161076">Ada masalah dengan pencantuman printer. Beberapa printer Anda mungkin tidak berhasil didaftarkan ke <ph name="CLOUD_PRINT_NAME" />.</translation>
 <translation id="2204034823255629767">Membaca dan mengubah apa saja yang Anda ketik</translation>
+<translation id="2208105671494637223">Bepo Prancis</translation>
 <translation id="2208158072373999562">Arsip Zip</translation>
 <translation id="2208311832613497869">Ups! Anda perlu izin dari orang tua untuk mengunjungi laman ini.</translation>
 <translation id="220858061631308971">Masukkan kode PIN ini ke "<ph name="DEVICE_NAME" />":</translation>
@@ -853,6 +860,7 @@
 <translation id="223714078860837942">Jika suatu laman belum disetel kebijakan perujuk eksplisitnya, menyetel tanda ini akan mengurangi jumlah informasi dalam header 'perujuk' untuk permintaan antar asal.</translation>
 <translation id="2238379619048995541">Data Status Frekuensi</translation>
 <translation id="2239921694246509981">Tambahkan orang yang dilindungi</translation>
+<translation id="2241053333139545397">Membaca dan mengubah data Anda di sejumlah situs web</translation>
 <translation id="2241468422635044128">Diizinkan oleh ekstensi</translation>
 <translation id="2242603986093373032">Tidak ada perangkat</translation>
 <translation id="2242687258748107519">Info File</translation>
@@ -886,7 +894,9 @@ Setelah membuat pengguna yang dilindungi, Anda dapat mengelola setelannya kapan 
     Apa pun yang terjadi pada perangkat Anda, file Anda tersimpan dengan aman di Google Drive.<ph name="MARKUP_6" />
     <ph name="MARKUP_7" />Berbagi, membuat, dan berkolaborasi<ph name="MARKUP_8" />
     suatu file dengan orang lain, semuanya di satu tempat.<ph name="MARKUP_9" /></translation>
+<translation id="2270450558902169558">Menukar data dengan perangkat apa pun dalam domain <ph name="DOMAIN" /></translation>
 <translation id="2270484714375784793">Nomor telepon</translation>
+<translation id="2270627217422354837">Menukar data dengan perangkat apa pun dalam domain: <ph name="DOMAINS" /></translation>
 <translation id="2271281383664374369">Permintaan ekstensi ke URL ini tersendat untuk sementara.</translation>
 <translation id="2273562597641264981">Operator:</translation>
 <translation id="2276503375879033601">Tambahkan aplikasi lainnya</translation>
@@ -1140,6 +1150,7 @@ Saya rasa situs ini tidak perlu diblokir!</translation>
 <translation id="2610780100389066815">Microsoft Trust List Signing</translation>
 <translation id="2612676031748830579">Nomor kartu kredit</translation>
 <translation id="2615569600992945508">Jangan izinkan situs apa pun untuk menonaktifkan kursor mouse</translation>
+<translation id="2616366145935564096">Membaca dan mengubah data Anda di <ph name="WEBSITE_1" /></translation>
 <translation id="2617653079636271958">Zoom: <ph name="VALUE" />%</translation>
 <translation id="2617919205928008385">Ruang tidak cukup</translation>
 <translation id="2618254410484974446">Identitas situs web ini telah diverifikasi oleh <ph name="ISSUER" />. Informasi Transparansi Sertifikat diberikan oleh server, namun tidak valid.</translation>
@@ -1348,6 +1359,7 @@ Saya rasa situs ini tidak perlu diblokir!</translation>
 <translation id="2875698561019555027">(Laman kesalahan Chrome)</translation>
 <translation id="2879560882721503072">Berhasil menyimpan sertifikat yang diterbitkan oleh <ph name="ISSUER" />.</translation>
 <translation id="288024221176729610">Cheska</translation>
+<translation id="288042212351694283">Akses perangkat Universal 2nd Factor Anda</translation>
 <translation id="2881966438216424900">Terakhir diakses:</translation>
 <translation id="2882943222317434580"><ph name="IDS_SHORT_PRODUCT_NAME" /> akan segera dimulai dan disetel ulang</translation>
 <translation id="2885378588091291677">Pengelola Tugas</translation>
@@ -1379,6 +1391,7 @@ Saya rasa situs ini tidak perlu diblokir!</translation>
 <translation id="2918322085844739869">4</translation>
 <translation id="2918583523892407401">Menggunakan kotak pasir Sinkronisasi Chrome</translation>
 <translation id="291886813706048071">Anda dapat menelusuri dari sini dengan <ph name="SEARCH_ENGINE" /></translation>
+<translation id="2922350208395188000">Sertifikat server tidak dapat diperiksa.</translation>
 <translation id="2923240520113693977">Esti</translation>
 <translation id="29232676912973978">Kelola sambungan...</translation>
 <translation id="2923469375796950815">Nonaktifkan ZIP unpacker baru.</translation>
@@ -1586,7 +1599,6 @@ Saya rasa situs ini tidak perlu diblokir!</translation>
 <translation id="3207960819495026254">Diberi bookmark</translation>
 <translation id="320825648481311438">Saat diaktifkan, browser mengelola proses masuk dan keluar akun Google.</translation>
 <translation id="3208703785962634733">Tidak dipastikan</translation>
-<translation id="3212792897911394068">Menonaktifkan versi eksperimental Ekstensi Media yang Dienkripsi pada elemen video dan audio.</translation>
 <translation id="3216508313927987948">Agar dapat melakukannya, Anda perlu melatih <ph name="DEVICE_TYPE" /> dengan langkah berikut.</translation>
 <translation id="3220586366024592812">Proses penyambung <ph name="CLOUD_PRINT_NAME" /> ngadat. Mulai ulang?</translation>
 <translation id="3221634914176615296">Jelajahi konten perangkat di aplikasi File.</translation>
@@ -1748,11 +1760,11 @@ Saya rasa situs ini tidak perlu diblokir!</translation>
 <translation id="3439153939049640737">Selalu izinkan <ph name="HOST" /> mengakses mikrofon Anda</translation>
 <translation id="3439970425423980614">Membuka PDF dalam Pratinjau</translation>
 <translation id="3441653493275994384">Layar</translation>
-<translation id="3442535954345742822">Membaca dan mengubah semua data Anda pada perangkat dan situs web yang dikunjungi</translation>
 <translation id="3444783709767514481">Waktu Saat Ditransmisikan Pertama Kali</translation>
 <translation id="3445092916808119474">Jadikan sebagai utama</translation>
 <translation id="3445830502289589282">Autentikasi tahap 2:</translation>
 <translation id="3445925074670675829">Perangkat USB-C</translation>
+<translation id="344630545793878684">Membaca data Anda di sejumlah situs</translation>
 <translation id="3447661539832366887">Pemilik perangkat ini menonaktifkan game dinosaurus.</translation>
 <translation id="3449839693241009168">Tekan <ph name="SEARCH_KEY" /> untuk mengirimkan perintah ke <ph name="EXTENSION_NAME" /></translation>
 <translation id="3450157232394774192">Persentase Pemakaian Status Menganggur</translation>
@@ -1889,6 +1901,7 @@ Saya rasa situs ini tidak perlu diblokir!</translation>
 <translation id="3601395307734599350">Semua ekstensi Anda ada di sini</translation>
 <translation id="3603385196401704894">Prancis Kanada</translation>
 <translation id="3603622770190368340">Mendapatkan sertifikat jaringan</translation>
+<translation id="3603690020645187079">Keyboard Bepo Prancis</translation>
 <translation id="3605780360466892872">Pria Berdasi</translation>
 <translation id="3608454375274108141">F10</translation>
 <translation id="3608576286259426129">Pratinjau gambar pengguna</translation>
@@ -2021,6 +2034,7 @@ Saya rasa situs ini tidak perlu diblokir!</translation>
 <translation id="3758760622021964394">Laman ini ingin menonaktifkan kursor mouse Anda.</translation>
 <translation id="3759371141211657149">Kelola setelan penangan...</translation>
 <translation id="3759461132968374835">Tidak ada laporan kondisi ngadat saat ini. Kondisi ngadat yang terjadi saat pelaporan kondisi ngadat tidak diaktifkan tidak akan tampil di sini.</translation>
+<translation id="3759933321830434300">Blokir bagian laman web</translation>
 <translation id="3760460896538743390">Periksa Laman Latar &amp;Belakang</translation>
 <translation id="37613671848467444">Buka di &amp;Jendela Penyamaran</translation>
 <translation id="3764583730281406327">{NUM_DEVICES,plural, =1{Berkomunikasi dengan satu perangkat USB}other{Berkomunikasi dengan # perangkat USB}}</translation>
@@ -2052,6 +2066,7 @@ Saya rasa situs ini tidak perlu diblokir!</translation>
 <translation id="3798449238516105146">Versi</translation>
 <translation id="3800503346337426623">Lompati masuk dan jelajahi sebagai Tamu</translation>
 <translation id="3800764353337460026">Gaya simbol</translation>
+<translation id="3801082500826908679">Faeroe</translation>
 <translation id="3803991353670408298">Tambahkan metode masukan lain sebelum menghapus ini.</translation>
 <translation id="380408572480438692">Mengaktifkan koleksi data kinerja akan membantu meningkatkan sistem sepanjang waktu. Tidak ada data yang terkirim hingga mengajukan laporan masukan (Alt-Shift-I) dan menyertakan data kinerja. Anda dapat kembali ke layar ini untuk menonaktifkan koleksi kapan saja.</translation>
 <translation id="3807747707162121253">&amp;Batal</translation>
@@ -2184,6 +2199,7 @@ Saya rasa situs ini tidak perlu diblokir!</translation>
 <translation id="3979395879372752341">Ekstensi baru ditambahkan (<ph name="EXTENSION_NAME" />)</translation>
 <translation id="3979748722126423326">Aktifkan <ph name="NETWORKDEVICE" /></translation>
 <translation id="3981760180856053153">Jenis penyimpanan yang dimasukkan tidak valid.</translation>
+<translation id="3983586614702900908">perangkat dari vendor tak dikenal</translation>
 <translation id="3984413272403535372">Kesalahan ketika menandai ekstensi.</translation>
 <translation id="399179161741278232">Diimpor</translation>
 <translation id="3991936620356087075">Anda terlalu sering memasukkan Kunci Pembuka PIN yang salah. Kartu SIM Anda dinonaktifkan secara permanen.</translation>
@@ -2474,7 +2490,6 @@ Tekan sembarang tombol untuk melanjutkan penjelajahan.</translation>
 <translation id="4433914671537236274">Buat Media Pemulihan</translation>
 <translation id="4434147949468540706">Pengguliran dan efek</translation>
 <translation id="443464694732789311">Lanjutkan</translation>
-<translation id="4436068767502531396">Saat ini Google Drive tidak dapat menyinkronkan "<ph name="FILENAME" />". Coba lagi nanti.</translation>
 <translation id="4436456292809448986">Tambahkan ke Desktop...</translation>
 <translation id="4439244508678316632">Lisensi konten</translation>
 <translation id="4439318412377770121">Ingin mendaftarkan <ph name="DEVICE_NAME" /> ke Perangkat Google Cloud?</translation>
@@ -2482,6 +2497,7 @@ Tekan sembarang tombol untuk melanjutkan penjelajahan.</translation>
 <translation id="444134486829715816">Luaskan...</translation>
 <translation id="444267095790823769">Pengecualian konten yang dilindungi</translation>
 <translation id="4443536555189480885">&amp;Bantuan</translation>
+<translation id="4444304522807523469">Mengakses pemindai dokumen yang terpasang melalui USB atau pada jaringan lokal</translation>
 <translation id="4446933390699670756">Dicerminkan</translation>
 <translation id="4447465454292850432">Baterai:</translation>
 <translation id="4448186133363537200">Menonaktifkan kemampuan javascript untuk mengunci orientasi layar.</translation>
@@ -2522,6 +2538,7 @@ Tekan sembarang tombol untuk melanjutkan penjelajahan.</translation>
 <translation id="4509345063551561634">Lokasi:</translation>
 <translation id="4514542542275172126">Menyiapkan pengguna yang dilindungi yang baru</translation>
 <translation id="4518677423782794009">Apakah Chrome mogok, menampilkan laman mulai, bilah alat yang tidak biasanya, iklan munculan yang tidak dapat ditutup, atau mengubah pengalaman penjelajahan? Anda dapat memperbaiki masalah ini dengan menjalankan Alat Pembersih Chrome.</translation>
+<translation id="452039078290142656">perangkat tak dikenal dari <ph name="VENDOR_NAME" /></translation>
 <translation id="4522570452068850558">Detail</translation>
 <translation id="452785312504541111">Karakter Bahasa Inggris dengan Lebar Tetap</translation>
 <translation id="4533259260976001693">Ciutkan/Luaskan</translation>
@@ -2533,6 +2550,7 @@ Tekan sembarang tombol untuk melanjutkan penjelajahan.</translation>
 <translation id="4538684596480161368">Selalu blokir plugin yang tidak dimasukkan kotak pasir di <ph name="HOST" /></translation>
 <translation id="4538792345715658285">Dipasang oleh kebijakan perusahaan.</translation>
 <translation id="45400070127195133">Dengan mengaktifkan opsi ini, Anda memungkinkan aplikasi web mengakses Ekstensi WebGL yang masih dalam status draf.</translation>
+<translation id="4542520061254486227">Membaca data Anda di <ph name="WEBSITE_1" /> dan <ph name="WEBSITE_2" /></translation>
 <translation id="4543733025292526486">esc</translation>
 <translation id="4543778593405494224">Pengelola sertifikat</translation>
 <translation id="4544744325790288581">Menggunakan versi eksperimental proxy pengurangan data. Proxy harus diaktifkan dalam setelan untuk agar penanda ini dapat diterapkan.</translation>
@@ -2605,6 +2623,7 @@ Tekan sembarang tombol untuk melanjutkan penjelajahan.</translation>
 <translation id="4647090755847581616">&amp;Tutup Tab</translation>
 <translation id="4647697156028544508">Masukkan PIN untuk "<ph name="DEVICE_NAME" />":</translation>
 <translation id="4648491805942548247">Izin tidak mencukupi</translation>
+<translation id="4650159467443406318">Klik di sini untuk mengunjungi laman ini</translation>
 <translation id="4653235815000740718">Ada masalah saat membuat media pemulihan OS. Perangkat penyimpanan yang dipakai tidak dapat ditemukan.</translation>
 <translation id="4654488276758583406">Sangat Kecil</translation>
 <translation id="465499440663162826">Tidak dapat tersambung ke Toko Web Chrome.</translation>
@@ -2929,6 +2948,7 @@ Tekan sembarang tombol untuk melanjutkan penjelajahan.</translation>
 <translation id="5122371513570456792">Ditemukan <ph name="NUMBER_OF_RESULTS" /> <ph name="SEARCH_RESULTS" /> hasil untuk '<ph name="SEARCH_STRING" />'.</translation>
 <translation id="5125751979347152379">URL tidak valid.</translation>
 <translation id="512608082539554821">Jika diaktifkan, transisi selama tutorial awal akan bergerak.</translation>
+<translation id="5127881134400491887">Mengelola sambungan jaringan</translation>
 <translation id="512903556749061217">terpasang</translation>
 <translation id="5129301143853688736">Sambungan Anda ke situs ini tidak bersifat pribadi. Penyerang mungkin mencoba mencuri informasi Anda (misalnya foto, sandi, pesan, dan kartu kredit) dari <ph name="DOMAIN" />.</translation>
 <translation id="5129662217315786329">Polski</translation>
@@ -3059,7 +3079,6 @@ Tekan sembarang tombol untuk melanjutkan penjelajahan.</translation>
 <translation id="529172024324796256">Nama pengguna:</translation>
 <translation id="529175790091471945">Format perangkat ini</translation>
 <translation id="5292890015345653304">Masukkan kartu SD atau stik memori USB</translation>
-<translation id="5293659407874396561"><ph name="SUBJECT" /> (<ph name="ISSUER" />)</translation>
 <translation id="5294529402252479912">Mutakhirkan Adobe Reader sekarang</translation>
 <translation id="5298219193514155779">Tema dibuat oleh</translation>
 <translation id="5298363578196989456">Tidak dapat mengimpor ekstensi "<ph name="IMPORT_NAME" />" karena bukan modul yang dibagikan.</translation>
@@ -3295,6 +3314,7 @@ Tekan sembarang tombol untuk melanjutkan penjelajahan.</translation>
 <translation id="561349411957324076">Selesai</translation>
 <translation id="5613695965848159202">Identitas anonim:</translation>
 <translation id="5614190747811328134">Notifikasi Pengguna</translation>
+<translation id="5617934323658610138">Aktifkan Iklan BLE di Chrome Apps.</translation>
 <translation id="5618075537869101857">Waduh, aplikasi kios tidak dapat diluncurkan.</translation>
 <translation id="5618333180342767515">(mungkin membutuhkan beberapa menit)</translation>
 <translation id="5618972959246891967">Tanggal sistem</translation>
@@ -3341,6 +3361,7 @@ Tekan sembarang tombol untuk melanjutkan penjelajahan.</translation>
 <translation id="5677928146339483299">Dicekal</translation>
 <translation id="5678550637669481956">Akses membaca dan menulis ke <ph name="VOLUME_NAME" /> telah diberikan.</translation>
 <translation id="567881659373499783">Versi <ph name="PRODUCT_VERSION" /></translation>
+<translation id="5678955352098267522">Membaca data Anda di <ph name="WEBSITE_1" /></translation>
 <translation id="5680545064257783621">Menyediakan tombol nonaktifkan untuk percobaan bookmark yang disempurnakan</translation>
 <translation id="568428328938709143">Akun dihapus</translation>
 <translation id="5684661240348539843">Pengenal Aset</translation>
@@ -3360,6 +3381,7 @@ Tekan sembarang tombol untuk melanjutkan penjelajahan.</translation>
 <translation id="5702898740348134351">&amp;Edit Mesin Telusur...</translation>
 <translation id="5703594190584829406">Menampilkan saran IsiOtomatis di bagian atas keyboard, bukan di menu tarik-turun.</translation>
 <translation id="5704272569086782895">Aktifkan untaian rasterisasi GPU.</translation>
+<translation id="570544101664452060">Notifikasi eksperimental WebUsb.</translation>
 <translation id="5706551819490830015">Kelola alamat penagihan...</translation>
 <translation id="5707185214361380026">Gagal memuat ekstensi dari:</translation>
 <translation id="5707604204219538797">Kata berikutnya</translation>
@@ -3394,6 +3416,7 @@ Tekan sembarang tombol untuk melanjutkan penjelajahan.</translation>
 <translation id="5752453871435543420">Cadangan Awan Chrome OS</translation>
 <translation id="5754903485544371559">Tambahkan ke Aplikasi...</translation>
 <translation id="5756163054456765343">Pusat bantuan</translation>
+<translation id="5756666464756035725">QWERTY Magyar</translation>
 <translation id="5757567991662509396">Mengaktifkan penggunaan pemeriksa ejaan Android.</translation>
 <translation id="5758389120290973856">Nonaktifkan Impor ke Awan.</translation>
 <translation id="5759272020525228995">Situs web mengalami kesalahan saat mengambil <ph name="URL" />.
@@ -3548,6 +3571,7 @@ Tekan sembarang tombol untuk melanjutkan penjelajahan.</translation>
 <translation id="5966707198760109579">Minggu</translation>
 <translation id="5967271952920681214">https://passwords.google.com/?hl=<ph name="GRITLANGCODE_1" /></translation>
 <translation id="5967867314010545767">Hapus dari riwayat</translation>
+<translation id="5971037678316050792">Mengontrol penyandingan dan keadaan adaptor Bluetooth</translation>
 <translation id="5972017421290582825">Kelola setelan MIDI...</translation>
 <translation id="5972826969634861500">Mulai <ph name="PRODUCT_NAME" /></translation>
 <translation id="5975083100439434680">Perkecil</translation>
@@ -3610,6 +3634,7 @@ Tekan sembarang tombol untuk melanjutkan penjelajahan.</translation>
 <translation id="6074825444536523002">Google Formulir</translation>
 <translation id="6075731018162044558">Ups!  Sistem gagal mencapai token akses API jangka panjang untuk perangkat ini.</translation>
 <translation id="6075880972317537864">Penyerang di <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> mungkin mencoba mengelabui Anda untuk mencuri informasi (misalnya sandi, pesan, atau kartu kredit).</translation>
+<translation id="6075907793831890935">Menukar data dengan perangkat yang bernama <ph name="HOSTNAME" /></translation>
 <translation id="607776788151925847">Membatalkan pendaftaran...</translation>
 <translation id="6080100832288487452">Ketikan isyarat untuk keyboard virtual.</translation>
 <translation id="6080689532560039067">Periksa waktu sistem Anda</translation>
@@ -3724,6 +3749,7 @@ Tekan sembarang tombol untuk melanjutkan penjelajahan.</translation>
 <translation id="6232017090690406397">Baterai</translation>
 <translation id="6232139169545176020">Skema URI yang diminta tidak didukung.</translation>
 <translation id="6237614789842758826">Telusuri di Google</translation>
+<translation id="6241530762627360640">Mengakses informasi tentang perangkat Bluetooth yang disandingkan dengan sistem Anda dan menemukan perangkat Bluetooth di sekitarnya.</translation>
 <translation id="6243774244933267674">Server tidak tersedia</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE" />%</translation>
 <translation id="624789221780392884">Pembaruan siap</translation>
@@ -3786,6 +3812,7 @@ Tekan sembarang tombol untuk melanjutkan penjelajahan.</translation>
 <translation id="6341850831632289108">Mendeteksi lokasi fisik Anda</translation>
 <translation id="6342069812937806050">Baru saja</translation>
 <translation id="634208815998129842">Pengelola tugas</translation>
+<translation id="6344170822609224263">Mengakses daftar sambungan jaringan</translation>
 <translation id="6344783595350022745">Hapus Teks</translation>
 <translation id="6347003977836730270">Mengaktifkan penawaran UX gelembung Terjemahan yang baru, bukan bilah info.</translation>
 <translation id="6348657800373377022">Kotak kombo</translation>
@@ -3804,6 +3831,7 @@ Tekan sembarang tombol untuk melanjutkan penjelajahan.</translation>
 <translation id="6374100501221763867">Nonaktifkan dekode video yang dipercepat perangkat keras.</translation>
 <translation id="6380143666419481200">Setujui dan lanjutkan</translation>
 <translation id="6380224340023442078">Setelan konten...</translation>
+<translation id="6384275966486438344">Ubah setelan penelusuran Anda menjadi: <ph name="SEARCH_HOST" /></translation>
 <translation id="6385543213911723544">Situs dapat menyimpan dan membaca data cookie</translation>
 <translation id="6387478394221739770">Tertarik dengan fitur Chrome baru yang keren? Coba saluran beta kami di chrome.com/beta.</translation>
 <translation id="6390799748543157332">Laman yang Anda lihat di jendela ini tidak akan muncul dalam riwayat browser dan tidak meninggalkan jejak lain, seperti cookie, di komputer setelah Anda menutup semua jendela Tamu yang terbuka. Namun, file apa pun yang Anda unduh akan tersimpan.</translation>
@@ -3820,6 +3848,7 @@ Tekan sembarang tombol untuk melanjutkan penjelajahan.</translation>
 <translation id="6405640832764359650">Aktifkan kotak centang penyimpanan kartu Google Payments</translation>
 <translation id="6406303162637086258">Simulasikan mulai ulang browser</translation>
 <translation id="6407080938771313237">HUD sentuhan proyeksi</translation>
+<translation id="6408118934673775994">Membaca dan mengubah data Anda di <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, dan <ph name="WEBSITE_3" /></translation>
 <translation id="6409731863280057959">Munculan</translation>
 <translation id="6410063390789552572">Tidak dapat mengakses pustaka jaringan</translation>
 <translation id="6410257289063177456">File Gambar</translation>
@@ -4028,6 +4057,7 @@ Tekan sembarang tombol untuk melanjutkan penjelajahan.</translation>
 <translation id="6690751852586194791">Pilih pengguna yang dilindungi untuk ditambahkan ke perangkat ini.</translation>
 <translation id="6691936601825168937">&amp;Maju</translation>
 <translation id="6698381487523150993">Dibuat:</translation>
+<translation id="6698810901424468597">Membaca dan mengubah data Anda di <ph name="WEBSITE_1" /> dan <ph name="WEBSITE_2" /></translation>
 <translation id="6699065916437121401">Menyebabkan keluaran audio mengalir untuk memeriksa apakah tersedia tata letak saluran selain tata letak perangkat keras default.</translation>
 <translation id="6699283942308121454">Pembuat File Zip</translation>
 <translation id="6700480081846086223">Transmisikan <ph name="HOST_NAME" /></translation>
@@ -4157,6 +4187,7 @@ Tekan sembarang tombol untuk melanjutkan penjelajahan.</translation>
 <translation id="6904344821472985372">Cabut akses file</translation>
 <translation id="6906268095242253962">Sambungkan ke Internet untuk melanjutkan.</translation>
 <translation id="6909461304779452601">Aplikasi, ekstensi, dan skrip pengguna tidak dapat ditambahkan dari situs web ini.</translation>
+<translation id="6910211073230771657">Dihapus</translation>
 <translation id="691024665142758461">Mengunduh beberapa file</translation>
 <translation id="6911468394164995108">Bergabung dengan lainnya...</translation>
 <translation id="691321796646552019">Hentikan!</translation>
@@ -4257,6 +4288,7 @@ Tekan sembarang tombol untuk melanjutkan penjelajahan.</translation>
 <translation id="7030084719913890980">Penyerang mungkin telah menyusupi situs ini dan mungkin berusaha memasang program berbahaya di komputer Anda yang dapat mencuri dan menghapus informasi Anda (misalnya, foto, sandi, pesan, dan kartu kredit).</translation>
 <translation id="7031962166228839643">TPM sedang disiapkan, harap tunggu (ini mungkin membutuhkan beberapa menit)...</translation>
 <translation id="7036710474162401473">Layanan masuk ini dihosting oleh <ph name="SAML_DOMAIN" />.</translation>
+<translation id="7039326228527141150">Akses perangkat USB dari <ph name="VENDOR_NAME" /></translation>
 <translation id="7039912931802252762">Microsoft Smart Card Logon</translation>
 <translation id="7040138676081995583">Buka dengan...</translation>
 <translation id="7042418530779813870">Tempel dan telu&amp;sur</translation>
@@ -4296,6 +4328,7 @@ Tekan sembarang tombol untuk melanjutkan penjelajahan.</translation>
 <translation id="708969677220991657">Memungkinkan permintaan ke localhost melalui HTTPS meskipun sertifikat yang tidak valid diberikan.</translation>
 <translation id="7090356285609536948">Jika diaktifkan, UI pemulihan sesi akan ditampilkan dalam gelembung, bukan bilah info.</translation>
 <translation id="7092106376816104">Pengecualian munculan</translation>
+<translation id="7093866338626856921">Menukar data dengan perangkat yang bernama: <ph name="HOSTNAMES" /></translation>
 <translation id="7096082900368329802">Ingin menemukan fitur yang lebih hebat?</translation>
 <translation id="7100897339030255923"><ph name="COUNT" /> item dipilih</translation>
 <translation id="7106346894903675391">Beli penyimpanan lagi...</translation>
@@ -4316,6 +4349,7 @@ Tekan sembarang tombol untuk melanjutkan penjelajahan.</translation>
 <translation id="7127980134843952133">Riwayat unduhan</translation>
 <translation id="7130561729700538522">Pendaftaran di Pengelola Perangkat Google tidak berhasil.</translation>
 <translation id="7130666834200497454">Untuk menjaga keamanan <ph name="DEVICE_TYPE" />, Smart Lock untuk Chromebook memerlukan kunci layar di ponsel yang akan membukanya. Sudah mengamankan ponsel? Klik “Periksa lagi” untuk memverifikasi dan melanjutkan penyiapan.</translation>
+<translation id="7131040479572660648">Membaca data Anda di <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, dan <ph name="WEBSITE_3" /></translation>
 <translation id="713122686776214250">Tambahkan la&amp;man...</translation>
 <translation id="7134098520442464001">Perkecil Teks</translation>
 <translation id="7136694880210472378">Jadikan default</translation>
@@ -4328,6 +4362,7 @@ Tekan sembarang tombol untuk melanjutkan penjelajahan.</translation>
 <translation id="7148311641502571842"><ph name="PLUGIN_NAME" /> telah dinonaktifkan. Untuk mengaktifkannya kembali, buka <ph name="CHROME_PLUGINS_LINK" />.</translation>
 <translation id="7148804936871729015">Server untuk <ph name="URL" /> menghabiskan waktu terlalu lama untuk merespons.  Server mungkin sedang kelebihan muatan.</translation>
 <translation id="715118844758971915">Printer klasik</translation>
+<translation id="7154130902455071009">Ubah laman awal Anda menjadi: <ph name="START_PAGE" /></translation>
 <translation id="715487527529576698">Mode Aksara China Awal adalah China Aksara Sederhana</translation>
 <translation id="7156235233373189579">File ini dirancang untuk PC yang menggunakan perangkat lunak Windows. File ini tidak kompatibel dengan perangkat Anda yang menjalankan Chrome OS. Telusuri aplikasi pengganti yang sesuai di <ph name="BEGIN_LINK" />Chrome Web Store<ph name="END_LINK" />.<ph name="BEGIN_LINK_HELP" />Pelajari Lebih Lanjut<ph name="END_LINK_HELP" /></translation>
 <translation id="7157063064925785854">Dengan mengeklik Lanjutkan, Anda menyetujui <ph name="LEGAL_DOC_LINK_TEXT_1" />, <ph name="LEGAL_DOC_LINK_TEXT_2" />, <ph name="LEGAL_DOC_LINK_TEXT_3" />, dan <ph name="LEGAL_DOC_LINK_TEXT_4" />.</translation>
@@ -4395,6 +4430,7 @@ Tekan sembarang tombol untuk melanjutkan penjelajahan.</translation>
 <translation id="7255935316994522020">Terapkan</translation>
 <translation id="7256710573727326513">Buka di tab</translation>
 <translation id="7257173066616499747">Jaringan Wi-Fi</translation>
+<translation id="7257666756905341374">Mengakses data yang Anda salin dan tempel</translation>
 <translation id="7260002739296185724">Aktifkan penggunaan AVFoundation untuk perekaman video dan pemantauan perangkat video di OS X &gt;= 10.7. QTKit akan digunakan sebagai gantinya.</translation>
 <translation id="7262221505565121">Pengecualian akses plugin yang tidak dimasukkan kotak pasir</translation>
 <translation id="7264275118036872269">Gagal memulai pencarian perangkat Bluetooth.</translation>
@@ -4423,6 +4459,7 @@ Tekan sembarang tombol untuk melanjutkan penjelajahan.</translation>
 <translation id="7299441085833132046"><ph name="BEGIN_LINK" />Bantuan<ph name="END_LINK" /></translation>
 <translation id="7301360164412453905">Tombol pilihan keyboard Hsu</translation>
 <translation id="7303492016543161086">Tampilkan opsi aksesibilitas di menu sistem</translation>
+<translation id="730515362922783851">Menukar data dengan perangkat di internet atau jaringan lokal</translation>
 <translation id="7309257895202129721">Tampilkan &amp;kontrol</translation>
 <translation id="7311079019872751559">Akses plugin yang tidak dimasukkan kotak pasir</translation>
 <translation id="7312441861087971374"><ph name="PLUGIN_NAME" /> sudah usang.</translation>
@@ -4840,6 +4877,7 @@ Ssst! <ph name="SHORTCUT_KEY" /> mode penyamaran mungkin berguna suatu saat nant
 <translation id="7887334752153342268">Gandakan</translation>
 <translation id="7887864092952184874">Mouse Bluetooth disandingkan</translation>
 <translation id="7892100671754994880">Pengguna berikutnya</translation>
+<translation id="7893008570150657497">Mengakses foto, musik, dan media lain dari komputer Anda</translation>
 <translation id="7893393459573308604"><ph name="ENGINE_NAME" /> (Default)</translation>
 <translation id="78957024357676568">ke kiri</translation>
 <translation id="7896906914454843592">Keyboard Perluasan AS</translation>
@@ -4962,7 +5000,6 @@ Simpan file kunci Anda di tempat yang aman. Anda akan membutuhkannya untuk membu
 <translation id="8053390638574070785">Muat Ulang Laman Ini</translation>
 <translation id="8054517699425078995">Jenis file ini dapat membahayakan perangkat Anda. Tetap ingin menyimpan <ph name="FILE_NAME" />?</translation>
 <translation id="8054563304616131773">Masukkan alamat email yang valid</translation>
-<translation id="8054635925509770969">Membaca dan mengubah apa pun yang Anda ketik, termasuk tombol untuk beralih tugas seperti CMD+TAB</translation>
 <translation id="8054921503121346576">Keyboard USB tersambung</translation>
 <translation id="8056430285089645882">Mengerti, jangan tampilkan ini lagi.</translation>
 <translation id="8059178146866384858">File dengan nama "$1" sudah ada. Pilih nama yang berbeda.</translation>
@@ -5351,6 +5388,7 @@ Simpan file kunci Anda di tempat yang aman. Anda akan membutuhkannya untuk membu
 <translation id="8615618338313291042">Aplikasi Penyamaran: <ph name="APP_NAME" /></translation>
 <translation id="8616748524633185354">Ada beberapa laman web yang menggunakan ekstensi JavaScript versi lawas atau yang bukan standar, sehingga dapat bentrok dengan fitur JavaScript versi terbaru. Tanda ini akan menonaktifkan dukungan untuk fitur tersebut agar kompatibel dengan laman seperti ini.</translation>
 <translation id="8619892228487928601"><ph name="CERTIFICATE_NAME" />: <ph name="ERROR" /></translation>
+<translation id="8620765578342452535">Konfigurasi sambungan jaringan</translation>
 <translation id="8622877356447980900">Ingin menerjemahkan laman ini?</translation>
 <translation id="8623004009673949077">Aplikasi dengan atribut manifes 'kiosk_only' harus dipasang pada mode kios Chrome OS.</translation>
 <translation id="862542460444371744">&amp;Ekstensi</translation>
@@ -5382,6 +5420,7 @@ Simpan file kunci Anda di tempat yang aman. Anda akan membutuhkannya untuk membu
 <translation id="8659716501582523573">Alamat IP:</translation>
 <translation id="8661290697478713397">Buka Tautan di Jendela Penya&amp;maran</translation>
 <translation id="8662795692588422978">Orang</translation>
+<translation id="8662911384982557515">Ubah laman beranda Anda menjadi: <ph name="HOME_PAGE" /></translation>
 <translation id="8662978096466608964">Chrome tidak dapat menyetel wallpaper.</translation>
 <translation id="8663099077749055505">Selalu blokir unduhan otomatis beberapa file di <ph name="HOST" /></translation>
 <translation id="8663876448733520316">Kelola Mesin Telusur</translation>
@@ -5453,6 +5492,7 @@ Simpan file kunci Anda di tempat yang aman. Anda akan membutuhkannya untuk membu
 <translation id="874420130893181774">Metode masukan Pinyin Tradisional</translation>
 <translation id="8744525654891896746">Pilih avatar untuk pengguna yang dilindungi ini</translation>
 <translation id="8744641000906923997">Romaji</translation>
+<translation id="8749863574775030885">Akses perangkat USB dari vendor tak dikenal</translation>
 <translation id="8754200782896249056">&lt;p&gt;Saat mengoperasikan <ph name="PRODUCT_NAME" /> pada lingkungan desktop yang didukung, setelan proxy sistem akan digunakan. Akan tetapi, tampaknya kami tidak dapat mendukung sistem Anda atau mungkin ada masalah saat meluncurkan konfigurasi sistem.&lt;/p&gt;
 
         &lt;p&gt;Namun demikian, Anda tetap dapat mengonfigurasi setelan melalui baris perintah.  Lihat &lt;code&gt;man <ph name="PRODUCT_BINARY_NAME" />&lt;/code&gt; untuk informasi selengkapnya mengenai tanda dan variabel lingkungan.&lt;/p&gt;</translation>
@@ -5491,6 +5531,7 @@ Simpan file kunci Anda di tempat yang aman. Anda akan membutuhkannya untuk membu
 <translation id="8800004011501252845">Menunjukkan tujuan untuk</translation>
 <translation id="8800420788467349919">Volume: <ph name="PRECENTAGE" />%</translation>
 <translation id="8803496343472038847">Keyboard Fonetik Rusia</translation>
+<translation id="8804398419035066391">Berkomunikasi dengan situs web yang bekerja sama</translation>
 <translation id="8807632654848257479">Stabil</translation>
 <translation id="8808478386290700967">Toko Web</translation>
 <translation id="8811314776632711217">Perender yang Didelegasikan (atau disebut juga Übercompositor).</translation>
@@ -5724,6 +5765,7 @@ Simpan file kunci Anda di tempat yang aman. Anda akan membutuhkannya untuk membu
 <translation id="9127762771585363996">Balikkan gambar kamera secara horizontal</translation>
 <translation id="9128870381267983090">Sambungkan ke jaringan</translation>
 <translation id="9130015405878219958">Mode yang dimasukkan tidak valid.</translation>
+<translation id="9131487537093447019">Kirim pesan ke dan terima pesan dari perangkat Bluetooth.</translation>
 <translation id="9131598836763251128">Pilih satu atau beberapa file</translation>
 <translation id="9132971099789715557">Tahan tombol Penelusuran untuk mengalihkan perilaku tombol baris atas.</translation>
 <translation id="9133055936679483811">Gagal membuat file zip. <ph name="ERROR_MESSAGE" /></translation>

@@ -580,6 +580,7 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 <translation id="4442582539341804154">Ativar o bloqueio quando o dispositivo entrar no modo ocioso ou suspenso</translation>
 <translation id="4445684791305970001">Desativa as Ferramentas do desenvolvedor e o console JavaScript. Se ativar esta configuração, as Ferramentas do desenvolvedor não podem ser acessadas ​​e elementos de websites não poderão mais ser inspecionados. Quaisquer entradas para abrir as Ferramentas do desenvolvedor ou o Console de JavaScript em atalhos de teclado, menus ou menus de contextos serão desativadas. Definir esta opção como desativada ou deixá-la sem definição permitirá a utilização das Ferramentas do desenvolvedor e do console JavaScript.</translation>
 <translation id="4467952432486360968">Bloquear cookies de terceiros</translation>
+<translation id="4474167089968829729">Ativar salvamento de senhas no gerenciador de senhas</translation>
 <translation id="4480694116501920047">Forçar SafeSearch</translation>
 <translation id="4482640907922304445">Mostra o botão "Página inicial" na barra de ferramentas de <ph name="PRODUCT_NAME" />. Se ativar esta configuração, o botão "Página inicial" será sempre exibido. Se desativar esta configuração, o botão "Página inicial" nunca será exibido. Se ativar ou desativar esta configuração, os usuários não podem alterá-la ou substituí-la em <ph name="PRODUCT_NAME" />. Deixar esta política sem definição permitirá ao usuário escolher se deseja exibir o botão "Página inicial".</translation>
 <translation id="4492287494009043413">Desativar captura de tela</translation>
@@ -968,6 +969,17 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
           Esta política é opcional. Se não for definida, a solicitação de pesquisa será enviada usando o método GET.
 
           Esta política só é seguida se a política "DefaultSearchProviderEnabled" estiver ativada.</translation>
+<translation id="6365608006609079612">
+          Quando essa configuração está ativada, os usuários podem permitir que o <ph name="PRODUCT_NAME" /> memorize senhas
+          e as forneça automaticamente na próxima vez que eles fizerem login em um site.
+
+          Quando essas configurações estão desativadas, os usuários não podem salvar novas senhas, mas 
+          ainda podem usar senhas que tenham sido salvas anteriormente.
+
+          Se essa política está ativada ou desativada, os usuários não podem alterá-la ou modificá-la
+          no <ph name="PRODUCT_NAME" />. Se essa política
+          não está configurada, é possível salvar senhas (mas esse recurso pode ser desativado
+          pelo usuário).</translation>
 <translation id="6367755442345892511">Se o canal de versão deve ser configurado pelo usuário</translation>
 <translation id="6368011194414932347">Configurar o URL da página inicial</translation>
 <translation id="6368403635025849609">Permitir o JavaScript nestes sites</translation>

@@ -703,6 +703,7 @@
 
       Ak túto možnosť nastavíte ako zakázanú alebo ju ponecháte nenastavenú, umožní to používateľovi použiť Nástroje pre vývojárov a konzolu JavaScript.</translation>
 <translation id="4467952432486360968">Blokovať súbory cookie tretej strany</translation>
+<translation id="4474167089968829729">Povolenie ukladania hesiel do správcu hesiel</translation>
 <translation id="4480694116501920047">Vynútenie Bezpečného vyhľadávania</translation>
 <translation id="4482640907922304445">Zobrazí tlačidlo Domovská stránka na paneli s nástrojmi prehliadača <ph name="PRODUCT_NAME" />.
 
@@ -1159,6 +1160,17 @@ Ak toto pravidlo nie je nastavené alebo je prázdne, akýkoľvek používateľ 
           Toto pravidlo je voliteľné. Ak nie je nastavené, žiadosť o vyhľadávanie sa odošle pomocou metódy GET.
 
           Toto pravidlo sa rešpektuje iba v prípade, ak je povolené pravidlo DefaultSearchProviderEnabled.</translation>
+<translation id="6365608006609079612">
+          Ak povolíte toto nastavenie, <ph name="PRODUCT_NAME" /> si môže zapamätať heslá používateľov
+          a poskytnúť ich automaticky pri ďalšom prihlásení na stránkach.
+
+          Ak toto nastavenie zakážete, používatelia nebudú môcť ukladať nové
+          heslá, ale budú môcť naďalej používať predtým uložené heslá.
+
+          Ak toto pravidlo povolíte alebo zakážete, používatelia ho nebudú môcť
+          v službe <ph name="PRODUCT_NAME" /> zmeniť ani prepísať. Ak toto pravidlo
+          nenastavíte, ukladanie hesiel bude povolené (ale používatelia ho
+          môžu vypnúť).</translation>
 <translation id="6367755442345892511">Či má byť kanál na vydávanie nových verzií konfigurovateľný používateľom</translation>
 <translation id="6368011194414932347">Konfigurovať webovú adresu domovskej stránky</translation>
 <translation id="6368403635025849609">Povoliť jazyk JavaScript na týchto stránkach</translation>

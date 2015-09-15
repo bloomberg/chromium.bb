@@ -113,6 +113,7 @@
 <translation id="2718352093833049315">僅限連上 Wi-Fi 網路時</translation>
 <translation id="2748463065602559597">您正在瀏覽安全型 Google Chrome 網頁。</translation>
 <translation id="2770465223704140727">從清單中移除</translation>
+<translation id="278029852808208386">找不到藍牙裝置，請<ph name="BEGIN_LINK" />重新搜尋<ph name="END_LINK" />。</translation>
 <translation id="2816165854387457183">偵測到連線速度緩慢。</translation>
 <translation id="2842985007712546952">上層資料夾</translation>
 <translation id="2870560284913253234">網站</translation>
@@ -190,6 +191,7 @@
 <translation id="4099578267706723511">將使用統計資料及當機報告傳送給 Google，助我們一臂之力，讓 Chrome 更臻完美。</translation>
 <translation id="411254640334432676">下載失敗。</translation>
 <translation id="4113030288477039509">您的管理員已停用這項功能</translation>
+<translation id="4116939199945053760"><ph name="SITE" /> 要求與下列藍牙裝置<ph name="BEGIN_LINK" />配對<ph name="END_LINK" />：</translation>
 <translation id="4165986682804962316">網站設定</translation>
 <translation id="4170011742729630528">服務無法使用，請稍後再試。</translation>
 <translation id="4195643157523330669">在新分頁中開啟</translation>
@@ -203,6 +205,7 @@
 <translation id="4307992518367153382">基本選項</translation>
 <translation id="4333969446981951071">使用這個應用程式即表示您同意接受 Chrome 的《<ph name="BEGIN_LINK1" />服務條款<ph name="END_LINK1" />》和《<ph name="BEGIN_LINK2" />隱私權聲明<ph name="END_LINK2" />》。</translation>
 <translation id="4351244548802238354">關閉對話方塊</translation>
+<translation id="4357362091209756047">找不到您的裝置嗎？請<ph name="BEGIN_LINK1" />重新搜尋<ph name="END_LINK1" />或<ph name="BEGIN_LINK2" />尋求協助<ph name="END_LINK2" />。</translation>
 <translation id="4376501731284077108">不受控制</translation>
 <translation id="4378154925671717803">電話</translation>
 <translation id="4412992751769744546">允許第三方 Cookie</translation>
@@ -290,6 +293,7 @@
 <translation id="5626134646977739690">名稱：</translation>
 <translation id="5626370437647899551">新增 Google 帳戶</translation>
 <translation id="563535393368633106">存取前詢問我 (建議)</translation>
+<translation id="5643573370311148178"><ph name="BEGIN_LINK" />說明<ph name="END_LINK" />。</translation>
 <translation id="5646376287012673985">位置</translation>
 <translation id="5659593005791499971">電子郵件</translation>
 <translation id="5668404140385795438">覆寫網站禁止放大的要求</translation>
@@ -310,6 +314,7 @@
 <translation id="5771382037724542929">您要取代「<ph name="DIRECTORY_NAME" />」目錄中現有的 <ph name="FILE_NAME" /> 嗎？</translation>
 <translation id="5804241973901381774">權限</translation>
 <translation id="5806294296882899667">載入預設值時發生錯誤</translation>
+<translation id="5817918615728894473">配對</translation>
 <translation id="5832934273103296195">已展開 - 按一下即可收合</translation>
 <translation id="583891442612896534">Chrome 無法連上 Google 的伺服器進行資料壓縮，這可能會導致您無法節省某些數據流量。</translation>
 <translation id="5860033963881614850">關閉</translation>
@@ -332,7 +337,6 @@
 <translation id="6040143037577758943">關閉</translation>
 <translation id="6042308850641462728">詳細資訊</translation>
 <translation id="605721222689873409">年</translation>
-<translation id="6060567974409584397">輕觸即可返回這個分頁</translation>
 <translation id="6066720739967032277">手機的「總覽」畫面會顯示您的分頁和其他最近使用過的應用程式。您可以在<ph name="BEGIN_LINK" />設定<ph name="END_LINK" />中控管這項功能。</translation>
 <translation id="6075798973483050474">編輯首頁</translation>
 <translation id="6108923351542677676">設定中…</translation>
@@ -380,6 +384,7 @@
 <translation id="6698801883190606802">管理同步資料</translation>
 <translation id="6699351163704950317">所有儲存的網頁</translation>
 <translation id="6710213216561001401">返回</translation>
+<translation id="6720988912937197322">無法離線存取您剛儲存的網頁</translation>
 <translation id="6738867403308150051">下載中…</translation>
 <translation id="6770414673596662518">Chrome 的安全瀏覽系統也會用於偵測惡意網頁，保護您不受網路釣魚、惡意軟體和有害下載內容的攻擊。</translation>
 <translation id="6784675033504223784">搜尋「<ph name="SEARCH_TERM" />」</translation>
@@ -393,7 +398,6 @@
 <translation id="6850830437481525139">關閉了 <ph name="TAB_COUNT" /> 個分頁</translation>
 <translation id="6857778194843072568">僅於使用 Wi-Fi 連線時傳送</translation>
 <translation id="6868088497967843822">登入後，即可從任何裝置取得自己的書籤、歷史紀錄、密碼和其他設定</translation>
-<translation id="6935223586406308151"><ph name="DOMAIN_NAME" /> 已加到您的主畫面</translation>
 <translation id="6945221475159498467">選取</translation>
 <translation id="6963766334940102469">刪除書籤</translation>
 <translation id="6964496835063002391">新增帳戶</translation>
@@ -522,6 +526,7 @@
 <translation id="8719023831149562936">無法傳輸目前的分頁</translation>
 <translation id="8725066075913043281">再試一次</translation>
 <translation id="8730621377337864115">完成</translation>
+<translation id="8737542153238017984">儲存空間即將用盡，因此無法離線存取您剛儲存的網頁。</translation>
 <translation id="8793430725658173476">複製網址</translation>
 <translation id="8798099450830957504">預設</translation>
 <translation id="8820817407110198400">書籤</translation>
@@ -552,6 +557,7 @@
 <translation id="9133515669113036225">重設裝置憑證</translation>
 <translation id="9137013805542155359">顯示原文</translation>
 <translation id="9156605176886108508">沒有書籤資料夾</translation>
+<translation id="9192643434065497760">如要允許配對，請在<ph name="BEGIN_LINK" />裝置設定<ph name="END_LINK" />中開啟藍牙功能。</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="932327136139879170">首頁</translation>
 <translation id="938850635132480979">錯誤：<ph name="ERROR_CODE" /></translation>

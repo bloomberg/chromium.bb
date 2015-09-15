@@ -591,6 +591,7 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
 <translation id="4442582539341804154">Attiva il blocco quando lo stato del dispositivo diventa inattivo o sospeso</translation>
 <translation id="4445684791305970001">Consente di disattivare gli Strumenti per sviluppatori e la Console JavaScript. Se attivi questa impostazione, gli Strumenti per sviluppatori non saranno accessibili e non sarà più possibile eseguire un'ispezione degli elementi del sito web. Le scorciatoie da tastiera e le voci dei menu contestuali e di altri menu che consentono di aprire gli Strumenti per sviluppatori o la Console JavaScript verranno disattivate. Se disattivi questa opzione o non la imposti sarà possibile utilizzare gli Strumenti per sviluppatori e la Console JavaScript.</translation>
 <translation id="4467952432486360968">Blocca cookie di terze parti</translation>
+<translation id="4474167089968829729">Attiva il salvataggio delle password in Gestione password</translation>
 <translation id="4480694116501920047">Forza SafeSearch</translation>
 <translation id="4482640907922304445">Consente di visualizzare il pulsante Pagina iniziale sulla barra degli strumenti di <ph name="PRODUCT_NAME" />. Se attivi questa impostazione il pulsante Pagina iniziale verrà sempre visualizzato, in caso contrario non verrà mai visualizzato. Se questa impostazione viene attivata o disattivata, gli utenti non potranno modificarla o sostituirla in <ph name="PRODUCT_NAME" />. Se non imposti questa norma gli utenti potranno scegliere se visualizzare o meno il pulsante Pagina iniziale.</translation>
 <translation id="4492287494009043413">Disabilita l'acquisizione di screenshot</translation>
@@ -981,6 +982,12 @@ Il valore della norma deve essere specificato in millisecondi. I valori devono e
 Questa norma è facoltativa. Se non viene impostata, la richiesta di ricerca verrà inviata utilizzando il metodo GET.
 
 Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled" è attiva.</translation>
+<translation id="6365608006609079612">
+          Quando questa impostazione è attiva, gli utenti possono impostare <ph name="PRODUCT_NAME" /> affinché memorizzi le password e le inserisca automaticamente al successivo accesso a un sito.
+
+          Se questa impostazione viene disattivata, gli utenti non potranno salvare nuove password ma potranno ancora utilizzare password già salvate.
+
+          Se questa norma viene attivata o disattivata, gli utenti non potranno modificarla o sostituirla in <ph name="PRODUCT_NAME" />. Se la norma non viene impostata, il salvataggio delle password è consentito (ma può essere disattivato dall'utente).</translation>
 <translation id="6367755442345892511">Eventuale configurazione del canale della versione da parte dell'utente</translation>
 <translation id="6368011194414932347">Configura l'URL della pagina iniziale</translation>
 <translation id="6368403635025849609">Consenti JavaScript su questi siti</translation>

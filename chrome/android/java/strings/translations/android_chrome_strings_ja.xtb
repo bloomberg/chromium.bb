@@ -113,6 +113,7 @@
 <translation id="2718352093833049315">Wi-Fi接続時のみ</translation>
 <translation id="2748463065602559597">Google Chrome の安全なページを表示しています。</translation>
 <translation id="2770465223704140727">リストから削除</translation>
+<translation id="278029852808208386">Bluetooth デバイスが見つかりませんでした。<ph name="BEGIN_LINK" />もう一度検索してください<ph name="END_LINK" />。</translation>
 <translation id="2816165854387457183">低速な接続が見つかりました。</translation>
 <translation id="2842985007712546952">親フォルダ</translation>
 <translation id="2870560284913253234">サイト</translation>
@@ -190,6 +191,7 @@
 <translation id="4099578267706723511">使用統計情報と障害レポートを Google に送信して、Chrome の品質向上にご協力ください。</translation>
 <translation id="411254640334432676">ダウンロードできませんでした。</translation>
 <translation id="4113030288477039509">管理者により管理されています</translation>
+<translation id="4116939199945053760"><ph name="SITE" /> の<ph name="BEGIN_LINK" />ペア設定<ph name="END_LINK" />先を選択:</translation>
 <translation id="4165986682804962316">サイトの設定</translation>
 <translation id="4170011742729630528">このサービスはご利用になれません。しばらくしてからもう一度お試しください。</translation>
 <translation id="4195643157523330669">新しいタブで開く</translation>
@@ -203,6 +205,7 @@
 <translation id="4307992518367153382">基本設定</translation>
 <translation id="4333969446981951071">このアプリケーションを使用すると、Chrome の<ph name="BEGIN_LINK1" />利用規約<ph name="END_LINK1" />と<ph name="BEGIN_LINK2" />プライバシーに関するお知らせ<ph name="END_LINK2" />に同意したことになります。</translation>
 <translation id="4351244548802238354">ダイアログを閉じる</translation>
+<translation id="4357362091209756047">デバイスが見つからない場合は、<ph name="BEGIN_LINK1" />もう一度検索<ph name="END_LINK1" />するか、<ph name="BEGIN_LINK2" />ヘルプ<ph name="END_LINK2" />をご覧ください。</translation>
 <translation id="4376501731284077108">管理対象外</translation>
 <translation id="4378154925671717803">電話番号</translation>
 <translation id="4412992751769744546">サードパーティの Cookie を許可</translation>
@@ -290,6 +293,7 @@
 <translation id="5626134646977739690">名前:</translation>
 <translation id="5626370437647899551">Googleアカウントの追加</translation>
 <translation id="563535393368633106">アクセスする前に確認する（推奨）</translation>
+<translation id="5643573370311148178"><ph name="BEGIN_LINK" />ヘルプ<ph name="END_LINK" /></translation>
 <translation id="5646376287012673985">現在地</translation>
 <translation id="5659593005791499971">メール</translation>
 <translation id="5668404140385795438">ウェブサイトのズーム防止リクエストを上書きする</translation>
@@ -310,6 +314,7 @@
 <translation id="5771382037724542929"><ph name="DIRECTORY_NAME" /> 内に既にある <ph name="FILE_NAME" /> を置き換えてもよろしいですか？</translation>
 <translation id="5804241973901381774">権限</translation>
 <translation id="5806294296882899667">デフォルトの読み込み中にエラーが発生しました</translation>
+<translation id="5817918615728894473">ペア設定</translation>
 <translation id="5832934273103296195">展開状態 - クリックして折りたたみ</translation>
 <translation id="583891442612896534">データ圧縮のために Chrome から Google サーバーにアクセスすることができません。データ使用量をあまり削減できない可能性があります。</translation>
 <translation id="5860033963881614850">オフ</translation>
@@ -332,7 +337,6 @@
 <translation id="6040143037577758943">閉じる</translation>
 <translation id="6042308850641462728">詳細表示</translation>
 <translation id="605721222689873409">YY</translation>
-<translation id="6060567974409584397">タップするとタブに戻ります</translation>
 <translation id="6066720739967032277">スマートフォンの [概要] 画面に最近使ったアプリと一緒にタブを表示します。これは [<ph name="BEGIN_LINK" />設定<ph name="END_LINK" />] で変更できます。</translation>
 <translation id="6075798973483050474">ホームページの編集</translation>
 <translation id="6108923351542677676">設定しています...</translation>
@@ -380,6 +384,7 @@
 <translation id="6698801883190606802">同期データを管理</translation>
 <translation id="6699351163704950317">保存したすべてのページ</translation>
 <translation id="6710213216561001401">前へ</translation>
+<translation id="6720988912937197322">保存したページはオフラインで表示できません</translation>
 <translation id="6738867403308150051">ダウンロードしています…</translation>
 <translation id="6770414673596662518">また、Chrome のセーフ ブラウジング システムにより悪意のあるページが検出され、フィッシング、不正なソフトウェア、有害なダウンロードからユーザーを保護します。</translation>
 <translation id="6784675033504223784">「<ph name="SEARCH_TERM" />」を検索します</translation>
@@ -393,7 +398,6 @@
 <translation id="6850830437481525139"><ph name="TAB_COUNT" /> 個のタブを閉じました</translation>
 <translation id="6857778194843072568">Wi-Fi のみで送信</translation>
 <translation id="6868088497967843822">ログインすると、お使いのどのデバイスでも同じブックマーク、履歴、パスワード、その他の設定を利用できるようになります。</translation>
-<translation id="6935223586406308151"><ph name="DOMAIN_NAME" /> をホーム画面に追加しました</translation>
 <translation id="6945221475159498467">選択</translation>
 <translation id="6963766334940102469">ブックマークを削除</translation>
 <translation id="6964496835063002391">アカウントを追加</translation>
@@ -522,6 +526,7 @@
 <translation id="8719023831149562936">現在のタブはビームできません</translation>
 <translation id="8725066075913043281">やり直し</translation>
 <translation id="8730621377337864115">完了</translation>
+<translation id="8737542153238017984">ストレージの空き容量がないため、保存したページはオフラインで表示できません。</translation>
 <translation id="8793430725658173476">URLをコピー</translation>
 <translation id="8798099450830957504">既定</translation>
 <translation id="8820817407110198400">ブックマーク</translation>
@@ -552,6 +557,7 @@
 <translation id="9133515669113036225">デバイス認証情報のリセット</translation>
 <translation id="9137013805542155359">原文のページを表示</translation>
 <translation id="9156605176886108508">ブックマークフォルダはありません</translation>
+<translation id="9192643434065497760">ペア設定するには<ph name="BEGIN_LINK" />デバイスの設定<ph name="END_LINK" />で Bluetooth をオンにしてください。</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="932327136139879170">ホーム</translation>
 <translation id="938850635132480979">エラー: <ph name="ERROR_CODE" /></translation>

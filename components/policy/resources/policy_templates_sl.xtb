@@ -713,6 +713,7 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
 
       Če to možnost onemogočite ali jo ne nastavite, bo lahko uporabnik uporabljal orodja za razvijalce in konzolo JavaScript.</translation>
 <translation id="4467952432486360968">Blokiraj piškotke drugih spletnih mest</translation>
+<translation id="4474167089968829729">Omogočanje shranjevanja gesel v upravitelju gesel</translation>
 <translation id="4480694116501920047">Uveljavitev Google Varnega iskanja</translation>
 <translation id="4482640907922304445">Pokaže gumb za domačo stran v orodni vrstici brskalnika <ph name="PRODUCT_NAME" />.
 
@@ -1171,6 +1172,17 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
           Ta pravilnik je izbiren. Če ni nastavljen, bo zahteva za iskanje poslana z metodo GET.
 
           Ta pravilnik se upošteva samo, če je omogočen pravilnik »DefaultSearchProviderEnabled«.</translation>
+<translation id="6365608006609079612">
+          Če je ta nastavitev omogočena, si lahko <ph name="PRODUCT_NAME" /> zapomni gesla
+          in jih samodejno ponudi uporabnikom, ko se naslednjič prijavijo na spletnem mestu.
+
+          Če je ta nastavitev onemogočena, uporabniki ne morejo shranjevati novih gesel,
+          vendar lahko še vedno uporabljajo že shranjena gesla.
+
+          Če je ta pravilnik omogočen ali onemogočen, ga uporabniki
+          v brskalniku <ph name="PRODUCT_NAME" /> ne morejo spremeniti ali preglasiti. Če ta
+          pravilnik ni nastavljen, je shranjevanje gesel dovoljeno (vendar ga lahko
+          uporabnik izklopi).</translation>
 <translation id="6367755442345892511">Ali lahko distribucijski kanal za nove izdaje nastavi uporabnik</translation>
 <translation id="6368011194414932347">Konfiguracija URL-ja domače strani</translation>
 <translation id="6368403635025849609">Dovoli JavaScript na teh mestih</translation>

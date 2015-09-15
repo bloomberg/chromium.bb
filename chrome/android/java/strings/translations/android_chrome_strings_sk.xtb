@@ -113,6 +113,7 @@
 <translation id="2718352093833049315">Len s Wi-Fi</translation>
 <translation id="2748463065602559597">Práve si prezeráte zabezpečenú stránku prehliadača Google Chrome.</translation>
 <translation id="2770465223704140727">Odstrániť zo zoznamu</translation>
+<translation id="278029852808208386">Nenašli sa žiadne zariadenia Bluetooth. <ph name="BEGIN_LINK" />Vyhľadať znova<ph name="END_LINK" /></translation>
 <translation id="2816165854387457183">Bolo zistené pomalé pripojenie</translation>
 <translation id="2842985007712546952">Nadradený priečinok</translation>
 <translation id="2870560284913253234">Webové stránky</translation>
@@ -190,6 +191,7 @@ Ak chcete upraviť hľadaný výraz, vyberte ho dlhým stlačením. Ak chcete vy
 <translation id="4099578267706723511">Odosielanie štatistík používania a prehľadu chýb pomôže Googlu zlepšiť Chrome.</translation>
 <translation id="411254640334432676">Sťahovanie zlyhalo.</translation>
 <translation id="4113030288477039509">Spravované vaším správcom</translation>
+<translation id="4116939199945053760">Webové stránky <ph name="SITE" /> sa chcú <ph name="BEGIN_LINK" />spárovať so zariadením<ph name="END_LINK" />:</translation>
 <translation id="4165986682804962316">Nastavenia webu</translation>
 <translation id="4170011742729630528">Služba nie je k dispozícii. Skúste to znova neskôr.</translation>
 <translation id="4195643157523330669">Otvoriť na novej karte</translation>
@@ -203,6 +205,7 @@ Ak chcete upraviť hľadaný výraz, vyberte ho dlhým stlačením. Ak chcete vy
 <translation id="4307992518367153382">Základy</translation>
 <translation id="4333969446981951071">Používaním tejto aplikácie vyjadrujete súhlas so <ph name="BEGIN_LINK1" />zmluvnými podmienkami<ph name="END_LINK1" /> a <ph name="BEGIN_LINK2" />upozornením o ochrane osobných údajov<ph name="END_LINK2" /> prehliadača Chrome.</translation>
 <translation id="4351244548802238354">Zavrieť dialógové okno</translation>
+<translation id="4357362091209756047">Nezobrazuje sa vaše zariadenie? <ph name="BEGIN_LINK1" />Spustite znova vyhľadávanie<ph name="END_LINK1" /> alebo <ph name="BEGIN_LINK2" />získajte pomoc<ph name="END_LINK2" />.</translation>
 <translation id="4376501731284077108">Nespravované</translation>
 <translation id="4378154925671717803">Telefón</translation>
 <translation id="4412992751769744546">Povoliť súbory cookie tretích strán</translation>
@@ -290,6 +293,7 @@ Stačí otvoriť Chrome na počítači, prejsť do ponuky a vybrať možnosť Pr
 <translation id="5626134646977739690">Názov:</translation>
 <translation id="5626370437647899551">Pridať účet Google</translation>
 <translation id="563535393368633106">Spýtať sa pred pristupovaním (odporúčané)</translation>
+<translation id="5643573370311148178"><ph name="BEGIN_LINK" />Pomocník<ph name="END_LINK" /></translation>
 <translation id="5646376287012673985">Poloha</translation>
 <translation id="5659593005791499971">E-mail</translation>
 <translation id="5668404140385795438">Ignorovať požiadavku webových stránok na zákaz priblíženia</translation>
@@ -310,6 +314,7 @@ Nie ste však neviditeľný/-á. Používanie režimu inkognito neukryje vaše p
 <translation id="5771382037724542929">Chcete nahradiť existujúci súbor <ph name="FILE_NAME" /> v adresári <ph name="DIRECTORY_NAME" />?</translation>
 <translation id="5804241973901381774">Povolenia</translation>
 <translation id="5806294296882899667">Chyba pri načítaní predvoleného priečinka</translation>
+<translation id="5817918615728894473">Párovať</translation>
 <translation id="5832934273103296195">Rozbalené – kliknutím zbaliť</translation>
 <translation id="583891442612896534">Prehliadaču Chrome sa nepodarilo nadviazať spojenie so servermi Google s cieľom vykonať kompresiu údajov. Ukladanie vašich údajov môže byť obmedzené.</translation>
 <translation id="5860033963881614850">Vypnuté</translation>
@@ -332,7 +337,6 @@ Niektoré webové stránky môžu napríklad na túto žiadosť reagovať tak, �
 <translation id="6040143037577758943">Zatvoriť</translation>
 <translation id="6042308850641462728">Viac</translation>
 <translation id="605721222689873409">RR</translation>
-<translation id="6060567974409584397">Klepnutím sa vrátite na kartu</translation>
 <translation id="6066720739967032277">Zobrazte si svoje karty spolu s ostatnými nedávnymi aplikáciami na telefóne na obrazovke Prehľad. Túto funkciu môžete vypnúť v <ph name="BEGIN_LINK" />Nastaveniach<ph name="END_LINK" />.</translation>
 <translation id="6075798973483050474">Úprava domovskej stránky</translation>
 <translation id="6108923351542677676">Inštaluje sa...</translation>
@@ -380,6 +384,7 @@ Niektoré webové stránky môžu napríklad na túto žiadosť reagovať tak, �
 <translation id="6698801883190606802">Spravovať synchronizované údaje</translation>
 <translation id="6699351163704950317">Všetky uložené stránky</translation>
 <translation id="6710213216561001401">Dozadu</translation>
+<translation id="6720988912937197322">Uložená stránka nie je k dispozícii v režime offline</translation>
 <translation id="6738867403308150051">Sťahuje sa...</translation>
 <translation id="6770414673596662518">Systém Bezpečné prehliadanie v prehliadači Chrome sa použije aj na rozpoznanie škodlivých stránok a ochranu pred phishingom, malvérom a sťahovaním škodlivých súborov.</translation>
 <translation id="6784675033504223784">Vyhľadajte výraz <ph name="SEARCH_TERM" /></translation>
@@ -393,7 +398,6 @@ Niektoré webové stránky môžu napríklad na túto žiadosť reagovať tak, �
 <translation id="6850830437481525139">Zatvorené karty: <ph name="TAB_COUNT" /></translation>
 <translation id="6857778194843072568">Odosielať len v sieťach Wi-Fi</translation>
 <translation id="6868088497967843822">Prihláste sa a získate tak svoje záložky, históriu, heslá a ďalšie nastavenia na všetkých svojich zariadeniach.</translation>
-<translation id="6935223586406308151">Doména <ph name="DOMAIN_NAME" /> bola pridaná na domovskú stránku</translation>
 <translation id="6945221475159498467">Vybrať</translation>
 <translation id="6963766334940102469">Odstrániť záložky</translation>
 <translation id="6964496835063002391">Pridať účet</translation>
@@ -520,6 +524,7 @@ Toto zobrazenie ukončíte pomocou tlačidla Späť.</translation>
 <translation id="8719023831149562936">Aktuálna karta sa nedá preniesť</translation>
 <translation id="8725066075913043281">Skúsiť znova</translation>
 <translation id="8730621377337864115">Hotovo</translation>
+<translation id="8737542153238017984">Uložené stránka nie je k dispozícii v režime offline. Úložisko je takmer plné.</translation>
 <translation id="8793430725658173476">Kopírovať webovú adresu</translation>
 <translation id="8798099450830957504">Predvolené</translation>
 <translation id="8820817407110198400">Záložky</translation>
@@ -550,6 +555,7 @@ Toto zobrazenie ukončíte pomocou tlačidla Späť.</translation>
 <translation id="9133515669113036225">Obnoviť prihlasovacie poverenia zariadenia</translation>
 <translation id="9137013805542155359">Zobraziť originál</translation>
 <translation id="9156605176886108508">Žiadne priečinky so záložkami</translation>
+<translation id="9192643434065497760">Zapnite rozhranie Bluetooth v <ph name="BEGIN_LINK" />nastaveniach zariadenia<ph name="END_LINK" />, čím povolíte párovanie.</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="932327136139879170">Domov</translation>
 <translation id="938850635132480979">Chyba: <ph name="ERROR_CODE" /></translation>

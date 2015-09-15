@@ -708,6 +708,7 @@ Hodnotu zásady je třeba zadat v sekundách. Hodnota musí být minimálně 360
 
       Pokud tuto možnost deaktivujete nebo nenastavíte, umožníte uživatelům používat nástroje pro vývojáře nebo konzoli JavaScript.</translation>
 <translation id="4467952432486360968">Blokovat soubory cookie třetích stran</translation>
+<translation id="4474167089968829729">Povolit ukládání hesel do správce hesel</translation>
 <translation id="4480694116501920047">Vynutit Bezpečné vyhledávání</translation>
 <translation id="4482640907922304445">Zobrazí na liště aplikace <ph name="PRODUCT_NAME" /> tlačítko Domovská stránka.
 
@@ -1161,6 +1162,12 @@ Pokud tuto zásadu nenastavíte, bude při prvním zobrazení přihlašovací ob
           Tato zásada je nepovinná. Pokud není nastavena, požadavek na vyhledávání bude odeslán pomocí metody GET.
 
           Tato zásada je respektována pouze v případě, že je aktivována zásada DefaultSearchProviderEnabled.</translation>
+<translation id="6365608006609079612">
+          Pokud je toto nastavení zapnuto, <ph name="PRODUCT_NAME" /> uživatelům může ukládat hesla a poskytovat je automaticky při dalším přihlášení na web.
+
+Pokud je toto nastavení vypnuto, uživatelé nová hesla ukládat nemohou, ale i nadále mohou používat hesla, která byla uložena v minulosti.
+
+Pokud je tato zásada zapnuta nebo vypnuta, uživatelé ji v <ph name="PRODUCT_NAME" /> nemohou změnit ani přepsat. Pokud tato zásada není nastavena, ukládání hesel není povoleno (ale uživatel jej může vypnout).</translation>
 <translation id="6367755442345892511">Zda má být kanál verzí nastavitelný uživatelem</translation>
 <translation id="6368011194414932347">Konfigurace adresy URL domovské stránky</translation>
 <translation id="6368403635025849609">Povolit JavaScript na těchto stránkách</translation>

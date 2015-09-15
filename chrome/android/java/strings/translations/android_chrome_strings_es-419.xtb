@@ -113,6 +113,7 @@
 <translation id="2718352093833049315">Solo en Wi-Fi</translation>
 <translation id="2748463065602559597">Estás viendo una página segura de Google Chrome.</translation>
 <translation id="2770465223704140727">Eliminar de la lista</translation>
+<translation id="278029852808208386">No se encontraron dispositivos Bluetooth. <ph name="BEGIN_LINK" />Vuelve a buscar<ph name="END_LINK" />.</translation>
 <translation id="2816165854387457183">Se detectó una conexión lenta.</translation>
 <translation id="2842985007712546952">Carpeta principal</translation>
 <translation id="2870560284913253234">Sitio</translation>
@@ -156,7 +157,7 @@
 Vas a acceder con una cuenta administrada, lo que significa que proporcionarás control sobre tu perfil de Chrome al administrador. Los datos de Chrome que tengas se vincularán de forma permanente a esta cuenta. Si la desconectas, se eliminarán los datos locales de Chrome.</translation>
 <translation id="3410346880900521918">Si el mensaje aparece con frecuencia, intenta seguir estas <ph name="BEGIN_LINK" />sugerencias<ph name="END_LINK" />.</translation>
 <translation id="3414952576877147120">Tamaño:</translation>
-<translation id="3455798674391346847">Google te permite usar menos datos para optimizar las páginas que visitas. Google no optimizará ni verá las páginas a las que accedas con HTTPS o en el modo de navegación de incógnito.</translation>
+<translation id="3455798674391346847">Gaste menos datos al usar a Google para optimizar las páginas que visitas. Google no optimizará ni verá las páginas a las que accedas con HTTPS o en el modo de navegación de incógnito.</translation>
 <translation id="346339498574870680">Copiar URL de imagen</translation>
 <translation id="3485544713029068372">Smart Lock para contraseñas</translation>
 <translation id="3492207499832628349">Nueva pestaña de incógnito</translation>
@@ -190,6 +191,7 @@ Para ajustar el término de búsqueda, mantén presionado el texto y seleccióna
 <translation id="4099578267706723511">Envía las estadísticas de uso y los informes de fallos a Google para ayudarnos a mejorar Chrome.</translation>
 <translation id="411254640334432676">Se produjo un error durante la descarga.</translation>
 <translation id="4113030288477039509">Administrado por tu administrador</translation>
+<translation id="4116939199945053760"><ph name="SITE" /> quiere <ph name="BEGIN_LINK" />sincronizarse con<ph name="END_LINK" />:</translation>
 <translation id="4165986682804962316">Configuración del sitio</translation>
 <translation id="4170011742729630528">El servicio no se encuentra disponible; vuelve a intentarlo más tarde.</translation>
 <translation id="4195643157523330669">Abrir en una pestaña nueva</translation>
@@ -203,6 +205,7 @@ Para ajustar el término de búsqueda, mantén presionado el texto y seleccióna
 <translation id="4307992518367153382">Básicas</translation>
 <translation id="4333969446981951071">Al usar la aplicación, aceptas las <ph name="BEGIN_LINK1" />Condiciones del servicio<ph name="END_LINK1" /> y el <ph name="BEGIN_LINK2" />Aviso de privacidad<ph name="END_LINK2" /> de Chrome.</translation>
 <translation id="4351244548802238354">Cerrar cuadro de diálogo</translation>
+<translation id="4357362091209756047">¿No puedes ver tu dispositivo? <ph name="BEGIN_LINK1" />Vuelve a buscarlo<ph name="END_LINK1" /> u <ph name="BEGIN_LINK2" />obtén ayuda<ph name="END_LINK2" />.</translation>
 <translation id="4376501731284077108">Sin controlar</translation>
 <translation id="4378154925671717803">Teléfono</translation>
 <translation id="4412992751769744546">Permitir cookies de terceros</translation>
@@ -291,6 +294,7 @@ Abre Chrome en la computadora, accede al menú y selecciona "Acceder a Chrome…
 <translation id="5626134646977739690">Nombre:</translation>
 <translation id="5626370437647899551">Agregar cuenta de Google</translation>
 <translation id="563535393368633106">Preguntar antes de acceder (recomendado)</translation>
+<translation id="5643573370311148178"><ph name="BEGIN_LINK" />Ayuda<ph name="END_LINK" />.</translation>
 <translation id="5646376287012673985">Ubicación</translation>
 <translation id="5659593005791499971">Correo electrónico</translation>
 <translation id="5668404140385795438">Anular la solicitud de inhabilitación del zoom de un sitio web</translation>
@@ -311,6 +315,7 @@ Sin embargo, no vas a pasar completamente desapercibido. El modo de navegación 
 <translation id="5771382037724542929">¿Quieres reemplazar el archivo <ph name="FILE_NAME" /> existente en <ph name="DIRECTORY_NAME" />?</translation>
 <translation id="5804241973901381774">Permisos</translation>
 <translation id="5806294296882899667">Error al cargar carpeta predeterminada</translation>
+<translation id="5817918615728894473">Sincronizar</translation>
 <translation id="5832934273103296195">Expandido (hacer clic para contraer)</translation>
 <translation id="583891442612896534">Chrome no puede acceder a los servidores de Google para la compresión de datos. Es posible que el ahorro de datos esté reducido.</translation>
 <translation id="5860033963881614850">Desactivado</translation>
@@ -333,7 +338,6 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mediante anuncio
 <translation id="6040143037577758943">Cerrar</translation>
 <translation id="6042308850641462728">Más</translation>
 <translation id="605721222689873409">AA</translation>
-<translation id="6060567974409584397">Toca para volver a la pestaña</translation>
 <translation id="6066720739967032277">Consulta las pestañas con otras aplicaciones recientes en la pantalla Recientes del teléfono. Puedes controlar este parámetro en <ph name="BEGIN_LINK" />Configuración<ph name="END_LINK" />.</translation>
 <translation id="6075798973483050474">Editar la Página principal</translation>
 <translation id="6108923351542677676">Configuración en curso…</translation>
@@ -381,6 +385,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mediante anuncio
 <translation id="6698801883190606802">Administrar datos sincronizados</translation>
 <translation id="6699351163704950317">Todas las páginas guardadas</translation>
 <translation id="6710213216561001401">Anterior</translation>
+<translation id="6720988912937197322">La página guardada no está disponible sin conexión.</translation>
 <translation id="6738867403308150051">Descargando…</translation>
 <translation id="6770414673596662518">El sistema de navegación segura de Chrome también se puede utilizar para detectar páginas maliciosas y protegerte de la suplantación de identidad (phishing), el software malicioso y las descargas peligrosas.</translation>
 <translation id="6784675033504223784">Buscar "<ph name="SEARCH_TERM" />"</translation>
@@ -394,7 +399,6 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mediante anuncio
 <translation id="6850830437481525139">Pestañas cerradas: <ph name="TAB_COUNT" /></translation>
 <translation id="6857778194843072568">Enviar solo con Wi-Fi</translation>
 <translation id="6868088497967843822">Accede a tu cuenta para ver los marcadores, el historial, las contraseñas y otras opciones de configuración en todos los dispositivos.</translation>
-<translation id="6935223586406308151">Se agregó <ph name="DOMAIN_NAME" /> a la pantalla principal.</translation>
 <translation id="6945221475159498467">Seleccionar</translation>
 <translation id="6963766334940102469">Borrar marcadores</translation>
 <translation id="6964496835063002391">Agregar una cuenta</translation>
@@ -523,6 +527,7 @@ Conéctate a Internet y reproduce el contenido descargado para obtener licencias
 <translation id="8719023831149562936">Esta pestaña no se puede transmitir.</translation>
 <translation id="8725066075913043281">Intentar nuevamente</translation>
 <translation id="8730621377337864115">Listo</translation>
+<translation id="8737542153238017984">La página guardada no está disponible sin conexión. El almacenamiento está casi lleno.</translation>
 <translation id="8793430725658173476">Copiar URL</translation>
 <translation id="8798099450830957504">Predeterminado</translation>
 <translation id="8820817407110198400">Marcadores</translation>
@@ -553,6 +558,7 @@ Conéctate a Internet y reproduce el contenido descargado para obtener licencias
 <translation id="9133515669113036225">Restablecer credenciales de dispositivo</translation>
 <translation id="9137013805542155359">Mostrar original</translation>
 <translation id="9156605176886108508">No hay carpetas de marcadores</translation>
+<translation id="9192643434065497760">Activa Bluetooth en la <ph name="BEGIN_LINK" />configuración del dispositivo<ph name="END_LINK" /> para permitir la sincronización.</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="932327136139879170">Página principal</translation>
 <translation id="938850635132480979">Error: <ph name="ERROR_CODE" /></translation>

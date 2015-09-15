@@ -113,6 +113,7 @@
 <translation id="2718352093833049315">Vain Wi-Fillä</translation>
 <translation id="2748463065602559597">Katselet suojattua Google Chrome -sivua.</translation>
 <translation id="2770465223704140727">Poista luettelosta</translation>
+<translation id="278029852808208386">Bluetooth-laitteita ei löytynyt. <ph name="BEGIN_LINK" />Hae uudelleen<ph name="END_LINK" />.</translation>
 <translation id="2816165854387457183">Hidas yhteys havaittu.</translation>
 <translation id="2842985007712546952">Ylätason kansio</translation>
 <translation id="2870560284913253234">Sivusto</translation>
@@ -190,6 +191,7 @@ Muokkaa hakutermiä valitsemalla se pitkällä painalluksella. Tarkenna hakua li
 <translation id="4099578267706723511">Auta parantamaan Chromea lähettämällä käyttötilastoja ja virheraportteja Googlelle.</translation>
 <translation id="411254640334432676">Lataus epäonnistui.</translation>
 <translation id="4113030288477039509">Järjestelmänvalvojasi hallinnoima</translation>
+<translation id="4116939199945053760"><ph name="SITE" /> haluaa <ph name="BEGIN_LINK" />muodostaa laiteparin seuraavan kohteen kanssa<ph name="END_LINK" />:</translation>
 <translation id="4165986682804962316">Sivustoasetukset</translation>
 <translation id="4170011742729630528">Palvelu ei ole käytettävissä. Yritä myöhemmin uudelleen.</translation>
 <translation id="4195643157523330669">Avaa uudessa välilehdessä</translation>
@@ -203,6 +205,7 @@ Muokkaa hakutermiä valitsemalla se pitkällä painalluksella. Tarkenna hakua li
 <translation id="4307992518367153382">Perustiedot</translation>
 <translation id="4333969446981951071">Käyttämällä sovellusta hyväksyt Chromen <ph name="BEGIN_LINK1" />käyttöehdot<ph name="END_LINK1" /> ja <ph name="BEGIN_LINK2" />tietosuojailmoituksen<ph name="END_LINK2" />.</translation>
 <translation id="4351244548802238354">Sulje ikkuna</translation>
+<translation id="4357362091209756047">Etkö näe laitetta? <ph name="BEGIN_LINK1" />Hae uudelleen<ph name="END_LINK1" /> tai <ph name="BEGIN_LINK2" />tutustu ohjeisiin<ph name="END_LINK2" />.</translation>
 <translation id="4376501731284077108">Ei rajoitettu</translation>
 <translation id="4378154925671717803">Puhelin</translation>
 <translation id="4412992751769744546">Salli kolmannen osapuolen evästeet</translation>
@@ -290,6 +293,7 @@ Avaa Chrome tietokoneella, siirry valikkoon ja valitse Kirjaudu Chromeen…</tra
 <translation id="5626134646977739690">Nimi:</translation>
 <translation id="5626370437647899551">Lisää Google-tili</translation>
 <translation id="563535393368633106">Kysy ennen käyttöä (suositus)</translation>
+<translation id="5643573370311148178"><ph name="BEGIN_LINK" />Ohje<ph name="END_LINK" /></translation>
 <translation id="5646376287012673985">Sijainti</translation>
 <translation id="5659593005791499971">Sähköposti</translation>
 <translation id="5668404140385795438">Ohita sivuston zoomauksen estämispyyntö</translation>
@@ -310,6 +314,7 @@ Et ole kuitenkaan näkymätön. Incognito-tila ei piilota selaustietojasi työna
 <translation id="5771382037724542929">Haluako korvata olemassa olevan tiedoston <ph name="FILE_NAME" /> hakemistossa <ph name="DIRECTORY_NAME" />?</translation>
 <translation id="5804241973901381774">Käyttöluvat</translation>
 <translation id="5806294296882899667">Virhe ladattaessa oletusta</translation>
+<translation id="5817918615728894473">Muodosta laitepari</translation>
 <translation id="5832934273103296195">Laajennettu – tiivistä klikkaamalla</translation>
 <translation id="583891442612896534">Chrome ei saa yhteyttä Googlen palvelimiin tietojen pakkausta varten. Tietojen tallentaminen voi olla rajoitettua.</translation>
 <translation id="5860033963881614850">Pois käytöstä</translation>
@@ -332,7 +337,6 @@ Jotkin verkkosivut voivat vastata tähän pyyntöön esimerkiksi näyttämällä
 <translation id="6040143037577758943">Sulje</translation>
 <translation id="6042308850641462728">Lisää</translation>
 <translation id="605721222689873409">VV</translation>
-<translation id="6060567974409584397">Palaa välilehteen koskettamalla</translation>
 <translation id="6066720739967032277">Näet välilehdet ja viimeksi käytetyt sovellukset puhelimen Viimeisimmät-näkymässä. Voit hallinnoida tätä asetusta <ph name="BEGIN_LINK" />asetuksissa<ph name="END_LINK" />.</translation>
 <translation id="6075798973483050474">Muokkaa etusivua</translation>
 <translation id="6108923351542677676">Synkronointia valmistellaan…</translation>
@@ -380,6 +384,7 @@ Jotkin verkkosivut voivat vastata tähän pyyntöön esimerkiksi näyttämällä
 <translation id="6698801883190606802">Hallinnoi synkronoituja tietoja</translation>
 <translation id="6699351163704950317">Kaikki tallennetut sivut</translation>
 <translation id="6710213216561001401">Edellinen</translation>
+<translation id="6720988912937197322">Tallennettu sivu ei ole käytettävissä offline-tilassa.</translation>
 <translation id="6738867403308150051">Ladataan…</translation>
 <translation id="6770414673596662518">Chromen selaussuojajärjestelmän avulla myös tunnistetaan haitallisia sivuja ja suojataan sinua tietojenkalastelulta, haittaohjelmilta ja haitallisilta latauksilta.</translation>
 <translation id="6784675033504223784">Tee haku <ph name="SEARCH_TERM" /></translation>
@@ -393,7 +398,6 @@ Jotkin verkkosivut voivat vastata tähän pyyntöön esimerkiksi näyttämällä
 <translation id="6850830437481525139"><ph name="TAB_COUNT" /> välilehteä suljettiin.</translation>
 <translation id="6857778194843072568">Lähetä vain Wi-Fi-yhteydellä</translation>
 <translation id="6868088497967843822">Kirjaudu ja käytä kirjanmerkkejä, historiaa, salasanoja ja muita asetuksiasi kaikissa laitteissasi.</translation>
-<translation id="6935223586406308151"><ph name="DOMAIN_NAME" /> lisättiin aloitusnäyttöön.</translation>
 <translation id="6945221475159498467">Valitse</translation>
 <translation id="6963766334940102469">Poista kirjanmerkkejä</translation>
 <translation id="6964496835063002391">Lisää tili.</translation>
@@ -522,6 +526,7 @@ Hanki uudet käyttöoik. muodostam. verkkoyhteys ja toistamalla ladattu sisält�
 <translation id="8719023831149562936">Nykyistä välilehteä ei voi jakaa</translation>
 <translation id="8725066075913043281">Yritä uudelleen</translation>
 <translation id="8730621377337864115">Valmis</translation>
+<translation id="8737542153238017984">Tallennettu sivu ei ole käytettävissä offline-tilassa. Tallennustila on lähes täysi.</translation>
 <translation id="8793430725658173476">Kopioi URL-osoite</translation>
 <translation id="8798099450830957504">Oletus</translation>
 <translation id="8820817407110198400">Kirjanmerkit</translation>
@@ -552,6 +557,7 @@ Hanki uudet käyttöoik. muodostam. verkkoyhteys ja toistamalla ladattu sisält�
 <translation id="9133515669113036225">Nollaa laitteen kirjautumistiedot</translation>
 <translation id="9137013805542155359">Näytä alkuperäinen</translation>
 <translation id="9156605176886108508">Ei kirjanmerkkikansioita</translation>
+<translation id="9192643434065497760">Ota Bluetooth käyttöön <ph name="BEGIN_LINK" />laitteen asetuksissa<ph name="END_LINK" />, jotta laiteparin muodostus onnistuu.</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="932327136139879170">Etusivu</translation>
 <translation id="938850635132480979">(Virhe: <ph name="ERROR_CODE" />)</translation>

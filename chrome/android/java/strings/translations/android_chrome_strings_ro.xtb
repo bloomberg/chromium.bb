@@ -113,6 +113,7 @@
 <translation id="2718352093833049315">Numai prin Wi-Fi</translation>
 <translation id="2748463065602559597">Acum afișează o pagină Google Chrome securizată.</translation>
 <translation id="2770465223704140727">Elimină din listă</translation>
+<translation id="278029852808208386">Nu s-a găsit niciun dispozitiv Bluetooth. <ph name="BEGIN_LINK" />Caută din nou<ph name="END_LINK" />.</translation>
 <translation id="2816165854387457183">A fost detectată o conexiune lentă.</translation>
 <translation id="2842985007712546952">Dosar părinte</translation>
 <translation id="2870560284913253234">Site</translation>
@@ -190,6 +191,7 @@ Pentru a ajusta termenii căutării, apasă lung pentru a selecta. Pentru a rafi
 <translation id="4099578267706723511">Contribuie la îmbunătățirea Chrome trimițând statistici de utilizare și rapoarte de blocare la Google.</translation>
 <translation id="411254640334432676">Nu s-a descărcat.</translation>
 <translation id="4113030288477039509">Gestionat de administratorul tău</translation>
+<translation id="4116939199945053760"><ph name="SITE" /> dorește <ph name="BEGIN_LINK" />să se asocieze cu<ph name="END_LINK" />:</translation>
 <translation id="4165986682804962316">Setări pentru site</translation>
 <translation id="4170011742729630528">Serviciul nu este disponibil. Încercați din nou mai târziu.</translation>
 <translation id="4195643157523330669">Deschide în filă nouă</translation>
@@ -203,6 +205,7 @@ Pentru a ajusta termenii căutării, apasă lung pentru a selecta. Pentru a rafi
 <translation id="4307992518367153382">Elemente de bază</translation>
 <translation id="4333969446981951071">Folosind această aplicație, accepți <ph name="BEGIN_LINK1" />Termenii și condițiile<ph name="END_LINK1" /> și <ph name="BEGIN_LINK2" />Notificarea privind confidențialitatea<ph name="END_LINK2" /> Chrome.</translation>
 <translation id="4351244548802238354">Închide caseta de dialog</translation>
+<translation id="4357362091209756047">Dispozitivul nu apare? <ph name="BEGIN_LINK1" />Caută din nou<ph name="END_LINK1" /> sau <ph name="BEGIN_LINK2" />obține ajutor<ph name="END_LINK2" />.</translation>
 <translation id="4376501731284077108">Necontrolat</translation>
 <translation id="4378154925671717803">Telefon</translation>
 <translation id="4412992751769744546">Permite cookie-urile terță parte</translation>
@@ -290,6 +293,7 @@ Deschide Chrome pe computer, accesează meniul și selectează „Conectează-te
 <translation id="5626134646977739690">Nume:</translation>
 <translation id="5626370437647899551">Adaugă un Cont Google</translation>
 <translation id="563535393368633106">Solicită permisiunea înainte de accesare (recomandat)</translation>
+<translation id="5643573370311148178"><ph name="BEGIN_LINK" />Ajutor<ph name="END_LINK" />.</translation>
 <translation id="5646376287012673985">Locație</translation>
 <translation id="5659593005791499971">Adresă de e-mail</translation>
 <translation id="5668404140385795438">Ignoră solicitarea unui site de a împiedica mărirea</translation>
@@ -310,6 +314,7 @@ Totuși, nu ești invizibil(ă). Trecerea în modul incognito nu ascunde activit
 <translation id="5771382037724542929">Dorești să înlocuiești fișierul <ph name="FILE_NAME" /> existent din <ph name="DIRECTORY_NAME" />?</translation>
 <translation id="5804241973901381774">Permisiuni</translation>
 <translation id="5806294296882899667">Eroare la încărcarea dosarului prestabilit</translation>
+<translation id="5817918615728894473">Asociază</translation>
 <translation id="5832934273103296195">Afișare extinsă – dă clic pentru a restrânge</translation>
 <translation id="583891442612896534">Chrome nu poate să contacteze serverele Google pentru comprimarea datelor. Economiile de date pot fi limitate.</translation>
 <translation id="5860033963881614850">Dezactivat</translation>
@@ -332,7 +337,6 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="6040143037577758943">Închide</translation>
 <translation id="6042308850641462728">Mai multe</translation>
 <translation id="605721222689873409">AA</translation>
-<translation id="6060567974409584397">Atinge pentru a reveni la filă</translation>
 <translation id="6066720739967032277">Vezi filele împreună cu alte aplicații recente pe ecranul Recente de pe telefon. Poți să controlezi acest aspect din <ph name="BEGIN_LINK" />Setări<ph name="END_LINK" />.</translation>
 <translation id="6075798973483050474">Editează pagina de pornire</translation>
 <translation id="6108923351542677676">Configurare în curs...</translation>
@@ -380,6 +384,7 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="6698801883190606802">Gestionează datele sincronizate</translation>
 <translation id="6699351163704950317">Toate paginile salvate</translation>
 <translation id="6710213216561001401">Înapoi</translation>
+<translation id="6720988912937197322">Pagina salvată nu este disponibilă offline</translation>
 <translation id="6738867403308150051">Se descarcă...</translation>
 <translation id="6770414673596662518">Sistemul Navigare sigură din Chrome va fi folosit pentru a detecta pagini rău-intenționate și pentru a te proteja împotriva phishingului, a programelor malware și a descărcărilor periculoase.</translation>
 <translation id="6784675033504223784">Caută „<ph name="SEARCH_TERM" />”</translation>
@@ -393,7 +398,6 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="6850830437481525139">S-au închis <ph name="TAB_COUNT" /> (de) file</translation>
 <translation id="6857778194843072568">Trimite numai prin Wi-Fi</translation>
 <translation id="6868088497967843822">Conectează-te pentru a avea marcajele, istoricul, parolele și alte setări pe toate dispozitivele</translation>
-<translation id="6935223586406308151"><ph name="DOMAIN_NAME" /> a fost adăugat la ecranul de pornire</translation>
 <translation id="6945221475159498467">Selectează</translation>
 <translation id="6963766334940102469">Șterge marcaje</translation>
 <translation id="6964496835063002391">Adaugă un cont</translation>
@@ -522,6 +526,7 @@ Pentru licențe noi, conectează-te la internet și redă conținutul descărcat
 <translation id="8719023831149562936">Fila actuală nu poate fi transmisă</translation>
 <translation id="8725066075913043281">Încearcă din nou</translation>
 <translation id="8730621377337864115">Terminat</translation>
+<translation id="8737542153238017984">Pagina salvată nu este disponibilă offline. Stocare aproape plină.</translation>
 <translation id="8793430725658173476">Copiază adresa URL</translation>
 <translation id="8798099450830957504">Prestabilit</translation>
 <translation id="8820817407110198400">Marcaje</translation>
@@ -552,6 +557,7 @@ Pentru licențe noi, conectează-te la internet și redă conținutul descărcat
 <translation id="9133515669113036225">Resetează datele de conectare de pe dispozitiv</translation>
 <translation id="9137013805542155359">Afișează originalul</translation>
 <translation id="9156605176886108508">Nu există dosare cu marcaje</translation>
+<translation id="9192643434065497760">Activează Bluetooth în <ph name="BEGIN_LINK" />setările dispozitivului<ph name="END_LINK" /> pentru a permite asocierea.</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="932327136139879170">Pagina de pornire</translation>
 <translation id="938850635132480979">Eroare: <ph name="ERROR_CODE" /></translation>

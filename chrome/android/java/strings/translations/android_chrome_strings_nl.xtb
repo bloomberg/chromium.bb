@@ -113,6 +113,7 @@
 <translation id="2718352093833049315">Alleen via wifi</translation>
 <translation id="2748463065602559597">Je bekijkt een veilige Google Chrome-pagina.</translation>
 <translation id="2770465223704140727">Verwijderen uit lijst</translation>
+<translation id="278029852808208386">Geen Bluetooth-apparaten gevonden. <ph name="BEGIN_LINK" />Zoek nogmaals<ph name="END_LINK" />.</translation>
 <translation id="2816165854387457183">Langzame verbinding gedetecteerd.</translation>
 <translation id="2842985007712546952">Bovenliggende map</translation>
 <translation id="2870560284913253234">Site</translation>
@@ -190,6 +191,7 @@ Als je de zoekterm wilt aanpassen, houd je deze aangeraakt om de term te selecte
 <translation id="4099578267706723511">Verzend automatisch gebruiksstatistieken en crashmeldingen naar Google.</translation>
 <translation id="411254640334432676">Downloaden mislukt.</translation>
 <translation id="4113030288477039509">Beheerd door je beheerder</translation>
+<translation id="4116939199945053760"><ph name="SITE" /> wil <ph name="BEGIN_LINK" />koppelen met<ph name="END_LINK" />:</translation>
 <translation id="4165986682804962316">Site-instellingen</translation>
 <translation id="4170011742729630528">De service is niet beschikbaar. Probeer het later opnieuw.</translation>
 <translation id="4195643157523330669">Openen op nieuw tabblad</translation>
@@ -203,6 +205,7 @@ Als je de zoekterm wilt aanpassen, houd je deze aangeraakt om de term te selecte
 <translation id="4307992518367153382">Basisinstellingen</translation>
 <translation id="4333969446981951071">Als je deze app gebruikt, ga je daarmee akkoord met de <ph name="BEGIN_LINK1" />Servicevoorwaarden<ph name="END_LINK1" /> en het <ph name="BEGIN_LINK2" />Privacybeleid<ph name="END_LINK2" /> van Chrome.</translation>
 <translation id="4351244548802238354">Dialoogvenster sluiten</translation>
+<translation id="4357362091209756047">Wordt je apparaat niet weergegeven? <ph name="BEGIN_LINK1" />Zoek nogmaals<ph name="END_LINK1" /> of <ph name="BEGIN_LINK2" />raadpleeg de Help<ph name="END_LINK2" />.</translation>
 <translation id="4376501731284077108">Niet-beheerd</translation>
 <translation id="4378154925671717803">Telefoon</translation>
 <translation id="4412992751769744546">Cookies van derden toestaan</translation>
@@ -290,6 +293,7 @@ Open Chrome op je computer, ga naar het menu en selecteer 'Inloggen bij Chrome'.
 <translation id="5626134646977739690">Naam:</translation>
 <translation id="5626370437647899551">Google-account toevoegen</translation>
 <translation id="563535393368633106">Vragen vóór toegang (aanbevolen)</translation>
+<translation id="5643573370311148178"><ph name="BEGIN_LINK" />Help<ph name="END_LINK" />.</translation>
 <translation id="5646376287012673985">Locatie</translation>
 <translation id="5659593005791499971">E-mailadres</translation>
 <translation id="5668404140385795438">Negeer verzoek van website om inzoomen te voorkomen</translation>
@@ -310,6 +314,7 @@ Je bent echter niet onzichtbaar. Als je incognito bent, wordt je browsegeschiede
 <translation id="5771382037724542929">Wil je de bestaande versie van <ph name="FILE_NAME" /> in <ph name="DIRECTORY_NAME" /> vervangen?</translation>
 <translation id="5804241973901381774">Rechten</translation>
 <translation id="5806294296882899667">Fout bij laden standaardmap</translation>
+<translation id="5817918615728894473">Koppelen</translation>
 <translation id="5832934273103296195">Uitgevouwen; klik om samen te vouwen</translation>
 <translation id="583891442612896534">Chrome kan de Google-servers niet bereiken voor gegevenscompressie. De besparing op je gegevensgebruik is mogelijk beperkt.</translation>
 <translation id="5860033963881614850">Uit</translation>
@@ -332,7 +337,6 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="6040143037577758943">Sluiten</translation>
 <translation id="6042308850641462728">Meer</translation>
 <translation id="605721222689873409">JJ</translation>
-<translation id="6060567974409584397">Tik om terug te gaan naar het tabblad</translation>
 <translation id="6066720739967032277">Bekijk je tabbladen met andere recente apps op het overzichtsscherm van je telefoon. Je kunt dit beheren via <ph name="BEGIN_LINK" />Instellingen<ph name="END_LINK" />.</translation>
 <translation id="6075798973483050474">Startpagina bewerken</translation>
 <translation id="6108923351542677676">Instellen wordt uitgevoerd...</translation>
@@ -380,6 +384,7 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="6698801883190606802">Gesynchroniseerde gegevens beheren</translation>
 <translation id="6699351163704950317">Alle opgeslagen pagina's</translation>
 <translation id="6710213216561001401">Vorige</translation>
+<translation id="6720988912937197322">Opgeslagen pagina niet offline beschikbaar</translation>
 <translation id="6738867403308150051">Downloaden...</translation>
 <translation id="6770414673596662518">Het Safe Browsing-systeem van Chrome wordt ook gebruikt om onveilige pagina's te detecteren en je te beschermen tegen phishing, malware en andere schadelijke downloads.</translation>
 <translation id="6784675033504223784">Zoeken op '<ph name="SEARCH_TERM" />'</translation>
@@ -393,7 +398,6 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="6850830437481525139"><ph name="TAB_COUNT" /> tabbladen gesloten</translation>
 <translation id="6857778194843072568">Alleen verzenden via wifi</translation>
 <translation id="6868088497967843822">Log in om je bladwijzers, geschiedenis, wachtwoorden en andere instellingen op al je apparaten te gebruiken</translation>
-<translation id="6935223586406308151"><ph name="DOMAIN_NAME" /> is toegevoegd aan je startscherm</translation>
 <translation id="6945221475159498467">Selecteren</translation>
 <translation id="6963766334940102469">Bladwijzers verwijderen</translation>
 <translation id="6964496835063002391">Een account toevoegen</translation>
@@ -522,6 +526,7 @@ Maak verbinding met internet en speel je gedownloade inhoud af om nieuwe licenti
 <translation id="8719023831149562936">Kan huidig tabblad niet beamen</translation>
 <translation id="8725066075913043281">Opnieuw proberen</translation>
 <translation id="8730621377337864115">Gereed</translation>
+<translation id="8737542153238017984">Opgeslagen pagina niet offline beschikbaar. Opslagruimte is bijna vol.</translation>
 <translation id="8793430725658173476">URL kopiëren</translation>
 <translation id="8798099450830957504">Standaard</translation>
 <translation id="8820817407110198400">Bladwijzers</translation>
@@ -552,6 +557,7 @@ Maak verbinding met internet en speel je gedownloade inhoud af om nieuwe licenti
 <translation id="9133515669113036225">Apparaatinloggegevens opnieuw instellen</translation>
 <translation id="9137013805542155359">Origineel weergeven</translation>
 <translation id="9156605176886108508">Geen bladwijzermappen</translation>
+<translation id="9192643434065497760">Schakel Bluetooth in de <ph name="BEGIN_LINK" />apparaatinstellingen<ph name="END_LINK" /> in om te koppelen.</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="932327136139879170">Startpagina</translation>
 <translation id="938850635132480979">Fout: <ph name="ERROR_CODE" /></translation>

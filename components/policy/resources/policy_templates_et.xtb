@@ -695,6 +695,7 @@ Kui jätate reegli määramata või keelate selle, siis kasutatakse kirjete jaga
 
       Kui keelate valiku või jätate selle määramata, siis saab arendaja tööriistu ja JavaScripti konsooli kasutada.</translation>
 <translation id="4467952432486360968">Blokeeri kolmanda osapoole küpsised</translation>
+<translation id="4474167089968829729">Luba paroolide salvestamine paroolihaldurisse</translation>
 <translation id="4480694116501920047">Jõusta SafeSearchi kasutamine</translation>
 <translation id="4482640907922304445">Kuvab rakenduse <ph name="PRODUCT_NAME" /> tööriistaribal nuppu Kodu.
 
@@ -1149,6 +1150,17 @@ Kui jätate reegli määramata või keelate selle, siis kasutatakse kirjete jaga
           See reegel on valikuline. Kui see pole määratud, siis saadetakse soovituse otsingu taotlus GET-meetodiga.
 
           Reeglit järgitakse ainult siis, kui lubatud on reegel „DefaultSearchProviderEnabled”.</translation>
+<translation id="6365608006609079612">
+          Kui see seade on lubatud, saavad kasutajad lasta teenusel <ph name="PRODUCT_NAME" /> paroolid meelde jätta
+          ja need sisestatakse järgmisel korral saidile sisse logides automaatselt.
+
+          Kui see seade on keelatud, ei saa kasutajad uusi paroole salvestada,
+          kuid nad saavad kasutada paroole, mis on varem salvestatud.
+
+          Kui see reegel on lubatud või keelatud, ei saa kasutajad seda teenuses
+          <ph name="PRODUCT_NAME" /> muuta ega alistada. Kui see reegel
+          on määramata, on paroolide salvestamine lubatud (kuid kasutaja saab selle
+          välja lülitada).</translation>
 <translation id="6367755442345892511">Määramine, kas kasutajal on võimalik versiooni kanalit seadistada</translation>
 <translation id="6368011194414932347">Avalehe URL-i seadistamine</translation>
 <translation id="6368403635025849609">Luba JavaScript nendel saitidel</translation>

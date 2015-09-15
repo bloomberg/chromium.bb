@@ -702,6 +702,7 @@
 
       Bibigyang-daan ng pagtatakda sa pagpipiliang ito na hindi pinagana o pag-iwan ditong hindi nakatakda ang user na gamitin ang Mga Tool ng Developer at ang console ng JavaScript.</translation>
 <translation id="4467952432486360968">I-block ang cookies ng third party</translation>
+<translation id="4474167089968829729">I-enable ang pagse-save ng mga password sa password manager</translation>
 <translation id="4480694116501920047">Ipuwersa ang SafeSearch</translation>
 <translation id="4482640907922304445">Ipinapakita ang button na Home sa toolbar ng  <ph name="PRODUCT_NAME" />.
 
@@ -1157,6 +1158,17 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
           Opsyonal ang patakarang ito. Kung hindi nakatakda, ipapadala ang kahilingan sa paghahanap gamit ang GET na paraan.
 
           Iginagalang lang ang patakarang ito kung naka-enable ang patakarang 'DefaultSearchProviderEnabled.'</translation>
+<translation id="6365608006609079612">
+          Kung naka-enable ang setting na ito, mabibigyang-daan ng mga user ang <ph name="PRODUCT_NAME" /> na tandaan ang mga password
+          at awtomatikong ibigay ang mga ito sa susunod na mag-log in sila sa isang site.
+
+          Kung naka-disable ang setting na ito, hindi makakapag-save ng mga bagong password ang mga user ngunit
+          maaari pa rin nilang gamitin ang mga password na dati nang na-save.
+
+          Kung naka-enable o naka-disable ang patakarang ito, hindi ito maaaring baguhin o i-override ng mga user
+          sa <ph name="PRODUCT_NAME" />. Kung
+          hindi nakatakda ang patakarang ito, pinapayagan ang pagse-save ng password (ngunit maaaring i-off
+          ng user).</translation>
 <translation id="6367755442345892511">Kung maaaring i-configure ng user ang release channel</translation>
 <translation id="6368011194414932347">I-configure ang URL ng home page</translation>
 <translation id="6368403635025849609">Payagan ang JavaScript sa mga site na ito</translation>

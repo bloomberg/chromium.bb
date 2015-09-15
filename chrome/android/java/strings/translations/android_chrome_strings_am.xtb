@@ -113,6 +113,7 @@
 <translation id="2718352093833049315">በWi-Fi ላይ ብቻ</translation>
 <translation id="2748463065602559597">ደህንነቱ የተጠበቀ የGoogle Chrome ገጽ እያዩ ነው።</translation>
 <translation id="2770465223704140727">ከዝርዝር  አስወግድ</translation>
+<translation id="278029852808208386">ምንም የብሉቱዝ መሳሪያዎች አልተገኙም። <ph name="BEGIN_LINK" />እንደገና ይፈልጉ<ph name="END_LINK" />።</translation>
 <translation id="2816165854387457183">ቀርፋፋ ግንኙነት ተገኝቷል።</translation>
 <translation id="2842985007712546952">ወላጅ አቃፊ</translation>
 <translation id="2870560284913253234">ጣቢያ</translation>
@@ -190,6 +191,7 @@
 <translation id="4099578267706723511">የአጠቃቀም ስታቲክሶችን እና የብልሽት ሪፖርቶችን ወደ Google በመላክ Chromeን የተሻለ ለማድረግ እገዛ ያድርጉ።</translation>
 <translation id="411254640334432676">ማውረድ አልተሳካም።</translation>
 <translation id="4113030288477039509">በእርስዎ አስተዳዳሪ የሚቀናበር</translation>
+<translation id="4116939199945053760"><ph name="SITE" /> <ph name="BEGIN_LINK" />ከዚህ ጋር መጣመር<ph name="END_LINK" /> ይፈልጋል፦</translation>
 <translation id="4165986682804962316">የጣቢያ ቅንብሮች</translation>
 <translation id="4170011742729630528">አገልግሎቱ አይገኝም፤ ቆይተው እንደገና ይሞክሩ።</translation>
 <translation id="4195643157523330669">በአዲስ ትር ክፈት</translation>
@@ -203,6 +205,7 @@
 <translation id="4307992518367153382">መሠረታዊ</translation>
 <translation id="4333969446981951071">ይህን መተግበሪያ በመጠቀምዎ በChrome <ph name="BEGIN_LINK1" />አገልግሎት ውል<ph name="END_LINK1" /> እና <ph name="BEGIN_LINK2" />የግላዊነት ማስታወቂያ<ph name="END_LINK2" /> ተስማምተዋል።</translation>
 <translation id="4351244548802238354">መገናኛ ዝጋ</translation>
+<translation id="4357362091209756047">መሳሪያዎ አይታየዎትም? <ph name="BEGIN_LINK1" />እንደገና ይፈልጉ<ph name="END_LINK1" /> ወይም <ph name="BEGIN_LINK2" />እገዛ ያግኙ<ph name="END_LINK2" />።</translation>
 <translation id="4376501731284077108">ቁጥጥር ያልተደረገበት</translation>
 <translation id="4378154925671717803">ስልክ</translation>
 <translation id="4412992751769744546">የሶስተኛ ወገን ኩኪዎችን ፍቀድ</translation>
@@ -290,6 +293,7 @@
 <translation id="5626134646977739690">ስም፦</translation>
 <translation id="5626370437647899551">የGoogle መለያ ያክሉ</translation>
 <translation id="563535393368633106">ከመድረስ በፊት ጠይቅ (የሚመከር)</translation>
+<translation id="5643573370311148178"><ph name="BEGIN_LINK" />እገዛ<ph name="END_LINK" /></translation>
 <translation id="5646376287012673985">አካባቢ</translation>
 <translation id="5659593005791499971">ኢሜይል</translation>
 <translation id="5668404140385795438">የአንድ ድር ጣቢያ ማጉላትን መከልከል ጥያቄ ሻር</translation>
@@ -310,6 +314,7 @@
 <translation id="5771382037724542929">በ<ph name="DIRECTORY_NAME" /> ውስጥ ያለውን ነባር <ph name="FILE_NAME" /> መተካት ይፈልጋሉ?</translation>
 <translation id="5804241973901381774">ፍቃዶች</translation>
 <translation id="5806294296882899667">ነባሪን መጫን ላይ ስህተት</translation>
+<translation id="5817918615728894473">አጣምር</translation>
 <translation id="5832934273103296195">ተዘርግቷል - ለመሰብሰብ ጠቅ ያድርጉ</translation>
 <translation id="583891442612896534">Chrome ለውሂብ እመቃ የGoogle አገልጋዮችን መድረስ አልቻለም። የውሂብ ቁጠባዎችዎ የተገደቡ ሊሆኑ ይችላሉ።</translation>
 <translation id="5860033963881614850">አጥፋ</translation>
@@ -332,7 +337,6 @@
 <translation id="6040143037577758943">ዝጋ</translation>
 <translation id="6042308850641462728">ተጨማሪ</translation>
 <translation id="605721222689873409">ዓዓ</translation>
-<translation id="6060567974409584397">ወደ ትሩ ለመመለስ ይንኩ</translation>
 <translation id="6066720739967032277">በስልክዎ የአጠቃላይ ዕይታ ማያ ገጽ ላይ የእርስዎን ትሮች ከሌሎች የቅርብ ጊዜ መተግበሪያዎች ጋር ይመልከቱ። ይህንን በ<ph name="BEGIN_LINK" />ቅንብሮች<ph name="END_LINK" /> ውስጥ መቆጣጠር ይችላሉ።</translation>
 <translation id="6075798973483050474">መነሻ ገጽን ያርትዑ</translation>
 <translation id="6108923351542677676">ማዋቀር በሂደት ላይ…</translation>
@@ -380,6 +384,7 @@
 <translation id="6698801883190606802">የተመሳሰለ ውሂብ ያስተዳድሩ</translation>
 <translation id="6699351163704950317">ሁሉም የተቀመጡ ገጾች</translation>
 <translation id="6710213216561001401">ቀዳሚ</translation>
+<translation id="6720988912937197322">የተቀመጠ ገጽ ከመስመር ውጭ አይገኝም</translation>
 <translation id="6738867403308150051">በማውረድ ላይ…</translation>
 <translation id="6770414673596662518">የChrome የጥንቃቄ አሰሳ ስርዓት ተንኮል-አዘል ገጾችን ለማወቅ እና እርስዎን ከማስገር፣ ተንኮል-አዘል ዌር እና ጎጂ ወራጆች ለመጠበቅ ስራ ላይ ይውላል።</translation>
 <translation id="6784675033504223784">«<ph name="SEARCH_TERM" />»ን ፈልግ</translation>
@@ -393,7 +398,6 @@
 <translation id="6850830437481525139"><ph name="TAB_COUNT" /> ትሮች ተዘግተዋል</translation>
 <translation id="6857778194843072568">በWi-Fi ላይ ሲሆን ብቻ ላክ</translation>
 <translation id="6868088497967843822">የእርስዎን ዕልባቶች፣ ታሪክ፣ የይለፍ ቃላት እና ሌሎች ቅንብሮች በሁሉም መሣሪያዎችዎ ላይ ለማግኘት ወደ መለያ ይግቡ</translation>
-<translation id="6935223586406308151"><ph name="DOMAIN_NAME" /> ወደ የእርስዎ መነሻ ማያ ገጽ ታክሎዋል</translation>
 <translation id="6945221475159498467">ይምረጡ</translation>
 <translation id="6963766334940102469">ዕልባቶችን ሰርዝ</translation>
 <translation id="6964496835063002391">መለያ አክል</translation>
@@ -522,6 +526,7 @@
 <translation id="8719023831149562936">የአሁኑን ትር በሞገድ መላክ አልተቻለም</translation>
 <translation id="8725066075913043281">እንደገና ይሞክሩ</translation>
 <translation id="8730621377337864115">ተከናውኗል</translation>
+<translation id="8737542153238017984">የተቀመጠ ገጽ ከመስመር ውጭ አይገኝም። ማከማቻ ሊሞላ ትንሽ ነው የቀረው።</translation>
 <translation id="8793430725658173476">ዩአርኤል ቅዳ</translation>
 <translation id="8798099450830957504">እንደወረደ</translation>
 <translation id="8820817407110198400">ዕልባቶች</translation>
@@ -552,6 +557,7 @@
 <translation id="9133515669113036225">የመሣሪያ ምስክርነቶችን ዳግም ያስጀምሩ</translation>
 <translation id="9137013805542155359">የመጀመሪያውን አሳይ</translation>
 <translation id="9156605176886108508">ምንም የዕልባት አቃፊዎች የሉም</translation>
+<translation id="9192643434065497760">ማጣመርን ለመፍቀድ በ<ph name="BEGIN_LINK" />መሳሪያ ቅንብሮች<ph name="END_LINK" /> ውስጥ ብሉቱዝን ያብሩ።</translation>
 <translation id="9206873250291191720">አ</translation>
 <translation id="932327136139879170">መነሻ</translation>
 <translation id="938850635132480979">ስህተት፦ <ph name="ERROR_CODE" /></translation>

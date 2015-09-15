@@ -715,6 +715,7 @@
 
       Om det här alternativet inaktiveras eller inte anges kan utvecklarverktygen och JavaScript-konsolen användas.</translation>
 <translation id="4467952432486360968">Blockera cookies från tredje part</translation>
+<translation id="4474167089968829729">Aktivera lösenordshanteraren för sparade lösenord</translation>
 <translation id="4480694116501920047">Tvinga fram användning av SafeSearch</translation>
 <translation id="4482640907922304445">Policyn visar knappen Startsida i verktygsfältet i <ph name="PRODUCT_NAME" />.
 
@@ -1173,6 +1174,17 @@
           Policyn är valfri. Om den inte anges skickas sökförfrågningar via GET-metoden.
 
           Policyn följs endast om policyn DefaultSearchProviderEnabled är aktiverad.</translation>
+<translation id="6365608006609079612">
+          Om den här inställningen har aktiverats kan användarna spara lösenord i <ph name="PRODUCT_NAME" /> och låta
+          dem fyllas i automatiskt nästa gång de loggar in på en webbplats.
+
+          Om inställningen har inaktiverats kan användarna inte spara lösenord, men de
+          kan fortfarande använda lösenord som har sparats sedan tidigare.
+
+          Om den här principen har aktiverats eller inaktiverats kan användarna inte 
+          ändra eller åsidosätta detta i <ph name="PRODUCT_NAME" />. Om principen
+          inte anges går det att spara lösenord (men användaren kan stänga av
+          detta).</translation>
 <translation id="6367755442345892511">Anger om lanseringskanalen ska kunna konfigureras av användaren</translation>
 <translation id="6368011194414932347">Konfigurera webbadress för startsida</translation>
 <translation id="6368403635025849609">Tillåt JavaScript på dessa webbplatser</translation>

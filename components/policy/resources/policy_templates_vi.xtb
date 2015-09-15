@@ -700,6 +700,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
 
       Đặt thành tắt hoặc không đặt tùy chọn này sẽ cho phép người dùng sử dụng các Công cụ dành cho nhà phát triển và bảng điều khiển JavaScript.</translation>
 <translation id="4467952432486360968">Chặn cookie của bên thứ ba</translation>
+<translation id="4474167089968829729">Bật lưu mật khẩu cho trình quản lý mật khẩu</translation>
 <translation id="4480694116501920047">Buộc Tìm kiếm an toàn</translation>
 <translation id="4482640907922304445">Hiển thị nút Trang chủ trên thanh công cụ của <ph name="PRODUCT_NAME" />.
 
@@ -1158,6 +1159,17 @@ Khi chính sách này được đặt thành false hoặc không được địn
           Chính sách này là tùy chọn. Nếu không đặt, yêu cầu tìm kiếm sẽ được gửi bằng phương thức GET.
 
           Chính sách này chỉ được tuân theo nếu kích hoạt chính sách 'DefaultSearchProviderEnabled'.</translation>
+<translation id="6365608006609079612">
+          Nếu cài đặt này được bật, người dùng có thể yêu cầu <ph name="PRODUCT_NAME" /> ghi nhớ mật khẩu
+          và tự động cung cấp cho họ vào lần tiếp theo họ đăng nhập trang web.
+
+          Nếu cài đặt này bị tắt, người dùng không thể lưu mật khẩu mới nhưng họ
+          vẫn có thể sử dụng mật khẩu đã được lưu trước đó.
+
+          Nếu chính sách này được bật hoặc tắt, người dùng không thể thay đổi hoặc ghi đè
+          chính sách trong <ph name="PRODUCT_NAME" />. Nếu chính sách
+          này chưa được đặt, bạn được phép lưu mật khẩu (nhưng người dùng có thể
+          tắt).</translation>
 <translation id="6367755442345892511">Kênh phát hành có thể được định cấu hình bởi người dùng hay không</translation>
 <translation id="6368011194414932347">Định cấu hình URL trang chủ</translation>
 <translation id="6368403635025849609">Cho phép JavaScript trên các trang web này</translation>

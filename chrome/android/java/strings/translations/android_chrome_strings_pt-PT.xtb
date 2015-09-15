@@ -113,6 +113,7 @@
 <translation id="2718352093833049315">Apenas em Wi-Fi</translation>
 <translation id="2748463065602559597">Está a ver uma página segura do Google Chrome.</translation>
 <translation id="2770465223704140727">Remover da lista</translation>
+<translation id="278029852808208386">Não foram encontrados dispositivos Bluetooth. <ph name="BEGIN_LINK" />Procure novamente<ph name="END_LINK" />.</translation>
 <translation id="2816165854387457183">Ligação lenta detetada.</translation>
 <translation id="2842985007712546952">Pasta superior</translation>
 <translation id="2870560284913253234">Site</translation>
@@ -190,6 +191,7 @@ Para ajustar o termo de pesquisa, prima continuamente para selecionar. Para refi
 <translation id="4099578267706723511">Ajude a melhorar o Chrome ao enviar estatísticas de utilização e relatórios de falhas para a Google.</translation>
 <translation id="411254640334432676">A transferência falhou.</translation>
 <translation id="4113030288477039509">Gerido pelo administrador</translation>
+<translation id="4116939199945053760"><ph name="SITE" /> pretende <ph name="BEGIN_LINK" />sincronizar com<ph name="END_LINK" />:</translation>
 <translation id="4165986682804962316">Definições de sites</translation>
 <translation id="4170011742729630528">O serviço não está disponível. Tente novamente mais tarde.</translation>
 <translation id="4195643157523330669">Abrir num novo separador</translation>
@@ -203,6 +205,7 @@ Para ajustar o termo de pesquisa, prima continuamente para selecionar. Para refi
 <translation id="4307992518367153382">Noções básicas</translation>
 <translation id="4333969446981951071">Ao utilizar esta aplicação, concorda com os <ph name="BEGIN_LINK1" />Termos de Utilização<ph name="END_LINK1" /> e o <ph name="BEGIN_LINK2" />Aviso de Privacidade<ph name="END_LINK2" /> do Chrome.</translation>
 <translation id="4351244548802238354">Fechar caixa de diálogo</translation>
+<translation id="4357362091209756047">Não vê o seu dispositivo? <ph name="BEGIN_LINK1" />Procure novamente<ph name="END_LINK1" /> ou <ph name="BEGIN_LINK2" />Obtenha ajuda<ph name="END_LINK2" />.</translation>
 <translation id="4376501731284077108">Não controlado</translation>
 <translation id="4378154925671717803">Telefone</translation>
 <translation id="4412992751769744546">Permitir cookies de terceiros</translation>
@@ -290,6 +293,7 @@ Basta abrir o Chrome no computador, aceder ao menu e selecionar "Iniciar sessão
 <translation id="5626134646977739690">Nome:</translation>
 <translation id="5626370437647899551">Adicionar uma Conta Google</translation>
 <translation id="563535393368633106">Perguntar antes de aceder (recomendado)</translation>
+<translation id="5643573370311148178"><ph name="BEGIN_LINK" />Ajuda<ph name="END_LINK" />.</translation>
 <translation id="5646376287012673985">Localização</translation>
 <translation id="5659593005791499971">Email</translation>
 <translation id="5668404140385795438">Substituir pedido de um Website para evitar aumentar o zoom</translation>
@@ -310,6 +314,7 @@ No entanto, a navegação não é invisível. Passar para o modo de navegação 
 <translation id="5771382037724542929">Pretende substituir o ficheiro <ph name="FILE_NAME" /> existente no diretório <ph name="DIRECTORY_NAME" />?</translation>
 <translation id="5804241973901381774">Permissões</translation>
 <translation id="5806294296882899667">Erro ao carregar a predefinição</translation>
+<translation id="5817918615728894473">Sincronizar</translation>
 <translation id="5832934273103296195">Expandida – clicar para reduzir</translation>
 <translation id="583891442612896534">O Chrome não consegue comunicar com os servidores da Google para a compressão de dados. A poupança de dados pode ser limitada.</translation>
 <translation id="5860033963881614850">Desativado</translation>
@@ -332,7 +337,6 @@ Por exemplo, alguns Websites podem responder a este pedido ao mostrar-lhe anúnc
 <translation id="6040143037577758943">Fechar</translation>
 <translation id="6042308850641462728">Mais</translation>
 <translation id="605721222689873409">AA</translation>
-<translation id="6060567974409584397">Toque para regressar ao separador</translation>
 <translation id="6066720739967032277">Veja os seus separadores com outras aplicações recentes no ecrã Vista geral do telemóvel. Pode controlar esta função nas <ph name="BEGIN_LINK" />Definições<ph name="END_LINK" />.</translation>
 <translation id="6075798973483050474">Editar página inicial</translation>
 <translation id="6108923351542677676">Configuração em curso…</translation>
@@ -380,6 +384,7 @@ Por exemplo, alguns Websites podem responder a este pedido ao mostrar-lhe anúnc
 <translation id="6698801883190606802">Gerir dados sincronizados</translation>
 <translation id="6699351163704950317">Todas as páginas guardadas</translation>
 <translation id="6710213216561001401">Anterior</translation>
+<translation id="6720988912937197322">Página guardada não disponível offline</translation>
 <translation id="6738867403308150051">A transferir...</translation>
 <translation id="6770414673596662518">O sistema de Navegação segura do Chrome também será utilizado para detetar páginas maliciosas e para o proteger contra phishing, programas maliciosos e transferências prejudiciais.</translation>
 <translation id="6784675033504223784">Pesquisar "<ph name="SEARCH_TERM" />"</translation>
@@ -393,7 +398,6 @@ Por exemplo, alguns Websites podem responder a este pedido ao mostrar-lhe anúnc
 <translation id="6850830437481525139"><ph name="TAB_COUNT" /> separadores fechados</translation>
 <translation id="6857778194843072568">Enviar apenas em Wi-Fi</translation>
 <translation id="6868088497967843822">Iniciar sessão para aceder aos marcadores, ao histórico, às palavras-passe e a outras definições em todos os dispositivos</translation>
-<translation id="6935223586406308151"><ph name="DOMAIN_NAME" /> foi adicionado ao ecrã principal</translation>
 <translation id="6945221475159498467">Seleccionar</translation>
 <translation id="6963766334940102469">Eliminar marcadores</translation>
 <translation id="6964496835063002391">Adicionar uma conta</translation>
@@ -522,6 +526,7 @@ Para obter licenças novas, ligue-se à Internet e reproduza o conteúdo transfe
 <translation id="8719023831149562936">Impossível transmitir o separador atual</translation>
 <translation id="8725066075913043281">Tentar novamente</translation>
 <translation id="8730621377337864115">Concluído</translation>
+<translation id="8737542153238017984">Página guardada não disponível offline. O armazenamento está quase cheio.</translation>
 <translation id="8793430725658173476">Copiar URL</translation>
 <translation id="8798099450830957504">Predefinição</translation>
 <translation id="8820817407110198400">Marcadores</translation>
@@ -552,6 +557,7 @@ Para obter licenças novas, ligue-se à Internet e reproduza o conteúdo transfe
 <translation id="9133515669113036225">Repor as credenciais do dispositivo</translation>
 <translation id="9137013805542155359">Mostrar original</translation>
 <translation id="9156605176886108508">Nenhuma pasta de marcadores</translation>
+<translation id="9192643434065497760">Ative o Bluetooth nas <ph name="BEGIN_LINK" />definições do dispositivo<ph name="END_LINK" /> para permitir a sincronização.</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="932327136139879170">Página inicial</translation>
 <translation id="938850635132480979">Erro: <ph name="ERROR_CODE" /></translation>

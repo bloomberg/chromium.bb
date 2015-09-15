@@ -3,6 +3,7 @@
 <translationbundle lang="zh-TW">
 <translation id="1000498691615767391">選取要開啟的資料夾</translation>
 <translation id="1000916256947465293">自動使用已儲存的憑證登入網站。如果關閉這項功能，網站會一律在您登入前要求提供憑證。</translation>
+<translation id="1005274289863221750">使用您的麥克風和相機</translation>
 <translation id="1007233996198401083">無法連線。</translation>
 <translation id="1007408791287232274">無法載入裝置。</translation>
 <translation id="1008557486741366299">現在不要</translation>
@@ -21,11 +22,14 @@
 <translation id="1029595648591494741">您要試用「<ph name="EXTENSION_NAME" />」嗎？</translation>
 <translation id="1031362278801463162">正在載入預覽畫面</translation>
 <translation id="1031460590482534116">嘗試儲存用戶端憑證時發生錯誤，錯誤碼： <ph name="ERROR_NUMBER" /> (<ph name="ERROR_NAME" />)。</translation>
+<translation id="1033780634303702874">存取您的序列裝置</translation>
 <translation id="1035094536595558507">投影片視圖</translation>
 <translation id="1035590878859356651">將這個網頁加入書籤...</translation>
 <translation id="1036348656032585052">關閉</translation>
+<translation id="1036511912703768636">存取下列任一 USB 裝置</translation>
 <translation id="1038168778161626396">只有 Encipher</translation>
 <translation id="1038842779957582377">不明名稱</translation>
+<translation id="1040931876666128942">WebUsb 通知。</translation>
 <translation id="1042174272890264476">您的電腦也內建了 <ph name="SHORT_PRODUCT_NAME" /> 的 RLZ 程式庫。RLZ 可指定非重複、非個人的可辨識標記，以評估特定宣傳廣告活動所提升的搜尋數與 <ph name="SHORT_PRODUCT_NAME" /> 使用量。這些標籤有時也會顯示在 <ph name="PRODUCT_NAME" /> 的 Google 搜尋查詢中。</translation>
 <translation id="1042574203789536285"><ph name="URL" /> 要求在您的裝置上永久儲存大量資料。</translation>
 <translation id="1045157690796831147">音譯 (namaskar → നമസ്കാരം)</translation>
@@ -37,9 +41,9 @@
 <translation id="1054153489933238809">在新分頁中開啟原始圖片(&amp;I)</translation>
 <translation id="1055806300943943258">搜尋藍牙裝置和 USB 裝置...</translation>
 <translation id="1056898198331236512">警告</translation>
+<translation id="1056982457359827501">在 Chrome 應用程式中啟用 BLE 廣告功能。BLE 廣告功能可能會造成藍牙低功耗技術 (Bluetooth Low Energy) 功能無法正常運作。</translation>
 <translation id="1058325955712687476">啟用 Site Engagement Service，記錄與網站的互動行為，並據此配置資源。</translation>
 <translation id="1058418043520174283">第 <ph name="INDEX" /> 個，共 <ph name="COUNT" /> 個</translation>
-<translation id="1059059430032922484">讀取及變更所有按鍵輸入，包括 ALT+TAB 鍵這類工作切換鍵</translation>
 <translation id="10614374240317010">永不儲存</translation>
 <translation id="1062407476771304334">取代</translation>
 <translation id="1062866675591297858">前往<ph name="BEGIN_LINK" />受監管的使用者資訊主頁<ph name="END_LINK" />管理您的受監管使用者。</translation>
@@ -193,6 +197,7 @@
 <translation id="1274997165432133392">Cookie 和其他網站資料</translation>
 <translation id="1275718070701477396">已選取</translation>
 <translation id="1278049586634282054">查看檢視模式：</translation>
+<translation id="1278813325885878377">匈牙利文 QWERTY 鍵盤</translation>
 <translation id="1285320974508926690">一律不翻譯此網站</translation>
 <translation id="1285484354230578868">將資料儲存在 Google 雲端硬碟帳戶中</translation>
 <translation id="1286637972568390913">停止支援 WebRTC 硬體視訊解碼。</translation>
@@ -419,6 +424,7 @@
 
 <ph name="EXTENSION_NAME" /></translation>
 <translation id="1587275751631642843">JavaScript 控制台(&amp;J)</translation>
+<translation id="158809615184981282">法羅文鍵盤</translation>
 <translation id="1588343017533984630">在 Mac 上建立代管應用程式時，禁止使用者建立應用程式庫。</translation>
 <translation id="1588870296199743671">使用其他程式開啟連結...</translation>
 <translation id="1589055389569595240">顯示拼字與文法</translation>
@@ -511,7 +517,6 @@
 <translation id="169515659049020177">Shift</translation>
 <translation id="1697068104427956555">選取圖片的方形區域。</translation>
 <translation id="1697532407822776718">大功告成！</translation>
-<translation id="1698647588772720278">停用帶有前置字串的 Encrypted Media Extensions。</translation>
 <translation id="1699395855685456105">硬體版本：</translation>
 <translation id="1701062906490865540">移除這個使用者</translation>
 <translation id="1702534956030472451">西歐語系</translation>
@@ -721,6 +726,7 @@
 <translation id="2045969484888636535">繼續封鎖 Cookie</translation>
 <translation id="2046040965693081040">使用目前的網頁</translation>
 <translation id="204622017488417136">您的裝置將還原至上一個安裝的 Chrome 版本，且所有使用者帳戶和本機資料都會遭到移除。這項操作無法復原。</translation>
+<translation id="2048182445208425546">存取您的網路流量</translation>
 <translation id="2049137146490122801">您的管理員已停用您裝置上本機檔案的存取權。</translation>
 <translation id="204914487372604757">建立捷徑</translation>
 <translation id="2049639323467105390">這個裝置由 <ph name="DOMAIN" /> 管理。</translation>
@@ -828,6 +834,7 @@
 <translation id="220138918934036434">隱藏按鈕</translation>
 <translation id="2202898655984161076">列出印表機清單時發生問題，您的部分印表機尚未使用 <ph name="CLOUD_PRINT_NAME" /> 完成註冊。</translation>
 <translation id="2204034823255629767">讀取及變更您輸入的任何設定</translation>
+<translation id="2208105671494637223">法文 Bepo</translation>
 <translation id="2208158072373999562">Zip 封存</translation>
 <translation id="2208311832613497869">注意：您必須徵求家長同意，才能瀏覽這個網頁。</translation>
 <translation id="220858061631308971">請在「<ph name="DEVICE_NAME" />」上輸入以下 PIN 碼：</translation>
@@ -855,6 +862,7 @@
 <translation id="223714078860837942">如果網頁並未設定特定的參照網址政策，設定這個標記會讓跨來源要求的「referer」標頭資訊量減少。</translation>
 <translation id="2238379619048995541">頻率狀態資料</translation>
 <translation id="2239921694246509981">新增受監管的使用者</translation>
+<translation id="2241053333139545397">讀取及變更您在多個網站上的資料</translation>
 <translation id="2241468422635044128">依據擴充功能設定允許</translation>
 <translation id="2242603986093373032">沒有任何裝置</translation>
 <translation id="2242687258748107519">檔案資訊</translation>
@@ -888,7 +896,9 @@
     無論裝置發生任何狀況，您的檔案都安全存放於 Google 雲端硬碟。<ph name="MARKUP_6" />
     <ph name="MARKUP_7" />檔案集中存放，<ph name="MARKUP_8" />
     方便共用、建立內容並與他人協同合作。<ph name="MARKUP_9" /></translation>
+<translation id="2270450558902169558">與 <ph name="DOMAIN" /> 網域中的任何裝置交換資料</translation>
 <translation id="2270484714375784793">電話號碼</translation>
+<translation id="2270627217422354837">與下列網域中的任何裝置交換資料：<ph name="DOMAINS" /></translation>
 <translation id="2271281383664374369">已暫時禁止擴充功能向網址傳送要求。</translation>
 <translation id="2273562597641264981">行動電話網路業者：</translation>
 <translation id="2276503375879033601">新增更多應用程式</translation>
@@ -1139,6 +1149,7 @@
 <translation id="2610780100389066815">Microsoft 信任清單簽署</translation>
 <translation id="2612676031748830579">卡片號碼</translation>
 <translation id="2615569600992945508">不允許任何網站停用滑鼠游標</translation>
+<translation id="2616366145935564096">讀取以及變更您在 <ph name="WEBSITE_1" /> 網站上的資料</translation>
 <translation id="2617653079636271958">縮放：<ph name="VALUE" />%</translation>
 <translation id="2617919205928008385">空間不足</translation>
 <translation id="2618254410484974446">這個網站的身分已通過 <ph name="ISSUER" /> 驗證，但伺服器提供了無效的 Certificate Transparency 資訊。</translation>
@@ -1347,6 +1358,7 @@
 <translation id="2875698561019555027">(Chrome 錯誤頁面)</translation>
 <translation id="2879560882721503072">成功儲存 <ph name="ISSUER" /> 發出的用戶端憑證。</translation>
 <translation id="288024221176729610">捷克文</translation>
+<translation id="288042212351694283">存取您的 Universal 2nd Factor 裝置</translation>
 <translation id="2881966438216424900">最後存取日期；</translation>
 <translation id="2882943222317434580"><ph name="IDS_SHORT_PRODUCT_NAME" /> 即將重新啟動並進行重設</translation>
 <translation id="2885378588091291677">工作管理員</translation>
@@ -1378,6 +1390,7 @@
 <translation id="2918322085844739869">4</translation>
 <translation id="2918583523892407401">使用 Chrome 同步沙箱</translation>
 <translation id="291886813706048071">您可以從這裡使用 <ph name="SEARCH_ENGINE" /> 進行搜尋</translation>
+<translation id="2922350208395188000">無法檢查伺服器憑證。</translation>
 <translation id="2923240520113693977">愛沙尼亞</translation>
 <translation id="29232676912973978">管理連線...</translation>
 <translation id="2923469375796950815">停用新版 ZIP 解壓縮工具。</translation>
@@ -1585,7 +1598,6 @@
 <translation id="3207960819495026254">已加入書籤</translation>
 <translation id="320825648481311438">啟用後即由瀏覽器管理 Google 帳戶的登入和登出作業。</translation>
 <translation id="3208703785962634733">尚未確認的</translation>
-<translation id="3212792897911394068">針對影片和音效元素停用 Encrypted Media Extensions 實驗性功能。</translation>
 <translation id="3216508313927987948">如要順利完成這項操作，您必須按照下列步驟訓練 <ph name="DEVICE_TYPE" /> 的辨識能力。</translation>
 <translation id="3220586366024592812"><ph name="CLOUD_PRINT_NAME" /> 連接器處理程序當掉了，您要重新啟動嗎？</translation>
 <translation id="3221634914176615296">在「檔案」應用程式中探索裝置內容。</translation>
@@ -1745,11 +1757,11 @@
 <translation id="3439153939049640737">一律允許 <ph name="HOST" /> 存取您的麥克風</translation>
 <translation id="3439970425423980614">正在預覽中開啟 PDF</translation>
 <translation id="3441653493275994384">螢幕</translation>
-<translation id="3442535954345742822">讀取及變更您的裝置和造訪過的網站上的所有資料</translation>
 <translation id="3444783709767514481">首次傳輸時間</translation>
 <translation id="3445092916808119474">設為主要設定</translation>
 <translation id="3445830502289589282">第 2 階段驗證：</translation>
 <translation id="3445925074670675829">USB-C 裝置</translation>
+<translation id="344630545793878684">讀取您在多個網站上產生的資料</translation>
 <translation id="3447661539832366887">這個裝置的擁有者已關閉恐龍遊戲。</translation>
 <translation id="3449839693241009168">按下「<ph name="SEARCH_KEY" />」即可將指令傳送給 <ph name="EXTENSION_NAME" /></translation>
 <translation id="3450157232394774192">閒置狀態占用率</translation>
@@ -1886,6 +1898,7 @@
 <translation id="3601395307734599350">這裡會顯示您的所有擴充功能</translation>
 <translation id="3603385196401704894">加拿大法文</translation>
 <translation id="3603622770190368340">取得網路憑證</translation>
+<translation id="3603690020645187079">法文 Bepo 鍵盤</translation>
 <translation id="3605780360466892872">小員工</translation>
 <translation id="3608454375274108141">F10</translation>
 <translation id="3608576286259426129">使用者圖片預覽</translation>
@@ -2018,6 +2031,7 @@
 <translation id="3758760622021964394">這個網頁要求停用滑鼠游標。</translation>
 <translation id="3759371141211657149">管理處理常式設定...</translation>
 <translation id="3759461132968374835">最近沒有收到當機資訊。當機回報功能停用時發生的當機不會列在這裡。</translation>
+<translation id="3759933321830434300">封鎖網頁部分內容</translation>
 <translation id="3760460896538743390">檢查背景頁面(&amp;B)</translation>
 <translation id="37613671848467444">在無痕式視窗中開啟(&amp;I)</translation>
 <translation id="3764583730281406327">{NUM_DEVICES,plural, =1{與 1 個 USB 裝置通訊}other{與 # 個 USB 裝置通訊}}</translation>
@@ -2049,6 +2063,7 @@
 <translation id="3798449238516105146">版本</translation>
 <translation id="3800503346337426623">略過登入程序，以訪客身分瀏覽</translation>
 <translation id="3800764353337460026">符號樣式</translation>
+<translation id="3801082500826908679">法羅文</translation>
 <translation id="3803991353670408298">請新增其他輸入法，然後再移除這個輸入法。</translation>
 <translation id="380408572480438692">啟用成效資料收集功能可協助 Google 持續改善系統。除非您提交意見回饋報告 (Alt-Shift-I) 並在其中包含成效資料，否則 Google 不會收到任何相關資料。您可以隨時回到這個畫面停用收集功能。</translation>
 <translation id="3807747707162121253">取消(&amp;C)</translation>
@@ -2180,6 +2195,7 @@
 <translation id="3979395879372752341">已新增以下擴充功能：<ph name="EXTENSION_NAME" /></translation>
 <translation id="3979748722126423326">啟用 <ph name="NETWORKDEVICE" /></translation>
 <translation id="3981760180856053153">輸入的儲存類型無效。</translation>
+<translation id="3983586614702900908">製造商不明的裝置</translation>
 <translation id="3984413272403535372">簽署擴充功能時出現錯誤。</translation>
 <translation id="399179161741278232">已匯入</translation>
 <translation id="3991936620356087075">您已輸入太多次不正確的 PIN 解鎖金鑰，您的 SIM 卡已永久停用。</translation>
@@ -2470,7 +2486,6 @@
 <translation id="4433914671537236274">建立還原媒體</translation>
 <translation id="4434147949468540706">捲動至底部效果</translation>
 <translation id="443464694732789311">繼續</translation>
-<translation id="4436068767502531396">Google 雲端硬碟目前無法同步處理「<ph name="FILENAME" />」，請稍後再試。</translation>
 <translation id="4436456292809448986">加到桌面...</translation>
 <translation id="4439244508678316632">內容授權</translation>
 <translation id="4439318412377770121">您要將 <ph name="DEVICE_NAME" /> 註冊到 Google 雲端裝置嗎？</translation>
@@ -2478,6 +2493,7 @@
 <translation id="444134486829715816">展開...</translation>
 <translation id="444267095790823769">受保護內容例外情況</translation>
 <translation id="4443536555189480885">說明(&amp;H)</translation>
+<translation id="4444304522807523469">存取透過 USB 附加或是在區域網路上的文件掃描器</translation>
 <translation id="4446933390699670756">鏡像模式</translation>
 <translation id="4447465454292850432">電池：</translation>
 <translation id="4448186133363537200">禁止使用 JavaScript 鎖定螢幕方向。</translation>
@@ -2518,6 +2534,7 @@
 <translation id="4509345063551561634">位置：</translation>
 <translation id="4514542542275172126">設定新的受監管使用者</translation>
 <translation id="4518677423782794009">Chrome 出現異常行為嗎 (例如造成電腦當機、顯示不尋常的起始網頁、工具列或無法關閉的未預期廣告，或是讓您無法正常瀏覽網路)？您可以執行 Chrome 清理工具，藉此修正相關問題。</translation>
+<translation id="452039078290142656">由 <ph name="VENDOR_NAME" /> 製造的不明裝置</translation>
 <translation id="4522570452068850558">詳細資訊</translation>
 <translation id="452785312504541111">全形英文</translation>
 <translation id="4533259260976001693">縮小/展開</translation>
@@ -2529,6 +2546,7 @@
 <translation id="4538684596480161368">一律禁止在 <ph name="HOST" /> 執行無沙箱防護的外掛程式</translation>
 <translation id="4538792345715658285">由公司政策安裝</translation>
 <translation id="45400070127195133">啟用這個選項即可讓網路應用程式存取仍處於草稿狀態的 WebGL 擴充功能。</translation>
+<translation id="4542520061254486227">讀取您在 <ph name="WEBSITE_1" /> 和 <ph name="WEBSITE_2" /> 上產生的資料</translation>
 <translation id="4543733025292526486">Esc 鍵</translation>
 <translation id="4543778593405494224">憑證管理員</translation>
 <translation id="4544744325790288581">使用實驗版資料縮減 Proxy。您必須在設定中啟用 Proxy，這個標記才會生效。</translation>
@@ -2600,6 +2618,7 @@
 <translation id="4647090755847581616">關閉分頁(&amp;C)</translation>
 <translation id="4647697156028544508">請輸入「<ph name="DEVICE_NAME" />」的 PIN：</translation>
 <translation id="4648491805942548247">權限不足</translation>
+<translation id="4650159467443406318">請按這裡造訪此頁面</translation>
 <translation id="4653235815000740718">建立作業系統還原媒體時發生問題，找不到使用的儲存裝置。</translation>
 <translation id="4654488276758583406">非常小</translation>
 <translation id="465499440663162826">無法連上 Chrome 線上應用程式商店。</translation>
@@ -2921,6 +2940,7 @@
 <translation id="5122371513570456792">找到 <ph name="NUMBER_OF_RESULTS" /> 個與「<ph name="SEARCH_STRING" />」相符的<ph name="SEARCH_RESULTS" />。</translation>
 <translation id="5125751979347152379">網址無效。</translation>
 <translation id="512608082539554821">如果啟用這項設定，首次執行教學課程就會顯示動畫轉場效果。</translation>
+<translation id="5127881134400491887">管理網路連線</translation>
 <translation id="512903556749061217">已附加</translation>
 <translation id="5129301143853688736">您與這個網站之間的連線不是私人連線。攻擊者可能會嘗試從 <ph name="DOMAIN" /> 竊取您的資訊 (例如相片、密碼、郵件和信用卡資訊)。</translation>
 <translation id="5129662217315786329">波蘭文</translation>
@@ -3050,7 +3070,6 @@
 <translation id="529172024324796256">使用者名稱：</translation>
 <translation id="529175790091471945">格式化這台裝置</translation>
 <translation id="5292890015345653304">請插入 SD 卡或 USB 隨身碟</translation>
-<translation id="5293659407874396561"><ph name="SUBJECT" /> (<ph name="ISSUER" />)</translation>
 <translation id="5294529402252479912">立即更新 Adobe Reader</translation>
 <translation id="5298219193514155779">主題製作者</translation>
 <translation id="5298363578196989456">「<ph name="IMPORT_NAME" />」擴充功能不是共用模組，因此無法匯入。</translation>
@@ -3286,6 +3305,7 @@
 <translation id="561349411957324076">完成</translation>
 <translation id="5613695965848159202">匿名身分：</translation>
 <translation id="5614190747811328134">使用者通知</translation>
+<translation id="5617934323658610138">在 Chrome 應用程式中啟用 BLE 廣告功能。</translation>
 <translation id="5618075537869101857">糟糕，無法啟動 Kiosk 應用程式。</translation>
 <translation id="5618333180342767515">(這可能需要幾分鐘的時間)</translation>
 <translation id="5618972959246891967">系統日期</translation>
@@ -3332,6 +3352,7 @@
 <translation id="5677928146339483299">已封鎖</translation>
 <translation id="5678550637669481956">已授予 <ph name="VOLUME_NAME" /> 的讀取及寫入權限。</translation>
 <translation id="567881659373499783">版本 <ph name="PRODUCT_VERSION" /></translation>
+<translation id="5678955352098267522">讀取您在 <ph name="WEBSITE_1" /> 上產生的資料</translation>
 <translation id="5680545064257783621">提供強化書籤實驗功能的關閉開關</translation>
 <translation id="568428328938709143">帳戶已遭移除</translation>
 <translation id="5684661240348539843">資產識別碼</translation>
@@ -3351,6 +3372,7 @@
 <translation id="5702898740348134351">編輯搜尋引擎(&amp;E)...</translation>
 <translation id="5703594190584829406">在鍵盤最上方顯示自動填入建議，而不要以下拉式選單顯示。</translation>
 <translation id="5704272569086782895">啟用執行緒 GPU 點陣化。</translation>
+<translation id="570544101664452060">實驗性 WebUsb 通知。</translation>
 <translation id="5706551819490830015">編輯帳單地址...</translation>
 <translation id="5707185214361380026">無法載入下列來源的擴充功能：</translation>
 <translation id="5707604204219538797">下一個字詞</translation>
@@ -3385,6 +3407,7 @@
 <translation id="5752453871435543420">Chrome 作業系統雲端備份</translation>
 <translation id="5754903485544371559">加到「應用程式」資料夾...</translation>
 <translation id="5756163054456765343">說明中心(&amp;E)</translation>
+<translation id="5756666464756035725">匈牙利文 QWERTY</translation>
 <translation id="5757567991662509396">允許使用 Android 拼字檢查工具。</translation>
 <translation id="5758389120290973856">停用雲端匯入功能。</translation>
 <translation id="5759272020525228995">擷取 <ph name="URL" /> 時網站遇到錯誤，
@@ -3538,6 +3561,7 @@
 <translation id="5966707198760109579">週</translation>
 <translation id="5967271952920681214">https://passwords.google.com/?hl=<ph name="GRITLANGCODE_1" /></translation>
 <translation id="5967867314010545767">從紀錄中移除</translation>
+<translation id="5971037678316050792">控制藍牙介面卡狀態與連線配對功能</translation>
 <translation id="5972017421290582825">管理 MIDI 設定...</translation>
 <translation id="5972826969634861500">啟動 <ph name="PRODUCT_NAME" /></translation>
 <translation id="5975083100439434680">縮小</translation>
@@ -3600,6 +3624,7 @@
 <translation id="6074825444536523002">Google 表單</translation>
 <translation id="6075731018162044558">糟糕！系統無法為這個裝置取得長期 API 存取符記。</translation>
 <translation id="6075880972317537864">攻擊者可能會試圖透過 <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> 騙取您的資訊 (例如密碼、郵件或信用卡資料)。</translation>
+<translation id="6075907793831890935">與名稱為 <ph name="HOSTNAME" /> 的裝置交換資料</translation>
 <translation id="607776788151925847">正在取消註冊...</translation>
 <translation id="6080100832288487452">啟用虛擬鍵盤的手勢輸入功能。</translation>
 <translation id="6080689532560039067">請檢查您的系統時間</translation>
@@ -3706,6 +3731,7 @@
 <translation id="6232017090690406397">電池</translation>
 <translation id="6232139169545176020">要求的 URI 協定不受支援。</translation>
 <translation id="6237614789842758826">Google 搜尋</translation>
+<translation id="6241530762627360640">存取與系統配對的藍牙裝置資訊並搜尋附近的藍牙裝置。</translation>
 <translation id="6243774244933267674">無法與伺服器連線</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE" />%</translation>
 <translation id="624789221780392884">可進行更新</translation>
@@ -3768,6 +3794,7 @@
 <translation id="6341850831632289108">偵測您的實際位置</translation>
 <translation id="6342069812937806050">剛剛</translation>
 <translation id="634208815998129842">工作管理員</translation>
+<translation id="6344170822609224263">存取網路連線清單</translation>
 <translation id="6344783595350022745">清除文字</translation>
 <translation id="6347003977836730270">啟用系統提供的新版翻譯泡泡 UX，取代資訊列。</translation>
 <translation id="6348657800373377022">下拉式方塊</translation>
@@ -3786,6 +3813,7 @@
 <translation id="6374100501221763867">停用硬體加速視訊解碼。</translation>
 <translation id="6380143666419481200">接受並繼續</translation>
 <translation id="6380224340023442078">內容設定...</translation>
+<translation id="6384275966486438344">將您的搜尋設定變更為：<ph name="SEARCH_HOST" /></translation>
 <translation id="6385543213911723544">網站可以儲存及讀取 Cookie 資料</translation>
 <translation id="6387478394221739770">想搶先試用酷炫的 Chrome 新功能嗎？請前往 chrome.com/beta 安裝測試版。</translation>
 <translation id="6390799748543157332">您在這個視窗瀏覽的網頁不會顯示在瀏覽器紀錄中，而且在您關閉所有開啟的訪客視窗後，電腦也不會留下 Cookie 等其他紀錄。不過，系統將會保留您下載的所有檔案。</translation>
@@ -3802,6 +3830,7 @@
 <translation id="6405640832764359650">啟用 Google Payments 信用卡儲存功能核取方塊</translation>
 <translation id="6406303162637086258">模擬瀏覽器重新啟動</translation>
 <translation id="6407080938771313237">投影觸控 HUD</translation>
+<translation id="6408118934673775994">讀取及變更您在 <ph name="WEBSITE_1" />、<ph name="WEBSITE_2" /> 和 <ph name="WEBSITE_3" /> 網站上的資料</translation>
 <translation id="6409731863280057959">彈出式視窗</translation>
 <translation id="6410063390789552572">無法存取網路程式庫</translation>
 <translation id="6410257289063177456">圖片檔</translation>
@@ -4005,6 +4034,7 @@
 <translation id="6690751852586194791">選擇要新增至裝置的受監管使用者。</translation>
 <translation id="6691936601825168937">下一頁(&amp;F)</translation>
 <translation id="6698381487523150993">建立於：</translation>
+<translation id="6698810901424468597">讀取及變更您在 <ph name="WEBSITE_1" /> 和 <ph name="WEBSITE_2" /> 網站上的資料</translation>
 <translation id="6699065916437121401">輸出音訊串流，檢查是否有預設硬體配置以外的頻道配置可供使用。</translation>
 <translation id="6699283942308121454">壓縮檔建立工具</translation>
 <translation id="6700480081846086223">投放 <ph name="HOST_NAME" /></translation>
@@ -4134,6 +4164,7 @@
 <translation id="6904344821472985372">撤銷檔案存取權</translation>
 <translation id="6906268095242253962">如要繼續執行，請連線至網際網路。</translation>
 <translation id="6909461304779452601">無法從這個網站新增應用程式、擴充功能及使用者指令碼。</translation>
+<translation id="6910211073230771657">已刪除</translation>
 <translation id="691024665142758461">下載多個檔案</translation>
 <translation id="6911468394164995108">加入其他網路...</translation>
 <translation id="691321796646552019">立即停用！</translation>
@@ -4237,6 +4268,7 @@
 <translation id="7030084719913890980">攻擊者可能已入侵這個網站，並試圖在您的電腦上安裝危險程式，藉此竊取或刪除您的資訊 (例如相片、密碼、郵件或信用卡資料)。</translation>
 <translation id="7031962166228839643">正在準備 TPM，請稍候 (這可能需要幾分鐘的時間)...</translation>
 <translation id="7036710474162401473">這是 <ph name="SAML_DOMAIN" /> 代管的登入服務。</translation>
+<translation id="7039326228527141150">存取由 <ph name="VENDOR_NAME" /> 製造的 USB 裝置</translation>
 <translation id="7039912931802252762">Microsoft 智慧卡登入</translation>
 <translation id="7040138676081995583">選擇開啟工具...</translation>
 <translation id="7042418530779813870">貼上及搜尋(&amp;S)</translation>
@@ -4276,6 +4308,7 @@
 <translation id="708969677220991657">即使憑證無效，仍允許透過 HTTPS 傳送要求給本機主機。</translation>
 <translation id="7090356285609536948">啟用後，復原工作階段的使用者介面將會顯示於說明圖示 (而非資訊列) 中。</translation>
 <translation id="7092106376816104">彈出式視窗例外</translation>
+<translation id="7093866338626856921">與下列名稱的裝置交換資料：<ph name="HOSTNAMES" /></translation>
 <translation id="7096082900368329802">想要探索更多超讚功能嗎？</translation>
 <translation id="7100897339030255923">已選取 <ph name="COUNT" /> 個項目</translation>
 <translation id="7106346894903675391">購買更多儲存空間...</translation>
@@ -4296,6 +4329,7 @@
 <translation id="7127980134843952133">下載紀錄</translation>
 <translation id="7130561729700538522">註冊 Google 裝置管理員失敗。</translation>
 <translation id="7130666834200497454">為確保 <ph name="DEVICE_TYPE" /> 的安全性，Chromebook 專用 Smart Lock 會要求您在解鎖專用手機上設定螢幕鎖定。手機已經受到妥善保護了嗎？請點選 [重新檢查] 進行驗證，再繼續完成設定。</translation>
+<translation id="7131040479572660648">讀取您在 <ph name="WEBSITE_1" />、<ph name="WEBSITE_2" /> 和 <ph name="WEBSITE_3" /> 上產生的資料</translation>
 <translation id="713122686776214250">新增網頁(&amp;G)...</translation>
 <translation id="7134098520442464001">縮小文字</translation>
 <translation id="7136694880210472378">設定為預設</translation>
@@ -4308,6 +4342,7 @@
 <translation id="7148311641502571842"><ph name="PLUGIN_NAME" /> 已停用。如要重新啟用外掛程式，請前往 <ph name="CHROME_PLUGINS_LINK" />。</translation>
 <translation id="7148804936871729015"><ph name="URL" /> 的伺服器的回應時間過長，該網站可能已超載。</translation>
 <translation id="715118844758971915">傳統印表機</translation>
+<translation id="7154130902455071009">將您的起始網頁變更為：<ph name="START_PAGE" /></translation>
 <translation id="715487527529576698">初始中文模式為簡體中文</translation>
 <translation id="7156235233373189579">這個檔案是專為使用 Windows 軟體的 PC 電腦所設計，與搭載 Chrome 作業系統的裝置不相容。請前往 <ph name="BEGIN_LINK" />Chrome 線上應用程式商店<ph name="END_LINK" />尋找適合的替代應用程式。<ph name="BEGIN_LINK_HELP" />瞭解詳情<ph name="END_LINK_HELP" /></translation>
 <translation id="7157063064925785854">按一下 [繼續] 即表示您同意接受《<ph name="LEGAL_DOC_LINK_TEXT_1" />》、《<ph name="LEGAL_DOC_LINK_TEXT_2" />》、《<ph name="LEGAL_DOC_LINK_TEXT_3" />》和《<ph name="LEGAL_DOC_LINK_TEXT_4" />》中的各項規定。</translation>
@@ -4375,6 +4410,7 @@
 <translation id="7255935316994522020">套用</translation>
 <translation id="7256710573727326513">在分頁中開啟</translation>
 <translation id="7257173066616499747">Wi-Fi 網路</translation>
+<translation id="7257666756905341374">讀取您複製和貼上的資料</translation>
 <translation id="7260002739296185724">在 OS X 10.7 以上版本的作業系統中，使用 AVFoundation 執行視訊擷取和視訊裝置監控；如果不使用 AVFoundation，系統將採用 QTKit 執行這些作業。</translation>
 <translation id="7262221505565121">無沙箱防護的外掛程式存取例外</translation>
 <translation id="7264275118036872269">無法開始搜索藍牙裝置。</translation>
@@ -4403,6 +4439,7 @@
 <translation id="7299441085833132046"><ph name="BEGIN_LINK" />說明<ph name="END_LINK" /></translation>
 <translation id="7301360164412453905">許氏鍵盤選字鍵</translation>
 <translation id="7303492016543161086">在系統選單中顯示協助工具選項</translation>
+<translation id="730515362922783851">與區域網路或網際網路中的任何裝置交換資料</translation>
 <translation id="7309257895202129721">顯示控制介面(&amp;C)</translation>
 <translation id="7311079019872751559">無沙箱防護的外掛程式存取</translation>
 <translation id="7312441861087971374"><ph name="PLUGIN_NAME" /> 已過期。</translation>
@@ -4822,6 +4859,7 @@
 <translation id="7887334752153342268">複製</translation>
 <translation id="7887864092952184874">已配對藍牙滑鼠</translation>
 <translation id="7892100671754994880">下一位使用者</translation>
+<translation id="7893008570150657497">存取您電腦中的相片、音樂及其他媒體</translation>
 <translation id="7893393459573308604"><ph name="ENGINE_NAME" /> (預設)</translation>
 <translation id="78957024357676568">向左鍵</translation>
 <translation id="7896906914454843592">美式改良鍵盤</translation>
@@ -4944,7 +4982,6 @@
 <translation id="8053390638574070785">重新載入此網頁</translation>
 <translation id="8054517699425078995">這種類型的檔案可能會損害您的裝置，您要保留 <ph name="FILE_NAME" /> 嗎？</translation>
 <translation id="8054563304616131773">請輸入有效的電子郵件地址</translation>
-<translation id="8054635925509770969">讀取及變更所有按鍵輸入，包括 CMD+TAB 鍵這類工作切換鍵</translation>
 <translation id="8054921503121346576">已連接 USB 鍵盤</translation>
 <translation id="8056430285089645882">知道了，不要再顯示這則訊息。</translation>
 <translation id="8059178146866384858">名稱為「$1」的檔案已經存在，請選擇其他名稱。</translation>
@@ -5333,6 +5370,7 @@
 <translation id="8615618338313291042">無痕模式應用程式：<ph name="APP_NAME" /></translation>
 <translation id="8616748524633185354">部分網頁使用舊版或非標準 JavaScript 擴充功能，可能會與最新的 JavaScript 功能發生衝突。使用此標記後，系統會為了與這類網頁相容而停止支援這些功能。</translation>
 <translation id="8619892228487928601"><ph name="CERTIFICATE_NAME" />：<ph name="ERROR" /></translation>
+<translation id="8620765578342452535">設定網路連線</translation>
 <translation id="8622877356447980900">您要翻譯這個網頁的內容嗎？</translation>
 <translation id="8623004009673949077">含有「kiosk_only」資訊清單屬性的應用程式只能在 Chrome 作業系統資訊站模式中安裝。</translation>
 <translation id="862542460444371744">擴充功能(&amp;E)</translation>
@@ -5364,6 +5402,7 @@
 <translation id="8659716501582523573">IP 位址：</translation>
 <translation id="8661290697478713397">在無痕式視窗中開啟連結(&amp;G)</translation>
 <translation id="8662795692588422978">人員</translation>
+<translation id="8662911384982557515">將您的首頁變更為：<ph name="HOME_PAGE" /></translation>
 <translation id="8662978096466608964">Chrome 無法設定桌布。</translation>
 <translation id="8663099077749055505">一律禁止在 <ph name="HOST" /> 自動下載多個檔案</translation>
 <translation id="8663876448733520316">管理搜尋引擎</translation>
@@ -5435,6 +5474,7 @@
 <translation id="874420130893181774">傳統拼音輸入法</translation>
 <translation id="8744525654891896746">選取這位受監管使用者的顯示圖片</translation>
 <translation id="8744641000906923997">羅馬字</translation>
+<translation id="8749863574775030885">存取製造商不明的 USB 裝置</translation>
 <translation id="8754200782896249056">&lt;p&gt;在受支援的桌面環境下執行「<ph name="PRODUCT_NAME" />」時，瀏覽器會使用系統的 Proxy 設定。不過，您的系統可能不受支援，或在啟動系統設定時發生問題。&lt;/p&gt;
 
         &lt;p&gt;無論如何，您仍然可以透過命令列進行設定。如需標記及環境變數的詳細資訊，請參閱 &lt;code&gt;man <ph name="PRODUCT_BINARY_NAME" />&lt;/code&gt;。&lt;/p&gt;</translation>
@@ -5473,6 +5513,7 @@
 <translation id="8800004011501252845">顯示以下地址的目的地：</translation>
 <translation id="8800420788467349919">音量：<ph name="PRECENTAGE" />%</translation>
 <translation id="8803496343472038847">俄文拼音鍵盤</translation>
+<translation id="8804398419035066391">與合作網站建立連線</translation>
 <translation id="8807632654848257479">穩定</translation>
 <translation id="8808478386290700967">線上應用程式商店</translation>
 <translation id="8811314776632711217">委派轉譯器 (AKA Übercompositor)。</translation>
@@ -5706,6 +5747,7 @@
 <translation id="9127762771585363996">水平翻轉相機圖片</translation>
 <translation id="9128870381267983090">連線至網路</translation>
 <translation id="9130015405878219958">輸入的模式無效。</translation>
+<translation id="9131487537093447019">透過藍牙裝置收發訊息。</translation>
 <translation id="9131598836763251128">選取一或多個檔案</translation>
 <translation id="9132971099789715557">按住搜尋鍵即可切換最上方一排按鍵的行為。</translation>
 <translation id="9133055936679483811">壓縮失敗。<ph name="ERROR_MESSAGE" /></translation>

@@ -717,6 +717,7 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
 
       Si se inhabilita esta opción o si no se establece, se podrán usar las Herramientas para desarrolladores y la Consola JavaScript.</translation>
 <translation id="4467952432486360968">Bloquear cookies de terceros</translation>
+<translation id="4474167089968829729">Habilitar el almacenamiento de contraseñas en el administrador de contraseñas</translation>
 <translation id="4480694116501920047">Forzar SafeSearch</translation>
 <translation id="4482640907922304445">Permite que el botón para volver a la página de inicio se muestre en la barra de herramientas de <ph name="PRODUCT_NAME" />.
 
@@ -1175,6 +1176,12 @@ Si esta opción no está establecida o está establecida en True, los dispositiv
           Esta política es opcional. Si no se establece, la solicitud de búsqueda se enviará mediante el método GET.
 
           Esta política solo se respeta si se habilita la política "DefaultSearchProviderEnabled".</translation>
+<translation id="6365608006609079612">
+          Si se habilita esta opción, los usuarios pueden hacer que <ph name="PRODUCT_NAME" /> memorice contraseñas y las proporcione automáticamente la próxima vez que inicien sesión en un sitio web.
+
+Si esta opción está inhabilitada, los usuarios no pueden guardar contraseñas nuevas, pero pueden seguir utilizando las que hayan guardado anteriormente.
+
+Si esta política está habilitada o inhabilitada, los usuarios no pueden cambiarla o anularla en <ph name="PRODUCT_NAME" />. Si esta política no está establecida, se permite guardar contraseñas (aunque el usuario puede desactivar esta opción).</translation>
 <translation id="6367755442345892511">Posibilidad de configuración del canal de versiones por parte del usuario</translation>
 <translation id="6368011194414932347">Configurar la URL de la página de inicio</translation>
 <translation id="6368403635025849609">Permitir JavaScript en estos sitios</translation>

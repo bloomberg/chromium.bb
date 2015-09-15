@@ -113,6 +113,7 @@
 <translation id="2718352093833049315">Само на Wi-Fi-ју</translation>
 <translation id="2748463065602559597">Прегледате безбедну Google Chrome страницу.</translation>
 <translation id="2770465223704140727">Уклони са листе</translation>
+<translation id="278029852808208386">Није пронађен ниједан Bluetooth уређај. <ph name="BEGIN_LINK" />Претражите поново<ph name="END_LINK" />.</translation>
 <translation id="2816165854387457183">Откривена је спора веза.</translation>
 <translation id="2842985007712546952">Надређени директоријум</translation>
 <translation id="2870560284913253234">Сајт</translation>
@@ -190,6 +191,7 @@
 <translation id="4099578267706723511">Побољшајте Chrome слањем статистике коришћења и извештаја о отказивању Google-у.</translation>
 <translation id="411254640334432676">Преузимање није успело.</translation>
 <translation id="4113030288477039509">Овим управља администратор</translation>
+<translation id="4116939199945053760"><ph name="SITE" /> жели да се <ph name="BEGIN_LINK" />упари са<ph name="END_LINK" />:</translation>
 <translation id="4165986682804962316">Подешавања сајта</translation>
 <translation id="4170011742729630528">Услуга није доступна. Покушајте поново касније.</translation>
 <translation id="4195643157523330669">Отвори у новој &amp;картици</translation>
@@ -203,6 +205,7 @@
 <translation id="4307992518367153382">Основне</translation>
 <translation id="4333969446981951071">Коришћењем ове апликације прихватате <ph name="BEGIN_LINK1" />Услове коришћења услуге<ph name="END_LINK1" /> и <ph name="BEGIN_LINK2" />Обавештење о приватности<ph name="END_LINK2" /> за Chrome.</translation>
 <translation id="4351244548802238354">Затвори дијалог</translation>
+<translation id="4357362091209756047">Не видите уређај? <ph name="BEGIN_LINK1" />Претражите поново<ph name="END_LINK1" /> или <ph name="BEGIN_LINK2" />потражите помоћ<ph name="END_LINK2" />.</translation>
 <translation id="4376501731284077108">Без контроле</translation>
 <translation id="4378154925671717803">Телефон</translation>
 <translation id="4412992751769744546">Дозволи колачиће треће стране</translation>
@@ -290,6 +293,7 @@
 <translation id="5626134646977739690">Име:</translation>
 <translation id="5626370437647899551">Додајте Google налог</translation>
 <translation id="563535393368633106">Питај пре приступања (препоручује се)</translation>
+<translation id="5643573370311148178"><ph name="BEGIN_LINK" />Помоћ<ph name="END_LINK" />.</translation>
 <translation id="5646376287012673985">Локација</translation>
 <translation id="5659593005791499971">Имејл</translation>
 <translation id="5668404140385795438">Одбијање захтева веб-сајта да се спречи увећавање</translation>
@@ -310,6 +314,7 @@
 <translation id="5771382037724542929">Желите ли да замените постојећу датотеку <ph name="FILE_NAME" /> у директоријуму <ph name="DIRECTORY_NAME" />?</translation>
 <translation id="5804241973901381774">Дозволе</translation>
 <translation id="5806294296882899667">Грешка при учитавању подразум. директоријума</translation>
+<translation id="5817918615728894473">Упари</translation>
 <translation id="5832934273103296195">Проширено је – Кликните да бисте скупили</translation>
 <translation id="583891442612896534">Chrome није успео да контактира Google сервере ради компримовања података. Уштеда података може да буде ограничена.</translation>
 <translation id="5860033963881614850">Искључено</translation>
@@ -332,7 +337,6 @@
 <translation id="6040143037577758943">Затвори</translation>
 <translation id="6042308850641462728">Више</translation>
 <translation id="605721222689873409">ГГ</translation>
-<translation id="6060567974409584397">Додирните да бисте се вратили на картицу</translation>
 <translation id="6066720739967032277">Прегледајте картице са другим недавним апликацијама на екрану Преглед на телефону. То можете да контролишете у <ph name="BEGIN_LINK" />Подешавањима<ph name="END_LINK" />.</translation>
 <translation id="6075798973483050474">Измените почетну страницу</translation>
 <translation id="6108923351542677676">Подешавање је у току...</translation>
@@ -380,6 +384,7 @@
 <translation id="6698801883190606802">Управљајте синхронизованим подацима</translation>
 <translation id="6699351163704950317">Све сачуване странице</translation>
 <translation id="6710213216561001401">Претходно</translation>
+<translation id="6720988912937197322">Сачувана страница није доступна офлајн</translation>
 <translation id="6738867403308150051">Преузима се...</translation>
 <translation id="6770414673596662518">Chrome-ов систем Безбедно прегледање ћемо користити и да бисмо откривали злонамерне странице и да бисмо вас заштитили од „пецања“, малвера и штетних преузимања.</translation>
 <translation id="6784675033504223784">Потражите „<ph name="SEARCH_TERM" />“</translation>
@@ -393,7 +398,6 @@
 <translation id="6850830437481525139">Затворених картица: <ph name="TAB_COUNT" /></translation>
 <translation id="6857778194843072568">Шаљи само преко Wi-Fi-ја</translation>
 <translation id="6868088497967843822">Пријавите се да би вам обележивачи, историја, лозинке и друга подешавања били доступни на свим уређајима</translation>
-<translation id="6935223586406308151"><ph name="DOMAIN_NAME" /> је додат на почетни екран</translation>
 <translation id="6945221475159498467">Изабери</translation>
 <translation id="6963766334940102469">Избриши обележиваче</translation>
 <translation id="6964496835063002391">Додајте налог</translation>
@@ -522,6 +526,7 @@
 <translation id="8719023831149562936">Није могуће пребацити актуелну картицу</translation>
 <translation id="8725066075913043281">Покушајте поново</translation>
 <translation id="8730621377337864115">Готово</translation>
+<translation id="8737542153238017984">Сачувана страница није доступна офлајн. Меморијски простор је скоро пун.</translation>
 <translation id="8793430725658173476">Копирај URL</translation>
 <translation id="8798099450830957504">Подразумевано</translation>
 <translation id="8820817407110198400">Обележивачи</translation>
@@ -552,6 +557,7 @@
 <translation id="9133515669113036225">Ресетуј акредитиве уређаја</translation>
 <translation id="9137013805542155359">Прикажи оригинал</translation>
 <translation id="9156605176886108508">Нема директоријума са обележивачима</translation>
+<translation id="9192643434065497760">Укључите Bluetooth у <ph name="BEGIN_LINK" />подешавањима уређаја<ph name="END_LINK" /> да бисте омогућили упаривање.</translation>
 <translation id="9206873250291191720">А</translation>
 <translation id="932327136139879170">Почетна</translation>
 <translation id="938850635132480979">Грешка: <ph name="ERROR_CODE" /></translation>

@@ -709,6 +709,7 @@ Als het beleid niet wordt ingesteld, of op 'False' wordt ingesteld, wordt het sp
 
       Als je deze optie uitschakelt of niet instelt, kunnen hulpprogramma's voor ontwikkelaars en de JavaScript-console worden gebruikt.</translation>
 <translation id="4467952432486360968">Indirecte cookies blokkeren</translation>
+<translation id="4474167089968829729">Opslaan van wachtwoorden in wachtwoordbeheer inschakelen</translation>
 <translation id="4480694116501920047">SafeSearch afdwingen</translation>
 <translation id="4482640907922304445">Hiermee wordt de knop 'Startpagina' weergegeven in de werkbalk van <ph name="PRODUCT_NAME" />.
 
@@ -1163,6 +1164,12 @@ Als het beleid niet wordt ingesteld, of op 'False' wordt ingesteld, wordt het sp
           Dit beleid is optioneel. Als het beleid niet is ingesteld, wordt de zoekopdracht verzonden met de GET-methode.
 
           Dit beleid wordt alleen gerespecteerd als het beleid 'DefaultSearchProviderEnabled' is ingeschakeld.</translation>
+<translation id="6365608006609079612">
+          Als deze instelling is ingeschakeld, kunnen gebruikers <ph name="PRODUCT_NAME" /> wachtwoorden laten onthouden en deze wachtwoorden automatisch laten leveren wanneer ze weer inloggen bij een site.
+
+          Als deze instelling is uitgeschakeld, kunnen gebruikers geen nieuwe wachtwoorden opslaan, maar kunnen ze nog steeds wachtwoorden gebruiken die eerder zijn opgeslagen.
+
+          Als dit beleid is ingeschakeld of uitgeschakeld, kunnen gebruikers dit niet wijzigen of overschrijven in <ph name="PRODUCT_NAME" />. Als dit beleid niet is ingesteld, is het opslaan van wachtwoorden toegestaan (maar kan dit worden uitgeschakeld door de gebruiker).</translation>
 <translation id="6367755442345892511">Of de gebruiker het releasekanaal moet configureren</translation>
 <translation id="6368011194414932347">De startpagina-URL configureren</translation>
 <translation id="6368403635025849609">JavaScript toestaan op deze sites</translation>

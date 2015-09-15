@@ -709,6 +709,7 @@ Si vous activez ce paramètre, les outils de développement ne sont plus accessi
 
 Si vous désactivez cette option ou si vous ne la configurez pas, l'utilisateur peut utiliser les outils de développement et la console JavaScript.</translation>
 <translation id="4467952432486360968">Bloquer les cookies tiers</translation>
+<translation id="4474167089968829729">Activer l'enregistrement des mots de passe dans le gestionnaire de mots de passe</translation>
 <translation id="4480694116501920047">Forcer SafeSearch</translation>
 <translation id="4482640907922304445">Affiche le bouton "Accueil" sur la barre d'outils <ph name="PRODUCT_NAME" />. 
 
@@ -1169,6 +1170,16 @@ Si vous désactivez ce paramètre ou si vous ne le configurez pas, le SPN Kerber
           Cette règle est facultative. Si elle n'est pas définie, la requête de recherche sera envoyée à l'aide la méthode GET.
 
           Cette règle n'est respectée que si la règle "DefaultSearchProviderEnabled" est activée.</translation>
+<translation id="6365608006609079612">
+          Si ce paramètre est activé, <ph name="PRODUCT_NAME" /> peut mémoriser les mots de passe
+          et les renseigner automatiquement la prochaine fois que les utilisateurs se connectent à un site.
+
+          Si ce paramètre est désactivé, les utilisateurs ne peuvent pas enregistrer           de nouveaux mots de passe, mais ils peuvent toujours utiliser des mots de passe préalablement enregistrés.
+
+          Si cette règle est activée ou désactivée, les utilisateurs ne peuvent pas la modifier ni l'ignorer
+          dans <ph name="PRODUCT_NAME" />. Si cette règle
+          n'est pas définie, l'enregistrement des mots de passe est autorisé (mais peut être désactivé par
+          l'utilisateur).</translation>
 <translation id="6367755442345892511">Autoriser ou verrouiller la configuration de la version par l'utilisateur</translation>
 <translation id="6368011194414932347">Configurer l'URL de la page d'accueil</translation>
 <translation id="6368403635025849609">Autoriser JavaScript sur ces sites</translation>

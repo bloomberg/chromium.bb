@@ -113,6 +113,7 @@
 <translation id="2718352093833049315">Sa Wi-Fi lang</translation>
 <translation id="2748463065602559597">Tumitingin ka sa isang secure na pahina ng Google Chrome.</translation>
 <translation id="2770465223704140727">Alisin sa listahan</translation>
+<translation id="278029852808208386">Walang nakitang mga bluetooth device. <ph name="BEGIN_LINK" />Muling maghanap<ph name="END_LINK" />.</translation>
 <translation id="2816165854387457183">Na-detect ang mabagal na koneksyon.</translation>
 <translation id="2842985007712546952">Pangunahing folder</translation>
 <translation id="2870560284913253234">Site</translation>
@@ -190,6 +191,7 @@ Upang baguhin ang iyong termino para sa paghahanap, pindutin ito nang matagal up
 <translation id="4099578267706723511">Tulungang mapahusay ang Chrome sa pamamagitan ng pagpapadala sa Google ng mga istatistika ng paggamit at ulat ng pag-crash.</translation>
 <translation id="411254640334432676">Hindi na-download.</translation>
 <translation id="4113030288477039509">Pinamamahalaan ng iyong administrator</translation>
+<translation id="4116939199945053760">Gusto ng <ph name="SITE" /> na <ph name="BEGIN_LINK" />makipares sa<ph name="END_LINK" />:</translation>
 <translation id="4165986682804962316">Mga setting ng site</translation>
 <translation id="4170011742729630528">Hindi available ang serbisyo; subukang muli sa ibang pagkakataon.</translation>
 <translation id="4195643157523330669">Buksan sa bagong tab</translation>
@@ -203,6 +205,7 @@ Upang baguhin ang iyong termino para sa paghahanap, pindutin ito nang matagal up
 <translation id="4307992518367153382">Mga Pangunahing Kaalaman</translation>
 <translation id="4333969446981951071">Sa pamamagitan ng paggamit sa application na ito, sumasang-ayon ka sa <ph name="BEGIN_LINK1" />Mga Tuntunin ng Serbisyo<ph name="END_LINK1" /> at sa <ph name="BEGIN_LINK2" />Paunawa sa Privacy<ph name="END_LINK2" /> ng Chrome.</translation>
 <translation id="4351244548802238354">Isara ang dialog</translation>
+<translation id="4357362091209756047">Hindi nakikita ang iyong device? <ph name="BEGIN_LINK1" />Muling maghanap<ph name="END_LINK1" /> o <ph name="BEGIN_LINK2" />Humingi ng tulong<ph name="END_LINK2" />.</translation>
 <translation id="4376501731284077108">Hindi kinokontrol</translation>
 <translation id="4378154925671717803">Telepono</translation>
 <translation id="4412992751769744546">Payagan ang third-party na cookies</translation>
@@ -290,6 +293,7 @@ Buksan lang ang Chrome sa iyong computer, pumunta sa menu, at piliin ang "Mag-si
 <translation id="5626134646977739690">Pangalan:</translation>
 <translation id="5626370437647899551">Magdagdag ng Google Account</translation>
 <translation id="563535393368633106">Magtanong bago mag-access (inirerekomenda)</translation>
+<translation id="5643573370311148178"><ph name="BEGIN_LINK" />Tulong<ph name="END_LINK" />.</translation>
 <translation id="5646376287012673985">Lokasyon</translation>
 <translation id="5659593005791499971">Email</translation>
 <translation id="5668404140385795438">I-override ang kahilingan ng isang website upang mapigilan ang pagzu-zoom in</translation>
@@ -310,6 +314,7 @@ Gayunpaman, hindi ka invisible. Hindi tinatago ng pagiging incognito ang iyong p
 <translation id="5771382037724542929">Gusto mo bang palitan ang umiiral nang <ph name="FILE_NAME" /> sa <ph name="DIRECTORY_NAME" />?</translation>
 <translation id="5804241973901381774">Mga Pahintulot</translation>
 <translation id="5806294296882899667">Error sa pag-load ng default</translation>
+<translation id="5817918615728894473">Ipares</translation>
 <translation id="5832934273103296195">Pinalawak - I-click upang i-collapse</translation>
 <translation id="583891442612896534">Hindi magawa ng Chrome na makipag-ugnayan sa mga server ng Google para sa pag-compress ng data. Maaaring limitado lang ang matipid mo sa data.</translation>
 <translation id="5860033963881614850">Naka-off</translation>
@@ -332,7 +337,6 @@ Halimbawa, maaaring tumugon ang ilang website sa kahilingang ito sa pamamagitan 
 <translation id="6040143037577758943">Isara</translation>
 <translation id="6042308850641462728">Higit pa</translation>
 <translation id="605721222689873409">YY</translation>
-<translation id="6060567974409584397">Pindutin upang bumalik sa tab</translation>
 <translation id="6066720739967032277">Tingnan ang iyong mga tab sa iba pang mga kamakailang app sa screen ng Pangkalahatang-ideya sa iyong telepono. Maaari mo itong pamahalaan sa <ph name="BEGIN_LINK" />Mga Setting<ph name="END_LINK" />.</translation>
 <translation id="6075798973483050474">I-edit ang home page</translation>
 <translation id="6108923351542677676">Kasalukuyang sine-setup…</translation>
@@ -380,6 +384,7 @@ Halimbawa, maaaring tumugon ang ilang website sa kahilingang ito sa pamamagitan 
 <translation id="6698801883190606802">Pamahalaan ang na-sync na data</translation>
 <translation id="6699351163704950317">Lahat ng naka-save na page</translation>
 <translation id="6710213216561001401">Nakaraan</translation>
+<translation id="6720988912937197322">Hindi available offline ang na-save na page</translation>
 <translation id="6738867403308150051">Nagda-download...</translation>
 <translation id="6770414673596662518">Ang Chrome ay mayroong system na Ligtas na Pagba-browse para malaman kung aling mga page ang hindi ligtas gamitin. Mapoprotektahan ka nito mula sa phishing, malware at mga download na nakakasama.</translation>
 <translation id="6784675033504223784">Hanapin ang “<ph name="SEARCH_TERM" />”</translation>
@@ -393,7 +398,6 @@ Halimbawa, maaaring tumugon ang ilang website sa kahilingang ito sa pamamagitan 
 <translation id="6850830437481525139"><ph name="TAB_COUNT" /> (na) tab ang isinara</translation>
 <translation id="6857778194843072568">Ipadala lang gamit ang Wi-Fi</translation>
 <translation id="6868088497967843822">Mag-sign in upang makuha ang iyong mga bookmark, history, password at ibang mga setting sa lahat ng iyong device</translation>
-<translation id="6935223586406308151">Idinagdag ang <ph name="DOMAIN_NAME" /> sa iyong Home screen</translation>
 <translation id="6945221475159498467">Pumili</translation>
 <translation id="6963766334940102469">Mag-delete ng mga bookmark</translation>
 <translation id="6964496835063002391">Magdagdag ng account</translation>
@@ -522,6 +526,7 @@ Upang makakuha ng mga bagong lisensya, kumonekta sa internet at i-play ang iyong
 <translation id="8719023831149562936">Hindi ma-beam ang kasalukuyang tab</translation>
 <translation id="8725066075913043281">Muling subukan</translation>
 <translation id="8730621377337864115">Tapos na</translation>
+<translation id="8737542153238017984">Hindi available offline ang na-save na page. Malapit nang mapuno ang storage.</translation>
 <translation id="8793430725658173476">Kopyahin ang url</translation>
 <translation id="8798099450830957504">Default</translation>
 <translation id="8820817407110198400">Mga Bookmark</translation>
@@ -552,6 +557,7 @@ Upang makakuha ng mga bagong lisensya, kumonekta sa internet at i-play ang iyong
 <translation id="9133515669113036225">I-reset ang mga kredensyal ng device</translation>
 <translation id="9137013805542155359">Ipakita ang orihinal</translation>
 <translation id="9156605176886108508">Walang mga folder ng bookmark</translation>
+<translation id="9192643434065497760">I-on ang Bluetooth sa <ph name="BEGIN_LINK" />mga setting ng device<ph name="END_LINK" /> upang payagan ang pagpapares.</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="932327136139879170">Home</translation>
 <translation id="938850635132480979">Error: <ph name="ERROR_CODE" /></translation>

@@ -713,6 +713,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 
       Setting this option to disabled or leaving it unset will allow the user to use the Developer Tools and the JavaScript console.</translation>
 <translation id="4467952432486360968">Block third-party cookies</translation>
+<translation id="4474167089968829729">Enable saving passwords to the password manager</translation>
 <translation id="4480694116501920047">Force SafeSearch</translation>
 <translation id="4482640907922304445">Shows the Home button on <ph name="PRODUCT_NAME" />'s toolbar.
 
@@ -1169,6 +1170,17 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
           This policy is optional. If not set, search request will be sent using the GET method.
 
           This policy is only respected if the 'DefaultSearchProviderEnabled' policy is enabled.</translation>
+<translation id="6365608006609079612">
+          If this setting is enabled, users can get<ph name="PRODUCT_NAME" /> to memorise passwords
+          and provide them automatically the next time they log in to a site.
+
+          If this settings is disabled, users cannot save new passwords but they
+          may still use passwords that have been saved previously.
+
+          If this policy is enabled or disabled, users cannot change or override
+          it in <ph name="PRODUCT_NAME" />. If this
+          policy is unset, password saving is allowed (but can be turned off by
+          the user).</translation>
 <translation id="6367755442345892511">Whether the release channel should be configurable by the user</translation>
 <translation id="6368011194414932347">Configure the home page URL</translation>
 <translation id="6368403635025849609">Allow JavaScript on these sites</translation>

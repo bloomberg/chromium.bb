@@ -711,6 +711,7 @@ chrome.enterprise.platformKeysPrivate.challengeUserKey().
 
       Menetapkan pilihan ini kepada dilumpuhkan atau membiarkannya tanpa ditetapkan, akan membolehkan pengguna menggunakan Alat Pembangun dan konsol JavaScript.</translation>
 <translation id="4467952432486360968">Sekat kuki pihak ketiga</translation>
+<translation id="4474167089968829729">Dayakan penyimpanan kata laluan pada pengurus kata laluan</translation>
 <translation id="4480694116501920047">SafeSearch Paksa</translation>
 <translation id="4482640907922304445">Memaparkan butang Laman Utama pada bar alat <ph name="PRODUCT_NAME" />.
 
@@ -1166,6 +1167,19 @@ chrome.enterprise.platformKeysPrivate.challengeUserKey().
           Dasar ini tidak wajib. Jika tidak ditetapkan, permintaan carian akan dihantar menggunakan kaedah GET.
 
           Dasar ini hanya dipatuhi jika dasar 'DefaultSearchProviderEnabled' didayakan.</translation>
+<translation id="6365608006609079612">
+          Jika tetapan ini didayakan, pengguna boleh meminta <ph name="PRODUCT_NAME" /> menghafal kata laluan
+          dan memberikannya secara automatik apabila mereka log masuk ke tapak
+          selepas itu.
+
+          Jika tetapan ini dilumpuhkan, pengguna tidak boleh menyimpan kata laluan
+          baharu tetapi mereka masih boleh menggunakan kata laluan yang telah
+          disimpan sebelum ini.
+
+          Jika dasar ini didayakan atau dilumpuhkan, pengguna tidak boleh menukar atau
+          mengatasi tetapan ini dalam <ph name="PRODUCT_NAME" />. Jika dasar ini
+          tidak ditetapkan, penyimpanan kata laluan dibenarkan (tetapi boleh dimatikan
+          oleh pengguna).</translation>
 <translation id="6367755442345892511">Sama ada saluran pelepasan harus boleh dikonfigurasikan oleh pengguna</translation>
 <translation id="6368011194414932347">Konfigurasi URL halaman utama</translation>
 <translation id="6368403635025849609">Benarkan JavaScript pada tapak ini</translation>

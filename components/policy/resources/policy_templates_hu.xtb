@@ -595,6 +595,7 @@ Ennek a házirendnek a beállítása felülbírálja az alapértelmezett 3 órá
 <translation id="4442582539341804154">Lezárás engedélyezése, ha az eszköz tétlen vagy felfüggesztett</translation>
 <translation id="4445684791305970001">Kikapcsolja a fejlesztői eszközöket és a JavaScript-konzolt. Ha engedélyezi ezt a beállítást, a fejlesztői eszközöket nem lehet elérni, és a webhelyek elemeit nem lehet ellenőrizni többé. Bármely billentyűparancs, menü vagy helyi menüpont le lesz tiltva, amely megnyitná a fejlesztői eszközöket vagy a JavaScript-konzolt. Ha letiltja ezt a beállítást, vagy konfigurálatlanul hagyja, akkor a felhasználó használhatja a felhasználói eszközöket és a JavaScript-konzolt.</translation>
 <translation id="4467952432486360968">Harmadik féltől származó cookie-k letiltása</translation>
+<translation id="4474167089968829729">Jelszavak mentésének aktiválása a jelszókezelőben</translation>
 <translation id="4480694116501920047">Kényszerített Biztonságos Keresés</translation>
 <translation id="4482640907922304445">Megjeleníti a Kezdőoldal gombot az <ph name="PRODUCT_NAME" /> eszköztárán. Ha engedélyezi ezt a beállítást, a Kezdőoldal gomb mindig látható. Ha letiltja a beállítást, a Kezdőoldal gomb soha nem látható. Ha engedélyezi vagy letiltja ezt a beállítást, a felhasználók nem módosíthatják és nem írhatják felül a <ph name="PRODUCT_NAME" /> ezen beállítását. Ha a házirend nincs beállítva, a felhasználó dönthet a Kezdőoldal gomb megjelenítéséről.</translation>
 <translation id="4492287494009043413">Képernyőképek készítésének letiltása</translation>
@@ -992,6 +993,17 @@ Ennek a házirendnek a beállítása felülbírálja az alapértelmezett 3 órá
           Ez egy opcionális házirend. Ha nincs beállítva, a keresési kérelmet a rendszer a GET metódus segítségével továbbítja.
 
           A házirend csak akkor érvényesül, ha a „DefaultSearchProviderEnabled” házirend engedélyezve van.</translation>
+<translation id="6365608006609079612">
+          Ha ez a beállítás aktiválva van, a felhasználók tárolhatják jelszavaikat a(z) <ph name="PRODUCT_NAME" /> segítségével,
+          amely az adott webhelyre való következő bejelentkezéskor automatikusan felkínálja őket.
+
+          Ha kikapcsolja a beállítást, a felhasználók nem tudják menteni a jelszavakat,
+          de a korábban mentett jelszavakat használhatják.
+
+          Az irányelv aktiválása vagy kikapcsolása esetén a felhasználók ezt nem módosíthatják és nem bírálhatják felül
+          a(z) <ph name="PRODUCT_NAME" /> termékben. Ha az irányelv nincs beállítva,
+          a jelszavak mentése engedélyezett (de a felhasználó
+          kikapcsolhatja).</translation>
 <translation id="6367755442345892511">A kiadási csatorna felhasználó által beállítható legyen-e.</translation>
 <translation id="6368011194414932347">Állítsa be a kezdőoldal URL-jét</translation>
 <translation id="6368403635025849609">JavaScript engedélyezése ezeken a webhelyeken</translation>

@@ -599,6 +599,7 @@ Si no es configura aquesta opció, no s'aplicarà cap restricció als tipus d'ex
 <translation id="4442582539341804154">Activació del bloqueig quan el dispositiu està inactiu o se suspèn</translation>
 <translation id="4445684791305970001">Desactiva les eines per a desenvolupador i la consola de JavaScript. Si activeu aquest paràmetre, no es podrà accedir a les eines per a desenvolupadors i no es podran inspeccionar més els elements del lloc web. Les tecles de drecera i les entrades dels menús o dels menús contextuals per obrir les eines per a desenvolupadors es desactivaran. Si es desactiva o no es defineix aquesta opció, es podran utilitzar les eines per a desenvolupadors i la consola de JavaScript.</translation>
 <translation id="4467952432486360968">Bloqueja les galetes de tercers</translation>
+<translation id="4474167089968829729">Permet que el gestor de contrasenyes desi contrasenyes</translation>
 <translation id="4480694116501920047">Força SafeSearch</translation>
 <translation id="4482640907922304445">Mostra el botó d'inici a la barra d'eines de <ph name="PRODUCT_NAME" />. Si activeu aquest paràmetre, el botó d'inici es mostrarà sempre. Si el desactiveu, el botó d'inici no es mostrarà mai. Si l'activeu o el desactiveu, els usuaris no podran canviar ni substituir aquesta configuració a <ph name="PRODUCT_NAME" />. Si no definiu aquesta política, l'usuari podrà decidir si vol que es mostri el botó d'inici.</translation>
 <translation id="4492287494009043413">Desactivació de les captures de pantalla</translation>
@@ -996,6 +997,17 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
           Aquesta política és opcional. Si no es defineix, la sol·licitud de cerca s'enviarà mitjançant el mètode GET.
 
           Aquesta política només es respecta si la política "DefaultSearchProviderEnabled" està activada.</translation>
+<translation id="6365608006609079612">
+          Si aquesta opció de configuració està activada, els usuaris poden fer que <ph name="PRODUCT_NAME" /> memoritzi contrasenyes
+          i que les insereixi de manera automàtica la propera vegada que iniciïn la sessió en un lloc.
+
+          Si està desactivada, els usuaris no poden desar contrasenyes noves, però
+          sí que poden utilitzar les que s'han desat anteriorment.
+
+          Si aquesta política està activada o desactivada, els usuaris no la poden canviar
+          ni substituir a <ph name="PRODUCT_NAME" />. Si no està
+          configurada de cap manera, es permet desar contrasenyes (però l'usuari pot
+          anul·lar aquest permís).</translation>
 <translation id="6367755442345892511">Si l'usuari pot configurar el canal de llançament</translation>
 <translation id="6368011194414932347">Configura l'URL de la pàgina d'inici</translation>
 <translation id="6368403635025849609">Permet JavaScript en aquests llocs</translation>

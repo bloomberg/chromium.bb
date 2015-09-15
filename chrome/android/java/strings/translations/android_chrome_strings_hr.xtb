@@ -113,6 +113,7 @@
 <translation id="2718352093833049315">Samo na Wi-Fi-ju</translation>
 <translation id="2748463065602559597">Gledate sigurnu stranicu Google Chrome.</translation>
 <translation id="2770465223704140727">Ukloni s popisa</translation>
+<translation id="278029852808208386">Nije pronađen nijedan Bluetooth uređaj. <ph name="BEGIN_LINK" />Pretražite ponovo<ph name="END_LINK" />.</translation>
 <translation id="2816165854387457183">Otkrivena je spora veza.</translation>
 <translation id="2842985007712546952">Nadređena mapa</translation>
 <translation id="2870560284913253234">Web lokacija</translation>
@@ -190,6 +191,7 @@ Da biste prilagodili pojam za pretraživanje, dugo pritisnite za odabir. Da bist
 <translation id="4099578267706723511">Poboljšajte Chrome šaljući Googleu statistike upotrebe i izvješća o rušenju.</translation>
 <translation id="411254640334432676">Preuzimanje nije uspjelo.</translation>
 <translation id="4113030288477039509">Upravlja vaš administrator</translation>
+<translation id="4116939199945053760">Web-lokacija <ph name="SITE" /> želi se <ph name="BEGIN_LINK" />upariti s uređajem<ph name="END_LINK" />:</translation>
 <translation id="4165986682804962316">Postavke web-lokacije</translation>
 <translation id="4170011742729630528">Usluga nije dostupna, pokušajte ponovo kasnije.</translation>
 <translation id="4195643157523330669">Otvori u novoj kartici</translation>
@@ -203,6 +205,7 @@ Da biste prilagodili pojam za pretraživanje, dugo pritisnite za odabir. Da bist
 <translation id="4307992518367153382">Osnove</translation>
 <translation id="4333969446981951071">Upotrebom te aplikacije prihvaćate Chromeove <ph name="BEGIN_LINK1" />Uvjete pružanja usluge<ph name="END_LINK1" /> i <ph name="BEGIN_LINK2" />obavijest o privatnosti<ph name="END_LINK2" />.</translation>
 <translation id="4351244548802238354">Zatvori dijaloški okvir</translation>
+<translation id="4357362091209756047">Ne vidite svoj uređaj? <ph name="BEGIN_LINK1" />Pretražite ponovo<ph name="END_LINK1" /> ili <ph name="BEGIN_LINK2" />potražite pomoć<ph name="END_LINK2" />.</translation>
 <translation id="4376501731284077108">Nenadzirani</translation>
 <translation id="4378154925671717803">Telefon</translation>
 <translation id="4412992751769744546">Dopusti kolačiće trećih strana</translation>
@@ -290,6 +293,7 @@ Samo otvorite Chrome na računalu, otvorite izbornik i odaberite "Prijava na Chr
 <translation id="5626134646977739690">Naziv:</translation>
 <translation id="5626370437647899551">Dodavanje Google računa</translation>
 <translation id="563535393368633106">Pitanje prije pristupa (preporučeno)</translation>
+<translation id="5643573370311148178"><ph name="BEGIN_LINK" />Pomoć<ph name="END_LINK" />.</translation>
 <translation id="5646376287012673985">Lokacija</translation>
 <translation id="5659593005791499971">E-pošta</translation>
 <translation id="5668404140385795438">Poništavanje zahtjeva web-lokacije za sprječavanje povećavanja</translation>
@@ -310,6 +314,7 @@ Međutim, niste nevidljivi. Anonimni način neće sakriti vaše pregledavanje od
 <translation id="5771382037724542929">Želite li zamijeniti postojeću datoteku <ph name="FILE_NAME" /> u direktoriju <ph name="DIRECTORY_NAME" />?</translation>
 <translation id="5804241973901381774">Dozvoljeno</translation>
 <translation id="5806294296882899667">Pogreška u učitavanju zadane mape</translation>
+<translation id="5817918615728894473">Upari</translation>
 <translation id="5832934273103296195">Prošireno – kliknite za sažimanje</translation>
 <translation id="583891442612896534">Chrome ne može pristupiti Googleovim poslužiteljima za kompresiju podataka. Ušteda na prijenosu podataka može biti ograničena.</translation>
 <translation id="5860033963881614850">Isključeno</translation>
@@ -332,7 +337,6 @@ Na primjer, neke web-lokacije na taj zahtjev mogu odgovoriti tako da vam prikaž
 <translation id="6040143037577758943">Zatvori</translation>
 <translation id="6042308850641462728">Više</translation>
 <translation id="605721222689873409">GG</translation>
-<translation id="6060567974409584397">Dodirnite da biste se vratili na karticu</translation>
 <translation id="6066720739967032277">Pregledajte svoje kartice s drugim nedavnim aplikacijama na telefonu na zaslonu Pregled. Time možete upravljati u <ph name="BEGIN_LINK" />Postavkama<ph name="END_LINK" />.</translation>
 <translation id="6075798973483050474">Uređivanje početne stranice</translation>
 <translation id="6108923351542677676">Postavljanje je u tijeku…</translation>
@@ -380,6 +384,7 @@ Na primjer, neke web-lokacije na taj zahtjev mogu odgovoriti tako da vam prikaž
 <translation id="6698801883190606802">Upravljanje sinkroniziranim podacima</translation>
 <translation id="6699351163704950317">Sve spremljene stranice</translation>
 <translation id="6710213216561001401">Prethodno</translation>
+<translation id="6720988912937197322">Spremljena stranica nije dostupna izvanmrežno</translation>
 <translation id="6738867403308150051">Preuzimanje...</translation>
 <translation id="6770414673596662518">Chromeov sustav Sigurno pregledavanje upotrebljavat će se i za otkrivanje zlonamjernih stranica i zaštitu od krađe identiteta, zlonamjernog softvera i štetnih preuzimanja.</translation>
 <translation id="6784675033504223784">Potražite pojam "<ph name="SEARCH_TERM" />"</translation>
@@ -393,7 +398,6 @@ Na primjer, neke web-lokacije na taj zahtjev mogu odgovoriti tako da vam prikaž
 <translation id="6850830437481525139">Kartice su zatvorene (njih <ph name="TAB_COUNT" />)</translation>
 <translation id="6857778194843072568">Šalji samo na Wi-Fi mreži</translation>
 <translation id="6868088497967843822">Prijavite se da biste imali svoje oznake, povijest, zaporke i druge postavke na svim svojim uređajima</translation>
-<translation id="6935223586406308151">Domena <ph name="DOMAIN_NAME" /> dodana je na početni zaslon</translation>
 <translation id="6945221475159498467">Odaberi</translation>
 <translation id="6963766334940102469">Brisanje oznaka</translation>
 <translation id="6964496835063002391">Dodajte račun</translation>
@@ -522,6 +526,7 @@ Da biste dobili nove licence, povežite se s internetom i reproducirajte preuzet
 <translation id="8719023831149562936">Trenutačnu karticu nije moguće emitirati</translation>
 <translation id="8725066075913043281">Pokušajte ponovo</translation>
 <translation id="8730621377337864115">Gotovo</translation>
+<translation id="8737542153238017984">Spremljena stranica nije dostupna izvanmrežno. Pohrana je gotovo puna.</translation>
 <translation id="8793430725658173476">Kopiraj URL</translation>
 <translation id="8798099450830957504">Zadano</translation>
 <translation id="8820817407110198400">Knjižne oznake</translation>
@@ -552,6 +557,7 @@ Da biste dobili nove licence, povežite se s internetom i reproducirajte preuzet
 <translation id="9133515669113036225">Poništavanje vjerodajnica uređaja</translation>
 <translation id="9137013805542155359">Prikaži original</translation>
 <translation id="9156605176886108508">Nema mapa oznaka</translation>
+<translation id="9192643434065497760">Uključite Bluetooth u <ph name="BEGIN_LINK" />postavkama uređaja<ph name="END_LINK" /> da biste omogućili uparivanje.</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="932327136139879170">Početna stranica</translation>
 <translation id="938850635132480979">Pogreška: <ph name="ERROR_CODE" /></translation>

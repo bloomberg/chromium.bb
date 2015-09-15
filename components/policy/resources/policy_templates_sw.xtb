@@ -705,6 +705,7 @@ Thamani ya sera inapaswa kubainishwa katika sekunde. Thamani huwekwa pamoja ili 
 
       Kulemaza chaguo hii au kuiacha bila kuwekwa kutaruhusu mtumiaji kutumia Zana za Msanidi Programu na kiweko cha JavaScript.</translation>
 <translation id="4467952432486360968">Zuia vidakuzi vya wengine</translation>
+<translation id="4474167089968829729">Washa kipengele cha kuhifadhi manenosiri kwenye kidhibiti cha nenosiri</translation>
 <translation id="4480694116501920047">Lazimisha SafeSearch</translation>
 <translation id="4482640907922304445">Inaonyesha kitufe cha Mwanzo kwenye upauzana wa <ph name="PRODUCT_NAME" />.
 
@@ -1154,6 +1155,16 @@ Thamani ya sera inapaswa kubainishwa katika milisekunde. Thamani huwekwa pamoja 
           Sera hii ni ya hiari. Isipowekwa, ombi la utafutaji litatumwa kutumia mbinu ya GET.
 
           Sera hii inatumika endapo sera ya 'DefaultSearchProviderEnabled' imewashwa.</translation>
+<translation id="6365608006609079612">
+          Mipangilio hii ikiwashwa, watumiaji wanaweza kuiwezesha <ph name="PRODUCT_NAME" /> kukumbuka na
+          kuyatoa manenosiri kiotomatiki wakati mwingine wanapoingia katika wavuti.
+
+         Mipangilio hii ikizimwa, watumiaji hawawezi kuhifadhi manenosiri mapya lakini bado wanaweza
+         kutumia yale ambayo tayari yamehifadhiwa.
+
+         Sera hii ikiwashwa au kuzimwa, watumiaji hawawezi kubadilisha au 
+          kuifuta katika <ph name="PRODUCT_NAME" />. Sera hii
+          ikiondolewa, inaruhusu kuhifadhi nenosiri (lakini inaweza kuzimwa na mtumiaji).</translation>
 <translation id="6367755442345892511">Ikiwa kituo cha kutoa kinastahili kusanidiwa na mtumiaji.</translation>
 <translation id="6368011194414932347">Sanidi URL ya ukurasa wa kwanza</translation>
 <translation id="6368403635025849609">Ruhusu JavaScript kwenye tovuti hizi</translation>

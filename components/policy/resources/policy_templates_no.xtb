@@ -659,6 +659,7 @@
 
       Hvis dette alternativet deaktiveres eller ikke angis, kan utviklerverktøyene og JavaScript-konsollen brukes.</translation>
 <translation id="4467952432486360968">Blokkér tredjeparts informasjonskapsler</translation>
+<translation id="4474167089968829729">Slå på lagring av passord i passordbehandlingen</translation>
 <translation id="4480694116501920047">Tving Sikkert Søk</translation>
 <translation id="4482640907922304445">Viser Startside-knappen i verktøylinjen til <ph name="PRODUCT_NAME" />.
 
@@ -1105,6 +1106,17 @@
           Denne innstillingen er valgfri. Hvis den ikke er angitt, blir forespørsler om søkeforslag sendt via GET-metoden.
 
           Denne innstillingen brukes bare hvis «DefaultSearchProviderEnabled»-innstillingen er aktivert.</translation>
+<translation id="6365608006609079612">
+          Hvis denne innstillingen er slått på, kan brukerne la <ph name="PRODUCT_NAME" /> huske passordene
+          og oppgi dem automatisk neste gang de logger på et nettsted.
+
+          Hvis denne innstillingen er slått av, kan ikke brukerne lagre nye passord,
+          men de kan fortsatt bruke passord som har blitt lagret tidligere.
+
+          Hvis disse retningslinjene slås på eller av, kan ikke brukerne endre eller overstyre
+          den i <ph name="PRODUCT_NAME" />. Hvis disse
+          retningslinjene ikke spesifiseres, er passordlagring tillatt (men brukeren 
+          kan slå det av).</translation>
 <translation id="6367755442345892511">Om lanseringskanalen skal kunne konfigureres av brukeren</translation>
 <translation id="6368011194414932347">Konfigurer nettadresse for startsiden</translation>
 <translation id="6368403635025849609">Tillat JavaScript på disse nettstedene</translation>

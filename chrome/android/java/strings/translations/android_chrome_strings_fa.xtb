@@ -113,6 +113,7 @@
 <translation id="2718352093833049315">‏فقط در Wi-Fi</translation>
 <translation id="2748463065602559597">‏شما در حال مشاهده یک صفحه امن Google Chrome هستید.</translation>
 <translation id="2770465223704140727">حذف از لیست</translation>
+<translation id="278029852808208386">دستگاه بلوتوثی پیدا نشد. <ph name="BEGIN_LINK" />دوباره جستجو کنید<ph name="END_LINK" />.</translation>
 <translation id="2816165854387457183">اتصال آهسته شناسایی شد.</translation>
 <translation id="2842985007712546952">پوشه اصلی</translation>
 <translation id="2870560284913253234">سایت</translation>
@@ -188,6 +189,7 @@
 <translation id="4099578267706723511">‏‫با ارسال آمار کاربرد و گزارش‌های خرابی به Google، به بهتر شدن Chrome کمک کنید.</translation>
 <translation id="411254640334432676">دانلود نشد.</translation>
 <translation id="4113030288477039509">مدیریت شده توسط سرپرست‌تان</translation>
+<translation id="4116939199945053760"><ph name="SITE" /> می‌خواهد با این دستگاه <ph name="BEGIN_LINK" />مرتبط شود<ph name="END_LINK" />:</translation>
 <translation id="4165986682804962316">تنظیمات سایت</translation>
 <translation id="4170011742729630528">این سرویس در دسترس نیست؛ بعداً دوباره امتحان کنید.</translation>
 <translation id="4195643157523330669">باز کردن در برگهٔ جدید</translation>
@@ -201,6 +203,7 @@
 <translation id="4307992518367153382">موارد اصلی</translation>
 <translation id="4333969446981951071">‏استفاده از این برنامه به معنای اعلام موافقت شما با <ph name="BEGIN_LINK1" />شرایط خدمات<ph name="END_LINK1" /> و <ph name="BEGIN_LINK2" />اعلامیه حریم خصوصی<ph name="END_LINK2" /> Chrome است.</translation>
 <translation id="4351244548802238354">بستن کادر گفتگو</translation>
+<translation id="4357362091209756047">دستگاهتان را نمی‌بینید؟ <ph name="BEGIN_LINK1" />دوباره جستجو کنید<ph name="END_LINK1" /> یا <ph name="BEGIN_LINK2" />راهنمایی دریافت کنید<ph name="END_LINK2" />.</translation>
 <translation id="4376501731284077108">کنترل نشده</translation>
 <translation id="4378154925671717803">تلفن</translation>
 <translation id="4412992751769744546">اجازه به کوکی‌های طرف ثالث</translation>
@@ -288,6 +291,7 @@
 <translation id="5626134646977739690">نام:</translation>
 <translation id="5626370437647899551">‏افزودن یک حساب Google</translation>
 <translation id="563535393368633106">قبل از دسترسی سؤال شود (توصیه می‌شود)</translation>
+<translation id="5643573370311148178"><ph name="BEGIN_LINK" />راهنما<ph name="END_LINK" /></translation>
 <translation id="5646376287012673985">مکان</translation>
 <translation id="5659593005791499971">ایمیل</translation>
 <translation id="5668404140385795438">لغو درخواست وب‌سایت برای جلوگیری از بزرگ‌نمایی</translation>
@@ -307,6 +311,7 @@
 <translation id="5771382037724542929">آیا می‌خواهید <ph name="FILE_NAME" /> موجود در <ph name="DIRECTORY_NAME" /> را جایگرین کنید؟</translation>
 <translation id="5804241973901381774">مجوزها</translation>
 <translation id="5806294296882899667">خطا در بارگیری پیش‌فرض</translation>
+<translation id="5817918615728894473">مرتبط کردن</translation>
 <translation id="5832934273103296195">بزرگ‌شده - برای کوچک کردن کلیک کنید</translation>
 <translation id="583891442612896534">‏Chrome نمی‌تواند برای فشرده کردن داده‌ها به سرورهای Google دسترسی پیدا کند. ممکن است صرفه‌جویی در مصرف داده محدود شود.</translation>
 <translation id="5860033963881614850">خاموش</translation>
@@ -329,7 +334,6 @@
 <translation id="6040143037577758943">بستن</translation>
 <translation id="6042308850641462728">بیشتر</translation>
 <translation id="605721222689873409">سال</translation>
-<translation id="6060567974409584397">برای برگشت به برگه، لمس کنید</translation>
 <translation id="6066720739967032277">در صفحه نمای کلی تلفنتان، برگه‌ها را به همراه سایر برنامه‌های اخیر می‌بینید. می‌توانید این مورد را در <ph name="BEGIN_LINK" />تنظیمات<ph name="END_LINK" /> کنترل کنید.</translation>
 <translation id="6075798973483050474">ویرایش صفحه اصلی</translation>
 <translation id="6108923351542677676">تنظیم در حال انجام است...</translation>
@@ -377,6 +381,7 @@
 <translation id="6698801883190606802">مدیریت اطلاعات همگام‌سازی شده</translation>
 <translation id="6699351163704950317">همه صفحه‌های ذخیره شده</translation>
 <translation id="6710213216561001401">قبلی</translation>
+<translation id="6720988912937197322">صفحه ذخیره شده به‌صورت آفلاین در دسترس نیست</translation>
 <translation id="6738867403308150051">در حال دانلود…</translation>
 <translation id="6770414673596662518">‏همچنین از سیستم مرور ایمن Chrome برای تشخیص صفحات مخرب و محافظت از شما در برابر فیشینگ، بدافزار و دانلودهای خطرناک استفاده می‌شود.</translation>
 <translation id="6784675033504223784">جستجوی «<ph name="SEARCH_TERM" />»</translation>
@@ -390,7 +395,6 @@
 <translation id="6850830437481525139"><ph name="TAB_COUNT" /> برگه بسته شد</translation>
 <translation id="6857778194843072568">‏ارسال فقط از طریق Wi-Fi</translation>
 <translation id="6868088497967843822">برای دریافت نشانک‌ها، سابقه، گذرواژه‌ها و سایر تنظیماتتان در همه دستگاه‌هایتان، به سیستم وارد شوید</translation>
-<translation id="6935223586406308151"><ph name="DOMAIN_NAME" /> به صفحه اصلی شما اضافه شد</translation>
 <translation id="6945221475159498467">انتخاب</translation>
 <translation id="6963766334940102469">حذف نشانک‌ها</translation>
 <translation id="6964496835063002391">افزودن حساب</translation>
@@ -519,6 +523,7 @@
 <translation id="8719023831149562936">انتقال برگه کنونی با پرتو ممکن نیست</translation>
 <translation id="8725066075913043281">سعی مجدد</translation>
 <translation id="8730621377337864115">انجام شد</translation>
+<translation id="8737542153238017984">صفحه ذخیره شده به‌صورت آفلاین در دسترس نیست. حافظه تقریباً پر است.</translation>
 <translation id="8793430725658173476">کپی نشانی وب</translation>
 <translation id="8798099450830957504">پیش‌فرض</translation>
 <translation id="8820817407110198400">نشانک‌ها</translation>
@@ -549,6 +554,7 @@
 <translation id="9133515669113036225">بازنشانی اعتبارنامه‌های دستگاه</translation>
 <translation id="9137013805542155359">نمایش مورد اصلی</translation>
 <translation id="9156605176886108508">پوشه نشانک‌ها موجود نیست</translation>
+<translation id="9192643434065497760">بلوتوث را در <ph name="BEGIN_LINK" />تنظیمات دستگاه<ph name="END_LINK" /> روشن کنید تا مرتبط‌سازی امکان‌پذیر شود.</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="932327136139879170">منزل</translation>
 <translation id="938850635132480979">خطا: <ph name="ERROR_CODE" /></translation>

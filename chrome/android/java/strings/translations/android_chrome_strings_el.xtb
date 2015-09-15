@@ -113,6 +113,7 @@
 <translation id="2718352093833049315">Μόνο σε Wi-Fi</translation>
 <translation id="2748463065602559597">Βλέπετε μια ασφαλή σελίδα του Google Chrome.</translation>
 <translation id="2770465223704140727">Κατάργηση από τη λίστα</translation>
+<translation id="278029852808208386">Δεν βρέθηκαν συσκευές Bluetooth. <ph name="BEGIN_LINK" />Νέα αναζήτηση<ph name="END_LINK" />.</translation>
 <translation id="2816165854387457183">Εντοπίστηκε αργή σύνδεση.</translation>
 <translation id="2842985007712546952">Γονικός φάκελος</translation>
 <translation id="2870560284913253234">Ιστότοπος</translation>
@@ -190,6 +191,7 @@
 <translation id="4099578267706723511">Συμβάλετε στη βελτίωση του Chrome, στέλνοντας στην Google στατιστικά στοιχεία χρήσης και αναφορές σφαλμάτων.</translation>
 <translation id="411254640334432676">Αποτυχία λήψης.</translation>
 <translation id="4113030288477039509">Διαχειρίζεται από το διαχειριστή σας</translation>
+<translation id="4116939199945053760">Το <ph name="SITE" /> επιθυμεί <ph name="BEGIN_LINK" /> σύζευξη με <ph name="END_LINK" />:</translation>
 <translation id="4165986682804962316">Ρυθμίσεις ιστότοπου</translation>
 <translation id="4170011742729630528">Η υπηρεσία δεν είναι διαθέσιμη. Δοκιμάστε ξανά αργότερα.</translation>
 <translation id="4195643157523330669">Άνοιγμα σε νέα καρτέλα</translation>
@@ -203,6 +205,7 @@
 <translation id="4307992518367153382">Βασικά στοιχεία</translation>
 <translation id="4333969446981951071">Χρησιμοποιώντας αυτήν την εφαρμογή, αποδέχεστε τους <ph name="BEGIN_LINK1" />Όρους Παροχής Υπηρεσιών<ph name="END_LINK1" /> και τη <ph name="BEGIN_LINK2" />Σημείωση Απορρήτου<ph name="END_LINK2" /> του Chrome.</translation>
 <translation id="4351244548802238354">Κλείσιμο παραθύρου διαλόγου</translation>
+<translation id="4357362091209756047">Δεν βλέπετε τη συσκευή σας;<ph name="BEGIN_LINK1" />Επαναλάβετε την αναζήτηση<ph name="END_LINK1" /> ή <ph name="BEGIN_LINK2" />Ζητήστε βοήθεια<ph name="END_LINK2" />.</translation>
 <translation id="4376501731284077108">Χωρίς έλεγχο</translation>
 <translation id="4378154925671717803">Τηλέφωνο</translation>
 <translation id="4412992751769744546">Αποδοχή cookie τρίτου μέρους</translation>
@@ -291,6 +294,7 @@
 <translation id="5626134646977739690">Όνομα:</translation>
 <translation id="5626370437647899551">Προσθήκη Λογαριασμού Google</translation>
 <translation id="563535393368633106">Ερώτηση πριν από την πρόσβαση (συνιστάται)</translation>
+<translation id="5643573370311148178"><ph name="BEGIN_LINK" />Βοήθεια<ph name="END_LINK" /></translation>
 <translation id="5646376287012673985">Τοποθεσία</translation>
 <translation id="5659593005791499971">Διεύθυνση ηλεκτρονικού ταχυδρομείου</translation>
 <translation id="5668404140385795438">Παράκαμψη του αιτήματος ενός ιστότοπου για παρεμπόδιση εστίασης</translation>
@@ -311,6 +315,7 @@
 <translation id="5771382037724542929">Θέλετε να αντικαταστήστε το υπάρχον αρχείο <ph name="FILE_NAME" /> στον κατάλογο <ph name="DIRECTORY_NAME" />;</translation>
 <translation id="5804241973901381774">Άδειες</translation>
 <translation id="5806294296882899667">Σφάλμα φόρτωσης προεπιλογής</translation>
+<translation id="5817918615728894473">Σύζευξη</translation>
 <translation id="5832934273103296195">Αναπτυγμένη - Κάντε κλικ για σύμπτυξη</translation>
 <translation id="583891442612896534">Το Chrome δεν είναι δυνατό να επικοινωνήσει με τους διακομιστές της Google για συμπίεση δεδομένων. Η εξοικονόμηση δεδομένων πιθανώς να είναι περιορισμένη.</translation>
 <translation id="5860033963881614850">Απενεργοποιημένη</translation>
@@ -333,7 +338,6 @@
 <translation id="6040143037577758943">Κλείσιμο</translation>
 <translation id="6042308850641462728">Περισσότερα</translation>
 <translation id="605721222689873409">ΕΕ</translation>
-<translation id="6060567974409584397">Αγγίξτε για να επιστρέψετε στην καρτέλα</translation>
 <translation id="6066720739967032277">Δείτε τις καρτέλες σας με άλλες πρόσφατες εφαρμογές στην οθόνη "Επισκόπηση" του τηλεφώνου σας. Μπορείτε να ελέγξετε αυτήν την επιλογή στις <ph name="BEGIN_LINK" />Ρυθμίσεις<ph name="END_LINK" />.</translation>
 <translation id="6075798973483050474">Επεξεργασία αρχικής σελίδας</translation>
 <translation id="6108923351542677676">Ρύθμιση σε εξέλιξη…</translation>
@@ -381,6 +385,7 @@
 <translation id="6698801883190606802">Διαχείριση συγχρονισμένων δεδομένων</translation>
 <translation id="6699351163704950317">Όλες οι αποθηκευμένες σελίδες</translation>
 <translation id="6710213216561001401">Προηγούμενο</translation>
+<translation id="6720988912937197322">Η αποθηκευμένη σελίδα δεν είναι διαθέσιμη εκτός σύνδεσης</translation>
 <translation id="6738867403308150051">Λήψη…</translation>
 <translation id="6770414673596662518">Το σύστημα ασφαλούς περιήγησης του Chrome μπορεί να χρησιμοποιηθεί επίσης για τον εντοπισμό κακόβουλων σελίδων και την προστασία σας από ηλεκτρονικό "ψάρεμα" (phishing), κακόβουλα προγράμματα (malware) και επιβλαβείς λήψεις.</translation>
 <translation id="6784675033504223784">Αναζήτηση για "<ph name="SEARCH_TERM" />"</translation>
@@ -394,7 +399,6 @@
 <translation id="6850830437481525139">Έκλεισαν <ph name="TAB_COUNT" /> καρτέλες</translation>
 <translation id="6857778194843072568">Αποστολή μόνο μέσω Wi-Fi</translation>
 <translation id="6868088497967843822">Συνδεθείτε προκειμένου οι σελιδοδείκτες, το ιστορικό, οι κωδικοί πρόσβασης και οι άλλες ρυθμίσεις σας να είναι διαθέσιμες σε όλες τις συσκευές σας.</translation>
-<translation id="6935223586406308151">Ο τομέας <ph name="DOMAIN_NAME" /> προστέθηκε στην αρχική οθόνη σας</translation>
 <translation id="6945221475159498467">Επιλογή</translation>
 <translation id="6963766334940102469">Διαγραφή σελιδοδεικτών</translation>
 <translation id="6964496835063002391">Προσθέστε έναν λογαριασμό</translation>
@@ -523,6 +527,7 @@
 <translation id="8719023831149562936">Δεν είναι δυνατή η ζεύξη της τρέχουσας καρτέλας</translation>
 <translation id="8725066075913043281">Προσπαθήστε ξανά</translation>
 <translation id="8730621377337864115">Ολοκληρώθηκε</translation>
+<translation id="8737542153238017984">Η αποθηκευμένη σελίδα δεν είναι διαθέσιμη εκτός σύνδεσης. Ο χώρος αποθήκευσης είναι σχεδόν πλήρης.</translation>
 <translation id="8793430725658173476">Αντιγραφή διεύθυνσης URL</translation>
 <translation id="8798099450830957504">Προεπιλογή</translation>
 <translation id="8820817407110198400">Σελιδοδείκτες</translation>
@@ -553,6 +558,7 @@
 <translation id="9133515669113036225">Επαναφορά διαπιστευτηρίων συσκευής</translation>
 <translation id="9137013805542155359">Εμφάνιση πρωτοτύπου</translation>
 <translation id="9156605176886108508">Δεν υπάρχουν φάκελοι σελιδοδεικτών</translation>
+<translation id="9192643434065497760">Ενεργοποιήστε το Bluetooth στις <ph name="BEGIN_LINK" />ρυθμίσεις συσκευής<ph name="END_LINK" /> για να επιτρέψετε τη σύζευξη.</translation>
 <translation id="9206873250291191720">Α</translation>
 <translation id="932327136139879170">Αρχική σελίδα</translation>
 <translation id="938850635132480979">Σφάλμα: <ph name="ERROR_CODE" /></translation>

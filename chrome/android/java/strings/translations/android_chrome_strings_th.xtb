@@ -113,6 +113,7 @@
 <translation id="2718352093833049315">Wi-Fi เท่านั้น</translation>
 <translation id="2748463065602559597">คุณกำลังดูหน้าเว็บ Google Chrome ที่ปลอดภัย</translation>
 <translation id="2770465223704140727">ลบจากรายการ</translation>
+<translation id="278029852808208386">ไม่พบอุปกรณ์บลูทูธ โปรด<ph name="BEGIN_LINK" />ค้นหาอีกครั้ง<ph name="END_LINK" /></translation>
 <translation id="2816165854387457183">ตรวจพบการเชื่อมต่อที่ช้า</translation>
 <translation id="2842985007712546952">โฟลเดอร์ระดับบนสุด</translation>
 <translation id="2870560284913253234">เว็บไซต์</translation>
@@ -190,6 +191,7 @@
 <translation id="4099578267706723511">ช่วยให้ Chrome ทำงานได้ดีขึ้นโดยส่งสถิติการใช้งานและรายงานข้อขัดข้องให้กับ Google</translation>
 <translation id="411254640334432676">การดาวน์โหลดล้มเหลว</translation>
 <translation id="4113030288477039509">มีการจัดการโดยผู้ดูแลระบบ</translation>
+<translation id="4116939199945053760"><ph name="SITE" /> ต้องการ<ph name="BEGIN_LINK" />จับคู่กับ<ph name="END_LINK" />:</translation>
 <translation id="4165986682804962316">การตั้งค่าไซต์</translation>
 <translation id="4170011742729630528">บริการนี้ยังไม่สามารถใช้ได้ โปรดลองอีกครั้งในภายหลัง</translation>
 <translation id="4195643157523330669">เปิดในแท็บใหม่</translation>
@@ -203,6 +205,7 @@
 <translation id="4307992518367153382">พื้นฐาน</translation>
 <translation id="4333969446981951071">การใช้แอปพลิเคชันนี้แสดงว่า คุณยอมรับ<ph name="BEGIN_LINK1" />ข้อกำหนดในการให้บริการ<ph name="END_LINK1" />และ<ph name="BEGIN_LINK2" />ประกาศเกี่ยวกับนโยบายส่วนบุคคล<ph name="END_LINK2" />ของ Chrome</translation>
 <translation id="4351244548802238354">ปิดหน้าต่างโต้ตอบ</translation>
+<translation id="4357362091209756047">หากไม่เห็นอุปกรณ์ของคุณ โปรด<ph name="BEGIN_LINK1" />ค้นหาอีกครั้ง<ph name="END_LINK1" /> หรือ<ph name="BEGIN_LINK2" />ขอความช่วยเหลือ<ph name="END_LINK2" /></translation>
 <translation id="4376501731284077108">ไม่มีการควบคุม</translation>
 <translation id="4378154925671717803">โทรศัพท์</translation>
 <translation id="4412992751769744546">อนุญาตคุกกี้ของบุคคลที่สาม</translation>
@@ -290,6 +293,7 @@
 <translation id="5626134646977739690">ชื่อ:</translation>
 <translation id="5626370437647899551">เพิ่มบัญชี Google</translation>
 <translation id="563535393368633106">ถามก่อนที่จะเข้าถึง (แนะนำ)</translation>
+<translation id="5643573370311148178"><ph name="BEGIN_LINK" />ขอความช่วยเหลือ<ph name="END_LINK" /></translation>
 <translation id="5646376287012673985">ตำแหน่ง</translation>
 <translation id="5659593005791499971">อีเมล</translation>
 <translation id="5668404140385795438">แทนที่คำขอของเว็บไซต์เพื่อป้องกันการซูมเข้า</translation>
@@ -310,6 +314,7 @@
 <translation id="5771382037724542929">คุณต้องการแทนที่ <ph name="FILE_NAME" /> ที่มีอยู่ใน <ph name="DIRECTORY_NAME" /> ไหม</translation>
 <translation id="5804241973901381774">การอนุญาต</translation>
 <translation id="5806294296882899667">ข้อผิดพลาดในการโหลดค่าเริ่มต้น</translation>
+<translation id="5817918615728894473">จับคู่</translation>
 <translation id="5832934273103296195">ขยาย - คลิกเพื่อยุบ</translation>
 <translation id="583891442612896534">Chrome ไม่สามารถเข้าถึงเซิร์ฟเวอร์ Google เพื่อบีบอัดข้อมูล การประหยัดอินเทอร์เน็ตของคุณอาจมีข้อจำกัด</translation>
 <translation id="5860033963881614850">ปิด</translation>
@@ -332,7 +337,6 @@
 <translation id="6040143037577758943">ปิด</translation>
 <translation id="6042308850641462728">เพิ่มเติม</translation>
 <translation id="605721222689873409">ปป</translation>
-<translation id="6060567974409584397">แตะเพื่อกลับไปยังแท็บ</translation>
 <translation id="6066720739967032277">ดูแท็บด้วยแอปล่าสุดอื่นๆ บนหน้าจอภาพรวมของโทรศัพท์ คุณสามารถควบคุมคุณลักษณะนี้ได้ใน<ph name="BEGIN_LINK" />การตั้งค่า<ph name="END_LINK" /></translation>
 <translation id="6075798973483050474">แก้ไขหน้าแรก</translation>
 <translation id="6108923351542677676">กำลังดำเนินการตั้งค่า…</translation>
@@ -380,6 +384,7 @@
 <translation id="6698801883190606802">จัดการข้อมูลที่ซิงค์</translation>
 <translation id="6699351163704950317">หน้าที่บันทึกไว้ทั้งหมด</translation>
 <translation id="6710213216561001401">ก่อนหน้า</translation>
+<translation id="6720988912937197322">หน้าที่บันทึกไว้ไม่พร้อมใช้งานแบบออฟไลน์</translation>
 <translation id="6738867403308150051">กำลังดาวน์โหลด…</translation>
 <translation id="6770414673596662518">ระบบ Safe Browsing ของ Chrome ยังใช้ในการตรวจหาหน้าเว็บที่ไม่ปลอดภัยและปกป้องคุณจากฟิชชิง มัลแวร์ และการดาวน์โหลดที่เป็นอันตราย</translation>
 <translation id="6784675033504223784">ค้นหา “<ph name="SEARCH_TERM" />”</translation>
@@ -393,7 +398,6 @@
 <translation id="6850830437481525139">ปิดแล้ว <ph name="TAB_COUNT" /> แท็บ</translation>
 <translation id="6857778194843072568">ส่งเมื่อใช้ Wi-Fi เท่านั้น</translation>
 <translation id="6868088497967843822">ลงชื่อเข้าใช้เพื่อรับบุ๊กมาร์ก ประวัติการเข้าชม รหัสผ่าน และการตั้งค่าอื่นๆ บนอุปกรณ์ทั้งหมดของคุณ</translation>
-<translation id="6935223586406308151">เพิ่ม <ph name="DOMAIN_NAME" /> ไปยังหน้าจอหลักแล้ว</translation>
 <translation id="6945221475159498467">เลือก</translation>
 <translation id="6963766334940102469">ลบบุ๊กมาร์ก</translation>
 <translation id="6964496835063002391">เพิ่มบัญชี</translation>
@@ -522,6 +526,7 @@
 <translation id="8719023831149562936">ไม่สามารถบีมแท็บปัจจุบัน</translation>
 <translation id="8725066075913043281">ลองอีกครั้ง</translation>
 <translation id="8730621377337864115">เสร็จสิ้น</translation>
+<translation id="8737542153238017984">หน้าที่บันทึกไว้ไม่พร้อมใช้งานแบบออฟไลน์ พื้นที่เก็บข้อมูลใกล้เต็มแล้ว</translation>
 <translation id="8793430725658173476">คัดลอก URL</translation>
 <translation id="8798099450830957504">ค่าเริ่มต้น</translation>
 <translation id="8820817407110198400">บุ๊กมาร์ก</translation>
@@ -552,6 +557,7 @@
 <translation id="9133515669113036225">รีเซ็ตข้อมูลรับรองของอุปกรณ์</translation>
 <translation id="9137013805542155359">แสดงหน้าเว็บเดิม</translation>
 <translation id="9156605176886108508">ไม่มีโฟลเดอร์บุ๊กมาร์ก</translation>
+<translation id="9192643434065497760">เปิดบลูทูธใน<ph name="BEGIN_LINK" />การตั้งค่าอุปกรณ์<ph name="END_LINK" />เพื่อให้จับคู่กันได้</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="932327136139879170">หน้าแรก</translation>
 <translation id="938850635132480979">ข้อผิดพลาด: <ph name="ERROR_CODE" /></translation>

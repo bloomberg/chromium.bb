@@ -113,6 +113,7 @@
 <translation id="2718352093833049315">仅限 Wi-Fi</translation>
 <translation id="2748463065602559597">您正在查看的是安全的 Google Chrome 浏览器网页。</translation>
 <translation id="2770465223704140727">从列表中移除</translation>
+<translation id="278029852808208386">未发现任何蓝牙设备。<ph name="BEGIN_LINK" />重新搜索<ph name="END_LINK" />。</translation>
 <translation id="2816165854387457183">检测到网速很慢。</translation>
 <translation id="2842985007712546952">父文件夹</translation>
 <translation id="2870560284913253234">网站</translation>
@@ -190,6 +191,7 @@
 <translation id="4099578267706723511">将使用情况统计信息和崩溃报告发送给 Google，帮助我们完善 Chrome。</translation>
 <translation id="411254640334432676">下载失败。</translation>
 <translation id="4113030288477039509">由您的管理员管理</translation>
+<translation id="4116939199945053760"><ph name="SITE" /> 希望<ph name="BEGIN_LINK" />与以下设备配对<ph name="END_LINK" />：</translation>
 <translation id="4165986682804962316">网站设置</translation>
 <translation id="4170011742729630528">此服务目前无法使用，请稍后再试。</translation>
 <translation id="4195643157523330669">在新标签页中打开</translation>
@@ -203,6 +205,7 @@
 <translation id="4307992518367153382">基本设置</translation>
 <translation id="4333969446981951071">使用此应用即表示您同意 Chrome 的<ph name="BEGIN_LINK1" />服务条款<ph name="END_LINK1" />和<ph name="BEGIN_LINK2" />隐私权声明<ph name="END_LINK2" />。</translation>
 <translation id="4351244548802238354">关闭对话框</translation>
+<translation id="4357362091209756047">没看到您的设备？<ph name="BEGIN_LINK1" />重新搜索<ph name="END_LINK1" />或<ph name="BEGIN_LINK2" />寻求帮助<ph name="END_LINK2" />。</translation>
 <translation id="4376501731284077108">不限</translation>
 <translation id="4378154925671717803">电话</translation>
 <translation id="4412992751769744546">允许第三方 Cookie</translation>
@@ -290,6 +293,7 @@
 <translation id="5626134646977739690">名字：</translation>
 <translation id="5626370437647899551">添加 Google 帐户</translation>
 <translation id="563535393368633106">访问前先询问（推荐）</translation>
+<translation id="5643573370311148178"><ph name="BEGIN_LINK" />帮助<ph name="END_LINK" />。</translation>
 <translation id="5646376287012673985">位置</translation>
 <translation id="5659593005791499971">电子邮件</translation>
 <translation id="5668404140385795438">覆盖网站的请求，以防止放大</translation>
@@ -310,6 +314,7 @@
 <translation id="5771382037724542929">要替换“<ph name="DIRECTORY_NAME" />”目录中现有的 <ph name="FILE_NAME" /> 吗？</translation>
 <translation id="5804241973901381774">权限</translation>
 <translation id="5806294296882899667">加载默认书签文件夹时出现错误</translation>
+<translation id="5817918615728894473">配对</translation>
 <translation id="5832934273103296195">已展开 - 点击即可折叠</translation>
 <translation id="583891442612896534">Chrome 无法连接到 Google 服务器来进行数据压缩，因此您节省的数据流量可能有限。</translation>
 <translation id="5860033963881614850">关闭</translation>
@@ -332,7 +337,6 @@
 <translation id="6040143037577758943">关闭</translation>
 <translation id="6042308850641462728">更多</translation>
 <translation id="605721222689873409">YY</translation>
-<translation id="6060567974409584397">触摸即可返回到该标签页</translation>
 <translation id="6066720739967032277">您目前打开的标签页和最近用过的其他应用都会显示在您手机的“概览”屏幕上。您可以在<ph name="BEGIN_LINK" />设置<ph name="END_LINK" />部分控制此功能。</translation>
 <translation id="6075798973483050474">修改主页</translation>
 <translation id="6108923351542677676">正在设置…</translation>
@@ -380,6 +384,7 @@
 <translation id="6698801883190606802">管理已同步的数据</translation>
 <translation id="6699351163704950317">所有保存的网页</translation>
 <translation id="6710213216561001401">上一个</translation>
+<translation id="6720988912937197322">无法为保存的页面创建离线副本</translation>
 <translation id="6738867403308150051">即将开始下载…</translation>
 <translation id="6770414673596662518">Chrome 的安全浏览系统也将用于检测恶意网页，保护您免受网上诱骗、恶意软件和有害下载内容的侵害。</translation>
 <translation id="6784675033504223784">搜索“<ph name="SEARCH_TERM" />”</translation>
@@ -393,7 +398,6 @@
 <translation id="6850830437481525139">已关闭 <ph name="TAB_COUNT" /> 个标签页</translation>
 <translation id="6857778194843072568">仅在使用 Wi-Fi 网络时发送</translation>
 <translation id="6868088497967843822">登录后可获取您所有设备上保存的书签、历史记录、密码和其他设置</translation>
-<translation id="6935223586406308151"><ph name="DOMAIN_NAME" /> 已添加到您的主屏幕</translation>
 <translation id="6945221475159498467">选择</translation>
 <translation id="6963766334940102469">删除书签</translation>
 <translation id="6964496835063002391">添加帐户</translation>
@@ -522,6 +526,7 @@
 <translation id="8719023831149562936">无法传输当前的标签页</translation>
 <translation id="8725066075913043281">重试</translation>
 <translation id="8730621377337864115">完成</translation>
+<translation id="8737542153238017984">存储空间即将用尽，因此无法为保存的页面创建离线副本。</translation>
 <translation id="8793430725658173476">复制网址</translation>
 <translation id="8798099450830957504">默认</translation>
 <translation id="8820817407110198400">书签</translation>
@@ -552,6 +557,7 @@
 <translation id="9133515669113036225">重置设备凭据</translation>
 <translation id="9137013805542155359">显示原始网页</translation>
 <translation id="9156605176886108508">没有书签文件夹</translation>
+<translation id="9192643434065497760">请在<ph name="BEGIN_LINK" />设备设置<ph name="END_LINK" />部分开启蓝牙，以允许配对。</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="932327136139879170">家庭</translation>
 <translation id="938850635132480979">错误：<ph name="ERROR_CODE" /></translation>

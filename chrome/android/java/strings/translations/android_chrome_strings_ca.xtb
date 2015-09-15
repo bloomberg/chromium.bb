@@ -113,6 +113,7 @@
 <translation id="2718352093833049315">Només amb Wi-Fi</translation>
 <translation id="2748463065602559597">Esteu visualitzant una pàgina segura de Google Chrome.</translation>
 <translation id="2770465223704140727">Suprimeix de la llista</translation>
+<translation id="278029852808208386">No s'ha trobat cap dispositiu Bluetooth. <ph name="BEGIN_LINK" />Torneu a fer la cerca<ph name="END_LINK" />.</translation>
 <translation id="2816165854387457183">S'ha detectat una connexió lenta.</translation>
 <translation id="2842985007712546952">Carpeta principal</translation>
 <translation id="2870560284913253234">Lloc</translation>
@@ -190,6 +191,7 @@ Per ajustar el terme de la cerca, manteniu-lo premut per seleccionar-lo. Per def
 <translation id="4099578267706723511">Ajudeu a millorar Chrome mitjançant l'enviament d'estadístiques d'ús i d'informes d'error a Google.</translation>
 <translation id="411254640334432676">S'ha produït un error durant la baixada.</translation>
 <translation id="4113030288477039509">Gestionat per l'administrador</translation>
+<translation id="4116939199945053760"><ph name="SITE" /> vol <ph name="BEGIN_LINK" />sincronitzar-se amb<ph name="END_LINK" />:</translation>
 <translation id="4165986682804962316">Configuració del lloc</translation>
 <translation id="4170011742729630528">El servei no està disponible. Torneu-ho a provar més tard.</translation>
 <translation id="4195643157523330669">Obre en una pestanya nova</translation>
@@ -203,6 +205,7 @@ Per ajustar el terme de la cerca, manteniu-lo premut per seleccionar-lo. Per def
 <translation id="4307992518367153382">Bàsic</translation>
 <translation id="4333969446981951071">En fer servir aquesta aplicació, accepteu les <ph name="BEGIN_LINK1" />Condicions del servei<ph name="END_LINK1" /> i l'<ph name="BEGIN_LINK2" />Avís de privadesa<ph name="END_LINK2" /> de Chrome.</translation>
 <translation id="4351244548802238354">Tanca el quadre de diàleg</translation>
+<translation id="4357362091209756047">No es mostra el vostre dispositiu? <ph name="BEGIN_LINK1" />Torneu a fer la cerca<ph name="END_LINK1" /> o <ph name="BEGIN_LINK2" />demaneu ajuda<ph name="END_LINK2" />.</translation>
 <translation id="4376501731284077108">No controlats</translation>
 <translation id="4378154925671717803">Telèfon</translation>
 <translation id="4412992751769744546">Permet les galetes de tercers</translation>
@@ -290,6 +293,7 @@ Per fer-ho, obriu Chrome a l'ordinador, aneu al menú i seleccioneu Inicia la se
 <translation id="5626134646977739690">Nom:</translation>
 <translation id="5626370437647899551">Afegir un compte de Google</translation>
 <translation id="563535393368633106">Demana permís abans d'accedir als elements (recomanat)</translation>
+<translation id="5643573370311148178"><ph name="BEGIN_LINK" />Ajuda<ph name="END_LINK" />.</translation>
 <translation id="5646376287012673985">Ubicació</translation>
 <translation id="5659593005791499971">Correu electrònic</translation>
 <translation id="5668404140385795438">Ignora la sol·licitud d'un lloc web per evitar que s'apropi la imatge</translation>
@@ -310,6 +314,7 @@ Tanmateix, no sou invisible. El vostre cap, el vostre proveïdor de serveis d'In
 <translation id="5771382037724542929">Voleu substituir el fitxer <ph name="FILE_NAME" /> de <ph name="DIRECTORY_NAME" />?</translation>
 <translation id="5804241973901381774">Permisos</translation>
 <translation id="5806294296882899667">Error en carregar el valor predeterminat</translation>
+<translation id="5817918615728894473">Sincronitza</translation>
 <translation id="5832934273103296195">Vista ampliada (feu clic per reduir-la)</translation>
 <translation id="583891442612896534">Chrome no es pot connectar amb els servidors de Google per comprimir les dades. És possible que només pugueu desar dades de manera limitada.</translation>
 <translation id="5860033963881614850">Desactivat</translation>
@@ -332,7 +337,6 @@ Per exemple, és possible que alguns llocs web responguin a aquesta sol·licitud
 <translation id="6040143037577758943">Tanca</translation>
 <translation id="6042308850641462728">Més</translation>
 <translation id="605721222689873409">AA</translation>
-<translation id="6060567974409584397">Toqueu per tornar a la pestanya</translation>
 <translation id="6066720739967032277">A la pantalla Visió general del telèfon podeu veure les pestanyes juntament amb altres aplicacions recents. Podeu controlar aquesta funció a la <ph name="BEGIN_LINK" />Configuració<ph name="END_LINK" />.</translation>
 <translation id="6075798973483050474">Editar la pàgina d'inici</translation>
 <translation id="6108923351542677676">Configuració en curs...</translation>
@@ -380,6 +384,7 @@ Per exemple, és possible que alguns llocs web responguin a aquesta sol·licitud
 <translation id="6698801883190606802">Gestioneu les dades sincronitzades</translation>
 <translation id="6699351163704950317">Totes les pàgines desades</translation>
 <translation id="6710213216561001401">Anterior</translation>
+<translation id="6720988912937197322">La pàgina desada no està disponible sense connexió</translation>
 <translation id="6738867403308150051">Baixada en curs...</translation>
 <translation id="6770414673596662518">El sistema de navegació segura de Chrome també s'utilitzarà per detectar pàgines malicioses i per protegir-vos de la pesca (suplantació d'identitat), de programari maliciós i de baixades perjudicials.</translation>
 <translation id="6784675033504223784">Cerqueu "<ph name="SEARCH_TERM" />"</translation>
@@ -393,7 +398,6 @@ Per exemple, és possible que alguns llocs web responguin a aquesta sol·licitud
 <translation id="6850830437481525139">S'han tancat <ph name="TAB_COUNT" /> pestanyes</translation>
 <translation id="6857778194843072568">Envia només amb Wi-Fi</translation>
 <translation id="6868088497967843822">Inicieu la sessió per tenir les adreces d'interès, l'historial, les contrasenyes i altres configuracions en tots els vostres dispositius</translation>
-<translation id="6935223586406308151"><ph name="DOMAIN_NAME" /> s'ha afegit a la pantalla d'inici</translation>
 <translation id="6945221475159498467">Selecciona</translation>
 <translation id="6963766334940102469">Suprimeix les adreces d'interès</translation>
 <translation id="6964496835063002391">Afegeix un compte</translation>
@@ -522,6 +526,7 @@ Per obtenir llicències noves, connecteu-vos a Internet i reproduïu el contingu
 <translation id="8719023831149562936">La pestanya actual no es pot compartir.</translation>
 <translation id="8725066075913043281">Torna-ho a provar</translation>
 <translation id="8730621377337864115">Fet</translation>
+<translation id="8737542153238017984">La pàgina desada no està disponible sense connexió. L'emmagatzematge està gairebé ple.</translation>
 <translation id="8793430725658173476">Copia l'URL</translation>
 <translation id="8798099450830957504">Predeterminat</translation>
 <translation id="8820817407110198400">Adreces d'interès</translation>
@@ -552,6 +557,7 @@ Per obtenir llicències noves, connecteu-vos a Internet i reproduïu el contingu
 <translation id="9133515669113036225">Restableix les credencials del dispositiu</translation>
 <translation id="9137013805542155359">Mostra l'original</translation>
 <translation id="9156605176886108508">No hi ha carpetes d'adreces d'interès</translation>
+<translation id="9192643434065497760">Activeu el Bluetooth a la <ph name="BEGIN_LINK" />configuració del dispositiu<ph name="END_LINK" /> per permetre la sincronització.</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="932327136139879170">Pàgina d'inici</translation>
 <translation id="938850635132480979">Error: <ph name="ERROR_CODE" /></translation>

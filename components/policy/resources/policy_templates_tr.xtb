@@ -706,6 +706,7 @@ politikayı geçersiz kılamaz.
 
       Bu seçeneğin devre dışı olarak ayarlanması veya ayarlanmadan bırakılması, Geliştirici Araçları ve JavaScript konsolunun kullanımına olanak tanır.</translation>
 <translation id="4467952432486360968">Üçüncü taraf çerezlerini engelle</translation>
+<translation id="4474167089968829729">Şifrelerin, şifre yöneticisine kaydedilmesini etkinleştir</translation>
 <translation id="4480694116501920047">Güvenli Arama'nın kullanılmasını zorunlu tut</translation>
 <translation id="4482640907922304445"><ph name="PRODUCT_NAME" /> araç çubuğunda Ana Sayfa düğmesini gösterir.
 
@@ -1161,6 +1162,18 @@ politikayı geçersiz kılamaz.
           Bu politika isteğe bağlıdır. Ayarlanmazsa, arama isteği GET yöntemi kullanılarak gönderilir.
 
           Bu politika sadece is "DefaultSearchProviderEnabled" politikası etkinleştirilmişse dikkate alınır.</translation>
+<translation id="6365608006609079612">
+          Bu ayar etkinleştirilirse kullanıcılar <ph name="PRODUCT_NAME" /> ürününün, şifreleri hatırlamasını
+          ve bir siteye tekrar giriş yaptıklarında şifrenin otomatik olarak girilmesini
+          sağlayabilirler.
+
+          Bu ayar devre dışı bırakılırsa kullanıcılar yeni şifreleri kaydedemez, ancak
+          önceden kaydedilmiş şifreleri kullanmaya devam edebilirler.
+
+          Bu politika etkinleştirilirse veya devre dışı bırakılırsa kullanıcılar bunu
+          <ph name="PRODUCT_NAME" /> ürününün içinden değiştiremez veya geçersiz kılamazlar.
+          Bu politika ayarlanmazsa, şifre kaydetmeye izin verilir (ancak kullanıcı
+          bu özelliği kapatabilir).</translation>
 <translation id="6367755442345892511">Yayın kanalının kullanıcı tarafından yapılandırılıp yapılandırılamayacağı</translation>
 <translation id="6368011194414932347">Ana sayfa URL'sini yapılandır</translation>
 <translation id="6368403635025849609">Bu sitelerde JavaScript'e izin ver</translation>

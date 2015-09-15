@@ -113,6 +113,7 @@
 <translation id="2718352093833049315">Endast på Wi-Fi</translation>
 <translation id="2748463065602559597">Du tittar på en säker Google Chrome-sida.</translation>
 <translation id="2770465223704140727">Ta bort från listan</translation>
+<translation id="278029852808208386">Inga Bluetooth-enheter hittades. <ph name="BEGIN_LINK" />Gör om sökningen<ph name="END_LINK" />.</translation>
 <translation id="2816165854387457183">En långsam anslutning upptäcktes.</translation>
 <translation id="2842985007712546952">Överordnad mapp</translation>
 <translation id="2870560284913253234">Webbplats</translation>
@@ -190,6 +191,7 @@ Om du vill ändra söktermen trycker du länge för att välja. Om du vill förf
 <translation id="4099578267706723511">Hjälp till att förbättra Chrome genom att skicka användningsstatistik och felrapporter till Google.</translation>
 <translation id="411254640334432676">Nedladdningen misslyckades.</translation>
 <translation id="4113030288477039509">Hanteras av administratören</translation>
+<translation id="4116939199945053760"><ph name="SITE" /> har begärt <ph name="BEGIN_LINK" />koppling till<ph name="END_LINK" />:</translation>
 <translation id="4165986682804962316">Platsinställningar</translation>
 <translation id="4170011742729630528">Tjänsten är inte tillgänglig, försök igen senare.</translation>
 <translation id="4195643157523330669">Öppna i ny flik</translation>
@@ -203,6 +205,7 @@ Om du vill ändra söktermen trycker du länge för att välja. Om du vill förf
 <translation id="4307992518367153382">Grunderna</translation>
 <translation id="4333969446981951071">Genom att använda det här programmet godkänner du Chromes <ph name="BEGIN_LINK1" />användarvillkor<ph name="END_LINK1" /> och <ph name="BEGIN_LINK2" />sekretessmeddelande<ph name="END_LINK2" />.</translation>
 <translation id="4351244548802238354">Stäng dialogrutan</translation>
+<translation id="4357362091209756047">Visas inte din enhet? <ph name="BEGIN_LINK1" />Gör om sökningen<ph name="END_LINK1" /> eller <ph name="BEGIN_LINK2" />få hjälp<ph name="END_LINK2" />.</translation>
 <translation id="4376501731284077108">Inte styrda</translation>
 <translation id="4378154925671717803">Telefon</translation>
 <translation id="4412992751769744546">Tillåt cookies från tredje part</translation>
@@ -290,6 +293,7 @@ Du behöver bara öppna Chrome på datorn, öppna menyn och välja Logga in i Ch
 <translation id="5626134646977739690">Namn:</translation>
 <translation id="5626370437647899551">Lägg till ett Google-konto</translation>
 <translation id="563535393368633106">Fråga innan informationen används (rekommenderas)</translation>
+<translation id="5643573370311148178"><ph name="BEGIN_LINK" />Hjälp<ph name="END_LINK" />.</translation>
 <translation id="5646376287012673985">Plats</translation>
 <translation id="5659593005791499971">E-post</translation>
 <translation id="5668404140385795438">Åsidosätt en webbplats begäran att hindra inzoomning</translation>
@@ -310,6 +314,7 @@ Du är dock inte osynlig. Trots inkognitoläget kan din arbetsgivare, din intern
 <translation id="5771382037724542929">Vill du ersätta den befintliga filen <ph name="FILE_NAME" /> i <ph name="DIRECTORY_NAME" />?</translation>
 <translation id="5804241973901381774">Behörigheter</translation>
 <translation id="5806294296882899667">Fel vid inläsning av standard</translation>
+<translation id="5817918615728894473">Koppla</translation>
 <translation id="5832934273103296195">Gruppvyn har expanderats. Komprimera vyn genom att klicka.</translation>
 <translation id="583891442612896534">Chrome kan inte nå Googles servrar för datakomprimeringen. Du kanske inte sparar data i någon större utsträckning.</translation>
 <translation id="5860033963881614850">Av</translation>
@@ -332,7 +337,6 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="6040143037577758943">Stäng</translation>
 <translation id="6042308850641462728">Mer</translation>
 <translation id="605721222689873409">ÅÅ</translation>
-<translation id="6060567974409584397">Tryck här om du vill återgå till fliken</translation>
 <translation id="6066720739967032277">Gör så att flikar visas tillsammans med de senaste apparna på skärmen Översikt i mobilen. Du kan styra detta i <ph name="BEGIN_LINK" />inställningarna<ph name="END_LINK" />.</translation>
 <translation id="6075798973483050474">Redigera startsidan</translation>
 <translation id="6108923351542677676">Konfigurationen pågår ...</translation>
@@ -380,6 +384,7 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="6698801883190606802">Hantera synkroniserad data</translation>
 <translation id="6699351163704950317">Alla sparade sidor</translation>
 <translation id="6710213216561001401">Föregående</translation>
+<translation id="6720988912937197322">Sidan som sparades är inte tillgänglig offline</translation>
 <translation id="6738867403308150051">Laddar ned …</translation>
 <translation id="6770414673596662518">Säker webbsökning i Chrome används dessutom för att identifiera skadliga sidor och skydda dig från nätfiske, skadlig programvara och skadliga filnedladdningar.</translation>
 <translation id="6784675033504223784">Sök efter <ph name="SEARCH_TERM" /></translation>
@@ -393,7 +398,6 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="6850830437481525139"><ph name="TAB_COUNT" /> flikar har stängts</translation>
 <translation id="6857778194843072568">Skicka endast via Wi-Fi</translation>
 <translation id="6868088497967843822">Logga in om du vill att bokmärken, historik, lösenord och andra inställningar ska vara tillgängliga på alla dina enheter.</translation>
-<translation id="6935223586406308151"><ph name="DOMAIN_NAME" /> har lagts till på startskärmen</translation>
 <translation id="6945221475159498467">Välj</translation>
 <translation id="6963766334940102469">Radera bokmärken</translation>
 <translation id="6964496835063002391">Lägg till ett konto</translation>
@@ -522,6 +526,7 @@ Du hämtar nya licenser genom att ansluta till internet och spela upp det nedlad
 <translation id="8719023831149562936">Den aktuella fliken kan inte överföras</translation>
 <translation id="8725066075913043281">Försök igen</translation>
 <translation id="8730621377337864115">Klart</translation>
+<translation id="8737542153238017984">Sidan som sparades är inte tillgänglig offline. Lagringsutrymmet är nästan fullt.</translation>
 <translation id="8793430725658173476">Kopiera webbadress</translation>
 <translation id="8798099450830957504">Standard</translation>
 <translation id="8820817407110198400">Bokmärken</translation>
@@ -552,6 +557,7 @@ Du hämtar nya licenser genom att ansluta till internet och spela upp det nedlad
 <translation id="9133515669113036225">Återställ användaruppgifter för enheten</translation>
 <translation id="9137013805542155359">Visa original</translation>
 <translation id="9156605176886108508">Inga bokmärkesmappar</translation>
+<translation id="9192643434065497760">Aktivera Bluetooth i <ph name="BEGIN_LINK" />enhetsinställningarna<ph name="END_LINK" /> om du vill tillåta koppling.</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="932327136139879170">Startsida</translation>
 <translation id="938850635132480979">Fel: <ph name="ERROR_CODE" /></translation>

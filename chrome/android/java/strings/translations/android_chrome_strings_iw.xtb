@@ -113,6 +113,7 @@
 <translation id="2718352093833049315">‏רק ב-Wi-Fi</translation>
 <translation id="2748463065602559597">‏אתה מציג דף Google Chrome מאובטח.</translation>
 <translation id="2770465223704140727">הסר מהרשימה</translation>
+<translation id="278029852808208386">‏לא נמצאו מכשירי Bluetooth. <ph name="BEGIN_LINK" />חפש שוב<ph name="END_LINK" />.</translation>
 <translation id="2816165854387457183">זוהה חיבור איטי.</translation>
 <translation id="2842985007712546952">תיקיית אב</translation>
 <translation id="2870560284913253234">אתר</translation>
@@ -190,6 +191,7 @@
 <translation id="4099578267706723511">‏עזור לשפר את Chrome על ידי שליחה של סטטיסטיקת שימוש ודוחות קריסה אל Google.</translation>
 <translation id="411254640334432676">ההורדה נכשלה.</translation>
 <translation id="4113030288477039509">מנוהל על ידי מנהל המערכת שלך</translation>
+<translation id="4116939199945053760"><ph name="SITE" /> רוצה <ph name="BEGIN_LINK" />לבצע התאמה עם<ph name="END_LINK" />:</translation>
 <translation id="4165986682804962316">הגדרות אתרים</translation>
 <translation id="4170011742729630528">השירות אינו זמין. נסה שוב מאוחר יותר.</translation>
 <translation id="4195643157523330669">פתח בכרטיסייה חדשה</translation>
@@ -203,6 +205,7 @@
 <translation id="4307992518367153382">היסודות</translation>
 <translation id="4333969446981951071">‏על ידי שימוש ביישום הזה, אתה מסכים ל<ph name="BEGIN_LINK1" />תנאים ולהגבלות<ph name="END_LINK1" /> ול<ph name="BEGIN_LINK2" />הודעת הפרטיות<ph name="END_LINK2" /> של Chrome.</translation>
 <translation id="4351244548802238354">סגור את תיבת הדו-שיח</translation>
+<translation id="4357362091209756047">אינך רואה את המכשיר? <ph name="BEGIN_LINK1" />חפש שוב<ph name="END_LINK1" /> או <ph name="BEGIN_LINK2" />קבל עזרה<ph name="END_LINK2" />.</translation>
 <translation id="4376501731284077108">לא מבוקר</translation>
 <translation id="4378154925671717803">טלפון</translation>
 <translation id="4412992751769744546">‏התר קובצי Cookie של צד שלישי</translation>
@@ -290,6 +293,7 @@
 <translation id="5626134646977739690">שם:</translation>
 <translation id="5626370437647899551">‏הוסף חשבון Google</translation>
 <translation id="563535393368633106">שאל לפני גישה (מומלץ)</translation>
+<translation id="5643573370311148178"><ph name="BEGIN_LINK" />עזרה<ph name="END_LINK" /></translation>
 <translation id="5646376287012673985">מיקום</translation>
 <translation id="5659593005791499971">אימייל</translation>
 <translation id="5668404140385795438">עקוף בקשה של אתר שנועדה למנוע שינוי של מרחק התצוגה</translation>
@@ -310,6 +314,7 @@
 <translation id="5771382037724542929">האם ברצונך להחליף את <ph name="FILE_NAME" /> הקיים ב-<ph name="DIRECTORY_NAME" />?</translation>
 <translation id="5804241973901381774">הרשאות</translation>
 <translation id="5806294296882899667">שגיאה בטעינת ברירת מחדל</translation>
+<translation id="5817918615728894473">התאם</translation>
 <translation id="5832934273103296195">מורחב - הקש כדי לכווץ</translation>
 <translation id="583891442612896534">‏ל-Chrome אין אפשרות לגשת אל שרתי Google לדחיסת נתונים. ייתכן שהחיסכון בנתונים יהיה מוגבל.</translation>
 <translation id="5860033963881614850">כבוי</translation>
@@ -332,7 +337,6 @@
 <translation id="6040143037577758943">סגור</translation>
 <translation id="6042308850641462728">עוד</translation>
 <translation id="605721222689873409">YY</translation>
-<translation id="6060567974409584397">גע כדי לחזור אל הכרטיסייה</translation>
 <translation id="6066720739967032277">הצג את הכרטיסיות במסך הסקירה של הטלפון יחד עם אפליקציות אחרונות שבהן השתמשת. תוכל לשלוט בתכונה הזו ב<ph name="BEGIN_LINK" />הגדרות<ph name="END_LINK" />.</translation>
 <translation id="6075798973483050474">עריכת דף הבית</translation>
 <translation id="6108923351542677676">ההגדרה מתבצעת…</translation>
@@ -380,6 +384,7 @@
 <translation id="6698801883190606802">נהל נתונים מסונכרנים</translation>
 <translation id="6699351163704950317">כל הדפים שנשמרו</translation>
 <translation id="6710213216561001401">הקודם</translation>
+<translation id="6720988912937197322">הדף שנשמר אינו זמין במצב לא מקוון</translation>
 <translation id="6738867403308150051">מוריד...</translation>
 <translation id="6770414673596662518">‏מערכת הגלישה הבטוחה של Chrome תשמש גם לזיהוי דפים זדוניים ולהגנה עליך מפני דיוג, תוכנות זדוניות והורדות של קבצים מזיקים.</translation>
 <translation id="6784675033504223784">חפש את "<ph name="SEARCH_TERM" />"</translation>
@@ -393,7 +398,6 @@
 <translation id="6850830437481525139"><ph name="TAB_COUNT" /> כרטיסיות נסגרו</translation>
 <translation id="6857778194843072568">‏שלח ב-Wi-Fi בלבד</translation>
 <translation id="6868088497967843822">היכנס כדי לקבל גישה אל הסימניות, ההיסטוריה, הסיסמאות והגדרות נוספות בכל המכשירים שברשותך</translation>
-<translation id="6935223586406308151"><ph name="DOMAIN_NAME" /> נוסף אל מסך דף הבית</translation>
 <translation id="6945221475159498467">בחר</translation>
 <translation id="6963766334940102469">מחק סימניות</translation>
 <translation id="6964496835063002391">הוסף חשבון</translation>
@@ -520,6 +524,7 @@
 <translation id="8719023831149562936">לא ניתן להעביר תוכן מהכרטיסייה הנוכחית</translation>
 <translation id="8725066075913043281">נסה שוב</translation>
 <translation id="8730621377337864115">בוצע</translation>
+<translation id="8737542153238017984">הדף שנשמר אינו זמין במצב לא מקוון. האחסון כמעט מלא.</translation>
 <translation id="8793430725658173476">העתק כתובת אתר</translation>
 <translation id="8798099450830957504">ברירת מחדל</translation>
 <translation id="8820817407110198400">סימניות</translation>
@@ -550,6 +555,7 @@
 <translation id="9133515669113036225">אפס את פרטי הכניסה של המכשיר</translation>
 <translation id="9137013805542155359">הצג מקור</translation>
 <translation id="9156605176886108508">אין תיקיות של סימניות</translation>
+<translation id="9192643434065497760">‏הפעל את Bluetooth ב<ph name="BEGIN_LINK" />הגדרות מכשיר<ph name="END_LINK" /> כדי לאפשר התאמה.</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="932327136139879170">בית</translation>
 <translation id="938850635132480979">שגיאה: <ph name="ERROR_CODE" /></translation>

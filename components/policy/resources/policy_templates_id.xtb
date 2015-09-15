@@ -598,6 +598,7 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
 <translation id="4442582539341804154">Aktifkan kunci bila perangkat menganggur atau ditangguhkan</translation>
 <translation id="4445684791305970001">Menonaktifkan Alat Pengembang dan konsol JavaScript. Jika Anda mengaktifkan setelan ini, alat Pengembang tidak dapat diakses dan elemen situs web tidak dapat diperiksa lagi. Setiap pintasan keyboard dan menu atau entri menu konteks untuk membuka Alat Pengembang atau Konsol JavaScript akan dinonaktifkan. Dengan menyetel opsi menjadi nonaktif atau membiarkannya tanpa disetel akan memungkinkan penggunaan konsol JavaScript dan Alat Pengembang.</translation>
 <translation id="4467952432486360968">Cekal cookie pihak ketiga</translation>
+<translation id="4474167089968829729">Aktifkan penyimpanan sandi di pengelola sandi</translation>
 <translation id="4480694116501920047">Paksakan TelusurAman</translation>
 <translation id="4482640907922304445">Menampilkan tombol Beranda di bilah alat <ph name="PRODUCT_NAME" />. Jika Anda mengaktifkan setelan ini, tombol Beranda akan selalu ditampilkan. Jika Anda menonaktifkan setelan ini, tombol Beranda tidak akan pernah ditampilkan. Jika Anda mengaktifkan atau menonaktifkan setelan ini, pengguna tidak dapat mengubah atau menimpa setelan ini di <ph name="PRODUCT_NAME" />. Membiarkan kebijakan ini tidak disetel akan memungkinkan pengguna memilih apakah akan menampilkan tombol beranda.</translation>
 <translation id="4492287494009043413">Menonaktifkan pengambilan tangkapan layar</translation>
@@ -995,6 +996,17 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
           Kebijakan ini bersifat opsional. Jika tidak disetel, permintaan penelusuran instan akan dikirim menggunakan metode GET.
 
           Kebijakan ini hanya dikhususkan jika kebijakan 'DefaultSearchProviderEnabled' diaktifkan.</translation>
+<translation id="6365608006609079612">
+          Jika setelan ini diaktifkan, pengguna dapat meminta <ph name="PRODUCT_NAME" /> mengingat sandi
+          dan sandi akan muncul otomatis saat pengguna masuk lagi ke situs.
+
+          Jika setelan ini dinonaktifkan, pengguna tidak dapat menyimpan sandi baru tetapi
+          masih dapat menggunakan sandi yang telah tersimpan sebelumnya.
+
+          Jika kebijakan ini diaktifkan atau dinonaktifkan, pengguna tidak dapat mengubah atau menggantinya
+          di <ph name="PRODUCT_NAME" />. Jika
+          kebijakan tidak disetel, penyimpanan sandi diizinkan (tetapi dapat dinonaktifkan oleh
+          pengguna).</translation>
 <translation id="6367755442345892511">Apakah saluran rilis dapat dikonfigurasi oleh pengguna atau tidak</translation>
 <translation id="6368011194414932347">Mengonfigurasi URL beranda</translation>
 <translation id="6368403635025849609">Izinkan JavaScript di situs ini</translation>

@@ -113,6 +113,7 @@
 <translation id="2718352093833049315">Wi-Fi uniquement</translation>
 <translation id="2748463065602559597">Cette page Google Chrome est sécurisée.</translation>
 <translation id="2770465223704140727">Retirer de la liste</translation>
+<translation id="278029852808208386">Aucun appareil Bluetooth trouvé. <ph name="BEGIN_LINK" />Relancez la recherche<ph name="END_LINK" />.</translation>
 <translation id="2816165854387457183">Connexion lente détectée</translation>
 <translation id="2842985007712546952">Dossier parent</translation>
 <translation id="2870560284913253234">Site</translation>
@@ -190,6 +191,7 @@ Pour modifier le terme de recherche, appuyez sur celui-ci de manière prolongée
 <translation id="4099578267706723511">Envoyez des statistiques d'utilisation et des rapports d'erreur pour améliorer Chrome.</translation>
 <translation id="411254640334432676">Échec du téléchargement.</translation>
 <translation id="4113030288477039509">Géré par votre administrateur</translation>
+<translation id="4116939199945053760">Le site <ph name="SITE" /> souhaite <ph name="BEGIN_LINK" />être associé<ph name="END_LINK" /> à l'appareil suivant :</translation>
 <translation id="4165986682804962316">Paramètres du site</translation>
 <translation id="4170011742729630528">Service indisponible. Veuillez réessayer plus tard.</translation>
 <translation id="4195643157523330669">Ouvrir dans un nouvel onglet</translation>
@@ -203,6 +205,7 @@ Pour modifier le terme de recherche, appuyez sur celui-ci de manière prolongée
 <translation id="4307992518367153382">Options de base</translation>
 <translation id="4333969446981951071">En utilisant cette application, vous acceptez les <ph name="BEGIN_LINK1" />Conditions d'utilisation<ph name="END_LINK1" /> et l'<ph name="BEGIN_LINK2" />Avis de confidentialité<ph name="END_LINK2" /> de Chrome.</translation>
 <translation id="4351244548802238354">Fermer la boîte de dialogue</translation>
+<translation id="4357362091209756047">Votre appareil ne s'affiche pas ? <ph name="BEGIN_LINK1" />Relancez la recherche<ph name="END_LINK1" /> ou <ph name="BEGIN_LINK2" />obtenez de l'aide<ph name="END_LINK2" />.</translation>
 <translation id="4376501731284077108">Aucun contrôle</translation>
 <translation id="4378154925671717803">Téléphone</translation>
 <translation id="4412992751769744546">Autoriser les cookies tiers</translation>
@@ -291,6 +294,7 @@ Il vous suffit d'ouvrir Chrome sur votre ordinateur, d'accéder au menu, puis de
 <translation id="5626134646977739690">Nom :</translation>
 <translation id="5626370437647899551">Ajouter un compte Google</translation>
 <translation id="563535393368633106">Demander l'autorisation avant d'accéder (recommandé)</translation>
+<translation id="5643573370311148178"><ph name="BEGIN_LINK" />Aide<ph name="END_LINK" /></translation>
 <translation id="5646376287012673985">Localisation</translation>
 <translation id="5659593005791499971">E-mail</translation>
 <translation id="5668404140385795438">Ignorer la demande d'un site refusant de faire un zoom avant</translation>
@@ -311,6 +315,7 @@ Vous n'êtes cependant pas devenu invisible. L'utilisation du mode navigation pr
 <translation id="5771382037724542929">Voulez-vous vraiment remplacer le fichier <ph name="FILE_NAME" /> dans le répertoire "<ph name="DIRECTORY_NAME" />" ?</translation>
 <translation id="5804241973901381774">Autorisations</translation>
 <translation id="5806294296882899667">Erreur de chargement du dossier par défaut.</translation>
+<translation id="5817918615728894473">Associer</translation>
 <translation id="5832934273103296195">Développé – Cliquer pour réduire</translation>
 <translation id="583891442612896534">Impossible de se connecter aux serveurs de Google dans Chrome pour la compression de données. Les sauvegardes de données peuvent être limitées.</translation>
 <translation id="5860033963881614850">Désactivé</translation>
@@ -333,7 +338,6 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="6040143037577758943">Fermer</translation>
 <translation id="6042308850641462728">Plus</translation>
 <translation id="605721222689873409">AA</translation>
-<translation id="6060567974409584397">Appuyez pour revenir à l'onglet.</translation>
 <translation id="6066720739967032277">Affichez vos onglets ainsi que d'autres applications récemment utilisées sur l'écran "Aperçu" de votre téléphone. Vous pouvez contrôler ce réglage dans les <ph name="BEGIN_LINK" />Paramètres<ph name="END_LINK" />.</translation>
 <translation id="6075798973483050474">Modifier la page d'accueil</translation>
 <translation id="6108923351542677676">Configuration en cours…</translation>
@@ -381,6 +385,7 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="6698801883190606802">Gérer les données synchronisées</translation>
 <translation id="6699351163704950317">Toutes les pages enregistrées</translation>
 <translation id="6710213216561001401">Précédent</translation>
+<translation id="6720988912937197322">La page enregistrée n'est pas disponible hors connexion.</translation>
 <translation id="6738867403308150051">Téléchargement en cours…</translation>
 <translation id="6770414673596662518">Nous utilisons également le système de navigation sécurisée de Chrome pour détecter les pages nuisibles tout en vous protégeant de l'hameçonnage, des logiciels malveillants et des téléchargements dangereux.</translation>
 <translation id="6784675033504223784">Recherchez "<ph name="SEARCH_TERM" />".</translation>
@@ -394,7 +399,6 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="6850830437481525139"><ph name="TAB_COUNT" /> onglets ont été fermés.</translation>
 <translation id="6857778194843072568">Envoyer via Wi-Fi uniquement</translation>
 <translation id="6868088497967843822">Connectez-vous pour récupérer vos favoris, votre historique, vos mots de passe et d'autres paramètres sur tous vos appareils.</translation>
-<translation id="6935223586406308151"><ph name="DOMAIN_NAME" /> a été ajouté à votre écran d'accueil.</translation>
 <translation id="6945221475159498467">Sélectionner</translation>
 <translation id="6963766334940102469">Supprimer des favoris</translation>
 <translation id="6964496835063002391">Ajouter un compte</translation>
@@ -523,6 +527,7 @@ Pour obtenir de nouvelles licences, connectez-vous à Internet et lisez le conte
 <translation id="8719023831149562936">Impossible de partager l'onglet actuel.</translation>
 <translation id="8725066075913043281">Réessayer</translation>
 <translation id="8730621377337864115">OK</translation>
+<translation id="8737542153238017984">La page enregistrée n'est pas disponible hors connexion. La mémoire de stockage est presque pleine.</translation>
 <translation id="8793430725658173476">Copier l'URL</translation>
 <translation id="8798099450830957504">Par défaut</translation>
 <translation id="8820817407110198400">Favoris</translation>
@@ -553,6 +558,7 @@ Pour obtenir de nouvelles licences, connectez-vous à Internet et lisez le conte
 <translation id="9133515669113036225">Réinitialiser les identifiants de l'appareil</translation>
 <translation id="9137013805542155359">Afficher l'original</translation>
 <translation id="9156605176886108508">Aucun dossier pour les favoris</translation>
+<translation id="9192643434065497760">Pour permettre l'association, activez le Bluetooth dans les <ph name="BEGIN_LINK" />paramètres de l'appareil<ph name="END_LINK" />.</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="932327136139879170">Accueil</translation>
 <translation id="938850635132480979">Erreur <ph name="ERROR_CODE" />.</translation>

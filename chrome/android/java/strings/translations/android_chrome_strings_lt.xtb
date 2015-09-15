@@ -113,6 +113,7 @@
 <translation id="2718352093833049315">Tik su „Wi–Fi“</translation>
 <translation id="2748463065602559597">Žiūrite saugų „Google Chrome“ puslapį.</translation>
 <translation id="2770465223704140727">Pašalinti iš sąrašo</translation>
+<translation id="278029852808208386">Nerasta „Bluetooth“ įrenginių. <ph name="BEGIN_LINK" />Ieškokite dar kartą<ph name="END_LINK" />.</translation>
 <translation id="2816165854387457183">Aptiktas lėtas ryšys.</translation>
 <translation id="2842985007712546952">Viršaplankis</translation>
 <translation id="2870560284913253234">Svetainė</translation>
@@ -190,6 +191,7 @@ Jei norite koreguoti paieškos terminą, paspauskite ir laikykite, kad jį pasir
 <translation id="4099578267706723511">Padėkite tobulinti „Chrome“ siųsdami „Google“ naudojimo statistiką ir strigčių ataskaitas.</translation>
 <translation id="411254640334432676">Nepavyko atsisiųsti.</translation>
 <translation id="4113030288477039509">Tvarko jūsų administratorius</translation>
+<translation id="4116939199945053760"><ph name="SITE" /> nori <ph name="BEGIN_LINK" />susieti su<ph name="END_LINK" />:</translation>
 <translation id="4165986682804962316">Svetainės nustatymai</translation>
 <translation id="4170011742729630528">Paslauga nepasiekiama; vėliau bandykite dar kartą.</translation>
 <translation id="4195643157523330669">Atidaryti naujame skirtuke</translation>
@@ -203,6 +205,7 @@ Jei norite koreguoti paieškos terminą, paspauskite ir laikykite, kad jį pasir
 <translation id="4307992518367153382">Pagrindai</translation>
 <translation id="4333969446981951071">Naudodami šią programą sutinkate su „Chrome“ <ph name="BEGIN_LINK1" />paslaugų teikimo sąlygomis<ph name="END_LINK1" /> ir <ph name="BEGIN_LINK2" />privatumo pranešimo<ph name="END_LINK2" /> sąlygomis.</translation>
 <translation id="4351244548802238354">Uždaryti dialogo langą</translation>
+<translation id="4357362091209756047">Nematote įrenginio? <ph name="BEGIN_LINK1" />Ieškokite dar kartą<ph name="END_LINK1" /> arba <ph name="BEGIN_LINK2" />gaukite pagalbos<ph name="END_LINK2" />.</translation>
 <translation id="4376501731284077108">Nevaldoma</translation>
 <translation id="4378154925671717803">Telefonas</translation>
 <translation id="4412992751769744546">Leisti trečiųjų šalių slapukus</translation>
@@ -291,6 +294,7 @@ Tiesiog atidarykite „Chrome“ kompiuteryje, eikite į meniu ir pasirinkite �
 <translation id="5626134646977739690">Pavadinimas:</translation>
 <translation id="5626370437647899551">Pridėti „Google“ paskyrą</translation>
 <translation id="563535393368633106">Klausti prieš pasiekiant (rekomenduojama)</translation>
+<translation id="5643573370311148178"><ph name="BEGIN_LINK" />Pagalba<ph name="END_LINK" />.</translation>
 <translation id="5646376287012673985">Vietovė</translation>
 <translation id="5659593005791499971">El. paštas</translation>
 <translation id="5668404140385795438">Nepaisyti svetainės mastelio keitimo vengimo užklausos</translation>
@@ -311,6 +315,7 @@ Tačiau nesate nematomi. Kai naudojate inkognito režimą, jūsų darbdavys, int
 <translation id="5771382037724542929">Ar norite pakeisti „<ph name="FILE_NAME" />“, esantį „<ph name="DIRECTORY_NAME" />“?</translation>
 <translation id="5804241973901381774">Leidimai</translation>
 <translation id="5806294296882899667">Įkeliant numatytąjį įvyko klaida</translation>
+<translation id="5817918615728894473">Susieti</translation>
 <translation id="5832934273103296195">Išskleista – spustelėkite, kad sutrauktumėte</translation>
 <translation id="583891442612896534">„Chrome“ negali pasiekti „Google“ serverių dėl duomenų glaudinimo. Duomenų išsaugojimas gali būti apribotas.</translation>
 <translation id="5860033963881614850">Išjungta</translation>
@@ -333,7 +338,6 @@ Pavyzdžiui, kai kurios svetainės gali atsakyti į šią užklausą rodydamos j
 <translation id="6040143037577758943">Uždaryti</translation>
 <translation id="6042308850641462728">Daugiau</translation>
 <translation id="605721222689873409">MM</translation>
-<translation id="6060567974409584397">Palieskite, kad grįžtumėte į skirtuką</translation>
 <translation id="6066720739967032277">Peržiūrėkite skirtukų lapus naudodami kitas naujausias programas telefono „Apžvalgos“ ekrane. Šią funkciją galite tvarkyti <ph name="BEGIN_LINK" />Nustatymų<ph name="END_LINK" /> skiltyje.</translation>
 <translation id="6075798973483050474">Redaguoti pagrindinį puslapį</translation>
 <translation id="6108923351542677676">Nustatoma…</translation>
@@ -381,6 +385,7 @@ Pavyzdžiui, kai kurios svetainės gali atsakyti į šią užklausą rodydamos j
 <translation id="6698801883190606802">Tvarkykite sinchronizuotus duomenis</translation>
 <translation id="6699351163704950317">Visi išsaugoti puslapiai</translation>
 <translation id="6710213216561001401">Ankstesnis</translation>
+<translation id="6720988912937197322">Išsaugotas puslapis nepasiekiamas neprisijungus</translation>
 <translation id="6738867403308150051">Atsisiunčiama...</translation>
 <translation id="6770414673596662518">„Chrome“ saugaus naršymo sistema taip pat bus naudojama siekiant aptikti kenkėjiškus puslapius ir apsaugoti jus nuo sukčiavimo, kenkėjiškų programų ir žalingų atsisiuntimų.</translation>
 <translation id="6784675033504223784">Ieškoti pagal „<ph name="SEARCH_TERM" />“</translation>
@@ -394,7 +399,6 @@ Pavyzdžiui, kai kurios svetainės gali atsakyti į šią užklausą rodydamos j
 <translation id="6850830437481525139">Uždaryta skirtukų lapų: <ph name="TAB_COUNT" /></translation>
 <translation id="6857778194843072568">Siųsti tik naudojant „Wi-Fi“</translation>
 <translation id="6868088497967843822">Prisijunkite, kad žymės, istorija, slaptažodžiai ir kiti nustatymai būtų pateikti visuose įrenginiuose</translation>
-<translation id="6935223586406308151"><ph name="DOMAIN_NAME" /> pridėtas prie pagrindinio ekrano</translation>
 <translation id="6945221475159498467">Pasirinkti</translation>
 <translation id="6963766334940102469">Ištrinti žymes</translation>
 <translation id="6964496835063002391">Pridėti paskyrą</translation>
@@ -523,6 +527,7 @@ Jei norite gauti naujas licencijas, prisijunkite prie interneto ir leiskite atsi
 <translation id="8719023831149562936">Negalima perduoti esamo skirtuko</translation>
 <translation id="8725066075913043281">Bandyti dar kartą</translation>
 <translation id="8730621377337864115">Atlikta</translation>
+<translation id="8737542153238017984">Išsaugotas puslapis nepasiekiamas neprisijungus. Saugykla beveik pilna.</translation>
 <translation id="8793430725658173476">Kopijuoti URL</translation>
 <translation id="8798099450830957504">Numatytasis</translation>
 <translation id="8820817407110198400">Žymės</translation>
@@ -553,6 +558,7 @@ Jei norite gauti naujas licencijas, prisijunkite prie interneto ir leiskite atsi
 <translation id="9133515669113036225">Iš naujo nustatyti įrenginio prisijungimo duomenis</translation>
 <translation id="9137013805542155359">Rodyti originalą</translation>
 <translation id="9156605176886108508">Nėra žymių aplankų</translation>
+<translation id="9192643434065497760">Įjunkite „Bluetooth“ <ph name="BEGIN_LINK" />įrenginio nustatymuose<ph name="END_LINK" />, kad leistumėte susieti.</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="932327136139879170">Kontaktinė namų informacija</translation>
 <translation id="938850635132480979">Klaida: <ph name="ERROR_CODE" /></translation>

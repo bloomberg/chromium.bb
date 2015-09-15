@@ -113,6 +113,7 @@
 <translation id="2718352093833049315">Tikai Wi-Fi</translation>
 <translation id="2748463065602559597">Jūs skatāt drošu Google Chrome lapu.</translation>
 <translation id="2770465223704140727">Noņemt no saraksta</translation>
+<translation id="278029852808208386">Netika atrasta neviena Bluetooth ierīce. <ph name="BEGIN_LINK" />Meklējiet vēlreiz<ph name="END_LINK" />.</translation>
 <translation id="2816165854387457183">Tika konstatēts, ka savienojums ir lēns.</translation>
 <translation id="2842985007712546952">Vecākmape</translation>
 <translation id="2870560284913253234">Vietne</translation>
@@ -190,6 +191,7 @@ Lai pielāgotu meklēšanas vienumu, nospiediet un turiet to. Lai veiktu precīz
 <translation id="4099578267706723511">Uzlabojiet pārlūku Chrome, uzņēmumam Google sūtot lietojuma statistiku un avāriju pārskatus.</translation>
 <translation id="411254640334432676">Lejupielāde neizdevās.</translation>
 <translation id="4113030288477039509">Pārvalda jūsu administrators</translation>
+<translation id="4116939199945053760"><ph name="SITE" /> vēlas <ph name="BEGIN_LINK" />izveidot savienojumu pārī ar<ph name="END_LINK" />:</translation>
 <translation id="4165986682804962316">Vietnes iestatījumi</translation>
 <translation id="4170011742729630528">Pakalpojums nav pieejams. Vēlāk mēģiniet vēlreiz.</translation>
 <translation id="4195643157523330669">Atvērt jaunā cilnē</translation>
@@ -203,6 +205,7 @@ Lai pielāgotu meklēšanas vienumu, nospiediet un turiet to. Lai veiktu precīz
 <translation id="4307992518367153382">Pamata</translation>
 <translation id="4333969446981951071">Izmantojot šo lietojumprogrammu, jūs piekrītat Chrome <ph name="BEGIN_LINK1" />pakalpojumu sniegšanas noteikumiem<ph name="END_LINK1" /> un <ph name="BEGIN_LINK2" />konfidencialitātes paziņojumam<ph name="END_LINK2" />.</translation>
 <translation id="4351244548802238354">Aizvērt dialoglodziņu</translation>
+<translation id="4357362091209756047">Vai jūsu ierīce netiek rādīta? <ph name="BEGIN_LINK1" />Meklējiet vēlreiz<ph name="END_LINK1" /> vai <ph name="BEGIN_LINK2" />saņemiet palīdzību<ph name="END_LINK2" />.</translation>
 <translation id="4376501731284077108">Netiek kontrolēts</translation>
 <translation id="4378154925671717803">Tālrunis</translation>
 <translation id="4412992751769744546">Atļaut trešo pušu sīkfailus</translation>
@@ -290,6 +293,7 @@ Vienkārši atveriet pārlūku Chrome savā datorā, atveriet izvēlni un atlasi
 <translation id="5626134646977739690">Nosaukums:</translation>
 <translation id="5626370437647899551">Google konta pievienošana</translation>
 <translation id="563535393368633106">Jautāt pirms piekļūšanas (ieteicams)</translation>
+<translation id="5643573370311148178"><ph name="BEGIN_LINK" />Saņemiet palīdzību<ph name="END_LINK" />.</translation>
 <translation id="5646376287012673985">Atrašanās vieta</translation>
 <translation id="5659593005791499971">E-pasts</translation>
 <translation id="5668404140385795438">Ignorēt vietnes pieprasījumu, lai novērstu tuvināšanu</translation>
@@ -310,6 +314,7 @@ Lietojuma statistikas datos tiek ietverta tāda informācija kā preferences, kl
 <translation id="5771382037724542929">Vai vēlaties aizstāt esošo failu <ph name="FILE_NAME" /> direktorijā “<ph name="DIRECTORY_NAME" />”?</translation>
 <translation id="5804241973901381774">Atļaujas</translation>
 <translation id="5806294296882899667">Noklusējuma iestatījumu ielādes kļūda</translation>
+<translation id="5817918615728894473">Savienot pārī</translation>
 <translation id="5832934273103296195">Izvērsts — noklikšķiniet, lai sakļautu</translation>
 <translation id="583891442612896534">Chrome nevar sasniegt Google serverus, lai veiktu datu saspiešanu. Datu lietojuma samazinājums var būt ierobežots.</translation>
 <translation id="5860033963881614850">Izsl.</translation>
@@ -332,7 +337,6 @@ Piemēram, dažas vietnes, reaģējot uz šo pieprasījumu, var rādīt jums tā
 <translation id="6040143037577758943">Aizvērt</translation>
 <translation id="6042308850641462728">Vairāk</translation>
 <translation id="605721222689873409">GG</translation>
-<translation id="6060567974409584397">Pieskarieties, lai atgrieztos cilnē</translation>
 <translation id="6066720739967032277">Skatiet cilnes ar citām jaunākajām lietotnēm tālruņa ekrānā Pārskats. Tās var pārvaldīt lapā <ph name="BEGIN_LINK" />Iestatījumi<ph name="END_LINK" />.</translation>
 <translation id="6075798973483050474">Sākumlapas rediģēšana</translation>
 <translation id="6108923351542677676">Notiek iestatīšana...</translation>
@@ -380,6 +384,7 @@ Piemēram, dažas vietnes, reaģējot uz šo pieprasījumu, var rādīt jums tā
 <translation id="6698801883190606802">Pārvaldīt sinhronizētos datus</translation>
 <translation id="6699351163704950317">Visas saglabātās lapas</translation>
 <translation id="6710213216561001401">Iepriekšējais</translation>
+<translation id="6720988912937197322">Saglabātā lapa nav pieejama bezsaistē.</translation>
 <translation id="6738867403308150051">Notiek lejupielāde…</translation>
 <translation id="6770414673596662518">Chrome sistēma Droša pārlūkošana tiks arī izmantota, lai noteiktu ļaunprātīgas lapas un pasargātu jūs no pikšķerēšanas, ļaunprātīgas programmatūras un kaitīgu failu lejupielādes.</translation>
 <translation id="6784675033504223784">Meklējiet vaicājumu “<ph name="SEARCH_TERM" />”</translation>
@@ -393,7 +398,6 @@ Piemēram, dažas vietnes, reaģējot uz šo pieprasījumu, var rādīt jums tā
 <translation id="6850830437481525139">Aizvērtas <ph name="TAB_COUNT" /> cilnes</translation>
 <translation id="6857778194843072568">Sūtīt tikai Wi-Fi tīklā</translation>
 <translation id="6868088497967843822">Pierakstieties, lai jūsu grāmatzīmes, vēsture, paroles un citi iestatījumi būtu pieejami visās jūsu ierīcēs.</translation>
-<translation id="6935223586406308151">Domēns <ph name="DOMAIN_NAME" /> tika pievienots jūsu sākuma ekrānam</translation>
 <translation id="6945221475159498467">Atlasīt</translation>
 <translation id="6963766334940102469">Dzēst grāmatzīmes</translation>
 <translation id="6964496835063002391">Pievienojiet kontu</translation>
@@ -522,6 +526,7 @@ Lai iegūtu jaunas licences, izveidojiet savienojumu ar internetu un atskaņojie
 <translation id="8719023831149562936">Nevar kopīgot šo cilni, izmantojot Beam.</translation>
 <translation id="8725066075913043281">Mēģināt vēlreiz</translation>
 <translation id="8730621377337864115">Gatavs</translation>
+<translation id="8737542153238017984">Saglabātā lapa nav pieejama bezsaistē. Krātuvē ir maz vietas.</translation>
 <translation id="8793430725658173476">Kopēt URL</translation>
 <translation id="8798099450830957504">Noklusējums</translation>
 <translation id="8820817407110198400">Grāmatzīmes</translation>
@@ -552,6 +557,7 @@ Lai iegūtu jaunas licences, izveidojiet savienojumu ar internetu un atskaņojie
 <translation id="9133515669113036225">Atiestatīt ierīces akreditācijas datus</translation>
 <translation id="9137013805542155359">Rādīt oriģinālo</translation>
 <translation id="9156605176886108508">Nav grāmatzīmju mapju</translation>
+<translation id="9192643434065497760">Lai atļautu savienošanu pārī, <ph name="BEGIN_LINK" />ierīces iestatījumos<ph name="END_LINK" /> ieslēdziet Bluetooth savienojumu.</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="932327136139879170">Sākums</translation>
 <translation id="938850635132480979">Kļūda: <ph name="ERROR_CODE" /></translation>

@@ -597,6 +597,7 @@ Jos tätä asetusta ei ole määritetty, kaikentyyppisiä sovelluksia ja laajenn
 <translation id="4442582539341804154">Ota lukitus käyttöön, kun laite on käyttämättömänä tai virransäästötilassa</translation>
 <translation id="4445684791305970001">Poistaa käytöstä kehittäjän työkalut sekä JavaScript-konsolin. Jos otat asetuksen käyttöön, kehittäjän työkaluja ei voi käyttää eikä verkkosivustojen elementtejä enää voi tarkastaa. Kehittäjän työkalut tai JavaScript-konsolin avaavat pikanäppäimet ja valikkokohteet poistetaan käytöstä. Jos poistat asetuksen käytöstä tai et määritä sitä, kehittäjän työkaluja ja JavaScript-konsolia voi käyttää.</translation>
 <translation id="4467952432486360968">Estä kolmannen osapuolen evästeet</translation>
+<translation id="4474167089968829729">Ota käyttöön salasanojen tallentaminen salasanojen hallintaohjelmaan</translation>
 <translation id="4480694116501920047">Pakota SafeSearch käyttöön</translation>
 <translation id="4482640907922304445">Näyttää Etusivu-painikkeen tuotteen <ph name="PRODUCT_NAME" /> työkalurivissä. Jos otat tämän asetuksen käyttöön, Etusivu-painike näkyy aina. Jos poistat asetuksen käytöstä, Etusivu-painiketta ei näytetä. Valittuasi asetuksen käyttäjät eivät voi muuttaa tai ohittaa sitä tuotteessa <ph name="PRODUCT_NAME" />. Jos tätä käytäntöä ei ole määritetty, käyttäjä voi valita, haluaako hän Etusivu-painikkeen näkyviin työkalurivissä.</translation>
 <translation id="4492287494009043413">Estä kuvakaappauksien ottaminen</translation>
@@ -994,6 +995,17 @@ Jos tämä asetus ei ole käytössä tai jos sen arvo on false, tulostuskomento 
           Tämä käytäntö on valinnainen. Jos sitä ei ole määritetty, hakupyyntö lähetetään GET-metodin avulla.
 
           Käytäntö on voimassa vain, jos käytäntö DefaultSearchProviderEnabled on käytössä.</translation>
+<translation id="6365608006609079612">
+          Jos tämä asetus on käytössä, käyttäjät voivat määrittää kohteen <ph name="PRODUCT_NAME" /> muistamaan
+          salasanoja ja täyttämään ne automaattisesti seuraavan kerran, kun käyttäjä
+          kirjautuu sivustolle.
+   
+          Jos tämä asetus on pois käytöstä, käyttäjät eivät voi tallentaa uusia 
+          salasanoja, mutta he voivat silti käyttää aiemmin tallennettuja salasanoja.
+
+          Jos tämä käytäntö otetaan käyttöön tai poistetaan käytöstä, käyttäjät eivät voi
+          muuttaa tai ohittaa sitä tuotteessa <ph name="PRODUCT_NAME" />. Jos tätä käytäntöä ei ole määritetty,
+          salasanojen tallentaminen on sallittua (mutta käyttäjä voi poistaa sen käytöstä).</translation>
 <translation id="6367755442345892511">Onko julkaisuversio käyttäjän asetettavissa</translation>
 <translation id="6368011194414932347">Määritä etusivun URL-osoite</translation>
 <translation id="6368403635025849609">Salli JavaScript näissä sivustoissa</translation>

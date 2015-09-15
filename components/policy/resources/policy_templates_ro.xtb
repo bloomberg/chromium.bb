@@ -611,6 +611,7 @@
 <translation id="4442582539341804154">Activați blocarea când dispozitivul este inactiv sau suspendat</translation>
 <translation id="4445684791305970001">Dezactivează Instrumentele pentru dezvoltatori și consola JavaScript. Dacă activați această setare, Instrumentele pentru dezvoltatori nu pot fi accesate, iar elementele site-urilor web nu mai pot fi inspectate. Toate comenzile rapide de la tastatură și toate intrările din meniuri sau din meniurile contextuale pentru deschiderea Instrumentelor pentru dezvoltatori sau a consolei JavaScript vor fi dezactivate. Dacă dezactivați această opțiune sau nu o setați, utilizatorul va putea să folosească Instrumentele pentru dezvoltatori și consola JavaScript.</translation>
 <translation id="4467952432486360968">Blochează cookie-urile terță parte</translation>
+<translation id="4474167089968829729">Activează salvarea parolelor în managerul de parole</translation>
 <translation id="4480694116501920047">Impuneți Căutarea sigură</translation>
 <translation id="4482640907922304445">Afișează butonul Pagină de pornire în bara de instrumente din <ph name="PRODUCT_NAME" />. Dacă activați această setare, butonul Pagina de pornire este întotdeauna afișat. Dacă dezactivați această setare, butonul Pagina de pornire nu este afișat. Dacă activați sau dezactivați această setare, utilizatorii nu o pot modifica sau anula în <ph name="PRODUCT_NAME" />. Dacă lăsați această politică nesetată, acest lucru va permite utilizatorului să aleagă dacă să afișeze sau nu butonul Pagină de pornire.</translation>
 <translation id="4492287494009043413">Dezactivați capturile de ecran</translation>
@@ -1012,6 +1013,17 @@
           Această politică este opțională. Dacă nu este setată, solicitarea de căutare va fi trimisă prin metoda GET.
 
           Această politică este urmată numai dacă este activată politica „DefaultSearchProviderEnabled”.</translation>
+<translation id="6365608006609079612">
+          Dacă această setare este activată, utilizatorii pot configura <ph name="PRODUCT_NAME" /> să memoreze parolele
+          și să le ofere automat data viitoare când se conectează la un site.
+
+          Dacă această setare este dezactivată, utilizatorii nu pot salva noile parole, dar
+          pot folosi în continuare parolele care au fost salvate anterior.
+
+          Dacă această politică este activată sau dezactivată, utilizatorii nu o pot modifica sau anula
+          în <ph name="PRODUCT_NAME" />. Dacă această politică
+          nu este setată, este permisă salvarea parolelor (dar nu poate fi dezactivată
+          de utilizator).</translation>
 <translation id="6367755442345892511">Această politică stabilește dacă utilizatorul poate configura canalul de lansare</translation>
 <translation id="6368011194414932347">Configurează adresa URL a paginii de pornire</translation>
 <translation id="6368403635025849609">Permite JavaScript pe aceste site-uri</translation>

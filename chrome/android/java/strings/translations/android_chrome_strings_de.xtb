@@ -113,6 +113,7 @@
 <translation id="2718352093833049315">Nur bei WLAN</translation>
 <translation id="2748463065602559597">Dies ist eine sichere Google Chrome-Seite.</translation>
 <translation id="2770465223704140727">Aus Liste entfernen</translation>
+<translation id="278029852808208386">Keine Bluetooth-Geräte gefunden. <ph name="BEGIN_LINK" />Wiederholen Sie die Suche.<ph name="END_LINK" /></translation>
 <translation id="2816165854387457183">Langsame Verbindung gefunden</translation>
 <translation id="2842985007712546952">Übergeordneter Ordner</translation>
 <translation id="2870560284913253234">Website</translation>
@@ -190,6 +191,7 @@ Zur Anpassung des Suchbegriffs drücken Sie einige Sekunden lang auf den entspre
 <translation id="4099578267706723511">Nutzungsstatistiken und Absturzberichte zur Verbesserung von Chrome an Google senden</translation>
 <translation id="411254640334432676">Fehler beim Download</translation>
 <translation id="4113030288477039509">Von Ihrem Administrator verwaltet</translation>
+<translation id="4116939199945053760"><ph name="SITE" /> möchte <ph name="BEGIN_LINK" />ein Pairing durchführen mit<ph name="END_LINK" />:</translation>
 <translation id="4165986682804962316">Website-Einstellungen</translation>
 <translation id="4170011742729630528">Der Dienst ist momentan nicht verfügbar. Bitte versuchen Sie es später erneut.</translation>
 <translation id="4195643157523330669">In neuem Tab öffnen</translation>
@@ -203,6 +205,7 @@ Zur Anpassung des Suchbegriffs drücken Sie einige Sekunden lang auf den entspre
 <translation id="4307992518367153382">Grundeinstellungen</translation>
 <translation id="4333969446981951071">Durch die Verwendung dieser App stimmen Sie den <ph name="BEGIN_LINK1" />Nutzungsbedingungen<ph name="END_LINK1" /> und <ph name="BEGIN_LINK2" />Datenschutzhinweisen<ph name="END_LINK2" /> von Chrome zu.</translation>
 <translation id="4351244548802238354">Dialogfeld schließen</translation>
+<translation id="4357362091209756047">Ihr Gerät ist nicht zu sehen? <ph name="BEGIN_LINK1" />Wiederholen Sie die Suche<ph name="END_LINK1" /> oder <ph name="BEGIN_LINK2" />rufen Sie die Hilfe auf<ph name="END_LINK2" />.</translation>
 <translation id="4376501731284077108">Nicht kontrolliert</translation>
 <translation id="4378154925671717803">Telefon</translation>
 <translation id="4412992751769744546">Cookies Dritter zulassen</translation>
@@ -290,6 +293,7 @@ Zur Anpassung des Suchbegriffs drücken Sie einige Sekunden lang auf den entspre
 <translation id="5626134646977739690">Name:</translation>
 <translation id="5626370437647899551">Google-Konto hinzufügen</translation>
 <translation id="563535393368633106">Vor dem Zugriff nachfragen (empfohlen)</translation>
+<translation id="5643573370311148178"><ph name="BEGIN_LINK" />Hilfe<ph name="END_LINK" />.</translation>
 <translation id="5646376287012673985">Standort</translation>
 <translation id="5659593005791499971">E-Mail-Adresse</translation>
 <translation id="5668404140385795438">Website-Anfrage zum Verhindern des Vergrößerns übergehen</translation>
@@ -310,6 +314,7 @@ Sie sind jedoch nicht unsichtbar. Der Inkognitomodus verhindert nicht, dass Info
 <translation id="5771382037724542929">Möchten Sie die vorhandene Datei "<ph name="FILE_NAME" />" in "<ph name="DIRECTORY_NAME" />" wirklich ersetzen?</translation>
 <translation id="5804241973901381774">Berechtigungen</translation>
 <translation id="5806294296882899667">Fehler beim Laden des Standardordners</translation>
+<translation id="5817918615728894473">Pairing durchführen</translation>
 <translation id="5832934273103296195">Maximiert – zum Minimieren klicken</translation>
 <translation id="583891442612896534">Chrome kann die Google-Server für die Datenkomprimierung nicht erreichen. Ihre Einsparungen bei der Datennutzung können begrenzt sein.</translation>
 <translation id="5860033963881614850">Aus</translation>
@@ -332,7 +337,6 @@ Einige Websites schalten möglicherweise Anzeigen, deren Auswahl nicht darauf ba
 <translation id="6040143037577758943">Schließen</translation>
 <translation id="6042308850641462728">Mehr</translation>
 <translation id="605721222689873409">JJ</translation>
-<translation id="6060567974409584397">Tippen, um zum Tab zurückzukehren</translation>
 <translation id="6066720739967032277">Sehen Sie auf dem Übersichtsbildschirm Ihres Smartphones Ihre Tabs sowie andere kürzlich verwendete Apps. Sie können diese Funktion in den <ph name="BEGIN_LINK" />Einstellungen<ph name="END_LINK" /> anpassen.</translation>
 <translation id="6075798973483050474">Startseite bearbeiten</translation>
 <translation id="6108923351542677676">Einrichtung läuft...</translation>
@@ -380,6 +384,7 @@ Einige Websites schalten möglicherweise Anzeigen, deren Auswahl nicht darauf ba
 <translation id="6698801883190606802">Synchronisierte Daten verwalten</translation>
 <translation id="6699351163704950317">Alle gespeicherten Seiten</translation>
 <translation id="6710213216561001401">Zurück</translation>
+<translation id="6720988912937197322">Gespeicherte Seite nicht offline verfügbar</translation>
 <translation id="6738867403308150051">Wird heruntergeladen...</translation>
 <translation id="6770414673596662518">Das Safe Browsing-System von Chrome erkennt außerdem schädliche Seiten und schützt Sie vor Phishing, Malware und schädlichen Downloads.</translation>
 <translation id="6784675033504223784">Nach "<ph name="SEARCH_TERM" />" suchen</translation>
@@ -393,7 +398,6 @@ Einige Websites schalten möglicherweise Anzeigen, deren Auswahl nicht darauf ba
 <translation id="6850830437481525139"><ph name="TAB_COUNT" /> Tabs geschlossen</translation>
 <translation id="6857778194843072568">Nur bei WLAN senden</translation>
 <translation id="6868088497967843822">Melden Sie sich an, um Ihre Lesezeichen, Ihren Verlauf, Ihre Passwörter und andere Einstellungen auf allen Ihren Geräten aufzurufen.</translation>
-<translation id="6935223586406308151"><ph name="DOMAIN_NAME" /> wurde zum Startbildschirm hinzugefügt.</translation>
 <translation id="6945221475159498467">Auswählen</translation>
 <translation id="6963766334940102469">Lesezeichen löschen</translation>
 <translation id="6964496835063002391">Konto hinzufügen</translation>
@@ -522,6 +526,7 @@ Um neue Lizenzen zu erwerben, stellen Sie eine Internetverbindung her und spiele
 <translation id="8719023831149562936">Aktueller Tab kann nicht gebeamt werden.</translation>
 <translation id="8725066075913043281">Erneut versuchen</translation>
 <translation id="8730621377337864115">Fertig</translation>
+<translation id="8737542153238017984">Gespeicherte Seite nicht offline verfügbar. Speicher fast voll</translation>
 <translation id="8793430725658173476">URL kopieren</translation>
 <translation id="8798099450830957504">Standardeinstellung</translation>
 <translation id="8820817407110198400">Lesezeichen</translation>
@@ -552,6 +557,7 @@ Um neue Lizenzen zu erwerben, stellen Sie eine Internetverbindung her und spiele
 <translation id="9133515669113036225">Anmeldedaten des Geräts zurücksetzen</translation>
 <translation id="9137013805542155359">Original anzeigen</translation>
 <translation id="9156605176886108508">Keine Lesezeichenordner</translation>
+<translation id="9192643434065497760">Aktivieren Sie Bluetooth in den <ph name="BEGIN_LINK" />Geräteeinstellungen<ph name="END_LINK" />, um ein Pairing zuzulassen.</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="932327136139879170">Privat</translation>
 <translation id="938850635132480979">Fehler: <ph name="ERROR_CODE" /></translation>

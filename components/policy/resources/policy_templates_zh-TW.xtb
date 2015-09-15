@@ -598,6 +598,7 @@
 <translation id="4442582539341804154">裝置閒置或暫停時啟用鎖定</translation>
 <translation id="4445684791305970001">停用「開發人員工具」和 JavaScript 控制台。如果您啟用這項設定，系統就無法存取「開發人員工具」且無法查看網站元素。此外，也會停用任何用來開啟「開發人員工具」和 JavaScript 控制台的鍵盤快速鍵、選單或內容選單項目。如果您停用或未設定這個選項，使用者即可使用「開發人員工具」和 JavaScript 控制台。</translation>
 <translation id="4467952432486360968">封鎖第三方 Cookie</translation>
+<translation id="4474167089968829729">允許將密碼儲存到密碼管理員</translation>
 <translation id="4480694116501920047">強制啟用安全搜尋服務</translation>
 <translation id="4482640907922304445">顯示「<ph name="PRODUCT_NAME" />」工具列上的 [首頁] 按鈕。如果您啟用這項設定，系統會顯示 [首頁] 按鈕。如果您停用這項設定，系統就不會顯示 [首頁] 按鈕。不論您啟用或停用這項設定，使用者都無法變更或覆寫「<ph name="PRODUCT_NAME" />」中的這項設定。如果您不設定這項政策，使用者就能選擇是否要顯示 [首頁] 按鈕。</translation>
 <translation id="4492287494009043413">停用螢幕畫面擷取功能</translation>
@@ -997,6 +998,17 @@
           這項政策是選擇性的，如果未設定，系統將使用 GET 方法傳送搜尋要求。
 
           只有在啟用「DefaultSearchProviderEnabled」時，系統才會遵循這項政策。</translation>
+<translation id="6365608006609079612">
+          啟用這項設定後，使用者即可讓 <ph name="PRODUCT_NAME" /> 記住密碼，
+          並且在使用者下次登入網站時提供密碼。
+
+          停用這項設定後，使用者將無法儲存新密碼，
+          但仍可使用先前儲存的密碼。
+
+          啟用或停用這項設定後，使用者將無法
+          在 <ph name="PRODUCT_NAME" /> 中變更或覆寫這項設定。
+          如果未設定這項政策，系統就會允許儲存密碼 (但使用者可以關閉
+          密碼儲存功能)。</translation>
 <translation id="6367755442345892511">是否允許使用者設定發佈頻道</translation>
 <translation id="6368011194414932347">設定首頁網址</translation>
 <translation id="6368403635025849609">允許這些網站的 JavaScript</translation>

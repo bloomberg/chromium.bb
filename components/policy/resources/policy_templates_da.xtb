@@ -607,8 +607,9 @@ Hvis denne indstilling ikke er angivet, vil <ph name="PRODUCT_NAME" /> tillade b
 <translation id="4442582539341804154">Aktivér låsen, hvis enheden bliver inaktiv eller suspenderes</translation>
 <translation id="4445684791305970001">Deaktiverer udviklerværktøjerne og JavaScript-konsollen. Hvis du aktiverer denne indstilling, kan man ikke få adgang til udviklerværktøjerne, og webstedselementer kan ikke inspiceres. Alle tastaturgenveje og menuer eller genvejsmenuer, der åbner udviklerværktøjerne eller JavaScript-konsollen, vil blive deaktiveret. Hvis du deaktiverer denne indstilling eller ikke angiver den, tillades brugen af udviklerværktøjer og JavaScript-konsollen.</translation>
 <translation id="4467952432486360968">Bloker cookies fra tredjeparter</translation>
+<translation id="4474167089968829729">Aktivér lagring af adgangskoder i adgangskodemanageren</translation>
 <translation id="4480694116501920047">Gennemtving Beskyttet Søgning</translation>
-<translation id="4482640907922304445">Viser knappen Start på værktøjslinjen i <ph name="PRODUCT_NAME" />. Hvis du aktiverer denne indstilling, vises knappen Start altid. Hvis du deaktiverer denne indstilling, vises knappen Start aldrig. Hvis du aktiverer eller deaktiverer denne indstilling, kan brugerne ikke ændre eller tilsidesætte denne indstilling i <ph name="PRODUCT_NAME" />. Hvis denne politik ikke angives, kan brugeren vælge, om knappen Start skal vises.</translation>
+<translation id="4482640907922304445">Viser knappen Startside på værktøjslinjen i <ph name="PRODUCT_NAME" />. Hvis du aktiverer denne indstilling, vises knappen Startside altid. Hvis du deaktiverer denne indstilling, vises knappen Startside aldrig. Hvis du aktiverer eller deaktiverer denne indstilling, kan brugerne ikke ændre eller tilsidesætte denne indstilling i <ph name="PRODUCT_NAME" />. Hvis denne politik ikke angives, kan brugeren vælge, om knappen Startside skal vises.</translation>
 <translation id="4492287494009043413">Deaktiver skærmbilleder</translation>
 <translation id="450537894712826981">Konfigurerer cachestørrelsen, som <ph name="PRODUCT_NAME" /> vil bruge til at lagre cachelagrede filer på disken.
 
@@ -1012,6 +1013,12 @@ Hvis denne politik slås fra eller indstilles til False (falsk), er udviklertils
           Denne politik er valgfri. Hvis den ikke angives, sendes der søgeanmodninger ved hjælp af GET-metoden.
 
           Denne politik respekteres kun, hvis politikken "DefaultSearchProviderEnabled" er aktiveret.</translation>
+<translation id="6365608006609079612">
+          Hvis denne indstilling er aktiveret, kan brugerne få <ph name="PRODUCT_NAME" /> til at huske adgangskoderne og angive dem automatisk, næste gang de logger ind på et website.
+
+          Hvis denne indstilling er deaktiveret, kan brugerne ikke gemme nye adgangskoder, men de kan stadig bruge adgangskoder, der allerede er gemt.
+
+          Hvis denne politik er aktiveret eller deaktiveret, kan brugerne ikke ændre eller tilsidesætte den i <ph name="PRODUCT_NAME" />. Hvis denne politik ikke angives, kan adgangskoder gemmes (men brugeren kan slå det fra).</translation>
 <translation id="6367755442345892511">Om udgivelseskanalen skal konfigureres af brugeren</translation>
 <translation id="6368011194414932347">Konfigurer webadressen for startsiden</translation>
 <translation id="6368403635025849609">Tillad JavaScript på disse websites</translation>

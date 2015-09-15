@@ -593,6 +593,7 @@
 <translation id="4442582539341804154">Omogući zaključavanje kada uređaj prijeđe u stanje mirovanja ili se isključi</translation>
 <translation id="4445684791305970001">Onemogućuje Alate za razvojne programere i konzolu JavaScriptu. Ako omogućite ovu postavku, više neće biti moguće pristupiti Alatima za razvojne programere i više se neće moći provjeravati elementi web-lokacija. Bit će onemogućeni svi tipkovnički prečaci i stavke izbornika ili kontekstnih izbornika za otvaranje Alata za razvojne programere ili konzole JavaScriptu. Ako se ova opcija onemogući ili ne postavi, bit će dopuštena upotreba Alata za razvojne programere i konzole JavaScripta.</translation>
 <translation id="4467952432486360968">Blokiraj kolačiće trećih strana</translation>
+<translation id="4474167089968829729">Omogući spremanje zaporki u upravitelj zaporki</translation>
 <translation id="4480694116501920047">Nametni Sigurno pretraživanje</translation>
 <translation id="4482640907922304445">Pokazuje gumb Početna na alatnoj traci proizvoda <ph name="PRODUCT_NAME" />. Ako omogućite ovu postavku, gumb Početna prikazivat će se uvijek. Ako onemogućite ovu postavku, gumb Početna neće se nikad prikazivati. Ako omogućite ili onemogućite ovu postavku, korisnici neće moći promijeniti ni poništiti ovu postavku u proizvodu <ph name="PRODUCT_NAME" />. Ako ovo pravilo nije postavljeno, korisnik će moći odabrati želi li da se prikazuje gumb Početna.</translation>
 <translation id="4492287494009043413">Onemogući izradu snimki zaslona</translation>
@@ -994,6 +995,16 @@
           To je pravilo izborno. Ako nije postavljeno, poslat će se zahtjev za pretraživanje pomoću GET metode.
 
           To se pravilo poštuje samo ako je omogućeno pravilo "DefaultSearchProviderEnabled".</translation>
+<translation id="6365608006609079612">
+          Ako je ta postavka omogućena, <ph name="PRODUCT_NAME" /> može korisnicima zapamtiti zaporke
+          i automatski ih pružiti prilikom sljedeće prijave na web-lokaciju.
+
+          Ako je ta postavka onemogućena, korisnici ne mogu spremati nove zaporke,
+          no mogu upotrebljavati zaporke koje su ranije spremljene.
+
+          Ako je to pravilo omogućeno ili onemogućeno, korisnici ga ne mogu mijenjati
+          niti nadjačavati na usluzi <ph name="PRODUCT_NAME" />. Ako se to
+          pravilo ne postavi, zaporke se mogu spremati (no korisnik to može isključiti).</translation>
 <translation id="6367755442345892511">Treba li korisnik imati mogućnost za konfiguriranje kanala izdanja</translation>
 <translation id="6368011194414932347">Konfiguriraj URL početne stranice</translation>
 <translation id="6368403635025849609">Omogući JavaScript na ovim web-lokacijama</translation>

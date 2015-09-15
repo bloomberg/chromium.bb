@@ -595,6 +595,7 @@ Si esta política no se configura, se utilizará 'Permitir complementos' y el us
 <translation id="4442582539341804154">Habilitar el bloqueo cuando el dispositivo esté inactivo o suspendido</translation>
 <translation id="4445684791305970001">Inhabilita las herramientas del programador y la consola de JavaScript. Si se habilita esta configuración, no se podrá acceder a las herramientas del programador y los elementos del sitio web ya no se podrán inspeccionar. Se inhabilitarán todos los accesos directos del teclado y todas las entradas de menú o de menú contextual para abrir las herramientas del programador o la consola de JavaScript. Si se inhabilita o no se configura esta opción, el usuario podrá usar las herramientas del programador y la consola de JavaScript.</translation>
 <translation id="4467952432486360968">Bloquear cookies de terceros</translation>
+<translation id="4474167089968829729">Habilitar el guardado de contraseñas en el administrador de contraseñas</translation>
 <translation id="4480694116501920047">Forzar SafeSearch</translation>
 <translation id="4482640907922304445">Muestra el botón de la Página principal en la barra de herramientas de <ph name="PRODUCT_NAME" />. Si se habilita esta configuración, el botón Página principal se mostrará siempre. Si se inhabilita esta configuración, el botón Página principal no se mostrará nunca. Si se habilita o inhabilita esta configuración, los usuarios no podrán cambiarla ni anularla en <ph name="PRODUCT_NAME" />. Si esta política no se configura, el usuario podrá elegir si desea mostrar el botón.</translation>
 <translation id="4492287494009043413">Inhabilitar la toma de capturas de pantalla</translation>
@@ -991,6 +992,15 @@ Si esta política no se configura, se utilizará 'Permitir complementos' y el us
           Esta política es opcional. Si no se establece, la solicitud de búsqueda se enviará mediante el método GET.
 
           Esta política solo se respeta si se habilita la política "DefaultSearchProviderEnabled".</translation>
+<translation id="6365608006609079612">
+          Si esta configuración está habilitada, los usuarios pueden hacer que<ph name="PRODUCT_NAME" />memorice contraseñas
+y se las proporcione automáticamente la próxima vez que inicien sesión en un sitio.
+Si esta configuración está inhabilitada, los usuarios no pueden guardar contraseñas nuevas, pero
+pueden usar las contraseñas que hayan guardado anteriormente.
+Si esta política está habilitada o inhabilitada, los usuarios no pueden cambiarla ni anularla
+en <ph name="PRODUCT_NAME" />. Si esta
+política no está establecida, se permite el guardado de contraseñas (pero el usuario puede
+desactivarlo).</translation>
 <translation id="6367755442345892511">Configuración del canal de versiones por parte del usuario</translation>
 <translation id="6368011194414932347">Configurar la dirección URL de la página principal</translation>
 <translation id="6368403635025849609">Permitir JavaScript en estos sitios</translation>

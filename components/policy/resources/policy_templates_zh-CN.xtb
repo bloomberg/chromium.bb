@@ -596,6 +596,7 @@
 <translation id="4442582539341804154">当设备进入待机或暂停状态时启用锁定</translation>
 <translation id="4445684791305970001">停用开发者工具和 JavaScript 控制台。如果您启用了此设置，用户就无法再访问开发者工具和查看网站元素了。用于启动开发者工具和 JavaScript 控制台的任何键盘快捷键以及任何菜单或右键菜单条目都会停用。如果停用或未设置此选项，用户就可以使用开发者工具和 JavaScript 控制台。</translation>
 <translation id="4467952432486360968">阻止第三方 Cookie</translation>
+<translation id="4474167089968829729">允许将密码保存到密码管理器</translation>
 <translation id="4480694116501920047">强制使用安全搜索</translation>
 <translation id="4482640907922304445">在 <ph name="PRODUCT_NAME" />的工具栏上显示“主页”按钮。如果您启用了此设置，则会始终显示“主页”按钮。如果您停用了此设置，则从不显示“主页”按钮。如果您启用或停用了此设置，用户就无法在 <ph name="PRODUCT_NAME" />中更改或替换此设置。如果未设置此政策，用户就可以选择是否显示“主页”按钮。</translation>
 <translation id="4492287494009043413">停用截取屏幕截图功能</translation>
@@ -992,6 +993,12 @@
           此为可选政策。如果未设置此政策，系统将使用 GET 方法发送搜索请求。
 
           此政策只在启用了“DefaultSearchProviderEnabled”政策的前提下才会生效。</translation>
+<translation id="6365608006609079612">
+          此设置处于启用状态时，用户可以让<ph name="PRODUCT_NAME" />记住密码，并让该产品在其下次登录相应网站时自动提供密码。
+
+          此设置处于停用状态时，用户将无法保存新密码，但仍可以使用之前保存的密码。
+
+          此政策处于启用或停用状态时，用户将无法在<ph name="PRODUCT_NAME" />中更改或覆盖它。如果此政策未设置，则允许保存密码（不过用户可以停用密码保存功能）。</translation>
 <translation id="6367755442345892511">是否允许用户配置发布版</translation>
 <translation id="6368011194414932347">配置主页网址</translation>
 <translation id="6368403635025849609">在这些网站上允许 JavaScript</translation>

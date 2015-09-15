@@ -713,6 +713,7 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
 
       Neleidus šios parinkties ar jos nenustačius, naudotojas (-a) galės naudoti kūrėjo įrankius ir „JavaScript“ konsolę.</translation>
 <translation id="4467952432486360968">Blokuoti trečiosios šalies slapukus</translation>
+<translation id="4474167089968829729">Įgalinti slaptažodžių saugojimą slaptažodžių tvarkytuvėje</translation>
 <translation id="4480694116501920047">Priverstinai vykdyti saugią paiešką</translation>
 <translation id="4482640907922304445">Rodomas pagrindinio puslapio mygtukas „<ph name="PRODUCT_NAME" />“ įrankių juostoje.
 
@@ -1171,6 +1172,17 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
           Ši politika pasirenkama. Jei nenustatyta, paieškos užklausa siunčiama naudojant GET metodą.
 
           Šios politikos laikomasi, tik jei įgalinta politika „DefaultSearchProviderEnabled“.</translation>
+<translation id="6365608006609079612">
+          Įgalinus šį nustatymą, naudotojai gali nustatyti, kad „<ph name="PRODUCT_NAME" />“ įsimintų slaptažodžius
+          ir pateiktų juos automatiškai kitą kartą prisijungiant prie svetainės.
+
+          Jei neleisite šio nustatymo, naudotojai negalės išsaugoti naujų slaptažodžių, bet
+          vis tiek galės naudoti anksčiau išsaugotus slaptažodžius.
+
+          Jei įgalinsite šią politiką arba jos neleisite, naudotojai negalės jos pakeisti ar perrašyti
+          naudodami „<ph name="PRODUCT_NAME" />“. Nenustačius
+          šios politikos, slaptažodžių saugojimo funkcija leidžiama (bet naudotojas ją gali
+          išjungti).</translation>
 <translation id="6367755442345892511">Ar naudotojui (-ai) turėtų būti leidžiama konfigūruoti paleidimo kanalą</translation>
 <translation id="6368011194414932347">Konfigūruoti pagrindinio puslapio URL</translation>
 <translation id="6368403635025849609">Leisti „JavaScript“ šiose svetainėse</translation>

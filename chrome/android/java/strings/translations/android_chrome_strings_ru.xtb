@@ -113,6 +113,7 @@
 <translation id="2718352093833049315">Только Wi-Fi</translation>
 <translation id="2748463065602559597">Вы просматриваете безопасную страницу Google Chrome.</translation>
 <translation id="2770465223704140727">Удалить из списка</translation>
+<translation id="278029852808208386">Устройства Bluetooth не обнаружены. <ph name="BEGIN_LINK" />Повторите попытку<ph name="END_LINK" />.</translation>
 <translation id="2816165854387457183">Низкая скорость сетевого подключения.</translation>
 <translation id="2842985007712546952">Родительская папка</translation>
 <translation id="2870560284913253234">Сайт</translation>
@@ -156,7 +157,8 @@
 Если вы войдете в аккаунт, администратор домена сможет управлять вашим профилем Chrome. Ваши данные будут связаны с этим аккаунтом. Если вы из него выйдете, все данные Chrome будут удалены с устройства.</translation>
 <translation id="3410346880900521918">Если эта проблема возникает часто, узнайте, <ph name="BEGIN_LINK" />как ее решить<ph name="END_LINK" />.</translation>
 <translation id="3414952576877147120">Размер:</translation>
-<translation id="3455798674391346847">Экономьте трафик – разрешите Google оптимизировать посещаемые страницы. Сайты, открытые через HTTPS или в режиме инкогнито, не сжимаются.</translation>
+<translation id="3455798674391346847">Экономьте трафик – разрешите Google оптимизировать посещаемые страницы. Сайты, открытые через HTTPS или в режиме инкогнито, не оптимизируются. Более того, Google никогда не узнает, что вы на них заходили.
+</translation>
 <translation id="346339498574870680">Скопировать URL изображения</translation>
 <translation id="3485544713029068372">Smart Lock для паролей</translation>
 <translation id="3492207499832628349">Новая вкладка инкогнито</translation>
@@ -190,6 +192,7 @@
 <translation id="4099578267706723511">Отправлять в Google статистику использования и отчеты о сбоях</translation>
 <translation id="411254640334432676">Ошибка при скачивании</translation>
 <translation id="4113030288477039509">Управляется администратором</translation>
+<translation id="4116939199945053760">Сайт <ph name="SITE" /> запрашивает <ph name="BEGIN_LINK" />подключение к этому устройству<ph name="END_LINK" />:</translation>
 <translation id="4165986682804962316">Настройки сайта</translation>
 <translation id="4170011742729630528">Сервис недоступен. Повторите попытку позже.</translation>
 <translation id="4195643157523330669">Открыть в новой вкладке</translation>
@@ -203,6 +206,7 @@
 <translation id="4307992518367153382">Основные</translation>
 <translation id="4333969446981951071">Нажимая "Продолжить", вы принимаете <ph name="BEGIN_LINK1" />Условия использования<ph name="END_LINK1" /> и <ph name="BEGIN_LINK2" />Примечание о конфиденциальности Chrome<ph name="END_LINK2" />.</translation>
 <translation id="4351244548802238354">Закрыть</translation>
+<translation id="4357362091209756047">Устройство не обнаружено? <ph name="BEGIN_LINK1" />Повторите попытку<ph name="END_LINK1" /> или перейдите в <ph name="BEGIN_LINK2" />справочный центр<ph name="END_LINK2" />.</translation>
 <translation id="4376501731284077108">Не контролируется</translation>
 <translation id="4378154925671717803">Телефон</translation>
 <translation id="4412992751769744546">Разрешить сторонним сайтам сохранять файлы cookie</translation>
@@ -290,6 +294,7 @@
 <translation id="5626134646977739690">Имя:</translation>
 <translation id="5626370437647899551">Добавление аккаунта Google</translation>
 <translation id="563535393368633106">Спрашивать разрешение на доступ (рекомендуется)</translation>
+<translation id="5643573370311148178"><ph name="BEGIN_LINK" />Справка<ph name="END_LINK" /></translation>
 <translation id="5646376287012673985">Местоположение</translation>
 <translation id="5659593005791499971">Электронная почта</translation>
 <translation id="5668404140385795438">Игнорировать запросы сайтов на запрет масштабирования</translation>
@@ -310,6 +315,7 @@
 <translation id="5771382037724542929">Вы хотите заменить существующий файл "<ph name="FILE_NAME" />" в папке "<ph name="DIRECTORY_NAME" />"?</translation>
 <translation id="5804241973901381774">Разрешения</translation>
 <translation id="5806294296882899667">Ошибка загрузки папки по умолчанию</translation>
+<translation id="5817918615728894473">Подключить</translation>
 <translation id="5832934273103296195">Развернуто. Нажмите, чтобы свернуть.</translation>
 <translation id="583891442612896534">Не удалось подключиться к серверам Google для сжатия данных. Объем трафика может увеличиться.</translation>
 <translation id="5860033963881614850">Выкл.</translation>
@@ -332,7 +338,6 @@
 <translation id="6040143037577758943">Закрыть</translation>
 <translation id="6042308850641462728">Подробнее...</translation>
 <translation id="605721222689873409">ГГ</translation>
-<translation id="6060567974409584397">Нажмите здесь, чтобы вернуться на вкладку</translation>
 <translation id="6066720739967032277">Вы найдете все вкладки в списке открытых приложений, нажав на значок "Обзор". Вернуться к прежнему интерфейсу можно в <ph name="BEGIN_LINK" />настройках<ph name="END_LINK" />.</translation>
 <translation id="6075798973483050474">Изменение главной страницы</translation>
 <translation id="6108923351542677676">Настройка…</translation>
@@ -380,6 +385,7 @@
 <translation id="6698801883190606802">Управление синхронизированными данными</translation>
 <translation id="6699351163704950317">Все сохраненные страницы</translation>
 <translation id="6710213216561001401">Назад</translation>
+<translation id="6720988912937197322">Страница недоступна в офлайн-режиме</translation>
 <translation id="6738867403308150051">Скачивание…</translation>
 <translation id="6770414673596662518">Функция "Безопасный просмотр" также позволяет обнаружить подозрительные страницы и защитить устройство от фишинга и вредоносного ПО.</translation>
 <translation id="6784675033504223784">Искать "<ph name="SEARCH_TERM" />"</translation>
@@ -393,7 +399,6 @@
 <translation id="6850830437481525139">Закрыто вкладок: <ph name="TAB_COUNT" /></translation>
 <translation id="6857778194843072568">Только через Wi-Fi</translation>
 <translation id="6868088497967843822">Войдите в аккаунт, чтобы синхронизировать закладки, историю, пароли и другие настройки на всех устройствах.</translation>
-<translation id="6935223586406308151">Домен <ph name="DOMAIN_NAME" /> добавлен на главный экран</translation>
 <translation id="6945221475159498467">Выбрать</translation>
 <translation id="6963766334940102469">Удалить закладки</translation>
 <translation id="6964496835063002391">Добавить аккаунт</translation>
@@ -522,6 +527,7 @@
 <translation id="8719023831149562936">Не удалось передать текущую вкладку</translation>
 <translation id="8725066075913043281">Повторить попытку</translation>
 <translation id="8730621377337864115">Готово</translation>
+<translation id="8737542153238017984">Страница недоступна в офлайн-режиме: свободное пространство заканчивается.</translation>
 <translation id="8793430725658173476">Копировать URL</translation>
 <translation id="8798099450830957504">По умолчанию</translation>
 <translation id="8820817407110198400">Закладки</translation>
@@ -552,6 +558,7 @@
 <translation id="9133515669113036225">Сбросить учетные данные</translation>
 <translation id="9137013805542155359">Показать оригинал</translation>
 <translation id="9156605176886108508">Нет папок с закладками</translation>
+<translation id="9192643434065497760">Чтобы разрешить соединение, включите Bluetooth в <ph name="BEGIN_LINK" />настройках устройства<ph name="END_LINK" />.</translation>
 <translation id="9206873250291191720">А</translation>
 <translation id="932327136139879170">Главная страница</translation>
 <translation id="938850635132480979">Ошибка <ph name="ERROR_CODE" /></translation>
