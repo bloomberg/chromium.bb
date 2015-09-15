@@ -6,5 +6,5 @@
   GarbageCollected,
   RuntimeEnabled=RequestIdleCallback,
 ] callback interface IdleRequestCallback {
-    void handleEvent(IdleCallbackDeadline deadline);
+    void handleEvent(IdleDeadline deadline);
 };

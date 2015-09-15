@@ -3033,7 +3033,7 @@ interface IDBVersionChangeEvent
     getter newVersion
     getter oldVersion
     method constructor
-interface IdleCallbackDeadline
+interface IdleDeadline
     getter didTimeout
     method constructor
     method timeRemaining

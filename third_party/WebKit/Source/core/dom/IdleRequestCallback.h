@@ -18,7 +18,7 @@ public:
     DEFINE_INLINE_VIRTUAL_TRACE() {}
     virtual ~IdleRequestCallback() {}
 
-    virtual void handleEvent(IdleCallbackDeadline*) = 0;
+    virtual void handleEvent(IdleDeadline*) = 0;
 };
 }
 

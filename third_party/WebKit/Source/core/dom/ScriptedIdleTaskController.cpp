@@ -32,12 +32,12 @@ public:
     static void idleTaskFired(PassRefPtr<IdleRequestCallbackWrapper> callbackWrapper, double deadlineSeconds)
     {
         // TODO(rmcilroy): Implement clamping of deadline in some form.
-        callbackWrapper->controller()->callbackFired(callbackWrapper->id(), deadlineSeconds, IdleCallbackDeadline::CallbackType::CalledWhenIdle);
+        callbackWrapper->controller()->callbackFired(callbackWrapper->id(), deadlineSeconds, IdleDeadline::CallbackType::CalledWhenIdle);
     }
 
     static void timeoutFired(PassRefPtr<IdleRequestCallbackWrapper> callbackWrapper)
     {
-        callbackWrapper->controller()->callbackFired(callbackWrapper->id(), monotonicallyIncreasingTime(), IdleCallbackDeadline::CallbackType::CalledByTimeout);
+        callbackWrapper->controller()->callbackFired(callbackWrapper->id(), monotonicallyIncreasingTime(), IdleDeadline::CallbackType::CalledByTimeout);
     }
 
     ScriptedIdleTaskController::CallbackId id() const { return m_id; }
@@ -95,13 +95,13 @@ void ScriptedIdleTaskController::cancelCallback(CallbackId id)
     m_callbacks.remove(id);
 }
 
-void ScriptedIdleTaskController::callbackFired(CallbackId id, double deadlineSeconds, IdleCallbackDeadline::CallbackType callbackType)
+void ScriptedIdleTaskController::callbackFired(CallbackId id, double deadlineSeconds, IdleDeadline::CallbackType callbackType)
 {
     if (!m_callbacks.contains(id))
         return;
 
     if (m_suspended) {
-        if (callbackType == IdleCallbackDeadline::CallbackType::CalledByTimeout) {
+        if (callbackType == IdleDeadline::CallbackType::CalledByTimeout) {
             // Queue for execution when we are resumed.
             m_pendingTimeouts.append(id);
         }
@@ -112,7 +112,7 @@ void ScriptedIdleTaskController::callbackFired(CallbackId id, double deadlineSec
     runCallback(id, deadlineSeconds, callbackType);
 }
 
-void ScriptedIdleTaskController::runCallback(CallbackId id, double deadlineSeconds, IdleCallbackDeadline::CallbackType callbackType)
+void ScriptedIdleTaskController::runCallback(CallbackId id, double deadlineSeconds, IdleDeadline::CallbackType callbackType)
 {
     ASSERT(!m_suspended);
     auto callback = m_callbacks.take(id);
@@ -120,7 +120,7 @@ void ScriptedIdleTaskController::runCallback(CallbackId id, double deadlineSecon
         return;
 
     // TODO(rmcilroy): Add devtools tracing.
-    callback->handleEvent(IdleCallbackDeadline::create(deadlineSeconds, callbackType));
+    callback->handleEvent(IdleDeadline::create(deadlineSeconds, callbackType));
 }
 
 void ScriptedIdleTaskController::stop()
@@ -142,7 +142,7 @@ void ScriptedIdleTaskController::resume()
     Vector<CallbackId> pendingTimeouts;
     m_pendingTimeouts.swap(pendingTimeouts);
     for (auto& id : pendingTimeouts)
-        runCallback(id, monotonicallyIncreasingTime(), IdleCallbackDeadline::CallbackType::CalledByTimeout);
+        runCallback(id, monotonicallyIncreasingTime(), IdleDeadline::CallbackType::CalledByTimeout);
 
     // Repost idle tasks for any remaining callbacks.
     for (auto& callback : m_callbacks) {

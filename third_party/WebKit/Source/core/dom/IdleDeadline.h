@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IdleCallbackDeadline_h
-#define IdleCallbackDeadline_h
+#ifndef IdleDeadline_h
+#define IdleDeadline_h
 
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {
 
-class IdleCallbackDeadline : public GarbageCollected<IdleCallbackDeadline>, public ScriptWrappable {
+class IdleDeadline : public GarbageCollected<IdleDeadline>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
     enum class CallbackType {
@@ -18,9 +18,9 @@ public:
         CalledByTimeout
     };
 
-    static IdleCallbackDeadline* create(double deadlineSeconds, CallbackType callbackType)
+    static IdleDeadline* create(double deadlineSeconds, CallbackType callbackType)
     {
-        return new IdleCallbackDeadline(deadlineSeconds, callbackType);
+        return new IdleDeadline(deadlineSeconds, callbackType);
     }
 
     DEFINE_INLINE_TRACE() { }
@@ -33,7 +33,7 @@ public:
     }
 
 private:
-    IdleCallbackDeadline(double deadlineSeconds, CallbackType);
+    IdleDeadline(double deadlineSeconds, CallbackType);
 
     double m_deadlineSeconds;
     CallbackType m_callbackType;
@@ -41,4 +41,4 @@ private:
 
 } // namespace blink
 
-#endif // IdleCallbackDeadline_h
+#endif // IdleDeadline_h

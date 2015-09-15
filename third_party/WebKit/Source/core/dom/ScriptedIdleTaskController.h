@@ -6,7 +6,7 @@
 #define ScriptedIdleTaskController_h
 
 #include "core/dom/ActiveDOMObject.h"
-#include "core/dom/IdleCallbackDeadline.h"
+#include "core/dom/IdleDeadline.h"
 #include "platform/Timer.h"
 #include "platform/heap/Handle.h"
 #include "wtf/RefCounted.h"
@@ -40,12 +40,12 @@ public:
     void resume() override;
     bool hasPendingActivity() const override;
 
-    void callbackFired(CallbackId, double deadlineSeconds, IdleCallbackDeadline::CallbackType);
+    void callbackFired(CallbackId, double deadlineSeconds, IdleDeadline::CallbackType);
 
 private:
     explicit ScriptedIdleTaskController(ExecutionContext*);
 
-    void runCallback(CallbackId, double deadlineSeconds, IdleCallbackDeadline::CallbackType);
+    void runCallback(CallbackId, double deadlineSeconds, IdleDeadline::CallbackType);
 
     WebScheduler* m_scheduler; // Not owned.
     PersistentHeapHashMapWillBeHeapHashMap<CallbackId, Member<IdleRequestCallback>> m_callbacks;

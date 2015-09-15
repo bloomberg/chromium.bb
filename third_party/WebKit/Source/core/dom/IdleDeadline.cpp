@@ -3,19 +3,19 @@
 // found in the LICENSE file.
 
 #include "config.h"
-#include "core/dom/IdleCallbackDeadline.h"
+#include "core/dom/IdleDeadline.h"
 
 #include "wtf/CurrentTime.h"
 
 namespace blink {
 
-IdleCallbackDeadline::IdleCallbackDeadline(double deadlineSeconds, CallbackType callbackType)
+IdleDeadline::IdleDeadline(double deadlineSeconds, CallbackType callbackType)
     : m_deadlineSeconds(deadlineSeconds)
     , m_callbackType(callbackType)
 {
 }
 
-double IdleCallbackDeadline::timeRemaining() const
+double IdleDeadline::timeRemaining() const
 {
     double timeRemaining = m_deadlineSeconds - monotonicallyIncreasingTime();
     if (timeRemaining < 0)
