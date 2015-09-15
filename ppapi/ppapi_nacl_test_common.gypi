@@ -14,6 +14,7 @@
     # variables overriden inside a target_condition block in this file will not
     # affect the values in untrusted.gypi.
     'variables': {
+      'nacl_untrusted_build': 1,
       'test_files': [],
       'generate_nmf%': 1,
       'nacl_newlib_out_dir': '<(PRODUCT_DIR)/>(nexe_destination_dir)/newlib',

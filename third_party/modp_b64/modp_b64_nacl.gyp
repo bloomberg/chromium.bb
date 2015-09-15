@@ -15,6 +15,7 @@
         'build_glibc': 0,
         'build_newlib': 1,
         'build_pnacl_newlib': 1,
+        'nacl_untrusted_build': 1,
       },
       'sources': [
         'modp_b64.cc',

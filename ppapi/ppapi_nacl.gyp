@@ -18,6 +18,7 @@
       'variables': {
         'nlib_target': 'libppapi_cpp.a',
         'nso_target': 'libppapi_cpp.so',
+        'nacl_untrusted_build': 1,
         'build_glibc': 1,
         'build_newlib': 1,
         'build_pnacl_newlib': 1,
@@ -33,6 +34,7 @@
       'type': 'none',
       'variables': {
         'nlib_target': 'libppapi_gles2.a',
+        'nacl_untrusted_build': 1,
         'nso_target': 'libppapi_gles2.so',
         'build_glibc': 1,
         'build_newlib': 1,
@@ -76,6 +78,7 @@
           'GL_GLEXT_PROTOTYPES',
         ],
         'nexe_target': 'ppapi_nacl_tests',
+        'nacl_untrusted_build': 1,
         'build_newlib': 1,
         'include_dirs': [
           'lib/gl/include',

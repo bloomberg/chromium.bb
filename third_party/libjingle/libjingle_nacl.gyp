@@ -301,6 +301,7 @@
       'type': 'none',
       'variables': {
         'nlib_target': 'libjingle_p2p_constants_nacl.a',
+        'nacl_untrusted_build': 1,
         'build_glibc': 0,
         'build_newlib': 1,
         'build_pnacl_newlib': 1,
