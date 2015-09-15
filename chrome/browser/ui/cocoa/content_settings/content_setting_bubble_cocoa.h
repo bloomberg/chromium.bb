@@ -40,7 +40,7 @@ struct MediaMenuParts {
 
 // Comparator used by MediaMenuPartsMap to order its keys.
 struct compare_button {
-  bool operator()(NSPopUpButton *const a, NSPopUpButton *const b) {
+  bool operator()(NSPopUpButton *const a, NSPopUpButton *const b) const {
     return [a tag] < [b tag];
   }
 };
