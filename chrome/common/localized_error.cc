@@ -630,8 +630,7 @@ void LocalizedError::GetStrings(int error_code,
     DCHECK_EQ(LocalizedError::kHttpErrorDomain, error_domain);
     error_string = base::IntToString16(error_code);
   }
-  error_strings->SetString("errorCode",
-      l10n_util::GetStringFUTF16(IDS_ERRORPAGES_ERROR_CODE, error_string));
+  error_strings->SetString("errorCode", error_string);
 
   // Platform specific information for diagnosing network issues on OSX and
   // Windows.
