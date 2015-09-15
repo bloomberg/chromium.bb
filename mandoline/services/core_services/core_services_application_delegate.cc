@@ -49,7 +49,7 @@ class ApplicationThread : public base::SimpleThread {
         new mojo::ApplicationRunner(delegate_.release()));
     if (url_ == "mojo://network_service/") {
       runner->set_message_loop_type(base::MessageLoop::TYPE_IO);
-    } else if (url_ == "mojo://view_manager/") {
+    } else if (url_ == "mojo://mus/") {
       runner->set_message_loop_type(base::MessageLoop::TYPE_UI);
     }
     runner->Run(request_.PassMessagePipe().release().value(), false);

@@ -18,7 +18,7 @@ scoped_ptr<mojo::ApplicationDelegate> CreateApplicationDelegateNotAndroid(
     return make_scoped_ptr(
         new resource_provider::ResourceProviderApp("mojo:core_services"));
   }
-  if (url == "mojo://view_manager/")
+  if (url == "mojo://mus/")
     return make_scoped_ptr(new view_manager::ViewManagerApp);
   return nullptr;
 }
