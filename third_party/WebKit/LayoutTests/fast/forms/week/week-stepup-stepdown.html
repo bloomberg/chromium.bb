@@ -58,8 +58,8 @@ debug('Step=any');
 shouldThrow('stepUp("2010-W02", "any", null)');
 shouldThrow('stepDown("2010-W02", "any", null)');
 debug('Overflow/underflow');
-shouldBeEqualToString('stepUp("2010-W02", "3.40282346e+38", null)', '2010-W02');
-shouldBeEqualToString('stepDown("2010-W02", "3.40282346e+38", null)', '2010-W02');
+shouldBeEqualToString('stepUp("2010-W02", "3.40282346e+38", null)', '1970-W01');
+shouldBeEqualToString('stepDown("2010-W02", "3.40282346e+38", null)', '1970-W01');
 shouldBeEqualToString('stepUp("2010-W02", "1", "2010-W02")', '2010-W02');
 shouldBeEqualToString('stepDown("2010-W02", "1", "2010-W02")', '2010-W02');
 

@@ -31,9 +31,13 @@ PASS stepDown("20:13", "1", "20:13") is "20:13:00"
 PASS stepUp("23:59", null, null) is "23:59"
 PASS stepDown("00:00", null, null) is "00:00"
 
+Invalid min/max:
+PASS setInputAttributes("10:00", "09:00", "60", "08:00"); input.stepUp(); input.value is "08:00"
+PASS inputWithInitialValue.stepUp(); inputWithInitialValue.value is "12:34"
+
 Step-mismatched initial values
-FAIL stepUp("20:13", "86400.000", null, 65536) should be 20:13. Was 00:00.
-FAIL stepUp("20:13", "86400.001", null, 65536) should be 20:13. Was 00:01:05.535.
+PASS stepUp("20:13", "86400.000", null, 65536) is "00:00"
+PASS stepUp("20:13", "86400.001", null, 65536) is "00:00:00.000"
 PASS stepUp("20:13", "600", null, 1) is "20:20"
 PASS stepUp("20:13", "600", null, 2) is "20:30"
 PASS stepDown("20:13", "600", null, 1) is "20:10"

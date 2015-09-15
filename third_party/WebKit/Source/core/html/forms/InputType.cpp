@@ -755,18 +755,33 @@ ColorChooserClient* InputType::colorChooserClient()
 
 void InputType::applyStep(const Decimal& current, int count, AnyStepHandling anyStepHandling, TextFieldEventBehavior eventBehavior, ExceptionState& exceptionState)
 {
+    // https://html.spec.whatwg.org/multipage/forms.html#dom-input-stepup
+
     StepRange stepRange(createStepRange(anyStepHandling));
+    // 2. If the element has no allowed value step, then throw an
+    // InvalidStateError exception, and abort these steps.
     if (!stepRange.hasStep()) {
         exceptionState.throwDOMException(InvalidStateError, "This form element does not have an allowed value step.");
         return;
     }
-    // TODO(tkent): We should do nothing if minimum > maximum, or there is no
-    // valid values between minimum and maximum.
-    // https://html.spec.whatwg.org/multipage/forms.html#dom-input-stepup
+
+    // 3. If the element has a minimum and a maximum and the minimum is greater
+    // than the maximum, then abort these steps.
+    if (stepRange.minimum() > stepRange.maximum())
+        return;
+
+    // 4. If the element has a minimum and a maximum and there is no value
+    // greater than or equal to the element's minimum and less than or equal to
+    // the element's maximum that, when subtracted from the step base, is an
+    // integral multiple of the allowed value step, then abort these steps.
+    const Decimal base = stepRange.stepBase();
+    const Decimal step = stepRange.step();
+    const Decimal alignedMaximum = base + ((stepRange.maximum() - base) / step).floor() * step;
+    ASSERT(alignedMaximum <= stepRange.maximum());
+    if (alignedMaximum < stepRange.minimum())
+        return;
 
     EventQueueScope scope;
-    const Decimal step = stepRange.step();
-
     Decimal newValue = current;
     const AtomicString& stepString = element().fastGetAttribute(stepAttr);
     if (!equalIgnoringCase(stepString, "any") && stepRange.stepMismatch(current)) {
@@ -779,7 +794,6 @@ void InputType::applyStep(const Decimal& current, int count, AnyStepHandling any
         //
 
         ASSERT(!step.isZero());
-        const Decimal base = stepRange.stepBase();
         if (count < 0) {
             newValue = base + ((newValue - base) / step).floor() * step;
             ++count;
@@ -793,15 +807,26 @@ void InputType::applyStep(const Decimal& current, int count, AnyStepHandling any
     if (!equalIgnoringCase(stepString, "any"))
         newValue = stepRange.alignValueForStep(current, newValue);
 
-    // TODO(tkent): The following code doesn't clamp newValue if difference
-    // between newValue and the limit is greater than 1 step.
-    // e.g. <input type=number value=0 step=1 max=10> and stepUp(100)
-    //      ==> newValue==100, maximum==10
-    if (newValue > stepRange.maximum())
-        newValue = newValue - stepRange.step();
-    else if (newValue < stepRange.minimum())
-        newValue = newValue + stepRange.step();
+    // 7. If the element has a minimum, and value is less than that minimum,
+    // then set value to the smallest value that, when subtracted from the step
+    // base, is an integral multiple of the allowed value step, and that is more
+    // than or equal to minimum.
+    // 8. If the element has a maximum, and value is greater than that maximum,
+    // then set value to the largest value that, when subtracted from the step
+    // base, is an integral multiple of the allowed value step, and that is less
+    // than or equal to maximum.
+    if (newValue > stepRange.maximum()) {
+        newValue = alignedMaximum;
+    } else if (newValue < stepRange.minimum()) {
+        const Decimal alignedMinimum = base + ((stepRange.minimum() - base) / step).ceil() * step;
+        ASSERT(alignedMinimum >= stepRange.minimum());
+        newValue = alignedMinimum;
+    }
 
+    // 9. Let value as string be the result of running the algorithm to convert
+    // a number to a string, as defined for the input element's type attribute's
+    // current state, on value.
+    // 10. Set the value of the element to value as string.
     setValueAsDecimal(newValue, eventBehavior, exceptionState);
 
     if (AXObjectCache* cache = element().document().existingAXObjectCache())
@@ -900,6 +925,8 @@ void InputType::stepUpFromLayoutObject(int n)
         setValueAsDecimal(sign > 0 ? stepRange.minimum() : stepRange.maximum(), DispatchChangeEvent, IGNORE_EXCEPTION);
         return;
     }
+    if ((sign > 0 && current > stepRange.maximum()) || (sign < 0 && current < stepRange.minimum()))
+        return;
     applyStep(current, n, AnyIsDefaultStep, DispatchChangeEvent, IGNORE_EXCEPTION);
 }
 

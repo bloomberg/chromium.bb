@@ -66,11 +66,22 @@ shouldBeEqualToString('stepUp("23:59", null, null)', '23:59');
 shouldBeEqualToString('stepDown("00:00", null, null)', '00:00');
 
 debug('');
+debug('Invalid min/max:');
+shouldBeEqualToString('setInputAttributes("10:00", "09:00", "60", "08:00"); input.stepUp(); input.value', '08:00');
+// Threre are no valid values between 00:00 - 00:33 because the step-base
+// is 12:34.
+var inputWithInitialValue = document.createElement('input');
+inputWithInitialValue.type = 'time';
+inputWithInitialValue.setAttribute('value', '12:34');
+inputWithInitialValue.setAttribute('step', '3600');
+inputWithInitialValue.setAttribute('max', '00:33');
+shouldBeEqualToString('inputWithInitialValue.stepUp(); inputWithInitialValue.value', '12:34');
+
+debug('');
 debug('Step-mismatched initial values');
-// There are no step-match values in 00:00 - 23:59:59.999.  stepUp()
-// should do nothing.
-shouldBeEqualToString('stepUp("20:13", "86400.000", null, 65536)', '20:13');
-shouldBeEqualToString('stepUp("20:13", "86400.001", null, 65536)', '20:13');
+// There are no step-match values in 00:00 - 23:59:59.999 except 00:00.
+shouldBeEqualToString('stepUp("20:13", "86400.000", null, 65536)', '00:00');
+shouldBeEqualToString('stepUp("20:13", "86400.001", null, 65536)', '00:00:00.000');
 shouldBeEqualToString('stepUp("20:13", "600", null, 1)', '20:20');
 shouldBeEqualToString('stepUp("20:13", "600", null, 2)', '20:30');
 shouldBeEqualToString('stepDown("20:13", "600", null, 1)', '20:10');
