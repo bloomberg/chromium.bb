@@ -38,9 +38,9 @@ def Main():
     elif caller_url == None:
       caller_url = arg
 
-  if platform.system() == 'Windows':
+  if platform.system() == 'Windows' and parent_window:
     import win32gui
-    if parent_window and not win32gui.IsWindow(parent_window):
+    if not win32gui.IsWindow(parent_window):
       sys.stderr.write('Invalid --parent-window.\n')
       return 1
 
