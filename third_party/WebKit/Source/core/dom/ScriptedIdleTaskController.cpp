@@ -119,8 +119,14 @@ void ScriptedIdleTaskController::runCallback(CallbackId id, double deadlineSecon
     if (!callback)
         return;
 
+    double allotedTimeMillis = std::max((deadlineSeconds - monotonicallyIncreasingTime()) * 1000, 0.0);
+    Platform::current()->histogramCustomCounts("WebCore.ScriptedIdleTaskController.IdleCallbackDeadline", allotedTimeMillis, 0, 50, 50);
+
     // TODO(rmcilroy): Add devtools tracing.
     callback->handleEvent(IdleDeadline::create(deadlineSeconds, callbackType));
+
+    double overrunMillis = std::max((monotonicallyIncreasingTime() - deadlineSeconds) * 1000, 0.0);
+    Platform::current()->histogramCustomCounts("WebCore.ScriptedIdleTaskController.IdleCallbackOverrun", overrunMillis, 0, 10000, 50);
 }
 
 void ScriptedIdleTaskController::stop()
