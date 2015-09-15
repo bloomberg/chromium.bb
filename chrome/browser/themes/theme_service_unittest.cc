@@ -17,6 +17,8 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/test_extension_registry_observer.h"
@@ -235,6 +237,72 @@ TEST_F(ThemeServiceTest, ThemeUpgrade) {
   EXPECT_EQ(extension2_id, theme_service->GetThemeID());
   EXPECT_TRUE(registry_->GetExtensionById(extension1_id,
                                           ExtensionRegistry::DISABLED));
+}
+
+namespace {
+
+// NotificationObserver which emulates an infobar getting destroyed when the
+// theme changes.
+class InfobarDestroyerOnThemeChange : public content::NotificationObserver {
+ public:
+  InfobarDestroyerOnThemeChange(Profile* profile)
+      : theme_service_(ThemeServiceFactory::GetForProfile(profile)) {
+    registrar_.Add(this, chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
+        content::Source<ThemeService>(theme_service_));
+  }
+
+  ~InfobarDestroyerOnThemeChange() override {}
+
+ private:
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override {
+    theme_service_->OnInfobarDestroyed();
+  }
+
+  // Not owned.
+  ThemeService* theme_service_;
+
+  content::NotificationRegistrar registrar_;
+
+  DISALLOW_COPY_AND_ASSIGN(InfobarDestroyerOnThemeChange);
+};
+
+}  // namespace
+
+// crbug.com/468280
+TEST_F(ThemeServiceTest, UninstallThemeOnThemeChangeNotification) {
+  // Setup.
+  ThemeService* theme_service =
+      ThemeServiceFactory::GetForProfile(profile_.get());
+  theme_service->UseDefaultTheme();
+  // Let the ThemeService uninstall unused themes.
+  base::MessageLoop::current()->RunUntilIdle();
+
+  base::ScopedTempDir temp_dir1;
+  ASSERT_TRUE(temp_dir1.CreateUniqueTempDir());
+  base::ScopedTempDir temp_dir2;
+  ASSERT_TRUE(temp_dir2.CreateUniqueTempDir());
+
+  const std::string& extension1_id = LoadUnpackedThemeAt(temp_dir1.path());
+  ASSERT_EQ(extension1_id, theme_service->GetThemeID());
+
+  // Show an infobar.
+  theme_service->OnInfobarDisplayed();
+
+  // Install another theme. Emulate the infobar destroying itself (and
+  // causing unused themes to be uninstalled) as a result of the
+  // NOTIFICATION_BROWSER_THEME_CHANGED notification.
+  {
+    InfobarDestroyerOnThemeChange destroyer(profile_.get());
+    const std::string& extension2_id = LoadUnpackedThemeAt(temp_dir2.path());
+    ASSERT_EQ(extension2_id, theme_service->GetThemeID());
+    ASSERT_FALSE(service_->GetInstalledExtension(extension1_id));
+  }
+
+  // Check that it is possible to reinstall extension1.
+  ASSERT_EQ(extension1_id, LoadUnpackedThemeAt(temp_dir1.path()));
+  EXPECT_EQ(extension1_id, theme_service->GetThemeID());
 }
 
 #if defined(ENABLE_SUPERVISED_USERS)

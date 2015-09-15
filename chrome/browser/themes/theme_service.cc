@@ -389,7 +389,13 @@ void ThemeService::SetTheme(const Extension* extension) {
   content::RecordAction(UserMetricsAction("Themes_Installed"));
 
   if (previous_theme_id != kDefaultThemeID &&
-      previous_theme_id != extension->id()) {
+      previous_theme_id != extension->id() &&
+      service->GetInstalledExtension(previous_theme_id)) {
+    // Do not disable the previous theme if it is already uninstalled. Sending
+    // NOTIFICATION_BROWSER_THEME_CHANGED causes the previous theme to be
+    // uninstalled when the notification causes the remaining infobar to close
+    // and does not open any new infobars. See crbug.com/468280.
+
     // Disable the old theme.
     service->DisableExtension(previous_theme_id,
                               extensions::Extension::DISABLE_USER_ACTION);
