@@ -217,23 +217,44 @@ IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceBrowserTest,
                        WebNotificationOptionsReflection) {
   ASSERT_NO_FATAL_FAILURE(GrantNotificationPermissionForTest());
 
+  // First, test the default values.
+
   std::string script_result;
-  ASSERT_TRUE(RunScript("DisplayPersistentAllOptionsNotification()",
+  ASSERT_TRUE(RunScript("DisplayPersistentNotification('Some title', {})",
                         &script_result));
   EXPECT_EQ("ok", script_result);
 
   ASSERT_EQ(1u, ui_manager()->GetNotificationCount());
 
   // We don't use or check the notification's direction and language.
-  const Notification& notification = ui_manager()->GetNotificationAt(0);
-  EXPECT_EQ("Title", base::UTF16ToUTF8(notification.title()));
-  EXPECT_EQ("Contents", base::UTF16ToUTF8(notification.message()));
-  EXPECT_EQ("replace-id", notification.tag());
-  EXPECT_FALSE(notification.icon().IsEmpty());
-  EXPECT_TRUE(notification.silent());
+  const Notification& default_notification = ui_manager()->GetNotificationAt(0);
+  EXPECT_EQ("Some title", base::UTF16ToUTF8(default_notification.title()));
+  EXPECT_EQ("", base::UTF16ToUTF8(default_notification.message()));
+  EXPECT_EQ("", default_notification.tag());
+  EXPECT_TRUE(default_notification.icon().IsEmpty());
+  EXPECT_FALSE(default_notification.silent());
+  EXPECT_FALSE(default_notification.never_timeout());
 
-  EXPECT_EQ(kIconWidth, notification.icon().Width());
-  EXPECT_EQ(kIconHeight, notification.icon().Height());
+  // Now, test the non-default values.
+
+  ASSERT_TRUE(RunScript("DisplayPersistentAllOptionsNotification()",
+                        &script_result));
+  EXPECT_EQ("ok", script_result);
+
+  ASSERT_EQ(2u, ui_manager()->GetNotificationCount());
+
+  // We don't use or check the notification's direction and language.
+  const Notification& all_options_notification =
+      ui_manager()->GetNotificationAt(1);
+  EXPECT_EQ("Title", base::UTF16ToUTF8(all_options_notification.title()));
+  EXPECT_EQ("Contents", base::UTF16ToUTF8(all_options_notification.message()));
+  EXPECT_EQ("replace-id", all_options_notification.tag());
+  EXPECT_FALSE(all_options_notification.icon().IsEmpty());
+  EXPECT_TRUE(all_options_notification.silent());
+  EXPECT_TRUE(all_options_notification.never_timeout());
+
+  EXPECT_EQ(kIconWidth, all_options_notification.icon().Width());
+  EXPECT_EQ(kIconHeight, all_options_notification.icon().Height());
 }
 
 IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceBrowserTest,
