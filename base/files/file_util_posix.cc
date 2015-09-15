@@ -24,8 +24,6 @@
 #if defined(OS_MACOSX)
 #include <AvailabilityMacros.h>
 #include "base/mac/foundation_util.h"
-#elif !defined(OS_CHROMEOS) && defined(USE_GLIB)
-#include <glib.h>  // for g_get_home_dir()
 #endif
 
 #include "base/basictypes.h"
@@ -478,16 +476,6 @@ FilePath GetHomeDir() {
 
 #if defined(OS_ANDROID)
   DLOG(WARNING) << "OS_ANDROID: Home directory lookup not yet implemented.";
-#elif defined(USE_GLIB) && !defined(OS_CHROMEOS)
-  // g_get_home_dir calls getpwent, which can fall through to LDAP calls so
-  // this may do I/O. However, it should be rare that $HOME is not defined and
-  // this is typically called from the path service which has no threading
-  // restrictions. The path service will cache the result which limits the
-  // badness of blocking on I/O. As a result, we don't have a thread
-  // restriction here.
-  home_dir = g_get_home_dir();
-  if (home_dir && home_dir[0])
-    return FilePath(home_dir);
 #endif
 
   FilePath rv;
