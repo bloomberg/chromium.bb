@@ -115,6 +115,13 @@ class HandshakeSettings(object):
     @type enableExtendedMasterSecret: bool
     @ivar enableExtendedMasterSecret: If true, the server supports the extended
     master secret TLS extension and will negotiated it with supporting clients.
+
+    @type supportedTokenBindingParams: list
+    @ivar supportedTokenBindingParams: A list of token binding parameters that
+    the server supports when negotiating token binding. List values are integers
+    corresponding to the TokenBindingKeyParameters enum in the Token Binding
+    Negotiation spec (draft-ietf-tokbind-negotiation-00). Values are in server's
+    preference order, with most preferred params first.
     
     Note that TACK support is not standardized by IETF and uses a temporary
     TLS Extension number, so should NOT be used in production software.
@@ -134,6 +141,7 @@ class HandshakeSettings(object):
         self.useExperimentalTackExtension = False
         self.alertAfterHandshake = False
         self.enableExtendedMasterSecret = True
+        self.supportedTokenBindingParams = []
 
     # Validates the min/max fields, and certificateTypes
     # Filters out unsupported cipherNames and cipherImplementations
@@ -152,6 +160,7 @@ class HandshakeSettings(object):
         other.tlsIntoleranceType = self.tlsIntoleranceType
         other.alertAfterHandshake = self.alertAfterHandshake
         other.enableExtendedMasterSecret = self.enableExtendedMasterSecret
+        other.supportedTokenBindingParams = self.supportedTokenBindingParams
 
         if not cipherfactory.tripleDESPresent:
             other.cipherNames = [e for e in self.cipherNames if e != "3des"]

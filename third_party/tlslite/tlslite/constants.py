@@ -59,6 +59,7 @@ class ExtensionType:    # RFC 6066 / 4366
     tack = 0xF300
     supports_npn = 13172
     channel_id = 30032
+    token_binding = 30033
 
 class HashAlgorithm:
     none = 0

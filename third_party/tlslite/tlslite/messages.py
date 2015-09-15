@@ -115,6 +115,7 @@ class ClientHello(HandshakeMsg):
         self.server_name = bytearray(0)
         self.channel_id = False
         self.extended_master_secret = False
+        self.tb_client_params = []
         self.support_signed_cert_timestamps = False
         self.status_request = False
 
@@ -188,6 +189,15 @@ class ClientHello(HandshakeMsg):
                         self.channel_id = True
                     elif extType == ExtensionType.extended_master_secret:
                         self.extended_master_secret = True
+                    elif extType == ExtensionType.token_binding:
+                        tokenBindingBytes = p.getFixBytes(extLength)
+                        p2 = Parser(tokenBindingBytes)
+                        ver_minor = p2.get(1)
+                        ver_major = p2.get(1)
+                        if (ver_major, ver_minor) >= (0, 2):
+                            p2.startLengthCheck(1)
+                            while not p2.atLengthCheck():
+                                self.tb_client_params.append(p2.get(1))
                     elif extType == ExtensionType.signed_cert_timestamps:
                         if extLength:
                             raise SyntaxError()
@@ -271,6 +281,7 @@ class ServerHello(HandshakeMsg):
         self.next_protos = None
         self.channel_id = False
         self.extended_master_secret = False
+        self.tb_params = None
         self.signed_cert_timestamps = None
         self.status_request = False
 
@@ -365,6 +376,17 @@ class ServerHello(HandshakeMsg):
         if self.extended_master_secret:
             w2.add(ExtensionType.extended_master_secret, 2)
             w2.add(0, 2)
+        if self.tb_params:
+            w2.add(ExtensionType.token_binding, 2)
+            # length of extension
+            w2.add(4, 2)
+            # version
+            w2.add(0, 1)
+            w2.add(2, 1)
+            # length of params (defined as variable length <1..2^8-1>, but in
+            # this context the server can only send a single value.
+            w2.add(1, 1)
+            w2.add(self.tb_params, 1)
         if self.signed_cert_timestamps:
             w2.add(ExtensionType.signed_cert_timestamps, 2)
             w2.addVarSeq(bytearray(self.signed_cert_timestamps), 1, 2)

@@ -1330,6 +1330,10 @@ class TLSConnection(TLSRecordLayer):
         serverHello.extended_master_secret = \
             clientHello.extended_master_secret and \
             settings.enableExtendedMasterSecret
+        for param in clientHello.tb_client_params:
+            if param in settings.supportedTokenBindingParams:
+                serverHello.tb_params = param
+                break
         if clientHello.support_signed_cert_timestamps:
             serverHello.signed_cert_timestamps = signedCertTimestamps
         if clientHello.status_request:

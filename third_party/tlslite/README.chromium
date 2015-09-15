@@ -41,3 +41,5 @@ Local Modifications:
 - patches/ecdhe_rsa.patch: Implement ECDHE_RSA-based ciper suites on the server.
 - patches/extended_master_secret.patch: Add server support for extended
   master secret.
+- patches/token_binding_negotiation.patch: Add server support for token
+  binding negotiation TLS extension (draft-ietf-tokbind-negotiation-00)
