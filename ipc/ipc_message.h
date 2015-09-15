@@ -194,6 +194,11 @@ class IPC_EXPORT Message : public base::Pickle {
                        const char* range_end,
                        NextMessageInfo* info);
 
+  // Adds a placeholder brokerable attachment that must be replaced before the
+  // message can be dispatched.
+  bool AddPlaceholderBrokerableAttachmentWithId(
+      BrokerableAttachment::AttachmentId id);
+
   // WriteAttachment appends |attachment| to the end of the set. It returns
   // false iff the set is full.
   bool WriteAttachment(scoped_refptr<MessageAttachment> attachment);

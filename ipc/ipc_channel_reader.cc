@@ -97,8 +97,8 @@ bool ChannelReader::TranslateInputData(const char* input_data,
       int pickle_len = static_cast<int>(info.pickle_end - p);
       Message translated_message(p, pickle_len);
 
-      // TODO(erikchen): Make attachments for info.attachment_ids.
-      // http://crbug.com/493414.
+      for (const auto& id : info.attachment_ids)
+        translated_message.AddPlaceholderBrokerableAttachmentWithId(id);
 
       if (!GetNonBrokeredAttachments(&translated_message))
         return false;
@@ -201,8 +201,9 @@ ChannelReader::AttachmentIdSet ChannelReader::GetBrokeredAttachments(
 
 #if USE_ATTACHMENT_BROKER
   MessageAttachmentSet* set = msg->attachment_set();
-  for (const scoped_refptr<BrokerableAttachment>& attachment :
-       set->GetBrokerableAttachmentsForUpdating()) {
+  std::vector<const BrokerableAttachment*> brokerable_attachments_copy =
+      set->PeekBrokerableAttachments();
+  for (const BrokerableAttachment* attachment : brokerable_attachments_copy) {
     if (attachment->NeedsBrokering()) {
       AttachmentBroker* broker = GetAttachmentBroker();
       scoped_refptr<BrokerableAttachment> brokered_attachment;
@@ -213,7 +214,7 @@ ChannelReader::AttachmentIdSet ChannelReader::GetBrokeredAttachments(
         continue;
       }
 
-      attachment->PopulateWithAttachment(brokered_attachment.get());
+      set->ReplacePlaceholderWithAttachment(brokered_attachment);
     }
   }
 #endif  // USE_ATTACHMENT_BROKER

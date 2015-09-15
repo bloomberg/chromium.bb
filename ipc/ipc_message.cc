@@ -11,6 +11,7 @@
 #include "build/build_config.h"
 #include "ipc/ipc_message_attachment.h"
 #include "ipc/ipc_message_attachment_set.h"
+#include "ipc/placeholder_brokerable_attachment.h"
 
 #if defined(OS_POSIX)
 #include "base/file_descriptor_posix.h"
@@ -178,6 +179,13 @@ void Message::FindNext(const char* range_start,
 #endif  // USE_ATTACHMENT_BROKER
 
   info->message_found = true;
+}
+
+bool Message::AddPlaceholderBrokerableAttachmentWithId(
+    BrokerableAttachment::AttachmentId id) {
+  scoped_refptr<PlaceholderBrokerableAttachment> attachment(
+      new PlaceholderBrokerableAttachment(id));
+  return attachment_set()->AddAttachment(attachment);
 }
 
 bool Message::WriteAttachment(scoped_refptr<MessageAttachment> attachment) {

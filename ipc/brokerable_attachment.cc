@@ -29,30 +29,29 @@ void BrokerableAttachment::AttachmentId::SerializeToBuffer(char* start_address,
     start_address[i] = nonce[i];
 }
 
-BrokerableAttachment::BrokerableAttachment()
-    : needs_brokering_(false) {}
+BrokerableAttachment::BrokerableAttachment() {}
 
-BrokerableAttachment::BrokerableAttachment(const AttachmentId& id,
-                                           bool needs_brokering)
-    : id_(id), needs_brokering_(needs_brokering) {}
+BrokerableAttachment::BrokerableAttachment(const AttachmentId& id) : id_(id) {}
 
-BrokerableAttachment::~BrokerableAttachment() {
-}
+BrokerableAttachment::~BrokerableAttachment() {}
 
 BrokerableAttachment::AttachmentId BrokerableAttachment::GetIdentifier() const {
   return id_;
 }
 
 bool BrokerableAttachment::NeedsBrokering() const {
-  return needs_brokering_;
-}
-
-void BrokerableAttachment::SetNeedsBrokering(bool needs_brokering) {
-  needs_brokering_ = needs_brokering;
+  return GetBrokerableType() == PLACEHOLDER;
 }
 
 BrokerableAttachment::Type BrokerableAttachment::GetType() const {
   return TYPE_BROKERABLE_ATTACHMENT;
 }
+
+#if defined(OS_POSIX)
+base::PlatformFile BrokerableAttachment::TakePlatformFile() {
+  NOTREACHED();
+  return base::PlatformFile();
+}
+#endif  // OS_POSIX
 
 }  // namespace IPC
