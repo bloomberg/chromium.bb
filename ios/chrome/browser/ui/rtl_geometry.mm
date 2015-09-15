@@ -4,8 +4,8 @@
 
 #include "ios/chrome/browser/ui/rtl_geometry.h"
 
-#include <limits>
 #import <UIKit/UIKit.h>
+#include <limits>
 
 #include "base/ios/ios_util.h"
 #include "base/logging.h"
@@ -139,6 +139,71 @@ LayoutRect LayoutRectGetTrailingLayout(LayoutRect layout) {
 
 CGFloat LayoutRectGetTrailingEdge(LayoutRect layout) {
   return layout.position.leading + layout.size.width;
+}
+
+CGPoint CGPointLayoutOffsetUsingDirection(CGPoint point,
+                                          LayoutOffset offset,
+                                          base::i18n::TextDirection direction) {
+  CGPoint newPoint = point;
+  if (direction == base::i18n::RIGHT_TO_LEFT)
+    offset = -offset;
+  newPoint.x += offset;
+  return newPoint;
+}
+
+CGPoint CGPointLayoutOffset(CGPoint point, LayoutOffset offset) {
+  return CGPointLayoutOffsetUsingDirection(point, offset, LayoutDirection());
+}
+
+CGRect CGRectLayoutOffsetUsingDirection(CGRect rect,
+                                        LayoutOffset offset,
+                                        base::i18n::TextDirection direction) {
+  if (direction == base::i18n::RIGHT_TO_LEFT)
+    offset = -offset;
+  return CGRectOffset(rect, offset, 0);
+}
+
+CGRect CGRectLayoutOffset(CGRect rect, LayoutOffset offset) {
+  return CGRectLayoutOffsetUsingDirection(rect, offset, LayoutDirection());
+}
+
+LayoutOffset CGRectGetLeadingLayoutOffsetInBoundingRect(CGRect rect,
+                                                        CGRect boundingRect) {
+  CGFloat rectLeadingEdge = CGRectGetLeadingEdge(rect);
+  CGFloat boundingRectLeadingEdge = CGRectGetLeadingEdge(boundingRect);
+  LayoutOffset offset = 0;
+  if (LayoutDirection() == base::i18n::LEFT_TO_RIGHT) {
+    // Leading edges have low x-values for LTR, so subtract the bounding rect's
+    // from |rect|'s.
+    offset = rectLeadingEdge - boundingRectLeadingEdge;
+  } else {
+    DCHECK_EQ(LayoutDirection(), base::i18n::RIGHT_TO_LEFT);
+    offset = boundingRectLeadingEdge - rectLeadingEdge;
+  }
+  return offset;
+}
+
+LayoutOffset CGRectGetTrailingLayoutOffsetInBoundingRect(CGRect rect,
+                                                         CGRect boundingRect) {
+  CGFloat rectTrailingEdge = CGRectGetTrailingEdge(rect);
+  CGFloat boundingRectTrailingEdge = CGRectGetTrailingEdge(boundingRect);
+  LayoutOffset offset = 0;
+  if (LayoutDirection() == base::i18n::RIGHT_TO_LEFT) {
+    // Trailing edges have low x-values for RTL, so subtract the bounding rect's
+    // from |rect|'s.
+    offset = rectTrailingEdge - boundingRectTrailingEdge;
+  } else {
+    DCHECK_EQ(LayoutDirection(), base::i18n::LEFT_TO_RIGHT);
+    offset = boundingRectTrailingEdge - rectTrailingEdge;
+  }
+  return offset;
+}
+
+LayoutOffset LeadingContentOffsetForScrollView(UIScrollView* scrollView) {
+  return UseRTLLayout()
+             ? scrollView.contentSize.width - scrollView.contentOffset.x -
+                   CGRectGetWidth(scrollView.bounds)
+             : scrollView.contentOffset.x;
 }
 
 #pragma mark - UIKit utilities

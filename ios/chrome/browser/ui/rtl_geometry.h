@@ -118,6 +118,42 @@ LayoutRect LayoutRectGetTrailingLayout(LayoutRect layout);
 // Return the trailing extent of |layout| (its leading plus its width).
 CGFloat LayoutRectGetTrailingEdge(LayoutRect layout);
 
+// A LayoutOffset is an x-offset specified in leading pixels.
+typedef CGFloat LayoutOffset;
+
+// Returns |point| with its x-value shifted |offset| pixels in the leading
+// direction according to |direction|
+CGPoint CGPointLayoutOffsetUsingDirection(CGPoint point,
+                                          LayoutOffset offset,
+                                          base::i18n::TextDirection direction);
+
+// As above, using |direction| == RIGHT_TO_LEFT if UseRTLLayout(), LEFT_TO_RIGHT
+// otherwise.
+CGPoint CGPointLayoutOffset(CGPoint point, LayoutOffset offset);
+
+// Returns |rect| with its x-origin shifted |offset| pixels in the leading
+// direction according to |direction|
+CGRect CGRectLayoutOffsetUsingDirection(CGRect rect,
+                                        LayoutOffset offset,
+                                        base::i18n::TextDirection direction);
+
+// As above, using |direction| == RIGHT_TO_LEFT if UseRTLLayout(), LEFT_TO_RIGHT
+// otherwise.
+CGRect CGRectLayoutOffset(CGRect rect, LayoutOffset offset);
+
+// Returns the leading offset of |rect| inside |boundingBox|, as a LayoutOffset.
+LayoutOffset CGRectGetLeadingLayoutOffsetInBoundingRect(CGRect rect,
+                                                        CGRect boundingRect);
+
+// Returns the trailing offset of |rect| inside |boundingBox|, as a
+// LayoutOffset. Note that this will be the distance from the trailing edge of
+// |rect| to the trailing edge of |boundingRect|.
+LayoutOffset CGRectGetTrailingLayoutOffsetInBoundingRect(CGRect rect,
+                                                         CGRect boundingRect);
+
+// Returns the leading content offset of |scrollView|.
+LayoutOffset LeadingContentOffsetForScrollView(UIScrollView* scrollView);
+
 // Utilities for mapping UIKit geometric structures to RTL-independent geometry.
 
 // Get leading and trailing edges of |rect|, assuming layout direction
