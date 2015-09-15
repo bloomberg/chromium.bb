@@ -78,7 +78,7 @@ Background = function() {
    * @type {!Object<EventType, function(Object) : void>}
    */
   this.listeners_ = {
-    alert: this.onEventDefault,
+    alert: this.onAlert,
     focus: this.onFocus,
     hover: this.onEventDefault,
     loadComplete: this.onLoadComplete,
@@ -451,6 +451,26 @@ Background.prototype = {
     new Output().withSpeechAndBraille(
             this.currentRange_, prevRange, evt.type)
         .go();
+  },
+
+  /**
+   * Makes an announcement without changing focus.
+   * @param {Object} evt
+   */
+  onAlert: function(evt) {
+    var node = evt.target;
+    if (!node)
+      return;
+
+    // Don't process nodes inside of web content if ChromeVox Next is inactive.
+    if (node.root.role != RoleType.desktop &&
+        this.mode_ === ChromeVoxMode.CLASSIC) {
+      return;
+    }
+
+    var range = cursors.Range.fromNode(node);
+
+    new Output().withSpeechAndBraille(range, null, evt.type).go();
   },
 
   /**
