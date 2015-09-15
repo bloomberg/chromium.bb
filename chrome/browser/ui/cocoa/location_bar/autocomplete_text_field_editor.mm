@@ -56,13 +56,12 @@ BOOL ThePasteboardIsTooDamnBig() {
 
     forbiddenCharacters_.reset([[NSCharacterSet controlCharacterSet] retain]);
 
-    // These checks seem inappropriate to the omnibox, and also
-    // unlikely to work reliably due to our autocomplete interfering.
+    // Disable all substitutions by default. In regular NSTextFields a user may
+    // selectively enable them via context menu, but that submenu is not enabled
+    // for the omnibox. The substitutions are unlikely to be useful in any case.
     //
-    // Also see <http://crbug.com/173405>.
-    NSTextCheckingTypes checkingTypes = [self enabledTextCheckingTypes];
-    checkingTypes &= ~NSTextCheckingTypeReplacement;
-    checkingTypes &= ~NSTextCheckingTypeCorrection;
+    // Also see http://crbug.com/173405 and http://crbug.com/528014.
+    NSTextCheckingTypes checkingTypes = 0;
     [self setEnabledTextCheckingTypes:checkingTypes];
   }
   return self;
