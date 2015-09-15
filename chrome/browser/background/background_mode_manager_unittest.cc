@@ -419,7 +419,6 @@ TEST_F(BackgroundModeManagerTest, BackgroundAppInstallUninstallWhileDisabled) {
   // Turn off background mode (shouldn't explicitly disable launch-on-startup as
   // the app-count is zero and launch-on-startup shouldn't be considered on).
   manager.SetEnabled(false);
-  manager.DisableBackgroundMode();
   AssertBackgroundModeInactive(manager);
 
   // When a new client is installed, status tray icons will not be created,
@@ -436,7 +435,6 @@ TEST_F(BackgroundModeManagerTest, BackgroundAppInstallUninstallWhileDisabled) {
   // Re-enable background mode (shouldn't actually enable launch-on-startup as
   // the app-count is zero).
   manager.SetEnabled(true);
-  manager.EnableBackgroundMode();
   AssertBackgroundModeInactive(manager);
 }
 
@@ -461,7 +459,6 @@ TEST_F(BackgroundModeManagerTest, EnableAfterBackgroundAppInstall) {
   // Turn off background mode - should hide status tray icon.
   EXPECT_CALL(manager, EnableLaunchOnStartup(false)).Times(Exactly(1));
   manager.SetEnabled(false);
-  manager.DisableBackgroundMode();
   Mock::VerifyAndClearExpectations(&manager);
   AssertBackgroundModeInactive(manager);
 
@@ -469,7 +466,6 @@ TEST_F(BackgroundModeManagerTest, EnableAfterBackgroundAppInstall) {
   // was already an app installed before background mode was disabled.
   EXPECT_CALL(manager, EnableLaunchOnStartup(true)).Times(Exactly(1));
   manager.SetEnabled(true);
-  manager.EnableBackgroundMode();
   Mock::VerifyAndClearExpectations(&manager);
   AssertBackgroundModeActive(manager);
 
@@ -506,14 +502,12 @@ TEST_F(BackgroundModeManagerTest, MultiProfile) {
   // Should hide both status tray icons.
   EXPECT_CALL(manager, EnableLaunchOnStartup(false)).Times(Exactly(1));
   manager.SetEnabled(false);
-  manager.DisableBackgroundMode();
   Mock::VerifyAndClearExpectations(&manager);
   AssertBackgroundModeInactive(manager);
 
   // Turn back on background mode - should show both status tray icons.
   EXPECT_CALL(manager, EnableLaunchOnStartup(true)).Times(Exactly(1));
   manager.SetEnabled(true);
-  manager.EnableBackgroundMode();
   Mock::VerifyAndClearExpectations(&manager);
   AssertBackgroundModeActive(manager);
 
