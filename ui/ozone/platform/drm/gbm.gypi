@@ -79,8 +79,6 @@
         'gpu/gbm_buffer_base.h',
         'gpu/gbm_device.cc',
         'gpu/gbm_device.h',
-        'gpu/gbm_surface.cc',
-        'gpu/gbm_surface.h',
         'gpu/gbm_surface_factory.cc',
         'gpu/gbm_surface_factory.h',
         'gpu/gbm_surfaceless.cc',
@@ -124,9 +122,6 @@
         'ozone_platform_gbm.h',
       ],
       'conditions': [
-        ['use_mesa_platform_null==1', {
-          'defines': ['USE_MESA_PLATFORM_NULL'],
-        }],
         ['use_vgem_map==1', {
           'defines': ['USE_VGEM_MAP'],
           'sources': [
