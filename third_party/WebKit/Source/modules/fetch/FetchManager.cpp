@@ -36,6 +36,7 @@
 #include "platform/network/ResourceResponse.h"
 #include "platform/weborigin/SchemeRegistry.h"
 #include "platform/weborigin/SecurityOrigin.h"
+#include "platform/weborigin/SecurityPolicy.h"
 #include "public/platform/WebURLRequest.h"
 #include "wtf/HashSet.h"
 #include "wtf/Vector.h"
@@ -485,8 +486,27 @@ void FetchManager::Loader::performHTTPFetch(bool corsFlag, bool corsPreflightFla
     // "2. Append `Referer`/empty byte sequence, if |HTTPRequest|'s |referrer|
     // is none, and `Referer`/|HTTPRequest|'s referrer, serialized and utf-8
     // encoded, otherwise, to HTTPRequest's header list.
-    // We set the referrer using workerGlobalScope's URL in
-    // WorkerThreadableLoader.
+    //
+    // The following code also invokes "determine request's referrer" which is
+    // written in "Main fetch" operation.
+    ASSERT(m_request->referrerPolicy() == ReferrerPolicyDefault);
+    // Request's referrer policy is always default, so use the client's one.
+    // TODO(yhirano): Fix here when we introduce requet's referrer policy.
+    ReferrerPolicy policy = executionContext()->referrerPolicy();
+    if (m_request->referrerString() == FetchRequestData::clientReferrerString()) {
+        String referrerURL;
+        if (executionContext()->isDocument()) {
+            Document* document = toDocument(executionContext());
+            referrerURL = document->outgoingReferrer();
+        } else if (executionContext()->isWorkerGlobalScope()) {
+            referrerURL = executionContext()->url().strippedForUseAsReferrer();
+        }
+        request.setHTTPReferrer(SecurityPolicy::generateReferrer(policy, m_request->url(), referrerURL));
+    } else {
+        // Note that generateReferrer generates |no-referrer| from |no-referrer|
+        // referrer string (i.e. String()).
+        request.setHTTPReferrer(SecurityPolicy::generateReferrer(policy, m_request->url(), m_request->referrerString()));
+    }
 
     // "3. Append `Host`, ..."
     // FIXME: Implement this when the spec is fixed.

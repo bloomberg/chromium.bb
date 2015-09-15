@@ -38,7 +38,7 @@ FetchRequestData* createCopyOfFetchRequestDataForFetch(ScriptState* scriptState,
         request->setOrigin(scriptState->executionContext()->securityOrigin());
     // FIXME: Set ForceOriginHeaderFlag.
     request->setSameOriginDataURLFlag(true);
-    request->mutableReferrer()->setClient();
+    request->setReferrer(original->referrer());
     request->setMode(original->mode());
     request->setCredentials(original->credentials());
     request->setRedirect(original->redirect());
@@ -76,8 +76,10 @@ Request* Request::createRequestWithRequestOrString(ScriptState* scriptState, Req
 
     // "3. Let |request| be |input|'s request, if |input| is a Request object,
     // and a new request otherwise."
+    // "4. Let origin be entry settings object's origin."
+    RefPtr<SecurityOrigin> origin = scriptState->executionContext()->securityOrigin();
+
     // TODO(yhirano):
-    //   "4. Let origin be entry settings object's origin."
     //   "5. Let window be client."
     //   "6. If request's window is an environment settings object and its
     //   origin is same origin with origin, set window to request's window."
@@ -118,12 +120,47 @@ Request* Request::createRequestWithRequestOrString(ScriptState* scriptState, Req
         // We don't use fallback values. We set these flags directly in below.
     }
 
-    // TODO(yhirano):
-    //   "14. If any of |init|'s members are present, set |request|'s referrer
-    //   to client, and |request|'s referrer policy to the empty string.
-    //   15. If |init|'s referrer member is present, run these substeps:...
+    //   14. If any of |init|'s members are present, set |request|'s referrer
+    // to client, and |request|'s referrer policy to the empty string.
+    //   => RequestInit::RequestInit.
+    //   15. If |init|'s referrer member is present, run these substeps:
+    // Note that JS null and undefined are encoded as an empty string and thus
+    // a null string means referrer member is not set.
     //   16. If |init|'s referrerPolicy member is present, set |request|'s
-    //   referrer policy to it."
+    // referrer policy to it.
+    if (init.isReferrerSet) {
+        // 1. Let |referrer| be |init|'s referrer member.
+        if (init.referrer.referrer.isEmpty()) {
+            // 2. if |referrer| is the empty string, set |request|'s referrer to
+            // "no-referrer" and terminate these substeps.
+            request->setReferrerString(FetchRequestData::noReferrerString());
+        } else {
+            // 3. Let |parsedReferrer| be the result of parsing |referrer| with
+            // |baseURL|.
+            KURL parsedReferrer = scriptState->executionContext()->completeURL(init.referrer.referrer);
+            if (!parsedReferrer.isValid()) {
+                // 4. If |parsedReferrer| is failure, throw a TypeError.
+                exceptionState.throwTypeError("Referrer '" + init.referrer.referrer + "' is not a valid URL.");
+                return nullptr;
+            }
+            if (parsedReferrer.protocolIsAbout() && parsedReferrer.host().isEmpty() and parsedReferrer.path() == "client") {
+                // 5. If |parsedReferrer|'s non-relative flag is set, scheme is
+                // "about", and path contains a single string "client", set
+                // request's referrer to "client" and terminate these substeps.
+                request->setReferrerString(FetchRequestData::clientReferrerString());
+            } else if (!origin->isSameSchemeHostPortAndSuborigin(SecurityOrigin::create(parsedReferrer).get())) {
+                // 6. If |parsedReferrer|'s origin is not same origin with
+                // |origin|, throw a TypeError.
+                exceptionState.throwTypeError("The origin of '" + init.referrer.referrer + "' should be same as '" + origin->toString() + "'");
+                return nullptr;
+            } else {
+                // 7. Set |request|'s referrer to |parsedReferrer|.
+                request->setReferrerString(AtomicString(parsedReferrer.string()));
+            }
+        }
+        request->setReferrerPolicy(init.referrer.referrerPolicy);
+    }
+
 
     // "17. Let |mode| be |init|'s mode member if it is present, and
     // |fallbackMode| otherwise."
@@ -443,11 +480,9 @@ String Request::referrer() const
     // "The referrer attribute's getter must return the empty string if
     // request's referrer is no referrer, "about:client" if request's referrer
     // is client and request's referrer, serialized, otherwise."
-    if (m_request->referrer().isNoReferrer())
-        return String();
-    if (m_request->referrer().isClient())
-        return String("about:client");
-    return m_request->referrer().referrer().referrer;
+    ASSERT(FetchRequestData::noReferrerString() == AtomicString());
+    ASSERT(FetchRequestData::clientReferrerString() == AtomicString("about:client"));
+    return m_request->referrerString();
 }
 
 String Request::mode() const
@@ -543,7 +578,7 @@ void Request::populateWebServiceWorkerRequest(WebServiceWorkerRequest& webReques
         webRequest.appendHeader(header.first, header.second);
     }
 
-    webRequest.setReferrer(m_request->referrer().referrer().referrer, static_cast<WebReferrerPolicy>(m_request->referrer().referrer().referrerPolicy));
+    webRequest.setReferrer(m_request->referrerString(), static_cast<WebReferrerPolicy>(m_request->referrerPolicy()));
     // FIXME: How can we set isReload properly? What is the correct place to load it in to the Request object? We should investigate the right way
     // to plumb this information in to here.
 }

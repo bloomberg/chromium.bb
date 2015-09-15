@@ -143,7 +143,8 @@ void WorkerThreadableLoader::MainThreadBridge::mainThreadCreateLoader(PassOwnPtr
     Document* document = toDocument(context);
 
     OwnPtr<ResourceRequest> request(ResourceRequest::adopt(requestData));
-    request->setHTTPReferrer(SecurityPolicy::generateReferrer(referrerPolicy, request->url(), outgoingReferrer));
+    if (!request->didSetHTTPReferrer())
+        request->setHTTPReferrer(SecurityPolicy::generateReferrer(referrerPolicy, request->url(), outgoingReferrer));
     resourceLoaderOptions.requestInitiatorContext = WorkerContext;
     m_mainThreadLoader = DocumentThreadableLoader::create(*document, this, *request, options, resourceLoaderOptions);
     if (!m_mainThreadLoader) {

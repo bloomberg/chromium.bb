@@ -102,7 +102,7 @@ TEST_F(ServiceWorkerRequestTest, FromAndToWebRequest)
     EXPECT_EQ(method, String(secondWebRequest.method()));
     EXPECT_EQ(context, secondWebRequest.requestContext());
     EXPECT_EQ(referrer, KURL(secondWebRequest.referrerUrl()));
-    EXPECT_EQ(referrerPolicy, secondWebRequest.referrerPolicy());
+    EXPECT_EQ(WebReferrerPolicyDefault, secondWebRequest.referrerPolicy());
     EXPECT_EQ(webRequest.headers(), secondWebRequest.headers());
 }
 

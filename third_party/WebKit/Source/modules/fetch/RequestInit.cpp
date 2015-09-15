@@ -18,28 +18,53 @@
 #include "modules/fetch/Headers.h"
 #include "platform/blob/BlobData.h"
 #include "platform/network/EncodedFormData.h"
+#include "platform/weborigin/ReferrerPolicy.h"
 
 namespace blink {
 
 RequestInit::RequestInit(ExecutionContext* context, const Dictionary& options, ExceptionState& exceptionState)
-    : opaque(false)
+    : opaque(false), isReferrerSet(false)
 {
-    DictionaryHelper::get(options, "method", method);
-    DictionaryHelper::get(options, "headers", headers);
+    bool areAnyMembersSet = false;
+
+    areAnyMembersSet = DictionaryHelper::get(options, "method", method) || areAnyMembersSet;
+    areAnyMembersSet = DictionaryHelper::get(options, "headers", headers) || areAnyMembersSet;
     if (!headers) {
         Vector<Vector<String>> headersVector;
-        if (DictionaryHelper::get(options, "headers", headersVector, exceptionState))
+        if (DictionaryHelper::get(options, "headers", headersVector, exceptionState)) {
             headers = Headers::create(headersVector, exceptionState);
-        else
-            DictionaryHelper::get(options, "headers", headersDictionary);
+            areAnyMembersSet = true;
+        } else {
+            areAnyMembersSet = DictionaryHelper::get(options, "headers", headersDictionary) || areAnyMembersSet;
+        }
     }
-    DictionaryHelper::get(options, "mode", mode);
-    DictionaryHelper::get(options, "credentials", credentials);
-    DictionaryHelper::get(options, "redirect", redirect);
-    DictionaryHelper::get(options, "integrity", integrity);
+    areAnyMembersSet = DictionaryHelper::get(options, "mode", mode) || areAnyMembersSet;
+    areAnyMembersSet = DictionaryHelper::get(options, "credentials", credentials) || areAnyMembersSet;
+    areAnyMembersSet = DictionaryHelper::get(options, "redirect", redirect) || areAnyMembersSet;
+    AtomicString referrerString;
+    bool isReferrerStringSet = DictionaryHelper::get(options, "referrer", referrerString);
+    areAnyMembersSet = areAnyMembersSet || isReferrerStringSet;
+    areAnyMembersSet = DictionaryHelper::get(options, "integrity", integrity) || areAnyMembersSet;
 
     v8::Local<v8::Value> v8Body;
-    if (!DictionaryHelper::get(options, "body", v8Body) || v8Body->IsUndefined() || v8Body->IsNull())
+    bool isBodySet = DictionaryHelper::get(options, "body", v8Body);
+    areAnyMembersSet = areAnyMembersSet || isBodySet;
+
+    if (areAnyMembersSet) {
+        // If any of init's members are present, unset request's
+        // omit-Origin-header flag, set request's referrer to "client",
+        // and request's referrer policy to the empty string.
+        //
+        // We need to use "about:client" instead of |clientReferrerString|,
+        // because "about:client" => |clientReferrerString| conversion is done
+        // in Request::createRequestWithRequestOrString.
+        referrer = Referrer("about:client", ReferrerPolicyDefault);
+        if (isReferrerStringSet)
+            referrer.referrer = referrerString;
+        isReferrerSet = true;
+    }
+
+    if (!isBodySet || v8Body->IsUndefined() || v8Body->IsNull())
         return;
     v8::Isolate* isolate = toIsolate(context);
     if (v8Body->IsArrayBuffer()) {

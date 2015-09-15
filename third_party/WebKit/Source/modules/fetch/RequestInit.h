@@ -7,6 +7,7 @@
 
 #include "bindings/core/v8/Dictionary.h"
 #include "platform/heap/Handle.h"
+#include "platform/weborigin/Referrer.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/RefPtr.h"
 #include "wtf/text/WTFString.h"
@@ -28,6 +29,7 @@ public:
     Dictionary headersDictionary;
     String contentType;
     OwnPtr<FetchDataConsumerHandle> body;
+    Referrer referrer;
     String mode;
     String credentials;
     String redirect;
@@ -35,6 +37,9 @@ public:
 
     // https://w3c.github.io/webappsec/specs/credentialmanagement/#monkey-patching-fetch-2
     bool opaque;
+    // True if any members in RequestInit are set and hence the referrer member
+    // should be used in the Request constructor.
+    bool isReferrerSet;
 };
 
 }

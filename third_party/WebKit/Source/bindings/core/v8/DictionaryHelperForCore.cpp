@@ -118,7 +118,7 @@ CORE_EXPORT bool DictionaryHelper::get(const Dictionary& dictionary, const Strin
 }
 
 template <>
-bool DictionaryHelper::get(const Dictionary& dictionary, const String& key, AtomicString& value)
+CORE_EXPORT bool DictionaryHelper::get(const Dictionary& dictionary, const String& key, AtomicString& value)
 {
     return getStringType(dictionary, key, value);
 }

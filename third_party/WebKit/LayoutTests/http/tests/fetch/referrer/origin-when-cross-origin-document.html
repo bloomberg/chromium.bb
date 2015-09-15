@@ -1,0 +1,34 @@
+<!doctype html>
+<html>
+<meta http-equiv = "Content-Security-Policy" content = "referrer origin-when-cross-origin">
+<title>Fetch in a document with &quot;referrer origin-when-cross-origin&quot; policy</title>
+<body>
+<script src = "/resources/testharness.js"></script>
+<script src = "/resources/testharness-helpers.js"></script>
+<script src = "/resources/testharnessreport.js"></script>
+<script src = "/serviceworker/resources/test-helpers.js"></script>
+<script src = "/fetch/resources/fetch-test-options.js"></script>
+<script src = "/fetch/resources/fetch-test-helpers.js"></script>
+<script>
+
+var BASE_URL = BASE_ORIGIN + '/fetch/resources/referrer.php';
+var OTHER_URL = OTHER_ORIGIN + '/fetch/resources/referrer.php';
+
+test(function(t) {
+    assert_equals(new Request(BASE_URL).referrer, 'about:client');
+  }, 'Request referrer property should be immune to the page referrer policy');
+
+var TESTS = [
+  [BASE_URL, 'about:client', location.href],
+  [BASE_URL, '', '[no-referrer]'],
+  [BASE_URL, '/foo', BASE_ORIGIN + '/foo'],
+  [OTHER_URL, 'about:client', BASE_ORIGIN + '/'],
+  [OTHER_URL, '', '[no-referrer]'],
+  [OTHER_URL, '/foo', BASE_ORIGIN + '/'],
+];
+
+add_referrer_tests(TESTS);
+done();
+</script>
+</body>
+</html>

@@ -33,7 +33,7 @@ FetchRequestData* FetchRequestData::create(ExecutionContext* executionContext, c
     if (webRequest.blobDataHandle())
         request->setBuffer(new BodyStreamBuffer(FetchBlobDataConsumerHandle::create(executionContext, webRequest.blobDataHandle())));
     request->setContext(webRequest.requestContext());
-    request->m_referrer.setURL(webRequest.referrer());
+    request->setReferrer(Referrer(webRequest.referrerUrl().string(), ReferrerPolicyDefault));
     request->setMode(webRequest.mode());
     request->setCredentials(webRequest.credentialsMode());
     request->setRedirect(webRequest.redirectMode());
@@ -92,6 +92,7 @@ FetchRequestData::FetchRequestData()
     , m_unsafeRequestFlag(false)
     , m_context(WebURLRequest::RequestContextUnspecified)
     , m_sameOriginDataURLFlag(false)
+    , m_referrer(Referrer(clientReferrerString(), ReferrerPolicyDefault))
     , m_mode(WebURLRequest::FetchRequestModeNoCORS)
     , m_credentials(WebURLRequest::FetchCredentialsModeOmit)
     , m_redirect(WebURLRequest::FetchRedirectModeFollow)

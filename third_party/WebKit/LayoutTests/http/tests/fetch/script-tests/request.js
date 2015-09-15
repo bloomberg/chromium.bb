@@ -374,6 +374,79 @@ test(function() {
                 'Request should be flagged as used if it has been consumed.');
   }, 'Request construction failure should not set "bodyUsed"');
 
+test(function() {
+    assert_equals(new Request(URL).referrer, 'about:client');
+  }, 'Request without RequestInit.');
+
+test(function() {
+    var req = new Request(URL, {referrer: 'about:client'});
+
+    assert_equals(req.referrer, 'about:client',
+                  'constructed with referrer=about:client');
+    assert_equals(new Request(req.clone()).referrer, 'about:client',
+                 'cloned from a request with referrer=about:client');
+    assert_equals(new Request(req.clone(), {foo: null}).referrer,
+                  'about:client',
+                  'constructed from a request with referrer=about:client');
+    assert_equals(new Request(req.clone(), {method: 'GET'}).referrer,
+                  'about:client',
+                  'constructed with method from a request with ' +
+                  'referrer=about:client');
+  }, 'Request with referrer=about:client.');
+
+test(function() {
+    var req = new Request(URL, {referrer: ''});
+
+    assert_equals(req.referrer, '', 'constructed with no-referrer');
+    assert_equals(new Request(req.clone()).referrer, '',
+                  'cloned from a request with no-referrer');
+    assert_equals(new Request(req.clone(), {foo: null}).referrer, '',
+                  'constructed from a request with no-referrer');
+    assert_equals(new Request(req.clone(), {method: 'GET'}).referrer,
+                  'about:client',
+                  'constructed with method from a request with no-referrer');
+  }, 'Request with no-referrer.');
+
+test(function() {
+    var referrer = BASE_ORIGIN + '/path?query';
+    var req = new Request(URL, {referrer: referrer});
+
+    assert_equals(req.referrer, referrer, 'constructed with a url referrer');
+    assert_equals(req.clone().referrer, referrer,
+                  'cloned from a request with a url referrer');
+    assert_equals(new Request(req.clone(), {foo: null}).referrer, referrer,
+                  'constructed from a request with a url referrer');
+    assert_equals(new Request(req.clone(), {method: 'GET'}).referrer,
+                  'about:client',
+                  'constructed with method from a request with a url referrer');
+  }, 'Request with a url referrer');
+
+test(function() {
+    var referrer =
+        (BASE_ORIGIN + '/path/?query#hash').replace('//', '//user:pass@');
+    var req = new Request(URL, {referrer: referrer});
+    assert_equals(req.referrer, referrer, 'constructed with a url referrer');
+  }, 'Request with a url referrer containing user, pass, and so on');
+
+test(function() {
+    var referrer = OTHER_ORIGIN + '/path?query';
+    assert_throws({name: 'TypeError'},
+        () => new Request(URL, {referrer: referrer}));
+  }, 'Request with a url with another origin');
+
+test(function() {
+    var referrer = 'invali\0d';
+    assert_throws({name: 'TypeError'},
+        () => new Request(URL, {referrer: referrer}));
+  }, 'Request with an invalid referrer');
+
+test(function() {
+    var referrer = '/path?query';
+    var expected = BASE_ORIGIN + '/path?query';
+
+    assert_equals(new Request(URL, {referrer: referrer}).referrer, expected);
+  }, 'Request with a relative referrer');
+
 // Spec: https://fetch.spec.whatwg.org/#dom-request
 // Step 21:
 // If request's method is `GET` or `HEAD`, throw a TypeError.

@@ -1,0 +1,42 @@
+<!doctype html>
+<html>
+<meta http-equiv = "Content-Security-Policy" content = "referrer origin">
+<body>
+<script src = "/resources/testharness.js"></script>
+<script src = "/resources/testharness-helpers.js"></script>
+<script src = "/resources/testharnessreport.js"></script>
+<script src = "/serviceworker/resources/test-helpers.js"></script>
+<script src = "/fetch/resources/fetch-test-helpers.js"></script>
+<script src = "/fetch/resources/fetch-test-options.js"></script>
+<script>
+var SCRIPT = '/fetch/referrer/resources/simple-onfetch.js';
+var SCOPE = location.href;
+
+var BASE_URL = BASE_ORIGIN + '/fetch/resources/referrer.php';
+var OTHER_URL = OTHER_ORIGIN + '/fetch/resources/referrer.php';
+var REFERRER_SOURCE = location.href;
+
+promise_test(t => {
+    return navigator.serviceWorker.register(SCRIPT, {scope: SCOPE}).then(r => {
+        return r.ready;
+      }).then(() => {
+        if (navigator.serviceWorker.controller === null) {
+          location.reload();
+        }
+      });
+  });
+
+var TESTS = [
+  [BASE_URL, 'about:client', BASE_ORIGIN + '/'],
+  [BASE_URL, '', '[no-referrer]'],
+  [BASE_URL, '/foo', BASE_ORIGIN + '/'],
+  [OTHER_URL, 'about:client', BASE_ORIGIN + '/'],
+  [OTHER_URL, '', '[no-referrer]'],
+  [OTHER_URL, '/foo', BASE_ORIGIN + '/'],
+];
+
+add_referrer_tests(TESTS);
+done();
+</script>
+</body>
+</html>
