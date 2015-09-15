@@ -1,0 +1,10 @@
+include_rules = [
+  "+crypto",
+  "-mojo/runner",
+]
+
+specific_include_rules = {
+  "about_fetcher_unittest.cc": [
+    "+mojo/runner/context.h"
+  ],
+}

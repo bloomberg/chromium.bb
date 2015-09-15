@@ -4,6 +4,7 @@
 
 #include "mojo/runner/in_process_native_runner.h"
 
+#include "base/path_service.h"
 #include "mojo/runner/context.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -11,7 +12,9 @@ namespace mojo {
 namespace runner {
 
 TEST(InProcessNativeRunnerTest, NotStarted) {
-  Context context;
+  base::FilePath shell_dir;
+  PathService::Get(base::DIR_MODULE, &shell_dir);
+  Context context(shell_dir);
   base::MessageLoop loop;
   context.Init();
   InProcessNativeRunner runner(&context);

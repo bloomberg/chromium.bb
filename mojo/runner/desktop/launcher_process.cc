@@ -13,6 +13,7 @@
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/message_loop/message_loop.h"
+#include "base/path_service.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/trace_event/trace_event.h"
 #include "components/tracing/trace_config_file.h"
@@ -98,7 +99,9 @@ int LauncherProcessMain(int argc, char** argv) {
 
   // We want the shell::Context to outlive the MessageLoop so that pipes are
   // all gracefully closed / error-out before we try to shut the Context down.
-  Context shell_context;
+  base::FilePath shell_dir;
+  PathService::Get(base::DIR_MODULE, &shell_dir);
+  Context shell_context(shell_dir);
   {
     base::MessageLoop message_loop;
     if (!shell_context.Init()) {
