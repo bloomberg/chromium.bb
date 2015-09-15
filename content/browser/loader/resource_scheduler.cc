@@ -5,7 +5,10 @@
 #include "content/browser/loader/resource_scheduler.h"
 
 #include <stdint.h>
+
 #include <set>
+#include <string>
+#include <vector>
 
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
@@ -135,9 +138,7 @@ class ResourceScheduler::RequestQueue {
   // Removes |request| from the queue.
   void Erase(ScheduledResourceRequest* request) {
     PointerMap::iterator it = pointers_.find(request);
-    DCHECK(it != pointers_.end());
-    if (it == pointers_.end())
-      return;
+    CHECK(it != pointers_.end());
     queue_.erase(it->second);
     pointers_.erase(it);
   }
@@ -1084,10 +1085,8 @@ void ResourceScheduler::OnClientCreated(int child_id,
 void ResourceScheduler::OnClientDeleted(int child_id, int route_id) {
   DCHECK(CalledOnValidThread());
   ClientId client_id = MakeClientId(child_id, route_id);
-  DCHECK(ContainsKey(client_map_, client_id));
   ClientMap::iterator it = client_map_.find(client_id);
-  if (it == client_map_.end())
-    return;
+  CHECK(it != client_map_.end());
 
   Client* client = it->second;
   // ResourceDispatcherHost cancels all requests except for cross-renderer
@@ -1293,9 +1292,7 @@ void ResourceScheduler::ReprioritizeRequest(net::URLRequest* request,
                                             net::RequestPriority new_priority,
                                             int new_intra_priority_value) {
   if (request->load_flags() & net::LOAD_IGNORE_LIMITS) {
-    // We should not be re-prioritizing requests with the
-    // IGNORE_LIMITS flag.
-    NOTREACHED();
+    // Requests with the IGNORE_LIMITS flag must stay at MAXIMUM_PRIORITY.
     return;
   }
 
@@ -1313,7 +1310,8 @@ void ResourceScheduler::ReprioritizeRequest(net::URLRequest* request,
   RequestPriorityParams old_priority_params =
       scheduled_resource_request->get_request_priority_params();
 
-  DCHECK(old_priority_params != new_priority_params);
+  if (old_priority_params == new_priority_params)
+    return;
 
   ClientMap::iterator client_it =
       client_map_.find(scheduled_resource_request->client_id());
@@ -1325,10 +1323,7 @@ void ResourceScheduler::ReprioritizeRequest(net::URLRequest* request,
     return;
   }
 
-  if (old_priority_params == new_priority_params)
-    return;
-
-  Client *client = client_it->second;
+  Client* client = client_it->second;
   client->ReprioritizeRequest(scheduled_resource_request, old_priority_params,
                               new_priority_params);
 }
