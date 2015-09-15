@@ -629,18 +629,21 @@ TEST_F(OfflinePageModelTest, GetPageByBookmarkId) {
       base::Bind(&OfflinePageModelTest::OnSavePageDone, AsWeakPtr()));
   PumpLoop();
 
-  OfflinePageItem page;
-  EXPECT_TRUE(model()->GetPageByBookmarkId(kTestPageBookmarkId1, &page));
-  EXPECT_EQ(kTestUrl, page.url);
-  EXPECT_EQ(kTestPageBookmarkId1, page.bookmark_id);
-  EXPECT_EQ(kTestFileSize, page.file_size);
+  const OfflinePageItem* page =
+      model()->GetPageByBookmarkId(kTestPageBookmarkId1);
+  ASSERT_TRUE(page);
+  EXPECT_EQ(kTestUrl, page->url);
+  EXPECT_EQ(kTestPageBookmarkId1, page->bookmark_id);
+  EXPECT_EQ(kTestFileSize, page->file_size);
 
-  EXPECT_TRUE(model()->GetPageByBookmarkId(kTestPageBookmarkId2, &page));
-  EXPECT_EQ(kTestUrl2, page.url);
-  EXPECT_EQ(kTestPageBookmarkId2, page.bookmark_id);
-  EXPECT_EQ(kTestFileSize, page.file_size);
+  page = model()->GetPageByBookmarkId(kTestPageBookmarkId2);
+  ASSERT_TRUE(page);
+  EXPECT_EQ(kTestUrl2, page->url);
+  EXPECT_EQ(kTestPageBookmarkId2, page->bookmark_id);
+  EXPECT_EQ(kTestFileSize, page->file_size);
 
-  EXPECT_FALSE(model()->GetPageByBookmarkId(-42, &page));
+  page = model()->GetPageByBookmarkId(-42);
+  EXPECT_FALSE(page);
 }
 
 TEST_F(OfflinePageModelTest, GetPageByOfflineURL) {

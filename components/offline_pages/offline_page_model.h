@@ -147,11 +147,9 @@ class OfflinePageModel : public KeyedService,
   // model is loaded.
   const std::vector<OfflinePageItem> GetPagesToCleanUp() const;
 
-  // Gets an offline page associated with a specified |bookmark_id|. Returns
-  // true if a matching offline page exists, and |offline_page| will be updated
-  // with corresponding value, or false, if no offline page was found.
-  bool GetPageByBookmarkId(int64 bookmark_id,
-                           OfflinePageItem* offline_page) const;
+  // Returns an offline page associated with a specified |bookmark_id|. nullptr
+  // is returned if not found.
+  const OfflinePageItem* GetPageByBookmarkId(int64 bookmark_id) const;
 
   // Returns an offline page that is stored as |offline_url|. nullptr is
   // returned if not found.

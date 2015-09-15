@@ -17,8 +17,6 @@ import android.graphics.Color;
 import android.graphics.Rect;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -92,6 +90,7 @@ import org.chromium.chrome.browser.metrics.UmaSessionStats;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.nfc.BeamController;
 import org.chromium.chrome.browser.nfc.BeamProvider;
+import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.chrome.browser.partnercustomizations.PartnerBrowserCustomizations;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
@@ -99,9 +98,7 @@ import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.printing.TabPrinter;
 import org.chromium.chrome.browser.share.ShareHelper;
 import org.chromium.chrome.browser.snackbar.LoFiBarPopupController;
-import org.chromium.chrome.browser.snackbar.Snackbar;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
-import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarController;
 import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarManageable;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.chrome.browser.sync.SyncController;
@@ -502,45 +499,10 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
             }
 
             @Override
-            public void onPageLoadStarted(Tab tab, String url) {
-                // If an offline page is being opened, show the hint.
-                if (tab.isOfflinePage()) {
-                    ConnectivityManager connectivityManager =
-                            (ConnectivityManager) getBaseContext().getSystemService(
-                                    Context.CONNECTIVITY_SERVICE);
-                    NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
-                    boolean hasConnection = networkInfo != null && networkInfo.isConnected();
-
-                    final String originalUrl = tab.getOfflinePageOriginalUrl();
-                    boolean showButton = hasConnection && originalUrl != null;
-                    final int tabId = tab.getId();
-
-                    getSnackbarManager().showSnackbar(Snackbar.make(
-                            getString(R.string.enhanced_bookmark_viewing_offline_page),
-                            new SnackbarController() {
-                                @Override
-                                public void onAction(Object actionData) {
-                                    Tab tab = mTabModelSelector.getTabById(tabId);
-                                    if (tab != null) {
-                                        tab.loadUrl(new LoadUrlParams(originalUrl,
-                                                PageTransition.RELOAD));
-                                    }
-                                }
-
-                                @Override
-                                public void onDismissNoAction(Object actionData) {}
-
-                                @Override
-                                public void onDismissForEachType(boolean isTimeout) {}
-                            })
-                            .setAction(showButton ? getString(R.string.reload) : null, null));
-                }
-            }
-
-            @Override
             public void onPageLoadFinished(Tab tab) {
                 postDeferredStartupIfNeeded();
                 showUpdateInfoBarIfNecessary();
+                OfflinePageUtils.showOfflineSnackbarIfNecessary(ChromeActivity.this, tab);
             }
 
             @Override
@@ -1059,6 +1021,19 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
             }
             startActivity(intent);
         }
+    }
+
+    /**
+     * Saves an offline copy for the specified tab that is bookmarked.
+     * @param tab The tab that needs to save an offline copy.
+     */
+    public void saveBookmarkOffline(Tab tab) {
+        if (tab == null || tab.isFrozen()) {
+            return;
+        }
+
+        EnhancedBookmarkUtils.saveBookmarkOffline(tab.getUserBookmarkId(),
+                new EnhancedBookmarksModel(), tab, getSnackbarManager(), ChromeActivity.this);
     }
 
     /**

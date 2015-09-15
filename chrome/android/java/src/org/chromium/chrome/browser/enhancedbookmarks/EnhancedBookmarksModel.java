@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.enhancedbookmarks;
 import org.chromium.base.ObserverList;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.BookmarksBridge;
+import org.chromium.chrome.browser.ChromeBrowserProviderClient;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge.OfflinePageModelObserver;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge.SavePageCallback;
@@ -30,7 +31,7 @@ public class EnhancedBookmarksModel extends BookmarksBridge {
     private static final int FAVICON_MAX_CACHE_SIZE = 10 * 1024 * 1024; // 10MB
 
     /**
-     * Callback for use with addBookmark.
+     * Callback for use with addBookmarkAsync / saveOfflinePage.
      */
     public interface AddBookmarkCallback {
         /**
@@ -194,14 +195,27 @@ public class EnhancedBookmarksModel extends BookmarksBridge {
             return;
         }
 
-        mOfflinePageBridge.savePage(webContents, enhancedId,
-                new SavePageCallback() {
-                    @Override
-                    public void onSavePageDone(int savePageResult, String url) {
-                        callback.onBookmarkAdded(
-                                enhancedId, savePageResult == SavePageResult.SUCCESS);
-                    }
-                });
+        saveOfflinePage(enhancedId, webContents, callback);
+    }
+
+    /**
+    * Save an offline copy for the bookmarked page asynchronously.
+    *
+    * @param bookmarkId The ID of the page to save an offline copy.
+    * @param webContents A {@link WebContents} object.
+    * @param callback The callback to be invoked when the offline copy is saved.
+    */
+    public void saveOfflinePage(final BookmarkId bookmarkId, WebContents webContents,
+            final AddBookmarkCallback callback) {
+        assert bookmarkId.getId() != ChromeBrowserProviderClient.INVALID_BOOKMARK_ID;
+        if (mOfflinePageBridge != null) {
+            mOfflinePageBridge.savePage(webContents, bookmarkId, new SavePageCallback() {
+                @Override
+                public void onSavePageDone(int savePageResult, String url) {
+                    callback.onBookmarkAdded(bookmarkId, savePageResult == SavePageResult.SUCCESS);
+                }
+            });
+        }
     }
 
     /**

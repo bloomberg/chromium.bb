@@ -2652,6 +2652,13 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
     }
 
     /**
+     * @return Whether an offline copy of this tab's URL exists.
+     */
+    public boolean hasOfflineCopy() {
+        return isFrozen() ? false : nativeHasOfflineCopy(mNativeTabAndroid);
+    }
+
+    /**
      * @return True if the offline page is opened.
      */
     public boolean isOfflinePage() {
@@ -2864,6 +2871,7 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
     private native void nativeLoadOriginalImage(long nativeTabAndroid);
     private native void nativeSearchByImageInNewTabAsync(long nativeTabAndroid);
     private native long nativeGetBookmarkId(long nativeTabAndroid, boolean onlyEditable);
+    private native boolean nativeHasOfflineCopy(long nativeTabAndroid);
     private native boolean nativeIsOfflinePage(long nativeTabAndroid);
     private native String nativeGetOfflinePageOriginalUrl(long nativeTabAndroid);
     private native void nativeSetInterceptNavigationDelegate(long nativeTabAndroid,

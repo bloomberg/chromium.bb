@@ -1833,9 +1833,6 @@ Just open Chrome on your computer, go to the menu, and select “Sign in to Chro
       <message name="IDS_ENHANCED_BOOKMARK_NO_RESULT" desc="Text explaining that no bookmarks are found to match a search query">
         No bookmarks found
       </message>
-      <message name="IDS_ENHANCED_BOOKMARK_VIEWING_OFFLINE_PAGE" desc="Text explaining that the user is viewing an offline copy of a web page.">
-        Viewing an offline copy of this page
-      </message>
       <message name="IDS_ACCESSIBILITY_ENHANCED_BOOKMARK_DRAWER_TOGGLE_BTN_OPEN" desc="Content description for the button to show the navigation drawer.">
         Open navigation drawer
       </message>
@@ -1880,6 +1877,9 @@ Just open Chrome on your computer, go to the menu, and select “Sign in to Chro
       <message name="IDS_OFFLINE_PAGES_SAVED_PAGES" desc="Title in recent tasks list for showing the list of web pages that have been saved.">
         Saved pages
       </message>
+      <message name="IDS_OFFLINE_PAGES_SAVE_PAGE_OFFLINE" desc="Message shown after the user visited a page that was bookmarked, but didn't have an offline copy.">
+        Save this page offline?
+      </message>
       <message name="IDS_OFFLINE_PAGES_STORAGE_SPACE_TITLE" desc="Title of the promo header for managing offline pages storage. [CHAR-LIMIT=32]">
         Storage space
       </message>
@@ -1888,6 +1888,9 @@ Just open Chrome on your computer, go to the menu, and select “Sign in to Chro
       </message>
       <message name="IDS_OFFLINE_PAGES_STORAGE_CLEARED" desc="Text for the snackbar confirming clearing of the offline page storage space.">
         Storage cleared
+      </message>
+      <message name="IDS_OFFLINE_PAGES_VIEWING_OFFLINE_PAGE" desc="Text explaining that the user is viewing an offline copy of a web page.">
+        Viewing an offline copy of this page
       </message>
 
       <!-- Find in page -->

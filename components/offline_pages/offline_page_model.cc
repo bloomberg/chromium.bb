@@ -169,18 +169,10 @@ const std::vector<OfflinePageItem> OfflinePageModel::GetPagesToCleanUp() const {
   return offline_pages;
 }
 
-bool OfflinePageModel::GetPageByBookmarkId(
-    int64 bookmark_id,
-    OfflinePageItem* offline_page) const {
-  DCHECK(offline_page);
-
+const OfflinePageItem* OfflinePageModel::GetPageByBookmarkId(
+    int64 bookmark_id) const {
   const auto iter = offline_pages_.find(bookmark_id);
-  if (iter != offline_pages_.end()) {
-    *offline_page = iter->second;
-    return true;
-  }
-
-  return false;
+  return iter != offline_pages_.end() ? &(iter->second) : nullptr;
 }
 
 const OfflinePageItem* OfflinePageModel::GetPageByOfflineURL(

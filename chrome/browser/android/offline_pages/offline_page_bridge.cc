@@ -117,15 +117,16 @@ ScopedJavaLocalRef<jobject> OfflinePageBridge::GetPageByBookmarkId(
     JNIEnv* env,
     jobject obj,
     jlong bookmark_id) {
-  OfflinePageItem offline_page;
-  if (!offline_page_model_->GetPageByBookmarkId(bookmark_id, &offline_page))
+  const OfflinePageItem* offline_page =
+      offline_page_model_->GetPageByBookmarkId(bookmark_id);
+  if (!offline_page)
     return ScopedJavaLocalRef<jobject>();
 
   return Java_OfflinePageBridge_createOfflinePageItem(
-      env, ConvertUTF8ToJavaString(env, offline_page.url.spec()).obj(),
-      offline_page.bookmark_id,
-      ConvertUTF8ToJavaString(env, offline_page.GetOfflineURL().spec()).obj(),
-      offline_page.file_size);
+      env, ConvertUTF8ToJavaString(env, offline_page->url.spec()).obj(),
+      offline_page->bookmark_id,
+      ConvertUTF8ToJavaString(env, offline_page->GetOfflineURL().spec()).obj(),
+      offline_page->file_size);
 }
 
 void OfflinePageBridge::SavePage(JNIEnv* env,

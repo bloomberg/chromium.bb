@@ -814,6 +814,20 @@ jlong TabAndroid::GetBookmarkId(JNIEnv* env,
   return -1;
 }
 
+jboolean TabAndroid::HasOfflineCopy(JNIEnv* env, jobject obj) {
+  // Offline copy is only saved for a bookmarked page.
+  jlong bookmark_id = GetBookmarkId(env, obj, true);
+  if (bookmark_id == -1)
+    return false;
+
+  offline_pages::OfflinePageModel* offline_page_model =
+      offline_pages::OfflinePageModelFactory::GetForBrowserContext(
+          GetProfile());
+  const offline_pages::OfflinePageItem* offline_page =
+      offline_page_model->GetPageByBookmarkId(bookmark_id);
+  return offline_page && !offline_page->file_path.empty();
+}
+
 jboolean TabAndroid::IsOfflinePage(JNIEnv* env, jobject obj) {
   GURL url = dom_distiller::url_utils::GetOriginalUrlFromDistillerUrl(
       web_contents()->GetURL());

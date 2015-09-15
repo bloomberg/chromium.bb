@@ -25,6 +25,7 @@ import org.chromium.chrome.browser.favicon.FaviconHelper;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.offlinepages.OfflinePageFreeUpSpaceCallback;
 import org.chromium.chrome.browser.offlinepages.OfflinePageFreeUpSpaceDialog;
+import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.chrome.browser.snackbar.Snackbar;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarController;
@@ -63,16 +64,46 @@ public class EnhancedBookmarkUtils {
     /**
      * If the tab has already been bookmarked, start {@link EnhancedBookmarkEditActivity} for the
      * bookmark. If not, add the bookmark to bookmarkmodel, and show a snackbar notifying the user.
+     * @param idToAdd The bookmark ID if the tab has already been bookmarked.
+     * @param bookmarkModel The enhanced bookmark model.
+     * @param tab The tab to add or edit a bookmark.
+     * @param snackbarManager The SnackbarManager used to show the snackbar.
+     * @param activity Current activity.
      */
-    public static void addOrEditBookmark(long idToAdd, final EnhancedBookmarksModel bookmarkModel,
-            Tab tab, final SnackbarManager snackbarManager, final Activity activity) {
+    public static void addOrEditBookmark(long idToAdd, EnhancedBookmarksModel bookmarkModel,
+            Tab tab, SnackbarManager snackbarManager, Activity activity) {
         if (idToAdd != ChromeBrowserProviderClient.INVALID_BOOKMARK_ID) {
             startEditActivity(activity, new BookmarkId(idToAdd, BookmarkType.NORMAL),
                     tab.getWebContents());
             return;
         }
 
-        AddBookmarkCallback callback = new AddBookmarkCallback() {
+        bookmarkModel.addBookmarkAsync(bookmarkModel.getDefaultFolder(), 0, tab.getTitle(),
+                tab.getUrl(), tab.getWebContents(),
+                createAddBookmarkCallback(bookmarkModel, snackbarManager, activity));
+    }
+
+    /**
+     * Saves an offline copy for the specified tab that is bookmarked. A snackbar will be shown to
+     * notify the user.
+     * @param bookmarkId The bookmark ID for the tab.
+     * @param bookmarkModel The enhanced bookmark model.
+     * @param tab The bookmarked tab to save an offline copy.
+     * @param snackbarManager The SnackbarManager used to show the snackbar.
+     * @param activity Current activity.
+     */
+    public static void saveBookmarkOffline(long bookmarkId, EnhancedBookmarksModel bookmarkModel,
+            Tab tab, final SnackbarManager snackbarManager, Activity activity) {
+        assert bookmarkId != ChromeBrowserProviderClient.INVALID_BOOKMARK_ID;
+        bookmarkModel.saveOfflinePage(new BookmarkId(bookmarkId, BookmarkType.NORMAL),
+                tab.getWebContents(),
+                createAddBookmarkCallback(bookmarkModel, snackbarManager, activity));
+    }
+
+    private static AddBookmarkCallback createAddBookmarkCallback(
+            final EnhancedBookmarksModel bookmarkModel, final SnackbarManager snackbarManager,
+            final Activity activity) {
+        return new AddBookmarkCallback() {
             @Override
             public void onBookmarkAdded(BookmarkId bookmarkId, boolean pageSavedOffline) {
                 SnackbarController snackbarController;
@@ -85,7 +116,7 @@ public class EnhancedBookmarkUtils {
                     buttonId = R.string.enhanced_bookmark_item_edit;
                     snackbarController = createSnackbarControllerForEditButton(
                             bookmarkModel, activity, bookmarkId);
-                } else if (offlinePageBridge.isStorageAlmostFull()) {
+                } else if (OfflinePageUtils.isStorageAlmostFull()) {
                     messageId = pageSavedOffline
                             ? R.string.offline_pages_page_saved_storage_near_full
                             : R.string.offline_pages_page_failed_to_save_storage_near_full;
@@ -110,9 +141,6 @@ public class EnhancedBookmarkUtils {
                                 .setSingleLine(false));
             }
         };
-
-        bookmarkModel.addBookmarkAsync(bookmarkModel.getDefaultFolder(), 0, tab.getTitle(),
-                                       tab.getUrl(), tab.getWebContents(), callback);
     }
 
     /**

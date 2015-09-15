@@ -208,6 +208,8 @@ class TabAndroid : public CoreTabHelperDelegate,
 
   jlong GetBookmarkId(JNIEnv* env, jobject obj, jboolean only_editable);
 
+  jboolean HasOfflineCopy(JNIEnv* env, jobject obj);
+
   jboolean IsOfflinePage(JNIEnv* env, jobject obj);
 
   base::android::ScopedJavaLocalRef<jstring> GetOfflinePageOriginalUrl(
