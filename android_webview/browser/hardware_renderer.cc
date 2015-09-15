@@ -73,36 +73,13 @@ HardwareRenderer::~HardwareRenderer() {
 void HardwareRenderer::CommitFrame() {
   TRACE_EVENT0("android_webview", "CommitFrame");
   scroll_offset_ = shared_renderer_state_->GetScrollOffsetOnRT();
-  {
-    scoped_ptr<ChildFrame> child_frame =
-        shared_renderer_state_->PassCompositorFrameOnRT();
-    if (!child_frame.get())
-      return;
-    child_frame_ = child_frame.Pass();
-  }
-
-  scoped_ptr<cc::CompositorFrame> frame = child_frame_->frame.Pass();
-  DCHECK(frame.get());
-  DCHECK(!frame->gl_frame_data);
-
-  // On Android we put our browser layers in physical pixels and set our
-  // browser CC device_scale_factor to 1, so suppress the transform between
-  // DIP and pixels.
-  frame->delegated_frame_data->device_scale_factor = 1.0f;
-
-  gfx::Size frame_size =
-      frame->delegated_frame_data->render_pass_list.back()->output_rect.size();
-  bool size_changed = frame_size != frame_size_;
-  frame_size_ = frame_size;
-  if (child_id_.is_null() || size_changed) {
-    if (!child_id_.is_null())
-      surface_factory_->Destroy(child_id_);
-    child_id_ = surface_id_allocator_->GenerateId();
-    surface_factory_->Create(child_id_);
-  }
-
-  surface_factory_->SubmitCompositorFrame(child_id_, frame.Pass(),
-                                          cc::SurfaceFactory::DrawCallback());
+  scoped_ptr<ChildFrame> child_frame =
+      shared_renderer_state_->PassCompositorFrameOnRT();
+  if (!child_frame.get())
+    return;
+  child_frame_ = child_frame.Pass();
+  DCHECK(child_frame_->frame.get());
+  DCHECK(!child_frame_->frame->gl_frame_data);
 }
 
 void HardwareRenderer::DrawGL(bool stencil_enabled,
@@ -118,6 +95,37 @@ void HardwareRenderer::DrawGL(bool stencil_enabled,
   if (last_egl_context_ != current_context)
     DLOG(WARNING) << "EGLContextChanged";
 
+  // SurfaceFactory::SubmitCompositorFrame might call glFlush. So calling it
+  // during "kModeSync" stage (which does not allow GL) might result in extra
+  // kModeProcess. Instead, submit the frame in "kModeDraw" stage to avoid
+  // unnecessary kModeProcess.
+  scoped_ptr<ChildFrame> child_frame = child_frame_.Pass();
+  if (child_frame.get()) {
+    scoped_ptr<cc::CompositorFrame> child_compositor_frame =
+        child_frame->frame.Pass();
+
+    // On Android we put our browser layers in physical pixels and set our
+    // browser CC device_scale_factor to 1, so suppress the transform between
+    // DIP and pixels.
+    child_compositor_frame->delegated_frame_data->device_scale_factor = 1.0f;
+
+    gfx::Size frame_size =
+        child_compositor_frame->delegated_frame_data->render_pass_list.back()
+            ->output_rect.size();
+    bool size_changed = frame_size != frame_size_;
+    frame_size_ = frame_size;
+    if (child_id_.is_null() || size_changed) {
+      if (!child_id_.is_null())
+        surface_factory_->Destroy(child_id_);
+      child_id_ = surface_id_allocator_->GenerateId();
+      surface_factory_->Create(child_id_);
+    }
+
+    surface_factory_->SubmitCompositorFrame(child_id_,
+                                            child_compositor_frame.Pass(),
+                                            cc::SurfaceFactory::DrawCallback());
+  }
+
   gfx::Transform transform(gfx::Transform::kSkipInitialization);
   transform.matrix().setColMajorf(draw_info->transform);
   transform.Translate(scroll_offset_.x(), scroll_offset_.y());
@@ -128,7 +136,7 @@ void HardwareRenderer::DrawGL(bool stencil_enabled,
   // compositor might not have the tiles rasterized as the animation goes on.
   ParentCompositorDrawConstraints draw_constraints(
       draw_info->is_layer, transform, viewport.IsEmpty());
-  if (!child_frame_.get() || draw_constraints.NeedUpdate(*child_frame_)) {
+  if (!child_frame.get() || draw_constraints.NeedUpdate(*child_frame)) {
     shared_renderer_state_->PostExternalDrawConstraintsToChildCompositorOnRT(
         draw_constraints);
   }
