@@ -73,8 +73,9 @@ ServerView* EventDispatcher::FindEventTarget(mojo::Event* event) {
   ServerView* focused_view = view_tree_host_->GetFocusedView();
   if (event->pointer_data) {
     ServerView* root = view_tree_host_->root_view();
-    const gfx::Point root_point(static_cast<int>(event->pointer_data->x),
-                                static_cast<int>(event->pointer_data->y));
+    const gfx::Point root_point(
+        static_cast<int>(event->pointer_data->location->x),
+        static_cast<int>(event->pointer_data->location->y));
     ServerView* target = focused_view;
     if (event->action == mojo::EVENT_TYPE_POINTER_DOWN || !target ||
         !root->Contains(target)) {
@@ -82,10 +83,10 @@ ServerView* EventDispatcher::FindEventTarget(mojo::Event* event) {
       CHECK(target);
     }
     const gfx::PointF local_point(ConvertPointFBetweenViews(
-        root, target,
-        gfx::PointF(event->pointer_data->x, event->pointer_data->y)));
-    event->pointer_data->x = local_point.x();
-    event->pointer_data->y = local_point.y();
+        root, target, gfx::PointF(event->pointer_data->location->x,
+                                  event->pointer_data->location->y)));
+    event->pointer_data->location->x = local_point.x();
+    event->pointer_data->location->y = local_point.y();
     return target;
   }
 

@@ -47,22 +47,58 @@ struct KeyData {
   uint16 unmodified_text;
 };
 
+struct LocationData {
+  // |x| and |y| are in the coordinate system of the View.
+  // Typically, this will be an integer-valued translation w.r.t.
+  // the screen and in this case, |x| and |y| are in units of physical
+  // pixels. However, some View embedders may apply arbitrary transformations
+  // of a view w.r.t. the screen.
+  float x;
+  float y;
+  // |screen_x| and |screen_y| are in screen coordinates in units of
+  // physical pixels.
+  float screen_x;
+  float screen_y;
+};
+
+// TODO(rjkroege,sadrul): Add gesture representation.
 struct PointerData {
   int32 pointer_id;
   PointerKind kind;
-  // |x| and |y| are in the coordinate system of the View.
-  float x;
-  float y;
-  // |screen_x| and |screen_y| are in screen coordinates.
-  float screen_x;
-  float screen_y;
+  LocationData location;
+  // Some devices (e.g. pen, finger) can extend across multiple pixels
+  // at once. |brush_data| provides additional data for this case and
+  // is available when |kind| is PEN or TOUCH.
+  BrushData? brush_data;
+};
+
+// Information payload to support
+// https://developer.mozilla.org/en-US/docs/Web/Events/wheel.
+// TODO(rjkroege): Handle MacOS momentum scrolling.
+struct WheelData {
+  WheelMode mode;
+  LocationData location;
+  // |delta_x|, |delta_y|, |delta_z| can be in units of pixels, lines, pages
+  // or control scaling as controlled by |mode|. Pixel scroll is physical
+  // pixels in the coordinate system of the target View.
+  float delta_x;
+  float delta_y;
+  float delta_z;
+};
+
+// Supplementary data to support pointers where the pointer can
+// cover multiple pixels per http://www.w3.org/TR/pointerevents/
+struct BrushData {
+  // |width| and |height| are in CSS pixels in the coordinate system of
+  // the target View.
+  float width;
+  float height;
+  // |pressure| range is [0,1]. For devices like mice buttons where the
+  // pressure is not available, it will be set to 0.5 if the button is down.
   float pressure;
-  float radius_major;
-  float radius_minor;
-  float orientation;
-  // Used for devices that support wheels. Ranges from -1 to 1.
-  float horizontal_wheel;
-  float vertical_wheel;
+  // |tiltY| and |tiltX| are in degrees.
+  float tiltY;
+  float tiltZ;
 };
 
 struct Event {
@@ -76,4 +112,7 @@ struct Event {
   int64 time_stamp;
   KeyData? key_data;
   PointerData? pointer_data;
+  // Some devices (e.g. trackpads or mice) have additional valuators
+  // such as the mouse wheel or ball. Present only if action is WHEEL.
+  WheelData? wheel_data;
 };

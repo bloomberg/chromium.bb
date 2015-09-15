@@ -301,6 +301,7 @@ test("html_viewer_unittests") {
   sources = [
     "ax_provider_impl_unittest.cc",
     "discardable_memory_allocator_unittest.cc",
+    "input_events_unittest.cc",
     "run_all_unittests.cc",
   ]
   deps = [
@@ -309,6 +310,7 @@ test("html_viewer_unittests") {
     "//base/test:test_support",
     "//components/scheduler",
     "//gin",
+    "//mojo/converters/input_events",
     "//testing/gtest:gtest",
     "//third_party/mojo/src/mojo/edk/system",
     "//ui/base",

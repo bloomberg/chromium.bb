@@ -23,6 +23,7 @@ include_rules = [
   "+mojo/cc",
   "+mojo/common",
   "+mojo/converters/geometry",
+  "+mojo/converters/input_events",
   "+mojo/converters/surfaces",
   "+mojo/logging",
   "+mojo/message_pump",
