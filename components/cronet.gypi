@@ -530,6 +530,9 @@
               'action': [
                 'python',
                 '<@(_inputs)',
+                '--src-dir=../base/android/java/src',
+                '--src-dir=../net/android/java/src',
+                '--src-dir=../url/android/java/src',
                 '--src-dir=cronet/android/java/src',
                 '--jar-path=<(package_dir)/<(java_src_lib)',
               ],

@@ -22,19 +22,25 @@ def JarSources(src_dir, jar_path):
   # options.src_dir so the .java file paths in the jar are correct.
   jar_cwd = src_dir
   jar_path = os.path.abspath(jar_path)
-  jar_cmd = ['jar', 'cf', jar_path, '.']
+  if os.path.exists(jar_path):
+    jar_cmd = ['jar', 'uf', jar_path, '.']
+  else:
+    jar_cmd = ['jar', 'cf', jar_path, '.']
+
   build_utils.CheckOutput(jar_cmd, cwd=jar_cwd)
 
 
 def main():
   parser = optparse.OptionParser()
-  parser.add_option('--src-dir', help='Directory containing .java files.')
+  parser.add_option('--src-dir', action="append",
+      help='Directory containing .java files.')
   parser.add_option('--jar-path', help='Jar output path.')
   parser.add_option('--stamp', help='Path to touch on success.')
 
   options, _ = parser.parse_args()
 
-  JarSources(options.src_dir, options.jar_path)
+  for src_dir in options.src_dir:
+    JarSources(src_dir, options.jar_path)
 
   if options.stamp:
     build_utils.Touch(options.stamp)
