@@ -108,6 +108,10 @@ SkColor FallbackTheme::GetSystemColor(ColorId color_id) const {
   // Label:
   static const SkColor kLabelEnabledColor = kButtonEnabledColor;
   static const SkColor kLabelBackgroundColor = SK_ColorWHITE;
+  // Link:
+  static const SkColor kLinkDisabledColor = SK_ColorBLACK;
+  static const SkColor kLinkEnabledColor = SkColorSetRGB(0, 51, 153);
+  static const SkColor kLinkPressedColor = SK_ColorRED;
   // Textfield:
   static const SkColor kTextfieldDefaultColor = SK_ColorBLACK;
   static const SkColor kTextfieldReadOnlyColor = SK_ColorDKGRAY;
@@ -211,6 +215,14 @@ SkColor FallbackTheme::GetSystemColor(ColorId color_id) const {
       return GetSystemColor(kColorId_ButtonDisabledColor);
     case kColorId_LabelBackgroundColor:
       return kLabelBackgroundColor;
+
+    // Link
+    case kColorId_LinkDisabled:
+      return kLinkDisabledColor;
+    case kColorId_LinkEnabled:
+      return kLinkEnabledColor;
+    case kColorId_LinkPressed:
+      return kLinkPressedColor;
 
     // Textfield
     case kColorId_TextfieldDefaultColor:

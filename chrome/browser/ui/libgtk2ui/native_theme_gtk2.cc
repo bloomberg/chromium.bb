@@ -160,9 +160,7 @@ SkColor GetTextAAColor(GtkWidget* widget, WidgetState state) {
 SkColor GetBaseColor(GtkWidget* widget, WidgetState state) {
   return GetBGColor(widget, state);
 }
-
 #endif
-
 
 // static
 NativeThemeGtk2* NativeThemeGtk2::instance() {
@@ -174,8 +172,6 @@ NativeThemeGtk2* NativeThemeGtk2::instance() {
 NativeThemeGtk2::NativeThemeGtk2() {}
 // This doesn't actually get called
 NativeThemeGtk2::~NativeThemeGtk2() {}
-
-
 
 void NativeThemeGtk2::PaintMenuPopupBackground(
     SkCanvas* canvas,
@@ -280,6 +276,15 @@ SkColor NativeThemeGtk2::GetSystemColor(ColorId color_id) const {
       return GetTextColor(GetLabel(), INSENSITIVE);
     case kColorId_LabelBackgroundColor:
       return GetBGColor(GetWindow(), NORMAL);
+
+    // Link
+    // TODO(estade): get these from the gtk theme instead of hardcoding.
+    case kColorId_LinkDisabled:
+      return SK_ColorBLACK;
+    case kColorId_LinkEnabled:
+      return SkColorSetRGB(0x33, 0x67, 0xD6);
+    case kColorId_LinkPressed:
+      return SK_ColorRED;
 
     // Button
     case kColorId_ButtonBackgroundColor:

@@ -1296,7 +1296,8 @@ views::View* ProfileChooserView::CreateCurrentProfileView(
 
         auth_error_email_button_->SetTextColor(
             views::LabelButton::STATE_NORMAL,
-            views::Link::GetDefaultEnabledColor());
+            ui::NativeTheme::instance()->GetSystemColor(
+                ui::NativeTheme::kColorId_LinkEnabled));
         auth_error_email_button_->SetFocusable(true);
         gfx::Insets insets =
             views::LabelButtonAssetBorder::GetDefaultInsetsForStyle(

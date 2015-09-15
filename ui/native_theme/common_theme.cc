@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "third_party/skia/include/core/SkCanvas.h"
+#include "ui/base/resource/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_utils.h"
@@ -39,6 +40,9 @@ const SkColor kBlueButtonDisabledColor = SK_ColorWHITE;
 const SkColor kBlueButtonPressedColor = SK_ColorWHITE;
 const SkColor kBlueButtonHoverColor = SK_ColorWHITE;
 const SkColor kBlueButtonShadowColor = SkColorSetRGB(0x53, 0x8C, 0xEA);
+// Link:
+const SkColor kLinkDisabledColorMd = SK_ColorBLACK;
+const SkColor kLinkEnabledColorMd = SkColorSetRGB(0x33, 0x67, 0xD6);
 // Material colors:
 const SkColor kAmber = SkColorSetRGB(0xFF, 0xC1, 0x07);
 const SkColor kGoogleBlue = SkColorSetRGB(0x42, 0x85, 0xF4);
@@ -52,6 +56,22 @@ const SkColor kThrobberLightColor = SkColorSetRGB(0xF4, 0xF8, 0xFD);
 namespace ui {
 
 bool CommonThemeGetSystemColor(NativeTheme::ColorId color_id, SkColor* color) {
+  if (ui::MaterialDesignController::IsModeMaterial()) {
+    switch (color_id) {
+      // Link
+      case NativeTheme::kColorId_LinkDisabled:
+        *color = kLinkDisabledColorMd;
+        return true;
+      case NativeTheme::kColorId_LinkEnabled:
+      case NativeTheme::kColorId_LinkPressed:
+        // Normal and pressed share a color.
+        *color = kLinkEnabledColorMd;
+        return true;
+      default:
+        break;
+    }
+  }
+
   switch (color_id) {
     // MenuItem
     case NativeTheme::kColorId_MenuBorderColor:

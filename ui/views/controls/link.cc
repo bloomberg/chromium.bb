@@ -10,11 +10,13 @@
 #include "base/strings/utf_string_conversions.h"
 #include "ui/accessibility/ax_view_state.h"
 #include "ui/base/cursor/cursor.h"
+#include "ui/base/resource/material_design/material_design_controller.h"
 #include "ui/events/event.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/font_list.h"
+#include "ui/native_theme/native_theme.h"
 #include "ui/views/controls/link_listener.h"
 #include "ui/views/native_cursor.h"
 
@@ -22,23 +24,25 @@ namespace views {
 
 const char Link::kViewClassName[] = "Link";
 
-Link::Link() : Label(base::string16()) {
+Link::Link()
+    : Label(base::string16()),
+      requested_enabled_color_(SK_ColorBLACK),
+      requested_enabled_color_set_(false),
+      requested_pressed_color_(SK_ColorBLACK),
+      requested_pressed_color_set_(false) {
   Init();
 }
 
-Link::Link(const base::string16& title) : Label(title) {
+Link::Link(const base::string16& title)
+    : Label(title),
+      requested_enabled_color_(SK_ColorBLACK),
+      requested_enabled_color_set_(false),
+      requested_pressed_color_(SK_ColorBLACK),
+      requested_pressed_color_set_(false) {
   Init();
 }
 
 Link::~Link() {
-}
-
-SkColor Link::GetDefaultEnabledColor() {
-#if defined(OS_WIN)
-  return color_utils::GetSysSkColor(COLOR_HOTLIGHT);
-#else
-  return SkColorSetRGB(0, 51, 153);
-#endif
 }
 
 const char* Link::GetClassName() const {
@@ -166,16 +170,22 @@ void Link::SetText(const base::string16& text) {
   SetFocusable(!text.empty());
 }
 
+void Link::OnNativeThemeChanged(const ui::NativeTheme* theme) {
+  Label::SetEnabledColor(GetEnabledColor());
+  SetDisabledColor(
+      theme->GetSystemColor(ui::NativeTheme::kColorId_LinkDisabled));
+}
+
 void Link::SetEnabledColor(SkColor color) {
+  requested_enabled_color_set_ = true;
   requested_enabled_color_ = color;
-  if (!pressed_)
-    Label::SetEnabledColor(requested_enabled_color_);
+  Label::SetEnabledColor(GetEnabledColor());
 }
 
 void Link::SetPressedColor(SkColor color) {
+  requested_pressed_color_set_ = true;
   requested_pressed_color_ = color;
-  if (pressed_)
-    Label::SetEnabledColor(requested_pressed_color_);
+  Label::SetEnabledColor(GetEnabledColor());
 }
 
 void Link::SetUnderline(bool underline) {
@@ -189,15 +199,6 @@ void Link::Init() {
   listener_ = NULL;
   pressed_ = false;
   underline_ = true;
-  SetEnabledColor(GetDefaultEnabledColor());
-#if defined(OS_WIN)
-  SetDisabledColor(color_utils::GetSysSkColor(COLOR_WINDOWTEXT));
-  SetPressedColor(SkColorSetRGB(200, 0, 0));
-#else
-  // TODO(beng): source from theme provider.
-  SetDisabledColor(SK_ColorBLACK);
-  SetPressedColor(SK_ColorRED);
-#endif
   RecalculateFont();
 
   // Label::Init() calls SetText(), but if that's being called from Label(), our
@@ -210,8 +211,7 @@ void Link::Init() {
 void Link::SetPressed(bool pressed) {
   if (pressed_ != pressed) {
     pressed_ = pressed;
-    Label::SetEnabledColor(pressed_ ?
-        requested_pressed_color_ : requested_enabled_color_);
+    Label::SetEnabledColor(GetEnabledColor());
     RecalculateFont();
     SchedulePaint();
   }
@@ -224,6 +224,24 @@ void Link::RecalculateFont() {
       (style | gfx::Font::UNDERLINE) : (style & ~gfx::Font::UNDERLINE);
   if (style != intended_style)
     Label::SetFontList(font_list().DeriveWithStyle(intended_style));
+}
+
+SkColor Link::GetEnabledColor() {
+  // In material mode, there is no pressed effect, so always use the unpressed
+  // color.
+  if (!pressed_ || ui::MaterialDesignController::IsModeMaterial()) {
+    if (!requested_enabled_color_set_ && GetNativeTheme())
+      return GetNativeTheme()->GetSystemColor(
+          ui::NativeTheme::kColorId_LinkEnabled);
+
+    return requested_enabled_color_;
+  }
+
+  if (!requested_pressed_color_set_ && GetNativeTheme())
+    return GetNativeTheme()->GetSystemColor(
+        ui::NativeTheme::kColorId_LinkPressed);
+
+  return requested_pressed_color_;
 }
 
 }  // namespace views

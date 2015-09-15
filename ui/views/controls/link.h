@@ -28,8 +28,6 @@ class VIEWS_EXPORT Link : public Label {
   explicit Link(const base::string16& title);
   ~Link() override;
 
-  static SkColor GetDefaultEnabledColor();
-
   const LinkListener* listener() { return listener_; }
   void set_listener(LinkListener* listener) { listener_ = listener; }
 
@@ -50,6 +48,7 @@ class VIEWS_EXPORT Link : public Label {
   void OnBlur() override;
   void SetFontList(const gfx::FontList& font_list) override;
   void SetText(const base::string16& text) override;
+  void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
   void SetEnabledColor(SkColor color) override;
 
   void SetPressedColor(SkColor color);
@@ -64,6 +63,9 @@ class VIEWS_EXPORT Link : public Label {
 
   void RecalculateFont();
 
+  SkColor GetEnabledColor();
+  SkColor GetPressedColor();
+
   LinkListener* listener_;
 
   // Whether the link should be underlined when enabled.
@@ -74,9 +76,11 @@ class VIEWS_EXPORT Link : public Label {
 
   // The color when the link is neither pressed nor disabled.
   SkColor requested_enabled_color_;
+  bool requested_enabled_color_set_;
 
   // The color when the link is pressed.
   SkColor requested_pressed_color_;
+  bool requested_pressed_color_set_;
 
   DISALLOW_COPY_AND_ASSIGN(Link);
 };

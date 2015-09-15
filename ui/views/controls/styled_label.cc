@@ -78,7 +78,8 @@ StyledLabel::RangeStyleInfo StyledLabel::RangeStyleInfo::CreateForLink() {
   RangeStyleInfo result;
   result.disable_line_wrapping = true;
   result.is_link = true;
-  result.color = Link::GetDefaultEnabledColor();
+  result.color = ui::NativeTheme::instance()->GetSystemColor(
+      ui::NativeTheme::kColorId_LinkEnabled);
   return result;
 }
 

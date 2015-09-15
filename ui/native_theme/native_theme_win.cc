@@ -23,6 +23,7 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkColorPriv.h"
 #include "third_party/skia/include/core/SkShader.h"
+#include "ui/base/resource/material_design/material_design_controller.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/gdi_util.h"
 #include "ui/gfx/geometry/rect.h"
@@ -544,6 +545,14 @@ SkColor NativeThemeWin::GetSystemColor(ColorId color_id) const {
       return system_colors_[COLOR_GRAYTEXT];
     case kColorId_LabelBackgroundColor:
       return system_colors_[COLOR_WINDOW];
+
+    // Link
+    case kColorId_LinkDisabled:
+      return system_colors_[COLOR_WINDOWTEXT];
+    case kColorId_LinkEnabled:
+      return system_colors_[COLOR_HOTLIGHT];
+    case kColorId_LinkPressed:
+      return SkColorSetRGB(200, 0, 0);
 
     // Textfield
     case kColorId_TextfieldDefaultColor:
