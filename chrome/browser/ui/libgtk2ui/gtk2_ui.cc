@@ -1263,10 +1263,8 @@ SkBitmap Gtk2UI::DrawGtkButtonBorder(const char* class_name,
   gtk_widget_set_size_request(button, width, height);
   gtk_container_add(GTK_CONTAINER(window), button);
 
-  if (class_name == views::BlueButton::kViewClassName) {
-    gtk_widget_set_can_default(button, true);
-    gtk_widget_grab_default(button);
-  }
+  if (class_name == views::BlueButton::kViewClassName)
+    TurnButtonBlue(button);
 
   gtk_widget_show_all(window);
 

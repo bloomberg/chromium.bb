@@ -103,6 +103,16 @@ int EventFlagsFromGdkState(guint state) {
   return flags;
 }
 
+void TurnButtonBlue(GtkWidget* button) {
+#if GTK_MAJOR_VERSION == 2
+  gtk_widget_set_can_default(button, true);
+  gtk_widget_grab_default(button);
+#else
+  gtk_style_context_add_class(gtk_widget_get_style_context(button),
+                              "suggested-action");
+#endif
+}
+
 void SetGtkTransientForAura(GtkWidget* dialog, aura::Window* parent) {
   if (!parent || !parent->GetHost())
     return;
