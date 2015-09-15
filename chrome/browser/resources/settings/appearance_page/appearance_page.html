@@ -1,5 +1,6 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
 <link rel="import" href="chrome://md-settings/checkbox/checkbox.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 
 <dom-module id="cr-settings-appearance-page">
   <link rel="import" type="css"
@@ -10,13 +11,13 @@
   <link rel="import" href="chrome://resources/html/action_link.html">
   <template>
     <div id="action-container">
-      <cr-button i18n-content="setWallpaper"></cr-button>
-      <cr-button id="get-themes" i18n-content="getThemes"
-          on-click="openThemesGallery_">
-      </cr-button>
-      <cr-button id="resetTheme" i18n-content="resetToDefaultTheme" disabled
-          on-click="resetTheme_">
-      </cr-button>
+      <paper-button i18n-content="setWallpaper"></paper-button>
+      <paper-button id="get-themes" i18n-content="getThemes"
+          on-tap="openThemesGallery_">
+      </paper-button>
+      <paper-button id="resetTheme" i18n-content="resetToDefaultTheme" disabled
+          on-tap="resetTheme_">
+      </paper-button>
     </div>
     <hr>
     <cr-settings-checkbox pref="{{prefs.browser.show_home_button}}"
