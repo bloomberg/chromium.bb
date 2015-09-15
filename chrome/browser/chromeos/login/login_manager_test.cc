@@ -4,7 +4,13 @@
 
 #include "chrome/browser/chromeos/login/login_manager_test.h"
 
+#include <string>
+
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/command_line.h"
+#include "base/files/file_path.h"
+#include "base/path_service.h"
 #include "base/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -13,6 +19,7 @@
 #include "chrome/browser/chromeos/login/session/user_session_manager_test_api.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host_impl.h"
 #include "chrome/browser/chromeos/login/ui/webui_login_view.h"
+#include "chrome/common/chrome_paths.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/login/auth/key.h"
 #include "chromeos/login/auth/user_context.h"
@@ -21,12 +28,69 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/test_utils.h"
+#include "google_apis/gaia/gaia_constants.h"
+#include "google_apis/gaia/gaia_switches.h"
+#include "google_apis/gaia/gaia_urls.h"
+#include "net/dns/mock_host_resolver.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
+#include "net/test/embedded_test_server/http_request.h"
+#include "net/test/embedded_test_server/http_response.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
+
+namespace {
+
+const char kGAIAHost[] = "accounts.google.com";
+const char kTestUserinfoToken1[] = "fake-userinfo-token-1";
+const char kTestRefreshToken1[] = "fake-refresh-token-1";
+const char kTestUserinfoToken2[] = "fake-userinfo-token-2";
+const char kTestRefreshToken2[] = "fake-refresh-token-2";
+
+UserContext CreateUserContext(const std::string& user_id) {
+  UserContext user_context(user_id);
+  user_context.SetGaiaID(LoginManagerTest::GetGaiaIDForUserID(user_id));
+  user_context.SetKey(Key("password"));
+  if (user_id == LoginManagerTest::kEnterpriseUser1) {
+    user_context.SetRefreshToken(kTestRefreshToken1);
+  } else if (user_id == LoginManagerTest::kEnterpriseUser2) {
+    user_context.SetRefreshToken(kTestRefreshToken2);
+  }
+  return user_context;
+}
+
+}  // namespace
+
+const char LoginManagerTest::kEnterpriseUser1[] = "user-1@example.com";
+const char LoginManagerTest::kEnterpriseUser2[] = "user-2@example.com";
 
 LoginManagerTest::LoginManagerTest(bool should_launch_browser)
     : should_launch_browser_(should_launch_browser), web_contents_(NULL) {
   set_exit_when_last_browser_closes(false);
+}
+
+LoginManagerTest::~LoginManagerTest() {}
+
+void LoginManagerTest::SetUp() {
+  base::FilePath test_data_dir;
+  PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir);
+  embedded_test_server()->ServeFilesFromDirectory(test_data_dir);
+
+  embedded_test_server()->RegisterRequestHandler(
+      base::Bind(&FakeGaia::HandleRequest, base::Unretained(&fake_gaia_)));
+
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+
+  // Start https wrapper here so that the URLs can be pointed at it in
+  // SetUpCommandLine().
+  ASSERT_TRUE(gaia_https_forwarder_.Initialize(
+      kGAIAHost, embedded_test_server()->base_url()));
+
+  // Stop IO thread here because no threads are allowed while
+  // spawning sandbox host process. See crbug.com/322732.
+  embedded_test_server()->StopThread();
+
+  MixinBasedBrowserTest::SetUp();
 }
 
 void LoginManagerTest::TearDownOnMainThread() {
@@ -34,20 +98,46 @@ void LoginManagerTest::TearDownOnMainThread() {
   if (LoginDisplayHostImpl::default_host())
     LoginDisplayHostImpl::default_host()->Finalize();
   base::MessageLoop::current()->RunUntilIdle();
+  EXPECT_TRUE(embedded_test_server()->ShutdownAndWaitUntilComplete());
 }
 
 void LoginManagerTest::SetUpCommandLine(base::CommandLine* command_line) {
   command_line->AppendSwitch(chromeos::switches::kLoginManager);
   command_line->AppendSwitch(chromeos::switches::kForceLoginManagerInTests);
+
+  const GURL gaia_url = gaia_https_forwarder_.GetURLForSSLHost(std::string());
+  command_line->AppendSwitchASCII(::switches::kGaiaUrl, gaia_url.spec());
+  command_line->AppendSwitchASCII(::switches::kLsoUrl, gaia_url.spec());
+  command_line->AppendSwitchASCII(::switches::kGoogleApisUrl, gaia_url.spec());
+
+  fake_gaia_.Initialize();
+  fake_gaia_.set_issue_oauth_code_cookie(true);
+
   MixinBasedBrowserTest::SetUpCommandLine(command_line);
 }
 
 void LoginManagerTest::SetUpInProcessBrowserTestFixture() {
+  host_resolver()->AddRule("*", "127.0.0.1");
   MixinBasedBrowserTest::SetUpInProcessBrowserTestFixture();
 }
 
 void LoginManagerTest::SetUpOnMainThread() {
-  MixinBasedBrowserTest::SetUpOnMainThread();
+  // Restart the thread as the sandbox host process has already been spawned.
+  embedded_test_server()->RestartThreadAndListen();
+
+  FakeGaia::AccessTokenInfo token_info;
+  token_info.scopes.insert(GaiaConstants::kDeviceManagementServiceOAuth);
+  token_info.scopes.insert(GaiaConstants::kOAuthWrapBridgeUserInfoScope);
+  token_info.audience = GaiaUrls::GetInstance()->oauth2_chrome_client_id();
+
+  token_info.token = kTestUserinfoToken1;
+  token_info.email = kEnterpriseUser1;
+  fake_gaia_.IssueOAuthToken(kTestRefreshToken1, token_info);
+
+  token_info.token = kTestUserinfoToken2;
+  token_info.email = kEnterpriseUser2;
+  fake_gaia_.IssueOAuthToken(kTestRefreshToken2, token_info);
+
   content::WindowedNotificationObserver(
       chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,
       content::NotificationService::AllSources()).Wait();
@@ -57,6 +147,8 @@ void LoginManagerTest::SetUpOnMainThread() {
   session_manager_test_api.SetShouldLaunchBrowserInTests(
       should_launch_browser_);
   session_manager_test_api.SetShouldObtainTokenHandleInTests(false);
+
+  MixinBasedBrowserTest::SetUpOnMainThread();
 }
 
 void LoginManagerTest::RegisterUser(const std::string& user_id) {
@@ -103,17 +195,13 @@ bool LoginManagerTest::AddUserToSession(const UserContext& user_context) {
 }
 
 void LoginManagerTest::LoginUser(const std::string& user_id) {
-  UserContext user_context(user_id);
-  user_context.SetGaiaID(GetGaiaIDForUserID(user_id));
-  user_context.SetKey(Key("password"));
+  const UserContext user_context = CreateUserContext(user_id);
   SetExpectedCredentials(user_context);
   EXPECT_TRUE(TryToLogin(user_context));
 }
 
 void LoginManagerTest::AddUser(const std::string& user_id) {
-  UserContext user_context(user_id);
-  user_context.SetGaiaID(GetGaiaIDForUserID(user_id));
-  user_context.SetKey(Key("password"));
+  const UserContext user_context = CreateUserContext(user_id);
   SetExpectedCredentials(user_context);
   EXPECT_TRUE(AddUserToSession(user_context));
 }

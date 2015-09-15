@@ -29,8 +29,11 @@ namespace chromeos {
 
 namespace {
 
-const char* kTestOwner = "test-owner@example.com";
-const char* kTestNonOwner = "test-user1@example.com";
+// Because policy is not needed in this test it is better to use e-mails that
+// are definitely not enterprise. This lets us to avoid faking of policy fetch
+// procedure.
+const char* kTestOwner = "test-owner@gmail.com";
+const char* kTestNonOwner = "test-user1@gmail.com";
 
 const char* kKnownSettings[] = {
   kDeviceOwner,

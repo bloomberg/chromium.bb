@@ -34,8 +34,11 @@ namespace chromeos {
 
 namespace {
 
-const char* kUser1 = "user1@test.com";
-const char* kUser2 = "user2@test.com";
+// Because policy is not needed this test it is better to use e-mails that
+// are definitely not enterprise. This lets us to avoid faking of policy fetch
+// procedure.
+const char kUser1[] = "user1@gmail.com";
+const char kUser2[] = "user2@gmail.com";
 
 base::HourClockType GetHourType() {
   const ash::TrayDate* tray_date = ash::Shell::GetInstance()

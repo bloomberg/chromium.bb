@@ -8,7 +8,9 @@
 #include <string>
 
 #include "chrome/browser/chromeos/login/mixin_based_browser_test.h"
+#include "chrome/browser/chromeos/login/test/https_forwarder.h"
 #include "chrome/browser/chromeos/login/test/js_checker.h"
+#include "google_apis/gaia/fake_gaia.h"
 
 namespace content {
 class WebContents;
@@ -27,12 +29,14 @@ class UserContext;
 class LoginManagerTest : public MixinBasedBrowserTest {
  public:
   explicit LoginManagerTest(bool should_launch_browser);
+  ~LoginManagerTest() override;
 
   // Overridden from InProcessBrowserTest.
   void TearDownOnMainThread() override;
   void SetUpCommandLine(base::CommandLine* command_line) override;
   void SetUpInProcessBrowserTestFixture() override;
   void SetUpOnMainThread() override;
+  void SetUp() override;
 
   // Registers the user with the given |user_id| on the device.
   // This method should be called in PRE_* test.
@@ -67,6 +71,21 @@ class LoginManagerTest : public MixinBasedBrowserTest {
   test::JSChecker& js_checker() { return js_checker_; }
 
   static std::string GetGaiaIDForUserID(const std::string& user_id);
+
+  // For obviously consumer users (that have e.g. @gmail.com e-mail) policy
+  // fetching code is skipped. This code is executed only for users that may be
+  // enterprise users. Thus if you derive from this class and don't need
+  // policies, please use @gmail.com e-mail for login. But if you need policies
+  // for your test, you must use e-mail addresses that a) have a potentially
+  // enterprise domain and b) have been registered with |fake_gaia_|.
+  // For your convenience, the e-mail addresses for users that have been set up
+  // in this way are provided below.
+  static const char kEnterpriseUser1[];
+  static const char kEnterpriseUser2[];
+
+ protected:
+  FakeGaia fake_gaia_;
+  HTTPSForwarder gaia_https_forwarder_;
 
  private:
   void InitializeWebContents();

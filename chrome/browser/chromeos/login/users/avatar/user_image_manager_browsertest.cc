@@ -77,8 +77,11 @@ namespace chromeos {
 
 namespace {
 
-const char kTestUser1[] = "test-user@example.com";
-const char kTestUser2[] = "test-user2@example.com";
+// Because policy is not needed in some tests it is better to use e-mails that
+// are definitely not enterprise. This lets us to avoid faking of policy fetch
+// procedure.
+const char kTestUser1[] = "test-user@gmail.com";
+const char kTestUser2[] = "test-user2@gmail.com";
 
 policy::CloudPolicyStore* GetStoreForUser(const user_manager::User* user) {
   Profile* profile = ProfileHelper::Get()->GetProfileByUserUnsafe(user);
@@ -629,7 +632,7 @@ class UserImageManagerPolicyTest : public UserImageManagerTest,
     ASSERT_TRUE(PathService::Get(chromeos::DIR_USER_POLICY_KEYS,
                                  &user_keys_dir));
     const std::string sanitized_username =
-        chromeos::CryptohomeClient::GetStubSanitizedUsername(kTestUser1);
+        chromeos::CryptohomeClient::GetStubSanitizedUsername(kEnterpriseUser1);
     const base::FilePath user_key_file =
         user_keys_dir.AppendASCII(sanitized_username)
                      .AppendASCII("policy.pub");
@@ -641,9 +644,7 @@ class UserImageManagerPolicyTest : public UserImageManagerTest,
                   reinterpret_cast<const char*>(user_key_bits.data()),
                   user_key_bits.size()),
               static_cast<int>(user_key_bits.size()));
-    user_policy_.policy_data().set_username(kTestUser1);
-
-    ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+    user_policy_.policy_data().set_username(kEnterpriseUser1);
 
     policy_image_ = test::ImageLoader(test_data_dir_.Append(
         test::kUserAvatarImage2RelativePath)).Load();
@@ -687,7 +688,7 @@ class UserImageManagerPolicyTest : public UserImageManagerTest,
 };
 
 IN_PROC_BROWSER_TEST_F(UserImageManagerPolicyTest, PRE_SetAndClear) {
-  RegisterUser(kTestUser1);
+  RegisterUser(kEnterpriseUser1);
   chromeos::StartupUtils::MarkOobeCompleted();
 }
 
@@ -697,10 +698,10 @@ IN_PROC_BROWSER_TEST_F(UserImageManagerPolicyTest, PRE_SetAndClear) {
 // http://crbug.com/396352
 IN_PROC_BROWSER_TEST_F(UserImageManagerPolicyTest, DISABLED_SetAndClear) {
   const user_manager::User* user =
-      user_manager::UserManager::Get()->FindUser(kTestUser1);
+      user_manager::UserManager::Get()->FindUser(kEnterpriseUser1);
   ASSERT_TRUE(user);
 
-  LoginUser(kTestUser1);
+  LoginUser(kEnterpriseUser1);
   base::RunLoop().RunUntilIdle();
 
   policy::CloudPolicyStore* store = GetStoreForUser(user);
@@ -711,7 +712,7 @@ IN_PROC_BROWSER_TEST_F(UserImageManagerPolicyTest, DISABLED_SetAndClear) {
   user_policy_.payload().mutable_useravatarimage()->set_value(
       ConstructPolicy(test::kUserAvatarImage2RelativePath));
   user_policy_.Build();
-  fake_session_manager_client_->set_user_policy(kTestUser1,
+  fake_session_manager_client_->set_user_policy(kEnterpriseUser1,
                                                 user_policy_.GetBlob());
   run_loop_.reset(new base::RunLoop);
   store->Load();
@@ -720,12 +721,12 @@ IN_PROC_BROWSER_TEST_F(UserImageManagerPolicyTest, DISABLED_SetAndClear) {
   EXPECT_FALSE(user->HasDefaultImage());
   EXPECT_EQ(user_manager::User::USER_IMAGE_EXTERNAL, user->image_index());
   EXPECT_TRUE(test::AreImagesEqual(*policy_image_, user->GetImage()));
-  ExpectNewUserImageInfo(kTestUser1,
+  ExpectNewUserImageInfo(kEnterpriseUser1,
                          user_manager::User::USER_IMAGE_EXTERNAL,
-                         GetUserImagePath(kTestUser1, "jpg"));
+                         GetUserImagePath(kEnterpriseUser1, "jpg"));
 
   scoped_ptr<gfx::ImageSkia> saved_image =
-      test::ImageLoader(GetUserImagePath(kTestUser1, "jpg")).Load();
+      test::ImageLoader(GetUserImagePath(kEnterpriseUser1, "jpg")).Load();
   ASSERT_TRUE(saved_image);
 
   // Check image dimensions. Images can't be compared since JPEG is lossy.
@@ -736,7 +737,7 @@ IN_PROC_BROWSER_TEST_F(UserImageManagerPolicyTest, DISABLED_SetAndClear) {
   // image.
   user_policy_.payload().Clear();
   user_policy_.Build();
-  fake_session_manager_client_->set_user_policy(kTestUser1,
+  fake_session_manager_client_->set_user_policy(kEnterpriseUser1,
                                                 user_policy_.GetBlob());
   run_loop_.reset(new base::RunLoop);
   store->AddObserver(this);
@@ -754,7 +755,8 @@ IN_PROC_BROWSER_TEST_F(UserImageManagerPolicyTest, DISABLED_SetAndClear) {
   const gfx::ImageSkia& default_image =
       user_manager::GetDefaultImage(default_image_index);
   EXPECT_TRUE(test::AreImagesEqual(default_image, user->GetImage()));
-  ExpectNewUserImageInfo(kTestUser1, default_image_index, base::FilePath());
+  ExpectNewUserImageInfo(kEnterpriseUser1, default_image_index,
+                         base::FilePath());
 
   // Choose a different user image. Verify that the chosen user image is set and
   // persisted.
@@ -766,17 +768,17 @@ IN_PROC_BROWSER_TEST_F(UserImageManagerPolicyTest, DISABLED_SetAndClear) {
       user_manager::GetDefaultImage(user_image_index);
 
   UserImageManager* user_image_manager =
-      ChromeUserManager::Get()->GetUserImageManager(kTestUser1);
+      ChromeUserManager::Get()->GetUserImageManager(kEnterpriseUser1);
   user_image_manager->SaveUserDefaultImageIndex(user_image_index);
 
   EXPECT_TRUE(user->HasDefaultImage());
   EXPECT_EQ(user_image_index, user->image_index());
   EXPECT_TRUE(test::AreImagesEqual(user_image, user->GetImage()));
-  ExpectNewUserImageInfo(kTestUser1, user_image_index, base::FilePath());
+  ExpectNewUserImageInfo(kEnterpriseUser1, user_image_index, base::FilePath());
 }
 
 IN_PROC_BROWSER_TEST_F(UserImageManagerPolicyTest, PRE_PolicyOverridesUser) {
-  RegisterUser(kTestUser1);
+  RegisterUser(kEnterpriseUser1);
   chromeos::StartupUtils::MarkOobeCompleted();
 }
 
@@ -785,10 +787,10 @@ IN_PROC_BROWSER_TEST_F(UserImageManagerPolicyTest, PRE_PolicyOverridesUser) {
 // previously chosen image.
 IN_PROC_BROWSER_TEST_F(UserImageManagerPolicyTest, PolicyOverridesUser) {
   const user_manager::User* user =
-      user_manager::UserManager::Get()->FindUser(kTestUser1);
+      user_manager::UserManager::Get()->FindUser(kEnterpriseUser1);
   ASSERT_TRUE(user);
 
-  LoginUser(kTestUser1);
+  LoginUser(kEnterpriseUser1);
   base::RunLoop().RunUntilIdle();
 
   policy::CloudPolicyStore* store = GetStoreForUser(user);
@@ -800,22 +802,23 @@ IN_PROC_BROWSER_TEST_F(UserImageManagerPolicyTest, PolicyOverridesUser) {
       user_manager::GetDefaultImage(user_manager::kFirstDefaultImageIndex);
 
   UserImageManager* user_image_manager =
-      ChromeUserManager::Get()->GetUserImageManager(kTestUser1);
+      ChromeUserManager::Get()->GetUserImageManager(kEnterpriseUser1);
   user_image_manager->SaveUserDefaultImageIndex(
       user_manager::kFirstDefaultImageIndex);
 
   EXPECT_TRUE(user->HasDefaultImage());
   EXPECT_EQ(user_manager::kFirstDefaultImageIndex, user->image_index());
   EXPECT_TRUE(test::AreImagesEqual(default_image, user->GetImage()));
-  ExpectNewUserImageInfo(
-      kTestUser1, user_manager::kFirstDefaultImageIndex, base::FilePath());
+  ExpectNewUserImageInfo(kEnterpriseUser1,
+                         user_manager::kFirstDefaultImageIndex,
+                         base::FilePath());
 
   // Set policy. Verify that the policy-provided user image is downloaded, set
   // and persisted, overriding the previously set image.
   user_policy_.payload().mutable_useravatarimage()->set_value(
       ConstructPolicy(test::kUserAvatarImage2RelativePath));
   user_policy_.Build();
-  fake_session_manager_client_->set_user_policy(kTestUser1,
+  fake_session_manager_client_->set_user_policy(kEnterpriseUser1,
                                                 user_policy_.GetBlob());
   run_loop_.reset(new base::RunLoop);
   store->Load();
@@ -824,12 +827,12 @@ IN_PROC_BROWSER_TEST_F(UserImageManagerPolicyTest, PolicyOverridesUser) {
   EXPECT_FALSE(user->HasDefaultImage());
   EXPECT_EQ(user_manager::User::USER_IMAGE_EXTERNAL, user->image_index());
   EXPECT_TRUE(test::AreImagesEqual(*policy_image_, user->GetImage()));
-  ExpectNewUserImageInfo(kTestUser1,
+  ExpectNewUserImageInfo(kEnterpriseUser1,
                          user_manager::User::USER_IMAGE_EXTERNAL,
-                         GetUserImagePath(kTestUser1, "jpg"));
+                         GetUserImagePath(kEnterpriseUser1, "jpg"));
 
   scoped_ptr<gfx::ImageSkia> saved_image =
-      test::ImageLoader(GetUserImagePath(kTestUser1, "jpg")).Load();
+      test::ImageLoader(GetUserImagePath(kEnterpriseUser1, "jpg")).Load();
   ASSERT_TRUE(saved_image);
 
   // Check image dimensions. Images can't be compared since JPEG is lossy.
@@ -839,7 +842,7 @@ IN_PROC_BROWSER_TEST_F(UserImageManagerPolicyTest, PolicyOverridesUser) {
 
 IN_PROC_BROWSER_TEST_F(UserImageManagerPolicyTest,
                        PRE_UserDoesNotOverridePolicy) {
-  RegisterUser(kTestUser1);
+  RegisterUser(kEnterpriseUser1);
   chromeos::StartupUtils::MarkOobeCompleted();
 }
 
@@ -848,10 +851,10 @@ IN_PROC_BROWSER_TEST_F(UserImageManagerPolicyTest,
 // from overriding the previously chosen image.
 IN_PROC_BROWSER_TEST_F(UserImageManagerPolicyTest, UserDoesNotOverridePolicy) {
   const user_manager::User* user =
-      user_manager::UserManager::Get()->FindUser(kTestUser1);
+      user_manager::UserManager::Get()->FindUser(kEnterpriseUser1);
   ASSERT_TRUE(user);
 
-  LoginUser(kTestUser1);
+  LoginUser(kEnterpriseUser1);
   base::RunLoop().RunUntilIdle();
 
   policy::CloudPolicyStore* store = GetStoreForUser(user);
@@ -862,7 +865,7 @@ IN_PROC_BROWSER_TEST_F(UserImageManagerPolicyTest, UserDoesNotOverridePolicy) {
   user_policy_.payload().mutable_useravatarimage()->set_value(
       ConstructPolicy(test::kUserAvatarImage2RelativePath));
   user_policy_.Build();
-  fake_session_manager_client_->set_user_policy(kTestUser1,
+  fake_session_manager_client_->set_user_policy(kEnterpriseUser1,
                                                 user_policy_.GetBlob());
   run_loop_.reset(new base::RunLoop);
   store->Load();
@@ -871,12 +874,12 @@ IN_PROC_BROWSER_TEST_F(UserImageManagerPolicyTest, UserDoesNotOverridePolicy) {
   EXPECT_FALSE(user->HasDefaultImage());
   EXPECT_EQ(user_manager::User::USER_IMAGE_EXTERNAL, user->image_index());
   EXPECT_TRUE(test::AreImagesEqual(*policy_image_, user->GetImage()));
-  ExpectNewUserImageInfo(kTestUser1,
+  ExpectNewUserImageInfo(kEnterpriseUser1,
                          user_manager::User::USER_IMAGE_EXTERNAL,
-                         GetUserImagePath(kTestUser1, "jpg"));
+                         GetUserImagePath(kEnterpriseUser1, "jpg"));
 
   scoped_ptr<gfx::ImageSkia> saved_image =
-      test::ImageLoader(GetUserImagePath(kTestUser1, "jpg")).Load();
+      test::ImageLoader(GetUserImagePath(kEnterpriseUser1, "jpg")).Load();
   ASSERT_TRUE(saved_image);
 
   // Check image dimensions. Images can't be compared since JPEG is lossy.
@@ -886,18 +889,19 @@ IN_PROC_BROWSER_TEST_F(UserImageManagerPolicyTest, UserDoesNotOverridePolicy) {
   // Choose a different user image. Verify that the user image does not change
   // as policy takes precedence.
   UserImageManager* user_image_manager =
-      ChromeUserManager::Get()->GetUserImageManager(kTestUser1);
+      ChromeUserManager::Get()->GetUserImageManager(kEnterpriseUser1);
   user_image_manager->SaveUserDefaultImageIndex(
       user_manager::kFirstDefaultImageIndex);
 
   EXPECT_FALSE(user->HasDefaultImage());
   EXPECT_EQ(user_manager::User::USER_IMAGE_EXTERNAL, user->image_index());
   EXPECT_TRUE(test::AreImagesEqual(*policy_image_, user->GetImage()));
-  ExpectNewUserImageInfo(kTestUser1,
+  ExpectNewUserImageInfo(kEnterpriseUser1,
                          user_manager::User::USER_IMAGE_EXTERNAL,
-                         GetUserImagePath(kTestUser1, "jpg"));
+                         GetUserImagePath(kEnterpriseUser1, "jpg"));
 
-  saved_image = test::ImageLoader(GetUserImagePath(kTestUser1, "jpg")).Load();
+  saved_image =
+      test::ImageLoader(GetUserImagePath(kEnterpriseUser1, "jpg")).Load();
   ASSERT_TRUE(saved_image);
 
   // Check image dimensions. Images can't be compared since JPEG is lossy.

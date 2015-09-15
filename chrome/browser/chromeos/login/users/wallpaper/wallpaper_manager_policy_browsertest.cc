@@ -53,8 +53,6 @@ namespace chromeos {
 
 namespace {
 
-const char kTestUsers[2][19] = { "test-0@example.com", "test-1@example.com" };
-
 const char kRedImageFileName[] = "chromeos/wallpapers/red.jpg";
 const char kGreenImageFileName[] = "chromeos/wallpapers/green.jpg";
 const char kBlueImageFileName[] = "chromeos/wallpapers/blue.jpg";
@@ -136,6 +134,8 @@ class WallpaperManagerPolicyTest
       : LoginManagerTest(true),
         wallpaper_change_count_(0),
         fake_session_manager_client_(new FakeSessionManagerClient) {
+    testUsers_[0] = LoginManagerTest::kEnterpriseUser1;
+    testUsers_[1] = LoginManagerTest::kEnterpriseUser2;
   }
 
   scoped_ptr<policy::UserPolicyBuilder> GetUserPolicyBuilder(
@@ -178,6 +178,8 @@ class WallpaperManagerPolicyTest
     // start-up of user profiles.
     command_line->AppendSwitch(switches::kLoginManager);
     command_line->AppendSwitch(switches::kForceLoginManagerInTests);
+
+    LoginManagerTest::SetUpCommandLine(command_line);
   }
 
   void SetUpOnMainThread() override {
@@ -186,10 +188,8 @@ class WallpaperManagerPolicyTest
         desktop_background_controller()->AddObserver(this);
 
     // Set up policy signing.
-    user_policy_builders_[0] = GetUserPolicyBuilder(kTestUsers[0]);
-    user_policy_builders_[1] = GetUserPolicyBuilder(kTestUsers[1]);
-
-    ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+    user_policy_builders_[0] = GetUserPolicyBuilder(testUsers_[0]);
+    user_policy_builders_[1] = GetUserPolicyBuilder(testUsers_[1]);
   }
 
   void TearDownOnMainThread() override {
@@ -233,7 +233,7 @@ class WallpaperManagerPolicyTest
   // empty |filename| to clear policy.
   void InjectPolicy(int user_number, const std::string& filename) {
     ASSERT_TRUE(user_number == 0 || user_number == 1);
-    const std::string user_id = kTestUsers[user_number];
+    const std::string user_id = testUsers_[user_number];
     policy::UserPolicyBuilder* builder =
         user_policy_builders_[user_number].get();
     if (!filename.empty()) {
@@ -258,8 +258,8 @@ class WallpaperManagerPolicyTest
   // Obtain WallpaperInfo for |user_number| from WallpaperManager.
   void GetUserWallpaperInfo(int user_number,
                             wallpaper::WallpaperInfo* wallpaper_info) {
-    WallpaperManager::Get()->
-        GetUserWallpaperInfo(kTestUsers[user_number], wallpaper_info);
+    WallpaperManager::Get()->GetUserWallpaperInfo(testUsers_[user_number],
+                                                  wallpaper_info);
   }
 
   base::FilePath test_data_dir_;
@@ -267,14 +267,15 @@ class WallpaperManagerPolicyTest
   int wallpaper_change_count_;
   scoped_ptr<policy::UserPolicyBuilder> user_policy_builders_[2];
   FakeSessionManagerClient* fake_session_manager_client_;
+  const char* testUsers_[2];
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WallpaperManagerPolicyTest);
 };
 
 IN_PROC_BROWSER_TEST_F(WallpaperManagerPolicyTest, PRE_SetResetClear) {
-  RegisterUser(kTestUsers[0]);
-  RegisterUser(kTestUsers[1]);
+  RegisterUser(testUsers_[0]);
+  RegisterUser(testUsers_[1]);
   StartupUtils::MarkOobeCompleted();
 }
 
@@ -284,7 +285,7 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerPolicyTest, PRE_SetResetClear) {
 // reverts to default.
 IN_PROC_BROWSER_TEST_F(WallpaperManagerPolicyTest, SetResetClear) {
   wallpaper::WallpaperInfo info;
-  LoginUser(kTestUsers[0]);
+  LoginUser(testUsers_[0]);
   base::RunLoop().RunUntilIdle();
 
   // First user: Wait until default wallpaper has been loaded (happens
@@ -325,14 +326,14 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerPolicyTest, SetResetClear) {
 
 IN_PROC_BROWSER_TEST_F(WallpaperManagerPolicyTest,
                        DISABLED_PRE_PRE_PRE_WallpaperOnLoginScreen) {
-  RegisterUser(kTestUsers[0]);
-  RegisterUser(kTestUsers[1]);
+  RegisterUser(testUsers_[0]);
+  RegisterUser(testUsers_[1]);
   StartupUtils::MarkOobeCompleted();
 }
 
 IN_PROC_BROWSER_TEST_F(WallpaperManagerPolicyTest,
                        DISABLED_PRE_PRE_WallpaperOnLoginScreen) {
-  LoginUser(kTestUsers[0]);
+  LoginUser(testUsers_[0]);
 
   // Wait until default wallpaper has been loaded.
   RunUntilWallpaperChangeCount(1);
@@ -347,7 +348,7 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerPolicyTest,
 
 IN_PROC_BROWSER_TEST_F(WallpaperManagerPolicyTest,
                        DISABLED_PRE_WallpaperOnLoginScreen) {
-  LoginUser(kTestUsers[1]);
+  LoginUser(testUsers_[1]);
 
   // Wait until default wallpaper has been loaded.
   RunUntilWallpaperChangeCount(1);
@@ -378,12 +379,12 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerPolicyTest,
 }
 
 IN_PROC_BROWSER_TEST_F(WallpaperManagerPolicyTest, PRE_PRE_PersistOverLogout) {
-  RegisterUser(kTestUsers[0]);
+  RegisterUser(testUsers_[0]);
   StartupUtils::MarkOobeCompleted();
 }
 
 IN_PROC_BROWSER_TEST_F(WallpaperManagerPolicyTest, PRE_PersistOverLogout) {
-  LoginUser(kTestUsers[0]);
+  LoginUser(testUsers_[0]);
 
   // Wait until default wallpaper has been loaded.
   RunUntilWallpaperChangeCount(1);
@@ -397,7 +398,7 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerPolicyTest, PRE_PersistOverLogout) {
 }
 
 IN_PROC_BROWSER_TEST_F(WallpaperManagerPolicyTest, PersistOverLogout) {
-  LoginUser(kTestUsers[0]);
+  LoginUser(testUsers_[0]);
 
   // Wait until wallpaper has been loaded.
   RunUntilWallpaperChangeCount(1);
