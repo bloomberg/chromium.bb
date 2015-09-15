@@ -40,6 +40,7 @@
 #include "content/browser/android/edge_effect_l.h"
 #include "content/browser/android/in_process/synchronous_compositor_impl.h"
 #include "content/browser/android/overscroll_controller_android.h"
+#include "content/browser/android/popup_touch_handle_drawable.h"
 #include "content/browser/devtools/render_frame_devtools_agent_host.h"
 #include "content/browser/gpu/browser_gpu_channel_host_factory.h"
 #include "content/browser/gpu/compositor_util.h"
@@ -1246,7 +1247,7 @@ scoped_ptr<ui::TouchHandleDrawable>
 RenderWidgetHostViewAndroid::CreateDrawable() {
   DCHECK(content_view_core_);
   if (!using_browser_compositor_)
-    return content_view_core_->CreatePopupTouchHandleDrawable();
+    return PopupTouchHandleDrawable::Create(content_view_core_);
 
   return scoped_ptr<ui::TouchHandleDrawable>(new CompositedTouchHandleDrawable(
       content_view_core_->GetLayer().get(),

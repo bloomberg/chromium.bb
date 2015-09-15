@@ -263,7 +263,6 @@ class ContentViewCoreImpl : public ContentViewCore,
   void OnSelectionEvent(ui::SelectionEventType event,
                         const gfx::PointF& selection_anchor,
                         const gfx::RectF& selection_rect);
-  scoped_ptr<ui::TouchHandleDrawable> CreatePopupTouchHandleDrawable();
 
   void StartContentIntent(const GURL& content_url);
 

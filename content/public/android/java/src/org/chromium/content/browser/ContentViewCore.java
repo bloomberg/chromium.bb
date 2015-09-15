@@ -70,8 +70,6 @@ import org.chromium.content.browser.input.JoystickScrollProvider;
 import org.chromium.content.browser.input.LegacyPastePopupMenu;
 import org.chromium.content.browser.input.PastePopupMenu;
 import org.chromium.content.browser.input.PastePopupMenu.PastePopupMenuDelegate;
-import org.chromium.content.browser.input.PopupTouchHandleDrawable;
-import org.chromium.content.browser.input.PopupTouchHandleDrawable.PopupTouchHandleDrawableDelegate;
 import org.chromium.content.browser.input.SelectPopup;
 import org.chromium.content.browser.input.SelectPopupDialog;
 import org.chromium.content.browser.input.SelectPopupDropdown;
@@ -498,10 +496,6 @@ public class ContentViewCore implements
     private PastePopupMenu mPastePopupMenu;
     private boolean mWasPastePopupShowingOnInsertionDragStart;
 
-    private PopupTouchHandleDrawableDelegate mTouchHandleDelegate;
-
-    private PositionObserver mPositionObserver;
-
     // Size of the viewport in physical pixels as set from onSizeChanged.
     private int mViewportWidthPix;
     private int mViewportHeightPix;
@@ -900,7 +894,6 @@ public class ContentViewCore implements
             }
 
             mContainerView = containerView;
-            mPositionObserver = new ViewPositionObserver(mContainerView);
             mContainerView.setClickable(true);
             mViewAndroidDelegate.updateCurrentContainerView(mContainerView);
             for (ContainerViewObserver observer : mContainerViewObservers) {
@@ -1031,7 +1024,6 @@ public class ContentViewCore implements
         unregisterAccessibilityContentObserver();
         mGestureStateListeners.clear();
         ScreenOrientationListener.getInstance().removeObserver(this);
-        mPositionObserver.clearListener();
         mContainerViewObservers.clear();
         hidePopupsAndPreserveSelection();
         mPastePopupMenu = null;
@@ -1200,6 +1192,15 @@ public class ContentViewCore implements
         return onTouchEventImpl(event, isTouchHandleEvent);
     }
 
+    /**
+     * Called by PopupWindow-based touch handles.
+     * @param event the MotionEvent targeting the handle.
+     */
+    public boolean onTouchHandleEvent(MotionEvent event) {
+        final boolean isTouchHandleEvent = true;
+        return onTouchEventImpl(event, isTouchHandleEvent);
+    }
+
     private boolean onTouchEventImpl(MotionEvent event, boolean isTouchHandleEvent) {
         TraceEvent.begin("onTouchEvent");
         try {
@@ -1265,6 +1266,9 @@ public class ContentViewCore implements
                 || eventAction == MotionEvent.ACTION_POINTER_UP;
     }
 
+    /**
+     * @return Whether a scroll targeting web content is in progress.
+     */
     public boolean isScrollInProgress() {
         return mTouchScrollInProgress || mPotentiallyActiveFlingCount > 0;
     }
@@ -2568,36 +2572,6 @@ public class ContentViewCore implements
     @CalledByNative
     private MotionEventSynthesizer createMotionEventSynthesizer() {
         return new MotionEventSynthesizer(this);
-    }
-
-    @SuppressWarnings("unused")
-    @CalledByNative
-    private PopupTouchHandleDrawable createPopupTouchHandleDrawable() {
-        if (mTouchHandleDelegate == null) {
-            mTouchHandleDelegate = new PopupTouchHandleDrawableDelegate() {
-                @Override
-                public View getParent() {
-                    return getContainerView();
-                }
-
-                @Override
-                public PositionObserver getParentPositionObserver() {
-                    return mPositionObserver;
-                }
-
-                @Override
-                public boolean onTouchHandleEvent(MotionEvent event) {
-                    final boolean isTouchHandleEvent = true;
-                    return onTouchEventImpl(event, isTouchHandleEvent);
-                }
-
-                @Override
-                public boolean isScrollInProgress() {
-                    return ContentViewCore.this.isScrollInProgress();
-                }
-            };
-        }
-        return new PopupTouchHandleDrawable(mTouchHandleDelegate);
     }
 
     /**

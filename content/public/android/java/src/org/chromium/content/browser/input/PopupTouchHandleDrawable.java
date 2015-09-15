@@ -5,7 +5,6 @@
 package org.chromium.content.browser.input;
 
 import android.annotation.SuppressLint;
-import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
@@ -18,10 +17,12 @@ import android.widget.PopupWindow;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.content.browser.ContainerViewObserver;
+import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.PositionObserver;
+import org.chromium.content.browser.ViewPositionObserver;
 import org.chromium.ui.touch_selection.TouchHandleOrientation;
 
-import java.lang.ref.WeakReference;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
@@ -34,18 +35,12 @@ import java.lang.reflect.Method;
  */
 @JNINamespace("content")
 public class PopupTouchHandleDrawable extends View {
-    private Drawable mDrawable;
     private final PopupWindow mContainer;
-    private final Context mContext;
     private final PositionObserver.Listener mParentPositionListener;
-
-    // The weak delegate reference allows the PopupTouchHandleDrawable to be owned by a native
-    // object that might have a different lifetime (or a cyclic lifetime) with respect to the
-    // delegate, allowing garbage collection of any Java references.
-    private final WeakReference<PopupTouchHandleDrawableDelegate> mDelegate;
-
-    // The observer reference will only be non-null while it is attached to mParentPositionListener.
+    private final ContainerViewObserver mParentViewObserver;
+    private ContentViewCore mContentViewCore;
     private PositionObserver mParentPositionObserver;
+    private Drawable mDrawable;
 
     // The position of the handle relative to the parent view.
     private int mPositionX;
@@ -85,39 +80,11 @@ public class PopupTouchHandleDrawable extends View {
     private Runnable mInvalidationRunnable;
     private boolean mHasPendingInvalidate;
 
-    /**
-     * Provides additional interaction behaviors necessary for handle
-     * manipulation and interaction.
-     */
-    public interface PopupTouchHandleDrawableDelegate {
-        /**
-         * @return The parent View of the PopupWindow.
-         */
-        View getParent();
-
-        /**
-         * @return A position observer for the parent View, used to keep the
-         *         absolutely positioned PopupWindow in-sync with the parent.
-         */
-        PositionObserver getParentPositionObserver();
-
-        /**
-         * Should route MotionEvents to the appropriate logic layer for
-         * performing handle manipulation.
-         */
-        boolean onTouchHandleEvent(MotionEvent ev);
-
-        /**
-         * @return Whether the associated content is actively scrolling.
-         */
-        boolean isScrollInProgress();
-    }
-
-    public PopupTouchHandleDrawable(PopupTouchHandleDrawableDelegate delegate) {
-        super(delegate.getParent().getContext());
-        mContext = delegate.getParent().getContext();
-        mDelegate = new WeakReference<PopupTouchHandleDrawableDelegate>(delegate);
-        mContainer = new PopupWindow(mContext, null, android.R.attr.textSelectHandleWindowStyle);
+    public PopupTouchHandleDrawable(ContentViewCore contentViewCore) {
+        super(contentViewCore.getContainerView().getContext());
+        mContentViewCore = contentViewCore;
+        mContainer =
+                new PopupWindow(getContext(), null, android.R.attr.textSelectHandleWindowStyle);
         mContainer.setSplitTouchEnabled(true);
         mContainer.setClippingEnabled(false);
         mContainer.setAnimationStyle(0);
@@ -126,12 +93,26 @@ public class PopupTouchHandleDrawable extends View {
         setWindowLayoutType(mContainer, WindowManager.LayoutParams.TYPE_APPLICATION_SUB_PANEL);
         mAlpha = 1.f;
         mVisible = getVisibility() == VISIBLE;
+        mParentPositionObserver = new ViewPositionObserver(mContentViewCore.getContainerView());
         mParentPositionListener = new PositionObserver.Listener() {
             @Override
             public void onPositionChanged(int x, int y) {
                 updateParentPosition(x, y);
             }
         };
+        mParentViewObserver = new ContainerViewObserver() {
+            @Override
+            public void onContainerViewChanged(ViewGroup newContainerView) {
+                // If the parent View ever changes, the parent position observer
+                // must be updated accordingly.
+                mParentPositionObserver.clearListener();
+                mParentPositionObserver = new ViewPositionObserver(newContainerView);
+                if (mContainer.isShowing()) {
+                    mParentPositionObserver.addListener(mParentPositionListener);
+                }
+            }
+        };
+        mContentViewCore.addContainerViewObserver(mParentViewObserver);
     }
 
     private static void setWindowLayoutType(PopupWindow window, int layoutType) {
@@ -152,19 +133,22 @@ public class PopupTouchHandleDrawable extends View {
     @SuppressLint("ClickableViewAccessibility")
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        final PopupTouchHandleDrawableDelegate delegate = getDelegateAndHideIfNull();
-        if (delegate == null) return false;
-
+        if (mContentViewCore == null) return false;
         // Convert from PopupWindow local coordinates to
         // parent view local coordinates prior to forwarding.
-        delegate.getParent().getLocationOnScreen(mTempScreenCoords);
+        mContentViewCore.getContainerView().getLocationOnScreen(mTempScreenCoords);
         final float offsetX = event.getRawX() - event.getX() - mTempScreenCoords[0];
         final float offsetY = event.getRawY() - event.getY() - mTempScreenCoords[1];
         final MotionEvent offsetEvent = MotionEvent.obtainNoHistory(event);
         offsetEvent.offsetLocation(offsetX, offsetY);
-        final boolean handled = delegate.onTouchHandleEvent(offsetEvent);
+        final boolean handled = mContentViewCore.onTouchHandleEvent(offsetEvent);
         offsetEvent.recycle();
         return handled;
+    }
+
+    @CalledByNative
+    private static PopupTouchHandleDrawable create(ContentViewCore contentViewCore) {
+        return new PopupTouchHandleDrawable(contentViewCore);
     }
 
     @CalledByNative
@@ -181,19 +165,19 @@ public class PopupTouchHandleDrawable extends View {
 
         switch (orientation) {
             case TouchHandleOrientation.LEFT: {
-                mDrawable = HandleViewResources.getLeftHandleDrawable(mContext);
+                mDrawable = HandleViewResources.getLeftHandleDrawable(getContext());
                 mHotspotX = (mDrawable.getIntrinsicWidth() * 3) / 4f;
                 break;
             }
 
             case TouchHandleOrientation.RIGHT: {
-                mDrawable = HandleViewResources.getRightHandleDrawable(mContext);
+                mDrawable = HandleViewResources.getRightHandleDrawable(getContext());
                 mHotspotX = mDrawable.getIntrinsicWidth() / 4f;
                 break;
             }
 
             case TouchHandleOrientation.CENTER: {
-                mDrawable = HandleViewResources.getCenterHandleDrawable(mContext);
+                mDrawable = HandleViewResources.getCenterHandleDrawable(getContext());
                 mHotspotX = mDrawable.getIntrinsicWidth() / 2f;
                 break;
             }
@@ -206,7 +190,7 @@ public class PopupTouchHandleDrawable extends View {
 
         // Force handle repositioning to accommodate the new orientation's hotspot.
         if (hadValidOrientation) setFocus(oldAdjustedPositionX, oldAdjustedPositionY);
-        mDrawable.setAlpha((int) (255 * mAlpha));
+        if (mDrawable != null) mDrawable.setAlpha((int) (255 * mAlpha));
         scheduleInvalidate();
     }
 
@@ -289,7 +273,7 @@ public class PopupTouchHandleDrawable extends View {
             mDeferredHandleFadeInRunnable = new Runnable() {
                 @Override
                 public void run() {
-                    if (isScrollInProgress()) {
+                    if (mContentViewCore.isScrollInProgress()) {
                         rescheduleFadeIn();
                         return;
                     }
@@ -345,28 +329,16 @@ public class PopupTouchHandleDrawable extends View {
         return mPositionY + Math.round(mHotspotY);
     }
 
-    private PopupTouchHandleDrawableDelegate getDelegateAndHideIfNull() {
-        final PopupTouchHandleDrawableDelegate delegate = mDelegate.get();
-        // If the delegate is gone, we should immediately dispose of the popup.
-        if (delegate == null) hide();
-        return delegate;
-    }
-
-    private boolean isScrollInProgress() {
-        final PopupTouchHandleDrawableDelegate delegate = getDelegateAndHideIfNull();
-        if (delegate == null) return false;
-        return delegate.isScrollInProgress();
+    @CalledByNative
+    private void destroy() {
+        hide();
+        mContentViewCore.removeContainerViewObserver(mParentViewObserver);
+        mContentViewCore = null;
     }
 
     @CalledByNative
     private void show() {
         if (mContainer.isShowing()) return;
-
-        final PopupTouchHandleDrawableDelegate delegate = getDelegateAndHideIfNull();
-        if (delegate == null) return;
-
-        mParentPositionObserver = delegate.getParentPositionObserver();
-        assert mParentPositionObserver != null;
 
         // While hidden, the parent position may have become stale. It must be updated before
         // checking isPositionVisible().
@@ -374,7 +346,7 @@ public class PopupTouchHandleDrawable extends View {
                 mParentPositionObserver.getPositionY());
         mParentPositionObserver.addListener(mParentPositionListener);
         mContainer.setContentView(this);
-        mContainer.showAtLocation(delegate.getParent(), 0,
+        mContainer.showAtLocation(mContentViewCore.getContainerView(), 0,
                 getContainerPositionX(), getContainerPositionY());
     }
 
@@ -384,11 +356,7 @@ public class PopupTouchHandleDrawable extends View {
         mAlpha = 1.0f;
         if (mDeferredHandleFadeInRunnable != null) removeCallbacks(mDeferredHandleFadeInRunnable);
         if (mContainer.isShowing()) mContainer.dismiss();
-        if (mParentPositionObserver != null) {
-            mParentPositionObserver.removeListener(mParentPositionListener);
-            // Clear the strong reference to allow garbage collection.
-            mParentPositionObserver = null;
-        }
+        mParentPositionObserver.clearListener();
     }
 
     @CalledByNative
@@ -398,7 +366,7 @@ public class PopupTouchHandleDrawable extends View {
         if (mPositionX == x && mPositionY == y) return;
         mPositionX = x;
         mPositionY = y;
-        if (isScrollInProgress()) {
+        if (mContentViewCore.isScrollInProgress()) {
             temporarilyHide();
         } else {
             scheduleInvalidate();

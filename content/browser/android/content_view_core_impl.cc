@@ -621,19 +621,6 @@ void ContentViewCoreImpl::OnSelectionEvent(ui::SelectionEventType event,
       selection_rect_pix.right(), selection_rect_pix.bottom());
 }
 
-scoped_ptr<ui::TouchHandleDrawable>
-ContentViewCoreImpl::CreatePopupTouchHandleDrawable() {
-  JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
-  if (obj.is_null()) {
-    NOTREACHED();
-    return scoped_ptr<ui::TouchHandleDrawable>();
-  }
-  return scoped_ptr<ui::TouchHandleDrawable>(new PopupTouchHandleDrawable(
-      Java_ContentViewCore_createPopupTouchHandleDrawable(env, obj.obj()),
-      dpi_scale_));
-}
-
 void ContentViewCoreImpl::ShowPastePopup(int x_dip, int y_dip) {
   RenderWidgetHostViewAndroid* view = GetRenderWidgetHostViewAndroid();
   if (!view)

@@ -8,14 +8,17 @@
 #include "ui/touch_selection/touch_handle.h"
 
 #include "base/android/jni_android.h"
+#include "base/android/jni_weak_ref.h"
 
 namespace content {
+
+class ContentViewCore;
 
 // Touch handle drawable backed by an Android PopupWindow.
 class PopupTouchHandleDrawable : public ui::TouchHandleDrawable {
  public:
-  PopupTouchHandleDrawable(base::android::ScopedJavaLocalRef<jobject> drawable,
-                           float dpi_scale);
+  static scoped_ptr<PopupTouchHandleDrawable> Create(
+      ContentViewCore* content_view_core);
   ~PopupTouchHandleDrawable() override;
 
   // ui::TouchHandleDrawable implementation.
@@ -28,8 +31,11 @@ class PopupTouchHandleDrawable : public ui::TouchHandleDrawable {
   static bool RegisterPopupTouchHandleDrawable(JNIEnv* env);
 
  private:
+  PopupTouchHandleDrawable(JNIEnv* env, jobject obj, float dpi_scale);
+
+  JavaObjectWeakGlobalRef java_ref_;
+
   const float dpi_scale_;
-  base::android::ScopedJavaGlobalRef<jobject> drawable_;
 
   DISALLOW_COPY_AND_ASSIGN(PopupTouchHandleDrawable);
 };
