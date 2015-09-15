@@ -12759,9 +12759,6 @@ Some features may be unavailable.  Please check that the profile exists and you 
         <message name="IDS_MESSAGE_CENTER_FOOTER_WITH_PRODUCT_TITLE" desc="The label in the footer of the message center tray, with the product title.">
           <ph name="product_name">$1<ex>Chrome</ex></ph> Notifications
         </message>
-        <message name="IDS_NOTIFIER_WELCOME_BODY" desc="Notification body for when a new notifier service is introduced.">
-          Now on your desktop
-        </message>
         <message name="IDS_NOTIFIER_WELCOME_BUTTON" desc="Notification body for when a new notifier service is introduced.">
           Turn off these notifications
         </message>
