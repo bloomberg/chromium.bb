@@ -44,7 +44,7 @@ protected:
 
 private:
     bool shouldSaveAndRestoreFormControlState() const override;
-    void appendToFormData(FormData&, bool) const override;
+    void appendToFormData(FormData&) const override;
     LayoutObject* createLayoutObject(const ComputedStyle&) const override;
     bool storesValueSeparateFromAttribute() override;
     void setValue(const String&, bool, TextFieldEventBehavior) override;

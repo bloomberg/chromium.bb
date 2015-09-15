@@ -422,7 +422,7 @@ void HTMLObjectElement::didMoveToNewDocument(Document& oldDocument)
     HTMLPlugInElement::didMoveToNewDocument(oldDocument);
 }
 
-void HTMLObjectElement::appendToFormData(FormData& formData, bool)
+void HTMLObjectElement::appendToFormData(FormData& formData)
 {
     if (name().isEmpty())
         return;

@@ -57,7 +57,7 @@ private:
     const AtomicString& formControlType() const override;
     FormControlState saveFormControlState() const override;
     void restoreFormControlState(const FormControlState&) override;
-    void appendToFormData(FormData&, bool) const override;
+    void appendToFormData(FormData&) const override;
     bool valueMissing(const String&) const override;
     String valueMissingText() const override;
     void handleDOMActivateEvent(Event*) override;

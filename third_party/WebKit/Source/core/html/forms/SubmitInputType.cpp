@@ -53,7 +53,7 @@ const AtomicString& SubmitInputType::formControlType() const
     return InputTypeNames::submit;
 }
 
-void SubmitInputType::appendToFormData(FormData& formData, bool) const
+void SubmitInputType::appendToFormData(FormData& formData) const
 {
     if (element().isActivatedSubmit())
         formData.append(element().name(), element().valueWithDefault());

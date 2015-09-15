@@ -472,9 +472,9 @@ void TextFieldInputType::updatePlaceholderText()
     placeholder->setTextContent(placeholderText);
 }
 
-void TextFieldInputType::appendToFormData(FormData& formData, bool isMultipart) const
+void TextFieldInputType::appendToFormData(FormData& formData) const
 {
-    InputType::appendToFormData(formData, isMultipart);
+    InputType::appendToFormData(formData);
     const AtomicString& dirnameAttrValue = element().fastGetAttribute(dirnameAttr);
     if (!dirnameAttrValue.isNull())
         formData.append(dirnameAttrValue, element().directionForFormData());

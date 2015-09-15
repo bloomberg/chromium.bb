@@ -84,7 +84,7 @@ public:
     virtual FormControlState saveFormControlState() const;
     virtual void restoreFormControlState(const FormControlState&);
     virtual bool isFormDataAppendable() const;
-    virtual void appendToFormData(FormData&, bool isMultipart) const;
+    virtual void appendToFormData(FormData&) const;
     virtual String resultForDialogSubmit() const;
 
     // DOM property functions

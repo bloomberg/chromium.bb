@@ -217,7 +217,7 @@ PassRefPtrWillBeRawPtr<FormSubmission> FormSubmission::create(HTMLFormElement* f
         ASSERT(control);
         HTMLElement& element = toHTMLElement(*control);
         if (!element.isDisabledFormControl())
-            control->appendToFormData(*domFormData, isMultiPartForm);
+            control->appendToFormData(*domFormData);
         if (isHTMLInputElement(element)) {
             HTMLInputElement& input = toHTMLInputElement(element);
             if (input.type() == InputTypeNames::password && !input.value().isEmpty())

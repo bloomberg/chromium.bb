@@ -64,7 +64,7 @@ bool ImageInputType::isFormDataAppendable() const
     return true;
 }
 
-void ImageInputType::appendToFormData(FormData& formData, bool) const
+void ImageInputType::appendToFormData(FormData& formData) const
 {
     if (!element().isActivatedSubmit())
         return;

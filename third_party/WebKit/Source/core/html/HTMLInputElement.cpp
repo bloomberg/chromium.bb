@@ -872,10 +872,10 @@ void HTMLInputElement::setActivatedSubmit(bool flag)
     m_isActivatedSubmit = flag;
 }
 
-void HTMLInputElement::appendToFormData(FormData& formData, bool isMultipart)
+void HTMLInputElement::appendToFormData(FormData& formData)
 {
     if (m_inputType->isFormDataAppendable())
-        m_inputType->appendToFormData(formData, isMultipart);
+        m_inputType->appendToFormData(formData);
 }
 
 String HTMLInputElement::resultForDialogSubmit()

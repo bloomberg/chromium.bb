@@ -1161,7 +1161,7 @@ void HTMLSelectElement::parseMultipleAttribute(const AtomicString& value)
     lazyReattachIfAttached();
 }
 
-void HTMLSelectElement::appendToFormData(FormData& formData, bool)
+void HTMLSelectElement::appendToFormData(FormData& formData)
 {
     const AtomicString& name = this->name();
     if (name.isEmpty())

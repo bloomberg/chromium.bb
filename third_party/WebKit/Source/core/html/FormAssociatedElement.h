@@ -65,7 +65,7 @@ public:
 
     // Override in derived classes to get the encoded name=value pair for
     // submitting.
-    virtual void appendToFormData(FormData&, bool isMultipart) { }
+    virtual void appendToFormData(FormData&) { }
 
     void resetFormOwner();
 

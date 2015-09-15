@@ -92,7 +92,7 @@ FormData::FormData(HTMLFormElement* form)
     for (unsigned i = 0; i < form->associatedElements().size(); ++i) {
         FormAssociatedElement* element = form->associatedElements()[i];
         if (!toHTMLElement(element)->isDisabledFormControl())
-            element->appendToFormData(*this, true);
+            element->appendToFormData(*this);
     }
 }
 

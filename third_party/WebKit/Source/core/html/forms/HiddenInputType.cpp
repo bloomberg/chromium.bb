@@ -97,13 +97,13 @@ void HiddenInputType::setValue(const String& sanitizedValue, bool, TextFieldEven
     element().setAttribute(valueAttr, AtomicString(sanitizedValue));
 }
 
-void HiddenInputType::appendToFormData(FormData& formData, bool isMultipartForm) const
+void HiddenInputType::appendToFormData(FormData& formData) const
 {
     if (equalIgnoringCase(element().name(), "_charset_")) {
         formData.append(element().name(), String(formData.encoding().name()));
         return;
     }
-    InputType::appendToFormData(formData, isMultipartForm);
+    InputType::appendToFormData(formData);
 }
 
 bool HiddenInputType::shouldRespectHeightAndWidthAttributes()

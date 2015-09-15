@@ -106,7 +106,7 @@ void FileInputType::restoreFormControlState(const FormControlState& state)
     filesChosen(filesFromFormControlState(state));
 }
 
-void FileInputType::appendToFormData(FormData& formData, bool) const
+void FileInputType::appendToFormData(FormData& formData) const
 {
     FileList* fileList = element().files();
     unsigned numFiles = fileList->length();

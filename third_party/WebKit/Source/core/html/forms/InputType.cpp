@@ -167,7 +167,7 @@ bool InputType::isFormDataAppendable() const
     return !element().name().isEmpty();
 }
 
-void InputType::appendToFormData(FormData& formData, bool) const
+void InputType::appendToFormData(FormData& formData) const
 {
     formData.append(element().name(), element().value());
 }

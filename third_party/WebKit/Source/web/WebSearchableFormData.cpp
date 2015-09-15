@@ -211,7 +211,7 @@ bool buildSearchString(const HTMLFormElement& form, Vector<char>* encodedString,
             continue;
 
         FormData* formData = FormData::create(encoding);
-        control.appendToFormData(*formData, false);
+        control.appendToFormData(*formData);
 
         for (const auto& entry : formData->entries()) {
             if (!encodedString->isEmpty())

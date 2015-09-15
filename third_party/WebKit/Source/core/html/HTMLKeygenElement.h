@@ -48,7 +48,7 @@ private:
 
     void parseAttribute(const QualifiedName&, const AtomicString&) override;
 
-    void appendToFormData(FormData&, bool) override;
+    void appendToFormData(FormData&) override;
     const AtomicString& formControlType() const override;
     bool isOptionalFormControl() const override { return false; }
 

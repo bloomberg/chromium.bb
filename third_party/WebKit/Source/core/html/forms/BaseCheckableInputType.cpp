@@ -52,7 +52,7 @@ void BaseCheckableInputType::restoreFormControlState(const FormControlState& sta
     element().setChecked(state[0] == "on");
 }
 
-void BaseCheckableInputType::appendToFormData(FormData& formData, bool) const
+void BaseCheckableInputType::appendToFormData(FormData& formData) const
 {
     if (element().checked())
         formData.append(element().name(), element().value());

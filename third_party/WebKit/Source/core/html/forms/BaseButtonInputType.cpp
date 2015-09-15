@@ -58,9 +58,8 @@ bool BaseButtonInputType::shouldSaveAndRestoreFormControlState() const
     return false;
 }
 
-void BaseButtonInputType::appendToFormData(FormData&, bool) const
+void BaseButtonInputType::appendToFormData(FormData&) const
 {
-    // Buttons except overridden types are never successful.
 }
 
 LayoutObject* BaseButtonInputType::createLayoutObject(const ComputedStyle&) const

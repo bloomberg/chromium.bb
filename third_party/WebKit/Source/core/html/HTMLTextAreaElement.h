@@ -120,7 +120,7 @@ private:
     bool isPresentationAttribute(const QualifiedName&) const override;
     void collectStyleForPresentationAttribute(const QualifiedName&, const AtomicString&, MutableStylePropertySet*) override;
     LayoutObject* createLayoutObject(const ComputedStyle&) override;
-    void appendToFormData(FormData&, bool) override;
+    void appendToFormData(FormData&) override;
     void resetImpl() override;
     bool hasCustomFocusLogic() const override;
     bool shouldShowFocusRingOnMouseFocus() const override;

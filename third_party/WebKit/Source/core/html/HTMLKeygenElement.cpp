@@ -97,7 +97,7 @@ void HTMLKeygenElement::parseAttribute(const QualifiedName& name, const AtomicSt
     HTMLFormControlElement::parseAttribute(name, value);
 }
 
-void HTMLKeygenElement::appendToFormData(FormData& formData, bool)
+void HTMLKeygenElement::appendToFormData(FormData& formData)
 {
     // Only RSA is supported at this time.
     const AtomicString& keyType = fastGetAttribute(keytypeAttr);

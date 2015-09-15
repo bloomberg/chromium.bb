@@ -52,7 +52,7 @@ private:
     bool isInteractiveContent() const override { return false; }
     bool shouldRespectHeightAndWidthAttributes() override;
     void setValue(const String&, bool, TextFieldEventBehavior) override;
-    void appendToFormData(FormData&, bool) const override;
+    void appendToFormData(FormData&) const override;
 };
 
 } // namespace blink

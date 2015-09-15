@@ -205,7 +205,7 @@ LayoutObject* HTMLTextAreaElement::createLayoutObject(const ComputedStyle&)
     return new LayoutTextControlMultiLine(this);
 }
 
-void HTMLTextAreaElement::appendToFormData(FormData& formData, bool)
+void HTMLTextAreaElement::appendToFormData(FormData& formData)
 {
     if (name().isEmpty())
         return;
