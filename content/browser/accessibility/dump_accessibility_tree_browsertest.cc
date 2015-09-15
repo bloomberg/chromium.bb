@@ -521,7 +521,7 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
 }
 
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
-                       AccessibilityAriaSpinButton) {
+                       DISABLED_AccessibilityAriaSpinButton) {
   RunAriaTest(FILE_PATH_LITERAL("aria-spinbutton.html"));
 }
 
@@ -579,11 +579,13 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityAriaTreeGrid) {
   RunAriaTest(FILE_PATH_LITERAL("aria-treegrid.html"));
 }
 
-IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityAriaValueMin) {
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
+    DISABLED_AccessibilityAriaValueMin) {
   RunAriaTest(FILE_PATH_LITERAL("aria-valuemin.html"));
 }
 
-IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityAriaValueMax) {
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
+    DISABLED_AccessibilityAriaValueMax) {
   RunAriaTest(FILE_PATH_LITERAL("aria-valuemax.html"));
 }
 
