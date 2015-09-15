@@ -1,0 +1,5 @@
+include_rules = [
+  # Used for tests (in sync_test.cc)
+  # TODO(shadi): Remove this once crbug.com/527505 is fixed and updated tests.
+  "+chrome/browser/ui/views/profiles/profile_chooser_view.h",
+]
