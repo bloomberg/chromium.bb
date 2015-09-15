@@ -136,8 +136,6 @@ per-file infobars.gypi=pkasting@chromium.org
 
 per-file invalidation.gypi=dcheng@chromium.org
 per-file invalidation.gypi=nyquist@chromium.org
-per-file invalidation.gypi=rlarocque@chromium.org
-per-file invalidation.gypi=tim@chromium.org
 per-file invalidation.gypi=pavely@chromium.org
 
 per-file json_schema.gypi=asargent@chromium.org
@@ -175,7 +173,6 @@ per-file nacl*=noelallen@chromium.org
 per-file navigation_interception.gypi=mnaganov@chromium.org
 
 per-file network_time.gypi=zea@chromium.org
-per-file network_time.gypi=haitaol@chromium.org
 
 per-file offline_pages*=dimich@chromium.org
 per-file offline_pages*=fgorski@chromium.org
@@ -266,19 +263,14 @@ per-file sessions.gypi=marja@chromium.org
 per-file sessions.gypi=sky@chromium.org
 
 per-file signin*=atwilson@chromium.org
-per-file signin*=tim@chromium.org
 per-file signin*=rogerta@chromium.org
 
 per-file storage_monitor.gypi=gbillock@chromium.org
 per-file storage_monitor.gypi=thestig@chromium.org
 per-file storage_monitor.gypi=vandebo@chromium.org
 
-per-file sync_driver*=haitaol@chromium.org
-per-file sync_driver*=maniscalco@chromium.org
 per-file sync_driver*=pavely@chromium.org
-per-file sync_driver*=rlarocque@chromium.org
 per-file sync_driver*=stanisc@chromium.org
-per-file sync_driver*=tim@chromium.org
 per-file sync_driver*=zea@chromium.org
 
 per-file timers*=chirantan@chromium.org
