@@ -54,7 +54,6 @@
 #if defined(ENABLE_CONFIGURATION_POLICY)
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/policy/core/browser/configuration_policy_pref_store.h"
-#include "components/policy/core/common/policy_types.h"
 #endif
 
 #if defined(ENABLE_EXTENSIONS)
@@ -427,17 +426,10 @@ void PrepareFactory(
     const scoped_refptr<PrefStore>& extension_prefs,
     bool async) {
 #if defined(ENABLE_CONFIGURATION_POLICY)
-  using policy::ConfigurationPolicyPrefStore;
-  factory->set_managed_prefs(
-      make_scoped_refptr(new ConfigurationPolicyPrefStore(
-          policy_service,
-          g_browser_process->browser_policy_connector()->GetHandlerList(),
-          policy::POLICY_LEVEL_MANDATORY)));
-  factory->set_recommended_prefs(
-      make_scoped_refptr(new ConfigurationPolicyPrefStore(
-          policy_service,
-          g_browser_process->browser_policy_connector()->GetHandlerList(),
-          policy::POLICY_LEVEL_RECOMMENDED)));
+  policy::BrowserPolicyConnector* policy_connector =
+      g_browser_process->browser_policy_connector();
+  factory->SetManagedPolicies(policy_service, policy_connector);
+  factory->SetRecommendedPolicies(policy_service, policy_connector);
 #endif  // ENABLE_CONFIGURATION_POLICY
 
 #if defined(ENABLE_SUPERVISED_USERS)

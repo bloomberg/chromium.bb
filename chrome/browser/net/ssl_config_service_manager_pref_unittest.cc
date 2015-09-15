@@ -10,6 +10,7 @@
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/testing_pref_store.h"
 #include "base/values.h"
+#include "chrome/browser/prefs/command_line_pref_store.h"
 #include "chrome/browser/prefs/pref_service_mock_factory.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -178,7 +179,7 @@ TEST_F(SSLConfigServiceManagerPrefTest, CommandLinePrefs) {
 
   PrefServiceMockFactory factory;
   factory.set_user_prefs(local_state_store);
-  factory.SetCommandLine(&command_line);
+  factory.set_command_line_prefs(new CommandLinePrefStore(&command_line));
   scoped_refptr<PrefRegistrySimple> registry = new PrefRegistrySimple;
   scoped_ptr<PrefService> local_state(factory.Create(registry.get()));
 
@@ -222,7 +223,7 @@ TEST_F(SSLConfigServiceManagerPrefTest, NoSSL3) {
 
   PrefServiceMockFactory factory;
   factory.set_user_prefs(local_state_store);
-  factory.SetCommandLine(&command_line);
+  factory.set_command_line_prefs(new CommandLinePrefStore(&command_line));
   scoped_refptr<PrefRegistrySimple> registry = new PrefRegistrySimple;
   scoped_ptr<PrefService> local_state(factory.Create(registry.get()));
 

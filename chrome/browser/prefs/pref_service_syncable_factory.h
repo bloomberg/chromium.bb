@@ -14,6 +14,7 @@ class CommandLine;
 }
 
 namespace policy {
+class BrowserPolicyConnector;
 class PolicyService;
 }
 
@@ -30,13 +31,13 @@ class PrefServiceSyncableFactory : public base::PrefServiceFactory {
   ~PrefServiceSyncableFactory() override;
 
 #if defined(ENABLE_CONFIGURATION_POLICY)
-  // Set up policy pref stores using the given policy service.
-  void SetManagedPolicies(policy::PolicyService* service);
-  void SetRecommendedPolicies(policy::PolicyService* service);
+  // Set up policy pref stores using the given policy service and connector.
+  void SetManagedPolicies(policy::PolicyService* service,
+                          policy::BrowserPolicyConnector* connector);
+  void SetRecommendedPolicies(policy::PolicyService* service,
+                              policy::BrowserPolicyConnector* connector);
 #endif
 
-  // Specifies to use an actual command-line backed command-line pref store.
-  void SetCommandLine(base::CommandLine* command_line);
 
   scoped_ptr<PrefServiceSyncable> CreateSyncable(
       user_prefs::PrefRegistrySyncable* registry);
