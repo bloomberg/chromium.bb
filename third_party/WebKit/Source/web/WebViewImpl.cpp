@@ -3846,28 +3846,38 @@ void WebViewImpl::didCommitLoad(bool isNewNavigation, bool isNavigationWithinPag
     m_userGestureObserved = false;
 }
 
+void WebViewImpl::documentElementAvailable(WebLocalFrameImpl* webframe)
+{
+    if (webframe != mainFrameImpl())
+        return;
+
+    // For non-HTML documents the willInsertBody notification won't happen
+    // so we resume as soon as we have a document element. Even for XHTML
+    // documents there may never be a <body> (since the parser won't always
+    // insert one), so we resume here too. That does mean XHTML documents make
+    // frames when there's only a <head>, but such documents are pretty rare.
+    if (!mainFrameImpl()->frame()->document()->isHTMLDocument())
+        resumeTreeViewCommitsIfRenderingReady();
+}
+
 void WebViewImpl::willInsertBody(WebLocalFrameImpl* webframe)
 {
     if (webframe != mainFrameImpl())
         return;
 
-    if (!m_page->mainFrame()->isLocalFrame())
-        return;
-
-    // If we get to the <body> tag and we have no pending stylesheet and import load, we
-    // can be fairly confident we'll have something sensible to paint soon and
-    // can turn off deferred commits.
-    if (m_page->deprecatedLocalMainFrame()->document()->isRenderingReady())
-        resumeTreeViewCommits();
+    // If we get to the <body> try to resume commits since we should have content
+    // to paint now.
+    // TODO(esprehn): Is this really optimal? We might start producing frames
+    // for very little content, should we wait for some herustic like
+    // isVisuallyNonEmpty() ?
+    resumeTreeViewCommitsIfRenderingReady();
 }
 
 void WebViewImpl::didFinishDocumentLoad(WebLocalFrameImpl* webframe)
 {
     if (webframe != mainFrameImpl())
         return;
-    // If we finished parsing and there's no sheets to load start painting.
-    if (webframe->frame()->document()->isRenderingReady())
-        resumeTreeViewCommits();
+    resumeTreeViewCommitsIfRenderingReady();
 }
 
 void WebViewImpl::didRemoveAllPendingStylesheet(WebLocalFrameImpl* webframe)
@@ -3875,15 +3885,26 @@ void WebViewImpl::didRemoveAllPendingStylesheet(WebLocalFrameImpl* webframe)
     if (webframe != mainFrameImpl())
         return;
 
-    // If we have no more stylesheets to load and we're past the body tag,
-    // we should have something to paint and should start as soon as possible.
-    if (m_page->deprecatedLocalMainFrame()->document()->body())
-        resumeTreeViewCommits();
+    Document& document = *mainFrameImpl()->frame()->document();
+
+    // For HTML if we have no more stylesheets to load and we're past the body
+    // tag, we should have something to paint so resume.
+    if (document.isHTMLDocument() && !document.body())
+        return;
+
+    // For non-HTML there is no body so resume as soon as the sheets are loaded.
+    if (!document.isHTMLDocument() && !document.documentElement())
+        return;
+
+    resumeTreeViewCommitsIfRenderingReady();
 }
 
-void WebViewImpl::resumeTreeViewCommits()
+void WebViewImpl::resumeTreeViewCommitsIfRenderingReady()
 {
-    if (!mainFrameImpl()->frame()->loader().stateMachine()->committedFirstRealDocumentLoad())
+    LocalFrame* frame = mainFrameImpl()->frame();
+    if (!frame->loader().stateMachine()->committedFirstRealDocumentLoad())
+        return;
+    if (!frame->document()->isRenderingReady())
         return;
     if (m_layerTreeView) {
         m_layerTreeView->setDeferCommits(false);

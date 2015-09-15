@@ -382,6 +382,7 @@ public:
     // unless the view did not need a layout.
     void layoutUpdated(WebLocalFrameImpl*);
 
+    void documentElementAvailable(WebLocalFrameImpl*);
     void willInsertBody(WebLocalFrameImpl*);
     void didRemoveAllPendingStylesheet(WebLocalFrameImpl*);
     void didFinishDocumentLoad(WebLocalFrameImpl*);
@@ -539,7 +540,7 @@ private:
     float maximumLegiblePageScale() const;
     void refreshPageScaleFactorAfterLayout();
     void resetScrollAndScaleState(bool immediately);
-    void resumeTreeViewCommits();
+    void resumeTreeViewCommitsIfRenderingReady();
     IntSize contentsSize() const;
 
     void performResize();

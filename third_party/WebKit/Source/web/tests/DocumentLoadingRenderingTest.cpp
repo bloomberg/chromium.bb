@@ -145,7 +145,35 @@ TEST_F(DocumentLoadingRenderingTest, ShouldResumeCommitsAfterSheetsLoaded)
     EXPECT_FALSE(m_layerTreeView.deferCommits());
 }
 
-TEST_F(DocumentLoadingRenderingTest, ShouldResumeCommitsAfterParsingSvg)
+TEST_F(DocumentLoadingRenderingTest, ShouldResumeCommitsAfterDocumentElementWithNoSheets)
+{
+    SimRequest mainResource("https://example.com/test.svg", "image/svg+xml");
+    SimRequest cssResource("https://example.com/test.css", "text/css");
+
+    loadURL("https://example.com/test.svg");
+
+    mainResource.start();
+
+    // Sheet loading and no documentElement, so don't resume.
+    mainResource.write("<?xml-stylesheet type='text/css' href='test.css'?>");
+    EXPECT_TRUE(m_layerTreeView.deferCommits());
+
+    // Sheet finishes loading, but no documentElement yet so don't resume.
+    cssResource.start();
+    cssResource.write("a { color: red; }");
+    cssResource.finish();
+    EXPECT_TRUE(m_layerTreeView.deferCommits());
+
+    // Root inserted so resume.
+    mainResource.write("<svg xmlns='http://www.w3.org/2000/svg'></svg>");
+    EXPECT_FALSE(m_layerTreeView.deferCommits());
+
+    // Finish the load, should stay resumed.
+    mainResource.finish();
+    EXPECT_FALSE(m_layerTreeView.deferCommits());
+}
+
+TEST_F(DocumentLoadingRenderingTest, ShouldResumeCommitsAfterSheetsLoadForXml)
 {
     SimRequest mainResource("https://example.com/test.svg", "image/svg+xml");
     SimRequest cssResource("https://example.com/test.css", "text/css");
@@ -164,14 +192,27 @@ TEST_F(DocumentLoadingRenderingTest, ShouldResumeCommitsAfterParsingSvg)
     EXPECT_TRUE(m_layerTreeView.deferCommits());
 
     // Root inserted, but sheet is still loading so don't resume.
-    mainResource.write("<svg>");
+    mainResource.write("<svg xmlns='http://www.w3.org/2000/svg'></svg>");
     EXPECT_TRUE(m_layerTreeView.deferCommits());
 
-    // Sheet finished, but no body since it's svg so don't resume.
+    // Finish the load, but sheets still loading so don't resume.
+    mainResource.finish();
+    EXPECT_TRUE(m_layerTreeView.deferCommits());
+
+    // Sheet finished, so resume commits.
     cssResource.finish();
-    EXPECT_TRUE(m_layerTreeView.deferCommits());
+    EXPECT_FALSE(m_layerTreeView.deferCommits());
+}
 
-    // Finish the load and resume.
+TEST_F(DocumentLoadingRenderingTest, ShouldResumeCommitsAfterFinishParsingXml)
+{
+    SimRequest mainResource("https://example.com/test.svg", "image/svg+xml");
+
+    loadURL("https://example.com/test.svg");
+
+    mainResource.start();
+
+    // Finish parsing, no sheets loading so resume.
     mainResource.finish();
     EXPECT_FALSE(m_layerTreeView.deferCommits());
 }

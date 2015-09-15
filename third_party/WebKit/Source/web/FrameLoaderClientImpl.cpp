@@ -155,6 +155,9 @@ void FrameLoaderClientImpl::documentElementAvailable()
 {
     if (m_webFrame->client())
         m_webFrame->client()->didCreateDocumentElement(m_webFrame);
+
+    if (m_webFrame->viewImpl())
+        m_webFrame->viewImpl()->documentElementAvailable(m_webFrame);
 }
 
 void FrameLoaderClientImpl::didCreateScriptContext(v8::Local<v8::Context> context, int extensionGroup, int worldId)
