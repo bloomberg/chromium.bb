@@ -33,27 +33,34 @@ class FilePath;
 // Options for creating a shared memory object.
 struct SharedMemoryCreateOptions {
   SharedMemoryCreateOptions()
-      : name_deprecated(NULL),
-        size(0),
-        open_existing_deprecated(false),
+      : size(0),
         executable(false),
-        share_read_only(false) {}
+        share_read_only(false) {
+#if !defined(OS_MACOSX)
+    name_deprecated = nullptr;
+    open_existing_deprecated = false;
+#endif
+  }
 
+#if !defined(OS_MACOSX)
   // DEPRECATED (crbug.com/345734):
   // If NULL, the object is anonymous.  This pointer is owned by the caller
   // and must live through the call to Create().
   const std::string* name_deprecated;
+#endif
 
   // Size of the shared memory object to be created.
   // When opening an existing object, this has no effect.
   size_t size;
 
+#if !defined(OS_MACOSX)
   // DEPRECATED (crbug.com/345734):
   // If true, and the shared memory already exists, Create() will open the
   // existing shared memory and ignore the size parameter.  If false,
   // shared memory must not exist.  This flag is meaningless unless
   // name_deprecated is non-NULL.
   bool open_existing_deprecated;
+#endif
 
   // If true, mappings might need to be made executable later.
   bool executable;
@@ -138,6 +145,7 @@ class BASE_EXPORT SharedMemory {
     return Create(options);
   }
 
+#if !defined(OS_MACOSX)
   // DEPRECATED (crbug.com/345734):
   // Creates or opens a shared memory segment based on a name.
   // If open_existing is true, and the shared memory already exists,
@@ -162,6 +170,7 @@ class BASE_EXPORT SharedMemory {
   // If read_only is true, opens for read-only access.
   // Returns true on success, false on failure.
   bool Open(const std::string& name, bool read_only);
+#endif  // !defined(OS_MACOSX)
 
   // Maps the shared memory into the caller's address space.
   // Returns true on success, false otherwise.  The memory address
@@ -191,7 +200,7 @@ class BASE_EXPORT SharedMemory {
 
   // Gets a pointer to the opened memory space if it has been
   // Mapped via Map().  Returns NULL if it is not mapped.
-  void *memory() const { return memory_; }
+  void* memory() const { return memory_; }
 
   // Returns the underlying OS handle for this segment.
   // Use of this handle for anything other than an opaque

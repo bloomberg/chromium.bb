@@ -53,8 +53,6 @@ bool CreateAnonymousSharedMemory(const SharedMemoryCreateOptions& options,
                                  ScopedFILE* fp,
                                  ScopedFD* readonly_fd,
                                  FilePath* path) {
-  // It doesn't make sense to have a open-existing private piece of shmem
-  DCHECK(!options.open_existing_deprecated);
   // Q: Why not use the shm_open() etc. APIs?
   // A: Because they're limited to 4mb on OS X.  FFFFFFFUUUUUUUUUUU
   FilePath directory;
@@ -65,7 +63,7 @@ bool CreateAnonymousSharedMemory(const SharedMemoryCreateOptions& options,
     tracked_objects::ScopedTracker tracking_profile(
         FROM_HERE_WITH_EXPLICIT_FUNCTION(
             "466437 SharedMemory::Create::OpenTemporaryFile"));
-    fp->reset(base::CreateAndOpenTemporaryFileInDir(directory, path));
+    fp->reset(CreateAndOpenTemporaryFileInDir(directory, path));
 
     // Deleting the file prevents anyone else from mapping it in (making it
     // private), and prevents the need for cleanup (once the last fd is
@@ -92,7 +90,8 @@ bool CreateAnonymousSharedMemory(const SharedMemoryCreateOptions& options,
   }
   return true;
 }
-}
+
+}  // namespace
 
 SharedMemory::SharedMemory()
     : mapped_file_(-1),
@@ -150,7 +149,7 @@ void SharedMemory::CloseHandle(const SharedMemoryHandle& handle) {
 
 // static
 size_t SharedMemory::GetHandleLimit() {
-  return base::GetMaxFds();
+  return GetMaxFds();
 }
 
 // static
@@ -202,120 +201,29 @@ bool SharedMemory::Create(const SharedMemoryCreateOptions& options) {
   base::ThreadRestrictions::ScopedAllowIO allow_io;
 
   ScopedFILE fp;
-  bool fix_size = true;
   ScopedFD readonly_fd;
 
   FilePath path;
-  if (options.name_deprecated == NULL || options.name_deprecated->empty()) {
-    bool result =
-        CreateAnonymousSharedMemory(options, &fp, &readonly_fd, &path);
-    if (!result)
-      return false;
-  } else {
-    if (!FilePathForMemoryName(*options.name_deprecated, &path))
-      return false;
+  bool result = CreateAnonymousSharedMemory(options, &fp, &readonly_fd, &path);
+  if (!result)
+    return false;
 
-    // Make sure that the file is opened without any permission
-    // to other users on the system.
-    const mode_t kOwnerOnly = S_IRUSR | S_IWUSR;
-
-    // First, try to create the file.
-    int fd = HANDLE_EINTR(
-        open(path.value().c_str(), O_RDWR | O_CREAT | O_EXCL, kOwnerOnly));
-    if (fd == -1 && options.open_existing_deprecated) {
-      // If this doesn't work, try and open an existing file in append mode.
-      // Opening an existing file in a world writable directory has two main
-      // security implications:
-      // - Attackers could plant a file under their control, so ownership of
-      //   the file is checked below.
-      // - Attackers could plant a symbolic link so that an unexpected file
-      //   is opened, so O_NOFOLLOW is passed to open().
-      fd = HANDLE_EINTR(
-          open(path.value().c_str(), O_RDWR | O_APPEND | O_NOFOLLOW));
-
-      // Check that the current user owns the file.
-      // If uid != euid, then a more complex permission model is used and this
-      // API is not appropriate.
-      const uid_t real_uid = getuid();
-      const uid_t effective_uid = geteuid();
-      struct stat sb;
-      if (fd >= 0 &&
-          (fstat(fd, &sb) != 0 || sb.st_uid != real_uid ||
-           sb.st_uid != effective_uid)) {
-        LOG(ERROR) <<
-            "Invalid owner when opening existing shared memory file.";
-        close(fd);
-        return false;
-      }
-
-      // An existing file was opened, so its size should not be fixed.
-      fix_size = false;
-    }
-
-    if (options.share_read_only) {
-      // Also open as readonly so that we can ShareReadOnlyToProcess.
-      readonly_fd.reset(HANDLE_EINTR(open(path.value().c_str(), O_RDONLY)));
-      if (!readonly_fd.is_valid()) {
-        DPLOG(ERROR) << "open(\"" << path.value() << "\", O_RDONLY) failed";
-        close(fd);
-        fd = -1;
-        return false;
-      }
-    }
-    if (fd >= 0) {
-      // "a+" is always appropriate: if it's a new file, a+ is similar to w+.
-      fp.reset(fdopen(fd, "a+"));
-    }
-  }
-  if (fp && fix_size) {
-    // Get current size.
-    struct stat stat;
-    if (fstat(fileno(fp.get()), &stat) != 0)
-      return false;
-    const size_t current_size = stat.st_size;
-    if (current_size != options.size) {
-      if (HANDLE_EINTR(ftruncate(fileno(fp.get()), options.size)) != 0)
-        return false;
-    }
-    requested_size_ = options.size;
-  }
-  if (fp == NULL) {
+  if (!fp) {
     PLOG(ERROR) << "Creating shared memory in " << path.value() << " failed";
     return false;
   }
 
-  return PrepareMapFile(fp.Pass(), readonly_fd.Pass());
-}
-
-// Our current implementation of shmem is with mmap()ing of files.
-// These files need to be deleted explicitly.
-// In practice this call is only needed for unit tests.
-bool SharedMemory::Delete(const std::string& name) {
-  FilePath path;
-  if (!FilePathForMemoryName(name, &path))
+  // Get current size.
+  struct stat stat;
+  if (fstat(fileno(fp.get()), &stat) != 0)
     return false;
-
-  if (PathExists(path))
-    return base::DeleteFile(path, false);
-
-  // Doesn't exist, so success.
-  return true;
-}
-
-bool SharedMemory::Open(const std::string& name, bool read_only) {
-  FilePath path;
-  if (!FilePathForMemoryName(name, &path))
-    return false;
-
-  read_only_ = read_only;
-
-  const char *mode = read_only ? "r" : "r+";
-  ScopedFILE fp(base::OpenFile(path, mode));
-  ScopedFD readonly_fd(HANDLE_EINTR(open(path.value().c_str(), O_RDONLY)));
-  if (!readonly_fd.is_valid()) {
-    DPLOG(ERROR) << "open(\"" << path.value() << "\", O_RDONLY) failed";
-    return false;
+  const size_t current_size = stat.st_size;
+  if (current_size != options.size) {
+    if (HANDLE_EINTR(ftruncate(fileno(fp.get()), options.size)) != 0)
+      return false;
   }
+  requested_size_ = options.size;
+
   return PrepareMapFile(fp.Pass(), readonly_fd.Pass());
 }
 
@@ -332,7 +240,7 @@ bool SharedMemory::MapAt(off_t offset, size_t bytes) {
   memory_ = mmap(NULL, bytes, PROT_READ | (read_only_ ? 0 : PROT_WRITE),
                  MAP_SHARED, mapped_file_, offset);
 
-  bool mmap_succeeded = memory_ != (void*)-1 && memory_ != NULL;
+  bool mmap_succeeded = memory_ && memory_ != reinterpret_cast<void*>(-1);
   if (mmap_succeeded) {
     mapped_size_ = bytes;
     DCHECK_EQ(0U, reinterpret_cast<uintptr_t>(memory_) &
@@ -423,7 +331,7 @@ bool SharedMemory::FilePathForMemoryName(const std::string& mem_name,
   if (!GetShmemTempDir(false, &temp_dir))
     return false;
 
-  std::string name_base = std::string(base::mac::BaseBundleID());
+  std::string name_base = std::string(mac::BaseBundleID());
   *path = temp_dir.AppendASCII(name_base + ".shmem." + mem_name);
   return true;
 }
@@ -433,7 +341,7 @@ bool SharedMemory::ShareToProcessCommon(ProcessHandle process,
                                         bool close_self,
                                         ShareMode share_mode) {
   int handle_to_dup = -1;
-  switch(share_mode) {
+  switch (share_mode) {
     case SHARE_CURRENT_MODE:
       handle_to_dup = mapped_file_;
       break;
