@@ -29,9 +29,14 @@ class StatsCollectionController
   static gin::WrapperInfo kWrapperInfo;
 
   // Install the JS and return a mojo:tracing InterfacePtr for stats reporting.
-  // This bails and returns a null pointer without the command line flag.
+  // This bails and returns a null pointer without the stats command line flag.
   static tracing::StartupPerformanceDataCollectorPtr Install(
       blink::WebFrame* frame,
+      mojo::ApplicationImpl* app);
+
+  // Return a mojo:metrics InterfacePtr for stats reporting.
+  // This bails and returns a null pointer without the stats command line flag.
+  static tracing::StartupPerformanceDataCollectorPtr ConnectToDataCollector(
       mojo::ApplicationImpl* app);
 
  private:

@@ -75,6 +75,7 @@ class HTMLWidgetRootLocal : public HTMLWidget, public blink::WebViewClient {
   virtual blink::WebStorageNamespace* createSessionStorageNamespace();
   virtual void initializeLayerTreeView();
   virtual blink::WebLayerTreeView* layerTreeView();
+  virtual void didFirstVisuallyNonEmptyLayout();
   virtual void resetInputMethod();
   virtual void didHandleGestureEvent(const blink::WebGestureEvent& event,
                                      bool event_cancelled);

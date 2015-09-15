@@ -99,6 +99,23 @@ tracing::StartupPerformanceDataCollectorPtr StatsCollectionController::Install(
   return collector_for_caller.Pass();
 }
 
+// static
+tracing::StartupPerformanceDataCollectorPtr
+StatsCollectionController::ConnectToDataCollector(mojo::ApplicationImpl* app) {
+  // Only make startup tracing available when running in the context of a test.
+  if (!app ||
+      !base::CommandLine::ForCurrentProcess()->HasSwitch(
+          tracing::kEnableStatsCollectionBindings)) {
+    return nullptr;
+  }
+
+  mojo::URLRequestPtr request(mojo::URLRequest::New());
+  request->url = mojo::String::From("mojo:tracing");
+  tracing::StartupPerformanceDataCollectorPtr collector;
+  app->ConnectToService(request.Pass(), &collector);
+  return collector.Pass();
+}
+
 StatsCollectionController::StatsCollectionController(
     tracing::StartupPerformanceDataCollectorPtr collector)
     : startup_performance_data_collector_(collector.Pass()) {}

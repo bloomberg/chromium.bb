@@ -396,15 +396,6 @@ void HTMLFrame::didNavigateWithinPage(blink::WebLocalFrame* frame,
                                               history_item.urlString().utf8());
 }
 
-void HTMLFrame::didFirstVisuallyNonEmptyLayout(blink::WebLocalFrame* frame) {
-  static bool recorded = false;
-  if (!recorded && startup_performance_data_collector_) {
-    startup_performance_data_collector_->SetFirstVisuallyNonEmptyLayoutTime(
-        base::Time::Now().ToInternalValue());
-    recorded = true;
-  }
-}
-
 blink::WebGeolocationClient* HTMLFrame::geolocationClient() {
   if (!geolocation_client_impl_)
     geolocation_client_impl_.reset(new GeolocationClientImpl);

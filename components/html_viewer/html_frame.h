@@ -171,7 +171,6 @@ class HTMLFrame : public blink::WebFrameClient,
   virtual void didNavigateWithinPage(blink::WebLocalFrame* frame,
                                      const blink::WebHistoryItem& history_item,
                                      blink::WebHistoryCommitType commit_type);
-  virtual void didFirstVisuallyNonEmptyLayout(blink::WebLocalFrame* frame);
   virtual blink::WebGeolocationClient* geolocationClient();
   virtual blink::WebEncryptedMediaClient* encryptedMediaClient();
   virtual void didStartLoading(bool to_different_document);
