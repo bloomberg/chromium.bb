@@ -79,7 +79,6 @@
 #     # files.
 #   }
 import("//build/config/chrome_build.gni")
-import("//third_party/WebKit/Source/config.gni")
 import("//build/config/crypto.gni")
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
@@ -248,13 +247,6 @@ if (enable_google_now) {
   grit_defines += [
     "-D",
     "enable_google_now",
-  ]
-}
-
-if (use_concatenated_impulse_responses) {
-  grit_defines += [
-    "-D",
-    "use_concatenated_impulse_responses",
   ]
 }
 
