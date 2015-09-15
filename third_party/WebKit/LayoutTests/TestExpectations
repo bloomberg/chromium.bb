@@ -170,6 +170,13 @@ crbug.com/518993 [ Win ] imported/web-platform-tests/user-timing/test_user_timin
 crbug.com/518995 media/track/media-element-move-to-new-document-assert.html [ Failure Pass ]
 crbug.com/518998 media/video-poster-after-loadedmetadata.html [ ImageOnlyFailure Pass ]
 
+crbug.com/529038 compositing/layer-creation/should-invoke-deferred-compositing.html [ NeedsRebaseline ]
+crbug.com/529038 compositing/repaint/clipping-should-not-repaint-composited-descendants.html [ NeedsRebaseline ]
+crbug.com/529038 fast/repaint/dont-invalidate-root-layer-when-composited-layer-becomes-visible.html [ NeedsRebaseline ]
+crbug.com/529038 fast/repaint/video-mute-repaint.html [ NeedsRebaseline ]
+crbug.com/529038 fast/repaint/video-unmute-repaint.html [ NeedsRebaseline ]
+crbug.com/529038 media/video-paint-invalidation.html [ NeedsRebaseline ]
+
 crbug.com/526594 [ Win10 ] plugins/webview-plugin-lifecycle.html [ ImageOnlyFailure ]
 crbug.com/518999 [ Win7 Debug ] plugins/webview-plugin-lifecycle.html [ ImageOnlyFailure Pass ]
 
