@@ -129,7 +129,7 @@ public class DateTimePickerDialog extends AlertDialog implements OnClickListener
         } else if (calendar.getTimeInMillis() > mMaxTimeMillis) {
             calendar.setTimeInMillis(mMaxTimeMillis);
         }
-        mTimePicker.setCurrentHour(calendar.get(Calendar.HOUR));
+        mTimePicker.setCurrentHour(calendar.get(Calendar.HOUR_OF_DAY));
         mTimePicker.setCurrentMinute(calendar.get(Calendar.MINUTE));
     }
 
