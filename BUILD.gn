@@ -630,7 +630,6 @@ group("gn_only") {
       "//components/sessions:unit_tests",
       "//media/blink:media_blink_unittests",
       "//media/cast:udp_proxy",
-      "//native_client/src/trusted/platform_qualify:vcpuid",
       "//native_client/src/trusted/debug_stub:gdb_rsp_unittest",
       "//storage/browser:dump_file_system",
       "//third_party/angle:libANGLE",
@@ -683,7 +682,10 @@ group("gn_only") {
     ]
 
     if (target_cpu == "x86" || target_cpu == "x64") {
-      deps += [ "//third_party/libjpeg_turbo:simd_asm" ]
+      deps += [
+        "//third_party/libjpeg_turbo:simd_asm",
+        "//native_client/src/trusted/platform_qualify:vcpuid",
+      ]
     }
     if (enable_nacl) {
       deps += [ "//native_client/src/trusted/service_runtime:sel_ldr" ]
