@@ -1268,6 +1268,7 @@ void FrameSelection::showTreeForThis() const
 DEFINE_TRACE(FrameSelection)
 {
     visitor->trace(m_frame);
+    visitor->trace(m_pendingSelection);
     visitor->trace(m_selectionEditor);
     visitor->trace(m_originalBase);
     visitor->trace(m_previousCaretNode);
