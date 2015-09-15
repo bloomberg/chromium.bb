@@ -91,10 +91,6 @@ bool PrintWebViewHelper::PrintPagesNative(blink::WebFrame* frame,
 
   metafile.FinishDocument();
 
-  // Get the size of the resulting metafile.
-  uint32 buf_size = metafile.GetDataSize();
-  DCHECK_GT(buf_size, 0u);
-
 #if defined(OS_CHROMEOS)
   NOTREACHED();
   return false;
@@ -115,28 +111,14 @@ bool PrintWebViewHelper::PrintPagesNative(blink::WebFrame* frame,
   return true;
 #else
   PrintHostMsg_DidPrintPage_Params printed_page_params;
-  printed_page_params.data_size = 0;
-  printed_page_params.document_cookie = params.params.document_cookie;
 
-  {
-    scoped_ptr<base::SharedMemory> shared_mem(
-        content::RenderThread::Get()
-            ->HostAllocateSharedMemoryBuffer(buf_size)
-            .release());
-    if (!shared_mem.get()) {
-      NOTREACHED() << "AllocateSharedMemoryBuffer failed";
-      return false;
-    }
-
-    if (!shared_mem->Map(buf_size)) {
-      NOTREACHED() << "Map failed";
-      return false;
-    }
-    metafile.GetData(shared_mem->memory(), buf_size);
-    printed_page_params.data_size = buf_size;
-    shared_mem->GiveToProcess(base::GetCurrentProcessHandle(),
-                              &(printed_page_params.metafile_data_handle));
+  if (!CopyMetafileDataToSharedMem(
+          metafile, &printed_page_params.metafile_data_handle)) {
+    return false;
   }
+
+  printed_page_params.data_size = metafile.GetDataSize();
+  printed_page_params.document_cookie = params.params.document_cookie;
 
   for (size_t i = 0; i < printed_pages.size(); ++i) {
     printed_page_params.page_number = printed_pages[i];

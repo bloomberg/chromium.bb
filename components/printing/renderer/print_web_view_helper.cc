@@ -71,10 +71,8 @@ enum PrintPreviewHelperEvents {
 
 const double kMinDpi = 1.0;
 
-#if !defined(ENABLE_PRINT_PREVIEW)
-bool g_is_preview_enabled_ = false;
-#else
-bool g_is_preview_enabled_ = true;
+#if defined(ENABLE_PRINT_PREVIEW)
+bool g_is_preview_enabled = true;
 
 const char kPageLoadScriptFormat[] =
     "document.open(); document.write(%s); document.close();";
@@ -89,7 +87,9 @@ void ExecuteScript(blink::WebFrame* frame,
   std::string script = base::StringPrintf(script_format, json.c_str());
   frame->executeScript(blink::WebString(base::UTF8ToUTF16(script)));
 }
-#endif  // !defined(ENABLE_PRINT_PREVIEW)
+#else
+bool g_is_preview_enabled = false;
+#endif  // defined(ENABLE_PRINT_PREVIEW)
 
 int GetDPI(const PrintMsg_Print_Params* print_params) {
 #if defined(OS_MACOSX)
@@ -560,7 +560,7 @@ class PrepareFrameAndViewForPrint : public blink::WebViewClient,
                               blink::WebLocalFrame* frame,
                               const blink::WebNode& node,
                               bool ignore_css_margins);
-  virtual ~PrepareFrameAndViewForPrint();
+  ~PrepareFrameAndViewForPrint() override;
 
   // Optional. Replaces |frame_| with selection if needed. Will call |on_ready|
   // when completed.
@@ -583,24 +583,21 @@ class PrepareFrameAndViewForPrint : public blink::WebViewClient,
     return owns_web_view_ && frame() && frame()->isLoading();
   }
 
+ private:
+  // blink::WebViewClient:
+  void didStopLoading() override;
   // TODO(ojan): Remove this override and have this class use a non-null
   // layerTreeView.
-  // blink::WebViewClient override:
-  virtual bool allowsBrokenNullLayerTreeView() const;
+  bool allowsBrokenNullLayerTreeView() const override;
 
- protected:
-  // blink::WebViewClient override:
-  virtual void didStopLoading();
-
-  // blink::WebFrameClient override:
-  virtual blink::WebFrame* createChildFrame(
+  // blink::WebFrameClient:
+  blink::WebFrame* createChildFrame(
       blink::WebLocalFrame* parent,
       blink::WebTreeScopeType scope,
       const blink::WebString& name,
-      blink::WebSandboxFlags sandboxFlags);
-  virtual void frameDetached(blink::WebFrame* frame, DetachType type);
+      blink::WebSandboxFlags sandboxFlags) override;
+  void frameDetached(blink::WebFrame* frame, DetachType type) override;
 
- private:
   void CallOnReady();
   void ResizeForPrinting();
   void RestoreSize();
@@ -823,7 +820,7 @@ PrintWebViewHelper::~PrintWebViewHelper() {
 
 // static
 void PrintWebViewHelper::DisablePreview() {
-  g_is_preview_enabled_ = false;
+  g_is_preview_enabled = false;
 }
 
 bool PrintWebViewHelper::IsScriptInitiatedPrintAllowed(blink::WebFrame* frame,
@@ -836,7 +833,7 @@ bool PrintWebViewHelper::IsScriptInitiatedPrintAllowed(blink::WebFrame* frame,
   // is app modal). If the print was initiated through user action, don't
   // throttle. Or, if the command line flag to skip throttling has been set.
   return !is_scripted_printing_blocked_ &&
-         (user_initiated || g_is_preview_enabled_ ||
+         (user_initiated || g_is_preview_enabled ||
           scripting_throttler_.IsAllowed(frame));
 }
 
@@ -867,7 +864,7 @@ void PrintWebViewHelper::PrintPage(blink::WebLocalFrame* frame,
   if (delegate_->OverridePrint(frame))
     return;
 
-  if (!g_is_preview_enabled_) {
+  if (!g_is_preview_enabled) {
     Print(frame, blink::WebNode(), true);
   } else {
     print_preview_context_.InitWithFrame(frame);
@@ -1203,13 +1200,18 @@ bool PrintWebViewHelper::FinalizePrintReadyDocument() {
   DCHECK(!is_print_ready_metafile_sent_);
   print_preview_context_.FinalizePrintReadyDocument();
 
-  // Get the size of the resulting metafile.
   PdfMetafileSkia* metafile = print_preview_context_.metafile();
-  uint32 buf_size = metafile->GetDataSize();
-  DCHECK_GT(buf_size, 0u);
-
   PrintHostMsg_DidPreviewDocument_Params preview_params;
-  preview_params.data_size = buf_size;
+
+  // Ask the browser to create the shared memory for us.
+  if (!CopyMetafileDataToSharedMem(*metafile,
+                                   &(preview_params.metafile_data_handle))) {
+    LOG(ERROR) << "CopyMetafileDataToSharedMem failed";
+    print_preview_context_.set_error(PREVIEW_ERROR_METAFILE_COPY_FAILED);
+    return false;
+  }
+
+  preview_params.data_size = metafile->GetDataSize();
   preview_params.document_cookie = print_pages_params_->params.document_cookie;
   preview_params.expected_pages_count =
       print_preview_context_.total_page_count();
@@ -1217,13 +1219,6 @@ bool PrintWebViewHelper::FinalizePrintReadyDocument() {
   preview_params.preview_request_id =
       print_pages_params_->params.preview_request_id;
 
-  // Ask the browser to create the shared memory for us.
-  if (!CopyMetafileDataToSharedMem(metafile,
-                                   &(preview_params.metafile_data_handle))) {
-    LOG(ERROR) << "CopyMetafileDataToSharedMem failed";
-    print_preview_context_.set_error(PREVIEW_ERROR_METAFILE_COPY_FAILED);
-    return false;
-  }
   is_print_ready_metafile_sent_ = true;
 
   Send(new PrintHostMsg_MetafileReadyForPrinting(routing_id(), preview_params));
@@ -1284,7 +1279,7 @@ void PrintWebViewHelper::PrintNode(const blink::WebNode& node) {
 
   // Make a copy of the node, in case RenderView::OnContextMenuClosed resets
   // its |context_menu_node_|.
-  if (!g_is_preview_enabled_) {
+  if (!g_is_preview_enabled) {
     blink::WebNode duplicate_node(node);
     Print(duplicate_node.document().frame(), duplicate_node, false);
   } else {
@@ -1390,17 +1385,17 @@ void PrintWebViewHelper::PrintPages() {
   Send(new PrintHostMsg_DidGetPrintedPagesCount(routing_id(),
                                                 print_params.document_cookie,
                                                 page_count));
-#endif  // !defined(OS_CHROMEOS)
+#endif  // !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
 
   if (print_params.preview_ui_id < 0) {
     // Printing for system dialog.
     int printed_count = params.pages.empty() ? page_count : params.pages.size();
-#if !defined(OS_CHROMEOS)
-    UMA_HISTOGRAM_COUNTS("PrintPreview.PageCount.SystemDialog", printed_count);
-#else
+#if defined(OS_CHROMEOS)
     UMA_HISTOGRAM_COUNTS("PrintPreview.PageCount.PrintToCloudPrintWebDialog",
                          printed_count);
-#endif  // !defined(OS_CHROMEOS)
+#else
+    UMA_HISTOGRAM_COUNTS("PrintPreview.PageCount.SystemDialog", printed_count);
+#endif  // defined(OS_CHROMEOS)
   }
 
   if (!PrintPagesNative(prep_frame_view_->frame(), page_count)) {
@@ -1662,22 +1657,25 @@ bool PrintWebViewHelper::RenderPagesForPrint(blink::WebLocalFrame* frame,
 
 #if defined(OS_POSIX)
 bool PrintWebViewHelper::CopyMetafileDataToSharedMem(
-    PdfMetafileSkia* metafile,
+    const PdfMetafileSkia& metafile,
     base::SharedMemoryHandle* shared_mem_handle) {
-  uint32 buf_size = metafile->GetDataSize();
-  scoped_ptr<base::SharedMemory> shared_buf(
-      content::RenderThread::Get()
-          ->HostAllocateSharedMemoryBuffer(buf_size)
-          .release());
+  uint32_t buf_size = metafile.GetDataSize();
+  if (buf_size == 0)
+    return false;
 
-  if (shared_buf) {
-    if (shared_buf->Map(buf_size)) {
-      metafile->GetData(shared_buf->memory(), buf_size);
-      return shared_buf->GiveToProcess(base::GetCurrentProcessHandle(),
-                                       shared_mem_handle);
-    }
-  }
-  return false;
+  scoped_ptr<base::SharedMemory> shared_buf(
+      content::RenderThread::Get()->HostAllocateSharedMemoryBuffer(buf_size));
+  if (!shared_buf)
+    return false;
+
+  if (!shared_buf->Map(buf_size))
+    return false;
+
+  if (!metafile.GetData(shared_buf->memory(), buf_size))
+    return false;
+
+  return shared_buf->GiveToProcess(base::GetCurrentProcessHandle(),
+                                   shared_mem_handle);
 }
 #endif  // defined(OS_POSIX)
 
@@ -1794,15 +1792,13 @@ bool PrintWebViewHelper::PreviewPageRendered(int page_number,
 
   PrintHostMsg_DidPreviewPage_Params preview_page_params;
   // Get the size of the resulting metafile.
-  uint32 buf_size = metafile->GetDataSize();
-  DCHECK_GT(buf_size, 0u);
   if (!CopyMetafileDataToSharedMem(
-          metafile, &(preview_page_params.metafile_data_handle))) {
+          *metafile, &(preview_page_params.metafile_data_handle))) {
     LOG(ERROR) << "CopyMetafileDataToSharedMem failed";
     print_preview_context_.set_error(PREVIEW_ERROR_METAFILE_COPY_FAILED);
     return false;
   }
-  preview_page_params.data_size = buf_size;
+  preview_page_params.data_size = metafile->GetDataSize();
   preview_page_params.page_number = page_number;
   preview_page_params.preview_request_id =
       print_pages_params_->params.preview_request_id;
