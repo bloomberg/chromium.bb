@@ -14,7 +14,8 @@ TestFrameTreeDelegate::TestFrameTreeDelegate(mojo::ApplicationImpl* app)
     : app_(app),
       waiting_for_create_frame_(false),
       waiting_for_destroy_frame_(nullptr),
-      most_recent_frame_(nullptr) {}
+      most_recent_frame_(nullptr),
+      waiting_for_frame_disconnected_(nullptr) {}
 
 TestFrameTreeDelegate::~TestFrameTreeDelegate() {}
 
@@ -33,6 +34,14 @@ Frame* TestFrameTreeDelegate::WaitForCreateFrame() {
 void TestFrameTreeDelegate::WaitForDestroyFrame(Frame* frame) {
   ASSERT_FALSE(is_waiting());
   waiting_for_destroy_frame_ = frame;
+  run_loop_.reset(new base::RunLoop);
+  run_loop_->Run();
+  run_loop_.reset();
+}
+
+void TestFrameTreeDelegate::WaitForFrameDisconnected(Frame* frame) {
+  ASSERT_FALSE(is_waiting());
+  waiting_for_frame_disconnected_ = frame;
   run_loop_.reset(new base::RunLoop);
   run_loop_->Run();
   run_loop_.reset();
@@ -74,6 +83,13 @@ void TestFrameTreeDelegate::DidCreateFrame(Frame* frame) {
 void TestFrameTreeDelegate::DidDestroyFrame(Frame* frame) {
   if (waiting_for_destroy_frame_ == frame) {
     waiting_for_destroy_frame_ = nullptr;
+    run_loop_->Quit();
+  }
+}
+
+void TestFrameTreeDelegate::OnViewEmbeddedInFrameDisconnected(Frame* frame) {
+  if (waiting_for_frame_disconnected_ == frame) {
+    waiting_for_frame_disconnected_ = nullptr;
     run_loop_->Quit();
   }
 }

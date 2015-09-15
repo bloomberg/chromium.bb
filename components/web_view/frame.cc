@@ -425,9 +425,17 @@ void Frame::OnViewDestroying(mojo::View* view) {
 }
 
 void Frame::OnViewEmbeddedAppDisconnected(mojo::View* view) {
-  if (tree_->root() != this)
-    delete this;
-  // TODO(sky): the root case should go to the delegate.
+  // See FrameTreeDelegate::OnViewEmbeddedAppDisconnected() for details of when
+  // this happens.
+  //
+  // Currently we have no way to distinguish between the cases that lead to this
+  // being called, so we assume we can continue on. Continuing on is important
+  // for html as it's entirely possible for a page to create a frame, navigate
+  // to a bogus url and expect the frame to still exist.
+  //
+  // TODO(sky): notify the delegate on this? At a minimum the delegate cares
+  // if the root is unembedded as this would correspond to a sab tab.
+  tree_->delegate_->OnViewEmbeddedInFrameDisconnected(this);
 }
 
 void Frame::PostMessageEventToFrame(uint32_t source_frame_id,

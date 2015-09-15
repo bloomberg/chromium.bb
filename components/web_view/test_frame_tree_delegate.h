@@ -30,8 +30,11 @@ class TestFrameTreeDelegate : public FrameTreeDelegate {
   // Frame supplied to DidCreateFrame().
   Frame* WaitForCreateFrame();
 
-  // Wires for DidDestroyFrame() to be called with |frame|.
+  // Waits for DidDestroyFrame() to be called with |frame|.
   void WaitForDestroyFrame(Frame* frame);
+
+  // Waits for OnViewEmbeddedInFrameDisconnected() to be called with |frame|.
+  void WaitForFrameDisconnected(Frame* frame);
 
   // TestFrameTreeDelegate:
   bool CanPostMessageEventToFrame(const Frame* source,
@@ -47,6 +50,7 @@ class TestFrameTreeDelegate : public FrameTreeDelegate {
   void DidStartNavigation(Frame* frame) override;
   void DidCreateFrame(Frame* frame) override;
   void DidDestroyFrame(Frame* frame) override;
+  void OnViewEmbeddedInFrameDisconnected(Frame* frame) override;
 
  private:
   bool is_waiting() const { return run_loop_.get(); }
@@ -56,6 +60,7 @@ class TestFrameTreeDelegate : public FrameTreeDelegate {
   Frame* waiting_for_destroy_frame_;
   scoped_ptr<base::RunLoop> run_loop_;
   Frame* most_recent_frame_;
+  Frame* waiting_for_frame_disconnected_;
 
   DISALLOW_COPY_AND_ASSIGN(TestFrameTreeDelegate);
 };
