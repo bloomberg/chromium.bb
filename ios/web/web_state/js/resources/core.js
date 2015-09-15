@@ -111,9 +111,6 @@ goog.require('__crWeb.message');
         // The following condition is true if the iframe is in a different
         // domain; no further information is accessible.
         if (typeof(currentElement.contentWindow.document) == 'undefined') {
-          invokeOnHost_({
-              'command': 'window.error',
-              'message': 'iframe contentWindow.document is not accessible.'});
           return currentElement;
         }
         var framePosition = getPositionInWindow(currentElement);
