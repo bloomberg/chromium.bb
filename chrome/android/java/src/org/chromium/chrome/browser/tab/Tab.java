@@ -750,17 +750,6 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
     }
 
     /**
-     * Creates an instance of a {@link Tab} with no id.
-     * @param incognito Whether or not this tab is incognito.
-     * @param context   An instance of a {@link Context}.
-     * @param window    An instance of a {@link WindowAndroid}.
-     */
-    @VisibleForTesting
-    public Tab(boolean incognito, Context context, WindowAndroid window) {
-        this(INVALID_TAB_ID, incognito, context, window);
-    }
-
-    /**
      * Creates an instance of a {@link Tab}.
      * @param id        The id this tab should be identified with.
      * @param incognito Whether or not this tab is incognito.
@@ -768,20 +757,7 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
      * @param window    An instance of a {@link WindowAndroid}.
      */
     public Tab(int id, boolean incognito, Context context, WindowAndroid window) {
-        this(id, INVALID_TAB_ID, incognito, context, window, null);
-    }
-
-    /**
-     * Creates an instance of a {@link Tab}.
-     * @param id        The id this tab should be identified with.
-     * @param parentId  The id id of the tab that caused this tab to be opened.
-     * @param incognito Whether or not this tab is incognito.
-     * @param context   An instance of a {@link Context}.
-     * @param window    An instance of a {@link WindowAndroid}.
-     */
-    public Tab(int id, int parentId, boolean incognito, Context context, WindowAndroid window,
-            TabLaunchType type) {
-        this(id, parentId, incognito, context, window, type, null);
+        this(id, INVALID_TAB_ID, incognito, context, window, null, null);
     }
 
     /**

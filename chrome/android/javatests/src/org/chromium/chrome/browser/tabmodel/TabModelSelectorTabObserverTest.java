@@ -200,7 +200,7 @@ public class TabModelSelectorTabObserverTest extends NativeLibraryTestBase {
 
     private class TestTab extends Tab {
         public TestTab(boolean incognito) {
-            super(incognito, null, mWindowAndroid);
+            super(Tab.INVALID_TAB_ID, incognito, null, mWindowAndroid);
             initializeNative();
         }
 
