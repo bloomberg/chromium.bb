@@ -721,8 +721,7 @@ void InlineTextBoxPainter::paintDecoration(const PaintInfo& paintInfo, const Lay
 
     context->setStrokeThickness(textDecorationThickness);
 
-    bool antialiasDecoration = shouldSetDecorationAntialias(overline.style, underline.style, linethrough.style)
-        && BoxPainter::shouldAntialiasLines(context);
+    bool antialiasDecoration = shouldSetDecorationAntialias(overline.style, underline.style, linethrough.style);
 
     // Offset between lines - always non-zero, so lines never cross each other.
     float doubleOffset = textDecorationThickness + 1.f;

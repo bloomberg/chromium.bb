@@ -117,25 +117,24 @@ void TableCellPainter::paintCollapsedBorders(const PaintInfo& paintInfo, const L
 
     LayoutObjectDrawingRecorder recorder(*graphicsContext, m_layoutTableCell, static_cast<DisplayItem::Type>(displayItemType), borderRect, paintOffset);
     Color cellColor = m_layoutTableCell.resolveColor(CSSPropertyColor);
-    bool antialias = BoxPainter::shouldAntialiasLines(graphicsContext);
 
     // We never paint diagonals at the joins.  We simply let the border with the highest
     // precedence paint on top of borders with lower precedence.
     if (displayItemType & DisplayItem::TableCollapsedBorderTop) {
         ObjectPainter::drawLineForBoxSide(graphicsContext, borderRect.x(), borderRect.y(), borderRect.maxX(), borderRect.y() + topWidth, BSTop,
-            topBorderValue.color().resolve(cellColor), collapsedBorderStyle(topBorderValue.style()), 0, 0, antialias);
+            topBorderValue.color().resolve(cellColor), collapsedBorderStyle(topBorderValue.style()), 0, 0, true);
     }
     if (displayItemType & DisplayItem::TableCollapsedBorderBottom) {
         ObjectPainter::drawLineForBoxSide(graphicsContext, borderRect.x(), borderRect.maxY() - bottomWidth, borderRect.maxX(), borderRect.maxY(), BSBottom,
-            bottomBorderValue.color().resolve(cellColor), collapsedBorderStyle(bottomBorderValue.style()), 0, 0, antialias);
+            bottomBorderValue.color().resolve(cellColor), collapsedBorderStyle(bottomBorderValue.style()), 0, 0, true);
     }
     if (displayItemType & DisplayItem::TableCollapsedBorderLeft) {
         ObjectPainter::drawLineForBoxSide(graphicsContext, borderRect.x(), borderRect.y(), borderRect.x() + leftWidth, borderRect.maxY(), BSLeft,
-            leftBorderValue.color().resolve(cellColor), collapsedBorderStyle(leftBorderValue.style()), 0, 0, antialias);
+            leftBorderValue.color().resolve(cellColor), collapsedBorderStyle(leftBorderValue.style()), 0, 0, true);
     }
     if (displayItemType & DisplayItem::TableCollapsedBorderRight) {
         ObjectPainter::drawLineForBoxSide(graphicsContext, borderRect.maxX() - rightWidth, borderRect.y(), borderRect.maxX(), borderRect.maxY(), BSRight,
-            rightBorderValue.color().resolve(cellColor), collapsedBorderStyle(rightBorderValue.style()), 0, 0, antialias);
+            rightBorderValue.color().resolve(cellColor), collapsedBorderStyle(rightBorderValue.style()), 0, 0, true);
     }
 }
 

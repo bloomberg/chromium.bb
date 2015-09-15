@@ -575,12 +575,6 @@ bool BoxPainter::paintNinePieceImage(LayoutBoxModelObject& obj, GraphicsContext*
     return ninePieceImagePainter.paint(graphicsContext, rect, style, ninePieceImage, op);
 }
 
-bool BoxPainter::shouldAntialiasLines(GraphicsContext* context)
-{
-    // TODO(pdr): Remove this function.
-    return true;
-}
-
 bool BoxPainter::allCornersClippedOut(const FloatRoundedRect& border, const IntRect& intClipRect)
 {
     LayoutRect boundingRect(border.rect());

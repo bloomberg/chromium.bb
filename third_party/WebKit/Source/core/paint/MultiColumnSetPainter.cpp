@@ -58,7 +58,6 @@ void MultiColumnSetPainter::paintColumnRules(const PaintInfo& paintInfo, const L
     paintRect.moveBy(paintOffset);
     LayoutObjectDrawingRecorder drawingRecorder(*paintInfo.context, m_layoutMultiColumnSet, DisplayItem::ColumnRules, paintRect, paintOffset);
 
-    bool antialias = BoxPainter::shouldAntialiasLines(paintInfo.context);
     bool leftToRight = m_layoutMultiColumnSet.style()->isLeftToRightDirection();
     LayoutUnit currLogicalLeftOffset = leftToRight ? LayoutUnit() : m_layoutMultiColumnSet.contentLogicalWidth();
     LayoutUnit ruleAdd = m_layoutMultiColumnSet.borderAndPaddingLogicalLeft();
@@ -85,7 +84,7 @@ void MultiColumnSetPainter::paintColumnRules(const PaintInfo& paintInfo, const L
             LayoutUnit ruleTop = m_layoutMultiColumnSet.isHorizontalWritingMode() ? paintOffset.y() + m_layoutMultiColumnSet.borderTop() + m_layoutMultiColumnSet.paddingTop() : paintOffset.y() + ruleLogicalLeft - ruleThickness / 2 + ruleAdd;
             LayoutUnit ruleBottom = m_layoutMultiColumnSet.isHorizontalWritingMode() ? ruleTop + m_layoutMultiColumnSet.contentHeight() : ruleTop + ruleThickness;
             IntRect pixelSnappedRuleRect = pixelSnappedIntRectFromEdges(ruleLeft, ruleTop, ruleRight, ruleBottom);
-            ObjectPainter::drawLineForBoxSide(paintInfo.context, pixelSnappedRuleRect.x(), pixelSnappedRuleRect.y(), pixelSnappedRuleRect.maxX(), pixelSnappedRuleRect.maxY(), boxSide, ruleColor, ruleStyle, 0, 0, antialias);
+            ObjectPainter::drawLineForBoxSide(paintInfo.context, pixelSnappedRuleRect.x(), pixelSnappedRuleRect.y(), pixelSnappedRuleRect.maxX(), pixelSnappedRuleRect.maxY(), boxSide, ruleColor, ruleStyle, 0, 0, true);
         }
 
         ruleLogicalLeft = currLogicalLeftOffset;
