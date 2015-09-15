@@ -111,6 +111,10 @@ struct NewWindowInfo {
 // Registers the current user agent with the web view.
 - (void)registerUserAgent;
 
+// Returns YES if the current navigation item corresponds to a web page
+// loaded by a POST request.
+- (BOOL)isCurrentNavigationItemPOST;
+
 // Returns the type of document object loaded in the web view.
 - (web::WebViewDocumentType)webViewDocumentType;
 

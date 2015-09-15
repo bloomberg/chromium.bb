@@ -545,6 +545,13 @@ const size_t kMaxMessageQueueSize = 262144;
       [self useDesktopUserAgent]);
 }
 
+- (BOOL)isCurrentNavigationItemPOST {
+  DCHECK([self currentSessionEntry]);
+  NSData* currentPOSTData =
+      [self currentSessionEntry].navigationItemImpl->GetPostData();
+  return currentPOSTData != nil;
+}
+
 // The core.js cannot pass messages back to obj-c  if it is injected
 // to |WEB_VIEW_DOCUMENT| because it does not support iframe creation used
 // by core.js to communicate back. That functionality is only supported

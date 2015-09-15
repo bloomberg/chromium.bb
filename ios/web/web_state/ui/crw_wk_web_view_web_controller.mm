@@ -206,6 +206,9 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
 - (void)updatePendingNavigationTypeForMainFrameFromNavigationAction:
     (WKNavigationAction*)action;
 
+// Discards the pending navigation type.
+- (void)discardPendingNavigationTypeForMainFrame;
+
 // Returns the WKBackForwardListItemHolder for the current navigation item.
 - (web::WKBackForwardListItemHolder*)currentBackForwardListItemHolder;
 
@@ -404,6 +407,17 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
 - (void)registerUserAgent {
   web::BuildAndRegisterUserAgentForUIWebView([self requestGroupIDForUserAgent],
                                              [self useDesktopUserAgent]);
+}
+
+- (BOOL)isCurrentNavigationItemPOST {
+  // |_pendingNavigationTypeForMainFrame| will be nil if
+  // |decidePolicyForNavigationAction| was not reached.
+  WKNavigationType type =
+      (_pendingNavigationTypeForMainFrame)
+          ? *_pendingNavigationTypeForMainFrame
+          : [self currentBackForwardListItemHolder]->navigation_type();
+  return type == WKNavigationTypeFormSubmitted ||
+         type == WKNavigationTypeFormResubmitted;
 }
 
 // The core.js cannot pass messages back to obj-c  if it is injected
@@ -714,6 +728,10 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
   if (action.targetFrame.mainFrame)
     _pendingNavigationTypeForMainFrame.reset(
         new WKNavigationType(action.navigationType));
+}
+
+- (void)discardPendingNavigationTypeForMainFrame {
+  _pendingNavigationTypeForMainFrame.reset();
 }
 
 - (web::WKBackForwardListItemHolder*)currentBackForwardListItemHolder {
@@ -1311,6 +1329,8 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
   else
 #endif
     [self handleLoadError:error inMainFrame:YES];
+
+  [self discardPendingNavigationTypeForMainFrame];
 }
 
 - (void)webView:(WKWebView *)webView

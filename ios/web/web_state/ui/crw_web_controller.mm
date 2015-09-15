@@ -1379,14 +1379,8 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 
   const GURL currentUrl = [self currentNavigationURL];
 
-  // TODO(bhnascar): Fix POST data check for WKWebView here and elsewhere.
-  // See crbug.com/517911.
-  DCHECK([self currentSessionEntry]);
-  NSData* currentPOSTData =
-      [self currentSessionEntry].navigationItemImpl->GetPostData();
-  BOOL isPost = currentPOSTData != nil;
-
   error = web::NetErrorFromError(error);
+  BOOL isPost = [self isCurrentNavigationItemPOST];
   [self setNativeController:[_nativeProvider controllerForURL:currentUrl
                                                     withError:error
                                                        isPost:isPost]];
