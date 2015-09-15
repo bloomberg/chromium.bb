@@ -81,7 +81,7 @@ void SkiaImageFilterBuilder::buildFilterOperations(const FilterOperations& opera
         switch (op.type()) {
         case FilterOperation::REFERENCE: {
             RefPtr<SkImageFilter> filter;
-            ReferenceFilter* referenceFilter = toReferenceFilterOperation(op).filter();
+            Filter* referenceFilter = toReferenceFilterOperation(op).filter();
             if (referenceFilter && referenceFilter->lastEffect()) {
                 FilterEffect* filterEffect = referenceFilter->lastEffect();
                 // Prepopulate SourceGraphic with two image filters: one with a null image

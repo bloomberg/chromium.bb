@@ -36,8 +36,8 @@
 
 namespace blink {
 
+class Filter;
 class FilterOperations;
-class ReferenceFilter;
 class Element;
 
 class CORE_EXPORT FilterEffectBuilder final : public RefCountedWillBeGarbageCollectedFinalized<FilterEffectBuilder> {
@@ -62,7 +62,7 @@ private:
     FilterEffectBuilder();
 
     RefPtrWillBeMember<FilterEffect> m_lastEffect;
-    WillBeHeapVector<RefPtrWillBeMember<ReferenceFilter>> m_referenceFilters;
+    WillBeHeapVector<RefPtrWillBeMember<Filter>> m_referenceFilters;
 };
 
 } // namespace blink

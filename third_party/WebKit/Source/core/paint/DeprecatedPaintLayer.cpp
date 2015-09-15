@@ -78,7 +78,7 @@
 #include "platform/geometry/FloatPoint3D.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/geometry/TransformState.h"
-#include "platform/graphics/filters/ReferenceFilter.h"
+#include "platform/graphics/filters/Filter.h"
 #include "platform/graphics/filters/SourceGraphic.h"
 #include "platform/transforms/ScaleTransformOperation.h"
 #include "platform/transforms/TransformationMatrix.h"
@@ -2543,8 +2543,8 @@ FilterOperations computeFilterOperationsHandleReferenceFilters(const FilterOpera
             if (filterOperation->type() != FilterOperation::REFERENCE)
                 continue;
             ReferenceFilterOperation& referenceOperation = toReferenceFilterOperation(*filterOperation);
-            // FIXME: Cache the ReferenceFilter if it didn't change.
-            RefPtrWillBeRawPtr<ReferenceFilter> referenceFilter = ReferenceFilterBuilder::build(effectiveZoom, toElement(enclosingElement), nullptr, referenceOperation);
+            // FIXME: Cache the Filter if it didn't change.
+            RefPtrWillBeRawPtr<Filter> referenceFilter = ReferenceFilterBuilder::build(effectiveZoom, toElement(enclosingElement), nullptr, referenceOperation);
             referenceOperation.setFilter(referenceFilter.release());
         }
     }

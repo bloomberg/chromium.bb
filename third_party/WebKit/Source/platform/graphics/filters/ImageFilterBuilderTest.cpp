@@ -28,8 +28,8 @@
 #include "platform/graphics/filters/FEBlend.h"
 #include "platform/graphics/filters/FEGaussianBlur.h"
 #include "platform/graphics/filters/FEMerge.h"
+#include "platform/graphics/filters/Filter.h"
 #include "platform/graphics/filters/FilterOperations.h"
-#include "platform/graphics/filters/ReferenceFilter.h"
 #include "platform/graphics/filters/SkiaImageFilterBuilder.h"
 #include "platform/graphics/filters/SourceGraphic.h"
 #include <gtest/gtest.h>
@@ -43,7 +43,7 @@ protected:
     void colorSpaceTest()
     {
         // Build filter tree
-        RefPtrWillBeRawPtr<ReferenceFilter> referenceFilter = ReferenceFilter::create(1.0f);
+        RefPtrWillBeRawPtr<Filter> referenceFilter = Filter::create(1.0f);
 
         // Add a dummy source graphic input
         RefPtrWillBeRawPtr<FilterEffect> sourceEffect = referenceFilter->sourceGraphic();

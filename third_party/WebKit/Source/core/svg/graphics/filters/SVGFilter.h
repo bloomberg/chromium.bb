@@ -22,10 +22,8 @@
 #define SVGFilter_h
 
 #include "platform/geometry/FloatRect.h"
-#include "platform/geometry/FloatSize.h"
 #include "platform/graphics/filters/Filter.h"
 #include "platform/graphics/filters/FilterEffect.h"
-#include "platform/transforms/AffineTransform.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
@@ -43,7 +41,7 @@ public:
     IntRect sourceImageRect() const override { return m_absoluteSourceDrawingRegion; }
 
 private:
-    SVGFilter(const IntRect& absoluteSourceDrawingRegion, const FloatRect& targetBoundingBox, const FloatRect& filterRegion, bool effectBBoxMode);
+    SVGFilter(const IntRect& absoluteSourceDrawingRegion, const FloatRect& referenceBox, const FloatRect& filterRegion, bool effectBBoxMode);
 
     IntRect m_absoluteSourceDrawingRegion;
     bool m_effectBBoxMode;

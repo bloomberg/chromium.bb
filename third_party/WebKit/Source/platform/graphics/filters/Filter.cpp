@@ -28,49 +28,49 @@
  * SUCH DAMAGE.
  */
 
-#ifndef ReferenceFilter_h
-#define ReferenceFilter_h
-
-#include "platform/geometry/FloatRect.h"
+#include "config.h"
 #include "platform/graphics/filters/Filter.h"
-#include "platform/heap/Handle.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/RefPtr.h"
+
+#include "platform/graphics/filters/FilterEffect.h"
+#include "platform/graphics/filters/SourceGraphic.h"
 
 namespace blink {
 
-class SourceGraphic;
-class FilterEffect;
+Filter::Filter(const FloatRect& referenceBox, const FloatRect& filterRegion, float scale)
+    : m_referenceBox(referenceBox)
+    , m_filterRegion(filterRegion)
+    , m_scale(scale)
+    , m_sourceGraphic(SourceGraphic::create(this))
+{
+}
 
-class PLATFORM_EXPORT ReferenceFilter: public Filter {
-public:
-    static PassRefPtrWillBeRawPtr<ReferenceFilter> create(const FloatRect& targetBoundingBox, const FloatRect& filterRegion, float scale)
-    {
-        return adoptRefWillBeNoop(new ReferenceFilter(targetBoundingBox, filterRegion, scale));
-    }
+Filter::~Filter()
+{
+}
 
-    static PassRefPtrWillBeRawPtr<ReferenceFilter> create(float scale)
-    {
-        return adoptRefWillBeNoop(new ReferenceFilter(FloatRect(), FloatRect(), scale));
-    }
+DEFINE_TRACE(Filter)
+{
+    visitor->trace(m_sourceGraphic);
+    visitor->trace(m_lastEffect);
+}
 
-    ~ReferenceFilter() override;
-    DECLARE_VIRTUAL_TRACE();
+FloatRect Filter::mapLocalRectToAbsoluteRect(const FloatRect& rect) const
+{
+    FloatRect result(rect);
+    result.scale(m_scale);
+    return result;
+}
 
-    IntRect sourceImageRect() const override { return IntRect(); }
+FloatRect Filter::mapAbsoluteRectToLocalRect(const FloatRect& rect) const
+{
+    FloatRect result(rect);
+    result.scale(1.0f / m_scale);
+    return result;
+}
 
-    void setLastEffect(PassRefPtrWillBeRawPtr<FilterEffect>);
-    FilterEffect* lastEffect() const { return m_lastEffect.get(); }
-
-    SourceGraphic* sourceGraphic() const { return m_sourceGraphic.get(); }
-
-private:
-    ReferenceFilter(const FloatRect& targetBoundingBox, const FloatRect& filterRegion, float scale);
-
-    RefPtrWillBeMember<SourceGraphic> m_sourceGraphic;
-    RefPtrWillBeMember<FilterEffect> m_lastEffect;
-};
+void Filter::setLastEffect(PassRefPtrWillBeRawPtr<FilterEffect> effect)
+{
+    m_lastEffect = effect;
+}
 
 } // namespace blink
-
-#endif // ReferenceFilter_h

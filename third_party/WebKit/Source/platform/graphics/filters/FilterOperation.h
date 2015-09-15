@@ -30,7 +30,6 @@
 #include "platform/PlatformExport.h"
 #include "platform/graphics/Color.h"
 #include "platform/graphics/filters/Filter.h"
-#include "platform/graphics/filters/ReferenceFilter.h"
 #include "platform/heap/Handle.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
@@ -124,8 +123,8 @@ public:
     const String& url() const { return m_url; }
     const AtomicString& fragment() const { return m_fragment; }
 
-    ReferenceFilter* filter() const { return m_filter.get(); }
-    void setFilter(PassRefPtrWillBeRawPtr<ReferenceFilter> filter) { m_filter = filter; }
+    Filter* filter() const { return m_filter.get(); }
+    void setFilter(PassRefPtrWillBeRawPtr<Filter> filter) { m_filter = filter; }
 
     DECLARE_VIRTUAL_TRACE();
 
@@ -153,7 +152,7 @@ private:
 
     String m_url;
     AtomicString m_fragment;
-    RefPtrWillBeMember<ReferenceFilter> m_filter;
+    RefPtrWillBeMember<Filter> m_filter;
 };
 
 DEFINE_FILTER_OPERATION_TYPE_CASTS(ReferenceFilterOperation, REFERENCE);

@@ -39,10 +39,10 @@
 namespace blink {
 
 class Element;
+class Filter;
 class FilterEffect;
 class FilterOperation;
 class ReferenceFilterOperation;
-class ReferenceFilter;
 
 class ReferenceFilterBuilder {
     STATIC_ONLY(ReferenceFilterBuilder);
@@ -51,7 +51,7 @@ public:
     static void setDocumentResourceReference(const FilterOperation*, PassOwnPtr<DocumentResourceReference>);
     static void clearDocumentResourceReference(const FilterOperation*);
 
-    static PassRefPtrWillBeRawPtr<ReferenceFilter> build(float zoom, Element*, FilterEffect* previousEffect, const ReferenceFilterOperation&);
+    static PassRefPtrWillBeRawPtr<Filter> build(float zoom, Element*, FilterEffect* previousEffect, const ReferenceFilterOperation&);
 
 private:
     static HashMap<const FilterOperation*, OwnPtr<DocumentResourceReference>>* documentResourceReferences;

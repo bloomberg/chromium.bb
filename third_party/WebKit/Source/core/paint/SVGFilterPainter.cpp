@@ -39,8 +39,7 @@ void SVGFilterRecordingContext::endContent(FilterData* filterData)
 {
     ASSERT(filterData->m_state == FilterData::RecordingContent);
 
-    // FIXME: maybe filterData should just hold onto SourceGraphic after creation?
-    SourceGraphic* sourceGraphic = static_cast<SourceGraphic*>(filterData->builder->getEffectById(SourceGraphic::effectName()));
+    SourceGraphic* sourceGraphic = filterData->filter->sourceGraphic();
     ASSERT(sourceGraphic);
 
     GraphicsContext* context = paintingContext();
@@ -64,17 +63,17 @@ void SVGFilterRecordingContext::endContent(FilterData* filterData)
 static void paintFilteredContent(LayoutObject& object, GraphicsContext* context, FilterData* filterData)
 {
     ASSERT(filterData->m_state == FilterData::ReadyToPaint);
-    ASSERT(filterData->builder->getEffectById(SourceGraphic::effectName()));
+    ASSERT(filterData->filter->sourceGraphic());
 
     filterData->m_state = FilterData::PaintingFilter;
 
     SkiaImageFilterBuilder builder;
-    RefPtr<SkImageFilter> imageFilter = builder.build(filterData->builder->lastEffect(), ColorSpaceDeviceRGB);
+    RefPtr<SkImageFilter> imageFilter = builder.build(filterData->filter->lastEffect(), ColorSpaceDeviceRGB);
     FloatRect boundaries = filterData->filter->filterRegion();
     context->save();
 
     // Clip drawing of filtered image to the minimum required paint rect.
-    FilterEffect* lastEffect = filterData->builder->lastEffect();
+    FilterEffect* lastEffect = filterData->filter->lastEffect();
     context->clipRect(lastEffect->determineAbsolutePaintRect(lastEffect->maxEffectRect()));
 
 #ifdef CHECK_CTM_FOR_TRANSFORMED_IMAGEFILTER
@@ -141,7 +140,7 @@ GraphicsContext* SVGFilterPainter::prepareEffect(LayoutObject& object, SVGFilter
     if (!filterData->builder)
         return nullptr;
 
-    FilterEffect* lastEffect = filterData->builder->lastEffect();
+    FilterEffect* lastEffect = filterData->filter->lastEffect();
     if (!lastEffect)
         return nullptr;
 
