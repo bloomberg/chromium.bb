@@ -47,6 +47,15 @@ AuraInit::AuraInit(mojo::View* view, mojo::Shell* shell)
 }
 
 AuraInit::~AuraInit() {
+#if defined(OS_LINUX) && !defined(OS_ANDROID)
+  if (font_loader_.get()) {
+    SkFontConfigInterface::SetGlobal(nullptr);
+    // FontLoader is ref counted. We need to explicitly shutdown the background
+    // thread, otherwise the background thread may be shutdown after the app is
+    // torn down, when we're in a bad state.
+    font_loader_->Shutdown();
+  }
+#endif
 }
 
 void AuraInit::InitializeResources(mojo::Shell* shell) {
@@ -67,7 +76,8 @@ void AuraInit::InitializeResources(mojo::Shell* shell) {
 
   // Initialize the skia font code to go ask fontconfig underneath.
 #if defined(OS_LINUX) && !defined(OS_ANDROID)
-  SkFontConfigInterface::SetGlobal(new font_service::FontLoader(shell));
+  font_loader_ = skia::AdoptRef(new font_service::FontLoader(shell));
+  SkFontConfigInterface::SetGlobal(font_loader_.get());
 #endif
 
   // There is a bunch of static state in gfx::Font, by running this now,
