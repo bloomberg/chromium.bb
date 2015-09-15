@@ -85,10 +85,7 @@ void GetServiceApplications(ExtensionService* service,
   ExtensionRegistry* registry = ExtensionRegistry::Get(service->profile());
   const ExtensionSet& enabled_extensions = registry->enabled_extensions();
 
-  for (ExtensionSet::const_iterator cursor = enabled_extensions.begin();
-       cursor != enabled_extensions.end();
-       ++cursor) {
-    const Extension* extension = cursor->get();
+  for (const auto& extension : enabled_extensions) {
     if (BackgroundApplicationListModel::IsBackgroundApp(*extension,
                                                         service->profile())) {
       applications_result->push_back(extension);
@@ -98,10 +95,7 @@ void GetServiceApplications(ExtensionService* service,
   // Walk the list of terminated extensions also (just because an extension
   // crashed doesn't mean we should ignore it).
   const ExtensionSet& terminated_extensions = registry->terminated_extensions();
-  for (ExtensionSet::const_iterator cursor = terminated_extensions.begin();
-       cursor != terminated_extensions.end();
-       ++cursor) {
-    const Extension* extension = cursor->get();
+  for (const auto& extension : terminated_extensions) {
     if (BackgroundApplicationListModel::IsBackgroundApp(*extension,
                                                         service->profile())) {
       applications_result->push_back(extension);
@@ -252,11 +246,10 @@ int BackgroundApplicationListModel::GetPosition(
     const Extension* extension) const {
   int position = 0;
   const std::string& id = extension->id();
-  for (ExtensionList::const_iterator cursor = extensions_.begin();
-       cursor != extensions_.end();
-       ++cursor, ++position) {
-    if (id == cursor->get()->id())
+  for (const auto& it : extensions_) {
+    if (id == it->id())
       return position;
+    ++position;
   }
   NOTREACHED();
   return -1;

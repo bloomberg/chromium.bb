@@ -239,19 +239,16 @@ BackgroundModeManager::BackgroundModeData::GetNewBackgroundApps() {
   std::set<const extensions::Extension*> new_apps;
 
   // Copy all current extensions into our list of |current_extensions_|.
-  for (extensions::ExtensionList::const_iterator it = applications_->begin();
-       it != applications_->end(); ++it) {
-    const extensions::ExtensionId& id = (*it)->id();
+  for (const auto& application : *applications_) {
+    const extensions::ExtensionId& id = application->id();
     if (current_extensions_.count(id) == 0) {
       // Not found in our set yet - add it and maybe return as a previously
       // unseen extension.
       current_extensions_.insert(id);
       // If this application has been newly loaded after the initial startup,
       // notify the user.
-      if (applications_->is_ready()) {
-        const extensions::Extension* extension = (*it).get();
-        new_apps.insert(extension);
-      }
+      if (applications_->is_ready())
+        new_apps.insert(application.get());
     }
   }
   return new_apps;
@@ -373,12 +370,8 @@ BackgroundModeManager::BackgroundModeManager(
 BackgroundModeManager::~BackgroundModeManager() {
   // Remove ourselves from the application observer list (only needed by unit
   // tests since APP_TERMINATING is what does this in a real running system).
-  for (BackgroundModeInfoMap::iterator it =
-       background_mode_data_.begin();
-       it != background_mode_data_.end();
-       ++it) {
-    it->second->applications_->RemoveObserver(this);
-  }
+  for (const auto& it : background_mode_data_)
+    it.second->applications_->RemoveObserver(this);
   BrowserList::RemoveObserver(this);
 
   // We're going away, so exit background mode (does nothing if we aren't in
@@ -515,12 +508,8 @@ void BackgroundModeManager::Observe(
       // Shutting down, so don't listen for any more notifications so we don't
       // try to re-enter/exit background mode again.
       registrar_.RemoveAll();
-      for (BackgroundModeInfoMap::iterator it =
-               background_mode_data_.begin();
-           it != background_mode_data_.end();
-           ++it) {
-        it->second->applications_->RemoveObserver(this);
-      }
+      for (const auto& it : background_mode_data_)
+        it.second->applications_->RemoveObserver(this);
       break;
     default:
       NOTREACHED();
@@ -584,12 +573,9 @@ void BackgroundModeManager::OnProfileAdded(const base::FilePath& profile_path) {
   // At this point, the profile should be registered with the background mode
   // manager, but when it's actually added to the cache is when its name is
   // set so we need up to update that with the background_mode_data.
-  for (BackgroundModeInfoMap::const_iterator it =
-       background_mode_data_.begin();
-       it != background_mode_data_.end();
-       ++it) {
-    if (it->first->GetPath() == profile_path) {
-      it->second->SetName(profile_name);
+  for (const auto& it : background_mode_data_) {
+    if (it.first->GetPath() == profile_path) {
+      it.second->SetName(profile_name);
       UpdateStatusTrayIconContextMenu();
       return;
     }
@@ -880,12 +866,8 @@ int BackgroundModeManager::GetBackgroundClientCount() const {
   int count = 0;
   // Walk the BackgroundModeData for all profiles and count the number of
   // clients.
-  for (BackgroundModeInfoMap::const_iterator it =
-       background_mode_data_.begin();
-       it != background_mode_data_.end();
-       ++it) {
-    count += it->second->GetBackgroundClientCount();
-  }
+  for (const auto& it : background_mode_data_)
+    count += it.second->GetBackgroundClientCount();
   DCHECK(count >= 0);
   return count;
 }
@@ -988,20 +970,12 @@ void BackgroundModeManager::UpdateStatusTrayIconContextMenu() {
 
   if (profile_cache_->GetNumberOfProfiles() > 1) {
     std::vector<BackgroundModeData*> bmd_vector;
-    for (BackgroundModeInfoMap::iterator it =
-         background_mode_data_.begin();
-         it != background_mode_data_.end();
-         ++it) {
-       bmd_vector.push_back(it->second.get());
-    }
+    for (const auto& it : background_mode_data_)
+      bmd_vector.push_back(it.second.get());
     std::sort(bmd_vector.begin(), bmd_vector.end(),
               &BackgroundModeData::BackgroundModeDataCompare);
     int profiles_using_background_mode = 0;
-    for (std::vector<BackgroundModeData*>::const_iterator bmd_it =
-         bmd_vector.begin();
-         bmd_it != bmd_vector.end();
-         ++bmd_it) {
-      BackgroundModeData* bmd = *bmd_it;
+    for (const auto& bmd : bmd_vector) {
       // We should only display the profile in the status icon if it has at
       // least one background app.
       if (bmd->GetBackgroundClientCount() > 0) {
