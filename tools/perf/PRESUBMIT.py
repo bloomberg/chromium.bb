@@ -119,7 +119,7 @@ def PostUploadHook(cl, change, output_api):
   results = []
   bots = [
     'linux_perf_bisect',
-    'mac_perf_bisect',
+    'mac_10_10_perf_bisect',
     'win_perf_bisect',
     'android_nexus5_perf_bisect'
   ]

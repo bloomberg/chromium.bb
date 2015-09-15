@@ -29,7 +29,7 @@ PERF_TEST_CONFIG = os.path.join(
     SCRIPT_DIR, os.path.pardir, os.path.pardir, 'run-perf-test.cfg')
 PLATFORM_BOT_MAP = {
     'linux': ['linux_perf_bisect'],
-    'mac': ['mac_perf_bisect', 'mac_10_9_perf_bisect'],
+    'mac': ['mac_10_9_perf_bisect', 'mac_10_10_perf_bisect'],
     'win': ['win_perf_bisect', 'win_8_perf_bisect', 'win_xp_perf_bisect'],
     'winx64': ['win_x64_perf_bisect'],
     'android': [
