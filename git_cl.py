@@ -214,6 +214,16 @@ def add_git_similarity(parser):
   parser.parse_args = Parse
 
 
+def _get_properties_from_options(options):
+  properties = dict(x.split('=', 1) for x in options.properties)
+  for key, val in properties.iteritems():
+    try:
+      properties[key] = json.loads(val)
+    except ValueError:
+      pass  # If a value couldn't be evaluated, treat it as a string.
+  return properties
+
+
 def _prefix_master(master):
   """Convert user-specified master name to full master name.
 
@@ -228,8 +238,7 @@ def _prefix_master(master):
   return '%s%s' % (prefix, master)
 
 
-def trigger_try_jobs(auth_config, changelist, options, masters, category,
-                     override_properties=None):
+def trigger_try_jobs(auth_config, changelist, options, masters, category):
   rietveld_url = settings.GetDefaultServerUrl()
   rietveld_host = urlparse.urlparse(rietveld_url).hostname
   authenticator = auth.get_authenticator_for_host(rietveld_host, auth_config)
@@ -238,6 +247,7 @@ def trigger_try_jobs(auth_config, changelist, options, masters, category,
   issue_props = changelist.GetIssueProperties()
   issue = changelist.GetIssue()
   patchset = changelist.GetMostRecentPatchset()
+  properties = _get_properties_from_options(options)
 
   buildbucket_put_url = (
       'https://{hostname}/_ah/api/buildbucket/v1/builds/batch'.format(
@@ -273,8 +283,8 @@ def trigger_try_jobs(auth_config, changelist, options, masters, category,
               'testfilter': tests,
           },
       }
-      if override_properties:
-        parameters['properties'].update(override_properties)
+      if properties:
+        parameters['properties'].update(properties)
       if options.clobber:
         parameters['properties']['clobber'] = True
       batch_req_body['builds'].append(
@@ -3073,6 +3083,11 @@ def CMDtry(parser, args):
       help="Override which project to use. Projects are defined "
            "server-side to define what default bot set to use")
   group.add_option(
+      "-p", "--property", dest="properties", action="append", default=[],
+      help="Specify generic properties in the form -p key1=value1 -p "
+           "key2=value2 etc (buildbucket only). The value will be treated as "
+           "json if decodable, or as string otherwise.")
+  group.add_option(
       "-n", "--name", help="Try job name; default to current branch name")
   group.add_option(
       "--use-rietveld", action="store_true", default=False,
@@ -3084,6 +3099,14 @@ def CMDtry(parser, args):
   auth.add_auth_options(parser)
   options, args = parser.parse_args(args)
   auth_config = auth.extract_auth_config_from_options(options)
+
+  if options.use_rietveld and options.properties:
+    parser.error('Properties can only be specified with buildbucket')
+
+  # Make sure that all properties are prop=value pairs.
+  bad_params = [x for x in options.properties if '=' not in x]
+  if bad_params:
+    parser.error('Got properties with missing "=": %s' % bad_params)
 
   if args:
     parser.error('Unknown arguments: %s' % args)
