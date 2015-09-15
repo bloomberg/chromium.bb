@@ -419,8 +419,6 @@ if (enable_webrtc) {
       "source/talk/media/devices/filevideocapturer.cc",
       "source/talk/media/devices/filevideocapturer.h",
       "source/talk/media/webrtc/webrtccommon.h",
-      "source/talk/media/webrtc/webrtcpassthroughrender.cc",
-      "source/talk/media/webrtc/webrtcpassthroughrender.h",
       "source/talk/media/webrtc/webrtcvideoframe.cc",
       "source/talk/media/webrtc/webrtcvideoframe.h",
       "source/talk/media/webrtc/webrtcvideoframefactory.cc",

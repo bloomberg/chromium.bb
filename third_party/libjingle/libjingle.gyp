@@ -406,8 +406,6 @@
             '<(libjingle_source)/talk/media/devices/filevideocapturer.cc',
             '<(libjingle_source)/talk/media/devices/filevideocapturer.h',
             '<(libjingle_source)/talk/media/webrtc/webrtccommon.h',
-            '<(libjingle_source)/talk/media/webrtc/webrtcpassthroughrender.cc',
-            '<(libjingle_source)/talk/media/webrtc/webrtcpassthroughrender.h',
             '<(libjingle_source)/talk/media/webrtc/webrtcvideoframe.cc',
             '<(libjingle_source)/talk/media/webrtc/webrtcvideoframe.h',
             '<(libjingle_source)/talk/media/webrtc/webrtcvideoframefactory.cc',
