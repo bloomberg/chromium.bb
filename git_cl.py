@@ -1786,6 +1786,8 @@ def CMDcomments(parser, args):
                     help='comment to add to an issue')
   parser.add_option('-i', dest='issue',
                     help="review issue id (defaults to current issue)")
+  parser.add_option('-j', '--json-file',
+                    help='File to write JSON summary to')
   auth.add_auth_options(parser)
   options, args = parser.parse_args(args)
   auth_config = auth.extract_auth_config_from_options(options)
@@ -1804,11 +1806,21 @@ def CMDcomments(parser, args):
     return 0
 
   data = cl.GetIssueProperties()
+  summary = []
   for message in sorted(data.get('messages', []), key=lambda x: x['date']):
+    summary.append({
+        'date': message['date'],
+        'lgtm': False,
+        'message': message['text'],
+        'not_lgtm': False,
+        'sender': message['sender'],
+    })
     if message['disapproval']:
       color = Fore.RED
+      summary[-1]['not lgtm'] = True
     elif message['approval']:
       color = Fore.GREEN
+      summary[-1]['lgtm'] = True
     elif message['sender'] == data['owner_email']:
       color = Fore.MAGENTA
     else:
@@ -1818,6 +1830,9 @@ def CMDcomments(parser, args):
         Fore.RESET)
     if message['text'].strip():
       print '\n'.join('  ' + l for l in message['text'].splitlines())
+  if options.json_file:
+    with open(options.json_file, 'wb') as f:
+      json.dump(summary, f)
   return 0
 
 
