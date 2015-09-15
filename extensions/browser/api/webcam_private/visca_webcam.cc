@@ -123,8 +123,9 @@ void ViscaWebcam::OpenOnIOThread(const OpenCompleteCallback& open_callback) {
   options.persistent.reset(new bool(false));
   options.bitrate.reset(new int(9600));
   options.cts_flow_control.reset(new bool(false));
-  options.receive_timeout.reset(new int(0));
-  options.send_timeout.reset(new int(0));
+  // Enable send and receive timeout error.
+  options.receive_timeout.reset(new int(3000));
+  options.send_timeout.reset(new int(3000));
   options.data_bits = api::serial::DATA_BITS_EIGHT;
   options.parity_bit = api::serial::PARITY_BIT_NO;
   options.stop_bits = api::serial::STOP_BITS_ONE;

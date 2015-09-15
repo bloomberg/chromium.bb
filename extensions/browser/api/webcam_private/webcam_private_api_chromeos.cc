@@ -24,6 +24,7 @@ namespace {
 
 const char kPathInUse[] = "Path in use";
 const char kUnknownWebcam[] = "Unknown webcam id";
+const char kOpenSerialWebcamError[] = "Can't open serial webcam.";
 const char kGetWebcamPTZError[] = "Can't get web camera pan/tilt/zoom.";
 const char kSetWebcamPTZError[] = "Can't set web camera pan/tilt/zoom.";
 const char kResetWebcamError[] = "Can't reset web camera.";
@@ -203,7 +204,7 @@ void WebcamPrivateOpenSerialWebcamFunction::OnOpenWebcam(
     SetResult(new base::StringValue(webcam_id));
     SendResponse(true);
   } else {
-    SetError(kUnknownWebcam);
+    SetError(kOpenSerialWebcamError);
     SendResponse(false);
   }
 }
