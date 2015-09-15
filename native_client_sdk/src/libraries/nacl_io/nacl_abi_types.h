@@ -92,7 +92,7 @@ typedef __int64_t       nacl_abi___time_t;
 typedef nacl_abi___time_t nacl_abi_time_t;
 #endif
 
-#if !(__GLIBC__ == 2 && __GLIBC_MINOR__ == 9)
+#if !(__GLIBC__ == 2 && __GLIBC_MINOR__ == 9) && !defined(__BIONIC__)
 struct nacl_abi_stat {  /* must be renamed when ABI is exported */
   nacl_abi_dev_t     nacl_abi_st_dev;       /* not implemented */
   nacl_abi_ino_t     nacl_abi_st_ino;       /* not implemented */
