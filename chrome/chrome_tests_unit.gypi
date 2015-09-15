@@ -1523,6 +1523,7 @@
       'browser/ui/browser_instant_controller_unittest.cc',
       'browser/ui/browser_iterator_unittest.cc',
       'browser/ui/browser_unittest.cc',
+      'browser/ui/chrome_bubble_manager_unittest.cc',
       'browser/ui/cocoa/autofill/new_credit_card_bubble_cocoa_unittest.mm',
       'browser/ui/content_settings/content_setting_bubble_model_unittest.cc',
       'browser/ui/content_settings/content_setting_image_model_unittest.cc',
@@ -2621,6 +2622,7 @@
           ],
         }, { # 'OS!="android" and OS!="ios"'
           'dependencies': [
+            '../components/components.gyp:bubble_test_support',
             'tools/profile_reset/jtl_compiler.gyp:jtl_compiler_lib',
           ],
         }],

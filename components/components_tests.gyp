@@ -82,6 +82,8 @@
       'browser_watcher/window_hang_monitor_win_unittest.cc',
     ],
     'bubble_unittest_sources': [
+      'bubble/bubble_manager_mocks.cc',
+      'bubble/bubble_manager_mocks.h',
       'bubble/bubble_manager_unittest.cc',
     ],
     'captive_portal_unittest_sources': [

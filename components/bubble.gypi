@@ -24,5 +24,20 @@
         'bubble/bubble_ui.h',
       ],
     },
+    {
+      'target_name': 'bubble_test_support',
+      'type': 'static_library',
+      'include_dirs': [
+        '..',
+      ],
+      'dependencies': [
+        '../testing/gmock.gyp:gmock',
+        'bubble',
+      ],
+      'sources': [
+        'bubble/bubble_manager_mocks.cc',
+        'bubble/bubble_manager_mocks.h',
+      ],
+    },
   ],
 }

@@ -28,7 +28,7 @@ static int GetBubbleId(BubbleReference bubble) {
   BubbleType bubble_type = BUBBLE_TYPE_UNKNOWN;
 
   // Translate from bubble name to enum.
-  if (bubble->GetName().compare("MockBubble"))
+  if (bubble->GetName().compare("MockBubble") == 0)
     bubble_type = BUBBLE_TYPE_MOCK;
 
   DCHECK_NE(bubble_type, BUBBLE_TYPE_UNKNOWN);
@@ -37,23 +37,61 @@ static int GetBubbleId(BubbleReference bubble) {
   return bubble_type;
 }
 
-// Get the UMA title for this close reason.
-static std::string GetBubbleCloseReasonName(BubbleCloseReason reason) {
+// Log the reason for closing this bubble.
+// Each reason is its own metric. Each histogram call MUST have a runtime
+// constant value passed in for the title.
+static void LogBubbleCloseReason(BubbleReference bubble,
+                                 BubbleCloseReason reason) {
+  int bubble_id = GetBubbleId(bubble);
   switch (reason) {
-    case BUBBLE_CLOSE_FORCED: return "Bubbles.Close.Forced";
-    case BUBBLE_CLOSE_FOCUS_LOST: return "Bubbles.Close.FocusLost";
-    case BUBBLE_CLOSE_TABSWITCHED: return "Bubbles.Close.TabSwitched";
-    case BUBBLE_CLOSE_TABDETACHED: return "Bubbles.Close.TabDetached";
-    case BUBBLE_CLOSE_USER_DISMISSED: return "Bubbles.Close.UserDismissed";
-    case BUBBLE_CLOSE_NAVIGATED: return "Bubbles.Close.Navigated";
+    case BUBBLE_CLOSE_FORCED:
+      UMA_HISTOGRAM_ENUMERATION("Bubbles.Close.Forced",
+                                bubble_id,
+                                BUBBLE_TYPE_MAX);
+      return;
+    case BUBBLE_CLOSE_FOCUS_LOST:
+      UMA_HISTOGRAM_ENUMERATION("Bubbles.Close.FocusLost",
+                                bubble_id,
+                                BUBBLE_TYPE_MAX);
+      return;
+    case BUBBLE_CLOSE_TABSWITCHED:
+      UMA_HISTOGRAM_ENUMERATION("Bubbles.Close.TabSwitched",
+                                bubble_id,
+                                BUBBLE_TYPE_MAX);
+      return;
+    case BUBBLE_CLOSE_TABDETACHED:
+      UMA_HISTOGRAM_ENUMERATION("Bubbles.Close.TabDetached",
+                                bubble_id,
+                                BUBBLE_TYPE_MAX);
+      return;
+    case BUBBLE_CLOSE_USER_DISMISSED:
+      UMA_HISTOGRAM_ENUMERATION("Bubbles.Close.UserDismissed",
+                                bubble_id,
+                                BUBBLE_TYPE_MAX);
+      return;
+    case BUBBLE_CLOSE_NAVIGATED:
+      UMA_HISTOGRAM_ENUMERATION("Bubbles.Close.Navigated",
+                                bubble_id,
+                                BUBBLE_TYPE_MAX);
+      return;
     case BUBBLE_CLOSE_FULLSCREEN_TOGGLED:
-      return "Bubbles.Close.FullscreenToggled";
-    case BUBBLE_CLOSE_ACCEPTED: return "Bubbles.Close.Accepted";
-    case BUBBLE_CLOSE_CANCELED: return "Bubbles.Close.Canceled";
+      UMA_HISTOGRAM_ENUMERATION("Bubbles.Close.FullscreenToggled",
+                                bubble_id,
+                                BUBBLE_TYPE_MAX);
+      return;
+    case BUBBLE_CLOSE_ACCEPTED:
+      UMA_HISTOGRAM_ENUMERATION("Bubbles.Close.Accepted",
+                                bubble_id,
+                                BUBBLE_TYPE_MAX);
+      return;
+    case BUBBLE_CLOSE_CANCELED:
+      UMA_HISTOGRAM_ENUMERATION("Bubbles.Close.Canceled",
+                                bubble_id,
+                                BUBBLE_TYPE_MAX);
+      return;
   }
 
   NOTREACHED();
-  return "Bubbles.Close.Unknown";
 }
 
 }  // namespace
@@ -117,8 +155,5 @@ void ChromeBubbleManager::ChromeBubbleMetrics::OnBubbleClosed(
   base::TimeDelta visible_time = bubble->GetVisibleTime();
   UMA_HISTOGRAM_LONG_TIMES("Bubbles.DisplayTime.All", visible_time);
 
-  // Log the reason the bubble was closed.
-  UMA_HISTOGRAM_ENUMERATION(GetBubbleCloseReasonName(reason),
-                            GetBubbleId(bubble),
-                            BUBBLE_TYPE_MAX);
+  LogBubbleCloseReason(bubble, reason);
 }

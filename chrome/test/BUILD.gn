@@ -1638,6 +1638,8 @@ if (!is_android) {
       if (!is_android && !is_ios) {
         sources +=
             [ "../browser/download/download_dir_policy_handler_unittest.cc" ]
+
+        deps += [ "//components/bubble:test_support" ]
       }
     }
     if (enable_web_speech) {

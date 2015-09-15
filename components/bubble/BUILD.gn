@@ -16,6 +16,21 @@ source_set("bubble") {
   ]
 }
 
+source_set("test_support") {
+  testonly = true
+
+  sources = [
+    "bubble_manager_mocks.cc",
+    "bubble_manager_mocks.h",
+  ]
+
+  deps = [
+    ":bubble",
+    "//testing/gmock",
+    "//testing/gtest",
+  ]
+}
+
 source_set("unit_tests") {
   testonly = true
 
@@ -25,6 +40,7 @@ source_set("unit_tests") {
 
   deps = [
     ":bubble",
+    ":test_support",
     "//testing/gmock",
     "//testing/gtest",
   ]

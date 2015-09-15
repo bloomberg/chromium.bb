@@ -5,79 +5,10 @@
 #include "components/bubble/bubble_manager.h"
 
 #include "components/bubble/bubble_controller.h"
-#include "components/bubble/bubble_delegate.h"
-#include "components/bubble/bubble_reference.h"
-#include "components/bubble/bubble_ui.h"
-#include "testing/gmock/include/gmock/gmock.h"
+#include "components/bubble/bubble_manager_mocks.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
-
-class MockBubbleUi : public BubbleUi {
- public:
-  MockBubbleUi() {}
-  ~MockBubbleUi() override { Destroyed(); }
-
-  MOCK_METHOD1(Show, void(BubbleReference));
-  MOCK_METHOD0(Close, void());
-  MOCK_METHOD0(UpdateAnchorPosition, void());
-
-  // To verify destructor call.
-  MOCK_METHOD0(Destroyed, void());
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockBubbleUi);
-};
-
-class MockBubbleDelegate : public BubbleDelegate {
- public:
-  MockBubbleDelegate() {}
-  ~MockBubbleDelegate() override { Destroyed(); }
-
-  // Default bubble shows UI and closes when asked to close.
-  static scoped_ptr<MockBubbleDelegate> Default();
-
-  // Stubborn bubble shows UI and doesn't want to close.
-  static scoped_ptr<MockBubbleDelegate> Stubborn();
-
-  MOCK_METHOD1(ShouldClose, bool(BubbleCloseReason reason));
-
-  // A scoped_ptr can't be returned in MOCK_METHOD.
-  MOCK_METHOD0(BuildBubbleUiMock, BubbleUi*());
-  scoped_ptr<BubbleUi> BuildBubbleUi() override {
-    return make_scoped_ptr(BuildBubbleUiMock());
-  }
-
-  MOCK_METHOD1(UpdateBubbleUi, bool(BubbleUi*));
-
-  MOCK_CONST_METHOD0(GetName, std::string());
-
-  // To verify destructor call.
-  MOCK_METHOD0(Destroyed, void());
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockBubbleDelegate);
-};
-
-// static
-scoped_ptr<MockBubbleDelegate> MockBubbleDelegate::Default() {
-  MockBubbleDelegate* delegate = new MockBubbleDelegate;
-  EXPECT_CALL(*delegate, BuildBubbleUiMock())
-      .WillOnce(testing::Return(new MockBubbleUi));
-  EXPECT_CALL(*delegate, ShouldClose(testing::_))
-      .WillOnce(testing::Return(true));
-  return make_scoped_ptr(delegate);
-}
-
-// static
-scoped_ptr<MockBubbleDelegate> MockBubbleDelegate::Stubborn() {
-  MockBubbleDelegate* delegate = new MockBubbleDelegate;
-  EXPECT_CALL(*delegate, BuildBubbleUiMock())
-      .WillOnce(testing::Return(new MockBubbleUi));
-  EXPECT_CALL(*delegate, ShouldClose(testing::_))
-      .WillRepeatedly(testing::Return(false));
-  return make_scoped_ptr(delegate);
-}
 
 // Helper class used to test chaining another bubble.
 class DelegateChainHelper {
