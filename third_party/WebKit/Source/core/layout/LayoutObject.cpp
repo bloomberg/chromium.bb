@@ -1372,7 +1372,7 @@ PaintInvalidationReason LayoutObject::invalidatePaintIfNeeded(PaintInvalidationS
         // mutation, but incurs no pixel difference (i.e. bounds stay the same) so no rect-based
         // invalidation is issued. See crbug.com/508383 and crbug.com/515977.
         // This is a workaround to force display items to update paint offset.
-        if (paintInvalidationState.ancestorHadPaintInvalidationForLocationChange())
+        if (paintInvalidationState.forcedSubtreeInvalidationWithinContainer())
             invalidateDisplayItemClients(paintInvalidationContainer);
 
         return invalidationReason;
@@ -3177,7 +3177,7 @@ void LayoutObject::clearPaintInvalidationState(const PaintInvalidationState& pai
 {
     // paintInvalidationStateIsDirty should be kept in sync with the
     // booleans that are cleared below.
-    ASSERT(paintInvalidationState.ancestorHadPaintInvalidationForLocationChange() || paintInvalidationStateIsDirty());
+    ASSERT(paintInvalidationState.forcedSubtreeInvalidationWithinContainer() || paintInvalidationStateIsDirty());
     clearShouldDoFullPaintInvalidation();
     m_bitfields.setChildShouldCheckForPaintInvalidation(false);
     m_bitfields.setNeededLayoutBecauseOfChildren(false);

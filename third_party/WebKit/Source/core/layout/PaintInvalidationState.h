@@ -36,8 +36,8 @@ public:
     bool cachedOffsetsEnabled() const { return m_cachedOffsetsEnabled; }
     bool isClipped() const { return m_clipped; }
 
-    bool ancestorHadPaintInvalidationForLocationChange() const { return m_ancestorHadPaintInvalidationForLocationChange; }
-    void setAncestorHadPaintInvalidationForLocationChange() { m_ancestorHadPaintInvalidationForLocationChange = true; }
+    bool forcedSubtreeInvalidationWithinContainer() const { return m_forcedSubtreeInvalidationWithinContainer; }
+    void setForceSubtreeInvalidationWithinContainer() { m_forcedSubtreeInvalidationWithinContainer = true; }
 
     const LayoutBoxModelObject& paintInvalidationContainer() const { return m_paintInvalidationContainer; }
 
@@ -60,7 +60,7 @@ private:
 
     bool m_clipped;
     mutable bool m_cachedOffsetsEnabled;
-    bool m_ancestorHadPaintInvalidationForLocationChange;
+    bool m_forcedSubtreeInvalidationWithinContainer;
 
     LayoutRect m_clipRect;
 

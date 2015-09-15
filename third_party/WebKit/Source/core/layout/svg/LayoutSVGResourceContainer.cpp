@@ -165,7 +165,12 @@ void LayoutSVGResourceContainer::markClientForInvalidation(LayoutObject* client,
         client->setNeedsBoundariesUpdate();
         break;
     case PaintInvalidation:
-        client->setShouldDoFullPaintInvalidation();
+        // Since LayoutSVGInlineTexts don't have SVGResources (they use their
+        // parent's), they will not be notified of changes to paint servers. So
+        // if the client is one that could have a LayoutSVGInlineText use a
+        // paint invalidation reason that will force paint invalidation of the
+        // entire <text>/<tspan>/... subtree.
+        client->setShouldDoFullPaintInvalidation(PaintInvalidationSVGResourceChange);
         break;
     case ParentOnlyInvalidation:
         break;

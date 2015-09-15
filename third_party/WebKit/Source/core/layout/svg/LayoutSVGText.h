@@ -76,6 +76,8 @@ private:
     void removeChild(LayoutObject*) override;
     void willBeDestroyed() override;
 
+    void invalidateTreeIfNeeded(PaintInvalidationState&) override;
+
     RootInlineBox* createRootInlineBox() override;
 
     bool shouldHandleSubtreeMutations() const;

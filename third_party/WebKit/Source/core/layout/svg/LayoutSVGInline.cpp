@@ -150,4 +150,23 @@ void LayoutSVGInline::removeChild(LayoutObject* child)
     textLayoutObject->subtreeChildWasRemoved(affectedAttributes);
 }
 
+void LayoutSVGInline::invalidateTreeIfNeeded(PaintInvalidationState& paintInvalidationState)
+{
+    ASSERT(!needsLayout());
+
+    if (!shouldCheckForPaintInvalidation(paintInvalidationState))
+        return;
+
+    PaintInvalidationReason reason = invalidatePaintIfNeeded(paintInvalidationState, paintInvalidationState.paintInvalidationContainer());
+    clearPaintInvalidationState(paintInvalidationState);
+
+    if (reason == PaintInvalidationDelayedFull)
+        paintInvalidationState.pushDelayedPaintInvalidationTarget(*this);
+
+    PaintInvalidationState childTreeWalkState(paintInvalidationState, *this, paintInvalidationState.paintInvalidationContainer());
+    if (reason == PaintInvalidationSVGResourceChange)
+        childTreeWalkState.setForceSubtreeInvalidationWithinContainer();
+    invalidatePaintOfSubtreesIfNeeded(childTreeWalkState);
+}
+
 }

@@ -54,6 +54,8 @@ const char* paintInvalidationReasonToString(PaintInvalidationReason reason)
         return "layoutObject insertion";
     case PaintInvalidationLayoutObjectRemoval:
         return "layoutObject removal";
+    case PaintInvalidationSVGResourceChange:
+        return "SVG resource change";
     case PaintInvalidationDelayedFull:
         return "delayed full";
     }

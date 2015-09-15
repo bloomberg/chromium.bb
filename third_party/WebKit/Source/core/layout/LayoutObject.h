@@ -1119,7 +1119,7 @@ public:
         // Should check for paint invalidation if some ancestor changed location, because this object
         // may also change paint offset or location in paint invalidation container, even if there is
         // no paint invalidation flag set.
-        return paintInvalidationState.ancestorHadPaintInvalidationForLocationChange() || shouldCheckForPaintInvalidationRegardlessOfPaintInvalidationState();
+        return paintInvalidationState.forcedSubtreeInvalidationWithinContainer() || shouldCheckForPaintInvalidationRegardlessOfPaintInvalidationState();
     }
 
     bool shouldCheckForPaintInvalidationRegardlessOfPaintInvalidationState() const

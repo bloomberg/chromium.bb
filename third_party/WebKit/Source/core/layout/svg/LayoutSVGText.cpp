@@ -25,7 +25,6 @@
  */
 
 #include "config.h"
-
 #include "core/layout/svg/LayoutSVGText.h"
 
 #include "core/editing/PositionWithAffinity.h"
@@ -33,6 +32,7 @@
 #include "core/layout/HitTestResult.h"
 #include "core/layout/LayoutAnalyzer.h"
 #include "core/layout/LayoutState.h"
+#include "core/layout/LayoutView.h"
 #include "core/layout/PointerEventsHitRules.h"
 #include "core/layout/api/LineLayoutItem.h"
 #include "core/layout/svg/LayoutSVGInline.h"
@@ -515,6 +515,26 @@ void LayoutSVGText::removeChild(LayoutObject* child)
     subtreeChildWillBeRemoved(child, affectedAttributes);
     LayoutSVGBlock::removeChild(child);
     subtreeChildWasRemoved(affectedAttributes);
+}
+
+void LayoutSVGText::invalidateTreeIfNeeded(PaintInvalidationState& paintInvalidationState)
+{
+    ASSERT(!needsLayout());
+
+    if (!shouldCheckForPaintInvalidation(paintInvalidationState))
+        return;
+
+    PaintInvalidationReason reason = invalidatePaintIfNeeded(paintInvalidationState, paintInvalidationState.paintInvalidationContainer());
+    clearPaintInvalidationState(paintInvalidationState);
+
+    if (reason == PaintInvalidationDelayedFull)
+        paintInvalidationState.pushDelayedPaintInvalidationTarget(*this);
+
+    ForceHorriblySlowRectMapping slowRectMapping(&paintInvalidationState);
+    PaintInvalidationState childTreeWalkState(paintInvalidationState, *this, paintInvalidationState.paintInvalidationContainer());
+    if (reason == PaintInvalidationSVGResourceChange)
+        childTreeWalkState.setForceSubtreeInvalidationWithinContainer();
+    invalidatePaintOfSubtreesIfNeeded(childTreeWalkState);
 }
 
 }
