@@ -454,8 +454,22 @@ void WindowProxy::setSecurityToken(SecurityOrigin* origin)
         return;
     }
 
-    if (m_world->isPrivateScriptIsolatedWorld())
+    if (m_world->isPrivateScriptIsolatedWorld()) {
         token = "private-script://" + token;
+    } else if (m_world->isIsolatedWorld()) {
+        SecurityOrigin* frameSecurityOrigin = m_frame->securityContext()->securityOrigin();
+        String frameSecurityToken = frameSecurityOrigin->toString();
+        // We need to check the return value of domainWasSetInDOM() on the
+        // frame's SecurityOrigin because, if that's the case, only
+        // SecurityOrigin::m_domain would have been modified.
+        // m_domain is not used by SecurityOrigin::toString(), so we would end
+        // up generating the same token that was already set.
+        if (frameSecurityOrigin->domainWasSetInDOM() || frameSecurityToken.isEmpty() || frameSecurityToken == "null") {
+            context->UseDefaultSecurityToken();
+            return;
+        }
+        token = frameSecurityToken + token;
+    }
 
     CString utf8Token = token.utf8();
     // NOTE: V8 does identity comparison in fast path, must use a symbol
@@ -548,7 +562,6 @@ void WindowProxy::namedItemRemoved(HTMLDocument* document, const AtomicString& n
 
 void WindowProxy::updateSecurityOrigin(SecurityOrigin* origin)
 {
-    ASSERT(m_world->isMainWorld());
     if (!isContextInitialized())
         return;
     setSecurityToken(origin);

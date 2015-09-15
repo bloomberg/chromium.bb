@@ -141,6 +141,10 @@ void ScriptController::clearForClose()
 void ScriptController::updateSecurityOrigin(SecurityOrigin* origin)
 {
     m_windowProxyManager->mainWorldProxy()->updateSecurityOrigin(origin);
+    Vector<std::pair<ScriptState*, SecurityOrigin*>> isolatedContexts;
+    m_windowProxyManager->collectIsolatedContexts(isolatedContexts);
+    for (auto isolatedContext : isolatedContexts)
+        m_windowProxyManager->windowProxy(isolatedContext.first->world())->updateSecurityOrigin(isolatedContext.second);
 }
 
 v8::MaybeLocal<v8::Value> ScriptController::callFunction(v8::Local<v8::Function> function, v8::Local<v8::Value> receiver, int argc, v8::Local<v8::Value> info[])
