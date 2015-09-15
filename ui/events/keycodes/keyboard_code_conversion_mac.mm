@@ -200,6 +200,42 @@ const KeyCodeMap kKeyCodesMap[] = {
   { VKEY_OEM_CLEAR /* 0xFE */, kVK_ANSI_KeypadClear, kClearCharCode }
 };
 
+bool IsKeypadEvent(NSEvent* event) {
+  // Check that this is the type of event that has a keyCode.
+  switch ([event type]) {
+    case NSKeyDown:
+    case NSKeyUp:
+    case NSFlagsChanged:
+      break;
+    default:
+      return false;
+  }
+
+  switch ([event keyCode]) {
+    case kVK_ANSI_KeypadClear:
+    case kVK_ANSI_KeypadEquals:
+    case kVK_ANSI_KeypadMultiply:
+    case kVK_ANSI_KeypadDivide:
+    case kVK_ANSI_KeypadMinus:
+    case kVK_ANSI_KeypadPlus:
+    case kVK_ANSI_KeypadEnter:
+    case kVK_ANSI_KeypadDecimal:
+    case kVK_ANSI_Keypad0:
+    case kVK_ANSI_Keypad1:
+    case kVK_ANSI_Keypad2:
+    case kVK_ANSI_Keypad3:
+    case kVK_ANSI_Keypad4:
+    case kVK_ANSI_Keypad5:
+    case kVK_ANSI_Keypad6:
+    case kVK_ANSI_Keypad7:
+    case kVK_ANSI_Keypad8:
+    case kVK_ANSI_Keypad9:
+      return true;
+  }
+
+  return false;
+}
+
 // A convenient array for getting symbol characters on the number keys.
 const char kShiftCharsForNumberKeys[] = ")!@#$%^&*(";
 
@@ -533,7 +569,8 @@ int MacKeyCodeForWindowsKeyCode(KeyboardCode keycode,
 KeyboardCode KeyboardCodeFromNSEvent(NSEvent* event) {
   KeyboardCode code = VKEY_UNKNOWN;
 
-  if ([event type] == NSKeyDown || [event type] == NSKeyUp) {
+  if (!IsKeypadEvent(event) &&
+      ([event type] == NSKeyDown || [event type] == NSKeyUp)) {
     NSString* characters = [event characters];
     if ([characters length] > 0)
       code = KeyboardCodeFromCharCode([characters characterAtIndex:0]);
