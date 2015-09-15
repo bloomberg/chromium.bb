@@ -40,7 +40,7 @@ struct EnumerationOptions {
 
 struct DeviceChangeNotification {
   array<DeviceInfo> devices_added;
-  array<string> devices_removed;
+  array<DeviceInfo> devices_removed;
 };
 
 interface DeviceManager {

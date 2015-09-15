@@ -126,7 +126,7 @@ void ExpectDeviceChangesAndThen(
   EXPECT_EQ(expected_removed_guids.size(), results->devices_removed.size());
   std::set<std::string> actual_removed_guids;
   for (size_t i = 0; i < results->devices_removed.size(); ++i)
-    actual_removed_guids.insert(results->devices_removed[i]);
+    actual_removed_guids.insert(results->devices_removed[i]->guid);
   EXPECT_EQ(expected_removed_guids, actual_removed_guids);
   continuation.Run();
 }

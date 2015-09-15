@@ -37,6 +37,9 @@ class DeviceManagerDelegate;
 // requested from the devices app located at "mojo:devices", if available.
 class DeviceManagerImpl : public DeviceManager {
  public:
+  using DeviceList = std::vector<scoped_refptr<UsbDevice>>;
+  using DeviceMap = std::map<std::string, scoped_refptr<device::UsbDevice>>;
+
   DeviceManagerImpl(
       mojo::InterfaceRequest<DeviceManager> request,
       PermissionProviderPtr permission_provider,
@@ -64,16 +67,17 @@ class DeviceManagerImpl : public DeviceManager {
       mojo::Array<mojo::String> allowed_guids);
 
   // Callbacks to handle the async responses from the underlying UsbService.
-  void OnGetDevices(const GetDevicesCallback& callback,
-                    mojo::Array<DeviceInfoPtr> devices);
+  void OnGetDevices(EnumerationOptionsPtr options,
+                    const GetDevicesCallback& callback,
+                    const DeviceList& devices);
 
   // Methods called by |helper_| when devices are added or removed.
-  void OnDeviceAdded(DeviceInfoPtr device);
-  void OnDeviceRemoved(std::string device_guid);
+  void OnDeviceAdded(scoped_refptr<device::UsbDevice> device);
+  void OnDeviceRemoved(scoped_refptr<device::UsbDevice> device);
   void MaybeRunDeviceChangesCallback();
   void OnEnumerationPermissionCheckComplete(
-      mojo::Array<DeviceInfoPtr> devices_added,
-      const std::set<std::string>& devices_removed,
+      const DeviceMap& devices_added,
+      const DeviceMap& devices_removed,
       mojo::Array<mojo::String> allowed_guids);
 
   PermissionProviderPtr permission_provider_;
@@ -84,8 +88,8 @@ class DeviceManagerImpl : public DeviceManager {
   // are collected in |devices_added_| and |devices_removed_| until the
   // next call to GetDeviceChanges.
   std::queue<GetDeviceChangesCallback> device_change_callbacks_;
-  mojo::Array<DeviceInfoPtr> devices_added_;
-  std::set<std::string> devices_removed_;
+  DeviceMap devices_added_;
+  DeviceMap devices_removed_;
   // To ensure that GetDeviceChangesCallbacks are called in the correct order
   // only perform a single request to |permission_provider_| at a time.
   bool permission_request_pending_ = false;
