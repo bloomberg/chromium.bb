@@ -92,30 +92,6 @@ public class FaviconHelper {
     }
 
     /**
-     * Fetches the first available favicon for a URL that exceeds the minimum size threshold.  If
-     * no favicons are larger (or equal) to the threshold, the largest favicon of any type is
-     * fetched.
-     *
-     * @param profile              Profile used for the FaviconService construction.
-     * @param pageUrl              The target Page URL to get the favicon.
-     * @param iconTypes            The list of icon types (each entry can be a bitmasked collection
-     *                             of types) that should be fetched in order.  As soon as one of
-     *                             the buckets exceeds the minimum size threshold, that favicon
-     *                             will be returned.
-     * @param minSizeThresholdPx   The size threshold (inclusive) used to early exit out fetching
-     *                             subsequent favicon types.
-     * @param faviconImageCallback The callback to be notified with the best matching favicon.
-     */
-    public void getLargestRawFaviconForUrl(
-            Profile profile, String pageUrl, int[] iconTypes, int minSizeThresholdPx,
-            FaviconImageCallback faviconImageCallback) {
-        assert mNativeFaviconHelper != 0;
-        nativeGetLargestRawFaviconForUrl(
-                mNativeFaviconHelper, profile, pageUrl, iconTypes, minSizeThresholdPx - 1,
-                faviconImageCallback);
-    }
-
-    /**
      * Return the dominant color of a given bitmap in {@link Color} format.
      * @param image The bitmap image to find the dominant color for.
      * @return The dominant color in {@link Color} format.
@@ -149,9 +125,6 @@ public class FaviconHelper {
     private static native void nativeDestroy(long nativeFaviconHelper);
     private static native boolean nativeGetLocalFaviconImageForURL(long nativeFaviconHelper,
             Profile profile, String pageUrl, int iconTypes, int desiredSizeInDip,
-            FaviconImageCallback faviconImageCallback);
-    private static native void nativeGetLargestRawFaviconForUrl(long nativeFaviconHelper,
-            Profile profile, String pageUrl, int[] iconTypes, int minSizeThresholdPx,
             FaviconImageCallback faviconImageCallback);
     private static native Bitmap nativeGetSyncedFaviconImageForURL(long nativeFaviconHelper,
             Profile profile, String pageUrl);

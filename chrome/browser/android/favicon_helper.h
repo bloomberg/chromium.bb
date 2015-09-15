@@ -22,13 +22,6 @@ class FaviconHelper {
                                       jint j_icon_types,
                                       jint j_desired_size_in_pixel,
                                       jobject j_favicon_image_callback);
-  void GetLargestRawFaviconForUrl(JNIEnv* env,
-                                  jobject obj,
-                                  jobject j_profile,
-                                  jstring j_page_url,
-                                  jintArray j_icon_types,
-                                  jint j_min_size_threshold_px,
-                                  jobject j_favicon_image_callback);
   base::android::ScopedJavaLocalRef<jobject> GetSyncedFaviconImageForURL(
       JNIEnv* env,
       jobject obj,

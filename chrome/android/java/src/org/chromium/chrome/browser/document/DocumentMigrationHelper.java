@@ -69,9 +69,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 @TargetApi(Build.VERSION_CODES.LOLLIPOP)
 public class DocumentMigrationHelper {
     private static final String TAG = "cr.DocumentMigration";
-    private static final int[] ICON_TYPES = {FaviconHelper.FAVICON,
-        FaviconHelper.TOUCH_ICON | FaviconHelper.TOUCH_PRECOMPOSED_ICON};
-    private static final int DESIRED_ICON_SIZE_DP = 32;
 
     public static final int FINALIZE_MODE_NO_ACTION = 0;
     public static final int FINALIZE_MODE_FINISH_ACTIVITY = 1;
@@ -190,7 +187,7 @@ public class DocumentMigrationHelper {
         private final String mTitle;
         private final int mFinalizeMode;
 
-        private Bitmap mFavicon;
+        private Bitmap mIcon;
 
         public MigrationImageCallback(final AtomicInteger completedCount, final Activity activity,
                 final TabContentManager tabContentManager, final MigrationTabModel tabModel,
@@ -207,7 +204,7 @@ public class DocumentMigrationHelper {
 
         @Override
         public void onFaviconAvailable(final Bitmap favicon, String iconUrl) {
-            mFavicon = favicon;
+            mIcon = new DocumentActivityIcon(mActivity).getBitmap(mUrl, favicon);
             mTabContentManager.getThumbnailForId(mTabId, this);
         }
 
@@ -218,7 +215,7 @@ public class DocumentMigrationHelper {
             if (!NativePageFactory.isNativePageUrl(mUrl, false)
                     && !mUrl.startsWith(UrlConstants.CHROME_SCHEME)) {
                 addAppTask(mActivity, mTabId, mTabModel.getTabStateForDocument(mTabId), mUrl,
-                        mTitle, mFavicon, bitmap);
+                        mTitle, mIcon, bitmap);
             }
 
             if (mCompletedCount.incrementAndGet() == mTabModel.getCount()) {
@@ -468,9 +465,9 @@ public class DocumentMigrationHelper {
 
             MigrationImageCallback imageCallback = new MigrationImageCallback(completedCount,
                     activity, contentManager, tabModel, tabId, url, title, finalizeMode);
-            faviconHelper.getLargestRawFaviconForUrl(
+            faviconHelper.getLocalFaviconImageForURL(
                     Profile.getLastUsedProfile().getOriginalProfile(),
-                    url, ICON_TYPES, DESIRED_ICON_SIZE_DP, imageCallback);
+                    url, 0, imageCallback);
             sMigrationCallbacks.add(imageCallback);
         }
     }
