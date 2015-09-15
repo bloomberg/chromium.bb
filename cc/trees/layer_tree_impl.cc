@@ -124,8 +124,12 @@ void LayerTreeImpl::DidUpdateScrollOffset(int layer_id) {
   if (layer_id != outer_layer_id && layer_id != inner_layer_id)
     return;
 
-  if (root_layer_scroll_offset_delegate_)
-    UpdateRootScrollOffsetDelegate();
+  if (root_layer_scroll_offset_delegate_) {
+    root_layer_scroll_offset_delegate_->UpdateRootLayerState(
+        TotalScrollOffset(), TotalMaxScrollOffset(), ScrollableSize(),
+        current_page_scale_factor(), min_page_scale_factor(),
+        max_page_scale_factor());
+  }
 }
 
 void LayerTreeImpl::SetRootLayer(scoped_ptr<LayerImpl> layer) {
@@ -439,8 +443,12 @@ void LayerTreeImpl::DidUpdatePageScale() {
 
   set_needs_update_draw_properties();
 
-  if (root_layer_scroll_offset_delegate_)
-    UpdateRootScrollOffsetDelegate();
+  if (root_layer_scroll_offset_delegate_) {
+    root_layer_scroll_offset_delegate_->UpdateRootLayerState(
+        TotalScrollOffset(), TotalMaxScrollOffset(), ScrollableSize(),
+        current_page_scale_factor(), min_page_scale_factor(),
+        max_page_scale_factor());
+  }
 
   if (PageScaleLayer() && PageScaleLayer()->transform_tree_index() != -1) {
     TransformNode* node = property_trees_.transform_tree.Node(
@@ -1031,19 +1039,14 @@ void LayerTreeImpl::SetRootLayerScrollOffsetDelegate(
   root_layer_scroll_offset_delegate_ = root_layer_scroll_offset_delegate;
 
   if (root_layer_scroll_offset_delegate_) {
-    UpdateRootScrollOffsetDelegate();
+    gfx::ScrollOffset total_scroll_offset = TotalScrollOffset();
 
-    DistributeRootScrollOffset(
-        root_layer_scroll_offset_delegate_->GetTotalScrollOffset());
+    root_layer_scroll_offset_delegate_->UpdateRootLayerState(
+        total_scroll_offset, TotalMaxScrollOffset(), ScrollableSize(),
+        current_page_scale_factor(), min_page_scale_factor(),
+        max_page_scale_factor());
+    DistributeRootScrollOffset(total_scroll_offset);
   }
-}
-
-void LayerTreeImpl::UpdateRootScrollOffsetDelegate() {
-  DCHECK(root_layer_scroll_offset_delegate_);
-  root_layer_scroll_offset_delegate_->UpdateRootLayerState(
-      TotalScrollOffset(), TotalMaxScrollOffset(), ScrollableSize(),
-      current_page_scale_factor(), min_page_scale_factor(),
-      max_page_scale_factor());
 }
 
 void LayerTreeImpl::DistributeRootScrollOffset(
@@ -1079,7 +1082,10 @@ void LayerTreeImpl::DistributeRootScrollOffset(
   InnerViewportScrollLayer()->SetCurrentScrollOffsetFromDelegate(
       inner_viewport_offset);
 
-  UpdateRootScrollOffsetDelegate();
+  root_layer_scroll_offset_delegate_->UpdateRootLayerState(
+      TotalScrollOffset(), TotalMaxScrollOffset(), ScrollableSize(),
+      current_page_scale_factor(), min_page_scale_factor(),
+      max_page_scale_factor());
 }
 
 void LayerTreeImpl::QueueSwapPromise(scoped_ptr<SwapPromise> swap_promise) {

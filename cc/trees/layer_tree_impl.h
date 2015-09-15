@@ -272,7 +272,6 @@ class CC_EXPORT LayerTreeImpl {
 
   void SetRootLayerScrollOffsetDelegate(
       LayerScrollOffsetDelegate* root_layer_scroll_offset_delegate);
-  void UpdateRootScrollOffsetDelegate();
   // Distribute the root scroll between outer and inner viewport scroll layer.
   // The outer viewport scroll layer scrolls first.
   void DistributeRootScrollOffset(const gfx::ScrollOffset& root_offset);

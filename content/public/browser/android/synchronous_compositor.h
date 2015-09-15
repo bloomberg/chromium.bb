@@ -19,6 +19,7 @@ class CompositorFrameAck;
 }
 
 namespace gfx {
+class ScrollOffset;
 class Transform;
 };
 
@@ -70,9 +71,9 @@ class CONTENT_EXPORT SynchronousCompositor {
   virtual void SetMemoryPolicy(size_t bytes_limit) = 0;
 
   // Should be called by the embedder after the embedder had modified the
-  // scroll offset of the root layer (as returned by
-  // SynchronousCompositorClient::GetTotalRootLayerScrollOffset).
-  virtual void DidChangeRootLayerScrollOffset() = 0;
+  // scroll offset of the root layer.
+  virtual void DidChangeRootLayerScrollOffset(
+      const gfx::ScrollOffset& root_offset) = 0;
 
   // Called by the embedder to notify that the compositor is active. The
   // compositor won't ask for vsyncs when it's inactive. NOTE: The compositor

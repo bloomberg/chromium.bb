@@ -101,7 +101,6 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient {
       content::SynchronousCompositor* compositor) override;
   void PostInvalidate() override;
   void DidUpdateContent() override;
-  gfx::Vector2dF GetTotalRootLayerScrollOffset() override;
   void UpdateRootLayerState(const gfx::Vector2dF& total_scroll_offset_dip,
                             const gfx::Vector2dF& max_scroll_offset_dip,
                             const gfx::SizeF& scrollable_size_dip,
@@ -181,14 +180,17 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient {
   gfx::Size size_;
 
   // Current scroll offset in CSS pixels.
+  // TODO(miletus): Make scroll_offset_dip_ a gfx::ScrollOffset.
   gfx::Vector2dF scroll_offset_dip_;
 
   // Max scroll offset in CSS pixels.
+  // TODO(miletus): Make max_scroll_offset_dip_ a gfx::ScrollOffset.
   gfx::Vector2dF max_scroll_offset_dip_;
 
   // Used to prevent rounding errors from accumulating enough to generate
   // visible skew (especially noticeable when scrolling up and down in the same
   // spot over a period of time).
+  // TODO(miletus): Make overscroll_rounding_error_ a gfx::ScrollOffset.
   gfx::Vector2dF overscroll_rounding_error_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserViewRenderer);

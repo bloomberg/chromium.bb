@@ -129,10 +129,9 @@ class CC_EXPORT InputHandler {
   virtual void SetRootLayerScrollOffsetDelegate(
       LayerScrollOffsetDelegate* root_layer_scroll_offset_delegate) = 0;
 
-  // Called when the value returned by
-  // LayerScrollOffsetDelegate.GetTotalScrollOffset has changed for reasons
+  // Called when the delegate's root scroll offset has changed for reasons
   // other than a SetTotalScrollOffset call. This passes along the new value of
-  // GetTotalScrollOffset.
+  // the offset.
   // NOTE: This should only called after a valid delegate was set via a call to
   // SetRootLayerScrollOffsetDelegate.
   virtual void OnRootLayerDelegatedScrollOffsetChanged(

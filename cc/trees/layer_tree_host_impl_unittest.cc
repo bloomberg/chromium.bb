@@ -4503,10 +4503,6 @@ class TestScrollOffsetDelegate : public LayerScrollOffsetDelegate {
 
   ~TestScrollOffsetDelegate() override {}
 
-  gfx::ScrollOffset GetTotalScrollOffset() override {
-    return getter_return_value_;
-  }
-
   void UpdateRootLayerState(const gfx::ScrollOffset& total_scroll_offset,
                             const gfx::ScrollOffset& max_scroll_offset,
                             const gfx::SizeF& scrollable_size,
@@ -4521,16 +4517,10 @@ class TestScrollOffsetDelegate : public LayerScrollOffsetDelegate {
     page_scale_factor_ = page_scale_factor;
     min_page_scale_factor_ = min_page_scale_factor;
     max_page_scale_factor_ = max_page_scale_factor;
-
-    set_getter_return_value(last_set_scroll_offset_);
   }
 
   gfx::ScrollOffset last_set_scroll_offset() {
     return last_set_scroll_offset_;
-  }
-
-  void set_getter_return_value(const gfx::ScrollOffset& value) {
-    getter_return_value_ = value;
   }
 
   gfx::ScrollOffset max_scroll_offset() const {
@@ -4555,7 +4545,6 @@ class TestScrollOffsetDelegate : public LayerScrollOffsetDelegate {
 
  private:
   gfx::ScrollOffset last_set_scroll_offset_;
-  gfx::ScrollOffset getter_return_value_;
   gfx::ScrollOffset max_scroll_offset_;
   gfx::SizeF scrollable_size_;
   float page_scale_factor_;
@@ -4615,7 +4604,6 @@ TEST_F(LayerTreeHostImplTest, RootLayerScrollOffsetDelegation) {
   gfx::Vector2dF scroll_delta(0.f, 10.f);
   gfx::ScrollOffset current_offset(7.f, 8.f);
 
-  scroll_delegate.set_getter_return_value(current_offset);
   EXPECT_EQ(InputHandler::SCROLL_STARTED,
             host_impl_->ScrollBegin(gfx::Point(), InputHandler::GESTURE));
   host_impl_->OnRootLayerDelegatedScrollOffsetChanged(current_offset);
@@ -4625,13 +4613,11 @@ TEST_F(LayerTreeHostImplTest, RootLayerScrollOffsetDelegation) {
             scroll_delegate.last_set_scroll_offset());
 
   current_offset = gfx::ScrollOffset(42.f, 41.f);
-  scroll_delegate.set_getter_return_value(current_offset);
   host_impl_->OnRootLayerDelegatedScrollOffsetChanged(current_offset);
   host_impl_->ScrollBy(gfx::Point(), scroll_delta);
   EXPECT_EQ(current_offset + gfx::ScrollOffset(scroll_delta),
             scroll_delegate.last_set_scroll_offset());
   host_impl_->ScrollEnd();
-  scroll_delegate.set_getter_return_value(gfx::ScrollOffset());
   host_impl_->OnRootLayerDelegatedScrollOffsetChanged(gfx::ScrollOffset());
 
   // Forces a full tree synchronization and ensures that the scroll delegate
@@ -4646,7 +4632,6 @@ TEST_F(LayerTreeHostImplTest, RootLayerScrollOffsetDelegation) {
   // Un-setting the delegate should propagate the delegate's current offset to
   // the root scrollable layer.
   current_offset = gfx::ScrollOffset(13.f, 12.f);
-  scroll_delegate.set_getter_return_value(current_offset);
   host_impl_->OnRootLayerDelegatedScrollOffsetChanged(current_offset);
   host_impl_->SetRootLayerScrollOffsetDelegate(NULL);
 
@@ -4680,7 +4665,6 @@ TEST_F(LayerTreeHostImplTest,
 
   // Set external scroll delta on delegate and notify LayerTreeHost.
   gfx::ScrollOffset scroll_offset(10.f, 10.f);
-  scroll_delegate.set_getter_return_value(scroll_offset);
   host_impl_->OnRootLayerDelegatedScrollOffsetChanged(scroll_offset);
 
   // Check scroll delta reflected in layer.
@@ -7656,7 +7640,6 @@ TEST_F(LayerTreeHostImplVirtualViewportTest, ScrollBothInnerAndOuterLayer) {
 
     gfx::ScrollOffset current_offset(70.f, 100.f);
 
-    scroll_delegate.set_getter_return_value(current_offset);
     host_impl_->OnRootLayerDelegatedScrollOffsetChanged(current_offset);
     EXPECT_EQ(gfx::ScrollOffset(25.f, 40.f), inner_scroll->MaxScrollOffset());
     EXPECT_EQ(gfx::ScrollOffset(50.f, 80.f), outer_scroll->MaxScrollOffset());

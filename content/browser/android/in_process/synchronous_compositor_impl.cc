@@ -273,11 +273,12 @@ void SynchronousCompositorImpl::PostInvalidate() {
     compositor_client_->PostInvalidate();
 }
 
-void SynchronousCompositorImpl::DidChangeRootLayerScrollOffset() {
+void SynchronousCompositorImpl::DidChangeRootLayerScrollOffset(
+    const gfx::ScrollOffset& root_offset) {
+  DCHECK(CalledOnValidThread());
   if (!input_handler_)
     return;
-  gfx::ScrollOffset offset = GetTotalScrollOffset();
-  input_handler_->OnRootLayerDelegatedScrollOffsetChanged(offset);
+  input_handler_->OnRootLayerDelegatedScrollOffsetChanged(root_offset);
 }
 
 void SynchronousCompositorImpl::SetIsActive(bool is_active) {
@@ -369,17 +370,6 @@ void SynchronousCompositorImpl::SetNeedsSynchronousAnimateInput() {
     return;
   need_animate_input_ = true;
   compositor_client_->PostInvalidate();
-}
-
-gfx::ScrollOffset SynchronousCompositorImpl::GetTotalScrollOffset() {
-  DCHECK(CalledOnValidThread());
-  DCHECK(compositor_client_);
-  if (!registered_with_client_)
-    return gfx::ScrollOffset();
-  // TODO(miletus): Make GetTotalRootLayerScrollOffset return
-  // ScrollOffset. crbug.com/414283.
-  return gfx::ScrollOffset(
-      compositor_client_->GetTotalRootLayerScrollOffset());
 }
 
 void SynchronousCompositorImpl::UpdateRootLayerState(

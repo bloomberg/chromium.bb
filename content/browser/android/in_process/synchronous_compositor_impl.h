@@ -79,7 +79,8 @@ class SynchronousCompositorImpl
   bool DemandDrawSw(SkCanvas* canvas) override;
   void ReturnResources(const cc::CompositorFrameAck& frame_ack) override;
   void SetMemoryPolicy(size_t bytes_limit) override;
-  void DidChangeRootLayerScrollOffset() override;
+  void DidChangeRootLayerScrollOffset(
+      const gfx::ScrollOffset& root_offset) override;
   void SetIsActive(bool is_active) override;
   void OnComputeScroll(base::TimeTicks animation_time) override;
 
@@ -87,7 +88,6 @@ class SynchronousCompositorImpl
   void SetNeedsSynchronousAnimateInput() override;
 
   // LayerScrollOffsetDelegate
-  gfx::ScrollOffset GetTotalScrollOffset() override;
   void UpdateRootLayerState(const gfx::ScrollOffset& total_scroll_offset,
                             const gfx::ScrollOffset& max_scroll_offset,
                             const gfx::SizeF& scrollable_size,

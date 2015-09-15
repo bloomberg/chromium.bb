@@ -21,6 +21,7 @@
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkPicture.h"
 #include "third_party/skia/include/core/SkPictureRecorder.h"
+#include "ui/gfx/geometry/scroll_offset.h"
 #include "ui/gfx/geometry/vector2d_conversions.h"
 
 namespace android_webview {
@@ -324,12 +325,11 @@ skia::RefPtr<SkPicture> BrowserViewRenderer::CapturePicture(int width,
     {
       // Reset scroll back to the origin, will go back to the old
       // value when scroll_reset is out of scope.
-      base::AutoReset<gfx::Vector2dF> scroll_reset(&scroll_offset_dip_,
-                                                   gfx::Vector2dF());
-      compositor_->DidChangeRootLayerScrollOffset();
+      compositor_->DidChangeRootLayerScrollOffset(gfx::ScrollOffset());
       CompositeSW(rec_canvas);
     }
-    compositor_->DidChangeRootLayerScrollOffset();
+    compositor_->DidChangeRootLayerScrollOffset(
+        gfx::ScrollOffset(scroll_offset_dip_));
   }
   return skia::AdoptRef(recorder.endRecording());
 }
@@ -513,8 +513,10 @@ void BrowserViewRenderer::ScrollTo(gfx::Vector2d scroll_offset) {
                "y",
                scroll_offset_dip.y());
 
-  if (compositor_)
-    compositor_->DidChangeRootLayerScrollOffset();
+  if (compositor_) {
+    compositor_->DidChangeRootLayerScrollOffset(
+        gfx::ScrollOffset(scroll_offset_dip_));
+  }
 }
 
 void BrowserViewRenderer::DidUpdateContent() {
@@ -555,10 +557,6 @@ void BrowserViewRenderer::SetTotalRootLayerScrollOffset(
   DCHECK_LE(scroll_offset.y(), max_offset.y());
 
   client_->ScrollContainerViewTo(scroll_offset);
-}
-
-gfx::Vector2dF BrowserViewRenderer::GetTotalRootLayerScrollOffset() {
-  return scroll_offset_dip_;
 }
 
 void BrowserViewRenderer::UpdateRootLayerState(

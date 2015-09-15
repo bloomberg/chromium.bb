@@ -28,7 +28,8 @@ class CONTENT_EXPORT TestSynchronousCompositor : public SynchronousCompositor {
   void ReturnResources(const cc::CompositorFrameAck& frame_ack) override {}
   bool DemandDrawSw(SkCanvas* canvas) override;
   void SetMemoryPolicy(size_t bytes_limit) override {}
-  void DidChangeRootLayerScrollOffset() override {}
+  void DidChangeRootLayerScrollOffset(
+      const gfx::ScrollOffset& root_offset) override {}
   void SetIsActive(bool is_active) override {}
   void OnComputeScroll(base::TimeTicks animate_time) override {}
 

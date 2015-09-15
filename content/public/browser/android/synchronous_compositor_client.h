@@ -28,7 +28,6 @@ class SynchronousCompositorClient {
   virtual void DidDestroyCompositor(SynchronousCompositor* compositor) = 0;
 
   // See LayerScrollOffsetDelegate for details.
-  virtual gfx::Vector2dF GetTotalRootLayerScrollOffset() = 0;
   virtual void UpdateRootLayerState(const gfx::Vector2dF& total_scroll_offset,
                                     const gfx::Vector2dF& max_scroll_offset,
                                     const gfx::SizeF& scrollable_size,
