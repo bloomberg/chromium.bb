@@ -320,7 +320,7 @@ void SourceBuffer::abort(ExceptionState& exceptionState)
     abortIfUpdating();
 
     // 4. Run the reset parser state algorithm.
-    m_webSourceBuffer->abort();
+    m_webSourceBuffer->resetParserState();
 
     // 5. Set appendWindowStart to 0.
     setAppendWindowStart(0, exceptionState);
@@ -773,7 +773,7 @@ void SourceBuffer::appendError(bool decodeError)
     // https://dvcs.w3.org/hg/html-media/raw-file/default/media-source/media-source.html#sourcebuffer-append-error
 
     // 1. Run the reset parser state algorithm.
-    m_webSourceBuffer->abort();
+    m_webSourceBuffer->resetParserState();
 
     // 2. Set the updating attribute to false.
     m_updating = false;

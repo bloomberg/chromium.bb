@@ -65,7 +65,7 @@ public:
     // The algorithm may update |*timestampOffset| if |timestampOffset| is not null.
     virtual void append(const unsigned char* data, unsigned length, double* timestampOffset) = 0;
 
-    virtual void abort() = 0;
+    virtual void resetParserState() = 0;
     virtual void remove(double start, double end) = 0;
     virtual bool setTimestampOffset(double) = 0;
 
