@@ -477,10 +477,9 @@ bool ImageResource::currentFrameKnownToBeOpaque(const LayoutObject* layoutObject
     blink::Image* image = imageForLayoutObject(layoutObject);
     if (image->isBitmapImage()) {
         TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "PaintImage", "data", InspectorPaintImageEvent::data(layoutObject, *this));
-        SkBitmap dummy;
-        if (!image->deprecatedBitmapForCurrentFrame(&dummy)) { // force decode
-            // We don't care about failures here, since we don't use "dummy"
-        }
+        // BitmapImage::currentFrameKnownToBeOpaque() conservatively returns true for uncached
+        // frames. To get an accurate answer, we pre-cache the current frame metadata.
+        image->imageForCurrentFrame();
     }
     return image->currentFrameKnownToBeOpaque();
 }
