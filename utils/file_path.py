@@ -705,7 +705,11 @@ def try_remove(filepath):
 
 
 def link_file(outfile, infile, action):
-  """Links a file. The type of link depends on |action|."""
+  """Links a file. The type of link depends on |action|.
+
+  Returns:
+    True if the action was caried on, False if fallback was used.
+  """
   assert isinstance(outfile, unicode), outfile
   assert isinstance(infile, unicode), infile
   if action not in (HARDLINK, HARDLINK_WITH_FALLBACK, SYMLINK, COPY):
@@ -734,6 +738,9 @@ def link_file(outfile, infile, action):
           'Failed to hardlink, failing back to copy %s to %s' % (
             infile, outfile))
       readable_copy(outfile, infile)
+      # Signal caller that fallback copy was used.
+      return False
+  return True
 
 
 ### Write directory functions.

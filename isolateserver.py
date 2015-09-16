@@ -1457,8 +1457,11 @@ class DiskCache(LocalCache):
     file node will affect them all.
     """
     path = self._path(digest)
-    # TODO(maruel): file_path.HARDLINK_WITH_FALLBACK ?
-    file_path.hardlink(path, dest)
+    if not file_path.link_file(dest, path, file_path.HARDLINK_WITH_FALLBACK):
+      # Report to the server that it failed with more details. We'll want to
+      # squash them all.
+      on_error.report('Failed to hardlink\n%s -> %s' % (path, dest))
+
     if file_mode is not None:
       # Ignores all other bits.
       os.chmod(dest, file_mode & 0500)
