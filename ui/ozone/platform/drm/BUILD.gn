@@ -120,7 +120,7 @@ source_set("gbm") {
 
   public_configs = [ "//third_party/khronos:khronos_headers" ]
 
-  defines = []
+  defines = [ "OZONE_IMPLEMENTATION" ]
 
   if (use_drm_atomic) {
     defines += [ "USE_DRM_ATOMIC" ]
