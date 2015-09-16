@@ -29,12 +29,12 @@ class BrowsingDataCounter {
   // The profile associated with this counter.
   Profile* GetProfile() const;
 
- protected:
-  // Called when some conditions have changed and the counting should be
-  // restarted, e.g. when the deletion preference changed state or when
-  // we were notified of data changes.
-  void RestartCounting();
+  // Restarts the counter. Will be called automatically if the counting needs
+  // to be restarted, e.g. when the deletion preference changes state or when
+  // we are notified of data changes.
+  void Restart();
 
+ protected:
   // Should be called from |Count| by any overriding class to indicate that
   // counting is finished and report the |result|.
   void ReportResult(uint32 result);

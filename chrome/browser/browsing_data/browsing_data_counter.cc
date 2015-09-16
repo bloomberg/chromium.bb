@@ -22,17 +22,16 @@ void BrowsingDataCounter::Init(
   pref_.Init(
       GetPrefName(),
       profile_->GetPrefs(),
-      base::Bind(&BrowsingDataCounter::RestartCounting,
+      base::Bind(&BrowsingDataCounter::Restart,
                  base::Unretained(this)));
   period_.Init(
       prefs::kDeleteTimePeriod,
       profile_->GetPrefs(),
-      base::Bind(&BrowsingDataCounter::RestartCounting,
+      base::Bind(&BrowsingDataCounter::Restart,
                  base::Unretained(this)));
 
   initialized_ = true;
   OnInitialized();
-  RestartCounting();
 }
 
 Profile* BrowsingDataCounter::GetProfile() const {
@@ -47,7 +46,7 @@ base::Time BrowsingDataCounter::GetPeriodStart() {
       static_cast<BrowsingDataRemover::TimePeriod>(*period_));
 }
 
-void BrowsingDataCounter::RestartCounting() {
+void BrowsingDataCounter::Restart() {
   DCHECK(initialized_);
 
   // If this data type was unchecked for deletion, we do not need to count it.

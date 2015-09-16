@@ -130,6 +130,7 @@ IN_PROC_BROWSER_TEST_F(PasswordsCounterTest, SameDomain) {
   counter.Init(browser()->profile(),
                base::Bind(&PasswordsCounterTest::Callback,
                           base::Unretained(this)));
+  counter.Restart();
 
   WaitForCounting();
   EXPECT_EQ(5u, GetResult());
@@ -145,6 +146,7 @@ IN_PROC_BROWSER_TEST_F(PasswordsCounterTest, Blacklisted) {
   counter.Init(browser()->profile(),
                base::Bind(&PasswordsCounterTest::Callback,
                           base::Unretained(this)));
+  counter.Restart();
 
   WaitForCounting();
   EXPECT_EQ(1u, GetResult());
@@ -177,6 +179,7 @@ IN_PROC_BROWSER_TEST_F(PasswordsCounterTest, PrefIsFalse) {
   counter.Init(browser()->profile(),
                base::Bind(&PasswordsCounterTest::Callback,
                           base::Unretained(this)));
+  counter.Restart();
 
   EXPECT_FALSE(counter.cancelable_task_tracker()->HasTrackedTasks());
 }
@@ -190,6 +193,7 @@ IN_PROC_BROWSER_TEST_F(PasswordsCounterTest, StoreChanged) {
   counter.Init(browser()->profile(),
                base::Bind(&PasswordsCounterTest::Callback,
                           base::Unretained(this)));
+  counter.Restart();
 
   WaitForCounting();
   EXPECT_EQ(1u, GetResult());

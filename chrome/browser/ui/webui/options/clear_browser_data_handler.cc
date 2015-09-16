@@ -81,6 +81,10 @@ void ClearBrowserDataHandler::InitializePage() {
   web_ui()->CallJavascriptFunction("ClearBrowserDataOverlay.setClearing",
                                    base::FundamentalValue(removal_in_progress));
 
+  for (BrowsingDataCounter* counter : counters_) {
+    DCHECK(AreCountersEnabled());
+    counter->Restart();
+  }
   web_ui()->CallJavascriptFunction(
       "ClearBrowserDataOverlay.markInitializationComplete");
 }

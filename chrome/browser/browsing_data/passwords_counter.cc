@@ -54,5 +54,5 @@ void PasswordsCounter::OnGetPasswordStoreResults(
 
 void PasswordsCounter::OnLoginsChanged(
     const password_manager::PasswordStoreChangeList& changes) {
-  RestartCounting();
+  Restart();
 }
