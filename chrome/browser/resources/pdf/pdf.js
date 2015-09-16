@@ -553,7 +553,6 @@ PDFViewer.prototype = {
         if (this.isMaterial_) {
           this.materialToolbar_.docLength =
               this.documentDimensions_.pageDimensions.length;
-          this.toolbarManager_.enableToolbars();
         } else {
           this.pageIndicator_.initialFadeIn();
           this.toolbar_.initialFadeIn();

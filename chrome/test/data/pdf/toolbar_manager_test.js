@@ -77,7 +77,6 @@ var tests = [
 
     var toolbarManager =
         new ToolbarManager(mockWindow, toolbar, mockZoomToolbar);
-    toolbarManager.enableToolbars();
 
     chrome.test.assertEq(680, bookmarksDropdown.lowerBound);
 

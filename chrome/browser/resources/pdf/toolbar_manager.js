@@ -62,19 +62,10 @@ function ToolbarManager(window, toolbar, zoomToolbar) {
   this.sideToolbarAllowedOnlyTimer_ = null;
 
   this.window_.addEventListener('resize', this.resizeDropdowns_.bind(this));
+  this.resizeDropdowns_();
 }
 
 ToolbarManager.prototype = {
-
-  /**
-   * Allow the toolbars to be shown. Should be called after the plugin has
-   * loaded and we are ready to show a document.
-   */
-  enableToolbars: function() {
-    this.toolbar_.hidden = false;
-    this.zoomToolbar_.hidden = false;
-    this.resizeDropdowns_();
-  },
 
   showToolbarsForMouseMove: function(e) {
     this.isMouseNearTopToolbar_ = isMouseNearTopToolbar(e);

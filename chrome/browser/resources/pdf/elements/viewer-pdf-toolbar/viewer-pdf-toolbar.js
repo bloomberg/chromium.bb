@@ -73,10 +73,6 @@
       }
     },
 
-    hostAttributes: {
-      hidden: true  // Toolbars are explicitly shown once the plugin is ready.
-    },
-
     listeners: {
       'neon-animation-finish': '_onAnimationFinished'
     },
