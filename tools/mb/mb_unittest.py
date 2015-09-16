@@ -121,9 +121,11 @@ TEST_CONFIG = """\
     },
     'rel': {
       'gn_args': 'is_debug=false',
+      'gyp_config': 'Release',
     },
     'debug': {
       'gn_args': 'is_debug=true',
+      'gyp_config': 'Debug',
     },
   },
   'private_configs': ['private'],
@@ -302,7 +304,7 @@ class UnitTest(unittest.TestCase):
   def test_gyp_lookup_goma_dir_expansion(self):
     self.check(['lookup', '-c', 'gyp_rel_bot', '-g', '/foo'], ret=0,
                out=("python build/gyp_chromium -G 'output_dir=<path>' "
-                    "-D goma=1 -D gomadir=/foo\n"))
+                    "-G config=Release -D goma=1 -D gomadir=/foo\n"))
 
   def test_help(self):
     orig_stdout = sys.stdout
