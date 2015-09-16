@@ -34,7 +34,7 @@
 namespace blink {
 
 template<typename T, typename Observer>
-class LifecycleNotifier {
+class LifecycleNotifier : public virtual WillBeGarbageCollectedMixin {
 public:
     virtual ~LifecycleNotifier();
 
@@ -74,10 +74,6 @@ protected:
 protected:
     using ObserverSet = WillBeHeapHashSet<RawPtrWillBeWeakMember<Observer>>;
 
-    // FIXME: Oilpan: make LifecycleNotifier<> a GC mixin, somehow. ExecutionContext
-    // is the problematic case, as it would then be a class with two GC mixin
-    // bases, but cannot itself derive from a GC base class also.
-    GC_PLUGIN_IGNORE("467502")
     ObserverSet m_observers;
 
 #if ENABLE(ASSERT)

@@ -36,6 +36,7 @@ namespace blink {
 class TestingObserver;
 
 class DummyContext final : public NoBaseWillBeGarbageCollectedFinalized<DummyContext>, public LifecycleNotifier<DummyContext, TestingObserver> {
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(DummyContext);
 public:
     static PassOwnPtrWillBeRawPtr<DummyContext> create()
     {

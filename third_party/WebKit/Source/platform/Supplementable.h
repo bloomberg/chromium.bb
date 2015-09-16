@@ -154,8 +154,10 @@ public:
 template<typename T, bool isGarbageCollected>
 class SupplementableTracing;
 
+// SupplementableTracing<T,true> inherits GarbageCollectedMixin virtually
+// to allow ExecutionContext to derive from two GC mixin classes.
 template<typename T>
-class SupplementableTracing<T, true> : public GarbageCollectedMixin {
+class SupplementableTracing<T, true> : public virtual GarbageCollectedMixin {
     WTF_MAKE_NONCOPYABLE(SupplementableTracing);
 public:
     DEFINE_INLINE_VIRTUAL_TRACE()
