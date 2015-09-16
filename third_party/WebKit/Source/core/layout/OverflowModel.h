@@ -36,7 +36,8 @@ namespace blink {
 // overflow. This is the natural choice for layout overflow (scrollbars are
 // linear in nature, thus are modelled by rectangles in 2D). For visual overflow
 // and content visual overflow, this is a first order simplification though as
-// they can be though as a collection of (potentially overlapping) rectangles.
+// they can be thought of as a collection of (potentially overlapping)
+// rectangles.
 //
 // Layout overflow is the overflow that is reachable via scrollbars. It is used
 // to size the scrollbar thumb and determine its position, which is determined
