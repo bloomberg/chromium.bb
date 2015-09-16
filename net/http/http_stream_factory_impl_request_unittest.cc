@@ -4,6 +4,7 @@
 
 #include "net/http/http_stream_factory_impl_request.h"
 
+#include "base/memory/scoped_ptr.h"
 #include "net/http/http_stream_factory_impl_job.h"
 #include "net/proxy/proxy_info.h"
 #include "net/proxy/proxy_service.h"

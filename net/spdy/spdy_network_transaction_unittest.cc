@@ -105,20 +105,20 @@ void UpdateSpdySessionDependencies(SpdyNetworkTransactionTestParams test_params,
   }
 }
 
-SpdySessionDependencies* CreateSpdySessionDependencies(
+scoped_ptr<SpdySessionDependencies> CreateSpdySessionDependencies(
     SpdyNetworkTransactionTestParams test_params) {
-  SpdySessionDependencies* session_deps =
-      new SpdySessionDependencies(test_params.protocol);
-  UpdateSpdySessionDependencies(test_params, session_deps);
+  scoped_ptr<SpdySessionDependencies> session_deps(
+      new SpdySessionDependencies(test_params.protocol));
+  UpdateSpdySessionDependencies(test_params, session_deps.get());
   return session_deps;
 }
 
-SpdySessionDependencies* CreateSpdySessionDependencies(
+scoped_ptr<SpdySessionDependencies> CreateSpdySessionDependencies(
     SpdyNetworkTransactionTestParams test_params,
-    ProxyService* proxy_service) {
-  SpdySessionDependencies* session_deps =
-      new SpdySessionDependencies(test_params.protocol, proxy_service);
-  UpdateSpdySessionDependencies(test_params, session_deps);
+    scoped_ptr<ProxyService> proxy_service) {
+  scoped_ptr<SpdySessionDependencies> session_deps(
+      new SpdySessionDependencies(test_params.protocol, proxy_service.Pass()));
+  UpdateSpdySessionDependencies(test_params, session_deps.get());
   return session_deps;
 }
 
@@ -155,16 +155,17 @@ class SpdyNetworkTransactionTest
   // A helper class that handles all the initial npn/ssl setup.
   class NormalSpdyTransactionHelper {
    public:
-    NormalSpdyTransactionHelper(const HttpRequestInfo& request,
-                                RequestPriority priority,
-                                const BoundNetLog& log,
-                                SpdyNetworkTransactionTestParams test_params,
-                                SpdySessionDependencies* session_deps)
+    NormalSpdyTransactionHelper(
+        const HttpRequestInfo& request,
+        RequestPriority priority,
+        const BoundNetLog& log,
+        SpdyNetworkTransactionTestParams test_params,
+        scoped_ptr<SpdySessionDependencies> session_deps)
         : request_(request),
           priority_(priority),
-          session_deps_(session_deps == NULL
+          session_deps_(session_deps.get() == NULL
                             ? CreateSpdySessionDependencies(test_params)
-                            : session_deps),
+                            : session_deps.Pass()),
           session_(
               SpdySessionDependencies::SpdyCreateSession(session_deps_.get())),
           log_(log),
@@ -198,7 +199,7 @@ class SpdyNetworkTransactionTest
 
     void RunPreTestSetup() {
       if (!session_deps_.get())
-        session_deps_.reset(CreateSpdySessionDependencies(test_params_));
+        session_deps_ = CreateSpdySessionDependencies(test_params_);
       if (!session_.get()) {
         session_ = SpdySessionDependencies::SpdyCreateSession(
             session_deps_.get());
@@ -3537,11 +3538,12 @@ TEST_P(SpdyNetworkTransactionTest, DecompressFailureOnSynReply) {
   };
 
   SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
-  SpdySessionDependencies* session_deps =
+  scoped_ptr<SpdySessionDependencies> session_deps =
       CreateSpdySessionDependencies(GetParam());
   session_deps->enable_compression = true;
   NormalSpdyTransactionHelper helper(CreateGetRequest(), DEFAULT_PRIORITY,
-                                     BoundNetLog(), GetParam(), session_deps);
+                                     BoundNetLog(), GetParam(),
+                                     session_deps.Pass());
   helper.RunToCompletion(&data);
   TransactionHelperResult out = helper.output();
   EXPECT_EQ(ERR_SPDY_COMPRESSION_ERROR, out.rv);
@@ -4400,7 +4402,7 @@ TEST_P(SpdyNetworkTransactionTest, HTTP11RequiredRetry) {
   // Do not force SPDY so that second socket can negotiate HTTP/1.1.
   session_deps->next_protos = SpdyNextProtos();
   NormalSpdyTransactionHelper helper(request, DEFAULT_PRIORITY, BoundNetLog(),
-                                     GetParam(), session_deps.release());
+                                     GetParam(), session_deps.Pass());
 
   // First socket: HTTP/2 request rejected with HTTP_1_1_REQUIRED.
   const char* url = request.url.spec().c_str();
@@ -4492,7 +4494,7 @@ TEST_P(SpdyNetworkTransactionTest, HTTP11RequiredProxyRetry) {
   // Do not force SPDY so that second socket can negotiate HTTP/1.1.
   session_deps->next_protos = SpdyNextProtos();
   NormalSpdyTransactionHelper helper(request, DEFAULT_PRIORITY, BoundNetLog(),
-                                     GetParam(), session_deps.release());
+                                     GetParam(), session_deps.Pass());
 
   // First socket: HTTP/2 CONNECT rejected with HTTP_1_1_REQUIRED.
   scoped_ptr<SpdyFrame> req(spdy_util_.ConstructSpdyConnect(
@@ -4580,9 +4582,8 @@ TEST_P(SpdyNetworkTransactionTest, HTTP11RequiredProxyRetry) {
 TEST_P(SpdyNetworkTransactionTest, ProxyConnect) {
   NormalSpdyTransactionHelper helper(CreateGetRequest(), DEFAULT_PRIORITY,
                                      BoundNetLog(), GetParam(), NULL);
-  helper.session_deps().reset(CreateSpdySessionDependencies(
-      GetParam(),
-      ProxyService::CreateFixedFromPacResult("PROXY myproxy:70")));
+  helper.session_deps() = CreateSpdySessionDependencies(
+      GetParam(), ProxyService::CreateFixedFromPacResult("PROXY myproxy:70"));
   helper.SetSession(make_scoped_refptr(
       SpdySessionDependencies::SpdyCreateSession(helper.session_deps().get())));
   helper.RunPreTestSetup();
@@ -4645,9 +4646,9 @@ TEST_P(SpdyNetworkTransactionTest, DirectConnectProxyReconnect) {
   // myproxy:70. For this test there will be no fallback, so it is equivalent
   // to simply DIRECT. The reason for appending the second proxy is to verify
   // that the session pool key used does is just "DIRECT".
-  helper.session_deps().reset(CreateSpdySessionDependencies(
+  helper.session_deps() = CreateSpdySessionDependencies(
       GetParam(),
-      ProxyService::CreateFixedFromPacResult("DIRECT; PROXY myproxy:70")));
+      ProxyService::CreateFixedFromPacResult("DIRECT; PROXY myproxy:70"));
   helper.SetSession(make_scoped_refptr(
       SpdySessionDependencies::SpdyCreateSession(helper.session_deps().get())));
 
@@ -5586,9 +5587,8 @@ TEST_P(SpdyNetworkTransactionTest, ServerPushCrossOriginCorrectness) {
     scoped_ptr<SpdySessionDependencies> session_deps(
         CreateSpdySessionDependencies(GetParam()));
     session_deps->trusted_spdy_proxy = "123.45.67.89:8080";
-    NormalSpdyTransactionHelper helper(request, DEFAULT_PRIORITY,
-                                       BoundNetLog(), GetParam(),
-                                       session_deps.release());
+    NormalSpdyTransactionHelper helper(request, DEFAULT_PRIORITY, BoundNetLog(),
+                                       GetParam(), session_deps.Pass());
     helper.RunPreTestSetup();
     helper.AddData(&data);
 

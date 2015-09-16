@@ -173,7 +173,7 @@ scoped_ptr<net::URLRequestContext> NetworkContext::MakeURLRequestContext(
 
   builder.set_accept_language("en-us,en");
   builder.set_user_agent(mojo::common::GetUserAgent());
-  builder.set_proxy_service(make_scoped_ptr(net::ProxyService::CreateDirect()));
+  builder.set_proxy_service(net::ProxyService::CreateDirect());
   builder.set_transport_security_persister_path(base_path);
 
   net::URLRequestContextBuilder::HttpCacheParams cache_params;

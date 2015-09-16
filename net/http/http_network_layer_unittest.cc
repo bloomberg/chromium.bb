@@ -32,10 +32,10 @@ class HttpNetworkLayerTest : public PlatformTest {
     ConfigureTestDependencies(ProxyService::CreateDirect());
   }
 
-  void ConfigureTestDependencies(ProxyService* proxy_service) {
+  void ConfigureTestDependencies(scoped_ptr<ProxyService> proxy_service) {
     cert_verifier_.reset(new MockCertVerifier);
     transport_security_state_.reset(new TransportSecurityState);
-    proxy_service_.reset(proxy_service);
+    proxy_service_ = proxy_service.Pass();
     HttpNetworkSession::Params session_params;
     session_params.client_socket_factory = &mock_socket_factory_;
     session_params.host_resolver = &host_resolver_;

@@ -189,7 +189,8 @@ struct SpdySessionDependencies {
   explicit SpdySessionDependencies(NextProto protocol);
 
   // Custom proxy service dependency.
-  SpdySessionDependencies(NextProto protocol, ProxyService* proxy_service);
+  SpdySessionDependencies(NextProto protocol,
+                          scoped_ptr<ProxyService> proxy_service);
 
   ~SpdySessionDependencies();
 

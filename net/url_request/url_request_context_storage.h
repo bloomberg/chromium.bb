@@ -45,27 +45,29 @@ class NET_EXPORT URLRequestContextStorage {
   // These setters will set both the member variables and call the setter on the
   // URLRequestContext object. In all cases, ownership is passed to |this|.
 
-  void set_net_log(NetLog* net_log);
+  void set_net_log(scoped_ptr<NetLog> net_log);
   void set_host_resolver(scoped_ptr<HostResolver> host_resolver);
-  void set_cert_verifier(CertVerifier* cert_verifier);
+  void set_cert_verifier(scoped_ptr<CertVerifier> cert_verifier);
   void set_channel_id_service(scoped_ptr<ChannelIDService> channel_id_service);
   void set_http_auth_handler_factory(
-      HttpAuthHandlerFactory* http_auth_handler_factory);
-  void set_proxy_service(ProxyService* proxy_service);
+      scoped_ptr<HttpAuthHandlerFactory> http_auth_handler_factory);
+  void set_proxy_service(scoped_ptr<ProxyService> proxy_service);
   void set_ssl_config_service(SSLConfigService* ssl_config_service);
-  void set_network_delegate(NetworkDelegate* network_delegate);
+  void set_network_delegate(scoped_ptr<NetworkDelegate> network_delegate);
   void set_http_server_properties(
       scoped_ptr<HttpServerProperties> http_server_properties);
   void set_cookie_store(CookieStore* cookie_store);
   void set_transport_security_state(
-      TransportSecurityState* transport_security_state);
+      scoped_ptr<TransportSecurityState> transport_security_state);
   void set_http_transaction_factory(
-      HttpTransactionFactory* http_transaction_factory);
-  void set_job_factory(URLRequestJobFactory* job_factory);
-  void set_throttler_manager(URLRequestThrottlerManager* throttler_manager);
-  void set_backoff_manager(URLRequestBackoffManager* backoff_manager);
+      scoped_ptr<HttpTransactionFactory> http_transaction_factory);
+  void set_job_factory(scoped_ptr<URLRequestJobFactory> job_factory);
+  void set_throttler_manager(
+      scoped_ptr<URLRequestThrottlerManager> throttler_manager);
+  void set_backoff_manager(
+      scoped_ptr<URLRequestBackoffManager> backoff_manager);
   void set_http_user_agent_settings(
-      HttpUserAgentSettings* http_user_agent_settings);
+      scoped_ptr<HttpUserAgentSettings> http_user_agent_settings);
   void set_sdch_manager(scoped_ptr<SdchManager> sdch_manager);
 
  private:

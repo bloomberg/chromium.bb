@@ -474,8 +474,7 @@ TEST_P(QuicNetworkTransactionTest, ForceQuic) {
 TEST_P(QuicNetworkTransactionTest, QuicProxy) {
   params_.enable_insecure_quic = true;
   params_.enable_quic_for_proxies = true;
-  proxy_service_.reset(
-      ProxyService::CreateFixedFromPacResult("QUIC myproxy:70"));
+  proxy_service_ = ProxyService::CreateFixedFromPacResult("QUIC myproxy:70");
 
   MockQuicData mock_quic_data;
   mock_quic_data.AddWrite(
@@ -509,8 +508,8 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyWithCert) {
 
   params_.enable_insecure_quic = true;
   params_.enable_quic_for_proxies = true;
-  proxy_service_.reset(
-      ProxyService::CreateFixedFromPacResult("QUIC " + proxy_host + ":70"));
+  proxy_service_ =
+      ProxyService::CreateFixedFromPacResult("QUIC " + proxy_host + ":70");
 
   maker_.set_hostname(origin_host);
   MockQuicData mock_quic_data;
@@ -1370,8 +1369,7 @@ TEST_P(QuicNetworkTransactionTest, ZeroRTTWithNoHttpRace) {
 
 TEST_P(QuicNetworkTransactionTest, ZeroRTTWithProxy) {
   params_.enable_insecure_quic = true;
-  proxy_service_.reset(
-      ProxyService::CreateFixedFromPacResult("PROXY myproxy:70"));
+  proxy_service_ = ProxyService::CreateFixedFromPacResult("PROXY myproxy:70");
 
   // Since we are using a proxy, the QUIC job will not succeed.
   MockWrite http_writes[] = {

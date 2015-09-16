@@ -43,11 +43,11 @@ int HttpAuthHandlerFactory::CreatePreemptiveAuthHandlerFromString(
 }
 
 // static
-HttpAuthHandlerRegistryFactory* HttpAuthHandlerFactory::CreateDefault(
-    HostResolver* host_resolver) {
+scoped_ptr<HttpAuthHandlerRegistryFactory>
+HttpAuthHandlerFactory::CreateDefault(HostResolver* host_resolver) {
   DCHECK(host_resolver);
-  HttpAuthHandlerRegistryFactory* registry_factory =
-      new HttpAuthHandlerRegistryFactory();
+  scoped_ptr<HttpAuthHandlerRegistryFactory> registry_factory =
+      make_scoped_ptr(new HttpAuthHandlerRegistryFactory());
   registry_factory->RegisterSchemeFactory(
       "basic", new HttpAuthHandlerBasic::Factory());
   registry_factory->RegisterSchemeFactory(

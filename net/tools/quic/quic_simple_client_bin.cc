@@ -218,7 +218,7 @@ int main(int argc, char *argv[]) {
   client.set_initial_max_packet_length(
       FLAGS_initial_mtu != 0 ? FLAGS_initial_mtu : net::kDefaultMaxPacketSize);
   // For secure QUIC we need to verify the cert chain.
-  cert_verifier.reset(CertVerifier::CreateDefault());
+  cert_verifier = CertVerifier::CreateDefault();
   transport_security_state.reset(new TransportSecurityState);
   client.SetProofVerifier(new ProofVerifierChromium(
       cert_verifier.get(), nullptr, transport_security_state.get()));

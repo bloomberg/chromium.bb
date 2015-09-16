@@ -552,16 +552,16 @@ void DataReductionProxyTestContext::AttachToURLRequestContext(
 
   // |request_context_storage| takes ownership of the network delegate.
   request_context_storage->set_network_delegate(
-      io_data()->CreateNetworkDelegate(
-          scoped_ptr<net::NetworkDelegate>(new net::TestNetworkDelegate()),
-          true).release());
+      io_data()
+          ->CreateNetworkDelegate(
+              make_scoped_ptr(new net::TestNetworkDelegate()).Pass(), true)
+          .Pass());
 
-  // |request_context_storage| takes ownership of the job factory.
   request_context_storage->set_job_factory(
-      new net::URLRequestInterceptingJobFactory(
+      make_scoped_ptr(new net::URLRequestInterceptingJobFactory(
           scoped_ptr<net::URLRequestJobFactory>(
               new net::URLRequestJobFactoryImpl()),
-          io_data()->CreateInterceptor().Pass()));
+          io_data()->CreateInterceptor().Pass())));
 }
 
 void DataReductionProxyTestContext::

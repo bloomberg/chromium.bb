@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/json/json_writer.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/url_request_job_factory.h"
@@ -55,11 +56,11 @@ class FakeProtocolHandler : public net::URLRequestJobFactory::ProtocolHandler {
 class SetResponseURLRequestContext: public net::TestURLRequestContext {
  public:
   void SetResponse(const std::string& headers, const std::string& response) {
-    net::URLRequestJobFactoryImpl* factory =
-        new net::URLRequestJobFactoryImpl();
+    scoped_ptr<net::URLRequestJobFactoryImpl> factory =
+        make_scoped_ptr(new net::URLRequestJobFactoryImpl());
     factory->SetProtocolHandler(
         "https", make_scoped_ptr(new FakeProtocolHandler(headers, response)));
-    context_storage_.set_job_factory(factory);
+    context_storage_.set_job_factory(factory.Pass());
   }
 };
 

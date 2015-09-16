@@ -65,7 +65,7 @@ class HttpNetworkTransactionSSLTest : public testing::Test {
     auth_handler_factory_.reset(new HttpAuthHandlerMock::Factory());
     session_params_.http_auth_handler_factory = auth_handler_factory_.get();
 
-    proxy_service_.reset(ProxyService::CreateDirect());
+    proxy_service_ = ProxyService::CreateDirect();
     session_params_.proxy_service = proxy_service_.get();
 
     session_params_.client_socket_factory = &mock_socket_factory_;

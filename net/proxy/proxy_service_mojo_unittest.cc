@@ -126,11 +126,11 @@ class ProxyServiceMojoTest : public testing::Test,
     mock_host_resolver_.rules()->AddRule("example.com", "1.2.3.4");
 
     fetcher_ = new MockProxyScriptFetcher;
-    proxy_service_.reset(CreateProxyServiceUsingMojoFactory(
+    proxy_service_ = CreateProxyServiceUsingMojoFactory(
         this, new ProxyConfigServiceFixed(
                   ProxyConfig::CreateFromCustomPacURL(GURL(kPacUrl))),
         fetcher_, make_scoped_ptr(new DoNothingDhcpProxyScriptFetcher()),
-        &mock_host_resolver_, &net_log_, &network_delegate_));
+        &mock_host_resolver_, &net_log_, &network_delegate_);
   }
 
   scoped_ptr<base::ScopedClosureRunner> CreateResolver(

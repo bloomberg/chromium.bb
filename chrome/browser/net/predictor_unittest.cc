@@ -791,7 +791,9 @@ TEST_F(PredictorTest, ProxyDefinitelyEnabled) {
 
   net::ProxyConfig config;
   config.proxy_rules().ParseFromString("http=socks://localhost:12345");
-  testing_master.proxy_service_ = net::ProxyService::CreateFixed(config);
+  scoped_ptr<net::ProxyService> proxy_service(
+      net::ProxyService::CreateFixed(config));
+  testing_master.proxy_service_ = proxy_service.get();
 
   GURL goog("http://www.google.com:80");
   testing_master.Resolve(goog, UrlInfo::OMNIBOX_MOTIVATED);
@@ -799,7 +801,6 @@ TEST_F(PredictorTest, ProxyDefinitelyEnabled) {
   // Proxy is definitely in use, so there is no need to pre-resolve the domain.
   EXPECT_TRUE(testing_master.work_queue_.IsEmpty());
 
-  delete testing_master.proxy_service_;
   testing_master.Shutdown();
 }
 
@@ -809,7 +810,9 @@ TEST_F(PredictorTest, ProxyDefinitelyNotEnabled) {
 
   Predictor testing_master(true, true);
   net::ProxyConfig config = net::ProxyConfig::CreateDirect();
-  testing_master.proxy_service_ = net::ProxyService::CreateFixed(config);
+  scoped_ptr<net::ProxyService> proxy_service(
+      net::ProxyService::CreateFixed(config));
+  testing_master.proxy_service_ = proxy_service.get();
 
   GURL goog("http://www.google.com:80");
   testing_master.Resolve(goog, UrlInfo::OMNIBOX_MOTIVATED);
@@ -817,7 +820,6 @@ TEST_F(PredictorTest, ProxyDefinitelyNotEnabled) {
   // Proxy is not in use, so the name has been registered for pre-resolve.
   EXPECT_FALSE(testing_master.work_queue_.IsEmpty());
 
-  delete testing_master.proxy_service_;
   testing_master.Shutdown();
 }
 
@@ -828,7 +830,9 @@ TEST_F(PredictorTest, ProxyMaybeEnabled) {
   Predictor testing_master(true, true);
   net::ProxyConfig config = net::ProxyConfig::CreateFromCustomPacURL(GURL(
       "http://foopy/proxy.pac"));
-  testing_master.proxy_service_ = net::ProxyService::CreateFixed(config);
+  scoped_ptr<net::ProxyService> proxy_service(
+      net::ProxyService::CreateFixed(config));
+  testing_master.proxy_service_ = proxy_service.get();
 
   GURL goog("http://www.google.com:80");
   testing_master.Resolve(goog, UrlInfo::OMNIBOX_MOTIVATED);
@@ -837,7 +841,6 @@ TEST_F(PredictorTest, ProxyMaybeEnabled) {
   // name has been registered for pre-resolve.
   EXPECT_FALSE(testing_master.work_queue_.IsEmpty());
 
-  delete testing_master.proxy_service_;
   testing_master.Shutdown();
 }
 

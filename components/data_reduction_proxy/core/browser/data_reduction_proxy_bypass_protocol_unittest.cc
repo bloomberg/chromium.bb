@@ -92,11 +92,11 @@ class DataReductionProxyProtocolTest : public testing::Test {
   }
 
   // Sets up the |TestURLRequestContext| with the provided |ProxyService|.
-  void ConfigureTestDependencies(ProxyService* proxy_service) {
+  void ConfigureTestDependencies(scoped_ptr<ProxyService> proxy_service) {
     // Create a context with delayed initialization.
     context_.reset(new TestURLRequestContext(true));
 
-    proxy_service_.reset(proxy_service);
+    proxy_service_ = proxy_service.Pass();
     context_->set_client_socket_factory(&mock_socket_factory_);
     context_->set_proxy_service(proxy_service_.get());
     network_delegate_.reset(new net::TestNetworkDelegate());

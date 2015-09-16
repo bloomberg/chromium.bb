@@ -37,7 +37,7 @@ class ProxyService;
 // # multi-threading model. In order for this to be safe to use, *ALL* the
 // # other V8's running in the process must use v8::Locker.
 // ##########################################################################
-NET_EXPORT ProxyService* CreateProxyServiceUsingV8ProxyResolver(
+NET_EXPORT scoped_ptr<ProxyService> CreateProxyServiceUsingV8ProxyResolver(
     ProxyConfigService* proxy_config_service,
     ProxyScriptFetcher* proxy_script_fetcher,
     scoped_ptr<DhcpProxyScriptFetcher> dhcp_proxy_script_fetcher,

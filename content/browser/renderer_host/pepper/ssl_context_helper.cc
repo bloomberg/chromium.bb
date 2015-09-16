@@ -15,7 +15,7 @@ SSLContextHelper::~SSLContextHelper() {}
 
 net::CertVerifier* SSLContextHelper::GetCertVerifier() {
   if (!cert_verifier_)
-    cert_verifier_.reset(net::CertVerifier::CreateDefault());
+    cert_verifier_ = net::CertVerifier::CreateDefault();
   return cert_verifier_.get();
 }
 

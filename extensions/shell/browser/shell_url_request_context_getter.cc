@@ -4,6 +4,7 @@
 
 #include "extensions/shell/browser/shell_url_request_context_getter.h"
 
+#include "base/memory/scoped_ptr.h"
 #include "content/public/browser/resource_request_info.h"
 #include "extensions/browser/info_map.h"
 #include "extensions/shell/browser/shell_network_delegate.h"
@@ -34,9 +35,10 @@ ShellURLRequestContextGetter::ShellURLRequestContextGetter(
 ShellURLRequestContextGetter::~ShellURLRequestContextGetter() {
 }
 
-net::NetworkDelegate*
+scoped_ptr<net::NetworkDelegate>
 ShellURLRequestContextGetter::CreateNetworkDelegate() {
-  return new ShellNetworkDelegate(browser_context_, extension_info_map_);
+  return make_scoped_ptr(
+      new ShellNetworkDelegate(browser_context_, extension_info_map_));
 }
 
 }  // namespace extensions

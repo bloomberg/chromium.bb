@@ -287,7 +287,7 @@ void XmppSignalStrategy::Core::StartTls() {
       new net::ClientSocketHandle());
   socket_handle->SetSocket(socket_.Pass());
 
-  cert_verifier_.reset(net::CertVerifier::CreateDefault());
+  cert_verifier_ = net::CertVerifier::CreateDefault();
   transport_security_state_.reset(new net::TransportSecurityState());
   net::SSLClientSocketContext context;
   context.cert_verifier = cert_verifier_.get();

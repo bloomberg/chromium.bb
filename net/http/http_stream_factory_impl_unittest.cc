@@ -618,8 +618,8 @@ TEST_P(HttpStreamFactoryTest, UnreachableQuicProxyMarkedAsBad) {
                             ERR_MSG_TOO_BIG};
   for (size_t i = 0; i < arraysize(mock_error); ++i) {
     scoped_ptr<ProxyService> proxy_service;
-    proxy_service.reset(
-        ProxyService::CreateFixedFromPacResult("QUIC bad:99; DIRECT"));
+    proxy_service =
+        ProxyService::CreateFixedFromPacResult("QUIC bad:99; DIRECT");
 
     HttpNetworkSession::Params params;
     params.enable_quic = true;
@@ -680,8 +680,7 @@ TEST_P(HttpStreamFactoryTest, UnreachableQuicProxyMarkedAsBad) {
 TEST_P(HttpStreamFactoryTest, QuicLossyProxyMarkedAsBad) {
   // Checks if a
   scoped_ptr<ProxyService> proxy_service;
-  proxy_service.reset(
-      ProxyService::CreateFixedFromPacResult("QUIC bad:99; DIRECT"));
+  proxy_service = ProxyService::CreateFixedFromPacResult("QUIC bad:99; DIRECT");
 
   HttpNetworkSession::Params params;
   params.enable_quic = true;

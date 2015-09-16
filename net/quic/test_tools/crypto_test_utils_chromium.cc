@@ -25,13 +25,15 @@ namespace {
 
 class TestProofVerifierChromium : public ProofVerifierChromium {
  public:
-  // TODO(rch): |transport_security_state| should be a scoped_ptr.
-  TestProofVerifierChromium(CertVerifier* cert_verifier,
-                            TransportSecurityState* transport_security_state,
-                            const std::string& cert_file)
-      : ProofVerifierChromium(cert_verifier, nullptr, transport_security_state),
-        cert_verifier_(cert_verifier),
-        transport_security_state_(transport_security_state) {
+  TestProofVerifierChromium(
+      scoped_ptr<CertVerifier> cert_verifier,
+      scoped_ptr<TransportSecurityState> transport_security_state,
+      const std::string& cert_file)
+      : ProofVerifierChromium(cert_verifier.get(),
+                              nullptr,
+                              transport_security_state.get()),
+        cert_verifier_(cert_verifier.Pass()),
+        transport_security_state_(transport_security_state.Pass()) {
     // Load and install the root for the validated chain.
     scoped_refptr<X509Certificate> root_cert =
         ImportCertFromFile(GetTestCertsDirectory(), cert_file);
@@ -122,7 +124,7 @@ ProofSource* CryptoTestUtils::ProofSourceForTesting() {
 // static
 ProofVerifier* CryptoTestUtils::ProofVerifierForTesting() {
   // TODO(rch): use a real cert verifier?
-  MockCertVerifier* cert_verifier = new MockCertVerifier();
+  scoped_ptr<MockCertVerifier> cert_verifier(new MockCertVerifier());
   net::CertVerifyResult verify_result;
   verify_result.verified_cert =
       ImportCertFromFile(GetTestCertsDirectory(), "quic_test.example.com.crt");
@@ -133,7 +135,8 @@ ProofVerifier* CryptoTestUtils::ProofVerifierForTesting() {
   cert_verifier->AddResultForCertAndHost(verify_result.verified_cert.get(),
                                          "test.example.com", verify_result, OK);
   return new TestProofVerifierChromium(
-      cert_verifier, new TransportSecurityState, "quic_root.crt");
+      cert_verifier.Pass(), make_scoped_ptr(new TransportSecurityState),
+      "quic_root.crt");
 }
 
 // static

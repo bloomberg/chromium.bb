@@ -19,12 +19,14 @@ bool CertVerifier::SupportsOCSPStapling() {
   return false;
 }
 
-CertVerifier* CertVerifier::CreateDefault() {
+scoped_ptr<CertVerifier> CertVerifier::CreateDefault() {
 #if defined(OS_NACL)
   NOTIMPLEMENTED();
-  return nullptr;
+  return scoped_ptr<CertVerifier>();
 #else
-  return new MultiThreadedCertVerifier(CertVerifyProc::CreateDefault());
+  return make_scoped_ptr(
+             new MultiThreadedCertVerifier(CertVerifyProc::CreateDefault()))
+      .Pass();
 #endif
 }
 

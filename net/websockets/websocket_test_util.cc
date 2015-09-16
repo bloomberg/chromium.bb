@@ -164,7 +164,7 @@ void WebSocketTestURLRequestContextHost::AddSSLSocketDataProvider(
 void WebSocketTestURLRequestContextHost::SetProxyConfig(
     const std::string& proxy_rules) {
   DCHECK(!url_request_context_initialized_);
-  proxy_service_.reset(ProxyService::CreateFixed(proxy_rules));
+  proxy_service_ = ProxyService::CreateFixed(proxy_rules);
   url_request_context_.set_proxy_service(proxy_service_.get());
 }
 

@@ -5,6 +5,7 @@
 #include "net/proxy/proxy_service_v8.h"
 
 #include "base/logging.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/thread_checker.h"
 #include "net/proxy/network_delegate_error_observer.h"
@@ -16,7 +17,7 @@
 namespace net {
 
 // static
-ProxyService* CreateProxyServiceUsingV8ProxyResolver(
+scoped_ptr<ProxyService> CreateProxyServiceUsingV8ProxyResolver(
     ProxyConfigService* proxy_config_service,
     ProxyScriptFetcher* proxy_script_fetcher,
     scoped_ptr<DhcpProxyScriptFetcher> dhcp_proxy_script_fetcher,
@@ -28,13 +29,13 @@ ProxyService* CreateProxyServiceUsingV8ProxyResolver(
   DCHECK(dhcp_proxy_script_fetcher);
   DCHECK(host_resolver);
 
-  ProxyService* proxy_service = new ProxyService(
+  scoped_ptr<ProxyService> proxy_service(new ProxyService(
       proxy_config_service,
       make_scoped_ptr(new ProxyResolverFactoryV8TracingWrapper(
           host_resolver, net_log,
           base::Bind(&NetworkDelegateErrorObserver::Create, network_delegate,
                      base::ThreadTaskRunnerHandle::Get()))),
-      net_log);
+      net_log));
 
   // Configure fetchers to use for PAC script downloads and auto-detect.
   proxy_service->SetProxyScriptFetchers(proxy_script_fetcher,

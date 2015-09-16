@@ -394,15 +394,22 @@ void CrNetEnvironment::InitializeOnNetworkThread() {
   http_server_properties_.reset(new net::HttpServerPropertiesImpl());
   main_context_->set_http_server_properties(
       http_server_properties_->GetWeakPtr());
+  // TODO(rdsmith): Note that the ".release()" calls below are leaking
+  // the objects in question; this should be fixed by having an object
+  // corresponding to URLRequestContextStorage that actually owns those
+  // objects.  See http://crbug.com/523858.
   main_context_->set_host_resolver(
       net::HostResolver::CreateDefaultResolver(nullptr).release());
-  main_context_->set_cert_verifier(net::CertVerifier::CreateDefault());
+  main_context_->set_cert_verifier(
+      net::CertVerifier::CreateDefault().release());
   main_context_->set_http_auth_handler_factory(
       net::HttpAuthHandlerRegistryFactory::CreateDefault(
-          main_context_->host_resolver()));
+          main_context_->host_resolver())
+          .release());
   main_context_->set_proxy_service(
       net::ProxyService::CreateUsingSystemProxyResolver(
-          proxy_config_service_.get(), 0, nullptr));
+          proxy_config_service_.get(), 0, nullptr)
+          .release());
 
   // Cache
   NSArray* dirs = NSSearchPathForDirectoriesInDomains(NSCachesDirectory,

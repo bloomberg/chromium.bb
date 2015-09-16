@@ -43,9 +43,9 @@ class LayoutTestURLRequestContextGetter : public ShellURLRequestContextGetter {
   ~LayoutTestURLRequestContextGetter() override;
 
   // ShellURLRequestContextGetter implementation.
-  net::NetworkDelegate* CreateNetworkDelegate() override;
-  net::ProxyConfigService* GetProxyConfigService() override;
-  net::ProxyService* GetProxyService() override;
+  scoped_ptr<net::NetworkDelegate> CreateNetworkDelegate() override;
+  scoped_ptr<net::ProxyConfigService> GetProxyConfigService() override;
+  scoped_ptr<net::ProxyService> GetProxyService() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(LayoutTestURLRequestContextGetter);

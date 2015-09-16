@@ -32,9 +32,9 @@ URLRequestContextStorage::URLRequestContextStorage(URLRequestContext* context)
 
 URLRequestContextStorage::~URLRequestContextStorage() {}
 
-void URLRequestContextStorage::set_net_log(NetLog* net_log) {
-  context_->set_net_log(net_log);
-  net_log_.reset(net_log);
+void URLRequestContextStorage::set_net_log(scoped_ptr<NetLog> net_log) {
+  context_->set_net_log(net_log.get());
+  net_log_ = net_log.Pass();
 }
 
 void URLRequestContextStorage::set_host_resolver(
@@ -43,9 +43,10 @@ void URLRequestContextStorage::set_host_resolver(
   host_resolver_ = host_resolver.Pass();
 }
 
-void URLRequestContextStorage::set_cert_verifier(CertVerifier* cert_verifier) {
-  context_->set_cert_verifier(cert_verifier);
-  cert_verifier_.reset(cert_verifier);
+void URLRequestContextStorage::set_cert_verifier(
+    scoped_ptr<CertVerifier> cert_verifier) {
+  context_->set_cert_verifier(cert_verifier.get());
+  cert_verifier_ = cert_verifier.Pass();
 }
 
 void URLRequestContextStorage::set_channel_id_service(
@@ -55,14 +56,15 @@ void URLRequestContextStorage::set_channel_id_service(
 }
 
 void URLRequestContextStorage::set_http_auth_handler_factory(
-    HttpAuthHandlerFactory* http_auth_handler_factory) {
-  context_->set_http_auth_handler_factory(http_auth_handler_factory);
-  http_auth_handler_factory_.reset(http_auth_handler_factory);
+    scoped_ptr<HttpAuthHandlerFactory> http_auth_handler_factory) {
+  context_->set_http_auth_handler_factory(http_auth_handler_factory.get());
+  http_auth_handler_factory_ = http_auth_handler_factory.Pass();
 }
 
-void URLRequestContextStorage::set_proxy_service(ProxyService* proxy_service) {
-  context_->set_proxy_service(proxy_service);
-  proxy_service_.reset(proxy_service);
+void URLRequestContextStorage::set_proxy_service(
+    scoped_ptr<ProxyService> proxy_service) {
+  context_->set_proxy_service(proxy_service.get());
+  proxy_service_ = proxy_service.Pass();
 }
 
 void URLRequestContextStorage::set_ssl_config_service(
@@ -72,9 +74,9 @@ void URLRequestContextStorage::set_ssl_config_service(
 }
 
 void URLRequestContextStorage::set_network_delegate(
-    NetworkDelegate* network_delegate) {
-  context_->set_network_delegate(network_delegate);
-  network_delegate_.reset(network_delegate);
+    scoped_ptr<NetworkDelegate> network_delegate) {
+  context_->set_network_delegate(network_delegate.get());
+  network_delegate_ = network_delegate.Pass();
 }
 
 void URLRequestContextStorage::set_http_server_properties(
@@ -89,39 +91,39 @@ void URLRequestContextStorage::set_cookie_store(CookieStore* cookie_store) {
 }
 
 void URLRequestContextStorage::set_transport_security_state(
-    TransportSecurityState* transport_security_state) {
-  context_->set_transport_security_state(transport_security_state);
-  transport_security_state_.reset(transport_security_state);
+    scoped_ptr<TransportSecurityState> transport_security_state) {
+  context_->set_transport_security_state(transport_security_state.get());
+  transport_security_state_ = transport_security_state.Pass();
 }
 
 void URLRequestContextStorage::set_http_transaction_factory(
-    HttpTransactionFactory* http_transaction_factory) {
-  context_->set_http_transaction_factory(http_transaction_factory);
-  http_transaction_factory_.reset(http_transaction_factory);
+    scoped_ptr<HttpTransactionFactory> http_transaction_factory) {
+  context_->set_http_transaction_factory(http_transaction_factory.get());
+  http_transaction_factory_ = http_transaction_factory.Pass();
 }
 
 void URLRequestContextStorage::set_job_factory(
-    URLRequestJobFactory* job_factory) {
-  context_->set_job_factory(job_factory);
-  job_factory_.reset(job_factory);
+    scoped_ptr<URLRequestJobFactory> job_factory) {
+  context_->set_job_factory(job_factory.get());
+  job_factory_ = job_factory.Pass();
 }
 
 void URLRequestContextStorage::set_throttler_manager(
-    URLRequestThrottlerManager* throttler_manager) {
-  context_->set_throttler_manager(throttler_manager);
-  throttler_manager_.reset(throttler_manager);
+    scoped_ptr<URLRequestThrottlerManager> throttler_manager) {
+  context_->set_throttler_manager(throttler_manager.get());
+  throttler_manager_ = throttler_manager.Pass();
 }
 
 void URLRequestContextStorage::set_backoff_manager(
-    URLRequestBackoffManager* backoff_manager) {
-  context_->set_backoff_manager(backoff_manager);
-  backoff_manager_.reset(backoff_manager);
+    scoped_ptr<URLRequestBackoffManager> backoff_manager) {
+  context_->set_backoff_manager(backoff_manager.get());
+  backoff_manager_ = backoff_manager.Pass();
 }
 
 void URLRequestContextStorage::set_http_user_agent_settings(
-    HttpUserAgentSettings* http_user_agent_settings) {
-  context_->set_http_user_agent_settings(http_user_agent_settings);
-  http_user_agent_settings_.reset(http_user_agent_settings);
+    scoped_ptr<HttpUserAgentSettings> http_user_agent_settings) {
+  context_->set_http_user_agent_settings(http_user_agent_settings.get());
+  http_user_agent_settings_ = http_user_agent_settings.Pass();
 }
 
 void URLRequestContextStorage::set_sdch_manager(

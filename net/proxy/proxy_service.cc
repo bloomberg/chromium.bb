@@ -935,7 +935,7 @@ ProxyService::ProxyService(ProxyConfigService* config_service,
 }
 
 // static
-ProxyService* ProxyService::CreateUsingSystemProxyResolver(
+scoped_ptr<ProxyService> ProxyService::CreateUsingSystemProxyResolver(
     ProxyConfigService* proxy_config_service,
     size_t num_pac_threads,
     NetLog* net_log) {
@@ -949,23 +949,23 @@ ProxyService* ProxyService::CreateUsingSystemProxyResolver(
   if (num_pac_threads == 0)
     num_pac_threads = kDefaultNumPacThreads;
 
-  return new ProxyService(
+  return make_scoped_ptr(new ProxyService(
       proxy_config_service,
       make_scoped_ptr(new ProxyResolverFactoryForSystem(num_pac_threads)),
-      net_log);
+      net_log));
 }
 
 // static
-ProxyService* ProxyService::CreateWithoutProxyResolver(
+scoped_ptr<ProxyService> ProxyService::CreateWithoutProxyResolver(
     ProxyConfigService* proxy_config_service,
     NetLog* net_log) {
-  return new ProxyService(
+  return make_scoped_ptr(new ProxyService(
       proxy_config_service,
-      make_scoped_ptr(new ProxyResolverFactoryForNullResolver), net_log);
+      make_scoped_ptr(new ProxyResolverFactoryForNullResolver), net_log));
 }
 
 // static
-ProxyService* ProxyService::CreateFixed(const ProxyConfig& pc) {
+scoped_ptr<ProxyService> ProxyService::CreateFixed(const ProxyConfig& pc) {
   // TODO(eroman): This isn't quite right, won't work if |pc| specifies
   //               a PAC script.
   return CreateUsingSystemProxyResolver(new ProxyConfigServiceFixed(pc),
@@ -973,36 +973,35 @@ ProxyService* ProxyService::CreateFixed(const ProxyConfig& pc) {
 }
 
 // static
-ProxyService* ProxyService::CreateFixed(const std::string& proxy) {
+scoped_ptr<ProxyService> ProxyService::CreateFixed(const std::string& proxy) {
   ProxyConfig proxy_config;
   proxy_config.proxy_rules().ParseFromString(proxy);
   return ProxyService::CreateFixed(proxy_config);
 }
 
 // static
-ProxyService* ProxyService::CreateDirect() {
+scoped_ptr<ProxyService> ProxyService::CreateDirect() {
   return CreateDirectWithNetLog(NULL);
 }
 
-ProxyService* ProxyService::CreateDirectWithNetLog(NetLog* net_log) {
+scoped_ptr<ProxyService> ProxyService::CreateDirectWithNetLog(NetLog* net_log) {
   // Use direct connections.
-  return new ProxyService(
+  return make_scoped_ptr(new ProxyService(
       new ProxyConfigServiceDirect,
-      make_scoped_ptr(new ProxyResolverFactoryForNullResolver), net_log);
+      make_scoped_ptr(new ProxyResolverFactoryForNullResolver), net_log));
 }
 
 // static
-ProxyService* ProxyService::CreateFixedFromPacResult(
+scoped_ptr<ProxyService> ProxyService::CreateFixedFromPacResult(
     const std::string& pac_string) {
-
   // We need the settings to contain an "automatic" setting, otherwise the
   // ProxyResolver dependency we give it will never be used.
   scoped_ptr<ProxyConfigService> proxy_config_service(
       new ProxyConfigServiceFixed(ProxyConfig::CreateAutoDetect()));
 
-  return new ProxyService(
+  return make_scoped_ptr(new ProxyService(
       proxy_config_service.release(),
-      make_scoped_ptr(new ProxyResolverFactoryForPacResult(pac_string)), NULL);
+      make_scoped_ptr(new ProxyResolverFactoryForPacResult(pac_string)), NULL));
 }
 
 int ProxyService::ResolveProxy(const GURL& raw_url,

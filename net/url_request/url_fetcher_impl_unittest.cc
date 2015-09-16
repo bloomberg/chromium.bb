@@ -15,6 +15,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/location.h"
 #include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
@@ -168,7 +169,8 @@ class FetcherTestURLRequestContext : public TestURLRequestContext {
     // Pass ownership to ContextStorage to ensure correct destruction order.
     context_storage_.set_host_resolver(
         scoped_ptr<HostResolver>(mock_resolver_));
-    context_storage_.set_throttler_manager(new URLRequestThrottlerManager());
+    context_storage_.set_throttler_manager(
+        make_scoped_ptr(new URLRequestThrottlerManager()));
     Init();
   }
 

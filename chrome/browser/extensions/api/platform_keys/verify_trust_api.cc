@@ -178,13 +178,11 @@ void VerifyTrustAPI::IOPart::Verify(scoped_ptr<Params> params,
     return;
   }
 
-  net::CertVerifier* verifier = nullptr;
-  if (ContainsKey(extension_to_verifier_, extension_id)) {
-    verifier = extension_to_verifier_[extension_id].get();
-  } else {
-    verifier = net::CertVerifier::CreateDefault();
-    extension_to_verifier_[extension_id] = make_linked_ptr(verifier);
+  if (!ContainsKey(extension_to_verifier_, extension_id)) {
+    extension_to_verifier_[extension_id] =
+        make_linked_ptr(net::CertVerifier::CreateDefault().release());
   }
+  net::CertVerifier* verifier = extension_to_verifier_[extension_id].get();
 
   scoped_ptr<net::CertVerifyResult> verify_result(new net::CertVerifyResult);
   scoped_ptr<net::BoundNetLog> net_log(new net::BoundNetLog);

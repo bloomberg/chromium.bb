@@ -145,8 +145,7 @@ class URLRequestContextGetter : public net::URLRequestContextGetter {
   net::URLRequestContext* GetURLRequestContext() override {
     if (!context_) {
       net::URLRequestContextBuilder context_builder;
-      context_builder.set_proxy_service(
-          make_scoped_ptr(net::ProxyService::CreateDirect()));
+      context_builder.set_proxy_service(net::ProxyService::CreateDirect());
       context_ = context_builder.Build().Pass();
     }
     return context_.get();

@@ -114,7 +114,7 @@ ProxyServiceFactory::CreatePrefProxyConfigTrackerOfLocalState(
 }
 
 // static
-net::ProxyService* ProxyServiceFactory::CreateProxyService(
+scoped_ptr<net::ProxyService> ProxyServiceFactory::CreateProxyService(
     net::NetLog* net_log,
     net::URLRequestContext* context,
     net::NetworkDelegate* network_delegate,
@@ -151,7 +151,7 @@ net::ProxyService* ProxyServiceFactory::CreateProxyService(
     }
   }
 
-  net::ProxyService* proxy_service = NULL;
+  scoped_ptr<net::ProxyService> proxy_service;
   if (use_v8) {
 #if defined(OS_IOS)
     NOTREACHED();

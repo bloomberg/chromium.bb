@@ -53,9 +53,9 @@ class ShellURLRequestContextGetter : public net::URLRequestContextGetter {
 
   // Used by subclasses to create their own implementation of NetworkDelegate
   // and net::ProxyService.
-  virtual net::NetworkDelegate* CreateNetworkDelegate();
-  virtual net::ProxyConfigService* GetProxyConfigService();
-  virtual net::ProxyService* GetProxyService();
+  virtual scoped_ptr<net::NetworkDelegate> CreateNetworkDelegate();
+  virtual scoped_ptr<net::ProxyConfigService> GetProxyConfigService();
+  virtual scoped_ptr<net::ProxyService> GetProxyService();
 
  private:
   bool ignore_certificate_errors_;

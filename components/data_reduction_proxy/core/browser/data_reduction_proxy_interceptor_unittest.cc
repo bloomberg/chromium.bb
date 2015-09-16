@@ -210,9 +210,8 @@ class DataReductionProxyInterceptorWithServerTest : public testing::Test {
     proxies_for_http.push_back(origin);
     test_context_->config()->test_params()->SetProxiesForHttp(proxies_for_http);
     std::string proxy_name = origin.ToURI();
-    proxy_service_.reset(
-        net::ProxyService::CreateFixedFromPacResult(
-            "PROXY " + proxy_name + "; DIRECT"));
+    proxy_service_ = net::ProxyService::CreateFixedFromPacResult(
+        "PROXY " + proxy_name + "; DIRECT");
 
     context_.set_proxy_service(proxy_service_.get());
 

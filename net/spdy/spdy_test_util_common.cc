@@ -386,12 +386,13 @@ SpdySessionDependencies::SpdySessionDependencies(NextProto protocol)
   host_resolver->set_synchronous_mode(true);
 }
 
-SpdySessionDependencies::SpdySessionDependencies(NextProto protocol,
-                                                 ProxyService* proxy_service)
+SpdySessionDependencies::SpdySessionDependencies(
+    NextProto protocol,
+    scoped_ptr<ProxyService> proxy_service)
     : host_resolver(new MockHostResolver),
       cert_verifier(new MockCertVerifier),
       transport_security_state(new TransportSecurityState),
-      proxy_service(proxy_service),
+      proxy_service(proxy_service.Pass()),
       ssl_config_service(new SSLConfigServiceDefaults),
       socket_factory(new MockClientSocketFactory),
       deterministic_socket_factory(new DeterministicMockClientSocketFactory),
@@ -476,15 +477,17 @@ SpdyURLRequestContext::SpdyURLRequestContext(NextProto protocol)
   DCHECK(next_proto_is_spdy(protocol)) << "Invalid protocol: " << protocol;
 
   storage_.set_host_resolver(scoped_ptr<HostResolver>(new MockHostResolver));
-  storage_.set_cert_verifier(new MockCertVerifier);
-  storage_.set_transport_security_state(new TransportSecurityState);
+  storage_.set_cert_verifier(make_scoped_ptr(new MockCertVerifier).Pass());
+  storage_.set_transport_security_state(
+      make_scoped_ptr(new TransportSecurityState));
   storage_.set_proxy_service(ProxyService::CreateDirect());
   storage_.set_ssl_config_service(new SSLConfigServiceDefaults);
-  storage_.set_http_auth_handler_factory(HttpAuthHandlerFactory::CreateDefault(
-      host_resolver()));
+  storage_.set_http_auth_handler_factory(
+      HttpAuthHandlerFactory::CreateDefault(host_resolver()));
   storage_.set_http_server_properties(
       scoped_ptr<HttpServerProperties>(new HttpServerPropertiesImpl()));
-  storage_.set_job_factory(new URLRequestJobFactoryImpl());
+  storage_.set_job_factory(
+      make_scoped_ptr(new URLRequestJobFactoryImpl()).Pass());
   HttpNetworkSession::Params params;
   params.client_socket_factory = &socket_factory_;
   params.host_resolver = host_resolver();
@@ -502,8 +505,10 @@ SpdyURLRequestContext::SpdyURLRequestContext(NextProto protocol)
       new HttpNetworkSession(params));
   SpdySessionPoolPeer pool_peer(network_session->spdy_session_pool());
   pool_peer.SetEnableSendingInitialData(false);
-  storage_.set_http_transaction_factory(new HttpCache(
-      network_session.get(), HttpCache::DefaultBackend::InMemory(0)));
+  storage_.set_http_transaction_factory(
+      make_scoped_ptr(new HttpCache(network_session.get(),
+                                    HttpCache::DefaultBackend::InMemory(0)))
+          .Pass());
 }
 
 SpdyURLRequestContext::~SpdyURLRequestContext() {

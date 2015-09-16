@@ -1070,14 +1070,12 @@ void ProfileIOData::Init(
 
   // NOTE: Proxy service uses the default io thread network delegate, not the
   // delegate just created.
-  proxy_service_.reset(
-      ProxyServiceFactory::CreateProxyService(
-          io_thread->net_log(),
-          io_thread_globals->proxy_script_fetcher_context.get(),
-          io_thread_globals->system_network_delegate.get(),
-          profile_params_->proxy_config_service.release(),
-          command_line,
-          quick_check_enabled_.GetValue()));
+  proxy_service_ = ProxyServiceFactory::CreateProxyService(
+      io_thread->net_log(),
+      io_thread_globals->proxy_script_fetcher_context.get(),
+      io_thread_globals->system_network_delegate.get(),
+      profile_params_->proxy_config_service.release(), command_line,
+      quick_check_enabled_.GetValue());
   transport_security_state_.reset(new net::TransportSecurityState());
   base::SequencedWorkerPool* pool = BrowserThread::GetBlockingPool();
   transport_security_persister_.reset(

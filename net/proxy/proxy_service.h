@@ -235,32 +235,33 @@ class NET_EXPORT ProxyService : public NetworkChangeNotifier::IPAddressObserver,
   // Same as CreateProxyServiceUsingV8ProxyResolver, except it uses system
   // libraries for evaluating the PAC script if available, otherwise skips
   // proxy autoconfig.
-  static ProxyService* CreateUsingSystemProxyResolver(
+  static scoped_ptr<ProxyService> CreateUsingSystemProxyResolver(
       ProxyConfigService* proxy_config_service,
       size_t num_pac_threads,
       NetLog* net_log);
 
   // Creates a ProxyService without support for proxy autoconfig.
-  static ProxyService* CreateWithoutProxyResolver(
+  static scoped_ptr<ProxyService> CreateWithoutProxyResolver(
       ProxyConfigService* proxy_config_service,
       NetLog* net_log);
 
   // Convenience methods that creates a proxy service using the
   // specified fixed settings.
-  static ProxyService* CreateFixed(const ProxyConfig& pc);
-  static ProxyService* CreateFixed(const std::string& proxy);
+  static scoped_ptr<ProxyService> CreateFixed(const ProxyConfig& pc);
+  static scoped_ptr<ProxyService> CreateFixed(const std::string& proxy);
 
   // Creates a proxy service that uses a DIRECT connection for all requests.
-  static ProxyService* CreateDirect();
+  static scoped_ptr<ProxyService> CreateDirect();
   // |net_log|'s lifetime must exceed ProxyService.
-  static ProxyService* CreateDirectWithNetLog(NetLog* net_log);
+  static scoped_ptr<ProxyService> CreateDirectWithNetLog(NetLog* net_log);
 
   // This method is used by tests to create a ProxyService that returns a
   // hardcoded proxy fallback list (|pac_string|) for every URL.
   //
   // |pac_string| is a list of proxy servers, in the format that a PAC script
   // would return it. For example, "PROXY foobar:99; SOCKS fml:2; DIRECT"
-  static ProxyService* CreateFixedFromPacResult(const std::string& pac_string);
+  static scoped_ptr<ProxyService> CreateFixedFromPacResult(
+      const std::string& pac_string);
 
   // Creates a config service appropriate for this platform that fetches the
   // system proxy settings.

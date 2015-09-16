@@ -206,18 +206,18 @@ void URLRequestContextFactory::InitializeSystemContextDependencies() {
       new net::ChannelIDService(new net::DefaultChannelIDStore(NULL),
                                 base::WorkerPool::GetTaskRunner(true)));
 
-  cert_verifier_.reset(net::CertVerifier::CreateDefault());
+  cert_verifier_ = net::CertVerifier::CreateDefault();
 
   ssl_config_service_ = new net::SSLConfigServiceDefaults;
 
   transport_security_state_.reset(new net::TransportSecurityState());
-  http_auth_handler_factory_.reset(
-      net::HttpAuthHandlerFactory::CreateDefault(host_resolver_.get()));
+  http_auth_handler_factory_ =
+      net::HttpAuthHandlerFactory::CreateDefault(host_resolver_.get());
 
   http_server_properties_.reset(new net::HttpServerPropertiesImpl);
 
-  proxy_service_.reset(net::ProxyService::CreateUsingSystemProxyResolver(
-      proxy_config_service_.release(), 0, NULL));
+  proxy_service_ = net::ProxyService::CreateUsingSystemProxyResolver(
+      proxy_config_service_.release(), 0, NULL);
   system_dependencies_initialized_ = true;
 }
 

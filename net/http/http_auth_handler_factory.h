@@ -115,7 +115,8 @@ class NET_EXPORT HttpAuthHandlerFactory {
   // non-NULL.  |resolver| must remain valid for the lifetime of the
   // HttpAuthHandlerRegistryFactory and any HttpAuthHandlers created by said
   // factory.
-  static HttpAuthHandlerRegistryFactory* CreateDefault(HostResolver* resolver);
+  static scoped_ptr<HttpAuthHandlerRegistryFactory> CreateDefault(
+      HostResolver* resolver);
 
  private:
   // The URL security manager

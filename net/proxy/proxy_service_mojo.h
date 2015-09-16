@@ -36,7 +36,7 @@ class ProxyService;
 // |host_resolver| points to the host resolving dependency the PAC script
 // should use for any DNS queries. It must remain valid throughout the
 // lifetime of the ProxyService.
-ProxyService* CreateProxyServiceUsingMojoFactory(
+scoped_ptr<ProxyService> CreateProxyServiceUsingMojoFactory(
     MojoProxyResolverFactory* mojo_proxy_factory,
     ProxyConfigService* proxy_config_service,
     ProxyScriptFetcher* proxy_script_fetcher,
@@ -53,7 +53,7 @@ ProxyService* CreateProxyServiceUsingMojoFactory(
 // # multi-threading model. In order for this to be safe to use, *ALL* the
 // # other V8's running in the process must use v8::Locker.
 // ##########################################################################
-ProxyService* CreateProxyServiceUsingMojoInProcess(
+scoped_ptr<ProxyService> CreateProxyServiceUsingMojoInProcess(
     ProxyConfigService* proxy_config_service,
     ProxyScriptFetcher* proxy_script_fetcher,
     scoped_ptr<DhcpProxyScriptFetcher> dhcp_proxy_script_fetcher,

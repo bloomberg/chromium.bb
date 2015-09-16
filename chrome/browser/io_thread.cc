@@ -681,8 +681,8 @@ void IOThread::Init() {
       globals_->host_resolver.get()));
   globals_->http_server_properties.reset(new net::HttpServerPropertiesImpl());
   // For the ProxyScriptFetcher, we use a direct ProxyService.
-  globals_->proxy_script_fetcher_proxy_service.reset(
-      net::ProxyService::CreateDirectWithNetLog(net_log_));
+  globals_->proxy_script_fetcher_proxy_service =
+      net::ProxyService::CreateDirectWithNetLog(net_log_);
   // In-memory cookie store.
   // TODO(erikchen): Remove ScopedTracker below once http://crbug.com/466432
   // is fixed.
@@ -1090,14 +1090,11 @@ void IOThread::InitSystemRequestContextOnIOThread() {
 
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
-  globals_->system_proxy_service.reset(
-      ProxyServiceFactory::CreateProxyService(
-          net_log_,
-          globals_->proxy_script_fetcher_context.get(),
-          globals_->system_network_delegate.get(),
-          system_proxy_config_service_.release(),
-          command_line,
-          quick_check_enabled_.GetValue()));
+  globals_->system_proxy_service = ProxyServiceFactory::CreateProxyService(
+      net_log_, globals_->proxy_script_fetcher_context.get(),
+      globals_->system_network_delegate.get(),
+      system_proxy_config_service_.release(), command_line,
+      quick_check_enabled_.GetValue());
 
   globals_->system_request_context.reset(
       ConstructSystemRequestContext(globals_, net_log_));

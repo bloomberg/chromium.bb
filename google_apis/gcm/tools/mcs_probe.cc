@@ -137,7 +137,7 @@ class MyTestURLRequestContext : public net::TestURLRequestContext {
     context_storage_.set_host_resolver(
         net::HostResolver::CreateDefaultResolver(NULL));
     context_storage_.set_transport_security_state(
-        new net::TransportSecurityState());
+        make_scoped_ptr(new net::TransportSecurityState()));
     Init();
   }
 
@@ -368,7 +368,7 @@ void MCSProbe::InitializeNetworkState() {
   if (command_line_.HasSwitch(kIgnoreCertSwitch)) {
     cert_verifier_.reset(new MyTestCertVerifier());
   } else {
-    cert_verifier_.reset(net::CertVerifier::CreateDefault());
+    cert_verifier_ = net::CertVerifier::CreateDefault();
   }
   system_channel_id_service_.reset(
       new net::ChannelIDService(
@@ -382,7 +382,7 @@ void MCSProbe::InitializeNetworkState() {
       host_resolver_.get(), std::string(), std::string(), false, false));
   http_server_properties_.reset(new net::HttpServerPropertiesImpl());
   host_mapping_rules_.reset(new net::HostMappingRules());
-  proxy_service_.reset(net::ProxyService::CreateDirectWithNetLog(&net_log_));
+  proxy_service_ = net::ProxyService::CreateDirectWithNetLog(&net_log_);
 }
 
 void MCSProbe::BuildNetworkSession() {

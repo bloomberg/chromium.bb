@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
 #include "net/base/completion_callback.h"
 #include "net/base/net_export.h"
 
@@ -128,7 +129,7 @@ class NET_EXPORT CertVerifier {
 
   // Creates a CertVerifier implementation that verifies certificates using
   // the preferred underlying cryptographic libraries.
-  static CertVerifier* CreateDefault();
+  static scoped_ptr<CertVerifier> CreateDefault();
 };
 
 }  // namespace net

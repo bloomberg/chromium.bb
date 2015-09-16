@@ -173,7 +173,7 @@ scoped_ptr<net::SSLClientSocket> CastSocketImpl::CreateSslSocket(
     logger_->LogSocketEvent(channel_id_, proto::SSL_CERT_WHITELISTED);
   }
 
-  cert_verifier_.reset(net::CertVerifier::CreateDefault());
+  cert_verifier_ = net::CertVerifier::CreateDefault();
   transport_security_state_.reset(new net::TransportSecurityState);
   net::SSLClientSocketContext context;
   // CertVerifier and TransportSecurityState are owned by us, not the

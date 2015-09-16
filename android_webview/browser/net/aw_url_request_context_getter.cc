@@ -217,9 +217,8 @@ void AwURLRequestContextGetter::InitializeURLRequestContext() {
   // Android provides a local HTTP proxy that handles all the proxying.
   // Create the proxy without a resolver since we rely on this local HTTP proxy.
   // TODO(sgurun) is this behavior guaranteed through SDK?
-  builder.set_proxy_service(
-      make_scoped_ptr(net::ProxyService::CreateWithoutProxyResolver(
-          proxy_config_service_.release(), net_log_.get())));
+  builder.set_proxy_service(net::ProxyService::CreateWithoutProxyResolver(
+      proxy_config_service_.release(), net_log_.get()));
   builder.set_net_log(net_log_.get());
   builder.SetCookieAndChannelIdStores(cookie_store_, NULL);
   ApplyCmdlineOverridesToURLRequestContextBuilder(&builder);

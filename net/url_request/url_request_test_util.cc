@@ -79,9 +79,10 @@ void TestURLRequestContext::Init() {
   if (!cert_verifier())
     context_storage_.set_cert_verifier(CertVerifier::CreateDefault());
   if (!transport_security_state())
-    context_storage_.set_transport_security_state(new TransportSecurityState);
+    context_storage_.set_transport_security_state(
+        make_scoped_ptr(new TransportSecurityState()));
   if (!ssl_config_service())
-    context_storage_.set_ssl_config_service(new SSLConfigServiceDefaults);
+    context_storage_.set_ssl_config_service(new SSLConfigServiceDefaults());
   if (!http_auth_handler_factory()) {
     context_storage_.set_http_auth_handler_factory(
         HttpAuthHandlerFactory::CreateDefault(host_resolver()));
@@ -89,10 +90,6 @@ void TestURLRequestContext::Init() {
   if (!http_server_properties()) {
     context_storage_.set_http_server_properties(
         scoped_ptr<HttpServerProperties>(new HttpServerPropertiesImpl()));
-  }
-  if (!transport_security_state()) {
-    context_storage_.set_transport_security_state(
-        new TransportSecurityState());
   }
   if (http_transaction_factory()) {
     // Make sure we haven't been passed an object we're not going to use.
@@ -111,9 +108,10 @@ void TestURLRequestContext::Init() {
     params.network_delegate = network_delegate();
     params.http_server_properties = http_server_properties();
     params.net_log = net_log();
-    context_storage_.set_http_transaction_factory(new HttpCache(
-        new HttpNetworkSession(params),
-        HttpCache::DefaultBackend::InMemory(0)));
+    context_storage_.set_http_transaction_factory(
+        make_scoped_ptr(new HttpCache(new HttpNetworkSession(params),
+                                      HttpCache::DefaultBackend::InMemory(0)))
+            .Pass());
   }
   // In-memory cookie store.
   if (!cookie_store())
@@ -126,10 +124,14 @@ void TestURLRequestContext::Init() {
   }
   if (!http_user_agent_settings()) {
     context_storage_.set_http_user_agent_settings(
-        new StaticHttpUserAgentSettings("en-us,fr", std::string()));
+        make_scoped_ptr(
+            new StaticHttpUserAgentSettings("en-us,fr", std::string()))
+            .Pass());
   }
-  if (!job_factory())
-    context_storage_.set_job_factory(new URLRequestJobFactoryImpl);
+  if (!job_factory()) {
+    context_storage_.set_job_factory(
+        make_scoped_ptr(new URLRequestJobFactoryImpl()).Pass());
+  }
 }
 
 TestURLRequestContextGetter::TestURLRequestContextGetter(

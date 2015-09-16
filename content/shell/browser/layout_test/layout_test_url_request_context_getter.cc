@@ -34,18 +34,19 @@ LayoutTestURLRequestContextGetter::LayoutTestURLRequestContextGetter(
 LayoutTestURLRequestContextGetter::~LayoutTestURLRequestContextGetter() {
 }
 
-net::NetworkDelegate*
+scoped_ptr<net::NetworkDelegate>
 LayoutTestURLRequestContextGetter::CreateNetworkDelegate() {
   ShellNetworkDelegate::SetAcceptAllCookies(false);
-  return new ShellNetworkDelegate;
+  return make_scoped_ptr(new ShellNetworkDelegate);
 }
 
-net::ProxyConfigService*
+scoped_ptr<net::ProxyConfigService>
 LayoutTestURLRequestContextGetter::GetProxyConfigService() {
   return nullptr;
 }
 
-net::ProxyService* LayoutTestURLRequestContextGetter::GetProxyService() {
+scoped_ptr<net::ProxyService>
+LayoutTestURLRequestContextGetter::GetProxyService() {
   return net::ProxyService::CreateDirect();
 }
 

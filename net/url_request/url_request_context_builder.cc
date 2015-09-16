@@ -270,20 +270,21 @@ scoped_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
       new ContainerURLRequestContext(file_task_runner_));
   URLRequestContextStorage* storage = context->storage();
 
-  storage->set_http_user_agent_settings(new StaticHttpUserAgentSettings(
-      accept_language_, user_agent_));
+  storage->set_http_user_agent_settings(
+      make_scoped_ptr(
+          new StaticHttpUserAgentSettings(accept_language_, user_agent_))
+          .Pass());
 
   if (!network_delegate_)
     network_delegate_.reset(new BasicNetworkDelegate);
-  NetworkDelegate* network_delegate = network_delegate_.release();
-  storage->set_network_delegate(network_delegate);
+  storage->set_network_delegate(network_delegate_.Pass());
 
   if (net_log_) {
     // Unlike the other builder parameters, |net_log_| is not owned by the
     // builder or resulting context.
     context->set_net_log(net_log_);
   } else {
-    storage->set_net_log(new NetLog);
+    storage->set_net_log(make_scoped_ptr(new NetLog));
   }
 
   if (!host_resolver_) {
@@ -306,23 +307,23 @@ scoped_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
           context->GetFileTaskRunner());
     }
   #endif  // defined(OS_LINUX) || defined(OS_ANDROID)
-    proxy_service_.reset(
-        ProxyService::CreateUsingSystemProxyResolver(
-            proxy_config_service,
-            0,  // This results in using the default value.
-            context->net_log()));
+    proxy_service_ = ProxyService::CreateUsingSystemProxyResolver(
+        proxy_config_service,
+        0,  // This results in using the default value.
+        context->net_log());
   }
-  storage->set_proxy_service(proxy_service_.release());
+  storage->set_proxy_service(proxy_service_.Pass());
 
   storage->set_ssl_config_service(new SSLConfigServiceDefaults);
-  HttpAuthHandlerRegistryFactory* http_auth_handler_registry_factory =
-      HttpAuthHandlerRegistryFactory::CreateDefault(context->host_resolver());
+  scoped_ptr<HttpAuthHandlerRegistryFactory> http_auth_handler_registry_factory(
+      HttpAuthHandlerRegistryFactory::CreateDefault(context->host_resolver()));
   for (size_t i = 0; i < extra_http_auth_handlers_.size(); ++i) {
     http_auth_handler_registry_factory->RegisterSchemeFactory(
         extra_http_auth_handlers_[i].scheme,
         extra_http_auth_handlers_[i].factory);
   }
-  storage->set_http_auth_handler_factory(http_auth_handler_registry_factory);
+  storage->set_http_auth_handler_factory(
+      http_auth_handler_registry_factory.Pass());
 
   if (cookie_store_) {
     storage->set_cookie_store(cookie_store_.get());
@@ -340,7 +341,8 @@ scoped_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
         scoped_ptr<net::SdchManager>(new SdchManager()).Pass());
   }
 
-  storage->set_transport_security_state(new TransportSecurityState());
+  storage->set_transport_security_state(
+      make_scoped_ptr(new TransportSecurityState()));
   if (!transport_security_persister_path_.empty()) {
     context->set_transport_security_persister(
         make_scoped_ptr<TransportSecurityPersister>(
@@ -359,11 +361,15 @@ scoped_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
 
   storage->set_cert_verifier(CertVerifier::CreateDefault());
 
-  if (throttling_enabled_)
-    storage->set_throttler_manager(new URLRequestThrottlerManager());
+  if (throttling_enabled_) {
+    storage->set_throttler_manager(
+        make_scoped_ptr(new URLRequestThrottlerManager()));
+  }
 
-  if (backoff_enabled_)
-    storage->set_backoff_manager(new URLRequestBackoffManager());
+  if (backoff_enabled_) {
+    storage->set_backoff_manager(
+        make_scoped_ptr(new URLRequestBackoffManager()));
+  }
 
   HttpNetworkSession::Params network_session_params;
   SetHttpNetworkSessionComponents(context.get(), &network_session_params);
@@ -387,7 +393,7 @@ scoped_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
   network_session_params.quic_connection_options =
       http_network_session_params_.quic_connection_options;
 
-  HttpTransactionFactory* http_transaction_factory = NULL;
+  scoped_ptr<HttpTransactionFactory> http_transaction_factory;
   if (http_cache_enabled_) {
     HttpCache::BackendFactory* http_cache_backend = NULL;
     if (http_cache_params_.type == HttpCacheParams::DISK) {
@@ -399,15 +405,15 @@ scoped_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
           HttpCache::DefaultBackend::InMemory(http_cache_params_.max_size);
     }
 
-    http_transaction_factory = new HttpCache(
-        network_session_params, http_cache_backend);
+    http_transaction_factory.reset(
+        new HttpCache(network_session_params, http_cache_backend));
   } else {
     scoped_refptr<HttpNetworkSession> network_session(
         new HttpNetworkSession(network_session_params));
 
-    http_transaction_factory = new HttpNetworkLayer(network_session.get());
+    http_transaction_factory.reset(new HttpNetworkLayer(network_session.get()));
   }
-  storage->set_http_transaction_factory(http_transaction_factory);
+  storage->set_http_transaction_factory(http_transaction_factory.Pass());
 
   URLRequestJobFactoryImpl* job_factory = new URLRequestJobFactoryImpl;
   if (data_enabled_)
@@ -444,7 +450,7 @@ scoped_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
     }
     url_request_interceptors_.weak_clear();
   }
-  storage->set_job_factory(top_job_factory.release());
+  storage->set_job_factory(top_job_factory.Pass());
   // TODO(willchan): Support sdch.
 
   return context.Pass();
