@@ -146,7 +146,7 @@ class MetaBuildWrapper(object):
     elif vals['type'] == 'gyp':
       if vals['gyp_crosscompile']:
         self.Print('GYP_CROSSCOMPILE=1')
-      cmd = self.GYPCmd('<path>', vals['gyp_defines'], vals['gyp_config'])
+      cmd = self.GYPCmd('<path>', vals['gyp_defines'])
     else:
       raise MBErr('Unknown meta-build type "%s"' % vals['type'])
 
@@ -285,7 +285,6 @@ class MetaBuildWrapper(object):
     vals = {
       'type': None,
       'gn_args': [],
-      'gyp_config': [],
       'gyp_defines': '',
       'gyp_crosscompile': False,
     }
@@ -311,8 +310,6 @@ class MetaBuildWrapper(object):
           vals['gn_args'] += ' ' + mixin_vals['gn_args']
         else:
           vals['gn_args'] = mixin_vals['gn_args']
-      if 'gyp_config' in mixin_vals:
-        vals['gyp_config'] = mixin_vals['gyp_config']
       if 'gyp_crosscompile' in mixin_vals:
         vals['gyp_crosscompile'] = mixin_vals['gyp_crosscompile']
       if 'gyp_defines' in mixin_vals:
@@ -458,12 +455,8 @@ class MetaBuildWrapper(object):
   def RunGYPGen(self, vals):
     path = self.args.path[0]
 
-    output_dir, gyp_config = self.ParseGYPConfigPath(path)
-    if gyp_config != vals['gyp_config']:
-      raise MBErr('The last component of the path (%s) must match the '
-                  'GYP configuration specified in the config (%s), and '
-                  'it does not.' % (gyp_config, vals['gyp_config']))
-    cmd = self.GYPCmd(output_dir, vals['gyp_defines'], config=gyp_config)
+    output_dir = self.ParseGYPConfigPath(path)
+    cmd = self.GYPCmd(output_dir, vals['gyp_defines'])
     env = None
     if vals['gyp_crosscompile']:
       if self.args.verbose:
@@ -474,11 +467,7 @@ class MetaBuildWrapper(object):
     return ret
 
   def RunGYPAnalyze(self, vals):
-    output_dir, gyp_config = self.ParseGYPConfigPath(self.args.path[0])
-    if gyp_config != vals['gyp_config']:
-      raise MBErr('The last component of the path (%s) must match the '
-                  'GYP configuration specified in the config (%s), and '
-                  'it does not.' % (gyp_config, vals['gyp_config']))
+    output_dir = self.ParseGYPConfigPath(self.args.path[0])
     if self.args.verbose:
       inp = self.ReadInputJSON(['files', 'targets'])
       self.Print()
@@ -486,7 +475,7 @@ class MetaBuildWrapper(object):
       self.PrintJSON(inp)
       self.Print()
 
-    cmd = self.GYPCmd(output_dir, vals['gyp_defines'], config=gyp_config)
+    cmd = self.GYPCmd(output_dir, vals['gyp_defines'])
     cmd.extend(['-f', 'analyzer',
                 '-G', 'config_path=%s' % self.args.input_path[0],
                 '-G', 'analyzer_output_path=%s' % self.args.output_path[0]])
@@ -592,26 +581,16 @@ class MetaBuildWrapper(object):
 
   def ParseGYPConfigPath(self, path):
     rpath = self.ToSrcRelPath(path)
-    output_dir, _, config = rpath.rpartition('/')
-    self.CheckGYPConfigIsSupported(config, path)
-    return output_dir, config
+    output_dir, _, _ = rpath.rpartition('/')
+    return output_dir
 
-  def CheckGYPConfigIsSupported(self, config, path):
-    if config not in ('Debug', 'Release'):
-      if (sys.platform in ('win32', 'cygwin') and
-          config not in ('Debug_x64', 'Release_x64')):
-        raise MBErr('Unknown or unsupported config type "%s" in "%s"' %
-                    config, path)
-
-  def GYPCmd(self, output_dir, gyp_defines, config):
+  def GYPCmd(self, output_dir, gyp_defines):
     gyp_defines = gyp_defines.replace("$(goma_dir)", self.args.goma_dir)
     cmd = [
         sys.executable,
         os.path.join('build', 'gyp_chromium'),
         '-G',
         'output_dir=' + output_dir,
-        '-G',
-        'config=' + config,
     ]
     for d in shlex.split(gyp_defines):
       cmd += ['-D', d]

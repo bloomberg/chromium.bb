@@ -172,8 +172,6 @@ value of the `mixins` key.
 Each mixin value is itself a dictionary that contains one or more of the
 following keys:
 
-  * `gyp_configs`: a list of the configurations to build, e.g.,
-    ['Release', 'Release_x64'].
   * `gyp_crosscompile`: a boolean; if true, GYP_CROSSCOMPILE=1 is set in
     the environment and passed to GYP.
   * `gyp_defines`: a string containing a list of GYP_DEFINES.
@@ -184,8 +182,8 @@ following keys:
 
 When `mb gen` or `mb analyze` executes, it takes a config name, looks it
 up in the 'configs' dict, and then does a left-to-right expansion of the
-mixins; gyp_defines and gn_args values are concatenated, and type and
-gyp_configs values override each other.
+mixins; gyp_defines and gn_args values are concatenated, and the type values
+overrides each other.
 
 For example, if you had:
 
@@ -205,7 +203,6 @@ For example, if you had:
     },
     'gn': {'type': 'gn'},
     'gyp_release': {
-      'gyp_config': 'Release'
       'mixins': ['release'],
       'type': 'gyp',
     },
