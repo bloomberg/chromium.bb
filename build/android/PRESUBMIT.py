@@ -16,16 +16,22 @@ def CommonChecks(input_api, output_api):
     """Returns a path relative to presubmit directory."""
     return input_api.os_path.join(input_api.PresubmitLocalPath(), *dirs)
 
+  build_pys = [
+      r'gyp/.*\.py$',
+      r'gn/.*\.py',
+      r'incremental_install/.*\.py',
+  ]
   output.extend(input_api.canned_checks.RunPylint(
       input_api,
       output_api,
       pylintrc='pylintrc',
-      black_list=[r'pylib/symbols/.*\.py$', r'gyp/.*\.py$', r'gn/.*\.py'],
+      # symbols has its own PRESUBMIT.py
+      black_list=build_pys + [r'pylib/symbols/.*\.py$'],
       extra_paths_list=[J(), J('buildbot')]))
   output.extend(input_api.canned_checks.RunPylint(
       input_api,
       output_api,
-      white_list=[r'gyp/.*\.py$', r'gn/.*\.py'],
+      white_list=build_pys,
       extra_paths_list=[J('gyp'), J('gn')]))
 
   # Disabled due to http://crbug.com/410936

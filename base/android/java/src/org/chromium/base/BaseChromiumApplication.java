@@ -17,12 +17,6 @@ public class BaseChromiumApplication extends Application {
 
     private static final String TAG = "cr.base";
 
-    @Override
-    protected void attachBaseContext(Context base) {
-        super.attachBaseContext(base);
-        IncrementalInstall.initialize(this);
-    }
-
     /**
      * Interface to be implemented by listeners for window focus events.
      */

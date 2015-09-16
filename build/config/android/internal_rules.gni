@@ -480,7 +480,6 @@ template("package_apk") {
     forward_variables_from(invoker,
                            [
                              "deps",
-                             "data_deps",
                              "public_deps",
                              "testonly",
                            ])
@@ -488,6 +487,7 @@ template("package_apk") {
     _ant_script = "//build/android/ant/apk-package.xml"
 
     depfile = "$target_gen_dir/$target_name.d"
+    data_deps = [ "//tools/android/md5sum" ]  # Used when deploying APKs
 
     inputs = [
       invoker.resource_packaged_apk_path,
@@ -616,15 +616,16 @@ template("create_apk") {
 
   if (defined(invoker.resources_zip)) {
     _resources_zip = invoker.resources_zip
+    assert(_resources_zip != "")  # Mark as used.
   }
   if (defined(invoker.dex_path)) {
     _dex_path = invoker.dex_path
   }
   _load_library_from_apk = invoker.load_library_from_apk
 
-  _package_deps = []
+  _deps = []
   if (defined(invoker.deps)) {
-    _package_deps = invoker.deps
+    _deps = invoker.deps
   }
 
   _native_libs_dir = "//build/android/empty/res"
@@ -634,19 +635,24 @@ template("create_apk") {
 
   if (defined(invoker.asset_location)) {
     _asset_location = invoker.asset_location
+    assert(_asset_location != "")  # Mark as used.
   }
 
   _version_code = invoker.version_code
   _version_name = invoker.version_name
+  assert(_version_code != -1)  # Mark as used.
+  assert(_version_name != "")  # Mark as used.
 
   _base_apk_path = _base_path + ".apk_intermediates"
 
   _resource_packaged_apk_path = _base_apk_path + ".ap_"
+  _incremental_resource_packaged_apk_path = _base_apk_path + "_incremental.ap_"
   _packaged_apk_path = _base_apk_path + ".unfinished.apk"
   _incremental_packaged_apk_path =
       _base_apk_path + "_incremental.unfinished.apk"
   _shared_resources =
       defined(invoker.shared_resources) && invoker.shared_resources
+  assert(_shared_resources || true)  # Mark as used.
 
   _keystore_path = invoker.keystore_path
   _keystore_name = invoker.keystore_name
@@ -668,83 +674,129 @@ template("create_apk") {
     _split_languages = invoker.language_splits
   }
 
-  _package_resources_target_name = "${target_name}__package_resources"
-  action(_package_resources_target_name) {
-    deps = _package_deps
+  template("package_resources_helper") {
+    action(target_name) {
+      deps = invoker.deps
 
-    script = "//build/android/gyp/package_resources.py"
+      script = "//build/android/gyp/package_resources.py"
+      depfile = "${target_gen_dir}/${target_name}.d"
+      inputs = [
+        invoker.android_manifest,
+      ]
+      if (defined(_resources_zip)) {
+        inputs += [ _resources_zip ]
+      }
+      outputs = [
+        depfile,
+        invoker.resource_packaged_apk_path,
+      ]
+
+      args = [
+        "--depfile",
+        rebase_path(depfile, root_build_dir),
+        "--android-sdk",
+        rebased_android_sdk,
+        "--aapt-path",
+        android_aapt_path,
+        "--configuration-name=$android_configuration_name",
+        "--android-manifest",
+        rebase_path(invoker.android_manifest, root_build_dir),
+        "--version-code",
+        _version_code,
+        "--version-name",
+        _version_name,
+        "--apk-path",
+        rebase_path(invoker.resource_packaged_apk_path, root_build_dir),
+      ]
+
+      if (defined(_asset_location)) {
+        args += [
+          "--asset-dir",
+          rebase_path(_asset_location, root_build_dir),
+        ]
+      }
+      if (defined(_resources_zip)) {
+        args += [
+          "--resource-zips",
+          rebase_path(_resources_zip, root_build_dir),
+        ]
+      }
+      if (_shared_resources) {
+        args += [ "--shared-resources" ]
+      }
+      if (_split_densities != []) {
+        args += [ "--create-density-splits" ]
+        foreach(_density, _split_densities) {
+          outputs += [ "${invoker.resource_packaged_apk_path}_${_density}" ]
+        }
+      }
+      if (_split_languages != []) {
+        args += [ "--language-splits=$_split_languages" ]
+        foreach(_language, _split_languages) {
+          outputs += [ "${invoker.resource_packaged_apk_path}_${_language}" ]
+        }
+      }
+      if (defined(invoker.extensions_to_not_compress)) {
+        args += [
+          "--no-compress",
+          invoker.extensions_to_not_compress,
+        ]
+      }
+    }
+  }
+
+  _package_resources_target_name = "${target_name}__package_resources"
+  package_resources_helper(_package_resources_target_name) {
+    forward_variables_from(invoker, [ "extensions_to_not_compress" ])
+    deps = _deps
+    android_manifest = _android_manifest
+    resource_packaged_apk_path = _resource_packaged_apk_path
+  }
+
+  _generate_incremental_manifest_target_name =
+      "${target_name}_incremental_generate_manifest"
+  _incremental_android_manifest =
+      get_label_info(_generate_incremental_manifest_target_name,
+                     "target_gen_dir") + "/AndroidManifest.xml"
+  action(_generate_incremental_manifest_target_name) {
+    deps = _deps
+    script = "//build/android/incremental_install/generate_android_manifest.py"
     depfile = "${target_gen_dir}/${target_name}.d"
     inputs = [
       _android_manifest,
     ]
-    if (defined(_resources_zip)) {
-      inputs += [ _resources_zip ]
-    }
     outputs = [
       depfile,
-      _resource_packaged_apk_path,
+      _incremental_android_manifest,
     ]
 
+    _rebased_src_manifest = rebase_path(_android_manifest, root_build_dir)
+    _rebased_incremental_manifest =
+        rebase_path(_incremental_android_manifest, root_build_dir)
     args = [
-      "--depfile",
-      rebase_path(depfile, root_build_dir),
-      "--android-sdk",
-      rebased_android_sdk,
-      "--aapt-path",
-      android_aapt_path,
-      "--configuration-name=$android_configuration_name",
-      "--android-manifest",
-      rebase_path(_android_manifest, root_build_dir),
-      "--version-code",
-      _version_code,
-      "--version-name",
-      _version_name,
-      "--apk-path",
-      rebase_path(_resource_packaged_apk_path, root_build_dir),
+      "--src-manifest=$_rebased_src_manifest",
+      "--out-manifest=$_rebased_incremental_manifest",
     ]
+    if (disable_incremental_isolated_processes) {
+      args += [ "--disable-isolated-processes" ]
+    }
+  }
 
-    if (defined(_asset_location)) {
-      args += [
-        "--asset-dir",
-        rebase_path(_asset_location, root_build_dir),
-      ]
-    }
-    if (defined(_resources_zip)) {
-      args += [
-        "--resource-zips",
-        rebase_path(_resources_zip, root_build_dir),
-      ]
-    }
-    if (_shared_resources) {
-      args += [ "--shared-resources" ]
-    }
-    if (_split_densities != []) {
-      args += [ "--create-density-splits" ]
-      foreach(_density, _split_densities) {
-        outputs += [ "${_resource_packaged_apk_path}_${_density}" ]
-      }
-    }
-    if (_split_languages != []) {
-      args += [ "--language-splits=$_split_languages" ]
-      foreach(_language, _split_languages) {
-        outputs += [ "${_resource_packaged_apk_path}_${_language}" ]
-      }
-    }
-    if (defined(invoker.extensions_to_not_compress)) {
-      args += [
-        "--no-compress",
-        invoker.extensions_to_not_compress,
-      ]
-    }
+  _incremental_package_resources_target_name =
+      "${target_name}_incremental__package_resources"
+
+  # TODO(agrieve): See if we can speed up this step by swapping the manifest
+  # from the result of the main package_resources step.
+  package_resources_helper(_incremental_package_resources_target_name) {
+    forward_variables_from(invoker, [ "extensions_to_not_compress" ])
+    deps = _deps + [ ":$_generate_incremental_manifest_target_name" ]
+    android_manifest = _incremental_android_manifest
+    resource_packaged_apk_path = _incremental_resource_packaged_apk_path
   }
 
   package_target = "${target_name}__package"
   package_apk(package_target) {
-    deps = []
-    forward_variables_from(invoker, [ "deps" ])
-    deps += [ ":${_package_resources_target_name}" ]
-
-    data_deps = [ "//tools/android/md5sum" ]  # Used when deploying APKs
+    deps = _deps + [ ":${_package_resources_target_name}" ]
 
     if (defined(_dex_path)) {
       dex_path = _dex_path
@@ -756,19 +808,21 @@ template("create_apk") {
 
   _incremental_package_target = "${target_name}_incremental__package"
   package_apk(_incremental_package_target) {
-    deps = []
-    forward_variables_from(invoker, [ "deps" ])
-    deps += [ ":${_package_resources_target_name}" ]
+    _dex_target = "//build/android/incremental_install:bootstrap_java__dex"
+    deps = _deps + [
+             ":${_incremental_package_resources_target_name}",
+             _dex_target,
+           ]
 
-    # TODO(agrieve): Multidex
     if (defined(_dex_path)) {
-      dex_path = _dex_path
+      dex_path =
+          get_label_info(_dex_target, "target_gen_dir") + "/bootstrap.dex"
     }
 
     # TODO(agrieve): Add a placeholder .so for http://crbug.com/384638
     native_libs_dir = "//build/android/empty/res"
     output_apk_path = _incremental_packaged_apk_path
-    resource_packaged_apk_path = _resource_packaged_apk_path
+    resource_packaged_apk_path = _incremental_resource_packaged_apk_path
   }
 
   _finalize_apk_rule_name = "${target_name}__finalize"

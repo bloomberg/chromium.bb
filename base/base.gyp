@@ -1448,8 +1448,6 @@
           'variables': {
             'java_in_dir': 'android/java',
             'jar_excluded_classes': [ '*/NativeLibraries.class' ],
-            # TODO(agrieve): Implement new incremental install for GYP.
-            'additional_src_dirs': [ 'android/java/release_src' ],
           },
           'dependencies': [
             'base_java_application_state',
