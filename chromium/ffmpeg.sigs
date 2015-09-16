@@ -70,6 +70,7 @@ void av_log_set_callback(AVLogCallback callback);
 void av_log_default_callback(void *avcl, int level, const char *fmt, va_list vl);
 void av_log_format_line(void *ptr, int level, const char *fmt, va_list vl, char *line, int line_size, int *print_prefix);
 int av_dict_set(AVDictionary **pm, const char *key, const char *value, int flags);
+void av_dict_free(AVDictionary **m);
 AVDictionaryEntry *av_dict_get(const AVDictionary *m, const char *key, const AVDictionaryEntry *prev, int flags);
 int av_samples_get_buffer_size(int *linesize, int nb_channels, int nb_samples, enum AVSampleFormat sample_fmt, int align);
 int av_image_check_size(unsigned int w, unsigned int h, int log_offset, void *log_ctx);
