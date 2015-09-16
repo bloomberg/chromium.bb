@@ -98,6 +98,11 @@ class LayoutTableRow;
 //     <td>Second row second child</td>
 //   </tr>
 // </table>
+//
+// LayoutTableSection is responsible for laying out LayoutTableRows and
+// LayoutTableCells (see layoutRows()). However it is not their containing
+// block, the enclosing LayoutTable (this object's parent()) is. This is why
+// this class inherits from LayoutBox and not LayoutBlock.
 class CORE_EXPORT LayoutTableSection final : public LayoutBox {
 public:
     LayoutTableSection(Element*);

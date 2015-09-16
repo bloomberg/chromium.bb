@@ -49,6 +49,19 @@ static const unsigned maxRowIndex = 0x7FFFFFFE; // 2,147,483,646
 // Note that this means that rows and cells differ from other LayoutObject as
 // they will ignore 'height' in some situation (when other LayoutObject just
 // allow some layout overflow to occur).
+//
+// LayoutTableRow doesn't establish a containing block for the underlying
+// LayoutTableCells. That's why it inherits from LayoutBox and not LayoutBlock.
+// One oddity is that LayoutTableRow doesn't establish a new coordinate system
+// for its children. LayoutTableCells are positioned with respect to the
+// enclosing LayoutTableSection (this object's parent()). This particularity is
+// why functions accumulating offset while walking the tree have to special case
+// LayoutTableRow (see e.g. PaintInvalidationState or
+// LayoutBox::positionFromPoint()).
+//
+// LayoutTableRow is also positioned with respect to the enclosing
+// LayoutTableSection. See LayoutTableSection::layoutRows() for the placement
+// logic.
 class CORE_EXPORT LayoutTableRow final : public LayoutBox {
 public:
     explicit LayoutTableRow(Element*);

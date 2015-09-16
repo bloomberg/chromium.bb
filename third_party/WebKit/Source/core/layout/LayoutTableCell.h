@@ -78,8 +78,10 @@ class SubtreeLayoutScope;
 // Note that this diagram is not impacted by collapsing or separate borders
 // (see 'border-collapse').
 // Also there is no margin on table cell (or any internal table element).
-// TODO(jchaffraix): Explain the positioning system used in tables and how
-// this interacts (badly) with table rows.
+//
+// LayoutTableCell is positioned with respect to the enclosing
+// LayoutTableSection. See callers of
+// LayoutTableSection::setLogicalPositionForCell() for when it is placed.
 class CORE_EXPORT LayoutTableCell final : public LayoutBlockFlow {
 public:
     explicit LayoutTableCell(Element*);
