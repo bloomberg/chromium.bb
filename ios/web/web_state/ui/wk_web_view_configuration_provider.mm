@@ -77,7 +77,7 @@ void AllowWKProcessPoolCreation(Class klass, SEL selector) {
   // internal implementation purposes.
   AllowWKProcessPoolCreation(
       [WKWebsiteDataStore class],
-      @selector(fetchDataRecordsOfTypes:completionHandler:completionHandler));
+      @selector(fetchDataRecordsOfTypes:completionHandler:completionHandler:));
   AllowWKProcessPoolCreation(
       [WKWebsiteDataStore class],
       @selector(removeDataOfTypes:forDataRecords:completionHandler:));
