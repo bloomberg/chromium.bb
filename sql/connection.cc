@@ -676,6 +676,9 @@ bool Connection::Delete(const base::FilePath& path) {
   std::string wal_str = AsUTF8ForSQL(wal_path);
   std::string path_str = AsUTF8ForSQL(path);
 
+  // Make sure sqlite3_initialize() is called before anything else.
+  InitializeSqlite();
+
   sqlite3_vfs* vfs = sqlite3_vfs_find(NULL);
   CHECK(vfs);
   CHECK(vfs->xDelete);
