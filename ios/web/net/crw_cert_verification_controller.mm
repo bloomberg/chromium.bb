@@ -4,6 +4,7 @@
 
 #import "ios/web/net/crw_cert_verification_controller.h"
 
+#include "base/logging.h"
 #include "base/mac/bind_objc_block.h"
 #import "base/memory/ref_counted.h"
 #import "base/memory/scoped_ptr.h"
@@ -91,6 +92,11 @@ class BlockHolder : public base::RefCountedThreadSafe<BlockHolder<T>> {
 }
 
 #pragma mark - Public
+
+- (instancetype)init {
+  NOTREACHED();
+  return nil;
+}
 
 - (instancetype)initWithBrowserState:(web::BrowserState*)browserState {
   DCHECK(browserState);
