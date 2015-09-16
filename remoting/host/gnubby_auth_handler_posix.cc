@@ -14,6 +14,7 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/values.h"
 #include "net/base/net_errors.h"
 #include "net/socket/unix_domain_server_socket_posix.h"
@@ -240,8 +241,15 @@ void GnubbyAuthHandlerPosix::CreateAuthorizationSocket() {
   DCHECK(CalledOnValidThread());
 
   if (!g_gnubby_socket_name.Get().empty()) {
-    // If the file already exists, a socket in use error is returned.
-    base::DeleteFile(g_gnubby_socket_name.Get(), false);
+    {
+      // DeleteFile() is a blocking operation, but so is creation of the unix
+      // socket below. Consider moving this class to a different thread if this
+      // causes any problems. See crbug.com/509807 .
+      base::ThreadRestrictions::ScopedAllowIO allow_io;
+
+      // If the file already exists, a socket in use error is returned.
+      base::DeleteFile(g_gnubby_socket_name.Get(), false);
+    }
 
     HOST_LOG << "Listening for gnubby requests on "
              << g_gnubby_socket_name.Get().value();

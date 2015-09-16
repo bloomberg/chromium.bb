@@ -174,6 +174,7 @@ _BANNED_CPP_FUNCTIONS = (
             r"simple_platform_shared_buffer_posix\.cc$",
         r"^net[\\\/]disk_cache[\\\/]cache_util\.cc$",
         r"^net[\\\/]url_request[\\\/]test_url_fetcher_factory\.cc$",
+        r"^remoting[\\\/]host[\\\/]gnubby_auth_handler_posix\.cc$",
         r"^ui[\\\/]ozone[\\\/]platform[\\\/]drm[\\\/]host[\\\/]"
             "drm_display_host_manager\.cc$",
       ),
@@ -1467,7 +1468,7 @@ def _CheckSingletonInHeaders(input_api, output_api):
                   (r"^base[\\\/]memory[\\\/]singleton\.h$",))
     return input_api.FilterSourceFile(affected_file, black_list=black_list)
 
-  pattern = input_api.re.compile(r'(?<!class\s)Singleton\s*<')
+  pattern = input_api.re.compile(r'(?<!class\sbase::)Singleton\s*<')
   files = []
   for f in input_api.AffectedSourceFiles(FileFilter):
     if (f.LocalPath().endswith('.h') or f.LocalPath().endswith('.hxx') or
@@ -1481,7 +1482,7 @@ def _CheckSingletonInHeaders(input_api, output_api):
 
   if files:
     return [ output_api.PresubmitError(
-        'Found Singleton<T> in the following header files.\n' +
+        'Found base::Singleton<T> in the following header files.\n' +
         'Please move them to an appropriate source file so that the ' +
         'template gets instantiated in a single compilation unit.',
         files) ]
