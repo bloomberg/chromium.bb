@@ -3,8 +3,9 @@
 // found in the LICENSE file.
 
 #include "base/files/scoped_temp_dir.h"
+#include "base/path_service.h"
+#include "mojo/fetcher/base_application_fetcher.h"
 #include "mojo/runner/context.h"
-#include "mojo/runner/url_resolver.h"
 #include "mojo/shell/application_manager.h"
 #include "mojo/util/filename_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -58,40 +59,32 @@ class TestNativeRunnerFactory : public shell::NativeRunnerFactory {
   TestState* state_;
 };
 
-class NativeApplicationLoaderTest : public testing::Test,
-                                    public shell::ApplicationManager::Delegate {
+class NativeApplicationLoaderTest : public testing::Test {
  public:
-  NativeApplicationLoaderTest() : application_manager_(this) {}
-  ~NativeApplicationLoaderTest() override {}
+  NativeApplicationLoaderTest() {
+    base::FilePath shell_dir;
+    PathService::Get(base::DIR_MODULE, &shell_dir);
+    context_.reset(new Context(shell_dir));
+    loop_.reset(new base::MessageLoop);
+  }
+  ~NativeApplicationLoaderTest() override {
+    loop_.reset();
+    context_.reset();
+  }
   void SetUp() override {
-    context_.Init();
+    context_->Init();
     scoped_ptr<shell::NativeRunnerFactory> factory(
         new TestNativeRunnerFactory(&state_));
-    application_manager_.set_native_runner_factory(factory.Pass());
-    application_manager_.set_blocking_pool(
-        context_.task_runners()->blocking_pool());
+    context_->application_manager()->set_native_runner_factory(factory.Pass());
+    context_->application_manager()->set_blocking_pool(
+        context_->task_runners()->blocking_pool());
   }
-  void TearDown() override { context_.Shutdown(); }
+  void TearDown() override { context_->Shutdown(); }
 
  protected:
-  Context context_;
-  base::MessageLoop loop_;
-  shell::ApplicationManager application_manager_;
+  scoped_ptr<base::MessageLoop> loop_;
+  scoped_ptr<Context> context_;
   TestState state_;
-
- private:
-  // shell::ApplicationManager::Delegate
-  GURL ResolveMappings(const GURL& url) override {
-    return context_.url_resolver()->ApplyMappings(url);
-  }
-  GURL ResolveMojoURL(const GURL& url) override {
-    return context_.url_resolver()->ResolveMojoURL(url);
-  }
-  bool CreateFetcher(
-      const GURL& url,
-      const shell::Fetcher::FetchCallback& loader_callback) override {
-    return false;
-  }
 };
 
 TEST_F(NativeApplicationLoaderTest, DoesNotExist) {
@@ -103,7 +96,7 @@ TEST_F(NativeApplicationLoaderTest, DoesNotExist) {
   ServiceProviderPtr service_provider;
   mojo::URLRequestPtr request(mojo::URLRequest::New());
   request->url = mojo::String::From(url.spec());
-  application_manager_.ConnectToApplication(
+  context_->application_manager()->ConnectToApplication(
       nullptr, request.Pass(), std::string(), services.Pass(),
       service_provider.Pass(), shell::GetPermissiveCapabilityFilter(),
       base::Closure(), shell::EmptyConnectCallback());

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_SHELL_UPDATE_FETCHER_H_
-#define MOJO_SHELL_UPDATE_FETCHER_H_
+#ifndef MOJO_FETCHER_UPDATE_FETCHER_H_
+#define MOJO_FETCHER_UPDATE_FETCHER_H_
 
 #include "mojo/shell/fetcher.h"
 
@@ -16,9 +16,9 @@ namespace mojo {
 
 class URLLoaderFactory;
 
-namespace shell {
+namespace fetcher {
 
-class UpdateFetcher : public Fetcher {
+class UpdateFetcher : public shell::Fetcher {
  public:
   UpdateFetcher(const GURL& url,
                 updater::Updater* updater,
@@ -49,7 +49,7 @@ class UpdateFetcher : public Fetcher {
   DISALLOW_COPY_AND_ASSIGN(UpdateFetcher);
 };
 
-}  // namespace shell
+}  // namespace fetcher
 }  // namespace mojo
 
-#endif  // MOJO_SHELL_UPDATE_FETCHER_H_
+#endif  // MOJO_FETCHER_UPDATE_FETCHER_H_

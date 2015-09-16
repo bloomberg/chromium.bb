@@ -18,6 +18,7 @@
     '../mojo/mojo_services.gyp:network_service_bindings_lib',
     '../mojo/mojo_services.gyp:updater_bindings_lib',
     '../mojo/mojo_shell.gyp:mojo_shell_lib',
+    '../mojo/mojo_shell.gyp:mojo_fetcher_lib',
     '../net/net.gyp:net',
     '../net/net.gyp:net_extras',
     '../skia/skia.gyp:skia',

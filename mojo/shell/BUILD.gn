@@ -8,6 +8,7 @@ import("//testing/test.gni")
 source_set("shell") {
   output_name = "mojo_shell"
   sources = [
+    "application_fetcher.h",
     "application_instance.cc",
     "application_instance.h",
     "application_loader.h",
@@ -25,19 +26,13 @@ source_set("shell") {
     "fetcher.h",
     "identity.cc",
     "identity.h",
-    "local_fetcher.cc",
-    "local_fetcher.h",
     "native_runner.h",
-    "network_fetcher.cc",
-    "network_fetcher.h",
     "query_util.cc",
     "query_util.h",
     "static_application_loader.cc",
     "static_application_loader.h",
     "switches.cc",
     "switches.h",
-    "update_fetcher.cc",
-    "update_fetcher.h",
   ]
 
   public_deps = [
