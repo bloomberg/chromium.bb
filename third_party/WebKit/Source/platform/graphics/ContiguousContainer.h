@@ -82,7 +82,7 @@ private:
     // Declares itself as a forward iterator, but also supports a few more
     // things. The whole random access iterator interface is a bit much.
     template <typename BaseIterator, typename ValueType>
-    class IteratorWrapper : public std::iterator<ValueType, std::forward_iterator_tag> {
+    class IteratorWrapper : public std::iterator<std::forward_iterator_tag, ValueType> {
     public:
         IteratorWrapper() {}
         bool operator==(const IteratorWrapper& other) const { return m_it == other.m_it; }
