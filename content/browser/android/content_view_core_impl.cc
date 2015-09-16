@@ -21,7 +21,6 @@
 #include "content/browser/android/interstitial_page_delegate_android.h"
 #include "content/browser/android/java/gin_java_bridge_dispatcher_host.h"
 #include "content/browser/android/load_url_params.h"
-#include "content/browser/android/popup_touch_handle_drawable.h"
 #include "content/browser/frame_host/interstitial_page_impl.h"
 #include "content/browser/geolocation/geolocation_service_context.h"
 #include "content/browser/media/media_web_contents_observer.h"
@@ -515,13 +514,6 @@ void ContentViewCoreImpl::OnGestureEventAck(const blink::WebGestureEvent& event,
         // However, if that fling went unconsumed, we still need to let the
         // listeners know that scrolling has ended.
         Java_ContentViewCore_onScrollEndEventAck(env, j_obj.obj());
-      }
-
-      if (ack_result == INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS) {
-        // The view expects the fling velocity in pixels/s.
-        Java_ContentViewCore_onFlingStartEventHadNoConsumer(env, j_obj.obj(),
-            event.data.flingStart.velocityX * dpi_scale(),
-            event.data.flingStart.velocityY * dpi_scale());
       }
       break;
     case WebInputEvent::GestureFlingCancel:

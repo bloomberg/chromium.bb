@@ -63,4 +63,14 @@ public class GestureStateListener {
      * but was not handled.
      */
     public void onShowUnhandledTapUIIfNeeded(int x, int y) {}
+
+    /**
+     * Called when the gesture source (ContentViewCore) loses window focus.
+     */
+    public void onWindowFocusChanged(boolean hasWindowFocus) {}
+
+    /**
+     * Called when the gesture source (ContentViewCore) is being destroyed.
+     */
+    public void onDestroyed() {}
 }

@@ -8,6 +8,7 @@ import android.annotation.SuppressLint;
 import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
+import android.os.SystemClock;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,6 +22,7 @@ import org.chromium.content.browser.ContainerViewObserver;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.PositionObserver;
 import org.chromium.content.browser.ViewPositionObserver;
+import org.chromium.content_public.browser.GestureStateListener;
 import org.chromium.ui.touch_selection.TouchHandleOrientation;
 
 import java.lang.reflect.InvocationTargetException;
@@ -61,12 +63,18 @@ public class PopupTouchHandleDrawable extends View {
     private int mOrientation = TouchHandleOrientation.UNDEFINED;
 
     // Length of the delay before fading in after the last page movement.
-    private static final int FADE_IN_DELAY_MS = 300;
+    private static final int MOVING_FADE_IN_DELAY_MS = 300;
     private static final int FADE_IN_DURATION_MS = 200;
     private Runnable mDeferredHandleFadeInRunnable;
     private long mFadeStartTime;
+    private long mTemporarilyHiddenExpireTime;
     private boolean mVisible;
+    private boolean mScrolling;
+    private boolean mFocused;
     private boolean mTemporarilyHidden;
+
+    // Gesture accounting for handle hiding while scrolling.
+    private final GestureStateListener mGestureStateListener;
 
     // There are no guarantees that the side effects of setting the position of
     // the PopupWindow and the visibility of its content View will be realized
@@ -80,19 +88,28 @@ public class PopupTouchHandleDrawable extends View {
     private Runnable mInvalidationRunnable;
     private boolean mHasPendingInvalidate;
 
-    public PopupTouchHandleDrawable(ContentViewCore contentViewCore) {
+    private PopupTouchHandleDrawable(ContentViewCore contentViewCore) {
         super(contentViewCore.getContainerView().getContext());
         mContentViewCore = contentViewCore;
         mContainer =
                 new PopupWindow(getContext(), null, android.R.attr.textSelectHandleWindowStyle);
         mContainer.setSplitTouchEnabled(true);
         mContainer.setClippingEnabled(false);
+
+        // The built-in PopupWindow animation causes jank when transitioning between
+        // visibility states. We use a custom fade-in animation when necessary.
         mContainer.setAnimationStyle(0);
+
+        // The SUB_PANEL window layout type improves z-ordering with respect to
+        // other popup-based elements.
+        setWindowLayoutType(mContainer, WindowManager.LayoutParams.TYPE_APPLICATION_SUB_PANEL);
         mContainer.setWidth(ViewGroup.LayoutParams.WRAP_CONTENT);
         mContainer.setHeight(ViewGroup.LayoutParams.WRAP_CONTENT);
-        setWindowLayoutType(mContainer, WindowManager.LayoutParams.TYPE_APPLICATION_SUB_PANEL);
+
         mAlpha = 1.f;
         mVisible = getVisibility() == VISIBLE;
+        mFocused = mContentViewCore.getContainerView().hasWindowFocus();
+
         mParentPositionObserver = new ViewPositionObserver(mContentViewCore.getContainerView());
         mParentPositionListener = new PositionObserver.Listener() {
             @Override
@@ -112,6 +129,37 @@ public class PopupTouchHandleDrawable extends View {
                 }
             }
         };
+        mGestureStateListener = new GestureStateListener() {
+            @Override
+            public void onScrollStarted(int scrollOffsetX, int scrollOffsetY) {
+                setIsScrolling(true);
+            }
+            @Override
+            public void onScrollEnded(int scrollOffsetX, int scrollOffsetY) {
+                setIsScrolling(false);
+            }
+            @Override
+            public void onFlingStartGesture(int vx, int vy, int scrollOffsetY, int scrollExtentY) {
+                // Fling accounting is unreliable in WebView, as the embedder
+                // can override onScroll() and suppress fling ticking. At best
+                // we have to rely on the scroll offset changing to temporarily
+                // and repeatedly keep the handles hidden.
+                setIsScrolling(false);
+            }
+            @Override
+            public void onScrollOffsetOrExtentChanged(int scrollOffsetY, int scrollExtentY) {
+                temporarilyHide();
+            }
+            @Override
+            public void onWindowFocusChanged(boolean hasWindowFocus) {
+                setIsFocused(hasWindowFocus);
+            }
+            @Override
+            public void onDestroyed() {
+                destroy();
+            }
+        };
+        mContentViewCore.addGestureStateListener(mGestureStateListener);
         mContentViewCore.addContainerViewObserver(mParentViewObserver);
     }
 
@@ -214,8 +262,12 @@ public class PopupTouchHandleDrawable extends View {
                 getRight() - getLeft(), getBottom() - getTop());
     }
 
+    private boolean isShowingAllowed() {
+        return mVisible && mFocused && !mScrolling;
+    }
+
     private void updateVisibility() {
-        int newVisibility = mVisible && !mTemporarilyHidden ? VISIBLE : INVISIBLE;
+        int newVisibility = isShowingAllowed() && !mTemporarilyHidden ? VISIBLE : INVISIBLE;
 
         // When regaining visibility, delay the visibility update by one frame
         // to ensure the PopupWindow has first been positioned properly.
@@ -231,6 +283,28 @@ public class PopupTouchHandleDrawable extends View {
         setVisibility(newVisibility);
     }
 
+    private void setIsScrolling(boolean scrolling) {
+        if (mScrolling == scrolling) return;
+        mScrolling = scrolling;
+        onVisibilityInputChanged();
+    }
+
+    private void setIsFocused(boolean focused) {
+        if (mFocused == focused) return;
+        mFocused = focused;
+        onVisibilityInputChanged();
+    }
+
+    private void onVisibilityInputChanged() {
+        if (!mContainer.isShowing()) return;
+        if (isShowingAllowed()) {
+            rescheduleFadeIn();
+        } else {
+            cancelFadeIn();
+            updateVisibility();
+        }
+    }
+
     private void updateAlpha() {
         if (mAlpha == 1.f) return;
         long currentTimeMillis = AnimationUtils.currentAnimationTimeMillis();
@@ -240,7 +314,9 @@ public class PopupTouchHandleDrawable extends View {
     }
 
     private void temporarilyHide() {
+        if (!mContainer.isShowing()) return;
         mTemporarilyHidden = true;
+        mTemporarilyHiddenExpireTime = SystemClock.uptimeMillis() + MOVING_FADE_IN_DELAY_MS;
         updateVisibility();
         rescheduleFadeIn();
     }
@@ -269,22 +345,28 @@ public class PopupTouchHandleDrawable extends View {
     }
 
     private void rescheduleFadeIn() {
+        if (!isShowingAllowed()) return;
         if (mDeferredHandleFadeInRunnable == null) {
             mDeferredHandleFadeInRunnable = new Runnable() {
                 @Override
                 public void run() {
-                    if (mContentViewCore.isScrollInProgress()) {
-                        rescheduleFadeIn();
-                        return;
-                    }
+                    assert isShowingAllowed();
                     mTemporarilyHidden = false;
+                    mTemporarilyHiddenExpireTime = 0;
                     beginFadeIn();
                 }
             };
         }
 
+        cancelFadeIn();
+        long now = SystemClock.uptimeMillis();
+        long delay = Math.max(0, mTemporarilyHiddenExpireTime - now);
+        postOnAnimationDelayed(mDeferredHandleFadeInRunnable, delay);
+    }
+
+    private void cancelFadeIn() {
+        if (mDeferredHandleFadeInRunnable == null) return;
         removeCallbacks(mDeferredHandleFadeInRunnable);
-        postOnAnimationDelayed(mDeferredHandleFadeInRunnable, FADE_IN_DELAY_MS);
     }
 
     private void beginFadeIn() {
@@ -331,13 +413,16 @@ public class PopupTouchHandleDrawable extends View {
 
     @CalledByNative
     private void destroy() {
+        if (mContentViewCore == null) return;
         hide();
+        mContentViewCore.removeGestureStateListener(mGestureStateListener);
         mContentViewCore.removeContainerViewObserver(mParentViewObserver);
         mContentViewCore = null;
     }
 
     @CalledByNative
     private void show() {
+        if (mContentViewCore == null) return;
         if (mContainer.isShowing()) return;
 
         // While hidden, the parent position may have become stale. It must be updated before
@@ -353,8 +438,9 @@ public class PopupTouchHandleDrawable extends View {
     @CalledByNative
     private void hide() {
         mTemporarilyHidden = false;
+        mTemporarilyHiddenExpireTime = 0;
         mAlpha = 1.0f;
-        if (mDeferredHandleFadeInRunnable != null) removeCallbacks(mDeferredHandleFadeInRunnable);
+        cancelFadeIn();
         if (mContainer.isShowing()) mContainer.dismiss();
         mParentPositionObserver.clearListener();
     }
@@ -366,19 +452,14 @@ public class PopupTouchHandleDrawable extends View {
         if (mPositionX == x && mPositionY == y) return;
         mPositionX = x;
         mPositionY = y;
-        if (mContentViewCore.isScrollInProgress()) {
-            temporarilyHide();
-        } else {
-            scheduleInvalidate();
-        }
+        if (getVisibility() == VISIBLE) scheduleInvalidate();
     }
 
     @CalledByNative
     private void setVisible(boolean visible) {
+        if (mVisible == visible) return;
         mVisible = visible;
-        int visibility = visible ? VISIBLE : INVISIBLE;
-        if (getVisibility() == visibility) return;
-        scheduleInvalidate();
+        onVisibilityInputChanged();
     }
 
     @CalledByNative
