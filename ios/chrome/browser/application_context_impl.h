@@ -26,6 +26,7 @@ class ApplicationContextImpl : public ApplicationContext {
   const std::string& GetApplicationLocale() override;
   ios::ChromeBrowserStateManager* GetChromeBrowserStateManager() override;
   metrics::MetricsService* GetMetricsService() override;
+  policy::BrowserPolicyConnector* GetBrowserPolicyConnector() override;
   rappor::RapporService* GetRapporService() override;
 
   base::ThreadChecker thread_checker_;

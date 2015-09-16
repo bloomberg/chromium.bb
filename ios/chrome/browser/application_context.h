@@ -21,6 +21,10 @@ namespace net {
 class URLRequestContextGetter;
 }
 
+namespace policy {
+class BrowserPolicyConnector;
+}
+
 namespace rappor {
 class RapporService;
 }
@@ -50,6 +54,9 @@ class ApplicationContext {
 
   // Gets the MetricsService used by this application.
   virtual metrics::MetricsService* GetMetricsService() = 0;
+
+  // Gets the policy connector, creating and starting it if necessary.
+  virtual policy::BrowserPolicyConnector* GetBrowserPolicyConnector() = 0;
 
   // Gets the RapporService. May returns null.
   virtual rappor::RapporService* GetRapporService() = 0;

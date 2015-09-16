@@ -51,6 +51,11 @@ metrics::MetricsService* ApplicationContextImpl::GetMetricsService() {
   return ios::GetChromeBrowserProvider()->GetMetricsService();
 }
 
+policy::BrowserPolicyConnector*
+ApplicationContextImpl::GetBrowserPolicyConnector() {
+  return ios::GetChromeBrowserProvider()->GetBrowserPolicyConnector();
+}
+
 rappor::RapporService* ApplicationContextImpl::GetRapporService() {
   return ios::GetChromeBrowserProvider()->GetRapporService();
 }
