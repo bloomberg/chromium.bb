@@ -25,16 +25,12 @@
 #include "config.h"
 #include "platform/graphics/GraphicsContext.h"
 
-#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/graphics/BitmapImage.h"
-#include "platform/graphics/ImageBuffer.h"
+#include "platform/graphics/paint/DisplayItemList.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkPicture.h"
 #include "third_party/skia/include/core/SkShader.h"
-#include "third_party/skia/include/effects/SkBlurDrawLooper.h"
-#include "third_party/skia/include/effects/SkBlurImageFilter.h"
-#include "third_party/skia/include/effects/SkBlurMaskFilter.h"
 #include <gtest/gtest.h>
 
 namespace blink {
@@ -66,27 +62,33 @@ namespace blink {
         } \
 }
 
-TEST(GraphicsContextTest, trackDisplayListRecording)
+TEST(GraphicsContextTest, pictureRecording)
 {
     SkBitmap bitmap;
     bitmap.allocN32Pixels(100, 100);
     bitmap.eraseColor(0);
     SkCanvas canvas(bitmap);
 
-    OwnPtr<GraphicsContext> context = GraphicsContext::deprecatedCreateWithCanvas(&canvas);
+    OwnPtr<DisplayItemList> displayItemList = DisplayItemList::create();
+    GraphicsContext context(displayItemList.get());
 
     Color opaque(1.0f, 0.0f, 0.0f, 1.0f);
+    FloatRect bounds(0, 0, 100, 100);
 
-    context->fillRect(FloatRect(0, 0, 50, 50), opaque, SkXfermode::kSrcOver_Mode);
+    context.beginRecording(bounds);
+    context.fillRect(FloatRect(0, 0, 50, 50), opaque, SkXfermode::kSrcOver_Mode);
+    RefPtr<const SkPicture> picture = context.endRecording();
+    canvas.drawPicture(picture.get());
     EXPECT_OPAQUE_PIXELS_ONLY_IN_RECT(bitmap, IntRect(0, 0, 50, 50))
 
-    FloatRect bounds(0, 0, 100, 100);
-    context->beginRecording(bounds);
-    context->fillRect(FloatRect(0, 0, 100, 100), opaque, SkXfermode::kSrcOver_Mode);
-    RefPtr<const SkPicture> picture = context->endRecording();
-
+    context.beginRecording(bounds);
+    context.fillRect(FloatRect(0, 0, 100, 100), opaque, SkXfermode::kSrcOver_Mode);
+    picture = context.endRecording();
     // Make sure the opaque region was unaffected by the rect drawn during Picture recording.
     EXPECT_OPAQUE_PIXELS_ONLY_IN_RECT(bitmap, IntRect(0, 0, 50, 50))
+
+    canvas.drawPicture(picture.get());
+    EXPECT_OPAQUE_PIXELS_ONLY_IN_RECT(bitmap, IntRect(0, 0, 100, 100))
 }
 
 TEST(GraphicsContextTest, UnboundedDrawsAreClipped)
@@ -96,29 +98,35 @@ TEST(GraphicsContextTest, UnboundedDrawsAreClipped)
     bitmap.eraseColor(0);
     SkCanvas canvas(bitmap);
 
-    OwnPtr<GraphicsContext> context = GraphicsContext::deprecatedCreateWithCanvas(&canvas);
-
     Color opaque(1.0f, 0.0f, 0.0f, 1.0f);
     Color alpha(0.0f, 0.0f, 0.0f, 0.0f);
+    FloatRect bounds(0, 0, 100, 100);
 
-    context->setShouldAntialias(false);
-    context->setMiterLimit(1);
-    context->setStrokeThickness(5);
-    context->setLineCap(SquareCap);
-    context->setStrokeStyle(SolidStroke);
+    OwnPtr<DisplayItemList> displayItemList = DisplayItemList::create();
+    GraphicsContext context(displayItemList.get());
+    context.beginRecording(bounds);
+
+    context.setShouldAntialias(false);
+    context.setMiterLimit(1);
+    context.setStrokeThickness(5);
+    context.setLineCap(SquareCap);
+    context.setStrokeStyle(SolidStroke);
 
     // Make skia unable to compute fast bounds for our paths.
     DashArray dashArray;
     dashArray.append(1);
     dashArray.append(0);
-    context->setLineDash(dashArray, 0);
+    context.setLineDash(dashArray, 0);
 
     // Make the device opaque in 10,10 40x40.
-    context->fillRect(FloatRect(10, 10, 40, 40), opaque, SkXfermode::kSrcOver_Mode);
+    context.fillRect(FloatRect(10, 10, 40, 40), opaque, SkXfermode::kSrcOver_Mode);
+    RefPtr<const SkPicture> picture = context.endRecording();
+    canvas.drawPicture(picture.get());
     EXPECT_OPAQUE_PIXELS_ONLY_IN_RECT(bitmap, IntRect(10, 10, 40, 40));
 
+    context.beginRecording(bounds);
     // Clip to the left edge of the opaque area.
-    context->clip(IntRect(10, 10, 10, 40));
+    context.clip(IntRect(10, 10, 10, 40));
 
     // Draw a path that gets clipped. This should destroy the opaque area but only inside the clip.
     Path path;
@@ -127,8 +135,10 @@ TEST(GraphicsContextTest, UnboundedDrawsAreClipped)
     SkPaint paint;
     paint.setColor(alpha.rgb());
     paint.setXfermodeMode(SkXfermode::kSrcOut_Mode);
-    context->drawPath(path.skPath(), paint);
+    context.drawPath(path.skPath(), paint);
 
+    picture = context.endRecording();
+    canvas.drawPicture(picture.get());
     EXPECT_OPAQUE_PIXELS_IN_RECT(bitmap, IntRect(20, 10, 30, 40));
 }
 

@@ -50,20 +50,8 @@
 namespace blink {
 
 GraphicsContext::GraphicsContext(DisplayItemList* displayItemList, DisabledMode disableContextOrPainting, SkMetaData* metaData)
-    : GraphicsContext(nullptr, displayItemList, disableContextOrPainting, metaData)
-{
-    // TODO(chrishtr): switch the type of the parameter to DisplayItemList&.
-    ASSERT(displayItemList);
-}
-
-PassOwnPtr<GraphicsContext> GraphicsContext::deprecatedCreateWithCanvas(SkCanvas* canvas, DisabledMode disableContextOrPainting, SkMetaData* metaData)
-{
-    return adoptPtr(new GraphicsContext(canvas, nullptr, disableContextOrPainting, metaData));
-}
-
-GraphicsContext::GraphicsContext(SkCanvas* canvas, DisplayItemList* displayItemList, DisabledMode disableContextOrPainting, SkMetaData* metaData)
-    : m_canvas(canvas)
-    , m_originalCanvas(canvas)
+    : m_canvas(nullptr)
+    , m_originalCanvas(nullptr)
     , m_displayItemList(displayItemList)
     , m_paintStateStack()
     , m_paintStateIndex(0)
@@ -77,6 +65,9 @@ GraphicsContext::GraphicsContext(SkCanvas* canvas, DisplayItemList* displayItemL
     , m_printing(false)
     , m_hasMetaData(!!metaData)
 {
+    // TODO(chrishtr): switch the type of the parameter to DisplayItemList&.
+    ASSERT(displayItemList);
+
     if (metaData)
         m_metaData = *metaData;
 
@@ -101,11 +92,6 @@ GraphicsContext::~GraphicsContext()
         ASSERT(!saveCount());
     }
 #endif
-}
-
-void GraphicsContext::resetCanvas(SkCanvas* canvas)
-{
-    m_canvas = canvas;
 }
 
 void GraphicsContext::save()

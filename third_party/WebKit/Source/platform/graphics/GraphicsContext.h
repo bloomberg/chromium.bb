@@ -71,20 +71,12 @@ public:
 
     explicit GraphicsContext(DisplayItemList*, DisabledMode = NothingDisabled, SkMetaData* = 0);
 
-    // TODO(chrishtr): Once Slimming Paint launches this should be removed (crbug.com/471333).
-    // A 0 canvas is allowed, but in such cases the context must only have canvas
-    // related commands called when within a beginRecording/endRecording block.
-    // Furthermore, save/restore calls must be balanced any time the canvas is 0.
-    static PassOwnPtr<GraphicsContext> deprecatedCreateWithCanvas(SkCanvas*, DisabledMode = NothingDisabled, SkMetaData* = 0);
-
     ~GraphicsContext();
 
     SkCanvas* canvas() { return m_canvas; }
     const SkCanvas* canvas() const { return m_canvas; }
 
     DisplayItemList* displayItemList() { return m_displayItemList; }
-
-    void resetCanvas(SkCanvas*);
 
     bool contextDisabled() const { return m_disabledState; }
 
@@ -94,7 +86,6 @@ public:
 
 #if ENABLE(ASSERT)
     unsigned saveCount() const;
-    void disableDestructionChecks() { m_disableDestructionChecks = true; }
 #endif
 
     float strokeThickness() const { return immutableState()->strokeData().thickness(); }
@@ -283,8 +274,6 @@ public:
     static PassRefPtr<SkColorFilter> WebCoreColorFilterToSkiaColorFilter(ColorFilter);
 
 private:
-    explicit GraphicsContext(SkCanvas*, DisplayItemList*, DisabledMode = NothingDisabled, SkMetaData* = 0);
-
     const GraphicsContextState* immutableState() const { return m_paintState; }
 
     GraphicsContextState* mutableState()
