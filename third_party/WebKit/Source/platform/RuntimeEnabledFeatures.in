@@ -121,10 +121,8 @@ Permissions status=stable
 PermissionsRequestRevoke status=experimental
 PointerEvent
 PreciseMemoryInfo
-// This feature is deprecated and replaced by EncryptedMedia.
-// See http://crbug.com/451117 for current status.
-PrefixedEncryptedMedia status=stable
-// This feature is deprecated and we are evangalizing affected sites.
+PrefixedEncryptedMedia status=deprecated
+// This feature is deprecated and we are evangelizing affected sites.
 // See https://crbug.com/346236 for current status.
 PrefixedVideoFullscreen status=stable
 Presentation status=stable

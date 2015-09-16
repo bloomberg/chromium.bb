@@ -289,10 +289,6 @@ html element audio
     property muted
     property networkState
     property onencrypted
-    property onwebkitkeyadded
-    property onwebkitkeyerror
-    property onwebkitkeymessage
-    property onwebkitneedkey
     property pause
     property paused
     property play
@@ -306,10 +302,7 @@ html element audio
     property src
     property textTracks
     property volume
-    property webkitAddKey
     property webkitAudioDecodedByteCount
-    property webkitCancelKeyRequest
-    property webkitGenerateKeyRequest
     property webkitVideoDecodedByteCount
 html element b
 html element base
@@ -1006,10 +999,6 @@ html element video
     property muted
     property networkState
     property onencrypted
-    property onwebkitkeyadded
-    property onwebkitkeyerror
-    property onwebkitkeymessage
-    property onwebkitneedkey
     property pause
     property paused
     property play
@@ -1026,9 +1015,7 @@ html element video
     property videoHeight
     property videoWidth
     property volume
-    property webkitAddKey
     property webkitAudioDecodedByteCount
-    property webkitCancelKeyRequest
     property webkitDecodedFrameCount
     property webkitDisplayingFullscreen
     property webkitDroppedFrameCount
@@ -1036,7 +1023,6 @@ html element video
     property webkitEnterFullscreen
     property webkitExitFullScreen
     property webkitExitFullscreen
-    property webkitGenerateKeyRequest
     property webkitSupportsFullscreen
     property webkitVideoDecodedByteCount
     property width
