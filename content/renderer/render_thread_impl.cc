@@ -68,6 +68,7 @@
 #include "content/common/gpu/gpu_messages.h"
 #include "content/common/gpu/gpu_process_launch_causes.h"
 #include "content/common/render_frame_setup.mojom.h"
+#include "content/common/render_process_messages.h"
 #include "content/common/resource_messages.h"
 #include "content/common/service_worker/embedded_worker_setup.mojom.h"
 #include "content/common/view_messages.h"
@@ -1458,7 +1459,7 @@ base::WaitableEvent* RenderThreadImpl::GetShutdownEvent() {
 #if defined(OS_WIN)
 void RenderThreadImpl::PreCacheFontCharacters(const LOGFONT& log_font,
                                               const base::string16& str) {
-  Send(new FrameHostMsg_PreCacheFontCharacters(log_font, str));
+  Send(new RenderProcessHostMsg_PreCacheFontCharacters(log_font, str));
 }
 
 #endif  // OS_WIN

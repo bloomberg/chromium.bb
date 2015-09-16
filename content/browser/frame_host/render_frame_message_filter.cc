@@ -20,15 +20,9 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "url/gurl.h"
 
-#if defined(OS_MACOSX)
-#include "content/common/mac/font_descriptor.h"
-#else
+#if !defined(OS_MACOSX)
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
-#endif
-
-#if defined(OS_WIN)
-#include "content/common/font_cache_dispatcher_win.h"
 #endif
 
 #if defined(ENABLE_PLUGINS)
@@ -296,12 +290,6 @@ bool RenderFrameMessageFilter::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(FrameHostMsg_CookiesEnabled, OnCookiesEnabled)
     IPC_MESSAGE_HANDLER(FrameHostMsg_Are3DAPIsBlocked, OnAre3DAPIsBlocked)
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidLose3DContext, OnDidLose3DContext)
-#if defined(OS_MACOSX)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(FrameHostMsg_LoadFont, OnLoadFont)
-#elif defined(OS_WIN)
-    IPC_MESSAGE_HANDLER(FrameHostMsg_PreCacheFontCharacters,
-                        OnPreCacheFontCharacters)
-#endif
 #if defined(ENABLE_PLUGINS)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(FrameHostMsg_GetPlugins, OnGetPlugins)
     IPC_MESSAGE_HANDLER(FrameHostMsg_GetPluginInfo, OnGetPluginInfo)
@@ -457,69 +445,6 @@ void RenderFrameMessageFilter::OnDidLose3DContext(
       top_origin_url, guilt);
 }
 
-#if defined(OS_MACOSX)
-
-void RenderFrameMessageFilter::OnLoadFont(const FontDescriptor& font,
-                                          IPC::Message* reply_msg) {
-  FontLoader::Result* result = new FontLoader::Result;
-
-  BrowserThread::PostTaskAndReply(
-      BrowserThread::FILE, FROM_HERE,
-      base::Bind(&FontLoader::LoadFont, font, result),
-      base::Bind(&RenderFrameMessageFilter::SendLoadFontReply, this, reply_msg,
-                 base::Owned(result)));
-}
-
-void RenderFrameMessageFilter::SendLoadFontReply(IPC::Message* reply,
-                                                 FontLoader::Result* result) {
-  base::SharedMemoryHandle handle;
-  if (result->font_data_size == 0 || result->font_id == 0) {
-    result->font_data_size = 0;
-    result->font_id = 0;
-    handle = base::SharedMemory::NULLHandle();
-  } else {
-    result->font_data.GiveToProcess(base::GetCurrentProcessHandle(), &handle);
-  }
-  FrameHostMsg_LoadFont::WriteReplyParams(
-      reply, result->font_data_size, handle, result->font_id);
-  Send(reply);
-}
-
-#elif defined(OS_WIN)
-
-void RenderFrameMessageFilter::OnPreCacheFontCharacters(
-    const LOGFONT& font,
-    const base::string16& str) {
-  // TODO(scottmg): pdf/ppapi still require the renderer to be able to precache
-  // GDI fonts (http://crbug.com/383227), even when using DirectWrite.
-  // Eventually this shouldn't be added and should be moved to
-  // FontCacheDispatcher too. http://crbug.com/356346.
-
-  // First, comments from FontCacheDispatcher::OnPreCacheFont do apply here too.
-  // Except that for True Type fonts,
-  // GetTextMetrics will not load the font in memory.
-  // The only way windows seem to load properly, it is to create a similar
-  // device (like the one in which we print), then do an ExtTextOut,
-  // as we do in the printing thread, which is sandboxed.
-  HDC hdc = CreateEnhMetaFile(NULL, NULL, NULL, NULL);
-  HFONT font_handle = CreateFontIndirect(&font);
-  DCHECK(NULL != font_handle);
-
-  HGDIOBJ old_font = SelectObject(hdc, font_handle);
-  DCHECK(NULL != old_font);
-
-  ExtTextOut(hdc, 0, 0, ETO_GLYPH_INDEX, 0, str.c_str(), str.length(), NULL);
-
-  SelectObject(hdc, old_font);
-  DeleteObject(font_handle);
-
-  HENHMETAFILE metafile = CloseEnhMetaFile(hdc);
-
-  if (metafile)
-    DeleteEnhMetaFile(metafile);
-}
-
-#endif  // OS_MACOSX
 
 #if defined(ENABLE_PLUGINS)
 

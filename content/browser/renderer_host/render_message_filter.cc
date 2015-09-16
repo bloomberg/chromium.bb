@@ -61,9 +61,18 @@
 #include "ui/gfx/color_profile.h"
 #include "url/gurl.h"
 
+#if defined(OS_MACOSX)
+#include "content/common/mac/font_descriptor.h"
+#endif
+
+#if defined(OS_WIN)
+#include "content/common/font_cache_dispatcher_win.h"
+#endif
+
 #if defined(OS_POSIX)
 #include "base/file_descriptor_posix.h"
 #endif
+
 #if defined(OS_ANDROID)
 #include "media/base/android/webaudio_media_codec_bridge.h"
 #endif
@@ -170,7 +179,11 @@ bool RenderMessageFilter::OnMessageReceived(const IPC::Message& message) {
                         OnCacheableMetadataAvailable)
     IPC_MESSAGE_HANDLER(ViewHostMsg_GetAudioHardwareConfig,
                         OnGetAudioHardwareConfig)
-#if defined(OS_WIN)
+#if defined(OS_MACOSX)
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(RenderProcessHostMsg_LoadFont, OnLoadFont)
+#elif defined(OS_WIN)
+    IPC_MESSAGE_HANDLER(RenderProcessHostMsg_PreCacheFontCharacters,
+                        OnPreCacheFontCharacters)
     IPC_MESSAGE_HANDLER(ViewHostMsg_GetMonitorColorProfile,
                         OnGetMonitorColorProfile)
 #endif
@@ -305,12 +318,74 @@ void RenderMessageFilter::OnGetAudioHardwareConfig(
       media::AudioManagerBase::kDefaultDeviceId);
 }
 
-#if defined(OS_WIN)
+#if defined(OS_MACOSX)
+
+void RenderMessageFilter::OnLoadFont(const FontDescriptor& font,
+                                          IPC::Message* reply_msg) {
+  FontLoader::Result* result = new FontLoader::Result;
+
+  BrowserThread::PostTaskAndReply(
+      BrowserThread::FILE, FROM_HERE,
+      base::Bind(&FontLoader::LoadFont, font, result),
+      base::Bind(&RenderMessageFilter::SendLoadFontReply, this, reply_msg,
+                 base::Owned(result)));
+}
+
+void RenderMessageFilter::SendLoadFontReply(IPC::Message* reply,
+                                                 FontLoader::Result* result) {
+  base::SharedMemoryHandle handle;
+  if (result->font_data_size == 0 || result->font_id == 0) {
+    result->font_data_size = 0;
+    result->font_id = 0;
+    handle = base::SharedMemory::NULLHandle();
+  } else {
+    result->font_data.GiveToProcess(base::GetCurrentProcessHandle(), &handle);
+  }
+  RenderProcessHostMsg_LoadFont::WriteReplyParams(
+      reply, result->font_data_size, handle, result->font_id);
+  Send(reply);
+}
+
+#elif defined(OS_WIN)
+
+void RenderMessageFilter::OnPreCacheFontCharacters(
+    const LOGFONT& font,
+    const base::string16& str) {
+  // TODO(scottmg): pdf/ppapi still require the renderer to be able to precache
+  // GDI fonts (http://crbug.com/383227), even when using DirectWrite.
+  // Eventually this shouldn't be added and should be moved to
+  // FontCacheDispatcher too. http://crbug.com/356346.
+
+  // First, comments from FontCacheDispatcher::OnPreCacheFont do apply here too.
+  // Except that for True Type fonts,
+  // GetTextMetrics will not load the font in memory.
+  // The only way windows seem to load properly, it is to create a similar
+  // device (like the one in which we print), then do an ExtTextOut,
+  // as we do in the printing thread, which is sandboxed.
+  HDC hdc = CreateEnhMetaFile(NULL, NULL, NULL, NULL);
+  HFONT font_handle = CreateFontIndirect(&font);
+  DCHECK(NULL != font_handle);
+
+  HGDIOBJ old_font = SelectObject(hdc, font_handle);
+  DCHECK(NULL != old_font);
+
+  ExtTextOut(hdc, 0, 0, ETO_GLYPH_INDEX, 0, str.c_str(), str.length(), NULL);
+
+  SelectObject(hdc, old_font);
+  DeleteObject(font_handle);
+
+  HENHMETAFILE metafile = CloseEnhMetaFile(hdc);
+
+  if (metafile)
+    DeleteEnhMetaFile(metafile);
+}
+
 void RenderMessageFilter::OnGetMonitorColorProfile(std::vector<char>* profile) {
   DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::IO));
   *profile = g_color_profile.Get().profile();
 }
-#endif
+
+#endif  // OS_*
 
 void RenderMessageFilter::DownloadUrl(int render_view_id,
                                       int render_frame_id,

@@ -547,7 +547,7 @@ bool RendererBlinkPlatformImpl::SandboxSupport::loadFont(NSFont* src_font,
   uint32 font_data_size;
   FontDescriptor src_font_descriptor(src_font);
   base::SharedMemoryHandle font_data;
-  if (!RenderThread::Get()->Send(new FrameHostMsg_LoadFont(
+  if (!RenderThread::Get()->Send(new RenderProcessHostMsg_LoadFont(
         src_font_descriptor, &font_data_size, &font_data, font_id))) {
     *out = NULL;
     *font_id = 0;
@@ -556,7 +556,7 @@ bool RendererBlinkPlatformImpl::SandboxSupport::loadFont(NSFont* src_font,
 
   if (font_data_size == 0 || font_data == base::SharedMemory::NULLHandle() ||
       *font_id == 0) {
-    LOG(ERROR) << "Bad response from FrameHostMsg_LoadFont() for " <<
+    LOG(ERROR) << "Bad response from RenderProcessHostMsg_LoadFont() for " <<
         src_font_descriptor.font_name;
     *out = NULL;
     *font_id = 0;
