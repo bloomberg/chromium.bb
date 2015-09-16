@@ -125,7 +125,9 @@ abstract class EnhancedBookmarkRow extends FrameLayout implements EnhancedBookma
                 @Override
                 public boolean isEnabled(int position) {
                     if (position == MOVE_POSITION) {
-                        return mDelegate.getModel().getBookmarkById(mBookmarkId).isMovable();
+                        BookmarkItem bookmark = mDelegate.getModel().getBookmarkById(mBookmarkId);
+                        if (bookmark == null) return false;
+                        return bookmark.isMovable();
                     }
                     return true;
                 }
