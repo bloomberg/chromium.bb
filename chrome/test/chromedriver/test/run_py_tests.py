@@ -143,6 +143,11 @@ _ANDROID_NEGATIVE_FILTER['chrome_stable'] = (
     _ANDROID_NEGATIVE_FILTER['chrome'])
 _ANDROID_NEGATIVE_FILTER['chrome_beta'] = (
     _ANDROID_NEGATIVE_FILTER['chrome'])
+_ANDROID_NEGATIVE_FILTER['chromium'] = (
+    _ANDROID_NEGATIVE_FILTER['chrome'] + [
+        'ChromeDriverTest.testSwitchToWindow',
+    ]
+)
 _ANDROID_NEGATIVE_FILTER['chromedriver_webview_shell'] = (
     _ANDROID_NEGATIVE_FILTER['chrome'] + [
         'PerformanceLoggerTest.testPerformanceLogger',

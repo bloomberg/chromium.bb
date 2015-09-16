@@ -63,6 +63,12 @@ INSTRUMENTATION_TESTS = dict((suite.name, suite) for suite in [
       'ContentShellTest',
       'content:content/test/data/android/device_files',
       isolate_file_path='content/content_shell_test_apk.isolate'),
+    I('ChromePublic',
+      'ChromePublic.apk',
+      'org.chromium.chrome',
+      'ChromePublicTest',
+      'chrome:chrome/test/data/android/device_files',
+      isolate_file_path='chrome/chrome_public_test_apk.isolate'),
     I('AndroidWebView',
       'AndroidWebView.apk',
       'org.chromium.android_webview.shell',
@@ -188,8 +194,9 @@ def RunChromeDriverTests(options):
   """Run all the steps for running chromedriver tests."""
   bb_annotations.PrintNamedStep('chromedriver_annotation')
   RunCmd(['chrome/test/chromedriver/run_buildbot_steps.py',
-          '--android-packages=%s,%s,%s' %
-          ('chrome_stable',
+          '--android-packages=%s,%s,%s,%s' %
+          ('chromium',
+           'chrome_stable',
            'chrome_beta',
            'chromedriver_webview_shell'),
           '--revision=%s' % _GetRevision(options),
