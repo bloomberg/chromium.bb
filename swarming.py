@@ -691,7 +691,7 @@ def decorate_shard_output(swarming, shard_index, metadata):
 
   header = dash_pad + tag_header + dash_pad
   footer = dash_pad + tag_footer + dash_pad[:-1]
-  output = metadata.get('output', '').rstrip() + '\n'
+  output = (metadata.get('output') or '').rstrip() + '\n'
   return header + output + footer
 
 
