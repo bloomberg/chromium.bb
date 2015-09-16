@@ -2201,6 +2201,7 @@ _FUNCTION_INFO = {
   'BlitFramebufferCHROMIUM': {
     'decoder_func': 'DoBlitFramebufferCHROMIUM',
     'unit_test': False,
+    'extension': 'chromium_framebuffer_multisample',
     'extension_flag': 'chromium_framebuffer_multisample',
     'pepper_interface': 'FramebufferBlit',
     'pepper_name': 'BlitFramebufferEXT',
@@ -3267,6 +3268,7 @@ _FUNCTION_INFO = {
     'gl_test_func': 'glRenderbufferStorageMultisampleCHROMIUM',
     'expectation': False,
     'unit_test': False,
+    'extension': 'chromium_framebuffer_multisample',
     'extension_flag': 'chromium_framebuffer_multisample',
     'pepper_interface': 'FramebufferMultisample',
     'pepper_name': 'RenderbufferStorageMultisampleEXT',
@@ -4874,7 +4876,8 @@ TEST_P(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
                   "CHROMIUM_sub_image", "CHROMIUM_miscellaneous",
                   "occlusion_query_EXT", "CHROMIUM_image",
                   "CHROMIUM_copy_texture",
-                  "CHROMIUM_pixel_transfer_buffer_object"]
+                  "CHROMIUM_pixel_transfer_buffer_object",
+                  "chromium_framebuffer_multisample"]
     if func.IsCoreGLFunction() or func.GetInfo("extension") in extensions:
       f.write("MojoGLES2MakeCurrent(context_);");
       func_return = "gl" + func.original_name + "(" + \
@@ -10456,6 +10459,7 @@ class MojoGLES2Impl : public gpu::gles2::GLES2Interface {
 
 #include "base/logging.h"
 #include "third_party/mojo/src/mojo/public/c/gles2/chromium_copy_texture.h"
+#include "third_party/mojo/src/mojo/public/c/gles2/chromium_framebuffer_multisample.h"
 #include "third_party/mojo/src/mojo/public/c/gles2/chromium_image.h"
 #include "third_party/mojo/src/mojo/public/c/gles2/chromium_miscellaneous.h"
 #include "third_party/mojo/src/mojo/public/c/gles2/chromium_pixel_transfer_buffer_object.h"
@@ -11030,6 +11034,9 @@ def main(argv):
   gen.WriteMojoGLCallVisitorForExtension(
       mojo_gles2_prefix + "_chromium_pixel_transfer_buffer_object_autogen.h",
       "CHROMIUM_pixel_transfer_buffer_object")
+  gen.WriteMojoGLCallVisitorForExtension(
+      mojo_gles2_prefix + "_chromium_framebuffer_multisample_autogen.h",
+      "chromium_framebuffer_multisample")
 
   Format(gen.generated_cpp_filenames)
 
