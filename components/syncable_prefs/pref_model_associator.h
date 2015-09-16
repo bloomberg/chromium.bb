@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_PREFS_PREF_MODEL_ASSOCIATOR_H_
-#define CHROME_BROWSER_PREFS_PREF_MODEL_ASSOCIATOR_H_
+#ifndef COMPONENTS_SYNCABLE_PREFS_PREF_MODEL_ASSOCIATOR_H_
+#define COMPONENTS_SYNCABLE_PREFS_PREF_MODEL_ASSOCIATOR_H_
 
 #include <map>
 #include <set>
@@ -15,7 +15,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/observer_list.h"
 #include "base/threading/non_thread_safe.h"
-#include "chrome/browser/prefs/synced_pref_observer.h"
+#include "components/syncable_prefs/synced_pref_observer.h"
 #include "sync/api/sync_data.h"
 #include "sync/api/syncable_service.h"
 
@@ -197,4 +197,4 @@ class PrefModelAssociator
   DISALLOW_COPY_AND_ASSIGN(PrefModelAssociator);
 };
 
-#endif  // CHROME_BROWSER_PREFS_PREF_MODEL_ASSOCIATOR_H_
+#endif  // COMPONENTS_SYNCABLE_PREFS_PREF_MODEL_ASSOCIATOR_H_

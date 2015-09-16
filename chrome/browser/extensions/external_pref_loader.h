@@ -12,9 +12,9 @@
 #include "base/scoped_observer.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/external_loader.h"
-#include "chrome/browser/prefs/pref_service_syncable_observer.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "components/sync_driver/sync_service_observer.h"
+#include "components/syncable_prefs/pref_service_syncable_observer.h"
 
 class PrefServiceSyncable;
 class Profile;

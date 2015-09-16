@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/prefs/pref_service_syncable.h"
+#include "components/syncable_prefs/pref_service_syncable.h"
 
 #include "base/json/json_reader.h"
 #include "base/json/json_string_value_serializer.h"
@@ -10,10 +10,10 @@
 #include "base/message_loop/message_loop.h"
 #include "base/prefs/scoped_user_pref_update.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/prefs/pref_model_associator.h"
-#include "chrome/browser/prefs/pref_model_associator_client.h"
-#include "chrome/test/base/testing_pref_service_syncable.h"
 #include "components/pref_registry/pref_registry_syncable.h"
+#include "components/syncable_prefs/pref_model_associator.h"
+#include "components/syncable_prefs/pref_model_associator_client.h"
+#include "components/syncable_prefs/testing_pref_service_syncable.h"
 #include "sync/api/attachments/attachment_id.h"
 #include "sync/api/sync_change.h"
 #include "sync/api/sync_data.h"

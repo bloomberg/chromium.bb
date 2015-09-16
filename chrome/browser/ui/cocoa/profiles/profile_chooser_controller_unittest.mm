@@ -10,7 +10,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/prefs/pref_service_syncable.h"
 #include "chrome/browser/profiles/avatar_menu.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/services/gcm/fake_gcm_profile_service.h"
@@ -31,6 +30,7 @@
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/common/profile_management_switches.h"
+#include "components/syncable_prefs/pref_service_syncable.h"
 
 const std::string kGaiaId = "gaiaid-user@gmail.com";
 const std::string kEmail = "user@gmail.com";

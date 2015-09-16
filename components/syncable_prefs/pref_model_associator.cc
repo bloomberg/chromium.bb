@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/prefs/pref_model_associator.h"
+#include "components/syncable_prefs/pref_model_associator.h"
 
 #include "base/auto_reset.h"
 #include "base/json/json_reader.h"
@@ -13,8 +13,8 @@
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/prefs/pref_model_associator_client.h"
-#include "chrome/browser/prefs/pref_service_syncable.h"
+#include "components/syncable_prefs/pref_model_associator_client.h"
+#include "components/syncable_prefs/pref_service_syncable.h"
 #include "sync/api/sync_change.h"
 #include "sync/api/sync_error_factory.h"
 #include "sync/protocol/preference_specifics.pb.h"

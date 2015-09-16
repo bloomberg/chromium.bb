@@ -9,7 +9,6 @@
 #include "chrome/browser/dom_distiller/dom_distiller_service_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
-#include "chrome/browser/prefs/pref_service_syncable.h"
 #include "chrome/browser/prefs/pref_service_syncable_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
@@ -28,6 +27,7 @@
 #include "components/dom_distiller/core/dom_distiller_service.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/password_manager/core/browser/password_store.h"
+#include "components/syncable_prefs/pref_service_syncable.h"
 #include "content/public/browser/browser_thread.h"
 
 #if defined(ENABLE_APP_LIST)

@@ -8,9 +8,9 @@
 
 #include "base/logging.h"
 #include "build/build_config.h"
-#include "chrome/browser/prefs/pref_service_syncable.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
+#include "components/syncable_prefs/pref_service_syncable.h"
 
 #if defined(OS_ANDROID) || defined(OS_IOS)
 #include "components/proxy_config/proxy_config_pref_names.h"

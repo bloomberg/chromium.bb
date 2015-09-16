@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_PREFS_SYNCED_PREF_CHANGE_REGISTRAR_H_
-#define CHROME_BROWSER_PREFS_SYNCED_PREF_CHANGE_REGISTRAR_H_
+#ifndef COMPONENTS_SYNCABLE_PREFS_SYNCED_PREF_CHANGE_REGISTRAR_H_
+#define COMPONENTS_SYNCABLE_PREFS_SYNCED_PREF_CHANGE_REGISTRAR_H_
 
 #include <map>
 #include <string>
 
 #include "base/callback.h"
-#include "chrome/browser/prefs/pref_service_syncable.h"
-#include "chrome/browser/prefs/synced_pref_observer.h"
+#include "components/syncable_prefs/pref_service_syncable.h"
+#include "components/syncable_prefs/synced_pref_observer.h"
 
 // Manages the registration of one or more SyncedPrefObservers on a
 // PrefServiceSyncable. This is modeled after base::PrefChangeRegistrar, and
@@ -53,4 +53,4 @@ class SyncedPrefChangeRegistrar : public SyncedPrefObserver {
   DISALLOW_COPY_AND_ASSIGN(SyncedPrefChangeRegistrar);
 };
 
-#endif  // CHROME_BROWSER_PREFS_SYNCED_PREF_CHANGE_REGISTRAR_H_
+#endif  // COMPONENTS_SYNCABLE_PREFS_SYNCED_PREF_CHANGE_REGISTRAR_H_

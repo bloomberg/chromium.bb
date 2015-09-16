@@ -16,11 +16,11 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/defaults.h"
-#include "chrome/browser/prefs/pref_service_syncable.h"
 #include "chrome/browser/prefs/pref_service_syncable_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/common/chrome_paths.h"
+#include "components/syncable_prefs/pref_service_syncable.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;

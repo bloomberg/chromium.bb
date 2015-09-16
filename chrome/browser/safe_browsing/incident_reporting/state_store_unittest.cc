@@ -13,8 +13,6 @@
 #include "base/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "chrome/browser/prefs/browser_prefs.h"
-#include "chrome/browser/prefs/pref_service_syncable.h"
-#include "chrome/browser/prefs/pref_service_syncable_factory.h"
 #include "chrome/browser/safe_browsing/incident_reporting/incident.h"
 #include "chrome/browser/safe_browsing/incident_reporting/platform_state_store.h"
 #include "chrome/common/pref_names.h"
@@ -22,6 +20,8 @@
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "components/pref_registry/pref_registry_syncable.h"
+#include "components/syncable_prefs/pref_service_syncable.h"
+#include "components/syncable_prefs/pref_service_syncable_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_WIN)

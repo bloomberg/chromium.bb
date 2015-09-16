@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_PREFS_PREF_SERVICE_SYNCABLE_FACTORY_H_
-#define CHROME_BROWSER_PREFS_PREF_SERVICE_SYNCABLE_FACTORY_H_
+#ifndef COMPONENTS_SYNCABLE_PREFS_PREF_SERVICE_SYNCABLE_FACTORY_H_
+#define COMPONENTS_SYNCABLE_PREFS_PREF_SERVICE_SYNCABLE_FACTORY_H_
 
 #include "base/prefs/pref_service_factory.h"
 
@@ -51,4 +51,4 @@ class PrefServiceSyncableFactory : public base::PrefServiceFactory {
   DISALLOW_COPY_AND_ASSIGN(PrefServiceSyncableFactory);
 };
 
-#endif  // CHROME_BROWSER_PREFS_PREF_SERVICE_SYNCABLE_FACTORY_H_
+#endif  // COMPONENTS_SYNCABLE_PREFS_PREF_SERVICE_SYNCABLE_FACTORY_H_

@@ -8,7 +8,6 @@
 #include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/histogram_tester.h"
-#include "chrome/browser/prefs/pref_service_syncable.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_metrics.h"
@@ -27,6 +26,7 @@
 #include "components/signin/core/browser/fake_auth_status_provider.h"
 #include "components/signin/core/browser/signin_error_controller.h"
 #include "components/signin/core/browser/signin_manager.h"
+#include "components/syncable_prefs/pref_service_syncable.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

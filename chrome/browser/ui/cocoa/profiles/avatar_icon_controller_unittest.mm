@@ -9,7 +9,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier_factory.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
-#include "chrome/browser/prefs/pref_service_syncable.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/supervised_user/supervised_user_service.h"
 #include "chrome/browser/supervised_user/supervised_user_service_factory.h"
@@ -24,6 +23,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "components/bookmarks/test/bookmark_test_helpers.h"
 #include "components/signin/core/common/profile_management_switches.h"
+#include "components/syncable_prefs/pref_service_syncable.h"
 
 class AvatarIconControllerTest : public CocoaProfileTest {
  public:

@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/macros.h"
-#include "chrome/browser/prefs/pref_model_associator_client.h"
+#include "components/syncable_prefs/pref_model_associator_client.h"
 
 namespace base {
 template <typename T>

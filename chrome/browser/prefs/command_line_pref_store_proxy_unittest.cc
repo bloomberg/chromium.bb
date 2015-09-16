@@ -11,9 +11,9 @@
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/prefs/command_line_pref_store.h"
-#include "chrome/browser/prefs/pref_service_mock_factory.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/proxy_config/pref_proxy_config_tracker_impl.h"
+#include "components/syncable_prefs/pref_service_mock_factory.h"
 #include "net/proxy/proxy_config_service_common_unittest.h"
 #include "url/gurl.h"
 

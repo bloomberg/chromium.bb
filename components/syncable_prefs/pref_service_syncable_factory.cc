@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/prefs/pref_service_syncable_factory.h"
+#include "components/syncable_prefs/pref_service_syncable_factory.h"
 
 #include "base/prefs/default_pref_store.h"
 #include "base/prefs/pref_notifier_impl.h"
 #include "base/prefs/pref_value_store.h"
 #include "base/trace_event/trace_event.h"
-#include "chrome/browser/prefs/pref_service_syncable.h"
 #include "components/pref_registry/pref_registry_syncable.h"
+#include "components/syncable_prefs/pref_service_syncable.h"
 
 #if defined(ENABLE_CONFIGURATION_POLICY)
 #include "components/policy/core/browser/browser_policy_connector.h"

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/prefs/pref_service_syncable.h"
+#include "components/syncable_prefs/pref_service_syncable.h"
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -14,9 +14,9 @@
 #include "base/prefs/pref_value_store.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/value_conversions.h"
-#include "chrome/browser/prefs/pref_model_associator.h"
-#include "chrome/browser/prefs/pref_service_syncable_observer.h"
 #include "components/pref_registry/pref_registry_syncable.h"
+#include "components/syncable_prefs/pref_model_associator.h"
+#include "components/syncable_prefs/pref_service_syncable_observer.h"
 
 PrefServiceSyncable::PrefServiceSyncable(
     PrefNotifierImpl* pref_notifier,

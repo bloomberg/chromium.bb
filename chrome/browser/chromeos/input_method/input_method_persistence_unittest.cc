@@ -16,10 +16,10 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
-#include "chrome/test/base/testing_pref_service_syncable.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "chromeos/chromeos_switches.h"
+#include "components/syncable_prefs/testing_pref_service_syncable.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 
 #include "testing/gtest/include/gtest/gtest.h"

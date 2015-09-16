@@ -6,7 +6,7 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/test/base/testing_pref_service_syncable.h"
+#include "components/syncable_prefs/testing_pref_service_syncable.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class DriveAppMappingTest : public testing::Test {

@@ -11,10 +11,10 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/prefs/synced_pref_change_registrar.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/syncable_prefs/synced_pref_change_registrar.h"
 
 class PrefRegistrySimple;
 

@@ -6,11 +6,11 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/prefs/pref_service_syncable.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/test/base/testing_browser_process.h"
+#include "components/syncable_prefs/pref_service_syncable.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_CHROMEOS)

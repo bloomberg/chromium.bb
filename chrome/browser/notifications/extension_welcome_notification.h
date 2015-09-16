@@ -10,8 +10,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/pref_member.h"
 #include "base/timer/timer.h"
-#include "chrome/browser/prefs/pref_service_syncable_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/syncable_prefs/pref_service_syncable_observer.h"
 #include "ui/message_center/notifier_settings.h"
 
 namespace base {

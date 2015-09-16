@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/prefs/synced_pref_change_registrar.h"
+#include "components/syncable_prefs/synced_pref_change_registrar.h"
 
 #include "base/bind.h"
 

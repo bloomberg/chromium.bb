@@ -9,7 +9,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
-#include "chrome/browser/prefs/pref_service_syncable_observer.h"
+#include "components/syncable_prefs/pref_service_syncable_observer.h"
 #include "content/public/browser/notification_observer.h"
 
 class PrefChangeRegistrar;

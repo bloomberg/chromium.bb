@@ -13,10 +13,10 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/sync/profile_sync_service_mock.h"
 #include "chrome/browser/ui/app_list/app_list_test_util.h"
-#include "chrome/test/base/testing_pref_service_syncable.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/suggestions/proto/suggestions.pb.h"
 #include "components/suggestions/suggestions_store.h"
+#include "components/syncable_prefs/testing_pref_service_syncable.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/app_list/search_result.h"
 

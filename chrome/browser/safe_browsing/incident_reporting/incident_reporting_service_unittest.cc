@@ -24,9 +24,9 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/safe_browsing/csd.pb.h"
 #include "chrome/test/base/testing_browser_process.h"
-#include "chrome/test/base/testing_pref_service_syncable.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
+#include "components/syncable_prefs/testing_pref_service_syncable.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

@@ -6,10 +6,10 @@
 
 #include "base/run_loop.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
-#include "chrome/test/base/testing_pref_service_syncable.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/search_engines/default_search_pref_test_util.h"
 #include "components/search_engines/template_url_service.h"
+#include "components/syncable_prefs/testing_pref_service_syncable.h"
 
 TemplateURLServiceFactoryTestUtil::TemplateURLServiceFactoryTestUtil(
     TestingProfile* profile)

@@ -18,12 +18,12 @@
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/testing_browser_process.h"
-#include "chrome/test/base/testing_pref_service_syncable.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/test/bookmark_test_helpers.h"
 #include "components/search_engines/search_terms_data.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/search_engines/template_url_service_client.h"
+#include "components/syncable_prefs/testing_pref_service_syncable.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/button/menu_button.h"
 

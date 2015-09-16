@@ -647,6 +647,10 @@
       'sync_driver/tab_node_pool_unittest.cc',
       'sync_driver/ui_data_type_controller_unittest.cc',
     ],
+    'syncable_prefs_unittest_sources': [
+      'syncable_prefs/pref_model_associator_unittest.cc',
+      'syncable_prefs/pref_service_syncable_unittest.cc',
+    ],
     'tracing_unittest_sources': [
       'tracing/trace_config_file_unittest.cc',
     ],
@@ -836,6 +840,7 @@
         '<@(signin_unittest_sources)',
         '<@(suggestions_unittest_sources)',
         '<@(sync_driver_unittest_sources)',
+        '<@(syncable_prefs_unittest_sources)',
         '<@(translate_unittest_sources)',
         '<@(undo_unittest_sources)',
         '<@(update_client_unittest_sources)',
@@ -952,6 +957,7 @@
         'components.gyp:signin_core_browser_test_support',
         'components.gyp:suggestions',
         'components.gyp:sync_driver_test_support',
+        'components.gyp:syncable_prefs_test_support',
         'components.gyp:translate_core_browser',
         'components.gyp:translate_core_common',
         'components.gyp:translate_core_language_detection',

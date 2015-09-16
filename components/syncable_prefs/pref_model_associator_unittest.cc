@@ -7,10 +7,10 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/scoped_user_pref_update.h"
 #include "base/values.h"
-#include "chrome/browser/prefs/pref_model_associator.h"
-#include "chrome/browser/prefs/pref_model_associator_client.h"
-#include "chrome/browser/prefs/pref_service_mock_factory.h"
-#include "chrome/browser/prefs/pref_service_syncable.h"
+#include "components/syncable_prefs/pref_model_associator.h"
+#include "components/syncable_prefs/pref_model_associator_client.h"
+#include "components/syncable_prefs/pref_service_mock_factory.h"
+#include "components/syncable_prefs/pref_service_syncable.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
