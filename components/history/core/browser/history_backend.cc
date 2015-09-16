@@ -1043,6 +1043,15 @@ TypedUrlSyncableService* HistoryBackend::GetTypedUrlSyncableService() const {
   return typed_url_syncable_service_.get();
 }
 
+// Statistics ------------------------------------------------------------------
+
+HistoryCountResult HistoryBackend::GetHistoryCount() {
+  HistoryCountResult result;
+  result.count = 0;
+  result.success = db_ && db_->GetHistoryCount(&result.count);
+  return result;
+}
+
 // Keyword visits --------------------------------------------------------------
 
 void HistoryBackend::SetKeywordSearchTermsForURL(const GURL& url,

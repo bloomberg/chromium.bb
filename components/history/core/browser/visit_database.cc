@@ -11,6 +11,7 @@
 
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/time/time.h"
 #include "components/history/core/browser/url_database.h"
 #include "components/history/core/browser/visit_filter.h"
 #include "sql/statement.h"
@@ -533,6 +534,36 @@ bool VisitDatabase::GetVisibleVisitCountToHost(const GURL& url,
 
   *first_visit = base::Time::FromInternalValue(statement.ColumnInt64(0));
   *count = statement.ColumnInt(1);
+  return true;
+}
+
+bool VisitDatabase::GetHistoryCount(int* count) {
+  sql::Statement statement(GetDB().GetCachedStatement(SQL_FROM_HERE,
+      "SELECT COUNT(*) FROM ("
+      "SELECT DISTINCT url, "
+      // Convert unit of timestamp from the numbers of microseconds since
+      // Windows Epoch to the number of seconds from Unix Epoch. Leap seconds
+      // are not handled in both timestamp units, so a linear conversion is
+      // valid here.
+      "DATE((visit_time - ?) / ?, 'unixepoch', 'localtime') "
+      "FROM visits "
+      "WHERE (transition & ?) != 0 "  // CHAIN_END
+      "AND (transition & ?) NOT IN (?, ?, ?)"  // NO SUBFRAME or
+                                               // KEYWORD_GENERATED
+      ")"));
+
+  statement.BindInt64(0, base::Time::kTimeTToMicrosecondsOffset);
+  statement.BindInt64(1, base::Time::kMicrosecondsPerSecond);
+  statement.BindInt(2, ui::PAGE_TRANSITION_CHAIN_END);
+  statement.BindInt(3, ui::PAGE_TRANSITION_CORE_MASK);
+  statement.BindInt(4, ui::PAGE_TRANSITION_AUTO_SUBFRAME);
+  statement.BindInt(5, ui::PAGE_TRANSITION_MANUAL_SUBFRAME);
+  statement.BindInt(6, ui::PAGE_TRANSITION_KEYWORD_GENERATED);
+
+  if (!statement.Step())
+    return false;
+
+  *count = statement.ColumnInt(0);
   return true;
 }
 

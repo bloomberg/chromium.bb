@@ -178,6 +178,14 @@ class VisitDatabase {
                                   int* count,
                                   base::Time* first_visit);
 
+  // Gets the number of URLs as seen in chrome://history with infinite date
+  // range. "User-visible" is defined as in GetVisibleVisitsInRange() above,
+  // i.e. excluding redirects and subframes. Also, if a URL is visited in
+  // multiple days, the URL is counted once for each day. For determination
+  // of the date, timestamps are converted to dates using local time.
+  // Returns false if there's a failure executing the statement. True otherwise.
+  bool GetHistoryCount(int* count);
+
   // Get the time of the first item in our database.
   bool GetStartDate(base::Time* first_visit);
 

@@ -452,6 +452,17 @@ class MostVisitedThumbnails
 // Map from host to visit count, sorted by visit count descending.
 typedef std::vector<std::pair<std::string, int>> TopHostsList;
 
+// Statistics -----------------------------------------------------------------
+
+// HistoryCountResult encapsulates the result of a call to
+// HistoryBackend::GetHistoryCount.
+struct HistoryCountResult {
+  // Indicates whether the call to HistoryBackend::GetHistoryCount was
+  // successful or not. If false, then |count| is undefined.
+  bool success;
+  int count;
+};
+
 // Favicons -------------------------------------------------------------------
 
 // Used for the mapping between the page and icon.

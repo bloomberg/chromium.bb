@@ -274,6 +274,14 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
                          bool debug,
                          FilteredURLList* result);
 
+  // Statistics ----------------------------------------------------------------
+
+  // Gets the number of URLs as seen in chrome://history with infinite date
+  // range. If a URL is visited in multiple days, the URL is counted once for
+  // each day. For determination of the date, timestamps are converted to dates
+  // using local time.
+  HistoryCountResult GetHistoryCount();
+
   // Favicon -------------------------------------------------------------------
 
   void GetFavicons(
