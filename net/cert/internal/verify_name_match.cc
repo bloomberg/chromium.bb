@@ -367,16 +367,21 @@ bool VerifyRdnMatch(der::Parser* a_parser, der::Parser* b_parser) {
   // small, a naive linear search for each element should be fine. (Hostile
   // certificates already have ways to provoke pathological behavior.)
   for (const auto& a : a_type_and_values) {
-    bool matched = false;
-    for (const auto& b : b_type_and_values) {
+    std::vector<AttributeTypeAndValue>::iterator b_iter =
+        b_type_and_values.begin();
+    for (; b_iter != b_type_and_values.end(); ++b_iter) {
+      const auto& b = *b_iter;
       if (a.type.Equals(b.type) &&
           VerifyValueMatch(a.value_tag, a.value, b.value_tag, b.value)) {
-        matched = true;
         break;
       }
     }
-    if (!matched)
+    if (b_iter == b_type_and_values.end())
       return false;
+    // Remove the matched element from b_type_and_values to ensure duplicate
+    // elements in a_type_and_values can't match the same element in
+    // b_type_and_values multiple times.
+    b_type_and_values.erase(b_iter);
   }
 
   // Every element in |a_type_and_values| had a matching element in

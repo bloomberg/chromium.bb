@@ -115,6 +115,9 @@ def main():
                                      valuetype,
                                      string_mangler('Name of company'))
 
+      n_dupe_attr = copy.deepcopy(n)
+      n_dupe_attr.rdns[-1].add_attr(*n_dupe_attr.rdns[-1].attrs[-1])
+
       n_extra_rdn = copy.deepcopy(n)
       n_extra_rdn.add_rdn().add_attr('organizationName',
                                      valuetype,
@@ -124,6 +127,7 @@ def main():
 
       generate(n, filename_base)
       generate(n_extra_attr, filename_base + '-extra_attr')
+      generate(n_dupe_attr, filename_base + '-dupe_attr')
       generate(n_extra_rdn, filename_base + '-extra_rdn')
 
   for valuetype in ('UTF8', 'BMPSTRING', 'UNIVERSALSTRING'):

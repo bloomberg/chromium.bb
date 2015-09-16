@@ -118,6 +118,25 @@ TEST_P(VerifyNameMatchSimpleTest, ExtraAttrDoesNotMatch) {
                                SequenceValueFromString(&der)));
 }
 
+// Ensure that a Name does not match another Name which has the same number of
+// RDNs and attributes, but where one of the attributes is duplicated in one of
+// the names but not in the other.
+TEST_P(VerifyNameMatchSimpleTest, DupeAttrDoesNotMatch) {
+  std::string der_dupe_attr;
+  ASSERT_TRUE(LoadTestData("ascii", value_type(), suffix() + "-dupe_attr",
+                           &der_dupe_attr));
+  std::string der_extra_attr;
+  ASSERT_TRUE(LoadTestData("ascii", value_type(), suffix() + "-extra_attr",
+                           &der_extra_attr));
+  EXPECT_FALSE(VerifyNameMatch(SequenceValueFromString(&der_dupe_attr),
+                               SequenceValueFromString(&der_extra_attr)));
+  EXPECT_FALSE(VerifyNameMatch(SequenceValueFromString(&der_extra_attr),
+                               SequenceValueFromString(&der_dupe_attr)));
+  // However, the name with a dupe attribute should match itself.
+  EXPECT_TRUE(VerifyNameMatch(SequenceValueFromString(&der_dupe_attr),
+                              SequenceValueFromString(&der_dupe_attr)));
+}
+
 // Ensure that a Name does not match another Name which is exactly the same but
 // with an extra Relative Distinguished Name.
 TEST_P(VerifyNameMatchSimpleTest, ExtraRdnDoesNotMatch) {
