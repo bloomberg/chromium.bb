@@ -32,7 +32,8 @@ chrome.tabCapture.onStatusChanged.addListener(function(info) {
       chrome.test.assertFalse(events[0]);
       chrome.test.assertTrue(events[1]);
       chrome.test.assertFalse(events[2]);
-      mediaStream.stop();
+      mediaStream.getVideoTracks()[0].stop();
+      mediaStream.getAudioTracks()[0].stop();
       chrome.test.succeed();
     }
 

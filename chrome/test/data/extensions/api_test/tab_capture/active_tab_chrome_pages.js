@@ -5,7 +5,8 @@
 var afterTabOpened = function() {
   chrome.tabCapture.capture({audio: true, video: true}, function(stream) {
     chrome.test.assertTrue(!!stream);
-    stream.stop();
+    stream.getVideoTracks()[0].stop();
+    stream.getAudioTracks()[0].stop();
     chrome.test.succeed();
   });
 };

@@ -24,7 +24,8 @@ chrome.test.runTests([
 
     tabCapture.capture({audio: true, video: true}, function(stream) {
       chrome.test.assertTrue(!!stream);
-      stream.stop();
+      stream.getVideoTracks()[0].stop();
+      stream.getAudioTracks()[0].stop();
     });
   },
 
@@ -66,7 +67,8 @@ chrome.test.runTests([
       // returns 'active' capturing status for the second tab.
       var capturedTabsAfterStartCapture = function(infos) {
         checkInfoForSecondTabHasStatus(infos, 'active');
-        activeStream.stop();
+        activeStream.getVideoTracks()[0].stop();
+        activeStream.getAudioTracks()[0].stop();
         tabCapture.getCapturedTabs(capturedTabsAfterStopCapture);
       };
 
@@ -86,7 +88,8 @@ chrome.test.runTests([
       chrome.test.assertLastError(
           'Cannot capture a tab with an active stream.');
       chrome.test.assertTrue(!stream);
-      stream1.stop();
+      stream1.getVideoTracks()[0].stop();
+      stream1.getAudioTracks()[0].stop();
       chrome.test.succeed();
     };
 
@@ -110,7 +113,7 @@ chrome.test.runTests([
         }
         else if ((changeInfo.mutedInfo.reason == "capture") &&
                  (changeInfo.mutedInfo.muted === false)) {
-          stream1.stop();
+          stream1.getAudioTracks()[0].stop();
           stopListener();
         }
       });
@@ -122,7 +125,7 @@ chrome.test.runTests([
   function onlyVideo() {
     tabCapture.capture({video: true}, function(stream) {
       chrome.test.assertTrue(!!stream);
-      stream.stop();
+      stream.getVideoTracks()[0].stop();
       chrome.test.succeed();
     });
   },
@@ -130,7 +133,7 @@ chrome.test.runTests([
   function onlyAudio() {
     tabCapture.capture({audio: true}, function(stream) {
       chrome.test.assertTrue(!!stream);
-      stream.stop();
+      stream.getAudioTracks()[0].stop();
       chrome.test.succeed();
     });
   },

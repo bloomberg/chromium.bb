@@ -5,7 +5,8 @@
 var afterWhitelistExtension = function(msg) {
   chrome.tabCapture.capture({audio: true, video: true}, function(stream) {
     chrome.test.assertTrue(!!stream);
-    stream.stop();
+    stream.getVideoTracks()[0].stop();
+    stream.getAudioTracks()[0].stop();
     chrome.test.succeed();
   });
 };
@@ -20,7 +21,8 @@ var afterOpenNewTab = function(msg) {
 var afterGrantPermission = function(msg) {
   chrome.tabCapture.capture({audio: true, video: true}, function(stream) {
     chrome.test.assertTrue(!!stream);
-    stream.stop();
+    stream.getVideoTracks()[0].stop();
+    stream.getAudioTracks()[0].stop();
     chrome.test.sendMessage('ready3', afterOpenNewTab);
   });
 };

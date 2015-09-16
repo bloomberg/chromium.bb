@@ -166,7 +166,7 @@ function didntGetStream(err) {
 function openCamera(width, height) {
   if (localStream) {
     pcClient.removeStream(localStream);
-    localStream.stop();
+    localStream.getVideoTracks().stop();
     localStream = null;
   }
   navigator.webkitGetUserMedia({

@@ -15,7 +15,8 @@ chrome.test.runTests([
       }
     }, function(stream) {
       chrome.test.assertTrue(!!stream);
-      stream.stop();
+      stream.getVideoTracks()[0].stop();
+      stream.getAudioTracks()[0].stop();
       chrome.test.succeed();
     });
   },
