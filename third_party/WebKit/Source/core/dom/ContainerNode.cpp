@@ -944,11 +944,12 @@ bool ContainerNode::getUpperLeftCorner(FloatPoint& point) const
             point = FloatPoint();
             if (o->isText() && toLayoutText(o)->firstTextBox()) {
                 point.move(toLayoutText(o)->linesBoundingBox().x(), toLayoutText(o)->firstTextBox()->root().lineTop().toFloat());
+                point = o->localToAbsolute(point, UseTransforms);
             } else if (o->isBox()) {
                 LayoutBox* box = toLayoutBox(o);
                 point.moveBy(box->location());
+                point = o->container()->localToAbsolute(point, UseTransforms);
             }
-            point = o->container()->localToAbsolute(point, UseTransforms);
             return true;
         }
     }
@@ -1035,11 +1036,12 @@ bool ContainerNode::getLowerRightCorner(FloatPoint& point) const
                 if (!linesBox.maxX() && !linesBox.maxY())
                     continue;
                 point.moveBy(linesBox.maxXMaxYCorner());
+                point = o->localToAbsolute(point, UseTransforms);
             } else {
                 LayoutBox* box = toLayoutBox(o);
                 point.moveBy(box->frameRect().maxXMaxYCorner());
+                point = o->container()->localToAbsolute(point, UseTransforms);
             }
-            point = o->container()->localToAbsolute(point, UseTransforms);
             return true;
         }
     }
