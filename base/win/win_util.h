@@ -166,6 +166,13 @@ BASE_EXPORT void SetDomainStateForTesting(bool state);
 // run-time detection of this capability.
 BASE_EXPORT bool MaybeHasSHA256Support();
 
+// Returns true if the current process can make USER32 or GDI32 calls such as
+// CreateWindow and CreateDC. Windows 8 and above allow the kernel component
+// of these calls to be disabled which can cause undefined behaviour such as
+// crashes. This function can be used to guard areas of code using these calls
+// and provide a fallback path if necessary.
+BASE_EXPORT bool IsUser32AndGdi32Available();
+
 }  // namespace win
 }  // namespace base
 

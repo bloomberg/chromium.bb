@@ -57,6 +57,44 @@ void __cdecl ForceCrashOnSigAbort(int) {
   *((volatile int*)0) = 0x1337;
 }
 
+typedef decltype(GetProcessMitigationPolicy)* GetProcessMitigationPolicyType;
+
+class LazyIsUser32AndGdi32Available {
+ public:
+  LazyIsUser32AndGdi32Available() : value_(!IsWin32kSyscallsDisabled()) {}
+
+  ~LazyIsUser32AndGdi32Available() {}
+
+  bool value() { return value_; }
+
+ private:
+  static bool IsWin32kSyscallsDisabled() {
+    // Can't disable win32k prior to windows 8.
+    if (base::win::GetVersion() < base::win::VERSION_WIN8)
+      return false;
+
+    GetProcessMitigationPolicyType get_process_mitigation_policy_func =
+        reinterpret_cast<GetProcessMitigationPolicyType>(GetProcAddress(
+            GetModuleHandle(L"kernel32.dll"), "GetProcessMitigationPolicy"));
+
+    if (!get_process_mitigation_policy_func)
+      return false;
+
+    PROCESS_MITIGATION_SYSTEM_CALL_DISABLE_POLICY policy = {};
+    if (get_process_mitigation_policy_func(GetCurrentProcess(),
+                                           ProcessSystemCallDisablePolicy,
+                                           &policy, sizeof(policy))) {
+      return policy.DisallowWin32kSystemCalls != 0;
+    }
+
+    return false;
+  }
+
+  const bool value_;
+
+  DISALLOW_COPY_AND_ASSIGN(LazyIsUser32AndGdi32Available);
+};
+
 const wchar_t kWindows8OSKRegPath[] =
     L"Software\\Classes\\CLSID\\{054AAE20-4BEA-4347-8A35-64A533254A9D}"
     L"\\LocalServer32";
@@ -535,6 +573,12 @@ bool MaybeHasSHA256Support() {
 
   DCHECK(os_info->version() >= VERSION_VISTA);
   return true;  // New enough to have SHA-256 support.
+}
+
+bool IsUser32AndGdi32Available() {
+  static base::LazyInstance<LazyIsUser32AndGdi32Available>::Leaky available =
+      LAZY_INSTANCE_INITIALIZER;
+  return available.Get().value();
 }
 
 }  // namespace win
