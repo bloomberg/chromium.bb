@@ -2,11 +2,42 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import base64
 import logging
 
 from common import chrome_proxy_metrics as metrics
 from telemetry.core import exceptions
 from telemetry.page import page_test
+
+
+def WaitForViaHeader(tab, url="http://check.googlezip.net/test.html"):
+  """Wait until responses start coming back with the Chrome Proxy via header.
+
+  Poll |url| in |tab| until the Chrome Proxy via header is present in a
+  response.
+
+  This function is useful when testing with the Data Saver API, since Chrome
+  won't actually start sending requests to the Data Reduction Proxy until the
+  Data Saver API fetch completes. This function can be used to wait for the Data
+  Saver API fetch to complete.
+  """
+
+  tab.Navigate('data:text/html;base64,%s' % base64.b64encode(
+    '<html><body><script>'
+    'function ProbeViaHeader(url, wanted_via) {'
+      'var xmlhttp = new XMLHttpRequest();'
+      'xmlhttp.open("HEAD",url,false);'
+      'xmlhttp.send();'
+      'var via=xmlhttp.getResponseHeader("via");'
+      'return (via && via.indexOf(wanted_via) != -1);'
+    '}'
+    '</script>'
+    'Waiting for Chrome to start using the DRP...'
+    '</body></html>'))
+
+  tab.WaitForJavaScriptExpression(
+    'ProbeViaHeader("%s", "%s")' % (url, metrics.CHROME_PROXY_VIA_HEADER), 300)
+
 
 class ChromeProxyValidation(page_test.PageTest):
   """Base class for all chrome proxy correctness measurements."""
@@ -25,6 +56,8 @@ class ChromeProxyValidation(page_test.PageTest):
     options.AppendExtraBrowserArgs('--enable-spdy-proxy-auth')
 
   def WillNavigateToPage(self, page, tab):
+    WaitForViaHeader(tab)
+
     tab.ClearCache(force=True)
     assert self._metrics
     self._metrics.Start(page, tab)

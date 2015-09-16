@@ -6,6 +6,7 @@ import base64
 import logging
 import urlparse
 
+from common import chrome_proxy_measurements as measurements
 from common.chrome_proxy_measurements import ChromeProxyValidation
 from integration_tests import chrome_proxy_metrics as metrics
 from metrics import loading
@@ -25,6 +26,8 @@ class ChromeProxyDataSaving(page_test.PageTest):
       options.AppendExtraBrowserArgs('--enable-spdy-proxy-auth')
 
   def WillNavigateToPage(self, page, tab):
+    if self._enable_proxy:
+      measurements.WaitForViaHeader(tab)
     tab.ClearCache(force=True)
     self._metrics.Start(page, tab)
 
@@ -346,9 +349,6 @@ class ChromeProxySmoke(ChromeProxyValidation):
     super(ChromeProxySmoke, self).__init__(restart_after_each_page=True,
                                            metrics=metrics.ChromeProxyMetric())
 
-  def WillNavigateToPage(self, page, tab):
-    super(ChromeProxySmoke, self).WillNavigateToPage(page, tab)
-
   def AddResults(self, tab, results):
     # Map a page name to its AddResults func.
     page_to_metrics = {
@@ -410,6 +410,11 @@ class ChromeProxyVideoValidation(page_test.PageTest):
     # The type is _allMetrics[url][PROXIED,DIRECT][metricName] = value,
     # where (metricName,value) is a metric computed by videowrapper.js.
     self._allMetrics = {}
+
+  def WillNavigateToPage(self, page, tab):
+    if page.use_chrome_proxy:
+      measurements.WaitForViaHeader(tab)
+    super(ChromeProxyVideoValidation, self).WillNavigateToPage(page, tab)
 
   def DidNavigateToPage(self, page, tab):
     self._currMetrics = metrics.ChromeProxyVideoMetric(tab)
@@ -488,6 +493,7 @@ class ChromeProxyInstrumentedVideoValidation(page_test.PageTest):
     options.AppendExtraBrowserArgs('--enable-spdy-proxy-auth')
 
   def WillNavigateToPage(self, page, tab):
+    measurements.WaitForViaHeader(tab)
     tab.ClearCache(force=True)
     self._metrics.Start(page, tab)
 

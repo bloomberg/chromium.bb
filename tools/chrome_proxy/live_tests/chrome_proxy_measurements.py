@@ -5,6 +5,7 @@
 import logging
 
 import chrome_proxy_metrics as metrics
+from common import chrome_proxy_measurements as measurements
 from telemetry.core import exceptions
 from telemetry.page import page_test
 
@@ -17,10 +18,12 @@ class ChromeProxyLatencyBase(page_test.PageTest):
 
   def WillNavigateToPage(self, page, tab):
     tab.ClearCache(force=True)
+    self._metrics.Start(page, tab)
 
   def ValidateAndMeasurePage(self, page, tab, results):
     # Wait for the load event.
     tab.WaitForJavaScriptExpression('performance.timing.loadEventStart', 300)
+    self._metrics.Stop(page, tab)
     self._metrics.AddResultsForLatency(tab, results)
 
 
@@ -31,6 +34,11 @@ class ChromeProxyLatency(ChromeProxyLatencyBase):
     super(ChromeProxyLatency, self).__init__(*args, **kwargs)
 
   def CustomizeBrowserOptions(self, options):
+    # NOTE: When using the Data Saver API, the first few requests for this test
+    # could go over direct instead of through the Data Reduction Proxy if the
+    # Data Saver API fetch is slow to finish. This test can't just use
+    # measurements.WaitForViaHeader(tab) since that would affect the results of
+    # the latency measurement, e.g. Chrome would have a hot proxy connection.
     options.AppendExtraBrowserArgs('--enable-spdy-proxy-auth')
 
 
@@ -66,6 +74,10 @@ class ChromeProxyDataSaving(ChromeProxyDataSavingBase):
 
   def CustomizeBrowserOptions(self, options):
     options.AppendExtraBrowserArgs('--enable-spdy-proxy-auth')
+
+  def WillNavigateToPage(self, page, tab):
+    measurements.WaitForViaHeader(tab)
+    super(ChromeProxyDataSaving, self).WillNavigateToPage(page, tab)
 
 
 class ChromeProxyDataSavingDirect(ChromeProxyDataSavingBase):
