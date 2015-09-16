@@ -49,6 +49,9 @@ Message::~Message() {
 Message::Message() : base::Pickle(sizeof(Header)) {
   header()->routing = header()->type = 0;
   header()->flags = GetRefNumUpper24();
+#if USE_ATTACHMENT_BROKER
+  header()->num_brokered_attachments = 0;
+#endif
 #if defined(OS_POSIX)
   header()->num_fds = 0;
   header()->pad = 0;
@@ -62,6 +65,9 @@ Message::Message(int32_t routing_id, uint32_t type, PriorityValue priority)
   header()->type = type;
   DCHECK((priority & 0xffffff00) == 0);
   header()->flags = priority | GetRefNumUpper24();
+#if USE_ATTACHMENT_BROKER
+  header()->num_brokered_attachments = 0;
+#endif
 #if defined(OS_POSIX)
   header()->num_fds = 0;
   header()->pad = 0;
@@ -149,7 +155,7 @@ void Message::FindNext(const char* range_start,
   // The data is not copied.
   size_t pickle_len = static_cast<size_t>(pickle_end - range_start);
   Message message(range_start, static_cast<int>(pickle_len));
-  int num_attachments = message.header()->num_brokered_attachments;
+  size_t num_attachments = message.header()->num_brokered_attachments;
 
   // Check for possible overflows.
   size_t max_size_t = std::numeric_limits<size_t>::max();
@@ -165,7 +171,7 @@ void Message::FindNext(const char* range_start,
   if (buffer_length < attachment_length + pickle_len)
     return;
 
-  for (int i = 0; i < num_attachments; ++i) {
+  for (size_t i = 0; i < num_attachments; ++i) {
     const char* attachment_start =
         pickle_end + i * BrokerableAttachment::kNonceSize;
     BrokerableAttachment::AttachmentId id(attachment_start,
@@ -192,6 +198,12 @@ bool Message::WriteAttachment(scoped_refptr<MessageAttachment> attachment) {
   // We write the index of the descriptor so that we don't have to
   // keep the current descriptor as extra decoding state when deserialising.
   WriteInt(attachment_set()->size());
+
+#if USE_ATTACHMENT_BROKER
+  if (attachment->GetType() == MessageAttachment::TYPE_BROKERABLE_ATTACHMENT)
+    header()->num_brokered_attachments += 1;
+#endif
+
   return attachment_set()->AddAttachment(attachment);
 }
 
