@@ -8,9 +8,7 @@
 #include <string>
 
 #include "base/command_line.h"
-#include "base/metrics/field_trial.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/strings/string_split.h"
 #include "chrome/browser/banners/app_banner_data_fetcher.h"
 #include "chrome/browser/banners/app_banner_metrics.h"
 #include "chrome/browser/browser_process.h"
@@ -20,6 +18,7 @@
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/rappor/rappor_utils.h"
+#include "components/variations/variations_associated_data.h"
 #include "content/public/browser/web_contents.h"
 #include "net/base/escape.h"
 #include "url/gurl.h"
@@ -58,6 +57,13 @@ const char* kBannerEventKeys[] = {
 const char kBannerTimeKey[] = "time";
 const char kBannerEngagementKey[] = "engagement";
 
+// Keys to use when querying the variations params.
+const char kBannerParamsKey[] = "AppBannerTriggering";
+const char kBannerParamsDirectKey[] = "direct";
+const char kBannerParamsIndirectKey[] = "indirect";
+const char kBannerParamsTotalKey[] = "total";
+const char kBannerParamsMinutesKey[] = "minutes";
+
 // Total site engagements where a banner could have been shown before
 // a banner will actually be triggered.
 double gTotalEngagementToTrigger = 2;
@@ -65,8 +71,8 @@ double gTotalEngagementToTrigger = 2;
 // Engagement weight assigned to direct and indirect navigations.
 // By default, a direct navigation is a page visit via ui::PAGE_TRANSITION_TYPED
 // or ui::PAGE_TRANSITION_GENERATED.
-double kDirectNavigationEngagement = 1;
-double kIndirectNavigationEnagagement = 1;
+double gDirectNavigationEngagement = 1;
+double gIndirectNavigationEnagagement = 1;
 
 scoped_ptr<base::DictionaryValue> GetOriginDict(
     HostContentSettingsMap* settings,
@@ -105,26 +111,25 @@ double GetEventEngagement(ui::PageTransition transition_type) {
                                    ui::PAGE_TRANSITION_TYPED) ||
       ui::PageTransitionCoreTypeIs(transition_type,
                                    ui::PAGE_TRANSITION_GENERATED)) {
-    return kDirectNavigationEngagement;
+    return gDirectNavigationEngagement;
   } else {
-    return kIndirectNavigationEnagagement;
+    return gIndirectNavigationEnagagement;
   }
 }
 
-// Queries a field trial for updates to the default engagement values assigned
+// Queries variations for updates to the default engagement values assigned
 // to direct and indirect navigations.
 void UpdateEngagementWeights() {
-  // Expect a field trial value of "X:Y:Z", where X is the direct engagement
-  // value, Y is the indirect engagement value, and Z is the total required
-  // engagement to trigger the banner.
-  std::string weights =
-      base::FieldTrialList::FindFullName("AppBannersEngagementWeights");
-  if (weights.empty())
-    return;
+  std::map<std::string, std::string> params;
+  std::string direct_param = variations::GetVariationParamValue(
+      kBannerParamsKey, kBannerParamsDirectKey);
+  std::string indirect_param = variations::GetVariationParamValue(
+      kBannerParamsKey, kBannerParamsIndirectKey);
+  std::string total_param = variations::GetVariationParamValue(
+      kBannerParamsKey, kBannerParamsTotalKey);
 
-  std::vector<std::string> tokens = base::SplitString(
-      weights, ":", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
-  if (tokens.size() == 3) {
+  if (!direct_param.empty() && !indirect_param.empty() &&
+      !total_param.empty()) {
     double direct_engagement = -1;
     double indirect_engagement = -1;
     double total_engagement = -1;
@@ -132,9 +137,9 @@ void UpdateEngagementWeights() {
     // Ensure that we get valid doubles from the field trial, and that both
     // values are greater than or equal to zero and less than or equal to the
     // total engagement required to trigger the banner.
-    if (base::StringToDouble(tokens[0], &direct_engagement) &&
-        base::StringToDouble(tokens[1], &indirect_engagement) &&
-        base::StringToDouble(tokens[2], &total_engagement) &&
+    if (base::StringToDouble(direct_param, &direct_engagement) &&
+        base::StringToDouble(indirect_param, &indirect_engagement) &&
+        base::StringToDouble(total_param, &total_engagement) &&
         direct_engagement >= 0 && indirect_engagement >= 0 &&
         total_engagement > 0 && direct_engagement <= total_engagement &&
         indirect_engagement <= total_engagement) {
@@ -145,17 +150,16 @@ void UpdateEngagementWeights() {
   }
 }
 
-// Queries a field trial for updates to the default number of minutes between
+// Queries variation for updates to the default number of minutes between
 // site visits counted for the purposes of displaying a banner.
 void UpdateMinutesBetweenVisits() {
-  std::string minutes_between_visits =
-      base::FieldTrialList::FindFullName("AppBannersMinutesBetweenVisits");
-  if (minutes_between_visits.empty())
-    return;
-
-  int minimum_minutes = 0;
-  if (base::StringToInt(minutes_between_visits, &minimum_minutes))
-    AppBannerSettingsHelper::SetMinimumMinutesBetweenVisits(minimum_minutes);
+  std::string param = variations::GetVariationParamValue(
+      kBannerParamsKey, kBannerParamsMinutesKey);
+  if (!param.empty()) {
+    int minimum_minutes = 0;
+    if (base::StringToInt(param, &minimum_minutes))
+      AppBannerSettingsHelper::SetMinimumMinutesBetweenVisits(minimum_minutes);
+  }
 }
 
 }  // namespace
@@ -492,8 +496,8 @@ base::Time AppBannerSettingsHelper::GetSingleBannerEvent(
 
 void AppBannerSettingsHelper::SetEngagementWeights(double direct_engagement,
                                                    double indirect_engagement) {
-  kDirectNavigationEngagement = direct_engagement;
-  kIndirectNavigationEnagagement = indirect_engagement;
+  gDirectNavigationEngagement = direct_engagement;
+  gIndirectNavigationEnagagement = indirect_engagement;
 }
 
 void AppBannerSettingsHelper::SetMinimumMinutesBetweenVisits(
