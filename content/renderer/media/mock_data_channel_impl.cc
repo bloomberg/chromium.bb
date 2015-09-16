@@ -4,6 +4,8 @@
 
 #include "content/renderer/media/mock_data_channel_impl.h"
 
+#include "base/logging.h"
+
 namespace content {
 
 MockDataChannel::MockDataChannel(const std::string& label,

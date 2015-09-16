@@ -295,7 +295,7 @@ void LibjingleTransport::OnRouteChange(
 
 void LibjingleTransport::OnWritableState(
     cricket::TransportChannel* channel) {
-  DCHECK_EQ(channel, channel_.get());
+  DCHECK_EQ(channel, static_cast<cricket::TransportChannel*>(channel_.get()));
 
   if (channel->writable()) {
     connect_attempts_left_ = kMaxReconnectAttempts;

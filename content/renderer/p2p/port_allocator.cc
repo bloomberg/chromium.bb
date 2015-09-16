@@ -5,6 +5,7 @@
 #include "content/renderer/p2p/port_allocator.h"
 
 #include "base/command_line.h"
+#include "base/logging.h"
 #include "content/public/common/content_switches.h"
 
 namespace content {
