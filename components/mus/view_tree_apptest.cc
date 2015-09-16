@@ -90,7 +90,7 @@ bool EmbedUrl(mojo::ApplicationImpl* app,
         app->ConnectToApplication(request.Pass());
     mojo::ViewTreeClientPtr client;
     connection->ConnectToService(&client);
-    vm->Embed(root_id, client.Pass(),
+    vm->Embed(root_id, client.Pass(), mojo::ViewTree::ACCESS_POLICY_DEFAULT,
               base::Bind(&EmbedCallbackImpl, &run_loop, &result));
   }
   run_loop.Run();
@@ -101,7 +101,7 @@ bool Embed(ViewTree* vm, Id root_id, mojo::ViewTreeClientPtr client) {
   bool result = false;
   base::RunLoop run_loop;
   {
-    vm->Embed(root_id, client.Pass(),
+    vm->Embed(root_id, client.Pass(), mojo::ViewTree::ACCESS_POLICY_DEFAULT,
               base::Bind(&EmbedCallbackImpl, &run_loop, &result));
   }
   run_loop.Run();
@@ -488,6 +488,15 @@ class ViewTreeAppTest : public mojo::test::ApplicationTestBase,
   // ViewTree.
   scoped_ptr<ViewTreeClientImpl>
   EstablishConnectionViaEmbed(ViewTree* owner, Id root_id, int* connection_id) {
+    return EstablishConnectionViaEmbedWithPolicyBitmask(
+        owner, root_id, mojo::ViewTree::ACCESS_POLICY_DEFAULT, connection_id);
+  }
+
+  scoped_ptr<ViewTreeClientImpl> EstablishConnectionViaEmbedWithPolicyBitmask(
+      ViewTree* owner,
+      Id root_id,
+      uint32_t policy_bitmask,
+      int* connection_id) {
     if (!EmbedUrl(application_impl(), owner, application_impl()->url(),
                   root_id)) {
       ADD_FAILURE() << "Embed() failed";
@@ -1644,8 +1653,11 @@ TEST_F(ViewTreeAppTest, CantEmbedFromConnectionRoot) {
   Id view_1_2 = vm_client1()->CreateView(2);
   ASSERT_TRUE(view_1_2);
   ASSERT_TRUE(AddView(vm1(), BuildViewId(connection_id_1(), 1), view_1_2));
-  vm1()->SetAccessPolicy(view_1_2, ViewTree::ACCESS_POLICY_EMBED_ROOT);
-  ASSERT_NO_FATAL_FAILURE(EstablishThirdConnection(vm1(), view_1_2));
+  ASSERT_TRUE(vm_client3_.get() == nullptr);
+  vm_client3_ = EstablishConnectionViaEmbedWithPolicyBitmask(
+      vm1(), view_1_2, mojo::ViewTree::ACCESS_POLICY_EMBED_ROOT, nullptr);
+  ASSERT_TRUE(vm_client3_.get() != nullptr);
+  vm_client3_->set_root_view(root_view_id());
 
   // view_1_2 is vm3's root, so even though v3 is an embed root it should not
   // be able to Embed into itself.

@@ -58,7 +58,10 @@ bool DefaultAccessPolicy::CanDescendIntoViewForViewTree(
          delegate_->IsDescendantOfEmbedRoot(view);
 }
 
-bool DefaultAccessPolicy::CanEmbed(const ServerView* view) const {
+bool DefaultAccessPolicy::CanEmbed(const ServerView* view,
+                                   uint32_t policy_bitmask) const {
+  if (policy_bitmask != mojo::ViewTree::ACCESS_POLICY_DEFAULT)
+    return false;
   return WasCreatedByThisConnection(view) ||
          (delegate_->IsViewKnownForAccessPolicy(view) &&
           IsDescendantOfEmbedRoot(view) &&
@@ -97,10 +100,6 @@ bool DefaultAccessPolicy::CanSetViewTextInputState(
 bool DefaultAccessPolicy::CanSetFocus(const ServerView* view) const {
   return WasCreatedByThisConnection(view) ||
          delegate_->IsRootForAccessPolicy(view->id());
-}
-
-bool DefaultAccessPolicy::CanSetAccessPolicy(const ServerView* view) const {
-  return false;
 }
 
 bool DefaultAccessPolicy::ShouldNotifyOnHierarchyChange(

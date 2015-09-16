@@ -157,7 +157,7 @@ void Frame::InitClient(
     embedded_connection_id_ = kInvalidConnectionId;
     embed_weak_ptr_factory_.InvalidateWeakPtrs();
     view_->Embed(
-        view_tree_client.Pass(),
+        view_tree_client.Pass(), mojo::ViewTree::ACCESS_POLICY_DEFAULT,
         base::Bind(&Frame::OnEmbedAck, embed_weak_ptr_factory_.GetWeakPtr()));
   }
 

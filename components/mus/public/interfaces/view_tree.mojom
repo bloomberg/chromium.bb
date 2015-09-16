@@ -153,8 +153,12 @@ interface ViewTree {
   // The callback returns whether the embedding was successful, and if the
   // embedding was successful and the originating connection is an embed root
   // the resulting id of the new connection.
-  Embed(uint32 view_id, ViewTreeClient client) => (bool success,
-                                                   uint16 connection_id);
+  //
+  // policy_bitmask is a bitmask of the kAccessPolicy constants. See them for
+  // details.
+  Embed(uint32 view_id,
+        ViewTreeClient client,
+        uint32 policy_bitmask) => (bool success, uint16 connection_id);
 
   SetFocus(uint32 view_id);
 
@@ -165,15 +169,6 @@ interface ViewTree {
   // If state is non-null, the specified view's text input state is updated.
   // Otherwise the existing state is used.
   SetImeVisibility(uint32 view_id, bool visible, TextInputState? state);
-
-  // Sets the access policy for the next ViewTreeClient embedded in |view_id|.
-  //
-  // Not all connections are allowed to change the access policy. See each
-  // constant for specifics.
-  //
-  // policy_bitmask is a bitmask of the kAccessPolicy constants. See them for
-  // details.
-  SetAccessPolicy(uint32 view_id, uint32 policy_bitmask);
 };
 
 // Changes to views are not sent to the connection that originated the

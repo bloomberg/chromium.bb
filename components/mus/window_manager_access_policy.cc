@@ -49,7 +49,8 @@ bool WindowManagerAccessPolicy::CanDescendIntoViewForViewTree(
   return true;
 }
 
-bool WindowManagerAccessPolicy::CanEmbed(const ServerView* view) const {
+bool WindowManagerAccessPolicy::CanEmbed(const ServerView* view,
+                                         uint32_t policy_bitmask) const {
   return !delegate_->IsRootForAccessPolicy(view->id());
 }
 
@@ -83,11 +84,6 @@ bool WindowManagerAccessPolicy::CanSetViewTextInputState(
 }
 
 bool WindowManagerAccessPolicy::CanSetFocus(const ServerView* view) const {
-  return true;
-}
-
-bool WindowManagerAccessPolicy::CanSetAccessPolicy(
-    const ServerView* view) const {
   return true;
 }
 

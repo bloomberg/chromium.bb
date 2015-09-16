@@ -176,16 +176,12 @@ void ViewTreeClientImpl::SetImeVisibility(Id view_id,
   tree_->SetImeVisibility(view_id, visible, state.Pass());
 }
 
-void ViewTreeClientImpl::SetAccessPolicy(Id view_id, uint32_t access_policy) {
-  DCHECK(tree_);
-  tree_->SetAccessPolicy(view_id, access_policy);
-}
-
 void ViewTreeClientImpl::Embed(Id view_id,
                                ViewTreeClientPtr client,
+                               uint32_t policy_bitmask,
                                const ViewTree::EmbedCallback& callback) {
   DCHECK(tree_);
-  tree_->Embed(view_id, client.Pass(), callback);
+  tree_->Embed(view_id, client.Pass(), policy_bitmask, callback);
 }
 
 void ViewTreeClientImpl::RequestSurface(Id view_id,

@@ -99,9 +99,11 @@ class ConnectionManager : public ServerViewDelegate,
   // |transport_view_id| is valid.
   void EmbedAtView(mojo::ConnectionSpecificId creator_id,
                    const ViewId& view_id,
+                   uint32_t policy_bitmask,
                    mojo::URLRequestPtr request);
   ViewTreeImpl* EmbedAtView(mojo::ConnectionSpecificId creator_id,
                             const ViewId& view_id,
+                            uint32_t policy_bitmask,
                             mojo::ViewTreeClientPtr client);
 
   // Returns the connection by id.

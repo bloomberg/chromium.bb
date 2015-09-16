@@ -62,12 +62,14 @@ class ViewManagerApp : public mojo::ApplicationDelegate,
       mojo::InterfaceRequest<mojo::ViewTree> tree_request,
       mojo::ConnectionSpecificId creator_id,
       mojo::URLRequestPtr request,
-      const ViewId& root_id) override;
+      const ViewId& root_id,
+      uint32_t policy_bitmask) override;
   ClientConnection* CreateClientConnectionForEmbedAtView(
       ConnectionManager* connection_manager,
       mojo::InterfaceRequest<mojo::ViewTree> tree_request,
       mojo::ConnectionSpecificId creator_id,
       const ViewId& root_id,
+      uint32_t policy_bitmask,
       mojo::ViewTreeClientPtr client) override;
 
   // mojo::InterfaceFactory<mojo::ViewTreeHostFactory>:

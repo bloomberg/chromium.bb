@@ -32,12 +32,14 @@ class ConnectionManagerDelegate {
       mojo::InterfaceRequest<mojo::ViewTree> tree_request,
       mojo::ConnectionSpecificId creator_id,
       mojo::URLRequestPtr request,
-      const ViewId& root_id) = 0;
+      const ViewId& root_id,
+      uint32_t policy_bitmask) = 0;
   virtual ClientConnection* CreateClientConnectionForEmbedAtView(
       ConnectionManager* connection_manager,
       mojo::InterfaceRequest<mojo::ViewTree> tree_request,
       mojo::ConnectionSpecificId creator_id,
       const ViewId& root_id,
+      uint32_t policy_bitmask,
       mojo::ViewTreeClientPtr client) = 0;
 
  protected:

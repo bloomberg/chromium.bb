@@ -29,14 +29,13 @@ class DefaultAccessPolicy : public AccessPolicy {
   bool CanDeleteView(const ServerView* view) const override;
   bool CanGetViewTree(const ServerView* view) const override;
   bool CanDescendIntoViewForViewTree(const ServerView* view) const override;
-  bool CanEmbed(const ServerView* view) const override;
+  bool CanEmbed(const ServerView* view, uint32_t policy_bitmask) const override;
   bool CanChangeViewVisibility(const ServerView* view) const override;
   bool CanSetViewSurfaceId(const ServerView* view) const override;
   bool CanSetViewBounds(const ServerView* view) const override;
   bool CanSetViewProperties(const ServerView* view) const override;
   bool CanSetViewTextInputState(const ServerView* view) const override;
   bool CanSetFocus(const ServerView* view) const override;
-  bool CanSetAccessPolicy(const ServerView* view) const override;
   bool ShouldNotifyOnHierarchyChange(
       const ServerView* view,
       const ServerView** new_parent,

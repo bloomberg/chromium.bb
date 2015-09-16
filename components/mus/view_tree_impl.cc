@@ -33,7 +33,8 @@ namespace view_manager {
 
 ViewTreeImpl::ViewTreeImpl(ConnectionManager* connection_manager,
                            mojo::ConnectionSpecificId creator_id,
-                           const ViewId& root_id)
+                           const ViewId& root_id,
+                           uint32_t policy_bitmask)
     : connection_manager_(connection_manager),
       id_(connection_manager_->GetAndAdvanceNextConnectionId()),
       creator_id_(creator_id),
@@ -47,8 +48,7 @@ ViewTreeImpl::ViewTreeImpl(ConnectionManager* connection_manager,
     is_embed_root_ = true;
   } else {
     access_policy_.reset(new DefaultAccessPolicy(id_, this));
-    is_embed_root_ = (view->get_and_clear_pending_access_policy() &
-                      ViewTree::ACCESS_POLICY_EMBED_ROOT) != 0;
+    is_embed_root_ = (policy_bitmask & ViewTree::ACCESS_POLICY_EMBED_ROOT) != 0;
   }
 }
 
@@ -155,23 +155,25 @@ bool ViewTreeImpl::SetViewVisibility(const ViewId& view_id, bool visible) {
 
 bool ViewTreeImpl::Embed(const ViewId& view_id,
                          mojo::ViewTreeClientPtr client,
+                         uint32_t policy_bitmask,
                          mojo::ConnectionSpecificId* connection_id) {
   *connection_id = kInvalidConnectionId;
-  if (!client.get() || !CanEmbed(view_id))
+  if (!client.get() || !CanEmbed(view_id, policy_bitmask))
     return false;
   PrepareForEmbed(view_id);
-  ViewTreeImpl* new_connection =
-      connection_manager_->EmbedAtView(id_, view_id, client.Pass());
+  ViewTreeImpl* new_connection = connection_manager_->EmbedAtView(
+      id_, view_id, policy_bitmask, client.Pass());
   if (is_embed_root_)
     *connection_id = new_connection->id();
   return true;
 }
 
 void ViewTreeImpl::Embed(const ViewId& view_id, mojo::URLRequestPtr request) {
-  if (!CanEmbed(view_id))
+  if (!CanEmbed(view_id, ViewTree::ACCESS_POLICY_DEFAULT))
     return;
   PrepareForEmbed(view_id);
-  connection_manager_->EmbedAtView(id_, view_id, request.Pass());
+  connection_manager_->EmbedAtView(
+      id_, view_id, mojo::ViewTree::ACCESS_POLICY_DEFAULT, request.Pass());
 }
 
 void ViewTreeImpl::ProcessViewBoundsChanged(const ServerView* view,
@@ -474,14 +476,15 @@ void ViewTreeImpl::DestroyViews() {
   }
 }
 
-bool ViewTreeImpl::CanEmbed(const ViewId& view_id) const {
+bool ViewTreeImpl::CanEmbed(const ViewId& view_id,
+                            uint32_t policy_bitmask) const {
   const ServerView* view = GetView(view_id);
-  return view && access_policy_->CanEmbed(view);
+  return view && access_policy_->CanEmbed(view, policy_bitmask);
 }
 
 void ViewTreeImpl::PrepareForEmbed(const ViewId& view_id) {
   const ServerView* view = GetView(view_id);
-  DCHECK(view && access_policy_->CanEmbed(view));
+  DCHECK(view);
 
   // Only allow a node to be the root for one connection.
   ViewTreeImpl* existing_owner =
@@ -636,28 +639,13 @@ void ViewTreeImpl::SetImeVisibility(Id transport_view_id,
   }
 }
 
-void ViewTreeImpl::SetAccessPolicy(Id transport_view_id,
-                                   uint32 policy_bitmask) {
-  const ViewId view_id(ViewIdFromTransportId(transport_view_id));
-  ServerView* view = GetView(view_id);
-  if (!view)
-    return;
-
-  ViewTreeImpl* existing_owner =
-      connection_manager_->GetConnectionWithRoot(view_id);
-  if (existing_owner)
-    return;  // Only allow changing the access policy when nothing is embedded.
-
-  if (access_policy_->CanSetAccessPolicy(view))
-    view->set_pending_access_policy(policy_bitmask);
-}
-
 void ViewTreeImpl::Embed(mojo::Id transport_view_id,
                          mojo::ViewTreeClientPtr client,
+                         uint32_t policy_bitmask,
                          const EmbedCallback& callback) {
   mojo::ConnectionSpecificId connection_id = kInvalidConnectionId;
   const bool result = Embed(ViewIdFromTransportId(transport_view_id),
-                            client.Pass(), &connection_id);
+                            client.Pass(), policy_bitmask, &connection_id);
   callback.Run(result, connection_id);
 }
 

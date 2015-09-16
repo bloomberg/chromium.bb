@@ -61,7 +61,7 @@ void ViewTreeHostConnectionImpl::OnDisplayInitialized() {
   connection_manager()->AddHost(this);
   set_view_tree(connection_manager()->EmbedAtView(
       kInvalidConnectionId, view_tree_host()->root_view()->id(),
-      client_.Pass()));
+      mojo::ViewTree::ACCESS_POLICY_EMBED_ROOT, client_.Pass()));
 }
 
 }  // namespace view_manager

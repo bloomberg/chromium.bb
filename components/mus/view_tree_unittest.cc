@@ -150,9 +150,10 @@ class TestConnectionManagerDelegate : public ConnectionManagerDelegate {
       mojo::InterfaceRequest<mojo::ViewTree> service_request,
       mojo::ConnectionSpecificId creator_id,
       mojo::URLRequestPtr request,
-      const ViewId& root_id) override {
-    scoped_ptr<ViewTreeImpl> service(
-        new ViewTreeImpl(connection_manager, creator_id, root_id));
+      const ViewId& root_id,
+      uint32_t policy_bitmask) override {
+    scoped_ptr<ViewTreeImpl> service(new ViewTreeImpl(
+        connection_manager, creator_id, root_id, policy_bitmask));
     last_connection_ = new TestClientConnection(service.Pass());
     return last_connection_;
   }
@@ -161,10 +162,11 @@ class TestConnectionManagerDelegate : public ConnectionManagerDelegate {
       mojo::InterfaceRequest<mojo::ViewTree> service_request,
       mojo::ConnectionSpecificId creator_id,
       const ViewId& root_id,
+      uint32_t policy_bitmask,
       mojo::ViewTreeClientPtr client) override {
     // Used by ConnectionManager::AddRoot.
-    scoped_ptr<ViewTreeImpl> service(
-        new ViewTreeImpl(connection_manager, creator_id, root_id));
+    scoped_ptr<ViewTreeImpl> service(new ViewTreeImpl(
+        connection_manager, creator_id, root_id, policy_bitmask));
     last_connection_ = new TestClientConnection(service.Pass());
     return last_connection_;
   }
@@ -189,7 +191,7 @@ class TestViewTreeHostConnection : public ViewTreeHostConnection {
     connection_manager()->AddHost(this);
     set_view_tree(connection_manager()->EmbedAtView(
         kInvalidConnectionId, view_tree_host()->root_view()->id(),
-        mojo::ViewTreeClientPtr()));
+        mojo::ViewTree::ACCESS_POLICY_EMBED_ROOT, mojo::ViewTreeClientPtr()));
   }
   DISALLOW_COPY_AND_ASSIGN(TestViewTreeHostConnection);
 };

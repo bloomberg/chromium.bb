@@ -164,9 +164,14 @@ class ViewManagerTest : public ViewManagerTestBase {
   // a response is received, or a timeout. On success the new ViewManager is
   // returned.
   EmbedResult Embed(View* view) {
+    return Embed(view, mojo::ViewTree::ACCESS_POLICY_DEFAULT);
+  }
+
+  EmbedResult Embed(View* view, uint32_t access_policy_bitmask) {
     DCHECK(!embed_details_);
     embed_details_.reset(new EmbedDetails);
     view->Embed(ConnectToApplicationAndGetViewManagerClient(),
+                access_policy_bitmask,
                 base::Bind(&ViewManagerTest::EmbedCallbackImpl,
                            base::Unretained(this)));
     embed_details_->waiting = true;
@@ -772,8 +777,8 @@ TEST_F(ViewManagerTest, EmbedRootSeesHierarchyChanged) {
   View* embed_view = window_manager()->CreateView();
   window_manager()->GetRoot()->AddChild(embed_view);
 
-  embed_view->SetAccessPolicy(ViewTree::ACCESS_POLICY_EMBED_ROOT);
-  ViewTreeConnection* vm2 = Embed(embed_view).connection;
+  ViewTreeConnection* vm2 =
+      Embed(embed_view, ViewTree::ACCESS_POLICY_EMBED_ROOT).connection;
   View* vm2_v1 = vm2->CreateView();
   vm2->GetRoot()->AddChild(vm2_v1);
 
@@ -790,8 +795,8 @@ TEST_F(ViewManagerTest, EmbedFromEmbedRoot) {
   window_manager()->GetRoot()->AddChild(embed_view);
 
   // Give the connection embedded at |embed_view| embed root powers.
-  embed_view->SetAccessPolicy(ViewTree::ACCESS_POLICY_EMBED_ROOT);
-  const EmbedResult result1 = Embed(embed_view);
+  const EmbedResult result1 =
+      Embed(embed_view, ViewTree::ACCESS_POLICY_EMBED_ROOT);
   ViewTreeConnection* vm2 = result1.connection;
   EXPECT_EQ(result1.connection_id, vm2->GetConnectionId());
   View* vm2_v1 = vm2->CreateView();

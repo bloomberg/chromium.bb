@@ -89,12 +89,13 @@ ClientConnection* ViewManagerApp::CreateClientConnectionForEmbedAtView(
     mojo::InterfaceRequest<mojo::ViewTree> tree_request,
     mojo::ConnectionSpecificId creator_id,
     mojo::URLRequestPtr request,
-    const ViewId& root_id) {
+    const ViewId& root_id,
+    uint32_t policy_bitmask) {
   mojo::ViewTreeClientPtr client;
   app_impl_->ConnectToService(request.Pass(), &client);
 
-  scoped_ptr<ViewTreeImpl> service(
-      new ViewTreeImpl(connection_manager, creator_id, root_id));
+  scoped_ptr<ViewTreeImpl> service(new ViewTreeImpl(
+      connection_manager, creator_id, root_id, policy_bitmask));
   return new DefaultClientConnection(service.Pass(), connection_manager,
                                      tree_request.Pass(), client.Pass());
 }
@@ -104,9 +105,10 @@ ClientConnection* ViewManagerApp::CreateClientConnectionForEmbedAtView(
     mojo::InterfaceRequest<mojo::ViewTree> tree_request,
     mojo::ConnectionSpecificId creator_id,
     const ViewId& root_id,
+    uint32_t policy_bitmask,
     mojo::ViewTreeClientPtr client) {
-  scoped_ptr<ViewTreeImpl> service(
-      new ViewTreeImpl(connection_manager, creator_id, root_id));
+  scoped_ptr<ViewTreeImpl> service(new ViewTreeImpl(
+      connection_manager, creator_id, root_id, policy_bitmask));
   return new DefaultClientConnection(service.Pass(), connection_manager,
                                      tree_request.Pass(), client.Pass());
 }

@@ -48,10 +48,10 @@ class ViewTreeClientImpl : public ViewTreeConnection, public ViewTreeClient {
                    const std::vector<uint8_t>& data);
   void SetViewTextInputState(Id view_id, TextInputStatePtr state);
   void SetImeVisibility(Id view_id, bool visible, TextInputStatePtr state);
-  void SetAccessPolicy(Id view_id, uint32_t access_policy);
 
   void Embed(Id view_id,
              ViewTreeClientPtr client,
+             uint32_t policy_bitmask,
              const ViewTree::EmbedCallback& callback);
 
   void RequestSurface(Id view_id,

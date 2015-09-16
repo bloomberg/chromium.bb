@@ -131,11 +131,13 @@ void ConnectionManager::OnHostConnectionClosed(
 
 void ConnectionManager::EmbedAtView(mojo::ConnectionSpecificId creator_id,
                                     const ViewId& view_id,
+                                    uint32_t policy_bitmask,
                                     mojo::URLRequestPtr request) {
   mojo::ViewTreePtr service_ptr;
   ClientConnection* client_connection =
       delegate_->CreateClientConnectionForEmbedAtView(
-          this, GetProxy(&service_ptr), creator_id, request.Pass(), view_id);
+          this, GetProxy(&service_ptr), creator_id, request.Pass(), view_id,
+          policy_bitmask);
   AddConnection(client_connection);
   client_connection->service()->Init(client_connection->client(),
                                      service_ptr.Pass());
@@ -145,11 +147,13 @@ void ConnectionManager::EmbedAtView(mojo::ConnectionSpecificId creator_id,
 ViewTreeImpl* ConnectionManager::EmbedAtView(
     mojo::ConnectionSpecificId creator_id,
     const ViewId& view_id,
+    uint32_t policy_bitmask,
     mojo::ViewTreeClientPtr client) {
   mojo::ViewTreePtr service_ptr;
   ClientConnection* client_connection =
       delegate_->CreateClientConnectionForEmbedAtView(
-          this, GetProxy(&service_ptr), creator_id, view_id, client.Pass());
+          this, GetProxy(&service_ptr), creator_id, view_id, policy_bitmask,
+          client.Pass());
   AddConnection(client_connection);
   client_connection->service()->Init(client_connection->client(),
                                      service_ptr.Pass());

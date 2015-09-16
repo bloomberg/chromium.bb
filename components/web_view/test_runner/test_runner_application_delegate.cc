@@ -44,7 +44,6 @@ TestRunnerApplicationDelegate::~TestRunnerApplicationDelegate() {
 
 void TestRunnerApplicationDelegate::LaunchURL(const GURL& test_url) {
   if (!web_view_) {
-    content_->SetAccessPolicy(mojo::ViewTree::ACCESS_POLICY_EMBED_ROOT);
     web_view_.reset(new WebView(this));
     web_view_->Init(app_, content_);
   }

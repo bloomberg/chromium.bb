@@ -104,9 +104,6 @@ class View {
   // View is attached to the root.
   bool IsDrawn() const;
 
-  // See mojom for details.
-  void SetAccessPolicy(uint32_t policy_bitmask);
-
   // Observation.
   void AddObserver(ViewObserver* observer);
   void RemoveObserver(ViewObserver* observer);
@@ -143,7 +140,9 @@ class View {
 
   // NOTE: callback is run synchronously if Embed() is not allowed on this
   // View.
-  void Embed(ViewTreeClientPtr client, const EmbedCallback& callback);
+  void Embed(ViewTreeClientPtr client,
+             uint32_t policy_bitmask,
+             const EmbedCallback& callback);
 
  protected:
   // This class is subclassed only by test classes that provide a public ctor.

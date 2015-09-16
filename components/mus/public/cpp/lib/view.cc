@@ -268,13 +268,6 @@ bool View::IsDrawn() const {
   return parent_ ? parent_->IsDrawn() : drawn_;
 }
 
-void View::SetAccessPolicy(uint32_t policy_bitmask) {
-  if (connection_) {
-    static_cast<ViewTreeClientImpl*>(connection_)
-        ->SetAccessPolicy(id_, policy_bitmask);
-  }
-}
-
 void View::AddObserver(ViewObserver* observer) {
   observers_.AddObserver(observer);
 }
@@ -386,13 +379,16 @@ bool View::HasFocus() const {
 }
 
 void View::Embed(ViewTreeClientPtr client) {
-  Embed(client.Pass(), base::Bind(&EmptyEmbedCallback));
+  Embed(client.Pass(), ViewTree::ACCESS_POLICY_DEFAULT,
+        base::Bind(&EmptyEmbedCallback));
 }
 
-void View::Embed(ViewTreeClientPtr client, const EmbedCallback& callback) {
+void View::Embed(ViewTreeClientPtr client,
+                 uint32_t policy_bitmask,
+                 const EmbedCallback& callback) {
   if (PrepareForEmbed()) {
     static_cast<ViewTreeClientImpl*>(connection_)
-        ->Embed(id_, client.Pass(), callback);
+        ->Embed(id_, client.Pass(), policy_bitmask, callback);
   } else {
     callback.Run(false, 0);
   }

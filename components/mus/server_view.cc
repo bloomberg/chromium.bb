@@ -29,7 +29,6 @@ ServerView::ServerView(ServerViewDelegate* delegate, const ViewId& id)
       parent_(nullptr),
       visible_(false),
       opacity_(1),
-      pending_access_policy_(mojo::ViewTree::ACCESS_POLICY_DEFAULT),
       // Don't notify newly added observers during notification. This causes
       // problems for code that adds an observer as part of an observer
       // notification (such as ServerViewDrawTracker).

@@ -37,7 +37,8 @@ class ViewTreeImpl : public mojo::ViewTree, public AccessPolicyDelegate {
  public:
   ViewTreeImpl(ConnectionManager* connection_manager,
                mojo::ConnectionSpecificId creator_id,
-               const ViewId& root_id);
+               const ViewId& root_id,
+               uint32_t policy_bitmask);
   ~ViewTreeImpl() override;
 
   // |services| and |exposed_services| are the ServiceProviders to pass to the
@@ -78,6 +79,7 @@ class ViewTreeImpl : public mojo::ViewTree, public AccessPolicyDelegate {
   bool SetViewVisibility(const ViewId& view_id, bool visible);
   bool Embed(const ViewId& view_id,
              mojo::ViewTreeClientPtr client,
+             uint32_t policy_bitmask,
              mojo::ConnectionSpecificId* connection_id);
   void Embed(const ViewId& view_id, mojo::URLRequestPtr request);
 
@@ -162,7 +164,7 @@ class ViewTreeImpl : public mojo::ViewTree, public AccessPolicyDelegate {
   // Deletes all Views we own.
   void DestroyViews();
 
-  bool CanEmbed(const ViewId& view_id) const;
+  bool CanEmbed(const ViewId& view_id, uint32_t policy_bitmask) const;
   void PrepareForEmbed(const ViewId& view_id);
   void RemoveChildrenAsPartOfEmbed(const ViewId& view_id);
 
@@ -200,6 +202,7 @@ class ViewTreeImpl : public mojo::ViewTree, public AccessPolicyDelegate {
                       mojo::SurfaceClientPtr client) override;
   void Embed(mojo::Id transport_view_id,
              mojo::ViewTreeClientPtr client,
+             uint32_t policy_bitmask,
              const EmbedCallback& callback) override;
   void SetFocus(uint32_t view_id) override;
   void SetViewTextInputState(uint32_t view_id,
@@ -207,8 +210,6 @@ class ViewTreeImpl : public mojo::ViewTree, public AccessPolicyDelegate {
   void SetImeVisibility(mojo::Id transport_view_id,
                         bool visible,
                         mojo::TextInputStatePtr state) override;
-  void SetAccessPolicy(mojo::Id transport_view_id,
-                       uint32 policy_bitmask) override;
 
   // AccessPolicyDelegate:
   bool IsRootForAccessPolicy(const ViewId& id) const override;
