@@ -2763,7 +2763,6 @@ void LayerTreeHostImpl::OnRootLayerDelegatedScrollOffsetChanged(
   DCHECK(root_layer_scroll_offset_delegate_);
   active_tree_->DistributeRootScrollOffset(root_offset);
   client_->SetNeedsCommitOnImplThread();
-  active_tree_->set_needs_update_draw_properties();
   // No need to SetNeedsRedraw, this is for WebView and every frame has redraw
   // requested by the WebView embedder already.
 }
