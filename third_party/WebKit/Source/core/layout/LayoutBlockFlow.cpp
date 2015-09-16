@@ -2285,13 +2285,7 @@ FloatingObject* LayoutBlockFlow::insertFloatingObject(LayoutBox& floatBox)
     if (isChildLayoutBlock && !floatBox.needsLayout() && view()->layoutState()->pageLogicalHeightChanged())
         floatBox.setChildNeedsLayout(MarkOnlyThis);
 
-    bool needsBlockDirectionLocationSetBeforeLayout = isChildLayoutBlock && view()->layoutState()->needsBlockDirectionLocationSetBeforeLayout();
-    if (!needsBlockDirectionLocationSetBeforeLayout || isWritingModeRoot()) { // We are unsplittable if we're a block flow root.
-        floatBox.layoutIfNeeded();
-    } else {
-        floatBox.updateLogicalWidth();
-        floatBox.computeAndSetBlockDirectionMargins(this);
-    }
+    floatBox.layoutIfNeeded();
 
     setLogicalWidthForFloat(*newObj, logicalWidthForChild(floatBox) + marginStartForChild(floatBox) + marginEndForChild(floatBox));
 

@@ -1261,28 +1261,12 @@ void LayoutBlock::layoutPositionedObjects(bool relayoutChildren, PositionedLayou
         if (!positionedObject->needsLayout())
             positionedObject->markForPaginationRelayoutIfNeeded(layoutScope);
 
-        // If we are paginated or in a line grid, go ahead and compute a vertical position for our object now.
-        // If it's wrong we'll lay out again.
-        LayoutUnit oldLogicalTop = 0;
-        bool needsBlockDirectionLocationSetBeforeLayout = positionedObject->needsLayout() && view()->layoutState()->needsBlockDirectionLocationSetBeforeLayout();
-        if (needsBlockDirectionLocationSetBeforeLayout) {
-            if (isHorizontalWritingMode() == positionedObject->isHorizontalWritingMode())
-                positionedObject->updateLogicalHeight();
-            else
-                positionedObject->updateLogicalWidth();
-            oldLogicalTop = logicalTopForChild(*positionedObject);
-        }
-
         // FIXME: We should be able to do a r->setNeedsPositionedMovementLayout() here instead of a full layout. Need
         // to investigate why it does not trigger the correct invalidations in that case. crbug.com/350756
         if (info == ForcedLayoutAfterContainingBlockMoved)
             positionedObject->setNeedsLayout(LayoutInvalidationReason::AncestorMoved, MarkOnlyThis);
 
         positionedObject->layoutIfNeeded();
-
-        // Lay out again if our estimate was wrong.
-        if (needsBlockDirectionLocationSetBeforeLayout && logicalTopForChild(*positionedObject) != oldLogicalTop)
-            positionedObject->forceChildLayout();
     }
 }
 

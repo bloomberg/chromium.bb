@@ -67,8 +67,6 @@ public:
 
     LayoutState* next() const { return m_next; }
 
-    bool needsBlockDirectionLocationSetBeforeLayout() const { return m_isPaginated && m_pageLogicalHeight; }
-
     LayoutFlowThread* flowThread() const { return m_flowThread; }
 
     LayoutObject& layoutObject() const { return m_layoutObject; }
