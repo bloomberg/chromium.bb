@@ -14771,6 +14771,31 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="HttpCache.AccessToDone" units="milliseconds">
+  <owner>gavinp@chromium.org</owner>
+  <summary>
+    For every http cache transaction with a pattern (see HttpCache.Pattern), the
+    time from the first access to the disk cache until the transaction was done.
+  </summary>
+</histogram>
+
+<histogram name="HttpCache.AccessToDone.SentRequest" units="milliseconds">
+  <owner>gavinp@chromium.org</owner>
+  <summary>
+    For every http cache transaction in which a network request was sent, the
+    time from the first access to the disk cache until the transaction was done.
+  </summary>
+</histogram>
+
+<histogram name="HttpCache.AccessToDone.Used" units="milliseconds">
+  <owner>gavinp@chromium.org</owner>
+  <summary>
+    For every http cache transaction for a cached entry used without validation,
+    the time from the first access to the disk cache until the transaction was
+    done.
+  </summary>
+</histogram>
+
 <histogram name="HttpCache.AsyncValidationDuration" units="milliseconds">
   <obsolete>
     Deprecated as of 3/2015.
@@ -14785,8 +14810,53 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="HttpCache.BeforeSend" units="milliseconds">
+  <owner>gavinp@chromium.org</owner>
+  <summary>
+    For every http cache transaction in which a network request was sent, the
+    time spent between first accessing the disk cache and sending the request.
+  </summary>
+</histogram>
+
+<histogram name="HttpCache.BeforeSend.CantConditionalize" units="milliseconds">
+  <owner>gavinp@chromium.org</owner>
+  <summary>
+    For every http cache transaction retrieving a resource cached, but not
+    possible to conditionalize, the time spent between first accessing the disk
+    cache and sending the request.
+  </summary>
+</histogram>
+
+<histogram name="HttpCache.BeforeSend.NotCached" units="milliseconds">
+  <owner>gavinp@chromium.org</owner>
+  <summary>
+    For every http cache transaction retrieving a resource not previously
+    cached, the time spent between first accessing the disk cache and sending
+    the request.
+  </summary>
+</histogram>
+
+<histogram name="HttpCache.BeforeSend.Updated" units="milliseconds">
+  <owner>gavinp@chromium.org</owner>
+  <summary>
+    For every http cache transaction retrieving a resource previously cached and
+    updating it, the time spent between first accessing the disk cache and
+    sending the request.
+  </summary>
+</histogram>
+
+<histogram name="HttpCache.BeforeSend.Validated" units="milliseconds">
+  <owner>gavinp@chromium.org</owner>
+  <summary>
+    For every http cache transaction retrieving a resource previously cached and
+    validating it, the time spent between first accessing the disk cache and
+    sending the request.
+  </summary>
+</histogram>
+
 <histogram name="HttpCache.EntryLockWait" units="milliseconds">
   <owner>jkarlin@chromium.org</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     The time spent waiting for write lock on a disk cache entry.
   </summary>
@@ -14809,6 +14879,55 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     Result of a main page HttpCacheTransaction if offline mode had been enabled.
+  </summary>
+</histogram>
+
+<histogram name="HttpCache.Pattern" enum="HttpCachePattern">
+  <owner>gavinp@chromium.org</owner>
+  <summary>For each http cache transaction, the recorded pattern.</summary>
+</histogram>
+
+<histogram name="HttpCache.PercentBeforeSend" units="%">
+  <owner>gavinp@chromium.org</owner>
+  <summary>
+    For every http cache in which a network request was sent, the percentage of
+    time spent between first accessing the disk cache and sending the request.
+  </summary>
+</histogram>
+
+<histogram name="HttpCache.PercentBeforeSend.CantConditionalize" units="%">
+  <owner>gavinp@chromium.org</owner>
+  <summary>
+    For every http cache transaction retrieving a resource cached, but not
+    possible to conditionalize, the percentage of total transaction time spent
+    between first accessing the disk cache and sending the request.
+  </summary>
+</histogram>
+
+<histogram name="HttpCache.PercentBeforeSend.NotCached" units="%">
+  <owner>gavinp@chromium.org</owner>
+  <summary>
+    For every http cache retrieving a resource not previously cached, the
+    percentage of time spent between first accessing the disk cache and sending
+    the request.
+  </summary>
+</histogram>
+
+<histogram name="HttpCache.PercentBeforeSend.Updated" units="%">
+  <owner>gavinp@chromium.org</owner>
+  <summary>
+    For every http cache transaction retrieving a resource previously cached and
+    updating it, the percentage of time spent between first accessing the disk
+    cache and sending the request.
+  </summary>
+</histogram>
+
+<histogram name="HttpCache.PercentBeforeSend.Validated" units="%">
+  <owner>gavinp@chromium.org</owner>
+  <summary>
+    For every http cache transaction retrieving a resource previously cached and
+    successfully validating it, the percentage of time spent between first
+    accessing the disk cache and sending the request.
   </summary>
 </histogram>
 
@@ -62185,6 +62304,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="13" label="Negotiate Secure Proxy"/>
   <int value="14" label="Negotiate Server"/>
   <int value="15" label="Negotiate Secure Server"/>
+</enum>
+
+<enum name="HttpCachePattern" type="int">
+  <int value="0" label="Undefined"/>
+  <int value="1" label="Not Covered"/>
+  <int value="2" label="Not Cached"/>
+  <int value="3" label="Used"/>
+  <int value="4" label="Validated"/>
+  <int value="5" label="Updated"/>
+  <int value="6" label="CantConditionalize"/>
 </enum>
 
 <enum name="HttpHeaderParserEvent" type="int">
