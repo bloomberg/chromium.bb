@@ -1,5 +1,3 @@
-set noparent
-
 # Blink API OWNERS
 darin@chromium.org
 dglazkov@chromium.org
