@@ -5,11 +5,6 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
-      "repaintRects": [
-        [6, 86, 88, 24],
-        [6, 86, 88, 24],
-        [6, 86, 86, 4]
-      ],
       "paintInvalidationClients": [
         "LayoutBlockFlow (anonymous)",
         "LayoutInline SPAN id='outer'",

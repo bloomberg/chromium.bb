@@ -8,7 +8,8 @@
       "children": [
         {
           "position": [10, 10],
-          "bounds": [120, 120],
+          "transformOrigin": [60, 60],
+          "bounds": [270, 170],
           "drawsContent": true,
           "backgroundColor": "#008000",
           "children": [

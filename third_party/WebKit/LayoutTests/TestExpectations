@@ -336,23 +336,6 @@ crbug.com/487281 [ Mac ] fast/forms/menulist-narrow-width.html [ ImageOnlyFailur
 
 crbug.com/441840 [ Mac XP ] cssom/ahem-ex-units.html [ Failure ]
 
-crbug.com/530044 compositing/geometry/fixed-in-composited.html [ NeedsRebaseline ]
-crbug.com/530044 compositing/layer-creation/stacking-context-overlap-nested.html [ NeedsRebaseline ]
-crbug.com/530044 fast/block/positioning/absolute-in-inline-ltr-2.html [ NeedsRebaseline ]
-crbug.com/530044 fast/block/positioning/absolute-in-inline-ltr-3.html [ NeedsRebaseline ]
-crbug.com/530044 fast/block/positioning/absolute-in-inline-ltr.html [ NeedsRebaseline ]
-crbug.com/530044 fast/block/positioning/absolute-in-inline-rtl-2.html [ NeedsRebaseline ]
-crbug.com/530044 fast/block/positioning/absolute-in-inline-rtl-3.html [ NeedsRebaseline ]
-crbug.com/530044 fast/block/positioning/absolute-in-inline-rtl.html [ NeedsRebaseline ]
-crbug.com/530044 fast/block/positioning/absolute-in-inline-short-ltr.html [ NeedsRebaseline ]
-crbug.com/530044 fast/block/positioning/absolute-in-inline-short-rtl.html [ NeedsRebaseline ]
-crbug.com/530044 fast/box-shadow/inset-box-shadow-radius.html [ NeedsRebaseline ]
-crbug.com/530044 fast/css/anonymous-block-continuation-outline.html [ NeedsRebaseline ]
-crbug.com/530044 fast/css/outline-auto-location.html [ NeedsRebaseline ]
-crbug.com/530044 fast/forms/control-clip.html [ NeedsRebaseline ]
-crbug.com/530044 fast/layers/opacity-transforms.html [ NeedsRebaseline ]
-crbug.com/530044 fast/repaint/outline-change-continuations.html [ NeedsRebaseline ]
-crbug.com/530044 fast/repaint/outline-continuations.html [ NeedsRebaseline ]
 crbug.com/530044 transforms/2d/transform-borderbox.html [ NeedsManualRebaseline ]
 
 # This directly has manual tests that don't have to run with run-webkit-tests
