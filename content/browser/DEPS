@@ -86,6 +86,9 @@ include_rules = [
   "+third_party/WebKit/public/web/WebTreeScopeType.h",
   "+third_party/WebKit/public/web/mac/WebScrollbarTheme.h",
 
+  # These should be burned down. http://crbug.com/237267
+  "!third_party/WebKit/public/web/mac/WebInputEventFactory.h",
+
   # DO NOT ADD ANY CHROME OR COMPONENTS INCLUDES HERE!!!
   # See https://sites.google.com/a/chromium.org/dev/developers/content-module
   # for more information.

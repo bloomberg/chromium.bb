@@ -33,6 +33,21 @@ gfx::Point GetScreenLocationFromEvent(const ui::LocatedEvent& event) {
   return screen_location;
 }
 
+blink::WebInputEvent::Modifiers DomCodeToWebInputEventModifiers(
+    ui::DomCode code) {
+  switch (ui::KeycodeConverter::DomCodeToLocation(code)) {
+    case ui::DomKeyLocation::LEFT:
+      return blink::WebInputEvent::IsLeft;
+    case ui::DomKeyLocation::RIGHT:
+      return blink::WebInputEvent::IsRight;
+    case ui::DomKeyLocation::NUMPAD:
+      return blink::WebInputEvent::IsKeyPad;
+    case ui::DomKeyLocation::STANDARD:
+      break;
+  }
+  return static_cast<blink::WebInputEvent::Modifiers>(0);
+}
+
 blink::WebPointerProperties::PointerType EventPointerTypeToWebPointerType(
     ui::EventPointerType pointer_type) {
   switch (pointer_type) {
