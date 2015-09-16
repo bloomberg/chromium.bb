@@ -4,17 +4,24 @@
 
 #include "media/capture/video/video_capture_device.h"
 
+#include "base/command_line.h"
 #include "base/i18n/timezone.h"
 #include "base/strings/string_util.h"
+#include "media/base/media_switches.h"
 
 namespace media {
 
+// TODO(msu.koo): http://crbug.com/532272, remove checking the switch in favour
+// of deferring GetModel() call to the actual VideoCaptureDevice object.
 const std::string VideoCaptureDevice::Name::GetNameAndModel() const {
   const std::string model_id = GetModel();
   if (model_id.empty())
     return device_name_;
   const std::string suffix = " (" + model_id + ")";
-  if (base::EndsWith(device_name_, suffix, base::CompareCase::SENSITIVE))
+  if (base::EndsWith(device_name_, suffix, base::CompareCase::SENSITIVE) ||
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kUseFakeDeviceForMediaStream))
+    // Ignore |model_id| if |kUseFakeDeviceForMediaStream| flag is present.
     return device_name_;
   return device_name_ + suffix;
 }
