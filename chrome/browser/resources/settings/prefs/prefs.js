@@ -87,7 +87,6 @@ function ListPrefWrapper(prefObj) {
        */
       prefs: {
         type: Object,
-        value: function() { return {}; },
         notify: true,
       },
 
@@ -189,20 +188,26 @@ function ListPrefWrapper(prefObj) {
 
     /**
      * Updates the prefs model with the given prefs.
-     * @param {!Array<!chrome.settingsPrivate.PrefObject>} prefs
+     * @param {!Array<!chrome.settingsPrivate.PrefObject>} newPrefs
      * @private
      */
-    updatePrefs_: function(prefs) {
-      prefs.forEach(function(newPrefObj) {
+    updatePrefs_: function(newPrefs) {
+      // Use the existing prefs object or create it.
+      var prefs = this.prefs || {};
+      newPrefs.forEach(function(newPrefObj) {
         // Use the PrefObject from settingsPrivate to create a PrefWrapper in
         // prefWrappers_ at the pref's key.
         this.prefWrappers_[newPrefObj.key] =
             this.createPrefWrapper_(newPrefObj);
 
-        // Set or update the pref in |prefs|. This triggers observers in the UI,
-        // which update controls associated with the pref.
-        this.setPref_(newPrefObj);
+        // Add the pref to |prefs|.
+        cr.exportPath(newPrefObj.key, newPrefObj, prefs);
+        // If this.prefs already exists, notify listeners of the change.
+        if (prefs == this.prefs)
+          this.notifyPath('prefs.' + newPrefObj.key, newPrefObj);
       }, this);
+      if (!this.prefs)
+        this.prefs = prefs;
     },
 
     /**
@@ -226,27 +231,6 @@ function ListPrefWrapper(prefObj) {
           return key;
       }
       return '';
-    },
-
-    /**
-     * Sets or updates the pref denoted by newPrefObj.key in the publicy exposed
-     * |prefs| property.
-     * @param {chrome.settingsPrivate.PrefObject} newPrefObj The pref object to
-     *     update the pref with.
-     * @private
-     */
-    setPref_: function(newPrefObj) {
-      // Check if the pref exists already in the Polymer |prefs| object.
-      if (this.get(newPrefObj.key, this.prefs)) {
-        // Update just the value, notifying listeners of the change.
-        this.set('prefs.' + newPrefObj.key + '.value', newPrefObj.value);
-      } else {
-        // Add the pref to |prefs|. cr.exportPath doesn't use Polymer.Base.set,
-        // which is OK because the nested property update events aren't useful.
-        cr.exportPath(newPrefObj.key, newPrefObj, this.prefs);
-        // Notify listeners of the change at the preference key.
-        this.notifyPath('prefs.' + newPrefObj.key, newPrefObj);
-      }
     },
 
     /**

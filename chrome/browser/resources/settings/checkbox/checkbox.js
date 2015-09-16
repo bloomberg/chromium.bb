@@ -24,7 +24,6 @@ Polymer({
     pref: {
       type: Object,
       notify: true,
-      value: null
     },
 
     inverted: {
@@ -60,10 +59,7 @@ Polymer({
 
   /** @private */
   prefValueChanged_: function(prefValue) {
-    // prefValue is initially undefined when Polymer initializes pref.
-    if (prefValue !== undefined) {
-      this.checked = this.getNewValue_(prefValue);
-    }
+    this.checked = this.getNewValue_(prefValue);
   },
 
   /** @private */
