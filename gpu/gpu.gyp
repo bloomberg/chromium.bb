@@ -124,8 +124,7 @@
       ],
     },
     {
-      # GN version: //gpu:angle_unittests
-      # TODO(kbr): port this refactoring to the GN build.
+      # GN version: //third_party/angle/src/tests:angle_unittests
       'target_name': 'angle_unittests',
       'type': '<(gtest_target_type)',
       'includes': [
@@ -743,10 +742,9 @@
         },
       ],
     }],
-    ['OS == "win" or (OS == "linux" and use_x11==1)', {
+    ['OS == "win" or (OS == "linux" and use_x11==1) or OS == "mac"', {
       'targets': [
         {
-          # TODO(crbug.com/519834): port this target to the GN build.
           'target_name': 'angle_end2end_tests',
           'type': '<(gtest_target_type)',
           'dependencies': [
