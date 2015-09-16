@@ -958,6 +958,27 @@ def CreateTarball(target, cwd, sudo=False, compression=COMP_XZ, chroot=None,
   return rc_func(cmd, cwd=cwd, **kwargs)
 
 
+def GroupByKey(input_iter, key):
+  """Split an iterable of dicts, based on value of a key.
+
+  GroupByKey([{'a': 1}, {'a': 2}, {'a': 1, 'b': 2}], 'a') =>
+    {1: [{'a': 1}, {'a': 1, 'b': 2}], 2: [{'a': 2}]}
+
+  Args:
+    input_iter: An iterable of dicts.
+    key: A string specifying the key name to split by.
+
+  Returns:
+    A dictionary, mapping from each unique value for |key| that
+    was encountered in |input_iter| to a list of entries that had
+    that value.
+  """
+  split_dict = dict()
+  for entry in input_iter:
+    split_dict.setdefault(entry.get(key), []).append(entry)
+  return split_dict
+
+
 def GetInput(prompt):
   """Helper function to grab input from a user.   Makes testing easier."""
   return raw_input(prompt)

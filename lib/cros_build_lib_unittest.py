@@ -1330,6 +1330,26 @@ class TestManifestCheckout(cros_test_lib.TempDirTestCase):
     self.assertEqual(branches, ['refs/remotes/origin/release-R23-2913.B'])
 
 
+class TestGroupByKey(cros_test_lib.TestCase):
+  """Test SplitByKey."""
+
+  def testEmpty(self):
+    self.assertEqual({}, cros_build_lib.GroupByKey([], ''))
+
+  def testGroupByKey(self):
+    input_iter = [{'a': None, 'b': 0},
+                  {'a': 1, 'b': 1},
+                  {'a': 2, 'b': 2},
+                  {'a': 1, 'b': 3}]
+    expected_result = {
+        None: [{'a': None, 'b': 0}],
+        1:    [{'a': 1, 'b': 1},
+               {'a': 1, 'b': 3}],
+        2:    [{'a': 2, 'b': 2}]}
+    self.assertEqual(cros_build_lib.GroupByKey(input_iter, 'a'),
+                     expected_result)
+
+
 class Test_iflatten_instance(cros_test_lib.TestCase):
   """Test iflatten_instance function."""
 
