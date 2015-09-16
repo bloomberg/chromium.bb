@@ -18,7 +18,7 @@
   <link rel="import" type="css" href="chrome://md-settings/settings_page/settings_page.css">
   <link rel="import" type="css" href="internet_detail_page.css">
   <template>
-    <paper-material class="layout vertical">
+    <div class="layout vertical">
       <!-- Title section: Icon + name + connection state. -->
       <div id="titleDiv" class="layout horizontal center">
         <cr-network-icon id="networkIcon" network-state="[[networkState]]">
@@ -165,7 +165,7 @@
           </cr-collapse>
         </div>
       </div>
-    </paper-material>
+    </div>
   </template>
   <script src="internet_detail_page.js"></script>
 </dom-module>
