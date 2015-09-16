@@ -270,6 +270,8 @@ ThumbnailLoader.prototype.load = function(box, fillMode, opt_optimizationMode,
  *     supported. This takes effect only when external thumbnail source is used.
  * @return {!Promise<{data:string, width:number, height:number}>} A promise
  *     which is resolved when data url is fetched.
+ *
+ * TODO(yawano): Support cancel operation.
  */
 ThumbnailLoader.prototype.loadAsDataUrl = function(fillMode) {
   assert(fillMode === ThumbnailLoader.FillMode.FIT ||

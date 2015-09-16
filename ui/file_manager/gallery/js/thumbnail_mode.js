@@ -910,35 +910,81 @@ ThumbnailView.Thumbnail.prototype.update = function() {
 
   // Calculate and set width.
   var metadata = this.galleryItem_.getMetadataItem();
-  if (metadata) {
-    var rotated = metadata.imageRotation % 2 === 1;
-    var imageWidth = rotated ? metadata.imageHeight : metadata.imageWidth;
-    var imageHeight = rotated ? metadata.imageWidth : metadata.imageHeight;
-    this.setWidth_(~~(imageWidth * ThumbnailView.ROW_HEIGHT / imageHeight));
-  } else {
+  if (!metadata) {
     this.setWidth_(ThumbnailView.ROW_HEIGHT);
+    return;
   }
+
+  var rotated = metadata.imageRotation % 2 === 1;
+  var imageWidth = rotated ? metadata.imageHeight : metadata.imageWidth;
+  var imageHeight = rotated ? metadata.imageWidth : metadata.imageHeight;
+  this.setWidth_(~~(imageWidth * ThumbnailView.ROW_HEIGHT / imageHeight));
 
   // Set thumbnail.
   var thumbnailMetadata = this.galleryItem_.getThumbnailMetadataItem();
-  if (thumbnailMetadata) {
-    this.thumbnailLoadRequestId_++;
+  if (!thumbnailMetadata)
+    return;
 
-    this.thumbnailLoader_ = new ThumbnailLoader(
-        this.galleryItem_.getEntry(), undefined, thumbnailMetadata);
-    this.thumbnailLoader_.loadAsDataUrl(ThumbnailLoader.FillMode.FIT)
-        .then(function(thumbnailLoadRequestId, result) {
-          // Discard the result of old request.
-          if (thumbnailLoadRequestId !== this.thumbnailLoadRequestId_)
-            return;
+  this.loadAndSetThumbnail_(thumbnailMetadata,
+      false /* do not force to generate thumbnail */).then(function(result) {
+    if (!result ||
+        result.height >= ThumbnailView.ROW_HEIGHT ||
+        result.loadTarget === ThumbnailLoader.LoadTarget.FILE_ENTRY ||
+        metadata.imageHeight <= ThumbnailView.ROW_HEIGHT ||
+        (thumbnailMetadata.external && !thumbnailMetadata.external.present)) {
+      return;
+    }
 
-          // Update width by using the widh of actual data.
-          this.setWidth_(
-              ~~(result.width * ThumbnailView.ROW_HEIGHT / result.height));
+    // If thumbnail height is lower than ThumbnailView.ROW_HEIGHT, generate
+    // thumbnail from image content.
+    this.loadAndSetThumbnail_(
+        thumbnailMetadata, true /* force to generate thumbnail */);
+  }.bind(this));
+};
 
-          this.imageFrame_.style.backgroundImage = 'url(' + result.data + ')';
-          this.setError_(null);
-        }.bind(this, this.thumbnailLoadRequestId_))
-        .catch(this.setError_.bind(this));
-  }
+/**
+ * Loads thumbnail and sets it.
+ * @param {!ThumbnailMetadataItem} thumbnailMetadata
+ * @param {boolean} forceToGenerate True to force generating thumbnail from
+ *     image content.
+ * @return {!Promise<?{height:number, loadTarget:?ThumbnailLoader.LoadTarget}>}
+ *     null is returned for error case.
+ * @private
+ */
+ThumbnailView.Thumbnail.prototype.loadAndSetThumbnail_ = function(
+    thumbnailMetadata, forceToGenerate) {
+  this.thumbnailLoadRequestId_++;
+
+  var loadTargets = forceToGenerate ?
+      [ThumbnailLoader.LoadTarget.FILE_ENTRY] :
+      undefined /* default value */;
+
+  this.thumbnailLoader_ = new ThumbnailLoader(this.galleryItem_.getEntry(),
+      undefined /* opt_loaderType */, thumbnailMetadata,
+      undefined /* opt_mediaType */, loadTargets);
+  return this.thumbnailLoader_.loadAsDataUrl(
+      ThumbnailLoader.FillMode.FIT).then(function(requestId, result) {
+    // Discard the result of old request.
+    if (requestId !== this.thumbnailLoadRequestId_)
+      return null;
+
+    // Update width by using the width of actual data.
+    this.setWidth_(
+        ~~(result.width * ThumbnailView.ROW_HEIGHT / result.height));
+
+    this.imageFrame_.style.backgroundImage = 'url(' + result.data + ')';
+    this.setError_(null);
+
+    return {
+      height: result.height,
+      loadTarget: this.thumbnailLoader_.getLoadTarget()
+    };
+    }.bind(this, this.thumbnailLoadRequestId_))
+    .catch(function(requestId, error) {
+      if (requestId !== this.thumbnailLoadRequestId_)
+        return null;
+
+      this.setError_(error);
+      return null;
+    }.bind(this, this.thumbnailLoadRequestId_));
 };
