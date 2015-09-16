@@ -27,7 +27,7 @@ namespace web_view {
 
 class TestRunnerApplicationDelegate
     : public mojo::ApplicationDelegate,
-      public mojo::ViewTreeDelegate,
+      public mus::ViewTreeDelegate,
       public mojom::WebViewClient,
       public LayoutTestRunner,
       public mojo::InterfaceFactory<LayoutTestRunner> {
@@ -44,9 +44,9 @@ class TestRunnerApplicationDelegate
   bool ConfigureIncomingConnection(
       mojo::ApplicationConnection* connection) override;
 
-  // mojo::ViewTreeDelegate:
-  void OnEmbed(mojo::View* root) override;
-  void OnConnectionLost(mojo::ViewTreeConnection* connection) override;
+  // mus::ViewTreeDelegate:
+  void OnEmbed(mus::View* root) override;
+  void OnConnectionLost(mus::ViewTreeConnection* connection) override;
 
   // mojom::WebViewClient:
   void TopLevelNavigate(mojo::URLRequestPtr request) override;
@@ -66,8 +66,8 @@ class TestRunnerApplicationDelegate
   mojo::ApplicationImpl* app_;
   mojo::ViewTreeHostPtr host_;
 
-  mojo::View* root_;
-  mojo::View* content_;
+  mus::View* root_;
+  mus::View* content_;
   scoped_ptr<WebView> web_view_;
 
   scoped_ptr<test_runner::TestInfoExtractor> test_extractor_;

@@ -8,7 +8,7 @@
 #include "base/test/test_suite.h"
 #include "third_party/mojo/src/mojo/public/cpp/system/macros.h"
 
-namespace mojo {
+namespace mus {
 
 class ViewManagerTestSuite : public base::TestSuite {
  public:
@@ -22,6 +22,6 @@ class ViewManagerTestSuite : public base::TestSuite {
   MOJO_DISALLOW_COPY_AND_ASSIGN(ViewManagerTestSuite);
 };
 
-}  // namespace mojo
+}  // namespace mus
 
 #endif  // COMPONENTS_MUS_PUBLIC_CPP_TESTS_VIEW_MANAGER_TEST_SUITE_H_

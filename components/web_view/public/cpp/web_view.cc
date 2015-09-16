@@ -20,7 +20,7 @@ void OnEmbed(bool success, uint16 connection_id) {
 WebView::WebView(mojom::WebViewClient* client) : binding_(client) {}
 WebView::~WebView() {}
 
-void WebView::Init(mojo::ApplicationImpl* app, mojo::View* view) {
+void WebView::Init(mojo::ApplicationImpl* app, mus::View* view) {
   mojo::URLRequestPtr request(mojo::URLRequest::New());
   request->url = "mojo:web_view";
 

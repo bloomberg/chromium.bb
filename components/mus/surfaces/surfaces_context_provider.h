@@ -23,24 +23,21 @@ class GLES2Implementation;
 
 }  // namespace gpu
 
-namespace gles2 {
+namespace mus {
+
 class CommandBufferDriver;
 class CommandBufferImpl;
 class CommandBufferLocal;
 class GpuState;
-}
-
-namespace surfaces {
-
 class SurfacesContextProviderDelegate;
 
 class SurfacesContextProvider : public cc::ContextProvider,
-                                public gles2::CommandBufferLocalClient,
+                                public CommandBufferLocalClient,
                                 public base::NonThreadSafe {
  public:
   SurfacesContextProvider(SurfacesContextProviderDelegate* delegate,
                           gfx::AcceleratedWidget widget,
-                          const scoped_refptr<gles2::GpuState>& state);
+                          const scoped_refptr<GpuState>& state);
 
   // cc::ContextProvider implementation.
   bool BindToCurrentThread() override;
@@ -80,13 +77,13 @@ class SurfacesContextProvider : public cc::ContextProvider,
 
   SurfacesContextProviderDelegate* delegate_;
   gfx::AcceleratedWidget widget_;
-  scoped_ptr<gles2::CommandBufferLocal> command_buffer_local_;
+  scoped_ptr<CommandBufferLocal> command_buffer_local_;
 
   base::Lock context_lock_;
 
   DISALLOW_COPY_AND_ASSIGN(SurfacesContextProvider);
 };
 
-}  // namespace surfaces
+}  // namespace mus
 
 #endif  // COMPONENTS_MUS_SURFACES_SURFACES_CONTEXT_PROVIDER_H_

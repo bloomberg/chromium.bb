@@ -5,7 +5,7 @@
 #include "components/mus/test_server_view_delegate.h"
 #include "components/mus/server_view.h"
 
-namespace view_manager {
+namespace mus {
 
 TestServerViewDelegate::TestServerViewDelegate() : root_view_(nullptr) {}
 
@@ -17,7 +17,7 @@ TestServerViewDelegate::UpdateViewTreeFromCompositorFrame(
   return scoped_ptr<cc::CompositorFrame>();
 }
 
-surfaces::SurfacesState* TestServerViewDelegate::GetSurfacesState() {
+SurfacesState* TestServerViewDelegate::GetSurfacesState() {
   return nullptr;
 }
 
@@ -28,4 +28,4 @@ const ServerView* TestServerViewDelegate::GetRootView(
   return root_view_;
 }
 
-}  // namespace view_manager
+}  // namespace mus

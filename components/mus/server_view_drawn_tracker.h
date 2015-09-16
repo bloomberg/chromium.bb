@@ -10,7 +10,7 @@
 #include "base/basictypes.h"
 #include "components/mus/server_view_observer.h"
 
-namespace view_manager {
+namespace mus {
 
 class ServerViewDrawnTrackerObserver;
 
@@ -51,6 +51,6 @@ class ServerViewDrawnTracker : public ServerViewObserver {
   DISALLOW_COPY_AND_ASSIGN(ServerViewDrawnTracker);
 };
 
-}  // namespace view_manager
+}  // namespace mus
 
 #endif  // COMPONENTS_MUS_SERVER_VIEW_DRAWN_TRACKER_H_

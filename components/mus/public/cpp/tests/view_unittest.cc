@@ -12,7 +12,7 @@
 #include "components/mus/public/cpp/view_property.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace mojo {
+namespace mus {
 
 // View ------------------------------------------------------------------------
 
@@ -423,7 +423,7 @@ class OrderChangeObserver : public ViewObserver {
   struct Change {
     View* view;
     View* relative_view;
-    OrderDirection direction;
+    mojo::OrderDirection direction;
   };
   typedef std::vector<Change> Changes;
 
@@ -442,13 +442,13 @@ class OrderChangeObserver : public ViewObserver {
   // Overridden from ViewObserver:
   void OnViewReordering(View* view,
                         View* relative_view,
-                        OrderDirection direction) override {
+                        mojo::OrderDirection direction) override {
     OnViewReordered(view, relative_view, direction);
   }
 
   void OnViewReordered(View* view,
                        View* relative_view,
-                       OrderDirection direction) override {
+                       mojo::OrderDirection direction) override {
     Change change;
     change.view = view;
     change.relative_view = relative_view;
@@ -488,11 +488,11 @@ TEST_F(ViewObserverTest, Order) {
     ASSERT_EQ(2U, changes.size());
     EXPECT_EQ(&v11, changes[0].view);
     EXPECT_EQ(&v13, changes[0].relative_view);
-    EXPECT_EQ(ORDER_DIRECTION_ABOVE, changes[0].direction);
+    EXPECT_EQ(mojo::ORDER_DIRECTION_ABOVE, changes[0].direction);
 
     EXPECT_EQ(&v11, changes[1].view);
     EXPECT_EQ(&v13, changes[1].relative_view);
-    EXPECT_EQ(ORDER_DIRECTION_ABOVE, changes[1].direction);
+    EXPECT_EQ(mojo::ORDER_DIRECTION_ABOVE, changes[1].direction);
   }
 
   {
@@ -508,11 +508,11 @@ TEST_F(ViewObserverTest, Order) {
     ASSERT_EQ(2U, changes.size());
     EXPECT_EQ(&v11, changes[0].view);
     EXPECT_EQ(&v12, changes[0].relative_view);
-    EXPECT_EQ(ORDER_DIRECTION_BELOW, changes[0].direction);
+    EXPECT_EQ(mojo::ORDER_DIRECTION_BELOW, changes[0].direction);
 
     EXPECT_EQ(&v11, changes[1].view);
     EXPECT_EQ(&v12, changes[1].relative_view);
-    EXPECT_EQ(ORDER_DIRECTION_BELOW, changes[1].direction);
+    EXPECT_EQ(mojo::ORDER_DIRECTION_BELOW, changes[1].direction);
   }
 
   {
@@ -520,7 +520,7 @@ TEST_F(ViewObserverTest, Order) {
 
     // Move v11 above v12.
     // Resulting order: v12. v11, v13
-    v11.Reorder(&v12, ORDER_DIRECTION_ABOVE);
+    v11.Reorder(&v12, mojo::ORDER_DIRECTION_ABOVE);
     EXPECT_EQ(&v12, v1.children().front());
     EXPECT_EQ(&v13, v1.children().back());
 
@@ -528,11 +528,11 @@ TEST_F(ViewObserverTest, Order) {
     ASSERT_EQ(2U, changes.size());
     EXPECT_EQ(&v11, changes[0].view);
     EXPECT_EQ(&v12, changes[0].relative_view);
-    EXPECT_EQ(ORDER_DIRECTION_ABOVE, changes[0].direction);
+    EXPECT_EQ(mojo::ORDER_DIRECTION_ABOVE, changes[0].direction);
 
     EXPECT_EQ(&v11, changes[1].view);
     EXPECT_EQ(&v12, changes[1].relative_view);
-    EXPECT_EQ(ORDER_DIRECTION_ABOVE, changes[1].direction);
+    EXPECT_EQ(mojo::ORDER_DIRECTION_ABOVE, changes[1].direction);
   }
 
   {
@@ -540,7 +540,7 @@ TEST_F(ViewObserverTest, Order) {
 
     // Move v11 below v12.
     // Resulting order: v11, v12, v13
-    v11.Reorder(&v12, ORDER_DIRECTION_BELOW);
+    v11.Reorder(&v12, mojo::ORDER_DIRECTION_BELOW);
     EXPECT_EQ(&v11, v1.children().front());
     EXPECT_EQ(&v13, v1.children().back());
 
@@ -548,11 +548,11 @@ TEST_F(ViewObserverTest, Order) {
     ASSERT_EQ(2U, changes.size());
     EXPECT_EQ(&v11, changes[0].view);
     EXPECT_EQ(&v12, changes[0].relative_view);
-    EXPECT_EQ(ORDER_DIRECTION_BELOW, changes[0].direction);
+    EXPECT_EQ(mojo::ORDER_DIRECTION_BELOW, changes[0].direction);
 
     EXPECT_EQ(&v11, changes[1].view);
     EXPECT_EQ(&v12, changes[1].relative_view);
-    EXPECT_EQ(ORDER_DIRECTION_BELOW, changes[1].direction);
+    EXPECT_EQ(mojo::ORDER_DIRECTION_BELOW, changes[1].direction);
   }
 }
 
@@ -565,7 +565,7 @@ std::string ViewIdToString(Id id) {
                    : base::StringPrintf("%d,%d", HiWord(id), LoWord(id));
 }
 
-std::string RectToString(const Rect& rect) {
+std::string RectToString(const mojo::Rect& rect) {
   return base::StringPrintf("%d,%d %dx%d", rect.x, rect.y, rect.width,
                             rect.height);
 }
@@ -586,16 +586,16 @@ class BoundsChangeObserver : public ViewObserver {
  private:
   // Overridden from ViewObserver:
   void OnViewBoundsChanging(View* view,
-                            const Rect& old_bounds,
-                            const Rect& new_bounds) override {
+                            const mojo::Rect& old_bounds,
+                            const mojo::Rect& new_bounds) override {
     changes_.push_back(base::StringPrintf(
         "view=%s old_bounds=%s new_bounds=%s phase=changing",
         ViewIdToString(view->id()).c_str(), RectToString(old_bounds).c_str(),
         RectToString(new_bounds).c_str()));
   }
   void OnViewBoundsChanged(View* view,
-                           const Rect& old_bounds,
-                           const Rect& new_bounds) override {
+                           const mojo::Rect& old_bounds,
+                           const mojo::Rect& new_bounds) override {
     changes_.push_back(base::StringPrintf(
         "view=%s old_bounds=%s new_bounds=%s phase=changed",
         ViewIdToString(view->id()).c_str(), RectToString(old_bounds).c_str(),
@@ -614,7 +614,7 @@ TEST_F(ViewObserverTest, SetBounds) {
   TestView v1;
   {
     BoundsChangeObserver observer(&v1);
-    Rect rect;
+    mojo::Rect rect;
     rect.width = rect.height = 100;
     v1.SetBounds(rect);
 
@@ -871,4 +871,4 @@ TEST_F(ViewObserverTest, LocalPropertyChanged) {
             o.PropertyChangeInfoAndClear());
 }
 
-}  // namespace mojo
+}  // namespace mus

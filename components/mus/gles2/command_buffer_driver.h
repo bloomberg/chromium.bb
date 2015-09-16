@@ -28,7 +28,7 @@ class GLContext;
 class GLSurface;
 }
 
-namespace gles2 {
+namespace mus {
 
 class GpuState;
 
@@ -94,6 +94,6 @@ class CommandBufferDriver {
   DISALLOW_COPY_AND_ASSIGN(CommandBufferDriver);
 };
 
-}  // namespace gles2
+}  // namespace mus
 
 #endif  // COMPONENTS_GLES2_COMMAND_BUFFER_DRIVER_H_

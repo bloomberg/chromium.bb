@@ -10,7 +10,7 @@
 #include "components/mus/public/cpp/view.h"
 #include "ui/mojo/events/input_events.mojom.h"
 
-namespace mojo {
+namespace mus {
 
 class View;
 
@@ -39,29 +39,29 @@ class ViewObserver {
 
   virtual void OnViewReordering(View* view,
                                 View* relative_view,
-                                OrderDirection direction) {}
+                                mojo::OrderDirection direction) {}
   virtual void OnViewReordered(View* view,
                                View* relative_view,
-                               OrderDirection direction) {}
+                               mojo::OrderDirection direction) {}
 
   virtual void OnViewDestroying(View* view) {}
   virtual void OnViewDestroyed(View* view) {}
 
   virtual void OnViewBoundsChanging(View* view,
-                                    const Rect& old_bounds,
-                                    const Rect& new_bounds) {}
+                                    const mojo::Rect& old_bounds,
+                                    const mojo::Rect& new_bounds) {}
   virtual void OnViewBoundsChanged(View* view,
-                                   const Rect& old_bounds,
-                                   const Rect& new_bounds) {}
+                                   const mojo::Rect& old_bounds,
+                                   const mojo::Rect& new_bounds) {}
 
   virtual void OnViewViewportMetricsChanged(
       View* view,
-      const ViewportMetrics& old_metrics,
-      const ViewportMetrics& new_metrics) {}
+      const mojo::ViewportMetrics& old_metrics,
+      const mojo::ViewportMetrics& new_metrics) {}
 
   virtual void OnViewFocusChanged(View* gained_focus, View* lost_focus) {}
 
-  virtual void OnViewInputEvent(View* view, const EventPtr& event) {}
+  virtual void OnViewInputEvent(View* view, const mojo::EventPtr& event) {}
 
   virtual void OnViewVisibilityChanging(View* view) {}
   virtual void OnViewVisibilityChanged(View* view) {}
@@ -97,6 +97,6 @@ class ViewObserver {
   virtual ~ViewObserver() {}
 };
 
-}  // namespace mojo
+}  // namespace mus
 
 #endif  // COMPONENTS_MUS_PUBLIC_CPP_VIEW_OBSERVER_H_

@@ -11,11 +11,14 @@
 #include "components/mus/gles2/gpu_state.h"
 #include "gpu/command_buffer/service/sync_point_manager.h"
 
-namespace gles2 {
+namespace mus {
+
 namespace {
+
 void RunCallback(const mojo::Callback<void()>& callback) {
   callback.Run();
 }
+
 }  // namespace
 
 class CommandBufferImpl::CommandBufferDriverClientImpl
@@ -167,4 +170,4 @@ void CommandBufferImpl::DidLoseContext() {
   OnConnectionError();
 }
 
-}  // namespace gles2
+}  // namespace mus

@@ -11,7 +11,7 @@
 #include "components/mus/view_tree_host_impl.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/binding.h"
 
-namespace view_manager {
+namespace mus {
 
 class ConnectionManager;
 class ViewTreeImpl;
@@ -77,6 +77,6 @@ class ViewTreeHostConnectionImpl : public ViewTreeHostConnection {
   DISALLOW_COPY_AND_ASSIGN(ViewTreeHostConnectionImpl);
 };
 
-}  // namespace view_manager
+}  // namespace mus
 
 #endif  // COMPONENTS_MUS_VIEW_TREE_HOST_CONNECTION_H_

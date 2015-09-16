@@ -8,7 +8,7 @@
 #include "cc/scheduler/compositor_timing_history.h"
 #include "cc/surfaces/display.h"
 
-namespace surfaces {
+namespace mus {
 
 SurfacesScheduler::SurfacesScheduler()
     : rendering_stats_instrumentation_(
@@ -98,4 +98,4 @@ void SurfacesScheduler::SendBeginFramesToChildren(
 
 void SurfacesScheduler::SendBeginMainFrameNotExpectedSoon() {}
 
-}  // namespace mojo
+}  // namespace mus

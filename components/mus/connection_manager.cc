@@ -20,9 +20,7 @@
 #include "mojo/converters/surfaces/surfaces_type_converters.h"
 #include "ui/gfx/geometry/size_conversions.h"
 
-using mojo::ConnectionSpecificId;
-
-namespace view_manager {
+namespace mus {
 
 ConnectionManager::ScopedChange::ScopedChange(
     ViewTreeImpl* connection,
@@ -40,7 +38,7 @@ ConnectionManager::ScopedChange::~ScopedChange() {
 
 ConnectionManager::ConnectionManager(
     ConnectionManagerDelegate* delegate,
-    const scoped_refptr<surfaces::SurfacesState>& surfaces_state)
+    const scoped_refptr<SurfacesState>& surfaces_state)
     : delegate_(delegate),
       surfaces_state_(surfaces_state),
       next_connection_id_(1),
@@ -129,7 +127,7 @@ void ConnectionManager::OnHostConnectionClosed(
     delegate_->OnNoMoreRootConnections();
 }
 
-void ConnectionManager::EmbedAtView(mojo::ConnectionSpecificId creator_id,
+void ConnectionManager::EmbedAtView(ConnectionSpecificId creator_id,
                                     const ViewId& view_id,
                                     uint32_t policy_bitmask,
                                     mojo::URLRequestPtr request) {
@@ -144,11 +142,10 @@ void ConnectionManager::EmbedAtView(mojo::ConnectionSpecificId creator_id,
   OnConnectionMessagedClient(client_connection->service()->id());
 }
 
-ViewTreeImpl* ConnectionManager::EmbedAtView(
-    mojo::ConnectionSpecificId creator_id,
-    const ViewId& view_id,
-    uint32_t policy_bitmask,
-    mojo::ViewTreeClientPtr client) {
+ViewTreeImpl* ConnectionManager::EmbedAtView(ConnectionSpecificId creator_id,
+                                             const ViewId& view_id,
+                                             uint32_t policy_bitmask,
+                                             mojo::ViewTreeClientPtr client) {
   mojo::ViewTreePtr service_ptr;
   ClientConnection* client_connection =
       delegate_->CreateClientConnectionForEmbedAtView(
@@ -335,7 +332,7 @@ ConnectionManager::UpdateViewTreeFromCompositorFrame(
   return ConvertToCompositorFrame(input, this);
 }
 
-surfaces::SurfacesState* ConnectionManager::GetSurfacesState() {
+SurfacesState* ConnectionManager::GetSurfacesState() {
   return surfaces_state_.get();
 }
 
@@ -464,4 +461,4 @@ bool ConnectionManager::ConvertSurfaceDrawQuad(
   return true;
 }
 
-}  // namespace view_manager
+}  // namespace mus

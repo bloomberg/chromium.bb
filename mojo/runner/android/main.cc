@@ -56,9 +56,9 @@ LazyInstance<base::android::ScopedJavaGlobalRef<jobject>> g_main_activiy =
 
 void ConfigureAndroidServices(Context* context) {
   context->application_manager()->SetLoaderForURL(
-      make_scoped_ptr(new UIApplicationLoader(
-          make_scoped_ptr(new view_manager::AndroidLoader()),
-          g_java_message_loop.Get().get())),
+      make_scoped_ptr(
+          new UIApplicationLoader(make_scoped_ptr(new mus::AndroidLoader()),
+                                  g_java_message_loop.Get().get())),
       GURL("mojo:mus"));
 
   // Android handler is bundled with the Mojo shell, because it uses the

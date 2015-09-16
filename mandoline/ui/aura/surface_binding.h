@@ -14,6 +14,9 @@ class OutputSurface;
 
 namespace mojo {
 class Shell;
+}
+
+namespace mus {
 class View;
 }
 
@@ -26,7 +29,7 @@ namespace mandoline {
 // share the same connection.
 class SurfaceBinding {
  public:
-  SurfaceBinding(mojo::Shell* shell, mojo::View* view);
+  SurfaceBinding(mojo::Shell* shell, mus::View* view);
   ~SurfaceBinding();
 
   // Creates an OutputSurface that renders to the View supplied to the
@@ -37,7 +40,7 @@ class SurfaceBinding {
   class PerConnectionState;
 
   mojo::Shell* shell_;
-  mojo::View* view_;
+  mus::View* view_;
   scoped_refptr<PerConnectionState> state_;
 
   DISALLOW_COPY_AND_ASSIGN(SurfaceBinding);

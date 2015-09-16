@@ -7,7 +7,7 @@
 #ifndef MANDOLINE_UI_AURA_INPUT_METHOD_MANDOLINE_H_
 #define MANDOLINE_UI_AURA_INPUT_METHOD_MANDOLINE_H_
 
-namespace mojo {
+namespace mus {
 class View;
 }  // namespace mojo
 
@@ -16,7 +16,7 @@ namespace mandoline {
 class InputMethodMandoline : public ui::InputMethodBase {
  public:
   InputMethodMandoline(ui::internal::InputMethodDelegate* delegate,
-                       mojo::View* view);
+                       mus::View* view);
   ~InputMethodMandoline() override;
 
  private:
@@ -40,7 +40,7 @@ class InputMethodMandoline : public ui::InputMethodBase {
   void UpdateTextInputType();
 
   // The toplevel view which is not owned by this class.
-  mojo::View* view_;
+  mus::View* view_;
 
   DISALLOW_COPY_AND_ASSIGN(InputMethodMandoline);
 };

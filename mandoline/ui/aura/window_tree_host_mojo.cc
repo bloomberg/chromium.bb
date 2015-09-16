@@ -20,7 +20,7 @@ namespace mandoline {
 ////////////////////////////////////////////////////////////////////////////////
 // WindowTreeHostMojo, public:
 
-WindowTreeHostMojo::WindowTreeHostMojo(mojo::Shell* shell, mojo::View* view)
+WindowTreeHostMojo::WindowTreeHostMojo(mojo::Shell* shell, mus::View* view)
     : view_(view), bounds_(view->bounds().To<gfx::Rect>()) {
   view_->AddObserver(this);
 
@@ -99,10 +99,9 @@ void WindowTreeHostMojo::OnCursorVisibilityChangedNative(bool show) {
 ////////////////////////////////////////////////////////////////////////////////
 // WindowTreeHostMojo, ViewObserver implementation:
 
-void WindowTreeHostMojo::OnViewBoundsChanged(
-    mojo::View* view,
-    const mojo::Rect& old_bounds,
-    const mojo::Rect& new_bounds) {
+void WindowTreeHostMojo::OnViewBoundsChanged(mus::View* view,
+                                             const mojo::Rect& old_bounds,
+                                             const mojo::Rect& new_bounds) {
   gfx::Rect old_bounds2 = old_bounds.To<gfx::Rect>();
   gfx::Rect new_bounds2 = new_bounds.To<gfx::Rect>();
   bounds_ = new_bounds2;

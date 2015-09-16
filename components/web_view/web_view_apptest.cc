@@ -28,7 +28,7 @@ const char kTestThreeFile[] = "test_three.html";
 const char kTestThreeTitle[] = "Test Title Three";
 }
 
-class WebViewTest : public mojo::ViewManagerTestBase,
+class WebViewTest : public mus::ViewManagerTestBase,
                     public mojom::WebViewClient {
  public:
   WebViewTest() : web_view_(this) {}
@@ -75,7 +75,7 @@ class WebViewTest : public mojo::ViewManagerTestBase,
   }
 
   // Overridden from ViewTreeDelegate:
-  void OnEmbed(mojo::View* root) override {
+  void OnEmbed(mus::View* root) override {
     content_ = root->connection()->CreateView();
     root->AddChild(content_);
     content_->SetVisible(true);
@@ -86,7 +86,7 @@ class WebViewTest : public mojo::ViewManagerTestBase,
   }
 
   void TearDown() override {
-    mojo::ScopedViewPtr::DeleteViewOrViewManager(window_manager()->GetRoot());
+    mus::ScopedViewPtr::DeleteViewOrViewManager(window_manager()->GetRoot());
     ViewManagerTestBase::TearDown();
   }
 
@@ -108,7 +108,7 @@ class WebViewTest : public mojo::ViewManagerTestBase,
 
   mojo::ApplicationImpl* app_;
 
-  mojo::View* content_;
+  mus::View* content_;
 
   web_view::WebView web_view_;
 

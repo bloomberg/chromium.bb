@@ -5,7 +5,7 @@
 #ifndef COMPONENTS_MUS_FOCUS_CONTROLLER_DELEGATE_H_
 #define COMPONENTS_MUS_FOCUS_CONTROLLER_DELEGATE_H_
 
-namespace view_manager {
+namespace mus {
 
 class ServerView;
 
@@ -18,6 +18,6 @@ class FocusControllerDelegate {
   ~FocusControllerDelegate() {}
 };
 
-}  // namespace view_manager
+}  // namespace mus
 
 #endif  // COMPONENTS_MUS_FOCUS_CONTROLLER_DELEGATE_H_

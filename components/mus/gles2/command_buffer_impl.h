@@ -11,7 +11,8 @@
 #include "components/mus/public/interfaces/command_buffer.mojom.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/binding.h"
 
-namespace gles2 {
+namespace mus {
+
 class CommandBufferDriver;
 class CommandBufferImplObserver;
 class GpuState;
@@ -77,6 +78,6 @@ class CommandBufferImpl : public mojo::CommandBuffer {
   DISALLOW_COPY_AND_ASSIGN(CommandBufferImpl);
 };
 
-}  // namespace gles2
+}  // namespace mus
 
 #endif  // COMPONENTS_MUS_GLES2_COMMAND_BUFFER_IMPL_H_

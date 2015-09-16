@@ -2,11 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/mus/view_manager_app.h"
+#include "components/mus/mus_app.h"
 #include "mojo/application/public/cpp/application_runner.h"
 #include "third_party/mojo/src/mojo/public/c/system/main.h"
 
+namespace mus {
+
 MojoResult MojoMain(MojoHandle shell_handle) {
-  mojo::ApplicationRunner runner(new view_manager::ViewManagerApp);
+  mojo::ApplicationRunner runner(new MandolineUIServicesApp);
   return runner.Run(shell_handle);
 }
+
+}  // namespace mus

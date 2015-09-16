@@ -18,19 +18,19 @@
 #include "mojo/application/public/cpp/interface_factory.h"
 #include "mojo/common/weak_binding_set.h"
 
-namespace mojo {
+namespace mus {
 class View;
 }
 
 namespace mandoline {
 
-class PhoneBrowserApplicationDelegate :
-    public mojo::ApplicationDelegate,
-    public LaunchHandler,
-    public mojo::ViewTreeDelegate,
-    public mojo::ViewObserver,
-    public web_view::mojom::WebViewClient,
-    public mojo::InterfaceFactory<LaunchHandler> {
+class PhoneBrowserApplicationDelegate
+    : public mojo::ApplicationDelegate,
+      public LaunchHandler,
+      public mus::ViewTreeDelegate,
+      public mus::ViewObserver,
+      public web_view::mojom::WebViewClient,
+      public mojo::InterfaceFactory<LaunchHandler> {
  public:
   PhoneBrowserApplicationDelegate();
   ~PhoneBrowserApplicationDelegate() override;
@@ -44,12 +44,12 @@ class PhoneBrowserApplicationDelegate :
   // Overridden from LaunchHandler:
   void LaunchURL(const mojo::String& url) override;
 
-  // Overridden from mojo::ViewTreeDelegate:
-  void OnEmbed(mojo::View* root) override;
-  void OnConnectionLost(mojo::ViewTreeConnection* connection) override;
+  // Overridden from mus::ViewTreeDelegate:
+  void OnEmbed(mus::View* root) override;
+  void OnConnectionLost(mus::ViewTreeConnection* connection) override;
 
-  // Overridden from mojo::ViewObserver:
-  void OnViewBoundsChanged(mojo::View* view,
+  // Overridden from mus::ViewObserver:
+  void OnViewBoundsChanged(mus::View* view,
                            const mojo::Rect& old_bounds,
                            const mojo::Rect& new_bounds) override;
 
@@ -68,8 +68,8 @@ class PhoneBrowserApplicationDelegate :
   mojo::ApplicationImpl* app_;
   mojo::ViewTreeHostPtr host_;
 
-  mojo::View* root_;
-  mojo::View* content_;
+  mus::View* root_;
+  mus::View* content_;
   web_view::WebView web_view_;
 
   mojo::String default_url_;

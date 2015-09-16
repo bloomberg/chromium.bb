@@ -167,4 +167,4 @@ gpu::Capabilities TypeConverter<gpu::Capabilities, GpuCapabilitiesPtr>::Convert(
   return result;
 }
 
-}  // namespace gles2
+}  // namespace mojo

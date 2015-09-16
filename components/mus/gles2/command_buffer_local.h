@@ -31,9 +31,10 @@ class GLContext;
 class GLSurface;
 }
 
-namespace gles2 {
+namespace mus {
 
 class CommandBufferLocalClient;
+class GpuState;
 
 // This class provides a thin wrapper around a CommandBufferService and a
 // GpuControl implementation to allow cc::Display to generate GL directly on
@@ -42,7 +43,7 @@ class CommandBufferLocal : public gpu::GpuControl {
  public:
   CommandBufferLocal(CommandBufferLocalClient* client,
                      gfx::AcceleratedWidget widget,
-                     const scoped_refptr<gles2::GpuState>& gpu_state);
+                     const scoped_refptr<GpuState>& gpu_state);
   ~CommandBufferLocal() override;
 
   bool Initialize();
@@ -83,7 +84,7 @@ class CommandBufferLocal : public gpu::GpuControl {
   void OnSyncPointRetired();
 
   gfx::AcceleratedWidget widget_;
-  scoped_refptr<gles2::GpuState> gpu_state_;
+  scoped_refptr<GpuState> gpu_state_;
   scoped_ptr<gpu::CommandBufferService> command_buffer_;
   scoped_ptr<gpu::GpuScheduler> scheduler_;
   scoped_ptr<gpu::gles2::GLES2Decoder> decoder_;
@@ -96,6 +97,6 @@ class CommandBufferLocal : public gpu::GpuControl {
   DISALLOW_COPY_AND_ASSIGN(CommandBufferLocal);
 };
 
-}  //  namespace gles2
+}  //  namespace mus
 
 #endif  // COMPONENTS_MUS_GLES2_COMMAND_BUFFER_LOCAL_H_

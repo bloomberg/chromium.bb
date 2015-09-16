@@ -11,15 +11,16 @@
 #include "components/mus/public/interfaces/view_tree.mojom.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/strong_binding.h"
 
-namespace mojo {
+namespace mus {
 class ViewTreeConnection;
 class ViewTreeDelegate;
 
 // Manages the connection with the View Manager service.
-class ViewTreeClientImpl : public ViewTreeConnection, public ViewTreeClient {
+class ViewTreeClientImpl : public ViewTreeConnection,
+                           public mojo::ViewTreeClient {
  public:
   ViewTreeClientImpl(ViewTreeDelegate* delegate,
-                     InterfaceRequest<ViewTreeClient> request);
+                     mojo::InterfaceRequest<mojo::ViewTreeClient> request);
   ~ViewTreeClientImpl() override;
 
   bool connected() const { return tree_; }
@@ -35,30 +36,32 @@ class ViewTreeClientImpl : public ViewTreeConnection, public ViewTreeClient {
   void AddChild(Id child_id, Id parent_id);
   void RemoveChild(Id child_id, Id parent_id);
 
-  void Reorder(Id view_id, Id relative_view_id, OrderDirection direction);
+  void Reorder(Id view_id, Id relative_view_id, mojo::OrderDirection direction);
 
   // Returns true if the specified view was created by this connection.
   bool OwnsView(Id id) const;
 
-  void SetBounds(Id view_id, const Rect& bounds);
+  void SetBounds(Id view_id, const mojo::Rect& bounds);
   void SetFocus(Id view_id);
   void SetVisible(Id view_id, bool visible);
   void SetProperty(Id view_id,
                    const std::string& name,
                    const std::vector<uint8_t>& data);
-  void SetViewTextInputState(Id view_id, TextInputStatePtr state);
-  void SetImeVisibility(Id view_id, bool visible, TextInputStatePtr state);
+  void SetViewTextInputState(Id view_id, mojo::TextInputStatePtr state);
+  void SetImeVisibility(Id view_id,
+                        bool visible,
+                        mojo::TextInputStatePtr state);
 
   void Embed(Id view_id,
-             ViewTreeClientPtr client,
+             mojo::ViewTreeClientPtr client,
              uint32_t policy_bitmask,
-             const ViewTree::EmbedCallback& callback);
+             const mojo::ViewTree::EmbedCallback& callback);
 
   void RequestSurface(Id view_id,
-                      InterfaceRequest<Surface> surface,
-                      SurfaceClientPtr client);
+                      mojo::InterfaceRequest<mojo::Surface> surface,
+                      mojo::SurfaceClientPtr client);
 
-  void set_change_acked_callback(const Callback<void(void)>& callback) {
+  void set_change_acked_callback(const mojo::Callback<void(void)>& callback) {
     change_acked_callback_ = callback;
   }
   void ClearChangeAckedCallback() { change_acked_callback_.reset(); }
@@ -90,45 +93,46 @@ class ViewTreeClientImpl : public ViewTreeConnection, public ViewTreeClient {
 
   // Overridden from ViewTreeClient:
   void OnEmbed(ConnectionSpecificId connection_id,
-               ViewDataPtr root,
-               ViewTreePtr tree,
+               mojo::ViewDataPtr root,
+               mojo::ViewTreePtr tree,
                Id focused_view_id,
                uint32_t access_policy) override;
   void OnEmbeddedAppDisconnected(Id view_id) override;
   void OnUnembed() override;
   void OnViewBoundsChanged(Id view_id,
-                           RectPtr old_bounds,
-                           RectPtr new_bounds) override;
-  void OnViewViewportMetricsChanged(ViewportMetricsPtr old_metrics,
-                                    ViewportMetricsPtr new_metrics) override;
+                           mojo::RectPtr old_bounds,
+                           mojo::RectPtr new_bounds) override;
+  void OnViewViewportMetricsChanged(
+      mojo::ViewportMetricsPtr old_metrics,
+      mojo::ViewportMetricsPtr new_metrics) override;
   void OnViewHierarchyChanged(Id view_id,
                               Id new_parent_id,
                               Id old_parent_id,
-                              Array<ViewDataPtr> views) override;
+                              mojo::Array<mojo::ViewDataPtr> views) override;
   void OnViewReordered(Id view_id,
                        Id relative_view_id,
-                       OrderDirection direction) override;
+                       mojo::OrderDirection direction) override;
   void OnViewDeleted(Id view_id) override;
   void OnViewVisibilityChanged(Id view_id, bool visible) override;
   void OnViewDrawnStateChanged(Id view_id, bool drawn) override;
   void OnViewSharedPropertyChanged(Id view_id,
-                                   const String& name,
-                                   Array<uint8_t> new_data) override;
+                                   const mojo::String& name,
+                                   mojo::Array<uint8_t> new_data) override;
   void OnViewInputEvent(Id view_id,
-                        EventPtr event,
-                        const Callback<void()>& callback) override;
+                        mojo::EventPtr event,
+                        const mojo::Callback<void()>& callback) override;
   void OnViewFocused(Id focused_view_id) override;
 
   void RootDestroyed(View* root);
 
   void OnActionCompleted(bool success);
 
-  Callback<void(bool)> ActionCompletedCallback();
+  mojo::Callback<void(bool)> ActionCompletedCallback();
 
   ConnectionSpecificId connection_id_;
   ConnectionSpecificId next_id_;
 
-  Callback<void(void)> change_acked_callback_;
+  mojo::Callback<void(void)> change_acked_callback_;
 
   ViewTreeDelegate* delegate_;
 
@@ -140,8 +144,8 @@ class ViewTreeClientImpl : public ViewTreeConnection, public ViewTreeClient {
   View* focused_view_;
   View* activated_view_;
 
-  Binding<ViewTreeClient> binding_;
-  ViewTreePtr tree_;
+  mojo::Binding<ViewTreeClient> binding_;
+  mojo::ViewTreePtr tree_;
 
   bool is_embed_root_;
 
@@ -150,6 +154,6 @@ class ViewTreeClientImpl : public ViewTreeConnection, public ViewTreeClient {
   MOJO_DISALLOW_COPY_AND_ASSIGN(ViewTreeClientImpl);
 };
 
-}  // namespace mojo
+}  // namespace mus
 
 #endif  // COMPONENTS_MUS_PUBLIC_CPP_LIB_VIEW_TREE_CLIENT_IMPL_H_

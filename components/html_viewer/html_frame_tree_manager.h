@@ -18,7 +18,7 @@ namespace blink {
 class WebView;
 }
 
-namespace mojo {
+namespace mus {
 class View;
 }
 
@@ -34,7 +34,7 @@ class HTMLFrameTreeManagerObserver;
 // document. Some of the frames may be remote. HTMLFrameTreeManager updates its
 // state in response to changes from the FrameTreeServer, as well as changes
 // from the underlying frames. The frame tree has at least one local frame
-// that is backed by a mojo::View.
+// that is backed by a mus::View.
 class HTMLFrameTreeManager {
  public:
   // Returns a new HTMLFrame or null if a HTMLFrame does not need to be created.
@@ -42,7 +42,7 @@ class HTMLFrameTreeManager {
   // Close() when done.
   static HTMLFrame* CreateFrameAndAttachToTree(
       GlobalState* global_state,
-      mojo::View* view,
+      mus::View* view,
       scoped_ptr<DocumentResourceWaiter> resource_waiter,
       HTMLFrameDelegate* delegate);
 
@@ -71,7 +71,7 @@ class HTMLFrameTreeManager {
   ~HTMLFrameTreeManager();
 
   void Init(HTMLFrameDelegate* delegate,
-            mojo::View* local_view,
+            mus::View* local_view,
             const mojo::Array<web_view::FrameDataPtr>& frame_data,
             uint32_t change_id);
 
@@ -80,7 +80,7 @@ class HTMLFrameTreeManager {
       HTMLFrameDelegate* delegate,
       const mojo::Array<web_view::FrameDataPtr>& frame_data,
       uint32_t local_frame_id,
-      mojo::View* local_view);
+      mus::View* local_view);
 
   // Returns this HTMLFrameTreeManager from |instances_|.
   void RemoveFromInstances();

@@ -17,11 +17,11 @@ namespace cc {
 class SurfaceManager;
 }
 
-namespace surfaces {
+namespace mus {
 class SurfacesScheduler;
 }
 
-namespace view_manager {
+namespace mus {
 
 class ConnectionManager;
 class FocusController;
@@ -40,13 +40,12 @@ class ViewTreeHostImpl : public DisplayManagerDelegate,
   // TODO(fsamuel): All these parameters are just plumbing for creating
   // DisplayManagers. We should probably just store these common parameters
   // in the DisplayManagerFactory and pass them along on DisplayManager::Create.
-  ViewTreeHostImpl(
-      mojo::ViewTreeHostClientPtr client,
-      ConnectionManager* connection_manager,
-      bool is_headless,
-      mojo::ApplicationImpl* app_impl,
-      const scoped_refptr<gles2::GpuState>& gpu_state,
-      const scoped_refptr<surfaces::SurfacesState>& surfaces_state);
+  ViewTreeHostImpl(mojo::ViewTreeHostClientPtr client,
+                   ConnectionManager* connection_manager,
+                   bool is_headless,
+                   mojo::ApplicationImpl* app_impl,
+                   const scoped_refptr<GpuState>& gpu_state,
+                   const scoped_refptr<SurfacesState>& surfaces_state);
   ~ViewTreeHostImpl() override;
 
   // Initializes state that depends on the existence of a ViewTreeHostImpl.
@@ -118,6 +117,6 @@ class ViewTreeHostImpl : public DisplayManagerDelegate,
   DISALLOW_COPY_AND_ASSIGN(ViewTreeHostImpl);
 };
 
-}  // namespace view_manager
+}  // namespace mus
 
 #endif  // COMPONENTS_MUS_VIEW_TREE_HOST_IMPL_H_

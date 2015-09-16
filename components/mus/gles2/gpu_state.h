@@ -13,7 +13,7 @@
 #include "gpu/command_buffer/service/sync_point_manager.h"
 #include "ui/gl/gl_share_group.h"
 
-namespace gles2 {
+namespace mus {
 
 // We need to share these across all CommandBuffer instances so that contexts
 // they create can share resources with each other via mailboxes.
@@ -50,6 +50,6 @@ class GpuState : public base::RefCounted<GpuState> {
   scoped_refptr<gpu::gles2::MailboxManager> mailbox_manager_;
 };
 
-}  // namespace gles2
+}  // namespace mus
 
 #endif  // COMPONENTS_MUS_GLES2_GPU_STATE_H_

@@ -10,7 +10,7 @@
 #include "base/containers/hash_tables.h"
 #include "components/mus/ids.h"
 
-namespace view_manager {
+namespace mus {
 
 class ServerView;
 
@@ -35,6 +35,6 @@ class AccessPolicyDelegate {
   virtual ~AccessPolicyDelegate() {}
 };
 
-}  // namespace view_manager
+}  // namespace mus
 
 #endif  // COMPONENTS_MUS_ACCESS_POLICY_DELEGATE_H_

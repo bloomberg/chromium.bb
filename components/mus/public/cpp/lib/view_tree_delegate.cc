@@ -4,8 +4,8 @@
 
 #include "components/mus/public/cpp/view_tree_delegate.h"
 
-namespace mojo {
+namespace mus {
 
 void ViewTreeDelegate::OnUnembed() {}
 
-}  // namespace mojo
+}  // namespace mus

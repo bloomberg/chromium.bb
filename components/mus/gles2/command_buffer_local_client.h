@@ -5,7 +5,7 @@
 #ifndef COMPONENTS_MUS_GLES2_COMMAND_BUFFER_LOCAL_CLIENT_H_
 #define COMPONENTS_MUS_GLES2_COMMAND_BUFFER_LOCAL_CLIENT_H_
 
-namespace gles2 {
+namespace mus {
 
 class CommandBufferLocalClient {
  public:
@@ -16,6 +16,6 @@ class CommandBufferLocalClient {
   virtual ~CommandBufferLocalClient() {}
 };
 
-}  // namespace gles2
+}  // namespace mus
 
 #endif  // COMPONENTS_MUS_GLES2_COMMAND_BUFFER_LOCAL_CLIENT_H_

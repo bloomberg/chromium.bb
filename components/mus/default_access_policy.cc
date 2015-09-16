@@ -7,11 +7,10 @@
 #include "components/mus/access_policy_delegate.h"
 #include "components/mus/server_view.h"
 
-namespace view_manager {
+namespace mus {
 
-DefaultAccessPolicy::DefaultAccessPolicy(
-    mojo::ConnectionSpecificId connection_id,
-    AccessPolicyDelegate* delegate)
+DefaultAccessPolicy::DefaultAccessPolicy(ConnectionSpecificId connection_id,
+                                         AccessPolicyDelegate* delegate)
     : connection_id_(connection_id), delegate_(delegate) {}
 
 DefaultAccessPolicy::~DefaultAccessPolicy() {}
@@ -144,4 +143,4 @@ bool DefaultAccessPolicy::IsDescendantOfEmbedRoot(
   return delegate_->IsDescendantOfEmbedRoot(view);
 }
 
-}  // namespace view_manager
+}  // namespace mus

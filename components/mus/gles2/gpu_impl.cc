@@ -7,7 +7,7 @@
 #include "components/mus/gles2/command_buffer_driver.h"
 #include "components/mus/gles2/command_buffer_impl.h"
 
-namespace gles2 {
+namespace mus {
 
 GpuImpl::GpuImpl(mojo::InterfaceRequest<Gpu> request,
                  const scoped_refptr<GpuState>& state)
@@ -21,4 +21,4 @@ void GpuImpl::CreateOffscreenGLES2Context(
                         make_scoped_ptr(new CommandBufferDriver(state_)));
 }
 
-}  // namespace gles2
+}  // namespace mus

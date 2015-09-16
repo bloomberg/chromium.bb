@@ -11,7 +11,7 @@ class PointF;
 class Rect;
 }
 
-namespace view_manager {
+namespace mus {
 
 class ServerView;
 
@@ -30,6 +30,6 @@ gfx::Rect ConvertRectBetweenViews(const ServerView* from,
                                   const ServerView* to,
                                   const gfx::Rect& rect);
 
-}  // namespace view_manager
+}  // namespace mus
 
 #endif  // COMPONENTS_MUS_VIEW_COORDINATE_CONVERSIONS_H_

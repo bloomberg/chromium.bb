@@ -10,9 +10,9 @@ mojom("interfaces") {
     "compositor_frame.mojom",
     "gpu.mojom",
     "gpu_capabilities.mojom",
+    "mus_constants.mojom",
     "quads.mojom",
     "surface_id.mojom",
-    "view_manager_constants.mojom",
     "view_tree.mojom",
     "view_tree_host.mojom",
   ]

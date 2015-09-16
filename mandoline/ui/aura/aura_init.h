@@ -14,6 +14,9 @@ class FontLoader;
 
 namespace mojo {
 class Shell;
+}
+
+namespace mus {
 class View;
 }
 
@@ -22,7 +25,7 @@ namespace mandoline {
 // Sets up necessary state for aura when run with the viewmanager.
 class AuraInit {
  public:
-  AuraInit(mojo::View* root, mojo::Shell* shell);
+  AuraInit(mus::View* root, mojo::Shell* shell);
   ~AuraInit();
 
  private:

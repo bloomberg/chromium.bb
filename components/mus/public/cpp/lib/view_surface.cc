@@ -7,7 +7,7 @@
 #include "components/mus/public/cpp/view_surface_client.h"
 #include "mojo/converters/surfaces/surfaces_type_converters.h"
 
-namespace mojo {
+namespace mus {
 
 ViewSurface::~ViewSurface() {}
 
@@ -41,4 +41,4 @@ void ViewSurface::ReturnResources(
   client_->OnResourcesReturned(this, resources.Pass());
 }
 
-}  // namespace mojo
+}  // namespace mus

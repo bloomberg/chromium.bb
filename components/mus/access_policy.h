@@ -6,9 +6,9 @@
 #define COMPONENTS_MUS_ACCESS_POLICY_H_
 
 #include "components/mus/ids.h"
-#include "components/mus/public/interfaces/view_manager_constants.mojom.h"
+#include "components/mus/public/interfaces/mus_constants.mojom.h"
 
-namespace view_manager {
+namespace mus {
 
 class ServerView;
 
@@ -54,6 +54,6 @@ class AccessPolicy {
       const ServerView* focused) = 0;
 };
 
-}  // namespace view_manager
+}  // namespace mus
 
 #endif  // COMPONENTS_MUS_ACCESS_POLICY_H_

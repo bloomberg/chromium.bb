@@ -51,7 +51,7 @@ WebViewImpl::~WebViewImpl() {
     content_->RemoveObserver(this);
   if (root_) {
     root_->RemoveObserver(this);
-    mojo::ScopedViewPtr::DeleteViewOrViewManager(root_);
+    mus::ScopedViewPtr::DeleteViewOrViewManager(root_);
   }
 }
 
@@ -109,7 +109,7 @@ void WebViewImpl::LoadRequest(mojo::URLRequestPtr request) {
 
 void WebViewImpl::GetViewTreeClient(
     mojo::InterfaceRequest<mojo::ViewTreeClient> view_tree_client) {
-  mojo::ViewTreeConnection::Create(this, view_tree_client.Pass());
+  mus::ViewTreeConnection::Create(this, view_tree_client.Pass());
 }
 
 void WebViewImpl::GoBack() {
@@ -138,9 +138,9 @@ void WebViewImpl::GoForward() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// WebViewImpl, mojo::ViewTreeDelegate implementation:
+// WebViewImpl, mus::ViewTreeDelegate implementation:
 
-void WebViewImpl::OnEmbed(mojo::View* root) {
+void WebViewImpl::OnEmbed(mus::View* root) {
   // We must have been granted embed root priviledges, otherwise we can't
   // Embed() in any descendants.
   DCHECK(root->connection()->IsEmbedRoot());
@@ -157,14 +157,14 @@ void WebViewImpl::OnEmbed(mojo::View* root) {
     OnLoad();
 }
 
-void WebViewImpl::OnConnectionLost(mojo::ViewTreeConnection* connection) {
+void WebViewImpl::OnConnectionLost(mus::ViewTreeConnection* connection) {
   root_ = nullptr;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// WebViewImpl, mojo::ViewObserver implementation:
+// WebViewImpl, mus::ViewObserver implementation:
 
-void WebViewImpl::OnViewBoundsChanged(mojo::View* view,
+void WebViewImpl::OnViewBoundsChanged(mus::View* view,
                                       const mojo::Rect& old_bounds,
                                       const mojo::Rect& new_bounds) {
   if (view != content_) {
@@ -175,7 +175,7 @@ void WebViewImpl::OnViewBoundsChanged(mojo::View* view,
   }
 }
 
-void WebViewImpl::OnViewDestroyed(mojo::View* view) {
+void WebViewImpl::OnViewDestroyed(mus::View* view) {
   // |FrameTree| cannot outlive the content view.
   if (view == content_) {
     frame_tree_.reset();

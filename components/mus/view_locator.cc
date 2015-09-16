@@ -6,7 +6,7 @@
 
 #include "components/mus/server_view.h"
 
-namespace view_manager {
+namespace mus {
 
 const ServerView* FindDeepestVisibleView(const ServerView* view,
                                          const gfx::Point& location) {
@@ -32,4 +32,4 @@ ServerView* FindDeepestVisibleView(ServerView* view,
       FindDeepestVisibleView(const_cast<const ServerView*>(view), location));
 }
 
-}  // namespace view_manager
+}  // namespace mus

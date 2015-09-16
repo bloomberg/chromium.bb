@@ -11,7 +11,7 @@ namespace mojo {
 class ApplicationImpl;
 }
 
-namespace view_manager {
+namespace mus {
 
 class AndroidLoader : public mojo::shell::ApplicationLoader {
  public:
@@ -29,6 +29,6 @@ class AndroidLoader : public mojo::shell::ApplicationLoader {
   DISALLOW_COPY_AND_ASSIGN(AndroidLoader);
 };
 
-}  // namespace view_manager
+}  // namespace mus
 
 #endif  // COMPONENTS_MUS_ANDROID_LOADER_H_

@@ -12,6 +12,9 @@
 
 namespace mojo {
 class Shell;
+}
+
+namespace mus {
 class View;
 }
 
@@ -19,7 +22,7 @@ namespace mandoline {
 
 class SurfaceContextFactory : public ui::ContextFactory {
  public:
-  SurfaceContextFactory(mojo::Shell* shell, mojo::View* view);
+  SurfaceContextFactory(mojo::Shell* shell, mus::View* view);
   ~SurfaceContextFactory() override;
 
  private:
@@ -44,7 +47,7 @@ class SurfaceContextFactory : public ui::ContextFactory {
   SurfaceBinding surface_binding_;
   uint32_t next_surface_id_namespace_;
   gles2::RasterThreadHelper raster_thread_helper_;
-  gles2::MojoGpuMemoryBufferManager gpu_memory_buffer_manager_;
+  mus::MojoGpuMemoryBufferManager gpu_memory_buffer_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(SurfaceContextFactory);
 };

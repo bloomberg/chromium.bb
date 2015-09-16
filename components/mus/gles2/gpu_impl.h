@@ -15,7 +15,7 @@
 #include "third_party/mojo/src/mojo/public/cpp/bindings/strong_binding.h"
 #include "ui/mojo/geometry/geometry.mojom.h"
 
-namespace gles2 {
+namespace mus {
 
 class GpuImpl : public mojo::Gpu {
  public:
@@ -33,6 +33,6 @@ class GpuImpl : public mojo::Gpu {
   DISALLOW_COPY_AND_ASSIGN(GpuImpl);
 };
 
-}  // namespace gles2
+}  // namespace mus
 
 #endif  // COMPONENTS_MUS_GLES2_GPU_IMPL_H_
