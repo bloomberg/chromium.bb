@@ -19,7 +19,7 @@ $(document).ready(function() {
 
   // Setup the log collection button.
   $(document).on('click', '.collect-logs', function() {
-    console.log('Collecting logs!');
+    window.open('/CollectLogs', '_blank');
   });
 
   // Setup the repair action buttons

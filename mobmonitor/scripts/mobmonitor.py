@@ -12,12 +12,14 @@ import json
 import os
 import sys
 
+from cherrypy.lib.static import serve_file
 from logging import handlers as logging_handlers
 
 from chromite.lib import remote_access
 from chromite.lib import commandline
 from chromite.lib import cros_logging as logging
 from chromite.mobmonitor.checkfile import manager
+from chromite.mobmonitor.util import collect_logs
 
 
 STATICDIR = '/etc/mobmonitor/static'
@@ -110,6 +112,12 @@ class MobMonitorRoot(object):
     status = self.checkfile_manager.RepairService(service, healthcheck, action,
                                                   args, kwargs)
     return json.dumps(manager.MapServiceStatusToDict(status))
+
+  @cherrypy.expose
+  def CollectLogs(self):
+    tarfile = collect_logs.collect_logs()
+    return serve_file(tarfile, 'application/x-download',
+                      'attachment', os.path.basename(tarfile))
 
 
 def SetupLogging(logdir):
