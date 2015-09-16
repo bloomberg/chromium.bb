@@ -817,4 +817,23 @@ public class AwContentsClientShouldInterceptRequestTest extends AwTestBase {
     public void testCalledForNonexistentContentUrl() throws Throwable {
         calledForUrlTemplate("content://org.chromium.webview.NoSuchProvider/foo");
     }
+
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    public void testBaseUrlOfLoadDataSentInRefererHeader() throws Throwable {
+        final String imageFile = "a.jpg";
+        final String pageHtml = "<img src='" + imageFile + "'>";
+        final String baseUrl = "http://localhost:666/";
+        final String imageUrl = baseUrl + imageFile;
+        final String refererHeaderName = "Referer";
+        int callCount = mShouldInterceptRequestHelper.getCallCount();
+        loadDataWithBaseUrlAsync(mAwContents, pageHtml, "text/html", false, baseUrl, null);
+        mShouldInterceptRequestHelper.waitForCallback(callCount, 1);
+        assertEquals(1, mShouldInterceptRequestHelper.getUrls().size());
+        assertEquals(imageUrl, mShouldInterceptRequestHelper.getUrls().get(0));
+        Map<String, String> headers =
+                mShouldInterceptRequestHelper.getRequestsForUrl(imageUrl).requestHeaders;
+        assertTrue(headers.containsKey(refererHeaderName));
+        assertEquals(baseUrl, headers.get(refererHeaderName));
+    }
 }
