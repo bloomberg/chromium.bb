@@ -7,6 +7,7 @@ package org.chromium.printing;
 import android.print.PrintDocumentAdapter;
 import android.util.SparseArray;
 
+import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
@@ -18,7 +19,7 @@ import org.chromium.base.annotations.JNINamespace;
  */
 @JNINamespace("printing")
 public class PrintingContext implements PrintingContextInterface {
-
+    private static final String TAG = "cr.printing";
     /**
      * Mapping from a file descriptor (as originally provided from
      * {@link PrintDocumentAdapter#onWrite}) to a PrintingContext.
@@ -102,6 +103,7 @@ public class PrintingContext implements PrintingContextInterface {
         if (mController != null) {  // The native side doesn't check if printing is enabled
             mController.startPendingPrint(this);
         } else {
+            Log.d(TAG, "Unable to start printing, feature not available.");
             // Printing disabled. Notify the native side to stop waiting.
             showSystemDialogDone();
         }
@@ -116,6 +118,8 @@ public class PrintingContext implements PrintingContextInterface {
             PrintingContext printingContext = PRINTING_CONTEXT_MAP.get(fd);
             printingContext.mController.pdfWritingDone(success);
             PRINTING_CONTEXT_MAP.remove(fd);
+        } else {
+            Log.d(TAG, "No PrintingContext found for fd %d, can't notify print completion.", fd);
         }
     }
 

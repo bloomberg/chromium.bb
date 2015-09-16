@@ -12,8 +12,8 @@ import android.os.ParcelFileDescriptor;
 import android.print.PageRange;
 import android.print.PrintAttributes;
 import android.print.PrintDocumentInfo;
-import android.util.Log;
 
+import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.printing.PrintDocumentAdapterWrapper.PdfGenerator;
 
@@ -31,8 +31,7 @@ import java.util.Iterator;
  */
 @TargetApi(Build.VERSION_CODES.KITKAT)
 public class PrintingControllerImpl implements PrintingController, PdfGenerator {
-
-    private static final String LOG_TAG = "PrintingControllerImpl";
+    private static final String TAG = "cr.printing";
 
     /**
      * This is used for both initial state and a completed state (i.e. starting from either
@@ -181,7 +180,10 @@ public class PrintingControllerImpl implements PrintingController, PdfGenerator 
 
     @Override
     public void setPendingPrint(final Printable printable, PrintManagerDelegate printManager) {
-        if (mIsBusy) return;
+        if (mIsBusy) {
+            Log.d(TAG, "Pending print can't be set. PrintingController is busy.");
+            return;
+        }
         mPrintable = printable;
         mPrintManager = printManager;
     }
@@ -189,7 +191,9 @@ public class PrintingControllerImpl implements PrintingController, PdfGenerator 
     @Override
     public void startPendingPrint(PrintingContextInterface printingContext) {
         if (mIsBusy || mPrintManager == null) {
-            Log.w(LOG_TAG, "Pending print can't be started. Is might be busy or not initialized.");
+            if (mIsBusy) Log.d(TAG, "Pending print can't be started. PrintingController is busy.");
+            else Log.d(TAG, "Pending print can't be started. No PrintManager provided.");
+
             if (printingContext != null) printingContext.showSystemDialogDone();
             return;
         }

@@ -219,7 +219,8 @@ void PrintJobWorker::GetSettingsWithUI(
         static_cast<PrintingContextDelegate*>(printing_context_delegate_.get());
     content::WebContents* web_contents =
         printing_context_delegate->GetWebContents();
-    TabAndroid* tab = TabAndroid::FromWebContents(web_contents);
+    TabAndroid* tab =
+        web_contents ? TabAndroid::FromWebContents(web_contents) : nullptr;
 
     // Regardless of whether the following call fails or not, the javascript
     // call will return since startPendingPrint will make it return immediately

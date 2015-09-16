@@ -13,14 +13,19 @@ import android.print.PrintAttributes;
 import android.print.PrintDocumentAdapter;
 import android.print.PrintDocumentInfo;
 import android.test.suitebuilder.annotation.LargeTest;
+import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.TestFileUtil;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
+import org.chromium.chrome.test.util.browser.TabTitleObserver;
+import org.chromium.content.common.ContentSwitches;
 import org.chromium.printing.PrintDocumentAdapterWrapper;
 import org.chromium.printing.PrintManagerDelegate;
 import org.chromium.printing.PrintingControllerImpl;
@@ -148,6 +153,31 @@ public class PrintingControllerTest extends ChromeActivityTestCaseBase<ChromeAct
             TestFileUtil.deleteFile(tempFile.getAbsolutePath());
         }
 
+    }
+
+    /**
+     * Test for http://crbug.com/528909
+     */
+    @CommandLineFlags.Add(
+            {ContentSwitches.DISABLE_POPUP_BLOCKING, ChromeSwitches.DISABLE_DOCUMENT_MODE})
+    @SmallTest
+    @Feature({"Printing"})
+    public void testPrintClosedWindow() throws Throwable {
+        String html = "<html><head><title>printwindowclose</title></head><body><script>"
+                + "function printClosedWindow() {"
+                + "  w = window.open(); w.close();"
+                + "  setTimeout(()=>{w.print(); document.title='completed'}, 0);"
+                + "}</script></body></html>";
+
+        startMainActivityWithURL("data:text/html;charset=utf-8," + html);
+
+        Tab mTab = getActivity().getActivityTab();
+        assertEquals("title does not match initial title", "printwindowclose", mTab.getTitle());
+
+        TabTitleObserver mOnTitleUpdatedHelper = new TabTitleObserver(mTab, "completed");
+        runJavaScriptCodeInCurrentTab("printClosedWindow();");
+        mOnTitleUpdatedHelper.waitForTitleUpdate(2);
+        assertEquals("JS did not finish running", "completed", mTab.getTitle());
     }
 
     private PrintingControllerImpl createControllerOnUiThread() {
