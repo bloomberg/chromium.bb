@@ -876,27 +876,6 @@ void PreviewFormField(const FormFieldData& data,
   }
 }
 
-// Recursively checks whether |node| or any of its children have a non-empty
-// bounding box. The recursion depth is bounded by |depth|.
-bool IsWebNodeVisibleImpl(const blink::WebNode& node, const int depth) {
-  if (depth < 0)
-    return false;
-  if (node.hasNonEmptyBoundingBox())
-    return true;
-
-  // The childNodes method is not a const method. Therefore it cannot be called
-  // on a const reference. Therefore we need a const cast.
-  const blink::WebNodeList& children =
-      const_cast<blink::WebNode&>(node).childNodes();
-  size_t length = children.length();
-  for (size_t i = 0; i < length; ++i) {
-    const blink::WebNode& item = children.item(i);
-    if (IsWebNodeVisibleImpl(item, depth - 1))
-      return true;
-  }
-  return false;
-}
-
 // Extracts the fields from |control_elements| with |extract_mask| to
 // |form_fields|. The extracted fields are also placed in |element_map|.
 // |form_fields| and |element_map| should start out empty.
@@ -1149,11 +1128,13 @@ const base::string16 GetFormIdentifier(const WebFormElement& form) {
 }
 
 bool IsWebNodeVisible(const blink::WebNode& node) {
-  // In the bug http://crbug.com/237216 the form's bounding box is empty
-  // however the form has non empty children. Thus we need to look at the
-  // form's children.
-  int kNodeSearchDepth = 2;
-  return IsWebNodeVisibleImpl(node, kNodeSearchDepth);
+  // TODO(esprehn): This code doesn't really check if the node is visible, just
+  // if the node takes up space in the layout. Does it want to check opacity,
+  // transform, and visibility too?
+  if (!node.isElementNode())
+    return false;
+  const WebElement element = node.toConst<WebElement>();
+  return element.hasNonEmptyLayoutSize();
 }
 
 std::vector<blink::WebFormControlElement> ExtractAutofillableElementsFromSet(

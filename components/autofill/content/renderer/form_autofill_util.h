@@ -72,8 +72,12 @@ bool IsCheckableElement(const blink::WebInputElement* element);
 // autofilled. {Text, Radiobutton, Checkbox}.
 bool IsAutofillableInputElement(const blink::WebInputElement* element);
 
-// Recursively checks whether |node| or any of its children have a non-empty
-// bounding box.
+// True if this node takes up space in the layout, ie. this node or a descendant
+// has a non-empty bounding bounding client rect.
+//
+// TODO(esprehn): This isn't really about visibility, it's about the size.
+// We should remove this function and just call hasNonEmptyLayoutSize()
+// directly.
 bool IsWebNodeVisible(const blink::WebNode& node);
 
 // Returns the form's |name| attribute if non-empty; otherwise the form's |id|
