@@ -1261,9 +1261,12 @@ void RenderTextHarfBuzz::ItemizeTextToRuns(
         script_item_break - run_break, &run->script) + run_break;
 
     // Find the next break and advance the iterators as needed.
-    run_break = std::min(
+    const size_t new_run_break = std::min(
         static_cast<size_t>(script_item_break),
         TextIndexToGivenTextIndex(text, style.GetRange().end()));
+    CHECK_NE(new_run_break, run_break)
+        << "It must proceed! " << text << " " << run_break;
+    run_break = new_run_break;
 
     // Break runs at certain characters that need to be rendered separately to
     // prevent either an unusual character from forcing a fallback font on the
