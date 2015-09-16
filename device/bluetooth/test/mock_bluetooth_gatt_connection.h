@@ -17,7 +17,7 @@ class MockBluetoothGattConnection : public BluetoothGattConnection {
 
   MOCK_CONST_METHOD0(GetDeviceAddress, std::string());
   MOCK_METHOD0(IsConnected, bool());
-  MOCK_METHOD1(Disconnect, void(const base::Closure&));
+  MOCK_METHOD0(Disconnect, void());
 };
 
 }  // namespace device

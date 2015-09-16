@@ -6,6 +6,7 @@ var deviceAddress0 = '11:22:33:44:55:66';
 var ble = chrome.bluetoothLowEnergy;
 
 var errorInProgress = 'In progress';
+var errorNotConnected = 'Not connected';
 
 function expectError(message) {
   if (!chrome.runtime.lastError ||
@@ -27,12 +28,14 @@ ble.connect(deviceAddress0, function () {
   });
 
   ble.disconnect(deviceAddress0, function () {
-    expectError(errorInProgress);
-    chrome.test.sendMessage('ready');
+    expectError(errorNotConnected);
+    chrome.test.sendMessage(
+        'After 2nd call to disconnect.');
   });
 });
 
 ble.connect(deviceAddress0, function () {
   expectError(errorInProgress);
-  chrome.test.sendMessage('ready');
+  chrome.test.sendMessage(
+      'After 2nd connect fails due to 1st connect being in progress.');
 });

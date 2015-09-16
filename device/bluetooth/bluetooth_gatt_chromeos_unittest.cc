@@ -216,11 +216,7 @@ TEST_F(BluetoothGattChromeOSTest, GattConnection) {
   EXPECT_EQ(FakeBluetoothDeviceClient::kLowEnergyAddress,
             gatt_conn_->GetDeviceAddress());
 
-  gatt_conn_->Disconnect(
-      base::Bind(&BluetoothGattChromeOSTest::SuccessCallback,
-                 base::Unretained(this)));
-  EXPECT_EQ(2, success_callback_count_);
-  EXPECT_EQ(0, error_callback_count_);
+  gatt_conn_->Disconnect();
   EXPECT_TRUE(device->IsConnected());
   EXPECT_FALSE(gatt_conn_->IsConnected());
 
@@ -230,7 +226,7 @@ TEST_F(BluetoothGattChromeOSTest, GattConnection) {
       base::Bind(&BluetoothGattChromeOSTest::ConnectErrorCallback,
                  base::Unretained(this)));
 
-  EXPECT_EQ(3, success_callback_count_);
+  EXPECT_EQ(2, success_callback_count_);
   EXPECT_EQ(0, error_callback_count_);
   EXPECT_TRUE(device->IsConnected());
   ASSERT_TRUE(gatt_conn_.get());
@@ -242,7 +238,7 @@ TEST_F(BluetoothGattChromeOSTest, GattConnection) {
       base::Bind(&BluetoothGattChromeOSTest::ErrorCallback,
                  base::Unretained(this)));
 
-  EXPECT_EQ(4, success_callback_count_);
+  EXPECT_EQ(3, success_callback_count_);
   EXPECT_EQ(0, error_callback_count_);
   ASSERT_TRUE(gatt_conn_.get());
   EXPECT_FALSE(gatt_conn_->IsConnected());
@@ -253,7 +249,7 @@ TEST_F(BluetoothGattChromeOSTest, GattConnection) {
       base::Bind(&BluetoothGattChromeOSTest::ConnectErrorCallback,
                  base::Unretained(this)));
 
-  EXPECT_EQ(5, success_callback_count_);
+  EXPECT_EQ(4, success_callback_count_);
   EXPECT_EQ(0, error_callback_count_);
   EXPECT_TRUE(device->IsConnected());
   EXPECT_TRUE(gatt_conn_->IsConnected());

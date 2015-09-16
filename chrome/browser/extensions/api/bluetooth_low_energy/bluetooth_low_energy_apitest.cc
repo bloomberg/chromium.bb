@@ -246,15 +246,7 @@ BluetoothGattConnection* CreateGattConnection(
     bool expect_disconnect) {
   testing::NiceMock<MockBluetoothGattConnection>* conn =
       new testing::NiceMock<MockBluetoothGattConnection>(device_address);
-
-  if (expect_disconnect) {
-    EXPECT_CALL(*conn, Disconnect(_))
-        .Times(1)
-        .WillOnce(InvokeCallbackArgument<0>());
-  } else {
-    EXPECT_CALL(*conn, Disconnect(_)).Times(0);
-  }
-
+  EXPECT_CALL(*conn, Disconnect()).Times(expect_disconnect ? 1 : 0);
   return conn;
 }
 
@@ -1212,15 +1204,12 @@ IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, ConnectInProgress) {
       .WillRepeatedly(Return(device0_.get()));
 
   BluetoothDevice::GattConnectionCallback connect_callback;
-  base::Closure disconnect_callback;
 
   testing::NiceMock<MockBluetoothGattConnection>* conn =
       new testing::NiceMock<MockBluetoothGattConnection>(
           kTestLeDeviceAddress0);
   scoped_ptr<BluetoothGattConnection> conn_ptr(conn);
-  EXPECT_CALL(*conn, Disconnect(_))
-      .Times(1)
-      .WillOnce(SaveArg<0>(&disconnect_callback));
+  EXPECT_CALL(*conn, Disconnect()).Times(1);
 
   EXPECT_CALL(*device0_, CreateGattConnection(_, _))
       .Times(1)
@@ -1231,13 +1220,15 @@ IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, ConnectInProgress) {
       "bluetooth_low_energy/connect_in_progress")));
 
   EXPECT_TRUE(listener.WaitUntilSatisfied());
-  ASSERT_EQ("ready", listener.message()) << listener.message();
-  connect_callback.Run(conn_ptr.Pass());
-
+  ASSERT_EQ("After 2nd connect fails due to 1st connect being in progress.",
+            listener.message())
+      << listener.message();
   listener.Reset();
+
+  connect_callback.Run(conn_ptr.Pass());
   EXPECT_TRUE(listener.WaitUntilSatisfied());
-  ASSERT_EQ("ready", listener.message()) << listener.message();
-  disconnect_callback.Run();
+  ASSERT_EQ("After 2nd call to disconnect.", listener.message())
+      << listener.message();
 
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
 }

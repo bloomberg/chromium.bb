@@ -302,12 +302,6 @@ void BluetoothLowEnergyEventRouter::Disconnect(
   }
 
   const std::string extension_id = extension->id();
-  const std::string disconnect_id = extension_id + device_address;
-
-  if (disconnecting_devices_.count(disconnect_id) != 0) {
-    error_callback.Run(kStatusErrorInProgress);
-    return;
-  }
 
   BluetoothLowEnergyConnection* conn =
       FindConnection(extension_id, device_address);
@@ -317,13 +311,15 @@ void BluetoothLowEnergyEventRouter::Disconnect(
     return;
   }
 
-  disconnecting_devices_.insert(disconnect_id);
-  conn->GetConnection()->Disconnect(
-      base::Bind(&BluetoothLowEnergyEventRouter::OnDisconnect,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 extension_id,
-                 device_address,
-                 callback));
+  conn->GetConnection()->Disconnect();
+  VLOG(2) << "GATT connection terminated.";
+
+  if (!RemoveConnection(extension_id, device_address)) {
+    VLOG(1) << "The connection was removed before disconnect completed, id: "
+            << extension_id << ", device: " << device_address;
+  }
+
+  callback.Run();
 }
 
 bool BluetoothLowEnergyEventRouter::GetServices(
@@ -1278,24 +1274,6 @@ void BluetoothLowEnergyEventRouter::OnCreateGattConnection(
   manager->Add(conn);
 
   connecting_devices_.erase(connect_id);
-  callback.Run();
-}
-
-void BluetoothLowEnergyEventRouter::OnDisconnect(
-    const std::string& extension_id,
-    const std::string& device_address,
-    const base::Closure& callback) {
-  VLOG(2) << "GATT connection terminated.";
-
-  const std::string disconnect_id = extension_id + device_address;
-  DCHECK_NE(0U, disconnecting_devices_.count(disconnect_id));
-
-  if (!RemoveConnection(extension_id, device_address)) {
-    VLOG(1) << "The connection was removed before disconnect completed, id: "
-            << extension_id << ", device: " << device_address;
-  }
-
-  disconnecting_devices_.erase(disconnect_id);
   callback.Run();
 }
 

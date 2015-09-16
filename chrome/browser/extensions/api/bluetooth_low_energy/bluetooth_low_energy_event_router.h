@@ -320,11 +320,6 @@ class BluetoothLowEnergyEventRouter
       const base::Closure& callback,
       scoped_ptr<device::BluetoothGattConnection> connection);
 
-  // Called by BluetoothGattConnection in response to a call to Disconnect.
-  void OnDisconnect(const std::string& extension_id,
-                    const std::string& device_address,
-                    const base::Closure& callback);
-
   // Called by BluetoothGattCharacteristic and BluetoothGattDescriptor in
   // case of an error during the read/write operations.
   void OnError(const ErrorCallback& error_callback,

@@ -34,10 +34,9 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothGattConnection {
   // Returns true if this connection is open.
   virtual bool IsConnected() = 0;
 
-  // Disconnects this GATT connection and calls |callback| upon completion.
-  // After a successful invocation, the device may still remain connected due to
-  // other GATT connections.
-  virtual void Disconnect(const base::Closure& callback) = 0;
+  // Disconnects this GATT connection. The device may still remain connected due
+  // to other GATT connections.
+  virtual void Disconnect() = 0;
 
  protected:
   BluetoothGattConnection();
