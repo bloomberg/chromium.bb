@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<div id="container">
+    <div id="item"></div>
+</div>
+<div id="flexContainer" style="display: flex">
+    <div id="flexItem"></div>
+</div>
+<script src="../../resources/js-test.js"></script>
+<script src="resources/alignment-parsing-utils.js"></script>
+<script>
+description('Test to verify initial values of alignment properties are backward-comaptible with flexbox implementation.');
+
+checkSupportedValues("container", "align-items");
+checkSupportedValues("container", "align-self");
+checkSupportedValues("container", "align-content");
+checkSupportedValues("container", "justify-content");
+
+checkSupportedValues("item", "align-items");
+checkSupportedValues("item", "align-self");
+checkSupportedValues("item", "align-content");
+checkSupportedValues("item", "justify-content");
+
+checkSupportedValues("flexContainer", "align-items");
+checkSupportedValues("flexContainer", "align-self");
+checkSupportedValues("flexContainer", "align-content");
+checkSupportedValues("flexContainer", "justify-content");
+
+checkSupportedValues("flexItem", "align-items");
+checkSupportedValues("flexItem", "align-self");
+checkSupportedValues("flexItem", "align-content");
+checkSupportedValues("flexItem", "justify-content");
+</script>

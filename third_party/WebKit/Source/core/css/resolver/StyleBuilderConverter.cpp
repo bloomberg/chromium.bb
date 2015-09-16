@@ -353,6 +353,24 @@ StyleSelfAlignmentData StyleBuilderConverter::convertSelfOrDefaultAlignmentData(
 StyleContentAlignmentData StyleBuilderConverter::convertContentAlignmentData(StyleResolverState&, CSSValue* value)
 {
     StyleContentAlignmentData alignmentData = ComputedStyle::initialContentAlignment();
+    if (!RuntimeEnabledFeatures::cssGridLayoutEnabled()) {
+        CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
+        switch (primitiveValue->getValueID()) {
+        case CSSValueStretch:
+        case CSSValueSpaceBetween:
+        case CSSValueSpaceAround:
+            alignmentData.setDistribution(*primitiveValue);
+            break;
+        case CSSValueFlexStart:
+        case CSSValueFlexEnd:
+        case CSSValueCenter:
+            alignmentData.setPosition(*primitiveValue);
+            break;
+        default:
+            ASSERT_NOT_REACHED();
+        }
+        return alignmentData;
+    }
     CSSContentDistributionValue* contentValue = toCSSContentDistributionValue(value);
     if (contentValue->distribution()->getValueID() != CSSValueInvalid)
         alignmentData.setDistribution(*contentValue->distribution());
