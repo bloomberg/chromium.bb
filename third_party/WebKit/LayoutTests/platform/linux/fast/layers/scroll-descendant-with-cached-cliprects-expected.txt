@@ -13,7 +13,8 @@
         [677, 52, 100, 100],
         [677, 52, 100, 100],
         [677, 52, 100, 100],
-        [677, 52, 100, 100]
+        [677, 52, 100, 100],
+        [0, 0, 100, 100]
       ],
       "paintInvalidationClients": [
         "LayoutBlockFlow (positioned) DIV id='scrollpanel'",
