@@ -298,17 +298,17 @@ void GuestViewBase::SetSize(const SetSizeParams& params) {
       new_size = GetDefaultSize();
     }
 
+    bool changed_due_to_auto_resize = false;
     if (auto_size_enabled_) {
       // Autosize was previously enabled.
       rvh->DisableAutoResize(new_size);
-      GuestSizeChangedDueToAutoSize(guest_size_, new_size);
+      changed_due_to_auto_resize = true;
     } else {
       // Autosize was already disabled.
       guest_host_->SizeContents(new_size);
     }
 
-    DispatchOnResizeEvent(guest_size_, new_size);
-    guest_size_ = new_size;
+    UpdateGuestSize(new_size, changed_due_to_auto_resize);
   }
 
   auto_size_enabled_ = enable_auto_size;
@@ -430,11 +430,7 @@ WebContents* GuestViewBase::GetOwnerWebContents() const {
 }
 
 void GuestViewBase::GuestSizeChanged(const gfx::Size& new_size) {
-  if (!auto_size_enabled_)
-    return;
-  GuestSizeChangedDueToAutoSize(guest_size_, new_size);
-  DispatchOnResizeEvent(guest_size_, new_size);
-  guest_size_ = new_size;
+  UpdateGuestSize(new_size, auto_size_enabled_);
 }
 
 const GURL& GuestViewBase::GetOwnerSiteURL() const {
@@ -646,6 +642,11 @@ content::ColorChooser* GuestViewBase::OpenColorChooser(
 
   return embedder_web_contents()->GetDelegate()->OpenColorChooser(
       web_contents, color, suggestions);
+}
+
+void GuestViewBase::ResizeDueToAutoResize(WebContents* web_contents,
+                                          const gfx::Size& new_size) {
+  guest_host_->GuestResizeDueToAutoResize(new_size);
 }
 
 void GuestViewBase::RunFileChooser(WebContents* web_contents,
@@ -867,6 +868,14 @@ void GuestViewBase::StopTrackingEmbedderZoomLevel() {
   if (!embedder_zoom_controller)
     return;
   embedder_zoom_controller->RemoveObserver(this);
+}
+
+void GuestViewBase::UpdateGuestSize(const gfx::Size& new_size,
+                                    bool due_to_auto_resize) {
+  if (due_to_auto_resize)
+    GuestSizeChangedDueToAutoSize(guest_size_, new_size);
+  DispatchOnResizeEvent(guest_size_, new_size);
+  guest_size_ = new_size;
 }
 
 }  // namespace guest_view

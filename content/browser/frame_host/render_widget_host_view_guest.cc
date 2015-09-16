@@ -230,8 +230,6 @@ void RenderWidgetHostViewGuest::OnSwapCompositorFrame(
   gfx::Size frame_size = root_pass->output_rect.size();
   float scale_factor = frame->metadata.device_scale_factor;
 
-  guest_->UpdateGuestSizeIfNecessary(frame_size, scale_factor);
-
   // Check whether we need to recreate the cc::Surface, which means the child
   // frame renderer has changed its output surface, or size, or scale factor.
   if (output_surface_id != last_output_surface_id_ && surface_factory_) {

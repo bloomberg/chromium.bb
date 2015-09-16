@@ -25,6 +25,9 @@ class GuestHost {
   virtual int LoadURLWithParams(
       const NavigationController::LoadURLParams& load_params) = 0;
 
+  // Called when the GuestHost's size changes due to auto resize.
+  virtual void GuestResizeDueToAutoResize(const gfx::Size& new_size) = 0;
+
   // Sets the size of the guest WebContents.
   virtual void SizeContents(const gfx::Size& new_size) = 0;
 

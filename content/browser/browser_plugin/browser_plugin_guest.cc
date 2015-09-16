@@ -147,6 +147,13 @@ int BrowserPluginGuest::LoadURLWithParams(
   return GetGuestProxyRoutingID();
 }
 
+void BrowserPluginGuest::GuestResizeDueToAutoResize(const gfx::Size& new_size) {
+  if (last_seen_view_size_ != new_size) {
+    delegate_->GuestSizeChanged(new_size);
+    last_seen_view_size_ = new_size;
+  }
+}
+
 void BrowserPluginGuest::SizeContents(const gfx::Size& new_size) {
   GetWebContents()->GetView()->SizeContents(new_size);
 }
@@ -385,17 +392,6 @@ void BrowserPluginGuest::PointerLockPermissionResponse(bool allow) {
       new BrowserPluginMsg_SetMouseLock(browser_plugin_instance_id(), allow));
 }
 
-void BrowserPluginGuest::UpdateGuestSizeIfNecessary(
-    const gfx::Size& frame_size, float scale_factor) {
-  gfx::Size view_size(
-      gfx::ToFlooredSize(gfx::ScaleSize(frame_size, 1.0f / scale_factor)));
-
-  if (last_seen_view_size_ != view_size) {
-    delegate_->GuestSizeChanged(view_size);
-    last_seen_view_size_ = view_size;
-  }
-}
-
 // TODO(wjmaclean): Remove this once any remaining users of this pathway
 // are gone.
 void BrowserPluginGuest::SwapCompositorFrame(
@@ -403,11 +399,6 @@ void BrowserPluginGuest::SwapCompositorFrame(
     int host_process_id,
     int host_routing_id,
     scoped_ptr<cc::CompositorFrame> frame) {
-  cc::RenderPass* root_pass =
-      frame->delegated_frame_data->render_pass_list.back();
-  UpdateGuestSizeIfNecessary(root_pass->output_rect.size(),
-                             frame->metadata.device_scale_factor);
-
   last_pending_frame_.reset(new FrameMsg_CompositorFrameSwapped_Params());
   frame->AssignTo(&last_pending_frame_->frame);
   last_pending_frame_->output_surface_id = output_surface_id;

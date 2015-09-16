@@ -179,6 +179,7 @@ class CONTENT_EXPORT BrowserPluginGuest : public GuestHost,
   // GuestHost implementation.
   int LoadURLWithParams(
       const NavigationController::LoadURLParams& load_params) override;
+  void GuestResizeDueToAutoResize(const gfx::Size& new_size) override;
   void SizeContents(const gfx::Size& new_size) override;
   void WillDestroy() override;
 
@@ -236,9 +237,7 @@ class CONTENT_EXPORT BrowserPluginGuest : public GuestHost,
 
   void PointerLockPermissionResponse(bool allow);
 
-  // The next three functions are virtual for test purposes.
-  virtual void UpdateGuestSizeIfNecessary(const gfx::Size& frame_size,
-                                          float scale_factor);
+  // The next two functions are virtual for test purposes.
   virtual void SwapCompositorFrame(uint32 output_surface_id,
                                    int host_process_id,
                                    int host_routing_id,

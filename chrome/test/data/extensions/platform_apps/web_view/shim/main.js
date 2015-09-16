@@ -2232,6 +2232,10 @@ function testResizeWebviewResizesContent() {
     if (data[0] == 'resize') {
       var width = data[1];
       var height = data[2];
+      // If the 'resize' event was because of the initial size, ignore it.
+      if (width == 300 && height == 300) {
+        return;
+      }
       embedder.test.assertEq(400, width);
       embedder.test.assertEq(300, height);
       embedder.test.succeed();
@@ -2296,6 +2300,10 @@ function testResizeWebviewWithDisplayNoneResizesContent() {
     if (data[0] == 'resize') {
       var width = data[1];
       var height = data[2];
+      // If the 'resize' event was because of the initial size, ignore it.
+      if (width == 300 && height == 300) {
+        return;
+      }
       embedder.test.assertEq(400, width);
       embedder.test.assertEq(300, height);
       embedder.test.succeed();
@@ -2617,27 +2625,30 @@ function testResizeEvents() {
   webview.style.width = '600px';
   webview.style.height = '400px';
 
-  var checkSizes = function(e) {
-    embedder.test.assertEq(e.oldWidth, 600)
-    embedder.test.assertEq(e.oldHeight, 400)
-    embedder.test.assertEq(e.newWidth, 500)
-    embedder.test.assertEq(e.newHeight, 400)
-  }
-
-  var contentResizeListener = function(e) {
-    webview.oncontentresize = null;
-
-    console.log('oncontentresize');
-    checkSizes(e);
-    embedder.test.succeed();
-  };
-
   var loadstopListener = function(e) {
     webview.removeEventListener('loadstop', loadstopListener);
-    webview.oncontentresize = contentResizeListener;
 
-    console.log('Resizing <webview> width from 600px to 500px.');
-    webview.style.width = '500px';
+    // Observer to look for window.resize event inside <webview>.
+    webview.onconsolemessage = function(e) {
+      if (e.message === 'ONRESIZE: 500X400') {
+        embedder.test.succeed();
+      }
+    };
+
+    webview.executeScript(
+        {
+           code: 'window.onresize=function(){' +
+                 '  console.log("ONRESIZE: " + window.innerWidth + "X" +' +
+                 '              window.innerHeight);' +
+                 '}'
+        }, function(results) {
+          if (!results || !results.length) {
+            embedder.test.fail();
+            return;
+          }
+          console.log('Resizing <webview> width from 600px to 500px.');
+          webview.style.width = '500px';
+        });
   };
 
   webview.addEventListener('loadstop', loadstopListener);
