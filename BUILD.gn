@@ -176,15 +176,7 @@ source_set("ffmpeg_internal") {
   # In addition to the above reasons, /Od optimization won't remove symbols
   # that are under "if (0)" style sections.  Which lead to link time errors
   # when for example it tries to link an ARM symbol on X86.
-  if (using_new_global_compiler_configs) {
-    # GN build is moving to a single default optimization config that prevents
-    # us from having to break out the debug/release conditions to override.
-    configs -= [ "//build/config/compiler:default_optimization" ]
-  } else if (is_debug) {
-    configs -= [ "//build/config/compiler:no_optimize" ]
-  } else {
-    configs -= [ "//build/config/compiler:optimize" ]
-  }
+  configs -= [ "//build/config/compiler:default_optimization" ]
   if (is_win) {
     # Setting the optimizations to 'speed' or to 'max' on Windows results in
     # a lot of unresolved symbols. The only supported mode is 'size' (see
