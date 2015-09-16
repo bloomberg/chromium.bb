@@ -111,6 +111,11 @@ def ProvisionDevice(device, blacklist, options):
     if should_run_phase(_PHASES.FINISH):
       run_phase(FinishProvisioning, reboot=False)
 
+    if options.chrome_specific_wipe:
+      package = "com.google.android.gms"
+      version_name = device.GetApplicationVersion(package)
+      logging.info("Version name for %s is %s", package, version_name)
+
   except device_errors.CommandTimeoutError:
     logging.exception('Timed out waiting for device %s. Adding to blacklist.',
                       str(device))
