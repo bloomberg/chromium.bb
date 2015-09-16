@@ -622,22 +622,22 @@ void WallpaperManager::ScheduleSetUserWallpaper(const std::string& user_id,
     return;
   }
 
-  // There is no visible background in kiosk mode.
-  if (user_manager::UserManager::Get()->IsLoggedInAsKioskApp())
-    return;
-  // Guest user, regular user in ephemeral mode, or kiosk app.
   const user_manager::User* user =
       user_manager::UserManager::Get()->FindUser(user_id);
-  if (user_manager::UserManager::Get()->IsUserNonCryptohomeDataEphemeral(
-          user_id) ||
-      (user != NULL && user->GetType() == user_manager::USER_TYPE_KIOSK_APP)) {
+
+  // User is unknown or there is no visible background in kiosk mode.
+  if (!user || user->GetType() == user_manager::USER_TYPE_KIOSK_APP)
+    return;
+
+  // Guest user or regular user in ephemeral mode.
+  if ((user_manager::UserManager::Get()->IsUserNonCryptohomeDataEphemeral(
+           user_id) &&
+       user->HasGaiaAccount()) ||
+      user->GetType() == user_manager::USER_TYPE_GUEST) {
     InitInitialUserWallpaper(user_id, false);
     GetPendingWallpaper(user_id, delayed)->ResetSetDefaultWallpaper();
     return;
   }
-
-  if (!user_manager::UserManager::Get()->IsKnownUser(user_id))
-    return;
 
   last_selected_user_ = user_id;
 
