@@ -8618,6 +8618,54 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="OfflinePages.Edit.RemoveButtonClicked">
+  <owner>jianli@chromium.org</owner>
+  <description>
+    Recorded when &quot;Remove&quot; button is clicked in offline section of
+    &quot;Edit bookmark&quot; page.
+  </description>
+</action>
+
+<action name="OfflinePages.Edit.RemoveButtonNotClicked">
+  <owner>jianli@chromium.org</owner>
+  <description>
+    Recorded when the user navigates away without clicking &quot;Remove&quot;
+    button in offline section of &quot;Edit bookmark&quot; page.
+  </description>
+</action>
+
+<action name="OfflinePages.Edit.SaveButtonClicked">
+  <owner>jianli@chromium.org</owner>
+  <description>
+    Recorded when &quot;Save&quot; button is clicked in offline section of
+    &quot;Edit bookmark&quot; page.
+  </description>
+</action>
+
+<action name="OfflinePages.Edit.SaveButtonNotClicked">
+  <owner>jianli@chromium.org</owner>
+  <description>
+    Recorded when the user navigates away without clicking &quot;Save&quot;
+    button in offline section of &quot;Edit bookmark&quot; page.
+  </description>
+</action>
+
+<action name="OfflinePages.Edit.VisitButtonClicked">
+  <owner>jianli@chromium.org</owner>
+  <description>
+    Recorded when &quot;Visit&quot; button is clicked in offline section of
+    &quot;Edit bookmark&quot; page.
+  </description>
+</action>
+
+<action name="OfflinePages.Edit.VisitButtonNotClicked">
+  <owner>jianli@chromium.org</owner>
+  <description>
+    Recorded when the user navigates away without clicking &quot;Visit&quot;
+    button in offline section of &quot;Edit bookmark&quot; page.
+  </description>
+</action>
+
 <action name="Omnibox.ServerSuggestDelete.Failure">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
