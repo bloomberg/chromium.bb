@@ -30,12 +30,15 @@ public class CardboardRenderer implements CardboardView.StereoRenderer {
     private static final int TEXTURE_COORDINATE_DATA_SIZE = 2;
     private static final float Z_NEAR = 0.1f;
     private static final float Z_FAR = 1000.0f;
+
+    // The following object positions are relative to the view point.
     private static final float DESKTOP_POSITION_X = 0.0f;
     private static final float DESKTOP_POSITION_Y = 0.0f;
     private static final float DESKTOP_POSITION_Z = -2.0f;
     private static final float MENU_BAR_POSITION_X = 0.0f;
     private static final float MENU_BAR_POSITION_Y = 0.0f;
-    private static final float MENU_BAR_POSITION_Z = -1.5f;
+    private static final float MENU_BAR_POSITION_Z = -0.9f;
+
     private static final float HALF_SKYBOX_SIZE = 100.0f;
     private static final float VIEW_POSITION_MIN = -1.0f;
     private static final float VIEW_POSITION_MAX = 3.0f;
@@ -164,8 +167,8 @@ public class CardboardRenderer implements CardboardView.StereoRenderer {
         Matrix.setLookAtM(mCameraMatrix, 0, eyeX, eyeY, eyeZ, lookX, lookY, lookZ, upX, upY, upZ);
 
         headTransform.getForwardVector(mForwardVector, 0);
-        mEyeDesktopPosition = getLookingPosition(DESKTOP_POSITION_Z);
-        mEyeMenuBarPosition = getLookingPosition(MENU_BAR_POSITION_Z);
+        mEyeDesktopPosition = getLookingPosition(Math.abs(DESKTOP_POSITION_Z - eyeZ));
+        mEyeMenuBarPosition = getLookingPosition(Math.abs(MENU_BAR_POSITION_Z));
         mDesktop.maybeLoadDesktopTexture();
         mPhotosphere.maybeLoadTextureAndCleanImage();
         mCursor.maybeLoadTexture(mDesktop);
@@ -253,8 +256,14 @@ public class CardboardRenderer implements CardboardView.StereoRenderer {
             return;
         }
 
+        float menuBarZ;
+        synchronized (mCameraPositionLock) {
+            menuBarZ = mCameraPosition + MENU_BAR_POSITION_Z;
+        }
+
+
         mMenuBar.draw(mViewMatrix, mProjectionMatrix, mEyeMenuBarPosition, MENU_BAR_POSITION_X,
-                MENU_BAR_POSITION_Y, MENU_BAR_POSITION_Z);
+                MENU_BAR_POSITION_Y, menuBarZ);
     }
 
     /**
@@ -360,11 +369,11 @@ public class CardboardRenderer implements CardboardView.StereoRenderer {
      */
     private PointF getLookingPosition(float distance) {
         if (Math.abs(mForwardVector[2]) < 0.00001f) {
-            return new PointF(-Math.signum(mForwardVector[0]) * Float.MAX_VALUE,
-                    -Math.signum(mForwardVector[1]) * Float.MAX_VALUE);
+            return new PointF(Math.copySign(Float.MAX_VALUE, mForwardVector[0]),
+                    Math.copySign(Float.MAX_VALUE, mForwardVector[1]));
         } else {
-            return new PointF(-mForwardVector[0] * distance / mForwardVector[2],
-                    -mForwardVector[1] * distance / mForwardVector[2]);
+            return new PointF(mForwardVector[0] * distance / mForwardVector[2],
+                    mForwardVector[1] * distance / mForwardVector[2]);
         }
     }
 

@@ -32,7 +32,7 @@ public class MenuBar {
         }
     }
 
-    public static final float MENU_ITEM_SIZE = 0.2f;
+    public static final float MENU_ITEM_SIZE = 0.1f;
 
     private final RectF mMenuBarRect;
 
