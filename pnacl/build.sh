@@ -137,7 +137,7 @@ readonly HOST_LIBCXX="${NACL_ROOT}/toolchain_build/out/libcxx_x86_64_linux_insta
 SBTC_PRODUCTION=${SBTC_PRODUCTION:-true}
 
 # Which arches to build for our sandboxed toolchain.
-SBTC_ARCHES_ALL=${SBTC_ARCHES_ALL:-"armv7 i686 x86_64"}
+SBTC_ARCHES_ALL=${SBTC_ARCHES_ALL:-"armv7 i686 x86_64 mips"}
 
 get-sbtc-llvm-arches() {
 # For LLVM i686 brings in both i686 and x86_64.  De-dupe that.
@@ -224,13 +224,14 @@ translator-clean() {
 
 check-arch() {
   local arch=$1
-  for valid_arch in i686 x86_64 armv7 universal ; do
+  for valid_arch in i686 x86_64 armv7 mips universal ; do
     if [ "${arch}" == "${valid_arch}" ] ; then
       return
     fi
   done
 
-  Fatal "ERROR: Unsupported arch [$1]. Must be: i686, x86_64, armv7, universal"
+  Fatal "ERROR: Unsupported arch [$1]. " \
+        "Must be: i686, x86_64, armv7, mips, universal"
 }
 
 llvm-sb-setup() {
@@ -318,6 +319,10 @@ llvm-sb-configure() {
     armv7)
       targets=arm
       subzero_targets=ARM32
+      ;;
+    mips)
+      targets=mips
+      subzero_targets=MIPS32
       ;;
     universal)
       targets=x86,arm,mips
@@ -503,6 +508,7 @@ GetTranslatorInstallDir() {
     i686) arch=x86-32 ;;
     x86_64) arch=x86-64 ;;
     armv7) arch=arm ;;
+    mips) arch=mips32 ;;
     default) arch=$1 ;;
   esac
   echo "${INSTALL_TRANSLATOR}"/translator/${arch}
@@ -571,8 +577,9 @@ binutils-gold-sb-configure() {
     i686)      gold_targets=i686-pc-nacl ;;
     x86_64)    gold_targets=x86_64-pc-nacl ;;
     armv7)     gold_targets=arm-pc-nacl ;;
+    mips)      gold_targets=mips-pc-nacl ;;
     universal)
-      gold_targets=i686-pc-nacl,x86_64-pc-nacl,arm-pc-nacl ;;
+      gold_targets=i686-pc-nacl,x86_64-pc-nacl,arm-pc-nacl,mips-pc-nacl ;;
   esac
 
   # gold always adds "target" to the enabled targets so we are
