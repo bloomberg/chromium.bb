@@ -50,6 +50,18 @@ Profile* CreateTestingProfile(const std::string& profile_name) {
   return profile;
 }
 
+Profile* CreateProfileOutsideUserDataDir() {
+  base::FilePath path;
+  if (!base::CreateNewTempDirectory(base::FilePath::StringType(), &path))
+    NOTREACHED() << "Could not create directory at " << path.MaybeAsASCII();
+
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  Profile* profile =
+      Profile::CreateProfile(path, NULL, Profile::CREATE_MODE_SYNCHRONOUS);
+  profile_manager->RegisterTestingProfile(profile, true, false);
+  return profile;
+}
+
 // Set up the profiles to enable Lock. Takes as parameter a profile that will be
 // signed in, and also creates a supervised user (necessary for lock).
 void SetupProfilesForLock(Profile* signed_in) {
@@ -183,6 +195,20 @@ class ProfileChooserViewExtensionsTest : public ExtensionBrowserTest {
 
   DISALLOW_COPY_AND_ASSIGN(ProfileChooserViewExtensionsTest);
 };
+
+IN_PROC_BROWSER_TEST_F(ProfileChooserViewExtensionsTest,
+    NoProfileChooserOnOutsideUserDataDirProfiles) {
+  // Test that the profile chooser view does not show when avatar menu is not
+  // available. This can be repro'ed with a profile path outside user_data_dir.
+  // crbug.com/527505
+  Profile* new_profile = CreateProfileOutsideUserDataDir();
+  Browser* browser = CreateBrowser(new_profile);
+  browser->window()->ShowAvatarBubbleFromAvatarButton(
+      BrowserWindow::AVATAR_BUBBLE_MODE_CONFIRM_SIGNIN,
+      signin::ManageAccountsParams());
+  ASSERT_FALSE(ProfileChooserView::IsShowing());
+  CloseBrowserSynchronously(browser);
+}
 
 IN_PROC_BROWSER_TEST_F(ProfileChooserViewExtensionsTest, SigninButtonHasFocus) {
   ASSERT_TRUE(profiles::IsMultipleProfilesEnabled());

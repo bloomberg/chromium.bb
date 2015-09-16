@@ -2522,6 +2522,9 @@ void BrowserView::ShowAvatarBubbleFromAvatarButton(
     AvatarBubbleMode mode,
     const signin::ManageAccountsParams& manage_accounts_params) {
 #if defined(FRAME_AVATAR_BUTTON)
+  // Do not show avatar bubble if there is no avatar menu button.
+  if (!frame_->GetNewAvatarMenuButton())
+    return;
   profiles::BubbleViewMode bubble_view_mode;
   profiles::TutorialMode tutorial_mode;
   profiles::BubbleViewModeFromAvatarBubbleMode(mode, &bubble_view_mode,
