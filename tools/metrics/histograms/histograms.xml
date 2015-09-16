@@ -18046,6 +18046,19 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Visible width of HTML5 video.</summary>
 </histogram>
 
+<histogram name="Media.Vpx.VideoDecoderBuffersInUseByDecoder">
+  <owner>dcastagna@chromium.org</owner>
+  <summary>Number of frame buffers used by Vpx decoder.</summary>
+</histogram>
+
+<histogram name="Media.Vpx.VideoDecoderBuffersInUseByDecoderAndVideoFrame">
+  <owner>dcastagna@chromium.org</owner>
+  <summary>
+    Number of frame buffers currently in use by both Vpx decoder and a
+    VideoFrame.
+  </summary>
+</histogram>
+
 <histogram name="Media.VTVDA.HardwareAccelerated"
     enum="BooleanHardwareAccelerated">
   <owner>sandersd@chromium.org</owner>
