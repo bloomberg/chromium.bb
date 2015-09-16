@@ -19,6 +19,9 @@
 // The UIWebView's bounding rectangle (relative to its parent).
 @property(readonly, assign) CGRect bounds;
 
+// The web view's frame rectangle.
+@property(readonly, assign) CGRect frame;
+
 // A Boolean value indicating whether web content can programmatically display
 // the keyboard.
 @property(nonatomic, assign) BOOL keyboardDisplayRequiresUserAction;

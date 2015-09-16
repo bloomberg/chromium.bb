@@ -350,8 +350,9 @@ bool ComputeFramesOfKeyboardParts(UIView* inputAccessoryView,
     _suggestionsHaveBeenShown = YES;
 
     CGFloat height = autofill::kInputAccessoryHeight;
-    CGRect frame = CGRectMake(_keyboardFrame.origin.x, -height,
-                              _keyboardFrame.size.width, height);
+    CGRect contentFrame = self.webViewProxy.frame;
+    CGRect frame = CGRectMake(contentFrame.origin.x, -height,
+                              contentFrame.size.width, height);
     _customAccessoryView.reset(
         [[FormInputAccessoryView alloc] initWithFrame:frame customView:view]);
     UIView* keyboardView = [self getKeyboardView];

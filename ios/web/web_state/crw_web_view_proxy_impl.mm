@@ -93,6 +93,10 @@ UIView* GetFirstResponderSubview(UIView* view) {
   return [_contentView bounds];
 }
 
+- (CGRect)frame {
+  return [_contentView frame];
+}
+
 - (NSArray*)gestureRecognizers {
   return [_contentView gestureRecognizers];
 }
