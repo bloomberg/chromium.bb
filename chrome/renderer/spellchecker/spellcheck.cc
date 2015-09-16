@@ -178,25 +178,30 @@ SpellCheck::~SpellCheck() {
 void SpellCheck::FillSuggestions(
     const std::vector<std::vector<base::string16>>& suggestions_list,
     std::vector<base::string16>* optional_suggestions) {
-  // A vector containing the indices of the current suggestion for each
-  // language's suggestion list.
-  std::vector<size_t> indices(suggestions_list.size(), 0);
-  // Take one suggestion at a time from each language's suggestions and add it
-  // to |optional_suggestions|.
-  for (size_t i = 0, num_empty = 0;
-       num_empty < suggestions_list.size() &&
-       optional_suggestions->size() <
-           chrome::spellcheck_common::kMaxSuggestions;
-       i = (i + 1) % suggestions_list.size()) {
-    if (indices[i] < suggestions_list[i].size()) {
-      const base::string16& suggestion = suggestions_list[i][indices[i]];
-      // Only add the suggestion if it's unique.
-      if (std::find(optional_suggestions->begin(), optional_suggestions->end(),
-                    suggestion) == optional_suggestions->end()) {
+  DCHECK(optional_suggestions);
+  size_t num_languages = suggestions_list.size();
+
+  // Compute maximum number of suggestions in a single language.
+  size_t max_suggestions = 0;
+  for (const auto& suggestions : suggestions_list)
+    max_suggestions = std::max(max_suggestions, suggestions.size());
+
+  for (size_t count = 0; count < (max_suggestions * num_languages); ++count) {
+    size_t language = count % num_languages;
+    size_t index = count / num_languages;
+
+    if (suggestions_list[language].size() <= index)
+      continue;
+
+    const base::string16& suggestion = suggestions_list[language][index];
+    // Only add the suggestion if it's unique.
+    if (std::find(optional_suggestions->begin(), optional_suggestions->end(),
+                  suggestion) == optional_suggestions->end()) {
         optional_suggestions->push_back(suggestion);
-      }
-      if (++indices[i] == suggestions_list[i].size())
-        num_empty++;
+    }
+    if (optional_suggestions->size() >=
+        chrome::spellcheck_common::kMaxSuggestions) {
+      break;
     }
   }
 }

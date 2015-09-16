@@ -8,6 +8,7 @@
 #include "base/files/file_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/common/spellcheck_common.h"
 #include "chrome/common/spellcheck_result.h"
@@ -91,6 +92,12 @@ class SpellCheckTest : public testing::Test {
 
   bool IsValidContraction(const base::string16& word, int tag) {
     return spell_check_->languages_.front()->IsValidContraction(word, tag);
+  }
+
+  static void FillSuggestions(
+      const std::vector<std::vector<base::string16>>& suggestions_list,
+      std::vector<base::string16>* optional_suggestions) {
+    SpellCheck::FillSuggestions(suggestions_list, optional_suggestions);
   }
 
 #if !defined(OS_MACOSX)
@@ -1475,4 +1482,107 @@ TEST_F(SpellCheckTest, IsValidContraction) {
     for (size_t j = 0; j < arraysize(kWords); ++j)
       EXPECT_TRUE(IsValidContraction(base::WideToUTF16(kWords[j]), 0));
   }
+}
+
+TEST_F(SpellCheckTest, FillSuggestions_OneLanguageNoSuggestions) {
+  std::vector<std::vector<base::string16>> suggestions_list;
+  std::vector<base::string16> suggestion_results;
+
+  suggestions_list.resize(1);
+
+  FillSuggestions(suggestions_list, &suggestion_results);
+  EXPECT_TRUE(suggestion_results.empty());
+}
+
+TEST_F(SpellCheckTest, FillSuggestions_OneLanguageFewSuggestions) {
+  std::vector<std::vector<base::string16>> suggestions_list;
+  std::vector<base::string16> suggestion_results;
+
+  suggestions_list.resize(1);
+  suggestions_list[0].push_back(base::ASCIIToUTF16("foo"));
+
+  FillSuggestions(suggestions_list, &suggestion_results);
+  ASSERT_EQ(1U, suggestion_results.size());
+  EXPECT_EQ(base::ASCIIToUTF16("foo"), suggestion_results[0]);
+}
+
+TEST_F(SpellCheckTest, FillSuggestions_OneLanguageManySuggestions) {
+  std::vector<std::vector<base::string16>> suggestions_list;
+  std::vector<base::string16> suggestion_results;
+
+  suggestions_list.resize(1);
+  for (int i = 0; i < chrome::spellcheck_common::kMaxSuggestions + 2; ++i)
+    suggestions_list[0].push_back(base::ASCIIToUTF16(base::IntToString(i)));
+
+  FillSuggestions(suggestions_list, &suggestion_results);
+  ASSERT_EQ(static_cast<size_t>(chrome::spellcheck_common::kMaxSuggestions),
+            suggestion_results.size());
+  for (int i = 0; i < chrome::spellcheck_common::kMaxSuggestions; ++i)
+    EXPECT_EQ(base::ASCIIToUTF16(base::IntToString(i)), suggestion_results[i]);
+}
+
+TEST_F(SpellCheckTest, FillSuggestions_RemoveDuplicates) {
+  std::vector<std::vector<base::string16>> suggestions_list;
+  std::vector<base::string16> suggestion_results;
+
+  suggestions_list.resize(2);
+  for (size_t i = 0; i < 2; ++i) {
+    suggestions_list[i].push_back(base::ASCIIToUTF16("foo"));
+    suggestions_list[i].push_back(base::ASCIIToUTF16("bar"));
+    suggestions_list[i].push_back(base::ASCIIToUTF16("baz"));
+  }
+
+  FillSuggestions(suggestions_list, &suggestion_results);
+  ASSERT_EQ(3U, suggestion_results.size());
+  EXPECT_EQ(base::ASCIIToUTF16("foo"), suggestion_results[0]);
+  EXPECT_EQ(base::ASCIIToUTF16("bar"), suggestion_results[1]);
+  EXPECT_EQ(base::ASCIIToUTF16("baz"), suggestion_results[2]);
+}
+
+TEST_F(SpellCheckTest, FillSuggestions_TwoLanguages) {
+  std::vector<std::vector<base::string16>> suggestions_list;
+  std::vector<base::string16> suggestion_results;
+
+  suggestions_list.resize(2);
+  for (size_t i = 0; i < 2; ++i) {
+    std::string prefix = base::IntToString(i);
+    suggestions_list[i].push_back(base::ASCIIToUTF16(prefix + "foo"));
+    suggestions_list[i].push_back(base::ASCIIToUTF16(prefix + "bar"));
+    suggestions_list[i].push_back(base::ASCIIToUTF16(prefix + "baz"));
+  }
+
+  // Yes, this test assumes kMaxSuggestions is 5. If it isn't, the test needs
+  // to be updated accordingly.
+  ASSERT_EQ(5, chrome::spellcheck_common::kMaxSuggestions);
+  FillSuggestions(suggestions_list, &suggestion_results);
+  ASSERT_EQ(5U, suggestion_results.size());
+  EXPECT_EQ(base::ASCIIToUTF16("0foo"), suggestion_results[0]);
+  EXPECT_EQ(base::ASCIIToUTF16("1foo"), suggestion_results[1]);
+  EXPECT_EQ(base::ASCIIToUTF16("0bar"), suggestion_results[2]);
+  EXPECT_EQ(base::ASCIIToUTF16("1bar"), suggestion_results[3]);
+  EXPECT_EQ(base::ASCIIToUTF16("0baz"), suggestion_results[4]);
+}
+
+TEST_F(SpellCheckTest, FillSuggestions_ThreeLanguages) {
+  std::vector<std::vector<base::string16>> suggestions_list;
+  std::vector<base::string16> suggestion_results;
+
+  suggestions_list.resize(3);
+  for (size_t i = 0; i < 3; ++i) {
+    std::string prefix = base::IntToString(i);
+    suggestions_list[i].push_back(base::ASCIIToUTF16(prefix + "foo"));
+    suggestions_list[i].push_back(base::ASCIIToUTF16(prefix + "bar"));
+    suggestions_list[i].push_back(base::ASCIIToUTF16(prefix + "baz"));
+  }
+
+  // Yes, this test assumes kMaxSuggestions is 5. If it isn't, the test needs
+  // to be updated accordingly.
+  ASSERT_EQ(5, chrome::spellcheck_common::kMaxSuggestions);
+  FillSuggestions(suggestions_list, &suggestion_results);
+  ASSERT_EQ(5U, suggestion_results.size());
+  EXPECT_EQ(base::ASCIIToUTF16("0foo"), suggestion_results[0]);
+  EXPECT_EQ(base::ASCIIToUTF16("1foo"), suggestion_results[1]);
+  EXPECT_EQ(base::ASCIIToUTF16("2foo"), suggestion_results[2]);
+  EXPECT_EQ(base::ASCIIToUTF16("0bar"), suggestion_results[3]);
+  EXPECT_EQ(base::ASCIIToUTF16("1bar"), suggestion_results[4]);
 }
