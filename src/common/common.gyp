@@ -120,7 +120,7 @@
         'mac/bootstrap_compat.h',
         'mac/byteswap.h',
         'mac/dump_syms.h',
-        'mac/dump_syms.mm',
+        'mac/dump_syms.cc',
         'mac/file_id.cc',
         'mac/file_id.h',
         'mac/GTMDefines.h',

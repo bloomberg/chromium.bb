@@ -317,7 +317,8 @@ bin_PROGRAMS += \
 	src/tools/linux/dump_syms/dump_syms \
 	src/tools/linux/md2core/minidump-2-core \
 	src/tools/linux/symupload/minidump_upload \
-	src/tools/linux/symupload/sym_upload
+	src/tools/linux/symupload/sym_upload \
+	src/tools/mac/dump_syms/dump_syms
 endif
 endif LINUX_HOST
 
@@ -364,6 +365,7 @@ check_PROGRAMS += \
 if !DISABLE_TOOLS
 check_PROGRAMS += \
 	src/common/dumper_unittest \
+	src/common/mac/macho_reader_unittest \
 	src/tools/linux/md2core/minidump_2_core_unittest
 endif
 endif LINUX_HOST
@@ -546,6 +548,30 @@ src_tools_linux_symupload_sym_upload_SOURCES = \
 	src/tools/linux/symupload/sym_upload.cc
 src_tools_linux_symupload_sym_upload_LDADD = -ldl
 
+src_tools_mac_dump_syms_dump_syms_SOURCES = \
+	src/common/dwarf_cfi_to_module.cc \
+	src/common/dwarf_cu_to_module.cc \
+	src/common/dwarf_line_to_module.cc \
+	src/common/language.cc \
+	src/common/md5.cc \
+	src/common/module.cc \
+	src/common/stabs_reader.cc \
+	src/common/stabs_to_module.cc \
+	src/common/dwarf/bytereader.cc \
+	src/common/dwarf/dwarf2diehandler.cc \
+	src/common/dwarf/dwarf2reader.cc \
+	src/common/mac/arch_utilities.cc \
+	src/common/mac/dump_syms.cc \
+	src/common/mac/file_id.cc \
+	src/common/mac/macho_id.cc \
+	src/common/mac/macho_reader.cc \
+	src/common/mac/macho_utilities.cc \
+	src/common/mac/macho_walker.cc \
+	src/tools/mac/dump_syms/dump_syms_tool.cc
+src_tools_mac_dump_syms_dump_syms_CXXFLAGS= \
+	-I$(top_srcdir)/src/third_party/mac_headers \
+	-DHAVE_MACH_O_NLIST_H
+
 src_common_dumper_unittest_SOURCES = \
 	src/common/byte_cursor_unittest.cc \
 	src/common/dwarf_cfi_to_module.cc \
@@ -601,6 +627,42 @@ src_common_dumper_unittest_CPPFLAGS = \
 	-I$(top_srcdir)/src/testing \
 	$(PTHREAD_CFLAGS)
 src_common_dumper_unittest_LDADD = $(PTHREAD_CFLAGS) $(PTHREAD_LIBS)
+
+src_common_mac_macho_reader_unittest_SOURCES = \
+	src/common/dwarf_cfi_to_module.cc \
+	src/common/dwarf_cu_to_module.cc \
+	src/common/dwarf_line_to_module.cc \
+	src/common/language.cc \
+	src/common/md5.cc \
+	src/common/module.cc \
+	src/common/stabs_reader.cc \
+	src/common/stabs_to_module.cc \
+	src/common/test_assembler.cc \
+	src/common/dwarf/bytereader.cc \
+	src/common/dwarf/cfi_assembler.cc \
+	src/common/dwarf/dwarf2diehandler.cc \
+	src/common/dwarf/dwarf2reader.cc \
+	src/common/mac/arch_utilities.cc \
+	src/common/mac/file_id.cc \
+	src/common/mac/macho_id.cc \
+	src/common/mac/macho_reader.cc \
+	src/common/mac/macho_reader_unittest.cc \
+	src/common/mac/macho_utilities.cc \
+	src/common/mac/macho_walker.cc \
+	src/common/tests/file_utils.cc \
+	src/testing/gtest/src/gtest-all.cc \
+	src/testing/gtest/src/gtest_main.cc \
+	src/testing/src/gmock-all.cc
+src_common_mac_macho_reader_unittest_CPPFLAGS = \
+	-I$(top_srcdir)/src \
+	-I$(top_srcdir)/src/testing/include \
+	-I$(top_srcdir)/src/testing/gtest/include \
+	-I$(top_srcdir)/src/testing/gtest \
+	-I$(top_srcdir)/src/testing \
+	-I$(top_srcdir)/src/third_party/mac_headers \
+	-DHAVE_MACH_O_NLIST_H \
+	$(PTHREAD_CFLAGS)
+src_common_mac_macho_reader_unittest_LDADD = $(PTHREAD_CFLAGS) $(PTHREAD_LIBS)
 endif
 
 src_tools_linux_md2core_minidump_2_core_unittest_SOURCES = \
@@ -1287,7 +1349,7 @@ EXTRA_DIST = \
 	src/common/mac/HTTPMultipartUpload.h \
 	src/common/mac/HTTPMultipartUpload.m \
 	src/common/mac/dump_syms.h \
-	src/common/mac/dump_syms.mm \
+	src/common/mac/dump_syms.cc \
 	src/common/mac/file_id.cc \
 	src/common/mac/file_id.h \
 	src/common/mac/macho_id.cc \
@@ -1339,7 +1401,7 @@ EXTRA_DIST = \
 	src/tools/mac/crash_report/on_demand_symbol_supplier.h \
 	src/tools/mac/crash_report/on_demand_symbol_supplier.mm \
 	src/tools/mac/dump_syms/dump_syms.xcodeproj/project.pbxproj \
-	src/tools/mac/dump_syms/dump_syms_tool.m \
+	src/tools/mac/dump_syms/dump_syms_tool.cc \
 	src/tools/mac/symupload/minidump_upload.m \
 	src/tools/mac/symupload/symupload.m \
 	src/tools/mac/symupload/symupload.xcodeproj/project.pbxproj \

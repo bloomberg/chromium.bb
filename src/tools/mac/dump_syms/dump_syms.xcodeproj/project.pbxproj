@@ -97,8 +97,8 @@
 		B8C5B51A1166534700D34F4E /* file_id.cc in Sources */ = {isa = PBXBuildFile; fileRef = 9BE650410B52F6D800611104 /* file_id.cc */; };
 		B8C5B51B1166534700D34F4E /* macho_id.cc in Sources */ = {isa = PBXBuildFile; fileRef = 9BE650430B52F6D800611104 /* macho_id.cc */; };
 		B8C5B51C1166534700D34F4E /* macho_walker.cc in Sources */ = {isa = PBXBuildFile; fileRef = 9BE650450B52F6D800611104 /* macho_walker.cc */; };
-		B8C5B51D1166534700D34F4E /* dump_syms.mm in Sources */ = {isa = PBXBuildFile; fileRef = 08FB7796FE84155DC02AAC07 /* dump_syms.mm */; };
-		B8C5B51E1166534700D34F4E /* dump_syms_tool.mm in Sources */ = {isa = PBXBuildFile; fileRef = 9BDF186E0B1BB43700F8391B /* dump_syms_tool.mm */; };
+		B8C5B51D1166534700D34F4E /* dump_syms.cc in Sources */ = {isa = PBXBuildFile; fileRef = 08FB7796FE84155DC02AAC07 /* dump_syms.cc */; };
+		B8C5B51E1166534700D34F4E /* dump_syms_tool.cc in Sources */ = {isa = PBXBuildFile; fileRef = 9BDF186E0B1BB43700F8391B /* dump_syms_tool.cc */; };
 		B8C5B523116653BA00D34F4E /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 08FB779EFE84155DC02AAC07 /* Foundation.framework */; };
 		D21F97D711CBA12300239E38 /* test_assembler_unittest.cc in Sources */ = {isa = PBXBuildFile; fileRef = B88FB0D9116CEC0600407530 /* test_assembler_unittest.cc */; };
 		D21F97D811CBA13D00239E38 /* libgtestmockall.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B88FB024116BDFFF00407530 /* libgtestmockall.a */; };
@@ -270,7 +270,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		08FB7796FE84155DC02AAC07 /* dump_syms.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = dump_syms.mm; path = ../../../common/mac/dump_syms.mm; sourceTree = "<group>"; };
+		08FB7796FE84155DC02AAC07 /* dump_syms.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = dump_syms.cc; path = ../../../common/mac/dump_syms.cc; sourceTree = "<group>"; };
 		08FB779EFE84155DC02AAC07 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		162F64F8161C591500CD68D5 /* arch_utilities.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = arch_utilities.cc; path = ../../../common/mac/arch_utilities.cc; sourceTree = "<group>"; };
 		162F64F9161C591500CD68D5 /* arch_utilities.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = arch_utilities.h; path = ../../../common/mac/arch_utilities.h; sourceTree = "<group>"; };
@@ -281,7 +281,7 @@
 		8B3102D411F0D60300FCF3E4 /* BreakpadDebug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; name = BreakpadDebug.xcconfig; path = ../../../common/mac/BreakpadDebug.xcconfig; sourceTree = SOURCE_ROOT; };
 		8B3102D511F0D60300FCF3E4 /* BreakpadRelease.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; name = BreakpadRelease.xcconfig; path = ../../../common/mac/BreakpadRelease.xcconfig; sourceTree = SOURCE_ROOT; };
 		9BDF186D0B1BB43700F8391B /* dump_syms.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = dump_syms.h; path = ../../../common/mac/dump_syms.h; sourceTree = "<group>"; };
-		9BDF186E0B1BB43700F8391B /* dump_syms_tool.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = dump_syms_tool.mm; sourceTree = "<group>"; };
+		9BDF186E0B1BB43700F8391B /* dump_syms_tool.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = dump_syms_tool.cc; sourceTree = "<group>"; };
 		9BE650410B52F6D800611104 /* file_id.cc */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = file_id.cc; path = ../../../common/mac/file_id.cc; sourceTree = SOURCE_ROOT; };
 		9BE650420B52F6D800611104 /* file_id.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = file_id.h; path = ../../../common/mac/file_id.h; sourceTree = SOURCE_ROOT; };
 		9BE650430B52F6D800611104 /* macho_id.cc */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = macho_id.cc; path = ../../../common/mac/macho_id.cc; sourceTree = SOURCE_ROOT; };
@@ -493,8 +493,8 @@
 				9BE650410B52F6D800611104 /* file_id.cc */,
 				9BE650420B52F6D800611104 /* file_id.h */,
 				9BDF186D0B1BB43700F8391B /* dump_syms.h */,
-				08FB7796FE84155DC02AAC07 /* dump_syms.mm */,
-				9BDF186E0B1BB43700F8391B /* dump_syms_tool.mm */,
+				08FB7796FE84155DC02AAC07 /* dump_syms.cc */,
+				9BDF186E0B1BB43700F8391B /* dump_syms_tool.cc */,
 				B89E0E701166573700DD08C9 /* macho_dump.cc */,
 				4D72CAF413DFBAC2006CABE3 /* md5.cc */,
 				08FB779DFE84155DC02AAC07 /* External Frameworks and Libraries */,
@@ -1077,8 +1077,8 @@
 				B8C5B51A1166534700D34F4E /* file_id.cc in Sources */,
 				B8C5B51B1166534700D34F4E /* macho_id.cc in Sources */,
 				B8C5B51C1166534700D34F4E /* macho_walker.cc in Sources */,
-				B8C5B51D1166534700D34F4E /* dump_syms.mm in Sources */,
-				B8C5B51E1166534700D34F4E /* dump_syms_tool.mm in Sources */,
+				B8C5B51D1166534700D34F4E /* dump_syms.cc in Sources */,
+				B8C5B51E1166534700D34F4E /* dump_syms_tool.cc in Sources */,
 				B88FAE1911665FE400407530 /* dwarf2diehandler.cc in Sources */,
 				B88FAE261166603300407530 /* dwarf_cu_to_module.cc in Sources */,
 				B88FAE271166603300407530 /* dwarf_line_to_module.cc in Sources */,
