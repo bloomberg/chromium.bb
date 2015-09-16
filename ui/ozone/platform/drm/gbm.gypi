@@ -131,18 +131,18 @@
             'gpu/client_native_pixmap_vgem.cc',
             'gpu/client_native_pixmap_vgem.h',
           ],
-	}],
-	['use_drm_atomic == 1', {
-	  'sources': [
-	    'gpu/hardware_display_plane_atomic.cc',
-	    'gpu/hardware_display_plane_atomic.h',
-	    'gpu/hardware_display_plane_manager_atomic.cc',
-	    'gpu/hardware_display_plane_manager_atomic.h',
-	  ],
-	  'defines': [
-	    'USE_DRM_ATOMIC=1',
-	  ],
-	}],
+        }],
+        ['use_drm_atomic == 1', {
+          'sources': [
+            'gpu/hardware_display_plane_atomic.cc',
+            'gpu/hardware_display_plane_atomic.h',
+            'gpu/hardware_display_plane_manager_atomic.cc',
+            'gpu/hardware_display_plane_manager_atomic.h',
+          ],
+          'defines': [
+            'USE_DRM_ATOMIC=1',
+          ],
+        }],
       ],
     },
     {
