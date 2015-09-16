@@ -312,7 +312,8 @@ void PlatformNotificationContextImpl::
   if (status == NotificationDatabase::STATUS_ERROR_CORRUPTED)
     DestroyDatabase();
 
-  // TODO(peter): Close the notifications in |deleted_notifications_set|.
+  // TODO(peter): Close the notifications in |deleted_notifications_set|. See
+  // https://crbug.com/532436.
 }
 
 void PlatformNotificationContextImpl::OnStorageWiped() {
