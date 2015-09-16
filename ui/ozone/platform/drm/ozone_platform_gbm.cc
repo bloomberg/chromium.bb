@@ -8,9 +8,7 @@
 #include <gbm.h>
 #include <stdlib.h>
 
-#include "base/at_exit.h"
 #include "base/bind.h"
-#include "base/command_line.h"
 #include "ui/base/cursor/ozone/bitmap_cursor_factory_ozone.h"
 #include "ui/events/ozone/device/device_manager.h"
 #include "ui/events/ozone/evdev/event_factory_evdev.h"
@@ -22,7 +20,6 @@
 #include "ui/ozone/platform/drm/gpu/drm_gpu_platform_support.h"
 #include "ui/ozone/platform/drm/gpu/gbm_buffer.h"
 #include "ui/ozone/platform/drm/gpu/gbm_device.h"
-#include "ui/ozone/platform/drm/gpu/gbm_surface.h"
 #include "ui/ozone/platform/drm/gpu/gbm_surface_factory.h"
 #include "ui/ozone/platform/drm/gpu/scanout_buffer.h"
 #include "ui/ozone/platform/drm/gpu/screen_manager.h"
@@ -114,7 +111,7 @@ class GbmDeviceGenerator : public DrmDeviceGenerator {
 
 class OzonePlatformGbm : public OzonePlatform {
  public:
-  OzonePlatformGbm(bool use_surfaceless) : use_surfaceless_(use_surfaceless) {}
+  OzonePlatformGbm() {}
   ~OzonePlatformGbm() override {}
 
   // OzonePlatform:
@@ -182,8 +179,8 @@ class OzonePlatformGbm : public OzonePlatform {
         gpu_platform_support_host_.get(), device_manager_.get(),
         event_factory_ozone_->input_controller()));
     cursor_factory_ozone_.reset(new BitmapCursorFactoryOzone);
-    overlay_manager_.reset(new DrmOverlayManager(
-        use_surfaceless_, gpu_platform_support_host_.get()));
+    overlay_manager_.reset(
+        new DrmOverlayManager(gpu_platform_support_host_.get()));
   }
 
   void InitializeGPU() override {
@@ -196,7 +193,7 @@ class OzonePlatformGbm : public OzonePlatform {
         scoped_ptr<DrmDeviceGenerator>(new GbmDeviceGenerator(use_atomic))));
     buffer_generator_.reset(new GbmBufferGenerator());
     screen_manager_.reset(new ScreenManager(buffer_generator_.get()));
-    surface_factory_ozone_.reset(new GbmSurfaceFactory(use_surfaceless_));
+    surface_factory_ozone_.reset(new GbmSurfaceFactory());
     surface_factory_ozone_->InitializeGpu(drm_device_manager_.get(),
                                           screen_manager_.get());
     scoped_ptr<DrmGpuDisplayManager> display_manager(new DrmGpuDisplayManager(
@@ -207,9 +204,6 @@ class OzonePlatformGbm : public OzonePlatform {
   }
 
  private:
-  // Objects in both processes.
-  bool use_surfaceless_;
-
   // Objects in the GPU process.
   scoped_ptr<GbmSurfaceFactory> surface_factory_ozone_;
   scoped_ptr<GlApiLoader> gl_api_loader_;
@@ -238,12 +232,7 @@ class OzonePlatformGbm : public OzonePlatform {
 }  // namespace
 
 OzonePlatform* CreateOzonePlatformGbm() {
-  base::CommandLine* cmd = base::CommandLine::ForCurrentProcess();
-#if defined(USE_MESA_PLATFORM_NULL)
-  // Only works with surfaceless.
-  cmd->AppendSwitch(switches::kOzoneUseSurfaceless);
-#endif
-  return new OzonePlatformGbm(cmd->HasSwitch(switches::kOzoneUseSurfaceless));
+  return new OzonePlatformGbm;
 }
 
 }  // namespace ui
