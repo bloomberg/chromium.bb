@@ -100,7 +100,6 @@ source_set("gbm") {
   ]
 
   deps = [
-    ":drm_common",
     "//base",
     "//ipc",
     "//skia",
@@ -117,7 +116,7 @@ source_set("gbm") {
     "//ui/gfx/geometry",
   ]
 
-  configs = [ ":libdrm" ]
+  configs += [ ":libdrm" ]
 
   public_configs = [ "//third_party/khronos:khronos_headers" ]
 
