@@ -162,7 +162,7 @@ const char kGen_Help[] =
     "  Or it can be a directory relative to the current directory such as:\n"
     "      out/foo\n"
     "\n"
-    "  See \"gn help\" for the common command-line switches.\n";
+    "  See \"gn help switches\" for the common command-line switches.\n";
 
 int RunGen(const std::vector<std::string>& args) {
   base::ElapsedTimer timer;

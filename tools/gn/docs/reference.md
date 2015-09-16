@@ -527,7 +527,7 @@
   Or it can be a directory relative to the current directory such as:
       out/foo
 
-  See "gn help" for the common command-line switches.
+  See "gn help switches" for the common command-line switches.
 
 
 ```
