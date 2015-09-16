@@ -9,6 +9,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/singleton.h"
+#include "base/synchronization/lock.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -63,6 +64,10 @@ class ChildMemoryDumpManagerDelegateImpl
   // The SingleThreadTaskRunner where the |ctmf_| lives.
   // It is NULL iff |cmtf_| is NULL.
   scoped_refptr<base::SingleThreadTaskRunner> ctmf_task_runner_;
+
+  // Protects from concurrent access to |ctmf_task_runner_| to allow
+  // RequestGlobalMemoryDump to be called from arbitrary threads.
+  base::Lock lock_;
 
   // The unique id of the child process, created for tracing and is expected to
   // be valid only when tracing is enabled.

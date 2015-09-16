@@ -9,6 +9,14 @@
 
 namespace tracing {
 
+namespace {
+void AbortDumpRequest(const base::trace_event::MemoryDumpRequestArgs& args,
+                      const base::trace_event::MemoryDumpCallback& callback) {
+  if (!callback.is_null())
+    callback.Run(args.dump_guid, false /* success */);
+}
+}  // namespace
+
 // static
 ChildMemoryDumpManagerDelegateImpl*
 ChildMemoryDumpManagerDelegateImpl::GetInstance() {
@@ -21,50 +29,62 @@ ChildMemoryDumpManagerDelegateImpl::ChildMemoryDumpManagerDelegateImpl()
     : ctmf_(nullptr),
       tracing_process_id_(
           base::trace_event::MemoryDumpManager::kInvalidTracingProcessId) {
-  base::trace_event::MemoryDumpManager::GetInstance()->Initialize(
-      this /* delegate */, false /* is_coordinator */);
 }
 
 ChildMemoryDumpManagerDelegateImpl::~ChildMemoryDumpManagerDelegateImpl() {}
 
 void ChildMemoryDumpManagerDelegateImpl::SetChildTraceMessageFilter(
     ChildTraceMessageFilter* ctmf) {
+  const auto& task_runner = ctmf ? (ctmf->ipc_task_runner()) : nullptr;
   // Check that we are either registering the CTMF or tearing it down, but not
   // replacing a valid instance with another one (should never happen).
   DCHECK(ctmf_ == nullptr || (ctmf == nullptr && ctmf_task_runner_ != nullptr));
   ctmf_ = ctmf;
-  ctmf_task_runner_ = ctmf ? (ctmf->ipc_task_runner()) : nullptr;
+
+  {
+    base::AutoLock lock(lock_);
+    ctmf_task_runner_ = task_runner;
+  }
+
+  if (ctmf) {
+    base::trace_event::MemoryDumpManager::GetInstance()->Initialize(
+      this /* delegate */, false /* is_coordinator */);
+  }
 }
 
 // Invoked in child processes by the MemoryDumpManager.
 void ChildMemoryDumpManagerDelegateImpl::RequestGlobalMemoryDump(
     const base::trace_event::MemoryDumpRequestArgs& args,
     const base::trace_event::MemoryDumpCallback& callback) {
+  // RequestGlobalMemoryDump can be called on any thread, cannot access
+  // ctmf_task_runner_ as it could be racy.
+  scoped_refptr<base::SingleThreadTaskRunner> ctmf_task_runner;
+  {
+    base::AutoLock lock(lock_);
+    ctmf_task_runner = ctmf_task_runner_;
+  }
+
   // Bail out if we receive a dump request from the manager before the
   // ChildTraceMessageFilter has been initialized.
-  if (!ctmf_task_runner_) {
-    if (!callback.is_null())
-      callback.Run(args.dump_guid, false /* success */);
-    return;
-  }
+  if (!ctmf_task_runner)
+    return AbortDumpRequest(args, callback);
 
   // Make sure we access |ctmf_| only on the thread where it lives to avoid
   // races on shutdown.
-  if (!ctmf_task_runner_->BelongsToCurrentThread()) {
-    ctmf_task_runner_->PostTask(
+  if (!ctmf_task_runner->BelongsToCurrentThread()) {
+    const bool did_post_task = ctmf_task_runner->PostTask(
         FROM_HERE,
         base::Bind(&ChildMemoryDumpManagerDelegateImpl::RequestGlobalMemoryDump,
                    base::Unretained(this), args, callback));
+    if (!did_post_task)
+      return AbortDumpRequest(args, callback);
     return;
   }
 
   // The ChildTraceMessageFilter could have been destroyed while hopping on the
   // right thread. If this is the case, bail out.
-  if (!ctmf_) {
-    if (!callback.is_null())
-      callback.Run(args.dump_guid, false /* success */);
-    return;
-  }
+  if (!ctmf_)
+    return AbortDumpRequest(args, callback);
 
   // Send the request up to the browser process' MessageDumpmanager.
   ctmf_->SendGlobalMemoryDumpRequest(args, callback);

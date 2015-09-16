@@ -808,10 +808,12 @@ int TraceLog::GetNumTracesRecorded() {
 }
 
 void TraceLog::AddEnabledStateObserver(EnabledStateObserver* listener) {
+  AutoLock lock(lock_);
   enabled_state_observer_list_.push_back(listener);
 }
 
 void TraceLog::RemoveEnabledStateObserver(EnabledStateObserver* listener) {
+  AutoLock lock(lock_);
   std::vector<EnabledStateObserver*>::iterator it =
       std::find(enabled_state_observer_list_.begin(),
                 enabled_state_observer_list_.end(), listener);
@@ -820,6 +822,7 @@ void TraceLog::RemoveEnabledStateObserver(EnabledStateObserver* listener) {
 }
 
 bool TraceLog::HasEnabledStateObserver(EnabledStateObserver* listener) const {
+  AutoLock lock(lock_);
   std::vector<EnabledStateObserver*>::const_iterator it =
       std::find(enabled_state_observer_list_.begin(),
                 enabled_state_observer_list_.end(), listener);
