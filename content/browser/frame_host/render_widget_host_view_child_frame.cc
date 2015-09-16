@@ -149,13 +149,13 @@ void RenderWidgetHostViewChildFrame::InitAsFullscreen(
 }
 
 void RenderWidgetHostViewChildFrame::ImeCancelComposition() {
-  NOTREACHED();
+  // TODO(kenrb): Fix OOPIF Ime.
 }
 
 void RenderWidgetHostViewChildFrame::ImeCompositionRangeChanged(
     const gfx::Range& range,
     const std::vector<gfx::Rect>& character_bounds) {
-  NOTREACHED();
+  // TODO(kenrb): Fix OOPIF Ime.
 }
 
 void RenderWidgetHostViewChildFrame::MovePluginWindows(
