@@ -166,6 +166,7 @@
       'test/fake_delegated_renderer_layer.h',
       'test/fake_delegated_renderer_layer_impl.cc',
       'test/fake_delegated_renderer_layer_impl.h',
+      'test/fake_display_list_recording_source.cc',
       'test/fake_display_list_recording_source.h',
       'test/fake_external_begin_frame_source.cc',
       'test/fake_external_begin_frame_source.h',

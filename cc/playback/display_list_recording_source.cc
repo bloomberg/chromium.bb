@@ -234,10 +234,6 @@ scoped_refptr<RasterSource> DisplayListRecordingSource::CreateRasterSource(
           this, can_use_lcd_text));
 }
 
-gfx::Size DisplayListRecordingSource::GetTileGridSizeForTesting() const {
-  return gfx::Size();
-}
-
 void DisplayListRecordingSource::DetermineIfSolidColor() {
   DCHECK(display_list_.get());
   is_solid_color_ = false;

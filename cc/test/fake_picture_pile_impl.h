@@ -65,7 +65,6 @@ class FakePicturePileImpl : public PicturePileImpl {
   ~FakePicturePileImpl() override;
 
   base::WaitableEvent* playback_allowed_event_;
-  gfx::Size tile_grid_size_;
 };
 
 }  // namespace cc

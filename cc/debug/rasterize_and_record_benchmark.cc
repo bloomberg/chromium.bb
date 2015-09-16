@@ -114,79 +114,13 @@ void RasterizeAndRecordBenchmark::RunOnLayer(PictureLayer* layer) {
   if (visible_layer_rect.IsEmpty())
     return;
 
-  if (host_->settings().use_display_lists) {
-    RunOnDisplayListLayer(layer, visible_layer_rect);
-  } else {
-    RunOnPictureLayer(layer, visible_layer_rect);
-  }
-}
-
-void RasterizeAndRecordBenchmark::RunOnPictureLayer(
-    PictureLayer* layer,
-    const gfx::Rect& visible_layer_rect) {
-  ContentLayerClient* painter = layer->client();
-
-  DCHECK(host_ && !host_->settings().use_display_lists);
-
-  gfx::Size tile_grid_size = host_->settings().default_tile_size;
-
-  for (int mode_index = 0; mode_index < RecordingSource::RECORDING_MODE_COUNT;
-       mode_index++) {
-    RecordingSource::RecordingMode mode =
-        static_cast<RecordingSource::RecordingMode>(mode_index);
-
-    // Not supported for SkPicture recording.
-    if (mode == RecordingSource::RECORD_WITH_CONSTRUCTION_DISABLED)
-      continue;
-
-    base::TimeDelta min_time = base::TimeDelta::Max();
-    size_t memory_used = 0;
-
-    for (int i = 0; i < record_repeat_count_; ++i) {
-      // Run for a minimum amount of time to avoid problems with timer
-      // quantization when the layer is very small.
-      LapTimer timer(kWarmupRuns,
-                     base::TimeDelta::FromMilliseconds(kTimeLimitMillis),
-                     kTimeCheckInterval);
-      scoped_refptr<Picture> picture;
-      do {
-        picture = Picture::Create(visible_layer_rect, painter, tile_grid_size,
-                                  false, mode);
-        if (picture->ShouldBeAnalyzedForSolidColor()) {
-          gfx::Size layer_size = layer->paint_properties().bounds;
-          skia::AnalysisCanvas canvas(layer_size.width(), layer_size.height());
-          picture->Raster(&canvas, nullptr, gfx::Rect(), 1.f);
-        }
-        if (memory_used) {
-          // Verify we are recording the same thing each time.
-          DCHECK(memory_used == picture->ApproximateMemoryUsage());
-        } else {
-          memory_used = picture->ApproximateMemoryUsage();
-        }
-
-        timer.NextLap();
-      } while (!timer.HasTimeLimitExpired());
-      base::TimeDelta duration =
-          base::TimeDelta::FromMillisecondsD(timer.MsPerLap());
-      if (duration < min_time)
-        min_time = duration;
-    }
-
-    if (mode == RecordingSource::RECORD_NORMALLY) {
-      record_results_.bytes_used += memory_used;
-      record_results_.pixels_recorded +=
-          visible_layer_rect.width() * visible_layer_rect.height();
-    }
-    record_results_.total_best_time[mode_index] += min_time;
-  }
+  RunOnDisplayListLayer(layer, visible_layer_rect);
 }
 
 void RasterizeAndRecordBenchmark::RunOnDisplayListLayer(
     PictureLayer* layer,
     const gfx::Rect& visible_layer_rect) {
   ContentLayerClient* painter = layer->client();
-
-  DCHECK(host_ && host_->settings().use_display_lists);
 
   for (int mode_index = 0; mode_index < RecordingSource::RECORDING_MODE_COUNT;
        mode_index++) {

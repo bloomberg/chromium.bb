@@ -4,33 +4,53 @@
 
 #include "cc/test/solid_color_content_layer_client.h"
 
+#include "cc/playback/drawing_display_item.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkPaint.h"
+#include "third_party/skia/include/core/SkPictureRecorder.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
+#include "ui/gfx/skia_util.h"
 
 namespace cc {
 
+// TODO(pdr): Remove PaintContents as all calls should go through
+// PaintContentsToDisplayList.
 void SolidColorContentLayerClient::PaintContents(
     SkCanvas* canvas,
     const gfx::Rect& rect,
     PaintingControlSetting painting_control) {
-  SkPaint paint;
-  paint.setStyle(SkPaint::kFill_Style);
-  paint.setColor(color_);
-
-  canvas->clear(SK_ColorTRANSPARENT);
-  canvas->drawRect(
-      SkRect::MakeXYWH(rect.x(), rect.y(), rect.width(), rect.height()),
-      paint);
+  scoped_refptr<DisplayItemList> contents =
+      PaintContentsToDisplayList(rect, painting_control);
+  contents->Raster(canvas, nullptr, rect, 1.0f);
 }
 
 scoped_refptr<DisplayItemList>
 SolidColorContentLayerClient::PaintContentsToDisplayList(
     const gfx::Rect& clip,
     PaintingControlSetting painting_control) {
-  NOTIMPLEMENTED();
-  return nullptr;
+  SkPictureRecorder recorder;
+  skia::RefPtr<SkCanvas> canvas =
+      skia::SharePtr(recorder.beginRecording(gfx::RectToSkRect(clip)));
+
+  SkPaint paint;
+  paint.setStyle(SkPaint::kFill_Style);
+  paint.setColor(color_);
+
+  canvas->clear(SK_ColorTRANSPARENT);
+  canvas->drawRect(
+      SkRect::MakeXYWH(clip.x(), clip.y(), clip.width(), clip.height()), paint);
+
+  scoped_refptr<DisplayItemList> display_list =
+      DisplayItemList::Create(clip, false);
+  auto* item = display_list->CreateAndAppendItem<DrawingDisplayItem>();
+
+  skia::RefPtr<SkPicture> picture =
+      skia::AdoptRef(recorder.endRecordingAsPicture());
+  item->SetNew(picture.Pass());
+
+  display_list->Finalize();
+  return display_list;
 }
 
 bool SolidColorContentLayerClient::FillsBoundsCompletely() const {

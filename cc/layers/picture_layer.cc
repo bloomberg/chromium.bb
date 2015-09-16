@@ -91,13 +91,8 @@ void PictureLayer::SetLayerTreeHost(LayerTreeHost* host) {
 
   const LayerTreeSettings& settings = layer_tree_host()->settings();
   if (!recording_source_) {
-    if (settings.use_display_lists) {
-      recording_source_.reset(
-          new DisplayListRecordingSource(settings.default_tile_grid_size));
-    } else {
-      recording_source_.reset(new PicturePile(settings.minimum_contents_scale,
-                                              settings.default_tile_grid_size));
-    }
+    recording_source_.reset(
+        new DisplayListRecordingSource(settings.default_tile_grid_size));
   }
   recording_source_->SetSlowdownRasterScaleFactor(
       host->debug_state().slow_down_raster_scale_factor);
@@ -183,31 +178,17 @@ skia::RefPtr<SkPicture> PictureLayer::GetPicture() const {
   gfx::Size layer_size = bounds();
   const LayerTreeSettings& settings = layer_tree_host()->settings();
 
-  if (settings.use_display_lists) {
-    scoped_ptr<RecordingSource> recording_source;
-    recording_source.reset(
-        new DisplayListRecordingSource(settings.default_tile_grid_size));
-    Region recording_invalidation;
-    recording_source->UpdateAndExpandInvalidation(
-        client_, &recording_invalidation, layer_size, gfx::Rect(layer_size),
-        update_source_frame_number_, RecordingSource::RECORD_NORMALLY);
+  scoped_ptr<RecordingSource> recording_source(
+      new DisplayListRecordingSource(settings.default_tile_grid_size));
+  Region recording_invalidation;
+  recording_source->UpdateAndExpandInvalidation(
+      client_, &recording_invalidation, layer_size, gfx::Rect(layer_size),
+      update_source_frame_number_, RecordingSource::RECORD_NORMALLY);
 
-    scoped_refptr<RasterSource> raster_source =
-        recording_source->CreateRasterSource(false);
+  scoped_refptr<RasterSource> raster_source =
+      recording_source->CreateRasterSource(false);
 
-    return raster_source->GetFlattenedPicture();
-  }
-
-  int width = layer_size.width();
-  int height = layer_size.height();
-
-  SkPictureRecorder recorder;
-  SkCanvas* canvas = recorder.beginRecording(width, height, nullptr, 0);
-  client_->PaintContents(canvas, gfx::Rect(width, height),
-                         ContentLayerClient::PAINTING_BEHAVIOR_NORMAL);
-  skia::RefPtr<SkPicture> picture =
-      skia::AdoptRef(recorder.endRecordingAsPicture());
-  return picture;
+  return raster_source->GetFlattenedPicture();
 }
 
 bool PictureLayer::IsSuitableForGpuRasterization() const {

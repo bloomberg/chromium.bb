@@ -55,7 +55,6 @@ class CC_EXPORT RecordingSource {
 
   // TODO(hendrikw): Figure out how to remove this.
   virtual void SetUnsuitableForGpuRasterizationForTesting() = 0;
-  virtual gfx::Size GetTileGridSizeForTesting() const = 0;
 };
 
 }  // namespace cc

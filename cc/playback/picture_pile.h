@@ -39,7 +39,6 @@ class CC_EXPORT PicturePile : public RecordingSource {
   void SetRequiresClear(bool requires_clear) override;
   bool IsSuitableForGpuRasterization() const override;
   void SetUnsuitableForGpuRasterizationForTesting() override;
-  gfx::Size GetTileGridSizeForTesting() const override;
 
   typedef std::pair<int, int> PictureMapKey;
   typedef base::hash_map<PictureMapKey, scoped_refptr<const Picture>>

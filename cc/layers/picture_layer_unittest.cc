@@ -27,8 +27,7 @@ class MockContentLayerClient : public ContentLayerClient {
   scoped_refptr<DisplayItemList> PaintContentsToDisplayList(
       const gfx::Rect& clip,
       PaintingControlSetting picture_control) override {
-    NOTIMPLEMENTED();
-    return nullptr;
+    return DisplayItemList::Create(clip, false);
   }
   bool FillsBoundsCompletely() const override { return false; };
   size_t GetApproximateUnsharedMemoryUsage() const override { return 0; }
@@ -96,26 +95,6 @@ TEST(PictureLayerTest, SuitableForGpuRasterization) {
   recording_source->SetUnsuitableForGpuRasterizationForTesting();
   EXPECT_FALSE(recording_source->IsSuitableForGpuRasterization());
   EXPECT_FALSE(layer->IsSuitableForGpuRasterization());
-}
-
-TEST(PictureLayerTest, UseTileGridSize) {
-  LayerTreeSettings settings;
-  settings.default_tile_grid_size = gfx::Size(123, 123);
-
-  MockContentLayerClient client;
-  scoped_refptr<PictureLayer> layer =
-      PictureLayer::Create(LayerSettings(), &client);
-  FakeLayerTreeHostClient host_client(FakeLayerTreeHostClient::DIRECT_3D);
-  TestTaskGraphRunner task_graph_runner;
-  scoped_ptr<FakeLayerTreeHost> host =
-      FakeLayerTreeHost::Create(&host_client, &task_graph_runner, settings);
-  host->SetRootLayer(layer);
-
-  // Tile-grid is set according to its setting.
-  gfx::Size size =
-      layer->GetRecordingSourceForTesting()->GetTileGridSizeForTesting();
-  EXPECT_EQ(size.width(), 123);
-  EXPECT_EQ(size.height(), 123);
 }
 
 // PicturePile uses the source frame number as a unit for measuring invalidation

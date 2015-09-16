@@ -80,7 +80,6 @@ class CC_EXPORT LayerTreeSettings {
   size_t scheduled_raster_task_limit;
   bool use_occlusion_for_tile_prioritization;
   bool record_full_layer;
-  bool use_display_lists;
   bool verify_property_trees;
   bool gather_images;
   bool use_compositor_animation_timelines;

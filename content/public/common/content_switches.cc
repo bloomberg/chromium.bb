@@ -244,10 +244,6 @@ const char kDisableSetuidSandbox[]          = "disable-setuid-sandbox";
 // Disable shared workers.
 const char kDisableSharedWorkers[]          = "disable-shared-workers";
 
-// Disables slimming paint: http://www.chromium.org/blink/slimming-paint
-// Can be overridden by kEnableSlimmingPaint.
-const char kDisableSlimmingPaint[]           = "disable-slimming-paint";
-
 // Disable smooth scrolling for testing.
 const char kDisableSmoothScrolling[]        = "disable-smooth-scrolling";
 
@@ -428,10 +424,6 @@ const char kEnableSeccompFilterSandbox[] =
 
 // Enables the Skia benchmarking extension
 const char kEnableSkiaBenchmarking[]        = "enable-skia-benchmarking";
-
-// Enables slimming paint: http://www.chromium.org/blink/slimming-paint
-// Overrides kDisableSlimmingPaint if both are present.
-const char kEnableSlimmingPaint[]           = "enable-slimming-paint";
 
 // Enables slimming paint phase 2: http://www.chromium.org/blink/slimming-paint
 const char kEnableSlimmingPaintV2[]         = "enable-slimming-paint-v2";

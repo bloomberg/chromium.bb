@@ -18,7 +18,8 @@ namespace cc {
 class FakeDisplayListRecordingSource : public DisplayListRecordingSource {
  public:
   explicit FakeDisplayListRecordingSource(const gfx::Size& grid_cell_size)
-      : DisplayListRecordingSource(grid_cell_size) {}
+      : DisplayListRecordingSource(grid_cell_size),
+        force_unsuitable_for_gpu_rasterization_(false) {}
   ~FakeDisplayListRecordingSource() override {}
 
   static scoped_ptr<FakeDisplayListRecordingSource> CreateRecordingSource(
@@ -93,9 +94,13 @@ class FakeDisplayListRecordingSource : public DisplayListRecordingSource {
     client_.set_reported_memory_usage(reported_memory_usage);
   }
 
+  bool IsSuitableForGpuRasterization() const override;
+  void SetUnsuitableForGpuRasterizationForTesting() override;
+
  private:
   FakeContentLayerClient client_;
   SkPaint default_paint_;
+  bool force_unsuitable_for_gpu_rasterization_;
 };
 
 }  // namespace cc

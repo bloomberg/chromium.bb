@@ -616,10 +616,6 @@ void PicturePile::SetUnsuitableForGpuRasterizationForTesting() {
   is_suitable_for_gpu_rasterization_ = false;
 }
 
-gfx::Size PicturePile::GetTileGridSizeForTesting() const {
-  return tile_grid_size_;
-}
-
 bool PicturePile::CanRasterSlowTileCheck(const gfx::Rect& layer_rect) const {
   bool include_borders = false;
   for (TilingData::Iterator tile_iter(&tiling_, layer_rect, include_borders);

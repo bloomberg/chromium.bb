@@ -28,7 +28,6 @@ class LayerTreeHostTilesPixelTest : public LayerTreePixelTest {
  protected:
   void InitializeSettings(LayerTreeSettings* settings) override {
     LayerTreePixelTest::InitializeSettings(settings);
-    settings->use_display_lists = true;
     switch (raster_mode_) {
       case PARTIAL_ONE_COPY:
         settings->use_zero_copy = false;

@@ -31,10 +31,6 @@ WebLayerTreeViewImpl::WebLayerTreeViewImpl(
 
   cc::LayerTreeSettings settings;
 
-  // Must match the value of
-  // blink::RuntimeEnabledFeature::slimmingPaintEnabled()
-  settings.use_display_lists = true;
-
   settings.use_image_texture_targets = std::vector<unsigned>(
       static_cast<size_t>(gfx::BufferFormat::LAST) + 1, GL_TEXTURE_2D);
   // TODO(jam): use multiple compositor raster threads and set gather_pixel_refs

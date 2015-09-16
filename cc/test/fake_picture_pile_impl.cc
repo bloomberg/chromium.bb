@@ -22,9 +22,7 @@ FakePicturePileImpl::FakePicturePileImpl(
     const PicturePile* other,
     base::WaitableEvent* playback_allowed_event)
     : PicturePileImpl(other, true),
-      playback_allowed_event_(playback_allowed_event),
-      tile_grid_size_(other->GetTileGridSizeForTesting()) {
-}
+      playback_allowed_event_(playback_allowed_event) {}
 
 FakePicturePileImpl::~FakePicturePileImpl() {}
 

@@ -31,6 +31,7 @@
 #include "cc/quads/render_pass_draw_quad.h"
 #include "cc/quads/tile_draw_quad.h"
 #include "cc/test/fake_content_layer_client.h"
+#include "cc/test/fake_display_list_recording_source.h"
 #include "cc/test/fake_layer_tree_host_client.h"
 #include "cc/test/fake_output_surface.h"
 #include "cc/test/fake_painted_scrollbar_layer.h"
@@ -1494,15 +1495,19 @@ class TestOpacityChangeLayerDelegate : public ContentLayerClient {
   void PaintContents(SkCanvas* canvas,
                      const gfx::Rect& clip,
                      PaintingControlSetting picture_control) override {
-    // Set layer opacity to 0.
-    if (test_layer_)
-      test_layer_->SetOpacity(0.f);
+    NOTIMPLEMENTED();
   }
   scoped_refptr<DisplayItemList> PaintContentsToDisplayList(
       const gfx::Rect& clip,
       PaintingControlSetting picture_control) override {
-    NOTIMPLEMENTED();
-    return nullptr;
+    // Set layer opacity to 0.
+    if (test_layer_)
+      test_layer_->SetOpacity(0.f);
+
+    // Return a dummy display list.
+    scoped_refptr<DisplayItemList> display_list =
+        DisplayItemList::Create(clip, false);
+    return display_list;
   }
   bool FillsBoundsCompletely() const override { return false; }
   size_t GetApproximateUnsharedMemoryUsage() const override { return 0; }
@@ -2096,14 +2101,18 @@ class LayerTreeHostTestChangeLayerPropertiesInPaintContents
     void PaintContents(SkCanvas* canvas,
                        const gfx::Rect& clip,
                        PaintingControlSetting picture_control) override {
-      layer_->SetBounds(gfx::Size(2, 2));
+      NOTIMPLEMENTED();
     }
 
     scoped_refptr<DisplayItemList> PaintContentsToDisplayList(
         const gfx::Rect& clip,
         PaintingControlSetting picture_control) override {
-      NOTIMPLEMENTED();
-      return nullptr;
+      layer_->SetBounds(gfx::Size(2, 2));
+
+      // Return a dummy display list.
+      scoped_refptr<DisplayItemList> display_list =
+          DisplayItemList::Create(clip, false);
+      return display_list;
     }
 
     bool FillsBoundsCompletely() const override { return false; }
@@ -4415,8 +4424,12 @@ class LayerTreeHostTestGpuRasterizationEnabled : public LayerTreeHostTest {
   void SetupTree() override {
     LayerTreeHostTest::SetupTree();
 
-    scoped_refptr<PictureLayer> layer =
-        PictureLayer::Create(layer_settings(), &layer_client_);
+    scoped_ptr<FakeDisplayListRecordingSource> recording_source(
+        new FakeDisplayListRecordingSource(gfx::Size(10, 10)));
+
+    scoped_refptr<FakePictureLayer> layer =
+        FakePictureLayer::CreateWithRecordingSource(
+            layer_settings(), &layer_client_, recording_source.Pass());
     layer->SetBounds(gfx::Size(10, 10));
     layer->SetIsDrawable(true);
     layer_tree_host()->root_layer()->AddChild(layer);
@@ -4424,8 +4437,10 @@ class LayerTreeHostTestGpuRasterizationEnabled : public LayerTreeHostTest {
 
   void BeginTest() override {
     Layer* root = layer_tree_host()->root_layer();
-    PictureLayer* layer = static_cast<PictureLayer*>(root->child_at(0));
-    RecordingSource* recording_source = layer->GetRecordingSourceForTesting();
+    FakePictureLayer* layer = static_cast<FakePictureLayer*>(root->child_at(0));
+    FakeDisplayListRecordingSource* recording_source =
+        static_cast<FakeDisplayListRecordingSource*>(
+            layer->GetRecordingSourceForTesting());
 
     // Verify default values.
     EXPECT_TRUE(root->IsSuitableForGpuRasterization());

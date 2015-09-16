@@ -79,7 +79,6 @@ void PopulateCommonLayerTreeSettings(cc::LayerTreeSettings* settings) {
       !cmd.HasSwitch(cc::switches::kDisableMainFrameBeforeActivation);
   settings->accelerated_animation_enabled =
       !cmd.HasSwitch(cc::switches::kDisableThreadedAnimation);
-  settings->use_display_lists = cmd.HasSwitch(switches::kEnableSlimmingPaint);
 
   settings->default_tile_size = gfx::Size(256, 256);
   if (cmd.HasSwitch(switches::kDefaultTileWidth)) {
