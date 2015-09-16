@@ -81,8 +81,10 @@ public:
     void uniformMatrix4x3fv(const WebGLUniformLocation*, GLboolean, Vector<GLfloat>&);
 
     void vertexAttribI4i(GLuint, GLint, GLint, GLint, GLint);
+    void vertexAttribI4iv(GLuint, const DOMInt32Array*);
     void vertexAttribI4iv(GLuint, const Vector<GLint>&);
     void vertexAttribI4ui(GLuint, GLuint, GLuint, GLuint, GLuint);
+    void vertexAttribI4uiv(GLuint, const DOMUint32Array*);
     void vertexAttribI4uiv(GLuint, const Vector<GLuint>&);
     void vertexAttribIPointer(GLuint index, GLint size, GLenum type, GLsizei stride, long long offset);
 
@@ -202,6 +204,9 @@ protected:
 
     bool validateBufferBaseTarget(const char* functionName, GLenum target);
     bool validateAndUpdateBufferBindBaseTarget(const char* functionName, GLenum, GLuint, WebGLBuffer*);
+
+    void vertexAttribIivImpl(const char*, GLuint, const GLint*, GLsizei);
+    void vertexAttribIuivImpl(const char*, GLuint, const GLuint*, GLsizei);
 
     /* WebGLRenderingContextBase overrides */
     unsigned getMaxWebGLLocationLength() const override { return 1024; };
