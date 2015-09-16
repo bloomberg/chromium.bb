@@ -65,7 +65,7 @@ layer at (0,0) size 800x600
         LayoutBlockFlow {INPUT} at (69,4) size 13x13 [color=#545454]
         LayoutText {#text} at (85,2) size 8x19
           text run at (85,2) width 8: "b"
-layer at (28,342) size 150x16 scrollWidth 169
+layer at (28,342) size 150x16 scrollWidth 168
   LayoutBlockFlow {DIV} at (2,3) size 150x16
     LayoutText {#text} at (0,0) size 168x16
       text run at (0,0) width 168: "foobarbazfoobarbazfoobarbaz"
