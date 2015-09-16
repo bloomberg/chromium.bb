@@ -15,7 +15,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ssl/ssl_error_info.h"
+#include "components/ssl_errors/error_info.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
 #include "net/base/net_util.h"
@@ -180,12 +180,12 @@ void SSLErrorClassification::RecordCaptivePortalUMAStatistics(
 
 void SSLErrorClassification::RecordUMAStatistics(
     bool overridable) const {
-  SSLErrorInfo::ErrorType type =
-      SSLErrorInfo::NetErrorToErrorType(cert_error_);
-  UMA_HISTOGRAM_ENUMERATION(
-      "interstitial.ssl_error_type", type, SSLErrorInfo::END_OF_ENUM);
+  ssl_errors::ErrorInfo::ErrorType type =
+      ssl_errors::ErrorInfo::NetErrorToErrorType(cert_error_);
+  UMA_HISTOGRAM_ENUMERATION("interstitial.ssl_error_type", type,
+                            ssl_errors::ErrorInfo::END_OF_ENUM);
   switch (type) {
-    case SSLErrorInfo::CERT_DATE_INVALID: {
+    case ssl_errors::ErrorInfo::CERT_DATE_INVALID: {
       if (IsUserClockInThePast(base::Time::NowFromSystemTime())) {
         RecordSSLInterstitialCause(overridable, CLOCK_PAST);
       } else if (IsUserClockInTheFuture(base::Time::NowFromSystemTime())) {
@@ -195,7 +195,7 @@ void SSLErrorClassification::RecordUMAStatistics(
       }
       break;
     }
-    case SSLErrorInfo::CERT_COMMON_NAME_INVALID: {
+    case ssl_errors::ErrorInfo::CERT_COMMON_NAME_INVALID: {
       std::string host_name = request_url_.host();
       if (IsHostNameKnownTLD(host_name)) {
         Tokens host_name_tokens = Tokenize(host_name);
@@ -219,7 +219,7 @@ void SSLErrorClassification::RecordUMAStatistics(
       }
       break;
     }
-    case SSLErrorInfo::CERT_AUTHORITY_INVALID: {
+    case ssl_errors::ErrorInfo::CERT_AUTHORITY_INVALID: {
       const std::string& hostname = request_url_.HostNoBrackets();
       if (net::IsLocalhost(hostname))
         RecordSSLInterstitialCause(overridable, LOCALHOST);

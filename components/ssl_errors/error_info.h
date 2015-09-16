@@ -1,9 +1,9 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SSL_SSL_ERROR_INFO_H_
-#define CHROME_BROWSER_SSL_SSL_ERROR_INFO_H_
+#ifndef COMPONENTS_SSL_ERRORS_SSL_ERROR_INFO_H_
+#define COMPONENTS_SSL_ERRORS_SSL_ERROR_INFO_H_
 
 #include <string>
 #include <vector>
@@ -14,11 +14,13 @@
 
 class GURL;
 
+namespace ssl_errors {
+
 // This class describes an error that happened while showing a page over SSL.
-// An SSLErrorInfo object only exists on the UI thread and only contains
+// An ErrorInfo object only exists on the UI thread and only contains
 // information about an error (type of error and text details).
 // Note no DISALLOW_COPY_AND_ASSIGN as we want the copy constructor.
-class SSLErrorInfo {
+class ErrorInfo {
  public:
   // This enum is being histogrammed; please only add new values at the end.
   enum ErrorType {
@@ -40,23 +42,23 @@ class SSLErrorInfo {
     END_OF_ENUM
   };
 
-  virtual ~SSLErrorInfo();
+  virtual ~ErrorInfo();
 
   // Converts a network error code to an ErrorType.
   static ErrorType NetErrorToErrorType(int net_error);
 
-  static SSLErrorInfo CreateError(ErrorType error_type,
-                                  net::X509Certificate* cert,
-                                  const GURL& request_url);
+  static ErrorInfo CreateError(ErrorType error_type,
+                               net::X509Certificate* cert,
+                               const GURL& request_url);
 
   // Populates the specified |errors| vector with the errors contained in
-  // |cert_status|.  Returns the number of errors found.
+  // |cert_status| for |cert|.  Returns the number of errors found.
   // Callers only interested in the error count can pass NULL for |errors|.
-  // TODO(wtc): Document |cert_id| and |url| arguments.
-  static void GetErrorsForCertStatus(int cert_id,
-                                     net::CertStatus cert_status,
-                                     const GURL& url,
-                                     std::vector<SSLErrorInfo>* errors);
+  static void GetErrorsForCertStatus(
+      const scoped_refptr<net::X509Certificate>& cert,
+      net::CertStatus cert_status,
+      const GURL& url,
+      std::vector<ErrorInfo>* errors);
 
   // A description of the error.
   const base::string16& details() const { return details_; }
@@ -65,11 +67,13 @@ class SSLErrorInfo {
   const base::string16& short_description() const { return short_description_; }
 
  private:
-  SSLErrorInfo(const base::string16& details,
-               const base::string16& short_description);
+  ErrorInfo(const base::string16& details,
+            const base::string16& short_description);
 
   base::string16 details_;
   base::string16 short_description_;
 };
 
-#endif  // CHROME_BROWSER_SSL_SSL_ERROR_INFO_H_
+}  // namespace ssl_errors
+
+#endif  // COMPONENTS_SSL_ERRORS_SSL_ERROR_INFO_H_
