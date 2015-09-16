@@ -19,7 +19,7 @@ std::vector<scoped_refptr<CTLogVerifier>> CreateLogVerifiersForKnownLogs() {
   std::vector<scoped_refptr<CTLogVerifier>> verifiers;
   for (size_t i = 0; i < arraysize(kCTLogList); ++i) {
     const CTLogInfo& log(kCTLogList[i]);
-    base::StringPiece key(log.log_key, arraysize(log.log_key) - 1);
+    base::StringPiece key(log.log_key, log.log_key_length);
 
     verifiers.push_back(CTLogVerifier::Create(key, log.log_name, log.log_url));
   }
