@@ -214,7 +214,7 @@
       <message name="IDS_ACCESSIBILITY_DATETIME_PICKER_TIME" desc="Content description for the date time picker time component. [CHAR-LIMIT=32]">
         Time
       </message>
-      <message name="IDS_DATE_PICKER_DIALOG_OTHER_BUTTON_LABEL" desc="Label for 'other' button in date picker dialog and time picker dialog, used to close the list of suggestions and open the the full date/time picker [CHAR-LIMIT=32]">
+      <message name="IDS_DATE_PICKER_DIALOG_OTHER_BUTTON_LABEL" desc="Label for 'other' button in date picker dialog and time picker dialog, used to close the list of suggestions and open the full date/time picker [CHAR-LIMIT=32]">
         Other
       </message>
       <message name="IDS_DATE_PICKER_DIALOG_TITLE" desc="Title for the date picker dialog, which can be used to choose a date. [CHAR-LIMIT=32]">
@@ -230,6 +230,9 @@
       </message>
       <message name="IDS_PASSWORD_GENERATION_POPUP_CONTENT_DESCRIPTION" desc="The text announced by the screen reader when the password generation popup is shown.">
         Showing password generation popup
+      </message>
+      <message name="IDS_AUTOFILL_KEYBOARD_ACCESSORY_CONTENT_DESCRIPTION" desc="The text announced by the screen reader when the autofill suggestions are shown.">
+        Suggestions available
       </message>
 
     </messages>

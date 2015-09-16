@@ -52,8 +52,6 @@ public class AutofillKeyboardAccessory extends LinearLayout
         mMaximumSublabelWidthPx = deviceWidthPx / 4;
 
         mWindowAndroid.addKeyboardVisibilityListener(this);
-        setContentDescription(getContext().getString(R.string.autofill_popup_content_description));
-
         int horizontalPaddingPx = getResources().getDimensionPixelSize(
                 R.dimen.keyboard_accessory_half_padding);
         setPadding(horizontalPaddingPx, 0, horizontalPaddingPx, 0);
@@ -132,7 +130,7 @@ public class AutofillKeyboardAccessory extends LinearLayout
             ViewGroup container = mWindowAndroid.getKeyboardAccessoryView();
             container.addView(this);
             container.setVisibility(View.VISIBLE);
-            sendAccessibilityEvent(AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED);
+            container.sendAccessibilityEvent(AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED);
         }
     }
 
