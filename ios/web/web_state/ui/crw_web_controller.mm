@@ -2170,7 +2170,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   // the main page (using logic from the popup blocker), or if the keyboard
   // is visible.
   BOOL submittedByUser = [context[web::kUserIsInteractingKey] boolValue] ||
-                         [_webViewProxy getKeyboardAccessory];
+                         [_webViewProxy keyboardAccessory];
   _webStateImpl->OnDocumentSubmitted(formName, submittedByUser);
   return YES;
 }

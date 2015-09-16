@@ -139,6 +139,10 @@ UIView* GetFirstResponderSubview(UIView* view) {
 }
 
 - (UIView*)getKeyboardAccessory {
+  return [self keyboardAccessory];
+}
+
+- (UIView*)keyboardAccessory {
   if (!_contentView)
     return nil;
   UIView* firstResponder = GetFirstResponderSubview(_contentView);

@@ -364,7 +364,7 @@ bool ComputeFramesOfKeyboardParts(UIView* inputAccessoryView,
     [self restoreDefaultInputAccessoryView];
     CGRect leftFrame;
     CGRect rightFrame;
-    UIView* inputAccessoryView = [self.webViewProxy getKeyboardAccessory];
+    UIView* inputAccessoryView = [self.webViewProxy keyboardAccessory];
     if (ComputeFramesOfKeyboardParts(inputAccessoryView, &leftFrame,
                                      &rightFrame)) {
       [self hideSubviewsInOriginalAccessoryView:inputAccessoryView];
@@ -419,7 +419,7 @@ bool ComputeFramesOfKeyboardParts(UIView* inputAccessoryView,
         FindDescendantToolbarItemsForActionName(inputAssistantItem, actionName);
 #endif
   } else {
-    UIView* inputAccessoryView = [self.webViewProxy getKeyboardAccessory];
+    UIView* inputAccessoryView = [self.webViewProxy keyboardAccessory];
     if (!inputAccessoryView)
       return NO;
     descendants =
