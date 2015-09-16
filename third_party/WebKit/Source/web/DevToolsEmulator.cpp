@@ -167,7 +167,8 @@ void DevToolsEmulator::enableDeviceEmulation(const WebDeviceEmulationParams& par
 {
     if (!m_deviceMetricsEnabled) {
         m_deviceMetricsEnabled = true;
-        m_webViewImpl->setBackgroundColorOverride(Color::darkGray);
+        if (params.viewSize.width || params.viewSize.height)
+            m_webViewImpl->setBackgroundColorOverride(Color::darkGray);
         m_webViewImpl->updateShowFPSCounter();
     }
 
