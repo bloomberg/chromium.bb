@@ -197,7 +197,7 @@ EXTN(jsimd_h2v2_downsample_sse2):
 	shl	rcx,3			; imul rcx,DCTSIZE (rcx = output_cols)
 	jz	near .return
 
-	mov	rdx, r10
+	mov	edx, r10d
 
 	; -- expand_right_edge
 
