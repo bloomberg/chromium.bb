@@ -1,7 +1,14 @@
 <html>
 <head>
 <script src="../http/tests/inspector/inspector-test.js"></script>
+<script src="../resources/permissions-helper.js"></script>
 <script>
+
+function grantGeolocationPermission() {
+  PermissionsHelper.setPermission('geolocation', 'granted').then(function(p) {
+    console.log("Permission granted.");
+  });
+}
 
 function serializeGeolocationError(error) {
     var result = "Unknown error"
@@ -60,10 +67,13 @@ function overridenTimestampGeolocation()
 
 function test()
 {
-    if (window.testRunner)
-        window.testRunner.setPermission('geolocation', 'granted', location.origin, location.origin);
-
     InspectorTest.runTestSuite([
+        function testPermissionGranted(next)
+        {
+            InspectorTest.addConsoleSniffer(next);
+            InspectorTest.evaluateInPage("grantGeolocationPermission()");
+        },
+
         function testGeolocationUnavailable(next)
         {
             InspectorTest.EmulationAgent.setGeolocationOverride();

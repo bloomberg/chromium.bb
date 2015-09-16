@@ -1,9 +1,12 @@
-CONSOLE MESSAGE: line 37: Position unavailable
-CONSOLE MESSAGE: line 30: Latitude: 50 Longitude: 100
-CONSOLE MESSAGE: line 30: Latitude: 50 Longitude: 100
-CONSOLE MESSAGE: line 48: PASSED
+CONSOLE MESSAGE: line 9: Permission granted.
+CONSOLE MESSAGE: line 44: Position unavailable
+CONSOLE MESSAGE: line 37: Latitude: 50 Longitude: 100
+CONSOLE MESSAGE: line 37: Latitude: 50 Longitude: 100
+CONSOLE MESSAGE: line 55: PASSED
 Tests that geolocation emulation with latitude and longitude works as expected.
 
+
+Running: testPermissionGranted
 
 Running: testGeolocationUnavailable
 

@@ -2,18 +2,16 @@
 <html>
 <head>
 <script src="../resources/js-test.js"></script>
+<script src="../resources/permissions-helper.js"></script>
 </head>
 <body>
 <script>
 
 description("Test if midimessage event handler work.");
 
-shouldBeDefined("testRunner.setPermission");
 shouldBeDefined("navigator.requestMIDIAccess");
 
 window.jsTestIsAsync = true;
-
-testRunner.setPermission('midi-sysex', 'granted', location.origin, location.origin);
 
 testData = [
     // Complete messages.
@@ -73,7 +71,9 @@ function test(useAddEventListener) {
     });
 }
 
-test(false).then(test.bind(null, true)).then(finishJSTest, finishJSTest);
+PermissionsHelper.setPermission('midi-sysex', 'granted').then(function() {
+  test(false).then(test.bind(null, true)).then(finishJSTest, finishJSTest);
+});
 
 </script>
 </body>
