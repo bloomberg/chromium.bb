@@ -182,7 +182,6 @@ public class ToolbarProgressBar extends ClipDrawableProgressBar {
     @Override
     public void setProgress(float progress) {
         assert mIsStarted;
-        assert getProgress() <= progress;
 
         mTargetProgress = progress;
         updateVisibleProgress();
