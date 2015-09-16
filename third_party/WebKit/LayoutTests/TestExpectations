@@ -1614,6 +1614,8 @@ crbug.com/527281 [ Win10 ] compositing/overflow/scrolling-without-painting.html 
 
 crbug.com/524826 [ Win10 ] compositing/squashing/squashing-reflection-disallowed.html [ Pass Timeout ]
 
+crbug.com/529038 virtual/gpu/fast/canvas/canvas-composite-repaint-by-all-imagesource.html [ NeedsRebaseline ]
+
 crbug.com/526752 [ Win10 ] fast/css/fontfaceset-check-platform-fonts.html [ Failure Pass ]
 
 # The Win10 result for fast/text/emoji-font-fallback-win.html does not match the description
