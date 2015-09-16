@@ -191,7 +191,6 @@ crbug.com/518929 [ Precise Debug ] http/tests/appcache/remove-cache.html [ Failu
 crbug.com/248938 virtual/threaded/transitions/cancel-and-start-new.html [ Pass Failure ]
 crbug.com/248938 virtual/threaded/animations/change-keyframes-name.html [ Failure Pass Timeout ]
 crbug.com/248938 virtual/threaded/animations/change-one-anim.html [ Failure Pass ]
-crbug.com/248938 virtual/threaded/animations/combo-transform-translate+scale.html [ Failure Pass ]
 crbug.com/326139 crbug.com/390125 media/video-frame-accurate-seek.html [ ImageOnlyFailure Pass ]
 crbug.com/352856 [ Mac ] svg/batik/text/textPosition.svg [ Failure Pass ]
 crbug.com/352856 [ Mac ] svg/batik/text/textPosition2.svg [ Failure Pass ]
