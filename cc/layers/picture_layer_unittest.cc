@@ -7,6 +7,7 @@
 #include "base/thread_task_runner_handle.h"
 #include "cc/layers/content_layer_client.h"
 #include "cc/layers/picture_layer_impl.h"
+#include "cc/playback/display_item_list_settings.h"
 #include "cc/test/fake_layer_tree_host.h"
 #include "cc/test/fake_picture_layer.h"
 #include "cc/test/fake_picture_layer_impl.h"
@@ -27,7 +28,7 @@ class MockContentLayerClient : public ContentLayerClient {
   scoped_refptr<DisplayItemList> PaintContentsToDisplayList(
       const gfx::Rect& clip,
       PaintingControlSetting picture_control) override {
-    return DisplayItemList::Create(clip, false);
+    return DisplayItemList::Create(clip, DisplayItemListSettings());
   }
   bool FillsBoundsCompletely() const override { return false; };
   size_t GetApproximateUnsharedMemoryUsage() const override { return 0; }

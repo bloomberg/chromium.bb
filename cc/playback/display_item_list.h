@@ -27,16 +27,13 @@ class DisplayItemListSettings;
 class CC_EXPORT DisplayItemList
     : public base::RefCountedThreadSafe<DisplayItemList> {
  public:
-  static scoped_refptr<DisplayItemList> CreateWithoutCachedPicture(
-      const DisplayItemListSettings& settings);
-
-  // Creates a display item list with the given cull rect (if picture caching
-  // is used).
-  static scoped_refptr<DisplayItemList> Create(gfx::Rect layer_rect,
-                                               bool use_cached_picture);
-
+  // Creates a display item list. If picture caching is used, then layer_rect
+  // specifies the cull rect of the display item list (the picture will not
+  // exceed this rect). If picture caching is not used, then the given rect can
+  // be empty.
+  // TODO(vmpstr): Maybe this cull rect can be part of the settings instead.
   static scoped_refptr<DisplayItemList> Create(
-      gfx::Rect layer_rect,
+      const gfx::Rect& layer_rect,
       const DisplayItemListSettings& settings);
 
   void Raster(SkCanvas* canvas,
@@ -85,8 +82,6 @@ class CC_EXPORT DisplayItemList
   DisplayItemList(gfx::Rect layer_rect,
                   const DisplayItemListSettings& display_list_settings,
                   bool retain_individual_display_items);
-  DisplayItemList(gfx::Rect layer_rect,
-                  const DisplayItemListSettings& display_list_settings);
   ~DisplayItemList();
 
   // While appending new items, if they are not being retained, this can process

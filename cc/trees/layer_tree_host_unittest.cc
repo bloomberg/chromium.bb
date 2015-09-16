@@ -26,6 +26,7 @@
 #include "cc/output/copy_output_result.h"
 #include "cc/output/output_surface.h"
 #include "cc/output/swap_promise.h"
+#include "cc/playback/display_item_list_settings.h"
 #include "cc/quads/draw_quad.h"
 #include "cc/quads/io_surface_draw_quad.h"
 #include "cc/quads/render_pass_draw_quad.h"
@@ -1506,7 +1507,7 @@ class TestOpacityChangeLayerDelegate : public ContentLayerClient {
 
     // Return a dummy display list.
     scoped_refptr<DisplayItemList> display_list =
-        DisplayItemList::Create(clip, false);
+        DisplayItemList::Create(clip, DisplayItemListSettings());
     return display_list;
   }
   bool FillsBoundsCompletely() const override { return false; }
@@ -2111,7 +2112,7 @@ class LayerTreeHostTestChangeLayerPropertiesInPaintContents
 
       // Return a dummy display list.
       scoped_refptr<DisplayItemList> display_list =
-          DisplayItemList::Create(clip, false);
+          DisplayItemList::Create(clip, DisplayItemListSettings());
       return display_list;
     }
 

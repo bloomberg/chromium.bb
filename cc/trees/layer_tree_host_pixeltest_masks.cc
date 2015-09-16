@@ -7,6 +7,7 @@
 #include "cc/layers/picture_image_layer.h"
 #include "cc/layers/picture_layer.h"
 #include "cc/layers/solid_color_layer.h"
+#include "cc/playback/display_item_list_settings.h"
 #include "cc/playback/drawing_display_item.h"
 #include "cc/test/layer_tree_pixel_resource_test.h"
 #include "cc/test/pixel_comparator.h"
@@ -65,7 +66,7 @@ class MaskContentLayerClient : public ContentLayerClient {
     }
 
     scoped_refptr<DisplayItemList> display_list =
-        DisplayItemList::Create(clip, false);
+        DisplayItemList::Create(clip, DisplayItemListSettings());
     auto* item = display_list->CreateAndAppendItem<DrawingDisplayItem>();
 
     skia::RefPtr<SkPicture> picture =
@@ -350,7 +351,7 @@ class CheckerContentLayerClient : public ContentLayerClient {
     }
 
     scoped_refptr<DisplayItemList> display_list =
-        DisplayItemList::Create(clip, false);
+        DisplayItemList::Create(clip, DisplayItemListSettings());
     auto* item = display_list->CreateAndAppendItem<DrawingDisplayItem>();
 
     skia::RefPtr<SkPicture> picture =
@@ -400,7 +401,7 @@ class CircleContentLayerClient : public ContentLayerClient {
                        paint);
 
     scoped_refptr<DisplayItemList> display_list =
-        DisplayItemList::Create(clip, false);
+        DisplayItemList::Create(clip, DisplayItemListSettings());
     auto* item = display_list->CreateAndAppendItem<DrawingDisplayItem>();
     skia::RefPtr<SkPicture> picture =
         skia::AdoptRef(recorder.endRecordingAsPicture());

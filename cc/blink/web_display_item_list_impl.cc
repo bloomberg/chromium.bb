@@ -31,7 +31,8 @@ namespace {
 scoped_refptr<cc::DisplayItemList> CreateUncachedDisplayItemListForBlink() {
   cc::DisplayItemListSettings settings;
   settings.use_cached_picture = false;
-  return cc::DisplayItemList::CreateWithoutCachedPicture(settings);
+  gfx::Rect layer_rect;
+  return cc::DisplayItemList::Create(layer_rect, settings);
 }
 
 }  // namespace

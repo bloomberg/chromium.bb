@@ -24,6 +24,7 @@
 #include "cc/output/delegated_frame_data.h"
 #include "cc/output/filter_operation.h"
 #include "cc/output/filter_operations.h"
+#include "cc/playback/display_item_list_settings.h"
 #include "cc/resources/transferable_resource.h"
 #include "cc/trees/layer_tree_settings.h"
 #include "ui/compositor/compositor_switches.h"
@@ -766,9 +767,10 @@ scoped_refptr<cc::DisplayItemList> Layer::PaintContentsToDisplayList(
       gfx::IntersectRects(damaged_region_.bounds(), local_bounds));
   DCHECK(clip.Contains(invalidation));
   ClearDamagedRects();
-  const bool use_cached_picture = false;
+  cc::DisplayItemListSettings settings;
+  settings.use_cached_picture = false;
   scoped_refptr<cc::DisplayItemList> display_list =
-      cc::DisplayItemList::Create(clip, use_cached_picture);
+      cc::DisplayItemList::Create(clip, settings);
   if (delegate_) {
     delegate_->OnPaintLayer(
         PaintContext(display_list.get(), device_scale_factor_, invalidation));

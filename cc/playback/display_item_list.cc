@@ -40,6 +40,14 @@ const int kDefaultNumDisplayItemsToReserve = 100;
 
 }  // namespace
 
+scoped_refptr<DisplayItemList> DisplayItemList::Create(
+    const gfx::Rect& layer_rect,
+    const DisplayItemListSettings& settings) {
+  return make_scoped_refptr(new DisplayItemList(
+      layer_rect, settings,
+      !settings.use_cached_picture || DisplayItemsTracingEnabled()));
+}
+
 DisplayItemList::DisplayItemList(gfx::Rect layer_rect,
                                  const DisplayItemListSettings& settings,
                                  bool retain_individual_display_items)
@@ -62,34 +70,6 @@ DisplayItemList::DisplayItemList(gfx::Rect layer_rect,
     canvas_->translate(-layer_rect_.x(), -layer_rect_.y());
     canvas_->clipRect(gfx::RectToSkRect(layer_rect_));
   }
-}
-
-DisplayItemList::DisplayItemList(gfx::Rect layer_rect,
-                                 const DisplayItemListSettings& settings)
-    : DisplayItemList(
-          layer_rect,
-          settings,
-          !settings.use_cached_picture || DisplayItemsTracingEnabled()) {
-}
-
-scoped_refptr<DisplayItemList> DisplayItemList::CreateWithoutCachedPicture(
-    const DisplayItemListSettings& settings) {
-  DCHECK(!settings.use_cached_picture);
-  return Create(gfx::Rect(), settings);
-}
-
-scoped_refptr<DisplayItemList> DisplayItemList::Create(
-    gfx::Rect layer_rect,
-    bool use_cached_picture) {
-  DisplayItemListSettings settings;
-  settings.use_cached_picture = use_cached_picture;
-  return Create(layer_rect, settings);
-}
-
-scoped_refptr<DisplayItemList> DisplayItemList::Create(
-    gfx::Rect layer_rect,
-    const DisplayItemListSettings& settings) {
-  return make_scoped_refptr(new DisplayItemList(layer_rect, settings));
 }
 
 DisplayItemList::~DisplayItemList() {

@@ -5,6 +5,7 @@
 #include "cc/test/fake_content_layer_client.h"
 
 #include "cc/playback/clip_display_item.h"
+#include "cc/playback/display_item_list_settings.h"
 #include "cc/playback/drawing_display_item.h"
 #include "cc/playback/transform_display_item.h"
 #include "third_party/skia/include/core/SkCanvas.h"
@@ -73,9 +74,10 @@ FakeContentLayerClient::PaintContentsToDisplayList(
     PaintingControlSetting painting_control) {
   // Cached picture is used because unit tests expect to be able to
   // use GatherPixelRefs.
-  const bool use_cached_picture = true;
+  DisplayItemListSettings settings;
+  settings.use_cached_picture = true;
   scoped_refptr<DisplayItemList> display_list =
-      DisplayItemList::Create(clip, use_cached_picture);
+      DisplayItemList::Create(clip, settings);
   SkPictureRecorder recorder;
   skia::RefPtr<SkCanvas> canvas;
   skia::RefPtr<SkPicture> picture;

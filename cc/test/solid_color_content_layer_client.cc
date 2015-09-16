@@ -4,6 +4,7 @@
 
 #include "cc/test/solid_color_content_layer_client.h"
 
+#include "cc/playback/display_item_list_settings.h"
 #include "cc/playback/drawing_display_item.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkPaint.h"
@@ -41,8 +42,10 @@ SolidColorContentLayerClient::PaintContentsToDisplayList(
   canvas->drawRect(
       SkRect::MakeXYWH(clip.x(), clip.y(), clip.width(), clip.height()), paint);
 
+  DisplayItemListSettings settings;
+  settings.use_cached_picture = false;
   scoped_refptr<DisplayItemList> display_list =
-      DisplayItemList::Create(clip, false);
+      DisplayItemList::Create(clip, settings);
   auto* item = display_list->CreateAndAppendItem<DrawingDisplayItem>();
 
   skia::RefPtr<SkPicture> picture =

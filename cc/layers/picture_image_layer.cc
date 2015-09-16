@@ -5,6 +5,7 @@
 #include "cc/layers/picture_image_layer.h"
 
 #include "cc/layers/picture_image_layer_impl.h"
+#include "cc/playback/display_item_list_settings.h"
 #include "cc/playback/drawing_display_item.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkImage.h"
@@ -73,9 +74,10 @@ scoped_refptr<DisplayItemList> PictureImageLayer::PaintContentsToDisplayList(
     ContentLayerClient::PaintingControlSetting painting_control) {
   // Picture image layers can be used with GatherPixelRefs, so cached SkPictures
   // are currently required.
-  const bool use_cached_picture = true;
+  DisplayItemListSettings settings;
+  settings.use_cached_picture = true;
   scoped_refptr<DisplayItemList> display_list =
-      DisplayItemList::Create(clip, use_cached_picture);
+      DisplayItemList::Create(clip, settings);
 
   SkPictureRecorder recorder;
   SkCanvas* canvas = recorder.beginRecording(gfx::RectToSkRect(clip));

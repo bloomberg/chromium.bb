@@ -6,6 +6,7 @@
 #include "cc/layers/picture_layer.h"
 #include "cc/output/copy_output_request.h"
 #include "cc/playback/display_item_list.h"
+#include "cc/playback/display_item_list_settings.h"
 #include "cc/playback/drawing_display_item.h"
 #include "cc/test/layer_tree_pixel_test.h"
 #include "cc/test/test_gpu_memory_buffer_manager.h"
@@ -98,9 +99,10 @@ class BlueYellowClient : public ContentLayerClient {
   scoped_refptr<DisplayItemList> PaintContentsToDisplayList(
       const gfx::Rect& clip,
       PaintingControlSetting painting_status) override {
-    bool use_cached_picture = false;
+    DisplayItemListSettings settings;
+    settings.use_cached_picture = false;
     scoped_refptr<DisplayItemList> display_list =
-        DisplayItemList::Create(clip, use_cached_picture);
+        DisplayItemList::Create(clip, settings);
 
     SkPictureRecorder recorder;
     skia::RefPtr<SkCanvas> canvas = skia::SharePtr(
