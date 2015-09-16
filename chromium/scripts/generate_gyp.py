@@ -144,7 +144,6 @@ def CleanObjectFiles(object_files):
       'libavformat/sdp.o',
       'libavutil/adler32.o',
       'libavutil/audio_fifo.o',
-      'libavutil/aes.o',
       'libavutil/blowfish.o',
       'libavutil/cast5.o',
       'libavutil/des.o',
@@ -676,13 +675,6 @@ def ParseOptions():
                     metavar='DIR',
                     help='Build root containing build.x64.linux, etc...')
 
-  parser.add_option('-g',
-                    '--output_gn',
-                    dest='output_gn',
-                    action="store_true",
-                    default=False,
-                    help='Output a GN file instead of a gyp file.')
-
   parser.add_option('-p',
                     '--print_licenses',
                     dest='print_licenses',
@@ -738,13 +730,16 @@ IGNORED_INCLUDE_FILES = [
   # of various defines) and we also don't generate them at all, so we will fail
   # to find these because they don't exist in our repository.
   os.path.join('libavcodec', 'aacps_tables.h'),
+  os.path.join('libavcodec', 'aacps_fixed_tables.h'),
   os.path.join('libavcodec', 'aacsbr_tables.h'),
   os.path.join('libavcodec', 'aac_tables.h'),
   os.path.join('libavcodec', 'cabac_tables.h'),
   os.path.join('libavcodec', 'cbrt_tables.h'),
+  os.path.join('libavcodec', 'cbrt_fixed_tables.h'),
   os.path.join('libavcodec', 'mpegaudio_tables.h'),
   os.path.join('libavcodec', 'pcm_tables.h'),
   os.path.join('libavcodec', 'sinewin_tables.h'),
+  os.path.join('libavcodec', 'sinewin_fixed_tables.h'),
 ]
 
 
@@ -841,7 +836,7 @@ def GetIncludedSources(file_path, source_dir, include_set):
     elif include_file_path in IGNORED_INCLUDE_FILES:
       continue
     else:
-      exit('Failed to find file', include_file_path)
+      exit('Failed to find file ' + include_file_path)
 
     # At this point we've found the file. Check if its in our ignore list which
     # means that the list should be updated to no longer mention this file.
@@ -1011,19 +1006,15 @@ def main():
     exit ('GENERATE FAILED: invalid licenses detected.')
   print 'License checks passed.'
 
-  # Open for writing.
-  if options.output_gn:
-    outfile = 'ffmpeg_generated.gni'
-  else:
-    outfile = 'ffmpeg_generated.gypi'
-  output_name = os.path.join(options.source_dir, outfile)
-  print 'Output:', output_name
+  def WriteOutputFile(outfile, func):
+    output_name = os.path.join(options.source_dir, outfile)
+    print 'Output:', output_name
 
-  with open(output_name, 'w') as fd:
-    if options.output_gn:
-      WriteGn(fd, sets)
-    else:
-      WriteGyp(fd, sets)
+    with open(output_name, 'w') as fd:
+      func(fd, sets);
+
+  WriteOutputFile('ffmpeg_generated.gni', WriteGn)
+  WriteOutputFile('ffmpeg_generated.gypi', WriteGyp)
 
 if __name__ == '__main__':
   main()
