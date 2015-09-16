@@ -160,7 +160,13 @@ TEST_F(AboutFetcherTest, AboutBlank) {
 TEST_F(AboutFetcherTest, UnrecognizedURL) {
   ConnectAndWait("about:some_unrecognized_url");
 
-  ASSERT_EQ(0u, html_content_handler()->response_number());
+  ASSERT_EQ(1u, html_content_handler()->response_number());
+
+  const URLResponse* response = html_content_handler()->latest_response();
+  EXPECT_EQ("about:some_unrecognized_url", response->url);
+  EXPECT_EQ(404u, response->status_code);
+  EXPECT_EQ("text/html", response->mime_type);
+  EXPECT_FALSE(response->body.is_valid());
 }
 
 }  // namespace

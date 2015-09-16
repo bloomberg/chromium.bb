@@ -242,14 +242,6 @@ void NetworkFetcher::OnLoadComplete(URLResponsePtr response) {
     return;
   }
 
-  if (response->status_code >= 400 && response->status_code < 600) {
-    LOG(ERROR) << "Error (" << response->status_code << ": "
-               << response->status_line << "): "
-               << "while fetching " << response->url;
-    loader_callback_.Run(nullptr);
-    return;
-  }
-
   response_ = response.Pass();
   loader_callback_.Run(owner.Pass());
 }

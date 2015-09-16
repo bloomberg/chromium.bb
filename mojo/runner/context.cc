@@ -65,6 +65,7 @@ void InitContentHandlers(shell::ApplicationManager* manager,
   manager->RegisterContentHandler("application/pdf", GURL("mojo:pdf_viewer"));
   manager->RegisterContentHandler("image/png", GURL("mojo:png_viewer"));
   manager->RegisterContentHandler("text/html", GURL("mojo:html_viewer"));
+  manager->RegisterContentHandler("text/plain", GURL("mojo:html_viewer"));
 
   // Command-line-specified content handlers.
   std::string handlers_spec =

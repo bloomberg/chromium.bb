@@ -41,14 +41,15 @@ AboutFetcher::AboutFetcher(const GURL& url,
 AboutFetcher::~AboutFetcher() {}
 
 void AboutFetcher::BuildResponse() {
-  if (url_ != GURL(kAboutBlankURL)) {
-    PostToRunCallback(false);
-    return;
-  }
-
   response_ = URLResponse::New();
-  response_->url = kAboutBlankURL;
-  response_->status_code = 200;
+  response_->url = url_.spec();
+
+  // about: URLs other than about:blank are not supported yet.
+  //
+  // TODO(yzshen): crbug.com/516494 Eventually we need a general solution to
+  // generate error page for network errors/unrecognized app format/etc.
+  response_->status_code = (url_ == GURL(kAboutBlankURL)) ? 200 : 404;
+
   response_->mime_type = "text/html";
   PostToRunCallback(true);
 }

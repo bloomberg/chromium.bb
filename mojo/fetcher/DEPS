@@ -7,4 +7,7 @@ specific_include_rules = {
   "about_fetcher_unittest.cc": [
     "+mojo/runner/context.h"
   ],
+  "network_fetcher_unittest.cc": [
+    "+mojo/runner/context.h"
+  ],
 }
