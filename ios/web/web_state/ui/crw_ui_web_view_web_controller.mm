@@ -339,27 +339,15 @@ const size_t kMaxMessageQueueSize = 262144;
 
     // UIWebViews require a redirect network client in order to accurately
     // detect server redirects.
-    redirect_client_factory_.reset(
-        [[CRWRedirectNetworkClientFactory alloc] initWithDelegate:self]);
-    // WeakNSObjects cannot be dereferenced outside of the main thread, and
-    // CRWWebController must be deallocated from the main thread.  Keep a
-    // reference to self on the main thread and release it after successfully
-    // adding the redirect client factory to the RequestTracker on the IO
-    // thread.
-    __block base::scoped_nsobject<CRWUIWebViewWebController> scopedSelf(
-        [self retain]);
-    web::WebThread::PostTaskAndReply(
-        web::WebThread::IO, FROM_HERE, base::BindBlock(^{
-          // Only add the factory if there is a valid request tracker.
-          web::WebStateImpl* webState = [scopedSelf webStateImpl];
-          if (webState && webState->GetRequestTracker()) {
-            webState->GetRequestTracker()->AddNetworkClientFactory(
-                redirect_client_factory_);
-          }
-        }),
-        base::BindBlock(^{
-          scopedSelf.reset();
-        }));
+    scoped_refptr<web::RequestTrackerImpl> requestTracker =
+        self.webStateImpl->GetRequestTracker();
+    if (requestTracker) {
+      redirect_client_factory_.reset(
+          [[CRWRedirectNetworkClientFactory alloc] initWithDelegate:self]);
+      requestTracker->PostIOTask(
+          base::Bind(&net::RequestTracker::AddNetworkClientFactory,
+                     requestTracker, redirect_client_factory_));
+    }
   }
   return self;
 }
