@@ -138,6 +138,7 @@ public:
     BLINK_EXPORT bool ariaControls(WebVector<WebAXObject>& controlsElements) const;
     BLINK_EXPORT bool ariaFlowTo(WebVector<WebAXObject>& flowToElements) const;
     BLINK_EXPORT bool ariaHasPopup() const;
+    BLINK_EXPORT bool isEditable() const;
     BLINK_EXPORT bool isMultiline() const;
     BLINK_EXPORT bool isRichlyEditable() const;
     BLINK_EXPORT bool ariaOwns(WebVector<WebAXObject>& ownsElements) const;

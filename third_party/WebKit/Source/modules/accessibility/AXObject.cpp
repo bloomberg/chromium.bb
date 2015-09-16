@@ -413,7 +413,9 @@ bool AXObject::isDetached() const
 
 bool AXObject::isARIATextControl() const
 {
-    return ariaRoleAttribute() == TextFieldRole || ariaRoleAttribute() == SearchBoxRole;
+    return ariaRoleAttribute() == TextFieldRole
+        || ariaRoleAttribute() == SearchBoxRole
+        || ariaRoleAttribute() == ComboBoxRole;
 }
 
 bool AXObject::isButton() const

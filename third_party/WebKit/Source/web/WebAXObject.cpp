@@ -512,6 +512,14 @@ bool WebAXObject::ariaFlowTo(WebVector<WebAXObject>& flowToElements) const
     return true;
 }
 
+bool WebAXObject::isEditable() const
+{
+    if (isDetached())
+        return false;
+
+    return m_private->isEditable();
+}
+
 bool WebAXObject::isMultiline() const
 {
     if (isDetached())

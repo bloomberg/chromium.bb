@@ -717,6 +717,7 @@ public:
     virtual void ariaControlsElements(AccessibilityChildrenVector&) const { }
     virtual void ariaOwnsElements(AccessibilityChildrenVector& owns) const { }
     virtual bool ariaHasPopup() const { return false; }
+    virtual bool isEditable() const { return false; }
     bool isMultiline() const;
     virtual bool isRichlyEditable() const { return false; }
     virtual String ariaLabelledbyAttribute() const { return String(); }

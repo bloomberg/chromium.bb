@@ -84,6 +84,7 @@ protected:
 
     // Check object role or purpose.
     bool isAttachment() const override;
+    bool isEditable() const override;
     bool isRichlyEditable() const override;
     bool isLinked() const override;
     bool isLoaded() const override;

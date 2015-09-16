@@ -101,6 +101,7 @@ protected:
     bool isAnchor() const final;
     bool isControl() const override;
     bool isControllingVideoElement() const;
+    bool isEditable() const override { return isTextControl(); }
     bool isEmbeddedObject() const final;
     bool isFieldset() const final;
     bool isHeading() const final;
@@ -118,6 +119,7 @@ protected:
     bool isNonNativeTextControl() const final;
     bool isPasswordField() const final;
     bool isProgressIndicator() const override;
+    bool isRichlyEditable() const override { return hasContentEditableAttributeSet(); }
     bool isSlider() const override;
     bool isNativeSlider() const override;
 

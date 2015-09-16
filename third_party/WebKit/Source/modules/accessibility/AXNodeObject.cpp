@@ -608,6 +608,7 @@ bool AXNodeObject::isTextControl() const
     case TextFieldRole:
     case ComboBoxRole:
     case SearchBoxRole:
+    case SpinButtonRole:
         return true;
     default:
         return false;

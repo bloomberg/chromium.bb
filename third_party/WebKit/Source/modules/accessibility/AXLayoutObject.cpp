@@ -380,7 +380,26 @@ static bool isLinkable(const AXObject& object)
 
 // Requires layoutObject to be present because it relies on style
 // user-modify. Don't move this logic to AXNodeObject.
-// TODO(nektar): Implement support in AXNodeObject for aria-hidden and canvas.
+bool AXLayoutObject::isEditable() const
+{
+    if (m_layoutObject && m_layoutObject->isTextControl())
+        return true;
+
+    if (node() && node()->isContentEditable())
+        return true;
+
+    if (isWebArea()) {
+        Document& document = m_layoutObject->document();
+        HTMLElement* body = document.body();
+        if (body && body->isContentEditable())
+            return true;
+
+        return document.isContentEditable();
+    }
+
+    return AXNodeObject::isEditable();
+}
+
 bool AXLayoutObject::isRichlyEditable() const
 {
     if (node() && node()->isContentRichlyEditable())
@@ -395,7 +414,7 @@ bool AXLayoutObject::isRichlyEditable() const
         return document.isContentRichlyEditable();
     }
 
-    return false;
+    return AXNodeObject::isRichlyEditable();
 }
 
 bool AXLayoutObject::isLinked() const
