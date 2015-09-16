@@ -162,7 +162,7 @@ TEST_F(WebAudioSourceProviderImplTest, ProvideInput) {
   // Point the WebVector into memory owned by |bus1|.
   blink::WebVector<float*> audio_data(static_cast<size_t>(bus1->channels()));
   for (size_t i = 0; i < audio_data.size(); ++i)
-    audio_data[i] = bus1->channel(i);
+    audio_data[i] = bus1->channel(static_cast<int>(i));
 
   // Verify provideInput() works before Initialize() and returns silence.
   bus1->channel(0)[0] = 1;
