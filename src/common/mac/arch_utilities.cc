@@ -180,7 +180,7 @@ const NXArchInfo *NXGetLocalArchInfo(void) {
 
 const NXArchInfo *NXGetArchInfoFromName(const char *name) {
   for (int arch = 0; arch < kNumArchitectures; ++arch) {
-    if (strcmp(name, kKnownArchitectures[arch].name)) {
+    if (!strcmp(name, kKnownArchitectures[arch].name)) {
       return &kKnownArchitectures[arch];
     }
   }
