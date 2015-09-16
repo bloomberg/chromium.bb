@@ -434,10 +434,7 @@ void WindowProxy::setSecurityToken(SecurityOrigin* origin)
     // - document.domain was modified
     // - the frame is showing the initial empty document
     // - the frame is remote
-    bool delaySet = m_world->isMainWorld()
-        && (m_frame->isRemoteFrame()
-            || origin->domainWasSetInDOM()
-            || toLocalFrame(m_frame)->loader().stateMachine()->isDisplayingInitialEmptyDocument());
+    bool delaySet = m_frame->isRemoteFrame() || (m_world->isMainWorld() && (origin->domainWasSetInDOM() || toLocalFrame(m_frame)->loader().stateMachine()->isDisplayingInitialEmptyDocument()));
     if (origin && !delaySet)
         token = origin->toString();
 
