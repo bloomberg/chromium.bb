@@ -37,6 +37,7 @@ class NativeThemeGtk2 : public ui::NativeThemeBase {
   GtkWidget* GetEntry() const;
   GtkWidget* GetLabel() const;
   GtkWidget* GetButton() const;
+  GtkWidget* GetBlueButton() const;
   GtkWidget* GetTree() const;
   GtkWidget* GetTooltip() const;
   GtkWidget* GetMenu() const;
@@ -50,6 +51,7 @@ class NativeThemeGtk2 : public ui::NativeThemeBase {
   mutable OwnedWidgetGtk fake_entry_;
   mutable OwnedWidgetGtk fake_label_;
   mutable OwnedWidgetGtk fake_button_;
+  mutable OwnedWidgetGtk fake_bluebutton_;
   mutable OwnedWidgetGtk fake_tree_;
   mutable OwnedWidgetGtk fake_tooltip_;
   mutable OwnedWidgetGtk fake_menu_;

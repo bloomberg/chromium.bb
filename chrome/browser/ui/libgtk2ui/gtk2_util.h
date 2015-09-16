@@ -40,6 +40,9 @@ GdkModifierType GetGdkModifierForAccelerator(
 // Translates event flags into plaform independent event flags.
 int EventFlagsFromGdkState(guint state);
 
+// Style a GTK button as a BlueButton
+void TurnButtonBlue(GtkWidget* button);
+
 // Sets |dialog| as transient for |parent|, which will keep it on top and center
 // it above |parent|. Do nothing if |parent| is NULL.
 void SetGtkTransientForAura(GtkWidget* dialog, aura::Window* parent);
