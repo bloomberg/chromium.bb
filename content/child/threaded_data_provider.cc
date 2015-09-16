@@ -81,9 +81,6 @@ void DataProviderMessageFilter::OnFilterAdded(IPC::Sender* sender) {
 
 bool DataProviderMessageFilter::OnMessageReceived(
     const IPC::Message& message) {
-  // TODO(erikchen): Temporary code to help track http://crbug.com/527588.
-  content::CheckContentsOfDataReceivedMessage(&message);
-
   DCHECK(io_task_runner_->BelongsToCurrentThread());
 
   if (message.type() != ResourceMsg_DataReceived::ID)
