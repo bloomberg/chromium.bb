@@ -102,7 +102,7 @@
 #include "chrome/browser/signin/oauth2_token_service_delegate_android.h"
 #include "chrome/browser/speech/tts_android.h"
 #include "chrome/browser/spellchecker/spellchecker_session_bridge_android.h"
-#include "chrome/browser/ssl/connection_security_android.h"
+#include "chrome/browser/ssl/security_state_model_android.h"
 #include "chrome/browser/supervised_user/child_accounts/child_account_feedback_reporter_android.h"
 #include "chrome/browser/supervised_user/child_accounts/child_account_service_android.h"
 #include "chrome/browser/sync/profile_sync_service_android.h"
@@ -222,7 +222,7 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
     {"ConfirmInfoBarDelegate", RegisterConfirmInfoBarDelegate},
     {"ConnectionInfoPopupAndroid",
      ConnectionInfoPopupAndroid::RegisterConnectionInfoPopupAndroid},
-    {"ConnectionSecurity", RegisterConnectionSecurityAndroid},
+    {"SecurityStateModel", RegisterSecurityStateModelAndroid},
     {"ConnectivityChecker", RegisterConnectivityChecker},
     {"ContextMenuHelper", RegisterContextMenuHelper},
     {"ContextualSearchManager", RegisterContextualSearchManager},

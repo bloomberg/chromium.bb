@@ -6,7 +6,7 @@
 
 #include "base/command_line.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ssl/connection_security.h"
+#include "chrome/browser/ssl/security_state_model.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/host_desktop.h"
@@ -92,9 +92,11 @@ bool HostedAppBrowserController::ShouldShowLocationBar() const {
   if (web_contents->GetLastCommittedURL().is_empty())
     return false;
 
-  connection_security::SecurityLevel security_level =
-      connection_security::GetSecurityLevelForWebContents(web_contents);
-  if (security_level == connection_security::SECURITY_ERROR)
+  const SecurityStateModel* model =
+      SecurityStateModel::FromWebContents(web_contents);
+  if (model &&
+      model->GetSecurityInfo().security_level ==
+          SecurityStateModel::SECURITY_ERROR)
     return true;
 
   GURL launch_url = AppLaunchInfo::GetLaunchWebURL(extension);

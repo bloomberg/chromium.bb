@@ -40,7 +40,7 @@ public class BluetoothChooserDialog implements ItemChooserDialog.ItemSelectedCal
     String mOrigin;
 
     // The security level of the connection to the site wanting to pair with the
-    // bluetooth devices. For valid values see connection_security::SecurityLevel.
+    // bluetooth devices. For valid values see SecurityStateModel::SecurityLevel.
     int mSecurityLevel;
 
     // A pointer back to the native part of the implementation for this dialog.

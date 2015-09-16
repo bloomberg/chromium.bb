@@ -11,6 +11,7 @@
 #include "base/compiler_specific.h"
 #include "base/prefs/pref_member.h"
 #include "chrome/browser/extensions/extension_context_menu_model.h"
+#include "chrome/browser/ssl/security_state_model.h"
 #include "chrome/browser/ui/location_bar/location_bar.h"
 #include "chrome/browser/ui/omnibox/chrome_omnibox_edit_controller.h"
 #include "chrome/browser/ui/search/search_model_observer.h"
@@ -142,7 +143,7 @@ class LocationBarView : public LocationBar,
 
   // Returns the appropriate color for the desired kind, based on the user's
   // system theme.
-  SkColor GetColor(connection_security::SecurityLevel security_level,
+  SkColor GetColor(SecurityStateModel::SecurityLevel security_level,
                    ColorKind kind) const;
 
   // Returns the delegate.

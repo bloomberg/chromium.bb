@@ -29,7 +29,7 @@
 #include "chrome/browser/ssl/certificate_reporting_test_utils.h"
 #include "chrome/browser/ssl/chrome_ssl_host_state_delegate.h"
 #include "chrome/browser/ssl/common_name_mismatch_handler.h"
-#include "chrome/browser/ssl/connection_security.h"
+#include "chrome/browser/ssl/security_state_model.h"
 #include "chrome/browser/ssl/ssl_blocking_page.h"
 #include "chrome/browser/ssl/ssl_error_classification.h"
 #include "chrome/browser/ssl/ssl_error_handler.h"
@@ -1025,27 +1025,26 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestMarkNonSecureAs) {
       base::FieldTrialList::CreateFieldTrial(
           "MarkNonSecureAs", switches::kMarkNonSecureAsNonSecure);
 
+  content::WebContents* contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(contents);
+
+  SecurityStateModel* model = SecurityStateModel::FromWebContents(contents);
+  ASSERT_TRUE(model);
+
   ui_test_utils::NavigateToURL(browser(), GURL("file:/"));
-  EXPECT_EQ(connection_security::NONE,
-            connection_security::GetSecurityLevelForWebContents(
-                browser()->tab_strip_model()->GetActiveWebContents()));
+  EXPECT_EQ(SecurityStateModel::NONE, model->GetSecurityInfo().security_level);
 
   ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
-  EXPECT_EQ(connection_security::NONE,
-            connection_security::GetSecurityLevelForWebContents(
-                browser()->tab_strip_model()->GetActiveWebContents()));
+  EXPECT_EQ(SecurityStateModel::NONE, model->GetSecurityInfo().security_level);
 
   ui_test_utils::NavigateToURL(browser(), GURL("data:text/plain,hello"));
-  EXPECT_EQ(connection_security::NONE,
-            connection_security::GetSecurityLevelForWebContents(
-                browser()->tab_strip_model()->GetActiveWebContents()));
+  EXPECT_EQ(SecurityStateModel::NONE, model->GetSecurityInfo().security_level);
 
   ui_test_utils::NavigateToURL(
       browser(),
       GURL("blob:chrome%3A//newtab/49a463bb-fac8-476c-97bf-5d7076c3ea1a"));
-  EXPECT_EQ(connection_security::NONE,
-            connection_security::GetSecurityLevelForWebContents(
-                browser()->tab_strip_model()->GetActiveWebContents()));
+  EXPECT_EQ(SecurityStateModel::NONE, model->GetSecurityInfo().security_level);
 }
 
 #if defined(USE_NSS_CERTS)

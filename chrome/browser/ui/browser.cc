@@ -77,6 +77,7 @@
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/sessions/tab_restore_service.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
+#include "chrome/browser/ssl/security_state_model.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/sync_ui_util.h"
@@ -253,6 +254,28 @@ BrowserWindow* CreateBrowserWindow(Browser* browser) {
 bool IsFastTabUnloadEnabled() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableFastUnload);
+}
+
+// Note: This is a lossy operation. Not all of the policies that can be
+// expressed by a SecurityLevel (a //chrome concept) can be expressed by
+// a content::SecurityStyle.
+content::SecurityStyle SecurityLevelToSecurityStyle(
+    SecurityStateModel::SecurityLevel security_level) {
+  switch (security_level) {
+    case SecurityStateModel::NONE:
+      return content::SECURITY_STYLE_UNAUTHENTICATED;
+    case SecurityStateModel::SECURITY_WARNING:
+    case SecurityStateModel::SECURITY_POLICY_WARNING:
+      return content::SECURITY_STYLE_WARNING;
+    case SecurityStateModel::EV_SECURE:
+    case SecurityStateModel::SECURE:
+      return content::SECURITY_STYLE_AUTHENTICATED;
+    case SecurityStateModel::SECURITY_ERROR:
+      return content::SECURITY_STYLE_AUTHENTICATION_BROKEN;
+  }
+
+  NOTREACHED();
+  return content::SECURITY_STYLE_UNKNOWN;
 }
 
 }  // namespace
@@ -1297,14 +1320,18 @@ bool Browser::CanDragEnter(content::WebContents* source,
 content::SecurityStyle Browser::GetSecurityStyle(
     WebContents* web_contents,
     content::SecurityStyleExplanations* security_style_explanations) {
-  connection_security::SecurityInfo security_info;
-  connection_security::GetSecurityInfoForWebContents(web_contents,
-                                                     &security_info);
+  SecurityStateModel* model = SecurityStateModel::FromWebContents(web_contents);
+  DCHECK(model);
+  const SecurityStateModel::SecurityInfo& security_info =
+      model->GetSecurityInfo();
+
+  const content::SecurityStyle security_style =
+      SecurityLevelToSecurityStyle(security_info.security_level);
 
   security_style_explanations->ran_insecure_content_style =
-      connection_security::kRanInsecureContentStyle;
+      SecurityStateModel::kRanInsecureContentStyle;
   security_style_explanations->displayed_insecure_content_style =
-      connection_security::kDisplayedInsecureContentStyle;
+      SecurityStateModel::kDisplayedInsecureContentStyle;
 
   // Check if the page is HTTP; if so, no explanations are needed. Note
   // that SECURITY_STYLE_UNAUTHENTICATED does not necessarily mean that
@@ -1315,20 +1342,19 @@ content::SecurityStyle Browser::GetSecurityStyle(
   // algorithms with the same UI treatment as HTTP pages).
   security_style_explanations->scheme_is_cryptographic =
       security_info.scheme_is_cryptographic;
-  if (!security_info.scheme_is_cryptographic ||
-      security_info.security_style == content::SECURITY_STYLE_UNKNOWN) {
-    return security_info.security_style;
+  if (!security_info.scheme_is_cryptographic) {
+    return security_style;
   }
 
   if (security_info.sha1_deprecation_status ==
-      connection_security::DEPRECATED_SHA1_BROKEN) {
+      SecurityStateModel::DEPRECATED_SHA1_BROKEN) {
     security_style_explanations->broken_explanations.push_back(
         content::SecurityStyleExplanation(
             l10n_util::GetStringUTF8(IDS_BROKEN_SHA1),
             l10n_util::GetStringUTF8(IDS_BROKEN_SHA1_DESCRIPTION),
             security_info.cert_id));
   } else if (security_info.sha1_deprecation_status ==
-             connection_security::DEPRECATED_SHA1_WARNING) {
+             SecurityStateModel::DEPRECATED_SHA1_WARNING) {
     security_style_explanations->warning_explanations.push_back(
         content::SecurityStyleExplanation(
             l10n_util::GetStringUTF8(IDS_WARNING_SHA1),
@@ -1338,14 +1364,14 @@ content::SecurityStyle Browser::GetSecurityStyle(
 
   security_style_explanations->ran_insecure_content =
       security_info.mixed_content_status ==
-          connection_security::RAN_MIXED_CONTENT ||
+          SecurityStateModel::RAN_MIXED_CONTENT ||
       security_info.mixed_content_status ==
-          connection_security::RAN_AND_DISPLAYED_MIXED_CONTENT;
+          SecurityStateModel::RAN_AND_DISPLAYED_MIXED_CONTENT;
   security_style_explanations->displayed_insecure_content =
       security_info.mixed_content_status ==
-          connection_security::DISPLAYED_MIXED_CONTENT ||
+          SecurityStateModel::DISPLAYED_MIXED_CONTENT ||
       security_info.mixed_content_status ==
-          connection_security::RAN_AND_DISPLAYED_MIXED_CONTENT;
+          SecurityStateModel::RAN_AND_DISPLAYED_MIXED_CONTENT;
 
   if (net::IsCertStatusError(security_info.cert_status)) {
     base::string16 error_string = base::UTF8ToUTF16(net::ErrorToString(
@@ -1366,7 +1392,7 @@ content::SecurityStyle Browser::GetSecurityStyle(
     // deprecated SHA1, then add an explanation that the certificate is
     // valid.
     if (security_info.sha1_deprecation_status ==
-        connection_security::NO_DEPRECATED_SHA1) {
+        SecurityStateModel::NO_DEPRECATED_SHA1) {
       security_style_explanations->secure_explanations.push_back(
           content::SecurityStyleExplanation(
               l10n_util::GetStringUTF8(IDS_VALID_SERVER_CERTIFICATE),
@@ -1376,7 +1402,7 @@ content::SecurityStyle Browser::GetSecurityStyle(
     }
   }
 
-  return security_info.security_style;
+  return security_style;
 }
 
 void Browser::ShowCertificateViewerInDevTools(

@@ -2,26 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ssl/connection_security.h"
+#include "chrome/browser/ssl/security_state_model.h"
 
 #include "base/command_line.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ssl/ssl_error_info.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/pref_names.h"
 #include "content/public/browser/cert_store.h"
-#include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/origin_util.h"
-#include "content/public/common/ssl_status.h"
-#include "net/base/net_util.h"
-#include "net/cert/cert_status_flags.h"
-#include "net/cert/x509_certificate.h"
 #include "net/ssl/ssl_connection_status_flags.h"
 
 #if defined(OS_CHROMEOS)
@@ -29,9 +25,11 @@
 #include "chrome/browser/chromeos/policy/policy_cert_service_factory.h"
 #endif
 
+DEFINE_WEB_CONTENTS_USER_DATA_KEY(SecurityStateModel);
+
 namespace {
 
-connection_security::SecurityLevel GetSecurityLevelForNonSecureFieldTrial() {
+SecurityStateModel::SecurityLevel GetSecurityLevelForNonSecureFieldTrial() {
   std::string choice =
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kMarkNonSecureAs);
@@ -41,24 +39,24 @@ connection_security::SecurityLevel GetSecurityLevelForNonSecureFieldTrial() {
   enum MarkNonSecureStatus { NEUTRAL, DUBIOUS, NON_SECURE, LAST_STATUS };
   const char kEnumeration[] = "MarkNonSecureAs";
 
-  connection_security::SecurityLevel level;
+  SecurityStateModel::SecurityLevel level = SecurityStateModel::NONE;
   MarkNonSecureStatus status;
 
   if (choice == switches::kMarkNonSecureAsNeutral) {
     status = NEUTRAL;
-    level = connection_security::NONE;
+    level = SecurityStateModel::NONE;
   } else if (choice == switches::kMarkNonSecureAsNonSecure) {
     status = NON_SECURE;
-    level = connection_security::SECURITY_ERROR;
+    level = SecurityStateModel::SECURITY_ERROR;
   } else if (group == switches::kMarkNonSecureAsNeutral) {
     status = NEUTRAL;
-    level = connection_security::NONE;
+    level = SecurityStateModel::NONE;
   } else if (group == switches::kMarkNonSecureAsNonSecure) {
     status = NON_SECURE;
-    level = connection_security::SECURITY_ERROR;
+    level = SecurityStateModel::SECURITY_ERROR;
   } else {
     status = NEUTRAL;
-    level = connection_security::NONE;
+    level = SecurityStateModel::NONE;
   }
 
   UMA_HISTOGRAM_ENUMERATION(kEnumeration, status, LAST_STATUS);
@@ -73,27 +71,25 @@ scoped_refptr<net::X509Certificate> GetCertForSSLStatus(
              : nullptr;
 }
 
-connection_security::SHA1DeprecationStatus GetSHA1DeprecationStatus(
+SecurityStateModel::SHA1DeprecationStatus GetSHA1DeprecationStatus(
     scoped_refptr<net::X509Certificate> cert,
     const content::SSLStatus& ssl) {
   if (!cert || !(ssl.cert_status & net::CERT_STATUS_SHA1_SIGNATURE_PRESENT))
-    return connection_security::NO_DEPRECATED_SHA1;
+    return SecurityStateModel::NO_DEPRECATED_SHA1;
 
   // The internal representation of the dates for UI treatment of SHA-1.
   // See http://crbug.com/401365 for details.
   static const int64_t kJanuary2017 = INT64_C(13127702400000000);
   if (cert->valid_expiry() >= base::Time::FromInternalValue(kJanuary2017))
-    return connection_security::DEPRECATED_SHA1_BROKEN;
-  // kJanuary2016 needs to be kept in sync with
-  // ToolbarModelAndroid::IsDeprecatedSHA1Present().
+    return SecurityStateModel::DEPRECATED_SHA1_BROKEN;
   static const int64_t kJanuary2016 = INT64_C(13096080000000000);
   if (cert->valid_expiry() >= base::Time::FromInternalValue(kJanuary2016))
-    return connection_security::DEPRECATED_SHA1_WARNING;
+    return SecurityStateModel::DEPRECATED_SHA1_WARNING;
 
-  return connection_security::NO_DEPRECATED_SHA1;
+  return SecurityStateModel::NO_DEPRECATED_SHA1;
 }
 
-connection_security::MixedContentStatus GetMixedContentStatus(
+SecurityStateModel::MixedContentStatus GetMixedContentStatus(
     const content::SSLStatus& ssl) {
   bool ran_insecure_content = false;
   bool displayed_insecure_content = false;
@@ -103,43 +99,38 @@ connection_security::MixedContentStatus GetMixedContentStatus(
     displayed_insecure_content = true;
 
   if (ran_insecure_content && displayed_insecure_content)
-    return connection_security::RAN_AND_DISPLAYED_MIXED_CONTENT;
+    return SecurityStateModel::RAN_AND_DISPLAYED_MIXED_CONTENT;
   if (ran_insecure_content)
-    return connection_security::RAN_MIXED_CONTENT;
+    return SecurityStateModel::RAN_MIXED_CONTENT;
   if (displayed_insecure_content)
-    return connection_security::DISPLAYED_MIXED_CONTENT;
+    return SecurityStateModel::DISPLAYED_MIXED_CONTENT;
 
-  return connection_security::NO_MIXED_CONTENT;
+  return SecurityStateModel::NO_MIXED_CONTENT;
 }
 
-}  // namespace
-
-namespace connection_security {
-
-SecurityLevel GetSecurityLevelForWebContents(
-    const content::WebContents* web_contents) {
-  if (!web_contents)
-    return NONE;
-
-  content::NavigationEntry* entry =
-      web_contents->GetController().GetVisibleEntry();
-  if (!entry)
-    return NONE;
-
-  const content::SSLStatus& ssl = entry->GetSSL();
+SecurityStateModel::SecurityLevel GetSecurityLevelForRequest(
+    const GURL& url,
+    const content::SSLStatus& ssl,
+    Profile* profile,
+    scoped_refptr<net::X509Certificate> cert,
+    SecurityStateModel::SHA1DeprecationStatus sha1_status,
+    SecurityStateModel::MixedContentStatus mixed_content_status) {
   switch (ssl.security_style) {
     case content::SECURITY_STYLE_UNKNOWN:
-      return NONE;
+      return SecurityStateModel::NONE;
 
     case content::SECURITY_STYLE_UNAUTHENTICATED: {
-      const GURL& url = entry->GetURL();
       if (!content::IsOriginSecure(url) && url.IsStandard())
         return GetSecurityLevelForNonSecureFieldTrial();
-      return NONE;
+      return SecurityStateModel::NONE;
     }
 
     case content::SECURITY_STYLE_AUTHENTICATION_BROKEN:
-      return SECURITY_ERROR;
+      return SecurityStateModel::SECURITY_ERROR;
+
+    case content::SECURITY_STYLE_WARNING:
+      NOTREACHED();
+      return SecurityStateModel::SECURITY_WARNING;
 
     case content::SECURITY_STYLE_AUTHENTICATED: {
 #if defined(OS_CHROMEOS)
@@ -149,90 +140,118 @@ SecurityLevel GetSecurityLevelForWebContents(
       // other authenticated-but-with-errors indicate something may
       // be wrong, or may be wrong in the future, but is unclear now.
       policy::PolicyCertService* service =
-          policy::PolicyCertServiceFactory::GetForProfile(
-              Profile::FromBrowserContext(web_contents->GetBrowserContext()));
+          policy::PolicyCertServiceFactory::GetForProfile(profile);
       if (service && service->UsedPolicyCertificates())
-        return SECURITY_POLICY_WARNING;
+        return SecurityStateModel::SECURITY_POLICY_WARNING;
 #endif
 
-      scoped_refptr<net::X509Certificate> cert = GetCertForSSLStatus(ssl);
-      SHA1DeprecationStatus sha1_status = GetSHA1DeprecationStatus(cert, ssl);
-      if (sha1_status == DEPRECATED_SHA1_BROKEN)
-        return SECURITY_ERROR;
-      if (sha1_status == DEPRECATED_SHA1_WARNING)
-        return NONE;
+      if (sha1_status == SecurityStateModel::DEPRECATED_SHA1_BROKEN)
+        return SecurityStateModel::SECURITY_ERROR;
+      if (sha1_status == SecurityStateModel::DEPRECATED_SHA1_WARNING)
+        return SecurityStateModel::NONE;
 
-      MixedContentStatus mixed_content_status = GetMixedContentStatus(ssl);
       // Active mixed content is downgraded to the BROKEN style and
       // handled above.
-      DCHECK_NE(RAN_MIXED_CONTENT, mixed_content_status);
-      DCHECK_NE(RAN_AND_DISPLAYED_MIXED_CONTENT, mixed_content_status);
+      DCHECK_NE(SecurityStateModel::RAN_MIXED_CONTENT, mixed_content_status);
+      DCHECK_NE(SecurityStateModel::RAN_AND_DISPLAYED_MIXED_CONTENT,
+                mixed_content_status);
       // This should be kept in sync with
       // |kDisplayedInsecureContentStyle|. That is: the treatment
       // given to passive mixed content here should be expressed by
       // |kDisplayedInsecureContentStyle|, which is used to coordinate
       // the treatment of passive mixed content with other security UI
-      // elements.
-      if (mixed_content_status == DISPLAYED_MIXED_CONTENT)
-        return NONE;
+      // elements outside of //chrome.
+      if (mixed_content_status == SecurityStateModel::DISPLAYED_MIXED_CONTENT)
+        return SecurityStateModel::NONE;
 
       if (net::IsCertStatusError(ssl.cert_status)) {
         DCHECK(net::IsCertStatusMinorError(ssl.cert_status));
-        return NONE;
+        return SecurityStateModel::NONE;
       }
       if (net::SSLConnectionStatusToVersion(ssl.connection_status) ==
           net::SSL_CONNECTION_VERSION_SSL3) {
         // SSLv3 will be removed in the future.
-        return SECURITY_WARNING;
+        return SecurityStateModel::SECURITY_WARNING;
       }
       if ((ssl.cert_status & net::CERT_STATUS_IS_EV) && cert)
-        return EV_SECURE;
-      return SECURE;
+        return SecurityStateModel::EV_SECURE;
+      return SecurityStateModel::SECURE;
     }
-
-    default:
-      NOTREACHED();
-      return NONE;
   }
+
+  return SecurityStateModel::NONE;
 }
 
-void GetSecurityInfoForWebContents(const content::WebContents* web_contents,
-                                   SecurityInfo* security_info) {
+}  // namespace
+
+const content::SecurityStyle
+    SecurityStateModel::kDisplayedInsecureContentStyle =
+        content::SECURITY_STYLE_UNAUTHENTICATED;
+const content::SecurityStyle SecurityStateModel::kRanInsecureContentStyle =
+    content::SECURITY_STYLE_AUTHENTICATION_BROKEN;
+
+SecurityStateModel::SecurityInfo::SecurityInfo()
+    : security_level(SecurityStateModel::NONE),
+      sha1_deprecation_status(SecurityStateModel::NO_DEPRECATED_SHA1),
+      mixed_content_status(SecurityStateModel::NO_MIXED_CONTENT),
+      scheme_is_cryptographic(false),
+      cert_status(0),
+      cert_id(0),
+      security_bits(-1),
+      connection_status(0) {}
+
+SecurityStateModel::SecurityInfo::~SecurityInfo() {}
+
+SecurityStateModel::~SecurityStateModel() {}
+
+const SecurityStateModel::SecurityInfo& SecurityStateModel::GetSecurityInfo()
+    const {
   content::NavigationEntry* entry =
-      web_contents ? web_contents->GetController().GetVisibleEntry() : nullptr;
+      web_contents_->GetController().GetVisibleEntry();
   if (!entry) {
-    security_info->security_style = content::SECURITY_STYLE_UNKNOWN;
-    return;
+    security_info_ = SecurityInfo();
+    visible_url_ = GURL();
+    visible_ssl_status_ = content::SSLStatus();
+    return security_info_;
   }
 
-  security_info->scheme_is_cryptographic =
-      entry->GetURL().SchemeIsCryptographic();
-
-  SecurityLevel security_level = GetSecurityLevelForWebContents(web_contents);
-  switch (security_level) {
-    case SECURITY_WARNING:
-    case NONE:
-      security_info->security_style = content::SECURITY_STYLE_UNAUTHENTICATED;
-      break;
-    case EV_SECURE:
-    case SECURE:
-      security_info->security_style = content::SECURITY_STYLE_AUTHENTICATED;
-      break;
-    case SECURITY_POLICY_WARNING:
-      security_info->security_style = content::SECURITY_STYLE_WARNING;
-      break;
-    case SECURITY_ERROR:
-      security_info->security_style =
-          content::SECURITY_STYLE_AUTHENTICATION_BROKEN;
-      break;
+  if (entry->GetURL() == visible_url_ &&
+      entry->GetSSL().Equals(visible_ssl_status_)) {
+    return security_info_;
   }
 
-  const content::SSLStatus& ssl = entry->GetSSL();
+  SecurityInfoForRequest(
+      entry->GetURL(), entry->GetSSL(),
+      Profile::FromBrowserContext(web_contents_->GetBrowserContext()),
+      &security_info_);
+  visible_url_ = entry->GetURL();
+  visible_ssl_status_ = entry->GetSSL();
+  return security_info_;
+}
+
+// static
+void SecurityStateModel::SecurityInfoForRequest(const GURL& url,
+                                                const content::SSLStatus& ssl,
+                                                Profile* profile,
+                                                SecurityInfo* security_info) {
   scoped_refptr<net::X509Certificate> cert = GetCertForSSLStatus(ssl);
+  security_info->cert_id = ssl.cert_id;
   security_info->sha1_deprecation_status = GetSHA1DeprecationStatus(cert, ssl);
   security_info->mixed_content_status = GetMixedContentStatus(ssl);
+  security_info->security_bits = ssl.security_bits;
+  security_info->connection_status = ssl.connection_status;
   security_info->cert_status = ssl.cert_status;
-  security_info->cert_id = ssl.cert_id;
+  security_info->scheme_is_cryptographic = url.SchemeIsCryptographic();
+
+  security_info->sct_verify_statuses.clear();
+  for (const auto& sct : ssl.signed_certificate_timestamp_ids) {
+    security_info->sct_verify_statuses.push_back(sct.status);
+  }
+
+  security_info->security_level = GetSecurityLevelForRequest(
+      url, ssl, profile, cert, security_info->sha1_deprecation_status,
+      security_info->mixed_content_status);
 }
 
-}  // namespace connection_security
+SecurityStateModel::SecurityStateModel(content::WebContents* web_contents)
+    : web_contents_(web_contents) {}

@@ -7,7 +7,7 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/ssl/connection_security.h"
+#include "chrome/browser/ssl/security_state_model.h"
 #include "chrome/browser/ui/android/window_android_helper.h"
 #include "content/public/browser/android/content_view_core.h"
 #include "jni/BluetoothChooserDialog_jni.h"
@@ -27,13 +27,17 @@ BluetoothChooserAndroid::BluetoothChooserAndroid(
       content::ContentViewCore::FromWebContents(
           web_contents)->GetWindowAndroid()->GetJavaObject();
 
+  SecurityStateModel* security_model =
+      SecurityStateModel::FromWebContents(web_contents);
+  DCHECK(security_model);
+
   // Create (and show) the BluetoothChooser dialog.
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jstring> origin_string =
       ConvertUTF8ToJavaString(env, origin.spec());
   java_dialog_.Reset(Java_BluetoothChooserDialog_create(
       env, window_android.obj(), origin_string.obj(),
-      connection_security::GetSecurityLevelForWebContents(web_contents),
+      security_model->GetSecurityInfo().security_level,
       reinterpret_cast<intptr_t>(this)));
 }
 

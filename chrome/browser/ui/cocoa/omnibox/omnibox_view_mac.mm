@@ -544,23 +544,23 @@ void OmniboxViewMac::ApplyTextAttributes(
   // TODO(shess): GTK has this as a member var, figure out why.
   // [Could it be to not change if no change?  If so, I'm guessing
   // AppKit may already handle that.]
-  const connection_security::SecurityLevel security_level =
+  const SecurityStateModel::SecurityLevel security_level =
       chrome_toolbar_model->GetSecurityLevel(false);
 
   // Emphasize the scheme for security UI display purposes (if necessary).
   if (!model()->user_input_in_progress() && model()->CurrentTextIsURL() &&
-      scheme.is_nonempty() && (security_level != connection_security::NONE)) {
+      scheme.is_nonempty() && (security_level != SecurityStateModel::NONE)) {
     NSColor* color;
-    if (security_level == connection_security::EV_SECURE ||
-        security_level == connection_security::SECURE) {
+    if (security_level == SecurityStateModel::EV_SECURE ||
+        security_level == SecurityStateModel::SECURE) {
       color = SecureSchemeColor();
-    } else if (security_level == connection_security::SECURITY_ERROR) {
+    } else if (security_level == SecurityStateModel::SECURITY_ERROR) {
       color = SecurityErrorSchemeColor();
       // Add a strikethrough through the scheme.
       [attributedString addAttribute:NSStrikethroughStyleAttributeName
                  value:[NSNumber numberWithInt:NSUnderlineStyleSingle]
                  range:ComponentToNSRange(scheme)];
-    } else if (security_level == connection_security::SECURITY_WARNING) {
+    } else if (security_level == SecurityStateModel::SECURITY_WARNING) {
       color = BaseTextColor();
     } else {
       NOTREACHED();

@@ -40,7 +40,7 @@ class ToolbarModelImpl : public ChromeToolbarModel {
   base::string16 GetCorpusNameForMobile() const override;
   GURL GetURL() const override;
   bool WouldPerformSearchTermReplacement(bool ignore_editing) const override;
-  connection_security::SecurityLevel GetSecurityLevel(
+  SecurityStateModel::SecurityLevel GetSecurityLevel(
       bool ignore_editing) const override;
   int GetIcon() const override;
   base::string16 GetEVCertName() const override;
@@ -48,7 +48,7 @@ class ToolbarModelImpl : public ChromeToolbarModel {
 
   // As |GetIcon()|, but returns the icon only taking into account the security
   // level| given, ignoring search term replacement state.
-  int GetIconForSecurityLevel(connection_security::SecurityLevel level) const;
+  int GetIconForSecurityLevel(SecurityStateModel::SecurityLevel level) const;
 
   // Returns the navigation controller used to retrieve the navigation entry
   // from which the states are retrieved.
