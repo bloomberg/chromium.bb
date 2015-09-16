@@ -59,6 +59,10 @@ class NET_EXPORT ExternalEstimateProvider {
   virtual void SetUpdatedEstimateDelegate(
       UpdatedEstimateDelegate* delegate) = 0;
 
+  // Requests an updated network quality estimate from the external estimate
+  // provider.
+  virtual void Update() const = 0;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(ExternalEstimateProvider);
 };
