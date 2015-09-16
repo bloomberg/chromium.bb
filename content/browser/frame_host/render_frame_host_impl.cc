@@ -922,7 +922,8 @@ void RenderFrameHostImpl::OnDidCommitProvisionalLoad(const IPC::Message& msg) {
   // compositor output (possibly because of script deliberately creating this
   // situation) then we clear it after a while anyway.
   // See https://crbug.com/497588.
-  if (frame_tree_node_->IsMainFrame() && GetView()) {
+  if (frame_tree_node_->IsMainFrame() && GetView() &&
+      !validated_params.was_within_same_page) {
     RenderWidgetHostImpl::From(GetView()->GetRenderWidgetHost())
         ->StartNewContentRenderingTimeout();
   }
