@@ -87,6 +87,11 @@ public class LogcatExtractionCallable implements Callable<Boolean> {
             + "(?:\\b|$)");
 
     @VisibleForTesting
+    protected static final String BEGIN_MICRODUMP = "-----BEGIN BREAKPAD MICRODUMP-----";
+    @VisibleForTesting
+    protected static final String END_MICRODUMP = "-----END BREAKPAD MICRODUMP-----";
+
+    @VisibleForTesting
     protected static final String IP_ELISION = "1.2.3.4";
 
     @VisibleForTesting
@@ -154,7 +159,7 @@ public class LogcatExtractionCallable implements Callable<Boolean> {
             int len = mMinidumpFilenames.length;
             CrashFileManager fileManager = new CrashFileManager(mContext.getCacheDir());
             for (int i = 0; i < len; i++) {
-                proccessMinidump(logcatFile, mMinidumpFilenames[i], fileManager, i == len - 1);
+                processMinidump(logcatFile, mMinidumpFilenames[i], fileManager, i == len - 1);
             }
             return true;
         } catch (IOException | InterruptedException e) {
@@ -163,7 +168,7 @@ public class LogcatExtractionCallable implements Callable<Boolean> {
         }
     }
 
-    private void proccessMinidump(File logcatFile, String name,
+    private void processMinidump(File logcatFile, String name,
             CrashFileManager manager, boolean isLast) throws IOException {
         String toPath = MINIDUMP_EXTENSION.matcher(name).replaceAll(LOGCAT_EXTENSION);
         File toFile = manager.createNewTempFile(toPath);
@@ -226,24 +231,16 @@ public class LogcatExtractionCallable implements Callable<Boolean> {
     }
 
     private static List<String> getLogcatInternal() throws IOException, InterruptedException {
-        LinkedList<String> rawLogcat = new LinkedList<String>();
-        String logLn = null;
+        List<String> rawLogcat = null;
         Integer exitValue = null;
         // In the absence of the android.permission.READ_LOGS permission the
         // the logcat call will just hang.
         Process p = Runtime.getRuntime().exec("logcat -d");
-        BufferedReader bReader = null;
+        BufferedReader reader = null;
         try {
-            bReader = new BufferedReader(new InputStreamReader(p.getInputStream()));
+            reader = new BufferedReader(new InputStreamReader(p.getInputStream()));
             while (exitValue == null) {
-                while ((logLn = bReader.readLine()) != null) {
-                    // Add each new string to the end of the queue.
-                    rawLogcat.add(logLn);
-                    if (rawLogcat.size() > LOGCAT_SIZE) {
-                        // Remove the head of the queue when it gets too large.
-                        rawLogcat.remove();
-                    }
-                }
+                rawLogcat = extractLogcatFromReader(reader, LOGCAT_SIZE);
                 try {
                     exitValue = p.exitValue();
                 } catch (IllegalThreadStateException itse) {
@@ -257,10 +254,52 @@ public class LogcatExtractionCallable implements Callable<Boolean> {
             }
             return rawLogcat;
         } finally {
-            if (bReader != null) {
-                bReader.close();
+            if (reader != null) {
+                reader.close();
             }
         }
+    }
+
+    /**
+     * Extract microdump-free logcat for more informative crash reports
+     *
+     * @param reader A buffered reader from which lines of initial logcat is read.
+     * @param maxLines The maximum number of lines logcat extracts from minidump.
+     *
+     * @return Logcat up to specified length as a list of strings.
+     * @throws IOException if the buffered reader encounters an I/O error.
+     */
+    @VisibleForTesting
+    protected static List<String> extractLogcatFromReader(
+            BufferedReader reader, int maxLines) throws IOException {
+        return extractLogcatFromReaderInternal(reader, maxLines);
+    }
+
+    private static List<String> extractLogcatFromReaderInternal(
+            BufferedReader reader, int maxLines) throws IOException {
+        boolean inMicrodump = false;
+        List<String> rawLogcat = new LinkedList<>();
+        String logLn;
+        while ((logLn = reader.readLine()) != null && rawLogcat.size() < maxLines) {
+            if (logLn.contains(BEGIN_MICRODUMP)) {
+                // If the log contains two begin markers without an end marker
+                // in between, we ignore the second begin marker.
+                inMicrodump = true;
+            } else if (logLn.contains(END_MICRODUMP)) {
+                if (!inMicrodump) {
+                    // If we have been extracting microdump the whole time,
+                    // start over with a clean logcat.
+                    rawLogcat.clear();
+                } else {
+                    inMicrodump = false;
+                }
+            } else {
+                if (!inMicrodump) {
+                    rawLogcat.add(logLn);
+                }
+            }
+        }
+        return rawLogcat;
     }
 
     private File writeLogcat(List<String> elidedLogcat) throws IOException {

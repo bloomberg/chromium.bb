@@ -4,11 +4,17 @@
 
 package org.chromium.chrome.browser.crash;
 
+import static org.chromium.chrome.browser.crash.LogcatExtractionCallable.BEGIN_MICRODUMP;
+import static org.chromium.chrome.browser.crash.LogcatExtractionCallable.END_MICRODUMP;
+
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.test.MoreAsserts;
 import android.test.suitebuilder.annotation.MediumTest;
 import android.test.suitebuilder.annotation.SmallTest;
+
+import android.text.TextUtils;
 
 import org.chromium.base.test.util.AdvancedMockContext;
 
@@ -16,8 +22,11 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.StringReader;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -26,6 +35,8 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class LogcatExtractionCallableTest extends CrashTestCase {
     private File mCrashDir;
+
+    private static final int MAX_LINES = 5;
 
     protected void setUp() throws Exception {
         super.setUp();
@@ -113,6 +124,102 @@ public class LogcatExtractionCallableTest extends CrashTestCase {
         String original = "I/chromium(123): [INFO:CONSOLE(2)] hello!";
         String expected = "I/chromium(123): [ELIDED:CONSOLE(0)] ELIDED CONSOLE MESSAGE";
         assertEquals(expected, LogcatExtractionCallable.elideConsole(original));
+    }
+
+    @SmallTest
+    public void testLogcatEmpty() {
+        final String original = "";
+        List<String> expected = new LinkedList<>();
+        List<String> logcat = null;
+        try {
+            logcat = LogcatExtractionCallable.extractLogcatFromReader(
+                    new BufferedReader(new StringReader(original)), MAX_LINES);
+        } catch (Exception e) {
+            fail(e.toString());
+        }
+        MoreAsserts.assertEquals(expected.toArray(), logcat.toArray());
+    }
+
+    @SmallTest
+    public void testLogcatWithoutBeginOrEnd_smallLogcat() {
+        final List<String> original = Arrays.asList("Line 1", "Line 2", "Line 3", "Line 4",
+                "Line 5");
+        assertLogcatLists(original, original);
+    }
+
+    @SmallTest
+    public void testLogcatWithoutBeginOrEnd_largeLogcat() {
+        final List<String> original = Arrays.asList("Line 1", "Line 2", "Line 3", "Line 4",
+                "Line 5", "Redundant Line 1", "Redundant Line 2");
+        final List<String> expected = Arrays.asList("Line 1", "Line 2", "Line 3", "Line 4",
+                "Line 5");
+        assertLogcatLists(expected, original);
+    }
+
+    @SmallTest
+    public void testLogcatBeginsWithBegin() {
+        final List<String> original = Arrays.asList(BEGIN_MICRODUMP, "a", "b", "c", "d", "e");
+        assertLogcatLists(new LinkedList<String>(), original);
+    }
+
+    @SmallTest
+    public void testLogcatWithBegin() {
+        final List<String> original = Arrays.asList("Line 1", "Line 2", BEGIN_MICRODUMP, "a",
+                "b", "c", "d", "e");
+        final List<String> expected = Arrays.asList("Line 1", "Line 2");
+        assertLogcatLists(expected, original);
+    }
+
+    @SmallTest
+    public void testLogcatWithEnd() {
+        final List<String> original = Arrays.asList("Line 1", "Line 2", END_MICRODUMP);
+        assertLogcatLists(new LinkedList<String>(), original);
+    }
+
+    @SmallTest
+    public void testLogcatWithBeginAndEnd_smallLogcat() {
+        final List<String> original = Arrays.asList("Line 1", "Line 2", BEGIN_MICRODUMP, "a", "b",
+                "c", "d", "e", END_MICRODUMP);
+        final List<String> expected = Arrays.asList("Line 1", "Line 2");
+        assertLogcatLists(expected, original);
+    }
+
+    @SmallTest
+    public void testLogcatWithBeginAndEnd_largeLogcat() {
+        final List<String> original = Arrays.asList("Line 1", "Line 2", BEGIN_MICRODUMP, "a", "b",
+                "c", "d", "e", END_MICRODUMP, "Line 3", "Line 4");
+        final List<String> expected = Arrays.asList("Line 1", "Line 2", "Line 3", "Line 4");
+        assertLogcatLists(expected, original);
+    }
+
+    @SmallTest
+    public void testLogcatWithEndAndBegin_smallLogcat() {
+        final List<String> original = Arrays.asList(END_MICRODUMP, "Line 1", "Line 2",
+                BEGIN_MICRODUMP, "a", "b", "c", "d", "e");
+        final List<String> expected = Arrays.asList("Line 1", "Line 2");
+        assertLogcatLists(expected, original);
+    }
+
+    @SmallTest
+    public void testLogcatWithEndAndBegin_largeLogcat() {
+        final List<String> original = Arrays.asList(END_MICRODUMP, "Line 1", "Line 2",
+                BEGIN_MICRODUMP, "a", "b", "c", "d", "e", END_MICRODUMP, "Line 3", "Line 4");
+        final List<String> expected = Arrays.asList("Line 1", "Line 2", "Line 3", "Line 4");
+        assertLogcatLists(expected, original);
+    }
+
+    private void assertLogcatLists(List<String> expected, List<String> original) {
+        List<String> actualLogcat = null;
+        String combinedLogcat = TextUtils.join("\n", original);
+        try {
+            //simulate a file reader to test whether the extraction process
+            //successfully strips microdump from logcat
+            actualLogcat = LogcatExtractionCallable.extractLogcatFromReader(
+                    new BufferedReader(new StringReader(combinedLogcat)), MAX_LINES);
+        } catch (Exception e) {
+            fail(e.toString());
+        }
+        MoreAsserts.assertEquals(expected.toArray(), actualLogcat.toArray());
     }
 
     @MediumTest
