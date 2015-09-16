@@ -139,9 +139,7 @@ class WebsiteSettings : public TabSpecificContentSettings::SiteDataObserver {
 
  private:
   // Initializes the |WebsiteSettings|.
-  void Init(Profile* profile,
-            const GURL& url,
-            const content::SSLStatus& ssl);
+  void Init(const GURL& url, const content::SSLStatus& ssl);
 
   // Sets (presents) the information about the site's permissions in the |ui_|.
   void PresentSitePermissions();
