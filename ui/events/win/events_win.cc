@@ -264,10 +264,6 @@ DomCode CodeFromNative(const base::NativeEvent& native_event) {
   return CodeForWindowsScanCode(scan_code);
 }
 
-uint32 PlatformKeycodeFromNative(const base::NativeEvent& native_event) {
-  return static_cast<uint32>(native_event.wParam);
-}
-
 bool IsCharFromNative(const base::NativeEvent& native_event) {
   return native_event.message == WM_CHAR;
 }

@@ -41,8 +41,7 @@ bool StubKeyboardLayoutEngine::UsesAltGr() const {
 bool StubKeyboardLayoutEngine::Lookup(DomCode dom_code,
                                       int flags,
                                       DomKey* out_dom_key,
-                                      KeyboardCode* out_key_code,
-                                      uint32* platform_keycode) const {
+                                      KeyboardCode* out_key_code) const {
   return DomCodeToUsLayoutDomKey(dom_code, flags, out_dom_key, out_key_code);
 }
 

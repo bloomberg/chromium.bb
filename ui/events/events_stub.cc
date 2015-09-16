@@ -129,11 +129,6 @@ DomCode CodeFromNative(const base::NativeEvent& native_event) {
   return DomCode::NONE;
 }
 
-uint32 PlatformKeycodeFromNative(const base::NativeEvent& native_event) {
-  NOTIMPLEMENTED();
-  return 0;
-}
-
 bool IsCharFromNative(const base::NativeEvent& native_event) {
   NOTIMPLEMENTED();
   return false;

@@ -715,8 +715,7 @@ bool XkbKeyboardLayoutEngine::UsesAltGr() const {
 bool XkbKeyboardLayoutEngine::Lookup(DomCode dom_code,
                                      int flags,
                                      DomKey* dom_key,
-                                     KeyboardCode* key_code,
-                                     uint32_t* platform_keycode) const {
+                                     KeyboardCode* key_code) const {
   if (dom_code == DomCode::NONE)
     return false;
   // Convert DOM physical key to XKB representation.
@@ -733,7 +732,6 @@ bool XkbKeyboardLayoutEngine::Lookup(DomCode dom_code,
   uint32_t character = 0;
   if (!XkbLookup(xkb_keycode, xkb_flags, &xkb_keysym, &character))
     return false;
-  *platform_keycode = xkb_keysym;
   // Classify the keysym and convert to DOM and VKEY representations.
   *dom_key = NonPrintableXKeySymToDomKey(xkb_keysym);
   if (*dom_key == DomKey::NONE) {

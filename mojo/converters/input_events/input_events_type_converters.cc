@@ -12,6 +12,7 @@
 #include "mojo/converters/geometry/geometry_type_converters.h"
 #include "mojo/converters/input_events/mojo_extended_key_event_data.h"
 #include "ui/events/event_utils.h"
+#include "ui/events/keycodes/dom/keycode_converter.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/mojo/events/input_events.mojom.h"
 
@@ -202,7 +203,8 @@ EventPtr TypeConverter<EventPtr, ui::Event>::Convert(const ui::Event& input) {
     const ui::KeyEvent* key_event = static_cast<const ui::KeyEvent*>(&input);
     KeyDataPtr key_data(KeyData::New());
     key_data->key_code = key_event->GetConflatedWindowsKeyCode();
-    key_data->native_key_code = key_event->platform_keycode();
+    key_data->native_key_code =
+      ui::KeycodeConverter::DomCodeToNativeKeycode(key_event->code());
     key_data->is_char = key_event->is_char();
     key_data->character = key_event->GetCharacter();
 
@@ -265,7 +267,6 @@ scoped_ptr<ui::Event> TypeConverter<scoped_ptr<ui::Event>, EventPtr>::Convert(
               static_cast<int32_t>(input->key_data->windows_key_code),
               input->key_data->text,
               input->key_data->unmodified_text)));
-      key_event->set_platform_keycode(input->key_data->native_key_code);
       return key_event.Pass();
     }
     case EVENT_TYPE_POINTER_DOWN:

@@ -220,10 +220,6 @@ DomCode CodeFromNative(const base::NativeEvent& native_event) {
   return CodeFromNSEvent(native_event);
 }
 
-uint32 PlatformKeycodeFromNative(const base::NativeEvent& native_event) {
-  return native_event.keyCode;
-}
-
 uint32 WindowsKeycodeFromNative(const base::NativeEvent& native_event) {
   return static_cast<uint32>(KeyboardCodeFromNSEvent(native_event));
 }

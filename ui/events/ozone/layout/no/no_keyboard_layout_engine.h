@@ -24,8 +24,7 @@ class EVENTS_OZONE_LAYOUT_EXPORT NoKeyboardLayoutEngine
   bool Lookup(DomCode dom_code,
               int flags,
               DomKey* dom_key,
-              KeyboardCode* key_code,
-              uint32* platform_keycode) const override;
+              KeyboardCode* key_code) const override;
 };
 
 }  // namespace ui

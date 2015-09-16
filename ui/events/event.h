@@ -750,11 +750,6 @@ class EVENTS_EXPORT KeyEvent : public Event {
   // as GetUnmodifiedText().
   base::char16 GetText() const;
 
-  // Gets the platform key code. For XKB, this is the xksym value.
-  // This should not be used in new code.
-  void set_platform_keycode(uint32 keycode) { platform_keycode_ = keycode; }
-  uint32 platform_keycode() const { return platform_keycode_; }
-
   // Gets the associated (Windows-based) KeyboardCode for this key event.
   // Historically, this has also been used to obtain the character associated
   // with a character event, because both use the Window message 'wParam' field.
@@ -816,10 +811,6 @@ class EVENTS_EXPORT KeyEvent : public Event {
 
   // True if this is a character event, false if this is a keystroke event.
   bool is_char_ = false;
-
-  // The platform related keycode value. For XKB, it's keysym value.
-  // For now, this is used for CharacterComposer in ChromeOS.
-  mutable uint32 platform_keycode_ = 0;
 
   // TODO(kpschoedel): refactor so that key_ is not mutable.
   // This requires defining the KeyEvent completely at construction rather

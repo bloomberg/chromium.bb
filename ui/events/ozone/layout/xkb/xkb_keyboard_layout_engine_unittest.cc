@@ -817,10 +817,8 @@ TEST_F(XkbLayoutEngineVkTest, KeyboardCodeForNonPrintable) {
     layout_engine_->SetEntry(&e.test);
     DomKey dom_key = DomKey::NONE;
     KeyboardCode key_code = VKEY_UNKNOWN;
-    uint32_t keysym;
     EXPECT_TRUE(layout_engine_->Lookup(e.test.dom_code, EF_NONE, &dom_key,
-                                       &key_code, &keysym));
-    EXPECT_EQ(e.test.keysym, keysym);
+                                       &key_code));
     EXPECT_EQ(e.key_code, key_code);
   }
 }

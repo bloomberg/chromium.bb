@@ -37,8 +37,7 @@ class EVENTS_OZONE_LAYOUT_EXPORT XkbKeyboardLayoutEngine
   bool Lookup(DomCode dom_code,
               int flags,
               DomKey* dom_key,
-              KeyboardCode* key_code,
-              uint32* platform_keycode) const override;
+              KeyboardCode* key_code) const override;
 
   static void ParseLayoutName(const std::string& layout_name,
                               std::string* layout_id,

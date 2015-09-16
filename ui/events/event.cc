@@ -672,8 +672,7 @@ KeyEvent::KeyEvent(const base::NativeEvent& native_event)
             EventFlagsFromNative(native_event)),
       key_code_(KeyboardCodeFromNative(native_event)),
       code_(CodeFromNative(native_event)),
-      is_char_(IsCharFromNative(native_event)),
-      platform_keycode_(PlatformKeycodeFromNative(native_event)) {
+      is_char_(IsCharFromNative(native_event)) {
   if (IsRepeated(*this))
     set_flags(flags() | ui::EF_IS_REPEAT);
 
@@ -729,7 +728,6 @@ KeyEvent::KeyEvent(const KeyEvent& rhs)
       key_code_(rhs.key_code_),
       code_(rhs.code_),
       is_char_(rhs.is_char_),
-      platform_keycode_(rhs.platform_keycode_),
       key_(rhs.key_) {
   if (rhs.extended_key_event_data_)
     extended_key_event_data_.reset(rhs.extended_key_event_data_->Clone());
@@ -742,7 +740,6 @@ KeyEvent& KeyEvent::operator=(const KeyEvent& rhs) {
     code_ = rhs.code_;
     key_ = rhs.key_;
     is_char_ = rhs.is_char_;
-    platform_keycode_ = rhs.platform_keycode_;
 
     if (rhs.extended_key_event_data_)
       extended_key_event_data_.reset(rhs.extended_key_event_data_->Clone());
@@ -785,7 +782,7 @@ void KeyEvent::ApplyLayout() const {
   }
 #elif defined(USE_OZONE)
   if (KeyboardLayoutEngineManager::GetKeyboardLayoutEngine()->Lookup(
-          code, flags(), &key_, &dummy_key_code, &platform_keycode_)) {
+          code, flags(), &key_, &dummy_key_code)) {
     return;
   }
 #else

@@ -26,8 +26,7 @@ bool NoKeyboardLayoutEngine::UsesAltGr() const {
 bool NoKeyboardLayoutEngine::Lookup(DomCode dom_code,
                                     int flags,
                                     DomKey* dom_key,
-                                    KeyboardCode* key_code,
-                                    uint32* platform_keycode) const {
+                                    KeyboardCode* key_code) const {
   return false;
 }
 

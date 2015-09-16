@@ -132,12 +132,10 @@ bool PlatformWindowAndroid::KeyEvent(JNIEnv* env,
                                      jint unicode_character) {
   ui::KeyEvent key_event(pressed ? ui::ET_KEY_PRESSED : ui::ET_KEY_RELEASED,
                          ui::KeyboardCodeFromAndroidKeyCode(key_code), 0);
-  key_event.set_platform_keycode(key_code);
   delegate_->DispatchEvent(&key_event);
   if (pressed && unicode_character) {
     ui::KeyEvent char_event(unicode_character,
                             ui::KeyboardCodeFromAndroidKeyCode(key_code), 0);
-    char_event.set_platform_keycode(key_code);
     delegate_->DispatchEvent(&char_event);
   }
   return true;

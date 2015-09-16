@@ -317,7 +317,6 @@ void DefaultDisplayManager::DispatchEvent(ui::Event* event) {
         make_scoped_ptr(new mojo::MojoExtendedKeyEventData(
             key_press_event->GetLocatedWindowsKeyboardCode(),
             key_press_event->GetText(), key_press_event->GetUnmodifiedText())));
-    char_event.set_platform_keycode(key_press_event->platform_keycode());
 
     delegate_->OnEvent(mojo::Event::From(char_event));
   }

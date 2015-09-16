@@ -35,11 +35,9 @@ bool ConvertKeyCodeToText(ui::KeyboardCode key_code,
 
   ui::DomKey dom_key;
   ui::KeyboardCode key_code_ignored;
-  uint32 platform_keycode_ignored;
 
   if (!keyboard_layout_engine->Lookup(dom_code, event_flags, &dom_key,
-                                      &key_code_ignored,
-                                      &platform_keycode_ignored)) {
+                                      &key_code_ignored)) {
     // Key codes like ui::VKEY_UNKNOWN need to be mapped to the empty string, so
     // even if the lookup fails we still need to return true here.
     *text = std::string();
