@@ -207,9 +207,8 @@ public class InvalidationClientService extends AndroidListener {
 
         // Attempt to retrieve a token for the user. This method will also invalidate
         // invalidAuthToken if it is non-null.
-        AccountManagerHelper.get(this).getNewAuthTokenFromForeground(
-                account, invalidAuthToken, getOAuth2ScopeWithType(),
-                new AccountManagerHelper.GetAuthTokenCallback() {
+        AccountManagerHelper.get(this).getNewAuthToken(account, invalidAuthToken,
+                getOAuth2ScopeWithType(), new AccountManagerHelper.GetAuthTokenCallback() {
                     @Override
                     public void tokenAvailable(String token, boolean isTransientError) {
                         if (token != null) {

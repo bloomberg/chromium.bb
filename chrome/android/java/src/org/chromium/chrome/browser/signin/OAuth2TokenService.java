@@ -148,8 +148,8 @@ public final class OAuth2TokenService
         String oauth2Scope = OAUTH2_SCOPE_PREFIX + scope;
 
         AccountManagerHelper accountManagerHelper = AccountManagerHelper.get(context);
-        accountManagerHelper.getAuthTokenFromForeground(
-                null, account, oauth2Scope, new AccountManagerHelper.GetAuthTokenCallback() {
+        accountManagerHelper.getAuthToken(
+                account, oauth2Scope, new AccountManagerHelper.GetAuthTokenCallback() {
                     @Override
                     public void tokenAvailable(String token, boolean isTransientError) {
                         nativeOAuth2TokenFetched(token, isTransientError, nativeCallback);
@@ -169,8 +169,7 @@ public final class OAuth2TokenService
             Context context, @Nullable Activity activity, Account account, String scope,
             AccountManagerHelper.GetAuthTokenCallback callback) {
         String oauth2Scope = OAUTH2_SCOPE_PREFIX + scope;
-        AccountManagerHelper.get(context).getAuthTokenFromForeground(
-                activity, account, oauth2Scope, callback);
+        AccountManagerHelper.get(context).getAuthToken(account, oauth2Scope, callback);
     }
 
     /**
@@ -193,8 +192,7 @@ public final class OAuth2TokenService
         final AtomicReference<String> result = new AtomicReference<String>();
         final Semaphore semaphore = new Semaphore(0);
         getOAuth2AccessToken(
-                context, activity, account, scope,
-                new AccountManagerHelper.GetAuthTokenCallback() {
+                context, activity, account, scope, new AccountManagerHelper.GetAuthTokenCallback() {
                     @Override
                     public void tokenAvailable(String token, boolean isTransientError) {
                         result.set(token);

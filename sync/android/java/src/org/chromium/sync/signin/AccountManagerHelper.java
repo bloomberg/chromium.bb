@@ -13,7 +13,6 @@ import android.accounts.AccountManagerFuture;
 import android.accounts.AuthenticatorDescription;
 import android.accounts.AuthenticatorException;
 import android.accounts.OperationCanceledException;
-import android.app.Activity;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.os.AsyncTask;
@@ -34,16 +33,13 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Pattern;
 
-import javax.annotation.Nullable;
-
 /**
  * AccountManagerHelper wraps our access of AccountManager in Android.
  *
  * Use the AccountManagerHelper.get(someContext) to instantiate it
  */
 public class AccountManagerHelper {
-
-    private static final String TAG = "AccountManagerHelper";
+    private static final String TAG = "cr.Sync.Signin";
 
     private static final Pattern AT_SYMBOL = Pattern.compile("@");
 
@@ -227,32 +223,17 @@ public class AccountManagerHelper {
     }
 
     /**
-     * Gets the auth token synchronously.
-     *
-     * - Assumes that the account is a valid account.
-     * - Should not be called on the main thread.
-     */
-    @Deprecated
-    public String getAuthTokenFromBackground(Account account, String authTokenType) {
-        AccountManagerFuture<Bundle> future = mAccountManager.getAuthToken(
-                account, authTokenType, true, null, null);
-        AtomicBoolean isTransientError = new AtomicBoolean(false);
-        return getAuthTokenInner(future, isTransientError);
-    }
-
-    /**
      * Gets the auth token and returns the response asynchronously.
      * This should be called when we have a foreground activity that needs an auth token.
      * If encountered an IO error, it will attempt to retry when the network is back.
      *
      * - Assumes that the account is a valid account.
      */
-    public void getAuthTokenFromForeground(Activity activity, Account account, String authTokenType,
-                GetAuthTokenCallback callback) {
+    public void getAuthToken(Account account, String authTokenType, GetAuthTokenCallback callback) {
         AtomicInteger numTries = new AtomicInteger(0);
         AtomicBoolean isTransientError = new AtomicBoolean(false);
-        getAuthTokenAsynchronously(activity, account, authTokenType, callback, numTries,
-                isTransientError, null);
+        getAuthTokenAsynchronously(
+                account, authTokenType, callback, numTries, isTransientError, null);
     }
 
     private class ConnectionRetry implements NetworkChangeNotifier.ConnectionTypeObserver {
@@ -280,8 +261,8 @@ public class AccountManagerHelper {
             }
             if (NetworkChangeNotifier.isOnline()) {
                 NetworkChangeNotifier.removeConnectionTypeObserver(this);
-                getAuthTokenAsynchronously(null, mAccount, mAuthTokenType, mCallback, mNumTries,
-                        mIsTransientError, this);
+                getAuthTokenAsynchronously(
+                        mAccount, mAuthTokenType, mCallback, mNumTries, mIsTransientError, this);
             }
         }
     }
@@ -318,10 +299,9 @@ public class AccountManagerHelper {
         return null;
     }
 
-    private void getAuthTokenAsynchronously(@Nullable Activity activity, final Account account,
-            final String authTokenType, final GetAuthTokenCallback callback,
-            final AtomicInteger numTries, final AtomicBoolean isTransientError,
-            final ConnectionRetry retry) {
+    private void getAuthTokenAsynchronously(final Account account, final String authTokenType,
+            final GetAuthTokenCallback callback, final AtomicInteger numTries,
+            final AtomicBoolean isTransientError, final ConnectionRetry retry) {
         // Return null token for no USE_CREDENTIALS permission.
         if (!hasUseCredentialsPermission()) {
             ThreadUtils.runOnUiThread(new Runnable() {
@@ -372,13 +352,13 @@ public class AccountManagerHelper {
      *
      * - Assumes that the account is a valid account.
      */
-    public void getNewAuthTokenFromForeground(Account account, String authToken,
-                String authTokenType, GetAuthTokenCallback callback) {
+    public void getNewAuthToken(Account account, String authToken, String authTokenType,
+            GetAuthTokenCallback callback) {
         invalidateAuthToken(authToken);
         AtomicInteger numTries = new AtomicInteger(0);
         AtomicBoolean isTransientError = new AtomicBoolean(false);
         getAuthTokenAsynchronously(
-                null, account, authTokenType, callback, numTries, isTransientError, null);
+                account, authTokenType, callback, numTries, isTransientError, null);
     }
 
     /**
