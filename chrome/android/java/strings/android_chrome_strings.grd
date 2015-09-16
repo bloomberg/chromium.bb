@@ -1862,6 +1862,9 @@ Just open Chrome on your computer, go to the menu, and select “Sign in to Chro
       <message name="IDS_OFFLINE_PAGES_FREE_UP_SPACE_MESSAGE" desc="Text explaining how many pages are going to be removed and how much storage is going to be freed.">
         Delete <ph name="PAGES_NUMBER">%1$d<ex>8</ex></ph> saved pages that are older than 1 month? This will clear <ph name="TOTAL_PAGE_SIZE">%2$s<ex>8.3 MB</ex></ph> of space.
       </message>
+      <message name="IDS_OFFLINE_PAGES_OPEN_STORAGE_SETTINGS_DIALOG_TEXT" desc="Text of the dialog asking if the user wants to open storage settings to remove files to make space.">
+        Your device storage is full. Please remove other media to make space.
+      </message>
       <message name="IDS_OFFLINE_PAGES_PAGE_SAVED" desc="Message shown after user adds a new offline page.">
         Page saved offline
       </message>
@@ -1891,6 +1894,9 @@ Just open Chrome on your computer, go to the menu, and select “Sign in to Chro
       </message>
       <message name="IDS_OFFLINE_PAGES_VIEWING_OFFLINE_PAGE" desc="Text explaining that the user is viewing an offline copy of a web page.">
         Viewing an offline copy of this page
+      </message>
+      <message name="IDS_OFFLINE_PAGES_VIEW_BUTTON" desc="Label for a button to open a system settings page. [CHAR-LIMIT=20]">
+        View
       </message>
 
       <!-- Find in page -->

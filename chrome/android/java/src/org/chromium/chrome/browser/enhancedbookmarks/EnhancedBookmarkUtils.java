@@ -25,6 +25,8 @@ import org.chromium.chrome.browser.favicon.FaviconHelper;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.offlinepages.OfflinePageFreeUpSpaceCallback;
 import org.chromium.chrome.browser.offlinepages.OfflinePageFreeUpSpaceDialog;
+import org.chromium.chrome.browser.offlinepages.OfflinePageOpenStorageSettingsDialog;
+import org.chromium.chrome.browser.offlinepages.OfflinePageStorageSpacePolicy;
 import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.chrome.browser.snackbar.Snackbar;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
@@ -188,23 +190,28 @@ public class EnhancedBookmarkUtils {
 
             @Override
             public void onAction(Object actionData) {
-                // Show edit activity with the name of parent folder highlighted.
-                OfflinePageFreeUpSpaceCallback callback = new OfflinePageFreeUpSpaceCallback() {
-                    @Override
-                    public void onFreeUpSpaceDone() {
-                        snackbarManager.showSnackbar(
-                                OfflinePageFreeUpSpaceDialog.createStorageClearedSnackbar(
-                                        activity));
-                        bookmarkModel.destroy();
-                    }
-                    @Override
-                    public void onFreeUpSpaceCancelled() {
-                        bookmarkModel.destroy();
-                    }
-                };
-                OfflinePageFreeUpSpaceDialog dialog = OfflinePageFreeUpSpaceDialog.newInstance(
-                        bookmarkModel.getOfflinePageBridge(), callback);
-                dialog.show(activity.getFragmentManager(), null);
+                OfflinePageStorageSpacePolicy policy =
+                        new OfflinePageStorageSpacePolicy(bookmarkModel.getOfflinePageBridge());
+                if (policy.hasPagesToCleanUp()) {
+                    OfflinePageFreeUpSpaceCallback callback = new OfflinePageFreeUpSpaceCallback() {
+                        @Override
+                        public void onFreeUpSpaceDone() {
+                            snackbarManager.showSnackbar(
+                                    OfflinePageFreeUpSpaceDialog.createStorageClearedSnackbar(
+                                            activity));
+                            bookmarkModel.destroy();
+                        }
+                        @Override
+                        public void onFreeUpSpaceCancelled() {
+                            bookmarkModel.destroy();
+                        }
+                    };
+                    OfflinePageFreeUpSpaceDialog dialog = OfflinePageFreeUpSpaceDialog.newInstance(
+                            bookmarkModel.getOfflinePageBridge(), callback);
+                    dialog.show(activity.getFragmentManager(), null);
+                } else {
+                    OfflinePageOpenStorageSettingsDialog.showDialog(activity);
+                }
             }
         };
     }

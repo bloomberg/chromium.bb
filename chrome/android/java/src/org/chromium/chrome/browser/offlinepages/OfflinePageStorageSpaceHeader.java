@@ -15,23 +15,13 @@ import android.widget.TextView;
 
 import org.chromium.chrome.R;
 
-import java.util.List;
-
 /**
  * Header shown in saved pages view to inform user of total used storage and offer freeing up
  * space.
  */
 public class OfflinePageStorageSpaceHeader {
-    /**
-     * Minimal total size of all pages, before a header will be shown to offer freeing up space.
-     */
-    private static final long MINIMUM_TOTAL_SIZE_BYTES = 10 * (1 << 20); // 10MB
-    /**
-     * Minimal size of pages to clean up, before a header will be shown to offer freeing up space.
-     */
-    private static final long MINIMUM_CEALNUP_SIZE_BYTES = 5 * (1 << 20); // 5MB
-
     OfflinePageBridge mOfflinePageBridge;
+    OfflinePageStorageSpacePolicy mOfflinePageStorageSpacePolicy;
     Context mContext;
     OfflinePageFreeUpSpaceCallback mCallback;
 
@@ -42,14 +32,14 @@ public class OfflinePageStorageSpaceHeader {
             OfflinePageFreeUpSpaceCallback callback) {
         assert offlinePageBridge != null;
         mOfflinePageBridge = offlinePageBridge;
+        mOfflinePageStorageSpacePolicy = new OfflinePageStorageSpacePolicy(mOfflinePageBridge);
         mContext = context;
         mCallback = callback;
     }
 
     /** @return Whether the header should be shown. */
     public boolean shouldShow() {
-        return getSizeOfAllPages() > MINIMUM_TOTAL_SIZE_BYTES
-                && getSizeOfPagesToCleanUp() > MINIMUM_CEALNUP_SIZE_BYTES;
+        return mOfflinePageStorageSpacePolicy.shouldShowStorageSpaceHeader();
     }
 
     /** @return A view holder with the contents of the header. */
@@ -60,7 +50,8 @@ public class OfflinePageStorageSpaceHeader {
 
         ((TextView) header.findViewById(R.id.storage_header_message))
                 .setText(mContext.getString(R.string.offline_pages_storage_space_message,
-                        Formatter.formatFileSize(mContext, getSizeOfAllPages())));
+                        Formatter.formatFileSize(
+                                mContext, mOfflinePageStorageSpacePolicy.getSizeOfAllPages())));
 
         header.findViewById(R.id.storage_header_button)
                 .setOnClickListener(new View.OnClickListener() {
@@ -74,21 +65,5 @@ public class OfflinePageStorageSpaceHeader {
                 });
 
         return new ViewHolder(header) {};
-    }
-
-    private long getSizeOfAllPages() {
-        return getTotalSize(mOfflinePageBridge.getAllPages());
-    }
-
-    private long getSizeOfPagesToCleanUp() {
-        return getTotalSize(mOfflinePageBridge.getPagesToCleanUp());
-    }
-
-    private long getTotalSize(List<OfflinePageItem> offlinePages) {
-        long totalSize = 0;
-        for (OfflinePageItem page : offlinePages) {
-            totalSize += page.getFileSize();
-        }
-        return totalSize;
     }
 }
