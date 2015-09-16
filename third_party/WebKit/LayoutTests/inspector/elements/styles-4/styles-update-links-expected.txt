@@ -162,7 +162,7 @@ element.style  { ()
     font-family: monospace;
 
 [expanded] 
-.should-change  { (styles-update-links.css:9 -> styles-update-links.css:9:83)
+.should-change  { (styles-update-links.css:9 -> styles-update-links.css:9:81)
     position: relative;
     margin: 1em;
 

@@ -11,7 +11,7 @@ raw cssText:
     firstProperty: rgba(1, 2, 3, 0);
     property1: value1;
     property2: value2;
-    property3: value3;
+    property3: value3
 }
 
 Running: testFormattedRemoveStart
@@ -19,7 +19,7 @@ raw cssText:
 {
     property1: value1;
     property2: value2;
-    property3: value3;
+    property3: value3
 }
 
 Running: testFormattedInsertMiddle
@@ -28,7 +28,7 @@ raw cssText:
     property1: value1;
     middleProperty: middleValue /* comment */;
     property2: value2;
-    property3: value3;
+    property3: value3
 }
 
 Running: testFormattedRemoveMiddle
@@ -36,7 +36,7 @@ raw cssText:
 {
     property1: value1;
     property2: value2;
-    property3: value3;
+    property3: value3
 }
 
 Running: testFormattedInsertEnd
