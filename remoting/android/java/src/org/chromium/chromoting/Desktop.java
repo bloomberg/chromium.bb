@@ -12,6 +12,7 @@ import android.content.pm.PackageManager.NameNotFoundException;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.view.KeyCharacterMap;
 import android.view.KeyEvent;
 import android.view.Menu;
@@ -50,9 +51,16 @@ public class Desktop extends AppCompatActivity implements View.OnSystemUiVisibil
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.desktop);
+
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+
         mRemoteHostDesktop = (DesktopView) findViewById(R.id.desktop_view);
         mRemoteHostDesktop.setDesktop(this);
         mSwitchToCardboardDesktopActivity = false;
+
+        getSupportActionBar().setDisplayShowTitleEnabled(false);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         // For this Activity, the home button in the action bar acts as a Disconnect button, so
         // set the description for accessibility/screen readers.

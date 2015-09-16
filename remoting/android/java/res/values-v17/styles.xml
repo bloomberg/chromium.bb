@@ -6,7 +6,7 @@
 -->
 
 <resources>
-    <style name="BaseTheme" parent="@style/Theme.AppCompat.Light">
+    <style name="BaseTheme" parent="@style/Theme.AppCompat.Light.NoActionBar">
         <item name="colorPrimary">#E0E0E0</item>
         <item name="colorPrimaryDark">#616161</item>
 
@@ -14,17 +14,9 @@
         <item name="colorAccent">#4285F4</item>
     </style>
     <style name="BaseTheme.NavigationDrawer" parent="@style/BaseTheme">
-        <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
         <!--suppress NewApi -->
         <item name="android:windowDrawsSystemBarBackgrounds">true</item>
-    </style>
-    <style name="BaseTheme.Desktop" parent="@style/BaseTheme">
-        <item name="actionBarStyle">@style/ActionBar.Desktop</item>
-    </style>
-
-    <style name="ActionBar.Desktop" parent="@style/Widget.AppCompat.ActionBar">
-        <item name="displayOptions">homeAsUp</item>
     </style>
 
     <style name="EmptyStateText" parent="@android:style/TextAppearance.Large">
