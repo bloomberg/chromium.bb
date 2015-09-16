@@ -1039,13 +1039,10 @@ void LayerTreeImpl::SetRootLayerScrollOffsetDelegate(
   root_layer_scroll_offset_delegate_ = root_layer_scroll_offset_delegate;
 
   if (root_layer_scroll_offset_delegate_) {
-    gfx::ScrollOffset total_scroll_offset = TotalScrollOffset();
-
     root_layer_scroll_offset_delegate_->UpdateRootLayerState(
-        total_scroll_offset, TotalMaxScrollOffset(), ScrollableSize(),
+        TotalScrollOffset(), TotalMaxScrollOffset(), ScrollableSize(),
         current_page_scale_factor(), min_page_scale_factor(),
         max_page_scale_factor());
-    DistributeRootScrollOffset(total_scroll_offset);
   }
 }
 
@@ -1066,6 +1063,7 @@ void LayerTreeImpl::DistributeRootScrollOffset(
       OuterViewportScrollLayer()->CurrentScrollOffset();
 
   // It may be nothing has changed.
+  DCHECK(inner_viewport_offset + outer_viewport_offset == TotalScrollOffset());
   if (inner_viewport_offset + outer_viewport_offset == root_offset)
     return;
 
