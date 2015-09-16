@@ -12,7 +12,7 @@ var metrics = metrics || metricsBase;
 
 /**
  * Analytics tracking ID for Files app.
- * @const {string}
+ * @const {!Object<string, string>}
  */
 metrics.TRACKING_IDS = {
   hhaomjibdihmijegdhdafkllkbggdgoj: 'UA-38248358-9',  // Files.app
