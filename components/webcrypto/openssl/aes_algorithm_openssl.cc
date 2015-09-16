@@ -15,6 +15,23 @@
 
 namespace webcrypto {
 
+namespace {
+
+// Creates an AES algorithm name for the given key size (in bytes). For
+// instance "A128CBC" is the result of suffix="CBC", keylen_bytes=16.
+std::string MakeJwkAesAlgorithmName(const std::string& suffix,
+                                    size_t keylen_bytes) {
+  if (keylen_bytes == 16)
+    return std::string("A128") + suffix;
+  if (keylen_bytes == 24)
+    return std::string("A192") + suffix;
+  if (keylen_bytes == 32)
+    return std::string("A256") + suffix;
+  return std::string();
+}
+
+}  // namespace
+
 AesAlgorithm::AesAlgorithm(blink::WebCryptoKeyUsageMask all_key_usages,
                            const std::string& jwk_suffix)
     : all_key_usages_(all_key_usages), jwk_suffix_(jwk_suffix) {
@@ -83,10 +100,32 @@ Status AesAlgorithm::ImportKeyJwk(const CryptoData& key_data,
                                   blink::WebCryptoKeyUsageMask usages,
                                   blink::WebCryptoKey* key) const {
   std::vector<uint8_t> raw_data;
-  Status status = ReadAesSecretKeyJwk(key_data, jwk_suffix_, extractable,
-                                      usages, &raw_data);
+  JwkReader jwk;
+  Status status = ReadSecretKeyNoExpectedAlg(key_data, extractable, usages,
+                                             &raw_data, &jwk);
   if (status.IsError())
     return status;
+
+  bool has_jwk_alg;
+  std::string jwk_alg;
+  status = jwk.GetAlg(&jwk_alg, &has_jwk_alg);
+  if (status.IsError())
+    return status;
+
+  if (has_jwk_alg) {
+    std::string expected_algorithm_name =
+        MakeJwkAesAlgorithmName(jwk_suffix_, raw_data.size());
+
+    if (jwk_alg != expected_algorithm_name) {
+      // Give a different error message if the key length was wrong.
+      if (jwk_alg == MakeJwkAesAlgorithmName(jwk_suffix_, 16) ||
+          jwk_alg == MakeJwkAesAlgorithmName(jwk_suffix_, 24) ||
+          jwk_alg == MakeJwkAesAlgorithmName(jwk_suffix_, 32)) {
+        return Status::ErrorJwkIncorrectKeyLength();
+      }
+      return Status::ErrorJwkAlgorithmInconsistent();
+    }
+  }
 
   return ImportKeyRaw(CryptoData(raw_data), algorithm, extractable, usages,
                       key);

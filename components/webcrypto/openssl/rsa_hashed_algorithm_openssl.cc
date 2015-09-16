@@ -24,6 +24,86 @@ namespace webcrypto {
 
 namespace {
 
+// Describes the RSA components for a parsed key. The names of the properties
+// correspond with those from the JWK spec. Note that Chromium's WebCrypto
+// implementation does not support multi-primes, so there is no parsed field
+// for "oth".
+struct JwkRsaInfo {
+  bool is_private_key = false;
+  std::string n;
+  std::string e;
+  std::string d;
+  std::string p;
+  std::string q;
+  std::string dp;
+  std::string dq;
+  std::string qi;
+};
+
+// Parses a UTF-8 encoded JWK (key_data), and extracts the RSA components to
+// |*result|. Returns Status::Success() on success, otherwise an error.
+// In order for this to succeed:
+//   * expected_alg must match the JWK's "alg", if present.
+//   * expected_extractable must be consistent with the JWK's "ext", if
+//     present.
+//   * expected_usages must be a subset of the JWK's "key_ops" if present.
+Status ReadRsaKeyJwk(const CryptoData& key_data,
+                     const std::string& expected_alg,
+                     bool expected_extractable,
+                     blink::WebCryptoKeyUsageMask expected_usages,
+                     JwkRsaInfo* result) {
+  JwkReader jwk;
+  Status status = jwk.Init(key_data, expected_extractable, expected_usages,
+                           "RSA", expected_alg);
+  if (status.IsError())
+    return status;
+
+  // An RSA public key must have an "n" (modulus) and an "e" (exponent) entry
+  // in the JWK, while an RSA private key must have those, plus at least a "d"
+  // (private exponent) entry.
+  // See http://tools.ietf.org/html/draft-ietf-jose-json-web-algorithms-18,
+  // section 6.3.
+  status = jwk.GetBigInteger("n", &result->n);
+  if (status.IsError())
+    return status;
+  status = jwk.GetBigInteger("e", &result->e);
+  if (status.IsError())
+    return status;
+
+  result->is_private_key = jwk.HasMember("d");
+  if (!result->is_private_key)
+    return Status::Success();
+
+  status = jwk.GetBigInteger("d", &result->d);
+  if (status.IsError())
+    return status;
+
+  // The "p", "q", "dp", "dq", and "qi" properties are optional in the JWA
+  // spec. However they are required by Chromium's WebCrypto implementation.
+
+  status = jwk.GetBigInteger("p", &result->p);
+  if (status.IsError())
+    return status;
+
+  status = jwk.GetBigInteger("q", &result->q);
+  if (status.IsError())
+    return status;
+
+  status = jwk.GetBigInteger("dp", &result->dp);
+  if (status.IsError())
+    return status;
+
+  status = jwk.GetBigInteger("dq", &result->dq);
+  if (status.IsError())
+    return status;
+
+  status = jwk.GetBigInteger("qi", &result->qi);
+  if (status.IsError())
+    return status;
+
+  return Status::Success();
+}
+
 // Creates a blink::WebCryptoAlgorithm having the modulus length and public
 // exponent  of |key|.
 Status CreateRsaHashedKeyAlgorithm(
@@ -343,23 +423,28 @@ Status RsaHashedAlgorithm::ExportKeyJwk(const blink::WebCryptoKey& key,
     return Status::ErrorUnexpected();
 
   switch (key.type()) {
-    case blink::WebCryptoKeyTypePublic:
-      WriteRsaPublicKeyJwk(CryptoData(BIGNUMToVector(rsa->n)),
-                           CryptoData(BIGNUMToVector(rsa->e)), jwk_algorithm,
-                           key.extractable(), key.usages(), buffer);
+    case blink::WebCryptoKeyTypePublic: {
+      JwkWriter writer(jwk_algorithm, key.extractable(), key.usages(), "RSA");
+      writer.SetBytes("n", CryptoData(BIGNUMToVector(rsa->n)));
+      writer.SetBytes("e", CryptoData(BIGNUMToVector(rsa->e)));
+      writer.ToJson(buffer);
       return Status::Success();
-    case blink::WebCryptoKeyTypePrivate:
-      WriteRsaPrivateKeyJwk(CryptoData(BIGNUMToVector(rsa->n)),
-                            CryptoData(BIGNUMToVector(rsa->e)),
-                            CryptoData(BIGNUMToVector(rsa->d)),
-                            CryptoData(BIGNUMToVector(rsa->p)),
-                            CryptoData(BIGNUMToVector(rsa->q)),
-                            CryptoData(BIGNUMToVector(rsa->dmp1)),
-                            CryptoData(BIGNUMToVector(rsa->dmq1)),
-                            CryptoData(BIGNUMToVector(rsa->iqmp)),
-                            jwk_algorithm, key.extractable(), key.usages(),
-                            buffer);
+    }
+    case blink::WebCryptoKeyTypePrivate: {
+      JwkWriter writer(jwk_algorithm, key.extractable(), key.usages(), "RSA");
+      writer.SetBytes("n", CryptoData(BIGNUMToVector(rsa->n)));
+      writer.SetBytes("e", CryptoData(BIGNUMToVector(rsa->e)));
+      writer.SetBytes("d", CryptoData(BIGNUMToVector(rsa->d)));
+      // Although these are "optional" in the JWA, WebCrypto spec requires them
+      // to be emitted.
+      writer.SetBytes("p", CryptoData(BIGNUMToVector(rsa->p)));
+      writer.SetBytes("q", CryptoData(BIGNUMToVector(rsa->q)));
+      writer.SetBytes("dp", CryptoData(BIGNUMToVector(rsa->dmp1)));
+      writer.SetBytes("dq", CryptoData(BIGNUMToVector(rsa->dmq1)));
+      writer.SetBytes("qi", CryptoData(BIGNUMToVector(rsa->iqmp)));
+      writer.ToJson(buffer);
       return Status::Success();
+    }
 
     default:
       return Status::ErrorUnexpected();

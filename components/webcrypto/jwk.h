@@ -140,91 +140,14 @@ void WriteSecretKeyJwk(const CryptoData& raw_key_data,
 // Parses a UTF-8 encoded JWK (key_data), and extracts the key material to
 // |*raw_key_data|. Returns Status::Success() on success, otherwise an error.
 // In order for this to succeed:
-//   * expected_alg must match the JWK's "alg", if present.
 //   * expected_extractable must be consistent with the JWK's "ext", if
 //     present.
 //   * expected_usages must be a subset of the JWK's "key_ops" if present.
-Status ReadSecretKeyJwk(const CryptoData& key_data,
-                        const std::string& expected_alg,
-                        bool expected_extractable,
-                        blink::WebCryptoKeyUsageMask expected_usages,
-                        std::vector<uint8_t>* raw_key_data);
-
-// Creates an AES algorithm name for the given key size (in bytes). For
-// instance "A128CBC" is the result of suffix="CBC", keylen_bytes=16.
-std::string MakeJwkAesAlgorithmName(const std::string& suffix,
-                                    size_t keylen_bytes);
-
-// This is very similar to ReadSecretKeyJwk(), except instead of specifying an
-// absolute "expected_alg", the suffix for an AES algorithm name is given
-// (See MakeJwkAesAlgorithmName() for an explanation of what the suffix is).
-//
-// This is because the algorithm name for AES keys is dependent on the length
-// of the key. This function expects key lengths to be either 128, 192, or 256
-// bits.
-Status ReadAesSecretKeyJwk(const CryptoData& key_data,
-                           const std::string& algorithm_name_suffix,
-                           bool expected_extractable,
-                           blink::WebCryptoKeyUsageMask expected_usages,
-                           std::vector<uint8_t>* raw_key_data);
-
-// Writes a JWK-formated RSA public key and saves the result to
-// |*jwk_key_data|.
-void WriteRsaPublicKeyJwk(const CryptoData& n,
-                          const CryptoData& e,
-                          const std::string& algorithm,
-                          bool extractable,
-                          blink::WebCryptoKeyUsageMask usages,
-                          std::vector<uint8_t>* jwk_key_data);
-
-// Writes a JWK-formated RSA private key and saves the result to
-// |*jwk_key_data|.
-void WriteRsaPrivateKeyJwk(const CryptoData& n,
-                           const CryptoData& e,
-                           const CryptoData& d,
-                           const CryptoData& p,
-                           const CryptoData& q,
-                           const CryptoData& dp,
-                           const CryptoData& dq,
-                           const CryptoData& qi,
-                           const std::string& algorithm,
-                           bool extractable,
-                           blink::WebCryptoKeyUsageMask usages,
-                           std::vector<uint8_t>* jwk_key_data);
-
-// Describes the RSA components for a parsed key. The names of the properties
-// correspond with those from the JWK spec. Note that Chromium's WebCrypto
-// implementation does not support multi-primes, so there is no parsed field
-// for othinfo.
-struct JwkRsaInfo {
-  JwkRsaInfo();
-  ~JwkRsaInfo();
-
-  bool is_private_key;
-  std::string n;
-  std::string e;
-  std::string d;
-  std::string p;
-  std::string q;
-  std::string dp;
-  std::string dq;
-  std::string qi;
-};
-
-// Parses a UTF-8 encoded JWK (key_data), and extracts the RSA components to
-// |*result|. Returns Status::Success() on success, otherwise an error.
-// In order for this to succeed:
-//   * expected_alg must match the JWK's "alg", if present.
-//   * expected_extractable must be consistent with the JWK's "ext", if
-//     present.
-//   * expected_usages must be a subset of the JWK's "key_ops" if present.
-Status ReadRsaKeyJwk(const CryptoData& key_data,
-                     const std::string& expected_alg,
-                     bool expected_extractable,
-                     blink::WebCryptoKeyUsageMask expected_usages,
-                     JwkRsaInfo* result);
-
-const char* GetJwkHmacAlgorithmName(blink::WebCryptoAlgorithmId hash);
+Status ReadSecretKeyNoExpectedAlg(const CryptoData& key_data,
+                                  bool expected_extractable,
+                                  blink::WebCryptoKeyUsageMask expected_usages,
+                                  std::vector<uint8_t>* raw_key_data,
+                                  JwkReader* jwk);
 
 // This decodes JWK's flavor of base64 encoding, as described by:
 // https://tools.ietf.org/html/draft-ietf-jose-json-web-signature-36#section-2

@@ -22,6 +22,21 @@ namespace webcrypto {
 
 namespace {
 
+const char* GetJwkHmacAlgorithmName(blink::WebCryptoAlgorithmId hash) {
+  switch (hash) {
+    case blink::WebCryptoAlgorithmIdSha1:
+      return "HS1";
+    case blink::WebCryptoAlgorithmIdSha256:
+      return "HS256";
+    case blink::WebCryptoAlgorithmIdSha384:
+      return "HS384";
+    case blink::WebCryptoAlgorithmIdSha512:
+      return "HS512";
+    default:
+      return NULL;
+  }
+}
+
 const blink::WebCryptoKeyUsageMask kAllKeyUsages =
     blink::WebCryptoKeyUsageSign | blink::WebCryptoKeyUsageVerify;
 
@@ -130,8 +145,12 @@ class HmacImplementation : public AlgorithmImplementation {
       return Status::ErrorUnexpected();
 
     std::vector<uint8_t> raw_data;
-    Status status = ReadSecretKeyJwk(key_data, algorithm_name, extractable,
-                                     usages, &raw_data);
+    JwkReader jwk;
+    Status status = ReadSecretKeyNoExpectedAlg(key_data, extractable, usages,
+                                               &raw_data, &jwk);
+    if (status.IsError())
+      return status;
+    status = jwk.VerifyAlg(algorithm_name);
     if (status.IsError())
       return status;
 
