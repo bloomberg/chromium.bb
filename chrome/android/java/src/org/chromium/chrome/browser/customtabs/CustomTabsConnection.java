@@ -703,15 +703,16 @@ public class CustomTabsConnection extends ICustomTabsService.Stub {
         wm.getDefaultDisplay().getSize(screenSize);
         Resources resources = mApplication.getResources();
         int statusBarId = resources.getIdentifier("status_bar_height", "dimen", "android");
-        int navigationBarId = resources.getIdentifier("navigation_bar_height", "dimen", "android");
         try {
             screenSize.y -=
                     resources.getDimensionPixelSize(R.dimen.custom_tabs_control_container_height);
             screenSize.y -= resources.getDimensionPixelSize(statusBarId);
-            screenSize.y -= resources.getDimensionPixelSize(navigationBarId);
         } catch (Resources.NotFoundException e) {
             // Nothing, this is just a best effort estimate.
         }
+        float density = resources.getDisplayMetrics().density;
+        screenSize.x /= density;
+        screenSize.y /= density;
         return screenSize;
     }
 
