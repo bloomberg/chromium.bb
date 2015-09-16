@@ -75,17 +75,6 @@ class BlinkPlatformImpl : public blink::Platform {
   virtual blink::WebScrollbarBehavior* scrollbarBehavior();
   virtual const unsigned char* getTraceCategoryEnabledFlag(
       const char* category_name);
-  virtual blink::WebGraphicsContext3D* createOffscreenGraphicsContext3D(
-      const blink::WebGraphicsContext3D::Attributes& attributes,
-      blink::WebGraphicsContext3D* share_context);
-  virtual blink::WebGraphicsContext3D* createOffscreenGraphicsContext3D(
-      const blink::WebGraphicsContext3D::Attributes& attributes,
-      blink::WebGraphicsContext3D* share_context,
-      blink::WebGLInfo* gl_info);
-  virtual blink::WebGraphicsContext3D* createOffscreenGraphicsContext3D(
-      const blink::WebGraphicsContext3D::Attributes& attributes);
-  virtual blink::WebGraphicsContext3DProvider*
-      createSharedOffscreenGraphicsContext3DProvider();
   virtual blink::WebData loadResource(const char* name);
   virtual blink::WebGestureCurve* createFlingAnimationCurve(
       blink::WebGestureDevice device_source,
@@ -99,7 +88,6 @@ class BlinkPlatformImpl : public blink::Platform {
 
   static void DestroyCurrentThread(void*);
 
-  mojo::ApplicationImpl* app_;
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
   scoped_ptr<scheduler::WebThreadImplForRendererScheduler> main_thread_;
   base::ThreadLocalStorage::Slot current_thread_slot_;

@@ -66,8 +66,6 @@ mojo_sdk_source_set("gles2") {
     "gles2_impl_chromium_bind_uniform_location_thunks.h",
     "gles2_impl_chromium_copy_texture_thunks.cc",
     "gles2_impl_chromium_copy_texture_thunks.h",
-    "gles2_impl_chromium_framebuffer_multisample_thunks.cc",
-    "gles2_impl_chromium_framebuffer_multisample_thunks.h",
     "gles2_impl_chromium_image_thunks.cc",
     "gles2_impl_chromium_image_thunks.h",
     "gles2_impl_chromium_miscellaneous_thunks.cc",

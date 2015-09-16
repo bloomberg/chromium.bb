@@ -10,7 +10,6 @@
 #include "base/logging.h"
 #include "mojo/platform_handle/platform_handle_private_thunks.h"
 #include "mojo/public/platform/native/gles2_impl_chromium_copy_texture_thunks.h"
-#include "mojo/public/platform/native/gles2_impl_chromium_framebuffer_multisample_thunks.h"
 #include "mojo/public/platform/native/gles2_impl_chromium_image_thunks.h"
 #include "mojo/public/platform/native/gles2_impl_chromium_miscellaneous_thunks.h"
 #include "mojo/public/platform/native/gles2_impl_chromium_pixel_transfer_buffer_object_thunks.h"
@@ -85,9 +84,6 @@ bool RunNativeApplication(base::NativeLibrary app_library,
     // they are missing.
     SetThunks(MojoMakeGLES2ImplChromiumCopyTextureThunks,
               "MojoSetGLES2ImplChromiumCopyTextureThunks", app_library);
-    SetThunks(MojoMakeGLES2ImplChromiumFramebufferMultisampleThunks,
-              "MojoSetGLES2ImplChromiumFramebufferMultisampleThunks",
-              app_library);
     SetThunks(MojoMakeGLES2ImplChromiumImageThunks,
               "MojoSetGLES2ImplChromiumImageThunks", app_library);
     SetThunks(MojoMakeGLES2ImplChromiumMiscellaneousThunks,

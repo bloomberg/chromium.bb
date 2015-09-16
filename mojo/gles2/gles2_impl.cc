@@ -82,7 +82,6 @@ void* MojoGLES2GetContextSupport(MojoGLES2Context context) {
   }
 #include "mojo/public/c/gles2/gles2_call_visitor_autogen.h"
 #include "mojo/public/c/gles2/gles2_call_visitor_chromium_copy_texture_autogen.h"
-#include "mojo/public/c/gles2/gles2_call_visitor_chromium_framebuffer_multisample_autogen.h"
 #include "mojo/public/c/gles2/gles2_call_visitor_chromium_image_autogen.h"
 #include "mojo/public/c/gles2/gles2_call_visitor_chromium_miscellaneous_autogen.h"
 #include "mojo/public/c/gles2/gles2_call_visitor_chromium_pixel_transfer_buffer_object_autogen.h"

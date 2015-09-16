@@ -114,10 +114,10 @@ bool CommandBufferDriver::DoInitialize(
   gpu::gles2::DisallowedFeatures disallowed_features;
 
   // TODO(piman): attributes.
-  const bool offscreen = true;
   std::vector<int32> attrib_vector;
-  if (!decoder_->Initialize(surface_, context_, offscreen, gfx::Size(1, 1),
-                            disallowed_features, attrib_vector))
+  if (!decoder_->Initialize(surface_, context_, false /* offscreen */,
+                            gfx::Size(1, 1), disallowed_features,
+                            attrib_vector))
     return false;
 
   command_buffer_->SetPutOffsetChangeCallback(base::Bind(

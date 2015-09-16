@@ -12,7 +12,6 @@
 
 #include "base/logging.h"
 #include "third_party/mojo/src/mojo/public/c/gles2/chromium_copy_texture.h"
-#include "third_party/mojo/src/mojo/public/c/gles2/chromium_framebuffer_multisample.h"
 #include "third_party/mojo/src/mojo/public/c/gles2/chromium_image.h"
 #include "third_party/mojo/src/mojo/public/c/gles2/chromium_miscellaneous.h"
 #include "third_party/mojo/src/mojo/public/c/gles2/chromium_pixel_transfer_buffer_object.h"
@@ -1222,9 +1221,7 @@ void MojoGLES2Impl::BlitFramebufferCHROMIUM(GLint srcX0,
                                             GLint dstY1,
                                             GLbitfield mask,
                                             GLenum filter) {
-  MojoGLES2MakeCurrent(context_);
-  glBlitFramebufferCHROMIUM(srcX0, srcY0, srcX1, srcY1, dstX0, dstY0, dstX1,
-                            dstY1, mask, filter);
+  NOTREACHED() << "Unimplemented BlitFramebufferCHROMIUM.";
 }
 void MojoGLES2Impl::RenderbufferStorageMultisampleCHROMIUM(
     GLenum target,
@@ -1232,9 +1229,7 @@ void MojoGLES2Impl::RenderbufferStorageMultisampleCHROMIUM(
     GLenum internalformat,
     GLsizei width,
     GLsizei height) {
-  MojoGLES2MakeCurrent(context_);
-  glRenderbufferStorageMultisampleCHROMIUM(target, samples, internalformat,
-                                           width, height);
+  NOTREACHED() << "Unimplemented RenderbufferStorageMultisampleCHROMIUM.";
 }
 void MojoGLES2Impl::RenderbufferStorageMultisampleEXT(GLenum target,
                                                       GLsizei samples,
