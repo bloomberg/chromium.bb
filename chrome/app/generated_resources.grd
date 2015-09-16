@@ -13286,12 +13286,6 @@ Some features may be unavailable.  Please check that the profile exists and you 
         <message name="IDS_PROTECTED_MEDIA_IDENTIFIER_INFOBAR_QUESTION" desc="Question asked on the infobar whenever URL wants to access protected media identifier. It shows the origin of the URL.">
           <ph name="URL">$1<ex>https://www.youtube.com</ex></ph> needs to uniquely identify your device to play premium content.
         </message>
-        <message name="IDS_PROTECTED_MEDIA_IDENTIFIER_ALLOW_BUTTON" desc="A button in the protected media identifier infobar for allowing access to a protected media identifier for a given origin.">
-          Allow
-        </message>
-        <message name="IDS_PROTECTED_MEDIA_IDENTIFIER_DENY_BUTTON" desc="A button in the protected media identifier infobar for denying access to a protected media identifier for a given origin.">
-          Deny
-        </message>
       </if>
 
       <!-- Fullscreen infobar -->
@@ -15400,8 +15394,8 @@ After you create a new supervised user, you can manage their settings at any tim
       </message>
       <message name="IDS_MANAGE_PASSWORDS_TITLE_DIFFERENT_DOMAIN" desc="The title text that is used in the manage passwords bubble when a password is autofilled or after a user has stored a password.">
         Saved passwords for <ph name="ORIGIN">$1<ex>example.com</ex></ph>:
-      </message> 
-      
+      </message>
+
     <if expr="is_win or is_macosx">
       <!-- Tab discarding -->
       <message name="IDS_FLAGS_ENABLE_TAB_DISCARDING_NAME" desc="Name for the flag to enable tab discarding.">
