@@ -76,9 +76,11 @@ void SurfacelessGlRenderer::BufferWrapper::SchedulePlane() {
                                gfx::Rect(size_), gfx::RectF(0, 0, 1, 1));
 }
 
-SurfacelessGlRenderer::SurfacelessGlRenderer(gfx::AcceleratedWidget widget,
-                                             const gfx::Size& size)
-    : GlRenderer(widget, size), weak_ptr_factory_(this) {}
+SurfacelessGlRenderer::SurfacelessGlRenderer(
+    gfx::AcceleratedWidget widget,
+    const scoped_refptr<gfx::GLSurface>& surface,
+    const gfx::Size& size)
+    : GlRenderer(widget, surface, size), weak_ptr_factory_(this) {}
 
 SurfacelessGlRenderer::~SurfacelessGlRenderer() {
   // Need to make current when deleting the framebuffer resources allocated in
@@ -115,10 +117,6 @@ void SurfacelessGlRenderer::RenderFrame() {
   if (!surface_->SwapBuffersAsync(base::Bind(&GlRenderer::PostRenderFrameTask,
                                              weak_ptr_factory_.GetWeakPtr())))
     LOG(FATAL) << "Failed to swap buffers";
-}
-
-scoped_refptr<gfx::GLSurface> SurfacelessGlRenderer::CreateSurface() {
-  return gfx::GLSurface::CreateSurfacelessViewGLSurface(widget_);
 }
 
 }  // namespace ui

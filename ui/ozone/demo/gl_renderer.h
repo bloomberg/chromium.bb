@@ -20,7 +20,9 @@ namespace ui {
 
 class GlRenderer : public RendererBase {
  public:
-  GlRenderer(gfx::AcceleratedWidget widget, const gfx::Size& size);
+  GlRenderer(gfx::AcceleratedWidget widget,
+             const scoped_refptr<gfx::GLSurface>& surface,
+             const gfx::Size& size);
   ~GlRenderer() override;
 
   void PostRenderFrameTask(gfx::SwapResult result);
@@ -30,7 +32,6 @@ class GlRenderer : public RendererBase {
 
  protected:
   virtual void RenderFrame();
-  virtual scoped_refptr<gfx::GLSurface> CreateSurface();
 
   scoped_refptr<gfx::GLSurface> surface_;
   scoped_refptr<gfx::GLContext> context_;

@@ -15,7 +15,9 @@ namespace ui {
 
 class SurfacelessGlRenderer : public GlRenderer {
  public:
-  SurfacelessGlRenderer(gfx::AcceleratedWidget widget, const gfx::Size& size);
+  SurfacelessGlRenderer(gfx::AcceleratedWidget widget,
+                        const scoped_refptr<gfx::GLSurface>& surface,
+                        const gfx::Size& size);
   ~SurfacelessGlRenderer() override;
 
   // Renderer:
@@ -24,7 +26,6 @@ class SurfacelessGlRenderer : public GlRenderer {
  private:
   // GlRenderer:
   void RenderFrame() override;
-  scoped_refptr<gfx::GLSurface> CreateSurface() override;
 
   class BufferWrapper {
    public:

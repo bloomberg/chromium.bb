@@ -13,20 +13,15 @@
 
 namespace ui {
 
-GlRenderer::GlRenderer(gfx::AcceleratedWidget widget, const gfx::Size& size)
-    : RendererBase(widget, size), weak_ptr_factory_(this) {
-}
+GlRenderer::GlRenderer(gfx::AcceleratedWidget widget,
+                       const scoped_refptr<gfx::GLSurface>& surface,
+                       const gfx::Size& size)
+    : RendererBase(widget, size), surface_(surface), weak_ptr_factory_(this) {}
 
 GlRenderer::~GlRenderer() {
 }
 
 bool GlRenderer::Initialize() {
-  surface_ = CreateSurface();
-  if (!surface_.get()) {
-    LOG(ERROR) << "Failed to create GL surface";
-    return false;
-  }
-
   context_ = gfx::GLContext::CreateGLContext(NULL, surface_.get(),
                                              gfx::PreferIntegratedGpu);
   if (!context_.get()) {
@@ -65,10 +60,6 @@ void GlRenderer::PostRenderFrameTask(gfx::SwapResult result) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(&GlRenderer::RenderFrame, weak_ptr_factory_.GetWeakPtr()));
-}
-
-scoped_refptr<gfx::GLSurface> GlRenderer::CreateSurface() {
-  return gfx::GLSurface::CreateViewGLSurface(widget_);
 }
 
 }  // namespace ui

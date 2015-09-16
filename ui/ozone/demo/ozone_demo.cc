@@ -32,15 +32,25 @@ const int kTestWindowHeight = 600;
 
 const char kDisableGpu[] = "disable-gpu";
 
+const char kDisableSurfaceless[] = "disable-surfaceless";
+
 const char kWindowSize[] = "window-size";
 
 class DemoWindow;
+
+scoped_refptr<gfx::GLSurface> CreateGLSurface(gfx::AcceleratedWidget widget) {
+  scoped_refptr<gfx::GLSurface> surface;
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(kDisableSurfaceless))
+    surface = gfx::GLSurface::CreateSurfacelessViewGLSurface(widget);
+  if (!surface)
+    surface = gfx::GLSurface::CreateViewGLSurface(widget);
+  return surface;
+}
 
 class RendererFactory {
  public:
   enum RendererType {
     GL,
-    SURFACELESS_GL,
     SOFTWARE,
   };
 
@@ -185,11 +195,7 @@ bool RendererFactory::Initialize() {
       gfx::GLSurface::InitializeOneOff() &&
       gpu_helper_.Initialize(base::ThreadTaskRunnerHandle::Get(),
                              base::ThreadTaskRunnerHandle::Get())) {
-    if (command_line->HasSwitch(switches::kOzoneUseSurfaceless)) {
-      type_ = SURFACELESS_GL;
-    } else {
-      type_ = GL;
-    }
+    type_ = GL;
   } else {
     type_ = SOFTWARE;
   }
@@ -201,10 +207,16 @@ scoped_ptr<ui::Renderer> RendererFactory::CreateRenderer(
     gfx::AcceleratedWidget widget,
     const gfx::Size& size) {
   switch (type_) {
-    case GL:
-      return make_scoped_ptr(new ui::GlRenderer(widget, size));
-    case SURFACELESS_GL:
-      return make_scoped_ptr(new ui::SurfacelessGlRenderer(widget, size));
+    case GL: {
+      scoped_refptr<gfx::GLSurface> surface = CreateGLSurface(widget);
+      if (!surface)
+        LOG(FATAL) << "Failed to create GL surface";
+      if (surface->IsSurfaceless())
+        return make_scoped_ptr(
+            new ui::SurfacelessGlRenderer(widget, surface, size));
+      else
+        return make_scoped_ptr(new ui::GlRenderer(widget, surface, size));
+    }
     case SOFTWARE:
       return make_scoped_ptr(new ui::SoftwareRenderer(widget, size));
   }
