@@ -19,29 +19,32 @@ class Layer;
 }
 
 namespace views {
-class AppearAnimationObserver;
-class InkDropDelegate;
-class InkDropHost;
-class View;
 
-// Base class for an ink drop animation which is hosted by an InkDropHost.
+// Pure virtual base class that manages an ink drop animation's lifetime and
+// state.
 class VIEWS_EXPORT InkDropAnimationController {
  public:
-  InkDropAnimationController() {}
   virtual ~InkDropAnimationController() {}
+
+  // Gets the current state of the ink drop.
+  virtual InkDropState GetInkDropState() const = 0;
 
   // Animates from the current InkDropState to |state|.
   virtual void AnimateToState(InkDropState state) = 0;
 
-  // Sets the size of the ink drop.
-  virtual void SetInkDropSize(const gfx::Size& size) = 0;
+  virtual gfx::Size GetInkDropLargeSize() const = 0;
 
-  // Returns the ink drop bounds.
-  virtual gfx::Rect GetInkDropBounds() const = 0;
+  // Sets the different sizes of the ink drop.
+  virtual void SetInkDropSize(const gfx::Size& large_size,
+                              int large_corner_radius,
+                              const gfx::Size& small_size,
+                              int small_corner_radius) = 0;
 
-  // Sets the bounds for the ink drop. |bounds| are in the coordinate space of
-  // the parent ui::Layer that the ink drop layer is added to.
-  virtual void SetInkDropBounds(const gfx::Rect& bounds) = 0;
+  // Sets the |center_point| of the ink drop relative to its parent Layer.
+  virtual void SetInkDropCenter(const gfx::Point& center_point) = 0;
+
+ protected:
+  InkDropAnimationController() {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(InkDropAnimationController);

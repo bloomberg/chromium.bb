@@ -20,41 +20,44 @@ namespace {
 class InkDropAnimationControllerStub
     : public InkDropAnimationController {
  public:
-  explicit InkDropAnimationControllerStub(InkDropHost* ink_drop_host);
+  explicit InkDropAnimationControllerStub();
   ~InkDropAnimationControllerStub() override;
 
   // InkDropAnimationController:
+  InkDropState GetInkDropState() const override;
   void AnimateToState(InkDropState state) override;
-  void SetInkDropSize(const gfx::Size& size) override;
-  gfx::Rect GetInkDropBounds() const override;
-  void SetInkDropBounds(const gfx::Rect& bounds) override;
+  gfx::Size GetInkDropLargeSize() const override;
+  void SetInkDropSize(const gfx::Size& large_size,
+                      int large_corner_radius,
+                      const gfx::Size& small_size,
+                      int small_corner_radius) override;
+  void SetInkDropCenter(const gfx::Point& center_point) override;
 
  private:
-  // The bounds of the ink drop layers. Defined in the coordinate space of the
-  // parent ui::Layer that the ink drop layers were added to.
-  gfx::Rect ink_drop_bounds_;
-
   DISALLOW_COPY_AND_ASSIGN(InkDropAnimationControllerStub);
 };
 
-InkDropAnimationControllerStub::InkDropAnimationControllerStub(
-    InkDropHost* ink_drop_host) {}
+InkDropAnimationControllerStub::InkDropAnimationControllerStub() {}
 
 InkDropAnimationControllerStub::~InkDropAnimationControllerStub() {}
 
+InkDropState InkDropAnimationControllerStub::GetInkDropState() const {
+  return InkDropState::HIDDEN;
+}
+
 void InkDropAnimationControllerStub::AnimateToState(InkDropState state) {}
 
-void InkDropAnimationControllerStub::SetInkDropSize(const gfx::Size& size) {
-  ink_drop_bounds_.set_size(size);
+gfx::Size InkDropAnimationControllerStub::GetInkDropLargeSize() const {
+  return gfx::Size();
 }
 
-gfx::Rect InkDropAnimationControllerStub::GetInkDropBounds() const {
-  return ink_drop_bounds_;
-}
+void InkDropAnimationControllerStub::SetInkDropSize(const gfx::Size& large_size,
+                                                    int large_corner_radius,
+                                                    const gfx::Size& small_size,
+                                                    int small_corner_radius) {}
 
-void InkDropAnimationControllerStub::SetInkDropBounds(const gfx::Rect& bounds) {
-  ink_drop_bounds_ = bounds;
-}
+void InkDropAnimationControllerStub::SetInkDropCenter(
+    const gfx::Point& center_point) {}
 
 }  // namespace
 
@@ -66,17 +69,19 @@ scoped_ptr<InkDropAnimationController>
 InkDropAnimationControllerFactory::CreateInkDropAnimationController(
     InkDropHost* ink_drop_host) {
 #if defined(OS_CHROMEOS)
+  // The ink drop animation is only targeted at ChromeOS because there is
+  // concern it will conflict with OS level touch feedback in a bad way.
   if (ui::MaterialDesignController::IsModeMaterial()) {
     return scoped_ptr<InkDropAnimationController>(
         new InkDropAnimationControllerImpl(ink_drop_host));
   } else {
     return scoped_ptr<InkDropAnimationController>(
-        new InkDropAnimationControllerStub(ink_drop_host));
+        new InkDropAnimationControllerStub());
   }
 #endif  // defined(OS_CHROMEOS)
 
   return scoped_ptr<InkDropAnimationController>(
-      new InkDropAnimationControllerStub(ink_drop_host));
+      new InkDropAnimationControllerStub());
 }
 
 }  // namespace views

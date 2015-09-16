@@ -32,9 +32,8 @@ void BackButton::SetLeadingMargin(int margin) {
   InvalidateLayout();
 }
 
-void BackButton::LayoutInkDrop() {
-  ink_drop_animation_controller()->SetInkDropBounds(
-      gfx::Rect(margin_leading_, 0, width() - margin_leading_, height()));
+gfx::Point BackButton::CalculateInkDropCenter() const {
+  return gfx::Point((width() + margin_leading_) / 2, height() / 2);
 }
 
 const char* BackButton::GetClassName() const {

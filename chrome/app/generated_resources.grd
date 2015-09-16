@@ -5836,18 +5836,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_FLAGS_DISABLE_TOUCH_FEEDBACK_DESCRIPTION" desc="Description for the flag that disables additional visual feedback for touch.">
           Certain UI components will stop displaying visual feedback upon touch interactions.
         </message>
-        <message name="IDS_FLAGS_MATERIAL_DESIGN_INK_DROP_CIRCLE" desc="Description for the flag that sets material design ink drop to a circle.">
-          Circle Ink Drop
-        </message>
-        <message name="IDS_FLAGS_MATERIAL_DESIGN_INK_DROP_SQUARE" desc="Description for the flag that sets material design ink drop to a square.">
-          Square Ink Drop
-        </message>
-        <message name="IDS_FLAGS_MATERIAL_DESIGN_INK_DROP_NAME" desc="Name for the flag that sets the material design ink drop.">
-          Material Design Ink Drop
-        </message>
-        <message name="IDS_FLAGS_MATERIAL_DESIGN_INK_DROP_DESCRIPTION" desc="Description for the flag that sets the material design ink drop.">
-          Experimental touch feedback animations for material design.
-        </message>
         <message name="IDS_FLAGS_MATERIAL_DESIGN_INK_DROP_ANIMATION_FAST" desc="Description for the flag that sets material design ink drop animation speed of fast.">
           Fast
         </message>

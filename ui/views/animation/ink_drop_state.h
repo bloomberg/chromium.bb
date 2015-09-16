@@ -17,12 +17,18 @@ enum class InkDropState {
   // The quick action for the view has been triggered. e.g. A tap gesture to
   // click a button.
   QUICK_ACTION,
-  // The slow action for the view has been triggered. e.g. A long press to bring
-  // up a menu.
+  // A view is being interacted with and the pending action will be a 'slow'
+  // action. e.g. A long press that is still active before releasing.
+  SLOW_ACTION_PENDING,
+  // The slow action for the view has been triggered. e.g. A long press release
+  // to bring up a menu.
   SLOW_ACTION,
-  // An active state for a view that is no longer being interacted with. e.g. A
-  // pressed button that is showing a menu.
-  ACTIVATED
+  // An active state for a view that is not currently being interacted with.
+  // e.g. A pressed button that is showing a menu.
+  ACTIVATED,
+  // A previously active state has been toggled to inactive. e.g. A drop down
+  // menu is closed.
+  DEACTIVATED,
 };
 
 }  // namespace views

@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_TOOLBAR_TOOLBAR_BUTTON_H_
 
 #include "base/memory/scoped_ptr.h"
+#include "ui/gfx/geometry/point.h"
 #include "ui/views/animation/ink_drop_host.h"
 #include "ui/views/context_menu_controller.h"
 #include "ui/views/controls/button/button.h"
@@ -62,11 +63,9 @@ class ToolbarButton : public views::LabelButton,
   void RemoveInkDropLayer(ui::Layer* ink_drop_layer) override;
 
  protected:
-  // Overridden from CustomButton. Returns true if the button should become
-  // pressed when a user holds the mouse down over the button. For this
-  // implementation, both left and right mouse buttons can trigger a change
-  // to the PUSHED state.
+  // views::LabelButton:
   bool ShouldEnterPushedState(const ui::Event& event) override;
+  void NotifyClick(const ui::Event& event) override;
 
   // Returns if menu should be shown. Override this to change default behavior.
   virtual bool ShouldShowMenu();
@@ -74,7 +73,8 @@ class ToolbarButton : public views::LabelButton,
   // Function to show the dropdown menu.
   virtual void ShowDropDownMenu(ui::MenuSourceType source_type);
 
-  virtual void LayoutInkDrop();
+  // Returns the Point where the ink drop should be centered.
+  virtual gfx::Point CalculateInkDropCenter() const;
 
   views::InkDropAnimationController* ink_drop_animation_controller() {
     return ink_drop_animation_controller_.get();

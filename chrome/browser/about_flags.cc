@@ -419,14 +419,6 @@ const Experiment::Choice kTopChromeMaterialDesignChoices[] = {
 #endif
 
 #if defined(OS_CHROMEOS)
-const Experiment::Choice kAshMaterialDesignInkDrop[] = {
-    {IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", ""},
-    {IDS_FLAGS_MATERIAL_DESIGN_INK_DROP_CIRCLE,
-     switches::kMaterialDesignInkDrop,
-     switches::kMaterialDesignInkDropCircle},
-    {IDS_FLAGS_MATERIAL_DESIGN_INK_DROP_SQUARE,
-     switches::kMaterialDesignInkDrop,
-     switches::kMaterialDesignInkDropSquare}};
 
 const Experiment::Choice kAshMaterialDesignInkDropAnimationSpeed[] = {
     {IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", ""},
@@ -1014,11 +1006,6 @@ const Experiment kExperiments[] = {
     },
 #endif  // defined(USE_ASH)
 #if defined(OS_CHROMEOS)
-    {"material-design-ink-drop",
-     IDS_FLAGS_MATERIAL_DESIGN_INK_DROP_NAME,
-     IDS_FLAGS_MATERIAL_DESIGN_INK_DROP_DESCRIPTION,
-     kOsCrOS,
-     MULTI_VALUE_TYPE(kAshMaterialDesignInkDrop)},
     {"material-design-ink-drop-animation-speed",
      IDS_FLAGS_MATERIAL_DESIGN_INK_DROP_ANIMATION_SPEED_NAME,
      IDS_FLAGS_MATERIAL_DESIGN_INK_DROP_ANIMATION_SPEED_DESCRIPTION,

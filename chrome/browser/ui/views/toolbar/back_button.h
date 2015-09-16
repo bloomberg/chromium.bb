@@ -31,7 +31,7 @@ class BackButton : public ToolbarButton {
 
  protected:
   // ToolbarButton:
-  void LayoutInkDrop() override;
+  gfx::Point CalculateInkDropCenter() const override;
 
  private:
   // ToolbarButton:

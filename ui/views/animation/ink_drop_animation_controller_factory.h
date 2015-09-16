@@ -7,17 +7,20 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
-#include "ui/views/animation/ink_drop_animation_controller.h"
 #include "ui/views/views_export.h"
 
 namespace views {
+class InkDropAnimationController;
+class InkDropHost;
 
 // A factory to create InkDropAnimationController. A different
 // InkDropAnimationController type will be created based on whether or not
 // material design is enabled.
 class VIEWS_EXPORT InkDropAnimationControllerFactory {
  public:
-  // Creates a new InkDropAnimationController.
+  // Creates a new InkDropAnimationController that will add/remove an
+  // InkDropAnimation's ui::Layer to/from the |ink_drop_host| when the animation
+  // is active/inactive.
   static scoped_ptr<InkDropAnimationController>
   CreateInkDropAnimationController(InkDropHost* ink_drop_host);
 

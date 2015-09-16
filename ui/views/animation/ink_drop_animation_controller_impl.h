@@ -15,7 +15,7 @@ namespace views {
 class InkDropAnimation;
 class InkDropHost;
 
-// Controls an ink drop animation which is hosted by an InkDropHost.
+// A functional implementation of an InkDropAnimationController.
 class VIEWS_EXPORT InkDropAnimationControllerImpl
     : public InkDropAnimationController {
  public:
@@ -25,19 +25,41 @@ class VIEWS_EXPORT InkDropAnimationControllerImpl
   ~InkDropAnimationControllerImpl() override;
 
   // InkDropAnimationController:
+  InkDropState GetInkDropState() const override;
   void AnimateToState(InkDropState state) override;
-  void SetInkDropSize(const gfx::Size& size) override;
-  gfx::Rect GetInkDropBounds() const override;
-  void SetInkDropBounds(const gfx::Rect& bounds) override;
+  gfx::Size GetInkDropLargeSize() const override;
+  void SetInkDropSize(const gfx::Size& large_size,
+                      int large_corner_radius,
+                      const gfx::Size& small_size,
+                      int small_corner_radius) override;
+  void SetInkDropCenter(const gfx::Point& center_point) override;
 
  private:
+  // Creates a new InkDropAnimation and sets it to |ink_drop_animation_|. If
+  // |ink_drop_animation_| wasn't null then it will be removed from the
+  // |ink_drop_host_|.
+  void CreateInkDropAnimation();
+
   // The host of the ink drop.
   InkDropHost* ink_drop_host_;
 
-  // TODO(bruthig): It will be expensive to maintain InkDropAnimation instances
-  // when they are not actually being used. Consider creating InkDropAnimations
-  // on an as-needed basis and if construction is also expensive then consider
-  // creating an InkDropAnimationPool. See www.crbug.com/522175.
+  // Cached size for the ink drop's large size animations.
+  gfx::Size ink_drop_large_size_;
+
+  // Cached corner radius for the ink drop's large size animations.
+  int ink_drop_large_corner_radius_;
+
+  // Cached size for the ink drop's small size animations.
+  gfx::Size ink_drop_small_size_;
+
+  // Cached corner radius for the ink drop's small size animations.
+  int ink_drop_small_corner_radius_;
+
+  // Cached center point for the ink drop.
+  gfx::Point ink_drop_center_;
+
+  // The current InkDropAnimation. Created on demand using
+  // CreateInkDropAnimation().
   scoped_ptr<InkDropAnimation> ink_drop_animation_;
 
   DISALLOW_COPY_AND_ASSIGN(InkDropAnimationControllerImpl);
