@@ -53,7 +53,7 @@ static bool paintsCompositionMarkers(const LayoutObject& layoutObject)
 
 void InlineTextBoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
-    if (m_inlineTextBox.isLineBreak() || !paintInfo.shouldPaintWithinRoot(&m_inlineTextBox.layoutObject()) || m_inlineTextBox.layoutObject().style()->visibility() != VISIBLE || m_inlineTextBox.truncation() == cFullTruncation || !m_inlineTextBox.len())
+    if (!shouldPaintTextBox(paintInfo))
         return;
 
     ASSERT(paintInfo.phase != PaintPhaseOutline && paintInfo.phase != PaintPhaseSelfOutline && paintInfo.phase != PaintPhaseChildOutlines);
@@ -87,6 +87,8 @@ void InlineTextBoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& 
         if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(*paintInfo.context, m_inlineTextBox, paintInfo.phase, paintOffset))
             return;
         LayoutRect paintRect(logicalVisualOverflow);
+        if (haveSelection && shouldPaintWrappedSelectionNewline())
+            expandToIncludeNewlineForSelection(paintRect);
         m_inlineTextBox.logicalRectToPhysicalRect(paintRect);
         if (paintInfo.phase != PaintPhaseSelection && (haveSelection || paintsMarkerHighlights(m_inlineTextBox.layoutObject())))
             paintRect.unite(m_inlineTextBox.localSelectionRect(m_inlineTextBox.start(), m_inlineTextBox.start() + m_inlineTextBox.len()));
@@ -241,6 +243,26 @@ void InlineTextBoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& 
 
     if (shouldRotate)
         context->concatCTM(TextPainter::rotation(boxRect, TextPainter::Counterclockwise));
+}
+
+bool InlineTextBoxPainter::shouldPaintTextBox(const PaintInfo& paintInfo)
+{
+    // When painting selection, we want to include a highlight when the
+    // selection spans line breaks. In other cases such as invisible elements
+    // or those with no text that are not line breaks, we can skip painting
+    // wholesale.
+    // TODO(wkorman): Constrain line break painting to appropriate paint phase.
+    // This code path is only called in PaintPhaseForeground whereas we would
+    // expect PaintPhaseSelection. The existing haveSelection logic in paint()
+    // tests for != PaintPhaseTextClip.
+    bool paintLineBreaks = RuntimeEnabledFeatures::selectionPaintingWithoutSelectionGapsEnabled();
+    if ((!paintLineBreaks && m_inlineTextBox.isLineBreak())
+        || !paintInfo.shouldPaintWithinRoot(&m_inlineTextBox.layoutObject())
+        || m_inlineTextBox.layoutObject().style()->visibility() != VISIBLE
+        || m_inlineTextBox.truncation() == cFullTruncation
+        || !m_inlineTextBox.len())
+        return false;
+    return true;
 }
 
 unsigned InlineTextBoxPainter::underlinePaintStart(const CompositionUnderline& underline)
@@ -463,10 +485,39 @@ void InlineTextBoxPainter::paintSelection(GraphicsContext* context, const Layout
     int selHeight = std::max(0, roundToInt(selectionBottom - selectionTop));
 
     FloatPoint localOrigin(boxRect.x().toFloat(), (boxRect.y() - deltaY).toFloat());
-    FloatRect clipRect(localOrigin, FloatSize(m_inlineTextBox.logicalWidth().toFloat(), selHeight));
 
+    LayoutUnit selectionWidth = m_inlineTextBox.logicalWidth();
+    LayoutRect selectionRect = LayoutRect(font.selectionRectForText(textRun, localOrigin, selHeight, sPos, ePos));
+    if (shouldPaintWrappedSelectionNewline()) {
+        expandToIncludeNewlineForSelection(selectionRect);
+        // TODO(wkorman): Make this work with RTL and vertical text.
+        selectionWidth += newlineSpaceWidth();
+    }
+    FloatRect clipRect(localOrigin, FloatSize(selectionWidth.toFloat(), selHeight));
+    // TODO(wkorman): Experiment with not clipping.
     context->clip(clipRect);
-    context->drawHighlightForText(font, textRun, localOrigin, selHeight, c, sPos, ePos);
+    context->fillRect(FloatRect(selectionRect), c);
+}
+
+void InlineTextBoxPainter::expandToIncludeNewlineForSelection(LayoutRect& rect)
+{
+    // TODO(wkorman): Make this work with RTL and vertical text.
+    rect.expand(FloatRectOutsets(0, newlineSpaceWidth(), 0, 0));
+}
+
+bool InlineTextBoxPainter::shouldPaintWrappedSelectionNewline()
+{
+    SelectionState selectionState = m_inlineTextBox.selectionState();
+    return RuntimeEnabledFeatures::selectionPaintingWithoutSelectionGapsEnabled()
+        && (m_inlineTextBox.root().lastSelectedBox() == m_inlineTextBox)
+        && (selectionState == SelectionStart || selectionState == SelectionInside);
+}
+
+float InlineTextBoxPainter::newlineSpaceWidth()
+{
+    // TODO(wkorman): Make sure we grab the right font.
+    const ComputedStyle* style = m_inlineTextBox.layoutObject().style(m_inlineTextBox.isFirstLineStyle());
+    return style->font().spaceWidth();
 }
 
 static int computeUnderlineOffset(const TextUnderlinePosition underlinePosition, const FontMetrics& fontMetrics, const InlineTextBox* inlineTextBox, const float textDecorationThickness)

@@ -1530,6 +1530,17 @@ crbug.com/521764 [ Win10 ] fast/loader/javascript-detached-frame-no-crash.html [
 crbug.com/521764 [ Win10 ] virtual/display_list_2d_canvas/fast/canvas/canvas-resize-reset.html [ Pass Timeout ]
 crbug.com/521764 [ Win10 ] transitions/equivalent-background-image-no-transition.html [ Pass Timeout ]
 
+crbug.com/474759 paint/selection/text-selection-newline.html [ NeedsRebaseline ]
+crbug.com/474759 paint/selection/text-selection-newline-across-blocks.html [ NeedsRebaseline ]
+crbug.com/474759 paint/selection/text-selection-newline-br.html [ NeedsRebaseline ]
+crbug.com/474759 paint/selection/text-selection-newline-span.html [ NeedsRebaseline ]
+crbug.com/474759 paint/selection/text-selection-newline-span-across-line.html [ NeedsRebaseline ]
+crbug.com/474759 virtual/spv2/paint/selection/text-selection-newline.html [ NeedsRebaseline ]
+crbug.com/474759 virtual/spv2/paint/selection/text-selection-newline-across-blocks.html [ NeedsRebaseline ]
+crbug.com/474759 virtual/spv2/paint/selection/text-selection-newline-br.html [ NeedsRebaseline ]
+crbug.com/474759 virtual/spv2/paint/selection/text-selection-newline-span.html [ NeedsRebaseline ]
+crbug.com/474759 virtual/spv2/paint/selection/text-selection-newline-span-across-line.html [ NeedsRebaseline ]
+
 # GrGLConvolutionEffect optimization causes blink layout test image differences
 crbug.com/505086 css3/filters/effect-blur-hw.html [ NeedsManualRebaseline ]
 crbug.com/505086 css3/filters/effect-brightness-clamping-hw.html [ NeedsManualRebaseline ]
