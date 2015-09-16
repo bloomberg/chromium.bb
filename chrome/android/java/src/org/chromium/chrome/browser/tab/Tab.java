@@ -32,6 +32,7 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.AccessibilityUtil;
+import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeWebContentsDelegateAndroid;
 import org.chromium.chrome.browser.FrozenNativePage;
 import org.chromium.chrome.browser.IntentHandler.TabOpenType;
@@ -128,6 +129,13 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
     /** Used for logging. */
     private static final String TAG = "Tab";
 
+    /**
+     * The {@link Activity} used to create {@link View}s and other Android components.  Unlike
+     * {@link #mApplicationContext}, this is not publicly exposed to help prevent leaking the
+     * {@link Activity}.
+     */
+    protected final ChromeActivity mActivity;
+
     private long mNativeTabAndroid;
 
     /** Unique id of this tab (within its container). */
@@ -137,17 +145,10 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
     private final boolean mIncognito;
 
     /**
-     * An Application {@link Context}.  Unlike {@link #mContext}, this is the only one that is
+     * An Application {@link Context}.  Unlike {@link #mActivity}, this is the only one that is
      * publicly exposed to help prevent leaking the {@link Activity}.
      */
     private final Context mApplicationContext;
-
-    /**
-     * The {@link Context} used to create {@link View}s and other Android components.  Unlike
-     * {@link #mApplicationContext}, this is not publicly exposed to help prevent leaking the
-     * {@link Activity}.
-     */
-    private final Context mContext;
 
     /** Gives {@link Tab} a way to interact with the Android window. */
     private final WindowAndroid mWindowAndroid;
@@ -434,8 +435,7 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
                             getWebContents().getNavigationController().continuePendingReload();
                         }
                     });
-            Activity activity = (Activity) mContext;
-            warningDialog.show(activity.getFragmentManager(), null);
+            warningDialog.show(mActivity.getFragmentManager(), null);
         }
 
         @Override
@@ -753,11 +753,10 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
      * Creates an instance of a {@link Tab}.
      * @param id        The id this tab should be identified with.
      * @param incognito Whether or not this tab is incognito.
-     * @param context   An instance of a {@link Context}.
      * @param window    An instance of a {@link WindowAndroid}.
      */
-    public Tab(int id, boolean incognito, Context context, WindowAndroid window) {
-        this(id, INVALID_TAB_ID, incognito, context, window, null, null);
+    public Tab(int id, boolean incognito, WindowAndroid window) {
+        this(id, INVALID_TAB_ID, incognito, null, window, null, null);
     }
 
     /**
@@ -765,26 +764,22 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
      * @param id          The id this tab should be identified with.
      * @param parentId    The id id of the tab that caused this tab to be opened.
      * @param incognito   Whether or not this tab is incognito.
-     * @param context     An instance of a {@link Context}.
+     * @param activity     An instance of a {@link Context}.
      * @param window      An instance of a {@link WindowAndroid}.
      * @param frozenState State containing information about this Tab, if it was persisted.
      */
-    public Tab(int id, int parentId, boolean incognito, Context context, WindowAndroid window,
-            TabLaunchType type, TabState frozenState) {
-        // We need a valid Activity Context to build the ContentView with.
-        assert context == null || context instanceof Activity;
-
+    public Tab(int id, int parentId, boolean incognito, ChromeActivity activity,
+            WindowAndroid window, TabLaunchType type, TabState frozenState) {
         mId = TabIdManager.getInstance().generateValidId(id);
         mParentId = parentId;
         mIncognito = incognito;
-        // TODO(dtrainor): Only store application context here.
-        mContext = context;
-        mApplicationContext = context != null ? context.getApplicationContext() : null;
+        mActivity = activity;
+        mApplicationContext = activity != null ? activity.getApplicationContext() : null;
         mWindowAndroid = window;
         mLaunchType = type;
-        if (mContext != null) {
-            mNumPixel16DP = (int) (DeviceDisplayInfo.create(mContext).getDIPScale() * 16);
-            Resources resources = mContext.getResources();
+        if (mActivity != null) {
+            mNumPixel16DP = (int) (DeviceDisplayInfo.create(mActivity).getDIPScale() * 16);
+            Resources resources = mActivity.getResources();
             mDefaultThemeColor = mIncognito
                     ? ApiCompatibilityUtils.getColor(resources, R.color.incognito_primary_color)
                     : ApiCompatibilityUtils.getColor(resources, R.color.default_primary_color);
@@ -1053,7 +1048,7 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
         if (printingController == null) return;
 
         printingController.setPendingPrint(new TabPrinter(this),
-                new PrintManagerDelegateImpl(mContext));
+                new PrintManagerDelegateImpl(mActivity));
     }
 
     /**
@@ -1475,7 +1470,7 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
      * @return {@link AppBannerManager} to be used for this tab. May be null.
      */
     protected AppBannerManager createAppBannerManager() {
-        return new AppBannerManager(this, mContext);
+        return new AppBannerManager(this, mActivity);
     }
 
     /**
@@ -1625,9 +1620,9 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
      *                    {@link ContentViewCore}.
      */
     protected void initContentViewCore(WebContents webContents) {
-        ContentViewCore cvc = new ContentViewCore(mContext);
-        ContentView cv = new ContentView(mContext, cvc);
-        cv.setContentDescription(mContext.getResources().getString(
+        ContentViewCore cvc = new ContentViewCore(mActivity);
+        ContentView cv = new ContentView(mActivity, cvc);
+        cv.setContentDescription(mActivity.getResources().getString(
                 R.string.accessibility_content_view));
         cvc.initialize(cv, cv, webContents, getWindowAndroid());
         setContentViewCore(cvc);
@@ -1661,7 +1656,7 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
             assert false;
             mContentViewParent.removeAllViews();
         }
-        mContentViewParent = new FrameLayout(mContext);
+        mContentViewParent = new FrameLayout(mActivity);
         mContentViewParent.addView(cvc.getContainerView(),
                 new FrameLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
 
@@ -1680,13 +1675,13 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
         if (mInfoBarContainer == null) {
             // The InfoBarContainer needs to be created after the ContentView has been natively
             // initialized.
-            mInfoBarContainer = new InfoBarContainer(mContext, getId(), mContentViewParent, this);
+            mInfoBarContainer = new InfoBarContainer(mActivity, getId(), mContentViewParent, this);
         } else {
             mInfoBarContainer.onParentViewChanged(getId(), mContentViewParent);
         }
         mInfoBarContainer.setContentViewCore(mContentViewCore);
 
-        mSwipeRefreshHandler = new SwipeRefreshHandler(mContext);
+        mSwipeRefreshHandler = new SwipeRefreshHandler(mActivity);
         mSwipeRefreshHandler.setContentViewCore(mContentViewCore);
 
         for (TabObserver observer : mObservers) observer.onContentChanged(this);
@@ -1722,7 +1717,7 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
             // Make sure we are not adding the "Aw, snap" view over an existing one.
             assert mSadTabView == null;
             mSadTabView = SadTabViewFactory.createSadTabView(
-                    mContext, suggestionAction, reloadButtonAction);
+                    mActivity, suggestionAction, reloadButtonAction);
 
             // Show the sad tab inside ContentView.
             getContentViewCore().getContainerView().addView(
@@ -1928,7 +1923,7 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
      */
     @CalledByNative
     public boolean loadIfNeeded() {
-        if (mContext == null) {
+        if (mActivity == null) {
             Log.e(TAG, "Tab couldn't be loaded because Context was null.");
             return false;
         }
@@ -2258,9 +2253,9 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
     @CalledByNative
     public void swapWebContents(
             WebContents webContents, boolean didStartLoad, boolean didFinishLoad) {
-        ContentViewCore cvc = new ContentViewCore(mContext);
-        ContentView cv = new ContentView(mContext, cvc);
-        cv.setContentDescription(mContext.getResources().getString(
+        ContentViewCore cvc = new ContentViewCore(mActivity);
+        ContentView cv = new ContentView(mActivity, cvc);
+        cv.setContentDescription(mActivity.getResources().getString(
                 R.string.accessibility_content_view));
         cvc.initialize(cv, cv, webContents, getWindowAndroid());
         swapContentViewCore(cvc, false, didStartLoad, didFinishLoad);
@@ -2796,11 +2791,11 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
      * complete the second level initialization.
      */
     @VisibleForTesting
-    static Tab createTabForLazyLoad(Context context, boolean incognito, WindowAndroid nativeWindow,
-            TabLaunchType type, int parentId, LoadUrlParams loadUrlParams,
-            TabModelSelector tabModelSelector) {
-        Tab tab = new Tab(INVALID_TAB_ID, parentId, incognito, context, nativeWindow, type, null);
-        if (context != null) {
+    static Tab createTabForLazyLoad(ChromeActivity activity, boolean incognito,
+            WindowAndroid nativeWindow, TabLaunchType type, int parentId,
+            LoadUrlParams loadUrlParams, TabModelSelector tabModelSelector) {
+        Tab tab = new Tab(INVALID_TAB_ID, parentId, incognito, activity, nativeWindow, type, null);
+        if (activity != null) {
             tab.setTabUma(new TabUma(tab, TabCreationState.FROZEN_FOR_LAZY_LOAD,
                     tabModelSelector.getModel(incognito)));
         }
@@ -2814,11 +2809,11 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
      * @param initiallyHidden true iff the tab being created is initially in background
      */
     @VisibleForTesting
-    static Tab createLiveTab(int id, Context context, boolean incognito, WindowAndroid nativeWindow,
-            TabLaunchType type, int parentId, boolean initiallyHidden,
+    static Tab createLiveTab(int id, ChromeActivity activity, boolean incognito,
+            WindowAndroid nativeWindow, TabLaunchType type, int parentId, boolean initiallyHidden,
             TabModelSelector tabModelSelector) {
-        Tab tab = new Tab(id, parentId, incognito, context, nativeWindow, type, null);
-        if (context != null) {
+        Tab tab = new Tab(id, parentId, incognito, activity, nativeWindow, type, null);
+        if (activity != null) {
             tab.setTabUma(new TabUma(tab, initiallyHidden ? TabCreationState.LIVE_IN_BACKGROUND
                                                           : TabCreationState.LIVE_IN_FOREGROUND,
                     tabModelSelector.getModel(incognito)));

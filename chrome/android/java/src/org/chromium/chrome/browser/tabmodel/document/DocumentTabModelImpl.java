@@ -290,7 +290,7 @@ public class DocumentTabModelImpl extends TabModelJniBridge implements DocumentT
 
         // Create a placeholder Tab that just has the ID.
         if (entry.placeholderTab == null) {
-            entry.placeholderTab = new Tab(tabId, isIncognito(), null, null);
+            entry.placeholderTab = new Tab(tabId, isIncognito(), null);
         }
 
         return entry.placeholderTab;

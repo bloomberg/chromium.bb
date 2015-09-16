@@ -443,13 +443,13 @@ public class DocumentTabModelImplTest extends NativeLibraryTestBase {
 
         Intent badIntent = new Intent();
         badIntent.setData(Uri.parse("http://toteslegit.com"));
-        Tab badTab = new Tab(Tab.INVALID_TAB_ID, false, null, null);
+        Tab badTab = new Tab(Tab.INVALID_TAB_ID, false, null);
         mTabModel.addTab(badIntent, badTab);
         assertEquals(0, mTabModel.getCount());
 
         Intent legitIntent = new Intent();
         legitIntent.setData(Uri.parse("document://11684?http://erfworld.com"));
-        Tab legitTab = new Tab(11684, false, null, null);
+        Tab legitTab = new Tab(11684, false, null);
         mTabModel.addTab(legitIntent, legitTab);
         assertEquals(1, mTabModel.getCount());
     }

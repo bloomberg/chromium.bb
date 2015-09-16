@@ -124,8 +124,6 @@ public class ChromeTab extends Tab {
      */
     private boolean mIsNativePageCommitPending;
 
-    protected final ChromeActivity mActivity;
-
     private WebContentsObserver mWebContentsObserver;
 
     private Handler mHandler;
@@ -211,7 +209,6 @@ public class ChromeTab extends Tab {
         }
 
         addObserver(mTabObserver);
-        mActivity = activity;
         mHandler = new Handler() {
             @Override
             public void handleMessage(Message msg) {
@@ -249,8 +246,7 @@ public class ChromeTab extends Tab {
      */
     @VisibleForTesting
     public ChromeTab(int id, boolean incognito) {
-        super(id, incognito, null, null);
-        mActivity = null;
+        super(id, incognito, null);
         mTabRedirectHandler = new TabRedirectHandler(null);
     }
 

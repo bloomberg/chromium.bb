@@ -41,7 +41,7 @@ public class MockTabModel extends EmptyTabModel {
 
     public void addTab(int id) {
         Tab tab = mDelegate == null
-                ? new Tab(id, isIncognito(), null, null) : mDelegate.createTab(id, isIncognito());
+                ? new Tab(id, isIncognito(), null) : mDelegate.createTab(id, isIncognito());
         mTabs.add(tab);
     }
 
