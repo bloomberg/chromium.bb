@@ -956,8 +956,6 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
             } else {
                 RecordUserAction.record("MobileShortcutFindInPage");
             }
-        } else if (id == R.id.show_menu) {
-            showMenu();
         } else if (id == R.id.focus_url_bar) {
             boolean isUrlBarVisible = !mLayoutManager.overviewVisible()
                     && (!isTablet() || getCurrentTabModel().getCount() != 0);
@@ -1240,10 +1238,10 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
         return super.shouldShowAppMenu();
     }
 
-    private boolean showMenu() {
-        if (!mUIInitialized || isFullscreenVideoPlaying()) return false;
-        getAppMenuHandler().showAppMenu(null, false);
-        return true;
+    @Override
+    protected void showAppMenuForKeyboardEvent() {
+        if (!mUIInitialized || isFullscreenVideoPlaying()) return;
+        super.showAppMenuForKeyboardEvent();
     }
 
     private boolean isFullscreenVideoPlaying() {

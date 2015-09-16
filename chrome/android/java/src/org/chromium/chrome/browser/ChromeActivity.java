@@ -31,6 +31,7 @@ import android.util.DisplayMetrics;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewConfiguration;
 import android.view.ViewGroup;
 import android.view.ViewStub;
 import android.view.ViewTreeObserver;
@@ -918,6 +919,18 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
     }
 
     /**
+    * Shows the app menu (if possible) for a key press on the keyboard with the correct anchor view
+    * chosen depending on device configuration and the visible menu button to the user.
+    */
+    protected void showAppMenuForKeyboardEvent() {
+        if (getAppMenuHandler() == null) return;
+
+        boolean hasPermanentMenuKey = ViewConfiguration.get(this).hasPermanentMenuKey();
+        getAppMenuHandler().showAppMenu(
+                hasPermanentMenuKey ? null : getToolbarManager().getMenuAnchor(), false);
+    }
+
+    /**
      * Allows Activities that extend ChromeActivity to do additional hiding/showing of menu items.
      * @param menu Menu that is going to be shown when the menu button is pressed.
      */
@@ -1393,6 +1406,8 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
             HelpAndFeedback.getInstance(this)
                     .show(this, helpContextId, currentTab.getProfile(), currentTab.getUrl());
             RecordUserAction.record("MobileMenuFeedback");
+        } else if (id == R.id.show_menu) {
+            showAppMenuForKeyboardEvent();
         } else {
             return false;
         }

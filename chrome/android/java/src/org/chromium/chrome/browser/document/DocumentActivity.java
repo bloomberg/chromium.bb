@@ -732,10 +732,6 @@ public class DocumentActivity extends ChromeActivity {
             } else {
                 RecordUserAction.record("MobileShortcutFindInPage");
             }
-        } else if (id == R.id.show_menu) {
-            if (getToolbarManager().isInitialized()) {
-                getAppMenuHandler().showAppMenu(null, false);
-            }
         } else if (id == R.id.focus_url_bar) {
             if (getToolbarManager().isInitialized()) getToolbarManager().setUrlBarFocus(true);
         } else {
@@ -767,6 +763,12 @@ public class DocumentActivity extends ChromeActivity {
         }
 
         return super.shouldShowAppMenu();
+    }
+
+    @Override
+    protected void showAppMenuForKeyboardEvent() {
+        if (!getToolbarManager().isInitialized()) return;
+        super.showAppMenuForKeyboardEvent();
     }
 
     private void updateTaskDescription() {

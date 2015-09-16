@@ -612,6 +612,14 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
     }
 
     /**
+     * @return The view that the pop up menu should be anchored to on the UI.
+     */
+    public View getMenuAnchor() {
+        return mToolbar.shouldShowMenuButton() ? mToolbar.getMenuButton()
+                : mToolbar.getLocationBar().getMenuAnchor();
+    }
+
+    /**
      * Adds a custom action button to the {@link Toolbar} if it is supported.
      * @param drawable     The {@link Drawable} to use as the background for the button.
      * @param description  The content description for the custom action button.

@@ -72,7 +72,7 @@ public class AppMenuHandler {
      * @param startDragging      Whether dragging is started. For example, if the app menu is
      *                           showed by tapping on a button, this should be false. If it is
      *                           showed by start dragging down on the menu button, this should
-     *                           be true. Note that if isByHardwareButton is true, this must
+     *                           be true. Note that if anchorView is null, this must
      *                           be false since we no longer support hardware menu button
      *                           dragging.
      * @return True, if the menu is shown, false, if menu is not shown, example reasons:
@@ -80,7 +80,8 @@ public class AppMenuHandler {
      */
     public boolean showAppMenu(View anchorView, boolean startDragging) {
         if (!mDelegate.shouldShowAppMenu() || isAppMenuShowing()) return false;
-        boolean isByHardwareButton = false;
+        boolean isByPermanentButton = false;
+
         if (anchorView == null) {
             // This fixes the bug where the bottom of the menu starts at the top of
             // the keyboard, instead of overlapping the keyboard as it should.
@@ -91,10 +92,10 @@ public class AppMenuHandler {
             mHardwareButtonMenuAnchor.setY((displayHeight - statusBarHeight));
 
             anchorView = mHardwareButtonMenuAnchor;
-            isByHardwareButton = true;
+            isByPermanentButton = true;
         }
 
-        assert !(isByHardwareButton && startDragging);
+        assert !(isByPermanentButton && startDragging);
 
         if (mMenu == null) {
             // Use a PopupMenu to create the Menu object. Note this is not the same as the
@@ -133,7 +134,7 @@ public class AppMenuHandler {
         int rotation = mActivity.getWindowManager().getDefaultDisplay().getRotation();
         Point pt = new Point();
         mActivity.getWindowManager().getDefaultDisplay().getSize(pt);
-        mAppMenu.show(wrapper, anchorView, isByHardwareButton,
+        mAppMenu.show(wrapper, anchorView, isByPermanentButton,
                 rotation, appRect, pt.y, mDelegate.getFooterResourceId());
         mAppMenuDragHelper.onShow(startDragging);
         RecordUserAction.record("MobileMenuShow");

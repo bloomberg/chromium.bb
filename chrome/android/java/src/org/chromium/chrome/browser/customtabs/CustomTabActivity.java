@@ -328,6 +328,12 @@ public class CustomTabActivity extends ChromeActivity {
     }
 
     @Override
+    protected void showAppMenuForKeyboardEvent() {
+        if (!shouldShowAppMenu()) return;
+        super.showAppMenuForKeyboardEvent();
+    }
+
+    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int menuIndex = getAppMenuPropertiesDelegate().getIndexOfMenuItem(item);
         if (menuIndex >= 0) {
@@ -341,12 +347,7 @@ public class CustomTabActivity extends ChromeActivity {
 
     @Override
     public boolean onMenuOrKeyboardAction(int id, boolean fromMenu) {
-        if (id == R.id.show_menu) {
-            if (shouldShowAppMenu()) {
-                getAppMenuHandler().showAppMenu(null, false);
-                return true;
-            }
-        } else if (id == R.id.open_in_chrome_id) {
+        if (id == R.id.open_in_chrome_id) {
             String url = getTabModelSelector().getCurrentTab().getUrl();
             Intent chromeIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
             chromeIntent.setPackage(getApplicationContext().getPackageName());

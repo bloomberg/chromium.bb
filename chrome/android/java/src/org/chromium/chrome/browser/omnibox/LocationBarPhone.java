@@ -105,6 +105,11 @@ public class LocationBarPhone extends LocationBarLayout {
     }
 
     @Override
+    public View getMenuAnchor() {
+        return mMenuButton;
+    }
+
+    @Override
     public void getContentRect(Rect outRect) {
         super.getContentRect(outRect);
         if (mIncognitoBadge.getVisibility() == View.GONE) return;

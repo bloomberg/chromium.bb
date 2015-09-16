@@ -321,6 +321,11 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
     }
 
     @Override
+    public View getMenuAnchor() {
+        return mMenuButton;
+    }
+
+    @Override
     protected void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
         setTitleToPageTitle();

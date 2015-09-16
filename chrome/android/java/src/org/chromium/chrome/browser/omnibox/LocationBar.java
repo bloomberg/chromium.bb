@@ -86,6 +86,12 @@ public interface LocationBar extends UrlBarDelegate {
     void setMenuButtonHelper(AppMenuButtonHelper helper);
 
     /**
+     * @return The anchor view that should be used for the app menu. Null if there is no menu in
+     *         {@link LocationBar} for the current configuration.
+     */
+    View getMenuAnchor();
+
+    /**
      * Initialize controls that will act as hooks to various functions.
      * @param windowDelegate {@link WindowDelegate} that will provide {@link Window} related info.
      * @param delegate {@link ActionBarDelegate} to be used while creating a
