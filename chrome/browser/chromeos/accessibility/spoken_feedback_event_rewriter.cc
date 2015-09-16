@@ -30,8 +30,7 @@ bool SpokenFeedbackEventRewriterDelegate::DispatchKeyEventToChromeVox(
 
   if (!chromeos::AccessibilityManager::Get())
     return false;
-  content::BrowserContext* context =
-      chromeos::AccessibilityManager::Get()->profile();
+  content::BrowserContext* context = ProfileManager::GetActiveUserProfile();
   if (!context)
     return false;
 

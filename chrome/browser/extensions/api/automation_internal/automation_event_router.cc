@@ -30,16 +30,12 @@ AutomationEventRouter* AutomationEventRouter::GetInstance() {
       base::LeakySingletonTraits<AutomationEventRouter>>::get();
 }
 
-AutomationEventRouter::AutomationEventRouter() {
+AutomationEventRouter::AutomationEventRouter()
+    : active_profile_(ProfileManager::GetActiveUserProfile()) {
   registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
                  content::NotificationService::AllBrowserContextsAndSources());
   registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
                  content::NotificationService::AllBrowserContextsAndSources());
-  active_profile_ = ProfileManager::GetLastUsedProfile();
-
-#if defined(OS_CHROMEOS)
-  session_state_observer_.reset(new ash::ScopedSessionStateObserver(this));
-#endif
 }
 
 AutomationEventRouter::~AutomationEventRouter() {
@@ -70,6 +66,11 @@ void AutomationEventRouter::RegisterListenerWithDesktopPermission(
 
 void AutomationEventRouter::DispatchAccessibilityEvent(
     const ExtensionMsg_AccessibilityEventParams& params) {
+  if (active_profile_ != ProfileManager::GetActiveUserProfile()) {
+    active_profile_ = ProfileManager::GetActiveUserProfile();
+    UpdateActiveProfile();
+  }
+
   for (const auto& listener : listeners_) {
     // Skip listeners that don't want to listen to this tree.
     if (!listener.desktop &&
@@ -162,13 +163,6 @@ void AutomationEventRouter::Observe(
       listeners_.end());
   UpdateActiveProfile();
 }
-
-#if defined(OS_CHROMEOS)
-void AutomationEventRouter::ActiveUserChanged(const std::string& user_id) {
-  active_profile_ = ProfileManager::GetLastUsedProfile();
-  UpdateActiveProfile();
-}
-#endif
 
 void AutomationEventRouter::UpdateActiveProfile() {
   for (auto& listener : listeners_) {

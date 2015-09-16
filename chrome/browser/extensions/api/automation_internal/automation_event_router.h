@@ -14,10 +14,6 @@
 #include "content/public/browser/notification_registrar.h"
 #include "extensions/common/extension.h"
 
-#if defined(OS_CHROMEOS)
-#include "ash/session/session_state_observer.h"
-#endif
-
 class Profile;
 
 namespace content {
@@ -30,12 +26,7 @@ namespace extensions {
 
 struct AutomationListener;
 
-class AutomationEventRouter
-    : public content::NotificationObserver
-#if defined(OS_CHROMEOS)
-    , public ash::SessionStateObserver
-#endif
-{
+class AutomationEventRouter : public content::NotificationObserver {
  public:
   static AutomationEventRouter* GetInstance();
 
@@ -92,11 +83,6 @@ class AutomationEventRouter
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override;
 
-#if defined(OS_CHROMEOS)
-  // SessionStateObserver overrides:
-  void ActiveUserChanged(const std::string& user_id) override;
-#endif
-
   // Called when the user switches profiles or when a listener is added
   // or removed. The purpose is to ensure that multiple instances of the
   // same extension running in different profiles don't interfere with one
@@ -113,10 +99,6 @@ class AutomationEventRouter
   std::vector<AutomationListener> listeners_;
 
   Profile* active_profile_;
-
-#if defined(OS_CHROMEOS)
-  scoped_ptr<ash::ScopedSessionStateObserver> session_state_observer_;
-#endif
 
   friend struct base::DefaultSingletonTraits<AutomationEventRouter>;
 
