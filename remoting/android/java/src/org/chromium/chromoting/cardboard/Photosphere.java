@@ -12,6 +12,8 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.opengl.GLES20;
 
+import com.google.vrtoolkit.cardboard.Eye;
+
 import org.chromium.base.Log;
 import org.chromium.chromoting.ChromotingDownloadManager;
 
@@ -47,7 +49,8 @@ public class Photosphere {
     private int mProgramHandle;
     private int mCombinedMatrixHandle;
     private int mPositionHandle;
-    private int mTextureDataHandle;
+    private int mLeftEyeTextureDataHandle;
+    private int mRightEyeTextureDataHandle;
     private int mTextureCoordinateHandle;
     private int mTextureUniformHandle;
 
@@ -72,10 +75,14 @@ public class Photosphere {
 
     // TODO(shichengfeng): Find a photosphere image and upload it.
     private static final String IMAGE_URI =
-            "https://dl.google.com/chrome-remote-desktop/android-assets/room_left.png";
+            "https://dl.google.com/chrome-remote-desktop/android-assets/photosphere.jpg";
     private static final String IMAGE_NAME = "photosphere";
 
     private static final ShortBuffer INDICES_BUFFER = calculateIndicesBuffer();
+
+    // Maxiumum resolution for decoded image.
+    private static final int MAX_WIDTH = 4096;
+    private static final int MAX_HEIGHT = 4096;
 
     private FloatBuffer mPositionBuffer;
     private FloatBuffer mTextureCoordinatesBuffer;
@@ -118,7 +125,8 @@ public class Photosphere {
                 GLES20.glGetAttribLocation(mProgramHandle, "a_TexCoordinate");
         mTextureUniformHandle =
                 GLES20.glGetUniformLocation(mProgramHandle, "u_TextureUnit");
-        mTextureDataHandle = TextureHelper.createTextureHandle();
+        mLeftEyeTextureDataHandle = TextureHelper.createTextureHandle();
+        mRightEyeTextureDataHandle = TextureHelper.createTextureHandle();
 
         mActivity.runOnUiThread(new Runnable() {
             public void run() {
@@ -157,7 +165,16 @@ public class Photosphere {
             // This will only be executed when download finishes, which runs on main thread.
             // On the main thread, we first initialize mDownloadDirectory and then start download,
             // so it is safe to use mDownloadDirectory here.
-            image = BitmapFactory.decodeFile(mDownloadDirectory + "/" + IMAGE_NAME);
+            // First decode with inJustDecodeBounds = true to check dimensions.
+            final BitmapFactory.Options options = new BitmapFactory.Options();
+            options.inJustDecodeBounds = true;
+            BitmapFactory.decodeFile(mDownloadDirectory + "/" + IMAGE_NAME, options);
+
+            calculateInSampleSize(options);
+
+            // Decode bitmap with inSampleSize set
+            options.inJustDecodeBounds = false;
+            image = BitmapFactory.decodeFile(mDownloadDirectory + "/" + IMAGE_NAME, options);
         }
 
         if (image == null) {
@@ -165,11 +182,19 @@ public class Photosphere {
             return;
         }
 
-        TextureHelper.linkTexture(mTextureDataHandle, image);
+        Bitmap leftEyeImage = Bitmap.createBitmap(image, 0, 0, image.getWidth(),
+                image.getHeight() / 2);
+        TextureHelper.linkTexture(mLeftEyeTextureDataHandle, leftEyeImage);
+        leftEyeImage.recycle();
+        Bitmap rightEyeImage = Bitmap.createBitmap(image, 0, image.getHeight() / 2,
+                image.getWidth(), image.getHeight() / 2);
+        TextureHelper.linkTexture(mRightEyeTextureDataHandle, rightEyeImage);
+        rightEyeImage.recycle();
+
         image.recycle();
     }
 
-    public void draw(float[] combinedMatrix) {
+    public void draw(float[] combinedMatrix, int eyeType) {
         GLES20.glUseProgram(mProgramHandle);
 
         // Pass in model view project matrix.
@@ -186,7 +211,11 @@ public class Photosphere {
 
         // Link texture data with texture unit.
         GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, mTextureDataHandle);
+        if (eyeType == Eye.Type.LEFT) {
+            GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, mLeftEyeTextureDataHandle);
+        } else if (eyeType == Eye.Type.RIGHT) {
+            GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, mRightEyeTextureDataHandle);
+        }
         GLES20.glUniform1i(mTextureUniformHandle, 0);
 
         GLES20.glDrawElements(GLES20.GL_TRIANGLES, NUM_DRAWING_VERTICES, GLES20.GL_UNSIGNED_SHORT,
@@ -255,12 +284,30 @@ public class Photosphere {
     public void cleanup() {
         GLES20.glDeleteShader(mVertexShaderHandle);
         GLES20.glDeleteShader(mFragmentShaderHandle);
-        GLES20.glDeleteTextures(1, new int[] {mTextureDataHandle}, 0);
+        GLES20.glDeleteTextures(2, new int[] {mLeftEyeTextureDataHandle,
+                mRightEyeTextureDataHandle}, 0);
 
         mActivity.runOnUiThread(new Runnable() {
             public void run() {
                 mDownloadManager.close();
             }
         });
+    }
+
+    // Calculate InSampleSize, which is the number of pixels in either dimension that correspond
+    // to a single pixel in the decoded bitmap.
+    private static void calculateInSampleSize(BitmapFactory.Options options) {
+        // Raw height and width of image
+        int height = options.outHeight;
+        int width = options.outWidth;
+        int inSampleSize = 1;
+
+        while (height > MAX_HEIGHT || width > MAX_WIDTH) {
+            inSampleSize *= 2;
+            height /= 2;
+            width /= 2;
+        }
+
+        options.inSampleSize = inSampleSize;
     }
 }

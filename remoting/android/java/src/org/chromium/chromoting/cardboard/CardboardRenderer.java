@@ -182,7 +182,7 @@ public class CardboardRenderer implements CardboardView.StereoRenderer {
         mProjectionMatrix = eye.getPerspective(Z_NEAR, Z_FAR);
 
         drawDesktop();
-        drawPhotosphere();
+        drawPhotosphere(eye.getType());
         drawMenuBar();
         drawCursor();
     }
@@ -220,13 +220,13 @@ public class CardboardRenderer implements CardboardView.StereoRenderer {
         mCursor.draw(mEyePointCombinedMatrix);
     }
 
-    private void drawPhotosphere() {
+    private void drawPhotosphere(int eyeType) {
         // Since we will always put the photosphere center in the origin, the
         // model matrix will always be identity matrix which we can ignore.
         Matrix.multiplyMM(mPhotosphereCombinedMatrix, 0, mProjectionMatrix,
                 0, mViewMatrix, 0);
 
-        mPhotosphere.draw(mPhotosphereCombinedMatrix);
+        mPhotosphere.draw(mPhotosphereCombinedMatrix, eyeType);
     }
 
     private void drawDesktop() {
