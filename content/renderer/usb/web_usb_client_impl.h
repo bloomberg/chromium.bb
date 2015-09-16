@@ -24,9 +24,14 @@ class WebUSBClientImpl : public blink::WebUSBClient {
   void requestDevice(
       const blink::WebUSBDeviceRequestOptions& options,
       blink::WebUSBClientRequestDeviceCallbacks* callbacks) override;
+  void setObserver(Observer* observer) override;
+
+  void OnDeviceChangeNotification(
+      device::usb::DeviceChangeNotificationPtr notification);
 
   mojo::ServiceProviderPtr device_services_;
   device::usb::DeviceManagerPtr device_manager_;
+  Observer* observer_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(WebUSBClientImpl);
 };

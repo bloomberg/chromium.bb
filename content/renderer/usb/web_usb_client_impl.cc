@@ -98,4 +98,39 @@ void WebUSBClientImpl::requestDevice(
   delete callbacks;
 }
 
+void WebUSBClientImpl::setObserver(Observer* observer) {
+  if (!observer_) {
+    // Set up two sequential calls to GetDeviceChanges to avoid latency.
+    device_manager_->GetDeviceChanges(base::Bind(
+        &WebUSBClientImpl::OnDeviceChangeNotification, base::Unretained(this)));
+    device_manager_->GetDeviceChanges(base::Bind(
+        &WebUSBClientImpl::OnDeviceChangeNotification, base::Unretained(this)));
+  }
+
+  observer_ = observer;
+}
+
+void WebUSBClientImpl::OnDeviceChangeNotification(
+    device::usb::DeviceChangeNotificationPtr notification) {
+  if (!observer_)
+    return;
+
+  device_manager_->GetDeviceChanges(base::Bind(
+      &WebUSBClientImpl::OnDeviceChangeNotification, base::Unretained(this)));
+  for (size_t i = 0; i < notification->devices_added.size(); ++i) {
+    device::usb::DeviceManagerPtr device_manager;
+    mojo::ConnectToService(device_services_.get(), &device_manager);
+    observer_->onDeviceConnected(blink::adoptWebPtr(new WebUSBDeviceImpl(
+        device_manager.Pass(), mojo::ConvertTo<blink::WebUSBDeviceInfo>(
+                                   notification->devices_added[i]))));
+  }
+  for (size_t i = 0; i < notification->devices_removed.size(); ++i) {
+    device::usb::DeviceManagerPtr device_manager;
+    mojo::ConnectToService(device_services_.get(), &device_manager);
+    observer_->onDeviceDisconnected(blink::adoptWebPtr(new WebUSBDeviceImpl(
+        device_manager.Pass(), mojo::ConvertTo<blink::WebUSBDeviceInfo>(
+                                   notification->devices_removed[i]))));
+  }
+}
+
 }  // namespace content
