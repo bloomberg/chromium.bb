@@ -4,6 +4,7 @@
 
 
 var TestConstants = {
+  isPowerwashed: 0,
   wallpaperURL: 'https://test.com/test.jpg',
   // A dummy string which is used to mock an image.
   IMAGE: '*#*@#&',
@@ -204,11 +205,15 @@ var chrome = {
           case Constants.AccessLocalSurpriseMeEnabledKey:
             items[Constants.AccessLocalSurpriseMeEnabledKey] = true;
           case Constants.AccessLocalWallpaperInfoKey:
-            items[Constants.AccessLocalWallpaperInfoKey] = {
-              'url': 'dummy',
-              'layout': 'dummy',
-              'source': Constants.WallpaperSourceEnum.Custom
-            };
+            if (TestConstants.isPowerwashed) {
+              items[Constants.AccessLocalWallpaperInfoKey] = null;
+            } else {
+              items[Constants.AccessLocalWallpaperInfoKey] = {
+                'url': 'dummy',
+                'layout': 'dummy',
+                'source': Constants.WallpaperSourceEnum.Custom
+              };
+            }
         }
         callback(items);
       },

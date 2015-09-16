@@ -43,7 +43,7 @@ function testSyncCustomWallpaperSet() {
 
 // Test store historical custom wallpaper. When receive a historical wallpaper
 // from syncFS, we store it to local.
-function testSyncCustoWallpapermStore() {
+function testSyncCustomWallpaperStore() {
   var syncFSChanges = {};
   syncFSChanges.status = 'synced';
   syncFSChanges.direction = 'remote_to_local';
@@ -55,6 +55,24 @@ function testSyncCustoWallpapermStore() {
   mockWrite.addExpectation(new Blob([new Int8Array(TestConstants.FILESTRING)]));
   chrome.syncFileSystem.onFileStatusChanged.dispatch(syncFSChanges);
 }
+
+// Test that historical custom wallpapers from syncFS get synced to localFS on
+// powerwashed (or recovered) devices.
+function testSyncCustomWallpaperStoreOnPowerwashedDevice() {
+  TestConstants.isPowerwashed = 1;
+  var syncFSChanges = {};
+  syncFSChanges.status = 'synced';
+  syncFSChanges.direction = 'remote_to_local';
+  syncFSChanges.action = 'added';
+  syncFSChanges.fileEntry = mockSyncFS.mockTestFile('historicalwallpaper');
+
+  // TODO(ranj): support two callbacks with success and failure?
+  var mockWrite = mockController.createFunctionMock(mockWriter, 'write');
+  mockWrite.addExpectation(new Blob([new Int8Array(TestConstants.FILESTRING)]));
+  chrome.syncFileSystem.onFileStatusChanged.dispatch(syncFSChanges);
+  TestConstants.isPowerwashed = 0;
+}
+
 
 // Test delete custom wallpaper from local. When receive a syncFS delete file
 // event, delete the file in localFS as well.

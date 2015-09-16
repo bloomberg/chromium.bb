@@ -283,9 +283,10 @@ chrome.syncFileSystem.onFileStatusChanged.addListener(function(detail) {
                     localData.source == Constants.WallpaperSourceEnum.Custom) {
                   WallpaperUtil.setCustomWallpaperFromSyncFS(localData.url,
                                                              localData.layout);
-                } else if (localData.url !=
+                } else if (!localData || localData.url !=
                            detail.fileEntry.name.replace(
                                Constants.CustomWallpaperThumbnailSuffix, '')) {
+                  // localData might be null on a powerwashed device.
                   WallpaperUtil.storeWallpaperFromSyncFSToLocalFS(
                       detail.fileEntry);
                 }
