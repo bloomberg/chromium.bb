@@ -244,8 +244,6 @@ layer at (0,0) size 785x989 backgroundClip at (0,0) size 785x600 clip at (0,0) s
               LayoutBlockFlow {SPAN} at (0,0) size 236x20
                 LayoutText {#text} at (0,0) size 139x19
                   text run at (0,0) width 139: "Table 2, Row 2, Cell 3"
-              LayoutBlockFlow (anonymous) at (0,20) size 236x0
-                LayoutText {#text} at (0,0) size 0x0
               LayoutBlockFlow {SPAN} at (0,20) size 236x20
                 LayoutText {#text} at (0,0) size 167x19
                   text run at (0,0) width 167: "also Table 2, Row 2, Cell 3"
