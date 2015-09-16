@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/metrics/perf_provider_chromeos.h"
+#include "chrome/browser/metrics/perf/perf_provider_chromeos.h"
 
 #include <string>
 
@@ -12,7 +12,7 @@
 #include "base/metrics/histogram.h"
 #include "base/rand_util.h"
 #include "base/threading/sequenced_worker_pool.h"
-#include "chrome/browser/metrics/windowed_incognito_observer.h"
+#include "chrome/browser/metrics/perf/windowed_incognito_observer.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/debug_daemon_client.h"

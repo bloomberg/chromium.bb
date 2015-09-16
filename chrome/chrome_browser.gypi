@@ -924,8 +924,8 @@
       'browser/media/protected_media_identifier_permission_context_factory.h',
       'browser/metrics/chromeos_metrics_provider.cc',
       'browser/metrics/chromeos_metrics_provider.h',
-      'browser/metrics/windowed_incognito_observer.cc',
-      'browser/metrics/windowed_incognito_observer.h',
+      'browser/metrics/perf/windowed_incognito_observer.cc',
+      'browser/metrics/perf/windowed_incognito_observer.h',
       # This is technically also dependent on enable_plugins but we don't
       # support ChromeOS with enable_plugins==0.
       'browser/renderer_host/pepper/pepper_platform_verification_message_filter.cc',
@@ -1871,8 +1871,8 @@
       'browser/metrics/metrics_reporting_state.h',
       'browser/metrics/metrics_services_manager.cc',
       'browser/metrics/metrics_services_manager.h',
-      'browser/metrics/perf_provider_chromeos.cc',
-      'browser/metrics/perf_provider_chromeos.h',
+      'browser/metrics/perf/perf_provider_chromeos.cc',
+      'browser/metrics/perf/perf_provider_chromeos.h',
       'browser/metrics/signin_status_metrics_provider.cc',
       'browser/metrics/signin_status_metrics_provider.h',
       'browser/metrics/signin_status_metrics_provider_base.cc',

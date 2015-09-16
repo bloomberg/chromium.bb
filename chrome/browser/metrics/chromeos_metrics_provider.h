@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_METRICS_CHROMEOS_METRICS_PROVIDER_H_
 
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/metrics/perf_provider_chromeos.h"
+#include "chrome/browser/metrics/perf/perf_provider_chromeos.h"
 #include "components/metrics/metrics_provider.h"
 
 namespace device {
