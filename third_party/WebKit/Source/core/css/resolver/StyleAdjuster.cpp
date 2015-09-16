@@ -36,6 +36,7 @@
 #include "core/dom/Element.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/Settings.h"
+#include "core/frame/UseCounter.h"
 #include "core/html/HTMLIFrameElement.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLPlugInElement.h"
@@ -175,7 +176,7 @@ void StyleAdjuster::adjustComputedStyle(ComputedStyle& style, const ComputedStyl
         // adjustStyeForTagName() above.
         adjustStyleForFirstLetter(style);
 
-        adjustStyleForDisplay(style, parentStyle);
+        adjustStyleForDisplay(style, parentStyle, e ? &e->document() : 0);
     } else {
         adjustStyleForFirstLetter(style);
     }
@@ -445,7 +446,7 @@ void StyleAdjuster::adjustOverflow(ComputedStyle& style)
     }
 }
 
-void StyleAdjuster::adjustStyleForDisplay(ComputedStyle& style, const ComputedStyle& parentStyle)
+void StyleAdjuster::adjustStyleForDisplay(ComputedStyle& style, const ComputedStyle& parentStyle, Document* document)
 {
     if (style.display() == BLOCK && !style.isFloating())
         return;
@@ -479,6 +480,13 @@ void StyleAdjuster::adjustStyleForDisplay(ComputedStyle& style, const ComputedSt
     if (parentStyle.isDisplayFlexibleOrGridBox()) {
         style.setFloating(NoFloat);
         style.setDisplay(equivalentBlockDisplay(style.display(), style.isFloating(), !m_useQuirksModeStyles));
+
+        // We want to count vertical percentage paddings/margins on flex items because our current
+        // behavior is different from the spec and we want to gather compatibility data.
+        if (style.paddingBefore().hasPercent() || style.paddingAfter().hasPercent())
+            UseCounter::count(document, UseCounter::FlexboxPercentagePaddingVertical);
+        if (style.marginBefore().hasPercent() || style.marginAfter().hasPercent())
+            UseCounter::count(document, UseCounter::FlexboxPercentageMarginVertical);
     }
 }
 

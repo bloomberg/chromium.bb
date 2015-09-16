@@ -26,6 +26,7 @@
 
 namespace blink {
 
+class Document;
 class Element;
 class HTMLElement;
 class ComputedStyle;
@@ -44,7 +45,7 @@ public:
 
 private:
     void adjustStyleForFirstLetter(ComputedStyle&);
-    void adjustStyleForDisplay(ComputedStyle& styleToAdjust, const ComputedStyle& parentStyle);
+    void adjustStyleForDisplay(ComputedStyle& styleToAdjust, const ComputedStyle& parentStyle, Document*);
     void adjustStyleForHTMLElement(ComputedStyle& styleToAdjust, const ComputedStyle& parentStyle, HTMLElement&);
     void adjustOverflow(ComputedStyle& styleToAdjust);
     void adjustStyleForAlignment(ComputedStyle& styleToAdjust, const ComputedStyle& parentStyle);

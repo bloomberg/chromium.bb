@@ -837,6 +837,8 @@ public:
         V8Window_Prompt_Method = 952,
         V8Window_Print_Method = 953,
         V8Window_RequestIdleCallback_Method = 954,
+        FlexboxPercentagePaddingVertical = 955,
+        FlexboxPercentageMarginVertical = 956,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.
