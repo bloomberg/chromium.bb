@@ -484,7 +484,7 @@ InspectorTest.createScriptMock = function(url, startLine, startColumn, isContent
 {
     target = target || WebInspector.targetManager.mainTarget();
     var debuggerModel = WebInspector.DebuggerModel.fromTarget(target);
-    var scriptId = ++InspectorTest._lastScriptId;
+    var scriptId = ++InspectorTest._lastScriptId + "";
     var lineCount = source.lineEndings().length;
     var endLine = startLine + lineCount - 1;
     var endColumn = lineCount === 1 ? startColumn + source.length : source.length - source.lineEndings()[lineCount - 2];
