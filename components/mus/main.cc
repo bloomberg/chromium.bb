@@ -6,11 +6,7 @@
 #include "mojo/application/public/cpp/application_runner.h"
 #include "third_party/mojo/src/mojo/public/c/system/main.h"
 
-namespace mus {
-
 MojoResult MojoMain(MojoHandle shell_handle) {
-  mojo::ApplicationRunner runner(new MandolineUIServicesApp);
+  mojo::ApplicationRunner runner(new mus::MandolineUIServicesApp);
   return runner.Run(shell_handle);
 }
-
-}  // namespace mus
