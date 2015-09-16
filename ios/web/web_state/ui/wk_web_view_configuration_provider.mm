@@ -5,6 +5,7 @@
 #import "ios/web/web_state/ui/wk_web_view_configuration_provider.h"
 
 #import <Foundation/Foundation.h>
+#import <objc/runtime.h>
 #import <WebKit/WebKit.h>
 
 #include "base/ios/ios_util.h"
@@ -19,6 +20,32 @@
 
 namespace {
 BOOL gAllowWKProcessPoolCreation = NO;
+
+// TODO(eugenebut): Cleanup this macro, once all bots switched to iOS9 SDK
+// (crbug.com/523365).
+#if defined(__IPHONE_9_0) && __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_9_0
+// By default WKProcessPool creation is not allowed by embedder to prevent
+// issues with browsing data clearing. However some iOS system methods do create
+// WKProcessPool inside, which is perfectly fine and should be allowed. This
+// method whitelists given |klass| with given |selector|, so creation of
+// WKProcessPool is allowed inside that selector call. This function currently
+// supports Objective-C methods with up to 4 arguments and needs to be updated
+// if support for more arguments is required.
+void AllowWKProcessPoolCreation(Class klass, SEL selector) {
+  Method method = class_getInstanceMethod(klass, selector);
+  IMP originalImp = method_getImplementation(method);
+  IMP safeImp = imp_implementationWithBlock(
+      ^(id self, id arg1, id arg2, id arg3, id arg4) {
+        BOOL oldAllowWKProcessPoolCreation = gAllowWKProcessPoolCreation;
+        gAllowWKProcessPoolCreation = YES;
+        id result = originalImp(self, selector, arg1, arg2, arg3, arg4);
+        gAllowWKProcessPoolCreation = oldAllowWKProcessPoolCreation;
+        return result;
+      });
+
+  method_setImplementation(method, safeImp);
+}
+#endif  // __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_9_0
 }
 
 @interface WKProcessPool (CRWAdditions)
@@ -39,6 +66,25 @@ BOOL gAllowWKProcessPoolCreation = NO;
     return nil;
   };
   web::AddAllocWithZoneMethod([WKProcessPool class], allocator);
+
+// TODO(eugenebut): Cleanup this macro, once all bots switched to iOS9 SDK
+// (crbug.com/523365).
+#if defined(__IPHONE_9_0) && __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_9_0
+  if (!base::ios::IsRunningOnIOS9OrLater())
+    return;
+
+  // Make sure that WKWebsiteDataStore is allowed to create WKProcessPool for
+  // internal implementation purposes.
+  AllowWKProcessPoolCreation(
+      [WKWebsiteDataStore class],
+      @selector(fetchDataRecordsOfTypes:completionHandler:completionHandler));
+  AllowWKProcessPoolCreation(
+      [WKWebsiteDataStore class],
+      @selector(removeDataOfTypes:forDataRecords:completionHandler:));
+  AllowWKProcessPoolCreation(
+      [WKWebsiteDataStore class],
+      @selector(removeDataOfTypes:modifiedSince:completionHandler:));
+#endif  // __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_9_0
 }
 
 @end
