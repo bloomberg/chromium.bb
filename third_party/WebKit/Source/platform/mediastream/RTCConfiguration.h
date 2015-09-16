@@ -65,6 +65,23 @@ private:
     String m_credential;
 };
 
+class RTCIceServerArray final : public GarbageCollectedFinalized<RTCIceServerArray> {
+public:
+    static RTCIceServerArray* create()
+    {
+        return new RTCIceServerArray();
+    }
+
+    void appendServer(RTCIceServer* server) { m_servers.append(server); }
+    size_t numberOfServers() { return m_servers.size(); }
+    RTCIceServer* server(size_t index) { return m_servers[index].get(); }
+
+    DEFINE_INLINE_TRACE() { visitor->trace(m_servers); }
+
+private:
+    HeapVector<Member<RTCIceServer>> m_servers;
+};
+
 enum RTCIceTransports {
     RTCIceTransportsNone,
     RTCIceTransportsRelay,
@@ -86,25 +103,26 @@ class RTCConfiguration final : public GarbageCollected<RTCConfiguration> {
 public:
     static RTCConfiguration* create() { return new RTCConfiguration(); }
 
-    void appendServer(RTCIceServer* server) { m_servers.append(server); }
-    size_t numberOfServers() { return m_servers.size(); }
-    RTCIceServer* server(size_t index) { return m_servers[index].get(); }
     void setIceTransports(RTCIceTransports iceTransports) { m_iceTransports = iceTransports; }
     RTCIceTransports iceTransports() { return m_iceTransports; }
     void setBundlePolicy(RTCBundlePolicy bundlePolicy) { m_bundlePolicy = bundlePolicy; }
     RTCBundlePolicy bundlePolicy() { return m_bundlePolicy; }
     void setRtcpMuxPolicy(RTCRtcpMuxPolicy rtcpMuxPolicy) { m_rtcpMuxPolicy = rtcpMuxPolicy; }
     RTCRtcpMuxPolicy rtcpMuxPolicy() { return m_rtcpMuxPolicy; }
+    void setIceServers(RTCIceServerArray* iceServers) { m_iceServers = iceServers; }
+    RTCIceServerArray* iceServers() { return m_iceServers.get(); }
 
-    DEFINE_INLINE_TRACE() { visitor->trace(m_servers); }
+    DEFINE_INLINE_TRACE() { visitor->trace(m_iceServers); }
 
 private:
-    RTCConfiguration() :
-        m_iceTransports(RTCIceTransportsAll),
-        m_bundlePolicy(RTCBundlePolicyBalanced),
-        m_rtcpMuxPolicy(RTCRtcpMuxPolicyNegotiate) { }
+    RTCConfiguration()
+        : m_iceTransports(RTCIceTransportsAll)
+        , m_bundlePolicy(RTCBundlePolicyBalanced)
+        , m_rtcpMuxPolicy(RTCRtcpMuxPolicyNegotiate)
+    {
+    }
 
-    HeapVector<Member<RTCIceServer>> m_servers;
+    Member<RTCIceServerArray> m_iceServers;
     RTCIceTransports m_iceTransports;
     RTCBundlePolicy m_bundlePolicy;
     RTCRtcpMuxPolicy m_rtcpMuxPolicy;

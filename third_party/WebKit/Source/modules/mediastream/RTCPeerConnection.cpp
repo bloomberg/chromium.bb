@@ -103,17 +103,26 @@ RTCConfiguration* RTCPeerConnection::parseConfiguration(const Dictionary& config
     }
 
     ArrayValue iceServers;
-    bool ok = DictionaryHelper::get(configuration, "iceServers", iceServers);
-    if (!ok || iceServers.isUndefinedOrNull()) {
-        exceptionState.throwTypeError("Malformed RTCConfiguration");
-        return 0;
-    }
-
-    size_t numberOfServers;
-    ok = iceServers.length(numberOfServers);
-    if (!ok) {
-        exceptionState.throwTypeError("Malformed RTCConfiguration");
-        return 0;
+    size_t numberOfServers = 0;
+    bool createIceServerArray = true;
+    if (DictionaryHelper::get(configuration, "iceServers", iceServers)) {
+        if (!iceServers.length(numberOfServers)) {
+            exceptionState.throwTypeError("Malformed RTCConfiguration");
+            return 0;
+        }
+    } else {
+        v8::Local<v8::Value> iceServersValue;
+        // Failed to parse iceServers as ArrayValue, try it as a scalar. If
+        // iceServers is not specified (get returns false) or specified as
+        // "undefined", treat it as the special case which RTCIceServerArray
+        // will not be created.
+        bool ok = (!DictionaryHelper::get(configuration, "iceServers", iceServersValue)
+            || iceServersValue->IsUndefined());
+        if (!ok) {
+            exceptionState.throwTypeError("Malformed RTCConfiguration");
+            return 0;
+        }
+        createIceServerArray = false;
     }
 
     RTCBundlePolicy bundlePolicy = RTCBundlePolicyBalanced;
@@ -144,10 +153,13 @@ RTCConfiguration* RTCPeerConnection::parseConfiguration(const Dictionary& config
     rtcConfiguration->setIceTransports(iceTransports);
     rtcConfiguration->setBundlePolicy(bundlePolicy);
     rtcConfiguration->setRtcpMuxPolicy(rtcpMuxPolicy);
+    if (createIceServerArray) {
+        rtcConfiguration->setIceServers(RTCIceServerArray::create());
+    }
 
     for (size_t i = 0; i < numberOfServers; ++i) {
         Dictionary iceServer;
-        ok = iceServers.get(i, iceServer);
+        bool ok = iceServers.get(i, iceServer);
         if (!ok) {
             exceptionState.throwTypeError("Malformed RTCIceServer");
             return 0;
@@ -191,7 +203,7 @@ RTCConfiguration* RTCPeerConnection::parseConfiguration(const Dictionary& config
                 return 0;
             }
 
-            rtcConfiguration->appendServer(RTCIceServer::create(url, username, credential));
+            rtcConfiguration->iceServers()->appendServer(RTCIceServer::create(url, username, credential));
         }
     }
 

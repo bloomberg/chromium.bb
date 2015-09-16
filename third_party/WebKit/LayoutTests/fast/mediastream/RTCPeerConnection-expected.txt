@@ -16,7 +16,9 @@ PASS new webkitRTCPeerConnection({iceServers:[{url:'turn:foo.com', credential:'x
 PASS new webkitRTCPeerConnection({iceServers:[{url:'turn:foo.com', credential:'x'},{url:'stun:bar.com'}]}, null); did not throw exception.
 PASS new webkitRTCPeerConnection({iceServers:[{urls:'stun:foo.com'}]}, null); did not throw exception.
 PASS new webkitRTCPeerConnection({iceServers:[{urls:['stun:foo.com', 'turn:foo.com']}]}, null); did not throw exception.
-PASS new webkitRTCPeerConnection({fooServers:[]}, null); threw exception TypeError: Failed to construct 'RTCPeerConnection': Malformed RTCConfiguration.
+PASS new webkitRTCPeerConnection({iceServers:undefined}, null); did not throw exception.
+PASS new webkitRTCPeerConnection({}, null); did not throw exception.
+PASS new webkitRTCPeerConnection({iceServers:null}, null); threw exception TypeError: Failed to construct 'RTCPeerConnection': Malformed RTCConfiguration.
 PASS new webkitRTCPeerConnection({iceServers:true}, null); threw exception TypeError: Failed to construct 'RTCPeerConnection': Malformed RTCConfiguration.
 PASS new webkitRTCPeerConnection({iceServers:[1, 2, 3]}, null); threw exception TypeError: Failed to construct 'RTCPeerConnection': Malformed RTCIceServer.
 PASS new webkitRTCPeerConnection({iceServers:[{}]}, null); threw exception TypeError: Failed to construct 'RTCPeerConnection': Malformed RTCIceServer.

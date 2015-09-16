@@ -21,8 +21,10 @@ shouldNotThrow("new webkitRTCPeerConnection({iceServers:[{url:'turn:foo.com', cr
 shouldNotThrow("new webkitRTCPeerConnection({iceServers:[{url:'turn:foo.com', credential:'x'},{url:'stun:bar.com'}]}, null);");
 shouldNotThrow("new webkitRTCPeerConnection({iceServers:[{urls:'stun:foo.com'}]}, null);");
 shouldNotThrow("new webkitRTCPeerConnection({iceServers:[{urls:['stun:foo.com', 'turn:foo.com']}]}, null);");
+shouldNotThrow("new webkitRTCPeerConnection({iceServers:undefined}, null);");
+shouldNotThrow("new webkitRTCPeerConnection({}, null);");
+shouldThrow("new webkitRTCPeerConnection({iceServers:null}, null);");
 
-shouldThrow("new webkitRTCPeerConnection({fooServers:[]}, null);");
 shouldThrow("new webkitRTCPeerConnection({iceServers:true}, null);");
 shouldThrow("new webkitRTCPeerConnection({iceServers:[1, 2, 3]}, null);");
 shouldThrow("new webkitRTCPeerConnection({iceServers:[{}]}, null);");

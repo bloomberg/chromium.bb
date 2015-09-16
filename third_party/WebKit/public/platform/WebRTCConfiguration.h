@@ -39,6 +39,7 @@
 namespace blink {
 
 class RTCIceServer;
+class RTCIceServerArray;
 class RTCConfiguration;
 class WebString;
 class WebURL;
@@ -70,6 +71,32 @@ public:
 
 private:
     WebPrivatePtr<RTCIceServer> m_private;
+};
+
+class WebRTCICEServerArray {
+public:
+    WebRTCICEServerArray() {}
+    WebRTCICEServerArray(const WebRTCICEServerArray& other) { assign(other); }
+    WebRTCICEServerArray& operator=(const WebRTCICEServerArray& other)
+    {
+        assign(other);
+        return *this;
+    }
+
+    BLINK_PLATFORM_EXPORT void assign(const WebRTCICEServerArray&);
+
+    BLINK_PLATFORM_EXPORT void reset();
+    bool isNull() const { return m_private.isNull(); }
+
+    BLINK_PLATFORM_EXPORT size_t numberOfServers() const;
+    BLINK_PLATFORM_EXPORT WebRTCICEServer server(size_t index) const;
+
+#if INSIDE_BLINK
+    BLINK_PLATFORM_EXPORT WebRTCICEServerArray(RTCIceServerArray*);
+#endif
+
+private:
+    WebPrivatePtr<RTCIceServerArray> m_private;
 };
 
 enum WebRTCIceTransports {
@@ -106,6 +133,7 @@ public:
     BLINK_PLATFORM_EXPORT void reset();
     bool isNull() const { return m_private.isNull(); }
 
+    // TODO(guoweis): Remove next 2 functions when WebKit rolls into Chromium.
     BLINK_PLATFORM_EXPORT size_t numberOfServers() const;
     BLINK_PLATFORM_EXPORT WebRTCICEServer server(size_t index) const;
 
@@ -114,6 +142,7 @@ public:
     BLINK_PLATFORM_EXPORT WebRTCBundlePolicy bundlePolicy() const;
 
     BLINK_PLATFORM_EXPORT WebRTCRtcpMuxPolicy rtcpMuxPolicy() const;
+    BLINK_PLATFORM_EXPORT WebRTCICEServerArray iceServers() const;
 
 #if INSIDE_BLINK
     BLINK_PLATFORM_EXPORT WebRTCConfiguration(RTCConfiguration*);
