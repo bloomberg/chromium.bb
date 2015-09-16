@@ -37,7 +37,8 @@ declare_args() {
   # the commented out logic.
   # Eventually we want this to be:
   #   enable_nacl = !is_ios && !is_android
-  enable_nacl = (is_linux && !is_chromeos) || is_nacl
+  enable_nacl =
+      ((is_linux && !is_chromeos) || is_nacl) && current_cpu != "mipsel"
   enable_nacl_untrusted = enable_nacl
   enable_pnacl = enable_nacl_untrusted
 
