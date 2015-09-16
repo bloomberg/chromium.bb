@@ -14,7 +14,10 @@ var metrics = metrics || metricsBase;
  * Analytics tracking ID for Files app.
  * @const {string}
  */
-metrics.TRACKING_ID = 'UA-38248358-9';
+metrics.TRACKING_IDS = {
+  hhaomjibdihmijegdhdafkllkbggdgoj: 'UA-38248358-9',  // Files.app
+  pmfjbimdmchhbnneeidfognadeopoehp: 'UA-38248358-13'  // Image Loader
+};
 
 /**
  * Convert a short metric name to the full format.
@@ -59,7 +62,8 @@ metrics.createTracker_ = function() {
 
   // Create a tracker, add a filter that only enables analytics when UMA is
   // enabled.
-  metrics.tracker_ = metrics.analytics_.getTracker(metrics.TRACKING_ID);
+  metrics.tracker_ = metrics.analytics_.getTracker(
+      metrics.TRACKING_IDS[chrome.runtime.id]);
   metrics.tracker_.addFilter(metrics.umaEnabledFilter_);
 };
 

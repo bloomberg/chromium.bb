@@ -15,7 +15,7 @@ function setUp() {
   setupFakeChromeAPIs();
 
   // Set a fake tracking ID so the tests aren't actually sending analytics.
-  metrics.TRACKING_ID = 'UA-XXXXX-XX';
+  metrics.TRACKING_IDS[chrome.runtime.id] = 'UA-XXXXX-XX';
   tracker  = metrics.getTracker();
 
   // Make a filter that logs the last received hit.
