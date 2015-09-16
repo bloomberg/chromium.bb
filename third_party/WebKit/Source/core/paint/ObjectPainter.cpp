@@ -195,12 +195,11 @@ void ObjectPainter::paintOutline(const PaintInfo& paintInfo, const LayoutPoint& 
         return;
 
     // Only paint the focus ring by hand if the theme isn't able to draw the focus ring.
-    bool paintFocusRing = styleToUse.outlineStyleIsAuto();
-    if (paintFocusRing && !LayoutTheme::theme().shouldDrawDefaultFocusRing(&m_layoutObject))
+    if (styleToUse.outlineStyleIsAuto() && !LayoutTheme::theme().shouldDrawDefaultFocusRing(&m_layoutObject))
         return;
 
     Vector<LayoutRect> outlineRects;
-    m_layoutObject.addOutlineRects(outlineRects, paintOffset);
+    m_layoutObject.addOutlineRects(outlineRects, paintOffset, m_layoutObject.outlineRectsShouldIncludeBlockVisualOverflow());
     if (outlineRects.isEmpty())
         return;
 
@@ -252,9 +251,9 @@ void ObjectPainter::addPDFURLRectIfNeeded(const PaintInfo& paintInfo, const Layo
     if (!url.isValid())
         return;
 
-    Vector<LayoutRect> outlineRects;
-    m_layoutObject.addOutlineRects(outlineRects, paintOffset);
-    IntRect rect = pixelSnappedIntRect(unionRect(outlineRects));
+    Vector<LayoutRect> visualOverflowRects;
+    m_layoutObject.addElementVisualOverflowRects(visualOverflowRects, paintOffset);
+    IntRect rect = pixelSnappedIntRect(unionRect(visualOverflowRects));
     if (rect.isEmpty())
         return;
 

@@ -392,7 +392,7 @@ void LayoutBoxModelObject::invalidateDisplayItemClientOnBacking(const DisplayIte
     }
 }
 
-void LayoutBoxModelObject::addOutlineRectsForNormalChildren(Vector<LayoutRect>& rects, const LayoutPoint& additionalOffset) const
+void LayoutBoxModelObject::addOutlineRectsForNormalChildren(Vector<LayoutRect>& rects, const LayoutPoint& additionalOffset, IncludeBlockVisualOverflowOrNot includeBlockOverflows) const
 {
     for (LayoutObject* child = slowFirstChild(); child; child = child->nextSibling()) {
         // Outlines of out-of-flow positioned descendants are handled in LayoutBlock::addOutlineRects().
@@ -405,18 +405,18 @@ void LayoutBoxModelObject::addOutlineRectsForNormalChildren(Vector<LayoutRect>& 
             || (child->isLayoutBlock() && toLayoutBlock(child)->isAnonymousBlockContinuation()))
             continue;
 
-        addOutlineRectsForDescendant(*child, rects, additionalOffset);
+        addOutlineRectsForDescendant(*child, rects, additionalOffset, includeBlockOverflows);
     }
 }
 
-void LayoutBoxModelObject::addOutlineRectsForDescendant(const LayoutObject& descendant, Vector<LayoutRect>& rects, const LayoutPoint& additionalOffset) const
+void LayoutBoxModelObject::addOutlineRectsForDescendant(const LayoutObject& descendant, Vector<LayoutRect>& rects, const LayoutPoint& additionalOffset, IncludeBlockVisualOverflowOrNot includeBlockOverflows) const
 {
     if (descendant.isText() || descendant.isListMarker())
         return;
 
     if (descendant.hasLayer()) {
         Vector<LayoutRect> layerOutlineRects;
-        descendant.addOutlineRects(layerOutlineRects, LayoutPoint());
+        descendant.addOutlineRects(layerOutlineRects, LayoutPoint(), includeBlockOverflows);
         for (size_t i = 0; i < layerOutlineRects.size(); ++i) {
             FloatQuad quadInBox = toLayoutBoxModelObject(descendant).localToContainerQuad(FloatQuad(FloatRect(layerOutlineRects[i])), this);
             LayoutRect rect = LayoutRect(quadInBox.boundingBox());
@@ -429,7 +429,7 @@ void LayoutBoxModelObject::addOutlineRectsForDescendant(const LayoutObject& desc
     }
 
     if (descendant.isBox()) {
-        descendant.addOutlineRects(rects, additionalOffset + toLayoutBox(descendant).locationOffset());
+        descendant.addOutlineRects(rects, additionalOffset + toLayoutBox(descendant).locationOffset(), includeBlockOverflows);
         return;
     }
 
@@ -438,11 +438,11 @@ void LayoutBoxModelObject::addOutlineRectsForDescendant(const LayoutObject& desc
         // line boxes, so descendants don't need to add line boxes again. For example, if the parent
         // is a LayoutBlock, it adds rects for its RootOutlineBoxes which cover the line boxes of
         // this LayoutInline. So the LayoutInline needs to add rects for children and continuations only.
-        toLayoutInline(descendant).addOutlineRectsForChildrenAndContinuations(rects, additionalOffset);
+        toLayoutInline(descendant).addOutlineRectsForChildrenAndContinuations(rects, additionalOffset, includeBlockOverflows);
         return;
     }
 
-    descendant.addOutlineRects(rects, additionalOffset);
+    descendant.addOutlineRects(rects, additionalOffset, includeBlockOverflows);
 }
 
 bool LayoutBoxModelObject::calculateHasBoxDecorations() const

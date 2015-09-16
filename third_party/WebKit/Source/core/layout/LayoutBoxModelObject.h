@@ -289,8 +289,8 @@ protected:
     bool hasAutoHeightOrContainingBlockWithAutoHeight() const;
     LayoutBlock* containingBlockForAutoHeightDetection(Length logicalHeight) const;
 
-    void addOutlineRectsForNormalChildren(Vector<LayoutRect>&, const LayoutPoint& additionalOffset) const;
-    void addOutlineRectsForDescendant(const LayoutObject& descendant, Vector<LayoutRect>&, const LayoutPoint& additionalOffset) const;
+    void addOutlineRectsForNormalChildren(Vector<LayoutRect>&, const LayoutPoint& additionalOffset, IncludeBlockVisualOverflowOrNot) const;
+    void addOutlineRectsForDescendant(const LayoutObject& descendant, Vector<LayoutRect>&, const LayoutPoint& additionalOffset, IncludeBlockVisualOverflowOrNot) const;
 
     void addLayerHitTestRects(LayerHitTestRects&, const DeprecatedPaintLayer*, const LayoutPoint&, const LayoutRect&) const override;
 

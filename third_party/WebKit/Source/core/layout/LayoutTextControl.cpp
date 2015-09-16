@@ -281,7 +281,7 @@ void LayoutTextControl::computePreferredLogicalWidths()
     clearPreferredLogicalWidthsDirty();
 }
 
-void LayoutTextControl::addOutlineRects(Vector<LayoutRect>& rects, const LayoutPoint& additionalOffset) const
+void LayoutTextControl::addOutlineRects(Vector<LayoutRect>& rects, const LayoutPoint& additionalOffset, IncludeBlockVisualOverflowOrNot) const
 {
     rects.append(LayoutRect(additionalOffset, size()));
 }

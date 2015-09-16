@@ -57,7 +57,7 @@ protected:
 private:
     FloatRect strokeBoundingBox() const override { return m_objectBoundingBox; }
 
-    void addOutlineRects(Vector<LayoutRect>&, const LayoutPoint& additionalOffset) const override;
+    void addOutlineRects(Vector<LayoutRect>&, const LayoutPoint& additionalOffset, IncludeBlockVisualOverflowOrNot) const override;
 
     void imageChanged(WrappedImagePtr, const IntRect* = nullptr) override;
 

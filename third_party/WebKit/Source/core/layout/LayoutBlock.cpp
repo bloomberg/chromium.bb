@@ -2559,7 +2559,7 @@ LayoutRect LayoutBlock::localCaretRect(InlineBox* inlineBox, int caretOffset, La
     return caretRect;
 }
 
-void LayoutBlock::addOutlineRects(Vector<LayoutRect>& rects, const LayoutPoint& additionalOffset) const
+void LayoutBlock::addOutlineRects(Vector<LayoutRect>& rects, const LayoutPoint& additionalOffset, IncludeBlockVisualOverflowOrNot includeBlockOverflows) const
 {
     // For blocks inside inlines, we go ahead and include margins so that we run right up to the
     // inline boxes above and below us (thus getting merged with them to form a single irregular
@@ -2583,7 +2583,7 @@ void LayoutBlock::addOutlineRects(Vector<LayoutRect>& rects, const LayoutPoint& 
         rects.append(LayoutRect(additionalOffset, size()));
     }
 
-    if (!hasOverflowClip() && !hasControlClip()) {
+    if (includeBlockOverflows == IncludeBlockVisualOverflow && !hasOverflowClip() && !hasControlClip()) {
         for (RootInlineBox* curr = firstRootBox(); curr; curr = curr->nextRootBox()) {
             LayoutUnit top = std::max<LayoutUnit>(curr->lineTop(), curr->top());
             LayoutUnit bottom = std::min<LayoutUnit>(curr->lineBottom(), curr->top() + curr->height());
@@ -2592,15 +2592,15 @@ void LayoutBlock::addOutlineRects(Vector<LayoutRect>& rects, const LayoutPoint& 
                 rects.append(rect);
         }
 
-        addOutlineRectsForNormalChildren(rects, additionalOffset);
+        addOutlineRectsForNormalChildren(rects, additionalOffset, includeBlockOverflows);
         if (TrackedLayoutBoxListHashSet* positionedObjects = this->positionedObjects()) {
             for (auto* box : *positionedObjects)
-                addOutlineRectsForDescendant(*box, rects, additionalOffset);
+                addOutlineRectsForDescendant(*box, rects, additionalOffset, includeBlockOverflows);
         }
     }
 
     if (inlineElementContinuation)
-        inlineElementContinuation->addOutlineRects(rects, additionalOffset + (inlineElementContinuation->containingBlock()->location() - location()));
+        inlineElementContinuation->addOutlineRects(rects, additionalOffset + (inlineElementContinuation->containingBlock()->location() - location()), includeBlockOverflows);
 }
 
 void LayoutBlock::computeSelfHitTestRects(Vector<LayoutRect>& rects, const LayoutPoint& layerOffset) const

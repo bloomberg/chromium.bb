@@ -1000,11 +1000,11 @@ IntRect LayoutObject::absoluteBoundingBoxRectIgnoringTransforms() const
     return result;
 }
 
-IntRect LayoutObject::absoluteOutlineBoundingBoxRect() const
+IntRect LayoutObject::absoluteElementBoundingBoxRect() const
 {
     Vector<LayoutRect> rects;
     const LayoutBoxModelObject* container = enclosingLayer()->layoutObject();
-    addOutlineRects(rects, LayoutPoint(localToContainerPoint(FloatPoint(), container)));
+    addElementVisualOverflowRects(rects, LayoutPoint(localToContainerPoint(FloatPoint(), container)));
     return container->localToAbsoluteQuad(FloatQuad(FloatRect(unionRect(rects)))).enclosingBoundingBox();
 }
 

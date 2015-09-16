@@ -342,7 +342,7 @@ protected:
     void addOverflowFromBlockChildren();
     void addVisualOverflowFromTheme();
 
-    void addOutlineRects(Vector<LayoutRect>&, const LayoutPoint& additionalOffset) const override;
+    void addOutlineRects(Vector<LayoutRect>&, const LayoutPoint& additionalOffset, IncludeBlockVisualOverflowOrNot) const override;
 
     void computeSelfHitTestRects(Vector<LayoutRect>&, const LayoutPoint& layerOffset) const override;
 

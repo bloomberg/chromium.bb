@@ -1877,7 +1877,7 @@ void LayoutBlockFlow::addOverflowFromInlineChildren()
             continue;
 
         Vector<LayoutRect> outlineRects;
-        toLayoutInline(o).addOutlineRectsForContinuations(outlineRects, LayoutPoint());
+        toLayoutInline(o).addOutlineRectsForContinuations(outlineRects, LayoutPoint(), o.outlineRectsShouldIncludeBlockVisualOverflow());
         if (!outlineRects.isEmpty()) {
             LayoutRect outlineBounds = unionRectEvenIfEmpty(outlineRects);
             outlineBounds.inflate(o.styleRef().outlineOutsetExtent());

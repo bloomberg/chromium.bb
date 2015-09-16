@@ -2486,11 +2486,19 @@ String Internals::unscopeableMethod()
     return "unscopeableMethod";
 }
 
+ClientRectList* Internals::focusRingRects(Element* element)
+{
+    Vector<LayoutRect> rects;
+    if (element && element->layoutObject())
+        element->layoutObject()->addOutlineRects(rects, LayoutPoint(), LayoutObject::IncludeBlockVisualOverflow);
+    return ClientRectList::create(rects);
+}
+
 ClientRectList* Internals::outlineRects(Element* element)
 {
     Vector<LayoutRect> rects;
     if (element && element->layoutObject())
-        element->layoutObject()->addOutlineRects(rects, LayoutPoint());
+        element->layoutObject()->addOutlineRects(rects, LayoutPoint(), LayoutObject::DontIncludeBlockVisualOverflow);
     return ClientRectList::create(rects);
 }
 

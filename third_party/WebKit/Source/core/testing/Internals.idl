@@ -341,6 +341,7 @@
     [Unscopeable] readonly attribute DOMString unscopeableAttribute;
     [Unscopeable] DOMString unscopeableMethod();
 
+    ClientRectList focusRingRects(Element element);
     ClientRectList outlineRects(Element element);
     void setCapsLockState(boolean enabled);
     void setSelectionPaintingWithoutSelectionGapsEnabled(boolean enabled);

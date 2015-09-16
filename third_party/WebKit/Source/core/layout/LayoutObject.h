@@ -867,8 +867,6 @@ public:
     // Build an array of quads in absolute coords for line boxes
     virtual void absoluteQuads(Vector<FloatQuad>&, bool* /* wasFixed */ = nullptr) const { }
 
-    virtual IntRect absoluteOutlineBoundingBoxRect() const;
-
     static FloatRect absoluteBoundingBoxRectForRange(const Range*);
 
     // the rect that will be painted if this object is passed as the paintingRoot
@@ -1076,8 +1074,30 @@ public:
     bool createsGroup() const { return isTransparent() || hasMask() || hasFilter() || style()->hasBlendMode(); }
 
     // Collects rectangles that the outline of this object would be drawing along the outside of,
-    // even if the object isn't styled with a outline for now.
-    virtual void addOutlineRects(Vector<LayoutRect>&, const LayoutPoint& additionalOffset) const { }
+    // even if the object isn't styled with a outline for now. The rects also cover continuations.
+    enum IncludeBlockVisualOverflowOrNot {
+        DontIncludeBlockVisualOverflow,
+        IncludeBlockVisualOverflow,
+    };
+    virtual void addOutlineRects(Vector<LayoutRect>&, const LayoutPoint& additionalOffset, IncludeBlockVisualOverflowOrNot) const { }
+
+    // For history and compatibility reasons, we draw outline:auto (for focus rings) and normal style outline differently.
+    // Focus rings enclose block visual overflows (of line boxes and descendants), while normal outlines don't.
+    IncludeBlockVisualOverflowOrNot outlineRectsShouldIncludeBlockVisualOverflow() const
+    {
+        return styleRef().outlineStyleIsAuto() ? IncludeBlockVisualOverflow : DontIncludeBlockVisualOverflow;
+    }
+
+    // Collects rectangles enclosing visual overflows of the DOM subtree under this object.
+    // The rects also cover continuations which may be not in the layout subtree of this object.
+    void addElementVisualOverflowRects(Vector<LayoutRect>& rects, const LayoutPoint& additionalOffset) const
+    {
+        addOutlineRects(rects, additionalOffset, IncludeBlockVisualOverflow);
+    }
+
+    // Returns the rect enclosing united visual overflow of the DOM subtree under this object.
+    // It includes continuations which may be not in the layout subtree of this object.
+    virtual IntRect absoluteElementBoundingBoxRect() const;
 
     // Compute a list of hit-test rectangles per layer rooted at this layoutObject.
     virtual void computeLayerHitTestRects(LayerHitTestRects&) const;

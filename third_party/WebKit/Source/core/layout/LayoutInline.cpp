@@ -1049,7 +1049,7 @@ LayoutRect LayoutInline::visualOverflowRect() const
         Vector<LayoutRect> rects;
         // We have already included outline extents of line boxes in linesVisualOverflowBoundingBox(),
         // so the following just add outline rects for children and continuations.
-        addOutlineRectsForChildrenAndContinuations(rects, LayoutPoint());
+        addOutlineRectsForChildrenAndContinuations(rects, LayoutPoint(), outlineRectsShouldIncludeBlockVisualOverflow());
         if (!rects.isEmpty()) {
             LayoutRect outlineRect = unionRectEvenIfEmpty(rects);
             outlineRect.inflate(outlineOutset);
@@ -1351,26 +1351,26 @@ private:
 
 } // unnamed namespace
 
-void LayoutInline::addOutlineRects(Vector<LayoutRect>& rects, const LayoutPoint& additionalOffset) const
+void LayoutInline::addOutlineRects(Vector<LayoutRect>& rects, const LayoutPoint& additionalOffset, IncludeBlockVisualOverflowOrNot includeBlockOverflows) const
 {
     AbsoluteLayoutRectsGeneratorContext context(rects, additionalOffset);
     generateLineBoxRects(context);
-    addOutlineRectsForChildrenAndContinuations(rects, additionalOffset);
+    addOutlineRectsForChildrenAndContinuations(rects, additionalOffset, includeBlockOverflows);
 }
 
-void LayoutInline::addOutlineRectsForChildrenAndContinuations(Vector<LayoutRect>& rects, const LayoutPoint& additionalOffset) const
+void LayoutInline::addOutlineRectsForChildrenAndContinuations(Vector<LayoutRect>& rects, const LayoutPoint& additionalOffset, IncludeBlockVisualOverflowOrNot includeBlockOverflows) const
 {
-    addOutlineRectsForNormalChildren(rects, additionalOffset);
-    addOutlineRectsForContinuations(rects, additionalOffset);
+    addOutlineRectsForNormalChildren(rects, additionalOffset, includeBlockOverflows);
+    addOutlineRectsForContinuations(rects, additionalOffset, includeBlockOverflows);
 }
 
-void LayoutInline::addOutlineRectsForContinuations(Vector<LayoutRect>& rects, const LayoutPoint& additionalOffset) const
+void LayoutInline::addOutlineRectsForContinuations(Vector<LayoutRect>& rects, const LayoutPoint& additionalOffset, IncludeBlockVisualOverflowOrNot includeBlockOverflows) const
 {
     if (LayoutBoxModelObject* continuation = this->continuation()) {
         if (continuation->isInline())
-            continuation->addOutlineRects(rects, additionalOffset + (continuation->containingBlock()->location() - containingBlock()->location()));
+            continuation->addOutlineRects(rects, additionalOffset + (continuation->containingBlock()->location() - containingBlock()->location()), includeBlockOverflows);
         else
-            continuation->addOutlineRects(rects, additionalOffset + (toLayoutBox(continuation)->location() - containingBlock()->location()));
+            continuation->addOutlineRects(rects, additionalOffset + (toLayoutBox(continuation)->location() - containingBlock()->location()), includeBlockOverflows);
     }
 }
 

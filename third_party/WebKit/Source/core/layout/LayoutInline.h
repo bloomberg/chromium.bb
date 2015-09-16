@@ -109,11 +109,11 @@ public:
 
     LayoutSize offsetForInFlowPositionedInline(const LayoutBox& child) const;
 
-    void addOutlineRects(Vector<LayoutRect>&, const LayoutPoint& additionalOffset) const final;
+    void addOutlineRects(Vector<LayoutRect>&, const LayoutPoint& additionalOffset, IncludeBlockVisualOverflowOrNot) const final;
     // The following methods are called from the container if it has already added outline rects for line boxes
     // and/or children of this LayoutInline.
-    void addOutlineRectsForChildrenAndContinuations(Vector<LayoutRect>&, const LayoutPoint& additionalOffset) const;
-    void addOutlineRectsForContinuations(Vector<LayoutRect>&, const LayoutPoint& additionalOffset) const;
+    void addOutlineRectsForChildrenAndContinuations(Vector<LayoutRect>&, const LayoutPoint& additionalOffset, IncludeBlockVisualOverflowOrNot) const;
+    void addOutlineRectsForContinuations(Vector<LayoutRect>&, const LayoutPoint& additionalOffset, IncludeBlockVisualOverflowOrNot) const;
 
     using LayoutBoxModelObject::continuation;
     using LayoutBoxModelObject::setContinuation;

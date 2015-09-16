@@ -2656,7 +2656,7 @@ LayoutRect AXLayoutObject::computeElementRect() const
     } else if (isWebArea() || obj->isSVGRoot()) {
         result = LayoutRect(obj->absoluteBoundingBoxRect());
     } else {
-        result = LayoutRect(obj->absoluteOutlineBoundingBoxRect());
+        result = LayoutRect(obj->absoluteElementBoundingBoxRect());
     }
 
     Document* document = this->document();

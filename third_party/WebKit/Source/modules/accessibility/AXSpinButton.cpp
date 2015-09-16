@@ -58,7 +58,7 @@ LayoutRect AXSpinButton::elementRect() const
     if (!m_spinButtonElement || !m_spinButtonElement->layoutObject())
         return LayoutRect();
 
-    return LayoutRect(m_spinButtonElement->layoutObject()->absoluteOutlineBoundingBoxRect());
+    return LayoutRect(m_spinButtonElement->layoutObject()->absoluteElementBoundingBoxRect());
 }
 
 void AXSpinButton::detach()

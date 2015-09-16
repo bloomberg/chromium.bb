@@ -150,7 +150,7 @@ void LayoutSVGContainer::paint(const PaintInfo& paintInfo, const LayoutPoint&)
     SVGContainerPainter(*this).paint(paintInfo);
 }
 
-void LayoutSVGContainer::addOutlineRects(Vector<LayoutRect>& rects, const LayoutPoint&) const
+void LayoutSVGContainer::addOutlineRects(Vector<LayoutRect>& rects, const LayoutPoint&, IncludeBlockVisualOverflowOrNot) const
 {
     rects.append(LayoutRect(paintInvalidationRectInLocalCoordinates()));
 }

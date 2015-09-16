@@ -636,7 +636,7 @@ FloatQuad LayoutBox::absoluteContentQuad() const
     return localToAbsoluteQuad(FloatRect(rect));
 }
 
-void LayoutBox::addOutlineRects(Vector<LayoutRect>& rects, const LayoutPoint& additionalOffset) const
+void LayoutBox::addOutlineRects(Vector<LayoutRect>& rects, const LayoutPoint& additionalOffset, IncludeBlockVisualOverflowOrNot) const
 {
     rects.append(LayoutRect(additionalOffset, size()));
 }
@@ -4130,7 +4130,7 @@ LayoutRectOutsets LayoutBox::computeVisualEffectOverflowOutsets() const
     if (style()->hasOutline()) {
         Vector<LayoutRect> outlineRects;
         // The result rects are in coordinates of this object's border box.
-        addOutlineRects(outlineRects, LayoutPoint());
+        addOutlineRects(outlineRects, LayoutPoint(), outlineRectsShouldIncludeBlockVisualOverflow());
         LayoutRect rect = unionRectEvenIfEmpty(outlineRects);
         int outlineOutset = style()->outlineOutsetExtent();
         top = std::max(top, -rect.y() + outlineOutset);

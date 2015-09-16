@@ -11,7 +11,7 @@ onload = function() {
   // - 3: div DIV2
   // - 4: first line box of div DIV2
   if (window.testRunner && window.internals)
-    shouldBe("internals.outlineRects(document.getElementById('focus')).length", "5");
+    shouldBe("internals.focusRingRects(document.getElementById('focus')).length", "5");
 };
 </script>
 <div>
