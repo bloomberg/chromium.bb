@@ -4,7 +4,7 @@
 
 {
   'variables': {
-    'use_system_minigbm%': 0,
+    'use_system_minigbm%': 1,
   },
   'conditions': [
     ['use_system_minigbm==0', {
