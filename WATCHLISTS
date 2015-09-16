@@ -924,7 +924,7 @@
     'blimp' : ['dtrainor+watch-blimp@chromium.org',
                'kmarshall+watch-blimp@chromium.org',
                'maniscalco+watch-blimp@chromium.org',
-               'nyquist+watch-blimp@chromium.org']
+               'nyquist+watch-blimp@chromium.org'],
     'bookmarks': ['noyau+watch@chromium.org', 'tfarina@chromium.org'],
     'browser_chromeos': ['davemoore+watch@chromium.org'],
     'browser_components': ['browser-components-watch@chromium.org'],
