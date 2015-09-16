@@ -119,9 +119,8 @@ ManifestPermission* AutomationManifestPermission::Diff(
   bool desktop = automation_info_->desktop && !other->automation_info_->desktop;
   bool interact =
       automation_info_->interact && !other->automation_info_->interact;
-  URLPatternSet matches;
-  URLPatternSet::CreateDifference(
-      automation_info_->matches, other->automation_info_->matches, &matches);
+  URLPatternSet matches = URLPatternSet::CreateDifference(
+      automation_info_->matches, other->automation_info_->matches);
   return new AutomationManifestPermission(
       make_scoped_ptr(new const AutomationInfo(desktop, matches, interact)));
 }
@@ -134,9 +133,8 @@ ManifestPermission* AutomationManifestPermission::Union(
   bool desktop = automation_info_->desktop || other->automation_info_->desktop;
   bool interact =
       automation_info_->interact || other->automation_info_->interact;
-  URLPatternSet matches;
-  URLPatternSet::CreateUnion(
-      automation_info_->matches, other->automation_info_->matches, &matches);
+  URLPatternSet matches = URLPatternSet::CreateUnion(
+      automation_info_->matches, other->automation_info_->matches);
   return new AutomationManifestPermission(
       make_scoped_ptr(new const AutomationInfo(desktop, matches, interact)));
 }
@@ -149,9 +147,8 @@ ManifestPermission* AutomationManifestPermission::Intersect(
   bool desktop = automation_info_->desktop && other->automation_info_->desktop;
   bool interact =
       automation_info_->interact && other->automation_info_->interact;
-  URLPatternSet matches;
-  URLPatternSet::CreateIntersection(
-      automation_info_->matches, other->automation_info_->matches, &matches);
+  URLPatternSet matches = URLPatternSet::CreateIntersection(
+      automation_info_->matches, other->automation_info_->matches);
   return new AutomationManifestPermission(
       make_scoped_ptr(new const AutomationInfo(desktop, matches, interact)));
 }

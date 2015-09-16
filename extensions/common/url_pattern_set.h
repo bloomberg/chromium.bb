@@ -26,16 +26,13 @@ class URLPatternSet {
   typedef std::set<URLPattern>::const_iterator const_iterator;
   typedef std::set<URLPattern>::iterator iterator;
 
-  // Clears |out| and populates the set with |set1| - |set2|.
-  static void CreateDifference(const URLPatternSet& set1,
-                               const URLPatternSet& set2,
-                               URLPatternSet* out);
+  // Returns |set1| - |set2|.
+  static URLPatternSet CreateDifference(const URLPatternSet& set1,
+                                        const URLPatternSet& set2);
 
-  // Clears |out| and populates the set with the intersection of |set1|
-  // and |set2|.
-  static void CreateIntersection(const URLPatternSet& set1,
-                                 const URLPatternSet& set2,
-                                 URLPatternSet* out);
+  // Returns the intersection of |set1| and |set2|.
+  static URLPatternSet CreateIntersection(const URLPatternSet& set1,
+                                          const URLPatternSet& set2);
 
   // Creates an intersection result where result has every element that is
   // contained by both |set1| and |set2|. This is different than
@@ -48,14 +45,12 @@ class URLPatternSet {
   static URLPatternSet CreateSemanticIntersection(const URLPatternSet& set1,
                                                   const URLPatternSet& set2);
 
-  // Clears |out| and populates the set with the union of |set1| and |set2|.
-  static void CreateUnion(const URLPatternSet& set1,
-                          const URLPatternSet& set2,
-                          URLPatternSet* out);
+  // Returns the union of |set1| and |set2|.
+  static URLPatternSet CreateUnion(const URLPatternSet& set1,
+                                   const URLPatternSet& set2);
 
-  // Clears |out| and populates it with the union of all sets in |sets|.
-  static void CreateUnion(const std::vector<URLPatternSet>& sets,
-                          URLPatternSet* out);
+  // Returns the union of all sets in |sets|.
+  static URLPatternSet CreateUnion(const std::vector<URLPatternSet>& sets);
 
   URLPatternSet();
   URLPatternSet(const URLPatternSet& rhs);

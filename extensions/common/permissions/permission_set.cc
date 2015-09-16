@@ -59,15 +59,11 @@ PermissionSet* PermissionSet::CreateDifference(
                                     set2_safe->manifest_permissions(),
                                     &manifest_permissions);
 
-  URLPatternSet explicit_hosts;
-  URLPatternSet::CreateDifference(set1_safe->explicit_hosts(),
-                                  set2_safe->explicit_hosts(),
-                                  &explicit_hosts);
+  URLPatternSet explicit_hosts = URLPatternSet::CreateDifference(
+      set1_safe->explicit_hosts(), set2_safe->explicit_hosts());
 
-  URLPatternSet scriptable_hosts;
-  URLPatternSet::CreateDifference(set1_safe->scriptable_hosts(),
-                                  set2_safe->scriptable_hosts(),
-                                  &scriptable_hosts);
+  URLPatternSet scriptable_hosts = URLPatternSet::CreateDifference(
+      set1_safe->scriptable_hosts(), set2_safe->scriptable_hosts());
 
   return new PermissionSet(apis, manifest_permissions,
                            explicit_hosts, scriptable_hosts);
@@ -114,15 +110,11 @@ PermissionSet* PermissionSet::CreateUnion(
                                set2_safe->manifest_permissions(),
                                &manifest_permissions);
 
-  URLPatternSet explicit_hosts;
-  URLPatternSet::CreateUnion(set1_safe->explicit_hosts(),
-                             set2_safe->explicit_hosts(),
-                             &explicit_hosts);
+  URLPatternSet explicit_hosts = URLPatternSet::CreateUnion(
+      set1_safe->explicit_hosts(), set2_safe->explicit_hosts());
 
-  URLPatternSet scriptable_hosts;
-  URLPatternSet::CreateUnion(set1_safe->scriptable_hosts(),
-                             set2_safe->scriptable_hosts(),
-                             &scriptable_hosts);
+  URLPatternSet scriptable_hosts = URLPatternSet::CreateUnion(
+      set1_safe->scriptable_hosts(), set2_safe->scriptable_hosts());
 
   return new PermissionSet(apis, manifest_permissions,
                            explicit_hosts, scriptable_hosts);
@@ -251,10 +243,8 @@ void PermissionSet::InitImplicitPermissions() {
 }
 
 void PermissionSet::InitEffectiveHosts() {
-  effective_hosts_.ClearPatterns();
-
-  URLPatternSet::CreateUnion(
-      explicit_hosts(), scriptable_hosts(), &effective_hosts_);
+  effective_hosts_ =
+      URLPatternSet::CreateUnion(explicit_hosts(), scriptable_hosts());
 }
 
 void PermissionSet::InitShouldWarnAllHosts() const {

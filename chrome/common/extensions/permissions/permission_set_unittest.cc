@@ -390,8 +390,8 @@ TEST(PermissionsTest, CreateUnion) {
   AddPattern(&expected_explicit_hosts, "http://*.example.com/*");
   AddPattern(&expected_scriptable_hosts, "http://*.google.com/*");
 
-  URLPatternSet::CreateUnion(
-      explicit_hosts2, scriptable_hosts2, &effective_hosts);
+  effective_hosts =
+      URLPatternSet::CreateUnion(explicit_hosts2, scriptable_hosts2);
 
   set2 = new PermissionSet(apis2, manifest_permissions,
                            explicit_hosts2, scriptable_hosts2);

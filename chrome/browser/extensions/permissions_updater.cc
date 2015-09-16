@@ -322,12 +322,10 @@ void PermissionsUpdater::WithholdImpliedAllHosts(const Extension* extension) {
                           &active_explicit,
                           &withheld_explicit);
 
-  URLPatternSet delta_explicit;
-  URLPatternSet::CreateDifference(
-      active->explicit_hosts(), active_explicit, &delta_explicit);
-  URLPatternSet delta_scriptable;
-  URLPatternSet::CreateDifference(
-      active->scriptable_hosts(), active_scriptable, &delta_scriptable);
+  URLPatternSet delta_explicit = URLPatternSet::CreateDifference(
+      active->explicit_hosts(), active_explicit);
+  URLPatternSet delta_scriptable = URLPatternSet::CreateDifference(
+      active->scriptable_hosts(), active_scriptable);
 
   SetPermissions(extension,
                  new PermissionSet(active->apis(),
@@ -358,20 +356,15 @@ void PermissionsUpdater::GrantWithheldImpliedAllHosts(
   // We can cheat a bit here since we know that the only host permission we
   // withhold is allhosts (or something similar enough to it), so we can just
   // grant all withheld host permissions.
-  URLPatternSet explicit_hosts;
-  URLPatternSet::CreateUnion(
-      active->explicit_hosts(), withheld->explicit_hosts(), &explicit_hosts);
-  URLPatternSet scriptable_hosts;
-  URLPatternSet::CreateUnion(active->scriptable_hosts(),
-                             withheld->scriptable_hosts(),
-                             &scriptable_hosts);
+  URLPatternSet explicit_hosts = URLPatternSet::CreateUnion(
+      active->explicit_hosts(), withheld->explicit_hosts());
+  URLPatternSet scriptable_hosts = URLPatternSet::CreateUnion(
+      active->scriptable_hosts(), withheld->scriptable_hosts());
 
-  URLPatternSet delta_explicit;
-  URLPatternSet::CreateDifference(
-      explicit_hosts, active->explicit_hosts(), &delta_explicit);
-  URLPatternSet delta_scriptable;
-  URLPatternSet::CreateDifference(
-      scriptable_hosts, active->scriptable_hosts(), &delta_scriptable);
+  URLPatternSet delta_explicit =
+      URLPatternSet::CreateDifference(explicit_hosts, active->explicit_hosts());
+  URLPatternSet delta_scriptable = URLPatternSet::CreateDifference(
+      scriptable_hosts, active->scriptable_hosts());
 
   // Since we only withhold host permissions (so far), we know that withheld
   // permissions will be empty.

@@ -255,8 +255,8 @@ class ExtensionPrefsGrantedPermissions : public ExtensionPrefsTest {
     EXPECT_EQ(shost_perm_set1_,
               granted_permissions->scriptable_hosts());
 
-    URLPatternSet::CreateUnion(ehost_perm_set1_, shost_perm_set1_,
-                               &effective_permissions_);
+    effective_permissions_ =
+        URLPatternSet::CreateUnion(ehost_perm_set1_, shost_perm_set1_);
     EXPECT_EQ(effective_permissions_, granted_permissions->effective_hosts());
 
     // Add the rest of the permissions.
@@ -275,9 +275,8 @@ class ExtensionPrefsGrantedPermissions : public ExtensionPrefsTest {
               granted_permissions->explicit_hosts());
     EXPECT_EQ(shost_permissions_,
               granted_permissions->scriptable_hosts());
-    effective_permissions_.ClearPatterns();
-    URLPatternSet::CreateUnion(ehost_permissions_, shost_permissions_,
-                               &effective_permissions_);
+    effective_permissions_ =
+        URLPatternSet::CreateUnion(ehost_permissions_, shost_permissions_);
     EXPECT_EQ(effective_permissions_, granted_permissions->effective_hosts());
   }
 

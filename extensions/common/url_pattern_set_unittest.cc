@@ -118,8 +118,7 @@ TEST(URLPatternSetTest, CreateDifference) {
   AddPattern(&set1, "http://www.yahoo.com/b*");
 
   // Subtract an empty set.
-  URLPatternSet result;
-  URLPatternSet::CreateDifference(set1, set2, &result);
+  URLPatternSet result = URLPatternSet::CreateDifference(set1, set2);
   EXPECT_EQ(set1, result);
 
   // Subtract a real set.
@@ -129,16 +128,14 @@ TEST(URLPatternSetTest, CreateDifference) {
 
   AddPattern(&expected, "http://www.yahoo.com/b*");
 
-  result.ClearPatterns();
-  URLPatternSet::CreateDifference(set1, set2, &result);
+  result = URLPatternSet::CreateDifference(set1, set2);
   EXPECT_EQ(expected, result);
   EXPECT_FALSE(result.is_empty());
   EXPECT_TRUE(set1.Contains(result));
   EXPECT_FALSE(result.Contains(set2));
   EXPECT_FALSE(set2.Contains(result));
 
-  URLPatternSet intersection;
-  URLPatternSet::CreateIntersection(result, set2, &intersection);
+  URLPatternSet intersection = URLPatternSet::CreateIntersection(result, set2);
   EXPECT_TRUE(intersection.is_empty());
 }
 
@@ -150,8 +147,7 @@ TEST(URLPatternSetTest, CreateIntersection) {
   AddPattern(&set1, "http://www.yahoo.com/b*");
 
   // Intersection with an empty set.
-  URLPatternSet result;
-  URLPatternSet::CreateIntersection(set1, empty_set, &result);
+  URLPatternSet result = URLPatternSet::CreateIntersection(set1, empty_set);
   EXPECT_EQ(expected, result);
   EXPECT_TRUE(result.is_empty());
   EXPECT_TRUE(empty_set.Contains(result));
@@ -166,8 +162,7 @@ TEST(URLPatternSetTest, CreateIntersection) {
 
   AddPattern(&expected, "http://www.google.com/f*");
 
-  result.ClearPatterns();
-  URLPatternSet::CreateIntersection(set1, set2, &result);
+  result = URLPatternSet::CreateIntersection(set1, set2);
   EXPECT_EQ(expected, result);
   EXPECT_FALSE(result.is_empty());
   EXPECT_TRUE(set1.Contains(result));
@@ -216,8 +211,7 @@ TEST(URLPatternSetTest, CreateUnion) {
   AddPattern(&expected, "http://www.yahoo.com/b*");
 
   // Union with an empty set.
-  URLPatternSet result;
-  URLPatternSet::CreateUnion(set1, empty_set, &result);
+  URLPatternSet result = URLPatternSet::CreateUnion(set1, empty_set);
   EXPECT_EQ(expected, result);
 
   // Union with a real set.
@@ -229,8 +223,7 @@ TEST(URLPatternSetTest, CreateUnion) {
   AddPattern(&expected, "http://www.reddit.com/f*");
   AddPattern(&expected, "http://www.yahoo.com/z*");
 
-  result.ClearPatterns();
-  URLPatternSet::CreateUnion(set1, set2, &result);
+  result = URLPatternSet::CreateUnion(set1, set2);
   EXPECT_EQ(expected, result);
 }
 
@@ -315,8 +308,7 @@ TEST(URLPatternSetTest, NwayUnion) {
   {
     std::vector<URLPatternSet> empty;
 
-    URLPatternSet result;
-    URLPatternSet::CreateUnion(empty, &result);
+    URLPatternSet result = URLPatternSet::CreateUnion(empty);
 
     URLPatternSet expected;
     EXPECT_EQ(expected, result);
@@ -327,8 +319,7 @@ TEST(URLPatternSetTest, NwayUnion) {
     std::vector<URLPatternSet> test;
     test.push_back(Patterns(google_a));
 
-    URLPatternSet result;
-    URLPatternSet::CreateUnion(test, &result);
+    URLPatternSet result = URLPatternSet::CreateUnion(test);
 
     URLPatternSet expected = Patterns(google_a);
     EXPECT_EQ(expected, result);
@@ -340,8 +331,7 @@ TEST(URLPatternSetTest, NwayUnion) {
     test.push_back(Patterns(google_a, google_b));
     test.push_back(Patterns(google_b, google_c));
 
-    URLPatternSet result;
-    URLPatternSet::CreateUnion(test, &result);
+    URLPatternSet result = URLPatternSet::CreateUnion(test);
 
     URLPatternSet expected;
     AddPattern(&expected, google_a);
@@ -357,8 +347,7 @@ TEST(URLPatternSetTest, NwayUnion) {
     test.push_back(Patterns(google_b, google_c));
     test.push_back(Patterns(yahoo_a, yahoo_b));
 
-    URLPatternSet result;
-    URLPatternSet::CreateUnion(test, &result);
+    URLPatternSet result = URLPatternSet::CreateUnion(test);
 
     URLPatternSet expected;
     AddPattern(&expected, google_a);
@@ -380,8 +369,7 @@ TEST(URLPatternSetTest, NwayUnion) {
     test.push_back(Patterns(yahoo_c));
     test.push_back(Patterns(reddit_a));
 
-    URLPatternSet result;
-    URLPatternSet::CreateUnion(test, &result);
+    URLPatternSet result = URLPatternSet::CreateUnion(test);
 
     URLPatternSet expected;
     AddPattern(&expected, google_a);
@@ -406,8 +394,7 @@ TEST(URLPatternSetTest, NwayUnion) {
     test.push_back(Patterns(reddit_a));
     test.push_back(Patterns(reddit_b));
 
-    URLPatternSet result;
-    URLPatternSet::CreateUnion(test, &result);
+    URLPatternSet result = URLPatternSet::CreateUnion(test);
 
     URLPatternSet expected;
     AddPattern(&expected, google_a);
@@ -434,8 +421,7 @@ TEST(URLPatternSetTest, NwayUnion) {
     test.push_back(Patterns(reddit_b));
     test.push_back(Patterns(reddit_c));
 
-    URLPatternSet result;
-    URLPatternSet::CreateUnion(test, &result);
+    URLPatternSet result = URLPatternSet::CreateUnion(test);
 
     URLPatternSet expected;
     AddPattern(&expected, google_a);
