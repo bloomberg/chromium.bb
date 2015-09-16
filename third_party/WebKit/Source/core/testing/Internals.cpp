@@ -1861,6 +1861,11 @@ void Internals::setPageScaleFactorLimits(float minScaleFactor, float maxScaleFac
     page->frameHost().setDefaultPageScaleLimits(minScaleFactor, maxScaleFactor);
 }
 
+bool Internals::magnifyScaleAroundAnchor(float scaleFactor, float x, float y)
+{
+    return frame()->host()->visualViewport().magnifyScaleAroundAnchor(scaleFactor, FloatPoint(x, y));
+}
+
 void Internals::setIsCursorVisible(Document* document, bool isVisible, ExceptionState& exceptionState)
 {
     ASSERT(document);

@@ -98,10 +98,10 @@ LayoutRect RootFrameViewport::scrollIntoView(const LayoutRect& rectInContent, co
     // is always integer sized.
 
     LayoutRect frameRectInContent = LayoutRect(
-        layoutViewport().scrollPositionDouble(),
+        layoutViewport().scrollAnimator()->currentPosition(),
         layoutViewport().visibleContentRect().size());
     LayoutRect visualRectInContent = LayoutRect(
-        layoutViewport().scrollPositionDouble() + toDoubleSize(visualViewport().scrollPositionDouble()),
+        scrollOffsetFromScrollAnimators(),
         visualViewport().visibleContentRect().size());
 
     LayoutRect viewRectInContent = intersection(visualRectInContent, frameRectInContent);

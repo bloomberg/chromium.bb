@@ -334,6 +334,8 @@
 
     void setVisualViewportOffset(long x, long y);
 
+    bool magnifyScaleAroundAnchor(float offset, float x, float y);
+
     boolean isUseCounted(Document document, long useCounterId);
 
     iterable<long>;
