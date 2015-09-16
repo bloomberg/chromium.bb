@@ -4866,12 +4866,12 @@ void WebGLRenderingContextBase::vertexAttrib1f(GLuint index, GLfloat v0)
     vertexAttribfImpl("vertexAttrib1f", index, 1, v0, 0.0f, 0.0f, 1.0f);
 }
 
-void WebGLRenderingContextBase::vertexAttrib1fv(GLuint index, DOMFloat32Array* v)
+void WebGLRenderingContextBase::vertexAttrib1fv(GLuint index, const DOMFloat32Array* v)
 {
     vertexAttribfvImpl("vertexAttrib1fv", index, v, 1);
 }
 
-void WebGLRenderingContextBase::vertexAttrib1fv(GLuint index, Vector<GLfloat>& v)
+void WebGLRenderingContextBase::vertexAttrib1fv(GLuint index, const Vector<GLfloat>& v)
 {
     vertexAttribfvImpl("vertexAttrib1fv", index, v.data(), v.size(), 1);
 }
@@ -4881,12 +4881,12 @@ void WebGLRenderingContextBase::vertexAttrib2f(GLuint index, GLfloat v0, GLfloat
     vertexAttribfImpl("vertexAttrib2f", index, 2, v0, v1, 0.0f, 1.0f);
 }
 
-void WebGLRenderingContextBase::vertexAttrib2fv(GLuint index, DOMFloat32Array* v)
+void WebGLRenderingContextBase::vertexAttrib2fv(GLuint index, const DOMFloat32Array* v)
 {
     vertexAttribfvImpl("vertexAttrib2fv", index, v, 2);
 }
 
-void WebGLRenderingContextBase::vertexAttrib2fv(GLuint index, Vector<GLfloat>& v)
+void WebGLRenderingContextBase::vertexAttrib2fv(GLuint index, const Vector<GLfloat>& v)
 {
     vertexAttribfvImpl("vertexAttrib2fv", index, v.data(), v.size(), 2);
 }
@@ -4896,12 +4896,12 @@ void WebGLRenderingContextBase::vertexAttrib3f(GLuint index, GLfloat v0, GLfloat
     vertexAttribfImpl("vertexAttrib3f", index, 3, v0, v1, v2, 1.0f);
 }
 
-void WebGLRenderingContextBase::vertexAttrib3fv(GLuint index, DOMFloat32Array* v)
+void WebGLRenderingContextBase::vertexAttrib3fv(GLuint index, const DOMFloat32Array* v)
 {
     vertexAttribfvImpl("vertexAttrib3fv", index, v, 3);
 }
 
-void WebGLRenderingContextBase::vertexAttrib3fv(GLuint index, Vector<GLfloat>& v)
+void WebGLRenderingContextBase::vertexAttrib3fv(GLuint index, const Vector<GLfloat>& v)
 {
     vertexAttribfvImpl("vertexAttrib3fv", index, v.data(), v.size(), 3);
 }
@@ -4911,12 +4911,12 @@ void WebGLRenderingContextBase::vertexAttrib4f(GLuint index, GLfloat v0, GLfloat
     vertexAttribfImpl("vertexAttrib4f", index, 4, v0, v1, v2, v3);
 }
 
-void WebGLRenderingContextBase::vertexAttrib4fv(GLuint index, DOMFloat32Array* v)
+void WebGLRenderingContextBase::vertexAttrib4fv(GLuint index, const DOMFloat32Array* v)
 {
     vertexAttribfvImpl("vertexAttrib4fv", index, v, 4);
 }
 
-void WebGLRenderingContextBase::vertexAttrib4fv(GLuint index, Vector<GLfloat>& v)
+void WebGLRenderingContextBase::vertexAttrib4fv(GLuint index, const Vector<GLfloat>& v)
 {
     vertexAttribfvImpl("vertexAttrib4fv", index, v.data(), v.size(), 4);
 }
@@ -6342,7 +6342,7 @@ void WebGLRenderingContextBase::vertexAttribfImpl(const char* functionName, GLui
     attribValue.value.floatValue[3] = v3;
 }
 
-void WebGLRenderingContextBase::vertexAttribfvImpl(const char* functionName, GLuint index, DOMFloat32Array* v, GLsizei expectedSize)
+void WebGLRenderingContextBase::vertexAttribfvImpl(const char* functionName, GLuint index, const DOMFloat32Array* v, GLsizei expectedSize)
 {
     if (isContextLost())
         return;
@@ -6353,7 +6353,7 @@ void WebGLRenderingContextBase::vertexAttribfvImpl(const char* functionName, GLu
     vertexAttribfvImpl(functionName, index, v->data(), v->length(), expectedSize);
 }
 
-void WebGLRenderingContextBase::vertexAttribfvImpl(const char* functionName, GLuint index, GLfloat* v, GLsizei size, GLsizei expectedSize)
+void WebGLRenderingContextBase::vertexAttribfvImpl(const char* functionName, GLuint index, const GLfloat* v, GLsizei size, GLsizei expectedSize)
 {
     if (isContextLost())
         return;

@@ -352,17 +352,17 @@ public:
     void validateProgram(WebGLProgram*);
 
     void vertexAttrib1f(GLuint index, GLfloat x);
-    void vertexAttrib1fv(GLuint index, DOMFloat32Array* values);
-    void vertexAttrib1fv(GLuint index, Vector<GLfloat>& values);
+    void vertexAttrib1fv(GLuint index, const DOMFloat32Array* values);
+    void vertexAttrib1fv(GLuint index, const Vector<GLfloat>& values);
     void vertexAttrib2f(GLuint index, GLfloat x, GLfloat y);
-    void vertexAttrib2fv(GLuint index, DOMFloat32Array* values);
-    void vertexAttrib2fv(GLuint index, Vector<GLfloat>& values);
+    void vertexAttrib2fv(GLuint index, const DOMFloat32Array* values);
+    void vertexAttrib2fv(GLuint index, const Vector<GLfloat>& values);
     void vertexAttrib3f(GLuint index, GLfloat x, GLfloat y, GLfloat z);
-    void vertexAttrib3fv(GLuint index, DOMFloat32Array* values);
-    void vertexAttrib3fv(GLuint index, Vector<GLfloat>& values);
+    void vertexAttrib3fv(GLuint index, const DOMFloat32Array* values);
+    void vertexAttrib3fv(GLuint index, const Vector<GLfloat>& values);
     void vertexAttrib4f(GLuint index, GLfloat x, GLfloat y, GLfloat z, GLfloat w);
-    void vertexAttrib4fv(GLuint index, DOMFloat32Array* values);
-    void vertexAttrib4fv(GLuint index, Vector<GLfloat>& values);
+    void vertexAttrib4fv(GLuint index, const DOMFloat32Array* values);
+    void vertexAttrib4fv(GLuint index, const Vector<GLfloat>& values);
     void vertexAttribPointer(GLuint index, GLint size, GLenum type, GLboolean normalized,
         GLsizei stride, long long offset);
 
@@ -1029,8 +1029,8 @@ protected:
 
     // Helper functions for vertexAttribNf{v}.
     void vertexAttribfImpl(const char* functionName, GLuint index, GLsizei expectedSize, GLfloat, GLfloat, GLfloat, GLfloat);
-    void vertexAttribfvImpl(const char* functionName, GLuint index, DOMFloat32Array*, GLsizei expectedSize);
-    void vertexAttribfvImpl(const char* functionName, GLuint index, GLfloat*, GLsizei, GLsizei expectedSize);
+    void vertexAttribfvImpl(const char* functionName, GLuint index, const DOMFloat32Array*, GLsizei expectedSize);
+    void vertexAttribfvImpl(const char* functionName, GLuint index, const GLfloat*, GLsizei, GLsizei expectedSize);
 
     // Helper functions to bufferData() and bufferSubData().
     void bufferDataImpl(GLenum target, long long size, const void* data, GLenum usage);
