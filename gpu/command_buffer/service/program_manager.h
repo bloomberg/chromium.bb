@@ -54,6 +54,12 @@ class GPU_EXPORT Program : public base::RefCounted<Program> {
     kUniform2ui = 1 << 12,
     kUniform3ui = 1 << 13,
     kUniform4ui = 1 << 14,
+    kUniformMatrix2x3f = 1 << 15,
+    kUniformMatrix2x4f = 1 << 16,
+    kUniformMatrix3x2f = 1 << 17,
+    kUniformMatrix3x4f = 1 << 18,
+    kUniformMatrix4x2f = 1 << 19,
+    kUniformMatrix4x3f = 1 << 20,
   };
 
   struct UniformInfo {

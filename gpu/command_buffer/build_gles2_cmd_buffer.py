@@ -3574,11 +3574,13 @@ _FUNCTION_INFO = {
   'UniformMatrix2x3fv': {
     'type': 'PUTn',
     'count': 6,
+    'decoder_func': 'DoUniformMatrix2x3fv',
     'unsafe': True,
   },
   'UniformMatrix2x4fv': {
     'type': 'PUTn',
     'count': 8,
+    'decoder_func': 'DoUniformMatrix2x4fv',
     'unsafe': True,
   },
   'UniformMatrix3fv': {
@@ -3589,11 +3591,13 @@ _FUNCTION_INFO = {
   'UniformMatrix3x2fv': {
     'type': 'PUTn',
     'count': 6,
+    'decoder_func': 'DoUniformMatrix3x2fv',
     'unsafe': True,
   },
   'UniformMatrix3x4fv': {
     'type': 'PUTn',
     'count': 12,
+    'decoder_func': 'DoUniformMatrix3x4fv',
     'unsafe': True,
   },
   'UniformMatrix4fv': {
@@ -3604,11 +3608,13 @@ _FUNCTION_INFO = {
   'UniformMatrix4x2fv': {
     'type': 'PUTn',
     'count': 8,
+    'decoder_func': 'DoUniformMatrix4x2fv',
     'unsafe': True,
   },
   'UniformMatrix4x3fv': {
     'type': 'PUTn',
     'count': 12,
+    'decoder_func': 'DoUniformMatrix4x3fv',
     'unsafe': True,
   },
   'UniformBlockBinding': {

@@ -193,6 +193,25 @@ Program::UniformInfo::UniformInfo(GLsizei _size,
       accepts_api_type = kUniformMatrix4f;
       break;
 
+    case GL_FLOAT_MAT2x3:
+      accepts_api_type = kUniformMatrix2x3f;
+      break;
+    case GL_FLOAT_MAT2x4:
+      accepts_api_type = kUniformMatrix2x4f;
+      break;
+    case GL_FLOAT_MAT3x2:
+      accepts_api_type = kUniformMatrix3x2f;
+      break;
+    case GL_FLOAT_MAT3x4:
+      accepts_api_type = kUniformMatrix3x4f;
+      break;
+    case GL_FLOAT_MAT4x2:
+      accepts_api_type = kUniformMatrix4x2f;
+      break;
+    case GL_FLOAT_MAT4x3:
+      accepts_api_type = kUniformMatrix4x3f;
+      break;
+
     case GL_SAMPLER_2D:
     case GL_SAMPLER_2D_RECT_ARB:
     case GL_SAMPLER_CUBE:

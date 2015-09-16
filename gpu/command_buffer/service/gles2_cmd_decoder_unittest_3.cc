@@ -48,6 +48,35 @@ void GLES2DecoderTestBase::SpecializedSetup<cmds::UniformMatrix4fvImmediate, 0>(
   SetupShaderForUniform(GL_FLOAT_MAT4);
 };
 
+template <>
+void GLES2DecoderTestBase::SpecializedSetup<
+    cmds::UniformMatrix2x4fvImmediate, 0>(bool /* valid */) {
+  SetupShaderForUniform(GL_FLOAT_MAT2x4);
+};
+
+template <>
+void GLES2DecoderTestBase::SpecializedSetup<
+    cmds::UniformMatrix3x2fvImmediate, 0>(bool /* valid */) {
+  SetupShaderForUniform(GL_FLOAT_MAT3x2);
+};
+
+template <>
+void GLES2DecoderTestBase::SpecializedSetup<
+    cmds::UniformMatrix3x4fvImmediate, 0>(bool /* valid */) {
+  SetupShaderForUniform(GL_FLOAT_MAT3x4);
+};
+
+template <>
+void GLES2DecoderTestBase::SpecializedSetup<
+    cmds::UniformMatrix4x2fvImmediate, 0>(bool /* valid */) {
+  SetupShaderForUniform(GL_FLOAT_MAT4x2);
+};
+
+template <>
+void GLES2DecoderTestBase::SpecializedSetup<
+    cmds::UniformMatrix4x3fvImmediate, 0>(bool /* valid */) {
+  SetupShaderForUniform(GL_FLOAT_MAT4x3);
+};
 
 template <>
 void GLES2DecoderTestBase::SpecializedSetup<cmds::UseProgram, 0>(

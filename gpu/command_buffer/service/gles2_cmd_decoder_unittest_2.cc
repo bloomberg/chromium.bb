@@ -38,7 +38,10 @@ class GLES2DecoderTest2 : public GLES2DecoderTestBase {
  public:
   GLES2DecoderTest2() { }
 
-  void TestAcceptedUniform(GLenum uniform_type, uint32 accepts_apis) {
+  void TestAcceptedUniform(
+      GLenum uniform_type, uint32 accepts_apis, bool es3_enabled) {
+    decoder_->set_unsafe_es3_apis_enabled(es3_enabled);
+
     SetupShaderForUniform(uniform_type);
     bool valid_uniform = false;
 
@@ -55,6 +58,18 @@ class GLES2DecoderTest2 : public GLES2DecoderTestBase {
     EXPECT_CALL(*gl_, UniformMatrix2fv(1, _, _, _)).Times(AnyNumber());
     EXPECT_CALL(*gl_, UniformMatrix3fv(1, _, _, _)).Times(AnyNumber());
     EXPECT_CALL(*gl_, UniformMatrix4fv(1, _, _, _)).Times(AnyNumber());
+    if (es3_enabled) {
+      EXPECT_CALL(*gl_, Uniform1uiv(1, _, _)).Times(AnyNumber());
+      EXPECT_CALL(*gl_, Uniform2uiv(1, _, _)).Times(AnyNumber());
+      EXPECT_CALL(*gl_, Uniform3uiv(1, _, _)).Times(AnyNumber());
+      EXPECT_CALL(*gl_, Uniform4uiv(1, _, _)).Times(AnyNumber());
+      EXPECT_CALL(*gl_, UniformMatrix2x3fv(1, _, _, _)).Times(AnyNumber());
+      EXPECT_CALL(*gl_, UniformMatrix2x4fv(1, _, _, _)).Times(AnyNumber());
+      EXPECT_CALL(*gl_, UniformMatrix3x2fv(1, _, _, _)).Times(AnyNumber());
+      EXPECT_CALL(*gl_, UniformMatrix3x4fv(1, _, _, _)).Times(AnyNumber());
+      EXPECT_CALL(*gl_, UniformMatrix4x2fv(1, _, _, _)).Times(AnyNumber());
+      EXPECT_CALL(*gl_, UniformMatrix4x3fv(1, _, _, _)).Times(AnyNumber());
+    }
 
     {
       valid_uniform = accepts_apis & Program::kUniform1i;
@@ -250,6 +265,160 @@ class GLES2DecoderTest2 : public GLES2DecoderTestBase {
       EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(data)));
       EXPECT_EQ(valid_uniform ? GL_NO_ERROR : GL_INVALID_OPERATION,
                 GetGLError());
+    }
+
+    if (es3_enabled) {
+      {
+        valid_uniform = accepts_apis & Program::kUniform1ui;
+        cmds::Uniform1ui cmd;
+        cmd.Init(1, 2);
+        EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+        EXPECT_EQ(valid_uniform ? GL_NO_ERROR : GL_INVALID_OPERATION,
+                  GetGLError());
+      }
+
+      {
+        valid_uniform = accepts_apis & Program::kUniform1ui;
+        cmds::Uniform1uivImmediate& cmd =
+            *GetImmediateAs<cmds::Uniform1uivImmediate>();
+        GLuint data[2][1] = {{0}};
+        cmd.Init(1, 2, &data[0][0]);
+        EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(data)));
+        EXPECT_EQ(valid_uniform ? GL_NO_ERROR : GL_INVALID_OPERATION,
+                  GetGLError());
+      }
+
+      {
+        valid_uniform = accepts_apis & Program::kUniform2ui;
+        cmds::Uniform2ui cmd;
+        cmd.Init(1, 2, 3);
+        EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+        EXPECT_EQ(valid_uniform ? GL_NO_ERROR : GL_INVALID_OPERATION,
+                  GetGLError());
+      }
+
+      {
+        valid_uniform = accepts_apis & Program::kUniform2ui;
+        cmds::Uniform2uivImmediate& cmd =
+            *GetImmediateAs<cmds::Uniform2uivImmediate>();
+        GLuint data[2][2] = {{0}};
+        cmd.Init(1, 2, &data[0][0]);
+        EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(data)));
+        EXPECT_EQ(valid_uniform ? GL_NO_ERROR : GL_INVALID_OPERATION,
+                  GetGLError());
+      }
+
+      {
+        valid_uniform = accepts_apis & Program::kUniform3ui;
+        cmds::Uniform3ui cmd;
+        cmd.Init(1, 2, 3, 4);
+        EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+        EXPECT_EQ(valid_uniform ? GL_NO_ERROR : GL_INVALID_OPERATION,
+                  GetGLError());
+      }
+
+      {
+        valid_uniform = accepts_apis & Program::kUniform3ui;
+        cmds::Uniform3uivImmediate& cmd =
+            *GetImmediateAs<cmds::Uniform3uivImmediate>();
+        GLuint data[2][3] = {{0}};
+        cmd.Init(1, 2, &data[0][0]);
+        EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(data)));
+        EXPECT_EQ(valid_uniform ? GL_NO_ERROR : GL_INVALID_OPERATION,
+                  GetGLError());
+      }
+
+      {
+        valid_uniform = accepts_apis & Program::kUniform4ui;
+        cmds::Uniform4ui cmd;
+        cmd.Init(1, 2, 3, 4, 5);
+        EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+        EXPECT_EQ(valid_uniform ? GL_NO_ERROR : GL_INVALID_OPERATION,
+                  GetGLError());
+      }
+
+      {
+        valid_uniform = accepts_apis & Program::kUniform4ui;
+        cmds::Uniform4uivImmediate& cmd =
+            *GetImmediateAs<cmds::Uniform4uivImmediate>();
+        GLuint data[2][4] = {{0}};
+        cmd.Init(1, 2, &data[0][0]);
+        EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(data)));
+        EXPECT_EQ(valid_uniform ? GL_NO_ERROR : GL_INVALID_OPERATION,
+                  GetGLError());
+      }
+
+      {
+        valid_uniform = accepts_apis & Program::kUniformMatrix2x3f;
+        cmds::UniformMatrix2x3fvImmediate& cmd =
+            *GetImmediateAs<cmds::UniformMatrix2x3fvImmediate>();
+        GLfloat data[2][2 * 3] = {{0.0f}};
+
+        cmd.Init(1, 2, &data[0][0]);
+        EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(data)));
+        EXPECT_EQ(valid_uniform ? GL_NO_ERROR : GL_INVALID_OPERATION,
+                  GetGLError());
+      }
+
+      {
+        valid_uniform = accepts_apis & Program::kUniformMatrix2x4f;
+        cmds::UniformMatrix2x4fvImmediate& cmd =
+            *GetImmediateAs<cmds::UniformMatrix2x4fvImmediate>();
+        GLfloat data[2][2 * 4] = {{0.0f}};
+
+        cmd.Init(1, 2, &data[0][0]);
+        EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(data)));
+        EXPECT_EQ(valid_uniform ? GL_NO_ERROR : GL_INVALID_OPERATION,
+                  GetGLError());
+      }
+
+      {
+        valid_uniform = accepts_apis & Program::kUniformMatrix3x2f;
+        cmds::UniformMatrix3x2fvImmediate& cmd =
+            *GetImmediateAs<cmds::UniformMatrix3x2fvImmediate>();
+        GLfloat data[2][3 * 2] = {{0.0f}};
+
+        cmd.Init(1, 2, &data[0][0]);
+        EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(data)));
+        EXPECT_EQ(valid_uniform ? GL_NO_ERROR : GL_INVALID_OPERATION,
+                  GetGLError());
+      }
+
+      {
+        valid_uniform = accepts_apis & Program::kUniformMatrix3x4f;
+        cmds::UniformMatrix3x4fvImmediate& cmd =
+            *GetImmediateAs<cmds::UniformMatrix3x4fvImmediate>();
+        GLfloat data[2][3 * 4] = {{0.0f}};
+
+        cmd.Init(1, 2, &data[0][0]);
+        EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(data)));
+        EXPECT_EQ(valid_uniform ? GL_NO_ERROR : GL_INVALID_OPERATION,
+                  GetGLError());
+      }
+
+      {
+        valid_uniform = accepts_apis & Program::kUniformMatrix4x2f;
+        cmds::UniformMatrix4x2fvImmediate& cmd =
+            *GetImmediateAs<cmds::UniformMatrix4x2fvImmediate>();
+        GLfloat data[2][4 * 2] = {{0.0f}};
+
+        cmd.Init(1, 2, &data[0][0]);
+        EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(data)));
+        EXPECT_EQ(valid_uniform ? GL_NO_ERROR : GL_INVALID_OPERATION,
+                  GetGLError());
+      }
+
+      {
+        valid_uniform = accepts_apis & Program::kUniformMatrix4x3f;
+        cmds::UniformMatrix4x3fvImmediate& cmd =
+            *GetImmediateAs<cmds::UniformMatrix4x3fvImmediate>();
+        GLfloat data[2][4 * 3] = {{0.0f}};
+
+        cmd.Init(1, 2, &data[0][0]);
+        EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(data)));
+        EXPECT_EQ(valid_uniform ? GL_NO_ERROR : GL_INVALID_OPERATION,
+                  GetGLError());
+      }
     }
   }
 };
@@ -530,6 +699,12 @@ void GLES2DecoderTestBase::SpecializedSetup<cmds::UniformMatrix2fvImmediate, 0>(
 };
 
 template <>
+void GLES2DecoderTestBase::SpecializedSetup<
+    cmds::UniformMatrix2x3fvImmediate, 0>(bool /* valid */) {
+  SetupShaderForUniform(GL_FLOAT_MAT2x3);
+};
+
+template <>
 void GLES2DecoderTestBase::SpecializedSetup<cmds::TexParameterf, 0>(
     bool /* valid */) {
   DoBindTexture(GL_TEXTURE_2D, client_texture_id_, kServiceTextureId);
@@ -609,63 +784,135 @@ void GLES2DecoderTestBase::SpecializedSetup<cmds::GetVertexAttribIuiv, 0>(
 #include "gpu/command_buffer/service/gles2_cmd_decoder_unittest_2_autogen.h"
 
 TEST_P(GLES2DecoderTest2, AcceptsUniform_GL_INT) {
-  TestAcceptedUniform(GL_INT, Program::kUniform1i);
+  TestAcceptedUniform(GL_INT, Program::kUniform1i, false);
 }
 
 TEST_P(GLES2DecoderTest2, AcceptsUniform_GL_INT_VEC2) {
-  TestAcceptedUniform(GL_INT_VEC2, Program::kUniform2i);
+  TestAcceptedUniform(GL_INT_VEC2, Program::kUniform2i, false);
 }
 
 TEST_P(GLES2DecoderTest2, AcceptsUniform_GL_INT_VEC3) {
-  TestAcceptedUniform(GL_INT_VEC3, Program::kUniform3i);
+  TestAcceptedUniform(GL_INT_VEC3, Program::kUniform3i, false);
 }
 
 TEST_P(GLES2DecoderTest2, AcceptsUniform_GL_INT_VEC4) {
-  TestAcceptedUniform(GL_INT_VEC4, Program::kUniform4i);
+  TestAcceptedUniform(GL_INT_VEC4, Program::kUniform4i, false);
 }
 
 TEST_P(GLES2DecoderTest2, AcceptsUniform_GL_BOOL) {
-  TestAcceptedUniform(GL_BOOL, Program::kUniform1i | Program::kUniform1f);
+  TestAcceptedUniform(
+      GL_BOOL, Program::kUniform1i | Program::kUniform1f, false);
+}
+
+TEST_P(GLES2DecoderTest2, AcceptsUniformES3_GL_BOOL) {
+  TestAcceptedUniform(
+      GL_BOOL,
+      Program::kUniform1i | Program::kUniform1f | Program::kUniform1ui,
+      true);
 }
 
 TEST_P(GLES2DecoderTest2, AcceptsUniform_GL_BOOL_VEC2) {
-  TestAcceptedUniform(GL_BOOL_VEC2, Program::kUniform2i | Program::kUniform2f);
+  TestAcceptedUniform(
+      GL_BOOL_VEC2, Program::kUniform2i | Program::kUniform2f, false);
+}
+
+TEST_P(GLES2DecoderTest2, AcceptsUniformES3_GL_BOOL_VEC2) {
+  TestAcceptedUniform(
+      GL_BOOL_VEC2,
+      Program::kUniform2i | Program::kUniform2f | Program::kUniform2ui,
+      true);
 }
 
 TEST_P(GLES2DecoderTest2, AcceptsUniform_GL_BOOL_VEC3) {
-  TestAcceptedUniform(GL_BOOL_VEC3, Program::kUniform3i | Program::kUniform3f);
+  TestAcceptedUniform(
+      GL_BOOL_VEC3, Program::kUniform3i | Program::kUniform3f, false);
+}
+
+TEST_P(GLES2DecoderTest2, AcceptsUniformES3_GL_BOOL_VEC3) {
+  TestAcceptedUniform(
+      GL_BOOL_VEC3,
+      Program::kUniform3i | Program::kUniform3f | Program::kUniform3ui,
+      true);
 }
 
 TEST_P(GLES2DecoderTest2, AcceptsUniform_GL_BOOL_VEC4) {
-  TestAcceptedUniform(GL_BOOL_VEC4, Program::kUniform4i | Program::kUniform4f);
+  TestAcceptedUniform(
+      GL_BOOL_VEC4, Program::kUniform4i | Program::kUniform4f, false);
+}
+
+TEST_P(GLES2DecoderTest2, AcceptsUniformES3_GL_BOOL_VEC4) {
+  TestAcceptedUniform(
+      GL_BOOL_VEC4,
+      Program::kUniform4i | Program::kUniform4f | Program::kUniform4ui,
+      true);
 }
 
 TEST_P(GLES2DecoderTest2, AcceptsUniformTypeFLOAT) {
-  TestAcceptedUniform(GL_FLOAT, Program::kUniform1f);
+  TestAcceptedUniform(GL_FLOAT, Program::kUniform1f, false);
 }
 
 TEST_P(GLES2DecoderTest2, AcceptsUniform_GL_FLOAT_VEC2) {
-  TestAcceptedUniform(GL_FLOAT_VEC2, Program::kUniform2f);
+  TestAcceptedUniform(GL_FLOAT_VEC2, Program::kUniform2f, false);
 }
 
 TEST_P(GLES2DecoderTest2, AcceptsUniform_GL_FLOAT_VEC3) {
-  TestAcceptedUniform(GL_FLOAT_VEC3, Program::kUniform3f);
+  TestAcceptedUniform(GL_FLOAT_VEC3, Program::kUniform3f, false);
 }
 
 TEST_P(GLES2DecoderTest2, AcceptsUniform_GL_FLOAT_VEC4) {
-  TestAcceptedUniform(GL_FLOAT_VEC4, Program::kUniform4f);
+  TestAcceptedUniform(GL_FLOAT_VEC4, Program::kUniform4f, false);
 }
 
 TEST_P(GLES2DecoderTest2, AcceptsUniform_GL_FLOAT_MAT2) {
-  TestAcceptedUniform(GL_FLOAT_MAT2, Program::kUniformMatrix2f);
+  TestAcceptedUniform(GL_FLOAT_MAT2, Program::kUniformMatrix2f, false);
 }
 
 TEST_P(GLES2DecoderTest2, AcceptsUniform_GL_FLOAT_MAT3) {
-  TestAcceptedUniform(GL_FLOAT_MAT3, Program::kUniformMatrix3f);
+  TestAcceptedUniform(GL_FLOAT_MAT3, Program::kUniformMatrix3f, false);
 }
 
 TEST_P(GLES2DecoderTest2, AcceptsUniform_GL_FLOAT_MAT4) {
-  TestAcceptedUniform(GL_FLOAT_MAT4, Program::kUniformMatrix4f);
+  TestAcceptedUniform(GL_FLOAT_MAT4, Program::kUniformMatrix4f, false);
+}
+
+TEST_P(GLES2DecoderTest2, AcceptsUniform_GL_UNSIGNED_INT) {
+  TestAcceptedUniform(GL_UNSIGNED_INT, Program::kUniform1ui, true);
+}
+
+TEST_P(GLES2DecoderTest2, AcceptsUniform_GL_UNSIGNED_INT_VEC2) {
+  TestAcceptedUniform(GL_UNSIGNED_INT_VEC2, Program::kUniform2ui, true);
+}
+
+TEST_P(GLES2DecoderTest2, AcceptsUniform_GL_UNSIGNED_INT_VEC3) {
+  TestAcceptedUniform(GL_UNSIGNED_INT_VEC3, Program::kUniform3ui, true);
+}
+
+TEST_P(GLES2DecoderTest2, AcceptsUniform_GL_UNSIGNED_INT_VEC4) {
+  TestAcceptedUniform(GL_UNSIGNED_INT_VEC4, Program::kUniform4ui, true);
+}
+
+TEST_P(GLES2DecoderTest2, AcceptsUniform_GL_FLOAT_MAT2x3) {
+  TestAcceptedUniform(GL_FLOAT_MAT2x3, Program::kUniformMatrix2x3f, true);
+}
+
+TEST_P(GLES2DecoderTest2, AcceptsUniform_GL_FLOAT_MAT2x4) {
+  TestAcceptedUniform(GL_FLOAT_MAT2x4, Program::kUniformMatrix2x4f, true);
+}
+
+TEST_P(GLES2DecoderTest2, AcceptsUniform_GL_FLOAT_MAT3x2) {
+  TestAcceptedUniform(GL_FLOAT_MAT3x2, Program::kUniformMatrix3x2f, true);
+}
+
+TEST_P(GLES2DecoderTest2, AcceptsUniform_GL_FLOAT_MAT3x4) {
+  TestAcceptedUniform(GL_FLOAT_MAT3x4, Program::kUniformMatrix3x4f, true);
+}
+
+TEST_P(GLES2DecoderTest2, AcceptsUniform_GL_FLOAT_MAT4x2) {
+  TestAcceptedUniform(GL_FLOAT_MAT4x2, Program::kUniformMatrix4x2f, true);
+}
+
+TEST_P(GLES2DecoderTest2, AcceptsUniform_GL_FLOAT_MAT4x3) {
+  TestAcceptedUniform(GL_FLOAT_MAT4x3, Program::kUniformMatrix4x3f, true);
 }
 
 }  // namespace gles2
