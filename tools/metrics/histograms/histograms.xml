@@ -14779,23 +14779,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="HttpCache.AccessToDone.SentRequest" units="milliseconds">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    For every http cache transaction in which a network request was sent, the
-    time from the first access to the disk cache until the transaction was done.
-  </summary>
-</histogram>
-
-<histogram name="HttpCache.AccessToDone.Used" units="milliseconds">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    For every http cache transaction for a cached entry used without validation,
-    the time from the first access to the disk cache until the transaction was
-    done.
-  </summary>
-</histogram>
-
 <histogram name="HttpCache.AsyncValidationDuration" units="milliseconds">
   <obsolete>
     Deprecated as of 3/2015.
@@ -14813,44 +14796,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram name="HttpCache.BeforeSend" units="milliseconds">
   <owner>gavinp@chromium.org</owner>
   <summary>
-    For every http cache transaction in which a network request was sent, the
-    time spent between first accessing the disk cache and sending the request.
-  </summary>
-</histogram>
-
-<histogram name="HttpCache.BeforeSend.CantConditionalize" units="milliseconds">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    For every http cache transaction retrieving a resource cached, but not
-    possible to conditionalize, the time spent between first accessing the disk
-    cache and sending the request.
-  </summary>
-</histogram>
-
-<histogram name="HttpCache.BeforeSend.NotCached" units="milliseconds">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    For every http cache transaction retrieving a resource not previously
-    cached, the time spent between first accessing the disk cache and sending
-    the request.
-  </summary>
-</histogram>
-
-<histogram name="HttpCache.BeforeSend.Updated" units="milliseconds">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    For every http cache transaction retrieving a resource previously cached and
-    updating it, the time spent between first accessing the disk cache and
-    sending the request.
-  </summary>
-</histogram>
-
-<histogram name="HttpCache.BeforeSend.Validated" units="milliseconds">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    For every http cache transaction retrieving a resource previously cached and
-    validating it, the time spent between first accessing the disk cache and
-    sending the request.
+    For http cache transactions in which a network request was sent, the time
+    elapsed between beginning the request and sending it over the network; this
+    is the time spent accessing the disk cache.
   </summary>
 </histogram>
 
@@ -14890,44 +14838,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram name="HttpCache.PercentBeforeSend" units="%">
   <owner>gavinp@chromium.org</owner>
   <summary>
-    For every http cache in which a network request was sent, the percentage of
-    time spent between first accessing the disk cache and sending the request.
-  </summary>
-</histogram>
-
-<histogram name="HttpCache.PercentBeforeSend.CantConditionalize" units="%">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    For every http cache transaction retrieving a resource cached, but not
-    possible to conditionalize, the percentage of total transaction time spent
-    between first accessing the disk cache and sending the request.
-  </summary>
-</histogram>
-
-<histogram name="HttpCache.PercentBeforeSend.NotCached" units="%">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    For every http cache retrieving a resource not previously cached, the
-    percentage of time spent between first accessing the disk cache and sending
-    the request.
-  </summary>
-</histogram>
-
-<histogram name="HttpCache.PercentBeforeSend.Updated" units="%">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    For every http cache transaction retrieving a resource previously cached and
-    updating it, the percentage of time spent between first accessing the disk
-    cache and sending the request.
-  </summary>
-</histogram>
-
-<histogram name="HttpCache.PercentBeforeSend.Validated" units="%">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    For every http cache transaction retrieving a resource previously cached and
-    successfully validating it, the percentage of time spent between first
-    accessing the disk cache and sending the request.
+    For http cache transactions in which a network request was sent, the
+    percentage of total request time that elapsed before sending the request
+    over the network; this is the time spent accessing the disk cache.
   </summary>
 </histogram>
 
@@ -76071,6 +75984,26 @@ To add a new entry, add it with any value and run test to compute valid value.
   <affected-histogram name="Histogram.InconsistenciesBrowser"/>
   <affected-histogram name="Histogram.InconsistenciesBrowserUnique"/>
   <affected-histogram name="Histogram.InconsistentSnapshotBrowser"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="HttpCacheAccessToDoneCases" separator=".">
+  <suffix name="SentRequest" label="The request was sent over the network."/>
+  <suffix name="Used"
+      label="A cache entry was used without using the network."/>
+  <affected-histogram name="HttpCache.AccessToDone"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="HttpCacheBeforeSendCases" separator=".">
+  <suffix name="CantConditionalize"
+      label="A cached resource existed but no conditional request could be
+             written."/>
+  <suffix name="NotCached" label="There was no pre-existing disk cache entry."/>
+  <suffix name="Updated"
+      label="A cached resource existed and was updated over the network."/>
+  <suffix name="Validated"
+      label="A cached resource existed and was validated over the network."/>
+  <affected-histogram name="HttpCache.BeforeSend"/>
+  <affected-histogram name="HttpCache.PercentBeforeSend"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="HttpPipeliningCompatibility">
