@@ -13,7 +13,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "net/quic/crypto/crypto_protocol.h"
 #include "net/quic/quic_crypto_stream.h"
-#include "net/quic/quic_flags.h"
 #include "net/quic/quic_protocol.h"
 #include "net/quic/quic_utils.h"
 #include "net/quic/reliable_quic_stream.h"
@@ -330,15 +329,9 @@ TEST_P(QuicSessionTestServer, MaximumImplicitlyOpenedStreams) {
 TEST_P(QuicSessionTestServer, TooManyImplicitlyOpenedStreams) {
   QuicStreamId stream_id1 = kClientDataStreamId1;
   // A stream ID which is too large to create.
-  const QuicStreamId kMaxStreamIdDelta = 200;
-  QuicStreamId stream_id2 =
-      FLAGS_exact_stream_id_delta
-          ? stream_id1 + 2 * session_.get_max_open_streams()
-          : stream_id1 + kMaxStreamIdDelta + 2;
+  QuicStreamId stream_id2 = stream_id1 + 2 * session_.get_max_open_streams();
   EXPECT_NE(nullptr, session_.GetIncomingDynamicStream(stream_id1));
-  EXPECT_CALL(*connection_, SendConnectionClose(FLAGS_exact_stream_id_delta
-                                                    ? QUIC_TOO_MANY_OPEN_STREAMS
-                                                    : QUIC_INVALID_STREAM_ID));
+  EXPECT_CALL(*connection_, SendConnectionClose(QUIC_TOO_MANY_OPEN_STREAMS));
   EXPECT_EQ(nullptr, session_.GetIncomingDynamicStream(stream_id2));
 }
 
@@ -349,8 +342,7 @@ TEST_P(QuicSessionTestServer, ManyImplicitlyOpenedStreams) {
   QuicStreamId stream_id = kClientDataStreamId1;
   // Create one stream.
   session_.GetIncomingDynamicStream(stream_id);
-  EXPECT_CALL(*connection_, SendConnectionClose(_))
-      .Times(FLAGS_exact_stream_id_delta ? 0 : 1);
+  EXPECT_CALL(*connection_, SendConnectionClose(_)).Times(0);
   // Create the largest stream ID of a threatened total of 200 streams.
   session_.GetIncomingDynamicStream(stream_id + 2 * (200 - 1));
 }
@@ -629,9 +621,7 @@ TEST_P(QuicSessionTestServer, MultipleRstStreamsCauseSingleConnectionClose) {
 
   // Process first invalid stream reset, resulting in the connection being
   // closed.
-  EXPECT_CALL(*connection_, SendConnectionClose(FLAGS_exact_stream_id_delta
-                                                    ? QUIC_TOO_MANY_OPEN_STREAMS
-                                                    : QUIC_INVALID_STREAM_ID))
+  EXPECT_CALL(*connection_, SendConnectionClose(QUIC_TOO_MANY_OPEN_STREAMS))
       .Times(1);
   const QuicStreamId kLargeInvalidStreamId = 99999999;
   QuicRstStreamFrame rst1(kLargeInvalidStreamId, QUIC_STREAM_NO_ERROR, 0);

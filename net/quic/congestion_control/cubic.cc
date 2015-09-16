@@ -79,6 +79,18 @@ void Cubic::Reset() {
   last_target_congestion_window_ = 0;
 }
 
+void Cubic::OnApplicationLimited() {
+  // When sender is not using the available congestion window, the window does
+  // not grow. But to be RTT-independent, Cubic assumes that the sender has been
+  // using the entire window during the time since the beginning of the current
+  // "epoch" (the end of the last loss recovery period). Since
+  // application-limited periods break this assumption, we reset the epoch when
+  // in such a period. This reset effectively freezes congestion window growth
+  // through application-limited periods and allows Cubic growth to continue
+  // when the entire window is being used.
+  epoch_ = QuicTime::Zero();
+}
+
 QuicPacketCount Cubic::CongestionWindowAfterPacketLoss(
     QuicPacketCount current_congestion_window) {
   if (current_congestion_window < last_max_congestion_window_) {
@@ -163,7 +175,7 @@ QuicPacketCount Cubic::CongestionWindowAfterAck(
     target_congestion_window = estimated_tcp_congestion_window_;
   }
 
-  DVLOG(1) << "Target congestion_window: " << target_congestion_window;
+  DVLOG(1) << "Final target congestion_window: " << target_congestion_window;
   return target_congestion_window;
 }
 

@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "net/tools/quic/quic_client.h"
+
 #include <dirent.h>
 #include <stdio.h>
 
@@ -9,7 +11,6 @@
 #include "base/strings/string_util.h"
 #include "net/quic/test_tools/quic_test_utils.h"
 #include "net/tools/epoll_server/epoll_server.h"
-#include "net/tools/quic/quic_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using net::EpollServer;

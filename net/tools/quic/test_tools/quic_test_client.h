@@ -132,6 +132,7 @@ class QuicTestClient : public SimpleClient,
   // DFATAL if called by users of SimpleClient.
   ssize_t SendAndWaitForResponse(const void* buffer, size_t size) override;
   void Bind(IPEndPoint* local_address) override;
+  void MigrateSocket(const IPAddressNumber& new_host) override;
   std::string SerializeMessage(const HTTPMessage& message) override;
   IPAddressNumber bind_to_address() const override;
   void set_bind_to_address(IPAddressNumber address) override;

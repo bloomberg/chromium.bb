@@ -66,4 +66,4 @@ void QuicAckNotifier::OnPacketRetransmitted(int packet_payload_size) {
   retransmitted_byte_count_ += packet_payload_size;
 }
 
-};  // namespace net
+}  // namespace net

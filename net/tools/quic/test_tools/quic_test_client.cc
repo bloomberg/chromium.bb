@@ -584,6 +584,10 @@ void QuicTestClient::Bind(IPEndPoint* local_address) {
   DLOG(WARNING) << "Bind will be done during connect";
 }
 
+void QuicTestClient::MigrateSocket(const IPAddressNumber& new_host) {
+  client_->MigrateSocket(new_host);
+}
+
 string QuicTestClient::SerializeMessage(const HTTPMessage& message) {
   LOG(DFATAL) << "Not implemented";
   return "";

@@ -658,6 +658,8 @@ class NET_EXPORT_PRIVATE QuicConnection
   // such a version exists, false otherwise.
   bool SelectMutualVersion(const QuicVersionVector& available_versions);
 
+  bool peer_ip_changed() const { return peer_ip_changed_; }
+
   bool peer_port_changed() const { return peer_port_changed_; }
 
  private:
@@ -798,8 +800,6 @@ class NET_EXPORT_PRIVATE QuicConnection
   IPEndPoint self_address_;
   IPEndPoint peer_address_;
 
-  // TODO(fayang): Use migrating_peer_address_ instead of migrating_peer_ip_
-  // and migrating_peer_port_ once FLAGS_quic_allow_ip_migration is deprecated.
   // Used to store latest peer IP address for IP address migration.
   IPAddressNumber migrating_peer_ip_;
   // Used to store latest peer port to possibly migrate to later.
@@ -935,11 +935,9 @@ class NET_EXPORT_PRIVATE QuicConnection
   bool connected_;
 
   // Set to true if the UDP packet headers have a new IP address for the peer.
-  // If true, do not perform connection migration.
   bool peer_ip_changed_;
 
   // Set to true if the UDP packet headers have a new port for the peer.
-  // If true, and the IP has not changed, then we can migrate the connection.
   bool peer_port_changed_;
 
   // Set to true if the UDP packet headers are addressed to a different IP.

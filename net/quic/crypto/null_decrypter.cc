@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "net/quic/crypto/null_decrypter.h"
+
 #include <stdint.h>
 
-#include "net/quic/crypto/null_decrypter.h"
 #include "net/quic/quic_utils.h"
 #include "net/quic/quic_data_reader.h"
 

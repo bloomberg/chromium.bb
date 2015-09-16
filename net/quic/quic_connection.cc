@@ -1477,8 +1477,6 @@ bool QuicConnection::ProcessValidatedPacket() {
     return false;
   }
 
-  // TODO(fayang): Use peer_address_changed_ instead of peer_ip_changed_ and
-  // peer_port_changed_ once FLAGS_quic_allow_ip_migration is deprecated.
   if (peer_ip_changed_ || peer_port_changed_) {
     IPEndPoint old_peer_address = peer_address_;
     peer_address_ = IPEndPoint(

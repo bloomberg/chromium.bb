@@ -59,11 +59,6 @@ bool FLAGS_quic_use_conservative_receive_buffer = true;
 // Limits QUIC's max CWND to 200 packets.
 bool FLAGS_quic_limit_max_cwnd = true;
 
-// If true, instead of enforcing a fixed limit of 200 between the last
-// client-created stream ID and the next one, calculate the difference based on
-// get_max_open_streams().
-bool FLAGS_exact_stream_id_delta = true;
-
 // If true, require handshake confirmation for QUIC connections, functionally
 // disabling 0-rtt handshakes.
 // TODO(rtenneti): Enable this flag after fixing tests.
@@ -83,3 +78,7 @@ bool FLAGS_quic_close_connection_out_of_order_sending = true;
 
 // Allow QUIC packet writer to limit the MTU of the connection.
 bool FLAGS_quic_limit_mtu_by_writer = true;
+
+// QUIC-specific flag. If true, Cubic's epoch is reset when the sender is
+// application-limited.
+bool FLAGS_reset_cubic_epoch_when_app_limited = true;
