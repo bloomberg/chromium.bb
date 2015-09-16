@@ -129,4 +129,13 @@ if (!is_mac) {
       deps += [ "//ui/gl" ]
     }
   }
+
+  # TODO(GYP): Delete this after we've converted everything to GN.
+  # The _run targets exist only for compatibility w/ GYP.
+  group("media_blink_unittests_run") {
+    testonly = true
+    deps = [
+      ":media_blink_unittests",
+    ]
+  }
 }
