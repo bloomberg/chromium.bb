@@ -571,7 +571,7 @@
         },
       ],
     }],
-    ['ozone_platform_gbm==1', {
+    ['ozone_platform_gbm==1 or chromeos==1', {
       'targets': [
         {
           'target_name': 'libdrm',
