@@ -44,17 +44,6 @@ public:
         return adoptRefWillBeNoop(new HashChangeEvent(type, initializer));
     }
 
-    void initHashChangeEvent(const AtomicString& eventType, bool canBubble, bool cancelable, const String& oldURL, const String& newURL)
-    {
-        if (dispatched())
-            return;
-
-        initEvent(eventType, canBubble, cancelable);
-
-        m_oldURL = oldURL;
-        m_newURL = newURL;
-    }
-
     const String& oldURL() const { return m_oldURL; }
     const String& newURL() const { return m_newURL; }
 

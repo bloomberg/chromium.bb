@@ -2898,7 +2898,6 @@ interface HashChangeEvent
     getter newURL
     getter oldURL
     method constructor
-    method initHashChangeEvent
 interface Headers
     method append
     method constructor

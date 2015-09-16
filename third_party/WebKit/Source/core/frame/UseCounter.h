@@ -685,7 +685,6 @@ public:
         ElementCreateShadowRootMultipleWithUserAgentShadowRoot = 800,
         InputTypeFileSecureOrigin = 801,
         InputTypeFileInsecureOrigin = 802,
-        V8HashChangeEvent_InitHashChangeEvent_Method = 803,
         ElementCreateShadowRootWithParameter = 804,
         V8KeyboardEvent_KeyIdentifier_AttributeGetter = 805,
         V8SecurityPolicyViolationEvent_DocumentURI_AttributeGetter = 806,
