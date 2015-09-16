@@ -52,8 +52,9 @@ IN_PROC_BROWSER_TEST_F(TwoClientExtensionsSyncTest,
             static_cast<int>(GetInstalledExtensions(GetProfile(0)).size()));
 }
 
+// Disabled as an E2ETest crbug.com/532202
 IN_PROC_BROWSER_TEST_F(TwoClientExtensionsSyncTest,
-                       StartWithDifferentExtensions_E2ETest) {
+                       StartWithDifferentExtensions) {
   ASSERT_TRUE(SetupClients());
 
   int extension_index = 0;
@@ -81,8 +82,9 @@ IN_PROC_BROWSER_TEST_F(TwoClientExtensionsSyncTest,
       static_cast<int>(GetInstalledExtensions(GetProfile(0)).size()));
 }
 
+// Disabled as an E2ETest crbug.com/532202
 IN_PROC_BROWSER_TEST_F(TwoClientExtensionsSyncTest,
-                       InstallDifferentExtensions_E2ETest) {
+                       InstallDifferentExtensions) {
   ASSERT_TRUE(SetupClients());
 
   int extension_index = 0;
