@@ -22,7 +22,10 @@
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|center_horizontal"
         android:layout_marginBottom="64dp"
+        android:gravity="center"
         android:fontFamily="sans-serif-condensed"
         android:textColor="@color/default_text_color"
-        android:textSize="24sp" />
+        android:textSize="24sp"
+        android:maxLines="2"
+        android:ellipsize="end" />
 </FrameLayout>
