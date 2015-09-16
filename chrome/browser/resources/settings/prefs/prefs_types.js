@@ -9,6 +9,7 @@
 /** @type {{INITIALIZED: string, isInitialized: boolean}} */
 var CrSettingsPrefs;
 
+// TODO(michaelpg): provide a Promise for initialization.
 if (CrSettingsPrefs === undefined) {
   CrSettingsPrefs = {
     /**

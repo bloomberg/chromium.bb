@@ -106,13 +106,19 @@ function ListPrefWrapper(prefObj) {
       'prefsChanged_(prefs.*)',
     ],
 
+    settingsApi_: chrome.settingsPrivate,
+
     /** @override */
-    created: function() {
+    ready: function() {
+      // Set window.mockApi to pass a custom settings API, i.e. for tests.
+      // TODO(michaelpg): don't use a global.
+      if (window.mockApi)
+        this.settingsApi_ = window.mockApi;
       CrSettingsPrefs.isInitialized = false;
 
-      chrome.settingsPrivate.onPrefsChanged.addListener(
+      this.settingsApi_.onPrefsChanged.addListener(
           this.onSettingsPrivatePrefsChanged_.bind(this));
-      chrome.settingsPrivate.getAllPrefs(
+      this.settingsApi_.getAllPrefs(
           this.onSettingsPrivatePrefsFetched_.bind(this));
     },
 
@@ -139,7 +145,7 @@ function ListPrefWrapper(prefObj) {
       if (prefWrapper.equals(this.createPrefWrapper_(prefObj)))
         return;
 
-      chrome.settingsPrivate.setPref(
+      this.settingsApi_.setPref(
           key,
           prefObj.value,
           /* pageId */ '',
@@ -181,7 +187,7 @@ function ListPrefWrapper(prefObj) {
 
       // Get the current pref value from chrome.settingsPrivate to ensure the
       // UI stays up to date.
-      chrome.settingsPrivate.getPref(key, function(pref) {
+      this.settingsApi_.getPref(key, function(pref) {
         this.updatePrefs_([pref]);
       }.bind(this));
     },

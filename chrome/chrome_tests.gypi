@@ -966,6 +966,7 @@
       'test/data/webui/polymer_browser_test_base.js',
       'test/data/webui/print_preview.js',
       'test/data/webui/sandboxstatus_browsertest.js',
+      'test/data/webui/settings/cr_settings_browsertest.js',
     ],
     # TODO(rockot) bug 505926: These should be moved to a target in
     # //extensions but have old dependencies on chrome files. The chrome
