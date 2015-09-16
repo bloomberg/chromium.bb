@@ -50,7 +50,7 @@ public class AppBannerManager extends EmptyTabObserver {
     public static boolean isEnabled() {
         if (sIsEnabled == null) {
             Context context = ApplicationStatus.getApplicationContext();
-            sIsEnabled = nativeIsEnabled() && ShortcutHelper.isAddToHomeIntentSupported(context);
+            sIsEnabled = ShortcutHelper.isAddToHomeIntentSupported(context);
         }
         return sIsEnabled;
     }
@@ -169,7 +169,6 @@ public class AppBannerManager extends EmptyTabObserver {
         return nativeIsFetcherActive(mNativePointer);
     }
 
-    private static native boolean nativeIsEnabled();
     private native long nativeInit(int idealSplashImageSizeInDp, int idealIconSizeInDp);
     private native void nativeDestroy(long nativeAppBannerManagerAndroid);
     private native void nativeReplaceWebContents(long nativeAppBannerManagerAndroid,

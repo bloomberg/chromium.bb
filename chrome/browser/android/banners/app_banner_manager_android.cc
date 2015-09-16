@@ -6,8 +6,6 @@
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
-#include "base/command_line.h"
-#include "base/metrics/field_trial.h"
 #include "chrome/browser/android/banners/app_banner_data_fetcher_android.h"
 #include "chrome/browser/banners/app_banner_metrics.h"
 #include "chrome/common/chrome_constants.h"
@@ -207,10 +205,6 @@ void SetEngagementWeights(JNIEnv* env,
                           jdouble indirect_engagement) {
   AppBannerManager::SetEngagementWeights(direct_engagement,
                                          indirect_engagement);
-}
-
-jboolean IsEnabled(JNIEnv* env, const JavaParamRef<jclass>& clazz) {
-  return base::FieldTrialList::FindFullName("AppBanners") == "Enabled";
 }
 
 }  // namespace banners
