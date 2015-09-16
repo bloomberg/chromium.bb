@@ -59,6 +59,8 @@ namespace spellcheck {
 
 namespace {
 
+const size_t kMaxFeedbackSizeBytes = 10 * 1024 * 1024;  // 10 MB
+
 // The default URL where feedback data is sent.
 const char kFeedbackServiceURL[] = "https://www.googleapis.com/rpc";
 
@@ -166,6 +168,7 @@ FeedbackSender::FeedbackSender(net::URLRequestContextGetter* request_context,
       language_(language),
       country_(country),
       misspelling_counter_(0),
+      feedback_(kMaxFeedbackSizeBytes),
       session_start_(base::Time::Now()),
       feedback_service_url_(kFeedbackServiceURL) {
   // The command-line switch is for testing and temporary.

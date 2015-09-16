@@ -15,6 +15,9 @@ namespace spellcheck {
 
 namespace {
 
+// Maximum number of bytes of feedback that would be sent to the server at once.
+const size_t kMaxFeedbackSize = 1024;
+
 // Identifier for a renderer process.
 const int kRendererProcessId = 7;
 
@@ -26,25 +29,71 @@ const uint32 kMisspellingHash = 42;
 // A test fixture to help keep the tests simple.
 class FeedbackTest : public testing::Test {
  public:
-  FeedbackTest() {}
+  FeedbackTest() : feedback_(kMaxFeedbackSize) {}
   ~FeedbackTest() override {}
 
  protected:
   void AddMisspelling(int renderer_process_id, uint32 hash) {
-    Misspelling misspelling;
-    misspelling.hash = hash;
-    feedback_.AddMisspelling(renderer_process_id, misspelling);
+    feedback_.AddMisspelling(renderer_process_id,
+                             Misspelling(base::string16(), 0, 0,
+                                         std::vector<base::string16>(), hash));
   }
 
   spellcheck::Feedback feedback_;
 };
 
+TEST_F(FeedbackTest, LimitFeedbackSize) {
+  // Adding too much feedback data should prevent adding more feedback.
+  feedback_.AddMisspelling(
+      kRendererProcessId,
+      Misspelling(
+          base::ASCIIToUTF16("0123456789"), 0, 1,
+          std::vector<base::string16>(50, base::ASCIIToUTF16("9876543210")),
+          0));
+  feedback_.AddMisspelling(
+      kRendererProcessId,
+      Misspelling(
+          base::ASCIIToUTF16("0123456789"), 0, 1,
+          std::vector<base::string16>(50, base::ASCIIToUTF16("9876543210")),
+          kMisspellingHash));
+  EXPECT_EQ(nullptr, feedback_.GetMisspelling(kMisspellingHash));
+
+  // Clearing the existing feedback data should allow adding feedback again.
+  feedback_.Clear();
+  feedback_.AddMisspelling(
+      kRendererProcessId,
+      Misspelling(
+          base::ASCIIToUTF16("0123456789"), 0, 1,
+          std::vector<base::string16>(50, base::ASCIIToUTF16("9876543210")),
+          kMisspellingHash));
+  EXPECT_NE(nullptr, feedback_.GetMisspelling(kMisspellingHash));
+  feedback_.Clear();
+
+  // Erasing finalized misspellings should allow adding feedback again.
+  feedback_.AddMisspelling(
+      kRendererProcessId,
+      Misspelling(
+          base::ASCIIToUTF16("0123456789"), 0, 1,
+          std::vector<base::string16>(50, base::ASCIIToUTF16("9876543210")),
+          0));
+  feedback_.FinalizeRemovedMisspellings(kRendererProcessId,
+                                        std::vector<uint32>());
+  feedback_.EraseFinalizedMisspellings(kRendererProcessId);
+  feedback_.AddMisspelling(
+      kRendererProcessId,
+      Misspelling(
+          base::ASCIIToUTF16("0123456789"), 0, 1,
+          std::vector<base::string16>(50, base::ASCIIToUTF16("9876543210")),
+          kMisspellingHash));
+  EXPECT_NE(nullptr, feedback_.GetMisspelling(kMisspellingHash));
+}
+
 // Should be able to retrieve misspelling after it's added.
 TEST_F(FeedbackTest, RetreiveMisspelling) {
-  EXPECT_EQ(NULL, feedback_.GetMisspelling(kMisspellingHash));
+  EXPECT_EQ(nullptr, feedback_.GetMisspelling(kMisspellingHash));
   AddMisspelling(kRendererProcessId, kMisspellingHash);
   Misspelling* result = feedback_.GetMisspelling(kMisspellingHash);
-  EXPECT_NE(static_cast<Misspelling*>(NULL), result);
+  EXPECT_NE(nullptr, result);
   EXPECT_EQ(kMisspellingHash, result->hash);
 }
 
@@ -58,11 +107,11 @@ TEST_F(FeedbackTest, FinalizeRemovedMisspellings) {
   feedback_.FinalizeRemovedMisspellings(kRendererProcessId, remaining_markers);
   Misspelling* removed_misspelling =
       feedback_.GetMisspelling(kRemovedMisspellingHash);
-  EXPECT_NE(static_cast<Misspelling*>(NULL), removed_misspelling);
+  EXPECT_NE(nullptr, removed_misspelling);
   EXPECT_TRUE(removed_misspelling->action.IsFinal());
   Misspelling* remaining_misspelling =
       feedback_.GetMisspelling(kRemainingMisspellingHash);
-  EXPECT_NE(static_cast<Misspelling*>(NULL), remaining_misspelling);
+  EXPECT_NE(nullptr, remaining_misspelling);
   EXPECT_FALSE(remaining_misspelling->action.IsFinal());
 }
 
@@ -222,7 +271,7 @@ TEST_F(FeedbackTest, FindMisspellingsByText) {
   for (std::set<uint32>::const_iterator it = misspellings.begin();
        it != misspellings.end(); ++it) {
     Misspelling* misspelling = feedback_.GetMisspelling(*it);
-    EXPECT_NE(static_cast<Misspelling*>(NULL), misspelling);
+    EXPECT_NE(nullptr, misspelling);
     EXPECT_TRUE(misspelling->hash >= kMisspellingHash &&
                 misspelling->hash <= hash);
     EXPECT_EQ(kMisspelledWord, GetMisspelledString(*misspelling));

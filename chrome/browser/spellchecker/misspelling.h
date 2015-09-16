@@ -68,4 +68,7 @@ base::DictionaryValue* SerializeMisspelling(const Misspelling& misspelling);
 // |length| characters.
 base::string16 GetMisspelledString(const Misspelling& misspelling);
 
+// Returns the approximate size of the misspelling when serialized.
+size_t ApproximateSerializedSize(const Misspelling& misspelling);
+
 #endif  // CHROME_BROWSER_SPELLCHECKER_MISSPELLING_H_

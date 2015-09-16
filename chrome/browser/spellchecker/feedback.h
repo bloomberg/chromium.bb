@@ -31,7 +31,7 @@ namespace spellcheck {
 //    feedback.EraseFinalizedMisspellings(renderer_process_id);
 class Feedback {
  public:
-  Feedback();
+  explicit Feedback(size_t max_total_text_size);
   ~Feedback();
 
   // Returns the misspelling identified by |hash|. Returns NULL if there's no
@@ -93,6 +93,13 @@ class Feedback {
   // An empty hash collection to return when FindMisspellings() does not find
   // misspellings.
   const HashCollection empty_hash_collection_;
+
+  // The limit on the amount of data to send to the server at once.
+  const size_t max_total_text_size_;
+
+  // Size of all feedback text, used to limit the estimated amount of data sent
+  // to the server at once.
+  size_t total_text_size_;
 
   // A map of hashes that identify document markers to feedback data to be sent
   // to spelling service.

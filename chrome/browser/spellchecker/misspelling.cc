@@ -69,3 +69,12 @@ base::string16 GetMisspelledString(const Misspelling& misspelling) {
     return base::string16();
   return misspelling.context.substr(misspelling.location, misspelling.length);
 }
+
+size_t ApproximateSerializedSize(const Misspelling& misspelling) {
+  // Estimated by eyeballing JSON overhead.
+  const size_t kNumberOfOverheadBytes = 180;
+  size_t result = misspelling.context.length() + kNumberOfOverheadBytes;
+  for (const base::string16& suggestion : misspelling.suggestions)
+    result += suggestion.size();
+  return result;
+}
