@@ -26,6 +26,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
+#include "ui/gfx/text_elider.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
@@ -35,6 +36,8 @@
 namespace ash {
 
 namespace {
+
+const int kMaximumStatusStringLength = 100;
 const int kStopButtonRightPadding = 18;
 
 // Returns the active CastConfigDelegate instance.
@@ -43,6 +46,18 @@ ash::CastConfigDelegate* GetCastConfigDelegate() {
       ->system_tray_delegate()
       ->GetCastConfigDelegate();
 }
+
+// Helper method to elide the given string to the maximum length. If a string is
+// contains user-input and is displayed, we should elide it.
+// TODO(jdufault): This does not properly trim unicode characters. We should
+// implement this properly by using views::Label::SetElideBehavior(...). See
+// crbug.com/532496.
+base::string16 ElideString(const base::string16& text) {
+  base::string16 elided;
+  gfx::ElideString(text, kMaximumStatusStringLength, &elided);
+  return elided;
+}
+
 }  // namespace
 
 namespace tray {
@@ -149,7 +164,7 @@ int CastCastView::GetHeightForWidth(int width) const {
   // the cast receiver we will update the label text, which will cause
   // this method to get invoked.
   return std::max(views::View::GetHeightForWidth(width),
-                  GetInsets().height() +
+                  kTrayPopupPaddingBetweenItems * 2 +
                       label_->GetHeightForWidth(label_->bounds().width()));
 }
 
@@ -188,11 +203,11 @@ void CastCastView::UpdateLabel(
       // what we are actually casting - either the desktop, a tab, or a fallback
       // that catches everything else (ie, an extension tab).
       if (activity.tab_id == CastConfigDelegate::Activity::TabId::DESKTOP) {
-        label_->SetText(l10n_util::GetStringFUTF16(
-            IDS_ASH_STATUS_TRAY_CAST_CAST_DESKTOP, receiver.name));
+        label_->SetText(ElideString(l10n_util::GetStringFUTF16(
+            IDS_ASH_STATUS_TRAY_CAST_CAST_DESKTOP, receiver.name)));
       } else if (activity.tab_id >= 0) {
-        label_->SetText(l10n_util::GetStringFUTF16(
-            IDS_ASH_STATUS_TRAY_CAST_CAST_TAB, activity.title, receiver.name));
+        label_->SetText(ElideString(l10n_util::GetStringFUTF16(
+            IDS_ASH_STATUS_TRAY_CAST_CAST_TAB, activity.title, receiver.name)));
       } else {
         label_->SetText(
             l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_CAST_CAST_UNKNOWN));
