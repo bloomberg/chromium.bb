@@ -22,6 +22,7 @@
 #ifndef SourceGraphic_h
 #define SourceGraphic_h
 
+#include "platform/geometry/IntRect.h"
 #include "platform/graphics/filters/FilterEffect.h"
 
 class SkPicture;
@@ -43,11 +44,13 @@ public:
     PassRefPtr<SkImageFilter> createImageFilter(SkiaImageFilterBuilder*) override;
 
     void setPicture(PassRefPtr<const SkPicture>);
+    void setSourceRect(const IntRect&);
 
 private:
-    SourceGraphic(Filter*);
+    explicit SourceGraphic(Filter*);
 
     RefPtr<const SkPicture> m_picture;
+    IntRect m_sourceRect;
 };
 
 } //namespace blink

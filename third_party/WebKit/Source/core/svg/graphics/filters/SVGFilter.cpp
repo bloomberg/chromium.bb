@@ -24,9 +24,8 @@
 
 namespace blink {
 
-SVGFilter::SVGFilter(const IntRect& absoluteSourceDrawingRegion, const FloatRect& referenceBox, const FloatRect& filterRegion, bool effectBBoxMode)
+SVGFilter::SVGFilter(const FloatRect& referenceBox, const FloatRect& filterRegion, bool effectBBoxMode)
     : Filter(referenceBox, filterRegion, 1.0f)
-    , m_absoluteSourceDrawingRegion(absoluteSourceDrawingRegion)
     , m_effectBBoxMode(effectBBoxMode)
 {
 }
@@ -54,9 +53,9 @@ FloatPoint3D SVGFilter::resolve3dPoint(const FloatPoint3D& point) const
         point.z() * sqrtf(referenceBox().size().diagonalLengthSquared() / 2));
 }
 
-PassRefPtrWillBeRawPtr<SVGFilter> SVGFilter::create(const IntRect& absoluteSourceDrawingRegion, const FloatRect& referenceBox, const FloatRect& filterRegion, bool effectBBoxMode)
+PassRefPtrWillBeRawPtr<SVGFilter> SVGFilter::create(const FloatRect& referenceBox, const FloatRect& filterRegion, bool effectBBoxMode)
 {
-    return adoptRefWillBeNoop(new SVGFilter(absoluteSourceDrawingRegion, referenceBox, filterRegion, effectBBoxMode));
+    return adoptRefWillBeNoop(new SVGFilter(referenceBox, filterRegion, effectBBoxMode));
 }
 
 } // namespace blink

@@ -52,8 +52,7 @@ const AtomicString& SourceGraphic::effectName()
 
 FloatRect SourceGraphic::determineAbsolutePaintRect(const FloatRect& requestedRect)
 {
-    FloatRect srcRect = filter()->sourceImageRect();
-    srcRect.intersect(requestedRect);
+    FloatRect srcRect = intersection(m_sourceRect, requestedRect);
     addAbsolutePaintRect(srcRect);
     return srcRect;
 }
@@ -61,6 +60,11 @@ FloatRect SourceGraphic::determineAbsolutePaintRect(const FloatRect& requestedRe
 void SourceGraphic::setPicture(PassRefPtr<const SkPicture> picture)
 {
     m_picture = picture;
+}
+
+void SourceGraphic::setSourceRect(const IntRect& sourceRect)
+{
+    m_sourceRect = sourceRect;
 }
 
 PassRefPtr<SkImageFilter> SourceGraphic::createImageFilter(SkiaImageFilterBuilder*)

@@ -32,18 +32,15 @@ namespace blink {
 
 class SVGFilter final : public Filter {
 public:
-    static PassRefPtrWillBeRawPtr<SVGFilter> create(const IntRect&, const FloatRect&, const FloatRect&, bool);
+    static PassRefPtrWillBeRawPtr<SVGFilter> create(const FloatRect&, const FloatRect&, bool);
 
     float applyHorizontalScale(float value) const override;
     float applyVerticalScale(float value) const override;
     FloatPoint3D resolve3dPoint(const FloatPoint3D&) const override;
 
-    IntRect sourceImageRect() const override { return m_absoluteSourceDrawingRegion; }
-
 private:
-    SVGFilter(const IntRect& absoluteSourceDrawingRegion, const FloatRect& referenceBox, const FloatRect& filterRegion, bool effectBBoxMode);
+    SVGFilter(const FloatRect& referenceBox, const FloatRect& filterRegion, bool effectBBoxMode);
 
-    IntRect m_absoluteSourceDrawingRegion;
     bool m_effectBBoxMode;
 };
 

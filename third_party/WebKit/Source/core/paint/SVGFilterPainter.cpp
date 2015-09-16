@@ -130,10 +130,11 @@ GraphicsContext* SVGFilterPainter::prepareEffect(LayoutObject& object, SVGFilter
         return nullptr;
 
     // Create the SVGFilter object.
-    FloatRect drawingRegion = object.strokeBoundingBox();
-    drawingRegion.intersect(filterRegion);
     bool primitiveBoundingBoxMode = filterElement->primitiveUnits()->currentValue()->enumValue() == SVGUnitTypes::SVG_UNIT_TYPE_OBJECTBOUNDINGBOX;
-    filterData->filter = SVGFilter::create(enclosingIntRect(drawingRegion), targetBoundingBox, filterRegion, primitiveBoundingBoxMode);
+    filterData->filter = SVGFilter::create(targetBoundingBox, filterRegion, primitiveBoundingBoxMode);
+
+    IntRect sourceRegion = enclosingIntRect(intersection(filterRegion, object.strokeBoundingBox()));
+    filterData->filter->sourceGraphic()->setSourceRect(sourceRegion);
 
     // Create all relevant filter primitives.
     filterData->builder = m_filter.buildPrimitives(filterData->filter.get());

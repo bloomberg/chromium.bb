@@ -57,8 +57,6 @@ public:
 
     virtual FloatPoint3D resolve3dPoint(const FloatPoint3D& point) const { return point; }
 
-    virtual IntRect sourceImageRect() const { return IntRect(); }
-
     FloatRect absoluteFilterRegion() const { return mapLocalRectToAbsoluteRect(m_filterRegion); }
 
     const FloatRect& filterRegion() const { return m_filterRegion; }
