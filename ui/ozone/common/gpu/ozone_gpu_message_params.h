@@ -57,6 +57,7 @@ struct OZONE_EXPORT OverlayCheck_Params {
   gfx::OverlayTransform transform = gfx::OVERLAY_TRANSFORM_INVALID;
   gfx::BufferFormat format = gfx::BufferFormat::BGRA_8888;
   gfx::Rect display_rect;
+  gfx::RectF crop_rect;
   int plane_z_order = 0;
 };
 

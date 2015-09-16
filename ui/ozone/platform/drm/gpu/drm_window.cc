@@ -172,7 +172,7 @@ bool DrmWindow::TestPageFlip(const std::vector<OverlayCheck_Params>& overlays,
       return false;
     planes.push_back(OverlayPlane(buffer, overlay.plane_z_order,
                                   overlay.transform, overlay.display_rect,
-                                  gfx::RectF(gfx::Size(1, 1))));
+                                  overlay.crop_rect));
   }
   return controller_->SchedulePageFlip(planes, true, true,
                                        base::Bind(&EmptyFlipCallback));
