@@ -1,7 +1,5 @@
 include_rules = [
-  "!chrome/common/content_restriction.h",
-  "!content/public/common/page_zoom.h",
-  "+components/ui/zoom/page_zoom_constants.h",
+  "+chrome/common/content_restriction.h",
   "+gin/public/gin_embedders.h",
   "+net",
   "+ppapi",
