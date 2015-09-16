@@ -1841,7 +1841,6 @@ bool LayoutBlockFlow::matchedEndLine(LineLayoutState& layoutState, const InlineB
 }
 
 bool LayoutBlockFlow::generatesLineBoxesForInlineChild(LayoutObject* inlineObj)
-
 {
     ASSERT(inlineObj->parent() == this);
 
@@ -1853,13 +1852,9 @@ bool LayoutBlockFlow::generatesLineBoxesForInlineChild(LayoutObject* inlineObj)
     return !it.atEnd();
 }
 
-
 void LayoutBlockFlow::addOverflowFromInlineChildren()
 {
     LayoutUnit endPadding = hasOverflowClip() ? paddingEnd() : LayoutUnit();
-    // FIXME: Need to find another way to do this, since scrollbars could show when we don't want them to.
-    if (hasOverflowClip() && !endPadding && node() && node()->isRootEditableElement() && style()->isLeftToRightDirection())
-        endPadding = 1;
     for (RootInlineBox* curr = firstRootBox(); curr; curr = curr->nextRootBox()) {
         addLayoutOverflow(curr->paddedLayoutOverflowRect(endPadding));
         LayoutRect visualOverflow = curr->visualOverflowRect(curr->lineTop(), curr->lineBottom());

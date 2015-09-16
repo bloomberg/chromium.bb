@@ -1,4 +1,4 @@
-<!DOCTYPE html> 
+<!DOCTYPE html>
 <html>
 <head>
 <title> Testcase for bug https://bugs.webkit.org/show_bug.cgi?id=89649 </title>
@@ -16,7 +16,7 @@
 <script>
 function runTest() {
     description('Testcase for bug <a href="http://www.webkit.org/b/89649">http://www.webkit.org/b/89649</a>. \
-The test case checks if caret is drawn properly(especially scrolls properly) inside a editable container having word-wrap:normal.');
+The test case checks if caret is drawn properly (especially scrolls properly) inside a editable container having word-wrap:normal.');
 
     editableContainer = document.getElementById('test');
     editableContainer.focus();
@@ -38,9 +38,9 @@ The test case checks if caret is drawn properly(especially scrolls properly) ins
 
     debug('<br>Final caret rect is calculated by following constraints');
     debug('1) ScrollWidth = text content width + caret width');
-    debug('2) Caret rect is always within container bounding box (thus substracting the scroll left)');
-    shouldBe("startCaretRect.left + editableContainer.scrollWidth - editableContainer.scrollLeft - caretWidth", "finalCaretRect.right");
-    
+    debug('2) Caret rect is always within container bounding box (thus subtracting the scroll left)');
+    shouldBe("startCaretRect.left + editableContainer.scrollWidth - editableContainer.scrollLeft", "finalCaretRect.right");
+
     document.body.removeChild(editableContainer);
     isSuccessfullyParsed();
  }
