@@ -410,9 +410,8 @@ function formOrFieldsetsToFormData_(formElement, formControlElement,
 
 /**
  * Scans DOM and returns a JSON string representation of forms and form
- * extraction results.
- *
- * TODO(thestig): Obsolete. Convert callers to use extractNewForms() and remove.
+ * extraction results. This is just a wrapper around extractNewForms() to JSON
+ * encode the forms, for convenience.
  *
  * @param {number} requiredFields The minimum number of fields forms must have
  *     to be extracted.
@@ -602,6 +601,9 @@ __gCrWeb.autofill['clearAutofilledFields'] = function(formName) {
  * This version still takes the minimumRequiredFields parameters. Whereas the
  * C++ version does not.
  *
+ * This version recursively scans its child frames. The C++ version does not
+ * because it has been converted to do only a single frame for Out Of Process
+ * Iframes.
  *
  * @param {number} minimumRequiredFields The minimum number of fields a form
  *     should contain for autofill.
@@ -612,15 +614,12 @@ __gCrWeb.autofill.extractNewForms = function(minimumRequiredFields) {
   // Protect against custom implementation of Array.toJSON in host pages.
   /** @suppress {checkTypes} */(function() { forms.toJSON = null; })();
 
-  __gCrWeb.autofill.extractFormsAndFormElements(
-      window, minimumRequiredFields, forms);
+  extractFormsAndFormElements_(window, minimumRequiredFields, forms);
   return forms;
 }
 
 /**
- * See extractNewForms() above.
- *
- * TODO(thestig): Obsolete. Convert callers to use extractNewForms() and remove.
+ * A helper function to implement extractNewForms().
  *
  * @param {HTMLFrameElement|Window} frame A window or a frame containing forms
  *     from which the data will be extracted.
@@ -628,24 +627,21 @@ __gCrWeb.autofill.extractNewForms = function(minimumRequiredFields) {
  *     should contain for autofill.
  * @param {Array<AutofillFormData>} forms Forms that will be filled in data of
  *     forms in frame.
- * @return {boolean} Whether there are unextracted forms due to
- *     |minimumRequiredFields| limit.
  */
-__gCrWeb.autofill.extractFormsAndFormElements = function(
+function extractFormsAndFormElements_(
     frame, minimumRequiredFields, forms) {
   if (!frame) {
-    return false;
+    return;
   }
   var doc = frame.document;
   if (!doc) {
-    return false;
+    return;
   }
 
   /** @type {HTMLCollection} */
   var webForms = doc.forms;
 
   var numFieldsSeen = 0;
-  var hasSkippedForms = false;
   for (var formIndex = 0; formIndex < webForms.length; ++formIndex) {
     /** @type {HTMLFormElement} */
     var formElement = webForms[formIndex];
@@ -665,7 +661,6 @@ __gCrWeb.autofill.extractFormsAndFormElements = function(
     // fields is imposed by webFormElementToFormData().
     if (numEditableElements < minimumRequiredFields &&
         controlElements.length > 0) {
-      hasSkippedForms = true;
       continue;
     }
 
@@ -683,19 +678,14 @@ __gCrWeb.autofill.extractFormsAndFormElements = function(
 
     if (form.fields.length >= minimumRequiredFields) {
       forms.push(form);
-    } else {
-      hasSkippedForms = true;
     }
   }
 
   // Recursively invoke for all frames/iframes.
   var frames = frame.frames;
   for (var i = 0; i < frames.length; i++) {
-    var hasSkippedInframe = __gCrWeb.autofill.extractFormsAndFormElements(
-        frames[i], minimumRequiredFields, forms);
-    hasSkippedForms = hasSkippedForms || hasSkippedInframe;
+    extractFormsAndFormElements_(frames[i], minimumRequiredFields, forms);
   }
-  return hasSkippedForms;
 };
 
 /**
