@@ -7,6 +7,9 @@
     'internal_ozone_platform_deps': [
       'ozone_platform_gbm',
     ],
+    'internal_ozone_platform_unittest_deps': [
+      'ozone_platform_gbm_unittests',
+    ],
     'internal_ozone_platforms': [
       'gbm',
     ],
