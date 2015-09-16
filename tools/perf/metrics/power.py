@@ -1,7 +1,7 @@
 # Copyright 2014 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-
+import atexit
 import logging
 import time
 
@@ -36,14 +36,6 @@ class PowerMetric(Metric):
     self._starting_cpu_stats = None
     self._results = None
     self._MeasureQuiescentPower(quiescent_measurement_time_s)
-
-  def __del__(self):
-    # TODO(jeremy): Remove once crbug.com/350841 is fixed.
-    # Don't leave power monitoring processes running on the system.
-    self._StopInternal()
-    parent = super(PowerMetric, self)
-    if hasattr(parent, '__del__'):
-      parent.__del__()
 
   def _StopInternal(self):
     """Stop monitoring power if measurement is running. This function is
@@ -89,6 +81,13 @@ class PowerMetric(Metric):
     # This line invokes top a few times, call before starting power measurement.
     self._starting_cpu_stats = self._browser.cpu_stats
     self._platform.StartMonitoringPower(self._browser)
+
+    # Make sure that power monitoring is cleaned up when program exits.
+    platform = self._platform
+    def CleanUp():
+      platform.StopMonitoringPower()
+    atexit.register(CleanUp)
+
     self._running = True
 
   def Stop(self, _, tab):
