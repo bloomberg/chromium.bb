@@ -158,7 +158,8 @@ class HTTPSServer(tlslite.api.TLSSocketServerMixIn,
                record_resume_info, tls_intolerant,
                tls_intolerance_type, signed_cert_timestamps,
                fallback_scsv_enabled, ocsp_response,
-               alert_after_handshake):
+               alert_after_handshake, disable_channel_id, disable_ems,
+               token_binding_params):
     self.cert_chain = tlslite.api.X509CertChain()
     self.cert_chain.parsePemList(pem_cert_and_key)
     # Force using only python implementation - otherwise behavior is different
@@ -204,6 +205,12 @@ class HTTPSServer(tlslite.api.TLSSocketServerMixIn,
       self.ssl_handshake_settings.tlsIntoleranceType = tls_intolerance_type
     if alert_after_handshake:
       self.ssl_handshake_settings.alertAfterHandshake = True
+    if disable_channel_id:
+      self.ssl_handshake_settings.enableChannelID = False
+    if disable_ems:
+      self.ssl_handshake_settings.enableExtendedMasterSecret = False
+    self.ssl_handshake_settings.supportedTokenBindingParams = \
+        token_binding_params
 
     if record_resume_info:
       # If record_resume_info is true then we'll replace the session cache with
@@ -2057,7 +2064,10 @@ class ServerRunner(testserver_base.TestServerRunner):
                                  "base64"),
                              self.options.fallback_scsv,
                              stapled_ocsp_response,
-                             self.options.alert_after_handshake)
+                             self.options.alert_after_handshake,
+                             self.options.disable_channel_id,
+                             self.options.disable_extended_master_secret,
+                             self.options.token_binding_params)
         print 'HTTPS server started on https://%s:%d...' % \
             (host, server.server_port)
       else:
@@ -2303,6 +2313,11 @@ class ServerRunner(testserver_base.TestServerRunner):
                                   default=False, action='store_true',
                                   help='If set, the FTP server will not create '
                                   'an anonymous user.')
+    self.option_parser.add_option('--disable-channel-id', action='store_true')
+    self.option_parser.add_option('--disable-extended-master-secret',
+                                  action='store_true')
+    self.option_parser.add_option('--token-binding-params', action='append',
+                                  default=[], type='int')
 
 
 if __name__ == '__main__':

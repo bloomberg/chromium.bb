@@ -223,6 +223,15 @@ class BaseTestServer {
 
     // Whether to send a fatal alert immediately after completing the handshake.
     bool alert_after_handshake;
+
+    // If true, disables channel ID on the server.
+    bool disable_channel_id;
+
+    // If true, disables extended master secret tls extension.
+    bool disable_extended_master_secret;
+
+    // List of token binding params that the server supports and will negotiate.
+    std::vector<int> supported_token_binding_params;
   };
 
   // Pass as the 'host' parameter during construction to server on 127.0.0.1
