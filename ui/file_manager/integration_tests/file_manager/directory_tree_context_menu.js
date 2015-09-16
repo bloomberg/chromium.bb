@@ -99,6 +99,56 @@ function navigateToDestinationDirectoryAndTestPaste(windowId) {
 };
 
 /**
+ * Rename photos directory to specified name by using directory tree.
+ */
+function renamePhotosDirectoryTo(windowId, newName, useKeyboardShortcut) {
+  return navigateWithDirectoryTree(windowId, '/photos').then(function() {
+    if (useKeyboardShortcut) {
+      return remoteCall.callRemoteTestUtil(
+          'fakeKeyDown', windowId, ['body', 'Enter', true /* ctrl */]);
+    } else {
+      return clickDirectoryTreeContextMenuItem(windowId, '/photos', 'rename');
+    }
+  }).then(function() {
+    return remoteCall.callRemoteTestUtil(
+        'inputText', windowId, ['.tree-row > input', newName]);
+  }).then(function() {
+    return remoteCall.callRemoteTestUtil(
+        'fakeKeyDown', windowId, ['.tree-row > input', 'Enter', false]);
+  });
+}
+
+/**
+ * Renames directory and confirm current directory is moved to the renamed
+ * directory.
+ */
+function renameDirectoryFromDirectoryTreeSuccessCase(useKeyboardShortcut) {
+  var windowId;
+  return setupForDirectoryTreeContextMenuTest().then(function(id) {
+    windowId = id;
+    return renamePhotosDirectoryTo(windowId, 'New photos', useKeyboardShortcut);
+  }).then(function() {
+    // Confirm that current directory has moved to new folder.
+    return remoteCall.waitUntilCurrentDirectoryIsChanged(
+        windowId, '/Downloads/New photos');
+  });
+}
+
+/**
+ * Renames directory and confirms that an alert dialog is shown.
+ */
+function renameDirectoryFromDirectoryTreeAndConfirmAlertDialog(newName) {
+  var windowId;
+  return setupForDirectoryTreeContextMenuTest().then(function(id) {
+    windowId = id;
+    return renamePhotosDirectoryTo(windowId, newName, false);
+  }).then(function() {
+    // Confirm that a dialog is shown.
+    return remoteCall.waitForElement(windowId, '.cr-dialog-container.shown');
+  });
+}
+
+/**
  * Test case for copying a directory from directory tree by using context menu.
  */
 testcase.copyFromDirectoryTreeWithContextMenu = function() {
@@ -209,4 +259,36 @@ testcase.pasteIntoFolderFromDirectoryTreeWithContextMenu = function() {
     return remoteCall.waitForElement(windowId,
         '[full-path-for-testing="/destination/photos"]');
   }));
+};
+
+/**
+ * Test case for renaming directory from directory tree by using context menu.
+ */
+testcase.renameDirectoryFromDirectoryTreeWithContextMenu = function() {
+  testPromise(renameDirectoryFromDirectoryTreeSuccessCase(
+      false /* do not use keyboard shortcut */));
+};
+
+/**
+ * Test case for renaming directory from directory tree by using keyboard
+ * shortcut.
+ */
+testcase.renameDirectoryFromDirectoryTreeWithKeyboardShortcut = function() {
+  testPromise(renameDirectoryFromDirectoryTreeSuccessCase(
+      true /* use keyboard shortcut */));
+};
+
+/**
+ * Test case for renaming directory to empty string.
+ */
+testcase.renameDirectoryToEmptyStringFromDirectoryTree = function() {
+  testPromise(renameDirectoryFromDirectoryTreeAndConfirmAlertDialog(''));
+};
+
+/**
+ * Test case for renaming directory to exsiting directory name.
+ */
+testcase.renameDirectoryToExistingOneFromDirectoryTree = function() {
+  testPromise(renameDirectoryFromDirectoryTreeAndConfirmAlertDialog(
+      'destination'));
 };

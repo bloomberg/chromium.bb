@@ -212,8 +212,26 @@ div.splitter {
   text-overflow: ellipsis;
 }
 
+#directory-tree [renaming] > .tree-row > .label {
+  display: none;
+}
+
+#directory-tree .tree-row > input {
+  display: none;
+  margin: 0 6px;
+  overflow: hidden;
+}
+
+#directory-tree [renaming] > .tree-row > input {
+  display: block;
+}
+
 #directory-tree .tree-row > paper-ripple {
   color: rgb(19, 120, 185);
+}
+
+#directory-tree [renaming] > .tree-row > paper-ripple {
+  display: none;
 }
 
 #directory-tree .tree-item.accepts > .tree-row,
@@ -1446,7 +1464,8 @@ html[dir='rtl'] .badge {
   padding: 2px 0;
 }
 
-input.rename:focus {
+input.rename:focus,
+#directory-tree .tree-row > input:focus {
   outline-color: rgb(77, 144, 254);
 }
 

@@ -158,6 +158,12 @@ function FileManager() {
   this.namingController_ = null;
 
   /**
+   * Directory tree naming controller.
+   * @private {DirectoryTreeNamingController}
+   */
+  this.directoryTreeNamingController_ = null;
+
+  /**
    * Controller for search UI.
    * @type {SearchController}
    * @private
@@ -579,6 +585,13 @@ FileManager.prototype = /** @struct */ {
     cr.ui.contextMenuHandler.setContextMenu(this.ui_.listContainer.renameInput,
                                             this.ui_.textContextMenu);
     this.registerInputCommands_(this.ui_.listContainer.renameInput);
+
+    cr.ui.contextMenuHandler.setContextMenu(
+        this.directoryTreeNamingController_.getInputElement(),
+        this.ui_.textContextMenu);
+    this.registerInputCommands_(
+        this.directoryTreeNamingController_.getInputElement());
+
     this.document_.addEventListener(
         'command',
         this.ui_.listContainer.clearHover.bind(this.ui_.listContainer));
@@ -972,6 +985,12 @@ FileManager.prototype = /** @struct */ {
         this.fileFilter_,
         this.selectionHandler_);
 
+    // Create directory tree naming controller.
+    this.directoryTreeNamingController_ = new DirectoryTreeNamingController(
+        this.directoryModel_,
+        assert(this.ui_.directoryTree),
+        this.ui_.alertDialog);
+
     // Create spinner controller.
     this.spinnerController_ = new SpinnerController(
         this.ui_.listContainer.spinner);
@@ -989,6 +1008,13 @@ FileManager.prototype = /** @struct */ {
         this.namingController_,
         this.selectionHandler_,
         this.launchParams_);
+  };
+
+  /**
+   * @return {DirectoryTreeNamingController}
+   */
+  FileManager.prototype.getDirectoryTreeNamingController = function() {
+    return this.directoryTreeNamingController_;
   };
 
   /**

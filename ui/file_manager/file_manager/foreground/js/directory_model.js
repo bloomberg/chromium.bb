@@ -39,6 +39,11 @@ function DirectoryModel(
   this.scanFailures_ = 0;
   this.changeDirectorySequence_ = 0;
 
+  /**
+   * @private {boolean}
+   */
+  this.ignoreCurrentDirectoryDeletion_ = false;
+
   this.directoryChangeQueue_ = new AsyncUtil.Queue();
   this.rescanAggregator_ = new AsyncUtil.Aggregator(
       this.rescanSoon.bind(this, true), 500);
@@ -241,6 +246,16 @@ DirectoryModel.prototype.updateSelectionAndPublishEvent_ =
 };
 
 /**
+ * Sets to ignore current directory deletion. This method is used to prevent
+ * going up to the volume root with the deletion of current directory by rename
+ * operation in directory tree.
+ * @param {boolean} value True to ignore current directory deletion.
+ */
+DirectoryModel.prototype.setIgnoringCurrentDirectoryDeletion = function(value) {
+  this.ignoreCurrentDirectoryDeletion_ = value;
+};
+
+/**
  * Invoked when a change in the directory is detected by the watcher.
  * @param {Event} event Event object.
  * @private
@@ -248,17 +263,19 @@ DirectoryModel.prototype.updateSelectionAndPublishEvent_ =
 DirectoryModel.prototype.onWatcherDirectoryChanged_ = function(event) {
   var directoryEntry = this.getCurrentDirEntry();
 
-  // If the change is deletion of currentDir, move up to its parent directory.
-  directoryEntry.getDirectory(directoryEntry.fullPath, {create: false},
-      function() {},
-      function() {
-        var volumeInfo = this.volumeManager_.getVolumeInfo(directoryEntry);
-        if (volumeInfo) {
-          volumeInfo.resolveDisplayRoot().then(function(displayRoot) {
-            this.changeDirectoryEntry(displayRoot);
-          }.bind(this));
-        }
-      }.bind(this));
+  if (!this.ignoreCurrentDirectoryDeletion_) {
+    // If the change is deletion of currentDir, move up to its parent directory.
+    directoryEntry.getDirectory(directoryEntry.fullPath, {create: false},
+        function() {},
+        function() {
+          var volumeInfo = this.volumeManager_.getVolumeInfo(directoryEntry);
+          if (volumeInfo) {
+            volumeInfo.resolveDisplayRoot().then(function(displayRoot) {
+              this.changeDirectoryEntry(displayRoot);
+            }.bind(this));
+          }
+        }.bind(this));
+  }
 
   if (event.changedFiles) {
     var addedOrUpdatedFileUrls = [];

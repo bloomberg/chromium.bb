@@ -189,7 +189,23 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
         TestParameter(NOT_IN_GUEST_MODE,
                       "pasteIntoFolderFromDirectoryTreeWithContextMenu"),
         TestParameter(IN_GUEST_MODE,
-                      "pasteIntoFolderFromDirectoryTreeWithContextMenu")));
+                      "pasteIntoFolderFromDirectoryTreeWithContextMenu"),
+        TestParameter(NOT_IN_GUEST_MODE,
+                      "renameDirectoryFromDirectoryTreeWithContextMenu"),
+        TestParameter(IN_GUEST_MODE,
+                      "renameDirectoryFromDirectoryTreeWithContextMenu"),
+        TestParameter(NOT_IN_GUEST_MODE,
+                      "renameDirectoryFromDirectoryTreeWithKeyboardShortcut"),
+        TestParameter(IN_GUEST_MODE,
+                      "renameDirectoryFromDirectoryTreeWithKeyboardShortcut"),
+        TestParameter(NOT_IN_GUEST_MODE,
+                      "renameDirectoryToEmptyStringFromDirectoryTree"),
+        TestParameter(IN_GUEST_MODE,
+                      "renameDirectoryToEmptyStringFromDirectoryTree"),
+        TestParameter(NOT_IN_GUEST_MODE,
+                      "renameDirectoryToExistingOneFromDirectoryTree"),
+        TestParameter(IN_GUEST_MODE,
+                      "renameDirectoryToExistingOneFromDirectoryTree")));
 
 // Fails on official build. http://crbug.com/429294
 #if defined(DISABLE_SLOW_FILESAPP_TESTS) || defined(OFFICIAL_BUILD)

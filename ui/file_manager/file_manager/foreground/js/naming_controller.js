@@ -309,29 +309,7 @@ NamingController.prototype.commitRename_ = function() {
           this.listContainer_.endBatchUpdates();
 
           // Show error dialog.
-          var message;
-          if (error.name == util.FileError.PATH_EXISTS_ERR ||
-              error.name == util.FileError.TYPE_MISMATCH_ERR) {
-            // Check the existing entry is file or not.
-            // 1) If the entry is a file:
-            //   a) If we get PATH_EXISTS_ERR, a file exists.
-            //   b) If we get TYPE_MISMATCH_ERR, a directory exists.
-            // 2) If the entry is a directory:
-            //   a) If we get PATH_EXISTS_ERR, a directory exists.
-            //   b) If we get TYPE_MISMATCH_ERR, a file exists.
-            message = strf(
-                (entry.isFile && error.name ==
-                    util.FileError.PATH_EXISTS_ERR) ||
-                (!entry.isFile && error.name ==
-                    util.FileError.TYPE_MISMATCH_ERR) ?
-                    'FILE_ALREADY_EXISTS' :
-                    'DIRECTORY_ALREADY_EXISTS',
-                newName);
-          } else {
-            message = strf('ERROR_RENAMING', entry.name,
-                           util.getFileErrorString(error.name));
-          }
-
+          var message = util.getRenameErrorMessage(error, entry, newName);
           this.alertDialog_.show(message);
         }.bind(this));
   }.bind(this);

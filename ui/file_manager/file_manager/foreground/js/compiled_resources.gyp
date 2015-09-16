@@ -78,6 +78,7 @@
           './dialog_type.js',
           './directory_contents.js',
           './directory_model.js',
+          './directory_tree_naming_controller.js',
           './empty_folder_controller.js',
           './file_manager.js',
           './file_manager_commands.js',

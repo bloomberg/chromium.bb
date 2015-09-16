@@ -131,6 +131,37 @@ util.rename = function(entry, newName, successCallback, errorCallback) {
 };
 
 /**
+ * Converts DOMError of util.rename to error message.
+ * @param {!DOMError} error
+ * @param {!Entry} entry
+ * @param {string} newName
+ * @return {string}
+ */
+util.getRenameErrorMessage = function(error, entry, newName) {
+  if (error.name == util.FileError.PATH_EXISTS_ERR ||
+      error.name == util.FileError.TYPE_MISMATCH_ERR) {
+    // Check the existing entry is file or not.
+    // 1) If the entry is a file:
+    //   a) If we get PATH_EXISTS_ERR, a file exists.
+    //   b) If we get TYPE_MISMATCH_ERR, a directory exists.
+    // 2) If the entry is a directory:
+    //   a) If we get PATH_EXISTS_ERR, a directory exists.
+    //   b) If we get TYPE_MISMATCH_ERR, a file exists.
+    return strf(
+        (entry.isFile && error.name ==
+            util.FileError.PATH_EXISTS_ERR) ||
+        (!entry.isFile && error.name ==
+            util.FileError.TYPE_MISMATCH_ERR) ?
+            'FILE_ALREADY_EXISTS' :
+            'DIRECTORY_ALREADY_EXISTS',
+        newName);
+  }
+
+  return strf('ERROR_RENAMING', entry.name,
+      util.getFileErrorString(error.name));
+};
+
+/**
  * Remove a file or a directory.
  * @param {Entry} entry The entry to remove.
  * @param {function()} onSuccess The success callback.

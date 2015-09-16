@@ -110,7 +110,6 @@ CommandUtil.getElementVolumeInfo = function(element, fileManager) {
 /**
  * @param {!FileManager} fileManager
  * @return {VolumeInfo}
- * @private
  */
 CommandUtil.getCurrentVolumeInfo = function(fileManager) {
   var currentDirEntry = fileManager.directoryModel.getCurrentDirEntry();
@@ -864,18 +863,36 @@ CommandHandler.COMMANDS_['rename'] = /** @type {Command} */ ({
    * @param {!FileManager} fileManager FileManager to use.
    */
   execute: function(event, fileManager) {
-    fileManager.namingController.initiateRename();
+    if (event.target instanceof DirectoryTree) {
+      var directoryTree = event.target;
+      assert(fileManager.getDirectoryTreeNamingController()).attachAndStart(
+          assert(directoryTree.selectedItem));
+    } else if (event.target instanceof DirectoryItem) {
+      var directoryItem = event.target;
+      assert(fileManager.getDirectoryTreeNamingController()).attachAndStart(
+          directoryItem);
+    } else {
+      fileManager.namingController.initiateRename();
+    }
   },
   /**
    * @param {!Event} event Command event.
    * @param {!FileManager} fileManager FileManager to use.
    */
   canExecute: function(event, fileManager) {
-    var selection = fileManager.getSelection();
-    event.canExecute = !fileManager.namingController.isRenamingInProgress() &&
-                       !fileManager.isOnReadonlyDirectory() &&
-                       selection &&
-                       selection.totalCount == 1;
+    var entries = CommandUtil.getCommandEntries(event.target);
+    if (entries.length === 0 ||
+        !CommandUtil.shouldShowMenuItemForEntry(
+            fileManager.volumeManager, entries[0])) {
+      event.canExecute = false;
+      event.command.setHidden(true);
+      return;
+    }
+
+    var locationInfo = fileManager.volumeManager.getLocationInfo(entries[0]);
+    event.canExecute = entries.length === 1 && !!locationInfo &&
+        !locationInfo.isReadOnly;
+    event.command.setHidden(false);
   }
 });
 
