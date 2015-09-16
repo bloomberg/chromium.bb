@@ -234,6 +234,10 @@ views::ViewsDelegate::ProcessMenuAcceleratorResult
 ChromeViewsDelegate::ProcessAcceleratorWhileMenuShowing(
     const ui::Accelerator& accelerator) {
 #if defined(USE_ASH)
+  // Handle ash accelerators only when a menu is opened on an ash desktop.
+  if (chrome::GetActiveDesktop() != chrome::HOST_DESKTOP_TYPE_ASH)
+    return views::ViewsDelegate::ProcessMenuAcceleratorResult::LEAVE_MENU_OPEN;
+
   ash::AcceleratorController* accelerator_controller =
       ash::Shell::GetInstance()->accelerator_controller();
 
