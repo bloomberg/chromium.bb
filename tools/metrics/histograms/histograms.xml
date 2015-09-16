@@ -50949,6 +50949,25 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="WebCore.ScriptedIdleTaskController.IdleCallbackDeadline"
+    units="milliseconds">
+  <owner>rmcilroy@chromium.org</owner>
+  <summary>
+    The amount of time allotted to a requestIdleCallback callback, i.e., the
+    difference between the time when it is called and when its deadline expires.
+  </summary>
+</histogram>
+
+<histogram name="WebCore.ScriptedIdleTaskController.IdleCallbackOverrun"
+    units="milliseconds">
+  <owner>rmcilroy@chromium.org</owner>
+  <summary>
+    The amount of time by which a requestIdleCallback callback overran its
+    deadline. Callbacks which don't overrun their deadline will report an
+    overrun of 0.
+  </summary>
+</histogram>
+
 <histogram name="WebCore.Scripts.Async.NotStreamingReason"
     enum="NotStreamingReason">
   <owner>marja@chromium.org</owner>
@@ -60769,6 +60788,18 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="940" label="HTMLImportsHasStyleSheets"/>
   <int value="941" label="WebkitTextInClipProperty"/>
   <int value="942" label="WebkitTextInColorProperty"/>
+  <int value="943" label="HeaderValueNotMatchingRFC7230"/>
+  <int value="944" label="ClipPathOfPositionedElement"/>
+  <int value="945" label="ClipCssOfPositionedElement"/>
+  <int value="946" label="NetInfoType"/>
+  <int value="947" label="NetInfoDownlinkMax"/>
+  <int value="948" label="NetInfoOnChange"/>
+  <int value="949" label="NetInfoOnTypeChange"/>
+  <int value="950" label="V8Window_Alert_Method"/>
+  <int value="951" label="V8Window_Confirm_Method"/>
+  <int value="952" label="V8Window_Prompt_Method"/>
+  <int value="953" label="V8Window_Print_Method"/>
+  <int value="954" label="V8Window_RequestIdleCallback_Method"/>
 </enum>
 
 <enum name="FetchRequestMode" type="int">
