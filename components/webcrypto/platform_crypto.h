@@ -11,7 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "third_party/WebKit/public/platform/WebCrypto.h"
 
-// The definitions for these methods live in openssl/
+// The definitions for these methods live in the algorithms/ directory.
 namespace webcrypto {
 
 class AlgorithmImplementation;
@@ -21,6 +21,9 @@ void PlatformInit();
 scoped_ptr<blink::WebCryptoDigestor> CreatePlatformDigestor(
     blink::WebCryptoAlgorithmId algorithm);
 
+// TODO(eroman): Return scoped_ptr.
+// TODO(eroman): Stop calling this "platform" now that BoringSSL is the only
+// implementation.
 AlgorithmImplementation* CreatePlatformShaImplementation();
 AlgorithmImplementation* CreatePlatformAesCbcImplementation();
 AlgorithmImplementation* CreatePlatformAesCtrImplementation();
