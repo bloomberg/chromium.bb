@@ -1045,15 +1045,15 @@
   reference the output or generated intermediate file directories,
   respectively.
 
-  Both "sources" and "outputs" must be specified. Sources can
+  Both "sources" and "outputs" must be specified. Sources can include
   as many files as you want, but there can only be one item in the
   outputs list (plural is used for the name for consistency with
   other target types).
 
   If there is more than one source file, your output name should specify
-  a mapping from each source files to output file names using source
+  a mapping from each source file to an output file name using source
   expansion (see "gn help source_expansion"). The placeholders will
-  will look like "{{source_name_part}}", for example.
+  look like "{{source_name_part}}", for example.
 
 ```
 
@@ -3518,8 +3518,8 @@
   A list of target labels.
 
   Specifies dependencies of a target that are not actually linked into
-  the current target. Such dependencies will be built and will be available
-  at runtime.
+  the current target. Such dependencies will be built and will be
+  available at runtime.
 
   This is normally used for things like plugins or helper programs that
   a target needs at runtime.
@@ -3777,6 +3777,25 @@
   sets or static libraries will be a no-op. If you want to apply ldflags
   to dependent targets, put them in a config and set it in the
   all_dependent_configs or public_configs.
+
+```
+
+### **Ordering of flags and values**:
+
+```
+  1. Those set on the current target (not in a config).
+  2. Those set on the "configs" on the target in order that the
+     configs appear in the list.
+  3. Those set on the "all_dependent_configs" on the target in order
+     that the configs appear in the list.
+  4. Those set on the "public_configs" on the target in order that
+     those configs appear in the list.
+  5. all_dependent_configs pulled from dependencies, in the order of
+     the "deps" list. This is done recursively. If a config appears
+     more than once, only the first occurance will be used.
+  6. public_configs pulled from dependencies, in the order of the
+     "deps" list. If a dependency is public, they will be applied
+     recursively.
 
 
 ```
