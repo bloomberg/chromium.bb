@@ -347,7 +347,7 @@ TEST_F(GetHumanReadableOriginTest, OriginFromHtmlForm) {
   html_form.origin = GURL(kSchemeHostExample + "/LoginAuth");
   html_form.action = GURL(kSchemeHostExample + "/Login");
   html_form.scheme = autofill::PasswordForm::SCHEME_HTML;
-  EXPECT_EQ(GetHumanReadableOrigin(html_form, ""), "example.com/LoginAuth");
+  EXPECT_EQ(GetHumanReadableOrigin(html_form, ""), "http://example.com");
 }
 
 TEST_F(GetHumanReadableOriginTest, OriginFromDigestForm) {
@@ -355,7 +355,7 @@ TEST_F(GetHumanReadableOriginTest, OriginFromDigestForm) {
   non_html_form.scheme = autofill::PasswordForm::SCHEME_DIGEST;
   non_html_form.action = GURL();
   non_html_form.signon_realm = kSchemeHostExample + "42";
-  EXPECT_EQ(GetHumanReadableOrigin(non_html_form, ""), "example.com");
+  EXPECT_EQ(GetHumanReadableOrigin(non_html_form, ""), "http://example.com");
 }
 
 TEST_F(GetHumanReadableOriginTest, OriginFromAndroidForm) {
