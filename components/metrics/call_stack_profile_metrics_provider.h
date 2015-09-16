@@ -18,11 +18,13 @@ class ChromeUserMetricsExtension;
 class CallStackProfileMetricsProvider : public MetricsProvider {
  public:
   // The event that triggered the profile collection.
+  // This enum should be kept in sync with content/common/profiled_stack_state.h
   enum Trigger {
     UNKNOWN,
     PROCESS_STARTUP,
     JANKY_TASK,
-    THREAD_HUNG
+    THREAD_HUNG,
+    TRIGGER_LAST = THREAD_HUNG
   };
 
   // Parameters to pass back to the metrics provider.

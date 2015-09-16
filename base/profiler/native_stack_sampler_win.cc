@@ -266,7 +266,7 @@ bool NativeStackSamplerWin::GetModuleForHandle(
 
   module->filename = base::FilePath(module_name);
 
-  module->base_address = reinterpret_cast<const void*>(module_handle);
+  module->base_address = reinterpret_cast<uintptr_t>(module_handle);
 
   module->id = GetBuildIDForModule(module_handle);
   if (module->id.empty())
@@ -305,7 +305,7 @@ void NativeStackSamplerWin::CopyToSample(
 
   for (int i = 0; i < stack_depth; ++i) {
     sample->push_back(StackSamplingProfiler::Frame(
-        instruction_pointers[i],
+        reinterpret_cast<uintptr_t>(instruction_pointers[i]),
         GetModuleIndex(module_handles[i], module)));
   }
 }

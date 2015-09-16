@@ -83,8 +83,8 @@ void AsyncRunner::RunCallbackAndDeleteInstance(
 
 // StackSamplingProfiler::Module ----------------------------------------------
 
-StackSamplingProfiler::Module::Module() : base_address(nullptr) {}
-StackSamplingProfiler::Module::Module(const void* base_address,
+StackSamplingProfiler::Module::Module() : base_address(0u) {}
+StackSamplingProfiler::Module::Module(uintptr_t base_address,
                                       const std::string& id,
                                       const FilePath& filename)
     : base_address(base_address), id(id), filename(filename) {}
@@ -93,12 +93,13 @@ StackSamplingProfiler::Module::~Module() {}
 
 // StackSamplingProfiler::Frame -----------------------------------------------
 
-StackSamplingProfiler::Frame::Frame(const void* instruction_pointer,
+StackSamplingProfiler::Frame::Frame(uintptr_t instruction_pointer,
                                     size_t module_index)
-    : instruction_pointer(instruction_pointer),
-      module_index(module_index) {}
+    : instruction_pointer(instruction_pointer), module_index(module_index) {}
 
 StackSamplingProfiler::Frame::~Frame() {}
+
+StackSamplingProfiler::Frame::Frame() {}
 
 // StackSamplingProfiler::CallStackProfile ------------------------------------
 

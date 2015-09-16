@@ -65,7 +65,7 @@ TEST_F(CallStackProfileMetricsProviderTest, MultipleProfiles) {
   const Module profile_modules[][2] = {
     {
       Module(
-          reinterpret_cast<const void*>(module1_base_address),
+          module1_base_address,
           "ABCD",
 #if defined(OS_WIN)
           base::FilePath(L"c:\\some\\path\\to\\chrome.exe")
@@ -74,7 +74,7 @@ TEST_F(CallStackProfileMetricsProviderTest, MultipleProfiles) {
 #endif
       ),
       Module(
-          reinterpret_cast<const void*>(module2_base_address),
+          module2_base_address,
           "EFGH",
 #if defined(OS_WIN)
           base::FilePath(L"c:\\some\\path\\to\\third_party.dll")
@@ -85,7 +85,7 @@ TEST_F(CallStackProfileMetricsProviderTest, MultipleProfiles) {
     },
     {
       Module(
-          reinterpret_cast<const void*>(module3_base_address),
+          module3_base_address,
           "MNOP",
 #if defined(OS_WIN)
           base::FilePath(L"c:\\some\\path\\to\\third_party2.dll")
@@ -94,7 +94,7 @@ TEST_F(CallStackProfileMetricsProviderTest, MultipleProfiles) {
 #endif
       ),
       Module( // Repeated from the first profile.
-          reinterpret_cast<const void*>(module1_base_address),
+          module1_base_address,
           "ABCD",
 #if defined(OS_WIN)
           base::FilePath(L"c:\\some\\path\\to\\chrome.exe")
@@ -147,26 +147,26 @@ TEST_F(CallStackProfileMetricsProviderTest, MultipleProfiles) {
   const Frame profile_sample_frames[][2][3] = {
     {
       {
-        Frame(reinterpret_cast<const void*>(module1_base_address + 0x10), 0),
-        Frame(reinterpret_cast<const void*>(module2_base_address + 0x20), 1),
-        Frame(reinterpret_cast<const void*>(module1_base_address + 0x30), 0)
+        Frame(module1_base_address + 0x10, 0),
+        Frame(module2_base_address + 0x20, 1),
+        Frame(module1_base_address + 0x30, 0)
       },
       {
-        Frame(reinterpret_cast<const void*>(module2_base_address + 0x10), 1),
-        Frame(reinterpret_cast<const void*>(module1_base_address + 0x20), 0),
-        Frame(reinterpret_cast<const void*>(module2_base_address + 0x30), 1)
+        Frame(module2_base_address + 0x10, 1),
+        Frame(module1_base_address + 0x20, 0),
+        Frame(module2_base_address + 0x30, 1)
       }
     },
     {
       {
-        Frame(reinterpret_cast<const void*>(module3_base_address + 0x10), 0),
-        Frame(reinterpret_cast<const void*>(module1_base_address + 0x20), 1),
-        Frame(reinterpret_cast<const void*>(module3_base_address + 0x30), 0)
+        Frame(module3_base_address + 0x10, 0),
+        Frame(module1_base_address + 0x20, 1),
+        Frame(module3_base_address + 0x30, 0)
       },
       {
-        Frame(reinterpret_cast<const void*>(module1_base_address + 0x10), 1),
-        Frame(reinterpret_cast<const void*>(module3_base_address + 0x20), 0),
-        Frame(reinterpret_cast<const void*>(module1_base_address + 0x30), 1)
+        Frame(module1_base_address + 0x10, 1),
+        Frame(module3_base_address + 0x20, 0),
+        Frame(module1_base_address + 0x30, 1)
       }
     }
   };
@@ -277,7 +277,7 @@ TEST_F(CallStackProfileMetricsProviderTest, RepeatedStacksUnordered) {
 
   const Module modules[] = {
     Module(
-        reinterpret_cast<const void*>(module_base_address),
+        module_base_address,
         "ABCD",
 #if defined(OS_WIN)
         base::FilePath(L"c:\\some\\path\\to\\chrome.exe")
@@ -289,10 +289,10 @@ TEST_F(CallStackProfileMetricsProviderTest, RepeatedStacksUnordered) {
 
   // Duplicate samples in slots 0, 2, and 3.
   const Frame sample_frames[][1] = {
-    { Frame(reinterpret_cast<const void*>(module_base_address + 0x10), 0), },
-    { Frame(reinterpret_cast<const void*>(module_base_address + 0x20), 0), },
-    { Frame(reinterpret_cast<const void*>(module_base_address + 0x10), 0), },
-    { Frame(reinterpret_cast<const void*>(module_base_address + 0x10), 0) }
+    { Frame(module_base_address + 0x10, 0), },
+    { Frame(module_base_address + 0x20, 0), },
+    { Frame(module_base_address + 0x10, 0), },
+    { Frame(module_base_address + 0x10, 0) }
   };
 
   Profile profile;
@@ -356,7 +356,7 @@ TEST_F(CallStackProfileMetricsProviderTest, RepeatedStacksOrdered) {
 
   const Module modules[] = {
     Module(
-        reinterpret_cast<const void*>(module_base_address),
+        module_base_address,
         "ABCD",
 #if defined(OS_WIN)
         base::FilePath(L"c:\\some\\path\\to\\chrome.exe")
@@ -368,10 +368,10 @@ TEST_F(CallStackProfileMetricsProviderTest, RepeatedStacksOrdered) {
 
   // Duplicate samples in slots 0, 2, and 3.
   const Frame sample_frames[][1] = {
-    { Frame(reinterpret_cast<const void*>(module_base_address + 0x10), 0), },
-    { Frame(reinterpret_cast<const void*>(module_base_address + 0x20), 0), },
-    { Frame(reinterpret_cast<const void*>(module_base_address + 0x10), 0), },
-    { Frame(reinterpret_cast<const void*>(module_base_address + 0x10), 0) }
+    { Frame(module_base_address + 0x10, 0), },
+    { Frame(module_base_address + 0x20, 0), },
+    { Frame(module_base_address + 0x10, 0), },
+    { Frame(module_base_address + 0x10, 0) }
   };
 
   Profile profile;
@@ -390,9 +390,8 @@ TEST_F(CallStackProfileMetricsProviderTest, RepeatedStacksOrdered) {
 
   CallStackProfileMetricsProvider provider;
   provider.OnRecordingEnabled();
-  AppendProfiles(
-      Params(CallStackProfileMetricsProvider::PROCESS_STARTUP, true),
-      std::vector<Profile>(1, profile));
+  AppendProfiles(Params(CallStackProfileMetricsProvider::PROCESS_STARTUP, true),
+                 std::vector<Profile>(1, profile));
   ChromeUserMetricsExtension uma_proto;
   provider.ProvideGeneralMetrics(&uma_proto);
 
@@ -430,8 +429,7 @@ TEST_F(CallStackProfileMetricsProviderTest, RepeatedStacksOrdered) {
 
 // Checks that unknown modules produce an empty Entry.
 TEST_F(CallStackProfileMetricsProviderTest, UnknownModule) {
-  const Frame frame(reinterpret_cast<const void*>(0x1000),
-                    Frame::kUnknownModuleIndex);
+  const Frame frame(0x1000, Frame::kUnknownModuleIndex);
 
   Profile profile;
 
@@ -471,8 +469,8 @@ TEST_F(CallStackProfileMetricsProviderTest, ProfilesProvidedOnlyOnce) {
   CallStackProfileMetricsProvider provider;
   for (int i = 0; i < 2; ++i) {
     Profile profile;
-    profile.samples.push_back(Sample(1, Frame(
-        reinterpret_cast<const void*>(0x1000), Frame::kUnknownModuleIndex)));
+    profile.samples.push_back(
+        Sample(1, Frame(0x1000, Frame::kUnknownModuleIndex)));
 
     profile.profile_duration = base::TimeDelta::FromMilliseconds(100);
     // Use the sampling period to distinguish the two profiles.
@@ -500,8 +498,8 @@ TEST_F(CallStackProfileMetricsProviderTest, ProfilesProvidedOnlyOnce) {
 TEST_F(CallStackProfileMetricsProviderTest,
        ProfilesProvidedWhenCollectedBeforeInstantiation) {
   Profile profile;
-  profile.samples.push_back(Sample(1, Frame(
-      reinterpret_cast<const void*>(0x1000), Frame::kUnknownModuleIndex)));
+  profile.samples.push_back(
+      Sample(1, Frame(0x1000, Frame::kUnknownModuleIndex)));
 
   profile.profile_duration = base::TimeDelta::FromMilliseconds(100);
   profile.sampling_period = base::TimeDelta::FromMilliseconds(10);
@@ -522,8 +520,8 @@ TEST_F(CallStackProfileMetricsProviderTest,
 // while recording is disabled.
 TEST_F(CallStackProfileMetricsProviderTest, ProfilesNotProvidedWhileDisabled) {
   Profile profile;
-  profile.samples.push_back(Sample(1, Frame(
-      reinterpret_cast<const void*>(0x1000), Frame::kUnknownModuleIndex)));
+  profile.samples.push_back(
+      Sample(1, Frame(0x1000, Frame::kUnknownModuleIndex)));
 
   profile.profile_duration = base::TimeDelta::FromMilliseconds(100);
   profile.sampling_period = base::TimeDelta::FromMilliseconds(10);
@@ -544,8 +542,8 @@ TEST_F(CallStackProfileMetricsProviderTest, ProfilesNotProvidedWhileDisabled) {
 TEST_F(CallStackProfileMetricsProviderTest,
        ProfilesNotProvidedAfterChangeToDisabled) {
   Profile profile;
-  profile.samples.push_back(Sample(1, Frame(
-      reinterpret_cast<const void*>(0x1000), Frame::kUnknownModuleIndex)));
+  profile.samples.push_back(
+      Sample(1, Frame(0x1000, Frame::kUnknownModuleIndex)));
 
   profile.profile_duration = base::TimeDelta::FromMilliseconds(100);
   profile.sampling_period = base::TimeDelta::FromMilliseconds(10);
@@ -569,8 +567,8 @@ TEST_F(CallStackProfileMetricsProviderTest,
 TEST_F(CallStackProfileMetricsProviderTest,
        ProfilesNotProvidedAfterChangeToDisabledThenEnabled) {
   Profile profile;
-  profile.samples.push_back(Sample(1, Frame(
-      reinterpret_cast<const void*>(0x1000), Frame::kUnknownModuleIndex)));
+  profile.samples.push_back(
+      Sample(1, Frame(0x1000, Frame::kUnknownModuleIndex)));
 
   profile.profile_duration = base::TimeDelta::FromMilliseconds(100);
   profile.sampling_period = base::TimeDelta::FromMilliseconds(10);
@@ -595,8 +593,8 @@ TEST_F(CallStackProfileMetricsProviderTest,
 TEST_F(CallStackProfileMetricsProviderTest,
        ProfilesNotProvidedAfterChangeFromDisabled) {
   Profile profile;
-  profile.samples.push_back(Sample(1, Frame(
-      reinterpret_cast<const void*>(0x1000), Frame::kUnknownModuleIndex)));
+  profile.samples.push_back(
+      Sample(1, Frame(0x1000, Frame::kUnknownModuleIndex)));
 
   profile.profile_duration = base::TimeDelta::FromMilliseconds(100);
   profile.sampling_period = base::TimeDelta::FromMilliseconds(10);

@@ -63,12 +63,13 @@ class BASE_EXPORT StackSamplingProfiler {
   // Module represents the module (DLL or exe) corresponding to a stack frame.
   struct BASE_EXPORT Module {
     Module();
-    Module(const void* base_address, const std::string& id,
+    Module(uintptr_t base_address,
+           const std::string& id,
            const FilePath& filename);
     ~Module();
 
     // Points to the base address of the module.
-    const void* base_address;
+    uintptr_t base_address;
 
     // An opaque binary string that uniquely identifies a particular program
     // version with high probability. This is parsed from headers of the loaded
@@ -88,11 +89,14 @@ class BASE_EXPORT StackSamplingProfiler {
     // Identifies an unknown module.
     static const size_t kUnknownModuleIndex = static_cast<size_t>(-1);
 
-    Frame(const void* instruction_pointer, size_t module_index);
+    Frame(uintptr_t instruction_pointer, size_t module_index);
     ~Frame();
 
+    // Default constructor to satisfy IPC macros. Do not use explicitly.
+    Frame();
+
     // The sampled instruction pointer within the function.
-    const void* instruction_pointer;
+    uintptr_t instruction_pointer;
 
     // Index of the module in CallStackProfile::modules. We don't represent
     // module state directly here to save space.
