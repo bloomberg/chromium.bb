@@ -73,6 +73,7 @@ class OZONE_EXPORT DrmBufferGenerator : public ScanoutBufferGenerator {
 
   // ScanoutBufferGenerator:
   scoped_refptr<ScanoutBuffer> Create(const scoped_refptr<DrmDevice>& drm,
+                                      gfx::BufferFormat format,
                                       const gfx::Size& size) override;
 
  private:

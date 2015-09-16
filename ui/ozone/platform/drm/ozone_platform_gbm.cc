@@ -78,9 +78,10 @@ class GbmBufferGenerator : public ScanoutBufferGenerator {
 
   // ScanoutBufferGenerator:
   scoped_refptr<ScanoutBuffer> Create(const scoped_refptr<DrmDevice>& drm,
+                                      gfx::BufferFormat format,
                                       const gfx::Size& size) override {
     scoped_refptr<GbmDevice> gbm(static_cast<GbmDevice*>(drm.get()));
-    return GbmBuffer::CreateBuffer(gbm, gfx::BufferFormat::BGRA_8888, size,
+    return GbmBuffer::CreateBuffer(gbm, format, size,
                                    gfx::BufferUsage::SCANOUT);
   }
 

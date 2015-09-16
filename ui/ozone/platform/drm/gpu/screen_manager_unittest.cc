@@ -460,8 +460,8 @@ TEST_F(ScreenManagerTest, EnableControllerWhenWindowHasBuffer) {
       new ui::DrmWindow(1, device_manager_.get(), screen_manager_.get()));
   window->Initialize();
   window->OnBoundsChanged(GetPrimaryBounds());
-  scoped_refptr<ui::ScanoutBuffer> buffer =
-      buffer_generator_->Create(drm_, GetPrimaryBounds().size());
+  scoped_refptr<ui::ScanoutBuffer> buffer = buffer_generator_->Create(
+      drm_, gfx::BufferFormat::BGRA_8888, GetPrimaryBounds().size());
   window->QueueOverlayPlane(ui::OverlayPlane(buffer));
   window->SchedulePageFlip(false /* is_sync */, base::Bind(&EmptySwapCallback));
   screen_manager_->AddWindow(1, window.Pass());

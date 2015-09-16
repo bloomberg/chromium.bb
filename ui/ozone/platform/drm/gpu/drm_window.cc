@@ -167,7 +167,8 @@ bool DrmWindow::TestPageFlip(const std::vector<OverlayCheck_Params>& overlays,
   for (const auto& overlay : overlays) {
     gfx::Size size =
         (overlay.plane_z_order == 0) ? bounds().size() : overlay.buffer_size;
-    scoped_refptr<ScanoutBuffer> buffer = buffer_generator->Create(drm, size);
+    scoped_refptr<ScanoutBuffer> buffer =
+        buffer_generator->Create(drm, overlay.format, size);
     if (!buffer)
       return false;
     planes.push_back(OverlayPlane(buffer, overlay.plane_z_order,

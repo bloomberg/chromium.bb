@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include "base/memory/ref_counted.h"
+#include "ui/gfx/buffer_types.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace ui {
@@ -43,6 +44,7 @@ class ScanoutBufferGenerator {
 
   virtual scoped_refptr<ScanoutBuffer> Create(
       const scoped_refptr<DrmDevice>& drm,
+      gfx::BufferFormat format,
       const gfx::Size& size) = 0;
 };
 
