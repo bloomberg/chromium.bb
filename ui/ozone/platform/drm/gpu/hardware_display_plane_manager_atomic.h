@@ -18,7 +18,6 @@ class OZONE_EXPORT HardwareDisplayPlaneManagerAtomic
 
   // HardwareDisplayPlaneManager:
   bool Commit(HardwareDisplayPlaneList* plane_list,
-              bool is_sync,
               bool test_only) override;
 
  private:

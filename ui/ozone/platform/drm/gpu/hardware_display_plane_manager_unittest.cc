@@ -72,7 +72,6 @@ class FakePlaneManager : public ui::HardwareDisplayPlaneManager {
   }
 
   bool Commit(ui::HardwareDisplayPlaneList* plane_list,
-              bool is_sync,
               bool test_only) override {
     return false;
   }
@@ -276,14 +275,14 @@ TEST(HardwareDisplayPlaneManagerLegacyTest, UnusedPlanesAreReleased) {
   drm->plane_manager()->BeginFrame(&hdpl);
   EXPECT_TRUE(drm->plane_manager()->AssignOverlayPlanes(&hdpl, assigns,
                                                         crtcs[0], &crtc));
-  EXPECT_TRUE(drm->plane_manager()->Commit(&hdpl, false, false));
+  EXPECT_TRUE(drm->plane_manager()->Commit(&hdpl, false));
   assigns.clear();
   assigns.push_back(ui::OverlayPlane(fake_buffer));
   drm->plane_manager()->BeginFrame(&hdpl);
   EXPECT_TRUE(drm->plane_manager()->AssignOverlayPlanes(&hdpl, assigns,
                                                         crtcs[0], &crtc));
   EXPECT_EQ(0, drm->get_overlay_clear_call_count());
-  EXPECT_TRUE(drm->plane_manager()->Commit(&hdpl, false, false));
+  EXPECT_TRUE(drm->plane_manager()->Commit(&hdpl, false));
   EXPECT_EQ(1, drm->get_overlay_clear_call_count());
 }
 

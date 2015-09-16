@@ -88,7 +88,7 @@ class OZONE_EXPORT DrmWindow {
   // is once again ready.
   void QueueOverlayPlane(const OverlayPlane& plane);
 
-  bool SchedulePageFlip(bool is_sync, const SwapCompletionCallback& callback);
+  bool SchedulePageFlip(const SwapCompletionCallback& callback);
   bool TestPageFlip(const std::vector<OverlayCheck_Params>& planes,
                     ScanoutBufferGenerator* buffer_generator);
 
@@ -132,7 +132,6 @@ class OZONE_EXPORT DrmWindow {
   // controller.
   OverlayPlaneList pending_planes_;
   OverlayPlaneList last_submitted_planes_;
-  bool last_swap_sync_ = false;
 
   bool force_buffer_reallocation_ = false;
 

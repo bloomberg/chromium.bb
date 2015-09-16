@@ -80,7 +80,6 @@ class MockDrmDevice : public ui::DrmDevice {
   ScopedDrmFramebufferPtr GetFramebuffer(uint32_t framebuffer) override;
   bool PageFlip(uint32_t crtc_id,
                 uint32_t framebuffer,
-                bool is_sync,
                 const PageFlipCallback& callback) override;
   bool PageFlipOverlay(uint32_t crtc_id,
                        uint32_t framebuffer,
@@ -109,7 +108,6 @@ class MockDrmDevice : public ui::DrmDevice {
   bool CommitProperties(drmModeAtomicReq* properties,
                         uint32_t flags,
                         uint32_t crtc_count,
-                        bool is_sync,
                         const PageFlipCallback& callback) override;
   bool SetGammaRamp(uint32_t crtc_id,
                     const std::vector<GammaRampRGBEntry>& lut) override;

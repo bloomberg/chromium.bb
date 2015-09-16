@@ -90,7 +90,6 @@ class OZONE_EXPORT HardwareDisplayPlaneManager {
 
   // Commit the plane states in |plane_list|.
   virtual bool Commit(HardwareDisplayPlaneList* plane_list,
-                      bool is_sync,
                       bool test_only) = 0;
 
   const ScopedVector<HardwareDisplayPlane>& planes() { return planes_; }

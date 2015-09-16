@@ -35,7 +35,6 @@ HardwareDisplayPlaneManagerAtomic::~HardwareDisplayPlaneManagerAtomic() {
 
 bool HardwareDisplayPlaneManagerAtomic::Commit(
     HardwareDisplayPlaneList* plane_list,
-    bool is_sync,
     bool test_only) {
   for (HardwareDisplayPlane* plane : plane_list->old_plane_list) {
     bool found =
@@ -76,7 +75,7 @@ bool HardwareDisplayPlaneManagerAtomic::Commit(
   }
 
   if (!drm_->CommitProperties(plane_list->atomic_property_set.get(), flags,
-                              crtcs.size(), is_sync,
+                              crtcs.size(),
                               base::Bind(&AtomicPageFlipCallback, crtcs))) {
     PLOG(ERROR) << "Failed to commit properties";
     return false;

@@ -124,8 +124,7 @@ void DrmWindow::QueueOverlayPlane(const OverlayPlane& plane) {
   pending_planes_.push_back(plane);
 }
 
-bool DrmWindow::SchedulePageFlip(bool is_sync,
-                                 const SwapCompletionCallback& callback) {
+bool DrmWindow::SchedulePageFlip(const SwapCompletionCallback& callback) {
   if (force_buffer_reallocation_) {
     // Clear pending planes otherwise the next call to queue planes will just
     // add on top.
@@ -137,11 +136,10 @@ bool DrmWindow::SchedulePageFlip(bool is_sync,
 
   last_submitted_planes_.clear();
   last_submitted_planes_.swap(pending_planes_);
-  last_swap_sync_ = is_sync;
 
   if (controller_) {
-    return controller_->SchedulePageFlip(last_submitted_planes_, is_sync, false,
-                                         callback);
+    return controller_->SchedulePageFlip(last_submitted_planes_,
+                                         false /* test_only */, callback);
   }
 
   callback.Run(gfx::SwapResult::SWAP_ACK);
@@ -175,7 +173,7 @@ bool DrmWindow::TestPageFlip(const std::vector<OverlayCheck_Params>& overlays,
                                   overlay.transform, overlay.display_rect,
                                   overlay.crop_rect));
   }
-  return controller_->SchedulePageFlip(planes, true, true,
+  return controller_->SchedulePageFlip(planes, true /* test_only */,
                                        base::Bind(&EmptyFlipCallback));
 }
 

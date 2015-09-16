@@ -99,7 +99,6 @@ class OZONE_EXPORT DrmDevice : public base::RefCountedThreadSafe<DrmDevice> {
   // queued on |fd_|.
   virtual bool PageFlip(uint32_t crtc_id,
                         uint32_t framebuffer,
-                        bool is_sync,
                         const PageFlipCallback& callback);
 
   // Schedule an overlay to be show during the page flip for CRTC |crtc_id|.
@@ -158,7 +157,6 @@ class OZONE_EXPORT DrmDevice : public base::RefCountedThreadSafe<DrmDevice> {
   virtual bool CommitProperties(drmModeAtomicReq* properties,
                                 uint32_t flags,
                                 uint32_t crtc_count,
-                                bool is_sync,
                                 const PageFlipCallback& callback);
 
   // Set the gamma ramp for |crtc_id| to reflect the ramps in |lut|.

@@ -19,7 +19,6 @@ HardwareDisplayPlaneManagerLegacy::~HardwareDisplayPlaneManagerLegacy() {
 
 bool HardwareDisplayPlaneManagerLegacy::Commit(
     HardwareDisplayPlaneList* plane_list,
-    bool is_sync,
     bool test_only) {
   if (test_only) {
     for (HardwareDisplayPlane* plane : plane_list->plane_list) {
@@ -52,13 +51,12 @@ bool HardwareDisplayPlaneManagerLegacy::Commit(
         break;
       }
     }
-    if (!drm_->PageFlip(flip.crtc_id, flip.framebuffer, is_sync,
+    if (!drm_->PageFlip(flip.crtc_id, flip.framebuffer,
                         base::Bind(&CrtcController::OnPageFlipEvent,
                                    flip.crtc->AsWeakPtr()))) {
       if (errno != EACCES) {
         PLOG(ERROR) << "Cannot page flip: crtc=" << flip.crtc_id
-                    << " framebuffer=" << flip.framebuffer
-                    << " is_sync=" << is_sync;
+                    << " framebuffer=" << flip.framebuffer;
         ret = false;
       }
       flip.crtc->PageFlipFailed();

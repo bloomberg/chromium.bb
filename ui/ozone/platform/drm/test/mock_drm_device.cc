@@ -143,7 +143,6 @@ ScopedDrmFramebufferPtr MockDrmDevice::GetFramebuffer(uint32_t framebuffer) {
 
 bool MockDrmDevice::PageFlip(uint32_t crtc_id,
                              uint32_t framebuffer,
-                             bool is_sync,
                              const PageFlipCallback& callback) {
   page_flip_call_count_++;
   current_framebuffer_ = framebuffer;
@@ -243,7 +242,6 @@ bool MockDrmDevice::CloseBufferHandle(uint32_t handle) {
 bool MockDrmDevice::CommitProperties(drmModeAtomicReq* properties,
                                      uint32_t flags,
                                      uint32_t crtc_count,
-                                     bool is_sync,
                                      const PageFlipCallback& callback) {
   return false;
 }
