@@ -33,8 +33,8 @@
 
 namespace blink {
 
-// FIXME: Get rid of this typedef.
-typedef DOMWindow AbstractView;
+// FIXME: Get rid of this type alias.
+using AbstractView = DOMWindow;
 
 class CORE_EXPORT UIEvent : public Event {
     DEFINE_WRAPPERTYPEINFO();

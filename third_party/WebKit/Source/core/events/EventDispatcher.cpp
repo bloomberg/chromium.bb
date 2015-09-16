@@ -132,7 +132,7 @@ bool EventDispatcher::dispatch()
     // Ensure that after event dispatch, the event's target object is the
     // outermost shadow DOM boundary.
     m_event->setTarget(m_event->eventPath().windowEventContext().target());
-    m_event->setCurrentTarget(0);
+    m_event->setCurrentTarget(nullptr);
     TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "UpdateCounters", TRACE_EVENT_SCOPE_THREAD, "data", InspectorUpdateCountersEvent::data());
 
     return !m_event->defaultPrevented();
@@ -197,7 +197,7 @@ inline void EventDispatcher::dispatchEventAtBubbling()
 inline void EventDispatcher::dispatchEventPostProcess(void* preDispatchEventHandlerResult)
 {
     m_event->setTarget(EventPath::eventTargetRespectingTargetRules(*m_node));
-    m_event->setCurrentTarget(0);
+    m_event->setCurrentTarget(nullptr);
     m_event->setEventPhase(0);
 
     // Pass the data from the preDispatchEventHandler to the postDispatchEventHandler.

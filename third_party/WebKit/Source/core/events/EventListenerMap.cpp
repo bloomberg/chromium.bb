@@ -166,7 +166,7 @@ EventListenerVector* EventListenerMap::find(const AtomicString& eventType)
             return entry.second.get();
     }
 
-    return 0;
+    return nullptr;
 }
 
 static void copyListenersNotCreatedFromMarkupToTarget(const AtomicString& eventType, EventListenerVector* listenerVector, EventTarget* target)
@@ -226,7 +226,7 @@ EventListenerIterator::~EventListenerIterator()
 EventListener* EventListenerIterator::nextListener()
 {
     if (!m_map)
-        return 0;
+        return nullptr;
 
     for (; m_entryIndex < m_map->m_entries.size(); ++m_entryIndex) {
         EventListenerVector& listeners = *m_map->m_entries[m_entryIndex].second;
@@ -235,7 +235,7 @@ EventListener* EventListenerIterator::nextListener()
         m_index = 0;
     }
 
-    return 0;
+    return nullptr;
 }
 
 } // namespace blink

@@ -248,7 +248,7 @@ PassRefPtrWillBeRawPtr<EventDispatchMediator> Event::createMediator()
 EventTarget* Event::currentTarget() const
 {
     if (!m_currentTarget)
-        return 0;
+        return nullptr;
     Node* node = m_currentTarget->toNode();
     if (node && node->isSVGElement()) {
         if (SVGElement* svgElement = toSVGElement(node)->correspondingElement())

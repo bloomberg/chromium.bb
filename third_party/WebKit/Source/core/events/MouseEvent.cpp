@@ -222,18 +222,18 @@ Node* MouseEvent::toElement() const
 {
     // MSIE extension - "the object toward which the user is moving the mouse pointer"
     if (type() == EventTypeNames::mouseout || type() == EventTypeNames::mouseleave)
-        return relatedTarget() ? relatedTarget()->toNode() : 0;
+        return relatedTarget() ? relatedTarget()->toNode() : nullptr;
 
-    return target() ? target()->toNode() : 0;
+    return target() ? target()->toNode() : nullptr;
 }
 
 Node* MouseEvent::fromElement() const
 {
     // MSIE extension - "object from which activation or the mouse pointer is exiting during the event" (huh?)
     if (type() != EventTypeNames::mouseout && type() != EventTypeNames::mouseleave)
-        return relatedTarget() ? relatedTarget()->toNode() : 0;
+        return relatedTarget() ? relatedTarget()->toNode() : nullptr;
 
-    return target() ? target()->toNode() : 0;
+    return target() ? target()->toNode() : nullptr;
 }
 
 DEFINE_TRACE(MouseEvent)

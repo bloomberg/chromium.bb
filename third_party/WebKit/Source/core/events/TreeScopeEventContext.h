@@ -41,7 +41,7 @@ class EventPath;
 class EventTarget;
 class Node;
 template <typename NodeType> class StaticNodeTypeList;
-typedef StaticNodeTypeList<Node> StaticNodeList;
+using StaticNodeList = StaticNodeTypeList<Node>;
 class TouchEventContext;
 class TreeScope;
 

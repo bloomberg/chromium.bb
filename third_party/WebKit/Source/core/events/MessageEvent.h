@@ -82,7 +82,7 @@ public:
     EventTarget* source() const { return m_source.get(); }
     MessagePortArray ports(bool& isNull) const;
     MessagePortArray ports() const;
-    MessagePortChannelArray* channels() const { return m_channels ? m_channels.get() : 0; }
+    MessagePortChannelArray* channels() const { return m_channels ? m_channels.get() : nullptr; }
 
     const AtomicString& interfaceName() const override;
 

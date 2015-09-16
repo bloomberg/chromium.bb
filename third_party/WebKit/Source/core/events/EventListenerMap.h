@@ -43,7 +43,7 @@ namespace blink {
 
 class EventTarget;
 
-typedef WillBeHeapVector<RegisteredEventListener, 1> EventListenerVector;
+using EventListenerVector = WillBeHeapVector<RegisteredEventListener, 1>;
 
 class CORE_EXPORT EventListenerMap {
     WTF_MAKE_NONCOPYABLE(EventListenerMap);

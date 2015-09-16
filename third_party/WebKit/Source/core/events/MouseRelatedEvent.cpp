@@ -64,7 +64,7 @@ MouseRelatedEvent::MouseRelatedEvent(const AtomicString& eventType, bool canBubb
     LayoutPoint adjustedPageLocation;
     LayoutPoint scrollPosition;
 
-    LocalFrame* frame = view() && view()->isLocalDOMWindow() ? toLocalDOMWindow(view())->frame() : 0;
+    LocalFrame* frame = view() && view()->isLocalDOMWindow() ? toLocalDOMWindow(view())->frame() : nullptr;
     if (frame && hasPosition()) {
         if (FrameView* frameView = frame->view()) {
             scrollPosition = frameView->scrollPosition();
@@ -131,7 +131,7 @@ void MouseRelatedEvent::receivedTarget()
 
 void MouseRelatedEvent::computeRelativePosition()
 {
-    Node* targetNode = target() ? target()->toNode() : 0;
+    Node* targetNode = target() ? target()->toNode() : nullptr;
     if (!targetNode)
         return;
 

@@ -39,7 +39,7 @@
 
 namespace blink {
 
-ScopedEventQueue* ScopedEventQueue::s_instance = 0;
+ScopedEventQueue* ScopedEventQueue::s_instance = nullptr;
 
 ScopedEventQueue::ScopedEventQueue()
     : m_scopingLevel(0)

@@ -72,24 +72,24 @@ EventTarget::~EventTarget()
 
 Node* EventTarget::toNode()
 {
-    return 0;
+    return nullptr;
 }
 
 LocalDOMWindow* EventTarget::toDOMWindow()
 {
-    return 0;
+    return nullptr;
 }
 
 MessagePort* EventTarget::toMessagePort()
 {
-    return 0;
+    return nullptr;
 }
 
 inline LocalDOMWindow* EventTarget::executingWindow()
 {
     if (ExecutionContext* context = executionContext())
         return context->executingWindow();
-    return 0;
+    return nullptr;
 }
 
 bool EventTarget::addEventListener(const AtomicString& eventType, PassRefPtrWillBeRawPtr<EventListener> listener, bool useCapture)
@@ -283,7 +283,7 @@ bool EventTarget::fireEventListeners(Event* event)
     if (!d)
         return true;
 
-    EventListenerVector* legacyListenersVector = 0;
+    EventListenerVector* legacyListenersVector = nullptr;
     AtomicString legacyTypeName = legacyType(event);
     if (!legacyTypeName.isEmpty())
         legacyListenersVector = d->eventListenerMap.find(legacyTypeName);
