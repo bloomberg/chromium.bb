@@ -50,6 +50,9 @@ public:
 
     BLINK_EXPORT bool isFormControlElement() const;
     BLINK_EXPORT bool isTextFormControlElement() const;
+    // If the element is editable, for example by being contenteditable or being
+    // an <input> that isn't readonly or disabled.
+    BLINK_EXPORT bool isEditable() const;
     // Returns the qualified name, which may contain a prefix and a colon.
     BLINK_EXPORT WebString tagName() const;
     // Check if this element has the specified local tag name, and the HTML

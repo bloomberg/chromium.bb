@@ -32,15 +32,20 @@
 #include "public/web/WebElement.h"
 
 #include "bindings/core/v8/ExceptionState.h"
+#include "core/HTMLNames.h"
 #include "core/dom/Element.h"
 #include "core/dom/Fullscreen.h"
-#include "core/dom/NamedNodeMap.h"
 #include "core/dom/custom/CustomElementProcessingStack.h"
+#include "core/html/HTMLTextFormControlElement.h"
 #include "platform/graphics/Image.h"
 #include "public/platform/WebRect.h"
 #include "wtf/PassRefPtr.h"
+#include "wtf/text/AtomicString.h"
+#include "wtf/text/WTFString.h"
 
 namespace blink {
+
+using namespace HTMLNames;
 
 bool WebElement::isFormControlElement() const
 {
@@ -50,6 +55,22 @@ bool WebElement::isFormControlElement() const
 bool WebElement::isTextFormControlElement() const
 {
     return constUnwrap<Element>()->isTextFormControl();
+}
+
+bool WebElement::isEditable() const
+{
+    const Element* element = constUnwrap<Element>();
+
+    if (element->isContentEditable())
+        return true;
+
+    if (element->isTextFormControl()) {
+        const HTMLTextFormControlElement* input = toHTMLTextFormControlElement(element);
+        if (!input->isDisabledOrReadOnly())
+            return true;
+    }
+
+    return equalIgnoringCase(element->getAttribute(roleAttr), "textbox");
 }
 
 WebString WebElement::tagName() const

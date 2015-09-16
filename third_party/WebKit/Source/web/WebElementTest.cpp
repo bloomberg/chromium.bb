@@ -79,7 +79,9 @@ void WebElementTest::insertHTML(String html)
 
 WebElement WebElementTest::testElement()
 {
-    return WebElement(document().getElementById("testElement"));
+    Element* element = document().getElementById("testElement");
+    ASSERT(element);
+    return WebElement(element);
 }
 
 void WebElementTest::SetUp()
@@ -117,6 +119,41 @@ TEST_F(WebElementTest, HasNonEmptyLayoutSize)
     RefPtrWillBeRawPtr<ShadowRoot> root = document().getElementById("testElement")->createShadowRootInternal(ShadowRootType::OpenByDefault, ASSERT_NO_EXCEPTION);
     root->setInnerHTML("<div>Hello World</div>", ASSERT_NO_EXCEPTION);
     EXPECT_TRUE(testElement().hasNonEmptyLayoutSize());
+}
+
+TEST_F(WebElementTest, IsEditable)
+{
+    insertHTML("<div id=testElement></div>");
+    EXPECT_FALSE(testElement().isEditable());
+
+    insertHTML("<div id=testElement contenteditable=true></div>");
+    EXPECT_TRUE(testElement().isEditable());
+
+    insertHTML(
+        "<div style='-webkit-user-modify: read-write'>"
+        "  <div id=testElement></div>"
+        "</div>"
+    );
+    EXPECT_TRUE(testElement().isEditable());
+
+    insertHTML(
+        "<div style='-webkit-user-modify: read-write'>"
+        "  <div id=testElement style='-webkit-user-modify: read-only'></div>"
+        "</div>"
+    );
+    EXPECT_FALSE(testElement().isEditable());
+
+    insertHTML("<input id=testElement>");
+    EXPECT_TRUE(testElement().isEditable());
+
+    insertHTML("<input id=testElement readonly>");
+    EXPECT_FALSE(testElement().isEditable());
+
+    insertHTML("<input id=testElement disabled>");
+    EXPECT_FALSE(testElement().isEditable());
+
+    insertHTML("<fieldset disabled><div><input id=testElement></div></fieldset>");
+    EXPECT_FALSE(testElement().isEditable());
 }
 
 } // namespace blink

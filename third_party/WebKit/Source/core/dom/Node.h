@@ -416,8 +416,8 @@ public:
         UserSelectAllDoesNotAffectEditability,
         UserSelectAllIsAlwaysNonEditable
     };
-    bool isContentEditable(UserSelectAllTreatment = UserSelectAllDoesNotAffectEditability);
-    bool isContentRichlyEditable();
+    bool isContentEditable(UserSelectAllTreatment = UserSelectAllDoesNotAffectEditability) const;
+    bool isContentRichlyEditable() const;
 
     bool hasEditableStyle(EditableType editableType = ContentIsEditable, UserSelectAllTreatment treatment = UserSelectAllIsAlwaysNonEditable) const
     {
