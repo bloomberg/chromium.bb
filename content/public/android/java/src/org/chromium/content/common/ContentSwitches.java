@@ -31,13 +31,6 @@ public abstract class ContentSwitches {
     public static final String RUNNING_PERFORMANCE_BENCHMARK =
             "running-performance-benchmark";
 
-    // Disables exposing web content using Android's accessibility
-    // framework and enables the (older) javascript injection accessibility.
-    // TODO(dmazzoni): remove this after native accessibility is in stable.
-    // http://crbug.com/356775
-    public static final String ENABLE_ACCESSIBILITY_SCRIPT_INJECTION =
-            "enable-accessibility-script-injection";
-
     // Sets the ISO country code that will be used for phone number detection.
     public static final String NETWORK_COUNTRY_ISO = "network-country-iso";
 

@@ -1368,14 +1368,6 @@ const Experiment kExperiments[] = {
      IDS_FLAGS_ENABLE_ACCESSIBILITY_TAB_SWITCHER_DESCRIPTION,
      kOsAndroid,
      SINGLE_VALUE_TYPE(switches::kEnableAccessibilityTabSwitcher)},
-    {// TODO(dmazzoni): remove this flag when native android accessibility
-     // ships in the stable channel. http://crbug.com/356775
-     "enable-accessibility-script-injection",
-     IDS_FLAGS_ENABLE_ACCESSIBILITY_SCRIPT_INJECTION_NAME,
-     IDS_FLAGS_ENABLE_ACCESSIBILITY_SCRIPT_INJECTION_DESCRIPTION,
-     kOsAndroid,
-     // Java-only switch: ContentSwitches.ENABLE_ACCESSIBILITY_SCRIPT_INJECTION.
-     SINGLE_VALUE_TYPE("enable-accessibility-script-injection")},
 #endif
     {"enable-zero-copy",
      IDS_FLAGS_ENABLE_ZERO_COPY_NAME,
