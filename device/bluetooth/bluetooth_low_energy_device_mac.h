@@ -20,12 +20,14 @@
 
 namespace device {
 
+class BluetoothAdapterMac;
 class BluetoothLowEnergyDiscoverManagerMac;
 
 class DEVICE_BLUETOOTH_EXPORT BluetoothLowEnergyDeviceMac
     : public BluetoothDeviceMac {
  public:
-  BluetoothLowEnergyDeviceMac(CBPeripheral* peripheral,
+  BluetoothLowEnergyDeviceMac(BluetoothAdapterMac* adapter,
+                              CBPeripheral* peripheral,
                               NSDictionary* advertisement_data,
                               int rssi);
   ~BluetoothLowEnergyDeviceMac() override;

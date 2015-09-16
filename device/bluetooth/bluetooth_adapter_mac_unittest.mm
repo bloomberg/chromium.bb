@@ -306,7 +306,7 @@ TEST_F(BluetoothAdapterMacTest, UpdateDevicesRemovesLowEnergyDevice) {
       CreateAdvertisementData());
 
   BluetoothLowEnergyDeviceMac* device = new BluetoothLowEnergyDeviceMac(
-      mock_peripheral, advertisement_data, kTestRssi);
+      adapter_mac_, mock_peripheral, advertisement_data, kTestRssi);
   SetDeviceTimeGreaterThanTimeout(device);
 
   EXPECT_EQ(0, NumDevices());

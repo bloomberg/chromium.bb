@@ -23,6 +23,7 @@ class BluetoothSocketThread;
 class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceWin : public BluetoothDevice {
  public:
   explicit BluetoothDeviceWin(
+      BluetoothAdapterWin* adapter,
       const BluetoothTaskManagerWin::DeviceState& device_state,
       const scoped_refptr<base::SequencedTaskRunner>& ui_task_runner,
       const scoped_refptr<BluetoothSocketThread>& socket_thread,

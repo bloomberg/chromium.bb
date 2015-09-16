@@ -125,7 +125,7 @@ BluetoothDeviceChromeOS::BluetoothDeviceChromeOS(
     const dbus::ObjectPath& object_path,
     scoped_refptr<base::SequencedTaskRunner> ui_task_runner,
     scoped_refptr<device::BluetoothSocketThread> socket_thread)
-    : adapter_(adapter),
+    : BluetoothDevice(adapter),
       object_path_(object_path),
       num_connecting_calls_(0),
       connection_monitor_started_(false),
@@ -154,7 +154,7 @@ BluetoothDeviceChromeOS::~BluetoothDeviceChromeOS() {
   for (GattServiceMap::iterator iter = gatt_services.begin();
        iter != gatt_services.end(); ++iter) {
     DCHECK(adapter_);
-    adapter_->NotifyGattServiceRemoved(
+    adapter()->NotifyGattServiceRemoved(
         static_cast<BluetoothRemoteGattServiceChromeOS*>(iter->second));
     delete iter->second;
   }
@@ -318,7 +318,7 @@ void BluetoothDeviceChromeOS::Connect(
     const base::Closure& callback,
     const ConnectErrorCallback& error_callback) {
   if (num_connecting_calls_++ == 0)
-    adapter_->NotifyDeviceChanged(this);
+    adapter()->NotifyDeviceChanged(this);
 
   VLOG(1) << object_path_.value() << ": Connecting, " << num_connecting_calls_
           << " in progress";
@@ -412,14 +412,10 @@ void BluetoothDeviceChromeOS::Disconnect(const base::Closure& callback,
 
 void BluetoothDeviceChromeOS::Forget(const ErrorCallback& error_callback) {
   VLOG(1) << object_path_.value() << ": Removing device";
-  DBusThreadManager::Get()->GetBluetoothAdapterClient()->
-      RemoveDevice(
-          adapter_->object_path(),
-          object_path_,
-          base::Bind(&base::DoNothing),
-          base::Bind(&BluetoothDeviceChromeOS::OnForgetError,
-                     weak_ptr_factory_.GetWeakPtr(),
-                     error_callback));
+  DBusThreadManager::Get()->GetBluetoothAdapterClient()->RemoveDevice(
+      adapter()->object_path(), object_path_, base::Bind(&base::DoNothing),
+      base::Bind(&BluetoothDeviceChromeOS::OnForgetError,
+                 weak_ptr_factory_.GetWeakPtr(), error_callback));
 }
 
 void BluetoothDeviceChromeOS::ConnectToService(
@@ -484,6 +480,10 @@ BluetoothPairingChromeOS* BluetoothDeviceChromeOS::GetPairing() const {
   return pairing_.get();
 }
 
+BluetoothAdapterChromeOS* BluetoothDeviceChromeOS::adapter() const {
+  return static_cast<BluetoothAdapterChromeOS*>(adapter_);
+}
+
 void BluetoothDeviceChromeOS::GattServiceAdded(
     const dbus::ObjectPath& object_path) {
   if (GetGattService(object_path.value())) {
@@ -503,14 +503,14 @@ void BluetoothDeviceChromeOS::GattServiceAdded(
   VLOG(1) << "Adding new remote GATT service for device: " << GetAddress();
 
   BluetoothRemoteGattServiceChromeOS* service =
-      new BluetoothRemoteGattServiceChromeOS(adapter_, this, object_path);
+      new BluetoothRemoteGattServiceChromeOS(adapter(), this, object_path);
 
   gatt_services_[service->GetIdentifier()] = service;
   DCHECK(service->object_path() == object_path);
   DCHECK(service->GetUUID().IsValid());
 
   DCHECK(adapter_);
-  adapter_->NotifyGattServiceAdded(service);
+  adapter()->NotifyGattServiceAdded(service);
 }
 
 void BluetoothDeviceChromeOS::GattServiceRemoved(
@@ -529,7 +529,7 @@ void BluetoothDeviceChromeOS::GattServiceRemoved(
   gatt_services_.erase(iter);
 
   DCHECK(adapter_);
-  adapter_->NotifyGattServiceRemoved(service);
+  adapter()->NotifyGattServiceRemoved(service);
 
   delete service;
 }
@@ -573,7 +573,7 @@ void BluetoothDeviceChromeOS::ConnectInternal(
 void BluetoothDeviceChromeOS::OnConnect(bool after_pairing,
                                         const base::Closure& callback) {
   if (--num_connecting_calls_ == 0)
-    adapter_->NotifyDeviceChanged(this);
+    adapter()->NotifyDeviceChanged(this);
 
   DCHECK(num_connecting_calls_ >= 0);
   VLOG(1) << object_path_.value() << ": Connected, " << num_connecting_calls_
@@ -603,7 +603,7 @@ void BluetoothDeviceChromeOS::OnConnectError(
     const std::string& error_name,
     const std::string& error_message) {
   if (--num_connecting_calls_ == 0)
-    adapter_->NotifyDeviceChanged(this);
+    adapter()->NotifyDeviceChanged(this);
 
   DCHECK(num_connecting_calls_ >= 0);
   LOG(WARNING) << object_path_.value() << ": Failed to connect device: "
@@ -641,7 +641,7 @@ void BluetoothDeviceChromeOS::OnPairError(
     const std::string& error_name,
     const std::string& error_message) {
   if (--num_connecting_calls_ == 0)
-    adapter_->NotifyDeviceChanged(this);
+    adapter()->NotifyDeviceChanged(this);
 
   DCHECK(num_connecting_calls_ >= 0);
   LOG(WARNING) << object_path_.value() << ": Failed to pair device: "

@@ -18,9 +18,12 @@
 
 namespace device {
 
+class BluetoothAdapterMac;
+
 class BluetoothClassicDeviceMac : public BluetoothDeviceMac {
  public:
-  explicit BluetoothClassicDeviceMac(IOBluetoothDevice* device);
+  explicit BluetoothClassicDeviceMac(BluetoothAdapterMac* adapter,
+                                     IOBluetoothDevice* device);
   ~BluetoothClassicDeviceMac() override;
 
   // BluetoothDevice override

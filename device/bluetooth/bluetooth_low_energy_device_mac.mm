@@ -30,9 +30,11 @@ device::BluetoothUUID BluetoothUUIDWithCBUUID(CBUUID* uuid) {
 }  // namespace
 
 BluetoothLowEnergyDeviceMac::BluetoothLowEnergyDeviceMac(
+    BluetoothAdapterMac* adapter,
     CBPeripheral* peripheral,
     NSDictionary* advertisement_data,
-    int rssi) {
+    int rssi)
+    : BluetoothDeviceMac(adapter) {
   DCHECK(BluetoothAdapterMac::IsLowEnergyAvailable());
   identifier_ = GetPeripheralIdentifier(peripheral);
   hash_address_ = GetPeripheralHashAddress(peripheral);

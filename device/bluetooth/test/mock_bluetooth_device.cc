@@ -16,7 +16,8 @@ MockBluetoothDevice::MockBluetoothDevice(MockBluetoothAdapter* adapter,
                                          const std::string& address,
                                          bool paired,
                                          bool connected)
-    : bluetooth_class_(bluetooth_class),
+    : BluetoothDevice(adapter),
+      bluetooth_class_(bluetooth_class),
       name_(name),
       address_(address) {
   ON_CALL(*this, GetBluetoothClass())

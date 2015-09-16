@@ -272,11 +272,8 @@ void BluetoothAdapterWin::DevicesPolled(
     BluetoothTaskManagerWin::DeviceState* device_state = (*iter);
     if (added_devices.find(device_state->address) != added_devices.end()) {
       BluetoothDeviceWin* device_win =
-          new BluetoothDeviceWin(*device_state,
-                                 ui_task_runner_,
-                                 socket_thread_,
-                                 NULL,
-                                 net::NetLog::Source());
+          new BluetoothDeviceWin(this, *device_state, ui_task_runner_,
+                                 socket_thread_, NULL, net::NetLog::Source());
       devices_[device_state->address] = device_win;
       FOR_EACH_OBSERVER(BluetoothAdapter::Observer,
                         observers_,

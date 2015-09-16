@@ -12,6 +12,7 @@
 #include "base/memory/scoped_vector.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/stringprintf.h"
+#include "device/bluetooth/bluetooth_adapter_win.h"
 #include "device/bluetooth/bluetooth_service_record_win.h"
 #include "device/bluetooth/bluetooth_socket_thread.h"
 #include "device/bluetooth/bluetooth_socket_win.h"
@@ -27,12 +28,13 @@ const char kApiUnavailable[] = "This API is not implemented on this platform.";
 namespace device {
 
 BluetoothDeviceWin::BluetoothDeviceWin(
+    BluetoothAdapterWin* adapter,
     const BluetoothTaskManagerWin::DeviceState& device_state,
     const scoped_refptr<base::SequencedTaskRunner>& ui_task_runner,
     const scoped_refptr<BluetoothSocketThread>& socket_thread,
     net::NetLog* net_log,
     const net::NetLog::Source& net_log_source)
-    : BluetoothDevice(),
+    : BluetoothDevice(adapter),
       ui_task_runner_(ui_task_runner),
       socket_thread_(socket_thread),
       net_log_(net_log),

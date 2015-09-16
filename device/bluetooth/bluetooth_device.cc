@@ -16,8 +16,8 @@
 
 namespace device {
 
-BluetoothDevice::BluetoothDevice()
-    : services_data_(new base::DictionaryValue()) {}
+BluetoothDevice::BluetoothDevice(BluetoothAdapter* adapter)
+    : adapter_(adapter), services_data_(new base::DictionaryValue()) {}
 
 BluetoothDevice::~BluetoothDevice() {
   STLDeleteValues(&gatt_services_);

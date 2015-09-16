@@ -63,21 +63,17 @@ class BluetoothDeviceWinTest : public testing::Test {
     base::HexStringToBytes(kTestVideoSdpBytes, &video_state->sdp_bytes);
     device_state_->service_record_states.push_back(video_state);
 
-    device_.reset(new BluetoothDeviceWin(*device_state_,
-                                         ui_task_runner,
-                                         socket_thread,
-                                         NULL,
+    device_.reset(new BluetoothDeviceWin(NULL, *device_state_, ui_task_runner,
+                                         socket_thread, NULL,
                                          net::NetLog::Source()));
 
     // Add empty device.
     empty_device_state_.reset(new BluetoothTaskManagerWin::DeviceState());
     empty_device_state_->name = kDeviceName;
     empty_device_state_->address = kDeviceAddress;
-    empty_device_.reset(new BluetoothDeviceWin(*empty_device_state_,
-                                               ui_task_runner,
-                                               socket_thread,
-                                               NULL,
-                                               net::NetLog::Source()));
+    empty_device_.reset(new BluetoothDeviceWin(NULL, *empty_device_state_,
+                                               ui_task_runner, socket_thread,
+                                               NULL, net::NetLog::Source()));
   }
 
  protected:

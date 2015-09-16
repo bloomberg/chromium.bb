@@ -451,10 +451,10 @@ LayoutTestBluetoothAdapterProvider::GetConnectableDevice(
   BluetoothDevice* device_ptr = device.get();
 
   ON_CALL(*device, CreateGattConnection(_, _))
-      .WillByDefault(
-          RunCallbackWithResult<0 /* success_callback */>([device_ptr]() {
-            return make_scoped_ptr(
-                new NiceMockBluetoothGattConnection(device_ptr->GetAddress()));
+      .WillByDefault(RunCallbackWithResult<0 /* success_callback */>(
+          [adapter, device_ptr]() {
+            return make_scoped_ptr(new NiceMockBluetoothGattConnection(
+                adapter, device_ptr->GetAddress()));
           }));
 
   return device.Pass();

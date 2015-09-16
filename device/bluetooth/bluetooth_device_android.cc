@@ -7,6 +7,7 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
+#include "device/bluetooth/bluetooth_adapter_android.h"
 #include "jni/ChromeBluetoothDevice_jni.h"
 
 using base::android::AttachCurrentThread;
@@ -15,8 +16,9 @@ using base::android::AppendJavaStringArrayToStringVector;
 namespace device {
 
 BluetoothDeviceAndroid* BluetoothDeviceAndroid::Create(
+    BluetoothAdapterAndroid* adapter,
     jobject bluetooth_device_wrapper) {  // Java Type: bluetoothDeviceWrapper
-  BluetoothDeviceAndroid* device = new BluetoothDeviceAndroid();
+  BluetoothDeviceAndroid* device = new BluetoothDeviceAndroid(adapter);
 
   device->j_device_.Reset(Java_ChromeBluetoothDevice_create(
       AttachCurrentThread(), bluetooth_device_wrapper));
@@ -189,8 +191,8 @@ void BluetoothDeviceAndroid::CreateGattConnection(
   NOTIMPLEMENTED();
 }
 
-BluetoothDeviceAndroid::BluetoothDeviceAndroid() {
-}
+BluetoothDeviceAndroid::BluetoothDeviceAndroid(BluetoothAdapterAndroid* adapter)
+    : BluetoothDevice(adapter) {}
 
 std::string BluetoothDeviceAndroid::GetDeviceName() const {
   return ConvertJavaStringToUTF8(Java_ChromeBluetoothDevice_getDeviceName(

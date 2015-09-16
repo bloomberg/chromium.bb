@@ -11,6 +11,8 @@
 
 namespace device {
 
+class BluetoothAdapterMac;
+
 class BluetoothDeviceMac : public BluetoothDevice {
  public:
   ~BluetoothDeviceMac() override;
@@ -20,7 +22,7 @@ class BluetoothDeviceMac : public BluetoothDevice {
   virtual NSDate* GetLastUpdateTime() const = 0;
 
  protected:
-  BluetoothDeviceMac();
+  BluetoothDeviceMac(BluetoothAdapterMac* adapter);
 
   DISALLOW_COPY_AND_ASSIGN(BluetoothDeviceMac);
 };

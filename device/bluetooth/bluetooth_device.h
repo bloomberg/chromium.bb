@@ -22,6 +22,7 @@ class BinaryValue;
 
 namespace device {
 
+class BluetoothAdapter;
 class BluetoothGattConnection;
 class BluetoothGattService;
 class BluetoothSocket;
@@ -429,7 +430,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDevice {
   static std::string CanonicalizeAddress(const std::string& address);
 
  protected:
-  BluetoothDevice();
+  BluetoothDevice(BluetoothAdapter* adapter);
 
   // Returns the internal name of the Bluetooth device, used by GetName().
   virtual std::string GetDeviceName() const = 0;
@@ -440,6 +441,10 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDevice {
   // Set the data of a given service designated by its UUID.
   void SetServiceData(BluetoothUUID serviceUUID, const char* buffer,
                       size_t size);
+
+  // Raw pointer to adapter owning this device object. Subclasses use platform
+  // specific pointers via adapter_.
+  BluetoothAdapter* adapter_;
 
   // Mapping from the platform-specific GATT service identifiers to
   // BluetoothGattService objects.

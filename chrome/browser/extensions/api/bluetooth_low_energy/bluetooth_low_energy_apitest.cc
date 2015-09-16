@@ -242,10 +242,12 @@ ACTION_TEMPLATE(InvokeCallbackWithScopedPtrArg,
 }
 
 BluetoothGattConnection* CreateGattConnection(
+    scoped_refptr<device::BluetoothAdapter> adapter,
     const std::string& device_address,
     bool expect_disconnect) {
   testing::NiceMock<MockBluetoothGattConnection>* conn =
-      new testing::NiceMock<MockBluetoothGattConnection>(device_address);
+      new testing::NiceMock<MockBluetoothGattConnection>(adapter,
+                                                         device_address);
   EXPECT_CALL(*conn, Disconnect()).Times(expect_disconnect ? 1 : 0);
   return conn;
 }
@@ -1150,17 +1152,17 @@ IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, GattConnection) {
       .WillOnce(InvokeCallbackArgument<1>(BluetoothDevice::ERROR_AUTH_CANCELED))
       .WillOnce(InvokeCallbackArgument<1>(BluetoothDevice::ERROR_AUTH_TIMEOUT))
       .WillOnce(
-           InvokeCallbackArgument<1>(BluetoothDevice::ERROR_UNSUPPORTED_DEVICE))
+          InvokeCallbackArgument<1>(BluetoothDevice::ERROR_UNSUPPORTED_DEVICE))
       .WillOnce(InvokeCallbackWithScopedPtrArg<0, BluetoothGattConnection>(
-          CreateGattConnection(kTestLeDeviceAddress0,
+          CreateGattConnection(mock_adapter_, kTestLeDeviceAddress0,
                                true /* expect_disconnect */)))
       .WillOnce(InvokeCallbackWithScopedPtrArg<0, BluetoothGattConnection>(
-          CreateGattConnection(kTestLeDeviceAddress0,
+          CreateGattConnection(mock_adapter_, kTestLeDeviceAddress0,
                                false /* expect_disconnect */)));
   EXPECT_CALL(*device1_, CreateGattConnection(_, _))
       .Times(1)
       .WillOnce(InvokeCallbackWithScopedPtrArg<0, BluetoothGattConnection>(
-          CreateGattConnection(kTestLeDeviceAddress1,
+          CreateGattConnection(mock_adapter_, kTestLeDeviceAddress1,
                                true /* expect_disconnect */)));
 
   ASSERT_TRUE(LoadExtension(
@@ -1177,7 +1179,7 @@ IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, ReconnectAfterDisconnected) {
 
   MockBluetoothGattConnection* first_conn =
       static_cast<MockBluetoothGattConnection*>(CreateGattConnection(
-          kTestLeDeviceAddress0, false /* expect_disconnect */));
+          mock_adapter_, kTestLeDeviceAddress0, false /* expect_disconnect */));
   EXPECT_CALL(*first_conn, IsConnected())
       .Times(2)
       .WillOnce(Return(true))
@@ -1188,7 +1190,7 @@ IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, ReconnectAfterDisconnected) {
       .WillOnce(InvokeCallbackWithScopedPtrArg<0, BluetoothGattConnection>(
           first_conn))
       .WillOnce(InvokeCallbackWithScopedPtrArg<0, BluetoothGattConnection>(
-          CreateGattConnection(kTestLeDeviceAddress0,
+          CreateGattConnection(mock_adapter_, kTestLeDeviceAddress0,
                                false /* expect_disconnect */)));
 
   ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII(
@@ -1206,8 +1208,8 @@ IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, ConnectInProgress) {
   BluetoothDevice::GattConnectionCallback connect_callback;
 
   testing::NiceMock<MockBluetoothGattConnection>* conn =
-      new testing::NiceMock<MockBluetoothGattConnection>(
-          kTestLeDeviceAddress0);
+      new testing::NiceMock<MockBluetoothGattConnection>(mock_adapter_,
+                                                         kTestLeDeviceAddress0);
   scoped_ptr<BluetoothGattConnection> conn_ptr(conn);
   EXPECT_CALL(*conn, Disconnect()).Times(1);
 

@@ -141,7 +141,7 @@ void BluetoothAdapterAndroid::CreateOrUpdateDeviceOnScan(
     jobject advertised_uuids) {        // Java Type: List<ParcelUuid>
   BluetoothDevice*& device = devices_[ConvertJavaStringToUTF8(env, address)];
   if (!device) {
-    device = BluetoothDeviceAndroid::Create(bluetooth_device_wrapper);
+    device = BluetoothDeviceAndroid::Create(this, bluetooth_device_wrapper);
     static_cast<BluetoothDeviceAndroid*>(device)
         ->UpdateAdvertisedUUIDs(advertised_uuids);
     FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,

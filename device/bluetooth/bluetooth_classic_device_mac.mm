@@ -58,9 +58,10 @@ BluetoothUUID ExtractUuid(IOBluetoothSDPDataElement* service_class_data) {
 
 }  // namespace
 
-BluetoothClassicDeviceMac::BluetoothClassicDeviceMac(IOBluetoothDevice* device)
-    : device_([device retain]) {
-}
+BluetoothClassicDeviceMac::BluetoothClassicDeviceMac(
+    BluetoothAdapterMac* adapter,
+    IOBluetoothDevice* device)
+    : BluetoothDeviceMac(adapter), device_([device retain]) {}
 
 BluetoothClassicDeviceMac::~BluetoothClassicDeviceMac() {
 }

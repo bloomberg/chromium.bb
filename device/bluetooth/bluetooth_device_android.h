@@ -11,8 +11,11 @@
 
 namespace device {
 
+class BluetoothAdapterAndroid;
+
 // BluetoothDeviceAndroid along with the Java class
-// org.chromium.device.bluetooth.BluetoothDevice implement BluetoothDevice.
+// org.chromium.device.bluetooth.ChromeBluetoothDevice implement
+// BluetoothDevice.
 class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceAndroid final
     : public BluetoothDevice {
  public:
@@ -25,6 +28,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceAndroid final
   // TODO(scheib): Return a scoped_ptr<>, but then adapter will need to handle
   // this correctly. http://crbug.com/506416
   static BluetoothDeviceAndroid* Create(
+      BluetoothAdapterAndroid* adapter,
       jobject bluetooth_device_wrapper);  // Java Type: bluetoothDeviceWrapper
 
   ~BluetoothDeviceAndroid() override;
@@ -79,7 +83,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceAndroid final
       const ConnectErrorCallback& error_callback) override;
 
  protected:
-  BluetoothDeviceAndroid();
+  BluetoothDeviceAndroid(BluetoothAdapterAndroid* adapter);
 
   // BluetoothDevice:
   std::string GetDeviceName() const override;

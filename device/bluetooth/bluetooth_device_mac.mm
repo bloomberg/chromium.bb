@@ -4,10 +4,12 @@
 
 #include "device/bluetooth/bluetooth_device_mac.h"
 
+#include "device/bluetooth/bluetooth_adapter_mac.h"
+
 namespace device {
 
-BluetoothDeviceMac::BluetoothDeviceMac() {
-}
+BluetoothDeviceMac::BluetoothDeviceMac(BluetoothAdapterMac* adapter)
+    : BluetoothDevice(adapter) {}
 
 BluetoothDeviceMac::~BluetoothDeviceMac() {
 }
