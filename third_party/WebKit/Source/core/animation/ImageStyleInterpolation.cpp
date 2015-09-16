@@ -26,8 +26,7 @@ void ImageStyleInterpolation::apply(StyleResolverState& state) const
         StyleBuilder::applyProperty(m_id, state, m_finalImage.get());
         return;
     }
-    RefPtrWillBeRawPtr<CSSCrossfadeValue> crossfadeValue = CSSCrossfadeValue::create(m_initialImage, m_finalImage);
-    crossfadeValue->setPercentage(CSSPrimitiveValue::create(cachedValue, CSSPrimitiveValue::UnitType::Number));
+    RefPtrWillBeRawPtr<CSSCrossfadeValue> crossfadeValue = CSSCrossfadeValue::create(m_initialImage, m_finalImage, CSSPrimitiveValue::create(cachedValue, CSSPrimitiveValue::UnitType::Number));
 
     StyleBuilder::applyProperty(m_id, state, crossfadeValue.get());
 }

@@ -55,9 +55,7 @@ PassRefPtr<AnimatableValue> AnimatableImage::interpolateTo(const AnimatableValue
     CSSValue* fromValue = toCSSValue();
     CSSValue* toValue = toAnimatableImage(value)->toCSSValue();
 
-    RefPtrWillBeRawPtr<CSSCrossfadeValue> crossfadeValue = CSSCrossfadeValue::create(fromValue, toValue);
-    crossfadeValue->setPercentage(CSSPrimitiveValue::create(fraction, CSSPrimitiveValue::UnitType::Number));
-    return create(crossfadeValue);
+    return create(CSSCrossfadeValue::create(fromValue, toValue, CSSPrimitiveValue::create(fraction, CSSPrimitiveValue::UnitType::Number)));
 }
 
 bool AnimatableImage::equalTo(const AnimatableValue* value) const

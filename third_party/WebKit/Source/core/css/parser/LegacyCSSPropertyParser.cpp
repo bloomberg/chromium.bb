@@ -6538,10 +6538,7 @@ bool CSSPropertyParser::parseCrossfade(CSSParserValueList* valueList, RefPtrWill
     else
         return false;
 
-    RefPtrWillBeRawPtr<CSSCrossfadeValue> result = CSSCrossfadeValue::create(fromImageValue, toImageValue);
-    result->setPercentage(percentage);
-
-    crossfade = result;
+    crossfade = CSSCrossfadeValue::create(fromImageValue, toImageValue, percentage);
 
     return true;
 }
