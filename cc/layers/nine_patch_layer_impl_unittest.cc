@@ -46,9 +46,10 @@ void NinePatchLayerLayoutTest(const gfx::Size& bitmap_size,
   FakeImplProxy proxy;
   TestSharedBitmapManager shared_bitmap_manager;
   TestTaskGraphRunner task_graph_runner;
+  scoped_ptr<OutputSurface> output_surface = FakeOutputSurface::Create3d();
   FakeUIResourceLayerTreeHostImpl host_impl(&proxy, &shared_bitmap_manager,
                                             &task_graph_runner);
-  host_impl.InitializeRenderer(FakeOutputSurface::Create3d());
+  host_impl.InitializeRenderer(output_surface.get());
 
   scoped_ptr<NinePatchLayerImpl> layer =
       NinePatchLayerImpl::Create(host_impl.active_tree(), 1);

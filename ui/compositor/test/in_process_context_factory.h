@@ -21,6 +21,7 @@ class SurfaceManager;
 }
 
 namespace ui {
+class InProcessContextProvider;
 
 class InProcessContextFactory : public ContextFactory {
  public:
@@ -56,7 +57,8 @@ class InProcessContextFactory : public ContextFactory {
                      const gfx::Size& size) override;
 
  private:
-  scoped_refptr<cc::ContextProvider> shared_main_thread_contexts_;
+  scoped_refptr<InProcessContextProvider> shared_main_thread_contexts_;
+  scoped_refptr<InProcessContextProvider> shared_worker_context_provider_;
   cc::TestSharedBitmapManager shared_bitmap_manager_;
   cc::TestGpuMemoryBufferManager gpu_memory_buffer_manager_;
   cc::TestImageFactory image_factory_;

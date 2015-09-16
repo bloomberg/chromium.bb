@@ -38,15 +38,6 @@ class InProcessContextProvider : public cc::ContextProvider {
       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
       gpu::ImageFactory* image_factory);
 
- private:
-  InProcessContextProvider(
-      const gpu::gles2::ContextCreationAttribHelper& attribs,
-      gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
-      gpu::ImageFactory* image_factory,
-      gfx::AcceleratedWidget window,
-      const std::string& debug_name);
-  ~InProcessContextProvider() override;
-
   // cc::ContextProvider:
   bool BindToCurrentThread() override;
   void DetachFromThread() override;
@@ -65,6 +56,15 @@ class InProcessContextProvider : public cc::ContextProvider {
   void SetMemoryPolicyChangedCallback(
       const MemoryPolicyChangedCallback& memory_policy_changed_callback)
       override;
+
+ private:
+  InProcessContextProvider(
+      const gpu::gles2::ContextCreationAttribHelper& attribs,
+      gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
+      gpu::ImageFactory* image_factory,
+      gfx::AcceleratedWidget window,
+      const std::string& debug_name);
+  ~InProcessContextProvider() override;
 
   void OnLostContext();
 

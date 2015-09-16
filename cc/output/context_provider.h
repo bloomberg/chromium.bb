@@ -32,11 +32,11 @@ class ContextProvider : public base::RefCountedThreadSafe<ContextProvider> {
     explicit ScopedContextLock(ContextProvider* context_provider)
         : context_provider_(context_provider),
           context_lock_(*context_provider_->GetLock()) {
-      // Allow current thread to bind to |context_provider|.
+      // Allow current thread to use |context_provider_|.
       context_provider_->DetachFromThread();
     }
     ~ScopedContextLock() {
-      // Allow a different thread to bind to |context_provider|.
+      // Allow usage by thread for which |context_provider_| is bound to.
       context_provider_->DetachFromThread();
     }
 
@@ -51,7 +51,9 @@ class ContextProvider : public base::RefCountedThreadSafe<ContextProvider> {
   // Bind the 3d context to the current thread. This should be called before
   // accessing the contexts. Calling it more than once should have no effect.
   // Once this function has been called, the class should only be accessed
-  // from the same thread.
+  // from the same thread unless the function has some explicitly specified
+  // rules for access on a different thread. See SetupLockOnMainThread(), which
+  // can be used to provide access from multiple threads.
   virtual bool BindToCurrentThread() = 0;
   virtual void DetachFromThread() {}
 
@@ -70,11 +72,13 @@ class ContextProvider : public base::RefCountedThreadSafe<ContextProvider> {
   // See skia GrContext::resetContext for details.
   virtual void InvalidateGrContext(uint32_t state) = 0;
 
-  // Sets up a lock so this context can be used from multiple threads.
+  // Sets up a lock so this context can be used from multiple threads. After
+  // calling this, all functions without explicit thread usage constraints can
+  // be used on any thread while the lock returned by GetLock() is acquired.
   virtual void SetupLock() = 0;
 
   // Returns the lock that should be held if using this context from multiple
-  // threads.
+  // threads. This can be called on any thread.
   virtual base::Lock* GetLock() = 0;
 
   // Returns the capabilities of the currently bound 3d context.

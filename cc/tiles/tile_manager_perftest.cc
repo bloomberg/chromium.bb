@@ -89,6 +89,7 @@ class TileManagerPerfTest : public testing::Test {
         max_tiles_(10000),
         id_(7),
         proxy_(base::ThreadTaskRunnerHandle::Get()),
+        output_surface_(FakeOutputSurface::Create3d()),
         host_impl_(LayerTreeSettings(),
                    &proxy_,
                    &shared_bitmap_manager_,
@@ -119,7 +120,7 @@ class TileManagerPerfTest : public testing::Test {
   }
 
   virtual void InitializeRenderer() {
-    host_impl_.InitializeRenderer(FakeOutputSurface::Create3d().Pass());
+    host_impl_.InitializeRenderer(output_surface_.get());
     tile_manager()->SetTileTaskRunnerForTesting(
         g_fake_tile_task_runner.Pointer());
   }
@@ -412,6 +413,7 @@ class TileManagerPerfTest : public testing::Test {
   int max_tiles_;
   int id_;
   FakeImplProxy proxy_;
+  scoped_ptr<OutputSurface> output_surface_;
   FakeLayerTreeHostImpl host_impl_;
   FakePictureLayerImpl* pending_root_layer_;
   FakePictureLayerImpl* active_root_layer_;

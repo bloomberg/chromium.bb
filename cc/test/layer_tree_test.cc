@@ -404,8 +404,8 @@ class LayerTreeHostImplForTesting : public LayerTreeHostImpl {
     test_hooks_->DidActivateTreeOnThread(this);
   }
 
-  bool InitializeRenderer(scoped_ptr<OutputSurface> output_surface) override {
-    bool success = LayerTreeHostImpl::InitializeRenderer(output_surface.Pass());
+  bool InitializeRenderer(OutputSurface* output_surface) override {
+    bool success = LayerTreeHostImpl::InitializeRenderer(output_surface);
     test_hooks_->InitializedRendererOnThread(this, success);
     return success;
   }

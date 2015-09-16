@@ -155,7 +155,7 @@ class CC_EXPORT ThreadProxy : public Proxy,
   void FinishAllRendering() override;
   bool IsStarted() const override;
   bool CommitToActiveTree() const override;
-  void SetOutputSurface(scoped_ptr<OutputSurface>) override;
+  void SetOutputSurface(OutputSurface* output_surface) override;
   void SetLayerTreeHostClientReady() override;
   void SetVisible(bool visible) override;
   void SetThrottleFrameProduction(bool throttle) override;
@@ -272,8 +272,7 @@ class CC_EXPORT ThreadProxy : public Proxy,
       CompletionEvent* completion,
       bool* has_initialized_output_surface);
   void DeleteContentsTexturesOnImplThread(CompletionEvent* completion);
-  void InitializeOutputSurfaceOnImplThread(
-      scoped_ptr<OutputSurface> output_surface);
+  void InitializeOutputSurfaceOnImplThread(OutputSurface* output_surface);
   void FinishGLOnImplThread(CompletionEvent* completion);
   void LayerTreeHostClosedOnImplThread(CompletionEvent* completion);
   DrawResult DrawSwapInternal(bool forced_draw);

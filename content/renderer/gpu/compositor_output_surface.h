@@ -51,6 +51,7 @@ class CompositorOutputSurface
 
   // cc::OutputSurface implementation.
   bool BindToClient(cc::OutputSurfaceClient* client) override;
+  void DetachFromClient() override;
   void SwapBuffers(cc::CompositorFrame* frame) override;
 
   // TODO(epenner): This seems out of place here and would be a better fit

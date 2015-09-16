@@ -41,6 +41,7 @@ class PictureLayerImplPerfTest : public testing::Test {
  public:
   PictureLayerImplPerfTest()
       : proxy_(base::ThreadTaskRunnerHandle::Get()),
+        output_surface_(FakeOutputSurface::Create3d()),
         host_impl_(LayerTreeSettings(),
                    &proxy_,
                    &shared_bitmap_manager_,
@@ -50,7 +51,7 @@ class PictureLayerImplPerfTest : public testing::Test {
                kTimeCheckInterval) {}
 
   void SetUp() override {
-    host_impl_.InitializeRenderer(FakeOutputSurface::Create3d());
+    host_impl_.InitializeRenderer(output_surface_.get());
   }
 
   void SetupActiveTree(const gfx::Size& layer_bounds,
@@ -164,6 +165,7 @@ class PictureLayerImplPerfTest : public testing::Test {
   TestSharedBitmapManager shared_bitmap_manager_;
   TestTaskGraphRunner task_graph_runner_;
   FakeImplProxy proxy_;
+  scoped_ptr<OutputSurface> output_surface_;
   FakeLayerTreeHostImpl host_impl_;
   FakePictureLayerImpl* active_layer_;
   LapTimer timer_;
