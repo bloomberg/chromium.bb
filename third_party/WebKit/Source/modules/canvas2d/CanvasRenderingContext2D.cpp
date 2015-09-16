@@ -439,7 +439,8 @@ void CanvasRenderingContext2D::setFillStyle(const StringOrCanvasGradientOrCanvas
 
         if (canvas()->originClean() && !canvasPattern->originClean())
             canvas()->setOriginTainted();
-
+        if (canvasPattern->pattern()->isTextureBacked())
+            canvas()->disableDeferral();
         canvasStyle = CanvasStyle::createFromPattern(canvasPattern);
     }
 
@@ -1359,8 +1360,6 @@ bool shouldDisableDeferral(CanvasImageSource* imageSource)
         return true;
     if (imageSource->isCanvasElement()) {
         HTMLCanvasElement* canvas = static_cast<HTMLCanvasElement*>(imageSource);
-        if (canvas->renderingContext() && canvas->renderingContext()->isAccelerated())
-            return true;
         if (canvas->isAnimated2D())
             return true;
     }
@@ -1402,7 +1401,7 @@ void CanvasRenderingContext2D::drawImage(CanvasImageSource* imageSource,
     if (srcRect.isEmpty())
         return;
 
-    if (shouldDisableDeferral(imageSource))
+    if (shouldDisableDeferral(imageSource) || image->imageForCurrentFrame()->isTextureBacked())
         canvas()->disableDeferral();
 
     validateStateStack();

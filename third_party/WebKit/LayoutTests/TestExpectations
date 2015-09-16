@@ -777,6 +777,10 @@ crbug.com/418021 inspector/profiler/heap-snapshot-inspect-dom-wrapper.html [ Pas
 crbug.com/504706 [ Linux ] inspector/profiler/heap-snapshot-containment-expansion-preserved-when-sorting.html [ Pass Slow ]
 crbug.com/504706 [ Linux ] inspector/profiler/heap-snapshot-containment-sorting.html [ Pass Slow ]
 
+crbug.com/531486 fast/canvas/canvas-pattern-video.html [ NeedsRebaseline ]
+crbug.com/531486 virtual/gpu/fast/canvas/canvas-pattern-video.html [ NeedsRebaseline ]
+crbug.com/531486 virtual/display_list_2d_canvas/fast/canvas/canvas-pattern-video.html [ NeedsRebaseline ]
+
 # Disabled until the test plugin is fixed.
 crbug.com/363099 [ Win ] plugins/nested-plugin-objects.html [ Failure ]
 crbug.com/363099 [ Win ] plugins/open-and-close-window-with-plugin.html [ Failure ]

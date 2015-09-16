@@ -17,6 +17,8 @@ class PLATFORM_EXPORT ImagePattern final : public Pattern {
 public:
     static PassRefPtr<ImagePattern> create(PassRefPtr<Image>, RepeatMode);
 
+    bool isTextureBacked() const override;
+
 protected:
     PassRefPtr<SkShader> createShader() override;
 

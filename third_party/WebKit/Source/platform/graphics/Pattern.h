@@ -66,6 +66,8 @@ public:
     bool isRepeatY() { return m_repeatMode & RepeatModeY; }
     bool isRepeatXY() { return m_repeatMode == RepeatModeXY; }
 
+    virtual bool isTextureBacked() const { return false; }
+
 protected:
     virtual PassRefPtr<SkShader> createShader() = 0;
 

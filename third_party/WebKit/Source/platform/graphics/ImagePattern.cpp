@@ -73,4 +73,9 @@ PassRefPtr<SkShader> ImagePattern::createShader()
     return adoptRef(expandedImage->newShader(tileModeX, tileModeY, &localMatrix));
 }
 
+bool ImagePattern::isTextureBacked() const
+{
+    return m_tileImage && m_tileImage->isTextureBacked();
+}
+
 } // namespace
