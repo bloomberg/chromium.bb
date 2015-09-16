@@ -28445,18 +28445,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="NQE.ExternalEstimateProviderStatus"
-    enum="NQEExternalEstimateProviderStatus">
-  <owner>bengr@chromium.org</owner>
-  <owner>tbansal@chromium.org</owner>
-  <summary>
-    Records the interaction (availability and query count) of Network Quality
-    Estimator with external estimates provider. Logged on network change events,
-    everytime external estimate provider is queried for an updated estimate, and
-    when it proactively notifies that an updated estimate is available.
-  </summary>
-</histogram>
-
 <histogram name="NQE.FastestRTT" units="milliseconds">
   <owner>bengr@chromium.org</owner>
   <owner>tbansal@chromium.org</owner>
@@ -66735,14 +66723,6 @@ To add a new entry, add it with any value and run test to compute valid value.
   </int>
   <int value="1" label="Disabled">NPAPI is disabled</int>
   <int value="2" label="Enabled">NPAPI is enabled</int>
-</enum>
-
-<enum name="NQEExternalEstimateProviderStatus" type="int">
-  <int value="0" label="External estimate provider was not available"/>
-  <int value="1" label="External estimate provider was available"/>
-  <int value="2" label="External estimate provider was queried"/>
-  <int value="3" label="Query to external estimate provider was successful"/>
-  <int value="4" label="Callback received from external estimate provider"/>
 </enum>
 
 <enum name="NtpFollowAction" type="int">

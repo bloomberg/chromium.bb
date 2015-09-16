@@ -33,6 +33,13 @@ ExternalEstimateProviderAndroid::~ExternalEstimateProviderAndroid() {
   net::NetworkChangeNotifier::RemoveConnectionTypeObserver(this);
 }
 
+void ExternalEstimateProviderAndroid::RequestUpdate() const {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  JNIEnv* env = base::android::AttachCurrentThread();
+  Java_ExternalEstimateProviderAndroid_requestUpdate(
+      env, j_external_estimate_provider_.obj());
+}
+
 bool ExternalEstimateProviderAndroid::GetRTT(base::TimeDelta* rtt) const {
   DCHECK(thread_checker_.CalledOnValidThread());
   JNIEnv* env = base::android::AttachCurrentThread();
@@ -89,23 +96,6 @@ bool ExternalEstimateProviderAndroid::GetTimeSinceLastUpdate(
   return true;
 }
 
-void ExternalEstimateProviderAndroid::SetUpdatedEstimateDelegate(
-    net::ExternalEstimateProvider::UpdatedEstimateDelegate* delegate) {
-  delegate_ = delegate;
-}
-
-void ExternalEstimateProviderAndroid::Update() const {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  JNIEnv* env = base::android::AttachCurrentThread();
-  Java_ExternalEstimateProviderAndroid_requestUpdate(
-      env, j_external_estimate_provider_.obj());
-}
-
-void ExternalEstimateProviderAndroid::OnConnectionTypeChanged(
-    net::NetworkChangeNotifier::ConnectionType type) {
-  Update();
-}
-
 void ExternalEstimateProviderAndroid::
     NotifyExternalEstimateProviderAndroidUpdate(JNIEnv* env, jobject obj) {
   if (!task_runner_)
@@ -123,8 +113,18 @@ void ExternalEstimateProviderAndroid::NotifyUpdatedEstimateAvailable() const {
     delegate_->OnUpdatedEstimateAvailable();
 }
 
+void ExternalEstimateProviderAndroid::OnConnectionTypeChanged(
+    net::NetworkChangeNotifier::ConnectionType type) {
+  RequestUpdate();
+}
+
 bool RegisterExternalEstimateProviderAndroid(JNIEnv* env) {
   return RegisterNativesImpl(env);
+}
+
+void ExternalEstimateProviderAndroid::SetUpdatedEstimateDelegate(
+    net::ExternalEstimateProvider::UpdatedEstimateDelegate* delegate) {
+  delegate_ = delegate;
 }
 
 }  // namespace android

@@ -34,22 +34,29 @@ class ExternalEstimateProviderAndroid
 
   ~ExternalEstimateProviderAndroid() override;
 
-  // net::ExternalEstimateProvider implementation:
+  // net::ExternalEstimateProvider implementation.
   bool GetRTT(base::TimeDelta* rtt) const override;
+
+  // net::ExternalEstimateProvider implementation.
   bool GetDownstreamThroughputKbps(
       int32_t* downstream_throughput_kbps) const override;
+
+  // net::ExternalEstimateProvider implementation.
   bool GetUpstreamThroughputKbps(
       int32_t* upstream_throughput_kbps) const override;
+
+  // net::ExternalEstimateProvider implementation.
   bool GetTimeSinceLastUpdate(
       base::TimeDelta* time_since_last_update) const override;
-  void SetUpdatedEstimateDelegate(
-      net::ExternalEstimateProvider::UpdatedEstimateDelegate* delegate)
-      override;
-  void Update() const override;
 
   // NetworkChangeNotifier::ConnectionTypeObserver implementation.
   void OnConnectionTypeChanged(
       net::NetworkChangeNotifier::ConnectionType type) override;
+
+  // net::ExternalEstimateProvider implementation.
+  void SetUpdatedEstimateDelegate(
+      net::ExternalEstimateProvider::UpdatedEstimateDelegate* delegate)
+      override;
 
   // Called by Java when the external estimate provider has an updated value.
   // This may be called on a thread different from |task_runner_|.
@@ -61,6 +68,10 @@ class ExternalEstimateProviderAndroid
   void NotifyUpdatedEstimateAvailable() const;
 
  private:
+  // Places a requests to the provider to update the network quality. Returns
+  // true if the request was placed successfully.
+  void RequestUpdate() const;
+
   // Value returned if valid value is unavailable.
   int32_t no_value_ = -1;
 

@@ -149,9 +149,6 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
   void OnConnectionTypeChanged(
       NetworkChangeNotifier::ConnectionType type) override;
 
-  // ExternalEstimateProvider::UpdatedEstimateObserver implementation.
-  void OnUpdatedEstimateAvailable() override;
-
  private:
   FRIEND_TEST_ALL_PREFIXES(NetworkQualityEstimatorTest, StoreObservations);
   FRIEND_TEST_ALL_PREFIXES(NetworkQualityEstimatorTest, TestKbpsRTTUpdates);
@@ -168,10 +165,6 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
   FRIEND_TEST_ALL_PREFIXES(NetworkQualityEstimatorTest,
                            TestLRUCacheMaximumSize);
   FRIEND_TEST_ALL_PREFIXES(NetworkQualityEstimatorTest, TestGetMedianRTTSince);
-  FRIEND_TEST_ALL_PREFIXES(NetworkQualityEstimatorTest,
-                           TestExternalEstimateProvider);
-  FRIEND_TEST_ALL_PREFIXES(NetworkQualityEstimatorTest,
-                           TestExternalEstimateProviderMergeEstimates);
 
   // NetworkQuality is used to cache the quality of a network connection.
   class NET_EXPORT_PRIVATE NetworkQuality {
@@ -359,18 +352,12 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
   // Maximum number of observations that can be held in the ObservationBuffer.
   static const size_t kMaximumObservationsBufferSize = 300;
 
-  // Time duration (in milliseconds) after which the estimate provided by
-  // external estimate provider is considered stale.
-  static const int kExternalEstimateProviderFreshnessDurationMsec =
-      5 * 60 * 1000;
-
   // Returns the RTT value to be used when the valid RTT is unavailable. Readers
   // should discard RTT if it is set to the value returned by |InvalidRTT()|.
   static const base::TimeDelta InvalidRTT();
 
-  // Queries the external estimate provider for the latest network quality
-  // estimates, and adds those estimates to the current observation buffer.
-  void QueryExternalEstimateProvider();
+  // ExternalEstimateProvider::UpdatedEstimateObserver implementation:
+  void OnUpdatedEstimateAvailable() override;
 
   // Obtains operating parameters from the field trial parameters.
   void ObtainOperatingParams(
@@ -408,22 +395,6 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
   // Only the requests that go over network are considered to provide useful
   // observations.
   bool RequestProvidesUsefulObservations(const URLRequest& request) const;
-
-  // Values of external estimate provider status. This enum must remain
-  // synchronized with the enum of the same name in
-  // metrics/histograms/histograms.xml.
-  enum NQEExternalEstimateProviderStatus {
-    EXTERNAL_ESTIMATE_PROVIDER_STATUS_NOT_AVAILABLE,
-    EXTERNAL_ESTIMATE_PROVIDER_STATUS_AVAILABLE,
-    EXTERNAL_ESTIMATE_PROVIDER_STATUS_QUERIED,
-    EXTERNAL_ESTIMATE_PROVIDER_STATUS_QUERY_SUCCESSFUL,
-    EXTERNAL_ESTIMATE_PROVIDER_STATUS_CALLBACK,
-    EXTERNAL_ESTIMATE_PROVIDER_STATUS_BOUNDARY
-  };
-
-  // Records the metrics related to external estimate provider.
-  void RecordExternalEstimateProviderMetrics(
-      NQEExternalEstimateProviderStatus status) const;
 
   // Determines if the requests to local host can be used in estimating the
   // network quality. Set to true only for tests.
@@ -468,7 +439,7 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
 
   // ExternalEstimateProvider that provides network quality using operating
   // system APIs. May be NULL.
-  const scoped_ptr<ExternalEstimateProvider> external_estimate_provider_;
+  const scoped_ptr<ExternalEstimateProvider> external_estimates_provider_;
 
   base::ThreadChecker thread_checker_;
 
