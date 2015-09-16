@@ -106,11 +106,6 @@ class OZONE_BASE_EXPORT SurfaceFactoryOzone {
       gfx::BufferFormat format,
       gfx::BufferUsage usage);
 
-  // Returns true if overlays can be shown at z-index 0, replacing the main
-  // surface. Combined with surfaceless extensions, it allows for an
-  // overlay-only mode.
-  virtual bool CanShowPrimaryPlaneAsOverlay();
-
  protected:
   SurfaceFactoryOzone();
   virtual ~SurfaceFactoryOzone();

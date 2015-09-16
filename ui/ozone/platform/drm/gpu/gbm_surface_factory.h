@@ -40,7 +40,6 @@ class GbmSurfaceFactory : public SurfaceFactoryOzone {
       gfx::Size size,
       gfx::BufferFormat format,
       gfx::BufferUsage usage) override;
-  bool CanShowPrimaryPlaneAsOverlay() override;
 
  private:
   scoped_refptr<GbmDevice> GetGbmDevice(gfx::AcceleratedWidget widget);

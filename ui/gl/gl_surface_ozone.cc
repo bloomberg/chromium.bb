@@ -564,6 +564,36 @@ bool GLSurfaceOzoneSurfacelessSurfaceImpl::CreatePixmaps() {
   return true;
 }
 
+scoped_refptr<GLSurface> CreateViewGLSurfaceOzone(
+    gfx::AcceleratedWidget window) {
+  scoped_ptr<ui::SurfaceOzoneEGL> surface_ozone =
+      ui::OzonePlatform::GetInstance()
+          ->GetSurfaceFactoryOzone()
+          ->CreateEGLSurfaceForWidget(window);
+  if (!surface_ozone)
+    return nullptr;
+  scoped_refptr<GLSurface> surface =
+      new GLSurfaceOzoneEGL(surface_ozone.Pass(), window);
+  if (!surface->Initialize())
+    return nullptr;
+  return surface;
+}
+
+scoped_refptr<GLSurface> CreateViewGLSurfaceOzoneSurfacelessSurfaceImpl(
+    gfx::AcceleratedWidget window) {
+  scoped_ptr<ui::SurfaceOzoneEGL> surface_ozone =
+      ui::OzonePlatform::GetInstance()
+          ->GetSurfaceFactoryOzone()
+          ->CreateSurfacelessEGLSurfaceForWidget(window);
+  if (!surface_ozone)
+    return nullptr;
+  scoped_refptr<GLSurface> surface =
+      new GLSurfaceOzoneSurfacelessSurfaceImpl(surface_ozone.Pass(), window);
+  if (!surface->Initialize())
+    return nullptr;
+  return surface;
+}
+
 }  // namespace
 
 // static
@@ -589,10 +619,7 @@ scoped_refptr<GLSurface> GLSurface::CreateSurfacelessViewGLSurface(
     gfx::AcceleratedWidget window) {
   if (GetGLImplementation() == kGLImplementationEGLGLES2 &&
       window != kNullAcceleratedWidget &&
-      GLSurfaceEGL::IsEGLSurfacelessContextSupported() &&
-      ui::OzonePlatform::GetInstance()
-          ->GetSurfaceFactoryOzone()
-          ->CanShowPrimaryPlaneAsOverlay()) {
+      GLSurfaceEGL::IsEGLSurfacelessContextSupported()) {
     scoped_ptr<ui::SurfaceOzoneEGL> surface_ozone =
         ui::OzonePlatform::GetInstance()
             ->GetSurfaceFactoryOzone()
@@ -620,30 +647,10 @@ scoped_refptr<GLSurface> GLSurface::CreateViewGLSurface(
   DCHECK(GetGLImplementation() == kGLImplementationEGLGLES2);
   if (window != kNullAcceleratedWidget) {
     scoped_refptr<GLSurface> surface;
-    if (GLSurfaceEGL::IsEGLSurfacelessContextSupported() &&
-        ui::OzonePlatform::GetInstance()
-            ->GetSurfaceFactoryOzone()
-            ->CanShowPrimaryPlaneAsOverlay()) {
-      scoped_ptr<ui::SurfaceOzoneEGL> surface_ozone =
-          ui::OzonePlatform::GetInstance()
-              ->GetSurfaceFactoryOzone()
-              ->CreateSurfacelessEGLSurfaceForWidget(window);
-      if (!surface_ozone)
-        return NULL;
-      surface = new GLSurfaceOzoneSurfacelessSurfaceImpl(surface_ozone.Pass(),
-                                                         window);
-    } else {
-      scoped_ptr<ui::SurfaceOzoneEGL> surface_ozone =
-          ui::OzonePlatform::GetInstance()
-              ->GetSurfaceFactoryOzone()
-              ->CreateEGLSurfaceForWidget(window);
-      if (!surface_ozone)
-        return NULL;
-
-      surface = new GLSurfaceOzoneEGL(surface_ozone.Pass(), window);
-    }
-    if (!surface->Initialize())
-      return NULL;
+    if (GLSurfaceEGL::IsEGLSurfacelessContextSupported())
+      surface = CreateViewGLSurfaceOzoneSurfacelessSurfaceImpl(window);
+    if (!surface)
+      surface = CreateViewGLSurfaceOzone(window);
     return surface;
   } else {
     scoped_refptr<GLSurface> surface = new GLSurfaceStub();

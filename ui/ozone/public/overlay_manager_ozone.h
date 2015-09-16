@@ -21,11 +21,6 @@ class OverlayManagerOzone {
   // Get the hal struct to check for overlay support.
   virtual scoped_ptr<OverlayCandidatesOzone> CreateOverlayCandidates(
       gfx::AcceleratedWidget w) = 0;
-
-  // Returns true if overlays can be shown at z-index 0, replacing the main
-  // surface. Combined with surfaceless extensions, it allows for an
-  // overlay-only mode.
-  virtual bool CanShowPrimaryPlaneAsOverlay() = 0;
 };
 
 }  // namespace ui

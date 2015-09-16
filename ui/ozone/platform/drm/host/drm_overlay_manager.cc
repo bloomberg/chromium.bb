@@ -30,8 +30,4 @@ scoped_ptr<OverlayCandidatesOzone> DrmOverlayManager::CreateOverlayCandidates(
       new DrmOverlayCandidatesHost(w, platform_support_host_));
 }
 
-bool DrmOverlayManager::CanShowPrimaryPlaneAsOverlay() {
-  return true;
-}
-
 }  // namespace ui

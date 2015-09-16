@@ -215,8 +215,4 @@ scoped_ptr<OverlayCandidatesOzone> OverlayManagerCast::CreateOverlayCandidates(
   return make_scoped_ptr(new OverlayCandidatesCast());
 }
 
-bool OverlayManagerCast::CanShowPrimaryPlaneAsOverlay() {
-  return false;
-}
-
 }  // namespace ui

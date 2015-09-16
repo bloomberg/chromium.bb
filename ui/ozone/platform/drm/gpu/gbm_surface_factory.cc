@@ -116,11 +116,6 @@ scoped_refptr<ui::NativePixmap> GbmSurfaceFactory::CreateNativePixmap(
   return pixmap;
 }
 
-bool GbmSurfaceFactory::CanShowPrimaryPlaneAsOverlay() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  return true;
-}
-
 scoped_refptr<GbmDevice> GbmSurfaceFactory::GetGbmDevice(
     gfx::AcceleratedWidget widget) {
   return static_cast<GbmDevice*>(

@@ -17,7 +17,6 @@ class StubOverlayManager : public OverlayManagerOzone {
   // OverlayManagerOzone:
   scoped_ptr<OverlayCandidatesOzone> CreateOverlayCandidates(
       gfx::AcceleratedWidget w) override;
-  bool CanShowPrimaryPlaneAsOverlay() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(StubOverlayManager);

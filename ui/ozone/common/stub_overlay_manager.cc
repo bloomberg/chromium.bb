@@ -18,8 +18,4 @@ scoped_ptr<OverlayCandidatesOzone> StubOverlayManager::CreateOverlayCandidates(
   return nullptr;
 }
 
-bool StubOverlayManager::CanShowPrimaryPlaneAsOverlay() {
-  return false;
-}
-
 }  // namespace ui

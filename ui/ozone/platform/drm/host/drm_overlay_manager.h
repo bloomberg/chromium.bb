@@ -19,7 +19,6 @@ class DrmOverlayManager : public OverlayManagerOzone {
   // OverlayManagerOzone:
   scoped_ptr<OverlayCandidatesOzone> CreateOverlayCandidates(
       gfx::AcceleratedWidget w) override;
-  bool CanShowPrimaryPlaneAsOverlay() override;
 
  private:
   DrmGpuPlatformSupportHost* platform_support_host_;
