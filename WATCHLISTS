@@ -921,9 +921,10 @@
     'base_memory': ['gavinp+memory@chromium.org'],
     'base_win': ['grt+watch@chromium.org', 'wfh+watch@chromium.org'],
     'battery_status': ['timvolodine@chromium.org'],
-    'blimp' : ['maniscalco+watch-blimp@chromium.org',
-               'nyquist+watch-blimp@chromium.org',
-               'kmarshall+watch-blimp@chromium.org'],
+    'blimp' : ['dtrainor+watch-blimp@chromium.org',
+               'kmarshall+watch-blimp@chromium.org',
+               'maniscalco+watch-blimp@chromium.org',
+               'nyquist+watch-blimp@chromium.org']
     'bookmarks': ['noyau+watch@chromium.org', 'tfarina@chromium.org'],
     'browser_chromeos': ['davemoore+watch@chromium.org'],
     'browser_components': ['browser-components-watch@chromium.org'],
