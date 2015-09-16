@@ -368,6 +368,13 @@ void OAuth2TokenServiceDelegateAndroid::ValidateAccounts(
     if (it == curr_ids.end())
       account_tracker_service_->RemoveAccount(info.account_id);
   }
+
+  // No need to wait for SigninManager to finish migration if not signed in.
+  if (account_tracker_service_->GetMigrationState() ==
+          AccountTrackerService::MIGRATION_IN_PROGRESS &&
+      signed_in_account.empty()) {
+    account_tracker_service_->SetMigrationDone();
+  }
 }
 
 bool OAuth2TokenServiceDelegateAndroid::ValidateAccounts(
