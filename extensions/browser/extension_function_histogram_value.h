@@ -1141,6 +1141,7 @@ enum HistogramValue {
   CERTIFICATEPROVIDERINTERNAL_REPORTSIGNATURE,
   CERTIFICATEPROVIDERINTERNAL_REPORTCERTIFICATES,
   BLUETOOTHPRIVATE_PAIR,
+  EASYUNLOCKPRIVATE_FINDSETUPCONNECTION,
   // Last entry: Add new entries above, then run:
   // python tools/metrics/histograms/update_extension_histograms.py
   ENUM_BOUNDARY

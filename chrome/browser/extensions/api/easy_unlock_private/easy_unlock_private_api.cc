@@ -13,6 +13,9 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/thread_task_runner_handle.h"
+#include "base/time/default_tick_clock.h"
+#include "base/time/time.h"
+#include "base/timer/timer.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/api/easy_unlock_private/easy_unlock_private_crypto_delegate.h"
 #include "chrome/browser/profiles/profile.h"
@@ -22,6 +25,9 @@
 #include "chrome/browser/ui/proximity_auth/proximity_auth_error_bubble.h"
 #include "chrome/common/extensions/api/easy_unlock_private.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/proximity_auth/ble/bluetooth_low_energy_connection.h"
+#include "components/proximity_auth/ble/bluetooth_low_energy_connection_finder.h"
+#include "components/proximity_auth/bluetooth_throttler_impl.h"
 #include "components/proximity_auth/bluetooth_util.h"
 #include "components/proximity_auth/cryptauth/base64url.h"
 #include "components/proximity_auth/cryptauth/cryptauth_device_manager.h"
@@ -31,6 +37,7 @@
 #include "components/proximity_auth/cryptauth/secure_message_delegate.h"
 #include "components/proximity_auth/logging/logging.h"
 #include "components/proximity_auth/proximity_auth_client.h"
+#include "components/proximity_auth/remote_device.h"
 #include "components/proximity_auth/screenlock_bridge.h"
 #include "components/proximity_auth/screenlock_state.h"
 #include "components/proximity_auth/switches.h"
@@ -1015,6 +1022,56 @@ bool EasyUnlockPrivateSetAutoPairingResultFunction::RunSync() {
   Profile* profile = Profile::FromBrowserContext(browser_context());
   EasyUnlockService::Get(profile)
       ->SetAutoPairingResult(params->result.success, error_message);
+
+  return true;
+}
+
+EasyUnlockPrivateFindSetupConnectionFunction::
+    EasyUnlockPrivateFindSetupConnectionFunction()
+    : bluetooth_throttler_(new proximity_auth::BluetoothThrottlerImpl(
+          make_scoped_ptr(new base::DefaultTickClock()))) {}
+
+EasyUnlockPrivateFindSetupConnectionFunction::
+    ~EasyUnlockPrivateFindSetupConnectionFunction() {}
+
+void EasyUnlockPrivateFindSetupConnectionFunction::
+    OnConnectionFinderTimedOut() {
+  SetError("No connection found.");
+  connection_finder_.reset();
+  SendResponse(false);
+}
+
+void EasyUnlockPrivateFindSetupConnectionFunction::OnConnectionFound(
+    scoped_ptr<proximity_auth::Connection> connection) {
+  results_ = easy_unlock_private::FindSetupConnection::Results::Create(0);
+  // TODO(sacomoto): Create a connection manager (associating |connectionId| <=>
+  // |connection->remote_device().bluetooth_address|) to handle |connection| and
+  // deal with future calls/events to send/receive data using |connection|.
+  SendResponse(true);
+}
+
+bool EasyUnlockPrivateFindSetupConnectionFunction::RunAsync() {
+  scoped_ptr<easy_unlock_private::FindSetupConnection::Params> params =
+      easy_unlock_private::FindSetupConnection::Params::Create(*args_);
+  EXTENSION_FUNCTION_VALIDATE(params);
+
+  // Creates a BLE connection finder to look for any device advertising
+  // |params->setup_service_uuid|.
+  connection_finder_.reset(
+      new proximity_auth::BluetoothLowEnergyConnectionFinder(
+          proximity_auth::RemoteDevice(), params->setup_service_uuid,
+          proximity_auth::BluetoothLowEnergyConnectionFinder::FIND_ANY_DEVICE,
+          nullptr, bluetooth_throttler_.get(), 3));
+
+  connection_finder_->Find(base::Bind(
+      &EasyUnlockPrivateFindSetupConnectionFunction::OnConnectionFound, this));
+
+  timer_.reset(
+      new base::OneShotTimer<EasyUnlockPrivateFindSetupConnectionFunction>());
+  timer_->Start(FROM_HERE, base::TimeDelta::FromSeconds(params->time_out),
+                base::Bind(&EasyUnlockPrivateFindSetupConnectionFunction::
+                               OnConnectionFinderTimedOut,
+                           this));
 
   return true;
 }

@@ -17,6 +17,10 @@
 
 // Implementations for chrome.easyUnlockPrivate API functions.
 
+namespace base {
+class Timer;
+}
+
 namespace content {
 class BrowserContext;
 }
@@ -26,6 +30,9 @@ class ExternalDeviceInfo;
 }
 
 namespace proximity_auth {
+class Connection;
+class BluetoothLowEnergyConnectionFinder;
+class BluetoothThrottler;
 class SecureMessageDelegate;
 }
 
@@ -438,6 +445,39 @@ class EasyUnlockPrivateSetAutoPairingResultFunction
   bool RunSync() override;
 
   DISALLOW_COPY_AND_ASSIGN(EasyUnlockPrivateSetAutoPairingResultFunction);
+};
+
+class EasyUnlockPrivateFindSetupConnectionFunction
+    : public AsyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("easyUnlockPrivate.findSetupConnection",
+                             EASYUNLOCKPRIVATE_FINDSETUPCONNECTION)
+  EasyUnlockPrivateFindSetupConnectionFunction();
+
+ private:
+  ~EasyUnlockPrivateFindSetupConnectionFunction() override;
+
+  // AsyncExtensionFunction:
+  bool RunAsync() override;
+
+  // Called when the connection with the remote device advertising the setup
+  // service was found.
+  void OnConnectionFound(scoped_ptr<proximity_auth::Connection> connection);
+
+  // Callback when waiting for |connection_finder_| to return.
+  void OnConnectionFinderTimedOut();
+
+  // The BLE connection finder instance.
+  scoped_ptr<proximity_auth::BluetoothLowEnergyConnectionFinder>
+      connection_finder_;
+
+  // The connection throttler passed to the BLE connection finder.
+  scoped_ptr<proximity_auth::BluetoothThrottler> bluetooth_throttler_;
+
+  // Used for timing out when waiting for the connection finder to return.
+  scoped_ptr<base::Timer> timer_;
+
+  DISALLOW_COPY_AND_ASSIGN(EasyUnlockPrivateFindSetupConnectionFunction);
 };
 
 }  // namespace extensions

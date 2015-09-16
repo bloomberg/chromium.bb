@@ -59374,6 +59374,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1080" label="CERTIFICATEPROVIDERINTERNAL_REPORTSIGNATURE"/>
   <int value="1081" label="CERTIFICATEPROVIDERINTERNAL_REPORTCERTIFICATES"/>
   <int value="1082" label="BLUETOOTHPRIVATE_PAIR"/>
+  <int value="1083" label="EASYUNLOCKPRIVATE_FINDSETUPCONNECTION"/>
 </enum>
 
 <enum name="ExtensionInstallCause" type="int">

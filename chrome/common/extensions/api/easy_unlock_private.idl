@@ -233,6 +233,11 @@ namespace easyUnlockPrivate {
   callback ConnectionInfoCallback = void(
       long rssi, long transmit_power, long max_transmit_power);
 
+  // Callback for the |FindSetupConnectionCallback| method.
+  // |connectionId|: The identifier of the connection found. To be used in
+  // future calls refering to this connection.
+  callback FindSetupConnectionCallback = void(long connectionId);
+
   interface Functions {
     // Gets localized strings required to render the API.
     //
@@ -387,6 +392,13 @@ namespace easyUnlockPrivate {
     // an optional error message to be displayed to the user.
     static void setAutoPairingResult(AutoPairingResult result,
                                      optional EmptyCallback callback);
+
+    // Finds and connects the remote BLE device that is advertising:
+    // |setupServiceUUID|. Returns when a connection is found or |timeOut|
+    // seconds have elapsed.
+    static void findSetupConnection(DOMString setupServiceUuid,
+                                    long timeOut,
+                                    FindSetupConnectionCallback callback);
   };
 
   interface Events {
