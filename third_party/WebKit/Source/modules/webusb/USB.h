@@ -30,6 +30,8 @@ public:
         return new USB(frame);
     }
 
+    // Eagerly finalize to enable to access m_controller in the destructor.
+    EAGERLY_FINALIZE();
     ~USB() override;
 
     // USB.idl
