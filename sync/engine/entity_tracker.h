@@ -14,6 +14,7 @@
 #include "sync/protocol/sync.pb.h"
 
 namespace syncer_v2 {
+struct CommitRequestData;
 struct UpdateResponseData;
 
 // Manages the pending commit and update state for an entity on the sync
@@ -26,33 +27,22 @@ struct UpdateResponseData;
 // necessary for decision-making on the sync thread.  It can track pending
 // commit state, received update state, and can detect conflicts.
 //
-// This object may or may not contain state associated with a pending commit.
-// If no commit is pending, the |is_commit_pending_| flag will be set to false
-// and many of this object's fields will be cleared.
+// This object may contain state associated with a pending commit, pending
+// update, or both.
 class SYNC_EXPORT EntityTracker {
  public:
   ~EntityTracker();
 
   // Initialize a new entity based on an update response.
-  static scoped_ptr<EntityTracker> FromServerUpdate(
-      const std::string& id_string,
-      const std::string& client_tag_hash,
-      int64 version);
+  static scoped_ptr<EntityTracker> FromUpdateResponse(
+      const UpdateResponseData& data);
 
   // Initialize a new entity based on a commit request.
   static scoped_ptr<EntityTracker> FromCommitRequest(
-      const std::string& id_string,
-      const std::string& client_tag_hash,
-      int64 sequence_number,
-      int64 base_version,
-      base::Time ctime,
-      base::Time mtime,
-      const std::string& non_unique_name,
-      bool deleted,
-      const sync_pb::EntitySpecifics& specifics);
+      const CommitRequestData& data);
 
   // Returns true if this entity should be commited to the server.
-  bool IsCommitPending() const;
+  bool HasPendingCommit() const;
 
   // Populates a sync_pb::SyncEntity for a commit.  Also sets the
   // |sequence_number|, so we can track it throughout the commit process.
@@ -62,15 +52,7 @@ class SYNC_EXPORT EntityTracker {
   // Updates this entity with data from the latest version that the
   // model asked us to commit.  May clobber state related to the
   // model's previous commit attempt(s).
-  void RequestCommit(const std::string& id,
-                     const std::string& client_tag_hash,
-                     int64 sequence_number,
-                     int64 base_version,
-                     base::Time ctime,
-                     base::Time mtime,
-                     const std::string& non_unique_name,
-                     bool deleted,
-                     const sync_pb::EntitySpecifics& specifics);
+  void RequestCommit(const CommitRequestData& data);
 
   // Handles the receipt of a commit response.
   //
@@ -153,19 +135,15 @@ class SYNC_EXPORT EntityTracker {
   // is completed and confirmed.  Not valid if no commit is pending.
   int64 sequence_number_;
 
-  // The following fields are valid only when a commit is pending.
-  // This is where we store the data that is to be sent up to the server
-  // at the next possible opportunity.
+  // The server version on which this item is based.
   int64 base_version_;
-  base::Time ctime_;
-  base::Time mtime_;
-  std::string non_unique_name_;
-  bool deleted_;
-  sync_pb::EntitySpecifics specifics_;
 
-  // An update for this item which can't be applied right now.  The presence of
-  // an pending update prevents commits.  As of this writing, the only source
-  // of pending updates is updates we can't decrypt right now.
+  // A commit for this entity waiting for a sync cycle to be committed.
+  scoped_ptr<CommitRequestData> pending_commit_;
+
+  // An update for this entity which can't be applied right now. The presence
+  // of an pending update prevents commits.  As of this writing, the only
+  // source of pending updates is updates that can't currently be decrypted.
   scoped_ptr<UpdateResponseData> pending_update_;
 
   DISALLOW_COPY_AND_ASSIGN(EntityTracker);

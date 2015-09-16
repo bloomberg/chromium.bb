@@ -46,8 +46,8 @@ ModelTypeWorker::ModelTypeWorker(
   for (UpdateResponseDataList::const_iterator it =
            saved_pending_updates.begin();
        it != saved_pending_updates.end(); ++it) {
-    scoped_ptr<EntityTracker> entity_tracker = EntityTracker::FromServerUpdate(
-        it->id, it->client_tag_hash, it->response_version);
+    scoped_ptr<EntityTracker> entity_tracker =
+        EntityTracker::FromUpdateResponse(*it);
     entity_tracker->ReceivePendingUpdate(*it);
     entities_.insert(it->client_tag_hash, entity_tracker.Pass());
   }
@@ -127,19 +127,6 @@ SyncerError ModelTypeWorker::ProcessGetUpdatesResponse(
     // TODO(stanisc): crbug.com/516866: this wouldn't be true for bookmarks.
     DCHECK(!client_tag_hash.empty());
 
-    EntityTracker* entity_tracker = NULL;
-    EntityMap::const_iterator map_it = entities_.find(client_tag_hash);
-    if (map_it == entities_.end()) {
-      scoped_ptr<EntityTracker> scoped_entity_tracker =
-          EntityTracker::FromServerUpdate(update_entity->id_string(),
-                                          client_tag_hash,
-                                          update_entity->version());
-      entity_tracker = scoped_entity_tracker.get();
-      entities_.insert(client_tag_hash, scoped_entity_tracker.Pass());
-    } else {
-      entity_tracker = map_it->second;
-    }
-
     // Prepare the message for the model thread.
     UpdateResponseData response_data;
     response_data.id = update_entity->id_string();
@@ -149,6 +136,17 @@ SyncerError ModelTypeWorker::ProcessGetUpdatesResponse(
     response_data.mtime = syncer::ProtoTimeToTime(update_entity->mtime());
     response_data.non_unique_name = update_entity->name();
     response_data.deleted = update_entity->deleted();
+
+    EntityTracker* entity_tracker = nullptr;
+    EntityMap::const_iterator map_it = entities_.find(client_tag_hash);
+    if (map_it == entities_.end()) {
+      scoped_ptr<EntityTracker> scoped_entity_tracker =
+          EntityTracker::FromUpdateResponse(response_data);
+      entity_tracker = scoped_entity_tracker.get();
+      entities_.insert(client_tag_hash, scoped_entity_tracker.Pass());
+    } else {
+      entity_tracker = map_it->second;
+    }
 
     const sync_pb::EntitySpecifics& specifics = update_entity->specifics();
 
@@ -246,7 +244,7 @@ scoped_ptr<CommitContribution> ModelTypeWorker::GetContribution(
   for (EntityMap::const_iterator it = entities_.begin();
        it != entities_.end() && space_remaining > 0; ++it) {
     EntityTracker* entity = it->second;
-    if (entity->IsCommitPending()) {
+    if (entity->HasPendingCommit()) {
       sync_pb::SyncEntity* commit_entity = commit_entities.Add();
       int64 sequence_number = -1;
 
@@ -270,20 +268,17 @@ void ModelTypeWorker::StorePendingCommit(const CommitRequestData& request) {
     DCHECK_EQ(type_, syncer::GetModelTypeFromSpecifics(request.specifics));
   }
 
+  EntityTracker* entity;
   EntityMap::const_iterator map_it = entities_.find(request.client_tag_hash);
   if (map_it == entities_.end()) {
-    scoped_ptr<EntityTracker> entity = EntityTracker::FromCommitRequest(
-        request.id, request.client_tag_hash, request.sequence_number,
-        request.base_version, request.ctime, request.mtime,
-        request.non_unique_name, request.deleted, request.specifics);
-    entities_.insert(request.client_tag_hash, entity.Pass());
+    scoped_ptr<EntityTracker> scoped_entity =
+        EntityTracker::FromCommitRequest(request);
+    entity = scoped_entity.get();
+    entities_.insert(request.client_tag_hash, scoped_entity.Pass());
   } else {
-    EntityTracker* entity = map_it->second;
-    entity->RequestCommit(request.id, request.client_tag_hash,
-                          request.sequence_number, request.base_version,
-                          request.ctime, request.mtime, request.non_unique_name,
-                          request.deleted, request.specifics);
+    entity = map_it->second;
   }
+  entity->RequestCommit(request);
 }
 
 void ModelTypeWorker::OnCommitResponse(
