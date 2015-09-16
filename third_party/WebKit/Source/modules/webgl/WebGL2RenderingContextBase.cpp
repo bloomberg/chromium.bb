@@ -261,6 +261,53 @@ ScriptValue WebGL2RenderingContextBase::getInternalformatParameter(ScriptState* 
     if (isContextLost())
         return ScriptValue::createNull(scriptState);
 
+    if (target != GL_RENDERBUFFER) {
+        synthesizeGLError(GL_INVALID_ENUM, "getInternalformatParameter", "invalid target");
+        return ScriptValue::createNull(scriptState);
+    }
+
+    switch (internalformat) {
+    case GL_R8UI:
+    case GL_R8I:
+    case GL_R16UI:
+    case GL_R16I:
+    case GL_R32UI:
+    case GL_R32I:
+    case GL_RG8UI:
+    case GL_RG8I:
+    case GL_RG16UI:
+    case GL_RG16I:
+    case GL_RG32UI:
+    case GL_RG32I:
+    case GL_RGBA8UI:
+    case GL_RGBA8I:
+    case GL_RGB10_A2UI:
+    case GL_RGBA16UI:
+    case GL_RGBA16I:
+    case GL_RGBA32UI:
+    case GL_RGBA32I:
+        return WebGLAny(scriptState, DOMInt32Array::create(0));
+    case GL_R8:
+    case GL_RG8:
+    case GL_RGB8:
+    case GL_RGB565:
+    case GL_RGBA8:
+    case GL_SRGB8_ALPHA8:
+    case GL_RGB5_A1:
+    case GL_RGBA4:
+    case GL_RGB10_A2:
+    case GL_DEPTH_COMPONENT16:
+    case GL_DEPTH_COMPONENT24:
+    case GL_DEPTH_COMPONENT32F:
+    case GL_DEPTH24_STENCIL8:
+    case GL_DEPTH32F_STENCIL8:
+    case GL_STENCIL_INDEX8:
+        break;
+    default:
+        synthesizeGLError(GL_INVALID_ENUM, "getInternalformatParameter", "invalid internalformat");
+        return ScriptValue::createNull(scriptState);
+    }
+
     switch (pname) {
     case GL_SAMPLES:
         {
