@@ -51,6 +51,11 @@ void ChannelTestBase::ShutdownChannelOnIOThread(unsigned i) {
   channels_[i]->Shutdown();
 }
 
+void ChannelTestBase::ShutdownAndReleaseChannelOnIOThread(unsigned i) {
+  ShutdownChannelOnIOThread(i);
+  channels_[i] = nullptr;
+}
+
 void ChannelTestBase::SetUpOnIOThread() {
   CHECK_EQ(base::MessageLoop::current(), io_thread()->message_loop());
 

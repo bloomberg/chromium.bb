@@ -147,6 +147,13 @@ bool Channel::IsWriteBufferEmpty() {
 void Channel::DetachEndpoint(ChannelEndpoint* endpoint,
                              ChannelEndpointId local_id,
                              ChannelEndpointId remote_id) {
+  // Keep a reference to |this| to prevent this |Channel| from being deleted
+  // while this function is running.  Without this, if |Shutdown()| is started
+  // on the IO thread immediately after |mutex_| is released below and finishes
+  // before |SendControlMessage()| gets to run, |this| could be deleted while
+  // this function is still running.
+  scoped_refptr<Channel> self(this);
+
   DCHECK(endpoint);
   DCHECK(local_id.is_valid());
 

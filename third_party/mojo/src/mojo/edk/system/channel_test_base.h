@@ -43,6 +43,7 @@ class ChannelTestBase : public testing::Test {
   void InitChannelOnIOThread(unsigned i);
   void CreateAndInitChannelOnIOThread(unsigned i);
   void ShutdownChannelOnIOThread(unsigned i);
+  void ShutdownAndReleaseChannelOnIOThread(unsigned i);
 
   base::TestIOThread* io_thread() { return &io_thread_; }
   Channel* channel(unsigned i) { return channels_[i].get(); }

@@ -39,6 +39,8 @@ const MojoHandleSignals kSignalAll = MOJO_HANDLE_SIGNAL_READABLE |
 
 const char kConnectionIdFlag[] = "test-connection-id";
 
+void DoNothing() {}
+
 class ScopedTestChannel {
  public:
   // Creates a channel, which lives on the I/O thread given to
@@ -50,7 +52,8 @@ class ScopedTestChannel {
   explicit ScopedTestChannel(ScopedPlatformHandle platform_handle)
       : bootstrap_message_pipe_(MOJO_HANDLE_INVALID),
         event_(true, false),  // Manual reset.
-        channel_info_(nullptr) {
+        channel_info_(nullptr),
+        wait_on_shutdown_(true) {
     bootstrap_message_pipe_ =
         CreateChannel(platform_handle.Pass(),
                       base::Bind(&ScopedTestChannel::DidCreateChannel,
@@ -67,11 +70,15 @@ class ScopedTestChannel {
     // |WaitForChannelCreationCompletion()| must be called before destruction.
     CHECK(event_.IsSignaled());
     event_.Reset();
-    DestroyChannel(channel_info_,
-                   base::Bind(&ScopedTestChannel::DidDestroyChannel,
-                              base::Unretained(this)),
-                   nullptr);
-    event_.Wait();
+    if (wait_on_shutdown_) {
+      DestroyChannel(channel_info_,
+                     base::Bind(&ScopedTestChannel::DidDestroyChannel,
+                                base::Unretained(this)),
+                     nullptr);
+      event_.Wait();
+    } else {
+      DestroyChannel(channel_info_, base::Bind(&DoNothing), nullptr);
+    }
   }
 
   // Waits for channel creation to be completed.
@@ -82,6 +89,10 @@ class ScopedTestChannel {
   // Call only after |WaitForChannelCreationCompletion()|. Use only to check
   // that it's not null.
   const ChannelInfo* channel_info() const { return channel_info_; }
+
+  // Don't wait for the channel shutdown to finish on destruction. Used to
+  // exercise races.
+  void NoWaitOnShutdown() { wait_on_shutdown_ = false; }
 
  private:
   void DidCreateChannel(ChannelInfo* channel_info) {
@@ -106,6 +117,9 @@ class ScopedTestChannel {
 
   // Valid after channel creation completion until destruction.
   ChannelInfo* channel_info_;
+
+  // Whether the destructor should wait until the channel is destroyed.
+  bool wait_on_shutdown_;
 
   MOJO_DISALLOW_COPY_AND_ASSIGN(ScopedTestChannel);
 };
@@ -429,6 +443,28 @@ TEST_F(EmbedderTest, MAYBE_MultiprocessMasterSlave) {
   test_io_thread().PostTaskAndWait(
       FROM_HERE,
       base::Bind(&DestroyChannelOnIOThread, base::Unretained(channel_info)));
+}
+
+TEST_F(EmbedderTest, ChannelShutdownRace_MessagePipeClose) {
+  const size_t kIterations = 1000;
+  mojo::test::ScopedIPCSupport ipc_support(test_io_task_runner());
+
+  for (size_t i = 0; i < kIterations; i++) {
+    PlatformChannelPair channel_pair;
+    scoped_ptr<ScopedTestChannel> server_channel(
+        new ScopedTestChannel(channel_pair.PassServerHandle()));
+    server_channel->WaitForChannelCreationCompletion();
+    server_channel->NoWaitOnShutdown();
+
+    MojoHandle server_mp = server_channel->bootstrap_message_pipe();
+    EXPECT_NE(server_mp, MOJO_HANDLE_INVALID);
+
+    // Race between channel shutdown and closing a message pipe. The message
+    // pipe doesn't have to be the bootstrap pipe. It just has to be bound to
+    // the channel.
+    server_channel.reset();
+    MojoClose(server_mp);
+  }
 }
 
 MOJO_MULTIPROCESS_TEST_CHILD_TEST(MultiprocessMasterSlave) {
