@@ -178,7 +178,7 @@ void LayoutFlowThread::collectLayerFragments(DeprecatedPaintLayerFragments& laye
 
 LayoutRect LayoutFlowThread::fragmentsBoundingBox(const LayoutRect& layerBoundingBox) const
 {
-    ASSERT(!m_columnSetsInvalidated);
+    ASSERT(!RuntimeEnabledFeatures::slimmingPaintV2Enabled() || !m_columnSetsInvalidated);
 
     LayoutRect result;
     for (auto* columnSet : m_multiColumnSetList)

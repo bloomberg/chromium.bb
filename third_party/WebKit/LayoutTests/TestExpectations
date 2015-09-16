@@ -239,6 +239,18 @@ crbug.com/352405 virtual/threaded/animations/transition-and-animation-1.html [ P
 
 crbug.com/529123 inspector/sources/debugger-breakpoints/debugger-reload-breakpoints-with-source-maps.html [ Pass Failure ]
 
+crbug.com/461179 compositing/repaint/should-not-repaint-composited-descendants-on-overflow-change.html [ NeedsRebaseline ]
+crbug.com/461179 css3/flexbox/repaint-opacity-change.html [ NeedsRebaseline ]
+crbug.com/461179 fast/css-grid-layout/grid-item-z-index-change-repaint.html [ NeedsRebaseline ]
+crbug.com/461179 fast/layers/scroll-descendant-with-cached-cliprects.html [ NeedsRebaseline ]
+crbug.com/461179 fast/repaint/change-transform.html [ NeedsRebaseline ]
+crbug.com/461179 fast/repaint/create-layer-repaint.html [ NeedsRebaseline ]
+crbug.com/461179 fast/repaint/erase-overflow.html [ NeedsRebaseline ]
+crbug.com/461179 fast/repaint/mix-blend-mode-separate-stacking-context.html [ NeedsRebaseline ]
+crbug.com/461179 fast/repaint/paint-invalidation-with-opacity.html [ NeedsRebaseline ]
+crbug.com/461179 fast/repaint/static-to-positioned.html [ NeedsRebaseline ]
+crbug.com/461179 virtual/spv2/paint/invalidation/invalidate-when-receiving-paint-layer.html [ ImageOnlyFailure ]
+
 crbug.com/524009 inspector/sources/debugger-pause/debugger-pause-in-internal.html [ NeedsManualRebaseline ]
 
 # TODO(ojan): These tests aren't flaky. See crbug.com/517144.

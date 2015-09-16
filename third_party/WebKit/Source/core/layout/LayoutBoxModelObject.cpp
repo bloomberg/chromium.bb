@@ -284,6 +284,22 @@ void LayoutBoxModelObject::styleDidChange(StyleDifference diff, const ComputedSt
 
 void LayoutBoxModelObject::createLayer(DeprecatedPaintLayerType type)
 {
+
+    // Acquiring a DeprecatedPaintLayer may change the paint invalidation container. Therefore we must eagerly
+    // invalidate paint for this object before creating the layer.
+    if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled() && isRooted()) {
+        DisablePaintInvalidationStateAsserts invalidationDisabler;
+        DisableCompositingQueryAsserts compositingDisabler;
+
+        // It would be more correct to call invalidatePaintIncludingNonCompositingDescendants, but
+        // we do this instead to avoid performance issues when creating large numbers of layers.
+        const LayoutBoxModelObject& paintInvalidationContainer = containerForPaintInvalidationOnRootedTree();
+        invalidatePaintUsingContainer(
+            paintInvalidationContainer,
+            boundsRectForPaintInvalidation(&paintInvalidationContainer),
+            PaintInvalidationLayer);
+    }
+
     ASSERT(!m_layer);
     m_layer = adoptPtr(new DeprecatedPaintLayer(this, type));
     setHasLayer(true);
