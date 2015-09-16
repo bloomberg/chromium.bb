@@ -41,7 +41,7 @@ public:
     virtual void requestDevice(const WebUSBDeviceRequestOptions&, WebUSBClientRequestDeviceCallbacks*) = 0;
 
     // Sets the observer of device changes through the WebUSBClient.
-    virtual void setObserver(Observer*) { }
+    virtual void setObserver(Observer*) = 0;
 };
 
 } // namespace blink
