@@ -27,7 +27,7 @@
 #define WebGeolocationPermissionRequestManager_h
 
 #include "../platform/WebNonCopyable.h"
-#include "../platform/WebPrivateOwnPtr.h"
+#include "../platform/WebPrivatePtr.h"
 
 namespace blink {
 
@@ -42,7 +42,7 @@ class WebGeolocationPermissionRequestManagerPrivate;
 // remove the association with the id.
 class WebGeolocationPermissionRequestManager : public WebNonCopyable {
 public:
-    WebGeolocationPermissionRequestManager() { init(); }
+    WebGeolocationPermissionRequestManager() { }
     ~WebGeolocationPermissionRequestManager() { reset(); }
 
     BLINK_EXPORT int add(const WebGeolocationPermissionRequest&);
@@ -50,10 +50,11 @@ public:
     BLINK_EXPORT bool remove(int, WebGeolocationPermissionRequest&);
 
 private:
-    BLINK_EXPORT void init();
     BLINK_EXPORT void reset();
 
-    WebPrivateOwnPtr<WebGeolocationPermissionRequestManagerPrivate> m_private;
+    WebGeolocationPermissionRequestManagerPrivate* ensureManager();
+
+    WebPrivatePtr<WebGeolocationPermissionRequestManagerPrivate> m_private;
 };
 
 }

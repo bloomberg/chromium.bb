@@ -27,16 +27,23 @@
 #include "public/web/WebGeolocationPermissionRequestManager.h"
 
 #include "modules/geolocation/Geolocation.h"
+#include "platform/heap/Handle.h"
 #include "public/web/WebGeolocationPermissionRequest.h"
 #include "wtf/HashMap.h"
 
 namespace blink {
 
-typedef PersistentHeapHashMap<Member<Geolocation>, int> GeolocationIdMap;
-typedef PersistentHeapHashMap<int, Member<Geolocation>> IdGeolocationMap;
+typedef HeapHashMap<Member<Geolocation>, int> GeolocationIdMap;
+typedef HeapHashMap<int, Member<Geolocation>> IdGeolocationMap;
 
-class WebGeolocationPermissionRequestManagerPrivate {
+class WebGeolocationPermissionRequestManagerPrivate final : public GarbageCollected<WebGeolocationPermissionRequestManagerPrivate> {
 public:
+    DEFINE_INLINE_TRACE()
+    {
+        visitor->trace(m_geolocationIdMap);
+        visitor->trace(m_idGeolocationMap);
+    }
+
     GeolocationIdMap m_geolocationIdMap;
     IdGeolocationMap m_idGeolocationMap;
 };
@@ -44,46 +51,52 @@ public:
 int WebGeolocationPermissionRequestManager::add(const WebGeolocationPermissionRequest& permissionRequest)
 {
     Geolocation* geolocation = permissionRequest.geolocation();
-    ASSERT(!m_private->m_geolocationIdMap.contains(geolocation));
+    WebGeolocationPermissionRequestManagerPrivate* manager = ensureManager();
+    ASSERT(!manager->m_geolocationIdMap.contains(geolocation));
     static int lastId;
     int id = ++lastId;
-    m_private->m_geolocationIdMap.add(geolocation, id);
-    m_private->m_idGeolocationMap.add(id, geolocation);
+    manager->m_geolocationIdMap.add(geolocation, id);
+    manager->m_idGeolocationMap.add(id, geolocation);
     return id;
 }
 
 bool WebGeolocationPermissionRequestManager::remove(const WebGeolocationPermissionRequest& permissionRequest, int& id)
 {
     Geolocation* geolocation = permissionRequest.geolocation();
-    GeolocationIdMap::iterator it = m_private->m_geolocationIdMap.find(geolocation);
-    if (it == m_private->m_geolocationIdMap.end())
+    WebGeolocationPermissionRequestManagerPrivate* manager = ensureManager();
+    GeolocationIdMap::iterator it = manager->m_geolocationIdMap.find(geolocation);
+    if (it == manager->m_geolocationIdMap.end())
         return false;
     id = it->value;
-    m_private->m_geolocationIdMap.remove(it);
-    m_private->m_idGeolocationMap.remove(id);
+    manager->m_geolocationIdMap.remove(it);
+    manager->m_idGeolocationMap.remove(id);
     return true;
 }
 
 bool WebGeolocationPermissionRequestManager::remove(int id, WebGeolocationPermissionRequest& permissionRequest)
 {
-    IdGeolocationMap::iterator it = m_private->m_idGeolocationMap.find(id);
-    if (it == m_private->m_idGeolocationMap.end())
+    WebGeolocationPermissionRequestManagerPrivate* manager = ensureManager();
+    IdGeolocationMap::iterator it = manager->m_idGeolocationMap.find(id);
+    if (it == manager->m_idGeolocationMap.end())
         return false;
     Geolocation* geolocation = it->value;
     permissionRequest = WebGeolocationPermissionRequest(geolocation);
-    m_private->m_idGeolocationMap.remove(it);
-    m_private->m_geolocationIdMap.remove(geolocation);
+    manager->m_idGeolocationMap.remove(it);
+    manager->m_geolocationIdMap.remove(geolocation);
     return true;
 }
 
-void WebGeolocationPermissionRequestManager::init()
+WebGeolocationPermissionRequestManagerPrivate* WebGeolocationPermissionRequestManager::ensureManager()
 {
-    m_private.reset(new WebGeolocationPermissionRequestManagerPrivate);
+    if (m_private.isNull())
+        m_private = new WebGeolocationPermissionRequestManagerPrivate;
+
+    return m_private.get();
 }
 
 void WebGeolocationPermissionRequestManager::reset()
 {
-    m_private.reset(0);
+    m_private.reset();
 }
 
 } // namespace blink
