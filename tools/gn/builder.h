@@ -58,6 +58,7 @@ class Builder : public base::RefCountedThreadSafe<Builder> {
   virtual ~Builder();
 
   bool TargetDefined(BuilderRecord* record, Err* err);
+  bool ConfigDefined(BuilderRecord* record, Err* err);
   bool ToolchainDefined(BuilderRecord* record, Err* err);
 
   // Returns the record associated with the given label. This function checks

@@ -88,6 +88,9 @@ void Builder::ItemDefined(scoped_ptr<Item> item) {
     case BuilderRecord::ITEM_TARGET:
       TargetDefined(record, &err);
       break;
+    case BuilderRecord::ITEM_CONFIG:
+      ConfigDefined(record, &err);
+      break;
     case BuilderRecord::ITEM_TOOLCHAIN:
       ToolchainDefined(record, &err);
       break;
@@ -230,6 +233,13 @@ bool Builder::TargetDefined(BuilderRecord* record, Err* err) {
   if (record->should_generate() || target->settings()->is_default())
     RecursiveSetShouldGenerate(record, true);
 
+  return true;
+}
+
+bool Builder::ConfigDefined(BuilderRecord* record, Err* err) {
+  Config* config = record->item()->AsConfig();
+  if (!AddDeps(record, config->configs(), err))
+    return false;
   return true;
 }
 
@@ -397,6 +407,10 @@ bool Builder::ResolveItem(BuilderRecord* record, Err* err) {
         !ResolveConfigs(&target->public_configs(), err) ||
         !ResolveForwardDependentConfigs(target, err) ||
         !ResolveToolchain(target, err))
+      return false;
+  } else if (record->type() == BuilderRecord::ITEM_CONFIG) {
+    Config* config = record->item()->AsConfig();
+    if (!ResolveConfigs(&config->configs(), err))
       return false;
   } else if (record->type() == BuilderRecord::ITEM_TOOLCHAIN) {
     Toolchain* toolchain = record->item()->AsToolchain();

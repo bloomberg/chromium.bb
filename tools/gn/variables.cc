@@ -306,7 +306,7 @@ const char kTargetOutDir_Help[] =
 
 #define COMMON_ORDERING_HELP \
     "\n" \
-    "Ordering of flags and values:\n" \
+    "Ordering of flags and values\n" \
     "\n" \
     "  1. Those set on the current target (not in a config).\n" \
     "  2. Those set on the \"configs\" on the target in order that the\n" \
@@ -501,27 +501,77 @@ const char kCompleteStaticLib_Help[] =
 
 const char kConfigs[] = "configs";
 const char kConfigs_HelpShort[] =
-    "configs: [label list] Configs applying to this target.";
+    "configs: [label list] Configs applying to this target or config.";
 const char kConfigs_Help[] =
-    "configs: Configs applying to this target.\n"
+    "configs: Configs applying to this target or config.\n"
     "\n"
     "  A list of config labels.\n"
     "\n"
-    "  The include_dirs, defines, etc. in each config are appended in the\n"
-    "  order they appear to the compile command for each file in the target.\n"
-    "  They will appear after the include_dirs, defines, etc. that the target\n"
-    "  sets directly.\n"
+    "Configs on a target\n"
+    "\n"
+    "  When used on a target, the include_dirs, defines, etc. in each config\n"
+    "  are appended in the order they appear to the compile command for each\n"
+    "  file in the target. They will appear after the include_dirs, defines,\n"
+    "  etc. that the target sets directly.\n"
+    "\n"
+    "  Since configs apply after the values set on a target, directly setting\n"
+    "  a compiler flag will prepend it to the command line. If you want to\n"
+    "  append a flag instead, you can put that flag in a one-off config and\n"
+    "  append that config to the target's configs list.\n"
     "\n"
     "  The build configuration script will generally set up the default\n"
     "  configs applying to a given target type (see \"set_defaults\").\n"
     "  When a target is being defined, it can add to or remove from this\n"
     "  list.\n"
+    "\n"
+    "Configs on a config\n"
+    "\n"
+    "  It is possible to create composite configs by specifying configs on a\n"
+    "  config. One might do this to forward values, or to factor out blocks\n"
+    "  of settings from very large configs into more manageable named chunks.\n"
+    "\n"
+    "  In this case, the composite config is expanded to be the concatenation\n"
+    "  of its own values, and in order, the values from its sub-configs\n"
+    "  *before* anything else happens. This has some ramifications:\n"
+    "\n"
+    "   - A target has no visibility into a config's sub-configs. Target\n"
+    "     code only sees the name of the composite config. It can't remove\n"
+    "     sub-configs or opt in to only parts of it. The composite config may\n"
+    "     not even be defined before the target is.\n"
+    "\n"
+    "   - You can get duplication of values if a config is listed twice, say,\n"
+    "     on a target and in a sub-config that also applies. In other cases,\n"
+    "     the configs applying to a target are de-duped. It's expected that\n"
+    "     if a config is listed as a sub-config that it is only used in that\n"
+    "     context. (Note that it's possible to fix this and de-dupe, but it's\n"
+    "     not normally relevant and complicates the implementation.)\n"
     COMMON_ORDERING_HELP
     "\n"
-    "Example:\n"
-    "  static_library(\"foo\") {\n"
-    "    configs -= \"//build:no_rtti\"  # Don't use the default RTTI config.\n"
-    "    configs += \":mysettings\"      # Add some of our own settings.\n"
+    "Example\n"
+    "\n"
+    "  # Configs on a target.\n"
+    "  source_set(\"foo\") {\n"
+    "    # Don't use the default RTTI config that BUILDCONFIG applied to us.\n"
+    "    configs -= [ \"//build:no_rtti\" ]\n"
+    "\n"
+    "    # Add some of our own settings.\n"
+    "    configs += [ \":mysettings\" ]\n"
+    "  }\n"
+    "\n"
+    "  # Create a default_optimization config that forwards to one of a set\n"
+    "  # of more specialized configs depending on build flags. This pattern\n"
+    "  # is useful because it allows a target to opt in to either a default\n"
+    "  # set, or a more specific set, while avoid duplicating the settings in\n"
+    "  # two places.\n"
+    "  config(\"super_optimization\") {\n"
+    "    cflags = [ ... ]\n"
+    "  }\n"
+    "  config(\"default_optimization\") {\n"
+    "    if (optimize_everything) {\n"
+    "      configs = [ \":super_optimization\" ]\n"
+    "    } else {\n"
+    "      configs = [ \":no_optimization\" ]\n"
+    "    }\n"
     "  }\n";
 
 const char kData[] = "data";

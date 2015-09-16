@@ -90,14 +90,17 @@ TEST(Target, DependentConfigs) {
 
   // Normal non-inherited config.
   Config config(setup.settings(), Label(SourceDir("//foo/"), "config"));
+  ASSERT_TRUE(config.OnResolved(&err));
   c.configs().push_back(LabelConfigPair(&config));
 
   // All dependent config.
   Config all(setup.settings(), Label(SourceDir("//foo/"), "all"));
+  ASSERT_TRUE(all.OnResolved(&err));
   c.all_dependent_configs().push_back(LabelConfigPair(&all));
 
   // Direct dependent config.
   Config direct(setup.settings(), Label(SourceDir("//foo/"), "direct"));
+  ASSERT_TRUE(direct.OnResolved(&err));
   c.public_configs().push_back(LabelConfigPair(&direct));
 
   ASSERT_TRUE(c.OnResolved(&err));
@@ -361,6 +364,7 @@ TEST(Target, PublicConfigs) {
 
   Label pub_config_label(SourceDir("//a/"), "pubconfig");
   Config pub_config(setup.settings(), pub_config_label);
+  ASSERT_TRUE(pub_config.OnResolved(&err));
 
   // This is the destination target that has a public config.
   TestTarget dest(setup, "//a:a", Target::SOURCE_SET);
@@ -572,8 +576,9 @@ TEST(Target, ResolvePrecompiledHeaders) {
   Config config_1(setup.settings(), Label(SourceDir("//foo/"), "c1"));
   std::string pch_1("pch.h");
   SourceFile pcs_1("//pcs.cc");
-  config_1.config_values().set_precompiled_header(pch_1);
-  config_1.config_values().set_precompiled_source(pcs_1);
+  config_1.own_values().set_precompiled_header(pch_1);
+  config_1.own_values().set_precompiled_source(pcs_1);
+  ASSERT_TRUE(config_1.OnResolved(&err));
   target.configs().push_back(LabelConfigPair(&config_1));
 
   // No PCH info specified on target, but the config specifies one, the
@@ -592,8 +597,9 @@ TEST(Target, ResolvePrecompiledHeaders) {
   Config config_2(setup.settings(), Label(SourceDir("//foo/"), "c2"));
   std::string pch_2("pch2.h");
   SourceFile pcs_2("//pcs2.cc");
-  config_2.config_values().set_precompiled_header(pch_2);
-  config_2.config_values().set_precompiled_source(pcs_2);
+  config_2.own_values().set_precompiled_header(pch_2);
+  config_2.own_values().set_precompiled_source(pcs_2);
+  ASSERT_TRUE(config_2.OnResolved(&err));
   target.configs().push_back(LabelConfigPair(&config_2));
 
   // This should be an error since they don't match.

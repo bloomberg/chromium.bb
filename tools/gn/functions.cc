@@ -19,6 +19,8 @@
 #include "tools/gn/template.h"
 #include "tools/gn/token.h"
 #include "tools/gn/value.h"
+#include "tools/gn/value_extractors.h"
+#include "tools/gn/variables.h"
 
 namespace {
 
@@ -299,10 +301,20 @@ Value RunConfig(const FunctionCallNode* function,
   if (!Visibility::FillItemVisibility(config.get(), scope, err))
     return Value();
 
-  // Fill it.
+  // Fill the flags and such.
   const SourceDir& input_dir = scope->GetSourceDir();
-  ConfigValuesGenerator gen(&config->config_values(), scope, input_dir, err);
+  ConfigValuesGenerator gen(&config->own_values(), scope, input_dir, err);
   gen.Run();
+  if (err->has_error())
+    return Value();
+
+  // Read sub-configs.
+  const Value* configs_value = scope->GetValue(variables::kConfigs, true);
+  if (configs_value) {
+    ExtractListOfUniqueLabels(*configs_value, scope->GetSourceDir(),
+                              ToolchainLabelForScope(scope),
+                              &config->configs(), err);
+  }
   if (err->has_error())
     return Value();
 

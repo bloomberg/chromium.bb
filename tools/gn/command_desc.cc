@@ -25,8 +25,9 @@ namespace commands {
 
 namespace {
 
-// The switch for displaying blame.
+// Desc-specific command line switches.
 const char kBlame[] = "blame";
+const char kTree[] = "tree";
 
 // Prints the given directory in a nice way for the user to view.
 std::string FormatSourceDir(const SourceDir& dir) {
@@ -113,7 +114,7 @@ void PrintDeps(const Target* target, bool display_header) {
   Label toolchain_label = target->label().GetToolchainLabel();
 
   // Tree mode is separate.
-  if (cmdline->HasSwitch("tree")) {
+  if (cmdline->HasSwitch(kTree)) {
     if (display_header)
       OutputString("\nDependency tree:\n");
 
@@ -249,39 +250,46 @@ void PrintTestonly(const Target* target, bool display_header) {
     OutputString("  false\n");
 }
 
-void PrintConfigsVector(const Target* target,
-                        const LabelConfigVector& configs,
-                        const std::string& heading,
-                        bool display_header) {
-  if (configs.empty())
+// Recursively prints subconfigs of a config.
+void PrintSubConfigs(const Config* config, int indent_level) {
+  if (config->configs().empty())
     return;
 
-  // Don't sort since the order determines how things are processed.
-  if (display_header)
-    OutputString("\n" + heading + " (in order applying):\n");
-
-  Label toolchain_label = target->label().GetToolchainLabel();
-  for (const auto& config : configs) {
-    OutputString("  " + config.label.GetUserVisibleName(toolchain_label) +
-                 "\n");
+  std::string indent(indent_level * 2, ' ');
+  Label toolchain_label = config->label().GetToolchainLabel();
+  for (const auto& pair : config->configs()) {
+    OutputString(
+        indent + pair.label.GetUserVisibleName(toolchain_label) + "\n");
+    PrintSubConfigs(pair.ptr, indent_level + 1);
   }
 }
 
+// This allows configs stored as either std::vector<LabelConfigPair> or
+// UniqueVector<LabelConfigPair> to be printed.
+template <class VectorType>
 void PrintConfigsVector(const Target* target,
-                        const UniqueVector<LabelConfigPair>& configs,
+                        const VectorType& configs,
                         const std::string& heading,
                         bool display_header) {
   if (configs.empty())
     return;
 
+  bool tree = base::CommandLine::ForCurrentProcess()->HasSwitch(kTree);
+
   // Don't sort since the order determines how things are processed.
-  if (display_header)
-    OutputString("\n" + heading + " (in order applying):\n");
+  if (display_header) {
+    if (tree)
+      OutputString("\n" + heading + " tree (in order applying):\n");
+    else
+      OutputString("\n" + heading + " (in order applying, try also --tree):\n");
+  }
 
   Label toolchain_label = target->label().GetToolchainLabel();
   for (const auto& config : configs) {
     OutputString("  " + config.label.GetUserVisibleName(toolchain_label) +
                  "\n");
+    if (tree)
+      PrintSubConfigs(config.ptr, 2);  // 2 = start with double-indent.
   }
 }
 

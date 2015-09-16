@@ -40,7 +40,7 @@ class ConfigValuesIterator {
   const ConfigValues& cur() const {
     if (cur_index_ == -1)
       return target_->config_values();
-    return target_->configs()[cur_index_].ptr->config_values();
+    return target_->configs()[cur_index_].ptr->resolved_values();
   }
 
   // Returns the origin of who added this config, if any. This will always be

@@ -453,7 +453,7 @@ bool Target::ResolvePrecompiledHeaders(Err* err) {
       continue;  // Skip the one on the target itself.
 
     const Config* config = iter.GetCurrentConfig();
-    const ConfigValues& cur = config->config_values();
+    const ConfigValues& cur = config->resolved_values();
     if (!cur.has_precompiled_headers())
       continue;  // This one has no precompiled header info, skip.
 
