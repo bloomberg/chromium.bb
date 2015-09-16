@@ -605,18 +605,22 @@ template("locale_pak_resources") {
 #     different application at runtime to access the package's resources.
 #
 
-# Example
+# Example:
 #   android_resources("foo_resources") {
 #     deps = [":foo_strings_grd"]
 #     resource_dirs = ["res"]
 #     custom_package = "org.chromium.foo"
+#   }
+#
+#   android_resources("foo_resources_overrides") {
+#     deps = [":foo_resources"]
+#     resource_dirs = ["res_overrides"]
 #   }
 template("android_resources") {
   set_sources_assignment_filter([])
   forward_variables_from(invoker, [ "testonly" ])
 
   assert(defined(invoker.resource_dirs))
-  assert(defined(invoker.android_manifest) || defined(invoker.custom_package))
 
   base_path = "$target_gen_dir/$target_name"
   zip_path = base_path + ".resources.zip"
@@ -635,12 +639,19 @@ template("android_resources") {
                              "custom_package",
                              "deps",
                            ])
+
+    # No package means resources override their deps.
+    if (defined(custom_package) || defined(android_manifest)) {
+      r_text = r_text_path
+    } else {
+      assert(defined(invoker.deps),
+             "Must specify deps when custom_package is omitted.")
+    }
     visibility = [ ":$process_resources_target_name" ]
 
     type = "android_resources"
     resources_zip = zip_path
     srcjar = srcjar_path
-    r_text = r_text_path
   }
 
   process_resources(process_resources_target_name) {

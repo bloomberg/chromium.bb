@@ -11,6 +11,7 @@ This will crunch images and generate v14 compatible resources
 """
 
 import codecs
+import collections
 import optparse
 import os
 import re
@@ -25,6 +26,11 @@ from util import build_utils
 sys.path.insert(1,
     os.path.join(os.path.dirname(__file__), '../../../third_party'))
 from jinja2 import Template # pylint: disable=F0401
+
+
+# Represents a line from a R.txt file.
+TextSymbolsEntry = collections.namedtuple('RTextEntry',
+    ('java_type', 'resource_type', 'name', 'value'))
 
 
 def ParseArgs(args):
@@ -135,42 +141,61 @@ def CreateExtraRJavaFiles(
     if len(extra_packages) != len(extra_r_text_files):
       raise Exception('Need one R.txt file per extra package')
 
-    all_resources = {}
     r_txt_file = os.path.join(r_dir, 'R.txt')
     if not os.path.exists(r_txt_file):
       return
-    with open(r_txt_file) as f:
-      for line in f:
-        m = re.match(r'(int(?:\[\])?) (\w+) (\w+) (.+)$', line)
-        if not m:
-          raise Exception('Unexpected line in R.txt: %s' % line)
-        java_type, resource_type, name, value = m.groups()
-        all_resources[(resource_type, name)] = (java_type, value)
 
+    # Map of (resource_type, name) -> Entry.
+    # Contains the correct values for resources.
+    all_resources = {}
+    for entry in _ParseTextSymbolsFile(r_txt_file):
+      all_resources[(entry.resource_type, entry.name)] = entry
+
+    # Map of package_name->resource_type->entry
+    resources_by_package = (
+        collections.defaultdict(lambda: collections.defaultdict(list)))
+    # Build the R.java files using each package's R.txt file, but replacing
+    # each entry's placeholder value with correct values from all_resources.
     for package, r_text_file in zip(extra_packages, extra_r_text_files):
-      if os.path.exists(r_text_file):
-        package_r_java_dir = os.path.join(r_dir, *package.split('.'))
-        build_utils.MakeDirectory(package_r_java_dir)
-        package_r_java_path = os.path.join(package_r_java_dir, 'R.java')
-        CreateExtraRJavaFile(
-            package, package_r_java_path, r_text_file, all_resources,
-            shared_resources)
+      if not os.path.exists(r_text_file):
+        continue
+      if package in resources_by_package:
+        raise Exception(('Package name "%s" appeared twice. All '
+                         'android_resources() targets must use unique package '
+                         'names, or no package name at all.') % package)
+      resources_by_type = resources_by_package[package]
+      # The sub-R.txt files have the wrong values at this point. Read them to
+      # figure out which entries belong to them, but use the values from the
+      # main R.txt file.
+      for entry in _ParseTextSymbolsFile(r_text_file):
+        entry = all_resources[(entry.resource_type, entry.name)]
+        resources_by_type[entry.resource_type].append(entry)
+
+    for package, resources_by_type in resources_by_package.iteritems():
+      package_r_java_dir = os.path.join(r_dir, *package.split('.'))
+      build_utils.MakeDirectory(package_r_java_dir)
+      package_r_java_path = os.path.join(package_r_java_dir, 'R.java')
+      java_file_contents = _CreateExtraRJavaFile(
+          package, resources_by_type, shared_resources)
+      with open(package_r_java_path, 'w') as f:
+        f.write(java_file_contents)
 
 
-def CreateExtraRJavaFile(
-      package, r_java_path, r_text_file, all_resources, shared_resources):
-  resources = {}
-  with open(r_text_file) as f:
+def _ParseTextSymbolsFile(path):
+  """Given an R.txt file, returns a list of TextSymbolsEntry."""
+  ret = []
+  with open(path) as f:
     for line in f:
-      m = re.match(r'int(?:\[\])? (\w+) (\w+) ', line)
+      m = re.match(r'(int(?:\[\])?) (\w+) (\w+) (.+)$', line)
       if not m:
         raise Exception('Unexpected line in R.txt: %s' % line)
-      resource_type, name = m.groups()
-      java_type, value = all_resources[(resource_type, name)]
-      if resource_type not in resources:
-        resources[resource_type] = []
-      resources[resource_type].append((name, java_type, value))
+      java_type, resource_type, name, value = m.groups()
+      ret.append(TextSymbolsEntry(java_type, resource_type, name, value))
+  return ret
 
+
+def _CreateExtraRJavaFile(package, resources_by_type, shared_resources):
+  """Generates the contents of a R.java file."""
   template = Template("""/* AUTO-GENERATED FILE.  DO NOT MODIFY. */
 
 package {{ package }};
@@ -178,11 +203,11 @@ package {{ package }};
 public final class R {
     {% for resource_type in resources %}
     public static final class {{ resource_type }} {
-        {% for name, java_type, value in resources[resource_type] %}
+        {% for e in resources[resource_type] %}
         {% if shared_resources %}
-        public static {{ java_type }} {{ name }} = {{ value }};
+        public static {{ e.java_type }} {{ e.name }} = {{ e.value }};
         {% else %}
-        public static final {{ java_type }} {{ name }} = {{ value }};
+        public static final {{ e.java_type }} {{ e.name }} = {{ e.value }};
         {% endif %}
         {% endfor %}
     }
@@ -190,16 +215,16 @@ public final class R {
     {% if shared_resources %}
     public static void onResourcesLoaded(int packageId) {
         {% for resource_type in resources %}
-        {% for name, java_type, value in resources[resource_type] %}
-        {% if java_type == 'int[]' %}
-        for(int i = 0; i < {{ resource_type }}.{{ name }}.length; ++i) {
-            {{ resource_type }}.{{ name }}[i] =
-                    ({{ resource_type }}.{{ name }}[i] & 0x00ffffff)
+        {% for e in resources[resource_type] %}
+        {% if e.java_type == 'int[]' %}
+        for(int i = 0; i < {{ e.resource_type }}.{{ e.name }}.length; ++i) {
+            {{ e.resource_type }}.{{ e.name }}[i] =
+                    ({{ e.resource_type }}.{{ e.name }}[i] & 0x00ffffff)
                     | (packageId << 24);
         }
         {% else %}
-        {{ resource_type }}.{{ name }} =
-                ({{ resource_type }}.{{ name }} & 0x00ffffff)
+        {{ e.resource_type }}.{{ e.name }} =
+                ({{ e.resource_type }}.{{ e.name }} & 0x00ffffff)
                 | (packageId << 24);
         {% endif %}
         {% endfor %}
@@ -209,10 +234,8 @@ public final class R {
 }
 """, trim_blocks=True, lstrip_blocks=True)
 
-  output = template.render(package=package, resources=resources,
-                           shared_resources=shared_resources)
-  with open(r_java_path, 'w') as f:
-    f.write(output)
+  return template.render(package=package, resources=resources_by_type,
+                         shared_resources=shared_resources)
 
 
 def CrunchDirectory(aapt, input_dir, output_dir):

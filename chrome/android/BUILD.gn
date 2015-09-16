@@ -43,10 +43,10 @@ locale_pak_resources("chrome_locale_paks") {
 
 # GYP: //chrome/chrome.gyp:chrome_java (resources part)
 android_resources("chrome_java_resources") {
-  if (!defined(android_branding_res_dirs)) {
-    android_branding_res_dirs = [ "//chrome/android/java/res_chromium" ]
-  }
-  resource_dirs = [ "java/res" ] + android_branding_res_dirs
+  resource_dirs = [
+    "java/res",
+    "//chrome/android/java/res_chromium",
+  ]
   deps = [
     ":chrome_locale_paks",
     ":chrome_strings_grd",
@@ -334,9 +334,14 @@ android_library("chrome_shared_test_java") {
   ]
 }
 
+# Overrides icon / name defined in chrome_java_resources.
 android_resources("chrome_public_apk_resources") {
   resource_dirs = [ "java/res_chromium" ]
-  custom_package = "org.chromium.chrome"
+
+  # Dep needed to ensure override works properly.
+  deps = [
+    ":chrome_java_resources",
+  ]
 }
 
 chrome_public_apk_assets_dir = "$root_build_dir/chrome_public_apk_assets"
@@ -425,7 +430,6 @@ android_apk("chrome_public_apk") {
 
   deps = [
     ":chrome_java",
-    ":chrome_java_resources",
     ":chrome_public",
     ":chrome_public_apk_assets",
     ":chrome_public_apk_manifest",
