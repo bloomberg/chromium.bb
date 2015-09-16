@@ -33,6 +33,11 @@ class PermissionsUpdater {
     INIT_FLAG_TRANSIENT = 1 << 0,
   };
 
+  enum RemoveType {
+    REMOVE_SOFT,
+    REMOVE_HARD,
+  };
+
   explicit PermissionsUpdater(content::BrowserContext* browser_context);
   PermissionsUpdater(content::BrowserContext* browser_context,
                      InitFlag init_flag);
@@ -46,8 +51,26 @@ class PermissionsUpdater {
 
   // Removes the set of |permissions| from the |extension|'s active permission
   // set and sends the relevant messages and notifications.
+  // If |remove_type| is REMOVE_HARD, this removes the permissions from the
+  // granted permissions in the prefs (meaning that the extension would have
+  // to prompt the user again for permission).
+  // You should use REMOVE_HARD to ensure the extension cannot silently regain
+  // the permission, which is the case when the permission is removed by the
+  // user. If it's the extension itself removing the permission, it is safe to
+  // use REMOVE_SOFT.
   void RemovePermissions(const Extension* extension,
-                         const PermissionSet* permissions);
+                         const PermissionSet* permissions,
+                         RemoveType remove_type);
+
+  // Removes the |permissions| from |extension| and makes no effort to determine
+  // if doing so is safe in the slightlest. This method shouldn't be used,
+  // except for removing permissions totally blacklisted by management.
+  void RemovePermissionsUnsafe(const Extension* extension,
+                               const PermissionSet* permissions);
+
+  // Returns the set of revokable permissions.
+  scoped_refptr<const PermissionSet> GetRevokablePermissions(
+      const Extension* extension) const;
 
   // Adds all permissions in the |extension|'s active permissions to its
   // granted permission set.

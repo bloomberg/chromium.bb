@@ -89,15 +89,10 @@ PermissionSet* PermissionSet::CreateIntersection(
                                       set2_safe->manifest_permissions(),
                                       &manifest_permissions);
 
-  URLPatternSet explicit_hosts;
-  URLPatternSet::CreateIntersection(set1_safe->explicit_hosts(),
-                                    set2_safe->explicit_hosts(),
-                                    &explicit_hosts);
-
-  URLPatternSet scriptable_hosts;
-  URLPatternSet::CreateIntersection(set1_safe->scriptable_hosts(),
-                                    set2_safe->scriptable_hosts(),
-                                    &scriptable_hosts);
+  URLPatternSet explicit_hosts = URLPatternSet::CreateSemanticIntersection(
+      set1_safe->explicit_hosts(), set2_safe->explicit_hosts());
+  URLPatternSet scriptable_hosts = URLPatternSet::CreateSemanticIntersection(
+      set1_safe->scriptable_hosts(), set2_safe->scriptable_hosts());
 
   return new PermissionSet(apis, manifest_permissions,
                            explicit_hosts, scriptable_hosts);

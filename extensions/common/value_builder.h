@@ -67,6 +67,8 @@ class DictionaryBuilder {
                          const base::string16& in_value);
   DictionaryBuilder& Set(const std::string& path, DictionaryBuilder& in_value);
   DictionaryBuilder& Set(const std::string& path, ListBuilder& in_value);
+  DictionaryBuilder& Set(const std::string& path,
+                         scoped_ptr<base::Value> in_value);
 
   // Named differently because overload resolution is too eager to
   // convert implicitly to bool.

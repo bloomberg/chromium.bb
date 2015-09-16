@@ -50,13 +50,19 @@ DictionaryBuilder& DictionaryBuilder::Set(const std::string& path,
 
 DictionaryBuilder& DictionaryBuilder::Set(const std::string& path,
                                           DictionaryBuilder& in_value) {
-  dict_->SetWithoutPathExpansion(path, in_value.Build().release());
+  dict_->SetWithoutPathExpansion(path, in_value.Build().Pass());
   return *this;
 }
 
 DictionaryBuilder& DictionaryBuilder::Set(const std::string& path,
                                           ListBuilder& in_value) {
-  dict_->SetWithoutPathExpansion(path, in_value.Build().release());
+  dict_->SetWithoutPathExpansion(path, in_value.Build().Pass());
+  return *this;
+}
+
+DictionaryBuilder& DictionaryBuilder::Set(const std::string& path,
+                                          scoped_ptr<base::Value> in_value) {
+  dict_->SetWithoutPathExpansion(path, in_value.Pass());
   return *this;
 }
 
@@ -94,12 +100,12 @@ ListBuilder& ListBuilder::Append(const base::string16& in_value) {
 }
 
 ListBuilder& ListBuilder::Append(DictionaryBuilder& in_value) {
-  list_->Append(in_value.Build().release());
+  list_->Append(in_value.Build().Pass());
   return *this;
 }
 
 ListBuilder& ListBuilder::Append(ListBuilder& in_value) {
-  list_->Append(in_value.Build().release());
+  list_->Append(in_value.Build().Pass());
   return *this;
 }
 

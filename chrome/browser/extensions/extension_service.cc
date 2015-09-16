@@ -1849,7 +1849,7 @@ void ExtensionService::OnExtensionManagementSettingsChanged() {
     if (!settings->IsPermissionSetAllowed(
             extension.get(),
             extension->permissions_data()->active_permissions())) {
-      extensions::PermissionsUpdater(profile()).RemovePermissions(
+      extensions::PermissionsUpdater(profile()).RemovePermissionsUnsafe(
           extension.get(),
           settings->GetBlockedPermissions(extension.get()).get());
     }

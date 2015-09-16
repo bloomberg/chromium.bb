@@ -174,6 +174,36 @@ TEST(URLPatternSetTest, CreateIntersection) {
   EXPECT_TRUE(set2.Contains(result));
 }
 
+TEST(URLPatternSetTest, CreateSemanticIntersection) {
+  {
+    URLPatternSet set1;
+    AddPattern(&set1, "http://*.google.com/*");
+    AddPattern(&set1, "http://*.yahoo.com/*");
+
+    URLPatternSet set2;
+    AddPattern(&set2, "http://google.com/*");
+
+    // The semantic intersection should contain only those patterns that are in
+    // both set 1 and set 2, or "http://google.com/*".
+    URLPatternSet intersection =
+        URLPatternSet::CreateSemanticIntersection(set1, set2);
+    ASSERT_EQ(1u, intersection.size());
+    EXPECT_EQ("http://google.com/*", intersection.begin()->GetAsString());
+  }
+
+  {
+    // We don't handle funny intersections, where the resultant pattern is
+    // neither of the two compared patterns. So the intersection of these two
+    // is not http://www.google.com/*, but rather nothing.
+    URLPatternSet set1;
+    AddPattern(&set1, "http://*/*");
+    URLPatternSet set2;
+    AddPattern(&set2, "*://www.google.com/*");
+    EXPECT_TRUE(
+        URLPatternSet::CreateSemanticIntersection(set1, set2).is_empty());
+  }
+}
+
 TEST(URLPatternSetTest, CreateUnion) {
   URLPatternSet empty_set;
 

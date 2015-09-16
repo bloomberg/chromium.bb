@@ -129,8 +129,9 @@ void RemoveBackgroundPermission(ExtensionService* service,
                                                        service->profile())) {
     return;
   }
-  extensions::PermissionsUpdater(service->profile()).RemovePermissions(
-      extension, extension->permissions_data()->active_permissions().get());
+  extensions::PermissionsUpdater(service->profile())
+      .RemovePermissionsUnsafe(
+          extension, extension->permissions_data()->active_permissions().get());
 }
 
 void AddEphemeralApp(const Extension* extension, ExtensionService* service) {

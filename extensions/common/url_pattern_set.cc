@@ -36,8 +36,24 @@ void URLPatternSet::CreateDifference(const URLPatternSet& set1,
 void URLPatternSet::CreateIntersection(const URLPatternSet& set1,
                                        const URLPatternSet& set2,
                                        URLPatternSet* out) {
+  out->patterns_.clear();
   out->patterns_ = base::STLSetIntersection<std::set<URLPattern> >(
       set1.patterns_, set2.patterns_);
+}
+
+URLPatternSet URLPatternSet::CreateSemanticIntersection(
+    const URLPatternSet& set1,
+    const URLPatternSet& set2) {
+  URLPatternSet result;
+  for (const URLPattern& pattern : set1) {
+    if (set2.ContainsPattern(pattern))
+      result.patterns_.insert(pattern);
+  }
+  for (const URLPattern& pattern : set2) {
+    if (set1.ContainsPattern(pattern))
+      result.patterns_.insert(pattern);
+  }
+  return result;
 }
 
 // static

@@ -37,6 +37,17 @@ class URLPatternSet {
                                  const URLPatternSet& set2,
                                  URLPatternSet* out);
 
+  // Creates an intersection result where result has every element that is
+  // contained by both |set1| and |set2|. This is different than
+  // CreateIntersection(), which does string comparisons. For example, the
+  // semantic intersection of ("http://*.google.com/*") and
+  // ("http://google.com/*") is ("http://google.com/*"), but the result from
+  // CreateIntersection() would be ().
+  // TODO(devlin): This is weird. We probably want to use mostly
+  // CreateSemanticIntersection().
+  static URLPatternSet CreateSemanticIntersection(const URLPatternSet& set1,
+                                                  const URLPatternSet& set2);
+
   // Clears |out| and populates the set with the union of |set1| and |set2|.
   static void CreateUnion(const URLPatternSet& set1,
                           const URLPatternSet& set2,

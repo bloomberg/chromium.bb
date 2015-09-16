@@ -110,7 +110,6 @@ bool IsValidPortForScheme(const std::string& scheme, const std::string& port) {
 std::string StripTrailingWildcard(const std::string& path) {
   size_t wildcard_index = path.find('*');
   size_t path_last = path.size() - 1;
-  DCHECK(wildcard_index == std::string::npos || wildcard_index == path_last);
   return wildcard_index == path_last ? path.substr(0, path_last) : path;
 }
 
@@ -534,10 +533,11 @@ bool URLPattern::OverlapsWith(const URLPattern& other) const {
 bool URLPattern::Contains(const URLPattern& other) const {
   if (match_all_urls())
     return true;
-  return MatchesAllSchemes(other.GetExplicitSchemes())
-      && MatchesHost(other.host())
-      && MatchesPortPattern(other.port())
-      && MatchesPath(StripTrailingWildcard(other.path()));
+  return MatchesAllSchemes(other.GetExplicitSchemes()) &&
+         MatchesHost(other.host()) &&
+         (!other.match_subdomains_ || match_subdomains_) &&
+         MatchesPortPattern(other.port()) &&
+         MatchesPath(StripTrailingWildcard(other.path()));
 }
 
 bool URLPattern::MatchesAnyScheme(

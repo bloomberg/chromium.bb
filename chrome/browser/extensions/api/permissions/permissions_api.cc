@@ -98,18 +98,33 @@ bool PermissionsRemoveFunction::RunSync() {
     }
   }
 
-  // Make sure we don't remove any required pemissions.
+  // Make sure we only remove optional permissions, and not required
+  // permissions. Sadly, for some reason we support having a permission be both
+  // optional and required (and should assume its required), so we need both of
+  // these checks.
+  // TODO(devlin): *Why* do we support that? Should be a load error.
+  scoped_refptr<const PermissionSet> optional =
+      PermissionsParser::GetOptionalPermissions(extension());
   scoped_refptr<const PermissionSet> required =
       PermissionsParser::GetRequiredPermissions(extension());
-  scoped_refptr<PermissionSet> intersection(
-      PermissionSet::CreateIntersection(permissions.get(), required.get()));
-  if (!intersection->IsEmpty()) {
+  if (!optional->Contains(*permissions) ||
+      !scoped_refptr<const PermissionSet>(
+           PermissionSet::CreateIntersection(permissions.get(), required.get()))
+           ->IsEmpty()) {
     error_ = kCantRemoveRequiredPermissionsError;
     return false;
   }
 
+  // Only try and remove those permissions that are active on the extension.
+  // For backwards compatability with behavior before this check was added, just
+  // silently remove any that aren't present.
+  permissions = PermissionSet::CreateIntersection(
+      permissions.get(),
+      extension()->permissions_data()->active_permissions().get());
+
   PermissionsUpdater(GetProfile())
-      .RemovePermissions(extension(), permissions.get());
+      .RemovePermissions(extension(), permissions.get(),
+                         PermissionsUpdater::REMOVE_SOFT);
   results_ = Remove::Results::Create(true);
   return true;
 }

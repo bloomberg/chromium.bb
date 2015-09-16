@@ -35,6 +35,24 @@ namespace extensions {
 
 namespace {
 
+scoped_refptr<const Extension> CreateExtensionWithOptionalPermissions(
+    scoped_ptr<base::Value> optional_permissions,
+    scoped_ptr<base::Value> permissions,
+    const std::string& name) {
+  return ExtensionBuilder()
+      .SetLocation(Manifest::INTERNAL)
+      .SetManifest(
+          DictionaryBuilder()
+              .Set("name", name)
+              .Set("description", "foo")
+              .Set("manifest_version", 2)
+              .Set("version", "0.1.2.3")
+              .Set("permissions", permissions.Pass())
+              .Set("optional_permissions", optional_permissions.Pass()))
+      .SetID(crx_file::id_util::GenerateId(name))
+      .Build();
+}
+
 scoped_refptr<const Extension> CreateExtensionWithPermissions(
     const std::set<URLPattern>& scriptable_hosts,
     const std::set<URLPattern>& explicit_hosts,
@@ -204,7 +222,6 @@ TEST_F(PermissionsUpdaterTest, AddAndRemovePermissions) {
 
   // Add a few permissions.
   APIPermissionSet apis;
-  apis.insert(APIPermission::kTab);
   apis.insert(APIPermission::kNotifications);
   URLPatternSet hosts;
   AddPattern(&hosts, "http://*.c.com/*");
@@ -252,7 +269,8 @@ TEST_F(PermissionsUpdaterTest, AddAndRemovePermissions) {
                             hosts, URLPatternSet());
 
   listener.Reset();
-  updater.RemovePermissions(extension.get(), delta.get());
+  updater.RemovePermissions(extension.get(), delta.get(),
+                            PermissionsUpdater::REMOVE_SOFT);
   listener.Wait();
 
   // Verify that the notification was correct.
@@ -470,6 +488,139 @@ TEST_F(PermissionsUpdaterTest, WithholdAllHostsWithTransientSwitch) {
       permissions_data->withheld_permissions()->scriptable_hosts().patterns(),
       all_host_patterns));
   EXPECT_FALSE(util::AllowedScriptingOnAllUrls(extension_b->id(), profile()));
+}
+
+TEST_F(PermissionsUpdaterTest, RevokingPermissions) {
+  InitializeEmptyExtensionService();
+
+  ExtensionPrefs* prefs = ExtensionPrefs::Get(profile());
+
+  auto api_permission_set = [](APIPermission::ID id) {
+    APIPermissionSet apis;
+    apis.insert(id);
+    return scoped_refptr<PermissionSet>(new PermissionSet(
+        apis, ManifestPermissionSet(), URLPatternSet(), URLPatternSet()));
+  };
+
+  auto url_permission_set = [](const GURL& url) {
+    URLPatternSet set;
+    URLPattern pattern(URLPattern::SCHEME_ALL, url.spec());
+    set.AddPattern(pattern);
+    return scoped_refptr<PermissionSet>(new PermissionSet(
+        APIPermissionSet(), ManifestPermissionSet(), set, URLPatternSet()));
+  };
+
+  {
+    // Test revoking optional permissions.
+    ListBuilder optional_permissions;
+    optional_permissions.Append("tabs").Append("cookies").Append("management");
+    ListBuilder required_permissions;
+    required_permissions.Append("topSites");
+    scoped_refptr<const Extension> extension =
+        CreateExtensionWithOptionalPermissions(optional_permissions.Build(),
+                                               required_permissions.Build(),
+                                               "My Extension");
+
+    PermissionsUpdater updater(profile());
+    EXPECT_TRUE(updater.GetRevokablePermissions(extension.get())->IsEmpty());
+
+    // Add the optional "cookies" permission.
+    updater.AddPermissions(extension.get(),
+                           api_permission_set(APIPermission::kCookie).get());
+    const PermissionsData* permissions = extension->permissions_data();
+    // The extension should have the permission in its active permissions and
+    // its granted permissions (stored in prefs). And, the permission should
+    // be revokable.
+    EXPECT_TRUE(permissions->HasAPIPermission(APIPermission::kCookie));
+    scoped_refptr<const PermissionSet> granted_permissions =
+        prefs->GetGrantedPermissions(extension->id());
+    EXPECT_TRUE(granted_permissions->HasAPIPermission(APIPermission::kCookie));
+    EXPECT_TRUE(updater.GetRevokablePermissions(extension.get())
+                    ->HasAPIPermission(APIPermission::kCookie));
+
+    // Repeat with "tabs".
+    updater.AddPermissions(extension.get(),
+                           api_permission_set(APIPermission::kTab).get());
+    EXPECT_TRUE(permissions->HasAPIPermission(APIPermission::kTab));
+    granted_permissions = prefs->GetGrantedPermissions(extension->id());
+    EXPECT_TRUE(granted_permissions->HasAPIPermission(APIPermission::kTab));
+    EXPECT_TRUE(updater.GetRevokablePermissions(extension.get())
+                    ->HasAPIPermission(APIPermission::kTab));
+
+    // Remove the "tabs" permission. The extension should no longer have it
+    // in its active or granted permissions, and it shouldn't be revokable.
+    // The extension should still have the "cookies" permission.
+    updater.RemovePermissions(extension.get(),
+                              api_permission_set(APIPermission::kTab).get(),
+                              PermissionsUpdater::REMOVE_HARD);
+    EXPECT_FALSE(permissions->HasAPIPermission(APIPermission::kTab));
+    granted_permissions = prefs->GetGrantedPermissions(extension->id());
+    EXPECT_FALSE(granted_permissions->HasAPIPermission(APIPermission::kTab));
+    EXPECT_FALSE(updater.GetRevokablePermissions(extension.get())
+                     ->HasAPIPermission(APIPermission::kTab));
+    EXPECT_TRUE(permissions->HasAPIPermission(APIPermission::kCookie));
+    granted_permissions = prefs->GetGrantedPermissions(extension->id());
+    EXPECT_TRUE(granted_permissions->HasAPIPermission(APIPermission::kCookie));
+    EXPECT_TRUE(updater.GetRevokablePermissions(extension.get())
+                    ->HasAPIPermission(APIPermission::kCookie));
+  }
+
+  {
+    // Test revoking non-optional host permissions with click-to-script.
+    FeatureSwitch::ScopedOverride scoped_override(
+        FeatureSwitch::scripts_require_action(), true);
+    ListBuilder optional_permissions;
+    optional_permissions.Append("tabs");
+    ListBuilder required_permissions;
+    required_permissions.Append("topSites")
+        .Append("http://*/*")
+        .Append("http://*.google.com/*");
+    scoped_refptr<const Extension> extension =
+        CreateExtensionWithOptionalPermissions(optional_permissions.Build(),
+                                               required_permissions.Build(),
+                                               "My Extension");
+    PermissionsUpdater updater(profile());
+    updater.InitializePermissions(extension.get());
+
+    // By default, all-hosts was withheld, so the extension shouldn't have
+    // access to any site (like foo.com).
+    const GURL kOrigin("http://foo.com");
+    EXPECT_FALSE(extension->permissions_data()
+                     ->active_permissions()
+                     ->HasExplicitAccessToOrigin(kOrigin));
+    EXPECT_TRUE(extension->permissions_data()
+                    ->withheld_permissions()
+                    ->HasExplicitAccessToOrigin(kOrigin));
+
+    const GURL kRequiredOrigin("http://www.google.com/");
+    EXPECT_TRUE(extension->permissions_data()
+                    ->active_permissions()
+                    ->HasExplicitAccessToOrigin(kRequiredOrigin));
+    EXPECT_FALSE(updater.GetRevokablePermissions(extension.get())
+                     ->HasExplicitAccessToOrigin(kRequiredOrigin));
+
+    // Give the extension access to foo.com. Now, the foo.com permission should
+    // be revokable.
+    updater.AddPermissions(extension.get(), url_permission_set(kOrigin).get());
+    EXPECT_TRUE(extension->permissions_data()
+                    ->active_permissions()
+                    ->HasExplicitAccessToOrigin(kOrigin));
+    EXPECT_TRUE(updater.GetRevokablePermissions(extension.get())
+                    ->HasExplicitAccessToOrigin(kOrigin));
+
+    // Revoke the foo.com permission. The extension should no longer have
+    // access to foo.com, and the revokable permissions should be empty.
+    updater.RemovePermissions(extension.get(),
+                              url_permission_set(kOrigin).get(),
+                              PermissionsUpdater::REMOVE_HARD);
+    EXPECT_FALSE(extension->permissions_data()
+                     ->active_permissions()
+                     ->HasExplicitAccessToOrigin(kOrigin));
+    EXPECT_TRUE(extension->permissions_data()
+                    ->withheld_permissions()
+                    ->HasExplicitAccessToOrigin(kOrigin));
+    EXPECT_TRUE(updater.GetRevokablePermissions(extension.get())->IsEmpty());
+  }
 }
 
 }  // namespace extensions

@@ -742,6 +742,8 @@ TEST(ExtensionURLPatternTest, Subset) {
   URLPattern pattern11(kAllSchemes, "http://example.com/*");
   URLPattern pattern12(kAllSchemes, "*://example.com/*");
   URLPattern pattern13(kAllSchemes, "*://example.com/foo/*");
+  URLPattern pattern14(kAllSchemes, "http://yahoo.com/*");
+  URLPattern pattern15(kAllSchemes, "http://*.yahoo.com/*");
 
   // All patterns should encompass themselves.
   EXPECT_TRUE(pattern1.Contains(pattern1));
@@ -808,6 +810,7 @@ TEST(ExtensionURLPatternTest, Subset) {
   EXPECT_TRUE(StrictlyContains(pattern12, pattern11));
   EXPECT_TRUE(NeitherContains(pattern11, pattern13));
   EXPECT_TRUE(StrictlyContains(pattern12, pattern13));
+  EXPECT_TRUE(StrictlyContains(pattern15, pattern14));
 }
 
 TEST(ExtensionURLPatternTest, MatchesSingleOrigin) {
