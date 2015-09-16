@@ -1585,6 +1585,9 @@ crbug.com/524826 [ Win10 ] compositing/squashing/squashing-reflection-disallowed
 
 crbug.com/526752 [ Win10 ] fast/css/fontfaceset-check-platform-fonts.html [ Failure Pass ]
 
+# This test has different results in Debug and Release.
+crbug.com/529038 [ Debug ] virtual/gpu/fast/canvas/canvas-composite-repaint-by-all-imagesource.html [ Failure ]
+
 crbug.com/532539 [ XP ] tables/mozilla/bugs/bug72359.xml [ NeedsRebaseline ]
 crbug.com/532539 [ XP ] fast/table/add-before-anonymous-child.html [ NeedsRebaseline ]
 crbug.com/532539 [ XP ] fast/table/table-after-child-in-table.html [ NeedsRebaseline ]
