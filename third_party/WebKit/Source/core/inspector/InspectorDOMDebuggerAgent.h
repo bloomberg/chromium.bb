@@ -100,6 +100,7 @@ public:
 
     void disable(ErrorString*) override;
     void restore() override;
+    void didCommitLoadForLocalFrame(LocalFrame*) override;
 
 private:
     InspectorDOMDebuggerAgent(InjectedScriptManager*, InspectorDOMAgent*, V8DebuggerAgent*);

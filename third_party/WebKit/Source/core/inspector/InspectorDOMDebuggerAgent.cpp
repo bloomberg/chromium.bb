@@ -677,4 +677,9 @@ void InspectorDOMDebuggerAgent::setEnabled(bool enabled)
     }
 }
 
+void InspectorDOMDebuggerAgent::didCommitLoadForLocalFrame(LocalFrame*)
+{
+    m_domBreakpoints.clear();
+}
+
 } // namespace blink
