@@ -132,7 +132,7 @@ PortalDetectorStrategy::PortalDetectorStrategy(Delegate* delegate)
 PortalDetectorStrategy::~PortalDetectorStrategy() {
 }
 
-// statc
+// static
 scoped_ptr<PortalDetectorStrategy> PortalDetectorStrategy::CreateById(
     StrategyId id,
     Delegate* delegate) {
@@ -148,7 +148,7 @@ scoped_ptr<PortalDetectorStrategy> PortalDetectorStrategy::CreateById(
     default:
       NOTREACHED();
       return scoped_ptr<PortalDetectorStrategy>(
-          static_cast<PortalDetectorStrategy*>(NULL));
+          static_cast<PortalDetectorStrategy*>(nullptr));
   }
 }
 
@@ -176,10 +176,6 @@ void PortalDetectorStrategy::SetPolicyAndReset(
 
 void PortalDetectorStrategy::OnDetectionCompleted() {
   backoff_entry_->InformOfRequest(false);
-}
-
-base::TimeDelta PortalDetectorStrategy::GetNextAttemptTimeoutImpl() {
-  return base::TimeDelta();
 }
 
 }  // namespace chromeos

@@ -69,7 +69,6 @@
 #include "chromeos/login/auth/user_context.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
-#include "chromeos/network/portal_detector/network_portal_detector.h"
 #include "components/login/localized_values_builder.h"
 #include "components/proximity_auth/screenlock_bridge.h"
 #include "components/user_manager/user.h"

@@ -236,8 +236,9 @@ const char NetworkPortalNotificationController::kUserActionMetric[] =
     "CaptivePortal.Notification.UserAction";
 
 NetworkPortalNotificationController::NetworkPortalNotificationController()
-    : dialog_(nullptr), ignore_no_network_for_testing_(false) {
-}
+    : dialog_(nullptr),
+      ignore_no_network_for_testing_(false),
+      weak_factory_(this) {}
 
 NetworkPortalNotificationController::~NetworkPortalNotificationController() {
 }
@@ -302,7 +303,7 @@ void NetworkPortalNotificationController::ShowDialog() {
     return;
 
   Profile* signin_profile = ProfileHelper::GetSigninProfile();
-  dialog_ = new NetworkPortalWebDialog(AsWeakPtr());
+  dialog_ = new NetworkPortalWebDialog(weak_factory_.GetWeakPtr());
   dialog_->SetWidget(views::Widget::GetWidgetForNativeWindow(
       chrome::ShowWebDialog(nullptr, signin_profile, dialog_)));
 }
@@ -321,7 +322,7 @@ NetworkPortalNotificationController::CreateDefaultCaptivePortalNotification(
   message_center::RichNotificationData data;
   scoped_refptr<NetworkPortalNotificationControllerDelegate> delegate(
       new NetworkPortalNotificationControllerDelegate(
-          std::string(), network->guid(), AsWeakPtr()));
+          std::string(), network->guid(), weak_factory_.GetWeakPtr()));
   gfx::Image& icon = GetImageForNotification();
   message_center::NotifierId notifier_id(
       message_center::NotifierId::SYSTEM_COMPONENT,
@@ -350,7 +351,7 @@ scoped_ptr<message_center::Notification> NetworkPortalNotificationController::
   message_center::RichNotificationData data;
   scoped_refptr<NetworkPortalNotificationControllerDelegate> delegate(
       new NetworkPortalNotificationControllerDelegate(
-          extension->id(), network->guid(), AsWeakPtr()));
+          extension->id(), network->guid(), weak_factory_.GetWeakPtr()));
   gfx::Image& icon = GetImageForNotification();
   message_center::NotifierId notifier_id(
       message_center::NotifierId::SYSTEM_COMPONENT,

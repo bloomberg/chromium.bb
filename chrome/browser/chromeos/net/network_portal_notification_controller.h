@@ -24,8 +24,7 @@ namespace chromeos {
 class NetworkState;
 class NetworkPortalWebDialog;
 
-class NetworkPortalNotificationController
-    : public base::SupportsWeakPtr<NetworkPortalNotificationController> {
+class NetworkPortalNotificationController {
  public:
   // The values of these metrics are being used for UMA gathering, so it is
   // important that they don't change between releases.
@@ -129,6 +128,8 @@ class NetworkPortalNotificationController
   // This is called if the controller learns about a potential change of the
   // captive portal.
   base::Closure retry_detection_callback_;
+
+  base::WeakPtrFactory<NetworkPortalNotificationController> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkPortalNotificationController);
 };

@@ -68,7 +68,7 @@ class CHROMEOS_EXPORT PortalDetectorStrategy {
   explicit PortalDetectorStrategy(Delegate* delegate);
 
   // Interface for subclasses:
-  virtual base::TimeDelta GetNextAttemptTimeoutImpl();
+  virtual base::TimeDelta GetNextAttemptTimeoutImpl() = 0;
 
   Delegate* delegate_;
   net::BackoffEntry::Policy policy_;

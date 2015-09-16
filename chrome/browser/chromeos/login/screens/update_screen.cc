@@ -261,7 +261,7 @@ void UpdateScreen::OnPortalDetectionCompleted(
                << "state.status=" << state.status << ", "
                << "state.response_code=" << state.response_code;
 
-  // Wait for the sane detection results.
+  // Wait for sane detection results.
   if (network &&
       state.status == NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_UNKNOWN) {
     return;
