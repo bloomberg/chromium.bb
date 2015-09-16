@@ -706,8 +706,6 @@ crbug.com/517449 [ Android ] css3/images/optimize-contrast-image.html [ ImageOnl
 
 crbug.com/309675 compositing/gestures/gesture-tapHighlight-simple-longPress.html [ ImageOnlyFailure ]
 
-crbug.com/505670 [ Debug ] css3/filters/huge-region.html [ Skip ]
-
 crbug.com/509581 [ Win ] css3/filters/filter-repaint-composited-fallback-crash.html [ ImageOnlyFailure ]
 crbug.com/509581 [ Win ] css3/filters/filter-repaint-composited-fallback.html [ ImageOnlyFailure ]
 
