@@ -1015,11 +1015,6 @@ IPC_SYNC_MESSAGE_CONTROL0_2(ViewHostMsg_GetAudioHardwareConfig,
                             media::AudioParameters /* input parameters */,
                             media::AudioParameters /* output parameters */)
 
-// Asks the browser for the renderer process memory size stats.
-IPC_SYNC_MESSAGE_CONTROL0_2(ViewHostMsg_GetProcessMemorySizes,
-                            size_t /* private_bytes */,
-                            size_t /* shared_bytes */)
-
 // These three messages are sent to the parent RenderViewHost to display the
 // page/widget that was created by
 // CreateWindow/CreateWidget/CreateFullscreenWidget. routing_id
@@ -1125,10 +1120,6 @@ IPC_MESSAGE_ROUTED1(ViewHostMsg_WindowlessPluginDummyWindowCreated,
 
 IPC_MESSAGE_ROUTED1(ViewHostMsg_WindowlessPluginDummyWindowDestroyed,
                     gfx::NativeViewId /* dummy_activation_window */)
-
-// Asks the browser for the user's monitor profile.
-IPC_SYNC_MESSAGE_CONTROL0_1(ViewHostMsg_GetMonitorColorProfile,
-                            std::vector<char> /* profile */)
 #endif
 
 // Get the list of proxies to use for |url|, as a semicolon delimited list
@@ -1278,23 +1269,11 @@ IPC_MESSAGE_ROUTED2(ViewHostMsg_UpdateZoomLimits,
                     int /* minimum_percent */,
                     int /* maximum_percent */)
 
-// Notify the browser that this render process can or can't be suddenly
-// terminated.
-IPC_MESSAGE_CONTROL1(ViewHostMsg_SuddenTerminationChanged,
-                     bool /* enabled */)
-
 IPC_MESSAGE_ROUTED3(
     ViewHostMsg_SwapCompositorFrame,
     uint32 /* output_surface_id */,
     cc::CompositorFrame /* frame */,
     std::vector<IPC::Message> /* messages_to_deliver_with_frame */)
-
-// Message sent from the renderer to the browser to request that the browser
-// cache |data| associated with |url| and |expected_response_time|.
-IPC_MESSAGE_CONTROL3(ViewHostMsg_DidGenerateCacheableMetadata,
-                     GURL /* url */,
-                     base::Time /* expected_response_time */,
-                     std::vector<char> /* data */)
 
 // Send back a string to be recorded by UserMetrics.
 IPC_MESSAGE_CONTROL1(ViewHostMsg_UserMetricsRecordAction,

@@ -135,7 +135,7 @@ RenderMessageFilter::~RenderMessageFilter() {
 bool RenderMessageFilter::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(RenderMessageFilter, message)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_GetProcessMemorySizes,
+    IPC_MESSAGE_HANDLER(RenderProcessHostMsg_GetProcessMemorySizes,
                         OnGetProcessMemorySizes)
     IPC_MESSAGE_HANDLER(ViewHostMsg_GenerateRoutingID, OnGenerateRoutingID)
     IPC_MESSAGE_HANDLER(ViewHostMsg_CreateWindow, OnCreateWindow)
@@ -175,7 +175,7 @@ bool RenderMessageFilter::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ChildProcessHostMsg_DeletedDiscardableSharedMemory,
                         OnDeletedDiscardableSharedMemory)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(RenderProcessHostMsg_Keygen, OnKeygen)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_DidGenerateCacheableMetadata,
+    IPC_MESSAGE_HANDLER(RenderProcessHostMsg_DidGenerateCacheableMetadata,
                         OnCacheableMetadataAvailable)
     IPC_MESSAGE_HANDLER(ViewHostMsg_GetAudioHardwareConfig,
                         OnGetAudioHardwareConfig)
@@ -184,7 +184,7 @@ bool RenderMessageFilter::OnMessageReceived(const IPC::Message& message) {
 #elif defined(OS_WIN)
     IPC_MESSAGE_HANDLER(RenderProcessHostMsg_PreCacheFontCharacters,
                         OnPreCacheFontCharacters)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_GetMonitorColorProfile,
+    IPC_MESSAGE_HANDLER(RenderProcessHostMsg_GetMonitorColorProfile,
                         OnGetMonitorColorProfile)
 #endif
     IPC_MESSAGE_HANDLER(ViewHostMsg_MediaLogEvents, OnMediaLogEvents)
@@ -211,7 +211,7 @@ base::TaskRunner* RenderMessageFilter::OverrideTaskRunnerForMessage(
     const IPC::Message& message) {
 #if defined(OS_WIN)
   // Windows monitor profile must be read from a file.
-  if (message.type() == ViewHostMsg_GetMonitorColorProfile::ID)
+  if (message.type() == RenderProcessHostMsg_GetMonitorColorProfile::ID)
     return BrowserThread::GetBlockingPool();
 #endif
   // Always query audio device parameters on the audio thread.
