@@ -15,13 +15,17 @@ import org.chromium.chrome.browser.signin.SigninPromoUma;
  * ChromePreferenceManager stores and retrieves various values in Android shared preferences.
  */
 public class ChromePreferenceManager {
+    /**
+     * Preference that denotes that Chrome has attempted to migrate from tabbed mode to document
+     * mode.
+     */
+    public static final String MIGRATION_ON_UPGRADE_ATTEMPTED = "migration_on_upgrade_attempted";
 
     private static final String BREAKPAD_UPLOAD_SUCCESS = "breakpad_upload_success";
     private static final String BREAKPAD_UPLOAD_FAIL = "breakpad_upload_fail";
     private static final String PROMOS_SKIPPED_ON_FIRST_START = "promos_skipped_on_first_start";
     private static final String SIGNIN_PROMO_LAST_SHOWN = "signin_promo_last_timestamp_key";
     private static final String SHOW_SIGNIN_PROMO = "show_signin_promo";
-    private static final String MIGRATION_ON_UPGRADE_ATTEMPTED = "migration_on_upgrade_attempted";
     private static final String ALLOW_LOW_END_DEVICE_UI = "allow_low_end_device_ui";
     private static final String PREF_WEBSITE_SETTINGS_FILTER = "website_settings_filter";
     private static final String CONTEXTUAL_SEARCH_PROMO_OPEN_COUNT =
