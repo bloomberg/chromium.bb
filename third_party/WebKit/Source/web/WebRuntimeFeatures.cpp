@@ -219,11 +219,6 @@ void WebRuntimeFeatures::enableScriptedSpeech(bool enable)
     RuntimeEnabledFeatures::setScriptedSpeechEnabled(enable);
 }
 
-void WebRuntimeFeatures::enableSlimmingPaint(bool)
-{
-    // TODO(pdr): Remove this function because slimming paint is on by default.
-}
-
 void WebRuntimeFeatures::enableSlimmingPaintV2(bool enable)
 {
     RuntimeEnabledFeatures::setSlimmingPaintV2Enabled(enable);
