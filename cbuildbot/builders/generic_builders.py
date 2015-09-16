@@ -14,6 +14,7 @@ import traceback
 
 from chromite.cbuildbot import constants
 from chromite.cbuildbot import failures_lib
+from chromite.cbuildbot import manifest_version
 from chromite.cbuildbot import results_lib
 from chromite.cbuildbot import trybot_patch_pool
 from chromite.cbuildbot.stages import build_stages
@@ -152,9 +153,11 @@ class Builder(object):
   def GetVersionInfo(self):
     """Returns a manifest_version.VersionInfo object for this build.
 
-    Subclasses must override this method.
+    Chrome OS Subclasses must override this method. Site specific builds which
+    don't use Chrome OS versioning should leave this alone.
     """
-    raise NotImplementedError()
+    # Placeholder version for non-Chrome OS builds.
+    return manifest_version.VersionInfo('1.0.0')
 
   def GetSyncInstance(self):
     """Returns an instance of a SyncStage that should be run.
