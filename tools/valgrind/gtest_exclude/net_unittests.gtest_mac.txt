@@ -1,5 +1,2 @@
 # Very slow under Valgrind, (see <http://crbug.com/37289>).
 KeygenHandlerTest.SmokeTest
-
-# Fails under Mac Valgrind (see http://crbug.com/527544).
-*SpdySessionTest.ReadDataWithoutYielding*
