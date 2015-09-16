@@ -7,8 +7,8 @@ module device.usb;
 import "device.mojom";
 
 interface PermissionProvider {
-  // Filters a set of |requested_guids| down to the set of |allowed_guids| that
-  // should be accessible to clients of the DeviceManager instance.
-  HasDevicePermission(array<string> requested_guids)
+  // Filters a set of |requested_devices| down to the set of |allowed_guids|
+  // that should be accessible to clients of the DeviceManager instance.
+  HasDevicePermission(array<DeviceInfo> requested_devices)
       => (array<string> allowed_guids);
 };

@@ -51,6 +51,23 @@ void GetDevicesOnServiceThread(
   }
 }
 
+void GetDeviceOnServiceThread(
+    const mojo::String& guid,
+    const base::Callback<void(DeviceInfoPtr)>& callback,
+    scoped_refptr<base::TaskRunner> callback_task_runner) {
+  DeviceInfoPtr device_info;
+  DCHECK(DeviceClient::Get());
+  UsbService* usb_service = DeviceClient::Get()->GetUsbService();
+  if (usb_service) {
+    scoped_refptr<UsbDevice> device = usb_service->GetDevice(guid);
+    if (device)
+      device_info = DeviceInfo::From(*device);
+  }
+
+  callback_task_runner->PostTask(
+      FROM_HERE, base::Bind(callback, base::Passed(&device_info)));
+}
+
 void RunOpenDeviceCallback(const DeviceManager::OpenDeviceCallback& callback,
                            OpenDeviceError error) {
   callback.Run(error);
@@ -211,10 +228,28 @@ void DeviceManagerImpl::OpenDevice(
     const mojo::String& guid,
     mojo::InterfaceRequest<Device> device_request,
     const OpenDeviceCallback& callback) {
-  mojo::Array<mojo::String> requested_guids(1);
-  requested_guids[0] = guid;
+  auto has_permission_callback = base::Bind(
+      &DeviceManagerImpl::OnGotDeviceInfoForOpen, weak_factory_.GetWeakPtr(),
+      base::Passed(&device_request), callback);
+  service_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&GetDeviceOnServiceThread, guid, has_permission_callback,
+                 base::ThreadTaskRunnerHandle::Get()));
+}
+
+void DeviceManagerImpl::OnGotDeviceInfoForOpen(
+    mojo::InterfaceRequest<Device> device_request,
+    const OpenDeviceCallback& callback,
+    DeviceInfoPtr device_info) {
+  if (!device_info) {
+    callback.Run(OPEN_DEVICE_ERROR_NOT_FOUND);
+    return;
+  }
+
+  mojo::Array<DeviceInfoPtr> requested_devices(1);
+  requested_devices[0] = device_info.Pass();
   permission_provider_->HasDevicePermission(
-      requested_guids.Pass(),
+      requested_devices.Pass(),
       base::Bind(&DeviceManagerImpl::OnOpenDevicePermissionCheckComplete,
                  base::Unretained(this), base::Passed(&device_request),
                  callback));
@@ -244,16 +279,16 @@ void DeviceManagerImpl::OnGetDevices(EnumerationOptionsPtr options,
     filters = options->filters.To<std::vector<UsbDeviceFilter>>();
 
   std::map<std::string, scoped_refptr<UsbDevice>> device_map;
-  mojo::Array<mojo::String> requested_guids(0);
+  mojo::Array<DeviceInfoPtr> requested_devices(0);
   for (const auto& device : devices) {
     if (filters.empty() || UsbDeviceFilter::MatchesAny(device, filters)) {
       device_map[device->guid()] = device;
-      requested_guids.push_back(device->guid());
+      requested_devices.push_back(DeviceInfo::From(*device));
     }
   }
 
   permission_provider_->HasDevicePermission(
-      requested_guids.Pass(),
+      requested_devices.Pass(),
       base::Bind(&FilterAndConvertDevicesAndThen, device_map, callback));
 }
 
@@ -276,19 +311,19 @@ void DeviceManagerImpl::MaybeRunDeviceChangesCallback() {
     DeviceMap devices_removed;
     devices_removed.swap(devices_removed_);
 
-    mojo::Array<mojo::String> requested_guids(devices_added.size() +
-                                              devices_removed.size());
+    mojo::Array<DeviceInfoPtr> requested_devices(devices_added.size() +
+                                                 devices_removed.size());
     {
       size_t i = 0;
       for (const auto& map_entry : devices_added)
-        requested_guids[i++] = map_entry.first;
+        requested_devices[i++] = DeviceInfo::From(*map_entry.second);
       for (const auto& map_entry : devices_removed)
-        requested_guids[i++] = map_entry.first;
+        requested_devices[i++] = DeviceInfo::From(*map_entry.second);
     }
 
     permission_request_pending_ = true;
     permission_provider_->HasDevicePermission(
-        requested_guids.Pass(),
+        requested_devices.Pass(),
         base::Bind(&DeviceManagerImpl::OnEnumerationPermissionCheckComplete,
                    base::Unretained(this), devices_added, devices_removed));
   }

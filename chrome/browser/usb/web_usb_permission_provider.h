@@ -28,7 +28,7 @@ class WebUSBPermissionProvider : public device::usb::PermissionProvider {
 
   // device::usb::PermissionProvider implementation.
   void HasDevicePermission(
-      mojo::Array<mojo::String> requested_guids,
+      mojo::Array<device::usb::DeviceInfoPtr> requested_devices,
       const HasDevicePermissionCallback& callback) override;
 
   mojo::StrongBinding<PermissionProvider> binding_;

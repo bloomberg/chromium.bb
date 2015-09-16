@@ -61,6 +61,9 @@ class DeviceManagerImpl : public DeviceManager {
                   mojo::InterfaceRequest<Device> device_request,
                   const OpenDeviceCallback& callback) override;
 
+  void OnGotDeviceInfoForOpen(mojo::InterfaceRequest<Device> device_request,
+                              const OpenDeviceCallback& callback,
+                              DeviceInfoPtr device_info);
   void OnOpenDevicePermissionCheckComplete(
       mojo::InterfaceRequest<Device> device_request,
       const OpenDeviceCallback& callback,

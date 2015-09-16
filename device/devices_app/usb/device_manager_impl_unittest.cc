@@ -35,10 +35,13 @@ class TestPermissionProvider : public PermissionProvider {
   ~TestPermissionProvider() override {}
 
   void HasDevicePermission(
-      mojo::Array<mojo::String> requested_guids,
+      mojo::Array<DeviceInfoPtr> requested_devices,
       const HasDevicePermissionCallback& callback) override {
     // Permission to access all devices granted.
-    callback.Run(requested_guids.Pass());
+    mojo::Array<mojo::String> allowed_guids(requested_devices.size());
+    for (size_t i = 0; i < requested_devices.size(); ++i)
+      allowed_guids[i] = requested_devices[i]->guid;
+    callback.Run(allowed_guids.Pass());
   }
 
  private:

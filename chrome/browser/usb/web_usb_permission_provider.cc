@@ -10,26 +10,31 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "device/core/device_client.h"
-#include "device/usb/usb_device.h"
-#include "device/usb/usb_service.h"
-#include "device/usb/webusb_descriptors.h"
 
 namespace {
 
-bool FindOriginInDescriptorSet(const device::WebUsbDescriptorSet* set,
+bool FindOriginInDescriptorSet(const device::usb::WebUsbDescriptorSet* set,
                                const GURL& origin) {
   if (!set)
     return false;
-  if (ContainsValue(set->origins, origin))
-    return true;
-  for (const device::WebUsbConfigurationSubset& config_subset :
-       set->configurations) {
-    if (ContainsValue(config_subset.origins, origin))
+  for (size_t i = 0; i < set->origins.size(); ++i) {
+    if (origin.spec() == set->origins[i])
       return true;
-    for (const device::WebUsbFunctionSubset& function_subset :
-         config_subset.functions) {
-      if (ContainsValue(function_subset.origins, origin))
+  }
+  for (size_t i = 0; i < set->configurations.size(); ++i) {
+    const device::usb::WebUsbConfigurationSubsetPtr& config =
+        set->configurations[i];
+    for (size_t j = 0; i < config->origins.size(); ++j) {
+      if (origin.spec() == config->origins[j])
         return true;
+    }
+    for (size_t j = 0; j < config->functions.size(); ++j) {
+      const device::usb::WebUsbFunctionSubsetPtr& function =
+          config->functions[j];
+      for (size_t k = 0; k < function->origins.size(); ++k) {
+        if (origin.spec() == function->origins[k])
+          return true;
+      }
     }
   }
   return false;
@@ -62,20 +67,18 @@ WebUSBPermissionProvider::WebUSBPermissionProvider(
       render_frame_host_(render_frame_host) {}
 
 void WebUSBPermissionProvider::HasDevicePermission(
-    mojo::Array<mojo::String> requested_guids,
+    mojo::Array<device::usb::DeviceInfoPtr> requested_devices,
     const HasDevicePermissionCallback& callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  device::UsbService* usb_service =
-      device::DeviceClient::Get()->GetUsbService();
   GURL origin = render_frame_host_->GetLastCommittedURL().GetOrigin();
 
   mojo::Array<mojo::String> allowed_guids(0);
-  for (size_t i = 0; i < requested_guids.size(); ++i) {
-    const mojo::String& guid = requested_guids[i];
-    scoped_refptr<device::UsbDevice> device = usb_service->GetDevice(guid);
-    if (FindOriginInDescriptorSet(device->webusb_allowed_origins(), origin) &&
+  for (size_t i = 0; i < requested_devices.size(); ++i) {
+    const device::usb::DeviceInfoPtr& device = requested_devices[i];
+    if (FindOriginInDescriptorSet(device->webusb_allowed_origins.get(),
+                                  origin) &&
         EnableWebUsbOnAnyOrigin())
-      allowed_guids.push_back(guid);
+      allowed_guids.push_back(device->guid);
   }
   callback.Run(allowed_guids.Pass());
 }
