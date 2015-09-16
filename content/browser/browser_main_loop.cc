@@ -1361,6 +1361,9 @@ void BrowserMainLoop::InitStartupTracingForDuration(
     const base::CommandLine& command_line) {
   DCHECK(is_tracing_startup_for_duration_);
 
+  // Initialize the tracing controller, required for memory tracing.
+  TracingController::GetInstance();
+
   startup_trace_file_ = GetStartupTraceFileName(parsed_command_line_);
 
   int delay_secs = 5;
