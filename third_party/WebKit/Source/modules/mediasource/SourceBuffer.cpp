@@ -51,6 +51,7 @@
 #include "wtf/MathExtras.h"
 
 #include <limits>
+#include <sstream>
 
 using blink::WebSourceBuffer;
 
@@ -71,6 +72,23 @@ static bool throwExceptionIfRemovedOrUpdating(bool isRemoved, bool isUpdating, E
 
     return false;
 }
+
+#if !LOG_DISABLED
+WTF::String webTimeRangesToString(const WebTimeRanges& ranges)
+{
+    StringBuilder stringBuilder;
+    stringBuilder.append("{");
+    for (auto& r : ranges) {
+        stringBuilder.append(" [");
+        stringBuilder.appendNumber(r.start);
+        stringBuilder.append(";");
+        stringBuilder.appendNumber(r.end);
+        stringBuilder.append("]");
+    }
+    stringBuilder.append(" }");
+    return stringBuilder.toString();
+}
+#endif
 
 } // namespace
 
@@ -118,6 +136,7 @@ SourceBuffer::~SourceBuffer()
     ASSERT(!m_stream);
     ASSERT(!m_webSourceBuffer);
 #endif
+    WTF_LOG(Media, "SourceBuffer::~SourceBuffer %p", this);
 }
 
 const AtomicString& SourceBuffer::segmentsKeyword()
@@ -438,6 +457,7 @@ void SourceBuffer::removedFromMediaSource()
     if (isRemoved())
         return;
 
+    WTF_LOG(Media, "SourceBuffer::removedFromMediaSource %p", this);
     abortIfUpdating();
 
     m_webSourceBuffer->removedFromMediaSource();
@@ -650,6 +670,7 @@ void SourceBuffer::appendBufferAsyncPart()
     // 5. Queue a task to fire a simple event named updateend at this SourceBuffer object.
     scheduleEvent(EventTypeNames::updateend);
     TRACE_EVENT_ASYNC_END0("media", "SourceBuffer::appendBuffer", this);
+    WTF_LOG(Media, "SourceBuffer::appendBuffer %p ended. buffered=%s", this, webTimeRangesToString(m_webSourceBuffer->buffered()).utf8().data());
 }
 
 void SourceBuffer::removeAsyncPart()
@@ -757,6 +778,7 @@ void SourceBuffer::appendStreamDone(bool success)
     // 14. Queue a task to fire a simple event named updateend at this SourceBuffer object.
     scheduleEvent(EventTypeNames::updateend);
     TRACE_EVENT_ASYNC_END0("media", "SourceBuffer::appendStream", this);
+    WTF_LOG(Media, "SourceBuffer::appendStream %p ended. buffered=%s", this, webTimeRangesToString(m_webSourceBuffer->buffered()).utf8().data());
 }
 
 void SourceBuffer::clearAppendStreamState()
