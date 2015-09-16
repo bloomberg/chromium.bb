@@ -236,7 +236,7 @@ AutofillSuggestionState::AutofillSuggestionState(const std::string& form_name,
 - (void)onSuggestionsReady:(NSArray*)suggestions
                   provider:(id<FormSuggestionProvider>)provider {
   // TODO(ios): crbug.com/249916. If we can also pass in the form/field for
-  // which |sugguestions| are, we should check here if |suggestions| are for
+  // which |suggestions| are, we should check here if |suggestions| are for
   // the current active element. If not, reset |_suggestionState|.
   if (!_suggestionState) {
     // The suggestion state was reset in between the call to Autofill API (e.g.

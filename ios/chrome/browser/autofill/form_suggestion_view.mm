@@ -13,11 +13,11 @@ namespace {
 
 // Vertical margin between suggestions and the edge of the suggestion content
 // frame.
-const CGFloat kSuggestionVerticalMargin = 4;
+const CGFloat kSuggestionVerticalMargin = 6;
 
 // Horizontal margin around suggestions (i.e. between suggestions, and between
 // the end suggestions and the suggestion content frame).
-const CGFloat kSuggestionHorizontalMargin = 2;
+const CGFloat kSuggestionHorizontalMargin = 6;
 
 }  // namespace
 

@@ -12,30 +12,31 @@
 #include "components/autofill/core/browser/credit_card.h"
 #import "components/autofill/ios/browser/form_suggestion.h"
 #import "ios/chrome/browser/autofill/form_suggestion_view_client.h"
+#import "ios/chrome/browser/ui/uikit_ui_util.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 
 namespace {
 
 // The button corner radius.
-const CGFloat kCornerRadius = 3.0f;
-
-// The width of the border in the button background image.
-const CGFloat kBorderWidth = 1.0f;
+const CGFloat kCornerRadius = 2.0f;
 
 // Font size of button titles.
 const CGFloat kIpadFontSize = 15.0f;
-const CGFloat kIphoneFontSize = 13.0f;
+const CGFloat kIphoneFontSize = 14.0f;
 
-// The grayscale value of the color object.
-const CGFloat kTitleColor = 51.0f / 255.0f;
+// The alpha values of the suggestion's main and description labels.
+const CGFloat kMainLabelAlpha = 0.87f;
+const CGFloat kDescriptionLabelAlpha = 0.55f;
 
-// The alpha value of the suggestion's description label.
-const CGFloat kDescriptionLabelAlpha = 0.54f;
-
-// The edge inset for background image.
-const CGFloat kBackgroundImageEdgeInsetSize = 8.0f;
+// The horizontal space between the edge of the background and the text.
+const CGFloat kBorderWidth = 8.0f;
 // The space between items in the label.
-const CGFloat kSpacing = 8.0f;
+const CGFloat kSpacing = 4.0f;
+
+// RGB button color when the button is not pressed.
+const int kBackgroundNormalColor = 0xeceff1;
+// RGB button color when the button is pressed.
+const int kBackgroundPressedColor = 0xc4cbcf;
 
 // Structure that record the image for each icon.
 struct IconImageMap {
@@ -56,13 +57,14 @@ const IconImageMap kCreditCardIconImageMap[] = {
 
 // Creates a label with the given |text| and |alpha| suitable for use in a
 // suggestion button in the keyboard accessory view.
-UILabel* TextLabel(NSString* text, CGFloat alpha) {
+UILabel* TextLabel(NSString* text, CGFloat alpha, BOOL bold) {
   base::scoped_nsobject<UILabel> label([[UILabel alloc] init]);
   [label setText:text];
-  UIFont* font = IsIPadIdiom() ? [UIFont systemFontOfSize:kIpadFontSize]
-                               : [UIFont systemFontOfSize:kIphoneFontSize];
+  CGFloat fontSize = IsIPadIdiom() ? kIpadFontSize : kIphoneFontSize;
+  UIFont* font = bold ? [UIFont boldSystemFontOfSize:fontSize]
+                      : [UIFont systemFontOfSize:fontSize];
   [label setFont:font];
-  [label setTextColor:[UIColor colorWithWhite:kTitleColor alpha:alpha]];
+  [label setTextColor:[UIColor colorWithWhite:0.0f alpha:alpha]];
   [label setBackgroundColor:[UIColor clearColor]];
   [label sizeToFit];
   return label.autorelease();
@@ -72,13 +74,6 @@ UILabel* TextLabel(NSString* text, CGFloat alpha) {
 
 @interface FormSuggestionLabel ()
 
-@property(nonatomic, readonly) UIColor* normalBackgroundColor;
-@property(nonatomic, readonly) UIColor* pressedBackgroundColor;
-
-// Returns the color generated from the image named |imageName| resized to
-// |rect|.
-- (UIColor*)backgroundColorFromImageNamed:(NSString*)imageName
-                                   inRect:(CGRect)rect;
 // Returns the name of the image for credit card icon.
 + (NSString*)imageNameForCreditCardIcon:(NSString*)icon;
 @end
@@ -87,11 +82,6 @@ UILabel* TextLabel(NSString* text, CGFloat alpha) {
   // Client of this view.
   base::WeakNSProtocol<id<FormSuggestionViewClient>> client_;
   base::scoped_nsobject<FormSuggestion> suggestion_;
-
-  // Background color when the label is not pressed.
-  base::scoped_nsobject<UIColor> normalBackgroundColor_;
-  // Background color when the label is pressed.
-  base::scoped_nsobject<UIColor> pressedBackgroundColor_;
 }
 
 - (id)initWithSuggestion:(FormSuggestion*)suggestion
@@ -105,7 +95,7 @@ UILabel* TextLabel(NSString* text, CGFloat alpha) {
     client_.reset(client);
 
     const CGFloat frameHeight = CGRectGetHeight(proposedFrame);
-    CGFloat currentX = kBorderWidth + kSpacing;
+    CGFloat currentX = kBorderWidth;
 
     // [UIImage imageNamed:] writes error message if nil is passed. Prevent
     // console spam by checking the name first.
@@ -125,31 +115,32 @@ UILabel* TextLabel(NSString* text, CGFloat alpha) {
       currentX += CGRectGetWidth(iconView.frame) + kSpacing;
     }
 
-    UILabel* label = TextLabel(suggestion.value, 1.0f);
+    UILabel* label = TextLabel(suggestion.value, kMainLabelAlpha, YES);
     const CGFloat labelY =
         std::floor(frameHeight / 2.0f - CGRectGetMidY(label.frame));
     label.frame = CGRectMake(currentX, labelY, CGRectGetWidth(label.frame),
                              CGRectGetHeight(label.frame));
     [self addSubview:label];
-    currentX += CGRectGetWidth(label.frame) + kSpacing;
+    currentX += CGRectGetWidth(label.frame);
 
-    if (suggestion.displayDescription) {
+    if ([suggestion.displayDescription length] > 0) {
+      currentX += kSpacing;
       UILabel* description =
-          TextLabel(suggestion.displayDescription, kDescriptionLabelAlpha);
+          TextLabel(suggestion.displayDescription, kDescriptionLabelAlpha, NO);
       const CGFloat descriptionY =
           std::floor(frameHeight / 2.0f - CGRectGetMidY(description.frame));
       description.frame =
           CGRectMake(currentX, descriptionY, CGRectGetWidth(description.frame),
                      CGRectGetHeight(description.frame));
       [self addSubview:description];
-      currentX += CGRectGetWidth(description.frame) + kSpacing;
+      currentX += CGRectGetWidth(description.frame);
     }
 
     currentX += kBorderWidth;
 
     self.frame = CGRectMake(proposedFrame.origin.x, proposedFrame.origin.y,
                             currentX, proposedFrame.size.height);
-    [self setBackgroundColor:[self normalBackgroundColor]];
+    [self setBackgroundColor:UIColorFromRGB(kBackgroundNormalColor)];
     [[self layer] setCornerRadius:kCornerRadius];
 
     [self setClipsToBounds:YES];
@@ -166,66 +157,24 @@ UILabel* TextLabel(NSString* text, CGFloat alpha) {
   return nil;
 }
 
-- (void)layoutSubviews {
-  // Resets the colors so the size will be updated in their getters.
-  normalBackgroundColor_.reset();
-  pressedBackgroundColor_.reset();
-  [super layoutSubviews];
-}
-
 #pragma mark -
 #pragma mark UIResponder
 
 - (void)touchesBegan:(NSSet*)touches withEvent:(UIEvent*)event {
-  [self setBackgroundColor:self.pressedBackgroundColor];
+  [self setBackgroundColor:UIColorFromRGB(kBackgroundPressedColor)];
 }
 
 - (void)touchesCancelled:(NSSet*)touches withEvent:(UIEvent*)event {
-  [self setBackgroundColor:self.normalBackgroundColor];
+  [self setBackgroundColor:UIColorFromRGB(kBackgroundNormalColor)];
 }
 
 - (void)touchesEnded:(NSSet*)touches withEvent:(UIEvent*)event {
-  [self setBackgroundColor:self.normalBackgroundColor];
+  [self setBackgroundColor:UIColorFromRGB(kBackgroundNormalColor)];
   [client_ didSelectSuggestion:suggestion_];
 }
 
 #pragma mark -
 #pragma mark Private
-
-- (UIColor*)normalBackgroundColor {
-  if (!normalBackgroundColor_) {
-    normalBackgroundColor_.reset(
-        [[self backgroundColorFromImageNamed:@"autofill_button"
-                                      inRect:self.bounds] retain]);
-  }
-  return normalBackgroundColor_;
-}
-
-- (UIColor*)pressedBackgroundColor {
-  if (!pressedBackgroundColor_) {
-    pressedBackgroundColor_.reset(
-        [[self backgroundColorFromImageNamed:@"autofill_button_pressed"
-                                      inRect:self.bounds] retain]);
-  }
-  return pressedBackgroundColor_;
-}
-
-- (UIColor*)backgroundColorFromImageNamed:(NSString*)imageName
-                                   inRect:(CGRect)rect {
-  UIEdgeInsets edgeInsets = UIEdgeInsetsMake(
-      kBackgroundImageEdgeInsetSize, kBackgroundImageEdgeInsetSize,
-      kBackgroundImageEdgeInsetSize, kBackgroundImageEdgeInsetSize);
-  UIImage* image =
-      [[UIImage imageNamed:imageName] resizableImageWithCapInsets:edgeInsets];
-
-  UIGraphicsBeginImageContextWithOptions(rect.size, NO,
-                                         UIScreen.mainScreen.scale);
-  [image drawInRect:rect];
-  UIImage* resizedImage = UIGraphicsGetImageFromCurrentImageContext();
-  UIGraphicsEndImageContext();
-
-  return [UIColor colorWithPatternImage:resizedImage];
-}
 
 + (NSString*)imageNameForCreditCardIcon:(NSString*)icon {
   if (!icon || [icon length] == 0) {
