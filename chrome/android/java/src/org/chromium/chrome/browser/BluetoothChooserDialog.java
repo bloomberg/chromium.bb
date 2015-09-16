@@ -128,7 +128,6 @@ public class BluetoothChooserDialog implements ItemChooserDialog.ItemSelectedCal
         // The type of link this span represents.
         private LinkType mLinkType;
 
-        // TODO(finnur): Remove this variable when toasts have been eliminated.
         private Context mContext;
 
         NoUnderlineClickableSpan(LinkType linkType, Context context) {
