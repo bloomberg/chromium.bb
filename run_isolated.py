@@ -184,7 +184,8 @@ def delete_and_upload(storage, out_dir, leak_temp_dir):
         # Re-raise, so it will be treated as an internal failure.
         raise
   try:
-    if not leak_temp_dir and not file_path.rmtree(out_dir):
+    if (not leak_temp_dir and os.path.isdir(out_dir) and
+        not file_path.rmtree(out_dir)):
       logging.error('Had difficulties removing out_dir %s', out_dir)
       return outputs_ref, False
   except OSError as e:
@@ -230,7 +231,7 @@ def map_and_run(isolated_hash, storage, cache, leak_temp_dir, extra_args):
       if leak_temp_dir:
         logging.warning(
             'Deliberately leaking %s for later examination', run_dir)
-      elif not file_path.rmtree(run_dir):
+      elif os.path.isdir(run_dir) and not file_path.rmtree(run_dir):
         # On Windows rmtree(run_dir) call above has a synchronization effect: it
         # finishes only when all task child processes terminate (since a running
         # process locks *.exe file). Examine out_dir only after that call
