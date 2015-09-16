@@ -10,6 +10,7 @@ import os
 import sys
 import time
 
+from devil.android import apk_helper
 from devil.android import device_errors
 from devil.android.sdk import intent
 from pylib import constants
@@ -160,3 +161,9 @@ class TestPackageApk(TestPackage):
   def PullAppFiles(self, device, files, directory):
     local_device_gtest_run.PullAppFilesImpl(
         device, self._package_info.package, files, directory)
+
+  #override
+  def SetPermissions(self, device):
+    permissions = apk_helper.ApkHelper(self.suite_path).GetPermissions()
+    device.GrantPermissions(
+        apk_helper.GetPackageName(self.suite_path), permissions)

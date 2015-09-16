@@ -75,3 +75,6 @@ class TestPackage(object):
       directory: The host directory to which files should be pulled.
     """
     raise NotImplementedError('Method must be overridden.')
+
+  def SetPermissions(self, device):
+    pass

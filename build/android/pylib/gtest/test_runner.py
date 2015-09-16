@@ -177,6 +177,7 @@ class TestRunner(base_test_runner.BaseTestRunner):
       self.test_package.ClearApplicationState(self.device)
       self.test_package.CreateCommandLineFileOnDevice(
           self.device, test, self._test_arguments)
+      self.test_package.SetPermissions(self.device)
       test_results = self._ParseTestOutput(
           self.test_package.SpawnTestProcess(self.device))
       if self._app_data_files:
