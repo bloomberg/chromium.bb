@@ -10,6 +10,8 @@
 
 #include <algorithm>
 
+#include "BlinkGCPluginOptions.h"
+#include "CheckFieldsVisitor.h"
 #include "Config.h"
 #include "JsonWriter.h"
 #include "RecordInfo.h"
@@ -176,21 +178,6 @@ std::set<FunctionDecl*> GetLateParsedFunctionDecls(TranslationUnitDecl* decl) {
   v.TraverseDecl(decl);
   return v.late_parsed_decls;
 }
-
-struct BlinkGCPluginOptions {
-  BlinkGCPluginOptions()
-    : enable_oilpan(false)
-    , dump_graph(false)
-    , warn_raw_ptr(false)
-    , warn_unneeded_finalizer(false) {}
-  bool enable_oilpan;
-  bool dump_graph;
-  bool warn_raw_ptr;
-  bool warn_unneeded_finalizer;
-  std::set<std::string> ignored_classes;
-  std::set<std::string> checked_namespaces;
-  std::vector<std::string> ignored_directories;
-};
 
 typedef std::vector<CXXRecordDecl*> RecordVector;
 typedef std::vector<CXXMethodDecl*> MethodVector;
@@ -843,174 +830,6 @@ class CheckGCRootsVisitor : public RecursiveEdgeVisitor {
   RootPath current_;
   VisitingSet visiting_set_;
   Errors gc_roots_;
-};
-
-// This visitor checks that the fields of a class are "well formed".
-// - OwnPtr, RefPtr and RawPtr must not point to a GC derived types.
-// - Part objects must not be GC derived types.
-// - An on-heap class must never contain GC roots.
-// - Only stack-allocated types may point to stack-allocated types.
-class CheckFieldsVisitor : public RecursiveEdgeVisitor {
- public:
-
-  enum Error {
-    kRawPtrToGCManaged,
-    kRawPtrToGCManagedWarning,
-    kRefPtrToGCManaged,
-    kReferencePtrToGCManaged,
-    kReferencePtrToGCManagedWarning,
-    kOwnPtrToGCManaged,
-    kMemberToGCUnmanaged,
-    kMemberInUnmanaged,
-    kPtrFromHeapToStack,
-    kGCDerivedPartObject
-  };
-
-  typedef std::vector<std::pair<FieldPoint*, Error> > Errors;
-
-  CheckFieldsVisitor(const BlinkGCPluginOptions& options)
-      : options_(options), current_(0), stack_allocated_host_(false) {}
-
-  Errors& invalid_fields() { return invalid_fields_; }
-
-  bool ContainsInvalidFields(RecordInfo* info) {
-    stack_allocated_host_ = info->IsStackAllocated();
-    managed_host_ = stack_allocated_host_ ||
-                    info->IsGCAllocated() ||
-                    info->IsNonNewable() ||
-                    info->IsOnlyPlacementNewable();
-    for (RecordInfo::Fields::iterator it = info->GetFields().begin();
-         it != info->GetFields().end();
-         ++it) {
-      context().clear();
-      current_ = &it->second;
-      current_->edge()->Accept(this);
-    }
-    return !invalid_fields_.empty();
-  }
-
-  void AtMember(Member* edge) override {
-    if (managed_host_)
-      return;
-    // A member is allowed to appear in the context of a root.
-    for (Context::iterator it = context().begin();
-         it != context().end();
-         ++it) {
-      if ((*it)->Kind() == Edge::kRoot)
-        return;
-    }
-    invalid_fields_.push_back(std::make_pair(current_, kMemberInUnmanaged));
-  }
-
-  void AtValue(Value* edge) override {
-    // TODO: what should we do to check unions?
-    if (edge->value()->record()->isUnion())
-      return;
-
-    if (!stack_allocated_host_ && edge->value()->IsStackAllocated()) {
-      invalid_fields_.push_back(std::make_pair(current_, kPtrFromHeapToStack));
-      return;
-    }
-
-    if (!Parent() &&
-        edge->value()->IsGCDerived() &&
-        !edge->value()->IsGCMixin()) {
-      invalid_fields_.push_back(std::make_pair(current_, kGCDerivedPartObject));
-      return;
-    }
-
-    // If in a stack allocated context, be fairly insistent that T in Member<T>
-    // is GC allocated, as stack allocated objects do not have a trace()
-    // that separately verifies the validity of Member<T>.
-    //
-    // Notice that an error is only reported if T's definition is in scope;
-    // we do not require that it must be brought into scope as that would
-    // prevent declarations of mutually dependent class types.
-    //
-    // (Note: Member<>'s constructor will at run-time verify that the
-    // pointer it wraps is indeed heap allocated.)
-    if (stack_allocated_host_ && Parent() && Parent()->IsMember() &&
-        edge->value()->HasDefinition() && !edge->value()->IsGCAllocated()) {
-      invalid_fields_.push_back(std::make_pair(current_,
-                                               kMemberToGCUnmanaged));
-      return;
-    }
-
-    if (!Parent() || !edge->value()->IsGCAllocated())
-      return;
-
-    // In transition mode, disallow  OwnPtr<T>, RawPtr<T> to GC allocated T's,
-    // also disallow T* in stack-allocated types.
-    if (options_.enable_oilpan) {
-      if (Parent()->IsOwnPtr() ||
-          Parent()->IsRawPtrClass() ||
-          (stack_allocated_host_ && Parent()->IsRawPtr())) {
-        invalid_fields_.push_back(std::make_pair(
-            current_, InvalidSmartPtr(Parent())));
-        return;
-      }
-      if (options_.warn_raw_ptr && Parent()->IsRawPtr()) {
-        if (static_cast<RawPtr*>(Parent())->HasReferenceType()) {
-          invalid_fields_.push_back(std::make_pair(
-              current_, kReferencePtrToGCManagedWarning));
-        } else {
-          invalid_fields_.push_back(std::make_pair(
-              current_, kRawPtrToGCManagedWarning));
-        }
-      }
-      return;
-    }
-
-    if (Parent()->IsRawPtr() || Parent()->IsRefPtr() || Parent()->IsOwnPtr()) {
-      invalid_fields_.push_back(std::make_pair(
-          current_, InvalidSmartPtr(Parent())));
-      return;
-    }
-  }
-
-  void AtCollection(Collection* edge) override {
-    if (edge->on_heap() && Parent() && Parent()->IsOwnPtr())
-      invalid_fields_.push_back(std::make_pair(current_, kOwnPtrToGCManaged));
-  }
-
-  static bool IsWarning(Error error) {
-    if (error == kRawPtrToGCManagedWarning)
-      return true;
-    if (error == kReferencePtrToGCManagedWarning)
-      return true;
-    return false;
-  }
-
-  static bool IsRawPtrError(Error error) {
-    return error == kRawPtrToGCManaged ||
-        error == kRawPtrToGCManagedWarning;
-  }
-
-  static bool IsReferencePtrError(Error error) {
-    return error == kReferencePtrToGCManaged ||
-        error == kReferencePtrToGCManagedWarning;
-  }
-
- private:
-  Error InvalidSmartPtr(Edge* ptr) {
-    if (ptr->IsRawPtr()) {
-      if (static_cast<RawPtr*>(ptr)->HasReferenceType())
-        return kReferencePtrToGCManaged;
-      else
-        return kRawPtrToGCManaged;
-    }
-    if (ptr->IsRefPtr())
-      return kRefPtrToGCManaged;
-    if (ptr->IsOwnPtr())
-      return kOwnPtrToGCManaged;
-    assert(false && "Unknown smart pointer kind");
-  }
-
-  const BlinkGCPluginOptions& options_;
-  FieldPoint* current_;
-  bool stack_allocated_host_;
-  bool managed_host_;
-  Errors invalid_fields_;
 };
 
 class EmptyStmtVisitor

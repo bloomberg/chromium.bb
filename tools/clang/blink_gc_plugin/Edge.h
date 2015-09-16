@@ -5,7 +5,9 @@
 #ifndef TOOLS_BLINK_GC_PLUGIN_EDGE_H_
 #define TOOLS_BLINK_GC_PLUGIN_EDGE_H_
 
+#include <cassert>
 #include <deque>
+#include <vector>
 
 #include "TracingStatus.h"
 
