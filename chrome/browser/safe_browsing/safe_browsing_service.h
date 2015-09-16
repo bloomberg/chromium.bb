@@ -63,7 +63,7 @@ class IncidentReportingService;
 class OffDomainInclusionDetector;
 class ResourceRequestDetector;
 #endif
-}
+}  // namespace safe_browsing
 
 // Construction needs to happen on the main thread.
 // The SafeBrowsingService owns both the UI and Database managers which do
@@ -76,6 +76,11 @@ class SafeBrowsingService
           content::BrowserThread::DeleteOnUIThread>,
       public content::NotificationObserver {
  public:
+  enum ResourceTypesToCheck {
+    CHECK_ALL_RESOURCE_TYPES,
+    CHECK_ONLY_DANGEROUS_TYPES,
+  };
+
   // Makes the passed |factory| the factory used to instanciate
   // a SafeBrowsingService. Useful for tests.
   static void RegisterFactory(SafeBrowsingServiceFactory* factory) {
@@ -94,6 +99,13 @@ class SafeBrowsingService
   // SafeBrowsingFieldTrial.java for controlling the UI.
   bool IsAndroidFieldTrialEnabled() const {
     return is_android_field_trial_enabled_;
+  }
+
+  // Should we check all types, or just the dangerous ones?
+  // We can flip this with a field trial if a non-dangerous type
+  // starts getting exploited.
+  ResourceTypesToCheck GetResourceTypesToCheck() const {
+    return resource_types_to_check_;
   }
 #endif  // defined(SAFE_BROWSING_DB_REMOTE)
 
@@ -275,6 +287,7 @@ class SafeBrowsingService
 
 #if defined(SAFE_BROWSING_DB_REMOTE)
   bool is_android_field_trial_enabled_;
+  ResourceTypesToCheck resource_types_to_check_;
 #endif  // defined(SAFE_BROWSING_DB_REMOTE)
 
   // Tracks existing PrefServices, and the safe browsing preference on each.

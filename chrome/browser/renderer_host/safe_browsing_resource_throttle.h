@@ -12,6 +12,7 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/safe_browsing/database_manager.h"
+#include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/safe_browsing/ui_manager.h"
 #include "content/public/browser/resource_throttle.h"
 #include "content/public/common/resource_type.h"
@@ -70,11 +71,6 @@ class SafeBrowsingResourceThrottle
       content::ResourceType resource_type,
       SafeBrowsingService* sb_service);
 
-  SafeBrowsingResourceThrottle(const net::URLRequest* request,
-                               content::ResourceType resource_type,
-                               SafeBrowsingService* sb_service,
-                               bool defer_at_start);
-
   // content::ResourceThrottle implementation (called on IO thread):
   void WillStartRequest(bool* defer) override;
   void WillRedirectRequest(const net::RedirectInfo& redirect_info,
@@ -87,6 +83,19 @@ class SafeBrowsingResourceThrottle
   void OnCheckBrowseUrlResult(const GURL& url,
                               SBThreatType result,
                               const std::string& metadata) override;
+
+ protected:
+  enum DeferAtStartSetting {
+    DEFER_AT_START,
+    DONT_DEFER_AT_START
+  };
+
+  SafeBrowsingResourceThrottle(
+      const net::URLRequest* request,
+      content::ResourceType resource_type,
+      SafeBrowsingService* sb_service,
+      DeferAtStartSetting defer_setting,
+      SafeBrowsingService::ResourceTypesToCheck types_to_check);
 
  private:
   // Describes what phase of the check a throttle is in.
@@ -141,6 +150,9 @@ class SafeBrowsingResourceThrottle
   // deemed safe.  Otherwise we let the resource partially load.
   const bool defer_at_start_;
 
+  // Check all types, or just the dangerous ones?
+  const SafeBrowsingService::ResourceTypesToCheck resource_types_to_check_;
+
   State state_;
   DeferState defer_state_;
 
@@ -165,8 +177,7 @@ class SafeBrowsingResourceThrottle
   scoped_refptr<SafeBrowsingDatabaseManager> database_manager_;
   scoped_refptr<SafeBrowsingUIManager> ui_manager_;
   const net::URLRequest* request_;
-  const bool is_subresource_;
-  const bool is_subframe_;
+  const content::ResourceType resource_type_;
 
   DISALLOW_COPY_AND_ASSIGN(SafeBrowsingResourceThrottle);
 };

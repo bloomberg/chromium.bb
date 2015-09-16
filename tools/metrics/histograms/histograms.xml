@@ -38458,6 +38458,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="SB2.ResourceTypes" enum="ContentResourceType">
+  <owner>nparker@chromium.org</owner>
+  <summary>
+    Resource types of resources that were inspected by Safe Browsing in the
+    SafeBrowsingResourceThrottle.
+  </summary>
+</histogram>
+
 <histogram name="SB2.SetExtendedReportingEnabled" enum="BooleanEnabled">
   <obsolete>
     Deprecated 03/2015. Replaced by
@@ -79055,6 +79063,26 @@ To add a new entry, add it with any value and run test to compute valid value.
   <suffix name="UnwantedSoftware" label="UnwantedSoftware"/>
   <affected-histogram name="SB2.DatabaseSizeKilobytes"/>
   <affected-histogram name="SB2.PrefixSetSizeKilobytes"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="SB2ResourceTypes" separator=".">
+  <suffix name="Checked"
+      label="Resources that were checked. Logged before the resource starts
+             loading and again for each redirect."/>
+  <suffix name="Safe"
+      label="Resources that were checked and deemed safe. Logged when the URL
+             check is completed."/>
+  <suffix name="Skipped"
+      label="Resources that were not checked because they are not active-ish
+             content types. Only used on mobile. Logged before the resource
+             request starts."/>
+  <suffix name="Unsafe"
+      label="Resources that were checked and classified as unsafe. Logged
+             when the URL check is completed."/>
+  <suffix name="UnsafePrefetchCanceled"
+      label="Pre-fetched resources that were checked and classified as
+             unsafe. Logged as the request is canceled."/>
+  <affected-histogram name="SB2.ResourceTypes"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="SBInterstitial">

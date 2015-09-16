@@ -109,6 +109,7 @@ bool IsIncidentReportingServiceEnabled() {
 // Android field trial
 const char kAndroidFieldExperiment[] = "SafeBrowsingAndroid";
 const char kAndroidFieldParam[] = "enabled";
+const char kAndroidCheckAllTypesParam[] = "check_all_resource_types";
 const char kAndroidFieldParamEnabledValue[] = "true";
 #endif  // defined(SAFE_BROWSING_DB_REMOTE)
 }  // namespace
@@ -220,6 +221,15 @@ SafeBrowsingService::SafeBrowsingService()
       kAndroidFieldExperiment, kAndroidFieldParam);
   is_android_field_trial_enabled_ =
       (enabled_param == kAndroidFieldParamEnabledValue);
+
+  const std::string check_all_types_param = variations::GetVariationParamValue(
+      kAndroidFieldExperiment, kAndroidCheckAllTypesParam);
+  if (check_all_types_param == kAndroidFieldParamEnabledValue) {
+    resource_types_to_check_ = CHECK_ALL_RESOURCE_TYPES;
+  } else {
+    // Default
+    resource_types_to_check_ = CHECK_ONLY_DANGEROUS_TYPES;
+  }
 #endif  // defined(SAFE_BROWSING_DB_REMOTE)
 }
 
