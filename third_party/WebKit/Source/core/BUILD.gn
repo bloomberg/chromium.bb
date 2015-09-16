@@ -27,13 +27,7 @@ if (is_debug || !is_win || !is_official_build) {
   core_config_add = []
   core_config_remove = []
 } else {
-  if (using_new_global_compiler_configs) {
-    # GN build is moving to a single default optimization config that prevents
-    # us from having to break out the debug/release conditions to override.
-    core_config_remove = [ "//build/config/compiler:default_optimization" ]
-  } else {
-    core_config_remove = [ "//build/config/compiler:optimize" ]
-  }
+  core_config_remove = [ "//build/config/compiler:default_optimization" ]
   core_config_add = [ "//build/config/compiler:optimize_max" ]
 }
 
