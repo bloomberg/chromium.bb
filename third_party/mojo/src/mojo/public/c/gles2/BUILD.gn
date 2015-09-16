@@ -22,6 +22,7 @@ mojo_sdk_source_set("headers") {
   sources = [
     "chromium_bind_uniform_location.h",
     "chromium_copy_texture.h",
+    "chromium_framebuffer_multisample.h",
     "chromium_image.h",
     "chromium_miscellaneous.h",
     "chromium_pixel_transfer_buffer_object.h",
@@ -33,6 +34,7 @@ mojo_sdk_source_set("headers") {
     "gles2.h",
     "gles2_call_visitor_autogen.h",
     "gles2_call_visitor_chromium_copy_texture_autogen.h",
+    "gles2_call_visitor_chromium_framebuffer_multisample_autogen.h",
     "gles2_call_visitor_chromium_image_autogen.h",
     "gles2_call_visitor_chromium_miscellaneous_autogen.h",
     "gles2_call_visitor_chromium_pixel_transfer_buffer_object_autogen.h",

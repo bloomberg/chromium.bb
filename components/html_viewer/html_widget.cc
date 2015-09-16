@@ -4,6 +4,7 @@
 
 #include "components/html_viewer/html_widget.h"
 
+#include "base/command_line.h"
 #include "components/html_viewer/global_state.h"
 #include "components/html_viewer/ime_controller.h"
 #include "components/html_viewer/stats_collection_controller.h"
@@ -19,6 +20,8 @@
 
 namespace html_viewer {
 namespace {
+
+const char kDisableWebGLSwitch[] = "disable-webgl";
 
 scoped_ptr<WebLayerTreeViewImpl> CreateWebLayerTreeView(
     GlobalState* global_state) {
@@ -57,6 +60,10 @@ void ConfigureSettings(blink::WebSettings* settings) {
   settings->setDefaultFontSize(16);
   settings->setLoadsImagesAutomatically(true);
   settings->setJavaScriptEnabled(true);
+
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  settings->setExperimentalWebGLEnabled(
+      !command_line->HasSwitch(kDisableWebGLSwitch));
 }
 
 }  // namespace
