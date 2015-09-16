@@ -112,7 +112,7 @@ function test()
     printTree("", model.profileHead);
     function printTree(padding, node)
     {
-        InspectorTest.addResult(padding + node.functionName + "(" + node.id + "): " + node.hitCount);
+        InspectorTest.addResult(padding + node.functionName + " id:" + node.id + " hits:" + node.hitCount + " depth:" + node.depth);
         node.children.forEach(printTree.bind(null, padding + "  "));
     }
     InspectorTest.addResult(model.samples.join(", "));
