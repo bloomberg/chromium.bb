@@ -19,6 +19,17 @@ using WebUSBClientRequestDeviceCallbacks = WebCallbacks<WebPassOwnPtr<WebUSBDevi
 
 class WebUSBClient {
 public:
+    class Observer {
+    public:
+        virtual ~Observer() { }
+
+        // Called when a device is connected to the system.
+        virtual void onDeviceConnected(WebPassOwnPtr<WebUSBDevice>) = 0;
+
+        // Called when a device is disconnected from the system.
+        virtual void onDeviceDisconnected(WebPassOwnPtr<WebUSBDevice>) = 0;
+    };
+
     virtual ~WebUSBClient() { }
 
     // Enumerates available devices.
@@ -28,6 +39,9 @@ public:
     // Requests access to a device.
     // Ownership of the WebUSBClientRequestDeviceCallbacks is transferred to the client.
     virtual void requestDevice(const WebUSBDeviceRequestOptions&, WebUSBClientRequestDeviceCallbacks*) = 0;
+
+    // Sets the observer of device changes through the WebUSBClient.
+    virtual void setObserver(Observer*) { }
 };
 
 } // namespace blink

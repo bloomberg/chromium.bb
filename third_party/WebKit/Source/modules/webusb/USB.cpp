@@ -12,6 +12,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "modules/EventTargetModules.h"
+#include "modules/webusb/USBConnectionEvent.h"
 #include "modules/webusb/USBDevice.h"
 #include "modules/webusb/USBDeviceFilter.h"
 #include "modules/webusb/USBDeviceRequestOptions.h"
@@ -78,6 +79,16 @@ private:
 USB::USB(LocalFrame& frame)
     : m_controller(USBController::from(frame))
 {
+    WebUSBClient* client = m_controller->client();
+    if (client)
+        client->setObserver(this);
+}
+
+USB::~USB()
+{
+    WebUSBClient* client = m_controller->client();
+    if (client)
+        client->setObserver(nullptr);
 }
 
 ScriptPromise USB::getDevices(ScriptState* scriptState)
@@ -118,6 +129,16 @@ ExecutionContext* USB::executionContext() const
 const AtomicString& USB::interfaceName() const
 {
     return EventTargetNames::USB;
+}
+
+void USB::onDeviceConnected(WebPassOwnPtr<WebUSBDevice> device)
+{
+    dispatchEvent(USBConnectionEvent::create(EventTypeNames::connect, USBDevice::create(device.release())));
+}
+
+void USB::onDeviceDisconnected(WebPassOwnPtr<WebUSBDevice> device)
+{
+    dispatchEvent(USBConnectionEvent::create(EventTypeNames::disconnect, USBDevice::create(device.release())));
 }
 
 DEFINE_TRACE(USB)

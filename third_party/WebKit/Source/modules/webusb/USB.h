@@ -10,15 +10,18 @@
 #include "core/events/EventTarget.h"
 #include "modules/webusb/USBController.h"
 #include "platform/heap/Handle.h"
+#include "public/platform/modules/webusb/WebUSBClient.h"
 
 namespace blink {
 
 class LocalFrame;
 class ScriptState;
 class USBDeviceRequestOptions;
+class WebUSBDevice;
 
 class USB final
-    : public RefCountedGarbageCollectedEventTargetWithInlineData<USB> {
+    : public RefCountedGarbageCollectedEventTargetWithInlineData<USB>
+    , public WebUSBClient::Observer {
     DEFINE_WRAPPERTYPEINFO();
     REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(USB);
 public:
@@ -26,6 +29,8 @@ public:
     {
         return new USB(frame);
     }
+
+    ~USB() override;
 
     // USB.idl
     ScriptPromise getDevices(ScriptState*);
@@ -36,6 +41,10 @@ public:
     // EventTarget overrides.
     ExecutionContext* executionContext() const override;
     const AtomicString& interfaceName() const override;
+
+    // WebUSBClient::Observer overrides.
+    void onDeviceConnected(WebPassOwnPtr<WebUSBDevice>) override;
+    void onDeviceDisconnected(WebPassOwnPtr<WebUSBDevice>) override;
 
     DECLARE_VIRTUAL_TRACE();
 
