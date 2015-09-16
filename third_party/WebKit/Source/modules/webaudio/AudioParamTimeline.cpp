@@ -359,9 +359,34 @@ float AudioParamTimeline::valuesForTimeRangeImpl(
 
         // First handle linear and exponential ramps which require looking ahead to the next event.
         if (nextEventType == ParamEvent::LinearRampToValue) {
+            const float valueDelta = value2 - value1;
+#if CPU(X86) || CPU(X86_64)
+            // Minimize in-loop operations. Calculate starting value and increment. Next step: value += inc.
+            //  value = value1 + (currentTime - time1) * k * (value2 - value1);
+            //  inc = sampleFrameTimeIncr * k * (value2 - value1);
+            // Resolve recursion by expanding constants to achieve a 4-step loop unrolling.
+            //  value = value1 + ((currentTime - time1) + i * sampleFrameTimeIncr) * k * (value2 -value1), i in 0..3
+            __m128 vValue = _mm_mul_ps(_mm_set_ps1(sampleFrameTimeIncr), _mm_set_ps(3, 2, 1, 0));
+            vValue = _mm_add_ps(vValue, _mm_set_ps1(currentTime - time1));
+            vValue = _mm_mul_ps(vValue, _mm_set_ps1(k * valueDelta));
+            vValue = _mm_add_ps(vValue, _mm_set_ps1(value1));
+            __m128 vInc = _mm_set_ps1(4 * sampleFrameTimeIncr * k * valueDelta);
+
+            // Truncate loop steps to multiple of 4.
+            unsigned fillToFrameTrunc = writeIndex + ((fillToFrame - writeIndex) / 4) * 4;
+            // Compute final time.
+            currentTime += sampleFrameTimeIncr * (fillToFrameTrunc - writeIndex);
+            // Process 4 loop steps.
+            for (; writeIndex < fillToFrameTrunc; writeIndex += 4) {
+                _mm_storeu_ps(values + writeIndex, vValue);
+                vValue = _mm_add_ps(vValue, vInc);
+            }
+#endif
+            // Serially process remaining values.
             for (; writeIndex < fillToFrame; ++writeIndex) {
                 float x = (currentTime - time1) * k;
-                value = (1 - x) * value1 + x * value2;
+                // value = (1 - x) * value1 + x * value2;
+                value = value1 + x * valueDelta;
                 values[writeIndex] = value;
                 currentTime += sampleFrameTimeIncr;
             }
