@@ -126,5 +126,33 @@
         'webaudiosourceprovider_impl_unittest.cc',
       ],
     },
-  ]
+  ],
+  'conditions': [
+    ['test_isolation_mode != "noop"', {
+      'targets': [
+        {
+          'target_name': 'media_blink_unittests_run',
+          'type': 'none',
+          'dependencies': [
+            'media_blink_unittests',
+          ],
+          'includes': [
+            '../../build/isolate.gypi',
+                      ],
+          'sources': [
+            'media_blink_unittests.isolate',
+          ],
+          'conditions': [
+            ['use_x11==1',
+              {
+                'dependencies': [
+                  '../../tools/xdisplaycheck/xdisplaycheck.gyp:xdisplaycheck',
+                ],
+              }
+            ],
+          ],
+        },
+      ],
+    }],
+  ],
 }
