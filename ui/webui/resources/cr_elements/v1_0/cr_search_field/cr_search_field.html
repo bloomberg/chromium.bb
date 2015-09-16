@@ -1,0 +1,28 @@
+<link rel="import" href="chrome://resources/html/assert.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/iron-icons.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-input/iron-input.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-input-container.html">
+
+<dom-module id="cr-search-field">
+  <template>
+    <paper-icon-button icon="search" id="search-button"
+        disabled$="[[showingSearch_]]"
+        i18n-values="title:search"
+        on-click="toggleShowingSearch_"></paper-icon-button>
+    <template is="dom-if" if="[[showingSearch_]]" id="search-container">
+      <paper-input-container id="search-term" on-search="onSearchTermSearch_"
+          on-keydown="onSearchTermKeydown_" hidden$="[[!showingSearch_]]"
+          no-label-float>
+        <input is="iron-input" id="search-input" type="search"
+            i18n-values="placeholder:search" incremental>
+        <paper-icon-button icon="cancel" id="clear-search"
+            on-click="toggleShowingSearch_"
+            hidden$="[[!showingSearch_]]"></paper-icon-button>
+      </paper-input-container>
+    </template>
+  </template>
+  <link rel="import" type="css" href="cr_search_field.css">
+  <script src="cr_search_field.js"></script>
+</dom-module>

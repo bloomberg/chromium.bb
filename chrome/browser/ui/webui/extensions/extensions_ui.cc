@@ -32,10 +32,18 @@ content::WebUIDataSource* CreateMdExtensionsSource() {
       content::WebUIDataSource::Create(chrome::kChromeUIExtensionsHost);
 
   source->SetJsonPath("strings.js");
+
   source->AddLocalizedString("title",
                              IDS_MANAGE_EXTENSIONS_SETTING_WINDOWS_TITLE);
+  source->AddLocalizedString("toolbarTitle", IDS_MD_EXTENSIONS_TOOLBAR_TITLE);
+  source->AddLocalizedString("search", IDS_MD_EXTENSIONS_SEARCH);
+
+  source->AddResourcePath("manager.css", IDR_MD_EXTENSIONS_MANAGER_CSS);
   source->AddResourcePath("manager.html", IDR_MD_EXTENSIONS_MANAGER_HTML);
   source->AddResourcePath("manager.js", IDR_MD_EXTENSIONS_MANAGER_JS);
+  source->AddResourcePath("toolbar.css", IDR_MD_EXTENSIONS_TOOLBAR_CSS);
+  source->AddResourcePath("toolbar.html", IDR_MD_EXTENSIONS_TOOLBAR_HTML);
+  source->AddResourcePath("toolbar.js", IDR_MD_EXTENSIONS_TOOLBAR_JS);
   source->AddResourcePath("strings.html", IDR_MD_EXTENSIONS_STRINGS_HTML);
   source->SetDefaultResource(IDR_MD_EXTENSIONS_EXTENSIONS_HTML);
 

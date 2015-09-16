@@ -4713,6 +4713,12 @@ Even if you have downloaded files from this website before, the website might ha
         <message name="IDS_EXTENSIONS_SHOW_BUTTON" desc="The text for the Show link.">
           Show button
         </message>
+        <message name="IDS_MD_EXTENSIONS_TOOLBAR_TITLE" desc="The text displayed in the toolbar of the chrome://extensions page.">
+          Extensions &amp; Apps
+        </message>
+        <message name="IDS_MD_EXTENSIONS_SEARCH" desc="The text displayed in the search box on the chrome://extensions page.">
+          Search
+        </message>
         <if expr="not use_titlecase">
           <message name="IDS_EXTENSIONS_ALWAYS_RUN" desc="The text for the 'always run' item in context menus (sentence case).">
             Always run

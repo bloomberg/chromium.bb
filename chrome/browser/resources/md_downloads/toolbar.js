@@ -12,17 +12,18 @@ cr.define('downloads', function() {
       this.actionService_ = actionService;
     },
 
+    attached: function() {
+      /** @private {!SearchFieldDelegate} */
+      this.searchFieldDelegate_ = new ToolbarSearchFieldDelegate(this);
+      this.$['search-input'].setDelegate(this.searchFieldDelegate_);
+    },
+
     properties: {
       downloadsShowing: {
         reflectToAttribute: true,
         type: Boolean,
         value: false,
         observer: 'onDownloadsShowingChange_',
-      },
-
-      showingSearch_: {
-        type: Boolean,
-        value: false,
       },
     },
 
@@ -33,7 +34,7 @@ cr.define('downloads', function() {
 
     /** @return {boolean} Whether "Clear all" should be allowed. */
     canClearAll: function() {
-      return !this.$['search-input'].value && this.downloadsShowing;
+      return !this.$['search-input'].getValue() && this.downloadsShowing;
     },
 
     /** @private */
@@ -47,17 +48,10 @@ cr.define('downloads', function() {
       this.updateClearAll_();
     },
 
-    /** @private */
-    onSearchTermSearch_: function() {
-      this.actionService_.search(this.$['search-input'].value);
+    /** @param {string} searchTerm */
+    onSearchTermSearch: function(searchTerm) {
+      this.actionService_.search(searchTerm);
       this.updateClearAll_();
-    },
-
-    /** @private */
-    onSearchTermKeydown_: function(e) {
-      assert(this.showingSearch_);
-      if (e.keyIdentifier == 'U+001B')  // Escape.
-        this.toggleShowingSearch_();
     },
 
     /** @private */
@@ -66,24 +60,29 @@ cr.define('downloads', function() {
     },
 
     /** @private */
-    toggleShowingSearch_: function() {
-      this.showingSearch_ = !this.showingSearch_;
-      this.$['search-button'].disabled = this.showingSearch_;
-
-      if (this.showingSearch_) {
-        this.$['search-input'].focus();
-      } else {
-        this.$['search-input'].value = '';
-        this.onSearchTermSearch_();
-      }
-    },
-
-    /** @private */
     updateClearAll_: function() {
       this.$$('#actions .clear-all').hidden = !this.canClearAll();
       this.$$('paper-menu .clear-all').hidden = !this.canClearAll();
     },
   });
+
+  /**
+   * @constructor
+   * @implements {SearchFieldDelegate}
+   */
+  // TODO(devlin): This is a bit excessive, and it would be better to just have
+  // Toolbar implement SearchFieldDelegate. But for now, we don't know how to
+  // make that happen with closure compiler.
+  function ToolbarSearchFieldDelegate(toolbar) {
+    this.toolbar_ = toolbar;
+  }
+
+  ToolbarSearchFieldDelegate.prototype = {
+    /** @override */
+    onSearchTermSearch: function(searchTerm) {
+      this.toolbar_.onSearchTermSearch(searchTerm);
+    }
+  };
 
   return {Toolbar: Toolbar};
 });
