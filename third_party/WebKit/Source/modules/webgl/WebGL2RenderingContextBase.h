@@ -227,6 +227,8 @@ protected:
     GLint m_max3DTextureSize;
     GLint m_max3DTextureLevel;
 
+    std::set<GLenum> m_supportedInternalFormatsStorage;
+
     PersistentWillBeMember<WebGLBuffer> m_boundCopyReadBuffer;
     PersistentWillBeMember<WebGLBuffer> m_boundCopyWriteBuffer;
     PersistentWillBeMember<WebGLBuffer> m_boundPixelPackBuffer;

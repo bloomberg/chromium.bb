@@ -38,10 +38,78 @@ WGC3Dsync syncObjectOrZero(const WebGLSync* object)
 
 } // namespace
 
+// These enums are from manual pages for glTexStorage2D/glTexStorage3D.
+const GLenum kSupportedInternalFormatsStorage[] = {
+    GL_R8,
+    GL_R8_SNORM,
+    GL_R16F,
+    GL_R32F,
+    GL_R8UI,
+    GL_R8I,
+    GL_R16UI,
+    GL_R16I,
+    GL_R32UI,
+    GL_R32I,
+    GL_RG8,
+    GL_RG8_SNORM,
+    GL_RG16F,
+    GL_RG32F,
+    GL_RG8UI,
+    GL_RG8I,
+    GL_RG16UI,
+    GL_RG16I,
+    GL_RG32UI,
+    GL_RG32I,
+    GL_RGB8,
+    GL_SRGB8,
+    GL_RGB565,
+    GL_RGB8_SNORM,
+    GL_R11F_G11F_B10F,
+    GL_RGB9_E5,
+    GL_RGB16F,
+    GL_RGB32F,
+    GL_RGB8UI,
+    GL_RGB8I,
+    GL_RGB16UI,
+    GL_RGB16I,
+    GL_RGB32UI,
+    GL_RGB32I,
+    GL_RGBA8,
+    GL_SRGB8_ALPHA8,
+    GL_RGBA8_SNORM,
+    GL_RGB5_A1,
+    GL_RGBA4,
+    GL_RGB10_A2,
+    GL_RGBA16F,
+    GL_RGBA32F,
+    GL_RGBA8UI,
+    GL_RGBA8I,
+    GL_RGB10_A2UI,
+    GL_RGBA16UI,
+    GL_RGBA16I,
+    GL_RGBA32UI,
+    GL_RGBA32I,
+    GL_DEPTH_COMPONENT16,
+    GL_DEPTH_COMPONENT24,
+    GL_DEPTH_COMPONENT32F,
+    GL_DEPTH24_STENCIL8,
+    GL_DEPTH32F_STENCIL8,
+    GL_COMPRESSED_R11_EAC,
+    GL_COMPRESSED_SIGNED_R11_EAC,
+    GL_COMPRESSED_RG11_EAC,
+    GL_COMPRESSED_SIGNED_RG11_EAC,
+    GL_COMPRESSED_RGB8_ETC2,
+    GL_COMPRESSED_SRGB8_ETC2,
+    GL_COMPRESSED_RGB8_PUNCHTHROUGH_ALPHA1_ETC2,
+    GL_COMPRESSED_SRGB8_PUNCHTHROUGH_ALPHA1_ETC2,
+    GL_COMPRESSED_RGBA8_ETC2_EAC,
+    GL_COMPRESSED_SRGB8_ALPHA8_ETC2_EAC,
+};
+
 WebGL2RenderingContextBase::WebGL2RenderingContextBase(HTMLCanvasElement* passedCanvas, PassOwnPtr<WebGraphicsContext3D> context, const WebGLContextAttributes& requestedAttributes)
     : WebGLRenderingContextBase(passedCanvas, context, requestedAttributes)
 {
-
+    m_supportedInternalFormatsStorage.insert(kSupportedInternalFormatsStorage, kSupportedInternalFormatsStorage + arraysize(kSupportedInternalFormatsStorage));
 }
 
 WebGL2RenderingContextBase::~WebGL2RenderingContextBase()
@@ -426,6 +494,11 @@ bool WebGL2RenderingContextBase::validateTexStorage(const char* functionName, GL
     WebGLTexture* tex = validateTextureBinding(functionName, target, false);
     if (!tex)
         return false;
+
+    if (m_supportedInternalFormatsStorage.find(internalformat) == m_supportedInternalFormatsStorage.end()) {
+        synthesizeGLError(GL_INVALID_ENUM, functionName, "invalid internalformat");
+        return false;
+    }
 
     if (tex->isImmutable()) {
         synthesizeGLError(GL_INVALID_OPERATION, functionName, "attempted to modify immutable texture");
