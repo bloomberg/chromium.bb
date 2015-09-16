@@ -227,34 +227,19 @@ void DeprecatedPaintLayerClipper::calculateRects(const ClipRectsContext& context
     layerBounds = LayoutRect(offset, LayoutSize(m_layoutObject.layer()->size()));
 
     // Update the clip rects that will be passed to child layers.
-    if (m_layoutObject.hasOverflowClip()) {
-        // This layer establishes a clip of some kind.
-        if (shouldRespectOverflowClip(context)) {
-            foregroundRect.intersect(toLayoutBox(m_layoutObject).overflowClipRect(offset, context.scrollbarRelevancy));
-            if (m_layoutObject.style()->hasBorderRadius())
-                foregroundRect.setHasRadius(true);
-        }
+    if (m_layoutObject.hasOverflowClip() && shouldRespectOverflowClip(context)) {
+        foregroundRect.intersect(toLayoutBox(m_layoutObject).overflowClipRect(offset, context.scrollbarRelevancy));
+        if (m_layoutObject.style()->hasBorderRadius())
+            foregroundRect.setHasRadius(true);
 
-        // If we establish an overflow clip at all, then go ahead and make sure our background
-        // rect is intersected with our layer's bounds including our visual overflow,
-        // since any visual overflow like box-shadow or border-outset is not clipped by overflow:auto/hidden.
-        if (toLayoutBox(m_layoutObject).hasVisualOverflow()) {
-            // FIXME: Perhaps we should be propagating the borderbox as the clip rect for children, even though
-            //        we may need to inflate our clip specifically for shadows or outsets.
-            // FIXME: Does not do the right thing with columns yet, since we don't yet factor in the
-            // individual column boxes as overflow.
-            LayoutRect layerBoundsWithVisualOverflow = toLayoutBox(m_layoutObject).visualOverflowRect();
-            toLayoutBox(m_layoutObject).flipForWritingMode(layerBoundsWithVisualOverflow); // DeprecatedPaintLayer are in physical coordinates, so the overflow has to be flipped.
-            layerBoundsWithVisualOverflow.moveBy(offset);
-            if (shouldRespectOverflowClip(context))
-                backgroundRect.intersect(layerBoundsWithVisualOverflow);
-        } else {
-            // The LayoutView is special since its overflow clipping rect may be larger than its box rect (crbug.com/492871).
-            LayoutRect bounds = m_layoutObject.isLayoutView() ? toLayoutView(m_layoutObject).viewRect() : toLayoutBox(m_layoutObject).borderBoxRect();
-            bounds.moveBy(offset);
-            if (shouldRespectOverflowClip(context))
-                backgroundRect.intersect(bounds);
-        }
+        // FIXME: Does not do the right thing with columns yet, since we don't yet factor in the
+        // individual column boxes as overflow.
+
+        // The LayoutView is special since its overflow clipping rect may be larger than its box rect (crbug.com/492871).
+        LayoutRect layerBoundsWithVisualOverflow = m_layoutObject.isLayoutView() ? toLayoutView(m_layoutObject).viewRect() : toLayoutBox(m_layoutObject).visualOverflowRect();
+        toLayoutBox(m_layoutObject).flipForWritingMode(layerBoundsWithVisualOverflow); // DeprecatedPaintLayer are in physical coordinates, so the overflow has to be flipped.
+        layerBoundsWithVisualOverflow.moveBy(offset);
+        backgroundRect.intersect(layerBoundsWithVisualOverflow);
     }
 
     // CSS clip (different than clipping due to overflow) can clip to any box, even if it falls outside of the border box.
