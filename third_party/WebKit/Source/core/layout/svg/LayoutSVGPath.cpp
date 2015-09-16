@@ -46,14 +46,13 @@ LayoutSVGPath::~LayoutSVGPath()
 {
 }
 
-void LayoutSVGPath::updateStrokeAndFillBoundingBoxes()
-{
-    LayoutSVGShape::updateStrokeAndFillBoundingBoxes();
 
-    // TODO(pdr): We should only call this in updateShapeFromElement.
+void LayoutSVGPath::updateShapeFromElement()
+{
+    LayoutSVGShape::updateShapeFromElement();
     processMarkerPositions();
-    if (!m_markerPositions.isEmpty())
-        m_strokeBoundingBox.unite(markerRect(strokeWidth()));
+
+    m_strokeBoundingBox = calculateUpdatedStrokeBoundingBox();
 }
 
 FloatRect LayoutSVGPath::hitTestStrokeBoundingBox() const
@@ -85,6 +84,14 @@ FloatRect LayoutSVGPath::hitTestStrokeBoundingBox() const
 
     box.inflate(delta);
     return box;
+}
+
+FloatRect LayoutSVGPath::calculateUpdatedStrokeBoundingBox() const
+{
+    FloatRect strokeBoundingBox = m_strokeBoundingBox;
+    if (!m_markerPositions.isEmpty())
+        strokeBoundingBox.unite(markerRect(strokeWidth()));
+    return strokeBoundingBox;
 }
 
 FloatRect LayoutSVGPath::markerRect(float strokeWidth) const

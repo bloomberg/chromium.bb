@@ -56,7 +56,7 @@ LayoutSVGShape::~LayoutSVGShape()
 {
 }
 
-void LayoutSVGShape::updateShapeFromElement()
+void LayoutSVGShape::createPath()
 {
     if (!m_path)
         m_path = adoptPtr(new Path());
@@ -65,26 +65,12 @@ void LayoutSVGShape::updateShapeFromElement()
         m_rareData->m_cachedNonScalingStrokePath.clear();
 }
 
-void LayoutSVGShape::updateStrokeAndFillBoundingBoxes()
+void LayoutSVGShape::updateShapeFromElement()
 {
-    m_fillBoundingBox = path().boundingRect();
+    createPath();
 
-    m_strokeBoundingBox = m_fillBoundingBox;
-    if (style()->svgStyle().hasStroke()) {
-        StrokeData strokeData;
-        SVGLayoutSupport::applyStrokeStyleToStrokeData(strokeData, styleRef(), *this);
-        if (hasNonScalingStroke()) {
-            AffineTransform nonScalingTransform = nonScalingStrokeTransform();
-            if (nonScalingTransform.isInvertible()) {
-                Path* usePath = nonScalingStrokePath(m_path.get(), nonScalingTransform);
-                FloatRect strokeBoundingRect = usePath->strokeBoundingRect(strokeData);
-                strokeBoundingRect = nonScalingTransform.inverse().mapRect(strokeBoundingRect);
-                m_strokeBoundingBox.unite(strokeBoundingRect);
-            }
-        } else {
-            m_strokeBoundingBox.unite(path().strokeBoundingRect(strokeData));
-        }
-    }
+    m_fillBoundingBox = calculateObjectBoundingBox();
+    m_strokeBoundingBox = calculateStrokeBoundingBox();
 }
 
 FloatRect LayoutSVGShape::hitTestStrokeBoundingBox() const
@@ -168,14 +154,11 @@ void LayoutSVGShape::layout()
     bool updateCachedBoundariesInParents = false;
     LayoutAnalyzer::Scope analyzer(*this);
 
-    if (m_needsShapeUpdate)
+    if (m_needsShapeUpdate || m_needsBoundariesUpdate) {
         updateShapeFromElement();
-
-    if (m_needsBoundariesUpdate || m_needsShapeUpdate) {
-        updateStrokeAndFillBoundingBoxes();
+        m_needsShapeUpdate = false;
         updatePaintInvalidationBoundingBox();
         m_needsBoundariesUpdate = false;
-        m_needsShapeUpdate = false;
         updateCachedBoundariesInParents = true;
     }
 
@@ -264,6 +247,35 @@ bool LayoutSVGShape::nodeAtFloatPointInternal(const HitTestRequest& request, con
             return true;
     }
     return false;
+}
+
+FloatRect LayoutSVGShape::calculateObjectBoundingBox() const
+{
+    return path().boundingRect();
+}
+
+FloatRect LayoutSVGShape::calculateStrokeBoundingBox() const
+{
+    ASSERT(m_path);
+    FloatRect strokeBoundingBox = m_fillBoundingBox;
+
+    if (style()->svgStyle().hasStroke()) {
+        StrokeData strokeData;
+        SVGLayoutSupport::applyStrokeStyleToStrokeData(strokeData, styleRef(), *this);
+        if (hasNonScalingStroke()) {
+            AffineTransform nonScalingTransform = nonScalingStrokeTransform();
+            if (nonScalingTransform.isInvertible()) {
+                Path* usePath = nonScalingStrokePath(m_path.get(), nonScalingTransform);
+                FloatRect strokeBoundingRect = usePath->strokeBoundingRect(strokeData);
+                strokeBoundingRect = nonScalingTransform.inverse().mapRect(strokeBoundingRect);
+                strokeBoundingBox.unite(strokeBoundingRect);
+            }
+        } else {
+            strokeBoundingBox.unite(path().strokeBoundingRect(strokeData));
+        }
+    }
+
+    return strokeBoundingBox;
 }
 
 void LayoutSVGShape::updatePaintInvalidationBoundingBox()

@@ -43,64 +43,37 @@ LayoutSVGRect::~LayoutSVGRect()
 {
 }
 
-void LayoutSVGRect::styleDidChange(StyleDifference diff, const ComputedStyle* oldStyle)
-{
-    if (diff.needsFullLayout() && oldStyle) {
-        const SVGComputedStyle& oldSvgStyle = oldStyle->svgStyle();
-        const SVGComputedStyle& svgStyle = style()->svgStyle();
-        if (oldSvgStyle.rx() != svgStyle.rx()
-            || oldSvgStyle.ry() != svgStyle.ry()
-            || oldSvgStyle.vectorEffect() != svgStyle.vectorEffect()
-            || definitelyHasSimpleStroke(oldSvgStyle) != definitelyHasSimpleStroke(svgStyle))
-            setNeedsShapeUpdate();
-    }
-
-    // Superclass will take care of calling clientStyleChanged.
-    LayoutSVGShape::styleDidChange(diff, oldStyle);
-}
-
 void LayoutSVGRect::updateShapeFromElement()
 {
+    // Before creating a new object we need to clear the cached bounding box
+    // to avoid using garbage.
+    m_fillBoundingBox = FloatRect();
+    m_strokeBoundingBox = FloatRect();
     m_usePathFallback = false;
+    SVGRectElement* rect = toSVGRectElement(element());
+    ASSERT(rect);
 
-    // Fallback to LayoutSVGShape and path-based hit detection if the rect
-    // has rounded corners or a non-scaling or non-simple stroke.
-    SVGLengthContext lengthContext(toSVGRectElement(element()));
-    if (lengthContext.valueForLength(styleRef().svgStyle().rx(), styleRef(), SVGLengthMode::Width) > 0
-        || lengthContext.valueForLength(styleRef().svgStyle().ry(), styleRef(), SVGLengthMode::Height) > 0
-        || hasNonScalingStroke()
-        || !definitelyHasSimpleStroke(style()->svgStyle())) {
-        LayoutSVGShape::updateShapeFromElement();
-        m_usePathFallback = true;
-        return;
-    }
-
-    clearPath();
-}
-
-void LayoutSVGRect::updateStrokeAndFillBoundingBoxes()
-{
-    SVGLengthContext lengthContext(toSVGRectElement(element()));
+    SVGLengthContext lengthContext(rect);
     FloatSize boundingBoxSize(
         lengthContext.valueForLength(styleRef().width(), styleRef(), SVGLengthMode::Width),
         lengthContext.valueForLength(styleRef().height(), styleRef(), SVGLengthMode::Height));
 
     // Spec: "A negative value is an error."
-    if (boundingBoxSize.width() < 0 || boundingBoxSize.height() < 0) {
-        m_fillBoundingBox = FloatRect();
-        m_strokeBoundingBox = FloatRect();
+    if (boundingBoxSize.width() < 0 || boundingBoxSize.height() < 0)
         return;
-    }
 
-    if (m_usePathFallback) {
-        // Spec: "A value of zero disables rendering of the element." so we can skip
-        // the path fallback and rely on the existing bounding box calculation.
-        if (!boundingBoxSize.isEmpty()) {
-            LayoutSVGShape::updateStrokeAndFillBoundingBoxes();
+    // Spec: "A value of zero disables rendering of the element."
+    if (!boundingBoxSize.isEmpty()) {
+        // Fallback to LayoutSVGShape and path-based hit detection if the rect
+        // has rounded corners or a non-scaling or non-simple stroke.
+        if (lengthContext.valueForLength(styleRef().svgStyle().rx(), styleRef(), SVGLengthMode::Width) > 0
+            || lengthContext.valueForLength(styleRef().svgStyle().ry(), styleRef(), SVGLengthMode::Height) > 0
+            || hasNonScalingStroke()
+            || !definitelyHasSimpleStroke()) {
+            LayoutSVGShape::updateShapeFromElement();
+            m_usePathFallback = true;
             return;
         }
-        m_usePathFallback = false;
-        clearPath();
     }
 
     m_fillBoundingBox = FloatRect(
@@ -117,8 +90,8 @@ bool LayoutSVGRect::shapeDependentStrokeContains(const FloatPoint& point)
 {
     // The optimized code below does not support non-simple strokes so we need
     // to fall back to LayoutSVGShape::shapeDependentStrokeContains in these cases.
-    if (m_usePathFallback || !definitelyHasSimpleStroke(style()->svgStyle())) {
-        if (!m_usePathFallback)
+    if (m_usePathFallback || !definitelyHasSimpleStroke()) {
+        if (!hasPath())
             LayoutSVGShape::updateShapeFromElement();
         return LayoutSVGShape::shapeDependentStrokeContains(point);
     }
@@ -146,8 +119,10 @@ bool LayoutSVGRect::shapeDependentFillContains(const FloatPoint& point, const Wi
 }
 
 // Returns true if the stroke is continuous and definitely uses miter joins.
-bool LayoutSVGRect::definitelyHasSimpleStroke(const SVGComputedStyle& svgStyle) const
+bool LayoutSVGRect::definitelyHasSimpleStroke() const
 {
+    const SVGComputedStyle& svgStyle = style()->svgStyle();
+
     // The four angles of a rect are 90 degrees. Using the formula at:
     // http://www.w3.org/TR/SVG/painting.html#StrokeMiterlimitProperty
     // when the join style of the rect is "miter", the ratio of the miterLength

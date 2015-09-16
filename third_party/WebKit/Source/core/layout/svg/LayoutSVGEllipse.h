@@ -41,14 +41,12 @@ public:
     const char* name() const override { return "LayoutSVGEllipse"; }
 
 private:
-    void styleDidChange(StyleDifference, const ComputedStyle* oldStyle) override;
     void updateShapeFromElement() override;
-    void updateStrokeAndFillBoundingBoxes() override;
     bool isShapeEmpty() const override { return m_usePathFallback ? LayoutSVGShape::isShapeEmpty() : m_fillBoundingBox.isEmpty(); }
     bool shapeDependentStrokeContains(const FloatPoint&) override;
     bool shapeDependentFillContains(const FloatPoint&, const WindRule) const override;
     void calculateRadiiAndCenter();
-    bool hasContinuousStroke(const SVGComputedStyle&) const;
+    bool hasContinuousStroke() const;
 
 private:
     FloatPoint m_center;

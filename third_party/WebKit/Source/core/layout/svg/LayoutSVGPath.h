@@ -40,9 +40,9 @@ public:
     const char* name() const override { return "LayoutSVGPath"; }
 
 private:
-    void updateStrokeAndFillBoundingBoxes() override;
-
+    void updateShapeFromElement() override;
     FloatRect hitTestStrokeBoundingBox() const override;
+    FloatRect calculateUpdatedStrokeBoundingBox() const;
 
     FloatRect markerRect(float strokeWidth) const;
     bool shouldGenerateMarkerPositions() const;
