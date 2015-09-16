@@ -57,7 +57,8 @@ class AppBannerDataFetcher
 
   AppBannerDataFetcher(content::WebContents* web_contents,
                        base::WeakPtr<Delegate> weak_delegate,
-                       int ideal_icon_size_in_dp);
+                       int ideal_icon_size_in_dp,
+                       int minimum_icon_size_in_dp);
 
   // Begins creating a banner for the URL being displayed by the Delegate's
   // WebContents.
@@ -169,8 +170,9 @@ class AppBannerDataFetcher
   static bool IsManifestValidForWebApp(const content::Manifest& manifest,
                                        content::WebContents* web_contents);
 
-  const int ideal_icon_size_in_dp_;
   const base::WeakPtr<Delegate> weak_delegate_;
+  const int ideal_icon_size_in_dp_;
+  const int minimum_icon_size_in_dp_;
   base::ObserverList<Observer> observer_list_;
   bool is_active_;
   bool was_canceled_by_page_;

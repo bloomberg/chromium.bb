@@ -18,10 +18,16 @@ namespace banners {
 AppBannerDataFetcherAndroid::AppBannerDataFetcherAndroid(
     content::WebContents* web_contents,
     base::WeakPtr<Delegate> weak_delegate,
+    int ideal_icon_size_in_dp,
+    int minimum_icon_size_in_dp,
     int ideal_splash_image_size_in_dp,
-    int ideal_icon_size_in_dp)
-    : AppBannerDataFetcher(web_contents, weak_delegate, ideal_icon_size_in_dp),
-      ideal_splash_image_size_in_dp_(ideal_splash_image_size_in_dp) {
+    int minimum_splash_image_size_in_dp)
+    : AppBannerDataFetcher(web_contents,
+                           weak_delegate,
+                           ideal_icon_size_in_dp,
+                           minimum_icon_size_in_dp),
+      ideal_splash_image_size_in_dp_(ideal_splash_image_size_in_dp),
+      minimum_splash_image_size_in_dp_(minimum_splash_image_size_in_dp) {
 }
 
 AppBannerDataFetcherAndroid::~AppBannerDataFetcherAndroid() {
@@ -56,10 +62,15 @@ void AppBannerDataFetcherAndroid::FetchWebappSplashScreenImage(
   GURL image_url = ManifestIconSelector::FindBestMatchingIcon(
       web_app_data().icons,
       ideal_splash_image_size_in_dp_,
+      minimum_splash_image_size_in_dp_,
       gfx::Screen::GetScreenFor(web_contents->GetNativeView()));
 
   ShortcutHelper::FetchSplashScreenImage(
-      web_contents, image_url, ideal_splash_image_size_in_dp_, webapp_id);
+      web_contents,
+      image_url,
+      ideal_splash_image_size_in_dp_,
+      minimum_splash_image_size_in_dp_,
+      webapp_id);
 }
 
 void AppBannerDataFetcherAndroid::ShowBanner(const SkBitmap* icon,

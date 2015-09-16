@@ -94,7 +94,8 @@ class AppBannerDataFetcherBrowserTest : public InProcessBrowserTest,
         browser()->tab_strip_model()->GetActiveWebContents();
     scoped_refptr<AppBannerDataFetcherDesktop> fetcher(
         new AppBannerDataFetcherDesktop(web_contents,
-                                        weak_factory_.GetWeakPtr(), 128));
+                                        weak_factory_.GetWeakPtr(),
+                                        128, 128));
 
     base::RunLoop run_loop;
     quit_closure_ = run_loop.QuitClosure();

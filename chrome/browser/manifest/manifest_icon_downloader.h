@@ -25,7 +25,8 @@ class GURL;
 // file contains multiple icons then it attempts to pick the one closest in size
 // bigger than or equal to ideal_icon_size_in_dp, taking into account the
 // density of the device. If a bigger icon is chosen then, the icon is scaled
-// down to be equal to ideal_icon_size_in_dp.
+// down to be equal to ideal_icon_size_in_dp. Smaller icons will be chosen down
+// to the value specified by |minimum_icon_size_in_dp|.
 class ManifestIconDownloader final {
  public:
   using IconFetchCallback = base::Callback<void(const SkBitmap&)>;
@@ -39,6 +40,7 @@ class ManifestIconDownloader final {
   static bool Download(content::WebContents* web_contents,
                        const GURL& icon_url,
                        int ideal_icon_size_in_dp,
+                       int minimum_icon_size_in_dp,
                        const IconFetchCallback& callback);
 
  private:

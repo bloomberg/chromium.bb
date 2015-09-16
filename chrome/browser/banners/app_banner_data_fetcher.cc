@@ -74,14 +74,17 @@ void AppBannerDataFetcher::SetTimeDeltaForTesting(int days) {
 AppBannerDataFetcher::AppBannerDataFetcher(
     content::WebContents* web_contents,
     base::WeakPtr<Delegate> delegate,
-    int ideal_icon_size_in_dp)
+    int ideal_icon_size_in_dp,
+    int minimum_icon_size_in_dp)
     : WebContentsObserver(web_contents),
-      ideal_icon_size_in_dp_(ideal_icon_size_in_dp),
       weak_delegate_(delegate),
+      ideal_icon_size_in_dp_(ideal_icon_size_in_dp),
+      minimum_icon_size_in_dp_(minimum_icon_size_in_dp),
       is_active_(false),
       was_canceled_by_page_(false),
       page_requested_prompt_(false),
       event_request_id_(-1) {
+  DCHECK(minimum_icon_size_in_dp <= ideal_icon_size_in_dp);
 }
 
 void AppBannerDataFetcher::Start(const GURL& validated_url,
@@ -320,6 +323,7 @@ void AppBannerDataFetcher::OnHasServiceWorker(
     ManifestIconSelector::FindBestMatchingIcon(
         web_app_data_.icons,
         ideal_icon_size_in_dp_,
+        minimum_icon_size_in_dp_,
         gfx::Screen::GetScreenFor(web_contents->GetNativeView()));
 
   if (!FetchAppIcon(web_contents, icon_url)) {
@@ -334,6 +338,7 @@ bool AppBannerDataFetcher::FetchAppIcon(content::WebContents* web_contents,
       web_contents,
       icon_url,
       ideal_icon_size_in_dp_,
+      minimum_icon_size_in_dp_,
       base::Bind(&AppBannerDataFetcher::OnAppIconFetched,
                  this));
 }

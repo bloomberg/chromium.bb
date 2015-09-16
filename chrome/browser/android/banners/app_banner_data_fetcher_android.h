@@ -17,8 +17,10 @@ class AppBannerDataFetcherAndroid : public AppBannerDataFetcher {
   AppBannerDataFetcherAndroid(
       content::WebContents* web_contents,
       base::WeakPtr<Delegate> weak_delegate,
+      int ideal_icon_size_in_dp,
+      int minimum_icon_size_in_dp,
       int ideal_splash_image_size_in_dp,
-      int ideal_icon_size_in_dp);
+      int minimum_splash_image_size_in_dp);
 
   // Saves information about the Android app being promoted by the current page,
   // then continues the creation pipeline.
@@ -45,6 +47,7 @@ class AppBannerDataFetcherAndroid : public AppBannerDataFetcher {
   std::string native_app_package_;
 
   int ideal_splash_image_size_in_dp_;
+  int minimum_splash_image_size_in_dp_;
 
   DISALLOW_COPY_AND_ASSIGN(AppBannerDataFetcherAndroid);
 };

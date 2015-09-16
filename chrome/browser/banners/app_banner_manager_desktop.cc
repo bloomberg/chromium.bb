@@ -10,7 +10,7 @@
 #include "extensions/common/constants.h"
 
 namespace {
-// TODO(dominickn) Enforce the set of icons which will guarantee the best
+// TODO(dominickn) Identify the best minimum icon size to guarantee the best
 // user experience.
 int kMinimumIconSize = extension_misc::EXTENSION_ICON_LARGE;
 }  // anonymous namespace
@@ -25,15 +25,15 @@ bool AppBannerManagerDesktop::IsEnabled() {
 }
 
 AppBannerDataFetcher* AppBannerManagerDesktop::CreateAppBannerDataFetcher(
-    base::WeakPtr<AppBannerDataFetcher::Delegate> weak_delegate,
-    const int ideal_icon_size) {
+    base::WeakPtr<AppBannerDataFetcher::Delegate> weak_delegate) {
   return new AppBannerDataFetcherDesktop(web_contents(), weak_delegate,
-                                         ideal_icon_size);
+                                         kMinimumIconSize,
+                                         kMinimumIconSize);
 }
 
 AppBannerManagerDesktop::AppBannerManagerDesktop(
     content::WebContents* web_contents)
-    : AppBannerManager(web_contents, kMinimumIconSize) {
+    : AppBannerManager(web_contents) {
 }
 
 }  // namespace banners

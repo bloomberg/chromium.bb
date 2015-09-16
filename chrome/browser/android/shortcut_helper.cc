@@ -7,6 +7,7 @@
 #include <jni.h>
 
 #include "base/android/jni_android.h"
+#include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/basictypes.h"
 #include "base/strings/string16.h"
@@ -19,6 +20,40 @@
 #include "url/gurl.h"
 
 using content::Manifest;
+
+namespace {
+
+static int kIdealHomescreenIconSize = -1;
+static int kMinimumHomescreenIconSize = -1;
+static int kIdealSplashImageSize = -1;
+static int kMinimumSplashImageSize = -1;
+
+// Retrieves and caches the ideal and minimum sizes of the Home screen icon
+// and the splash screen image.
+void GetHomescreenIconAndSplashImageSizes() {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  ScopedJavaLocalRef<jintArray> java_size_array =
+      Java_ShortcutHelper_getHomescreenIconAndSplashImageSizes(env,
+          base::android::GetApplicationContext());
+  std::vector<int> sizes;
+  base::android::JavaIntArrayToIntVector(
+      env, java_size_array.obj(), &sizes);
+
+  // Check that the size returned is what is expected.
+  DCHECK(sizes.size() == 4);
+
+  // This ordering must be kept up to date with the Java ShortcutHelper.
+  kIdealHomescreenIconSize = sizes[0];
+  kMinimumHomescreenIconSize = sizes[1];
+  kIdealSplashImageSize = sizes[2];
+  kMinimumSplashImageSize = sizes[3];
+
+  // Try to ensure that the data returned is sane.
+  DCHECK(kMinimumHomescreenIconSize <= kIdealHomescreenIconSize);
+  DCHECK(kMinimumSplashImageSize <= kIdealSplashImageSize);
+}
+
+} // anonymous namespace
 
 // static
 void ShortcutHelper::AddShortcutInBackgroundWithSkBitmap(
@@ -59,11 +94,36 @@ void ShortcutHelper::AddShortcutInBackgroundWithSkBitmap(
       info.background_color);
 }
 
+int ShortcutHelper::GetIdealHomescreenIconSizeInDp() {
+  if (kIdealHomescreenIconSize == -1)
+    GetHomescreenIconAndSplashImageSizes();
+  return kIdealHomescreenIconSize;
+}
+
+int ShortcutHelper::GetMinimumHomescreenIconSizeInDp() {
+  if (kMinimumHomescreenIconSize == -1)
+    GetHomescreenIconAndSplashImageSizes();
+  return kMinimumHomescreenIconSize;
+}
+
+int ShortcutHelper::GetIdealSplashImageSizeInDp() {
+  if (kIdealSplashImageSize == -1)
+    GetHomescreenIconAndSplashImageSizes();
+  return kIdealSplashImageSize;
+}
+
+int ShortcutHelper::GetMinimumSplashImageSizeInDp() {
+  if (kMinimumSplashImageSize == -1)
+    GetHomescreenIconAndSplashImageSizes();
+  return kMinimumSplashImageSize;
+}
+
 // static
 void ShortcutHelper::FetchSplashScreenImage(
     content::WebContents* web_contents,
     const GURL& image_url,
     const int ideal_splash_image_size_in_dp,
+    const int minimum_splash_image_size_in_dp,
     const std::string& webapp_id) {
   // This is a fire and forget task. It is not vital for the splash screen image
   // to be downloaded so if the downloader returns false there is no fallback.
@@ -71,6 +131,7 @@ void ShortcutHelper::FetchSplashScreenImage(
       web_contents,
       image_url,
       ideal_splash_image_size_in_dp,
+      minimum_splash_image_size_in_dp,
       base::Bind(&ShortcutHelper::StoreWebappData, webapp_id));
 }
 

@@ -9,7 +9,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
-import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
@@ -296,22 +295,46 @@ public class ShortcutHelper {
     }
 
     /**
-     * Returns the ideal size for an image displayed on a web app's splash screen.
-     * @param resources Resources to retrieve the dimension from.
-     * @return the dimensions in dp which the image should have.
-     */
-    public static int getIdealSplashImageSizeInDp(Resources resources) {
-        return getIdealSizeFromResource(resources, R.dimen.webapp_splash_image_size);
-    }
-
-    /**
      * Returns the ideal size for an icon representing a web app.  This size is used on app banners,
      * the Android Home screen, and in Android's recent tasks list, among other places.
      * @param resources Resources to retrieve the dimension from.
      * @return the dimensions in dp which the icon should have.
      */
-    public static int getIdealIconSizeInDp(Resources resources) {
-        return getIdealSizeFromResource(resources, R.dimen.webapp_home_screen_icon_size);
+    public static int getIdealHomescreenIconSizeInDp(Context context) {
+        return getIdealSizeFromResourceInDp(context, R.dimen.webapp_home_screen_icon_size);
+    }
+
+    /**
+     * Returns the minimum size for an icon representing a web app.  This size is used on app
+     * banners, the Android Home screen, and in Android's recent tasks list, among other places.
+     * @param resources Resources to retrieve the dimension from.
+     * @return the lower bound of the size which the icon should have in dp.
+     */
+    public static int getMinimumHomescreenIconSizeInDp(Context context) {
+        float sizeInPx = context.getResources().getDimension(R.dimen.webapp_home_screen_icon_size);
+        float density = context.getResources().getDisplayMetrics().density;
+        float idealIconSizeInDp = sizeInPx / density;
+
+        float minimumIconSizeInPx = idealIconSizeInDp * (density - 1);
+        return Math.round(minimumIconSizeInPx / density);
+    }
+
+    /**
+     * Returns the ideal size for an image displayed on a web app's splash screen.
+     * @param resources Resources to retrieve the dimension from.
+     * @return the dimensions in dp which the image should have.
+     */
+    public static int getIdealSplashImageSizeInDp(Context context) {
+        return getIdealSizeFromResourceInDp(context, R.dimen.webapp_splash_image_size);
+    }
+
+    /**
+     * Returns the minimum size for an image displayed on a web app's splash screen.
+     * @param resources Resources to retrieve the dimension from.
+     * @return the lower bound of the size which the image should have in dp.
+     */
+    public static int getMinimumSplashImageSizeInDp(Context context) {
+        return getIdealSizeFromResourceInDp(context, R.dimen.webapp_splash_image_min_size);
     }
 
     /**
@@ -325,9 +348,24 @@ public class ShortcutHelper {
         return Base64.encodeToString(mac, Base64.DEFAULT);
     }
 
-    private static int getIdealSizeFromResource(Resources resources, int resource) {
-        float sizeInPx = resources.getDimension(resource);
-        float density = resources.getDisplayMetrics().density;
+    /**
+     * Returns an array of sizes which describe the ideal size and minimum size of the Home screen
+     * icon and the ideal and minimum sizes of the splash screen image in that order.
+     */
+    @CalledByNative
+    private static int[] getHomescreenIconAndSplashImageSizes(Context context) {
+        // This ordering must be kept up to date with the C++ ShortcutHelper.
+        return new int[] {
+            getIdealHomescreenIconSizeInDp(context),
+            getMinimumHomescreenIconSizeInDp(context),
+            getIdealSplashImageSizeInDp(context),
+            getMinimumSplashImageSizeInDp(context)
+        };
+    }
+
+    private static int getIdealSizeFromResourceInDp(Context context, int resource) {
+        float sizeInPx = context.getResources().getDimension(resource);
+        float density = context.getResources().getDisplayMetrics().density;
         return Math.round(sizeInPx / density);
     }
 

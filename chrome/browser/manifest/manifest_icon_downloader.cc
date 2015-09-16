@@ -16,7 +16,9 @@ bool ManifestIconDownloader::Download(
     content::WebContents* web_contents,
     const GURL& icon_url,
     int ideal_icon_size_in_dp,
+    int minimum_icon_size_in_dp,
     const ManifestIconDownloader::IconFetchCallback& callback) {
+  DCHECK(minimum_icon_size_in_dp <= ideal_icon_size_in_dp);
   if (!web_contents || !icon_url.is_valid())
     return false;
 
@@ -27,10 +29,8 @@ bool ManifestIconDownloader::Download(
       screen->GetPrimaryDisplay().device_scale_factor();
   const int ideal_icon_size_in_px =
       static_cast<int>(round(ideal_icon_size_in_dp * device_scale_factor));
-
-  const float minimum_scale_factor = std::max(device_scale_factor - 1, 1.0f);
   const int minimum_icon_size_in_px =
-      static_cast<int>(round(ideal_icon_size_in_dp * minimum_scale_factor));
+      static_cast<int>(round(minimum_icon_size_in_dp * device_scale_factor));
 
   web_contents->DownloadImage(
       icon_url,

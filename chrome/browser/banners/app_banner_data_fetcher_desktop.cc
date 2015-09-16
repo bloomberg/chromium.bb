@@ -22,8 +22,12 @@ namespace banners {
 AppBannerDataFetcherDesktop::AppBannerDataFetcherDesktop(
     content::WebContents* web_contents,
     base::WeakPtr<Delegate> weak_delegate,
-    int ideal_icon_size)
-    : AppBannerDataFetcher(web_contents, weak_delegate, ideal_icon_size) {
+    int ideal_icon_size_in_dp,
+    int minimum_icon_size_in_dp)
+    : AppBannerDataFetcher(web_contents,
+                           weak_delegate,
+                           ideal_icon_size_in_dp,
+                           minimum_icon_size_in_dp) {
 }
 
 AppBannerDataFetcherDesktop::~AppBannerDataFetcherDesktop() {

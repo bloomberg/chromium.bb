@@ -27,27 +27,24 @@ using content::Manifest;
 
 jlong Initialize(JNIEnv* env,
                  const JavaParamRef<jobject>& obj,
-                 const JavaParamRef<jobject>& java_web_contents,
-                 jint ideal_splash_image_size_in_dp,
-                 jint ideal_icon_size_in_dp) {
+                 const JavaParamRef<jobject>& java_web_contents) {
   content::WebContents* web_contents =
       content::WebContents::FromJavaWebContents(java_web_contents);
   AddToHomescreenDialogHelper* add_to_homescreen_helper =
-      new AddToHomescreenDialogHelper(env, obj, web_contents,
-          ideal_splash_image_size_in_dp, ideal_icon_size_in_dp);
+      new AddToHomescreenDialogHelper(env, obj, web_contents);
   return reinterpret_cast<intptr_t>(add_to_homescreen_helper);
 }
 
 AddToHomescreenDialogHelper::AddToHomescreenDialogHelper(
     JNIEnv* env,
     jobject obj,
-    content::WebContents* web_contents,
-    int ideal_splash_image_size_in_dp,
-    int ideal_icon_size_in_dp)
+    content::WebContents* web_contents)
     : add_shortcut_pending_(false),
       data_fetcher_(new AddToHomescreenDataFetcher(web_contents,
-          ideal_splash_image_size_in_dp,
-          ideal_icon_size_in_dp,
+          ShortcutHelper::GetIdealHomescreenIconSizeInDp(),
+          ShortcutHelper::GetMinimumHomescreenIconSizeInDp(),
+          ShortcutHelper::GetIdealSplashImageSizeInDp(),
+          ShortcutHelper::GetMinimumSplashImageSizeInDp(),
           this)) {
   java_ref_.Reset(env, obj);
 }

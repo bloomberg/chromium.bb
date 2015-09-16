@@ -33,13 +33,14 @@ class ManifestIconSelector {
   // If/when this class is generalized, it may be a good idea to switch this to
   // taking in pixels, instead.
   //
-  // The icon returned will have a minimum size of an image one density bucket
-  // smaller than the device denisity * preferred_icon_size_in_dp.
+  // Any icon returned will be close as possible to |ideal_icon_size_in_dp|
+  // with a size not less than |minimum_icon_size_in_dp|.
   //
   // Returns the icon url if a suitable icon is found. An empty URL otherwise.
   static GURL FindBestMatchingIcon(
       const std::vector<content::Manifest::Icon>& icons,
       int ideal_icon_size_in_dp,
+      int minimum_icon_size_in_dp,
       const gfx::Screen* screen);
 
  private:

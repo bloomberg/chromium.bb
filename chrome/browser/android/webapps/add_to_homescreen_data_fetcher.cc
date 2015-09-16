@@ -34,8 +34,10 @@ using content::Manifest;
 
 AddToHomescreenDataFetcher::AddToHomescreenDataFetcher(
     content::WebContents* web_contents,
-    int ideal_splash_image_size_in_dp,
     int ideal_icon_size_in_dp,
+    int minimum_icon_size_in_dp,
+    int ideal_splash_image_size_in_dp,
+    int minimum_splash_image_size_in_dp,
     Observer* observer)
     : WebContentsObserver(web_contents),
       weak_observer_(observer),
@@ -45,8 +47,13 @@ AddToHomescreenDataFetcher::AddToHomescreenDataFetcher(
       icon_timeout_timer_(false, false),
       shortcut_info_(dom_distiller::url_utils::GetOriginalUrlFromDistillerUrl(
                      web_contents->GetURL())),
+      ideal_icon_size_in_dp_(ideal_icon_size_in_dp),
+      minimum_icon_size_in_dp_(minimum_icon_size_in_dp),
       ideal_splash_image_size_in_dp_(ideal_splash_image_size_in_dp),
-      ideal_icon_size_in_dp_(ideal_icon_size_in_dp) {
+      minimum_splash_image_size_in_dp_(minimum_splash_image_size_in_dp) {
+  DCHECK(minimum_icon_size_in_dp <= ideal_icon_size_in_dp);
+  DCHECK(minimum_splash_image_size_in_dp <= ideal_splash_image_size_in_dp);
+
   // Send a message to the renderer to retrieve information about the page.
   is_waiting_for_web_application_info_ = true;
   Send(new ChromeViewMsg_GetWebApplicationInfo(routing_id()));
@@ -109,6 +116,7 @@ void AddToHomescreenDataFetcher::OnDidGetManifest(
   GURL icon_src = ManifestIconSelector::FindBestMatchingIcon(
       manifest.icons,
       ideal_icon_size_in_dp_,
+      minimum_icon_size_in_dp_,
       gfx::Screen::GetScreenFor(web_contents()->GetNativeView()));
 
   // If fetching the Manifest icon fails, fallback to the best favicon
@@ -117,6 +125,7 @@ void AddToHomescreenDataFetcher::OnDidGetManifest(
         web_contents(),
         icon_src,
         ideal_icon_size_in_dp_,
+        minimum_icon_size_in_dp_,
         base::Bind(&AddToHomescreenDataFetcher::OnManifestIconFetched,
                    this))) {
     FetchFavicon();
@@ -126,6 +135,7 @@ void AddToHomescreenDataFetcher::OnDidGetManifest(
   splash_screen_url_ = ManifestIconSelector::FindBestMatchingIcon(
       manifest.icons,
       ideal_splash_image_size_in_dp_,
+      minimum_splash_image_size_in_dp_,
       gfx::Screen::GetScreenFor(web_contents()->GetNativeView()));
 
   weak_observer_->OnUserTitleAvailable(shortcut_info_.user_title);
@@ -165,6 +175,7 @@ void AddToHomescreenDataFetcher::FetchSplashScreenImage(
       web_contents(),
       splash_screen_url_,
       ideal_splash_image_size_in_dp_,
+      minimum_splash_image_size_in_dp_,
       webapp_id);
 }
 

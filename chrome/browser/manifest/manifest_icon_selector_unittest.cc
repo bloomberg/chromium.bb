@@ -13,12 +13,6 @@
 #include "ui/gfx/screen_type_delegate.h"
 #include "ui/gfx/test/test_screen.h"
 
-namespace {
-
-const int kPreferredIconSize = 48;
-
-}
-
 class ManifestIconSelectorTest : public testing::Test  {
  protected:
   ManifestIconSelectorTest() {
@@ -28,17 +22,28 @@ class ManifestIconSelectorTest : public testing::Test  {
 
   ~ManifestIconSelectorTest() override {}
 
-  GURL FindBestMatchingIcon(const std::vector<content::Manifest::Icon>& icons) {
+  GURL FindBestMatchingIconWithMinimum(
+      const std::vector<content::Manifest::Icon>& icons,
+      int minimum_icon_size_in_dp) {
     return ManifestIconSelector::FindBestMatchingIcon(
-        icons, GetPreferredIconSizeInDp(), &test_screen_);
+        icons, GetPreferredIconSizeInDp(),
+        minimum_icon_size_in_dp, &test_screen_);
+  }
+
+  GURL FindBestMatchingIcon(const std::vector<content::Manifest::Icon>& icons) {
+    return FindBestMatchingIconWithMinimum(icons, 0);
   }
 
   void SetDisplayDeviceScaleFactor(float device_scale_factor) {
     test_screen_.display()->set_device_scale_factor(device_scale_factor);
   }
 
-  static int GetPreferredIconSizeInDp() {
-    return kPreferredIconSize;
+  int GetPreferredIconSizeInDp() {
+    return preferred_icon_size_;
+  }
+
+  void SetPreferredIconSizeInDp(int new_size) {
+    preferred_icon_size_ = new_size;
   }
 
   static content::Manifest::Icon CreateIcon(
@@ -58,6 +63,7 @@ class ManifestIconSelectorTest : public testing::Test  {
 
  private:
   gfx::test::TestScreen test_screen_;
+  int preferred_icon_size_ = 48;
 
   DISALLOW_COPY_AND_ASSIGN(ManifestIconSelectorTest);
 };
@@ -229,38 +235,62 @@ TEST_F(ManifestIconSelectorTest, DeviceDensityFallback) {
 
 TEST_F(ManifestIconSelectorTest, DeviceDensityMatchRejectsTooSmall) {
   // If we have to resort to density matching to find icons, then an icon of
-  // the correct size has not been found. Make sure that an icon which is just
-  // slightly smaller than one density bucket below the device is not chosen
-  // even if the density matches.
+  // the correct size has not been found. Make sure that the minimum passed
+  // is enforced.
   std::vector<gfx::Size> sizes_1_2;
   std::vector<gfx::Size> sizes_3;
 
   sizes_1_2.push_back(gfx::Size(47, 47));
   sizes_3.push_back(gfx::Size(95, 95));
 
+  // Set to a value which will not affect the calculations.
+  SetPreferredIconSizeInDp(1024);
+
   std::vector<content::Manifest::Icon> icons;
   icons.push_back(CreateIcon("http://foo.com/icon_x1.png", "", 1.0, sizes_1_2));
   icons.push_back(CreateIcon("http://foo.com/icon_x2.png", "", 2.0, sizes_1_2));
   icons.push_back(CreateIcon("http://foo.com/icon_x3.png", "", 3.0, sizes_3));
 
-  // Nothing matches here because there is a density scale factor lower bound of
-  // of 1.0 which since there is no density bucket smaller than the one
-  // associated with this scale factor.
+  // Nothing matches here because the minimum is 48.
   SetDisplayDeviceScaleFactor(1.0f);
-  GURL url = FindBestMatchingIcon(icons);
+  GURL url = FindBestMatchingIconWithMinimum(icons, 48);
   EXPECT_TRUE(url.is_empty());
 
-  // Nothing matches here as the icon is just smaller than the icon size
-  // one density bucket below (i.e. 96 is expected and 48 is the minimum).
+  // Nothing matches here because the minimum is 48 again.
   SetDisplayDeviceScaleFactor(2.0f);
-  url = FindBestMatchingIcon(icons);
+  url = FindBestMatchingIconWithMinimum(icons, 48);
   EXPECT_TRUE(url.is_empty());
 
-  // Nothing matches here as the icon is just smaller than the icon size
-  // one density bucket below (i.e. 144 is expected and 96 is the minimum).
+  // Nothing matches here as the minimum is 96.
   SetDisplayDeviceScaleFactor(3.0f);
-  url = FindBestMatchingIcon(icons);
+  url = FindBestMatchingIconWithMinimum(icons, 96);
   EXPECT_TRUE(url.is_empty());
+}
+
+TEST_F(ManifestIconSelectorTest, IdealVeryCloseToMinimumMatches) {
+  std::vector<gfx::Size> sizes;
+  sizes.push_back(gfx::Size(2, 2));
+
+  std::vector<content::Manifest::Icon> icons;
+  icons.push_back(CreateIcon("http://foo.com/icon_x1.png", "", 1.0, sizes));
+
+  SetDisplayDeviceScaleFactor(1.0f);
+  GURL url = FindBestMatchingIconWithMinimum(icons, 1);
+  EXPECT_EQ("http://foo.com/icon_x1.png", url.spec());
+}
+
+TEST_F(ManifestIconSelectorTest, SizeVeryCloseToMinimumMatches) {
+  std::vector<gfx::Size> sizes;
+  sizes.push_back(gfx::Size(2, 2));
+
+  SetPreferredIconSizeInDp(200);
+
+  std::vector<content::Manifest::Icon> icons;
+  icons.push_back(CreateIcon("http://foo.com/icon_x1.png", "", 1.0, sizes));
+
+  SetDisplayDeviceScaleFactor(1.0f);
+  GURL url = FindBestMatchingIconWithMinimum(icons, 1);
+  EXPECT_EQ("http://foo.com/icon_x1.png", url.spec());
 }
 
 TEST_F(ManifestIconSelectorTest, DoNotUseOtherDensities) {
@@ -300,7 +330,7 @@ TEST_F(ManifestIconSelectorTest, ClosestIconToPreferred) {
   int big = GetPreferredIconSizeInDp() * 2;
   int very_big = GetPreferredIconSizeInDp() * 4;
 
-  // (very_small, bit_small) => empty (since both are too small)
+  // (very_small, bit_small) => bit_small
   {
     std::vector<gfx::Size> sizes_1;
     sizes_1.push_back(gfx::Size(very_small, very_small));
@@ -313,10 +343,10 @@ TEST_F(ManifestIconSelectorTest, ClosestIconToPreferred) {
     icons.push_back(CreateIcon("http://foo.com/icon.png", "", 1.0, sizes_2));
 
     GURL url = FindBestMatchingIcon(icons);
-    EXPECT_EQ("", url.spec());
+    EXPECT_EQ("http://foo.com/icon.png", url.spec());
   }
 
-  // (very_small, bit_small, smaller) => empty (since both are too small)
+  // (very_small, bit_small, smaller) => bit_small
   {
     std::vector<gfx::Size> sizes_1;
     sizes_1.push_back(gfx::Size(very_small, very_small));
@@ -333,7 +363,7 @@ TEST_F(ManifestIconSelectorTest, ClosestIconToPreferred) {
     icons.push_back(CreateIcon("http://foo.com/icon_no.png", "", 1.0, sizes_3));
 
     GURL url = FindBestMatchingIcon(icons);
-    EXPECT_EQ("", url.spec());
+    EXPECT_EQ("http://foo.com/icon.png", url.spec());
   }
 
   // (very_big, big) => big

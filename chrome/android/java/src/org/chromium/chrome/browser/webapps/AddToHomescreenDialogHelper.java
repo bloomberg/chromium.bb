@@ -46,10 +46,7 @@ public class AddToHomescreenDialogHelper {
      */
     public void initialize(Observer observer) {
         mObserver = observer;
-        mNativeAddToHomescreenDialogHelper = nativeInitialize(
-                mTab.getWebContents(),
-                ShortcutHelper.getIdealSplashImageSizeInDp(mAppContext.getResources()),
-                ShortcutHelper.getIdealIconSizeInDp(mAppContext.getResources()));
+        mNativeAddToHomescreenDialogHelper = nativeInitialize(mTab.getWebContents());
     }
 
     /**
@@ -100,8 +97,7 @@ public class AddToHomescreenDialogHelper {
                 ApplicationStatus.getApplicationContext(), icon, url, red, green, blue);
     }
 
-    private native long nativeInitialize(WebContents webContents,
-            int idealSplashImageSizeInDp, int idealIconSizeInDp);
+    private native long nativeInitialize(WebContents webContents);
     private native void nativeAddShortcut(long nativeAddToHomescreenDialogHelper,
             String userRequestedTitle);
     private native void nativeDestroy(long nativeAddToHomescreenDialogHelper);

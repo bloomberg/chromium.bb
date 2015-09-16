@@ -69,9 +69,7 @@ public class AppBannerManager extends EmptyTabObserver {
      * @param tab Tab that the AppBannerManager will be attached to.
      */
     public AppBannerManager(Tab tab, Context context) {
-        mNativePointer = nativeInit(
-                ShortcutHelper.getIdealSplashImageSizeInDp(context.getResources()),
-                ShortcutHelper.getIdealIconSizeInDp(context.getResources()));
+        mNativePointer = nativeInit();
         mTab = tab;
         updatePointers();
     }
@@ -169,7 +167,7 @@ public class AppBannerManager extends EmptyTabObserver {
         return nativeIsFetcherActive(mNativePointer);
     }
 
-    private native long nativeInit(int idealSplashImageSizeInDp, int idealIconSizeInDp);
+    private native long nativeInit();
     private native void nativeDestroy(long nativeAppBannerManagerAndroid);
     private native void nativeReplaceWebContents(long nativeAppBannerManagerAndroid,
             WebContents webContents);

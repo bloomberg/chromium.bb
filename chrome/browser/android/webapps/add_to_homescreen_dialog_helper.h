@@ -31,9 +31,7 @@ class AddToHomescreenDialogHelper :
  public:
   AddToHomescreenDialogHelper(JNIEnv* env,
                               jobject obj,
-                              content::WebContents* web_contents,
-                              int ideal_splash_image_size_in_dp,
-                              int ideal_icon_size_in_dp);
+                              content::WebContents* web_contents);
 
   // Called by the Java counterpart to destroy its native half.
   void Destroy(JNIEnv* env, jobject obj);

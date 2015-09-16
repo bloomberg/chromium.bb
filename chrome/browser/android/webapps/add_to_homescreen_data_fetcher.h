@@ -53,8 +53,10 @@ class AddToHomescreenDataFetcher
   // renderer process. The initialization is asynchronous and
   // OnDidGetWebApplicationInfo is expected to be called when finished.
   AddToHomescreenDataFetcher(content::WebContents* web_contents,
-                             int ideal_splash_image_size_in_dp,
                              int ideal_icon_size_in_dp,
+                             int minimum_icon_size_in_dp,
+                             int ideal_splash_image_size_in_dp,
+                             int minimum_splash_image_size_in_dp,
                              Observer* observer);
 
   // Called to fetch the splash screen image to be stored for the webapp with
@@ -108,8 +110,10 @@ class AddToHomescreenDataFetcher
   SkBitmap shortcut_icon_;
   base::CancelableTaskTracker favicon_task_tracker_;
 
-  const int ideal_splash_image_size_in_dp_;
   const int ideal_icon_size_in_dp_;
+  const int minimum_icon_size_in_dp_;
+  const int ideal_splash_image_size_in_dp_;
+  const int minimum_splash_image_size_in_dp_;
 
   friend class base::RefCounted<AddToHomescreenDataFetcher>;
   DISALLOW_COPY_AND_ASSIGN(AddToHomescreenDataFetcher);
