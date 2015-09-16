@@ -388,10 +388,21 @@ cr.define('media_router_container', function() {
 
       // Tests the expected view when there are no local active routes and
       // media_router_container is created for the first time.
-      test('initial view with one local route', function() {
+      test('initial view with no local route', function() {
         container.sinkList = fakeSinkList;
         container.routeList = [];
 
+        checkCurrentView(container.CONTAINER_VIEW_.SINK_LIST);
+      });
+
+      // Tests the expected view when there are no local active routes and
+      // media_router_container is created for the first time.
+      test('view after route is closed remotely', function() {
+        container.sinkList = fakeSinkList;
+        container.routeList = fakeRouteList;
+        checkCurrentView(container.CONTAINER_VIEW_.ROUTE_DETAILS);
+
+        container.routeList = [];
         checkCurrentView(container.CONTAINER_VIEW_.SINK_LIST);
       });
 

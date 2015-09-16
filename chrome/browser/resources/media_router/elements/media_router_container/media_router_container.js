@@ -544,6 +544,16 @@ Polymer({
       }
     }, this);
 
+    // If |currentRoute_| is no longer active, clear |currentRoute_|. Also
+    // switch back to the SINK_PICKER view if the user is currently in the
+    // ROUTE_DETAILS view.
+    if (!this.currentRoute_ || !this.routeMap_[this.currentRoute_.id]) {
+      if (this.currentView_ == this.CONTAINER_VIEW_.ROUTE_DETAILS)
+        this.showSinkList_();
+      else
+        this.currentRoute_ = null;
+    }
+
     this.sinkToRouteMap_ = tempSinkToRouteMap;
     this.maybeShowRouteDetailsOnOpen_(localRoute);
   },
