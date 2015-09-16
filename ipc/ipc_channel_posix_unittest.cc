@@ -12,7 +12,6 @@
 #include <sys/un.h>
 #include <unistd.h>
 
-#include "base/basictypes.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/location.h"

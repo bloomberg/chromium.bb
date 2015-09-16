@@ -5,7 +5,6 @@
 #ifndef IPC_IPC_PLATFORM_FILE_H_
 #define IPC_IPC_PLATFORM_FILE_H_
 
-#include "base/basictypes.h"
 #include "base/files/file.h"
 #include "base/process/process.h"
 #include "ipc/ipc_export.h"

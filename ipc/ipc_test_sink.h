@@ -10,7 +10,8 @@
 #include <utility>
 #include <vector>
 
-#include "base/basictypes.h"
+#include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/observer_list.h"
 #include "ipc/ipc_channel.h"
 

@@ -9,8 +9,9 @@
 #if defined(OS_WIN)
 #include <windows.h>
 #endif
+
 #include <string>
-#include "base/basictypes.h"
+
 #include "base/memory/scoped_ptr.h"
 #include "ipc/ipc_message.h"
 

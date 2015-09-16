@@ -9,7 +9,6 @@
 #include <fcntl.h>
 #include <unistd.h>
 
-#include "base/basictypes.h"
 #include "base/posix/eintr_wrapper.h"
 #include "ipc/ipc_platform_file_attachment_posix.h"
 #include "testing/gtest/include/gtest/gtest.h"

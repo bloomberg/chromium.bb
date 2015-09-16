@@ -5,7 +5,7 @@
 #ifndef IPC_IPC_SECURITY_TEST_UTIL_H_
 #define IPC_IPC_SECURITY_TEST_UTIL_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 
 namespace IPC {
 
