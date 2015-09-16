@@ -1598,6 +1598,10 @@ crbug.com/532539 [ XP ] fast/table/table-before-child-in-table.html [ NeedsRebas
 crbug.com/532539 [ XP ] fast/table/table-row-after-child-in-table.html [ NeedsRebaseline ]
 crbug.com/532539 [ XP ] fast/table/table-cell-after-child-in-table.html [ NeedsRebaseline ]
 
+crbug.com/532643 [ Mac ] fast/events/hit-test-cache-scrollbar-no-crash.html [ Pass Failure ]
+crbug.com/532643 [ Mac ] virtual/trustedeventsdefaultaction/fast/events/hit-test-cache-scrollbar-no-crash.html [ Pass Failure ]
+crbug.com/532643 [ Mac ] virtual/pointerevent/fast/events/hit-test-cache-scrollbar-no-crash.html [ Pass Failure ]
+
 # The Win10 result for fast/text/emoji-font-fallback-win.html does not match the description
 crbug.com/527044 [ Win10 ] fast/text/emoji-font-fallback-win.html [ ImageOnlyFailure Timeout ]
 
