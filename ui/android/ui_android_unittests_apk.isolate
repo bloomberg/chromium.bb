@@ -7,7 +7,7 @@
   ],
   'variables': {
     'command': [
-      '<(PRODUCT_DIR)/bin/run_ui_android_unittests',
+      '<(PRODUCT_DIR)/bin/run_ui_android_unittests', '-v',
     ],
     'files': [
       '<(PRODUCT_DIR)/bin/run_ui_android_unittests',
