@@ -19,8 +19,7 @@ recorderOnStop = test.step_func(function() {
     assert_unreached('Recording stopped.');
 });
 
-gotStream = test.step_func(function(s) {
-    stream = s;
+gotStream = test.step_func(function(stream) {
     assert_equals(stream.getAudioTracks().length, 0);
     assert_equals(stream.getVideoTracks().length, 1);
     assert_equals(stream.getVideoTracks()[0].readyState, 'live');

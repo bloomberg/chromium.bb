@@ -411,9 +411,8 @@ crbug.com/505364 imported/web-platform-tests/shadow-dom/untriaged/shadow-trees/u
 crbug.com/505364 imported/web-platform-tests/shadow-dom/untriaged/shadow-trees/upper-boundary-encapsulation/ownerdocument-002.html [ Failure ]
 crbug.com/505364 crbug.com/520616 imported/web-platform-tests/shadow-dom/untriaged/shadow-trees/upper-boundary-encapsulation/test-009.html [ Failure ]
 
-# Temporarily disabled for Chromium side code landing.
-crbug.com/262211 fast/mediarecorder/MediaRecorder-basic-video.html [ Skip ]
-crbug.com/262211 fast/mediarecorder/MediaRecorder-canRecordMimeType.html [ Skip ]
+# Temporarily disabled until Chromium side supports meaningful MediaStreamTracks.
+crbug.com/532509 fast/mediarecorder/MediaRecorder-basic-video.html [ Skip ]
 
 crbug.com/387740 imported/web-platform-tests/mediacapture-streams/stream-api/introduction/disabled-audio-silence.html [ Skip ]
 crbug.com/387740 imported/web-platform-tests/mediacapture-streams/stream-api/introduction/disabled-video-black.html [ Skip ]

@@ -10,6 +10,7 @@
 #include "modules/EventModules.h"
 #include "modules/EventTargetModules.h"
 #include "modules/mediarecorder/MediaRecorderErrorEvent.h"
+#include "platform/NotImplemented.h"
 #include "platform/blob/BlobData.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebMediaStream.h"
@@ -204,9 +205,7 @@ void MediaRecorder::stop()
 
 void MediaRecorder::writeData(const char* data, size_t length, bool lastInSlice)
 {
-    ASSERT(m_state == State::Recording);
-
-    if (m_stopped) {
+    if (!lastInSlice && m_stopped) {
         m_stopped = false;
         scheduleDispatchEvent(Event::create(EventTypeNames::start));
     }
@@ -249,7 +248,7 @@ void MediaRecorder::failOtherRecordingError(const WebString& message)
 void MediaRecorder::createBlobEvent(PassOwnPtr<BlobData> blobData)
 {
     // TODO(mcasas): Launch a BlobEvent when that class is landed, but also see https://github.com/w3c/mediacapture-record/issues/17.
-    ASSERT_NOT_REACHED();
+    notImplemented();
 }
 
 void MediaRecorder::stopRecording()
