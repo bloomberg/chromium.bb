@@ -63,7 +63,6 @@ ApplicationManager::~ApplicationManager() {
     pair.second->CloseConnection();
   TerminateShellConnections();
   STLDeleteValues(&url_to_loader_);
-  STLDeleteValues(&scheme_to_loader_);
 }
 
 void ApplicationManager::TerminateShellConnections() {
@@ -288,21 +287,6 @@ void ApplicationManager::HandleFetchCallback(
     return;
   }
 
-  // TODO(aa): Sanity check that the thing we got looks vaguely like a mojo
-  // application. That could either mean looking for the platform-specific dll
-  // header, or looking for some specific mojo signature prepended to the
-  // library.
-  // TODO(vtl): (Maybe this should be done by the factory/runner?)
-
-  GURL base_resolved_url = GetBaseURLAndQuery(fetcher->GetURL(), nullptr);
-  NativeRunnerFactory::Options options;
-  if (url_to_native_options_.find(base_resolved_url) !=
-      url_to_native_options_.end()) {
-    DVLOG(2) << "Applying stored native options to resolved URL "
-             << fetcher->GetURL();
-    options = url_to_native_options_[base_resolved_url];
-  }
-
   // TODO(erg): Have a better way of switching the sandbox on. For now, switch
   // it on hard coded when we're using some of the sandboxable core services.
   bool start_sandboxed = false;
@@ -320,13 +304,12 @@ void ApplicationManager::HandleFetchCallback(
                   base::Bind(&ApplicationManager::RunNativeApplication,
                              weak_ptr_factory_.GetWeakPtr(),
                              base::Passed(request.Pass()), start_sandboxed,
-                             options, base::Passed(fetcher.Pass())));
+                             base::Passed(fetcher.Pass())));
 }
 
 void ApplicationManager::RunNativeApplication(
     InterfaceRequest<Application> application_request,
     bool start_sandboxed,
-    const NativeRunnerFactory::Options& options,
     scoped_ptr<Fetcher> fetcher,
     const base::FilePath& path,
     bool path_exists) {
@@ -343,10 +326,9 @@ void ApplicationManager::RunNativeApplication(
 
   TRACE_EVENT1("mojo_shell", "ApplicationManager::RunNativeApplication", "path",
                path.AsUTF8Unsafe());
-  NativeRunner* runner = native_runner_factory_->Create(options).release();
+  NativeRunner* runner = native_runner_factory_->Create().release();
   native_runners_.push_back(runner);
-  runner->Start(path, start_sandboxed, NativeApplicationCleanup::DONT_DELETE,
-                application_request.Pass(),
+  runner->Start(path, start_sandboxed, application_request.Pass(),
                 base::Bind(&ApplicationManager::CleanupRunner,
                            weak_ptr_factory_.GetWeakPtr(), runner));
 }
@@ -405,36 +387,10 @@ void ApplicationManager::SetLoaderForURL(scoped_ptr<ApplicationLoader> loader,
   url_to_loader_[url] = loader.release();
 }
 
-void ApplicationManager::SetLoaderForScheme(
-    scoped_ptr<ApplicationLoader> loader,
-    const std::string& scheme) {
-  SchemeToLoaderMap::iterator it = scheme_to_loader_.find(scheme);
-  if (it != scheme_to_loader_.end())
-    delete it->second;
-  scheme_to_loader_[scheme] = loader.release();
-}
-
-void ApplicationManager::SetNativeOptionsForURL(
-    const NativeRunnerFactory::Options& options,
-    const GURL& url) {
-  DCHECK(!url.has_query());  // Precondition.
-  // Apply mappings and resolution to get the resolved URL.
-  GURL resolved_url = fetcher_->ResolveURL(url);
-  DCHECK(!resolved_url.has_query());  // Still shouldn't have query.
-  // TODO(vtl): We should probably also remove/disregard the query string (and
-  // maybe canonicalize in other ways).
-  DVLOG(2) << "Storing native options for resolved URL " << resolved_url
-           << " (original URL " << url << ")";
-  url_to_native_options_[resolved_url] = options;
-}
-
 ApplicationLoader* ApplicationManager::GetLoaderForURL(const GURL& url) {
   auto url_it = url_to_loader_.find(GetBaseURLAndQuery(url, nullptr));
   if (url_it != url_to_loader_.end())
     return url_it->second;
-  auto scheme_it = scheme_to_loader_.find(url.scheme());
-  if (scheme_it != scheme_to_loader_.end())
-    return scheme_it->second;
   return default_loader_.get();
 }
 

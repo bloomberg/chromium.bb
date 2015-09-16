@@ -21,8 +21,6 @@ class FilePath;
 namespace mojo {
 namespace shell {
 
-enum class NativeApplicationCleanup { DELETE, DONT_DELETE };
-
 // ApplicationManager requires implementations of NativeRunner and
 // NativeRunnerFactory to run native applications.
 class NativeRunner {
@@ -38,24 +36,14 @@ class NativeRunner {
   // file to decide what kind of NativeRunner to make.
   virtual void Start(const base::FilePath& app_path,
                      bool start_sandboxed,
-                     NativeApplicationCleanup cleanup,
                      InterfaceRequest<Application> application_request,
                      const base::Closure& app_completed_callback) = 0;
 };
 
 class NativeRunnerFactory {
  public:
-  // Options for running the native app. (This will contain, e.g., information
-  // about the sandbox profile, etc.)
-  struct Options {
-    // Constructs with default options.
-    Options() : force_in_process(false) {}
-
-    bool force_in_process;
-  };
-
   virtual ~NativeRunnerFactory() {}
-  virtual scoped_ptr<NativeRunner> Create(const Options& options) = 0;
+  virtual scoped_ptr<NativeRunner> Create() = 0;
 };
 
 }  // namespace shell

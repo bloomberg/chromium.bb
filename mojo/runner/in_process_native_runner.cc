@@ -15,9 +15,7 @@ namespace mojo {
 namespace runner {
 
 InProcessNativeRunner::InProcessNativeRunner(Context* context)
-    : cleanup_(shell::NativeApplicationCleanup::DONT_DELETE),
-      app_library_(nullptr) {
-}
+    : app_library_(nullptr) {}
 
 InProcessNativeRunner::~InProcessNativeRunner() {
   // It is important to let the thread exit before unloading the DSO (when
@@ -33,11 +31,9 @@ InProcessNativeRunner::~InProcessNativeRunner() {
 void InProcessNativeRunner::Start(
     const base::FilePath& app_path,
     bool start_sandboxed,
-    shell::NativeApplicationCleanup cleanup,
     InterfaceRequest<Application> application_request,
     const base::Closure& app_completed_callback) {
   app_path_ = app_path;
-  cleanup_ = cleanup;
 
   DCHECK(!application_request_.is_pending());
   application_request_ = application_request.Pass();
@@ -58,15 +54,14 @@ void InProcessNativeRunner::Run() {
            << " thread id=" << base::PlatformThread::CurrentId();
 
   // TODO(vtl): ScopedNativeLibrary doesn't have a .get() method!
-  base::NativeLibrary app_library = LoadNativeApplication(app_path_, cleanup_);
+  base::NativeLibrary app_library = LoadNativeApplication(app_path_);
   app_library_.Reset(app_library);
   RunNativeApplication(app_library, application_request_.Pass());
   app_completed_callback_runner_.Run();
   app_completed_callback_runner_.Reset();
 }
 
-scoped_ptr<shell::NativeRunner> InProcessNativeRunnerFactory::Create(
-    const Options& options) {
+scoped_ptr<shell::NativeRunner> InProcessNativeRunnerFactory::Create() {
   return make_scoped_ptr(new InProcessNativeRunner(context_));
 }
 

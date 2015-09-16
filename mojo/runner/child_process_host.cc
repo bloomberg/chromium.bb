@@ -31,12 +31,10 @@ namespace runner {
 
 ChildProcessHost::ChildProcessHost(Context* context,
                                    bool start_sandboxed,
-                                   const base::FilePath& app_path,
-                                   bool clean_app_path)
+                                   const base::FilePath& app_path)
     : context_(context),
       start_sandboxed_(start_sandboxed),
       app_path_(app_path),
-      clean_app_path_(clean_app_path),
       channel_info_(nullptr) {
   platform_channel_ = platform_channel_pair_.PassServerHandle();
   CHECK(platform_channel_.is_valid());
@@ -108,9 +106,6 @@ bool ChildProcessHost::DoLaunch() {
   base::CommandLine child_command_line(parent_command_line->GetProgram());
   child_command_line.AppendArguments(*parent_command_line, false);
   child_command_line.AppendSwitchPath(switches::kChildProcess, app_path_);
-
-  if (clean_app_path_)
-    child_command_line.AppendSwitch(switches::kDeleteAfterLoad);
 
   if (start_sandboxed_)
     child_command_line.AppendSwitch(switches::kEnableSandbox);

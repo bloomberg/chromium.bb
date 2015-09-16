@@ -288,12 +288,8 @@ int ChildProcessMain() {
   base::NativeLibrary app_library = 0;
   if (command_line.HasSwitch(switches::kChildProcess)) {
     // Load the application library before we engage the sandbox.
-    mojo::shell::NativeApplicationCleanup cleanup =
-        command_line.HasSwitch(switches::kDeleteAfterLoad)
-            ? mojo::shell::NativeApplicationCleanup::DELETE
-            : mojo::shell::NativeApplicationCleanup::DONT_DELETE;
     app_library = mojo::runner::LoadNativeApplication(
-        command_line.GetSwitchValuePath(switches::kChildProcess), cleanup);
+        command_line.GetSwitchValuePath(switches::kChildProcess));
 
 #if defined(OS_LINUX) && !defined(OS_ANDROID)
     if (command_line.HasSwitch(switches::kEnableSandbox)) {

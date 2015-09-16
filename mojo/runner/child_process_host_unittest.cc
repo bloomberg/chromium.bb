@@ -22,7 +22,7 @@ namespace {
 class TestChildProcessHost : public ChildProcessHost {
  public:
   explicit TestChildProcessHost(Context* context)
-      : ChildProcessHost(context, false, base::FilePath(), false) {}
+      : ChildProcessHost(context, false, base::FilePath()) {}
   ~TestChildProcessHost() override {}
 
   void DidStart(bool success) override {

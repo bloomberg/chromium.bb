@@ -37,7 +37,6 @@ class TestNativeRunner : public shell::NativeRunner {
   }
   void Start(const base::FilePath& app_path,
              bool start_sandboxed,
-             shell::NativeApplicationCleanup cleanup,
              InterfaceRequest<Application> application_request,
              const base::Closure& app_completed_callback) override {
     state_->runner_was_started = true;
@@ -51,7 +50,7 @@ class TestNativeRunnerFactory : public shell::NativeRunnerFactory {
  public:
   explicit TestNativeRunnerFactory(TestState* state) : state_(state) {}
   ~TestNativeRunnerFactory() override {}
-  scoped_ptr<shell::NativeRunner> Create(const Options& options) override {
+  scoped_ptr<shell::NativeRunner> Create() override {
     return scoped_ptr<shell::NativeRunner>(new TestNativeRunner(state_));
   }
 

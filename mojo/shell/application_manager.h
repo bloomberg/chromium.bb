@@ -49,7 +49,6 @@ class ApplicationManager {
     static bool HasCreatedInstance();
     // Returns true if there is a ApplicationInstance for this URL.
     bool HasRunningInstanceForURL(const GURL& url) const;
-
    private:
     ApplicationManager* manager_;
 
@@ -100,8 +99,7 @@ class ApplicationManager {
                                        const GURL& content_handler_package,
                                        const std::string& qualifier);
 
-  // Sets the default Loader to be used if not overridden by SetLoaderForURL()
-  // or SetLoaderForScheme().
+  // Sets the default Loader to be used if not overridden by SetLoaderForURL().
   void set_default_loader(scoped_ptr<ApplicationLoader> loader) {
     default_loader_ = loader.Pass();
   }
@@ -114,18 +112,6 @@ class ApplicationManager {
   }
   // Sets a Loader to be used for a specific url.
   void SetLoaderForURL(scoped_ptr<ApplicationLoader> loader, const GURL& url);
-  // Sets a Loader to be used for a specific url scheme.
-  void SetLoaderForScheme(scoped_ptr<ApplicationLoader> loader,
-                          const std::string& scheme);
-  // These options will be used in running any native application at |url|
-  // (which shouldn't contain a query string). (|url| will be mapped and
-  // resolved, and any application whose base resolved URL matches it will have
-  // |options| applied.)
-  // TODO(vtl): This may not do what's desired if the resolved URL results in an
-  // HTTP redirect. Really, we want options to be identified with a particular
-  // implementation, maybe via a signed manifest or something like that.
-  void SetNativeOptionsForURL(const NativeRunnerFactory::Options& options,
-                              const GURL& url);
 
   // Destroys all Shell-ends of connections established with Applications.
   // Applications connected by this ApplicationManager will observe pipe errors
@@ -146,11 +132,9 @@ class ApplicationManager {
   using IdentityToApplicationInstanceMap =
       std::map<Identity, ApplicationInstance*>;
   using MimeTypeToURLMap = std::map<std::string, GURL>;
-  using SchemeToLoaderMap = std::map<std::string, ApplicationLoader*>;
   using URLToContentHandlerMap =
       std::map<std::pair<GURL, std::string>, ContentHandlerConnection*>;
   using URLToLoaderMap = std::map<GURL, ApplicationLoader*>;
-  using URLToNativeOptionsMap = std::map<GURL, NativeRunnerFactory::Options>;
 
   // Takes the contents of |params| only when it returns true.
   bool ConnectToRunningApplication(
@@ -176,7 +160,6 @@ class ApplicationManager {
 
   void RunNativeApplication(InterfaceRequest<Application> application_request,
                             bool start_sandboxed,
-                            const NativeRunnerFactory::Options& options,
                             scoped_ptr<Fetcher> fetcher,
                             const base::FilePath& file_path,
                             bool path_exists);
@@ -206,15 +189,12 @@ class ApplicationManager {
   // Loader management.
   // Loaders are chosen in the order they are listed here.
   URLToLoaderMap url_to_loader_;
-  SchemeToLoaderMap scheme_to_loader_;
   scoped_ptr<ApplicationLoader> default_loader_;
   scoped_ptr<NativeRunnerFactory> native_runner_factory_;
 
   ApplicationPackagedAlias application_package_alias_;
   IdentityToApplicationInstanceMap identity_to_instance_;
   URLToContentHandlerMap url_to_content_handler_;
-  // Note: The keys are URLs after mapping and resolving.
-  URLToNativeOptionsMap url_to_native_options_;
 
   base::SequencedWorkerPool* blocking_pool_;
   updater::UpdaterPtr updater_;

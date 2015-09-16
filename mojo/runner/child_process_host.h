@@ -33,12 +33,10 @@ class ChildProcessHost {
  public:
   // |name| is just for debugging ease. We will spawn off a process so that it
   // can be sandboxed if |start_sandboxed| is true. |app_path| is a path to the
-  // mojo application we wish to start. |clean_app_path| cleans up transient
-  // applications after execution.
+  // mojo application we wish to start.
   ChildProcessHost(Context* context,
                    bool start_sandboxed,
-                   const base::FilePath& app_path,
-                   bool clean_app_path);
+                   const base::FilePath& app_path);
   virtual ~ChildProcessHost();
 
   // |Start()|s the child process; calls |DidStart()| (on the thread on which
@@ -73,7 +71,6 @@ class ChildProcessHost {
   Context* const context_;
   bool start_sandboxed_;
   const base::FilePath app_path_;
-  bool clean_app_path_;
   base::Process child_process_;
   embedder::PlatformChannelPair platform_channel_pair_;
   ChildControllerPtr controller_;

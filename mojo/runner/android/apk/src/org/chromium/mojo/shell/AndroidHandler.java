@@ -48,8 +48,6 @@ public class AndroidHandler {
 
     private static final String INTERNAL_DIRECTORY = "internal";
 
-    private enum AppType { CACHED, UNCACHED }
-
     /**
      * Deletes directories holding the temporary files. This should be called early on shell startup
      * to clean up after the previous run.
@@ -111,7 +109,7 @@ public class AndroidHandler {
 
         return runApp(context, getDexOutputDir(context), applicationJavaLibrary,
                 applicationNativeLibrary, bootstrapJavaLibrary, bootstrapNativeLibrary, handle,
-                runApplicationPtr, AppType.UNCACHED);
+                runApplicationPtr);
     }
 
     private static File findFileInDirectoryMatchingSuffix(
@@ -202,7 +200,7 @@ public class AndroidHandler {
 
         return runApp(context, new File(internalDir, DEX_OUTPUT_DIRECTORY), applicationJavaLibrary,
                 applicationNativeLibrary, bootstrapJavaLibrary, bootstrapNativeLibrary, handle,
-                runApplicationPtr, AppType.CACHED);
+                runApplicationPtr);
     }
 
     /**
@@ -212,7 +210,7 @@ public class AndroidHandler {
      */
     private static boolean runApp(Context context, File dexOutputDir, File applicationJavaLibrary,
             File applicationNativeLibrary, File bootstrapJavaLibrary, File bootstrapNativeLibrary,
-            int handle, long runApplicationPtr, AppType appType) {
+            int handle, long runApplicationPtr) {
         final String dexPath = bootstrapJavaLibrary.getAbsolutePath() + File.pathSeparator
                 + applicationJavaLibrary.getAbsolutePath();
         if (!dexOutputDir.exists() && !dexOutputDir.mkdirs()) {
@@ -228,12 +226,11 @@ public class AndroidHandler {
         try {
             Class<?> loadedClass = bootstrapLoader.loadClass(BOOTSTRAP_CLASS);
             Class<? extends Runnable> bootstrapClass = loadedClass.asSubclass(Runnable.class);
-            Constructor<? extends Runnable> constructor =
-                    bootstrapClass.getConstructor(Context.class, File.class, File.class,
-                            Integer.class, Long.class, Boolean.class);
+            Constructor<? extends Runnable> constructor = bootstrapClass.getConstructor(
+                    Context.class, File.class, File.class, Integer.class, Long.class);
             Runnable bootstrapRunnable = constructor.newInstance(context, bootstrapNativeLibrary,
                     applicationNativeLibrary, Integer.valueOf(handle),
-                    Long.valueOf(runApplicationPtr), appType == AppType.CACHED);
+                    Long.valueOf(runApplicationPtr));
             bootstrapRunnable.run();
         } catch (Throwable t) {
             Log.e(TAG, "Running Bootstrap failed.", t);

@@ -107,25 +107,6 @@ void InitContentHandlers(shell::ApplicationManager* manager,
   }
 }
 
-void InitNativeOptions(shell::ApplicationManager* manager,
-                       const base::CommandLine& command_line) {
-  std::vector<std::string> force_in_process_url_list = base::SplitString(
-      command_line.GetSwitchValueASCII(switches::kForceInProcess), ",",
-      base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
-  for (const auto& force_in_process_url : force_in_process_url_list) {
-    GURL gurl(force_in_process_url);
-    if (!gurl.is_valid()) {
-      LOG(ERROR) << "Invalid value for switch " << switches::kForceInProcess
-                 << ": '" << force_in_process_url << "'is not a valid URL.";
-      return;
-    }
-
-    shell::NativeRunnerFactory::Options options;
-    options.force_in_process = true;
-    manager->SetNativeOptionsForURL(options, gurl);
-  }
-}
-
 void InitDevToolsServiceIfNeeded(shell::ApplicationManager* manager,
                                  const base::CommandLine& command_line) {
   if (!command_line.HasSwitch(devtools_service::kRemoteDebuggingPort))
@@ -218,7 +199,6 @@ bool Context::Init() {
   application_manager_->set_native_runner_factory(runner_factory.Pass());
 
   InitContentHandlers(application_manager_.get(), command_line);
-  InitNativeOptions(application_manager_.get(), command_line);
 
   ServiceProviderPtr service_provider_ptr;
   ServiceProviderPtr tracing_service_provider_ptr;

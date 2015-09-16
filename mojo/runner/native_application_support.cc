@@ -47,15 +47,11 @@ bool SetThunks(Thunks (*make_thunks)(),
 
 }  // namespace
 
-base::NativeLibrary LoadNativeApplication(
-    const base::FilePath& app_path,
-    shell::NativeApplicationCleanup cleanup) {
+base::NativeLibrary LoadNativeApplication(const base::FilePath& app_path) {
   DVLOG(2) << "Loading Mojo app in process from library: " << app_path.value();
 
   base::NativeLibraryLoadError error;
   base::NativeLibrary app_library = base::LoadNativeLibrary(app_path, &error);
-  if (cleanup == shell::NativeApplicationCleanup::DELETE)
-    DeleteFile(app_path, false);
   LOG_IF(ERROR, !app_library)
       << "Failed to load app library (error: " << error.ToString() << ")";
   return app_library;

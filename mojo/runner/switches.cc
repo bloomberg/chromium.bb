@@ -15,10 +15,6 @@ const char kChildProcess[] = "child-process";
 // text/html,mojo:html_viewer,application/bravo,https://abarth.com/bravo
 const char kContentHandlers[] = "content-handlers";
 
-// Used internally to delete a loaded application after we load it. Used for
-// transient applications. Not for user use.
-const char kDeleteAfterLoad[] = "delete-after-load";
-
 // Enables the sandbox on this process.
 const char kEnableSandbox[] = "enable-sandbox";
 

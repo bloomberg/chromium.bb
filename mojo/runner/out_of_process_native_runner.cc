@@ -31,7 +31,6 @@ OutOfProcessNativeRunner::~OutOfProcessNativeRunner() {
 void OutOfProcessNativeRunner::Start(
     const base::FilePath& app_path,
     bool start_sandboxed,
-    shell::NativeApplicationCleanup cleanup,
     InterfaceRequest<Application> application_request,
     const base::Closure& app_completed_callback) {
   app_path_ = app_path;
@@ -39,9 +38,8 @@ void OutOfProcessNativeRunner::Start(
   DCHECK(app_completed_callback_.is_null());
   app_completed_callback_ = app_completed_callback;
 
-  bool clean_app_path = cleanup == shell::NativeApplicationCleanup::DELETE;
-  child_process_host_.reset(new ChildProcessHost(context_, start_sandboxed,
-                                                 app_path, clean_app_path));
+  child_process_host_.reset(
+      new ChildProcessHost(context_, start_sandboxed, app_path));
   child_process_host_->Start();
 
   child_process_host_->StartApp(
@@ -60,11 +58,7 @@ void OutOfProcessNativeRunner::AppCompleted(int32_t result) {
   app_completed_callback.Run();
 }
 
-scoped_ptr<shell::NativeRunner> OutOfProcessNativeRunnerFactory::Create(
-    const Options& options) {
-  if (options.force_in_process)
-    return make_scoped_ptr(new InProcessNativeRunner(context_));
-
+scoped_ptr<shell::NativeRunner> OutOfProcessNativeRunnerFactory::Create() {
   return make_scoped_ptr(new OutOfProcessNativeRunner(context_));
 }
 

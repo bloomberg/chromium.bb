@@ -570,52 +570,33 @@ TEST_F(ApplicationManagerTest, Deletes) {
     TestApplicationLoader* url_loader2 = new TestApplicationLoader;
     url_loader1->set_context(&context_);
     url_loader2->set_context(&context_);
-    TestApplicationLoader* scheme_loader1 = new TestApplicationLoader;
-    TestApplicationLoader* scheme_loader2 = new TestApplicationLoader;
-    scheme_loader1->set_context(&context_);
-    scheme_loader2->set_context(&context_);
     am.set_default_loader(scoped_ptr<ApplicationLoader>(default_loader));
     am.SetLoaderForURL(scoped_ptr<ApplicationLoader>(url_loader1),
                        GURL("test:test1"));
     am.SetLoaderForURL(scoped_ptr<ApplicationLoader>(url_loader2),
                        GURL("test:test1"));
-    am.SetLoaderForScheme(scoped_ptr<ApplicationLoader>(scheme_loader1),
-                          "test");
-    am.SetLoaderForScheme(scoped_ptr<ApplicationLoader>(scheme_loader2),
-                          "test");
   }
-  EXPECT_EQ(5, context_.num_loader_deletes);
+  EXPECT_EQ(3, context_.num_loader_deletes);
 }
 
-// Confirm that both urls and schemes can have their loaders explicitly set.
+// Test for SetLoaderForURL() & set_default_loader().
 TEST_F(ApplicationManagerTest, SetLoaders) {
   TestApplicationLoader* default_loader = new TestApplicationLoader;
   TestApplicationLoader* url_loader = new TestApplicationLoader;
-  TestApplicationLoader* scheme_loader = new TestApplicationLoader;
   application_manager_->set_default_loader(
       scoped_ptr<ApplicationLoader>(default_loader));
   application_manager_->SetLoaderForURL(
       scoped_ptr<ApplicationLoader>(url_loader), GURL("test:test1"));
-  application_manager_->SetLoaderForScheme(
-      scoped_ptr<ApplicationLoader>(scheme_loader), "test");
 
   // test::test1 should go to url_loader.
   TestServicePtr test_service;
   application_manager_->ConnectToService(GURL("test:test1"), &test_service);
   EXPECT_EQ(1, url_loader->num_loads());
-  EXPECT_EQ(0, scheme_loader->num_loads());
-  EXPECT_EQ(0, default_loader->num_loads());
-
-  // test::test2 should go to scheme loader.
-  application_manager_->ConnectToService(GURL("test:test2"), &test_service);
-  EXPECT_EQ(1, url_loader->num_loads());
-  EXPECT_EQ(1, scheme_loader->num_loads());
   EXPECT_EQ(0, default_loader->num_loads());
 
   // http::test1 should go to default loader.
   application_manager_->ConnectToService(GURL("http:test1"), &test_service);
   EXPECT_EQ(1, url_loader->num_loads());
-  EXPECT_EQ(1, scheme_loader->num_loads());
   EXPECT_EQ(1, default_loader->num_loads());
 }
 
@@ -707,32 +688,10 @@ TEST_F(ApplicationManagerTest, NoServiceNoLoad) {
   EXPECT_TRUE(c.encountered_error());
 }
 
-TEST_F(ApplicationManagerTest, TestQueryWithLoaders) {
-  TestApplicationLoader* url_loader = new TestApplicationLoader;
-  TestApplicationLoader* scheme_loader = new TestApplicationLoader;
-  application_manager_->SetLoaderForURL(
-      scoped_ptr<ApplicationLoader>(url_loader), GURL("test:test1"));
-  application_manager_->SetLoaderForScheme(
-      scoped_ptr<ApplicationLoader>(scheme_loader), "test");
-
-  // test::test1 should go to url_loader.
-  TestServicePtr test_service;
-  application_manager_->ConnectToService(GURL("test:test1?foo=bar"),
-                                         &test_service);
-  EXPECT_EQ(1, url_loader->num_loads());
-  EXPECT_EQ(0, scheme_loader->num_loads());
-
-  // test::test2 should go to scheme loader.
-  application_manager_->ConnectToService(GURL("test:test2?foo=bar"),
-                                         &test_service);
-  EXPECT_EQ(1, url_loader->num_loads());
-  EXPECT_EQ(1, scheme_loader->num_loads());
-}
-
 TEST_F(ApplicationManagerTest, TestEndApplicationClosure) {
   ClosingApplicationLoader* loader = new ClosingApplicationLoader();
-  application_manager_->SetLoaderForScheme(
-      scoped_ptr<ApplicationLoader>(loader), "test");
+  application_manager_->SetLoaderForURL(
+      scoped_ptr<ApplicationLoader>(loader), GURL("test:test"));
 
   bool called = false;
   scoped_ptr<ConnectToApplicationParams> params(new ConnectToApplicationParams);
@@ -944,8 +903,9 @@ TEST(ApplicationManagerTest2, DifferedContentHandlersGetDifferentIDs) {
 
 TEST_F(ApplicationManagerTest,
        ConnectWithNoContentHandlerGetsInvalidContentHandlerId) {
-  application_manager_->SetLoaderForScheme(
-      scoped_ptr<ApplicationLoader>(new TestApplicationLoader), "test");
+  application_manager_->SetLoaderForURL(
+      scoped_ptr<ApplicationLoader>(new TestApplicationLoader),
+      GURL("test:test"));
 
   uint32_t content_handler_id = 1u;
   scoped_ptr<ConnectToApplicationParams> params(new ConnectToApplicationParams);
