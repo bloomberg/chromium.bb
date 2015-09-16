@@ -159,7 +159,7 @@ def GetBotStepMap():
       B('blink-try-builder', H(compile_step)),
       B('chromedriver-fyi-tests-dbg', H(std_test_steps),
         T(['chromedriver'],
-          ['--install=ChromeDriverWebViewShell',
+          ['--install=ChromePublic', '--install=ChromeDriverWebViewShell',
            '--skip-wipe', '--disable-location', '--cleanup'])),
       B('fyi-x86-builder-dbg',
         H(compile_step + std_host_tests, experimental, target_arch='ia32')),
