@@ -9,7 +9,6 @@
 
 #include "chrome/browser/permissions/permission_infobar_delegate.h"
 
-class PermissionQueueController;
 class InfoBarService;
 
 class ProtectedMediaIdentifierInfoBarDelegate
@@ -18,17 +17,17 @@ class ProtectedMediaIdentifierInfoBarDelegate
   // Creates a protected media identifier infobar and delegate and adds the
   // infobar to |infobar_service|.  Returns the infobar if it was successfully
   // added.
-  static infobars::InfoBar* Create(InfoBarService* infobar_service,
-                                   PermissionQueueController* controller,
-                                   const PermissionRequestID& id,
-                                   const GURL& requesting_frame,
-                                   const std::string& display_languages);
+  static infobars::InfoBar* Create(
+    InfoBarService* infobar_service,
+    const GURL& requesting_frame,
+    const std::string& display_languages,
+    const PermissionSetCallback& callback);
 
  protected:
-  ProtectedMediaIdentifierInfoBarDelegate(PermissionQueueController* controller,
-                                          const PermissionRequestID& id,
-                                          const GURL& requesting_frame,
-                                          const std::string& display_languages);
+  ProtectedMediaIdentifierInfoBarDelegate(
+      const GURL& requesting_frame,
+      const std::string& display_languages,
+      const PermissionSetCallback& callback);
   ~ProtectedMediaIdentifierInfoBarDelegate() override;
 
  private:

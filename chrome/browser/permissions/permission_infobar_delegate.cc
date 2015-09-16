@@ -5,7 +5,6 @@
 #include "chrome/browser/permissions/permission_infobar_delegate.h"
 
 #include "chrome/browser/permissions/permission_context_uma_util.h"
-#include "chrome/browser/permissions/permission_queue_controller.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/infobars/core/infobar.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -16,13 +15,13 @@ PermissionInfobarDelegate::~PermissionInfobarDelegate() {
 }
 
 PermissionInfobarDelegate::PermissionInfobarDelegate(
-    PermissionQueueController* controller,
-    const PermissionRequestID& id,
     const GURL& requesting_origin,
-    ContentSettingsType type)
-    : controller_(controller), id_(id), requesting_origin_(requesting_origin),
+    ContentSettingsType type,
+    const base::Callback<void(bool, bool)>& callback)
+    : requesting_origin_(requesting_origin),
       action_taken_(false),
-      type_(type) {
+      type_(type),
+      callback_(callback) {
 }
 
 infobars::InfoBarDelegate::Type
@@ -58,9 +57,5 @@ bool PermissionInfobarDelegate::Cancel() {
 void PermissionInfobarDelegate::SetPermission(bool update_content_setting,
                                               bool allowed) {
   action_taken_ = true;
-  controller_->OnPermissionSet(
-      id_, requesting_origin_,
-      InfoBarService::WebContentsFromInfoBar(
-          infobar())->GetLastCommittedURL().GetOrigin(),
-      update_content_setting, allowed);
+  callback_.Run(update_content_setting, allowed);
 }

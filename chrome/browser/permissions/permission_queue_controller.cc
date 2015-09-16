@@ -12,6 +12,7 @@
 #include "chrome/browser/media/midi_permission_infobar_delegate.h"
 #include "chrome/browser/notifications/notification_permission_infobar_delegate.h"
 #include "chrome/browser/permissions/permission_context_uma_util.h"
+#include "chrome/browser/permissions/permission_request_id.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/storage/durable_storage_permission_infobar_delegate.h"
 #include "chrome/browser/tab_contents/tab_util.h"
@@ -114,35 +115,45 @@ void PermissionQueueController::PendingInfobarRequest::RunCallback(
 void PermissionQueueController::PendingInfobarRequest::CreateInfoBar(
     PermissionQueueController* controller,
     const std::string& display_languages) {
+  // Controller can be Unretained because the lifetime of the infobar
+  // is tied to that of the queue controller. Before QueueController
+  // is destroyed, all requests will be cancelled and so all delegates
+  // will be destroyed.
+  PermissionInfobarDelegate::PermissionSetCallback callback =
+      base::Bind(&PermissionQueueController::OnPermissionSet,
+                 base::Unretained(controller),
+                 id_,
+                 requesting_frame_,
+                 embedder_);
   switch (type_) {
     case CONTENT_SETTINGS_TYPE_GEOLOCATION:
       infobar_ = GeolocationInfoBarDelegate::Create(
-          GetInfoBarService(id_), controller, id_, requesting_frame_,
-          display_languages);
+          GetInfoBarService(id_), requesting_frame_,
+          display_languages, callback);
       break;
 #if defined(ENABLE_NOTIFICATIONS)
     case CONTENT_SETTINGS_TYPE_NOTIFICATIONS:
       infobar_ = NotificationPermissionInfobarDelegate::Create(
-          GetInfoBarService(id_), controller, id_, requesting_frame_,
-          display_languages);
+          GetInfoBarService(id_), requesting_frame_,
+          display_languages, callback);
       break;
 #endif  // ENABLE_NOTIFICATIONS
     case CONTENT_SETTINGS_TYPE_MIDI_SYSEX:
       infobar_ = MidiPermissionInfoBarDelegate::Create(
-          GetInfoBarService(id_), controller, id_, requesting_frame_,
-          display_languages, type_);
+          GetInfoBarService(id_), requesting_frame_,
+          display_languages, type_, callback);
       break;
 #if defined(OS_ANDROID) || defined(OS_CHROMEOS)
     case CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER:
       infobar_ = ProtectedMediaIdentifierInfoBarDelegate::Create(
-          GetInfoBarService(id_), controller, id_, requesting_frame_,
-          display_languages);
+          GetInfoBarService(id_), requesting_frame_,
+          display_languages, callback);
       break;
 #endif
     case CONTENT_SETTINGS_TYPE_DURABLE_STORAGE:
       infobar_ = DurableStoragePermissionInfoBarDelegate::Create(
-          GetInfoBarService(id_), controller, id_, requesting_frame_,
-          display_languages, type_);
+          GetInfoBarService(id_), requesting_frame_,
+          display_languages, type_, callback);
       break;
     default:
       NOTREACHED();

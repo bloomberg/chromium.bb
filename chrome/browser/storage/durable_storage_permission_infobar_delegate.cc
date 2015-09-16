@@ -16,25 +16,23 @@
 // static
 infobars::InfoBar* DurableStoragePermissionInfoBarDelegate::Create(
     InfoBarService* infobar_service,
-    PermissionQueueController* controller,
-    const PermissionRequestID& id,
     const GURL& requesting_frame,
     const std::string& display_languages,
-    ContentSettingsType type) {
+    ContentSettingsType type,
+    const PermissionSetCallback& callback) {
   return infobar_service->AddInfoBar(
       infobar_service->CreateConfirmInfoBar(scoped_ptr<ConfirmInfoBarDelegate>(
           new DurableStoragePermissionInfoBarDelegate(
-              controller, id, requesting_frame, display_languages, type))));
+              requesting_frame, display_languages, type, callback))));
 }
 
 DurableStoragePermissionInfoBarDelegate::
     DurableStoragePermissionInfoBarDelegate(
-        PermissionQueueController* controller,
-        const PermissionRequestID& id,
         const GURL& requesting_frame,
         const std::string& display_languages,
-        ContentSettingsType type)
-    : PermissionInfobarDelegate(controller, id, requesting_frame, type),
+        ContentSettingsType type,
+        const PermissionSetCallback& callback)
+    : PermissionInfobarDelegate(requesting_frame, type, callback),
       requesting_frame_(requesting_frame),
       display_languages_(display_languages) {
 }

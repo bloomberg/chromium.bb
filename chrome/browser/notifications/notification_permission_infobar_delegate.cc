@@ -15,24 +15,23 @@
 // static
 infobars::InfoBar* NotificationPermissionInfobarDelegate::Create(
     InfoBarService* infobar_service,
-    PermissionQueueController* controller,
-    const PermissionRequestID& id,
     const GURL& requesting_frame,
-    const std::string& display_languages) {
+    const std::string& display_languages,
+    const base::Callback<void(bool, bool)>& callback) {
   return infobar_service->AddInfoBar(infobar_service->CreateConfirmInfoBar(
       scoped_ptr<ConfirmInfoBarDelegate>(
-          new NotificationPermissionInfobarDelegate(controller, id,
-                                                    requesting_frame,
-                                                    display_languages))));
+          new NotificationPermissionInfobarDelegate(requesting_frame,
+                                                    display_languages,
+                                                    callback))));
 }
 
 NotificationPermissionInfobarDelegate::NotificationPermissionInfobarDelegate(
-    PermissionQueueController* controller,
-    const PermissionRequestID& id,
     const GURL& requesting_frame,
-    const std::string& display_languages)
-    : PermissionInfobarDelegate(controller, id, requesting_frame,
-                                CONTENT_SETTINGS_TYPE_NOTIFICATIONS),
+    const std::string& display_languages,
+    const base::Callback<void(bool, bool)>& callback)
+    : PermissionInfobarDelegate(requesting_frame,
+                                CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+                                callback),
       requesting_frame_(requesting_frame),
       display_languages_(display_languages) {}
 

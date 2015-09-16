@@ -14,16 +14,16 @@ class NotificationPermissionInfobarDelegate : public PermissionInfobarDelegate {
   // Creates a Notification permission infobar and delegate and adds the
   // infobar to |infobar_service|.  Returns the infobar if it was successfully
   // added.
-  static infobars::InfoBar* Create(InfoBarService* infobar_service,
-                                   PermissionQueueController* controller,
-                                   const PermissionRequestID& id,
-                                   const GURL& requesting_frame,
-                                   const std::string& display_languages);
+  static infobars::InfoBar* Create(
+      InfoBarService* infobar_service,
+      const GURL& requesting_frame,
+      const std::string& display_languages,
+      const PermissionSetCallback& callback);
  private:
-  NotificationPermissionInfobarDelegate(PermissionQueueController* controller,
-                                     const PermissionRequestID& id,
-                                     const GURL& requesting_frame,
-                                     const std::string& display_languages);
+  NotificationPermissionInfobarDelegate(
+      const GURL& requesting_frame,
+      const std::string& display_languages,
+      const PermissionSetCallback& callback);
   ~NotificationPermissionInfobarDelegate() override;
 
   // PermissionInfoBarDelegate:

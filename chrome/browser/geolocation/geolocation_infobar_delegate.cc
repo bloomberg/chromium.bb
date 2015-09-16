@@ -12,26 +12,24 @@
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
-
 // static
 infobars::InfoBar* GeolocationInfoBarDelegate::Create(
     InfoBarService* infobar_service,
-    PermissionQueueController* controller,
-    const PermissionRequestID& id,
     const GURL& requesting_frame,
-    const std::string& display_languages) {
+    const std::string& display_languages,
+    const PermissionSetCallback& callback) {
   return infobar_service->AddInfoBar(infobar_service->CreateConfirmInfoBar(
       scoped_ptr<ConfirmInfoBarDelegate>(new GeolocationInfoBarDelegate(
-          controller, id, requesting_frame, display_languages))));
+          requesting_frame, display_languages, callback))));
 }
 
 GeolocationInfoBarDelegate::GeolocationInfoBarDelegate(
-    PermissionQueueController* controller,
-    const PermissionRequestID& id,
     const GURL& requesting_frame,
-    const std::string& display_languages)
-    : PermissionInfobarDelegate(controller, id, requesting_frame,
-                                CONTENT_SETTINGS_TYPE_GEOLOCATION),
+    const std::string& display_languages,
+    const PermissionSetCallback& callback)
+    : PermissionInfobarDelegate(requesting_frame,
+                                CONTENT_SETTINGS_TYPE_GEOLOCATION,
+                                callback),
       requesting_frame_(requesting_frame),
       display_languages_(display_languages) {
 }

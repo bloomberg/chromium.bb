@@ -6,13 +6,11 @@
 #define CHROME_BROWSER_PERMISSIONS_PERMISSION_INFOBAR_DELEGATE_H_
 
 #include "chrome/browser/infobars/infobar_service.h"
-#include "chrome/browser/permissions/permission_request_id.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/infobars/core/confirm_infobar_delegate.h"
 #include "content/public/browser/web_contents.h"
 
 class NavigationDetails;
-class PermissionQueueController;
 
 // Base class for permission infobars, it implements the default behavior
 // so that the accept/deny buttons grant/deny the relevant permission.
@@ -21,13 +19,13 @@ class PermissionQueueController;
 class PermissionInfobarDelegate : public ConfirmInfoBarDelegate {
 
  public:
+  using PermissionSetCallback = base::Callback<void(bool, bool)>;
   ContentSettingsType content_setting() const { return type_; }
 
  protected:
-  PermissionInfobarDelegate(PermissionQueueController* controller,
-                            const PermissionRequestID& id,
-                            const GURL& requesting_origin,
-                            ContentSettingsType type);
+  PermissionInfobarDelegate(const GURL& requesting_origin,
+                            ContentSettingsType type,
+                            const PermissionSetCallback& callback);
   ~PermissionInfobarDelegate() override;
 
  private:
@@ -41,11 +39,10 @@ class PermissionInfobarDelegate : public ConfirmInfoBarDelegate {
 
   void SetPermission(bool update_content_setting, bool allowed);
 
-  PermissionQueueController* controller_; // not owned by us
-  const PermissionRequestID id_;
   GURL requesting_origin_;
   bool action_taken_;
   ContentSettingsType type_;
+  const PermissionSetCallback callback_;
 
   DISALLOW_COPY_AND_ASSIGN(PermissionInfobarDelegate);
 };

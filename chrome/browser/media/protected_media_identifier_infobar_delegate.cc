@@ -5,8 +5,6 @@
 #include "chrome/browser/media/protected_media_identifier_infobar_delegate.h"
 
 #include "chrome/browser/infobars/infobar_service.h"
-#include "chrome/browser/permissions/permission_queue_controller.h"
-#include "chrome/browser/permissions/permission_request_id.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/infobars/core/infobar.h"
@@ -18,25 +16,24 @@
 // static
 infobars::InfoBar* ProtectedMediaIdentifierInfoBarDelegate::Create(
     InfoBarService* infobar_service,
-    PermissionQueueController* controller,
-    const PermissionRequestID& id,
     const GURL& requesting_frame,
-    const std::string& display_languages) {
+    const std::string& display_languages,
+    const PermissionSetCallback& callback) {
   return infobar_service->AddInfoBar(infobar_service->CreateConfirmInfoBar(
       scoped_ptr<ConfirmInfoBarDelegate>(
           new ProtectedMediaIdentifierInfoBarDelegate(
-              controller, id, requesting_frame, display_languages))));
+              requesting_frame, display_languages, callback))));
 }
 
 ProtectedMediaIdentifierInfoBarDelegate::
     ProtectedMediaIdentifierInfoBarDelegate(
-    PermissionQueueController* controller,
-    const PermissionRequestID& id,
     const GURL& requesting_frame,
-    const std::string& display_languages)
+    const std::string& display_languages,
+    const PermissionSetCallback& callback)
     : PermissionInfobarDelegate(
-          controller, id, requesting_frame,
-          CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER),
+          requesting_frame,
+          CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER,
+          callback),
       requesting_frame_(requesting_frame),
       display_languages_(display_languages) {
 }
