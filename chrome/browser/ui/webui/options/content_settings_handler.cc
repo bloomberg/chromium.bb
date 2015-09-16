@@ -18,6 +18,7 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/content_settings/web_site_settings_uma_util.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
@@ -593,9 +594,10 @@ void ContentSettingsHandler::InitializeHandler() {
   flash_settings_manager_.reset(new PepperFlashSettingsManager(this, context));
 
   Profile* profile = Profile::FromWebUI(web_ui());
-  observer_.Add(profile->GetHostContentSettingsMap());
+  observer_.Add(HostContentSettingsMapFactory::GetForProfile(profile));
   if (profile->HasOffTheRecordProfile()) {
-    auto map = profile->GetOffTheRecordProfile()->GetHostContentSettingsMap();
+    auto map = HostContentSettingsMapFactory::GetForProfile(
+        profile->GetOffTheRecordProfile());
     if (!observer_.IsObserving(map))
       observer_.Add(map);
   }
@@ -638,11 +640,13 @@ void ContentSettingsHandler::Observe(
   switch (type) {
     case chrome::NOTIFICATION_PROFILE_DESTROYED: {
       Profile* profile = content::Source<Profile>(source).ptr();
+      HostContentSettingsMap* settings_map =
+          HostContentSettingsMapFactory::GetForProfile(profile);
       if (profile->IsOffTheRecord() &&
-          observer_.IsObserving(profile->GetHostContentSettingsMap())) {
+          observer_.IsObserving(settings_map)) {
         web_ui()->CallJavascriptFunction(
             "ContentSettingsExceptionsArea.OTRProfileDestroyed");
-        observer_.Remove(profile->GetHostContentSettingsMap());
+        observer_.Remove(settings_map);
       }
       break;
     }
@@ -651,7 +655,7 @@ void ContentSettingsHandler::Observe(
       Profile* profile = content::Source<Profile>(source).ptr();
       if (profile->IsOffTheRecord()) {
         UpdateAllOTRExceptionsViewsFromModel();
-        observer_.Add(profile->GetHostContentSettingsMap());
+        observer_.Add(HostContentSettingsMapFactory::GetForProfile(profile));
       }
       break;
     }
@@ -787,7 +791,8 @@ void ContentSettingsHandler::UpdateExceptionsViewFromModel(
 // TODO(estade): merge with GetExceptionsFromHostContentSettingsMap.
 void ContentSettingsHandler::UpdateGeolocationExceptionsView() {
   Profile* profile = Profile::FromWebUI(web_ui());
-  HostContentSettingsMap* map = profile->GetHostContentSettingsMap();
+  HostContentSettingsMap* map =
+      HostContentSettingsMapFactory::GetForProfile(profile);
 
   ContentSettingsForOneType all_settings;
   map->GetSettingsForOneType(
@@ -1312,7 +1317,8 @@ void ContentSettingsHandler::SetContentFilter(const base::ListValue* args) {
     profile = profile->GetOriginalProfile();
 #endif
 
-  HostContentSettingsMap* map = profile->GetHostContentSettingsMap();
+  HostContentSettingsMap* map =
+      HostContentSettingsMapFactory::GetForProfile(profile);
 
   // MEDIASTREAM is deprecated and the two separate settings MEDIASTREAM_CAMERA
   // and MEDIASTREAM_MIC should be used instead. However, we still only have
@@ -1467,7 +1473,8 @@ std::string ContentSettingsHandler::ContentSettingsTypeToGroupName(
 }
 
 HostContentSettingsMap* ContentSettingsHandler::GetContentSettingsMap() {
-  return Profile::FromWebUI(web_ui())->GetHostContentSettingsMap();
+  return HostContentSettingsMapFactory::GetForProfile(
+      Profile::FromWebUI(web_ui()));
 }
 
 ProtocolHandlerRegistry* ContentSettingsHandler::GetProtocolHandlerRegistry() {
@@ -1479,7 +1486,8 @@ HostContentSettingsMap*
     ContentSettingsHandler::GetOTRContentSettingsMap() {
   Profile* profile = Profile::FromWebUI(web_ui());
   if (profile->HasOffTheRecordProfile())
-    return profile->GetOffTheRecordProfile()->GetHostContentSettingsMap();
+    return HostContentSettingsMapFactory::GetForProfile(
+        profile->GetOffTheRecordProfile());
   return NULL;
 }
 

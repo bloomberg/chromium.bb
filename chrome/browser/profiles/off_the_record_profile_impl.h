@@ -60,7 +60,6 @@ class OffTheRecordProfileImpl : public Profile {
       content::ProtocolHandlerMap* protocol_handlers,
       content::URLRequestInterceptorScopedVector request_interceptors) override;
   net::SSLConfigService* GetSSLConfigService() override;
-  HostContentSettingsMap* GetHostContentSettingsMap() override;
   bool IsSameProfile(Profile* profile) override;
   Time GetStartTime() const override;
   base::FilePath last_selected_directory() override;

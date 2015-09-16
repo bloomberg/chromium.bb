@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings.h"
@@ -61,7 +62,7 @@ int32_t PepperBrokerMessageFilter::OnIsAllowed(
   Profile* profile =
       Profile::FromBrowserContext(render_process_host->GetBrowserContext());
   HostContentSettingsMap* content_settings =
-      profile->GetHostContentSettingsMap();
+      HostContentSettingsMapFactory::GetForProfile(profile);
   ContentSetting setting =
       content_settings->GetContentSetting(document_url_,
                                           document_url_,

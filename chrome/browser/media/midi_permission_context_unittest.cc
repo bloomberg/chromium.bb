@@ -5,6 +5,7 @@
 #include "chrome/browser/media/midi_permission_context.h"
 
 #include "base/bind.h"
+#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/permissions/permission_queue_controller.h"
 #include "chrome/browser/permissions/permission_request_id.h"
@@ -103,9 +104,11 @@ TEST_F(MidiPermissionContextTests, TestInsecureRequestingUrl) {
   EXPECT_TRUE(permission_context.tab_context_updated());
 
   ContentSetting setting =
-      profile()->GetHostContentSettingsMap()->GetContentSetting(
-          url.GetOrigin(), url.GetOrigin(),
-          CONTENT_SETTINGS_TYPE_MIDI_SYSEX, std::string());
+      HostContentSettingsMapFactory::GetForProfile(profile())
+          ->GetContentSetting(url.GetOrigin(),
+                              url.GetOrigin(),
+                              CONTENT_SETTINGS_TYPE_MIDI_SYSEX,
+                              std::string());
   EXPECT_EQ(CONTENT_SETTING_ASK, setting);
 }
 
@@ -117,17 +120,23 @@ TEST_F(MidiPermissionContextTests, TestInsecureQueryingUrl) {
 
   // Check that there is no saved content settings.
   EXPECT_EQ(CONTENT_SETTING_ASK,
-      profile()->GetHostContentSettingsMap()->GetContentSetting(
-          insecure_url.GetOrigin(), insecure_url.GetOrigin(),
-          CONTENT_SETTINGS_TYPE_MIDI_SYSEX, std::string()));
+      HostContentSettingsMapFactory::GetForProfile(profile())
+          ->GetContentSetting(insecure_url.GetOrigin(),
+                              insecure_url.GetOrigin(),
+                              CONTENT_SETTINGS_TYPE_MIDI_SYSEX,
+                              std::string()));
   EXPECT_EQ(CONTENT_SETTING_ASK,
-      profile()->GetHostContentSettingsMap()->GetContentSetting(
-          secure_url.GetOrigin(), insecure_url.GetOrigin(),
-          CONTENT_SETTINGS_TYPE_MIDI_SYSEX, std::string()));
+      HostContentSettingsMapFactory::GetForProfile(profile())
+          ->GetContentSetting(secure_url.GetOrigin(),
+                              insecure_url.GetOrigin(),
+                              CONTENT_SETTINGS_TYPE_MIDI_SYSEX,
+                              std::string()));
   EXPECT_EQ(CONTENT_SETTING_ASK,
-      profile()->GetHostContentSettingsMap()->GetContentSetting(
-          insecure_url.GetOrigin(), secure_url.GetOrigin(),
-          CONTENT_SETTINGS_TYPE_MIDI_SYSEX, std::string()));
+      HostContentSettingsMapFactory::GetForProfile(profile())
+          ->GetContentSetting(insecure_url.GetOrigin(),
+                              secure_url.GetOrigin(),
+                              CONTENT_SETTINGS_TYPE_MIDI_SYSEX,
+                              std::string()));
 
   EXPECT_EQ(CONTENT_SETTING_BLOCK, permission_context.GetPermissionStatus(
       insecure_url, insecure_url));

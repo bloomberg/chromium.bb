@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/message_loop/message_loop.h"
+#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
@@ -34,16 +35,18 @@ class ContentSettingsUsagesStateTests : public testing::Test {
  protected:
   void ClearOnNewOrigin(ContentSettingsType type) {
     TestingProfile profile;
-    ContentSettingsUsagesState state(profile.GetHostContentSettingsMap(), type,
-                                     prefs::kAcceptLanguages,
-                                     profile.GetPrefs());
+    ContentSettingsUsagesState state(
+        HostContentSettingsMapFactory::GetForProfile(&profile),
+        type,
+        prefs::kAcceptLanguages,
+        profile.GetPrefs());
     GURL url_0("http://www.example.com");
 
     ContentSettingsUsagesState::CommittedDetails details =
         CreateDetailsWithURL(url_0);
     state.DidNavigate(details);
 
-    profile.GetHostContentSettingsMap()->SetContentSetting(
+    HostContentSettingsMapFactory::GetForProfile(&profile)->SetContentSetting(
         ContentSettingsPattern::FromURLNoWildcard(url_0),
         ContentSettingsPattern::FromURLNoWildcard(url_0),
         type,
@@ -52,7 +55,7 @@ class ContentSettingsUsagesStateTests : public testing::Test {
     state.OnPermissionSet(url_0, true);
 
     GURL url_1("http://www.example1.com");
-    profile.GetHostContentSettingsMap()->SetContentSetting(
+    HostContentSettingsMapFactory::GetForProfile(&profile)->SetContentSetting(
         ContentSettingsPattern::FromURLNoWildcard(url_1),
         ContentSettingsPattern::FromURLNoWildcard(url_0),
         type,
@@ -138,16 +141,18 @@ class ContentSettingsUsagesStateTests : public testing::Test {
 
   void ShowPortOnSameHost(ContentSettingsType type) {
     TestingProfile profile;
-    ContentSettingsUsagesState state(profile.GetHostContentSettingsMap(), type,
-                                     prefs::kAcceptLanguages,
-                                     profile.GetPrefs());
+    ContentSettingsUsagesState state(
+        HostContentSettingsMapFactory::GetForProfile(&profile),
+        type,
+        prefs::kAcceptLanguages,
+        profile.GetPrefs());
     GURL url_0("http://www.example.com");
 
     ContentSettingsUsagesState::CommittedDetails details =
         CreateDetailsWithURL(url_0);
     state.DidNavigate(details);
 
-    profile.GetHostContentSettingsMap()->SetContentSetting(
+    HostContentSettingsMapFactory::GetForProfile(&profile)->SetContentSetting(
         ContentSettingsPattern::FromURLNoWildcard(url_0),
         ContentSettingsPattern::FromURLNoWildcard(url_0),
         type,
@@ -156,7 +161,7 @@ class ContentSettingsUsagesStateTests : public testing::Test {
     state.OnPermissionSet(url_0, true);
 
     GURL url_1("https://www.example.com");
-    profile.GetHostContentSettingsMap()->SetContentSetting(
+    HostContentSettingsMapFactory::GetForProfile(&profile)->SetContentSetting(
         ContentSettingsPattern::FromURLNoWildcard(url_1),
         ContentSettingsPattern::FromURLNoWildcard(url_0),
         type,
@@ -165,7 +170,7 @@ class ContentSettingsUsagesStateTests : public testing::Test {
     state.OnPermissionSet(url_1, true);
 
     GURL url_2("http://www.example1.com");
-    profile.GetHostContentSettingsMap()->SetContentSetting(
+    HostContentSettingsMapFactory::GetForProfile(&profile)->SetContentSetting(
         ContentSettingsPattern::FromURLNoWildcard(url_2),
         ContentSettingsPattern::FromURLNoWildcard(url_0),
         type,

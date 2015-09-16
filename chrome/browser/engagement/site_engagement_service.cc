@@ -10,9 +10,9 @@
 #include "base/command_line.h"
 #include "base/time/clock.h"
 #include "base/values.h"
+#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/engagement/site_engagement_helper.h"
 #include "chrome/browser/engagement/site_engagement_service_factory.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
@@ -168,7 +168,8 @@ SiteEngagementService::~SiteEngagementService() {
 }
 
 void SiteEngagementService::HandleNavigation(const GURL& url) {
-  HostContentSettingsMap* settings_map = profile_->GetHostContentSettingsMap();
+  HostContentSettingsMap* settings_map =
+    HostContentSettingsMapFactory::GetForProfile(profile_);
   scoped_ptr<base::DictionaryValue> score_dict =
       GetScoreDictForOrigin(settings_map, url);
   SiteEngagementScore score(&clock_, *score_dict);
@@ -187,7 +188,8 @@ void SiteEngagementService::HandleNavigation(const GURL& url) {
 }
 
 int SiteEngagementService::GetScore(const GURL& url) {
-  HostContentSettingsMap* settings_map = profile_->GetHostContentSettingsMap();
+  HostContentSettingsMap* settings_map =
+    HostContentSettingsMapFactory::GetForProfile(profile_);
   scoped_ptr<base::DictionaryValue> score_dict =
       GetScoreDictForOrigin(settings_map, url);
   SiteEngagementScore score(&clock_, *score_dict);
@@ -196,7 +198,8 @@ int SiteEngagementService::GetScore(const GURL& url) {
 }
 
 int SiteEngagementService::GetTotalEngagementPoints() {
-  HostContentSettingsMap* settings_map = profile_->GetHostContentSettingsMap();
+  HostContentSettingsMap* settings_map =
+    HostContentSettingsMapFactory::GetForProfile(profile_);
   ContentSettingsForOneType engagement_settings;
   settings_map->GetSettingsForOneType(CONTENT_SETTINGS_TYPE_SITE_ENGAGEMENT,
                                       std::string(), &engagement_settings);

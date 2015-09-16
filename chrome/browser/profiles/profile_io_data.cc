@@ -25,6 +25,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
+#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
 #include "chrome/browser/devtools/devtools_network_controller.h"
@@ -384,7 +385,8 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
   params->io_thread = g_browser_process->io_thread();
 
   params->cookie_settings = CookieSettingsFactory::GetForProfile(profile);
-  params->host_content_settings_map = profile->GetHostContentSettingsMap();
+  params->host_content_settings_map =
+      HostContentSettingsMapFactory::GetForProfile(profile);
   params->ssl_config_service = profile->GetSSLConfigService();
 
 #if defined(ENABLE_EXTENSIONS)

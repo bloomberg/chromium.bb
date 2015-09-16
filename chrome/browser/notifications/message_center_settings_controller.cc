@@ -13,6 +13,7 @@
 #include "base/thread_task_runner_handle.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/extensions/app_icon_loader_impl.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/notifications/desktop_notification_profile_util.h"
@@ -311,8 +312,8 @@ void MessageCenterSettingsController::SetNotifierEnabled(
     // since it has the exact URL pattern.
     // TODO(mukai): fix this.
     ContentSetting default_setting =
-        profile->GetHostContentSettingsMap()->GetDefaultContentSetting(
-            CONTENT_SETTINGS_TYPE_NOTIFICATIONS, NULL);
+        HostContentSettingsMapFactory::GetForProfile(profile)
+          ->GetDefaultContentSetting(CONTENT_SETTINGS_TYPE_NOTIFICATIONS, NULL);
 
     DCHECK(default_setting == CONTENT_SETTING_ALLOW ||
            default_setting == CONTENT_SETTING_BLOCK ||

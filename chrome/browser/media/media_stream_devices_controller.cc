@@ -8,6 +8,7 @@
 #include "base/prefs/scoped_user_pref_update.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/media/media_capture_devices_dispatcher.h"
 #include "chrome/browser/media/media_permission.h"
@@ -287,16 +288,18 @@ content::MediaStreamDevices MediaStreamDevicesController::GetDevices(
   }  // switch
 
   if (audio_allowed) {
-    profile_->GetHostContentSettingsMap()->UpdateLastUsageByPattern(
-        ContentSettingsPattern::FromURLNoWildcard(request_.security_origin),
-        ContentSettingsPattern::Wildcard(),
-        CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC);
+    HostContentSettingsMapFactory::GetForProfile(profile_)
+        ->UpdateLastUsageByPattern(
+            ContentSettingsPattern::FromURLNoWildcard(request_.security_origin),
+            ContentSettingsPattern::Wildcard(),
+            CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC);
   }
   if (video_allowed) {
-    profile_->GetHostContentSettingsMap()->UpdateLastUsageByPattern(
-        ContentSettingsPattern::FromURLNoWildcard(request_.security_origin),
-        ContentSettingsPattern::Wildcard(),
-        CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA);
+    HostContentSettingsMapFactory::GetForProfile(profile_)
+        ->UpdateLastUsageByPattern(
+            ContentSettingsPattern::FromURLNoWildcard(request_.security_origin),
+            ContentSettingsPattern::Wildcard(),
+            CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA);
   }
 
   return devices;
@@ -348,7 +351,7 @@ void MediaStreamDevicesController::StorePermission(
   if (IsAskingForAudio() && new_audio_setting != CONTENT_SETTING_ASK) {
     if (ShouldPersistContentSetting(new_audio_setting, request_.security_origin,
                                     is_pepper_request)) {
-      profile_->GetHostContentSettingsMap()->SetContentSetting(
+      HostContentSettingsMapFactory::GetForProfile(profile_)->SetContentSetting(
           primary_pattern, ContentSettingsPattern::Wildcard(),
           CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC, std::string(),
           new_audio_setting);
@@ -357,7 +360,7 @@ void MediaStreamDevicesController::StorePermission(
   if (IsAskingForVideo() && new_video_setting != CONTENT_SETTING_ASK) {
     if (ShouldPersistContentSetting(new_video_setting, request_.security_origin,
                                     is_pepper_request)) {
-      profile_->GetHostContentSettingsMap()->SetContentSetting(
+      HostContentSettingsMapFactory::GetForProfile(profile_)->SetContentSetting(
           primary_pattern, ContentSettingsPattern::Wildcard(),
           CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA, std::string(),
           new_video_setting);

@@ -10,6 +10,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/test/base/testing_profile.h"
@@ -210,7 +211,8 @@ TEST_F(PluginInfoMessageFilterTest, FindEnabledPlugin) {
 }
 
 TEST_F(PluginInfoMessageFilterTest, GetPluginContentSetting) {
-  HostContentSettingsMap* map = profile()->GetHostContentSettingsMap();
+  HostContentSettingsMap* map =
+      HostContentSettingsMapFactory::GetForProfile(profile());
 
   // Block plugins by default.
   map->SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_PLUGINS,

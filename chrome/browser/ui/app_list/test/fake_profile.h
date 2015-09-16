@@ -67,7 +67,6 @@ class FakeProfile : public Profile {
   net::URLRequestContextGetter* GetRequestContext() override;
   net::URLRequestContextGetter* GetRequestContextForExtensions() override;
   net::SSLConfigService* GetSSLConfigService() override;
-  HostContentSettingsMap* GetHostContentSettingsMap() override;
   bool IsSameProfile(Profile* profile) override;
   base::Time GetStartTime() const override;
   net::URLRequestContextGetter* CreateRequestContext(

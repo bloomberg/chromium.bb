@@ -70,8 +70,9 @@ SupervisedUserPrefStore::SupervisedUserPrefStore(
                  base::Unretained(this)));
 
   // Should only be nullptr in unit tests
-  // TODO(peconn): Remove this notification once HostContentSettingsMap is
-  // a KeyedService.
+  // TODO(peconn): Remove this once SupervisedUserPrefStore is (partially at
+  // least) a KeyedService. The user_settings_subscription_ must be reset or
+  // destroyed before the SupervisedUserSettingsService is.
   if (supervised_user_settings_service->GetProfile() != nullptr){
     unsubscriber_registrar_.Add(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
         content::Source<Profile>(

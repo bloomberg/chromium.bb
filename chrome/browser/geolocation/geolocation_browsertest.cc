@@ -12,6 +12,7 @@
 #include "base/test/simple_test_clock.h"
 #include "base/time/clock.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -478,10 +479,13 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, MAYBE_NoPromptForSecondTab) {
 
 IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, NoPromptForDeniedOrigin) {
   ASSERT_TRUE(Initialize(INITIALIZATION_NONE));
-  current_browser()->profile()->GetHostContentSettingsMap()->SetContentSetting(
-      ContentSettingsPattern::FromURLNoWildcard(current_url()),
-      ContentSettingsPattern::FromURLNoWildcard(current_url()),
-      CONTENT_SETTINGS_TYPE_GEOLOCATION, std::string(), CONTENT_SETTING_BLOCK);
+  HostContentSettingsMapFactory::GetForProfile(current_browser()->profile())
+      ->SetContentSetting(
+          ContentSettingsPattern::FromURLNoWildcard(current_url()),
+          ContentSettingsPattern::FromURLNoWildcard(current_url()),
+          CONTENT_SETTINGS_TYPE_GEOLOCATION,
+          std::string(),
+          CONTENT_SETTING_BLOCK);
 
   // Check that the bubble wasn't shown but we get an error for this origin.
   SetFrameHost("");
@@ -503,10 +507,13 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, NoPromptForDeniedOrigin) {
 #endif
 IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, MAYBE_NoPromptForAllowedOrigin) {
   ASSERT_TRUE(Initialize(INITIALIZATION_NONE));
-  current_browser()->profile()->GetHostContentSettingsMap()->SetContentSetting(
-      ContentSettingsPattern::FromURLNoWildcard(current_url()),
-      ContentSettingsPattern::FromURLNoWildcard(current_url()),
-      CONTENT_SETTINGS_TYPE_GEOLOCATION, std::string(), CONTENT_SETTING_ALLOW);
+  HostContentSettingsMapFactory::GetForProfile(current_browser()->profile())
+      ->SetContentSetting(
+          ContentSettingsPattern::FromURLNoWildcard(current_url()),
+          ContentSettingsPattern::FromURLNoWildcard(current_url()),
+          CONTENT_SETTINGS_TYPE_GEOLOCATION,
+          std::string(),
+          CONTENT_SETTING_ALLOW);
   // Checks no prompt will be created and there's no error callback.
   SetFrameHost("");
   RequestPermissionAndObserve(false);
@@ -738,29 +745,25 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, TabDestroyed) {
 IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, MAYBE_LastUsageUpdated) {
   ASSERT_TRUE(Initialize(INITIALIZATION_NONE));
   base::SimpleTestClock* clock_ = new base::SimpleTestClock();
-  current_browser()
-      ->profile()
-      ->GetHostContentSettingsMap()
+  HostContentSettingsMapFactory::GetForProfile(current_browser()->profile())
       ->SetPrefClockForTesting(scoped_ptr<base::Clock>(clock_));
   clock_->SetNow(base::Time::UnixEpoch() + base::TimeDelta::FromSeconds(10));
 
   // Setting the permission should trigger the last usage.
-  current_browser()->profile()->GetHostContentSettingsMap()->SetContentSetting(
-      ContentSettingsPattern::FromURLNoWildcard(current_url()),
-      ContentSettingsPattern::FromURLNoWildcard(current_url()),
-      CONTENT_SETTINGS_TYPE_GEOLOCATION,
-      std::string(),
-      CONTENT_SETTING_ALLOW);
+  HostContentSettingsMapFactory::GetForProfile(current_browser()->profile())
+      ->SetContentSetting(
+          ContentSettingsPattern::FromURLNoWildcard(current_url()),
+          ContentSettingsPattern::FromURLNoWildcard(current_url()),
+          CONTENT_SETTINGS_TYPE_GEOLOCATION,
+          std::string(),
+          CONTENT_SETTING_ALLOW);
 
   // Permission has been used at the starting time.
-  EXPECT_EQ(current_browser()
-                ->profile()
-                ->GetHostContentSettingsMap()
-                ->GetLastUsage(current_url().GetOrigin(),
-                               current_url().GetOrigin(),
-                               CONTENT_SETTINGS_TYPE_GEOLOCATION)
-                .ToDoubleT(),
-            10);
+  EXPECT_EQ(HostContentSettingsMapFactory::GetForProfile(
+      current_browser()->profile())->GetLastUsage(
+          current_url().GetOrigin(),
+          current_url().GetOrigin(),
+          CONTENT_SETTINGS_TYPE_GEOLOCATION).ToDoubleT(), 10);
 
   clock_->Advance(base::TimeDelta::FromSeconds(3));
 
@@ -770,12 +773,9 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, MAYBE_LastUsageUpdated) {
   CheckGeoposition(fake_latitude(), fake_longitude());
 
   // Last usage has been updated.
-  EXPECT_EQ(current_browser()
-                ->profile()
-                ->GetHostContentSettingsMap()
-                ->GetLastUsage(current_url().GetOrigin(),
-                               current_url().GetOrigin(),
-                               CONTENT_SETTINGS_TYPE_GEOLOCATION)
-                .ToDoubleT(),
-            13);
+  EXPECT_EQ(HostContentSettingsMapFactory::GetForProfile(
+      current_browser()->profile())->GetLastUsage(
+          current_url().GetOrigin(),
+          current_url().GetOrigin(),
+          CONTENT_SETTINGS_TYPE_GEOLOCATION).ToDoubleT(), 13);
 }

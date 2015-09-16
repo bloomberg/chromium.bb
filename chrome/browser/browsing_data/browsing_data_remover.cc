@@ -18,6 +18,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/domain_reliability/service_factory.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/download/download_service_factory.h"
@@ -559,10 +560,10 @@ void BrowsingDataRemover::RemoveImpl(int remove_mask,
 #endif
 
   if (remove_mask & REMOVE_SITE_USAGE_DATA || remove_mask & REMOVE_HISTORY) {
-    profile_->GetHostContentSettingsMap()->ClearSettingsForOneType(
-        CONTENT_SETTINGS_TYPE_APP_BANNER);
-    profile_->GetHostContentSettingsMap()->ClearSettingsForOneType(
-        CONTENT_SETTINGS_TYPE_SITE_ENGAGEMENT);
+    HostContentSettingsMapFactory::GetForProfile(profile_)
+        ->ClearSettingsForOneType(CONTENT_SETTINGS_TYPE_APP_BANNER);
+    HostContentSettingsMapFactory::GetForProfile(profile_)
+        ->ClearSettingsForOneType(CONTENT_SETTINGS_TYPE_SITE_ENGAGEMENT);
   }
 
   if (remove_mask & REMOVE_PASSWORDS) {

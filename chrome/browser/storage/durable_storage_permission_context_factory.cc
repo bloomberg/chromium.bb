@@ -23,7 +23,7 @@ DurableStoragePermissionContextFactory::GetInstance() {
 }
 
 DurableStoragePermissionContextFactory::DurableStoragePermissionContextFactory()
-    : BrowserContextKeyedServiceFactory(
+    : PermissionContextFactoryBase(
           "DurableStoragePermissionContext",
           BrowserContextDependencyManager::GetInstance()) {
 }
@@ -31,10 +31,4 @@ DurableStoragePermissionContextFactory::DurableStoragePermissionContextFactory()
 KeyedService* DurableStoragePermissionContextFactory::BuildServiceInstanceFor(
     content::BrowserContext* profile) const {
   return new DurableStoragePermissionContext(static_cast<Profile*>(profile));
-}
-
-content::BrowserContext*
-DurableStoragePermissionContextFactory::GetBrowserContextToUse(
-    content::BrowserContext* context) const {
-  return chrome::GetBrowserContextOwnInstanceInIncognito(context);
 }

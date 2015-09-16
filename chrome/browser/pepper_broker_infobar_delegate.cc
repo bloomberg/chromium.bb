@@ -5,6 +5,7 @@
 #include "chrome/browser/pepper_broker_infobar_delegate.h"
 
 #include "base/prefs/pref_service.h"
+#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/plugins/plugin_finder.h"
@@ -44,7 +45,7 @@ void PepperBrokerInfoBarDelegate::Create(
       TabSpecificContentSettings::FromWebContents(web_contents);
 
   HostContentSettingsMap* content_settings =
-      profile->GetHostContentSettingsMap();
+      HostContentSettingsMapFactory::GetForProfile(profile);
   ContentSetting setting =
       content_settings->GetContentSetting(url, url,
                                           CONTENT_SETTINGS_TYPE_PPAPI_BROKER,

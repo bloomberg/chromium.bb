@@ -9,6 +9,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
+#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_metrics.h"
@@ -206,12 +207,14 @@ bool ChromeSigninClient::AreSigninCookiesAllowed() {
 
 void ChromeSigninClient::AddContentSettingsObserver(
     content_settings::Observer* observer) {
-  profile_->GetHostContentSettingsMap()->AddObserver(observer);
+  HostContentSettingsMapFactory::GetForProfile(profile_)
+      ->AddObserver(observer);
 }
 
 void ChromeSigninClient::RemoveContentSettingsObserver(
     content_settings::Observer* observer) {
-  profile_->GetHostContentSettingsMap()->RemoveObserver(observer);
+  HostContentSettingsMapFactory::GetForProfile(profile_)
+      ->RemoveObserver(observer);
 }
 
 scoped_ptr<SigninClient::CookieChangedSubscription>

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "build/build_config.h"
+#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/fullscreen.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -104,7 +105,7 @@ FullscreenControllerInteractiveTest::TestFullscreenMouseLockContentSettings() {
 
   // Add content setting to ALLOW fullscreen.
   HostContentSettingsMap* settings_map =
-      browser()->profile()->GetHostContentSettingsMap();
+      HostContentSettingsMapFactory::GetForProfile(browser()->profile());
   ContentSettingsPattern pattern =
       ContentSettingsPattern::FromURL(url);
   settings_map->SetContentSetting(

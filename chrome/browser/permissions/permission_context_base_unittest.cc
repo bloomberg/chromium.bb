@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/permissions/permission_queue_controller.h"
 #include "chrome/browser/permissions/permission_request_id.h"
@@ -116,9 +117,11 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
     EXPECT_TRUE(permission_context.tab_context_updated());
 
     ContentSetting setting =
-        profile()->GetHostContentSettingsMap()->GetContentSetting(
-            url.GetOrigin(), url.GetOrigin(),
-            CONTENT_SETTINGS_TYPE_NOTIFICATIONS, std::string());
+        HostContentSettingsMapFactory::GetForProfile(profile())
+            ->GetContentSetting(url.GetOrigin(),
+                                url.GetOrigin(),
+                                CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+                                std::string());
     EXPECT_EQ(CONTENT_SETTING_ALLOW, setting);
   }
 
@@ -144,9 +147,11 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
     EXPECT_TRUE(permission_context.tab_context_updated());
 
     ContentSetting setting =
-        profile()->GetHostContentSettingsMap()->GetContentSetting(
-            url.GetOrigin(), url.GetOrigin(),
-            CONTENT_SETTINGS_TYPE_MIDI_SYSEX, std::string());
+        HostContentSettingsMapFactory::GetForProfile(profile())
+            ->GetContentSetting(url.GetOrigin(),
+                                url.GetOrigin(),
+                                CONTENT_SETTINGS_TYPE_MIDI_SYSEX,
+                                std::string());
     EXPECT_EQ(CONTENT_SETTING_ASK, setting);
   }
 
@@ -171,8 +176,11 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
     EXPECT_TRUE(permission_context.tab_context_updated());
 
     ContentSetting setting =
-        profile()->GetHostContentSettingsMap()->GetContentSetting(
-            url.GetOrigin(), url.GetOrigin(), type, std::string());
+        HostContentSettingsMapFactory::GetForProfile(profile())
+            ->GetContentSetting(url.GetOrigin(),
+                                url.GetOrigin(),
+                                type,
+                                std::string());
     EXPECT_EQ(CONTENT_SETTING_ASK, setting);
   }
 
@@ -198,20 +206,24 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
     EXPECT_TRUE(permission_context.tab_context_updated());
 
     ContentSetting setting =
-        profile()->GetHostContentSettingsMap()->GetContentSetting(
-            url.GetOrigin(), url.GetOrigin(),
-            type, std::string());
+        HostContentSettingsMapFactory::GetForProfile(profile())
+            ->GetContentSetting(url.GetOrigin(),
+                                url.GetOrigin(),
+                                type,
+                                std::string());
     EXPECT_EQ(CONTENT_SETTING_ALLOW, setting);
 
     // Try to reset permission.
     permission_context.ResetPermission(url.GetOrigin(), url.GetOrigin());
     ContentSetting setting_after_reset =
-        profile()->GetHostContentSettingsMap()->GetContentSetting(
-            url.GetOrigin(), url.GetOrigin(),
-            type, std::string());
+        HostContentSettingsMapFactory::GetForProfile(profile())
+            ->GetContentSetting(url.GetOrigin(),
+                                url.GetOrigin(),
+                                type,
+                                std::string());
     ContentSetting default_setting =
-        profile()->GetHostContentSettingsMap()->GetDefaultContentSetting(
-            type, nullptr);
+        HostContentSettingsMapFactory::GetForProfile(profile())
+            ->GetDefaultContentSetting(type, nullptr);
     EXPECT_EQ(default_setting, setting_after_reset);
   }
 

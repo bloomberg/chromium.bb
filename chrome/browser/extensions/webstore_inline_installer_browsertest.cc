@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/tab_helper.h"
@@ -149,10 +150,12 @@ IN_PROC_BROWSER_TEST_F(WebstoreInlineInstallerTest,
   GURL install_url =
       GenerateTestServerUrl(kAppDomain, "install_from_popup.html");
   // Disable popup blocking for the test url.
-  browser()->profile()->GetHostContentSettingsMap()->SetContentSetting(
-      ContentSettingsPattern::FromURL(install_url),
-      ContentSettingsPattern::Wildcard(), CONTENT_SETTINGS_TYPE_POPUPS,
-      std::string(), CONTENT_SETTING_ALLOW);
+  HostContentSettingsMapFactory::GetForProfile(browser()->profile())
+      ->SetContentSetting(ContentSettingsPattern::FromURL(install_url),
+                          ContentSettingsPattern::Wildcard(),
+                          CONTENT_SETTINGS_TYPE_POPUPS,
+                          std::string(),
+                          CONTENT_SETTING_ALLOW);
   ui_test_utils::NavigateToURL(browser(), install_url);
   // The test page opens a popup which is a new |browser| window.
   Browser* popup_browser = chrome::FindLastActiveWithProfile(

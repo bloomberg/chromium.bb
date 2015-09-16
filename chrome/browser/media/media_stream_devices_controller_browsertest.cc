@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/prefs/pref_service.h"
+#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/media/media_capture_devices_dispatcher.h"
 #include "chrome/browser/media/media_stream_capture_indicator.h"
@@ -91,8 +92,8 @@ class MediaStreamDevicesControllerTest : public WebRtcTestBase {
   void SetContentSettings(ContentSetting mic_setting,
                           ContentSetting cam_setting) {
     HostContentSettingsMap* content_settings =
-        Profile::FromBrowserContext(GetWebContents()->GetBrowserContext())
-            ->GetHostContentSettingsMap();
+        HostContentSettingsMapFactory::GetForProfile(
+            Profile::FromBrowserContext(GetWebContents()->GetBrowserContext()));
     ContentSettingsPattern pattern =
         ContentSettingsPattern::FromURLNoWildcard(example_url_);
     content_settings->SetContentSetting(pattern, pattern,

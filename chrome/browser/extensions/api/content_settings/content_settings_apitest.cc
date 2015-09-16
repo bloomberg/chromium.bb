@@ -10,6 +10,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
+#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/extensions/api/content_settings/content_settings_api.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/profiles/profile.h"
@@ -72,7 +73,7 @@ class ExtensionContentSettingsApiTest : public ExtensionApiTest {
  protected:
   void CheckContentSettingsSet() {
     HostContentSettingsMap* map =
-        profile_->GetHostContentSettingsMap();
+        HostContentSettingsMapFactory::GetForProfile(profile_);
     content_settings::CookieSettings* cookie_settings =
         CookieSettingsFactory::GetForProfile(profile_).get();
 
@@ -189,7 +190,7 @@ class ExtensionContentSettingsApiTest : public ExtensionApiTest {
 
   void CheckContentSettingsDefault() {
     HostContentSettingsMap* map =
-        profile_->GetHostContentSettingsMap();
+        HostContentSettingsMapFactory::GetForProfile(profile_);
     content_settings::CookieSettings* cookie_settings =
         CookieSettingsFactory::GetForProfile(profile_).get();
 

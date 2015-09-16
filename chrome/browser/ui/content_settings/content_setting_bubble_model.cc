@@ -12,6 +12,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/chrome_content_settings_utils.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
+#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
@@ -377,7 +378,8 @@ void ContentSettingSingleRadioGroup::SetRadioGroup() {
         url, url, true, &setting_source);
   } else {
     SettingInfo info;
-    HostContentSettingsMap* map = profile()->GetHostContentSettingsMap();
+    HostContentSettingsMap* map =
+        HostContentSettingsMapFactory::GetForProfile(profile());
     scoped_ptr<base::Value> value =
         map->GetWebsiteSetting(url, url, content_type(), std::string(), &info);
     setting = content_settings::ValueToContentSetting(value.get());
@@ -415,7 +417,7 @@ void ContentSettingSingleRadioGroup::SetRadioGroup() {
 
 void ContentSettingSingleRadioGroup::AddException(ContentSetting setting) {
   if (profile()) {
-    profile()->GetHostContentSettingsMap()->AddExceptionForURL(
+    HostContentSettingsMapFactory::GetForProfile(profile())->AddExceptionForURL(
         bubble_content().radio_group.url,
         bubble_content().radio_group.url,
         content_type(),
@@ -802,7 +804,7 @@ void ContentSettingMediaStreamBubbleModel::UpdateSettings(
     ContentSetting setting) {
   if (profile()) {
     HostContentSettingsMap* content_settings =
-        profile()->GetHostContentSettingsMap();
+        HostContentSettingsMapFactory::GetForProfile(profile());
     TabSpecificContentSettings* tab_content_settings =
         TabSpecificContentSettings::FromWebContents(web_contents());
     // The same patterns must be used as in other places (e.g. the infobar) in
@@ -1016,7 +1018,7 @@ void ContentSettingDomainListBubbleModel::OnCustomLinkClicked() {
   const ContentSettingsUsagesState::StateMap& state_map =
       content_settings->geolocation_usages_state().state_map();
   HostContentSettingsMap* settings_map =
-      profile()->GetHostContentSettingsMap();
+      HostContentSettingsMapFactory::GetForProfile(profile());
 
   for (const std::pair<GURL, ContentSetting>& map_entry : state_map) {
     settings_map->SetContentSetting(
@@ -1270,7 +1272,7 @@ void ContentSettingMidiSysExBubbleModel::OnCustomLinkClicked() {
   const ContentSettingsUsagesState::StateMap& state_map =
       content_settings->midi_usages_state().state_map();
   HostContentSettingsMap* settings_map =
-      profile()->GetHostContentSettingsMap();
+      HostContentSettingsMapFactory::GetForProfile(profile());
 
   for (const std::pair<GURL, ContentSetting>& map_entry : state_map) {
     settings_map->SetContentSetting(

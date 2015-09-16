@@ -5,6 +5,7 @@
 #include <string>
 
 #include "base/message_loop/message_loop.h"
+#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/geolocation/geolocation_settings_state.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
@@ -40,7 +41,7 @@ TEST_F(GeolocationSettingsStateTests, ClearOnNewOrigin) {
   load_committed_details.entry = entry.get();
   state.DidNavigate(load_committed_details);
 
-  profile.GetHostContentSettingsMap()->SetContentSetting(
+  HostContentSettingsMapFactory::GetForProfile(profile)->SetContentSetting(
       ContentSettingsPattern::FromURLNoWildcard(url_0),
       ContentSettingsPattern::FromURLNoWildcard(url_0),
       CONTENT_SETTINGS_TYPE_GEOLOCATION,
@@ -49,7 +50,7 @@ TEST_F(GeolocationSettingsStateTests, ClearOnNewOrigin) {
   state.OnGeolocationPermissionSet(url_0, true);
 
   GURL url_1("http://www.example1.com");
-  profile.GetHostContentSettingsMap()->SetContentSetting(
+  HostContentSettingsMapFactory::GetForProfile(profile)->SetContentSetting(
     ContentSettingsPattern::FromURLNoWildcard(url_1),
     ContentSettingsPattern::FromURLNoWildcard(url_0),
     CONTENT_SETTINGS_TYPE_GEOLOCATION,
@@ -145,7 +146,7 @@ TEST_F(GeolocationSettingsStateTests, ShowPortOnSameHost) {
   load_committed_details.entry = entry.get();
   state.DidNavigate(load_committed_details);
 
-  profile.GetHostContentSettingsMap()->SetContentSetting(
+  HostContentSettingsMapFactory::GetForProfile(profile)->SetContentSetting(
       ContentSettingsPattern::FromURLNoWildcard(url_0),
       ContentSettingsPattern::FromURLNoWildcard(url_0),
       CONTENT_SETTINGS_TYPE_GEOLOCATION,
@@ -154,7 +155,7 @@ TEST_F(GeolocationSettingsStateTests, ShowPortOnSameHost) {
   state.OnGeolocationPermissionSet(url_0, true);
 
   GURL url_1("https://www.example.com");
-  profile.GetHostContentSettingsMap()->SetContentSetting(
+  HostContentSettingsMapFactory::GetForProfile(profile)->SetContentSetting(
       ContentSettingsPattern::FromURLNoWildcard(url_1),
       ContentSettingsPattern::FromURLNoWildcard(url_0),
       CONTENT_SETTINGS_TYPE_GEOLOCATION,
@@ -163,7 +164,7 @@ TEST_F(GeolocationSettingsStateTests, ShowPortOnSameHost) {
   state.OnGeolocationPermissionSet(url_1, true);
 
   GURL url_2("http://www.example1.com");
-  profile.GetHostContentSettingsMap()->SetContentSetting(
+  HostContentSettingsMapFactory::GetForProfile(profile)->SetContentSetting(
       ContentSettingsPattern::FromURLNoWildcard(url_2),
       ContentSettingsPattern::FromURLNoWildcard(url_0),
       CONTENT_SETTINGS_TYPE_GEOLOCATION,

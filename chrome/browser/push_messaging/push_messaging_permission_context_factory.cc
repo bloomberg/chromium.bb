@@ -24,7 +24,7 @@ PushMessagingPermissionContextFactory::GetInstance() {
 }
 
 PushMessagingPermissionContextFactory::PushMessagingPermissionContextFactory()
-    : BrowserContextKeyedServiceFactory(
+    : PermissionContextFactoryBase(
           "GCMPermissionContext",
           BrowserContextDependencyManager::GetInstance()) {
 }
@@ -36,10 +36,4 @@ PushMessagingPermissionContextFactory
 KeyedService* PushMessagingPermissionContextFactory::BuildServiceInstanceFor(
     content::BrowserContext* profile) const {
   return new PushMessagingPermissionContext(static_cast<Profile*>(profile));
-}
-
-content::BrowserContext*
-PushMessagingPermissionContextFactory::GetBrowserContextToUse(
-    content::BrowserContext* context) const {
-  return chrome::GetBrowserContextOwnInstanceInIncognito(context);
 }

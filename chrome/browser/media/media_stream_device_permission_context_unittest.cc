@@ -5,6 +5,7 @@
 #include "chrome/browser/media/media_stream_device_permission_context.h"
 
 #include "base/bind.h"
+#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/permissions/permission_queue_controller.h"
 #include "chrome/browser/permissions/permission_request_id.h"
@@ -45,17 +46,23 @@ class MediaStreamDevicePermissionContextTests
 
     // Check that there is no saved content settings.
     EXPECT_EQ(CONTENT_SETTING_ASK,
-              profile()->GetHostContentSettingsMap()->GetContentSetting(
-                  insecure_url.GetOrigin(), insecure_url.GetOrigin(),
-                  permission_type, std::string()));
+              HostContentSettingsMapFactory::GetForProfile(profile())
+                  ->GetContentSetting(insecure_url.GetOrigin(),
+                                      insecure_url.GetOrigin(),
+                                      permission_type,
+                                      std::string()));
     EXPECT_EQ(CONTENT_SETTING_ASK,
-              profile()->GetHostContentSettingsMap()->GetContentSetting(
-                  secure_url.GetOrigin(), insecure_url.GetOrigin(),
-                  permission_type, std::string()));
+              HostContentSettingsMapFactory::GetForProfile(profile())
+                  ->GetContentSetting(secure_url.GetOrigin(),
+                                      insecure_url.GetOrigin(),
+                                      permission_type,
+                                      std::string()));
     EXPECT_EQ(CONTENT_SETTING_ASK,
-              profile()->GetHostContentSettingsMap()->GetContentSetting(
-                  insecure_url.GetOrigin(), secure_url.GetOrigin(),
-                  permission_type, std::string()));
+              HostContentSettingsMapFactory::GetForProfile(profile())
+                  ->GetContentSetting(insecure_url.GetOrigin(),
+                                      secure_url.GetOrigin(),
+                                      permission_type,
+                                      std::string()));
 
     EXPECT_EQ(CONTENT_SETTING_ASK, permission_context.GetPermissionStatus(
                                        insecure_url, insecure_url));
@@ -69,9 +76,11 @@ class MediaStreamDevicePermissionContextTests
 
     // Check that there is no saved content settings.
     EXPECT_EQ(CONTENT_SETTING_ASK,
-              profile()->GetHostContentSettingsMap()->GetContentSetting(
-                  secure_url.GetOrigin(), secure_url.GetOrigin(),
-                  permission_type, std::string()));
+              HostContentSettingsMapFactory::GetForProfile(profile())
+                  ->GetContentSetting(secure_url.GetOrigin(),
+                                      secure_url.GetOrigin(),
+                                      permission_type,
+                                      std::string()));
 
     EXPECT_EQ(CONTENT_SETTING_ASK,
               permission_context.GetPermissionStatus(secure_url, secure_url));

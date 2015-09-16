@@ -5,6 +5,7 @@
 #include "chrome/browser/permissions/permission_manager.h"
 
 #include "base/callback.h"
+#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/permissions/permission_context.h"
 #include "chrome/browser/permissions/permission_context_base.h"
 #include "chrome/browser/permissions/permission_request_id.h"
@@ -135,7 +136,8 @@ PermissionManager::PermissionManager(Profile* profile)
 
 PermissionManager::~PermissionManager() {
   if (!subscriptions_.IsEmpty())
-    profile_->GetHostContentSettingsMap()->RemoveObserver(this);
+    HostContentSettingsMapFactory::GetForProfile(profile_)
+        ->RemoveObserver(this);
 }
 
 void PermissionManager::RequestPermission(
@@ -233,7 +235,7 @@ void PermissionManager::RegisterPermissionUsage(PermissionType permission,
   if (IsConstantPermission(permission))
     return;
 
-  profile_->GetHostContentSettingsMap()->UpdateLastUsage(
+  HostContentSettingsMapFactory::GetForProfile(profile_)->UpdateLastUsage(
       requesting_origin,
       embedding_origin,
       PermissionTypeToContentSetting(permission));
@@ -245,7 +247,7 @@ int PermissionManager::SubscribePermissionStatusChange(
     const GURL& embedding_origin,
     const base::Callback<void(PermissionStatus)>& callback) {
   if (subscriptions_.IsEmpty())
-    profile_->GetHostContentSettingsMap()->AddObserver(this);
+    HostContentSettingsMapFactory::GetForProfile(profile_)->AddObserver(this);
 
   Subscription* subscription = new Subscription();
   subscription->permission = permission;
@@ -270,7 +272,8 @@ void PermissionManager::UnsubscribePermissionStatusChange(int subscription_id) {
   subscriptions_.Remove(subscription_id);
 
   if (subscriptions_.IsEmpty())
-    profile_->GetHostContentSettingsMap()->RemoveObserver(this);
+    HostContentSettingsMapFactory::GetForProfile(profile_)
+        ->RemoveObserver(this);
 }
 
 bool PermissionManager::IsPermissionBubbleManagerMissing(

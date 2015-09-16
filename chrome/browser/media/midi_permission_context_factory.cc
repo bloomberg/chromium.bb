@@ -23,7 +23,7 @@ MidiPermissionContextFactory::GetInstance() {
 }
 
 MidiPermissionContextFactory::MidiPermissionContextFactory()
-    : BrowserContextKeyedServiceFactory(
+    : PermissionContextFactoryBase(
           "MidiPermissionContext",
           BrowserContextDependencyManager::GetInstance()) {
 }
@@ -34,10 +34,4 @@ MidiPermissionContextFactory::~MidiPermissionContextFactory() {
 KeyedService* MidiPermissionContextFactory::BuildServiceInstanceFor(
     content::BrowserContext* profile) const {
   return new MidiPermissionContext(static_cast<Profile*>(profile));
-}
-
-content::BrowserContext*
-MidiPermissionContextFactory::GetBrowserContextToUse(
-    content::BrowserContext* context) const {
-  return chrome::GetBrowserContextOwnInstanceInIncognito(context);
 }

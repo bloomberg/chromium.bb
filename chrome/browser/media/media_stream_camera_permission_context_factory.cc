@@ -11,7 +11,7 @@
 
 MediaStreamCameraPermissionContextFactory::
     MediaStreamCameraPermissionContextFactory()
-    : BrowserContextKeyedServiceFactory(
+    : PermissionContextFactoryBase(
           "MediaStreamCameraPermissionContext",
           BrowserContextDependencyManager::GetInstance()) {}
 
@@ -23,12 +23,6 @@ MediaStreamCameraPermissionContextFactory::BuildServiceInstanceFor(
     content::BrowserContext* profile) const {
   return new MediaStreamDevicePermissionContext(
       static_cast<Profile*>(profile), CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA);
-}
-
-content::BrowserContext*
-MediaStreamCameraPermissionContextFactory::GetBrowserContextToUse(
-    content::BrowserContext* context) const {
-  return chrome::GetBrowserContextOwnInstanceInIncognito(context);
 }
 
 // static

@@ -23,6 +23,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/plugins/plugin_finder.h"
 #include "chrome/browser/plugins/plugin_metadata.h"
 #include "chrome/browser/plugins/plugin_prefs.h"
@@ -301,7 +302,7 @@ void PluginsDOMHandler::HandleSetPluginAlwaysAllowed(
     return;
   }
   Profile* profile = Profile::FromWebUI(web_ui());
-  profile->GetHostContentSettingsMap()->SetContentSetting(
+  HostContentSettingsMapFactory::GetForProfile(profile)->SetContentSetting(
       ContentSettingsPattern::Wildcard(),
       ContentSettingsPattern::Wildcard(),
       CONTENT_SETTINGS_TYPE_PLUGINS,

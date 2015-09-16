@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/prefs/pref_service.h"
+#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
@@ -35,6 +36,7 @@ CookieSettingsFactory::CookieSettingsFactory()
     : RefcountedBrowserContextKeyedServiceFactory(
           "CookieSettings",
           BrowserContextDependencyManager::GetInstance()) {
+  DependsOn(HostContentSettingsMapFactory::GetInstance());
 }
 
 CookieSettingsFactory::~CookieSettingsFactory() {
@@ -63,6 +65,7 @@ CookieSettingsFactory::BuildServiceInstanceFor(
         UserMetricsAction("ThirdPartyCookieBlockingDisabled"));
   }
   return new content_settings::CookieSettings(
-      profile->GetHostContentSettingsMap(), profile->GetPrefs(),
+      HostContentSettingsMapFactory::GetForProfile(profile),
+      profile->GetPrefs(),
       extensions::kExtensionScheme);
 }

@@ -5,6 +5,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
+#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/notifications/notification_delegate.h"
 #include "chrome/browser/notifications/notification_test_util.h"
 #include "chrome/browser/notifications/platform_notification_service_impl.h"
@@ -230,7 +231,7 @@ TEST_F(PlatformNotificationServiceTest, NotificationPermissionLastUsage) {
   CreateSimplePageNotification();
 
   base::Time after_page_notification =
-      profile()->GetHostContentSettingsMap()->GetLastUsage(
+      HostContentSettingsMapFactory::GetForProfile(profile())->GetLastUsage(
           origin, origin, CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
   EXPECT_GT(after_page_notification, begin_time);
 
@@ -242,7 +243,7 @@ TEST_F(PlatformNotificationServiceTest, NotificationPermissionLastUsage) {
       content::PlatformNotificationData());
 
   base::Time after_persistent_notification =
-      profile()->GetHostContentSettingsMap()->GetLastUsage(
+      HostContentSettingsMapFactory::GetForProfile(profile())->GetLastUsage(
           origin, origin, CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
   EXPECT_GT(after_persistent_notification, after_page_notification);
 }

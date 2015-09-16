@@ -989,13 +989,6 @@ net::SSLConfigService* ProfileImpl::GetSSLConfigService() {
   return ssl_config_service_manager_->Get();
 }
 
-HostContentSettingsMap* ProfileImpl::GetHostContentSettingsMap() {
-  // TODO(peconn): Once HostContentSettingsMapFactory works for TestingProfiles
-  // remove Profile::GetHostContentSettingsMap and replace all references to it.
-  // Don't forget to remove the #include "host_content_settings_map_factory"!
-  return HostContentSettingsMapFactory::GetForProfile(this);
-}
-
 content::BrowserPluginGuestManager* ProfileImpl::GetGuestManager() {
 #if defined(ENABLE_EXTENSIONS)
   return guest_view::GuestViewManager::FromBrowserContext(this);

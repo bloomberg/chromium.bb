@@ -143,10 +143,6 @@ net::SSLConfigService* FakeProfile::GetSSLConfigService() {
   return nullptr;
 }
 
-HostContentSettingsMap* FakeProfile::GetHostContentSettingsMap() {
-  return nullptr;
-}
-
 bool FakeProfile::IsSameProfile(Profile* profile) {
   return false;
 }

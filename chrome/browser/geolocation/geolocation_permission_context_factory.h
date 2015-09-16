@@ -8,14 +8,14 @@
 #include "base/memory/singleton.h"
 #include "base/prefs/pref_service.h"
 #include "base/values.h"
-#include "components/keyed_service/content/browser_context_keyed_service_factory.h"
+#include "chrome/browser/permissions/permission_context_factory_base.h"
 
 class GeolocationPermissionContext;
 class PrefRegistrySyncable;
 class Profile;
 
 class GeolocationPermissionContextFactory
-    : public BrowserContextKeyedServiceFactory {
+    : public PermissionContextFactoryBase {
  public:
   static GeolocationPermissionContext* GetForProfile(Profile* profile);
 
@@ -33,8 +33,6 @@ class GeolocationPermissionContextFactory
       content::BrowserContext* profile) const override;
   void RegisterProfilePrefs(
       user_prefs::PrefRegistrySyncable* registry) override;
-  content::BrowserContext* GetBrowserContextToUse(
-      content::BrowserContext* context) const override;
 
   DISALLOW_COPY_AND_ASSIGN(GeolocationPermissionContextFactory);
 };

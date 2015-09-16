@@ -6,6 +6,7 @@
 #include "base/command_line.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/infobars/infobar_service.h"
@@ -180,7 +181,7 @@ TEST_F(ContentSettingBubbleModelTest, BlockedMediastreamMicAndCamera) {
   GURL url = web_contents()->GetURL();
 
   HostContentSettingsMap* host_content_settings_map =
-      profile()->GetHostContentSettingsMap();
+      HostContentSettingsMapFactory::GetForProfile(profile());
   ContentSettingsPattern primary_pattern =
       ContentSettingsPattern::FromURL(url);
   ContentSetting setting = CONTENT_SETTING_BLOCK;
@@ -271,7 +272,7 @@ TEST_F(ContentSettingBubbleModelTest, MediastreamContentBubble) {
   GURL url = web_contents()->GetURL();
 
   HostContentSettingsMap* host_content_settings_map =
-      profile()->GetHostContentSettingsMap();
+      HostContentSettingsMapFactory::GetForProfile(profile());
   ContentSettingsPattern primary_pattern =
       ContentSettingsPattern::FromURL(url);
   ContentSetting setting = CONTENT_SETTING_BLOCK;
@@ -822,7 +823,7 @@ TEST_F(ContentSettingBubbleModelTest, Geolocation) {
 
   // Add it to the content map, should now have a clear link.
   HostContentSettingsMap* setting_map =
-      profile()->GetHostContentSettingsMap();
+      HostContentSettingsMapFactory::GetForProfile(profile());
   setting_map->SetContentSetting(
       ContentSettingsPattern::FromURLNoWildcard(frame1_url),
       ContentSettingsPattern::FromURLNoWildcard(page_url),
@@ -832,8 +833,8 @@ TEST_F(ContentSettingBubbleModelTest, Geolocation) {
   CheckGeolocationBubble(1, true, false);
 
   // Change the default to allow: no message needed.
-  profile()->GetHostContentSettingsMap()->SetDefaultContentSetting(
-      CONTENT_SETTINGS_TYPE_GEOLOCATION, CONTENT_SETTING_ALLOW);
+  setting_map->SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_GEOLOCATION,
+                                         CONTENT_SETTING_ALLOW);
   CheckGeolocationBubble(1, false, false);
 
   // Second frame denied, but not stored in the content map: requires reload.
@@ -841,8 +842,8 @@ TEST_F(ContentSettingBubbleModelTest, Geolocation) {
   CheckGeolocationBubble(2, false, true);
 
   // Change the default to block: offer a clear link for the persisted frame 1.
-  profile()->GetHostContentSettingsMap()->SetDefaultContentSetting(
-      CONTENT_SETTINGS_TYPE_GEOLOCATION, CONTENT_SETTING_BLOCK);
+  setting_map->SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_GEOLOCATION,
+                                         CONTENT_SETTING_BLOCK);
   CheckGeolocationBubble(2, true, false);
 }
 

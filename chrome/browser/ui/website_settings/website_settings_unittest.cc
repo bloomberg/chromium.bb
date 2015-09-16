@@ -8,6 +8,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/ui/website_settings/website_settings_ui.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
@@ -154,7 +155,7 @@ class WebsiteSettingsTest : public ChromeRenderViewHostTestHarness {
 TEST_F(WebsiteSettingsTest, OnPermissionsChanged) {
   // Setup site permissions.
   HostContentSettingsMap* content_settings =
-      profile()->GetHostContentSettingsMap();
+      HostContentSettingsMapFactory::GetForProfile(profile());
   ContentSetting setting = content_settings->GetContentSetting(
       url(), url(), CONTENT_SETTINGS_TYPE_POPUPS, std::string());
   EXPECT_EQ(setting, CONTENT_SETTING_BLOCK);
@@ -223,7 +224,7 @@ TEST_F(WebsiteSettingsTest, OnPermissionsChanged) {
 TEST_F(WebsiteSettingsTest, OnPermissionsChanged_Fullscreen) {
   // Setup site permissions.
   HostContentSettingsMap* content_settings =
-      profile()->GetHostContentSettingsMap();
+      HostContentSettingsMapFactory::GetForProfile(profile());
   ContentSetting setting = content_settings->GetContentSetting(
       url(), url(), CONTENT_SETTINGS_TYPE_FULLSCREEN, std::string());
   EXPECT_EQ(setting, CONTENT_SETTING_ASK);

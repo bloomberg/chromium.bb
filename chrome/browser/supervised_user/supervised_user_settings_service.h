@@ -85,7 +85,8 @@ class SupervisedUserSettingsService : public KeyedService,
   // Gets the associated profile
   // This is currently only used for subscribing to notifications, it will be
   // nullptr in tests and will soon be removed.
-  // TODO(peconn): Remove this once HostContentSettingsMap is a KeyedService
+  // TODO(peconn): Remove this once SupervisedUserPrefStore is (partially at
+  // least) a KeyedService, see TODO in SupervisedUserPrefStore.
   Profile* GetProfile();
 
   // Activates/deactivates the service. This is called by the

@@ -11,6 +11,7 @@
 #include "base/thread_task_runner_handle.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_context.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_manager.h"
@@ -352,10 +353,9 @@ bool FullscreenController::OnAcceptExclusiveAccessPermission() {
     // TODO(estark): Revisit this when crbug.com/455882 is fixed.
     if (!requester.SchemeIsFile() && !embedder.SchemeIsFile() &&
         primary_pattern.IsValid() && secondary_pattern.IsValid()) {
-      HostContentSettingsMap* settings_map = exclusive_access_manager()
-                                                 ->context()
-                                                 ->GetProfile()
-                                                 ->GetHostContentSettingsMap();
+      HostContentSettingsMap* settings_map =
+          HostContentSettingsMapFactory::GetForProfile(
+              exclusive_access_manager()->context()->GetProfile());
       settings_map->SetContentSetting(
           primary_pattern, secondary_pattern, CONTENT_SETTINGS_TYPE_FULLSCREEN,
           std::string(), CONTENT_SETTING_ALLOW);
@@ -528,23 +528,19 @@ ContentSetting FullscreenController::GetFullscreenSetting() const {
 
   // If the permission was granted to the website with no embedder, it should
   // always be allowed, even if embedded.
-  if (exclusive_access_manager()
-          ->context()
-          ->GetProfile()
-          ->GetHostContentSettingsMap()
-          ->GetContentSetting(url, url, CONTENT_SETTINGS_TYPE_FULLSCREEN,
-                              std::string()) == CONTENT_SETTING_ALLOW) {
+  if (HostContentSettingsMapFactory::GetForProfile(
+        exclusive_access_manager()->context()->GetProfile())
+            ->GetContentSetting(url, url, CONTENT_SETTINGS_TYPE_FULLSCREEN,
+                                std::string()) == CONTENT_SETTING_ALLOW) {
     return CONTENT_SETTING_ALLOW;
   }
 
   // See the comment above the call to |SetContentSetting()| for how the
   // requesting and embedding origins interact with each other wrt permissions.
-  return exclusive_access_manager()
-      ->context()
-      ->GetProfile()
-      ->GetHostContentSettingsMap()
-      ->GetContentSetting(url, GetEmbeddingOrigin(),
-                          CONTENT_SETTINGS_TYPE_FULLSCREEN, std::string());
+  return HostContentSettingsMapFactory::GetForProfile(
+      exclusive_access_manager()->context()->GetProfile())
+          ->GetContentSetting(url, GetEmbeddingOrigin(),
+                              CONTENT_SETTINGS_TYPE_FULLSCREEN, std::string());
 }
 
 bool FullscreenController::IsPrivilegedFullscreenForTab() const {

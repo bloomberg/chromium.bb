@@ -210,9 +210,6 @@ class Profile : public content::BrowserContext {
   // Returns the SSLConfigService for this profile.
   virtual net::SSLConfigService* GetSSLConfigService() = 0;
 
-  // Returns the Hostname <-> Content settings map for this profile.
-  virtual HostContentSettingsMap* GetHostContentSettingsMap() = 0;
-
   // Return whether 2 profiles are the same. 2 profiles are the same if they
   // represent the same profile. This can happen if there is pointer equality
   // or if one profile is the incognito version of another profile (or vice

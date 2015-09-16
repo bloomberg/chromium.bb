@@ -17,6 +17,7 @@
 #include "base/time/default_clock.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
@@ -236,7 +237,8 @@ void ChromeSSLHostStateDelegate::AllowCert(const std::string& host,
   GURL url = GetSecureGURLForHost(host);
   const ContentSettingsPattern pattern =
       ContentSettingsPattern::FromURLNoWildcard(url);
-  HostContentSettingsMap* map = profile_->GetHostContentSettingsMap();
+  HostContentSettingsMap* map =
+      HostContentSettingsMapFactory::GetForProfile(profile_);
   scoped_ptr<base::Value> value(map->GetWebsiteSetting(
       url, url, CONTENT_SETTINGS_TYPE_SSL_CERT_DECISIONS, std::string(), NULL));
 
@@ -270,8 +272,8 @@ void ChromeSSLHostStateDelegate::AllowCert(const std::string& host,
 }
 
 void ChromeSSLHostStateDelegate::Clear() {
-  profile_->GetHostContentSettingsMap()->ClearSettingsForOneType(
-      CONTENT_SETTINGS_TYPE_SSL_CERT_DECISIONS);
+  HostContentSettingsMapFactory::GetForProfile(profile_)
+      ->ClearSettingsForOneType(CONTENT_SETTINGS_TYPE_SSL_CERT_DECISIONS);
 }
 
 content::SSLHostStateDelegate::CertJudgment
@@ -279,7 +281,8 @@ ChromeSSLHostStateDelegate::QueryPolicy(const std::string& host,
                                         const net::X509Certificate& cert,
                                         net::CertStatus error,
                                         bool* expired_previous_decision) {
-  HostContentSettingsMap* map = profile_->GetHostContentSettingsMap();
+  HostContentSettingsMap* map =
+      HostContentSettingsMapFactory::GetForProfile(profile_);
   GURL url = GetSecureGURLForHost(host);
   scoped_ptr<base::Value> value(map->GetWebsiteSetting(
       url, url, CONTENT_SETTINGS_TYPE_SSL_CERT_DECISIONS, std::string(), NULL));
@@ -330,7 +333,8 @@ void ChromeSSLHostStateDelegate::RevokeUserAllowExceptions(
   GURL url = GetSecureGURLForHost(host);
   const ContentSettingsPattern pattern =
       ContentSettingsPattern::FromURLNoWildcard(url);
-  HostContentSettingsMap* map = profile_->GetHostContentSettingsMap();
+  HostContentSettingsMap* map =
+      HostContentSettingsMapFactory::GetForProfile(profile_);
 
   map->SetWebsiteSetting(pattern,
                          pattern,
@@ -369,7 +373,8 @@ bool ChromeSSLHostStateDelegate::HasAllowException(
   GURL url = GetSecureGURLForHost(host);
   const ContentSettingsPattern pattern =
       ContentSettingsPattern::FromURLNoWildcard(url);
-  HostContentSettingsMap* map = profile_->GetHostContentSettingsMap();
+  HostContentSettingsMap* map =
+      HostContentSettingsMapFactory::GetForProfile(profile_);
 
   scoped_ptr<base::Value> value(map->GetWebsiteSetting(
       url, url, CONTENT_SETTINGS_TYPE_SSL_CERT_DECISIONS, std::string(), NULL));

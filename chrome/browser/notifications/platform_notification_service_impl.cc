@@ -8,6 +8,7 @@
 #include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/notifications/desktop_notification_profile_util.h"
 #include "chrome/browser/notifications/notification_object_proxy.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
@@ -236,7 +237,7 @@ void PlatformNotificationServiceImpl::DisplayNotification(
                    notification.delegate_id(),
                    NotificationUIManager::GetProfileID(profile));
 
-  profile->GetHostContentSettingsMap()->UpdateLastUsage(
+  HostContentSettingsMapFactory::GetForProfile(profile)->UpdateLastUsage(
       origin, origin, CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
 }
 
@@ -263,7 +264,7 @@ void PlatformNotificationServiceImpl::DisplayPersistentNotification(
 
   GetNotificationUIManager()->Add(notification, profile);
 
-  profile->GetHostContentSettingsMap()->UpdateLastUsage(
+  HostContentSettingsMapFactory::GetForProfile(profile)->UpdateLastUsage(
       origin, origin, CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
 }
 

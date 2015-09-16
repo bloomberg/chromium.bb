@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
@@ -103,11 +104,11 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerTest, PermissionContentSettings) {
   // The content's origin is not allowed to go fullscreen.
   EXPECT_EQ(
       CONTENT_SETTING_ASK,
-      browser()->profile()->GetHostContentSettingsMap()->GetContentSetting(
-          url.GetOrigin(),
-          url.GetOrigin(),
-          CONTENT_SETTINGS_TYPE_FULLSCREEN,
-          std::string()));
+      HostContentSettingsMapFactory::GetForProfile(browser()->profile())
+          ->GetContentSetting(url.GetOrigin(),
+                              url.GetOrigin(),
+                              CONTENT_SETTINGS_TYPE_FULLSCREEN,
+                              std::string()));
 
   GetFullscreenController()->EnterFullscreenModeForTab(
       browser()->tab_strip_model()->GetActiveWebContents(), url.GetOrigin());
@@ -116,33 +117,33 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerTest, PermissionContentSettings) {
   // The content's origin is still not allowed to go fullscreen.
   EXPECT_EQ(
       CONTENT_SETTING_ASK,
-      browser()->profile()->GetHostContentSettingsMap()->GetContentSetting(
-          url.GetOrigin(),
-          url.GetOrigin(),
-          CONTENT_SETTINGS_TYPE_FULLSCREEN,
-          std::string()));
+      HostContentSettingsMapFactory::GetForProfile(browser()->profile())
+          ->GetContentSetting(url.GetOrigin(),
+                              url.GetOrigin(),
+                              CONTENT_SETTINGS_TYPE_FULLSCREEN,
+                              std::string()));
 
   AcceptCurrentFullscreenOrMouseLockRequest();
 
   // The content's origin is allowed to go fullscreen.
   EXPECT_EQ(
       CONTENT_SETTING_ALLOW,
-      browser()->profile()->GetHostContentSettingsMap()->GetContentSetting(
-          url.GetOrigin(),
-          url.GetOrigin(),
-          CONTENT_SETTINGS_TYPE_FULLSCREEN,
-          std::string()));
+      HostContentSettingsMapFactory::GetForProfile(browser()->profile())
+          ->GetContentSetting(url.GetOrigin(),
+                              url.GetOrigin(),
+                              CONTENT_SETTINGS_TYPE_FULLSCREEN,
+                              std::string()));
 
   // The primary and secondary patterns have been set when setting the
   // permission, thus setting another secondary pattern shouldn't work.
   EXPECT_EQ(
       CONTENT_SETTING_ASK,
-      browser()->profile()->GetHostContentSettingsMap()->GetContentSetting(
-          url.GetOrigin(),
-          GURL("https://test.com"),
-          CONTENT_SETTINGS_TYPE_FULLSCREEN,
-          std::string()));
+      HostContentSettingsMapFactory::GetForProfile(browser()->profile())
+          ->GetContentSetting(url.GetOrigin(),
+                              GURL("https://test.com"),
+                              CONTENT_SETTINGS_TYPE_FULLSCREEN,
+                              std::string()));
 
-  browser()->profile()->GetHostContentSettingsMap()->ClearSettingsForOneType(
-      CONTENT_SETTINGS_TYPE_FULLSCREEN);
+  HostContentSettingsMapFactory::GetForProfile(browser()->profile())
+      ->ClearSettingsForOneType(CONTENT_SETTINGS_TYPE_FULLSCREEN);
 }

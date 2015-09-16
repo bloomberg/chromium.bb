@@ -2074,6 +2074,8 @@
       'browser/permissions/permission_context.h',
       'browser/permissions/permission_context_base.cc',
       'browser/permissions/permission_context_base.h',
+      'browser/permissions/permission_context_factory_base.cc',
+      'browser/permissions/permission_context_factory_base.h',
       'browser/permissions/permission_context_uma_util.cc',
       'browser/permissions/permission_context_uma_util.h',
       'browser/permissions/permission_infobar_delegate.cc',

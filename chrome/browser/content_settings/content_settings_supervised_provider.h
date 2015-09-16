@@ -9,11 +9,8 @@
 
 #include "base/callback_list.h"
 #include "base/synchronization/lock.h"
-#include "chrome/browser/profiles/profile.h"
 #include "components/content_settings/core/browser/content_settings_binary_value_map.h"
 #include "components/content_settings/core/browser/content_settings_observable_provider.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 
 class PrefService;
 class SupervisedUserSettingsService;
@@ -22,8 +19,7 @@ namespace content_settings {
 
 // SupervisedProvider that provides content-settings managed by the custodian
 // of a supervised user.
-class SupervisedProvider : public ObservableProvider,
-                           public content::NotificationObserver {
+class SupervisedProvider : public ObservableProvider {
  public:
   explicit SupervisedProvider(
       SupervisedUserSettingsService* supervised_user_settings_service);
@@ -47,11 +43,6 @@ class SupervisedProvider : public ObservableProvider,
   // Callback on receiving settings from the supervised user settings service.
   void OnSupervisedSettingsAvailable(const base::DictionaryValue* settings);
 
-  // NotificationObserver implementation.
-  void Observe(int type,
-               const content::NotificationSource& src,
-               const content::NotificationDetails& details) override;
-
  private:
   BinaryValueMap value_map_;
 
@@ -61,9 +52,6 @@ class SupervisedProvider : public ObservableProvider,
 
   scoped_ptr<base::CallbackList<void(
       const base::DictionaryValue*)>::Subscription> user_settings_subscription_;
-  // This is a pointer instead of a member so we can make sure it is destroyed
-  // on the UI thread.
-  scoped_ptr<content::NotificationRegistrar> unsubscriber_registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(SupervisedProvider);
 };

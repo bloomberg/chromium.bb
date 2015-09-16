@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/stl_util.h"
+#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/download/download_permission_request.h"
 #include "chrome/browser/infobars/infobar_service.h"
@@ -360,8 +361,9 @@ void DownloadRequestLimiter::OnCanDownloadDecided(
 
 HostContentSettingsMap* DownloadRequestLimiter::GetContentSettings(
     content::WebContents* contents) {
-  return content_settings_ ? content_settings_ : Profile::FromBrowserContext(
-      contents->GetBrowserContext())->GetHostContentSettingsMap();
+  return content_settings_ ? content_settings_ :
+      HostContentSettingsMapFactory::GetForProfile(
+          Profile::FromBrowserContext(contents->GetBrowserContext()));
 }
 
 void DownloadRequestLimiter::CanDownloadImpl(

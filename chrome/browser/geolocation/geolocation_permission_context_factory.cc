@@ -31,13 +31,13 @@ GeolocationPermissionContextFactory::GetInstance() {
 
 #if !defined(OS_ANDROID)
 GeolocationPermissionContextFactory::GeolocationPermissionContextFactory()
-    : BrowserContextKeyedServiceFactory(
+    : PermissionContextFactoryBase(
           "GeolocationPermissionContext",
           BrowserContextDependencyManager::GetInstance()) {
 }
 #else
 GeolocationPermissionContextFactory::GeolocationPermissionContextFactory()
-    : BrowserContextKeyedServiceFactory(
+    : PermissionContextFactoryBase(
           "GeolocationPermissionContextAndroid",
           BrowserContextDependencyManager::GetInstance()) {
 }
@@ -63,10 +63,4 @@ void GeolocationPermissionContextFactory::RegisterProfilePrefs(
 #if defined(OS_ANDROID)
   registry->RegisterBooleanPref(prefs::kGeolocationEnabled, true);
 #endif
-}
-
-content::BrowserContext*
-GeolocationPermissionContextFactory::GetBrowserContextToUse(
-    content::BrowserContext* context) const {
-  return chrome::GetBrowserContextOwnInstanceInIncognito(context);
 }

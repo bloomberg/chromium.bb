@@ -858,12 +858,6 @@ content::ResourceContext* TestingProfile::GetResourceContext() {
   return resource_context_;
 }
 
-HostContentSettingsMap* TestingProfile::GetHostContentSettingsMap() {
-  // TODO(peconn): Get rid of this function
-  // Don't forget to remove the #include "host_content_settings_map_factory"!
-  return HostContentSettingsMapFactory::GetForProfile(this);
-}
-
 content::BrowserPluginGuestManager* TestingProfile::GetGuestManager() {
 #if defined(ENABLE_EXTENSIONS)
   return guest_view::GuestViewManager::FromBrowserContext(this);

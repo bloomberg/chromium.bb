@@ -10,7 +10,7 @@
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 
 MediaStreamMicPermissionContextFactory::MediaStreamMicPermissionContextFactory()
-    : BrowserContextKeyedServiceFactory(
+    : PermissionContextFactoryBase(
           "MediaStreamMicPermissionContext",
           BrowserContextDependencyManager::GetInstance()) {}
 
@@ -21,12 +21,6 @@ KeyedService* MediaStreamMicPermissionContextFactory::BuildServiceInstanceFor(
     content::BrowserContext* profile) const {
   return new MediaStreamDevicePermissionContext(
       static_cast<Profile*>(profile), CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC);
-}
-
-content::BrowserContext*
-MediaStreamMicPermissionContextFactory::GetBrowserContextToUse(
-    content::BrowserContext* context) const {
-  return chrome::GetBrowserContextOwnInstanceInIncognito(context);
 }
 
 // static

@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/prefs/pref_service.h"
+#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/permissions/permission_bubble_request_impl.h"
 #include "chrome/browser/permissions/permission_context_uma_util.h"
 #include "chrome/browser/permissions/permission_queue_controller.h"
@@ -57,14 +58,17 @@ ContentSetting PermissionContextBase::GetPermissionStatus(
     return CONTENT_SETTING_BLOCK;
   }
 
-  return profile_->GetHostContentSettingsMap()->GetContentSetting(
-      requesting_origin, embedding_origin, permission_type_, std::string());
+  return HostContentSettingsMapFactory::GetForProfile(profile_)
+      ->GetContentSetting(requesting_origin,
+                          embedding_origin,
+                          permission_type_,
+                          std::string());
 }
 
 void PermissionContextBase::ResetPermission(
     const GURL& requesting_origin,
     const GURL& embedding_origin) {
-  profile_->GetHostContentSettingsMap()->SetContentSetting(
+  HostContentSettingsMapFactory::GetForProfile(profile_)->SetContentSetting(
       ContentSettingsPattern::FromURLNoWildcard(requesting_origin),
       ContentSettingsPattern::FromURLNoWildcard(embedding_origin),
       permission_type_, std::string(), CONTENT_SETTING_DEFAULT);
@@ -121,7 +125,7 @@ void PermissionContextBase::DecidePermission(
   }
 
   ContentSetting content_setting =
-      profile_->GetHostContentSettingsMap()
+      HostContentSettingsMapFactory::GetForProfile(profile_)
           ->GetContentSettingAndMaybeUpdateLastUsage(
               requesting_origin, embedding_origin, permission_type_,
               std::string());
@@ -225,8 +229,8 @@ void PermissionContextBase::NotifyPermissionSet(
 
   if (content_setting == CONTENT_SETTING_DEFAULT) {
     content_setting =
-        profile_->GetHostContentSettingsMap()->GetDefaultContentSetting(
-            permission_type_, nullptr);
+        HostContentSettingsMapFactory::GetForProfile(profile_)
+            ->GetDefaultContentSetting(permission_type_, nullptr);
   }
 
   DCHECK_NE(content_setting, CONTENT_SETTING_DEFAULT);
@@ -247,7 +251,7 @@ void PermissionContextBase::UpdateContentSetting(
   DCHECK(content_setting == CONTENT_SETTING_ALLOW ||
          content_setting == CONTENT_SETTING_BLOCK);
 
-  profile_->GetHostContentSettingsMap()->SetContentSetting(
+  HostContentSettingsMapFactory::GetForProfile(profile_)->SetContentSetting(
       ContentSettingsPattern::FromURLNoWildcard(requesting_origin),
       ContentSettingsPattern::FromURLNoWildcard(embedding_origin),
       permission_type_, std::string(), content_setting);

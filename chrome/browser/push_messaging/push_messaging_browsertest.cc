@@ -15,6 +15,7 @@
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_remover.h"
 #include "chrome/browser/browsing_data/browsing_data_remover_test_util.h"
+#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/notifications/notification_test_util.h"
 #include "chrome/browser/notifications/platform_notification_service_impl.h"
 #include "chrome/browser/profiles/profile.h"
@@ -776,7 +777,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
   push_service()->SetContentSettingChangedCallbackForTesting(
       message_loop_runner->QuitClosure());
 
-  GetBrowser()->profile()->GetHostContentSettingsMap()->
+  HostContentSettingsMapFactory::GetForProfile(GetBrowser()->profile())->
       ClearSettingsForOneType(CONTENT_SETTINGS_TYPE_PUSH_MESSAGING);
 
   message_loop_runner->Run();
@@ -806,12 +807,12 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
       message_loop_runner->QuitClosure());
 
   GURL origin = https_server()->GetURL(std::string()).GetOrigin();
-  GetBrowser()->profile()->GetHostContentSettingsMap()->SetContentSetting(
-      ContentSettingsPattern::FromURLNoWildcard(origin),
-      ContentSettingsPattern::FromURLNoWildcard(origin),
-      CONTENT_SETTINGS_TYPE_PUSH_MESSAGING,
-      std::string(),
-      CONTENT_SETTING_DEFAULT);
+  HostContentSettingsMapFactory::GetForProfile(GetBrowser()->profile())
+      ->SetContentSetting(ContentSettingsPattern::FromURLNoWildcard(origin),
+                          ContentSettingsPattern::FromURLNoWildcard(origin),
+                          CONTENT_SETTINGS_TYPE_PUSH_MESSAGING,
+                          std::string(),
+                          CONTENT_SETTING_DEFAULT);
 
   message_loop_runner->Run();
 
@@ -840,12 +841,12 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
       message_loop_runner->QuitClosure());
 
   GURL origin = https_server()->GetURL(std::string()).GetOrigin();
-  GetBrowser()->profile()->GetHostContentSettingsMap()->SetContentSetting(
-      ContentSettingsPattern::FromURLNoWildcard(origin),
-      ContentSettingsPattern::FromURLNoWildcard(origin),
-      CONTENT_SETTINGS_TYPE_PUSH_MESSAGING,
-      std::string(),
-      CONTENT_SETTING_BLOCK);
+  HostContentSettingsMapFactory::GetForProfile(GetBrowser()->profile())
+      ->SetContentSetting(ContentSettingsPattern::FromURLNoWildcard(origin),
+                          ContentSettingsPattern::FromURLNoWildcard(origin),
+                          CONTENT_SETTINGS_TYPE_PUSH_MESSAGING,
+                          std::string(),
+                          CONTENT_SETTING_BLOCK);
 
   message_loop_runner->Run();
 
@@ -873,7 +874,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
   push_service()->SetContentSettingChangedCallbackForTesting(
       message_loop_runner->QuitClosure());
 
-  GetBrowser()->profile()->GetHostContentSettingsMap()->
+  HostContentSettingsMapFactory::GetForProfile(GetBrowser()->profile())->
       ClearSettingsForOneType(CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
 
   message_loop_runner->Run();
@@ -903,12 +904,12 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
       message_loop_runner->QuitClosure());
 
   GURL origin = https_server()->GetURL(std::string()).GetOrigin();
-  GetBrowser()->profile()->GetHostContentSettingsMap()->SetContentSetting(
-      ContentSettingsPattern::FromURLNoWildcard(origin),
-      ContentSettingsPattern::Wildcard(),
-      CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
-      std::string(),
-      CONTENT_SETTING_DEFAULT);
+  HostContentSettingsMapFactory::GetForProfile(GetBrowser()->profile())
+      ->SetContentSetting(ContentSettingsPattern::FromURLNoWildcard(origin),
+                          ContentSettingsPattern::Wildcard(),
+                          CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+                          std::string(),
+                          CONTENT_SETTING_DEFAULT);
 
   message_loop_runner->Run();
 
@@ -937,12 +938,12 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
       message_loop_runner->QuitClosure());
 
   GURL origin = https_server()->GetURL(std::string()).GetOrigin();
-  GetBrowser()->profile()->GetHostContentSettingsMap()->SetContentSetting(
-      ContentSettingsPattern::FromURLNoWildcard(origin),
-      ContentSettingsPattern::Wildcard(),
-      CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
-      std::string(),
-      CONTENT_SETTING_BLOCK);
+  HostContentSettingsMapFactory::GetForProfile(GetBrowser()->profile())
+      ->SetContentSetting(ContentSettingsPattern::FromURLNoWildcard(origin),
+                          ContentSettingsPattern::Wildcard(),
+                          CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+                          std::string(),
+                          CONTENT_SETTING_BLOCK);
 
   message_loop_runner->Run();
 
@@ -971,18 +972,18 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
       base::BarrierClosure(2, message_loop_runner->QuitClosure()));
 
   GURL origin = https_server()->GetURL(std::string()).GetOrigin();
-  GetBrowser()->profile()->GetHostContentSettingsMap()->SetContentSetting(
-      ContentSettingsPattern::FromURLNoWildcard(origin),
-      ContentSettingsPattern::Wildcard(),
-      CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
-      std::string(),
-      CONTENT_SETTING_ALLOW);
-  GetBrowser()->profile()->GetHostContentSettingsMap()->SetContentSetting(
-      ContentSettingsPattern::FromURLNoWildcard(origin),
-      ContentSettingsPattern::FromURLNoWildcard(origin),
-      CONTENT_SETTINGS_TYPE_PUSH_MESSAGING,
-      std::string(),
-      CONTENT_SETTING_ALLOW);
+  HostContentSettingsMapFactory::GetForProfile(GetBrowser()->profile())
+      ->SetContentSetting(ContentSettingsPattern::FromURLNoWildcard(origin),
+                          ContentSettingsPattern::Wildcard(),
+                          CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+                          std::string(),
+                          CONTENT_SETTING_ALLOW);
+  HostContentSettingsMapFactory::GetForProfile(GetBrowser()->profile())
+      ->SetContentSetting(ContentSettingsPattern::FromURLNoWildcard(origin),
+                          ContentSettingsPattern::FromURLNoWildcard(origin),
+                          CONTENT_SETTINGS_TYPE_PUSH_MESSAGING,
+                          std::string(),
+                          CONTENT_SETTING_ALLOW);
 
   message_loop_runner->Run();
 
@@ -1015,30 +1016,30 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
       base::BarrierClosure(4, message_loop_runner->QuitClosure()));
 
   GURL origin = https_server()->GetURL(std::string()).GetOrigin();
-  GetBrowser()->profile()->GetHostContentSettingsMap()->SetContentSetting(
-      ContentSettingsPattern::Wildcard(),
-      ContentSettingsPattern::Wildcard(),
-      CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
-      std::string(),
-      CONTENT_SETTING_ALLOW);
-  GetBrowser()->profile()->GetHostContentSettingsMap()->SetContentSetting(
-      ContentSettingsPattern::FromString("https://*"),
-      ContentSettingsPattern::FromString("https://*"),
-      CONTENT_SETTINGS_TYPE_PUSH_MESSAGING,
-      std::string(),
-      CONTENT_SETTING_ALLOW);
-  GetBrowser()->profile()->GetHostContentSettingsMap()->SetContentSetting(
-      ContentSettingsPattern::FromURLNoWildcard(origin),
-      ContentSettingsPattern::Wildcard(),
-      CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
-      std::string(),
-      CONTENT_SETTING_DEFAULT);
-  GetBrowser()->profile()->GetHostContentSettingsMap()->SetContentSetting(
-      ContentSettingsPattern::FromURLNoWildcard(origin),
-      ContentSettingsPattern::FromURLNoWildcard(origin),
-      CONTENT_SETTINGS_TYPE_PUSH_MESSAGING,
-      std::string(),
-      CONTENT_SETTING_DEFAULT);
+  HostContentSettingsMapFactory::GetForProfile(GetBrowser()->profile())
+      ->SetContentSetting(ContentSettingsPattern::Wildcard(),
+                          ContentSettingsPattern::Wildcard(),
+                          CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+                          std::string(),
+                          CONTENT_SETTING_ALLOW);
+  HostContentSettingsMapFactory::GetForProfile(GetBrowser()->profile())
+      ->SetContentSetting(ContentSettingsPattern::FromString("https://*"),
+                          ContentSettingsPattern::FromString("https://*"),
+                          CONTENT_SETTINGS_TYPE_PUSH_MESSAGING,
+                          std::string(),
+                          CONTENT_SETTING_ALLOW);
+  HostContentSettingsMapFactory::GetForProfile(GetBrowser()->profile())
+      ->SetContentSetting(ContentSettingsPattern::FromURLNoWildcard(origin),
+                          ContentSettingsPattern::Wildcard(),
+                          CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+                          std::string(),
+                          CONTENT_SETTING_DEFAULT);
+  HostContentSettingsMapFactory::GetForProfile(GetBrowser()->profile())
+      ->SetContentSetting(ContentSettingsPattern::FromURLNoWildcard(origin),
+                          ContentSettingsPattern::FromURLNoWildcard(origin),
+                          CONTENT_SETTINGS_TYPE_PUSH_MESSAGING,
+                          std::string(),
+                          CONTENT_SETTING_DEFAULT);
 
   message_loop_runner->Run();
 
@@ -1086,8 +1087,8 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
   // This shouldn't (asynchronously) cause a DCHECK.
   // TODO(johnme): Get this test running on Android, which has a different
   // codepath due to sender_id being required for unsubscribing there.
-  GetBrowser()->profile()->GetHostContentSettingsMap()->
-      ClearSettingsForOneType(CONTENT_SETTINGS_TYPE_PUSH_MESSAGING);
+  HostContentSettingsMapFactory::GetForProfile(GetBrowser()->profile())
+      ->ClearSettingsForOneType(CONTENT_SETTINGS_TYPE_PUSH_MESSAGING);
 
   run_loop.Run();
 

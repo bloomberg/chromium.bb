@@ -6,14 +6,14 @@
 #define CHROME_BROWSER_PUSH_MESSAGING_PUSH_MESSAGING_PERMISSION_CONTEXT_FACTORY_H_
 
 #include "base/memory/singleton.h"
-#include "components/keyed_service/content/browser_context_keyed_service_factory.h"
+#include "chrome/browser/permissions/permission_context_factory_base.h"
 
 class Profile;
 
 class PushMessagingPermissionContext;
 
 class PushMessagingPermissionContextFactory
-    : public BrowserContextKeyedServiceFactory {
+    : public PermissionContextFactoryBase {
  public:
   static PushMessagingPermissionContext* GetForProfile(Profile* profile);
   static PushMessagingPermissionContextFactory* GetInstance();
@@ -28,8 +28,6 @@ class PushMessagingPermissionContextFactory
   // BrowserContextKeyedBaseFactory methods:
   KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* profile) const override;
-  content::BrowserContext* GetBrowserContextToUse(
-      content::BrowserContext* context) const override;
 
   DISALLOW_COPY_AND_ASSIGN(PushMessagingPermissionContextFactory);
 };

@@ -4,6 +4,7 @@
 
 #include "base/values.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
+#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/extensions/extension_special_storage_policy.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
@@ -352,7 +353,7 @@ TEST_F(ExtensionSpecialStoragePolicyTest, IsStorageDurableTest) {
   EXPECT_FALSE(policy_->IsStorageDurable(kHttpUrl));
 
   HostContentSettingsMap* content_settings_map =
-      profile.GetHostContentSettingsMap();
+      HostContentSettingsMapFactory::GetForProfile(&profile);
   content_settings_map->SetContentSetting(
       ContentSettingsPattern::FromString("foo.com"),
       ContentSettingsPattern::Wildcard(), CONTENT_SETTINGS_TYPE_DURABLE_STORAGE,

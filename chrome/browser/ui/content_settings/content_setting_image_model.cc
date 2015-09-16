@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/content_settings/content_setting_image_model.h"
 
+#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/profiles/profile.h"
@@ -197,7 +198,8 @@ void ContentSettingBlockedImageModel::UpdateFromWebContents(
   // due to auto-blocking NPAPI plugins).
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
-  HostContentSettingsMap* map = profile->GetHostContentSettingsMap();
+  HostContentSettingsMap* map =
+      HostContentSettingsMapFactory::GetForProfile(profile);
   if (type == CONTENT_SETTINGS_TYPE_PLUGINS) {
     GURL url = web_contents->GetURL();
     if (map->GetContentSetting(url, url, type, std::string()) !=

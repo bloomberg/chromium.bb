@@ -11,6 +11,7 @@
 #include "base/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/content_settings/content_settings_mock_observer.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
+#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/content_settings/mock_settings_observer.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -49,7 +50,7 @@ class HostContentSettingsMapTest : public testing::Test {
 TEST_F(HostContentSettingsMapTest, DefaultValues) {
   TestingProfile profile;
   HostContentSettingsMap* host_content_settings_map =
-      profile.GetHostContentSettingsMap();
+      HostContentSettingsMapFactory::GetForProfile(&profile);
 
   // Check setting defaults.
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
@@ -94,7 +95,7 @@ TEST_F(HostContentSettingsMapTest, DefaultValues) {
 TEST_F(HostContentSettingsMapTest, IndividualSettings) {
   TestingProfile profile;
   HostContentSettingsMap* host_content_settings_map =
-      profile.GetHostContentSettingsMap();
+      HostContentSettingsMapFactory::GetForProfile(&profile);
 
   // Check returning individual settings.
   GURL host("http://example.com/");
@@ -211,7 +212,7 @@ TEST_F(HostContentSettingsMapTest, IndividualSettings) {
 TEST_F(HostContentSettingsMapTest, Clear) {
   TestingProfile profile;
   HostContentSettingsMap* host_content_settings_map =
-      profile.GetHostContentSettingsMap();
+      HostContentSettingsMapFactory::GetForProfile(&profile);
 
   // Check clearing one type.
   ContentSettingsPattern pattern =
@@ -262,7 +263,7 @@ TEST_F(HostContentSettingsMapTest, Clear) {
 TEST_F(HostContentSettingsMapTest, Patterns) {
   TestingProfile profile;
   HostContentSettingsMap* host_content_settings_map =
-      profile.GetHostContentSettingsMap();
+      HostContentSettingsMapFactory::GetForProfile(&profile);
 
   GURL host1("http://example.com/");
   GURL host2("http://www.example.com/");
@@ -303,7 +304,7 @@ TEST_F(HostContentSettingsMapTest, Patterns) {
 TEST_F(HostContentSettingsMapTest, Observer) {
   TestingProfile profile;
   HostContentSettingsMap* host_content_settings_map =
-      profile.GetHostContentSettingsMap();
+      HostContentSettingsMapFactory::GetForProfile(&profile);
   MockSettingsObserver observer(host_content_settings_map);
 
   ContentSettingsPattern primary_pattern =
@@ -344,7 +345,7 @@ TEST_F(HostContentSettingsMapTest, Observer) {
 TEST_F(HostContentSettingsMapTest, ObserveDefaultPref) {
   TestingProfile profile;
   HostContentSettingsMap* host_content_settings_map =
-      profile.GetHostContentSettingsMap();
+      HostContentSettingsMapFactory::GetForProfile(&profile);
 
   PrefService* prefs = profile.GetPrefs();
   GURL host("http://example.com");
@@ -374,7 +375,7 @@ TEST_F(HostContentSettingsMapTest, ObserveDefaultPref) {
 TEST_F(HostContentSettingsMapTest, ObserveExceptionPref) {
   TestingProfile profile;
   HostContentSettingsMap* host_content_settings_map =
-      profile.GetHostContentSettingsMap();
+      HostContentSettingsMapFactory::GetForProfile(&profile);
 
   PrefService* prefs = profile.GetPrefs();
 
@@ -424,7 +425,7 @@ TEST_F(HostContentSettingsMapTest, ObserveExceptionPref) {
 TEST_F(HostContentSettingsMapTest, HostTrimEndingDotCheck) {
   TestingProfile profile;
   HostContentSettingsMap* host_content_settings_map =
-      profile.GetHostContentSettingsMap();
+      HostContentSettingsMapFactory::GetForProfile(&profile);
   content_settings::CookieSettings* cookie_settings =
       CookieSettingsFactory::GetForProfile(&profile).get();
 
@@ -581,7 +582,7 @@ TEST_F(HostContentSettingsMapTest, HostTrimEndingDotCheck) {
 TEST_F(HostContentSettingsMapTest, NestedSettings) {
   TestingProfile profile;
   HostContentSettingsMap* host_content_settings_map =
-      profile.GetHostContentSettingsMap();
+      HostContentSettingsMapFactory::GetForProfile(&profile);
 
   GURL host("http://a.b.example.com/");
   ContentSettingsPattern pattern1 =
@@ -647,7 +648,7 @@ TEST_F(HostContentSettingsMapTest, NestedSettings) {
 TEST_F(HostContentSettingsMapTest, OffTheRecord) {
   TestingProfile profile;
   HostContentSettingsMap* host_content_settings_map =
-      profile.GetHostContentSettingsMap();
+      HostContentSettingsMapFactory::GetForProfile(&profile);
   scoped_refptr<HostContentSettingsMap> otr_map(
       new HostContentSettingsMap(profile.GetPrefs(),
                                  true));
@@ -714,7 +715,7 @@ TEST_F(HostContentSettingsMapTest, CanonicalizeExceptionsUnicodeOnly) {
                                                      dummy_payload);
   }
 
-  profile.GetHostContentSettingsMap();
+  HostContentSettingsMapFactory::GetForProfile(&profile);
 
   const base::DictionaryValue* all_settings_dictionary =
       prefs->GetDictionary(GetPrefName(CONTENT_SETTINGS_TYPE_PLUGINS));
@@ -741,7 +742,7 @@ TEST_F(HostContentSettingsMapTest, CanonicalizeExceptionsUnicodeAndPunycode) {
                           *puny_value);
 
   // Initialize the content map.
-  profile.GetHostContentSettingsMap();
+  HostContentSettingsMapFactory::GetForProfile(&profile);
 
   const base::DictionaryValue& content_setting_prefs =
       *profile.GetPrefs()->GetDictionary(
@@ -757,7 +758,7 @@ TEST_F(HostContentSettingsMapTest, CanonicalizeExceptionsUnicodeAndPunycode) {
 TEST_F(HostContentSettingsMapTest, ManagedDefaultContentSetting) {
   TestingProfile profile;
   HostContentSettingsMap* host_content_settings_map =
-      profile.GetHostContentSettingsMap();
+      HostContentSettingsMapFactory::GetForProfile(&profile);
   TestingPrefServiceSyncable* prefs = profile.GetTestingPrefService();
 
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
@@ -797,7 +798,7 @@ TEST_F(HostContentSettingsMapTest,
        GetNonDefaultContentSettingsIfTypeManaged) {
   TestingProfile profile;
   HostContentSettingsMap* host_content_settings_map =
-      profile.GetHostContentSettingsMap();
+      HostContentSettingsMapFactory::GetForProfile(&profile);
   TestingPrefServiceSyncable* prefs = profile.GetTestingPrefService();
 
   // Set pattern for JavaScript setting.
@@ -833,7 +834,7 @@ TEST_F(HostContentSettingsMapTest,
        ManagedDefaultContentSettingIgnoreUserPattern) {
   TestingProfile profile;
   HostContentSettingsMap* host_content_settings_map =
-      profile.GetHostContentSettingsMap();
+      HostContentSettingsMapFactory::GetForProfile(&profile);
   TestingPrefServiceSyncable* prefs = profile.GetTestingPrefService();
 
   // Block all JavaScript.
@@ -878,7 +879,7 @@ TEST_F(HostContentSettingsMapTest,
 TEST_F(HostContentSettingsMapTest, OverwrittenDefaultContentSetting) {
   TestingProfile profile;
   HostContentSettingsMap* host_content_settings_map =
-      profile.GetHostContentSettingsMap();
+      HostContentSettingsMapFactory::GetForProfile(&profile);
   TestingPrefServiceSyncable* prefs = profile.GetTestingPrefService();
 
   // Set user defined default-content-setting for Cookies.
@@ -908,7 +909,7 @@ TEST_F(HostContentSettingsMapTest, OverwrittenDefaultContentSetting) {
 TEST_F(HostContentSettingsMapTest, SettingDefaultContentSettingsWhenManaged) {
   TestingProfile profile;
   HostContentSettingsMap* host_content_settings_map =
-      profile.GetHostContentSettingsMap();
+      HostContentSettingsMapFactory::GetForProfile(&profile);
   TestingPrefServiceSyncable* prefs = profile.GetTestingPrefService();
 
   prefs->SetManagedPref(prefs::kManagedDefaultPluginsSetting,
@@ -932,7 +933,7 @@ TEST_F(HostContentSettingsMapTest, SettingDefaultContentSettingsWhenManaged) {
 TEST_F(HostContentSettingsMapTest, GetContentSetting) {
   TestingProfile profile;
   HostContentSettingsMap* host_content_settings_map =
-      profile.GetHostContentSettingsMap();
+      HostContentSettingsMapFactory::GetForProfile(&profile);
 
   GURL host("http://example.com/");
   GURL embedder("chrome://foo");
@@ -993,7 +994,7 @@ TEST_F(HostContentSettingsMapTest, IsSettingAllowedForType) {
 TEST_F(HostContentSettingsMapTest, AddContentSettingsObserver) {
   TestingProfile profile;
   HostContentSettingsMap* host_content_settings_map =
-      profile.GetHostContentSettingsMap();
+      HostContentSettingsMapFactory::GetForProfile(&profile);
   content_settings::MockObserver mock_observer;
 
   GURL host("http://example.com/");

@@ -14,6 +14,7 @@
 #include "chrome/browser/banners/app_banner_data_fetcher.h"
 #include "chrome/browser/banners/app_banner_metrics.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
@@ -162,7 +163,8 @@ void UpdateMinutesBetweenVisits() {
 void AppBannerSettingsHelper::ClearHistoryForURLs(
     Profile* profile,
     const std::set<GURL>& origin_urls) {
-  HostContentSettingsMap* settings = profile->GetHostContentSettingsMap();
+  HostContentSettingsMap* settings =
+      HostContentSettingsMapFactory::GetForProfile(profile);
   for (const GURL& origin_url : origin_urls) {
     ContentSettingsPattern pattern(ContentSettingsPattern::FromURL(origin_url));
     if (!pattern.IsValid())
@@ -230,7 +232,8 @@ void AppBannerSettingsHelper::RecordBannerEvent(
   if (!pattern.IsValid())
     return;
 
-  HostContentSettingsMap* settings = profile->GetHostContentSettingsMap();
+  HostContentSettingsMap* settings =
+      HostContentSettingsMapFactory::GetForProfile(profile);
   scoped_ptr<base::DictionaryValue> origin_dict =
       GetOriginDict(settings, origin_url);
   if (!origin_dict)
@@ -274,7 +277,8 @@ void AppBannerSettingsHelper::RecordBannerCouldShowEvent(
   if (!pattern.IsValid())
     return;
 
-  HostContentSettingsMap* settings = profile->GetHostContentSettingsMap();
+  HostContentSettingsMap* settings =
+      HostContentSettingsMapFactory::GetForProfile(profile);
   scoped_ptr<base::DictionaryValue> origin_dict =
       GetOriginDict(settings, origin_url);
   if (!origin_dict)
@@ -416,7 +420,8 @@ AppBannerSettingsHelper::GetCouldShowBannerEvents(
 
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
-  HostContentSettingsMap* settings = profile->GetHostContentSettingsMap();
+  HostContentSettingsMap* settings =
+      HostContentSettingsMapFactory::GetForProfile(profile);
   scoped_ptr<base::DictionaryValue> origin_dict =
       GetOriginDict(settings, origin_url);
 
@@ -464,7 +469,8 @@ base::Time AppBannerSettingsHelper::GetSingleBannerEvent(
 
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
-  HostContentSettingsMap* settings = profile->GetHostContentSettingsMap();
+  HostContentSettingsMap* settings =
+      HostContentSettingsMapFactory::GetForProfile(profile);
   scoped_ptr<base::DictionaryValue> origin_dict =
       GetOriginDict(settings, origin_url);
 

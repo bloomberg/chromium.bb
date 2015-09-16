@@ -17,6 +17,7 @@
 #include "base/time/clock.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/notifications/desktop_notification_profile_util.h"
 #include "chrome/browser/notifications/notification.h"
@@ -226,14 +227,14 @@ void NotificationsTest::AllowOrigin(const GURL& origin) {
 
 void NotificationsTest::AllowAllOrigins() {
   // Reset all origins
-  browser()->profile()->GetHostContentSettingsMap()->ClearSettingsForOneType(
-       CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
+  HostContentSettingsMapFactory::GetForProfile(browser()->profile())
+      ->ClearSettingsForOneType(CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
   SetDefaultContentSetting(CONTENT_SETTING_ALLOW);
  }
 
 void NotificationsTest::SetDefaultContentSetting(ContentSetting setting) {
-  browser()->profile()->GetHostContentSettingsMap()->SetDefaultContentSetting(
-      CONTENT_SETTINGS_TYPE_NOTIFICATIONS, setting);
+  HostContentSettingsMapFactory::GetForProfile(browser()->profile())
+      ->SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_NOTIFICATIONS, setting);
 }
 
 std::string NotificationsTest::CreateNotification(
@@ -697,7 +698,7 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest, TestLastUsage) {
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
 
   HostContentSettingsMap* settings_map =
-      browser()->profile()->GetHostContentSettingsMap();
+      HostContentSettingsMapFactory::GetForProfile(browser()->profile());
   base::SimpleTestClock* clock = new base::SimpleTestClock();
   settings_map->SetPrefClockForTesting(scoped_ptr<base::Clock>(clock));
   clock->SetNow(base::Time::UnixEpoch() + base::TimeDelta::FromSeconds(10));

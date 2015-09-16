@@ -10,6 +10,7 @@
 #include "base/prefs/scoped_user_pref_update.h"
 #include "base/synchronization/cancellation_flag.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
+#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/google/google_url_tracker_factory.h"
 #include "chrome/browser/profile_resetter/brandcoded_default_settings.h"
@@ -218,7 +219,8 @@ void ProfileResetter::ResetHomepage() {
 void ProfileResetter::ResetContentSettings() {
   DCHECK(CalledOnValidThread());
   PrefService* prefs = profile_->GetPrefs();
-  HostContentSettingsMap* map = profile_->GetHostContentSettingsMap();
+  HostContentSettingsMap* map =
+      HostContentSettingsMapFactory::GetForProfile(profile_);
 
   content_settings::WebsiteSettingsRegistry* registry =
       content_settings::WebsiteSettingsRegistry::GetInstance();

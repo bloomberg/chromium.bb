@@ -20,6 +20,7 @@
 #include "chrome/browser/browsing_data/cookies_tree_model.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/chrome_content_settings_utils.h"
+#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/media/media_capture_devices_dispatcher.h"
 #include "chrome/browser/media/media_stream_capture_indicator.h"
 #include "chrome/browser/profiles/profile.h"
@@ -89,14 +90,14 @@ TabSpecificContentSettings::TabSpecificContentSettings(WebContents* tab)
       blocked_local_shared_objects_(
           Profile::FromBrowserContext(tab->GetBrowserContext())),
       geolocation_usages_state_(
-          Profile::FromBrowserContext(tab->GetBrowserContext())
-              ->GetHostContentSettingsMap(),
+          HostContentSettingsMapFactory::GetForProfile(
+              Profile::FromBrowserContext(tab->GetBrowserContext())),
           CONTENT_SETTINGS_TYPE_GEOLOCATION,
           prefs::kAcceptLanguages,
           Profile::FromBrowserContext(tab->GetBrowserContext())->GetPrefs()),
       midi_usages_state_(
-          Profile::FromBrowserContext(tab->GetBrowserContext())
-              ->GetHostContentSettingsMap(),
+          HostContentSettingsMapFactory::GetForProfile(
+              Profile::FromBrowserContext(tab->GetBrowserContext())),
           CONTENT_SETTINGS_TYPE_MIDI_SYSEX,
           prefs::kAcceptLanguages,
           Profile::FromBrowserContext(tab->GetBrowserContext())->GetPrefs()),
@@ -109,8 +110,8 @@ TabSpecificContentSettings::TabSpecificContentSettings(WebContents* tab)
   ClearBlockedContentSettingsExceptForCookies();
   ClearCookieSpecificContentSettings();
 
-  observer_.Add(Profile::FromBrowserContext(tab->GetBrowserContext())
-                    ->GetHostContentSettingsMap());
+  observer_.Add(HostContentSettingsMapFactory::GetForProfile(
+      Profile::FromBrowserContext(tab->GetBrowserContext())));
 }
 
 TabSpecificContentSettings::~TabSpecificContentSettings() {
@@ -712,7 +713,8 @@ void TabSpecificContentSettings::OnContentSettingChanged(
       details.primary_pattern().Matches(entry_url)) {
     Profile* profile =
         Profile::FromBrowserContext(web_contents()->GetBrowserContext());
-    const HostContentSettingsMap* map = profile->GetHostContentSettingsMap();
+    const HostContentSettingsMap* map =
+        HostContentSettingsMapFactory::GetForProfile(profile);
 
     if (content_type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC ||
         content_type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA) {

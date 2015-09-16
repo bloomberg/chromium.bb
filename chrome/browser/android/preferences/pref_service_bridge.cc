@@ -19,6 +19,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_remover.h"
+#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/net/prediction_options.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -62,7 +63,7 @@ Profile* GetOriginalProfile() {
 
 bool GetBooleanForContentSetting(ContentSettingsType type) {
   HostContentSettingsMap* content_settings =
-      GetOriginalProfile()->GetHostContentSettingsMap();
+      HostContentSettingsMapFactory::GetForProfile(GetOriginalProfile());
   switch (content_settings->GetDefaultContentSetting(type, NULL)) {
     case CONTENT_SETTING_BLOCK:
       return false;
@@ -98,7 +99,7 @@ std::string GetStringForContentSettingsType(
 bool IsContentSettingManaged(ContentSettingsType content_settings_type) {
   std::string source;
   HostContentSettingsMap* content_settings =
-      GetOriginalProfile()->GetHostContentSettingsMap();
+      HostContentSettingsMapFactory::GetForProfile(GetOriginalProfile());
   content_settings->GetDefaultContentSetting(content_settings_type, &source);
   HostContentSettingsMap::ProviderType provider =
       content_settings->GetProviderTypeFromSource(source);
@@ -109,7 +110,7 @@ bool IsContentSettingManagedByCustodian(
     ContentSettingsType content_settings_type) {
   std::string source;
   HostContentSettingsMap* content_settings =
-      GetOriginalProfile()->GetHostContentSettingsMap();
+      HostContentSettingsMapFactory::GetForProfile(GetOriginalProfile());
   content_settings->GetDefaultContentSetting(content_settings_type, &source);
   HostContentSettingsMap::ProviderType provider =
       content_settings->GetProviderTypeFromSource(source);
@@ -119,7 +120,7 @@ bool IsContentSettingManagedByCustodian(
 bool IsContentSettingUserModifiable(ContentSettingsType content_settings_type) {
   std::string source;
   HostContentSettingsMap* content_settings =
-      GetOriginalProfile()->GetHostContentSettingsMap();
+      HostContentSettingsMapFactory::GetForProfile(GetOriginalProfile());
   content_settings->GetDefaultContentSetting(content_settings_type, &source);
   HostContentSettingsMap::ProviderType provider =
       content_settings->GetProviderTypeFromSource(source);
@@ -158,7 +159,7 @@ static jboolean IsContentSettingEnabled(JNIEnv* env,
     return GetBooleanForContentSetting(type);
 
   HostContentSettingsMap* content_settings =
-      GetOriginalProfile()->GetHostContentSettingsMap();
+      HostContentSettingsMapFactory::GetForProfile(GetOriginalProfile());
   return content_settings->GetDefaultContentSetting(
       type, nullptr) == CONTENT_SETTING_ALLOW;
 }
@@ -173,7 +174,7 @@ static void SetContentSettingEnabled(JNIEnv* env,
          content_settings_type == CONTENT_SETTINGS_TYPE_IMAGES ||
          content_settings_type == CONTENT_SETTINGS_TYPE_POPUPS);
   HostContentSettingsMap* host_content_settings_map =
-      GetOriginalProfile()->GetHostContentSettingsMap();
+      HostContentSettingsMapFactory::GetForProfile(GetOriginalProfile());
   host_content_settings_map->SetDefaultContentSetting(
       static_cast<ContentSettingsType>(content_settings_type),
       allow ? CONTENT_SETTING_ALLOW : CONTENT_SETTING_BLOCK);
@@ -185,7 +186,7 @@ static void SetContentSettingForPattern(JNIEnv* env,
                                         const JavaParamRef<jstring>& pattern,
                                         int setting) {
   HostContentSettingsMap* host_content_settings_map =
-      GetOriginalProfile()->GetHostContentSettingsMap();
+      HostContentSettingsMapFactory::GetForProfile(GetOriginalProfile());
   host_content_settings_map->SetContentSetting(
       ContentSettingsPattern::FromString(ConvertJavaStringToUTF8(env, pattern)),
       ContentSettingsPattern::Wildcard(),
@@ -199,7 +200,7 @@ static void GetContentSettingsExceptions(JNIEnv* env,
                                          int content_settings_type,
                                          const JavaParamRef<jobject>& list) {
   HostContentSettingsMap* host_content_settings_map =
-      GetOriginalProfile()->GetHostContentSettingsMap();
+      HostContentSettingsMapFactory::GetForProfile(GetOriginalProfile());
   ContentSettingsForOneType entries;
   host_content_settings_map->GetSettingsForOneType(
       static_cast<ContentSettingsType>(content_settings_type), "", &entries);
@@ -379,7 +380,7 @@ static jboolean GetLocationAllowedByPolicy(JNIEnv* env,
   if (!IsContentSettingManaged(CONTENT_SETTINGS_TYPE_GEOLOCATION))
     return false;
   HostContentSettingsMap* content_settings =
-      GetOriginalProfile()->GetHostContentSettingsMap();
+      HostContentSettingsMapFactory::GetForProfile(GetOriginalProfile());
   return content_settings->GetDefaultContentSetting(
              CONTENT_SETTINGS_TYPE_GEOLOCATION, nullptr) ==
          CONTENT_SETTING_ALLOW;
@@ -453,7 +454,7 @@ static jboolean GetFullscreenManaged(JNIEnv* env,
 static jboolean GetFullscreenAllowed(JNIEnv* env,
                                      const JavaParamRef<jobject>& obj) {
   HostContentSettingsMap* content_settings =
-      GetOriginalProfile()->GetHostContentSettingsMap();
+      HostContentSettingsMapFactory::GetForProfile(GetOriginalProfile());
   return content_settings->GetDefaultContentSetting(
       CONTENT_SETTINGS_TYPE_FULLSCREEN, NULL) == CONTENT_SETTING_ALLOW;
 }
@@ -548,7 +549,7 @@ static void SetAllowCookiesEnabled(JNIEnv* env,
                                    const JavaParamRef<jobject>& obj,
                                    jboolean allow) {
   HostContentSettingsMap* host_content_settings_map =
-      GetOriginalProfile()->GetHostContentSettingsMap();
+      HostContentSettingsMapFactory::GetForProfile(GetOriginalProfile());
   host_content_settings_map->SetDefaultContentSetting(
       CONTENT_SETTINGS_TYPE_COOKIES,
       allow ? CONTENT_SETTING_ALLOW : CONTENT_SETTING_BLOCK);
@@ -579,7 +580,7 @@ static void SetProtectedMediaIdentifierEnabled(JNIEnv* env,
                                                const JavaParamRef<jobject>& obj,
                                                jboolean is_enabled) {
   HostContentSettingsMap* host_content_settings_map =
-      GetOriginalProfile()->GetHostContentSettingsMap();
+      HostContentSettingsMapFactory::GetForProfile(GetOriginalProfile());
   host_content_settings_map->SetDefaultContentSetting(
       CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER,
       is_enabled ? CONTENT_SETTING_ASK : CONTENT_SETTING_BLOCK);
@@ -589,7 +590,7 @@ static void SetAllowLocationEnabled(JNIEnv* env,
                                     const JavaParamRef<jobject>& obj,
                                     jboolean is_enabled) {
   HostContentSettingsMap* host_content_settings_map =
-      GetOriginalProfile()->GetHostContentSettingsMap();
+      HostContentSettingsMapFactory::GetForProfile(GetOriginalProfile());
   host_content_settings_map->SetDefaultContentSetting(
       CONTENT_SETTINGS_TYPE_GEOLOCATION,
       is_enabled ? CONTENT_SETTING_ASK : CONTENT_SETTING_BLOCK);
@@ -599,7 +600,7 @@ static void SetCameraEnabled(JNIEnv* env,
                              const JavaParamRef<jobject>& obj,
                              jboolean allow) {
   HostContentSettingsMap* host_content_settings_map =
-      GetOriginalProfile()->GetHostContentSettingsMap();
+      HostContentSettingsMapFactory::GetForProfile(GetOriginalProfile());
   host_content_settings_map->SetDefaultContentSetting(
       CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA,
       allow ? CONTENT_SETTING_ASK : CONTENT_SETTING_BLOCK);
@@ -609,7 +610,7 @@ static void SetMicEnabled(JNIEnv* env,
                           const JavaParamRef<jobject>& obj,
                           jboolean allow) {
   HostContentSettingsMap* host_content_settings_map =
-      GetOriginalProfile()->GetHostContentSettingsMap();
+      HostContentSettingsMapFactory::GetForProfile(GetOriginalProfile());
   host_content_settings_map->SetDefaultContentSetting(
       CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC,
       allow ? CONTENT_SETTING_ASK : CONTENT_SETTING_BLOCK);
@@ -619,7 +620,7 @@ static void SetFullscreenAllowed(JNIEnv* env,
                                  const JavaParamRef<jobject>& obj,
                                  jboolean allow) {
   HostContentSettingsMap* host_content_settings_map =
-      GetOriginalProfile()->GetHostContentSettingsMap();
+      HostContentSettingsMapFactory::GetForProfile(GetOriginalProfile());
   host_content_settings_map->SetDefaultContentSetting(
       CONTENT_SETTINGS_TYPE_FULLSCREEN,
       allow ? CONTENT_SETTING_ALLOW : CONTENT_SETTING_ASK);
@@ -629,7 +630,7 @@ static void SetPushNotificationsEnabled(JNIEnv* env,
                                         const JavaParamRef<jobject>& obj,
                                         jboolean allow) {
   HostContentSettingsMap* host_content_settings_map =
-      GetOriginalProfile()->GetHostContentSettingsMap();
+      HostContentSettingsMapFactory::GetForProfile(GetOriginalProfile());
   host_content_settings_map->SetDefaultContentSetting(
       CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
       allow ? CONTENT_SETTING_ASK : CONTENT_SETTING_BLOCK);
@@ -773,7 +774,7 @@ static void SetJavaScriptAllowed(JNIEnv* env,
                                  const JavaParamRef<jstring>& pattern,
                                  int setting) {
   HostContentSettingsMap* host_content_settings_map =
-      GetOriginalProfile()->GetHostContentSettingsMap();
+      HostContentSettingsMapFactory::GetForProfile(GetOriginalProfile());
   host_content_settings_map->SetContentSetting(
       ContentSettingsPattern::FromString(ConvertJavaStringToUTF8(env, pattern)),
       ContentSettingsPattern::Wildcard(),
@@ -787,7 +788,7 @@ static void SetPopupException(JNIEnv* env,
                               const JavaParamRef<jstring>& pattern,
                               int setting) {
   HostContentSettingsMap* host_content_settings_map =
-      GetOriginalProfile()->GetHostContentSettingsMap();
+      HostContentSettingsMapFactory::GetForProfile(GetOriginalProfile());
   host_content_settings_map->SetContentSetting(
       ContentSettingsPattern::FromString(ConvertJavaStringToUTF8(env, pattern)),
       ContentSettingsPattern::Wildcard(),

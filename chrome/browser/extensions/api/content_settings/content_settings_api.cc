@@ -13,6 +13,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
+#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/extensions/api/content_settings/content_settings_api_constants.h"
 #include "chrome/browser/extensions/api/content_settings/content_settings_helpers.h"
 #include "chrome/browser/extensions/api/content_settings/content_settings_service.h"
@@ -141,11 +142,12 @@ bool ContentSettingsContentSettingGetFunction::RunSync() {
       error_ = keys::kIncognitoSessionOnlyError;
       return false;
     }
-    map = GetProfile()->GetOffTheRecordProfile()->GetHostContentSettingsMap();
+    map = HostContentSettingsMapFactory::GetForProfile(
+        GetProfile()->GetOffTheRecordProfile());
     cookie_settings = CookieSettingsFactory::GetForProfile(
                           GetProfile()->GetOffTheRecordProfile()).get();
   } else {
-    map = GetProfile()->GetHostContentSettingsMap();
+    map = HostContentSettingsMapFactory::GetForProfile(GetProfile());
     cookie_settings = CookieSettingsFactory::GetForProfile(GetProfile()).get();
   }
 

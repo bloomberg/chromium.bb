@@ -6,14 +6,14 @@
 #define CHROME_BROWSER_MEDIA_MEDIA_STREAM_CAMERA_PERMISSION_CONTEXT_FACTORY_H_
 
 #include "base/memory/singleton.h"
+#include "chrome/browser/permissions/permission_context_factory_base.h"
 #include "components/content_settings/core/common/content_settings_types.h"
-#include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 
 class MediaStreamDevicePermissionContext;
 class Profile;
 
 class MediaStreamCameraPermissionContextFactory
-    : public BrowserContextKeyedServiceFactory {
+    : public PermissionContextFactoryBase {
  public:
   static MediaStreamDevicePermissionContext* GetForProfile(Profile* profile);
   static MediaStreamCameraPermissionContextFactory* GetInstance();
@@ -28,8 +28,6 @@ class MediaStreamCameraPermissionContextFactory
   // BrowserContextKeyedBaseFactory methods:
   KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* profile) const override;
-  content::BrowserContext* GetBrowserContextToUse(
-      content::BrowserContext* context) const override;
 
   DISALLOW_COPY_AND_ASSIGN(MediaStreamCameraPermissionContextFactory);
 };

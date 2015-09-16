@@ -28,7 +28,7 @@ ProtectedMediaIdentifierPermissionContextFactory::GetInstance() {
 
 ProtectedMediaIdentifierPermissionContextFactory::
 ProtectedMediaIdentifierPermissionContextFactory()
-    : BrowserContextKeyedServiceFactory(
+    : PermissionContextFactoryBase(
           "ProtectedMediaIdentifierPermissionContext",
           BrowserContextDependencyManager::GetInstance()) {
 }
@@ -50,10 +50,4 @@ ProtectedMediaIdentifierPermissionContextFactory::RegisterProfilePrefs(
 #if defined(OS_ANDROID)
   registry->RegisterBooleanPref(prefs::kProtectedMediaIdentifierEnabled, true);
 #endif
-}
-
-content::BrowserContext*
-ProtectedMediaIdentifierPermissionContextFactory::GetBrowserContextToUse(
-    content::BrowserContext* context) const {
-  return chrome::GetBrowserContextOwnInstanceInIncognito(context);
 }

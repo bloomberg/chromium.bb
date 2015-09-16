@@ -4,6 +4,7 @@
 
 #include "chrome/browser/permissions/permission_manager.h"
 
+#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/permissions/permission_manager_factory.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
@@ -50,7 +51,7 @@ class PermissionManagerTest : public testing::Test {
   }
 
   HostContentSettingsMap* GetHostContentSettingsMap() {
-    return profile_.GetHostContentSettingsMap();
+    return HostContentSettingsMapFactory::GetForProfile(&profile_);
   }
 
   void CheckPermissionStatus(PermissionType type,
@@ -60,7 +61,7 @@ class PermissionManagerTest : public testing::Test {
   }
 
   void SetPermission(ContentSettingsType type, ContentSetting value) {
-    profile_.GetHostContentSettingsMap()->SetContentSetting(
+    HostContentSettingsMapFactory::GetForProfile(&profile_)->SetContentSetting(
         ContentSettingsPattern::FromURLNoWildcard(url_),
         ContentSettingsPattern::FromURLNoWildcard(url_),
         type, std::string(), value);

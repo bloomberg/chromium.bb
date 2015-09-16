@@ -15,6 +15,7 @@
 #include "chrome/browser/browsing_data/cookies_tree_model.h"
 #include "chrome/browser/browsing_data/local_data_container.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
+#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/content_settings/web_site_settings_uma_util.h"
 #include "chrome/browser/notifications/desktop_notification_profile_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -43,7 +44,8 @@ static Profile* GetActiveUserProfile(bool is_incognito) {
 }
 
 static HostContentSettingsMap* GetHostContentSettingsMap(bool is_incognito) {
-  return GetActiveUserProfile(is_incognito)->GetHostContentSettingsMap();
+  return HostContentSettingsMapFactory::GetForProfile(
+      GetActiveUserProfile(is_incognito));
 }
 
 static void GetOrigins(JNIEnv* env,

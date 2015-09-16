@@ -4,6 +4,7 @@
 
 #include "base/command_line.h"
 #include "base/prefs/pref_service.h"
+#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -175,8 +176,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, MAYBE_PluginPrivate) {
   // Regression test for http://crbug.com/131811: The plugin should be
   // whitelisted for the extension (and only for the extension), so it should be
   // loaded even if content settings are set to block plugins.
-  browser()->profile()->GetHostContentSettingsMap()->SetDefaultContentSetting(
-      CONTENT_SETTINGS_TYPE_PLUGINS, CONTENT_SETTING_BLOCK);
+  HostContentSettingsMapFactory::GetForProfile(browser()->profile())
+      ->SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_PLUGINS,
+                                 CONTENT_SETTING_BLOCK);
   ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
       tab, "testPluginWorks()", &result));
   // We don't allow extension plugins to run on ChromeOS.

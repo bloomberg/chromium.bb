@@ -17,6 +17,7 @@
 #include "base/test/simple_test_clock.h"
 #include "base/time/clock.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/geolocation/geolocation_permission_context_factory.h"
 #include "chrome/browser/infobars/infobar_service.h"
@@ -328,8 +329,11 @@ void GeolocationPermissionContextTests::BubbleManagerDocumentLoadCompleted(
 
 ContentSetting GeolocationPermissionContextTests::GetGeolocationContentSetting(
     GURL frame_0, GURL frame_1) {
-  return profile()->GetHostContentSettingsMap()->GetContentSetting(
-      frame_0, frame_1, CONTENT_SETTINGS_TYPE_GEOLOCATION, std::string());
+  return HostContentSettingsMapFactory::GetForProfile(profile())
+      ->GetContentSetting(frame_0,
+                          frame_1,
+                          CONTENT_SETTINGS_TYPE_GEOLOCATION,
+                          std::string());
 }
 
 bool GeolocationPermissionContextTests::BubbleEnabled() const {
@@ -831,7 +835,8 @@ TEST_F(GeolocationPermissionContextTests, LastUsageAudited) {
   test_clock->SetNow(base::Time::UnixEpoch() +
                      base::TimeDelta::FromSeconds(10));
 
-  HostContentSettingsMap* map = profile()->GetHostContentSettingsMap();
+  HostContentSettingsMap* map =
+      HostContentSettingsMapFactory::GetForProfile(profile());
   map->SetPrefClockForTesting(scoped_ptr<base::Clock>(test_clock));
 
   // The permission shouldn't have been used yet.
@@ -870,7 +875,8 @@ TEST_F(GeolocationPermissionContextTests, LastUsageAuditedMultipleFrames) {
   test_clock->SetNow(base::Time::UnixEpoch() +
                      base::TimeDelta::FromSeconds(10));
 
-  HostContentSettingsMap* map = profile()->GetHostContentSettingsMap();
+  HostContentSettingsMap* map =
+      HostContentSettingsMapFactory::GetForProfile(profile());
   map->SetPrefClockForTesting(scoped_ptr<base::Clock>(test_clock));
 
   GURL requesting_frame_0("http://www.example.com/geolocation");

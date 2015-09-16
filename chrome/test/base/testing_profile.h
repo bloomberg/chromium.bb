@@ -282,7 +282,6 @@ class TestingProfile : public Profile {
       content::ProtocolHandlerMap* protocol_handlers,
       content::URLRequestInterceptorScopedVector request_interceptors) override;
   net::SSLConfigService* GetSSLConfigService() override;
-  HostContentSettingsMap* GetHostContentSettingsMap() override;
   void set_last_session_exited_cleanly(bool value) {
     last_session_exited_cleanly_ = value;
   }

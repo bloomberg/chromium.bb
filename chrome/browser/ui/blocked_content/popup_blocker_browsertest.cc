@@ -8,6 +8,7 @@
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
@@ -343,7 +344,7 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest,
                        AllowPopupThroughContentSetting) {
   GURL url(embedded_test_server()->GetURL(
       "/popup_blocker/popup-blocked-to-post-blank.html"));
-  browser()->profile()->GetHostContentSettingsMap()
+  HostContentSettingsMapFactory::GetForProfile(browser()->profile())
       ->SetContentSetting(ContentSettingsPattern::FromURL(url),
                           ContentSettingsPattern::Wildcard(),
                           CONTENT_SETTINGS_TYPE_POPUPS,
@@ -357,7 +358,7 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest,
 IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest,
                        AllowPopupThroughContentSettingIFrame) {
   GURL url(embedded_test_server()->GetURL("/popup_blocker/popup-frames.html"));
-  browser()->profile()->GetHostContentSettingsMap()
+  HostContentSettingsMapFactory::GetForProfile(browser()->profile())
       ->SetContentSetting(ContentSettingsPattern::FromURL(url),
                           ContentSettingsPattern::Wildcard(),
                           CONTENT_SETTINGS_TYPE_POPUPS,
@@ -374,9 +375,9 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest,
   GURL frame_url(embedded_test_server()
                      ->GetURL("/popup_blocker/popup-frames-iframe.html")
                      .ReplaceComponents(replace_host));
-  browser()->profile()->GetHostContentSettingsMap()->ClearSettingsForOneType(
-      CONTENT_SETTINGS_TYPE_POPUPS);
-  browser()->profile()->GetHostContentSettingsMap()
+  HostContentSettingsMapFactory::GetForProfile(browser()->profile())
+      ->ClearSettingsForOneType(CONTENT_SETTINGS_TYPE_POPUPS);
+  HostContentSettingsMapFactory::GetForProfile(browser()->profile())
       ->SetContentSetting(ContentSettingsPattern::FromURL(frame_url),
                           ContentSettingsPattern::Wildcard(),
                           CONTENT_SETTINGS_TYPE_POPUPS,
@@ -564,9 +565,12 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, ModalPopUnder) {
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
   GURL url(
       embedded_test_server()->GetURL("/popup_blocker/popup-window-open.html"));
-  browser()->profile()->GetHostContentSettingsMap()->SetContentSetting(
-      ContentSettingsPattern::FromURL(url), ContentSettingsPattern::Wildcard(),
-      CONTENT_SETTINGS_TYPE_POPUPS, std::string(), CONTENT_SETTING_ALLOW);
+  HostContentSettingsMapFactory::GetForProfile(browser()->profile())
+      ->SetContentSetting(ContentSettingsPattern::FromURL(url),
+                          ContentSettingsPattern::Wildcard(),
+                          CONTENT_SETTINGS_TYPE_POPUPS,
+                          std::string(),
+                          CONTENT_SETTING_ALLOW);
 
   NavigateAndCheckPopupShown(url, ExpectPopup);
 

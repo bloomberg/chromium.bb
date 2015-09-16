@@ -7,10 +7,8 @@
 #include <string>
 #include <vector>
 
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/supervised_user/supervised_user_constants.h"
 #include "chrome/browser/supervised_user/supervised_user_settings_service.h"
-#include "content/public/browser/notification_source.h"
 
 namespace {
 
@@ -38,22 +36,16 @@ const ContentSettingsFromSupervisedSettingsEntry
 namespace content_settings {
 
 SupervisedProvider::SupervisedProvider(
-    SupervisedUserSettingsService* supervised_user_settings_service)
-    : unsubscriber_registrar_(new content::NotificationRegistrar()) {
+    SupervisedUserSettingsService* supervised_user_settings_service) {
 
+  // The SupervisedProvider is owned by the HostContentSettingsMap which
+  // DependsOn the SupervisedUserSettingsService (through their factories).
+  // This means this will get destroyed before the SUSS and will be
+  // unsubscribed from it.
   user_settings_subscription_ = supervised_user_settings_service->Subscribe(
       base::Bind(
           &content_settings::SupervisedProvider::OnSupervisedSettingsAvailable,
           base::Unretained(this)));
-
-  // Should only be nullptr in unit tests
-  // TODO(peconn): Remove this notification once HostContentSettingsMap is
-  // a KeyedService.
-  if (supervised_user_settings_service->GetProfile() != nullptr){
-    unsubscriber_registrar_->Add(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
-        content::Source<Profile>(
-          supervised_user_settings_service->GetProfile()));
-  }
 }
 
 SupervisedProvider::~SupervisedProvider() {
@@ -111,16 +103,6 @@ void SupervisedProvider::ClearAllContentSettingsRules(
 void SupervisedProvider::ShutdownOnUIThread() {
   DCHECK(CalledOnValidThread());
   RemoveAllObservers();
-  user_settings_subscription_.reset();
-  unsubscriber_registrar_.reset();
-}
-
-// Callback to unsubscribe from the supervised user settings service.
-void SupervisedProvider::Observe(
-    int type,
-    const content::NotificationSource& src,
-    const content::NotificationDetails& details) {
-  DCHECK_EQ(chrome::NOTIFICATION_PROFILE_DESTROYED, type);
   user_settings_subscription_.reset();
 }
 

@@ -34,6 +34,7 @@
 #include "chrome/browser/chrome_net_benchmarking_message_filter.h"
 #include "chrome/browser/chrome_quota_permission_context.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
+#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/devtools/chrome_devtools_manager_delegate.h"
@@ -893,7 +894,7 @@ void ChromeContentBrowserClient::RenderProcessWillLaunch(
 #endif
   } else {
     GetRendererContentSettingRules(
-        profile->GetHostContentSettingsMap(), &rules);
+        HostContentSettingsMapFactory::GetForProfile(profile), &rules);
   }
   host->Send(new ChromeViewMsg_SetContentSettingRules(rules));
 }
@@ -1961,7 +1962,7 @@ void ChromeContentBrowserClient::SelectClientCertificate(
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
   scoped_ptr<base::Value> filter =
-      profile->GetHostContentSettingsMap()->GetWebsiteSetting(
+      HostContentSettingsMapFactory::GetForProfile(profile)->GetWebsiteSetting(
           requesting_url,
           requesting_url,
           CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE,
