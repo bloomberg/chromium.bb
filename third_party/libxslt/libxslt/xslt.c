@@ -3553,7 +3553,7 @@ xsltPrecomputeStylesheet(xsltStylesheetPtr style, xmlNodePtr cur)
 	    }
 	} else if (cur->type == XML_TEXT_NODE) {
 	    if (IS_BLANK_NODE(cur)) {
-		if (xmlNodeGetSpacePreserve(cur) != 1) {
+		if (xmlNodeGetSpacePreserve(cur->parent) != 1) {
 		    deleteNode = cur;
 		}
 	    } else if ((cur->content != NULL) && (internalize) &&
