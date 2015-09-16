@@ -31,6 +31,15 @@ var allTests = [
         chrome.test.succeed();
       });
     });
+  },
+
+  function testAutomationNodeToString() {
+    chrome.automation.getDesktop(function(rootNode) {
+      assertEq(RoleType.desktop, rootNode.role);
+      var prefix = 'tree id=0';
+      assertEq(prefix, rootNode.toString().substring(0, prefix.length));
+      chrome.test.succeed();
+    });
   }
 ];
 

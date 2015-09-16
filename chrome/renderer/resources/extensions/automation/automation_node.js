@@ -320,11 +320,8 @@ AutomationNodeImpl.prototype = {
   },
 
   toString: function() {
-    var impl = privates(this).impl;
-    if (!impl)
-      impl = this;
-
     var parentID = GetParentID(this.treeID, this.id);
+    var childTreeID = GetIntAttribute(this.treeID, this.id, 'childTreeId');
     var count = GetChildCount(this.treeID, this.id);
     var childIDs = [];
     for (var i = 0; i < count; ++i) {
@@ -332,11 +329,19 @@ AutomationNodeImpl.prototype = {
       childIDs.push(childID);
     }
 
-    return 'node id=' + impl.id +
+    var result = 'node id=' + this.id +
         ' role=' + this.role +
         ' state=' + $JSON.stringify(this.state) +
         ' parentID=' + parentID +
         ' childIds=' + $JSON.stringify(childIDs);
+    if (this.hostNode_) {
+      var hostNodeImpl = privates(this.hostNode_).impl;
+      result += ' host treeID=' + hostNodeImpl.treeID +
+          ' host nodeID=' + hostNodeImpl.id;
+    }
+    if (childTreeID)
+      result += ' childTreeID=' + childTreeID;
+    return result;
   },
 
   dispatchEventAtCapturing_: function(event, path) {
@@ -812,19 +817,22 @@ AutomationRootNodeImpl.prototype = {
   },
 
   toString: function() {
-    function toStringInternal(node, indent) {
-      if (!node)
+    function toStringInternal(nodeImpl, indent) {
+      if (!nodeImpl)
         return '';
-      var output =
-          new Array(indent).join(' ') +
-          AutomationNodeImpl.prototype.toString.call(node) +
+      var output = '';
+      if (nodeImpl.isRootNode)
+        output += indent + 'tree id=' + nodeImpl.treeID + '\n';
+      output += indent +
+          AutomationNodeImpl.prototype.toString.call(nodeImpl) +
           '\n';
-      indent += 2;
-      for (var i = 0; i < node.children.length; i++)
-        output += toStringInternal(node.children[i], indent);
+      indent += '  ';
+      var children = nodeImpl.children;
+      for (var i = 0; i < children.length; ++i)
+        output += toStringInternal(privates(children[i]).impl, indent);
       return output;
     }
-    return toStringInternal(this, 0);
+    return toStringInternal(this, '');
   },
 };
 
