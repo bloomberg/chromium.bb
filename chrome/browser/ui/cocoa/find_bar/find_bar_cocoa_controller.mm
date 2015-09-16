@@ -18,6 +18,7 @@
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_controller.h"
 #include "chrome/browser/ui/find_bar/find_bar_controller.h"
 #include "chrome/browser/ui/find_bar/find_tab_helper.h"
+#include "chrome/grit/generated_resources.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/theme_resources.h"
@@ -25,6 +26,7 @@
 #import "ui/base/cocoa/find_pasteboard.h"
 #import "ui/base/cocoa/focus_tracker.h"
 #import "ui/base/cocoa/nsview_additions.h"
+#include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/resources/grit/ui_resources.h"
 
 using content::NativeWebKeyboardEvent;
@@ -114,6 +116,13 @@ const float kRightEdgeOffset = 25;
                    forButtonState:image_button_cell::kPressedState];
   [[closeButton_ cell] setImageID:IDR_CLOSE_1
                    forButtonState:image_button_cell::kDisabledState];
+
+  [closeButton_ setToolTip:l10n_util::GetNSString(
+       IDS_FIND_IN_PAGE_CLOSE_TOOLTIP)];
+  [previousButton_ setToolTip:l10n_util::GetNSString(
+       IDS_FIND_IN_PAGE_PREVIOUS_TOOLTIP)];
+  [nextButton_ setToolTip:l10n_util::GetNSString(
+       IDS_FIND_IN_PAGE_NEXT_TOOLTIP)];
 
   [findBarView_ setFrame:[self hiddenFindBarFrame]];
   defaultWidth_ = NSWidth([findBarView_ frame]);
