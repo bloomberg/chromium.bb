@@ -43,8 +43,8 @@ const char kBluetoothAddress[] = "11:22:33:44:55:66";
 const char kPersistentSymmetricKey[] = "PSK";
 
 const char kServiceUUID[] = "DEADBEEF-CAFE-FEED-FOOD-D15EA5EBEEEF";
-const char kToPeripheralCharUUID[] = "FBAE09F2-0482-11E5-8418-1697F925EC7B";
-const char kFromPeripheralCharUUID[] = "5539ED10-0483-11E5-8418-1697F925EC7B";
+const char kToPeripheralCharUUID[] = "977c6674-1239-4e72-993b-502369b8bb5a";
+const char kFromPeripheralCharUUID[] = "f4b904a2-a030-43b3-98a8-221c536c03cb";
 
 const char kServiceID[] = "service id";
 const char kToPeripheralCharID[] = "to peripheral char id";
@@ -87,15 +87,11 @@ class MockBluetoothLowEnergyConnection : public BluetoothLowEnergyConnection {
       const RemoteDevice& remote_device,
       scoped_refptr<device::BluetoothAdapter> adapter,
       const device::BluetoothUUID remote_service_uuid,
-      const device::BluetoothUUID to_peripheral_char_uuid,
-      const device::BluetoothUUID from_peripheral_char_uuid,
       BluetoothThrottler* bluetooth_throttler,
       int max_number_of_write_attempts)
       : BluetoothLowEnergyConnection(remote_device,
                                      adapter,
                                      remote_service_uuid,
-                                     to_peripheral_char_uuid,
-                                     from_peripheral_char_uuid,
                                      bluetooth_throttler,
                                      max_number_of_write_attempts) {}
 
@@ -184,8 +180,7 @@ class ProximityAuthBluetoothLowEnergyConnectionTest : public testing::Test {
 
     scoped_ptr<MockBluetoothLowEnergyConnection> connection(
         new MockBluetoothLowEnergyConnection(
-            remote_device_, adapter_, service_uuid_, to_peripheral_char_uuid_,
-            from_peripheral_char_uuid_, bluetooth_throttler_.get(),
+            remote_device_, adapter_, service_uuid_, bluetooth_throttler_.get(),
             kMaxNumberOfTries));
 
     EXPECT_EQ(connection->sub_status(),
@@ -396,8 +391,7 @@ class ProximityAuthBluetoothLowEnergyConnectionTest : public testing::Test {
 TEST_F(ProximityAuthBluetoothLowEnergyConnectionTest,
        CreateAndDestroyWithouthConnectCallDoesntCrash) {
   BluetoothLowEnergyConnection connection(
-      remote_device_, adapter_, service_uuid_, to_peripheral_char_uuid_,
-      from_peripheral_char_uuid_, bluetooth_throttler_.get(),
+      remote_device_, adapter_, service_uuid_, bluetooth_throttler_.get(),
       kMaxNumberOfTries);
 }
 

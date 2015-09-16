@@ -44,13 +44,6 @@ const char kClassicBluetoothServiceUUID[] =
 // The UUID of the Bluetooth Low Energy service.
 const char kBLESmartLockServiceUUID[] = "b3b7e28e-a000-3e17-bd86-6e97b9e28c11";
 
-// The UUID of the characteristic used to send data to the peripheral.
-const char kBLEToPeripheralCharUUID[] = "977c6674-1239-4e72-993b-502369b8bb5a";
-
-// The UUID of the characteristic used to receive data from the peripheral.
-const char kBLEFromPeripheralCharUUID[] =
-    "f4b904a2-a030-43b3-98a8-221c536c03cb";
-
 // Keys in the JSON representation of a log message.
 const char kLogMessageTextKey[] = "text";
 const char kLogMessageTimeKey[] = "time";
@@ -546,9 +539,9 @@ void ProximityAuthWebUIHandler::FindBluetoothLowEnergyConnection(
 
   // TODO(tengs): Set a timeout to stop the connection finder eventually.
   connection_finder_.reset(new BluetoothLowEnergyConnectionFinder(
-      kBLESmartLockServiceUUID, kBLEToPeripheralCharUUID,
-      kBLEFromPeripheralCharUUID, ble_device_whitelist_.get(),
-      bluetooth_throttler_.get(), 3));
+      remote_device, kBLESmartLockServiceUUID,
+      BluetoothLowEnergyConnectionFinder::FIND_ANY_DEVICE,
+      ble_device_whitelist_.get(), bluetooth_throttler_.get(), 3));
   connection_finder_->Find(
       base::Bind(&ProximityAuthWebUIHandler::OnConnectionFound,
                  weak_ptr_factory_.GetWeakPtr()));

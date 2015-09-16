@@ -35,6 +35,12 @@ using device::BluetoothUUID;
 namespace proximity_auth {
 namespace {
 
+// The UUID of the characteristic used to send data to the peripheral.
+const char kToPeripheralCharUUID[] = "977c6674-1239-4e72-993b-502369b8bb5a";
+
+// The UUID of the characteristic used to receive data from the peripheral.
+const char kFromPeripheralCharUUID[] = "f4b904a2-a030-43b3-98a8-221c536c03cb";
+
 // Deprecated signal send as the first byte in send byte operations.
 const int kFirstByteZero = 0;
 
@@ -54,15 +60,13 @@ BluetoothLowEnergyConnection::BluetoothLowEnergyConnection(
     const RemoteDevice& device,
     scoped_refptr<device::BluetoothAdapter> adapter,
     const BluetoothUUID remote_service_uuid,
-    const BluetoothUUID to_peripheral_char_uuid,
-    const BluetoothUUID from_peripheral_char_uuid,
     BluetoothThrottler* bluetooth_throttler,
     int max_number_of_write_attempts)
     : Connection(device),
       adapter_(adapter),
       remote_service_({remote_service_uuid, ""}),
-      to_peripheral_char_({to_peripheral_char_uuid, ""}),
-      from_peripheral_char_({from_peripheral_char_uuid, ""}),
+      to_peripheral_char_({BluetoothUUID(kToPeripheralCharUUID), ""}),
+      from_peripheral_char_({BluetoothUUID(kFromPeripheralCharUUID), ""}),
       bluetooth_throttler_(bluetooth_throttler),
       task_runner_(base::ThreadTaskRunnerHandle::Get()),
       sub_status_(SubStatus::DISCONNECTED),

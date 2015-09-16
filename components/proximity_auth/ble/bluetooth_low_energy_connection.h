@@ -88,8 +88,6 @@ class BluetoothLowEnergyConnection : public Connection,
       const RemoteDevice& remote_device,
       scoped_refptr<device::BluetoothAdapter> adapter,
       const device::BluetoothUUID remote_service_uuid,
-      const device::BluetoothUUID to_peripheral_char_uuid,
-      const device::BluetoothUUID from_peripheral_char_uuid,
       BluetoothThrottler* bluetooth_throttler,
       int max_number_of_write_attempts);
 

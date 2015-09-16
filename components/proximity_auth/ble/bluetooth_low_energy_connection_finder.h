@@ -34,13 +34,32 @@ class BluetoothLowEnergyConnectionFinder
       public ConnectionObserver,
       public device::BluetoothAdapter::Observer {
  public:
+  enum FinderStrategy { FIND_PAIRED_DEVICE, FIND_ANY_DEVICE };
+
+  // Finds (and connects) to a Bluetooth low energy device. There are two
+  // possible search strategies depending on |finder_strategy|:
+  // (i) |FIND_PAIRED_DEVICE| searches for the unique paired bluetooth
+  // |remote_device|;
+  // (ii) |FIND_ANY_DEVICE| searches for any device advertising
+  // |remote_service_uuid|.
+  //
+  // |remote_device|: The BLE remote device. |remote_device.bluetooth_adress|
+  // should be empty when |has_public_bluetooth_address| is false.
+  // |remote_service_uuid|: The UUID of the service used to send/receive data in
+  // remote device.
+  // |bluetooth_throttler|: The reconnection throttler.
+  // |max_number_of_tries|: Maximum number attempts to send a message before
+  // disconnecting.
+  // TODO(sacomoto): Remove |device_whitelist| when ProximityAuthBleSystem is
+  // not needed anymore.
   BluetoothLowEnergyConnectionFinder(
+      const RemoteDevice remote_device,
       const std::string& remote_service_uuid,
-      const std::string& to_peripheral_char_uuid,
-      const std::string& from_peripheral_char_uuid,
+      const FinderStrategy finder_strategy,
       const BluetoothLowEnergyDeviceWhitelist* device_whitelist,
       BluetoothThrottler* bluetooth_throttler,
       int max_number_of_tries);
+
   ~BluetoothLowEnergyConnectionFinder() override;
 
   // Finds a connection to the remote device.
@@ -92,8 +111,12 @@ class BluetoothLowEnergyConnectionFinder
   // Stops the discovery session given by |discovery_session_|.
   void StopDiscoverySession();
 
-  // Checks if a service with |service_uuid| is offered by |remote_device|.
-  bool HasService(device::BluetoothDevice* remote_device);
+  // Checks if |device| is the right device: (i) has the adversement data or
+  // (ii) is paired and is the same as |remote_device|.
+  bool IsRightDevice(device::BluetoothDevice* device);
+
+  // Checks if |remote_device| is advertising |remote_service_uuid_|.
+  bool HasService(device::BluetoothDevice* device);
 
   // Restarts the discovery session after creating |connection_| fails.
   void RestartDiscoverySessionWhenReady();
@@ -105,17 +128,21 @@ class BluetoothLowEnergyConnectionFinder
   // Returns the device with |device_address|.
   device::BluetoothDevice* GetDevice(std::string device_address);
 
+  // The remote BLE device being searched. It maybe empty, in this case the
+  // remote device should advertise |remote_service_uuid_| and
+  // |advertised_name_|.
+  RemoteDevice remote_device_;
+
   // The uuid of the service it looks for to establish a GattConnection.
   device::BluetoothUUID remote_service_uuid_;
 
-  // Characteristic used to send data to the remote device.
-  device::BluetoothUUID to_peripheral_char_uuid_;
-
-  // Characteristic used to receive data from the remote device.
-  device::BluetoothUUID from_peripheral_char_uuid_;
+  // The finder strategy being used. See |IsRightDevice()|.
+  const FinderStrategy finder_strategy_;
 
   // Devices in |device_whitelist_| don't need to have |remote_service_uuid_|
   // cached or advertised. Not owned, must outlive this instance.
+  // TODO(sacomoto): Remove |device_whitelist_| when ProximityAuthBleSystem is
+  // not needed anymore.
   const BluetoothLowEnergyDeviceWhitelist* device_whitelist_;
 
   // Throttles repeated connection attempts to the same device. This is a

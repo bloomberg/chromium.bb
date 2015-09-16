@@ -35,12 +35,6 @@ namespace {
 // The UUID of the Bluetooth Low Energy service.
 const char kSmartLockServiceUUID[] = "b3b7e28e-a000-3e17-bd86-6e97b9e28c11";
 
-// The UUID of the characteristic used to send data to the peripheral.
-const char kToPeripheralCharUUID[] = "977c6674-1239-4e72-993b-502369b8bb5a";
-
-// The UUID of the characteristic used to receive data from the peripheral.
-const char kFromPeripheralCharUUID[] = "f4b904a2-a030-43b3-98a8-221c536c03cb";
-
 // Polling interval in seconds.
 const int kPollingIntervalSeconds = 5;
 
@@ -165,7 +159,8 @@ void ProximityAuthBleSystem::OnScreenDidLock(
 
 ConnectionFinder* ProximityAuthBleSystem::CreateConnectionFinder() {
   return new BluetoothLowEnergyConnectionFinder(
-      kSmartLockServiceUUID, kToPeripheralCharUUID, kFromPeripheralCharUUID,
+      RemoteDevice(), kSmartLockServiceUUID,
+      BluetoothLowEnergyConnectionFinder::FIND_ANY_DEVICE,
       device_whitelist_.get(), bluetooth_throttler_.get(), kMaxNumberOfTries);
 }
 
