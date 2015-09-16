@@ -39,6 +39,8 @@ include_rules = [
   "+components/rlz",
   "+components/search",
   "+components/search_engines",
+  "+components/sessions",
+  "-components/sessions/content",
   "+components/signin/core/browser",
   "+components/signin/core/common",
   "+components/signin/ios/browser",
