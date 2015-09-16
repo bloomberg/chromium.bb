@@ -1182,7 +1182,13 @@ ImageEditor.Toolbar.createButton_ = function(
 
   GalleryUtil.decorateMouseFocusHandling(button);
 
-  button.addEventListener('click', handler , false);
+  button.addEventListener('click', handler, false);
+  button.addEventListener('keydown', function(event) {
+    // Stop propagation of Enter key event to prevent it from being captured by
+    // image editor.
+    if (event.keyIdentifier === 'Enter')
+      event.stopPropagation();
+  });
 
   return button;
 };
