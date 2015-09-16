@@ -66,12 +66,16 @@ public:
     ScrollResultOneDimensional userScroll(ScrollDirectionPhysical, ScrollGranularity, float delta = 1) override;
     bool scrollAnimatorEnabled() const override;
     HostWindow* hostWindow() const override;
+    void serviceScrollAnimations(double) override;
+    void updateCompositorScrollAnimations() override;
     ScrollBehavior scrollBehaviorStyle() const override;
 
 private:
     RootFrameViewport(ScrollableArea& visualViewport, ScrollableArea& layoutViewport, bool invertScrollOrder);
 
     DoublePoint scrollOffsetFromScrollAnimators() const;
+
+    void distributeScrollBetweenViewports(const DoublePoint&, ScrollType, ScrollBehavior);
 
     // If either of the layout or visual viewports are scrolled explicitly (i.e. not
     // through this class), their updated offset will not be reflected in this class'

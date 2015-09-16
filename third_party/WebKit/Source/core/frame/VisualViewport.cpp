@@ -427,6 +427,11 @@ void VisualViewport::clearLayersForTreeView(WebLayerTreeView* layerTreeView) con
     layerTreeView->clearViewportLayers();
 }
 
+HostWindow* VisualViewport::hostWindow() const
+{
+    return &frameHost().chromeClient();
+}
+
 DoubleRect VisualViewport::visibleContentRectDouble(IncludeScrollbarsInRect) const
 {
     return visibleRect();

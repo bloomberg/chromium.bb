@@ -73,12 +73,16 @@ void RootFrameViewport::setScrollPosition(const DoublePoint& position, ScrollTyp
 {
     updateScrollAnimator();
 
-    // TODO(bokan): Support composited smooth scrolling the visual viewport.
     if (scrollBehavior == ScrollBehaviorAuto)
         scrollBehavior = scrollBehaviorStyle();
 
     if (scrollType == ProgrammaticScroll && !layoutViewport().isProgrammaticallyScrollable())
         return;
+
+    if (scrollBehavior == ScrollBehaviorSmooth) {
+        distributeScrollBetweenViewports(position, scrollType, scrollBehavior);
+        return;
+    }
 
     DoublePoint clampedPosition = clampScrollPosition(position);
     ScrollableArea::setScrollPosition(clampedPosition, scrollType, scrollBehavior);
@@ -139,6 +143,11 @@ void RootFrameViewport::setScrollOffset(const IntPoint& offset, ScrollType scrol
 
 void RootFrameViewport::setScrollOffset(const DoublePoint& offset, ScrollType scrollType)
 {
+    distributeScrollBetweenViewports(DoublePoint(offset), scrollType, ScrollBehaviorInstant);
+}
+
+void RootFrameViewport::distributeScrollBetweenViewports(const DoublePoint& offset, ScrollType scrollType, ScrollBehavior behavior)
+{
     // Make sure we use the scroll positions as reported by each viewport's ScrollAnimator, since its
     // ScrollableArea's position may have the fractional part truncated off.
     DoublePoint oldPosition = scrollOffsetFromScrollAnimators();
@@ -152,16 +161,19 @@ void RootFrameViewport::setScrollOffset(const DoublePoint& offset, ScrollType sc
     ScrollableArea& secondary = !m_invertScrollOrder ? visualViewport() : layoutViewport();
 
     DoublePoint targetPosition = primary.clampScrollPosition(primary.scrollAnimator()->currentPosition() + delta);
-    primary.setScrollPosition(targetPosition, scrollType);
+    primary.setScrollPosition(targetPosition, scrollType, behavior);
 
-    DoubleSize applied = scrollOffsetFromScrollAnimators() - oldPosition;
+    // Scroll the secondary viewport if all of the scroll was not applied to the
+    // primary viewport.
+    DoublePoint updatedPosition = secondary.scrollAnimator()->currentPosition() + FloatPoint(targetPosition);
+    DoubleSize applied = updatedPosition - oldPosition;
     delta -= applied;
 
     if (delta.isZero())
         return;
 
     targetPosition = secondary.clampScrollPosition(secondary.scrollAnimator()->currentPosition() + delta);
-    secondary.setScrollPosition(targetPosition, scrollType);
+    secondary.setScrollPosition(targetPosition, scrollType, behavior);
 }
 
 IntPoint RootFrameViewport::scrollPosition() const
@@ -275,6 +287,20 @@ bool RootFrameViewport::scrollAnimatorEnabled() const
 HostWindow* RootFrameViewport::hostWindow() const
 {
     return layoutViewport().hostWindow();
+}
+
+void RootFrameViewport::serviceScrollAnimations(double monotonicTime)
+{
+    ScrollableArea::serviceScrollAnimations(monotonicTime);
+    layoutViewport().serviceScrollAnimations(monotonicTime);
+    visualViewport().serviceScrollAnimations(monotonicTime);
+}
+
+void RootFrameViewport::updateCompositorScrollAnimations()
+{
+    ScrollableArea::updateCompositorScrollAnimations();
+    layoutViewport().updateCompositorScrollAnimations();
+    visualViewport().updateCompositorScrollAnimations();
 }
 
 DEFINE_TRACE(RootFrameViewport)
