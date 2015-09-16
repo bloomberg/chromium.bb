@@ -300,8 +300,14 @@ void LayoutBlock::styleDidChange(StyleDifference diff, const ComputedStyle* oldS
 {
     LayoutBox::styleDidChange(diff, oldStyle);
 
-    if (isFloatingOrOutOfFlowPositioned() && oldStyle && !oldStyle->isFloating() && !oldStyle->hasOutOfFlowPosition() && parent() && parent()->isLayoutBlockFlow())
+    if (isFloatingOrOutOfFlowPositioned() && oldStyle && !oldStyle->isFloating() && !oldStyle->hasOutOfFlowPosition() && parent() && parent()->isLayoutBlockFlow()) {
         toLayoutBlock(parent())->removeAnonymousWrappersIfRequired();
+        // Reparent to an adjacent anonymous block if one is available.
+        if (previousSibling() && previousSibling()->isAnonymousBlock())
+            toLayoutBlock(parent())->moveChildTo(toLayoutBlock(previousSibling()), this, nullptr, false);
+        else if (nextSibling() && nextSibling()->isAnonymousBlock())
+            toLayoutBlock(parent())->moveChildTo(toLayoutBlock(nextSibling()), this, nextSibling()->slowFirstChild(), false);
+    }
 
     const ComputedStyle& newStyle = styleRef();
 
@@ -477,7 +483,20 @@ void LayoutBlock::addChildIgnoringContinuation(LayoutObject* newChild, LayoutObj
             // No suitable existing anonymous box - create a new one.
             LayoutBlock* newBox = createAnonymousBlock();
             LayoutBox::addChild(newBox, beforeChild);
+            // Reparent adjacent floating or out-of-flow siblings to the new box.
+            LayoutObject* child = newBox->previousSibling();
+            while (child && child->isFloatingOrOutOfFlowPositioned()) {
+                LayoutObject* sibling = child->previousSibling();
+                moveChildTo(newBox, child, newBox->firstChild(), false);
+                child = sibling;
+            }
             newBox->addChild(newChild);
+            child = newBox->nextSibling();
+            while (child && child->isFloatingOrOutOfFlowPositioned()) {
+                LayoutObject* sibling = child->nextSibling();
+                moveChildTo(newBox, child, nullptr, false);
+                child = sibling;
+            }
             return;
         }
     }
@@ -671,6 +690,20 @@ void LayoutBlock::collapseAnonymousBlockChild(LayoutBlock* parent, LayoutBlock* 
     child->destroy();
 }
 
+static inline bool shouldMakeChildrenInline(const LayoutBlock* block)
+{
+    if (!block->isLayoutBlockFlow())
+        return false;
+    LayoutObject* child = block->firstChild();
+    while (child) {
+        // TODO(rhogan): If we encounter anonymous blocks with inline children we should fold them in here.
+        if (!child->isFloatingOrOutOfFlowPositioned())
+            return false;
+        child = child->nextSibling();
+    }
+    return true;
+}
+
 void LayoutBlock::removeChild(LayoutObject* oldChild)
 {
     // No need to waste time in merging or removing empty anonymous blocks.
@@ -773,6 +806,9 @@ void LayoutBlock::removeChild(LayoutObject* oldChild)
             setContinuation(nullptr);
             destroy();
         }
+    } else if (!beingDestroyed() && !oldChild->isFloatingOrOutOfFlowPositioned() && shouldMakeChildrenInline(this)) {
+        // If the child we're removing means that we can now treat all children as inline without the need for anonymous blocks, then do that.
+        setChildrenInline(true);
     }
 }
 

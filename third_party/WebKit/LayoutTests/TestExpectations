@@ -77,6 +77,18 @@ crbug.com/481269 [ Win ] fast/dom/gc-treescope.html [ Pass Timeout ]
 
 crbug.com/280342 [ Linux Win ] http/tests/media/progress-events-generated-correctly.html [ Failure ]
 
+crbug.com/411256 fast/block/do-not-strip-anonymous-blocks-when-block-child-becomes-float-and-continuation-on-line.html [ NeedsRebaseline ]
+crbug.com/411256 fast/block/do-not-strip-anonymous-blocks-when-block-child-becomes-float-and-other-block-on-line.html [ NeedsRebaseline ]
+crbug.com/411256 fast/block/float/nestedAnonymousBlocks.html [ NeedsRebaseline ]
+crbug.com/411256 css1/box_properties/float_on_text_elements.html [ NeedsRebaseline ]
+crbug.com/411256 fast/block/float/add-inline-between-floats-with-preceding-anonymous-box.html [ NeedsRebaseline ]
+crbug.com/411256 fast/block/float/add-inline-to-block-flow-with-block-children-that-do-not-need-anonymous-boxes.html [ NeedsRebaseline ]
+crbug.com/411256 fast/box-sizing/box-sizing.html [ NeedsRebaseline ]
+crbug.com/411256 fast/css/color-correction-on-backgrounds.html [ NeedsRebaseline ]
+crbug.com/411256 fast/css/word-space-extra.html [ NeedsRebaseline ]
+crbug.com/411256 fast/forms/input-align-image.html [ NeedsRebaseline ]
+crbug.com/411256 fast/text/word-break-run-rounding.html [ NeedsRebaseline ]
+
 crbug.com/520739 [ Mac ] http/tests/websocket/close-code-and-reason.html [ Failure Pass Timeout ]
 crbug.com/520737 [ Mac ] imported/csswg-test/css-writing-modes-3/writing-mode-vertical-rl-001.xht [ ImageOnlyFailure Pass Timeout ]
 crbug.com/520736 [ Win7 ] media/W3C/video/networkState/networkState_during_progress.html [ Failure Pass ]

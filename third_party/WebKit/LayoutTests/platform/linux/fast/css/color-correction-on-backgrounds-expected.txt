@@ -6,8 +6,8 @@ layer at (0,0) size 800x600
       LayoutBlockFlow {P} at (0,0) size 784x20
         LayoutText {#text} at (0,0) size 122x19
           text run at (0,0) width 122: "These should match:"
-      LayoutBlockFlow (floating) {DIV} at (0,36) size 100x100 [bgcolor=#560063]
       LayoutBlockFlow (anonymous) at (0,36) size 784x105
+        LayoutBlockFlow (floating) {DIV} at (0,0) size 100x100 [bgcolor=#560063]
         LayoutImage {IMG} at (100,0) size 100x100
         LayoutText {#text} at (200,85) size 4x19
           text run at (200,85) width 4: " "
@@ -15,7 +15,7 @@ layer at (0,0) size 800x600
       LayoutBlockFlow {P} at (0,157) size 784x20
         LayoutText {#text} at (0,0) size 223x19
           text run at (0,0) width 223: "These should not match (at this time):"
-      LayoutBlockFlow (floating) {DIV} at (0,193) size 100x100 [bgcolor=#560063]
       LayoutBlockFlow (anonymous) at (0,193) size 784x100
+        LayoutBlockFlow (floating) {DIV} at (0,0) size 100x100 [bgcolor=#560063]
         LayoutImage {IMG} at (100,0) size 100x100
         LayoutText {#text} at (0,0) size 0x0
