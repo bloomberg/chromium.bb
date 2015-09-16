@@ -4,6 +4,7 @@
 
 #include "ui/ozone/demo/software_renderer.h"
 
+#include "base/trace_event/trace_event.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "ui/gfx/vsync_provider.h"
@@ -44,6 +45,8 @@ bool SoftwareRenderer::Initialize() {
 }
 
 void SoftwareRenderer::RenderFrame() {
+  TRACE_EVENT0("ozone", "SoftwareRenderer::RenderFrame");
+
   float fraction = NextFraction();
 
   skia::RefPtr<SkSurface> surface = software_surface_->GetSurface();

@@ -6,6 +6,7 @@
 
 #include "base/location.h"
 #include "base/thread_task_runner_handle.h"
+#include "base/trace_event/trace_event.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_surface.h"
@@ -45,6 +46,8 @@ bool GlRenderer::Initialize() {
 }
 
 void GlRenderer::RenderFrame() {
+  TRACE_EVENT0("ozone", "GlRenderer::RenderFrame");
+
   float fraction = NextFraction();
 
   context_->MakeCurrent(surface_.get());

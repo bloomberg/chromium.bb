@@ -426,6 +426,7 @@ class GL_EXPORT GLSurfaceOzoneSurfacelessSurfaceImpl
   gfx::SwapResult SwapBuffers() override;
   bool SwapBuffersAsync(const SwapCompletionCallback& callback) override;
   void Destroy() override;
+  bool IsSurfaceless() const override;
 
  private:
   ~GLSurfaceOzoneSurfacelessSurfaceImpl() override;
@@ -525,6 +526,10 @@ void GLSurfaceOzoneSurfacelessSurfaceImpl::Destroy() {
     if (image)
       image->Destroy(true);
   }
+}
+
+bool GLSurfaceOzoneSurfacelessSurfaceImpl::IsSurfaceless() const {
+  return false;
 }
 
 GLSurfaceOzoneSurfacelessSurfaceImpl::~GLSurfaceOzoneSurfacelessSurfaceImpl() {

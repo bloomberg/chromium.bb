@@ -5,6 +5,7 @@
 #include "ui/ozone/demo/surfaceless_gl_renderer.h"
 
 #include "base/bind.h"
+#include "base/trace_event/trace_event.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_image.h"
@@ -98,6 +99,8 @@ bool SurfacelessGlRenderer::Initialize() {
 }
 
 void SurfacelessGlRenderer::RenderFrame() {
+  TRACE_EVENT0("ozone", "SurfacelessGlRenderer::RenderFrame");
+
   float fraction = NextFraction();
 
   context_->MakeCurrent(surface_.get());
