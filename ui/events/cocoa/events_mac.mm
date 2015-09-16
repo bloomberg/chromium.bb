@@ -233,7 +233,7 @@ uint16 TextFromNative(const base::NativeEvent& native_event) {
   if ([native_event type] != NSFlagsChanged)
     text = [native_event characters];
 
-  // These exceptions are based on web_input_event_builders_mac.mm:
+  // These exceptions are based on WebInputEventFactoryMac.mm:
   uint32 windows_keycode = WindowsKeycodeFromNative(native_event);
   if (windows_keycode == '\r')
     text = @"\r";
@@ -252,7 +252,7 @@ uint16 UnmodifiedTextFromNative(const base::NativeEvent& native_event) {
   if ([native_event type] != NSFlagsChanged)
     text = [native_event charactersIgnoringModifiers];
 
-  // These exceptions are based on web_input_event_builders_mac.mm:
+  // These exceptions are based on WebInputEventFactoryMac.mm:
   uint32 windows_keycode = WindowsKeycodeFromNative(native_event);
   if (windows_keycode == '\r')
     text = @"\r";
