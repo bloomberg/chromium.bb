@@ -34,7 +34,6 @@ import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.browser.tabmodel.document.DocumentTabModelInfo.DocumentEntry;
 import org.chromium.chrome.browser.tabmodel.document.DocumentTabModelInfo.DocumentList;
 import org.chromium.chrome.browser.util.MathUtils;
-import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
 
 import java.io.File;
@@ -140,7 +139,7 @@ public class DocumentTabModelImpl extends TabModelJniBridge implements DocumentT
      * Construct a DocumentTabModel.
      * @param activityDelegate Delegate to use for accessing the ActivityManager.
      * @param storageDelegate Delegate to use for accessing persistent storage.
-     * @param tabDelegate Used to create/get Tabs.
+     * @param tabCreatorManager Used to create Tabs.
      * @param isIncognito Whether or not the TabList is managing incognito tabs.
      * @param prioritizedTabId ID of the tab to prioritize when loading.
      * @param context Context to use for accessing SharedPreferences.
@@ -283,7 +282,7 @@ public class DocumentTabModelImpl extends TabModelJniBridge implements DocumentT
         // Create a frozen Tab if we are capable, or if the previous Tab is just a placeholder.
         if (entry.getTabState() != null && isNativeInitialized()
                 && (entry.placeholderTab == null || !entry.placeholderTab.isInitialized())) {
-            entry.placeholderTab = getTabDelegate(isIncognito()).createFrozenTab(
+            entry.placeholderTab = getTabCreator(isIncognito()).createFrozenTab(
                     entry.getTabState(), entry.tabId, TabModel.INVALID_TAB_INDEX);
             entry.placeholderTab.initializeNative();
         }
@@ -338,22 +337,20 @@ public class DocumentTabModelImpl extends TabModelJniBridge implements DocumentT
     }
 
     @Override
+    protected TabDelegate getTabCreator(boolean incognito) {
+        return (TabDelegate) mTabCreatorManager.getTabCreator(incognito);
+    }
+
+    @Override
     protected boolean createTabWithWebContents(
             boolean isIncognito, WebContents webContents, int parentTabId) {
         // Tabs created along this pathway are currently only created via JNI, which includes
         // session restore tabs.  Differs from TabModelImpl because we explicitly open tabs in the
         // foreground -- opening tabs in affiliated mode is disallowed by ChromeLauncherActivity
         // when a WebContents has already been created.
-        return getTabDelegate(isIncognito).createTabWithWebContents(
+        return getTabCreator(isIncognito).createTabWithWebContents(
                 webContents, parentTabId, TabLaunchType.FROM_LONGPRESS_FOREGROUND,
                 webContents.getUrl(), DocumentMetricIds.STARTED_BY_CHROME_HOME_RECENT_TABS);
-    }
-
-    @Override
-    protected Tab createNewTabForDevTools(String url) {
-        // TODO(dfalcantara): Move upwards once we delete ChromeShellTabModel.
-        return getTabDelegate(false).createNewTab(new LoadUrlParams(url),
-                TabModel.TabLaunchType.FROM_MENU_OR_OVERVIEW, null);
     }
 
     @Override
@@ -888,9 +885,5 @@ public class DocumentTabModelImpl extends TabModelJniBridge implements DocumentT
             if (entries.get(i).tabId == tabId) return true;
         }
         return false;
-    }
-
-    private TabDelegate getTabDelegate(boolean incognito) {
-        return (TabDelegate) mTabCreatorManager.getTabCreator(incognito);
     }
 }

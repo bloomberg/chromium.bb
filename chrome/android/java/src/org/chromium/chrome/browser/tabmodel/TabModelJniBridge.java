@@ -8,7 +8,10 @@ import android.os.SystemClock;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.tab.ChromeTab;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tabmodel.TabCreatorManager.TabCreator;
+import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
 
 /**
@@ -97,6 +100,12 @@ public abstract class TabModelJniBridge implements TabModel {
     protected abstract boolean closeTabAt(int index);
 
     /**
+     * Returns a tab creator for this tab model.
+     * @param incognito Whether to return an incognito TabCreator.
+     */
+    protected abstract TabCreator getTabCreator(boolean incognito);
+
+    /**
      * Creates a Tab with the given WebContents.
      * @param incognito Whether or not the tab is incognito.
      * @param webContents A {@link WebContents} object.
@@ -112,7 +121,10 @@ public abstract class TabModelJniBridge implements TabModel {
      * @param url URL to show.
      */
     @CalledByNative
-    protected abstract Tab createNewTabForDevTools(String url);
+    protected Tab createNewTabForDevTools(String url) {
+        return getTabCreator(false).createNewTab(new LoadUrlParams(url),
+                TabModel.TabLaunchType.FROM_MENU_OR_OVERVIEW, null);
+    }
 
     @Override
     @CalledByNative

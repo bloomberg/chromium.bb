@@ -9,7 +9,7 @@ import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.partnercustomizations.HomepageManager;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.content_public.browser.LoadUrlParams;
+import org.chromium.chrome.browser.tabmodel.TabCreatorManager.TabCreator;
 import org.chromium.content_public.browser.WebContents;
 
 /**
@@ -96,15 +96,14 @@ public class TabModelImpl extends TabModelBase {
     }
 
     @Override
-    protected boolean createTabWithWebContents(boolean incognito, WebContents webContents,
-            int parentId) {
-        return mActivity.getTabCreator(incognito).createTabWithWebContents(webContents,
-                parentId, TabLaunchType.FROM_LONGPRESS_BACKGROUND);
+    protected TabCreator getTabCreator(boolean incognito) {
+        return mActivity.getTabCreator(incognito);
     }
 
     @Override
-    protected Tab createNewTabForDevTools(String url) {
-        return mActivity.getTabCreator(false).createNewTab(new LoadUrlParams(url),
-                TabModel.TabLaunchType.FROM_MENU_OR_OVERVIEW, null);
+    protected boolean createTabWithWebContents(boolean incognito, WebContents webContents,
+            int parentId) {
+        return getTabCreator(incognito).createTabWithWebContents(webContents,
+                parentId, TabLaunchType.FROM_LONGPRESS_BACKGROUND);
     }
 }
