@@ -33,11 +33,13 @@ component("proxy_config") {
 source_set("unit_tests") {
   testonly = true
   sources = [
+    "pref_proxy_config_tracker_impl_unittest.cc",
     "proxy_config_dictionary_unittest.cc",
     "proxy_prefs_unittest.cc",
   ]
   deps = [
     ":proxy_config",
+    "//testing/gmock",
     "//testing/gtest",
   ]
 }

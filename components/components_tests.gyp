@@ -529,6 +529,7 @@
       'proximity_auth/wire_message_unittest.cc',
     ],
     'proxy_config_unittest_sources': [
+      'proxy_config/pref_proxy_config_tracker_impl_unittest.cc',
       'proxy_config/proxy_config_dictionary_unittest.cc',
       'proxy_config/proxy_prefs_unittest.cc',
     ],
