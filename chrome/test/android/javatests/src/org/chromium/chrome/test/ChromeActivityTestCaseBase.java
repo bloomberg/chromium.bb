@@ -246,34 +246,6 @@ public abstract class ChromeActivityTestCaseBase<T extends ChromeActivity>
     }
 
     /**
-     * Sends (synchronously) a single click to an absolute screen coordinates.
-     *
-     * @param x screen absolute
-     * @param y screen absolute
-     * @see TestTouchUtils
-     */
-    public void singleClick(float x, float y) {
-        TouchCommon.singleClick(getActivity(), x, y);
-    }
-
-    /**
-     * Sends (synchronously) a single click to the View at the specified coordinates.
-     *
-     * <p>
-     * Differs from
-     * {@link TestTouchUtils#singleClickView(android.app.Instrumentation, View, int, int)}
-     * as this does not rely on injecting events into the different activity.  Injecting events has
-     * been unreliable for us and simulating the touch events in this manner is just as effective.
-     *
-     * @param v The view to be clicked.
-     * @param x Relative x location to v
-     * @param y Relative y location to v
-     */
-    public void singleClickView(View v, int x, int y) {
-        TouchCommon.singleClickView(v, x, y);
-    }
-
-    /**
      * Sends (synchronously) a single click to the center of the View.
      *
      * <p>

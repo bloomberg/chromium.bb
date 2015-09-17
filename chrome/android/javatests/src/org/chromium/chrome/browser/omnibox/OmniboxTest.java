@@ -202,7 +202,7 @@ public class OmniboxTest extends ChromeActivityTestCaseBase<ChromeActivity> {
         // clicking.
         UiUtils.settleDownUI(getInstrumentation());
 
-        singleClickView(deleteButton, deleteButton.getWidth() / 2, deleteButton.getHeight() / 2);
+        singleClickView(deleteButton);
 
         assertTrue("Should have requested zero suggest results on url bar empty",
                 CriteriaHelper.pollForCriteria(new Criteria() {

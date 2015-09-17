@@ -103,8 +103,7 @@ public class DownloadTest extends DownloadTestBase {
         waitForFocus();
         int initialTabCount = getActivity().getCurrentTabModel().getCount();
         View currentView = getActivity().getActivityTab().getView();
-        TouchCommon.longPressView(currentView, currentView.getWidth() / 2,
-                currentView.getHeight() / 2);
+        TouchCommon.longPressView(currentView);
 
         getInstrumentation().invokeContextMenuAction(getActivity(),
                 R.id.contextmenu_open_in_new_tab, 0);
@@ -323,8 +322,7 @@ public class DownloadTest extends DownloadTestBase {
         waitForFocus();
 
         View currentView = getActivity().getActivityTab().getView();
-        TouchCommon.longPressView(
-                currentView, currentView.getWidth() / 2, currentView.getHeight() / 2);
+        TouchCommon.longPressView(currentView);
         getInstrumentation().invokeContextMenuAction(
                 getActivity(), R.id.contextmenu_open_in_new_tab, 0);
         waitForNewTabToStabilize(2);

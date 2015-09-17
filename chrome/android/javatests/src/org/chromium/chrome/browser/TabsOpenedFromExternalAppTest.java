@@ -507,7 +507,7 @@ public class TabsOpenedFromExternalAppTest extends ChromeTabbedActivityTestBase 
                 return getActivity().getActivityTab().getContentViewCore().getContainerView();
             }
         });
-        TouchCommon.longPressView(view, view.getWidth() / 2, view.getHeight() / 2);
+        TouchCommon.longPressView(view);
         assertTrue(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {

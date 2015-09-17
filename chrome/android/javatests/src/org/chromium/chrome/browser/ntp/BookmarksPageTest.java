@@ -115,7 +115,7 @@ public class BookmarksPageTest extends ChromeTabbedActivityTestBase {
         addBookmark();
         BookmarkItemView itemView = (BookmarkItemView) BookmarkTestUtils.getViewWithText(
                 mBookmarksList, TEST_PAGE_TITLE);
-        TouchCommon.longPressView(itemView, itemView.getWidth() / 2, itemView.getHeight() / 2);
+        TouchCommon.longPressView(itemView);
     }
 
     private String getCurrentFolderTitle() {
