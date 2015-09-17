@@ -5,7 +5,7 @@
 #ifndef COMPONENTS_MUS_VIEW_TREE_HOST_DELEGATE_H_
 #define COMPONENTS_MUS_VIEW_TREE_HOST_DELEGATE_H_
 
-namespace mus {
+namespace view_manager {
 
 class ViewTreeImpl;
 
@@ -30,6 +30,6 @@ class ViewTreeHostDelegate {
   virtual ~ViewTreeHostDelegate() {}
 };
 
-}  // namespace mus
+}  // namespace view_manager
 
 #endif  // COMPONENTS_MUS_VIEW_TREE_HOST_DELEGATE_H_

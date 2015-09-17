@@ -9,7 +9,6 @@
 #include "cc/surfaces/display_client.h"
 #include "cc/surfaces/surface_factory.h"
 #include "cc/surfaces/surface_factory_client.h"
-#include "components/mus/gles2/gpu_state.h"
 #include "components/mus/surfaces/surfaces_context_provider.h"
 #include "components/mus/surfaces/surfaces_context_provider_delegate.h"
 #include "components/mus/surfaces/surfaces_state.h"
@@ -21,7 +20,11 @@ class Display;
 class SurfaceFactory;
 }
 
-namespace mus {
+namespace gles2 {
+class GpuState;
+}
+
+namespace surfaces {
 
 class DisplayDelegate;
 class SurfacesScheduler;
@@ -32,10 +35,10 @@ class SurfacesState;
 // scheduled to be generated here based on VSync.
 class TopLevelDisplayClient : public cc::DisplayClient,
                               public cc::SurfaceFactoryClient,
-                              public SurfacesContextProviderDelegate {
+                              public surfaces::SurfacesContextProviderDelegate {
  public:
   TopLevelDisplayClient(gfx::AcceleratedWidget widget,
-                        const scoped_refptr<GpuState>& gpu_state,
+                        const scoped_refptr<gles2::GpuState>& gpu_state,
                         const scoped_refptr<SurfacesState>& surfaces_state);
   ~TopLevelDisplayClient() override;
 
@@ -68,6 +71,6 @@ class TopLevelDisplayClient : public cc::DisplayClient,
   DISALLOW_COPY_AND_ASSIGN(TopLevelDisplayClient);
 };
 
-}  // namespace mus
+}  // namespace surfaces
 
 #endif  // COMPONENTS_MUS_SURFACES_DISPLAY_IMPL_H_

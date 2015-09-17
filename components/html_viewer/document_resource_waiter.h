@@ -27,7 +27,7 @@ class GlobalState;
 // assumed HTMLDocument will call back for the FrameTreeClient and FrameData.
 class DocumentResourceWaiter : public web_view::FrameTreeClient,
                                public HTMLFrameTreeManagerObserver,
-                               public mus::ViewObserver {
+                               public mojo::ViewObserver {
  public:
   DocumentResourceWaiter(GlobalState* global_state,
                          mojo::URLResponsePtr response,
@@ -51,8 +51,8 @@ class DocumentResourceWaiter : public web_view::FrameTreeClient,
   // See class description.
   bool is_ready() const { return is_ready_; }
 
-  void SetRoot(mus::View* root);
-  mus::View* root() { return root_; }
+  void SetRoot(mojo::View* root);
+  mojo::View* root() { return root_; }
 
   void Bind(mojo::InterfaceRequest<web_view::FrameTreeClient> request);
 
@@ -80,10 +80,10 @@ class DocumentResourceWaiter : public web_view::FrameTreeClient,
 
   // ViewObserver:
   void OnViewViewportMetricsChanged(
-      mus::View* view,
+      mojo::View* view,
       const mojo::ViewportMetrics& old_metrics,
       const mojo::ViewportMetrics& new_metrics) override;
-  void OnViewDestroyed(mus::View* view) override;
+  void OnViewDestroyed(mojo::View* view) override;
 
   // HTMLFrameTreeManagerObserver:
   void OnHTMLFrameTreeManagerChangeIdAdvanced() override;
@@ -92,7 +92,7 @@ class DocumentResourceWaiter : public web_view::FrameTreeClient,
   GlobalState* global_state_;
   HTMLDocument* document_;
   mojo::URLResponsePtr response_;
-  mus::View* root_;
+  mojo::View* root_;
   web_view::FrameTreeServerPtr server_;
   mojo::Array<web_view::FrameDataPtr> frame_data_;
   uint32_t change_id_;

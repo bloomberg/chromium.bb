@@ -22,13 +22,14 @@
 #include "ui/gl/gl_image_memory.h"
 #include "ui/gl/gl_surface.h"
 
-namespace mus {
+namespace gles2 {
 
 const unsigned int GL_MAP_CHROMIUM = 0x78F1;
 
-CommandBufferLocal::CommandBufferLocal(CommandBufferLocalClient* client,
-                                       gfx::AcceleratedWidget widget,
-                                       const scoped_refptr<GpuState>& gpu_state)
+CommandBufferLocal::CommandBufferLocal(
+    CommandBufferLocalClient* client,
+    gfx::AcceleratedWidget widget,
+    const scoped_refptr<gles2::GpuState>& gpu_state)
     : widget_(widget),
       gpu_state_(gpu_state),
       client_(client),
@@ -74,7 +75,7 @@ bool CommandBufferLocal::Initialize() {
   bool bind_generates_resource = false;
   scoped_refptr<gpu::gles2::ContextGroup> context_group =
       new gpu::gles2::ContextGroup(
-          gpu_state_->mailbox_manager(), new GpuMemoryTracker,
+          gpu_state_->mailbox_manager(), new gles2::GpuMemoryTracker,
           new gpu::gles2::ShaderTranslatorCache,
           new gpu::gles2::FramebufferCompletenessCache, nullptr, nullptr,
           nullptr, bind_generates_resource);
@@ -127,8 +128,8 @@ int32_t CommandBufferLocal::CreateImage(ClientBuffer buffer,
                                         size_t width,
                                         size_t height,
                                         unsigned internalformat) {
-  MojoGpuMemoryBufferImpl* gpu_memory_buffer =
-      MojoGpuMemoryBufferImpl::FromClientBuffer(buffer);
+  gles2::MojoGpuMemoryBufferImpl* gpu_memory_buffer =
+      gles2::MojoGpuMemoryBufferImpl::FromClientBuffer(buffer);
 
   scoped_refptr<gfx::GLImageMemory> image(new gfx::GLImageMemory(
       gfx::Size(static_cast<int>(width), static_cast<int>(height)),
@@ -159,10 +160,11 @@ int32_t CommandBufferLocal::CreateGpuMemoryBufferImage(size_t width,
                                                        unsigned internalformat,
                                                        unsigned usage) {
   DCHECK_EQ(usage, static_cast<unsigned>(GL_MAP_CHROMIUM));
-  scoped_ptr<gfx::GpuMemoryBuffer> buffer(MojoGpuMemoryBufferImpl::Create(
-      gfx::Size(static_cast<int>(width), static_cast<int>(height)),
-      gpu::ImageFactory::DefaultBufferFormatForImageFormat(internalformat),
-      gpu::ImageFactory::ImageUsageToGpuMemoryBufferUsage(usage)));
+  scoped_ptr<gfx::GpuMemoryBuffer> buffer(
+      gles2::MojoGpuMemoryBufferImpl::Create(
+          gfx::Size(static_cast<int>(width), static_cast<int>(height)),
+          gpu::ImageFactory::DefaultBufferFormatForImageFormat(internalformat),
+          gpu::ImageFactory::ImageUsageToGpuMemoryBufferUsage(usage)));
   if (!buffer)
     return -1;
   return CreateImage(buffer->AsClientBuffer(), width, height, internalformat);
@@ -257,4 +259,4 @@ void CommandBufferLocal::OnSyncPointRetired() {
   scheduler_->SetScheduled(true);
 }
 
-}  // namespace mus
+}  // namespace gles2

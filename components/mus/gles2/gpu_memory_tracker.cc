@@ -4,7 +4,7 @@
 
 #include "components/mus/gles2/gpu_memory_tracker.h"
 
-namespace mus {
+namespace gles2 {
 
 GpuMemoryTracker::GpuMemoryTracker() {}
 
@@ -27,4 +27,4 @@ int GpuMemoryTracker::ClientId() const {
 
 GpuMemoryTracker::~GpuMemoryTracker() {}
 
-}  // namespace mus
+}  // namespace gles2

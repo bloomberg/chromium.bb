@@ -12,7 +12,7 @@
 #include "components/mus/surfaces/surfaces_scheduler.h"
 #include "components/mus/surfaces/surfaces_state.h"
 
-namespace mus {
+namespace surfaces {
 namespace {
 void CallCallback(const base::Closure& callback, cc::SurfaceDrawStatus status) {
   callback.Run();
@@ -21,7 +21,7 @@ void CallCallback(const base::Closure& callback, cc::SurfaceDrawStatus status) {
 
 TopLevelDisplayClient::TopLevelDisplayClient(
     gfx::AcceleratedWidget widget,
-    const scoped_refptr<GpuState>& gpu_state,
+    const scoped_refptr<gles2::GpuState>& gpu_state,
     const scoped_refptr<SurfacesState>& surfaces_state)
     : surfaces_state_(surfaces_state),
       factory_(surfaces_state->manager(), this),
@@ -35,7 +35,7 @@ TopLevelDisplayClient::TopLevelDisplayClient(
   // TODO(brianderson): Reconcile with SurfacesScheduler crbug.com/476676
   cc::DisplayScheduler* null_display_scheduler = nullptr;
   display_->Initialize(
-      make_scoped_ptr(new DirectOutputSurface(
+      make_scoped_ptr(new surfaces::DirectOutputSurface(
           new SurfacesContextProvider(this, widget, gpu_state))),
       null_display_scheduler);
 
@@ -101,4 +101,4 @@ void TopLevelDisplayClient::ReturnResources(
   // TODO(fsamuel): Implement this.
 }
 
-}  // namespace mus
+}  // namespace surfaces

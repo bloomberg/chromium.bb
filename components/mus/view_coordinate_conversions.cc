@@ -12,7 +12,7 @@
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/geometry/vector2d_f.h"
 
-namespace mus {
+namespace view_manager {
 
 namespace {
 
@@ -66,4 +66,4 @@ gfx::Rect ConvertRectBetweenViews(const ServerView* from,
                    bottom_right.y() - top_left.y());
 }
 
-}  // namespace mus
+}  // namespace view_manager

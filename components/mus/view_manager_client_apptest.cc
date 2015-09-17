@@ -15,7 +15,7 @@
 #include "mojo/application/public/cpp/application_test_base.h"
 #include "ui/mojo/geometry/geometry_util.h"
 
-namespace mus {
+namespace mojo {
 
 namespace {
 
@@ -29,8 +29,8 @@ class BoundsChangeObserver : public ViewObserver {
  private:
   // Overridden from ViewObserver:
   void OnViewBoundsChanged(View* view,
-                           const mojo::Rect& old_bounds,
-                           const mojo::Rect& new_bounds) override {
+                           const Rect& old_bounds,
+                           const Rect& new_bounds) override {
     DCHECK_EQ(view, view_);
     EXPECT_TRUE(ViewManagerTestBase::QuitRunLoop());
   }
@@ -97,7 +97,7 @@ class OrderChangeObserver : public ViewObserver {
   // Overridden from ViewObserver:
   void OnViewReordered(View* view,
                        View* relative_view,
-                       mojo::OrderDirection direction) override {
+                       OrderDirection direction) override {
     DCHECK_EQ(view, view_);
     EXPECT_TRUE(ViewManagerTestBase::QuitRunLoop());
   }
@@ -188,7 +188,7 @@ class ViewManagerTest : public ViewManagerTestBase {
   mojo::ViewTreeClientPtr ConnectToApplicationAndGetViewManagerClient() {
     mojo::URLRequestPtr request(mojo::URLRequest::New());
     request->url = mojo::String::From(application_impl()->url());
-    scoped_ptr<mojo::ApplicationConnection> connection =
+    scoped_ptr<ApplicationConnection> connection =
         application_impl()->ConnectToApplication(request.Pass());
     mojo::ViewTreeClientPtr client;
     connection->ConnectToService(&client);
@@ -311,7 +311,7 @@ TEST_F(ViewManagerTest, SetBounds) {
   View* view_in_embedded = embedded->GetViewById(view->id());
   EXPECT_EQ(view->bounds(), view_in_embedded->bounds());
 
-  mojo::Rect rect;
+  Rect rect;
   rect.width = rect.height = 100;
   view->SetBounds(rect);
   ASSERT_TRUE(WaitForBoundsToChange(view_in_embedded));
@@ -328,7 +328,7 @@ TEST_F(ViewManagerTest, SetBoundsSecurity) {
   ASSERT_NE(nullptr, embedded);
 
   View* view_in_embedded = embedded->GetViewById(view->id());
-  mojo::Rect rect;
+  Rect rect;
   rect.width = 800;
   rect.height = 600;
   view->SetBounds(rect);
@@ -778,7 +778,7 @@ TEST_F(ViewManagerTest, EmbedRootSeesHierarchyChanged) {
   window_manager()->GetRoot()->AddChild(embed_view);
 
   ViewTreeConnection* vm2 =
-      Embed(embed_view, mojo::ViewTree::ACCESS_POLICY_EMBED_ROOT).connection;
+      Embed(embed_view, ViewTree::ACCESS_POLICY_EMBED_ROOT).connection;
   View* vm2_v1 = vm2->CreateView();
   vm2->GetRoot()->AddChild(vm2_v1);
 
@@ -796,7 +796,7 @@ TEST_F(ViewManagerTest, EmbedFromEmbedRoot) {
 
   // Give the connection embedded at |embed_view| embed root powers.
   const EmbedResult result1 =
-      Embed(embed_view, mojo::ViewTree::ACCESS_POLICY_EMBED_ROOT);
+      Embed(embed_view, ViewTree::ACCESS_POLICY_EMBED_ROOT);
   ViewTreeConnection* vm2 = result1.connection;
   EXPECT_EQ(result1.connection_id, vm2->GetConnectionId());
   View* vm2_v1 = vm2->CreateView();
@@ -826,4 +826,4 @@ TEST_F(ViewManagerTest, EmbedFromEmbedRoot) {
   EXPECT_EQ(result4.connection_id, result4.connection->GetConnectionId());
 }
 
-}  // namespace mus
+}  // namespace mojo

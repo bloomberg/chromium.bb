@@ -37,7 +37,7 @@ std::set<std::string> GetResourcePaths() {
 // TODO(sky): the 1.f should be view->viewport_metrics().device_scale_factor,
 // but that causes clipping problems. No doubt we're not scaling a size
 // correctly.
-AuraInit::AuraInit(mus::View* view, mojo::Shell* shell)
+AuraInit::AuraInit(mojo::View* view, mojo::Shell* shell)
     : ui_init_(view->viewport_metrics().size_in_pixels.To<gfx::Size>(), 1.f) {
   aura::Env::CreateInstance(false);
 

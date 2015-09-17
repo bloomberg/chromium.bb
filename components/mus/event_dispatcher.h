@@ -12,7 +12,7 @@
 #include "ui/mojo/events/input_events.mojom.h"
 #include "ui/mojo/events/input_key_codes.mojom.h"
 
-namespace mus {
+namespace view_manager {
 
 class ServerView;
 class ViewTreeHostImpl;
@@ -65,6 +65,6 @@ class EventDispatcher {
   DISALLOW_COPY_AND_ASSIGN(EventDispatcher);
 };
 
-}  // namespace mus
+}  // namespace view_manager
 
 #endif  // COMPONENTS_MUS_EVENT_DISPATCHER_H_

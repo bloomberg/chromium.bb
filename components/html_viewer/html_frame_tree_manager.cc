@@ -68,7 +68,7 @@ HTMLFrameTreeManager::TreeMap* HTMLFrameTreeManager::instances_ = nullptr;
 // static
 HTMLFrame* HTMLFrameTreeManager::CreateFrameAndAttachToTree(
     GlobalState* global_state,
-    mus::View* view,
+    mojo::View* view,
     scoped_ptr<DocumentResourceWaiter> resource_waiter,
     HTMLFrameDelegate* delegate) {
   if (!instances_)
@@ -209,7 +209,7 @@ HTMLFrameTreeManager::~HTMLFrameTreeManager() {
 
 void HTMLFrameTreeManager::Init(
     HTMLFrameDelegate* delegate,
-    mus::View* local_view,
+    mojo::View* local_view,
     const mojo::Array<web_view::FrameDataPtr>& frame_data,
     uint32_t change_id) {
   change_id_ = change_id;
@@ -223,7 +223,7 @@ HTMLFrame* HTMLFrameTreeManager::BuildFrameTree(
     HTMLFrameDelegate* delegate,
     const mojo::Array<web_view::FrameDataPtr>& frame_data,
     uint32_t local_frame_id,
-    mus::View* local_view) {
+    mojo::View* local_view) {
   std::vector<HTMLFrame*> parents;
   HTMLFrame* root = nullptr;
   HTMLFrame* last_frame = nullptr;

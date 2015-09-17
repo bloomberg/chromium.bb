@@ -4,9 +4,9 @@
 
 #include "components/mus/public/cpp/keys.h"
 
-namespace mus {
+namespace mojo {
 
 extern const char kViewManagerKeyWantsTouchEvents[] =
     "view-manager-key-wants-touch-events";
 
-}  // namespace mus
+}  // namespace mojo

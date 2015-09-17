@@ -30,13 +30,14 @@ void RequireCallback(cc::SurfaceId surface_id,
 
 }
 
-WebLayerImpl::WebLayerImpl(mus::View* view, float device_pixel_ratio)
-    : cc_blink::WebLayerImpl(
-          cc::SurfaceLayer::Create(cc_blink::WebLayerImpl::LayerSettings(),
-                                   base::Bind(&SatisfyCallback),
-                                   base::Bind(&RequireCallback))),
+WebLayerImpl::WebLayerImpl(mojo::View* view, float device_pixel_ratio)
+    : cc_blink::WebLayerImpl(cc::SurfaceLayer::Create(
+          cc_blink::WebLayerImpl::LayerSettings(),
+          base::Bind(&SatisfyCallback),
+          base::Bind(&RequireCallback))),
       view_(view),
-      device_pixel_ratio_(device_pixel_ratio) {}
+      device_pixel_ratio_(device_pixel_ratio) {
+}
 
 WebLayerImpl::~WebLayerImpl() {
 }

@@ -8,7 +8,7 @@
 #include "base/basictypes.h"
 #include "components/mus/server_view_delegate.h"
 
-namespace mus {
+namespace view_manager {
 
 class TestServerViewDelegate : public ServerViewDelegate {
  public:
@@ -21,7 +21,7 @@ class TestServerViewDelegate : public ServerViewDelegate {
   // ServerViewDelegate:
   scoped_ptr<cc::CompositorFrame> UpdateViewTreeFromCompositorFrame(
       const mojo::CompositorFramePtr& input) override;
-  SurfacesState* GetSurfacesState() override;
+  surfaces::SurfacesState* GetSurfacesState() override;
   void OnScheduleViewPaint(const ServerView* view) override;
   const ServerView* GetRootView(const ServerView* view) const override;
 
@@ -30,6 +30,6 @@ class TestServerViewDelegate : public ServerViewDelegate {
   DISALLOW_COPY_AND_ASSIGN(TestServerViewDelegate);
 };
 
-}  // namespace mus
+}  // namespace view_manager
 
 #endif  // COMPONENTS_MUS_TEST_SERVER_VIEW_DELEGATE_H_

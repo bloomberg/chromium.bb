@@ -15,7 +15,7 @@
 #include "components/mus/public/cpp/view_tracker.h"
 #include "mojo/application/public/cpp/service_provider_impl.h"
 
-namespace mus {
+namespace mojo {
 
 namespace {
 
@@ -88,7 +88,7 @@ class ScopedOrderChangedNotifier {
  public:
   ScopedOrderChangedNotifier(View* view,
                              View* relative_view,
-                             mojo::OrderDirection direction)
+                             OrderDirection direction)
       : view_(view), relative_view_(relative_view), direction_(direction) {
     FOR_EACH_OBSERVER(ViewObserver, *ViewPrivate(view_).observers(),
                       OnViewReordering(view_, relative_view_, direction_));
@@ -101,7 +101,7 @@ class ScopedOrderChangedNotifier {
  private:
   View* view_;
   View* relative_view_;
-  mojo::OrderDirection direction_;
+  OrderDirection direction_;
 
   MOJO_DISALLOW_COPY_AND_ASSIGN(ScopedOrderChangedNotifier);
 };
@@ -110,7 +110,7 @@ class ScopedOrderChangedNotifier {
 bool ReorderImpl(View::Children* children,
                  View* view,
                  View* relative,
-                 mojo::OrderDirection direction) {
+                 OrderDirection direction) {
   DCHECK(relative);
   DCHECK_NE(view, relative);
   DCHECK_EQ(view->parent(), relative->parent());
@@ -120,14 +120,14 @@ bool ReorderImpl(View::Children* children,
   const size_t target_i =
       std::find(children->begin(), children->end(), relative) -
       children->begin();
-  if ((direction == mojo::ORDER_DIRECTION_ABOVE && child_i == target_i + 1) ||
-      (direction == mojo::ORDER_DIRECTION_BELOW && child_i + 1 == target_i)) {
+  if ((direction == ORDER_DIRECTION_ABOVE && child_i == target_i + 1) ||
+      (direction == ORDER_DIRECTION_BELOW && child_i + 1 == target_i)) {
     return false;
   }
 
   ScopedOrderChangedNotifier notifier(view, relative, direction);
 
-  const size_t dest_i = direction == mojo::ORDER_DIRECTION_ABOVE
+  const size_t dest_i = direction == ORDER_DIRECTION_ABOVE
                             ? (child_i < target_i ? target_i : target_i + 1)
                             : (child_i < target_i ? target_i - 1 : target_i);
   children->erase(children->begin() + child_i);
@@ -139,8 +139,8 @@ bool ReorderImpl(View::Children* children,
 class ScopedSetBoundsNotifier {
  public:
   ScopedSetBoundsNotifier(View* view,
-                          const mojo::Rect& old_bounds,
-                          const mojo::Rect& new_bounds)
+                          const Rect& old_bounds,
+                          const Rect& new_bounds)
       : view_(view), old_bounds_(old_bounds), new_bounds_(new_bounds) {
     FOR_EACH_OBSERVER(ViewObserver, *ViewPrivate(view_).observers(),
                       OnViewBoundsChanging(view_, old_bounds_, new_bounds_));
@@ -152,8 +152,8 @@ class ScopedSetBoundsNotifier {
 
  private:
   View* view_;
-  const mojo::Rect old_bounds_;
-  const mojo::Rect new_bounds_;
+  const Rect old_bounds_;
+  const Rect new_bounds_;
 
   MOJO_DISALLOW_COPY_AND_ASSIGN(ScopedSetBoundsNotifier);
 };
@@ -191,7 +191,7 @@ void View::Destroy() {
   LocalDestroy();
 }
 
-void View::SetBounds(const mojo::Rect& bounds) {
+void View::SetBounds(const Rect& bounds) {
   if (!OwnsView(connection_, this))
     return;
 
@@ -212,15 +212,14 @@ void View::SetVisible(bool value) {
   LocalSetVisible(value);
 }
 
-scoped_ptr<ViewSurface> View::RequestSurface() {
+scoped_ptr<mojo::ViewSurface> View::RequestSurface() {
   mojo::SurfacePtr surface;
   mojo::SurfaceClientPtr client;
-  mojo::InterfaceRequest<mojo::SurfaceClient> client_request =
-      GetProxy(&client);
+  mojo::InterfaceRequest<SurfaceClient> client_request = GetProxy(&client);
   static_cast<ViewTreeClientImpl*>(connection_)
       ->RequestSurface(id_, GetProxy(&surface), client.Pass());
   return make_scoped_ptr(
-      new ViewSurface(surface.PassInterface(), client_request.Pass()));
+      new mojo::ViewSurface(surface.PassInterface(), client_request.Pass()));
 }
 
 void View::SetSharedProperty(const std::string& name,
@@ -248,7 +247,7 @@ void View::SetSharedProperty(const std::string& name,
 
   // TODO: add test coverage of this (450303).
   if (connection_) {
-    mojo::Array<uint8_t> transport_value;
+    Array<uint8_t> transport_value;
     if (value) {
       transport_value.resize(value->size());
       if (value->size())
@@ -309,16 +308,16 @@ void View::RemoveChild(View* child) {
 void View::MoveToFront() {
   if (!parent_ || parent_->children_.back() == this)
     return;
-  Reorder(parent_->children_.back(), mojo::ORDER_DIRECTION_ABOVE);
+  Reorder(parent_->children_.back(), ORDER_DIRECTION_ABOVE);
 }
 
 void View::MoveToBack() {
   if (!parent_ || parent_->children_.front() == this)
     return;
-  Reorder(parent_->children_.front(), mojo::ORDER_DIRECTION_BELOW);
+  Reorder(parent_->children_.front(), ORDER_DIRECTION_BELOW);
 }
 
-void View::Reorder(View* relative, mojo::OrderDirection direction) {
+void View::Reorder(View* relative, OrderDirection direction) {
   if (!LocalReorder(relative, direction))
     return;
   if (connection_) {
@@ -354,16 +353,16 @@ View* View::GetChildById(Id id) {
   return NULL;
 }
 
-void View::SetTextInputState(mojo::TextInputStatePtr state) {
+void View::SetTextInputState(TextInputStatePtr state) {
   if (connection_) {
     static_cast<ViewTreeClientImpl*>(connection_)
         ->SetViewTextInputState(id_, state.Pass());
   }
 }
 
-void View::SetImeVisibility(bool visible, mojo::TextInputStatePtr state) {
+void View::SetImeVisibility(bool visible, TextInputStatePtr state) {
   // SetImeVisibility() shouldn't be used if the view is not editable.
-  DCHECK(state.is_null() || state->type != mojo::TEXT_INPUT_TYPE_NONE);
+  DCHECK(state.is_null() || state->type != TEXT_INPUT_TYPE_NONE);
   if (connection_) {
     static_cast<ViewTreeClientImpl*>(connection_)
         ->SetImeVisibility(id_, visible, state.Pass());
@@ -379,12 +378,12 @@ bool View::HasFocus() const {
   return connection_ && connection_->GetFocusedView() == this;
 }
 
-void View::Embed(mojo::ViewTreeClientPtr client) {
-  Embed(client.Pass(), mojo::ViewTree::ACCESS_POLICY_DEFAULT,
+void View::Embed(ViewTreeClientPtr client) {
+  Embed(client.Pass(), ViewTree::ACCESS_POLICY_DEFAULT,
         base::Bind(&EmptyEmbedCallback));
 }
 
-void View::Embed(mojo::ViewTreeClientPtr client,
+void View::Embed(ViewTreeClientPtr client,
                  uint32_t policy_bitmask,
                  const EmbedCallback& callback) {
   if (PrepareForEmbed()) {
@@ -400,9 +399,9 @@ void View::Embed(mojo::ViewTreeClientPtr client,
 
 namespace {
 
-mojo::ViewportMetricsPtr CreateEmptyViewportMetrics() {
-  mojo::ViewportMetricsPtr metrics = mojo::ViewportMetrics::New();
-  metrics->size_in_pixels = mojo::Size::New();
+ViewportMetricsPtr CreateEmptyViewportMetrics() {
+  ViewportMetricsPtr metrics = ViewportMetrics::New();
+  metrics->size_in_pixels = Size::New();
   // TODO(vtl): The |.Pass()| below is only needed due to an MSVS bug; remove it
   // once that's fixed.
   return metrics.Pass();
@@ -506,12 +505,11 @@ void View::LocalRemoveChild(View* child) {
   RemoveChildImpl(child, &children_);
 }
 
-bool View::LocalReorder(View* relative, mojo::OrderDirection direction) {
+bool View::LocalReorder(View* relative, OrderDirection direction) {
   return ReorderImpl(&parent_->children_, this, relative, direction);
 }
 
-void View::LocalSetBounds(const mojo::Rect& old_bounds,
-                          const mojo::Rect& new_bounds) {
+void View::LocalSetBounds(const Rect& old_bounds, const Rect& new_bounds) {
   DCHECK(old_bounds.x == bounds_.x);
   DCHECK(old_bounds.y == bounds_.y);
   DCHECK(old_bounds.width == bounds_.width);
@@ -520,8 +518,8 @@ void View::LocalSetBounds(const mojo::Rect& old_bounds,
   bounds_ = new_bounds;
 }
 
-void View::LocalSetViewportMetrics(const mojo::ViewportMetrics& old_metrics,
-                                   const mojo::ViewportMetrics& new_metrics) {
+void View::LocalSetViewportMetrics(const ViewportMetrics& old_metrics,
+                                   const ViewportMetrics& new_metrics) {
   // TODO(eseidel): We could check old_metrics against viewport_metrics_.
   viewport_metrics_ = new_metrics.Clone();
   FOR_EACH_OBSERVER(
@@ -612,4 +610,4 @@ bool View::PrepareForEmbed() {
   return true;
 }
 
-}  // namespace mus
+}  // namespace mojo

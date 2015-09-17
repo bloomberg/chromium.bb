@@ -29,8 +29,8 @@ class PendingWebViewLoad;
 class URLRequestCloneable;
 
 class WebViewImpl : public mojom::WebView,
-                    public mus::ViewTreeDelegate,
-                    public mus::ViewObserver,
+                    public mojo::ViewTreeDelegate,
+                    public mojo::ViewObserver,
                     public FrameTreeDelegate,
                     public FrameDevToolsAgentDelegate {
  public:
@@ -58,15 +58,15 @@ class WebViewImpl : public mojom::WebView,
   void GoBack() override;
   void GoForward() override;
 
-  // Overridden from mus::ViewTreeDelegate:
-  void OnEmbed(mus::View* root) override;
-  void OnConnectionLost(mus::ViewTreeConnection* connection) override;
+  // Overridden from mojo::ViewTreeDelegate:
+  void OnEmbed(mojo::View* root) override;
+  void OnConnectionLost(mojo::ViewTreeConnection* connection) override;
 
-  // Overridden from mus::ViewObserver:
-  void OnViewBoundsChanged(mus::View* view,
+  // Overridden from mojo::ViewObserver:
+  void OnViewBoundsChanged(mojo::View* view,
                            const mojo::Rect& old_bounds,
                            const mojo::Rect& new_bounds) override;
-  void OnViewDestroyed(mus::View* view) override;
+  void OnViewDestroyed(mojo::View* view) override;
 
   // Overridden from FrameTreeDelegate:
   bool CanPostMessageEventToFrame(const Frame* source,
@@ -87,8 +87,8 @@ class WebViewImpl : public mojom::WebView,
   mojo::ApplicationImpl* app_;
   mojom::WebViewClientPtr client_;
   mojo::StrongBinding<WebView> binding_;
-  mus::View* root_;
-  mus::View* content_;
+  mojo::View* root_;
+  mojo::View* content_;
   scoped_ptr<FrameTree> frame_tree_;
 
   // When LoadRequest() is called a PendingWebViewLoad is created to wait for

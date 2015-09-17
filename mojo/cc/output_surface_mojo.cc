@@ -15,8 +15,9 @@ namespace mojo {
 
 OutputSurfaceMojo::OutputSurfaceMojo(
     const scoped_refptr<cc::ContextProvider>& context_provider,
-    scoped_ptr<mus::ViewSurface> surface)
-    : cc::OutputSurface(context_provider), surface_(surface.Pass()) {
+    scoped_ptr<mojo::ViewSurface> surface)
+    : cc::OutputSurface(context_provider),
+      surface_(surface.Pass()) {
   capabilities_.delegated_rendering = true;
   capabilities_.max_frames_pending = 1;
 }
@@ -39,7 +40,7 @@ void OutputSurfaceMojo::SwapBuffers(cc::CompositorFrame* frame) {
 }
 
 void OutputSurfaceMojo::OnResourcesReturned(
-    mus::ViewSurface* surface,
+    mojo::ViewSurface* surface,
     mojo::Array<mojo::ReturnedResourcePtr> resources) {
   cc::CompositorFrameAck cfa;
   cfa.resources = resources.To<cc::ReturnedResourceArray>();

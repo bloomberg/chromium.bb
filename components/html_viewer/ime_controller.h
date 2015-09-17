@@ -12,7 +12,7 @@ class WebGestureEvent;
 class WebWidget;
 }
 
-namespace mus {
+namespace mojo {
 class View;
 }
 
@@ -22,7 +22,7 @@ namespace html_viewer {
 // handling IME related stuff.
 class ImeController {
  public:
-  ImeController(mus::View* view, blink::WebWidget* widget);
+  ImeController(mojo::View* view, blink::WebWidget* widget);
   ~ImeController();
 
   // Methods called by WebWidget overrides.
@@ -33,13 +33,13 @@ class ImeController {
   void ShowImeIfNeeded();
 
  private:
-  // Update text input state from WebWidget to mus::View. If the focused
+  // Update text input state from WebWidget to mojo::View. If the focused
   // element is editable and |show_ime| is True, the software keyboard will be
   // shown.
   void UpdateTextInputState(bool show_ime);
 
   // Not owned objects.
-  mus::View* view_;
+  mojo::View* view_;
   blink::WebWidget* widget_;
 
   blink::WebTextInputInfo text_input_info_;

@@ -5,13 +5,13 @@
 #ifndef COMPONENTS_MUS_SERVER_VIEW_OBSERVER_H_
 #define COMPONENTS_MUS_SERVER_VIEW_OBSERVER_H_
 
-#include "components/mus/public/interfaces/mus_constants.mojom.h"
+#include "components/mus/public/interfaces/view_manager_constants.mojom.h"
 
 namespace gfx {
 class Rect;
 }
 
-namespace mus {
+namespace mojo {
 class ViewportMetrics;
 }
 
@@ -19,7 +19,7 @@ namespace ui {
 struct TextInputState;
 }
 
-namespace mus {
+namespace view_manager {
 
 class ServerView;
 
@@ -65,6 +65,6 @@ class ServerViewObserver {
   virtual ~ServerViewObserver() {}
 };
 
-}  // namespace mus
+}  // namespace view_manager
 
 #endif  // COMPONENTS_MUS_SERVER_VIEW_OBSERVER_H_

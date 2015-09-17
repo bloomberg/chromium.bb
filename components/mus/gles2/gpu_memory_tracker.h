@@ -7,7 +7,7 @@
 
 #include "gpu/command_buffer/service/memory_tracking.h"
 
-namespace mus {
+namespace gles2 {
 
 // TODO(fsamuel, rjkroege): This is a stub implementation that needs to be
 // completed for proper memory tracking.
@@ -15,7 +15,7 @@ class GpuMemoryTracker : public gpu::gles2::MemoryTracker {
  public:
   GpuMemoryTracker();
 
-  // gpu::MemoryTracker implementation:
+  // gpu::gles2::MemoryTracker implementation:
   void TrackMemoryAllocatedChange(
       size_t old_size,
       size_t new_size,
@@ -30,6 +30,6 @@ class GpuMemoryTracker : public gpu::gles2::MemoryTracker {
   DISALLOW_COPY_AND_ASSIGN(GpuMemoryTracker);
 };
 
-}  // namespace mus
+}  // namespace gles2
 
 #endif  // COMPONENTS_MUS_GLES2_GPU_MEMORY_TRACKER_H_

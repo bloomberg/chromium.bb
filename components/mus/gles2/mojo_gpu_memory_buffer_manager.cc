@@ -7,7 +7,7 @@
 #include "base/logging.h"
 #include "components/mus/gles2/mojo_gpu_memory_buffer.h"
 
-namespace mus {
+namespace gles2 {
 
 MojoGpuMemoryBufferManager::MojoGpuMemoryBufferManager() {}
 
@@ -32,4 +32,4 @@ void MojoGpuMemoryBufferManager::SetDestructionSyncPoint(
   NOTIMPLEMENTED();
 }
 
-}  // namespace mus
+}  // namespace gles2

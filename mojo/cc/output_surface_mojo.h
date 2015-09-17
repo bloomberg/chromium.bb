@@ -15,10 +15,10 @@
 namespace mojo {
 
 class OutputSurfaceMojo : public cc::OutputSurface,
-                          public mus::ViewSurfaceClient {
+                          public mojo::ViewSurfaceClient {
  public:
   OutputSurfaceMojo(const scoped_refptr<cc::ContextProvider>& context_provider,
-                    scoped_ptr<mus::ViewSurface> surface);
+                    scoped_ptr<mojo::ViewSurface> surface);
   ~OutputSurfaceMojo() override;
 
   // cc::OutputSurface implementation.
@@ -26,12 +26,12 @@ class OutputSurfaceMojo : public cc::OutputSurface,
   bool BindToClient(cc::OutputSurfaceClient* client) override;
 
  private:
-  // ViewSurfaceClient implementation:
+  // uip::SurfaceObserver implementation:
   void OnResourcesReturned(
-      mus::ViewSurface* surface,
+      mojo::ViewSurface* surface,
       mojo::Array<mojo::ReturnedResourcePtr> resources) override;
 
-  scoped_ptr<mus::ViewSurface> surface_;
+  scoped_ptr<mojo::ViewSurface> surface_;
 
   DISALLOW_COPY_AND_ASSIGN(OutputSurfaceMojo);
 };

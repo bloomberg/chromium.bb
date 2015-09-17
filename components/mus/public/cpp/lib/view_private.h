@@ -7,7 +7,7 @@
 
 #include "components/mus/public/cpp/view.h"
 
-namespace mus {
+namespace mojo {
 
 // This class is a friend of a View and contains functions to mutate internal
 // state of View.
@@ -37,19 +37,18 @@ class ViewPrivate {
     view_->properties_ = data;
   }
 
-  void LocalSetViewportMetrics(const mojo::ViewportMetrics& old_metrics,
-                               const mojo::ViewportMetrics& new_metrics) {
+  void LocalSetViewportMetrics(const ViewportMetrics& old_metrics,
+                               const ViewportMetrics& new_metrics) {
     view_->LocalSetViewportMetrics(new_metrics, new_metrics);
   }
 
   void LocalDestroy() { view_->LocalDestroy(); }
   void LocalAddChild(View* child) { view_->LocalAddChild(child); }
   void LocalRemoveChild(View* child) { view_->LocalRemoveChild(child); }
-  void LocalReorder(View* relative, mojo::OrderDirection direction) {
+  void LocalReorder(View* relative, OrderDirection direction) {
     view_->LocalReorder(relative, direction);
   }
-  void LocalSetBounds(const mojo::Rect& old_bounds,
-                      const mojo::Rect& new_bounds) {
+  void LocalSetBounds(const Rect& old_bounds, const Rect& new_bounds) {
     view_->LocalSetBounds(old_bounds, new_bounds);
   }
   void LocalSetDrawn(bool drawn) { view_->LocalSetDrawn(drawn); }
@@ -61,6 +60,6 @@ class ViewPrivate {
   MOJO_DISALLOW_COPY_AND_ASSIGN(ViewPrivate);
 };
 
-}  // namespace mus
+}  // namespace mojo
 
 #endif  // COMPONENTS_MUS_PUBLIC_CPP_LIB_VIEW_PRIVATE_H_

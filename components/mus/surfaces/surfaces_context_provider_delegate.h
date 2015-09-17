@@ -5,7 +5,7 @@
 #ifndef COMPONENTS_MUS_SURFACES_SURFACES_CONTEXT_PROVIDER_DELEGATE_H_
 #define COMPONENTS_MUS_SURFACES_SURFACES_CONTEXT_PROVIDER_DELEGATE_H_
 
-namespace mus {
+namespace surfaces {
 
 class SurfacesContextProviderDelegate {
  public:
@@ -15,6 +15,6 @@ class SurfacesContextProviderDelegate {
   virtual ~SurfacesContextProviderDelegate() {}
 };
 
-}  // namespace mus
+}  // namespace surfaces
 
 #endif  // COMPONENTS_MUS_SURFACES_SURFACES_CONTEXT_PROVIDER_DELEGATE_H_

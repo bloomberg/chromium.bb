@@ -51,7 +51,7 @@ class FrameTreeDelegate {
   // Asks the client if navigation is allowed. If the navigation is allowed
   // |callback| should be called to continue the navigation. |callback|
   // may be called synchronously or asynchronously. In the callback
-  // mojo::ViewTreeClientPtr should only be set if an app other than
+  // ViewTreeClientPtr should only be set if an app other than
   // frame->app_id() is used to render |request|.
   virtual void CanNavigateFrame(Frame* target,
                                 mojo::URLRequestPtr request,

@@ -5,7 +5,7 @@
 #ifndef COMPONENTS_GLES2_COMMAND_BUFFER_IMPL_OBSERVER_H_
 #define COMPONENTS_GLES2_COMMAND_BUFFER_IMPL_OBSERVER_H_
 
-namespace mus {
+namespace gles2 {
 
 class CommandBufferImplObserver {
  public:
@@ -15,6 +15,6 @@ class CommandBufferImplObserver {
   ~CommandBufferImplObserver() {}
 };
 
-}  // namespace mus
+}  // namespace gles2
 
 #endif  // COMPONENTS_GLES2_COMMAND_BUFFER_IMPL_OBSERVER_H_

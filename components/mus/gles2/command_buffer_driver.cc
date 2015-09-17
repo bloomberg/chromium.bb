@@ -32,7 +32,7 @@
 #include "ui/gl/gl_image_shared_memory.h"
 #include "ui/gl/gl_surface.h"
 
-namespace mus {
+namespace gles2 {
 
 CommandBufferDriver::Client::~Client() {}
 
@@ -131,7 +131,7 @@ bool CommandBufferDriver::DoInitialize(
 
   const size_t kSize = sizeof(gpu::CommandBufferSharedState);
   scoped_ptr<gpu::BufferBacking> backing(
-      MojoBufferBacking::Create(shared_state.Pass(), kSize));
+      gles2::MojoBufferBacking::Create(shared_state.Pass(), kSize));
   if (!backing)
     return false;
 
@@ -167,7 +167,7 @@ void CommandBufferDriver::RegisterTransferBuffer(
   // Take ownership of the memory and map it into this process.
   // This validates the size.
   scoped_ptr<gpu::BufferBacking> backing(
-      MojoBufferBacking::Create(transfer_buffer.Pass(), size));
+      gles2::MojoBufferBacking::Create(transfer_buffer.Pass(), size));
   if (!backing) {
     DVLOG(0) << "Failed to map shared memory.";
     return;
@@ -302,4 +302,4 @@ void CommandBufferDriver::DestroyDecoder() {
   }
 }
 
-}  // namespace mus
+}  // namespace gles2

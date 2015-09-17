@@ -11,7 +11,7 @@
 #include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/rect.h"
 
-namespace mus {
+namespace view_manager {
 
 using ViewCoordinateConversionsTest = testing::Test;
 
@@ -55,4 +55,4 @@ TEST_F(ViewCoordinateConversionsTest, ConvertPointFBetweenViews) {
   }
 }
 
-}  // namespace mus
+}  // namespace view_manager

@@ -11,7 +11,7 @@
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/point_f.h"
 
-namespace mus {
+namespace view_manager {
 
 EventDispatcher::EventDispatcher(ViewTreeHostImpl* view_tree_host)
     : view_tree_host_(view_tree_host) {}
@@ -93,4 +93,4 @@ ServerView* EventDispatcher::FindEventTarget(mojo::Event* event) {
   return focused_view;
 }
 
-}  // namespace mus
+}  // namespace view_manager

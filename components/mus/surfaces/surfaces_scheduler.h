@@ -14,7 +14,7 @@ class Display;
 class RenderingStatsInstrumentation;
 }
 
-namespace mus {
+namespace surfaces {
 
 // TODO(brianderson): Reconcile with DisplayScheduler crbug.com/476676
 class SurfacesScheduler : public cc::SchedulerClient {
@@ -53,6 +53,6 @@ class SurfacesScheduler : public cc::SchedulerClient {
   DISALLOW_COPY_AND_ASSIGN(SurfacesScheduler);
 };
 
-}  // namespace mus
+}  // namespace surfaces
 
 #endif  // COMPONENTS_MUS_SURFACES_SURFACES_SCHEDULER_H_

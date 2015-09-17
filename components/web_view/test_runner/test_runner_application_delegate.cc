@@ -39,7 +39,7 @@ TestRunnerApplicationDelegate::TestRunnerApplicationDelegate()
 
 TestRunnerApplicationDelegate::~TestRunnerApplicationDelegate() {
   if (root_)
-    mus::ScopedViewPtr::DeleteViewOrViewManager(root_);
+    mojo::ScopedViewPtr::DeleteViewOrViewManager(root_);
 }
 
 void TestRunnerApplicationDelegate::LaunchURL(const GURL& test_url) {
@@ -54,7 +54,7 @@ void TestRunnerApplicationDelegate::LaunchURL(const GURL& test_url) {
 
 void TestRunnerApplicationDelegate::Terminate() {
   if (root_)
-    mus::ScopedViewPtr::DeleteViewOrViewManager(root_);
+    mojo::ScopedViewPtr::DeleteViewOrViewManager(root_);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -62,7 +62,7 @@ void TestRunnerApplicationDelegate::Terminate() {
 
 void TestRunnerApplicationDelegate::Initialize(mojo::ApplicationImpl* app) {
   app_ = app;
-  mus::CreateSingleViewTreeHost(app_, this, &host_);
+  mojo::CreateSingleViewTreeHost(app_, this, &host_);
 }
 
 bool TestRunnerApplicationDelegate::ConfigureIncomingConnection(
@@ -72,9 +72,9 @@ bool TestRunnerApplicationDelegate::ConfigureIncomingConnection(
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// mus::ViewTreeDelegate implementation:
+// mojo::ViewTreeDelegate implementation:
 
-void TestRunnerApplicationDelegate::OnEmbed(mus::View* root) {
+void TestRunnerApplicationDelegate::OnEmbed(mojo::View* root) {
   root_ = root;
 
   // If this is a sys-check, then terminate in the next cycle.
@@ -107,7 +107,7 @@ void TestRunnerApplicationDelegate::OnEmbed(mus::View* root) {
 }
 
 void TestRunnerApplicationDelegate::OnConnectionLost(
-    mus::ViewTreeConnection* connection) {
+    mojo::ViewTreeConnection* connection) {
   root_ = nullptr;
   app_->Quit();
 }

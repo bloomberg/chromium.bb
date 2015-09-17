@@ -38,7 +38,7 @@ class FocusRulesImpl : public wm::BaseFocusRules {
 NativeWidgetViewManager::NativeWidgetViewManager(
     views::internal::NativeWidgetDelegate* delegate,
     mojo::Shell* shell,
-    mus::View* view)
+    mojo::View* view)
     : NativeWidgetAura(delegate), view_(view) {
   view_->AddObserver(this);
   window_tree_host_.reset(new WindowTreeHostMojo(shell, view_));
@@ -76,7 +76,7 @@ void NativeWidgetViewManager::OnWindowVisibilityChanged(aura::Window* window,
   // I'm not bothering.
 }
 
-void NativeWidgetViewManager::OnViewDestroyed(mus::View* view) {
+void NativeWidgetViewManager::OnViewDestroyed(mojo::View* view) {
   DCHECK_EQ(view, view_);
   view->RemoveObserver(this);
   view_ = NULL;
@@ -85,22 +85,22 @@ void NativeWidgetViewManager::OnViewDestroyed(mus::View* view) {
 }
 
 void NativeWidgetViewManager::OnViewBoundsChanged(
-    mus::View* view,
+    mojo::View* view,
     const mojo::Rect& old_bounds,
     const mojo::Rect& new_bounds) {
   gfx::Rect view_rect = view->bounds().To<gfx::Rect>();
   GetWidget()->SetBounds(gfx::Rect(view_rect.size()));
 }
 
-void NativeWidgetViewManager::OnViewFocusChanged(mus::View* gained_focus,
-                                                 mus::View* lost_focus) {
+void NativeWidgetViewManager::OnViewFocusChanged(mojo::View* gained_focus,
+                                                 mojo::View* lost_focus) {
   if (gained_focus == view_)
     window_tree_host_->GetInputMethod()->OnFocus();
   else if (lost_focus == view_)
     window_tree_host_->GetInputMethod()->OnBlur();
 }
 
-void NativeWidgetViewManager::OnViewInputEvent(mus::View* view,
+void NativeWidgetViewManager::OnViewInputEvent(mojo::View* view,
                                                const mojo::EventPtr& event) {
   scoped_ptr<ui::Event> ui_event(event.To<scoped_ptr<ui::Event>>());
   if (!ui_event)

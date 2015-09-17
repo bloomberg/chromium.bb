@@ -10,7 +10,7 @@
 namespace web_view {
 
 FrameTree::FrameTree(uint32_t root_app_id,
-                     mus::View* view,
+                     mojo::View* view,
                      mojo::ViewTreeClientPtr view_tree_client,
                      FrameTreeDelegate* delegate,
                      FrameTreeClient* root_client,
@@ -43,7 +43,7 @@ Frame* FrameTree::CreateSharedFrame(
     uint32_t frame_id,
     uint32_t app_id,
     const Frame::ClientPropertyMap& client_properties) {
-  mus::View* frame_view = root_->view()->GetChildById(frame_id);
+  mojo::View* frame_view = root_->view()->GetChildById(frame_id);
   // |frame_view| may be null if the View hasn't been created yet. If this is
   // the case the View will be connected to the Frame in Frame::OnTreeChanged.
   Frame* frame =

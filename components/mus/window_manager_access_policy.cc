@@ -7,13 +7,13 @@
 #include "components/mus/access_policy_delegate.h"
 #include "components/mus/server_view.h"
 
-namespace mus {
+namespace view_manager {
 
 // TODO(sky): document why this differs from default for each case. Maybe want
 // to subclass DefaultAccessPolicy.
 
 WindowManagerAccessPolicy::WindowManagerAccessPolicy(
-    ConnectionSpecificId connection_id,
+    mojo::ConnectionSpecificId connection_id,
     AccessPolicyDelegate* delegate)
     : connection_id_(connection_id), delegate_(delegate) {}
 
@@ -106,4 +106,4 @@ bool WindowManagerAccessPolicy::IsViewKnown(const ServerView* view) const {
   return delegate_->IsViewKnownForAccessPolicy(view);
 }
 
-}  // namespace mus
+}  // namespace view_manager

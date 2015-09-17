@@ -7,7 +7,7 @@
 #include "components/mus/connection_manager.h"
 #include "components/mus/view_tree_host_impl.h"
 
-namespace mus {
+namespace view_manager {
 
 ViewTreeHostConnection::ViewTreeHostConnection(
     scoped_ptr<ViewTreeHostImpl> host_impl,
@@ -64,4 +64,4 @@ void ViewTreeHostConnectionImpl::OnDisplayInitialized() {
       mojo::ViewTree::ACCESS_POLICY_EMBED_ROOT, client_.Pass()));
 }
 
-}  // namespace mus
+}  // namespace view_manager

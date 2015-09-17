@@ -30,7 +30,7 @@ class BrowserManager;
 class ProgressView;
 class ToolbarView;
 
-class BrowserWindow : public mus::ViewTreeDelegate,
+class BrowserWindow : public mojo::ViewTreeDelegate,
                       public mojo::ViewTreeHostClient,
                       public web_view::mojom::WebViewClient,
                       public ViewEmbedder,
@@ -53,9 +53,9 @@ class BrowserWindow : public mus::ViewTreeDelegate,
 
   float DIPSToPixels(float value) const;
 
-  // Overridden from mus::ViewTreeDelegate:
-  void OnEmbed(mus::View* root) override;
-  void OnConnectionLost(mus::ViewTreeConnection* connection) override;
+  // Overridden from mojo::ViewTreeDelegate:
+  void OnEmbed(mojo::View* root) override;
+  void OnConnectionLost(mojo::ViewTreeConnection* connection) override;
 
   // Overridden from ViewTreeHostClient:
   void OnAccelerator(uint32_t id, mojo::EventPtr event) override;
@@ -80,7 +80,7 @@ class BrowserWindow : public mus::ViewTreeDelegate,
   gfx::Size GetPreferredSize(const views::View* view) const override;
   void Layout(views::View* host) override;
 
-  void Init(mus::View* root);
+  void Init(mojo::View* root);
   void EmbedOmnibox();
 
   mojo::ApplicationImpl* app_;
@@ -90,9 +90,9 @@ class BrowserWindow : public mus::ViewTreeDelegate,
   BrowserManager* manager_;
   ToolbarView* toolbar_view_;
   ProgressView* progress_bar_;
-  mus::View* root_;
-  mus::View* content_;
-  mus::View* omnibox_view_;
+  mojo::View* root_;
+  mojo::View* content_;
+  mojo::View* omnibox_view_;
 
   mojo::WeakBindingSet<ViewEmbedder> view_embedder_bindings_;
 

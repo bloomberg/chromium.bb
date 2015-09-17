@@ -7,7 +7,7 @@
 
 #include "cc/output/output_surface.h"
 
-namespace mus {
+namespace surfaces {
 
 // An OutputSurface implementation that directly draws and
 // swaps to an actual GL surface.
@@ -24,6 +24,6 @@ class DirectOutputSurface : public cc::OutputSurface {
   base::WeakPtrFactory<DirectOutputSurface> weak_ptr_factory_;
 };
 
-}  // namespace mus
+}  // namespace surfaces
 
 #endif  // COMPONENTS_MUS_SURFACES_SURFACES_OUTPUT_SURFACE_H_

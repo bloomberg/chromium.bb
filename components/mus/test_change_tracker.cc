@@ -10,14 +10,15 @@
 #include "mojo/common/common_type_converters.h"
 
 using mojo::Array;
+using mojo::Id;
 using mojo::ViewDataPtr;
 using mojo::String;
 
-namespace mus {
+namespace view_manager {
 
 std::string ViewIdToString(Id id) {
-  return (id == 0) ? "null"
-                   : base::StringPrintf("%d,%d", HiWord(id), LoWord(id));
+  return (id == 0) ? "null" : base::StringPrintf("%d,%d", mojo::HiWord(id),
+                                                 mojo::LoWord(id));
 }
 
 namespace {
@@ -171,7 +172,7 @@ TestChangeTracker::TestChangeTracker() : delegate_(NULL) {}
 
 TestChangeTracker::~TestChangeTracker() {}
 
-void TestChangeTracker::OnEmbed(ConnectionSpecificId connection_id,
+void TestChangeTracker::OnEmbed(mojo::ConnectionSpecificId connection_id,
                                 ViewDataPtr root) {
   Change change;
   change.type = CHANGE_TYPE_EMBED;
@@ -288,7 +289,7 @@ void TestChangeTracker::OnViewSharedPropertyChanged(Id view_id,
   AddChange(change);
 }
 
-void TestChangeTracker::OnViewFocused(Id view_id) {
+void TestChangeTracker::OnViewFocused(mojo::Id view_id) {
   Change change;
   change.type = CHANGE_TYPE_FOCUSED;
   change.view_id = view_id;
@@ -325,4 +326,4 @@ std::string TestView::ToString2() const {
       drawn ? "true" : "false");
 }
 
-}  // namespace mus
+}  // namespace view_manager

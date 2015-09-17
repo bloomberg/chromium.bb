@@ -8,15 +8,16 @@
 #include "components/mus/public/cpp/types.h"
 #include "components/mus/public/cpp/util.h"
 
-namespace mus {
+namespace view_manager {
 
 // Connection id is used to indicate no connection. That is, no ViewTreeImpl
 // ever gets this id.
-const ConnectionSpecificId kInvalidConnectionId = 0;
+const mojo::ConnectionSpecificId kInvalidConnectionId = 0;
 
 // Adds a bit of type safety to view ids.
 struct ViewId {
-  ViewId(ConnectionSpecificId connection_id, ConnectionSpecificId view_id)
+  ViewId(mojo::ConnectionSpecificId connection_id,
+         mojo::ConnectionSpecificId view_id)
       : connection_id(connection_id), view_id(view_id) {}
   ViewId() : connection_id(0), view_id(0) {}
 
@@ -26,15 +27,15 @@ struct ViewId {
 
   bool operator!=(const ViewId& other) const { return !(*this == other); }
 
-  ConnectionSpecificId connection_id;
-  ConnectionSpecificId view_id;
+  mojo::ConnectionSpecificId connection_id;
+  mojo::ConnectionSpecificId view_id;
 };
 
-inline ViewId ViewIdFromTransportId(Id id) {
-  return ViewId(HiWord(id), LoWord(id));
+inline ViewId ViewIdFromTransportId(mojo::Id id) {
+  return ViewId(mojo::HiWord(id), mojo::LoWord(id));
 }
 
-inline Id ViewIdToTransportId(const ViewId& id) {
+inline mojo::Id ViewIdToTransportId(const ViewId& id) {
   return (id.connection_id << 16) | id.view_id;
 }
 
@@ -49,6 +50,6 @@ inline ViewId RootViewId(uint16_t index) {
   return ViewId(kInvalidConnectionId, 2 + index);
 }
 
-}  // namespace mus
+}  // namespace view_manager
 
 #endif  // COMPONENTS_MUS_IDS_H_

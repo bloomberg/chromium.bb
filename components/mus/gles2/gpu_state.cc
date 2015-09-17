@@ -5,7 +5,7 @@
 
 #include "components/mus/gles2/gpu_state.h"
 
-namespace mus {
+namespace gles2 {
 
 GpuState::GpuState()
     : control_thread_("gpu_command_buffer_control"),
@@ -21,4 +21,4 @@ void GpuState::StopControlThread() {
   control_thread_.Stop();
 }
 
-}  // namespace mus
+}  // namespace gles2

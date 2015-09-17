@@ -48,7 +48,7 @@ class WebLayerTreeViewImpl : public blink::WebLayerTreeView,
   ~WebLayerTreeViewImpl() override;
 
   void Initialize(mojo::GpuPtr gpu_service,
-                  mus::View* view,
+                  mojo::View* view,
                   blink::WebWidget* widget);
 
   // cc::LayerTreeHostClient implementation.
@@ -115,7 +115,7 @@ class WebLayerTreeViewImpl : public blink::WebLayerTreeView,
  private:
   // widget_ and view_ will outlive us.
   blink::WebWidget* widget_;
-  mus::View* view_;
+  mojo::View* view_;
   scoped_ptr<cc::LayerTreeHost> layer_tree_host_;
   scoped_ptr<cc::OutputSurface> output_surface_;
   scoped_refptr<base::SingleThreadTaskRunner>

@@ -4,7 +4,7 @@
 
 #include "components/mus/public/cpp/lib/view_private.h"
 
-namespace mus {
+namespace mojo {
 
 ViewPrivate::ViewPrivate(View* view) : view_(view) {
   CHECK(view);
@@ -17,4 +17,4 @@ View* ViewPrivate::LocalCreate() {
   return new View;
 }
 
-}  // namespace mus
+}  // namespace mojo

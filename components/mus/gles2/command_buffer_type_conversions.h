@@ -62,6 +62,6 @@ struct TypeConverter<gpu::Capabilities, GpuCapabilitiesPtr> {
   static gpu::Capabilities Convert(const GpuCapabilitiesPtr& input);
 };
 
-}  // namespace mojo
+}  // namespace gles2
 
 #endif  // COMPONENTS_MUS_GLES2_COMMAND_BUFFER_TYPE_CONVERSIONS_H_

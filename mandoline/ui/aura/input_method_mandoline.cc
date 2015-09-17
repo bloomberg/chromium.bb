@@ -17,7 +17,7 @@ namespace mandoline {
 
 InputMethodMandoline::InputMethodMandoline(
     ui::internal::InputMethodDelegate* delegate,
-    mus::View* view)
+    mojo::View* view)
     : view_(view) {
   SetDelegate(delegate);
 }

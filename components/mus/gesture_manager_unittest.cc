@@ -13,14 +13,14 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/mojo/events/input_events.mojom.h"
 
-namespace mus {
+namespace view_manager {
 namespace {
 
 const uint32_t kInvalidGestureId = GestureManager::kInvalidGestureId;
 
 void MarkAsRespondsToTouch(ServerView* view) {
   std::vector<uint8_t> empty_vector;
-  view->SetProperty(kViewManagerKeyWantsTouchEvents, &empty_vector);
+  view->SetProperty(mojo::kViewManagerKeyWantsTouchEvents, &empty_vector);
 }
 
 std::set<uint32_t> SetWith(uint32_t v1) {
@@ -465,4 +465,4 @@ TEST_F(GestureManagerTest, SingleViewSingleGestureCancel) {
             gesture_delegate_.GetAndClearDescriptions());
 }
 
-}  // namespace mus
+}  // namespace view_manager

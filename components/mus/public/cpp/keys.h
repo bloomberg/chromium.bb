@@ -5,10 +5,10 @@
 #ifndef COMPONENTS_MUS_PUBLIC_CPP_KEYS_H_
 #define COMPONENTS_MUS_PUBLIC_CPP_KEYS_H_
 
-namespace mus {
+namespace mojo {
 
 extern const char kViewManagerKeyWantsTouchEvents[];
 
-}  // namespace mus
+}  // namespace mojo
 
 #endif  // COMPONENTS_MUS_PUBLIC_CPP_KEYS_H_

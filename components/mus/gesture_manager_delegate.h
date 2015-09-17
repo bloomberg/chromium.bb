@@ -10,7 +10,7 @@
 #include "components/mus/public/cpp/types.h"
 #include "ui/mojo/events/input_events.mojom.h"
 
-namespace mus {
+namespace view_manager {
 
 class GestureManagerDelegate {
  public:
@@ -26,6 +26,6 @@ class GestureManagerDelegate {
   virtual ~GestureManagerDelegate() {}
 };
 
-}  // namespace mus
+}  // namespace view_manager
 
 #endif  // COMPONENTS_MUS_GESTURE_MANAGER_DELEGATE_H_

@@ -13,7 +13,7 @@
 #include "components/mus/public/cpp/view_tree_host_factory.h"
 #include "mojo/application/public/cpp/application_impl.h"
 
-namespace mus {
+namespace mojo {
 namespace {
 
 base::RunLoop* current_run_loop = nullptr;
@@ -73,13 +73,13 @@ void ViewManagerTestBase::TearDown() {
   ApplicationTestBase::TearDown();
 }
 
-mojo::ApplicationDelegate* ViewManagerTestBase::GetApplicationDelegate() {
+ApplicationDelegate* ViewManagerTestBase::GetApplicationDelegate() {
   return this;
 }
 
 bool ViewManagerTestBase::ConfigureIncomingConnection(
-    mojo::ApplicationConnection* connection) {
-  connection->AddService<mojo::ViewTreeClient>(this);
+    ApplicationConnection* connection) {
+  connection->AddService<ViewTreeClient>(this);
   return true;
 }
 
@@ -92,10 +92,9 @@ void ViewManagerTestBase::OnConnectionLost(ViewTreeConnection* connection) {
   view_tree_connection_destroyed_ = true;
 }
 
-void ViewManagerTestBase::Create(
-    mojo::ApplicationConnection* connection,
-    mojo::InterfaceRequest<mojo::ViewTreeClient> request) {
+void ViewManagerTestBase::Create(ApplicationConnection* connection,
+                                 InterfaceRequest<ViewTreeClient> request) {
   ViewTreeConnection::Create(this, request.Pass());
 }
 
-}  // namespace mus
+}  // namespace mojo

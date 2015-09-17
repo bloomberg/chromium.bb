@@ -80,7 +80,7 @@ BrowserWindow::BrowserWindow(mojo::ApplicationImpl* app,
       web_view_(this) {
   mojo::ViewTreeHostClientPtr host_client;
   host_client_binding_.Bind(GetProxy(&host_client));
-  mus::CreateViewTreeHost(host_factory, host_client.Pass(), this, &host_);
+  mojo::CreateViewTreeHost(host_factory, host_client.Pass(), this, &host_);
 }
 
 void BrowserWindow::LoadURL(const GURL& url) {
@@ -103,7 +103,7 @@ void BrowserWindow::LoadURL(const GURL& url) {
 
 void BrowserWindow::Close() {
   if (root_)
-    mus::ScopedViewPtr::DeleteViewOrViewManager(root_);
+    mojo::ScopedViewPtr::DeleteViewOrViewManager(root_);
   else
     delete this;
 }
@@ -143,9 +143,9 @@ float BrowserWindow::DIPSToPixels(float value) const {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// BrowserWindow, mus::ViewTreeDelegate implementation:
+// BrowserWindow, mojo::ViewTreeDelegate implementation:
 
-void BrowserWindow::OnEmbed(mus::View* root) {
+void BrowserWindow::OnEmbed(mojo::View* root) {
   // BrowserWindow does not support being embedded more than once.
   CHECK(!root_);
 
@@ -200,13 +200,13 @@ void BrowserWindow::OnEmbed(mus::View* root) {
   }
 }
 
-void BrowserWindow::OnConnectionLost(mus::ViewTreeConnection* connection) {
+void BrowserWindow::OnConnectionLost(mojo::ViewTreeConnection* connection) {
   root_ = nullptr;
   delete this;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// BrowserWindow, mus::ViewTreeHostClient implementation:
+// BrowserWindow, mojo::ViewTreeHostClient implementation:
 
 void BrowserWindow::OnAccelerator(uint32_t id, mojo::EventPtr event) {
   switch (static_cast<BrowserCommand>(id)) {
@@ -328,7 +328,7 @@ void BrowserWindow::Layout(views::View* host) {
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserWindow, private:
 
-void BrowserWindow::Init(mus::View* root) {
+void BrowserWindow::Init(mojo::View* root) {
   DCHECK_GT(root->viewport_metrics().device_pixel_ratio, 0);
   if (!aura_init_)
     aura_init_.reset(new AuraInit(root, app_->shell()));

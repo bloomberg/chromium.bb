@@ -13,7 +13,7 @@
 #include "mojo/converters/geometry/geometry_type_converters.h"
 #include "mojo/converters/surfaces/surfaces_type_converters.h"
 
-namespace mus {
+namespace view_manager {
 
 namespace {
 
@@ -311,4 +311,4 @@ void ServerView::RemoveImpl(ServerView* view) {
   children_.erase(std::find(children_.begin(), children_.end(), view));
 }
 
-}  // namespace mus
+}  // namespace view_manager

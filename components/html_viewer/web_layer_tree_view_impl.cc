@@ -58,7 +58,7 @@ WebLayerTreeViewImpl::WebLayerTreeViewImpl(
 }
 
 void WebLayerTreeViewImpl::Initialize(mojo::GpuPtr gpu_service,
-                                      mus::View* view,
+                                      mojo::View* view,
                                       blink::WebWidget* widget) {
   view_ = view;
   widget_ = widget;

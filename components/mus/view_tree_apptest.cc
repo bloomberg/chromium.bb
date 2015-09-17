@@ -18,9 +18,11 @@ using mojo::ApplicationConnection;
 using mojo::ApplicationDelegate;
 using mojo::Array;
 using mojo::Callback;
+using mojo::ConnectionSpecificId;
 using mojo::ERROR_CODE_NONE;
 using mojo::ErrorCode;
 using mojo::EventPtr;
+using mojo::Id;
 using mojo::InterfaceRequest;
 using mojo::ORDER_DIRECTION_ABOVE;
 using mojo::ORDER_DIRECTION_BELOW;
@@ -34,9 +36,7 @@ using mojo::ViewTree;
 using mojo::ViewTreeClient;
 using mojo::ViewportMetricsPtr;
 
-namespace mus {
-
-namespace {
+namespace view_manager {
 
 // Creates an id used for transport from the specified parameters.
 Id BuildViewId(ConnectionSpecificId connection_id,
@@ -216,8 +216,9 @@ bool WaitForAllMessages(ViewTree* vm) {
 
 const Id kNullParentId = 0;
 std::string IdToString(Id id) {
-  return (id == kNullParentId) ? "null" : base::StringPrintf(
-                                              "%d,%d", HiWord(id), LoWord(id));
+  return (id == kNullParentId)
+             ? "null"
+             : base::StringPrintf("%d,%d", mojo::HiWord(id), mojo::LoWord(id));
 }
 
 std::string ViewParentToString(Id view, Id parent) {
@@ -228,10 +229,10 @@ std::string ViewParentToString(Id view, Id parent) {
 // -----------------------------------------------------------------------------
 
 // A ViewTreeClient implementation that logs all changes to a tracker.
-class TestViewTreeClientImpl : public mojo::ViewTreeClient,
-                               public TestChangeTracker::Delegate {
+class ViewTreeClientImpl : public mojo::ViewTreeClient,
+                           public TestChangeTracker::Delegate {
  public:
-  explicit TestViewTreeClientImpl(mojo::ApplicationImpl* app)
+  explicit ViewTreeClientImpl(mojo::ApplicationImpl* app)
       : binding_(this), app_(app), connection_id_(0), root_view_id_(0) {
     tracker_.set_delegate(this);
   }
@@ -303,7 +304,7 @@ class TestViewTreeClientImpl : public mojo::ViewTreeClient,
   void OnEmbed(ConnectionSpecificId connection_id,
                ViewDataPtr root,
                mojo::ViewTreePtr tree,
-               Id focused_view_id,
+               mojo::Id focused_view_id,
                uint32_t access_policy) override {
     // TODO(sky): add coverage of |focused_view_id|.
     tree_ = tree.Pass();
@@ -381,19 +382,19 @@ class TestViewTreeClientImpl : public mojo::ViewTreeClient,
   Id connection_id_;
   Id root_view_id_;
 
-  DISALLOW_COPY_AND_ASSIGN(TestViewTreeClientImpl);
+  DISALLOW_COPY_AND_ASSIGN(ViewTreeClientImpl);
 };
 
 // -----------------------------------------------------------------------------
 
-// InterfaceFactory for vending TestViewTreeClientImpls.
+// InterfaceFactory for vending ViewTreeClientImpls.
 class ViewTreeClientFactory : public mojo::InterfaceFactory<ViewTreeClient> {
  public:
   explicit ViewTreeClientFactory(mojo::ApplicationImpl* app) : app_(app) {}
   ~ViewTreeClientFactory() override {}
 
   // Runs a nested MessageLoop until a new instance has been created.
-  scoped_ptr<TestViewTreeClientImpl> WaitForInstance() {
+  scoped_ptr<ViewTreeClientImpl> WaitForInstance() {
     if (!client_impl_.get()) {
       DCHECK(!run_loop_.get());
       run_loop_.reset(new base::RunLoop);
@@ -407,20 +408,18 @@ class ViewTreeClientFactory : public mojo::InterfaceFactory<ViewTreeClient> {
   // InterfaceFactory<ViewTreeClient>:
   void Create(ApplicationConnection* connection,
               InterfaceRequest<ViewTreeClient> request) override {
-    client_impl_.reset(new TestViewTreeClientImpl(app_));
+    client_impl_.reset(new ViewTreeClientImpl(app_));
     client_impl_->Bind(request.Pass());
     if (run_loop_.get())
       run_loop_->Quit();
   }
 
   mojo::ApplicationImpl* app_;
-  scoped_ptr<TestViewTreeClientImpl> client_impl_;
+  scoped_ptr<ViewTreeClientImpl> client_impl_;
   scoped_ptr<base::RunLoop> run_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(ViewTreeClientFactory);
 };
-
-}  // namespace
 
 class ViewTreeAppTest : public mojo::test::ApplicationTestBase,
                         public ApplicationDelegate {
@@ -441,9 +440,9 @@ class ViewTreeAppTest : public mojo::test::ApplicationTestBase,
   ViewTree* vm2() { return vm_client2_->tree(); }
   ViewTree* vm3() { return vm_client3_->tree(); }
 
-  TestViewTreeClientImpl* vm_client1() { return vm_client1_.get(); }
-  TestViewTreeClientImpl* vm_client2() { return vm_client2_.get(); }
-  TestViewTreeClientImpl* vm_client3() { return vm_client3_.get(); }
+  ViewTreeClientImpl* vm_client1() { return vm_client1_.get(); }
+  ViewTreeClientImpl* vm_client2() { return vm_client2_.get(); }
+  ViewTreeClientImpl* vm_client3() { return vm_client3_.get(); }
 
   Id root_view_id() const { return root_view_id_; }
 
@@ -481,30 +480,29 @@ class ViewTreeAppTest : public mojo::test::ApplicationTestBase,
     vm_client3_->set_root_view(root_view_id_);
   }
 
-  scoped_ptr<TestViewTreeClientImpl> WaitForViewTreeClient() {
+  scoped_ptr<ViewTreeClientImpl> WaitForViewTreeClient() {
     return client_factory_->WaitForInstance();
   }
 
   // Establishes a new connection by way of Embed() on the specified
   // ViewTree.
-  scoped_ptr<TestViewTreeClientImpl>
+  scoped_ptr<ViewTreeClientImpl>
   EstablishConnectionViaEmbed(ViewTree* owner, Id root_id, int* connection_id) {
     return EstablishConnectionViaEmbedWithPolicyBitmask(
         owner, root_id, mojo::ViewTree::ACCESS_POLICY_DEFAULT, connection_id);
   }
 
-  scoped_ptr<TestViewTreeClientImpl>
-  EstablishConnectionViaEmbedWithPolicyBitmask(ViewTree* owner,
-                                               Id root_id,
-                                               uint32_t policy_bitmask,
-                                               int* connection_id) {
+  scoped_ptr<ViewTreeClientImpl> EstablishConnectionViaEmbedWithPolicyBitmask(
+      ViewTree* owner,
+      Id root_id,
+      uint32_t policy_bitmask,
+      int* connection_id) {
     if (!EmbedUrl(application_impl(), owner, application_impl()->url(),
                   root_id)) {
       ADD_FAILURE() << "Embed() failed";
       return nullptr;
     }
-    scoped_ptr<TestViewTreeClientImpl> client =
-        client_factory_->WaitForInstance();
+    scoped_ptr<ViewTreeClientImpl> client = client_factory_->WaitForInstance();
     if (!client.get()) {
       ADD_FAILURE() << "WaitForInstance failed";
       return nullptr;
@@ -530,7 +528,7 @@ class ViewTreeAppTest : public mojo::test::ApplicationTestBase,
     application_impl()->ConnectToService(request.Pass(), &factory);
 
     mojo::ViewTreeClientPtr tree_client_ptr;
-    vm_client1_.reset(new TestViewTreeClientImpl(application_impl()));
+    vm_client1_.reset(new ViewTreeClientImpl(application_impl()));
     vm_client1_->Bind(GetProxy(&tree_client_ptr));
 
     factory->CreateViewTreeHost(GetProxy(&host_), mojo::ViewTreeHostClientPtr(),
@@ -558,9 +556,9 @@ class ViewTreeAppTest : public mojo::test::ApplicationTestBase,
     return true;
   }
 
-  scoped_ptr<TestViewTreeClientImpl> vm_client1_;
-  scoped_ptr<TestViewTreeClientImpl> vm_client2_;
-  scoped_ptr<TestViewTreeClientImpl> vm_client3_;
+  scoped_ptr<ViewTreeClientImpl> vm_client1_;
+  scoped_ptr<ViewTreeClientImpl> vm_client2_;
+  scoped_ptr<ViewTreeClientImpl> vm_client3_;
 
   mojo::ViewTreeHostPtr host_;
 
@@ -1267,7 +1265,7 @@ TEST_F(ViewTreeAppTest, EmbedWithSameViewId2) {
     changes3()->clear();
 
     // We should get a new connection for the new embedding.
-    scoped_ptr<TestViewTreeClientImpl> connection4(
+    scoped_ptr<ViewTreeClientImpl> connection4(
         EstablishConnectionViaEmbed(vm1(), view_1_1, nullptr));
     ASSERT_TRUE(connection4.get());
     EXPECT_EQ("[" + ViewParentToString(view_1_1, kNullParentId) + "]",
@@ -1588,7 +1586,7 @@ TEST_F(ViewTreeAppTest, DontCleanMapOnDestroy) {
 TEST_F(ViewTreeAppTest, EmbedSupplyingViewTreeClient) {
   ASSERT_TRUE(vm_client1()->CreateView(1));
 
-  TestViewTreeClientImpl client2(application_impl());
+  ViewTreeClientImpl client2(application_impl());
   mojo::ViewTreeClientPtr client2_ptr;
   mojo::Binding<ViewTreeClient> client2_binding(&client2, &client2_ptr);
   ASSERT_TRUE(
@@ -1676,4 +1674,4 @@ TEST_F(ViewTreeAppTest, CantEmbedFromConnectionRoot) {
 // ViewManagerTest.MultipleEmbedRootsBeforeWTHReady gets added to window manager
 // tests.
 
-}  // namespace mus
+}  // namespace view_manager

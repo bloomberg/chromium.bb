@@ -8,7 +8,7 @@
 #include "components/mus/server_view.h"
 #include "components/mus/server_view_drawn_tracker.h"
 
-namespace mus {
+namespace view_manager {
 
 FocusController::FocusController(FocusControllerDelegate* delegate)
     : delegate_(delegate) {}
@@ -48,4 +48,4 @@ void FocusController::OnDrawnStateChanged(ServerView* ancestor,
   SetFocusedViewImpl(ancestor, CHANGE_SOURCE_DRAWN_STATE_CHANGED);
 }
 
-}  // namespace mus
+}  // namespace view_manager

@@ -33,7 +33,7 @@ scoped_ptr<WebLayerTreeViewImpl> CreateWebLayerTreeView(
 
 void InitializeWebLayerTreeView(WebLayerTreeViewImpl* web_layer_tree_view,
                                 mojo::ApplicationImpl* app,
-                                mus::View* view,
+                                mojo::View* view,
                                 blink::WebWidget* widget) {
   DCHECK(view);
   mojo::URLRequestPtr request(mojo::URLRequest::New());
@@ -43,7 +43,7 @@ void InitializeWebLayerTreeView(WebLayerTreeViewImpl* web_layer_tree_view,
   web_layer_tree_view->Initialize(gpu_service.Pass(), view, widget);
 }
 
-void UpdateWebViewSizeFromViewSize(mus::View* view,
+void UpdateWebViewSizeFromViewSize(mojo::View* view,
                                    blink::WebWidget* web_widget,
                                    WebLayerTreeViewImpl* web_layer_tree_view) {
   const gfx::Size size_in_pixels(view->bounds().width, view->bounds().height);
@@ -81,13 +81,13 @@ blink::WebWidget* HTMLWidgetRootRemote::GetWidget() {
   return web_view_;
 }
 
-void HTMLWidgetRootRemote::OnViewBoundsChanged(mus::View* view) {}
+void HTMLWidgetRootRemote::OnViewBoundsChanged(mojo::View* view) {}
 
 // HTMLWidgetRootLocal --------------------------------------------------------
 
 HTMLWidgetRootLocal::CreateParams::CreateParams(mojo::ApplicationImpl* app,
                                                 GlobalState* global_state,
-                                                mus::View* view)
+                                                mojo::View* view)
     : app(app), global_state(global_state), view(view) {}
 
 HTMLWidgetRootLocal::CreateParams::~CreateParams() {}
@@ -160,7 +160,7 @@ blink::WebWidget* HTMLWidgetRootLocal::GetWidget() {
   return web_view_;
 }
 
-void HTMLWidgetRootLocal::OnViewBoundsChanged(mus::View* view) {
+void HTMLWidgetRootLocal::OnViewBoundsChanged(mojo::View* view) {
   UpdateWebViewSizeFromViewSize(view, web_view_,
                                 web_layer_tree_view_impl_.get());
 }
@@ -169,7 +169,7 @@ void HTMLWidgetRootLocal::OnViewBoundsChanged(mus::View* view) {
 
 HTMLWidgetLocalRoot::HTMLWidgetLocalRoot(mojo::ApplicationImpl* app,
                                          GlobalState* global_state,
-                                         mus::View* view,
+                                         mojo::View* view,
                                          blink::WebLocalFrame* web_local_frame)
     : app_(app), global_state_(global_state), web_frame_widget_(nullptr) {
   web_frame_widget_ = blink::WebFrameWidget::create(this, web_local_frame);
@@ -192,7 +192,7 @@ blink::WebWidget* HTMLWidgetLocalRoot::GetWidget() {
   return web_frame_widget_;
 }
 
-void HTMLWidgetLocalRoot::OnViewBoundsChanged(mus::View* view) {
+void HTMLWidgetLocalRoot::OnViewBoundsChanged(mojo::View* view) {
   UpdateWebViewSizeFromViewSize(view, web_frame_widget_,
                                 web_layer_tree_view_impl_.get());
 }

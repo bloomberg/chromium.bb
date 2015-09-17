@@ -47,7 +47,7 @@ void PhoneBrowserApplicationDelegate::Initialize(mojo::ApplicationImpl* app) {
       break;
     }
   }
-  mus::CreateSingleViewTreeHost(app_, this, &host_);
+  mojo::CreateSingleViewTreeHost(app_, this, &host_);
 }
 
 bool PhoneBrowserApplicationDelegate::ConfigureIncomingConnection(
@@ -66,9 +66,9 @@ void PhoneBrowserApplicationDelegate::LaunchURL(const mojo::String& url) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// PhoneBrowserApplicationDelegate, mus::ViewTreeDelegate implementation:
+// PhoneBrowserApplicationDelegate, mojo::ViewTreeDelegate implementation:
 
-void PhoneBrowserApplicationDelegate::OnEmbed(mus::View* root) {
+void PhoneBrowserApplicationDelegate::OnEmbed(mojo::View* root) {
   CHECK(!root_);
   root_ = root;
   content_ = root->connection()->CreateView();
@@ -83,13 +83,14 @@ void PhoneBrowserApplicationDelegate::OnEmbed(mus::View* root) {
 }
 
 void PhoneBrowserApplicationDelegate::OnConnectionLost(
-    mus::ViewTreeConnection* connection) {}
+    mojo::ViewTreeConnection* connection) {
+}
 
 ////////////////////////////////////////////////////////////////////////////////
-// PhoneBrowserApplicationDelegate, mus::ViewObserver implementation:
+// PhoneBrowserApplicationDelegate, mojo::ViewObserver implementation:
 
 void PhoneBrowserApplicationDelegate::OnViewBoundsChanged(
-    mus::View* view,
+    mojo::View* view,
     const mojo::Rect& old_bounds,
     const mojo::Rect& new_bounds) {
   CHECK_EQ(view, root_);

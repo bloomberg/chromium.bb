@@ -11,7 +11,7 @@
 #include "mojo/application/public/interfaces/service_provider.mojom.h"
 #include "mojo/services/network/public/interfaces/url_loader.mojom.h"
 
-namespace mus {
+namespace mojo {
 
 class View;
 class ViewTreeConnection;
@@ -58,6 +58,6 @@ class ViewTreeDelegate {
   virtual ~ViewTreeDelegate() {}
 };
 
-}  // namespace mus
+}  // namespace mojo
 
 #endif  // COMPONENTS_MUS_PUBLIC_CPP_VIEW_TREE_DELEGATE_H_

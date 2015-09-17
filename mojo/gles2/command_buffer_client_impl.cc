@@ -238,7 +238,7 @@ scoped_refptr<gpu::Buffer> CommandBufferClientImpl::CreateTransferBuffer(
       *id, duped.Pass(), static_cast<uint32_t>(size));
 
   scoped_ptr<gpu::BufferBacking> backing(
-      new mus::MojoBufferBacking(handle.Pass(), memory, size));
+      new MojoBufferBacking(handle.Pass(), memory, size));
   scoped_refptr<gpu::Buffer> buffer(new gpu::Buffer(backing.Pass()));
   return buffer;
 }
@@ -261,8 +261,8 @@ int32_t CommandBufferClientImpl::CreateImage(ClientBuffer buffer,
   size->width = static_cast<int32_t>(width);
   size->height = static_cast<int32_t>(height);
 
-  mus::MojoGpuMemoryBufferImpl* gpu_memory_buffer =
-      mus::MojoGpuMemoryBufferImpl::FromClientBuffer(buffer);
+  MojoGpuMemoryBufferImpl* gpu_memory_buffer =
+      MojoGpuMemoryBufferImpl::FromClientBuffer(buffer);
   gfx::GpuMemoryBufferHandle handle = gpu_memory_buffer->GetHandle();
 
   bool requires_sync_point = false;
@@ -312,7 +312,7 @@ int32_t CommandBufferClientImpl::CreateGpuMemoryBufferImage(
     size_t height,
     unsigned internalformat,
     unsigned usage) {
-  scoped_ptr<gfx::GpuMemoryBuffer> buffer(mus::MojoGpuMemoryBufferImpl::Create(
+  scoped_ptr<gfx::GpuMemoryBuffer> buffer(MojoGpuMemoryBufferImpl::Create(
       gfx::Size(static_cast<int>(width), static_cast<int>(height)),
       gpu::ImageFactory::DefaultBufferFormatForImageFormat(internalformat),
       gpu::ImageFactory::ImageUsageToGpuMemoryBufferUsage(usage)));

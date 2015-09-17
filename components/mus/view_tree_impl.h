@@ -22,7 +22,7 @@ namespace gfx {
 class Rect;
 }
 
-namespace mus {
+namespace view_manager {
 
 class AccessPolicy;
 class ConnectionManager;
@@ -36,7 +36,7 @@ class ViewTreeHostImpl;
 class ViewTreeImpl : public mojo::ViewTree, public AccessPolicyDelegate {
  public:
   ViewTreeImpl(ConnectionManager* connection_manager,
-               ConnectionSpecificId creator_id,
+               mojo::ConnectionSpecificId creator_id,
                const ViewId& root_id,
                uint32_t policy_bitmask);
   ~ViewTreeImpl() override;
@@ -45,8 +45,8 @@ class ViewTreeImpl : public mojo::ViewTree, public AccessPolicyDelegate {
   // client via OnEmbed().
   void Init(mojo::ViewTreeClient* client, mojo::ViewTreePtr tree);
 
-  ConnectionSpecificId id() const { return id_; }
-  ConnectionSpecificId creator_id() const { return creator_id_; }
+  mojo::ConnectionSpecificId id() const { return id_; }
+  mojo::ConnectionSpecificId creator_id() const { return creator_id_; }
 
   mojo::ViewTreeClient* client() { return client_; }
 
@@ -80,7 +80,7 @@ class ViewTreeImpl : public mojo::ViewTree, public AccessPolicyDelegate {
   bool Embed(const ViewId& view_id,
              mojo::ViewTreeClientPtr client,
              uint32_t policy_bitmask,
-             ConnectionSpecificId* connection_id);
+             mojo::ConnectionSpecificId* connection_id);
   void Embed(const ViewId& view_id, mojo::URLRequestPtr request);
 
   // The following methods are invoked after the corresponding change has been
@@ -116,8 +116,8 @@ class ViewTreeImpl : public mojo::ViewTree, public AccessPolicyDelegate {
                            const ServerView* new_focused_view);
 
  private:
-  using ViewIdSet = base::hash_set<Id>;
-  using ViewMap = std::map<ConnectionSpecificId, ServerView*>;
+  using ViewIdSet = base::hash_set<mojo::Id>;
+  using ViewMap = std::map<mojo::ConnectionSpecificId, ServerView*>;
 
   bool IsViewKnown(const ServerView* view) const;
 
@@ -170,44 +170,44 @@ class ViewTreeImpl : public mojo::ViewTree, public AccessPolicyDelegate {
 
   // ViewTree:
   void CreateView(
-      Id transport_view_id,
+      mojo::Id transport_view_id,
       const mojo::Callback<void(mojo::ErrorCode)>& callback) override;
-  void DeleteView(Id transport_view_id,
+  void DeleteView(mojo::Id transport_view_id,
                   const mojo::Callback<void(bool)>& callback) override;
-  void AddView(Id parent_id,
-               Id child_id,
+  void AddView(mojo::Id parent_id,
+               mojo::Id child_id,
                const mojo::Callback<void(bool)>& callback) override;
   void RemoveViewFromParent(
-      Id view_id,
+      mojo::Id view_id,
       const mojo::Callback<void(bool)>& callback) override;
-  void ReorderView(Id view_id,
-                   Id relative_view_id,
+  void ReorderView(mojo::Id view_id,
+                   mojo::Id relative_view_id,
                    mojo::OrderDirection direction,
                    const mojo::Callback<void(bool)>& callback) override;
-  void GetViewTree(Id view_id,
+  void GetViewTree(mojo::Id view_id,
                    const mojo::Callback<void(mojo::Array<mojo::ViewDataPtr>)>&
                        callback) override;
-  void SetViewBounds(Id view_id,
+  void SetViewBounds(mojo::Id view_id,
                      mojo::RectPtr bounds,
                      const mojo::Callback<void(bool)>& callback) override;
-  void SetViewVisibility(Id view_id,
+  void SetViewVisibility(mojo::Id view_id,
                          bool visible,
                          const mojo::Callback<void(bool)>& callback) override;
-  void SetViewProperty(Id view_id,
+  void SetViewProperty(mojo::Id view_id,
                        const mojo::String& name,
                        mojo::Array<uint8_t> value,
                        const mojo::Callback<void(bool)>& callback) override;
-  void RequestSurface(Id view_id,
+  void RequestSurface(mojo::Id view_id,
                       mojo::InterfaceRequest<mojo::Surface> surface,
                       mojo::SurfaceClientPtr client) override;
-  void Embed(Id transport_view_id,
+  void Embed(mojo::Id transport_view_id,
              mojo::ViewTreeClientPtr client,
              uint32_t policy_bitmask,
              const EmbedCallback& callback) override;
   void SetFocus(uint32_t view_id) override;
   void SetViewTextInputState(uint32_t view_id,
                              mojo::TextInputStatePtr state) override;
-  void SetImeVisibility(Id transport_view_id,
+  void SetImeVisibility(mojo::Id transport_view_id,
                         bool visible,
                         mojo::TextInputStatePtr state) override;
 
@@ -221,15 +221,15 @@ class ViewTreeImpl : public mojo::ViewTree, public AccessPolicyDelegate {
   ConnectionManager* connection_manager_;
 
   // Id of this connection as assigned by ConnectionManager.
-  const ConnectionSpecificId id_;
+  const mojo::ConnectionSpecificId id_;
 
   // ID of the connection that created us. If 0 it indicates either we were
   // created by the root, or the connection that created us has been destroyed.
-  ConnectionSpecificId creator_id_;
+  mojo::ConnectionSpecificId creator_id_;
 
   mojo::ViewTreeClient* client_;
 
-  scoped_ptr<mus::AccessPolicy> access_policy_;
+  scoped_ptr<view_manager::AccessPolicy> access_policy_;
 
   // The views created by this connection. This connection owns these objects.
   ViewMap view_map_;
@@ -247,6 +247,6 @@ class ViewTreeImpl : public mojo::ViewTree, public AccessPolicyDelegate {
   DISALLOW_COPY_AND_ASSIGN(ViewTreeImpl);
 };
 
-}  // namespace mus
+}  // namespace view_manager
 
 #endif  // COMPONENTS_MUS_VIEW_TREE_IMPL_H_

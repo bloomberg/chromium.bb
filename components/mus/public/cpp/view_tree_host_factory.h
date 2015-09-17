@@ -12,26 +12,23 @@
 #include "third_party/mojo/src/mojo/public/cpp/bindings/binding.h"
 
 namespace mojo {
+
 class ApplicationImpl;
-}
-
-namespace mus {
-
 class ViewTreeDelegate;
 
 // Uses |factory| to create a new |host|, providing the supplied |host_client|
 // which may be null. |delegate| must not be null.
-void CreateViewTreeHost(mojo::ViewTreeHostFactory* factory,
-                        mojo::ViewTreeHostClientPtr host_client,
+void CreateViewTreeHost(ViewTreeHostFactory* factory,
+                        ViewTreeHostClientPtr host_client,
                         ViewTreeDelegate* delegate,
-                        mojo::ViewTreeHostPtr* host);
+                        ViewTreeHostPtr* host);
 
 // Creates a single host with no client by connecting to the view manager
 // application. Useful only for tests and trivial UIs.
-void CreateSingleViewTreeHost(mojo::ApplicationImpl* app,
+void CreateSingleViewTreeHost(ApplicationImpl* app,
                               ViewTreeDelegate* delegate,
-                              mojo::ViewTreeHostPtr* host);
+                              ViewTreeHostPtr* host);
 
-}  // namespace mus
+}  // namespace mojo
 
 #endif  // COMPONENTS_MUS_PUBLIC_CPP_VIEW_TREE_HOST_FACTORY_H_

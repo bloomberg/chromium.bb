@@ -14,7 +14,7 @@ namespace cc {
 class SurfaceManager;
 }  // namespace cc
 
-namespace mus {
+namespace surfaces {
 
 // The SurfacesState object is an object global to the View Manager app that
 // holds the SurfaceManager, SurfacesScheduler and allocates new Surfaces
@@ -45,6 +45,6 @@ class SurfacesState : public base::RefCounted<SurfacesState> {
   DISALLOW_COPY_AND_ASSIGN(SurfacesState);
 };
 
-}  // namespace mus
+}  // namespace surfaces
 
 #endif  //  COMPONENTS_MUS_SURFACES_SURFACES_STATE_H_

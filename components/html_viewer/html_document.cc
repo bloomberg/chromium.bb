@@ -31,7 +31,7 @@
 #include "ui/gfx/geometry/size.h"
 
 using mojo::AxProvider;
-using mus::View;
+using mojo::View;
 
 namespace html_viewer {
 namespace {
@@ -48,23 +48,23 @@ bool IsTestInterfaceEnabled() {
 // A ViewTreeDelegate implementation that delegates to a (swappable) delegate.
 // This is used when one HTMLDocument takes over for another delegate
 // (OnSwap()).
-class ViewTreeDelegateImpl : public mus::ViewTreeDelegate {
+class ViewTreeDelegateImpl : public mojo::ViewTreeDelegate {
  public:
-  explicit ViewTreeDelegateImpl(mus::ViewTreeDelegate* delegate)
+  explicit ViewTreeDelegateImpl(mojo::ViewTreeDelegate* delegate)
       : delegate_(delegate) {}
   ~ViewTreeDelegateImpl() override {}
 
-  void set_delegate(mus::ViewTreeDelegate* delegate) { delegate_ = delegate; }
+  void set_delegate(mojo::ViewTreeDelegate* delegate) { delegate_ = delegate; }
 
  private:
   // ViewTreeDelegate:
-  void OnEmbed(mus::View* root) override { delegate_->OnEmbed(root); }
+  void OnEmbed(mojo::View* root) override { delegate_->OnEmbed(root); }
   void OnUnembed() override { delegate_->OnUnembed(); }
-  void OnConnectionLost(mus::ViewTreeConnection* connection) override {
+  void OnConnectionLost(mojo::ViewTreeConnection* connection) override {
     delegate_->OnConnectionLost(connection);
   }
 
-  mus::ViewTreeDelegate* delegate_;
+  mojo::ViewTreeDelegate* delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(ViewTreeDelegateImpl);
 };
@@ -117,7 +117,7 @@ HTMLDocument::HTMLDocument(mojo::ApplicationImpl* html_document_app,
 
 void HTMLDocument::Destroy() {
   if (resource_waiter_) {
-    mus::View* root = resource_waiter_->root();
+    mojo::View* root = resource_waiter_->root();
     if (root) {
       resource_waiter_.reset();
       delete root->connection();
@@ -149,7 +149,7 @@ void HTMLDocument::Load() {
   DCHECK(resource_waiter_ && resource_waiter_->is_ready());
 
   // Note: |view| is null if we're taking over for an existing frame.
-  mus::View* view = resource_waiter_->root();
+  mojo::View* view = resource_waiter_->root();
   if (view) {
     global_state_->InitIfNecessary(
         view->viewport_metrics().size_in_pixels.To<gfx::Size>(),
@@ -200,7 +200,7 @@ void HTMLDocument::OnEmbed(View* root) {
   resource_waiter_->SetRoot(root);
 }
 
-void HTMLDocument::OnConnectionLost(mus::ViewTreeConnection* connection) {
+void HTMLDocument::OnConnectionLost(mojo::ViewTreeConnection* connection) {
   delete this;
 }
 
@@ -316,7 +316,7 @@ void HTMLDocument::Create(
   transferable_state_.view_tree_delegate_impl.reset(
       new ViewTreeDelegateImpl(this));
   transferable_state_.owns_view_tree_connection = true;
-  mus::ViewTreeConnection::Create(
+  mojo::ViewTreeConnection::Create(
       transferable_state_.view_tree_delegate_impl.get(), request.Pass());
 }
 

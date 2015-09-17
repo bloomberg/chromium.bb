@@ -27,9 +27,9 @@ class InputMethodMandoline;
 class SurfaceContextFactory;
 
 class WindowTreeHostMojo : public aura::WindowTreeHost,
-                           public mus::ViewObserver {
+                           public mojo::ViewObserver {
  public:
-  WindowTreeHostMojo(mojo::Shell* shell, mus::View* view);
+  WindowTreeHostMojo(mojo::Shell* shell, mojo::View* view);
   ~WindowTreeHostMojo() override;
 
   const gfx::Rect& bounds() const { return bounds_; }
@@ -53,12 +53,12 @@ class WindowTreeHostMojo : public aura::WindowTreeHost,
   void MoveCursorToNative(const gfx::Point& location) override;
   void OnCursorVisibilityChangedNative(bool show) override;
 
-  // mus::ViewObserver:
-  void OnViewBoundsChanged(mus::View* view,
+  // mojo::ViewObserver:
+  void OnViewBoundsChanged(mojo::View* view,
                            const mojo::Rect& old_bounds,
                            const mojo::Rect& new_bounds) override;
 
-  mus::View* view_;
+  mojo::View* view_;
 
   gfx::Rect bounds_;
 

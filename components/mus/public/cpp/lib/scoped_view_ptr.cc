@@ -8,7 +8,7 @@
 #include "components/mus/public/cpp/view_observer.h"
 #include "components/mus/public/cpp/view_tree_connection.h"
 
-namespace mus {
+namespace mojo {
 
 ScopedViewPtr::ScopedViewPtr(View* view) : view_(view) {
   view_->AddObserver(this);
@@ -41,4 +41,4 @@ void ScopedViewPtr::OnViewDestroying(View* view) {
   DetachFromView();
 }
 
-}  // namespace mus
+}  // namespace mojo

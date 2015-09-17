@@ -8,7 +8,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "components/mus/server_view_drawn_tracker_observer.h"
 
-namespace mus {
+namespace view_manager {
 
 class FocusControllerDelegate;
 class ServerView;
@@ -47,6 +47,6 @@ class FocusController : public ServerViewDrawnTrackerObserver {
   DISALLOW_COPY_AND_ASSIGN(FocusController);
 };
 
-}  // namespace mus
+}  // namespace view_manager
 
 #endif  // COMPONENTS_MUS_FOCUS_CONTROLLER_H_

@@ -62,7 +62,7 @@ class TestFrameTreeServer : public web_view::FrameTreeServer {
 
 }  // namespace
 
-using AXProviderTest = mus::ViewManagerTestBase;
+using AXProviderTest = ViewManagerTestBase;
 
 TEST_F(AXProviderTest, HelloWorld) {
   // Start a test server for net/data/test.html access.
@@ -82,7 +82,7 @@ TEST_F(AXProviderTest, HelloWorld) {
   // Embed the html_viewer in a View.
   ViewTreeClientPtr tree_client;
   connection->ConnectToService(&tree_client);
-  mus::View* embed_view = window_manager()->CreateView();
+  View* embed_view = window_manager()->CreateView();
   embed_view->Embed(tree_client.Pass());
 
   TestFrameTreeServer frame_tree_server;

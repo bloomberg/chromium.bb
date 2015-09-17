@@ -27,8 +27,10 @@ class FakeReflector : public ui::Reflector {
 }
 
 SurfaceContextFactory::SurfaceContextFactory(mojo::Shell* shell,
-                                             mus::View* view)
-    : surface_binding_(shell, view), next_surface_id_namespace_(1u) {}
+                                             mojo::View* view)
+    : surface_binding_(shell, view),
+      next_surface_id_namespace_(1u) {
+}
 
 SurfaceContextFactory::~SurfaceContextFactory() {
 }

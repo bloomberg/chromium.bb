@@ -8,13 +8,13 @@
 #include "base/basictypes.h"
 #include "components/mus/access_policy.h"
 
-namespace mus {
+namespace view_manager {
 
 class AccessPolicyDelegate;
 
 class WindowManagerAccessPolicy : public AccessPolicy {
  public:
-  WindowManagerAccessPolicy(ConnectionSpecificId connection_id,
+  WindowManagerAccessPolicy(mojo::ConnectionSpecificId connection_id,
                             AccessPolicyDelegate* delegate);
   ~WindowManagerAccessPolicy() override;
 
@@ -44,12 +44,12 @@ class WindowManagerAccessPolicy : public AccessPolicy {
  private:
   bool IsViewKnown(const ServerView* view) const;
 
-  const ConnectionSpecificId connection_id_;
+  const mojo::ConnectionSpecificId connection_id_;
   AccessPolicyDelegate* delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowManagerAccessPolicy);
 };
 
-}  // namespace mus
+}  // namespace view_manager
 
 #endif  // COMPONENTS_MUS_WINDOW_MANAGER_ACCESS_POLICY_H_

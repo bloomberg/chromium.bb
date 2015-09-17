@@ -9,7 +9,7 @@
 #include "components/mus/test_server_view_delegate.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace mus {
+namespace view_manager {
 namespace {
 
 class TestFocusControllerDelegate : public FocusControllerDelegate {
@@ -104,4 +104,4 @@ TEST(FocusControllerTest, Basic) {
   focus_delegate.ClearAll();
 }
 
-}  // namespace mus
+}  // namespace view_manager

@@ -12,8 +12,9 @@
 
 namespace html_viewer {
 
-ImeController::ImeController(mus::View* view, blink::WebWidget* widget)
-    : view_(view), widget_(widget) {}
+ImeController::ImeController(mojo::View* view, blink::WebWidget* widget)
+    : view_(view), widget_(widget) {
+}
 
 ImeController::~ImeController() {}
 

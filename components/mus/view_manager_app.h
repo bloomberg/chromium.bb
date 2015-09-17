@@ -19,30 +19,35 @@
 #include "mojo/common/tracing_impl.h"
 #include "mojo/common/weak_binding_set.h"
 
+namespace gles2 {
+class GpuState;
+}
+
 namespace mojo {
 class ApplicationImpl;
+}
+
+namespace surfaces {
+class SurfacesScheduler;
+class SurfacesState;
 }
 
 namespace ui {
 class PlatformEventSource;
 }
 
-namespace mus {
+namespace view_manager {
 
 class ConnectionManager;
-class GpuState;
-class SurfacesScheduler;
-class SurfacesState;
 
-class MandolineUIServicesApp
-    : public mojo::ApplicationDelegate,
-      public ConnectionManagerDelegate,
-      public mojo::InterfaceFactory<mojo::ViewTreeHostFactory>,
-      public mojo::InterfaceFactory<mojo::Gpu>,
-      public mojo::ViewTreeHostFactory {
+class ViewManagerApp : public mojo::ApplicationDelegate,
+                       public ConnectionManagerDelegate,
+                       public mojo::InterfaceFactory<mojo::ViewTreeHostFactory>,
+                       public mojo::InterfaceFactory<mojo::Gpu>,
+                       public mojo::ViewTreeHostFactory {
  public:
-  MandolineUIServicesApp();
-  ~MandolineUIServicesApp() override;
+  ViewManagerApp();
+  ~ViewManagerApp() override;
 
  private:
   // ApplicationDelegate:
@@ -55,14 +60,14 @@ class MandolineUIServicesApp
   ClientConnection* CreateClientConnectionForEmbedAtView(
       ConnectionManager* connection_manager,
       mojo::InterfaceRequest<mojo::ViewTree> tree_request,
-      ConnectionSpecificId creator_id,
+      mojo::ConnectionSpecificId creator_id,
       mojo::URLRequestPtr request,
       const ViewId& root_id,
       uint32_t policy_bitmask) override;
   ClientConnection* CreateClientConnectionForEmbedAtView(
       ConnectionManager* connection_manager,
       mojo::InterfaceRequest<mojo::ViewTree> tree_request,
-      ConnectionSpecificId creator_id,
+      mojo::ConnectionSpecificId creator_id,
       const ViewId& root_id,
       uint32_t policy_bitmask,
       mojo::ViewTreeClientPtr client) override;
@@ -85,16 +90,16 @@ class MandolineUIServicesApp
   mojo::ApplicationImpl* app_impl_;
   scoped_ptr<ConnectionManager> connection_manager_;
   mojo::TracingImpl tracing_;
-  scoped_refptr<GpuState> gpu_state_;
+  scoped_refptr<gles2::GpuState> gpu_state_;
   scoped_ptr<ui::PlatformEventSource> event_source_;
   bool is_headless_;
 
   // Surfaces
-  scoped_refptr<SurfacesState> surfaces_state_;
+  scoped_refptr<surfaces::SurfacesState> surfaces_state_;
 
-  DISALLOW_COPY_AND_ASSIGN(MandolineUIServicesApp);
+  DISALLOW_COPY_AND_ASSIGN(ViewManagerApp);
 };
 
-}  // namespace mus
+}  // namespace view_manager
 
 #endif  // COMPONENTS_MUS_VIEW_MANAGER_APP_H_

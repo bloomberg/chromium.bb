@@ -58,7 +58,7 @@ mojo::URLResponsePtr DocumentResourceWaiter::ReleaseURLResponse() {
   return response_.Pass();
 }
 
-void DocumentResourceWaiter::SetRoot(mus::View* root) {
+void DocumentResourceWaiter::SetRoot(mojo::View* root) {
   DCHECK(!root_);
   root_ = root;
   root_->AddObserver(this);
@@ -173,13 +173,13 @@ void DocumentResourceWaiter::OnWillNavigate(uint32_t target_frame_id) {
 }
 
 void DocumentResourceWaiter::OnViewViewportMetricsChanged(
-    mus::View* view,
+    mojo::View* view,
     const mojo::ViewportMetrics& old_metrics,
     const mojo::ViewportMetrics& new_metrics) {
   UpdateIsReady();
 }
 
-void DocumentResourceWaiter::OnViewDestroyed(mus::View* view) {
+void DocumentResourceWaiter::OnViewDestroyed(mojo::View* view) {
   root_->RemoveObserver(this);
   root_ = nullptr;
 }

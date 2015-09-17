@@ -11,15 +11,15 @@
 #include "base/callback.h"
 #include "base/observer_list.h"
 #include "components/mus/public/cpp/types.h"
-#include "components/mus/public/interfaces/mus_constants.mojom.h"
 #include "components/mus/public/interfaces/surface_id.mojom.h"
+#include "components/mus/public/interfaces/view_manager_constants.mojom.h"
 #include "components/mus/public/interfaces/view_tree.mojom.h"
 #include "mojo/application/public/interfaces/service_provider.mojom.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/array.h"
 #include "third_party/mojo/src/mojo/public/cpp/system/macros.h"
 #include "ui/mojo/geometry/geometry.mojom.h"
 
-namespace mus {
+namespace mojo {
 
 class ServiceProviderImpl;
 class View;
@@ -55,14 +55,14 @@ class View {
   Id id() const { return id_; }
 
   // Geometric disposition.
-  const mojo::Rect& bounds() const { return bounds_; }
-  void SetBounds(const mojo::Rect& bounds);
+  const Rect& bounds() const { return bounds_; }
+  void SetBounds(const Rect& bounds);
 
   // Visibility (also see IsDrawn()). When created views are hidden.
   bool visible() const { return visible_; }
   void SetVisible(bool value);
 
-  const mojo::ViewportMetrics& viewport_metrics() { return *viewport_metrics_; }
+  const ViewportMetrics& viewport_metrics() { return *viewport_metrics_; }
 
   scoped_ptr<ViewSurface> RequestSurface();
 
@@ -120,7 +120,7 @@ class View {
   void AddChild(View* child);
   void RemoveChild(View* child);
 
-  void Reorder(View* relative, mojo::OrderDirection direction);
+  void Reorder(View* relative, OrderDirection direction);
   void MoveToFront();
   void MoveToBack();
 
@@ -128,19 +128,19 @@ class View {
 
   View* GetChildById(Id id);
 
-  void SetTextInputState(mojo::TextInputStatePtr state);
-  void SetImeVisibility(bool visible, mojo::TextInputStatePtr state);
+  void SetTextInputState(TextInputStatePtr state);
+  void SetImeVisibility(bool visible, TextInputStatePtr state);
 
   // Focus.
   void SetFocus();
   bool HasFocus() const;
 
   // Embedding. See view_tree.mojom for details.
-  void Embed(mojo::ViewTreeClientPtr client);
+  void Embed(ViewTreeClientPtr client);
 
   // NOTE: callback is run synchronously if Embed() is not allowed on this
   // View.
-  void Embed(mojo::ViewTreeClientPtr client,
+  void Embed(ViewTreeClientPtr client,
              uint32_t policy_bitmask,
              const EmbedCallback& callback);
 
@@ -168,11 +168,10 @@ class View {
   void LocalAddChild(View* child);
   void LocalRemoveChild(View* child);
   // Returns true if the order actually changed.
-  bool LocalReorder(View* relative, mojo::OrderDirection direction);
-  void LocalSetBounds(const mojo::Rect& old_bounds,
-                      const mojo::Rect& new_bounds);
-  void LocalSetViewportMetrics(const mojo::ViewportMetrics& old_metrics,
-                               const mojo::ViewportMetrics& new_metrics);
+  bool LocalReorder(View* relative, OrderDirection direction);
+  void LocalSetBounds(const Rect& old_bounds, const Rect& new_bounds);
+  void LocalSetViewportMetrics(const ViewportMetrics& old_metrics,
+                               const ViewportMetrics& new_metrics);
   void LocalSetDrawn(bool drawn);
   void LocalSetVisible(bool visible);
 
@@ -199,8 +198,8 @@ class View {
 
   base::ObserverList<ViewObserver> observers_;
 
-  mojo::Rect bounds_;
-  mojo::ViewportMetricsPtr viewport_metrics_;
+  Rect bounds_;
+  ViewportMetricsPtr viewport_metrics_;
 
   bool visible_;
 
@@ -224,6 +223,6 @@ class View {
   MOJO_DISALLOW_COPY_AND_ASSIGN(View);
 };
 
-}  // namespace mus
+}  // namespace mojo
 
 #endif  // COMPONENTS_MUS_PUBLIC_CPP_VIEW_H_

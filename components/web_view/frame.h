@@ -49,12 +49,12 @@ enum class ViewOwnership {
 // by the argument |reuse_existing_view| supplied to OnConnect(). Typically the
 // id is that of content handler id, but this is left up to the
 // FrameTreeDelegate to decide.
-class Frame : public mus::ViewObserver, public FrameTreeServer {
+class Frame : public mojo::ViewObserver, public FrameTreeServer {
  public:
   using ClientPropertyMap = std::map<std::string, std::vector<uint8_t>>;
 
   Frame(FrameTree* tree,
-        mus::View* view,
+        mojo::View* view,
         uint32_t frame_id,
         uint32_t app_id,
         ViewOwnership view_ownership,
@@ -69,15 +69,15 @@ class Frame : public mus::ViewObserver, public FrameTreeServer {
   // Frame that is associated with |view|. For example, if |view|
   // has a Frame associated with it, then that is returned. Otherwise
   // this checks view->parent() and so on.
-  static Frame* FindFirstFrameAncestor(mus::View* view);
+  static Frame* FindFirstFrameAncestor(mojo::View* view);
 
   FrameTree* tree() { return tree_; }
 
   Frame* parent() { return parent_; }
   const Frame* parent() const { return parent_; }
 
-  mus::View* view() { return view_; }
-  const mus::View* view() const { return view_; }
+  mojo::View* view() { return view_; }
+  const mojo::View* view() const { return view_; }
 
   uint32_t id() const { return id_; }
 
@@ -137,7 +137,7 @@ class Frame : public mus::ViewObserver, public FrameTreeServer {
       scoped_ptr<FrameTreeServerBinding> frame_tree_server_binding);
 
   // Callback from OnEmbed().
-  void OnEmbedAck(bool success, mus::ConnectionSpecificId connection_id);
+  void OnEmbedAck(bool success, mojo::ConnectionSpecificId connection_id);
 
   // Completes a navigation request; swapping the existing FrameTreeClient to
   // the supplied arguments.
@@ -146,7 +146,7 @@ class Frame : public mus::ViewObserver, public FrameTreeServer {
                     mojo::ViewTreeClientPtr view_tree_client,
                     uint32 app_id);
 
-  void SetView(mus::View* view);
+  void SetView(mojo::View* view);
 
   // Returns the first ancestor (starting at |this|) that has a
   // FrameTreeClient.
@@ -192,10 +192,10 @@ class Frame : public mus::ViewObserver, public FrameTreeServer {
                                    const mojo::String& name,
                                    const mojo::Array<uint8_t>& value);
 
-  // mus::ViewObserver:
+  // mojo::ViewObserver:
   void OnTreeChanged(const TreeChangeParams& params) override;
-  void OnViewDestroying(mus::View* view) override;
-  void OnViewEmbeddedAppDisconnected(mus::View* view) override;
+  void OnViewDestroying(mojo::View* view) override;
+  void OnViewEmbeddedAppDisconnected(mojo::View* view) override;
 
   // FrameTreeServer:
   void PostMessageEventToFrame(uint32_t source_frame_id,
@@ -219,10 +219,10 @@ class Frame : public mus::ViewObserver, public FrameTreeServer {
 
   FrameTree* const tree_;
   // WARNING: this may be null. See class description for details.
-  mus::View* view_;
+  mojo::View* view_;
   // The connection id returned from ViewManager::Embed(). Frames created by
   // way of OnCreatedFrame() inherit the id from the parent.
-  mus::ConnectionSpecificId embedded_connection_id_;
+  mojo::ConnectionSpecificId embedded_connection_id_;
   // ID for the frame, which is the same as that of the view.
   const uint32_t id_;
   // ID of the app providing the FrameTreeClient and ViewTreeClient.

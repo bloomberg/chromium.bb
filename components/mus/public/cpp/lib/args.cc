@@ -4,7 +4,7 @@
 
 #include "components/mus/public/cpp/args.h"
 
-namespace mus {
+namespace mojo {
 
 // Create native viewport in headless mode.
 const char kUseHeadlessConfig[] = "use-headless-config";
@@ -13,4 +13,4 @@ const char kUseHeadlessConfig[] = "use-headless-config";
 // creating X11 windows.
 const char kUseX11TestConfig[] = "use-x11-test-config";
 
-}  // namespace mus
+}  // namespace mojo
