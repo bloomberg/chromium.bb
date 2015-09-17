@@ -208,7 +208,7 @@ public:
     WebElement console()
     {
         WebElement console = m_webViewHelper.webView()->mainFrame()->document().getElementById("console");
-        ASSERT(console.nodeName() == "UL");
+        ASSERT(console.hasHTMLTagName("UL"));
         return console;
     }
 
@@ -222,11 +222,12 @@ public:
         ASSERT(consoleLength() > i);
 
         WebNode consoleListItem = console().childNodes().item(1 + i);
-        ASSERT(consoleListItem.nodeName() == "LI");
+        ASSERT(consoleListItem.isElementNode());
+        ASSERT(consoleListItem.to<WebElement>().hasHTMLTagName("LI"));
         ASSERT(consoleListItem.hasChildNodes());
 
         WebNode textNode = consoleListItem.firstChild();
-        ASSERT(textNode.nodeName() == "#text");
+        ASSERT(textNode.isTextNode());
 
         return textNode.nodeValue().utf8().data();
     }
