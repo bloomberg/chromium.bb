@@ -73,6 +73,11 @@ static const char kTitleFormat[] = "Developer Tools - %s";
 static const char kDevToolsActionTakenHistogram[] = "DevTools.ActionTaken";
 static const char kDevToolsPanelShownHistogram[] = "DevTools.PanelShown";
 
+static const char kRemotePageActionInspect[] = "inspect";
+static const char kRemotePageActionReload[] = "reload";
+static const char kRemotePageActionActivate[] = "activate";
+static const char kRemotePageActionClose[] = "close";
+
 // This constant should be in sync with
 // the constant at shell_devtools_frontend.cc.
 const size_t kMaxMessageChunkSize = IPC::Channel::kMaximumMessageSize / 4;
@@ -755,6 +760,35 @@ void DevToolsUIBindings::ResetZoom() {
   ui_zoom::PageZoom::Zoom(web_contents(), content::PAGE_ZOOM_RESET);
 }
 
+void DevToolsUIBindings::SetDevicesDiscoveryConfig(
+    bool discover_usb_devices,
+    bool port_forwarding_enabled,
+    const std::string& port_forwarding_config) {
+  base::DictionaryValue* config_dict = nullptr;
+  scoped_ptr<base::Value> parsed_config =
+      base::JSONReader::Read(port_forwarding_config);
+  if (!parsed_config || !parsed_config->GetAsDictionary(&config_dict))
+    return;
+
+  profile_->GetPrefs()->SetBoolean(
+      prefs::kDevToolsDiscoverUsbDevicesEnabled, discover_usb_devices);
+  profile_->GetPrefs()->SetBoolean(
+      prefs::kDevToolsPortForwardingEnabled, port_forwarding_enabled);
+  profile_->GetPrefs()->Set(
+      prefs::kDevToolsPortForwardingConfig, *config_dict);
+}
+
+void DevToolsUIBindings::DevicesDiscoveryConfigUpdated() {
+  CallClientFunction(
+      "DevToolsAPI.devicesDiscoveryConfigChanged",
+      profile_->GetPrefs()->FindPreference(
+          prefs::kDevToolsDiscoverUsbDevicesEnabled)->GetValue(),
+      profile_->GetPrefs()->FindPreference(
+          prefs::kDevToolsPortForwardingEnabled)->GetValue(),
+      profile_->GetPrefs()->FindPreference(
+          prefs::kDevToolsPortForwardingConfig)->GetValue());
+}
+
 void DevToolsUIBindings::SetDevicesUpdatesEnabled(bool enabled) {
   if (devices_updates_enabled_ == enabled)
     return;
@@ -764,9 +798,38 @@ void DevToolsUIBindings::SetDevicesUpdatesEnabled(bool enabled) {
         base::Bind(&DevToolsUIBindings::DevicesUpdated,
                    base::Unretained(this)),
         profile_);
+    pref_change_registrar_.Init(profile_->GetPrefs());
+    pref_change_registrar_.Add(prefs::kDevToolsDiscoverUsbDevicesEnabled,
+        base::Bind(&DevToolsUIBindings::DevicesDiscoveryConfigUpdated,
+                   base::Unretained(this)));
+    pref_change_registrar_.Add(prefs::kDevToolsPortForwardingEnabled,
+        base::Bind(&DevToolsUIBindings::DevicesDiscoveryConfigUpdated,
+                   base::Unretained(this)));
+    pref_change_registrar_.Add(prefs::kDevToolsPortForwardingConfig,
+        base::Bind(&DevToolsUIBindings::DevicesDiscoveryConfigUpdated,
+                   base::Unretained(this)));
+    DevicesDiscoveryConfigUpdated();
   } else {
     remote_targets_handler_.reset();
+    pref_change_registrar_.RemoveAll();
   }
+}
+
+void DevToolsUIBindings::PerformActionOnRemotePage(const std::string& page_id,
+                                                   const std::string& action) {
+  if (!remote_targets_handler_)
+    return;
+  DevToolsTargetImpl* target = remote_targets_handler_->GetTarget(page_id);
+  if (!target)
+    return;
+  if (action == kRemotePageActionInspect)
+    target->Inspect(profile_);
+  if (action == kRemotePageActionReload)
+    target->Reload();
+  if (action == kRemotePageActionActivate)
+    target->Activate();
+  if (action == kRemotePageActionClose)
+    target->Close();
 }
 
 void DevToolsUIBindings::GetPreferences(const DispatchCallback& callback) {

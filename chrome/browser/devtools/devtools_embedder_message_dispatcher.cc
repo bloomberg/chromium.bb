@@ -333,8 +333,12 @@ DevToolsEmbedderMessageDispatcher::CreateForDevToolsFrontend(
   d->RegisterHandler("zoomIn", &Delegate::ZoomIn, delegate);
   d->RegisterHandler("zoomOut", &Delegate::ZoomOut, delegate);
   d->RegisterHandler("resetZoom", &Delegate::ResetZoom, delegate);
+  d->RegisterHandler("setDevicesDiscoveryConfig",
+                     &Delegate::SetDevicesDiscoveryConfig, delegate);
   d->RegisterHandler("setDevicesUpdatesEnabled",
                      &Delegate::SetDevicesUpdatesEnabled, delegate);
+  d->RegisterHandler("performActionOnRemotePage",
+                     &Delegate::PerformActionOnRemotePage, delegate);
   d->RegisterHandler("sendMessageToBrowser",
                      &Delegate::SendMessageToBrowser, delegate);
   d->RegisterHandler("recordEnumeratedHistogram",
