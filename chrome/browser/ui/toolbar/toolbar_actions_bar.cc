@@ -227,7 +227,7 @@ size_t ToolbarActionsBar::WidthToIconCount(int pixels) const {
 
 size_t ToolbarActionsBar::GetIconCount() const {
   if (!model_)
-    return 0u;
+    return 0;
 
   int pop_out_modifier = 0;
   // If there is a popped out action, it could affect the number of visible
@@ -264,9 +264,23 @@ size_t ToolbarActionsBar::GetIconCount() const {
   return visible_icons;
 }
 
-gfx::Rect ToolbarActionsBar::GetFrameForIndex(size_t index) const {
-  size_t start_index = in_overflow_mode() ?
-      toolbar_actions_.size() - GetIconCount() : 0u;
+size_t ToolbarActionsBar::GetStartIndexInBounds() const {
+  return in_overflow_mode() ? main_bar_->GetEndIndexInBounds() : 0;
+}
+
+size_t ToolbarActionsBar::GetEndIndexInBounds() const {
+  return in_overflow_mode() ?
+      toolbar_actions_.size() : WidthToIconCount(delegate_->GetWidth());
+}
+
+bool ToolbarActionsBar::NeedsOverflow() const {
+  DCHECK(!in_overflow_mode());
+  return GetEndIndexInBounds() != toolbar_actions_.size();
+}
+
+gfx::Rect ToolbarActionsBar::GetFrameForIndex(
+    size_t index) const {
+  size_t start_index = GetStartIndexInBounds();
 
   // If the index is for an action that is before range we show (i.e., is for
   // a button that's on the main bar, and this is the overflow), send back an

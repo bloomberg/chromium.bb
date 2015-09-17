@@ -583,10 +583,8 @@ void ToolbarActionsBarBridge::ShowExtensionMessageBubble(
   }
 
   [self showChevronIfNecessaryInFrame:[containerView_ frame]];
-  NSUInteger minIndex = isOverflow_ ?
-      [buttons_ count] - toolbarActionsBar_->GetIconCount() : 0;
-  NSUInteger maxIndex = isOverflow_ ?
-      [buttons_ count] : toolbarActionsBar_->GetIconCount();
+  NSUInteger startIndex = toolbarActionsBar_->GetStartIndexInBounds();
+  NSUInteger endIndex = toolbarActionsBar_->GetEndIndexInBounds();
   for (NSUInteger i = 0; i < [buttons_ count]; ++i) {
     BrowserActionButton* button = [buttons_ objectAtIndex:i];
     if ([button isBeingDragged])
@@ -594,7 +592,7 @@ void ToolbarActionsBarBridge::ShowExtensionMessageBubble(
 
     [self moveButton:[buttons_ objectAtIndex:i] toIndex:i];
 
-    if (i >= minIndex && i < maxIndex) {
+    if (i >= startIndex && i < endIndex) {
       // Make sure the button is within the visible container.
       if ([button superview] != containerView_) {
         // We add the subview under the sibling views so that when it
@@ -669,16 +667,23 @@ void ToolbarActionsBarBridge::ShowExtensionMessageBubble(
 - (void)updateButtonOpacity {
   for (BrowserActionButton* button in buttons_.get()) {
     NSRect buttonFrame = [button frameAfterAnimation];
+    // The button is fully in the container view, and should get full opacity.
     if (NSContainsRect([containerView_ bounds], buttonFrame)) {
       if ([button alphaValue] != 1.0)
         [button setAlphaValue:1.0];
 
       continue;
     }
-    CGFloat intersectionWidth =
-        NSWidth(NSIntersectionRect([containerView_ bounds], buttonFrame));
-    CGFloat alpha = std::max(static_cast<CGFloat>(0.0),
-                             intersectionWidth / NSWidth(buttonFrame));
+    // The button is only partially in the container view. If the user is
+    // resizing the container, we have partial alpha so the icon fades in as
+    // space is made. Otherwise, hide the icon fully.
+    CGFloat alpha = 0.0;
+    if ([containerView_ userIsResizing]) {
+      CGFloat intersectionWidth =
+          NSWidth(NSIntersectionRect([containerView_ bounds], buttonFrame));
+      alpha = std::max(static_cast<CGFloat>(0.0),
+                       intersectionWidth / NSWidth(buttonFrame));
+    }
     [button setAlphaValue:alpha];
     [button setNeedsDisplay:YES];
   }

@@ -38,6 +38,13 @@ namespace {
 // actions overflow container).
 const int kLeftPadding = 16;
 const int kRightPadding = 10;
+
+// In *very* extreme cases, it's possible that there are so many overflowed
+// actions, we won't be able to show them all. Cap the height so that the
+// overflow won't make the menu larger than the height of the screen.
+// Note: With this height, we can show 104 actions. Less than 0.0002% of our
+// users will be affected.
+const int kMaxOverflowContainerHeight = 416;
 }
 
 namespace wrench_menu_controller {
@@ -278,7 +285,9 @@ class ZoomLevelObserver {
   // and size of each for it display properly.
   // The parent views each have a size of the full width of the menu, so we can
   // properly position the container.
-  NSSize parentSize = NSMakeSize(menuWidth, preferredContainerSize.height());
+  NSSize parentSize = NSMakeSize(menuWidth,
+                                 std::min(preferredContainerSize.height(),
+                                          kMaxOverflowContainerHeight));
   [view setFrameSize:parentSize];
   [[containerView superview] setFrameSize:parentSize];
 

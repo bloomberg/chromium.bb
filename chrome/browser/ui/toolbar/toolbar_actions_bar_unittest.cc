@@ -447,3 +447,53 @@ TEST_F(ToolbarActionsBarRedesignUnitTest, TestActionFrameBounds) {
   EXPECT_EQ(gfx::Rect(kSpacing, kIconHeight * 2, kIconWidth, kIconHeight),
             overflow_bar()->GetFrameForIndex(6));
 }
+
+TEST_F(ToolbarActionsBarRedesignUnitTest, TestStartAndEndIndexes) {
+  for (int i = 0; i < 3; ++i) {
+    CreateAndAddExtension(
+        base::StringPrintf("extension %d", i),
+        extensions::extension_action_test_util::BROWSER_ACTION);
+  }
+  // At the start, all icons should be present on the main bar, and no
+  // overflow should be needed.
+  EXPECT_EQ(3u, toolbar_actions_bar()->GetIconCount());
+  EXPECT_EQ(0u, toolbar_actions_bar()->GetStartIndexInBounds());
+  EXPECT_EQ(3u, toolbar_actions_bar()->GetEndIndexInBounds());
+  EXPECT_EQ(3u, overflow_bar()->GetStartIndexInBounds());
+  EXPECT_EQ(3u, overflow_bar()->GetEndIndexInBounds());
+  EXPECT_FALSE(toolbar_actions_bar()->NeedsOverflow());
+
+  // Shrink the width of the view to be a little over enough for one icon.
+  browser_action_test_util()->SetWidth(ToolbarActionsBar::IconWidth(true) + 5);
+  // Tricky: GetIconCount() is what we use to determine our preferred size,
+  // stored pref size, etc, and should not be affected by a minimum size that is
+  // too small to show everything. It should remain constant.
+  EXPECT_EQ(3u, toolbar_actions_bar()->GetIconCount());
+  // The main container should display only the first icon, with the overflow
+  // displaying the rest.
+  EXPECT_EQ(0u, toolbar_actions_bar()->GetStartIndexInBounds());
+  EXPECT_EQ(1u, toolbar_actions_bar()->GetEndIndexInBounds());
+  EXPECT_EQ(1u, overflow_bar()->GetStartIndexInBounds());
+  EXPECT_EQ(3u, overflow_bar()->GetEndIndexInBounds());
+  EXPECT_TRUE(toolbar_actions_bar()->NeedsOverflow());
+
+  // Shrink the container again to be too small to display even one icon.
+  // The overflow container should be displaying everything.
+  browser_action_test_util()->SetWidth(ToolbarActionsBar::IconWidth(true) - 10);
+  EXPECT_EQ(3u, toolbar_actions_bar()->GetIconCount());
+  EXPECT_EQ(0u, toolbar_actions_bar()->GetStartIndexInBounds());
+  EXPECT_EQ(0u, toolbar_actions_bar()->GetEndIndexInBounds());
+  EXPECT_EQ(0u, overflow_bar()->GetStartIndexInBounds());
+  EXPECT_EQ(3u, overflow_bar()->GetEndIndexInBounds());
+  EXPECT_TRUE(toolbar_actions_bar()->NeedsOverflow());
+
+  // Set the width back to the preferred width. All should be back to normal.
+  browser_action_test_util()->SetWidth(
+      toolbar_actions_bar()->GetPreferredSize().width());
+  EXPECT_EQ(3u, toolbar_actions_bar()->GetIconCount());
+  EXPECT_EQ(0u, toolbar_actions_bar()->GetStartIndexInBounds());
+  EXPECT_EQ(3u, toolbar_actions_bar()->GetEndIndexInBounds());
+  EXPECT_EQ(3u, overflow_bar()->GetStartIndexInBounds());
+  EXPECT_EQ(3u, overflow_bar()->GetEndIndexInBounds());
+  EXPECT_FALSE(toolbar_actions_bar()->NeedsOverflow());
+}

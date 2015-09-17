@@ -36,7 +36,7 @@
 #include "chrome/browser/ui/toolbar/bookmark_sub_menu_model.h"
 #include "chrome/browser/ui/toolbar/encoding_menu_controller.h"
 #include "chrome/browser/ui/toolbar/recent_tabs_sub_menu_model.h"
-#include "chrome/browser/ui/toolbar/toolbar_actions_model.h"
+#include "chrome/browser/ui/toolbar/toolbar_actions_bar.h"
 #include "chrome/browser/upgrade_detector.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -966,7 +966,9 @@ bool WrenchMenuModel::AddGlobalErrorMenuItems() {
 void WrenchMenuModel::CreateActionToolbarOverflowMenu() {
   // We only add the extensions overflow container if there are any icons that
   // aren't shown in the main container.
-  if (!ToolbarActionsModel::Get(browser_->profile())->all_icons_visible()) {
+  // browser_->window() can return null during startup.
+  if (browser_->window() &&
+      browser_->window()->GetToolbarActionsBar()->NeedsOverflow()) {
 #if defined(OS_MACOSX)
     // There's a bug in AppKit menus, where if a menu item with a custom view
     // (like the extensions overflow menu) is the first menu item, it is not

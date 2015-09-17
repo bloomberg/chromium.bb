@@ -305,7 +305,7 @@ void BrowserActionsContainer::SetChevronVisibility(bool visible) {
 }
 
 int BrowserActionsContainer::GetWidth() const {
-  return container_width_;
+  return width();
 }
 
 bool BrowserActionsContainer::IsAnimating() const {
@@ -407,13 +407,15 @@ void BrowserActionsContainer::Layout() {
   if (resize_area_)
     resize_area_->SetBounds(0, 0, platform_settings().item_spacing, height());
 
+  // The range of visible icons, from start_index (inclusive) to end_index
+  // (exclusive).
+  size_t start_index = toolbar_actions_bar_->GetStartIndexInBounds();
+  size_t end_index = toolbar_actions_bar_->GetEndIndexInBounds();
+
   // If the icons don't all fit, show the chevron (unless suppressed).
-  int max_x = GetPreferredSize().width();
-  if (toolbar_actions_bar_->IconCountToWidth(-1) > max_x &&
-      !suppress_chevron_ && chevron_) {
+  if (chevron_ && !suppress_chevron_ && toolbar_actions_bar_->NeedsOverflow()) {
     chevron_->SetVisible(true);
     gfx::Size chevron_size(chevron_->GetPreferredSize());
-    max_x -= chevron_size.width() + kChevronSpacing;
     chevron_->SetBounds(
         width() - ToolbarView::kStandardSpacing - chevron_size.width(),
         0,
@@ -422,20 +424,6 @@ void BrowserActionsContainer::Layout() {
   } else if (chevron_) {
     chevron_->SetVisible(false);
   }
-
-  // The range of visible icons, from start_index (inclusive) to end_index
-  // (exclusive).
-  size_t start_index = in_overflow_mode() ?
-      toolbar_action_views_.size() - toolbar_actions_bar_->GetIconCount() : 0u;
-  // For the main container's last visible icon, we calculate how many icons we
-  // can display with the given width. We add an extra item_spacing because the
-  // last icon doesn't need padding, but we want it to divide easily.
-  size_t end_index = in_overflow_mode() ?
-      toolbar_action_views_.size() :
-      (max_x - platform_settings().left_padding -
-          platform_settings().right_padding +
-          platform_settings().item_spacing) /
-          ToolbarActionsBar::IconWidth(true);
 
   // Now draw the icons for the actions in the available space. Once all the
   // variables are in place, the layout works equally well for the main and
@@ -630,10 +618,19 @@ void BrowserActionsContainer::OnResize(int resize_amount, bool done_resizing) {
   // We don't allow resize while the toolbar is highlighting a subset of
   // actions, since this is a temporary and entirely browser-driven sequence in
   // order to warn the user about potentially dangerous items.
-  if (toolbar_actions_bar_->is_highlighting())
+  // We also don't allow resize when the bar is already animating, since we
+  // don't want two competing size changes.
+  if (toolbar_actions_bar_->is_highlighting() || animating())
     return;
 
   if (!done_resizing) {
+    // If this is the start of the resize gesture, then set |container_width_|
+    // to be the current width. It might not have been if the container was
+    // shrunk to give room to the omnibox, but to adjust the size, it needs to
+    // be accurate.
+    if (!resize_amount_)
+      container_width_ = width();
+
     resize_amount_ = resize_amount;
     Redraw(false);
     return;

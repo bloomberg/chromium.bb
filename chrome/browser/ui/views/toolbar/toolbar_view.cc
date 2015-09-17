@@ -593,20 +593,30 @@ void ToolbarView::Layout() {
   next_element_x = home_->bounds().right() +
                    GetLayoutConstant(TOOLBAR_VIEW_STANDARD_SPACING);
 
-  int browser_actions_width = browser_actions_->GetPreferredSize().width();
+  int browser_actions_desired_width =
+      browser_actions_->GetPreferredSize().width();
   int app_menu_width = app_menu_->GetPreferredSize().width();
   const int location_bar_right_padding =
       GetLayoutConstant(TOOLBAR_VIEW_LOCATION_BAR_RIGHT_PADDING);
+
   int available_width = std::max(
-      0, width() - insets.right() - app_menu_width - browser_actions_width -
-             (browser_actions_width > 0 ? element_padding : 0) -
+      0, width() - insets.right() - app_menu_width -
+             (browser_actions_desired_width > 0 ? element_padding : 0) -
              location_bar_right_padding - next_element_x);
+  // Don't allow the omnibox to shrink to the point of non-existence, so
+  // subtract its minimum width from the available width to reserve it.
+  int minimum_location_bar_width = location_bar_->GetMinimumSize().width();
+  int browser_actions_width =
+      std::min(std::max(available_width - minimum_location_bar_width, 0),
+               browser_actions_desired_width);
+  available_width -= browser_actions_width;
+  int location_bar_width = available_width;
 
   int location_height = location_bar_->GetPreferredSize().height();
   int location_y = CenteredChildY(height(), location_height);
 
   location_bar_->SetBounds(next_element_x, location_y,
-                           std::max(available_width, 0), location_height);
+                           location_bar_width, location_height);
   next_element_x = location_bar_->bounds().right() + location_bar_right_padding;
 
   browser_actions_->SetBounds(

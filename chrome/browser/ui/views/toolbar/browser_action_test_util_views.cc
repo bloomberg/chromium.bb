@@ -22,6 +22,27 @@
 
 namespace {
 
+// The BrowserActionsContainer expects to have a parent (and be added to the
+// view hierarchy), so wrap it in a shell view that will set the container's
+// bounds to be its preferred bounds.
+class ContainerParent : public views::View {
+ public:
+  explicit ContainerParent(BrowserActionsContainer* container)
+      : container_(container) {
+    AddChildView(container_);
+  }
+  ~ContainerParent() override {}
+
+  void Layout() override {
+    container_->SizeToPreferredSize();
+  }
+
+ private:
+  BrowserActionsContainer* container_;
+
+  DISALLOW_COPY_AND_ASSIGN(ContainerParent);
+};
+
 // The views-specific implementation of the TestToolbarActionsBarHelper, which
 // creates and owns a BrowserActionsContainer.
 class TestToolbarActionsBarHelperViews : public TestToolbarActionsBarHelper {
@@ -35,12 +56,12 @@ class TestToolbarActionsBarHelperViews : public TestToolbarActionsBarHelper {
   }
 
  private:
-  // The parent of the BrowserActionsContainer, which directly owns the
-  // container as part of the views hierarchy.
-  views::View container_parent_;
-
   // The created BrowserActionsContainer. Owned by |container_parent_|.
   BrowserActionsContainer* browser_actions_container_;
+
+  // The parent of the BrowserActionsContainer, which directly owns the
+  // container as part of the views hierarchy.
+  ContainerParent container_parent_;
 
   DISALLOW_COPY_AND_ASSIGN(TestToolbarActionsBarHelperViews);
 };
@@ -49,11 +70,11 @@ TestToolbarActionsBarHelperViews::TestToolbarActionsBarHelperViews(
     Browser* browser,
     BrowserActionsContainer* main_bar)
     : browser_actions_container_(
-          new BrowserActionsContainer(browser, main_bar)) {
-  // The BrowserActionsContainer expects to have a parent (and be added to the
-  // view hierarchy), so wrap it in a shell view.
+          new BrowserActionsContainer(browser, main_bar)),
+      container_parent_(browser_actions_container_) {
   container_parent_.set_owned_by_client();
-  container_parent_.AddChildView(browser_actions_container_);
+  container_parent_.SetSize(gfx::Size(1000, 1000));
+  container_parent_.Layout();
 }
 
 TestToolbarActionsBarHelperViews::~TestToolbarActionsBarHelperViews() {
@@ -172,6 +193,12 @@ bool BrowserActionTestUtil::ActionButtonWantsToRun(size_t index) {
   return GetContainer(browser_, test_helper_.get())
       ->GetToolbarActionViewAt(index)
       ->wants_to_run_for_testing();
+}
+
+void BrowserActionTestUtil::SetWidth(int width) {
+  BrowserActionsContainer* container =
+      GetContainer(browser_, test_helper_.get());
+  container->SetSize(gfx::Size(width, container->height()));
 }
 
 ToolbarActionsBar* BrowserActionTestUtil::GetToolbarActionsBar() {

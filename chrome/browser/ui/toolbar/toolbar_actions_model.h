@@ -28,7 +28,13 @@ class ExtensionRegistry;
 class ExtensionSet;
 }
 
-// Model for the browser actions toolbar.
+// Model for the browser actions toolbar. This is a per-profile instance, and
+// manages the user's global preferences.
+// Each browser window will attempt to show browser actions as specified by this
+// model, but if the window is too narrow, actions may end up pushed into the
+// overflow menu on a per-window basis. Callers interested in the arrangement of
+// actions in a particular window should check that window's instance of
+// ToolbarActionsBar, which is responsible for the per-window layout.
 class ToolbarActionsModel : public extensions::ExtensionActionAPI::Observer,
                             public extensions::ExtensionRegistryObserver,
                             public KeyedService {
@@ -123,6 +129,9 @@ class ToolbarActionsModel : public extensions::ExtensionActionAPI::Observer,
   // "show all actions".
   void SetVisibleIconCount(size_t count);
 
+  // Note that this (and all_icons_visible()) are the global default, but are
+  // inappropriate for determining a specific window's state - for that, use
+  // the ToolbarActionsBar.
   size_t visible_icon_count() const {
     // We have guards around this because |visible_icon_count_| can be set by
     // prefs/sync, and we want to ensure that the icon count returned is within
@@ -132,7 +141,6 @@ class ToolbarActionsModel : public extensions::ExtensionActionAPI::Observer,
                : std::min(static_cast<size_t>(visible_icon_count_),
                           toolbar_items().size());
   }
-
   bool all_icons_visible() const {
     return visible_icon_count() == toolbar_items().size();
   }

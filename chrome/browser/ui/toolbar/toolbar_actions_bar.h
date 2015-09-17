@@ -29,9 +29,14 @@ class ToolbarActionViewController;
 
 // A platform-independent version of the container for toolbar actions,
 // including extension actions and component actions.
-// This class manages the order of the actions, the actions' state, and owns the
-// action controllers, in addition to interfacing with the toolbar actions
-// model. Further, it manages dimensions for the bar, excluding animations.
+//
+// This is a per-window instance, unlike the ToolbarActionsModel, which is
+// per-profile. In most cases, ordering and visible count will be identical
+// between the base model and the window; however, there are exceptions in the
+// case of very small windows (which may be too narrow to display all the
+// icons), or windows in which an action is "popped out", resulting in a
+// re-ordering.
+//
 // This can come in two flavors, main and "overflow". The main bar is visible
 // next to the omnibox, and the overflow bar is visible inside the chrome
 // (fka wrench) menu. The main bar can have only a single row of icons with
@@ -101,8 +106,26 @@ class ToolbarActionsBar : public ToolbarActionsModel::Observer {
   // Returns the number of icons that can fit within the given width.
   size_t WidthToIconCount(int width) const;
 
-  // Returns the number of icons that should be displayed.
+  // Returns the number of icons that should be displayed if space allows.
   size_t GetIconCount() const;
+
+  // Returns the starting index (inclusive) for displayable icons.
+  size_t GetStartIndexInBounds() const;
+
+  // Returns the ending index (exclusive) for displayable icons.
+  size_t GetEndIndexInBounds() const;
+
+  // Returns true if an overflow container is necessary to display any other
+  // icons for this particular window. This is different than
+  // ToolbarActionsModel::all_icons_visible() because the ToolbarActionsBar
+  // is limited to a single window, whereas the model is the underlying model
+  // of *all* windows, independent of size. As such, the model is identical
+  // between a very wide window and a very narrow window, and the user's stored
+  // preference may be to have all icons visible. But if the very narrow window
+  // doesn't have the width to display all those actions, some will need to be
+  // implicitly pushed to the overflow, even though the user's global preference
+  // has not changed.
+  bool NeedsOverflow() const;
 
   // Returns the frame (bounds) that the specified index should have, taking
   // into account if this is the main or overflow bar. If this is the overflow
