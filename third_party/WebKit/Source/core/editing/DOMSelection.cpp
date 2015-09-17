@@ -226,7 +226,7 @@ void DOMSelection::collapse(Node* node, int offset, ExceptionState& exceptionSta
     range->setEnd(node, offset, exceptionState);
     if (exceptionState.hadException())
         return;
-    m_frame->selection().setSelectedRange(range.get(), TextAffinity::Downstream, m_frame->selection().isDirectional() ? FrameSelection::Directional : FrameSelection::NonDirectional);
+    m_frame->selection().setSelectedRange(range.get(), TextAffinity::Downstream, m_frame->selection().isDirectional() ? SelectionDirectionalMode::Directional : SelectionDirectionalMode::NonDirectional);
 }
 
 void DOMSelection::collapseToEnd(ExceptionState& exceptionState)

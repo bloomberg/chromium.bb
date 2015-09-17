@@ -811,7 +811,7 @@ void FrameSelection::selectAll()
     notifyLayoutObjectOfSelectionChange(UserTriggered);
 }
 
-bool FrameSelection::setSelectedRange(Range* range, TextAffinity affinity, DirectionalOption directional, SetSelectionOptions options)
+bool FrameSelection::setSelectedRange(Range* range, TextAffinity affinity, SelectionDirectionalMode directional, SetSelectionOptions options)
 {
     if (!range || !range->startContainer() || !range->endContainer())
         return false;
@@ -819,7 +819,7 @@ bool FrameSelection::setSelectedRange(Range* range, TextAffinity affinity, Direc
     return setSelectedRange(EphemeralRange(range), affinity, directional, options);
 }
 
-bool FrameSelection::setSelectedRange(const EphemeralRange& range, TextAffinity affinity, DirectionalOption directional, SetSelectionOptions options)
+bool FrameSelection::setSelectedRange(const EphemeralRange& range, TextAffinity affinity, SelectionDirectionalMode directional, SetSelectionOptions options)
 {
     return m_selectionEditor->setSelectedRange(range, affinity, directional, options);
 }

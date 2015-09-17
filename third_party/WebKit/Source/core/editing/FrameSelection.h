@@ -60,6 +60,8 @@ enum RevealExtentOption {
     DoNotRevealExtent
 };
 
+enum class SelectionDirectionalMode { NonDirectional, Directional };
+
 class CORE_EXPORT FrameSelection final : public NoBaseWillBeGarbageCollectedFinalized<FrameSelection>, private CaretBase {
     WTF_MAKE_NONCOPYABLE(FrameSelection);
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(FrameSelection);
@@ -86,10 +88,6 @@ public:
         return static_cast<EUserTriggered>(options & UserTriggered);
     }
 
-    enum DirectionalOption {
-        NonDirectional,
-        Directional
-    };
     enum ResetCaretBlinkOption {
         None,
         ResetCaretBlink
@@ -113,8 +111,8 @@ public:
     void setSelection(const VisibleSelection& selection, TextGranularity granularity) { setSelection(selection, CloseTyping | ClearTypingStyle, CursorAlignOnScroll::IfNeeded, granularity); }
     // TODO(yosin) We should get rid of |Range| version of |setSelectedRagne()|
     // for Oilpan.
-    bool setSelectedRange(Range*, TextAffinity, DirectionalOption = NonDirectional, SetSelectionOptions = CloseTyping | ClearTypingStyle);
-    bool setSelectedRange(const EphemeralRange&, TextAffinity, DirectionalOption = NonDirectional, FrameSelection::SetSelectionOptions = CloseTyping | ClearTypingStyle);
+    bool setSelectedRange(Range*, TextAffinity, SelectionDirectionalMode = SelectionDirectionalMode::NonDirectional, SetSelectionOptions = CloseTyping | ClearTypingStyle);
+    bool setSelectedRange(const EphemeralRange&, TextAffinity, SelectionDirectionalMode = SelectionDirectionalMode::NonDirectional, FrameSelection::SetSelectionOptions = CloseTyping | ClearTypingStyle);
     void selectAll();
     void clear();
     void prepareForDestruction();

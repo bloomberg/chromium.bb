@@ -784,7 +784,7 @@ LayoutUnit SelectionEditor::lineDirectionPointForBlockDirectionNavigation(EPosit
     return x;
 }
 
-bool SelectionEditor::setSelectedRange(const EphemeralRange& range, TextAffinity affinity, FrameSelection::DirectionalOption directional, FrameSelection::SetSelectionOptions options)
+bool SelectionEditor::setSelectedRange(const EphemeralRange& range, TextAffinity affinity, SelectionDirectionalMode directional, FrameSelection::SetSelectionOptions options)
 {
     if (range.isNull())
         return false;
@@ -799,7 +799,7 @@ bool SelectionEditor::setSelectedRange(const EphemeralRange& range, TextAffinity
     // calling it.
     m_logicalRange = createRange(range);
 
-    VisibleSelection newSelection(range.startPosition(), range.endPosition(), affinity, directional == FrameSelection::Directional);
+    VisibleSelection newSelection(range.startPosition(), range.endPosition(), affinity, directional == SelectionDirectionalMode::Directional);
     m_frameSelection->setSelection(newSelection, options);
     startObservingVisibleSelectionChange();
     return true;

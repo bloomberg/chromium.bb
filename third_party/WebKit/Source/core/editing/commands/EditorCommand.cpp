@@ -221,7 +221,7 @@ static bool expandSelectionToGranularity(LocalFrame& frame, TextGranularity gran
     if (newRange.isCollapsed())
         return false;
     TextAffinity affinity = frame.selection().affinity();
-    frame.selection().setSelectedRange(newRange, affinity, FrameSelection::NonDirectional, FrameSelection::CloseTyping);
+    frame.selection().setSelectedRange(newRange, affinity, SelectionDirectionalMode::NonDirectional, FrameSelection::CloseTyping);
     return true;
 }
 
@@ -396,7 +396,7 @@ static bool executeDeleteToMark(LocalFrame& frame, Event*, EditorCommandSource, 
 {
     const EphemeralRange mark = frame.editor().mark().toNormalizedEphemeralRange();
     if (mark.isNotNull()) {
-        bool selected = frame.selection().setSelectedRange(unionEphemeralRanges(mark, frame.editor().selectedRange()), TextAffinity::Downstream, FrameSelection::NonDirectional, FrameSelection::CloseTyping);
+        bool selected = frame.selection().setSelectedRange(unionEphemeralRanges(mark, frame.editor().selectedRange()), TextAffinity::Downstream, SelectionDirectionalMode::NonDirectional, FrameSelection::CloseTyping);
         ASSERT(selected);
         if (!selected)
             return false;
@@ -1044,7 +1044,7 @@ static bool executeSelectToMark(LocalFrame& frame, Event*, EditorCommandSource, 
     EphemeralRange selection = frame.editor().selectedRange();
     if (mark.isNull() || selection.isNull())
         return false;
-    frame.selection().setSelectedRange(unionEphemeralRanges(mark, selection), TextAffinity::Downstream, FrameSelection::NonDirectional, FrameSelection::CloseTyping);
+    frame.selection().setSelectedRange(unionEphemeralRanges(mark, selection), TextAffinity::Downstream, SelectionDirectionalMode::NonDirectional, FrameSelection::CloseTyping);
     return true;
 }
 

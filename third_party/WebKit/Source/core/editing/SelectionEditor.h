@@ -50,7 +50,7 @@ public:
     bool isContentEditable() const { return m_selection.isContentEditable(); }
     bool isContentRichlyEditable() const { return m_selection.isContentRichlyEditable(); }
 
-    bool setSelectedRange(const EphemeralRange&, TextAffinity, FrameSelection::DirectionalOption, FrameSelection::SetSelectionOptions);
+    bool setSelectedRange(const EphemeralRange&, TextAffinity, SelectionDirectionalMode, FrameSelection::SetSelectionOptions);
 
     bool modify(EAlteration, SelectionDirection, TextGranularity, EUserTriggered);
     bool modify(EAlteration, unsigned verticalDistance, VerticalDirection, EUserTriggered, CursorAlignOnScroll);
