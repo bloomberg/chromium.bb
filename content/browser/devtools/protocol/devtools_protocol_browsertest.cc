@@ -37,6 +37,7 @@ class DevToolsProtocolTest : public ContentBrowserTest,
  public:
   DevToolsProtocolTest()
       : last_sent_id_(0),
+        waiting_for_notifications_count_(0),
         in_dispatch_(false) {
   }
 
@@ -103,6 +104,11 @@ class DevToolsProtocolTest : public ContentBrowserTest,
     }
   }
 
+  void WaitForNotifications(int count) {
+    waiting_for_notifications_count_ = count;
+    RunMessageLoop();
+  }
+
   scoped_ptr<base::DictionaryValue> result_;
   scoped_refptr<DevToolsAgentHost> agent_host_;
   int last_sent_id_;
@@ -127,6 +133,11 @@ class DevToolsProtocolTest : public ContentBrowserTest,
       std::string notification;
       EXPECT_TRUE(root->GetString("method", &notification));
       notifications_.push_back(notification);
+      if (waiting_for_notifications_count_) {
+        waiting_for_notifications_count_--;
+        if (!waiting_for_notifications_count_)
+          base::MessageLoop::current()->QuitNow();
+      }
     }
   }
 
@@ -134,6 +145,7 @@ class DevToolsProtocolTest : public ContentBrowserTest,
     EXPECT_TRUE(false);
   }
 
+  int waiting_for_notifications_count_;
   bool in_dispatch_;
 };
 
@@ -358,6 +370,30 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, CrossSiteNoDetach) {
   NavigateToURLBlockUntilNavigationsComplete(shell(), test_url2, 1);
 
   EXPECT_EQ(0u, notifications_.size());
+}
+
+IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, ReconnectPreservesState) {
+  ASSERT_TRUE(test_server()->Start());
+  GURL test_url = test_server()->GetURL("files/devtools/navigation.html");
+  NavigateToURLBlockUntilNavigationsComplete(shell(), test_url, 1);
+
+  Shell* second = CreateBrowser();
+  NavigateToURLBlockUntilNavigationsComplete(second, test_url, 1);
+
+  Attach();
+  SendCommand("Runtime.enable", nullptr);
+
+  size_t notification_count = notifications_.size();
+  agent_host_->DisconnectWebContents();
+  agent_host_->ConnectWebContents(second->web_contents());
+  WaitForNotifications(1);
+
+  bool found_notification = false;
+  for (size_t i = notification_count; i < notifications_.size(); ++i) {
+    if (notifications_[i] == "Runtime.executionContextsCleared")
+      found_notification = true;
+  }
+  EXPECT_TRUE(found_notification);
 }
 
 }  // namespace content
