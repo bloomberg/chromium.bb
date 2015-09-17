@@ -45,9 +45,9 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['win'], bug=485641)
     self.Fail('conformance/glsl/bugs/sampler-struct-function-arg.html',
         ['win'], bug=485642)
-    self.Flaky('conformance/glsl/constructors/' +
-               'glsl-construct-vec-mat-index.html',
-               ['win'], bug=525188)
+    self.Fail('conformance/glsl/constructors/' +
+              'glsl-construct-vec-mat-index.html',
+              ['win'], bug=525188)
 
     # Win7 / Intel failures
     self.Fail('conformance/rendering/gl-scissor-test.html',
