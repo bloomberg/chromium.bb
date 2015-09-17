@@ -90,8 +90,7 @@ class WebServiceWorkerNetworkProviderImpl
       blink::WebDataSource& data_source) {
     ServiceWorkerNetworkProvider* provider =
         GetNetworkProviderFromDataSource(&data_source);
-    return provider->context()->controller_handle_id() !=
-        kInvalidServiceWorkerHandleId;
+    return provider->context()->controller() != nullptr;
   }
 
   virtual int64_t serviceWorkerID(

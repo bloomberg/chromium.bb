@@ -17,10 +17,6 @@ namespace base {
 class SingleThreadTaskRunner;
 }
 
-namespace IPC {
-class Message;
-}
-
 namespace content {
 
 class ServiceWorkerHandleReference;
@@ -51,19 +47,6 @@ class ServiceWorkerProviderContext
   bool GetRegistrationInfoAndVersionAttributes(
       ServiceWorkerRegistrationObjectInfo* info,
       ServiceWorkerVersionAttributes* attrs);
-
-  void SetVersionAttributes(ChangedVersionAttributesMask mask,
-                            const ServiceWorkerVersionAttributes& attrs);
-
-  // Gets the handle ID of the controller Service Worker, or
-  // kInvalidServiceWorkerHandleId if the provider is not controlled
-  // by a Service Worker.
-  int controller_handle_id() const;
-
-  // Gets the handle ID of the associated registration, or
-  // kInvalidRegistrationHandleId if the provider is not associated with any
-  // registration.
-  int registration_handle_id() const;
 
  private:
   friend class base::DeleteHelper<ServiceWorkerProviderContext>;

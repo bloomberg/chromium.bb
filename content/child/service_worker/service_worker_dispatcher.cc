@@ -638,17 +638,11 @@ void ServiceWorkerDispatcher::OnSetVersionAttributes(
                "ServiceWorkerDispatcher::OnSetVersionAttributes",
                "Thread ID", thread_id);
 
-  ChangedVersionAttributesMask mask(changed_mask);
-  ProviderContextMap::iterator provider = provider_contexts_.find(provider_id);
-  if (provider != provider_contexts_.end() &&
-      provider->second->registration_handle_id() == registration_handle_id) {
-    provider->second->SetVersionAttributes(mask, attrs);
-  }
-
   RegistrationObjectMap::iterator found =
       registrations_.find(registration_handle_id);
   if (found != registrations_.end()) {
     // Populate the version fields (eg. .installing) with new worker objects.
+    ChangedVersionAttributesMask mask(changed_mask);
     if (mask.installing_changed())
       found->second->SetInstalling(GetServiceWorker(attrs.installing, false));
     if (mask.waiting_changed())

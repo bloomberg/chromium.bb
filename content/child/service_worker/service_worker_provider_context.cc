@@ -4,9 +4,6 @@
 
 #include "content/child/service_worker/service_worker_provider_context.h"
 
-#include "base/bind.h"
-#include "base/location.h"
-#include "base/stl_util.h"
 #include "base/thread_task_runner_handle.h"
 #include "content/child/child_thread_impl.h"
 #include "content/child/service_worker/service_worker_dispatcher.h"
@@ -14,7 +11,6 @@
 #include "content/child/service_worker/service_worker_registration_handle_reference.h"
 #include "content/child/thread_safe_sender.h"
 #include "content/child/worker_task_runner.h"
-#include "content/common/service_worker/service_worker_messages.h"
 
 namespace content {
 
@@ -62,27 +58,6 @@ bool ServiceWorkerProviderContext::GetRegistrationInfoAndVersionAttributes(
   return true;
 }
 
-void ServiceWorkerProviderContext::SetVersionAttributes(
-    ChangedVersionAttributesMask mask,
-    const ServiceWorkerVersionAttributes& attrs) {
-  base::AutoLock lock(lock_);
-  DCHECK(main_thread_task_runner_->RunsTasksOnCurrentThread());
-  DCHECK(registration_);
-
-  if (mask.installing_changed()) {
-    installing_ = ServiceWorkerHandleReference::Adopt(
-        attrs.installing, thread_safe_sender_.get());
-  }
-  if (mask.waiting_changed()) {
-    waiting_ = ServiceWorkerHandleReference::Adopt(
-        attrs.waiting, thread_safe_sender_.get());
-  }
-  if (mask.active_changed()) {
-    active_ = ServiceWorkerHandleReference::Adopt(
-        attrs.active, thread_safe_sender_.get());
-  }
-}
-
 void ServiceWorkerProviderContext::OnAssociateRegistration(
     const ServiceWorkerRegistrationObjectInfo& info,
     const ServiceWorkerVersionAttributes& attrs) {
@@ -125,18 +100,6 @@ void ServiceWorkerProviderContext::OnSetControllerServiceWorker(
 
   // TODO(kinuko): We can forward the message to other threads here
   // when we support navigator.serviceWorker in dedicated workers.
-}
-
-int ServiceWorkerProviderContext::controller_handle_id() const {
-  DCHECK(main_thread_task_runner_->RunsTasksOnCurrentThread());
-  return controller_ ? controller_->info().handle_id
-                     : kInvalidServiceWorkerHandleId;
-}
-
-int ServiceWorkerProviderContext::registration_handle_id() const {
-  DCHECK(main_thread_task_runner_->RunsTasksOnCurrentThread());
-  return registration_ ? registration_->info().handle_id
-                       : kInvalidServiceWorkerRegistrationHandleId;
 }
 
 void ServiceWorkerProviderContext::DestructOnMainThread() const {
