@@ -17,7 +17,7 @@ PASS [INPUT in URL status] validity.valid must be false if validity.tooLong is t
 PASS [INPUT in URL status] validity.valid must be false if validity.patternMismatch is true 
 PASS [INPUT in URL status] validity.valid must be false if validity.typeMismatch is true 
 PASS [INPUT in URL status] validity.valid must be false if validity.valueMissing is true 
-FAIL [INPUT in EMAIL status] validity.valid must be false if validity.tooLong is true Failed to execute 'setSelectionRange' on 'HTMLInputElement': The input element's type ('email') does not support selection.
+PASS [INPUT in EMAIL status] validity.valid must be false if validity.tooLong is true 
 PASS [INPUT in EMAIL status] validity.valid must be false if validity.patternMismatch is true 
 PASS [INPUT in EMAIL status] validity.valid must be false if validity.typeMismatch is true 
 PASS [INPUT in EMAIL status] validity.valid must be false if validity.valueMissing is true 

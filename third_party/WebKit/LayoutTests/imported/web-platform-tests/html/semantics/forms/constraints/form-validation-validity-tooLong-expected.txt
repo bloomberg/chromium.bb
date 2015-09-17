@@ -51,10 +51,10 @@ PASS [INPUT in EMAIL status] Non-dirty value - value is empty string
 PASS [INPUT in EMAIL status] Non-dirty value - length of value is less than maxlength 
 PASS [INPUT in EMAIL status] Non-dirty value - length of value equals to maxlength 
 PASS [INPUT in EMAIL status] Non-dirty value - length of value is greater than maxlength 
-FAIL [INPUT in EMAIL status] Dirty value - value is less than maxlength Failed to execute 'setSelectionRange' on 'HTMLInputElement': The input element's type ('email') does not support selection.
-FAIL [INPUT in EMAIL status] Dirty value - length of value(AAA) in unicode is less than maxlength Failed to execute 'setSelectionRange' on 'HTMLInputElement': The input element's type ('email') does not support selection.
-FAIL [INPUT in EMAIL status] Dirty value - value equals to maxlength Failed to execute 'setSelectionRange' on 'HTMLInputElement': The input element's type ('email') does not support selection.
-FAIL [INPUT in EMAIL status] Dirty value - length of value is greater than maxlength Failed to execute 'setSelectionRange' on 'HTMLInputElement': The input element's type ('email') does not support selection.
+PASS [INPUT in EMAIL status] Dirty value - value is less than maxlength 
+PASS [INPUT in EMAIL status] Dirty value - length of value(AAA) in unicode is less than maxlength 
+PASS [INPUT in EMAIL status] Dirty value - value equals to maxlength 
+FAIL [INPUT in EMAIL status] Dirty value - length of value is greater than maxlength assert_true: The validity.tooLong should be true. expected true got false
 PASS [INPUT in PASSWORD status] Non-dirty value - maxlength is not set 
 PASS [INPUT in PASSWORD status] Non-dirty value - value is empty string 
 PASS [INPUT in PASSWORD status] Non-dirty value - length of value is less than maxlength 

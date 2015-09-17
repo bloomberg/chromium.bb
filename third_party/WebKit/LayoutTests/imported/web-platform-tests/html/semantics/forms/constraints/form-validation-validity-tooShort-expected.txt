@@ -51,10 +51,10 @@ PASS [INPUT in EMAIL status] Non-dirty value - value is empty string
 PASS [INPUT in EMAIL status] Non-dirty value - length of value is greater than minLength 
 PASS [INPUT in EMAIL status] Non-dirty value - length of value equals to minLength 
 PASS [INPUT in EMAIL status] Non-dirty value - length of value is less than minLength 
-FAIL [INPUT in EMAIL status] Dirty value - value is greater than minLength Failed to execute 'setSelectionRange' on 'HTMLInputElement': The input element's type ('email') does not support selection.
-FAIL [INPUT in EMAIL status] Dirty value - length of value(AAAAA) in unicode is greater than minLength Failed to execute 'setSelectionRange' on 'HTMLInputElement': The input element's type ('email') does not support selection.
-FAIL [INPUT in EMAIL status] Dirty value - value equals to minLength Failed to execute 'setSelectionRange' on 'HTMLInputElement': The input element's type ('email') does not support selection.
-FAIL [INPUT in EMAIL status] Dirty value - length of value is less than minLength Failed to execute 'setSelectionRange' on 'HTMLInputElement': The input element's type ('email') does not support selection.
+PASS [INPUT in EMAIL status] Dirty value - value is greater than minLength 
+PASS [INPUT in EMAIL status] Dirty value - length of value(AAAAA) in unicode is greater than minLength 
+FAIL [INPUT in EMAIL status] Dirty value - value equals to minLength assert_false: The validity.tooShort should be false. expected false got true
+PASS [INPUT in EMAIL status] Dirty value - length of value is less than minLength 
 PASS [INPUT in PASSWORD status] Non-dirty value - minLength is not set 
 PASS [INPUT in PASSWORD status] Non-dirty value - value is empty string 
 PASS [INPUT in PASSWORD status] Non-dirty value - length of value is greater than minLength 
