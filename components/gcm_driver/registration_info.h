@@ -26,8 +26,8 @@ struct RegistrationInfo {
   // key and value.
   // |registration_id| can be NULL if no interest to it.
   static scoped_ptr<RegistrationInfo> BuildFromString(
-      const std::string& serialzied_key,
-      const std::string& serialzied_value,
+      const std::string& serialized_key,
+      const std::string& serialized_value,
       std::string* registration_id);
 
   RegistrationInfo();
@@ -43,8 +43,8 @@ struct RegistrationInfo {
   virtual std::string GetSerializedValue(
       const std::string& registration_id) const = 0;
   // |registration_id| can be NULL if it is of no interest to the caller.
-  virtual bool Deserialize(const std::string& serialzied_key,
-                           const std::string& serialzied_value,
+  virtual bool Deserialize(const std::string& serialized_key,
+                           const std::string& serialized_value,
                            std::string* registration_id) = 0;
 
   // Every registration is associated with an application.
@@ -67,8 +67,8 @@ struct GCMRegistrationInfo : public RegistrationInfo {
   std::string GetSerializedKey() const override;
   std::string GetSerializedValue(
       const std::string& registration_id) const override;
-  bool Deserialize(const std::string& serialzied_key,
-                   const std::string& serialzied_value,
+  bool Deserialize(const std::string& serialized_key,
+                   const std::string& serialized_value,
                    std::string* registration_id) override;
 
   // List of IDs of the servers that are allowed to send the messages to the
@@ -92,8 +92,8 @@ struct InstanceIDTokenInfo : public RegistrationInfo {
   std::string GetSerializedKey() const override;
   std::string GetSerializedValue(
       const std::string& registration_id) const override;
-  bool Deserialize(const std::string& serialzied_key,
-                   const std::string& serialzied_value,
+  bool Deserialize(const std::string& serialized_key,
+                   const std::string& serialized_value,
                    std::string* registration_id) override;
 
   // Entity that is authorized to access resources associated with the Instance
