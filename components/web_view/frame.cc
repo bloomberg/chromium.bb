@@ -382,9 +382,6 @@ void Frame::OnViewEmbeddedAppDisconnected(mus::View* view) {
   // being called, so we assume we can continue on. Continuing on is important
   // for html as it's entirely possible for a page to create a frame, navigate
   // to a bogus url and expect the frame to still exist.
-  //
-  // TODO(sky): notify the delegate on this? At a minimum the delegate cares
-  // if the root is unembedded as this would correspond to a sab tab.
   tree_->delegate_->OnViewEmbeddedInFrameDisconnected(this);
 }
 
