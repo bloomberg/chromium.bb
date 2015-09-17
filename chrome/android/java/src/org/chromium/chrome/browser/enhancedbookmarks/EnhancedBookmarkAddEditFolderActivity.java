@@ -196,6 +196,7 @@ public class EnhancedBookmarkAddEditFolderActivity extends EnhancedBookmarkActiv
             assert mIsAddMode;
 
             if (mFolderTitle.isEmpty()) {
+                mFolderTitle.validate();
                 mFolderTitle.requestFocus();
                 return true;
             }
