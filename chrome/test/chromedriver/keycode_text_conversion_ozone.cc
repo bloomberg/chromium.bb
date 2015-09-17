@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/logging.h"
 #include "base/strings/string16.h"
 #include "base/strings/stringprintf.h"
+#include "base/strings/utf_string_conversion_utils.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/test/chromedriver/chrome/ui_events.h"
 #include "chrome/test/chromedriver/keycode_text_conversion.h"
@@ -37,21 +37,15 @@ bool ConvertKeyCodeToText(ui::KeyboardCode key_code,
   ui::KeyboardCode key_code_ignored;
 
   if (!keyboard_layout_engine->Lookup(dom_code, event_flags, &dom_key,
-                                      &key_code_ignored)) {
-    // Key codes like ui::VKEY_UNKNOWN need to be mapped to the empty string, so
-    // even if the lookup fails we still need to return true here.
+                                      &key_code_ignored) ||
+      !dom_key.IsCharacter()) {
+    // The keycode lookup failed, or mapped to a key that isn't a unicode
+    // character. Convert it to the empty string.
     *text = std::string();
     return true;
   }
 
-  if (!dom_key.IsCharacter()) {
-    *error_msg = base::StringPrintf(
-        "unicode conversion failed for keycode %d with modifiers 0x%x",
-        key_code, modifiers);
-    return false;
-  }
-
-  *text = ui::KeycodeConverter::DomKeyToKeyString(dom_key);
+  base::WriteUnicodeCharacter(dom_key.ToCharacter(), text);
   return true;
 }
 
