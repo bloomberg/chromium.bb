@@ -126,7 +126,7 @@ class LegacyLinker extends Linker {
     public boolean isUsingBrowserSharedRelros() {
         synchronized (mLock) {
             ensureInitializedLocked();
-            return mBrowserUsesSharedRelro;
+            return mInBrowserProcess && mBrowserUsesSharedRelro;
         }
     }
 

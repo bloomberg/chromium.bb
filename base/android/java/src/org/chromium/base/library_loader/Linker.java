@@ -305,8 +305,6 @@ public abstract class Linker {
                 sSingleton = ModernLinker.create();
             } else if (type == LINKER_IMPLEMENTATION_LEGACY) {
                 sSingleton = LegacyLinker.create();
-            } else {
-                return;
             }
             Log.i(TAG, "Forced linker: " + sSingleton.getClass().getName());
         }
@@ -318,19 +316,21 @@ public abstract class Linker {
      *
      * @return LINKER_IMPLEMENTATION_LEGACY or LINKER_IMPLEMENTATION_MODERN
      */
-    public int getImplementationForTesting() {
+    public final int getImplementationForTesting() {
         // Sanity check. This method may only be called during tests.
         assertLinkerTestsAreEnabled();
 
         synchronized (sSingletonLock) {
-            assertForTesting(sSingleton != null);
+            assertForTesting(sSingleton == this);
 
             if (sSingleton instanceof ModernLinker) {
                 return LINKER_IMPLEMENTATION_MODERN;
             } else if (sSingleton instanceof LegacyLinker) {
                 return LINKER_IMPLEMENTATION_LEGACY;
+            } else {
+                Log.wtf(TAG, "Invalid linker: " + sSingleton.getClass().getName());
+                assertForTesting(false);
             }
-            Log.e(TAG, "Invalid linker: " + sSingleton.getClass().getName());
             return 0;
         }
     }
@@ -359,7 +359,7 @@ public abstract class Linker {
      * @param testRunnerClassName null or a String for the class name of the
      * TestRunner to use.
      */
-    public void setTestRunnerClassNameForTesting(String testRunnerClassName) {
+    public final void setTestRunnerClassNameForTesting(String testRunnerClassName) {
         if (DEBUG) {
             Log.i(TAG, "setTestRunnerClassNameForTesting(" + testRunnerClassName + ") called");
         }
@@ -380,7 +380,7 @@ public abstract class Linker {
      * @return null or a String holding the name of the class implementing
      * the TestRunner set by calling setTestRunnerClassNameForTesting() previously.
      */
-    public String getTestRunnerClassNameForTesting() {
+    public final String getTestRunnerClassNameForTesting() {
         // Sanity check. This method may only be called during tests.
         assertLinkerTestsAreEnabled();
 
@@ -399,7 +399,7 @@ public abstract class Linker {
      * runner class name. On subsequent calls, checks that the singleton produced by
      * the first call matches the requested type and test runner class name.
      */
-    public static void setupForTesting(int type, String testRunnerClassName) {
+    public static final void setupForTesting(int type, String testRunnerClassName) {
         if (DEBUG) {
             Log.i(TAG, "setupForTesting(" + type + ", " + testRunnerClassName + ") called");
         }
@@ -433,8 +433,8 @@ public abstract class Linker {
      * @param memoryDeviceConfig LegacyLinker memory config, or 0 if unused
      * @param inBrowserProcess true if in the browser process
      */
-    protected void runTestRunnerClassForTesting(int memoryDeviceConfig,
-                                                boolean inBrowserProcess) {
+    protected final void runTestRunnerClassForTesting(int memoryDeviceConfig,
+                                                      boolean inBrowserProcess) {
         if (DEBUG) {
             Log.i(TAG, "runTestRunnerClassForTesting called");
         }
@@ -443,7 +443,8 @@ public abstract class Linker {
 
         synchronized (mLock) {
             if (mTestRunnerClassName == null) {
-                return;
+                Log.wtf(TAG, "Linker runtime tests not set up for this process");
+                assertForTesting(false);
             }
             if (DEBUG) {
                 Log.i(TAG, "Instantiating " + mTestRunnerClassName);
@@ -452,17 +453,16 @@ public abstract class Linker {
             try {
                 testRunner = (TestRunner) Class.forName(mTestRunnerClassName).newInstance();
             } catch (Exception e) {
-                Log.e(TAG, "Could not instantiate test runner class by name", e);
-                testRunner = null;
+                Log.wtf(TAG, "Could not instantiate test runner class by name", e);
+                assertForTesting(false);
             }
-            if (testRunner != null) {
-                if (!testRunner.runChecks(memoryDeviceConfig, inBrowserProcess)) {
-                    Log.wtf(TAG, "Linker runtime tests failed in this process!!");
-                    assertForTesting(false);
-                } else {
-                    Log.i(TAG, "All linker tests passed!");
-                }
+
+            if (!testRunner.runChecks(memoryDeviceConfig, inBrowserProcess)) {
+                Log.wtf(TAG, "Linker runtime tests failed in this process");
+                assertForTesting(false);
             }
+
+            Log.i(TAG, "All linker tests passed");
         }
     }
 
@@ -472,7 +472,7 @@ public abstract class Linker {
      *
      * @param memoryDeviceConfig MEMORY_DEVICE_CONFIG_LOW or MEMORY_DEVICE_CONFIG_NORMAL.
      */
-    public void setMemoryDeviceConfigForTesting(int memoryDeviceConfig) {
+    public final void setMemoryDeviceConfigForTesting(int memoryDeviceConfig) {
         if (DEBUG) {
             Log.i(TAG, "setMemoryDeviceConfigForTesting(" + memoryDeviceConfig + ") called");
         }
