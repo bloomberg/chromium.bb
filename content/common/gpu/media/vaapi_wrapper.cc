@@ -93,7 +93,6 @@ static const ProfileMap kProfileMap[] = {
     // media::H264PROFILE_HIGH*.
     {media::H264PROFILE_HIGH, VAProfileH264High},
     {media::VP8PROFILE_ANY, VAProfileVP8Version0_3},
-    {media::VP9PROFILE_ANY, VAProfileVP9Profile0},
 };
 
 static std::vector<VAConfigAttrib> GetRequiredAttribs(

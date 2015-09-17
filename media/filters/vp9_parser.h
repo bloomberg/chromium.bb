@@ -7,15 +7,28 @@
 // accelerators, e.g. libva which implements VA-API, require the caller
 // (chrome) to feed them parsed VP9 frame header.
 //
-// See content::VP9Decoder for example usage.
+// Example usage:
+//   {
+//     Vp9Parser parser;
+//     uint8_t* frame_stream;
+//     size_t frame_size;
 //
+//     // Get frames from, say, WebM parser or IVF parser.
+//     while (GetVp9Frame(&frame_stream, &frame_size)) {
+//       Vp9FrameHeader header;
+//       if (!parser.ParseFrame(frame_stream, frame_size, &header)) {
+//         // Parse failed.
+//         return false;
+//       }
+//       // Got a frame parsed successfully.
+//     }
+//  }
+
 #ifndef MEDIA_FILTERS_VP9_PARSER_H_
 #define MEDIA_FILTERS_VP9_PARSER_H_
 
 #include <stddef.h>
 #include <stdint.h>
-
-#include <deque>
 
 #include "base/macros.h"
 #include "media/base/media_export.h"
@@ -25,9 +38,9 @@ namespace media {
 
 const int kVp9MaxProfile = 4;
 const int kVp9NumRefFramesLog2 = 3;
-const size_t kVp9NumRefFrames = 1 << kVp9NumRefFramesLog2;
+const int kVp9NumRefFrames = 1 << kVp9NumRefFramesLog2;
 const uint8_t kVp9MaxProb = 255;
-const size_t kVp9NumRefsPerFrame = 3;
+const int kVp9NumRefsPerFrame = 3;
 
 enum class Vp9ColorSpace {
   UNKNOWN = 0,
@@ -40,25 +53,20 @@ enum class Vp9ColorSpace {
   SRGB = 7,
 };
 
-enum Vp9InterpFilter {
-  EIGHTTAP = 0,
+enum class Vp9InterpFilter {
+  INTERP_FILTER_SELECT = 0,
   EIGHTTAP_SMOOTH = 1,
-  EIGHTTAP_SHARP = 2,
-  BILINEAR = 3,
-  SWICHABLE = 4,
+  EIGHTTAP = 2,
+  EIGHTTAP_SHARP = 3,
+  BILINEAR = 4,
 };
 
+// Members of Vp9FrameHeader will be 0-initialized by Vp9Parser::ParseFrame.
 struct MEDIA_EXPORT Vp9Segmentation {
-  static const size_t kNumSegments = 8;
-  static const size_t kNumTreeProbs = kNumSegments - 1;
-  static const size_t kNumPredictionProbs = 3;
-  enum SegmentLevelFeature {
-    SEG_LVL_ALT_Q = 0,
-    SEG_LVL_ALT_LF = 1,
-    SEG_LVL_REF_FRAME = 2,
-    SEG_LVL_SKIP = 3,
-    SEG_LVL_MAX
-  };
+  static const int kNumSegments = 8;
+  static const int kNumTreeProbs = kNumSegments - 1;
+  static const int kNumPredictionProbs = 3;
+  static const int kNumFeatures = 4;
 
   bool enabled;
 
@@ -69,46 +77,27 @@ struct MEDIA_EXPORT Vp9Segmentation {
 
   bool update_data;
   bool abs_delta;
-  bool feature_enabled[kNumSegments][SEG_LVL_MAX];
-  int8_t feature_data[kNumSegments][SEG_LVL_MAX];
-
-  int16_t y_dequant[kNumSegments][2];
-  int16_t uv_dequant[kNumSegments][2];
-
-  bool FeatureEnabled(size_t seg_id, SegmentLevelFeature feature) const {
-    return feature_enabled[seg_id][feature];
-  }
-
-  int8_t FeatureData(size_t seg_id, SegmentLevelFeature feature) const {
-    return feature_data[seg_id][feature];
-  }
+  bool feature_enabled[kNumSegments][kNumFeatures];
+  int8_t feature_data[kNumSegments][kNumFeatures];
 };
 
+// Members of Vp9FrameHeader will be 0-initialized by Vp9Parser::ParseFrame.
 struct MEDIA_EXPORT Vp9LoopFilter {
-  enum Vp9FrameType {
-    VP9_FRAME_INTRA = 0,
-    VP9_FRAME_LAST = 1,
-    VP9_FRAME_GOLDEN = 2,
-    VP9_FRAME_ALTREF = 3,
-    VP9_FRAME_MAX = 4,
-  };
-
-  static const size_t kNumModeDeltas = 2;
+  static const int kNumRefDeltas = 4;
+  static const int kNumModeDeltas = 2;
 
   uint8_t filter_level;
   uint8_t sharpness_level;
 
   bool mode_ref_delta_enabled;
   bool mode_ref_delta_update;
-  bool update_ref_deltas[VP9_FRAME_MAX];
-  int8_t ref_deltas[VP9_FRAME_MAX];
+  bool update_ref_deltas[kNumRefDeltas];
+  int8_t ref_deltas[kNumRefDeltas];
   bool update_mode_deltas[kNumModeDeltas];
   int8_t mode_deltas[kNumModeDeltas];
-
-  uint8_t lvl[Vp9Segmentation::kNumSegments][VP9_FRAME_MAX][kNumModeDeltas];
 };
 
-// Members of Vp9FrameHeader will be 0-initialized by Vp9Parser::ParseNextFrame.
+// Members of Vp9FrameHeader will be 0-initialized by Vp9Parser::ParseFrame.
 struct MEDIA_EXPORT Vp9QuantizationParams {
   bool IsLossless() const {
     return base_qindex == 0 && y_dc_delta == 0 && uv_dc_delta == 0 &&
@@ -128,8 +117,7 @@ struct MEDIA_EXPORT Vp9FrameHeader {
     INTERFRAME = 1,
   };
 
-  bool IsKeyframe() const;
-  bool RefreshFlag(size_t i) const { return !!(refresh_flags & (1u << i)); }
+  bool IsKeyframe() const { return frame_type == KEYFRAME; }
 
   uint8_t profile;
 
@@ -155,7 +143,7 @@ struct MEDIA_EXPORT Vp9FrameHeader {
 
   bool intra_only;
   uint8_t reset_context;
-  uint8_t refresh_flags;
+  bool refresh_flag[kVp9NumRefFrames];
   uint8_t frame_refs[kVp9NumRefsPerFrame];
   bool ref_sign_biases[kVp9NumRefsPerFrame];
   bool allow_high_precision_mv;
@@ -165,18 +153,12 @@ struct MEDIA_EXPORT Vp9FrameHeader {
   bool frame_parallel_decoding_mode;
   uint8_t frame_context_idx;
 
+  Vp9LoopFilter loop_filter;
   Vp9QuantizationParams quant_params;
+  Vp9Segmentation segment;
 
   uint8_t log2_tile_cols;
   uint8_t log2_tile_rows;
-
-  // Pointer to the beginning of frame data. It is a responsibility of the
-  // client of the Vp9Parser to maintain validity of this data while it is
-  // being used outside of that class.
-  const uint8_t* data;
-
-  // Size of |data| in bytes.
-  size_t frame_size;
 
   // Size of compressed header in bytes.
   size_t first_partition_size;
@@ -188,37 +170,12 @@ struct MEDIA_EXPORT Vp9FrameHeader {
 // A parser for VP9 bitstream.
 class MEDIA_EXPORT Vp9Parser {
  public:
-  // ParseNextFrame() return values. See documentation for ParseNextFrame().
-  enum Result {
-    kOk,
-    kInvalidStream,
-    kEOStream,
-  };
-
   Vp9Parser();
-  ~Vp9Parser();
 
-  // Set a new stream buffer to read from, starting at |stream| and of size
-  // |stream_size| in bytes. |stream| must point to the beginning of a single
-  // frame or a single superframe, is owned by caller and must remain valid
-  // until the next call to SetStream().
-  void SetStream(const uint8_t* stream, off_t stream_size);
-
-  // Parse the next frame in the current stream buffer, filling |fhdr| with
-  // the parsed frame header and updating current segmentation and loop filter
-  // state. Return kOk if a frame has successfully been parsed, kEOStream if
-  // there is no more data in the current stream buffer, or kInvalidStream
-  // on error.
-  Result ParseNextFrame(Vp9FrameHeader* fhdr);
-
-  // Return current segmentation state.
-  const Vp9Segmentation& GetSegmentation() const { return segmentation_; }
-
-  // Return current loop filter state.
-  const Vp9LoopFilter& GetLoopFilter() const { return loop_filter_; }
-
-  // Clear parser state and return to an initialized state.
-  void Reset();
+  // Parses one frame and fills parsing result to |fhdr|. Returns true on
+  // success, false otherwise.
+  // |stream| is the address of VP9 bitstream with |size|.
+  bool ParseFrame(const uint8_t* stream, size_t size, Vp9FrameHeader* fhdr);
 
  private:
   // The parsing context to keep track of references.
@@ -227,7 +184,6 @@ class MEDIA_EXPORT Vp9Parser {
     uint32_t height;
   };
 
-  bool ParseSuperframe();
   uint8_t ReadProfile();
   bool VerifySyncCode();
   bool ReadBitDepthColorSpaceSampling(Vp9FrameHeader* fhdr);
@@ -235,49 +191,23 @@ class MEDIA_EXPORT Vp9Parser {
   bool ReadFrameSizeFromRefs(Vp9FrameHeader* fhdr);
   void ReadDisplayFrameSize(Vp9FrameHeader* fhdr);
   Vp9InterpFilter ReadInterpFilter();
-  void ReadLoopFilter();
+  void ReadLoopFilter(Vp9LoopFilter* loop_filter);
   void ReadQuantization(Vp9QuantizationParams* quants);
-  void ReadSegmentationMap();
-  void ReadSegmentationData();
-  void ReadSegmentation();
+  void ReadSegmentationMap(Vp9Segmentation* segment);
+  void ReadSegmentationData(Vp9Segmentation* segment);
+  void ReadSegmentation(Vp9Segmentation* segment);
   void ReadTiles(Vp9FrameHeader* fhdr);
-  bool ParseUncompressedHeader(const uint8_t* stream,
-                               off_t frame_size,
-                               Vp9FrameHeader* fhdr);
+  bool ParseUncompressedHeader(Vp9FrameHeader* fhdr);
   void UpdateSlots(const Vp9FrameHeader* fhdr);
 
-  void ResetLoopfilter();
-  void SetupPastIndependence();
-  size_t GetQIndex(const Vp9QuantizationParams& quant, size_t segid) const;
-  void SetupSegmentationDequant(const Vp9QuantizationParams& quant);
-  void SetupLoopFilter();
-
-  // Current address in the bitstream buffer.
+  // Start address of VP9 bitstream buffer.
   const uint8_t* stream_;
 
-  // Remaining bytes in stream_.
-  off_t bytes_left_;
-
-  // Stores start pointer and size of each frame within the current superframe.
-  struct FrameInfo {
-    FrameInfo(const uint8_t* ptr, off_t size);
-
-    // Starting address of the frame.
-    const uint8_t* ptr;
-
-    // Size of the frame in bytes.
-    off_t size;
-  };
-
-  // FrameInfo for the remaining frames in the current superframe to be parsed.
-  std::deque<FrameInfo> frames_;
+  // Size of |stream_| in bytes.
+  size_t size_;
 
   // Raw bits decoder for uncompressed frame header.
   Vp9RawBitsReader reader_;
-
-  // Segmentation and loop filter state that persists across frames.
-  Vp9Segmentation segmentation_;
-  Vp9LoopFilter loop_filter_;
 
   // The parsing context to keep track of references.
   ReferenceSlot ref_slots_[kVp9NumRefFrames];
