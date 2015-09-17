@@ -45,11 +45,11 @@ bool IsFeatureSubstringMatchEnabled() {
 bool IsKeyboardAccessoryEnabled() {
 #if defined(OS_ANDROID)
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
-             autofill::switches::kEnableAccessorySuggestionView) ||
+             switches::kEnableAccessorySuggestionView) ||
          (base::FieldTrialList::FindFullName("AutofillKeyboardAccessory") ==
               "Enabled" &&
           !base::CommandLine::ForCurrentProcess()->HasSwitch(
-              autofill::switches::kDisableAccessorySuggestionView));
+              switches::kDisableAccessorySuggestionView));
 #else  // !defined(OS_ANDROID)
   return false;
 #endif

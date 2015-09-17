@@ -126,10 +126,12 @@ void AutocompleteHistoryManager::OnWillSubmitForm(const FormData& form) {
   //    AutofillManager)
   std::vector<FormFieldData> values;
   for (const FormFieldData& field : form.fields) {
-    if (!field.value.empty() && !field.name.empty() && IsTextField(field) &&
+    if (!field.value.empty() &&
+        !field.name.empty() &&
+        IsTextField(field) &&
         field.should_autocomplete &&
-        !autofill::IsValidCreditCardNumber(field.value) &&
-        !autofill::IsSSN(field.value)) {
+        !IsValidCreditCardNumber(field.value) &&
+        !IsSSN(field.value)) {
       values.push_back(field);
     }
   }

@@ -115,13 +115,12 @@ void AutofillQueryXmlParser::ParseElementDescriptor(
     ++attrs;
     const std::string& attribute_value = value_qname.LocalPart();
     if (attribute_name.compare("id") == 0 && !attribute_value.empty()) {
-      element_descriptor->retrieval_method = autofill::WebElementDescriptor::ID;
+      element_descriptor->retrieval_method = WebElementDescriptor::ID;
       element_descriptor->descriptor = attribute_value;
       break;
     } else if (attribute_name.compare("css_selector") == 0 &&
                !attribute_value.empty()) {
-      element_descriptor->retrieval_method =
-          autofill::WebElementDescriptor::CSS_SELECTOR;
+      element_descriptor->retrieval_method = WebElementDescriptor::CSS_SELECTOR;
       element_descriptor->descriptor = attribute_value;
       break;
     }

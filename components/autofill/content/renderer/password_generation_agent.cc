@@ -71,11 +71,10 @@ bool ContainsURL(const std::vector<GURL>& urls, const GURL& url) {
   return std::find(urls.begin(), urls.end(), url) != urls.end();
 }
 
-bool ContainsForm(const std::vector<autofill::FormData>& forms,
+bool ContainsForm(const std::vector<FormData>& forms,
                   const PasswordForm& form) {
-  for (std::vector<autofill::FormData>::const_iterator it =
-           forms.begin(); it != forms.end(); ++it) {
-    if (it->SameFormAs(form.form_data))
+  for (const auto& form_it : forms) {
+    if (form_it.SameFormAs(form.form_data))
       return true;
   }
   return false;
@@ -274,7 +273,7 @@ void PasswordGenerationAgent::OnPasswordAccepted(
 }
 
 void PasswordGenerationAgent::OnAccountCreationFormsDetected(
-    const std::vector<autofill::FormData>& forms) {
+    const std::vector<FormData>& forms) {
   generation_enabled_forms_.insert(
       generation_enabled_forms_.end(), forms.begin(), forms.end());
   DetermineGenerationElement();

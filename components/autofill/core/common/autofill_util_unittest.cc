@@ -20,7 +20,7 @@ TEST(AutofillUtilTest, FieldIsSuggestionSubstringStartingOnTokenBoundary) {
 
   // Token matching is currently behind a flag.
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      autofill::switches::kEnableSuggestionsWithSubstringMatch);
+      switches::kEnableSuggestionsWithSubstringMatch);
 
   const struct {
     const char* const field_suggestion;
@@ -96,4 +96,4 @@ TEST(AutofillUtilTest, GetTextSelectionStart) {
   }
 }
 
-}  // autofill
+}  // namespace autofill

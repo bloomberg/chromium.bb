@@ -230,14 +230,14 @@ class CreditCard : public AutofillDataModel {
 std::ostream& operator<<(std::ostream& os, const CreditCard& credit_card);
 
 // The string identifiers for credit card icon resources.
-extern const char* const kAmericanExpressCard;
-extern const char* const kDinersCard;
-extern const char* const kDiscoverCard;
-extern const char* const kGenericCard;
-extern const char* const kJCBCard;
-extern const char* const kMasterCard;
-extern const char* const kUnionPay;
-extern const char* const kVisaCard;
+extern const char kAmericanExpressCard[];
+extern const char kDinersCard[];
+extern const char kDiscoverCard[];
+extern const char kGenericCard[];
+extern const char kJCBCard[];
+extern const char kMasterCard[];
+extern const char kUnionPay[];
+extern const char kVisaCard[];
 
 }  // namespace autofill
 

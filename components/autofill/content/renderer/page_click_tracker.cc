@@ -32,6 +32,8 @@ using blink::WebSize;
 using blink::WebTextAreaElement;
 using blink::WebUserGestureIndicator;
 
+namespace autofill {
+
 namespace {
 
 // Casts |node| to a WebInputElement.
@@ -43,7 +45,7 @@ const WebInputElement GetTextWebInputElement(const WebNode& node) {
   if (!element.hasHTMLTagName("input"))
     return WebInputElement();
   const WebInputElement* input = blink::toWebInputElement(&element);
-  if (!autofill::IsTextInput(input))
+  if (!IsTextInput(input))
     return WebInputElement();
   return *input;
 }
@@ -61,8 +63,6 @@ const WebTextAreaElement GetWebTextAreaElement(const WebNode& node) {
 }
 
 }  // namespace
-
-namespace autofill {
 
 PageClickTracker::PageClickTracker(content::RenderFrame* render_frame,
                                    PageClickListener* listener)

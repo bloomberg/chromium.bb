@@ -255,7 +255,7 @@ bool CardUnmaskPromptControllerImpl::CanStoreLocally() const {
   // Never offer to save for incognito.
   if (is_off_the_record_)
     return false;
-  return autofill::OfferStoreUnmaskedCards();
+  return OfferStoreUnmaskedCards();
 }
 
 bool CardUnmaskPromptControllerImpl::GetStoreLocallyStartState() const {

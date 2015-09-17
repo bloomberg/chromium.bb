@@ -443,10 +443,8 @@ const std::pair<base::string16, base::string16> CreditCard::LabelPieces()
 
 void CreditCard::SetInfoForMonthInputType(const base::string16& value) {
   // Check if |text| is "yyyy-mm" format first, and check normal month format.
-  if (!autofill::MatchesPattern(value,
-                                base::UTF8ToUTF16("^[0-9]{4}-[0-9]{1,2}$"))) {
+  if (!MatchesPattern(value, base::UTF8ToUTF16("^[0-9]{4}-[0-9]{1,2}$")))
     return;
-  }
 
   std::vector<base::StringPiece16> year_month = base::SplitStringPiece(
       value, base::ASCIIToUTF16("-"),
@@ -627,15 +625,14 @@ bool CreditCard::IsEmpty(const std::string& app_locale) const {
 }
 
 bool CreditCard::IsComplete() const {
-  return
-      autofill::IsValidCreditCardNumber(number_) &&
-      expiration_month_ != 0 &&
-      expiration_year_ != 0;
+  return IsValidCreditCardNumber(number_) &&
+         expiration_month_ != 0 &&
+         expiration_year_ != 0;
 }
 
 bool CreditCard::IsValid() const {
-  return autofill::IsValidCreditCardNumber(number_) &&
-         autofill::IsValidCreditCardExpirationDate(
+  return IsValidCreditCardNumber(number_) &&
+         IsValidCreditCardExpirationDate(
              expiration_year_, expiration_month_, base::Time::Now());
 }
 
@@ -781,13 +778,13 @@ std::ostream& operator<<(std::ostream& os, const CreditCard& credit_card) {
 // These values must match the values in WebKitPlatformSupportImpl in
 // webkit/glue. We send these strings to WebKit, which then asks
 // WebKitPlatformSupportImpl to load the image data.
-const char* const kAmericanExpressCard = "americanExpressCC";
-const char* const kDinersCard = "dinersCC";
-const char* const kDiscoverCard = "discoverCC";
-const char* const kGenericCard = "genericCC";
-const char* const kJCBCard = "jcbCC";
-const char* const kMasterCard = "masterCardCC";
-const char* const kUnionPay = "unionPayCC";
-const char* const kVisaCard = "visaCC";
+const char kAmericanExpressCard[] = "americanExpressCC";
+const char kDinersCard[] = "dinersCC";
+const char kDiscoverCard[] = "discoverCC";
+const char kGenericCard[] = "genericCC";
+const char kJCBCard[] = "jcbCC";
+const char kMasterCard[] = "masterCardCC";
+const char kUnionPay[] = "unionPayCC";
+const char kVisaCard[] = "visaCC";
 
 }  // namespace autofill

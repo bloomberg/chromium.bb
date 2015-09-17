@@ -6,7 +6,7 @@
 
 namespace autofill {
 
-autofill::WebElementDescriptor::WebElementDescriptor()
+WebElementDescriptor::WebElementDescriptor()
   : retrieval_method(NONE) {}
 
 }  // namespace autofill

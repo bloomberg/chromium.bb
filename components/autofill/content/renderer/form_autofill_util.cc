@@ -1547,8 +1547,7 @@ void PreviewSuggestion(const base::string16& suggestion,
                        blink::WebFormControlElement* input_element) {
   size_t selection_start = user_input.length();
   if (IsFeatureSubstringMatchEnabled()) {
-    size_t offset =
-        autofill::GetTextSelectionStart(suggestion, user_input, false);
+    size_t offset = GetTextSelectionStart(suggestion, user_input, false);
     // Zero selection start is for password manager, which can show usernames
     // that do not begin with the user input value.
     selection_start = (offset == base::string16::npos) ? 0 : offset;

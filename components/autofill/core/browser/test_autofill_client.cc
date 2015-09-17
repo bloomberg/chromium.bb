@@ -90,7 +90,7 @@ bool TestAutofillClient::IsAutocompleteEnabled() {
 
 void TestAutofillClient::PropagateAutofillPredictions(
     content::RenderFrameHost* rfh,
-    const std::vector<autofill::FormStructure*>& forms) {
+    const std::vector<FormStructure*>& forms) {
 }
 
 void TestAutofillClient::DidFillOrPreviewField(

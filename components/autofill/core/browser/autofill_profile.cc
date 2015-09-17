@@ -364,16 +364,16 @@ bool AutofillProfile::IsPresentButInvalid(ServerFieldType type) const {
 
   switch (type) {
     case ADDRESS_HOME_STATE:
-      return country == "US" && !autofill::IsValidState(data);
+      return country == "US" && !IsValidState(data);
 
     case ADDRESS_HOME_ZIP:
-      return country == "US" && !autofill::IsValidZip(data);
+      return country == "US" && !IsValidZip(data);
 
     case PHONE_HOME_WHOLE_NUMBER:
       return !i18n::PhoneObject(data, country).IsValidNumber();
 
     case EMAIL_ADDRESS:
-      return !autofill::IsValidEmailAddress(data);
+      return !IsValidEmailAddress(data);
 
     default:
       NOTREACHED();

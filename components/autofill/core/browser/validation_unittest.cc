@@ -101,17 +101,15 @@ TEST(AutofillValidation, IsValidCreditCardNumber) {
   for (size_t i = 0; i < arraysize(kValidNumbers); ++i) {
     SCOPED_TRACE(kValidNumbers[i]);
     EXPECT_TRUE(
-        autofill::IsValidCreditCardNumber(ASCIIToUTF16(kValidNumbers[i])));
+        IsValidCreditCardNumber(ASCIIToUTF16(kValidNumbers[i])));
   }
   for (size_t i = 0; i < arraysize(kInvalidNumbers); ++i) {
     SCOPED_TRACE(kInvalidNumbers[i]);
-    EXPECT_FALSE(
-        autofill::IsValidCreditCardNumber(ASCIIToUTF16(kInvalidNumbers[i])));
+    EXPECT_FALSE(IsValidCreditCardNumber(ASCIIToUTF16(kInvalidNumbers[i])));
   }
 }
 
-TEST(AutofillValidation, IsValidCreditCardExpirationDate)
-{
+TEST(AutofillValidation, IsValidCreditCardExpirationDate) {
   base::Time now;
   ASSERT_TRUE(base::Time::FromString(kCurrentDate, &now));
 
@@ -119,24 +117,21 @@ TEST(AutofillValidation, IsValidCreditCardExpirationDate)
     const ExpirationDate& data = kValidCreditCardExpirationDate[i];
     SCOPED_TRACE(data.year);
     SCOPED_TRACE(data.month);
-    EXPECT_TRUE(
-        autofill::IsValidCreditCardExpirationDate(ASCIIToUTF16(data.year),
-                                                  ASCIIToUTF16(data.month),
-                                                  now));
+    EXPECT_TRUE(IsValidCreditCardExpirationDate(ASCIIToUTF16(data.year),
+                                                ASCIIToUTF16(data.month),
+                                                now));
   }
   for (size_t i = 0; i < arraysize(kInvalidCreditCardExpirationDate); ++i) {
     const ExpirationDate& data = kInvalidCreditCardExpirationDate[i];
     SCOPED_TRACE(data.year);
     SCOPED_TRACE(data.month);
-    EXPECT_TRUE(
-        !autofill::IsValidCreditCardExpirationDate(ASCIIToUTF16(data.year),
-                                                   ASCIIToUTF16(data.month),
-                                                   now));
+    EXPECT_TRUE(!IsValidCreditCardExpirationDate(ASCIIToUTF16(data.year),
+                                                 ASCIIToUTF16(data.month),
+                                                 now));
   }
 }
 
-TEST(AutofillValidation, IsValidCreditCardIntExpirationDate)
-{
+TEST(AutofillValidation, IsValidCreditCardIntExpirationDate) {
   base::Time now;
   ASSERT_TRUE(base::Time::FromString(kCurrentDate, &now));
 
@@ -144,57 +139,51 @@ TEST(AutofillValidation, IsValidCreditCardIntExpirationDate)
     const IntExpirationDate& data = kValidCreditCardIntExpirationDate[i];
     SCOPED_TRACE(data.year);
     SCOPED_TRACE(data.month);
-    EXPECT_TRUE(
-        autofill::IsValidCreditCardExpirationDate(data.year, data.month, now));
+    EXPECT_TRUE(IsValidCreditCardExpirationDate(data.year, data.month, now));
   }
   for (size_t i = 0; i < arraysize(kInvalidCreditCardIntExpirationDate); ++i) {
     const IntExpirationDate& data = kInvalidCreditCardIntExpirationDate[i];
     SCOPED_TRACE(data.year);
     SCOPED_TRACE(data.month);
-    EXPECT_TRUE(
-        !autofill::IsValidCreditCardExpirationDate(data.year, data.month, now));
+    EXPECT_TRUE(!IsValidCreditCardExpirationDate(data.year, data.month, now));
   }
 }
 TEST(AutofillValidation, IsValidCreditCardSecurityCode) {
   for (size_t i = 0; i < arraysize(kValidCreditCardSecurityCode); ++i) {
     SCOPED_TRACE(kValidCreditCardSecurityCode[i]);
-    EXPECT_TRUE(
-        autofill::IsValidCreditCardSecurityCode(
-            ASCIIToUTF16(kValidCreditCardSecurityCode[i])));
+    EXPECT_TRUE(IsValidCreditCardSecurityCode(
+        ASCIIToUTF16(kValidCreditCardSecurityCode[i])));
   }
   for (size_t i = 0; i < arraysize(kInvalidCreditCardSecurityCode); ++i) {
     SCOPED_TRACE(kInvalidCreditCardSecurityCode[i]);
-    EXPECT_FALSE(
-        autofill::IsValidCreditCardSecurityCode(
-            ASCIIToUTF16(kInvalidCreditCardSecurityCode[i])));
+    EXPECT_FALSE(IsValidCreditCardSecurityCode(
+        ASCIIToUTF16(kInvalidCreditCardSecurityCode[i])));
   }
 }
 
 TEST(AutofillValidation, IsValidEmailAddress) {
   for (size_t i = 0; i < arraysize(kValidEmailAddress); ++i) {
     SCOPED_TRACE(kValidEmailAddress[i]);
-    EXPECT_TRUE(
-        autofill::IsValidEmailAddress(ASCIIToUTF16(kValidEmailAddress[i])));
+    EXPECT_TRUE(IsValidEmailAddress(ASCIIToUTF16(kValidEmailAddress[i])));
   }
   for (size_t i = 0; i < arraysize(kInvalidEmailAddress); ++i) {
     SCOPED_TRACE(kInvalidEmailAddress[i]);
-    EXPECT_FALSE(
-        autofill::IsValidEmailAddress(ASCIIToUTF16(kInvalidEmailAddress[i])));
+    EXPECT_FALSE(IsValidEmailAddress(ASCIIToUTF16(kInvalidEmailAddress[i])));
   }
 }
 
 TEST(AutofillValidation, IsValidCreditCardSecurityCodeWithNumber) {
-  EXPECT_TRUE(autofill::IsValidCreditCardSecurityCode(
+  EXPECT_TRUE(IsValidCreditCardSecurityCode(
       ASCIIToUTF16(kAmericanExpressCVC), ASCIIToUTF16(kAmericanExpressCard)));
-  EXPECT_TRUE(autofill::IsValidCreditCardSecurityCode(
+  EXPECT_TRUE(IsValidCreditCardSecurityCode(
       ASCIIToUTF16(kVisaCVC), ASCIIToUTF16(kVisaCard)));
-  EXPECT_FALSE(autofill::IsValidCreditCardSecurityCode(
+  EXPECT_FALSE(IsValidCreditCardSecurityCode(
       ASCIIToUTF16(kVisaCVC), ASCIIToUTF16(kAmericanExpressCard)));
-  EXPECT_FALSE(autofill::IsValidCreditCardSecurityCode(
+  EXPECT_FALSE(IsValidCreditCardSecurityCode(
       ASCIIToUTF16(kAmericanExpressCVC), ASCIIToUTF16(kVisaCard)));
-  EXPECT_TRUE(autofill::IsValidCreditCardSecurityCode(
+  EXPECT_TRUE(IsValidCreditCardSecurityCode(
       ASCIIToUTF16(kVisaCVC), ASCIIToUTF16(kInvalidNumbers[0])));
-  EXPECT_FALSE(autofill::IsValidCreditCardSecurityCode(
+  EXPECT_FALSE(IsValidCreditCardSecurityCode(
       ASCIIToUTF16(kAmericanExpressCVC), ASCIIToUTF16(kInvalidNumbers[0])));
 }
 

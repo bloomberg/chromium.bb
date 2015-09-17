@@ -1859,7 +1859,7 @@ TEST_F(AutofillTableTest, DeleteUnmaskedCard) {
 TEST_F(AutofillTableTest, GetFormValuesForElementName_SubstringMatchEnabled) {
   // Token matching is currently behind a flag.
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      autofill::switches::kEnableSuggestionsWithSubstringMatch);
+      switches::kEnableSuggestionsWithSubstringMatch);
 
   const size_t kMaxCount = 2;
   const struct {

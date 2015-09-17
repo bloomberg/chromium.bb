@@ -199,10 +199,10 @@ void AutofillManager::ShowAutofillSettings() {
 bool AutofillManager::ShouldShowScanCreditCard(const FormData& form,
                                                const FormFieldData& field) {
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          autofill::switches::kEnableCreditCardScan) &&
+          switches::kEnableCreditCardScan) &&
       (base::FieldTrialList::FindFullName("CreditCardScan") != "Enabled" ||
        base::CommandLine::ForCurrentProcess()->HasSwitch(
-           autofill::switches::kDisableCreditCardScan))) {
+           switches::kDisableCreditCardScan))) {
     return false;
   }
 
@@ -1412,8 +1412,9 @@ void AutofillManager::ParseForms(const std::vector<FormData>& forms) {
       AutofillMetrics::LogPasswordFormQueryVolume(
           AutofillMetrics::CURRENT_QUERY);
       form_structures_.push_back(form_structure.release());
-    } else
+    } else {
       non_queryable_forms.push_back(form_structure.release());
+    }
   }
 
   if (!form_structures_.empty() && download_manager_) {
@@ -1541,7 +1542,7 @@ void AutofillManager::DumpAutofillData(bool imported_cc) const {
 
   fputs("------------------------------------------------------\n", file);
   if (imported_cc)
-   fputs("Got a new credit card on CC form:\n", file);
+    fputs("Got a new credit card on CC form:\n", file);
   else
     fputs("Submitted form:\n", file);
   for (int i = static_cast<int>(recently_autofilled_forms_.size()) - 1;

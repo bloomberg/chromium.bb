@@ -109,7 +109,7 @@ base::string16 AutofillCCInfoBarDelegate::GetLinkText() const {
 
 bool AutofillCCInfoBarDelegate::LinkClicked(WindowOpenDisposition disposition) {
   autofill_client_->LinkClicked(
-      GURL(autofill::kHelpURL),
+      GURL(kHelpURL),
       (disposition == CURRENT_TAB) ? NEW_FOREGROUND_TAB : disposition);
 
   return false;

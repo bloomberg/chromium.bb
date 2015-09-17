@@ -264,7 +264,7 @@ scoped_ptr<WDTypedResult> AutofillWebDataBackendImpl::GetServerProfiles(
 }
 
 WebDatabase::State AutofillWebDataBackendImpl::UpdateAutofillEntries(
-    const std::vector<autofill::AutofillEntry>& autofill_entries,
+    const std::vector<AutofillEntry>& autofill_entries,
     WebDatabase* db) {
   DCHECK(db_thread_->BelongsToCurrentThread());
   if (!AutofillTable::FromWebDatabase(db)

@@ -262,7 +262,7 @@ TEST_F(AutofillDownloadTest, QueryAndUploadTest) {
   fetcher = factory.GetFetcherByID(0);
   ASSERT_TRUE(fetcher);
   FakeOnURLFetchComplete(fetcher, 200, std::string(responses[0]));
-  EXPECT_EQ(static_cast<size_t>(3), responses_.size());
+  EXPECT_EQ(3U, responses_.size());
 
   EXPECT_EQ(AutofillDownloadTest::UPLOAD_SUCCESSFULL,
             responses_.front().type_of_response);
@@ -424,12 +424,12 @@ TEST_F(AutofillDownloadTest, CacheQueryTest) {
                                AutofillMetrics::QUERY_SENT, 1);
 
   // No responses yet
-  EXPECT_EQ(static_cast<size_t>(0), responses_.size());
+  EXPECT_EQ(0U, responses_.size());
 
   net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);
   ASSERT_TRUE(fetcher);
   FakeOnURLFetchComplete(fetcher, 200, std::string(responses[0]));
-  ASSERT_EQ(static_cast<size_t>(1), responses_.size());
+  ASSERT_EQ(1U, responses_.size());
   EXPECT_EQ(responses[0], responses_.front().response);
 
   responses_.clear();
@@ -439,7 +439,7 @@ TEST_F(AutofillDownloadTest, CacheQueryTest) {
   histogram.ExpectUniqueSample("Autofill.ServerQueryResponse",
                                AutofillMetrics::QUERY_SENT, 2);
   // Data is available immediately from cache - no over-the-wire trip.
-  ASSERT_EQ(static_cast<size_t>(1), responses_.size());
+  ASSERT_EQ(1U, responses_.size());
   EXPECT_EQ(responses[0], responses_.front().response);
   responses_.clear();
 
@@ -448,12 +448,12 @@ TEST_F(AutofillDownloadTest, CacheQueryTest) {
   histogram.ExpectUniqueSample("Autofill.ServerQueryResponse",
                                AutofillMetrics::QUERY_SENT, 3);
   // No responses yet
-  EXPECT_EQ(static_cast<size_t>(0), responses_.size());
+  EXPECT_EQ(0U, responses_.size());
 
   fetcher = factory.GetFetcherByID(1);
   ASSERT_TRUE(fetcher);
   FakeOnURLFetchComplete(fetcher, 200, std::string(responses[1]));
-  ASSERT_EQ(static_cast<size_t>(1), responses_.size());
+  ASSERT_EQ(1U, responses_.size());
   EXPECT_EQ(responses[1], responses_.front().response);
 
   responses_.clear();
@@ -466,7 +466,7 @@ TEST_F(AutofillDownloadTest, CacheQueryTest) {
   fetcher = factory.GetFetcherByID(2);
   ASSERT_TRUE(fetcher);
   FakeOnURLFetchComplete(fetcher, 200, std::string(responses[2]));
-  ASSERT_EQ(static_cast<size_t>(1), responses_.size());
+  ASSERT_EQ(1U, responses_.size());
   EXPECT_EQ(responses[2], responses_.front().response);
 
   responses_.clear();
@@ -480,7 +480,7 @@ TEST_F(AutofillDownloadTest, CacheQueryTest) {
   histogram.ExpectUniqueSample("Autofill.ServerQueryResponse",
                                AutofillMetrics::QUERY_SENT, 6);
 
-  ASSERT_EQ(static_cast<size_t>(2), responses_.size());
+  ASSERT_EQ(2U, responses_.size());
   EXPECT_EQ(responses[1], responses_.front().response);
   EXPECT_EQ(responses[2], responses_.back().response);
   responses_.clear();
@@ -491,12 +491,12 @@ TEST_F(AutofillDownloadTest, CacheQueryTest) {
   histogram.ExpectUniqueSample("Autofill.ServerQueryResponse",
                                AutofillMetrics::QUERY_SENT, 7);
   // No responses yet
-  EXPECT_EQ(static_cast<size_t>(0), responses_.size());
+  EXPECT_EQ(0U, responses_.size());
 
   fetcher = factory.GetFetcherByID(3);
   ASSERT_TRUE(fetcher);
   FakeOnURLFetchComplete(fetcher, 200, std::string(responses[0]));
-  ASSERT_EQ(static_cast<size_t>(1), responses_.size());
+  ASSERT_EQ(1U, responses_.size());
   EXPECT_EQ(responses[0], responses_.front().response);
 }
 

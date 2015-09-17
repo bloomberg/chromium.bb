@@ -22,9 +22,9 @@ bool AutofillFieldTrialIOS::IsFullFormAutofillEnabled() {
 
   const base::CommandLine* command_line =
       base::CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(autofill::switches::kDisableFullFormAutofillIOS))
+  if (command_line->HasSwitch(switches::kDisableFullFormAutofillIOS))
     return false;
-  if (command_line->HasSwitch(autofill::switches::kEnableFullFormAutofillIOS))
+  if (command_line->HasSwitch(switches::kEnableFullFormAutofillIOS))
     return true;
 
   return !field_trial_state.empty() && field_trial_state != "Disabled";

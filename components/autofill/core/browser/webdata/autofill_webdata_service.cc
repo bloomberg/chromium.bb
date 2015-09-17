@@ -139,7 +139,7 @@ WebDataServiceBase::Handle AutofillWebDataService::GetServerProfiles(
 }
 
 void AutofillWebDataService::UpdateAutofillEntries(
-    const std::vector<autofill::AutofillEntry>& autofill_entries) {
+    const std::vector<AutofillEntry>& autofill_entries) {
   wdbs_->ScheduleDBTask(FROM_HERE,
                         Bind(&AutofillWebDataBackendImpl::UpdateAutofillEntries,
                              autofill_backend_,
