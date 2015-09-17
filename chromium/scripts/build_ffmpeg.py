@@ -310,6 +310,7 @@ def main(argv):
       '--disable-vaapi',
       '--disable-vda',
       '--disable-vdpau',
+      '--disable-videotoolbox',
 
       # Common codecs.
       '--enable-decoder=vorbis',
