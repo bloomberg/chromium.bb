@@ -1031,11 +1031,11 @@ importer.DriveSyncWatcher.prototype.checkSyncStatus_ =
  * @private
  */
 importer.DriveSyncWatcher.prototype.getSyncStatus_ = function(url) {
-  util.URLsToEntries([url])
+  return util.URLsToEntries([url])
     .then(
         /** @this {importer.DriveSyncWatcher} */
         function(results) {
-          if (results.entries.length)
+          if (results.entries.length !== 1)
             return Promise.reject();
           return new Promise(
               /** @this {importer.DriveSyncWatcher} */
