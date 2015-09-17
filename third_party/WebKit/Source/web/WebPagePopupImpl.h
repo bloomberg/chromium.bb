@@ -93,6 +93,7 @@ private:
     bool handleMouseWheel(LocalFrame& mainFrame, const WebMouseWheelEvent&) override;
 
     bool isMouseEventInWindow(const WebMouseEvent&);
+    bool isGestureEventInWindow(const WebGestureEvent&);
 
     // PagePopup function
     AXObject* rootAXObject() override;

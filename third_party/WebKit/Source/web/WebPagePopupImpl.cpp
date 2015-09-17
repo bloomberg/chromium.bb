@@ -399,6 +399,10 @@ bool WebPagePopupImpl::handleGestureEvent(const WebGestureEvent& event)
 {
     if (m_closing || !m_page || !m_page->mainFrame() || !toLocalFrame(m_page->mainFrame())->view())
         return false;
+    if (event.type == WebInputEvent::GestureTap && !isGestureEventInWindow(event)) {
+        cancel();
+        return false;
+    }
     LocalFrame& frame = *toLocalFrame(m_page->mainFrame());
     return frame.eventHandler().handleGestureEvent(PlatformGestureEventBuilder(frame.view(), event));
 }
@@ -420,6 +424,11 @@ bool WebPagePopupImpl::handleMouseWheel(LocalFrame& mainFrame, const WebMouseWhe
 }
 
 bool WebPagePopupImpl::isMouseEventInWindow(const WebMouseEvent& event)
+{
+    return IntRect(0, 0, m_windowRectInScreen.width, m_windowRectInScreen.height).contains(IntPoint(event.x, event.y));
+}
+
+bool WebPagePopupImpl::isGestureEventInWindow(const WebGestureEvent& event)
 {
     return IntRect(0, 0, m_windowRectInScreen.width, m_windowRectInScreen.height).contains(IntPoint(event.x, event.y));
 }

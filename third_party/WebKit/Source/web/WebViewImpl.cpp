@@ -778,6 +778,7 @@ bool WebViewImpl::handleGestureEvent(const WebGestureEvent& event)
 
     switch (event.type) {
     case WebInputEvent::GestureTap: {
+        hidePopups();
         m_client->cancelScheduledContentIntents();
         if (detectContentOnTouch(targetedEvent)) {
             eventSwallowed = true;
