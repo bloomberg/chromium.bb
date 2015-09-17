@@ -4719,6 +4719,24 @@ Even if you have downloaded files from this website before, the website might ha
         <message name="IDS_MD_EXTENSIONS_SEARCH" desc="The text displayed in the search box on the chrome://extensions page.">
           Search
         </message>
+        <message name="IDS_MD_EXTENSIONS_SIDEBAR_EXTENSIONS" desc="The text displayed in the sidebar to go to the extensions section of the page.">
+          Extensions
+        </message>
+        <message name="IDS_MD_EXTENSIONS_SIDEBAR_APPS" desc="The text displayed in the sidebar to go to the apps section of the page.">
+          Chrome Apps
+        </message>
+        <message name="IDS_MD_EXTENSIONS_SIDEBAR_WEBSITES" desc="The text displayed in the sidebar to go to the websites section of the page.">
+          Websites
+        </message>
+        <message name="IDS_MD_EXTENSIONS_SIDEBAR_DEVELOPER_MODE" desc="The text displayed next to the checkbox to toggle developer mode in the extensions page.">
+          Developer mode
+        </message>
+        <message name="IDS_MD_EXTENSIONS_SIDEBAR_GET_MORE_EXTENSIONS" desc="The text for the link to get more extensions in the extensions page.">
+          Get more extensions
+        </message>
+        <message name="IDS_MD_EXTENSIONS_SIDEBAR_KEYBOARD_SHORTCUTS" desc="The text for the link to manage keyboard shortcuts for extensions.">
+          Keyboard shortcuts
+        </message>
         <if expr="not use_titlecase">
           <message name="IDS_EXTENSIONS_ALWAYS_RUN" desc="The text for the 'always run' item in context menus (sentence case).">
             Always run

@@ -1,0 +1,34 @@
+<link rel="import" href="chrome://resources/html/cr.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-checkbox/paper-checkbox.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-item/paper-item.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-menu/paper-menu.html">
+
+<dom-module id="extensions-sidebar">
+  <template>
+    <paper-menu id="section-menu">
+      <paper-item class="section-menu-item" id="sections-extensions">
+        <iron-icon icon="extension"></iron-icon>
+        <span i18n-content="sidebarExtensions"></span>
+      </paper-item>
+      <paper-item class="section-menu-item" id="sections-apps">
+        <iron-icon icon="apps"></iron-icon>
+        <span i18n-content="sidebarApps"></span>
+      </paper-item>
+      <paper-item class="section-menu-item" id="sections-websites">
+        <iron-icon icon="cloud"></iron-icon>
+        <span i18n-content="sidebarWebsites"></span>
+      </paper-item>
+    </paper-menu>
+    <paper-item id="developer-mode">
+      <span i18n-content="developerMode"></span>
+      <paper-checkbox id="developer-mode-checkbox"></paper-checkbox>
+    </paper-item>
+    <paper-item id="more-extensions" i18n-content="getMoreExtensions">
+    </paper-item>
+    <paper-item id="keyboard-shortcuts" i18n-content="keyboardShortcuts">
+    </paper-item>
+  </template>
+  <link rel="import" type="css" href="chrome://extensions/sidebar.css">
+  <script src="chrome://extensions/sidebar.js"></script>
+</dom-module>

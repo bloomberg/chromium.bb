@@ -1,0 +1,45 @@
+/* Copyright 2015 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
+:host {
+  -webkit-margin-start: 30px;
+  margin-top: 30px;
+  position: fixed;
+}
+
+#section-menu {
+  --paper-menu-background-color: {
+    transparent;
+  }
+  --paper-menu-selected-item: {
+    background-color: transparent;
+    color: rgb(66, 133, 244);
+    font-weight: normal;
+  }
+  padding: 0;
+}
+
+paper-item {
+  -webkit-margin-start: 0;
+  -webkit-padding-start: 0;
+  color: #5A5A5A;
+  cursor: pointer;
+  font-size: 88%;
+}
+
+.section-menu-item span {
+  -webkit-margin-start: 15px;
+}
+
+#developer-mode {
+  border-bottom: 1px solid #C5C5C5;
+  border-top: 1px solid #C5C5C5;
+  margin: 10px 0;
+}
+
+#developer-mode-checkbox {
+  --paper-checkbox-checked-color: rgb(66, 133, 244);
+  --primary-text-color: #5A5A5A;
+  -webkit-margin-start: 10px;
+}
