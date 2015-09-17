@@ -5,9 +5,7 @@
 package org.chromium.chrome.browser.tabmodel.document;
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.net.Uri;
 import android.text.TextUtils;
@@ -16,6 +14,7 @@ import org.chromium.base.ApplicationStatus;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.document.DocumentActivity;
+import org.chromium.chrome.browser.externalnav.ExternalNavigationDelegateImpl;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.document.DocumentTabModel.Entry;
 
@@ -64,9 +63,7 @@ public abstract class ActivityDelegate {
                 : DocumentActivity.LEGACY_CLASS_NAME;
         String className = null;
         if (intent.getComponent() == null) {
-            Context context = ApplicationStatus.getApplicationContext();
-            PackageManager pm = context.getPackageManager();
-            ResolveInfo resolveInfo = pm.resolveActivity(intent, 0);
+            ResolveInfo resolveInfo = ExternalNavigationDelegateImpl.resolveActivity(intent);
             if (resolveInfo != null) className = resolveInfo.activityInfo.name;
         } else {
             className = intent.getComponent().getClassName();

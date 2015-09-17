@@ -116,6 +116,21 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
         return false;
     }
 
+    /**
+     * Retrieve information about the Activity that will handle the given Intent.
+     * @param intent Intent to resolve.
+     * @return       ResolveInfo of the Activity that will handle the Intent, or null if it failed.
+     */
+    public static ResolveInfo resolveActivity(Intent intent) {
+        try {
+            Context context = ApplicationStatus.getApplicationContext();
+            PackageManager pm = context.getPackageManager();
+            return pm.resolveActivity(intent, 0);
+        } catch (RuntimeException e) {
+            logTransactionTooLargeOrRethrow(e, intent);
+        }
+        return null;
+    }
 
     /**
      * Determines whether Chrome will be handling the given Intent.
