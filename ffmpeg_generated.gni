@@ -564,12 +564,6 @@ if ((is_linux && current_cpu == "arm" && arm_use_neon && ffmpeg_branding == "Chr
   ]
 }
 
-if (is_mac) {
-  ffmpeg_c_sources += [
-    "libavcodec/videotoolbox.c",
-  ]
-}
-
 if (is_win && current_cpu == "x64") {
   ffmpeg_yasm_sources += [
     "libavutil/x86/emms.asm",

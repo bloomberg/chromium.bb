@@ -62,11 +62,6 @@
           'libavutil/x86/emms.asm',
         ],
       }],  # OS == "win" and target_arch == "x64"
-      ['OS == "mac"', {
-        'c_sources': [
-          'libavcodec/videotoolbox.c',
-        ],
-      }],  # OS == "mac"
       ['(OS == "linux" and target_arch == "arm" and arm_neon == 1 and ffmpeg_branding == "Chrome") or (OS == "linux" and target_arch == "arm" and arm_neon == 1 and ffmpeg_branding == "ChromeOS")', {
         'asm_sources': [
           'libavcodec/arm/h264cmc_neon.S',
