@@ -11,7 +11,7 @@
 #include "components/mus/public/cpp/view_observer.h"
 #include "third_party/mojo/src/mojo/public/cpp/system/macros.h"
 
-namespace mojo {
+namespace mus {
 
 class ViewTracker : public ViewObserver {
  public:
@@ -42,6 +42,6 @@ class ViewTracker : public ViewObserver {
   MOJO_DISALLOW_COPY_AND_ASSIGN(ViewTracker);
 };
 
-}  // namespace mojo
+}  // namespace mus
 
 #endif  // COMPONENTS_MUS_PUBLIC_CPP_VIEW_TRACKER_H_

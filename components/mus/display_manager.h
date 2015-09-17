@@ -31,21 +31,18 @@ namespace mojo {
 class ApplicationImpl;
 }  // namespace mojo
 
-namespace surfaces {
-class SurfacesScheduler;
-class SurfacesState;
-}  // namespace surfaces
-
 namespace ui {
 class PlatformWindow;
 struct TextInputState;
 }  // namespace ui
 
-namespace view_manager {
+namespace mus {
 
 class DisplayManagerFactory;
 class EventDispatcher;
 class ServerView;
+class SurfacesScheduler;
+class SurfacesState;
 
 // DisplayManager is used to connect the root ServerView to a display.
 class DisplayManager {
@@ -55,8 +52,8 @@ class DisplayManager {
   static DisplayManager* Create(
       bool is_headless,
       mojo::ApplicationImpl* app_impl,
-      const scoped_refptr<gles2::GpuState>& gpu_state,
-      const scoped_refptr<surfaces::SurfacesState>& surfaces_state);
+      const scoped_refptr<GpuState>& gpu_state,
+      const scoped_refptr<SurfacesState>& surfaces_state);
 
   virtual void Init(DisplayManagerDelegate* delegate) = 0;
 
@@ -89,11 +86,10 @@ class DisplayManager {
 class DefaultDisplayManager : public DisplayManager,
                               public ui::PlatformWindowDelegate {
  public:
-  DefaultDisplayManager(
-      bool is_headless,
-      mojo::ApplicationImpl* app_impl,
-      const scoped_refptr<gles2::GpuState>& gpu_state,
-      const scoped_refptr<surfaces::SurfacesState>& surfaces_state);
+  DefaultDisplayManager(bool is_headless,
+                        mojo::ApplicationImpl* app_impl,
+                        const scoped_refptr<GpuState>& gpu_state,
+                        const scoped_refptr<SurfacesState>& surfaces_state);
   ~DefaultDisplayManager() override;
 
   // DisplayManager:
@@ -125,8 +121,8 @@ class DefaultDisplayManager : public DisplayManager,
 
   bool is_headless_;
   mojo::ApplicationImpl* app_impl_;
-  scoped_refptr<gles2::GpuState> gpu_state_;
-  scoped_refptr<surfaces::SurfacesState> surfaces_state_;
+  scoped_refptr<GpuState> gpu_state_;
+  scoped_refptr<SurfacesState> surfaces_state_;
   DisplayManagerDelegate* delegate_;
 
   mojo::ViewportMetrics metrics_;
@@ -134,7 +130,7 @@ class DefaultDisplayManager : public DisplayManager,
   base::Timer draw_timer_;
   bool frame_pending_;
 
-  scoped_ptr<surfaces::TopLevelDisplayClient> top_level_display_client_;
+  scoped_ptr<TopLevelDisplayClient> top_level_display_client_;
   scoped_ptr<ui::PlatformWindow> platform_window_;
 
   base::WeakPtrFactory<DefaultDisplayManager> weak_factory_;
@@ -142,6 +138,6 @@ class DefaultDisplayManager : public DisplayManager,
   DISALLOW_COPY_AND_ASSIGN(DefaultDisplayManager);
 };
 
-}  // namespace view_manager
+}  // namespace mus
 
 #endif  // COMPONENTS_MUS_DISPLAY_MANAGER_H_

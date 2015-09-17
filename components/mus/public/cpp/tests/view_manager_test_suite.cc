@@ -10,7 +10,7 @@
 #include "ui/gfx/x/x11_connection.h"
 #endif
 
-namespace mojo {
+namespace mus {
 
 ViewManagerTestSuite::ViewManagerTestSuite(int argc, char** argv)
     : TestSuite(argc, argv) {}
@@ -30,4 +30,4 @@ void ViewManagerTestSuite::Initialize() {
   base::i18n::AllowMultipleInitializeCallsForTesting();
 }
 
-}  // namespace mojo
+}  // namespace mus

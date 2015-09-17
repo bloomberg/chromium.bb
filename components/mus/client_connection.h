@@ -9,7 +9,7 @@
 #include "components/mus/public/interfaces/view_tree.mojom.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/binding.h"
 
-namespace view_manager {
+namespace mus {
 
 class ConnectionManager;
 class ViewTreeImpl;
@@ -52,6 +52,6 @@ class DefaultClientConnection : public ClientConnection {
   DISALLOW_COPY_AND_ASSIGN(DefaultClientConnection);
 };
 
-}  // namespace view_manager
+}  // namespace mus
 
 #endif  // COMPONENTS_MUS_CLIENT_CONNECTION_H_

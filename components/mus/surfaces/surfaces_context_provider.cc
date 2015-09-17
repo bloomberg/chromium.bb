@@ -16,7 +16,7 @@
 #include "gpu/command_buffer/client/gles2_implementation.h"
 #include "gpu/command_buffer/client/transfer_buffer.h"
 
-namespace surfaces {
+namespace mus {
 
 namespace {
 const size_t kDefaultCommandBufferSize = 1024 * 1024;
@@ -28,11 +28,10 @@ const size_t kDefaultMaxTransferBufferSize = 16 * 1024 * 1024;
 SurfacesContextProvider::SurfacesContextProvider(
     SurfacesContextProviderDelegate* delegate,
     gfx::AcceleratedWidget widget,
-    const scoped_refptr<gles2::GpuState>& state)
+    const scoped_refptr<GpuState>& state)
     : delegate_(delegate), widget_(widget) {
   capabilities_.gpu.image = true;
-  command_buffer_local_.reset(
-      new gles2::CommandBufferLocal(this, widget_, state));
+  command_buffer_local_.reset(new CommandBufferLocal(this, widget_, state));
 }
 
 // This is called when we have an accelerated widget.
@@ -116,4 +115,4 @@ void SurfacesContextProvider::DidLoseContext() {
   lost_context_callback_.Run();
 }
 
-}  // namespace surfaces
+}  // namespace mus

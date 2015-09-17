@@ -20,7 +20,7 @@
 #include "ui/gfx/transform.h"
 #include "ui/platform_window/text_input_state.h"
 
-namespace view_manager {
+namespace mus {
 
 class ServerViewDelegate;
 class ServerViewObserver;
@@ -148,6 +148,6 @@ class ServerView : public mojo::Surface, public cc::SurfaceFactoryClient {
   DISALLOW_COPY_AND_ASSIGN(ServerView);
 };
 
-}  // namespace view_manager
+}  // namespace mus
 
 #endif  // COMPONENTS_MUS_SERVER_VIEW_H_

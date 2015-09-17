@@ -5,13 +5,13 @@
 #ifndef COMPONENTS_MUS_PUBLIC_CPP_ARGS_H_
 #define COMPONENTS_MUS_PUBLIC_CPP_ARGS_H_
 
-namespace mojo {
+namespace mus {
 
 // All args in alphabetical order. The switches should be documented
 // alongside the definition of their values in the .cc file.
 extern const char kUseHeadlessConfig[];
 extern const char kUseX11TestConfig[];
 
-}  // namespace mojo
+}  // namespace mus
 
 #endif  // COMPONENTS_MUS_PUBLIC_CPP_ARGS_H_

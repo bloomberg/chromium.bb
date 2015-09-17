@@ -5,7 +5,7 @@
 #ifndef COMPONENTS_MUS_PUBLIC_CPP_VIEW_SURFACE_CLIENT_H_
 #define COMPONENTS_MUS_PUBLIC_CPP_VIEW_SURFACE_CLIENT_H_
 
-namespace mojo {
+namespace mus {
 
 class ViewSurface;
 
@@ -19,6 +19,6 @@ class ViewSurfaceClient {
   ~ViewSurfaceClient() {}
 };
 
-}  // namespace mojo
+}  // namespace mus
 
 #endif  // COMPONENTS_MUS_PUBLIC_CPP_VIEW_SURFACE_CLIENT_H_

@@ -26,8 +26,8 @@
 #include "mojo/application/public/cpp/application_test_base.h"
 #include "mojo/application/public/cpp/service_provider_impl.h"
 
-using mojo::View;
-using mojo::ViewTreeConnection;
+using mus::View;
+using mus::ViewTreeConnection;
 
 namespace web_view {
 
@@ -141,7 +141,7 @@ class FrameTest;
 // a single FrameTreeClient. In other words this maintains the data structures
 // needed to represent a client side frame. To obtain one use
 // FrameTest::WaitForViewAndFrame().
-class ViewAndFrame : public mojo::ViewTreeDelegate {
+class ViewAndFrame : public mus::ViewTreeDelegate {
  public:
   ~ViewAndFrame() override {
     if (view_)
@@ -149,7 +149,7 @@ class ViewAndFrame : public mojo::ViewTreeDelegate {
   }
 
   // The View associated with the frame.
-  mojo::View* view() { return view_; }
+  mus::View* view() { return view_; }
   TestFrameTreeClient* test_frame_tree_client() {
     return &test_frame_tree_client_;
   }
@@ -189,7 +189,7 @@ class ViewAndFrame : public mojo::ViewTreeDelegate {
     view_ = nullptr;
   }
 
-  mojo::View* view_;
+  mus::View* view_;
   base::RunLoop run_loop_;
   TestFrameTreeClient test_frame_tree_client_;
   mojo::Binding<FrameTreeClient> frame_tree_binding_;
@@ -199,7 +199,7 @@ class ViewAndFrame : public mojo::ViewTreeDelegate {
 
 class FrameTest : public mojo::test::ApplicationTestBase,
                   public mojo::ApplicationDelegate,
-                  public mojo::ViewTreeDelegate,
+                  public mus::ViewTreeDelegate,
                   public mojo::InterfaceFactory<mojo::ViewTreeClient>,
                   public mojo::InterfaceFactory<FrameTreeClient> {
  public:
@@ -223,7 +223,7 @@ class FrameTest : public mojo::test::ApplicationTestBase,
 
   // Creates a new shared frame as a child of |parent|.
   Frame* CreateSharedFrame(ViewAndFrame* parent) {
-    mojo::View* child_frame_view = parent->view()->connection()->CreateView();
+    mus::View* child_frame_view = parent->view()->connection()->CreateView();
     parent->view()->AddChild(child_frame_view);
     mojo::Map<mojo::String, mojo::Array<uint8_t>> client_properties;
     client_properties.mark_non_null();
@@ -281,7 +281,7 @@ class FrameTest : public mojo::test::ApplicationTestBase,
   void SetUp() override {
     ApplicationTestBase::SetUp();
 
-    mojo::CreateSingleViewTreeHost(application_impl(), this, &host_);
+    mus::CreateSingleViewTreeHost(application_impl(), this, &host_);
 
     ASSERT_TRUE(DoRunLoopWithTimeout());
     std::swap(window_manager_, most_recent_connection_);
@@ -294,7 +294,7 @@ class FrameTest : public mojo::test::ApplicationTestBase,
     FrameTreeClient* frame_tree_client = frame_connection->frame_tree_client();
     mojo::ViewTreeClientPtr view_tree_client =
         frame_connection->GetViewTreeClient();
-    mojo::View* frame_root_view = window_manager()->CreateView();
+    mus::View* frame_root_view = window_manager()->CreateView();
     window_manager()->GetRoot()->AddChild(frame_root_view);
     frame_tree_.reset(
         new FrameTree(0u, frame_root_view, view_tree_client.Pass(),
@@ -316,9 +316,9 @@ class FrameTest : public mojo::test::ApplicationTestBase,
       mojo::ApplicationConnection* connection,
       mojo::InterfaceRequest<mojo::ViewTreeClient> request) override {
     if (view_and_frame_) {
-      mojo::ViewTreeConnection::Create(view_and_frame_.get(), request.Pass());
+      mus::ViewTreeConnection::Create(view_and_frame_.get(), request.Pass());
     } else {
-      mojo::ViewTreeConnection::Create(this, request.Pass());
+      mus::ViewTreeConnection::Create(this, request.Pass());
     }
   }
 

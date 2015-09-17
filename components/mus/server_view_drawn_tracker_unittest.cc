@@ -9,7 +9,7 @@
 #include "components/mus/test_server_view_delegate.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace view_manager {
+namespace mus {
 namespace {
 
 class TestServerViewDrawnTrackerObserver
@@ -136,4 +136,4 @@ TEST(ServerViewDrawnTrackerTest, ChangeBecauseOfRemovingAncestorFromRoot) {
   EXPECT_TRUE(drawn_observer.is_drawn());
 }
 
-}  // namespace view_manager
+}  // namespace mus

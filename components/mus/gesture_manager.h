@@ -15,7 +15,7 @@ namespace mojo {
 class Event;
 }
 
-namespace view_manager {
+namespace mus {
 
 class GestureManagerDelegate;
 class GestureManagerTest;
@@ -183,6 +183,6 @@ class GestureManager {
   DISALLOW_COPY_AND_ASSIGN(GestureManager);
 };
 
-}  // namespace view_manager
+}  // namespace mus
 
 #endif  // COMPONENTS_MUS_GESTURE_MANAGER_H_

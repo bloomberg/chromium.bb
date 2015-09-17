@@ -9,7 +9,7 @@
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 
-namespace gles2 {
+namespace mus {
 
 class MojoGpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
  public:
@@ -45,6 +45,6 @@ class MojoGpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
   DISALLOW_COPY_AND_ASSIGN(MojoGpuMemoryBufferImpl);
 };
 
-}  // gles2
+}  // namespace mus
 
 #endif  // COMPONENTS_MUS_GLES2_MOJO_GPU_MEMORY_BUFFER_H_

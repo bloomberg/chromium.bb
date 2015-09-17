@@ -71,7 +71,7 @@ using mojo::AxProvider;
 using mojo::Rect;
 using mojo::ServiceProviderPtr;
 using mojo::URLResponsePtr;
-using mojo::View;
+using mus::View;
 using web_view::HTMLMessageEvent;
 using web_view::HTMLMessageEventPtr;
 
@@ -275,7 +275,7 @@ HTMLFrame::~HTMLFrame() {
 
   if (view_) {
     view_->RemoveObserver(this);
-    mojo::ScopedViewPtr::DeleteViewOrViewManager(view_);
+    mus::ScopedViewPtr::DeleteViewOrViewManager(view_);
   }
 }
 
@@ -300,7 +300,7 @@ blink::WebFrame* HTMLFrame::createChildFrame(
   DCHECK(view_);  // If we're local we have to have a view.
   // Create the view that will house the frame now. We embed once we know the
   // url (see decidePolicyForNavigation()).
-  mojo::View* child_view = view_->connection()->CreateView();
+  mus::View* child_view = view_->connection()->CreateView();
   ReplicatedFrameState child_state;
   child_state.name = frame_name;
   child_state.tree_scope = scope;
@@ -320,7 +320,7 @@ blink::WebFrame* HTMLFrame::createChildFrame(
   params.allow_local_shared_frame = true;
   HTMLFrame* child_frame =
       GetLocalRoot()->delegate_->GetHTMLFactory()->CreateHTMLFrame(&params);
-  child_frame->owned_view_.reset(new mojo::ScopedViewPtr(child_view));
+  child_frame->owned_view_.reset(new mus::ScopedViewPtr(child_view));
   return child_frame->web_frame_;
 }
 
@@ -494,7 +494,7 @@ web_view::FrameTreeServer* HTMLFrame::GetFrameTreeServer() {
   return frame_tree_manager_->local_root_->server_.get();
 }
 
-void HTMLFrame::SetView(mojo::View* view) {
+void HTMLFrame::SetView(mus::View* view) {
   if (view_)
     view_->RemoveObserver(this);
   view_ = view;
@@ -561,7 +561,7 @@ void HTMLFrame::SwapToRemote() {
 
 void HTMLFrame::SwapToLocal(
     HTMLFrameDelegate* delegate,
-    mojo::View* view,
+    mus::View* view,
     const mojo::Map<mojo::String, mojo::Array<uint8_t>>& properties) {
   CHECK(!IsLocal());
   // It doesn't make sense for the root to swap to local.
@@ -662,8 +662,8 @@ void HTMLFrame::OnViewInputEvent(View* view, const mojo::EventPtr& event) {
     web_widget->handleInputEvent(*web_event);
 }
 
-void HTMLFrame::OnViewFocusChanged(mojo::View* gained_focus,
-                                   mojo::View* lost_focus) {
+void HTMLFrame::OnViewFocusChanged(mus::View* gained_focus,
+                                   mus::View* lost_focus) {
   UpdateFocus();
 }
 

@@ -10,7 +10,7 @@
 // Typedefs for the transport types. These typedefs match that of the mojom
 // file, see it for specifics.
 
-namespace mojo {
+namespace mus {
 
 // Used to identify views and change ids.
 typedef uint32_t Id;
@@ -20,6 +20,6 @@ typedef uint32_t Id;
 // connection and the ConnectionSpecificId of the view.
 typedef uint16_t ConnectionSpecificId;
 
-}  // namespace mojo
+}  // namespace mus
 
 #endif  // COMPONENTS_MUS_PUBLIC_CPP_TYPES_H_

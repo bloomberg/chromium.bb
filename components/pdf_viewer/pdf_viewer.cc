@@ -58,7 +58,7 @@ void OnGotContentHandlerID(uint32_t content_handler_id) {}
 // BitmapUploader is useful if you want to draw a bitmap or color in a View.
 class BitmapUploader : public mojo::SurfaceClient {
  public:
-  explicit BitmapUploader(mojo::View* view)
+  explicit BitmapUploader(mus::View* view)
       : view_(view),
         color_(g_transparent_color),
         width_(0),
@@ -67,8 +67,7 @@ class BitmapUploader : public mojo::SurfaceClient {
         next_resource_id_(1u),
         id_namespace_(0u),
         local_id_(0u),
-        returner_binding_(this) {
-  }
+        returner_binding_(this) {}
   ~BitmapUploader() override {
     MojoGLES2DestroyContext(gles2_context_);
   }
@@ -290,9 +289,9 @@ class BitmapUploader : public mojo::SurfaceClient {
     }
   }
 
-  mojo::View* view_;
+  mus::View* view_;
   mojo::GpuPtr gpu_service_;
-  scoped_ptr<mojo::ViewSurface> surface_;
+  scoped_ptr<mus::ViewSurface> surface_;
   MojoGLES2Context gles2_context_;
 
   mojo::Size size_;
@@ -312,7 +311,7 @@ class BitmapUploader : public mojo::SurfaceClient {
 
 class EmbedderData {
  public:
-  EmbedderData(mojo::Shell* shell, mojo::View* root) : bitmap_uploader_(root) {
+  EmbedderData(mojo::Shell* shell, mus::View* root) : bitmap_uploader_(root) {
     bitmap_uploader_.Init(shell);
     bitmap_uploader_.SetColor(g_background_color);
   }
@@ -326,8 +325,8 @@ class EmbedderData {
 };
 
 class PDFView : public mojo::ApplicationDelegate,
-                public mojo::ViewTreeDelegate,
-                public mojo::ViewObserver,
+                public mus::ViewTreeDelegate,
+                public mus::ViewObserver,
                 public mojo::InterfaceFactory<mojo::ViewTreeClient> {
  public:
   PDFView(mojo::InterfaceRequest<mojo::Application> request,
@@ -356,7 +355,7 @@ class PDFView : public mojo::ApplicationDelegate,
   }
 
   // Overridden from ViewTreeDelegate:
-  void OnEmbed(mojo::View* root) override {
+  void OnEmbed(mus::View* root) override {
     DCHECK(embedder_for_roots_.find(root) == embedder_for_roots_.end());
     root->AddObserver(this);
     EmbedderData* embedder_data = new EmbedderData(app_.shell(), root);
@@ -364,18 +363,17 @@ class PDFView : public mojo::ApplicationDelegate,
     DrawBitmap(embedder_data);
   }
 
-  void OnConnectionLost(mojo::ViewTreeConnection* connection) override {}
+  void OnConnectionLost(mus::ViewTreeConnection* connection) override {}
 
   // Overridden from ViewObserver:
-  void OnViewBoundsChanged(mojo::View* view,
+  void OnViewBoundsChanged(mus::View* view,
                            const mojo::Rect& old_bounds,
                            const mojo::Rect& new_bounds) override {
     DCHECK(embedder_for_roots_.find(view) != embedder_for_roots_.end());
     DrawBitmap(embedder_for_roots_[view]);
   }
 
-  void OnViewInputEvent(mojo::View* view,
-                        const mojo::EventPtr& event) override {
+  void OnViewInputEvent(mus::View* view, const mojo::EventPtr& event) override {
     DCHECK(embedder_for_roots_.find(view) != embedder_for_roots_.end());
     if (event->key_data &&
         (event->action != mojo::EVENT_TYPE_KEY_PRESSED ||
@@ -404,7 +402,7 @@ class PDFView : public mojo::ApplicationDelegate,
     }
   }
 
-  void OnViewDestroyed(mojo::View* view) override {
+  void OnViewDestroyed(mus::View* view) override {
     DCHECK(embedder_for_roots_.find(view) != embedder_for_roots_.end());
     const auto& it = embedder_for_roots_.find(view);
     DCHECK(it != embedder_for_roots_.end());
@@ -418,7 +416,7 @@ class PDFView : public mojo::ApplicationDelegate,
   void Create(
       mojo::ApplicationConnection* connection,
       mojo::InterfaceRequest<mojo::ViewTreeClient> request) override {
-    mojo::ViewTreeConnection::Create(this, request.Pass());
+    mus::ViewTreeConnection::Create(this, request.Pass());
   }
 
   void DrawBitmap(EmbedderData* embedder_data) {
@@ -467,7 +465,7 @@ class PDFView : public mojo::ApplicationDelegate,
   int current_page_;
   int page_count_;
   FPDF_DOCUMENT doc_;
-  std::map<mojo::View*, EmbedderData*> embedder_for_roots_;
+  std::map<mus::View*, EmbedderData*> embedder_for_roots_;
 
   DISALLOW_COPY_AND_ASSIGN(PDFView);
 };

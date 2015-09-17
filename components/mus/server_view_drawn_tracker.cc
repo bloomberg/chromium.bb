@@ -7,7 +7,7 @@
 #include "components/mus/server_view.h"
 #include "components/mus/server_view_drawn_tracker_observer.h"
 
-namespace view_manager {
+namespace mus {
 
 ServerViewDrawnTracker::ServerViewDrawnTracker(
     ServerView* view,
@@ -69,4 +69,4 @@ void ServerViewDrawnTracker::OnViewVisibilityChanged(ServerView* view) {
   SetDrawn(is_drawn ? nullptr : view->parent(), is_drawn);
 }
 
-}  // namespace view_manager
+}  // namespace mus

@@ -40,7 +40,7 @@
 // If a property type is not exported, use DECLARE_VIEW_PROPERTY_TYPE(MyType)
 // which is a shorthand for DECLARE_EXPORTED_VIEW_PROPERTY_TYPE(, MyType).
 
-namespace mojo {
+namespace mus {
 namespace {
 
 // No single new-style cast works for every conversion to/from int64_t, so we
@@ -99,41 +99,41 @@ void View::ClearLocalProperty(const ViewProperty<T>* property) {
   SetLocalProperty(property, property->default_value);
 }
 
-}  // namespace mojo
+}  // namespace mus
 
 // Macros to instantiate the property getter/setter template functions.
-#define DECLARE_EXPORTED_VIEW_PROPERTY_TYPE(EXPORT, T)                         \
-  template EXPORT void mojo::View::SetLocalProperty(                           \
-      const mojo::ViewProperty<T>*, T);                                        \
-  template EXPORT T mojo::View::GetLocalProperty(const mojo::ViewProperty<T>*) \
-      const;                                                                   \
-  template EXPORT void mojo::View::ClearLocalProperty(                         \
-      const mojo::ViewProperty<T>*);
+#define DECLARE_EXPORTED_VIEW_PROPERTY_TYPE(EXPORT, T)                       \
+  template EXPORT void mus::View::SetLocalProperty(                          \
+      const mus::ViewProperty<T>*, T);                                       \
+  template EXPORT T mus::View::GetLocalProperty(const mus::ViewProperty<T>*) \
+      const;                                                                 \
+  template EXPORT void mus::View::ClearLocalProperty(                        \
+      const mus::ViewProperty<T>*);
 #define DECLARE_VIEW_PROPERTY_TYPE(T) DECLARE_EXPORTED_VIEW_PROPERTY_TYPE(, T)
 
 #define DEFINE_VIEW_PROPERTY_KEY(TYPE, NAME, DEFAULT)                       \
   COMPILE_ASSERT(sizeof(TYPE) <= sizeof(int64_t), property_type_too_large); \
   namespace {                                                               \
-  const mojo::ViewProperty<TYPE> NAME##_Value = {DEFAULT, #NAME, nullptr};  \
+  const mus::ViewProperty<TYPE> NAME##_Value = {DEFAULT, #NAME, nullptr};   \
   }                                                                         \
-  const mojo::ViewProperty<TYPE>* const NAME = &NAME##_Value;
+  const mus::ViewProperty<TYPE>* const NAME = &NAME##_Value;
 
 #define DEFINE_LOCAL_VIEW_PROPERTY_KEY(TYPE, NAME, DEFAULT)                 \
   COMPILE_ASSERT(sizeof(TYPE) <= sizeof(int64_t), property_type_too_large); \
   namespace {                                                               \
-  const mojo::ViewProperty<TYPE> NAME##_Value = {DEFAULT, #NAME, nullptr};  \
-  const mojo::ViewProperty<TYPE>* const NAME = &NAME##_Value;               \
+  const mus::ViewProperty<TYPE> NAME##_Value = {DEFAULT, #NAME, nullptr};   \
+  const mus::ViewProperty<TYPE>* const NAME = &NAME##_Value;                \
   }
 
-#define DEFINE_OWNED_VIEW_PROPERTY_KEY(TYPE, NAME, DEFAULT)            \
-  namespace {                                                          \
-  void Deallocator##NAME(int64_t p) {                                  \
-    enum { type_must_be_complete = sizeof(TYPE) };                     \
-    delete mojo::ViewPropertyCaster<TYPE*>::FromInt64(p);              \
-  }                                                                    \
-  const mojo::ViewProperty<TYPE*> NAME##_Value = {DEFAULT, #NAME,      \
-                                                  &Deallocator##NAME}; \
-  }                                                                    \
-  const mojo::ViewProperty<TYPE*>* const NAME = &NAME##_Value;
+#define DEFINE_OWNED_VIEW_PROPERTY_KEY(TYPE, NAME, DEFAULT)           \
+  namespace {                                                         \
+  void Deallocator##NAME(int64_t p) {                                 \
+    enum { type_must_be_complete = sizeof(TYPE) };                    \
+    delete mus::ViewPropertyCaster<TYPE*>::FromInt64(p);              \
+  }                                                                   \
+  const mus::ViewProperty<TYPE*> NAME##_Value = {DEFAULT, #NAME,      \
+                                                 &Deallocator##NAME}; \
+  }                                                                   \
+  const mus::ViewProperty<TYPE*>* const NAME = &NAME##_Value;
 
 #endif  // COMPONENTS_MUS_PUBLIC_CPP_VIEW_PROPERTY_H_

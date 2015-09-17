@@ -74,7 +74,7 @@ class GlobalState {
     return &raster_thread_helper_;
   }
 
-  gles2::MojoGpuMemoryBufferManager* gpu_memory_buffer_manager() {
+  mus::MojoGpuMemoryBufferManager* gpu_memory_buffer_manager() {
     return &gpu_memory_buffer_manager_;
   }
 
@@ -109,7 +109,7 @@ class GlobalState {
   scoped_ptr<BlinkPlatformImpl> blink_platform_;
   base::Thread compositor_thread_;
   gles2::RasterThreadHelper raster_thread_helper_;
-  gles2::MojoGpuMemoryBufferManager gpu_memory_buffer_manager_;
+  mus::MojoGpuMemoryBufferManager gpu_memory_buffer_manager_;
   scoped_ptr<MediaFactory> media_factory_;
 
 #if defined(OS_LINUX) && !defined(OS_ANDROID)

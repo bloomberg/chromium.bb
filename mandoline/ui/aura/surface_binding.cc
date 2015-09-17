@@ -42,17 +42,17 @@ class SurfaceBinding::PerConnectionState
     : public base::RefCounted<PerConnectionState> {
  public:
   static PerConnectionState* Get(mojo::Shell* shell,
-                                 mojo::ViewTreeConnection* connection);
+                                 mus::ViewTreeConnection* connection);
 
-  scoped_ptr<cc::OutputSurface> CreateOutputSurface(mojo::View* view);
+  scoped_ptr<cc::OutputSurface> CreateOutputSurface(mus::View* view);
 
  private:
-  typedef std::map<mojo::ViewTreeConnection*,
-                   PerConnectionState*> ConnectionToStateMap;
+  typedef std::map<mus::ViewTreeConnection*, PerConnectionState*>
+      ConnectionToStateMap;
 
   friend class base::RefCounted<PerConnectionState>;
 
-  PerConnectionState(mojo::Shell* shell, mojo::ViewTreeConnection* connection);
+  PerConnectionState(mojo::Shell* shell, mus::ViewTreeConnection* connection);
   ~PerConnectionState();
 
   void Init();
@@ -61,7 +61,7 @@ class SurfaceBinding::PerConnectionState
       base::ThreadLocalPointer<ConnectionToStateMap>>::Leaky view_states;
 
   mojo::Shell* shell_;
-  mojo::ViewTreeConnection* connection_;
+  mus::ViewTreeConnection* connection_;
 
   // Set of state needed to create an OutputSurface.
   mojo::GpuPtr gpu_;
@@ -77,7 +77,7 @@ base::LazyInstance<base::ThreadLocalPointer<
 // static
 SurfaceBinding::PerConnectionState* SurfaceBinding::PerConnectionState::Get(
     mojo::Shell* shell,
-    mojo::ViewTreeConnection* connection) {
+    mus::ViewTreeConnection* connection) {
   ConnectionToStateMap* view_map = view_states.Pointer()->Get();
   if (!view_map) {
     view_map = new ConnectionToStateMap;
@@ -91,7 +91,7 @@ SurfaceBinding::PerConnectionState* SurfaceBinding::PerConnectionState::Get(
 }
 
 scoped_ptr<cc::OutputSurface>
-SurfaceBinding::PerConnectionState::CreateOutputSurface(mojo::View* view) {
+SurfaceBinding::PerConnectionState::CreateOutputSurface(mus::View* view) {
   // TODO(sky): figure out lifetime here. Do I need to worry about the return
   // value outliving this?
   mojo::CommandBufferPtr cb;
@@ -105,9 +105,8 @@ SurfaceBinding::PerConnectionState::CreateOutputSurface(mojo::View* view) {
 
 SurfaceBinding::PerConnectionState::PerConnectionState(
     mojo::Shell* shell,
-    mojo::ViewTreeConnection* connection)
-    : shell_(shell) {
-}
+    mus::ViewTreeConnection* connection)
+    : shell_(shell) {}
 
 SurfaceBinding::PerConnectionState::~PerConnectionState() {
   ConnectionToStateMap* view_map = view_states.Pointer()->Get();
@@ -132,10 +131,8 @@ void SurfaceBinding::PerConnectionState::Init() {
 
 // SurfaceBinding --------------------------------------------------------------
 
-SurfaceBinding::SurfaceBinding(mojo::Shell* shell, mojo::View* view)
-    : view_(view),
-      state_(PerConnectionState::Get(shell, view->connection())) {
-}
+SurfaceBinding::SurfaceBinding(mojo::Shell* shell, mus::View* view)
+    : view_(view), state_(PerConnectionState::Get(shell, view->connection())) {}
 
 SurfaceBinding::~SurfaceBinding() {
 }

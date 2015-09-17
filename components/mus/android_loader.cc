@@ -4,10 +4,10 @@
 
 #include "components/mus/android_loader.h"
 
-#include "components/mus/view_manager_app.h"
+#include "components/mus/mus_app.h"
 #include "mojo/application/public/cpp/application_impl.h"
 
-namespace view_manager {
+namespace mus {
 
 AndroidLoader::AndroidLoader() {}
 AndroidLoader::~AndroidLoader() {}
@@ -16,8 +16,8 @@ void AndroidLoader::Load(
     const GURL& url,
     mojo::InterfaceRequest<mojo::Application> application_request) {
   DCHECK(application_request.is_pending());
-  app_.reset(new mojo::ApplicationImpl(new ViewManagerApp,
+  app_.reset(new mojo::ApplicationImpl(new MandolineUIServicesApp,
                                        application_request.Pass()));
 }
 
-}  // namespace view_manager
+}  // namespace mus

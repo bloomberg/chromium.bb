@@ -7,7 +7,7 @@
 
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
 
-namespace gles2 {
+namespace mus {
 
 class MojoGpuMemoryBufferManager : public gpu::GpuMemoryBufferManager {
  public:
@@ -28,6 +28,6 @@ class MojoGpuMemoryBufferManager : public gpu::GpuMemoryBufferManager {
   DISALLOW_COPY_AND_ASSIGN(MojoGpuMemoryBufferManager);
 };
 
-}  // namespace gles2
+}  // namespace mus
 
 #endif  // COMPONENTS_MUS_GLES2_MOJO_GPU_MEMORY_BUFFER_MANAGER_H_

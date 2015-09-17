@@ -4,7 +4,7 @@
 
 #include "components/mus/public/cpp/view_observer.h"
 
-namespace mojo {
+namespace mus {
 
 ////////////////////////////////////////////////////////////////////////////////
 // ViewObserver, public:
@@ -15,4 +15,4 @@ ViewObserver::TreeChangeParams::TreeChangeParams()
       new_parent(nullptr),
       receiver(nullptr) {}
 
-}  // namespace mojo
+}  // namespace mus

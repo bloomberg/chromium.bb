@@ -44,7 +44,7 @@
 using mojo::Rect;
 using mojo::Size;
 
-namespace view_manager {
+namespace mus {
 namespace {
 
 void DrawViewTree(cc::RenderPass* pass,
@@ -90,8 +90,8 @@ DisplayManagerFactory* DisplayManager::factory_ = nullptr;
 DisplayManager* DisplayManager::Create(
     bool is_headless,
     mojo::ApplicationImpl* app_impl,
-    const scoped_refptr<gles2::GpuState>& gpu_state,
-    const scoped_refptr<surfaces::SurfacesState>& surfaces_state) {
+    const scoped_refptr<GpuState>& gpu_state,
+    const scoped_refptr<SurfacesState>& surfaces_state) {
   if (factory_) {
     return factory_->CreateDisplayManager(is_headless, app_impl, gpu_state,
                                           surfaces_state);
@@ -103,8 +103,8 @@ DisplayManager* DisplayManager::Create(
 DefaultDisplayManager::DefaultDisplayManager(
     bool is_headless,
     mojo::ApplicationImpl* app_impl,
-    const scoped_refptr<gles2::GpuState>& gpu_state,
-    const scoped_refptr<surfaces::SurfacesState>& surfaces_state)
+    const scoped_refptr<GpuState>& gpu_state,
+    const scoped_refptr<SurfacesState>& surfaces_state)
     : is_headless_(is_headless),
       app_impl_(app_impl),
       gpu_state_(gpu_state),
@@ -321,12 +321,12 @@ void DefaultDisplayManager::OnAcceleratedWidgetAvailable(
     gfx::AcceleratedWidget widget,
     float device_pixel_ratio) {
   if (widget != gfx::kNullAcceleratedWidget) {
-    top_level_display_client_.reset(new surfaces::TopLevelDisplayClient(
-        widget, gpu_state_, surfaces_state_));
+    top_level_display_client_.reset(
+        new TopLevelDisplayClient(widget, gpu_state_, surfaces_state_));
   }
   UpdateMetrics(metrics_.size_in_pixels.To<gfx::Size>(), device_pixel_ratio);
 }
 
 void DefaultDisplayManager::OnActivationChanged(bool active) {}
 
-}  // namespace view_manager
+}  // namespace mus

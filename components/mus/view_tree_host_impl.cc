@@ -14,15 +14,15 @@
 #include "mojo/common/common_type_converters.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
 
-namespace view_manager {
+namespace mus {
 
 ViewTreeHostImpl::ViewTreeHostImpl(
     mojo::ViewTreeHostClientPtr client,
     ConnectionManager* connection_manager,
     bool is_headless,
     mojo::ApplicationImpl* app_impl,
-    const scoped_refptr<gles2::GpuState>& gpu_state,
-    const scoped_refptr<surfaces::SurfacesState>& surfaces_state)
+    const scoped_refptr<GpuState>& gpu_state,
+    const scoped_refptr<SurfacesState>& surfaces_state)
     : delegate_(nullptr),
       connection_manager_(connection_manager),
       client_(client.Pass()),
@@ -238,4 +238,4 @@ void ViewTreeHostImpl::OnFocusChanged(ServerView* old_focused_view,
   UpdateTextInputState(new_focused_view, new_focused_view->text_input_state());
 }
 
-}  // namespace view_manager
+}  // namespace mus

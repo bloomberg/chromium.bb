@@ -23,7 +23,7 @@
 #include "third_party/mojo/src/mojo/public/cpp/bindings/array.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/binding.h"
 
-namespace view_manager {
+namespace mus {
 
 class ClientConnection;
 class ConnectionManagerDelegate;
@@ -46,33 +46,32 @@ class ConnectionManager : public ServerViewDelegate,
                  bool is_delete_view);
     ~ScopedChange();
 
-    mojo::ConnectionSpecificId connection_id() const { return connection_id_; }
+    ConnectionSpecificId connection_id() const { return connection_id_; }
     bool is_delete_view() const { return is_delete_view_; }
 
     // Marks the connection with the specified id as having seen a message.
-    void MarkConnectionAsMessaged(mojo::ConnectionSpecificId connection_id) {
+    void MarkConnectionAsMessaged(ConnectionSpecificId connection_id) {
       message_ids_.insert(connection_id);
     }
 
     // Returns true if MarkConnectionAsMessaged(connection_id) was invoked.
-    bool DidMessageConnection(mojo::ConnectionSpecificId connection_id) const {
+    bool DidMessageConnection(ConnectionSpecificId connection_id) const {
       return message_ids_.count(connection_id) > 0;
     }
 
    private:
     ConnectionManager* connection_manager_;
-    const mojo::ConnectionSpecificId connection_id_;
+    const ConnectionSpecificId connection_id_;
     const bool is_delete_view_;
 
     // See description of MarkConnectionAsMessaged/DidMessageConnection.
-    std::set<mojo::ConnectionSpecificId> message_ids_;
+    std::set<ConnectionSpecificId> message_ids_;
 
     DISALLOW_COPY_AND_ASSIGN(ScopedChange);
   };
 
-  ConnectionManager(
-      ConnectionManagerDelegate* delegate,
-      const scoped_refptr<surfaces::SurfacesState>& surfaces_state);
+  ConnectionManager(ConnectionManagerDelegate* delegate,
+                    const scoped_refptr<SurfacesState>& surfaces_state);
   ~ConnectionManager() override;
 
   // Adds a ViewTreeHost.
@@ -83,7 +82,7 @@ class ConnectionManager : public ServerViewDelegate,
   ServerView* CreateServerView(const ViewId& id);
 
   // Returns the id for the next ViewTreeImpl.
-  mojo::ConnectionSpecificId GetAndAdvanceNextConnectionId();
+  ConnectionSpecificId GetAndAdvanceNextConnectionId();
 
   // Returns the id for the next ViewTreeHostImpl.
   uint16_t GetAndAdvanceNextHostId();
@@ -97,17 +96,17 @@ class ConnectionManager : public ServerViewDelegate,
 
   // See description of ViewTree::Embed() for details. This assumes
   // |transport_view_id| is valid.
-  void EmbedAtView(mojo::ConnectionSpecificId creator_id,
+  void EmbedAtView(ConnectionSpecificId creator_id,
                    const ViewId& view_id,
                    uint32_t policy_bitmask,
                    mojo::URLRequestPtr request);
-  ViewTreeImpl* EmbedAtView(mojo::ConnectionSpecificId creator_id,
+  ViewTreeImpl* EmbedAtView(ConnectionSpecificId creator_id,
                             const ViewId& view_id,
                             uint32_t policy_bitmask,
                             mojo::ViewTreeClientPtr client);
 
   // Returns the connection by id.
-  ViewTreeImpl* GetConnection(mojo::ConnectionSpecificId connection_id);
+  ViewTreeImpl* GetConnection(ConnectionSpecificId connection_id);
 
   // Returns the View identified by |id|.
   ServerView* GetView(const ViewId& id);
@@ -130,10 +129,10 @@ class ConnectionManager : public ServerViewDelegate,
 
   // Invoked when a connection messages a client about the change. This is used
   // to avoid sending ServerChangeIdAdvanced() unnecessarily.
-  void OnConnectionMessagedClient(mojo::ConnectionSpecificId id);
+  void OnConnectionMessagedClient(ConnectionSpecificId id);
 
   // Returns true if OnConnectionMessagedClient() was invoked for id.
-  bool DidConnectionMessageClient(mojo::ConnectionSpecificId id) const;
+  bool DidConnectionMessageClient(ConnectionSpecificId id) const;
 
   // Returns the metrics of the viewport where the provided |view| is displayed.
   mojo::ViewportMetricsPtr GetViewportMetricsForView(const ServerView* view);
@@ -177,7 +176,7 @@ class ConnectionManager : public ServerViewDelegate,
   void ProcessViewDeleted(const ViewId& view);
 
  private:
-  using ConnectionMap = std::map<mojo::ConnectionSpecificId, ClientConnection*>;
+  using ConnectionMap = std::map<ConnectionSpecificId, ClientConnection*>;
   using HostConnectionMap =
       std::map<ViewTreeHostImpl*, ViewTreeHostConnection*>;
 
@@ -193,7 +192,7 @@ class ConnectionManager : public ServerViewDelegate,
   void FinishChange();
 
   // Returns true if the specified connection originated the current change.
-  bool IsChangeSource(mojo::ConnectionSpecificId connection_id) const {
+  bool IsChangeSource(ConnectionSpecificId connection_id) const {
     return current_change_ && current_change_->connection_id() == connection_id;
   }
 
@@ -203,7 +202,7 @@ class ConnectionManager : public ServerViewDelegate,
   // Overridden from ServerViewDelegate:
   scoped_ptr<cc::CompositorFrame> UpdateViewTreeFromCompositorFrame(
       const mojo::CompositorFramePtr& input) override;
-  surfaces::SurfacesState* GetSurfacesState() override;
+  SurfacesState* GetSurfacesState() override;
   void OnScheduleViewPaint(const ServerView* view) override;
   const ServerView* GetRootView(const ServerView* view) const override;
 
@@ -238,10 +237,10 @@ class ConnectionManager : public ServerViewDelegate,
   ConnectionManagerDelegate* delegate_;
 
   // State for rendering into a Surface.
-  scoped_refptr<surfaces::SurfacesState> surfaces_state_;
+  scoped_refptr<SurfacesState> surfaces_state_;
 
   // ID to use for next ViewTreeImpl.
-  mojo::ConnectionSpecificId next_connection_id_;
+  ConnectionSpecificId next_connection_id_;
 
   // ID to use for next ViewTreeHostImpl.
   uint16_t next_host_id_;
@@ -261,6 +260,6 @@ class ConnectionManager : public ServerViewDelegate,
   DISALLOW_COPY_AND_ASSIGN(ConnectionManager);
 };
 
-}  // namespace view_manager
+}  // namespace mus
 
 #endif  // COMPONENTS_MUS_CONNECTION_MANAGER_H_

@@ -7,7 +7,7 @@
 #include "components/mus/connection_manager.h"
 #include "components/mus/view_tree_impl.h"
 
-namespace view_manager {
+namespace mus {
 
 ClientConnection::ClientConnection(scoped_ptr<ViewTreeImpl> service,
                                    mojo::ViewTreeClient* client)
@@ -30,4 +30,4 @@ DefaultClientConnection::DefaultClientConnection(
 
 DefaultClientConnection::~DefaultClientConnection() {}
 
-}  // namespace view_manager
+}  // namespace mus

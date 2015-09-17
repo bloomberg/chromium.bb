@@ -5,7 +5,7 @@
 #ifndef COMPONENTS_MUS_SERVER_VIEW_DRAWN_TRACKER_OBSERVER_H_
 #define COMPONENTS_MUS_SERVER_VIEW_DRAWN_TRACKER_OBSERVER_H_
 
-namespace view_manager {
+namespace mus {
 
 class ServerView;
 
@@ -23,6 +23,6 @@ class ServerViewDrawnTrackerObserver {
   virtual ~ServerViewDrawnTrackerObserver() {}
 };
 
-}  // namespace view_manager
+}  // namespace mus
 
 #endif  // COMPONENTS_MUS_SERVER_VIEW_DRAWN_TRACKER_OBSERVER_H_

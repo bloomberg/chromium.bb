@@ -26,7 +26,7 @@ namespace mandoline {
 ////////////////////////////////////////////////////////////////////////////////
 // OmniboxImpl
 
-class OmniboxImpl : public mojo::ViewTreeDelegate,
+class OmniboxImpl : public mus::ViewTreeDelegate,
                     public views::LayoutManager,
                     public views::TextfieldController,
                     public Omnibox {
@@ -37,9 +37,9 @@ class OmniboxImpl : public mojo::ViewTreeDelegate,
   ~OmniboxImpl() override;
 
  private:
-  // Overridden from mojo::ViewTreeDelegate:
-  void OnEmbed(mojo::View* root) override;
-  void OnConnectionLost(mojo::ViewTreeConnection* connection) override;
+  // Overridden from mus::ViewTreeDelegate:
+  void OnEmbed(mus::View* root) override;
+  void OnConnectionLost(mus::ViewTreeConnection* connection) override;
 
   // Overridden from views::LayoutManager:
   gfx::Size GetPreferredSize(const views::View* view) const override;
@@ -59,7 +59,7 @@ class OmniboxImpl : public mojo::ViewTreeDelegate,
 
   scoped_ptr<AuraInit> aura_init_;
   mojo::ApplicationImpl* app_;
-  mojo::View* root_;
+  mus::View* root_;
   mojo::String url_;
   views::Textfield* edit_;
   mojo::Binding<Omnibox> binding_;
@@ -110,9 +110,9 @@ OmniboxImpl::OmniboxImpl(mojo::ApplicationImpl* app,
 OmniboxImpl::~OmniboxImpl() {}
 
 ////////////////////////////////////////////////////////////////////////////////
-// OmniboxImpl, mojo::ViewTreeDelegate implementation:
+// OmniboxImpl, mus::ViewTreeDelegate implementation:
 
-void OmniboxImpl::OnEmbed(mojo::View* root) {
+void OmniboxImpl::OnEmbed(mus::View* root) {
   root_ = root;
 
   if (!aura_init_.get()) {
@@ -148,7 +148,7 @@ void OmniboxImpl::OnEmbed(mojo::View* root) {
   ShowWindow();
 }
 
-void OmniboxImpl::OnConnectionLost(mojo::ViewTreeConnection* connection) {
+void OmniboxImpl::OnConnectionLost(mus::ViewTreeConnection* connection) {
   root_ = nullptr;
 }
 
@@ -190,7 +190,7 @@ bool OmniboxImpl::HandleKeyEvent(views::Textfield* sender,
 
 void OmniboxImpl::GetViewTreeClient(
     mojo::InterfaceRequest<mojo::ViewTreeClient> request) {
-  mojo::ViewTreeConnection::Create(this, request.Pass());
+  mus::ViewTreeConnection::Create(this, request.Pass());
 }
 
 void OmniboxImpl::ShowForURL(const mojo::String& url) {

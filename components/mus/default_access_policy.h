@@ -8,14 +8,14 @@
 #include "base/basictypes.h"
 #include "components/mus/access_policy.h"
 
-namespace view_manager {
+namespace mus {
 
 class AccessPolicyDelegate;
 
 // AccessPolicy for all connections, except the window manager.
 class DefaultAccessPolicy : public AccessPolicy {
  public:
-  DefaultAccessPolicy(mojo::ConnectionSpecificId connection_id,
+  DefaultAccessPolicy(ConnectionSpecificId connection_id,
                       AccessPolicyDelegate* delegate);
   ~DefaultAccessPolicy() override;
 
@@ -46,12 +46,12 @@ class DefaultAccessPolicy : public AccessPolicy {
   bool WasCreatedByThisConnection(const ServerView* view) const;
   bool IsDescendantOfEmbedRoot(const ServerView* view) const;
 
-  const mojo::ConnectionSpecificId connection_id_;
+  const ConnectionSpecificId connection_id_;
   AccessPolicyDelegate* delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(DefaultAccessPolicy);
 };
 
-}  // namespace view_manager
+}  // namespace mus
 
 #endif  // COMPONENTS_MUS_DEFAULT_ACCESS_POLICY_H_

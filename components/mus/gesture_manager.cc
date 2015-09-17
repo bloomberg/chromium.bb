@@ -14,7 +14,7 @@
 #include "ui/gfx/geometry/point_f.h"
 #include "ui/mojo/events/input_events.mojom.h"
 
-namespace view_manager {
+namespace mus {
 
 using Views = std::vector<const ServerView*>;
 
@@ -36,7 +36,7 @@ Views GetTouchTargets(const ServerView* deepest) {
   Views result;
   const ServerView* view = deepest;
   while (view) {
-    if (view->properties().count(mojo::kViewManagerKeyWantsTouchEvents)) {
+    if (view->properties().count(kViewManagerKeyWantsTouchEvents)) {
       if (!result.empty() &&
           result.back()->id().connection_id == view->id().connection_id) {
         result.pop_back();
@@ -693,4 +693,4 @@ void GestureManager::ScheduleDelete(Pointer* pointer) {
   }
 }
 
-}  // namespace view_manager
+}  // namespace mus

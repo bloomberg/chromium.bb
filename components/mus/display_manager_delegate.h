@@ -7,7 +7,7 @@
 
 #include "components/mus/public/interfaces/view_tree.mojom.h"
 
-namespace view_manager {
+namespace mus {
 
 class ServerView;
 
@@ -34,6 +34,6 @@ class DisplayManagerDelegate {
   virtual ~DisplayManagerDelegate() {}
 };
 
-}  // namespace view_manager
+}  // namespace mus
 
 #endif  // COMPONENTS_MUS_DISPLAY_MANAGER_DELEGATE_H_

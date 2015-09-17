@@ -15,7 +15,7 @@
 #undef LoWord
 #endif
 
-namespace mojo {
+namespace mus {
 
 inline uint16_t HiWord(uint32_t id) {
   return static_cast<uint16_t>((id >> 16) & 0xFFFF);
@@ -25,6 +25,6 @@ inline uint16_t LoWord(uint32_t id) {
   return static_cast<uint16_t>(id & 0xFFFF);
 }
 
-}  // namespace mojo
+}  // namespace mus
 
 #endif  // COMPONENTS_MUS_PUBLIC_CPP_UTIL_H_

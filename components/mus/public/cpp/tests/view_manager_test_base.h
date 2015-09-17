@@ -13,16 +13,17 @@
 #include "mojo/application/public/cpp/application_test_base.h"
 #include "mojo/application/public/cpp/interface_factory.h"
 
-namespace mojo {
+namespace mus {
 
 // ViewManagerTestBase is a base class for use with app tests that use
 // ViewManager. SetUp() connects to the ViewManager and blocks until OnEmbed()
 // has been invoked. window_manager() can be used to access the ViewManager
 // established as part of SetUp().
-class ViewManagerTestBase : public test::ApplicationTestBase,
-                            public ApplicationDelegate,
-                            public ViewTreeDelegate,
-                            public InterfaceFactory<ViewTreeClient> {
+class ViewManagerTestBase
+    : public mojo::test::ApplicationTestBase,
+      public mojo::ApplicationDelegate,
+      public ViewTreeDelegate,
+      public mojo::InterfaceFactory<mojo::ViewTreeClient> {
  public:
   ViewManagerTestBase();
   ~ViewManagerTestBase() override;
@@ -53,25 +54,26 @@ class ViewManagerTestBase : public test::ApplicationTestBase,
   void TearDown() override;
 
   // test::ApplicationTestBase:
-  ApplicationDelegate* GetApplicationDelegate() override;
+  mojo::ApplicationDelegate* GetApplicationDelegate() override;
 
   // ApplicationDelegate:
-  bool ConfigureIncomingConnection(ApplicationConnection* connection) override;
+  bool ConfigureIncomingConnection(
+      mojo::ApplicationConnection* connection) override;
 
   // ViewTreeDelegate:
   void OnEmbed(View* root) override;
   void OnConnectionLost(ViewTreeConnection* connection) override;
 
   // InterfaceFactory<ViewTreeClient>:
-  void Create(ApplicationConnection* connection,
-              InterfaceRequest<ViewTreeClient> request) override;
+  void Create(mojo::ApplicationConnection* connection,
+              mojo::InterfaceRequest<mojo::ViewTreeClient> request) override;
 
   // Used to receive the most recent view tree connection loaded by an embed
   // action.
   ViewTreeConnection* most_recent_connection_;
 
  private:
-  ViewTreeHostPtr host_;
+  mojo::ViewTreeHostPtr host_;
 
   // The View Manager connection held by the window manager (app running at the
   // root view).
@@ -82,6 +84,6 @@ class ViewManagerTestBase : public test::ApplicationTestBase,
   MOJO_DISALLOW_COPY_AND_ASSIGN(ViewManagerTestBase);
 };
 
-}  // namespace mojo
+}  // namespace mus
 
 #endif  // COMPONENTS_MUS_PUBLIC_CPP_TESTS_VIEW_MANAGER_TEST_BASE_H_

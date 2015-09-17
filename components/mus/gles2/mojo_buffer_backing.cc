@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 
-namespace gles2 {
+namespace mus {
 
 MojoBufferBacking::MojoBufferBacking(mojo::ScopedSharedBufferHandle handle,
                                      void* memory,
@@ -37,4 +37,4 @@ size_t MojoBufferBacking::GetSize() const {
   return size_;
 }
 
-}  // namespace gles2
+}  // namespace mus

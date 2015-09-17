@@ -33,7 +33,7 @@ using mojo::ServiceProviderPtr;
 using mojo::String;
 using mojo::ViewDataPtr;
 
-namespace view_manager {
+namespace mus {
 namespace {
 
 // -----------------------------------------------------------------------------
@@ -52,7 +52,7 @@ class TestViewTreeClient : public mojo::ViewTreeClient {
   void OnEmbed(uint16_t connection_id,
                ViewDataPtr root,
                mojo::ViewTreePtr tree,
-               mojo::Id focused_view_id,
+               Id focused_view_id,
                uint32_t access_policy) override {
     // TODO(sky): add test coverage of |focused_view_id|.
     tracker_.OnEmbed(connection_id, root.Pass());
@@ -148,7 +148,7 @@ class TestConnectionManagerDelegate : public ConnectionManagerDelegate {
   ClientConnection* CreateClientConnectionForEmbedAtView(
       ConnectionManager* connection_manager,
       mojo::InterfaceRequest<mojo::ViewTree> service_request,
-      mojo::ConnectionSpecificId creator_id,
+      ConnectionSpecificId creator_id,
       mojo::URLRequestPtr request,
       const ViewId& root_id,
       uint32_t policy_bitmask) override {
@@ -160,7 +160,7 @@ class TestConnectionManagerDelegate : public ConnectionManagerDelegate {
   ClientConnection* CreateClientConnectionForEmbedAtView(
       ConnectionManager* connection_manager,
       mojo::InterfaceRequest<mojo::ViewTree> service_request,
-      mojo::ConnectionSpecificId creator_id,
+      ConnectionSpecificId creator_id,
       const ViewId& root_id,
       uint32_t policy_bitmask,
       mojo::ViewTreeClientPtr client) override {
@@ -237,8 +237,8 @@ class TestDisplayManagerFactory : public DisplayManagerFactory {
   DisplayManager* CreateDisplayManager(
       bool is_headless,
       mojo::ApplicationImpl* app_impl,
-      const scoped_refptr<gles2::GpuState>& gpu_state,
-      const scoped_refptr<surfaces::SurfacesState>& surfaces_state) override {
+      const scoped_refptr<GpuState>& gpu_state,
+      const scoped_refptr<SurfacesState>& surfaces_state) override {
     return new TestDisplayManager();
   }
 
@@ -302,12 +302,12 @@ class ViewTreeTest : public testing::Test {
   void SetUp() override {
     DisplayManager::set_factory_for_testing(&display_manager_factory_);
     // TODO(fsamuel): This is probably broken. We need a root.
-    connection_manager_.reset(new ConnectionManager(
-        &delegate_, scoped_refptr<surfaces::SurfacesState>()));
+    connection_manager_.reset(
+        new ConnectionManager(&delegate_, scoped_refptr<SurfacesState>()));
     ViewTreeHostImpl* host = new ViewTreeHostImpl(
         mojo::ViewTreeHostClientPtr(), connection_manager_.get(),
-        true /* is_headless */, nullptr, scoped_refptr<gles2::GpuState>(),
-        scoped_refptr<surfaces::SurfacesState>());
+        true /* is_headless */, nullptr, scoped_refptr<GpuState>(),
+        scoped_refptr<SurfacesState>());
     // TODO(fsamuel): This is way too magical. We need to find a better way to
     // manage lifetime.
     host_connection_ = new TestViewTreeHostConnection(
@@ -447,4 +447,4 @@ TEST_F(ViewTreeTest, BasicInputEventTarget) {
             ChangesToDescription1(*embed_connection->tracker()->changes())[1]);
 }
 
-}  // namespace view_manager
+}  // namespace mus

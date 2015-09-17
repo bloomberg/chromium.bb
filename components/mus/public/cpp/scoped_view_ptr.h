@@ -7,7 +7,7 @@
 
 #include "components/mus/public/cpp/view_observer.h"
 
-namespace mojo {
+namespace mus {
 
 // Wraps a View, taking overship of the View. Also deals with View being
 // destroyed while ScopedViewPtr still exists.
@@ -33,6 +33,6 @@ class ScopedViewPtr : public ViewObserver {
   DISALLOW_COPY_AND_ASSIGN(ScopedViewPtr);
 };
 
-}  // namespace mojo
+}  // namespace mus
 
 #endif  // COMPONENTS_MUS_PUBLIC_CPP_SCOPED_VIEW_PTR_H_

@@ -9,7 +9,7 @@
 #include "base/numerics/safe_conversions.h"
 #include "ui/gfx/buffer_format_util.h"
 
-namespace gles2 {
+namespace mus {
 
 MojoGpuMemoryBufferImpl::MojoGpuMemoryBufferImpl(
     const gfx::Size& size,
@@ -97,4 +97,4 @@ ClientBuffer MojoGpuMemoryBufferImpl::AsClientBuffer() {
   return reinterpret_cast<ClientBuffer>(this);
 }
 
-}  // namespace gles2
+}  // namespace mus

@@ -4,7 +4,7 @@
 
 #include "components/mus/public/cpp/view_tracker.h"
 
-namespace mojo {
+namespace mus {
 
 ViewTracker::ViewTracker() {}
 
@@ -37,4 +37,4 @@ void ViewTracker::OnViewDestroying(View* view) {
   Remove(view);
 }
 
-}  // namespace mojo
+}  // namespace mus

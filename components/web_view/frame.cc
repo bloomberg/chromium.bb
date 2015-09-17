@@ -18,7 +18,7 @@
 #include "components/web_view/frame_utils.h"
 #include "mojo/application/public/interfaces/shell.mojom.h"
 
-using mojo::View;
+using mus::View;
 
 DECLARE_VIEW_PROPERTY_TYPE(web_view::Frame*);
 
@@ -30,7 +30,7 @@ DEFINE_LOCAL_VIEW_PROPERTY_KEY(Frame*, kFrame, nullptr);
 namespace {
 
 const uint32_t kNoParentId = 0u;
-const mojo::ConnectionSpecificId kInvalidConnectionId = 0u;
+const mus::ConnectionSpecificId kInvalidConnectionId = 0u;
 
 FrameDataPtr FrameToFrameData(const Frame* frame) {
   FrameDataPtr frame_data(FrameData::New());
@@ -220,12 +220,12 @@ void Frame::ChangeClient(FrameTreeClient* frame_tree_client,
              view_tree_client.Pass());
 }
 
-void Frame::OnEmbedAck(bool success, mojo::ConnectionSpecificId connection_id) {
+void Frame::OnEmbedAck(bool success, mus::ConnectionSpecificId connection_id) {
   if (success)
     embedded_connection_id_ = connection_id;
 }
 
-void Frame::SetView(mojo::View* view) {
+void Frame::SetView(mus::View* view) {
   DCHECK(!view_);
   DCHECK_EQ(id_, view->id());
   view_ = view;
@@ -395,7 +395,7 @@ void Frame::OnTreeChanged(const TreeChangeParams& params) {
   }
 }
 
-void Frame::OnViewDestroying(mojo::View* view) {
+void Frame::OnViewDestroying(mus::View* view) {
   if (parent_)
     parent_->Remove(this);
 
@@ -412,7 +412,7 @@ void Frame::OnViewDestroying(mojo::View* view) {
   delete this;
 }
 
-void Frame::OnViewEmbeddedAppDisconnected(mojo::View* view) {
+void Frame::OnViewEmbeddedAppDisconnected(mus::View* view) {
   // See FrameTreeDelegate::OnViewEmbeddedAppDisconnected() for details of when
   // this happens.
   //

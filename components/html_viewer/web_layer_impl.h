@@ -10,7 +10,7 @@
 #include "cc/blink/web_layer_impl.h"
 #include "cc/layers/surface_layer.h"
 
-namespace mojo {
+namespace mus {
 class View;
 }
 
@@ -18,14 +18,14 @@ namespace html_viewer {
 
 class WebLayerImpl : public cc_blink::WebLayerImpl {
  public:
-  WebLayerImpl(mojo::View* view, float device_pixel_ratio);
+  WebLayerImpl(mus::View* view, float device_pixel_ratio);
   ~WebLayerImpl() override;
 
   // WebLayer implementation.
   void setBounds(const blink::WebSize& bounds) override;
 
  private:
-  mojo::View* view_;
+  mus::View* view_;
   const float device_pixel_ratio_;
   scoped_refptr<cc::SurfaceLayer> layer_;
 

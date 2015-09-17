@@ -20,7 +20,6 @@
 
 using mojo::Array;
 using mojo::Callback;
-using mojo::Id;
 using mojo::InterfaceRequest;
 using mojo::OrderDirection;
 using mojo::Rect;
@@ -29,10 +28,10 @@ using mojo::ServiceProviderPtr;
 using mojo::String;
 using mojo::ViewDataPtr;
 
-namespace view_manager {
+namespace mus {
 
 ViewTreeImpl::ViewTreeImpl(ConnectionManager* connection_manager,
-                           mojo::ConnectionSpecificId creator_id,
+                           ConnectionSpecificId creator_id,
                            const ViewId& root_id,
                            uint32_t policy_bitmask)
     : connection_manager_(connection_manager),
@@ -68,7 +67,7 @@ void ViewTreeImpl::Init(mojo::ViewTreeClient* client, mojo::ViewTreePtr tree) {
   const ServerView* focused_view = host ? host->GetFocusedView() : nullptr;
   if (focused_view)
     focused_view = access_policy_->GetViewForFocusChange(focused_view);
-  const mojo::Id focused_view_transport_id(
+  const Id focused_view_transport_id(
       ViewIdToTransportId(focused_view ? focused_view->id() : ViewId()));
 
   client->OnEmbed(id_, ViewToViewData(to_send.front()), tree.Pass(),
@@ -156,7 +155,7 @@ bool ViewTreeImpl::SetViewVisibility(const ViewId& view_id, bool visible) {
 bool ViewTreeImpl::Embed(const ViewId& view_id,
                          mojo::ViewTreeClientPtr client,
                          uint32_t policy_bitmask,
-                         mojo::ConnectionSpecificId* connection_id) {
+                         ConnectionSpecificId* connection_id) {
   *connection_id = kInvalidConnectionId;
   if (!client.get() || !CanEmbed(view_id, policy_bitmask))
     return false;
@@ -606,7 +605,7 @@ void ViewTreeImpl::SetViewProperty(uint32_t view_id,
   callback.Run(success);
 }
 
-void ViewTreeImpl::RequestSurface(mojo::Id view_id,
+void ViewTreeImpl::RequestSurface(Id view_id,
                                   mojo::InterfaceRequest<mojo::Surface> surface,
                                   mojo::SurfaceClientPtr client) {
   ServerView* view = GetView(ViewIdFromTransportId(view_id));
@@ -639,11 +638,11 @@ void ViewTreeImpl::SetImeVisibility(Id transport_view_id,
   }
 }
 
-void ViewTreeImpl::Embed(mojo::Id transport_view_id,
+void ViewTreeImpl::Embed(Id transport_view_id,
                          mojo::ViewTreeClientPtr client,
                          uint32_t policy_bitmask,
                          const EmbedCallback& callback) {
-  mojo::ConnectionSpecificId connection_id = kInvalidConnectionId;
+  ConnectionSpecificId connection_id = kInvalidConnectionId;
   const bool result = Embed(ViewIdFromTransportId(transport_view_id),
                             client.Pass(), policy_bitmask, &connection_id);
   callback.Run(result, connection_id);
@@ -680,4 +679,4 @@ bool ViewTreeImpl::IsDescendantOfEmbedRoot(const ServerView* view) {
   return is_embed_root_ && root_ && GetView(*root_)->Contains(view);
 }
 
-}  // namespace view_manager
+}  // namespace mus

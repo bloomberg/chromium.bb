@@ -11,7 +11,8 @@
 #include "components/mus/public/interfaces/view_tree.mojom.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/interface_request.h"
 
-namespace mojo {
+namespace mus {
+
 class View;
 class ViewTreeDelegate;
 
@@ -23,8 +24,9 @@ class ViewTreeConnection {
 
   // The returned ViewTreeConnection instance owns itself, and is deleted when
   // the last root is destroyed or the connection to the service is broken.
-  static ViewTreeConnection* Create(ViewTreeDelegate* delegate,
-                                    InterfaceRequest<ViewTreeClient> request);
+  static ViewTreeConnection* Create(
+      ViewTreeDelegate* delegate,
+      mojo::InterfaceRequest<mojo::ViewTreeClient> request);
 
   // Returns the root of this connection.
   virtual View* GetRoot() = 0;
@@ -47,6 +49,6 @@ class ViewTreeConnection {
   virtual ConnectionSpecificId GetConnectionId() = 0;
 };
 
-}  // namespace mojo
+}  // namespace mus
 
 #endif  // COMPONENTS_MUS_PUBLIC_CPP_VIEW_TREE_CONNECTION_H_

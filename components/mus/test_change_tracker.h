@@ -14,7 +14,7 @@
 #include "third_party/mojo/src/mojo/public/cpp/bindings/array.h"
 #include "ui/mojo/geometry/geometry.mojom.h"
 
-namespace view_manager {
+namespace mus {
 
 enum ChangeType {
   CHANGE_TYPE_EMBED,
@@ -45,8 +45,8 @@ struct TestView {
   // Returns a string description that includes visible and drawn.
   std::string ToString2() const;
 
-  mojo::Id parent_id;
-  mojo::Id view_id;
+  Id parent_id;
+  Id view_id;
   bool visible;
   bool drawn;
   std::map<std::string, std::vector<uint8_t>> properties;
@@ -59,11 +59,11 @@ struct Change {
   ~Change();
 
   ChangeType type;
-  mojo::ConnectionSpecificId connection_id;
+  ConnectionSpecificId connection_id;
   std::vector<TestView> views;
-  mojo::Id view_id;
-  mojo::Id view_id2;
-  mojo::Id view_id3;
+  Id view_id;
+  Id view_id2;
+  Id view_id3;
   mojo::Rect bounds;
   mojo::Rect bounds2;
   int32_t event_action;
@@ -117,30 +117,29 @@ class TestChangeTracker {
 
   // Each of these functions generate a Change. There is one per
   // ViewTreeClient function.
-  void OnEmbed(mojo::ConnectionSpecificId connection_id,
-               mojo::ViewDataPtr root);
-  void OnEmbeddedAppDisconnected(mojo::Id view_id);
+  void OnEmbed(ConnectionSpecificId connection_id, mojo::ViewDataPtr root);
+  void OnEmbeddedAppDisconnected(Id view_id);
   void OnUnembed();
-  void OnViewBoundsChanged(mojo::Id view_id,
+  void OnViewBoundsChanged(Id view_id,
                            mojo::RectPtr old_bounds,
                            mojo::RectPtr new_bounds);
   void OnViewViewportMetricsChanged(mojo::ViewportMetricsPtr old_bounds,
                                     mojo::ViewportMetricsPtr new_bounds);
-  void OnViewHierarchyChanged(mojo::Id view_id,
-                              mojo::Id new_parent_id,
-                              mojo::Id old_parent_id,
+  void OnViewHierarchyChanged(Id view_id,
+                              Id new_parent_id,
+                              Id old_parent_id,
                               mojo::Array<mojo::ViewDataPtr> views);
-  void OnViewReordered(mojo::Id view_id,
-                       mojo::Id relative_view_id,
+  void OnViewReordered(Id view_id,
+                       Id relative_view_id,
                        mojo::OrderDirection direction);
-  void OnViewDeleted(mojo::Id view_id);
-  void OnViewVisibilityChanged(mojo::Id view_id, bool visible);
-  void OnViewDrawnStateChanged(mojo::Id view_id, bool drawn);
-  void OnViewInputEvent(mojo::Id view_id, mojo::EventPtr event);
-  void OnViewSharedPropertyChanged(mojo::Id view_id,
+  void OnViewDeleted(Id view_id);
+  void OnViewVisibilityChanged(Id view_id, bool visible);
+  void OnViewDrawnStateChanged(Id view_id, bool drawn);
+  void OnViewInputEvent(Id view_id, mojo::EventPtr event);
+  void OnViewSharedPropertyChanged(Id view_id,
                                    mojo::String name,
                                    mojo::Array<uint8_t> data);
-  void OnViewFocused(mojo::Id view_id);
+  void OnViewFocused(Id view_id);
   void DelegateEmbed(const mojo::String& url);
 
  private:
@@ -152,6 +151,6 @@ class TestChangeTracker {
   DISALLOW_COPY_AND_ASSIGN(TestChangeTracker);
 };
 
-}  // namespace view_manager
+}  // namespace mus
 
 #endif  // COMPONENTS_MUS_TEST_CHANGE_TRACKER_H_

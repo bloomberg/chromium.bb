@@ -24,6 +24,7 @@
 #include "net/test/spawned_test_server/spawned_test_server.h"
 #include "third_party/mojo_services/src/accessibility/public/interfaces/accessibility.mojom.h"
 
+using mus::ViewManagerTestBase;
 using web_view::Frame;
 using web_view::FrameConnection;
 using web_view::FrameTree;
@@ -141,7 +142,7 @@ class HTMLFrameTest : public ViewManagerTestBase {
   // Creates the frame tree showing an empty page at the root and adds (via
   // script) a frame showing the same empty page.
   Frame* LoadEmptyPageAndCreateFrame() {
-    View* embed_view = window_manager()->CreateView();
+    mus::View* embed_view = window_manager()->CreateView();
     frame_tree_delegate_.reset(
         new TestFrameTreeDelegateImpl(application_impl()));
     FrameConnection* root_connection =
@@ -194,7 +195,8 @@ class HTMLFrameTest : public ViewManagerTestBase {
     return request.Pass();
   }
 
-  FrameConnection* InitFrameTree(View* view, const std::string& url_string) {
+  FrameConnection* InitFrameTree(mus::View* view,
+                                 const std::string& url_string) {
     frame_tree_delegate_.reset(
         new TestFrameTreeDelegateImpl(application_impl()));
     scoped_ptr<FrameConnection> frame_connection(new FrameConnection);
@@ -250,7 +252,7 @@ class HTMLFrameTest : public ViewManagerTestBase {
 };
 
 TEST_F(HTMLFrameTest, PageWithSingleFrame) {
-  View* embed_view = window_manager()->CreateView();
+  mus::View* embed_view = window_manager()->CreateView();
 
   FrameConnection* root_connection = InitFrameTree(
       embed_view, "http://127.0.0.1:%u/files/page_with_single_frame.html");
@@ -279,7 +281,7 @@ TEST_F(HTMLFrameTest, PageWithSingleFrame) {
 // Creates two frames. The parent navigates the child frame by way of changing
 // the location of the child frame.
 TEST_F(HTMLFrameTest, ChangeLocationOfChildFrame) {
-  View* embed_view = window_manager()->CreateView();
+  mus::View* embed_view = window_manager()->CreateView();
 
   ASSERT_TRUE(InitFrameTree(
       embed_view, "http://127.0.0.1:%u/files/page_with_single_frame.html"));

@@ -9,7 +9,7 @@ namespace gfx {
 class Point;
 }
 
-namespace view_manager {
+namespace mus {
 
 class ServerView;
 
@@ -19,6 +19,6 @@ const ServerView* FindDeepestVisibleView(const ServerView* view,
 ServerView* FindDeepestVisibleView(ServerView* view,
                                    const gfx::Point& location);
 
-}  // namespace view_manager
+}  // namespace mus
 
 #endif  // COMPONENTS_MUS_VIEW_LOCATOR_H_

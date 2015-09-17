@@ -10,7 +10,7 @@
 #include "third_party/mojo/src/mojo/public/cpp/bindings/binding.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/interface_ptr_info.h"
 
-namespace mojo {
+namespace mus {
 
 class ViewSurfaceClient;
 class View;
@@ -28,10 +28,10 @@ class ViewSurface : public mojo::SurfaceClient {
   // TODO(fsamuel): Add a callback.
   void SubmitCompositorFrame(mojo::CompositorFramePtr frame);
 
-  void set_client(mojo::ViewSurfaceClient* client) { client_ = client; }
+  void set_client(ViewSurfaceClient* client) { client_ = client; }
 
  private:
-  friend class mojo::View;
+  friend class View;
 
   ViewSurface(mojo::InterfacePtrInfo<mojo::Surface> surface_info,
               mojo::InterfaceRequest<mojo::SurfaceClient> client_request);
@@ -40,7 +40,7 @@ class ViewSurface : public mojo::SurfaceClient {
   void ReturnResources(
       mojo::Array<mojo::ReturnedResourcePtr> resources) override;
 
-  mojo::ViewSurfaceClient* client_;
+  ViewSurfaceClient* client_;
   mojo::InterfacePtrInfo<mojo::Surface> surface_info_;
   mojo::InterfaceRequest<mojo::SurfaceClient> client_request_;
   mojo::SurfacePtr surface_;
@@ -48,6 +48,6 @@ class ViewSurface : public mojo::SurfaceClient {
   bool bound_to_thread_;
 };
 
-}  // namespace mojo
+}  // namespace mus
 
 #endif  // COMPONENTS_MUS_PUBLIC_CPP_VIEW_SURFACE_H_

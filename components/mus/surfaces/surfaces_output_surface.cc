@@ -11,7 +11,7 @@
 #include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 
-namespace surfaces {
+namespace mus {
 
 DirectOutputSurface::DirectOutputSurface(
     const scoped_refptr<cc::ContextProvider>& context_provider)
@@ -37,4 +37,4 @@ void DirectOutputSurface::SwapBuffers(cc::CompositorFrame* frame) {
   client_->DidSwapBuffers();
 }
 
-}  // namespace surfaces
+}  // namespace mus

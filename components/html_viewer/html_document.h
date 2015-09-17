@@ -27,7 +27,7 @@ namespace base {
 class SingleThreadTaskRunner;
 }
 
-namespace mojo {
+namespace mus {
 class View;
 class ViewTreeConnection;
 }
@@ -49,7 +49,7 @@ class WebLayerTreeViewImpl;
 // . When the View the HTMLDocument is embedded in is destroyed.
 // . Explicitly by way of Destroy().
 class HTMLDocument
-    : public mojo::ViewTreeDelegate,
+    : public mus::ViewTreeDelegate,
       public HTMLFrameDelegate,
       public mojo::InterfaceFactory<mojo::AxProvider>,
       public mojo::InterfaceFactory<web_view::FrameTreeClient>,
@@ -96,7 +96,7 @@ class HTMLDocument
     void Move(TransferableState* other);
 
     bool owns_view_tree_connection;
-    mojo::View* root;
+    mus::View* root;
     scoped_ptr<ViewTreeDelegateImpl> view_tree_delegate_impl;
   };
 
@@ -107,8 +107,8 @@ class HTMLDocument
   BeforeLoadCache* GetBeforeLoadCache();
 
   // ViewTreeDelegate:
-  void OnEmbed(mojo::View* root) override;
-  void OnConnectionLost(mojo::ViewTreeConnection* connection) override;
+  void OnEmbed(mus::View* root) override;
+  void OnConnectionLost(mus::ViewTreeConnection* connection) override;
 
   // HTMLFrameDelegate:
   mojo::ApplicationImpl* GetApp() override;
@@ -136,7 +136,7 @@ class HTMLDocument
       mojo::ApplicationConnection* connection,
       mojo::InterfaceRequest<devtools_service::DevToolsAgent> request) override;
 
-  // mojo::InterfaceFactory<mojo::ViewTreeClient>:
+  // mojo::InterfaceFactory<mus::ViewTreeClient>:
   void Create(mojo::ApplicationConnection* connection,
               mojo::InterfaceRequest<mojo::ViewTreeClient> request) override;
 

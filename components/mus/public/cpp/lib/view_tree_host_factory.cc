@@ -8,21 +8,21 @@
 #include "components/mus/public/cpp/view_tree_delegate.h"
 #include "mojo/application/public/cpp/application_impl.h"
 
-namespace mojo {
+namespace mus {
 
-void CreateViewTreeHost(ViewTreeHostFactory* factory,
-                        ViewTreeHostClientPtr host_client,
+void CreateViewTreeHost(mojo::ViewTreeHostFactory* factory,
+                        mojo::ViewTreeHostClientPtr host_client,
                         ViewTreeDelegate* delegate,
-                        ViewTreeHostPtr* host) {
-  ViewTreeClientPtr tree_client;
+                        mojo::ViewTreeHostPtr* host) {
+  mojo::ViewTreeClientPtr tree_client;
   ViewTreeConnection::Create(delegate, GetProxy(&tree_client));
   factory->CreateViewTreeHost(GetProxy(host), host_client.Pass(),
                               tree_client.Pass());
 }
 
-void CreateSingleViewTreeHost(ApplicationImpl* app,
+void CreateSingleViewTreeHost(mojo::ApplicationImpl* app,
                               ViewTreeDelegate* delegate,
-                              ViewTreeHostPtr* host) {
+                              mojo::ViewTreeHostPtr* host) {
   mojo::ViewTreeHostFactoryPtr factory;
   mojo::URLRequestPtr request(mojo::URLRequest::New());
   request->url = "mojo:mus";
@@ -31,4 +31,4 @@ void CreateSingleViewTreeHost(ApplicationImpl* app,
                      host);
 }
 
-}  // namespace mojo
+}  // namespace mus
