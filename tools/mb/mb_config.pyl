@@ -42,6 +42,8 @@
     'gyp_debug_bot': ['gyp', 'debug_bot'],
     'gyp_debug_bot_x86': ['gyp', 'debug_bot', 'x86'],
     'gyp_official_bot': ['gyp', 'official', 'goma'],
+    'gyp_official_bot_chromeos': ['gyp', 'official', 'goma', 'chromeos'],
+    'gyp_official_bot_x86': ['gyp', 'official', 'goma', 'x86'],
     'gyp_official_bot_minimal_symbols': ['gyp', 'official', 'minimal_symbols', 'goma'],
     'gyp_official_bot_minimal_symbols_android': ['gyp', 'official', 'minimal_symbols', 'goma', 'android'],
     'gyp_official_bot_minimal_symbols_android_arm64': ['gyp', 'official', 'minimal_symbols', 'goma', 'android', 'arm64'],
@@ -293,7 +295,7 @@
 
     'x86': {
       'gn_args': 'target_cpu="x86"',
-      'gyp_args': 'target_arch=ia32',
+      'gyp_defines': 'target_arch=ia32',
     },
   },
 
@@ -305,6 +307,13 @@
   #
   # TODO(crbug.com/481692): Add in remaining bots on the waterfalls.
   'masters': {
+    'chromium.chrome': {
+      'Google Chrome Win': 'gyp_official_bot_minimal_symbols_x86',
+      'Google Chrome Linux': 'gyp_official_bot_x86',
+      'Google Chrome Linux x64': 'gyp_official_bot',
+      'Google Chrome Mac': 'gyp_official_bot',
+      'Google Chrome ChromeOS': 'gyp_official_bot_chromeos',
+    },
     'chromium.chromiumos': {
       'Linux ChromiumOS GN': 'chromeos_gn_release_bot',
       'Linux ChromiumOS GN (dbg)': 'chromeos_gn_debug_bot',
