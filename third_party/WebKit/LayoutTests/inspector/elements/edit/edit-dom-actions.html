@@ -92,6 +92,128 @@ function test()
         function testAddAttribute(next)
         {
             InspectorTest.doAddAttribute("testAddAttribute", "node-to-add-attribute", "newattr=\"new-value\"", next);
+        },
+
+        function testAddAttributeUnquotedValue(next)
+        {
+            InspectorTest.doAddAttribute("testAddAttributeUnquotedValue", "node-to-add-attribute-unquoted-value", "newattr=unquotedValue", next);
+        },
+
+        function testEditCommentAsHTML(next)
+        {
+            function commentNodeSelectionCallback(testNode, callback)
+            {
+                var childNodes = testNode.children();
+                for (var i = 0; i < childNodes.length; ++i) {
+                    if (childNodes[i].nodeType() === 8) {
+                        WebInspector.Revealer.reveal(childNodes[i]);
+                        callback(childNodes[i]);
+                        return;
+                    }
+                }
+                InspectorTest.addResult("Comment node not found");
+                InspectorTest.completeTest();
+            }
+            InspectorTest.domActionTest("testEditCommentAsHTML", commentNodeSelectionCallback, testBody, next);
+
+            function testBody(node, done)
+            {
+                var treeOutline = InspectorTest.firstElementsTreeOutline();
+                var treeElement = treeOutline.findTreeElement(node);
+                treeOutline.toggleEditAsHTML(node);
+                InspectorTest.runAfterPendingDispatches(step2);
+
+                function step2()
+                {
+                    InspectorTest.addResult(treeElement._editing.codeMirror.getValue());
+                    treeElement._editing.codeMirror.setValue("<div foo=\"bar-comment\">Element</div>");
+                    var event = InspectorTest.createKeyEvent("Enter");
+                    event.isMetaOrCtrlForTest = true;
+                    treeElement._htmlEditElement.dispatchEvent(event);
+                    InspectorTest.runAfterPendingDispatches(done);
+                }
+            }
+        },
+
+        function testEditAsHTML(next)
+        {
+            InspectorTest.domActionTestForNodeId("testEditAsHTML", "node-to-edit-as-html", testBody, next);
+
+            function testBody(node, done)
+            {
+                var treeOutline = InspectorTest.firstElementsTreeOutline();
+                var treeElement = treeOutline.findTreeElement(node);
+                treeOutline.toggleEditAsHTML(node);
+                InspectorTest.runAfterPendingDispatches(step2);
+
+                function step2()
+                {
+                    InspectorTest.addResult(treeElement._editing.codeMirror.getValue());
+                    treeElement._editing.codeMirror.setValue("<span foo=\"bar\"><span id=\"inner-span\">Span contents</span></span>");
+                    var event = InspectorTest.createKeyEvent("Enter");
+                    event.isMetaOrCtrlForTest = true;
+                    treeElement._htmlEditElement.dispatchEvent(event);
+                    InspectorTest.runAfterPendingDispatches(InspectorTest.expandElementsTree.bind(InspectorTest, done));
+                }
+            }
+        },
+
+        function testEditInvisibleCharsAsHTML(next)
+        {
+            InspectorTest.domActionTestForNodeId("testEditInvisibleCharsAsHTML", "node-with-invisible-chars", testBody, next);
+
+            function testBody(node, done)
+            {
+                var treeOutline = InspectorTest.firstElementsTreeOutline();
+                var treeElement = treeOutline.findTreeElement(node);
+                treeOutline.toggleEditAsHTML(node);
+                InspectorTest.runAfterPendingDispatches(step2);
+
+                function step2()
+                {
+                    var codeMirror = treeElement._editing.codeMirror;
+                    InspectorTest.addResult(codeMirror.getValue());
+                    codeMirror.setValue(codeMirror.getValue().replace(/&/g, '#'));
+                    var event = InspectorTest.createKeyEvent("Enter");
+                    event.isMetaOrCtrlForTest = true;
+                    treeElement._htmlEditElement.dispatchEvent(event);
+                    InspectorTest.runAfterPendingDispatches(InspectorTest.expandElementsTree.bind(InspectorTest, done));
+                }
+            }
+        },
+
+        function testEditScript(next)
+        {
+            InspectorTest.domActionTestForNodeId("testEditScript", "node-to-edit-script", testBody, next);
+
+            function testBody(node, done)
+            {
+                InspectorTest.editNodePartAndRun(node, "webkit-html-text-node", "var i = 0;\n    var j = 0;\n", done);
+            }
+        },
+
+        function testEditSVGAttribute(next)
+        {
+            InspectorTest.domActionTestForNodeId("testEditSVG", "node-to-edit-svg-attribute", testBody, next);
+
+            function testBody(node, done)
+            {
+                var treeOutline = InspectorTest.firstElementsTreeOutline();
+                var treeElement = treeOutline.findTreeElement(node);
+                treeOutline.toggleEditAsHTML(node);
+                InspectorTest.runAfterPendingDispatches(step2);
+
+                function step2()
+                {
+                    var value = treeElement._editing.codeMirror.getValue();
+                    InspectorTest.addResult(value);
+                    treeElement._editing.codeMirror.setValue(value.replace("100", "110"));
+                    var event = InspectorTest.createKeyEvent("Enter");
+                    event.isMetaOrCtrlForTest = true;
+                    treeElement._htmlEditElement.dispatchEvent(event);
+                    InspectorTest.runAfterPendingDispatches(InspectorTest.expandElementsTree.bind(InspectorTest, done));
+                }
+            }
         }
     ]);
 }
@@ -101,7 +223,7 @@ function test()
 
 <body onload="runTest()">
 <p>
-Tests that user can mutate DOM by means of elements panel (part 1).
+Tests that user can mutate DOM by means of elements panel.
 </p>
 
 <div>
@@ -137,6 +259,39 @@ Tests that user can mutate DOM by means of elements panel (part 1).
 
     <div id="testAddAttribute">
         <div id="node-to-add-attribute"></div>
+    </div>
+
+    <div id="testAddAttributeUnquotedValue">
+        <div id="node-to-add-attribute-unquoted-value"></div>
+    </div>
+
+    <div id="testEditAsHTML">
+        <div id="node-to-edit-as-html"><span id="span">Text</span></div>
+    </div>
+
+    <div id="testEditInvisibleCharsAsHTML">
+        <div id="node-with-invisible-chars">A&nbsp;B&ensp;C&emsp;D&thinsp;E&zwnj;F&zwj;G&rlm;H&lrm;I</div>
+    </div>
+
+    <div id="testEditScript">
+        <script id="node-to-edit-script">
+
+          var i = 0;
+          var j = 5;
+          for (; i < j; ++i) {
+              // Do nothing.
+          }
+
+        </script>
+    </div>
+
+    <div id="testEditSVG">
+        <svg id="node-to-edit-svg-attribute" xmlns:xlink="test" width="100">
+        </svg>
+    </div>
+
+    <div id="testEditCommentAsHTML">
+        <!-- Comment -->
     </div>
 </div>
 </body>
