@@ -27,12 +27,12 @@
 #include "chrome/browser/ssl/cert_report_helper.h"
 #include "chrome/browser/ssl/ssl_cert_reporter.h"
 #include "chrome/browser/ssl/ssl_error_classification.h"
+#include "chrome/browser/ssl/ssl_error_info.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/google/core/browser/google_util.h"
-#include "components/ssl_errors/error_info.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/cert_store.h"
 #include "content/public/browser/interstitial_page.h"
@@ -220,9 +220,9 @@ void SSLBlockingPage::PopulateInterstitialStrings(
   if (overridable_) {
     load_time_data->SetBoolean("overridable", true);
 
-    ssl_errors::ErrorInfo error_info = ssl_errors::ErrorInfo::CreateError(
-        ssl_errors::ErrorInfo::NetErrorToErrorType(cert_error_),
-        ssl_info_.cert.get(), request_url());
+    SSLErrorInfo error_info = SSLErrorInfo::CreateError(
+        SSLErrorInfo::NetErrorToErrorType(cert_error_), ssl_info_.cert.get(),
+        request_url());
     load_time_data->SetString("explanationParagraph", error_info.details());
     load_time_data->SetString(
         "primaryButtonText",
@@ -233,9 +233,9 @@ void SSLBlockingPage::PopulateInterstitialStrings(
   } else {
     load_time_data->SetBoolean("overridable", false);
 
-    ssl_errors::ErrorInfo::ErrorType type =
-        ssl_errors::ErrorInfo::NetErrorToErrorType(cert_error_);
-    if (type == ssl_errors::ErrorInfo::CERT_INVALID &&
+    SSLErrorInfo::ErrorType type =
+        SSLErrorInfo::NetErrorToErrorType(cert_error_);
+    if (type == SSLErrorInfo::CERT_INVALID &&
         SSLErrorClassification::MaybeWindowsLacksSHA256Support()) {
       load_time_data->SetString(
           "explanationParagraph",
@@ -254,13 +254,13 @@ void SSLBlockingPage::PopulateInterstitialStrings(
     load_time_data->SetInteger("errorType", type);
     int help_string = IDS_SSL_NONOVERRIDABLE_INVALID;
     switch (type) {
-      case ssl_errors::ErrorInfo::CERT_REVOKED:
+      case SSLErrorInfo::CERT_REVOKED:
         help_string = IDS_SSL_NONOVERRIDABLE_REVOKED;
         break;
-      case ssl_errors::ErrorInfo::CERT_PINNED_KEY_MISSING:
+      case SSLErrorInfo::CERT_PINNED_KEY_MISSING:
         help_string = IDS_SSL_NONOVERRIDABLE_PINNED;
         break;
-      case ssl_errors::ErrorInfo::CERT_INVALID:
+      case SSLErrorInfo::CERT_INVALID:
         help_string = IDS_SSL_NONOVERRIDABLE_INVALID;
         break;
       default:

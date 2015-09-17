@@ -2756,7 +2756,9 @@
       'browser/ssl/ssl_error_classification.cc',
       'browser/ssl/ssl_error_classification.h',
       'browser/ssl/ssl_error_handler.cc',
-      'browser/ssl/ssl_error_handler.h'
+      'browser/ssl/ssl_error_handler.h',
+      'browser/ssl/ssl_error_info.cc',
+      'browser/ssl/ssl_error_info.h',
     ],
     'chrome_browser_supervised_user_sources': [
       'browser/content_settings/content_settings_supervised_provider.cc',
@@ -3145,7 +3147,6 @@
         '../components/components.gyp:search_engines',
         '../components/components.gyp:search_provider_logos',
         '../components/components.gyp:security_interstitials_core',
-        '../components/components.gyp:ssl_errors',
         '../components/components.gyp:suggestions',
         '../components/components.gyp:signin_core_browser',
         '../components/components.gyp:startup_metric_utils',

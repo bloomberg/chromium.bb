@@ -15,7 +15,7 @@
 #include "chrome/browser/ssl/ssl_blocking_page.h"
 #include "chrome/browser/ssl/ssl_cert_reporter.h"
 #include "chrome/browser/ssl/ssl_error_classification.h"
-#include "components/ssl_errors/error_info.h"
+#include "chrome/browser/ssl/ssl_error_info.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/render_frame_host.h"
@@ -133,8 +133,8 @@ bool IsSSLCommonNameMismatchHandlingEnabled() {
 }
 
 bool IsErrorDueToBadClock(const base::Time& now, int error) {
-  if (ssl_errors::ErrorInfo::NetErrorToErrorType(error) !=
-      ssl_errors::ErrorInfo::CERT_DATE_INVALID) {
+  if (SSLErrorInfo::NetErrorToErrorType(error) !=
+      SSLErrorInfo::CERT_DATE_INVALID) {
     return false;
   }
   return SSLErrorClassification::IsUserClockInThePast(now) ||

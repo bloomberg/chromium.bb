@@ -104,7 +104,6 @@ group("all_components") {
     "//components/security_interstitials/core",
     "//components/sessions",
     "//components/signin/core/browser",
-    "//components/ssl_errors",
     "//components/startup_metric_utils",
     "//components/strings",
     "//components/sync_driver",
