@@ -29,28 +29,23 @@ import org.chromium.chrome.browser.ChromeWebContentsDelegateAndroid;
 import org.chromium.chrome.browser.FrozenNativePage;
 import org.chromium.chrome.browser.NativePage;
 import org.chromium.chrome.browser.TabState;
-import org.chromium.chrome.browser.contextmenu.ChromeContextMenuPopulator;
-import org.chromium.chrome.browser.contextmenu.ContextMenuPopulator;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchTabHelper;
 import org.chromium.chrome.browser.crash.MinidumpUploadService;
 import org.chromium.chrome.browser.document.DocumentUtils;
 import org.chromium.chrome.browser.document.DocumentWebContentsDelegate;
 import org.chromium.chrome.browser.dom_distiller.ReaderModeActivityDelegate;
 import org.chromium.chrome.browser.dom_distiller.ReaderModeManager;
-import org.chromium.chrome.browser.download.ChromeDownloadDelegate;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationHandler;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationHandler.OverrideUrlLoadingResult;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationParams;
 import org.chromium.chrome.browser.fullscreen.FullscreenManager;
 import org.chromium.chrome.browser.media.MediaCaptureNotificationService;
 import org.chromium.chrome.browser.media.ui.MediaSessionTabHelper;
-import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.ntp.NativePageAssassin;
 import org.chromium.chrome.browser.ntp.NativePageFactory;
 import org.chromium.chrome.browser.omnibox.geo.GeolocationHeader;
 import org.chromium.chrome.browser.policy.PolicyAuditor;
 import org.chromium.chrome.browser.policy.PolicyAuditor.AuditEvent;
-import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.rlz.RevenueStats;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
@@ -76,12 +71,9 @@ import org.chromium.content_public.browser.NavigationController;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsObserver;
 import org.chromium.content_public.common.ConsoleMessageLevel;
-import org.chromium.content_public.common.Referrer;
 import org.chromium.ui.WindowOpenDisposition;
 import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.base.WindowAndroid;
-
-import java.util.Locale;
 
 /**
  * A representation of a Tab for Chrome. This manages wrapping a WebContents and interacting with
@@ -95,9 +87,6 @@ public class ChromeTab extends Tab {
     // URL didFailLoad error code. Should match the value in net_error_list.h.
     public static final int BLOCKED_BY_ADMINISTRATOR = -22;
 
-    public static final String PAGESPEED_PASSTHROUGH_HEADERS =
-            "Chrome-Proxy: pass-through\nCache-Control: no-cache";
-
     private static final int MSG_ID_ENABLE_FULLSCREEN_AFTER_LOAD = 1;
 
     /** The maximum amount of time to wait for a page to load before entering fullscreen.  -1 means
@@ -107,8 +96,6 @@ public class ChromeTab extends Tab {
     private ReaderModeManager mReaderModeManager;
 
     private TabRedirectHandler mTabRedirectHandler;
-
-    private ChromeDownloadDelegate mDownloadDelegate;
 
     private boolean mIsFullscreenWaitingForLoad = false;
     private ExternalNavigationHandler.OverrideUrlLoadingResult mLastOverrideUrlLoadingResult =
@@ -156,21 +143,6 @@ public class ChromeTab extends Tab {
         }
     };
 
-    /**
-     * The data reduction proxy was in use on the last page load if true.
-     */
-    protected boolean mUsedSpdyProxy;
-
-    /**
-     * The data reduction proxy was in pass through mode on the last page load if true.
-     */
-    protected boolean mUsedSpdyProxyWithPassthrough;
-
-    /**
-     * The last page load had request headers indicating that the data reduction proxy should
-     * be put in pass through mode, if true.
-     */
-    private boolean mLastPageLoadHasSpdyProxyPassthroughHeaders;
 
     /**
      * Listens to gesture events fired by the ContentViewCore.
@@ -295,26 +267,7 @@ public class ChromeTab extends Tab {
         return (ChromeTab) tab;
     }
 
-    /**
-     * Remember if the last load used the data reduction proxy, and if so,
-     * also remember if it used pass through mode.
-     */
-    private void maybeSetDataReductionProxyUsed() {
-        // Ignore internal URLs.
-        String url = getUrl();
-        if (url != null && url.toLowerCase(Locale.US).startsWith("chrome://")) {
-            return;
-        }
-        mUsedSpdyProxy = false;
-        mUsedSpdyProxyWithPassthrough = false;
-        if (isSpdyProxyEnabledForUrl(url)) {
-            mUsedSpdyProxy = true;
-            if (mLastPageLoadHasSpdyProxyPassthroughHeaders) {
-                mLastPageLoadHasSpdyProxyPassthroughHeaders = false;
-                mUsedSpdyProxyWithPassthrough = true;
-            }
-        }
-    }
+
 
     @Override
     protected void openNewTab(
@@ -545,72 +498,6 @@ public class ChromeTab extends Tab {
         }
     }
 
-    /**
-     * Check whether the context menu download should be intercepted.
-     *
-     * @param url URL to be downloaded.
-     * @return whether the download should be intercepted.
-     */
-    protected boolean shouldInterceptContextMenuDownload(String url) {
-        return mDownloadDelegate.shouldInterceptContextMenuDownload(url);
-    }
-
-    private class ChromeTabChromeContextMenuItemDelegate extends TabChromeContextMenuItemDelegate {
-        @Override
-        public boolean isIncognitoSupported() {
-            return PrefServiceBridge.getInstance().isIncognitoModeEnabled();
-        }
-
-        @Override
-        public boolean canLoadOriginalImage() {
-            return mUsedSpdyProxy && !mUsedSpdyProxyWithPassthrough;
-        }
-
-        @Override
-        public boolean isDataReductionProxyEnabledForURL(String url) {
-            return isSpdyProxyEnabledForUrl(url);
-        }
-
-        @Override
-        public boolean startDownload(String url, boolean isLink) {
-            if (isLink && shouldInterceptContextMenuDownload(url)) {
-                return false;
-            }
-            return true;
-        }
-
-        @Override
-        public void onOpenInNewTab(String url, Referrer referrer) {
-            RecordUserAction.record("MobileNewTabOpened");
-            LoadUrlParams loadUrlParams = new LoadUrlParams(url);
-            loadUrlParams.setReferrer(referrer);
-            mActivity.getTabModelSelector().openNewTab(loadUrlParams,
-                    TabLaunchType.FROM_LONGPRESS_BACKGROUND, ChromeTab.this, isIncognito());
-        }
-
-        @Override
-        public void onOpenInNewIncognitoTab(String url) {
-            RecordUserAction.record("MobileNewTabOpened");
-            mActivity.getTabModelSelector().openNewTab(new LoadUrlParams(url),
-                    TabLaunchType.FROM_LONGPRESS_FOREGROUND, ChromeTab.this, true);
-        }
-
-        @Override
-        public void onOpenImageInNewTab(String url, Referrer referrer) {
-            boolean useOriginal = isSpdyProxyEnabledForUrl(url);
-            LoadUrlParams loadUrlParams = new LoadUrlParams(url);
-            loadUrlParams.setVerbatimHeaders(useOriginal ? PAGESPEED_PASSTHROUGH_HEADERS : null);
-            loadUrlParams.setReferrer(referrer);
-            mActivity.getTabModelSelector().openNewTab(loadUrlParams,
-                    TabLaunchType.FROM_LONGPRESS_BACKGROUND, ChromeTab.this, isIncognito());
-        }
-    }
-
-    @Override
-    protected ContextMenuPopulator createContextMenuPopulator() {
-        return new ChromeContextMenuPopulator(new ChromeTabChromeContextMenuItemDelegate());
-    }
-
     @VisibleForTesting
     public void setViewClientForTesting(ContentViewClient client) {
         setContentViewClient(client);
@@ -793,8 +680,6 @@ public class ChromeTab extends Tab {
         // Handle the case where a commit or prerender swap notification failed to arrive and the
         // enable fullscreen message was never enqueued.
         scheduleEnableFullscreenLoadDelayIfNecessary();
-
-        maybeSetDataReductionProxyUsed();
     }
 
     @Override
@@ -862,9 +747,6 @@ public class ChromeTab extends Tab {
             super.setContentViewCore(cvc);
             mWebContentsObserver = createWebContentsObserver(cvc.getWebContents());
 
-            mDownloadDelegate = new ChromeDownloadDelegate(mActivity,
-                    mActivity.getTabModelSelector(), this);
-            cvc.setDownloadDelegate(mDownloadDelegate);
             setInterceptNavigationDelegate(createInterceptNavigationDelegate());
 
             if (mGestureStateListener == null) mGestureStateListener = createGestureStateListener();
@@ -952,20 +834,6 @@ public class ChromeTab extends Tab {
         NativePageAssassin.getInstance().tabHidden(this);
 
         mTabRedirectHandler.clear();
-    }
-
-    /**
-     * Checks if spdy proxy is enabled for input url.
-     * @param url Input url to check for spdy setting.
-     * @return true if url is enabled for spdy proxy.
-    */
-    protected boolean isSpdyProxyEnabledForUrl(String url) {
-        if (DataReductionProxySettings.getInstance().isDataReductionProxyEnabled()
-                && url != null && !url.toLowerCase(Locale.US).startsWith("https://")
-                && !isIncognito()) {
-            return true;
-        }
-        return false;
     }
 
     @Override

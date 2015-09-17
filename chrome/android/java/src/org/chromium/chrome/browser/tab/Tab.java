@@ -30,6 +30,7 @@ import org.chromium.base.TraceEvent;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.AccessibilityUtil;
 import org.chromium.chrome.browser.ChromeActivity;
@@ -52,11 +53,14 @@ import org.chromium.chrome.browser.contextmenu.ContextMenuPopulator;
 import org.chromium.chrome.browser.contextmenu.ContextMenuPopulatorWrapper;
 import org.chromium.chrome.browser.contextmenu.EmptyChromeContextMenuItemDelegate;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
+import org.chromium.chrome.browser.download.ChromeDownloadDelegate;
 import org.chromium.chrome.browser.fullscreen.FullscreenManager;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.infobar.InfoBarContainer;
 import org.chromium.chrome.browser.metrics.UmaSessionStats;
 import org.chromium.chrome.browser.metrics.UmaUtils;
+import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
+import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.printing.TabPrinter;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
@@ -92,6 +96,7 @@ import java.lang.ref.WeakReference;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * The basic Java representation of a tab.  Contains and manages a {@link ContentView}.
@@ -112,6 +117,9 @@ import java.util.List;
 public class Tab implements ViewGroup.OnHierarchyChangeListener,
         View.OnSystemUiVisibilityChangeListener {
     public static final int INVALID_TAB_ID = -1;
+    public static final String PAGESPEED_PASSTHROUGH_HEADERS =
+            "Chrome-Proxy: pass-through\nCache-Control: no-cache";
+
     private static final long INVALID_TIMESTAMP = -1;
 
     // TabRendererCrashStatus defined in tools/metrics/histograms/histograms.xml.
@@ -331,6 +339,24 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
     private int mThemeColor;
 
     /**
+     * The data reduction proxy was in use on the last page load if true.
+     */
+    protected boolean mUsedSpdyProxy;
+
+    /**
+     * The data reduction proxy was in pass through mode on the last page load if true.
+     */
+    protected boolean mUsedSpdyProxyWithPassthrough;
+
+    /**
+     * The last page load had request headers indicating that the data reduction proxy should
+     * be put in pass through mode, if true.
+     */
+    protected boolean mLastPageLoadHasSpdyProxyPassthroughHeaders;
+
+    private ChromeDownloadDelegate mDownloadDelegate;
+
+    /**
      * A default {@link ChromeContextMenuItemDelegate} that supports some of the context menu
      * functionality.
      */
@@ -351,6 +377,29 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
         }
 
         @Override
+        public boolean isIncognitoSupported() {
+            return PrefServiceBridge.getInstance().isIncognitoModeEnabled();
+        }
+
+        @Override
+        public boolean canLoadOriginalImage() {
+            return mUsedSpdyProxy && !mUsedSpdyProxyWithPassthrough;
+        }
+
+        @Override
+        public boolean isDataReductionProxyEnabledForURL(String url) {
+            return isSpdyProxyEnabledForUrl(url);
+        }
+
+        @Override
+        public boolean startDownload(String url, boolean isLink) {
+            if (isLink && shouldInterceptContextMenuDownload(url)) {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
         public void onSaveToClipboard(String text, int clipboardType) {
             mClipboard.setText(text, text);
         }
@@ -358,6 +407,15 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
         @Override
         public void onSaveImageToClipboard(String url) {
             mClipboard.setHTMLText("<img src=\"" + url + "\">", url, url);
+        }
+
+        @Override
+        public void onOpenInNewTab(String url, Referrer referrer) {
+            RecordUserAction.record("MobileNewTabOpened");
+            LoadUrlParams loadUrlParams = new LoadUrlParams(url);
+            loadUrlParams.setReferrer(referrer);
+            mActivity.getTabModelSelector().openNewTab(loadUrlParams,
+                    TabLaunchType.FROM_LONGPRESS_BACKGROUND, Tab.this, isIncognito());
         }
 
         @Override
@@ -371,6 +429,13 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
         }
 
         @Override
+        public void onOpenInNewIncognitoTab(String url) {
+            RecordUserAction.record("MobileNewTabOpened");
+            mActivity.getTabModelSelector().openNewTab(new LoadUrlParams(url),
+                    TabLaunchType.FROM_LONGPRESS_FOREGROUND, Tab.this, true);
+        }
+
+        @Override
         public String getPageUrl() {
             return getUrl();
         }
@@ -381,6 +446,16 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
             loadUrlParams.setTransitionType(PageTransition.LINK);
             loadUrlParams.setReferrer(referrer);
             loadUrl(loadUrlParams);
+        }
+
+        @Override
+        public void onOpenImageInNewTab(String url, Referrer referrer) {
+            boolean useOriginal = isSpdyProxyEnabledForUrl(url);
+            LoadUrlParams loadUrlParams = new LoadUrlParams(url);
+            loadUrlParams.setVerbatimHeaders(useOriginal ? PAGESPEED_PASSTHROUGH_HEADERS : null);
+            loadUrlParams.setReferrer(referrer);
+            mActivity.getTabModelSelector().openNewTab(loadUrlParams,
+                    TabLaunchType.FROM_LONGPRESS_BACKGROUND, Tab.this, isIncognito());
         }
 
         @Override
@@ -1587,6 +1662,8 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
         if (mTabUma != null) mTabUma.onLoadFinished();
 
         for (TabObserver observer : mObservers) observer.onPageLoadFinished(this);
+
+        maybeSetDataReductionProxyUsed();
     }
 
     /**
@@ -1690,6 +1767,10 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
         // when it loads. This is not the default behavior for embedded
         // web views.
         mContentViewCore.setShouldSetAccessibilityFocusOnPageLoad(true);
+
+        mDownloadDelegate = new ChromeDownloadDelegate(mActivity,
+                mActivity.getTabModelSelector(), this);
+        cvc.setDownloadDelegate(mDownloadDelegate);
     }
 
     /**
@@ -2843,6 +2924,51 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
         intent.putExtra(TabOpenType.BRING_TAB_TO_FRONT.name(), tabId);
         intent.setPackage(packageName);
         return intent;
+    }
+
+    /**
+     * Check whether the context menu download should be intercepted.
+     *
+     * @param url URL to be downloaded.
+     * @return whether the download should be intercepted.
+     */
+    protected boolean shouldInterceptContextMenuDownload(String url) {
+        return mDownloadDelegate.shouldInterceptContextMenuDownload(url);
+    }
+
+    /**
+     * Checks if spdy proxy is enabled for input url.
+     * @param url Input url to check for spdy setting.
+     * @return true if url is enabled for spdy proxy.
+    */
+    private boolean isSpdyProxyEnabledForUrl(String url) {
+        if (DataReductionProxySettings.getInstance().isDataReductionProxyEnabled()
+                && url != null && !url.toLowerCase(Locale.US).startsWith("https://")
+                && !isIncognito()) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Remember if the last load used the data reduction proxy, and if so,
+     * also remember if it used pass through mode.
+     */
+    private void maybeSetDataReductionProxyUsed() {
+        // Ignore internal URLs.
+        String url = getUrl();
+        if (url != null && url.toLowerCase(Locale.US).startsWith("chrome://")) {
+            return;
+        }
+        mUsedSpdyProxy = false;
+        mUsedSpdyProxyWithPassthrough = false;
+        if (isSpdyProxyEnabledForUrl(url)) {
+            mUsedSpdyProxy = true;
+            if (mLastPageLoadHasSpdyProxyPassthroughHeaders) {
+                mLastPageLoadHasSpdyProxyPassthroughHeaders = false;
+                mUsedSpdyProxyWithPassthrough = true;
+            }
+        }
     }
 
     private native void nativeInit();
