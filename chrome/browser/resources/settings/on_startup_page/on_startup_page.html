@@ -2,8 +2,8 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/classes/iron-flex-layout.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/neon-animatable.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-radio-button/paper-radio-button.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-radio-group/paper-radio-group.html">
 <link rel="import" href="chrome://md-settings/on_startup_page/startup_urls_page.html">
+<link rel="import" href="chrome://md-settings/radio_group/radio_group.html">
 <link rel="import" href="chrome://md-settings/settings_page/settings_animated_pages.html">
 <link rel="import" href="chrome://md-settings/settings_page/settings_subheader.html">
 
@@ -17,21 +17,17 @@
       <neon-animatable id="">
         <div id="locationLabel" i18n-content="onStartup"></div>
         <div>
-          <paper-radio-group
-              selected="{{prefs.session.restore_on_startup.value}}">
-            <paper-radio-button
-                name="[[prefValues_.OPEN_NEW_TAB]]"
+          <cr-settings-radio-group pref="{{prefs.session.restore_on_startup}}">
+            <paper-radio-button name="[[prefValues_.OPEN_NEW_TAB]]"
                 i18n-content="onStartupOpenNewTab">
             </paper-radio-button>
-            <paper-radio-button
-                name="[[prefValues_.CONTINUE]]"
+            <paper-radio-button name="[[prefValues_.CONTINUE]]"
                 i18n-content="onStartupContinue">
             </paper-radio-button>
-            <paper-radio-button
-                name="[[prefValues_.OPEN_SPECIFIC]]"
-                i18n-content="onStartupOpenSpecific">
+            <paper-radio-button name="[[prefValues_.OPEN_SPECIFIC]]">
+              <span i18n-content="onStartupOpenSpecific"></span>
             </paper-radio-button>
-          </paper-radio-group>
+          </cr-settings-radio-group>
           <paper-button
               on-tap="onSetPagesTap_" raised i18n-content="onStartupSetPages">
           </paper-button>

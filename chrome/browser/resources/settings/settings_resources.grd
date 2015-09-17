@@ -213,6 +213,15 @@
       <structure name="IDR_SETTINGS_PRIVACY_PAGE_JS"
                  file="privacy_page/privacy_page.js"
                  type="chrome_html" />
+      <structure name="IDR_SETTINGS_RADIO_GROUP_HTML"
+                 file="radio_group/radio_group.html"
+                 type="chrome_html" />
+      <structure name="IDR_SETTINGS_RADIO_GROUP_JS"
+                 file="radio_group/radio_group.js"
+                 type="chrome_html" />
+      <structure name="IDR_SETTINGS_RADIO_GROUP_CSS"
+                 file="radio_group/radio_group.css"
+                 type="chrome_html" />
       <structure name="IDR_SETTINGS_CR_SETTINGS_ROUTER_HTML"
                  file="settings_page/settings_router.html"
                  type="chrome_html" />

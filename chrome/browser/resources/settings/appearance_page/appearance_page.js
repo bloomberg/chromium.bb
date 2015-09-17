@@ -41,6 +41,19 @@ Polymer({
       type: Object,
       notify: true,
     },
+
+    /**
+     * Translated strings used in data binding.
+     */
+    i18n_: {
+      type: Object,
+      value: function() {
+        return {
+          homePageNtp: loadTimeData.getString('homePageNtp'),
+          openThisPage: loadTimeData.getString('openThisPage'),
+        };
+      },
+    },
   },
 
   setResetThemeEnabled: function(enabled) {
