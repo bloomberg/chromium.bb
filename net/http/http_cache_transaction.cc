@@ -1875,7 +1875,7 @@ int HttpCache::Transaction::DoCacheWriteDataComplete(int result) {
     // We want to ignore errors writing to disk and just keep reading from
     // the network.
     result = write_len_;
-  } else if (!done_reading_ && entry_) {
+  } else if (!done_reading_ && entry_ && (!partial_ || truncated_)) {
     int current_size = entry_->disk_entry->GetDataSize(kResponseContentIndex);
     int64 body_size = response_.headers->GetContentLength();
     if (body_size >= 0 && body_size <= current_size)
