@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 window.console.log('Hello world from content_script');
+window.console.log(window.location.href);
 
 // Signal back to the embedder via event and text content change.
 // If the embedder registers event after the event is fired, we can still

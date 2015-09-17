@@ -26,10 +26,19 @@ onload = function() {
   }
 
   var webview = document.createElement('webview');
-  webview.addEventListener('loadstop', function(e) {
-    webviewLoaded = true;
-    maybePassTest();
-  });
+  // Load the webview twice so that we catch if there were any webview
+  // renderer/ crashes during the first navigation.
+  webview.onloadstop = function(e) {
+    window.setTimeout(function() {
+      webview.onloadstop = function() {
+        webviewLoaded = true;
+        maybePassTest();
+      };
+      // Loading the webview again exposes WebFrame::swap crash, otherwise
+      // the test probably finishes too early.
+      webview.src = 'about:blank';
+    }, 0);
+  };
   webview.setAttribute(
       'src', 'data:text/html,<html><body>tear down test</body></html>');
   document.body.appendChild(webview);
