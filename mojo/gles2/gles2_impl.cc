@@ -14,6 +14,8 @@ using gles2::GLES2Context;
 
 namespace {
 
+const int32_t kNone = 0x3038;  // EGL_NONE
+
 base::LazyInstance<base::ThreadLocalPointer<gpu::gles2::GLES2Interface> >::Leaky
     g_gpu_interface;
 
@@ -26,13 +28,22 @@ void RunSignalSyncCallback(MojoGLES2SignalSyncPointCallback callback,
 
 extern "C" {
 MojoGLES2Context MojoGLES2CreateContext(MojoHandle handle,
+                                        const int32_t* attrib_list,
                                         MojoGLES2ContextLost lost_callback,
                                         void* closure,
                                         const MojoAsyncWaiter* async_waiter) {
   mojo::MessagePipeHandle mph(handle);
   mojo::ScopedMessagePipeHandle scoped_handle(mph);
+  std::vector<int32_t> attribs;
+  if (attrib_list) {
+    for (int32_t const* p = attrib_list; *p != kNone;) {
+      attribs.push_back(*p++);
+      attribs.push_back(*p++);
+    }
+  }
+  attribs.push_back(kNone);
   scoped_ptr<GLES2Context> client(new GLES2Context(
-      async_waiter, scoped_handle.Pass(), lost_callback, closure));
+      attribs, async_waiter, scoped_handle.Pass(), lost_callback, closure));
   if (!client->Initialize())
     client.reset();
   return client.release();

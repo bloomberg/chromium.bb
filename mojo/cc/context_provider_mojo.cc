@@ -23,6 +23,7 @@ ContextProviderMojo::ContextProviderMojo(
 bool ContextProviderMojo::BindToCurrentThread() {
   DCHECK(command_buffer_handle_.is_valid());
   context_ = MojoGLES2CreateContext(command_buffer_handle_.release().value(),
+                                    nullptr,
                                     &ContextLostThunk,
                                     this,
                                     Environment::GetDefaultAsyncWaiter());

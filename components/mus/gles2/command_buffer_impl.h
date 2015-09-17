@@ -30,7 +30,8 @@ class CommandBufferImpl : public mojo::CommandBuffer {
   void Initialize(mojo::CommandBufferSyncClientPtr sync_client,
                   mojo::CommandBufferSyncPointClientPtr sync_point_client,
                   mojo::CommandBufferLostContextObserverPtr loss_observer,
-                  mojo::ScopedSharedBufferHandle shared_state) override;
+                  mojo::ScopedSharedBufferHandle shared_state,
+                  mojo::Array<int32_t> attribs) override;
   void SetGetBuffer(int32_t buffer) override;
   void Flush(int32_t put_offset) override;
   void MakeProgress(int32_t last_get_offset) override;

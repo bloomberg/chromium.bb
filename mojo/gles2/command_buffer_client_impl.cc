@@ -118,9 +118,11 @@ class CommandBufferClientImpl::SyncPointClientImpl
 
 CommandBufferClientImpl::CommandBufferClientImpl(
     CommandBufferDelegate* delegate,
+    const std::vector<int32_t>& attribs,
     const MojoAsyncWaiter* async_waiter,
     mojo::ScopedMessagePipeHandle command_buffer_handle)
     : delegate_(delegate),
+      attribs_(attribs),
       observer_binding_(this),
       shared_state_(NULL),
       last_put_offset_(-1),
@@ -161,7 +163,8 @@ bool CommandBufferClientImpl::Initialize() {
   command_buffer_->Initialize(sync_client.Pass(),
                               sync_point_client.Pass(),
                               observer_ptr.Pass(),
-                              duped.Pass());
+                              duped.Pass(),
+                              mojo::Array<int32_t>::From(attribs_));
 
   // Wait for DidInitialize to come on the sync client pipe.
   if (!sync_client_impl_->WaitForInitialization()) {

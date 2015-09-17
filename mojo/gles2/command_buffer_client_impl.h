@@ -6,6 +6,7 @@
 #define MOJO_GLES2_COMMAND_BUFFER_CLIENT_IMPL_H_
 
 #include <map>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
@@ -34,6 +35,7 @@ class CommandBufferClientImpl : public mojo::CommandBufferLostContextObserver,
  public:
   explicit CommandBufferClientImpl(
       CommandBufferDelegate* delegate,
+      const std::vector<int32_t>& attribs,
       const MojoAsyncWaiter* async_waiter,
       mojo::ScopedMessagePipeHandle command_buffer_handle);
   ~CommandBufferClientImpl() override;
@@ -86,6 +88,7 @@ class CommandBufferClientImpl : public mojo::CommandBufferLostContextObserver,
   gpu::CommandBufferSharedState* shared_state() const { return shared_state_; }
 
   CommandBufferDelegate* delegate_;
+  std::vector<int32_t> attribs_;
   mojo::Binding<mojo::CommandBufferLostContextObserver> observer_binding_;
   mojo::CommandBufferPtr command_buffer_;
   scoped_ptr<SyncClientImpl> sync_client_impl_;

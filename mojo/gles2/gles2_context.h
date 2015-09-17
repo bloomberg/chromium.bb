@@ -5,6 +5,8 @@
 #ifndef MOJO_GLES2_GLES2_CONTEXT_H_
 #define MOJO_GLES2_GLES2_CONTEXT_H_
 
+#include <vector>
+
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
@@ -26,7 +28,8 @@ namespace gles2 {
 class GLES2Context : public CommandBufferDelegate,
                      public MojoGLES2ContextPrivate {
  public:
-  explicit GLES2Context(const MojoAsyncWaiter* async_waiter,
+  explicit GLES2Context(const std::vector<int32_t>& attribs,
+                        const MojoAsyncWaiter* async_waiter,
                         mojo::ScopedMessagePipeHandle command_buffer_handle,
                         MojoGLES2ContextLost lost_callback,
                         void* closure);

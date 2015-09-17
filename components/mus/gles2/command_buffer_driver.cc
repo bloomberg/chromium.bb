@@ -46,10 +46,11 @@ CommandBufferDriver::~CommandBufferDriver() {
 void CommandBufferDriver::Initialize(
     mojo::CommandBufferSyncClientPtr sync_client,
     mojo::CommandBufferLostContextObserverPtr loss_observer,
-    mojo::ScopedSharedBufferHandle shared_state) {
+    mojo::ScopedSharedBufferHandle shared_state,
+    mojo::Array<int32_t> attribs) {
   sync_client_ = sync_client.Pass();
   loss_observer_ = loss_observer.Pass();
-  bool success = DoInitialize(shared_state.Pass());
+  bool success = DoInitialize(shared_state.Pass(), attribs.Pass());
   mojo::GpuCapabilitiesPtr capabilities =
       success ? mojo::GpuCapabilities::From(decoder_->GetCapabilities())
               : nullptr;
@@ -72,7 +73,12 @@ bool CommandBufferDriver::MakeCurrent() {
 }
 
 bool CommandBufferDriver::DoInitialize(
-    mojo::ScopedSharedBufferHandle shared_state) {
+    mojo::ScopedSharedBufferHandle shared_state,
+    mojo::Array<int32_t> attribs) {
+  gpu::gles2::ContextCreationAttribHelper attrib_helper;
+  if (!attrib_helper.Parse(attribs.storage()))
+    return false;
+
   surface_ = gfx::GLSurface::CreateOffscreenGLSurface(gfx::Size(1, 1));
 
   if (!surface_.get())
@@ -89,7 +95,7 @@ bool CommandBufferDriver::DoInitialize(
 
   // TODO(piman): ShaderTranslatorCache is currently per-ContextGroup but
   // only needs to be per-thread.
-  bool bind_generates_resource = false;
+  const bool bind_generates_resource = attrib_helper.bind_generates_resource;
   scoped_refptr<gpu::gles2::ContextGroup> context_group =
       new gpu::gles2::ContextGroup(
           gpu_state_->mailbox_manager(), new GpuMemoryTracker,
@@ -113,9 +119,9 @@ bool CommandBufferDriver::DoInitialize(
 
   gpu::gles2::DisallowedFeatures disallowed_features;
 
-  // TODO(piman): attributes.
   const bool offscreen = true;
   std::vector<int32> attrib_vector;
+  attrib_helper.Serialize(&attrib_vector);
   if (!decoder_->Initialize(surface_, context_, offscreen, gfx::Size(1, 1),
                             disallowed_features, attrib_vector))
     return false;

@@ -40,7 +40,8 @@ interface CommandBuffer {
   Initialize(CommandBufferSyncClient sync_client,
              CommandBufferSyncPointClient sync_point_client,
              CommandBufferLostContextObserver lost_observer,
-             handle<shared_buffer> shared_state);
+             handle<shared_buffer> shared_state,
+             array<int32> attribs);
   SetGetBuffer(int32 buffer);
   Flush(int32 put_offset);
   MakeProgress(int32 last_get_offset);

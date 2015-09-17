@@ -21,6 +21,7 @@ extern "C" {
 
 MOJO_GLES2_EXPORT MojoGLES2Context
     MojoGLES2CreateContext(MojoHandle handle,
+                           const int32_t* attrib_list,
                            MojoGLES2ContextLost lost_callback,
                            void* closure,
                            const MojoAsyncWaiter* async_waiter);

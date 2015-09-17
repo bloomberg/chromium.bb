@@ -54,13 +54,15 @@ void CommandBufferImpl::Initialize(
     mojo::CommandBufferSyncClientPtr sync_client,
     mojo::CommandBufferSyncPointClientPtr sync_point_client,
     mojo::CommandBufferLostContextObserverPtr loss_observer,
-    mojo::ScopedSharedBufferHandle shared_state) {
+    mojo::ScopedSharedBufferHandle shared_state,
+    mojo::Array<int32_t> attribs) {
   sync_point_client_ = sync_point_client.Pass();
   driver_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&CommandBufferDriver::Initialize,
                  base::Unretained(driver_.get()), base::Passed(&sync_client),
-                 base::Passed(&loss_observer), base::Passed(&shared_state)));
+                 base::Passed(&loss_observer), base::Passed(&shared_state),
+                 base::Passed(&attribs)));
 }
 
 void CommandBufferImpl::SetGetBuffer(int32_t buffer) {

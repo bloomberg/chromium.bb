@@ -19,6 +19,7 @@ struct MojoGLES2ControlThunks {
   size_t size;  // Should be set to sizeof(MojoGLES2ControlThunks).
 
   MojoGLES2Context (*GLES2CreateContext)(MojoHandle handle,
+                                         const int32_t* attrib_list,
                                          MojoGLES2ContextLost lost_callback,
                                          void* closure,
                                          const MojoAsyncWaiter* async_waiter);

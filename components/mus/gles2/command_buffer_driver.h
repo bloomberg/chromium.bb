@@ -49,7 +49,8 @@ class CommandBufferDriver {
 
   void Initialize(mojo::CommandBufferSyncClientPtr sync_client,
                   mojo::CommandBufferLostContextObserverPtr loss_observer,
-                  mojo::ScopedSharedBufferHandle shared_state);
+                  mojo::ScopedSharedBufferHandle shared_state,
+                  mojo::Array<int32_t> attribs);
   void SetGetBuffer(int32_t buffer);
   void Flush(int32_t put_offset);
   void MakeProgress(int32_t last_get_offset);
@@ -68,7 +69,8 @@ class CommandBufferDriver {
 
  private:
   bool MakeCurrent();
-  bool DoInitialize(mojo::ScopedSharedBufferHandle shared_state);
+  bool DoInitialize(mojo::ScopedSharedBufferHandle shared_state,
+                    mojo::Array<int32_t> attribs);
   void OnResize(gfx::Size size, float scale_factor);
   bool OnWaitSyncPoint(uint32_t sync_point);
   void OnSyncPointRetired();
