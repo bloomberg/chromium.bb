@@ -17,41 +17,41 @@ layer at (0,0) size 785x2786 backgroundClip at (0,0) size 785x600 clip at (0,0) 
       LayoutBlockFlow (anonymous) at (0,90) size 769x18
         LayoutBR {BR} at (0,0) size 0x18
       LayoutBlockFlow {HR} at (0,116) size 769x2 [border: (1px inset #EEEEEE)]
-      LayoutBlockFlow (floating) {P} at (0,126) size 769x72 [bgcolor=#FFFF00]
-        LayoutText {#text} at (0,0) size 769x72
-          text run at (0,0) width 769: "This paragraph is of class \"two\". Since the width has been set to 100%, it should automatically be as wide as its parent"
-          text run at (0,18) width 769: "element allows it to be. Therefore, even though the element is floated, there is no room for other content on the sides"
-          text run at (0,36) width 769: "and a orange square image should be seen AFTER the paragraph, not next to it. A yellow background has been added"
-          text run at (0,54) width 265: "to this paragraph for diagnostic purposes."
       LayoutBlockFlow (anonymous) at (0,126) size 769x91
+        LayoutBlockFlow (floating) {P} at (0,0) size 769x72 [bgcolor=#FFFF00]
+          LayoutText {#text} at (0,0) size 769x72
+            text run at (0,0) width 769: "This paragraph is of class \"two\". Since the width has been set to 100%, it should automatically be as wide as its parent"
+            text run at (0,18) width 769: "element allows it to be. Therefore, even though the element is floated, there is no room for other content on the sides"
+            text run at (0,36) width 769: "and a orange square image should be seen AFTER the paragraph, not next to it. A yellow background has been added"
+            text run at (0,54) width 265: "to this paragraph for diagnostic purposes."
         LayoutImage {IMG} at (0,72) size 15x15
         LayoutText {#text} at (15,73) size 4x18
           text run at (15,73) width 4: " "
         LayoutBR {BR} at (19,87) size 0x0
       LayoutBlockFlow {HR} at (0,225) size 769x2 [border: (1px inset #EEEEEE)]
-      LayoutBlockFlow (floating) {P} at (0,235) size 384.50x108 [bgcolor=#FFFF00]
-        LayoutText {#text} at (0,0) size 385x108
-          text run at (0,0) width 384: "This paragraph is floated to the left and the orange square"
-          text run at (0,18) width 384: "image should appear to the right of the paragraph. This"
-          text run at (0,36) width 385: "paragraph has a yellow background and no padding, margin"
-          text run at (0,54) width 385: "or border. The right edge of this yellow box should be"
-          text run at (0,72) width 385: "horizontally aligned with the left edge of the yellow box"
-          text run at (0,90) width 81: "undernearth."
       LayoutBlockFlow (anonymous) at (0,235) size 769x108
+        LayoutBlockFlow (floating) {P} at (0,0) size 384.50x108 [bgcolor=#FFFF00]
+          LayoutText {#text} at (0,0) size 385x108
+            text run at (0,0) width 384: "This paragraph is floated to the left and the orange square"
+            text run at (0,18) width 384: "image should appear to the right of the paragraph. This"
+            text run at (0,36) width 385: "paragraph has a yellow background and no padding, margin"
+            text run at (0,54) width 385: "or border. The right edge of this yellow box should be"
+            text run at (0,72) width 385: "horizontally aligned with the left edge of the yellow box"
+            text run at (0,90) width 81: "undernearth."
         LayoutImage {IMG} at (384.50,0) size 15x15
         LayoutText {#text} at (399,1) size 5x18
           text run at (399,1) width 5: " "
         LayoutBR {BR} at (403,15) size 1x0
       LayoutBlockFlow {HR} at (0,351) size 769x2 [border: (1px inset #EEEEEE)]
-      LayoutBlockFlow (floating) {P} at (384.50,361) size 384.50x108 [bgcolor=#FFFF00]
-        LayoutText {#text} at (0,0) size 385x108
-          text run at (0,0) width 384: "This paragraph is floated to the right (using a STYLE"
-          text run at (0,18) width 384: "attribute) and the orange square image should appear to the"
-          text run at (0,36) width 384: "left of the paragraph. This paragraph has a yellow"
-          text run at (0,54) width 384: "background and no padding, margin or border. The left"
-          text run at (0,72) width 385: "edge of this yellow box should be horizonally aligned with"
-          text run at (0,90) width 251: "the right edge of the yellow box above."
       LayoutBlockFlow (anonymous) at (0,361) size 769x108
+        LayoutBlockFlow (floating) {P} at (384.50,0) size 384.50x108 [bgcolor=#FFFF00]
+          LayoutText {#text} at (0,0) size 385x108
+            text run at (0,0) width 384: "This paragraph is floated to the right (using a STYLE"
+            text run at (0,18) width 384: "attribute) and the orange square image should appear to the"
+            text run at (0,36) width 384: "left of the paragraph. This paragraph has a yellow"
+            text run at (0,54) width 384: "background and no padding, margin or border. The left"
+            text run at (0,72) width 385: "edge of this yellow box should be horizonally aligned with"
+            text run at (0,90) width 251: "the right edge of the yellow box above."
         LayoutImage {IMG} at (0,0) size 15x15
         LayoutText {#text} at (15,1) size 4x18
           text run at (15,1) width 4: " "
@@ -150,28 +150,28 @@ layer at (0,0) size 785x2786 backgroundClip at (0,0) size 785x600 clip at (0,0) 
       LayoutBlockFlow (anonymous) at (0,1169) size 769x36
         LayoutBR {BR} at (192,0) size 1x18
       LayoutBlockFlow {HR} at (0,1213) size 769x2 [border: (1px inset #EEEEEE)]
-      LayoutBlockFlow (floating) {DIV} at (0,1223) size 576.75x126 [bgcolor=#66CCFF]
-        LayoutBlockFlow (floating) {DIV} at (422.56,0) size 144.19x36 [bgcolor=#FFFF00]
-          LayoutBlockFlow {P} at (0,0) size 144.19x36
-            LayoutText {#text} at (0,0) size 145x36
-              text run at (0,0) width 145: "See description in the"
-              text run at (0,18) width 127: "box on the left side."
-        LayoutBlockFlow {P} at (0,0) size 576.75x126
-          LayoutText {#text} at (0,0) size 577x126
-            text run at (0,0) width 423: "This paragraph is inside a DIV which is floated left. The"
-            text run at (0,18) width 422: "background of the DIV element is blue and its width is 75%. This"
-            text run at (0,36) width 407: "text should all be inside the blue rectangle. The blue DIV "
-            text run at (406,36) width 170: "element has another DIV"
-            text run at (0,54) width 224: "element as a child. It has a yellow "
-            text run at (223,54) width 354: "background color and is floated to the right. Since it is"
-            text run at (0,72) width 12: "a "
-            text run at (11,72) width 411: "child of the blue DIV, the yellow DIV should appear inside the "
-            text run at (421,72) width 156: "blue rectangle. Due to it"
-            text run at (0,90) width 253: "being floated to the right and having "
-            text run at (252,90) width 325: "a 10px right margin, the yellow rectange should"
-            text run at (0,108) width 113: "have a 10px blue "
-            text run at (112,108) width 144: "stripe on its right side."
       LayoutBlockFlow (anonymous) at (0,1223) size 769x126
+        LayoutBlockFlow (floating) {DIV} at (0,0) size 576.75x126 [bgcolor=#66CCFF]
+          LayoutBlockFlow (floating) {DIV} at (422.56,0) size 144.19x36 [bgcolor=#FFFF00]
+            LayoutBlockFlow {P} at (0,0) size 144.19x36
+              LayoutText {#text} at (0,0) size 145x36
+                text run at (0,0) width 145: "See description in the"
+                text run at (0,18) width 127: "box on the left side."
+          LayoutBlockFlow {P} at (0,0) size 576.75x126
+            LayoutText {#text} at (0,0) size 577x126
+              text run at (0,0) width 423: "This paragraph is inside a DIV which is floated left. The"
+              text run at (0,18) width 422: "background of the DIV element is blue and its width is 75%. This"
+              text run at (0,36) width 407: "text should all be inside the blue rectangle. The blue DIV "
+              text run at (406,36) width 170: "element has another DIV"
+              text run at (0,54) width 224: "element as a child. It has a yellow "
+              text run at (223,54) width 354: "background color and is floated to the right. Since it is"
+              text run at (0,72) width 12: "a "
+              text run at (11,72) width 411: "child of the blue DIV, the yellow DIV should appear inside the "
+              text run at (421,72) width 156: "blue rectangle. Due to it"
+              text run at (0,90) width 253: "being floated to the right and having "
+              text run at (252,90) width 325: "a 10px right margin, the yellow rectange should"
+              text run at (0,108) width 113: "have a 10px blue "
+              text run at (112,108) width 144: "stripe on its right side."
         LayoutBR {BR} at (576,0) size 1x18
       LayoutBlockFlow {HR} at (0,1357) size 769x2 [border: (1px inset #EEEEEE)]
       LayoutTable {TABLE} at (0,1367) size 769x1403 [border: (1px outset #808080)]
@@ -200,41 +200,41 @@ layer at (0,0) size 785x2786 backgroundClip at (0,0) size 785x600 clip at (0,0) 
               LayoutBlockFlow (anonymous) at (4,94) size 747x18
                 LayoutBR {BR} at (0,0) size 0x18
               LayoutBlockFlow {HR} at (4,120) size 747x2 [border: (1px inset #EEEEEE)]
-              LayoutBlockFlow (floating) {P} at (4,130) size 747x72 [bgcolor=#FFFF00]
-                LayoutText {#text} at (0,0) size 747x72
-                  text run at (0,0) width 747: "This paragraph is of class \"two\". Since the width has been set to 100%, it should automatically be as wide as its"
-                  text run at (0,18) width 747: "parent element allows it to be. Therefore, even though the element is floated, there is no room for other content on"
-                  text run at (0,36) width 747: "the sides and a orange square image should be seen AFTER the paragraph, not next to it. A yellow background has"
-                  text run at (0,54) width 342: "been added to this paragraph for diagnostic purposes."
               LayoutBlockFlow (anonymous) at (4,130) size 747x91
+                LayoutBlockFlow (floating) {P} at (0,0) size 747x72 [bgcolor=#FFFF00]
+                  LayoutText {#text} at (0,0) size 747x72
+                    text run at (0,0) width 747: "This paragraph is of class \"two\". Since the width has been set to 100%, it should automatically be as wide as its"
+                    text run at (0,18) width 747: "parent element allows it to be. Therefore, even though the element is floated, there is no room for other content on"
+                    text run at (0,36) width 747: "the sides and a orange square image should be seen AFTER the paragraph, not next to it. A yellow background has"
+                    text run at (0,54) width 342: "been added to this paragraph for diagnostic purposes."
                 LayoutImage {IMG} at (0,72) size 15x15
                 LayoutText {#text} at (15,73) size 4x18
                   text run at (15,73) width 4: " "
                 LayoutBR {BR} at (19,87) size 0x0
               LayoutBlockFlow {HR} at (4,229) size 747x2 [border: (1px inset #EEEEEE)]
-              LayoutBlockFlow (floating) {P} at (4,239) size 373.50x108 [bgcolor=#FFFF00]
-                LayoutText {#text} at (0,0) size 374x108
-                  text run at (0,0) width 373: "This paragraph is floated to the left and the orange square"
-                  text run at (0,18) width 373: "image should appear to the right of the paragraph. This"
-                  text run at (0,36) width 374: "paragraph has a yellow background and no padding,"
-                  text run at (0,54) width 373: "margin or border. The right edge of this yellow box"
-                  text run at (0,72) width 373: "should be horizontally aligned with the left edge of the"
-                  text run at (0,90) width 156: "yellow box undernearth."
               LayoutBlockFlow (anonymous) at (4,239) size 747x108
+                LayoutBlockFlow (floating) {P} at (0,0) size 373.50x108 [bgcolor=#FFFF00]
+                  LayoutText {#text} at (0,0) size 374x108
+                    text run at (0,0) width 373: "This paragraph is floated to the left and the orange square"
+                    text run at (0,18) width 373: "image should appear to the right of the paragraph. This"
+                    text run at (0,36) width 374: "paragraph has a yellow background and no padding,"
+                    text run at (0,54) width 373: "margin or border. The right edge of this yellow box"
+                    text run at (0,72) width 373: "should be horizontally aligned with the left edge of the"
+                    text run at (0,90) width 156: "yellow box undernearth."
                 LayoutImage {IMG} at (373.50,0) size 15x15
                 LayoutText {#text} at (388,1) size 5x18
                   text run at (388,1) width 5: " "
                 LayoutBR {BR} at (392,15) size 1x0
               LayoutBlockFlow {HR} at (4,355) size 747x2 [border: (1px inset #EEEEEE)]
-              LayoutBlockFlow (floating) {P} at (377.50,365) size 373.50x108 [bgcolor=#FFFF00]
-                LayoutText {#text} at (0,0) size 374x108
-                  text run at (0,0) width 373: "This paragraph is floated to the right (using a STYLE"
-                  text run at (0,18) width 374: "attribute) and the orange square image should appear to"
-                  text run at (0,36) width 374: "the left of the paragraph. This paragraph has a yellow"
-                  text run at (0,54) width 373: "background and no padding, margin or border. The left"
-                  text run at (0,72) width 373: "edge of this yellow box should be horizonally aligned"
-                  text run at (0,90) width 284: "with the right edge of the yellow box above."
               LayoutBlockFlow (anonymous) at (4,365) size 747x108
+                LayoutBlockFlow (floating) {P} at (373.50,0) size 373.50x108 [bgcolor=#FFFF00]
+                  LayoutText {#text} at (0,0) size 374x108
+                    text run at (0,0) width 373: "This paragraph is floated to the right (using a STYLE"
+                    text run at (0,18) width 374: "attribute) and the orange square image should appear to"
+                    text run at (0,36) width 374: "the left of the paragraph. This paragraph has a yellow"
+                    text run at (0,54) width 373: "background and no padding, margin or border. The left"
+                    text run at (0,72) width 373: "edge of this yellow box should be horizonally aligned"
+                    text run at (0,90) width 284: "with the right edge of the yellow box above."
                 LayoutImage {IMG} at (0,0) size 15x15
                 LayoutText {#text} at (15,1) size 4x18
                   text run at (15,1) width 4: " "
@@ -333,28 +333,28 @@ layer at (0,0) size 785x2786 backgroundClip at (0,0) size 785x600 clip at (0,0) 
               LayoutBlockFlow (anonymous) at (4,1173) size 747x36
                 LayoutBR {BR} at (186,0) size 1x18
               LayoutBlockFlow {HR} at (4,1217) size 747x2 [border: (1px inset #EEEEEE)]
-              LayoutBlockFlow (floating) {DIV} at (4,1227) size 560.25x126 [bgcolor=#66CCFF]
-                LayoutBlockFlow (floating) {DIV} at (410.19,0) size 140.06x36 [bgcolor=#FFFF00]
-                  LayoutBlockFlow {P} at (0,0) size 140.06x36
-                    LayoutText {#text} at (0,0) size 140x36
-                      text run at (0,0) width 140: "See description in the"
-                      text run at (0,18) width 127: "box on the left side."
-                LayoutBlockFlow {P} at (0,0) size 560.25x126
-                  LayoutText {#text} at (0,0) size 561x126
-                    text run at (0,0) width 410: "This paragraph is inside a DIV which is floated left. The"
-                    text run at (0,18) width 410: "background of the DIV element is blue and its width is 75%."
-                    text run at (0,36) width 35: "This "
-                    text run at (34,36) width 394: "text should all be inside the blue rectangle. The blue DIV "
-                    text run at (427,36) width 133: "element has another"
-                    text run at (0,54) width 268: "DIV element as a child. It has a yellow "
-                    text run at (267,54) width 294: "background color and is floated to the right."
-                    text run at (0,72) width 90: "Since it is a "
-                    text run at (89,72) width 444: "child of the blue DIV, the yellow DIV should appear inside the "
-                    text run at (532,72) width 29: "blue"
-                    text run at (0,90) width 395: "rectangle. Due to it being floated to the right and having "
-                    text run at (394,90) width 166: "a 10px right margin, the"
-                    text run at (0,108) width 266: "yellow rectange should have a 10px blue "
-                    text run at (265,108) width 143: "stripe on its right side."
               LayoutBlockFlow (anonymous) at (4,1227) size 747x126
+                LayoutBlockFlow (floating) {DIV} at (0,0) size 560.25x126 [bgcolor=#66CCFF]
+                  LayoutBlockFlow (floating) {DIV} at (410.19,0) size 140.06x36 [bgcolor=#FFFF00]
+                    LayoutBlockFlow {P} at (0,0) size 140.06x36
+                      LayoutText {#text} at (0,0) size 140x36
+                        text run at (0,0) width 140: "See description in the"
+                        text run at (0,18) width 127: "box on the left side."
+                  LayoutBlockFlow {P} at (0,0) size 560.25x126
+                    LayoutText {#text} at (0,0) size 561x126
+                      text run at (0,0) width 410: "This paragraph is inside a DIV which is floated left. The"
+                      text run at (0,18) width 410: "background of the DIV element is blue and its width is 75%."
+                      text run at (0,36) width 35: "This "
+                      text run at (34,36) width 394: "text should all be inside the blue rectangle. The blue DIV "
+                      text run at (427,36) width 133: "element has another"
+                      text run at (0,54) width 268: "DIV element as a child. It has a yellow "
+                      text run at (267,54) width 294: "background color and is floated to the right."
+                      text run at (0,72) width 90: "Since it is a "
+                      text run at (89,72) width 444: "child of the blue DIV, the yellow DIV should appear inside the "
+                      text run at (532,72) width 29: "blue"
+                      text run at (0,90) width 395: "rectangle. Due to it being floated to the right and having "
+                      text run at (394,90) width 166: "a 10px right margin, the"
+                      text run at (0,108) width 266: "yellow rectange should have a 10px blue "
+                      text run at (265,108) width 143: "stripe on its right side."
                 LayoutBR {BR} at (560,0) size 1x18
               LayoutBlockFlow {HR} at (4,1361) size 747x2 [border: (1px inset #EEEEEE)]

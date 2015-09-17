@@ -6,145 +6,145 @@ layer at (0,0) size 800x2386 backgroundClip at (0,0) size 800x600 clip at (0,0) 
       LayoutBlockFlow {H2} at (0,0) size 784x28
         LayoutText {#text} at (0,0) size 139x28
           text run at (0,0) width 139: "word-spacing"
-      LayoutBlockFlow (floating) {PRE} at (0,60.91) size 1201.58x167.41
-        LayoutBlockFlow {H3} at (0,15.20) size 1201.58x17
-          LayoutText {#text} at (0,0) size 207x17
-            text run at (0,0) width 207: "In a floated pre"
-        LayoutBlockFlow (anonymous) at (0,47.41) size 1201.58x120
-          LayoutText {#text} at (0,0) size 257x30
-            text run at (0,0) width 0: " "
-            text run at (0,15) width 257: "Word   spacing test "
-          LayoutInline {EM} at (0,0) size 24x15
-            LayoutText {#text} at (256,15) size 24x15
-              text run at (256,15) width 24: "for"
-          LayoutText {#text} at (299,15) size 9x15
-            text run at (299,15) width 9: " "
-          LayoutInline {STRONG} at (0,0) size 63x15
-            LayoutText {#text} at (307,15) size 63x15
-              text run at (307,15) width 63: "elements"
-          LayoutText {#text} at (389,15) size 9x15
-            text run at (389,15) width 9: " "
-          LayoutInline {TT} at (0,0) size 48x15
-            LayoutText {#text} at (397,15) size 48x15
-              text run at (397,15) width 48: "within"
-          LayoutText {#text} at (464,15) size 614x30
-            text run at (464,15) width 130: " elements too."
-            text run at (613,15) width 1: " "
-            text run at (0,30) width 257: "Word   spacing test "
-          LayoutInline {EM} at (0,0) size 24x15
-            LayoutText {#text} at (256,30) size 24x15
-              text run at (256,30) width 24: "for"
-          LayoutText {#text} at (299,30) size 9x15
-            text run at (299,30) width 9: " "
-          LayoutInline {STRONG} at (0,0) size 63x15
-            LayoutText {#text} at (307,30) size 63x15
-              text run at (307,30) width 63: "elements"
-          LayoutText {#text} at (389,30) size 9x15
-            text run at (389,30) width 9: " "
-          LayoutInline {TT} at (0,0) size 48x15
-            LayoutText {#text} at (397,30) size 48x15
-              text run at (397,30) width 48: "within"
-          LayoutText {#text} at (464,30) size 99x15
-            text run at (464,30) width 99: " elements "
-          LayoutText {#text} at (562,30) size 1054x30
-            text run at (562,30) width 472: " too. (with comment between elements and too)"
-            text run at (1053,30) width 1: " "
-            text run at (0,45) width 257: "Word   spacing test "
-          LayoutInline {EM} at (0,0) size 24x15
-            LayoutText {#text} at (256,45) size 24x15
-              text run at (256,45) width 24: "for"
-          LayoutText {#text} at (299,45) size 9x15
-            text run at (299,45) width 9: " "
-          LayoutInline {STRONG} at (0,0) size 63x15
-            LayoutText {#text} at (307,45) size 63x15
-              text run at (307,45) width 63: "elements"
-          LayoutText {#text} at (389,45) size 9x15
-            text run at (389,45) width 9: " "
-          LayoutInline {TT} at (0,0) size 48x15
-            LayoutText {#text} at (397,45) size 48x15
-              text run at (397,45) width 48: "within"
-          LayoutText {#text} at (464,45) size 71x15
-            text run at (464,45) width 71: " elements"
-          LayoutText {#text} at (554,45) size 1278x30
-            text run at (554,45) width 704: " too. (with comment (no preceeding space) between elements and too)"
-            text run at (1277,45) width 1: " "
-            text run at (0,60) width 257: "Word   spacing test "
-          LayoutInline {EM} at (0,0) size 24x15
-            LayoutText {#text} at (256,60) size 24x15
-              text run at (256,60) width 24: "for"
-          LayoutText {#text} at (299,60) size 9x15
-            text run at (299,60) width 9: " "
-          LayoutInline {STRONG} at (0,0) size 63x15
-            LayoutText {#text} at (307,60) size 63x15
-              text run at (307,60) width 63: "elements"
-          LayoutText {#text} at (389,60) size 9x15
-            text run at (389,60) width 9: " "
-          LayoutInline {TT} at (0,0) size 48x15
-            LayoutText {#text} at (397,60) size 48x15
-              text run at (397,60) width 48: "within"
-          LayoutText {#text} at (464,60) size 99x15
-            text run at (464,60) width 99: " elements "
-          LayoutText {#text} at (562,60) size 700x15
-            text run at (562,60) width 680: "too. (with comment (no trailing space) between elements and too)"
-            text run at (1261,60) width 1: " "
-          LayoutInline {SPAN} at (0,0) size 370x15
-            LayoutText {#text} at (0,75) size 257x15
-              text run at (0,75) width 257: "Word   spacing test "
-            LayoutInline {EM} at (0,0) size 24x15
-              LayoutText {#text} at (256,75) size 24x15
-                text run at (256,75) width 24: "for"
-            LayoutText {#text} at (299,75) size 9x15
-              text run at (299,75) width 9: " "
-            LayoutInline {STRONG} at (0,0) size 63x15
-              LayoutText {#text} at (307,75) size 63x15
-                text run at (307,75) width 63: "elements"
-          LayoutText {#text} at (389,75) size 9x15
-            text run at (389,75) width 9: " "
-          LayoutInline {TT} at (0,0) size 48x15
-            LayoutText {#text} at (397,75) size 48x15
-              text run at (397,75) width 48: "within"
-          LayoutText {#text} at (464,75) size 1097x30
-            text run at (464,75) width 613: " elements too. (with monospace font from Word to elements)"
-            text run at (1096,75) width 1: " "
-            text run at (0,90) width 257: "Word   spacing test "
-          LayoutInline {SPAN} at (0,0) size 189x15
-            LayoutInline {EM} at (0,0) size 24x15
-              LayoutText {#text} at (256,90) size 24x15
-                text run at (256,90) width 24: "for"
-            LayoutText {#text} at (299,90) size 9x15
-              text run at (299,90) width 9: " "
-            LayoutInline {STRONG} at (0,0) size 63x15
-              LayoutText {#text} at (307,90) size 63x15
-                text run at (307,90) width 63: "elements"
-            LayoutText {#text} at (389,90) size 9x15
-              text run at (389,90) width 9: " "
-            LayoutInline {TT} at (0,0) size 48x15
-              LayoutText {#text} at (397,90) size 48x15
-                text run at (397,90) width 48: "within"
-          LayoutText {#text} at (464,90) size 1074x30
-            text run at (464,90) width 590: " elements too. (with monospace font from for to within)"
-            text run at (1073,90) width 1: " "
-            text run at (0,105) width 257: "Word   spacing test "
-          LayoutInline {EM} at (0,0) size 24x15
-            LayoutText {#text} at (256,105) size 24x15
-              text run at (256,105) width 24: "for"
-          LayoutText {#text} at (299,105) size 9x15
-            text run at (299,105) width 9: " "
-          LayoutInline {STRONG} at (0,0) size 63x15
-            LayoutText {#text} at (307,105) size 63x15
-              text run at (307,105) width 63: "elements"
-          LayoutText {#text} at (389,105) size 9x15
-            text run at (389,105) width 9: " "
-          LayoutInline {SPAN} at (0,0) size 189x15
-            LayoutInline {TT} at (0,0) size 48x15
-              LayoutText {#text} at (397,105) size 48x15
-                text run at (397,105) width 48: "within"
-            LayoutText {#text} at (464,105) size 122x15
-              text run at (464,105) width 122: " elements too"
-          LayoutText {#text} at (585,105) size 504x15
-            text run at (585,105) width 484: ". (with monospace font from elements to too)"
-            text run at (1088,105) width 1: " "
       LayoutBlockFlow (anonymous) at (0,47.91) size 784x193.41
+        LayoutBlockFlow (floating) {PRE} at (0,13) size 1201.58x167.41
+          LayoutBlockFlow {H3} at (0,15.20) size 1201.58x17
+            LayoutText {#text} at (0,0) size 207x17
+              text run at (0,0) width 207: "In a floated pre"
+          LayoutBlockFlow (anonymous) at (0,47.41) size 1201.58x120
+            LayoutText {#text} at (0,0) size 257x30
+              text run at (0,0) width 0: " "
+              text run at (0,15) width 257: "Word   spacing test "
+            LayoutInline {EM} at (0,0) size 24x15
+              LayoutText {#text} at (256,15) size 24x15
+                text run at (256,15) width 24: "for"
+            LayoutText {#text} at (299,15) size 9x15
+              text run at (299,15) width 9: " "
+            LayoutInline {STRONG} at (0,0) size 63x15
+              LayoutText {#text} at (307,15) size 63x15
+                text run at (307,15) width 63: "elements"
+            LayoutText {#text} at (389,15) size 9x15
+              text run at (389,15) width 9: " "
+            LayoutInline {TT} at (0,0) size 48x15
+              LayoutText {#text} at (397,15) size 48x15
+                text run at (397,15) width 48: "within"
+            LayoutText {#text} at (464,15) size 614x30
+              text run at (464,15) width 130: " elements too."
+              text run at (613,15) width 1: " "
+              text run at (0,30) width 257: "Word   spacing test "
+            LayoutInline {EM} at (0,0) size 24x15
+              LayoutText {#text} at (256,30) size 24x15
+                text run at (256,30) width 24: "for"
+            LayoutText {#text} at (299,30) size 9x15
+              text run at (299,30) width 9: " "
+            LayoutInline {STRONG} at (0,0) size 63x15
+              LayoutText {#text} at (307,30) size 63x15
+                text run at (307,30) width 63: "elements"
+            LayoutText {#text} at (389,30) size 9x15
+              text run at (389,30) width 9: " "
+            LayoutInline {TT} at (0,0) size 48x15
+              LayoutText {#text} at (397,30) size 48x15
+                text run at (397,30) width 48: "within"
+            LayoutText {#text} at (464,30) size 99x15
+              text run at (464,30) width 99: " elements "
+            LayoutText {#text} at (562,30) size 1054x30
+              text run at (562,30) width 472: " too. (with comment between elements and too)"
+              text run at (1053,30) width 1: " "
+              text run at (0,45) width 257: "Word   spacing test "
+            LayoutInline {EM} at (0,0) size 24x15
+              LayoutText {#text} at (256,45) size 24x15
+                text run at (256,45) width 24: "for"
+            LayoutText {#text} at (299,45) size 9x15
+              text run at (299,45) width 9: " "
+            LayoutInline {STRONG} at (0,0) size 63x15
+              LayoutText {#text} at (307,45) size 63x15
+                text run at (307,45) width 63: "elements"
+            LayoutText {#text} at (389,45) size 9x15
+              text run at (389,45) width 9: " "
+            LayoutInline {TT} at (0,0) size 48x15
+              LayoutText {#text} at (397,45) size 48x15
+                text run at (397,45) width 48: "within"
+            LayoutText {#text} at (464,45) size 71x15
+              text run at (464,45) width 71: " elements"
+            LayoutText {#text} at (554,45) size 1278x30
+              text run at (554,45) width 704: " too. (with comment (no preceeding space) between elements and too)"
+              text run at (1277,45) width 1: " "
+              text run at (0,60) width 257: "Word   spacing test "
+            LayoutInline {EM} at (0,0) size 24x15
+              LayoutText {#text} at (256,60) size 24x15
+                text run at (256,60) width 24: "for"
+            LayoutText {#text} at (299,60) size 9x15
+              text run at (299,60) width 9: " "
+            LayoutInline {STRONG} at (0,0) size 63x15
+              LayoutText {#text} at (307,60) size 63x15
+                text run at (307,60) width 63: "elements"
+            LayoutText {#text} at (389,60) size 9x15
+              text run at (389,60) width 9: " "
+            LayoutInline {TT} at (0,0) size 48x15
+              LayoutText {#text} at (397,60) size 48x15
+                text run at (397,60) width 48: "within"
+            LayoutText {#text} at (464,60) size 99x15
+              text run at (464,60) width 99: " elements "
+            LayoutText {#text} at (562,60) size 700x15
+              text run at (562,60) width 680: "too. (with comment (no trailing space) between elements and too)"
+              text run at (1261,60) width 1: " "
+            LayoutInline {SPAN} at (0,0) size 370x15
+              LayoutText {#text} at (0,75) size 257x15
+                text run at (0,75) width 257: "Word   spacing test "
+              LayoutInline {EM} at (0,0) size 24x15
+                LayoutText {#text} at (256,75) size 24x15
+                  text run at (256,75) width 24: "for"
+              LayoutText {#text} at (299,75) size 9x15
+                text run at (299,75) width 9: " "
+              LayoutInline {STRONG} at (0,0) size 63x15
+                LayoutText {#text} at (307,75) size 63x15
+                  text run at (307,75) width 63: "elements"
+            LayoutText {#text} at (389,75) size 9x15
+              text run at (389,75) width 9: " "
+            LayoutInline {TT} at (0,0) size 48x15
+              LayoutText {#text} at (397,75) size 48x15
+                text run at (397,75) width 48: "within"
+            LayoutText {#text} at (464,75) size 1097x30
+              text run at (464,75) width 613: " elements too. (with monospace font from Word to elements)"
+              text run at (1096,75) width 1: " "
+              text run at (0,90) width 257: "Word   spacing test "
+            LayoutInline {SPAN} at (0,0) size 189x15
+              LayoutInline {EM} at (0,0) size 24x15
+                LayoutText {#text} at (256,90) size 24x15
+                  text run at (256,90) width 24: "for"
+              LayoutText {#text} at (299,90) size 9x15
+                text run at (299,90) width 9: " "
+              LayoutInline {STRONG} at (0,0) size 63x15
+                LayoutText {#text} at (307,90) size 63x15
+                  text run at (307,90) width 63: "elements"
+              LayoutText {#text} at (389,90) size 9x15
+                text run at (389,90) width 9: " "
+              LayoutInline {TT} at (0,0) size 48x15
+                LayoutText {#text} at (397,90) size 48x15
+                  text run at (397,90) width 48: "within"
+            LayoutText {#text} at (464,90) size 1074x30
+              text run at (464,90) width 590: " elements too. (with monospace font from for to within)"
+              text run at (1073,90) width 1: " "
+              text run at (0,105) width 257: "Word   spacing test "
+            LayoutInline {EM} at (0,0) size 24x15
+              LayoutText {#text} at (256,105) size 24x15
+                text run at (256,105) width 24: "for"
+            LayoutText {#text} at (299,105) size 9x15
+              text run at (299,105) width 9: " "
+            LayoutInline {STRONG} at (0,0) size 63x15
+              LayoutText {#text} at (307,105) size 63x15
+                text run at (307,105) width 63: "elements"
+            LayoutText {#text} at (389,105) size 9x15
+              text run at (389,105) width 9: " "
+            LayoutInline {SPAN} at (0,0) size 189x15
+              LayoutInline {TT} at (0,0) size 48x15
+                LayoutText {#text} at (397,105) size 48x15
+                  text run at (397,105) width 48: "within"
+              LayoutText {#text} at (464,105) size 122x15
+                text run at (464,105) width 122: " elements too"
+            LayoutText {#text} at (585,105) size 504x15
+              text run at (585,105) width 484: ". (with monospace font from elements to too)"
+              text run at (1088,105) width 1: " "
         LayoutBR {BR} at (1201,0) size 1x18
       LayoutBlockFlow {PRE} at (0,256.52) size 784x152.20
         LayoutBlockFlow {H3} at (0,0) size 784x17
@@ -449,145 +449,145 @@ layer at (0,0) size 800x2386 backgroundClip at (0,0) size 800x600 clip at (0,0) 
       LayoutBlockFlow {H2} at (0,758.06) size 784x28
         LayoutText {#text} at (0,0) size 140x28
           text run at (0,0) width 140: "letter-spacing"
-      LayoutBlockFlow (floating) {PRE} at (0,818.97) size 1497.78x167.41
-        LayoutBlockFlow {H3} at (0,15.20) size 1497.78x17
-          LayoutText {#text} at (0,0) size 227x17
-            text run at (0,0) width 227: "In a floated pre"
-        LayoutBlockFlow (anonymous) at (0,47.41) size 1497.78x120
-          LayoutText {#text} at (0,0) size 282x30
-            text run at (0,0) width 0: " "
-            text run at (0,15) width 282: "Letter   spacing test "
-          LayoutInline {EM} at (0,0) size 40x15
-            LayoutText {#text} at (281,15) size 40x15
-              text run at (281,15) width 40: "for"
-          LayoutText {#text} at (320,15) size 13x15
-            text run at (320,15) width 13: " "
-          LayoutInline {STRONG} at (0,0) size 104x15
-            LayoutText {#text} at (332,15) size 104x15
-              text run at (332,15) width 104: "elements"
-          LayoutText {#text} at (435,15) size 14x15
-            text run at (435,15) width 14: " "
-          LayoutInline {TT} at (0,0) size 77x15
-            LayoutText {#text} at (448,15) size 77x15
-              text run at (448,15) width 77: "within"
-          LayoutText {#text} at (524,15) size 705x30
-            text run at (524,15) width 181: " elements too."
-            text run at (704,15) width 1: " "
-            text run at (0,30) width 282: "Letter   spacing test "
-          LayoutInline {EM} at (0,0) size 40x15
-            LayoutText {#text} at (281,30) size 40x15
-              text run at (281,30) width 40: "for"
-          LayoutText {#text} at (320,30) size 13x15
-            text run at (320,30) width 13: " "
-          LayoutInline {STRONG} at (0,0) size 104x15
-            LayoutText {#text} at (332,30) size 104x15
-              text run at (332,30) width 104: "elements"
-          LayoutText {#text} at (435,30) size 14x15
-            text run at (435,30) width 14: " "
-          LayoutInline {TT} at (0,0) size 77x15
-            LayoutText {#text} at (448,30) size 77x15
-              text run at (448,30) width 77: "within"
-          LayoutText {#text} at (524,30) size 129x15
-            text run at (524,30) width 129: " elements "
-          LayoutText {#text} at (652,30) size 1229x30
-            text run at (652,30) width 577: " too. (with comment between elements and too)"
-            text run at (1228,30) width 1: " "
-            text run at (0,45) width 282: "Letter   spacing test "
-          LayoutInline {EM} at (0,0) size 40x15
-            LayoutText {#text} at (281,45) size 40x15
-              text run at (281,45) width 40: "for"
-          LayoutText {#text} at (320,45) size 13x15
-            text run at (320,45) width 13: " "
-          LayoutInline {STRONG} at (0,0) size 104x15
-            LayoutText {#text} at (332,45) size 104x15
-              text run at (332,45) width 104: "elements"
-          LayoutText {#text} at (435,45) size 14x15
-            text run at (435,45) width 14: " "
-          LayoutInline {TT} at (0,0) size 77x15
-            LayoutText {#text} at (448,45) size 77x15
-              text run at (448,45) width 77: "within"
-          LayoutText {#text} at (524,45) size 117x15
-            text run at (524,45) width 117: " elements"
-          LayoutText {#text} at (640,45) size 1498x30
-            text run at (640,45) width 858: " too. (with comment (no preceeding space) between elements and too)"
-            text run at (1497,45) width 1: " "
-            text run at (0,60) width 282: "Letter   spacing test "
-          LayoutInline {EM} at (0,0) size 40x15
-            LayoutText {#text} at (281,60) size 40x15
-              text run at (281,60) width 40: "for"
-          LayoutText {#text} at (320,60) size 13x15
-            text run at (320,60) width 13: " "
-          LayoutInline {STRONG} at (0,0) size 104x15
-            LayoutText {#text} at (332,60) size 104x15
-              text run at (332,60) width 104: "elements"
-          LayoutText {#text} at (435,60) size 14x15
-            text run at (435,60) width 14: " "
-          LayoutInline {TT} at (0,0) size 77x15
-            LayoutText {#text} at (448,60) size 77x15
-              text run at (448,60) width 77: "within"
-          LayoutText {#text} at (524,60) size 129x15
-            text run at (524,60) width 129: " elements "
-          LayoutText {#text} at (652,60) size 821x15
-            text run at (652,60) width 821: "too. (with comment (no trailing space) between elements and too)"
-            text run at (1472,60) width 1: " "
-          LayoutInline {SPAN} at (0,0) size 436x15
-            LayoutText {#text} at (0,75) size 282x15
-              text run at (0,75) width 282: "Letter   spacing test "
-            LayoutInline {EM} at (0,0) size 40x15
-              LayoutText {#text} at (281,75) size 40x15
-                text run at (281,75) width 40: "for"
-            LayoutText {#text} at (320,75) size 13x15
-              text run at (320,75) width 13: " "
-            LayoutInline {STRONG} at (0,0) size 104x15
-              LayoutText {#text} at (332,75) size 104x15
-                text run at (332,75) width 104: "elements"
-          LayoutText {#text} at (435,75) size 14x15
-            text run at (435,75) width 14: " "
-          LayoutInline {TT} at (0,0) size 77x15
-            LayoutText {#text} at (448,75) size 77x15
-              text run at (448,75) width 77: "within"
-          LayoutText {#text} at (524,75) size 1293x30
-            text run at (524,75) width 769: " elements too. (with monospace font from Letter to elements)"
-            text run at (1292,75) width 1: " "
-            text run at (0,90) width 282: "Letter   spacing test "
-          LayoutInline {SPAN} at (0,0) size 244x15
-            LayoutInline {EM} at (0,0) size 40x15
-              LayoutText {#text} at (281,90) size 40x15
-                text run at (281,90) width 40: "for"
-            LayoutText {#text} at (320,90) size 13x15
-              text run at (320,90) width 13: " "
-            LayoutInline {STRONG} at (0,0) size 104x15
-              LayoutText {#text} at (332,90) size 104x15
-                text run at (332,90) width 104: "elements"
-            LayoutText {#text} at (435,90) size 14x15
-              text run at (435,90) width 14: " "
-            LayoutInline {TT} at (0,0) size 77x15
-              LayoutText {#text} at (448,90) size 77x15
-                text run at (448,90) width 77: "within"
-          LayoutText {#text} at (524,90) size 1229x30
-            text run at (524,90) width 705: " elements too. (with monospace font from for to within)"
-            text run at (1228,90) width 1: " "
-            text run at (0,105) width 282: "Letter   spacing test "
-          LayoutInline {EM} at (0,0) size 40x15
-            LayoutText {#text} at (281,105) size 40x15
-              text run at (281,105) width 40: "for"
-          LayoutText {#text} at (320,105) size 13x15
-            text run at (320,105) width 13: " "
-          LayoutInline {STRONG} at (0,0) size 104x15
-            LayoutText {#text} at (332,105) size 104x15
-              text run at (332,105) width 104: "elements"
-          LayoutText {#text} at (435,105) size 14x15
-            text run at (435,105) width 14: " "
-          LayoutInline {SPAN} at (0,0) size 244x15
-            LayoutInline {TT} at (0,0) size 77x15
-              LayoutText {#text} at (448,105) size 77x15
-                text run at (448,105) width 77: "within"
-            LayoutText {#text} at (524,105) size 168x15
-              text run at (524,105) width 168: " elements too"
-          LayoutText {#text} at (691,105) size 564x15
-            text run at (691,105) width 564: ". (with monospace font from elements to too)"
-            text run at (1254,105) width 1: " "
       LayoutBlockFlow (anonymous) at (0,805.97) size 784x193.41
+        LayoutBlockFlow (floating) {PRE} at (0,13) size 1497.78x167.41
+          LayoutBlockFlow {H3} at (0,15.20) size 1497.78x17
+            LayoutText {#text} at (0,0) size 227x17
+              text run at (0,0) width 227: "In a floated pre"
+          LayoutBlockFlow (anonymous) at (0,47.41) size 1497.78x120
+            LayoutText {#text} at (0,0) size 282x30
+              text run at (0,0) width 0: " "
+              text run at (0,15) width 282: "Letter   spacing test "
+            LayoutInline {EM} at (0,0) size 40x15
+              LayoutText {#text} at (281,15) size 40x15
+                text run at (281,15) width 40: "for"
+            LayoutText {#text} at (320,15) size 13x15
+              text run at (320,15) width 13: " "
+            LayoutInline {STRONG} at (0,0) size 104x15
+              LayoutText {#text} at (332,15) size 104x15
+                text run at (332,15) width 104: "elements"
+            LayoutText {#text} at (435,15) size 14x15
+              text run at (435,15) width 14: " "
+            LayoutInline {TT} at (0,0) size 77x15
+              LayoutText {#text} at (448,15) size 77x15
+                text run at (448,15) width 77: "within"
+            LayoutText {#text} at (524,15) size 705x30
+              text run at (524,15) width 181: " elements too."
+              text run at (704,15) width 1: " "
+              text run at (0,30) width 282: "Letter   spacing test "
+            LayoutInline {EM} at (0,0) size 40x15
+              LayoutText {#text} at (281,30) size 40x15
+                text run at (281,30) width 40: "for"
+            LayoutText {#text} at (320,30) size 13x15
+              text run at (320,30) width 13: " "
+            LayoutInline {STRONG} at (0,0) size 104x15
+              LayoutText {#text} at (332,30) size 104x15
+                text run at (332,30) width 104: "elements"
+            LayoutText {#text} at (435,30) size 14x15
+              text run at (435,30) width 14: " "
+            LayoutInline {TT} at (0,0) size 77x15
+              LayoutText {#text} at (448,30) size 77x15
+                text run at (448,30) width 77: "within"
+            LayoutText {#text} at (524,30) size 129x15
+              text run at (524,30) width 129: " elements "
+            LayoutText {#text} at (652,30) size 1229x30
+              text run at (652,30) width 577: " too. (with comment between elements and too)"
+              text run at (1228,30) width 1: " "
+              text run at (0,45) width 282: "Letter   spacing test "
+            LayoutInline {EM} at (0,0) size 40x15
+              LayoutText {#text} at (281,45) size 40x15
+                text run at (281,45) width 40: "for"
+            LayoutText {#text} at (320,45) size 13x15
+              text run at (320,45) width 13: " "
+            LayoutInline {STRONG} at (0,0) size 104x15
+              LayoutText {#text} at (332,45) size 104x15
+                text run at (332,45) width 104: "elements"
+            LayoutText {#text} at (435,45) size 14x15
+              text run at (435,45) width 14: " "
+            LayoutInline {TT} at (0,0) size 77x15
+              LayoutText {#text} at (448,45) size 77x15
+                text run at (448,45) width 77: "within"
+            LayoutText {#text} at (524,45) size 117x15
+              text run at (524,45) width 117: " elements"
+            LayoutText {#text} at (640,45) size 1498x30
+              text run at (640,45) width 858: " too. (with comment (no preceeding space) between elements and too)"
+              text run at (1497,45) width 1: " "
+              text run at (0,60) width 282: "Letter   spacing test "
+            LayoutInline {EM} at (0,0) size 40x15
+              LayoutText {#text} at (281,60) size 40x15
+                text run at (281,60) width 40: "for"
+            LayoutText {#text} at (320,60) size 13x15
+              text run at (320,60) width 13: " "
+            LayoutInline {STRONG} at (0,0) size 104x15
+              LayoutText {#text} at (332,60) size 104x15
+                text run at (332,60) width 104: "elements"
+            LayoutText {#text} at (435,60) size 14x15
+              text run at (435,60) width 14: " "
+            LayoutInline {TT} at (0,0) size 77x15
+              LayoutText {#text} at (448,60) size 77x15
+                text run at (448,60) width 77: "within"
+            LayoutText {#text} at (524,60) size 129x15
+              text run at (524,60) width 129: " elements "
+            LayoutText {#text} at (652,60) size 821x15
+              text run at (652,60) width 821: "too. (with comment (no trailing space) between elements and too)"
+              text run at (1472,60) width 1: " "
+            LayoutInline {SPAN} at (0,0) size 436x15
+              LayoutText {#text} at (0,75) size 282x15
+                text run at (0,75) width 282: "Letter   spacing test "
+              LayoutInline {EM} at (0,0) size 40x15
+                LayoutText {#text} at (281,75) size 40x15
+                  text run at (281,75) width 40: "for"
+              LayoutText {#text} at (320,75) size 13x15
+                text run at (320,75) width 13: " "
+              LayoutInline {STRONG} at (0,0) size 104x15
+                LayoutText {#text} at (332,75) size 104x15
+                  text run at (332,75) width 104: "elements"
+            LayoutText {#text} at (435,75) size 14x15
+              text run at (435,75) width 14: " "
+            LayoutInline {TT} at (0,0) size 77x15
+              LayoutText {#text} at (448,75) size 77x15
+                text run at (448,75) width 77: "within"
+            LayoutText {#text} at (524,75) size 1293x30
+              text run at (524,75) width 769: " elements too. (with monospace font from Letter to elements)"
+              text run at (1292,75) width 1: " "
+              text run at (0,90) width 282: "Letter   spacing test "
+            LayoutInline {SPAN} at (0,0) size 244x15
+              LayoutInline {EM} at (0,0) size 40x15
+                LayoutText {#text} at (281,90) size 40x15
+                  text run at (281,90) width 40: "for"
+              LayoutText {#text} at (320,90) size 13x15
+                text run at (320,90) width 13: " "
+              LayoutInline {STRONG} at (0,0) size 104x15
+                LayoutText {#text} at (332,90) size 104x15
+                  text run at (332,90) width 104: "elements"
+              LayoutText {#text} at (435,90) size 14x15
+                text run at (435,90) width 14: " "
+              LayoutInline {TT} at (0,0) size 77x15
+                LayoutText {#text} at (448,90) size 77x15
+                  text run at (448,90) width 77: "within"
+            LayoutText {#text} at (524,90) size 1229x30
+              text run at (524,90) width 705: " elements too. (with monospace font from for to within)"
+              text run at (1228,90) width 1: " "
+              text run at (0,105) width 282: "Letter   spacing test "
+            LayoutInline {EM} at (0,0) size 40x15
+              LayoutText {#text} at (281,105) size 40x15
+                text run at (281,105) width 40: "for"
+            LayoutText {#text} at (320,105) size 13x15
+              text run at (320,105) width 13: " "
+            LayoutInline {STRONG} at (0,0) size 104x15
+              LayoutText {#text} at (332,105) size 104x15
+                text run at (332,105) width 104: "elements"
+            LayoutText {#text} at (435,105) size 14x15
+              text run at (435,105) width 14: " "
+            LayoutInline {SPAN} at (0,0) size 244x15
+              LayoutInline {TT} at (0,0) size 77x15
+                LayoutText {#text} at (448,105) size 77x15
+                  text run at (448,105) width 77: "within"
+              LayoutText {#text} at (524,105) size 168x15
+                text run at (524,105) width 168: " elements too"
+            LayoutText {#text} at (691,105) size 564x15
+              text run at (691,105) width 564: ". (with monospace font from elements to too)"
+              text run at (1254,105) width 1: " "
         LayoutBR {BR} at (1497,0) size 1x18
       LayoutBlockFlow {PRE} at (0,1014.58) size 784x152.20
         LayoutBlockFlow {H3} at (0,0) size 784x17
@@ -893,145 +893,145 @@ layer at (0,0) size 800x2386 backgroundClip at (0,0) size 800x600 clip at (0,0) 
       LayoutBlockFlow {H2} at (0,1547.13) size 784x28
         LayoutText {#text} at (0,0) size 133x28
           text run at (0,0) width 133: "both-spacing"
-      LayoutBlockFlow (floating) {PRE} at (0,1608.03) size 1952.98x167.41
-        LayoutBlockFlow {H3} at (0,15.20) size 1952.98x17
-          LayoutText {#text} at (0,0) size 287x17
-            text run at (0,0) width 287: "In a floated pre"
-        LayoutBlockFlow (anonymous) at (0,47.41) size 1952.98x120
-          LayoutText {#text} at (0,0) size 537x30
-            text run at (0,0) width 0: " "
-            text run at (0,15) width 537: "Word and letter   spacing test "
-          LayoutInline {EM} at (0,0) size 40x15
-            LayoutText {#text} at (536,15) size 40x15
-              text run at (536,15) width 40: "for"
-          LayoutText {#text} at (595,15) size 14x15
-            text run at (595,15) width 14: " "
-          LayoutInline {STRONG} at (0,0) size 103x15
-            LayoutText {#text} at (608,15) size 103x15
-              text run at (608,15) width 103: "elements"
-          LayoutText {#text} at (730,15) size 14x15
-            text run at (730,15) width 14: " "
-          LayoutInline {TT} at (0,0) size 78x15
-            LayoutText {#text} at (743,15) size 78x15
-              text run at (743,15) width 78: "within"
-          LayoutText {#text} at (840,15) size 1060x30
-            text run at (840,15) width 200: " elements too."
-            text run at (1059,15) width 1: " "
-            text run at (0,30) width 537: "Word and letter   spacing test "
-          LayoutInline {EM} at (0,0) size 40x15
-            LayoutText {#text} at (536,30) size 40x15
-              text run at (536,30) width 40: "for"
-          LayoutText {#text} at (595,30) size 14x15
-            text run at (595,30) width 14: " "
-          LayoutInline {STRONG} at (0,0) size 103x15
-            LayoutText {#text} at (608,30) size 103x15
-              text run at (608,30) width 103: "elements"
-          LayoutText {#text} at (730,30) size 14x15
-            text run at (730,30) width 14: " "
-          LayoutInline {TT} at (0,0) size 78x15
-            LayoutText {#text} at (743,30) size 78x15
-              text run at (743,30) width 78: "within"
-          LayoutText {#text} at (840,30) size 149x15
-            text run at (840,30) width 149: " elements "
-          LayoutText {#text} at (988,30) size 1705x30
-            text run at (988,30) width 697: " too. (with comment between elements and too)"
-            text run at (1704,30) width 1: " "
-            text run at (0,45) width 537: "Word and letter   spacing test "
-          LayoutInline {EM} at (0,0) size 40x15
-            LayoutText {#text} at (536,45) size 40x15
-              text run at (536,45) width 40: "for"
-          LayoutText {#text} at (595,45) size 14x15
-            text run at (595,45) width 14: " "
-          LayoutInline {STRONG} at (0,0) size 103x15
-            LayoutText {#text} at (608,45) size 103x15
-              text run at (608,45) width 103: "elements"
-          LayoutText {#text} at (730,45) size 14x15
-            text run at (730,45) width 14: " "
-          LayoutInline {TT} at (0,0) size 78x15
-            LayoutText {#text} at (743,45) size 78x15
-              text run at (743,45) width 78: "within"
-          LayoutText {#text} at (840,45) size 116x15
-            text run at (840,45) width 116: " elements"
-          LayoutText {#text} at (975,45) size 2033x30
-            text run at (975,45) width 1038: " too. (with comment (no preceeding space) between elements and too)"
-            text run at (2032,45) width 1: " "
-            text run at (0,60) width 537: "Word and letter   spacing test "
-          LayoutInline {EM} at (0,0) size 40x15
-            LayoutText {#text} at (536,60) size 40x15
-              text run at (536,60) width 40: "for"
-          LayoutText {#text} at (595,60) size 14x15
-            text run at (595,60) width 14: " "
-          LayoutInline {STRONG} at (0,0) size 103x15
-            LayoutText {#text} at (608,60) size 103x15
-              text run at (608,60) width 103: "elements"
-          LayoutText {#text} at (730,60) size 14x15
-            text run at (730,60) width 14: " "
-          LayoutInline {TT} at (0,0) size 78x15
-            LayoutText {#text} at (743,60) size 78x15
-              text run at (743,60) width 78: "within"
-          LayoutText {#text} at (840,60) size 149x15
-            text run at (840,60) width 149: " elements "
-          LayoutText {#text} at (988,60) size 1020x15
-            text run at (988,60) width 1000: "too. (with comment (no trailing space) between elements and too)"
-            text run at (2007,60) width 1: " "
-          LayoutInline {SPAN} at (0,0) size 711x15
-            LayoutText {#text} at (0,75) size 537x15
-              text run at (0,75) width 537: "Word and letter   spacing test "
-            LayoutInline {EM} at (0,0) size 40x15
-              LayoutText {#text} at (536,75) size 40x15
-                text run at (536,75) width 40: "for"
-            LayoutText {#text} at (595,75) size 14x15
-              text run at (595,75) width 14: " "
-            LayoutInline {STRONG} at (0,0) size 103x15
-              LayoutText {#text} at (608,75) size 103x15
-                text run at (608,75) width 103: "elements"
-          LayoutText {#text} at (730,75) size 14x15
-            text run at (730,75) width 14: " "
-          LayoutInline {TT} at (0,0) size 78x15
-            LayoutText {#text} at (743,75) size 78x15
-              text run at (743,75) width 78: "within"
-          LayoutText {#text} at (840,75) size 1763x30
-            text run at (840,75) width 903: " elements too. (with monospace font from Word to elements)"
-            text run at (1762,75) width 1: " "
-            text run at (0,90) width 537: "Word and letter   spacing test "
-          LayoutInline {SPAN} at (0,0) size 285x15
-            LayoutInline {EM} at (0,0) size 40x15
-              LayoutText {#text} at (536,90) size 40x15
-                text run at (536,90) width 40: "for"
-            LayoutText {#text} at (595,90) size 14x15
-              text run at (595,90) width 14: " "
-            LayoutInline {STRONG} at (0,0) size 103x15
-              LayoutText {#text} at (608,90) size 103x15
-                text run at (608,90) width 103: "elements"
-            LayoutText {#text} at (730,90) size 14x15
-              text run at (730,90) width 14: " "
-            LayoutInline {TT} at (0,0) size 78x15
-              LayoutText {#text} at (743,90) size 78x15
-                text run at (743,90) width 78: "within"
-          LayoutText {#text} at (840,90) size 1725x30
-            text run at (840,90) width 865: " elements too. (with monospace font from for to within)"
-            text run at (1724,90) width 1: " "
-            text run at (0,105) width 537: "Word and letter   spacing test "
-          LayoutInline {EM} at (0,0) size 40x15
-            LayoutText {#text} at (536,105) size 40x15
-              text run at (536,105) width 40: "for"
-          LayoutText {#text} at (595,105) size 14x15
-            text run at (595,105) width 14: " "
-          LayoutInline {STRONG} at (0,0) size 103x15
-            LayoutText {#text} at (608,105) size 103x15
-              text run at (608,105) width 103: "elements"
-          LayoutText {#text} at (730,105) size 14x15
-            text run at (730,105) width 14: " "
-          LayoutInline {SPAN} at (0,0) size 284x15
-            LayoutInline {TT} at (0,0) size 78x15
-              LayoutText {#text} at (743,105) size 78x15
-                text run at (743,105) width 78: "within"
-            LayoutText {#text} at (840,105) size 187x15
-              text run at (840,105) width 187: " elements too"
-          LayoutText {#text} at (1026,105) size 724x15
-            text run at (1026,105) width 704: ". (with monospace font from elements to too)"
-            text run at (1749,105) width 1: " "
       LayoutBlockFlow (anonymous) at (0,1595.03) size 784x193.41
+        LayoutBlockFlow (floating) {PRE} at (0,13) size 1952.98x167.41
+          LayoutBlockFlow {H3} at (0,15.20) size 1952.98x17
+            LayoutText {#text} at (0,0) size 287x17
+              text run at (0,0) width 287: "In a floated pre"
+          LayoutBlockFlow (anonymous) at (0,47.41) size 1952.98x120
+            LayoutText {#text} at (0,0) size 537x30
+              text run at (0,0) width 0: " "
+              text run at (0,15) width 537: "Word and letter   spacing test "
+            LayoutInline {EM} at (0,0) size 40x15
+              LayoutText {#text} at (536,15) size 40x15
+                text run at (536,15) width 40: "for"
+            LayoutText {#text} at (595,15) size 14x15
+              text run at (595,15) width 14: " "
+            LayoutInline {STRONG} at (0,0) size 103x15
+              LayoutText {#text} at (608,15) size 103x15
+                text run at (608,15) width 103: "elements"
+            LayoutText {#text} at (730,15) size 14x15
+              text run at (730,15) width 14: " "
+            LayoutInline {TT} at (0,0) size 78x15
+              LayoutText {#text} at (743,15) size 78x15
+                text run at (743,15) width 78: "within"
+            LayoutText {#text} at (840,15) size 1060x30
+              text run at (840,15) width 200: " elements too."
+              text run at (1059,15) width 1: " "
+              text run at (0,30) width 537: "Word and letter   spacing test "
+            LayoutInline {EM} at (0,0) size 40x15
+              LayoutText {#text} at (536,30) size 40x15
+                text run at (536,30) width 40: "for"
+            LayoutText {#text} at (595,30) size 14x15
+              text run at (595,30) width 14: " "
+            LayoutInline {STRONG} at (0,0) size 103x15
+              LayoutText {#text} at (608,30) size 103x15
+                text run at (608,30) width 103: "elements"
+            LayoutText {#text} at (730,30) size 14x15
+              text run at (730,30) width 14: " "
+            LayoutInline {TT} at (0,0) size 78x15
+              LayoutText {#text} at (743,30) size 78x15
+                text run at (743,30) width 78: "within"
+            LayoutText {#text} at (840,30) size 149x15
+              text run at (840,30) width 149: " elements "
+            LayoutText {#text} at (988,30) size 1705x30
+              text run at (988,30) width 697: " too. (with comment between elements and too)"
+              text run at (1704,30) width 1: " "
+              text run at (0,45) width 537: "Word and letter   spacing test "
+            LayoutInline {EM} at (0,0) size 40x15
+              LayoutText {#text} at (536,45) size 40x15
+                text run at (536,45) width 40: "for"
+            LayoutText {#text} at (595,45) size 14x15
+              text run at (595,45) width 14: " "
+            LayoutInline {STRONG} at (0,0) size 103x15
+              LayoutText {#text} at (608,45) size 103x15
+                text run at (608,45) width 103: "elements"
+            LayoutText {#text} at (730,45) size 14x15
+              text run at (730,45) width 14: " "
+            LayoutInline {TT} at (0,0) size 78x15
+              LayoutText {#text} at (743,45) size 78x15
+                text run at (743,45) width 78: "within"
+            LayoutText {#text} at (840,45) size 116x15
+              text run at (840,45) width 116: " elements"
+            LayoutText {#text} at (975,45) size 2033x30
+              text run at (975,45) width 1038: " too. (with comment (no preceeding space) between elements and too)"
+              text run at (2032,45) width 1: " "
+              text run at (0,60) width 537: "Word and letter   spacing test "
+            LayoutInline {EM} at (0,0) size 40x15
+              LayoutText {#text} at (536,60) size 40x15
+                text run at (536,60) width 40: "for"
+            LayoutText {#text} at (595,60) size 14x15
+              text run at (595,60) width 14: " "
+            LayoutInline {STRONG} at (0,0) size 103x15
+              LayoutText {#text} at (608,60) size 103x15
+                text run at (608,60) width 103: "elements"
+            LayoutText {#text} at (730,60) size 14x15
+              text run at (730,60) width 14: " "
+            LayoutInline {TT} at (0,0) size 78x15
+              LayoutText {#text} at (743,60) size 78x15
+                text run at (743,60) width 78: "within"
+            LayoutText {#text} at (840,60) size 149x15
+              text run at (840,60) width 149: " elements "
+            LayoutText {#text} at (988,60) size 1020x15
+              text run at (988,60) width 1000: "too. (with comment (no trailing space) between elements and too)"
+              text run at (2007,60) width 1: " "
+            LayoutInline {SPAN} at (0,0) size 711x15
+              LayoutText {#text} at (0,75) size 537x15
+                text run at (0,75) width 537: "Word and letter   spacing test "
+              LayoutInline {EM} at (0,0) size 40x15
+                LayoutText {#text} at (536,75) size 40x15
+                  text run at (536,75) width 40: "for"
+              LayoutText {#text} at (595,75) size 14x15
+                text run at (595,75) width 14: " "
+              LayoutInline {STRONG} at (0,0) size 103x15
+                LayoutText {#text} at (608,75) size 103x15
+                  text run at (608,75) width 103: "elements"
+            LayoutText {#text} at (730,75) size 14x15
+              text run at (730,75) width 14: " "
+            LayoutInline {TT} at (0,0) size 78x15
+              LayoutText {#text} at (743,75) size 78x15
+                text run at (743,75) width 78: "within"
+            LayoutText {#text} at (840,75) size 1763x30
+              text run at (840,75) width 903: " elements too. (with monospace font from Word to elements)"
+              text run at (1762,75) width 1: " "
+              text run at (0,90) width 537: "Word and letter   spacing test "
+            LayoutInline {SPAN} at (0,0) size 285x15
+              LayoutInline {EM} at (0,0) size 40x15
+                LayoutText {#text} at (536,90) size 40x15
+                  text run at (536,90) width 40: "for"
+              LayoutText {#text} at (595,90) size 14x15
+                text run at (595,90) width 14: " "
+              LayoutInline {STRONG} at (0,0) size 103x15
+                LayoutText {#text} at (608,90) size 103x15
+                  text run at (608,90) width 103: "elements"
+              LayoutText {#text} at (730,90) size 14x15
+                text run at (730,90) width 14: " "
+              LayoutInline {TT} at (0,0) size 78x15
+                LayoutText {#text} at (743,90) size 78x15
+                  text run at (743,90) width 78: "within"
+            LayoutText {#text} at (840,90) size 1725x30
+              text run at (840,90) width 865: " elements too. (with monospace font from for to within)"
+              text run at (1724,90) width 1: " "
+              text run at (0,105) width 537: "Word and letter   spacing test "
+            LayoutInline {EM} at (0,0) size 40x15
+              LayoutText {#text} at (536,105) size 40x15
+                text run at (536,105) width 40: "for"
+            LayoutText {#text} at (595,105) size 14x15
+              text run at (595,105) width 14: " "
+            LayoutInline {STRONG} at (0,0) size 103x15
+              LayoutText {#text} at (608,105) size 103x15
+                text run at (608,105) width 103: "elements"
+            LayoutText {#text} at (730,105) size 14x15
+              text run at (730,105) width 14: " "
+            LayoutInline {SPAN} at (0,0) size 284x15
+              LayoutInline {TT} at (0,0) size 78x15
+                LayoutText {#text} at (743,105) size 78x15
+                  text run at (743,105) width 78: "within"
+              LayoutText {#text} at (840,105) size 187x15
+                text run at (840,105) width 187: " elements too"
+            LayoutText {#text} at (1026,105) size 724x15
+              text run at (1026,105) width 704: ". (with monospace font from elements to too)"
+              text run at (1749,105) width 1: " "
         LayoutBR {BR} at (1952,0) size 1x18
       LayoutBlockFlow {PRE} at (0,1803.64) size 784x152.20
         LayoutBlockFlow {H3} at (0,0) size 784x17
