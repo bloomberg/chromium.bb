@@ -25,17 +25,13 @@ void TestPackageManager::RegisterContentHandler(
 void TestPackageManager::SetApplicationManager(ApplicationManager* manager) {
 }
 
-GURL TestPackageManager::ResolveURL(const GURL& url) {
-  return url;
-}
-
 void TestPackageManager::FetchRequest(
     URLRequestPtr request,
     const Fetcher::FetchCallback& loader_callback) {}
 
 bool TestPackageManager::HandleWithContentHandler(
     Fetcher* fetcher,
-    const GURL& unresolved_url,
+    const GURL& url,
     base::TaskRunner* task_runner,
     URLResponsePtr* new_response,
     GURL* content_handler_url,

@@ -474,16 +474,6 @@ class AMTestPackageManager : public TestPackageManager {
   void set_mime_type(const std::string& mime_type) { mime_type_ = mime_type; }
 
   // TestPackageManager:
-  GURL ResolveURL(const GURL& url) override {
-    GURL resolved_url = url;
-    // The shell automatically map mojo URLs.
-    if (resolved_url.scheme() == "mojo") {
-      url::Replacements<char> replacements;
-      replacements.SetScheme("file", url::Component(0, 4));
-      resolved_url = resolved_url.ReplaceComponents(replacements);
-    }
-    return resolved_url;
-  }
   void FetchRequest(URLRequestPtr request,
                     const Fetcher::FetchCallback& loader_callback) override {
     if (create_test_fetcher_)
