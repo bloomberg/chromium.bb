@@ -10,6 +10,11 @@
 
 namespace net {
 
+using ::testing::ElementsAre;
+using ::testing::IsEmpty;
+using ::testing::Pointee;
+using ::testing::UnorderedElementsAre;
+
 namespace test {
 
 template <typename NodeId>
@@ -59,8 +64,7 @@ TEST_F(SpdyPriorityTreeTest, AddAndRemoveNodes) {
   ASSERT_TRUE(tree.NodeExists(1));
   EXPECT_EQ(100, tree.GetWeight(1));
   EXPECT_FALSE(tree.NodeExists(5));
-  EXPECT_THAT(tree.GetChildren(0),
-              ::testing::Pointee(::testing::ElementsAre(1)));
+  EXPECT_THAT(tree.GetChildren(0), Pointee(ElementsAre(1)));
 
   EXPECT_TRUE(tree.AddNode(5, 0, 50, false));
   // Should not be able to add a node with an id that already exists.
@@ -105,55 +109,254 @@ TEST_F(SpdyPriorityTreeTest, AddAndRemoveNodes) {
   ASSERT_TRUE(peer.ValidateInvariants());
 }
 
-TEST_F(SpdyPriorityTreeTest, SetParent) {
+// Basic case of reparenting a subtree.
+TEST_F(SpdyPriorityTreeTest, SetParentBasicNonExclusive) {
+  /* Tree:
+        0
+       / \
+      1   2
+     / \
+    3   4
+   */
   tree.AddNode(1, 0, 100, false);
-  tree.AddNode(2, 1, 20, false);
-  tree.AddNode(3, 2, 30, false);
-  tree.AddNode(5, 3, 50, false);
-  tree.AddNode(7, 5, 70, false);
-  tree.AddNode(9, 7, 90, false);
-  tree.AddNode(11, 0, 200, false);
-  tree.AddNode(13, 11, 130, false);
-  // We can't set the parent of a nonexistent node, or set the parent of an
-  // existing node to a nonexistent node.
-  EXPECT_FALSE(tree.SetParent(99, 13, false));
-  EXPECT_FALSE(tree.SetParent(5, 99, false));
-  // We should be able to add multiple children to nodes.
-  EXPECT_TRUE(tree.SetParent(13, 7, false));
-  EXPECT_TRUE(tree.SetParent(3, 11, false));
-  // We should adjust the tree if a new dependency would create a cycle.
-  EXPECT_TRUE(tree.SetParent(11, 13, false));
-  EXPECT_TRUE(tree.SetParent(1, 9, false));
-  EXPECT_TRUE(tree.SetParent(3, 9, false));
-  // Test dependency changes.
-  EXPECT_TRUE(tree.HasChild(5, 7));
-  EXPECT_TRUE(tree.SetParent(7, 13, false));
-  EXPECT_EQ(13u, tree.GetParent(7));
-  EXPECT_TRUE(tree.HasChild(13, 7));
+  tree.AddNode(2, 0, 100, false);
+  tree.AddNode(3, 1, 100, false);
+  tree.AddNode(4, 1, 100, false);
+  EXPECT_TRUE(tree.SetParent(1, 2, false));
+  EXPECT_THAT(tree.GetChildren(0), Pointee(ElementsAre(2)));
+  EXPECT_THAT(tree.GetChildren(1), Pointee(UnorderedElementsAre(3, 4)));
+  EXPECT_THAT(tree.GetChildren(2), Pointee(ElementsAre(1)));
+  EXPECT_THAT(tree.GetChildren(3), Pointee(IsEmpty()));
+  EXPECT_THAT(tree.GetChildren(4), Pointee(IsEmpty()));
+  ASSERT_TRUE(peer.ValidateInvariants());
+}
 
-  EXPECT_TRUE(tree.SetParent(1, 9, false));
-  EXPECT_EQ(9u, tree.GetParent(1));
-  EXPECT_TRUE(tree.HasChild(9, 1));
-  // Setting the parent of a node to its same parent should be a no-op.
-  EXPECT_EQ(1u, tree.GetParent(2));
-  EXPECT_TRUE(tree.HasChild(1, 2));
+// Basic case of reparenting a subtree.  Result here is the same as the
+// non-exclusive case.
+TEST_F(SpdyPriorityTreeTest, SetParentBasicExclusive) {
+  /* Tree:
+        0
+       / \
+      1   2
+     / \
+    3   4
+   */
+  tree.AddNode(1, 0, 100, false);
+  tree.AddNode(2, 0, 100, false);
+  tree.AddNode(3, 1, 100, false);
+  tree.AddNode(4, 1, 100, false);
+  EXPECT_TRUE(tree.SetParent(1, 2, true));
+  EXPECT_THAT(tree.GetChildren(0), Pointee(ElementsAre(2)));
+  EXPECT_THAT(tree.GetChildren(1), Pointee(UnorderedElementsAre(3, 4)));
+  EXPECT_THAT(tree.GetChildren(2), Pointee(ElementsAre(1)));
+  EXPECT_THAT(tree.GetChildren(3), Pointee(IsEmpty()));
+  EXPECT_THAT(tree.GetChildren(4), Pointee(IsEmpty()));
+  ASSERT_TRUE(peer.ValidateInvariants());
+}
+
+// We can't set the parent of a nonexistent node, or set the parent to a
+// nonexistent node.
+TEST_F(SpdyPriorityTreeTest, SetParentNonexistent) {
+  tree.AddNode(1, 0, 100, false);
+  tree.AddNode(2, 0, 100, false);
+  bool test_bool_values[] = {true, false};
+  for (bool exclusive : test_bool_values) {
+    EXPECT_FALSE(tree.SetParent(1, 3, exclusive));
+    EXPECT_FALSE(tree.SetParent(4, 2, exclusive));
+    EXPECT_FALSE(tree.SetParent(3, 4, exclusive));
+    EXPECT_THAT(tree.GetChildren(0), Pointee(UnorderedElementsAre(1, 2)));
+    EXPECT_THAT(tree.GetChildren(1), Pointee(IsEmpty()));
+    EXPECT_THAT(tree.GetChildren(2), Pointee(IsEmpty()));
+  }
+  ASSERT_TRUE(peer.ValidateInvariants());
+}
+
+// We should be able to add multiple children to nodes.
+TEST_F(SpdyPriorityTreeTest, SetParentMultipleChildrenNonExclusive) {
+  /* Tree:
+        0
+       / \
+      1   2
+     / \   \
+    3   4   5
+   */
+  tree.AddNode(1, 0, 100, false);
+  tree.AddNode(2, 0, 100, false);
+  tree.AddNode(3, 1, 100, false);
+  tree.AddNode(4, 1, 100, false);
+  tree.AddNode(5, 2, 100, false);
+  EXPECT_TRUE(tree.SetParent(2, 1, false));
+  EXPECT_THAT(tree.GetChildren(0), Pointee(ElementsAre(1)));
+  EXPECT_THAT(tree.GetChildren(1), Pointee(UnorderedElementsAre(2, 3, 4)));
+  EXPECT_THAT(tree.GetChildren(2), Pointee(ElementsAre(5)));
+  EXPECT_THAT(tree.GetChildren(3), Pointee(IsEmpty()));
+  EXPECT_THAT(tree.GetChildren(4), Pointee(IsEmpty()));
+  EXPECT_THAT(tree.GetChildren(5), Pointee(IsEmpty()));
+  ASSERT_TRUE(peer.ValidateInvariants());
+}
+
+TEST_F(SpdyPriorityTreeTest, SetParentMultipleChildrenExclusive) {
+  /* Tree:
+        0
+       / \
+      1   2
+     / \   \
+    3   4   5
+   */
+  tree.AddNode(1, 0, 100, false);
+  tree.AddNode(2, 0, 100, false);
+  tree.AddNode(3, 1, 100, false);
+  tree.AddNode(4, 1, 100, false);
+  tree.AddNode(5, 2, 100, false);
   EXPECT_TRUE(tree.SetParent(2, 1, true));
-  EXPECT_EQ(1u, tree.GetParent(2));
-  EXPECT_TRUE(tree.HasChild(1, 2));
+  EXPECT_THAT(tree.GetChildren(0), Pointee(ElementsAre(1)));
+  EXPECT_THAT(tree.GetChildren(1), Pointee(ElementsAre(2)));
+  EXPECT_THAT(tree.GetChildren(2), Pointee(UnorderedElementsAre(3, 4, 5)));
+  EXPECT_THAT(tree.GetChildren(3), Pointee(IsEmpty()));
+  EXPECT_THAT(tree.GetChildren(4), Pointee(IsEmpty()));
+  EXPECT_THAT(tree.GetChildren(5), Pointee(IsEmpty()));
+  ASSERT_TRUE(peer.ValidateInvariants());
+}
 
+TEST_F(SpdyPriorityTreeTest, SetParentToChildNonExclusive) {
+  /* Tree:
+        0
+        |
+        1
+       / \
+      2   3
+      |
+      4
+   */
+  tree.AddNode(1, 0, 100, false);
+  tree.AddNode(2, 1, 100, false);
+  tree.AddNode(3, 1, 100, false);
+  tree.AddNode(4, 2, 100, false);
+  EXPECT_TRUE(tree.SetParent(1, 2, false));
+  EXPECT_THAT(tree.GetChildren(0), Pointee(ElementsAre(2)));
+  EXPECT_THAT(tree.GetChildren(1), Pointee(ElementsAre(3)));
+  EXPECT_THAT(tree.GetChildren(2), Pointee(UnorderedElementsAre(1, 4)));
+  EXPECT_THAT(tree.GetChildren(3), Pointee(IsEmpty()));
+  EXPECT_THAT(tree.GetChildren(4), Pointee(IsEmpty()));
+  ASSERT_TRUE(peer.ValidateInvariants());
+}
+
+TEST_F(SpdyPriorityTreeTest, SetParentToChildExclusive) {
+  /* Tree:
+        0
+        |
+        1
+       / \
+      2   3
+      |
+      4
+   */
+  tree.AddNode(1, 0, 100, false);
+  tree.AddNode(2, 1, 100, false);
+  tree.AddNode(3, 1, 100, false);
+  tree.AddNode(4, 2, 100, false);
+  EXPECT_TRUE(tree.SetParent(1, 2, true));
+  EXPECT_THAT(tree.GetChildren(0), Pointee(ElementsAre(2)));
+  EXPECT_THAT(tree.GetChildren(1), Pointee(UnorderedElementsAre(3, 4)));
+  EXPECT_THAT(tree.GetChildren(2), Pointee(ElementsAre(1)));
+  EXPECT_THAT(tree.GetChildren(3), Pointee(IsEmpty()));
+  EXPECT_THAT(tree.GetChildren(4), Pointee(IsEmpty()));
+  ASSERT_TRUE(peer.ValidateInvariants());
+}
+
+TEST_F(SpdyPriorityTreeTest, SetParentToGrandchildNonExclusive) {
+  /* Tree:
+        0
+        |
+        1
+       / \
+      2   3
+     / \
+    4   5
+    |
+    6
+   */
+  tree.AddNode(1, 0, 100, false);
+  tree.AddNode(2, 1, 100, false);
+  tree.AddNode(3, 1, 100, false);
+  tree.AddNode(4, 2, 100, false);
+  tree.AddNode(5, 2, 100, false);
+  tree.AddNode(6, 4, 100, false);
+  EXPECT_TRUE(tree.SetParent(1, 4, false));
+  EXPECT_THAT(tree.GetChildren(0), Pointee(ElementsAre(4)));
+  EXPECT_THAT(tree.GetChildren(1), Pointee(UnorderedElementsAre(2, 3)));
+  EXPECT_THAT(tree.GetChildren(2), Pointee(ElementsAre(5)));
+  EXPECT_THAT(tree.GetChildren(3), Pointee(IsEmpty()));
+  EXPECT_THAT(tree.GetChildren(4), Pointee(UnorderedElementsAre(1, 6)));
+  EXPECT_THAT(tree.GetChildren(5), Pointee(IsEmpty()));
+  EXPECT_THAT(tree.GetChildren(6), Pointee(IsEmpty()));
+  ASSERT_TRUE(peer.ValidateInvariants());
+}
+
+TEST_F(SpdyPriorityTreeTest, SetParentToGrandchildExclusive) {
+  /* Tree:
+        0
+        |
+        1
+       / \
+      2   3
+     / \
+    4   5
+    |
+    6
+   */
+  tree.AddNode(1, 0, 100, false);
+  tree.AddNode(2, 1, 100, false);
+  tree.AddNode(3, 1, 100, false);
+  tree.AddNode(4, 2, 100, false);
+  tree.AddNode(5, 2, 100, false);
+  tree.AddNode(6, 4, 100, false);
+  EXPECT_TRUE(tree.SetParent(1, 4, true));
+  EXPECT_THAT(tree.GetChildren(0), Pointee(ElementsAre(4)));
+  EXPECT_THAT(tree.GetChildren(1), Pointee(UnorderedElementsAre(2, 3, 6)));
+  EXPECT_THAT(tree.GetChildren(2), Pointee(ElementsAre(5)));
+  EXPECT_THAT(tree.GetChildren(3), Pointee(IsEmpty()));
+  EXPECT_THAT(tree.GetChildren(4), Pointee(ElementsAre(1)));
+  EXPECT_THAT(tree.GetChildren(5), Pointee(IsEmpty()));
+  EXPECT_THAT(tree.GetChildren(6), Pointee(IsEmpty()));
+  ASSERT_TRUE(peer.ValidateInvariants());
+}
+
+TEST_F(SpdyPriorityTreeTest, SetParentToParent) {
+  tree.AddNode(1, 0, 100, false);
+  tree.AddNode(2, 1, 100, false);
+  tree.AddNode(3, 1, 100, false);
+  bool test_bool_values[] = {true, false};
+  for (bool exclusive : test_bool_values) {
+    EXPECT_TRUE(tree.SetParent(2, 1, exclusive));
+    EXPECT_THAT(tree.GetChildren(0), Pointee(ElementsAre(1)));
+    EXPECT_THAT(tree.GetChildren(1), Pointee(UnorderedElementsAre(2, 3)));
+    EXPECT_THAT(tree.GetChildren(2), Pointee(IsEmpty()));
+    EXPECT_THAT(tree.GetChildren(3), Pointee(IsEmpty()));
+  }
+  ASSERT_TRUE(peer.ValidateInvariants());
+}
+
+TEST_F(SpdyPriorityTreeTest, SetParentToSelf) {
+  tree.AddNode(1, 0, 100, false);
+  EXPECT_FALSE(tree.SetParent(1, 1, false));
+  EXPECT_FALSE(tree.SetParent(1, 1, true));
+  EXPECT_THAT(tree.GetChildren(0), Pointee(ElementsAre(1)));
+  EXPECT_THAT(tree.GetChildren(1), Pointee(IsEmpty()));
   ASSERT_TRUE(peer.ValidateInvariants());
 }
 
 TEST_F(SpdyPriorityTreeTest, BlockAndUnblock) {
   /* Create the tree.
 
-           0
-          /|\
-         1 2 3
-        /| |  \
-       4 5 6   7
-      /| |\ \  |\
-     8 91011121314
+             0
+           / | \
+          /  |  \
+         1   2   3
+        / \   \   \
+       4   5   6   7
+      /|  / \  |   |\
+     8 9 10 11 12 13 14
     / \
    15 16
 
@@ -375,8 +578,8 @@ TEST_F(SpdyPriorityTreeTest, CalculateRoundedWeights) {
            0
           / \
          1   2
-       //|\  |\
-      83 4 5 6 7
+       /| |\  |\
+      8 3 4 5 6 7
   */
   tree.AddNode(3, 0, 100, false);
   tree.AddNode(4, 0, 100, false);

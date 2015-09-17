@@ -93,7 +93,8 @@ class SpdyPriorityTree {
   // Returns false and has no effect if the node and/or the parent doesn't
   // exist. If the new parent is a descendant of the node (i.e. this would have
   // created a cycle) then we rearrange the topology of the tree as described
-  // in the HTTP2 spec.
+  // in section 5.3.3 of RFC 7540:
+  // https://tools.ietf.org/html/rfc7540#section-5.3.3
   bool SetParent(NodeId node_id, NodeId parent_id, bool exclusive);
 
   // Returns true if the node parent_id has child_id in its child_list.
@@ -374,6 +375,21 @@ bool SpdyPriorityTree<NodeId>::SetParent(
   Node* old_parent = &all_nodes_[old_parent_id];
   old_parent->child_list->remove(node_id);
   old_parent->total_child_weights -= node->weight;
+
+  if (exclusive) {
+    // Move the new parent's current children below the current node.
+    node->child_list->insert(node->child_list->end(),
+                             new_parent->child_list->begin(),
+                             new_parent->child_list->end());
+    node->total_child_weights += new_parent->total_child_weights;
+    for (NodeId child_id : *new_parent->child_list) {
+      Node* child = &all_nodes_[child_id];
+      child->parent_id = node_id;
+    }
+    // Clear new parent's old child data.
+    new_parent->child_list->clear();
+    new_parent->total_child_weights = 0;
+  }
 
   // Make the change.
   node->parent_id = parent_id;
