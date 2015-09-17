@@ -23,6 +23,7 @@ from chromite.cbuildbot.stages import report_stages
 from chromite.lib import alerts
 from chromite.lib import cidb
 from chromite.lib import cros_build_lib
+from chromite.lib import cros_logging as logging
 from chromite.lib import fake_cidb
 from chromite.lib import gs_unittest
 from chromite.lib import osutils
@@ -82,6 +83,42 @@ class BuildReexecutionStageTest(generic_stages_unittest.AbstractStageTestCase):
 
   def ConstructStage(self):
     return report_stages.BuildReexecutionFinishedStage(self._run)
+
+
+class SlaveFailureSummaryStageTest(
+    generic_stages_unittest.AbstractStageTestCase):
+  """Tests that SlaveFailureSummaryStage behaves as expected."""
+
+  def setUp(self):
+    self.db = mock.MagicMock()
+    cidb.CIDBConnectionFactory.SetupMockCidb(self.db)
+    self._Prepare(build_id=1)
+
+  def _Prepare(self, **kwargs):
+    """Prepare stage with config['master']=True."""
+    super(SlaveFailureSummaryStageTest, self)._Prepare(**kwargs)
+    self._run.config['master'] = True
+
+  def ConstructStage(self):
+    return report_stages.SlaveFailureSummaryStage(self._run)
+
+  def testPerformStage(self):
+    """Tests that stage runs without syntax errors."""
+    fake_failure = {
+        'build_id': 10,
+        'build_stage_id': 11,
+        'waterfall': constants.WATERFALL_EXTERNAL,
+        'builder_name': 'builder_name',
+        'build_number': 12,
+        'build_config': 'build-config',
+        'stage_name': 'FailingStage',
+        'stage_status': constants.BUILDER_STATUS_FAILED,
+        }
+    self.PatchObject(self.db, 'GetSlaveFailures', return_value=[fake_failure])
+    self.PatchObject(logging, 'PrintBuildbotLink')
+    self.RunStage()
+    self.assertEqual(logging.PrintBuildbotLink.call_count, 1)
+
 
 class BuildStartStageTest(generic_stages_unittest.AbstractStageTestCase):
   """Tests that BuildStartStage behaves as expected."""

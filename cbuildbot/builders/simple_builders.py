@@ -390,6 +390,8 @@ class DistributedBuilder(SimpleBuilder):
           not self._run.config.afdo_generate_min):
         self._RunStage(afdo_stages.AFDOUpdateEbuildStage)
     finally:
+      if self._run.config.master:
+        self._RunStage(report_stages.SlaveFailureSummaryStage)
       if self._run.config.push_overlays:
         publish = (was_build_successful and completion_successful and
                    build_finished)

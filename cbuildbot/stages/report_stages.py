@@ -202,6 +202,48 @@ class BuildStartStage(generic_stages.BuilderStage):
                              '%s.' % (metadata_dict['db_type'], db_type))
 
 
+class SlaveFailureSummaryStage(generic_stages.BuilderStage):
+  """Stage which summarizes and links to the failures of slave builds."""
+
+  @failures_lib.SetFailureType(failures_lib.InfrastructureFailure)
+  def PerformStage(self):
+    if not self._run.config.master:
+      logging.info('This stage is only meaningful for master builds. '
+                   'Doing nothing.')
+      return
+
+    build_id, db = self._run.GetCIDBHandle()
+
+    if not db:
+      logging.info('No cidb connection for this build. '
+                   'Doing nothing.')
+      return
+
+    slave_failures = db.GetSlaveFailures(build_id)
+    failures_by_build = cros_build_lib.GroupByKey(slave_failures, 'build_id')
+    for build_id, build_failures in sorted(failures_by_build.items()):
+      failures_by_stage = cros_build_lib.GroupByKey(build_failures,
+                                                    'build_stage_id')
+      # Surface a link to each slave stage that failed, in stage_id sorted
+      # order.
+      for stage_id in sorted(failures_by_stage):
+        failure = failures_by_stage[stage_id][0]
+        # Ignore failures that did not cause their enclosing stage to fail.
+        # TODO(akeshet) revisit this approach, if we seem to be suppressing
+        # useful information as a result of it.
+        if failure['stage_status'] != constants.BUILDER_STATUS_FAILED:
+          continue
+        waterfall_url = constants.WATERFALL_TO_DASHBOARD[failure['waterfall']]
+        slave_stage_url = tree_status.ConstructDashboardURL(
+            waterfall_url,
+            failure['builder_name'],
+            failure['build_number'],
+            failure['stage_name'])
+        logging.PrintBuildbotLink('%s %s' % (failure['build_config'],
+                                             failure['stage_name']),
+                                  slave_stage_url)
+
+
 class BuildReexecutionFinishedStage(generic_stages.BuilderStage,
                                     generic_stages.ArchivingStageMixin):
   """The first stage to run after the final cbuildbot reexecution.
