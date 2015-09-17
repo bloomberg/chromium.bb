@@ -2316,7 +2316,7 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
      * return null.
      */
     public SnackbarManager getSnackbarManager() {
-        return null;
+        return mActivity.getSnackbarManager();
     }
 
     /**
@@ -2789,20 +2789,8 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
         loadUrlParams.setVerbatimHeaders(extraHeaders);
         loadUrlParams.setPostData(postData);
         loadUrlParams.setIsRendererInitiated(isRendererInitiated);
-        openNewTab(loadUrlParams, tabLaunchType, parentTab, incognito);
-    }
-
-    /**
-     * Asks the Tab to open another Tab with the given parameters.  Must be implemented by
-     * subclasses because the Tab itself has no access to a TabModel.
-     * @param params Parameters for loading a URL in the new Tab.
-     * @param launchType How the Tab is being launched.
-     * @param parentTab Tab that is spawning a new Tab.
-     * @param incognito Whether the new Tab is supposed to be incognito.
-     */
-    protected void openNewTab(
-            LoadUrlParams params, TabLaunchType launchType, Tab parentTab, boolean incognito) {
-        assert false : "Subclasses must implement this method.";
+        mActivity.getTabModelSelector().openNewTab(
+                loadUrlParams, tabLaunchType, parentTab, incognito);
     }
 
     /**
