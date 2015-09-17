@@ -924,6 +924,8 @@
       'browser/media/protected_media_identifier_permission_context_factory.h',
       'browser/metrics/chromeos_metrics_provider.cc',
       'browser/metrics/chromeos_metrics_provider.h',
+      'browser/metrics/perf/random_selector.cc',
+      'browser/metrics/perf/random_selector.h',
       'browser/metrics/perf/windowed_incognito_observer.cc',
       'browser/metrics/perf/windowed_incognito_observer.h',
       # This is technically also dependent on enable_plugins but we don't
