@@ -223,6 +223,13 @@ public:
 
     TransformationMatrix& applyPerspective(double p);
 
+    // Changes the transform to apply as if the origin were at (x, y, z).
+    TransformationMatrix& applyTransformOrigin(double x, double y, double z);
+    TransformationMatrix& applyTransformOrigin(const FloatPoint3D& origin)
+    {
+        return applyTransformOrigin(origin.x(), origin.y(), origin.z());
+    }
+
     bool isInvertible() const;
 
     // This method returns the identity matrix if it is not invertible.

@@ -1074,6 +1074,13 @@ TransformationMatrix& TransformationMatrix::applyPerspective(double p)
     return *this;
 }
 
+TransformationMatrix& TransformationMatrix::applyTransformOrigin(double x, double y, double z)
+{
+    translateRight3d(x, y, z);
+    translate3d(-x, -y, -z);
+    return *this;
+}
+
 // this = mat * this.
 TransformationMatrix& TransformationMatrix::multiply(const TransformationMatrix& mat)
 {

@@ -186,6 +186,10 @@ inline float FloatPoint3D::distanceTo(const FloatPoint3D& a) const
     return (*this - a).length();
 }
 
+// Redeclared here to avoid ODR issues.
+// See platform/testing/GeometryPrinters.h.
+void PrintTo(const FloatPoint3D&, std::ostream*);
+
 } // namespace blink
 
 #endif // FloatPoint3D_h

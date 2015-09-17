@@ -12,6 +12,7 @@ namespace blink {
 
 class FloatBox;
 class FloatPoint;
+class FloatPoint3D;
 class FloatQuad;
 class FloatRect;
 class FloatSize;
@@ -30,6 +31,7 @@ class LayoutRect;
 // your unit test binary.
 void PrintTo(const FloatBox&, std::ostream*);
 void PrintTo(const FloatPoint&, std::ostream*);
+void PrintTo(const FloatPoint3D&, std::ostream*);
 void PrintTo(const FloatQuad&, std::ostream*);
 void PrintTo(const FloatRect&, std::ostream*);
 void PrintTo(const FloatRoundedRect&, std::ostream*);

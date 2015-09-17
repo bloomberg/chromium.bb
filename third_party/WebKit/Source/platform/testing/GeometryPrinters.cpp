@@ -7,6 +7,7 @@
 
 #include "platform/geometry/FloatBox.h"
 #include "platform/geometry/FloatPoint.h"
+#include "platform/geometry/FloatPoint3D.h"
 #include "platform/geometry/FloatQuad.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/geometry/FloatSize.h"
@@ -57,6 +58,15 @@ void PrintTo(const FloatPoint& point, std::ostream* os)
     *os << "FloatPoint("
         << point.x() << ", "
         << point.y() << ")";
+}
+
+void PrintTo(const FloatPoint3D& point, std::ostream* os)
+{
+    ScopedFloatFlags scope(*os);
+    *os << "FloatPoint3D("
+        << point.x() << ", "
+        << point.y() << ", "
+        << point.z() << ")";
 }
 
 void PrintTo(const FloatQuad& quad, std::ostream* os)
