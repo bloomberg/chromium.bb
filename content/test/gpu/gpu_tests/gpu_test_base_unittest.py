@@ -84,6 +84,12 @@ class FakeGpuSharedPageState(fakes.FakeSharedPageState):
     return expectations.GetExpectationForPage(
       browser_info.browser, page) != 'skip'
 
+  # NOTE: if you change this logic you must change the logic in
+  # GpuSharedPageState and DesktopGpuSharedPageState
+  # (gpu_test_base.py) as well.
+  def RunStory(self, results):
+    gpu_test_base.RunStoryWithRetries(FakeGpuSharedPageState, self, results)
+
 
 class FakePage(gpu_test_base.PageBase):
   def __init__(self, benchmark, name, manager_mock=None):

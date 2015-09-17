@@ -40,8 +40,8 @@ def _PageOperationWrapper(page, tab, expectations,
       msg = 'Expected exception while running %s' % page.display_name
       exception_formatter.PrintFormattedException(msg=msg)
     elif expectation == 'flaky':
-      if not page.GetSuppressFlakyFailures():
-        raise
+      # Retries are handled in RunStoryWithRetries, below.
+      raise
     else:
       logging.warning(
           'Unknown expectation %s while handling exception for %s' %
@@ -104,53 +104,12 @@ class ValidatorBase(page_test.PageTest):
     """Validates and measures the page, taking into account test
     expectations. Do not override this method. Override
     ValidateAndMeasurePageInner, below."""
-
-    # First figure out whether this test is marked flaky in the test
-    # expectations.
-    num_retries = page.GetExpectations().GetFlakyRetriesForPage(
-      tab.browser, page)
-
     try:
       _PageOperationWrapper(
         page, tab, page.GetExpectations(), True,
         lambda: self.ValidateAndMeasurePageInner(page, tab, results),
         results=results)
-    except Exception:
-      # If we're going to re-execute a flaky test in the finally
-      # clause, then we have to squelch this exception.
-      if num_retries == 0:
-        raise
     finally:
-      if page.HadError() and num_retries:
-        # Emulate the logic that's in shared_page_state to re-run the
-        # test up to |num_retries| times. It would be ideal if it
-        # could be reused (by calling SharedPageState.RunStory), but
-        # unfortunately it's not possible to fetch the active
-        # SharedPageState on demand.
-        for ii in xrange(0, num_retries):
-          print 'FLAKY TEST FAILURE, retrying: ' + page.display_name
-          page.ClearHadError()
-          page.SetSuppressFlakyFailures(False)
-          try:
-            self.WillNavigateToPage(page, tab)
-            page.RunNavigateSteps(page.cached_action_runner)
-            self.DidNavigateToPage(page, tab)
-            page.RunPageInteractions(page.cached_action_runner)
-            # Must not re-enter ourselves!
-            _PageOperationWrapper(
-              page, tab, page.GetExpectations(), True,
-              lambda: self.ValidateAndMeasurePageInner(page, tab, results),
-              results=results)
-          except Exception:
-            # Squelch any exceptions from any but the last retry.
-            if ii == num_retries - 1:
-              raise
-          finally:
-            # If the retry succeeded, stop.
-            if not page.HadError():
-              break
-            # Otherwise, clear the error state and retry.
-            page.ClearHadError()
       # Clear the error state of the page at this point so that if
       # --page-repeat or --pageset-repeat are used, the subsequent
       # iterations don't turn into no-ops.
@@ -173,10 +132,41 @@ def _CanRunOnBrowser(browser_info, page):
   return expectations.GetExpectationForPage(
     browser_info.browser, page) != 'skip'
 
+def RunStoryWithRetries(cls, shared_page_state, results):
+  try:
+    super(cls, shared_page_state).RunStory(results)
+  except Exception:
+    page = shared_page_state.current_page
+    tab = shared_page_state.current_tab
+    num_retries = page.GetExpectations().GetFlakyRetriesForPage(
+      tab.browser, page)
+    if page.HadError() and num_retries:
+      # Re-run the test up to |num_retries| times.
+      page.ClearHadError()
+      for ii in xrange(0, num_retries):
+        print 'FLAKY TEST FAILURE, retrying: ' + page.display_name
+        try:
+          super(cls, shared_page_state).RunStory(results)
+          break
+        except Exception:
+          # Squelch any exceptions from any but the last retry.
+          if ii == num_retries - 1:
+            raise
+        finally:
+          # Clear the error state in case we have to retry.
+          page.ClearHadError()
+    else:
+      # Re-raise the exception.
+      raise
 
 class GpuSharedPageState(shared_page_state.SharedPageState):
   def CanRunOnBrowser(self, browser_info, page):
     return _CanRunOnBrowser(browser_info, page)
+
+  # NOTE: if you change this logic you must change the logic in
+  # FakeGpuSharedPageState (gpu_test_base_unittest.py) as well.
+  def RunStory(self, results):
+    RunStoryWithRetries(GpuSharedPageState, self, results)
 
 
 # TODO(kbr): re-evaluate the need for this SharedPageState
@@ -185,6 +175,11 @@ class DesktopGpuSharedPageState(
     shared_page_state.SharedDesktopPageState):
   def CanRunOnBrowser(self, browser_info, page):
     return _CanRunOnBrowser(browser_info, page)
+
+  # Note: if you change this logic you must change the logic in
+  # FakeGpuSharedPageState (gpu_test_base_unittest.py) as well.
+  def RunStory(self, results):
+    RunStoryWithRetries(DesktopGpuSharedPageState, self, results)
 
 
 class PageBase(page_module.Page):
@@ -208,7 +203,6 @@ class PageBase(page_module.Page):
     self._expectations = expectations
     self._had_error = False
     self._cached_action_runner = None
-    self._suppress_flaky_failures = True
 
   def GetExpectations(self):
     return self._expectations
@@ -221,12 +215,6 @@ class PageBase(page_module.Page):
 
   def ClearHadError(self):
     self._had_error = False
-
-  def SetSuppressFlakyFailures(self, value):
-    self._suppress_flaky_failures = value
-
-  def GetSuppressFlakyFailures(self):
-    return self._suppress_flaky_failures
 
   @property
   def cached_action_runner(self):
