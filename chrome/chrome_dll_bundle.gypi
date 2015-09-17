@@ -148,16 +148,8 @@
       'files': [],
       'conditions': [
         ['disable_nacl!=1', {
-          'conditions': [
-            ['target_arch=="x64"', {
-              'files': [
-                '<(PRODUCT_DIR)/nacl_irt_x86_64.nexe',
-              ],
-            }, {
-              'files': [
-                '<(PRODUCT_DIR)/nacl_irt_x86_32.nexe',
-              ],
-            }],
+          'files': [
+            '<(PRODUCT_DIR)/nacl_irt_x86_64.nexe',
           ],
         }],
       ],
