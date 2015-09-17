@@ -7,9 +7,10 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/sync_internals_message_handler.h"
 #include "chrome/common/url_constants.h"
+#include "components/sync_driver/about_sync_util.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
-#include "grit/sync_internals_resources.h"
+#include "grit/components_resources.h"
 
 namespace {
 
@@ -18,20 +19,27 @@ content::WebUIDataSource* CreateSyncInternalsHTMLSource() {
       content::WebUIDataSource::Create(chrome::kChromeUISyncInternalsHost);
 
   source->SetJsonPath("strings.js");
-  source->AddResourcePath("sync_index.js", IDR_SYNC_INTERNALS_INDEX_JS);
-  source->AddResourcePath("chrome_sync.js",
-                          IDR_SYNC_INTERNALS_CHROME_SYNC_JS);
-  source->AddResourcePath("types.js", IDR_SYNC_INTERNALS_TYPES_JS);
-  source->AddResourcePath("sync_log.js", IDR_SYNC_INTERNALS_SYNC_LOG_JS);
-  source->AddResourcePath("sync_node_browser.js",
-                          IDR_SYNC_INTERNALS_SYNC_NODE_BROWSER_JS);
-  source->AddResourcePath("sync_search.js",
-                          IDR_SYNC_INTERNALS_SYNC_SEARCH_JS);
-  source->AddResourcePath("about.js", IDR_SYNC_INTERNALS_ABOUT_JS);
-  source->AddResourcePath("data.js", IDR_SYNC_INTERNALS_DATA_JS);
-  source->AddResourcePath("events.js", IDR_SYNC_INTERNALS_EVENTS_JS);
-  source->AddResourcePath("search.js", IDR_SYNC_INTERNALS_SEARCH_JS);
-  source->SetDefaultResource(IDR_SYNC_INTERNALS_INDEX_HTML);
+  source->AddResourcePath(sync_driver::sync_ui_util::kSyncIndexJS,
+                          IDR_SYNC_DRIVER_SYNC_INTERNALS_INDEX_JS);
+  source->AddResourcePath(sync_driver::sync_ui_util::kChromeSyncJS,
+                          IDR_SYNC_DRIVER_SYNC_INTERNALS_CHROME_SYNC_JS);
+  source->AddResourcePath(sync_driver::sync_ui_util::kTypesJS,
+                          IDR_SYNC_DRIVER_SYNC_INTERNALS_TYPES_JS);
+  source->AddResourcePath(sync_driver::sync_ui_util::kSyncLogJS,
+                          IDR_SYNC_DRIVER_SYNC_INTERNALS_SYNC_LOG_JS);
+  source->AddResourcePath(sync_driver::sync_ui_util::kSyncNodeBrowserJS,
+                          IDR_SYNC_DRIVER_SYNC_INTERNALS_SYNC_NODE_BROWSER_JS);
+  source->AddResourcePath(sync_driver::sync_ui_util::kSyncSearchJS,
+                          IDR_SYNC_DRIVER_SYNC_INTERNALS_SYNC_SEARCH_JS);
+  source->AddResourcePath(sync_driver::sync_ui_util::kAboutJS,
+                          IDR_SYNC_DRIVER_SYNC_INTERNALS_ABOUT_JS);
+  source->AddResourcePath(sync_driver::sync_ui_util::kDataJS,
+                          IDR_SYNC_DRIVER_SYNC_INTERNALS_DATA_JS);
+  source->AddResourcePath(sync_driver::sync_ui_util::kEventsJS,
+                          IDR_SYNC_DRIVER_SYNC_INTERNALS_EVENTS_JS);
+  source->AddResourcePath(sync_driver::sync_ui_util::kSearchJS,
+                          IDR_SYNC_DRIVER_SYNC_INTERNALS_SEARCH_JS);
+  source->SetDefaultResource(IDR_SYNC_DRIVER_SYNC_INTERNALS_INDEX_HTML);
   return source;
 }
 

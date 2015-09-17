@@ -16,7 +16,6 @@
       '<(grit_out_dir)/net_internals_resources.pak',
       '<(grit_out_dir)/password_manager_internals_resources.pak',
       '<(grit_out_dir)/signin_internals_resources.pak',
-      '<(grit_out_dir)/sync_internals_resources.pak',
       '<(grit_out_dir)/translate_internals_resources.pak',
     ],
     'pak_output': '<(SHARED_INTERMEDIATE_DIR)/repack/resources.pak',

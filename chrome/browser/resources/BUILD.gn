@@ -49,15 +49,6 @@ grit("signin_internals_resources") {
   output_dir = "$root_gen_dir/chrome"
 }
 
-grit("sync_internals_resources") {
-  source = "sync_internals_resources.grd"
-  outputs = [
-    "grit/sync_internals_resources.h",
-    "sync_internals_resources.pak",
-  ]
-  output_dir = "$root_gen_dir/chrome"
-}
-
 grit("translate_internals_resources") {
   source = "translate_internals_resources.grd"
   outputs = [

@@ -389,9 +389,8 @@ ScopedJavaLocalRef<jstring> ProfileSyncServiceAndroid::GetAboutInfoForTest(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   scoped_ptr<base::DictionaryValue> about_info =
-      sync_ui_util::ConstructAboutInformation(sync_service_,
-                                              sync_service_->signin(),
-                                              chrome::GetChannel());
+      sync_driver::sync_ui_util::ConstructAboutInformation(
+          sync_service_, sync_service_->signin(), chrome::GetChannel());
   std::string about_info_json;
   base::JSONWriter::Write(*about_info, &about_info_json);
 

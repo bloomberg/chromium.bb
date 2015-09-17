@@ -22,8 +22,46 @@
 using base::DictionaryValue;
 using base::ListValue;
 
+namespace sync_driver {
+
+namespace sync_ui_util {
+
 const char kIdentityTitle[] = "Identity";
 const char kDetailsKey[] = "details";
+
+// Resource paths.
+const char kAboutJS[] = "about.js";
+const char kChromeSyncJS[] = "chrome_sync.js";
+const char kDataJS[] = "data.js";
+const char kEventsJS[] = "events.js";
+const char kSearchJS[] = "search.js";
+const char kSyncIndexJS[] = "sync_index.js";
+const char kSyncLogJS[] = "sync_log.js";
+const char kSyncNodeBrowserJS[] = "sync_node_browser.js";
+const char kSyncSearchJS[] = "sync_search.js";
+const char kTypesJS[] = "types.js";
+
+// Message handlers.
+const char kDispatchEvent[] = "chrome.sync.dispatchEvent";
+const char kGetAllNodes[] = "getAllNodes";
+const char kGetAllNodesCallback[] = "chrome.sync.getAllNodesCallback";
+const char kRegisterForEvents[] = "registerForEvents";
+const char kRegisterForPerTypeCounters[] = "registerForPerTypeCounters";
+const char kRequestListOfTypes[] = "requestListOfTypes";
+const char kRequestUpdatedAboutInfo[] = "requestUpdatedAboutInfo";
+
+// Other strings.
+const char kCommit[] = "commit";
+const char kCounters[] = "counters";
+const char kCounterType[] = "counterType";
+const char kModelType[] = "modelType";
+const char kOnAboutInfoUpdated[] = "onAboutInfoUpdated";
+const char kOnCountersUpdated[] = "onCountersUpdated";
+const char kOnProtocolEvent[] = "onProtocolEvent";
+const char kOnReceivedListOfTypes[] = "onReceivedListOfTypes";
+const char kStatus[] = "status";
+const char kTypes[] = "types";
+const char kUpdate[] = "update";
 
 namespace {
 
@@ -199,8 +237,6 @@ std::string GetConnectionStatus(
 }
 
 }  // namespace
-
-namespace sync_ui_util {
 
 // This function both defines the structure of the message to be returned and
 // its contents.  Most of the message consists of simple fields in about:sync
@@ -493,3 +529,5 @@ scoped_ptr<base::DictionaryValue> ConstructAboutInformation(
 }
 
 }  // namespace sync_ui_util
+
+}  // namespace sync_driver

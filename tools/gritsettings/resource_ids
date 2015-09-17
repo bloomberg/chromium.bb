@@ -119,156 +119,153 @@
     "structures": [20400],
     "messages": [20410],
   },
-  "chrome/browser/resources/sync_internals_resources.grd": {
+  "chrome/browser/resources/signin_internals_resources.grd": {
     "includes": [21400],
   },
-  "chrome/browser/resources/signin_internals_resources.grd": {
-    "includes": [21650],
-  },
   "chrome/browser/resources/invalidations_resources.grd": {
-    "includes": [21850],
+    "includes": [21600],
   },
   # This file is generated during the build.
   "<(SHARED_INTERMEDIATE_DIR)/devtools/devtools_resources.grd": {
-    "includes": [21900],
+    "includes": [21650],
   },
   "devtools_resources.grd": {
-    "includes": [21900],
+    "includes": [21650],
   },
   "chrome/browser/resources/options_resources.grd": {
-    "includes": [22900],
-    "structures": [23100],
+    "includes": [22650],
+    "structures": [22850],
   },
   "chrome/browser/resources/options_test_resources.grd": {
-    "includes": [23300],
-    "structures": [23340],
+    "includes": [23050],
+    "structures": [23090],
   },
   "chrome/test/data/webui_test_resources.grd": {
-    "includes": [23380],
-    "structures": [23390],
+    "includes": [23130],
+    "structures": [23140],
   },
   "cloud_print/virtual_driver/win/install/virtual_driver_setup_resources.grd": {
-    "messages": [23400],
-    "includes": [23450],
+    "messages": [23150],
+    "includes": [23200],
   },
   "cloud_print/service/win/service_resources.grd": {
-    "messages": [23500],
-    "includes": [23600],
-    "structures": [23650],
+    "messages": [23250],
+    "includes": [23350],
+    "structures": [23400],
   },
   "cloud_print/gcp20/prototype/gcp20_device.grd": {
-    "messages": [23700],
-    "includes": [23730],
-    "structures": [23760],
+    "messages": [23450],
+    "includes": [23480],
+    "structures": [23490],
   },
   "chrome/browser/resources/quota_internals_resources.grd": {
-    "includes": [23900],
+    "includes": [23650],
   },
   "content/content_resources.grd": {
-    "includes": [24900],
+    "includes": [24650],
   },
   "content/shell/shell_resources.grd": {
-    "includes": [25400],
+    "includes": [25150],
   },
   # This file is generated during the build.
   "<(SHARED_INTERMEDIATE_DIR)/content/browser/tracing/tracing_resources.grd": {
-    "includes": [25650],
+    "includes": [25400],
   },
   # iOS resources overlap with android_webview, ash, chromeos and extensions_api,
   # as these are not used on iOS.
   "ios/chrome/app/strings/ios_strings.grd": {
-    "messages": [25900],
+    "messages": [25650],
   },
   # Chromium strings and Google Chrome strings must start at the same id.
   # We only use one file depending on whether we're building Chromium or
   # Google Chrome.
   "ios/chrome/app/strings/ios_chromium_strings.grd": {
-    "messages": [26800],
+    "messages": [26550],
   },
   "ios/chrome/app/strings/ios_google_chrome_strings.grd": {
-    "messages": [26800],
+    "messages": [26550],
   },
   "ios/chrome/app/theme/ios_theme_resources.grd": {
-    "structures": [26900],
+    "structures": [26650],
   },
   "ash/ash_strings.grd": {
-    "messages": [25900],
+    "messages": [25650],
   },
   "android_webview/ui/aw_resources.grd": {
-    "includes": [25900],
+    "includes": [25650],
   },
   "android_webview/ui/aw_strings.grd": {
-    "messages": [26000],
+    "messages": [25750],
   },
   "ui/chromeos/resources/ui_chromeos_resources.grd": {
-    "structures": [26100],
+    "structures": [25850],
   },
   "ui/chromeos/ui_chromeos_strings.grd": {
-    "messages": [26200],
+    "messages": [25950],
   },
   "chrome/common/extensions_api_resources.grd": {
-    "includes": [26300],
+    "includes": [26050],
   },
   "extensions/extensions_resources.grd": {
-    "includes": [26500],
+    "includes": [26250],
   },
   "extensions/browser/resources/extensions_browser_resources.grd": {
-    "structures": [26700],
+    "structures": [26450],
   },
   "extensions/renderer/resources/extensions_renderer_resources.grd": {
-    "includes": [26750],
-    "structures": [26850],
+    "includes": [26500],
+    "structures": [26600],
   },
   "extensions/extensions_strings.grd": {
-    "messages": [26900],
+    "messages": [26650],
   },
   "extensions/shell/app_shell_resources.grd": {
-    "includes": [27300],
+    "includes": [27050],
   },
   "chrome/browser/resources/memory_internals_resources.grd": {
-    "includes": [27400],
+    "includes": [27150],
   },
   "chrome/browser/resources/password_manager_internals_resources.grd": {
-    "includes": [27600],
+    "includes": [27350],
   },
   "device/bluetooth/bluetooth_strings.grd": {
-    "messages": [27900],
+    "messages": [27650],
   },
   "ui/file_manager/file_manager_resources.grd": {
-    "includes": [28010],
+    "includes": [27760],
   },
   "components/chrome_apps/chrome_apps_resources.grd": {
-    "includes": [28190],
+    "includes": [27940],
   },
   "ui/login/login_resources.grd": {
-    "includes": [28210],
+    "includes": [27960],
   },
   "chrome/browser/resources/translate_internals_resources.grd": {
-    "includes": [28410],
+    "includes": [28160],
   },
   "chrome/browser/resources/sync_file_system_internals_resources.grd": {
-    "includes": [28910],
+    "includes": [28660],
   },
   "chrome/app/address_input_strings.grd": {
-    "messages": [29010],
+    "messages": [28760],
   },
   "remoting/resources/remoting_strings.grd": {
-    "messages": [29460],
+    "messages": [29210],
   },
   "components/components_strings.grd": {
-    "messages": [29910],
+    "messages": [29660],
   },
   # Chromium strings and Google Chrome strings must start at the same id.
   # We only use one file depending on whether we're building Chromium or
   # Google Chrome.
   "components/components_chromium_strings.grd": {
-    "messages": [30240],
+    "messages": [30140],
   },
   "components/components_google_chrome_strings.grd": {
-    "messages": [30240],
+    "messages": [30140],
   },
   "components/resources/components_resources.grd": {
-    "includes": [30255],
+    "includes": [30155],
   },
   "components/resources/components_scaled_resources.grd": {
     "structures": [30310],

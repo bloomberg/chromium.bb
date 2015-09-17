@@ -58,14 +58,6 @@
           'includes': ['../build/grit_action.gypi' ],
         },
         {
-          # GN version: //chrome/browser/resources:sync_internals_resources
-          'action_name': 'generate_sync_internals_resources',
-          'variables': {
-            'grit_grd_file': 'browser/resources/sync_internals_resources.grd',
-          },
-          'includes': [ '../build/grit_action.gypi' ],
-        },
-        {
           # GN version: //chrome/browser/resources:translate_internals_resources
           'action_name': 'generate_translate_internals_resources',
           'variables': {

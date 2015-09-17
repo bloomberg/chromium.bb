@@ -14,6 +14,7 @@ using ::testing::NiceMock;
 using ::testing::Return;
 using ::testing::_;
 
+namespace sync_driver {
 namespace sync_ui_util {
 namespace {
 
@@ -53,3 +54,4 @@ TEST(SyncUIUtilTestAbout, ConstructAboutInformationWithUnrecoverableErrorTest) {
 
 }  // namespace
 }  // namespace sync_ui_util
+}  // namespace sync_driver
