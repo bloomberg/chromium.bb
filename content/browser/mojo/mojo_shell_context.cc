@@ -18,7 +18,7 @@
 #include "content/public/common/service_registry.h"
 #include "mojo/application/public/cpp/application_delegate.h"
 #include "mojo/common/url_type_converters.h"
-#include "mojo/fetcher/base_application_fetcher.h"
+#include "mojo/package_manager/package_manager_impl.h"
 #include "mojo/shell/application_loader.h"
 #include "mojo/shell/connect_to_application_params.h"
 #include "mojo/shell/identity.h"
@@ -159,10 +159,10 @@ MojoShellContext::MojoShellContext() {
 
   // Construct with an empty filepath since mojo: urls can't be registered now
   // the url scheme registry is locked.
-  scoped_ptr<mojo::fetcher::BaseApplicationFetcher> fetcher(
-      new mojo::fetcher::BaseApplicationFetcher(base::FilePath()));
+  scoped_ptr<mojo::package_manager::PackageManagerImpl> package_manager(
+      new mojo::package_manager::PackageManagerImpl(base::FilePath()));
   application_manager_.reset(
-      new mojo::shell::ApplicationManager(fetcher.Pass()));
+      new mojo::shell::ApplicationManager(package_manager.Pass()));
 
   application_manager_->set_default_loader(
       scoped_ptr<mojo::shell::ApplicationLoader>(new DefaultApplicationLoader));

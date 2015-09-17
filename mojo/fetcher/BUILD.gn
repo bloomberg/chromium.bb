@@ -8,8 +8,6 @@ source_set("fetcher") {
   sources = [
     "about_fetcher.cc",
     "about_fetcher.h",
-    "base_application_fetcher.cc",
-    "base_application_fetcher.h",
     "local_fetcher.cc",
     "local_fetcher.h",
     "network_fetcher.cc",

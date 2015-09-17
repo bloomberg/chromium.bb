@@ -29,7 +29,7 @@
 #include "mojo/common/tracing_impl.h"
 #include "mojo/edk/embedder/embedder.h"
 #include "mojo/edk/embedder/simple_platform_support.h"
-#include "mojo/fetcher/base_application_fetcher.h"
+#include "mojo/package_manager/package_manager_impl.h"
 #include "mojo/runner/in_process_native_runner.h"
 #include "mojo/runner/out_of_process_native_runner.h"
 #include "mojo/runner/switches.h"
@@ -59,7 +59,7 @@ class Setup {
   DISALLOW_COPY_AND_ASSIGN(Setup);
 };
 
-void InitContentHandlers(shell::ApplicationManager* manager,
+void InitContentHandlers(package_manager::PackageManagerImpl* manager,
                          const base::CommandLine& command_line) {
   // Default content handlers.
   manager->RegisterContentHandler("application/pdf", GURL("mojo:pdf_viewer"));
@@ -162,9 +162,7 @@ class TracingServiceProvider : public ServiceProvider {
 }  // namespace
 
 Context::Context(const base::FilePath& shell_file_root)
-    : application_manager_(new shell::ApplicationManager(make_scoped_ptr(
-          new fetcher::BaseApplicationFetcher(shell_file_root)))),
-      main_entry_time_(base::Time::Now()) {}
+    : shell_file_root_(shell_file_root), main_entry_time_(base::Time::Now()) {}
 
 Context::~Context() {
   DCHECK(!base::MessageLoop::current());
@@ -190,6 +188,12 @@ bool Context::Init() {
       embedder::ProcessType::NONE, task_runners_->shell_runner(), this,
       task_runners_->io_runner(), embedder::ScopedPlatformHandle());
 
+  package_manager_ = new package_manager::PackageManagerImpl(shell_file_root_);
+  InitContentHandlers(package_manager_, command_line);
+
+  application_manager_.reset(
+      new shell::ApplicationManager(make_scoped_ptr(package_manager_)));
+
   scoped_ptr<shell::NativeRunnerFactory> runner_factory;
   if (command_line.HasSwitch(switches::kEnableMultiprocess))
     runner_factory.reset(new OutOfProcessNativeRunnerFactory(this));
@@ -197,8 +201,6 @@ bool Context::Init() {
     runner_factory.reset(new InProcessNativeRunnerFactory(this));
   application_manager_->set_blocking_pool(task_runners_->blocking_pool());
   application_manager_->set_native_runner_factory(runner_factory.Pass());
-
-  InitContentHandlers(application_manager_.get(), command_line);
 
   ServiceProviderPtr service_provider_ptr;
   ServiceProviderPtr tracing_service_provider_ptr;

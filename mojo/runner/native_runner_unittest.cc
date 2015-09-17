@@ -4,7 +4,6 @@
 
 #include "base/files/scoped_temp_dir.h"
 #include "base/path_service.h"
-#include "mojo/fetcher/base_application_fetcher.h"
 #include "mojo/runner/context.h"
 #include "mojo/shell/application_manager.h"
 #include "mojo/util/filename_util.h"

@@ -15,11 +15,11 @@
 #include "mojo/application/public/interfaces/content_handler.mojom.h"
 #include "mojo/application/public/interfaces/service_provider.mojom.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
-#include "mojo/shell/application_fetcher.h"
 #include "mojo/shell/application_loader.h"
 #include "mojo/shell/application_manager.h"
 #include "mojo/shell/fetcher.h"
 #include "mojo/shell/test.mojom.h"
+#include "mojo/shell/test_package_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace mojo {
@@ -456,13 +456,13 @@ class Tester : public ApplicationDelegate,
   ScopedVector<TestAImpl> a_bindings_;
 };
 
-class TestApplicationFetcher : public ApplicationFetcher {
+class AMTestPackageManager : public TestPackageManager {
  public:
-  TestApplicationFetcher()
+   AMTestPackageManager()
       : create_test_fetcher_(false),
         fetcher_url_("xxx"),
         mime_type_(kTestMimeType) {}
-  ~TestApplicationFetcher() override {}
+   ~AMTestPackageManager() override {}
 
   void set_create_test_fetcher(bool create_test_fetcher) {
     create_test_fetcher_ = create_test_fetcher;
@@ -472,8 +472,7 @@ class TestApplicationFetcher : public ApplicationFetcher {
 
   void set_mime_type(const std::string& mime_type) { mime_type_ = mime_type; }
 
-  // ApplicationManager::Delegate
-  void SetApplicationManager(ApplicationManager* manager) override {}
+  // TestPackageManager:
   GURL ResolveURL(const GURL& url) override {
     GURL resolved_url = url;
     // The shell automatically map mojo URLs.
@@ -495,7 +494,7 @@ class TestApplicationFetcher : public ApplicationFetcher {
   GURL fetcher_url_;
   std::string mime_type_;
 
-  DISALLOW_COPY_AND_ASSIGN(TestApplicationFetcher);
+  DISALLOW_COPY_AND_ASSIGN(AMTestPackageManager);
 };
 
 class ApplicationManagerTest : public testing::Test {
@@ -506,7 +505,7 @@ class ApplicationManagerTest : public testing::Test {
 
   void SetUp() override {
     application_manager_.reset(new ApplicationManager(
-        make_scoped_ptr(new TestApplicationFetcher)));
+        make_scoped_ptr(new AMTestPackageManager)));
     test_loader_ = new TestApplicationLoader;
     test_loader_->set_context(&context_);
     application_manager_->set_default_loader(
@@ -563,7 +562,7 @@ TEST_F(ApplicationManagerTest, ClientError) {
 
 TEST_F(ApplicationManagerTest, Deletes) {
   {
-    ApplicationManager am(make_scoped_ptr(new TestApplicationFetcher));
+    ApplicationManager am(make_scoped_ptr(new AMTestPackageManager));
     TestApplicationLoader* default_loader = new TestApplicationLoader;
     default_loader->set_context(&context_);
     TestApplicationLoader* url_loader1 = new TestApplicationLoader;
@@ -709,13 +708,13 @@ TEST(ApplicationManagerTest2, ContentHandlerConnectionGetsRequestorURL) {
   const GURL requestor_url("http://requestor.url");
   TestContext test_context;
   base::MessageLoop loop;
-  scoped_ptr<TestApplicationFetcher> test_application_fetcher(
-      new TestApplicationFetcher);
-  test_application_fetcher->set_create_test_fetcher(true);
-  ApplicationManager application_manager(test_application_fetcher.Pass());
+  scoped_ptr<AMTestPackageManager> test_package_manager(
+      new AMTestPackageManager);
+  test_package_manager->set_create_test_fetcher(true);
+  test_package_manager->RegisterContentHandler(kTestMimeType,
+                                               content_handler_url);
+  ApplicationManager application_manager(test_package_manager.Pass());
   application_manager.set_default_loader(nullptr);
-  application_manager.RegisterContentHandler(kTestMimeType,
-                                             content_handler_url);
 
   TestApplicationLoader* loader = new TestApplicationLoader;
   loader->set_context(&test_context);
@@ -775,14 +774,14 @@ TEST(ApplicationManagerTest2,
   const GURL content_handler_url("http://test.content.handler");
   const GURL requestor_url("http://requestor.url");
   TestContext test_context;
-  scoped_ptr<TestApplicationFetcher> test_application_fetcher(
-      new TestApplicationFetcher);
-  test_application_fetcher->set_fetcher_url(GURL("test:test"));
-  test_application_fetcher->set_create_test_fetcher(true);
-  ApplicationManager application_manager(test_application_fetcher.Pass());
+  scoped_ptr<AMTestPackageManager> test_package_manager(
+      new AMTestPackageManager);
+  test_package_manager->set_fetcher_url(GURL("test:test"));
+  test_package_manager->set_create_test_fetcher(true);
+  test_package_manager->RegisterContentHandler(kTestMimeType,
+                                               content_handler_url);
+  ApplicationManager application_manager(test_package_manager.Pass());
   application_manager.set_default_loader(nullptr);
-  application_manager.RegisterContentHandler(kTestMimeType,
-                                             content_handler_url);
 
   TestApplicationLoader* content_handler_loader = new TestApplicationLoader;
   content_handler_loader->set_create_content_handler(true);
@@ -834,14 +833,13 @@ TEST(ApplicationManagerTest2, DifferedContentHandlersGetDifferentIDs) {
   const GURL content_handler_url("http://test.content.handler");
   const GURL requestor_url("http://requestor.url");
   TestContext test_context;
-  TestApplicationFetcher* test_application_fetcher = new TestApplicationFetcher;
-  test_application_fetcher->set_fetcher_url(GURL("test:test"));
-  test_application_fetcher->set_create_test_fetcher(true);
-  ApplicationManager application_manager(
-      make_scoped_ptr(test_application_fetcher));
+  AMTestPackageManager* test_package_manager = new AMTestPackageManager;
+  test_package_manager->set_fetcher_url(GURL("test:test"));
+  test_package_manager->set_create_test_fetcher(true);
+  test_package_manager->RegisterContentHandler(kTestMimeType,
+                                               content_handler_url);
+  ApplicationManager application_manager(make_scoped_ptr(test_package_manager));
   application_manager.set_default_loader(nullptr);
-  application_manager.RegisterContentHandler(kTestMimeType,
-                                             content_handler_url);
 
   TestApplicationLoader* content_handler_loader = new TestApplicationLoader;
   content_handler_loader->set_create_content_handler(true);
@@ -870,9 +868,10 @@ TEST(ApplicationManagerTest2, DifferedContentHandlersGetDifferentIDs) {
 
   const std::string mime_type2("test/mime-type2");
   const GURL content_handler_url2("http://test.content2.handler");
-  test_application_fetcher->set_fetcher_url(GURL("test2:test2"));
-  test_application_fetcher->set_mime_type(mime_type2);
-  application_manager.RegisterContentHandler(mime_type2, content_handler_url2);
+  test_package_manager->set_fetcher_url(GURL("test2:test2"));
+  test_package_manager->set_mime_type(mime_type2);
+  test_package_manager->RegisterContentHandler(mime_type2,
+                                               content_handler_url2);
 
   TestApplicationLoader* content_handler_loader2 = new TestApplicationLoader;
   content_handler_loader->set_create_content_handler(true);

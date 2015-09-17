@@ -33,7 +33,7 @@ class SequencedWorkerPool;
 namespace mojo {
 namespace shell {
 
-class ApplicationFetcher;
+class PackageManager;
 class ApplicationInstance;
 class ContentHandlerConnection;
 
@@ -55,7 +55,7 @@ class ApplicationManager {
     DISALLOW_COPY_AND_ASSIGN(TestAPI);
   };
 
-  explicit ApplicationManager(scoped_ptr<ApplicationFetcher> fetcher);
+  explicit ApplicationManager(scoped_ptr<PackageManager> package_manager);
   ~ApplicationManager();
 
   // Loads a service if necessary and establishes a new client connection.
@@ -86,19 +86,6 @@ class ApplicationManager {
     ptr->Bind(InterfacePtrInfo<Interface>(service_handle.Pass(), 0u));
   }
 
-  void RegisterContentHandler(const std::string& mime_type,
-                              const GURL& content_handler_url);
-
-  // Registers a package alias. When attempting to load |alias|, it will
-  // instead redirect to |content_handler_package|, which is a content handler
-  // which will be passed the |alias| as the URLResponse::url. Different values
-  // of |alias| with the same |qualifier| that are in the same
-  // |content_handler_package| will run in the same process in multi-process
-  // mode.
-  void RegisterApplicationPackageAlias(const GURL& alias,
-                                       const GURL& content_handler_package,
-                                       const std::string& qualifier);
-
   // Sets the default Loader to be used if not overridden by SetLoaderForURL().
   void set_default_loader(scoped_ptr<ApplicationLoader> loader) {
     default_loader_ = loader.Pass();
@@ -128,10 +115,8 @@ class ApplicationManager {
   ApplicationInstance* GetApplicationInstance(const Identity& identity) const;
 
  private:
-  using ApplicationPackagedAlias = std::map<GURL, std::pair<GURL, std::string>>;
   using IdentityToApplicationInstanceMap =
       std::map<Identity, ApplicationInstance*>;
-  using MimeTypeToURLMap = std::map<std::string, GURL>;
   using URLToContentHandlerMap =
       std::map<std::pair<GURL, std::string>, ContentHandlerConnection*>;
   using URLToLoaderMap = std::map<GURL, ApplicationLoader*>;
@@ -185,20 +170,18 @@ class ApplicationManager {
       const GURL& application_url,
       const std::string& interface_name);
 
-  scoped_ptr<ApplicationFetcher> const fetcher_;
+  scoped_ptr<PackageManager> const package_manager_;
   // Loader management.
   // Loaders are chosen in the order they are listed here.
   URLToLoaderMap url_to_loader_;
   scoped_ptr<ApplicationLoader> default_loader_;
   scoped_ptr<NativeRunnerFactory> native_runner_factory_;
 
-  ApplicationPackagedAlias application_package_alias_;
   IdentityToApplicationInstanceMap identity_to_instance_;
   URLToContentHandlerMap url_to_content_handler_;
 
   base::SequencedWorkerPool* blocking_pool_;
   updater::UpdaterPtr updater_;
-  MimeTypeToURLMap mime_type_to_url_;
   ScopedVector<NativeRunner> native_runners_;
   // Counter used to assign ids to content_handlers.
   uint32_t content_handler_id_counter_;

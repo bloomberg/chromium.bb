@@ -8,7 +8,6 @@ import("//testing/test.gni")
 source_set("shell") {
   output_name = "mojo_shell"
   sources = [
-    "application_fetcher.h",
     "application_instance.cc",
     "application_instance.h",
     "application_loader.h",
@@ -27,6 +26,7 @@ source_set("shell") {
     "identity.cc",
     "identity.h",
     "native_runner.h",
+    "package_manager.h",
     "query_util.cc",
     "query_util.h",
     "static_application_loader.cc",
@@ -60,6 +60,8 @@ test("mojo_shell_unittests") {
     "application_manager_unittest.cc",
     "capability_filter_unittest.cc",
     "query_util_unittest.cc",
+    "test_package_manager.cc",
+    "test_package_manager.h",
   ]
 
   deps = [

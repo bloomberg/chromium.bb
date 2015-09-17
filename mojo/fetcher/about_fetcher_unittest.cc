@@ -15,7 +15,7 @@
 #include "mojo/application/public/interfaces/content_handler.mojom.h"
 #include "mojo/common/weak_binding_set.h"
 #include "mojo/fetcher/about_fetcher.h"
-#include "mojo/fetcher/base_application_fetcher.h"
+#include "mojo/package_manager/package_manager_impl.h"
 #include "mojo/runner/context.h"
 #include "mojo/shell/application_loader.h"
 #include "mojo/shell/application_manager.h"
@@ -125,13 +125,15 @@ class AboutFetcherTest : public testing::Test {
     runner::Context::EnsureEmbedderIsInitialized();
     base::FilePath shell_dir;
     PathService::Get(base::DIR_MODULE, &shell_dir);
-    application_manager_.reset(new shell::ApplicationManager(
-        make_scoped_ptr(new BaseApplicationFetcher(shell_dir))));
+    scoped_ptr<package_manager::PackageManagerImpl> package_manager(
+        new package_manager::PackageManagerImpl(shell_dir));
+    package_manager->RegisterContentHandler(
+        "text/html", GURL("test:html_content_handler"));
+    application_manager_.reset(
+        new shell::ApplicationManager(package_manager.Pass()));
     application_manager_->SetLoaderForURL(
         make_scoped_ptr(new TestLoader(&html_content_handler_)),
         GURL("test:html_content_handler"));
-    application_manager_->RegisterContentHandler(
-        "text/html", GURL("test:html_content_handler"));
   }
 
   void TearDown() override { application_manager_.reset(); }

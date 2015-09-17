@@ -18,6 +18,9 @@
 #include "url/gurl.h"
 
 namespace mojo {
+namespace package_manager {
+class PackageManagerImpl;
+}
 namespace runner {
 
 class NativeApplicationLoader;
@@ -52,6 +55,10 @@ class Context : public embedder::ProcessDelegate {
     return application_manager_.get();
   }
 
+  package_manager::PackageManagerImpl* package_manager() {
+    return package_manager_;
+  }
+
  private:
   class NativeViewportApplicationLoader;
 
@@ -63,6 +70,9 @@ class Context : public embedder::ProcessDelegate {
   ScopedUserDataDir scoped_user_data_dir;
   std::set<GURL> app_urls_;
   scoped_ptr<TaskRunners> task_runners_;
+  base::FilePath shell_file_root_;
+  // Owned by |application_manager_|.
+  package_manager::PackageManagerImpl* package_manager_;
   scoped_ptr<shell::ApplicationManager> application_manager_;
   base::Closure app_complete_callback_;
   base::Time main_entry_time_;

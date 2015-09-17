@@ -13,10 +13,10 @@
 #include "base/trace_event/trace_event.h"
 #include "mojo/application/public/interfaces/content_handler.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "mojo/shell/application_fetcher.h"
 #include "mojo/shell/application_instance.h"
 #include "mojo/shell/content_handler_connection.h"
 #include "mojo/shell/fetcher.h"
+#include "mojo/shell/package_manager.h"
 #include "mojo/shell/query_util.h"
 #include "mojo/shell/switches.h"
 
@@ -50,11 +50,12 @@ bool ApplicationManager::TestAPI::HasRunningInstanceForURL(
          manager_->identity_to_instance_.end();
 }
 
-ApplicationManager::ApplicationManager(scoped_ptr<ApplicationFetcher> fetcher)
-    : fetcher_(fetcher.Pass()),
+ApplicationManager::ApplicationManager(
+    scoped_ptr<PackageManager> package_manager)
+    : package_manager_(package_manager.Pass()),
       content_handler_id_counter_(0u),
       weak_ptr_factory_(this) {
-  fetcher_->SetApplicationManager(this);
+  package_manager_->SetApplicationManager(this);
 }
 
 ApplicationManager::~ApplicationManager() {
@@ -107,7 +108,7 @@ void ApplicationManager::ConnectToApplication(
   if (ConnectToRunningApplication(&params))
     return;
 
-  GURL resolved_url = fetcher_->ResolveURL(original_url);
+  GURL resolved_url = package_manager_->ResolveURL(original_url);
   params->SetURLInfo(resolved_url);
   if (ConnectToRunningApplication(&params))
     return;
@@ -126,7 +127,7 @@ void ApplicationManager::ConnectToApplication(
   auto callback =
       base::Bind(&ApplicationManager::HandleFetchCallback,
                  weak_ptr_factory_.GetWeakPtr(), base::Passed(&params));
-  fetcher_->FetchRequest(original_url_request.Pass(), callback);
+  package_manager_->FetchRequest(original_url_request.Pass(), callback);
 }
 
 bool ApplicationManager::ConnectToRunningApplication(
@@ -226,85 +227,39 @@ void ApplicationManager::HandleFetchCallback(
   ApplicationInstance* app = nullptr;
   InterfaceRequest<Application> request(RegisterInstance(params.Pass(), &app));
 
-  // For resources that are loaded with content handlers, we group app instances
-  // by site.
 
-  // If the response begins with a #!mojo <content-handler-url>, use it.
   GURL content_handler_url;
-  std::string shebang;
-  // TODO(beng): it seems like some delegate should/would want to have a say in
-  //             configuring the qualifier also.
-  bool enable_multi_process = base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableMultiprocess);
-
-  if (fetcher->PeekContentHandler(&shebang, &content_handler_url)) {
-    URLResponsePtr response(fetcher->AsURLResponse(
-        blocking_pool_, static_cast<int>(shebang.size())));
-    std::string site =
-        enable_multi_process ? response->site.To<std::string>() : std::string();
+  URLResponsePtr new_response;
+  if (package_manager_->HandleWithContentHandler(fetcher.get(),
+                                                 app_url,
+                                                 blocking_pool_,
+                                                 &new_response,
+                                                 &content_handler_url,
+                                                 &qualifier)) {
     LoadWithContentHandler(originator_identity, originator_filter,
-                           content_handler_url, site, filter, connect_callback,
-                           app, request.Pass(), response.Pass());
-    return;
-  }
-
-  MimeTypeToURLMap::iterator iter = mime_type_to_url_.find(fetcher->MimeType());
-  if (iter != mime_type_to_url_.end()) {
-    URLResponsePtr response(fetcher->AsURLResponse(blocking_pool_, 0));
-    std::string site =
-        enable_multi_process ? response->site.To<std::string>() : std::string();
-    LoadWithContentHandler(originator_identity, originator_filter, iter->second,
-                           site, filter, connect_callback, app, request.Pass(),
-                           response.Pass());
-    return;
-  }
-
-  auto alias_iter = application_package_alias_.find(app_url);
-  if (alias_iter != application_package_alias_.end()) {
-    // We replace the qualifier with the one our package alias requested.
-    URLResponsePtr response(URLResponse::New());
-    response->url = app_url.spec();
-
-    std::string qualifier;
-    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kEnableMultiprocess)) {
-      // Why can't we use this in single process mode? Because of
-      // base::AtExitManager. If you link in ApplicationRunner into
-      // your code, and then we make initialize multiple copies of the
-      // application, we end up with multiple AtExitManagers and will check on
-      // the second one being created.
-      //
-      // Why doesn't that happen when running different apps? Because
-      // your_thing.mojo!base::AtExitManager and
-      // my_thing.mojo!base::AtExitManager are different symbols.
-      qualifier = alias_iter->second.second;
+                           content_handler_url, qualifier, filter,
+                           connect_callback, app, request.Pass(),
+                           new_response.Pass());
+  } else {
+    // TODO(erg): Have a better way of switching the sandbox on. For now, switch
+    // it on hard coded when we're using some of the sandboxable core services.
+    bool start_sandboxed = false;
+    if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kMojoNoSandbox)) {
+      if (app_url == GURL("mojo://core_services/") && qualifier == "Core")
+        start_sandboxed = true;
+      else if (app_url == GURL("mojo://html_viewer/"))
+        start_sandboxed = true;
     }
 
-    LoadWithContentHandler(originator_identity, originator_filter,
-                           alias_iter->second.first, qualifier, filter,
-                           connect_callback, app, request.Pass(),
-                           response.Pass());
-    return;
+    connect_callback.Run(Shell::kInvalidContentHandlerID);
+
+    fetcher->AsPath(blocking_pool_,
+                    base::Bind(&ApplicationManager::RunNativeApplication,
+                               weak_ptr_factory_.GetWeakPtr(),
+                               base::Passed(request.Pass()), start_sandboxed,
+                               base::Passed(fetcher.Pass())));
   }
-
-  // TODO(erg): Have a better way of switching the sandbox on. For now, switch
-  // it on hard coded when we're using some of the sandboxable core services.
-  bool start_sandboxed = false;
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kMojoNoSandbox)) {
-    if (app_url == GURL("mojo://core_services/") && qualifier == "Core")
-      start_sandboxed = true;
-    else if (app_url == GURL("mojo://html_viewer/"))
-      start_sandboxed = true;
-  }
-
-  connect_callback.Run(Shell::kInvalidContentHandlerID);
-
-  fetcher->AsPath(blocking_pool_,
-                  base::Bind(&ApplicationManager::RunNativeApplication,
-                             weak_ptr_factory_.GetWeakPtr(),
-                             base::Passed(request.Pass()), start_sandboxed,
-                             base::Passed(fetcher.Pass())));
 }
 
 void ApplicationManager::RunNativeApplication(
@@ -331,22 +286,6 @@ void ApplicationManager::RunNativeApplication(
   runner->Start(path, start_sandboxed, application_request.Pass(),
                 base::Bind(&ApplicationManager::CleanupRunner,
                            weak_ptr_factory_.GetWeakPtr(), runner));
-}
-
-void ApplicationManager::RegisterContentHandler(
-    const std::string& mime_type,
-    const GURL& content_handler_url) {
-  DCHECK(content_handler_url.is_valid())
-      << "Content handler URL is invalid for mime type " << mime_type;
-  mime_type_to_url_[mime_type] = content_handler_url;
-}
-
-void ApplicationManager::RegisterApplicationPackageAlias(
-    const GURL& alias,
-    const GURL& content_handler_package,
-    const std::string& qualifier) {
-  application_package_alias_[alias] =
-      std::make_pair(content_handler_package, qualifier);
 }
 
 void ApplicationManager::LoadWithContentHandler(

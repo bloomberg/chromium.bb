@@ -24,6 +24,7 @@ executable("mandoline_runner") {
     "//mandoline/ui/desktop_ui/public/interfaces",
     "//mojo/common",
     "//mojo/environment:chromium",
+    "//mojo/package_manager",
     "//mojo/runner:lib",
     "//mojo/runner:mojo_runner_lib",
   ]
