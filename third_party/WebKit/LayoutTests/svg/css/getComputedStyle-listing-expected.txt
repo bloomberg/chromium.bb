@@ -134,6 +134,7 @@ color: rgb(0, 0, 0)
 color-interpolation: sRGB
 color-interpolation-filters: linearRGB
 color-rendering: auto
+content: 
 cursor: auto
 cx: 0px
 cy: 0px
