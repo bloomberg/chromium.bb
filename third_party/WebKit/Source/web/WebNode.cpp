@@ -36,6 +36,7 @@
 #include "core/dom/Element.h"
 #include "core/dom/Node.h"
 #include "core/dom/NodeList.h"
+#include "core/dom/StaticNodeList.h"
 #include "core/dom/TagCollection.h"
 #include "core/editing/serializers/Serialization.h"
 #include "core/events/Event.h"
@@ -241,14 +242,30 @@ WebElementCollection WebNode::getElementsByHTMLTagName(const WebString& tag) con
     return WebElementCollection();
 }
 
-WebElement WebNode::querySelector(const WebString& tag, WebExceptionCode& ec) const
+WebElement WebNode::querySelector(const WebString& selector, WebExceptionCode& ec) const
 {
+    if (!m_private->isContainerNode())
+        return WebElement();
     TrackExceptionState exceptionState;
-    WebElement element;
-    if (m_private->isContainerNode())
-        element = toContainerNode(m_private.get())->querySelector(tag, exceptionState);
+    WebElement element = toContainerNode(m_private.get())->querySelector(selector, exceptionState);
     ec = exceptionState.code();
     return element;
+}
+
+void WebNode::querySelectorAll(const WebString& selector, WebExceptionCode& ec, WebVector<WebElement>& results) const
+{
+    if (!m_private->isContainerNode())
+        return;
+    TrackExceptionState exceptionState;
+    RefPtrWillBeRawPtr<StaticElementList> elements = toContainerNode(m_private.get())->querySelectorAll(selector, exceptionState);
+    ec = exceptionState.code();
+    if (exceptionState.hadException())
+        return;
+    Vector<WebElement> temp;
+    temp.reserveCapacity(elements->length());
+    for (unsigned i = 0; i < elements->length(); ++i)
+        temp.append(WebElement(elements->item(i)));
+    results.assign(temp);
 }
 
 bool WebNode::focused() const

@@ -34,6 +34,7 @@
 #include "../platform/WebCommon.h"
 #include "../platform/WebPrivatePtr.h"
 #include "../platform/WebString.h"
+#include "../platform/WebVector.h"
 #include "WebExceptionCode.h"
 
 namespace blink {
@@ -112,7 +113,8 @@ public:
     BLINK_EXPORT void simulateClick();
     // The argument should be lower-cased.
     BLINK_EXPORT WebElementCollection getElementsByHTMLTagName(const WebString&) const;
-    BLINK_EXPORT WebElement querySelector(const WebString&, WebExceptionCode&) const;
+    BLINK_EXPORT WebElement querySelector(const WebString& selector, WebExceptionCode&) const;
+    BLINK_EXPORT void querySelectorAll(const WebString& selector, WebExceptionCode&, WebVector<WebElement>& results) const;
     BLINK_EXPORT bool focused() const;
     BLINK_EXPORT bool remove();
 
