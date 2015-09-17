@@ -693,9 +693,10 @@ String AXObject::recursiveTextAlternative(const AXObject& axObj, bool inAriaLabe
     return axObj.textAlternative(true, inAriaLabelledByTraversal, visited, tmpNameFrom, nullptr, nullptr);
 }
 
-// In ARIA 1.1, the default value for aria-orientation changed from horizontal to undefined.
 AccessibilityOrientation AXObject::orientation() const
 {
+    // In ARIA 1.1, the default value for aria-orientation changed from
+    // horizontal to undefined.
     return AccessibilityOrientationUndefined;
 }
 

@@ -143,6 +143,7 @@ protected:
     bool deprecatedExposesTitleUIElement() const override;
     int headingLevel() const final;
     unsigned hierarchicalLevel() const final;
+    AccessibilityOrientation orientation() const override;
     String text() const override;
     AXObject* deprecatedTitleUIElement() const override;
 

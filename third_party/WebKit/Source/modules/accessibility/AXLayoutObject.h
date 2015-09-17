@@ -106,7 +106,6 @@ protected:
     RGBA32 color() const final;
     // Font size is in pixels.
     float fontSize() const final;
-    AccessibilityOrientation orientation() const override;
     String text() const override;
     AccessibilityTextDirection textDirection() const final;
     int textLength() const override;
