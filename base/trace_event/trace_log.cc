@@ -79,9 +79,6 @@ const size_t kMonitorTraceEventBufferChunks = 30000 / kTraceBufferChunkSize;
 // ECHO_TO_CONSOLE needs a small buffer to hold the unfinished COMPLETE events.
 const size_t kEchoToConsoleTraceEventBufferChunks = 256;
 
-// The overhead of TraceEvent above this threshold will be reported in the
-// trace.
-const int kOverheadReportThresholdInMicroseconds = 50;
 const size_t kTraceEventBufferSizeInBytes = 100 * 1024;
 const int kThreadFlushTimeoutMs = 3000;
 
@@ -102,9 +99,7 @@ const char* g_category_groups[MAX_CATEGORY_GROUPS] = {
     "toplevel",
     "tracing already shutdown",
     "tracing categories exhausted; must increase MAX_CATEGORY_GROUPS",
-    "__metadata",
-    // For reporting trace_event overhead. For thread local event buffers only.
-    "trace_event_overhead"};
+    "__metadata"};
 
 // The enabled flag is char instead of bool so that the API can be used from C.
 unsigned char g_category_group_enabled[MAX_CATEGORY_GROUPS] = {0};
@@ -112,8 +107,7 @@ unsigned char g_category_group_enabled[MAX_CATEGORY_GROUPS] = {0};
 const int g_category_already_shutdown = 1;
 const int g_category_categories_exhausted = 2;
 const int g_category_metadata = 3;
-const int g_category_trace_event_overhead = 4;
-const int g_num_builtin_categories = 5;
+const int g_num_builtin_categories = 4;
 // Skip default categories.
 base::subtle::AtomicWord g_category_index = g_num_builtin_categories;
 
@@ -221,9 +215,6 @@ class TraceLog::ThreadLocalEventBuffer
 
   TraceEvent* AddTraceEvent(TraceEventHandle* handle);
 
-  void ReportOverhead(const TraceTicks& event_timestamp,
-                      const ThreadTicks& event_thread_timestamp);
-
   TraceEvent* GetEventByHandle(TraceEventHandle handle) {
     if (!chunk_ || handle.chunk_seq != chunk_->seq() ||
         handle.chunk_index != chunk_index_)
@@ -253,8 +244,6 @@ class TraceLog::ThreadLocalEventBuffer
   TraceLog* trace_log_;
   scoped_ptr<TraceBufferChunk> chunk_;
   size_t chunk_index_;
-  int event_count_;
-  TimeDelta overhead_;
   int generation_;
 
   DISALLOW_COPY_AND_ASSIGN(ThreadLocalEventBuffer);
@@ -263,7 +252,6 @@ class TraceLog::ThreadLocalEventBuffer
 TraceLog::ThreadLocalEventBuffer::ThreadLocalEventBuffer(TraceLog* trace_log)
     : trace_log_(trace_log),
       chunk_index_(0),
-      event_count_(0),
       generation_(trace_log->generation()) {
   // ThreadLocalEventBuffer is created only if the thread has a message loop, so
   // the following message_loop won't be NULL.
@@ -282,17 +270,6 @@ TraceLog::ThreadLocalEventBuffer::~ThreadLocalEventBuffer() {
   CheckThisIsCurrentBuffer();
   MessageLoop::current()->RemoveDestructionObserver(this);
   MemoryDumpManager::GetInstance()->UnregisterDumpProvider(this);
-
-  // Zero event_count_ happens in either of the following cases:
-  // - no event generated for the thread;
-  // - the thread has no message loop;
-  // - trace_event_overhead is disabled.
-  if (event_count_) {
-    InitializeMetadataEvent(AddTraceEvent(NULL),
-                            static_cast<int>(base::PlatformThread::CurrentId()),
-                            "overhead", "average_overhead",
-                            overhead_.InMillisecondsF() / event_count_);
-  }
 
   {
     AutoLock lock(trace_log_->lock_);
@@ -325,43 +302,6 @@ TraceEvent* TraceLog::ThreadLocalEventBuffer::AddTraceEvent(
     MakeHandle(chunk_->seq(), chunk_index_, event_index, handle);
 
   return trace_event;
-}
-
-void TraceLog::ThreadLocalEventBuffer::ReportOverhead(
-    const TraceTicks& event_timestamp,
-    const ThreadTicks& event_thread_timestamp) {
-  if (!g_category_group_enabled[g_category_trace_event_overhead])
-    return;
-
-  CheckThisIsCurrentBuffer();
-
-  event_count_++;
-  ThreadTicks thread_now = ThreadNow();
-  TraceTicks now = trace_log_->OffsetNow();
-  TimeDelta overhead = now - event_timestamp;
-  if (overhead.InMicroseconds() >= kOverheadReportThresholdInMicroseconds) {
-    TraceEvent* trace_event = AddTraceEvent(NULL);
-    if (trace_event) {
-      trace_event->Initialize(
-          static_cast<int>(PlatformThread::CurrentId()),
-          event_timestamp,
-          event_thread_timestamp,
-          TRACE_EVENT_PHASE_COMPLETE,
-          &g_category_group_enabled[g_category_trace_event_overhead],
-          "overhead",
-          trace_event_internal::kNoId,  // id
-          trace_event_internal::kNoId,  // context_id
-          trace_event_internal::kNoId,  // bind_id
-          ::trace_event_internal::kZeroNumArgs,
-          nullptr,
-          nullptr,
-          nullptr,
-          nullptr,
-          TRACE_EVENT_FLAG_NONE);
-      trace_event->UpdateDuration(now, thread_now);
-    }
-  }
-  overhead_ += overhead;
 }
 
 void TraceLog::ThreadLocalEventBuffer::WillDestroyCurrentMessageLoop() {
@@ -634,8 +574,6 @@ const unsigned char* TraceLog::GetCategoryGroupEnabledInternal(
 void TraceLog::GetKnownCategoryGroups(
     std::vector<std::string>* category_groups) {
   AutoLock lock(lock_);
-  category_groups->push_back(
-      g_category_groups[g_category_trace_event_overhead]);
   size_t category_index = base::subtle::NoBarrier_Load(&g_category_index);
   for (size_t i = g_num_builtin_categories; i < category_index; i++)
     category_groups->push_back(g_category_groups[i]);
@@ -1257,9 +1195,6 @@ TraceEventHandle TraceLog::AddTraceEventWithThreadIdAndTimestamp(
   }
 
   TraceTicks offset_event_timestamp = OffsetTimestamp(timestamp);
-  TraceTicks now = flags & TRACE_EVENT_FLAG_EXPLICIT_TIMESTAMP
-                       ? OffsetNow()
-                       : offset_event_timestamp;
   ThreadTicks thread_now = ThreadNow();
 
   // |thread_local_event_buffer_| can be null if the current thread doesn't have
@@ -1384,9 +1319,6 @@ TraceEventHandle TraceLog::AddTraceEventWithThreadIdAndTimestamp(
           arg_values, flags);
     }
   }
-
-  if (thread_local_event_buffer)
-    thread_local_event_buffer->ReportOverhead(now, thread_now);
 
   return handle;
 }
