@@ -82,7 +82,7 @@ class _ApkDelegate(object):
     PullAppFilesImpl(device, self._package, files, directory)
 
   def Clear(self, device):
-    device.ClearApplicationState(self._package)
+    device.ClearApplicationState(self._package, permissions=self._permissions)
 
 
 class _ExeDelegate(object):
