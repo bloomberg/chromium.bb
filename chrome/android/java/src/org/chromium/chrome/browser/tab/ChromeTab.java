@@ -43,11 +43,9 @@ import org.chromium.chrome.browser.media.MediaCaptureNotificationService;
 import org.chromium.chrome.browser.media.ui.MediaSessionTabHelper;
 import org.chromium.chrome.browser.ntp.NativePageAssassin;
 import org.chromium.chrome.browser.ntp.NativePageFactory;
-import org.chromium.chrome.browser.omnibox.geo.GeolocationHeader;
 import org.chromium.chrome.browser.policy.PolicyAuditor;
 import org.chromium.chrome.browser.policy.PolicyAuditor.AuditEvent;
 import org.chromium.chrome.browser.rlz.RevenueStats;
-import org.chromium.chrome.browser.search_engines.TemplateUrlService;
 import org.chromium.chrome.browser.tab.TabUma.TabCreationState;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager.TabCreator;
 import org.chromium.chrome.browser.tabmodel.TabModel;
@@ -58,9 +56,6 @@ import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
 import org.chromium.components.navigation_interception.InterceptNavigationDelegate;
 import org.chromium.components.navigation_interception.NavigationParams;
-import org.chromium.content.browser.ActivityContentVideoViewClient;
-import org.chromium.content.browser.ContentVideoViewClient;
-import org.chromium.content.browser.ContentViewClient;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.crypto.CipherFactory;
 import org.chromium.content_public.browser.GestureStateListener;
@@ -189,7 +184,6 @@ public class ChromeTab extends Tab {
                 }
             }
         };
-        setContentViewClient(createContentViewClient());
         if (mActivity != null && creationState != null) {
             setTabUma(new TabUma(
                     this, creationState, mActivity.getTabModelSelector().getModel(incognito)));
@@ -487,82 +481,6 @@ public class ChromeTab extends Tab {
             return !isClosing()
                     && ChromeWebContentsDelegateAndroid.nativeIsCapturingVideo(getWebContents());
         }
-    }
-
-    @VisibleForTesting
-    public void setViewClientForTesting(ContentViewClient client) {
-        setContentViewClient(client);
-    }
-
-    @VisibleForTesting
-    public ContentViewClient getViewClientForTesting() {
-        return getContentViewClient();
-    }
-
-    private ContentViewClient createContentViewClient() {
-        return new TabContentViewClient() {
-            @Override
-            public void onBackgroundColorChanged(int color) {
-                ChromeTab.this.onBackgroundColorChanged(color);
-            }
-
-            @Override
-            public void onOffsetsForFullscreenChanged(
-                    float topControlsOffsetY, float contentOffsetY, float overdrawBottomHeight) {
-                onOffsetsChanged(topControlsOffsetY, contentOffsetY, overdrawBottomHeight,
-                        isShowingSadTab());
-            }
-
-            @Override
-            public void performWebSearch(String searchQuery) {
-                if (TextUtils.isEmpty(searchQuery)) return;
-                String url = TemplateUrlService.getInstance().getUrlForSearchQuery(searchQuery);
-                String headers = GeolocationHeader.getGeoHeader(getApplicationContext(), url,
-                        isIncognito());
-
-                LoadUrlParams loadUrlParams = new LoadUrlParams(url);
-                loadUrlParams.setVerbatimHeaders(headers);
-                loadUrlParams.setTransitionType(PageTransition.GENERATED);
-                mActivity.getTabModelSelector().openNewTab(loadUrlParams,
-                        TabLaunchType.FROM_LONGPRESS_FOREGROUND, ChromeTab.this, isIncognito());
-            }
-
-            @Override
-            public boolean doesPerformWebSearch() {
-                return true;
-            }
-
-            @Override
-            public ContentVideoViewClient getContentVideoViewClient() {
-                return new ActivityContentVideoViewClient(mActivity) {
-                    @Override
-                    public void enterFullscreenVideo(View view) {
-                        super.enterFullscreenVideo(view);
-                        FullscreenManager fullscreenManager = getFullscreenManager();
-                        if (fullscreenManager != null) {
-                            fullscreenManager.setOverlayVideoMode(true);
-                            // Disable double tap for video.
-                            if (getContentViewCore() != null) {
-                                getContentViewCore().updateDoubleTapSupport(false);
-                            }
-                        }
-                    }
-
-                    @Override
-                    public void exitFullscreenVideo() {
-                        FullscreenManager fullscreenManager = getFullscreenManager();
-                        if (fullscreenManager != null) {
-                            fullscreenManager.setOverlayVideoMode(false);
-                            // Disable double tap for video.
-                            if (getContentViewCore() != null) {
-                                getContentViewCore().updateDoubleTapSupport(true);
-                            }
-                        }
-                        super.exitFullscreenVideo();
-                    }
-                };
-            }
-        };
     }
 
     private WebContentsObserver createWebContentsObserver(WebContents webContents) {

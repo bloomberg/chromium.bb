@@ -61,9 +61,11 @@ import org.chromium.chrome.browser.infobar.InfoBarContainer;
 import org.chromium.chrome.browser.metrics.UmaSessionStats;
 import org.chromium.chrome.browser.metrics.UmaUtils;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
+import org.chromium.chrome.browser.omnibox.geo.GeolocationHeader;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.printing.TabPrinter;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.search_engines.TemplateUrlService;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.ssl.ConnectionSecurityLevel;
 import org.chromium.chrome.browser.ssl.SecurityStateModel;
@@ -74,6 +76,8 @@ import org.chromium.chrome.browser.tabmodel.TabModelBase;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.components.navigation_interception.InterceptNavigationDelegate;
+import org.chromium.content.browser.ActivityContentVideoViewClient;
+import org.chromium.content.browser.ContentVideoViewClient;
 import org.chromium.content.browser.ContentView;
 import org.chromium.content.browser.ContentViewClient;
 import org.chromium.content.browser.ContentViewCore;
@@ -582,11 +586,19 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
         }
     }
 
-    /**
-     * ContentViewClient that provides basic tab functionality and is meant to be extended
-     * by child classes.
-     */
-    protected class TabContentViewClient extends ContentViewClient {
+    private class TabContentViewClient extends ContentViewClient {
+        @Override
+        public void onBackgroundColorChanged(int color) {
+            Tab.this.onBackgroundColorChanged(color);
+        }
+
+        @Override
+        public void onOffsetsForFullscreenChanged(
+                float topControlsOffsetY, float contentOffsetY, float overdrawBottomHeight) {
+            onOffsetsChanged(topControlsOffsetY, contentOffsetY, overdrawBottomHeight,
+                    isShowingSadTab());
+        }
+
         @Override
         public void onUpdateTitle(String title) {
             updateTitle(title);
@@ -618,6 +630,56 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
         public void onFocusedNodeEditabilityChanged(boolean editable) {
             if (getFullscreenManager() == null) return;
             updateFullscreenEnabledState();
+        }
+
+        @Override
+        public boolean doesPerformWebSearch() {
+            return true;
+        }
+
+        @Override
+        public void performWebSearch(String searchQuery) {
+            if (TextUtils.isEmpty(searchQuery)) return;
+            String url = TemplateUrlService.getInstance().getUrlForSearchQuery(searchQuery);
+            String headers = GeolocationHeader.getGeoHeader(getApplicationContext(), url,
+                    isIncognito());
+
+            LoadUrlParams loadUrlParams = new LoadUrlParams(url);
+            loadUrlParams.setVerbatimHeaders(headers);
+            loadUrlParams.setTransitionType(PageTransition.GENERATED);
+            mActivity.getTabModelSelector().openNewTab(loadUrlParams,
+                    TabLaunchType.FROM_LONGPRESS_FOREGROUND, Tab.this, isIncognito());
+        }
+
+        @Override
+        public ContentVideoViewClient getContentVideoViewClient() {
+            return new ActivityContentVideoViewClient(mActivity) {
+                @Override
+                public void enterFullscreenVideo(View view) {
+                    super.enterFullscreenVideo(view);
+                    FullscreenManager fullscreenManager = getFullscreenManager();
+                    if (fullscreenManager != null) {
+                        fullscreenManager.setOverlayVideoMode(true);
+                        // Disable double tap for video.
+                        if (getContentViewCore() != null) {
+                            getContentViewCore().updateDoubleTapSupport(false);
+                        }
+                    }
+                }
+
+                @Override
+                public void exitFullscreenVideo() {
+                    FullscreenManager fullscreenManager = getFullscreenManager();
+                    if (fullscreenManager != null) {
+                        fullscreenManager.setOverlayVideoMode(false);
+                        // Disable double tap for video.
+                        if (getContentViewCore() != null) {
+                            getContentViewCore().updateDoubleTapSupport(true);
+                        }
+                    }
+                    super.exitFullscreenVideo();
+                }
+            };
         }
     }
 
@@ -874,6 +936,8 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
             assert type == TabLaunchType.FROM_RESTORE;
             restoreFieldsFromState(frozenState);
         }
+
+        setContentViewClient(new TabContentViewClient());
     }
 
     /**
@@ -1302,19 +1366,10 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
     }
 
     /**
-     * @return The {@link ContentViewClient} currently bound to any {@link ContentViewCore}
-     *         associated with the current page.  There can still be a {@link ContentViewClient}
-     *         even when there is no {@link ContentViewCore}.
-     */
-    protected ContentViewClient getContentViewClient() {
-        return mContentViewClient;
-    }
-
-    /**
      * @param client The {@link ContentViewClient} to be bound to any current or new
      *               {@link ContentViewCore}s associated with this {@link Tab}.
      */
-    protected void setContentViewClient(ContentViewClient client) {
+    private void setContentViewClient(ContentViewClient client) {
         if (mContentViewClient == client) return;
 
         ContentViewClient oldClient = mContentViewClient;
@@ -1351,13 +1406,6 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
         // subactivity did not change the fullscreen configuration of this ChromeTab's renderer in
         // the case where it was shared (i.e. via an EmbedContentViewActivity).
         updateFullscreenEnabledState();
-    }
-
-    /**
-     * Called on the foreground tab when the Activity is stopped.
-     */
-    public void onActivityStop() {
-        // TODO(jdduke): Remove this method when all downstream callers have been removed.
     }
 
     /**
