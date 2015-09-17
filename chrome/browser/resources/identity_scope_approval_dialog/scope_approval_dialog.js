@@ -47,7 +47,7 @@ document.addEventListener('DOMContentLoaded', function() {
     window.close();
   };
 
-  chrome.identityPrivate.getStrings(function(strings) {
+  chrome.resourcesPrivate.getStrings('identity', function(strings) {
     document.title = strings['window-title'];
   });
 });

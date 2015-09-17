@@ -5,15 +5,6 @@
 // identityPrivate.
 namespace identityPrivate {
 
-  callback GetStringsCallback = void (object result);
-
-  interface Functions {
-    // Gets localized strings required to render the API.
-    //
-    // |callback| : Called with a dictionary mapping names to resource strings.
-    static void getStrings(GetStringsCallback callback);
-  };
-
   interface Events {
     // Fired when a web flow dialog should be displayed.
     static void onWebFlowRequest(DOMString key, DOMString url, DOMString mode);

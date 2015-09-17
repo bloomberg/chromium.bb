@@ -201,6 +201,8 @@ std::vector<APIPermissionInfo*> ChromeAPIPermissions::GetAllPermissions()
        APIPermissionInfo::kFlagCannotBeOptional},
       {APIPermission::kLanguageSettingsPrivate, "languageSettingsPrivate",
        APIPermissionInfo::kFlagCannotBeOptional},
+      {APIPermission::kResourcesPrivate, "resourcesPrivate",
+       APIPermissionInfo::kFlagCannotBeOptional},
 
       // Full url access permissions.
       {APIPermission::kDebugger, "debugger",

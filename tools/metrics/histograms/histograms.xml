@@ -58659,7 +58659,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="467" label="RUNTIME_GETPLATFORMINFO"/>
   <int value="468" label="DELETED_WEBVIEW_INSERTCSS"/>
   <int value="469" label="METRICSPRIVATE_GETISCRASHRECORDINGENABLED"/>
-  <int value="470" label="IDENTITYPRIVATE_GETSTRINGS"/>
+  <int value="470" label="DELETED_IDENTITYPRIVATE_GETSTRINGS"/>
   <int value="471" label="NOTIFICATIONS_GET_ALL"/>
   <int value="472" label="USB_LISTINTERFACES"/>
   <int value="473" label="FILESYSTEM_RETAINENTRY"/>
@@ -59296,6 +59296,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1081" label="CERTIFICATEPROVIDERINTERNAL_REPORTCERTIFICATES"/>
   <int value="1082" label="BLUETOOTHPRIVATE_PAIR"/>
   <int value="1083" label="EASYUNLOCKPRIVATE_FINDSETUPCONNECTION"/>
+  <int value="1084" label="RESOURCESPRIVATE_GETSTRINGS"/>
 </enum>
 
 <enum name="ExtensionInstallCause" type="int">
@@ -59701,6 +59702,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="194" label="kPasswordsPrivate"/>
   <int value="195" label="kLanguageSettingsPrivate"/>
   <int value="196" label="kEnterpriseDeviceAttributes"/>
+  <int value="197" label="kCertificateProvider"/>
+  <int value="198" label="kResourcesPrivate"/>
 </enum>
 
 <enum name="ExtensionServiceVerifyAllSuccess" type="int">

@@ -691,6 +691,10 @@
     "dependencies": ["permission:readingListPrivate"],
     "contexts": ["blessed_extension"]
   },
+  "resourcesPrivate": {
+    "dependencies": ["permission:resourcesPrivate"],
+    "contexts": ["blessed_extension"]
+  },
   "rtcPrivate": {
     "dependencies": ["permission:rtcPrivate"],
     "contexts": ["blessed_extension"]

@@ -887,6 +887,13 @@
       "3F65507A3B39259B38C8173C6FFA3D12DF64CCE9"  // http://crbug.com/371562
     ]
   },
+  "resourcesPrivate": {
+    "channel": "stable",
+    "extension_types": [
+      "extension", "legacy_packaged_app", "platform_app"
+    ],
+    "location": "component"
+  },
   "rtcPrivate": {
     "channel": "stable",
     "extension_types": ["extension", "legacy_packaged_app"],

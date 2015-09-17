@@ -9,6 +9,7 @@
   "permissions": [
     "chrome://theme/",
     "identityPrivate",
+    "resourcesPrivate",
     "webview"
   ],
 
