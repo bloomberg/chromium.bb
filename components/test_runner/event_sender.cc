@@ -1396,6 +1396,7 @@ void EventSender::KeyDown(const std::string& code_str,
   // Windows event flow; on other platforms we create a merged event and test
   // the event flow that that platform provides.
   WebKeyboardEvent event_down;
+  event_down.timeStampSeconds = GetCurrentEventTimeSec();
   event_down.type = WebInputEvent::RawKeyDown;
   event_down.modifiers = modifiers;
   event_down.windowsKeyCode = code;
