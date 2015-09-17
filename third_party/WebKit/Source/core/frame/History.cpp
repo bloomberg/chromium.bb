@@ -34,6 +34,7 @@
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
 #include "core/loader/HistoryItem.h"
+#include "core/loader/NavigationScheduler.h"
 #include "core/page/Page.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/weborigin/KURL.h"
@@ -139,6 +140,8 @@ void History::go(ExecutionContext* context, int delta)
         return;
 
     if (!activeDocument->frame() || !activeDocument->frame()->canNavigate(*m_frame))
+        return;
+    if (!NavigationDisablerForBeforeUnload::isNavigationAllowed())
         return;
 
     if (delta)
