@@ -65,6 +65,7 @@ class TracingHandler {
   void DisableRecording(
       const scoped_refptr<TracingController::TraceDataSink>& trace_data_sink);
   bool IsRecording() const;
+  static bool IsStartupTracingActive();
 
   scoped_ptr<base::Timer> buffer_usage_poll_timer_;
   Target target_;

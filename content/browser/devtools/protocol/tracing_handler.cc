@@ -14,6 +14,7 @@
 #include "base/timer/timer.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/trace_event_impl.h"
+#include "components/tracing/trace_config_file.h"
 #include "content/browser/devtools/devtools_io_context.h"
 
 namespace content {
@@ -159,7 +160,10 @@ Response TracingHandler::Start(DevToolsCommandId command_id,
 }
 
 Response TracingHandler::End(DevToolsCommandId command_id) {
-  if (!did_initiate_recording_)
+  // Startup tracing triggered by --trace-config-file is a special case, where
+  // tracing is started automatically upon browser startup and can be stopped
+  // via DevTools.
+  if (!did_initiate_recording_ && !IsStartupTracingActive())
     return Response::InternalError("Tracing is not started");
 
   scoped_refptr<TracingController::TraceDataSink> proxy;
@@ -256,6 +260,11 @@ void TracingHandler::DisableRecording(
 
 bool TracingHandler::IsRecording() const {
   return TracingController::GetInstance()->IsRecording();
+}
+
+bool TracingHandler::IsStartupTracingActive() {
+  return ::tracing::TraceConfigFile::GetInstance()->IsEnabled() &&
+      TracingController::GetInstance()->IsRecording();
 }
 
 }  // namespace tracing
