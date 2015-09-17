@@ -92,7 +92,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                android:layout_marginTop="16dp"
+                android:layout_marginTop="28dp"
                 android:visibility="gone" >
 
                 <TextView
@@ -101,10 +101,12 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:layout_gravity="center_vertical"
+                    android:layout_marginStart="3dp"
                     android:text="@string/bookmark_offline_page_none"
                     android:textAlignment="viewStart"
                     android:textAppearance="@style/TextAppearance.AppCompat.Medium"
-                    android:textColor="@color/dark_mode_tint" />
+                    android:textColor="@color/dark_mode_tint"
+                    android:textSize="15sp" />
 
                 <Button
                     android:id="@+id/offline_page_save_remove_button"
