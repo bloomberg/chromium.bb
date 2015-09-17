@@ -126,7 +126,7 @@ TEST_CONFIG = """\
     'gn': {'type': 'gn'},
     'goma': {
       'gn_args': 'use_goma=true goma_dir="$(goma_dir)"',
-      'gyp_defines': 'goma=1 gomadir="$(goma_dir)"',
+      'gyp_defines': 'goma=1 gomadir=$(goma_dir)',
     },
     'rel': {
       'gn_args': 'is_debug=false',
@@ -285,9 +285,9 @@ class UnitTest(unittest.TestCase):
 
   def test_gn_lookup_goma_dir_expansion(self):
     self.check(['lookup', '-c', 'gn_rel_bot', '-g', '/foo'], ret=0,
-               out=("/fake_src/buildtools/linux64/gn gen '<path>' "
-                    "'--args=is_debug=false use_goma=true "
-                    "goma_dir=\"/foo\"'\n" ))
+               out=("/fake_src/buildtools/linux64/gn gen <path> "
+                    "--args=is_debug=false use_goma=true "
+                    "goma_dir=\"/foo\"\n" ))
 
   def test_gyp_analyze(self):
     mbw = self.check(['analyze', '-c', 'gyp_rel_bot', '//out/Release',
@@ -311,8 +311,8 @@ class UnitTest(unittest.TestCase):
     mbw.sep = '\\'
     self.check(['gen', '-c', 'gyp_rel_bot', '-g', 'c:\\goma', '//out/Release'],
                mbw=mbw, ret=0,
-               out=("python 'build\\gyp_chromium' -G output_dir=out "
-                    "-D goma=1 -D 'gomadir=c:\\goma'\n"))
+               out=("python build\\gyp_chromium -G output_dir=out "
+                    "-D goma=1 -D gomadir=c:\\goma\n"))
 
   def test_gyp_gen_fails(self):
     mbw = self.fake_mbw()
@@ -321,7 +321,7 @@ class UnitTest(unittest.TestCase):
 
   def test_gyp_lookup_goma_dir_expansion(self):
     self.check(['lookup', '-c', 'gyp_rel_bot', '-g', '/foo'], ret=0,
-               out=("python build/gyp_chromium -G 'output_dir=<path>' "
+               out=("python build/gyp_chromium -G output_dir=<path> "
                     "-D goma=1 -D gomadir=/foo\n"))
 
   def test_help(self):

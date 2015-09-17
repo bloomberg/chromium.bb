@@ -16,9 +16,7 @@ import ast
 import errno
 import json
 import os
-import pipes
 import pprint
-import shlex
 import shutil
 import sys
 import subprocess
@@ -592,7 +590,7 @@ class MetaBuildWrapper(object):
         '-G',
         'output_dir=' + output_dir,
     ]
-    for d in shlex.split(gyp_defines):
+    for d in gyp_defines.split(' '):
       cmd += ['-D', d]
     return cmd
 
@@ -727,7 +725,7 @@ class MetaBuildWrapper(object):
   def PrintCmd(self, cmd):
     if cmd[0] == self.executable:
       cmd = ['python'] + cmd[1:]
-    self.Print(*[pipes.quote(c) for c in cmd])
+    self.Print(*cmd)
 
   def PrintJSON(self, obj):
     self.Print(json.dumps(obj, indent=2, sort_keys=True))
