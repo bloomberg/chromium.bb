@@ -1587,10 +1587,6 @@ void WebGLRenderingContextBase::bufferData(GLenum target, long long size, GLenum
 {
     if (isContextLost())
         return;
-    if (!size) {
-        synthesizeGLError(GL_INVALID_VALUE, "bufferData", "size == 0");
-        return;
-    }
     bufferDataImpl(target, size, 0, usage);
 }
 
