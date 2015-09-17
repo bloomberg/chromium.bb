@@ -28,6 +28,7 @@ TEST_F(TableCellPainterTest, TableCellBackgroundInterestRect)
 
     LayoutView& layoutView = *document().layoutView();
     DeprecatedPaintLayer& rootLayer = *layoutView.layer();
+    DeprecatedPaintLayer& htmlLayer = *toLayoutBoxModelObject(document().documentElement()->layoutObject())->layer();
     LayoutObject& cell1 = *document().getElementById("cell1")->layoutObject();
     LayoutObject& cell2 = *document().getElementById("cell2")->layoutObject();
 
@@ -36,17 +37,25 @@ TEST_F(TableCellPainterTest, TableCellBackgroundInterestRect)
     DeprecatedPaintLayerPainter(rootLayer).paintLayerContents(&context, paintingInfo, PaintLayerPaintingCompositingAllPhases);
     rootDisplayItemList().commitNewDisplayItems();
 
-    EXPECT_DISPLAY_LIST(rootDisplayItemList().displayItems(), 2,
+    EXPECT_DISPLAY_LIST(rootDisplayItemList().displayItems(), 6,
+        TestDisplayItem(rootLayer, DisplayItem::BeginSubsequence),
         TestDisplayItem(layoutView, DisplayItem::BoxDecorationBackground),
-        TestDisplayItem(cell1, DisplayItem::TableCellBackgroundFromContainers));
+        TestDisplayItem(htmlLayer, DisplayItem::BeginSubsequence),
+        TestDisplayItem(cell1, DisplayItem::TableCellBackgroundFromContainers),
+        TestDisplayItem(htmlLayer, DisplayItem::EndSubsequence),
+        TestDisplayItem(rootLayer, DisplayItem::EndSubsequence));
 
     DeprecatedPaintLayerPaintingInfo paintingInfo1(&rootLayer, LayoutRect(0, 300, 200, 200), GlobalPaintNormalPhase, LayoutSize());
     DeprecatedPaintLayerPainter(rootLayer).paintLayerContents(&context, paintingInfo1, PaintLayerPaintingCompositingAllPhases);
     rootDisplayItemList().commitNewDisplayItems();
 
-    EXPECT_DISPLAY_LIST(rootDisplayItemList().displayItems(), 2,
+    EXPECT_DISPLAY_LIST(rootDisplayItemList().displayItems(), 6,
+        TestDisplayItem(rootLayer, DisplayItem::BeginSubsequence),
         TestDisplayItem(layoutView, DisplayItem::BoxDecorationBackground),
-        TestDisplayItem(cell2, DisplayItem::TableCellBackgroundFromContainers));
+        TestDisplayItem(htmlLayer, DisplayItem::BeginSubsequence),
+        TestDisplayItem(cell2, DisplayItem::TableCellBackgroundFromContainers),
+        TestDisplayItem(htmlLayer, DisplayItem::EndSubsequence),
+        TestDisplayItem(rootLayer, DisplayItem::EndSubsequence));
 }
 
 } // namespace blink

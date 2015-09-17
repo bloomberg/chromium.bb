@@ -1187,11 +1187,13 @@ void LayoutObject::invalidatePaintUsingContainer(const LayoutBoxModelObject& pai
 void LayoutObject::invalidateDisplayItemClient(const DisplayItemClientWrapper& displayItemClient) const
 {
     // Not using enclosingCompositedContainer() directly because this object may be in an orphaned subtree.
-    if (const DeprecatedPaintLayer* enclosingLayer = this->enclosingLayer()) {
+    if (DeprecatedPaintLayer* enclosingLayer = this->enclosingLayer()) {
         // This is valid because we want to invalidate the client in the display item list of the current backing.
         DisableCompositingQueryAsserts disabler;
         if (const DeprecatedPaintLayer* paintInvalidationLayer = enclosingLayer->enclosingLayerForPaintInvalidationCrossingFrameBoundaries())
             paintInvalidationLayer->layoutObject()->invalidateDisplayItemClientOnBacking(displayItemClient);
+
+        enclosingLayer->setNeedsRepaint();
     }
 }
 
@@ -1199,10 +1201,8 @@ void LayoutObject::invalidateDisplayItemClients(const LayoutBoxModelObject& pain
 {
     paintInvalidationContainer.invalidateDisplayItemClientOnBacking(*this);
 
-    if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
-        if (DeprecatedPaintLayer* enclosingLayer = this->enclosingLayer())
-            enclosingLayer->setNeedsRepaint();
-    }
+    if (DeprecatedPaintLayer* enclosingLayer = this->enclosingLayer())
+        enclosingLayer->setNeedsRepaint();
 }
 
 LayoutRect LayoutObject::boundsRectForPaintInvalidation(const LayoutBoxModelObject* paintInvalidationContainer, const PaintInvalidationState* paintInvalidationState) const
