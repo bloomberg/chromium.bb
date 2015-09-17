@@ -27,9 +27,6 @@
 namespace WTF {
 
     struct WTF_EXPORT RefCountedLeakCounter {
-        static void suppressMessages(const char*);
-        static void cancelMessageSuppression(const char*);
-
         explicit RefCountedLeakCounter(const char* description);
         ~RefCountedLeakCounter();
 
