@@ -21,6 +21,7 @@ source_set("setup") {
     "//base",
     "//google_apis",
     "//remoting/host",
+    "//remoting/host/native_messaging",
   ]
 
   if (is_win) {
