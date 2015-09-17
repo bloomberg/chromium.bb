@@ -37,14 +37,14 @@ layer at (0,0) size 785x966 backgroundClip at (0,0) size 785x600 clip at (0,0) s
       LayoutBlockFlow {H1} at (0,502.06) size 769x37
         LayoutText {#text} at (0,0) size 209x36
           text run at (0,0) width 209: "Floating blocks"
-      LayoutBlockFlow (floating) {DIV} at (5,570.50) size 20x20 [color=#FFFFFF] [bgcolor=#FFA500] [border: (2px solid #000000)]
-      LayoutBlockFlow (floating) {DIV} at (35,570.50) size 20x20 [color=#FFFFFF] [bgcolor=#FFA500] [border: (2px solid #000000)]
-      LayoutBlockFlow (floating) {DIV} at (65,570.50) size 20x20 [color=#FFFFFF] [bgcolor=#FFA500] [border: (2px solid #000000)]
-      LayoutBlockFlow (floating) {DIV} at (95,570.50) size 20x20 [color=#FFFFFF] [bgcolor=#FFA500] [border: (2px solid #000000)]
-        LayoutBR {BR} at (6,6) size 0x19
-        LayoutBR {BR} at (6,26) size 0x19
-        LayoutBR {BR} at (6,46) size 0x19
       LayoutBlockFlow (anonymous) at (0,560.50) size 769x40
+        LayoutBlockFlow (floating) {DIV} at (5,10) size 20x20 [color=#FFFFFF] [bgcolor=#FFA500] [border: (2px solid #000000)]
+        LayoutBlockFlow (floating) {DIV} at (35,10) size 20x20 [color=#FFFFFF] [bgcolor=#FFA500] [border: (2px solid #000000)]
+        LayoutBlockFlow (floating) {DIV} at (65,10) size 20x20 [color=#FFFFFF] [bgcolor=#FFA500] [border: (2px solid #000000)]
+        LayoutBlockFlow (floating) {DIV} at (95,10) size 20x20 [color=#FFFFFF] [bgcolor=#FFA500] [border: (2px solid #000000)]
+          LayoutBR {BR} at (6,6) size 0x19
+          LayoutBR {BR} at (6,26) size 0x19
+          LayoutBR {BR} at (6,46) size 0x19
         LayoutBR {BR} at (120,0) size 0x19
       LayoutBlockFlow {H1} at (0,621.94) size 769x37
         LayoutText {#text} at (0,0) size 209x36
@@ -63,11 +63,11 @@ layer at (0,0) size 785x966 backgroundClip at (0,0) size 785x600 clip at (0,0) s
       LayoutBlockFlow {H1} at (0,841.69) size 769x37
         LayoutText {#text} at (0,0) size 219x36
           text run at (0,0) width 219: "Floating Images"
-      LayoutImage (floating) {IMG} at (5,910.13) size 20x20 [color=#FFFFFF] [bgcolor=#FFA500] [border: (2px solid #000000)]
-      LayoutImage (floating) {IMG} at (35,910.13) size 20x20 [color=#FFFFFF] [bgcolor=#FFA500] [border: (2px solid #000000)]
-      LayoutImage (floating) {IMG} at (65,910.13) size 20x20 [color=#FFFFFF] [bgcolor=#FFA500] [border: (2px solid #000000)]
-      LayoutImage (floating) {IMG} at (95,910.13) size 20x20 [color=#FFFFFF] [bgcolor=#FFA500] [border: (2px solid #000000)]
       LayoutBlockFlow (anonymous) at (0,900.13) size 769x40
+        LayoutImage (floating) {IMG} at (5,10) size 20x20 [color=#FFFFFF] [bgcolor=#FFA500] [border: (2px solid #000000)]
+        LayoutImage (floating) {IMG} at (35,10) size 20x20 [color=#FFFFFF] [bgcolor=#FFA500] [border: (2px solid #000000)]
+        LayoutImage (floating) {IMG} at (65,10) size 20x20 [color=#FFFFFF] [bgcolor=#FFA500] [border: (2px solid #000000)]
+        LayoutImage (floating) {IMG} at (95,10) size 20x20 [color=#FFFFFF] [bgcolor=#FFA500] [border: (2px solid #000000)]
         LayoutBR {BR} at (120,0) size 0x19
       LayoutBlockFlow {HR} at (0,948.13) size 769x2 [border: (1px inset #EEEEEE)]
 layer at (13,479) size 20x20
