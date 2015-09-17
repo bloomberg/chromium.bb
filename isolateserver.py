@@ -1005,6 +1005,8 @@ class IsolateServer(StorageApi):
 
     # for GS entities
     connection = net.url_open(response['url'])
+    if not connection:
+      raise IOError('Failed to download %s / %s' % (self._namespace, digest))
 
     # If |offset|, verify server respects it by checking Content-Range.
     if offset:
