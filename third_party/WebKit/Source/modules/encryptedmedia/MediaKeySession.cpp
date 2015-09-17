@@ -92,6 +92,8 @@ static String ConvertKeyStatusToString(const WebEncryptedMediaKeyInformation::Ke
         return "usable";
     case WebEncryptedMediaKeyInformation::KeyStatus::Expired:
         return "expired";
+    case WebEncryptedMediaKeyInformation::KeyStatus::Released:
+        return "released";
     case WebEncryptedMediaKeyInformation::KeyStatus::OutputRestricted:
         return "output-restricted";
     case WebEncryptedMediaKeyInformation::KeyStatus::OutputDownscaled:
