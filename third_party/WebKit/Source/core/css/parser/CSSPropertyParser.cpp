@@ -173,6 +173,51 @@ static PassRefPtrWillBeRawPtr<CSSValue> consumeWebkitHighlight(CSSParserTokenRan
     return consumeString(range);
 }
 
+static PassRefPtrWillBeRawPtr<CSSValue> consumeFontVariantLigatures(CSSParserTokenRange& range)
+{
+    if (range.peek().id() == CSSValueNormal)
+        return consumeIdent(range);
+    RefPtrWillBeRawPtr<CSSValueList> ligatureValues = CSSValueList::createSpaceSeparated();
+    bool sawCommonLigaturesValue = false;
+    bool sawDiscretionaryLigaturesValue = false;
+    bool sawHistoricalLigaturesValue = false;
+    bool sawContextualLigaturesValue = false;
+    do {
+        CSSValueID id = range.peek().id();
+        switch (id) {
+        case CSSValueNoCommonLigatures:
+        case CSSValueCommonLigatures:
+            if (sawCommonLigaturesValue)
+                return nullptr;
+            sawCommonLigaturesValue = true;
+            break;
+        case CSSValueNoDiscretionaryLigatures:
+        case CSSValueDiscretionaryLigatures:
+            if (sawDiscretionaryLigaturesValue)
+                return nullptr;
+            sawDiscretionaryLigaturesValue = true;
+            break;
+        case CSSValueNoHistoricalLigatures:
+        case CSSValueHistoricalLigatures:
+            if (sawHistoricalLigaturesValue)
+                return nullptr;
+            sawHistoricalLigaturesValue = true;
+            break;
+        case CSSValueNoContextual:
+        case CSSValueContextual:
+            if (sawContextualLigaturesValue)
+                return nullptr;
+            sawContextualLigaturesValue = true;
+            break;
+        default:
+            return nullptr;
+        }
+        ligatureValues->append(consumeIdent(range));
+    } while (!range.atEnd());
+
+    return ligatureValues.release();
+}
+
 PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSPropertyID propId)
 {
     m_range.consumeWhitespace();
@@ -185,6 +230,8 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSProperty
         return consumeQuotes(m_range);
     case CSSPropertyWebkitHighlight:
         return consumeWebkitHighlight(m_range);
+    case CSSPropertyFontVariantLigatures:
+        return consumeFontVariantLigatures(m_range);
     default:
         return nullptr;
     }

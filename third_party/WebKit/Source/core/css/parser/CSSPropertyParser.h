@@ -265,8 +265,6 @@ private:
     bool parseFontFeatureTag(CSSValueList*);
     PassRefPtrWillBeRawPtr<CSSValue> parseFontFeatureSettings();
 
-    bool parseFontVariantLigatures(bool important);
-
     bool parseGeneratedImage(CSSParserValueList*, RefPtrWillBeRawPtr<CSSValue>&);
 
     PassRefPtrWillBeRawPtr<CSSPrimitiveValue> createPrimitiveNumericValue(CSSParserValue*);

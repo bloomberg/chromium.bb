@@ -1383,12 +1383,6 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
             parsedValue = parseFontFeatureSettings();
         break;
 
-    case CSSPropertyFontVariantLigatures:
-        if (id == CSSValueNormal)
-            validPrimitive = true;
-        else
-            return parseFontVariantLigatures(important);
-        break;
     case CSSPropertyWebkitClipPath:
         if (id == CSSValueNone) {
             validPrimitive = true;
@@ -1447,6 +1441,7 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
     case CSSPropertyOverflow:
     case CSSPropertyQuotes:
     case CSSPropertyWebkitHighlight:
+    case CSSPropertyFontVariantLigatures:
         validPrimitive = false;
         break;
 
@@ -7014,59 +7009,6 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseFontFeatureSettings()
             return nullptr;
     }
     return settings.release();
-}
-
-bool CSSPropertyParser::parseFontVariantLigatures(bool important)
-{
-    RefPtrWillBeRawPtr<CSSValueList> ligatureValues = CSSValueList::createSpaceSeparated();
-    bool sawCommonLigaturesValue = false;
-    bool sawDiscretionaryLigaturesValue = false;
-    bool sawHistoricalLigaturesValue = false;
-    bool sawContextualLigaturesValue = false;
-
-    for (CSSParserValue* value = m_valueList->current(); value; value = m_valueList->next()) {
-        if (value->m_unit != CSSParserValue::Identifier)
-            return false;
-
-        switch (value->id) {
-        case CSSValueNoCommonLigatures:
-        case CSSValueCommonLigatures:
-            if (sawCommonLigaturesValue)
-                return false;
-            sawCommonLigaturesValue = true;
-            ligatureValues->append(cssValuePool().createIdentifierValue(value->id));
-            break;
-        case CSSValueNoDiscretionaryLigatures:
-        case CSSValueDiscretionaryLigatures:
-            if (sawDiscretionaryLigaturesValue)
-                return false;
-            sawDiscretionaryLigaturesValue = true;
-            ligatureValues->append(cssValuePool().createIdentifierValue(value->id));
-            break;
-        case CSSValueNoHistoricalLigatures:
-        case CSSValueHistoricalLigatures:
-            if (sawHistoricalLigaturesValue)
-                return false;
-            sawHistoricalLigaturesValue = true;
-            ligatureValues->append(cssValuePool().createIdentifierValue(value->id));
-            break;
-        case CSSValueNoContextual:
-        case CSSValueContextual:
-            if (sawContextualLigaturesValue)
-                return false;
-            sawContextualLigaturesValue = true;
-            ligatureValues->append(cssValuePool().createIdentifierValue(value->id));
-            break;
-        default:
-            return false;
-        }
-    }
-
-    if (!ligatureValues->length())
-        return false;
-
-    addProperty(CSSPropertyFontVariantLigatures, ligatureValues.release(), important);
-    return true;
 }
 
 bool CSSPropertyParser::parseCalculation(CSSParserValue* value, ValueRange range)
