@@ -17,6 +17,7 @@ public:
     LengthInterpolationType(CSSPropertyID);
 
     PassOwnPtr<InterpolationValue> maybeConvertUnderlyingValue(const StyleResolverState&) const final;
+    void composite(UnderlyingValue&, double underlyingFraction, const InterpolationValue&) const final;
     void apply(const InterpolableValue&, const NonInterpolableValue*, StyleResolverState&) const final;
 
 private:
@@ -27,6 +28,8 @@ private:
     PassOwnPtr<InterpolationValue> maybeConvertInitial() const final;
     PassOwnPtr<InterpolationValue> maybeConvertInherit(const StyleResolverState*, ConversionCheckers&) const final;
     PassOwnPtr<InterpolationValue> maybeConvertValue(const CSSValue&, const StyleResolverState*, ConversionCheckers&) const final;
+
+    PassOwnPtr<PairwisePrimitiveInterpolation> mergeSingleConversions(InterpolationValue&, InterpolationValue&) const final;
 
     const ValueRange m_valueRange;
 };

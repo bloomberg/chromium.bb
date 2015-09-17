@@ -74,7 +74,7 @@ public:
 
     virtual void apply(const InterpolableValue&, const NonInterpolableValue*, StyleResolverState&) const = 0;
 
-    // Implement reference equality checking via pointer equality checking as these are singletons
+    // Implement reference equality checking via pointer equality checking as these are singletons.
     bool operator==(const InterpolationType& other) const { return this == &other; }
     bool operator!=(const InterpolationType& other) const { return this != &other; }
 

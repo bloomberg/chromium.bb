@@ -44,6 +44,19 @@ assertComposition({
 
 assertComposition({
   property: 'left',
+  underlying: '10%',
+  addFrom: '100px',
+  addTo: '-10%',
+}, [
+  {at: -0.3, is: 'calc(130px + 13%)'},
+  {at: 0, is: 'calc(100px + 10%)'},
+  {at: 0.5, is: 'calc(50px + 5%)'},
+  {at: 1, is: '0%'},
+  {at: 1.5, is: 'calc(-50px - 5%)'},
+]);
+
+assertComposition({
+  property: 'left',
   underlying: '50px',
   addFrom: '100px',
   replaceTo: '200px',

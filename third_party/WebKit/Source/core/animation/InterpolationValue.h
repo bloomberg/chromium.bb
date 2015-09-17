@@ -27,7 +27,7 @@ struct InterpolationComponentValue {
 
 class InterpolationValue {
 public:
-    static PassOwnPtr<InterpolationValue> create(const InterpolationType& type, PassOwnPtr<InterpolableValue> interpolableValue, PassRefPtrWillBeRawPtr<NonInterpolableValue> nonInterpolableValue = nullptr)
+    static PassOwnPtr<InterpolationValue> create(const InterpolationType& type, PassOwnPtr<InterpolableValue> interpolableValue, PassRefPtr<NonInterpolableValue> nonInterpolableValue = nullptr)
     {
         return adoptPtr(new InterpolationValue(type, interpolableValue, nonInterpolableValue));
     }
@@ -43,8 +43,9 @@ public:
 
     InterpolationComponentValue& mutableComponent() { return m_component; }
 
+
 private:
-    InterpolationValue(const InterpolationType& type, PassOwnPtr<InterpolableValue> interpolableValue, PassRefPtrWillBeRawPtr<NonInterpolableValue> nonInterpolableValue = nullptr)
+    InterpolationValue(const InterpolationType& type, PassOwnPtr<InterpolableValue> interpolableValue, PassRefPtr<NonInterpolableValue> nonInterpolableValue)
         : m_type(type)
         , m_component(interpolableValue, nonInterpolableValue)
     {
