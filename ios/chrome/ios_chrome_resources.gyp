@@ -23,6 +23,14 @@
       'hard_dependency': 1,
       'actions': [
         {
+          'action_name': 'generate_ios_locale_settings',
+          'variables': {
+            'grit_whitelist': '',
+            'grit_grd_file': 'app/strings/ios_locale_settings.grd',
+          },
+          'includes': [ '../../build/grit_action.gypi' ],
+        },
+        {
           'action_name': 'generate_ios_strings',
           'variables': {
             'grit_whitelist': '',
