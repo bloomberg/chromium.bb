@@ -159,7 +159,6 @@
 
     'debug': {
       'gn_args': 'is_debug=true',
-      'gyp_config': 'Debug',
     },
 
     'debug_bot': {
@@ -254,12 +253,10 @@
     'official': {
       'gn_args': 'is_chrome_branded is_official_build=true is_debug=false is_component_build=false',
       'gyp_defines': 'branding="Chrome" buildtype="Official" component=static_library',
-      'gyp_config': 'Release',
     },
 
     'release': {
       'gn_args': 'is_debug=false',
-      'gyp_config': 'Release',
     },
 
     'release_bot': {

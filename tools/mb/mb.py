@@ -37,7 +37,9 @@ class MetaBuildWrapper(object):
     self.chromium_src_dir = p.normpath(d(d(d(p.abspath(__file__)))))
     self.default_config = p.join(self.chromium_src_dir, 'tools', 'mb',
                                  'mb_config.pyl')
+    self.executable = sys.executable
     self.platform = sys.platform
+    self.sep = os.sep
     self.args = argparse.Namespace()
     self.configs = {}
     self.masters = {}
@@ -146,7 +148,7 @@ class MetaBuildWrapper(object):
     elif vals['type'] == 'gyp':
       if vals['gyp_crosscompile']:
         self.Print('GYP_CROSSCOMPILE=1')
-      cmd = self.GYPCmd('<path>', vals['gyp_defines'], vals['gyp_config'])
+      cmd = self.GYPCmd('<path>', vals['gyp_defines'])
     else:
       raise MBErr('Unknown meta-build type "%s"' % vals['type'])
 
@@ -285,7 +287,6 @@ class MetaBuildWrapper(object):
     vals = {
       'type': None,
       'gn_args': [],
-      'gyp_config': [],
       'gyp_defines': '',
       'gyp_crosscompile': False,
     }
@@ -311,8 +312,6 @@ class MetaBuildWrapper(object):
           vals['gn_args'] += ' ' + mixin_vals['gn_args']
         else:
           vals['gn_args'] = mixin_vals['gn_args']
-      if 'gyp_config' in mixin_vals:
-        vals['gyp_config'] = mixin_vals['gyp_config']
       if 'gyp_crosscompile' in mixin_vals:
         vals['gyp_crosscompile'] = mixin_vals['gyp_crosscompile']
       if 'gyp_defines' in mixin_vals:
@@ -327,7 +326,7 @@ class MetaBuildWrapper(object):
   def ClobberIfNeeded(self, vals):
     path = self.args.path[0]
     build_dir = self.ToAbsPath(path)
-    mb_type_path = os.path.join(build_dir, 'mb_type')
+    mb_type_path = self.PathJoin(build_dir, 'mb_type')
     needs_clobber = False
     new_mb_type = vals['type']
     if self.Exists(build_dir):
@@ -364,7 +363,7 @@ class MetaBuildWrapper(object):
       # the compile targets to the matching GN labels.
       contents = self.ReadFile(self.args.swarming_targets_file)
       swarming_targets = contents.splitlines()
-      gn_isolate_map = ast.literal_eval(self.ReadFile(os.path.join(
+      gn_isolate_map = ast.literal_eval(self.ReadFile(self.PathJoin(
           self.chromium_src_dir, 'testing', 'buildbot', 'gn_isolate_map.pyl')))
       gn_labels = []
       for target in swarming_targets:
@@ -399,7 +398,7 @@ class MetaBuildWrapper(object):
         runtime_deps_target = 'obj/%s.stamp' % label.replace(':', '/')
       else:
         runtime_deps_target = target
-      if sys.platform == 'win32':
+      if self.platform == 'win32':
         deps_path = self.ToAbsPath(path,
                                    runtime_deps_target + '.exe.runtime_deps')
       else:
@@ -426,9 +425,9 @@ class MetaBuildWrapper(object):
         {
           'args': [
             '--isolated',
-            self.ToSrcRelPath('%s%s%s.isolated' % (path, os.sep, target)),
+            self.ToSrcRelPath('%s%s%s.isolated' % (path, self.sep, target)),
             '--isolate',
-            self.ToSrcRelPath('%s%s%s.isolate' % (path, os.sep, target)),
+            self.ToSrcRelPath('%s%s%s.isolate' % (path, self.sep, target)),
           ],
           'dir': self.chromium_src_dir,
           'version': 1,
@@ -440,14 +439,12 @@ class MetaBuildWrapper(object):
 
   def GNCmd(self, subcommand, path, gn_args=''):
     if self.platform == 'linux2':
-      gn_path = os.path.join(self.chromium_src_dir, 'buildtools', 'linux64',
-                             'gn')
+      subdir = 'linux64'
     elif self.platform == 'darwin':
-      gn_path = os.path.join(self.chromium_src_dir, 'buildtools', 'mac',
-                             'gn')
+      subdir = 'mac'
     else:
-      gn_path = os.path.join(self.chromium_src_dir, 'buildtools', 'win',
-                             'gn.exe')
+      subdir = 'win'
+    gn_path = self.PathJoin(self.chromium_src_dir, 'buildtools', subdir, 'gn')
 
     cmd = [gn_path, subcommand, path]
     gn_args = gn_args.replace("$(goma_dir)", self.args.goma_dir)
@@ -458,12 +455,8 @@ class MetaBuildWrapper(object):
   def RunGYPGen(self, vals):
     path = self.args.path[0]
 
-    output_dir, gyp_config = self.ParseGYPConfigPath(path)
-    if gyp_config != vals['gyp_config']:
-      raise MBErr('The last component of the path (%s) must match the '
-                  'GYP configuration specified in the config (%s), and '
-                  'it does not.' % (gyp_config, vals['gyp_config']))
-    cmd = self.GYPCmd(output_dir, vals['gyp_defines'], config=gyp_config)
+    output_dir = self.ParseGYPConfigPath(path)
+    cmd = self.GYPCmd(output_dir, vals['gyp_defines'])
     env = None
     if vals['gyp_crosscompile']:
       if self.args.verbose:
@@ -474,11 +467,7 @@ class MetaBuildWrapper(object):
     return ret
 
   def RunGYPAnalyze(self, vals):
-    output_dir, gyp_config = self.ParseGYPConfigPath(self.args.path[0])
-    if gyp_config != vals['gyp_config']:
-      raise MBErr('The last component of the path (%s) must match the '
-                  'GYP configuration specified in the config (%s), and '
-                  'it does not.' % (gyp_config, vals['gyp_config']))
+    output_dir = self.ParseGYPConfigPath(self.args.path[0])
     if self.args.verbose:
       inp = self.ReadInputJSON(['files', 'targets'])
       self.Print()
@@ -486,7 +475,7 @@ class MetaBuildWrapper(object):
       self.PrintJSON(inp)
       self.Print()
 
-    cmd = self.GYPCmd(output_dir, vals['gyp_defines'], config=gyp_config)
+    cmd = self.GYPCmd(output_dir, vals['gyp_defines'])
     cmd.extend(['-f', 'analyzer',
                 '-G', 'config_path=%s' % self.args.input_path[0],
                 '-G', 'analyzer_output_path=%s' % self.args.output_path[0]])
@@ -504,7 +493,7 @@ class MetaBuildWrapper(object):
     # This needs to mirror the settings in //build/config/ui.gni:
     # use_x11 = is_linux && !use_ozone.
     # TODO(dpranke): Figure out how to keep this in sync better.
-    use_x11 = (sys.platform == 'linux2' and
+    use_x11 = (self.platform == 'linux2' and
                not 'target_os="android"' in vals['gn_args'] and
                not 'use_ozone=true' in vals['gn_args'])
 
@@ -512,7 +501,7 @@ class MetaBuildWrapper(object):
     msan = 'is_msan=true' in vals['gn_args']
     tsan = 'is_tsan=true' in vals['gn_args']
 
-    executable_suffix = '.exe' if sys.platform == 'win32' else ''
+    executable_suffix = '.exe' if self.platform == 'win32' else ''
 
     test_type = gn_isolate_map[target]['type']
     cmdline = []
@@ -580,38 +569,28 @@ class MetaBuildWrapper(object):
     return cmdline, extra_files
 
   def ToAbsPath(self, build_path, *comps):
-    return os.path.join(self.chromium_src_dir,
-                        self.ToSrcRelPath(build_path),
-                        *comps)
+    return self.PathJoin(self.chromium_src_dir,
+                         self.ToSrcRelPath(build_path),
+                         *comps)
 
   def ToSrcRelPath(self, path):
     """Returns a relative path from the top of the repo."""
     # TODO: Support normal paths in addition to source-absolute paths.
     assert(path.startswith('//'))
-    return path[2:].replace('/', os.sep)
+    return path[2:].replace('/', self.sep)
 
   def ParseGYPConfigPath(self, path):
     rpath = self.ToSrcRelPath(path)
-    output_dir, _, config = rpath.rpartition('/')
-    self.CheckGYPConfigIsSupported(config, path)
-    return output_dir, config
+    output_dir, _, _ = rpath.rpartition(self.sep)
+    return output_dir
 
-  def CheckGYPConfigIsSupported(self, config, path):
-    if config not in ('Debug', 'Release'):
-      if (sys.platform in ('win32', 'cygwin') and
-          config not in ('Debug_x64', 'Release_x64')):
-        raise MBErr('Unknown or unsupported config type "%s" in "%s"' %
-                    config, path)
-
-  def GYPCmd(self, output_dir, gyp_defines, config):
+  def GYPCmd(self, output_dir, gyp_defines):
     gyp_defines = gyp_defines.replace("$(goma_dir)", self.args.goma_dir)
     cmd = [
-        sys.executable,
-        os.path.join('build', 'gyp_chromium'),
+        self.executable,
+        self.PathJoin('build', 'gyp_chromium'),
         '-G',
         'output_dir=' + output_dir,
-        '-G',
-        'config=' + config,
     ]
     for d in shlex.split(gyp_defines):
       cmd += ['-D', d]
@@ -667,7 +646,7 @@ class MetaBuildWrapper(object):
       if ret and not 'The input matches no targets' in out:
         self.WriteFailureAndRaise('gn refs returned %d: %s' % (ret, out),
                                   output_path)
-      build_dir = self.ToSrcRelPath(self.args.path[0]) + os.sep
+      build_dir = self.ToSrcRelPath(self.args.path[0]) + self.sep
       for output in out.splitlines():
         build_output = output.replace(build_dir, '')
         if build_output in inp['targets']:
@@ -746,7 +725,7 @@ class MetaBuildWrapper(object):
                  (e, path))
 
   def PrintCmd(self, cmd):
-    if cmd[0] == sys.executable:
+    if cmd[0] == self.executable:
       cmd = ['python'] + cmd[1:]
     self.Print(*[pipes.quote(c) for c in cmd])
 
@@ -794,6 +773,10 @@ class MetaBuildWrapper(object):
       if e.errno != errno.EEXIST:
         raise
 
+  def PathJoin(self, *comps):
+    # This function largely exists so it can be overriden for testing.
+    return os.path.join(*comps)
+
   def ReadFile(self, path):
     # This function largely exists so it can be overriden for testing.
     with open(path) as fp:
@@ -804,7 +787,7 @@ class MetaBuildWrapper(object):
     os.remove(path)
 
   def RemoveDirectory(self, abs_path):
-    if sys.platform == 'win32':
+    if self.platform == 'win32':
       # In other places in chromium, we often have to retry this command
       # because we're worried about other processes still holding on to
       # file handles, but when MB is invoked, it will be early enough in the

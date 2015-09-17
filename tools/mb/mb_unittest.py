@@ -7,6 +7,7 @@
 
 import json
 import StringIO
+import os
 import sys
 import unittest
 
@@ -16,15 +17,20 @@ import mb
 class FakeMBW(mb.MetaBuildWrapper):
   def __init__(self):
     super(FakeMBW, self).__init__()
+
+    # Override vars for test portability.
+    self.chromium_src_dir = '/fake_src'
+    self.default_config = '/fake_src/tools/mb/mb_config.pyl'
+    self.executable = 'python'
+    self.platform = 'linux2'
+    self.sep = '/'
+
     self.files = {}
     self.calls = []
     self.cmds = []
     self.cross_compile = None
     self.out = ''
     self.err = ''
-    self.platform = 'linux2'
-    self.chromium_src_dir = '/fake_src'
-    self.default_config = '/fake_src/tools/mb/mb_config.pyl'
     self.rmdirs = []
 
   def ExpandUser(self, path):
@@ -35,6 +41,9 @@ class FakeMBW(mb.MetaBuildWrapper):
 
   def MaybeMakeDirectory(self, path):
     self.files[path] = True
+
+  def PathJoin(self, *comps):
+    return self.sep.join(comps)
 
   def ReadFile(self, path):
     return self.files[path]
@@ -121,11 +130,9 @@ TEST_CONFIG = """\
     },
     'rel': {
       'gn_args': 'is_debug=false',
-      'gyp_config': 'Release',
     },
     'debug': {
       'gn_args': 'is_debug=true',
-      'gyp_config': 'Debug',
     },
   },
   'private_configs': ['private'],
@@ -166,7 +173,7 @@ class UnitTest(unittest.TestCase):
     # The first time we run this, the build dir doesn't exist, so no clobber.
     self.check(['gen', '-c', 'gn_debug', '//out/Debug'], mbw=mbw, ret=0)
     self.assertEqual(mbw.rmdirs, [])
-    self.assertTrue(mbw.files['/fake_src/out/Debug/mb_type'], 'gn')
+    self.assertEqual(mbw.files['/fake_src/out/Debug/mb_type'], 'gn')
 
     # The second time we run this, the build dir exists and matches, so no
     # clobber.
@@ -294,7 +301,18 @@ class UnitTest(unittest.TestCase):
     self.assertTrue(mbw.cross_compile)
 
   def test_gyp_gen(self):
-    self.check(['gen', '-c', 'gyp_rel_bot', '//out/Release'], ret=0)
+    self.check(['gen', '-c', 'gyp_rel_bot', '-g', '/goma', '//out/Release'],
+               ret=0,
+               out=("python build/gyp_chromium -G output_dir=out "
+                    "-D goma=1 -D gomadir=/goma\n"))
+
+    # simulate win32
+    mbw = self.fake_mbw()
+    mbw.sep = '\\'
+    self.check(['gen', '-c', 'gyp_rel_bot', '-g', 'c:\\goma', '//out/Release'],
+               mbw=mbw, ret=0,
+               out=("python 'build\\gyp_chromium' -G output_dir=out "
+                    "-D goma=1 -D 'gomadir=c:\\goma'\n"))
 
   def test_gyp_gen_fails(self):
     mbw = self.fake_mbw()
@@ -304,7 +322,7 @@ class UnitTest(unittest.TestCase):
   def test_gyp_lookup_goma_dir_expansion(self):
     self.check(['lookup', '-c', 'gyp_rel_bot', '-g', '/foo'], ret=0,
                out=("python build/gyp_chromium -G 'output_dir=<path>' "
-                    "-G config=Release -D goma=1 -D gomadir=/foo\n"))
+                    "-D goma=1 -D gomadir=/foo\n"))
 
   def test_help(self):
     orig_stdout = sys.stdout
