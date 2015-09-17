@@ -66,8 +66,8 @@ static PassRefPtrWillBeRawPtr<StyleSheetContents> parseUASheet(const String& str
 {
     RefPtrWillBeRawPtr<StyleSheetContents> sheet = StyleSheetContents::create(CSSParserContext(UASheetMode, 0));
     sheet->parseString(str);
-    // User Agent stylesheets are parsed once for the lifetime of the layoutObject
-    // and are intentionally leaked.
+    // User Agent stylesheets are parsed once for the lifetime of the renderer
+    // process and are intentionally leaked.
     WTF_ANNOTATE_LEAKING_OBJECT_PTR(sheet.get());
     return sheet.release();
 }
