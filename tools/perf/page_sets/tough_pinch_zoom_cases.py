@@ -15,10 +15,24 @@ class ToughPinchZoomCasesPage(page_module.Page):
         credentials_path = 'data/credentials.json')
     self.archive_data_file = 'data/tough_pinch_zoom_cases.json'
 
-  def RunPageInteractions(self, action_runner):
-    with action_runner.CreateGestureInteraction('PinchAction'):
-      action_runner.PinchPage()
+  def RunPinchGesture(self, action_runner, left_anchor_ratio=0.5,
+                      top_anchor_ratio=0.5, scale_factor=None,
+                      speed_in_pixels_per_second=800):
+      with action_runner.CreateGestureInteraction('PinchAction',
+                                                  repeatable=True):
+        action_runner.PinchPage(
+            left_anchor_ratio=left_anchor_ratio,
+            top_anchor_ratio=top_anchor_ratio,
+            scale_factor=scale_factor,
+            speed_in_pixels_per_second=speed_in_pixels_per_second)
 
+  def RunPageInteractions(self, action_runner):
+    action_runner.tab.WaitForDocumentReadyStateToBeInteractiveOrBetter()
+    for _ in xrange(0, 3):
+      self.RunPinchGesture(action_runner, scale_factor=7.0)
+      self.RunPinchGesture(action_runner, scale_factor=1/2.0)
+      self.RunPinchGesture(action_runner, scale_factor=1/2.0)
+      self.RunPinchGesture(action_runner, scale_factor=1/2.0)
 
 class GoogleSearchPage(ToughPinchZoomCasesPage):
 
@@ -67,11 +81,6 @@ class GoogleCalendarPage(ToughPinchZoomCasesPage):
     super(GoogleCalendarPage, self).RunNavigateSteps(action_runner)
     action_runner.Wait(2)
 
-  def RunPageInteractions(self, action_runner):
-    with action_runner.CreateGestureInteraction('PinchAction'):
-      action_runner.PinchPage(left_anchor_ratio=0.1, top_anchor_ratio=0.3)
-
-
 class GoogleImageSearchPage(ToughPinchZoomCasesPage):
 
   """ Why: tough image case; top google properties """
@@ -82,27 +91,6 @@ class GoogleImageSearchPage(ToughPinchZoomCasesPage):
       page_set=page_set)
 
     self.credentials = 'google'
-
-
-class GooglePlusPage(ToughPinchZoomCasesPage):
-
-  """ Why: social; top google property; Public profile; infinite scrolls """
-
-  def __init__(self, page_set):
-    super(GooglePlusPage, self).__init__(
-      url='https://plus.google.com/+BarackObama/posts',
-      page_set=page_set)
-
-    self.credentials = 'google'
-
-  def RunNavigateSteps(self, action_runner):
-    super(GooglePlusPage, self).RunNavigateSteps(action_runner)
-    action_runner.WaitForElement(text='Home')
-
-  def RunPageInteractions(self, action_runner):
-    with action_runner.CreateGestureInteraction('PinchAction'):
-      action_runner.PinchElement(
-          selector='[id="110031535020051778989-tab-bar"]')
 
 
 class YoutubePage(ToughPinchZoomCasesPage):
@@ -220,20 +208,6 @@ class YahooGamePage(ToughPinchZoomCasesPage):
     action_runner.Wait(2)
 
 
-class YahooAnswersPage(ToughPinchZoomCasesPage):
-
-  """ Why: #1 Alexa reference """
-
-  def __init__(self, page_set):
-    super(YahooAnswersPage, self).__init__(
-      url='http://answers.yahoo.com',
-      page_set=page_set)
-
-  def RunPageInteractions(self, action_runner):
-    with action_runner.CreateGestureInteraction('PinchAction'):
-      action_runner.PinchElement(selector='#ya-content-apps')
-
-
 class ToughPinchZoomCasesPageSet(story.StorySet):
 
   """ Set of pages that are tricky to pinch-zoom """
@@ -247,7 +221,6 @@ class ToughPinchZoomCasesPageSet(story.StorySet):
     self.AddStory(GmailPage(self))
     self.AddStory(GoogleCalendarPage(self))
     self.AddStory(GoogleImageSearchPage(self))
-    self.AddStory(GooglePlusPage(self))
     self.AddStory(YoutubePage(self))
     self.AddStory(BlogSpotPage(self))
     self.AddStory(FacebookPage(self))
@@ -275,8 +248,6 @@ class ToughPinchZoomCasesPageSet(story.StorySet):
 
     # Why: #1 Alexa recreation
     self.AddStory(ToughPinchZoomCasesPage('http://booking.com', self))
-
-    self.AddStory(YahooAnswersPage(self))
 
     # Why: #1 Alexa sports
     self.AddStory(ToughPinchZoomCasesPage('http://sports.yahoo.com/', self))
