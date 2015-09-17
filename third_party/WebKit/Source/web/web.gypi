@@ -15,6 +15,8 @@
       'CompositionUnderlineVectorBuilder.h',
       'ContextFeaturesClientImpl.cpp',
       'ContextFeaturesClientImpl.h',
+      'ContextMenuAllowedScope.cpp',
+      'ContextMenuAllowedScope.h',
       'ContextMenuClientImpl.cpp',
       'ContextMenuClientImpl.h',
       'DatabaseClientImpl.cpp',

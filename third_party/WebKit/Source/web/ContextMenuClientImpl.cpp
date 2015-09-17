@@ -77,6 +77,7 @@
 #include "public/web/WebSearchableFormData.h"
 #include "public/web/WebSpellCheckClient.h"
 #include "public/web/WebViewClient.h"
+#include "web/ContextMenuAllowedScope.h"
 #include "web/WebDataSourceImpl.h"
 #include "web/WebLocalFrameImpl.h"
 #include "web/WebPluginContainerImpl.h"
@@ -187,7 +188,7 @@ void ContextMenuClientImpl::showContextMenu(const ContextMenu* defaultMenu)
     // response to user input (Mouse event WM_RBUTTONDOWN,
     // Keyboard events KeyVK_APPS, Shift+F10). Check if this is being invoked
     // in response to the above input events before popping up the context menu.
-    if (!m_webView->contextMenuAllowed())
+    if (!ContextMenuAllowedScope::isContextMenuAllowed())
         return;
 
     HitTestResult r = m_webView->page()->contextMenuController().hitTestResult();
@@ -311,12 +312,13 @@ void ContextMenuClientImpl::showContextMenu(const ContextMenu* defaultMenu)
         data.frameEncoding = selectedFrame->document()->encodingName();
 
     // Send the frame and page URLs in any case.
-    data.pageURL = urlFromFrame(m_webView->mainFrameImpl()->frame());
-    if (selectedFrame != m_webView->mainFrameImpl()->frame()) {
+    if (selectedFrame != m_webView->page()->mainFrame()) {
         data.frameURL = urlFromFrame(selectedFrame);
         RefPtrWillBeRawPtr<HistoryItem> historyItem = selectedFrame->loader().currentItem();
         if (historyItem)
             data.frameHistoryItem = WebHistoryItem(historyItem);
+    } else {
+        data.pageURL = urlFromFrame(m_webView->mainFrameImpl()->frame());
     }
 
     if (r.isSelected()) {

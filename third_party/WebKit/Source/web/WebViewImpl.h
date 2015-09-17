@@ -394,11 +394,6 @@ public:
     // they should be rendered by WebKit (which is the default).
     static bool useExternalPopupMenus();
 
-    bool contextMenuAllowed() const
-    {
-        return m_contextMenuAllowed;
-    }
-
     bool shouldAutoResize() const
     {
         return m_shouldAutoResize;
@@ -679,8 +674,6 @@ private:
     IntPoint m_fakePageScaleAnimationTargetPosition;
     float m_fakePageScaleAnimationPageScaleFactor;
     bool m_fakePageScaleAnimationUseAnchor;
-
-    bool m_contextMenuAllowed;
 
     bool m_doingDragAndDrop;
 

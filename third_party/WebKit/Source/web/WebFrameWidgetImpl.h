@@ -139,6 +139,9 @@ public:
     // the page is shutting down, but will be valid at all other times.
     Page* page() const { return view()->page(); }
 
+    // Event related methods:
+    void mouseContextMenu(const WebMouseEvent&);
+
     WebLayerTreeView* layerTreeView() const { return m_layerTreeView; }
 
     // Returns true if the event leads to scrolling.
@@ -159,6 +162,9 @@ private:
 
     explicit WebFrameWidgetImpl(WebWidgetClient*, WebLocalFrame*);
     ~WebFrameWidgetImpl();
+
+    // Perform a hit test for a point relative to the root frame of the page.
+    HitTestResult hitTestResultForRootFramePos(const IntPoint& posInRootFrame);
 
     // Returns true if the event was actually processed.
     bool keyEventDefault(const WebKeyboardEvent&);

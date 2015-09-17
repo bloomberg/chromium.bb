@@ -150,6 +150,7 @@
 #include "public/web/WebWindowFeatures.h"
 #include "web/CompositionUnderlineVectorBuilder.h"
 #include "web/ContextFeaturesClientImpl.h"
+#include "web/ContextMenuAllowedScope.h"
 #include "web/DatabaseClientImpl.h"
 #include "web/DevToolsEmulator.h"
 #include "web/FullscreenController.h"
@@ -420,7 +421,6 @@ WebViewImpl::WebViewImpl(WebViewClient* client)
     , m_enableFakePageScaleAnimationForTesting(false)
     , m_fakePageScaleAnimationPageScaleFactor(0)
     , m_fakePageScaleAnimationUseAnchor(false)
-    , m_contextMenuAllowed(false)
     , m_doingDragAndDrop(false)
     , m_ignoreInputEvents(false)
     , m_compositorDeviceScaleFactorOverride(0)
@@ -617,9 +617,10 @@ void WebViewImpl::mouseContextMenu(const WebMouseEvent& event)
     targetLocalFrame->view()->setCursor(pointerCursor());
 #endif
 
-    m_contextMenuAllowed = true;
-    targetLocalFrame->eventHandler().sendContextMenuEvent(pme, nullptr);
-    m_contextMenuAllowed = false;
+    {
+        ContextMenuAllowedScope scope;
+        targetLocalFrame->eventHandler().sendContextMenuEvent(pme, nullptr);
+    }
     // Actually showing the context menu is handled by the ContextMenuClient
     // implementation...
 }
@@ -839,9 +840,10 @@ bool WebViewImpl::handleGestureEvent(const WebGestureEvent& event)
 
         m_client->cancelScheduledContentIntents();
         m_page->contextMenuController().clearContextMenu();
-        m_contextMenuAllowed = true;
-        eventSwallowed = mainFrameImpl()->frame()->eventHandler().handleGestureEvent(targetedEvent);
-        m_contextMenuAllowed = false;
+        {
+            ContextMenuAllowedScope scope;
+            eventSwallowed = mainFrameImpl()->frame()->eventHandler().handleGestureEvent(targetedEvent);
+        }
 
         break;
     }
@@ -1467,12 +1469,14 @@ bool WebViewImpl::sendContextMenuEvent(const WebKeyboardEvent& event)
     // not run.
     page()->contextMenuController().clearContextMenu();
 
-    m_contextMenuAllowed = true;
-    Frame* focusedFrame = page()->focusController().focusedOrMainFrame();
-    if (!focusedFrame->isLocalFrame())
-        return false;
-    bool handled = toLocalFrame(focusedFrame)->eventHandler().sendContextMenuEventForKey(nullptr);
-    m_contextMenuAllowed = false;
+    bool handled;
+    {
+        ContextMenuAllowedScope scope;
+        Frame* focusedFrame = page()->focusController().focusedOrMainFrame();
+        if (!focusedFrame->isLocalFrame())
+            return false;
+        handled = toLocalFrame(focusedFrame)->eventHandler().sendContextMenuEventForKey(nullptr);
+    }
     return handled;
 }
 #endif
@@ -1481,10 +1485,11 @@ void WebViewImpl::showContextMenuAtPoint(float x, float y, PassRefPtrWillBeRawPt
 {
     if (!page()->mainFrame()->isLocalFrame())
         return;
-    m_contextMenuAllowed = true;
-    page()->contextMenuController().clearContextMenu();
-    page()->contextMenuController().showContextMenuAtPoint(page()->deprecatedLocalMainFrame(), x, y, menuProvider);
-    m_contextMenuAllowed = false;
+    {
+        ContextMenuAllowedScope scope;
+        page()->contextMenuController().clearContextMenu();
+        page()->contextMenuController().showContextMenuAtPoint(page()->deprecatedLocalMainFrame(), x, y, menuProvider);
+    }
 }
 
 void WebViewImpl::showContextMenuForElement(WebElement element)
@@ -1493,10 +1498,11 @@ void WebViewImpl::showContextMenuForElement(WebElement element)
         return;
 
     page()->contextMenuController().clearContextMenu();
-    m_contextMenuAllowed = true;
-    if (LocalFrame* focusedFrame = toLocalFrame(page()->focusController().focusedOrMainFrame()))
-        focusedFrame->eventHandler().sendContextMenuEventForKey(element.unwrap<Element>());
-    m_contextMenuAllowed = false;
+    {
+        ContextMenuAllowedScope scope;
+        if (LocalFrame* focusedFrame = toLocalFrame(page()->focusController().focusedOrMainFrame()))
+            focusedFrame->eventHandler().sendContextMenuEventForKey(element.unwrap<Element>());
+    }
 }
 
 bool WebViewImpl::keyEventDefault(const WebKeyboardEvent& event)
@@ -3728,10 +3734,11 @@ void WebViewImpl::showContextMenu()
         return;
 
     page()->contextMenuController().clearContextMenu();
-    m_contextMenuAllowed = true;
-    if (LocalFrame* focusedFrame = toLocalFrame(page()->focusController().focusedOrMainFrame()))
-        focusedFrame->eventHandler().sendContextMenuEventForKey(nullptr);
-    m_contextMenuAllowed = false;
+    {
+        ContextMenuAllowedScope scope;
+        if (LocalFrame* focusedFrame = toLocalFrame(page()->focusController().focusedOrMainFrame()))
+            focusedFrame->eventHandler().sendContextMenuEventForKey(nullptr);
+    }
 }
 
 void WebViewImpl::extractSmartClipData(WebRect rectInViewport, WebString& clipText, WebString& clipHtml, WebRect& clipRectInViewport)

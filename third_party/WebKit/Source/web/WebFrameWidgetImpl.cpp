@@ -42,12 +42,14 @@
 #include "core/input/EventHandler.h"
 #include "core/layout/LayoutView.h"
 #include "core/layout/compositing/DeprecatedPaintLayerCompositor.h"
+#include "core/page/ContextMenuController.h"
 #include "core/page/FocusController.h"
 #include "core/page/Page.h"
 #include "platform/KeyboardCodes.h"
 #include "platform/NotImplemented.h"
 #include "public/web/WebBeginFrameArgs.h"
 #include "public/web/WebWidgetClient.h"
+#include "web/ContextMenuAllowedScope.h"
 #include "web/WebDevToolsAgentImpl.h"
 #include "web/WebInputEventConversion.h"
 #include "web/WebLocalFrameImpl.h"
@@ -699,14 +701,63 @@ void WebFrameWidgetImpl::handleMouseDown(LocalFrame& mainFrame, const WebMouseEv
     if (event.button == WebMouseEvent::ButtonLeft && m_mouseCaptureNode)
         m_mouseCaptureGestureToken = mainFrame.eventHandler().takeLastMouseDownGestureToken();
 
-    // FIXME: Add context menu support.
+    // Dispatch the contextmenu event regardless of if the click was swallowed.
+    if (!page()->settings().showContextMenuOnMouseUp()) {
+#if OS(MACOSX)
+        if (event.button == WebMouseEvent::ButtonRight || (event.button == WebMouseEvent::ButtonLeft && event.modifiers & WebMouseEvent::ControlKey))
+            mouseContextMenu(event);
+#else
+        if (event.button == WebMouseEvent::ButtonRight)
+            mouseContextMenu(event);
+#endif
+    }
+}
+
+void WebFrameWidgetImpl::mouseContextMenu(const WebMouseEvent& event)
+{
+    page()->contextMenuController().clearContextMenu();
+
+    PlatformMouseEventBuilder pme(m_localRoot->frameView(), event);
+
+    // Find the right target frame. See issue 1186900.
+    HitTestResult result = hitTestResultForRootFramePos(pme.position());
+    Frame* targetFrame;
+    if (result.innerNodeOrImageMapImage())
+        targetFrame = result.innerNodeOrImageMapImage()->document().frame();
+    else
+        targetFrame = page()->focusController().focusedOrMainFrame();
+
+    // This will need to be changed to a nullptr check when focus control
+    // is refactored, at which point focusedOrMainFrame will never return a
+    // RemoteFrame.
+    // See https://crbug.com/341918.
+    if (!targetFrame->isLocalFrame())
+        return;
+
+    LocalFrame* targetLocalFrame = toLocalFrame(targetFrame);
+
+#if OS(WIN)
+    targetLocalFrame->view()->setCursor(pointerCursor());
+#endif
+
+    {
+        ContextMenuAllowedScope scope;
+        targetLocalFrame->eventHandler().sendContextMenuEvent(pme, nullptr);
+    }
+    // Actually showing the context menu is handled by the ContextMenuClient
+    // implementation...
 }
 
 void WebFrameWidgetImpl::handleMouseUp(LocalFrame& mainFrame, const WebMouseEvent& event)
 {
     PageWidgetEventHandler::handleMouseUp(mainFrame, event);
 
-    // FIXME: Add context menu support (Windows).
+    if (page()->settings().showContextMenuOnMouseUp()) {
+        // Dispatch the contextmenu event regardless of if the click was swallowed.
+        // On Mac/Linux, we handle it on mouse down, not up.
+        if (event.button == WebMouseEvent::ButtonRight)
+            mouseContextMenu(event);
+    }
 }
 
 bool WebFrameWidgetImpl::handleMouseWheel(LocalFrame& mainFrame, const WebMouseWheelEvent& event)
@@ -783,6 +834,22 @@ bool WebFrameWidgetImpl::handleKeyEvent(const WebKeyboardEvent& event)
         }
         return true;
     }
+
+#if !OS(MACOSX)
+    const WebInputEvent::Type contextMenuTriggeringEventType =
+#if OS(WIN)
+        WebInputEvent::KeyUp;
+#else
+        WebInputEvent::RawKeyDown;
+#endif
+
+    bool isUnmodifiedMenuKey = !(event.modifiers & WebInputEvent::InputModifiers) && event.windowsKeyCode == VKEY_APPS;
+    bool isShiftF10 = event.modifiers == WebInputEvent::ShiftKey && event.windowsKeyCode == VKEY_F10;
+    if ((isUnmodifiedMenuKey || isShiftF10) && event.type == contextMenuTriggeringEventType) {
+        view()->sendContextMenuEvent(event);
+        return true;
+    }
+#endif // !OS(MACOSX)
 
     return keyEventDefault(event);
 }
@@ -1063,6 +1130,14 @@ void WebFrameWidgetImpl::setVisibilityState(WebPageVisibilityState visibilitySta
         bool visible = visibilityState == WebPageVisibilityStateVisible;
         m_layerTreeView->setVisible(visible);
     }
+}
+
+HitTestResult WebFrameWidgetImpl::hitTestResultForRootFramePos(const IntPoint& posInRootFrame)
+{
+    IntPoint docPoint(m_localRoot->frame()->view()->rootFrameToContents(posInRootFrame));
+    HitTestResult result = m_localRoot->frame()->eventHandler().hitTestResultAtPoint(docPoint, HitTestRequest::ReadOnly | HitTestRequest::Active);
+    result.setToShadowHostIfInUserAgentShadowRoot();
+    return result;
 }
 
 } // namespace blink
