@@ -107,6 +107,7 @@ gestureshowpress
 gesturetap
 gesturetapdown
 gesturetapunconfirmed
+gestureflingstart
 gotpointercapture
 hashchange
 icecandidate

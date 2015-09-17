@@ -709,6 +709,12 @@ bool WebViewImpl::handleGestureEvent(const WebGestureEvent& event)
         scheduleAnimation();
         eventSwallowed = true;
 
+        // Plugins may need to see GestureFlingStart to balance
+        // GestureScrollBegin (since the former replaces GestureScrollEnd when
+        // transitioning to a fling).
+        PlatformGestureEventBuilder platformEvent(mainFrameImpl()->frameView(), event);
+        mainFrameImpl()->frame()->eventHandler().handleGestureScrollEvent(platformEvent);
+
         m_client->didHandleGestureEvent(event, eventCancelled);
         return eventSwallowed;
     }
@@ -1867,7 +1873,7 @@ void WebViewImpl::beginFrame(const WebBeginFrameArgs& frameTime)
             PlatformGestureEvent endScrollEvent(PlatformEvent::GestureScrollEnd,
                 m_positionOnFlingStart, m_globalPositionOnFlingStart,
                 IntSize(), 0, false, false, false, false);
-            endScrollEvent.setScrollGestureData(0, 0, 0, 0, true, false);
+            endScrollEvent.setScrollGestureData(0, 0, 0, 0, true, false, -1 /* null plugin id */);
 
             mainFrameImpl()->frame()->eventHandler().handleGestureScrollEnd(endScrollEvent);
         }

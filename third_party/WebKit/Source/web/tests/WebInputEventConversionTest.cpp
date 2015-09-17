@@ -434,9 +434,9 @@ TEST(WebInputEventConversionTest, InputEventsScaling)
     {
         PlatformGestureEvent platformGestureEvent(PlatformEvent::GestureScrollUpdate, IntPoint(10, 12), IntPoint(20, 22), IntSize(25, 27), 0,
             false, false, false, false);
-        platformGestureEvent.setScrollGestureData(30, 32, 40, 42, true, true);
+        platformGestureEvent.setScrollGestureData(30, 32, 40, 42, true, true, -1 /* null plugin id */);
         // FIXME: GestureEvent does not preserve velocityX, velocityY,
-        // preventPropagation, or inertial. It also fails to scale
+        // or preventPropagation. It also fails to scale
         // coordinates (x, y, deltaX, deltaY) to the page scale. This
         // may lead to unexpected bugs if a PlatformGestureEvent is
         // transformed into WebGestureEvent and back.
@@ -451,7 +451,7 @@ TEST(WebInputEventConversionTest, InputEventsScaling)
         EXPECT_EQ(32, webGestureBuilder.data.scrollUpdate.deltaY);
         EXPECT_EQ(0, webGestureBuilder.data.scrollUpdate.velocityX);
         EXPECT_EQ(0, webGestureBuilder.data.scrollUpdate.velocityY);
-        EXPECT_FALSE(webGestureBuilder.data.scrollUpdate.inertial);
+        EXPECT_TRUE(webGestureBuilder.data.scrollUpdate.inertial);
         EXPECT_FALSE(webGestureBuilder.data.scrollUpdate.preventPropagation);
     }
 
@@ -874,7 +874,7 @@ TEST(WebInputEventConversionTest, WebMouseWheelEventBuilder)
     RefPtrWillBeRawPtr<Document> document = toLocalFrame(webViewImpl->page()->mainFrame())->document();
     RefPtrWillBeRawPtr<WheelEvent> event = WheelEvent::create(FloatPoint(1, 3), FloatPoint(5, 10),
         WheelEvent::DOM_DELTA_PAGE, document.get()->domWindow(),  IntPoint(2, 6), IntPoint(10, 30),
-        true, false, false, false, 0, true, true, Event::RailsModeHorizontal);
+        true, false, false, false, 0, true, -1 /* null plugin id */, true, Event::RailsModeHorizontal);
     WebMouseWheelEventBuilder webMouseWheel(toLocalFrame(webViewImpl->page()->mainFrame())->view(), document.get()->layoutView(), *event);
     EXPECT_EQ(1, webMouseWheel.wheelTicksX);
     EXPECT_EQ(3, webMouseWheel.wheelTicksY);

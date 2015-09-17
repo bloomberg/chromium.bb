@@ -373,6 +373,13 @@ public:
     float accelerationRatioX;
     float accelerationRatioY;
 
+    // This field exists to allow BrowserPlugin to mark MouseWheel events as
+    // 'resent' to handle the case where an event is not consumed when first
+    // encountered; it should be handled differently by the plugin when it is
+    // sent for thesecond time. No code within Blink touches this, other than to
+    // plumb it through event conversions.
+    int resendingPluginId;
+
     Phase phase;
     Phase momentumPhase;
 
@@ -412,6 +419,7 @@ public:
         , wheelTicksY(0.0f)
         , accelerationRatioX(1.0f)
         , accelerationRatioY(1.0f)
+        , resendingPluginId(-1)
         , phase(PhaseNone)
         , momentumPhase(PhaseNone)
         , canRubberbandLeft(true)
@@ -433,6 +441,12 @@ public:
     int globalX;
     int globalY;
     WebGestureDevice sourceDevice;
+    // This field exists to allow BrowserPlugin to mark GestureScroll events as
+    // 'resent' to handle the case where an event is not consumed when first
+    // encountered; it should be handled differently by the plugin when it is
+    // sent for thesecond time. No code within Blink touches this, other than to
+    // plumb it through event conversions.
+    int resendingPluginId;
 
     union {
         // Tap information must be set for GestureTap, GestureTapUnconfirmed,
@@ -514,6 +528,7 @@ public:
         , y(0)
         , globalX(0)
         , globalY(0)
+        , resendingPluginId(-1)
     {
         memset(&data, 0, sizeof(data));
     }

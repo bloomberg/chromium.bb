@@ -55,7 +55,7 @@ public:
     }
 
     void setScrollGestureData(float deltaX, float deltaY, float velocityX, float velocityY,
-        bool inertial, bool preventPropagation)
+        bool inertial, bool preventPropagation, int resendingPluginId)
     {
         ASSERT(type() == PlatformEvent::GestureScrollBegin
             || type() == PlatformEvent::GestureScrollUpdate
@@ -76,6 +76,7 @@ public:
         m_data.m_scroll.m_velocityX = velocityX;
         m_data.m_scroll.m_velocityY = velocityY;
         m_data.m_scroll.m_inertial = inertial;
+        m_data.m_scroll.m_resendingPluginId = resendingPluginId;
         m_data.m_scroll.m_preventPropagation = preventPropagation;
     }
 
@@ -104,13 +105,13 @@ public:
 
     float velocityX() const
     {
-        ASSERT(m_type == PlatformEvent::GestureScrollUpdate);
+        ASSERT(m_type == PlatformEvent::GestureScrollUpdate || m_type == PlatformEvent::GestureFlingStart);
         return m_data.m_scroll.m_velocityX;
     }
 
     float velocityY() const
     {
-        ASSERT(m_type == PlatformEvent::GestureScrollUpdate);
+        ASSERT(m_type == PlatformEvent::GestureScrollUpdate || m_type == PlatformEvent::GestureFlingStart);
         return m_data.m_scroll.m_velocityY;
     }
 
@@ -118,6 +119,18 @@ public:
     {
         ASSERT(m_type == PlatformEvent::GestureScrollUpdate || m_type == PlatformEvent::GestureScrollEnd);
         return m_data.m_scroll.m_inertial;
+    }
+
+    int resendingPluginId() const
+    {
+        if (m_type == PlatformEvent::GestureScrollUpdate
+            || m_type == PlatformEvent::GestureScrollBegin
+            || m_type == PlatformEvent::GestureScrollEnd)
+            return m_data.m_scroll.m_resendingPluginId;
+
+        // This function is called by *all* gesture event types in
+        // GestureEvent::Create(), so we return -1 for all other types.
+        return -1;
     }
 
     bool preventPropagation() const
@@ -185,6 +198,7 @@ protected:
             float m_velocityY;
             int m_preventPropagation;
             bool m_inertial;
+            int m_resendingPluginId;
         } m_scroll;
 
         struct {

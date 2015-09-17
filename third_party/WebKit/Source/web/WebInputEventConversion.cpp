@@ -197,6 +197,7 @@ PlatformWheelEventBuilder::PlatformWheelEventBuilder(Widget* widget, const WebMo
 
     m_hasPreciseScrollingDeltas = e.hasPreciseScrollingDeltas;
     m_canScroll = e.canScroll;
+    m_resendingPluginId = e.resendingPluginId;
     m_railsMode = static_cast<PlatformEvent::RailsMode>(e.railsMode);
 #if OS(MACOSX)
     m_phase = static_cast<PlatformWheelEventPhase>(e.phase);
@@ -214,15 +215,20 @@ PlatformGestureEventBuilder::PlatformGestureEventBuilder(Widget* widget, const W
     switch (e.type) {
     case WebInputEvent::GestureScrollBegin:
         m_type = PlatformEvent::GestureScrollBegin;
+        m_data.m_scroll.m_resendingPluginId = e.resendingPluginId;
         break;
     case WebInputEvent::GestureScrollEnd:
         m_type = PlatformEvent::GestureScrollEnd;
+        m_data.m_scroll.m_resendingPluginId = e.resendingPluginId;
         break;
     case WebInputEvent::GestureFlingStart:
         m_type = PlatformEvent::GestureFlingStart;
+        m_data.m_scroll.m_velocityX = e.data.flingStart.velocityX;
+        m_data.m_scroll.m_velocityY = e.data.flingStart.velocityY;
         break;
     case WebInputEvent::GestureScrollUpdate:
         m_type = PlatformEvent::GestureScrollUpdate;
+        m_data.m_scroll.m_resendingPluginId = e.resendingPluginId;
         m_data.m_scroll.m_deltaX = scaleDeltaToWindow(widget, e.data.scrollUpdate.deltaX);
         m_data.m_scroll.m_deltaY = scaleDeltaToWindow(widget, e.data.scrollUpdate.deltaY);
         m_data.m_scroll.m_velocityX = e.data.scrollUpdate.velocityX;
@@ -606,6 +612,7 @@ WebMouseWheelEventBuilder::WebMouseWheelEventBuilder(const Widget* widget, const
     wheelTicksY = event.ticksY();
     scrollByPage = event.deltaMode() == WheelEvent::DOM_DELTA_PAGE;
     canScroll = event.canScroll();
+    resendingPluginId = event.resendingPluginId();
     railsMode = static_cast<RailsMode>(event.railsMode());
 }
 
@@ -737,20 +744,28 @@ WebTouchEventBuilder::WebTouchEventBuilder(const LayoutObject* layoutObject, con
 
 WebGestureEventBuilder::WebGestureEventBuilder(const LayoutObject* layoutObject, const GestureEvent& event)
 {
-    if (event.type() == EventTypeNames::gestureshowpress)
+    if (event.type() == EventTypeNames::gestureshowpress) {
         type = GestureShowPress;
-    else if (event.type() == EventTypeNames::gesturelongpress)
+    } else if (event.type() == EventTypeNames::gesturelongpress) {
         type = GestureLongPress;
-    else if (event.type() == EventTypeNames::gesturetapdown)
+    } else if (event.type() == EventTypeNames::gesturetapdown) {
         type = GestureTapDown;
-    else if (event.type() == EventTypeNames::gesturescrollstart)
+    } else if (event.type() == EventTypeNames::gesturescrollstart) {
         type = GestureScrollBegin;
-    else if (event.type() == EventTypeNames::gesturescrollend)
+        resendingPluginId = event.resendingPluginId();
+    } else if (event.type() == EventTypeNames::gesturescrollend) {
         type = GestureScrollEnd;
-    else if (event.type() == EventTypeNames::gesturescrollupdate) {
+        resendingPluginId = event.resendingPluginId();
+    } else if (event.type() == EventTypeNames::gesturescrollupdate) {
         type = GestureScrollUpdate;
         data.scrollUpdate.deltaX = event.deltaX();
         data.scrollUpdate.deltaY = event.deltaY();
+        data.scrollUpdate.inertial = event.inertial();
+        resendingPluginId = event.resendingPluginId();
+    } else if (event.type() == EventTypeNames::gestureflingstart) {
+        type = GestureFlingStart;
+        data.flingStart.velocityX = event.velocityX();
+        data.flingStart.velocityY = event.velocityY();
     } else if (event.type() == EventTypeNames::gesturetap) {
         type = GestureTap;
         data.tap.tapCount = 1;

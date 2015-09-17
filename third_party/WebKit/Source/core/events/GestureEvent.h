@@ -45,6 +45,11 @@ public:
 
     float deltaX() const { return m_deltaX; }
     float deltaY() const { return m_deltaY; }
+    float velocityX() const { return m_velocityX; }
+    float velocityY() const { return m_velocityY; }
+    bool inertial() const { return m_inertial; }
+
+    int resendingPluginId() const { return m_resendingPluginId; }
 
     PassRefPtrWillBeRawPtr<EventDispatchMediator> createMediator() override;
 
@@ -52,10 +57,15 @@ public:
 
 private:
     GestureEvent();
-    GestureEvent(const AtomicString& type, PassRefPtrWillBeRawPtr<AbstractView>, int screenX, int screenY, int clientX, int clientY, bool ctrlKey, bool altKey, bool shiftKey, bool metaKey, float deltaX, float deltaY, double uiTimeStamp);
+    GestureEvent(const AtomicString& type, PassRefPtrWillBeRawPtr<AbstractView>, int screenX, int screenY, int clientX, int clientY, bool ctrlKey, bool altKey, bool shiftKey, bool metaKey, float deltaX, float deltaY, float velocityX, float velocityY, bool inertial, double uiTimeStamp, int resendingPluginId);
 
     float m_deltaX;
     float m_deltaY;
+    float m_velocityX;
+    float m_velocityY;
+    bool m_inertial;
+
+    int m_resendingPluginId;
 };
 
 class GestureEventDispatchMediator final : public EventDispatchMediator {

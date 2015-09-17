@@ -1613,7 +1613,7 @@ TEST_P(ParameterizedVisualViewportTest, SlowScrollAfterImplScroll)
         IntPoint(0, 0),
         IntSize(5, 5),
         0, false, false, false, false);
-    gsu.setScrollGestureData(-50, -60, 1, 1, false, false);
+    gsu.setScrollGestureData(-50, -60, 1, 1, false, false, -1 /* null plugin id */);
 
     frame()->eventHandler().handleGestureEvent(gsu);
 

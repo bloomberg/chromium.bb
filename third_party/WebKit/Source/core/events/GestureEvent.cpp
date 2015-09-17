@@ -35,6 +35,9 @@ PassRefPtrWillBeRawPtr<GestureEvent> GestureEvent::create(PassRefPtrWillBeRawPtr
     AtomicString eventType;
     float deltaX = 0;
     float deltaY = 0;
+    float velocityX = 0;
+    float velocityY = 0;
+    bool inertial = false;
     switch (event.type()) {
     case PlatformEvent::GestureScrollBegin:
         eventType = EventTypeNames::gesturescrollstart; break;
@@ -46,6 +49,7 @@ PassRefPtrWillBeRawPtr<GestureEvent> GestureEvent::create(PassRefPtrWillBeRawPtr
         eventType = EventTypeNames::gesturescrollupdate;
         deltaX = event.deltaX();
         deltaY = event.deltaY();
+        inertial = event.inertial();
         break;
     case PlatformEvent::GestureTap:
         eventType = EventTypeNames::gesturetap; break;
@@ -57,6 +61,11 @@ PassRefPtrWillBeRawPtr<GestureEvent> GestureEvent::create(PassRefPtrWillBeRawPtr
         eventType = EventTypeNames::gestureshowpress; break;
     case PlatformEvent::GestureLongPress:
         eventType = EventTypeNames::gesturelongpress; break;
+    case PlatformEvent::GestureFlingStart:
+        eventType = EventTypeNames::gestureflingstart;
+        velocityX = event.velocityX();
+        velocityY = event.velocityY();
+        break;
     case PlatformEvent::GestureTwoFingerTap:
     case PlatformEvent::GesturePinchBegin:
     case PlatformEvent::GesturePinchEnd:
@@ -65,7 +74,7 @@ PassRefPtrWillBeRawPtr<GestureEvent> GestureEvent::create(PassRefPtrWillBeRawPtr
     default:
         return nullptr;
     }
-    return adoptRefWillBeNoop(new GestureEvent(eventType, view, event.globalPosition().x(), event.globalPosition().y(), event.position().x(), event.position().y(), event.ctrlKey(), event.altKey(), event.shiftKey(), event.metaKey(), deltaX, deltaY, event.timestamp()));
+    return adoptRefWillBeNoop(new GestureEvent(eventType, view, event.globalPosition().x(), event.globalPosition().y(), event.position().x(), event.position().y(), event.ctrlKey(), event.altKey(), event.shiftKey(), event.metaKey(), deltaX, deltaY, velocityX, velocityY, inertial, event.timestamp(), event.resendingPluginId()));
 }
 
 const AtomicString& GestureEvent::interfaceName() const
@@ -84,13 +93,21 @@ bool GestureEvent::isGestureEvent() const
 GestureEvent::GestureEvent()
     : m_deltaX(0)
     , m_deltaY(0)
+    , m_velocityX(0)
+    , m_velocityY(0)
+    , m_inertial(false)
+    , m_resendingPluginId(-1)
 {
 }
 
-GestureEvent::GestureEvent(const AtomicString& type, PassRefPtrWillBeRawPtr<AbstractView> view, int screenX, int screenY, int clientX, int clientY, bool ctrlKey, bool altKey, bool shiftKey, bool metaKey, float deltaX, float deltaY, double uiTimestamp)
+GestureEvent::GestureEvent(const AtomicString& type, PassRefPtrWillBeRawPtr<AbstractView> view, int screenX, int screenY, int clientX, int clientY, bool ctrlKey, bool altKey, bool shiftKey, bool metaKey, float deltaX, float deltaY, float velocityX, float velocityY, bool inertial, double uiTimestamp, int resendingPluginId)
     : MouseRelatedEvent(type, true, true, view, 0, IntPoint(screenX, screenY), IntPoint(clientX, clientY), IntPoint(0, 0), ctrlKey, altKey, shiftKey, metaKey, PositionType::Position)
     , m_deltaX(deltaX)
     , m_deltaY(deltaY)
+    , m_velocityX(velocityX)
+    , m_velocityY(velocityY)
+    , m_inertial(inertial)
+    , m_resendingPluginId(resendingPluginId)
 {
     setUICreateTime(uiTimestamp);
 }

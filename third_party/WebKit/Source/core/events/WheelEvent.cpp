@@ -41,7 +41,7 @@ PassRefPtrWillBeRawPtr<WheelEvent> WheelEvent::create(const PlatformWheelEvent& 
         convertDeltaMode(event), view, event.globalPosition(), event.position(),
         event.ctrlKey(), event.altKey(), event.shiftKey(), event.metaKey(),
         MouseEvent::platformModifiersToButtons(event.modifiers()),
-        event.canScroll(), event.hasPreciseScrollingDeltas(),
+        event.canScroll(), event.resendingPluginId(), event.hasPreciseScrollingDeltas(),
         static_cast<Event::RailsMode>(event.railsMode())));
 }
 
@@ -51,6 +51,7 @@ WheelEvent::WheelEvent()
     , m_deltaZ(0)
     , m_deltaMode(DOM_DELTA_PIXEL)
     , m_canScroll(true)
+    , m_resendingPluginId(-1)
     , m_hasPreciseScrollingDeltas(false)
     , m_railsMode(RailsModeFree)
 {
@@ -64,6 +65,7 @@ WheelEvent::WheelEvent(const AtomicString& type, const WheelEventInit& initializ
     , m_deltaZ(initializer.deltaZ())
     , m_deltaMode(initializer.deltaMode())
     , m_canScroll(true)
+    , m_resendingPluginId(-1)
     , m_hasPreciseScrollingDeltas(false)
     , m_railsMode(RailsModeFree)
 {
@@ -71,7 +73,7 @@ WheelEvent::WheelEvent(const AtomicString& type, const WheelEventInit& initializ
 
 WheelEvent::WheelEvent(const FloatPoint& wheelTicks, const FloatPoint& rawDelta, unsigned deltaMode,
     PassRefPtrWillBeRawPtr<AbstractView> view, const IntPoint& screenLocation, const IntPoint& windowLocation,
-    bool ctrlKey, bool altKey, bool shiftKey, bool metaKey, unsigned short buttons, bool canScroll, bool hasPreciseScrollingDeltas, RailsMode railsMode)
+    bool ctrlKey, bool altKey, bool shiftKey, bool metaKey, unsigned short buttons, bool canScroll, int resendingPluginId, bool hasPreciseScrollingDeltas, RailsMode railsMode)
     : MouseEvent(EventTypeNames::wheel, true, true, view, 0, screenLocation.x(), screenLocation.y(),
         windowLocation.x(), windowLocation.y(), 0, 0, ctrlKey, altKey, shiftKey, metaKey, 0, buttons,
         nullptr, PlatformMouseEvent::RealOrIndistinguishable)
@@ -81,6 +83,7 @@ WheelEvent::WheelEvent(const FloatPoint& wheelTicks, const FloatPoint& rawDelta,
     , m_deltaZ(0)
     , m_deltaMode(deltaMode)
     , m_canScroll(canScroll)
+    , m_resendingPluginId(resendingPluginId)
     , m_hasPreciseScrollingDeltas(hasPreciseScrollingDeltas)
     , m_railsMode(railsMode)
 {
