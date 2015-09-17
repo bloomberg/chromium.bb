@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 
+#include "ash/ash_switches.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
@@ -62,6 +63,8 @@ const CommandLinePrefStore::BooleanSwitchToPreferenceMapEntry
 #if defined(OS_CHROMEOS)
       { chromeos::switches::kEnableTouchpadThreeFingerClick,
           prefs::kEnableTouchpadThreeFingerClick, true },
+      { ash::switches::kAshEnableUnifiedDesktop,
+          prefs::kUnifiedDesktopEnabledByDefault, true },
 #endif
       { switches::kDisableAsyncDns, prefs::kBuiltInDnsClientEnabled, false },
 };

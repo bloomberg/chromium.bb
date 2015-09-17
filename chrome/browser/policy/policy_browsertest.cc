@@ -6,6 +6,7 @@
 #include <string>
 #include <vector>
 
+#include "ash/display/display_manager.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
@@ -3868,5 +3869,36 @@ IN_PROC_BROWSER_TEST_F(HardwareAccelerationModePolicyTest,
       content::GpuDataManager::GetInstance()->GpuAccessAllowed(nullptr));
 }
 #endif  // !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
+
+#if defined(OS_CHROMEOS)
+// Policy is only available in ChromeOS
+IN_PROC_BROWSER_TEST_F(PolicyTest, UnifiedDesktopEnabledByDefault) {
+  // Verify that Unified Desktop can be enabled by policy
+  ash::DisplayManager *display_manager =
+      ash::Shell::GetInstance()->display_manager();
+
+  // The policy description promises that Unified Desktop is not available
+  // unless the policy is set (or a command line or an extension is used). If
+  // this default behaviour changes, please change the description at
+  // components/policy/resources/policy_templates.json.
+  EXPECT_FALSE(display_manager->unified_desktop_enabled());
+  // Now set the policy and check that unified desktop is turned on.
+  PolicyMap policies;
+  policies.Set(key::kUnifiedDesktopEnabledByDefault,
+               POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER,
+               new base::FundamentalValue(true),
+               NULL);
+  UpdateProviderPolicy(policies);
+  EXPECT_TRUE(display_manager->unified_desktop_enabled());
+  policies.Set(key::kUnifiedDesktopEnabledByDefault,
+               POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER,
+               new base::FundamentalValue(false),
+               NULL);
+  UpdateProviderPolicy(policies);
+  EXPECT_FALSE(display_manager->unified_desktop_enabled());
+}
+#endif // defined(OS_CHROMEOS)
 
 }  // namespace policy

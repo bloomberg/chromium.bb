@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "ash/autoclick/autoclick_controller.h"
+#include "ash/display/display_manager.h"
 #include "ash/shell.h"
 #include "base/command_line.h"
 #include "base/i18n/time_formatting.h"
@@ -120,6 +121,10 @@ void Preferences::RegisterProfilePrefs(
       false,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PRIORITY_PREF);
   registry->RegisterBooleanPref(prefs::kEnableTouchpadThreeFingerClick, false);
+  // This preference can only be set to true by policy or command_line flag
+  // and it should not carry over to sessions were neither of these is set.
+  registry->RegisterBooleanPref(prefs::kUnifiedDesktopEnabledByDefault, false,
+                                PrefRegistry::NO_REGISTRATION_FLAGS);
   registry->RegisterBooleanPref(
       prefs::kNaturalScroll, base::CommandLine::ForCurrentProcess()->HasSwitch(
                                  switches::kNaturalScrollDefault),
@@ -291,7 +296,9 @@ void Preferences::InitUserPrefs(PrefServiceSyncable* prefs) {
   tap_to_click_enabled_.Init(prefs::kTapToClickEnabled, prefs, callback);
   tap_dragging_enabled_.Init(prefs::kTapDraggingEnabled, prefs, callback);
   three_finger_click_enabled_.Init(prefs::kEnableTouchpadThreeFingerClick,
-      prefs, callback);
+                                   prefs, callback);
+  unified_desktop_enabled_by_default_.Init(
+      prefs::kUnifiedDesktopEnabledByDefault, prefs, callback);
   natural_scroll_.Init(prefs::kNaturalScroll, prefs, callback);
   mouse_sensitivity_.Init(prefs::kMouseSensitivity, prefs, callback);
   touchpad_sensitivity_.Init(prefs::kTouchpadSensitivity, prefs, callback);
@@ -440,6 +447,14 @@ void Preferences::ApplyPreferences(ApplyReason reason,
       UMA_HISTOGRAM_BOOLEAN("Touchpad.ThreeFingerClick.Changed", enabled);
     else if (reason == REASON_INITIALIZATION)
       UMA_HISTOGRAM_BOOLEAN("Touchpad.ThreeFingerClick.Started", enabled);
+  }
+  if (reason != REASON_PREF_CHANGED ||
+      pref_name == prefs::kUnifiedDesktopEnabledByDefault) {
+    const bool enabled = unified_desktop_enabled_by_default_.GetValue();
+    if (ash::Shell::HasInstance()) {
+      ash::Shell::GetInstance()->display_manager()
+          ->SetUnifiedDesktopEnabled(enabled);
+    }
   }
   if (reason != REASON_PREF_CHANGED || pref_name == prefs::kNaturalScroll) {
     // Force natural scroll default if we've sync'd and if the cmd line arg is

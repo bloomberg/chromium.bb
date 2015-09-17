@@ -121,6 +121,7 @@ class Preferences : public PrefServiceSyncableObserver,
   BooleanPrefMember tap_to_click_enabled_;
   BooleanPrefMember tap_dragging_enabled_;
   BooleanPrefMember three_finger_click_enabled_;
+  BooleanPrefMember unified_desktop_enabled_by_default_;
   BooleanPrefMember natural_scroll_;
   BooleanPrefMember vert_edge_scroll_enabled_;
   IntegerPrefMember speed_factor_;

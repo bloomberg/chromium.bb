@@ -141,7 +141,7 @@
       { "pref": "spdy.disabled" }
     ]
   },
-  
+
   "QuicAllowed": {
     "os": ["win", "linux", "mac", "chromeos"],
     "test_policy": { "QuicAllowed": true }
@@ -1087,7 +1087,7 @@
 
     "note": "TODO(bartfab): Flag this with can_be_recommended when http://crbug.com/106682 is fixed."
   },
-  
+
   "DefaultMediaStreamSetting.OverriddenByAudioCaptureAllowed": {
     "os": ["win", "linux", "mac", "chromeos"],
     "test_policy": { "DefaultMediaStreamSetting": 3,
@@ -1111,7 +1111,7 @@
       }
     ]
   },
-  
+
   "DefaultMediaStreamSetting.OverriddenByVideoCaptureAllowed": {
     "os": ["win", "linux", "mac", "chromeos"],
     "test_policy": { "DefaultMediaStreamSetting": 3,
@@ -2332,6 +2332,15 @@
           { "policy": { "HardwareAccelerationModeEnabled": false } }
         ]
       }
+    ]
+  },
+
+  "UnifiedDesktopEnabledByDefault": {
+    "os": ["chromeos"],
+    "can_be_recommended": false,
+    "test_policy": { "UnifiedDesktopEnabledByDefault": true },
+    "pref_mappings": [
+      { "pref": "settings.display.unified_desktop_enabled_by_default" }
     ]
   },
 

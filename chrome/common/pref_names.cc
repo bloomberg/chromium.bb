@@ -809,6 +809,13 @@ const char kForceMaximizeOnFirstRun[] = "ui.force_maximize_on_first_run";
 // A dictionary pref mapping public keys that identify platform keys to its
 // properties like whether it's meant for corporate usage.
 const char kPlatformKeys[] = "platform_keys";
+
+// A boolean pref. If set to true, the Unified Desktop feature is made
+// available and turned on by default, which allows applications to span
+// multiple screens. Users may turn the feature off and on in the settings
+// while this is set to true.
+const char kUnifiedDesktopEnabledByDefault[] =
+    "settings.display.unified_desktop_enabled_by_default";
 #endif  // defined(OS_CHROMEOS)
 
 // A boolean pref set to true if a Home button to open the Home pages should be

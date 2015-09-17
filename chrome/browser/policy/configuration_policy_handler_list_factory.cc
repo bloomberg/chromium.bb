@@ -477,6 +477,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kForceMaximizeOnFirstRun,
     prefs::kForceMaximizeOnFirstRun,
     base::Value::TYPE_BOOLEAN },
+  { key::kUnifiedDesktopEnabledByDefault,
+    prefs::kUnifiedDesktopEnabledByDefault,
+    base::Value::TYPE_BOOLEAN },
 #endif  // defined(OS_CHROMEOS)
 
 #if !defined(OS_MACOSX) && !defined(OS_CHROMEOS)
