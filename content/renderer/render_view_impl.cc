@@ -1443,7 +1443,7 @@ void RenderViewImpl::OnScrollFocusedEditableNodeIntoRect(
 
   blink::WebElement element = GetFocusedElement();
   bool will_animate = false;
-  if (!element.isNull() && IsEditableNode(element)) {
+  if (!element.isNull() && element.isEditable()) {
     rect_for_scrolled_focused_editable_node_ = rect;
     has_scrolled_focused_editable_node_into_rect_ = true;
     will_animate = webview()->scrollFocusedNodeIntoRect(rect);
@@ -1923,16 +1923,19 @@ void RenderViewImpl::focusPrevious() {
   Send(new ViewHostMsg_TakeFocus(routing_id_, true));
 }
 
+// TODO(esprehn): Blink only ever passes Elements, this should take WebElement.
 void RenderViewImpl::focusedNodeChanged(const WebNode& fromNode,
                                         const WebNode& toNode) {
   has_scrolled_focused_editable_node_into_rect_ = false;
 
   gfx::Rect node_bounds;
+  bool is_editable = false;
   if (!toNode.isNull() && toNode.isElementNode()) {
-    WebNode web_node = const_cast<WebNode&>(toNode);
-    node_bounds = gfx::Rect(web_node.to<WebElement>().boundsInViewportSpace());
+    WebElement element = const_cast<WebNode&>(toNode).to<WebElement>();
+    node_bounds = gfx::Rect(element.boundsInViewportSpace());
+    is_editable = element.isEditable();
   }
-  Send(new ViewHostMsg_FocusedNodeChanged(routing_id_, IsEditableNode(toNode),
+  Send(new ViewHostMsg_FocusedNodeChanged(routing_id_, is_editable,
                                           node_bounds));
 
   // TODO(estade): remove.
@@ -2231,28 +2234,6 @@ void RenderViewImpl::SetWebkitPreferences(const WebPreferences& preferences) {
 
 blink::WebView* RenderViewImpl::GetWebView() {
   return webview();
-}
-
-bool RenderViewImpl::IsEditableNode(const WebNode& node) const {
-  if (node.isNull())
-    return false;
-
-  if (node.isContentEditable())
-    return true;
-
-  if (node.isElementNode()) {
-    const WebElement& element = node.toConst<WebElement>();
-    if (element.isTextFormControlElement()) {
-      if (!(element.hasAttribute("readonly") ||
-            element.hasAttribute("disabled")))
-        return true;
-    }
-
-    return base::LowerCaseEqualsASCII(
-        base::StringPiece16(element.getAttribute("role")), "textbox");
-  }
-
-  return false;
 }
 
 bool RenderViewImpl::ShouldDisplayScrollbars(int width, int height) const {

@@ -81,10 +81,6 @@ class CONTENT_EXPORT RenderView : public IPC::Sender {
   // Returns the associated WebView. May return NULL when the view is closing.
   virtual blink::WebView* GetWebView() = 0;
 
-  // Returns true if the parameter node is a textfield, text area, a content
-  // editable div, or has an ARIA role of textbox.
-  virtual bool IsEditableNode(const blink::WebNode& node) const = 0;
-
   // Returns true if we should display scrollbars for the given view size and
   // false if the scrollbars should be hidden.
   virtual bool ShouldDisplayScrollbars(int width, int height) const = 0;
