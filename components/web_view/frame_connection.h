@@ -63,7 +63,6 @@ class FrameConnection : public FrameUserData {
  private:
   FrameTreeClientPtr frame_tree_client_;
 
-  // TODO(sky): needs to be destroyed when connection lost.
   scoped_ptr<mojo::ApplicationConnection> application_connection_;
 
   DISALLOW_COPY_AND_ASSIGN(FrameConnection);

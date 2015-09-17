@@ -36,25 +36,22 @@ class TestFrameTreeServer : public web_view::FrameTreeServer {
   ~TestFrameTreeServer() override {}
 
   // web_view::FrameTreeServer:
-  void PostMessageEventToFrame(uint32_t source_frame_id,
-                               uint32_t target_frame_id,
+  void PostMessageEventToFrame(uint32_t target_frame_id,
                                web_view::HTMLMessageEventPtr event) override {}
-  void LoadingStateChanged(uint32_t frame_id,
-                           bool loading,
-                           double progress) override {}
-  void TitleChanged(uint32_t frame_id, const mojo::String& title) override {}
-  void SetClientProperty(uint32_t frame_id,
-                         const mojo::String& name,
+  void LoadingStateChanged(bool loading, double progress) override {}
+  void TitleChanged(const mojo::String& title) override {}
+  void SetClientProperty(const mojo::String& name,
                          mojo::Array<uint8_t> value) override {}
-  void OnCreatedFrame(uint32_t parent_id,
-                      uint32_t frame_id,
-                      mojo::Map<mojo::String, mojo::Array<uint8_t>>
-                          client_properties) override {}
+  void OnCreatedFrame(
+      mojo::InterfaceRequest<web_view::FrameTreeServer> server_request,
+      web_view::FrameTreeClientPtr client,
+      uint32_t frame_id,
+      mojo::Map<mojo::String, mojo::Array<uint8_t>> client_properties)
+      override {}
   void RequestNavigate(web_view::NavigationTargetType target_type,
                        uint32_t target_frame_id,
                        mojo::URLRequestPtr request) override {}
-  void DidNavigateLocally(uint32_t frame_id, const mojo::String& url) override {
-  }
+  void DidNavigateLocally(const mojo::String& url) override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestFrameTreeServer);

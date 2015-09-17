@@ -82,51 +82,76 @@ scoped_ptr<base::Value> ExecuteScript(ApplicationConnection* connection,
 class TestFrameTreeDelegateImpl : public web_view::TestFrameTreeDelegate {
  public:
   explicit TestFrameTreeDelegateImpl(mojo::ApplicationImpl* app)
-      : TestFrameTreeDelegate(app),
-        frame_tree_(nullptr),
-        waiting_for_navigate_(false),
-        got_navigate_(false) {}
+      : TestFrameTreeDelegate(app), frame_tree_(nullptr) {}
   ~TestFrameTreeDelegateImpl() override {}
 
   void set_frame_tree(FrameTree* frame_tree) { frame_tree_ = frame_tree; }
 
-  void clear_got_navigate() { got_navigate_ = false; }
+  // Resets the navigation state for |frame|.
+  void ClearGotNavigate(Frame* frame) { frames_navigated_.erase(frame); }
 
-  bool waiting_for_navigate() const { return waiting_for_navigate_; }
-
-  // Waits for a navigation to occur. This immediately returns true if a
-  // navigation has already occurred. In other words, take care when using this,
-  // you may need to clear_got_navigate() before calling this.
-  bool WaitForNavigateFrame() {
-    if (waiting_for_navigate_)
-      return false;
-
-    if (got_navigate_)
+  // Waits until |frame| has |count| children and the last child has navigated.
+  bool WaitForChildFrameCount(Frame* frame, size_t count) {
+    if (DidChildNavigate(frame, count))
       return true;
 
-    base::AutoReset<bool> resetter(&waiting_for_navigate_, true);
-    return ViewManagerTestBase::DoRunLoopWithTimeout() && got_navigate_;
+    waiting_for_frame_child_count_.reset(new FrameAndChildCount);
+    waiting_for_frame_child_count_->frame = frame;
+    waiting_for_frame_child_count_->count = count;
+
+    return ViewManagerTestBase::DoRunLoopWithTimeout();
+  }
+
+  // Returns true if |frame| has navigated. If |frame| hasn't navigated runs
+  // a nested message loop until |frame| navigates.
+  bool WaitForFrameNavigation(Frame* frame) {
+    if (frames_navigated_.count(frame))
+      return true;
+
+    frames_waiting_for_navigate_.insert(frame);
+    return ViewManagerTestBase::DoRunLoopWithTimeout();
   }
 
   // TestFrameTreeDelegate:
-  void CanNavigateFrame(Frame* target,
-                        mojo::URLRequestPtr request,
-                        const CanNavigateFrameCallback& callback) override {
-    FrameConnection::CreateConnectionForCanNavigateFrame(
-        app(), target, request.Pass(), callback);
-  }
-
   void DidStartNavigation(Frame* frame) override {
-    got_navigate_ = true;
+    frames_navigated_.insert(frame);
 
-    if (waiting_for_navigate_)
+    if (waiting_for_frame_child_count_ &&
+        DidChildNavigate(waiting_for_frame_child_count_->frame,
+                         waiting_for_frame_child_count_->count)) {
+      waiting_for_frame_child_count_.reset();
+      ASSERT_TRUE(ViewManagerTestBase::QuitRunLoop());
+    }
+
+    if (frames_waiting_for_navigate_.count(frame)) {
+      frames_waiting_for_navigate_.erase(frame);
       ignore_result(ViewManagerTestBase::QuitRunLoop());
+    }
   }
 
  private:
+  struct FrameAndChildCount {
+    Frame* frame;
+    size_t count;
+  };
+
+  // Returns true if |frame| has |count| children and the last child frame
+  // has navigated.
+  bool DidChildNavigate(Frame* frame, size_t count) {
+    return ((frame->children().size() == count) &&
+            (frames_navigated_.count(frame->children()[count - 1])));
+  }
+
   FrameTree* frame_tree_;
-  bool waiting_for_navigate_;
-  bool got_navigate_;
+  // Any time DidStartNavigation() is invoked the frame is added here. Frames
+  // are inserted as void* as this does not track destruction of the frames.
+  std::set<void*> frames_navigated_;
+
+  // The set of frames waiting for a navigation to occur.
+  std::set<Frame*> frames_waiting_for_navigate_;
+
+  // Set of frames waiting for a certain number of children and navigation.
+  scoped_ptr<FrameAndChildCount> waiting_for_frame_child_count_;
 
   DISALLOW_COPY_AND_ASSIGN(TestFrameTreeDelegateImpl);
 };
@@ -167,19 +192,10 @@ class HTMLFrameTest : public ViewManagerTestBase {
     ExecuteScript(ApplicationConnectionForFrame(parent),
                   AddPortToString(kAddFrameWithEmptyPageScript));
 
-    // Wait for the frame to appear.
-    if ((parent->children().size() != initial_frame_count + 1u ||
-         !parent->children().back()->user_data()) &&
-        !WaitForNavigateFrame()) {
-      ADD_FAILURE() << "timed out waiting for child";
+    frame_tree_delegate_->WaitForChildFrameCount(parent,
+                                                 initial_frame_count + 1);
+    if (HasFatalFailure())
       return nullptr;
-    }
-
-    if (parent->view()->children().size() != initial_frame_count + 1u) {
-      ADD_FAILURE() << "unexpected number of children "
-                    << parent->view()->children().size();
-      return nullptr;
-    }
 
     return parent->FindFrame(parent->view()->children().back()->id());
   }
@@ -218,14 +234,6 @@ class HTMLFrameTest : public ViewManagerTestBase {
     return result;
   }
 
-  bool WaitForNavigateFrame() {
-    if (frame_tree_delegate_->waiting_for_navigate())
-      return false;
-
-    frame_tree_delegate_->clear_got_navigate();
-    return frame_tree_delegate_->WaitForNavigateFrame();
-  }
-
   // ViewManagerTest:
   void SetUp() override {
     ViewManagerTestBase::SetUp();
@@ -261,12 +269,8 @@ TEST_F(HTMLFrameTest, PageWithSingleFrame) {
   ASSERT_EQ("Page with single frame",
             GetFrameText(root_connection->application_connection()));
 
-  // page_with_single_frame contains a child frame. The child frame should
-  // create a new View and Frame.
-  if (frame_tree_->root()->children().empty() ||
-      !frame_tree_->root()->children().back()->user_data()) {
-    ASSERT_TRUE(WaitForNavigateFrame());
-  }
+  ASSERT_NO_FATAL_FAILURE(
+      frame_tree_delegate_->WaitForChildFrameCount(frame_tree_->root(), 1u));
 
   ASSERT_EQ(1u, embed_view->children().size());
   Frame* child_frame =
@@ -288,29 +292,28 @@ TEST_F(HTMLFrameTest, ChangeLocationOfChildFrame) {
 
   // page_with_single_frame contains a child frame. The child frame should
   // create a new View and Frame.
-  if (frame_tree_->root()->children().empty() ||
-      !frame_tree_->root()->children().back()->user_data()) {
-    ASSERT_TRUE(WaitForNavigateFrame());
-  }
+  ASSERT_NO_FATAL_FAILURE(
+      frame_tree_delegate_->WaitForChildFrameCount(frame_tree_->root(), 1u));
 
-  ASSERT_EQ(
-      "child",
-      GetFrameText(static_cast<FrameConnection*>(
-                       frame_tree_->root()->children().back()->user_data())
-                       ->application_connection()));
+  Frame* child_frame = frame_tree_->root()->children().back();
+
+  ASSERT_EQ("child",
+            GetFrameText(static_cast<FrameConnection*>(child_frame->user_data())
+                             ->application_connection()));
 
   // Change the location and wait for the navigation to occur.
   const char kNavigateFrame[] =
       "window.frames[0].location = "
       "'http://127.0.0.1:%u/files/empty_page2.html'";
-  frame_tree_delegate_->clear_got_navigate();
+  frame_tree_delegate_->ClearGotNavigate(child_frame);
   ExecuteScript(ApplicationConnectionForFrame(frame_tree_->root()),
                 AddPortToString(kNavigateFrame));
-  ASSERT_TRUE(WaitForNavigateFrame());
+  ASSERT_TRUE(frame_tree_delegate_->WaitForFrameNavigation(child_frame));
+
+  // There should still only be one frame.
+  ASSERT_EQ(1u, frame_tree_->root()->children().size());
 
   // The navigation should have changed the text of the frame.
-  ASSERT_EQ(1u, frame_tree_->root()->children().size());
-  Frame* child_frame = frame_tree_->root()->children()[0];
   ASSERT_TRUE(child_frame->user_data());
   ASSERT_EQ("child2",
             GetFrameText(static_cast<FrameConnection*>(child_frame->user_data())
@@ -447,8 +450,6 @@ TEST_F(HTMLFrameTest, PostMessage) {
       "}"
       "window.addEventListener('message', messageFunction, false);";
   ExecuteScript(child_frame_connection, kRegisterPostMessageHandler);
-
-  frame_tree_delegate_->clear_got_navigate();
 
   // Post a message from the parent to the child.
   const char kPostMessageFromParent[] =

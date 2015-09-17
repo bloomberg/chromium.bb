@@ -308,7 +308,9 @@ void HTMLFrameTreeManager::ProcessOnFrameAdded(
   HTMLFrame::CreateParams params(this, parent, frame_data->frame_id, nullptr,
                                  frame_data->client_properties, nullptr);
   // |parent| takes ownership of created HTMLFrame.
-  source->GetLocalRoot()->delegate_->GetHTMLFactory()->CreateHTMLFrame(&params);
+  source->GetFirstAncestorWithDelegate()
+      ->delegate_->GetHTMLFactory()
+      ->CreateHTMLFrame(&params);
 }
 
 void HTMLFrameTreeManager::ProcessOnFrameRemoved(HTMLFrame* source,

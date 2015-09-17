@@ -5,6 +5,7 @@
 #include "components/web_view/test_frame_tree_delegate.h"
 
 #include "base/run_loop.h"
+#include "components/web_view/client_initiated_frame_connection.h"
 #include "components/web_view/frame_connection.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -45,6 +46,12 @@ void TestFrameTreeDelegate::WaitForFrameDisconnected(Frame* frame) {
   run_loop_.reset(new base::RunLoop);
   run_loop_->Run();
   run_loop_.reset();
+}
+
+scoped_ptr<FrameUserData> TestFrameTreeDelegate::CreateUserDataForNewFrame(
+    FrameTreeClientPtr frame_tree_client) {
+  return make_scoped_ptr(
+      new ClientInitiatedFrameConnection(frame_tree_client.Pass()));
 }
 
 bool TestFrameTreeDelegate::CanPostMessageEventToFrame(

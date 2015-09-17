@@ -32,13 +32,10 @@ enum class ViewOwnership {
 // with is deleted.
 //
 // In general each Frame has a View. When a new Frame is created by a client
-// there may be a small amount of time where the View is not yet known to us
+// there may be a small amount of time where the View is not yet known
 // (separate pipes are used for the view and frame, resulting in undefined
 // message ordering). In this case the view is null and will be set once we
 // see the view (OnTreeChanged()).
-//
-// When the FrameTreeClient creates a new Frame there is no associated
-// FrameTreeClient for the child Frame.
 //
 // Each frame has an identifier of the app providing the FrameTreeClient
 // (|app_id|). This id is used when servicing a request to navigate the frame.
@@ -63,7 +60,9 @@ class Frame : public mus::ViewObserver, public FrameTreeServer {
         const ClientPropertyMap& client_properties);
   ~Frame() override;
 
-  void Init(Frame* parent, mojo::ViewTreeClientPtr view_tree_client);
+  void Init(Frame* parent,
+            mojo::ViewTreeClientPtr view_tree_client,
+            mojo::InterfaceRequest<FrameTreeServer> server_request);
 
   // Walks the View tree starting at |view| going up returning the first
   // Frame that is associated with |view|. For example, if |view|
@@ -112,7 +111,17 @@ class Frame : public mus::ViewObserver, public FrameTreeServer {
 
   // Identifies whether the FrameTreeClient is from the same app or a different
   // app.
-  enum class ClientType { SAME_APP, NEW_APP };
+  enum class ClientType {
+    // The client is either the root frame, or navigating an existing frame
+    // to a different app.
+    EXISTING_FRAME_NEW_APP,
+
+    // The client is the result of navigating an existing frame to a new app.
+    EXISTING_FRAME_SAME_APP,
+
+    // The client is the result of a new frame (not the root).
+    NEW_CHILD_FRAME
+  };
 
   struct FrameTreeServerBinding;
 
@@ -128,7 +137,8 @@ class Frame : public mus::ViewObserver, public FrameTreeServer {
   // OnConnect().
   void InitClient(ClientType client_type,
                   scoped_ptr<FrameTreeServerBinding> frame_tree_server_binding,
-                  mojo::ViewTreeClientPtr view_tree_client);
+                  mojo::ViewTreeClientPtr view_tree_client,
+                  mojo::InterfaceRequest<FrameTreeServer> server_request);
 
   // Callback from OnConnect(). This does nothing (other than destroying
   // |frame_tree_server_binding|). See InitClient() for details as to why
@@ -148,10 +158,6 @@ class Frame : public mus::ViewObserver, public FrameTreeServer {
 
   void SetView(mus::View* view);
 
-  // Returns the first ancestor (starting at |this|) that has a
-  // FrameTreeClient.
-  Frame* GetAncestorWithFrameTreeClient();
-
   // Adds this to |frames| and recurses through the children calling the
   // same function.
   void BuildFrameTree(std::vector<const Frame*>* frames) const;
@@ -167,17 +173,6 @@ class Frame : public mus::ViewObserver, public FrameTreeServer {
                           FrameTreeClient* frame_tree_client,
                           scoped_ptr<FrameUserData> user_data,
                           mojo::ViewTreeClientPtr view_tree_client);
-
-  // The implementation of the various FrameTreeServer functions that take
-  // frame_id call into these.
-  void LoadingStateChangedImpl(bool loading, double progress);
-  void TitleChangedImpl(const mojo::String& title);
-  void SetClientPropertyImpl(const mojo::String& name,
-                             mojo::Array<uint8_t> value);
-
-  // Returns the Frame whose id is |frame_id|. Returns nullptr if |frame_id| is
-  // not from the same connection as this.
-  Frame* FindFrameWithIdFromSameApp(uint32_t frame_id);
 
   // Notifies the client and all descendants as appropriate.
   void NotifyAdded(const Frame* source,
@@ -196,24 +191,21 @@ class Frame : public mus::ViewObserver, public FrameTreeServer {
   void OnViewEmbeddedAppDisconnected(mus::View* view) override;
 
   // FrameTreeServer:
-  void PostMessageEventToFrame(uint32_t source_frame_id,
-                               uint32_t target_frame_id,
+  void PostMessageEventToFrame(uint32_t target_frame_id,
                                HTMLMessageEventPtr event) override;
-  void LoadingStateChanged(uint32 frame_id,
-                           bool loading,
-                           double progress) override;
-  void TitleChanged(uint32_t frame_id, const mojo::String& title) override;
-  void SetClientProperty(uint32_t frame_id,
-                         const mojo::String& name,
+  void LoadingStateChanged(bool loading, double progress) override;
+  void TitleChanged(const mojo::String& title) override;
+  void SetClientProperty(const mojo::String& name,
                          mojo::Array<uint8_t> value) override;
   void OnCreatedFrame(
-      uint32_t parent_id,
+      mojo::InterfaceRequest<FrameTreeServer> server_request,
+      FrameTreeClientPtr client,
       uint32_t frame_id,
       mojo::Map<mojo::String, mojo::Array<uint8_t>> client_properties) override;
   void RequestNavigate(NavigationTargetType target_type,
                        uint32_t target_frame_id,
                        mojo::URLRequestPtr request) override;
-  void DidNavigateLocally(uint32_t frame_id, const mojo::String& url) override;
+  void DidNavigateLocally(const mojo::String& url) override;
 
   FrameTree* const tree_;
   // WARNING: this may be null. See class description for details.
@@ -230,7 +222,6 @@ class Frame : public mus::ViewObserver, public FrameTreeServer {
   std::vector<Frame*> children_;
   scoped_ptr<FrameUserData> user_data_;
 
-  // WARNING: this may be null. See class description for details.
   FrameTreeClient* frame_tree_client_;
 
   bool loading_;

@@ -70,27 +70,27 @@ interface FrameTreeServer {
   // Requests the server to message the specified frame with |event|. If the
   // operation is allowed OnPostMessageEvent() is called on the appropriate
   // FrameTreeClient.
-  PostMessageEventToFrame(uint32 source_frame_id,
-                          uint32 target_frame_id,
-                          HTMLMessageEvent event);
+  PostMessageEventToFrame(uint32 target_frame_id, HTMLMessageEvent event);
 
   // Notifies the server that the loading state and progress changed.
-  LoadingStateChanged(uint32 frame_id, bool loading, double progress);
+  LoadingStateChanged(bool loading, double progress);
 
   // Called when the title becomes available or changes.
-  TitleChanged(uint32 frame_id, string? title);
+  TitleChanged(string? title);
 
   // Sets the value of the specified client property, notifying clients if the
   // value changed. If |value| is null the property is removed.
-  SetClientProperty(uint32 frame_id,
-                    string name,
-                    array<uint8>? value);
+  SetClientProperty(string name, array<uint8>? value);
 
   // Called when the client creates a new frame. |frame_id| corresponds to
   // the id of the view hosting the frame, and |parent_id| the id of the
   // parent. See FrameData::client_properties for details of
   // |client_properties|.
-  OnCreatedFrame(uint32 parent_id,
+  //
+  // Note that the FrameTreeClient still gets an OnConnect(), but the only
+  // thing of interest is the callback.
+  OnCreatedFrame(FrameTreeServer& server_request,
+                 FrameTreeClient client,
                  uint32 frame_id,
                  map<string, array<uint8>> client_properties);
 
@@ -103,7 +103,7 @@ interface FrameTreeServer {
 
   // The frame navigated locally, for example, pushState() navigations in an
   // HTML application.
-  DidNavigateLocally(uint32 frame_id, string url);
+  DidNavigateLocally(string url);
 };
 
 enum ViewConnectType {
@@ -121,11 +121,11 @@ interface FrameTreeClient {
   // |view_id| is the id of the view the FrameTreeClient should render to. If
   // a ViewTreeClient is asked for then |view_id| is the same id as that of the
   // View supplied to ViewTreeClient::OnEmbed().
-  OnConnect(FrameTreeServer server,
+  OnConnect(FrameTreeServer? server,
             uint32 change_id,
             uint32 view_id,
             ViewConnectType view_connect_type,
-            array<FrameData> frame_data) => ();
+            array<FrameData>? frame_data) => ();
 
   // Called when a new frame is added to the tree.
   OnFrameAdded(uint32 change_id, FrameData frame_data);
@@ -143,9 +143,8 @@ interface FrameTreeClient {
                      uint32 target_frame_id,
                      HTMLMessageEvent event);
 
-  // Called prior to starting a new navigation in |target_frame_id|. This is
-  // only called on the FrameTreeClient that is rendering to |target_frame_id|
-  // and only when another content handler is going to start handling the
-  // rendering.
-  OnWillNavigate(uint32 target_frame_id);
+  // Called prior to starting a new navigation. This is only called on the
+  // FrameTreeClient that is rendering to the frame, and only when another
+  // content handler is going to start handling the rendering.
+  OnWillNavigate();
 };

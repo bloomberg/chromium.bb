@@ -165,7 +165,7 @@ HTMLFrame::HTMLFrame(CreateParams* params)
       // Collect startup perf data for local main frames in test environments.
       // Child frames aren't tracked, and tracking remote frames is redundant.
       startup_performance_data_collector_ =
-          StatsCollectionController::Install(web_frame_, GetLocalRootApp());
+          StatsCollectionController::Install(web_frame_, GetApp());
     }
   } else if (!params->allow_local_shared_frame && params->view &&
              id_ == params->view->id()) {
@@ -286,8 +286,7 @@ blink::WebMediaPlayer* HTMLFrame::createMediaPlayer(
     blink::WebMediaPlayerEncryptedMediaClient* encrypted_client,
     blink::WebContentDecryptionModule* initial_cdm) {
   return global_state()->media_factory()->CreateMediaPlayer(
-      frame, url, client, encrypted_client, initial_cdm,
-      GetLocalRootApp()->shell());
+      frame, url, client, encrypted_client, initial_cdm, GetApp()->shell());
 }
 
 blink::WebFrame* HTMLFrame::createChildFrame(
@@ -312,15 +311,20 @@ blink::WebFrame* HTMLFrame::createChildFrame(
   child_view->SetVisible(true);
   view_->AddChild(child_view);
 
-  GetLocalRoot()->server_->OnCreatedFrame(id_, child_view->id(),
-                                          client_properties.Pass());
-
   HTMLFrame::CreateParams params(frame_tree_manager_, this, child_view->id(),
                                  child_view, client_properties, nullptr);
   params.allow_local_shared_frame = true;
-  HTMLFrame* child_frame =
-      GetLocalRoot()->delegate_->GetHTMLFactory()->CreateHTMLFrame(&params);
+  HTMLFrame* child_frame = GetFirstAncestorWithDelegate()
+                               ->delegate_->GetHTMLFactory()
+                               ->CreateHTMLFrame(&params);
   child_frame->owned_view_.reset(new mus::ScopedViewPtr(child_view));
+
+  web_view::FrameTreeClientPtr client_ptr;
+  child_frame->frame_tree_client_binding_.reset(
+      new mojo::Binding<web_view::FrameTreeClient>(
+          child_frame, mojo::GetProxy(&client_ptr)));
+  server_->OnCreatedFrame(GetProxy(&(child_frame->server_)), client_ptr.Pass(),
+                          child_view->id(), client_properties.Pass());
   return child_frame->web_frame_;
 }
 
@@ -361,7 +365,7 @@ blink::WebNavigationPolicy HTMLFrame::decidePolicyForNavigation(
   // Ask the FrameTreeServer to handle the navigation. By returning
   // WebNavigationPolicyIgnore the load is suppressed.
   mojo::URLRequestPtr url_request = mojo::URLRequest::From(info.urlRequest);
-  GetLocalRoot()->server_->RequestNavigate(
+  server_->RequestNavigate(
       WebNavigationPolicyToNavigationTarget(info.defaultPolicy), id_,
       url_request.Pass());
   return blink::WebNavigationPolicyIgnore;
@@ -385,15 +389,14 @@ void HTMLFrame::didAddMessageToConsole(const blink::WebConsoleMessage& message,
 }
 
 void HTMLFrame::didFinishLoad(blink::WebLocalFrame* frame) {
-  if (GetLocalRoot() == this)
+  if (GetFirstAncestorWithDelegate() == this)
     delegate_->OnFrameDidFinishLoad();
 }
 
 void HTMLFrame::didNavigateWithinPage(blink::WebLocalFrame* frame,
                                       const blink::WebHistoryItem& history_item,
                                       blink::WebHistoryCommitType commit_type) {
-  GetLocalRoot()->server_->DidNavigateLocally(id_,
-                                              history_item.urlString().utf8());
+  server_->DidNavigateLocally(history_item.urlString().utf8());
 }
 
 blink::WebGeolocationClient* HTMLFrame::geolocationClient() {
@@ -407,22 +410,22 @@ blink::WebEncryptedMediaClient* HTMLFrame::encryptedMediaClient() {
 }
 
 void HTMLFrame::didStartLoading(bool to_different_document) {
-  GetLocalRoot()->server_->LoadingStateChanged(id_, true, 0.0);
+  server_->LoadingStateChanged(true, 0.0);
 }
 
 void HTMLFrame::didStopLoading() {
-  GetLocalRoot()->server_->LoadingStateChanged(id_, false, 1.0);
+  server_->LoadingStateChanged(false, 1.0);
 }
 
 void HTMLFrame::didChangeLoadProgress(double load_progress) {
-  GetLocalRoot()->server_->LoadingStateChanged(id_, true, load_progress);
+  server_->LoadingStateChanged(true, load_progress);
 }
 
 void HTMLFrame::didChangeName(blink::WebLocalFrame* frame,
                               const blink::WebString& name) {
   state_.name = name;
-  GetLocalRoot()->server_->SetClientProperty(id_, kPropertyFrameName,
-                                             FrameNameToClientProperty(name));
+  server_->SetClientProperty(kPropertyFrameName,
+                             FrameNameToClientProperty(name));
 }
 
 void HTMLFrame::didCommitProvisionalLoad(
@@ -430,8 +433,8 @@ void HTMLFrame::didCommitProvisionalLoad(
     const blink::WebHistoryItem& item,
     blink::WebHistoryCommitType commit_type) {
   state_.origin = FrameOrigin(frame);
-  GetLocalRoot()->server_->SetClientProperty(
-      id_, kPropertyFrameOrigin, FrameOriginToClientProperty(frame));
+  server_->SetClientProperty(kPropertyFrameOrigin,
+                             FrameOriginToClientProperty(frame));
 }
 
 void HTMLFrame::didReceiveTitle(blink::WebLocalFrame* frame,
@@ -443,7 +446,7 @@ void HTMLFrame::didReceiveTitle(blink::WebLocalFrame* frame,
     formatted =
         mojo::String::From(base::string16(title).substr(0, kMaxTitleChars));
   }
-  GetLocalRoot()->server_->TitleChanged(id_, formatted);
+  server_->TitleChanged(formatted);
 }
 
 void HTMLFrame::Bind(web_view::FrameTreeServerPtr frame_tree_server,
@@ -472,22 +475,23 @@ void HTMLFrame::SetValueFromClientProperty(const std::string& name,
   }
 }
 
-HTMLFrame* HTMLFrame::GetLocalRoot() {
+HTMLFrame* HTMLFrame::GetFirstAncestorWithDelegate() {
   HTMLFrame* frame = this;
   while (frame && !frame->delegate_)
     frame = frame->parent_;
   return frame;
 }
 
-mojo::ApplicationImpl* HTMLFrame::GetLocalRootApp() {
-  return GetLocalRoot()->delegate_->GetApp();
+mojo::ApplicationImpl* HTMLFrame::GetApp() {
+  return GetFirstAncestorWithDelegate()->delegate_->GetApp();
 }
 
 web_view::FrameTreeServer* HTMLFrame::GetFrameTreeServer() {
-  // Prefer the local root.
-  HTMLFrame* local_root = GetLocalRoot();
-  if (local_root)
-    return local_root->server_.get();
+  // Prefer an ancestor with a FrameTreeServer.
+  for (HTMLFrame* frame = this; frame; frame = frame->parent_) {
+    if (frame->server_.get())
+      return frame->server_.get();
+  }
 
   // No local root. This means we're a remote frame with no local frame
   // ancestors. Use the local frame from the FrameTreeServer.
@@ -505,8 +509,8 @@ void HTMLFrame::SetView(mus::View* view) {
 void HTMLFrame::CreateRootWebWidget() {
   DCHECK(!html_widget_);
   if (view_) {
-    HTMLWidgetRootLocal::CreateParams create_params(GetLocalRootApp(),
-                                                    global_state(), view_);
+    HTMLWidgetRootLocal::CreateParams create_params(GetApp(), global_state(),
+                                                    view_);
     html_widget_.reset(
         delegate_->GetHTMLFactory()->CreateHTMLWidgetRootLocal(&create_params));
   } else {
@@ -517,8 +521,8 @@ void HTMLFrame::CreateRootWebWidget() {
 void HTMLFrame::CreateLocalRootWebWidget(blink::WebLocalFrame* local_frame) {
   DCHECK(!html_widget_);
   DCHECK(IsLocal());
-  html_widget_.reset(new HTMLWidgetLocalRoot(GetLocalRootApp(), global_state(),
-                                             view_, local_frame));
+  html_widget_.reset(
+      new HTMLWidgetLocalRoot(GetApp(), global_state(), view_, local_frame));
 }
 
 void HTMLFrame::UpdateFocus() {
@@ -555,6 +559,8 @@ void HTMLFrame::SwapToRemote() {
   remote_frame->setReplicatedSandboxFlags(state_.sandbox_flags);
   web_frame_ = remote_frame;
   SetView(nullptr);
+  server_.reset();
+  frame_tree_client_binding_.reset();
   if (delegate)
     delegate->OnFrameSwappedToRemote();
 }
@@ -673,9 +679,8 @@ void HTMLFrame::OnConnect(web_view::FrameTreeServerPtr server,
                           web_view::ViewConnectType view_connect_type,
                           mojo::Array<web_view::FrameDataPtr> frame_data,
                           const OnConnectCallback& callback) {
-  // OnConnect() is only sent once, and has been received (by
-  // DocumentResourceWaiter) by the time we get here.
-  NOTREACHED();
+  // This is called if this frame is created by way of OnCreatedFrame().
+  callback.Run();
 }
 
 void HTMLFrame::OnFrameAdded(uint32_t change_id,
@@ -743,12 +748,9 @@ void HTMLFrame::OnPostMessageEvent(uint32_t source_frame_id,
                                                         msg_event);
 }
 
-void HTMLFrame::OnWillNavigate(uint32_t target_frame_id) {
-  HTMLFrame* target = frame_tree_manager_->root_->FindFrame(target_frame_id);
-  if (target && target->IsLocal() &&
-      target != frame_tree_manager_->local_root_) {
-    target->SwapToRemote();
-  }
+void HTMLFrame::OnWillNavigate() {
+  if (IsLocal() && this != frame_tree_manager_->local_root_)
+    SwapToRemote();
 }
 
 void HTMLFrame::frameDetached(blink::WebRemoteFrameClient::DetachType type) {
@@ -780,8 +782,8 @@ void HTMLFrame::postMessageEvent(blink::WebLocalFrame* source_web_frame,
   if (!target_origin.isNull())
     event->target_origin = mojo::String::From(target_origin.toString());
 
-  GetFrameTreeServer()->PostMessageEventToFrame(
-      source_frame->id_, target_frame->id_, event.Pass());
+  source_frame->server_->PostMessageEventToFrame(target_frame->id_,
+                                                 event.Pass());
 }
 
 void HTMLFrame::initializeChildFrame(const blink::WebRect& frame_rect,

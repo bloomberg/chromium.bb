@@ -28,7 +28,7 @@ FrameTree::FrameTree(uint32_t root_app_id,
                       client_properties)),
       progress_(0.f),
       change_id_(1u) {
-  root_->Init(nullptr, view_tree_client.Pass());
+  root_->Init(nullptr, view_tree_client.Pass(), nullptr);
 }
 
 FrameTree::~FrameTree() {
@@ -38,18 +38,23 @@ FrameTree::~FrameTree() {
   root_ = nullptr;
 }
 
-Frame* FrameTree::CreateSharedFrame(
+Frame* FrameTree::CreateChildFrame(
     Frame* parent,
+    mojo::InterfaceRequest<FrameTreeServer> server_request,
+    FrameTreeClientPtr client,
     uint32_t frame_id,
     uint32_t app_id,
     const Frame::ClientPropertyMap& client_properties) {
+  FrameTreeClient* raw_client = client.get();
+  scoped_ptr<FrameUserData> user_data =
+      delegate_->CreateUserDataForNewFrame(client.Pass());
   mus::View* frame_view = root_->view()->GetChildById(frame_id);
   // |frame_view| may be null if the View hasn't been created yet. If this is
   // the case the View will be connected to the Frame in Frame::OnTreeChanged.
   Frame* frame =
       new Frame(this, frame_view, frame_id, app_id, ViewOwnership::OWNS_VIEW,
-                nullptr, nullptr, client_properties);
-  frame->Init(parent, nullptr);
+                raw_client, user_data.Pass(), client_properties);
+  frame->Init(parent, nullptr, server_request.Pass());
   return frame;
 }
 

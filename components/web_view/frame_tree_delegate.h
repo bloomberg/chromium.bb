@@ -29,6 +29,11 @@ class FrameTreeDelegate {
                           scoped_ptr<FrameUserData>,
                           mojo::ViewTreeClientPtr)>;
 
+  // Called when a Frame creates a new child Frame. |frame_tree_client| is the
+  // FrameTreeClient for the new frame.
+  virtual scoped_ptr<FrameUserData> CreateUserDataForNewFrame(
+      FrameTreeClientPtr frame_tree_client) = 0;
+
   // Returns whether a request to post a message from |source| to |target|
   // is allowed. |source| and |target| are never null.
   virtual bool CanPostMessageEventToFrame(const Frame* source,

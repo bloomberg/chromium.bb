@@ -204,11 +204,11 @@ class HTMLFrame : public blink::WebFrameClient,
                                   mojo::Array<uint8_t> new_data);
 
   // The local root is the first ancestor (starting at this) that has its own
-  // connection.
-  HTMLFrame* GetLocalRoot();
+  // delegate.
+  HTMLFrame* GetFirstAncestorWithDelegate();
 
-  // Returns the ApplicationImpl from the local root's delegate.
-  mojo::ApplicationImpl* GetLocalRootApp();
+  // Returns the ApplicationImpl from the first ancestor with a delegate.
+  mojo::ApplicationImpl* GetApp();
 
   // Gets the FrameTreeServer to use for this frame.
   web_view::FrameTreeServer* GetFrameTreeServer();
@@ -270,7 +270,7 @@ class HTMLFrame : public blink::WebFrameClient,
       uint32_t source_frame_id,
       uint32_t target_frame_id,
       web_view::HTMLMessageEventPtr serialized_event) override;
-  void OnWillNavigate(uint32_t target_frame_id) override;
+  void OnWillNavigate() override;
 
   // blink::WebRemoteFrameClient:
   virtual void frameDetached(blink::WebRemoteFrameClient::DetachType type);

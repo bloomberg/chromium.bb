@@ -13,6 +13,8 @@ source_set("switches") {
 
 source_set("lib") {
   sources = [
+    "client_initiated_frame_connection.cc",
+    "client_initiated_frame_connection.h",
     "frame.cc",
     "frame.h",
     "frame_connection.cc",

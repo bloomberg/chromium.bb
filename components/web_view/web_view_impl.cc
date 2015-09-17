@@ -9,6 +9,7 @@
 #include "components/mus/public/cpp/scoped_view_ptr.h"
 #include "components/mus/public/cpp/view.h"
 #include "components/mus/public/cpp/view_tree_connection.h"
+#include "components/web_view/client_initiated_frame_connection.h"
 #include "components/web_view/frame.h"
 #include "components/web_view/frame_connection.h"
 #include "components/web_view/frame_devtools_agent.h"
@@ -185,6 +186,12 @@ void WebViewImpl::OnViewDestroyed(mus::View* view) {
 
 ////////////////////////////////////////////////////////////////////////////////
 // WebViewImpl, FrameTreeDelegate implementation:
+
+scoped_ptr<FrameUserData> WebViewImpl::CreateUserDataForNewFrame(
+    FrameTreeClientPtr frame_tree_client) {
+  return make_scoped_ptr(
+      new ClientInitiatedFrameConnection(frame_tree_client.Pass()));
+}
 
 bool WebViewImpl::CanPostMessageEventToFrame(const Frame* source,
                                              const Frame* target,

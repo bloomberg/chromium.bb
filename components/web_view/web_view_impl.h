@@ -69,6 +69,8 @@ class WebViewImpl : public mojom::WebView,
   void OnViewDestroyed(mus::View* view) override;
 
   // Overridden from FrameTreeDelegate:
+  scoped_ptr<FrameUserData> CreateUserDataForNewFrame(
+      FrameTreeClientPtr frame_tree_client) override;
   bool CanPostMessageEventToFrame(const Frame* source,
                                   const Frame* target,
                                   HTMLMessageEvent* event) override;

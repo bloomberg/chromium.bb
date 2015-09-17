@@ -37,6 +37,8 @@ class TestFrameTreeDelegate : public FrameTreeDelegate {
   void WaitForFrameDisconnected(Frame* frame);
 
   // TestFrameTreeDelegate:
+  scoped_ptr<FrameUserData> CreateUserDataForNewFrame(
+      FrameTreeClientPtr frame_tree_client) override;
   bool CanPostMessageEventToFrame(const Frame* source,
                                   const Frame* target,
                                   HTMLMessageEvent* event) override;
