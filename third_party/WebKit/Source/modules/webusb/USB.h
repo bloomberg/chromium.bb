@@ -8,8 +8,7 @@
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/events/EventTarget.h"
-#include "modules/webusb/USBController.h"
-#include "platform/heap/Handle.h"
+#include "core/frame/LocalFrameLifecycleObserver.h"
 #include "public/platform/modules/webusb/WebUSBClient.h"
 
 namespace blink {
@@ -21,6 +20,7 @@ class WebUSBDevice;
 
 class USB final
     : public RefCountedGarbageCollectedEventTargetWithInlineData<USB>
+    , public LocalFrameLifecycleObserver
     , public WebUSBClient::Observer {
     DEFINE_WRAPPERTYPEINFO();
     REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(USB);
@@ -30,8 +30,6 @@ public:
         return new USB(frame);
     }
 
-    // Eagerly finalize to enable to access m_controller in the destructor.
-    EAGERLY_FINALIZE();
     ~USB() override;
 
     // USB.idl
@@ -44,6 +42,9 @@ public:
     ExecutionContext* executionContext() const override;
     const AtomicString& interfaceName() const override;
 
+    // LocalFrameLifecycleObserver overrides.
+    void willDetachFrameHost() override;
+
     // WebUSBClient::Observer overrides.
     void onDeviceConnected(WebPassOwnPtr<WebUSBDevice>) override;
     void onDeviceDisconnected(WebPassOwnPtr<WebUSBDevice>) override;
@@ -53,7 +54,7 @@ public:
 private:
     explicit USB(LocalFrame& frame);
 
-    RawPtrWillBeMember<USBController> m_controller;
+    WebUSBClient* m_client;
 };
 
 } // namespace blink

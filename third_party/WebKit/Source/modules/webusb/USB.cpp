@@ -13,6 +13,7 @@
 #include "core/dom/ExceptionCode.h"
 #include "modules/EventTargetModules.h"
 #include "modules/webusb/USBConnectionEvent.h"
+#include "modules/webusb/USBController.h"
 #include "modules/webusb/USBDevice.h"
 #include "modules/webusb/USBDeviceFilter.h"
 #include "modules/webusb/USBDeviceRequestOptions.h"
@@ -77,37 +78,34 @@ private:
 } // namespace
 
 USB::USB(LocalFrame& frame)
-    : m_controller(USBController::from(frame))
+    : LocalFrameLifecycleObserver(&frame)
+    , m_client(USBController::from(frame).client())
 {
-    WebUSBClient* client = m_controller->client();
-    if (client)
-        client->setObserver(this);
+    if (m_client)
+        m_client->setObserver(this);
 }
 
 USB::~USB()
 {
-    WebUSBClient* client = m_controller->client();
-    if (client)
-        client->setObserver(nullptr);
+    if (m_client)
+        m_client->setObserver(nullptr);
 }
 
 ScriptPromise USB::getDevices(ScriptState* scriptState)
 {
-    WebUSBClient* client = m_controller->client();
-    if (!client)
+    if (!m_client)
         return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(NotSupportedError));
 
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
-    client->getDevices(new CallbackPromiseAdapter<DeviceArray, USBError>(resolver));
+    m_client->getDevices(new CallbackPromiseAdapter<DeviceArray, USBError>(resolver));
 
     return promise;
 }
 
 ScriptPromise USB::requestDevice(ScriptState* scriptState, const USBDeviceRequestOptions& options)
 {
-    WebUSBClient* client = m_controller->client();
-    if (!client)
+    if (!m_client)
         return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(NotSupportedError));
 
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
@@ -115,20 +113,26 @@ ScriptPromise USB::requestDevice(ScriptState* scriptState, const USBDeviceReques
 
     WebUSBDeviceRequestOptions webOptions;
     convertDeviceRequestOptions(options, &webOptions);
-    client->requestDevice(webOptions, new CallbackPromiseAdapter<USBDevice, USBError>(resolver));
+    m_client->requestDevice(webOptions, new CallbackPromiseAdapter<USBDevice, USBError>(resolver));
 
     return promise;
 }
 
 ExecutionContext* USB::executionContext() const
 {
-    LocalFrame* frame = m_controller->frame();
-    return frame ? frame->document() : nullptr;
+    return frame() ? frame()->document() : nullptr;
 }
 
 const AtomicString& USB::interfaceName() const
 {
     return EventTargetNames::USB;
+}
+
+void USB::willDetachFrameHost()
+{
+    if (m_client)
+        m_client->setObserver(nullptr);
+    m_client = nullptr;
 }
 
 void USB::onDeviceConnected(WebPassOwnPtr<WebUSBDevice> device)
@@ -143,8 +147,8 @@ void USB::onDeviceDisconnected(WebPassOwnPtr<WebUSBDevice> device)
 
 DEFINE_TRACE(USB)
 {
-    visitor->trace(m_controller);
     RefCountedGarbageCollectedEventTargetWithInlineData<USB>::trace(visitor);
+    LocalFrameLifecycleObserver::trace(visitor);
 }
 
 } // namespace blink
