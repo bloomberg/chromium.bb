@@ -446,12 +446,6 @@ public:
     virtual LayoutRect boundingBox() const;
     IntRect pixelSnappedBoundingBox() const { return pixelSnappedIntRect(boundingBox()); }
 
-    // Returns true if the node has a non-empty bounding box in layout.
-    // This does not 100% guarantee the user can see it, but is pretty close.
-    // Note: This method only works properly after layout has occurred.
-    // DEPRECATED: Use Element::hasNonEmptyLayoutSize() instead.
-    bool hasNonEmptyBoundingBox() const;
-
     unsigned nodeIndex() const;
 
     // Returns the DOM ownerDocument attribute. This method never returns null, except in the case

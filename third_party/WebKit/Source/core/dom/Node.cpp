@@ -597,29 +597,6 @@ LayoutRect Node::boundingBox() const
     return LayoutRect();
 }
 
-bool Node::hasNonEmptyBoundingBox() const
-{
-    // Before calling absoluteRects, check for the common case where the layoutObject
-    // is non-empty, since this is a faster check and almost always returns true.
-    LayoutBoxModelObject* box = layoutBoxModelObject();
-    if (!box)
-        return false;
-    if (!box->borderBoundingBox().isEmpty())
-        return true;
-
-    Vector<IntRect> rects;
-    FloatPoint absPos = layoutObject()->localToAbsolute();
-    layoutObject()->absoluteRects(rects, flooredLayoutPoint(absPos));
-    size_t n = rects.size();
-    for (size_t i = 0; i < n; ++i) {
-        if (!rects[i].isEmpty()) {
-            return true;
-        }
-    }
-
-    return false;
-}
-
 #ifndef NDEBUG
 inline static ShadowRoot* oldestShadowRootFor(const Node* node)
 {
