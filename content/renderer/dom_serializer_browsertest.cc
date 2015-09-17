@@ -489,8 +489,7 @@ class DomSerializerTests : public ContentBrowserTest,
     ASSERT_TRUE(!body_ele.isNull());
     WebNode text_node = body_ele.firstChild();
     ASSERT_TRUE(text_node.isTextNode());
-    ASSERT_TRUE(std::string(text_node.createMarkup().utf8()) ==
-                "&amp;&lt;&gt;\"\'");
+    ASSERT_TRUE(std::string(text_node.nodeValue().utf8()) == "&<>\"\'");
     // Do serialization.
     SerializeDomForURL(file_url, false);
     // Compare the serialized contents with original contents.
