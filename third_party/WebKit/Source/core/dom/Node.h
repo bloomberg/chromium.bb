@@ -209,7 +209,7 @@ public:
     Node* firstChild() const;
     Node* lastChild() const;
 
-    void remove(ExceptionState&);
+    void remove(ExceptionState& = ASSERT_NO_EXCEPTION);
 
     Node* pseudoAwareNextSibling() const;
     Node* pseudoAwarePreviousSibling() const;

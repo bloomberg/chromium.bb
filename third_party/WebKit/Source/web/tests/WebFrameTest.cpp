@@ -257,6 +257,13 @@ protected:
         return frame->nodeImage(*element);
     }
 
+    void removeElementById(WebLocalFrameImpl* frame, const AtomicString& id)
+    {
+        Element* element = frame->frame()->document()->getElementById(id);
+        ASSERT(element);
+        element->remove();
+    }
+
     std::string m_baseURL;
     std::string m_notBaseURL;
     std::string m_chromeURL;
@@ -3924,7 +3931,7 @@ TEST_P(ParameterizedWebFrameTest, FindOnDetachedFrame)
     RefPtrWillBeRawPtr<LocalFrame> holdSecondFrame(secondFrame->frame());
 
     // Detach the frame before finding.
-    EXPECT_TRUE(mainFrame->document().getElementById("frame").remove());
+    removeElementById(mainFrame, "frame");
 
     EXPECT_TRUE(mainFrame->find(kFindIdentifier, searchText, options, false, 0));
     EXPECT_FALSE(secondFrame->find(kFindIdentifier, searchText, options, false, 0));
@@ -3969,7 +3976,7 @@ TEST_P(ParameterizedWebFrameTest, FindDetachFrameBeforeScopeStrings)
     EXPECT_FALSE(client.findResultsAreReady());
 
     // Detach the frame between finding and scoping.
-    EXPECT_TRUE(mainFrame->document().getElementById("frame").remove());
+    removeElementById(mainFrame, "frame");
 
     mainFrame->resetMatchCount();
 
@@ -4013,7 +4020,7 @@ TEST_P(ParameterizedWebFrameTest, FindDetachFrameWhileScopingStrings)
         frame->scopeStringMatches(kFindIdentifier, searchText, options, true);
 
     // The first scopeStringMatches will have reset the state. Detach before it actually scopes.
-    EXPECT_TRUE(mainFrame->document().getElementById("frame").remove());
+    removeElementById(mainFrame, "frame");
 
     runPendingTasks();
     EXPECT_TRUE(client.findResultsAreReady());

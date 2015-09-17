@@ -283,13 +283,6 @@ bool WebNode::focused() const
     return m_private->focused();
 }
 
-bool WebNode::remove()
-{
-    TrackExceptionState exceptionState;
-    m_private->remove(exceptionState);
-    return !exceptionState.hadException();
-}
-
 WebPluginContainer* WebNode::pluginContainer() const
 {
     if (isNull())

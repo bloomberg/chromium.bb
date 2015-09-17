@@ -123,7 +123,6 @@ public:
     BLINK_EXPORT void querySelectorAll(const WebString& selector, WebVector<WebElement>& results) const;
 
     BLINK_EXPORT bool focused() const;
-    BLINK_EXPORT bool remove();
 
     BLINK_EXPORT WebPluginContainer* pluginContainer() const;
 
