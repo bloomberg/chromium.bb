@@ -50,8 +50,8 @@ typedef int (*DLL_MAIN)(HINSTANCE, sandbox::SandboxInterfaceInfo*);
 
 typedef void (*RelaunchChromeBrowserWithNewCommandLineIfNeededFunc)();
 
-base::LazyInstance<chrome::ChromeCrashReporterClient>::Leaky
-    g_chrome_crash_client = LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<ChromeCrashReporterClient>::Leaky g_chrome_crash_client =
+    LAZY_INSTANCE_INITIALIZER;
 
 // Loads |module| after setting the CWD to |module|'s directory. Returns a
 // reference to the loaded module on success, or null on error.

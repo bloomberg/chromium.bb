@@ -338,7 +338,7 @@ class CloudPrintProxyPolicyStartupTest : public base::MultiProcessTest,
   std::string startup_channel_id_;
   scoped_ptr<IPC::ChannelProxy> startup_channel_;
   scoped_ptr<ChromeContentClient> content_client_;
-  scoped_ptr<chrome::ChromeContentBrowserClient> browser_content_client_;
+  scoped_ptr<ChromeContentBrowserClient> browser_content_client_;
 
 #if defined(OS_MACOSX)
   base::ScopedTempDir temp_dir_;
@@ -389,7 +389,7 @@ CloudPrintProxyPolicyStartupTest::~CloudPrintProxyPolicyStartupTest() {
 void CloudPrintProxyPolicyStartupTest::SetUp() {
   content_client_.reset(new ChromeContentClient);
   content::SetContentClient(content_client_.get());
-  browser_content_client_.reset(new chrome::ChromeContentBrowserClient());
+  browser_content_client_.reset(new ChromeContentBrowserClient());
   content::SetBrowserClientForTesting(browser_content_client_.get());
 
   TestingBrowserProcess::CreateInstance();

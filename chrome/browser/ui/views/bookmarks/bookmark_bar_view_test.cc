@@ -259,7 +259,7 @@ class BookmarkBarViewEventTestBase : public ViewEventTestBase {
   void SetUp() override {
     content_client_.reset(new ChromeContentClient);
     content::SetContentClient(content_client_.get());
-    browser_content_client_.reset(new chrome::ChromeContentBrowserClient());
+    browser_content_client_.reset(new ChromeContentBrowserClient());
     content::SetBrowserClientForTesting(browser_content_client_.get());
 
     views::MenuController::TurnOffMenuSelectionHoldForTest();
@@ -389,7 +389,7 @@ class BookmarkBarViewEventTestBase : public ViewEventTestBase {
   }
 
   scoped_ptr<ChromeContentClient> content_client_;
-  scoped_ptr<chrome::ChromeContentBrowserClient> browser_content_client_;
+  scoped_ptr<ChromeContentBrowserClient> browser_content_client_;
   scoped_ptr<TestingProfile> profile_;
   scoped_ptr<Browser> browser_;
   scoped_ptr<ScopedTestingLocalState> local_state_;

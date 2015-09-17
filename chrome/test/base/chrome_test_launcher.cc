@@ -115,8 +115,7 @@ int LaunchChromeTests(int default_jobs,
 #if defined(OS_LINUX) || defined(OS_ANDROID)
   // We leak this pointer intentionally. The breakpad client needs to outlive
   // all other code.
-  chrome::ChromeCrashReporterClient* crash_client =
-      new chrome::ChromeCrashReporterClient();
+  ChromeCrashReporterClient* crash_client = new ChromeCrashReporterClient();
   ANNOTATE_LEAKING_OBJECT_PTR(crash_client);
   crash_reporter::SetCrashReporterClient(crash_client);
 #endif

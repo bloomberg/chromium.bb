@@ -242,7 +242,7 @@ base::FilePath OffTheRecordProfileImpl::GetPath() const {
 scoped_ptr<content::ZoomLevelDelegate>
 OffTheRecordProfileImpl::CreateZoomLevelDelegate(
     const base::FilePath& partition_path) {
-  return make_scoped_ptr(new chrome::ChromeZoomLevelOTRDelegate(
+  return make_scoped_ptr(new ChromeZoomLevelOTRDelegate(
       ui_zoom::ZoomEventManager::GetForBrowserContext(this)->GetWeakPtr()));
 }
 

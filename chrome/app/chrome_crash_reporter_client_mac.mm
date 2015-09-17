@@ -17,8 +17,6 @@
 #include "native_client/src/trusted/service_runtime/osx/crash_filter.h"
 #endif
 
-namespace chrome {
-
 bool ChromeCrashReporterClient::ReportingIsEnforcedByPolicy(
     bool* breakpad_enabled) {
   base::ScopedCFTypeRef<CFStringRef> key(
@@ -33,5 +31,3 @@ bool ChromeCrashReporterClient::ReportingIsEnforcedByPolicy(
   }
   return false;
 }
-
-}  // namespace chrome

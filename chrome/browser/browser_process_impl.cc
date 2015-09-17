@@ -718,7 +718,7 @@ void BrowserProcessImpl::SetApplicationLocale(const std::string& locale) {
 #if defined(ENABLE_EXTENSIONS)
   extension_l10n_util::SetProcessLocale(locale);
 #endif
-  chrome::ChromeContentBrowserClient::SetApplicationLocale(locale);
+  ChromeContentBrowserClient::SetApplicationLocale(locale);
   translate::TranslateDownloadManager::GetInstance()->set_application_locale(
       locale);
 }

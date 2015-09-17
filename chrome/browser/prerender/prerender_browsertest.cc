@@ -1007,18 +1007,18 @@ void CreateMockInterceptorOnIO(const GURL& url, const base::FilePath& file) {
 }
 
 // A ContentBrowserClient that cancels all prerenderers on OpenURL.
-class TestContentBrowserClient : public chrome::ChromeContentBrowserClient {
+class TestContentBrowserClient : public ChromeContentBrowserClient {
  public:
   TestContentBrowserClient() {}
   ~TestContentBrowserClient() override {}
 
-  // chrome::ChromeContentBrowserClient implementation.
+  // ChromeContentBrowserClient:
   bool ShouldAllowOpenURL(content::SiteInstance* site_instance,
                           const GURL& url) override {
     PrerenderManagerFactory::GetForProfile(
         Profile::FromBrowserContext(site_instance->GetBrowserContext()))
         ->CancelAllPrerenders();
-    return chrome::ChromeContentBrowserClient::ShouldAllowOpenURL(site_instance,
+    return ChromeContentBrowserClient::ShouldAllowOpenURL(site_instance,
                                                                   url);
   }
 
@@ -1027,13 +1027,12 @@ class TestContentBrowserClient : public chrome::ChromeContentBrowserClient {
 };
 
 // A ContentBrowserClient that forces cross-process navigations.
-class SwapProcessesContentBrowserClient
-    : public chrome::ChromeContentBrowserClient {
+class SwapProcessesContentBrowserClient : public ChromeContentBrowserClient {
  public:
   SwapProcessesContentBrowserClient() {}
   ~SwapProcessesContentBrowserClient() override {}
 
-  // chrome::ChromeContentBrowserClient implementation.
+  // ChromeContentBrowserClient:
   bool ShouldSwapProcessesForRedirect(
       content::ResourceContext* resource_context,
       const GURL& current_url,

@@ -195,7 +195,7 @@ class MockTabStripModelObserver : public TabStripModelObserver {
 
 // Causes the browser to swap processes on a redirect to an HTTPS URL.
 class TransferHttpsRedirectsContentBrowserClient
-    : public chrome::ChromeContentBrowserClient {
+    : public ChromeContentBrowserClient {
  public:
   bool ShouldSwapProcessesForRedirect(
       content::ResourceContext* resource_context,

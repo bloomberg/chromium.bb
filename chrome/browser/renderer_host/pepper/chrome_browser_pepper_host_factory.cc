@@ -23,8 +23,6 @@ using ppapi::host::MessageFilterHost;
 using ppapi::host::ResourceHost;
 using ppapi::host::ResourceMessageFilter;
 
-namespace chrome {
-
 ChromeBrowserPepperHostFactory::ChromeBrowserPepperHostFactory(
     content::BrowserPpapiHost* host)
     : host_(host) {}
@@ -48,14 +46,15 @@ scoped_ptr<ResourceHost> ChromeBrowserPepperHostFactory::CreateResourceHost(
     switch (message.type()) {
       case PpapiHostMsg_Broker_Create::ID: {
         scoped_refptr<ResourceMessageFilter> broker_filter(
-            new PepperBrokerMessageFilter(instance, host_));
+            new chrome::PepperBrokerMessageFilter(instance, host_));
         return scoped_ptr<ResourceHost>(new MessageFilterHost(
             host_->GetPpapiHost(), instance, resource, broker_filter));
       }
 #if defined(OS_CHROMEOS)
       case PpapiHostMsg_PlatformVerification_Create::ID: {
         scoped_refptr<ResourceMessageFilter> pv_filter(
-            new PepperPlatformVerificationMessageFilter(host_, instance));
+            new chrome::PepperPlatformVerificationMessageFilter(host_,
+                                                                instance));
         return scoped_ptr<ResourceHost>(new MessageFilterHost(
             host_->GetPpapiHost(), instance, resource, pv_filter));
       }
@@ -63,7 +62,7 @@ scoped_ptr<ResourceHost> ChromeBrowserPepperHostFactory::CreateResourceHost(
 #if defined(OS_CHROMEOS)
       case PpapiHostMsg_OutputProtection_Create::ID: {
         scoped_refptr<ResourceMessageFilter> output_protection_filter(
-            new PepperOutputProtectionMessageFilter(host_, instance));
+            new chrome::PepperOutputProtectionMessageFilter(host_, instance));
         return scoped_ptr<ResourceHost>(
             new MessageFilterHost(host_->GetPpapiHost(), instance, resource,
                                   output_protection_filter));
@@ -78,16 +77,16 @@ scoped_ptr<ResourceHost> ChromeBrowserPepperHostFactory::CreateResourceHost(
     switch (message.type()) {
       case PpapiHostMsg_Flash_Create::ID:
         return scoped_ptr<ResourceHost>(
-            new PepperFlashBrowserHost(host_, instance, resource));
+            new chrome::PepperFlashBrowserHost(host_, instance, resource));
       case PpapiHostMsg_FlashClipboard_Create::ID: {
         scoped_refptr<ResourceMessageFilter> clipboard_filter(
-            new PepperFlashClipboardMessageFilter);
+            new chrome::PepperFlashClipboardMessageFilter);
         return scoped_ptr<ResourceHost>(new MessageFilterHost(
             host_->GetPpapiHost(), instance, resource, clipboard_filter));
       }
       case PpapiHostMsg_FlashDRM_Create::ID:
         return scoped_ptr<ResourceHost>(
-            new PepperFlashDRMHost(host_, instance, resource));
+            new chrome::PepperFlashDRMHost(host_, instance, resource));
     }
   }
 
@@ -98,8 +97,8 @@ scoped_ptr<ResourceHost> ChromeBrowserPepperHostFactory::CreateResourceHost(
   // whitelisted apps which may not have access to the other private
   // interfaces.
   if (message.type() == PpapiHostMsg_IsolatedFileSystem_Create::ID) {
-    PepperIsolatedFileSystemMessageFilter* isolated_fs_filter =
-        PepperIsolatedFileSystemMessageFilter::Create(instance, host_);
+    chrome::PepperIsolatedFileSystemMessageFilter* isolated_fs_filter =
+        chrome::PepperIsolatedFileSystemMessageFilter::Create(instance, host_);
     if (!isolated_fs_filter)
       return scoped_ptr<ResourceHost>();
     return scoped_ptr<ResourceHost>(
@@ -108,5 +107,3 @@ scoped_ptr<ResourceHost> ChromeBrowserPepperHostFactory::CreateResourceHost(
 
   return scoped_ptr<ResourceHost>();
 }
-
-}  // namespace chrome

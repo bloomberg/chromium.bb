@@ -624,8 +624,6 @@ void GetGuestViewDefaultContentSettingRules(
 
 }  // namespace
 
-namespace chrome {
-
 ChromeContentBrowserClient::ChromeContentBrowserClient()
     :
       weak_factory_(this) {
@@ -748,7 +746,7 @@ std::string ChromeContentBrowserClient::GetStoragePartitionIdForSite(
   if (site.SchemeIs(content::kGuestScheme)) {
     partition_id = site.spec();
   } else if (!switches::IsEnableWebviewBasedSignin() &&
-             site.GetOrigin().spec() == kChromeUIChromeSigninURL) {
+             site.GetOrigin().spec() == chrome::kChromeUIChromeSigninURL) {
     // The non-webview Chrome signin page has an embedded iframe of extension
     // and web content, thus it must be isolated from other webUI pages.
     partition_id = site.GetOrigin().spec();
@@ -812,8 +810,9 @@ void ChromeContentBrowserClient::GetStoragePartitionConfigForSite(
   }
 #endif
 
-  if (!success && (!switches::IsEnableWebviewBasedSignin() &&
-                   site.GetOrigin().spec() == kChromeUIChromeSigninURL)) {
+  if (!success &&
+      (!switches::IsEnableWebviewBasedSignin() &&
+       site.GetOrigin().spec() == chrome::kChromeUIChromeSigninURL)) {
     // The non-webview Chrome signin page has an embedded iframe of extension
     // and web content, thus it must be isolated from other webUI pages.
     *partition_domain = chrome::kChromeUIChromeSigninHost;
@@ -2313,7 +2312,7 @@ std::string ChromeContentBrowserClient::GetDefaultDownloadName() {
 
 base::FilePath ChromeContentBrowserClient::GetShaderDiskCacheDirectory() {
   base::FilePath user_data_dir;
-  PathService::Get(DIR_USER_DATA, &user_data_dir);
+  PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
   DCHECK(!user_data_dir.empty());
   return user_data_dir.Append(FILE_PATH_LITERAL("ShaderCache"));
 }
@@ -2561,9 +2560,10 @@ void ChromeContentBrowserClient::OpenURL(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
-  NavigateParams nav_params(Profile::FromBrowserContext(browser_context),
-                            params.url,
-                            params.transition);
+  chrome::NavigateParams nav_params(
+      Profile::FromBrowserContext(browser_context),
+      params.url,
+      params.transition);
   FillNavigateParamsFromOpenURLParams(&nav_params, params);
   nav_params.user_gesture = params.user_gesture;
 
@@ -2676,5 +2676,3 @@ void ChromeContentBrowserClient::MaybeCopyDisableWebRtcEncryptionSwitch(
   }
 }
 #endif  // defined(ENABLE_WEBRTC)
-
-}  // namespace chrome

@@ -50,8 +50,6 @@
 #include "components/version_info/version_info.h"
 #endif
 
-namespace chrome {
-
 namespace {
 
 #if defined(OS_WIN)
@@ -354,5 +352,3 @@ bool ChromeCrashReporterClient::EnableBreakpadForProcess(
          process_type == switches::kZygoteProcess ||
          process_type == switches::kGpuProcess;
 }
-
-}  // namespace chrome

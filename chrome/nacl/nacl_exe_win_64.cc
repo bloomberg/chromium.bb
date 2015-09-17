@@ -12,8 +12,8 @@
 
 namespace {
 
-base::LazyInstance<chrome::ChromeCrashReporterClient>::Leaky
-    g_chrome_crash_client = LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<ChromeCrashReporterClient>::Leaky g_chrome_crash_client =
+    LAZY_INSTANCE_INITIALIZER;
 
 } // namespace
 

@@ -57,14 +57,14 @@ class ContentSettingBubbleControllerTest
     ChromeUnitTestSuite::InitializeResourceBundle();
     content_client_.reset(new ChromeContentClient);
     content::SetContentClient(content_client_.get());
-    browser_content_client_.reset(new chrome::ChromeContentBrowserClient());
+    browser_content_client_.reset(new ChromeContentBrowserClient());
     content::SetBrowserClientForTesting(browser_content_client_.get());
     initializer_.reset(new TestingBrowserProcessInitializer);
     ChromeRenderViewHostTestHarness::SetUp();
   }
 
   scoped_ptr<ChromeContentClient> content_client_;
-  scoped_ptr<chrome::ChromeContentBrowserClient> browser_content_client_;
+  scoped_ptr<ChromeContentBrowserClient> browser_content_client_;
 
   // This is a unit test running in the browser_tests suite, so we must create
   // the TestingBrowserProcess manually. Must be first member.

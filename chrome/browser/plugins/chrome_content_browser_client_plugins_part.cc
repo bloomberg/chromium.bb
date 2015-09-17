@@ -148,7 +148,7 @@ void ChromeContentBrowserClientPluginsPart::DidCreatePpapiPlugin(
     content::BrowserPpapiHost* browser_host) {
   browser_host->GetPpapiHost()->AddHostFactoryFilter(
       scoped_ptr<ppapi::host::HostFactory>(
-          new chrome::ChromeBrowserPepperHostFactory(browser_host)));
+          new ChromeBrowserPepperHostFactory(browser_host)));
 }
 
 }  // namespace plugins

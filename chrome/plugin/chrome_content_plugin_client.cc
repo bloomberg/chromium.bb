@@ -8,13 +8,9 @@
 #include "gin/v8_initializer.h"
 #endif
 
-namespace chrome {
-
 void ChromeContentPluginClient::PreSandboxInitialization() {
 #ifdef V8_USE_EXTERNAL_STARTUP_DATA
   gin::V8Initializer::LoadV8Snapshot();
   gin::V8Initializer::LoadV8Natives();
 #endif
 }
-
-}  // namespace chrome

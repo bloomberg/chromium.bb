@@ -131,18 +131,18 @@ base::LazyInstance<ChromeContentRendererClient>
     g_chrome_content_renderer_client = LAZY_INSTANCE_INITIALIZER;
 base::LazyInstance<ChromeContentUtilityClient>
     g_chrome_content_utility_client = LAZY_INSTANCE_INITIALIZER;
-base::LazyInstance<chrome::ChromeContentPluginClient>
+base::LazyInstance<ChromeContentPluginClient>
     g_chrome_content_plugin_client = LAZY_INSTANCE_INITIALIZER;
 #endif
 
 #if !defined(CHROME_MULTIPLE_DLL_CHILD)
-base::LazyInstance<chrome::ChromeContentBrowserClient>
-    g_chrome_content_browser_client = LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<ChromeContentBrowserClient> g_chrome_content_browser_client =
+    LAZY_INSTANCE_INITIALIZER;
 #endif
 
 #if defined(OS_POSIX)
-base::LazyInstance<chrome::ChromeCrashReporterClient>::Leaky
-    g_chrome_crash_client = LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<ChromeCrashReporterClient>::Leaky g_chrome_crash_client =
+    LAZY_INSTANCE_INITIALIZER;
 #endif
 
 extern int NaClMain(const content::MainFunctionParams&);

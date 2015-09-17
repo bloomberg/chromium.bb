@@ -5,16 +5,11 @@
 #ifndef CHROME_PLUGIN_CHROME_CONTENT_PLUGIN_CLIENT_H_
 #define CHROME_PLUGIN_CHROME_CONTENT_PLUGIN_CLIENT_H_
 
-#include "base/compiler_specific.h"
 #include "content/public/plugin/content_plugin_client.h"
-
-namespace chrome {
 
 class ChromeContentPluginClient : public content::ContentPluginClient {
  public:
   void PreSandboxInitialization() override;
 };
-
-}  // namespace chrome
 
 #endif  // CHROME_PLUGIN_CHROME_CONTENT_PLUGIN_CLIENT_H_

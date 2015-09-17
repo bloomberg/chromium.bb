@@ -27,8 +27,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
-namespace chrome {
-
 using ChromeContentBrowserClientTest = testing::Test;
 
 TEST_F(ChromeContentBrowserClientTest, ShouldAssignSiteForURL) {
@@ -320,8 +318,6 @@ TEST_F(BlinkSettingsFieldTrialTest, ResourcePrioritiesIncreasePriorities) {
   EXPECT_EQ("fetchIncreasePriorities=true",
             command_line().GetSwitchValueASCII(switches::kBlinkSettings));
 }
-
-}  // namespace chrome
 
 #if !defined(OS_IOS) && !defined(OS_ANDROID)
 namespace content {

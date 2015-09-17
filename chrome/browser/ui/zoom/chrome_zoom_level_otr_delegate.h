@@ -15,8 +15,6 @@ namespace ui_zoom {
 class ZoomEventManager;
 }
 
-namespace chrome {
-
 // This class is a light-weight version of ChromeZoomLevelPrefs and is used
 // to connect an OTR StoragePartition's HostZoomMap to the OTR profile's
 // ZoomEventManager.
@@ -41,7 +39,5 @@ class ChromeZoomLevelOTRDelegate : public content::ZoomLevelDelegate {
 
   DISALLOW_COPY_AND_ASSIGN(ChromeZoomLevelOTRDelegate);
 };
-
-}  // namespace chrome
 
 #endif  // CHROME_BROWSER_UI_ZOOM_CHROME_ZOOM_LEVEL_OTR_DELEGATE_H_

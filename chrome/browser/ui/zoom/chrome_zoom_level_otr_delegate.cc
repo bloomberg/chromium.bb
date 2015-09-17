@@ -7,8 +7,6 @@
 #include "base/bind.h"
 #include "components/ui/zoom/zoom_event_manager.h"
 
-namespace chrome {
-
 ChromeZoomLevelOTRDelegate::ChromeZoomLevelOTRDelegate(
     base::WeakPtr<ui_zoom::ZoomEventManager> zoom_event_manager)
     : zoom_event_manager_(zoom_event_manager), host_zoom_map_(nullptr) {
@@ -36,5 +34,3 @@ void ChromeZoomLevelOTRDelegate::OnZoomLevelChanged(
   if (zoom_event_manager_)
     zoom_event_manager_->OnZoomLevelChanged(change);
 }
-
-}  // namespace chrome

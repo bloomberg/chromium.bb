@@ -10,8 +10,8 @@
 #include <utility>
 #include <vector>
 
-#include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "content/public/browser/content_browser_client.h"
@@ -37,8 +37,6 @@ class PrefRegistrySyncable;
 namespace version_info {
 enum class Channel;
 }
-
-namespace chrome {
 
 class ChromeContentBrowserClient : public content::ContentBrowserClient {
  public:
@@ -338,7 +336,5 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
 
   DISALLOW_COPY_AND_ASSIGN(ChromeContentBrowserClient);
 };
-
-}  // namespace chrome
 
 #endif  // CHROME_BROWSER_CHROME_CONTENT_BROWSER_CLIENT_H_

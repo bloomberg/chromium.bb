@@ -128,7 +128,7 @@ content::ContentClient* ChromeRenderViewTest::CreateContentClient() {
 
 content::ContentBrowserClient*
 ChromeRenderViewTest::CreateContentBrowserClient() {
-  return new chrome::ChromeContentBrowserClient();
+  return new ChromeContentBrowserClient();
 }
 
 content::ContentRendererClient*

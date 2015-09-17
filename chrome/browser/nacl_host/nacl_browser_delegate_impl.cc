@@ -138,7 +138,7 @@ std::string NaClBrowserDelegateImpl::GetVersionString() const {
 
 ppapi::host::HostFactory* NaClBrowserDelegateImpl::CreatePpapiHostFactory(
     content::BrowserPpapiHost* ppapi_host) {
-  return new chrome::ChromeBrowserPepperHostFactory(ppapi_host);
+  return new ChromeBrowserPepperHostFactory(ppapi_host);
 }
 
 void NaClBrowserDelegateImpl::SetDebugPatterns(
