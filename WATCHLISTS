@@ -142,7 +142,7 @@
                   '|components/bookmarks'
     },
     'breakpad_app': {
-      'filepath': 'components/crash/content/app/',
+      'filepath': 'components/crash/app/',
     },
     'browser': {
       'filepath': 'chrome/browser/',

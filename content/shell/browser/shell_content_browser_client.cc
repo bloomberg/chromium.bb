@@ -40,14 +40,14 @@
 #if defined(OS_ANDROID)
 #include "base/android/apk_assets.h"
 #include "base/android/path_utils.h"
-#include "components/crash/content/browser/crash_dump_manager_android.h"
+#include "components/crash/browser/crash_dump_manager_android.h"
 #include "content/shell/android/shell_descriptors.h"
 #endif
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
 #include "base/debug/leak_annotations.h"
-#include "components/crash/content/app/breakpad_linux.h"
-#include "components/crash/content/browser/crash_handler_host_linux.h"
+#include "components/crash/app/breakpad_linux.h"
+#include "components/crash/browser/crash_handler_host_linux.h"
 #include "content/public/common/content_descriptors.h"
 #endif
 

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "components/crash/content/app/breakpad_mac.h"
+#import "components/crash/app/breakpad_mac.h"
 
 #include <CoreFoundation/CoreFoundation.h>
 #import <Foundation/Foundation.h>
@@ -25,7 +25,7 @@
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread_restrictions.h"
 #import "breakpad/src/client/mac/Framework/Breakpad.h"
-#include "components/crash/content/app/crash_reporter_client.h"
+#include "components/crash/app/crash_reporter_client.h"
 
 using crash_reporter::GetCrashReporterClient;
 

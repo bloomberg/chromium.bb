@@ -5,7 +5,7 @@
 // For linux_syscall_support.h. This makes it safe to call embedded system
 // calls when in seccomp mode.
 
-#include "components/crash/content/app/breakpad_linux.h"
+#include "components/crash/app/breakpad_linux.h"
 
 #include <fcntl.h>
 #include <poll.h>
@@ -39,8 +39,8 @@
 #include "breakpad/src/common/linux/linux_libc_support.h"
 #include "breakpad/src/common/memory.h"
 #include "build/build_config.h"
-#include "components/crash/content/app/breakpad_linux_impl.h"
-#include "components/crash/content/app/crash_reporter_client.h"
+#include "components/crash/app/breakpad_linux_impl.h"
+#include "components/crash/app/crash_reporter_client.h"
 #include "content/public/common/content_descriptors.h"
 
 #if defined(OS_ANDROID)

@@ -6,7 +6,7 @@
 
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/time/time.h"
-#include "components/crash/content/app/crashpad_mac.h"
+#include "components/crash/app/crashpad_mac.h"
 
 CrashUploadListMac::CrashUploadListMac(
     Delegate* delegate,

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/crash/content/app/breakpad_win.h"
+#include "components/crash/app/breakpad_win.h"
 
 #include <windows.h>
 #include <shellapi.h>
@@ -33,9 +33,9 @@
 #include "base/win/registry.h"
 #include "base/win/win_util.h"
 #include "breakpad/src/client/windows/handler/exception_handler.h"
-#include "components/crash/content/app/crash_keys_win.h"
-#include "components/crash/content/app/crash_reporter_client.h"
-#include "components/crash/content/app/hard_error_handler_win.h"
+#include "components/crash/app/crash_keys_win.h"
+#include "components/crash/app/crash_reporter_client.h"
+#include "components/crash/app/hard_error_handler_win.h"
 #include "content/public/common/result_codes.h"
 #include "sandbox/win/src/nt_internals.h"
 #include "sandbox/win/src/sidestep/preamble_patcher.h"

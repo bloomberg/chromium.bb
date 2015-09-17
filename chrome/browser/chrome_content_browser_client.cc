@@ -172,7 +172,7 @@
 #include "chrome/browser/android/webapps/single_tab_mode_tab_helper.h"
 #include "chrome/browser/chrome_browser_main_android.h"
 #include "chrome/common/descriptors_android.h"
-#include "components/crash/content/browser/crash_dump_manager_android.h"
+#include "components/crash/browser/crash_dump_manager_android.h"
 #include "components/service_tab_launcher/browser/android/service_tab_launcher.h"
 #include "ui/base/resource/resource_bundle_android.h"
 #elif defined(OS_POSIX)
@@ -181,8 +181,8 @@
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
 #include "base/debug/leak_annotations.h"
-#include "components/crash/content/app/breakpad_linux.h"
-#include "components/crash/content/browser/crash_handler_host_linux.h"
+#include "components/crash/app/breakpad_linux.h"
+#include "components/crash/browser/crash_handler_host_linux.h"
 #endif
 
 #if defined(OS_ANDROID)

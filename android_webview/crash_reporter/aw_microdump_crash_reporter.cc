@@ -9,8 +9,8 @@
 #include "base/lazy_instance.h"
 #include "base/scoped_native_library.h"
 #include "build/build_config.h"
-#include "components/crash/content/app/breakpad_linux.h"
-#include "components/crash/content/app/crash_reporter_client.h"
+#include "components/crash/app/breakpad_linux.h"
+#include "components/crash/app/crash_reporter_client.h"
 
 namespace android_webview {
 namespace crash_reporter {

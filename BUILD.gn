@@ -571,7 +571,7 @@ group("both_gn_and_gyp") {
       "//chrome/installer/setup:setup_unittests",
       "//chrome_elf:chrome_elf_unittests",
       "//chrome_elf:dll_hash_main",
-      "//components/crash/content/tools:crash_service",
+      "//components/crash/tools:crash_service",
       "//components/wifi:wifi_test",
       "//net:quic_client",
       "//net:quic_server",

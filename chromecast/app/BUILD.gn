@@ -18,7 +18,7 @@ source_set("app") {
     "//chromecast/browser",
     "//chromecast/common",
     "//chromecast/renderer",
-    "//components/crash/content/app:lib",
+    "//components/crash/app:lib",
     "//content/public/app:both",
     "//content/public/browser",
     "//content/public/common",
@@ -40,8 +40,8 @@ source_set("cast_crash_client") {
     "//base",
     "//chromecast/base",
     "//chromecast/crash",
-    "//components/crash/content/app",
-    "//components/crash/content/app:lib",
+    "//components/crash/app",
+    "//components/crash/app:lib",
     "//content/public/common",
   ]
 }

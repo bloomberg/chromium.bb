@@ -64,7 +64,7 @@
 #include "chrome/browser/mac/relauncher.h"
 #include "chrome/common/mac/cfbundle_blocker.h"
 #include "chrome/common/mac/objc_zombie.h"
-#include "components/crash/content/app/crashpad_mac.h"
+#include "components/crash/app/crashpad_mac.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #endif
 
@@ -72,7 +72,7 @@
 #include <locale.h>
 #include <signal.h>
 #include "chrome/app/chrome_crash_reporter_client.h"
-#include "components/crash/content/app/crash_reporter_client.h"
+#include "components/crash/app/crash_reporter_client.h"
 #endif
 
 #if !defined(DISABLE_NACL) && defined(OS_LINUX)
@@ -103,7 +103,7 @@
 #endif
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
-#include "components/crash/content/app/breakpad_linux.h"
+#include "components/crash/app/breakpad_linux.h"
 #endif
 
 #if defined(OS_LINUX)

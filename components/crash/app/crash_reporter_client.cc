@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/crash/content/app/crash_reporter_client.h"
+#include "components/crash/app/crash_reporter_client.h"
 
 #include "base/files/file_path.h"
 #include "base/logging.h"

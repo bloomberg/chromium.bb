@@ -14,7 +14,7 @@ source_set("lib") {
     "crash_reporter_client.h",
   ]
 
-  include_dirs = [ "../../../../breakpad/src" ]
+  include_dirs = [ "../../../breakpad/src" ]
 }
 
 # Note: if you depend on this target, you need to either link in

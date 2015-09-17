@@ -15,7 +15,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/locale_settings.h"
 #include "chrome/installer/util/google_update_settings.h"
-#include "components/crash/content/app/breakpad_linux.h"
+#include "components/crash/app/breakpad_linux.h"
 #include "grit/components_strings.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"

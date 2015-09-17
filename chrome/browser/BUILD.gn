@@ -585,8 +585,8 @@ source_set("browser") {
       "//chrome/app/chrome_crash_reporter_client.h",
     ]
     deps += [
-      "//components/crash/content/app",
-      "//components/crash/content/browser",
+      "//components/crash/app",
+      "//components/crash/browser",
     ]
   }
   if (use_nss_certs) {
