@@ -8,6 +8,8 @@ source_set("fetcher") {
   sources = [
     "about_fetcher.cc",
     "about_fetcher.h",
+    "data_fetcher.cc",
+    "data_fetcher.h",
     "local_fetcher.cc",
     "local_fetcher.h",
     "network_fetcher.cc",
@@ -24,19 +26,20 @@ source_set("fetcher") {
     "//base",
     "//mojo/application/public/interfaces",
     "//mojo/common",
-    "//third_party/mojo/src/mojo/public/cpp/bindings",
     "//mojo/services/network/public/interfaces",
     "//mojo/services/updater",
+    "//third_party/mojo/src/mojo/public/cpp/bindings",
     "//url",
   ]
   deps = [
     "//base/third_party/dynamic_annotations",
     "//crypto:crypto",
     "//mojo/application/public/cpp:sources",
-    "//url",
-    "//third_party/mojo/src/mojo/edk/system",
     "//mojo/environment:chromium",
     "//mojo/shell",
     "//mojo/util:filename_util",
+    "//net",
+    "//third_party/mojo/src/mojo/edk/system",
+    "//url",
   ]
 }

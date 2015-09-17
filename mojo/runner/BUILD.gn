@@ -417,6 +417,7 @@ mojom("child_process_bindings") {
 test("mojo_runner_unittests") {
   sources = [
     "../fetcher/about_fetcher_unittest.cc",
+    "../fetcher/data_fetcher_unittest.cc",
     "../fetcher/network_fetcher_unittest.cc",
     "../fetcher/url_resolver_unittest.cc",
     "child_process_host_unittest.cc",

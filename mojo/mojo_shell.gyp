@@ -51,6 +51,8 @@
     'sources': [
       'fetcher/about_fetcher.cc',
       'fetcher/about_fetcher.h',
+      'fetcher/data_fetcher.cc',
+      'fetcher/data_fetcher.h',
       'fetcher/local_fetcher.cc',
       'fetcher/local_fetcher.h',
       'fetcher/network_fetcher.cc',
@@ -76,6 +78,7 @@
       '<(DEPTH)/mojo/mojo_services.gyp:network_service_bindings_lib',
       '<(DEPTH)/mojo/mojo_services.gyp:updater_bindings_lib',
       '<(DEPTH)/mojo/mojo_shell.gyp:mojo_shell_lib',
+      '<(DEPTH)/net/net.gyp:net',
       '<(DEPTH)/url/url.gyp:url_lib',
     ]
   }, {

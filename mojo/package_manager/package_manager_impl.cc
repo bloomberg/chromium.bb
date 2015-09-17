@@ -5,6 +5,7 @@
 #include "mojo/package_manager/package_manager_impl.h"
 
 #include "mojo/fetcher/about_fetcher.h"
+#include "mojo/fetcher/data_fetcher.h"
 #include "mojo/fetcher/local_fetcher.h"
 #include "mojo/fetcher/network_fetcher.h"
 #include "mojo/fetcher/switches.h"
@@ -64,6 +65,11 @@ void PackageManagerImpl::FetchRequest(
   GURL url(request->url);
   if (url.SchemeIs(fetcher::AboutFetcher::kAboutScheme)) {
     fetcher::AboutFetcher::Start(url, loader_callback);
+    return;
+  }
+
+  if (url.SchemeIs(url::kDataScheme)) {
+    fetcher::DataFetcher::Start(url, loader_callback);
     return;
   }
 
