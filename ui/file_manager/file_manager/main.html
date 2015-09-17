@@ -405,9 +405,10 @@
       <div class="left">
         <!-- TODO(fukino): Turn this button into paper-button when the CommandButton supports paper-button. -->
         <button id="new-folder-button" class="primary"
-                i18n-content="NEW_FOLDER_BUTTON_LABEL"
                 visibleif="saveas-file folder" command="#new-folder"
                 tabindex="3" disabled>
+          <paper-ripple fit></paper-ripple>
+          <span i18n-content="NEW_FOLDER_BUTTON_LABEL"></span>
         </button>
         <div id="filename-input-box" visibleif="saveas-file">
           <paper-input-container no-label-float>
@@ -421,9 +422,14 @@
       </div>
       <div class="right buttonbar">
         <select class="file-type" hidden tabindex="-1"></select>
-        <button id="ok-button" class="ok primary" disabled tabindex="5"></button>
-        <button id="cancel-button" class="cancel secondary"
-                i18n-content="CANCEL_LABEL" tabindex="6"></button>
+        <button id="ok-button" class="ok primary" disabled tabindex="5">
+          <paper-ripple fit></paper-ripple>
+          <span></span>
+        </button>
+        <button id="cancel-button" class="cancel secondary" tabindex="6">
+          <paper-ripple fit></paper-ripple>
+          <span i18n-content="CANCEL_LABEL"></span>
+        </button>
       </div>
     </div>
     <div id="drag-container"></div>

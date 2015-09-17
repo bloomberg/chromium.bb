@@ -788,8 +788,11 @@ html[dir='rtl'] #search-box .clear {
   margin: 0 0.29em;
   min-width: 5.14em;
   outline: none;
+  padding: 1px 16px;
+  position: relative;
   text-align: center;
   text-transform: uppercase;
+  transition: box-shadow 0.28s cubic-bezier(0.4, 0, 0.2, 1);
   z-index: 0;
 }
 
@@ -799,6 +802,12 @@ html[dir='rtl'] #search-box .clear {
 
 .dialog-footer button:hover {
   border-image: none;  /* Overrides the definition of common.css. */
+}
+
+.dialog-footer button:active {
+  box-shadow: 0 4px 5px 0 rgba(0, 0, 0, 0.14),
+              0 1px 10px 0 rgba(0, 0, 0, 0.12),
+              0 2px 4px -1px rgba(0, 0, 0, 0.4);
 }
 
 .dialog-footer paper-button,
@@ -877,9 +886,9 @@ html[dir='rtl'] #search-box .clear {
 }
 
 /* Draw outline using box-shadow to make them rounded. */
-.dialog-footer .primary:focus,
-.dialog-footer .secondary:focus,
-.dialog-footer select:focus {
+.dialog-footer .primary:focus:not(:active),
+.dialog-footer .secondary:focus:not(:active),
+.dialog-footer select:focus:not(:active) {
   box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.5);
 }
 

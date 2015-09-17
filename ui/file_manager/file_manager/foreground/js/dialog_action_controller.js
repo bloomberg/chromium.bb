@@ -454,10 +454,10 @@ DialogActionController.prototype.updateOkButton_ = function() {
 
   if (this.dialogType_ === DialogType.SELECT_SAVEAS_FILE) {
     if (selection.directoryCount === 1 && selection.fileCount === 0) {
-      this.dialogFooter_.okButton.textContent = str('OPEN_LABEL');
+      this.dialogFooter_.okButtonLabel.textContent = str('OPEN_LABEL');
       this.dialogFooter_.okButton.disabled = false;
     } else {
-      this.dialogFooter_.okButton.textContent = str('SAVE_LABEL');
+      this.dialogFooter_.okButtonLabel.textContent = str('SAVE_LABEL');
       this.dialogFooter_.okButton.disabled =
           this.directoryModel_.isReadOnly() ||
           !this.dialogFooter_.filenameInput.value;

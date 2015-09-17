@@ -34,6 +34,14 @@ function DialogFooter(dialogType, container, filenameInput) {
       (container.querySelector('.ok'));
 
   /**
+   * OK button's label in the footer.
+   * @const
+   * @type {!HTMLSpanElement}
+   */
+  this.okButtonLabel = /** @type {!HTMLSpanElement} */
+      (this.okButton.querySelector('span'));
+
+  /**
    * Cancel button in the footer.
    * @const
    * @type {!HTMLButtonElement}
@@ -60,7 +68,7 @@ function DialogFooter(dialogType, container, filenameInput) {
 
   // Set initial label for OK button. The label can be updated dynamically
   // depending on dialog types.
-  this.okButton.textContent = DialogFooter.getOKButtonLabel_(dialogType);
+  this.okButtonLabel.textContent = DialogFooter.getOKButtonLabel_(dialogType);
 
   // Register event handlers.
   this.filenameInput.addEventListener(
