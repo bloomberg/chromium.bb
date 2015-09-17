@@ -41,7 +41,6 @@
 #include "public/platform/Platform.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/MathExtras.h"
-#include "wtf/RefCountedLeakCounter.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/Vector.h"
 #include "wtf/text/CString.h"
@@ -91,8 +90,6 @@ static inline bool shouldUpdateHeaderAfterRevalidation(const AtomicString& heade
     }
     return true;
 }
-
-DEFINE_DEBUG_ONLY_GLOBAL(RefCountedLeakCounter, cachedResourceLeakCounter, ("Resource"));
 
 class Resource::CacheHandler : public CachedMetadataHandler {
 public:
@@ -173,9 +170,6 @@ Resource::Resource(const ResourceRequest& request, Type type)
 {
     ASSERT(m_type == unsigned(type)); // m_type is a bitfield, so this tests careless updates of the enum.
     InstanceCounters::incrementCounter(InstanceCounters::ResourceCounter);
-#ifndef NDEBUG
-    cachedResourceLeakCounter.increment();
-#endif
     memoryCache()->registerLiveResource(*this);
 
     // Currently we support the metadata caching only for HTTP family.
@@ -201,9 +195,6 @@ Resource::~Resource()
 
 #ifdef ENABLE_RESOURCE_IS_DELETED_CHECK
     m_deleted = true;
-#endif
-#ifndef NDEBUG
-    cachedResourceLeakCounter.decrement();
 #endif
     InstanceCounters::decrementCounter(InstanceCounters::ResourceCounter);
 }

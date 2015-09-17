@@ -50,11 +50,8 @@
 #include "platform/MemoryPurgeController.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/plugins/PluginData.h"
-#include "wtf/RefCountedLeakCounter.h"
 
 namespace blink {
-
-DEFINE_DEBUG_ONLY_GLOBAL(WTF::RefCountedLeakCounter, pageCounter, ("Page"));
 
 // static
 HashSet<Page*>& Page::allPages()
@@ -131,10 +128,6 @@ Page::Page(PageClients& pageClients)
 
     ASSERT(!allPages().contains(this));
     allPages().add(this);
-
-#ifndef NDEBUG
-    pageCounter.increment();
-#endif
 }
 
 Page::~Page()
@@ -591,10 +584,6 @@ void Page::willBeDestroyed()
 
     if (m_scrollingCoordinator)
         m_scrollingCoordinator->willBeDestroyed();
-
-#ifndef NDEBUG
-    pageCounter.decrement();
-#endif
 
     chromeClient().chromeDestroyed();
     if (m_validationMessageClient)

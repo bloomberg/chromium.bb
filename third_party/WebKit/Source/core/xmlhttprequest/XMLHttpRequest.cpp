@@ -72,13 +72,10 @@
 #include "platform/network/ResourceRequest.h"
 #include "public/platform/WebURLRequest.h"
 #include "wtf/Assertions.h"
-#include "wtf/RefCountedLeakCounter.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/text/CString.h"
 
 namespace blink {
-
-DEFINE_DEBUG_ONLY_GLOBAL(WTF::RefCountedLeakCounter, xmlHttpRequestCounter, ("XMLHttpRequest"));
 
 namespace {
 
@@ -221,9 +218,6 @@ XMLHttpRequest::XMLHttpRequest(ExecutionContext* context, PassRefPtr<SecurityOri
     , m_downloadingToFile(false)
     , m_responseTextOverflow(false)
 {
-#ifndef NDEBUG
-    xmlHttpRequestCounter.increment();
-#endif
 #if ENABLE(ASSERT) && !ENABLE(OILPAN)
     // Verify that this object was allocated on the 'eager' heap.
     // (this check comes 'for free' with Oilpan enabled.)
@@ -233,9 +227,6 @@ XMLHttpRequest::XMLHttpRequest(ExecutionContext* context, PassRefPtr<SecurityOri
 
 XMLHttpRequest::~XMLHttpRequest()
 {
-#ifndef NDEBUG
-    xmlHttpRequestCounter.decrement();
-#endif
 }
 
 Document* XMLHttpRequest::document() const

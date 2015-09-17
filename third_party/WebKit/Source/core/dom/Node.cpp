@@ -89,7 +89,6 @@
 #include "wtf/HashSet.h"
 #include "wtf/Partitions.h"
 #include "wtf/PassOwnPtr.h"
-#include "wtf/RefCountedLeakCounter.h"
 #include "wtf/Vector.h"
 #include "wtf/text/CString.h"
 #include "wtf/text/StringBuilder.h"
@@ -242,14 +241,8 @@ void Node::dumpStatistics()
 #endif
 }
 
-DEFINE_DEBUG_ONLY_GLOBAL(WTF::RefCountedLeakCounter, nodeCounter, ("WebCoreNode"));
-
 void Node::trackForDebugging()
 {
-#ifndef NDEBUG
-    nodeCounter.increment();
-#endif
-
 #if DUMP_NODE_STATISTICS
     liveNodeSet().add(this);
 #endif
@@ -276,10 +269,6 @@ Node::Node(TreeScope* treeScope, ConstructionType type)
 
 Node::~Node()
 {
-#ifndef NDEBUG
-    nodeCounter.decrement();
-#endif
-
 #if !ENABLE(OILPAN)
 #if DUMP_NODE_STATISTICS
     liveNodeSet().remove(this);
