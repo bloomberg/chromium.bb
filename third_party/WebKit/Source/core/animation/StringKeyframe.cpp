@@ -28,6 +28,7 @@
 #include "core/animation/LengthStyleInterpolation.h"
 #include "core/animation/ListSVGInterpolation.h"
 #include "core/animation/ListStyleInterpolation.h"
+#include "core/animation/NumberInterpolationType.h"
 #include "core/animation/NumberOptionalNumberSVGInterpolation.h"
 #include "core/animation/NumberSVGInterpolation.h"
 #include "core/animation/PathSVGInterpolation.h"
@@ -124,33 +125,6 @@ bool StringKeyframe::CSSPropertySpecificKeyframe::populateAnimatableValue(CSSPro
 }
 
 namespace {
-InterpolationRange setRange(CSSPropertyID id)
-{
-    switch (id) {
-    case CSSPropertyOrphans:
-    case CSSPropertyWebkitColumnCount:
-    case CSSPropertyWidows:
-        return RangeRoundGreaterThanOrEqualToOne;
-    case CSSPropertyWebkitColumnRuleWidth:
-    case CSSPropertyZIndex:
-        return RangeRound;
-    case CSSPropertyFloodOpacity:
-    case CSSPropertyStopOpacity:
-    case CSSPropertyStrokeOpacity:
-    case CSSPropertyShapeImageThreshold:
-        return RangeZeroToOne;
-    case CSSPropertyFillOpacity:
-    case CSSPropertyOpacity:
-        return RangeOpacityFIXME;
-    case CSSPropertyStrokeMiterlimit:
-        return RangeGreaterThanOrEqualToOne;
-    case CSSPropertyFontSizeAdjust:
-        return RangeNonNegative;
-    default:
-        ASSERT_NOT_REACHED();
-        return RangeAll;
-    }
-}
 
 const Vector<const InterpolationType*>* applicableTypesForProperty(CSSPropertyID property)
 {
@@ -214,6 +188,22 @@ const Vector<const InterpolationType*>* applicableTypesForProperty(CSSPropertyID
     case CSSPropertyX:
     case CSSPropertyY:
         applicableTypes->append(new LengthInterpolationType(property));
+        break;
+    case CSSPropertyFlexGrow:
+    case CSSPropertyFlexShrink:
+    case CSSPropertyFillOpacity:
+    case CSSPropertyFloodOpacity:
+    case CSSPropertyFontSizeAdjust:
+    case CSSPropertyOpacity:
+    case CSSPropertyOrphans:
+    case CSSPropertyShapeImageThreshold:
+    case CSSPropertyStopOpacity:
+    case CSSPropertyStrokeMiterlimit:
+    case CSSPropertyStrokeOpacity:
+    case CSSPropertyWebkitColumnCount:
+    case CSSPropertyWidows:
+    case CSSPropertyZIndex:
+        applicableTypes->append(new NumberInterpolationType(property));
         break;
     default:
         // TODO(alancutter): Support all interpolable CSS properties here so we can stop falling back to the old StyleInterpolation implementation.
@@ -301,22 +291,6 @@ PassRefPtr<Interpolation> StringKeyframe::CSSPropertySpecificKeyframe::maybeCrea
         if (property == CSSPropertyBaselineShift)
             return createLegacyStyleInterpolation(property, end, element, baseStyle);
 
-        break;
-
-    case CSSPropertyOrphans:
-    case CSSPropertyWidows:
-    case CSSPropertyZIndex:
-    case CSSPropertyWebkitColumnCount:
-    case CSSPropertyShapeImageThreshold:
-    case CSSPropertyFillOpacity:
-    case CSSPropertyFloodOpacity:
-    case CSSPropertyFontSizeAdjust:
-    case CSSPropertyOpacity:
-    case CSSPropertyStopOpacity:
-    case CSSPropertyStrokeOpacity:
-    case CSSPropertyStrokeMiterlimit:
-        if (DoubleStyleInterpolation::canCreateFrom(*fromCSSValue) && DoubleStyleInterpolation::canCreateFrom(*toCSSValue))
-            return DoubleStyleInterpolation::create(*fromCSSValue, *toCSSValue, property, toCSSPrimitiveValue(fromCSSValue)->isNumber(), setRange(property));
         break;
 
     case CSSPropertyMotionRotation: {

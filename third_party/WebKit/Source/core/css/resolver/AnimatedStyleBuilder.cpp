@@ -538,7 +538,7 @@ void AnimatedStyleBuilder::applyProperty(CSSPropertyID property, StyleResolverSt
         style->setClipPath(toAnimatableClipPathOperation(value)->clipPathOperation());
         return;
     case CSSPropertyWebkitColumnCount:
-        style->setColumnCount(clampTo<unsigned short>(toAnimatableDouble(value)->toDouble(), 1));
+        style->setColumnCount(clampTo<unsigned short>(round(toAnimatableDouble(value)->toDouble()), 1));
         return;
     case CSSPropertyWebkitColumnGap:
         style->setColumnGap(clampTo(toAnimatableDouble(value)->toDouble(), 0));
