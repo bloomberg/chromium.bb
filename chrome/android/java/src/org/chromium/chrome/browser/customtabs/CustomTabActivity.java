@@ -10,6 +10,7 @@ import android.os.IBinder;
 import android.support.customtabs.CustomTabsCallback;
 import android.support.customtabs.CustomTabsIntent;
 import android.text.TextUtils;
+import android.view.KeyEvent;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -25,6 +26,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.IntentHandler.ExternalAppId;
+import org.chromium.chrome.browser.KeyboardShortcuts;
 import org.chromium.chrome.browser.appmenu.AppMenuPropertiesDelegate;
 import org.chromium.chrome.browser.appmenu.ChromeAppMenuPropertiesDelegate;
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPanel.StateChangeReason;
@@ -346,6 +348,13 @@ public class CustomTabActivity extends ChromeActivity {
     }
 
     @Override
+    public boolean dispatchKeyEvent(KeyEvent event) {
+        Boolean result = KeyboardShortcuts.dispatchKeyEvent(event, this,
+                getToolbarManager().isInitialized());
+        return result != null ? result : super.dispatchKeyEvent(event);
+    }
+
+    @Override
     public boolean onMenuOrKeyboardAction(int id, boolean fromMenu) {
         if (id == R.id.open_in_chrome_id) {
             String url = getTabModelSelector().getCurrentTab().getUrl();
@@ -365,6 +374,9 @@ public class CustomTabActivity extends ChromeActivity {
             } else {
                 RecordUserAction.record("MobileShortcutFindInPage");
             }
+            return true;
+        } else if (id == R.id.focus_url_bar) {
+            // Do nothing because url bar in custom tabs is not editable.
             return true;
         }
         return super.onMenuOrKeyboardAction(id, fromMenu);
