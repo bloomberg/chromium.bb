@@ -40,10 +40,6 @@ public:
     static bool interpolationRequiresStyleResolve(const CSSBasicShape&);
     static bool interpolationRequiresStyleResolve(const CSSQuadValue&);
 
-    void underlyingStyleChanged() { m_outdated = true; }
-
-    bool isDeferredLegacyStyleInterpolation() const final { return true; }
-
 private:
     DeferredLegacyStyleInterpolation(PassRefPtrWillBeRawPtr<CSSValue> start, PassRefPtrWillBeRawPtr<CSSValue> end, CSSPropertyID id)
         : StyleInterpolation(InterpolableNumber::create(0), InterpolableNumber::create(1), id)
@@ -58,8 +54,6 @@ private:
     mutable RefPtr<LegacyStyleInterpolation> m_innerInterpolation;
     mutable bool m_outdated;
 };
-
-DEFINE_TYPE_CASTS(DeferredLegacyStyleInterpolation, StyleInterpolation, value, value->isDeferredLegacyStyleInterpolation(), value.isDeferredLegacyStyleInterpolation());
 
 }
 

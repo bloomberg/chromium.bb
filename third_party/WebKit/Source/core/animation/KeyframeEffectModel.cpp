@@ -82,41 +82,40 @@ bool KeyframeEffectModelBase::sample(int iteration, double fraction, double iter
 void KeyframeEffectModelBase::forceConversionsToAnimatableValues(Element& element, const ComputedStyle* baseStyle)
 {
     ensureKeyframeGroups();
-    snapshotCompositableProperties(element, baseStyle);
+    snapshotAllCompositorKeyframes(element, baseStyle);
     ensureInterpolationEffect(&element, baseStyle);
 }
 
-void KeyframeEffectModelBase::snapshotCompositableProperties(Element& element, const ComputedStyle* baseStyle)
+bool KeyframeEffectModelBase::snapshotNeutralCompositorKeyframes(Element& element, const ComputedStyle& oldStyle, const ComputedStyle& newStyle)
 {
+    bool updated = false;
     ensureKeyframeGroups();
-    for (CSSPropertyID id : CompositorAnimations::compositableProperties) {
-        PropertyHandle property = PropertyHandle(id);
-        if (!affects(property))
+    for (CSSPropertyID property : CompositorAnimations::compositableProperties) {
+        if (CSSPropertyEquality::propertiesEqual(property, oldStyle, newStyle))
             continue;
-        for (auto& keyframe : m_keyframeGroups->get(property)->m_keyframes)
-            keyframe->populateAnimatableValue(id, element, baseStyle);
+        PropertySpecificKeyframeGroup* keyframeGroup = m_keyframeGroups->get(PropertyHandle(property));
+        if (!keyframeGroup)
+            continue;
+        for (auto& keyframe : keyframeGroup->m_keyframes) {
+            if (keyframe->isNeutral())
+                updated |= keyframe->populateAnimatableValue(property, element, &newStyle, true);
+        }
     }
+    return updated;
 }
 
-bool KeyframeEffectModelBase::updateNeutralKeyframeAnimatableValues(CSSPropertyID property, PassRefPtr<AnimatableValue> value)
+bool KeyframeEffectModelBase::snapshotAllCompositorKeyframes(Element& element, const ComputedStyle* baseStyle)
 {
-    ASSERT(CompositorAnimations::isCompositableProperty(property));
-
-    if (!value)
-        return false;
-
+    bool updated = false;
     ensureKeyframeGroups();
-    auto& keyframes = m_keyframeGroups->get(PropertyHandle(property))->m_keyframes;
-    ASSERT(keyframes.size() >= 2);
-
-    auto& first = toCSSPropertySpecificKeyframe(*keyframes.first());
-    auto& last = toCSSPropertySpecificKeyframe(*keyframes.last());
-
-    if (!first.value())
-        first.setAnimatableValue(value);
-    if (!last.value())
-        last.setAnimatableValue(value);
-    return !first.value() || !last.value();
+    for (CSSPropertyID property : CompositorAnimations::compositableProperties) {
+        PropertySpecificKeyframeGroup* keyframeGroup = m_keyframeGroups->get(PropertyHandle(property));
+        if (!keyframeGroup)
+            continue;
+        for (auto& keyframe : keyframeGroup->m_keyframes)
+            updated |= keyframe->populateAnimatableValue(property, element, baseStyle, true);
+    }
+    return updated;
 }
 
 KeyframeEffectModelBase::KeyframeVector KeyframeEffectModelBase::normalizedKeyframes(const KeyframeVector& keyframes)

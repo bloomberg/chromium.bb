@@ -209,10 +209,38 @@ bool CSSAnimations::isTransitionAnimationForInspector(const Animation& animation
 
 void CSSAnimations::calculateUpdate(const Element* animatingElement, Element& element, const ComputedStyle& style, ComputedStyle* parentStyle, CSSAnimationUpdate& animationUpdate, StyleResolver* resolver)
 {
+    calculateCompositorAnimationUpdate(animationUpdate, animatingElement, element, style);
     calculateAnimationUpdate(animationUpdate, animatingElement, element, style, parentStyle, resolver);
     calculateAnimationActiveInterpolations(animationUpdate, animatingElement, element.document().timeline().currentTimeInternal());
     calculateTransitionUpdate(animationUpdate, animatingElement, style);
     calculateTransitionActiveInterpolations(animationUpdate, animatingElement, element.document().timeline().currentTimeInternal());
+}
+
+void CSSAnimations::calculateCompositorAnimationUpdate(CSSAnimationUpdate& update, const Element* animatingElement, Element& element, const ComputedStyle& style)
+{
+    ElementAnimations* elementAnimations = animatingElement ? animatingElement->elementAnimations() : nullptr;
+
+    // We only update compositor animations in response to changes in the base style.
+    if (!elementAnimations || elementAnimations->isAnimationStyleChange())
+        return;
+
+    if (!animatingElement->layoutObject() || !animatingElement->layoutObject()->style())
+        return;
+
+    const ComputedStyle& oldStyle = *animatingElement->layoutObject()->style();
+
+    CSSAnimations& cssAnimations = elementAnimations->cssAnimations();
+    for (auto& runningAnimation : cssAnimations.m_animations.values()) {
+        Animation& animation = *runningAnimation->animation;
+        if (animation.effect() && animation.effect()->isKeyframeEffect()) {
+            EffectModel* model = toKeyframeEffect(animation.effect())->model();
+            if (model && model->isKeyframeEffectModel()) {
+                KeyframeEffectModelBase* keyframeEffect = toKeyframeEffectModelBase(model);
+                if (keyframeEffect->hasSyntheticKeyframes() && keyframeEffect->snapshotNeutralCompositorKeyframes(element, oldStyle, style))
+                    update.updateCompositorKeyframes(&animation);
+            }
+        }
+    }
 }
 
 void CSSAnimations::calculateAnimationUpdate(CSSAnimationUpdate& update, const Element* animatingElement, Element& element, const ComputedStyle& style, ComputedStyle* parentStyle, StyleResolver* resolver)
@@ -268,13 +296,6 @@ void CSSAnimations::calculateAnimationUpdate(CSSAnimationUpdate& update, const E
                         update.updateAnimation(animationName, animation, InertEffect::create(
                             createKeyframeEffectModel(resolver, animatingElement, element, &style, parentStyle, animationName, keyframeTimingFunction.get(), i),
                             timing, isPaused, animation->unlimitedCurrentTimeInternal()), specifiedTiming, keyframesRule);
-                    } else if (!isAnimationStyleChange && animation->effect() && animation->effect()->isKeyframeEffect()) {
-                        EffectModel* model = toKeyframeEffect(animation->effect())->model();
-                        if (model && model->isKeyframeEffectModel()) {
-                            KeyframeEffectModelBase* keyframeEffect = toKeyframeEffectModelBase(model);
-                            if (keyframeEffect->hasSyntheticKeyframes())
-                                update.updateAnimationStyle(animation, keyframeEffect, animatingElement->layoutObject(), style);
-                        }
                     }
 
                     if (isPaused != animation->paused()) {
@@ -329,26 +350,8 @@ void CSSAnimations::maybeApplyPendingUpdate(Element* element)
             animation->update(TimingUpdateOnDemand);
     }
 
-    for (const auto& styleUpdate : m_pendingUpdate.animationsWithStyleUpdates()) {
-        styleUpdate.model->forEachInterpolation([](Interpolation& interpolation) {
-            if (interpolation.isStyleInterpolation() && toStyleInterpolation(interpolation).isDeferredLegacyStyleInterpolation())
-                toDeferredLegacyStyleInterpolation(toStyleInterpolation(interpolation)).underlyingStyleChanged();
-        });
-
-        bool updated = false;
-        if (styleUpdate.snapshot.opacity)
-            updated |= styleUpdate.model->updateNeutralKeyframeAnimatableValues(CSSPropertyOpacity, styleUpdate.snapshot.opacity);
-        if (styleUpdate.snapshot.transform)
-            updated |= styleUpdate.model->updateNeutralKeyframeAnimatableValues(CSSPropertyTransform, styleUpdate.snapshot.transform);
-        if (styleUpdate.snapshot.webkitFilter)
-            updated |= styleUpdate.model->updateNeutralKeyframeAnimatableValues(CSSPropertyWebkitFilter, styleUpdate.snapshot.webkitFilter);
-        if (styleUpdate.snapshot.backdropFilter)
-            updated |= styleUpdate.model->updateNeutralKeyframeAnimatableValues(CSSPropertyBackdropFilter, styleUpdate.snapshot.backdropFilter);
-        if (updated) {
-            styleUpdate.animation->setOutdated();
-            styleUpdate.animation->setCompositorPending(true);
-        }
-    }
+    for (const auto& animation : m_pendingUpdate.updatedCompositorKeyframes())
+        animation->setCompositorPending(true);
 
     for (const auto& entry : m_pendingUpdate.animationsWithUpdates()) {
         KeyframeEffect* effect = toKeyframeEffect(entry.animation->effect());

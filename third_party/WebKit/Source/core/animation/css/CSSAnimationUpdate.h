@@ -91,40 +91,6 @@ public:
         unsigned styleRuleVersion;
     };
 
-    class UpdatedAnimationStyle {
-        ALLOW_ONLY_INLINE_ALLOCATION();
-    public:
-        struct CompositableStyleSnapshot {
-            DISALLOW_ALLOCATION();
-        public:
-            RefPtr<AnimatableValue> opacity;
-            RefPtr<AnimatableValue> transform;
-            RefPtr<AnimatableValue> webkitFilter;
-            RefPtr<AnimatableValue> backdropFilter;
-        };
-
-        UpdatedAnimationStyle()
-        {
-        }
-
-        UpdatedAnimationStyle(Animation* animation, KeyframeEffectModelBase* model, const UpdatedAnimationStyle::CompositableStyleSnapshot& snapshot)
-            : animation(animation)
-            , model(model)
-            , snapshot(snapshot)
-        {
-        }
-
-        DEFINE_INLINE_TRACE()
-        {
-            visitor->trace(animation);
-            visitor->trace(model);
-        }
-
-        Member<Animation> animation;
-        Member<KeyframeEffectModelBase> model;
-        CompositableStyleSnapshot snapshot;
-    };
-
     CSSAnimationUpdate()
     {
     }
@@ -141,7 +107,6 @@ public:
         ASSERT(isEmpty());
         m_newAnimations = update.newAnimations();
         m_animationsWithUpdates = update.animationsWithUpdates();
-        m_animationsWithStyleUpdates = update.animationsWithStyleUpdates();
         m_newTransitions = update.newTransitions();
         m_activeInterpolationsForAnimations = update.activeInterpolationsForAnimations();
         m_activeInterpolationsForTransitions = update.activeInterpolationsForTransitions();
@@ -149,13 +114,13 @@ public:
         m_animationsWithPauseToggled = update.animationsWithPauseToggled();
         m_cancelledTransitions = update.cancelledTransitions();
         m_finishedTransitions = update.finishedTransitions();
+        m_updatedCompositorKeyframes = update.updatedCompositorKeyframes();
     }
 
     void clear()
     {
         m_newAnimations.clear();
         m_animationsWithUpdates.clear();
-        m_animationsWithStyleUpdates.clear();
         m_newTransitions.clear();
         m_activeInterpolationsForAnimations.clear();
         m_activeInterpolationsForTransitions.clear();
@@ -163,6 +128,7 @@ public:
         m_animationsWithPauseToggled.clear();
         m_cancelledTransitions.clear();
         m_finishedTransitions.clear();
+        m_updatedCompositorKeyframes.clear();
     }
 
     void startAnimation(const AtomicString& animationName, InertEffect* effect, const Timing& timing, PassRefPtrWillBeRawPtr<StyleRuleKeyframes> styleRule)
@@ -187,22 +153,9 @@ public:
         m_animationsWithUpdates.append(UpdatedAnimation(name, animation, effect, specifiedTiming, styleRule));
         m_suppressedAnimations.add(animation);
     }
-    void updateAnimationStyle(Animation* animation, KeyframeEffectModelBase* model, LayoutObject* layoutObject, const ComputedStyle& newStyle)
+    void updateCompositorKeyframes(Animation* animation)
     {
-        UpdatedAnimationStyle::CompositableStyleSnapshot snapshot;
-        if (layoutObject) {
-            const ComputedStyle& oldStyle = layoutObject->styleRef();
-            if (!CSSPropertyEquality::propertiesEqual(CSSPropertyOpacity, oldStyle, newStyle) && model->affects(PropertyHandle(CSSPropertyOpacity)))
-                snapshot.opacity = CSSAnimatableValueFactory::create(CSSPropertyOpacity, newStyle);
-            if (!CSSPropertyEquality::propertiesEqual(CSSPropertyTransform, oldStyle, newStyle) && model->affects(PropertyHandle(CSSPropertyTransform)))
-                snapshot.transform = CSSAnimatableValueFactory::create(CSSPropertyTransform, newStyle);
-            if (!CSSPropertyEquality::propertiesEqual(CSSPropertyWebkitFilter, oldStyle, newStyle) && model->affects(PropertyHandle(CSSPropertyWebkitFilter)))
-                snapshot.webkitFilter = CSSAnimatableValueFactory::create(CSSPropertyWebkitFilter, newStyle);
-            if (!CSSPropertyEquality::propertiesEqual(CSSPropertyBackdropFilter, oldStyle, newStyle) && model->affects(PropertyHandle(CSSPropertyBackdropFilter)))
-                snapshot.backdropFilter = CSSAnimatableValueFactory::create(CSSPropertyBackdropFilter, newStyle);
-        }
-
-        m_animationsWithStyleUpdates.append(UpdatedAnimationStyle(animation, model, snapshot));
+        m_updatedCompositorKeyframes.append(animation);
     }
 
     void startTransition(CSSPropertyID id, const AnimatableValue* from, const AnimatableValue* to, InertEffect* effect)
@@ -224,7 +177,7 @@ public:
     const HeapHashSet<Member<const Animation>>& suppressedAnimations() const { return m_suppressedAnimations; }
     const Vector<AtomicString>& animationsWithPauseToggled() const { return m_animationsWithPauseToggled; }
     const HeapVector<UpdatedAnimation>& animationsWithUpdates() const { return m_animationsWithUpdates; }
-    const HeapVector<UpdatedAnimationStyle>& animationsWithStyleUpdates() const { return m_animationsWithStyleUpdates; }
+    const HeapVector<Member<Animation>>& updatedCompositorKeyframes() const { return m_updatedCompositorKeyframes; }
 
     struct NewTransition {
         ALLOW_ONLY_INLINE_ALLOCATION();
@@ -257,12 +210,12 @@ public:
             && m_suppressedAnimations.isEmpty()
             && m_animationsWithPauseToggled.isEmpty()
             && m_animationsWithUpdates.isEmpty()
-            && m_animationsWithStyleUpdates.isEmpty()
             && m_newTransitions.isEmpty()
             && m_cancelledTransitions.isEmpty()
             && m_finishedTransitions.isEmpty()
             && m_activeInterpolationsForAnimations.isEmpty()
-            && m_activeInterpolationsForTransitions.isEmpty();
+            && m_activeInterpolationsForTransitions.isEmpty()
+            && m_updatedCompositorKeyframes.isEmpty();
     }
 
     DEFINE_INLINE_TRACE()
@@ -271,7 +224,7 @@ public:
         visitor->trace(m_newAnimations);
         visitor->trace(m_suppressedAnimations);
         visitor->trace(m_animationsWithUpdates);
-        visitor->trace(m_animationsWithStyleUpdates);
+        visitor->trace(m_updatedCompositorKeyframes);
     }
 
 private:
@@ -284,7 +237,7 @@ private:
     HeapHashSet<Member<const Animation>> m_suppressedAnimations;
     Vector<AtomicString> m_animationsWithPauseToggled;
     HeapVector<UpdatedAnimation> m_animationsWithUpdates;
-    HeapVector<UpdatedAnimationStyle> m_animationsWithStyleUpdates;
+    HeapVector<Member<Animation>> m_updatedCompositorKeyframes;
 
     NewTransitionMap m_newTransitions;
     HashSet<CSSPropertyID> m_cancelledTransitions;
@@ -300,6 +253,5 @@ private:
 
 WTF_ALLOW_INIT_WITH_MEM_FUNCTIONS(blink::CSSAnimationUpdate::NewAnimation);
 WTF_ALLOW_INIT_WITH_MEM_FUNCTIONS(blink::CSSAnimationUpdate::UpdatedAnimation);
-WTF_ALLOW_INIT_WITH_MEM_FUNCTIONS(blink::CSSAnimationUpdate::UpdatedAnimationStyle);
 
 #endif

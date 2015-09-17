@@ -66,7 +66,7 @@ public:
         virtual PassOwnPtr<PropertySpecificKeyframe> cloneWithOffset(double offset) const = 0;
 
         // FIXME: Remove this once CompositorAnimations no longer depends on AnimatableValues
-        virtual void populateAnimatableValue(CSSPropertyID, Element&, const ComputedStyle* baseStyle) const { }
+        virtual bool populateAnimatableValue(CSSPropertyID, Element&, const ComputedStyle* baseStyle, bool force) const { return false; }
         virtual const PassRefPtr<AnimatableValue> getAnimatableValue() const = 0;
 
         virtual bool isAnimatableValuePropertySpecificKeyframe() const { return false; }

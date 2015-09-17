@@ -113,10 +113,14 @@ StringKeyframe::CSSPropertySpecificKeyframe::CSSPropertySpecificKeyframe(double 
     ASSERT(!isNull(m_offset));
 }
 
-void StringKeyframe::CSSPropertySpecificKeyframe::populateAnimatableValue(CSSPropertyID property, Element& element, const ComputedStyle* baseStyle) const
+bool StringKeyframe::CSSPropertySpecificKeyframe::populateAnimatableValue(CSSPropertyID property, Element& element, const ComputedStyle* baseStyle, bool force) const
 {
-    if (!m_animatableValueCache && (baseStyle || !DeferredLegacyStyleInterpolation::interpolationRequiresStyleResolve(*m_value)))
-        m_animatableValueCache = StyleResolver::createAnimatableValueSnapshot(element, baseStyle, property, m_value.get());
+    if (m_animatableValueCache && !force)
+        return false;
+    if (!baseStyle && (!m_value || DeferredLegacyStyleInterpolation::interpolationRequiresStyleResolve(*m_value)))
+        return false;
+    m_animatableValueCache = StyleResolver::createAnimatableValueSnapshot(element, baseStyle, property, m_value.get());
+    return true;
 }
 
 namespace {
@@ -188,8 +192,8 @@ PassRefPtr<Interpolation> StringKeyframe::CSSPropertySpecificKeyframe::createLeg
 
     // FIXME: Remove the use of AnimatableValues and Elements here.
     ASSERT(element);
-    populateAnimatableValue(property, *element, baseStyle);
-    end.populateAnimatableValue(property, *element, baseStyle);
+    populateAnimatableValue(property, *element, baseStyle, false);
+    end.populateAnimatableValue(property, *element, baseStyle, false);
     return LegacyStyleInterpolation::create(getAnimatableValue(), end.getAnimatableValue(), property);
 }
 

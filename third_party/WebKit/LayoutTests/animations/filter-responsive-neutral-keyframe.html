@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<style>
+div {
+  position: absolute;
+  width: 100px;
+  height: 100px;
+}
+#target {
+  background: red;
+  -webkit-filter: opacity(1);
+  animation: test 1e8s;
+}
+#green {
+  background: green;
+}
+@keyframes test {
+  to { -webkit-filter: opacity(0.5); }
+}
+</style>
+<div id="green"></div>
+<div id="target"></div>
+<script>
+if (window.testRunner)
+  testRunner.waitUntilDone();
+
+requestAnimationFrame(() => {
+  requestAnimationFrame(() => {
+    target.style.webkitFilter = 'opacity(0)';
+    requestAnimationFrame(() => {
+      if (window.testRunner)
+        testRunner.notifyDone();
+    });
+  });
+});
+</script>

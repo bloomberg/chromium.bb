@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<style>
+div {
+  position: absolute;
+  width: 100px;
+  height: 100px;
+}
+#target {
+  background: red;
+  transform: translateY(100px);
+  animation: test 1e8s;
+}
+#expected {
+  background: green;
+  transform: translateY(50px);
+}
+@keyframes test {
+  to { transform: translateX(100px); }
+}
+</style>
+<div id="target"></div>
+<div id="expected"></div>
+<script>
+if (window.testRunner)
+  testRunner.waitUntilDone();
+
+requestAnimationFrame(() => {
+  requestAnimationFrame(() => {
+    target.style.transform = 'translateY(50px)';
+    requestAnimationFrame(() => {
+      if (window.testRunner)
+        testRunner.notifyDone();
+    });
+  });
+});
+</script>
