@@ -28,6 +28,7 @@
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
+#include "third_party/WebKit/public/web/WebDocumentType.h"
 #include "third_party/WebKit/public/web/WebElement.h"
 #include "third_party/WebKit/public/web/WebElementCollection.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
@@ -82,16 +83,11 @@ WebFrame* FindSubFrameByURL(WebView* web_view, const GURL& url) {
   return NULL;
 }
 
-// Helper function that test whether the first node in the doc is a doc type
-// node.
 bool HasDocType(const WebDocument& doc) {
-  WebNode node = doc.firstChild();
-  if (node.isNull())
-    return false;
-  return node.nodeType() == WebNode::DocumentTypeNode;
+  return !doc.doctype().isNull();
 }
 
-  // Helper function for checking whether input node is META tag. Return true
+// Helper function for checking whether input node is META tag. Return true
 // means it is META element, otherwise return false. The parameter charset_info
 // return actual charset info if the META tag has charset declaration.
 bool IsMetaElement(const WebNode& node, std::string& charset_info) {
@@ -755,7 +751,7 @@ class DomSerializerTests : public ContentBrowserTest,
     ASSERT_TRUE(web_frame != NULL);
     WebDocument doc = web_frame->document();
     WebNode lastNodeInBody = doc.body().lastChild();
-    ASSERT_EQ(WebNode::ElementNode, lastNodeInBody.nodeType());
+    ASSERT_TRUE(lastNodeInBody.isElementNode());
     WebString uri = GetSubResourceLinkFromElement(
         lastNodeInBody.to<WebElement>());
     EXPECT_TRUE(uri.isNull());
