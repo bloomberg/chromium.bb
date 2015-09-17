@@ -18,13 +18,13 @@ namespace blink {
 class LengthNonInterpolableValue : public NonInterpolableValue {
 public:
     ~LengthNonInterpolableValue() override { ASSERT_NOT_REACHED(); }
-    static PassRefPtr<LengthNonInterpolableValue> create(bool hasPercentage)
+    static PassRefPtrWillBeRawPtr<LengthNonInterpolableValue> create(bool hasPercentage)
     {
-        DEFINE_STATIC_REF_WILL_BE_PERSISTENT(LengthNonInterpolableValue, singleton, adoptRef(new LengthNonInterpolableValue()));
+        DEFINE_STATIC_REF_WILL_BE_PERSISTENT(LengthNonInterpolableValue, singleton, adoptRefWillBeNoop(new LengthNonInterpolableValue()));
         ASSERT(singleton);
         return hasPercentage ? singleton : nullptr;
     }
-    static PassRefPtr<LengthNonInterpolableValue> merge(const NonInterpolableValue* a, const NonInterpolableValue* b)
+    static PassRefPtrWillBeRawPtr<LengthNonInterpolableValue> merge(const NonInterpolableValue* a, const NonInterpolableValue* b)
     {
         return create(hasPercentage(a) || hasPercentage(b));
     }
