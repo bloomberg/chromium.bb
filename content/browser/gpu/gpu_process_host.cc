@@ -129,7 +129,6 @@ static const char* const kSwitchNames[] = {
 #endif
 #if defined(USE_OZONE)
   switches::kOzonePlatform,
-  switches::kOzoneUseSurfaceless,
 #endif
 #if defined(USE_X11) && !defined(OS_CHROMEOS)
   switches::kX11Display,

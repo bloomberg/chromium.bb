@@ -12,10 +12,6 @@ const char kOzonePlatform[] = "ozone-platform";
 // Specify location for image dumps.
 const char kOzoneDumpFile[] = "ozone-dump-file";
 
-// Specify if the accelerated path should use surfaceless rendering. In this
-// mode there is no EGL surface.
-const char kOzoneUseSurfaceless[] = "ozone-use-surfaceless";
-
 // Enable support for a single overlay plane.
 const char kOzoneTestSingleOverlaySupport[] =
     "ozone-test-single-overlay-support";

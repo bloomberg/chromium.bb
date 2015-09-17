@@ -14,8 +14,6 @@ OZONE_EXPORT extern const char kOzonePlatform[];
 
 OZONE_EXPORT extern const char kOzoneDumpFile[];
 
-OZONE_EXPORT extern const char kOzoneUseSurfaceless[];
-
 OZONE_EXPORT extern const char kOzoneTestSingleOverlaySupport[];
 
 OZONE_EXPORT extern const char kOzoneInitialDisplayBounds[];

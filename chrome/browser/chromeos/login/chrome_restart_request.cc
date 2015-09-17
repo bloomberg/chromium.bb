@@ -171,7 +171,6 @@ void DeriveCommandLine(const GURL& start_url,
     ::switches::kOzoneInitialDisplayBounds,
     ::switches::kOzoneInitialDisplayPhysicalSizeMm,
     ::switches::kOzonePlatform,
-    ::switches::kOzoneUseSurfaceless,
 #endif
     app_list::switches::kDisableSyncAppList,
     app_list::switches::kEnableCenteredAppList,
