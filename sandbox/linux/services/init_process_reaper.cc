@@ -74,7 +74,7 @@ bool CreateInitProcessReaper(base::Closure* post_fork_parent_callback) {
         if (reaped_child_info.si_code == CLD_EXITED) {
           exit_code = reaped_child_info.si_status;
         }
-        // Exit with the same exit code as our parent. Exit with 0 if we got
+        // Exit with the same exit code as our child. Exit with 0 if we got
         // signaled.
         _exit(exit_code);
       }
