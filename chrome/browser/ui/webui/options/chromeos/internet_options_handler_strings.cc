@@ -8,6 +8,7 @@
 #include "base/values.h"
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/chromeos/strings/grit/ui_chromeos_strings.h"
 
 namespace chromeos {
 namespace internet_options_strings {
@@ -31,6 +32,7 @@ StringResource kStringResources[] = {
      IDS_OPTIONS_SETTINGS_SECTION_THIRD_PARTY_VPN_NAME_TEMPLATE},
     {"defaultThirdPartyProviderName",
      IDS_OPTIONS_SETTINGS_SECTION_DEFAULT_THIRD_PARTY_PROVIDER_NAME},
+    {"vpnBuiltInProvider", IDS_NETWORK_VPN_BUILT_IN_PROVIDER},
     {"joinOtherNetwork", IDS_OPTIONS_SETTINGS_NETWORK_OTHER},
     {"networkDisabled", IDS_OPTIONS_SETTINGS_NETWORK_DISABLED},
     {"turnOffWifi", IDS_OPTIONS_SETTINGS_NETWORK_DISABLE_WIFI},

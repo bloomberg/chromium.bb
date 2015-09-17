@@ -2,15 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// TODO: /** @typedef {chrome.networkingPrivate.ThirdPartyVPNProperties} */
-/**
- * @typedef {{
- *   ExtensionID: string,
- *   ProviderName: string
- * }}
- */
-var ThirdPartyVPNProperties;
-
 /**
  * Partial definition of the result of networkingPrivate.getProperties()).
  * TODO(stevenjb): Replace with chrome.networkingPrivate.NetworkStateProperties
@@ -29,12 +20,14 @@ var ThirdPartyVPNProperties;
  *   Type: string,
  *   VPN: ?{
  *     Type: string,
- *     ThirdPartyVPN: ThirdPartyVPNProperties
+ *     ThirdPartyVPN: chrome.networkingPrivate.ThirdPartyVPNProperties
  *   }
  * }}
  * @see extensions/common/api/networking_private.idl
  */
 var NetworkProperties;
+
+/** @typedef {chrome.management.ExtensionInfo} */ var ExtensionInfo;
 
 cr.define('options.network', function() {
   var ArrayDataModel = cr.ui.ArrayDataModel;
@@ -116,6 +109,13 @@ cr.define('options.network', function() {
    * @private
    */
   var wimaxDeviceState_ = undefined;
+
+  /**
+   * The current list of third-party VPN providers.
+   * @type {!Array<!chrome.networkingPrivate.ThirdPartyVPNProperties>}}
+   * @private
+   */
+  var vpnProviders_ = [];
 
   /**
    * Indicates if mobile data roaming is enabled.
@@ -917,9 +917,18 @@ cr.define('options.network', function() {
       chrome.networkingPrivate.onDeviceStateListChanged.addListener(
           this.onNetworkListChanged_.bind(this));
 
-      chrome.networkingPrivate.requestNetworkScan();
+      chrome.management.onInstalled.addListener(
+          this.onExtensionAdded_.bind(this));
+      chrome.management.onEnabled.addListener(
+          this.onExtensionAdded_.bind(this));
+      chrome.management.onUninstalled.addListener(
+          this.onExtensionRemoved_.bind(this));
+      chrome.management.onDisabled.addListener(function(extension) {
+        this.onExtensionRemoved_(extension.id);
+      }.bind(this));
 
-      options.VPNProviders.addObserver(this.onVPNProvidersChanged_.bind(this));
+      chrome.management.getAll(this.onGetAllExtensions_.bind(this));
+      chrome.networkingPrivate.requestNetworkScan();
     },
 
     /**
@@ -938,11 +947,71 @@ cr.define('options.network', function() {
     },
 
     /**
-     * Called when the list of VPN providers changes. Refreshes the contents of
-     * menus that list VPN providers.
+     * chrome.management.getAll callback.
+     * @param {!Array<!ExtensionInfo>} extensions
      * @private
      */
-    onVPNProvidersChanged_: function() {
+    onGetAllExtensions_: function(extensions) {
+      vpnProviders_ = [];
+      for (var extension of extensions)
+        this.addVpnProvider_(extension);
+    },
+
+    /**
+     * If |extension| is a third-party VPN provider, add it to vpnProviders_.
+     * @param {!ExtensionInfo} extension
+     * @private
+     */
+    addVpnProvider_: function(extension) {
+      if (!extension.enabled ||
+          extension.permissions.indexOf('vpnProvider') == -1) {
+        return;
+      }
+      // Ensure that we haven't already added this provider, e.g. if
+      // the onExtensionAdded_ callback gets invoked after onGetAllExtensions_
+      // for an extension in the returned list.
+      for (var provider of vpnProviders_) {
+        if (provider.ExtensionID == extension.id)
+          return;
+      }
+      var newProvider = {
+        ExtensionID: extension.id,
+        ProviderName: extension.name
+      };
+      vpnProviders_.push(newProvider);
+      this.refreshVpnProviders_();
+    },
+
+    /**
+     * chrome.management.onInstalled or onEnabled event.
+     * @param {!ExtensionInfo} extension
+     * @private
+     */
+    onExtensionAdded_: function(extension) {
+      this.addVpnProvider_(extension);
+    },
+
+    /**
+     * chrome.management.onUninstalled or onDisabled event.
+     * @param {string} extensionId
+     * @private
+     */
+    onExtensionRemoved_: function(extensionId) {
+      for (var i = 0; i < vpnProviders_.length; ++i) {
+        var provider = vpnProviders_[i];
+        if (provider.ExtensionID == extensionId) {
+          vpnProviders_.splice(i, 1);
+          this.refreshVpnProviders_();
+          break;
+        }
+      }
+    },
+
+    /**
+     * Rebuilds the list of VPN providers.
+     * @private
+     */
+    refreshVpnProviders_: function() {
       // Refresh the contents of the VPN menu.
       var index = this.indexOf('VPN');
       if (index != undefined)
@@ -957,7 +1026,7 @@ cr.define('options.network', function() {
 
     /**
      * Updates the entries in the "add connection" menu, based on the VPN
-     * providers currently enabled in the primary user's profile.
+     * providers currently enabled in the user's profile.
      * @private
      */
     updateAddConnectionMenuEntries_: function() {
@@ -1417,23 +1486,28 @@ cr.define('options.network', function() {
 
   /**
    * Generates an "add network" entry for each VPN provider currently enabled in
-   * the primary user's profile.
+   * the user's profile.
    * @return {!Array<{label: string, command: function(), data: !Object}>} The
    *     list of entries.
    * @private
    */
   function createAddVPNConnectionEntries_() {
     var entries = [];
-    var providers = options.VPNProviders.getProviders();
-    for (var i = 0; i < providers.length; ++i) {
+    for (var i = 0; i < vpnProviders_.length; ++i) {
+      var provider = vpnProviders_[i];
       entries.push({
         label: loadTimeData.getStringF('addConnectionVPNTemplate',
-                                       providers[i].name),
-        command: createVPNConnectionCallback_(
-            providers[i].extensionID || undefined),
+                                       provider.ProviderName),
+        command: createVPNConnectionCallback_(provider.ExtensionID),
         data: {}
       });
     }
+    // Add an entry for the built-in OpenVPN/L2TP provider.
+    entries.push({
+      label: loadTimeData.getString('vpnBuiltInProvider'),
+      command: createVPNConnectionCallback_(),
+      data: {}
+    });
     return entries;
   }
 
