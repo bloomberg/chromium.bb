@@ -54,6 +54,10 @@ if (is_android) {
 
   generate_jni("midi_jni_headers") {
     sources = [
+      "java/src/org/chromium/media/midi/MidiDeviceAndroid.java",
+      "java/src/org/chromium/media/midi/MidiInputPortAndroid.java",
+      "java/src/org/chromium/media/midi/MidiManagerAndroid.java",
+      "java/src/org/chromium/media/midi/MidiOutputPortAndroid.java",
       "java/src/org/chromium/media/midi/UsbMidiDeviceAndroid.java",
       "java/src/org/chromium/media/midi/UsbMidiDeviceFactoryAndroid.java",
     ]
@@ -91,10 +95,18 @@ component("midi") {
   libs = []
 
   if (is_android) {
+    # TODO(yhirano): Consider having "android" subdirectory.
     sources += [
+                 "midi_device_android.cc",
+                 "midi_device_android.h",
                  "midi_jni_registrar.cc",
                  "midi_jni_registrar.h",
+                 "midi_input_port_android.cc",
+                 "midi_input_port_android.h",
                  "midi_manager_android.cc",
+                 "midi_manager_android.h",
+                 "midi_output_port_android.cc",
+                 "midi_output_port_android.h",
                  "usb_midi_device_android.cc",
                  "usb_midi_device_android.h",
                  "usb_midi_device_factory_android.cc",

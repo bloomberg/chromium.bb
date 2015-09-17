@@ -47,6 +47,7 @@
         'midi_manager.cc',
         'midi_manager.h',
         'midi_manager_android.cc',
+        'midi_manager_android.h',
         'midi_manager_mac.cc',
         'midi_manager_mac.h',
         'midi_manager_win.cc',
@@ -99,8 +100,14 @@
           ],
           'sources': [
             '<@(usb_midi_sources)',
+            'midi_device_android.cc',
+            'midi_device_android.h',
+            'midi_input_port_android.cc',
+            'midi_input_port_android.h',
             'midi_jni_registrar.cc',
             'midi_jni_registrar.h',
+            'midi_output_port_android.cc',
+            'midi_output_port_android.h',
           ],
           'defines': [
             'EXPORT_USB_MIDI',
@@ -209,6 +216,10 @@
           'target_name': 'midi_jni_headers',
           'type': 'none',
           'sources': [
+            'java/src/org/chromium/media/midi/MidiDeviceAndroid.java',
+            'java/src/org/chromium/media/midi/MidiManagerAndroid.java',
+            'java/src/org/chromium/media/midi/MidiInputPortAndroid.java',
+            'java/src/org/chromium/media/midi/MidiOutputPortAndroid.java',
             'java/src/org/chromium/media/midi/UsbMidiDeviceAndroid.java',
             'java/src/org/chromium/media/midi/UsbMidiDeviceFactoryAndroid.java',
           ],

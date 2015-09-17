@@ -151,6 +151,9 @@ class MIDI_EXPORT MidiManager {
     return pending_clients_.size();
   }
 
+  const MidiPortInfoList& input_ports() const { return input_ports_; }
+  const MidiPortInfoList& output_ports() const { return output_ports_; }
+
  private:
   void CompleteInitializationInternal(Result result);
   void AddInitialPorts(MidiManagerClient* client);

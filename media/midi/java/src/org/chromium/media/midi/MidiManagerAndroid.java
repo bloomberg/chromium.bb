@@ -1,0 +1,161 @@
+// Copyright 2015 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+package org.chromium.media.midi;
+
+import android.content.Context;
+import android.media.midi.MidiDevice;
+import android.media.midi.MidiDeviceInfo;
+import android.media.midi.MidiManager;
+import android.os.Handler;
+
+import org.chromium.base.ThreadUtils;
+import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.JNINamespace;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+/**
+ * A Java class implementing media::midi::MidiManagerAndroid functionality.
+ */
+@JNINamespace("media::midi")
+class MidiManagerAndroid {
+    /**
+     * Set true while this instance is being initialized.
+     */
+    private boolean mIsInitializing = true;
+    /**
+     * The devices held by this manager.
+     */
+    private final List<MidiDeviceAndroid> mDevices = new ArrayList<>();
+    /**
+     * The device information instances which are being initialized.
+     */
+    private final Set<MidiDeviceInfo> mPendingDevices = new HashSet<>();
+    /**
+     * The underlying MidiManager.
+     */
+    private final MidiManager mManager;
+    /**
+     * Callbacks will run on the message queue associated with this handler.
+     */
+    private final Handler mHandler;
+    /**
+     * The associated media::midi::MidiDeviceAndroid instance.
+     */
+    private final long mNativeManagerPointer;
+
+    @CalledByNative
+    /**
+     * A creation function called by C++.
+     * @param context
+     * @param nativeManagerPointer The native pointer to a media::midi::MidiManagerAndroid object.
+     */
+    static MidiManagerAndroid create(Context context, long nativeManagerPointer) {
+        return new MidiManagerAndroid(context, nativeManagerPointer);
+    }
+
+    /**
+     * @param context
+     * @param nativeManagerPointer The native pointer to a media::midi::MidiManagerAndroid object.
+     */
+    MidiManagerAndroid(Context context, long nativeManagerPointer) {
+        assert ThreadUtils.runningOnUiThread();
+
+        mManager = (MidiManager) context.getSystemService(Context.MIDI_SERVICE);
+        mHandler = new Handler(ThreadUtils.getUiThreadLooper());
+        mNativeManagerPointer = nativeManagerPointer;
+    }
+
+    /**
+     * Initializes this object.
+     * This function must be called right after creation.
+     */
+    @CalledByNative
+    void initialize() {
+        mManager.registerDeviceCallback(new MidiManager.DeviceCallback() {
+            @Override
+            public void onDeviceAdded(MidiDeviceInfo device) {
+                MidiManagerAndroid.this.onDeviceAdded(device);
+            }
+
+            @Override
+            public void onDeviceRemoved(MidiDeviceInfo device) {
+                MidiManagerAndroid.this.onDeviceRemoved(device);
+            }
+        }, mHandler);
+        MidiDeviceInfo[] infos = mManager.getDevices();
+
+        for (final MidiDeviceInfo info : infos) {
+            mPendingDevices.add(info);
+            openDevice(info);
+        }
+        mHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                if (mPendingDevices.isEmpty() && mIsInitializing) {
+                    nativeOnInitialized(
+                            mNativeManagerPointer, mDevices.toArray(new MidiDeviceAndroid[0]));
+                    mIsInitializing = false;
+                }
+            }
+        });
+    }
+
+    private void openDevice(final MidiDeviceInfo info) {
+        mManager.openDevice(info, new MidiManager.OnDeviceOpenedListener() {
+            @Override
+            public void onDeviceOpened(MidiDevice device) {
+                MidiManagerAndroid.this.onDeviceOpened(device, info);
+            }
+        }, mHandler);
+    }
+
+    /**
+     * Called when a midi device is attached.
+     * @param info the attached device information.
+     */
+    private void onDeviceAdded(final MidiDeviceInfo info) {
+        if (mIsInitializing) {
+            mPendingDevices.add(info);
+        }
+        openDevice(info);
+    }
+
+    /**
+     * Called when a midi device is detached.
+     * @param info the detached device information.
+     */
+    private void onDeviceRemoved(MidiDeviceInfo info) {
+        for (MidiDeviceAndroid device : mDevices) {
+            if (device.isOpen() && device.getInfo().getId() == info.getId()) {
+                device.close();
+                nativeOnDetached(mNativeManagerPointer, device);
+            }
+        }
+    }
+
+    private void onDeviceOpened(MidiDevice device, MidiDeviceInfo info) {
+        mPendingDevices.remove(info);
+        if (device != null) {
+            MidiDeviceAndroid xdevice = new MidiDeviceAndroid(device);
+            mDevices.add(xdevice);
+            if (!mIsInitializing) {
+                nativeOnAttached(mNativeManagerPointer, xdevice);
+            }
+        }
+        if (mIsInitializing && mPendingDevices.isEmpty()) {
+            nativeOnInitialized(mNativeManagerPointer, mDevices.toArray(new MidiDeviceAndroid[0]));
+            mIsInitializing = false;
+        }
+    }
+
+    static native void nativeOnInitialized(
+            long nativeMidiManagerAndroid, MidiDeviceAndroid[] devices);
+    static native void nativeOnAttached(long nativeMidiManagerAndroid, MidiDeviceAndroid device);
+    static native void nativeOnDetached(long nativeMidiManagerAndroid, MidiDeviceAndroid device);
+}

@@ -8,6 +8,9 @@
 #include "base/android/jni_registrar.h"
 #include "base/basictypes.h"
 
+#include "media/midi/midi_device_android.h"
+#include "media/midi/midi_input_port_android.h"
+#include "media/midi/midi_manager_android.h"
 #include "media/midi/usb_midi_device_android.h"
 #include "media/midi/usb_midi_device_factory_android.h"
 
@@ -18,6 +21,9 @@ static base::android::RegistrationMethod kMediaRegisteredMethods[] = {
     {"UsbMidiDevice", UsbMidiDeviceAndroid::RegisterUsbMidiDevice},
     {"UsbMidiDeviceFactory",
      UsbMidiDeviceFactoryAndroid::RegisterUsbMidiDeviceFactory},
+    {"MidiDeviceAndroid", MidiDeviceAndroid::Register},
+    {"MidiManagerAndroid", MidiManagerAndroid::Register},
+    {"MidiInputPort", MidiInputPortAndroid::Register},
 };
 
 bool RegisterJni(JNIEnv* env) {

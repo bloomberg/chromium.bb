@@ -137,7 +137,7 @@ bool MidiManagerUsb::AddPorts(UsbMidiDevice* device, int device_id) {
     // sufficiently unique although there is no user-friendly meaning.
     // TODO(yhirano): Use a hashed string as ID.
     std::string id(
-        base::StringPrintf("port-%d-%ld", device_id, static_cast<long>(j)));
+        base::StringPrintf("usb:port-%d-%ld", device_id, static_cast<long>(j)));
     if (jacks[j].direction() == UsbMidiJack::DIRECTION_OUT) {
       output_streams_.push_back(new UsbMidiOutputStream(jacks[j]));
       AddOutputPort(MidiPortInfo(id, manufacturer, product_name, version,

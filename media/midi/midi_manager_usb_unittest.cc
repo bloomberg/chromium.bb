@@ -117,7 +117,8 @@ class FakeMidiManagerClient : public MidiManagerClient {
                        size_t size,
                        double timestamp) override {
     logger_->AddLog("MidiManagerClient::ReceiveMidiData ");
-    logger_->AddLog(base::StringPrintf("port_index = %d data =", port_index));
+    logger_->AddLog(
+        base::StringPrintf("usb:port_index = %d data =", port_index));
     for (size_t i = 0; i < size; ++i)
       logger_->AddLog(base::StringPrintf(" 0x%02x", data[i]));
     logger_->AddLog("\n");
@@ -259,17 +260,17 @@ TEST_F(MidiManagerUsbTest, Initialize) {
   EXPECT_EQ(Result::OK, GetInitializationResult());
 
   ASSERT_EQ(1u, input_ports().size());
-  EXPECT_EQ("port-0-2", input_ports()[0].id);
+  EXPECT_EQ("usb:port-0-2", input_ports()[0].id);
   EXPECT_EQ("vendor1", input_ports()[0].manufacturer);
   EXPECT_EQ("device1", input_ports()[0].name);
   EXPECT_EQ("1.02", input_ports()[0].version);
 
   ASSERT_EQ(2u, output_ports().size());
-  EXPECT_EQ("port-0-0", output_ports()[0].id);
+  EXPECT_EQ("usb:port-0-0", output_ports()[0].id);
   EXPECT_EQ("vendor1", output_ports()[0].manufacturer);
   EXPECT_EQ("device1", output_ports()[0].name);
   EXPECT_EQ("1.02", output_ports()[0].version);
-  EXPECT_EQ("port-0-1", output_ports()[1].id);
+  EXPECT_EQ("usb:port-0-1", output_ports()[1].id);
   EXPECT_EQ("vendor1", output_ports()[1].manufacturer);
   EXPECT_EQ("device1", output_ports()[1].name);
   EXPECT_EQ("1.02", output_ports()[1].version);
@@ -320,29 +321,29 @@ TEST_F(MidiManagerUsbTest, InitializeMultipleDevices) {
   EXPECT_EQ(Result::OK, GetInitializationResult());
 
   ASSERT_EQ(2u, input_ports().size());
-  EXPECT_EQ("port-0-2", input_ports()[0].id);
+  EXPECT_EQ("usb:port-0-2", input_ports()[0].id);
   EXPECT_EQ("vendor1", input_ports()[0].manufacturer);
   EXPECT_EQ("device1", input_ports()[0].name);
   EXPECT_EQ("1.02", input_ports()[0].version);
-  EXPECT_EQ("port-1-2", input_ports()[1].id);
+  EXPECT_EQ("usb:port-1-2", input_ports()[1].id);
   EXPECT_EQ("vendor2", input_ports()[1].manufacturer);
   EXPECT_EQ("device2", input_ports()[1].name);
   EXPECT_EQ("98.76", input_ports()[1].version);
 
   ASSERT_EQ(4u, output_ports().size());
-  EXPECT_EQ("port-0-0", output_ports()[0].id);
+  EXPECT_EQ("usb:port-0-0", output_ports()[0].id);
   EXPECT_EQ("vendor1", output_ports()[0].manufacturer);
   EXPECT_EQ("device1", output_ports()[0].name);
   EXPECT_EQ("1.02", output_ports()[0].version);
-  EXPECT_EQ("port-0-1", output_ports()[1].id);
+  EXPECT_EQ("usb:port-0-1", output_ports()[1].id);
   EXPECT_EQ("vendor1", output_ports()[1].manufacturer);
   EXPECT_EQ("device1", output_ports()[1].name);
   EXPECT_EQ("1.02", output_ports()[1].version);
-  EXPECT_EQ("port-1-0", output_ports()[2].id);
+  EXPECT_EQ("usb:port-1-0", output_ports()[2].id);
   EXPECT_EQ("vendor2", output_ports()[2].manufacturer);
   EXPECT_EQ("device2", output_ports()[2].name);
   EXPECT_EQ("98.76", output_ports()[2].version);
-  EXPECT_EQ("port-1-1", output_ports()[3].id);
+  EXPECT_EQ("usb:port-1-1", output_ports()[3].id);
   EXPECT_EQ("vendor2", output_ports()[3].manufacturer);
   EXPECT_EQ("device2", output_ports()[3].name);
   EXPECT_EQ("98.76", output_ports()[3].version);
@@ -512,13 +513,14 @@ TEST_F(MidiManagerUsbTest, Receive) {
                                base::TimeTicks());
   Finalize();
 
-  EXPECT_EQ("UsbMidiDevice::GetDescriptors\n"
-            "MidiManagerClient::ReceiveMidiData port_index = 0 "
-            "data = 0x90 0x45 0x7f\n"
-            "MidiManagerClient::ReceiveMidiData port_index = 0 "
-            "data = 0xf0 0x00 0x01\n"
-            "MidiManagerClient::ReceiveMidiData port_index = 0 data = 0xf7\n",
-            logger_.TakeLog());
+  EXPECT_EQ(
+      "UsbMidiDevice::GetDescriptors\n"
+      "MidiManagerClient::ReceiveMidiData usb:port_index = 0 "
+      "data = 0x90 0x45 0x7f\n"
+      "MidiManagerClient::ReceiveMidiData usb:port_index = 0 "
+      "data = 0xf0 0x00 0x01\n"
+      "MidiManagerClient::ReceiveMidiData usb:port_index = 0 data = 0xf7\n",
+      logger_.TakeLog());
 }
 
 TEST_F(MidiManagerUsbTest, AttachDevice) {
