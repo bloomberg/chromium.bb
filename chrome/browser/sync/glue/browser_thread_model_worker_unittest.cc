@@ -13,7 +13,8 @@
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/thread.h"
 #include "base/timer/timer.h"
-#include "chrome/browser/sync/glue/browser_thread_model_worker.h"
+#include "components/sync_driver/glue/browser_thread_model_worker.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -75,7 +76,11 @@ class SyncBrowserThreadModelWorkerTest : public testing::Test {
   }
 
  protected:
-  void SetUp() override { worker_ = new DatabaseModelWorker(NULL); }
+  void SetUp() override {
+    worker_ = new BrowserThreadModelWorker(
+        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB),
+        syncer::GROUP_DB, NULL);
+  }
 
   virtual void Teardown() {
     worker_ = NULL;

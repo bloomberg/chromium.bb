@@ -2869,8 +2869,6 @@
       'browser/sync/glue/bookmark_data_type_controller.h',
       'browser/sync/glue/bookmark_model_associator.cc',
       'browser/sync/glue/bookmark_model_associator.h',
-      'browser/sync/glue/browser_thread_model_worker.cc',
-      'browser/sync/glue/browser_thread_model_worker.h',
       'browser/sync/glue/chrome_report_unrecoverable_error.cc',
       'browser/sync/glue/chrome_report_unrecoverable_error.h',
       'browser/sync/glue/extensions_activity_monitor.cc',

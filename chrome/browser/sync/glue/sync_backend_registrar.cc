@@ -12,12 +12,12 @@
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sync/glue/browser_thread_model_worker.h"
 #include "chrome/browser/sync/glue/history_model_worker.h"
 #include "chrome/browser/sync/glue/ui_model_worker.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/sync/browser/password_model_worker.h"
 #include "components/sync_driver/change_processor.h"
+#include "components/sync_driver/glue/browser_thread_model_worker.h"
 #include "content/public/browser/browser_thread.h"
 #include "sync/internal_api/public/engine/passive_model_worker.h"
 #include "sync/internal_api/public/user_share.h"
@@ -71,10 +71,14 @@ SyncBackendRegistrar::SyncBackendRegistrar(
     CHECK(sync_thread_->StartWithOptions(options));
   }
 
-  workers_[syncer::GROUP_DB] = new DatabaseModelWorker(this);
+  workers_[syncer::GROUP_DB] = new BrowserThreadModelWorker(
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB),
+      syncer::GROUP_DB, this);
   workers_[syncer::GROUP_DB]->RegisterForLoopDestruction();
 
-  workers_[syncer::GROUP_FILE] = new FileModelWorker(this);
+  workers_[syncer::GROUP_FILE] = new BrowserThreadModelWorker(
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE),
+      syncer::GROUP_FILE, this);
   workers_[syncer::GROUP_FILE]->RegisterForLoopDestruction();
 
   workers_[syncer::GROUP_UI] = new UIModelWorker(this);
