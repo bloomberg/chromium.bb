@@ -24,16 +24,18 @@ using content::NavigationEntry;
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(SupervisedUserNavigationObserver);
 
 SupervisedUserNavigationObserver::~SupervisedUserNavigationObserver() {
+  supervised_user_service_->RemoveObserver(this);
 }
 
 SupervisedUserNavigationObserver::SupervisedUserNavigationObserver(
     content::WebContents* web_contents)
-    : web_contents_(web_contents) {
+    : web_contents_(web_contents), weak_ptr_factory_(this) {
   Profile* profile =
       Profile::FromBrowserContext(web_contents_->GetBrowserContext());
-  SupervisedUserService* supervised_user_service =
+  supervised_user_service_ =
       SupervisedUserServiceFactory::GetForProfile(profile);
-  url_filter_ = supervised_user_service->GetURLFilterForUIThread();
+  url_filter_ = supervised_user_service_->GetURLFilterForUIThread();
+  supervised_user_service_->AddObserver(this);
 }
 
 // static
@@ -84,7 +86,28 @@ void SupervisedUserNavigationObserver::OnRequestBlockedInternal(
   entry->SetVirtualURL(url);
   entry->SetTimestamp(timestamp);
   blocked_navigations_.push_back(entry.release());
-  SupervisedUserService* supervised_user_service =
-      SupervisedUserServiceFactory::GetForProfile(profile);
-  supervised_user_service->DidBlockNavigation(web_contents_);
+  supervised_user_service_->DidBlockNavigation(web_contents_);
+}
+
+void SupervisedUserNavigationObserver::OnURLFilterChanged() {
+  url_filter_->GetFilteringBehaviorForURLWithAsyncChecks(
+      web_contents_->GetLastCommittedURL(),
+      base::Bind(&SupervisedUserNavigationObserver::URLFilterCheckCallback,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 web_contents_->GetLastCommittedURL()));
+}
+
+void SupervisedUserNavigationObserver::URLFilterCheckCallback(
+    const GURL& url,
+    SupervisedUserURLFilter::FilteringBehavior behavior,
+    SupervisedUserURLFilter::FilteringBehaviorReason reason,
+    bool uncertain) {
+  // If the page has been changed in the meantime, we can exit.
+  if (url != web_contents_->GetLastCommittedURL())
+    return;
+
+  if (behavior == SupervisedUserURLFilter::FilteringBehavior::BLOCK) {
+    SupervisedUserInterstitial::Show(web_contents_, url, reason,
+                                     base::Callback<void(bool)>());
+  }
 }

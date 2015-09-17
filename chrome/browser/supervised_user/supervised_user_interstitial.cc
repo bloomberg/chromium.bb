@@ -386,8 +386,9 @@ void SupervisedUserInterstitial::DispatchContinueRequest(
       SupervisedUserServiceFactory::GetForProfile(profile_);
   supervised_user_service->RemoveObserver(this);
 
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE, base::Bind(callback_, continue_request));
+  if (!callback_.is_null())
+    BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                            base::Bind(callback_, continue_request));
 
   // After this, the WebContents may be destroyed. Make sure we don't try to use
   // it again.
