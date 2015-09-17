@@ -398,39 +398,6 @@ bool IsTopLevelNavigation(WebFrame* frame) {
   return frame->parent() == NULL;
 }
 
-// Returns false unless this is a top-level navigation that crosses origins.
-bool IsNonLocalTopLevelNavigation(const GURL& url,
-                                  WebFrame* frame,
-                                  WebNavigationType type,
-                                  bool is_form_post) {
-  if (!IsTopLevelNavigation(frame))
-    return false;
-
-  // Navigations initiated within Webkit are not sent out to the external host
-  // in the following cases.
-  // 1. The url scheme is not http/https
-  // 2. The origin of the url and the opener is the same in which case the
-  //    opener relationship is maintained.
-  // 3. Reloads/form submits/back forward navigations
-  if (!url.SchemeIs(url::kHttpScheme) && !url.SchemeIs(url::kHttpsScheme))
-    return false;
-
-  if (type != blink::WebNavigationTypeReload &&
-      type != blink::WebNavigationTypeBackForward && !is_form_post) {
-    // The opener relationship between the new window and the parent allows the
-    // new window to script the parent and vice versa. This is not allowed if
-    // the origins of the two domains are different. This can be treated as a
-    // top level navigation and routed back to the host.
-    blink::WebFrame* opener = frame->opener();
-    if (!opener)
-      return true;
-
-    if (url.GetOrigin() != GURL(opener->document().url()).GetOrigin())
-      return true;
-  }
-  return false;
-}
-
 WebURLRequest CreateURLRequestForNavigation(
     const CommonNavigationParams& common_params,
     scoped_ptr<StreamOverrideParameters> stream_override,
@@ -4286,27 +4253,11 @@ WebNavigationPolicy RenderFrameImpl::DecidePolicyForNavigation(
       document_state->navigation_state()->IsContentInitiated();
 
   // If the browser is interested, then give it a chance to look at the request.
-  if (is_content_initiated) {
-    bool is_form_post =
-        ((info.navigationType == blink::WebNavigationTypeFormSubmitted) ||
-            (info.navigationType == blink::WebNavigationTypeFormResubmitted)) &&
-        base::EqualsASCII(base::StringPiece16(info.urlRequest.httpMethod()),
-                          "POST");
-    bool browser_handles_request =
-        render_view_->renderer_preferences_
-            .browser_handles_non_local_top_level_requests
-        && IsNonLocalTopLevelNavigation(url, info.frame, info.navigationType,
-                                        is_form_post);
-    if (!browser_handles_request) {
-      browser_handles_request = IsTopLevelNavigation(info.frame) &&
-          render_view_->renderer_preferences_
-              .browser_handles_all_top_level_requests;
-    }
-
-    if (browser_handles_request) {
-      OpenURL(info.frame, url, referrer, info.defaultPolicy);
-      return blink::WebNavigationPolicyIgnore;  // Suppress the load here.
-    }
+  if (is_content_initiated && IsTopLevelNavigation(info.frame) &&
+      render_view_->renderer_preferences_
+          .browser_handles_all_top_level_requests) {
+    OpenURL(info.frame, url, referrer, info.defaultPolicy);
+    return blink::WebNavigationPolicyIgnore;  // Suppress the load here.
   }
 
   // Use the frame's original request's URL rather than the document's URL for

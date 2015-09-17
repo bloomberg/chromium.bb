@@ -76,9 +76,6 @@ struct CONTENT_EXPORT RendererPreferences {
   SkColor inactive_selection_bg_color;
   SkColor inactive_selection_fg_color;
 
-  // Browser wants a look at all non-local top level navigation requests.
-  bool browser_handles_non_local_top_level_requests;
-
   // Browser wants a look at all top-level navigation requests.
   bool browser_handles_all_top_level_requests;
 
