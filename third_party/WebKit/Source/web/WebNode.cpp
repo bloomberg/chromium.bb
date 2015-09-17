@@ -186,11 +186,6 @@ WebNodeList WebNode::childNodes()
     return WebNodeList(m_private->childNodes());
 }
 
-WebString WebNode::createMarkup() const
-{
-    return blink::createMarkup(m_private.get());
-}
-
 bool WebNode::isLink() const
 {
     return m_private->isLink();

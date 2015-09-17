@@ -103,7 +103,6 @@ public:
     BLINK_EXPORT WebNode nextSibling() const;
     BLINK_EXPORT bool hasChildNodes() const;
     BLINK_EXPORT WebNodeList childNodes();
-    BLINK_EXPORT WebString createMarkup() const;
     BLINK_EXPORT bool isLink() const;
     BLINK_EXPORT bool isTextNode() const;
     BLINK_EXPORT bool isFocusable() const;
