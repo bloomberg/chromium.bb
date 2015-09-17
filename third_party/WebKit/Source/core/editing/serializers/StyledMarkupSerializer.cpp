@@ -134,19 +134,19 @@ StyledMarkupSerializer<Strategy>::StyledMarkupSerializer(EAbsoluteURLs shouldRes
 {
 }
 
-static bool needInterchangeNewlineAfter(const VisiblePosition& v)
+template <typename Strategy>
+static bool needInterchangeNewlineAfter(const VisiblePositionTemplate<Strategy>& v)
 {
-    VisiblePosition next = nextPositionOf(v);
+    const VisiblePositionTemplate<Strategy> next = nextPositionOf(v);
     Node* upstreamNode = mostBackwardCaretPosition(next.deepEquivalent()).anchorNode();
     Node* downstreamNode = mostForwardCaretPosition(v.deepEquivalent()).anchorNode();
     // Add an interchange newline if a paragraph break is selected and a br won't already be added to the markup to represent it.
     return isEndOfParagraph(v) && isStartOfParagraph(next) && !(isHTMLBRElement(*upstreamNode) && upstreamNode == downstreamNode);
 }
 
-static bool needInterchangeNewlineAt(const VisiblePosition& v)
+template <typename Strategy>
+static bool needInterchangeNewlineAt(const VisiblePositionTemplate<Strategy>& v)
 {
-    // TODO(yosin) |previousPositionOf(v)| works on a DOM tree. We need to fix
-    // this to work on a composed tree.
     return needInterchangeNewlineAfter(previousPositionOf(v));
 }
 
@@ -175,8 +175,8 @@ String StyledMarkupSerializer<Strategy>::createMarkup()
     Node* pastEnd = m_end.nodeAsRangePastLastNode();
 
     Node* firstNode = m_start.nodeAsRangeFirstNode();
-    VisiblePosition visibleStart = createVisiblePositionInDOMTree(m_start);
-    VisiblePosition visibleEnd = createVisiblePositionInDOMTree(m_end);
+    const VisiblePositionTemplate<Strategy> visibleStart = createVisiblePosition(m_start);
+    const VisiblePositionTemplate<Strategy> visibleEnd = createVisiblePosition(m_end);
     if (shouldAnnotate() && needInterchangeNewlineAfter(visibleStart)) {
         markupAccumulator.appendInterchangeNewline();
         if (visibleStart.deepEquivalent() == previousPositionOf(visibleEnd).deepEquivalent())
