@@ -115,7 +115,7 @@ dev_list="apache2.2-bin bison cdbs curl dpkg-dev elfutils devscripts fakeroot
 
 # 64-bit systems need a minimum set of 32-bit compat packages for the pre-built
 # NaCl binaries.
-if file /sbin/init | grep -q 'ELF 64-bit'; then
+if file -L /sbin/init | grep -q 'ELF 64-bit'; then
   dev_list="${dev_list} libc6-i386 lib32gcc1 lib32stdc++6"
 fi
 
@@ -230,7 +230,7 @@ fi
 # When cross building for arm/Android on 64-bit systems the host binaries
 # that are part of v8 need to be compiled with -m32 which means
 # that basic multilib support is needed.
-if file /sbin/init | grep -q 'ELF 64-bit'; then
+if file -L /sbin/init | grep -q 'ELF 64-bit'; then
   # gcc-multilib conflicts with the arm cross compiler (at least in trusty) but
   # g++-X.Y-multilib gives us the 32-bit support that we need. Find out the
   # appropriate value of X and Y by seeing what version the current
