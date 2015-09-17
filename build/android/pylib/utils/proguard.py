@@ -67,82 +67,81 @@ def Dump(jar_path):
                        '-dontobfuscate',
                        '-dontpreverify',
                        '-dump', proguard_output.name])
+    return Parse(proguard_output)
 
+def Parse(proguard_output):
+  results = {
+    'classes': [],
+  }
 
-    results = {
-      'classes': [],
-    }
+  annotation = None
+  annotation_has_value = False
+  class_result = None
+  method_result = None
 
-    annotation = None
-    annotation_has_value = False
-    class_result = None
-    method_result = None
+  for line in proguard_output:
+    line = line.strip('\r\n')
 
-    for line in proguard_output:
-      line = line.strip('\r\n')
+    m = _PROGUARD_CLASS_RE.match(line)
+    if m:
+      class_result = {
+        'class': m.group(1).replace('/', '.'),
+        'superclass': '',
+        'annotations': {},
+        'methods': [],
+      }
+      results['classes'].append(class_result)
+      annotation = None
+      annotation_has_value = False
+      method_result = None
+      continue
 
-      m = _PROGUARD_CLASS_RE.match(line)
-      if m:
-        class_result = {
-          'class': m.group(1).replace('/', '.'),
-          'superclass': '',
-          'annotations': {},
-          'methods': [],
-        }
-        results['classes'].append(class_result)
-        annotation = None
-        annotation_has_value = False
-        method_result = None
-        continue
+    if not class_result:
+      continue
 
-      if not class_result:
-        continue
+    m = _PROGUARD_SUPERCLASS_RE.match(line)
+    if m:
+      class_result['superclass'] = m.group(1).replace('/', '.')
+      continue
 
-      m = _PROGUARD_SUPERCLASS_RE.match(line)
-      if m:
-        class_result['superclass'] = m.group(1).replace('/', '.')
-        continue
+    m = _PROGUARD_SECTION_RE.match(line)
+    if m:
+      annotation = None
+      annotation_has_value = False
+      method_result = None
+      continue
 
-      m = _PROGUARD_SECTION_RE.match(line)
-      if m:
-        annotation = None
-        annotation_has_value = False
-        method_result = None
-        continue
+    m = _PROGUARD_METHOD_RE.match(line)
+    if m:
+      method_result = {
+        'method': m.group(1),
+        'annotations': {},
+      }
+      class_result['methods'].append(method_result)
+      annotation = None
+      annotation_has_value = False
+      continue
 
-      m = _PROGUARD_METHOD_RE.match(line)
-      if m:
-        method_result = {
-          'method': m.group(1),
-          'annotations': {},
-        }
-        class_result['methods'].append(method_result)
-        annotation = None
-        annotation_has_value = False
-        continue
+    m = _PROGUARD_ANNOTATION_RE.match(line)
+    if m:
+      # Ignore the annotation package.
+      annotation = m.group(1).split('/')[-1]
+      if method_result:
+        method_result['annotations'][annotation] = None
+      else:
+        class_result['annotations'][annotation] = None
+      continue
 
-      m = _PROGUARD_ANNOTATION_RE.match(line)
-      if m:
-        # Ignore the annotation package.
-        annotation = m.group(1).split('/')[-1]
-        if method_result:
-          method_result['annotations'][annotation] = None
-        else:
-          class_result['annotations'][annotation] = None
-        continue
-
-      if annotation:
-        if not annotation_has_value:
-          m = _PROGUARD_ANNOTATION_CONST_RE.match(line)
-          annotation_has_value = bool(m)
-        else:
-          m = _PROGUARD_ANNOTATION_VALUE_RE.match(line)
-          if m:
-            if method_result:
-              method_result['annotations'][annotation] = m.group(1)
-            else:
-              class_result['annotations'][annotation] = m.group(1)
-          annotation_has_value = None
-
+    if annotation:
+      if not annotation_has_value:
+        m = _PROGUARD_ANNOTATION_CONST_RE.match(line)
+        annotation_has_value = bool(m)
+      else:
+        m = _PROGUARD_ANNOTATION_VALUE_RE.match(line)
+        if m:
+          if method_result:
+            method_result['annotations'][annotation] = m.group(1)
+          else:
+            class_result['annotations'][annotation] = m.group(1)
+        annotation_has_value = None
   return results
-

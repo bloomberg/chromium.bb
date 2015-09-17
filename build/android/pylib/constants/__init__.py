@@ -189,9 +189,10 @@ PYTHON_UNIT_TEST_SUITES = {
     'path': os.path.join(DIR_SOURCE_ROOT, 'build', 'android'),
     'test_modules': [
       'devil.android.device_utils_test',
+      'devil.android.md5sum_test',
       'devil.utils.cmd_helper_test',
-      'devil.utils.md5sum_test',
       'pylib.results.json_results_test',
+      'pylib.utils.proguard_test',
     ]
   },
   'gyp_py_unittests': {
