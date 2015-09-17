@@ -126,50 +126,6 @@ double InvalidatableStyleInterpolation::underlyingFraction() const
     return m_cachedConversion->interpolateUnderlyingFraction(m_startKeyframe->underlyingFraction(), m_endKeyframe->underlyingFraction(), m_currentFraction);
 }
 
-// Handles memory management of underlying InterpolationValues in applyStack()
-// Ensures we perform copy on write if we are not the owner of an underlying InterpolationValue.
-// This functions similar to a DataRef except on OwnPtr'd objects.
-class UnderlyingValue {
-    STACK_ALLOCATED();
-
-public:
-    UnderlyingValue()
-        : m_valueOwner(nullptr)
-        , m_value(nullptr)
-    { }
-
-    void set(const InterpolationValue* interpolationValue)
-    {
-        // By clearing m_valueOwner we will perform a copy before attempting to mutate m_value,
-        // thus upholding the const contract for this instance of interpolationValue despite the const_cast.
-        m_valueOwner.clear();
-        m_value = const_cast<InterpolationValue*>(interpolationValue);
-    }
-    void set(PassOwnPtr<InterpolationValue> interpolationValue)
-    {
-        m_valueOwner = interpolationValue;
-        m_value = m_valueOwner.get();
-    }
-    InterpolationComponentValue& mutableComponent()
-    {
-        ASSERT(m_value);
-        if (!m_valueOwner)
-            set(m_value->clone());
-        return m_value->mutableComponent();
-    }
-    const InterpolationValue* get() const { return m_value; }
-    operator bool() const { return m_value; }
-    const InterpolationValue* operator->() const
-    {
-        ASSERT(m_value);
-        return m_value;
-    }
-
-private:
-    OwnPtr<InterpolationValue> m_valueOwner;
-    InterpolationValue* m_value;
-};
-
 void InvalidatableStyleInterpolation::applyStack(const ActiveInterpolations& interpolations, StyleResolverState& state)
 {
     ASSERT(!interpolations.isEmpty());
@@ -208,7 +164,7 @@ void InvalidatableStyleInterpolation::applyStack(const ActiveInterpolations& int
         if (underlyingFraction == 0 || !underlyingValue || underlyingValue->type() != currentValue->type())
             underlyingValue.set(currentValue);
         else
-            underlyingValue.mutableComponent().interpolableValue->scaleAndAdd(underlyingFraction, currentValue->interpolableValue());
+            currentValue->type().composite(underlyingValue, underlyingFraction, *currentValue);
     }
 
     if (shouldApply && underlyingValue)

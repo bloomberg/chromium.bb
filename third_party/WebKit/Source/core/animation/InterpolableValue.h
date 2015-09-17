@@ -25,14 +25,13 @@ public:
     virtual bool isAnimatableValue() const { return false; }
 
     virtual PassOwnPtr<InterpolableValue> clone() const = 0;
+    virtual void scaleAndAdd(double scale, const InterpolableValue& other) = 0;
 
 private:
     virtual void interpolate(const InterpolableValue& to, const double progress, InterpolableValue& result) const = 0;
-    virtual void scaleAndAdd(double scale, const InterpolableValue& other) = 0;
 
     friend class Interpolation;
     friend class PairwisePrimitiveInterpolation;
-    friend class InvalidatableStyleInterpolation;
 
     // Keep interpolate private, but allow calls within the hierarchy without
     // knowledge of type.

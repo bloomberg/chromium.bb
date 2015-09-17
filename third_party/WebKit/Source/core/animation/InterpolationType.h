@@ -10,6 +10,7 @@
 #include "core/animation/NonInterpolableValue.h"
 #include "core/animation/PrimitiveInterpolation.h"
 #include "core/animation/StringKeyframe.h"
+#include "core/animation/UnderlyingValue.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Allocator.h"
 
@@ -47,12 +48,7 @@ public:
         OwnPtr<InterpolationValue> endValue = maybeConvertSingle(endKeyframe, state, conversionCheckers);
         if (!endValue)
             return nullptr;
-        ASSERT(!startValue->nonInterpolableValue());
-        ASSERT(!endValue->nonInterpolableValue());
-        return PairwisePrimitiveInterpolation::create(*this,
-            startValue->mutableComponent().interpolableValue.release(),
-            endValue->mutableComponent().interpolableValue.release(),
-            nullptr);
+        return mergeSingleConversions(*startValue, *endValue);
     }
 
     virtual PassOwnPtr<InterpolationValue> maybeConvertSingle(const CSSPropertySpecificKeyframe& keyframe, const StyleResolverState* state, ConversionCheckers& conversionCheckers) const
@@ -69,6 +65,13 @@ public:
 
     virtual PassOwnPtr<InterpolationValue> maybeConvertUnderlyingValue(const StyleResolverState&) const = 0;
 
+    virtual void composite(UnderlyingValue& underlyingValue, double underlyingFraction, const InterpolationValue& value) const
+    {
+        ASSERT(!underlyingValue->nonInterpolableValue());
+        ASSERT(!value.nonInterpolableValue());
+        underlyingValue.mutableComponent().interpolableValue->scaleAndAdd(underlyingFraction, value.interpolableValue());
+    }
+
     virtual void apply(const InterpolableValue&, const NonInterpolableValue*, StyleResolverState&) const = 0;
 
     // Implement reference equality checking via pointer equality checking as these are singletons
@@ -84,6 +87,16 @@ protected:
     virtual PassOwnPtr<InterpolationValue> maybeConvertInitial() const { ASSERT_NOT_REACHED(); return nullptr; }
     virtual PassOwnPtr<InterpolationValue> maybeConvertInherit(const StyleResolverState* state, ConversionCheckers& conversionCheckers) const { ASSERT_NOT_REACHED(); return nullptr; }
     virtual PassOwnPtr<InterpolationValue> maybeConvertValue(const CSSValue& value, const StyleResolverState* state, ConversionCheckers& conversionCheckers) const { ASSERT_NOT_REACHED(); return nullptr; }
+
+    virtual PassOwnPtr<PairwisePrimitiveInterpolation> mergeSingleConversions(InterpolationValue& startValue, InterpolationValue& endValue) const
+    {
+        ASSERT(!startValue.nonInterpolableValue());
+        ASSERT(!endValue.nonInterpolableValue());
+        return PairwisePrimitiveInterpolation::create(*this,
+            startValue.mutableComponent().interpolableValue.release(),
+            endValue.mutableComponent().interpolableValue.release(),
+            nullptr);
+    }
 
     const CSSPropertyID m_property;
 };
