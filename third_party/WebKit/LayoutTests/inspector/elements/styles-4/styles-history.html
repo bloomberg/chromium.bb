@@ -89,7 +89,7 @@ function test()
 
         function onNodeSelected(node)
         {
-            InspectorTest.CSSAgent.getMatchedStylesForNode(node.id, true, true, onMatchedStylesForNode);
+            InspectorTest.CSSAgent.getMatchedStylesForNode(node.id, onMatchedStylesForNode);
         }
 
         function onMatchedStylesForNode(error, matchedStyles)
