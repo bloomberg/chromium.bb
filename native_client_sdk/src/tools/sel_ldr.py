@@ -33,12 +33,11 @@ Log.verbose = False
 
 
 def FindQemu():
+  path = os.environ.get('PATH', '').split(os.pathsep)
   qemu_locations = [os.path.join(SCRIPT_DIR, 'qemu_arm'),
                     os.path.join(SCRIPT_DIR, 'qemu-arm')]
-  qemu_locations += [os.path.join(path, 'qemu_arm')
-                     for path in os.environ["PATH"].split(os.pathsep)]
-  qemu_locations += [os.path.join(path, 'qemu-arm')
-                     for path in os.environ["PATH"].split(os.pathsep)]
+  qemu_locations += [os.path.join(p, 'qemu_arm') for p in path]
+  qemu_locations += [os.path.join(p, 'qemu-arm') for p in path]
   # See if qemu is in any of these locations.
   qemu_bin = None
   for loc in qemu_locations:
