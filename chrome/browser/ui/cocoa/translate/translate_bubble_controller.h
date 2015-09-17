@@ -67,3 +67,9 @@ class WebContents;
 - (void)switchToErrorView:(translate::TranslateErrors::Type)errorType;
 
 @end
+
+// The methods on this category are used internally by the controller and are
+// only exposed for testing purposes. DO NOT USE OTHERWISE.
+@interface TranslateBubbleController (ExposedForTesting)
+- (void)handleTranslateButtonPressed;
+@end

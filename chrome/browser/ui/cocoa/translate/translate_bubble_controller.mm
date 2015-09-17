@@ -90,7 +90,6 @@ const CGFloat kContentWidth = kWindowWidth - 2 * kFramePadding;
 - (NSPopUpButton*)addPopUpButton:(ui::ComboboxModel*)model
                           action:(SEL)action
                           toView:(NSView*)view;
-- (void)handleTranslateButtonPressed;
 - (void)handleNopeButtonPressed;
 - (void)handleDoneButtonPressed;
 - (void)handleCancelButtonPressed;

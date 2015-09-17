@@ -23,6 +23,8 @@
 #include "chrome/browser/translate/translate_service.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/translate/translate_bubble_test_utils.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/test_switches.h"
@@ -46,6 +48,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_renderer_host.h"
+#include "content/public/test/test_utils.h"
 #include "net/base/net_errors.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_status.h"
@@ -207,7 +210,7 @@ class AutofillInteractiveTest : public InProcessBrowserTest {
         "window.domAutomationController.send("
         "    document.getElementById('" + field_name + "').value);",
         &value));
-    EXPECT_EQ(expected_value, value);
+    EXPECT_EQ(expected_value, value) << "for field " << field_name;
   }
 
   void GetFieldBackgroundColor(const std::string& field_name,
@@ -1063,10 +1066,20 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, AutofillAfterReload) {
   TryBasicFormFill();
 }
 
-IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, AutofillAfterTranslate) {
-  // TODO(port): Test corresponding bubble translate UX: http://crbug.com/383235
-  if (TranslateService::IsTranslateBubbleEnabled())
-    return;
+// Test fails on Linux ASAN, see http://crbug.com/532737
+#if defined(ADDRESS_SANITIZER)
+#define MAYBE_AutofillAfterTranslate DISABLED_AutofillAfterTranslate
+#else
+#define MAYBE_AutofillAfterTranslate AutofillAfterTranslate
+#endif  // ADDRESS_SANITIZER
+IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, MAYBE_AutofillAfterTranslate) {
+// TODO(groby): Remove once the bubble is enabled by default everywhere.
+// http://crbug.com/507442
+#if defined(OS_MACOSX)
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      ::switches::kEnableTranslateNewUX);
+#endif
+  ASSERT_TRUE(TranslateService::IsTranslateBubbleEnabled());
 
   translate::TranslateManager::SetIgnoreMissingKeyForTesting(true);
 
@@ -1108,25 +1121,27 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, AutofillAfterTranslate) {
                "我々は重要な、興味深いものになるが、時折状況が発生するため苦労や痛みは"
                "彼にいくつかの素晴らしいを調達することができます。それから、いくつかの利");
 
-  content::WindowedNotificationObserver infobar_observer(
-      chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_ADDED,
-      content::NotificationService::AllSources());
+  // Set up an observer to be able to wait for the bubble to be shown.
+  content::Source<content::WebContents> source(GetWebContents());
+  content::WindowedNotificationObserver language_detected_signal(
+      chrome::NOTIFICATION_TAB_LANGUAGE_DETERMINED, source);
+
   ASSERT_NO_FATAL_FAILURE(
       ui_test_utils::NavigateToURL(browser(), url));
 
-  // Wait for the translation bar to appear and get it.
-  infobar_observer.Wait();
-  InfoBarService* infobar_service =
-      InfoBarService::FromWebContents(GetWebContents());
-  translate::TranslateInfoBarDelegate* delegate =
-      infobar_service->infobar_at(0)->delegate()->AsTranslateInfoBarDelegate();
-  ASSERT_TRUE(delegate);
-  EXPECT_EQ(translate::TRANSLATE_STEP_BEFORE_TRANSLATE,
-            delegate->translate_step());
+  // Wait for the translate bubble to appear.
+  language_detected_signal.Wait();
 
-  // Simulate translation button press.
-  delegate->Translate();
+  // Verify current translate step.
+  const TranslateBubbleModel* model =
+      translate::test_utils::GetCurrentModel(browser());
+  ASSERT_NE(nullptr, model);
+  EXPECT_EQ(TranslateBubbleModel::VIEW_STATE_BEFORE_TRANSLATE,
+            model->GetViewState());
 
+  translate::test_utils::PressTranslate(browser());
+
+  // Wait for translation.
   content::WindowedNotificationObserver translation_observer(
       chrome::NOTIFICATION_PAGE_TRANSLATED,
       content::NotificationService::AllSources());
