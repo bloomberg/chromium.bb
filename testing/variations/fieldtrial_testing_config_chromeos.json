@@ -9,6 +9,11 @@
             "group_name": "Enabled"
         }
     ],
+    "ChromotingQUIC": [
+        {
+            "group_name": "Enabled"
+        }
+    ],
     "EnableGoogleCachedCopyTextExperiment": [
         {
             "group_name": "Button"
