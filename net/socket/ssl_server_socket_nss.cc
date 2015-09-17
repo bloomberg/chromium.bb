@@ -69,7 +69,7 @@ class NSSSSLServerInitSingleton {
   }
 };
 
-static base::LazyInstance<NSSSSLServerInitSingleton>
+static base::LazyInstance<NSSSSLServerInitSingleton>::Leaky
     g_nss_ssl_server_init_singleton = LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
