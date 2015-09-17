@@ -871,10 +871,13 @@ public class ContextualSearchManager extends ContextualSearchObservable
         mDidPromoteSearchNavigation = false;
     }
 
-
     @Override
-    public boolean shouldInterceptNavigation(ExternalNavigationHandler externalNavHandler,
-            NavigationParams navigationParams) {
+    public boolean shouldInterceptNavigation(
+            ExternalNavigationHandler externalNavHandler, NavigationParams navigationParams) {
+        mTabRedirectHandler.updateNewUrlLoading(navigationParams.pageTransitionType,
+                navigationParams.isRedirect,
+                navigationParams.hasUserGesture || navigationParams.hasUserGestureCarryover,
+                mActivity.getLastUserInteractionTime(), TabRedirectHandler.INVALID_ENTRY_INDEX);
         ExternalNavigationParams params = new ExternalNavigationParams.Builder(
                 navigationParams.url, false, navigationParams.referrer,
                 navigationParams.pageTransitionType, navigationParams.isRedirect)
@@ -886,12 +889,12 @@ public class ContextualSearchManager extends ContextualSearchObservable
                 != OverrideUrlLoadingResult.NO_OVERRIDE) {
             mSearchPanelDelegate.maximizePanelThenPromoteToTab(StateChangeReason.TAB_PROMOTION,
                     INTERCEPT_NAVIGATION_PROMOTION_ANIMATION_DURATION_MS);
-            return false;
+            return true;
         }
         if (navigationParams.isExternalProtocol) {
-            return false;
+            return true;
         }
-        return true;
+        return false;
     }
 
     /**

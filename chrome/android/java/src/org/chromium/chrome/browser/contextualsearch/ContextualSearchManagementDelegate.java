@@ -161,10 +161,10 @@ public interface ContextualSearchManagementDelegate {
     void onStartedLoading();
 
     /**
-     * Determine if a particular navigation should be ignored.
+     * Determine if a particular navigation should be intercepted.
      * @param externalNavHandler External navigation handler for the activity the panel is in.
      * @param navigationParams The navigation params for the current navigation.
-     * @return True if the navigation should be ignored.
+     * @return True if the navigation should be intercepted.
      */
     boolean shouldInterceptNavigation(ExternalNavigationHandler externalNavHandler,
             NavigationParams navigationParams);

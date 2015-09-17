@@ -8,7 +8,12 @@ import static org.chromium.base.test.util.Restriction.RESTRICTION_TYPE_NON_LOW_E
 import static org.chromium.base.test.util.Restriction.RESTRICTION_TYPE_PHONE;
 import static org.chromium.content.browser.test.util.CriteriaHelper.DEFAULT_POLLING_INTERVAL;
 
+import android.app.Activity;
+import android.app.Instrumentation;
+import android.app.Instrumentation.ActivityMonitor;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.ActivityInfo;
 import android.graphics.Point;
 import android.os.SystemClock;
@@ -27,6 +32,7 @@ import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPanel.PanelState;
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPanelDelegate;
+import org.chromium.chrome.browser.externalnav.ExternalNavigationHandler;
 import org.chromium.chrome.browser.gsa.GSAContextDisplaySelection;
 import org.chromium.chrome.browser.omnibox.UrlBar;
 import org.chromium.chrome.browser.tab.Tab;
@@ -38,11 +44,13 @@ import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.OmniboxTestUtils;
 import org.chromium.chrome.test.util.TestHttpServerClient;
+import org.chromium.components.navigation_interception.NavigationParams;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.test.util.CallbackHelper;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.DOMUtils;
+import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.touch_selection.SelectionEventType;
 
 import java.util.concurrent.TimeoutException;
@@ -68,6 +76,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
     private ContextualSearchPanelDelegate mPanelDelegate;
     private ContextualSearchSelectionController mSelectionController;
     private ContextualSearchPolicy mPolicy;
+    private ActivityMonitor mActivityMonitor;
 
     public ContextualSearchManagerTest() {
         super(ChromeActivity.class);
@@ -91,6 +100,12 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
             mPolicy.overrideDecidedStateForTesting(true);
             resetCounters();
         }
+
+        IntentFilter filter = new IntentFilter(Intent.ACTION_VIEW);
+        filter.addCategory(Intent.CATEGORY_BROWSABLE);
+        filter.addDataScheme("market");
+        mActivityMonitor = getInstrumentation().addMonitor(
+                filter, new Instrumentation.ActivityResult(Activity.RESULT_OK, null), true);
     }
 
     @Override
@@ -1809,5 +1824,88 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
             waitForSelectionDissolved();
             assertSearchTermRequested();
         }
+    }
+
+    /**
+     * Tests ContextualSearchManager#shouldInterceptNavigation for a case that an external
+     * navigation has a user gesture.
+     */
+    @SmallTest
+    @Feature({"ContextualSearch"})
+    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
+    public void testExternalNavigationWithUserGesture() {
+        final ExternalNavigationHandler externalNavHandler =
+                new ExternalNavigationHandler(getActivity());
+        final NavigationParams navigationParams = new NavigationParams(
+                "intent://test/#Intent;scheme=test;package=com.chrome.test;end", "",
+                false /* isPost */, true /* hasUserGesture */, PageTransition.LINK,
+                false /* isRedirect */, true /* isExternalProtocol */, true /* isMainFrame */,
+                false /* hasUserGestureCarryover */);
+        getInstrumentation().runOnMainSync(new Runnable() {
+            @Override
+            public void run() {
+                assertTrue(
+                        mManager.shouldInterceptNavigation(externalNavHandler, navigationParams));
+            }
+        });
+        assertEquals(1, mActivityMonitor.getHits());
+    }
+
+    /**
+     * Tests ContextualSearchManager#shouldInterceptNavigation for a case that an initial
+     * navigation has a user gesture but the redirected external navigation doesn't.
+     */
+    @SmallTest
+    @Feature({"ContextualSearch"})
+    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
+    public void testRedirectedExternalNavigationWithUserGesture() {
+        final ExternalNavigationHandler externalNavHandler =
+                new ExternalNavigationHandler(getActivity());
+
+        final NavigationParams initialNavigationParams = new NavigationParams("http://test.com", "",
+                false /* isPost */, true /* hasUserGesture */, PageTransition.LINK,
+                false /* isRedirect */, false /* isExternalProtocol */, true /* isMainFrame */,
+                false /* hasUserGestureCarryover */);
+        final NavigationParams redirectedNavigationParams = new NavigationParams(
+                "intent://test/#Intent;scheme=test;package=com.chrome.test;end", "",
+                false /* isPost */, false /* hasUserGesture */, PageTransition.LINK,
+                true /* isRedirect */, true /* isExternalProtocol */, true /* isMainFrame */,
+                false /* hasUserGestureCarryover */);
+
+        getInstrumentation().runOnMainSync(new Runnable() {
+            @Override
+            public void run() {
+                assertFalse(mManager.shouldInterceptNavigation(
+                        externalNavHandler, initialNavigationParams));
+                assertTrue(mManager.shouldInterceptNavigation(
+                        externalNavHandler, redirectedNavigationParams));
+            }
+        });
+        assertEquals(1, mActivityMonitor.getHits());
+    }
+
+    /**
+     * Tests ContextualSearchManager#shouldInterceptNavigation for a case that an external
+     * navigation doesn't have a user gesture.
+     */
+    @SmallTest
+    @Feature({"ContextualSearch"})
+    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
+    public void testExternalNavigationWithoutUserGesture() {
+        final ExternalNavigationHandler externalNavHandler =
+                new ExternalNavigationHandler(getActivity());
+        final NavigationParams navigationParams = new NavigationParams(
+                "intent://test/#Intent;scheme=test;package=com.chrome.test;end", "",
+                false /* isPost */, false /* hasUserGesture */, PageTransition.LINK,
+                false /* isRedirect */, true /* isExternalProtocol */, true /* isMainFrame */,
+                false /* hasUserGestureCarryover */);
+        getInstrumentation().runOnMainSync(new Runnable() {
+            @Override
+            public void run() {
+                assertTrue(
+                        mManager.shouldInterceptNavigation(externalNavHandler, navigationParams));
+            }
+        });
+        assertEquals(0, mActivityMonitor.getHits());
     }
 }

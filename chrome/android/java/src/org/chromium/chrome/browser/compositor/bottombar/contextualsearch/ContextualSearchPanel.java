@@ -15,7 +15,6 @@ import org.chromium.chrome.browser.WebContentsFactory;
 import org.chromium.chrome.browser.compositor.layouts.LayoutUpdateHost;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchContentController;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationHandler;
-import org.chromium.chrome.browser.tab.TabRedirectHandler;
 import org.chromium.components.navigation_interception.InterceptNavigationDelegate;
 import org.chromium.components.navigation_interception.NavigationParams;
 import org.chromium.components.web_contents_delegate_android.WebContentsDelegateAndroid;
@@ -102,11 +101,6 @@ public class ContextualSearchPanel extends ContextualSearchPanelAnimation
      * Observes the ContentViewCore for this panel.
      */
     private WebContentsObserver mWebContentsObserver;
-
-    /**
-     * Handles tab redirection requests.
-     */
-    private TabRedirectHandler mTabRedirectHandler;
 
     /**
      * Used to detect if a URL was loaded in the ContentViewCore.
@@ -466,7 +460,6 @@ public class ContextualSearchPanel extends ContextualSearchPanelAnimation
             mContentController.destroyContentView();
         }
 
-        mTabRedirectHandler = new TabRedirectHandler(mActivity);
         mContentViewCore = new ContentViewCore(mActivity);
 
         // Adds a ContentViewClient to override the default fullscreen size.
@@ -615,14 +608,9 @@ public class ContextualSearchPanel extends ContextualSearchPanelAnimation
                 mActivity);
         @Override
         public boolean shouldIgnoreNavigation(NavigationParams navigationParams) {
-            mTabRedirectHandler.updateNewUrlLoading(navigationParams.pageTransitionType,
-                    navigationParams.isRedirect,
-                    navigationParams.hasUserGesture || navigationParams.hasUserGestureCarryover,
-                    mActivity.getLastUserInteractionTime(), TabRedirectHandler.INVALID_ENTRY_INDEX);
-
             // TODO(mdjones): Rather than passing the two navigation params, instead consider
             // passing a boolean to make this API simpler.
-            return !getManagementDelegate().shouldInterceptNavigation(mExternalNavHandler,
+            return getManagementDelegate().shouldInterceptNavigation(mExternalNavHandler,
                     navigationParams);
         }
     }
