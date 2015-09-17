@@ -231,15 +231,11 @@ bool PathExists(const FilePath& path) {
 
 bool PathIsWritable(const FilePath& path) {
   ThreadRestrictions::AssertIOAllowed();
-  HANDLE dir =
+  win::ScopedHandle dir(
       CreateFile(path.value().c_str(), FILE_ADD_FILE, kFileShareAll,
-                 NULL, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, NULL);
+                 NULL, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, NULL));
 
-  if (dir == INVALID_HANDLE_VALUE)
-    return false;
-
-  CloseHandle(dir);
-  return true;
+  return dir.IsValid();
 }
 
 bool DirectoryExists(const FilePath& path) {

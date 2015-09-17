@@ -39,20 +39,19 @@ void RunTest_BasicSignal(MessageLoop::Type message_loop_type) {
   EXPECT_FALSE(watcher.IsWatching());
 
   // A manual-reset event that is not yet signaled.
-  HANDLE event = CreateEvent(NULL, TRUE, FALSE, NULL);
+  base::win::ScopedHandle event(CreateEvent(NULL, TRUE, FALSE, NULL));
 
   QuitDelegate delegate;
-  bool ok = watcher.StartWatching(event, &delegate);
+  bool ok = watcher.StartWatching(event.Get(), &delegate);
   EXPECT_TRUE(ok);
   EXPECT_TRUE(watcher.IsWatching());
-  EXPECT_EQ(event, watcher.GetWatchedObject());
+  EXPECT_EQ(event.Get(), watcher.GetWatchedObject());
 
-  SetEvent(event);
+  SetEvent(event.Get());
 
   MessageLoop::current()->Run();
 
   EXPECT_FALSE(watcher.IsWatching());
-  CloseHandle(event);
 }
 
 void RunTest_BasicCancel(MessageLoop::Type message_loop_type) {
@@ -61,15 +60,13 @@ void RunTest_BasicCancel(MessageLoop::Type message_loop_type) {
   ObjectWatcher watcher;
 
   // A manual-reset event that is not yet signaled.
-  HANDLE event = CreateEvent(NULL, TRUE, FALSE, NULL);
+  base::win::ScopedHandle event(CreateEvent(NULL, TRUE, FALSE, NULL));
 
   QuitDelegate delegate;
-  bool ok = watcher.StartWatching(event, &delegate);
+  bool ok = watcher.StartWatching(event.Get(), &delegate);
   EXPECT_TRUE(ok);
 
   watcher.StopWatching();
-
-  CloseHandle(event);
 }
 
 void RunTest_CancelAfterSet(MessageLoop::Type message_loop_type) {
@@ -81,12 +78,12 @@ void RunTest_CancelAfterSet(MessageLoop::Type message_loop_type) {
   DecrementCountDelegate delegate(&counter);
 
   // A manual-reset event that is not yet signaled.
-  HANDLE event = CreateEvent(NULL, TRUE, FALSE, NULL);
+  base::win::ScopedHandle event(CreateEvent(NULL, TRUE, FALSE, NULL));
 
-  bool ok = watcher.StartWatching(event, &delegate);
+  bool ok = watcher.StartWatching(event.Get(), &delegate);
   EXPECT_TRUE(ok);
 
-  SetEvent(event);
+  SetEvent(event.Get());
 
   // Let the background thread do its business
   Sleep(30);
@@ -97,8 +94,6 @@ void RunTest_CancelAfterSet(MessageLoop::Type message_loop_type) {
 
   // Our delegate should not have fired.
   EXPECT_EQ(1, counter);
-
-  CloseHandle(event);
 }
 
 void RunTest_SignalBeforeWatch(MessageLoop::Type message_loop_type) {
@@ -107,33 +102,32 @@ void RunTest_SignalBeforeWatch(MessageLoop::Type message_loop_type) {
   ObjectWatcher watcher;
 
   // A manual-reset event that is signaled before we begin watching.
-  HANDLE event = CreateEvent(NULL, TRUE, TRUE, NULL);
+  base::win::ScopedHandle event(CreateEvent(NULL, TRUE, TRUE, NULL));
 
   QuitDelegate delegate;
-  bool ok = watcher.StartWatching(event, &delegate);
+  bool ok = watcher.StartWatching(event.Get(), &delegate);
   EXPECT_TRUE(ok);
 
   MessageLoop::current()->Run();
 
   EXPECT_FALSE(watcher.IsWatching());
-  CloseHandle(event);
 }
 
 void RunTest_OutlivesMessageLoop(MessageLoop::Type message_loop_type) {
   // Simulate a MessageLoop that dies before an ObjectWatcher.  This ordinarily
   // doesn't happen when people use the Thread class, but it can happen when
   // people use the Singleton pattern or atexit.
-  HANDLE event = CreateEvent(NULL, TRUE, FALSE, NULL);  // not signaled
+  // Note that |event| is not signaled
+  base::win::ScopedHandle event(CreateEvent(NULL, TRUE, FALSE, NULL));
   {
     ObjectWatcher watcher;
     {
       MessageLoop message_loop(message_loop_type);
 
       QuitDelegate delegate;
-      watcher.StartWatching(event, &delegate);
+      watcher.StartWatching(event.Get(), &delegate);
     }
   }
-  CloseHandle(event);
 }
 
 }  // namespace

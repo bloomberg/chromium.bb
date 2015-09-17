@@ -12,6 +12,7 @@
 
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
+#include "base/win/scoped_handle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::Time;
@@ -86,15 +87,17 @@ TEST(TimeTicks, WinRollover) {
     // Setup
     MockTimeTicks::InstallTicker();
     g_rollover_test_start = CreateEvent(0, TRUE, FALSE, 0);
-    HANDLE threads[kThreads];
+    // Since using _beginthreadex() (as opposed to _beginthread), make sure
+    // CloseHandle is called.
+    base::win::ScopedHandle threads[kThreads];
 
     for (int index = 0; index < kThreads; index++) {
       void* argument = reinterpret_cast<void*>(kChecks);
       unsigned thread_id;
-      threads[index] = reinterpret_cast<HANDLE>(
+      threads[index].Set(reinterpret_cast<HANDLE>(
         _beginthreadex(NULL, 0, RolloverTestThreadMain, argument, 0,
-          &thread_id));
-      EXPECT_NE((HANDLE)NULL, threads[index]);
+          &thread_id)));
+      EXPECT_EQ(true, threads[index].IsValid());
     }
 
     // Start!
@@ -102,14 +105,11 @@ TEST(TimeTicks, WinRollover) {
 
     // Wait for threads to finish
     for (int index = 0; index < kThreads; index++) {
-      DWORD rv = WaitForSingleObject(threads[index], INFINITE);
+      DWORD rv = WaitForSingleObject(threads[index].Get(), INFINITE);
       EXPECT_EQ(rv, WAIT_OBJECT_0);
-      // Since using _beginthreadex() (as opposed to _beginthread),
-      // an explicit CloseHandle() is supposed to be called.
-      CloseHandle(threads[index]);
     }
 
-    CloseHandle(g_rollover_test_start);
+    CHECK(::CloseHandle(g_rollover_test_start));
 
     // Teardown
     MockTimeTicks::UninstallTicker();

@@ -159,11 +159,8 @@ bool WaitForProcessesToExit(const FilePath::StringType& executable_name,
     DWORD remaining_wait = static_cast<DWORD>(std::max(
         static_cast<int64>(0),
         wait.InMilliseconds() - (GetTickCount() - start_time)));
-    HANDLE process = OpenProcess(SYNCHRONIZE,
-                                 FALSE,
-                                 entry->th32ProcessID);
-    DWORD wait_result = WaitForSingleObject(process, remaining_wait);
-    CloseHandle(process);
+    Process process(Process::OpenWithAccess(entry->th32ProcessID, SYNCHRONIZE));
+    DWORD wait_result = WaitForSingleObject(process.Handle(), remaining_wait);
     result &= (wait_result == WAIT_OBJECT_0);
   }
 
