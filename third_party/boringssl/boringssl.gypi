@@ -32,7 +32,7 @@
       'src/ssl/ssl_file.c',
       'src/ssl/ssl_lib.c',
       'src/ssl/ssl_rsa.c',
-      'src/ssl/ssl_sess.c',
+      'src/ssl/ssl_session.c',
       'src/ssl/ssl_stat.c',
       'src/ssl/ssl_txt.c',
       'src/ssl/t1_enc.c',
