@@ -23,6 +23,7 @@ namespace remoting {
 namespace protocol {
 class ClipboardEvent;
 class CursorShapeInfo;
+class PerformanceTracker;
 }  // namespace protocol
 
 class ChromotingJniRuntime;
@@ -149,6 +150,7 @@ class ChromotingJniInstance
 
   // This group of variables is to be used on the network thread.
   scoped_ptr<ClientContext> client_context_;
+  scoped_ptr<protocol::PerformanceTracker> perf_tracker_;
   scoped_ptr<JniFrameConsumer> view_;
   scoped_ptr<VideoRenderer> video_renderer_;
   scoped_ptr<protocol::Authenticator> authenticator_;

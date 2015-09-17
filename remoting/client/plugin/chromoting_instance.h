@@ -35,6 +35,7 @@
 #include "remoting/protocol/mouse_input_filter.h"
 #include "remoting/protocol/negotiating_client_authenticator.h"
 #include "remoting/protocol/performance_tracker.h"
+#include "remoting/protocol/performance_tracker.h"
 #include "remoting/protocol/third_party_client_authenticator.h"
 
 namespace base {
@@ -251,6 +252,7 @@ class ChromotingInstance : public ClientUserInterface,
   scoped_ptr<base::ThreadTaskRunnerHandle> thread_task_runner_handle_;
   scoped_ptr<jingle_glue::JingleThreadWrapper> thread_wrapper_;
   ClientContext context_;
+  protocol::PerformanceTracker perf_tracker_;
   scoped_ptr<PepperVideoRenderer> video_renderer_;
   pp::View plugin_view_;
 

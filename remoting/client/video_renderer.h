@@ -8,7 +8,6 @@
 namespace remoting {
 
 namespace protocol {
-class PerformanceTracker;
 class SessionConfig;
 class VideoStub;
 }  // namespace protocol;
@@ -22,12 +21,6 @@ class VideoRenderer {
   // Configures the renderer with the supplied |config|. This must be called
   // exactly once before video data is supplied to the renderer.
   virtual void OnSessionConfig(const protocol::SessionConfig& config) = 0;
-
-  // Return the performance tracker.
-  //
-  // TODO(sergeyu): Remove this method. Perf tracker should not be owned by the
-  // renderer.
-  virtual protocol::PerformanceTracker* GetPerformanceTracker() = 0;
 
   // Returns the VideoStub interface of this renderer.
   virtual protocol::VideoStub* GetVideoStub() = 0;

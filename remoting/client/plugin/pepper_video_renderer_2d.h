@@ -46,13 +46,13 @@ class PepperVideoRenderer2D : public PepperVideoRenderer,
   // PepperVideoRenderer interface.
   bool Initialize(pp::Instance* instance,
                   const ClientContext& context,
-                  EventHandler* event_handler) override;
+                  EventHandler* event_handler,
+                  protocol::PerformanceTracker* perf_tracker) override;
   void OnViewChanged(const pp::View& view) override;
   void EnableDebugDirtyRegion(bool enable) override;
 
   // VideoRenderer interface.
   void OnSessionConfig(const protocol::SessionConfig& config) override;
-  protocol::PerformanceTracker* GetPerformanceTracker() override;
   protocol::VideoStub* GetVideoStub() override;
 
  private:

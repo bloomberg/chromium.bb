@@ -133,7 +133,7 @@ class SoftwareVideoRendererTest : public ::testing::Test {
   SoftwareVideoRendererTest() : decode_thread_("TestDecodeThread") {
     decode_thread_.Start();
     renderer_.reset(new SoftwareVideoRenderer(decode_thread_.task_runner(),
-                                              &frame_consumer_));
+                                              &frame_consumer_, nullptr));
     renderer_->OnSessionConfig(
         *protocol::SessionConfig::ForTestWithVerbatimVideo());
   }

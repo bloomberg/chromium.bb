@@ -55,9 +55,11 @@ PepperVideoRenderer2D::PepperVideoRenderer2D()
 
 PepperVideoRenderer2D::~PepperVideoRenderer2D() {}
 
-bool PepperVideoRenderer2D::Initialize(pp::Instance* instance,
-                                       const ClientContext& context,
-                                       EventHandler* event_handler) {
+bool PepperVideoRenderer2D::Initialize(
+    pp::Instance* instance,
+    const ClientContext& context,
+    EventHandler* event_handler,
+    protocol::PerformanceTracker* perf_tracker) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!instance_);
   DCHECK(!event_handler_);
@@ -66,8 +68,8 @@ bool PepperVideoRenderer2D::Initialize(pp::Instance* instance,
 
   instance_ = instance;
   event_handler_ = event_handler;
-  software_video_renderer_.reset(
-      new SoftwareVideoRenderer(context.decode_task_runner(), this));
+  software_video_renderer_.reset(new SoftwareVideoRenderer(
+      context.decode_task_runner(), this, perf_tracker));
 
   return true;
 }
@@ -100,12 +102,6 @@ void PepperVideoRenderer2D::OnSessionConfig(
   DCHECK(thread_checker_.CalledOnValidThread());
 
   software_video_renderer_->OnSessionConfig(config);
-}
-
-protocol::PerformanceTracker* PepperVideoRenderer2D::GetPerformanceTracker() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-
-  return software_video_renderer_->GetPerformanceTracker();
 }
 
 protocol::VideoStub* PepperVideoRenderer2D::GetVideoStub() {

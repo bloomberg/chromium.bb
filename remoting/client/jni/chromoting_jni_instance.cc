@@ -24,6 +24,7 @@
 #include "remoting/protocol/libjingle_transport_factory.h"
 #include "remoting/protocol/negotiating_client_authenticator.h"
 #include "remoting/protocol/network_settings.h"
+#include "remoting/protocol/performance_tracker.h"
 #include "remoting/signaling/server_log_entry.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
 
@@ -124,6 +125,7 @@ void ChromotingJniInstance::Disconnect() {
   view_.reset();
   authenticator_.reset();
   signaling_.reset();
+  perf_tracker_.reset();
   client_context_.reset();
 }
 
@@ -299,7 +301,7 @@ void ChromotingJniInstance::RecordPaintTime(int64 paint_time_ms) {
   }
 
   if (stats_logging_enabled_)
-    video_renderer_->GetPerformanceTracker()->RecordPaintTime(paint_time_ms);
+    perf_tracker_->RecordPaintTime(paint_time_ms);
 }
 
 void ChromotingJniInstance::OnConnectionState(
@@ -399,9 +401,11 @@ void ChromotingJniInstance::ConnectToHostOnNetworkThread() {
   client_context_.reset(new ClientContext(jni_runtime_->network_task_runner()));
   client_context_->Start();
 
+  perf_tracker_.reset(new protocol::PerformanceTracker());
+
   view_.reset(new JniFrameConsumer(jni_runtime_));
   video_renderer_.reset(new SoftwareVideoRenderer(
-      client_context_->decode_task_runner(), view_.get()));
+      client_context_->decode_task_runner(), view_.get(), perf_tracker_.get()));
 
   client_.reset(new ChromotingClient(
       client_context_.get(), this, video_renderer_.get(), nullptr));
@@ -492,18 +496,16 @@ void ChromotingJniInstance::LogPerfStats() {
   if (!stats_logging_enabled_)
     return;
 
-  protocol::PerformanceTracker* perf_tracker =
-      video_renderer_->GetPerformanceTracker();
   __android_log_print(
       ANDROID_LOG_INFO, "stats",
       "Bandwidth:%.0f FrameRate:%.1f Capture:%.1f Encode:%.1f "
       "Decode:%.1f Render:%.1f Latency:%.0f",
-      perf_tracker->video_bandwidth(), perf_tracker->video_frame_rate(),
-      perf_tracker->video_capture_ms(), perf_tracker->video_encode_ms(),
-      perf_tracker->video_decode_ms(), perf_tracker->video_paint_ms(),
-      perf_tracker->round_trip_ms());
+      perf_tracker_->video_bandwidth(), perf_tracker_->video_frame_rate(),
+      perf_tracker_->video_capture_ms(), perf_tracker_->video_encode_ms(),
+      perf_tracker_->video_decode_ms(), perf_tracker_->video_paint_ms(),
+      perf_tracker_->round_trip_ms());
 
-  client_status_logger_->LogStatistics(perf_tracker);
+  client_status_logger_->LogStatistics(perf_tracker_.get());
 
   jni_runtime_->network_task_runner()->PostDelayedTask(
       FROM_HERE, base::Bind(&ChromotingJniInstance::LogPerfStats, this),

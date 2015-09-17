@@ -54,26 +54,12 @@ class PepperVideoRenderer3D::Picture {
   PP_VideoPicture picture_;
 };
 
-
 PepperVideoRenderer3D::FrameDecodeTimestamp::FrameDecodeTimestamp(
     uint32_t frame_id,
     base::TimeTicks decode_started_time)
-    : frame_id(frame_id), decode_started_time(decode_started_time) {
-}
+    : frame_id(frame_id), decode_started_time(decode_started_time) {}
 
-PepperVideoRenderer3D::PepperVideoRenderer3D()
-    : event_handler_(nullptr),
-      initialization_finished_(false),
-      decode_pending_(false),
-      get_picture_pending_(false),
-      paint_pending_(false),
-      latest_frame_id_(0),
-      force_repaint_(false),
-      current_shader_program_texture_target_(0),
-      shader_program_(0),
-      shader_texcoord_scale_location_(0),
-      callback_factory_(this) {
-}
+PepperVideoRenderer3D::PepperVideoRenderer3D() : callback_factory_(this) {}
 
 PepperVideoRenderer3D::~PepperVideoRenderer3D() {
   if (shader_program_)
@@ -82,13 +68,16 @@ PepperVideoRenderer3D::~PepperVideoRenderer3D() {
   STLDeleteElements(&pending_packets_);
 }
 
-bool PepperVideoRenderer3D::Initialize(pp::Instance* instance,
-                                       const ClientContext& context,
-                                       EventHandler* event_handler) {
+bool PepperVideoRenderer3D::Initialize(
+    pp::Instance* instance,
+    const ClientContext& context,
+    EventHandler* event_handler,
+    protocol::PerformanceTracker* perf_tracker) {
   DCHECK(event_handler);
   DCHECK(!event_handler_);
 
   event_handler_ = event_handler;
+  perf_tracker_ = perf_tracker;
 
   const int32_t context_attributes[] = {
       PP_GRAPHICS3DATTRIB_ALPHA_SIZE,     8,
@@ -187,10 +176,6 @@ void PepperVideoRenderer3D::OnSessionConfig(
       << "video_decoder_.Initialize() returned " << result;
 }
 
-protocol::PerformanceTracker* PepperVideoRenderer3D::GetPerformanceTracker() {
-  return &perf_tracker_;
-}
-
 protocol::VideoStub* PepperVideoRenderer3D::GetVideoStub() {
   return this;
 }
@@ -199,7 +184,7 @@ void PepperVideoRenderer3D::ProcessVideoPacket(scoped_ptr<VideoPacket> packet,
                                                const base::Closure& done) {
   base::ScopedClosureRunner done_runner(done);
 
-  perf_tracker_.RecordVideoPacketStats(*packet);
+  perf_tracker_->RecordVideoPacketStats(*packet);
 
   // Don't need to do anything if the packet is empty. Host sends empty video
   // packets when the screen is not changing.
@@ -344,7 +329,7 @@ void PepperVideoRenderer3D::OnPictureReady(int32_t result,
 
   base::TimeDelta decode_time =
       base::TimeTicks::Now() - frame_timer.decode_started_time;
-  perf_tracker_.RecordDecodeTime(decode_time.InMilliseconds());
+  perf_tracker_->RecordDecodeTime(decode_time.InMilliseconds());
 
   frame_decode_timestamps_.pop_front();
 
@@ -426,7 +411,7 @@ void PepperVideoRenderer3D::OnPaintDone(int32_t result) {
   paint_pending_ = false;
   base::TimeDelta paint_time =
       base::TimeTicks::Now() - latest_paint_started_time_;
-  perf_tracker_.RecordPaintTime(paint_time.InMilliseconds());
+  perf_tracker_->RecordPaintTime(paint_time.InMilliseconds());
   PaintIfNeeded();
 }
 

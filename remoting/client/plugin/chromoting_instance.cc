@@ -627,7 +627,7 @@ void ChromotingInstance::HandleConnect(const base::DictionaryValue& data) {
 
   // Try initializing 3D video renderer.
   video_renderer_.reset(new PepperVideoRenderer3D());
-  if (!video_renderer_->Initialize(this, context_, this))
+  if (!video_renderer_->Initialize(this, context_, this, &perf_tracker_))
     video_renderer_.reset();
 
   // If we didn't initialize 3D renderer then use the 2D renderer.
@@ -635,13 +635,13 @@ void ChromotingInstance::HandleConnect(const base::DictionaryValue& data) {
     LOG(WARNING)
         << "Failed to initialize 3D renderer. Using 2D renderer instead.";
     video_renderer_.reset(new PepperVideoRenderer2D());
-    if (!video_renderer_->Initialize(this, context_, this))
+    if (!video_renderer_->Initialize(this, context_, this, &perf_tracker_))
       video_renderer_.reset();
   }
 
   CHECK(video_renderer_);
 
-  video_renderer_->GetPerformanceTracker()->SetUpdateUmaCallbacks(
+  perf_tracker_.SetUpdateUmaCallbacks(
       base::Bind(&ChromotingInstance::UpdateUmaCustomHistogram,
                  weak_factory_.GetWeakPtr(), true),
       base::Bind(&ChromotingInstance::UpdateUmaCustomHistogram,
@@ -1037,21 +1037,19 @@ void ChromotingInstance::SendPerfStats() {
   // Fetch performance stats from the VideoRenderer and send them to the client
   // for display to users.
   scoped_ptr<base::DictionaryValue> data(new base::DictionaryValue());
-  protocol::PerformanceTracker* perf_tracker =
-      video_renderer_->GetPerformanceTracker();
-  data->SetDouble("videoBandwidth", perf_tracker->video_bandwidth());
-  data->SetDouble("videoFrameRate", perf_tracker->video_frame_rate());
-  data->SetDouble("captureLatency", perf_tracker->video_capture_ms());
-  data->SetDouble("encodeLatency", perf_tracker->video_encode_ms());
-  data->SetDouble("decodeLatency", perf_tracker->video_decode_ms());
-  data->SetDouble("renderLatency", perf_tracker->video_paint_ms());
-  data->SetDouble("roundtripLatency", perf_tracker->round_trip_ms());
+  data->SetDouble("videoBandwidth", perf_tracker_.video_bandwidth());
+  data->SetDouble("videoFrameRate", perf_tracker_.video_frame_rate());
+  data->SetDouble("captureLatency", perf_tracker_.video_capture_ms());
+  data->SetDouble("encodeLatency", perf_tracker_.video_encode_ms());
+  data->SetDouble("decodeLatency", perf_tracker_.video_decode_ms());
+  data->SetDouble("renderLatency", perf_tracker_.video_paint_ms());
+  data->SetDouble("roundtripLatency", perf_tracker_.round_trip_ms());
   PostLegacyJsonMessage("onPerfStats", data.Pass());
 
   // Record the video frame-rate, packet-rate and bandwidth stats to UMA.
   // TODO(anandc): Create a timer in PerformanceTracker to do this work.
   // See http://crbug/508602.
-  perf_tracker->UploadRateStatsToUma();
+  perf_tracker_.UploadRateStatsToUma();
 }
 
 // static

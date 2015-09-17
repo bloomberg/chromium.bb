@@ -36,18 +36,18 @@ class PerformanceTracker;
 class SoftwareVideoRenderer : public VideoRenderer,
                               public protocol::VideoStub {
  public:
-  // Creates an update decoder on |main_task_runner_| and |decode_task_runner_|,
-  // outputting to |consumer|. The |main_task_runner_| is responsible for
-  // receiving and queueing packets. The |decode_task_runner_| is responsible
-  // for decoding the video packets.
+  // All methods must be called on the same thread the renderer is created. The
+  // |decode_task_runner_| is used to decode the video packets. |perf_tracker|
+  // must outlive the renderer. |perf_tracker| may be nullptr, performance
+  // tracking is disabled in that case.
   SoftwareVideoRenderer(
       scoped_refptr<base::SingleThreadTaskRunner> decode_task_runner,
-      FrameConsumer* consumer);
+      FrameConsumer* consumer,
+      protocol::PerformanceTracker* perf_tracker);
   ~SoftwareVideoRenderer() override;
 
   // VideoRenderer interface.
   void OnSessionConfig(const protocol::SessionConfig& config) override;
-  protocol::PerformanceTracker* GetPerformanceTracker() override;
   protocol::VideoStub* GetVideoStub() override;
 
   // protocol::VideoStub interface.
@@ -63,13 +63,12 @@ class SoftwareVideoRenderer : public VideoRenderer,
 
   scoped_refptr<base::SingleThreadTaskRunner> decode_task_runner_;
   FrameConsumer* consumer_;
+  protocol::PerformanceTracker* perf_tracker_;
 
   scoped_ptr<VideoDecoder> decoder_;
 
   webrtc::DesktopSize source_size_;
   webrtc::DesktopVector source_dpi_;
-
-  protocol::PerformanceTracker perf_tracker_;
 
   base::ThreadChecker thread_checker_;
 

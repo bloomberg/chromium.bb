@@ -22,6 +22,10 @@ namespace remoting {
 
 class ClientContext;
 
+namespace protocol {
+class PerformanceTracker;
+}  // namespace protocol
+
 // Interface for video renderers that render video in pepper plugin.
 class PepperVideoRenderer : public VideoRenderer {
  public:
@@ -54,7 +58,8 @@ class PepperVideoRenderer : public VideoRenderer {
   // renderer. Returns false if the renderer cannot be initialized.
   virtual bool Initialize(pp::Instance* instance,
                           const ClientContext& context,
-                          EventHandler* event_handler) = 0;
+                          EventHandler* event_handler,
+                          protocol::PerformanceTracker* perf_tracker) = 0;
 
   // Must be called whenever the plugin view changes.
   virtual void OnViewChanged(const pp::View& view) = 0;

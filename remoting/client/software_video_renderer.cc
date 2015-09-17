@@ -71,9 +71,11 @@ scoped_ptr<webrtc::DesktopFrame> DoDecodeFrame(
 
 SoftwareVideoRenderer::SoftwareVideoRenderer(
     scoped_refptr<base::SingleThreadTaskRunner> decode_task_runner,
-    FrameConsumer* consumer)
+    FrameConsumer* consumer,
+    protocol::PerformanceTracker* perf_tracker)
     : decode_task_runner_(decode_task_runner),
       consumer_(consumer),
+      perf_tracker_(perf_tracker),
       weak_factory_(this) {}
 
 SoftwareVideoRenderer::~SoftwareVideoRenderer() {
@@ -104,11 +106,6 @@ void SoftwareVideoRenderer::OnSessionConfig(
   }
 }
 
-protocol::PerformanceTracker* SoftwareVideoRenderer::GetPerformanceTracker() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  return &perf_tracker_;
-}
-
 protocol::VideoStub* SoftwareVideoRenderer::GetVideoStub() {
   DCHECK(thread_checker_.CalledOnValidThread());
   return this;
@@ -120,7 +117,8 @@ void SoftwareVideoRenderer::ProcessVideoPacket(scoped_ptr<VideoPacket> packet,
 
   base::ScopedClosureRunner done_runner(done);
 
-  perf_tracker_.RecordVideoPacketStats(*packet);
+  if (perf_tracker_)
+    perf_tracker_->RecordVideoPacketStats(*packet);
 
   // If the video packet is empty then drop it. Empty packets are used to
   // maintain activity on the network.
@@ -166,8 +164,10 @@ void SoftwareVideoRenderer::RenderFrame(
     scoped_ptr<webrtc::DesktopFrame> frame) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  perf_tracker_.RecordDecodeTime(
-      (base::TimeTicks::Now() - decode_start_time).InMilliseconds());
+  if (perf_tracker_) {
+    perf_tracker_->RecordDecodeTime(
+        (base::TimeTicks::Now() - decode_start_time).InMilliseconds());
+  }
 
   if (!frame) {
     if (!done.is_null())
@@ -185,8 +185,10 @@ void SoftwareVideoRenderer::OnFrameRendered(base::TimeTicks paint_start_time,
                                             const base::Closure& done) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  perf_tracker_.RecordPaintTime(
-      (base::TimeTicks::Now() - paint_start_time).InMilliseconds());
+  if (perf_tracker_) {
+    perf_tracker_->RecordPaintTime(
+        (base::TimeTicks::Now() - paint_start_time).InMilliseconds());
+  }
 
   if (!done.is_null())
     done.Run();
