@@ -51,7 +51,6 @@ import org.chromium.chrome.browser.contextmenu.ChromeContextMenuPopulator;
 import org.chromium.chrome.browser.contextmenu.ContextMenuParams;
 import org.chromium.chrome.browser.contextmenu.ContextMenuPopulator;
 import org.chromium.chrome.browser.contextmenu.ContextMenuPopulatorWrapper;
-import org.chromium.chrome.browser.contextmenu.EmptyChromeContextMenuItemDelegate;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.download.ChromeDownloadDelegate;
 import org.chromium.chrome.browser.fullscreen.FullscreenManager;
@@ -360,8 +359,7 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
      * A default {@link ChromeContextMenuItemDelegate} that supports some of the context menu
      * functionality.
      */
-    protected class TabChromeContextMenuItemDelegate
-            extends EmptyChromeContextMenuItemDelegate {
+    protected class TabChromeContextMenuItemDelegate implements ChromeContextMenuItemDelegate {
         private final Clipboard mClipboard;
 
         /**
