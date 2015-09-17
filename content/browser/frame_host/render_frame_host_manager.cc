@@ -1740,11 +1740,12 @@ scoped_ptr<RenderFrameHostImpl> RenderFrameHostManager::CreateRenderFrame(
 
       proxy_hosts_->Remove(instance->GetId());
       // NB |proxy| is deleted at this point.
+
+      // If we are reusing the RenderViewHost and it doesn't already have a
+      // RenderWidgetHostView, we need to create one if this is the main frame.
+      if (!render_view_host->GetView() && frame_tree_node_->IsMainFrame())
+        delegate_->CreateRenderWidgetHostViewForRenderManager(render_view_host);
     }
-    // If we are reusing the RenderViewHost and it doesn't already have a
-    // RenderWidgetHostView, we need to create one if this is the main frame.
-    if (!render_view_host->GetView() && frame_tree_node_->IsMainFrame())
-      delegate_->CreateRenderWidgetHostViewForRenderManager(render_view_host);
   } else {
     // Create a new RenderFrameHost if we don't find an existing one.
 
