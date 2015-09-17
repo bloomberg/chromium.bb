@@ -112,10 +112,12 @@ class AboutFetcherTest : public testing::Test {
 
     URLRequestPtr request(URLRequest::New());
     request->url = url;
-    application_manager_->ConnectToApplication(
-        nullptr, request.Pass(), std::string(), service_provider_request.Pass(),
-        nullptr, shell::CapabilityFilter(), base::Closure(),
-        shell::EmptyConnectCallback());
+
+    scoped_ptr<shell::ConnectToApplicationParams> params(
+        new shell::ConnectToApplicationParams);
+    params->SetURLInfo(request.Pass());
+    params->set_services(service_provider_request.Pass());
+    application_manager_->ConnectToApplication(params.Pass());
 
     run_loop.Run();
   }

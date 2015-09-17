@@ -11,6 +11,7 @@
 #include "mojo/fetcher/switches.h"
 #include "mojo/fetcher/update_fetcher.h"
 #include "mojo/shell/application_manager.h"
+#include "mojo/shell/connect_util.h"
 #include "mojo/shell/query_util.h"
 #include "mojo/shell/switches.h"
 #include "mojo/util/filename_util.h"
@@ -79,8 +80,8 @@ void PackageManagerImpl::FetchRequest(
     // LocalFetcher uses the network service to infer MIME types from URLs.
     // Skip this for mojo URLs to avoid recursively loading the network service.
     if (!network_service_ && !url.SchemeIs("mojo")) {
-      application_manager_->ConnectToService(GURL("mojo:network_service"),
-                                            &network_service_);
+      shell::ConnectToService(application_manager_,
+                              GURL("mojo:network_service"), &network_service_);
     }
     // Ownership of this object is transferred to |loader_callback|.
     // TODO(beng): this is eff'n weird.
@@ -99,7 +100,8 @@ void PackageManagerImpl::FetchRequest(
   if (url.SchemeIs("mojo") &&
       base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kUseUpdater)) {
-    application_manager_->ConnectToService(GURL("mojo:updater"), &updater_);
+    shell::ConnectToService(application_manager_, GURL("mojo:updater"),
+                            &updater_);
     // Ownership of this object is transferred to |loader_callback|.
     // TODO(beng): this is eff'n weird.
     new fetcher::UpdateFetcher(url, updater_.get(), loader_callback);
@@ -108,8 +110,8 @@ void PackageManagerImpl::FetchRequest(
 #endif
 
   if (!url_loader_factory_) {
-    application_manager_->ConnectToService(GURL("mojo:network_service"),
-                                           &url_loader_factory_);
+    shell::ConnectToService(application_manager_, GURL("mojo:network_service"),
+                            &url_loader_factory_);
   }
 
   // Ownership of this object is transferred to |loader_callback|.

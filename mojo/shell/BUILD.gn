@@ -17,6 +17,8 @@ source_set("shell") {
     "capability_filter.h",
     "connect_to_application_params.cc",
     "connect_to_application_params.h",
+    "connect_util.cc",
+    "connect_util.h",
     "content_handler_connection.cc",
     "content_handler_connection.h",
     "data_pipe_peek.cc",

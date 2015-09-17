@@ -94,9 +94,16 @@ void ApplicationInstance::ConnectToApplication(
     CapabilityFilter capability_filter = GetPermissiveCapabilityFilter();
     if (!filter.is_null())
       capability_filter = filter->filter.To<CapabilityFilter>();
-    manager_->ConnectToApplication(
-        this, app_request.Pass(), std::string(), services.Pass(),
-        exposed_services.Pass(), capability_filter, base::Closure(), callback);
+
+    scoped_ptr<ConnectToApplicationParams> params(
+        new ConnectToApplicationParams);
+    params->SetOriginatorInfo(this);
+    params->SetURLInfo(app_request.Pass());
+    params->set_services(services.Pass());
+    params->set_exposed_services(exposed_services.Pass());
+    params->set_filter(capability_filter);
+    params->set_connect_callback(callback);
+    manager_->ConnectToApplication(params.Pass());
   } else {
     LOG(WARNING) << "CapabilityFilter prevented connection from: " <<
         identity_.url << " to: " << url.spec();
