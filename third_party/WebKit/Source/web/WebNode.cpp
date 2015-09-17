@@ -141,11 +141,6 @@ WebNode WebNode::parentNode() const
     return WebNode(const_cast<ContainerNode*>(m_private->parentNode()));
 }
 
-WebString WebNode::nodeName() const
-{
-    return m_private->nodeName();
-}
-
 WebString WebNode::nodeValue() const
 {
     return m_private->nodeValue();
