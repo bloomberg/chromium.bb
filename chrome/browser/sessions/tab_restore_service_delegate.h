@@ -10,9 +10,8 @@
 
 #include "components/sessions/session_id.h"
 
-namespace content {
-class NavigationController;
-class WebContents;
+namespace sessions {
+class LiveTab;
 }
 
 namespace sessions {
@@ -40,15 +39,14 @@ class TabRestoreServiceDelegate {
   // see Browser::app_name()
   virtual std::string GetAppName() const = 0;
 
-  // see Browser methods with the same names
-  virtual content::WebContents* GetWebContentsAt(int index) const = 0;
-  virtual content::WebContents* GetActiveWebContents() const = 0;
+  virtual sessions::LiveTab* GetLiveTabAt(int index) const = 0;
+  virtual sessions::LiveTab* GetActiveLiveTab() const = 0;
   virtual bool IsTabPinned(int index) const = 0;
 
   // Note: |tab_client_data| may be null (e.g., if |from_last_session| is true,
   // as the tab client data is not persisted, or if the embedder did not supply
   // client data for the tab in question).
-  virtual content::WebContents* AddRestoredTab(
+  virtual sessions::LiveTab* AddRestoredTab(
       const std::vector<sessions::SerializedNavigationEntry>& navigations,
       int tab_index,
       int selected_navigation,
@@ -61,7 +59,7 @@ class TabRestoreServiceDelegate {
 
   // Note: |tab_client_data| may be null (e.g., if |from_last_session| is true,
   // as the tab client data is not persisted, or if the embedder did not supply
-  virtual content::WebContents* ReplaceRestoredTab(
+  virtual sessions::LiveTab* ReplaceRestoredTab(
       const std::vector<sessions::SerializedNavigationEntry>& navigations,
       int selected_navigation,
       bool from_last_session,

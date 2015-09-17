@@ -30,6 +30,7 @@
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/pref_names.h"
+#include "components/sessions/content/content_live_tab.h"
 #include "components/sync_driver/glue/synced_session.h"
 #include "components/sync_driver/open_tabs_ui_delegate.h"
 #include "components/url_formatter/url_formatter.h"
@@ -454,16 +455,18 @@ bool SessionsRestoreFunction::RestoreMostRecentlyClosed(Browser* browser) {
   TabRestoreServiceDelegate* delegate =
       BrowserTabRestoreServiceDelegate::FindDelegateForWebContents(
           browser->tab_strip_model()->GetActiveWebContents());
-  std::vector<content::WebContents*> contents =
+  std::vector<sessions::LiveTab*> restored_tabs =
       tab_restore_service->RestoreMostRecentEntry(delegate, host_desktop_type);
-  DCHECK(contents.size());
+  DCHECK(restored_tabs.size());
 
+  sessions::ContentLiveTab* first_tab =
+      static_cast<sessions::ContentLiveTab*>(restored_tabs[0]);
   if (is_window) {
     return SetResultRestoredWindow(
-        ExtensionTabUtil::GetWindowIdOfTab(contents[0]));
+        ExtensionTabUtil::GetWindowIdOfTab(first_tab->web_contents()));
   }
 
-  SetResultRestoredTab(contents[0]);
+  SetResultRestoredTab(first_tab->web_contents());
   return true;
 }
 
@@ -494,24 +497,25 @@ bool SessionsRestoreFunction::RestoreLocalSession(const SessionId& session_id,
   TabRestoreServiceDelegate* delegate =
       BrowserTabRestoreServiceDelegate::FindDelegateForWebContents(
           browser->tab_strip_model()->GetActiveWebContents());
-  std::vector<content::WebContents*> contents =
-      tab_restore_service->RestoreEntryById(delegate,
-                                            session_id.id(),
-                                            host_desktop_type,
-                                            UNKNOWN);
-  // If the ID is invalid, contents will be empty.
-  if (!contents.size()) {
+  std::vector<sessions::LiveTab*> restored_tabs =
+      tab_restore_service->RestoreEntryById(delegate, session_id.id(),
+                                            host_desktop_type, UNKNOWN);
+  // If the ID is invalid, restored_tabs will be empty.
+  if (!restored_tabs.size()) {
     SetInvalidIdError(session_id.ToString());
     return false;
   }
 
-  // Retrieve the window through any of the tabs in contents.
+  sessions::ContentLiveTab* first_tab =
+      static_cast<sessions::ContentLiveTab*>(restored_tabs[0]);
+
+  // Retrieve the window through any of the tabs in restored_tabs.
   if (is_window) {
     return SetResultRestoredWindow(
-        ExtensionTabUtil::GetWindowIdOfTab(contents[0]));
+        ExtensionTabUtil::GetWindowIdOfTab(first_tab->web_contents()));
   }
 
-  SetResultRestoredTab(contents[0]);
+  SetResultRestoredTab(first_tab->web_contents());
   return true;
 }
 

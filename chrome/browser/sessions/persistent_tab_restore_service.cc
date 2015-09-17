@@ -23,6 +23,8 @@
 #include "components/sessions/core/session_constants.h"
 #include "components/sessions/session_command.h"
 
+using sessions::LiveTab;
+
 namespace {
 
 // Only written if the tab is pinned.
@@ -945,10 +947,9 @@ void PersistentTabRestoreService::RemoveObserver(
   helper_.RemoveObserver(observer);
 }
 
-void PersistentTabRestoreService::CreateHistoricalTab(
-    content::WebContents* contents,
-    int index) {
-  helper_.CreateHistoricalTab(contents, index);
+void PersistentTabRestoreService::CreateHistoricalTab(LiveTab* live_tab,
+                                                      int index) {
+  helper_.CreateHistoricalTab(live_tab, index);
 }
 
 void PersistentTabRestoreService::BrowserClosing(
@@ -969,8 +970,7 @@ const TabRestoreService::Entries& PersistentTabRestoreService::entries() const {
   return helper_.entries();
 }
 
-std::vector<content::WebContents*>
-PersistentTabRestoreService::RestoreMostRecentEntry(
+std::vector<LiveTab*> PersistentTabRestoreService::RestoreMostRecentEntry(
     TabRestoreServiceDelegate* delegate,
     int host_desktop_type) {
   return helper_.RestoreMostRecentEntry(delegate, host_desktop_type);
@@ -981,8 +981,7 @@ TabRestoreService::Tab* PersistentTabRestoreService::RemoveTabEntryById(
   return helper_.RemoveTabEntryById(id);
 }
 
-std::vector<content::WebContents*>
-PersistentTabRestoreService::RestoreEntryById(
+std::vector<LiveTab*> PersistentTabRestoreService::RestoreEntryById(
     TabRestoreServiceDelegate* delegate,
     SessionID::id_type id,
     int host_desktop_type,

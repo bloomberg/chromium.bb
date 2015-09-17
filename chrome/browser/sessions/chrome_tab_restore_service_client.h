@@ -22,16 +22,15 @@ class ChromeTabRestoreServiceClient : public sessions::TabRestoreServiceClient {
   TabRestoreServiceDelegate* CreateTabRestoreServiceDelegate(
       int host_desktop_type,
       const std::string& app_name) override;
-  TabRestoreServiceDelegate* FindTabRestoreServiceDelegateForWebContents(
-      const content::WebContents* contents) override;
+  TabRestoreServiceDelegate* FindTabRestoreServiceDelegateForTab(
+      const sessions::LiveTab* tab) override;
   TabRestoreServiceDelegate* FindTabRestoreServiceDelegateWithID(
       SessionID::id_type desired_id,
       int host_desktop_type) override;
   bool ShouldTrackURLForRestore(const GURL& url) override;
-  std::string GetExtensionAppIDForWebContents(
-      content::WebContents* web_contents) override;
-  scoped_ptr<sessions::TabClientData> GetTabClientDataForWebContents(
-      content::WebContents* web_contents) override;
+  std::string GetExtensionAppIDForTab(sessions::LiveTab* tab) override;
+  scoped_ptr<sessions::TabClientData> GetTabClientDataForTab(
+      sessions::LiveTab* tab) override;
   base::SequencedWorkerPool* GetBlockingPool() override;
   base::FilePath GetPathToSaveTo() override;
   GURL GetNewTabURL() override;

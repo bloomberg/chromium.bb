@@ -21,8 +21,8 @@
 class TabRestoreServiceDelegate;
 class TabRestoreServiceObserver;
 
-namespace content {
-class WebContents;
+namespace sessions {
+class LiveTab;
 }
 
 // TabRestoreService is responsible for maintaining the most recently closed
@@ -132,10 +132,9 @@ class TabRestoreService : public KeyedService {
   virtual void AddObserver(TabRestoreServiceObserver* observer) = 0;
   virtual void RemoveObserver(TabRestoreServiceObserver* observer) = 0;
 
-  // Creates a Tab to represent |contents| and notifies observers the list of
+  // Creates a Tab to represent |live_tab| and notifies observers the list of
   // entries has changed.
-  virtual void CreateHistoricalTab(content::WebContents* contents,
-                                   int index) = 0;
+  virtual void CreateHistoricalTab(sessions::LiveTab* live_tab, int index) = 0;
 
   // Invoked when a browser is closing. If |delegate| is a tabbed browser with
   // at least one tab, a Window is created, added to entries and observers are
@@ -157,9 +156,9 @@ class TabRestoreService : public KeyedService {
   // entries to restore. If the most recently restored entry is a tab, it is
   // added to |delegate|. |host_desktop_type| is a value that is opaque to this
   // class and will be used only to pass back to the embedder via
-  // TabRestoreServiceClient if necessary. Returns the WebContents of the
+  // TabRestoreServiceClient if necessary. Returns the LiveTab instances of the
   // restored tab(s).
-  virtual std::vector<content::WebContents*> RestoreMostRecentEntry(
+  virtual std::vector<sessions::LiveTab*> RestoreMostRecentEntry(
       TabRestoreServiceDelegate* delegate,
       int host_desktop_type) = 0;
 
@@ -173,9 +172,9 @@ class TabRestoreService : public KeyedService {
   // browser window) of the tab when it was closed will be respected if
   // disposition is UNKNOWN.  |host_desktop_type| is a value that is opaque to
   // this class and will be used only to pass back to the embedder via
-  // TabRestoreServiceClient if necessary.  Returns the WebContents of the
+  // TabRestoreServiceClient if necessary.  Returns the LiveTab instances of the
   // restored tab(s).
-  virtual std::vector<content::WebContents*> RestoreEntryById(
+  virtual std::vector<sessions::LiveTab*> RestoreEntryById(
       TabRestoreServiceDelegate* delegate,
       SessionID::id_type id,
       int host_desktop_type,

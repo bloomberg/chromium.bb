@@ -13,6 +13,7 @@
       'sessions/base_session_service_commands.cc',
       'sessions/base_session_service_commands.h',
       'sessions/base_session_service_delegate.h',
+      'sessions/core/live_tab.h',
       'sessions/core/serialized_navigation_driver.h',
       'sessions/core/session_constants.cc',
       'sessions/core/session_constants.h',
@@ -90,6 +91,8 @@
             # Note: sources list duplicated in GN build.
             '<@(sessions_core_sources)',
 
+            'sessions/content/content_live_tab.cc',
+            'sessions/content/content_live_tab.h',
             'sessions/content/content_serialized_navigation_builder.cc',
             'sessions/content/content_serialized_navigation_builder.h',
             'sessions/content/content_serialized_navigation_driver.cc',

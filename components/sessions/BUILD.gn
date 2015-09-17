@@ -14,6 +14,8 @@ if (!is_ios) {
   # GYP version: components/sessions.gypi:sessions_content
   component("sessions") {
     sources = [
+      "content/content_live_tab.cc",
+      "content/content_live_tab.h",
       "content/content_serialized_navigation_builder.cc",
       "content/content_serialized_navigation_builder.h",
       "content/content_serialized_navigation_driver.cc",
@@ -69,6 +71,7 @@ source_set("shared") {
     "base_session_service_commands.cc",
     "base_session_service_commands.h",
     "base_session_service_delegate.h",
+    "core/live_tab.h",
     "core/serialized_navigation_driver.h",
     "core/session_constants.cc",
     "core/session_constants.h",

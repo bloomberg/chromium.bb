@@ -15,6 +15,10 @@
 class Browser;
 class Profile;
 
+namespace content {
+class WebContents;
+}
+
 // Implementation of TabRestoreServiceDelegate which uses an instance of
 // Browser in order to fulfil its duties.
 class BrowserTabRestoreServiceDelegate : public TabRestoreServiceDelegate {
@@ -29,10 +33,10 @@ class BrowserTabRestoreServiceDelegate : public TabRestoreServiceDelegate {
   int GetTabCount() const override;
   int GetSelectedIndex() const override;
   std::string GetAppName() const override;
-  content::WebContents* GetWebContentsAt(int index) const override;
-  content::WebContents* GetActiveWebContents() const override;
+  sessions::LiveTab* GetLiveTabAt(int index) const override;
+  sessions::LiveTab* GetActiveLiveTab() const override;
   bool IsTabPinned(int index) const override;
-  content::WebContents* AddRestoredTab(
+  sessions::LiveTab* AddRestoredTab(
       const std::vector<sessions::SerializedNavigationEntry>& navigations,
       int tab_index,
       int selected_navigation,
@@ -42,7 +46,7 @@ class BrowserTabRestoreServiceDelegate : public TabRestoreServiceDelegate {
       bool from_last_session,
       const sessions::TabClientData* storage_namespace,
       const std::string& user_agent_override) override;
-  content::WebContents* ReplaceRestoredTab(
+  sessions::LiveTab* ReplaceRestoredTab(
       const std::vector<sessions::SerializedNavigationEntry>& navigations,
       int selected_navigation,
       bool from_last_session,

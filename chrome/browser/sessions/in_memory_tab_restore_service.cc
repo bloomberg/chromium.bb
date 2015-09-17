@@ -8,6 +8,8 @@
 
 #include "base/compiler_specific.h"
 
+using sessions::LiveTab;
+
 InMemoryTabRestoreService::InMemoryTabRestoreService(
     scoped_ptr<sessions::TabRestoreServiceClient> client,
     TabRestoreService::TimeFactory* time_factory)
@@ -26,10 +28,9 @@ void InMemoryTabRestoreService::RemoveObserver(
   helper_.RemoveObserver(observer);
 }
 
-void InMemoryTabRestoreService::CreateHistoricalTab(
-    content::WebContents* contents,
-    int index) {
-  helper_.CreateHistoricalTab(contents, index);
+void InMemoryTabRestoreService::CreateHistoricalTab(LiveTab* live_tab,
+                                                    int index) {
+  helper_.CreateHistoricalTab(live_tab, index);
 }
 
 void InMemoryTabRestoreService::BrowserClosing(
@@ -50,8 +51,7 @@ const TabRestoreService::Entries& InMemoryTabRestoreService::entries() const {
   return helper_.entries();
 }
 
-std::vector<content::WebContents*>
-InMemoryTabRestoreService::RestoreMostRecentEntry(
+std::vector<LiveTab*> InMemoryTabRestoreService::RestoreMostRecentEntry(
     TabRestoreServiceDelegate* delegate,
     int host_desktop_type) {
   return helper_.RestoreMostRecentEntry(delegate, host_desktop_type);
@@ -62,7 +62,7 @@ TabRestoreService::Tab* InMemoryTabRestoreService::RemoveTabEntryById(
   return helper_.RemoveTabEntryById(id);
 }
 
-std::vector<content::WebContents*> InMemoryTabRestoreService::RestoreEntryById(
+std::vector<LiveTab*> InMemoryTabRestoreService::RestoreEntryById(
     TabRestoreServiceDelegate* delegate,
     SessionID::id_type id,
     int host_desktop_type,

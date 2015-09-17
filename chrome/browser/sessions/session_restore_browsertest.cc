@@ -34,6 +34,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/test_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/sessions/content/content_live_tab.h"
 #include "components/sessions/serialized_navigation_entry_test_helper.h"
 #include "components/sessions/session_types.h"
 #include "content/public/browser/navigation_controller.h"
@@ -530,11 +531,13 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoreIndividualTabFromWindow) {
     if (tab.navigations[0].virtual_url() == url2) {
       timestamp = tab.navigations[0].timestamp();
       http_status_code = tab.navigations[0].http_status_code();
-      std::vector<content::WebContents*> content =
+      std::vector<sessions::LiveTab*> content =
           service->RestoreEntryById(NULL, tab.id, host_desktop_type, UNKNOWN);
       ASSERT_EQ(1U, content.size());
       ASSERT_TRUE(content[0]);
-      EXPECT_EQ(url2, content[0]->GetURL());
+      EXPECT_EQ(url2, static_cast<sessions::ContentLiveTab*>(content[0])
+                          ->web_contents()
+                          ->GetURL());
       break;
     }
   }
@@ -584,11 +587,13 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, WindowWithOneTab) {
       static_cast<TabRestoreService::Tab*>(service->entries().front());
 
   // Restore the tab.
-  std::vector<content::WebContents*> content =
+  std::vector<sessions::LiveTab*> content =
       service->RestoreEntryById(NULL, tab->id, host_desktop_type, UNKNOWN);
   ASSERT_EQ(1U, content.size());
   ASSERT_TRUE(content[0]);
-  EXPECT_EQ(url, content[0]->GetURL());
+  EXPECT_EQ(url, static_cast<sessions::ContentLiveTab*>(content[0])
+                     ->web_contents()
+                     ->GetURL());
 
   // Make sure the restore was successful.
   EXPECT_EQ(0U, service->entries().size());

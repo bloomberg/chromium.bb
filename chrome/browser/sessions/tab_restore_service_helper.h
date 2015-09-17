@@ -20,11 +20,6 @@ class TabRestoreServiceDelegate;
 class TabRestoreServiceObserver;
 class TimeFactory;
 
-namespace content {
-class NavigationController;
-class WebContents;
-}
-
 namespace sessions {
 class TabRestoreServiceClient;
 }
@@ -77,16 +72,16 @@ class TabRestoreServiceHelper {
   // Helper methods used to implement TabRestoreService.
   void AddObserver(TabRestoreServiceObserver* observer);
   void RemoveObserver(TabRestoreServiceObserver* observer);
-  void CreateHistoricalTab(content::WebContents* contents, int index);
+  void CreateHistoricalTab(sessions::LiveTab* live_tab, int index);
   void BrowserClosing(TabRestoreServiceDelegate* delegate);
   void BrowserClosed(TabRestoreServiceDelegate* delegate);
   void ClearEntries();
   const Entries& entries() const;
-  std::vector<content::WebContents*> RestoreMostRecentEntry(
+  std::vector<sessions::LiveTab*> RestoreMostRecentEntry(
       TabRestoreServiceDelegate* delegate,
       int host_desktop_type);
   Tab* RemoveTabEntryById(SessionID::id_type id);
-  std::vector<content::WebContents*> RestoreEntryById(
+  std::vector<sessions::LiveTab*> RestoreEntryById(
       TabRestoreServiceDelegate* delegate,
       SessionID::id_type id,
       int host_desktop_type,
@@ -120,12 +115,12 @@ class TabRestoreServiceHelper {
  private:
   friend class PersistentTabRestoreService;
 
-  // Populates the tab's navigations from the NavigationController, and its
-  // browser_id and pinned state from the browser.
+  // Populates the tab's navigations from the LiveTab, and its browser_id and
+  // pinned state from the delegate.
   void PopulateTab(Tab* tab,
                    int index,
                    TabRestoreServiceDelegate* delegate,
-                   content::NavigationController* controller);
+                   sessions::LiveTab* live_tab);
 
   // This is a helper function for RestoreEntryById() for restoring a single
   // tab. If |delegate| is NULL, this creates a new window for the entry. This
@@ -135,12 +130,12 @@ class TabRestoreServiceHelper {
   // TabRestoreServiceDelegate needs to be created for this tab,
   // |host_desktop_type| will be passed to
   // TabRestoreServiceClient::CreateTabRestoreServiceDelegate(). If present,
-  // |contents| will be populated with the WebContents of the restored tab.
+  // |live_tab| will be populated with the LiveTab of the restored tab.
   TabRestoreServiceDelegate* RestoreTab(const Tab& tab,
                                         TabRestoreServiceDelegate* delegate,
                                         int host_desktop_type,
                                         WindowOpenDisposition disposition,
-                                        content::WebContents** contents);
+                                        sessions::LiveTab** live_tab);
 
   // Returns true if |tab| has more than one navigation. If |tab| has more
   // than one navigation |tab->current_navigation_index| is constrained based

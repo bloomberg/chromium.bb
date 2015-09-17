@@ -34,16 +34,16 @@ class InMemoryTabRestoreService : public TabRestoreService {
   // TabRestoreService:
   void AddObserver(TabRestoreServiceObserver* observer) override;
   void RemoveObserver(TabRestoreServiceObserver* observer) override;
-  void CreateHistoricalTab(content::WebContents* contents, int index) override;
+  void CreateHistoricalTab(sessions::LiveTab* live_tab, int index) override;
   void BrowserClosing(TabRestoreServiceDelegate* delegate) override;
   void BrowserClosed(TabRestoreServiceDelegate* delegate) override;
   void ClearEntries() override;
   const Entries& entries() const override;
-  std::vector<content::WebContents*> RestoreMostRecentEntry(
+  std::vector<sessions::LiveTab*> RestoreMostRecentEntry(
       TabRestoreServiceDelegate* delegate,
       int host_desktop_type) override;
   Tab* RemoveTabEntryById(SessionID::id_type id) override;
-  std::vector<content::WebContents*> RestoreEntryById(
+  std::vector<sessions::LiveTab*> RestoreEntryById(
       TabRestoreServiceDelegate* delegate,
       SessionID::id_type id,
       int host_desktop_type,

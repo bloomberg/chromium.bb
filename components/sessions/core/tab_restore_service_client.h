@@ -23,15 +23,12 @@ namespace content {
 class WebContents;
 }
 
-namespace sessions {
-struct SessionWindow;
-}
-
 class GURL;
 class TabRestoreServiceDelegate;
 
 namespace sessions {
 
+class LiveTab;
 struct SessionWindow;
 
 // Callback from TabRestoreServiceClient::GetLastSession.
@@ -68,12 +65,9 @@ class SESSIONS_EXPORT TabRestoreServiceClient {
       const std::string& app_name) = 0;
 
   // Returns the TabRestoreServiceDelegate instance that is associated with
-  // |contents|, or null if there is no such instance.
-  // TODO(blundell): Replace the usage of WebContents here with the cross-
-  // platform interface that will abstract it. crbug.com/530174
-  virtual TabRestoreServiceDelegate*
-  FindTabRestoreServiceDelegateForWebContents(
-      const content::WebContents* contents) = 0;
+  // |tab|, or null if there is no such instance.
+  virtual TabRestoreServiceDelegate* FindTabRestoreServiceDelegateForTab(
+      const LiveTab* tab) = 0;
 
   // Returns the TabRestoreServiceDelegate instance that is associated with
   // |desired_id| and |host_desktop_type|, or null if there is no such instance.
@@ -90,16 +84,12 @@ class SESSIONS_EXPORT TabRestoreServiceClient {
   // Returns the extension app ID for the given WebContents, or the empty string
   // if there is no such ID (e.g., if extensions are not supported by the
   // embedder).
-  // TODO(blundell): Replace the usage of WebContents here with the cross-
-  // platform interface that will abstract it. crbug.com/530174
-  virtual std::string GetExtensionAppIDForWebContents(
-      content::WebContents* web_contents) = 0;
+  virtual std::string GetExtensionAppIDForTab(LiveTab* tab) = 0;
 
   // Returns any client data that should be associated with the
-  // TabRestoreService::Tab corresponding to |web_contents|. That tab will own
+  // TabRestoreService::Tab corresponding to |tab|. That tab will own
   // this TabClientData instance. The default implementation returns null.
-  virtual scoped_ptr<TabClientData> GetTabClientDataForWebContents(
-      content::WebContents* web_contents);
+  virtual scoped_ptr<TabClientData> GetTabClientDataForTab(LiveTab* tab);
 
   // Get the sequenced worker pool for running tasks on the backend thread as
   // long as the system is not shutting down.

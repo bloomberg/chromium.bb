@@ -10,9 +10,8 @@ TabClientData::~TabClientData() {}
 
 TabRestoreServiceClient::~TabRestoreServiceClient() {}
 
-scoped_ptr<TabClientData>
-TabRestoreServiceClient::GetTabClientDataForWebContents(
-    content::WebContents* web_contents) {
+scoped_ptr<TabClientData> TabRestoreServiceClient::GetTabClientDataForTab(
+    LiveTab* tab) {
   return nullptr;
 }
 

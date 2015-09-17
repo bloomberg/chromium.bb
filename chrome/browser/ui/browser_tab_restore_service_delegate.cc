@@ -10,6 +10,7 @@
 #include "chrome/browser/ui/browser_tabrestore.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "components/sessions/content/content_live_tab.h"
 #include "components/sessions/content/content_tab_client_data.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/session_storage_namespace.h"
@@ -38,20 +39,22 @@ std::string BrowserTabRestoreServiceDelegate::GetAppName() const {
   return browser_->app_name();
 }
 
-WebContents* BrowserTabRestoreServiceDelegate::GetWebContentsAt(
+sessions::LiveTab* BrowserTabRestoreServiceDelegate::GetLiveTabAt(
     int index) const {
-  return browser_->tab_strip_model()->GetWebContentsAt(index);
+  return sessions::ContentLiveTab::FromWebContents(
+      browser_->tab_strip_model()->GetWebContentsAt(index));
 }
 
-WebContents* BrowserTabRestoreServiceDelegate::GetActiveWebContents() const {
-  return browser_->tab_strip_model()->GetActiveWebContents();
+sessions::LiveTab* BrowserTabRestoreServiceDelegate::GetActiveLiveTab() const {
+  return sessions::ContentLiveTab::FromWebContents(
+      browser_->tab_strip_model()->GetActiveWebContents());
 }
 
 bool BrowserTabRestoreServiceDelegate::IsTabPinned(int index) const {
   return browser_->tab_strip_model()->IsTabPinned(index);
 }
 
-WebContents* BrowserTabRestoreServiceDelegate::AddRestoredTab(
+sessions::LiveTab* BrowserTabRestoreServiceDelegate::AddRestoredTab(
     const std::vector<sessions::SerializedNavigationEntry>& navigations,
     int tab_index,
     int selected_navigation,
@@ -66,13 +69,15 @@ WebContents* BrowserTabRestoreServiceDelegate::AddRestoredTab(
           ? static_cast<const sessions::ContentTabClientData*>(tab_client_data)
                 ->session_storage_namespace()
           : nullptr;
-  return chrome::AddRestoredTab(browser_, navigations, tab_index,
-                                selected_navigation, extension_app_id, select,
-                                pin, from_last_session, storage_namespace,
-                                user_agent_override);
+
+  WebContents* web_contents = chrome::AddRestoredTab(
+      browser_, navigations, tab_index, selected_navigation, extension_app_id,
+      select, pin, from_last_session, storage_namespace, user_agent_override);
+
+  return sessions::ContentLiveTab::FromWebContents(web_contents);
 }
 
-WebContents* BrowserTabRestoreServiceDelegate::ReplaceRestoredTab(
+sessions::LiveTab* BrowserTabRestoreServiceDelegate::ReplaceRestoredTab(
     const std::vector<sessions::SerializedNavigationEntry>& navigations,
     int selected_navigation,
     bool from_last_session,
@@ -84,9 +89,12 @@ WebContents* BrowserTabRestoreServiceDelegate::ReplaceRestoredTab(
           ? static_cast<const sessions::ContentTabClientData*>(tab_client_data)
                 ->session_storage_namespace()
           : nullptr;
-  return chrome::ReplaceRestoredTab(browser_, navigations, selected_navigation,
-                                    from_last_session, extension_app_id,
-                                    storage_namespace, user_agent_override);
+
+  WebContents* web_contents = chrome::ReplaceRestoredTab(
+      browser_, navigations, selected_navigation, from_last_session,
+      extension_app_id, storage_namespace, user_agent_override);
+
+  return sessions::ContentLiveTab::FromWebContents(web_contents);
 }
 
 void BrowserTabRestoreServiceDelegate::CloseTab() {
@@ -119,7 +127,7 @@ TabRestoreServiceDelegate*
 BrowserTabRestoreServiceDelegate::FindDelegateForWebContents(
     const WebContents* contents) {
   Browser* browser = chrome::FindBrowserWithWebContents(contents);
-  return browser ? browser->tab_restore_service_delegate() : NULL;
+  return browser ? browser->tab_restore_service_delegate() : nullptr;
 }
 
 // static

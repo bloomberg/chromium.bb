@@ -63,6 +63,7 @@
 #include "components/offline_pages/offline_page_feature.h"
 #include "components/offline_pages/offline_page_item.h"
 #include "components/offline_pages/offline_page_model.h"
+#include "components/sessions/content/content_live_tab.h"
 #include "components/url_formatter/url_fixer.h"
 #include "content/public/browser/android/compositor.h"
 #include "content/public/browser/android/content_view_core.h"
@@ -736,7 +737,8 @@ void TabAndroid::CreateHistoricalTabFromContents(WebContents* web_contents) {
   }
 
   // TODO(jcivelli): is the index important?
-  service->CreateHistoricalTab(web_contents, -1);
+  service->CreateHistoricalTab(
+      sessions::ContentLiveTab::FromWebContents(web_contents), -1);
 }
 
 void TabAndroid::CreateHistoricalTab(JNIEnv* env, jobject obj) {
