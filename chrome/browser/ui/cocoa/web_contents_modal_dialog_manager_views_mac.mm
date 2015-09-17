@@ -82,7 +82,10 @@
 }
 
 - (void)makeSheetKeyAndOrderFront {
-  [customWindow_ makeKeyAndOrderFront:nil];
+  // If the window is not visible, do nothing. Widget::Show() is responsible for
+  // showing, and it may want to animate it.
+  if ([customWindow_ isVisible])
+    [customWindow_ makeKeyAndOrderFront:nil];
 }
 
 - (void)updateSheetPosition {
@@ -129,6 +132,9 @@ void SingleWebContentsDialogManagerViewsMac::Show() {
   [[ConstrainedWindowSheetController controllerForParentWindow:parent_window]
           showSheet:sheet_
       forParentView:parent_view];
+
+  if (!widget_->IsVisible())
+    widget_->Show();
 }
 
 void SingleWebContentsDialogManagerViewsMac::Hide() {
