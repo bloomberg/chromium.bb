@@ -57,7 +57,8 @@ bool NotificationUIManagerAndroid::OnNotificationClicked(
     jobject java_object,
     jlong persistent_notification_id,
     jstring java_origin,
-    jstring java_tag) {
+    jstring java_tag,
+    jint action_index) {
   GURL origin(ConvertJavaStringToUTF8(env, java_origin));
   std::string tag = ConvertJavaStringToUTF8(env, java_tag);
 
@@ -71,7 +72,7 @@ bool NotificationUIManagerAndroid::OnNotificationClicked(
       ProfileManager::GetLastUsedProfile(),
       persistent_notification_id,
       origin,
-      -1 /* action_index */);
+      action_index);
 
   return true;
 }
@@ -132,6 +133,12 @@ void NotificationUIManagerAndroid::Add(const Notification& notification,
   if (!icon_bitmap.isNull())
     icon = gfx::ConvertToJavaBitmap(&icon_bitmap);
 
+  std::vector<base::string16> action_titles_vector;
+  for (const message_center::ButtonInfo& button : notification.buttons())
+    action_titles_vector.push_back(button.title);
+  ScopedJavaLocalRef<jobjectArray> action_titles =
+      base::android::ToJavaArrayOfStrings(env, action_titles_vector);
+
   ScopedJavaLocalRef<jintArray> vibration_pattern =
       base::android::ToJavaIntArray(env, notification.vibration_pattern());
 
@@ -145,7 +152,8 @@ void NotificationUIManagerAndroid::Add(const Notification& notification,
       body.obj(),
       icon.obj(),
       vibration_pattern.obj(),
-      notification.silent());
+      notification.silent(),
+      action_titles.obj());
 
   regenerated_notification_infos_[persistent_notification_id] =
       std::make_pair(origin_url.spec(), notification.tag());
