@@ -186,6 +186,8 @@ DefaultCommandLineSwitch g_default_switches[] = {
 #endif
 #endif
 #endif  // defined(OS_LINUX)
+  // Enable prefixed EME until all Cast partner apps are moved off of it.
+  { switches::kEnablePrefixedEncryptedMedia, "" },
   // Needed to fix a bug where the raster thread doesn't get scheduled for a
   // substantial time (~5 seconds).  See https://crbug.com/441895.
   { switches::kUseNormalPriorityForTileTaskWorkerThreads, "" },
