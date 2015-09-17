@@ -162,7 +162,57 @@ const Vector<const InterpolationType*>* applicableTypesForProperty(CSSPropertyID
 
     auto applicableTypes = new Vector<const InterpolationType*>();
     switch (property) {
+    case CSSPropertyBaselineShift:
+    case CSSPropertyBorderBottomWidth:
+    case CSSPropertyBorderLeftWidth:
+    case CSSPropertyBorderRightWidth:
+    case CSSPropertyBorderTopWidth:
+    case CSSPropertyBottom:
+    case CSSPropertyCx:
+    case CSSPropertyCy:
+    case CSSPropertyFlexBasis:
+    case CSSPropertyHeight:
     case CSSPropertyLeft:
+    case CSSPropertyLetterSpacing:
+    case CSSPropertyMarginBottom:
+    case CSSPropertyMarginLeft:
+    case CSSPropertyMarginRight:
+    case CSSPropertyMarginTop:
+    case CSSPropertyMaxHeight:
+    case CSSPropertyMaxWidth:
+    case CSSPropertyMinHeight:
+    case CSSPropertyMinWidth:
+    case CSSPropertyMotionOffset:
+    case CSSPropertyOutlineOffset:
+    case CSSPropertyOutlineWidth:
+    case CSSPropertyPaddingBottom:
+    case CSSPropertyPaddingLeft:
+    case CSSPropertyPaddingRight:
+    case CSSPropertyPaddingTop:
+    case CSSPropertyPerspective:
+    case CSSPropertyR:
+    case CSSPropertyRight:
+    case CSSPropertyRx:
+    case CSSPropertyRy:
+    case CSSPropertyShapeMargin:
+    case CSSPropertyStrokeDashoffset:
+    case CSSPropertyStrokeWidth:
+    case CSSPropertyTop:
+    case CSSPropertyVerticalAlign:
+    case CSSPropertyWebkitBorderHorizontalSpacing:
+    case CSSPropertyWebkitBorderVerticalSpacing:
+    case CSSPropertyWebkitColumnGap:
+    case CSSPropertyWebkitColumnRuleWidth:
+    case CSSPropertyWebkitColumnWidth:
+    case CSSPropertyWebkitPerspectiveOriginX:
+    case CSSPropertyWebkitPerspectiveOriginY:
+    case CSSPropertyWebkitTransformOriginX:
+    case CSSPropertyWebkitTransformOriginY:
+    case CSSPropertyWebkitTransformOriginZ:
+    case CSSPropertyWidth:
+    case CSSPropertyWordSpacing:
+    case CSSPropertyX:
+    case CSSPropertyY:
         applicableTypes->append(new LengthInterpolationType(property));
         break;
     default:
@@ -234,67 +284,14 @@ PassRefPtr<Interpolation> StringKeyframe::CSSPropertySpecificKeyframe::maybeCrea
     case CSSPropertyLineHeight:
         if (LengthStyleInterpolation::canCreateFrom(*fromCSSValue) && LengthStyleInterpolation::canCreateFrom(*toCSSValue))
             return LengthStyleInterpolation::create(*fromCSSValue, *toCSSValue, property, RangeNonNegative);
-
         if (DoubleStyleInterpolation::canCreateFrom(*fromCSSValue) && DoubleStyleInterpolation::canCreateFrom(*toCSSValue))
             return DoubleStyleInterpolation::create(*fromCSSValue, *toCSSValue, property, true, RangeNonNegative);
 
         break;
-    case CSSPropertyBorderBottomWidth:
-    case CSSPropertyBorderLeftWidth:
-    case CSSPropertyBorderRightWidth:
-    case CSSPropertyBorderTopWidth:
-    case CSSPropertyFlexBasis:
+
     case CSSPropertyFontSize:
-    case CSSPropertyHeight:
-    case CSSPropertyMaxHeight:
-    case CSSPropertyMaxWidth:
-    case CSSPropertyMinHeight:
-    case CSSPropertyMinWidth:
-    case CSSPropertyOutlineWidth:
-    case CSSPropertyPaddingBottom:
-    case CSSPropertyPaddingLeft:
-    case CSSPropertyPaddingRight:
-    case CSSPropertyPaddingTop:
-    case CSSPropertyPerspective:
-    case CSSPropertyR:
-    case CSSPropertyRx:
-    case CSSPropertyRy:
-    case CSSPropertyShapeMargin:
-    case CSSPropertyStrokeWidth:
-    case CSSPropertyWebkitBorderHorizontalSpacing:
-    case CSSPropertyWebkitBorderVerticalSpacing:
-    case CSSPropertyWebkitColumnGap:
-    case CSSPropertyWebkitColumnWidth:
-    case CSSPropertyWidth:
-        range = RangeNonNegative;
-        // Fall through
-    case CSSPropertyBaselineShift:
-    case CSSPropertyBottom:
-    case CSSPropertyCx:
-    case CSSPropertyCy:
-    case CSSPropertyLeft:
-    case CSSPropertyLetterSpacing:
-    case CSSPropertyMarginBottom:
-    case CSSPropertyMarginLeft:
-    case CSSPropertyMarginRight:
-    case CSSPropertyMarginTop:
-    case CSSPropertyMotionOffset:
-    case CSSPropertyOutlineOffset:
-    case CSSPropertyRight:
-    case CSSPropertyStrokeDashoffset:
-    case CSSPropertyTop:
-    case CSSPropertyVerticalAlign:
-    case CSSPropertyWordSpacing:
-    case CSSPropertyWebkitColumnRuleWidth:
-    case CSSPropertyWebkitPerspectiveOriginX:
-    case CSSPropertyWebkitPerspectiveOriginY:
-    case CSSPropertyWebkitTransformOriginX:
-    case CSSPropertyWebkitTransformOriginY:
-    case CSSPropertyWebkitTransformOriginZ:
-    case CSSPropertyX:
-    case CSSPropertyY:
-        if (LengthStyleInterpolation::canCreateFrom(*fromCSSValue, property) && LengthStyleInterpolation::canCreateFrom(*toCSSValue, property))
-            return LengthStyleInterpolation::create(*fromCSSValue, *toCSSValue, property, range);
+        if (LengthStyleInterpolation::canCreateFrom(*fromCSSValue) && LengthStyleInterpolation::canCreateFrom(*toCSSValue))
+            return LengthStyleInterpolation::create(*fromCSSValue, *toCSSValue, property, RangeNonNegative);
 
         // FIXME: Handle keywords e.g. 'smaller', 'larger'.
         if (property == CSSPropertyFontSize)
@@ -305,6 +302,7 @@ PassRefPtr<Interpolation> StringKeyframe::CSSPropertySpecificKeyframe::maybeCrea
             return createLegacyStyleInterpolation(property, end, element, baseStyle);
 
         break;
+
     case CSSPropertyOrphans:
     case CSSPropertyWidows:
     case CSSPropertyZIndex:

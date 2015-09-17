@@ -17,12 +17,12 @@ class ComputedStyle;
 class LengthPropertyFunctions {
     STATIC_ONLY(LengthPropertyFunctions);
 public:
-    typedef void (ComputedStyle::*LengthSetter)(const Length&);
-
     static ValueRange valueRange(CSSPropertyID);
+    static bool isZoomedLength(CSSPropertyID);
     static bool getPixelsForKeyword(CSSPropertyID, CSSValueID, double& resultPixels);
-    static bool getLength(CSSPropertyID, const ComputedStyle&, Length& result);
     static bool getInitialLength(CSSPropertyID, Length& result);
+    static bool getLength(CSSPropertyID, const ComputedStyle&, Length& result);
+    static bool setLength(CSSPropertyID, ComputedStyle&, const Length&);
 };
 
 } // namespace blink

@@ -4,7 +4,7 @@
 <script src="../interpolation/resources/interpolation-test.js"></script>
 <script>
 assertComposition({
-  property: 'left',
+  property: 'cx',
   underlying: '50px',
   addFrom: '100px',
   addTo: '200px',
@@ -17,7 +17,7 @@ assertComposition({
 ]);
 
 assertComposition({
-  property: 'left',
+  property: 'cx',
   underlying: '100px',
   addFrom: '10px',
   addTo: '2px',
@@ -30,20 +30,7 @@ assertComposition({
 ]);
 
 assertComposition({
-  property: 'left',
-  underlying: '10%',
-  addFrom: '100px',
-  addTo: '20%',
-}, [
-  {at: -0.3, is: 'calc(130px + 4%)'},
-  {at: 0, is: 'calc(100px + 10%)'},
-  {at: 0.5, is: 'calc(50px + 20%)'},
-  {at: 1, is: '30%'},
-  {at: 1.5, is: 'calc(-50px + 40%)'},
-]);
-
-assertComposition({
-  property: 'left',
+  property: 'cx',
   underlying: '50px',
   addFrom: '100px',
   replaceTo: '200px',
@@ -53,19 +40,6 @@ assertComposition({
   {at: 0.5, is: '175px'},
   {at: 1, is: '200px'},
   {at: 1.5, is: '225px'},
-]);
-
-assertComposition({
-  property: 'left',
-  underlying: '100px',
-  addFrom: '100px',
-  addTo: 'auto',
-}, [
-  {at: -0.3, is: '200px'},
-  {at: 0, is: '200px'},
-  {at: 0.5, is: 'auto'},
-  {at: 1, is: 'auto'},
-  {at: 1.5, is: 'auto'},
 ]);
 </script>
 </body>

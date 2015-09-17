@@ -60,7 +60,7 @@ assertNoInterpolation({
 assertInterpolation({
   property: 'height',
   from: '0px',
-  to: '100px'
+  to: '100px',
 }, [
   {at: -0.3, is: '0px'}, // CSS height can't be negative.
   {at: 0, is: '0px'},

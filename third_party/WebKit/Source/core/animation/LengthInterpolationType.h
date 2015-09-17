@@ -10,6 +10,8 @@
 
 namespace blink {
 
+class ComputedStyle;
+
 class LengthInterpolationType : public InterpolationType {
 public:
     LengthInterpolationType(CSSPropertyID);
@@ -18,6 +20,8 @@ public:
     void apply(const InterpolableValue&, const NonInterpolableValue*, StyleResolverState&) const final;
 
 private:
+    float effectiveZoom(const ComputedStyle&) const;
+
     PassOwnPtr<InterpolationValue> maybeConvertLength(const Length&, float zoom) const;
     PassOwnPtr<InterpolationValue> maybeConvertNeutral() const final;
     PassOwnPtr<InterpolationValue> maybeConvertInitial() const final;

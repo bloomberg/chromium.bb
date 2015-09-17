@@ -1493,8 +1493,14 @@ public:
     void setFloodColor(const Color& c) { accessSVGStyle().setFloodColor(c); }
     void setLightingColor(const Color& c) { accessSVGStyle().setLightingColor(c); }
 
+    EBaselineShift baselineShift() const { return svgStyle().baselineShift(); }
     const Length& baselineShiftValue() const { return svgStyle().baselineShiftValue(); }
-    void setBaselineShiftValue(const Length& s) { accessSVGStyle().setBaselineShiftValue(s); }
+    void setBaselineShiftValue(const Length& value)
+    {
+        SVGComputedStyle& svgStyle = accessSVGStyle();
+        svgStyle.setBaselineShift(BS_LENGTH);
+        svgStyle.setBaselineShiftValue(value);
+    }
 
     void setShapeOutside(PassRefPtrWillBeRawPtr<ShapeValue> value)
     {

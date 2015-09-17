@@ -32,6 +32,11 @@ static PassOwnPtr<InterpolableList> createNeutralValue()
     return listOfValuesAndTypes.release();
 }
 
+float LengthInterpolationType::effectiveZoom(const ComputedStyle& style) const
+{
+    return LengthPropertyFunctions::isZoomedLength(m_property) ? style.effectiveZoom() : 1;
+}
+
 PassOwnPtr<InterpolationValue> LengthInterpolationType::maybeConvertLength(const Length& length, float zoom) const
 {
     if (!length.isSpecified())
@@ -45,8 +50,8 @@ PassOwnPtr<InterpolationValue> LengthInterpolationType::maybeConvertLength(const
     values.set(CSSPrimitiveValue::UnitTypePercentage, InterpolableNumber::create(pixelsAndPercent.percent));
 
     InterpolableList& types = toInterpolableList(*valuesAndTypes->get(1));
-    types.set(CSSPrimitiveValue::UnitTypePixels, InterpolableNumber::create(1));
-    types.set(CSSPrimitiveValue::UnitTypePercentage, InterpolableNumber::create(1));
+    types.set(CSSPrimitiveValue::UnitTypePixels, InterpolableNumber::create(pixelsAndPercent.pixels != 0));
+    types.set(CSSPrimitiveValue::UnitTypePercentage, InterpolableNumber::create(length.hasPercent()));
 
     return InterpolationValue::create(*this, valuesAndTypes.release());
 }
@@ -68,7 +73,7 @@ private:
     {
         Length parentLength;
         if (!LengthPropertyFunctions::getLength(m_property, *state.parentStyle(), parentLength))
-            return true;
+            return false;
         return parentLength == m_length;
     }
 
@@ -97,7 +102,7 @@ PassOwnPtr<InterpolationValue> LengthInterpolationType::maybeConvertInherit(cons
     if (!LengthPropertyFunctions::getLength(m_property, *state->parentStyle(), inheritedLength))
         return nullptr;
     conversionCheckers.append(ParentLengthChecker::create(m_property, inheritedLength));
-    return maybeConvertLength(inheritedLength, state->parentStyle()->effectiveZoom());
+    return maybeConvertLength(inheritedLength, effectiveZoom(*state->parentStyle()));
 }
 
 PassOwnPtr<InterpolationValue> LengthInterpolationType::maybeConvertValue(const CSSValue& value, const StyleResolverState* state, ConversionCheckers& conversionCheckers) const
@@ -146,7 +151,7 @@ PassOwnPtr<InterpolationValue> LengthInterpolationType::maybeConvertUnderlyingVa
     Length underlyingLength;
     if (!LengthPropertyFunctions::getLength(m_property, *state.style(), underlyingLength))
         return nullptr;
-    return maybeConvertLength(underlyingLength, state.style()->effectiveZoom());
+    return maybeConvertLength(underlyingLength, effectiveZoom(*state.style()));
 }
 
 void LengthInterpolationType::apply(const InterpolableValue& interpolableValue, const NonInterpolableValue*, StyleResolverState& state) const
@@ -154,8 +159,7 @@ void LengthInterpolationType::apply(const InterpolableValue& interpolableValue, 
     // TODO(alancutter): Make all length interpolation functions operate on ValueRanges instead of InterpolationRanges.
     InterpolationRange range = m_valueRange == ValueRangeNonNegative ? RangeNonNegative : RangeAll;
     // TODO(alancutter): Set arbitrary property Lengths on ComputedStyle without using cross compilation unit member function getters (Windows runtime doesn't like it).
-    ASSERT(m_property == CSSPropertyLeft);
-    LengthStyleInterpolation::applyInterpolableValue(m_property, interpolableValue, range, state, &ComputedStyle::setLeft);
+    LengthStyleInterpolation::applyInterpolableValue(m_property, interpolableValue, range, state);
 }
 
 } // namespace blink

@@ -4,7 +4,7 @@
 <script src="../interpolation/resources/interpolation-test.js"></script>
 <script>
 assertComposition({
-  property: 'left',
+  property: 'padding-bottom',
   underlying: '50px',
   addFrom: '100px',
   addTo: '200px',
@@ -17,7 +17,7 @@ assertComposition({
 ]);
 
 assertComposition({
-  property: 'left',
+  property: 'padding-bottom',
   underlying: '100px',
   addFrom: '10px',
   addTo: '2px',
@@ -26,11 +26,11 @@ assertComposition({
   {at: 0, is: '110px'},
   {at: 0.5, is: '106px'},
   {at: 1, is: '102px'},
-  {at: 1.5, is: '98px'},
+  {at: 1.5, is: '98px'}, // Value clamping should happen after composition.
 ]);
 
 assertComposition({
-  property: 'left',
+  property: 'padding-bottom',
   underlying: '10%',
   addFrom: '100px',
   addTo: '20%',
@@ -43,7 +43,7 @@ assertComposition({
 ]);
 
 assertComposition({
-  property: 'left',
+  property: 'padding-bottom',
   underlying: '50px',
   addFrom: '100px',
   replaceTo: '200px',
@@ -53,19 +53,6 @@ assertComposition({
   {at: 0.5, is: '175px'},
   {at: 1, is: '200px'},
   {at: 1.5, is: '225px'},
-]);
-
-assertComposition({
-  property: 'left',
-  underlying: '100px',
-  addFrom: '100px',
-  addTo: 'auto',
-}, [
-  {at: -0.3, is: '200px'},
-  {at: 0, is: '200px'},
-  {at: 0.5, is: 'auto'},
-  {at: 1, is: 'auto'},
-  {at: 1.5, is: 'auto'},
 ]);
 </script>
 </body>

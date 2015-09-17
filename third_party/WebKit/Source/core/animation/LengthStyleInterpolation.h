@@ -16,7 +16,6 @@ class Length;
 
 class CORE_EXPORT LengthStyleInterpolation : public StyleInterpolation {
 public:
-    typedef void (ComputedStyle::*LengthSetter)(const Length&);
     typedef void NonInterpolableType;
 
     static PassRefPtr<LengthStyleInterpolation> create(const CSSValue& start, const CSSValue& end, CSSPropertyID id, InterpolationRange range)
@@ -30,23 +29,16 @@ public:
 
     static PassOwnPtr<InterpolableValue> toInterpolableValue(const CSSValue&, CSSPropertyID = CSSPropertyInvalid);
     static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> fromInterpolableValue(const InterpolableValue&, InterpolationRange);
-    static void applyInterpolableValue(CSSPropertyID, const InterpolableValue&, InterpolationRange, StyleResolverState&, LengthSetter);
+    static void applyInterpolableValue(CSSPropertyID, const InterpolableValue&, InterpolationRange, StyleResolverState&);
 
 private:
     LengthStyleInterpolation(PassOwnPtr<InterpolableValue> start, PassOwnPtr<InterpolableValue> end, CSSPropertyID id, InterpolationRange range)
         : StyleInterpolation(start, end, id)
         , m_range(range)
-        , m_lengthSetter(nullptr)
     {
-        if (isPixelsOrPercentOnly(*m_start) && isPixelsOrPercentOnly(*m_end))
-            m_lengthSetter = lengthSetterForProperty(id);
     }
 
-    static bool isPixelsOrPercentOnly(const InterpolableValue&);
-    static LengthSetter lengthSetterForProperty(CSSPropertyID);
-
     InterpolationRange m_range;
-    LengthSetter m_lengthSetter;
 };
 
 }
