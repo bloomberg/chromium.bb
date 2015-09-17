@@ -59,6 +59,8 @@
         'midi_port_info.h',
         'midi_scheduler.cc',
         'midi_scheduler.h',
+        'midi_switches.cc',
+        'midi_switches.h',
         'usb_midi_device_android.cc',
         'usb_midi_device_android.h',
         'usb_midi_device_factory_android.cc',

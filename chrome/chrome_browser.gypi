@@ -3269,6 +3269,7 @@
             '../content/app/resources/content_resources.gyp:content_resources',
             '../gpu/gpu.gyp:gpu',
             '../media/media.gyp:media',
+            '../media/midi/midi.gyp:midi',
             '../media/mojo/interfaces/mojo_bindings.gyp:platform_verification_api',
             '../mojo/mojo_base.gyp:mojo_application_base',
             '../mojo/mojo_base.gyp:mojo_common_lib',

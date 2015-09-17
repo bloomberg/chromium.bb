@@ -135,6 +135,7 @@ include_rules = [
   "+jni",
   "+media/audio", # For media audio hang monitor.
   "+media/base",  # For media switches
+  "+media/midi",  # For midi switches
   "+mojo/application/public/cpp",
   "+policy",  # For generated headers and source
   "+ppapi/c",  # For various types.

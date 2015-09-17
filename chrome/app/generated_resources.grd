@@ -15407,7 +15407,13 @@ After you create a new supervised user, you can manage their settings at any tim
       <message name="IDS_FLAGS_NTP_POPULAR_SITES_DESCRIPTION" desc="Description for the flag to enable showing non-personalized popular suggestions on the New Tab Page, when no personal suggestions are available yet.">
         Pre-populate the New Tab page with popular sites.
       </message>
-    </if>
+      <message name="IDS_FLAGS_USE_ANDROID_MIDI_API_NAME" desc="Name for the flag to use android midi api.">
+        Use Android Midi API
+      </message>
+      <message name="IDS_FLAGS_USE_ANDROID_MIDI_API_DESCRIPTION" desc="Description for the flag to use android midi api.">
+        Use Android Midi API for WebMIDI (effective only with Android M+ devices).
+      </message>
+   </if>
 
     <if expr="is_win">
       <!-- Exporting tracing events to ETW -->

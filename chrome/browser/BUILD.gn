@@ -301,6 +301,7 @@ source_set("browser") {
       "//components/web_modal",
       "//content/app/resources",
       "//media",
+      "//media/midi",
       "//mojo/application/public/cpp",
       "//mojo/common",
       "//mojo/environment:chromium",

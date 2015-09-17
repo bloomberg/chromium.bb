@@ -64642,6 +64642,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="1668611601" label="enable-encrypted-media"/>
   <int value="1694854500" label="disable-save-password-bubble"/>
   <int value="1696139514" label="enable-ble-advertising-in-apps"/>
+  <int value="1705724232" label="use-android-midi-api"/>
   <int value="1723601083" label="enable-app-window-controls"/>
   <int value="1730236697" label="force-device-scale-factor"/>
   <int value="1731522433" label="enable-offer-store-unmasked-wallet-cards"/>

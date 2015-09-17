@@ -40,6 +40,7 @@
 #include "components/version_info/version_info.h"
 #include "content/public/browser/user_metrics.h"
 #include "media/base/media_switches.h"
+#include "media/midi/midi_switches.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/display/display_switches.h"
@@ -2020,6 +2021,11 @@ const Experiment kExperiments[] = {
      kOsAndroid,
      ENABLE_DISABLE_VALUE_TYPE(switches::kEnableNTPPopularSites,
                                switches::kDisableNTPPopularSites)},
+    {"use-android-midi-api",
+     IDS_FLAGS_USE_ANDROID_MIDI_API_NAME,
+     IDS_FLAGS_USE_ANDROID_MIDI_API_DESCRIPTION,
+     kOsAndroid,
+     SINGLE_VALUE_TYPE(switches::kUseAndroidMidiApi)},
 #endif  // defined(OS_ANDROID)
 #if defined(OS_WIN)
      {"trace-export-events-to-etw",
