@@ -738,6 +738,7 @@ void NavigatorImpl::CommitNavigation(FrameTreeNode* frame_tree_node,
       render_frame_host, navigation_request->common_params().url);
 
   navigation_request->TransferNavigationHandleOwnership(render_frame_host);
+  delegate_->ReadyToCommitNavigation(render_frame_host->navigation_handle());
   render_frame_host->CommitNavigation(response, body.Pass(),
                                       navigation_request->common_params(),
                                       navigation_request->request_params());
@@ -768,6 +769,7 @@ void NavigatorImpl::FailedNavigation(FrameTreeNode* frame_tree_node,
       render_frame_host, navigation_request->common_params().url);
 
   navigation_request->TransferNavigationHandleOwnership(render_frame_host);
+  delegate_->ReadyToCommitNavigation(render_frame_host->navigation_handle());
   render_frame_host->FailedNavigation(navigation_request->common_params(),
                                       navigation_request->request_params(),
                                       has_stale_copy_in_cache, error_code);

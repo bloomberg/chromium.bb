@@ -2796,6 +2796,12 @@ void WebContentsImpl::DidRedirectNavigation(
                     DidRedirectNavigation(navigation_handle));
 }
 
+void WebContentsImpl::ReadyToCommitNavigation(
+    NavigationHandle* navigation_handle) {
+  FOR_EACH_OBSERVER(WebContentsObserver, observers_,
+                    ReadyToCommitNavigation(navigation_handle));
+}
+
 void WebContentsImpl::DidCommitNavigation(NavigationHandle* navigation_handle) {
   FOR_EACH_OBSERVER(WebContentsObserver, observers_,
                     DidCommitNavigation(navigation_handle));

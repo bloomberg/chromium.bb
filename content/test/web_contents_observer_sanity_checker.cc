@@ -143,6 +143,15 @@ void WebContentsObserverSanityChecker::DidRedirectNavigation(
   CHECK(!navigation_handle->HasCommittedErrorPage());
 }
 
+void WebContentsObserverSanityChecker::ReadyToCommitNavigation(
+    NavigationHandle* navigation_handle) {
+  CHECK(NavigationIsOngoing(navigation_handle));
+  CHECK(!NavigationIsOngoingAndCommitted(navigation_handle));
+
+  CHECK(!navigation_handle->HasCommittedDocument());
+  CHECK(!navigation_handle->HasCommittedErrorPage());
+}
+
 void WebContentsObserverSanityChecker::DidCommitNavigation(
     NavigationHandle* navigation_handle) {
   CHECK(NavigationIsOngoing(navigation_handle));

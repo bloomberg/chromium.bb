@@ -121,8 +121,9 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener,
 
   // Called when a navigation started in the WebContents. |navigation_handle|
   // is unique to a specific navigation. The same |navigation_handle| will be
-  // provided on subsequent calls to DidRedirect/Commit/FinishNavigation
-  // related to this navigation.
+  // provided on subsequent calls to
+  // DidRedirect/Commit/FinishNavigation/ReadyToCommitNavigation related to
+  // this navigation.
   //
   // Note that this is fired by navigations in any frame of the WebContents,
   // not just the main frame.
@@ -138,6 +139,14 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener,
 
   // Called when a navigation encountered a server redirect.
   virtual void DidRedirectNavigation(NavigationHandle* navigation_handle) {}
+
+  // PlzNavigate
+  // Called when the navigation is ready to be committed in a renderer. This is
+  // the first point in time where a RenderFrameHost is associated with the
+  // navigation. Observers that want to initialize any renderer side
+  // structures/state before the RenderFrame is navigated, should use this
+  // method as opposed to DidCommitNavigation, which is after the fact.
+  virtual void ReadyToCommitNavigation(NavigationHandle* navigation_handle) {}
 
   // Called when a navigation was committed.
   virtual void DidCommitNavigation(NavigationHandle* navigation_handle) {}

@@ -242,6 +242,13 @@ class AppWindow : public content::WebContentsDelegate,
   // is on startup and from within UpdateWindowTitle().
   base::string16 GetTitle() const;
 
+  // |callback| will then be called when the first navigation in the window is
+  // ready to commit.
+  void SetOnFirstCommitCallback(const base::Closure& callback);
+
+  // Called when the first navigation in the window is ready to commit.
+  void OnReadyToCommitFirstNavigation();
+
   // Call to notify ShellRegistry and delete the window. Subclasses should
   // invoke this method instead of using "delete this".
   void OnNativeClose();
@@ -550,6 +557,9 @@ class AppWindow : public content::WebContentsDelegate,
 
   // Whether |is_ime_window| was set in the CreateParams.
   bool is_ime_window_;
+
+  // PlzNavigate: this is called when the first navigation is ready to commit.
+  base::Closure on_first_commit_callback_;
 
   base::WeakPtrFactory<AppWindow> image_loader_ptr_factory_;
 

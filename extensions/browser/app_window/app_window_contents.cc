@@ -118,6 +118,12 @@ bool AppWindowContentsImpl::OnMessageReceived(const IPC::Message& message) {
   return handled;
 }
 
+void AppWindowContentsImpl::ReadyToCommitNavigation(
+    content::NavigationHandle* handle) {
+  if (!is_window_ready_)
+    host_->OnReadyToCommitFirstNavigation();
+}
+
 void AppWindowContentsImpl::UpdateDraggableRegions(
     const std::vector<DraggableRegion>& regions) {
   host_->UpdateDraggableRegions(regions);

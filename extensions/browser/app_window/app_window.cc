@@ -8,9 +8,12 @@
 #include <string>
 #include <vector>
 
+#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "content/public/browser/browser_context.h"
@@ -440,6 +443,26 @@ void AppWindow::DidFirstVisuallyNonEmptyPaint() {
            delayed_show_type_ == SHOW_INACTIVE);
     Show(delayed_show_type_);
   }
+}
+
+void AppWindow::SetOnFirstCommitCallback(const base::Closure& callback) {
+  DCHECK(on_first_commit_callback_.is_null());
+  on_first_commit_callback_ = callback;
+}
+
+void AppWindow::OnReadyToCommitFirstNavigation() {
+  CHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(
+      ::switches::kEnableBrowserSideNavigation));
+  WindowEventsReady();
+  if (on_first_commit_callback_.is_null())
+    return;
+  // It is important that the callback executes after the calls to
+  // WebContentsObserver::ReadyToCommitNavigation have been processed. The
+  // CommitNavigation IPC that will properly set up the renderer will only be
+  // sent after these, and it must be sent before the callback gets to run,
+  // hence the use of PostTask.
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::ResetAndReturn(&on_first_commit_callback_));
 }
 
 void AppWindow::OnNativeClose() {

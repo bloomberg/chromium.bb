@@ -34,6 +34,9 @@ class CONTENT_EXPORT NavigatorDelegate {
   // Called when a navigation was redirected.
   virtual void DidRedirectNavigation(NavigationHandle* navigation_handle) {}
 
+  // Called when the navigation is about to be committed in a renderer.
+  virtual void ReadyToCommitNavigation(NavigationHandle* navigation_handle) {}
+
   // Called when a navigation committed.
   virtual void DidCommitNavigation(NavigationHandle* navigation_handle) {}
 
