@@ -53,10 +53,6 @@ const char kAccessibleNumberOfPages[] = "numberOfPages";
 const char kAccessibleLoaded[] = "loaded";
 const char kAccessibleCopyable[] = "copyable";
 
-// PDF background colors.
-const uint32 kBackgroundColor = 0xFFCCCCCC;
-const uint32 kBackgroundColorMaterial = 0xFF525659;
-
 // Constants used in handling postMessage() messages.
 const char kType[] = "type";
 // Viewport message arguments. (Page -> Plugin).
@@ -281,7 +277,7 @@ OutOfProcessInstance::OutOfProcessInstance(PP_Instance instance)
       received_viewport_message_(false),
       did_call_start_loading_(false),
       stop_scrolling_(false),
-      background_color_(kBackgroundColor),
+      background_color_(0),
       top_toolbar_height_(0) {
   loader_factory_.Initialize(this);
   timer_factory_.Initialize(this);
@@ -350,24 +346,22 @@ bool OutOfProcessInstance::Init(uint32_t argc,
   const char* stream_url = nullptr;
   const char* original_url = nullptr;
   const char* headers = nullptr;
-  bool is_material = false;
   for (uint32_t i = 0; i < argc; ++i) {
+    bool success = true;
     if (strcmp(argn[i], "src") == 0)
       original_url = argv[i];
     else if (strcmp(argn[i], "stream-url") == 0)
       stream_url = argv[i];
     else if (strcmp(argn[i], "headers") == 0)
       headers = argv[i];
-    else if (strcmp(argn[i], "is-material") == 0)
-      is_material = true;
+    else if (strcmp(argn[i], "background-color") == 0)
+      success = base::HexStringToUInt(argv[i], &background_color_);
     else if (strcmp(argn[i], "top-toolbar-height") == 0)
-      base::StringToInt(argv[i], &top_toolbar_height_);
-  }
+      success = base::StringToInt(argv[i], &top_toolbar_height_);
 
-  if (is_material)
-    background_color_ = kBackgroundColorMaterial;
-  else
-    background_color_ = kBackgroundColor;
+    if (!success)
+      return false;
+  }
 
   if (!original_url)
     return false;

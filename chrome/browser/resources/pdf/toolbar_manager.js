@@ -68,7 +68,7 @@ function ToolbarManager(window, toolbar, zoomToolbar) {
 ToolbarManager.prototype = {
 
   showToolbarsForMouseMove: function(e) {
-    this.isMouseNearTopToolbar_ = isMouseNearTopToolbar(e);
+    this.isMouseNearTopToolbar_ = this.toolbar_ && isMouseNearTopToolbar(e);
     this.isMouseNearSideToolbar_ = isMouseNearSideToolbar(e);
 
     // Allow the top toolbar to be shown if the mouse moves away from the side
@@ -96,7 +96,8 @@ ToolbarManager.prototype = {
    * Display both UI toolbars.
    */
   showToolbars: function() {
-    this.toolbar_.show();
+    if (this.toolbar_)
+      this.toolbar_.show();
     this.zoomToolbar_.show();
   },
 
@@ -106,11 +107,15 @@ ToolbarManager.prototype = {
    * elements.
    */
   hideToolbarsIfAllowed: function() {
-    if (!(this.isMouseNearTopToolbar_ || this.isMouseNearSideToolbar_ ||
-        this.toolbar_.shouldKeepOpen())) {
+    if (this.isMouseNearSideToolbar_ || this.isMouseNearTopToolbar_)
+      return;
+
+    if (this.toolbar_ && this.toolbar_.shouldKeepOpen())
+      return;
+
+    if (this.toolbar_)
       this.toolbar_.hide();
-      this.zoomToolbar_.hide();
-    }
+    this.zoomToolbar_.hide();
   },
 
   /**
@@ -128,7 +133,7 @@ ToolbarManager.prototype = {
    * hides the basic toolbars otherwise.
    */
   hideSingleToolbarLayer: function() {
-    if (!this.toolbar_.hideDropdowns())
+    if (!this.toolbar_ || !this.toolbar_.hideDropdowns())
       this.hideToolbarsIfAllowed();
   },
 
@@ -141,6 +146,8 @@ ToolbarManager.prototype = {
    * of the screen.
    */
   forceHideTopToolbar: function() {
+    if (!this.toolbar_)
+      return;
     this.toolbar_.hide();
     this.sideToolbarAllowedOnly_ = true;
     this.sideToolbarAllowedOnlyTimer_ = this.window_.setTimeout(function() {
@@ -154,6 +161,8 @@ ToolbarManager.prototype = {
    * @private
    */
   resizeDropdowns_: function() {
+    if (!this.toolbar_)
+      return;
     var lowerBound = this.window_.innerHeight - this.zoomToolbar_.clientHeight;
     this.toolbar_.setDropdownLowerBound(lowerBound);
   }

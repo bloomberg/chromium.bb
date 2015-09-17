@@ -25,7 +25,6 @@
   ],
   "mime_types_handler": "<INDEX>",
   "web_accessible_resources": [
-    "index.html",
     "<INDEX>"
   ]
 }

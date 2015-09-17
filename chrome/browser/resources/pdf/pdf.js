@@ -95,6 +95,16 @@ PDFViewer.MIN_TOOLBAR_OFFSET = 15;
 PDFViewer.MATERIAL_TOOLBAR_HEIGHT = 56;
 
 /**
+ * The light-gray background color used for print preview.
+ */
+PDFViewer.LIGHT_BACKGROUND_COLOR = '0xFFCCCCCC';
+
+/**
+ * The dark-gray background color used for the regular viewer.
+ */
+PDFViewer.DARK_BACKGROUND_COLOR = '0xFF525659';
+
+/**
  * Creates a new PDFViewer. There should only be one of these objects per
  * document.
  * @constructor
@@ -117,7 +127,8 @@ function PDFViewer(browserApi) {
   // of the pdf and zoom level.
   this.sizer_ = $('sizer');
   this.toolbar_ = $('toolbar');
-  this.pageIndicator_ = $('page-indicator');
+  if (!this.isMaterial_ || this.isPrintPreview_)
+    this.pageIndicator_ = $('page-indicator');
   this.progressBar_ = $('progress-bar');
   this.passwordScreen_ = $('password-screen');
   this.passwordScreen_.addEventListener('password-submitted',
@@ -128,7 +139,8 @@ function PDFViewer(browserApi) {
 
   // Create the viewport.
   var topToolbarHeight =
-      this.isMaterial_ ? PDFViewer.MATERIAL_TOOLBAR_HEIGHT : 0;
+      (this.isMaterial_ && !this.isPrintPreview_) ?
+      PDFViewer.MATERIAL_TOOLBAR_HEIGHT : 0;
   this.viewport_ = new Viewport(window,
                                 this.sizer_,
                                 this.viewportChanged_.bind(this),
@@ -167,11 +179,11 @@ function PDFViewer(browserApi) {
   }
   this.plugin_.setAttribute('headers', headers);
 
-  if (this.isMaterial_) {
-    this.plugin_.setAttribute('is-material', '');
-    this.plugin_.setAttribute('top-toolbar-height',
-                              PDFViewer.MATERIAL_TOOLBAR_HEIGHT);
-  }
+  var backgroundColor = PDFViewer.DARK_BACKGROUND_COLOR;
+  if (!this.isMaterial_)
+    backgroundColor = PDFViewer.LIGHT_BACKGROUND_COLOR;
+  this.plugin_.setAttribute('background-color', backgroundColor);
+  this.plugin_.setAttribute('top-toolbar-height', topToolbarHeight);
 
   if (!this.browserApi_.getStreamInfo().embedded)
     this.plugin_.setAttribute('full-frame', '');
@@ -202,13 +214,19 @@ function PDFViewer(browserApi) {
     this.zoomToolbar_.addEventListener('zoom-out',
         this.viewport_.zoomOut.bind(this.viewport_));
 
-    this.materialToolbar_ = $('material-toolbar');
-    this.materialToolbar_.addEventListener('save', this.save_.bind(this));
-    this.materialToolbar_.addEventListener('print', this.print_.bind(this));
-    this.materialToolbar_.addEventListener('rotate-right',
-        this.rotateClockwise_.bind(this));
-    this.materialToolbar_.addEventListener('rotate-left',
-        this.rotateCounterClockwise_.bind(this));
+    if (!this.isPrintPreview_) {
+      this.materialToolbar_ = $('material-toolbar');
+      this.materialToolbar_.addEventListener('save', this.save_.bind(this));
+      this.materialToolbar_.addEventListener('print', this.print_.bind(this));
+      this.materialToolbar_.addEventListener('rotate-right',
+          this.rotateClockwise_.bind(this));
+      this.materialToolbar_.addEventListener('rotate-left',
+          this.rotateCounterClockwise_.bind(this));
+      // Must attach to mouseup on the plugin element, since it eats mousedown
+      // and click events.
+      this.plugin_.addEventListener('mouseup',
+          this.materialToolbar_.hideDropdowns.bind(this.materialToolbar_));
+    }
 
     document.body.addEventListener('change-page', function(e) {
       this.viewport_.goToPage(e.detail.page);
@@ -216,12 +234,6 @@ function PDFViewer(browserApi) {
 
     this.toolbarManager_ =
         new ToolbarManager(window, this.materialToolbar_, this.zoomToolbar_);
-
-    // Must attach to mouseup on the plugin element, since it eats mousedown and
-    // click events.
-    this.plugin_.addEventListener(
-        'mouseup',
-        this.materialToolbar_.hideDropdowns.bind(this.materialToolbar_));
   }
 
   // Set up the ZoomManager.
@@ -353,7 +365,8 @@ PDFViewer.prototype = {
         }
         return;
       case 71: // g key.
-        if (this.isMaterial_ && (e.ctrlKey || e.metaKey)) {
+        if (this.isMaterial_ && this.materialToolbar_ &&
+            (e.ctrlKey || e.metaKey)) {
           this.toolbarManager_.showToolbars();
           this.materialToolbar_.selectPageNumber();
           // To prevent the default "find text" behaviour in Chrome.
@@ -488,10 +501,12 @@ PDFViewer.prototype = {
    * @param {number} progress the progress as a percentage.
    */
   updateProgress_: function(progress) {
-    if (this.isMaterial_)
-      this.materialToolbar_.loadProgress = progress;
-    else
+    if (this.isMaterial_) {
+      if (this.materialToolbar_)
+        this.materialToolbar_.loadProgress = progress;
+    } else {
       this.progressBar_.progress = progress;
+    }
 
     if (progress == -1) {
       // Document load failed.
@@ -550,11 +565,15 @@ PDFViewer.prototype = {
         if (this.passwordScreen_.active)
           this.passwordScreen_.accept();
 
-        if (this.isMaterial_) {
-          this.materialToolbar_.docLength =
-              this.documentDimensions_.pageDimensions.length;
-        } else {
+        if (this.pageIndicator_)
           this.pageIndicator_.initialFadeIn();
+
+        if (this.isMaterial_) {
+          if (this.materialToolbar_) {
+            this.materialToolbar_.docLength =
+                this.documentDimensions_.pageDimensions.length;
+          }
+        } else {
           this.toolbar_.initialFadeIn();
         }
         break;
@@ -619,7 +638,7 @@ PDFViewer.prototype = {
               getFilenameFromURL(this.browserApi_.getStreamInfo().originalUrl);
         }
         this.bookmarks_ = message.data.bookmarks;
-        if (this.isMaterial_) {
+        if (this.isMaterial_ && this.materialToolbar_) {
           this.materialToolbar_.docTitle = document.title;
           this.materialToolbar_.bookmarks = this.bookmarks;
         }
@@ -704,9 +723,12 @@ PDFViewer.prototype = {
 
     // Update the page indicator.
     var visiblePage = this.viewport_.getMostVisiblePage();
-    if (this.isMaterial_) {
+
+    if (this.materialToolbar_)
       this.materialToolbar_.pageNo = visiblePage + 1;
-    } else {
+
+    // TODO(raymes): Give pageIndicator_ the same API as materialToolbar_.
+    if (this.pageIndicator_) {
       this.pageIndicator_.index = visiblePage;
       if (this.documentDimensions_.pageDimensions.length > 1 &&
           hasScrollbars.vertical) {
@@ -796,8 +818,7 @@ PDFViewer.prototype = {
         if (saveButton)
           saveButton.parentNode.removeChild(saveButton);
 
-        if (!this.isMaterial_)
-          this.pageIndicator_.pageLabels = message.data.pageNumbers;
+        this.pageIndicator_.pageLabels = message.data.pageNumbers;
 
         this.plugin_.postMessage({
           type: 'resetPrintPreviewMode',
