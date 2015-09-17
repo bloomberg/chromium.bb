@@ -15,6 +15,7 @@ import contextlib
 import logging
 import os
 import signal
+import threading
 import time
 
 import subprocess
@@ -174,6 +175,14 @@ class Popen(subprocess.Popen):
   - detached: If True, the child process was started as a detached process.
   - gid: process group id, if any.
   """
+  # subprocess.Popen.__init__() is not threadsafe; there is a race between
+  # creating the exec-error pipe for the child and setting it to CLOEXEC during
+  # which another thread can fork and cause the pipe to be inherited by its
+  # descendents, which will cause the current Popen to hang until all those
+  # descendents exit. Protect this with a lock so that only one fork/exec can
+  # happen at a time.
+  popen_lock = threading.Lock()
+
   def __init__(self, args, **kwargs):
     assert 'creationflags' not in kwargs
     assert 'preexec_fn' not in kwargs
@@ -186,7 +195,8 @@ class Popen(subprocess.Popen):
         kwargs['creationflags'] = subprocess.CREATE_NEW_PROCESS_GROUP
       else:
         kwargs['preexec_fn'] = lambda: os.setpgid(0, 0)
-    super(Popen, self).__init__(args, **kwargs)
+    with self.popen_lock:
+      super(Popen, self).__init__(args, **kwargs)
     if self.detached and not subprocess.mswindows:
       self.gid = os.getpgid(self.pid)
 
