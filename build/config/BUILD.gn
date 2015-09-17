@@ -417,11 +417,10 @@ config("default_libs") {
 
 # Add this config to your target to enable precompiled headers.
 #
-# On Windows, precompiled headers are done on a per-target basis. If you have
-# just a couple of files, the time it takes to precompile (~2 seconds) can
-# actually be longer than the time saved. On a Z620, a 100 file target compiles
-# about 2 seconds faster with precompiled headers, with greater savings for
-# larger targets.
+# Precompiled headers are done on a per-target basis. If you have just a couple
+# of files, the time it takes to precompile (~2 seconds) can actually be longer
+# than the time saved. On a Z620, a 100 file target compiles about 2 seconds
+# faster with precompiled headers, with greater savings for larger targets.
 #
 # Recommend precompiled headers for targets with more than 50 .cc files.
 config("precompiled_headers") {
@@ -449,5 +448,10 @@ config("precompiled_headers") {
     # case but forgot the other one?). To reproduce this error, do a build,
     # then delete the precompile.c.obj file, then build again.
     cflags_c = [ "/wd4206" ]
+  } else if (is_mac && !is_official_build && !use_goma) {
+    # TODO:(andybons): enable this when GCC PCH support in the binary has been
+    # rolled.
+    #precompiled_header = "build/precompile.h"
+    #precompiled_source = "//build/precompile.h"
   }
 }

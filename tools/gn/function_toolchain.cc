@@ -20,7 +20,7 @@ namespace functions {
 
 namespace {
 
-// This is jsut a unique value to take the address of to use as the key for
+// This is just a unique value to take the address of to use as the key for
 // the toolchain property on a scope.
 const int kToolchainPropertyKey = 0;
 
@@ -124,12 +124,15 @@ bool ReadPrecompiledHeaderType(Scope* scope, Tool* tool, Err* err) {
   if (value->string_value().empty())
     return true;  // Accept empty string, do nothing (default is "no PCH").
 
-  if (value->string_value() == "msvc") {
+  if (value->string_value() == "gcc") {
+    tool->set_precompiled_header_type(Tool::PCH_GCC);
+    return true;
+  } else if (value->string_value() == "msvc") {
     tool->set_precompiled_header_type(Tool::PCH_MSVC);
     return true;
   }
   *err = Err(*value, "Invalid precompiled_header_type",
-             "Must either be empty or \"msvc\".");
+             "Must either be empty, \"gcc\", or \"msvc\".");
   return false;
 }
 
@@ -531,12 +534,14 @@ const char kTool_Help[] =
     "\n"
     "        Type of precompiled headers. If undefined or the empty string,\n"
     "        precompiled headers will not be used for this tool. Otherwise\n"
-    "        use \"msvc\" which is the only currently supported value.\n"
+    "        use \"gcc\" or \"msvc\".\n"
     "\n"
     "        For precompiled headers to be used for a given target, the\n"
     "        target (or a config applied to it) must also specify a\n"
     "        \"precompiled_header\" and, for \"msvc\"-style headers, a\n"
-    "        \"precompiled_source\" value.\n"
+    "        \"precompiled_source\" value. If the type is \"gcc\", then both\n"
+    "        \"precompiled_header\" and \"precompiled_source\" must resolve\n"
+    "        to the same file, despite the different formats required for each."
     "\n"
     "        See \"gn help precompiled_header\" for more.\n"
     "\n"

@@ -69,7 +69,7 @@ extern const char* kSubstitutionNames[SUBSTITUTION_NUM_TYPES];
 // the dollar sign.
 extern const char* kSubstitutionNinjaNames[SUBSTITUTION_NUM_TYPES];
 
-// A wrapper around an array if flags indicating whether a give substitution
+// A wrapper around an array if flags indicating whether a given substitution
 // type is required in some context. By convention, the LITERAL type bit is
 // not set.
 struct SubstitutionBits {

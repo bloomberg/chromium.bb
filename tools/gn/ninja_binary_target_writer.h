@@ -47,27 +47,43 @@ class NinjaBinaryTargetWriter : public NinjaTargetWriter {
       EscapeOptions flag_escape_options);
 
   // Writes build lines required for precompiled headers. Any generated
-  // object files will be appended to the given vector.
+  // object files will be appended to the |object_files|. Any generated
+  // non-object files (for instance, .gch files from a GCC toolchain, are
+  // appended to |other_files|).
   //
   // input_dep is the stamp file collecting the dependencies required before
   // compiling this target. It will be empty if there are no input deps.
-  void WritePrecompiledHeaderCommands(const SourceFileTypeSet& used_types,
-                                      const OutputFile& input_dep,
-                                      std::vector<OutputFile>* object_files);
+  void WritePCHCommands(const SourceFileTypeSet& used_types,
+                        const OutputFile& input_dep,
+                        std::vector<OutputFile>* object_files,
+                        std::vector<OutputFile>* other_files);
 
-  // Writes a Windows .pch compile build line for a language type.
+  // Writes a .pch compile build line for a language type.
+  void WritePCHCommand(SubstitutionType flag_type,
+                       Toolchain::ToolType tool_type,
+                       Tool::PrecompiledHeaderType header_type,
+                       const OutputFile& input_dep,
+                       std::vector<OutputFile>* object_files,
+                       std::vector<OutputFile>* other_files);
+
+  void WriteGCCPCHCommand(SubstitutionType flag_type,
+                          Toolchain::ToolType tool_type,
+                          const OutputFile& order_only_dep,
+                          std::vector<OutputFile>* gch_files);
+
   void WriteWindowsPCHCommand(SubstitutionType flag_type,
                               Toolchain::ToolType tool_type,
-                              const OutputFile& input_dep,
+                              const OutputFile& order_only_dep,
                               std::vector<OutputFile>* object_files);
 
-  // extra_deps are additional dependencies to run before the rule.
+  // pch_deps are additional dependencies to run before the rule. They are
+  // expected to abide by the naming conventions specified by GetPCHOutputFiles.
   //
-  // iorder_only_dep is the name of the stamp file that covers the dependencies
+  // order_only_dep is the name of the stamp file that covers the dependencies
   // that must be run before doing any compiles.
   //
   // The files produced by the compiler will be added to two output vectors.
-  void WriteSources(const std::vector<OutputFile>& extra_deps,
+  void WriteSources(const std::vector<OutputFile>& pch_deps,
                     const OutputFile& order_only_dep,
                     std::vector<OutputFile>* object_files,
                     std::vector<SourceFile>* other_files);

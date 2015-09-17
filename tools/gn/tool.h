@@ -21,7 +21,8 @@ class Tool {
 
   enum PrecompiledHeaderType {
     PCH_NONE = 0,
-    PCH_MSVC = 1
+    PCH_GCC = 1,
+    PCH_MSVC = 2
   };
 
   Tool();
