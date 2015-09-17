@@ -26,8 +26,8 @@
 
 #include "core/layout/svg/LayoutSVGResourceContainer.h"
 #include "core/svg/SVGFilterElement.h"
-#include "core/svg/graphics/filters/SVGFilter.h"
 #include "core/svg/graphics/filters/SVGFilterBuilder.h"
+#include "platform/graphics/filters/Filter.h"
 
 namespace blink {
 
@@ -59,7 +59,7 @@ public:
 
     DECLARE_TRACE();
 
-    RefPtrWillBeMember<SVGFilter> filter;
+    RefPtrWillBeMember<Filter> filter;
     RefPtrWillBeMember<SVGFilterBuilder> builder;
     FilterDataState m_state;
 
@@ -82,7 +82,7 @@ public:
 
     FloatRect resourceBoundingBox(const LayoutObject*);
 
-    PassRefPtrWillBeRawPtr<SVGFilterBuilder> buildPrimitives(SVGFilter*);
+    PassRefPtrWillBeRawPtr<SVGFilterBuilder> buildPrimitives(Filter*);
 
     SVGUnitTypes::SVGUnitType filterUnits() const { return toSVGFilterElement(element())->filterUnits()->currentValue()->enumValue(); }
     SVGUnitTypes::SVGUnitType primitiveUnits() const { return toSVGFilterElement(element())->primitiveUnits()->currentValue()->enumValue(); }

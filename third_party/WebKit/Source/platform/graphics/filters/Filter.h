@@ -33,29 +33,27 @@ namespace blink {
 class SourceGraphic;
 class FilterEffect;
 
-class PLATFORM_EXPORT Filter : public RefCountedWillBeGarbageCollectedFinalized<Filter> {
+class PLATFORM_EXPORT Filter final : public RefCountedWillBeGarbageCollectedFinalized<Filter> {
 public:
-    static PassRefPtrWillBeRawPtr<Filter> create(const FloatRect& referenceBox, const FloatRect& filterRegion, float scale)
-    {
-        return adoptRefWillBeNoop(new Filter(referenceBox, filterRegion, scale));
-    }
+    enum UnitScaling {
+        UserSpace,
+        BoundingBox
+    };
 
-    static PassRefPtrWillBeRawPtr<Filter> create(float scale)
-    {
-        return adoptRefWillBeNoop(new Filter(FloatRect(), FloatRect(), scale));
-    }
+    static PassRefPtrWillBeRawPtr<Filter> create(const FloatRect& referenceBox, const FloatRect& filterRegion, float scale, UnitScaling = UserSpace);
+    static PassRefPtrWillBeRawPtr<Filter> create(float scale);
 
-    virtual ~Filter();
-    DECLARE_VIRTUAL_TRACE();
+    ~Filter();
+    DECLARE_TRACE();
 
     float scale() const { return m_scale; }
     FloatRect mapLocalRectToAbsoluteRect(const FloatRect&) const;
     FloatRect mapAbsoluteRectToLocalRect(const FloatRect&) const;
 
-    virtual float applyHorizontalScale(float value) const { return m_scale * value; }
-    virtual float applyVerticalScale(float value) const { return m_scale * value; }
+    float applyHorizontalScale(float value) const;
+    float applyVerticalScale(float value) const;
 
-    virtual FloatPoint3D resolve3dPoint(const FloatPoint3D& point) const { return point; }
+    FloatPoint3D resolve3dPoint(const FloatPoint3D&) const;
 
     FloatRect absoluteFilterRegion() const { return mapLocalRectToAbsoluteRect(m_filterRegion); }
 
@@ -67,13 +65,13 @@ public:
 
     SourceGraphic* sourceGraphic() const { return m_sourceGraphic.get(); }
 
-protected:
-    Filter(const FloatRect& referenceBox, const FloatRect& filterRegion, float scale);
-
 private:
+    Filter(const FloatRect& referenceBox, const FloatRect& filterRegion, float scale, UnitScaling);
+
     FloatRect m_referenceBox;
     FloatRect m_filterRegion;
     float m_scale;
+    UnitScaling m_unitScaling;
 
     RefPtrWillBeMember<SourceGraphic> m_sourceGraphic;
     RefPtrWillBeMember<FilterEffect> m_lastEffect;

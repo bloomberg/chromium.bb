@@ -99,7 +99,7 @@ void LayoutSVGResourceFilter::removeClientFromCache(LayoutObject* client, bool m
     markClientForInvalidation(client, markForInvalidation ? BoundariesInvalidation : ParentOnlyInvalidation);
 }
 
-PassRefPtrWillBeRawPtr<SVGFilterBuilder> LayoutSVGResourceFilter::buildPrimitives(SVGFilter* filter)
+PassRefPtrWillBeRawPtr<SVGFilterBuilder> LayoutSVGResourceFilter::buildPrimitives(Filter* filter)
 {
     SVGFilterElement* filterElement = toSVGFilterElement(element());
     FloatRect referenceBox = filter->referenceBox();

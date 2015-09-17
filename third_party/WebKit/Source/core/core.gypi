@@ -3494,8 +3494,6 @@
             'svg/graphics/SVGImageForContainer.h',
             'svg/graphics/filters/SVGFEImage.cpp',
             'svg/graphics/filters/SVGFEImage.h',
-            'svg/graphics/filters/SVGFilter.cpp',
-            'svg/graphics/filters/SVGFilter.h',
             'svg/graphics/filters/SVGFilterBuilder.cpp',
             'svg/graphics/filters/SVGFilterBuilder.h',
             'svg/properties/SVGAnimatedProperty.cpp',

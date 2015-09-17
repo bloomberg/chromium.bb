@@ -131,7 +131,8 @@ GraphicsContext* SVGFilterPainter::prepareEffect(LayoutObject& object, SVGFilter
 
     // Create the SVGFilter object.
     bool primitiveBoundingBoxMode = filterElement->primitiveUnits()->currentValue()->enumValue() == SVGUnitTypes::SVG_UNIT_TYPE_OBJECTBOUNDINGBOX;
-    filterData->filter = SVGFilter::create(targetBoundingBox, filterRegion, primitiveBoundingBoxMode);
+    Filter::UnitScaling unitScaling = primitiveBoundingBoxMode ? Filter::BoundingBox : Filter::UserSpace;
+    filterData->filter = Filter::create(targetBoundingBox, filterRegion, 1, unitScaling);
 
     IntRect sourceRegion = enclosingIntRect(intersection(filterRegion, object.strokeBoundingBox()));
     filterData->filter->sourceGraphic()->setSourceRect(sourceRegion);
