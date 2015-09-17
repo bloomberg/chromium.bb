@@ -67,8 +67,9 @@ void RemoteSafeBrowsingDatabaseManager::ClientRequest::OnRequestDone(
   DVLOG(1) << "OnRequestDone took " << timer_.Elapsed().InMilliseconds()
            << " ms for client " << client_ << " and URL " << url_;
   client_->OnCheckBrowseUrlResult(url_, matched_threat_type, metadata);
-  db_manager_->CancelCheck(client_);
   UMA_HISTOGRAM_TIMES("SB2.RemoteCall.Elapsed", timer_.Elapsed());
+  // CancelCheck() will delete *this.
+  db_manager_->CancelCheck(client_);
 }
 
 //
