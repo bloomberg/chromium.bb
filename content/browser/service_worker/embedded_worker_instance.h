@@ -5,9 +5,7 @@
 #ifndef CONTENT_BROWSER_SERVICE_WORKER_EMBEDDED_WORKER_INSTANCE_H_
 #define CONTENT_BROWSER_SERVICE_WORKER_EMBEDDED_WORKER_INSTANCE_H_
 
-#include <map>
 #include <string>
-#include <vector>
 
 #include "base/basictypes.h"
 #include "base/callback.h"
@@ -41,7 +39,6 @@ class MessagePortMessageFilter;
 class ServiceRegistry;
 class ServiceRegistryImpl;
 class ServiceWorkerContextCore;
-struct ServiceWorkerFetchRequest;
 
 // This gives an interface to control one EmbeddedWorker instance, which
 // may be 'in-waiting' or running in one of the child processes added by

@@ -4,10 +4,6 @@
 
 #include "content/browser/service_worker/embedded_worker_instance.h"
 
-#include <algorithm>
-#include <string>
-#include <utility>
-
 #include "base/bind_helpers.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/threading/non_thread_safe.h"
@@ -28,14 +24,6 @@
 namespace content {
 
 namespace {
-
-// Functor to sort by the .second element of a struct.
-struct SecondGreater {
-  template <typename Value>
-  bool operator()(const Value& lhs, const Value& rhs) {
-    return lhs.second > rhs.second;
-  }
-};
 
 void NotifyWorkerReadyForInspectionOnUI(int worker_process_id,
                                         int worker_route_id) {
