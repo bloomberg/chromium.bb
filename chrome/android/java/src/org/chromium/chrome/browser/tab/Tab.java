@@ -24,6 +24,7 @@ import org.chromium.base.ActivityState;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ApplicationState;
 import org.chromium.base.ApplicationStatus;
+import org.chromium.base.CommandLine;
 import org.chromium.base.ObserverList;
 import org.chromium.base.ObserverList.RewindableIterator;
 import org.chromium.base.TraceEvent;
@@ -34,6 +35,7 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.AccessibilityUtil;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeWebContentsDelegateAndroid;
 import org.chromium.chrome.browser.FrozenNativePage;
 import org.chromium.chrome.browser.IntentHandler.TabOpenType;
@@ -777,7 +779,10 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
                 color = mDefaultThemeColor;
             }
             if (isShowingInterstitialPage()) color = mDefaultThemeColor;
-            if (!FeatureUtilities.isDocumentMode(mApplicationContext)) color = mDefaultThemeColor;
+            if (!FeatureUtilities.isDocumentMode(mApplicationContext)
+                    && !isThemeColorEnabledInTabbedMode()) {
+                color = mDefaultThemeColor;
+            }
             if (color == Color.TRANSPARENT) color = mDefaultThemeColor;
             color |= 0xFF000000;
             if (mThemeColor == color) return;
@@ -2910,6 +2915,11 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
         intent.putExtra(TabOpenType.BRING_TAB_TO_FRONT.name(), tabId);
         intent.setPackage(packageName);
         return intent;
+    }
+
+    private static boolean isThemeColorEnabledInTabbedMode() {
+        CommandLine commandLine = CommandLine.getInstance();
+        return commandLine.hasSwitch(ChromeSwitches.ENABLE_THEME_COLOR_IN_TABBED_MODE);
     }
 
     /**

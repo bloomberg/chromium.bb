@@ -64889,6 +64889,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="147373243" label="enable-deferred-image-decoding"/>
   <int value="180074362" label="memory-pressure-thresholds"/>
   <int value="203776499" label="enable-virtual-keyboard-overscroll"/>
+  <int value="244697230" label="enable-theme-color-in-tabbed-mode"/>
   <int value="266702296" label="disable-plugin-power-saver"/>
   <int value="270267831" label="enable-scripts-require-action"/>
   <int value="274103741" label="enable-ntp-popular-sites"/>

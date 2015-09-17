@@ -326,6 +326,7 @@ extern const char kEnableDomDistillerButtonAnimation[];
 extern const char kEnableHostedMode[];
 extern const char kEnableReaderModeToolbarIcon[];
 extern const char kProgressBarAnimation[];
+extern const char kEnableThemeColorInTabbedMode[];
 #endif  // defined(OS_ANDROID)
 
 #if defined(USE_ASH)
