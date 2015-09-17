@@ -12,6 +12,7 @@
 #include "net/dns/mock_host_resolver.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_response_info.h"
+#include "net/http/http_server_properties_impl.h"
 #include "net/http/http_util.h"
 #include "net/http/transport_security_state.h"
 #include "net/quic/crypto/crypto_handshake.h"
@@ -148,6 +149,20 @@ class QuicStreamFactoryPeer {
     return factory->IsQuicDisabled(port);
   }
 
+  static bool GetDelayTcpRace(QuicStreamFactory* factory) {
+    return factory->delay_tcp_race_;
+  }
+
+  static void SetDelayTcpRace(QuicStreamFactory* factory, bool delay_tcp_race) {
+    factory->delay_tcp_race_ = delay_tcp_race;
+  }
+
+  static void SetHttpServerProperties(
+      QuicStreamFactory* factory,
+      base::WeakPtr<HttpServerProperties> http_server_properties) {
+    factory->http_server_properties_ = http_server_properties;
+  }
+
   static size_t GetNumberOfActiveJobs(QuicStreamFactory* factory,
                                       const QuicServerId& server_id) {
     return (factory->active_jobs_[server_id]).size();
@@ -249,6 +264,7 @@ class QuicStreamFactoryTest : public ::testing::TestWithParam<TestParams> {
                  /*threshold_timeouts_with_open_streams=*/2,
                  /*threshold_pulic_resets_post_handshake=*/2,
                  /*receive_buffer_size=*/0,
+                 /*delay_tcp_race=*/false,
                  QuicTagVector()),
         host_port_pair_(kDefaultServerHostName, kDefaultServerPort),
         is_https_(false),
@@ -2507,6 +2523,72 @@ TEST_P(QuicStreamFactoryTest, TimeoutsWithOpenStreamsTwoOfFour) {
   EXPECT_TRUE(socket_data3.AllWriteDataConsumed());
   EXPECT_TRUE(socket_data4.AllReadDataConsumed());
   EXPECT_TRUE(socket_data4.AllWriteDataConsumed());
+}
+
+TEST_P(QuicStreamFactoryTest, EnableDelayTcpRace) {
+  bool delay_tcp_race = QuicStreamFactoryPeer::GetDelayTcpRace(&factory_);
+  QuicStreamFactoryPeer::SetDelayTcpRace(&factory_, false);
+  MockRead reads[] = {
+      MockRead(ASYNC, OK, 0),
+  };
+  DeterministicSocketData socket_data(reads, arraysize(reads), nullptr, 0);
+  socket_factory_.AddSocketDataProvider(&socket_data);
+  socket_data.StopAfter(1);
+
+  // Set up data in HttpServerProperties.
+  scoped_ptr<HttpServerProperties> http_server_properties(
+      new HttpServerPropertiesImpl());
+  QuicStreamFactoryPeer::SetHttpServerProperties(
+      &factory_, http_server_properties->GetWeakPtr());
+
+  const AlternativeService alternative_service1(QUIC, host_port_pair_.host(),
+                                                host_port_pair_.port());
+  AlternativeServiceInfoVector alternative_service_info_vector;
+  base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
+  alternative_service_info_vector.push_back(
+      AlternativeServiceInfo(alternative_service1, 1.0, expiration));
+
+  http_server_properties->SetAlternativeServices(
+      host_port_pair_, alternative_service_info_vector);
+
+  ServerNetworkStats stats1;
+  stats1.srtt = base::TimeDelta::FromMicroseconds(10);
+  http_server_properties->SetServerNetworkStats(host_port_pair_, stats1);
+
+  crypto_client_stream_factory_.set_handshake_mode(
+      MockCryptoClientStream::ZERO_RTT);
+  host_resolver_.set_synchronous_mode(true);
+  host_resolver_.rules()->AddIPLiteralRule(host_port_pair_.host(),
+                                           "192.168.0.1", "");
+
+  QuicStreamRequest request(&factory_);
+  EXPECT_EQ(ERR_IO_PENDING,
+            request.Request(host_port_pair_, is_https_, privacy_mode_,
+                            /*cert_verify_flags=*/0, host_port_pair_.host(),
+                            "POST", net_log_, callback_.callback()));
+
+  // If we don't delay TCP connection, then time delay should be 0.
+  EXPECT_FALSE(factory_.delay_tcp_race());
+  EXPECT_EQ(base::TimeDelta(), request.GetTimeDelayForWaitingJob());
+
+  // Enable |delay_tcp_race_| param and verify delay is one RTT and that
+  // server supports QUIC.
+  QuicStreamFactoryPeer::SetDelayTcpRace(&factory_, true);
+  EXPECT_TRUE(factory_.delay_tcp_race());
+  EXPECT_EQ(base::TimeDelta::FromMicroseconds(15),
+            request.GetTimeDelayForWaitingJob());
+
+  // Confirm the handshake and verify that the stream is created.
+  crypto_client_stream_factory_.last_stream()->SendOnCryptoHandshakeEvent(
+      QuicSession::HANDSHAKE_CONFIRMED);
+
+  EXPECT_EQ(OK, callback_.WaitForResult());
+
+  scoped_ptr<QuicHttpStream> stream = request.ReleaseStream();
+  EXPECT_TRUE(stream.get());
+  EXPECT_TRUE(socket_data.AllReadDataConsumed());
+  EXPECT_TRUE(socket_data.AllWriteDataConsumed());
+  QuicStreamFactoryPeer::SetDelayTcpRace(&factory_, delay_tcp_race);
 }
 
 }  // namespace test

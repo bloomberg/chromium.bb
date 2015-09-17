@@ -1033,6 +1033,7 @@ void IOThread::InitializeNetworkSessionParamsFromGlobals(
       &params->quic_packet_loss_threshold);
   globals.quic_socket_receive_buffer_size.CopyToIfSet(
       &params->quic_socket_receive_buffer_size);
+  globals.quic_delay_tcp_race.CopyToIfSet(&params->quic_delay_tcp_race);
   globals.enable_quic_port_selection.CopyToIfSet(
       &params->enable_quic_port_selection);
   globals.quic_max_packet_length.CopyToIfSet(&params->quic_max_packet_length);
@@ -1144,6 +1145,7 @@ void IOThread::ConfigureQuicGlobals(
     if (receive_buffer_size != 0) {
       globals->quic_socket_receive_buffer_size.set(receive_buffer_size);
     }
+    globals->quic_delay_tcp_race.set(ShouldQuicDelayTcpRace(quic_trial_params));
     float load_server_info_timeout_srtt_multiplier =
         GetQuicLoadServerInfoTimeoutSrttMultiplier(quic_trial_params);
     if (load_server_info_timeout_srtt_multiplier != 0) {
@@ -1408,6 +1410,12 @@ int IOThread::GetQuicSocketReceiveBufferSize(
     return value;
   }
   return 0;
+}
+
+bool IOThread::ShouldQuicDelayTcpRace(
+    const VariationParameters& quic_trial_params) {
+  return base::LowerCaseEqualsASCII(
+      GetVariationParam(quic_trial_params, "delay_tcp_race"), "true");
 }
 
 size_t IOThread::GetQuicMaxPacketLength(

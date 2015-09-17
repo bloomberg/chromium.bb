@@ -172,6 +172,7 @@ TEST_F(IOThreadTest, EnableQuicFromFieldTrialGroup) {
   EXPECT_FALSE(params.use_alternative_services);
   EXPECT_EQ(4, params.quic_max_number_of_lossy_connections);
   EXPECT_EQ(0.5f, params.quic_packet_loss_threshold);
+  EXPECT_FALSE(params.quic_delay_tcp_race);
   EXPECT_FALSE(IOThread::ShouldEnableQuicForDataReductionProxy());
 }
 
@@ -419,6 +420,15 @@ TEST_F(IOThreadTest, QuicReceiveBufferSize) {
   net::HttpNetworkSession::Params params;
   InitializeNetworkSessionParams(&params);
   EXPECT_EQ(2097152, params.quic_socket_receive_buffer_size);
+}
+
+TEST_F(IOThreadTest, QuicDelayTcpConnection) {
+  field_trial_group_ = "Enabled";
+  field_trial_params_["delay_tcp_race"] = "true";
+  ConfigureQuicGlobals();
+  net::HttpNetworkSession::Params params;
+  InitializeNetworkSessionParams(&params);
+  EXPECT_TRUE(params.quic_delay_tcp_race);
 }
 
 TEST_F(IOThreadTest, AlternativeServiceProbabilityThresholdFromFlag) {

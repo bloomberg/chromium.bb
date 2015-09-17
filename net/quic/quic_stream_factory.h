@@ -12,6 +12,7 @@
 
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
+#include "base/time/time.h"
 #include "net/base/address_list.h"
 #include "net/base/completion_callback.h"
 #include "net/base/host_port_pair.h"
@@ -71,6 +72,10 @@ class NET_EXPORT_PRIVATE QuicStreamRequest {
 
   void OnRequestComplete(int rv);
 
+  // Helper method that calls |factory_|'s GetTimeDelayForWaitingJob(). It
+  // returns the amount of time waiting job should be delayed.
+  base::TimeDelta GetTimeDelayForWaitingJob() const;
+
   scoped_ptr<QuicHttpStream> ReleaseStream();
 
   void set_stream(scoped_ptr<QuicHttpStream> stream);
@@ -87,6 +92,7 @@ class NET_EXPORT_PRIVATE QuicStreamRequest {
   QuicStreamFactory* factory_;
   HostPortPair host_port_pair_;
   std::string origin_host_;
+  bool is_https_;
   PrivacyMode privacy_mode_;
   BoundNetLog net_log_;
   CompletionCallback callback_;
@@ -130,6 +136,7 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
       int threshold_timeouts_with_streams_open,
       int threshold_public_resets_post_handshake,
       int socket_receive_buffer_size,
+      bool delay_tcp_race,
       const QuicTagVector& connection_options);
   ~QuicStreamFactory() override;
 
@@ -215,6 +222,9 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
 
   void set_require_confirmation(bool require_confirmation);
 
+  // It returns the amount of time waiting job should be delayed.
+  base::TimeDelta GetTimeDelayForWaitingJob(const QuicServerId& server_id);
+
   QuicConnectionHelper* helper() { return helper_.get(); }
 
   bool enable_port_selection() const { return enable_port_selection_; }
@@ -235,6 +245,8 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   }
 
   int socket_receive_buffer_size() const { return socket_receive_buffer_size_; }
+
+  bool delay_tcp_race() const { return delay_tcp_race_; }
 
  private:
   class Job;
@@ -305,6 +317,7 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
 
   // Helper methods.
   bool WasQuicRecentlyBroken(const QuicServerId& server_id) const;
+
   bool CryptoConfigCacheIsEmpty(const QuicServerId& server_id);
 
   // Initializes the cached state associated with |server_id| in
@@ -415,6 +428,9 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
 
   // Size of the UDP receive buffer.
   int socket_receive_buffer_size_;
+
+  // Set if we do want to delay TCP connection when it is racing with QUIC.
+  bool delay_tcp_race_;
 
   // Each profile will (probably) have a unique port_seed_ value.  This value
   // is used to help seed a pseudo-random number generator (PortSuggester) so

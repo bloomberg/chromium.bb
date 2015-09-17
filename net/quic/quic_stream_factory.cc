@@ -532,6 +532,7 @@ int QuicStreamRequest::Request(const HostPortPair& host_port_pair,
                        cert_verify_flags, origin_host, method, net_log, this);
   if (rv == ERR_IO_PENDING) {
     host_port_pair_ = host_port_pair;
+    is_https_ = is_https;
     net_log_ = net_log;
     callback_ = callback;
   } else {
@@ -550,6 +551,13 @@ void QuicStreamRequest::set_stream(scoped_ptr<QuicHttpStream> stream) {
 void QuicStreamRequest::OnRequestComplete(int rv) {
   factory_ = nullptr;
   callback_.Run(rv);
+}
+
+base::TimeDelta QuicStreamRequest::GetTimeDelayForWaitingJob() const {
+  if (!factory_)
+    return base::TimeDelta();
+  return factory_->GetTimeDelayForWaitingJob(
+      QuicServerId(host_port_pair_, is_https_, privacy_mode_));
 }
 
 scoped_ptr<QuicHttpStream> QuicStreamRequest::ReleaseStream() {
@@ -585,6 +593,7 @@ QuicStreamFactory::QuicStreamFactory(
     int threshold_public_resets_post_handshake,
     int threshold_timeouts_with_open_streams,
     int socket_receive_buffer_size,
+    bool delay_tcp_race,
     const QuicTagVector& connection_options)
     : require_confirmation_(true),
       host_resolver_(host_resolver),
@@ -620,6 +629,7 @@ QuicStreamFactory::QuicStreamFactory(
       threshold_public_resets_post_handshake_(
           threshold_public_resets_post_handshake),
       socket_receive_buffer_size_(socket_receive_buffer_size),
+      delay_tcp_race_(delay_tcp_race),
       port_seed_(random_generator_->RandUint64()),
       check_persisted_supports_quic_(true),
       task_runner_(nullptr),
@@ -671,6 +681,19 @@ void QuicStreamFactory::set_require_confirmation(bool require_confirmation) {
     http_server_properties_->SetSupportsQuic(!require_confirmation,
                                              local_address_.address());
   }
+}
+
+base::TimeDelta QuicStreamFactory::GetTimeDelayForWaitingJob(
+    const QuicServerId& server_id) {
+  if (!delay_tcp_race_ || require_confirmation_)
+    return base::TimeDelta();
+  int64 srtt = 1.5 * GetServerNetworkStatsSmoothedRttInMicroseconds(server_id);
+  // Picked 300ms based on mean time from
+  // Net.QuicSession.HostResolution.HandshakeConfirmedTime histogram.
+  const int kDefaultRTT = 300 * kNumMicrosPerMilli;
+  if (!srtt)
+    srtt = kDefaultRTT;
+  return base::TimeDelta::FromMicroseconds(srtt);
 }
 
 int QuicStreamFactory::Create(const HostPortPair& host_port_pair,
