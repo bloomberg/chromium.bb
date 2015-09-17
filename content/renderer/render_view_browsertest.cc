@@ -332,7 +332,7 @@ class RenderViewImplBlinkSettingsTest : public RenderViewImplTest {
     RenderViewImplTest::SetUp();
   }
 
-  const blink::WebSettings* settings() {
+  blink::WebSettings* settings() {
     return view()->webview()->settings();
   }
 
@@ -2367,15 +2367,24 @@ TEST_F(RenderViewImplTest, HistoryIsProperlyUpdatedOnNavigation) {
 
 TEST_F(RenderViewImplBlinkSettingsTest, Default) {
   DoSetUp();
-  EXPECT_EQ(blink::WebSettings::HoverTypeNone, settings()->primaryHoverType());
   EXPECT_FALSE(settings()->viewportEnabled());
 }
 
 TEST_F(RenderViewImplBlinkSettingsTest, CommandLine) {
   base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kBlinkSettings, "primaryHoverType=4,viewportEnabled=true");
+      switches::kBlinkSettings,
+      "multiTargetTapNotificationEnabled=true,viewportEnabled=true");
   DoSetUp();
-  EXPECT_EQ(blink::WebSettings::HoverTypeHover, settings()->primaryHoverType());
+  EXPECT_TRUE(settings()->multiTargetTapNotificationEnabled());
+  EXPECT_TRUE(settings()->viewportEnabled());
+}
+
+TEST_F(RenderViewImplBlinkSettingsTest, Negative) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      switches::kBlinkSettings,
+      "multiTargetTapNotificationEnabled=false,viewportEnabled=true");
+  DoSetUp();
+  EXPECT_FALSE(settings()->multiTargetTapNotificationEnabled());
   EXPECT_TRUE(settings()->viewportEnabled());
 }
 
