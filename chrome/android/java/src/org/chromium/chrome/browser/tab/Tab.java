@@ -89,7 +89,6 @@ import org.chromium.ui.base.Clipboard;
 import org.chromium.ui.base.LocalizationUtils;
 import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.base.WindowAndroid;
-import org.chromium.ui.gfx.DeviceDisplayInfo;
 
 import java.lang.ref.WeakReference;
 import java.nio.ByteBuffer;
@@ -225,9 +224,10 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
     private String mFaviconUrl;
 
     /**
-     * The number of pixel of 16DP.
+     * The size in pixels at which favicons will be drawn. Ideally mFavicon will have this size to
+     * avoid scaling artifacts.
      */
-    private int mNumPixel16DP;
+    private int mIdealFaviconSize;
 
     /** Whether or not the TabState has changed. */
     private boolean mIsTabStateDirty = true;
@@ -851,15 +851,15 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
         mWindowAndroid = window;
         mLaunchType = type;
         if (mActivity != null) {
-            mNumPixel16DP = (int) (DeviceDisplayInfo.create(mActivity).getDIPScale() * 16);
             Resources resources = mActivity.getResources();
+            mIdealFaviconSize = resources.getDimensionPixelSize(R.dimen.default_favicon_size);
             mDefaultThemeColor = mIncognito
                     ? ApiCompatibilityUtils.getColor(resources, R.color.incognito_primary_color)
                     : ApiCompatibilityUtils.getColor(resources, R.color.default_primary_color);
             mThemeColor = mDefaultThemeColor;
         } else {
+            mIdealFaviconSize = 16;
             mDefaultThemeColor = 0;
-            mNumPixel16DP = 16;
         }
 
         // Restore data from the TabState, if it existed.
@@ -2287,9 +2287,9 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
         // This method will be called multiple times if the page has more than one favicon.
         // we are trying to use the 16x16 DP icon here, Bitmap.createScaledBitmap will return
         // the origin bitmap if it is already 16x16 DP.
-        if (pageUrlChanged || (icon.getWidth() == mNumPixel16DP
-                && icon.getHeight() == mNumPixel16DP)) {
-            mFavicon = Bitmap.createScaledBitmap(icon, mNumPixel16DP, mNumPixel16DP, true);
+        if (pageUrlChanged || (icon.getWidth() == mIdealFaviconSize
+                && icon.getHeight() == mIdealFaviconSize)) {
+            mFavicon = Bitmap.createScaledBitmap(icon, mIdealFaviconSize, mIdealFaviconSize, true);
             needUpdate = true;
         }
 
