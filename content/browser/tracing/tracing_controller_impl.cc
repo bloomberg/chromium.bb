@@ -127,8 +127,6 @@ bool TracingControllerImpl::EnableRecording(
 #endif
 
   if (trace_config.IsSystraceEnabled()) {
-    DCHECK(!is_power_tracing_);
-    is_power_tracing_ = PowerTracingAgent::GetInstance()->StartTracing();
 #if defined(OS_CHROMEOS)
     DCHECK(!is_system_tracing_);
     chromeos::DBusThreadManager::Get()->GetDebugDaemonClient()->
