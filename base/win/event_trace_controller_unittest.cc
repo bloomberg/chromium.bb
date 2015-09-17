@@ -221,6 +221,9 @@ TEST_F(EtwTraceControllerTest, EnableDisable) {
   EXPECT_EQ(TRACE_LEVEL_VERBOSE, provider.enable_level());
   EXPECT_EQ(kTestProviderFlags, provider.enable_flags());
 
+  // Consume the callback event of the previous controller.EnableProvider().
+  provider.WaitForCallback();
+
   EXPECT_HRESULT_SUCCEEDED(controller.Stop(NULL));
 
   provider.WaitForCallback();
