@@ -17164,6 +17164,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Media.DetectedAudioCodec" enum="FFmpegCodecs">
+  <obsolete>
+    Deprecated Sep 15 2015 in favor of Media.DetectedAudioCodecHash
+  </obsolete>
+  <owner>jrummell@chromium.org</owner>
+  <summary>Audio codec used in HTML5 media.</summary>
+</histogram>
+
+<histogram name="Media.DetectedAudioCodecHash" enum="FFmpegCodecHashes">
   <owner>jrummell@chromium.org</owner>
   <summary>Audio codec used in HTML5 media.</summary>
 </histogram>
@@ -17178,6 +17186,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Media.DetectedVideoCodec" enum="FFmpegCodecs">
+  <obsolete>
+    Deprecated Sep 15 2015 in favor of Media.DetectedVideoCodecHash
+  </obsolete>
+  <owner>jrummell@chromium.org</owner>
+  <summary>Video codec used in HTML5 media.</summary>
+</histogram>
+
+<histogram name="Media.DetectedVideoCodecHash" enum="FFmpegCodecHashes">
   <owner>jrummell@chromium.org</owner>
   <summary>Video codec used in HTML5 media.</summary>
 </histogram>
@@ -60879,7 +60895,417 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="3" label="CORSWithForcedPreflight"/>
 </enum>
 
+<enum name="FFmpegCodecHashes" type="int">
+  <int value="-2140893972" label="bfi"/>
+  <int value="-2126016986" label="vp3"/>
+  <int value="-2112225664" label="pcm_s32be"/>
+  <int value="-2100141199" label="loco"/>
+  <int value="-2095396703" label="v408"/>
+  <int value="-2093680186" label="amv"/>
+  <int value="-2089660750" label="h263"/>
+  <int value="-2087604036" label="adpcm_ima_smjpeg"/>
+  <int value="-2077566827" label="musepack8"/>
+  <int value="-2057234831" label="8svx_exp"/>
+  <int value="-2039593792" label="targa"/>
+  <int value="-2026984418" label="dirac"/>
+  <int value="-2024394607" label="adpcm_ima_ws"/>
+  <int value="-2022450851" label="sunrast"/>
+  <int value="-2013419814" label="dsd_lsbf_planar"/>
+  <int value="-2002502337" label="tiff"/>
+  <int value="-1978772551" label="dvaudio"/>
+  <int value="-1956356936" label="wmavoice"/>
+  <int value="-1936051434" label="h261"/>
+  <int value="-1935659465" label="text"/>
+  <int value="-1929182263" label="rl2"/>
+  <int value="-1920776714" label="a64_multi5"/>
+  <int value="-1920272933" label="mlp"/>
+  <int value="-1913457333" label="smackvideo"/>
+  <int value="-1877492821" label="ws_vqa"/>
+  <int value="-1868061100" label="avrp"/>
+  <int value="-1866047250" label="brender_pix_deprecated"/>
+  <int value="-1861192281" label="c93"/>
+  <int value="-1859416370" label="mts2"/>
+  <int value="-1855199147" label="adpcm_yamaha"/>
+  <int value="-1854941320" label="tgq"/>
+  <int value="-1848915146" label="adpcm_ima_iss"/>
+  <int value="-1847740489" label="flac"/>
+  <int value="-1847405305" label="qdmc"/>
+  <int value="-1837462345" label="bmv_video"/>
+  <int value="-1787878546" label="adpcm_afc"/>
+  <int value="-1782518388" label="adpcm_vima_deprecated"/>
+  <int value="-1769822834" label="vmdaudio"/>
+  <int value="-1754427880" label="frwu"/>
+  <int value="-1746405263" label="none"/>
+  <int value="-1746190470" label="adpcm_ima_amv"/>
+  <int value="-1742178896" label="cinepak"/>
+  <int value="-1722959117" label="cook"/>
+  <int value="-1694324852" label="adpcm_ima_rad"/>
+  <int value="-1653946850" label="mp3on4"/>
+  <int value="-1638592334" label="msmpeg4v3"/>
+  <int value="-1625425962" label="dpx"/>
+  <int value="-1620040130" label="vp6"/>
+  <int value="-1596796424" label="pcm_f32le"/>
+  <int value="-1580836816" label="cdxl"/>
+  <int value="-1578877775" label="twinvq"/>
+  <int value="-1570048110" label="mace3"/>
+  <int value="-1558356361" label="paf_audio"/>
+  <int value="-1546633359" label="dss_sp"/>
+  <int value="-1538621442" label="tak"/>
+  <int value="-1535770868" label="mov_text"/>
+  <int value="-1532420090" label="dvb_teletext"/>
+  <int value="-1518326441" label="cpia"/>
+  <int value="-1516599706" label="stl"/>
+  <int value="-1510953689" label="ulti"/>
+  <int value="-1495077719" label="wavesynth"/>
+  <int value="-1493473944" label="mp1"/>
+  <int value="-1488471023" label="aac_latm"/>
+  <int value="-1471896197" label="adpcm_4xm"/>
+  <int value="-1458812472" label="vble"/>
+  <int value="-1452408746" label="bin_data"/>
+  <int value="-1437754593" label="tqi"/>
+  <int value="-1398094744" label="brender_pix"/>
+  <int value="-1396201900" label="lagarith"/>
+  <int value="-1394735166" label="s302m"/>
+  <int value="-1366158780" label="mvc2"/>
+  <int value="-1346295474" label="dfa"/>
+  <int value="-1335819014" label="adpcm_ea_r3"/>
+  <int value="-1333697928" label="rv10"/>
+  <int value="-1328796639" label="pcm_s32le_planar_deprecated"/>
+  <int value="-1326344691" label="wmalossless"/>
+  <int value="-1276285619" label="subviewer1"/>
+  <int value="-1267322736" label="evrc"/>
+  <int value="-1253653962" label="cljr"/>
+  <int value="-1249151864" label="westwood_snd1"/>
+  <int value="-1234201101" label="xan_dpcm"/>
+  <int value="-1228141376" label="aic"/>
+  <int value="-1217250068" label="pcm_u24le"/>
+  <int value="-1216801956" label="kmvc"/>
+  <int value="-1216327014" label="ansi"/>
+  <int value="-1212214965" label="svq3"/>
+  <int value="-1205406239" label="mpeg4"/>
+  <int value="-1192008277" label="flashsv"/>
+  <int value="-1181422407" label="gif"/>
+  <int value="-1156009526" label="wmv1"/>
+  <int value="-1153001952" label="eia_608"/>
+  <int value="-1150003992" label="nellymoser"/>
+  <int value="-1147304270" label="pgm"/>
+  <int value="-1146321910" label="adpcm_sbpro_4"/>
+  <int value="-1124358604" label="qdraw"/>
+  <int value="-1094512964" label="hevc"/>
+  <int value="-1082894560" label="y41p"/>
+  <int value="-1069291012" label="roq"/>
+  <int value="-1055791926" label="wmv2"/>
+  <int value="-1052495685" label="adpcm_ea_xas"/>
+  <int value="-1050536726" label="fic"/>
+  <int value="-1050267191" label="theora"/>
+  <int value="-1047975380" label="aura"/>
+  <int value="-1038298513" label="iac"/>
+  <int value="-1033247386" label="pcm_u24be"/>
+  <int value="-1030131048" label="ra_288"/>
+  <int value="-1011667768" label="sgirle"/>
+  <int value="-1010059925" label="cdgraphics"/>
+  <int value="-993429906" label="webp_deprecated"/>
+  <int value="-991743010" label="pictor"/>
+  <int value="-986254855" label="qtrle"/>
+  <int value="-984524901" label="wmapro"/>
+  <int value="-982785322" label="roq_dpcm"/>
+  <int value="-967736249" label="idf"/>
+  <int value="-963536204" label="tmv"/>
+  <int value="-961342190" label="truespeech"/>
+  <int value="-955936385" label="qdm2"/>
+  <int value="-937993216" label="cyuv"/>
+  <int value="-908137771" label="mss2"/>
+  <int value="-898663359" label="paf_video"/>
+  <int value="-891450332" label="qcelp"/>
+  <int value="-881893142" label="paf_video_deprecated"/>
+  <int value="-878761755" label="alac"/>
+  <int value="-872951009" label="vp7"/>
+  <int value="-870965910" label="mszh"/>
+  <int value="-868148645" label="ttf"/>
+  <int value="-853586131" label="eac3"/>
+  <int value="-839127813" label="adpcm_adx"/>
+  <int value="-820705472" label="timed_id3"/>
+  <int value="-816209197" label="vima"/>
+  <int value="-815578090" label="ssa"/>
+  <int value="-804708185" label="vb"/>
+  <int value="-799004205" label="thp"/>
+  <int value="-792737437" label="mjpeg"/>
+  <int value="-781332453" label="xbm"/>
+  <int value="-780629337" label="adpcm_ima_oki"/>
+  <int value="-777478450" label="iff_byterun1"/>
+  <int value="-776406198" label="hdmv_pgs_subtitle"/>
+  <int value="-755809410" label="xface"/>
+  <int value="-750906124" label="sonic"/>
+  <int value="-746782512" label="nuv"/>
+  <int value="-728484627" label="vp6f"/>
+  <int value="-711076000" label="ilbc"/>
+  <int value="-693682032" label="png"/>
+  <int value="-665301881" label="kgv1"/>
+  <int value="-651841063" label="musepack7"/>
+  <int value="-644671397" label="pcm_s16le"/>
+  <int value="-644168765" label="dvvideo"/>
+  <int value="-630356729" label="paf_audio_deprecated"/>
+  <int value="-624149477" label="mad"/>
+  <int value="-606142900" label="microdvd"/>
+  <int value="-605150423" label="jacosub"/>
+  <int value="-600721750" label="pcm_s16le_planar"/>
+  <int value="-597857853" label="fraps"/>
+  <int value="-594775425" label="tdsc"/>
+  <int value="-583421433" label="pcm_zork"/>
+  <int value="-573567800" label="ffvhuff"/>
+  <int value="-558754697" label="dxtory"/>
+  <int value="-547412719" label="a64_multi"/>
+  <int value="-530757209" label="iff_ilbm"/>
+  <int value="-522844891" label="tta"/>
+  <int value="-515467965" label="yop"/>
+  <int value="-483644003" label="mvc1"/>
+  <int value="-478544739" label="mxpeg"/>
+  <int value="-469833042" label="sgi"/>
+  <int value="-462654404" label="pbm"/>
+  <int value="-450113811" label="vp8"/>
+  <int value="-449164482" label="smv"/>
+  <int value="-434097103" label="8svx_fib"/>
+  <int value="-431043877" label="rv30"/>
+  <int value="-418117523" label="exr_deprecated"/>
+  <int value="-414733739" label="hevc_deprecated"/>
+  <int value="-411871512" label="4xm"/>
+  <int value="-351638235" label="mace6"/>
+  <int value="-335532805" label="v308"/>
+  <int value="-321063470" label="cavs"/>
+  <int value="-312812574" label="dsicinaudio"/>
+  <int value="-305868762" label="ptx"/>
+  <int value="-302658824" label="dxa"/>
+  <int value="-302292845" label="atrac1"/>
+  <int value="-268375107" label="indeo2"/>
+  <int value="-262604522" label="qpeg"/>
+  <int value="-259187129" label="interplay_dpcm"/>
+  <int value="-235472313" label="pjs"/>
+  <int value="-197551526" label="vp7_deprecated"/>
+  <int value="-195649673" label="mmvideo"/>
+  <int value="-194494447" label="sanm"/>
+  <int value="-179123055" label="hnm4video"/>
+  <int value="-166593824" label="bintext"/>
+  <int value="-153142813" label="adpcm_ima_qt"/>
+  <int value="-135875472" label="pcm_s24le_planar"/>
+  <int value="-108909529" label="adpcm_ea"/>
+  <int value="-96441857" label="escape124"/>
+  <int value="-92926716" label="indeo3"/>
+  <int value="-92742166" label="adpcm_swf"/>
+  <int value="-85419673" label="dvb_subtitle"/>
+  <int value="-83742388" label="metasound"/>
+  <int value="-81607027" label="speex"/>
+  <int value="-65839877" label="amr_nb"/>
+  <int value="-50131597" label="avui"/>
+  <int value="-41854216" label="msrle"/>
+  <int value="-35300163" label="pam"/>
+  <int value="-30500564" label="rv20"/>
+  <int value="-27780731" label="h263i"/>
+  <int value="-23682808" label="mjpegb"/>
+  <int value="-21755362" label="adpcm_sbpro_3"/>
+  <int value="-19624220" label="msmpeg4v1"/>
+  <int value="123753" label="bethsoftvid"/>
+  <int value="5678717" label="adpcm_vima"/>
+  <int value="6153938" label="ffv1"/>
+  <int value="60024993" label="sol_dpcm"/>
+  <int value="73149662" label="escape130_deprecated"/>
+  <int value="76029796" label="mss1"/>
+  <int value="86453097" label="utvideo"/>
+  <int value="87186225" label="vmdvideo"/>
+  <int value="95607943" label="alias_pix"/>
+  <int value="98199414" label="wmv3image"/>
+  <int value="113741725" label="shorten"/>
+  <int value="132664538" label="gsm_ms"/>
+  <int value="136569655" label="adpcm_ima_ea_eacs"/>
+  <int value="146059120" label="adpcm_ima_dk3"/>
+  <int value="173919536" label="dsd_msbf_planar"/>
+  <int value="174382442" label="g729"/>
+  <int value="180797897" label="xsub"/>
+  <int value="197903705" label="yuv4"/>
+  <int value="197942357" label="mdec"/>
+  <int value="212901544" label="pcm_f64le"/>
+  <int value="227190580" label="adpcm_ea_r1"/>
+  <int value="231296785" label="jpegls"/>
+  <int value="242042871" label="vc1image"/>
+  <int value="250226160" label="pcm_s8"/>
+  <int value="254320798" label="pcm_dvd"/>
+  <int value="265862349" label="binkaudio_rdft"/>
+  <int value="278236230" label="webp"/>
+  <int value="284053917" label="sp5x"/>
+  <int value="287849834" label="msvideo1"/>
+  <int value="294769071" label="pcm_s16be_planar"/>
+  <int value="309105352" label="bmp"/>
+  <int value="309392554" label="dsd_msbf"/>
+  <int value="311400023" label="zlib"/>
+  <int value="317095520" label="adpcm_ima_apc"/>
+  <int value="342736256" label="avrn"/>
+  <int value="343186566" label="rpza"/>
+  <int value="347789448" label="vplayer"/>
+  <int value="396111544" label="otf"/>
+  <int value="412600562" label="pcm_u16be"/>
+  <int value="429618670" label="jv"/>
+  <int value="441761537" label="indeo4"/>
+  <int value="445373194" label="tiertexseqvideo"/>
+  <int value="453915988" label="adpcm_ima_ea_sead"/>
+  <int value="461173543" label="smackaudio"/>
+  <int value="463008496" label="dvd_subtitle"/>
+  <int value="465125740" label="realtext"/>
+  <int value="486681814" label="8bps"/>
+  <int value="489448448" label="vc1"/>
+  <int value="491790310" label="vcr1"/>
+  <int value="503945275" label="motionpixels"/>
+  <int value="525499602" label="vmnc"/>
+  <int value="552661632" label="adpcm_xa"/>
+  <int value="558339021" label="jpeg2000"/>
+  <int value="565711017" label="pcm_s24le"/>
+  <int value="567624278" label="asv2"/>
+  <int value="573633387" label="pcm_f64be"/>
+  <int value="579930439" label="cmv"/>
+  <int value="580364763" label="txd"/>
+  <int value="588676310" label="pcm_s8_planar"/>
+  <int value="603287142" label="mpl2"/>
+  <int value="610300309" label="v210x"/>
+  <int value="634747673" label="avs"/>
+  <int value="640012049" label="adpcm_ms"/>
+  <int value="648238710" label="xan_wc3"/>
+  <int value="695230495" label="aura2"/>
+  <int value="722738593" label="escape130"/>
+  <int value="724570383" label="rawvideo"/>
+  <int value="726397522" label="wmv3"/>
+  <int value="746742638" label="truehd"/>
+  <int value="747771882" label="dts"/>
+  <int value="753949422" label="indeo5"/>
+  <int value="781916095" label="ayuv"/>
+  <int value="789960893" label="bmv_audio"/>
+  <int value="802192292" label="adpcm_ima_dk4"/>
+  <int value="814609554" label="ralf"/>
+  <int value="816220395" label="apng"/>
+  <int value="820788836" label="subviewer"/>
+  <int value="855521935" label="smvjpeg"/>
+  <int value="856849194" label="tgv"/>
+  <int value="865955000" label="smc"/>
+  <int value="903853106" label="012v"/>
+  <int value="913577987" label="wmav2"/>
+  <int value="944040689" label="ppm"/>
+  <int value="944980366" label="idcin"/>
+  <int value="946455966" label="aasc"/>
+  <int value="948849813" label="adpcm_ima_wav"/>
+  <int value="949116467" label="binkvideo"/>
+  <int value="949591507" label="vp9"/>
+  <int value="972771007" label="mpeg2video"/>
+  <int value="973601133" label="hq_hqa"/>
+  <int value="981942659" label="opus"/>
+  <int value="997031855" label="truemotion2"/>
+  <int value="997190932" label="atrac3p"/>
+  <int value="997732996" label="xwd"/>
+  <int value="1001166722" label="xan_wc4"/>
+  <int value="1008492983" label="msmpeg4v2"/>
+  <int value="1020187009" label="rv40"/>
+  <int value="1022607787" label="ape"/>
+  <int value="1033850553" label="snow"/>
+  <int value="1034034342" label="sipr"/>
+  <int value="1041617024" label="tak_deprecated"/>
+  <int value="1049882649" label="binkaudio_dct"/>
+  <int value="1053922807" label="g723_1"/>
+  <int value="1066477861" label="vorbis"/>
+  <int value="1077386855" label="cscd"/>
+  <int value="1098721511" label="g2m"/>
+  <int value="1127772984" label="imc"/>
+  <int value="1138712147" label="ac3"/>
+  <int value="1139877352" label="dnxhd"/>
+  <int value="1158772651" label="anm"/>
+  <int value="1165132763" label="opus_deprecated"/>
+  <int value="1194572884" label="g2m_deprecated"/>
+  <int value="1210249397" label="avc"/>
+  <int value="1236695157" label="pcm_s32le_planar"/>
+  <int value="1244283551" label="mpeg1video"/>
+  <int value="1246598929" label="flic"/>
+  <int value="1258259575" label="pcm_lxf"/>
+  <int value="1271374381" label="wmav1"/>
+  <int value="1294385179" label="mp3"/>
+  <int value="1299068647" label="truemotion1"/>
+  <int value="1310993795" label="zerocodec"/>
+  <int value="1311566537" label="flv1"/>
+  <int value="1312943731" label="zmbv"/>
+  <int value="1313131096" label="h264"/>
+  <int value="1318324895" label="pcm_bluray"/>
+  <int value="1333708519" label="pcm_u8"/>
+  <int value="1366148173" label="adpcm_g726le"/>
+  <int value="1375054610" label="aac"/>
+  <int value="1395029615" label="adpcm_ea_maxis_xa"/>
+  <int value="1397947482" label="dsd_lsbf"/>
+  <int value="1411832541" label="pcm_f32be"/>
+  <int value="1413182900" label="dvd_nav_packet"/>
+  <int value="1462568683" label="srt"/>
+  <int value="1467359000" label="msa1"/>
+  <int value="1468951708" label="comfortnoise"/>
+  <int value="1469210692" label="mp2"/>
+  <int value="1483758205" label="celt"/>
+  <int value="1502256638" label="vp5"/>
+  <int value="1525492969" label="asv1"/>
+  <int value="1526182480" label="klv"/>
+  <int value="1535518292" label="pcm_s24le_planar_deprecated"/>
+  <int value="1536086449" label="pcx"/>
+  <int value="1550758811" label="mpegvideo_xvmc"/>
+  <int value="1565855078" label="adpcm_ea_r2"/>
+  <int value="1567457517" label="adpcm_g722"/>
+  <int value="1571821879" label="dsicinvideo"/>
+  <int value="1578202877" label="h263p"/>
+  <int value="1603330014" label="r10k"/>
+  <int value="1622843532" label="adpcm_sbpro_2"/>
+  <int value="1626738193" label="mp3adu"/>
+  <int value="1636940385" label="targa_y216"/>
+  <int value="1647791075" label="adpcm_g726"/>
+  <int value="1651871844" label="svq1"/>
+  <int value="1656834662" label="voxware"/>
+  <int value="1671488988" label="adpcm_ct"/>
+  <int value="1681362983" label="webvtt"/>
+  <int value="1681507854" label="exr"/>
+  <int value="1704161151" label="pcm_u32be"/>
+  <int value="1724507916" label="ra_144"/>
+  <int value="1729587546" label="pgmyuv"/>
+  <int value="1730373804" label="pcm_alaw"/>
+  <int value="1741236466" label="subrip"/>
+  <int value="1771307928" label="flashsv2"/>
+  <int value="1789213623" label="wavpack"/>
+  <int value="1804125128" label="pcm_s24be"/>
+  <int value="1813293157" label="hqx"/>
+  <int value="1818519290" label="sonicls"/>
+  <int value="1822179743" label="pcm_s24daud"/>
+  <int value="1823608208" label="pcm_mulaw"/>
+  <int value="1827051583" label="adpcm_thp"/>
+  <int value="1834381325" label="adpcm_dtk"/>
+  <int value="1854844146" label="tscc"/>
+  <int value="1890319788" label="mp4als"/>
+  <int value="1896040704" label="cllc"/>
+  <int value="1913299765" label="vixl"/>
+  <int value="1947892273" label="prores"/>
+  <int value="1951984033" label="v210"/>
+  <int value="1961440145" label="vp6a"/>
+  <int value="1965599083" label="sami"/>
+  <int value="1981484138" label="pcm_u32le"/>
+  <int value="1997862473" label="interplayvideo"/>
+  <int value="2002251246" label="tscc2"/>
+  <int value="2005720882" label="atrac3"/>
+  <int value="2026594607" label="ass"/>
+  <int value="2032395845" label="pcm_u16le"/>
+  <int value="2041774878" label="huffyuv"/>
+  <int value="2047102762" label="sanm_deprecated"/>
+  <int value="2053719989" label="r210"/>
+  <int value="2071582326" label="xbin"/>
+  <int value="2080704511" label="pcm_s16be"/>
+  <int value="2084073402" label="ljpeg"/>
+  <int value="2086226415" label="pcm_s32le"/>
+  <int value="2086394367" label="gsm"/>
+  <int value="2100540076" label="amr_wb"/>
+  <int value="2118960502" label="mimic"/>
+  <int value="2128505640" label="wnv1"/>
+  <int value="2146164868" label="v410"/>
+</enum>
+
 <enum name="FFmpegCodecs" type="int">
+  <obsolete>
+    deprecated Sep 15 2015 in favor of FFmpegCodecHashes
+  </obsolete>
   <int value="0" label="NONE"/>
   <int value="1" label="MPEG1VIDEO"/>
   <int value="2" label="MPEG2VIDEO"/>

@@ -10,7 +10,7 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
@@ -158,6 +158,18 @@ static void RecordVideoCodecStats(const VideoDecoderConfig& video_config,
   // UMA_HISTOGRAM_ENUMERATION to report a discrete value.
   UMA_HISTOGRAM_ENUMERATION("Media.VideoColorRange", color_range,
                             AVCOL_RANGE_NB);  // PRESUBMIT_IGNORE_UMA_MAX
+}
+
+static int32_t GetCodecHash(const AVCodecContext* context) {
+  if (context->codec_descriptor)
+    return HashCodecName(context->codec_descriptor->name);
+  const AVCodecDescriptor* codec_descriptor =
+      avcodec_descriptor_get(context->codec_id);
+  if (codec_descriptor)
+    return HashCodecName(codec_descriptor->name);
+
+  // If the codec name can't be determined, return none for tracking.
+  return HashCodecName("none");
 }
 
 //
@@ -993,8 +1005,9 @@ void FFmpegDemuxer::OnFindStreamInfoDone(const PipelineStatusCB& status_cb,
         continue;
 
       // Log the codec detected, whether it is supported or not.
-      UMA_HISTOGRAM_SPARSE_SLOWLY("Media.DetectedAudioCodec",
-                                  codec_context->codec_id);
+      UMA_HISTOGRAM_SPARSE_SLOWLY("Media.DetectedAudioCodecHash",
+                                  GetCodecHash(codec_context));
+
       // Ensure the codec is supported. IsValidConfig() also checks that the
       // channel layout and sample format are valid.
       AVStreamToAudioDecoderConfig(stream, &audio_config);
@@ -1004,7 +1017,6 @@ void FFmpegDemuxer::OnFindStreamInfoDone(const PipelineStatusCB& status_cb,
     } else if (codec_type == AVMEDIA_TYPE_VIDEO) {
       if (video_stream)
         continue;
-
 
 #if defined(ENABLE_HEVC_DEMUXING)
       if (stream->codec->codec_id == AV_CODEC_ID_HEVC) {
@@ -1028,8 +1040,9 @@ void FFmpegDemuxer::OnFindStreamInfoDone(const PipelineStatusCB& status_cb,
       }
 #endif
       // Log the codec detected, whether it is supported or not.
-      UMA_HISTOGRAM_SPARSE_SLOWLY("Media.DetectedVideoCodec",
-                                  codec_context->codec_id);
+      UMA_HISTOGRAM_SPARSE_SLOWLY("Media.DetectedVideoCodecHash",
+                                  GetCodecHash(codec_context));
+
       // Ensure the codec is supported. IsValidConfig() also checks that the
       // frame size and visible size are valid.
       AVStreamToVideoDecoderConfig(stream, &video_config);

@@ -6,7 +6,7 @@
 
 #include "base/basictypes.h"
 #include "base/logging.h"
-#include "base/metrics/histogram.h"
+#include "base/sha1.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -643,6 +643,13 @@ bool FFmpegUTCDateToTime(const char* date_utc, base::Time* out) {
   }
 
   return false;
+}
+
+int32_t HashCodecName(const char* codec_name) {
+  // Use the first 32-bits from the SHA1 hash as the identifier.
+  int32_t hash;
+  memcpy(&hash, base::SHA1HashString(codec_name).substr(0, 4).c_str(), 4);
+  return hash;
 }
 
 }  // namespace media

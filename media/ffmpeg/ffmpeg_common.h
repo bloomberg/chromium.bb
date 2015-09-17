@@ -129,6 +129,10 @@ ColorSpace AVColorSpaceToColorSpace(AVColorSpace color_space,
 // date string. Otherwise returns fals and timeline_offset is unmodified.
 MEDIA_EXPORT bool FFmpegUTCDateToTime(const char* date_utc, base::Time* out);
 
+// Returns a 32-bit hash for the given codec name.  See the VerifyUmaCodecHashes
+// unit test for more information and code for generating the histogram XML.
+MEDIA_EXPORT int32_t HashCodecName(const char* codec_name);
+
 }  // namespace media
 
 #endif  // MEDIA_FFMPEG_FFMPEG_COMMON_H_
