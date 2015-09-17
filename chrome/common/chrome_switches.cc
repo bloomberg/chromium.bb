@@ -328,9 +328,6 @@ const char kDisableQuic[]                   = "disable-quic";
 // This only has an effect if QUIC protocol is enabled.
 const char kDisableQuicPortSelection[]      = "disable-quic-port-selection";
 
-// Prevents the save password bubble from being enabled.
-const char kDisableSavePasswordBubble[] = "disable-save-password-bubble";
-
 // Prevents SDCH persistence from being used.
 const char kDisableSdchPersistence[] = "disable-sdch-persistence";
 
@@ -521,9 +518,6 @@ const char kEnableQuicPortSelection[]       = "enable-quic-port-selection";
 
 // Enables support for HTTP alternative services.
 const char kEnableAlternativeServices[] = "enable-alternative-services";
-
-// Enables save password prompt bubble.
-const char kEnableSavePasswordBubble[]      = "enable-save-password-bubble";
 
 // Enables SDCH persistence.
 const char kEnableSdchPersistence[] = "enable-sdch-persistence";
@@ -1219,6 +1213,9 @@ const char kDisableHostedAppsInWindows[] = "disable-hosted-apps-in-windows";
 const char kDisableMacViewsNativeAppWindows[] =
     "disable-mac-views-native-app-windows";
 
+// Prevents the save password bubble from being enabled.
+const char kDisableSavePasswordBubble[] = "disable-save-password-bubble";
+
 // Disables Translate experimental new UX which replaces the infobar.
 const char kDisableTranslateNewUX[] = "disable-translate-new-ux";
 
@@ -1239,6 +1236,9 @@ const char kEnableMacViewsNativeAppWindows[] =
 // Causes Chrome to use an equivalent toolkit-views version of a browser dialog
 // when available, rather than a Cocoa one.
 const char kEnableMacViewsDialogs[] = "enable-mac-views-dialogs";
+
+// Enables save password prompt bubble.
+const char kEnableSavePasswordBubble[] = "enable-save-password-bubble";
 
 // Enables Translate experimental new UX which replaces the infobar.
 const char kEnableTranslateNewUX[] = "enable-translate-new-ux";

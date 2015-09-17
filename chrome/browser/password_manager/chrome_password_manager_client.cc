@@ -12,7 +12,6 @@
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
-#include "chrome/browser/password_manager/save_password_infobar_delegate.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
@@ -49,6 +48,10 @@
 #include "google_apis/gaia/gaia_urls.h"
 #include "net/base/url_util.h"
 #include "third_party/re2/re2/re2.h"
+
+#if defined(OS_MACOSX) || defined(OS_ANDROID)
+#include "chrome/browser/password_manager/save_password_infobar_delegate.h"
+#endif
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/android/tab_android.h"
@@ -226,6 +229,7 @@ bool ChromePasswordManagerClient::PromptUserToSaveOrUpdatePassword(
       manage_passwords_ui_controller->OnPasswordSubmitted(form_to_save.Pass());
     }
   } else {
+#if defined(OS_MACOSX) || defined(OS_ANDROID)
     if (form_to_save->IsBlacklisted())
       return false;
     std::string uma_histogram_suffix(
@@ -234,6 +238,9 @@ bool ChromePasswordManagerClient::PromptUserToSaveOrUpdatePassword(
                 form_to_save->pending_credentials().signon_realm, GetPrefs())));
     SavePasswordInfoBarDelegate::Create(
         web_contents(), form_to_save.Pass(), uma_histogram_suffix, type);
+#else
+    NOTREACHED() << "Aura platforms should always use the bubble";
+#endif
   }
   return true;
 }
@@ -516,9 +523,9 @@ bool ChromePasswordManagerClient::IsURLPasswordWebsiteReauth(
 }
 
 bool ChromePasswordManagerClient::IsTheHotNewBubbleUIEnabled() {
-#if !defined(USE_AURA) && !defined(OS_MACOSX)
+#if defined(OS_ANDROID)
   return false;
-#endif
+#elif defined(OS_MACOSX)
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kDisableSavePasswordBubble))
     return false;
@@ -531,6 +538,10 @@ bool ChromePasswordManagerClient::IsTheHotNewBubbleUIEnabled() {
 
   // The bubble should be the default case that runs on the bots.
   return group_name != "Infobar";
+#else
+  // All other platforms use Aura, and therefore always show the bubble.
+  return true;
+#endif
 }
 
 bool ChromePasswordManagerClient::IsUpdatePasswordUIEnabled() const {

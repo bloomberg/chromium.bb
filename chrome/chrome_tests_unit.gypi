@@ -162,7 +162,6 @@
       'browser/password_manager/password_store_proxy_mac_unittest.cc',
       'browser/password_manager/password_store_win_unittest.cc',
       'browser/password_manager/password_store_x_unittest.cc',
-      'browser/password_manager/save_password_infobar_delegate_unittest.cc',
       'browser/password_manager/simple_password_store_mac_unittest.cc',
       'browser/permissions/permission_context_base_unittest.cc',
       'browser/permissions/permission_manager_unittest.cc',
@@ -556,6 +555,9 @@
       '../tools/json_schema_compiler/test/idl_schemas_unittest.cc',
       '../tools/json_schema_compiler/test/objects_unittest.cc',
       '../tools/json_schema_compiler/test/simple_api_unittest.cc',
+    ],
+    'chrome_unit_tests_mac_android_sources': [
+      'browser/password_manager/save_password_infobar_delegate_unittest.cc',
     ],
     'chrome_unit_tests_spellchecker_sources': [
       'browser/spellchecker/feedback_sender_unittest.cc',
@@ -2525,6 +2527,9 @@
           # but when we tried to pull it up to the common.gypi level, it broke
           # other things like the ui and startup tests. *shrug*
           'xcode_settings': {'OTHER_LDFLAGS': ['-Wl,-ObjC']},
+        }],
+        ['OS=="mac" or OS=="android"', {
+          'sources': [ '<@(chrome_unit_tests_mac_android_sources)' ],
         }],
         ['OS!="mac" and OS!="ios"', {
           'dependencies': [

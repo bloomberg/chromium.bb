@@ -2209,7 +2209,6 @@
       'browser/ui/views/infobars/infobar_container_view.h',
       'browser/ui/views/infobars/infobar_view.cc',
       'browser/ui/views/infobars/infobar_view.h',
-      'browser/ui/views/infobars/save_password_infobar.cc',
       'browser/ui/views/layout_constants.cc',
       'browser/ui/views/layout_constants.h',
       'browser/ui/views/load_complete_listener.cc',
@@ -2422,6 +2421,7 @@
     # migrate from mac_views_browser to a chrome://flag.
     'chrome_browser_ui_views_mac_experimental_sources': [
       'browser/ui/views/apps/chrome_app_window_client_views_mac.mm',
+      'browser/ui/views/infobars/save_password_infobar.cc',
     ],
     # Windows-only. Assume ash/aura/views.
     'chrome_browser_ui_win_sources': [

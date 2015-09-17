@@ -1548,12 +1548,14 @@ const Experiment kExperiments[] = {
      kOsDesktop,
      ENABLE_DISABLE_VALUE_TYPE(switches::kEnableSettingsWindow,
                                switches::kDisableSettingsWindow)},
+#if defined(OS_MACOSX)
     {"enable-save-password-bubble",
      IDS_FLAGS_ENABLE_SAVE_PASSWORD_BUBBLE_NAME,
      IDS_FLAGS_ENABLE_SAVE_PASSWORD_BUBBLE_DESCRIPTION,
-     kOsWin | kOsLinux | kOsCrOS | kOsMac,
+     kOsMac,
      ENABLE_DISABLE_VALUE_TYPE(switches::kEnableSavePasswordBubble,
                                switches::kDisableSavePasswordBubble)},
+#endif
     {"enable-apps-file-associations",
      IDS_FLAGS_ENABLE_APPS_FILE_ASSOCIATIONS_NAME,
      IDS_FLAGS_ENABLE_APPS_FILE_ASSOCIATIONS_DESCRIPTION,

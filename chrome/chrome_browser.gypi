@@ -2064,10 +2064,13 @@
       'browser/password_manager/password_store_win.h',
       'browser/password_manager/password_store_x.cc',
       'browser/password_manager/password_store_x.h',
-      'browser/password_manager/save_password_infobar_delegate.cc',
-      'browser/password_manager/save_password_infobar_delegate.h',
       'browser/password_manager/simple_password_store_mac.cc',
       'browser/password_manager/simple_password_store_mac.h',
+    ],
+    # Used on Mac and Android platforms.
+    'chrome_browser_password_manager_mac_android_sources': [
+      'browser/password_manager/save_password_infobar_delegate.cc',
+      'browser/password_manager/save_password_infobar_delegate.h',
     ],
     'chrome_browser_permissions_sources': [
       'browser/permissions/permission_bubble_request_impl.cc',
@@ -3386,6 +3389,11 @@
             'browser_app_shim',
           ],
           'sources': [ '<@(chrome_browser_mac_sources)' ]
+        }],
+        ['OS=="mac" or OS=="android"', {
+          'sources': [
+            '<@(chrome_browser_password_manager_mac_android_sources)',
+          ],
         }],
         ['chromeos==1', {
           'sources!': [

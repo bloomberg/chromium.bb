@@ -376,6 +376,12 @@ source_set("browser") {
       #"browser_app_shim"  TODO(GYP) bug 512600
     ]
   }
+  if (is_mac || is_android) {
+    sources += rebase_path(
+            gypi_values.chrome_browser_password_manager_mac_android_sources,
+            ".",
+            "//chrome")
+  }
   if (enable_extensions) {
     public_deps += [ "//chrome/browser/extensions" ]
     deps += [
