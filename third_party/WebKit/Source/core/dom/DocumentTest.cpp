@@ -324,4 +324,33 @@ TEST_F(DocumentTest, OutgoingReferrerWithUniqueOrigin)
     EXPECT_EQ(String(), document().outgoingReferrer());
 }
 
+TEST_F(DocumentTest, StyleVersion)
+{
+    setHtmlInnerHTML(
+        "<style>"
+        "    .a * { color: green }"
+        "    .b .c { color: green }"
+        "</style>"
+        "<div id='x'><span class='c'></span></div>");
+
+    Element* element = document().getElementById("x");
+    EXPECT_TRUE(element);
+
+    uint64_t previousStyleVersion = document().styleVersion();
+    element->setAttribute(blink::HTMLNames::classAttr, "notfound");
+    EXPECT_EQ(previousStyleVersion, document().styleVersion());
+
+    document().view()->updateAllLifecyclePhases();
+
+    previousStyleVersion = document().styleVersion();
+    element->setAttribute(blink::HTMLNames::classAttr, "a");
+    EXPECT_NE(previousStyleVersion, document().styleVersion());
+
+    document().view()->updateAllLifecyclePhases();
+
+    previousStyleVersion = document().styleVersion();
+    element->setAttribute(blink::HTMLNames::classAttr, "a b");
+    EXPECT_NE(previousStyleVersion, document().styleVersion());
+}
+
 } // namespace blink
