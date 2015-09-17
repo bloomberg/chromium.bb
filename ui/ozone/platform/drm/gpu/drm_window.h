@@ -12,6 +12,7 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/swap_result.h"
+#include "ui/gfx/vsync_provider.h"
 #include "ui/ozone/ozone_export.h"
 #include "ui/ozone/platform/drm/gpu/overlay_plane.h"
 #include "ui/ozone/platform/drm/gpu/page_flip_request.h"
@@ -94,6 +95,9 @@ class OZONE_EXPORT DrmWindow {
 
   // Returns the last buffer associated with this window.
   const OverlayPlane* GetLastModesetBuffer();
+
+  void GetVSyncParameters(
+      const gfx::VSyncProvider::UpdateVSyncCallback& callback) const;
 
  private:
   // Draw the last set cursor & update the cursor plane.
