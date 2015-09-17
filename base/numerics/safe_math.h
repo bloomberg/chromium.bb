@@ -145,6 +145,14 @@ class CheckedNumeric {
     return CheckedNumeric<T>(value, validity);
   }
 
+  // This function is available only for integral types. It returns an unsigned
+  // integer of the same width as the source type, containing the absolute value
+  // of the source, and properly handling signed min.
+  CheckedNumeric<typename UnsignedOrFloatForSize<T>::type> UnsignedAbs() const {
+    return CheckedNumeric<typename UnsignedOrFloatForSize<T>::type>(
+        CheckedUnsignedAbs(state_.value()), state_.validity());
+  }
+
   CheckedNumeric& operator++() {
     *this += 1;
     return *this;

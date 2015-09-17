@@ -28,6 +28,7 @@ using base::internal::RANGE_VALID;
 using base::internal::RANGE_INVALID;
 using base::internal::RANGE_OVERFLOW;
 using base::internal::RANGE_UNDERFLOW;
+using base::internal::SignedIntegerForSize;
 using base::enable_if;
 
 // These tests deliberately cause arithmetic overflows. If the compiler is
@@ -143,6 +144,13 @@ static void TestSpecializedArithmetic(
                          CheckedNumeric<Dst>(DstLimits::min()) - 1);
   TEST_EXPECTED_VALUE(0, CheckedNumeric<Dst>(DstLimits::min()) * 2);
   TEST_EXPECTED_VALUE(0, CheckedNumeric<Dst>(1) / 2);
+  TEST_EXPECTED_VALIDITY(RANGE_VALID,
+                         CheckedNumeric<Dst>(DstLimits::min()).UnsignedAbs());
+  TEST_EXPECTED_VALIDITY(
+      RANGE_VALID,
+      CheckedNumeric<typename SignedIntegerForSize<Dst>::type>(
+          std::numeric_limits<typename SignedIntegerForSize<Dst>::type>::min())
+          .UnsignedAbs());
 
   // Modulus is legal only for integers.
   TEST_EXPECTED_VALUE(0, CheckedNumeric<Dst>() % 1);
