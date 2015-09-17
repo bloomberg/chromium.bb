@@ -139,9 +139,9 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
     // Queues a task to run as soon as possible.
     virtual void ScheduleTask(const base::Closure& task) = 0;
 
-    // Schedules |callback| to run at an appropriate time for performing idle
+    // Schedules |callback| to run at an appropriate time for performing delayed
     // work.
-    virtual void ScheduleIdleWork(const base::Closure& task) = 0;
+    virtual void ScheduleDelayedWork(const base::Closure& task) = 0;
 
     virtual bool UseVirtualizedGLContexts() = 0;
     virtual scoped_refptr<gles2::ShaderTranslatorCache>
@@ -200,7 +200,7 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
   bool InitializeOnGpuThread(const InitializeOnGpuThreadParams& params);
   bool DestroyOnGpuThread();
   void FlushOnGpuThread(int32 put_offset);
-  void ScheduleIdleWorkOnGpuThread();
+  void ScheduleDelayedWorkOnGpuThread();
   uint32 CreateStreamTextureOnGpuThread(uint32 client_texture_id);
   bool MakeCurrent();
   base::Closure WrapCallback(const base::Closure& callback);
@@ -226,7 +226,7 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
   void OnResizeView(gfx::Size size, float scale_factor);
   bool GetBufferChanged(int32 transfer_buffer_id);
   void PumpCommands();
-  void PerformIdleWork();
+  void PerformDelayedWork();
 
   // Members accessed on the gpu thread (possibly with the exception of
   // creation):
@@ -237,7 +237,7 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
   scoped_refptr<gfx::GLContext> context_;
   scoped_refptr<gfx::GLSurface> surface_;
   base::Closure context_lost_callback_;
-  bool idle_work_pending_;  // Used to throttle PerformIdleWork.
+  bool delayed_work_pending_;  // Used to throttle PerformDelayedWork.
   ImageFactory* image_factory_;
 
   // Members accessed on the client thread:
@@ -281,7 +281,7 @@ class GPU_EXPORT GpuInProcessThread
   void AddRef() const override;
   void Release() const override;
   void ScheduleTask(const base::Closure& task) override;
-  void ScheduleIdleWork(const base::Closure& callback) override;
+  void ScheduleDelayedWork(const base::Closure& callback) override;
   bool UseVirtualizedGLContexts() override;
   scoped_refptr<gles2::ShaderTranslatorCache> shader_translator_cache()
       override;

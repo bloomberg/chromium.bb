@@ -11,6 +11,7 @@
 
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "base/time/time.h"
 #include "content/common/content_export.h"
 #include "content/common/gpu/gpu_memory_manager.h"
 #include "content/common/gpu/gpu_memory_manager_client.h"
@@ -231,11 +232,13 @@ class GpuCommandBufferStub
 
   // Poll the command buffer to execute work.
   void PollWork();
+  void PerformWork();
 
-  // Whether this command buffer needs to be polled again in the future.
-  bool HasMoreWork();
-
-  void ScheduleDelayedWork(int64 delay);
+  // Schedule processing of delayed work. This updates the time at which
+  // delayed work should be processed. |process_delayed_work_time_| is
+  // updated to current time + delay. Call this after processing some amount
+  // of delayed work.
+  void ScheduleDelayedWork(base::TimeDelta delay);
 
   bool CheckContextLost();
   void CheckCompleteWaits();
@@ -284,7 +287,7 @@ class GpuCommandBufferStub
   std::deque<uint32> sync_points_;
   int sync_point_wait_count_;
 
-  bool delayed_work_scheduled_;
+  base::TimeTicks process_delayed_work_time_;
   uint32_t previous_processed_num_;
   base::TimeTicks last_idle_time_;
 

@@ -100,7 +100,7 @@ size_t DeferredGpuCommandService::IdleQueueSize() {
   return idle_tasks_.size();
 }
 
-void DeferredGpuCommandService::ScheduleIdleWork(
+void DeferredGpuCommandService::ScheduleDelayedWork(
     const base::Closure& callback) {
   {
     base::AutoLock lock(tasks_lock_);

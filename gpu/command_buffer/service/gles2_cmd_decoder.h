@@ -187,12 +187,16 @@ class GPU_EXPORT GLES2Decoder : public base::SupportsWeakPtr<GLES2Decoder>,
   // Gets the ValuebufferManager for this context.
   virtual ValuebufferManager* GetValuebufferManager() = 0;
 
-  // Process any pending queries. Returns false if there are no pending queries.
-  virtual bool ProcessPendingQueries(bool did_finish) = 0;
+  // Returns false if there are no pending queries.
+  virtual bool HasPendingQueries() const = 0;
 
-  // Returns false if there are no idle work to be made.
-  virtual bool HasMoreIdleWork() = 0;
+  // Process any pending queries.
+  virtual void ProcessPendingQueries(bool did_finish) = 0;
 
+  // Returns false if there is no idle work to be made.
+  virtual bool HasMoreIdleWork() const = 0;
+
+  // Perform any idle work that needs to be made.
   virtual void PerformIdleWork() = 0;
 
   // Sets a callback which is called when a glResizeCHROMIUM command

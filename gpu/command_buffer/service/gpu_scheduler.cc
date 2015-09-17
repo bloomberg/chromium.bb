@@ -161,9 +161,14 @@ bool GpuScheduler::IsScheduled() {
   return unscheduled_count_ == 0;
 }
 
-bool GpuScheduler::HasMoreWork() {
-  return (decoder_ && decoder_->ProcessPendingQueries(false)) ||
-         HasMoreIdleWork();
+bool GpuScheduler::HasPendingQueries() const {
+  return (decoder_ && decoder_->HasPendingQueries());
+}
+
+void GpuScheduler::ProcessPendingQueries() {
+  if (!decoder_)
+    return;
+  decoder_->ProcessPendingQueries(false);
 }
 
 void GpuScheduler::SetSchedulingChangedCallback(
@@ -229,7 +234,7 @@ bool GpuScheduler::IsPreempted() {
   return preemption_flag_->IsSet();
 }
 
-bool GpuScheduler::HasMoreIdleWork() {
+bool GpuScheduler::HasMoreIdleWork() const {
   return (decoder_ && decoder_->HasMoreIdleWork());
 }
 

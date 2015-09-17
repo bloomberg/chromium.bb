@@ -73,8 +73,13 @@ class GPU_EXPORT GpuScheduler
   // Returns whether the scheduler is currently able to process more commands.
   bool IsScheduled();
 
-  // Returns whether the scheduler needs to be polled again in the future.
-  bool HasMoreWork();
+  // Returns whether the scheduler needs to be polled again in the future to
+  // process pending queries.
+  bool HasPendingQueries() const;
+
+  // Process pending queries and return. HasPendingQueries() can be used to
+  // determine if there's more pending queries after this has been called.
+  void ProcessPendingQueries();
 
   typedef base::Callback<void(bool /* scheduled */)> SchedulingChangedCallback;
 
@@ -91,7 +96,12 @@ class GPU_EXPORT GpuScheduler
 
   void SetCommandProcessedCallback(const base::Closure& callback);
 
-  bool HasMoreIdleWork();
+  // Returns whether the scheduler needs to be polled again in the future to
+  // process idle work.
+  bool HasMoreIdleWork() const;
+
+  // Perform some idle work and return. HasMoreIdleWork() can be used to
+  // determine if there's more idle work do be done after this has been called.
   void PerformIdleWork();
 
   CommandParser* parser() const {

@@ -42,7 +42,7 @@ class DeferredGpuCommandService
   static DeferredGpuCommandService* GetInstance();
 
   void ScheduleTask(const base::Closure& task) override;
-  void ScheduleIdleWork(const base::Closure& task) override;
+  void ScheduleDelayedWork(const base::Closure& task) override;
   bool UseVirtualizedGLContexts() override;
   scoped_refptr<gpu::gles2::ShaderTranslatorCache> shader_translator_cache()
       override;

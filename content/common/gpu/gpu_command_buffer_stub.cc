@@ -199,7 +199,6 @@ GpuCommandBufferStub::GpuCommandBufferStub(
       last_memory_allocation_valid_(false),
       watchdog_(watchdog),
       sync_point_wait_count_(0),
-      delayed_work_scheduled_(false),
       previous_processed_num_(0),
       active_url_(active_url),
       total_gpu_memory_(0) {
@@ -313,9 +312,12 @@ bool GpuCommandBufferStub::OnMessageReceived(const IPC::Message& message) {
 
   CheckCompleteWaits();
 
+  // Ensure that any delayed work that was created will be handled.
   if (have_context) {
-    // Ensure that any delayed work that was created will be handled.
-    ScheduleDelayedWork(kHandleMoreWorkPeriodMs);
+    if (scheduler_)
+      scheduler_->ProcessPendingQueries();
+    ScheduleDelayedWork(
+        base::TimeDelta::FromMilliseconds(kHandleMoreWorkPeriodMs));
   }
 
   DCHECK(handled);
@@ -330,13 +332,25 @@ bool GpuCommandBufferStub::IsScheduled() {
   return (!scheduler_.get() || scheduler_->IsScheduled());
 }
 
-bool GpuCommandBufferStub::HasMoreWork() {
-  return scheduler_.get() && scheduler_->HasMoreWork();
+void GpuCommandBufferStub::PollWork() {
+  // Post another delayed task if we have not yet reached the time at which
+  // we should process delayed work.
+  base::TimeTicks current_time = base::TimeTicks::Now();
+  DCHECK(!process_delayed_work_time_.is_null());
+  if (process_delayed_work_time_ > current_time) {
+    task_runner_->PostDelayedTask(
+        FROM_HERE, base::Bind(&GpuCommandBufferStub::PollWork, AsWeakPtr()),
+        process_delayed_work_time_ - current_time);
+    return;
+  }
+  process_delayed_work_time_ = base::TimeTicks();
+
+  PerformWork();
 }
 
-void GpuCommandBufferStub::PollWork() {
-  TRACE_EVENT0("gpu", "GpuCommandBufferStub::PollWork");
-  delayed_work_scheduled_ = false;
+void GpuCommandBufferStub::PerformWork() {
+  TRACE_EVENT0("gpu", "GpuCommandBufferStub::PerformWork");
+
   FastSetActiveURL(active_url_, active_url_hash_);
   if (decoder_.get() && !MakeCurrent())
     return;
@@ -361,8 +375,12 @@ void GpuCommandBufferStub::PollWork() {
       last_idle_time_ = base::TimeTicks::Now();
       scheduler_->PerformIdleWork();
     }
+
+    scheduler_->ProcessPendingQueries();
   }
-  ScheduleDelayedWork(kHandleMoreWorkPeriodBusyMs);
+
+  ScheduleDelayedWork(
+      base::TimeDelta::FromMilliseconds(kHandleMoreWorkPeriodBusyMs));
 }
 
 bool GpuCommandBufferStub::HasUnprocessedCommands() {
@@ -374,22 +392,28 @@ bool GpuCommandBufferStub::HasUnprocessedCommands() {
   return false;
 }
 
-void GpuCommandBufferStub::ScheduleDelayedWork(int64 delay) {
-  if (!HasMoreWork()) {
+void GpuCommandBufferStub::ScheduleDelayedWork(base::TimeDelta delay) {
+  bool has_more_work = scheduler_.get() && (scheduler_->HasPendingQueries() ||
+                                            scheduler_->HasMoreIdleWork());
+  if (!has_more_work) {
     last_idle_time_ = base::TimeTicks();
     return;
   }
 
-  if (delayed_work_scheduled_)
+  base::TimeTicks current_time = base::TimeTicks::Now();
+  // |process_delayed_work_time_| is set if processing of delayed work is
+  // already scheduled. Just update the time if already scheduled.
+  if (!process_delayed_work_time_.is_null()) {
+    process_delayed_work_time_ = current_time + delay;
     return;
-  delayed_work_scheduled_ = true;
+  }
 
   // Idle when no messages are processed between now and when
   // PollWork is called.
   previous_processed_num_ =
       channel()->gpu_channel_manager()->ProcessedOrderNumber();
   if (last_idle_time_.is_null())
-    last_idle_time_ = base::TimeTicks::Now();
+    last_idle_time_ = current_time;
 
   // IsScheduled() returns true after passing all unschedule fences
   // and this is when we can start performing idle work. Idle work
@@ -400,12 +424,13 @@ void GpuCommandBufferStub::ScheduleDelayedWork(int64 delay) {
   if (scheduler_.get() &&
       scheduler_->IsScheduled() &&
       scheduler_->HasMoreIdleWork()) {
-    delay = 0;
+    delay = base::TimeDelta();
   }
 
+  process_delayed_work_time_ = current_time + delay;
   task_runner_->PostDelayedTask(
       FROM_HERE, base::Bind(&GpuCommandBufferStub::PollWork, AsWeakPtr()),
-      base::TimeDelta::FromMilliseconds(delay));
+      delay);
 }
 
 bool GpuCommandBufferStub::MakeCurrent() {

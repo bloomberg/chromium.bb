@@ -667,9 +667,10 @@ class GLES2DecoderImpl : public GLES2Decoder,
     return valuebuffer_manager();
   }
 
-  bool ProcessPendingQueries(bool did_finish) override;
+  bool HasPendingQueries() const override;
+  void ProcessPendingQueries(bool did_finish) override;
 
-  bool HasMoreIdleWork() override;
+  bool HasMoreIdleWork() const override;
   void PerformIdleWork() override;
 
   void WaitForReadPixels(base::Closure callback) override;
@@ -12259,14 +12260,15 @@ void GLES2DecoderImpl::DeleteQueriesEXTHelper(
   }
 }
 
-bool GLES2DecoderImpl::ProcessPendingQueries(bool did_finish) {
-  if (query_manager_.get() == NULL) {
-    return false;
-  }
-  if (!query_manager_->ProcessPendingQueries(did_finish)) {
+bool GLES2DecoderImpl::HasPendingQueries() const {
+  return query_manager_.get() && query_manager_->HavePendingQueries();
+}
+
+void GLES2DecoderImpl::ProcessPendingQueries(bool did_finish) {
+  if (!query_manager_.get())
+    return;
+  if (!query_manager_->ProcessPendingQueries(did_finish))
     current_decoder_error_ = error::kOutOfBounds;
-  }
-  return query_manager_->HavePendingQueries();
 }
 
 // Note that if there are no pending readpixels right now,
@@ -12295,7 +12297,7 @@ void GLES2DecoderImpl::ProcessPendingReadPixels(bool did_finish) {
   }
 }
 
-bool GLES2DecoderImpl::HasMoreIdleWork() {
+bool GLES2DecoderImpl::HasMoreIdleWork() const {
   return !pending_readpixel_fences_.empty() ||
          gpu_tracer_->HasTracesToProcess();
 }
