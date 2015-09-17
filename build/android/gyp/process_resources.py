@@ -54,6 +54,10 @@ def ParseArgs(args):
       action='store_true',
       help='Make a resource package that can be loaded by a different'
       'application at runtime to access the package\'s resources.')
+  parser.add_option(
+      '--app-as-shared-lib',
+      action='store_true',
+      help='Make a resource package that can be loaded as shared library.')
 
   parser.add_option('--resource-dirs',
                     help='Directories containing resources of this target.')
@@ -384,6 +388,8 @@ def main():
       package_command += ['-G', options.proguard_file]
     if options.shared_resources:
       package_command.append('--shared-lib')
+    if options.app_as_shared_lib:
+      package_command.append('--app-as-shared-lib')
     build_utils.CheckOutput(package_command, print_stderr=False)
 
     if options.extra_res_packages:

@@ -94,6 +94,10 @@ def ParseArgs():
       action='store_true',
       help='Make a resource package that can be loaded by a different'
       'application at runtime to access the package\'s resources.')
+  parser.add_option(
+      '--app-as-shared-lib',
+      action='store_true',
+      help='Make a resource package that can be loaded as shared library')
   parser.add_option('--resource-zips',
                     help='zip files containing resources to be packaged')
   parser.add_option('--asset-dir',
@@ -224,6 +228,8 @@ def main():
         package_command += ['-0', ext]
     if options.shared_resources:
       package_command.append('--shared-lib')
+    if options.app_as_shared_lib:
+      package_command.append('--app-as-shared-lib')
 
     if options.asset_dir and os.path.exists(options.asset_dir):
       package_command += ['-A', options.asset_dir]

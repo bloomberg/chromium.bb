@@ -18,6 +18,8 @@
 #  resource_zips - List of paths to resource zip files.
 #  shared_resources - Make a resource package that can be loaded by a different
 #    application at runtime to access the package's resources.
+#  app_as_shared_library - Make a resource package that can be loaded as shared
+#    library.
 #  extensions_to_not_compress - E.g.: 'pak,dat,bin'
 #  extra_inputs - List of extra action inputs.
 {
@@ -26,6 +28,7 @@
     'create_density_splits%': 0,
     'resource_zips%': [],
     'shared_resources%': 0,
+    'app_as_shared_library%': 0,
     'extensions_to_not_compress%': '',
     'extra_inputs%': [],
     'resource_packaged_apk_name': '<(apk_name)-resources.ap_',
@@ -58,6 +61,11 @@
     ['shared_resources == 1', {
       'action': [
         '--shared-resources',
+      ],
+    }],
+    ['app_as_shared_library == 1', {
+      'action': [
+        '--app-as-shared-lib',
       ],
     }],
     ['asset_location != ""', {

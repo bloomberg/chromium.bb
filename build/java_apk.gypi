@@ -49,6 +49,8 @@
 #  resource_dir - The directory for resources.
 #  shared_resources - Make a resource package that can be loaded by a different
 #    application at runtime to access the package's resources.
+#  app_as_shared_library - Make a resource package that can be loaded as shared
+#    library.
 #  R_package - A custom Java package to generate the resource file R.java in.
 #    By default, the package given in AndroidManifest.xml will be used.
 #  include_all_resources - Set to 1 to include all resource IDs in all generated
@@ -142,6 +144,7 @@
     'link_stamp': '<(intermediate_dir)/link.stamp',
     'resource_zip_path': '<(intermediate_dir)/<(_target_name).resources.zip',
     'shared_resources%': 0,
+    'app_as_shared_library%': 0,
     'final_apk_path%': '<(PRODUCT_DIR)/apks/<(apk_name).apk',
     'final_apk_path_no_extension%': '<(PRODUCT_DIR)/apks/<(apk_name)',
     'final_abi_split_apk_path%': '<(PRODUCT_DIR)/apks/<(apk_name)-abi-<(android_app_abi).apk',
@@ -792,6 +795,9 @@
           }],
           ['shared_resources == 1', {
             'process_resources_options+': ['--shared-resources']
+          }],
+          ['app_as_shared_library == 1', {
+            'process_resources_options+': ['--app-as-shared-lib']
           }],
           ['R_package != ""', {
             'process_resources_options+': ['--custom-package', '<(R_package)']
