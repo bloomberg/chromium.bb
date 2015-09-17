@@ -382,6 +382,7 @@ if (is_linux) {
 } else if (is_mac) {
   _native_compiler_configs += [ "//build/config/mac:sdk" ]
 } else if (is_ios) {
+  _native_compiler_configs += [ "//build/config/ios:sdk" ]
 } else if (is_android) {
   _native_compiler_configs += [ "//build/config/android:sdk" ]
 }
