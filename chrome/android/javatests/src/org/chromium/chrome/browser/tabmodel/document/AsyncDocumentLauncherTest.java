@@ -4,15 +4,17 @@
 
 package org.chromium.chrome.browser.tabmodel.document;
 
+import static org.chromium.base.test.util.Restriction.RESTRICTION_TYPE_NON_LOW_END_DEVICE;
+
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Build;
-//import android.test.suitebuilder.annotation.MediumTest;
+import android.test.suitebuilder.annotation.MediumTest;
 import android.text.TextUtils;
 
 import org.chromium.base.ApplicationStatus;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
+import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.document.DocumentActivity;
 import org.chromium.chrome.browser.document.DocumentModeTestBase;
@@ -29,8 +31,8 @@ import org.chromium.content_public.browser.LoadUrlParams;
 @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP)
 @DisableInTabbedMode
 public class AsyncDocumentLauncherTest extends DocumentModeTestBase {
-    // @MediumTest
-    @DisabledTest
+    @MediumTest
+    @Restriction({RESTRICTION_TYPE_NON_LOW_END_DEVICE})
     public void testLaunchingMultipleUnparented() throws Exception {
         AsyncTabCreationParams initialParams = new AsyncTabCreationParams(new LoadUrlParams(URL_1));
         AsyncTabCreationParams secondParams = new AsyncTabCreationParams(new LoadUrlParams(URL_2));
@@ -51,7 +53,7 @@ public class AsyncDocumentLauncherTest extends DocumentModeTestBase {
 
                 return TextUtils.equals(URL_3, documentActivity.getActivityTab().getUrl());
             }
-        }));
+        }, 10000, 50));
 
         TabModelSelector selector = ChromeApplication.getDocumentTabModelSelector();
         assertEquals(3, selector.getTotalTabCount());
@@ -60,8 +62,8 @@ public class AsyncDocumentLauncherTest extends DocumentModeTestBase {
         assertEquals(URL_3, selector.getModel(false).getTabAt(2).getUrl());
     }
 
-    // @MediumTest
-    @DisabledTest
+    @MediumTest
+    @Restriction({RESTRICTION_TYPE_NON_LOW_END_DEVICE})
     public void testLaunchingMultipleParented() throws Exception {
         // Create an Activity that will be credited with creating the child Activities.
         int parentId = launchViaViewIntent(false, URL_1, "Page 1");
@@ -85,7 +87,7 @@ public class AsyncDocumentLauncherTest extends DocumentModeTestBase {
 
                 return TextUtils.equals(URL_4, documentActivity.getActivityTab().getUrl());
             }
-        }));
+        }, 10000, 50));
 
         TabModelSelector selector = ChromeApplication.getDocumentTabModelSelector();
         assertEquals(4, selector.getTotalTabCount());
@@ -95,8 +97,8 @@ public class AsyncDocumentLauncherTest extends DocumentModeTestBase {
         assertEquals(URL_4, selector.getModel(false).getTabAt(3).getUrl());
     }
 
-    // @MediumTest
-    @DisabledTest
+    @MediumTest
+    @Restriction({RESTRICTION_TYPE_NON_LOW_END_DEVICE})
     public void testFailedLaunch() throws Exception {
         // Bloat up the parent Intent so that launching the child Activity will fail.
         int parentId = launchViaViewIntent(false, URL_1, "Page 1");
@@ -127,7 +129,7 @@ public class AsyncDocumentLauncherTest extends DocumentModeTestBase {
 
                 return TextUtils.equals(URL_4, documentActivity.getActivityTab().getUrl());
             }
-        }));
+        }, 10000, 50));
 
         TabModelSelector selector = ChromeApplication.getDocumentTabModelSelector();
         assertEquals(3, selector.getTotalTabCount());
