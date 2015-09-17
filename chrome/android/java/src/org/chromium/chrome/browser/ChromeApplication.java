@@ -384,23 +384,6 @@ public class ChromeApplication extends ContentApplication {
         });
     }
 
-    /**
-     * Returns the class name of the Settings activity.
-     *
-     * TODO(newt): delete this when ChromeShell is deleted.
-     */
-    public String getSettingsActivityName() {
-        return Preferences.class.getName();
-    }
-
-    /**
-     * Open Chrome Sync settings page.
-     * @param accountName the name of the account that is being synced.
-     */
-    public void openSyncSettings(String accountName) {
-        // TODO(aurimas): implement this once SyncCustomizationFragment is upstreamed.
-    }
-
     @CalledByNative
     protected void showAutofillSettings() {
         PreferencesLauncher.launchSettingsPage(this,
@@ -488,7 +471,6 @@ public class ChromeApplication extends ContentApplication {
 
     @Override
     public void initCommandLine() {
-        // TODO(newt): delete this when deleting ChromeShell.
         ChromeCommandLineInitUtil.initChromeCommandLine(this);
     }
 

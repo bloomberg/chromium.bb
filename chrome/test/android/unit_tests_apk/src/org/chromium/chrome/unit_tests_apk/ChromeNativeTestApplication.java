@@ -13,11 +13,6 @@ import org.chromium.chrome.browser.smartcard.PKCS11AuthenticationManager;
 public class ChromeNativeTestApplication extends ChromeApplication {
 
     @Override
-    public String getSettingsActivityName() {
-        return null;
-    }
-
-    @Override
     protected boolean areParentalControlsEnabled() {
         return false;
     }

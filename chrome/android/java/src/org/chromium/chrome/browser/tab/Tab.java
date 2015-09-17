@@ -100,9 +100,9 @@ import java.util.Locale;
 /**
  * The basic Java representation of a tab.  Contains and manages a {@link ContentView}.
  *
- * Tab provides common functionality for ChromeShell Tab as well as Chrome on Android's
- * tab. It is intended to be extended either on Java or both Java and C++, with ownership managed
- * by this base class.
+ * Tab is the base class of ChromeTab; the semi-arbitrary separation between these two classes
+ * exists mainly for historical reasons and will be reworked at some point. It is intended to be
+ * extended either on Java or both Java and C++, with ownership managed by this base class.
  *
  * Extending just Java:
  *  - Just extend the class normally.  Do not override initializeNative().

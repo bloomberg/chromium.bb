@@ -60,24 +60,6 @@ public class Preferences extends AppCompatActivity implements
 
     private static boolean sActivityNotExportedChecked;
 
-    /**
-     * Starts the browser process, if it's not already started.
-     *
-     * TODO(newt): Delete this method once ChromeShellPreferences is deleted.
-     */
-    protected void startBrowserProcessSync() throws ProcessInitException {
-        ((ChromeApplication) getApplication()).startBrowserProcessesAndLoadLibrariesSync(true);
-    }
-
-    /**
-     * Returns the name of the fragment to show if the intent doesn't request a specific fragment.
-     *
-     * TODO(newt): Delete this method once ChromeShellPreferences is deleted.
-     */
-    protected String getTopLevelFragmentName() {
-        return MainPreferences.class.getName();
-    }
-
     @SuppressFBWarnings("DM_EXIT")
     @SuppressLint("InlinedApi")
     @Override
@@ -89,7 +71,7 @@ public class Preferences extends AppCompatActivity implements
         // killed, or for tests. This should happen before super.onCreate() because it might
         // recreate a fragment, and a fragment might depend on the native library.
         try {
-            startBrowserProcessSync();
+            ((ChromeApplication) getApplication()).startBrowserProcessesAndLoadLibrariesSync(true);
         } catch (ProcessInitException e) {
             Log.e(TAG, "Failed to start browser process.", e);
             // This can only ever happen, if at all, when the activity is started from an Android
@@ -116,7 +98,7 @@ public class Preferences extends AppCompatActivity implements
         // If savedInstanceState is non-null, then the activity is being
         // recreated and super.onCreate() has already recreated the fragment.
         if (savedInstanceState == null) {
-            if (initialFragment == null) initialFragment = getTopLevelFragmentName();
+            if (initialFragment == null) initialFragment = MainPreferences.class.getName();
             Fragment fragment = Fragment.instantiate(this, initialFragment, initialArguments);
             getFragmentManager().beginTransaction()
                     .replace(android.R.id.content, fragment)
