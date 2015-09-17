@@ -28,12 +28,15 @@ SavePasswordInfoBar::CreateRenderInfoBar(JNIEnv* env) {
       env, GetTextFor(ConfirmInfoBarDelegate::BUTTON_CANCEL));
   ScopedJavaLocalRef<jstring> message_text = ConvertUTF16ToJavaString(
       env, save_password_delegate->GetMessageText());
+  ScopedJavaLocalRef<jstring> first_run_experience_message =
+      ConvertUTF16ToJavaString(
+          env, save_password_delegate->GetFirstRunExperienceMessage());
 
   return Java_SavePasswordInfoBar_show(
       env, GetEnumeratedIconId(), message_text.obj(),
       save_password_delegate->message_link_range().start(),
       save_password_delegate->message_link_range().end(), ok_button_text.obj(),
-      cancel_button_text.obj());
+      cancel_button_text.obj(), first_run_experience_message.obj());
 }
 
 void SavePasswordInfoBar::OnLinkClicked(JNIEnv* env, jobject obj) {

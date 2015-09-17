@@ -45,6 +45,8 @@ class SavePasswordInfoBarDelegate : public ConfirmInfoBarDelegate {
 
   const gfx::Range& message_link_range() const { return message_link_range_; }
 
+  base::string16 GetFirstRunExperienceMessage();
+
   // ConfirmInfoBarDelegate:
   Type GetInfoBarType() const override;
   InfoBarAutomationType GetInfoBarAutomationType() const override;
@@ -64,7 +66,8 @@ class SavePasswordInfoBarDelegate : public ConfirmInfoBarDelegate {
       scoped_ptr<password_manager::PasswordFormManager> form_to_save,
       const std::string& uma_histogram_suffix,
       password_manager::CredentialSourceType source_type,
-      bool is_smartlock_branding_enabled);
+      bool is_smartlock_branding_enabled,
+      bool should_show_first_run_experience);
 
  private:
   // The PasswordFormManager managing the form we're asking the user about,
@@ -92,6 +95,10 @@ class SavePasswordInfoBarDelegate : public ConfirmInfoBarDelegate {
   // If set, describes the location of the link to the help center article for
   // Smart Lock.
   gfx::Range message_link_range_;
+
+  bool should_show_first_run_experience_;
+
+  content::WebContents* web_contents_;
 
   DISALLOW_COPY_AND_ASSIGN(SavePasswordInfoBarDelegate);
 };

@@ -6,8 +6,10 @@ package org.chromium.chrome.browser.infobar;
 
 import android.text.SpannableString;
 import android.text.Spanned;
+import android.text.TextUtils;
 import android.text.style.ClickableSpan;
 import android.view.View;
+import android.widget.TextView;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.browser.ResourceId;
@@ -21,20 +23,25 @@ public class SavePasswordInfoBar extends ConfirmInfoBar {
     private final int mTitleLinkRangeStart;
     private final int mTitleLinkRangeEnd;
     private final String mTitle;
+    private final String mFirstRunExperienceMessage;
 
     @CalledByNative
     private static InfoBar show(int enumeratedIconId, String message, int titleLinkStart,
-            int titleLinkEnd, String primaryButtonText, String secondaryButtonText) {
+            int titleLinkEnd, String primaryButtonText, String secondaryButtonText,
+            String firstRunExperienceMessage) {
         return new SavePasswordInfoBar(ResourceId.mapToDrawableId(enumeratedIconId), message,
-                titleLinkStart, titleLinkEnd, primaryButtonText, secondaryButtonText);
+                titleLinkStart, titleLinkEnd, primaryButtonText, secondaryButtonText,
+                firstRunExperienceMessage);
     }
 
     private SavePasswordInfoBar(int iconDrawbleId, String message, int titleLinkStart,
-            int titleLinkEnd, String primaryButtonText, String secondaryButtonText) {
+            int titleLinkEnd, String primaryButtonText, String secondaryButtonText,
+            String firstRunExperienceMessage) {
         super(null, iconDrawbleId, null, message, null, primaryButtonText, secondaryButtonText);
         mTitleLinkRangeStart = titleLinkStart;
         mTitleLinkRangeEnd = titleLinkEnd;
         mTitle = message;
+        mFirstRunExperienceMessage = firstRunExperienceMessage;
     }
 
     @Override
@@ -49,6 +56,14 @@ public class SavePasswordInfoBar extends ConfirmInfoBar {
                 }
             }, mTitleLinkRangeStart, mTitleLinkRangeEnd, Spanned.SPAN_INCLUSIVE_INCLUSIVE);
             layout.setMessage(title);
+        }
+
+        if (!TextUtils.isEmpty(mFirstRunExperienceMessage)) {
+            // TODO(melandory): Implement correct (as in mocks) margin for the first run experience
+            // text.
+            TextView firstRunExperienceMessageView = new TextView(getContext());
+            firstRunExperienceMessageView.setText(mFirstRunExperienceMessage);
+            layout.setCustomContent(firstRunExperienceMessageView);
         }
     }
 }
