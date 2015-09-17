@@ -29,8 +29,7 @@ class WebSocket final {
 
   static WebSocket* CreateWebSocket(HttpServer* server,
                                     HttpConnection* connection,
-                                    const HttpServerRequestInfo& request,
-                                    size_t* pos);
+                                    const HttpServerRequestInfo& request);
 
   void Accept(const HttpServerRequestInfo& request);
   ParseResult Read(std::string* message);
@@ -40,8 +39,7 @@ class WebSocket final {
  private:
   WebSocket(HttpServer* server,
             HttpConnection* connection,
-            const HttpServerRequestInfo& request,
-            size_t* pos);
+            const HttpServerRequestInfo& request);
 
   HttpServer* const server_;
   HttpConnection* const connection_;

@@ -237,7 +237,7 @@ int HttpServer::HandleReadResult(HttpConnection* connection, int rv) {
 
     if (request.HasHeaderValue("connection", "upgrade")) {
       scoped_ptr<WebSocket> websocket(
-          WebSocket::CreateWebSocket(this, connection, request, &pos));
+          WebSocket::CreateWebSocket(this, connection, request));
       if (!websocket)  // Not enough data was received.
         break;
       connection->SetWebSocket(websocket.Pass());

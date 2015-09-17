@@ -20,8 +20,7 @@ namespace net {
 
 WebSocket::WebSocket(HttpServer* server,
                      HttpConnection* connection,
-                     const HttpServerRequestInfo& request,
-                     size_t* pos)
+                     const HttpServerRequestInfo& request)
     : server_(server), connection_(connection), closed_(false) {
   std::string request_extensions =
       request.GetHeaderValue("sec-websocket-extensions");
@@ -37,8 +36,7 @@ WebSocket::~WebSocket() {}
 
 WebSocket* WebSocket::CreateWebSocket(HttpServer* server,
                                       HttpConnection* connection,
-                                      const HttpServerRequestInfo& request,
-                                      size_t* pos) {
+                                      const HttpServerRequestInfo& request) {
   std::string version = request.GetHeaderValue("sec-websocket-version");
   if (version != "8" && version != "13") {
     server->SendResponse(
@@ -57,7 +55,7 @@ WebSocket* WebSocket::CreateWebSocket(HttpServer* server,
             "specified."));
     return nullptr;
   }
-  return new WebSocket(server, connection, request, pos);
+  return new WebSocket(server, connection, request);
 }
 
 void WebSocket::Accept(const HttpServerRequestInfo& request) {
