@@ -14,7 +14,7 @@ file. All content written to this directory will be uploaded upon termination
 and the .isolated file describing this directory will be printed to stdout.
 """
 
-__version__ = '0.5'
+__version__ = '0.5.1'
 
 import logging
 import optparse
@@ -89,7 +89,7 @@ def make_temp_dir(prefix, root_dir=None):
   if (root_dir and
       not file_path.is_same_filesystem(root_dir, tempfile.gettempdir())):
     base_temp_dir = root_dir
-  return tempfile.mkdtemp(prefix=prefix, dir=base_temp_dir)
+  return unicode(tempfile.mkdtemp(prefix=prefix, dir=base_temp_dir))
 
 
 def change_tree_read_only(rootdir, read_only):
@@ -130,13 +130,21 @@ def process_command(command, out_dir):
   return [fix(arg) for arg in command]
 
 
-def run_command(command, cwd):
+def run_command(command, cwd, tmp_dir):
   """Runs the command, returns the process exit code."""
   logging.info('run_command(%s, %s)' % (command, cwd))
   sys.stdout.flush()
+
+  env = os.environ.copy()
+  if sys.platform == 'darwin':
+    env['TMPDIR'] = tmp_dir.encode('ascii')
+  elif sys.platform == 'win32':
+    env['TEMP'] = tmp_dir.encode('ascii')
+  else:
+    env['TMP'] = tmp_dir.encode('ascii')
   with tools.Profiler('RunTest'):
     try:
-      with subprocess42.Popen_with_handler(command, cwd=cwd) as p:
+      with subprocess42.Popen_with_handler(command, cwd=cwd, env=env) as p:
         p.communicate()
         exit_code = p.returncode
     except OSError:
@@ -195,7 +203,8 @@ def delete_and_upload(storage, out_dir, leak_temp_dir):
   return outputs_ref, True
 
 
-def map_and_run(isolated_hash, storage, cache, leak_temp_dir, extra_args):
+def map_and_run(
+    isolated_hash, storage, cache, leak_temp_dir, root_dir, extra_args):
   """Maps and run the command. Returns metadata about the result."""
   # TODO(maruel): Include performance statistics.
   result = {
@@ -204,9 +213,16 @@ def map_and_run(isolated_hash, storage, cache, leak_temp_dir, extra_args):
     'outputs_ref': None,
     'version': 1,
   }
-  tmp_root = os.path.dirname(cache.cache_dir) if cache.cache_dir else None
-  run_dir = make_temp_dir(u'run_tha_test', tmp_root)
-  out_dir = unicode(make_temp_dir(u'isolated_out', tmp_root))
+  if root_dir:
+    if not os.path.isdir(root_dir):
+      os.makedirs(root_dir, 0700)
+    prefix = u''
+  else:
+    root_dir = os.path.dirname(cache.cache_dir) if cache.cache_dir else None
+    prefix = u'isolated_'
+  run_dir = make_temp_dir(prefix + u'run', root_dir)
+  out_dir = make_temp_dir(prefix + u'out', root_dir)
+  tmp_dir = make_temp_dir(prefix + u'tmp', root_dir)
   try:
     bundle = isolateserver.fetch_isolated(
         isolated_hash=isolated_hash,
@@ -219,7 +235,8 @@ def map_and_run(isolated_hash, storage, cache, leak_temp_dir, extra_args):
     cwd = os.path.normpath(os.path.join(run_dir, bundle.relative_cwd))
     command = bundle.command + extra_args
     file_path.ensure_command_has_abs_path(command, cwd)
-    result['exit_code'] = run_command(process_command(command, out_dir), cwd)
+    result['exit_code'] = run_command(
+        process_command(command, out_dir), cwd, tmp_dir)
   except Exception as e:
     # An internal error occured. Report accordingly so the swarming task will be
     # retried automatically.
@@ -231,20 +248,30 @@ def map_and_run(isolated_hash, storage, cache, leak_temp_dir, extra_args):
       if leak_temp_dir:
         logging.warning(
             'Deliberately leaking %s for later examination', run_dir)
-      elif os.path.isdir(run_dir) and not file_path.rmtree(run_dir):
-        # On Windows rmtree(run_dir) call above has a synchronization effect: it
-        # finishes only when all task child processes terminate (since a running
-        # process locks *.exe file). Examine out_dir only after that call
-        # completes (since child processes may write to out_dir too and we need
-        # to wait for them to finish).
-        print >> sys.stderr, (
-            'Failed to delete the temporary directory, forcibly failing\n'
-            'the task because of it. No zombie process can outlive a\n'
-            'successful task run and still be marked as successful.\n'
-            'Fix your stuff.')
-        if result['exit_code'] == 0:
-          result['exit_code'] = 1
+      else:
+        if os.path.isdir(run_dir) and not file_path.rmtree(run_dir):
+          # On Windows rmtree(run_dir) call above has a synchronization effect:
+          # it finishes only when all task child processes terminate (since a
+          # running process locks *.exe file). Examine out_dir only after that
+          # call completes (since child processes may write to out_dir too and
+          # we need to wait for them to finish).
+          print >> sys.stderr, (
+              'Failed to delete the run directory, forcibly failing\n'
+              'the task because of it. No zombie process can outlive a\n'
+              'successful task run and still be marked as successful.\n'
+              'Fix your stuff.')
+          if result['exit_code'] == 0:
+            result['exit_code'] = 1
+        if os.path.isdir(tmp_dir) and not file_path.rmtree(tmp_dir):
+          print >> sys.stderr, (
+              'Failed to delete the temporary directory, forcibly failing\n'
+              'the task because of it. No zombie process can outlive a\n'
+              'successful task run and still be marked as successful.\n'
+              'Fix your stuff.')
+          if result['exit_code'] == 0:
+            result['exit_code'] = 1
 
+      # This deletes out_dir if leak_temp_dir is not set.
       result['outputs_ref'], success = delete_and_upload(
           storage, out_dir, leak_temp_dir)
       if not success and result['exit_code'] == 0:
@@ -257,7 +284,8 @@ def map_and_run(isolated_hash, storage, cache, leak_temp_dir, extra_args):
 
 
 def run_tha_test(
-    isolated_hash, storage, cache, leak_temp_dir, result_json, extra_args):
+    isolated_hash, storage, cache, leak_temp_dir, result_json, root_dir,
+    extra_args):
   """Downloads the dependencies in the cache, hardlinks them into a temporary
   directory and runs the executable from there.
 
@@ -278,6 +306,8 @@ def run_tha_test(
                    for later examination.
     result_json: file path to dump result metadata into. If set, the process
                  exit code is always 0 unless an internal error occured.
+    root_dir: directory to the path to use to create the temporary directory. If
+              not specified, a random temporary directory is created.
     extra_args: optional arguments to add to the command stated in the .isolate
                 file.
 
@@ -286,7 +316,7 @@ def run_tha_test(
   """
   # run_isolated exit code. Depends on if result_json is used or not.
   result = map_and_run(
-      isolated_hash, storage, cache, leak_temp_dir, extra_args)
+      isolated_hash, storage, cache, leak_temp_dir, root_dir, extra_args)
   logging.info('Result:\n%s', tools.format_json(result, dense=True))
   if result_json:
     tools.write_json(result_json, result, dense=True)
@@ -321,8 +351,6 @@ def main(args):
   data_group.add_option(
       '-s', '--isolated',
       help='Hash of the .isolated to grab from the isolate server')
-  data_group.add_option(
-      '-H', dest='isolated', help=optparse.SUPPRESS_HELP)
   isolateserver.add_isolate_server_options(data_group)
   parser.add_option_group(data_group)
 
@@ -335,6 +363,8 @@ def main(args):
       action='store_true',
       help='Deliberately leak isolate\'s temp dir for later examination '
           '[default: %default]')
+  debug_group.add_option(
+      '--root-dir', help='Use a directory instead of a random one')
   parser.add_option_group(debug_group)
 
   auth.add_auth_options(parser)
@@ -351,7 +381,7 @@ def main(args):
     assert storage.hash_algo == cache.hash_algo
     return run_tha_test(
         options.isolated, storage, cache, options.leak_temp_dir, options.json,
-        args)
+        options.root_dir, args)
 
 
 if __name__ == '__main__':

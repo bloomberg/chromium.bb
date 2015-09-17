@@ -88,11 +88,11 @@ class RunIsolatedTestBase(auto_stub.TestCase):
   @property
   def run_test_temp_dir(self):
     """Where to map all files in run_isolated.run_tha_test."""
-    return os.path.join(self.tempdir, 'run_tha_test')
+    return os.path.join(self.tempdir, 'isolated_run')
 
   def fake_make_temp_dir(self, prefix, _root_dir=None):
     """Predictably returns directory for run_tha_test (one per test case)."""
-    self.assertIn(prefix, ('run_tha_test', 'isolated_out'))
+    self.assertIn(prefix, ('isolated_out', 'isolated_run', 'isolated_tmp'))
     temp_dir = os.path.join(self.tempdir, prefix)
     self.assertFalse(os.path.isdir(temp_dir))
     os.makedirs(temp_dir)
@@ -187,6 +187,7 @@ class RunIsolatedTest(RunIsolatedTestBase):
         isolateserver.MemoryCache(),
         False,
         None,
+        None,
         [])
     self.assertEqual(0, ret)
     return make_tree_call
@@ -197,7 +198,10 @@ class RunIsolatedTest(RunIsolatedTestBase):
     files = {isolated_hash:isolated}
     make_tree_call = self._run_tha_test(isolated_hash, files)
     self.assertEqual(
-        ['make_tree_writeable', 'make_tree_deleteable', 'make_tree_deleteable'],
+        [
+          'make_tree_writeable', 'make_tree_deleteable', 'make_tree_deleteable',
+          'make_tree_deleteable',
+        ],
         make_tree_call)
     self.assertEqual(1, len(self.popen_calls))
     self.assertEqual(
@@ -214,7 +218,10 @@ class RunIsolatedTest(RunIsolatedTestBase):
     files = {isolated_hash:isolated}
     make_tree_call = self._run_tha_test(isolated_hash, files)
     self.assertEqual(
-        ['make_tree_writeable', 'make_tree_deleteable', 'make_tree_deleteable'],
+        [
+          'make_tree_writeable', 'make_tree_deleteable', 'make_tree_deleteable',
+          'make_tree_deleteable',
+        ],
         make_tree_call)
     self.assertEqual(1, len(self.popen_calls))
     self.assertEqual(
@@ -233,7 +240,7 @@ class RunIsolatedTest(RunIsolatedTestBase):
     self.assertEqual(
         [
           'make_tree_files_read_only', 'make_tree_deleteable',
-          'make_tree_deleteable',
+          'make_tree_deleteable', 'make_tree_deleteable',
         ],
         make_tree_call)
     self.assertEqual(1, len(self.popen_calls))
@@ -251,7 +258,10 @@ class RunIsolatedTest(RunIsolatedTestBase):
     files = {isolated_hash:isolated}
     make_tree_call = self._run_tha_test(isolated_hash, files)
     self.assertEqual(
-        ['make_tree_read_only', 'make_tree_deleteable', 'make_tree_deleteable'],
+        [
+          'make_tree_read_only', 'make_tree_deleteable', 'make_tree_deleteable',
+          'make_tree_deleteable',
+        ],
         make_tree_call)
     self.assertEqual(1, len(self.popen_calls))
     self.assertEqual(
@@ -353,6 +363,7 @@ class RunIsolatedTestRun(RunIsolatedTestBase):
           store,
           isolateserver.MemoryCache(),
           False,
+          None,
           None,
           [])
       self.assertEqual(0, ret)
