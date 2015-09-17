@@ -10,13 +10,16 @@ import android.support.v7.media.MediaRouter;
 
 import com.google.android.gms.cast.Cast;
 import com.google.android.gms.cast.CastDevice;
+import com.google.android.gms.cast.CastStatusCodes;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.PendingResult;
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.api.Status;
 
+import org.chromium.base.Log;
 import org.chromium.chrome.browser.media.router.ChromeMediaRouter;
+import org.chromium.chrome.browser.media.router.RouteDelegate;
 
 /**
  * Establishes a {@link MediaRoute} by starting a Cast application represented by the given
@@ -45,12 +48,39 @@ public class CreateRouteRequest implements GoogleApiClient.ConnectionCallbacks,
     private static final String ERROR_NEW_ROUTE_CLIENT_CONNECTION_FAILED =
             "GoogleApiClient connection failed: %d, %b";
 
+    private class CastListener extends Cast.Listener {
+        private SessionWrapper mSession;
+
+        CastListener() {}
+
+        void setSession(SessionWrapper session) {
+            mSession = session;
+        }
+
+        @Override
+        public void onApplicationStatusChanged() {
+            if (mSession == null) return;
+
+            mSession.updateSessionStatus();
+        }
+
+        @Override
+        public void onApplicationDisconnected(int errorCode) {
+            if (errorCode != CastStatusCodes.SUCCESS) {
+                Log.e(TAG, String.format(
+                        "Application disconnected with: %d", errorCode));
+            }
+            mSession.close();
+        }
+    };
+
     private final String mSourceUrn;
     private final MediaSource mMediaSource;
     private final String mSinkId;
     private final String mRouteId;
     private final int mRequestId;
-    private final ChromeMediaRouter mMediaRouter;
+    private final RouteDelegate mDelegate;
+    private final CastListener mCastListener = new CastListener();
 
     private GoogleApiClient mApiClient;
     private MediaRouter.RouteInfo mRoute;
@@ -63,36 +93,33 @@ public class CreateRouteRequest implements GoogleApiClient.ConnectionCallbacks,
      * @param routeId The id assigned to the route by {@link ChromeMediaRouter}
      * @param requestId The id of the route creation request for tracking by
      * {@link ChromeMediaRouter}
-     * @param router The instance of {@link ChromeMediaRouter} handling the request
+     * @param delegate The instance of {@link RouteDelegate} handling the request
      */
     public CreateRouteRequest(
             String sourceUrn,
             String sinkUrn,
             String routeId,
             int requestId,
-            ChromeMediaRouter router) {
+            RouteDelegate delegate) {
         mSourceUrn = sourceUrn;
         mMediaSource = MediaSource.from(sourceUrn);
         mSinkId = sinkUrn;
         mRouteId = routeId;
         mRequestId = requestId;
-        mMediaRouter = router;
+        mDelegate = delegate;
     }
 
     /**
      * Starts the process of launching the application on the Cast device.
      * @param androidMediaRouter Android's {@link MediaRouter} instance.
      * @param applicationContext application context
-     * @param castApplicationListener {@link com.google.android.gms.cast.Cast.Listener}
      * implementation provided by the caller.
      */
     public void start(
             MediaRouter androidMediaRouter,
-            Context applicationContext,
-            Cast.Listener castApplicationListener) {
+            Context applicationContext) {
         assert androidMediaRouter != null;
         assert applicationContext != null;
-        assert castApplicationListener != null;
 
         if (mState != STATE_IDLE) throwInvalidState();
 
@@ -115,7 +142,7 @@ public class CreateRouteRequest implements GoogleApiClient.ConnectionCallbacks,
             return;
         }
 
-        mApiClient = createApiClient(mRoute, castApplicationListener, applicationContext);
+        mApiClient = createApiClient(mRoute, mCastListener, applicationContext);
         mApiClient.connect();
         mState = STATE_CONNECTING_TO_API;
     }
@@ -206,16 +233,14 @@ public class CreateRouteRequest implements GoogleApiClient.ConnectionCallbacks,
     private void reportSuccess(Cast.ApplicationConnectionResult result) {
         if (mState != STATE_LAUNCH_SUCCEEDED) throwInvalidState();
 
-        mMediaRouter.onRouteCreated(
+        SessionWrapper session = new SessionWrapper(
+                mApiClient,
+                result,
+                CastDevice.getFromBundle(mRoute.getExtras()),
                 mRouteId,
-                mRequestId,
-                new SessionWrapper(
-                        mApiClient,
-                        result,
-                        CastDevice.getFromBundle(mRoute.getExtras()),
-                        mRouteId,
-                        mMediaRouter),
-                result.getWasLaunched());
+                mDelegate);
+        mCastListener.setSession(session);
+        mDelegate.onRouteCreated(mRouteId, mRequestId, session, result.getWasLaunched());
 
         terminate();
     }
@@ -223,8 +248,8 @@ public class CreateRouteRequest implements GoogleApiClient.ConnectionCallbacks,
     private void reportError(String message) {
         if (mState == STATE_TERMINATED) throwInvalidState();
 
-        assert mMediaRouter != null;
-        mMediaRouter.onRouteCreationError(message, mRequestId);
+        assert mDelegate != null;
+        mDelegate.onRouteCreationError(message, mRequestId);
 
         terminate();
     }

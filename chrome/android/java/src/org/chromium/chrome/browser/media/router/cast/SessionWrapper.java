@@ -13,6 +13,8 @@ import com.google.android.gms.common.api.Status;
 
 import org.chromium.base.Log;
 import org.chromium.chrome.browser.media.router.ChromeMediaRouter;
+import org.chromium.chrome.browser.media.router.RouteController;
+import org.chromium.chrome.browser.media.router.RouteDelegate;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -26,7 +28,7 @@ import java.util.Set;
 /**
  * A wrapper around the established Cast application session.
  */
-public class SessionWrapper {
+public class SessionWrapper implements RouteController {
     private static final String TAG = "cr.MediaRouter";
 
     private static final String MEDIA_NAMESPACE = "urn:x-cast:com.google.cast.media";
@@ -67,7 +69,7 @@ public class SessionWrapper {
 
     private final String mMediaRouteId;
     private final CastMessagingChannel mMessageChannel;
-    private final ChromeMediaRouter mMediaRouter;
+    private final RouteDelegate mRouteDelegate;
     private final CastDevice mCastDevice;
 
     // Ids of the connected Cast clients.
@@ -91,11 +93,11 @@ public class SessionWrapper {
             Cast.ApplicationConnectionResult result,
             CastDevice castDevice,
             String mediaRouteId,
-            ChromeMediaRouter mediaRouter) {
+            RouteDelegate delegate) {
         mApiClient = apiClient;
         mSessionId = result.getSessionId();
         mMediaRouteId = mediaRouteId;
-        mMediaRouter = mediaRouter;
+        mRouteDelegate = delegate;
         mApplicationMetadata = result.getApplicationMetadata();
         mApplicationStatus = result.getApplicationStatus();
         mCastDevice = castDevice;
@@ -107,10 +109,8 @@ public class SessionWrapper {
 
 
 
-    /**
-     * Stops the Cast application associated with this session.
-     */
-    public void stop() {
+    @Override
+    public void close() {
         assert mApiClient != null;
 
         if (mApiClient.isConnected() || mApiClient.isConnecting()) {
@@ -125,17 +125,12 @@ public class SessionWrapper {
         mApiClient = null;
     }
 
-    /**
-     * Send a string message to the session and invokes the {@link ChromeMediaRouter} with the
-     * passed callback id on success or failure.
-     * @param message The message to send.
-     * @param callbackId The id of the callback handling the result.
-     */
-    public void sendStringMessage(String message, final int callbackId) {
+    @Override
+    public void sendStringMessage(String message, int callbackId) {
         if (handleInternalMessage(message, callbackId)) return;
 
         // TODO(avayvod): figure out what to do with custom namespace messages.
-        mMediaRouter.onMessageSentResult(false, callbackId);
+        mRouteDelegate.onMessageSentResult(false, callbackId);
     }
 
     /**
@@ -145,7 +140,7 @@ public class SessionWrapper {
      */
     public void onMessage(String type, String message) {
         for (String client : mClients) {
-            mMediaRouter.onMessage(mMediaRouteId,
+            mRouteDelegate.onMessage(mMediaRouteId,
                     buildInternalMessage(type, message, client, mSequenceNumber));
         }
         mSequenceNumber++;
@@ -216,7 +211,7 @@ public class SessionWrapper {
             return false;
         }
 
-        mMediaRouter.onMessageSentResult(success, callbackId);
+        mRouteDelegate.onMessageSentResult(success, callbackId);
         return true;
     }
 
@@ -228,7 +223,7 @@ public class SessionWrapper {
 
         mClients.add(clientId);
 
-        mMediaRouter.onMessage(mMediaRouteId,
+        mRouteDelegate.onMessage(mMediaRouteId,
                 buildInternalMessage("new_session", buildSessionMessage(), clientId, -1));
         return true;
     }
@@ -351,7 +346,7 @@ public class SessionWrapper {
             mApplicationMetadata = Cast.CastApi.getApplicationMetadata(mApiClient);
 
             for (String clientId : mClients) {
-                mMediaRouter.onMessage(mMediaRouteId, buildInternalMessage(
+                mRouteDelegate.onMessage(mMediaRouteId, buildInternalMessage(
                         "update_session", buildSessionMessage(), clientId, -1));
             }
         } catch (IllegalStateException e) {
