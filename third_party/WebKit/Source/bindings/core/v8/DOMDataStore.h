@@ -214,21 +214,24 @@ private:
     OwnPtr<DOMWrapperMap<ScriptWrappable>> m_wrapperMap;
 };
 
-template <>
-inline void DOMWrapperMap<ScriptWrappable>::PersistentValueMapTraits::Dispose(
-    v8::Isolate* isolate,
-    v8::Global<v8::Object> value,
-    ScriptWrappable* key)
+template<>
+inline void DOMWrapperMap<ScriptWrappable>::PersistentValueMapTraits::Dispose(v8::Isolate*, v8::Global<v8::Object> value, ScriptWrappable* key)
 {
-    RELEASE_ASSERT(!value.IsEmpty()); // See crbug.com/368095.
-    releaseObject(value);
+    auto wrapperTypeInfo = toWrapperTypeInfo(value);
+    if (wrapperTypeInfo->isGarbageCollected())
+        wrapperTypeInfo->derefObject();
+    else
+        wrapperTypeInfo->derefObject(toScriptWrappable(value));
 }
 
-template <>
-inline void DOMWrapperMap<ScriptWrappable>::PersistentValueMapTraits::DisposeWeak(v8::Isolate* isolate, void* internalFields[v8::kInternalFieldsInWeakCallback], ScriptWrappable* key)
+template<>
+inline void DOMWrapperMap<ScriptWrappable>::PersistentValueMapTraits::DisposeWeak(const v8::WeakCallbackInfo<WeakCallbackDataType>& data)
 {
-    auto typeInfo = reinterpret_cast<WrapperTypeInfo*>(internalFields[v8DOMWrapperTypeIndex]);
-    typeInfo->derefObject(key);
+    auto wrapperTypeInfo = reinterpret_cast<WrapperTypeInfo*>(data.GetInternalField(v8DOMWrapperTypeIndex));
+    if (wrapperTypeInfo->isGarbageCollected())
+        wrapperTypeInfo->derefObject();
+    else
+        wrapperTypeInfo->derefObject(KeyFromWeakCallbackInfo(data));
 }
 
 } // namespace blink

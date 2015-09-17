@@ -425,20 +425,19 @@ static DOMWrapperMap<NPObject>& staticNPObjectMap()
     return npObjectMap;
 }
 
-template <>
-inline void DOMWrapperMap<NPObject>::PersistentValueMapTraits::Dispose(
-    v8::Isolate* isolate,
-    v8::Global<v8::Object> value,
-    NPObject* npObject)
+template<>
+inline void DOMWrapperMap<NPObject>::PersistentValueMapTraits::Dispose(v8::Isolate*, v8::Global<v8::Object> value, NPObject* key)
 {
+    auto npObject = key;
     ASSERT(npObject);
     if (_NPN_IsAlive(npObject))
         _NPN_ReleaseObject(npObject);
 }
 
-template <>
-inline void DOMWrapperMap<NPObject>::PersistentValueMapTraits::DisposeWeak(v8::Isolate* isolate, void* internalFields[v8::kInternalFieldsInWeakCallback], NPObject* npObject)
+template<>
+inline void DOMWrapperMap<NPObject>::PersistentValueMapTraits::DisposeWeak(const v8::WeakCallbackInfo<WeakCallbackDataType>& data)
 {
+    auto npObject = KeyFromWeakCallbackInfo(data);
     ASSERT(npObject);
     if (_NPN_IsAlive(npObject))
         _NPN_ReleaseObject(npObject);

@@ -94,7 +94,7 @@ public:
 
 private:
     class PersistentValueMapTraits {
-        DISALLOW_ALLOCATION();
+        STATIC_ONLY(PersistentValueMapTraits);
     public:
         // Map traits:
         typedef HashMap<KeyType*, v8::PersistentContainerValue> Impl;
@@ -148,19 +148,11 @@ private:
             return reinterpret_cast<KeyType*>(data.GetInternalField(v8DOMWrapperObjectIndex));
         }
 
-        static void OnWeakCallback(const v8::WeakCallbackInfo<WeakCallbackDataType>& data) { }
+        static void OnWeakCallback(const v8::WeakCallbackInfo<WeakCallbackDataType>&) { }
 
-        static void Dispose(v8::Isolate* isolate, v8::Global<v8::Object> value, KeyType* key) { }
+        static void Dispose(v8::Isolate*, v8::Global<v8::Object>, KeyType*);
 
-        static void DisposeWeak(const v8::WeakCallbackInfo<WeakCallbackDataType>& data)
-        {
-            void* internalFields[v8::kInternalFieldsInWeakCallback] = {
-                data.GetInternalField(0),
-                data.GetInternalField(1)
-            };
-            DisposeWeak(data.GetIsolate(), internalFields, KeyFromWeakCallbackInfo(data));
-        }
-        static void DisposeWeak(v8::Isolate* isolate, void* internalFields[v8::kInternalFieldsInWeakCallback], KeyType* key) { }
+        static void DisposeWeak(const v8::WeakCallbackInfo<WeakCallbackDataType>&);
     };
 
     v8::Isolate* m_isolate;

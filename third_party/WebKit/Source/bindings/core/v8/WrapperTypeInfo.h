@@ -43,6 +43,8 @@ class ActiveDOMObject;
 class EventTarget;
 class ScriptWrappable;
 
+ScriptWrappable* toScriptWrappable(const v8::PersistentBase<v8::Object>& wrapper);
+
 static const int v8DOMWrapperTypeIndex = static_cast<int>(gin::kWrapperInfoIndex);
 static const int v8DOMWrapperObjectIndex = static_cast<int>(gin::kEncodedValueIndex);
 static const int v8DefaultWrapperInternalFieldCount = static_cast<int>(gin::kNumberOfInternalFields);
@@ -155,6 +157,12 @@ struct WrapperTypeInfo {
         }
     }
 
+    void derefObject() const
+    {
+        ASSERT(isGarbageCollected());
+        ThreadState::current()->persistentFreed();
+    }
+
     void trace(Visitor* visitor, ScriptWrappable* scriptWrappable) const
     {
         ASSERT(traceFunction);
@@ -210,28 +218,21 @@ struct WrapperTypeInfo {
     const unsigned gcType : 2; // GCType
 };
 
-static_assert(offsetof(struct WrapperTypeInfo, ginEmbedder) == offsetof(struct gin::WrapperInfo, embedder), "offset of WrapperTypeInfo.ginEmbedder must be the same as gin::WrapperInfo.embedder");
-
 template<typename T, int offset>
 inline T* getInternalField(const v8::PersistentBase<v8::Object>& persistent)
 {
     ASSERT(offset < v8::Object::InternalFieldCount(persistent));
-    return static_cast<T*>(v8::Object::GetAlignedPointerFromInternalField(persistent, offset));
+    return reinterpret_cast<T*>(v8::Object::GetAlignedPointerFromInternalField(persistent, offset));
 }
 
 template<typename T, int offset>
 inline T* getInternalField(v8::Local<v8::Object> wrapper)
 {
     ASSERT(offset < wrapper->InternalFieldCount());
-    return static_cast<T*>(wrapper->GetAlignedPointerFromInternalField(offset));
+    return reinterpret_cast<T*>(wrapper->GetAlignedPointerFromInternalField(offset));
 }
 
-inline ScriptWrappable* toScriptWrappable(const v8::Persistent<v8::Object>& wrapper)
-{
-    return getInternalField<ScriptWrappable, v8DOMWrapperObjectIndex>(wrapper);
-}
-
-inline ScriptWrappable* toScriptWrappable(const v8::Global<v8::Object>& wrapper)
+inline ScriptWrappable* toScriptWrappable(const v8::PersistentBase<v8::Object>& wrapper)
 {
     return getInternalField<ScriptWrappable, v8DOMWrapperObjectIndex>(wrapper);
 }
@@ -241,12 +242,7 @@ inline ScriptWrappable* toScriptWrappable(v8::Local<v8::Object> wrapper)
     return getInternalField<ScriptWrappable, v8DOMWrapperObjectIndex>(wrapper);
 }
 
-inline const WrapperTypeInfo* toWrapperTypeInfo(const v8::Persistent<v8::Object>& wrapper)
-{
-    return getInternalField<WrapperTypeInfo, v8DOMWrapperTypeIndex>(wrapper);
-}
-
-inline const WrapperTypeInfo* toWrapperTypeInfo(const v8::Global<v8::Object>& wrapper)
+inline const WrapperTypeInfo* toWrapperTypeInfo(const v8::PersistentBase<v8::Object>& wrapper)
 {
     return getInternalField<WrapperTypeInfo, v8DOMWrapperTypeIndex>(wrapper);
 }
@@ -254,16 +250,6 @@ inline const WrapperTypeInfo* toWrapperTypeInfo(const v8::Global<v8::Object>& wr
 inline const WrapperTypeInfo* toWrapperTypeInfo(v8::Local<v8::Object> wrapper)
 {
     return getInternalField<WrapperTypeInfo, v8DOMWrapperTypeIndex>(wrapper);
-}
-
-inline void releaseObject(v8::Local<v8::Object> wrapper)
-{
-    toWrapperTypeInfo(wrapper)->derefObject(toScriptWrappable(wrapper));
-}
-
-inline void releaseObject(v8::Global<v8::Object>& wrapper)
-{
-    toWrapperTypeInfo(wrapper)->derefObject(toScriptWrappable(wrapper));
 }
 
 } // namespace blink
