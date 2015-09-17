@@ -548,7 +548,7 @@ TEST_F(AssociatedURLLoaderTest, RedirectCrossOriginWithAccessControlFailure)
     // We should get a notification about access control check failure.
     EXPECT_FALSE(m_willSendRequest);
     EXPECT_FALSE(m_didReceiveResponse);
-    EXPECT_TRUE(m_didReceiveData);
+    EXPECT_FALSE(m_didReceiveData);
     EXPECT_TRUE(m_didFail);
 }
 

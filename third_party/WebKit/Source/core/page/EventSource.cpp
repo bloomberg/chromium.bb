@@ -319,13 +319,10 @@ void EventSource::abortConnectionAttempt()
 {
     ASSERT(m_state == CONNECTING);
 
-    if (m_requestInFlight) {
-        m_loader->cancel();
-    } else {
-        m_state = CLOSED;
-    }
+    m_loader = nullptr;
+    m_state = CLOSED;
+    networkRequestEnded();
 
-    ASSERT(m_state == CLOSED);
     dispatchEvent(Event::create(EventTypeNames::error));
 }
 

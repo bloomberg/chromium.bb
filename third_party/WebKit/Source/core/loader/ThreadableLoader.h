@@ -118,16 +118,44 @@ template<> struct CrossThreadCopierBase<false, false, false, ThreadableLoaderOpt
 
 // Useful for doing loader operations from any thread (not threadsafe,
 // just able to run on threads other than the main thread).
+//
+// Arguments common to both loadResourceSynchronously() and create():
+//
+// - ThreadableLoaderOptions argument configures this ThreadableLoader's
+//   behavior.
+//
+// - ResourceLoaderOptions argument will be passed to the FetchRequest
+//   that this ThreadableLoader creates. It can be altered e.g. when
+//   redirect happens.
 class CORE_EXPORT ThreadableLoader : public RefCounted<ThreadableLoader> {
     WTF_MAKE_NONCOPYABLE(ThreadableLoader);
 public:
-    // ThreadableLoaderOptions argument configures this ThreadableLoader's
-    // behavior.
-    //
-    // ResourceLoaderOptions argument will be passed to the FetchRequest
-    // that this ThreadableLoader creates. It can be altered e.g. when
-    // redirect happens.
+    // ThreadableLoaderClient methods may not destroy the ThreadableLoader
+    // instance in them.
     static void loadResourceSynchronously(ExecutionContext&, const ResourceRequest&, ThreadableLoaderClient&, const ThreadableLoaderOptions&, const ResourceLoaderOptions&);
+    // Loading completes when one of the following methods are called:
+    // - didFinishLoading()
+    // - didFail()
+    // - didFailAccessControlCheck()
+    // - didFailRedirectCheck()
+    // After any of these methods is called, no ThreadableLoaderClient method
+    // will be called.
+    //
+    // When ThreadableLoader is destructed, ThreadableLoaderClient methods are
+    // NOT called in response to the destruction synchronously or after
+    // destruction.
+    //
+    // When ThreadableLoader::cancel() is called,
+    // ThreadableLoaderClient::didFail() is called with ResourceError with
+    // isCancellation() returning true, if any of didFinishLoading() or
+    // didFail.*() methods have not been called yet. (didFail() may be called
+    // with a ResourceError with isCancellation() returning true also for
+    // cancellation happened inside the loader.)
+    //
+    // ThreadableLoaderClient methods:
+    // - may call cancel()
+    // - can destroy the ThreadableLoader instance in them (by clearing
+    //   RefPtr<ThreadableLoader>).
     static PassRefPtr<ThreadableLoader> create(ExecutionContext&, ThreadableLoaderClient*, const ResourceRequest&, const ThreadableLoaderOptions&, const ResourceLoaderOptions&);
 
     // A ThreadableLoader may have a timeout specified. It is possible, in some cases, for
