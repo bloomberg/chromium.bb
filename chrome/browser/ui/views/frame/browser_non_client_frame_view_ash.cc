@@ -534,17 +534,8 @@ bool BrowserNonClientFrameViewAsh::UseImmersiveLightbarHeaderStyle() const {
 
 bool BrowserNonClientFrameViewAsh::UsePackagedAppHeaderStyle() const {
   // Use the packaged app style for apps that aren't using the newer WebApp
-  // style, and that aren't bookmark apps.
-  if (!browser_view()->browser()->is_app() || UseWebAppHeaderStyle())
-    return false;
-
-  const std::string extension_id = web_app::GetExtensionIdFromApplicationName(
-      browser_view()->browser()->app_name());
-  const extensions::Extension* extension =
-      extensions::ExtensionRegistry::Get(browser_view()->browser()->profile())
-          ->GetExtensionById(extension_id,
-                             extensions::ExtensionRegistry::EVERYTHING);
-  return !extension || !extension->from_bookmark();
+  // style.
+  return browser_view()->browser()->is_app() && !UseWebAppHeaderStyle();
 }
 
 bool BrowserNonClientFrameViewAsh::UseWebAppHeaderStyle() const {
