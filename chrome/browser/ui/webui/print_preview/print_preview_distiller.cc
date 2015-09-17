@@ -20,6 +20,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/resource_request_details.h"
 #include "content/public/browser/session_storage_namespace.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
@@ -150,6 +151,8 @@ class PrintPreviewDistiller::WebContentsDelegateImpl
   void DidGetRedirectForResourceRequest(
       content::RenderFrameHost* render_frame_host,
       const content::ResourceRedirectDetails& details) override {
+    if (details.resource_type != content::RESOURCE_TYPE_MAIN_FRAME)
+      return;
     // Redirects are unsupported for distilled content renderers.
     on_failed_callback_.Run();
   }
