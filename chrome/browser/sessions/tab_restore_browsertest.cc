@@ -33,7 +33,6 @@
 #include "content/public/test/browser_test_utils.h"
 #include "net/base/net_util.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
-#include "third_party/WebKit/public/web/WebFindOptions.h"
 #include "url/gurl.h"
 
 // Class used to run a message loop waiting for the TabRestoreService to finish

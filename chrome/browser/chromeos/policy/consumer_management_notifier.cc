@@ -20,7 +20,6 @@
 #include "chrome/common/url_constants.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
-#include "third_party/WebKit/public/web/WebTextDirection.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/page_transition_types.h"
 #include "ui/base/resource/resource_bundle.h"
