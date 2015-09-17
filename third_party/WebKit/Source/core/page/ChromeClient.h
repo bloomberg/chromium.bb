@@ -89,8 +89,9 @@ public:
     virtual void takeFocus(WebFocusType) = 0;
 
     virtual void focusedNodeChanged(Node*, Node*) = 0;
-
     virtual void focusedFrameChanged(LocalFrame*) = 0;
+
+    virtual bool hadFormInteraction() const = 0;
 
     // The LocalFrame pointer provides the ChromeClient with context about which
     // LocalFrame wants to create the new Page. Also, the newly created window

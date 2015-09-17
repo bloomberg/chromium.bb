@@ -213,6 +213,11 @@ void ChromeClientImpl::focusedFrameChanged(LocalFrame* frame)
         webframe->client()->frameFocused();
 }
 
+bool ChromeClientImpl::hadFormInteraction() const
+{
+    return m_webView->pageImportanceSignals() && m_webView->pageImportanceSignals()->hadFormInteraction();
+}
+
 namespace {
 
 void updatePolicyForEvent(const WebInputEvent* inputEvent, NavigationPolicy* policy)

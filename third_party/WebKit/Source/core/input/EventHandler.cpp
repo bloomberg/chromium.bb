@@ -3394,6 +3394,9 @@ void EventHandler::defaultBackspaceEventHandler(KeyboardEvent* event)
 
     if (!m_frame->editor().behavior().shouldNavigateBackOnBackspace())
         return;
+    UseCounter::count(m_frame->document(), UseCounter::BackspaceNavigatedBack);
+    if (m_frame->page()->chromeClient().hadFormInteraction())
+        UseCounter::count(m_frame->document(), UseCounter::BackspaceNavigatedBackAfterFormInteraction);
     bool handledEvent = m_frame->loader().client()->navigateBackForward(event->shiftKey() ? 1 : -1);
     if (handledEvent)
         event->setDefaultHandled();

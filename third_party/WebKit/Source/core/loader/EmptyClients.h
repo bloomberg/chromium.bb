@@ -89,6 +89,8 @@ public:
 
     void didOverscroll(const FloatSize&, const FloatSize&, const FloatPoint&, const FloatSize&) override {}
 
+    bool hadFormInteraction() const override { return false; }
+
     void setToolbarsVisible(bool) override {}
     bool toolbarsVisible() override { return false; }
 
