@@ -1384,14 +1384,7 @@ void LayerImpl::AddDamageRect(const gfx::Rect& damage_rect) {
 void LayerImpl::SetCurrentScrollOffset(const gfx::ScrollOffset& scroll_offset) {
   DCHECK(IsActive());
   if (scroll_offset_->SetCurrent(scroll_offset))
-    DidUpdateScrollOffset(false);
-}
-
-void LayerImpl::SetCurrentScrollOffsetFromDelegate(
-    const gfx::ScrollOffset& scroll_offset) {
-  DCHECK(IsActive());
-  if (scroll_offset_->SetCurrent(scroll_offset))
-    DidUpdateScrollOffset(true);
+    DidUpdateScrollOffset();
 }
 
 void LayerImpl::PushScrollOffsetFromMainThread(
@@ -1461,7 +1454,7 @@ void LayerImpl::PushScrollOffset(const gfx::ScrollOffset* scroll_offset) {
   }
 
   if (changed)
-    DidUpdateScrollOffset(false);
+    DidUpdateScrollOffset();
 }
 
 void LayerImpl::UpdatePropertyTreeScrollOffset() {
@@ -1480,11 +1473,9 @@ void LayerImpl::UpdatePropertyTreeScrollOffset() {
   }
 }
 
-void LayerImpl::DidUpdateScrollOffset(bool is_from_root_delegate) {
+void LayerImpl::DidUpdateScrollOffset() {
   DCHECK(scroll_offset_);
 
-  if (!is_from_root_delegate)
-    layer_tree_impl()->DidUpdateScrollOffset(id());
   NoteLayerPropertyChangedForSubtree();
   ScrollbarParametersDidChange(false);
 
@@ -1494,7 +1485,7 @@ void LayerImpl::DidUpdateScrollOffset(bool is_from_root_delegate) {
   if (layer_tree_impl()->IsActiveTree()) {
     LayerImpl* pending_twin = layer_tree_impl()->FindPendingTreeLayerById(id());
     if (pending_twin)
-      pending_twin->DidUpdateScrollOffset(is_from_root_delegate);
+      pending_twin->DidUpdateScrollOffset();
   }
 }
 

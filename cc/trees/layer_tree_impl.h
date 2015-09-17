@@ -270,8 +270,6 @@ class CC_EXPORT LayerTreeImpl {
   // Useful for debug assertions, probably shouldn't be used for anything else.
   Proxy* proxy() const;
 
-  void SetRootLayerScrollOffsetDelegate(
-      LayerScrollOffsetDelegate* root_layer_scroll_offset_delegate);
   // Distribute the root scroll between outer and inner viewport scroll layer.
   // The outer viewport scroll layer scrolls first.
   void DistributeRootScrollOffset(const gfx::ScrollOffset& root_offset);
@@ -363,8 +361,6 @@ class CC_EXPORT LayerTreeImpl {
 
   void GatherFrameTimingRequestIds(std::vector<int64_t>* request_ids);
 
-  void DidUpdateScrollOffset(int layer_id);
-
   bool IsAnimatingFilterProperty(const LayerImpl* layer) const;
   bool IsAnimatingOpacityProperty(const LayerImpl* layer) const;
   bool IsAnimatingTransformProperty(const LayerImpl* layer) const;
@@ -417,7 +413,6 @@ class CC_EXPORT LayerTreeImpl {
   scoped_ptr<LayerImpl> root_layer_;
   HeadsUpDisplayLayerImpl* hud_layer_;
   PropertyTrees property_trees_;
-  LayerScrollOffsetDelegate* root_layer_scroll_offset_delegate_;
   SkColor background_color_;
   bool has_transparent_background_;
 

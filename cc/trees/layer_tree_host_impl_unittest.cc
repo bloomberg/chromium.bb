@@ -4580,19 +4580,28 @@ TEST_F(LayerTreeHostImplTest, RootLayerScrollOffsetDelegation) {
   EXPECT_EQ(1.f, scroll_delegate.min_page_scale_factor());
   EXPECT_EQ(1.f, scroll_delegate.max_page_scale_factor());
 
-  // Updating page scale immediately updates the delegate.
+  // Put a page scale on the tree.
   host_impl_->active_tree()->PushPageScaleFromMainThread(2.f, 0.5f, 4.f);
-  EXPECT_EQ(2.f, scroll_delegate.page_scale_factor());
-  EXPECT_EQ(0.5f, scroll_delegate.min_page_scale_factor());
-  EXPECT_EQ(4.f, scroll_delegate.max_page_scale_factor());
-  host_impl_->active_tree()->SetPageScaleOnActiveTree(2.f * 1.5f);
-  EXPECT_EQ(3.f, scroll_delegate.page_scale_factor());
-  EXPECT_EQ(0.5f, scroll_delegate.min_page_scale_factor());
-  EXPECT_EQ(4.f, scroll_delegate.max_page_scale_factor());
-  host_impl_->active_tree()->SetPageScaleOnActiveTree(2.f);
-  host_impl_->active_tree()->PushPageScaleFromMainThread(1.f, 0.5f, 4.f);
   EXPECT_EQ(1.f, scroll_delegate.page_scale_factor());
-  EXPECT_EQ(0.5f, scroll_delegate.min_page_scale_factor());
+  EXPECT_EQ(1.f, scroll_delegate.min_page_scale_factor());
+  EXPECT_EQ(1.f, scroll_delegate.max_page_scale_factor());
+  // Activation will update the delegate.
+  host_impl_->ActivateSyncTree();
+  EXPECT_EQ(2.f, scroll_delegate.page_scale_factor());
+  EXPECT_EQ(.5f, scroll_delegate.min_page_scale_factor());
+  EXPECT_EQ(4.f, scroll_delegate.max_page_scale_factor());
+
+  // Reset the page scale for the rest of the test.
+  host_impl_->active_tree()->PushPageScaleFromMainThread(1.f, 0.5f, 4.f);
+  EXPECT_EQ(2.f, scroll_delegate.page_scale_factor());
+  EXPECT_EQ(.5f, scroll_delegate.min_page_scale_factor());
+  EXPECT_EQ(4.f, scroll_delegate.max_page_scale_factor());
+
+  // Animating page scale can change the root offset, so it should update the
+  // delegate.
+  host_impl_->Animate();
+  EXPECT_EQ(1.f, scroll_delegate.page_scale_factor());
+  EXPECT_EQ(.5f, scroll_delegate.min_page_scale_factor());
   EXPECT_EQ(4.f, scroll_delegate.max_page_scale_factor());
 
   // The pinch gesture doesn't put the delegate into a state where the scroll

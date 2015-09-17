@@ -674,6 +674,7 @@ class CC_EXPORT LayerTreeHostImpl
 
   void NotifySwapPromiseMonitorsOfSetNeedsRedraw();
   void NotifySwapPromiseMonitorsOfForwardingToMainThread();
+  void NotifyRootLayerScrollOffsetDelegate();
 
   void ScrollAnimationCreate(LayerImpl* layer_impl,
                              const gfx::ScrollOffset& target_offset,

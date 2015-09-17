@@ -14,6 +14,7 @@
 #include "content/public/browser/android/synchronous_compositor_client.h"
 #include "skia/ext/refptr.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/size_f.h"
 #include "ui/gfx/geometry/vector2d_f.h"
 
 class SkCanvas;
@@ -165,6 +166,8 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient {
   bool hardware_enabled_;
   float dip_scale_;
   float page_scale_factor_;
+  float min_page_scale_factor_;
+  float max_page_scale_factor_;
   bool on_new_picture_enable_;
   bool clear_view_;
 
@@ -178,6 +181,8 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient {
   bool fallback_tick_pending_;
 
   gfx::Size size_;
+
+  gfx::SizeF scrollable_size_dip_;
 
   // Current scroll offset in CSS pixels.
   // TODO(miletus): Make scroll_offset_dip_ a gfx::ScrollOffset.

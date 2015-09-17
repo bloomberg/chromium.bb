@@ -94,13 +94,14 @@ BrowserViewRenderer::BrowserViewRenderer(
       window_visible_(false),
       attached_to_window_(false),
       hardware_enabled_(false),
-      dip_scale_(0.0),
-      page_scale_factor_(1.0),
+      dip_scale_(0.f),
+      page_scale_factor_(1.f),
+      min_page_scale_factor_(0.f),
+      max_page_scale_factor_(0.f),
       on_new_picture_enable_(false),
       clear_view_(false),
       offscreen_pre_raster_(false),
-      fallback_tick_pending_(false) {
-}
+      fallback_tick_pending_(false) {}
 
 BrowserViewRenderer::~BrowserViewRenderer() {
 }
@@ -530,11 +531,8 @@ void BrowserViewRenderer::DidUpdateContent() {
 
 void BrowserViewRenderer::SetTotalRootLayerScrollOffset(
     gfx::Vector2dF scroll_offset_dip) {
-  // TOOD(mkosiba): Add a DCHECK to say that this does _not_ get called during
-  // DrawGl when http://crbug.com/249972 is fixed.
   if (scroll_offset_dip_ == scroll_offset_dip)
     return;
-
   scroll_offset_dip_ = scroll_offset_dip;
 
   gfx::Vector2d max_offset = max_scroll_offset();
@@ -573,20 +571,27 @@ void BrowserViewRenderer::UpdateRootLayerState(
       "state",
       RootLayerStateAsValue(total_scroll_offset_dip, scrollable_size_dip));
 
+  DCHECK_GE(max_scroll_offset_dip.x(), 0.f);
+  DCHECK_GE(max_scroll_offset_dip.y(), 0.f);
+  DCHECK_GT(page_scale_factor, 0.f);
+  // SetDipScale should have been called at least once before this is called.
   DCHECK_GT(dip_scale_, 0.f);
 
-  max_scroll_offset_dip_ = max_scroll_offset_dip;
-  DCHECK_LE(0.f, max_scroll_offset_dip_.x());
-  DCHECK_LE(0.f, max_scroll_offset_dip_.y());
+  if (max_scroll_offset_dip_ != max_scroll_offset_dip ||
+      scrollable_size_dip_ != scrollable_size_dip ||
+      page_scale_factor_ != page_scale_factor ||
+      min_page_scale_factor_ != min_page_scale_factor ||
+      max_page_scale_factor_ != max_page_scale_factor) {
+    max_scroll_offset_dip_ = max_scroll_offset_dip;
+    scrollable_size_dip_ = scrollable_size_dip;
+    page_scale_factor_ = page_scale_factor;
+    min_page_scale_factor_ = min_page_scale_factor;
+    max_page_scale_factor_ = max_page_scale_factor;
 
-  page_scale_factor_ = page_scale_factor;
-  DCHECK_GT(page_scale_factor_, 0.f);
-
-  client_->UpdateScrollState(max_scroll_offset(),
-                             scrollable_size_dip,
-                             page_scale_factor,
-                             min_page_scale_factor,
-                             max_page_scale_factor);
+    client_->UpdateScrollState(max_scroll_offset(), scrollable_size_dip,
+                               page_scale_factor, min_page_scale_factor,
+                               max_page_scale_factor);
+  }
   SetTotalRootLayerScrollOffset(total_scroll_offset_dip);
 }
 

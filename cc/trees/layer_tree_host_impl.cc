@@ -185,7 +185,7 @@ LayerTreeHostImpl::LayerTreeHostImpl(
       scroll_affects_scroll_handler_(false),
       scroll_layer_id_when_mouse_over_scrollbar_(0),
       tile_priorities_dirty_(false),
-      root_layer_scroll_offset_delegate_(NULL),
+      root_layer_scroll_offset_delegate_(nullptr),
       settings_(settings),
       visible_(true),
       cached_managed_memory_policy_(
@@ -424,6 +424,9 @@ void LayerTreeHostImpl::Animate() {
   AnimateLayers(monotonic_time);
   AnimateScrollbars(monotonic_time);
   AnimateTopControls(monotonic_time);
+
+  // Animating stuff can change the root scroll offset, so inform the delegate.
+  NotifyRootLayerScrollOffsetDelegate();
 }
 
 bool LayerTreeHostImpl::PrepareTiles() {
@@ -1872,7 +1875,6 @@ void LayerTreeHostImpl::ActivateSyncTree() {
   if (pending_tree_) {
     TRACE_EVENT_ASYNC_END0("cc", "PendingTree:waiting", pending_tree_.get());
 
-    active_tree_->SetRootLayerScrollOffsetDelegate(NULL);
     // Process any requests in the UI resource queue.  The request queue is
     // given in LayerTreeHost::FinishCommitOnImplThread.  This must take place
     // before the swap.
@@ -1895,9 +1897,6 @@ void LayerTreeHostImpl::ActivateSyncTree() {
     pending_tree_.swap(recycle_tree_);
 
     UpdateViewportContainerSizes();
-
-    active_tree_->SetRootLayerScrollOffsetDelegate(
-        root_layer_scroll_offset_delegate_);
 
     // If we commit to the active tree directly, this is already done during
     // commit.
@@ -1930,6 +1929,8 @@ void LayerTreeHostImpl::ActivateSyncTree() {
         pending_page_scale_animation->scale,
         pending_page_scale_animation->duration);
   }
+  // Activation can change the root scroll offset, so inform the delegate.
+  NotifyRootLayerScrollOffsetDelegate();
 }
 
 void LayerTreeHostImpl::SetVisible(bool visible) {
@@ -2706,6 +2707,10 @@ InputHandlerScrollResult LayerTreeHostImpl::ScrollBy(
   scroll_result.did_overscroll_root = !unused_root_delta.IsZero();
   scroll_result.accumulated_root_overscroll = accumulated_root_overscroll_;
   scroll_result.unused_scroll_delta = unused_root_delta;
+
+  // Scrolling can change the root scroll offset, so inform the delegate.
+  NotifyRootLayerScrollOffsetDelegate();
+
   return scroll_result;
 }
 
@@ -2754,15 +2759,17 @@ bool LayerTreeHostImpl::ScrollVerticallyByPage(const gfx::Point& viewport_point,
 void LayerTreeHostImpl::SetRootLayerScrollOffsetDelegate(
       LayerScrollOffsetDelegate* root_layer_scroll_offset_delegate) {
   root_layer_scroll_offset_delegate_ = root_layer_scroll_offset_delegate;
-  active_tree_->SetRootLayerScrollOffsetDelegate(
-      root_layer_scroll_offset_delegate_);
+  // When first set, clobber the delegate's scroll offset with compositor's.
+  NotifyRootLayerScrollOffsetDelegate();
 }
 
 void LayerTreeHostImpl::OnRootLayerDelegatedScrollOffsetChanged(
     const gfx::ScrollOffset& root_offset) {
-  DCHECK(root_layer_scroll_offset_delegate_);
   active_tree_->DistributeRootScrollOffset(root_offset);
   client_->SetNeedsCommitOnImplThread();
+  // After applying the delegate's scroll offset, tell it what we ended up with.
+  DCHECK(root_layer_scroll_offset_delegate_);
+  NotifyRootLayerScrollOffsetDelegate();
   // No need to SetNeedsRedraw, this is for WebView and every frame has redraw
   // requested by the WebView embedder already.
 }
@@ -2894,24 +2901,15 @@ void LayerTreeHostImpl::PinchGestureBegin() {
 
 void LayerTreeHostImpl::PinchGestureUpdate(float magnify_delta,
                                            const gfx::Point& anchor) {
+  TRACE_EVENT0("cc", "LayerTreeHostImpl::PinchGestureUpdate");
   if (!InnerViewportScrollLayer())
     return;
-
-  TRACE_EVENT0("cc", "LayerTreeHostImpl::PinchGestureUpdate");
-
-  // For a moment the scroll offset ends up being outside of the max range. This
-  // confuses the delegate so we switch it off till after we're done processing
-  // the pinch update.
-  active_tree_->SetRootLayerScrollOffsetDelegate(NULL);
-
   viewport()->PinchUpdate(magnify_delta, anchor);
-
-  active_tree_->SetRootLayerScrollOffsetDelegate(
-      root_layer_scroll_offset_delegate_);
-
   client_->SetNeedsCommitOnImplThread();
   SetNeedsRedraw();
   client_->RenewTreePriority();
+  // Pinching can change the root scroll offset, so inform the delegate.
+  NotifyRootLayerScrollOffsetDelegate();
 }
 
 void LayerTreeHostImpl::PinchGestureEnd() {
@@ -3385,6 +3383,16 @@ void LayerTreeHostImpl::NotifySwapPromiseMonitorsOfForwardingToMainThread() {
   std::set<SwapPromiseMonitor*>::iterator it = swap_promise_monitor_.begin();
   for (; it != swap_promise_monitor_.end(); it++)
     (*it)->OnForwardScrollUpdateToMainThreadOnImpl();
+}
+
+void LayerTreeHostImpl::NotifyRootLayerScrollOffsetDelegate() {
+  if (!root_layer_scroll_offset_delegate_)
+    return;
+  root_layer_scroll_offset_delegate_->UpdateRootLayerState(
+      active_tree_->TotalScrollOffset(), active_tree_->TotalMaxScrollOffset(),
+      active_tree_->ScrollableSize(), active_tree_->current_page_scale_factor(),
+      active_tree_->min_page_scale_factor(),
+      active_tree_->max_page_scale_factor());
 }
 
 void LayerTreeHostImpl::ScrollAnimationCreate(

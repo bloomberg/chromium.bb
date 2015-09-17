@@ -440,8 +440,6 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   gfx::Vector2dF bounds_delta() const { return bounds_delta_; }
 
   void SetCurrentScrollOffset(const gfx::ScrollOffset& scroll_offset);
-  void SetCurrentScrollOffsetFromDelegate(
-      const gfx::ScrollOffset& scroll_offset);
   void PushScrollOffsetFromMainThread(const gfx::ScrollOffset& scroll_offset);
   // This method is similar to PushScrollOffsetFromMainThread but will cause the
   // scroll offset given to clobber any scroll changes on the active tree in the
@@ -715,10 +713,7 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   void ValidateQuadResourcesInternal(DrawQuad* quad) const;
 
   void PushScrollOffset(const gfx::ScrollOffset* scroll_offset);
-  // If the new scroll offset is assigned from the root scroll offset delegate,
-  // LayerImpl won't inform the root scroll offset delegate about the scroll
-  // change to avoid feedback.
-  void DidUpdateScrollOffset(bool is_from_root_delegate);
+  void DidUpdateScrollOffset();
   void NoteLayerPropertyChangedForDescendantsInternal();
 
   virtual const char* LayerTypeAsString() const;
