@@ -118,7 +118,6 @@ public:
     BLINK_EXPORT bool focused() const;
     BLINK_EXPORT bool remove();
 
-    BLINK_EXPORT bool containsIncludingShadowDOM(const WebNode&) const;
     BLINK_EXPORT WebPluginContainer* pluginContainer() const;
 
     BLINK_EXPORT bool isInsideFocusableElementOrARIAWidget() const;

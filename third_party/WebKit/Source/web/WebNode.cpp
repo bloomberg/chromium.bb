@@ -280,11 +280,6 @@ bool WebNode::remove()
     return !exceptionState.hadException();
 }
 
-bool WebNode::containsIncludingShadowDOM(const WebNode& other) const
-{
-    return m_private->containsIncludingShadowDOM(other.m_private.get());
-}
-
 WebPluginContainer* WebNode::pluginContainer() const
 {
     if (isNull())
