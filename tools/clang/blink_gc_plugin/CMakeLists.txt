@@ -3,6 +3,8 @@ set(LIBRARYNAME BlinkGCPlugin)
 set(plugin_sources
   BlinkGCPlugin.cpp
   CheckFieldsVisitor.cpp
+  CheckTraceVisitor.cpp
+  Config.cpp
   Edge.cpp
   RecordInfo.cpp)
 
