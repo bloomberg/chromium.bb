@@ -104,9 +104,9 @@ void SoftwareVideoRenderer::OnSessionConfig(
   }
 }
 
-ChromotingStats* SoftwareVideoRenderer::GetStats() {
+protocol::PerformanceTracker* SoftwareVideoRenderer::GetPerformanceTracker() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  return &stats_;
+  return &perf_tracker_;
 }
 
 protocol::VideoStub* SoftwareVideoRenderer::GetVideoStub() {
@@ -120,7 +120,7 @@ void SoftwareVideoRenderer::ProcessVideoPacket(scoped_ptr<VideoPacket> packet,
 
   base::ScopedClosureRunner done_runner(done);
 
-  stats_.RecordVideoPacketStats(*packet);
+  perf_tracker_.RecordVideoPacketStats(*packet);
 
   // If the video packet is empty then drop it. Empty packets are used to
   // maintain activity on the network.
@@ -166,7 +166,7 @@ void SoftwareVideoRenderer::RenderFrame(
     scoped_ptr<webrtc::DesktopFrame> frame) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  stats_.RecordDecodeTime(
+  perf_tracker_.RecordDecodeTime(
       (base::TimeTicks::Now() - decode_start_time).InMilliseconds());
 
   if (!frame) {
@@ -185,7 +185,7 @@ void SoftwareVideoRenderer::OnFrameRendered(base::TimeTicks paint_start_time,
                                             const base::Closure& done) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  stats_.RecordPaintTime(
+  perf_tracker_.RecordPaintTime(
       (base::TimeTicks::Now() - paint_start_time).InMilliseconds());
 
   if (!done.is_null())

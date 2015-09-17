@@ -7,8 +7,8 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/rand_util.h"
-#include "remoting/client/chromoting_stats.h"
 #include "remoting/client/server_log_entry_client.h"
+#include "remoting/protocol/performance_tracker.h"
 
 using remoting::protocol::ConnectionToHost;
 
@@ -91,12 +91,13 @@ void ClientStatusLogger::LogSessionStateChange(
   log_to_server_.Log(*entry.get());
 }
 
-void ClientStatusLogger::LogStatistics(ChromotingStats* statistics) {
+void ClientStatusLogger::LogStatistics(
+    protocol::PerformanceTracker* perf_tracker) {
   DCHECK(CalledOnValidThread());
 
   MaybeExpireSessionId();
 
-  scoped_ptr<ServerLogEntry> entry(MakeLogEntryForStatistics(statistics));
+  scoped_ptr<ServerLogEntry> entry(MakeLogEntryForStatistics(perf_tracker));
   AddClientFieldsToLogEntry(entry.get());
   entry->AddModeField(log_to_server_.mode());
   AddSessionIdToLogEntry(entry.get(), session_id_);

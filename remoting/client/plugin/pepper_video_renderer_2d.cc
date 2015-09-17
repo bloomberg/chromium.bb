@@ -15,10 +15,10 @@
 #include "ppapi/cpp/rect.h"
 #include "ppapi/cpp/size.h"
 #include "remoting/base/util.h"
-#include "remoting/client/chromoting_stats.h"
 #include "remoting/client/client_context.h"
 #include "remoting/client/software_video_renderer.h"
 #include "remoting/proto/video.pb.h"
+#include "remoting/protocol/performance_tracker.h"
 #include "third_party/libyuv/include/libyuv/scale_argb.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_frame.h"
 
@@ -102,10 +102,10 @@ void PepperVideoRenderer2D::OnSessionConfig(
   software_video_renderer_->OnSessionConfig(config);
 }
 
-ChromotingStats* PepperVideoRenderer2D::GetStats() {
+protocol::PerformanceTracker* PepperVideoRenderer2D::GetPerformanceTracker() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  return software_video_renderer_->GetStats();
+  return software_video_renderer_->GetPerformanceTracker();
 }
 
 protocol::VideoStub* PepperVideoRenderer2D::GetVideoStub() {

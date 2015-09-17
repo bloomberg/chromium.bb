@@ -15,8 +15,8 @@
 #include "ppapi/cpp/instance_handle.h"
 #include "ppapi/cpp/video_decoder.h"
 #include "ppapi/utility/completion_callback_factory.h"
-#include "remoting/client/chromoting_stats.h"
 #include "remoting/client/plugin/pepper_video_renderer.h"
+#include "remoting/protocol/performance_tracker.h"
 #include "remoting/protocol/video_stub.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_region.h"
@@ -42,7 +42,7 @@ class PepperVideoRenderer3D : public PepperVideoRenderer,
 
   // VideoRenderer interface.
   void OnSessionConfig(const protocol::SessionConfig& config) override;
-  ChromotingStats* GetStats() override;
+  protocol::PerformanceTracker* GetPerformanceTracker() override;
   protocol::VideoStub* GetVideoStub() override;
 
   // protocol::VideoStub interface.
@@ -107,7 +107,7 @@ class PepperVideoRenderer3D : public PepperVideoRenderer,
 
   webrtc::DesktopSize view_size_;
 
-  ChromotingStats stats_;
+  protocol::PerformanceTracker perf_tracker_;
 
   bool initialization_finished_;
   bool decode_pending_;

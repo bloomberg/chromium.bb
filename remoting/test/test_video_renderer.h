@@ -38,7 +38,7 @@ class TestVideoRenderer : public VideoRenderer, public protocol::VideoStub {
 
   // VideoRenderer interface.
   void OnSessionConfig(const protocol::SessionConfig& config) override;
-  ChromotingStats* GetStats() override;
+  protocol::PerformanceTracker* GetPerformanceTracker() override;
   protocol::VideoStub* GetVideoStub() override;
 
   // protocol::VideoStub interface.

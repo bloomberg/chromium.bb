@@ -5,7 +5,7 @@
 #include "remoting/client/client_status_logger.h"
 
 #include "base/message_loop/message_loop.h"
-#include "remoting/client/chromoting_stats.h"
+#include "remoting/protocol/performance_tracker.h"
 #include "remoting/signaling/mock_signal_strategy.h"
 #include "remoting/signaling/server_log_entry_unittest.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -141,8 +141,8 @@ TEST_F(ClientStatusLoggerTest, LogStatistics) {
         .RetiresOnSaturation();
   }
 
-  ChromotingStats stats;
-  client_status_logger_->LogStatistics(&stats);
+  protocol::PerformanceTracker perf_tracker;
+  client_status_logger_->LogStatistics(&perf_tracker);
 
   client_status_logger_->SetSignalingStateForTest(SignalStrategy::CONNECTED);
   client_status_logger_->SetSignalingStateForTest(SignalStrategy::DISCONNECTED);

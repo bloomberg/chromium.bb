@@ -1,8 +1,9 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/client/chromoting_stats.h"
+#include "remoting/protocol/performance_tracker.h"
+
 #include "remoting/proto/video.pb.h"
 
 namespace {
@@ -52,11 +53,13 @@ const int kBandwidthHistogramBuckets = 100;
 // bursts of packets. Enum histograms expect samples to be less than the
 // boundary value, so set to 101.
 const int kMaxFramesPerSec = 101;
+
 }  // namespace
 
 namespace remoting {
+namespace protocol {
 
-ChromotingStats::ChromotingStats()
+PerformanceTracker::PerformanceTracker()
     : video_bandwidth_(
           base::TimeDelta::FromSeconds(kStatsUpdateFrequencyInSeconds)),
       video_frame_rate_(
@@ -69,10 +72,10 @@ ChromotingStats::ChromotingStats()
       video_paint_ms_(kLatencySampleSize),
       round_trip_ms_(kLatencySampleSize) {}
 
-ChromotingStats::~ChromotingStats() {
+PerformanceTracker::~PerformanceTracker() {
 }
 
-void ChromotingStats::SetUpdateUmaCallbacks(
+void PerformanceTracker::SetUpdateUmaCallbacks(
     UpdateUmaCustomHistogramCallback update_uma_custom_counts_callback,
     UpdateUmaCustomHistogramCallback update_uma_custom_times_callback,
     UpdateUmaEnumHistogramCallback update_uma_enum_histogram_callback) {
@@ -81,7 +84,7 @@ void ChromotingStats::SetUpdateUmaCallbacks(
   uma_enum_histogram_updater_ = update_uma_enum_histogram_callback;
 }
 
-void ChromotingStats::RecordVideoPacketStats(const VideoPacket& packet) {
+void PerformanceTracker::RecordVideoPacketStats(const VideoPacket& packet) {
   // Record this received packet, even if it is empty.
   video_packet_rate_.Record(1);
 
@@ -130,7 +133,7 @@ void ChromotingStats::RecordVideoPacketStats(const VideoPacket& packet) {
   }
 }
 
-void ChromotingStats::RecordDecodeTime(double value) {
+void PerformanceTracker::RecordDecodeTime(double value) {
   video_decode_ms_.Record(value);
   if (!uma_custom_times_updater_.is_null())
     uma_custom_times_updater_.Run(
@@ -138,7 +141,7 @@ void ChromotingStats::RecordDecodeTime(double value) {
         kVideoActionsHistogramsMaxMs, kVideoActionsHistogramsBuckets);
 }
 
-void ChromotingStats::RecordPaintTime(double value) {
+void PerformanceTracker::RecordPaintTime(double value) {
   video_paint_ms_.Record(value);
   if (!uma_custom_times_updater_.is_null())
     uma_custom_times_updater_.Run(
@@ -146,7 +149,7 @@ void ChromotingStats::RecordPaintTime(double value) {
         kVideoActionsHistogramsMaxMs, kVideoActionsHistogramsBuckets);
 }
 
-void ChromotingStats::UploadRateStatsToUma() {
+void PerformanceTracker::UploadRateStatsToUma() {
   if (!uma_enum_histogram_updater_.is_null()) {
     uma_enum_histogram_updater_.Run(kVideoFrameRateHistogram,
                                     video_frame_rate(), kMaxFramesPerSec);
@@ -158,4 +161,5 @@ void ChromotingStats::UploadRateStatsToUma() {
   }
 }
 
+}  // namespace protocol
 }  // namespace remoting

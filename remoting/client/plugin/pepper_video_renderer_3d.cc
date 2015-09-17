@@ -14,8 +14,8 @@
 #include "ppapi/cpp/instance.h"
 #include "ppapi/lib/gl/include/GLES2/gl2.h"
 #include "ppapi/lib/gl/include/GLES2/gl2ext.h"
-#include "remoting/client/chromoting_stats.h"
 #include "remoting/proto/video.pb.h"
+#include "remoting/protocol/performance_tracker.h"
 #include "remoting/protocol/session_config.h"
 
 namespace remoting {
@@ -187,8 +187,8 @@ void PepperVideoRenderer3D::OnSessionConfig(
       << "video_decoder_.Initialize() returned " << result;
 }
 
-ChromotingStats* PepperVideoRenderer3D::GetStats() {
-  return &stats_;
+protocol::PerformanceTracker* PepperVideoRenderer3D::GetPerformanceTracker() {
+  return &perf_tracker_;
 }
 
 protocol::VideoStub* PepperVideoRenderer3D::GetVideoStub() {
@@ -199,7 +199,7 @@ void PepperVideoRenderer3D::ProcessVideoPacket(scoped_ptr<VideoPacket> packet,
                                                const base::Closure& done) {
   base::ScopedClosureRunner done_runner(done);
 
-  stats_.RecordVideoPacketStats(*packet);
+  perf_tracker_.RecordVideoPacketStats(*packet);
 
   // Don't need to do anything if the packet is empty. Host sends empty video
   // packets when the screen is not changing.
@@ -344,7 +344,7 @@ void PepperVideoRenderer3D::OnPictureReady(int32_t result,
 
   base::TimeDelta decode_time =
       base::TimeTicks::Now() - frame_timer.decode_started_time;
-  stats_.RecordDecodeTime(decode_time.InMilliseconds());
+  perf_tracker_.RecordDecodeTime(decode_time.InMilliseconds());
 
   frame_decode_timestamps_.pop_front();
 
@@ -426,7 +426,7 @@ void PepperVideoRenderer3D::OnPaintDone(int32_t result) {
   paint_pending_ = false;
   base::TimeDelta paint_time =
       base::TimeTicks::Now() - latest_paint_started_time_;
-  stats_.RecordPaintTime(paint_time.InMilliseconds());
+  perf_tracker_.RecordPaintTime(paint_time.InMilliseconds());
   PaintIfNeeded();
 }
 

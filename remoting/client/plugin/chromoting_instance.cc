@@ -641,7 +641,7 @@ void ChromotingInstance::HandleConnect(const base::DictionaryValue& data) {
 
   CHECK(video_renderer_);
 
-  video_renderer_->GetStats()->SetUpdateUmaCallbacks(
+  video_renderer_->GetPerformanceTracker()->SetUpdateUmaCallbacks(
       base::Bind(&ChromotingInstance::UpdateUmaCustomHistogram,
                  weak_factory_.GetWeakPtr(), true),
       base::Bind(&ChromotingInstance::UpdateUmaCustomHistogram,
@@ -719,7 +719,7 @@ void ChromotingInstance::HandleConnect(const base::DictionaryValue& data) {
       FROM_HERE, base::Bind(&ChromotingInstance::SendPerfStats,
                             weak_factory_.GetWeakPtr()),
       base::TimeDelta::FromSeconds(
-          ChromotingStats::kStatsUpdateFrequencyInSeconds));
+          protocol::PerformanceTracker::kStatsUpdateFrequencyInSeconds));
 }
 
 void ChromotingInstance::HandleDisconnect(const base::DictionaryValue& data) {
@@ -1032,25 +1032,26 @@ void ChromotingInstance::SendPerfStats() {
       FROM_HERE, base::Bind(&ChromotingInstance::SendPerfStats,
                             weak_factory_.GetWeakPtr()),
       base::TimeDelta::FromSeconds(
-          ChromotingStats::kStatsUpdateFrequencyInSeconds));
+          protocol::PerformanceTracker::kStatsUpdateFrequencyInSeconds));
 
   // Fetch performance stats from the VideoRenderer and send them to the client
   // for display to users.
   scoped_ptr<base::DictionaryValue> data(new base::DictionaryValue());
-  ChromotingStats* stats = video_renderer_->GetStats();
-  data->SetDouble("videoBandwidth", stats->video_bandwidth());
-  data->SetDouble("videoFrameRate", stats->video_frame_rate());
-  data->SetDouble("captureLatency", stats->video_capture_ms());
-  data->SetDouble("encodeLatency", stats->video_encode_ms());
-  data->SetDouble("decodeLatency", stats->video_decode_ms());
-  data->SetDouble("renderLatency", stats->video_paint_ms());
-  data->SetDouble("roundtripLatency", stats->round_trip_ms());
+  protocol::PerformanceTracker* perf_tracker =
+      video_renderer_->GetPerformanceTracker();
+  data->SetDouble("videoBandwidth", perf_tracker->video_bandwidth());
+  data->SetDouble("videoFrameRate", perf_tracker->video_frame_rate());
+  data->SetDouble("captureLatency", perf_tracker->video_capture_ms());
+  data->SetDouble("encodeLatency", perf_tracker->video_encode_ms());
+  data->SetDouble("decodeLatency", perf_tracker->video_decode_ms());
+  data->SetDouble("renderLatency", perf_tracker->video_paint_ms());
+  data->SetDouble("roundtripLatency", perf_tracker->round_trip_ms());
   PostLegacyJsonMessage("onPerfStats", data.Pass());
 
   // Record the video frame-rate, packet-rate and bandwidth stats to UMA.
-  // TODO(anandc): Create a timer in ChromotingStats to do this work.
+  // TODO(anandc): Create a timer in PerformanceTracker to do this work.
   // See http://crbug/508602.
-  stats->UploadRateStatsToUma();
+  perf_tracker->UploadRateStatsToUma();
 }
 
 // static

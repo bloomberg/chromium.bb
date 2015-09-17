@@ -52,7 +52,7 @@ class PepperVideoRenderer2D : public PepperVideoRenderer,
 
   // VideoRenderer interface.
   void OnSessionConfig(const protocol::SessionConfig& config) override;
-  ChromotingStats* GetStats() override;
+  protocol::PerformanceTracker* GetPerformanceTracker() override;
   protocol::VideoStub* GetVideoStub() override;
 
  private:

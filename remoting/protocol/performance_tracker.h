@@ -1,12 +1,9 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// ChromotingStats defines a bundle of performance counters and statistics
-// for chromoting.
-
-#ifndef REMOTING_CLIENT_CHROMOTING_STATS_H_
-#define REMOTING_CLIENT_CHROMOTING_STATS_H_
+#ifndef REMOTING_PROTOCOL_PERFORMANCE_TRACKER_H_
+#define REMOTING_PROTOCOL_PERFORMANCE_TRACKER_H_
 
 #include "base/callback.h"
 #include "remoting/base/rate_counter.h"
@@ -16,7 +13,11 @@ namespace remoting {
 
 class VideoPacket;
 
-class ChromotingStats {
+namespace protocol {
+
+// PerformanceTracker defines a bundle of performance counters and statistics
+// for chromoting.
+class PerformanceTracker {
  public:
   // Callback that updates UMA custom counts or custom times histograms.
   typedef base::Callback<void(const std::string& histogram_name,
@@ -31,8 +32,8 @@ class ChromotingStats {
       void(const std::string& histogram_name, int64 value, int histogram_max)>
       UpdateUmaEnumHistogramCallback;
 
-  ChromotingStats();
-  virtual ~ChromotingStats();
+  PerformanceTracker();
+  virtual ~PerformanceTracker();
 
   // Constant used to calculate the average for rate metrics and used by the
   // plugin for the frequency at which stats should be updated.
@@ -96,9 +97,10 @@ class ChromotingStats {
   // The latest input timestamp that a VideoPacket was seen annotated with.
   int64 latest_input_event_timestamp_ = 0;
 
-  DISALLOW_COPY_AND_ASSIGN(ChromotingStats);
+  DISALLOW_COPY_AND_ASSIGN(PerformanceTracker);
 };
 
+}  // namespace protocol
 }  // namespace remoting
 
-#endif  // REMOTING_CLIENT_CHROMOTING_STATS_H_
+#endif  // REMOTING_PROTOCOL_PERFORMANCE_TRACKER_H_

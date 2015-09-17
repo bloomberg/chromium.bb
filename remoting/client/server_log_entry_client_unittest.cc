@@ -5,8 +5,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/stringize_macros.h"
 #include "base/sys_info.h"
-#include "remoting/client/chromoting_stats.h"
 #include "remoting/client/server_log_entry_client.h"
+#include "remoting/protocol/performance_tracker.h"
 #include "remoting/signaling/server_log_entry.h"
 #include "remoting/signaling/server_log_entry_unittest.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -49,8 +49,8 @@ TEST(ServerLogEntryClientTest, SessionStateChangeWithError) {
 }
 
 TEST(ServerLogEntryClientTest, Statistics) {
-  ChromotingStats statistics;
-  scoped_ptr<ServerLogEntry> entry(MakeLogEntryForStatistics(&statistics));
+  protocol::PerformanceTracker perf_tracker;
+  scoped_ptr<ServerLogEntry> entry(MakeLogEntryForStatistics(&perf_tracker));
   scoped_ptr<XmlElement> stanza = entry->ToStanza();
   std::string error;
   std::map<std::string, std::string> key_value_pairs;

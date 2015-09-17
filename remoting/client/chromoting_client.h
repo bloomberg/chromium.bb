@@ -11,12 +11,12 @@
 
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
-#include "remoting/client/chromoting_stats.h"
 #include "remoting/protocol/client_stub.h"
 #include "remoting/protocol/clipboard_stub.h"
 #include "remoting/protocol/connection_to_host.h"
 #include "remoting/protocol/connection_to_host_impl.h"
 #include "remoting/protocol/input_stub.h"
+#include "remoting/protocol/performance_tracker.h"
 #include "remoting/protocol/video_stub.h"
 
 namespace base {
@@ -120,7 +120,7 @@ class ChromotingClient : public protocol::ConnectionToHost::HostEventCallback,
   bool host_capabilities_received_;
 
   // Record the statistics of the connection.
-  ChromotingStats stats_;
+  protocol::PerformanceTracker perf_tracker_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromotingClient);
 };

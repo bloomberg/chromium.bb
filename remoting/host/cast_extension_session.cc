@@ -568,8 +568,7 @@ void CastExtensionSession::PollPeerConnectionStats() {
   rtc::scoped_refptr<webrtc::MediaStreamTrackInterface> video_track =
       stream_->FindVideoTrack(kVideoLabel);
   peer_connection_->GetStats(
-      stats_observer_,
-      video_track.release(),
+      stats_observer_, video_track.release(),
       webrtc::PeerConnectionInterface::kStatsOutputLevelStandard);
 }
 

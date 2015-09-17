@@ -17,7 +17,6 @@
 #include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/text_input_controller.h"
 #include "ppapi/cpp/var.h"
-#include "remoting/client/chromoting_stats.h"
 #include "remoting/client/client_context.h"
 #include "remoting/client/client_user_interface.h"
 #include "remoting/client/empty_cursor_filter.h"
@@ -35,6 +34,7 @@
 #include "remoting/protocol/input_event_tracker.h"
 #include "remoting/protocol/mouse_input_filter.h"
 #include "remoting/protocol/negotiating_client_authenticator.h"
+#include "remoting/protocol/performance_tracker.h"
 #include "remoting/protocol/third_party_client_authenticator.h"
 
 namespace base {

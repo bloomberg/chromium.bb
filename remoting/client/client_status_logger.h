@@ -13,7 +13,9 @@
 
 namespace remoting {
 
-class ChromotingStats;
+namespace protocol {
+class PerformanceTracker;
+}  // namespace protocol
 
 // ClientStatusLogger sends client log entries to a server.
 // The contents of the log entries are described in server_log_entry_client.cc.
@@ -27,7 +29,7 @@ class ClientStatusLogger : public base::NonThreadSafe {
 
   void LogSessionStateChange(protocol::ConnectionToHost::State state,
                              protocol::ErrorCode error);
-  void LogStatistics(remoting::ChromotingStats* statistics);
+  void LogStatistics(protocol::PerformanceTracker* perf_tracker);
 
   // Allows test code to fake SignalStrategy state change events.
   void SetSignalingStateForTest(SignalStrategy::State state);

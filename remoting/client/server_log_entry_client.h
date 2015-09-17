@@ -11,8 +11,11 @@
 
 namespace remoting {
 
-class ChromotingStats;
 class ServerLogEntry;
+
+namespace protocol {
+class PerformanceTracker;
+}  // namespace protocol
 
 // Constructs a log entry for a session state change.
 scoped_ptr<ServerLogEntry> MakeLogEntryForSessionStateChange(
@@ -21,7 +24,7 @@ scoped_ptr<ServerLogEntry> MakeLogEntryForSessionStateChange(
 
 // Constructs a log entry for reporting statistics.
 scoped_ptr<ServerLogEntry> MakeLogEntryForStatistics(
-    ChromotingStats* statistics);
+    protocol::PerformanceTracker* statistics);
 
 // Constructs a log entry for reporting session ID is old.
 scoped_ptr<ServerLogEntry> MakeLogEntryForSessionIdOld(

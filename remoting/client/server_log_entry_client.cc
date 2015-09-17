@@ -9,7 +9,7 @@
 #include "base/strings/stringize_macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/sys_info.h"
-#include "remoting/client/chromoting_stats.h"
+#include "remoting/protocol/performance_tracker.h"
 #include "remoting/signaling/server_log_entry.h"
 
 using base::StringPrintf;
@@ -109,23 +109,23 @@ scoped_ptr<ServerLogEntry> MakeLogEntryForSessionStateChange(
 }
 
 scoped_ptr<ServerLogEntry> MakeLogEntryForStatistics(
-    ChromotingStats* statistics) {
+    protocol::PerformanceTracker* perf_tracker) {
   scoped_ptr<ServerLogEntry> entry(new ServerLogEntry());
   entry->AddRoleField(kValueRoleClient);
   entry->AddEventNameField(kValueEventNameStatistics);
 
   entry->Set("video-bandwidth",
-             StringPrintf("%.2f", statistics->video_bandwidth()));
+             StringPrintf("%.2f", perf_tracker->video_bandwidth()));
   entry->Set("capture-latency",
-             StringPrintf("%.2f", statistics->video_capture_ms()));
+             StringPrintf("%.2f", perf_tracker->video_capture_ms()));
   entry->Set("encode-latency",
-             StringPrintf("%.2f", statistics->video_encode_ms()));
+             StringPrintf("%.2f", perf_tracker->video_encode_ms()));
   entry->Set("decode-latency",
-             StringPrintf("%.2f", statistics->video_decode_ms()));
+             StringPrintf("%.2f", perf_tracker->video_decode_ms()));
   entry->Set("render-latency",
-             StringPrintf("%.2f", statistics->video_frame_rate()));
+             StringPrintf("%.2f", perf_tracker->video_frame_rate()));
   entry->Set("roundtrip-latency",
-             StringPrintf("%.2f", statistics->round_trip_ms()));
+             StringPrintf("%.2f", perf_tracker->round_trip_ms()));
 
   return entry.Pass();
 }

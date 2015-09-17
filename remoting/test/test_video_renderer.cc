@@ -300,10 +300,10 @@ void TestVideoRenderer::OnSessionConfig(const protocol::SessionConfig& config) {
   SetCodecForDecoding(codec);
 }
 
-ChromotingStats* TestVideoRenderer::GetStats() {
+protocol::PerformanceTracker* TestVideoRenderer::GetPerformanceTracker() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  VLOG(2) << "TestVideoRenderer::GetStats() Called";
+  VLOG(2) << "TestVideoRenderer::GetPerformanceTracker() Called";
   return nullptr;
 }
 

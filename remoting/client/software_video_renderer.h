@@ -9,8 +9,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
-#include "remoting/client/chromoting_stats.h"
 #include "remoting/client/video_renderer.h"
+#include "remoting/protocol/performance_tracker.h"
 #include "remoting/protocol/video_stub.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"
 
@@ -20,13 +20,16 @@ class SingleThreadTaskRunner;
 
 namespace webrtc {
 class DesktopFrame;
-}  // namespace webrtc;
+}  // namespace webrtc
 
 namespace remoting {
 
-class ChromotingStats;
 class FrameConsumer;
 class VideoDecoder;
+
+namespace protocol {
+class PerformanceTracker;
+}  // namespace protocol
 
 // Implementation of VideoRenderer interface that decodes frame on CPU (on a
 // decode thread) and then passes decoded frames to a FrameConsumer.
@@ -44,7 +47,7 @@ class SoftwareVideoRenderer : public VideoRenderer,
 
   // VideoRenderer interface.
   void OnSessionConfig(const protocol::SessionConfig& config) override;
-  ChromotingStats* GetStats() override;
+  protocol::PerformanceTracker* GetPerformanceTracker() override;
   protocol::VideoStub* GetVideoStub() override;
 
   // protocol::VideoStub interface.
@@ -66,7 +69,7 @@ class SoftwareVideoRenderer : public VideoRenderer,
   webrtc::DesktopSize source_size_;
   webrtc::DesktopVector source_dpi_;
 
-  ChromotingStats stats_;
+  protocol::PerformanceTracker perf_tracker_;
 
   base::ThreadChecker thread_checker_;
 

@@ -299,7 +299,7 @@ void ChromotingJniInstance::RecordPaintTime(int64 paint_time_ms) {
   }
 
   if (stats_logging_enabled_)
-    video_renderer_->GetStats()->RecordPaintTime(paint_time_ms);
+    video_renderer_->GetPerformanceTracker()->RecordPaintTime(paint_time_ms);
 }
 
 void ChromotingJniInstance::OnConnectionState(
@@ -492,16 +492,18 @@ void ChromotingJniInstance::LogPerfStats() {
   if (!stats_logging_enabled_)
     return;
 
-  ChromotingStats* stats = video_renderer_->GetStats();
-  __android_log_print(ANDROID_LOG_INFO, "stats",
-                      "Bandwidth:%.0f FrameRate:%.1f Capture:%.1f Encode:%.1f "
-                      "Decode:%.1f Render:%.1f Latency:%.0f",
-                      stats->video_bandwidth(), stats->video_frame_rate(),
-                      stats->video_capture_ms(), stats->video_encode_ms(),
-                      stats->video_decode_ms(), stats->video_paint_ms(),
-                      stats->round_trip_ms());
+  protocol::PerformanceTracker* perf_tracker =
+      video_renderer_->GetPerformanceTracker();
+  __android_log_print(
+      ANDROID_LOG_INFO, "stats",
+      "Bandwidth:%.0f FrameRate:%.1f Capture:%.1f Encode:%.1f "
+      "Decode:%.1f Render:%.1f Latency:%.0f",
+      perf_tracker->video_bandwidth(), perf_tracker->video_frame_rate(),
+      perf_tracker->video_capture_ms(), perf_tracker->video_encode_ms(),
+      perf_tracker->video_decode_ms(), perf_tracker->video_paint_ms(),
+      perf_tracker->round_trip_ms());
 
-  client_status_logger_->LogStatistics(stats);
+  client_status_logger_->LogStatistics(perf_tracker);
 
   jni_runtime_->network_task_runner()->PostDelayedTask(
       FROM_HERE, base::Bind(&ChromotingJniInstance::LogPerfStats, this),
