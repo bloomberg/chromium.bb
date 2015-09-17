@@ -61,11 +61,11 @@ class PasswordManager : public LoginModel {
 
   // Called by a PasswordFormManager when it decides a form can be autofilled
   // on the page.
-  virtual void Autofill(password_manager::PasswordManagerDriver* driver,
-                        const autofill::PasswordForm& form_for_autofill,
-                        const autofill::PasswordFormMap& best_matches,
-                        const autofill::PasswordForm& preferred_match,
-                        bool wait_for_username) const;
+  void Autofill(password_manager::PasswordManagerDriver* driver,
+                const autofill::PasswordForm& form_for_autofill,
+                const autofill::PasswordFormMap& best_matches,
+                const autofill::PasswordForm& preferred_match,
+                bool wait_for_username) const;
 
   // LoginModel implementation.
   void AddObserver(LoginModelObserver* observer) override;
