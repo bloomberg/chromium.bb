@@ -12,6 +12,10 @@
  * parameters they are called with see testharness.js
  */
 
+(function() {
+
+// TODO(tkent): Fix indentation.
+
 // Setup for WebKit JavaScript tests
 if (self.testRunner) {
     testRunner.dumpAsText();
@@ -52,6 +56,13 @@ function isCSSWGTest() {
 function isJSTest() {
     return !!document.querySelector('script[src*="/resources/testharness"]');
 }
+
+var didDispatchLoadEvent = false;
+var handleLoad = function() {
+    didDispatchLoadEvent = true;
+    window.removeEventListener('load', handleLoad);
+};
+window.addEventListener('load', handleLoad, false);
 
 /*  Using a callback function, test results will be added to the page in a
 *   manner that allows dumpAsText to produce readable test results
@@ -116,9 +127,14 @@ add_completion_callback(function (tests, harness_status) {
             testRunner.notifyDone();
     }
 
-    if (document.readyState === 'loading') {
-        window.addEventListener('load', done);
-    } else {
+    if (didDispatchLoadEvent || document.readyState != 'loading') {
+        // This function might not be the last 'completion callback', and
+        // another completion callback might generate more results.  So, we
+        // don't dump the results immediately.
         setTimeout(done, 0);
+    } else {
+        window.addEventListener('load', done);
     }
 });
+
+})();
