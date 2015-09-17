@@ -577,7 +577,7 @@ def convert_to_old_format(result):
   result['state'] = State.from_enum(result['state'])
   # tags
   result['try_number'] = (
-      int(result['try_number']) if result['try_number'] else None)
+      int(result['try_number']) if result.get('try_number') else None)
   result['bot_dimensions'] = {
     i['key']: i['value'] for i in result['bot_dimensions']
   }
