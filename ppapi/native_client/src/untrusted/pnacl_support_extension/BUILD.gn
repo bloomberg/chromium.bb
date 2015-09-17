@@ -5,8 +5,10 @@
 import("//build/config/features.gni")
 
 if (enable_nacl && enable_nacl_untrusted && enable_pnacl) {
-  # We could use 'copies', but we want to rename the files
-  # in a white-listed way first.  Thus use an action.
+  # This target copies files from the prebuilt/DEPS'ed in pnacl_translator
+  # toolchain and copies the latest PNaCl IRT shim library.
+  # We could use 'copies', but we want to rename the files in a white-listed
+  # way first.  Thus use an action.
   action("pnacl_support_extension") {
     script = "pnacl_component_crx_gen.py"
     inputs = [
@@ -14,12 +16,10 @@ if (enable_nacl && enable_nacl_untrusted && enable_pnacl) {
       "//native_client/pnacl/driver/pnacl_info_template.json",
       "//native_client/toolchain_revisions/pnacl_translator.json",
     ]
-    shim_target_dir = "//ppapi/native_client/src/untrusted/pnacl_irt_shim/"
-    shim_target_out_dir =
-        rebase_path(get_path_info(shim_target_dir, "out_dir"), root_build_dir)
+    shim_target_label =
+        "//ppapi/native_client/src/untrusted/pnacl_irt_shim:browser"
     src_shim_name = "libpnacl_irt_shim_browser.a"
     desired_shim_name = "libpnacl_irt_shim.a"
-    shim_target_label = "$shim_target_dir:browser"
 
     # Use the IRT toolchain to build the shim. We want similar properties
     # (x86-64 sandbox base address hiding). One thing we don't want is the
@@ -31,23 +31,13 @@ if (enable_nacl && enable_nacl_untrusted && enable_pnacl) {
     deps = [
       shim_target_tc_label,
     ]
-
-    # Figure out the path of the shim library that we depend upon.
-    # TODO(jvoung): change this to:
-    #   lib_path = rebase_path(
-    #      get_label_info(shim_target_tc_label, "target_out_dir"),
-    #      root_build_dir)
-    # once https://crbug.com/524587 is fixed.
-    # For now, look up the root_out_dir and concatenate the out_dir on top
-    # of that manually.
-    shim_toolchain_root_out =
-        get_label_info(shim_target_tc_label, "root_out_dir")
-    lib_path = rebase_path(
-            "$shim_toolchain_root_out/$shim_target_out_dir/$src_shim_name",
-            root_build_dir)
+    shim_lib_path =
+        rebase_path(get_label_info(shim_target_tc_label, "target_out_dir") +
+                        "/$src_shim_name",
+                    root_build_dir)
     shim_override_args = [
       "--lib_override",
-      "$target_cpu,$lib_path,$desired_shim_name",
+      "$target_cpu,$shim_lib_path,$desired_shim_name",
     ]
 
     output_prefix = "$root_out_dir/pnacl/pnacl_public_"
@@ -89,22 +79,13 @@ if (enable_nacl && enable_nacl_untrusted && enable_pnacl) {
         shim_target_tc_x64_label =
             "$shim_target_label(${shim_toolchain_base}x64)"
         deps += [ shim_target_tc_x64_label ]
-
-        # TODO(jvoung): change this to:
-        #   lib_x64_path = rebase_path(
-        #      get_label_info(shim_target_tc_x64_label, "target_out_dir"),
-        #      root_build_dir)
-        # once https://crbug.com/524587 is fixed.
-        # For now, look up the root_out_dir and concatenate the out_dir on top
-        # of that manually.
-        shim_toolchain_x64_root_out =
-            get_label_info(shim_target_tc_x64_label, "root_out_dir")
-        lib_x64_path = rebase_path(
-                "$shim_toolchain_x64_root_out/$shim_target_out_dir/$src_shim_name",
-                root_build_dir)
+        shim_lib_x64_path =
+            rebase_path(get_label_info(shim_target_tc_x64_label,
+                                       "target_out_dir") + "/$src_shim_name",
+                        root_build_dir)
         shim_override_args = [
           "--lib_override",
-          "x64,$lib_x64_path,$desired_shim_name",
+          "x64,$shim_lib_x64_path,$desired_shim_name",
         ]
       }
     } else if (target_cpu == "x64") {

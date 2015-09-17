@@ -45,10 +45,8 @@ if (enable_nacl) {
       data_deps = [ "//ppapi/native_client:irt" ]
     }
     if (enable_pnacl) {
-      data_deps += [
-        # TODO(GYP): handle other architectures correctly.
-        "//ppapi/native_client/src/untrusted/pnacl_support_extension",
-      ]
+      data_deps +=
+          [ "//ppapi/native_client/src/untrusted/pnacl_support_extension" ]
     }
   }
 
