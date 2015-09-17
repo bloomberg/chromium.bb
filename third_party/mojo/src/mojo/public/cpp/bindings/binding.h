@@ -149,6 +149,20 @@ class Binding {
     Bind(request.PassMessagePipe(), waiter);
   }
 
+  // Stops processing incoming messages until
+  // ResumeIncomingMethodCallProcessing(), or WaitForIncomingMethodCall().
+  // Outgoing messages are still sent.
+  //
+  // No errors are detected on the message pipe while paused.
+  void PauseIncomingMethodCallProcessing() {
+    MOJO_DCHECK(internal_router_);
+    internal_router_->PauseIncomingMethodCallProcessing();
+  }
+  void ResumeIncomingMethodCallProcessing() {
+    MOJO_DCHECK(internal_router_);
+    internal_router_->ResumeIncomingMethodCallProcessing();
+  }
+
   // Blocks the calling thread until either a call arrives on the previously
   // bound message pipe, the deadline is exceeded, or an error occurs. Returns
   // true if a method was successfully read and dispatched.

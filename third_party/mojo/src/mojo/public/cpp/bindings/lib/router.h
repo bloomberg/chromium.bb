@@ -59,6 +59,14 @@ class Router : public MessageReceiverWithResponder {
     return connector_.WaitForIncomingMessage(deadline);
   }
 
+  // See Binding for details of pause/resume.
+  void PauseIncomingMethodCallProcessing() {
+    connector_.PauseIncomingMethodCallProcessing();
+  }
+  void ResumeIncomingMethodCallProcessing() {
+    connector_.ResumeIncomingMethodCallProcessing();
+  }
+
   // Sets this object to testing mode.
   // In testing mode:
   // - the object is more tolerant of unrecognized response messages;

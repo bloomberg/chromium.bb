@@ -222,6 +222,48 @@ TEST_F(BindingTest, SetInterfacePtrVersion) {
   EXPECT_EQ(3u, ptr.version());
 }
 
+TEST_F(BindingTest, PauseResume) {
+  bool called = false;
+  auto called_cb = [&called](int32_t result) { called = true; };
+  sample::ServicePtr ptr;
+  auto request = GetProxy(&ptr);
+  ServiceImpl impl;
+  Binding<sample::Service> binding(&impl, request.Pass());
+  binding.PauseIncomingMethodCallProcessing();
+  ptr->Frobinate(nullptr, sample::Service::BAZ_OPTIONS_REGULAR, nullptr,
+                 called_cb);
+  EXPECT_FALSE(called);
+  loop().RunUntilIdle();
+  // Frobinate() should not be called as the binding is paused.
+  EXPECT_FALSE(called);
+
+  // Resume the binding, which should trigger processing.
+  binding.ResumeIncomingMethodCallProcessing();
+  loop().RunUntilIdle();
+  EXPECT_TRUE(called);
+}
+
+// Verifies the connection error handler is not run while a binding is paused.
+TEST_F(BindingTest, ErrorHandleNotRunWhilePaused) {
+  bool called = false;
+  sample::ServicePtr ptr;
+  auto request = GetProxy(&ptr);
+  ServiceImpl impl;
+  Binding<sample::Service> binding(&impl, request.Pass());
+  binding.set_connection_error_handler([&called]() { called = true; });
+  binding.PauseIncomingMethodCallProcessing();
+
+  ptr.reset();
+  loop().RunUntilIdle();
+  // The connection error handle should not be called as the binding is paused.
+  EXPECT_FALSE(called);
+
+  // Resume the binding, which should trigger the error handler.
+  binding.ResumeIncomingMethodCallProcessing();
+  loop().RunUntilIdle();
+  EXPECT_TRUE(called);
+}
+
 // StrongBindingTest -----------------------------------------------------------
 
 using StrongBindingTest = BindingTestBase;
