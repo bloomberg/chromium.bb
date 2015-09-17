@@ -601,7 +601,7 @@ bool Texture::CanGenerateMipmaps(
   for (size_t ii = 0; ii < face_infos_.size(); ++ii) {
     const LevelInfo& info = face_infos_[ii].level_infos[base_level_];
     if ((info.target == 0) || (info.width != base.width) ||
-        (info.height != base.height) || (info.depth != 1) ||
+        (info.height != base.height) || (info.depth != base.depth) ||
         (info.format != base.format) ||
         (info.internal_format != base.internal_format) ||
         (info.type != base.type) ||
