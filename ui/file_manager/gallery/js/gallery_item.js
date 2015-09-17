@@ -249,14 +249,12 @@ Gallery.Item.prototype.getNewMimeType_ = function() {
 
 /**
  * Return copy name of this item.
+ * @param {!DirectoryEntry} dirEntry Parent directory entry of copied item.
  * @return {!Promise<string>} A promise which will be fulfilled with copy name.
  */
-Gallery.Item.prototype.getCopyName = function() {
-  return new Promise(this.entry_.getParent.bind(this.entry_)
-      ).then(function(parentEntry) {
-        return new Promise(this.createCopyName_.bind(
-            this, parentEntry, this.getNewMimeType_()));
-      }.bind(this));
+Gallery.Item.prototype.getCopyName = function(dirEntry) {
+  return new Promise(this.createCopyName_.bind(
+      this, dirEntry, this.getNewMimeType_()));
 };
 
 /**

@@ -480,6 +480,40 @@ SlideMode.KEY_OFFSET_MAP = {
 };
 
 /**
+ * Returns editor warning message if it should be shown.
+ * @param {!Gallery.Item} item
+ * @param {string} readonlyDirName Name of read only volume. Pass empty string
+ *     if volume is writable.
+ * @param {!DirectoryEntry} fallbackSaveDirectory
+ * @return {!Promise<?string>} Warning message. null if no warning message
+ *     should be shown.
+ */
+SlideMode.getEditorWarningMessage = function(
+    item, readonlyDirName, fallbackSaveDirectory) {
+  var isReadOnlyVolume = !!readonlyDirName;
+  var isWritableFormat = item.isWritableFormat();
+
+  if (isReadOnlyVolume && !isWritableFormat) {
+    return item.getCopyName(fallbackSaveDirectory).then(function(copyName) {
+      return strf('GALLERY_READONLY_AND_NON_WRITABLE_FORMAT_WARNING',
+          readonlyDirName, copyName);
+    });
+  } else if (isReadOnlyVolume) {
+    return Promise.resolve(/** @type {?string} */
+        (strf('GALLERY_READONLY_WARNING', readonlyDirName)));
+  } else if (!isWritableFormat) {
+    var entry = item.getEntry();
+    return new Promise(entry.getParent.bind(entry)).then(function(parentDir) {
+      return item.getCopyName(parentDir);
+    }).then(function(copyName) {
+      return strf('GALLERY_NON_WRITABLE_FORMAT_WARNING', copyName);
+    });
+  } else {
+    return Promise.resolve(/** @type {?string} */ (null));
+  }
+};
+
+/**
  * SlideMode extends cr.EventTarget.
  */
 SlideMode.prototype.__proto__ = cr.EventTarget.prototype;
@@ -1550,25 +1584,20 @@ SlideMode.prototype.toggleEditor = function(opt_event) {
 
     this.imageView_.applyViewportChange();
 
-    // TODO(yawano): Integarate this warning message to the non writable format
-    //     warning message.
-    if (this.context_.readonlyDirName) {
-      this.editor_.getPrompt().showAt(
-          'top', 'GALLERY_READONLY_WARNING', 0, this.context_.readonlyDirName);
-    } else {
-      // If image format is not writable format, show toast to let user know
-      // that edits will be saved to a copy.
-      var item = this.getItem(this.getSelectedIndex());
-      if (!item.isWritableFormat()) {
-        item.getCopyName().then(function(copyName) {
-          this.filesToast_.show(
-              strf('GALLERY_NON_WRITABLE_FORMAT_WARNING', copyName));
-        }.bind(this));
-      }
-    }
-
     this.touchHandlers_.enabled = false;
     this.dimmableUIController_.setDisabled(true);
+
+    // Show editor warning message.
+    SlideMode.getEditorWarningMessage(
+        assert(this.getItem(this.getSelectedIndex())),
+        this.context_.readonlyDirName,
+        assert(this.dataModel_.fallbackSaveDirectory)
+        ).then(function(warningMessage) {
+      if (!warningMessage)
+        return;
+
+      this.filesToast_.show(warningMessage);
+    }.bind(this));
 
     // Show overwrite original bubble if it hasn't been shown for max times.
     this.getOverwriteBubbleCount_().then(function(count) {
