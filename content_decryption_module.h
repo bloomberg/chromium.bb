@@ -305,9 +305,10 @@ enum KeyStatus {
   kUsable = 0,
   kInternalError = 1,
   kExpired = 2,
-  kOutputNotAllowed = 3,
+  kOutputRestricted = 3,
   kOutputDownscaled = 4,
-  kStatusPending = 5
+  kStatusPending = 5,
+  kReleased = 6
 };
 
 // Used when passing arrays of key information. Does not own the referenced
