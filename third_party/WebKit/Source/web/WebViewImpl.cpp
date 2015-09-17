@@ -482,6 +482,8 @@ WebViewImpl::WebViewImpl(WebViewClient* client)
     m_devToolsEmulator = DevToolsEmulator::create(this);
 
     allInstances().add(this);
+
+    m_pageImportanceSignals.setObserver(client);
 }
 
 WebViewImpl::~WebViewImpl()
@@ -3835,7 +3837,7 @@ void WebViewImpl::didCommitLoad(bool isNewNavigation, bool isNavigationWithinPag
 {
     if (isNewNavigation && !isNavigationWithinPage) {
         pageScaleConstraintsSet().setNeedsReset(true);
-        pageImportanceSignals().onCommitLoad();
+        m_pageImportanceSignals.onCommitLoad();
     }
 
     // Give the visual viewport's scroll layer its initial size.
@@ -4019,6 +4021,11 @@ void WebViewImpl::setPageOverlayColor(WebColor color)
 
     m_pageColorOverlay = PageOverlay::create(this, new ColorOverlay(color));
     m_pageColorOverlay->update();
+}
+
+WebPageImportanceSignals* WebViewImpl::pageImportanceSignals()
+{
+    return &m_pageImportanceSignals;
 }
 
 Element* WebViewImpl::focusedElement() const

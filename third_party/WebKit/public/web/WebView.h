@@ -50,6 +50,7 @@ class WebCredentialManagerClient;
 class WebDragData;
 class WebFrame;
 class WebHitTestResult;
+class WebPageImportanceSignals;
 class WebPageOverlay;
 class WebPrerendererClient;
 class WebSettings;
@@ -58,10 +59,10 @@ class WebString;
 class WebViewClient;
 struct WebActiveWheelFlingParameters;
 struct WebDeviceEmulationParams;
+struct WebFloatPoint;
 struct WebMediaPlayerAction;
 struct WebPluginAction;
 struct WebPoint;
-struct WebFloatPoint;
 struct WebWindowFeatures;
 
 class WebView : public WebWidget {
@@ -455,6 +456,9 @@ public:
     // Overlay this WebView with a solid color.
     virtual void setPageOverlayColor(WebColor) = 0;
 
+    // Page Importance Signals ----------------------------------------------
+
+    virtual WebPageImportanceSignals* pageImportanceSignals() { return nullptr; }
 
     // i18n -----------------------------------------------------------------
 

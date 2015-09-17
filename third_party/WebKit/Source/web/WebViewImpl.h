@@ -263,6 +263,7 @@ public:
     void extractSmartClipData(WebRect, WebString&, WebString&, WebRect&) override;
     void hidePopups() override;
     void setPageOverlayColor(WebColor) override;
+    WebPageImportanceSignals* pageImportanceSignals() override;
     void transferActiveWheelFlingAnimation(const WebActiveWheelFlingParameters&) override;
     bool endActiveFlingAnimation() override;
     void setShowPaintRects(bool) override;
@@ -527,8 +528,6 @@ public:
     PageScaleConstraintsSet& pageScaleConstraintsSet() const;
 
     FloatSize elasticOverscroll() const { return m_elasticOverscroll; }
-
-    WebPageImportanceSignals& pageImportanceSignals() { return m_pageImportanceSignals; }
 
 private:
     InspectorOverlayImpl* inspectorOverlay();

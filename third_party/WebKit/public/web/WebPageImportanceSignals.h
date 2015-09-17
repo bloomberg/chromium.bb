@@ -9,6 +9,8 @@
 
 namespace blink {
 
+class WebViewClient;
+
 // WebPageImportanceSignals indicate the importance of the page state to user.
 // This signal is propagated to embedder so that it can prioritize preserving
 // state of certain page over the others.
@@ -17,15 +19,18 @@ public:
     WebPageImportanceSignals() { reset(); }
 
     bool hadFormInteraction() const { return m_hadFormInteraction; }
-    void setHadFormInteraction() { m_hadFormInteraction = true; }
+    void setHadFormInteraction();
 
     BLINK_EXPORT void reset();
 #if BLINK_IMPLEMENTATION
     void onCommitLoad();
 #endif
 
+    void setObserver(WebViewClient* observer) { m_observer = observer; }
+
 private:
     bool m_hadFormInteraction : 1;
+    WebViewClient* m_observer = nullptr;
 };
 
 } // namespace blink

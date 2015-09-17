@@ -4,6 +4,7 @@
 
 #include "config.h"
 #include "public/web/WebPageImportanceSignals.h"
+#include "public/web/WebViewClient.h"
 
 #include "public/platform/Platform.h"
 
@@ -12,6 +13,15 @@ namespace blink {
 void WebPageImportanceSignals::reset()
 {
     m_hadFormInteraction = false;
+    if (m_observer)
+        m_observer->pageImportanceSignalsChanged();
+}
+
+void WebPageImportanceSignals::setHadFormInteraction()
+{
+    m_hadFormInteraction = true;
+    if (m_observer)
+        m_observer->pageImportanceSignalsChanged();
 }
 
 void WebPageImportanceSignals::onCommitLoad()
