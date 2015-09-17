@@ -251,8 +251,8 @@ mojo::EventPtr CreatePointerDownEvent(int x, int y) {
   event->action = mojo::EVENT_TYPE_POINTER_DOWN;
   event->pointer_data = mojo::PointerData::New();
   event->pointer_data->pointer_id = 1u;
-  event->pointer_data->x = x;
-  event->pointer_data->y = y;
+  event->pointer_data->location->x = x;
+  event->pointer_data->location->y = y;
   return event.Pass();
 }
 
@@ -261,8 +261,8 @@ mojo::EventPtr CreatePointerUpEvent(int x, int y) {
   event->action = mojo::EVENT_TYPE_POINTER_UP;
   event->pointer_data = mojo::PointerData::New();
   event->pointer_data->pointer_id = 1u;
-  event->pointer_data->x = x;
-  event->pointer_data->y = y;
+  event->pointer_data->location->x = x;
+  event->pointer_data->location->y = y;
   return event.Pass();
 }
 

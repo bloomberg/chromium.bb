@@ -55,11 +55,12 @@ Views GetTouchTargets(const ServerView* deepest) {
 mojo::EventPtr CloneEventForView(const mojo::Event& event,
                                  const ServerView* view) {
   mojo::EventPtr result(event.Clone());
-  const gfx::PointF location(event.pointer_data->x, event.pointer_data->y);
+  const gfx::PointF location(event.pointer_data->location->x,
+                             event.pointer_data->location->y);
   const gfx::PointF target_location(
       ConvertPointFBetweenViews(view->GetRoot(), view, location));
-  result->pointer_data->x = target_location.x();
-  result->pointer_data->y = target_location.y();
+  result->pointer_data->location->x = target_location.x();
+  result->pointer_data->location->y = target_location.y();
   return result.Pass();
 }
 
@@ -538,8 +539,8 @@ bool GestureManager::ProcessEvent(const mojo::Event& event) {
     return false;
 
   ScheduledDeleteProcessor delete_processor(this);
-  const gfx::Point location(static_cast<int>(event.pointer_data->x),
-                            static_cast<int>(event.pointer_data->y));
+  const gfx::Point location(static_cast<int>(event.pointer_data->location->x),
+                            static_cast<int>(event.pointer_data->location->y));
   switch (event.action) {
     case mojo::EVENT_TYPE_POINTER_DOWN: {
       if (GetPointerById(event.pointer_data->pointer_id)) {
