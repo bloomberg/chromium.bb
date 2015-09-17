@@ -11,6 +11,7 @@
 #include "ui/events/keycodes/keyboard_codes.h"
 
 namespace ui {
+enum class DomCode;
 struct GestureEventData;
 struct GestureEventDetails;
 class MotionEvent;
@@ -25,6 +26,9 @@ CONTENT_EXPORT void UpdateWindowsKeyCodeAndKeyIdentifier(
     ui::KeyboardCode windows_key_code);
 
 int WebEventModifiersToEventFlags(int modifiers);
+
+blink::WebInputEvent::Modifiers DomCodeToWebInputEventModifiers(
+    ui::DomCode code);
 
 }  // namespace content
 

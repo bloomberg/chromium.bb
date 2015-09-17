@@ -6,10 +6,8 @@
 
 #import <AppKit/AppKit.h>
 
-#include "third_party/WebKit/public/web/mac/WebInputEventFactory.h"
+#include "content/browser/renderer_host/input/web_input_event_builders_mac.h"
 #include "ui/events/event.h"
-
-using blink::WebInputEventFactory;
 
 namespace content {
 
@@ -19,10 +17,9 @@ NativeWebKeyboardEvent::NativeWebKeyboardEvent()
 }
 
 NativeWebKeyboardEvent::NativeWebKeyboardEvent(gfx::NativeEvent native_event)
-    : WebKeyboardEvent(WebInputEventFactory::keyboardEvent(native_event)),
+    : WebKeyboardEvent(WebKeyboardEventBuilder::Build(native_event)),
       os_event([native_event retain]),
-      skip_in_browser(false) {
-}
+      skip_in_browser(false) {}
 
 NativeWebKeyboardEvent::NativeWebKeyboardEvent(const ui::KeyEvent& key_event)
     : NativeWebKeyboardEvent(key_event.native_event()) {
