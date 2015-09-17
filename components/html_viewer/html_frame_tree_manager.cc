@@ -91,6 +91,8 @@ HTMLFrame* HTMLFrameTreeManager::CreateFrameAndAttachToTree(
   HTMLFrameTreeManager* frame_tree =
       FindFrameTreeWithRoot(frame_data[0]->frame_id);
 
+  DCHECK(!frame_tree || change_id <= frame_tree->change_id_);
+
   if (view_connect_type == web_view::VIEW_CONNECT_TYPE_USE_EXISTING &&
       !frame_tree) {
     DVLOG(1) << "was told to use existing view but do not have frame tree";
@@ -137,9 +139,7 @@ HTMLFrame* HTMLFrameTreeManager::CreateFrameAndAttachToTree(
       if (frame_tree->pending_remove_ids_.count(view->id()))
         return nullptr;
 
-      // TODO(sky): if change_id > frame_tree->change_id_ then this needs
-      // to wait and bind once the change has been processed.
-
+      // TODO(sky): rethink this. I suspect this should be a CHECK.
       HTMLFrame* parent = frame_tree->root_->FindFrame(data->parent_id);
       CHECK(parent);
       HTMLFrame::CreateParams params(frame_tree, parent, view->id(), view,

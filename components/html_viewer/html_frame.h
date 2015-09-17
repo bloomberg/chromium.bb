@@ -84,7 +84,7 @@ class HTMLFrame : public blink::WebFrameClient,
           view(view),
           properties(properties),
           delegate(delegate),
-          allow_local_shared_frame(false) {}
+          is_local_create_child(false) {}
     ~CreateParams() {}
 
     HTMLFrameTreeManager* manager;
@@ -97,8 +97,9 @@ class HTMLFrame : public blink::WebFrameClient,
    private:
     friend class HTMLFrame;
 
-    // TODO(sky): nuke.
-    bool allow_local_shared_frame;
+    // True if the creation is the result of createChildFrame(). That is, a
+    // local parent is creating a new child frame.
+    bool is_local_create_child;
   };
 
   explicit HTMLFrame(CreateParams* params);

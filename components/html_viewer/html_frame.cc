@@ -167,7 +167,7 @@ HTMLFrame::HTMLFrame(CreateParams* params)
       startup_performance_data_collector_ =
           StatsCollectionController::Install(web_frame_, GetApp());
     }
-  } else if (!params->allow_local_shared_frame && params->view &&
+  } else if (!params->is_local_create_child && params->view &&
              id_ == params->view->id()) {
     // Frame represents the local frame, and it isn't the root of the tree.
     HTMLFrame* previous_sibling = GetPreviousSibling(this);
@@ -182,12 +182,7 @@ HTMLFrame::HTMLFrame(CreateParams* params)
     web_frame_ = parent_->web_frame()->toWebRemoteFrame()->createRemoteChild(
         state_.tree_scope, state_.name, state_.sandbox_flags, this);
   } else {
-    // TODO(sky): this DCHECK, and |allow_local_shared_frame| should be
-    // moved to HTMLFrameTreeManager. It makes more sense there.
-    // This should never happen (if we create a local child we don't call
-    // Init(), and the frame server should not being creating child frames of
-    // this frame).
-    DCHECK(params->allow_local_shared_frame);
+    CHECK(params->is_local_create_child);
 
     blink::WebLocalFrame* child_web_frame =
         blink::WebLocalFrame::create(state_.tree_scope, this);
@@ -313,7 +308,7 @@ blink::WebFrame* HTMLFrame::createChildFrame(
 
   HTMLFrame::CreateParams params(frame_tree_manager_, this, child_view->id(),
                                  child_view, client_properties, nullptr);
-  params.allow_local_shared_frame = true;
+  params.is_local_create_child = true;
   HTMLFrame* child_frame = GetFirstAncestorWithDelegate()
                                ->delegate_->GetHTMLFactory()
                                ->CreateHTMLFrame(&params);
