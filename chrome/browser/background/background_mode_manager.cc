@@ -925,7 +925,6 @@ void BackgroundModeManager::CreateStatusTrayIcon() {
   if (!status_tray_ || status_icon_)
     return;
 
-  // TODO(rlp): Status tray icon should have submenus for each profile.
   gfx::ImageSkia* image_skia = ui::ResourceBundle::GetSharedInstance().
       GetImageSkiaNamed(IDR_STATUS_TRAY_ICON);
 
@@ -954,20 +953,15 @@ void BackgroundModeManager::UpdateStatusTrayIconContextMenu() {
     return;
   }
 
-  // We are building a new menu. Reset the Command IDs.
   command_id_handler_vector_.clear();
-
-  // Clear the submenus too since we will be creating new ones.
   submenus.clear();
 
-  // TODO(rlp): Add current profile color or indicator.
-  // Create a context menu item for Chrome.
   scoped_ptr<StatusIconMenuModel> menu(new StatusIconMenuModel(this));
-  // Add About item
   menu->AddItem(IDC_ABOUT, l10n_util::GetStringUTF16(IDS_ABOUT));
   menu->AddItemWithStringId(IDC_TASK_MANAGER, IDS_TASK_MANAGER);
   menu->AddSeparator(ui::NORMAL_SEPARATOR);
 
+  // If there are multiple profiles they each get a submenu.
   if (profile_cache_->GetNumberOfProfiles() > 1) {
     std::vector<BackgroundModeData*> bmd_vector;
     for (const auto& it : background_mode_data_)
