@@ -31,10 +31,12 @@ public class CardboardRenderer implements CardboardView.StereoRenderer {
     private static final float Z_NEAR = 0.1f;
     private static final float Z_FAR = 1000.0f;
 
-    // The following object positions are relative to the view point.
+    // Desktop position is fixed in world coordinates.
     private static final float DESKTOP_POSITION_X = 0.0f;
     private static final float DESKTOP_POSITION_Y = 0.0f;
     private static final float DESKTOP_POSITION_Z = -2.0f;
+
+    // Menu bar position is relative to the view point.
     private static final float MENU_BAR_POSITION_X = 0.0f;
     private static final float MENU_BAR_POSITION_Y = 0.0f;
     private static final float MENU_BAR_POSITION_Z = -0.9f;
@@ -49,6 +51,18 @@ public class CardboardRenderer implements CardboardView.StereoRenderer {
 
     // Distance to move camera each time.
     private static final float CAMERA_MOTION_STEP = 0.5f;
+
+    // This ratio is used by {@link isLookingFarawayFromDesktop()} to determine the
+    // angle beyond which the user is looking faraway from the desktop.
+    // The ratio is based on half of the desktop's angular width, as seen from
+    // the camera position.
+    // If the user triggers the button while looking faraway, this will cause the
+    // desktop to be re-positioned in the center of the view.
+    private static final float FARAWAY_ANGLE_RATIO = 1.6777f;
+
+    // Small number used to avoid division-overflow or other problems with
+    // floating-point imprecision.
+    private static final float EPSILON = 1e-5f;
 
     private final Activity mActivity;
 
@@ -351,8 +365,9 @@ public class CardboardRenderer implements CardboardView.StereoRenderer {
     public boolean isLookingAtDesktop() {
         synchronized (mEyeDesktopPositionLock) {
             // TODO(shichengfeng): Move logic to CardboardActivityDesktop.
-            return Math.abs(mEyeDesktopPosition.x) <= (mDesktop.getHalfWidth() + EDGE_MARGIN)
-                && Math.abs(mEyeDesktopPosition.y) <= (mDesktop.getHalfHeight() + EDGE_MARGIN);
+            return mForwardVector[2] < 0
+                    && Math.abs(mEyeDesktopPosition.x) <= (mDesktop.getHalfWidth() + EDGE_MARGIN)
+                    && Math.abs(mEyeDesktopPosition.y) <= (mDesktop.getHalfHeight() + EDGE_MARGIN);
         }
     }
 
@@ -360,7 +375,8 @@ public class CardboardRenderer implements CardboardView.StereoRenderer {
      * Return true if user is looking at the menu bar.
      */
     public boolean isLookingAtMenuBar() {
-        return mMenuBar.contains(new PointF(mEyeMenuBarPosition.x - MENU_BAR_POSITION_X,
+        return mForwardVector[2] < 0
+                && mMenuBar.contains(new PointF(mEyeMenuBarPosition.x - MENU_BAR_POSITION_X,
                 mEyeMenuBarPosition.y - MENU_BAR_POSITION_Y));
     }
 
@@ -368,7 +384,7 @@ public class CardboardRenderer implements CardboardView.StereoRenderer {
      * Get eye position at the given distance.
      */
     private PointF getLookingPosition(float distance) {
-        if (Math.abs(mForwardVector[2]) < 0.00001f) {
+        if (Math.abs(mForwardVector[2]) < EPSILON) {
             return new PointF(Math.copySign(Float.MAX_VALUE, mForwardVector[0]),
                     Math.copySign(Float.MAX_VALUE, mForwardVector[1]));
         } else {
@@ -389,5 +405,28 @@ public class CardboardRenderer implements CardboardView.StereoRenderer {
      */
     public boolean isMenuBarVisible() {
         return mMenuBarVisible;
+    }
+
+
+    /**
+     * Return true if user is looking faraway from desktop.
+     */
+    public boolean isLookingFarawayFromDesktop() {
+        if (mForwardVector[2] > -EPSILON) {
+            // If user is looking towards the back.
+            return true;
+        }
+
+        // Calculate half desktop looking angle.
+        double theta;
+        synchronized (mCameraPositionLock) {
+            theta = Math.atan(mDesktop.getHalfWidth()
+                    / (DESKTOP_POSITION_Z - mCameraPosition));
+        }
+
+        // Calculate current looking angle.
+        double phi = Math.atan(mForwardVector[0] / mForwardVector[2]);
+
+        return Math.abs(phi) > FARAWAY_ANGLE_RATIO * Math.abs(theta);
     }
 }

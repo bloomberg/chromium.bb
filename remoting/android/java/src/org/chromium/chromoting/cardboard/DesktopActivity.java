@@ -43,10 +43,10 @@ public class DesktopActivity extends CardboardActivity {
         mRenderer = new CardboardRenderer(this);
         mIsListening = false;
 
-        // Associate a CardboardView.StereoRenderer with cardboardView.
+        // Associate a CardboardView.StereoRenderer with cardboard view.
         cardboardView.setRenderer(mRenderer);
 
-        // Associate the cardboardView with this activity.
+        // Associate the cardboard view with this activity.
         setCardboardView(cardboardView);
     }
 
@@ -80,7 +80,11 @@ public class DesktopActivity extends CardboardActivity {
                 JniInterface.sendMouseEvent((int) coordinates.x, (int) coordinates.y,
                         TouchInputHandler.BUTTON_LEFT, false);
             } else {
-                mRenderer.setMenuBarVisible(true);
+                if (mRenderer.isLookingFarawayFromDesktop()) {
+                    getCardboardView().resetHeadTracker();
+                } else {
+                    mRenderer.setMenuBarVisible(true);
+                }
             }
         }
     }
