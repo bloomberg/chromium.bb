@@ -228,6 +228,7 @@ const SwitchInfoMap& GetSwitches() {
     INSERT_VARIABLE(Root)
     INSERT_VARIABLE(Quiet)
     INSERT_VARIABLE(RuntimeDepsListFile)
+    INSERT_VARIABLE(Threads)
     INSERT_VARIABLE(Time)
     INSERT_VARIABLE(Tracelog)
     INSERT_VARIABLE(Verbose)
