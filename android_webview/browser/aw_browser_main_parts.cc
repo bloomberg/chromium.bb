@@ -89,10 +89,10 @@ void AwBrowserMainParts::PreMainMessageLoopRun() {
       new AwMediaClientAndroid(AwResource::GetConfigKeySystemUuidMapping()));
 
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kUseInProcCommandBuffer)) {
-    gfx::GLSurface::InitializeOneOff();
-  } else {
+          switches::kUseIpcCommandBuffer)) {
     content::SynchronousCompositor::SetUseIpcCommandBuffer();
+  } else {
+    gfx::GLSurface::InitializeOneOff();
   }
 
   content::RenderFrameHost::AllowInjectingJavaScriptForAndroidWebView();
