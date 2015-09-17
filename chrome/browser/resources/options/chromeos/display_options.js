@@ -558,12 +558,16 @@ cr.define('options', function() {
      * @private
      */
     startDragging_: function(target, eventLocation) {
+      var oldFocusedIndex = this.focusedIndex_;
+      var willUpdateDisplayDescription = false;
       this.focusedIndex_ = null;
       for (var i = 0; i < this.displays_.length; i++) {
         var display = this.displays_[i];
         if (display.div == target ||
             (target.offsetParent && target.offsetParent == display.div)) {
           this.focusedIndex_ = i;
+          if (oldFocusedIndex !== null && oldFocusedIndex != i)
+            willUpdateDisplayDescription = true;
           break;
         }
       }
@@ -586,7 +590,8 @@ cr.define('options', function() {
         }
       }
 
-      this.updateSelectedDisplayDescription_();
+      if (willUpdateDisplayDescription)
+        this.updateSelectedDisplayDescription_();
       return false;
     },
 
@@ -626,7 +631,6 @@ cr.define('options', function() {
           this.applyResult_();
         this.dragging_ = null;
       }
-      this.updateSelectedDisplayDescription_();
       return false;
     },
 
@@ -763,7 +767,7 @@ cr.define('options', function() {
       var orientation = $('display-options-orientation-selection');
       var orientationOptions = orientation.getElementsByTagName('option');
       for (var i = 0; i < orientationOptions.length; i++)
-        orientationOptions.selected = false;
+        orientationOptions[i].selected = false;
 
       if (this.mirroring_) {
         this.updateSelectedDisplaySectionMirroring_();
