@@ -20,7 +20,7 @@ namespace shell {
 class TestPackageManager : public PackageManager {
  public:
   TestPackageManager();
-  virtual ~TestPackageManager();
+  ~TestPackageManager() override;
 
   void RegisterContentHandler(const std::string& mime_type,
                               const GURL& content_handler_url);
