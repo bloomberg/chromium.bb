@@ -236,7 +236,13 @@ class CONTENT_EXPORT EmbeddedWorkerInstance {
                               int line_number,
                               const GURL& source_url);
 
+  // Resets all running state. After this function is called, |status_| is
+  // STOPPED.
   void ReleaseProcess();
+  // Called when the startup sequence failed. Calls ReleaseProcess() and invokes
+  // |callback| with |status|. May destroy |this|.
+  void OnStartFailed(const StatusCallback& callback,
+                     ServiceWorkerStatusCode status);
 
   base::WeakPtr<ServiceWorkerContextCore> context_;
   scoped_refptr<EmbeddedWorkerRegistry> registry_;

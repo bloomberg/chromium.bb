@@ -21,8 +21,11 @@ namespace {
 
 const int kRenderProcessId = 11;
 
-void SaveStatus(ServiceWorkerStatusCode* out, ServiceWorkerStatusCode status) {
-  *out = status;
+void DestroyWorker(scoped_ptr<EmbeddedWorkerInstance> worker,
+                   ServiceWorkerStatusCode* out_status,
+                   ServiceWorkerStatusCode status) {
+  *out_status = status;
+  worker.reset();
 }
 
 void SaveStatusAndCall(ServiceWorkerStatusCode* out,
@@ -39,6 +42,11 @@ class EmbeddedWorkerInstanceTest : public testing::Test,
  protected:
   EmbeddedWorkerInstanceTest()
       : thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP) {}
+
+  void OnStopped(EmbeddedWorkerInstance::Status old_status) override {
+    stopped_ = true;
+    stopped_old_status_ = old_status;
+  }
 
   void OnDetached(EmbeddedWorkerInstance::Status old_status) override {
     detached_ = true;
@@ -79,9 +87,24 @@ class EmbeddedWorkerInstanceTest : public testing::Test,
   bool detached_ = false;
   EmbeddedWorkerInstance::Status detached_old_status_ =
       EmbeddedWorkerInstance::STOPPED;
+  bool stopped_ = false;
+  EmbeddedWorkerInstance::Status stopped_old_status_ =
+      EmbeddedWorkerInstance::STOPPED;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(EmbeddedWorkerInstanceTest);
+};
+
+class FailToSendIPCHelper : public EmbeddedWorkerTestHelper {
+ public:
+  FailToSendIPCHelper()
+      : EmbeddedWorkerTestHelper(base::FilePath(), kRenderProcessId) {}
+  ~FailToSendIPCHelper() override {}
+
+  bool Send(IPC::Message* message) override {
+    delete message;
+    return false;
+  }
 };
 
 TEST_F(EmbeddedWorkerInstanceTest, StartAndStop) {
@@ -232,14 +255,34 @@ TEST_F(EmbeddedWorkerInstanceTest, RemoveWorkerInSharedProcess) {
 TEST_F(EmbeddedWorkerInstanceTest, DetachDuringStart) {
   scoped_ptr<EmbeddedWorkerInstance> worker =
       embedded_worker_registry()->CreateWorker();
+  worker->AddListener(this);
+
   scoped_ptr<EmbeddedWorkerMsg_StartWorker_Params> params(
       new EmbeddedWorkerMsg_StartWorker_Params());
   ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_FAILED;
-  // Pretend we had a process allocated but then got detached before
-  // the start sequence reached SendStartWorker.
-  worker->process_id_ = -1;
-  worker->SendStartWorker(params.Pass(), base::Bind(&SaveStatus, &status), true,
-                          -1, false);
+
+  // Pretend the worker got stopped before the start sequence reached
+  // SendStartWorker.
+  worker->status_ = EmbeddedWorkerInstance::STOPPED;
+  base::RunLoop run_loop;
+  worker->SendStartWorker(params.Pass(), base::Bind(&SaveStatusAndCall, &status,
+                                                    run_loop.QuitClosure()),
+                          true, -1, false);
+  run_loop.Run();
+  EXPECT_EQ(SERVICE_WORKER_ERROR_ABORT, status);
+  // Don't expect SendStartWorker() to dispatch an OnStopped/Detached() message
+  // since the worker was already stopped.
+  EXPECT_FALSE(stopped_);
+  EXPECT_FALSE(detached_);
+
+  // Repeat, this time have the start callback destroy the worker, as is
+  // usual when starting a worker fails, and ensure a crash doesn't occur.
+  worker->status_ = EmbeddedWorkerInstance::STOPPED;
+  EmbeddedWorkerInstance* worker_ptr = worker.get();
+  worker_ptr->SendStartWorker(
+      params.Pass(), base::Bind(&DestroyWorker, base::Passed(&worker), &status),
+      true, -1, false);
+  // No crash.
   EXPECT_EQ(SERVICE_WORKER_ERROR_ABORT, status);
 }
 
@@ -249,8 +292,6 @@ TEST_F(EmbeddedWorkerInstanceTest, StopDuringStart) {
   scoped_ptr<EmbeddedWorkerInstance> worker =
       embedded_worker_registry()->CreateWorker();
   worker->AddListener(this);
-  scoped_ptr<EmbeddedWorkerMsg_StartWorker_Params> params(
-      new EmbeddedWorkerMsg_StartWorker_Params());
   // Pretend we stop during starting before we got a process allocated.
   worker->status_ = EmbeddedWorkerInstance::STARTING;
   worker->process_id_ = -1;
@@ -258,6 +299,33 @@ TEST_F(EmbeddedWorkerInstanceTest, StopDuringStart) {
   EXPECT_EQ(EmbeddedWorkerInstance::STOPPED, worker->status());
   EXPECT_TRUE(detached_);
   EXPECT_EQ(EmbeddedWorkerInstance::STARTING, detached_old_status_);
+}
+
+// Test for when sending the start IPC failed.
+TEST_F(EmbeddedWorkerInstanceTest, FailToSendStartIPC) {
+  helper_.reset(new FailToSendIPCHelper());
+
+  const int64 version_id = 55L;
+  const GURL pattern("http://example.com/");
+  const GURL url("http://example.com/worker.js");
+
+  scoped_ptr<EmbeddedWorkerInstance> worker =
+      embedded_worker_registry()->CreateWorker();
+  helper_->SimulateAddProcessToPattern(pattern, kRenderProcessId);
+  ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_FAILED;
+  worker->AddListener(this);
+
+  // Attempt to start the worker.
+  base::RunLoop run_loop;
+  worker->Start(
+      version_id, pattern, url,
+      base::Bind(&SaveStatusAndCall, &status, run_loop.QuitClosure()));
+  run_loop.Run();
+
+  // The callback should have run, and we should have got an OnStopped message.
+  EXPECT_EQ(SERVICE_WORKER_ERROR_IPC_FAILED, status);
+  EXPECT_TRUE(stopped_);
+  EXPECT_EQ(EmbeddedWorkerInstance::STARTING, stopped_old_status_);
 }
 
 }  // namespace content
