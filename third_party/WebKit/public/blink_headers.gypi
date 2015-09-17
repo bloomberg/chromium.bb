@@ -509,7 +509,6 @@
       "web/WebWorkerContentSettingsClientProxy.h",
       "web/default/WebRenderTheme.h",
       "web/linux/WebFontRendering.h",
-      "web/mac/WebInputEventFactory.h",
       "web/mac/WebScrollbarTheme.h",
       "web/mac/WebSubstringUtil.h",
       "web/modules/notifications/WebNotificationPermissionCallback.h",
