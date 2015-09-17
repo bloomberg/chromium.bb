@@ -11,15 +11,15 @@ BattorPowerTraceProvider::BattorPowerTraceProvider() {}
 BattorPowerTraceProvider::~BattorPowerTraceProvider() {}
 
 bool BattorPowerTraceProvider::IsConnected() {
-  return true;
+  return false;
 }
 
 bool BattorPowerTraceProvider::StartTracing() {
-  return true;
+  return false;
 }
 
 bool BattorPowerTraceProvider::StopTracing() {
-  return true;
+  return false;
 }
 
 void BattorPowerTraceProvider::GetLog(std::string* log_str) {
