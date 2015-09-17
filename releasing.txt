@@ -22,7 +22,8 @@ To make a release of Weston and/or Wayland, follow these steps.
       you install it to a location other than /usr/bin/Xwayland, specify
       this in the following env var:
 
-      export DISTCHECK_CONFIGURE_FLAGS="--with-xserver-path=<your-Xwayland-path>"
+	  XWAYLAND=$(which Xwayland)  # Or specify your own path
+      export DISTCHECK_CONFIGURE_FLAGS="--with-xserver-path=$XWAYLAND"
 
       If you're using a locally installed libinput or other dependency
       libraries, you'll likely need to set a few other environment
@@ -58,7 +59,7 @@ To make a release of Weston and/or Wayland, follow these steps.
       listing of the most notable changes.  For x.y.0 releases, indicate
       the schedule for the x.y+1.0 release.
 
-  5.  Send the release announcements to
+  5.  pgp sign the the release announcements and send them to
       wayland-devel@lists.freedesktop.org
 
   6.  Get your freshly posted release email URL from
