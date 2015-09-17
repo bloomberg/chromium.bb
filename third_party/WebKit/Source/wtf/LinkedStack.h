@@ -42,6 +42,14 @@ class LinkedStack {
 public:
     LinkedStack() : m_size(0) { }
 
+    // Iterative cleanup to prevent stack overflow problems.
+    ~LinkedStack()
+    {
+        OwnPtr<Node> ptr = m_head.release();
+        while (ptr)
+            ptr = ptr->m_next.release();
+    }
+
     bool isEmpty();
 
     void push(const T&);
