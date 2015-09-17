@@ -214,7 +214,7 @@ void DocumentMarkerController::addMarker(Node* node, const DocumentMarker& newMa
     if (list->isEmpty() || list->last()->endOffset() < newMarker.startOffset()) {
         list->append(newRenderedMarker.release());
     } else {
-        if (newMarker.type() != DocumentMarker::TextMatch) {
+        if (newMarker.type() != DocumentMarker::TextMatch && newMarker.type() != DocumentMarker::Composition) {
             mergeOverlapping(list.get(), newRenderedMarker.release());
         } else {
             MarkerList::iterator pos = std::lower_bound(list->begin(), list->end(), &newMarker, startsFurther);

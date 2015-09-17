@@ -245,4 +245,17 @@ TEST_F(DocumentMarkerControllerTest, UpdateRenderedRectsForComposition)
     EXPECT_NE(renderedRects[0], newRenderedRects[0]);
 }
 
+TEST_F(DocumentMarkerControllerTest, CompositionMarkersNotMerged)
+{
+    IntRect invalidRect(RenderedDocumentMarker::create(DocumentMarker(0, 0, false))->renderedRect());
+
+    setBodyInnerHTML("<div style='margin: 100px'>foo</div>");
+    RefPtrWillBeRawPtr<Node> text = document().body()->firstChild()->firstChild();
+    document().updateLayout();
+    markerController().addCompositionMarker(Position(text, 0), Position(text, 1), Color::black, false, Color::black);
+    markerController().addCompositionMarker(Position(text, 1), Position(text, 3), Color::black, true, Color::black);
+
+    EXPECT_EQ(2u, markerController().markers().size());
+}
+
 } // namespace blink
