@@ -9,7 +9,7 @@
 #define PPAPI_C_PP_MACROS_H_
 
 
-#define PPAPI_RELEASE 46
+#define PPAPI_RELEASE 47
 
 /**
  * @file

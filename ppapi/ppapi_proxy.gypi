@@ -21,6 +21,8 @@
 
           'proxy/audio_buffer_resource.cc',
           'proxy/audio_buffer_resource.h',
+          'proxy/audio_encoder_resource.cc',
+          'proxy/audio_encoder_resource.h',
           'proxy/audio_input_resource.cc',
           'proxy/audio_input_resource.h',
           'proxy/broker_dispatcher.cc',

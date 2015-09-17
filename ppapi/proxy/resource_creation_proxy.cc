@@ -6,6 +6,7 @@
 
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/pp_size.h"
+#include "ppapi/proxy/audio_encoder_resource.h"
 #include "ppapi/proxy/audio_input_resource.h"
 #include "ppapi/proxy/camera_device_resource.h"
 #include "ppapi/proxy/compositor_resource.h"
@@ -206,6 +207,10 @@ PP_Resource ResourceCreationProxy::CreateAudio(
     void* user_data) {
   return PPB_Audio_Proxy::CreateProxyResource(
       instance, config_id, AudioCallbackCombined(audio_callback), user_data);
+}
+
+PP_Resource ResourceCreationProxy::CreateAudioEncoder(PP_Instance instance) {
+  return (new AudioEncoderResource(GetConnection(), instance))->GetReference();
 }
 
 PP_Resource ResourceCreationProxy::CreateAudioTrusted(PP_Instance instance) {

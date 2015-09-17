@@ -145,6 +145,8 @@
           'thunk/ppb_audio_buffer_thunk.cc',
           'thunk/ppb_audio_config_api.h',
           'thunk/ppb_audio_config_thunk.cc',
+          'thunk/ppb_audio_encoder_api.h',
+          'thunk/ppb_audio_encoder_thunk.cc',
           'thunk/ppb_audio_input_api.h',
           'thunk/ppb_audio_input_dev_thunk.cc',
           'thunk/ppb_audio_thunk.cc',
