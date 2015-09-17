@@ -279,7 +279,7 @@ deps = {
 
   'src/third_party/catapult':
     Var('chromium_git') + '/external/github.com/catapult-project/catapult.git' + '@' +
-    '7bdbcba774b0b906b413be4c2f083958ffefa481',
+    'dc1a60501d508cc469c8dc94305724b153e556e2',
 }
 
 
