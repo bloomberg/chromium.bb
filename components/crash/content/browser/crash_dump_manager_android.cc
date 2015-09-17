@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/crash/browser/crash_dump_manager_android.h"
+#include "components/crash/content/browser/crash_dump_manager_android.h"
 
 #include "base/bind.h"
 #include "base/files/file_util.h"

@@ -24,7 +24,7 @@ shared_library("libcontent_shell_content_view") {
     "//build/config/sanitizers:deps",
     "//content/shell:content_shell_lib",
     "//content/shell:pak",
-    "//components/crash/browser",
+    "//components/crash/content/browser",
     "//skia",
     "//media/base/android",
   ]

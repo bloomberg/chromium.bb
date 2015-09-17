@@ -17,8 +17,8 @@
 #include "breakpad/src/client/linux/handler/minidump_descriptor.h"
 #include "chromecast/app/android/cast_crash_reporter_client_android.h"
 #include "chromecast/base/version.h"
-#include "components/crash/app/breakpad_linux.h"
-#include "components/crash/app/crash_reporter_client.h"
+#include "components/crash/content/app/breakpad_linux.h"
+#include "components/crash/content/app/crash_reporter_client.h"
 #include "content/public/common/content_switches.h"
 #include "jni/CastCrashHandler_jni.h"
 

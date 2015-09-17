@@ -4,7 +4,7 @@
 {
   'variables': {
     'files': [
-      '../components/crash/tools/generate_breakpad_symbols.py',
+      '../components/crash/content/tools/generate_breakpad_symbols.py',
     ],
   },
   'conditions': [

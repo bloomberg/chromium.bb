@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_CRASH_APP_BREAKPAD_WIN_H_
-#define COMPONENTS_CRASH_APP_BREAKPAD_WIN_H_
+#ifndef COMPONENTS_CRASH_CONTENT_APP_BREAKPAD_WIN_H_
+#define COMPONENTS_CRASH_CONTENT_APP_BREAKPAD_WIN_H_
 
 #include <windows.h>
 #include <string>
@@ -25,4 +25,4 @@ void ConsumeInvalidHandleExceptions();
 
 }  // namespace breakpad
 
-#endif  // COMPONENTS_CRASH_APP_BREAKPAD_WIN_H_
+#endif  // COMPONENTS_CRASH_CONTENT_APP_BREAKPAD_WIN_H_

@@ -119,7 +119,7 @@
       'content_settings/core/common/content_settings_pattern_unittest.cc',
     ],
     'crash_unittest_sources': [
-      'crash/app/crash_keys_win_unittest.cc',
+      'crash/content/app/crash_keys_win_unittest.cc',
     ],
     'crx_file_unittest_sources': [
       'crx_file/id_util_unittest.cc',
@@ -236,8 +236,8 @@
       'feedback/feedback_uploader_unittest.cc',
     ],
     'gcm_driver_unittest_sources': [
-      'gcm_driver/gcm_account_tracker_unittest.cc',
       'gcm_driver/gcm_account_mapper_unittest.cc',
+      'gcm_driver/gcm_account_tracker_unittest.cc',
       'gcm_driver/gcm_channel_status_request_unittest.cc',
       'gcm_driver/gcm_client_impl_unittest.cc',
       'gcm_driver/gcm_delayed_task_controller_unittest.cc',

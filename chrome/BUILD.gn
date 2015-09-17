@@ -106,7 +106,7 @@ if (!is_android) {
         "//chrome/installer/util",
         "//chrome_elf",
         "//components/browser_watcher:browser_watcher_client",
-        "//components/crash/app",
+        "//components/crash/content/app",
         "//components/crash_keys",
         "//content:startup_helper_win",
         "//crypto",

@@ -17,7 +17,7 @@
 #include "chrome/app/chrome_watcher_client_win.h"
 #include "chrome/chrome_watcher/chrome_watcher_main_api.h"
 #include "chrome/common/chrome_constants.h"
-#include "components/crash/app/crash_keys_win.h"
+#include "components/crash/content/app/crash_keys_win.h"
 #include "syzygy/kasko/api/client.h"
 
 namespace {

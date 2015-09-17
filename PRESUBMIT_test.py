@@ -482,7 +482,7 @@ class CheckAddedDepsHaveTetsApprovalsTest(unittest.TestCase):
       'chrome/plugin/chrome_content_plugin_client.h',
       'chrome/utility/chrome_content_utility_client.h',
       'chromeos/chromeos_paths.h',
-      'components/crash/DEPS',
+      'components/crash/content/DEPS',
       'components/nacl/common/DEPS',
       'content/public/browser/render_process_host.h',
       'policy/DEPS',

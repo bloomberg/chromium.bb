@@ -6,7 +6,7 @@
 #define CHROMECAST_APP_ANDROID_CAST_CRASH_REPORTER_CLIENT_ANDROID_H_
 
 #include "base/compiler_specific.h"
-#include "components/crash/app/crash_reporter_client.h"
+#include "components/crash/content/app/crash_reporter_client.h"
 
 namespace chromecast {
 

@@ -201,7 +201,7 @@ static_library("content_shell_lib") {
     "//base/allocator",
     "//base/third_party/dynamic_annotations",
     "//cc",
-    "//components/crash/app",
+    "//components/crash/content/app",
     "//components/devtools_discovery",
     "//components/devtools_http_handler",
     "//components/plugins/renderer",
@@ -272,7 +272,7 @@ static_library("content_shell_lib") {
   }
 
   if (is_posix && !is_mac) {
-    deps += [ "//components/crash/browser" ]
+    deps += [ "//components/crash/content/browser" ]
   }
 
   if (use_aura) {
@@ -458,7 +458,7 @@ if (is_win) {
     deps = [
       "//base",
       "//build/config/sanitizers:deps",
-      "//components/crash/tools:crash_service",
+      "//components/crash/content/tools:crash_service",
     ]
 
     configs -= [ "//build/config/win:console" ]

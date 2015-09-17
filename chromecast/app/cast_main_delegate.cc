@@ -22,7 +22,7 @@
 #include "chromecast/common/cast_resource_delegate.h"
 #include "chromecast/common/global_descriptors.h"
 #include "chromecast/renderer/cast_content_renderer_client.h"
-#include "components/crash/app/crash_reporter_client.h"
+#include "components/crash/content/app/crash_reporter_client.h"
 #include "content/public/browser/browser_main_runner.h"
 #include "content/public/common/content_switches.h"
 #include "ui/base/resource/resource_bundle.h"

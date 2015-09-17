@@ -29,8 +29,8 @@
 #include "chromecast/media/base/media_message_loop.h"
 #include "chromecast/public/cast_media_shlib.h"
 #include "chromecast/public/media/media_pipeline_backend.h"
-#include "components/crash/app/breakpad_linux.h"
-#include "components/crash/browser/crash_handler_host_linux.h"
+#include "components/crash/content/app/breakpad_linux.h"
+#include "components/crash/content/browser/crash_handler_host_linux.h"
 #include "components/network_hints/browser/network_hints_message_filter.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/certificate_request_result_type.h"
@@ -48,7 +48,7 @@
 #include "ui/gl/gl_switches.h"
 
 #if defined(OS_ANDROID)
-#include "components/crash/browser/crash_dump_manager_android.h"
+#include "components/crash/content/browser/crash_dump_manager_android.h"
 #include "components/external_video_surface/browser/android/external_video_surface_container_impl.h"
 #else
 #include "chromecast/browser/media/cast_browser_cdm_factory.h"
