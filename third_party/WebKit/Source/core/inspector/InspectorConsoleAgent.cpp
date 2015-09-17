@@ -226,7 +226,8 @@ void InspectorConsoleAgent::sendConsoleMessageToFrontend(ConsoleMessage* console
         }
     }
     if (consoleMessage->callStack()) {
-        jsonObj->setStackTrace(consoleMessage->callStack()->buildInspectorArray());
+        if (consoleMessage->callStack()->size())
+            jsonObj->setStackTrace(consoleMessage->callStack()->buildInspectorArray());
         RefPtrWillBeRawPtr<ScriptAsyncCallStack> asyncCallStack = consoleMessage->callStack()->asyncCallStack();
         if (asyncCallStack)
             jsonObj->setAsyncStackTrace(asyncCallStack->buildInspectorObject());

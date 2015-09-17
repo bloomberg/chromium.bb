@@ -51,7 +51,7 @@ void setCallStack(TracedValue* value)
         traceCategoryEnabled = TRACE_EVENT_API_GET_CATEGORY_ENABLED(TRACE_DISABLED_BY_DEFAULT("devtools.timeline.stack"));
     if (!*traceCategoryEnabled)
         return;
-    RefPtrWillBeRawPtr<ScriptCallStack> scriptCallStack = createScriptCallStack(ScriptCallStack::maxCallStackSizeToCapture, true);
+    RefPtrWillBeRawPtr<ScriptCallStack> scriptCallStack = currentScriptCallStack(ScriptCallStack::maxCallStackSizeToCapture);
     if (scriptCallStack)
         scriptCallStack->toTracedValue(value, "stackTrace");
 }
@@ -166,7 +166,7 @@ PassRefPtr<TracedValue> InspectorScheduleStyleInvalidationTrackingEvent::fillCom
     setNodeInfo(value.get(), &element, "nodeId", "nodeName");
     value->setString("invalidationSet", descendantInvalidationSetToIdString(invalidationSet));
     value->setString("invalidatedSelectorId", invalidatedSelector);
-    if (RefPtrWillBeRawPtr<ScriptCallStack> stackTrace = createScriptCallStack(maxInvalidationTrackingCallstackSize, true))
+    if (RefPtrWillBeRawPtr<ScriptCallStack> stackTrace = currentScriptCallStack(maxInvalidationTrackingCallstackSize))
         stackTrace->toTracedValue(value.get(), "stackTrace");
     return value.release();
 }
@@ -260,7 +260,7 @@ PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorStyleRecalcInvalidatio
     setNodeInfo(value.get(), node, "nodeId", "nodeName");
     value->setString("reason", reason.reasonString());
     value->setString("extraData", reason.extraData());
-    if (RefPtrWillBeRawPtr<ScriptCallStack> stackTrace = createScriptCallStack(maxInvalidationTrackingCallstackSize, true))
+    if (RefPtrWillBeRawPtr<ScriptCallStack> stackTrace = currentScriptCallStack(maxInvalidationTrackingCallstackSize))
         stackTrace->toTracedValue(value.get(), "stackTrace");
     return value.release();
 }
@@ -364,7 +364,7 @@ PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorLayoutInvalidationTrac
     value->setString("frame", toHexString(layoutObject->frame()));
     setGeneratingNodeInfo(value.get(), layoutObject, "nodeId", "nodeName");
     value->setString("reason", reason);
-    if (RefPtrWillBeRawPtr<ScriptCallStack> stackTrace = createScriptCallStack(maxInvalidationTrackingCallstackSize, true))
+    if (RefPtrWillBeRawPtr<ScriptCallStack> stackTrace = currentScriptCallStack(maxInvalidationTrackingCallstackSize))
         stackTrace->toTracedValue(value.get(), "stackTrace");
     return value.release();
 }
@@ -387,7 +387,7 @@ PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorScrollInvalidationTrac
     value->setString("frame", toHexString(layoutObject.frame()));
     value->setString("reason", ScrollInvalidationReason);
     setGeneratingNodeInfo(value.get(), &layoutObject, "nodeId", "nodeName");
-    if (RefPtrWillBeRawPtr<ScriptCallStack> stackTrace = createScriptCallStack(maxInvalidationTrackingCallstackSize, true))
+    if (RefPtrWillBeRawPtr<ScriptCallStack> stackTrace = currentScriptCallStack(maxInvalidationTrackingCallstackSize))
         stackTrace->toTracedValue(value.get(), "stackTrace");
     return value.release();
 }

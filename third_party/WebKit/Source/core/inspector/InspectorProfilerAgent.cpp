@@ -130,7 +130,7 @@ PassRefPtr<TypeBuilder::Profiler::CPUProfile> createCPUProfile(v8::CpuProfile* v
 
 PassRefPtr<TypeBuilder::Debugger::Location> currentDebugLocation()
 {
-    RefPtrWillBeRawPtr<ScriptCallStack> callStack(createScriptCallStack(1));
+    RefPtrWillBeRawPtr<ScriptCallStack> callStack(currentScriptCallStack(1));
     const ScriptCallFrame& lastCaller = callStack->at(0);
     RefPtr<TypeBuilder::Debugger::Location> location = TypeBuilder::Debugger::Location::create()
         .setScriptId(lastCaller.scriptId())

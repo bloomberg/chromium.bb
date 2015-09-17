@@ -717,8 +717,8 @@ static void gatherSecurityPolicyViolationEventData(SecurityPolicyViolationEventI
     if (!SecurityOrigin::isSecure(document->url()) && document->loader())
         init.setStatusCode(document->loader()->response().httpStatusCode());
 
-    RefPtrWillBeRawPtr<ScriptCallStack> stack = createScriptCallStack(1, false);
-    if (!stack)
+    RefPtrWillBeRawPtr<ScriptCallStack> stack = currentScriptCallStack(1);
+    if (!stack || !stack->size())
         return;
 
     const ScriptCallFrame& callFrame = stack->at(0);

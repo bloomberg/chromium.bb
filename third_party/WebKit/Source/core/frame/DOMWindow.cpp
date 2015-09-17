@@ -206,7 +206,7 @@ void DOMWindow::postMessage(PassRefPtr<SerializedScriptValue> message, const Mes
         // Capture stack trace only when inspector front-end is loaded as it may be time consuming.
         RefPtrWillBeRawPtr<ScriptCallStack> stackTrace = nullptr;
         if (InspectorInstrumentation::consoleAgentEnabled(sourceDocument))
-            stackTrace = createScriptCallStack(ScriptCallStack::maxCallStackSizeToCapture, true);
+            stackTrace = currentScriptCallStack(ScriptCallStack::maxCallStackSizeToCapture);
 
         toLocalDOMWindow(this)->schedulePostMessage(event, source, target.get(), stackTrace.release());
     }

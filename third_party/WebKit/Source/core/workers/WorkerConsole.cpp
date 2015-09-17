@@ -51,11 +51,6 @@ WorkerConsole::~WorkerConsole()
 
 void WorkerConsole::reportMessageToConsole(PassRefPtrWillBeRawPtr<ConsoleMessage> consoleMessage)
 {
-    if (RefPtrWillBeRawPtr<ScriptCallStack> callStack = consoleMessage->callStack()) {
-        const ScriptCallFrame& lastCaller = callStack->at(0);
-        consoleMessage->setURL(lastCaller.sourceURL());
-        consoleMessage->setLineNumber(lastCaller.lineNumber());
-    }
     m_scope->addConsoleMessage(consoleMessage);
 }
 

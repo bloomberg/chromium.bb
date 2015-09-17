@@ -51,7 +51,7 @@ WebSocketChannel* WebSocketChannel::create(ExecutionContext* context, WebSocketC
 
     String sourceURL;
     unsigned lineNumber = 0;
-    RefPtrWillBeRawPtr<ScriptCallStack> callStack = createScriptCallStack(1, true);
+    RefPtrWillBeRawPtr<ScriptCallStack> callStack = currentScriptCallStack(1);
     if (callStack && callStack->size()) {
         sourceURL = callStack->at(0).sourceURL();
         lineNumber = callStack->at(0).lineNumber();

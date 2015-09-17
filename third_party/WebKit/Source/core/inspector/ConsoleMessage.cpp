@@ -8,6 +8,7 @@
 #include "bindings/core/v8/ScriptCallStackFactory.h"
 #include "bindings/core/v8/ScriptValue.h"
 #include "core/inspector/ScriptArguments.h"
+#include "core/inspector/ScriptAsyncCallStack.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/PassOwnPtr.h"
 
@@ -98,6 +99,12 @@ PassRefPtrWillBeRawPtr<ScriptCallStack> ConsoleMessage::callStack() const
 void ConsoleMessage::setCallStack(PassRefPtrWillBeRawPtr<ScriptCallStack> callStack)
 {
     m_callStack = callStack;
+    if (m_callStack && m_callStack->size() && !m_scriptId) {
+        const ScriptCallFrame& frame = m_callStack->at(0);
+        m_url = frame.sourceURL();
+        m_lineNumber = frame.lineNumber();
+        m_columnNumber = frame.columnNumber();
+    }
 }
 
 ScriptState* ConsoleMessage::scriptState() const
@@ -201,19 +208,8 @@ void ConsoleMessage::collectCallStack()
     if (m_type == EndGroupMessageType)
         return;
 
-    if (!m_callStack || m_source == ConsoleAPIMessageSource)
-        m_callStack = createScriptCallStackForConsole(ScriptCallStack::maxCallStackSizeToCapture, true);
-
-    if (m_callStack && m_callStack->size() && !m_scriptId) {
-        const ScriptCallFrame& frame = m_callStack->at(0);
-        m_url = frame.sourceURL();
-        m_lineNumber = frame.lineNumber();
-        m_columnNumber = frame.columnNumber();
-        return;
-    }
-
-    if (m_callStack && !m_callStack->size())
-        m_callStack.clear();
+    if (!m_callStack)
+        setCallStack(currentScriptCallStackForConsole(ScriptCallStack::maxCallStackSizeToCapture));
 }
 
 DEFINE_TRACE(ConsoleMessage)

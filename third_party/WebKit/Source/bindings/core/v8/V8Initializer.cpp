@@ -109,9 +109,6 @@ static PassRefPtrWillBeRawPtr<ScriptCallStack> extractCallStack(v8::Isolate* iso
         int topScriptId = callStack->at(0).scriptId().toInt(&success);
         if (success && topScriptId == *scriptId)
             *scriptId = 0;
-    } else {
-        Vector<ScriptCallFrame> callFrames;
-        callStack = ScriptCallStack::create(callFrames);
     }
     return callStack.release();
 }
