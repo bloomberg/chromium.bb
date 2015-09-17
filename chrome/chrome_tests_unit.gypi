@@ -406,7 +406,6 @@
       'browser/ui/cocoa/location_bar/zoom_decoration_unittest.mm',
       'browser/ui/cocoa/media_picker/desktop_media_picker_controller_unittest.mm',
       'browser/ui/cocoa/menu_button_unittest.mm',
-      'browser/ui/cocoa/notifications/message_center_tray_bridge_unittest.mm',
       'browser/ui/cocoa/nsmenuitem_additions_unittest.mm',
       'browser/ui/cocoa/omnibox/omnibox_popup_cell_unittest.mm',
       'browser/ui/cocoa/omnibox/omnibox_popup_matrix_unittest.mm',

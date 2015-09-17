@@ -41,6 +41,8 @@ class NotificationUIManager {
   virtual ~NotificationUIManager() {}
 
   // Creates an initialized UI manager.
+  // TODO(dewittj): Remove the PrefService argument which is unused. See
+  // crbug.com/530376
   static NotificationUIManager* Create(PrefService* local_state);
 
   // Adds a notification to be displayed. Virtual for unit test override.

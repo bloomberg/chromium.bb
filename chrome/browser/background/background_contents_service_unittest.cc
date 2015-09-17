@@ -191,7 +191,7 @@ class BackgroundContentsServiceNotificationTest
             g_browser_process->notification_ui_manager());
     manager->SetMessageCenterTrayDelegateForTest(
         new message_center::FakeMessageCenterTrayDelegate(
-            message_center::MessageCenter::Get(), base::Closure()));
+            message_center::MessageCenter::Get()));
   }
 
   void TearDown() override {

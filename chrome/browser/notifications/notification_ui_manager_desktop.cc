@@ -24,6 +24,5 @@ NotificationUIManager* NotificationUIManager::Create(PrefService* local_state) {
       new MessageCenterSettingsController(profile_info_cache));
   return new MessageCenterNotificationManager(
       g_browser_process->message_center(),
-      local_state,
       settings_provider.Pass());
 }

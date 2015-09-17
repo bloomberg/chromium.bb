@@ -1984,7 +1984,6 @@
       'browser/notifications/desktop_notification_profile_util.h',
       'browser/notifications/login_state_notification_blocker_chromeos.cc',
       'browser/notifications/login_state_notification_blocker_chromeos.h',
-      'browser/notifications/message_center_notification_manager_win.cc',
       'browser/notifications/notification.cc',
       'browser/notifications/notification.h',
       'browser/notifications/notification_delegate.h',

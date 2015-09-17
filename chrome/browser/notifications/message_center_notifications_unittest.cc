@@ -4,7 +4,6 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/testing_pref_service.h"
-#include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/test_timeouts.h"
 #include "base/values.h"
@@ -20,7 +19,6 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/message_center/fake_message_center_tray_delegate.h"
-#include "ui/message_center/fake_notifier_settings_provider.h"
 #include "ui/message_center/message_center_impl.h"
 #include "ui/message_center/message_center_tray.h"
 #include "ui/message_center/message_center_types.h"
@@ -50,35 +48,16 @@ class MessageCenterNotificationManagerTest : public BrowserWithTestWindowTest {
 #endif
 
 
-    // Clear the preference and initialize.
     TestingBrowserProcess* browser_process = TestingBrowserProcess::GetGlobal();
     profile_manager_.reset(new TestingProfileManager(browser_process));
     ASSERT_TRUE(profile_manager_->SetUp());
-    local_state()->ClearPref(prefs::kMessageCenterShowedFirstRunBalloon);
-    first_run_pref_.reset(new BooleanPrefMember);
-    first_run_pref_->Init(prefs::kMessageCenterShowedFirstRunBalloon,
-                         local_state());
-
-    // Get ourselves a run loop.
-    run_loop_.reset(new base::RunLoop());
 
     message_center_ = MessageCenter::Get();
-    scoped_ptr<NotifierSettingsProvider> settings_provider(
-        new FakeNotifierSettingsProvider(notifiers_));
-    delegate_ = new FakeMessageCenterTrayDelegate(message_center_,
-                                                  run_loop_->QuitClosure());
+    delegate_ = new FakeMessageCenterTrayDelegate(message_center_);
     notification_manager()->SetMessageCenterTrayDelegateForTest(delegate_);
-#if defined(OS_WIN)
-    // First run features are only implemented on Windows, where the
-    // notification center is hard to find.
-    notification_manager()->SetFirstRunTimeoutForTest(
-        TestTimeouts::tiny_timeout());
-#endif
   }
 
   void TearDown() override {
-    run_loop_.reset();
-    first_run_pref_.reset();
     profile_manager_.reset();
 
 #if !defined(OS_CHROMEOS)
@@ -94,8 +73,6 @@ class MessageCenterNotificationManagerTest : public BrowserWithTestWindowTest {
         g_browser_process->notification_ui_manager();
   }
 
-  FakeMessageCenterTrayDelegate* delegate() { return delegate_; }
-
   MessageCenter* message_center() { return message_center_; }
 
   const ::Notification GetANotification(const std::string& id) {
@@ -109,25 +86,15 @@ class MessageCenterNotificationManagerTest : public BrowserWithTestWindowTest {
         new MockNotificationDelegate(id));
   }
 
-  base::RunLoop* run_loop() { return run_loop_.get(); }
-  PrefService* local_state() {
-    return TestingBrowserProcess::GetGlobal()->local_state();
-  }
-  bool DidFirstRunPref() { return first_run_pref_->GetValue(); }
-
  private:
   scoped_ptr<TestingProfileManager> profile_manager_;
-  scoped_ptr<base::RunLoop> run_loop_;
   MessageCenter* message_center_;
-  std::vector<Notifier*> notifiers_;
   FakeMessageCenterTrayDelegate* delegate_;
-  scoped_ptr<BooleanPrefMember> first_run_pref_;
 };
 
 TEST_F(MessageCenterNotificationManagerTest, SetupNotificationManager) {
   TestingProfile profile;
   notification_manager()->Add(GetANotification("test"), &profile);
-  EXPECT_FALSE(DidFirstRunPref());
 }
 
 TEST_F(MessageCenterNotificationManagerTest, UpdateNotification) {
@@ -163,52 +130,4 @@ TEST_F(MessageCenterNotificationManagerTest, MultiUserUpdates) {
 }
 #endif
 
-#if defined(OS_WIN)
-// The following tests test the first run balloon, which is only implemented for
-// Windows.
-TEST_F(MessageCenterNotificationManagerTest, FirstRunShown) {
-  TestingProfile profile;
-  notification_manager()->Add(GetANotification("test"), &profile);
-  std::string notification_id =
-      notification_manager()
-          ->FindById("test", NotificationUIManager::GetProfileID(&profile))
-          ->id();
-  message_center()->DisplayedNotification(
-      notification_id, message_center::DISPLAY_SOURCE_MESSAGE_CENTER);
-  message_center()->MarkSinglePopupAsShown(notification_id, false);
-
-  run_loop()->Run();
-  base::RunLoop run_loop_2;
-  run_loop_2.RunUntilIdle();
-  EXPECT_TRUE(delegate()->displayed_first_run_balloon());
-  EXPECT_TRUE(DidFirstRunPref());
-}
-
-TEST_F(MessageCenterNotificationManagerTest,
-       FirstRunNotShownWithPopupsVisible) {
-  TestingProfile profile;
-  notification_manager()->Add(GetANotification("test"), &profile);
-  std::string notification_id =
-      notification_manager()
-          ->FindById("test", NotificationUIManager::GetProfileID(&profile))
-          ->id();
-  message_center()->DisplayedNotification(
-      notification_id, message_center::DISPLAY_SOURCE_MESSAGE_CENTER);
-  run_loop()->RunUntilIdle();
-  EXPECT_FALSE(delegate()->displayed_first_run_balloon());
-  EXPECT_FALSE(notification_manager()->FirstRunTimerIsActive());
-  EXPECT_FALSE(DidFirstRunPref());
-}
-
-TEST_F(MessageCenterNotificationManagerTest,
-       FirstRunNotShownWithMessageCenter) {
-  TestingProfile profile;
-  notification_manager()->Add(GetANotification("test"), &profile);
-  message_center()->SetVisibility(message_center::VISIBILITY_MESSAGE_CENTER);
-  run_loop()->RunUntilIdle();
-  EXPECT_FALSE(notification_manager()->FirstRunTimerIsActive());
-  EXPECT_FALSE(DidFirstRunPref());
-}
-
-#endif
 }  // namespace message_center

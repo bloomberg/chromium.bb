@@ -1905,18 +1905,6 @@ const char kFactoryResetRequested[] = "FactoryResetRequested";
 // Indicates that debugging features were requested from oobe screen.
 const char kDebuggingFeaturesRequested[] = "DebuggingFeaturesRequested";
 
-// Boolean recording whether we have showed a balloon that calls out the message
-// center for desktop notifications.
-const char kMessageCenterShowedFirstRunBalloon[] =
-    "message_center.showed_first_run_balloon";
-
-// Boolean recording whether the user has disabled the notifications
-// menubar or systray icon.
-const char kMessageCenterShowIcon[] = "message_center.show_icon";
-
-const char kMessageCenterForcedOnTaskbar[] =
-    "message_center.was_forced_on_taskbar";
-
 #if defined(OS_CHROMEOS)
 // This setting starts periodic timezone refresh when not in user session.
 // (user session is controlled by user profile preference

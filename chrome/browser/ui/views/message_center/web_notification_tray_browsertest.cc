@@ -145,7 +145,7 @@ IN_PROC_BROWSER_TEST_F(WebNotificationTrayTest, WebNotifications) {
 }
 
 IN_PROC_BROWSER_TEST_F(WebNotificationTrayTest, WebNotificationPopupBubble) {
-  scoped_ptr<WebNotificationTray> tray(new WebNotificationTray(NULL));
+  scoped_ptr<WebNotificationTray> tray(new WebNotificationTray());
   tray->message_center();
 
   // Adding a notification should show the popup bubble.
@@ -168,31 +168,8 @@ IN_PROC_BROWSER_TEST_F(WebNotificationTrayTest, WebNotificationPopupBubble) {
 
 using message_center::NotificationList;
 
-// Flaky, see http://crbug.com/222500 .
-IN_PROC_BROWSER_TEST_F(WebNotificationTrayTest,
-                       DISABLED_ManyMessageCenterNotifications) {
-  scoped_ptr<WebNotificationTray> tray(new WebNotificationTray(NULL));
-  message_center::MessageCenter* message_center = tray->message_center();
-
-  // Add the max visible notifications +1, ensure the correct visible number.
-  size_t notifications_to_add = kMaxVisibleMessageCenterNotifications + 1;
-  for (size_t i = 0; i < notifications_to_add; ++i) {
-    std::string id = base::StringPrintf("test_id%d", static_cast<int>(i));
-    std::string replace_id =
-        base::StringPrintf("replace_id%d", static_cast<int>(i));
-    AddNotification(id, replace_id);
-  }
-  bool shown = tray->message_center_tray_->ShowMessageCenterBubble();
-  EXPECT_TRUE(shown);
-  content::RunAllPendingInMessageLoop();
-  EXPECT_TRUE(tray->message_center_delegate_ != NULL);
-  EXPECT_EQ(notifications_to_add, message_center->NotificationCount());
-  EXPECT_EQ(kMaxVisibleMessageCenterNotifications,
-            tray->message_center_delegate_->NumMessageViewsForTest());
-}
-
 IN_PROC_BROWSER_TEST_F(WebNotificationTrayTest, ManyPopupNotifications) {
-  scoped_ptr<WebNotificationTray> tray(new WebNotificationTray(NULL));
+  scoped_ptr<WebNotificationTray> tray(new WebNotificationTray());
   message_center::MessageCenter* message_center = tray->message_center();
 
   // Add the max visible popup notifications +1, ensure the correct num visible.
@@ -213,46 +190,4 @@ IN_PROC_BROWSER_TEST_F(WebNotificationTrayTest, ManyPopupNotifications) {
   EXPECT_EQ(kMaxVisiblePopupNotifications, popups.size());
 }
 
-IN_PROC_BROWSER_TEST_F(WebNotificationTrayTest,
-                       ManuallyCloseMessageCenter) {
-  NotificationUIManager* manager = g_browser_process->notification_ui_manager();
-  MessageCenterNotificationManager* mc_manager =
-      static_cast<MessageCenterNotificationManager*>(manager);
-
-  WebNotificationTray* tray =
-      static_cast<WebNotificationTray*>(mc_manager->tray_.get());
-  ASSERT_TRUE(NULL != tray);
-
-  message_center::MessageCenter* message_center = tray->message_center();
-
-  bool shown = tray->message_center_tray_->ShowMessageCenterBubble();
-  EXPECT_TRUE(shown);
-  EXPECT_TRUE(message_center->IsMessageCenterVisible());
-
-  mc_manager->EnsureMessageCenterClosed();
-
-  EXPECT_FALSE(message_center->IsMessageCenterVisible());
-  if (NULL != tray->message_center_delegate_)
-    EXPECT_TRUE(tray->message_center_delegate_->GetWidget()->IsClosed());
-}
-
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
-#define MAYBE_StatusIconBehavior DISABLED_StatusIconBehavior
-#else
-#define MAYBE_StatusIconBehavior StatusIconBehavior
-#endif
-IN_PROC_BROWSER_TEST_F(WebNotificationTrayTest, MAYBE_StatusIconBehavior) {
-  scoped_ptr<WebNotificationTray> tray(new WebNotificationTray(NULL));
-
-  EXPECT_TRUE(tray->status_icon_ == NULL);
-  tray->OnMessageCenterTrayChanged();
-  base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(tray->status_icon_ == NULL);
-  AddNotification("test_id", "replace_id");
-  base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(tray->status_icon_ != NULL);
-  RemoveNotification("test_id");
-  base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(tray->status_icon_ == NULL);
-}
 }  // namespace message_center

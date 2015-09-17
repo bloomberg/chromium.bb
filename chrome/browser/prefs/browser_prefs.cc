@@ -37,7 +37,6 @@
 #include "chrome/browser/net/predictor.h"
 #include "chrome/browser/net/ssl_config_service_manager.h"
 #include "chrome/browser/notifications/extension_welcome_notification.h"
-#include "chrome/browser/notifications/message_center_notification_manager.h"
 #include "chrome/browser/notifications/notifier_state_tracker.h"
 #include "chrome/browser/pepper_flash_settings_manager.h"
 #include "chrome/browser/plugins/plugin_finder.h"
@@ -277,11 +276,6 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
 
 #if defined(ENABLE_EXTENSIONS)
   EasyUnlockService::RegisterPrefs(registry);
-#endif
-
-#if defined(ENABLE_NOTIFICATIONS) && !defined(OS_ANDROID)
-  // Android does not use the message center for notifications.
-  MessageCenterNotificationManager::RegisterPrefs(registry);
 #endif
 
 #if defined(ENABLE_PLUGINS)

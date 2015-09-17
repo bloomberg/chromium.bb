@@ -4,176 +4,26 @@
 
 #include "chrome/browser/ui/views/message_center/web_notification_tray.h"
 
-#include "base/i18n/number_formatting.h"
-#include "base/location.h"
-#include "base/prefs/pref_service.h"
-#include "base/single_thread_task_runner.h"
-#include "base/strings/string16.h"
-#include "base/strings/utf_string_conversions.h"
-#include "base/thread_task_runner_handle.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/status_icons/status_icon.h"
-#include "chrome/browser/status_icons/status_icon_menu_model.h"
-#include "chrome/browser/status_icons/status_tray.h"
-#include "chrome/common/pref_names.h"
-#include "chrome/grit/chromium_strings.h"
-#include "chrome/grit/generated_resources.h"
-#include "content/public/browser/notification_service.h"
-#include "grit/theme_resources.h"
-#include "ui/base/l10n/l10n_util.h"
-#include "ui/base/resource/resource_bundle.h"
-#include "ui/gfx/canvas.h"
-#include "ui/gfx/geometry/rect.h"
-#include "ui/gfx/geometry/size.h"
-#include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/screen.h"
 #include "ui/message_center/message_center_tray.h"
 #include "ui/message_center/message_center_tray_delegate.h"
 #include "ui/message_center/views/desktop_popup_alignment_delegate.h"
 #include "ui/message_center/views/message_popup_collection.h"
-#include "ui/strings/grit/ui_strings.h"
-#include "ui/views/widget/widget.h"
-
-#if defined(OS_LINUX)
-#include "base/environment.h"
-#include "base/nix/xdg_util.h"
-#endif
-
-namespace {
-
-// Tray constants
-const int kScreenEdgePadding = 2;
-
-// Number of pixels the message center is offset from the mouse.
-const int kMouseOffset = 5;
-
-// Menu commands
-const int kToggleQuietMode = 0;
-const int kEnableQuietModeHour = 1;
-const int kEnableQuietModeDay = 2;
-
-gfx::ImageSkia* GetIcon(int unread_count, bool is_quiet_mode) {
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  int resource_id = IDR_NOTIFICATION_TRAY_EMPTY;
-
-  if (unread_count) {
-    if (is_quiet_mode)
-      resource_id = IDR_NOTIFICATION_TRAY_DO_NOT_DISTURB_ATTENTION;
-    else
-      resource_id = IDR_NOTIFICATION_TRAY_ATTENTION;
-  } else if (is_quiet_mode) {
-    resource_id = IDR_NOTIFICATION_TRAY_DO_NOT_DISTURB_EMPTY;
-  }
-
-  return rb.GetImageSkiaNamed(resource_id);
-}
-
-bool CanDestroyStatusIcon() {
-#if defined(OS_LINUX)
-  // Avoid creating multiple system tray icons on KDE4 and newer versions of KDE
-  // because the OS does not support removing system tray icons.
-  // TODO(pkotwicz): This is a hack for the sake of M40. Fix this properly.
-  scoped_ptr<base::Environment> env(base::Environment::Create());
-  base::nix::DesktopEnvironment desktop_environment =
-      base::nix::GetDesktopEnvironment(env.get());
-  return desktop_environment != base::nix::DESKTOP_ENVIRONMENT_KDE4;
-#else
-  return true;
-#endif
-}
-
-}  // namespace
 
 namespace message_center {
 
-namespace internal {
-
-// Gets the position of the taskbar from the work area bounds. Returns
-// ALIGNMENT_NONE if position cannot be found.
-Alignment GetTaskbarAlignment() {
-  gfx::Screen* screen = gfx::Screen::GetNativeScreen();
-  // TODO(dewittj): It's possible GetPrimaryDisplay is wrong.
-  gfx::Rect screen_bounds = screen->GetPrimaryDisplay().bounds();
-  gfx::Rect work_area = screen->GetPrimaryDisplay().work_area();
-  work_area.Inset(kScreenEdgePadding, kScreenEdgePadding);
-
-  // Comparing the work area to the screen bounds gives us the location of the
-  // taskbar.  If the work area is exactly the same as the screen bounds,
-  // we are unable to locate the taskbar so we say we don't know it's alignment.
-  if (work_area.height() < screen_bounds.height()) {
-    if (work_area.y() > screen_bounds.y())
-      return ALIGNMENT_TOP;
-    return ALIGNMENT_BOTTOM;
-  }
-  if (work_area.width() < screen_bounds.width()) {
-    if (work_area.x() > screen_bounds.x())
-      return ALIGNMENT_LEFT;
-    return ALIGNMENT_RIGHT;
-  }
-
-  return ALIGNMENT_NONE;
-}
-
-gfx::Point GetClosestCorner(const gfx::Rect& rect, const gfx::Point& query) {
-  gfx::Point center_point = rect.CenterPoint();
-  gfx::Point rv;
-
-  if (query.x() > center_point.x())
-    rv.set_x(rect.right());
-  else
-    rv.set_x(rect.x());
-
-  if (query.y() > center_point.y())
-    rv.set_y(rect.bottom());
-  else
-    rv.set_y(rect.y());
-
-  return rv;
-}
-
-// Gets the corner of the screen where the message center should pop up.
-Alignment GetAnchorAlignment(const gfx::Rect& work_area, gfx::Point corner) {
-  gfx::Point center = work_area.CenterPoint();
-
-  Alignment anchor_alignment =
-      center.y() > corner.y() ? ALIGNMENT_TOP : ALIGNMENT_BOTTOM;
-  anchor_alignment =
-      (Alignment)(anchor_alignment |
-                  (center.x() > corner.x() ? ALIGNMENT_LEFT : ALIGNMENT_RIGHT));
-
-  return anchor_alignment;
-}
-
-}  // namespace internal
-
 MessageCenterTrayDelegate* CreateMessageCenterTray() {
-  return new WebNotificationTray(g_browser_process->local_state());
+  return new WebNotificationTray();
 }
 
-WebNotificationTray::WebNotificationTray(PrefService* local_state)
-    : message_center_delegate_(NULL),
-      status_icon_(NULL),
-      status_icon_menu_(NULL),
-      should_update_tray_content_(true) {
+WebNotificationTray::WebNotificationTray() {
   message_center_tray_.reset(
       new MessageCenterTray(this, g_browser_process->message_center()));
-  last_quiet_mode_state_ = message_center()->IsQuietMode();
   alignment_delegate_.reset(new message_center::DesktopPopupAlignmentDelegate);
   popup_collection_.reset(new message_center::MessagePopupCollection(
       NULL, message_center(), message_center_tray_.get(),
       alignment_delegate_.get()));
-
-#if defined(OS_WIN)
-  // |local_state| can be NULL in tests.
-  if (local_state) {
-    did_force_tray_visible_.reset(new BooleanPrefMember());
-    did_force_tray_visible_->Init(prefs::kMessageCenterForcedOnTaskbar,
-                                  local_state);
-  }
-#endif
-  title_ = l10n_util::GetStringFUTF16(
-      IDS_MESSAGE_CENTER_FOOTER_WITH_PRODUCT_TITLE,
-      l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME));
 }
 
 WebNotificationTray::~WebNotificationTray() {
@@ -181,7 +31,6 @@ WebNotificationTray::~WebNotificationTray() {
   // problems.
   popup_collection_.reset();
   message_center_tray_.reset();
-  DestroyStatusIcon();
 }
 
 message_center::MessageCenter* WebNotificationTray::message_center() {
@@ -200,37 +49,16 @@ void WebNotificationTray::HidePopups() {
 }
 
 bool WebNotificationTray::ShowMessageCenter() {
-  message_center_delegate_ =
-      new MessageCenterWidgetDelegate(this,
-                                      message_center_tray_.get(),
-                                      false,  // settings initally invisible
-                                      GetPositionInfo(),
-                                      title_);
-
-  return true;
+  // Message center not available on Windows/Linux.
+  return false;
 }
 
 void WebNotificationTray::HideMessageCenter() {
-  if (message_center_delegate_) {
-    views::Widget* widget = message_center_delegate_->GetWidget();
-    if (widget)
-      widget->Close();
-  }
 }
 
 bool WebNotificationTray::ShowNotifierSettings() {
-  if (message_center_delegate_) {
-    message_center_delegate_->SetSettingsVisible(true);
-    return true;
-  }
-  message_center_delegate_ =
-      new MessageCenterWidgetDelegate(this,
-                                      message_center_tray_.get(),
-                                      true,  // settings initally visible
-                                      GetPositionInfo(),
-                                      title_);
-
-  return true;
+  // Message center settings not available on Windows/Linux.
+  return false;
 }
 
 bool WebNotificationTray::IsContextMenuEnabled() const {
@@ -240,192 +68,10 @@ bool WebNotificationTray::IsContextMenuEnabled() const {
 }
 
 void WebNotificationTray::OnMessageCenterTrayChanged() {
-  if (status_icon_) {
-    bool quiet_mode_state = message_center()->IsQuietMode();
-    if (last_quiet_mode_state_ != quiet_mode_state) {
-      last_quiet_mode_state_ = quiet_mode_state;
-
-      // Quiet mode has changed, update the quiet mode menu.
-      status_icon_menu_->SetCommandIdChecked(kToggleQuietMode,
-                                             quiet_mode_state);
-    }
-  } else if (message_center()->NotificationCount() == 0) {
-    // If there's no existing status icon and we still don't have any
-    // notifications to display, nothing needs to be done.
-    return;
-  }
-
-  // See the comments in ash/system/web_notification/web_notification_tray.cc
-  // for why PostTask.
-  should_update_tray_content_ = true;
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::Bind(&WebNotificationTray::UpdateStatusIcon, AsWeakPtr()));
-}
-
-void WebNotificationTray::OnStatusIconClicked() {
-  // TODO(dewittj): It's possible GetNativeScreen is wrong for win-aura.
-  gfx::Screen* screen = gfx::Screen::GetNativeScreen();
-  mouse_click_point_ = screen->GetCursorScreenPoint();
-  message_center_tray_->ToggleMessageCenterBubble();
-}
-
-void WebNotificationTray::ExecuteCommand(int command_id, int event_flags) {
-  if (command_id == kToggleQuietMode) {
-    bool in_quiet_mode = message_center()->IsQuietMode();
-    message_center()->SetQuietMode(!in_quiet_mode);
-    return;
-  }
-  base::TimeDelta expires_in = command_id == kEnableQuietModeDay
-                                   ? base::TimeDelta::FromDays(1)
-                                   : base::TimeDelta::FromHours(1);
-  message_center()->EnterQuietModeWithExpire(expires_in);
-}
-
-void WebNotificationTray::UpdateStatusIcon() {
-  if (!should_update_tray_content_)
-    return;
-  should_update_tray_content_ = false;
-
-  int unread_notifications = message_center()->UnreadNotificationCount();
-
-  base::string16 tool_tip;
-  if (unread_notifications > 0) {
-    base::string16 str_unread_count = base::FormatNumber(unread_notifications);
-    tool_tip = l10n_util::GetStringFUTF16(IDS_MESSAGE_CENTER_TOOLTIP_UNREAD,
-                                          str_unread_count);
-  } else {
-    tool_tip = l10n_util::GetStringUTF16(IDS_MESSAGE_CENTER_TOOLTIP);
-  }
-
-  if (message_center()->GetVisibleNotifications().empty() &&
-      CanDestroyStatusIcon()) {
-    DestroyStatusIcon();
-    return;
-  }
-
-  gfx::ImageSkia* icon_image = GetIcon(
-      unread_notifications,
-      message_center()->IsQuietMode());
-
-  if (status_icon_) {
-    status_icon_->SetImage(*icon_image);
-    status_icon_->SetToolTip(tool_tip);
-    return;
-  }
-
-  CreateStatusIcon(*icon_image, tool_tip);
-}
-
-void WebNotificationTray::SendHideMessageCenter() {
-  message_center_tray_->HideMessageCenterBubble();
-}
-
-void WebNotificationTray::MarkMessageCenterHidden() {
-  if (message_center_delegate_) {
-    message_center_tray_->MarkMessageCenterHidden();
-    message_center_delegate_ = NULL;
-  }
-}
-
-PositionInfo WebNotificationTray::GetPositionInfo() {
-  PositionInfo pos_info;
-
-  gfx::Screen* screen = gfx::Screen::GetNativeScreen();
-  gfx::Rect work_area = screen->GetPrimaryDisplay().work_area();
-  work_area.Inset(kScreenEdgePadding, kScreenEdgePadding);
-
-  gfx::Point corner = internal::GetClosestCorner(work_area, mouse_click_point_);
-
-  pos_info.taskbar_alignment = internal::GetTaskbarAlignment();
-
-  // We assume the taskbar is either at the top or at the bottom if we are not
-  // able to find it.
-  if (pos_info.taskbar_alignment == ALIGNMENT_NONE) {
-    if (mouse_click_point_.y() > corner.y())
-      pos_info.taskbar_alignment = ALIGNMENT_TOP;
-    else
-      pos_info.taskbar_alignment = ALIGNMENT_BOTTOM;
-  }
-
-  pos_info.message_center_alignment =
-      internal::GetAnchorAlignment(work_area, corner);
-
-  pos_info.inital_anchor_point = corner;
-  pos_info.max_height = work_area.height();
-
-  if (work_area.Contains(mouse_click_point_)) {
-    // Message center is in the work area. So position it few pixels above the
-    // mouse click point if alignemnt is towards bottom and few pixels below if
-    // alignment is towards top.
-    pos_info.inital_anchor_point.set_y(
-        mouse_click_point_.y() +
-        (pos_info.message_center_alignment & ALIGNMENT_BOTTOM ? -kMouseOffset
-                                                              : kMouseOffset));
-
-    // Subtract the distance between mouse click point and the closest
-    // (insetted) edge from the max height to show the message center within the
-    // (insetted) work area bounds. Also subtract the offset from the mouse
-    // click point we added earlier.
-    pos_info.max_height -=
-        std::abs(mouse_click_point_.y() - corner.y()) + kMouseOffset;
-  }
-  return pos_info;
 }
 
 MessageCenterTray* WebNotificationTray::GetMessageCenterTray() {
   return message_center_tray_.get();
-}
-
-void WebNotificationTray::CreateStatusIcon(const gfx::ImageSkia& image,
-                                           const base::string16& tool_tip) {
-  if (status_icon_)
-    return;
-
-  StatusTray* status_tray = g_browser_process->status_tray();
-  if (!status_tray)
-    return;
-
-  status_icon_ = status_tray->CreateStatusIcon(
-      StatusTray::NOTIFICATION_TRAY_ICON, image, tool_tip);
-  if (!status_icon_)
-    return;
-
-  status_icon_->AddObserver(this);
-  AddQuietModeMenu(status_icon_);
-}
-
-void WebNotificationTray::DestroyStatusIcon() {
-  if (!status_icon_)
-    return;
-
-  status_icon_->RemoveObserver(this);
-  StatusTray* status_tray = g_browser_process->status_tray();
-  if (status_tray)
-    status_tray->RemoveStatusIcon(status_icon_);
-  status_icon_menu_ = NULL;
-  status_icon_ = NULL;
-}
-
-void WebNotificationTray::AddQuietModeMenu(StatusIcon* status_icon) {
-  DCHECK(status_icon);
-
-  scoped_ptr<StatusIconMenuModel> menu(new StatusIconMenuModel(this));
-  menu->AddCheckItem(kToggleQuietMode,
-                     l10n_util::GetStringUTF16(IDS_MESSAGE_CENTER_QUIET_MODE));
-  menu->SetCommandIdChecked(kToggleQuietMode, message_center()->IsQuietMode());
-  menu->AddItem(kEnableQuietModeHour,
-                l10n_util::GetStringUTF16(IDS_MESSAGE_CENTER_QUIET_MODE_1HOUR));
-  menu->AddItem(kEnableQuietModeDay,
-                l10n_util::GetStringUTF16(IDS_MESSAGE_CENTER_QUIET_MODE_1DAY));
-
-  status_icon_menu_ = menu.get();
-  status_icon->SetContextMenu(menu.Pass());
-}
-
-MessageCenterWidgetDelegate*
-WebNotificationTray::GetMessageCenterWidgetDelegateForTest() {
-  return message_center_delegate_;
 }
 
 }  // namespace message_center

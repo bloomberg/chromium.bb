@@ -11,7 +11,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
-#include "base/prefs/pref_member.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/notifications/google_now_notification_stats_collector.h"
@@ -26,8 +25,6 @@
 
 class MessageCenterSettingsController;
 class Notification;
-class PrefRegistrySimple;
-class PrefService;
 class Profile;
 class ProfileNotification;
 
@@ -44,12 +41,8 @@ class MessageCenterNotificationManager
  public:
   MessageCenterNotificationManager(
       message_center::MessageCenter* message_center,
-      PrefService* local_state,
       scoped_ptr<message_center::NotifierSettingsProvider> settings_provider);
   ~MessageCenterNotificationManager() override;
-
-  // Registers preferences.
-  static void RegisterPrefs(PrefRegistrySimple* registry);
 
   // NotificationUIManager
   void Add(const Notification& notification, Profile* profile) override;
@@ -73,16 +66,6 @@ class MessageCenterNotificationManager
   void OnNotificationUpdated(const std::string& notification_id) override;
 
   void EnsureMessageCenterClosed();
-
-#if defined(OS_WIN)
-  // Called when the pref changes for the first run balloon. The first run
-  // balloon is only displayed on Windows, since the visibility of the tray
-  // icon is limited.
-  void DisplayFirstRunBalloon();
-
-  void SetFirstRunTimeoutForTest(base::TimeDelta timeout);
-  bool FirstRunTimerIsActive() const;
-#endif
 
   // Takes ownership of |delegate|.
   void SetMessageCenterTrayDelegateForTest(
@@ -123,25 +106,6 @@ class MessageCenterNotificationManager
   // Chorme Notification Center.
   std::string GetExtensionTakingOverNotifications(Profile* profile);
 
-#if defined(OS_WIN)
-  // This function is run on update to ensure that the notification balloon is
-  // shown only when there are no popups present.
-  void CheckFirstRunTimer();
-
-  // |first_run_pref_| is used to keep track of whether we've ever shown the
-  // first run balloon before, even across restarts.
-  BooleanPrefMember first_run_pref_;
-
-  // The timer after which we will show the first run balloon.  This timer is
-  // restarted every time the message center is closed and every time the last
-  // popup disappears from the screen.
-  base::OneShotTimer<MessageCenterNotificationManager> first_run_balloon_timer_;
-
-  // The first-run balloon will be shown |first_run_idle_timeout_| after all
-  // popups go away and the user has notifications in the message center.
-  base::TimeDelta first_run_idle_timeout_;
-#endif
-
   scoped_ptr<message_center::NotifierSettingsProvider> settings_provider_;
 
   // To own the blockers.
@@ -154,11 +118,6 @@ class MessageCenterNotificationManager
 
   // Keeps track of notifications specific to Google Now for UMA purposes.
   GoogleNowNotificationStatsCollector google_now_stats_collector_;
-
-#if defined(OS_WIN)
-  // Provides weak pointers for the purpose of the first run timer.
-  base::WeakPtrFactory<MessageCenterNotificationManager> weak_factory_;
-#endif
 
   DISALLOW_COPY_AND_ASSIGN(MessageCenterNotificationManager);
 };

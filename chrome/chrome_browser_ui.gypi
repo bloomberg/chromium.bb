@@ -695,11 +695,8 @@
       'browser/ui/views/frame/desktop_browser_frame_aura.h',
       'browser/ui/views/message_center/message_center_frame_view.cc',
       'browser/ui/views/message_center/message_center_frame_view.h',
-      'browser/ui/views/message_center/message_center_widget_delegate.cc',
-      'browser/ui/views/message_center/message_center_widget_delegate.h',
       'browser/ui/views/message_center/web_notification_tray.cc',
       'browser/ui/views/message_center/web_notification_tray.h',
-      'browser/ui/views/message_center/web_notification_tray_win.cc',
     ],
     # ChromeOS-only sources that don't end in _chromeos or live in a chromeos
     # directory.

@@ -714,10 +714,6 @@ extern const char kDevicePolicyRefreshRate[];
 extern const char kFactoryResetRequested[];
 extern const char kDebuggingFeaturesRequested[];
 
-extern const char kMessageCenterShowedFirstRunBalloon[];
-extern const char kMessageCenterShowIcon[];
-extern const char kMessageCenterForcedOnTaskbar[];
-
 #if defined(OS_CHROMEOS)
 extern const char kResolveDeviceTimezoneByGeolocation[];
 #endif  // defined(OS_CHROMEOS)

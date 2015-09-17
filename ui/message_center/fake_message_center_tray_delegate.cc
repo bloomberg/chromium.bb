@@ -10,11 +10,8 @@
 namespace message_center {
 
 FakeMessageCenterTrayDelegate::FakeMessageCenterTrayDelegate(
-    MessageCenter* message_center,
-    base::Closure quit_closure)
-    : tray_(new MessageCenterTray(this, message_center)),
-      quit_closure_(quit_closure),
-      displayed_first_run_balloon_(false) {}
+    MessageCenter* message_center)
+    : tray_(new MessageCenterTray(this, message_center)) {}
 
 FakeMessageCenterTrayDelegate::~FakeMessageCenterTrayDelegate() {
 }
@@ -46,11 +43,6 @@ bool FakeMessageCenterTrayDelegate::IsContextMenuEnabled() const {
 
 MessageCenterTray* FakeMessageCenterTrayDelegate::GetMessageCenterTray() {
   return tray_.get();
-}
-
-void FakeMessageCenterTrayDelegate::DisplayFirstRunBalloon() {
-  displayed_first_run_balloon_ = true;
-  base::MessageLoop::current()->PostTask(FROM_HERE, quit_closure_);
 }
 
 }  // namespace message_center
