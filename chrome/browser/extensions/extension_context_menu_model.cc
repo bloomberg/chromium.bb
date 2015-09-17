@@ -28,7 +28,6 @@
 #include "chrome/grit/theme_resources.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/context_menu_params.h"
-#include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/management_policy.h"
@@ -41,14 +40,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
 
-using content::OpenURLParams;
-using content::Referrer;
-using content::WebContents;
-using extensions::Extension;
-using extensions::ExtensionActionAPI;
-using extensions::ExtensionPrefs;
-using extensions::MenuItem;
-using extensions::MenuManager;
+namespace extensions {
 
 namespace {
 
@@ -80,11 +72,10 @@ int GetVisibilityStringId(
     ExtensionContextMenuModel::ButtonVisibility button_visibility) {
   DCHECK(profile);
   int string_id = -1;
-  if (!extensions::FeatureSwitch::extension_action_redesign()->IsEnabled()) {
+  if (!FeatureSwitch::extension_action_redesign()->IsEnabled()) {
     // Without the toolbar redesign, we only show the visibility toggle for
     // browser actions, and only give the option to hide.
-    if (extensions::ExtensionActionManager::Get(profile)->GetBrowserAction(
-            *extension)) {
+    if (ExtensionActionManager::Get(profile)->GetBrowserAction(*extension)) {
       string_id = IDS_EXTENSIONS_HIDE_BUTTON;
     }
   } else {
@@ -110,11 +101,30 @@ int GetVisibilityStringId(
 // policy.
 bool IsExtensionRequiredByPolicy(const Extension* extension,
                                  Profile* profile) {
-  extensions::ManagementPolicy* policy =
-      extensions::ExtensionSystem::Get(profile)->management_policy();
+  ManagementPolicy* policy = ExtensionSystem::Get(profile)->management_policy();
   return !policy->UserMayModifySettings(extension, nullptr) ||
          policy->MustRemainInstalled(extension, nullptr);
 }
+
+// A stub for the uninstall dialog.
+// TODO(devlin): Ideally, we would just have the uninstall dialog take a
+// base::Callback, but that's a bunch of churn.
+class StubUninstallDialogDelegate : public ExtensionUninstallDialog::Delegate {
+ public:
+  StubUninstallDialogDelegate() {}
+
+ private:
+  // This class handles its own lifetime.
+  ~StubUninstallDialogDelegate() override {}
+
+  // ExtensionUninstallDialog::Delegate:
+  void OnExtensionUninstallDialogClosed(bool did_start_uninstall,
+                                        const base::string16& error) override {
+    delete this;
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(StubUninstallDialogDelegate);
+};
 
 }  // namespace
 
@@ -125,8 +135,7 @@ ExtensionContextMenuModel::ExtensionContextMenuModel(
     PopupDelegate* delegate)
     : SimpleMenuModel(this),
       extension_id_(extension->id()),
-      is_component_(extensions::Manifest::IsComponentLocation(
-                        extension->location())),
+      is_component_(Manifest::IsComponentLocation(extension->location())),
       browser_(browser),
       profile_(browser->profile()),
       delegate_(delegate),
@@ -163,16 +172,15 @@ bool ExtensionContextMenuModel::IsCommandIdEnabled(int command_id) const {
       command_id <= IDC_EXTENSIONS_CONTEXT_CUSTOM_LAST) {
     return extension_items_->IsCommandIdEnabled(command_id);
   } else if (command_id == CONFIGURE) {
-    return extensions::OptionsPageInfo::HasOptionsPage(extension);
+    return OptionsPageInfo::HasOptionsPage(extension);
   } else if (command_id == NAME) {
     // The NAME links to the Homepage URL. If the extension doesn't have a
     // homepage, we just disable this menu item. We also disable for component
     // extensions, because it doesn't make sense to link to a webstore page or
     // chrome://extensions.
-    return extensions::ManifestURL::GetHomepageURL(extension).is_valid() &&
-        !is_component_;
+    return ManifestURL::GetHomepageURL(extension).is_valid() && !is_component_;
   } else if (command_id == INSPECT_POPUP) {
-    WebContents* web_contents = GetActiveWebContents();
+    content::WebContents* web_contents = GetActiveWebContents();
     if (!web_contents)
       return false;
 
@@ -197,7 +205,7 @@ void ExtensionContextMenuModel::ExecuteCommand(int command_id,
 
   if (command_id >= IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST &&
       command_id <= IDC_EXTENSIONS_CONTEXT_CUSTOM_LAST) {
-    WebContents* web_contents =
+    content::WebContents* web_contents =
         browser_->tab_strip_model()->GetActiveWebContents();
     DCHECK(extension_items_);
     extension_items_->ExecuteCommand(
@@ -207,23 +215,23 @@ void ExtensionContextMenuModel::ExecuteCommand(int command_id,
 
   switch (command_id) {
     case NAME: {
-      OpenURLParams params(extensions::ManifestURL::GetHomepageURL(extension),
-                           Referrer(), NEW_FOREGROUND_TAB,
-                           ui::PAGE_TRANSITION_LINK, false);
+      content::OpenURLParams params(ManifestURL::GetHomepageURL(extension),
+                                    content::Referrer(), NEW_FOREGROUND_TAB,
+                                    ui::PAGE_TRANSITION_LINK, false);
       browser_->OpenURL(params);
       break;
     }
     case ALWAYS_RUN: {
-      WebContents* web_contents = GetActiveWebContents();
+      content::WebContents* web_contents = GetActiveWebContents();
       if (web_contents) {
-        extensions::ActiveScriptController::GetForWebContents(web_contents)
+        ActiveScriptController::GetForWebContents(web_contents)
             ->AlwaysRunOnVisibleOrigin(extension);
       }
       break;
     }
     case CONFIGURE:
-      DCHECK(extensions::OptionsPageInfo::HasOptionsPage(extension));
-      extensions::ExtensionTabUtil::OpenOptionsPage(extension, browser_);
+      DCHECK(OptionsPageInfo::HasOptionsPage(extension));
+      ExtensionTabUtil::OpenOptionsPage(extension, browser_);
       break;
     case TOGGLE_VISIBILITY: {
       ExtensionActionAPI* api = ExtensionActionAPI::Get(profile_);
@@ -232,13 +240,12 @@ void ExtensionContextMenuModel::ExecuteCommand(int command_id,
       break;
     }
     case UNINSTALL: {
-      AddRef();  // Balanced in OnExtensionUninstallDialogClosed().
-      extension_uninstall_dialog_.reset(
-          extensions::ExtensionUninstallDialog::Create(
-              profile_, browser_->window()->GetNativeWindow(), this));
+      extension_uninstall_dialog_.reset(ExtensionUninstallDialog::Create(
+          profile_, browser_->window()->GetNativeWindow(),
+          new StubUninstallDialogDelegate()));
       extension_uninstall_dialog_->ConfirmUninstall(
-          extension, extensions::UNINSTALL_REASON_USER_INITIATED,
-          extensions::UNINSTALL_SOURCE_TOOLBAR_CONTEXT_MENU);
+          extension, UNINSTALL_REASON_USER_INITIATED,
+          UNINSTALL_SOURCE_TOOLBAR_CONTEXT_MENU);
       break;
     }
     case MANAGE: {
@@ -255,20 +262,14 @@ void ExtensionContextMenuModel::ExecuteCommand(int command_id,
   }
 }
 
-void ExtensionContextMenuModel::OnExtensionUninstallDialogClosed(
-    bool did_start_uninstall,
-    const base::string16& error) {
-  Release();
-}
-
 ExtensionContextMenuModel::~ExtensionContextMenuModel() {}
 
 void ExtensionContextMenuModel::InitMenu(const Extension* extension,
                                          ButtonVisibility button_visibility) {
   DCHECK(extension);
 
-  extensions::ExtensionActionManager* extension_action_manager =
-      extensions::ExtensionActionManager::Get(profile_);
+  ExtensionActionManager* extension_action_manager =
+      ExtensionActionManager::Get(profile_);
   extension_action_ = extension_action_manager->GetBrowserAction(*extension);
   if (!extension_action_) {
     extension_action_ = extension_action_manager->GetPageAction(*extension);
@@ -278,7 +279,7 @@ void ExtensionContextMenuModel::InitMenu(const Extension* extension,
     action_type_ = BROWSER_ACTION;
   }
 
-  extension_items_.reset(new extensions::ContextMenuMatcher(
+  extension_items_.reset(new ContextMenuMatcher(
       profile_, this, this, base::Bind(MenuItemMatchesAction, action_type_)));
 
   std::string extension_name = extension->name();
@@ -293,14 +294,14 @@ void ExtensionContextMenuModel::InitMenu(const Extension* extension,
   // injections if there is an active action for this extension. Note that this
   // will add it to *all* extension action context menus, not just the one
   // attached to the script injection request icon, but that's okay.
-  WebContents* web_contents = GetActiveWebContents();
+  content::WebContents* web_contents = GetActiveWebContents();
   if (web_contents &&
-      extensions::ActiveScriptController::GetForWebContents(web_contents)
+      ActiveScriptController::GetForWebContents(web_contents)
           ->WantsToRun(extension)) {
     AddItemWithStringId(ALWAYS_RUN, IDS_EXTENSIONS_ALWAYS_RUN);
   }
 
-  if (!is_component_ || extensions::OptionsPageInfo::HasOptionsPage(extension))
+  if (!is_component_ || OptionsPageInfo::HasOptionsPage(extension))
     AddItemWithStringId(CONFIGURE, IDS_EXTENSIONS_OPTIONS_MENU_ITEM);
 
   if (!is_component_) {
@@ -331,9 +332,8 @@ void ExtensionContextMenuModel::InitMenu(const Extension* extension,
 }
 
 const Extension* ExtensionContextMenuModel::GetExtension() const {
-  return extensions::ExtensionRegistry::Get(profile_)
-      ->enabled_extensions()
-      .GetByID(extension_id_);
+  return ExtensionRegistry::Get(profile_)->enabled_extensions().GetByID(
+      extension_id_);
 }
 
 void ExtensionContextMenuModel::AppendExtensionItems() {
@@ -356,3 +356,5 @@ void ExtensionContextMenuModel::AppendExtensionItems() {
 content::WebContents* ExtensionContextMenuModel::GetActiveWebContents() const {
   return browser_->tab_strip_model()->GetActiveWebContents();
 }
+
+}  // namespace extensions

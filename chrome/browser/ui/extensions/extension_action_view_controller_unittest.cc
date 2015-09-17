@@ -106,9 +106,8 @@ TEST_F(ToolbarActionsBarRedesignUnitTest, ExtensionActionContextMenu) {
                                     int expected_visibility_string) {
     ui::SimpleMenuModel* context_menu =
         static_cast<ui::SimpleMenuModel*>(action->GetContextMenu());
-    int visibility_index =
-        context_menu->GetIndexOfCommandId(
-            ExtensionContextMenuModel::TOGGLE_VISIBILITY);
+    int visibility_index = context_menu->GetIndexOfCommandId(
+        extensions::ExtensionContextMenuModel::TOGGLE_VISIBILITY);
     ASSERT_GE(visibility_index, 0);
     base::string16 visibility_label =
         context_menu->GetLabelAt(visibility_index);

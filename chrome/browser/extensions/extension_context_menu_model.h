@@ -23,14 +23,10 @@ namespace extensions {
 class Extension;
 class ContextMenuMatcher;
 class ExtensionContextMenuModelTest;
-}
 
 // The context menu model for extension icons.
-class ExtensionContextMenuModel
-    : public base::RefCounted<ExtensionContextMenuModel>,
-      public ui::SimpleMenuModel,
-      public ui::SimpleMenuModel::Delegate,
-      public extensions::ExtensionUninstallDialog::Delegate {
+class ExtensionContextMenuModel : public ui::SimpleMenuModel,
+                                  public ui::SimpleMenuModel::Delegate {
  public:
   enum MenuEntries {
     NAME = 0,
@@ -72,15 +68,15 @@ class ExtensionContextMenuModel
   // prefs::kExtensionsUIDeveloperMode is enabled then a menu item
   // will be shown for "Inspect Popup" which, when selected, will cause
   // ShowPopupForDevToolsWindow() to be called on |delegate|.
-  ExtensionContextMenuModel(const extensions::Extension* extension,
+  ExtensionContextMenuModel(const Extension* extension,
                             Browser* browser,
                             ButtonVisibility visibility,
                             PopupDelegate* delegate);
+  ~ExtensionContextMenuModel() override;
 
   // Create a menu model for the given extension, without support
   // for the "Inspect Popup" command.
-  ExtensionContextMenuModel(const extensions::Extension* extension,
-                            Browser* browser);
+  ExtensionContextMenuModel(const Extension* extension, Browser* browser);
 
   // SimpleMenuModel::Delegate overrides.
   bool IsCommandIdChecked(int command_id) const override;
@@ -89,22 +85,14 @@ class ExtensionContextMenuModel
                                   ui::Accelerator* accelerator) override;
   void ExecuteCommand(int command_id, int event_flags) override;
 
-  // ExtensionUninstallDialog::Delegate:
-  void OnExtensionUninstallDialogClosed(bool did_start_uninstall,
-                                        const base::string16& error) override;
-
  private:
-  friend class base::RefCounted<ExtensionContextMenuModel>;
-  friend class extensions::ExtensionContextMenuModelTest;
+  friend class ExtensionContextMenuModelTest;
 
-  ~ExtensionContextMenuModel() override;
-
-  void InitMenu(const extensions::Extension* extension,
-                ButtonVisibility button_visibility);
+  void InitMenu(const Extension* extension, ButtonVisibility button_visibility);
 
   // Gets the extension we are displaying the menu for. Returns NULL if the
   // extension has been uninstalled and no longer exists.
-  const extensions::Extension* GetExtension() const;
+  const Extension* GetExtension() const;
 
   // Returns the active web contents.
   content::WebContents* GetActiveWebContents() const;
@@ -133,15 +121,17 @@ class ExtensionContextMenuModel
   ActionType action_type_;
 
   // Keeps track of the extension uninstall dialog.
-  scoped_ptr<extensions::ExtensionUninstallDialog> extension_uninstall_dialog_;
+  scoped_ptr<ExtensionUninstallDialog> extension_uninstall_dialog_;
 
   // Menu matcher for context menu items specified by the extension.
-  scoped_ptr<extensions::ContextMenuMatcher> extension_items_;
+  scoped_ptr<ContextMenuMatcher> extension_items_;
 
   // Number of extension items in this menu. Used for testing.
   int extension_items_count_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionContextMenuModel);
 };
+
+}  // namespace extensions
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_CONTEXT_MENU_MODEL_H_

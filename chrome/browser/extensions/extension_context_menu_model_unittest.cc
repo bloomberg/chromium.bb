@@ -63,11 +63,10 @@ scoped_ptr<Browser> CreateBrowser(Profile* profile) {
 
 // Returns the index of the given |command_id| in the given |menu|, or -1 if it
 // is not found.
-int GetCommandIndex(const scoped_refptr<ExtensionContextMenuModel> menu,
-                         int command_id) {
-  int item_count = menu->GetItemCount();
+int GetCommandIndex(const ExtensionContextMenuModel& menu, int command_id) {
+  int item_count = menu.GetItemCount();
   for (int i = 0; i < item_count; ++i) {
-    if (menu->GetCommandIdAt(i) == command_id)
+    if (menu.GetCommandIdAt(i) == command_id)
       return i;
   }
   return -1;
@@ -92,10 +91,12 @@ class ExtensionContextMenuModelTest : public ExtensionServiceTestBase {
   // Returns the number of extension menu items that show up in |model|.
   // For this test, all the extension items have samel label
   // |kTestExtensionItemLabel|.
-  int CountExtensionItems(ExtensionContextMenuModel* model);
+  int CountExtensionItems(const ExtensionContextMenuModel& model);
 
  private:
   int cur_id_;
+
+  DISALLOW_COPY_AND_ASSIGN(ExtensionContextMenuModelTest);
 };
 
 ExtensionContextMenuModelTest::ExtensionContextMenuModelTest() : cur_id_(0) {
@@ -125,14 +126,14 @@ void ExtensionContextMenuModelTest::RefreshMenu(
 }
 
 int ExtensionContextMenuModelTest::CountExtensionItems(
-    ExtensionContextMenuModel* model) {
+    const ExtensionContextMenuModel& model) {
   base::string16 expected_label = base::ASCIIToUTF16(kTestExtensionItemLabel);
   int num_items_found = 0;
-  for (int i = 0; i < model->GetItemCount(); ++i) {
-    if (expected_label == model->GetLabelAt(i))
+  for (int i = 0; i < model.GetItemCount(); ++i) {
+    if (expected_label == model.GetLabelAt(i))
       ++num_items_found;
   }
-  EXPECT_EQ(num_items_found, model->extension_items_count_);
+  EXPECT_EQ(num_items_found, model.extension_items_count_);
   return num_items_found;
 }
 
@@ -151,14 +152,13 @@ TEST_F(ExtensionContextMenuModelTest, RequiredInstallationsDisablesItems) {
   service()->AddExtension(extension.get());
 
   scoped_ptr<Browser> browser = CreateBrowser(profile());
-  scoped_refptr<ExtensionContextMenuModel> menu(
-      new ExtensionContextMenuModel(extension.get(), browser.get()));
+  ExtensionContextMenuModel menu(extension.get(), browser.get());
 
   ExtensionSystem* system = ExtensionSystem::Get(profile());
   system->management_policy()->UnregisterAllProviders();
 
   // Uninstallation should be, by default, enabled.
-  EXPECT_TRUE(menu->IsCommandIdEnabled(ExtensionContextMenuModel::UNINSTALL));
+  EXPECT_TRUE(menu.IsCommandIdEnabled(ExtensionContextMenuModel::UNINSTALL));
 
   TestManagementPolicyProvider policy_provider(
       TestManagementPolicyProvider::PROHIBIT_MODIFY_STATUS);
@@ -166,13 +166,13 @@ TEST_F(ExtensionContextMenuModelTest, RequiredInstallationsDisablesItems) {
 
   // If there's a policy provider that requires the extension stay enabled, then
   // uninstallation should be disabled.
-  EXPECT_FALSE(menu->IsCommandIdEnabled(ExtensionContextMenuModel::UNINSTALL));
+  EXPECT_FALSE(menu.IsCommandIdEnabled(ExtensionContextMenuModel::UNINSTALL));
   int uninstall_index =
-      menu->GetIndexOfCommandId(ExtensionContextMenuModel::UNINSTALL);
+      menu.GetIndexOfCommandId(ExtensionContextMenuModel::UNINSTALL);
   // There should also be an icon to visually indicate why uninstallation is
   // forbidden.
   gfx::Image icon;
-  EXPECT_TRUE(menu->GetIconAt(uninstall_index, &icon));
+  EXPECT_TRUE(menu.GetIconAt(uninstall_index, &icon));
   EXPECT_FALSE(icon.IsEmpty());
 
   // Don't leave |policy_provider| dangling.
@@ -191,6 +191,9 @@ TEST_F(ExtensionContextMenuModelTest, ComponentExtensionContextMenu) {
                          .Set("browser_action", DictionaryBuilder().Pass())
                          .Build();
 
+  scoped_ptr<Browser> browser = CreateBrowser(profile());
+
+  {
   scoped_refptr<const Extension> extension =
       ExtensionBuilder().SetManifest(make_scoped_ptr(manifest->DeepCopy()))
                         .SetID(crx_file::id_util::GenerateId("component"))
@@ -198,38 +201,36 @@ TEST_F(ExtensionContextMenuModelTest, ComponentExtensionContextMenu) {
                         .Build();
   service()->AddExtension(extension.get());
 
-  scoped_ptr<Browser> browser = CreateBrowser(profile());
-
-  scoped_refptr<ExtensionContextMenuModel> menu(
-      new ExtensionContextMenuModel(extension.get(), browser.get()));
+  ExtensionContextMenuModel menu(extension.get(), browser.get());
 
   // A component extension's context menu should not include options for
   // managing extensions or removing it, and should only include an option for
   // the options page if the extension has one (which this one doesn't).
-  EXPECT_EQ(-1,
-            menu->GetIndexOfCommandId(ExtensionContextMenuModel::CONFIGURE));
-  EXPECT_EQ(-1,
-            menu->GetIndexOfCommandId(ExtensionContextMenuModel::UNINSTALL));
-  EXPECT_EQ(-1, menu->GetIndexOfCommandId(ExtensionContextMenuModel::MANAGE));
+  EXPECT_EQ(-1, menu.GetIndexOfCommandId(ExtensionContextMenuModel::CONFIGURE));
+  EXPECT_EQ(-1, menu.GetIndexOfCommandId(ExtensionContextMenuModel::UNINSTALL));
+  EXPECT_EQ(-1, menu.GetIndexOfCommandId(ExtensionContextMenuModel::MANAGE));
   // The "name" option should be present, but not enabled for component
   // extensions.
-  EXPECT_NE(-1, menu->GetIndexOfCommandId(ExtensionContextMenuModel::NAME));
-  EXPECT_FALSE(menu->IsCommandIdEnabled(ExtensionContextMenuModel::NAME));
+  EXPECT_NE(-1, menu.GetIndexOfCommandId(ExtensionContextMenuModel::NAME));
+  EXPECT_FALSE(menu.IsCommandIdEnabled(ExtensionContextMenuModel::NAME));
+  }
 
+  {
   // Check that a component extension with an options page does have the options
   // menu item, and it is enabled.
   manifest->SetString("options_page", "options_page.html");
-  extension =
-      ExtensionBuilder().SetManifest(manifest.Pass())
-                        .SetID(crx_file::id_util::GenerateId("component_opts"))
-                        .SetLocation(Manifest::COMPONENT)
-                        .Build();
-  menu = new ExtensionContextMenuModel(extension.get(), browser.get());
+  scoped_refptr<const Extension> extension =
+      ExtensionBuilder()
+          .SetManifest(manifest.Pass())
+          .SetID(crx_file::id_util::GenerateId("component_opts"))
+          .SetLocation(Manifest::COMPONENT)
+          .Build();
+  ExtensionContextMenuModel menu(extension.get(), browser.get());
   service()->AddExtension(extension.get());
   EXPECT_TRUE(extensions::OptionsPageInfo::HasOptionsPage(extension.get()));
-  EXPECT_NE(-1,
-            menu->GetIndexOfCommandId(ExtensionContextMenuModel::CONFIGURE));
-  EXPECT_TRUE(menu->IsCommandIdEnabled(ExtensionContextMenuModel::CONFIGURE));
+  EXPECT_NE(-1, menu.GetIndexOfCommandId(ExtensionContextMenuModel::CONFIGURE));
+  EXPECT_TRUE(menu.IsCommandIdEnabled(ExtensionContextMenuModel::CONFIGURE));
+  }
 }
 
 TEST_F(ExtensionContextMenuModelTest, ExtensionItemTest) {
@@ -250,45 +251,44 @@ TEST_F(ExtensionContextMenuModelTest, ExtensionItemTest) {
           &MenuManagerFactory::BuildServiceInstanceForTesting)));
   ASSERT_TRUE(manager);
 
-  scoped_refptr<ExtensionContextMenuModel> menu(
-      new ExtensionContextMenuModel(extension.get(), browser.get()));
+  ExtensionContextMenuModel menu(extension.get(), browser.get());
 
   // There should be no extension items yet.
-  EXPECT_EQ(0, CountExtensionItems(menu.get()));
+  EXPECT_EQ(0, CountExtensionItems(menu));
 
   // Add a browser action menu item for |extension| to |manager|.
-  AddContextItemAndRefreshModel(
-      manager, extension.get(), MenuItem::BROWSER_ACTION, menu.get());
+  AddContextItemAndRefreshModel(manager, extension.get(),
+                                MenuItem::BROWSER_ACTION, &menu);
 
   // Since |extension| has a page action, the browser action menu item should
   // not be present.
-  EXPECT_EQ(0, CountExtensionItems(menu.get()));
+  EXPECT_EQ(0, CountExtensionItems(menu));
 
   // Add a page action menu item and reset the context menu.
-  AddContextItemAndRefreshModel(
-      manager, extension.get(), MenuItem::PAGE_ACTION, menu.get());
+  AddContextItemAndRefreshModel(manager, extension.get(), MenuItem::PAGE_ACTION,
+                                &menu);
 
   // The page action item should be present because |extension| has a page
   // action.
-  EXPECT_EQ(1, CountExtensionItems(menu.get()));
+  EXPECT_EQ(1, CountExtensionItems(menu));
 
   // Create more page action items to test top level menu item limitations.
   for (int i = 0; i < api::context_menus::ACTION_MENU_TOP_LEVEL_LIMIT; ++i)
-    AddContextItemAndRefreshModel(
-        manager, extension.get(), MenuItem::PAGE_ACTION, menu.get());
+    AddContextItemAndRefreshModel(manager, extension.get(),
+                                  MenuItem::PAGE_ACTION, &menu);
 
   // The menu should only have a limited number of extension items, since they
   // are all top level items, and we limit the number of top level extension
   // items.
   EXPECT_EQ(api::context_menus::ACTION_MENU_TOP_LEVEL_LIMIT,
-            CountExtensionItems(menu.get()));
+            CountExtensionItems(menu));
 
-  AddContextItemAndRefreshModel(
-      manager, extension.get(), MenuItem::PAGE_ACTION, menu.get());
+  AddContextItemAndRefreshModel(manager, extension.get(), MenuItem::PAGE_ACTION,
+                                &menu);
 
   // Adding another top level item should not increase the count.
   EXPECT_EQ(api::context_menus::ACTION_MENU_TOP_LEVEL_LIMIT,
-            CountExtensionItems(menu.get()));
+            CountExtensionItems(menu));
 }
 
 // Test that the "show" and "hide" menu items appear correctly in the extension
@@ -311,12 +311,6 @@ TEST_F(ExtensionContextMenuModelTest, ExtensionContextMenuShowAndHide) {
 
   scoped_ptr<Browser> browser = CreateBrowser(profile());
 
-  scoped_refptr<ExtensionContextMenuModel> menu(
-      new ExtensionContextMenuModel(page_action.get(),
-                                    browser.get(),
-                                    ExtensionContextMenuModel::VISIBLE,
-                                    nullptr));
-
   // For laziness.
   const ExtensionContextMenuModel::MenuEntries visibility_command =
       ExtensionContextMenuModel::TOGGLE_VISIBILITY;
@@ -329,53 +323,59 @@ TEST_F(ExtensionContextMenuModelTest, ExtensionContextMenuShowAndHide) {
   base::string16 redesign_keep_string =
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_KEEP_BUTTON_IN_TOOLBAR);
 
-  int index = GetCommandIndex(menu, visibility_command);
-  // Without the toolbar redesign switch, page action menus shouldn't have a
-  // visibility option.
-  EXPECT_EQ(-1, index);
+  {
+    ExtensionContextMenuModel menu(page_action.get(), browser.get(),
+                                   ExtensionContextMenuModel::VISIBLE, nullptr);
 
-  menu = new ExtensionContextMenuModel(browser_action.get(),
-                                       browser.get(),
-                                       ExtensionContextMenuModel::VISIBLE,
-                                       nullptr);
-  index = GetCommandIndex(menu, visibility_command);
-  // Browser actions should have the visibility option.
-  EXPECT_NE(-1, index);
-  // Since the action is currently visible, it should have the option to hide
-  // it.
-  EXPECT_EQ(hide_string, menu->GetLabelAt(index));
+    int index = GetCommandIndex(menu, visibility_command);
+    // Without the toolbar redesign switch, page action menus shouldn't have a
+    // visibility option.
+    EXPECT_EQ(-1, index);
+  }
+
+  {
+    ExtensionContextMenuModel menu(browser_action.get(), browser.get(),
+                                   ExtensionContextMenuModel::VISIBLE, nullptr);
+    int index = GetCommandIndex(menu, visibility_command);
+    // Browser actions should have the visibility option.
+    EXPECT_NE(-1, index);
+    // Since the action is currently visible, it should have the option to hide
+    // it.
+    EXPECT_EQ(hide_string, menu.GetLabelAt(index));
+  }
 
   // Enabling the toolbar redesign switch should give page actions the button.
   FeatureSwitch::ScopedOverride enable_toolbar_redesign(
       FeatureSwitch::extension_action_redesign(), true);
-  menu = new ExtensionContextMenuModel(page_action.get(),
-                                       browser.get(),
-                                       ExtensionContextMenuModel::VISIBLE,
-                                       nullptr);
-  index = GetCommandIndex(menu, visibility_command);
+  {
+    ExtensionContextMenuModel menu(page_action.get(), browser.get(),
+                                   ExtensionContextMenuModel::VISIBLE, nullptr);
+    int index = GetCommandIndex(menu, visibility_command);
   EXPECT_NE(-1, index);
-  EXPECT_EQ(redesign_hide_string, menu->GetLabelAt(index));
+  EXPECT_EQ(redesign_hide_string, menu.GetLabelAt(index));
+  }
 
+  {
   // If the action is overflowed, it should have the "Show button in toolbar"
   // string.
-  menu = new ExtensionContextMenuModel(browser_action.get(),
-                                       browser.get(),
-                                       ExtensionContextMenuModel::OVERFLOWED,
-                                       nullptr);
-  index = GetCommandIndex(menu, visibility_command);
+  ExtensionContextMenuModel menu(browser_action.get(), browser.get(),
+                                 ExtensionContextMenuModel::OVERFLOWED,
+                                 nullptr);
+  int index = GetCommandIndex(menu, visibility_command);
   EXPECT_NE(-1, index);
-  EXPECT_EQ(redesign_show_string, menu->GetLabelAt(index));
+  EXPECT_EQ(redesign_show_string, menu.GetLabelAt(index));
+  }
 
+  {
   // If the action is transitively visible, as happens when it is showing a
   // popup, we should use a "Keep button in toolbar" string.
-  menu = new ExtensionContextMenuModel(
-             browser_action.get(),
-             browser.get(),
-             ExtensionContextMenuModel::TRANSITIVELY_VISIBLE,
-             nullptr);
-  index = GetCommandIndex(menu, visibility_command);
+  ExtensionContextMenuModel menu(
+      browser_action.get(), browser.get(),
+      ExtensionContextMenuModel::TRANSITIVELY_VISIBLE, nullptr);
+  int index = GetCommandIndex(menu, visibility_command);
   EXPECT_NE(-1, index);
-  EXPECT_EQ(redesign_keep_string, menu->GetLabelAt(index));
+  EXPECT_EQ(redesign_keep_string, menu.GetLabelAt(index));
+  }
 }
 
 }  // namespace extensions

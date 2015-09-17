@@ -35,7 +35,7 @@ class ExtensionViewHost;
 class ExtensionActionViewController
     : public ToolbarActionViewController,
       public ExtensionActionIconFactory::Observer,
-      public ExtensionContextMenuModel::PopupDelegate,
+      public extensions::ExtensionContextMenuModel::PopupDelegate,
       public extensions::ExtensionHostObserver {
  public:
   // The different options for showing a popup.
@@ -162,7 +162,7 @@ class ExtensionActionViewController
   extensions::ExtensionViewHost* popup_host_;
 
   // The context menu model for the extension.
-  scoped_refptr<ExtensionContextMenuModel> context_menu_model_;
+  scoped_ptr<extensions::ExtensionContextMenuModel> context_menu_model_;
 
   // Our view delegate.
   ToolbarActionViewDelegate* view_delegate_;

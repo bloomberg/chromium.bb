@@ -238,11 +238,10 @@ bool ChevronMenuButton::MenuController::ShowContextMenu(
   if (!view_controller->extension()->ShowConfigureContextMenus())
     return false;
 
-  scoped_refptr<ExtensionContextMenuModel> context_menu_contents =
-      new ExtensionContextMenuModel(view_controller->extension(),
-                                    view_controller->browser(),
-                                    ExtensionContextMenuModel::OVERFLOWED,
-                                    view_controller);
+  scoped_ptr<extensions::ExtensionContextMenuModel> context_menu_contents(
+      new extensions::ExtensionContextMenuModel(
+          view_controller->extension(), view_controller->browser(),
+          extensions::ExtensionContextMenuModel::OVERFLOWED, view_controller));
   views::MenuRunner context_menu_runner(context_menu_contents.get(),
                                         views::MenuRunner::HAS_MNEMONICS |
                                             views::MenuRunner::IS_NESTED |
