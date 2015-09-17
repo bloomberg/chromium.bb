@@ -1,6 +1,6 @@
 include_rules = [
   "+chrome/common/content_restriction.h",
-  "+gin/public/gin_embedders.h",
+  "+gin",
   "+net",
   "+ppapi",
   "+printing/units.h",

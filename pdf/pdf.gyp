@@ -11,6 +11,7 @@
         '../base/base.gyp:base',
         '../components/components.gyp:ui_zoom',
         '../content/content.gyp:content_common',
+        '../gin/gin.gyp:gin',
         '../net/net.gyp:net',
         '../ppapi/ppapi.gyp:ppapi_cpp_objects',
         '../ppapi/ppapi.gyp:ppapi_internal_module',

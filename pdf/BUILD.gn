@@ -52,6 +52,7 @@ static_library("pdf") {
     "//base",
     "//components/ui/zoom",
     "//content/public/common",
+    "//gin",
     "//net",
     "//ppapi/cpp:objects",
     "//ppapi/cpp/private:internal_module",

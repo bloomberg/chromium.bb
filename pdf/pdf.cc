@@ -10,21 +10,36 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "gin/array_buffer.h"
+#include "gin/public/isolate_holder.h"
 #include "pdf/out_of_process_instance.h"
 #include "ppapi/c/ppp.h"
 #include "ppapi/cpp/private/internal_module.h"
 #include "ppapi/cpp/private/pdf.h"
 #include "v8/include/v8.h"
 
+namespace chrome_pdf {
+
+namespace {
+
 bool g_sdk_initialized_via_pepper = false;
 
-namespace chrome_pdf {
+gin::IsolateHolder* g_isolate_holder = nullptr;
+
+void TearDownV8() {
+  g_isolate_holder->isolate()->Exit();
+  delete g_isolate_holder;
+  g_isolate_holder = nullptr;
+}
+
+}  // namespace
 
 PDFModule::PDFModule() {
 }
 
 PDFModule::~PDFModule() {
   if (g_sdk_initialized_via_pepper) {
+    TearDownV8();
     chrome_pdf::ShutdownSDK();
     g_sdk_initialized_via_pepper = false;
   }
@@ -45,8 +60,15 @@ pp::Instance* PDFModule::CreateInstance(PP_Instance instance) {
       v8::V8::SetNativesDataBlob(&natives);
       v8::V8::SetSnapshotDataBlob(&snapshot);
     }
-    if (!chrome_pdf::InitializeSDK())
+    gin::IsolateHolder::Initialize(gin::IsolateHolder::kNonStrictMode,
+                                   gin::ArrayBufferAllocator::SharedInstance());
+    g_isolate_holder =
+        new gin::IsolateHolder(gin::IsolateHolder::kSingleThread);
+    g_isolate_holder->isolate()->Enter();
+    if (!chrome_pdf::InitializeSDK()) {
+      TearDownV8();
       return NULL;
+    }
     g_sdk_initialized_via_pepper = true;
   }
 
