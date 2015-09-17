@@ -80,7 +80,7 @@ static int LockManagerOperation(void** lock, enum AVLockOp op) {
 
     case AV_LOCK_DESTROY:
       delete static_cast<base::Lock*>(*lock);
-      *lock = NULL;
+      *lock = nullptr;
       return 0;
   }
   return 1;
@@ -132,7 +132,7 @@ FFmpegGlue::FFmpegGlue(FFmpegURLProtocol* protocol)
   format_context_ = avformat_alloc_context();
   avio_context_.reset(avio_alloc_context(
       static_cast<unsigned char*>(av_malloc(kBufferSize)), kBufferSize, 0,
-      protocol, &AVIOReadOperation, NULL, &AVIOSeekOperation));
+      protocol, &AVIOReadOperation, nullptr, &AVIOSeekOperation));
 
   // Ensure FFmpeg only tries to seek on resources we know to be seekable.
   avio_context_->seekable =
@@ -145,6 +145,10 @@ FFmpegGlue::FFmpegGlue(FFmpegURLProtocol* protocol)
   // will set the AVFMT_FLAG_CUSTOM_IO flag for us, but do so here to ensure an
   // early error state doesn't cause FFmpeg to free our resources in error.
   format_context_->flags |= AVFMT_FLAG_CUSTOM_IO;
+
+  // Enable fast, but inaccurate seeks for MP3.
+  format_context_->flags |= AVFMT_FLAG_FAST_SEEK;
+
   format_context_->pb = avio_context_.get();
 }
 
@@ -171,15 +175,27 @@ bool FFmpegGlue::OpenContext() {
     UMA_HISTOGRAM_SPARSE_SLOWLY("Media.DetectedContainer", container);
   }
 
-  // By passing NULL for the filename (second parameter) we are telling FFmpeg
-  // to use the AVIO context we setup from the AVFormatContext structure.
-  return avformat_open_input(&format_context_, NULL, NULL, NULL) == 0;
+  // Use TOC when available to quickly seek MP3 file.
+  // TODO(dalecurtis): Remove this upon rolling ffmpeg. Commit c43bd08... will
+  // make setting AVFMT_FLAG_FAST_SEEK (which we already do) default usetoc = 1.
+  AVDictionary* options = nullptr;
+  av_dict_set(&options, "usetoc", "1", 0);
+
+  // By passing nullptr for the filename (second parameter) we are telling
+  // FFmpeg to use the AVIO context we setup from the AVFormatContext structure.
+  bool success =
+      avformat_open_input(&format_context_, nullptr, nullptr, &options) == 0;
+
+  if (options)
+    av_dict_free(&options);
+
+  return success;
 }
 
 FFmpegGlue::~FFmpegGlue() {
   // In the event of avformat_open_input() failure, FFmpeg may sometimes free
   // our AVFormatContext behind the scenes, but leave the buffer alive.  It will
-  // helpfully set |format_context_| to NULL in this case.
+  // helpfully set |format_context_| to nullptr in this case.
   if (!format_context_) {
     av_free(avio_context_->buffer);
     return;
