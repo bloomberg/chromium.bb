@@ -25,10 +25,13 @@ enum Branding { NO_BRANDING, BRANDING };
 
 enum FirstRunExperience { NO_FIRST_RUN_EXPERIENCE, FIRST_RUN_EXPERIENCE };
 
+enum SmartLockUser { SMARTLOCK_USER, NOT_SMARTLOCK_USER };
+
 struct IsSmartLockBrandingEnabledTestcase {
   CustomPassphraseState passphrase_state;
   syncer::ModelType type;
   Branding branding;
+  SmartLockUser user_type;
 };
 
 struct ShouldShowSavePromptFirstRunExperienceTestcase {
@@ -107,6 +110,12 @@ class PasswordManagerPasswordBubbleExperimentTest : public testing::Test {
     } else {
       EXPECT_FALSE(is_smart_lock_branding_enabled);
     }
+
+    if (test_case.user_type == SMARTLOCK_USER) {
+      EXPECT_TRUE(password_bubble_experiment::IsSmartLockUser(sync_service()));
+    } else {
+      EXPECT_FALSE(password_bubble_experiment::IsSmartLockUser(sync_service()));
+    }
   }
 
   void TestShouldShowSavePromptFirstRunExperienceTestcase(
@@ -144,10 +153,11 @@ class PasswordManagerPasswordBubbleExperimentTest : public testing::Test {
 TEST_F(PasswordManagerPasswordBubbleExperimentTest,
        IsSmartLockBrandingEnabledTest) {
   const IsSmartLockBrandingEnabledTestcase kTestData[] = {
-      {CUSTOM_PASSPHRASE, syncer::PASSWORDS, NO_BRANDING},
-      {CUSTOM_PASSPHRASE, syncer::BOOKMARKS, NO_BRANDING},
-      {NO_CUSTOM_PASSPHRASE, syncer::PASSWORDS, BRANDING},
-      {NO_CUSTOM_PASSPHRASE, syncer::BOOKMARKS, NO_BRANDING},
+      {CUSTOM_PASSPHRASE, syncer::PASSWORDS, NO_BRANDING, NOT_SMARTLOCK_USER},
+      {CUSTOM_PASSPHRASE, syncer::BOOKMARKS, NO_BRANDING, NOT_SMARTLOCK_USER},
+      {NO_CUSTOM_PASSPHRASE, syncer::PASSWORDS, BRANDING, SMARTLOCK_USER},
+      {NO_CUSTOM_PASSPHRASE, syncer::BOOKMARKS, NO_BRANDING,
+       NOT_SMARTLOCK_USER},
   };
 
   EnforceExperimentGroup(kSmartLockBrandingGroupName);
@@ -159,10 +169,11 @@ TEST_F(PasswordManagerPasswordBubbleExperimentTest,
 TEST_F(PasswordManagerPasswordBubbleExperimentTest,
        IsSmartLockBrandingEnabledTestNoBranding) {
   const IsSmartLockBrandingEnabledTestcase kTestData[] = {
-      {CUSTOM_PASSPHRASE, syncer::PASSWORDS, NO_BRANDING},
-      {CUSTOM_PASSPHRASE, syncer::BOOKMARKS, NO_BRANDING},
-      {NO_CUSTOM_PASSPHRASE, syncer::PASSWORDS, NO_BRANDING},
-      {NO_CUSTOM_PASSPHRASE, syncer::BOOKMARKS, NO_BRANDING},
+      {CUSTOM_PASSPHRASE, syncer::PASSWORDS, NO_BRANDING, NOT_SMARTLOCK_USER},
+      {CUSTOM_PASSPHRASE, syncer::BOOKMARKS, NO_BRANDING, NOT_SMARTLOCK_USER},
+      {NO_CUSTOM_PASSPHRASE, syncer::PASSWORDS, NO_BRANDING, SMARTLOCK_USER},
+      {NO_CUSTOM_PASSPHRASE, syncer::BOOKMARKS, NO_BRANDING,
+       NOT_SMARTLOCK_USER},
   };
 
   EnforceExperimentGroup(kSmartLockNoBrandingGroupName);

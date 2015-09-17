@@ -27,9 +27,13 @@ void RegisterPrefs(PrefRegistrySimple* registry) {
       password_manager::prefs::kWasSavePrompFirstRunExperienceShown, false);
 }
 
-bool IsSmartLockBrandingEnabled(const sync_driver::SyncService* sync_service) {
+bool IsSmartLockUser(const sync_driver::SyncService* sync_service) {
   return password_manager_util::GetPasswordSyncState(sync_service) ==
-             password_manager::SYNCING_NORMAL_ENCRYPTION &&
+         password_manager::SYNCING_NORMAL_ENCRYPTION;
+}
+
+bool IsSmartLockBrandingEnabled(const sync_driver::SyncService* sync_service) {
+  return IsSmartLockUser(sync_service) &&
          base::FieldTrialList::FindFullName(kBrandingExperimentName) ==
              kSmartLockBrandingGroupName;
 }

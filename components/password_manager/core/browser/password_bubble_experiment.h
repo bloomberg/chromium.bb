@@ -30,6 +30,9 @@ void RecordBubbleClosed(
 // the save prompt was shown.
 void RegisterPrefs(PrefRegistrySimple* registry);
 
+// A Smart Lock user is a sync user without a custom passphrase.
+bool IsSmartLockUser(const sync_driver::SyncService* sync_service);
+
 // Returns true if the password manager should be referred to as Smart Lock.
 // This is only true for signed-in users.
 bool IsSmartLockBrandingEnabled(const sync_driver::SyncService* sync_service);
