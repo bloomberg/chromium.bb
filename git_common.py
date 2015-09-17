@@ -357,14 +357,14 @@ def freeze():
   took_action = False
 
   try:
-    run('commit', '-m', FREEZE + '.indexed')
+    run('commit', '--no-verify', '-m', FREEZE + '.indexed')
     took_action = True
   except subprocess2.CalledProcessError:
     pass
 
   try:
     run('add', '-A')
-    run('commit', '-m', FREEZE + '.unindexed')
+    run('commit', '--no-verify', '-m', FREEZE + '.unindexed')
     took_action = True
   except subprocess2.CalledProcessError:
     pass
