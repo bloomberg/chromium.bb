@@ -73,6 +73,7 @@ class CONTENT_EXPORT VaapiVideoDecodeAccelerator
  private:
   class VaapiH264Accelerator;
   class VaapiVP8Accelerator;
+  class VaapiVP9Accelerator;
 
   // Notify the client that an error has occurred and decoding cannot continue.
   void NotifyError(Error error);
@@ -275,6 +276,7 @@ class CONTENT_EXPORT VaapiVideoDecodeAccelerator
   // Accelerators come after vaapi_wrapper_ to ensure they are destroyed first.
   scoped_ptr<VaapiH264Accelerator> h264_accelerator_;
   scoped_ptr<VaapiVP8Accelerator> vp8_accelerator_;
+  scoped_ptr<VaapiVP9Accelerator> vp9_accelerator_;
   // After *_accelerator_ to ensure correct destruction order.
   scoped_ptr<AcceleratedVideoDecoder> decoder_;
 

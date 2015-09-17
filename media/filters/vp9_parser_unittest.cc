@@ -28,25 +28,50 @@ class Vp9ParserTest : public ::testing::Test {
 
   void TearDown() override { stream_.reset(); }
 
+  bool ParseNextFrame(struct Vp9FrameHeader* frame_hdr);
+
+  const Vp9Segmentation& GetSegmentation() const {
+    return vp9_parser_.GetSegmentation();
+  }
+
+  const Vp9LoopFilter& GetLoopFilter() const {
+    return vp9_parser_.GetLoopFilter();
+  }
+
   IvfParser ivf_parser_;
   scoped_ptr<base::MemoryMappedFile> stream_;
+
+  Vp9Parser vp9_parser_;
 };
+
+bool Vp9ParserTest::ParseNextFrame(Vp9FrameHeader* fhdr) {
+  while (1) {
+    Vp9Parser::Result res = vp9_parser_.ParseNextFrame(fhdr);
+    if (res == Vp9Parser::kEOStream) {
+      IvfFrameHeader ivf_frame_header;
+      const uint8_t* ivf_payload;
+
+      if (!ivf_parser_.ParseNextFrame(&ivf_frame_header, &ivf_payload))
+        return false;
+
+      vp9_parser_.SetStream(ivf_payload, ivf_frame_header.frame_size);
+      continue;
+    }
+
+    return res == Vp9Parser::kOk;
+  }
+}
 
 TEST_F(Vp9ParserTest, StreamFileParsing) {
   // Number of frames in the test stream to be parsed.
   const int num_frames = 250;
-
-  Vp9Parser vp9_parser;
-  IvfFrameHeader ivf_frame_header;
   int num_parsed_frames = 0;
-  const uint8_t* ivf_payload;
 
-  // Parse until the end of stream/unsupported stream/error in stream is found.
-  while (ivf_parser_.ParseNextFrame(&ivf_frame_header, &ivf_payload)) {
+  while (num_parsed_frames < num_frames) {
     Vp9FrameHeader fhdr;
+    if (!ParseNextFrame(&fhdr))
+      break;
 
-    ASSERT_TRUE(
-        vp9_parser.ParseFrame(ivf_payload, ivf_frame_header.frame_size, &fhdr));
     ++num_parsed_frames;
   }
 
@@ -57,15 +82,9 @@ TEST_F(Vp9ParserTest, StreamFileParsing) {
 }
 
 TEST_F(Vp9ParserTest, VerifyFirstFrame) {
-  Vp9Parser vp9_parser;
-  IvfFrameHeader ivf_frame_header;
-  const uint8_t* ivf_payload;
-
-  ASSERT_TRUE(ivf_parser_.ParseNextFrame(&ivf_frame_header, &ivf_payload));
   Vp9FrameHeader fhdr;
 
-  ASSERT_TRUE(
-      vp9_parser.ParseFrame(ivf_payload, ivf_frame_header.frame_size, &fhdr));
+  ASSERT_TRUE(ParseNextFrame(&fhdr));
 
   EXPECT_EQ(0, fhdr.profile);
   EXPECT_FALSE(fhdr.show_existing_frame);
@@ -88,10 +107,9 @@ TEST_F(Vp9ParserTest, VerifyFirstFrame) {
   EXPECT_TRUE(fhdr.frame_parallel_decoding_mode);
   EXPECT_EQ(0, fhdr.frame_context_idx);
 
-  EXPECT_EQ(9, fhdr.loop_filter.filter_level);
-  EXPECT_EQ(0, fhdr.loop_filter.sharpness_level);
-
-  const Vp9LoopFilter& lf = fhdr.loop_filter;
+  const Vp9LoopFilter& lf = GetLoopFilter();
+  EXPECT_EQ(9, lf.filter_level);
+  EXPECT_EQ(0, lf.sharpness_level);
   EXPECT_TRUE(lf.mode_ref_delta_enabled);
   EXPECT_TRUE(lf.mode_ref_delta_update);
   EXPECT_TRUE(lf.update_ref_deltas[0]);
@@ -106,7 +124,7 @@ TEST_F(Vp9ParserTest, VerifyFirstFrame) {
   EXPECT_FALSE(qp.uv_ac_delta);
   EXPECT_FALSE(qp.IsLossless());
 
-  const Vp9Segmentation& seg = fhdr.segment;
+  const Vp9Segmentation& seg = GetSegmentation();
   EXPECT_FALSE(seg.enabled);
 
   EXPECT_EQ(0, fhdr.log2_tile_cols);
@@ -117,23 +135,17 @@ TEST_F(Vp9ParserTest, VerifyFirstFrame) {
 }
 
 TEST_F(Vp9ParserTest, VerifyInterFrame) {
-  Vp9Parser vp9_parser;
   Vp9FrameHeader fhdr;
 
   // To verify the second frame.
-  for (int i = 0; i < 2; i++) {
-    IvfFrameHeader ivf_frame_header;
-    const uint8_t* ivf_payload;
-    ASSERT_TRUE(ivf_parser_.ParseNextFrame(&ivf_frame_header, &ivf_payload));
-    ASSERT_TRUE(
-        vp9_parser.ParseFrame(ivf_payload, ivf_frame_header.frame_size, &fhdr));
-  }
+  for (int i = 0; i < 2; i++)
+    ASSERT_TRUE(ParseNextFrame(&fhdr));
 
   EXPECT_EQ(Vp9FrameHeader::INTERFRAME, fhdr.frame_type);
   EXPECT_FALSE(fhdr.show_frame);
   EXPECT_FALSE(fhdr.intra_only);
   EXPECT_FALSE(fhdr.reset_context);
-  EXPECT_TRUE(fhdr.refresh_flag[5]);
+  EXPECT_TRUE(fhdr.RefreshFlag(2));
   EXPECT_EQ(0, fhdr.frame_refs[0]);
   EXPECT_EQ(1, fhdr.frame_refs[1]);
   EXPECT_EQ(2, fhdr.frame_refs[2]);

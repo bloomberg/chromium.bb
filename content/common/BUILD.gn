@@ -358,6 +358,10 @@ source_set("common") {
       "gpu/media/vp8_decoder.h",
       "gpu/media/vp8_picture.cc",
       "gpu/media/vp8_picture.h",
+      "gpu/media/vp9_decoder.cc",
+      "gpu/media/vp9_decoder.h",
+      "gpu/media/vp9_picture.cc",
+      "gpu/media/vp9_picture.h",
     ]
     if (use_v4lplugin) {
       defines += [ "USE_LIBV4L2" ]
