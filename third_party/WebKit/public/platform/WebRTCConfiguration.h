@@ -77,6 +77,7 @@ class WebRTCICEServerArray {
 public:
     WebRTCICEServerArray() {}
     WebRTCICEServerArray(const WebRTCICEServerArray& other) { assign(other); }
+    ~WebRTCICEServerArray() { reset(); }
     WebRTCICEServerArray& operator=(const WebRTCICEServerArray& other)
     {
         assign(other);
