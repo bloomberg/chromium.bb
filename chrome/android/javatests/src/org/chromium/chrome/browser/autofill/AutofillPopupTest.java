@@ -189,7 +189,7 @@ public class AutofillPopupTest extends ChromeActivityTestCaseBase<ChromeActivity
 
         waitForAutofillPopopShow(popup);
 
-        TouchCommon.singleClickView(popup.getListView(), 10, 10);
+        TouchCommon.singleClickViewRelative(popup.getListView(), 10, 10);
 
         waitForInputFieldFill(webContents);
     }

@@ -248,7 +248,7 @@ public class DocumentModeTestBase extends MultiActivityTestBase {
                 return activity.findViewById(android.R.id.content).getRootView();
             }
         });
-        TouchCommon.longPressView(view);
+        TouchCommon.longPressView(view, view.getWidth() / 2, view.getHeight() / 2);
         assertTrue(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {

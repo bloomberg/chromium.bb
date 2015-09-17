@@ -18,10 +18,6 @@ import java.util.concurrent.ExecutionException;
 
 /**
  * Touch-related functionality reused across test cases.
- *
- * Differs from {@link TestTouchUtils} as this does not rely on injecting events via
- * Instrumentation. Injecting events is more brittle (e.g. it will fail if a dialog pops up in front
- * of the test), and simulating the touch events in the manner used here is just as effective.
  */
 public class TouchCommon {
     // Prevent instantiation.
@@ -32,19 +28,15 @@ public class TouchCommon {
      * Starts (synchronously) a drag motion. Normally followed by dragTo() and dragEnd().
      *
      * @activity activity The activity where the touch action is being performed.
-     * @param x X coordinate, in screen coordinates.
-     * @param y Y coordinate, in screen coordinates.
-     * @param downTime When the drag was started, in millis since the epoch.
+     * @param x
+     * @param y
+     * @param downTime (in ms)
      * @see TouchUtils
      */
     public static void dragStart(Activity activity, float x, float y, long downTime) {
-        View root = getRootViewForActivity(activity);
-        float[] windowXY = screenToWindowCoordinates(root, x, y);
-        float windowX = windowXY[0];
-        float windowY = windowXY[1];
         MotionEvent event = MotionEvent.obtain(downTime, downTime,
-                MotionEvent.ACTION_DOWN, windowX, windowY, 0);
-        dispatchTouchEvent(root, event);
+                MotionEvent.ACTION_DOWN, x, y, 0);
+        dispatchTouchEvent(getRootViewForActivity(activity), event);
     }
 
     /**
@@ -52,12 +44,12 @@ public class TouchCommon {
      * dragStart() and followed by dragEnd()
      *
      * @activity activity The activity where the touch action is being performed.
-     * @param fromX X coordinate of the initial touch, in screen coordinates.
-     * @param toX Xcoordinate of the drag destination, in screen coordinates.
-     * @param fromY X coordinate of the initial touch, in screen coordinates.
-     * @param toY Y coordinate of the drag destination, in screen coordinates.
-     * @param stepCount How many move steps to include in the drag.
-     * @param downTime When the drag was started, in millis since the epoch.
+     * @param fromX
+     * @param toX
+     * @param fromY
+     * @param toY
+     * @param stepCount
+     * @param downTime (in ms)
      * @see TouchUtils
      */
     public static void dragTo(Activity activity, float fromX, float toX, float fromY,
@@ -71,11 +63,8 @@ public class TouchCommon {
             y += yStep;
             x += xStep;
             long eventTime = SystemClock.uptimeMillis();
-            float[] windowXY = screenToWindowCoordinates(rootView, x, y);
-            float windowX = windowXY[0];
-            float windowY = windowXY[1];
             MotionEvent event = MotionEvent.obtain(downTime, eventTime,
-                    MotionEvent.ACTION_MOVE, windowX, windowY, 0);
+                    MotionEvent.ACTION_MOVE, x, y, 0);
             dispatchTouchEvent(rootView, event);
         }
     }
@@ -85,34 +74,42 @@ public class TouchCommon {
      * Normally preceeded by dragStart() and dragTo().
      *
      * @activity activity The activity where the touch action is being performed.
-     * @param x X coordinate, in screen coordinates.
-     * @param y Y coordinate, in screen coordinates.
-     * @param downTime When the drag was started, in millis since the epoch.
+     * @param x
+     * @param y
+     * @param downTime (in ms)
      * @see TouchUtils
      */
     public static void dragEnd(Activity activity, float x, float y, long downTime) {
-        View root = getRootViewForActivity(activity);
-        float[] windowXY = screenToWindowCoordinates(root, x, y);
-        float windowX = windowXY[0];
-        float windowY = windowXY[1];
         long eventTime = SystemClock.uptimeMillis();
         MotionEvent event = MotionEvent.obtain(downTime, eventTime,
-                MotionEvent.ACTION_UP, windowX, windowY, 0);
-        dispatchTouchEvent(root, event);
+                MotionEvent.ACTION_UP, x, y, 0);
+        dispatchTouchEvent(getRootViewForActivity(activity), event);
     }
 
     /**
-     * Sends (synchronously) a single click to the View at the specified view-relative coordinates.
+     * Sends (synchronously) a single click to an absolute screen coordinates.
+     *
+     * @activity activity The activity where the touch action is being performed.
+     * @param x screen absolute
+     * @param y screen absolute
+     * @see TouchUtils
+     */
+    public static void singleClick(Activity activity, float x, float y) {
+        singleClickInternal(getRootViewForActivity(activity), x, y);
+    }
+
+    /**
+     * Sends (synchronously) a single click to the View at the specified coordinates.
      *
      * @param v The view to be clicked.
-     * @param x X coordinate, relative to v.
-     * @param y Y coordinate, relative to v.
+     * @param x Relative x location to v
+     * @param y Relative y location to v
      */
     public static void singleClickView(View v, int x, int y) {
-        int windowXY[] = viewToWindowCoordinates(v, x, y);
-        int windowX = windowXY[0];
-        int windowY = windowXY[1];
-        singleClickInternal(v.getRootView(), windowX, windowY);
+        int location[] = getAbsoluteLocationFromRelative(v, x, y);
+        int absoluteX = location[0];
+        int absoluteY = location[1];
+        singleClickInternal(v.getRootView(), absoluteX, absoluteY);
     }
 
     /**
@@ -122,49 +119,75 @@ public class TouchCommon {
         singleClickView(v, v.getWidth() / 2, v.getHeight() / 2);
     }
 
-    private static void singleClickInternal(View view, float windowX, float windowY) {
+    private static void singleClickInternal(View view, float x, float y) {
         long downTime = SystemClock.uptimeMillis();
         long eventTime = SystemClock.uptimeMillis();
 
         MotionEvent event = MotionEvent.obtain(
-                downTime, eventTime, MotionEvent.ACTION_DOWN, windowX, windowY, 0);
+                downTime, eventTime, MotionEvent.ACTION_DOWN, x, y, 0);
         dispatchTouchEvent(view, event);
 
         eventTime = SystemClock.uptimeMillis();
         event = MotionEvent.obtain(
-                downTime, eventTime, MotionEvent.ACTION_UP, windowX, windowY, 0);
+                downTime, eventTime, MotionEvent.ACTION_UP, x, y, 0);
         dispatchTouchEvent(view, event);
+    }
+
+    /**
+     * Sends (synchronously) a single click on the specified relative coordinates inside
+     * a given view.
+     *
+     * @param view The view to be clicked.
+     * @param x screen absolute
+     * @param y screen absolute
+     * @see TouchUtils
+     */
+    public static void singleClickViewRelative(View view, int x, int y) {
+        long downTime = SystemClock.uptimeMillis();
+        long eventTime = SystemClock.uptimeMillis();
+
+        MotionEvent event = MotionEvent.obtain(
+                downTime, eventTime, MotionEvent.ACTION_DOWN, x, y, 0);
+        dispatchTouchEvent(view, event);
+
+        eventTime = SystemClock.uptimeMillis();
+        event = MotionEvent.obtain(
+                downTime, eventTime, MotionEvent.ACTION_UP, x, y, 0);
+        dispatchTouchEvent(view, event);
+    }
+
+    /**
+     * Sends (synchronously) a long press to an absolute screen coordinates.
+     *
+     * @activity activity The activity where the touch action is being performed.
+     * @param x screen absolute
+     * @param y screen absolute
+     * @see TouchUtils
+     */
+    public static void longPress(Activity activity, float x, float y) {
+        longPressInternal(getRootViewForActivity(activity), x, y);
     }
 
     /**
      * Sends (synchronously) a long press to the View at the specified coordinates.
      *
-     * @param v The view to receive the long press.
-     * @param x X coordinate, relative to v.
-     * @param y Y coordinate, relative to v.
+     * @param v The view to be clicked.
+     * @param x Relative x location to v
+     * @param y Relative y location to v
      */
     public static void longPressView(View v, int x, int y) {
-        int windowXY[] = viewToWindowCoordinates(v, x, y);
-        int windowX = windowXY[0];
-        int windowY = windowXY[1];
-        longPressInternal(v.getRootView(), windowX, windowY);
+        int location[] = getAbsoluteLocationFromRelative(v, x, y);
+        int absoluteX = location[0];
+        int absoluteY = location[1];
+        longPressInternal(v.getRootView(), absoluteX, absoluteY);
     }
 
-    /**
-     * Sends (synchronously) a long press to the center of the View.
-     *
-     * @param v The view to receive the long press.
-     */
-    public static void longPressView(View v) {
-        longPressView(v, v.getWidth() / 2, v.getHeight() / 2);
-    }
-
-    private static void longPressInternal(View view, float windowX, float windowY) {
+    private static void longPressInternal(View view, float x, float y) {
         long downTime = SystemClock.uptimeMillis();
         long eventTime = SystemClock.uptimeMillis();
 
         MotionEvent event = MotionEvent.obtain(
-                downTime, eventTime, MotionEvent.ACTION_DOWN, windowX, windowY, 0);
+                downTime, eventTime, MotionEvent.ACTION_DOWN, x, y, 0);
         dispatchTouchEvent(view, event);
 
         int longPressTimeout = ViewConfiguration.getLongPressTimeout();
@@ -174,7 +197,7 @@ public class TouchCommon {
 
         eventTime = SystemClock.uptimeMillis();
         event = MotionEvent.obtain(
-                downTime, eventTime, MotionEvent.ACTION_UP, windowX, windowY, 0);
+                downTime, eventTime, MotionEvent.ACTION_UP, x, y, 0);
         dispatchTouchEvent(view, event);
     }
 
@@ -194,7 +217,8 @@ public class TouchCommon {
     }
 
     /**
-     * Sends a MotionEvent to the specified view.
+     * Send a MotionEvent to the specified view instead of the root view.
+     * For example AutofillPopup window that is above the root view.
      * @param view The view that should receive the event.
      * @param event The view to be dispatched.
      */
@@ -212,35 +236,18 @@ public class TouchCommon {
     }
 
     /**
-     * Converts view-relative coordinates into window coordinates.
+     * Returns the absolute location in screen coordinates from location relative
+     * to view.
      * @param v The view the coordinates are relative to.
-     * @param x X coordinate, relative to the view.
-     * @param y Y coordinate, relative to the view.
-     * @return The coordinates relative to the window as a 2-element array.
+     * @param x Relative x location.
+     * @param y Relative y location.
+     * @return absolute x and y location in an array.
      */
-    private static int[] viewToWindowCoordinates(View v, int x, int y) {
-        int windowXY[] = new int[2];
-        v.getLocationInWindow(windowXY);
-        windowXY[0] += x;
-        windowXY[1] += y;
-        return windowXY;
-    }
-
-    /**
-     * Converts screen coordinates into window coordinates.
-     * @param view Any view in the window.
-     * @param screenX X coordinate relative to the screen.
-     * @param screenY Y coordinate relative to the screen.
-     * @return The coordinates relative to the window as a 2-element array.
-     */
-    private static float[] screenToWindowCoordinates(View view, float screenX, float screenY) {
-        View root = view.getRootView();
-        int[] rootScreenXY = new int[2];
-        int[] rootWindowXY = new int[2];
-        root.getLocationOnScreen(rootScreenXY);
-        root.getLocationInWindow(rootWindowXY);
-        float windowX = screenX - rootScreenXY[0] + rootWindowXY[0];
-        float windowY = screenY - rootScreenXY[1] + rootWindowXY[1];
-        return new float[] {windowX, windowY};
+    private static int[] getAbsoluteLocationFromRelative(View v, int x, int y) {
+        int location[] = new int[2];
+        v.getLocationOnScreen(location);
+        location[0] += x;
+        location[1] += y;
+        return location;
     }
 }

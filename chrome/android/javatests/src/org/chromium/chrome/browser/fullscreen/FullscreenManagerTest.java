@@ -148,12 +148,12 @@ public class FullscreenManagerTest extends ChromeTabbedActivityTestBase {
         final ChromeWebContentsDelegateAndroid delegate =
                 tab.getChromeWebContentsDelegateAndroid();
 
-        singleClickView(view);
+        singleClickView(view, view.getWidth() / 2, view.getHeight() / 2);
         waitForPersistentFullscreen(delegate, true);
         assertEquals((float) -topControlsHeight, waitForTopControlsPosition(-topControlsHeight));
 
         TestTouchUtils.sleepForDoubleTapTimeout(getInstrumentation());
-        singleClickView(view);
+        singleClickView(view, view.getWidth() / 2, view.getHeight() / 2);
         waitForPersistentFullscreen(delegate, false);
         waitForNoBrowserTopControlsOffset();
         assertEquals((float) 0, waitForTopControlsPosition(0));
