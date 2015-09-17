@@ -637,6 +637,7 @@ void WebsiteSettings::Init(const GURL& url, const content::SSLStatus& ssl) {
   WebsiteSettingsUI::TabId tab_id = WebsiteSettingsUI::TAB_ID_PERMISSIONS;
   if (site_connection_status_ == SITE_CONNECTION_STATUS_ENCRYPTED_ERROR ||
       site_connection_status_ == SITE_CONNECTION_STATUS_MIXED_CONTENT ||
+      site_connection_status_ == SITE_CONNECTION_STATUS_MIXED_SCRIPT ||
       site_identity_status_ == SITE_IDENTITY_STATUS_ERROR ||
       site_identity_status_ == SITE_IDENTITY_STATUS_CERT_REVOCATION_UNKNOWN ||
       site_identity_status_ == SITE_IDENTITY_STATUS_ADMIN_PROVIDED_CERT ||

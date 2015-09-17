@@ -351,11 +351,9 @@ int WebsiteSettingsUI::GetConnectionIconID(
     case WebsiteSettings::SITE_CONNECTION_STATUS_UNENCRYPTED:
       resource_id = IDR_PAGEINFO_WARNING_MAJOR;
       break;
+    case WebsiteSettings::SITE_CONNECTION_STATUS_MIXED_SCRIPT:
     case WebsiteSettings::SITE_CONNECTION_STATUS_ENCRYPTED_ERROR:
       resource_id = IDR_PAGEINFO_BAD;
-      break;
-    default:
-      NOTREACHED();
       break;
   }
   return resource_id;

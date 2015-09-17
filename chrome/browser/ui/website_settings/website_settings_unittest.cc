@@ -19,6 +19,7 @@
 #include "components/infobars/core/infobar.h"
 #include "content/public/browser/cert_store.h"
 #include "content/public/common/ssl_status.h"
+#include "grit/theme_resources.h"
 #include "net/cert/cert_status_flags.h"
 #include "net/cert/x509_certificate.h"
 #include "net/ssl/ssl_connection_status_flags.h"
@@ -305,7 +306,7 @@ TEST_F(WebsiteSettingsTest, HTTPSConnection) {
   EXPECT_EQ(base::string16(), website_settings()->organization_name());
 }
 
-TEST_F(WebsiteSettingsTest, HTTPSMixedContent) {
+TEST_F(WebsiteSettingsTest, HTTPSPassiveMixedContent) {
   ssl_.security_style = content::SECURITY_STYLE_AUTHENTICATED;
   ssl_.cert_id = cert_id();
   ssl_.cert_status = 0;
@@ -323,6 +324,33 @@ TEST_F(WebsiteSettingsTest, HTTPSMixedContent) {
             website_settings()->site_connection_status());
   EXPECT_EQ(WebsiteSettings::SITE_IDENTITY_STATUS_CERT,
             website_settings()->site_identity_status());
+  EXPECT_EQ(IDR_PAGEINFO_WARNING_MINOR,
+            WebsiteSettingsUI::GetConnectionIconID(
+                website_settings()->site_connection_status()));
+  EXPECT_EQ(base::string16(), website_settings()->organization_name());
+}
+
+TEST_F(WebsiteSettingsTest, HTTPSActiveMixedContent) {
+  ssl_.security_style = content::SECURITY_STYLE_AUTHENTICATION_BROKEN;
+  ssl_.cert_id = cert_id();
+  ssl_.cert_status = 0;
+  ssl_.security_bits = 81;  // No error if > 80.
+  ssl_.content_status = SSLStatus::RAN_INSECURE_CONTENT;
+  int status = 0;
+  status = SetSSLVersion(status, net::SSL_CONNECTION_VERSION_TLS1);
+  status = SetSSLCipherSuite(status, CR_TLS_RSA_WITH_AES_256_CBC_SHA256);
+  ssl_.connection_status = status;
+
+  SetDefaultUIExpectations(mock_ui());
+  EXPECT_CALL(*mock_ui(), SetSelectedTab(WebsiteSettingsUI::TAB_ID_CONNECTION));
+
+  EXPECT_EQ(WebsiteSettings::SITE_CONNECTION_STATUS_MIXED_SCRIPT,
+            website_settings()->site_connection_status());
+  EXPECT_EQ(WebsiteSettings::SITE_IDENTITY_STATUS_CERT,
+            website_settings()->site_identity_status());
+  EXPECT_EQ(IDR_PAGEINFO_BAD,
+            WebsiteSettingsUI::GetConnectionIconID(
+                website_settings()->site_connection_status()));
   EXPECT_EQ(base::string16(), website_settings()->organization_name());
 }
 
