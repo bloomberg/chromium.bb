@@ -516,12 +516,17 @@ bool DrmDevice::CommitProperties(drmModeAtomicReq* properties,
                                  uint32_t crtc_count,
                                  const PageFlipCallback& callback) {
 #if defined(USE_DRM_ATOMIC)
-  uint64_t id = page_flip_manager_->GetNextId();
+  uint64_t id = 0;
+  bool page_flip_event_requested = flags & DRM_MODE_PAGE_FLIP_EVENT;
+
+  if (page_flip_event_requested)
+    id = page_flip_manager_->GetNextId();
+
   if (!drmModeAtomicCommit(file_.GetPlatformFile(), properties, flags,
                            reinterpret_cast<void*>(id))) {
-    if (flags & DRM_MODE_ATOMIC_TEST_ONLY)
-      return true;
-    page_flip_manager_->RegisterCallback(id, crtc_count, callback);
+    if (page_flip_event_requested)
+      page_flip_manager_->RegisterCallback(id, crtc_count, callback);
+
     return true;
   }
 #endif  // defined(USE_DRM_ATOMIC)
