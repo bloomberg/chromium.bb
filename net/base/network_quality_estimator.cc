@@ -178,7 +178,7 @@ NetworkQualityEstimator::NetworkQualityEstimator(
       downstream_throughput_kbps_observations_(
           GetWeightMultiplierPerSecond(variation_params)),
       rtt_msec_observations_(GetWeightMultiplierPerSecond(variation_params)),
-      external_estimates_provider_(external_estimates_provider.Pass()) {
+      external_estimate_provider_(external_estimates_provider.Pass()) {
   static_assert(kMinRequestDurationMicroseconds > 0,
                 "Minimum request duration must be > 0");
   static_assert(kDefaultHalfLifeSeconds > 0,
@@ -192,8 +192,15 @@ NetworkQualityEstimator::NetworkQualityEstimator(
 
   ObtainOperatingParams(variation_params);
   NetworkChangeNotifier::AddConnectionTypeObserver(this);
-  if (external_estimates_provider_)
-    external_estimates_provider_->SetUpdatedEstimateDelegate(this);
+  if (external_estimate_provider_) {
+    RecordExternalEstimateProviderMetrics(
+        EXTERNAL_ESTIMATE_PROVIDER_STATUS_AVAILABLE);
+    external_estimate_provider_->SetUpdatedEstimateDelegate(this);
+    QueryExternalEstimateProvider();
+  } else {
+    RecordExternalEstimateProviderMetrics(
+        EXTERNAL_ESTIMATE_PROVIDER_STATUS_NOT_AVAILABLE);
+  }
   current_network_id_ = GetCurrentNetworkID();
   AddDefaultEstimates();
 }
@@ -210,6 +217,9 @@ void NetworkQualityEstimator::ObtainOperatingParams(
   for (size_t i = 0; i <= NetworkChangeNotifier::CONNECTION_LAST; ++i) {
     NetworkChangeNotifier::ConnectionType type =
         static_cast<NetworkChangeNotifier::ConnectionType>(i);
+    DCHECK_EQ(InvalidRTT(), default_observations_[i].rtt());
+    DCHECK_EQ(kInvalidThroughput,
+              default_observations_[i].downstream_throughput_kbps());
     int32_t variations_value = kMinimumRTTVariationParameterMsec - 1;
     // Name of the parameter that holds the RTT value for this connection type.
     std::string rtt_parameter_name =
@@ -419,6 +429,12 @@ bool NetworkQualityEstimator::RequestProvidesUsefulObservations(
          request.creation_time() >= last_connection_change_;
 }
 
+void NetworkQualityEstimator::RecordExternalEstimateProviderMetrics(
+    NQEExternalEstimateProviderStatus status) const {
+  UMA_HISTOGRAM_ENUMERATION("NQE.ExternalEstimateProviderStatus", status,
+                            EXTERNAL_ESTIMATE_PROVIDER_STATUS_BOUNDARY);
+}
+
 void NetworkQualityEstimator::OnConnectionTypeChanged(
     NetworkChangeNotifier::ConnectionType type) {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -537,6 +553,8 @@ void NetworkQualityEstimator::OnConnectionTypeChanged(
   downstream_throughput_kbps_observations_.Clear();
   rtt_msec_observations_.Clear();
   current_network_id_ = GetCurrentNetworkID();
+
+  QueryExternalEstimateProvider();
 
   // Read any cached estimates for the new network. If cached estimates are
   // unavailable, add the default estimates.
@@ -812,8 +830,51 @@ bool NetworkQualityEstimator::ReadCachedNetworkQualityEstimate() {
 
 void NetworkQualityEstimator::OnUpdatedEstimateAvailable() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(external_estimates_provider_);
-  // TODO(tbansal): Query provider for the recent value.
+  DCHECK(external_estimate_provider_);
+
+  RecordExternalEstimateProviderMetrics(
+      EXTERNAL_ESTIMATE_PROVIDER_STATUS_CALLBACK);
+  QueryExternalEstimateProvider();
+}
+
+void NetworkQualityEstimator::QueryExternalEstimateProvider() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  if (!external_estimate_provider_)
+    return;
+  RecordExternalEstimateProviderMetrics(
+      EXTERNAL_ESTIMATE_PROVIDER_STATUS_QUERIED);
+
+  base::TimeDelta time_since_last_update;
+
+  // Request a new estimate if estimate is not available, or if the available
+  // estimate is not fresh.
+  if (!external_estimate_provider_->GetTimeSinceLastUpdate(
+          &time_since_last_update) ||
+      time_since_last_update >
+          base::TimeDelta::FromMilliseconds(
+              kExternalEstimateProviderFreshnessDurationMsec)) {
+    // Request the external estimate provider for updated estimates. When the
+    // updates estimates are available, OnUpdatedEstimateAvailable() will be
+    // called.
+    external_estimate_provider_->Update();
+    return;
+  }
+
+  RecordExternalEstimateProviderMetrics(
+      EXTERNAL_ESTIMATE_PROVIDER_STATUS_QUERY_SUCCESSFUL);
+  base::TimeDelta rtt;
+  if (external_estimate_provider_->GetRTT(&rtt)) {
+    rtt_msec_observations_.AddObservation(
+        Observation(rtt.InMilliseconds(), base::TimeTicks::Now()));
+  }
+
+  int32_t downstream_throughput_kbps;
+  if (external_estimate_provider_->GetDownstreamThroughputKbps(
+          &downstream_throughput_kbps)) {
+    downstream_throughput_kbps_observations_.AddObservation(
+        Observation(downstream_throughput_kbps, base::TimeTicks::Now()));
+  }
 }
 
 void NetworkQualityEstimator::CacheNetworkQualityEstimate() {
