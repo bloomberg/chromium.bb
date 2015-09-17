@@ -1023,6 +1023,9 @@ if (is_clang) {
     # which we no longer use. Check if it makes sense to remove
     # this as well. http://crbug.com/316352
     "-Wno-unneeded-internal-declaration",
+
+    # TODO(hans): Get this cleaned up, http://crbug.com/428099
+    "-Wno-inconsistent-missing-override",
   ]
 
   if (is_posix && !is_mac && !is_ios) {
@@ -1038,9 +1041,6 @@ if (is_clang) {
   if (!is_nacl) {
     # Flags NaCl does not recognize.
     default_warning_flags += [
-      # TODO(hans): Get this cleaned up, http://crbug.com/428099
-      "-Wno-inconsistent-missing-override",
-
       # TODO(thakis): Enable this, crbug.com/507717
       "-Wno-shift-negative-value",
     ]
