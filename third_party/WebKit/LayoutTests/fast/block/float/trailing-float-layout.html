@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <object>
-  <span style="display: inline-block;"><span id="float" style="float: left; width: 1px; height: 150px" data-expected-height=0></span></span>
+  <span style="display: inline-block;"><span style="float: left; width: 1px; height: 150px; background-color: green;"></span></span>
   <div style="padding-top: 55%"></div>
 </object>
-<p>crbug.com/517030: Ensure trailing float gets a layout.</p>
-<script src="../../../resources/check-layout.js"></script>
+<p>crbug.com/517030: Ensure trailing float gets a layout. Passes if it does not assert</p>
 <script>
-    checkLayout('#float');
+    if (window.testRunner)
+        testRunner.dumpAsText();
 </script>

@@ -1590,9 +1590,6 @@ crbug.com/527044 [ Win10 ] fast/text/emoji-font-fallback-win.html [ ImageOnlyFai
 
 crbug.com/525065 webaudio/audionode-disconnect-audioparam.html [ Failure Pass ]
 
-crbug.com/525295 fast/block/float/trailing-float-layout-2.html [ Failure Pass ]
-crbug.com/525295 fast/block/float/trailing-float-layout.html [ Failure Pass ]
-
 crbug.com/525296 fast/css/font-load-while-styleresolver-missing.html [ Crash ImageOnlyFailure Pass ]
 
 crbug.com/525299 [ MountainLion Mavericks XP Win10 ] http/tests/security/redirect-BLOCKED-to-localURL.html [ Failure Pass ]
