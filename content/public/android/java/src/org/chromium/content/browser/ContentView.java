@@ -8,6 +8,7 @@ import android.content.Context;
 import android.content.res.Configuration;
 import android.graphics.Canvas;
 import android.graphics.Rect;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -35,12 +36,26 @@ public class ContentView extends FrameLayout
     protected final ContentViewCore mContentViewCore;
 
     /**
+     * Constructs a new ContentView for the appropriate Android version.
+     * @param context The Context the view is running in, through which it can
+     *                access the current theme, resources, etc.
+     * @param cvc A pointer to the content view core managing this content view.
+     * @return an instance of a ContentView.
+     */
+    public static ContentView createContentView(Context context, ContentViewCore cvc) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            return new ContentViewApi23(context, cvc);
+        }
+        return new ContentView(context, cvc);
+    }
+
+    /**
      * Creates an instance of a ContentView.
      * @param context The Context the view is running in, through which it can
      *                access the current theme, resources, etc.
      * @param cvc A pointer to the content view core managing this content view.
      */
-    public ContentView(Context context, ContentViewCore cvc) {
+    ContentView(Context context, ContentViewCore cvc) {
         super(context, null, android.R.attr.webViewStyle);
 
         if (getScrollBarStyle() == View.SCROLLBARS_INSIDE_OVERLAY) {
@@ -71,11 +86,6 @@ public class ContentView extends FrameLayout
         } else {
             return super.getAccessibilityNodeProvider();
         }
-    }
-
-    @Override
-    public void onProvideVirtualStructure(final ViewStructure structure) {
-        mContentViewCore.onProvideVirtualStructure(structure);
     }
 
     // Needed by ContentViewCore.InternalAccessDelegate
@@ -346,4 +356,15 @@ public class ContentView extends FrameLayout
     ///////////////////////////////////////////////////////////////////////////////////////////////
     //                End Implementation of ContentViewCore.InternalAccessDelegate               //
     ///////////////////////////////////////////////////////////////////////////////////////////////
+
+    private static class ContentViewApi23 extends ContentView {
+        public ContentViewApi23(Context context, ContentViewCore cvc) {
+            super(context, cvc);
+        }
+
+        @Override
+        public void onProvideVirtualStructure(final ViewStructure structure) {
+            mContentViewCore.onProvideVirtualStructure(structure);
+        }
+    }
 }

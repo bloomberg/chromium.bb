@@ -1696,7 +1696,7 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
      */
     protected void initContentViewCore(WebContents webContents) {
         ContentViewCore cvc = new ContentViewCore(mActivity);
-        ContentView cv = new ContentView(mActivity, cvc);
+        ContentView cv = ContentView.createContentView(mActivity, cvc);
         cv.setContentDescription(mActivity.getResources().getString(
                 R.string.accessibility_content_view));
         cvc.initialize(cv, cv, webContents, getWindowAndroid());
@@ -2333,7 +2333,7 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
     public void swapWebContents(
             WebContents webContents, boolean didStartLoad, boolean didFinishLoad) {
         ContentViewCore cvc = new ContentViewCore(mActivity);
-        ContentView cv = new ContentView(mActivity, cvc);
+        ContentView cv = ContentView.createContentView(mActivity, cvc);
         cv.setContentDescription(mActivity.getResources().getString(
                 R.string.accessibility_content_view));
         cvc.initialize(cv, cv, webContents, getWindowAndroid());

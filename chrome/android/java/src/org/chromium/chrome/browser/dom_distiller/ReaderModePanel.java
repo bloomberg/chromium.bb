@@ -641,7 +641,7 @@ public class ReaderModePanel implements ChromeAnimation.Animatable<ReaderModePan
         boolean isHostTabIncognito =
                 mReaderModeHost.getTab().getContentViewCore().getWebContents().isIncognito();
         ContentViewCore cvc = new ContentViewCore(context);
-        ContentView cv = new ContentView(context, cvc);
+        ContentView cv = ContentView.createContentView(context, cvc);
         cvc.initialize(cv, cv, WebContentsFactory.createWebContents(isHostTabIncognito, true),
                 windowAndroid);
         cvc.setContentViewClient(new ContentViewClient() {

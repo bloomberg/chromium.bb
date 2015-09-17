@@ -83,7 +83,7 @@ public class SelectPopupOtherContentViewTest extends ChromeActivityTestCaseBase<
                 WindowAndroid windowAndroid = new ActivityWindowAndroid(getActivity());
 
                 ContentViewCore contentViewCore = new ContentViewCore(getActivity());
-                ContentView cv = new ContentView(getActivity(), contentViewCore);
+                ContentView cv = ContentView.createContentView(getActivity(), contentViewCore);
                 contentViewCore.initialize(cv, cv, webContents, windowAndroid);
                 contentViewCore.destroy();
             }

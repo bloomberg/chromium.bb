@@ -481,7 +481,7 @@ public class ContextualSearchPanel extends ContextualSearchPanelAnimation
             });
         }
 
-        ContentView cv = new ContentView(mActivity, mContentViewCore);
+        ContentView cv = ContentView.createContentView(mActivity, mContentViewCore);
         // Creates an initially hidden WebContents which gets shown when the panel is opened.
         mContentViewCore.initialize(cv, cv,
                 WebContentsFactory.createWebContents(false, true), mWindowAndroid);
