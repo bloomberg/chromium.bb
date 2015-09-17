@@ -40,20 +40,21 @@ class PermissionSet
                 const URLPatternSet& explicit_hosts,
                 const URLPatternSet& scriptable_hosts);
 
-  // Creates a new permission set equal to |set1| - |set2|, passing ownership of
-  // the new set to the caller.
-  static PermissionSet* CreateDifference(
-      const PermissionSet* set1, const PermissionSet* set2);
+  // Creates a new permission set equal to |set1| - |set2|.
+  static scoped_refptr<const PermissionSet> CreateDifference(
+      const PermissionSet& set1,
+      const PermissionSet& set2);
 
   // Creates a new permission set equal to the intersection of |set1| and
-  // |set2|, passing ownership of the new set to the caller.
-  static PermissionSet* CreateIntersection(
-      const PermissionSet* set1, const PermissionSet* set2);
+  // |set2|.
+  static scoped_refptr<const PermissionSet> CreateIntersection(
+      const PermissionSet& set1,
+      const PermissionSet& set2);
 
   // Creates a new permission set equal to the union of |set1| and |set2|.
-  // Passes ownership of the new set to the caller.
-  static PermissionSet* CreateUnion(
-      const PermissionSet* set1, const PermissionSet* set2);
+  static scoped_refptr<const PermissionSet> CreateUnion(
+      const PermissionSet& set1,
+      const PermissionSet& set2);
 
   bool operator==(const PermissionSet& rhs) const;
   bool operator!=(const PermissionSet& rhs) const;

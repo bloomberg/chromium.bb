@@ -42,11 +42,9 @@ TEST(ExtensionInstallPromptUnittest, PromptShowsPermissionWarnings) {
   content::TestBrowserThreadBundle thread_bundle;
   APIPermissionSet api_permissions;
   api_permissions.insert(APIPermission::kTab);
-  scoped_refptr<PermissionSet> permission_set =
-      new PermissionSet(api_permissions,
-                        ManifestPermissionSet(),
-                        URLPatternSet(),
-                        URLPatternSet());
+  scoped_refptr<const PermissionSet> permission_set =
+      new PermissionSet(api_permissions, ManifestPermissionSet(),
+                        URLPatternSet(), URLPatternSet());
   scoped_refptr<const Extension> extension =
       ExtensionBuilder().SetManifest(
           DictionaryBuilder().Set("name", "foo")

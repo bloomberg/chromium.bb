@@ -556,11 +556,11 @@ bool ExtensionPrefs::ReadPrefAsBooleanAndReturn(
   return ReadPrefAsBoolean(extension_id, pref_key, &out_value) && out_value;
 }
 
-PermissionSet* ExtensionPrefs::ReadPrefAsPermissionSet(
+scoped_refptr<const PermissionSet> ExtensionPrefs::ReadPrefAsPermissionSet(
     const std::string& extension_id,
     const std::string& pref_key) const {
   if (!GetExtensionPref(extension_id))
-    return NULL;
+    return nullptr;
 
   // Retrieve the API permissions. Please refer SetExtensionPrefPermissionSet()
   // for api_values format.
@@ -597,8 +597,8 @@ PermissionSet* ExtensionPrefs::ReadPrefAsPermissionSet(
       extension_id, JoinPrefs(pref_key, kPrefScriptableHosts),
       &scriptable_hosts, UserScript::ValidUserScriptSchemes());
 
-  return new PermissionSet(
-      apis, manifest_permissions, explicit_hosts, scriptable_hosts);
+  return make_scoped_refptr(new PermissionSet(
+      apis, manifest_permissions, explicit_hosts, scriptable_hosts));
 }
 
 // Set the API or Manifest permissions.
@@ -1014,7 +1014,7 @@ void ExtensionPrefs::MigrateDisableReasons(
   }
 }
 
-PermissionSet* ExtensionPrefs::GetGrantedPermissions(
+scoped_refptr<const PermissionSet> ExtensionPrefs::GetGrantedPermissions(
     const std::string& extension_id) const {
   CHECK(crx_file::id_util::IdIsValid(extension_id));
   return ReadPrefAsPermissionSet(extension_id, kPrefGrantedPermissions);
@@ -1024,18 +1024,16 @@ void ExtensionPrefs::AddGrantedPermissions(
     const std::string& extension_id,
     const PermissionSet* permissions) {
   CHECK(crx_file::id_util::IdIsValid(extension_id));
+  DCHECK(permissions);
 
-  scoped_refptr<PermissionSet> granted_permissions(
-      GetGrantedPermissions(extension_id));
-
+  scoped_refptr<const PermissionSet> granted =
+      GetGrantedPermissions(extension_id);
+  granted = granted.get() ? PermissionSet::CreateUnion(*permissions, *granted)
+                          : permissions;
   // The new granted permissions are the union of the already granted
   // permissions and the newly granted permissions.
-  scoped_refptr<PermissionSet> new_perms(
-      PermissionSet::CreateUnion(
-          permissions, granted_permissions.get()));
-
-  SetExtensionPrefPermissionSet(
-      extension_id, kPrefGrantedPermissions, new_perms.get());
+  SetExtensionPrefPermissionSet(extension_id, kPrefGrantedPermissions,
+                                granted.get());
 }
 
 void ExtensionPrefs::RemoveGrantedPermissions(
@@ -1043,20 +1041,16 @@ void ExtensionPrefs::RemoveGrantedPermissions(
     const PermissionSet* permissions) {
   CHECK(crx_file::id_util::IdIsValid(extension_id));
 
-  scoped_refptr<PermissionSet> granted_permissions(
-      GetGrantedPermissions(extension_id));
-
   // The new granted permissions are the difference of the already granted
   // permissions and the newly ungranted permissions.
-  scoped_refptr<PermissionSet> new_perms(
-      PermissionSet::CreateDifference(
-          granted_permissions.get(), permissions));
-
   SetExtensionPrefPermissionSet(
-      extension_id, kPrefGrantedPermissions, new_perms.get());
+      extension_id, kPrefGrantedPermissions,
+      PermissionSet::CreateDifference(*GetGrantedPermissions(extension_id),
+                                      *permissions)
+          .get());
 }
 
-PermissionSet* ExtensionPrefs::GetActivePermissions(
+scoped_refptr<const PermissionSet> ExtensionPrefs::GetActivePermissions(
     const std::string& extension_id) const {
   CHECK(crx_file::id_util::IdIsValid(extension_id));
   return ReadPrefAsPermissionSet(extension_id, kPrefActivePermissions);

@@ -83,8 +83,8 @@ class PermissionMessagesUnittest : public testing::Test {
     scoped_refptr<const PermissionSet> optional_permissions =
         PermissionsParser::GetOptionalPermissions(app_.get());
     scoped_refptr<const PermissionSet> requested_permissions =
-        PermissionSet::CreateDifference(optional_permissions.get(),
-                                        granted_permissions.get());
+        PermissionSet::CreateDifference(*optional_permissions,
+                                        *granted_permissions);
     return GetMessages(requested_permissions);
   }
 

@@ -276,7 +276,7 @@ TEST(PermissionsTest, ExplicitAccessToOrigin) {
   // The explicit host paths should get set to /*.
   AddPattern(&explicit_hosts, "http://www.example.com/a/particular/path/*");
 
-  scoped_refptr<PermissionSet> perm_set = new PermissionSet(
+  scoped_refptr<const PermissionSet> perm_set = new PermissionSet(
       apis, manifest_permissions, explicit_hosts, scriptable_hosts);
   ASSERT_TRUE(perm_set->HasExplicitAccessToOrigin(
       GURL("http://www.google.com/")));
@@ -308,9 +308,9 @@ TEST(PermissionsTest, CreateUnion) {
 
   URLPatternSet effective_hosts;
 
-  scoped_refptr<PermissionSet> set1;
-  scoped_refptr<PermissionSet> set2;
-  scoped_refptr<PermissionSet> union_set;
+  scoped_refptr<const PermissionSet> set1;
+  scoped_refptr<const PermissionSet> set2;
+  scoped_refptr<const PermissionSet> union_set;
 
   const APIPermissionInfo* permission_info =
     PermissionsInfo::GetInstance()->GetByID(APIPermission::kSocket);
@@ -339,7 +339,7 @@ TEST(PermissionsTest, CreateUnion) {
                            explicit_hosts1, scriptable_hosts1);
   set2 = new PermissionSet(apis2, manifest_permissions,
                            explicit_hosts2, scriptable_hosts2);
-  union_set = PermissionSet::CreateUnion(set1.get(), set2.get());
+  union_set = PermissionSet::CreateUnion(*set1, *set2);
   EXPECT_TRUE(set1->Contains(*set2.get()));
   EXPECT_TRUE(set1->Contains(*union_set.get()));
   EXPECT_FALSE(set2->Contains(*set1.get()));
@@ -395,7 +395,7 @@ TEST(PermissionsTest, CreateUnion) {
 
   set2 = new PermissionSet(apis2, manifest_permissions,
                            explicit_hosts2, scriptable_hosts2);
-  union_set = PermissionSet::CreateUnion(set1.get(), set2.get());
+  union_set = PermissionSet::CreateUnion(*set1, *set2);
 
   EXPECT_FALSE(set1->Contains(*set2.get()));
   EXPECT_FALSE(set1->Contains(*union_set.get()));
@@ -430,9 +430,9 @@ TEST(PermissionsTest, CreateIntersection) {
 
   URLPatternSet effective_hosts;
 
-  scoped_refptr<PermissionSet> set1;
-  scoped_refptr<PermissionSet> set2;
-  scoped_refptr<PermissionSet> new_set;
+  scoped_refptr<const PermissionSet> set1;
+  scoped_refptr<const PermissionSet> set2;
+  scoped_refptr<const PermissionSet> new_set;
 
   const APIPermissionInfo* permission_info =
     PermissionsInfo::GetInstance()->GetByID(APIPermission::kSocket);
@@ -457,7 +457,7 @@ TEST(PermissionsTest, CreateIntersection) {
                            explicit_hosts1, scriptable_hosts1);
   set2 = new PermissionSet(apis2, manifest_permissions,
                            explicit_hosts2, scriptable_hosts2);
-  new_set = PermissionSet::CreateIntersection(set1.get(), set2.get());
+  new_set = PermissionSet::CreateIntersection(*set1, *set2);
   EXPECT_TRUE(set1->Contains(*new_set.get()));
   EXPECT_TRUE(set2->Contains(*new_set.get()));
   EXPECT_TRUE(set1->Contains(*set2.get()));
@@ -507,7 +507,7 @@ TEST(PermissionsTest, CreateIntersection) {
 
   set2 = new PermissionSet(apis2, manifest_permissions,
                            explicit_hosts2, scriptable_hosts2);
-  new_set = PermissionSet::CreateIntersection(set1.get(), set2.get());
+  new_set = PermissionSet::CreateIntersection(*set1, *set2);
 
   EXPECT_TRUE(set1->Contains(*new_set.get()));
   EXPECT_TRUE(set2->Contains(*new_set.get()));
@@ -542,9 +542,9 @@ TEST(PermissionsTest, CreateDifference) {
 
   URLPatternSet effective_hosts;
 
-  scoped_refptr<PermissionSet> set1;
-  scoped_refptr<PermissionSet> set2;
-  scoped_refptr<PermissionSet> new_set;
+  scoped_refptr<const PermissionSet> set1;
+  scoped_refptr<const PermissionSet> set2;
+  scoped_refptr<const PermissionSet> new_set;
 
   const APIPermissionInfo* permission_info =
     PermissionsInfo::GetInstance()->GetByID(APIPermission::kSocket);
@@ -569,7 +569,7 @@ TEST(PermissionsTest, CreateDifference) {
                            explicit_hosts1, scriptable_hosts1);
   set2 = new PermissionSet(apis2, manifest_permissions,
                            explicit_hosts2, scriptable_hosts2);
-  new_set = PermissionSet::CreateDifference(set1.get(), set2.get());
+  new_set = PermissionSet::CreateDifference(*set1, *set2);
   EXPECT_EQ(*set1.get(), *new_set.get());
 
   // Now use a real second set.
@@ -606,7 +606,7 @@ TEST(PermissionsTest, CreateDifference) {
 
   set2 = new PermissionSet(apis2, manifest_permissions,
                            explicit_hosts2, scriptable_hosts2);
-  new_set = PermissionSet::CreateDifference(set1.get(), set2.get());
+  new_set = PermissionSet::CreateDifference(*set1, *set2);
 
   EXPECT_TRUE(set1->Contains(*new_set.get()));
   EXPECT_FALSE(set2->Contains(*new_set.get()));
@@ -619,7 +619,7 @@ TEST(PermissionsTest, CreateDifference) {
   EXPECT_EQ(effective_hosts, new_set->effective_hosts());
 
   // |set3| = |set1| - |set2| --> |set3| intersect |set2| == empty_set
-  set1 = PermissionSet::CreateIntersection(new_set.get(), set2.get());
+  set1 = PermissionSet::CreateIntersection(*new_set, *set2);
   EXPECT_TRUE(set1->IsEmpty());
 }
 
@@ -864,7 +864,7 @@ TEST(PermissionsTest, FileSystemPermissionMessages) {
   APIPermissionSet api_permissions;
   api_permissions.insert(APIPermission::kFileSystemWrite);
   api_permissions.insert(APIPermission::kFileSystemDirectory);
-  scoped_refptr<PermissionSet> permissions(
+  scoped_refptr<const PermissionSet> permissions(
       new PermissionSet(api_permissions, ManifestPermissionSet(),
                         URLPatternSet(), URLPatternSet()));
   EXPECT_TRUE(PermissionSetProducesMessage(
@@ -876,7 +876,7 @@ TEST(PermissionsTest, HiddenFileSystemPermissionMessages) {
   APIPermissionSet api_permissions;
   api_permissions.insert(APIPermission::kFileSystemWrite);
   api_permissions.insert(APIPermission::kFileSystemDirectory);
-  scoped_refptr<PermissionSet> permissions(
+  scoped_refptr<const PermissionSet> permissions(
       new PermissionSet(api_permissions, ManifestPermissionSet(),
                         URLPatternSet(), URLPatternSet()));
   EXPECT_TRUE(PermissionSetProducesMessage(
@@ -892,9 +892,8 @@ TEST(PermissionsTest, SuppressedPermissionMessages) {
     URLPatternSet hosts;
     hosts.AddPattern(URLPattern(URLPattern::SCHEME_CHROMEUI,
                                 "chrome://favicon/"));
-    scoped_refptr<PermissionSet> permissions(
-        new PermissionSet(api_permissions, ManifestPermissionSet(),
-                          hosts, URLPatternSet()));
+    scoped_refptr<const PermissionSet> permissions(new PermissionSet(
+        api_permissions, ManifestPermissionSet(), hosts, URLPatternSet()));
     EXPECT_TRUE(PermissionSetProducesMessage(
         permissions.get(), Manifest::TYPE_EXTENSION,
         MakePermissionIDSet(APIPermission::kTab, APIPermission::kFavicon)));
@@ -906,9 +905,8 @@ TEST(PermissionsTest, SuppressedPermissionMessages) {
     URLPatternSet hosts;
     hosts.AddPattern(URLPattern(URLPattern::SCHEME_CHROMEUI,
                                 "chrome://favicon/"));
-    scoped_refptr<PermissionSet> permissions(
-        new PermissionSet(api_permissions, ManifestPermissionSet(),
-                          hosts, URLPatternSet()));
+    scoped_refptr<const PermissionSet> permissions(new PermissionSet(
+        api_permissions, ManifestPermissionSet(), hosts, URLPatternSet()));
     EXPECT_TRUE(PermissionSetProducesMessage(
         permissions.get(), Manifest::TYPE_EXTENSION,
         MakePermissionIDSet(APIPermission::kHistory, APIPermission::kFavicon)));
@@ -919,7 +917,7 @@ TEST(PermissionsTest, SuppressedPermissionMessages) {
     api_permissions.insert(APIPermission::kTab);
     URLPatternSet hosts;
     hosts.AddPattern(URLPattern(URLPattern::SCHEME_CHROMEUI, "*://*/*"));
-    scoped_refptr<PermissionSet> permissions(new PermissionSet(
+    scoped_refptr<const PermissionSet> permissions(new PermissionSet(
         api_permissions, ManifestPermissionSet(), hosts, URLPatternSet()));
     EXPECT_TRUE(PermissionSetProducesMessage(
         permissions.get(), Manifest::TYPE_EXTENSION,
@@ -931,7 +929,7 @@ TEST(PermissionsTest, SuppressedPermissionMessages) {
     api_permissions.insert(APIPermission::kTopSites);
     URLPatternSet hosts;
     hosts.AddPattern(URLPattern(URLPattern::SCHEME_CHROMEUI, "*://*/*"));
-    scoped_refptr<PermissionSet> permissions(new PermissionSet(
+    scoped_refptr<const PermissionSet> permissions(new PermissionSet(
         api_permissions, ManifestPermissionSet(), hosts, URLPatternSet()));
     EXPECT_TRUE(PermissionSetProducesMessage(
         permissions.get(), Manifest::TYPE_EXTENSION,
@@ -944,7 +942,7 @@ TEST(PermissionsTest, SuppressedPermissionMessages) {
     api_permissions.insert(APIPermission::kDeclarativeWebRequest);
     URLPatternSet hosts;
     hosts.AddPattern(URLPattern(URLPattern::SCHEME_CHROMEUI, "*://*/*"));
-    scoped_refptr<PermissionSet> permissions(new PermissionSet(
+    scoped_refptr<const PermissionSet> permissions(new PermissionSet(
         api_permissions, ManifestPermissionSet(), hosts, URLPatternSet()));
     EXPECT_TRUE(PermissionSetProducesMessage(
         permissions.get(), Manifest::TYPE_EXTENSION,
@@ -958,7 +956,7 @@ TEST(PermissionsTest, SuppressedPermissionMessages) {
     api_permissions.insert(APIPermission::kTopSites);
     api_permissions.insert(APIPermission::kProcesses);
     api_permissions.insert(APIPermission::kWebNavigation);
-    scoped_refptr<PermissionSet> permissions(
+    scoped_refptr<const PermissionSet> permissions(
         new PermissionSet(api_permissions, ManifestPermissionSet(),
                           URLPatternSet(), URLPatternSet()));
     EXPECT_TRUE(PermissionSetProducesMessage(
@@ -972,7 +970,7 @@ TEST(PermissionsTest, SuppressedPermissionMessages) {
     api_permissions.insert(APIPermission::kTopSites);
     api_permissions.insert(APIPermission::kProcesses);
     api_permissions.insert(APIPermission::kWebNavigation);
-    scoped_refptr<PermissionSet> permissions(
+    scoped_refptr<const PermissionSet> permissions(
         new PermissionSet(api_permissions, ManifestPermissionSet(),
                           URLPatternSet(), URLPatternSet()));
     EXPECT_TRUE(PermissionSetProducesMessage(
@@ -985,11 +983,9 @@ TEST(PermissionsTest, AccessToDevicesMessages) {
   {
     APIPermissionSet api_permissions;
     api_permissions.insert(APIPermission::kSerial);
-    scoped_refptr<PermissionSet> permissions(
-        new PermissionSet(api_permissions,
-                          ManifestPermissionSet(),
-                          URLPatternSet(),
-                          URLPatternSet()));
+    scoped_refptr<const PermissionSet> permissions(
+        new PermissionSet(api_permissions, ManifestPermissionSet(),
+                          URLPatternSet(), URLPatternSet()));
     VerifyOnePermissionMessage(
         permissions.get(), Manifest::TYPE_EXTENSION,
         l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_WARNING_SERIAL));
@@ -999,11 +995,9 @@ TEST(PermissionsTest, AccessToDevicesMessages) {
     APIPermissionSet api_permissions;
     api_permissions.insert(APIPermission::kSerial);
     api_permissions.insert(APIPermission::kSerial);
-    scoped_refptr<PermissionSet> permissions(
-        new PermissionSet(api_permissions,
-                          ManifestPermissionSet(),
-                          URLPatternSet(),
-                          URLPatternSet()));
+    scoped_refptr<const PermissionSet> permissions(
+        new PermissionSet(api_permissions, ManifestPermissionSet(),
+                          URLPatternSet(), URLPatternSet()));
     VerifyOnePermissionMessage(
         permissions.get(), Manifest::TYPE_EXTENSION,
         l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_WARNING_SERIAL));
@@ -1029,23 +1023,22 @@ TEST(PermissionsTest, AccessToDevicesMessages) {
 TEST(PermissionsTest, MergedFileSystemPermissionComparison) {
   APIPermissionSet write_api_permissions;
   write_api_permissions.insert(APIPermission::kFileSystemWrite);
-  scoped_refptr<PermissionSet> write_permissions(
+  scoped_refptr<const PermissionSet> write_permissions(
       new PermissionSet(write_api_permissions, ManifestPermissionSet(),
                         URLPatternSet(), URLPatternSet()));
 
   APIPermissionSet directory_api_permissions;
   directory_api_permissions.insert(APIPermission::kFileSystemDirectory);
-  scoped_refptr<PermissionSet> directory_permissions(
+  scoped_refptr<const PermissionSet> directory_permissions(
       new PermissionSet(directory_api_permissions, ManifestPermissionSet(),
                         URLPatternSet(), URLPatternSet()));
 
   APIPermissionSet write_directory_api_permissions;
   write_directory_api_permissions.insert(APIPermission::kFileSystemWrite);
   write_directory_api_permissions.insert(APIPermission::kFileSystemDirectory);
-  scoped_refptr<PermissionSet> write_directory_permissions(
+  scoped_refptr<const PermissionSet> write_directory_permissions(
       new PermissionSet(write_directory_api_permissions,
-                        ManifestPermissionSet(),
-                        URLPatternSet(),
+                        ManifestPermissionSet(), URLPatternSet(),
                         URLPatternSet()));
 
   const PermissionMessageProvider* provider = PermissionMessageProvider::Get();
@@ -1141,7 +1134,7 @@ TEST(PermissionsTest, GetWarningMessages_CombinedSessions) {
     api_permissions.insert(APIPermission::kProcesses);
     api_permissions.insert(APIPermission::kWebNavigation);
     api_permissions.insert(APIPermission::kSessions);
-    scoped_refptr<PermissionSet> permissions(
+    scoped_refptr<const PermissionSet> permissions(
         new PermissionSet(api_permissions, ManifestPermissionSet(),
                           URLPatternSet(), URLPatternSet()));
     EXPECT_TRUE(VerifyOnePermissionMessage(
@@ -1157,7 +1150,7 @@ TEST(PermissionsTest, GetWarningMessages_CombinedSessions) {
     api_permissions.insert(APIPermission::kProcesses);
     api_permissions.insert(APIPermission::kWebNavigation);
     api_permissions.insert(APIPermission::kSessions);
-    scoped_refptr<PermissionSet> permissions(
+    scoped_refptr<const PermissionSet> permissions(
         new PermissionSet(api_permissions, ManifestPermissionSet(),
                           URLPatternSet(), URLPatternSet()));
     EXPECT_TRUE(VerifyOnePermissionMessage(
@@ -1455,9 +1448,9 @@ TEST(PermissionsTest, GetDistinctHosts) {
     expected.insert("*.google.com");
     expected.insert("*.example.com");
 
-    scoped_refptr<PermissionSet> perm_set(new PermissionSet(
-        empty_perms, ManifestPermissionSet(),
-        explicit_hosts, scriptable_hosts));
+    scoped_refptr<const PermissionSet> perm_set(
+        new PermissionSet(empty_perms, ManifestPermissionSet(), explicit_hosts,
+                          scriptable_hosts));
     EXPECT_EQ(expected,
               permission_message_util::GetDistinctHosts(
                   perm_set->effective_hosts(), true, true));
@@ -1569,8 +1562,8 @@ TEST(PermissionsTest, IsHostPrivilegeIncrease) {
   URLPatternSet elist2;
   URLPatternSet slist1;
   URLPatternSet slist2;
-  scoped_refptr<PermissionSet> set1;
-  scoped_refptr<PermissionSet> set2;
+  scoped_refptr<const PermissionSet> set1;
+  scoped_refptr<const PermissionSet> set2;
   APIPermissionSet empty_perms;
   elist1.AddPattern(
       URLPattern(URLPattern::SCHEME_HTTP, "http://www.google.com.hk/path"));
@@ -1654,8 +1647,8 @@ TEST(PermissionsTest, GetAPIsAsStrings) {
   apis.insert(APIPermission::kNotifications);
   apis.insert(APIPermission::kTab);
 
-  scoped_refptr<PermissionSet> perm_set = new PermissionSet(
-      apis, ManifestPermissionSet(), empty_set, empty_set);
+  scoped_refptr<const PermissionSet> perm_set =
+      new PermissionSet(apis, ManifestPermissionSet(), empty_set, empty_set);
   std::set<std::string> api_names = perm_set->GetAPIsAsStrings();
 
   // The result is correct if it has the same number of elements
@@ -1669,9 +1662,9 @@ TEST(PermissionsTest, IsEmpty) {
   APIPermissionSet empty_apis;
   URLPatternSet empty_extent;
 
-  scoped_refptr<PermissionSet> empty = new PermissionSet();
+  scoped_refptr<const PermissionSet> empty = new PermissionSet();
   EXPECT_TRUE(empty->IsEmpty());
-  scoped_refptr<PermissionSet> perm_set;
+  scoped_refptr<const PermissionSet> perm_set;
 
   perm_set = new PermissionSet(empty_apis, ManifestPermissionSet(),
                                empty_extent, empty_extent);
@@ -1702,7 +1695,7 @@ TEST(PermissionsTest, ImpliedPermissions) {
   apis.insert(APIPermission::kFileBrowserHandler);
   EXPECT_EQ(1U, apis.size());
 
-  scoped_refptr<PermissionSet> perm_set;
+  scoped_refptr<const PermissionSet> perm_set;
   perm_set = new PermissionSet(apis, ManifestPermissionSet(),
                                empty_extent, empty_extent);
   EXPECT_EQ(2U, perm_set->apis().size());
@@ -1733,7 +1726,7 @@ TEST(PermissionsTest, ChromeURLs) {
       URLPattern(URLPattern::SCHEME_ALL, "chrome://favicon/"));
   allowed_hosts.AddPattern(
       URLPattern(URLPattern::SCHEME_ALL, "chrome://thumb/"));
-  scoped_refptr<PermissionSet> permissions(
+  scoped_refptr<const PermissionSet> permissions(
       new PermissionSet(APIPermissionSet(), ManifestPermissionSet(),
                         allowed_hosts, URLPatternSet()));
   PermissionMessageProvider::Get()->GetPermissionMessages(

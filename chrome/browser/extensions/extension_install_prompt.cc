@@ -863,8 +863,7 @@ void ExtensionInstallPrompt::ShowConfirmation() {
       scoped_refptr<const PermissionSet> optional_permissions =
           extensions::PermissionsParser::GetOptionalPermissions(extension_);
       permissions_to_display = PermissionSet::CreateUnion(
-          permissions_to_display.get(),
-          optional_permissions.get());
+          *permissions_to_display, *optional_permissions);
     }
   }
 

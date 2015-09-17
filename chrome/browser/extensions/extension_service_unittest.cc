@@ -1851,7 +1851,7 @@ TEST_F(ExtensionServiceTest, GrantedPermissions) {
 
   // Make sure there aren't any granted permissions before the
   // extension is installed.
-  scoped_refptr<PermissionSet> known_perms(
+  scoped_refptr<const PermissionSet> known_perms(
       prefs->GetGrantedPermissions(permissions_crx));
   EXPECT_FALSE(known_perms.get());
 
@@ -1898,7 +1898,7 @@ TEST_F(ExtensionServiceTest, DefaultAppsGrantedPermissions) {
 
   // Make sure there aren't any granted permissions before the
   // extension is installed.
-  scoped_refptr<PermissionSet> known_perms(
+  scoped_refptr<const PermissionSet> known_perms(
       prefs->GetGrantedPermissions(permissions_crx));
   EXPECT_FALSE(known_perms.get());
 
@@ -1935,7 +1935,7 @@ TEST_F(ExtensionServiceTest, GrantedFullAccessPermissions) {
   EXPECT_EQ(1u, registry()->enabled_extensions().size());
   ExtensionPrefs* prefs = ExtensionPrefs::Get(profile());
 
-  scoped_refptr<PermissionSet> permissions(
+  scoped_refptr<const PermissionSet> permissions(
       prefs->GetGrantedPermissions(extension->id()));
   EXPECT_FALSE(permissions->IsEmpty());
   EXPECT_TRUE(permissions->HasEffectiveFullAccess());
@@ -1998,7 +1998,7 @@ TEST_F(ExtensionServiceTest, GrantedAPIAndHostPermissions) {
   ASSERT_TRUE(service()->IsExtensionEnabled(extension_id));
   ASSERT_FALSE(prefs->DidExtensionEscalatePermissions(extension_id));
 
-  scoped_refptr<PermissionSet> current_perms(
+  scoped_refptr<const PermissionSet> current_perms(
       prefs->GetGrantedPermissions(extension_id));
   ASSERT_TRUE(current_perms.get());
   ASSERT_FALSE(current_perms->IsEmpty());
@@ -2893,7 +2893,7 @@ TEST_F(ExtensionServiceTest, LoadExtensionsWithPlugins) {
   EXPECT_TRUE(registry()->enabled_extensions().Contains(good2));
 
   // Make sure the granted permissions have been setup.
-  scoped_refptr<PermissionSet> permissions(
+  scoped_refptr<const PermissionSet> permissions(
       ExtensionPrefs::Get(profile())->GetGrantedPermissions(good1));
   EXPECT_FALSE(permissions->IsEmpty());
   EXPECT_TRUE(permissions->HasEffectiveFullAccess());
@@ -6616,7 +6616,7 @@ TEST_F(ExtensionServiceTest, ProcessSyncDataNewExtension) {
                                                            : DISABLED);
     EXPECT_EQ(test_case.expect_disable_reasons,
               prefs->GetDisableReasons(good_crx));
-    scoped_refptr<PermissionSet> permissions(
+    scoped_refptr<const PermissionSet> permissions(
         prefs->GetGrantedPermissions(good_crx));
     EXPECT_EQ(test_case.expect_permissions_granted, !permissions->IsEmpty());
     ASSERT_FALSE(service()->pending_extension_manager()->IsIdPending(good_crx));
@@ -6961,7 +6961,7 @@ TEST_F(ExtensionServiceTest, ProcessSyncDataPermissionApproval) {
     }
     ASSERT_TRUE(registry()->enabled_extensions().Contains(id));
 
-    scoped_refptr<PermissionSet> granted_permissions_v1(
+    scoped_refptr<const PermissionSet> granted_permissions_v1(
         prefs->GetGrantedPermissions(id));
 
     // Update to a new version with increased permissions.
@@ -6978,7 +6978,7 @@ TEST_F(ExtensionServiceTest, ProcessSyncDataPermissionApproval) {
         id, Extension::DISABLE_PERMISSIONS_INCREASE));
 
     // No new permissions should have been granted.
-    scoped_refptr<PermissionSet> granted_permissions_v2(
+    scoped_refptr<const PermissionSet> granted_permissions_v2(
         prefs->GetGrantedPermissions(id));
     ASSERT_EQ(*granted_permissions_v1, *granted_permissions_v2);
 
@@ -7001,10 +7001,10 @@ TEST_F(ExtensionServiceTest, ProcessSyncDataPermissionApproval) {
 
     // Check expectations.
     EXPECT_TRUE(registry()->GetExtensionById(id, ExtensionRegistry::ENABLED));
-    scoped_refptr<PermissionSet> granted_permissions(
+    scoped_refptr<const PermissionSet> granted_permissions(
         prefs->GetGrantedPermissions(id));
     if (test_case.expect_permissions_granted) {
-      scoped_refptr<PermissionSet> active_permissions(
+      scoped_refptr<const PermissionSet> active_permissions(
           prefs->GetActivePermissions(id));
       EXPECT_EQ(*granted_permissions, *active_permissions);
     } else {

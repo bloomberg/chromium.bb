@@ -1602,7 +1602,7 @@ void ExtensionService::CheckPermissionsIncrease(const Extension* extension,
   if (extension->location() == Manifest::INTERNAL && !auto_grant_permission) {
     // Add all the recognized permissions if the granted permissions list
     // hasn't been initialized yet.
-    scoped_refptr<PermissionSet> granted_permissions =
+    scoped_refptr<const PermissionSet> granted_permissions =
         extension_prefs_->GetGrantedPermissions(extension->id());
     CHECK(granted_permissions.get());
 

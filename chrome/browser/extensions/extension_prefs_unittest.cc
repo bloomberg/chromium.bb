@@ -208,8 +208,8 @@ class ExtensionPrefsGrantedPermissions : public ExtensionPrefsTest {
     APIPermissionSet empty_set;
     ManifestPermissionSet empty_manifest_permissions;
     URLPatternSet empty_extent;
-    scoped_refptr<PermissionSet> permissions;
-    scoped_refptr<PermissionSet> granted_permissions;
+    scoped_refptr<const PermissionSet> permissions;
+    scoped_refptr<const PermissionSet> granted_permissions;
 
     // Make sure both granted api and host permissions start empty.
     granted_permissions =
@@ -281,7 +281,7 @@ class ExtensionPrefsGrantedPermissions : public ExtensionPrefsTest {
   }
 
   void Verify() override {
-    scoped_refptr<PermissionSet> permissions(
+    scoped_refptr<const PermissionSet> permissions(
         prefs()->GetGrantedPermissions(extension_id_));
     EXPECT_TRUE(permissions.get());
     EXPECT_FALSE(permissions->HasEffectiveFullAccess());
@@ -334,7 +334,7 @@ class ExtensionPrefsActivePermissions : public ExtensionPrefsTest {
         api_perms, empty_manifest_permissions, ehosts, shosts);
 
     // Make sure the active permissions start empty.
-    scoped_refptr<PermissionSet> active(
+    scoped_refptr<const PermissionSet> active(
         prefs()->GetActivePermissions(extension_id_));
     EXPECT_TRUE(active->IsEmpty());
 
@@ -348,14 +348,14 @@ class ExtensionPrefsActivePermissions : public ExtensionPrefsTest {
   }
 
   void Verify() override {
-    scoped_refptr<PermissionSet> permissions(
+    scoped_refptr<const PermissionSet> permissions(
         prefs()->GetActivePermissions(extension_id_));
     EXPECT_EQ(*active_perms_.get(), *permissions.get());
   }
 
  private:
   std::string extension_id_;
-  scoped_refptr<PermissionSet> active_perms_;
+  scoped_refptr<const PermissionSet> active_perms_;
 };
 TEST_F(ExtensionPrefsActivePermissions, SetAndGetActivePermissions) {}
 
@@ -963,12 +963,12 @@ class ExtensionPrefsComponentExtension : public ExtensionPrefsTest {
 
   void Verify() override {
     // Component extension can access chrome://print/*.
-    scoped_refptr<PermissionSet> component_permissions(
+    scoped_refptr<const PermissionSet> component_permissions(
         prefs()->GetActivePermissions(component_extension_->id()));
     EXPECT_EQ(1u, component_permissions->scriptable_hosts().size());
 
     // Non Component extension can not access chrome://print/*.
-    scoped_refptr<PermissionSet> no_component_permissions(
+    scoped_refptr<const PermissionSet> no_component_permissions(
         prefs()->GetActivePermissions(no_component_extension_->id()));
     EXPECT_EQ(0u, no_component_permissions->scriptable_hosts().size());
 
@@ -988,7 +988,7 @@ class ExtensionPrefsComponentExtension : public ExtensionPrefsTest {
   }
 
  private:
-  scoped_refptr<PermissionSet> active_perms_;
+  scoped_refptr<const PermissionSet> active_perms_;
   scoped_refptr<Extension> component_extension_;
   scoped_refptr<Extension> no_component_extension_;
 };

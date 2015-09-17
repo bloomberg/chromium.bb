@@ -261,11 +261,12 @@ void BundleInstaller::ShowPrompt() {
     return;
   }
 
-  scoped_refptr<PermissionSet> permissions;
-  for (size_t i = 0; i < dummy_extensions_.size(); ++i) {
+  scoped_refptr<const PermissionSet> permissions =
+      dummy_extensions_[0]->permissions_data()->active_permissions();
+  for (size_t i = 1; i < dummy_extensions_.size(); ++i) {
     permissions = PermissionSet::CreateUnion(
-        permissions.get(),
-        dummy_extensions_[i]->permissions_data()->active_permissions().get());
+        *permissions,
+        *dummy_extensions_[i]->permissions_data()->active_permissions());
   }
 
   if (g_auto_approve_for_test == PROCEED) {

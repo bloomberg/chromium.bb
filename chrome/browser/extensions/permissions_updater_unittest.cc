@@ -210,9 +210,8 @@ TEST_F(PermissionsUpdaterTest, AddAndRemovePermissions) {
 
   URLPatternSet default_hosts;
   AddPattern(&default_hosts, "http://a.com/*");
-  scoped_refptr<PermissionSet> default_permissions =
-      new PermissionSet(default_apis, empty_manifest_permissions,
-                        default_hosts, URLPatternSet());
+  scoped_refptr<const PermissionSet> default_permissions = new PermissionSet(
+      default_apis, empty_manifest_permissions, default_hosts, URLPatternSet());
 
   // Make sure it loaded properly.
   scoped_refptr<const PermissionSet> permissions =
@@ -226,9 +225,8 @@ TEST_F(PermissionsUpdaterTest, AddAndRemovePermissions) {
   URLPatternSet hosts;
   AddPattern(&hosts, "http://*.c.com/*");
 
-  scoped_refptr<PermissionSet> delta =
-      new PermissionSet(apis, empty_manifest_permissions,
-                        hosts, URLPatternSet());
+  scoped_refptr<const PermissionSet> delta = new PermissionSet(
+      apis, empty_manifest_permissions, hosts, URLPatternSet());
 
   PermissionsUpdaterListener listener;
   PermissionsUpdater updater(profile_.get());
@@ -243,8 +241,8 @@ TEST_F(PermissionsUpdaterTest, AddAndRemovePermissions) {
   ASSERT_EQ(*delta.get(), *listener.permissions());
 
   // Make sure the extension's active permissions reflect the change.
-  scoped_refptr<PermissionSet> active_permissions =
-      PermissionSet::CreateUnion(default_permissions.get(), delta.get());
+  scoped_refptr<const PermissionSet> active_permissions =
+      PermissionSet::CreateUnion(*default_permissions, *delta);
   ASSERT_EQ(*active_permissions.get(),
             *extension->permissions_data()->active_permissions().get());
 
@@ -252,10 +250,9 @@ TEST_F(PermissionsUpdaterTest, AddAndRemovePermissions) {
   // in the extension preferences. In this case, the granted permissions should
   // be equal to the active permissions.
   ExtensionPrefs* prefs = ExtensionPrefs::Get(profile_.get());
-  scoped_refptr<PermissionSet> granted_permissions =
-      active_permissions;
+  scoped_refptr<const PermissionSet> granted_permissions = active_permissions;
 
-  scoped_refptr<PermissionSet> from_prefs =
+  scoped_refptr<const PermissionSet> from_prefs =
       prefs->GetActivePermissions(extension->id());
   ASSERT_EQ(*active_permissions.get(), *from_prefs.get());
 
@@ -281,7 +278,7 @@ TEST_F(PermissionsUpdaterTest, AddAndRemovePermissions) {
 
   // Make sure the extension's active permissions reflect the change.
   active_permissions =
-      PermissionSet::CreateDifference(active_permissions.get(), delta.get());
+      PermissionSet::CreateDifference(*active_permissions, *delta);
   ASSERT_EQ(*active_permissions.get(),
             *extension->permissions_data()->active_permissions().get());
 
@@ -498,7 +495,7 @@ TEST_F(PermissionsUpdaterTest, RevokingPermissions) {
   auto api_permission_set = [](APIPermission::ID id) {
     APIPermissionSet apis;
     apis.insert(id);
-    return scoped_refptr<PermissionSet>(new PermissionSet(
+    return make_scoped_refptr(new PermissionSet(
         apis, ManifestPermissionSet(), URLPatternSet(), URLPatternSet()));
   };
 
@@ -506,7 +503,7 @@ TEST_F(PermissionsUpdaterTest, RevokingPermissions) {
     URLPatternSet set;
     URLPattern pattern(URLPattern::SCHEME_ALL, url.spec());
     set.AddPattern(pattern);
-    return scoped_refptr<PermissionSet>(new PermissionSet(
+    return make_scoped_refptr(new PermissionSet(
         APIPermissionSet(), ManifestPermissionSet(), set, URLPatternSet()));
   };
 

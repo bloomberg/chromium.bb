@@ -74,7 +74,7 @@ class PermissionsRequestFunction : public ChromeAsyncExtensionFunction,
 
  private:
   scoped_ptr<ExtensionInstallPrompt> install_ui_;
-  scoped_refptr<extensions::PermissionSet> requested_permissions_;
+  scoped_refptr<const PermissionSet> requested_permissions_;
 };
 
 }  // namespace extensions

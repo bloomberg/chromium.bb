@@ -36,7 +36,7 @@ TEST(ExtensionPermissionsAPIHelpers, Pack) {
   AddPattern(&hosts, "http://a.com/*");
   AddPattern(&hosts, "http://b.com/*");
 
-  scoped_refptr<PermissionSet> permission_set =
+  scoped_refptr<const PermissionSet> permission_set =
       new PermissionSet(apis, ManifestPermissionSet(), hosts, URLPatternSet());
 
   // Pack the permission set to value and verify its contents.
@@ -65,7 +65,7 @@ TEST(ExtensionPermissionsAPIHelpers, Pack) {
 
   // Unpack the value back to a permission set and make sure its equal to the
   // original one.
-  scoped_refptr<PermissionSet> from_value;
+  scoped_refptr<const PermissionSet> from_value;
   std::string error;
   Permissions permissions_object;
   EXPECT_TRUE(Permissions::Populate(*value, &permissions_object));
@@ -84,7 +84,7 @@ TEST(ExtensionPermissionsAPIHelpers, Unpack) {
   origins->Append(new base::StringValue("http://a.com/*"));
 
   scoped_ptr<base::DictionaryValue> value(new base::DictionaryValue());
-  scoped_refptr<PermissionSet> permissions;
+  scoped_refptr<const PermissionSet> permissions;
   std::string error;
 
   // Origins shouldn't have to be present.

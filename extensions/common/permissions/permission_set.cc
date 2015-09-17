@@ -44,77 +44,65 @@ PermissionSet::PermissionSet(
 }
 
 // static
-PermissionSet* PermissionSet::CreateDifference(
-    const PermissionSet* set1,
-    const PermissionSet* set2) {
-  scoped_refptr<PermissionSet> empty = new PermissionSet();
-  const PermissionSet* set1_safe = (set1 == NULL) ? empty.get() : set1;
-  const PermissionSet* set2_safe = (set2 == NULL) ? empty.get() : set2;
-
+scoped_refptr<const PermissionSet> PermissionSet::CreateDifference(
+    const PermissionSet& set1,
+    const PermissionSet& set2) {
   APIPermissionSet apis;
-  APIPermissionSet::Difference(set1_safe->apis(), set2_safe->apis(), &apis);
+  APIPermissionSet::Difference(set1.apis(), set2.apis(), &apis);
 
   ManifestPermissionSet manifest_permissions;
-  ManifestPermissionSet::Difference(set1_safe->manifest_permissions(),
-                                    set2_safe->manifest_permissions(),
+  ManifestPermissionSet::Difference(set1.manifest_permissions(),
+                                    set2.manifest_permissions(),
                                     &manifest_permissions);
 
   URLPatternSet explicit_hosts = URLPatternSet::CreateDifference(
-      set1_safe->explicit_hosts(), set2_safe->explicit_hosts());
+      set1.explicit_hosts(), set2.explicit_hosts());
 
   URLPatternSet scriptable_hosts = URLPatternSet::CreateDifference(
-      set1_safe->scriptable_hosts(), set2_safe->scriptable_hosts());
+      set1.scriptable_hosts(), set2.scriptable_hosts());
 
-  return new PermissionSet(apis, manifest_permissions,
-                           explicit_hosts, scriptable_hosts);
+  return make_scoped_refptr(new PermissionSet(
+      apis, manifest_permissions, explicit_hosts, scriptable_hosts));
 }
 
 // static
-PermissionSet* PermissionSet::CreateIntersection(
-    const PermissionSet* set1,
-    const PermissionSet* set2) {
-  scoped_refptr<PermissionSet> empty = new PermissionSet();
-  const PermissionSet* set1_safe = (set1 == NULL) ? empty.get() : set1;
-  const PermissionSet* set2_safe = (set2 == NULL) ? empty.get() : set2;
-
+scoped_refptr<const PermissionSet> PermissionSet::CreateIntersection(
+    const PermissionSet& set1,
+    const PermissionSet& set2) {
   APIPermissionSet apis;
-  APIPermissionSet::Intersection(set1_safe->apis(), set2_safe->apis(), &apis);
+  APIPermissionSet::Intersection(set1.apis(), set2.apis(), &apis);
 
   ManifestPermissionSet manifest_permissions;
-  ManifestPermissionSet::Intersection(set1_safe->manifest_permissions(),
-                                      set2_safe->manifest_permissions(),
+  ManifestPermissionSet::Intersection(set1.manifest_permissions(),
+                                      set2.manifest_permissions(),
                                       &manifest_permissions);
 
   URLPatternSet explicit_hosts = URLPatternSet::CreateSemanticIntersection(
-      set1_safe->explicit_hosts(), set2_safe->explicit_hosts());
+      set1.explicit_hosts(), set2.explicit_hosts());
   URLPatternSet scriptable_hosts = URLPatternSet::CreateSemanticIntersection(
-      set1_safe->scriptable_hosts(), set2_safe->scriptable_hosts());
+      set1.scriptable_hosts(), set2.scriptable_hosts());
 
   return new PermissionSet(apis, manifest_permissions,
                            explicit_hosts, scriptable_hosts);
 }
 
 // static
-PermissionSet* PermissionSet::CreateUnion(
-    const PermissionSet* set1,
-    const PermissionSet* set2) {
-  scoped_refptr<PermissionSet> empty = new PermissionSet();
-  const PermissionSet* set1_safe = (set1 == NULL) ? empty.get() : set1;
-  const PermissionSet* set2_safe = (set2 == NULL) ? empty.get() : set2;
-
+scoped_refptr<const PermissionSet> PermissionSet::CreateUnion(
+    const PermissionSet& set1,
+    const PermissionSet& set2) {
   APIPermissionSet apis;
-  APIPermissionSet::Union(set1_safe->apis(), set2_safe->apis(), &apis);
+  APIPermissionSet::Union(set1.apis(), set2.apis(), &apis);
 
   ManifestPermissionSet manifest_permissions;
-  ManifestPermissionSet::Union(set1_safe->manifest_permissions(),
-                               set2_safe->manifest_permissions(),
+  ManifestPermissionSet::Union(set1.manifest_permissions(),
+                               set2.manifest_permissions(),
                                &manifest_permissions);
 
-  URLPatternSet explicit_hosts = URLPatternSet::CreateUnion(
-      set1_safe->explicit_hosts(), set2_safe->explicit_hosts());
+  URLPatternSet explicit_hosts =
+      URLPatternSet::CreateUnion(set1.explicit_hosts(), set2.explicit_hosts());
 
   URLPatternSet scriptable_hosts = URLPatternSet::CreateUnion(
-      set1_safe->scriptable_hosts(), set2_safe->scriptable_hosts());
+      set1.scriptable_hosts(), set2.scriptable_hosts());
 
   return new PermissionSet(apis, manifest_permissions,
                            explicit_hosts, scriptable_hosts);

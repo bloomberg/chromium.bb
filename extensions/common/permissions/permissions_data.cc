@@ -138,8 +138,7 @@ void PermissionsData::UpdateTabSpecificPermissions(
   if (iter == tab_specific_permissions_.end())
     tab_specific_permissions_[tab_id] = permissions;
   else
-    iter->second =
-        PermissionSet::CreateUnion(iter->second.get(), permissions.get());
+    iter->second = PermissionSet::CreateUnion(*(iter->second), *permissions);
 }
 
 void PermissionsData::ClearTabSpecificPermissions(int tab_id) const {

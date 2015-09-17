@@ -67,7 +67,7 @@ scoped_ptr<Permissions> PackPermissionSet(const PermissionSet* set) {
   return scoped_ptr<Permissions>(permissions);
 }
 
-scoped_refptr<PermissionSet> UnpackPermissionSet(
+scoped_refptr<const PermissionSet> UnpackPermissionSet(
     const Permissions& permissions,
     bool allow_file_access,
     std::string* error) {
@@ -149,7 +149,7 @@ scoped_refptr<PermissionSet> UnpackPermissionSet(
     }
   }
 
-  return scoped_refptr<PermissionSet>(
+  return make_scoped_refptr(
       new PermissionSet(apis, manifest_permissions, origins, URLPatternSet()));
 }
 

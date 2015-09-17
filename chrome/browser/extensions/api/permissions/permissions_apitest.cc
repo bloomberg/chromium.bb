@@ -57,7 +57,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, PermissionsFail) {
   // ExtensionBrowserTest doesn't actually fail, it just times out.  To fix this
   // I'll need to add an EXTENSION_LOAD_ERROR notification, which is probably
   // too much for the branch.  I'll enable this on trunk later.
-  //ASSERT_FALSE(RunExtensionTest("permissions/enabled"))) << message_;
+  // ASSERT_FALSE(RunExtensionTest("permissions/enabled"))) << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(ExperimentalApiTest, PermissionsSucceed) {
@@ -92,9 +92,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, OptionalPermissionsGranted) {
   ManifestPermissionSet manifest_permissions;
   URLPatternSet explicit_hosts;
   AddPattern(&explicit_hosts, "http://*.c.com/*");
-  scoped_refptr<PermissionSet> granted_permissions =
-      new PermissionSet(apis, manifest_permissions,
-                        explicit_hosts, URLPatternSet());
+  scoped_refptr<const PermissionSet> granted_permissions = new PermissionSet(
+      apis, manifest_permissions, explicit_hosts, URLPatternSet());
 
   ExtensionPrefs* prefs = ExtensionPrefs::Get(browser()->profile());
   prefs->AddGrantedPermissions("kjmkgkdkpedkejedfhmfcenooemhbpbo",
@@ -184,7 +183,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, OptionalPermissionsFileAccess) {
   // a whole lot (i.e. file access works - but it'd better not be the case
   // that the extension actually has file access, since that'd be the bug
   // that this is supposed to be testing).
-  //EXPECT_TRUE(prefs->AllowFileAccess("hlonmbgfjccgolnaboonlakjckinmhmd"));
+  // EXPECT_TRUE(prefs->AllowFileAccess("hlonmbgfjccgolnaboonlakjckinmhmd"));
 }
 
 // Test requesting, querying, and removing host permissions for host

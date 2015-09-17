@@ -56,7 +56,7 @@ bool PermissionsContainsFunction::RunSync() {
   scoped_ptr<Contains::Params> params(Contains::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  scoped_refptr<PermissionSet> permissions = helpers::UnpackPermissionSet(
+  scoped_refptr<const PermissionSet> permissions = helpers::UnpackPermissionSet(
       params->permissions,
       ExtensionPrefs::Get(GetProfile())->AllowFileAccess(extension_->id()),
       &error_);
@@ -80,7 +80,7 @@ bool PermissionsRemoveFunction::RunSync() {
   scoped_ptr<Remove::Params> params(Remove::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  scoped_refptr<PermissionSet> permissions = helpers::UnpackPermissionSet(
+  scoped_refptr<const PermissionSet> permissions = helpers::UnpackPermissionSet(
       params->permissions,
       ExtensionPrefs::Get(GetProfile())->AllowFileAccess(extension_->id()),
       &error_);
@@ -109,7 +109,7 @@ bool PermissionsRemoveFunction::RunSync() {
       PermissionsParser::GetRequiredPermissions(extension());
   if (!optional->Contains(*permissions) ||
       !scoped_refptr<const PermissionSet>(
-           PermissionSet::CreateIntersection(permissions.get(), required.get()))
+           PermissionSet::CreateIntersection(*permissions, *required))
            ->IsEmpty()) {
     error_ = kCantRemoveRequiredPermissionsError;
     return false;
@@ -119,8 +119,7 @@ bool PermissionsRemoveFunction::RunSync() {
   // For backwards compatability with behavior before this check was added, just
   // silently remove any that aren't present.
   permissions = PermissionSet::CreateIntersection(
-      permissions.get(),
-      extension()->permissions_data()->active_permissions().get());
+      *permissions, *extension()->permissions_data()->active_permissions());
 
   PermissionsUpdater(GetProfile())
       .RemovePermissions(extension(), permissions.get(),
@@ -220,13 +219,13 @@ bool PermissionsRequestFunction::RunAsync() {
   }
 
   // Filter out the granted permissions so we only prompt for new ones.
-  requested_permissions_ = PermissionSet::CreateDifference(
-      requested_permissions_.get(), granted.get());
+  requested_permissions_ =
+      PermissionSet::CreateDifference(*requested_permissions_, *granted);
 
   // Filter out the active permissions.
   requested_permissions_ = PermissionSet::CreateDifference(
-      requested_permissions_.get(),
-      extension()->permissions_data()->active_permissions().get());
+      *requested_permissions_.get(),
+      *extension()->permissions_data()->active_permissions());
 
   AddRef();  // Balanced in InstallUIProceed() / InstallUIAbort().
 

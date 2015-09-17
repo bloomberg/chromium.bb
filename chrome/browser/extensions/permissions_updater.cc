@@ -75,18 +75,19 @@ scoped_refptr<const PermissionSet> GetBoundedActivePermissions(
   // extension's manifest.
   //  a) active permissions must be a subset of optional + default permissions
   //  b) active permissions must contains all default permissions
-  scoped_refptr<PermissionSet> total_permissions = PermissionSet::CreateUnion(
-      required_permissions.get(),
-      PermissionsParser::GetOptionalPermissions(extension).get());
+  scoped_refptr<const PermissionSet> total_permissions =
+      PermissionSet::CreateUnion(
+          *required_permissions,
+          *PermissionsParser::GetOptionalPermissions(extension));
 
   // Make sure the active permissions contain no more than optional + default.
-  scoped_refptr<PermissionSet> adjusted_active =
-      PermissionSet::CreateIntersection(total_permissions.get(),
-                                        active_permissions.get());
+  scoped_refptr<const PermissionSet> adjusted_active =
+      PermissionSet::CreateIntersection(*total_permissions,
+                                        *active_permissions);
 
   // Make sure the active permissions contain the default permissions.
-  adjusted_active = PermissionSet::CreateUnion(required_permissions.get(),
-                                               adjusted_active.get());
+  adjusted_active =
+      PermissionSet::CreateUnion(*required_permissions, *adjusted_active);
 
   return adjusted_active;
 }
@@ -125,10 +126,10 @@ void PermissionsUpdater::AddPermissions(
     const Extension* extension, const PermissionSet* permissions) {
   scoped_refptr<const PermissionSet> active(
       extension->permissions_data()->active_permissions());
-  scoped_refptr<PermissionSet> total(
-      PermissionSet::CreateUnion(active.get(), permissions));
-  scoped_refptr<PermissionSet> added(
-      PermissionSet::CreateDifference(total.get(), active.get()));
+  scoped_refptr<const PermissionSet> total(
+      PermissionSet::CreateUnion(*active, *permissions));
+  scoped_refptr<const PermissionSet> added(
+      PermissionSet::CreateDifference(*total, *active));
 
   SetPermissions(extension, total, nullptr);
 
@@ -147,7 +148,7 @@ void PermissionsUpdater::RemovePermissions(const Extension* extension,
   scoped_refptr<const PermissionSet> active(
       extension->permissions_data()->active_permissions());
   scoped_refptr<const PermissionSet> remaining(
-      PermissionSet::CreateDifference(active.get(), to_remove));
+      PermissionSet::CreateDifference(*active, *to_remove));
 
   // Move any granted permissions that were in the withheld set back to the
   // withheld set so they can be added back later.
@@ -155,11 +156,10 @@ void PermissionsUpdater::RemovePermissions(const Extension* extension,
   // be a withheld permission.
   scoped_refptr<const PermissionSet> removed_withheld =
       PermissionSet::CreateDifference(
-          to_remove,
-          PermissionsParser::GetOptionalPermissions(extension).get());
+          *to_remove, *PermissionsParser::GetOptionalPermissions(extension));
   scoped_refptr<const PermissionSet> withheld = PermissionSet::CreateUnion(
-      removed_withheld.get(),
-      extension->permissions_data()->withheld_permissions().get());
+      *removed_withheld,
+      *extension->permissions_data()->withheld_permissions());
 
   SetPermissions(extension, remaining, withheld);
 
@@ -179,12 +179,12 @@ void PermissionsUpdater::RemovePermissionsUnsafe(
     const PermissionSet* to_remove) {
   scoped_refptr<const PermissionSet> active(
       extension->permissions_data()->active_permissions());
-  scoped_refptr<PermissionSet> total(
-      PermissionSet::CreateDifference(active.get(), to_remove));
+  scoped_refptr<const PermissionSet> total(
+      PermissionSet::CreateDifference(*active, *to_remove));
   // |successfully_removed| might not equal |to_remove| if |to_remove| contains
   // permissions the extension didn't have.
-  scoped_refptr<PermissionSet> successfully_removed(
-      PermissionSet::CreateDifference(active.get(), total.get()));
+  scoped_refptr<const PermissionSet> successfully_removed(
+      PermissionSet::CreateDifference(*active, *total));
 
   SetPermissions(extension, total, nullptr);
   NotifyPermissionsUpdated(REMOVED, extension, successfully_removed.get());
@@ -223,10 +223,10 @@ scoped_refptr<const PermissionSet> PermissionsUpdater::GetRevokablePermissions(
         new PermissionSet(APIPermissionSet(), ManifestPermissionSet(),
                           revokable_explicit_hosts, revokable_scriptable_hosts);
     revokable_permissions = PermissionSet::CreateUnion(
-        revokable_permissions.get(), revokable_host_permissions.get());
+        *revokable_permissions, *revokable_host_permissions);
   }
   return scoped_refptr<const PermissionSet>(PermissionSet::CreateIntersection(
-      active_permissions.get(), revokable_permissions.get()));
+      *active_permissions, *revokable_permissions));
 }
 
 void PermissionsUpdater::GrantActivePermissions(const Extension* extension) {
