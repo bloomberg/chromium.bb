@@ -684,7 +684,7 @@ static bool executeMovePageDown(LocalFrame& frame, Event*, EditorCommandSource, 
     if (!distance)
         return false;
     return frame.selection().modify(FrameSelection::AlterationMove, distance, FrameSelection::DirectionDown,
-        UserTriggered, FrameSelection::AlignCursorOnScrollAlways);
+        UserTriggered, CursorAlignOnScroll::Always);
 }
 
 static bool executeMovePageDownAndModifySelection(LocalFrame& frame, Event*, EditorCommandSource, const String&)
@@ -693,7 +693,7 @@ static bool executeMovePageDownAndModifySelection(LocalFrame& frame, Event*, Edi
     if (!distance)
         return false;
     return frame.selection().modify(FrameSelection::AlterationExtend, distance, FrameSelection::DirectionDown,
-        UserTriggered, FrameSelection::AlignCursorOnScrollAlways);
+        UserTriggered, CursorAlignOnScroll::Always);
 }
 
 static bool executeMovePageUp(LocalFrame& frame, Event*, EditorCommandSource, const String&)
@@ -702,7 +702,7 @@ static bool executeMovePageUp(LocalFrame& frame, Event*, EditorCommandSource, co
     if (!distance)
         return false;
     return frame.selection().modify(FrameSelection::AlterationMove, distance, FrameSelection::DirectionUp,
-        UserTriggered, FrameSelection::AlignCursorOnScrollAlways);
+        UserTriggered, CursorAlignOnScroll::Always);
 }
 
 static bool executeMovePageUpAndModifySelection(LocalFrame& frame, Event*, EditorCommandSource, const String&)
@@ -711,7 +711,7 @@ static bool executeMovePageUpAndModifySelection(LocalFrame& frame, Event*, Edito
     if (!distance)
         return false;
     return frame.selection().modify(FrameSelection::AlterationExtend, distance, FrameSelection::DirectionUp,
-        UserTriggered, FrameSelection::AlignCursorOnScrollAlways);
+        UserTriggered, CursorAlignOnScroll::Always);
 }
 
 static bool executeMoveRight(LocalFrame& frame, Event*, EditorCommandSource, const String&)

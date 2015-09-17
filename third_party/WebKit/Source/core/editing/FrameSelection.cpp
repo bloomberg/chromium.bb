@@ -317,9 +317,9 @@ void FrameSelection::setSelection(const VisibleSelection& newSelection, SetSelec
         ScrollAlignment alignment;
 
         if (m_frame->editor().behavior().shouldCenterAlignWhenSelectionIsRevealed())
-            alignment = (align == AlignCursorOnScrollAlways) ? ScrollAlignment::alignCenterAlways : ScrollAlignment::alignCenterIfNeeded;
+            alignment = (align == CursorAlignOnScroll::Always) ? ScrollAlignment::alignCenterAlways : ScrollAlignment::alignCenterIfNeeded;
         else
-            alignment = (align == AlignCursorOnScrollAlways) ? ScrollAlignment::alignTopAlways : ScrollAlignment::alignToEdgeIfNeeded;
+            alignment = (align == CursorAlignOnScroll::Always) ? ScrollAlignment::alignTopAlways : ScrollAlignment::alignToEdgeIfNeeded;
 
         revealSelection(alignment, RevealExtent);
     }
@@ -1335,7 +1335,7 @@ void FrameSelection::moveRangeSelectionExtent(const IntPoint& contentsPoint)
     setSelection(
         newSelection,
         FrameSelection::CloseTyping | FrameSelection::ClearTypingStyle | FrameSelection::DoNotClearStrategy | UserTriggered,
-        FrameSelection::AlignCursorOnScrollIfNeeded,
+        CursorAlignOnScroll::IfNeeded,
         CharacterGranularity);
 }
 

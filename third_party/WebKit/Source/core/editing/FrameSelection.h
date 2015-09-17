@@ -51,6 +51,8 @@ class SelectionEditor;
 class PendingSelection;
 class Text;
 
+enum class CursorAlignOnScroll { IfNeeded, Always };
+
 enum EUserTriggered { NotUserTriggered = 0, UserTriggered = 1 };
 
 enum RevealExtentOption {
@@ -69,7 +71,6 @@ public:
     ~FrameSelection();
 
     enum EAlteration { AlterationMove, AlterationExtend };
-    enum CursorAlignOnScroll { AlignCursorOnScrollIfNeeded, AlignCursorOnScrollAlways };
     enum SetSelectionOption {
         // 1 << 0 is reserved for EUserTriggered
         CloseTyping = 1 << 1,
@@ -103,13 +104,13 @@ public:
     bool isContentEditable() const { return selection().isContentEditable(); }
     bool isContentRichlyEditable() const { return selection().isContentRichlyEditable(); }
 
-    void moveTo(const VisiblePosition&, EUserTriggered = NotUserTriggered, CursorAlignOnScroll = AlignCursorOnScrollIfNeeded);
+    void moveTo(const VisiblePosition&, EUserTriggered = NotUserTriggered, CursorAlignOnScroll = CursorAlignOnScroll::IfNeeded);
     void moveTo(const VisiblePosition&, const VisiblePosition&, EUserTriggered = NotUserTriggered);
     void moveTo(const Position&, TextAffinity, EUserTriggered = NotUserTriggered);
 
     const VisibleSelection& selection() const;
-    void setSelection(const VisibleSelection&, SetSelectionOptions = CloseTyping | ClearTypingStyle, CursorAlignOnScroll = AlignCursorOnScrollIfNeeded, TextGranularity = CharacterGranularity);
-    void setSelection(const VisibleSelection& selection, TextGranularity granularity) { setSelection(selection, CloseTyping | ClearTypingStyle, AlignCursorOnScrollIfNeeded, granularity); }
+    void setSelection(const VisibleSelection&, SetSelectionOptions = CloseTyping | ClearTypingStyle, CursorAlignOnScroll = CursorAlignOnScroll::IfNeeded, TextGranularity = CharacterGranularity);
+    void setSelection(const VisibleSelection& selection, TextGranularity granularity) { setSelection(selection, CloseTyping | ClearTypingStyle, CursorAlignOnScroll::IfNeeded, granularity); }
     // TODO(yosin) We should get rid of |Range| version of |setSelectedRagne()|
     // for Oilpan.
     bool setSelectedRange(Range*, TextAffinity, DirectionalOption = NonDirectional, SetSelectionOptions = CloseTyping | ClearTypingStyle);
@@ -129,7 +130,7 @@ public:
 
     bool modify(EAlteration, SelectionDirection, TextGranularity, EUserTriggered = NotUserTriggered);
     enum VerticalDirection { DirectionUp, DirectionDown };
-    bool modify(EAlteration, unsigned verticalDistance, VerticalDirection, EUserTriggered = NotUserTriggered, CursorAlignOnScroll = AlignCursorOnScrollIfNeeded);
+    bool modify(EAlteration, unsigned verticalDistance, VerticalDirection, EUserTriggered = NotUserTriggered, CursorAlignOnScroll = CursorAlignOnScroll::IfNeeded);
 
     // Moves the selection extent based on the selection granularity strategy.
     // This function does not allow the selection to collapse. If the new

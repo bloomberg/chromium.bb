@@ -35,10 +35,8 @@ class SelectionEditor final : public NoBaseWillBeGarbageCollectedFinalized<Selec
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(SelectionEditor);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(SelectionEditor);
 public:
-    // TODO(yosin) We should move |CursorAlignOnScroll|, |EAlteration|, and
-    // |VerticalDirection| out from |FrameSelection| class like
-    // |EUserTriggered|.
-    typedef FrameSelection::CursorAlignOnScroll CursorAlignOnScroll;
+    // TODO(yosin) We should move |EAlteration| and |VerticalDirection| out
+    // from |FrameSelection| class like |EUserTriggered|.
     typedef FrameSelection::EAlteration EAlteration;
     typedef FrameSelection::VerticalDirection VerticalDirection;
 
