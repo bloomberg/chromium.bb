@@ -26,6 +26,10 @@ namespace {
 
 const int kWriteDelayMinutes = 60;
 
+// Each bucket holds data usage for a 5 minute interval. History is maintained
+// for 60 days.
+const int kNumExpectedBuckets = 60 * 24 * 60 / 5;
+
 int64 GetListPrefInt64Value(
     const base::ListValue& list_update, size_t index) {
   std::string string_value;
@@ -1044,10 +1048,11 @@ TEST_F(DataReductionProxyCompressionStatsTest, RecordDataUsageSingleSite) {
 
   RecordDataUsage("https://www.google.com", 1000, 1250);
 
-  auto expected_data_usage = make_scoped_ptr(
-      new std::vector<data_reduction_proxy::DataUsageBucket>(5760));
+  auto expected_data_usage =
+      make_scoped_ptr(new std::vector<data_reduction_proxy::DataUsageBucket>(
+          kNumExpectedBuckets));
   data_reduction_proxy::PerConnectionDataUsage* connection_usage =
-      expected_data_usage->at(5759).add_connection_usage();
+      expected_data_usage->at(kNumExpectedBuckets - 1).add_connection_usage();
   data_reduction_proxy::PerSiteDataUsage* site_usage =
       connection_usage->add_site_usage();
   site_usage->set_hostname("www.google.com");
@@ -1069,10 +1074,11 @@ TEST_F(DataReductionProxyCompressionStatsTest, RecordDataUsageMultipleSites) {
   RecordDataUsage("https://yahoo.com", 1001, 1251);
   RecordDataUsage("http://facebook.com", 1002, 1252);
 
-  auto expected_data_usage = make_scoped_ptr(
-      new std::vector<data_reduction_proxy::DataUsageBucket>(5760));
+  auto expected_data_usage =
+      make_scoped_ptr(new std::vector<data_reduction_proxy::DataUsageBucket>(
+          kNumExpectedBuckets));
   data_reduction_proxy::PerConnectionDataUsage* connection_usage =
-      expected_data_usage->at(5759).add_connection_usage();
+      expected_data_usage->at(kNumExpectedBuckets - 1).add_connection_usage();
   data_reduction_proxy::PerSiteDataUsage* site_usage =
       connection_usage->add_site_usage();
   site_usage->set_hostname("www.google.com");
@@ -1101,24 +1107,26 @@ TEST_F(DataReductionProxyCompressionStatsTest,
   EnableDataUsageReporting();
   base::RunLoop().RunUntilIdle();
 
-  base::Time fifteen_mins_ago = base::Time::Now() - TimeDelta::FromMinutes(15);
+  base::Time five_mins_ago = base::Time::Now() - TimeDelta::FromMinutes(5);
 
   RecordDataUsage("https://www.google.com", 1000, 1250);
-  // Fake above record to be from 15 minutes ago.
-  SetLastUpdatedTimestamp(fifteen_mins_ago);
+  // Fake above record to be from 5 minutes ago.
+  SetLastUpdatedTimestamp(five_mins_ago);
   RecordDataUsage("https://yahoo.com", 1001, 1251);
 
-  auto expected_data_usage = make_scoped_ptr(
-      new std::vector<data_reduction_proxy::DataUsageBucket>(5760));
+  auto expected_data_usage =
+      make_scoped_ptr(new std::vector<data_reduction_proxy::DataUsageBucket>(
+          kNumExpectedBuckets));
   data_reduction_proxy::PerConnectionDataUsage* connection_usage =
-      expected_data_usage->at(5758).add_connection_usage();
+      expected_data_usage->at(kNumExpectedBuckets - 2).add_connection_usage();
   data_reduction_proxy::PerSiteDataUsage* site_usage =
       connection_usage->add_site_usage();
   site_usage->set_hostname("www.google.com");
   site_usage->set_data_used(1000);
   site_usage->set_original_size(1250);
 
-  connection_usage = expected_data_usage->at(5759).add_connection_usage();
+  connection_usage =
+      expected_data_usage->at(kNumExpectedBuckets - 1).add_connection_usage();
   site_usage = connection_usage->add_site_usage();
   site_usage->set_hostname("yahoo.com");
   site_usage->set_data_used(1001);
@@ -1138,16 +1146,17 @@ TEST_F(DataReductionProxyCompressionStatsTest,
   EnableDataUsageReporting();
   base::RunLoop().RunUntilIdle();
 
-  base::Time fifteen_mins_ago = base::Time::Now() - TimeDelta::FromMinutes(15);
+  base::Time five_mins_ago = base::Time::Now() - TimeDelta::FromMinutes(5);
 
   RecordDataUsage("https://www.google.com", 1000, 1250);
   // Fake above record to be from 15 minutes ago.
-  SetLastUpdatedTimestamp(fifteen_mins_ago);
+  SetLastUpdatedTimestamp(five_mins_ago);
 
-  auto expected_data_usage = make_scoped_ptr(
-      new std::vector<data_reduction_proxy::DataUsageBucket>(5760));
+  auto expected_data_usage =
+      make_scoped_ptr(new std::vector<data_reduction_proxy::DataUsageBucket>(
+          kNumExpectedBuckets));
   data_reduction_proxy::PerConnectionDataUsage* connection_usage =
-      expected_data_usage->at(5758).add_connection_usage();
+      expected_data_usage->at(kNumExpectedBuckets - 2).add_connection_usage();
   data_reduction_proxy::PerSiteDataUsage* site_usage =
       connection_usage->add_site_usage();
   site_usage->set_hostname("www.google.com");

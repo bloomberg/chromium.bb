@@ -11,6 +11,11 @@
 #include "components/data_reduction_proxy/proto/data_store.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace {
+// Each bucket holds data usage for a 5 minute interval. History is maintained
+// for 60 days.
+const unsigned kNumExpectedBuckets = 60 * 24 * 60 / 5;
+}
 
 namespace data_reduction_proxy {
 
@@ -51,7 +56,7 @@ TEST_F(DataUsageStoreTest, LoadEmpty) {
   std::vector<DataUsageBucket> data_usage;
   data_usage_store()->LoadDataUsage(&data_usage);
 
-  ASSERT_EQ(5760u, data_usage.size());
+  ASSERT_EQ(kNumExpectedBuckets, data_usage.size());
   ASSERT_FALSE(data_usage[0].has_last_updated_timestamp());
 }
 
@@ -72,10 +77,12 @@ TEST_F(DataUsageStoreTest, LoadAndStoreToSameBucket) {
   std::vector<DataUsageBucket> data_usage;
   data_usage_store()->LoadDataUsage(&data_usage);
 
-  ASSERT_EQ(5760u, data_usage.size());
+  ASSERT_EQ(kNumExpectedBuckets, data_usage.size());
   ASSERT_FALSE(data_usage[0].has_last_updated_timestamp());
-  ASSERT_FALSE(data_usage[5758].has_last_updated_timestamp());
-  ASSERT_EQ(now.ToInternalValue(), data_usage[5759].last_updated_timestamp());
+  ASSERT_FALSE(
+      data_usage[kNumExpectedBuckets - 2].has_last_updated_timestamp());
+  ASSERT_EQ(now.ToInternalValue(),
+            data_usage[kNumExpectedBuckets - 1].last_updated_timestamp());
 }
 
 TEST_F(DataUsageStoreTest, StoreSameBucket) {
@@ -90,7 +97,7 @@ TEST_F(DataUsageStoreTest, StoreSameBucket) {
   exploded.millisecond = 0;
   base::Time time1 = base::Time::FromUTCExploded(exploded);
 
-  exploded.minute = 14;
+  exploded.minute = 4;
   exploded.second = 59;
   exploded.millisecond = 999;
   base::Time time2 = base::Time::FromUTCExploded(exploded);
@@ -110,10 +117,12 @@ TEST_F(DataUsageStoreTest, StoreSameBucket) {
   std::vector<DataUsageBucket> data_usage;
   data_usage_store()->LoadDataUsage(&data_usage);
 
-  ASSERT_EQ(5760u, data_usage.size());
+  ASSERT_EQ(kNumExpectedBuckets, data_usage.size());
   ASSERT_FALSE(data_usage[0].has_last_updated_timestamp());
-  ASSERT_FALSE(data_usage[5758].has_last_updated_timestamp());
-  ASSERT_EQ(time2.ToInternalValue(), data_usage[5759].last_updated_timestamp());
+  ASSERT_FALSE(
+      data_usage[kNumExpectedBuckets - 2].has_last_updated_timestamp());
+  ASSERT_EQ(time2.ToInternalValue(),
+            data_usage[kNumExpectedBuckets - 1].last_updated_timestamp());
 }
 
 TEST_F(DataUsageStoreTest, StoreConsecutiveBuckets) {
@@ -128,7 +137,7 @@ TEST_F(DataUsageStoreTest, StoreConsecutiveBuckets) {
   exploded.millisecond = 999;
   base::Time time1 = base::Time::FromUTCExploded(exploded);
 
-  exploded.minute = 15;
+  exploded.minute = 5;
   exploded.second = 0;
   exploded.millisecond = 0;
   base::Time time2 = base::Time::FromUTCExploded(exploded);
@@ -148,11 +157,14 @@ TEST_F(DataUsageStoreTest, StoreConsecutiveBuckets) {
   std::vector<DataUsageBucket> data_usage;
   data_usage_store()->LoadDataUsage(&data_usage);
 
-  ASSERT_EQ(5760u, data_usage.size());
+  ASSERT_EQ(kNumExpectedBuckets, data_usage.size());
   ASSERT_FALSE(data_usage[0].has_last_updated_timestamp());
-  ASSERT_FALSE(data_usage[5757].has_last_updated_timestamp());
-  ASSERT_EQ(time1.ToInternalValue(), data_usage[5758].last_updated_timestamp());
-  ASSERT_EQ(time2.ToInternalValue(), data_usage[5759].last_updated_timestamp());
+  ASSERT_FALSE(
+      data_usage[kNumExpectedBuckets - 3].has_last_updated_timestamp());
+  ASSERT_EQ(time1.ToInternalValue(),
+            data_usage[kNumExpectedBuckets - 2].last_updated_timestamp());
+  ASSERT_EQ(time2.ToInternalValue(),
+            data_usage[kNumExpectedBuckets - 1].last_updated_timestamp());
 }
 
 TEST_F(DataUsageStoreTest, StoreMultipleBuckets) {
@@ -161,19 +173,18 @@ TEST_F(DataUsageStoreTest, StoreMultipleBuckets) {
 
   // Comments indicate time expressed as day.hour.min.sec.millis relative to
   // each other beginning at 0.0.0.0.0.
-  // The first bucket range is 0.0.0.0.0 - 0.0.14.59.999 and
-  // the second bucket range is 0.0.15.0.0 - 0.0.29.59.999, etc.
+  // The first bucket range is 0.0.0.0.0 - 0.0.4.59.999 and
+  // the second bucket range is 0.0.5.0.0 - 0.0.9.59.999, etc.
   base::Time first_bucket_time = base::Time::Now();  // 0.0.0.0.0.
-  base::Time last_bucket_time = first_bucket_time    // 59.23.45.0.0
+  base::Time last_bucket_time = first_bucket_time    // 59.23.55.0.0
                                 + base::TimeDelta::FromDays(60) -
-                                base::TimeDelta::FromMinutes(15);
-  base::Time before_history_time =  // 0.0.-15.0.0
-      first_bucket_time - base::TimeDelta::FromMinutes(15);
-  base::Time tenth_bucket_time =  // 0.2.15.0.0
-      first_bucket_time + base::TimeDelta::FromHours(2) +
-      base::TimeDelta::FromMinutes(15);
-  base::Time second_last_bucket_time =  // 59.23.30.0.0
-      last_bucket_time - base::TimeDelta::FromMinutes(15);
+                                base::TimeDelta::FromMinutes(5);
+  base::Time before_history_time =  // 0.0.-5.0.0
+      first_bucket_time - base::TimeDelta::FromMinutes(5);
+  base::Time tenth_bucket_time =  // 0.0.45.0.0
+      first_bucket_time + base::TimeDelta::FromMinutes(45);
+  base::Time second_last_bucket_time =  // 59.23.50.0.0
+      last_bucket_time - base::TimeDelta::FromMinutes(5);
 
   // This bucket will be discarded when the |last_bucket| is stored.
   DataUsageBucket bucket_before_history;
@@ -213,27 +224,27 @@ TEST_F(DataUsageStoreTest, StoreMultipleBuckets) {
       second_last_bucket_time.ToInternalValue());
   data_usage_store()->StoreCurrentDataUsageBucket(second_last_bucket);
   // Max number of buckets we store to DB plus one for the current index.
-  ASSERT_EQ(5761u, store()->map()->size());
+  ASSERT_EQ(kNumExpectedBuckets + 1, store()->map()->size());
 
   // This bucket should simply overwrite oldest bucket, so number of entries in
   // store should be unchanged.
   DataUsageBucket last_bucket;
   last_bucket.set_last_updated_timestamp(last_bucket_time.ToInternalValue());
   data_usage_store()->StoreCurrentDataUsageBucket(last_bucket);
-  ASSERT_EQ(5761u, store()->map()->size());
+  ASSERT_EQ(kNumExpectedBuckets + 1, store()->map()->size());
 
   std::vector<DataUsageBucket> data_usage;
   data_usage_store()->LoadDataUsage(&data_usage);
 
-  ASSERT_EQ(5760u, data_usage.size());
+  ASSERT_EQ(kNumExpectedBuckets, data_usage.size());
   ASSERT_EQ(first_bucket_time.ToInternalValue(),
             data_usage[0].last_updated_timestamp());
   ASSERT_EQ(tenth_bucket_time.ToInternalValue(),
             data_usage[9].last_updated_timestamp());
   ASSERT_EQ(second_last_bucket_time.ToInternalValue(),
-            data_usage[5758].last_updated_timestamp());
+            data_usage[kNumExpectedBuckets - 2].last_updated_timestamp());
   ASSERT_EQ(last_bucket_time.ToInternalValue(),
-            data_usage[5759].last_updated_timestamp());
+            data_usage[kNumExpectedBuckets - 1].last_updated_timestamp());
 }
 
 }  // namespace data_reduction_proxy
