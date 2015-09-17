@@ -1510,9 +1510,7 @@ bool IsWebElementEmpty(const blink::WebElement& element) {
                                  base::kWhitespaceASCII))
       return false;
 
-    // We ignore all other items with names which begin with
-    // the character # because they are not html tags.
-    if (item.nodeName().utf8()[0] == '#')
+    if (!item.isElementNode())
       continue;
 
     bool tag_is_allowed = false;
