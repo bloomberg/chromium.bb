@@ -92,7 +92,10 @@ PositionAlgorithm<Strategy>::PositionAlgorithm(PassRefPtrWillBeRawPtr<Node> anch
     , m_offset(offset)
     , m_anchorType(PositionAnchorType::OffsetInAnchor)
 {
-    ASSERT(offset >= 0);
+    if (m_anchorNode)
+        ASSERT(offset >= 0);
+    else
+        ASSERT(offset == 0);
     ASSERT(canBeAnchorNode(m_anchorNode.get()));
 }
 

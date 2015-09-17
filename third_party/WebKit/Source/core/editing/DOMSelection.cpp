@@ -48,6 +48,14 @@
 
 namespace blink {
 
+static Position createPosition(Node* node, int offset)
+{
+    ASSERT(offset >= 0);
+    if (!node)
+        return Position();
+    return Position(node, offset);
+}
+
 static Node* selectionShadowAncestor(LocalFrame* frame)
 {
     Node* node = frame->selection().selection().base().anchorNode();
@@ -276,8 +284,8 @@ void DOMSelection::setBaseAndExtent(Node* baseNode, int baseOffset, Node* extent
     if (!isValidForPosition(baseNode) || !isValidForPosition(extentNode))
         return;
 
-    VisiblePosition visibleBase = createVisiblePosition(Position(baseNode, baseOffset));
-    VisiblePosition visibleExtent = createVisiblePosition(Position(extentNode, extentOffset));
+    VisiblePosition visibleBase = createVisiblePosition(createPosition(baseNode, baseOffset));
+    VisiblePosition visibleExtent = createVisiblePosition(createPosition(extentNode, extentOffset));
 
     m_frame->selection().moveTo(visibleBase, visibleExtent);
 }
@@ -351,7 +359,7 @@ void DOMSelection::extend(Node* node, int offset, ExceptionState& exceptionState
     if (!isValidForPosition(node))
         return;
 
-    m_frame->selection().setExtent(createVisiblePosition(Position(node, offset)));
+    m_frame->selection().setExtent(createVisiblePosition(createPosition(node, offset)));
 }
 
 PassRefPtrWillBeRawPtr<Range> DOMSelection::getRangeAt(int index, ExceptionState& exceptionState)
