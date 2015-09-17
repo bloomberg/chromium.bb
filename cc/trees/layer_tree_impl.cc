@@ -1521,6 +1521,14 @@ static ViewportSelectionBound ComputeViewportSelectionBound(
   gfx::PointF screen_bottom = MathUtil::MapPoint(
       layer->screen_space_transform(), layer_bottom, &clipped);
 
+  // MapPoint can produce points with NaN components (even when no inputs are
+  // NaN). Since consumers of ViewportSelectionBounds may round |edge_top| or
+  // |edge_bottom| (and since rounding will crash on NaN), we return an empty
+  // bound instead.
+  if (std::isnan(screen_top.x()) || std::isnan(screen_top.y()) ||
+      std::isnan(screen_bottom.x()) || std::isnan(screen_bottom.y()))
+    return ViewportSelectionBound();
+
   const float inv_scale = 1.f / device_scale_factor;
   viewport_bound.edge_top = gfx::ScalePoint(screen_top, inv_scale);
   viewport_bound.edge_bottom = gfx::ScalePoint(screen_bottom, inv_scale);

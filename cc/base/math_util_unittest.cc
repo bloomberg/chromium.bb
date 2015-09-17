@@ -219,6 +219,104 @@ TEST(MathUtilTest, MapEnclosedRectWith2dAxisAlignedTransform) {
   EXPECT_EQ(gfx::Rect(2, 4, 6, 8), output);
 }
 
+TEST(MathUtilTest, MapEnclosingRectWithLargeTransforms) {
+  gfx::Rect input(1, 2, 100, 200);
+  gfx::Rect output;
+
+  gfx::Transform large_x_scale;
+  large_x_scale.Scale(SkDoubleToMScalar(1e37), 1.0);
+
+  gfx::Transform infinite_x_scale;
+  infinite_x_scale = large_x_scale * large_x_scale;
+
+  gfx::Transform large_y_scale;
+  large_y_scale.Scale(1.0, SkDoubleToMScalar(1e37));
+
+  gfx::Transform infinite_y_scale;
+  infinite_y_scale = large_y_scale * large_y_scale;
+
+  gfx::Transform rotation;
+  rotation.RotateAboutYAxis(170.0);
+
+  int max_int = std::numeric_limits<int>::max();
+
+  output = MathUtil::MapEnclosingClippedRect(large_x_scale, input);
+  EXPECT_EQ(gfx::Rect(max_int, 2, 0, 200), output);
+
+  output = MathUtil::MapEnclosingClippedRect(large_x_scale * rotation, input);
+  EXPECT_EQ(gfx::Rect(), output);
+
+  output = MathUtil::MapEnclosingClippedRect(infinite_x_scale, input);
+  EXPECT_EQ(gfx::Rect(max_int, 2, 0, 200), output);
+
+  output =
+      MathUtil::MapEnclosingClippedRect(infinite_x_scale * rotation, input);
+  EXPECT_EQ(gfx::Rect(), output);
+
+  output = MathUtil::MapEnclosingClippedRect(large_y_scale, input);
+  EXPECT_EQ(gfx::Rect(1, max_int, 100, 0), output);
+
+  output = MathUtil::MapEnclosingClippedRect(large_y_scale * rotation, input);
+  EXPECT_EQ(gfx::Rect(-100, max_int, 100, 0), output);
+
+  output = MathUtil::MapEnclosingClippedRect(infinite_y_scale, input);
+  EXPECT_EQ(gfx::Rect(1, max_int, 100, 0), output);
+
+  output =
+      MathUtil::MapEnclosingClippedRect(infinite_y_scale * rotation, input);
+  EXPECT_EQ(gfx::Rect(), output);
+}
+
+TEST(MathUtilTest, ProjectEnclosingRectWithLargeTransforms) {
+  gfx::Rect input(1, 2, 100, 200);
+  gfx::Rect output;
+
+  gfx::Transform large_x_scale;
+  large_x_scale.Scale(SkDoubleToMScalar(1e37), 1.0);
+
+  gfx::Transform infinite_x_scale;
+  infinite_x_scale = large_x_scale * large_x_scale;
+
+  gfx::Transform large_y_scale;
+  large_y_scale.Scale(1.0, SkDoubleToMScalar(1e37));
+
+  gfx::Transform infinite_y_scale;
+  infinite_y_scale = large_y_scale * large_y_scale;
+
+  gfx::Transform rotation;
+  rotation.RotateAboutYAxis(170.0);
+
+  int max_int = std::numeric_limits<int>::max();
+
+  output = MathUtil::ProjectEnclosingClippedRect(large_x_scale, input);
+  EXPECT_EQ(gfx::Rect(max_int, 2, 0, 200), output);
+
+  output =
+      MathUtil::ProjectEnclosingClippedRect(large_x_scale * rotation, input);
+  EXPECT_EQ(gfx::Rect(), output);
+
+  output = MathUtil::ProjectEnclosingClippedRect(infinite_x_scale, input);
+  EXPECT_EQ(gfx::Rect(max_int, 2, 0, 200), output);
+
+  output =
+      MathUtil::ProjectEnclosingClippedRect(infinite_x_scale * rotation, input);
+  EXPECT_EQ(gfx::Rect(), output);
+
+  output = MathUtil::ProjectEnclosingClippedRect(large_y_scale, input);
+  EXPECT_EQ(gfx::Rect(1, max_int, 100, 0), output);
+
+  output =
+      MathUtil::ProjectEnclosingClippedRect(large_y_scale * rotation, input);
+  EXPECT_EQ(gfx::Rect(-103, max_int, 102, 0), output);
+
+  output = MathUtil::ProjectEnclosingClippedRect(infinite_y_scale, input);
+  EXPECT_EQ(gfx::Rect(1, max_int, 100, 0), output);
+
+  output =
+      MathUtil::ProjectEnclosingClippedRect(infinite_y_scale * rotation, input);
+  EXPECT_EQ(gfx::Rect(), output);
+}
+
 TEST(MathUtilTest, RoundUp) {
   for (int multiplier = 1; multiplier <= 10; ++multiplier) {
     // Try attempts in descending order, so that we can

@@ -1991,6 +1991,31 @@ TEST_F(LayerTreeHostCommonTest, AnimationsForRenderSurfaceHierarchy) {
       5.0, grand_child_of_rs2->screen_space_transform().matrix().get(1, 3));
 }
 
+TEST_F(LayerTreeHostCommonTest, LargeTransforms) {
+  LayerImpl* parent = root_layer();
+  LayerImpl* child = AddChildToRoot<LayerImpl>();
+  LayerImpl* grand_child = AddChild<LayerImpl>(child);
+
+  grand_child->SetDrawsContent(true);
+
+  gfx::Transform large_transform;
+  large_transform.Scale(SkDoubleToMScalar(1e37), SkDoubleToMScalar(1e37));
+
+  gfx::Transform identity;
+
+  SetLayerPropertiesForTesting(parent, identity, gfx::Point3F(), gfx::PointF(),
+                               gfx::Size(10, 10), true, false, true);
+  SetLayerPropertiesForTesting(child, large_transform, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(10, 10), true, false,
+                               false);
+  SetLayerPropertiesForTesting(grand_child, large_transform, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(10, 10), true, false,
+                               false);
+  ExecuteCalculateDrawProperties(parent);
+
+  EXPECT_EQ(gfx::Rect(), grand_child->visible_layer_rect());
+}
+
 TEST_F(LayerTreeHostCommonTest,
        ScreenSpaceTransformIsAnimatingWithDelayedAnimation) {
   LayerImpl* parent = root_layer();

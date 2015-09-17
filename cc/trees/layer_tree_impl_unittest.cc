@@ -2005,6 +2005,69 @@ TEST_F(LayerTreeImplTest, SelectionBoundsForScaledLayers) {
   EXPECT_TRUE(output.end.visible);
 }
 
+TEST_F(LayerTreeImplTest, SelectionBoundsWithLargeTransforms) {
+  int root_id = 1;
+  int child_id = 2;
+  int grand_child_id = 3;
+
+  scoped_ptr<LayerImpl> root =
+      LayerImpl::Create(host_impl().active_tree(), root_id);
+  gfx::Size bounds(100, 100);
+  gfx::Transform identity_matrix;
+  gfx::Point3F transform_origin;
+  gfx::PointF position;
+
+  SetLayerPropertiesForTesting(root.get(), identity_matrix, transform_origin,
+                               position, bounds, true, false, true);
+
+  gfx::Transform large_transform;
+  large_transform.Scale(SkDoubleToMScalar(1e37), SkDoubleToMScalar(1e37));
+  large_transform.RotateAboutYAxis(30);
+
+  {
+    scoped_ptr<LayerImpl> child =
+        LayerImpl::Create(host_impl().active_tree(), child_id);
+    SetLayerPropertiesForTesting(child.get(), large_transform, transform_origin,
+                                 position, bounds, true, false, false);
+
+    scoped_ptr<LayerImpl> grand_child =
+        LayerImpl::Create(host_impl().active_tree(), grand_child_id);
+    SetLayerPropertiesForTesting(grand_child.get(), large_transform,
+                                 transform_origin, position, bounds, true,
+                                 false, false);
+    grand_child->SetDrawsContent(true);
+
+    child->AddChild(grand_child.Pass());
+    root->AddChild(child.Pass());
+  }
+
+  host_impl().SetViewportSize(root->bounds());
+  host_impl().active_tree()->SetRootLayer(root.Pass());
+  host_impl().UpdateNumChildrenAndDrawPropertiesForActiveTree();
+
+  LayerSelection input;
+
+  input.start.type = SELECTION_BOUND_LEFT;
+  input.start.edge_top = gfx::PointF(10, 10);
+  input.start.edge_bottom = gfx::PointF(10, 20);
+  input.start.layer_id = grand_child_id;
+
+  input.end.type = SELECTION_BOUND_RIGHT;
+  input.end.edge_top = gfx::PointF(50, 10);
+  input.end.edge_bottom = gfx::PointF(50, 30);
+  input.end.layer_id = grand_child_id;
+
+  host_impl().active_tree()->RegisterSelection(input);
+
+  ViewportSelection output;
+  host_impl().active_tree()->GetViewportSelection(&output);
+
+  // edge_bottom and edge_top aren't allowed to have NaNs, so the selection
+  // should be empty.
+  EXPECT_EQ(ViewportSelectionBound(), output.start);
+  EXPECT_EQ(ViewportSelectionBound(), output.end);
+}
+
 TEST_F(LayerTreeImplTest, NumLayersTestOne) {
   EXPECT_EQ(0u, host_impl().active_tree()->NumLayers());
   scoped_ptr<LayerImpl> root = LayerImpl::Create(host_impl().active_tree(), 1);
