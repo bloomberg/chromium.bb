@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<style>
+div {
+  position: absolute;
+  width: 100px;
+  height: 100px;
+  background: black;
+  animation: test 1e8s;
+}
+@keyframes test {
+  from {transform: translate(100px, 100px);}
+  to {transform: translate(100px, 100px);}
+}
+</style>
+<div></div>
+<script>
+if (window.testRunner)
+  testRunner.waitUntilDone();
+
+requestAnimationFrame(() => {
+  requestAnimationFrame(() => {
+    internals.setZoomFactor(2);
+    requestAnimationFrame(() => {
+      if (window.testRunner)
+        testRunner.notifyDone();
+    });
+  });
+});
+</script>

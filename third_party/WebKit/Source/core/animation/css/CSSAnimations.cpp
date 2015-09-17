@@ -228,6 +228,8 @@ void CSSAnimations::calculateCompositorAnimationUpdate(CSSAnimationUpdate& updat
         return;
 
     const ComputedStyle& oldStyle = *animatingElement->layoutObject()->style();
+    if (!oldStyle.shouldCompositeForCurrentAnimations())
+        return;
 
     CSSAnimations& cssAnimations = elementAnimations->cssAnimations();
     for (auto& runningAnimation : cssAnimations.m_animations.values()) {
@@ -238,6 +240,20 @@ void CSSAnimations::calculateCompositorAnimationUpdate(CSSAnimationUpdate& updat
                 KeyframeEffectModelBase* keyframeEffect = toKeyframeEffectModelBase(model);
                 if (keyframeEffect->hasSyntheticKeyframes() && keyframeEffect->snapshotNeutralCompositorKeyframes(element, oldStyle, style))
                     update.updateCompositorKeyframes(&animation);
+            }
+        }
+    }
+
+    if (oldStyle.hasCurrentTransformAnimation() && oldStyle.effectiveZoom() != style.effectiveZoom()) {
+        for (auto& entry : elementAnimations->animations()) {
+            Animation& animation = *entry.key;
+            if (animation.effect() && animation.effect()->isKeyframeEffect()) {
+                EffectModel* model = toKeyframeEffect(animation.effect())->model();
+                if (model && model->isKeyframeEffectModel()) {
+                    KeyframeEffectModelBase* keyframeEffect = toKeyframeEffectModelBase(model);
+                    if (keyframeEffect->affects(PropertyHandle(CSSPropertyTransform)) && keyframeEffect->snapshotAllCompositorKeyframes(element, &style))
+                        update.updateCompositorKeyframes(&animation);
+                }
             }
         }
     }
