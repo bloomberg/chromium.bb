@@ -281,8 +281,9 @@ const char* WebNavigationPolicyToString(blink::WebNavigationPolicy policy) {
       return kPolicyNewWindow;
     case blink::WebNavigationPolicyNewPopup:
       return kPolicyNewPopup;
+    default:
+      return kIllegalString;
   }
-  return kIllegalString;
 }
 
 std::string DumpFrameHeaderIfNeeded(blink::WebFrame* frame) {
