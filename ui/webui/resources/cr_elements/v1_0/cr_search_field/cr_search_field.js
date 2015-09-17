@@ -16,6 +16,11 @@ var SearchField = Polymer({
   is: 'cr-search-field',
 
   properties: {
+    label: {
+      type: String,
+      value: '',
+    },
+
     showingSearch_: {
       type: Boolean,
       value: false,

@@ -8,15 +8,14 @@
 <dom-module id="cr-search-field">
   <template>
     <paper-icon-button icon="search" id="search-button"
-        disabled$="[[showingSearch_]]"
-        i18n-values="title:search"
+        disabled$="[[showingSearch_]]" title="[[label]]"
         on-click="toggleShowingSearch_"></paper-icon-button>
     <template is="dom-if" if="[[showingSearch_]]" id="search-container">
       <paper-input-container id="search-term" on-search="onSearchTermSearch_"
           on-keydown="onSearchTermKeydown_" hidden$="[[!showingSearch_]]"
           no-label-float>
         <input is="iron-input" id="search-input" type="search"
-            i18n-values="placeholder:search" incremental>
+            placeholder="[[label]]" incremental>
         <paper-icon-button icon="cancel" id="clear-search"
             on-click="toggleShowingSearch_"
             hidden$="[[!showingSearch_]]"></paper-icon-button>
