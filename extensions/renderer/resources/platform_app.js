@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-var $console = window.console;
-
 /**
  * Returns a function that logs a 'not available' error to the console and
  * returns undefined.
@@ -14,7 +12,7 @@ function generateDisabledMethodStub(messagePrefix, opt_messageSuffix) {
   var message = messagePrefix + ' is not available in packaged apps.';
   if (opt_messageSuffix) message = message + ' ' + opt_messageSuffix;
   return function() {
-    $console.error(message);
+    console.error(message);
     return;
   };
 }
@@ -157,10 +155,12 @@ disableGetters(window.history, 'history',
     ['back', 'forward', 'go', 'length', 'pushState', 'replaceState']);
 
 // Disable find.
+disableMethods(window, 'window', ['find']);
 disableMethods(Window.prototype, 'window', ['find']);
 
 // Disable modal dialogs. Shell windows disable these anyway, but it's nice to
 // warn.
+disableMethods(window, 'window', ['alert', 'confirm', 'prompt']);
 disableMethods(Window.prototype, 'window', ['alert', 'confirm', 'prompt']);
 
 // Disable window.*bar.
@@ -198,11 +198,12 @@ window.addEventListener('readystatechange', function(event) {
 }, true);
 
 // Disable onunload, onbeforeunload.
+disableSetters(window, 'window', ['onbeforeunload', 'onunload']);
 disableSetters(Window.prototype, 'window', ['onbeforeunload', 'onunload']);
-var windowAddEventListener = Window.prototype.addEventListener;
-Window.prototype.addEventListener = function(type) {
+var eventTargetAddEventListener = EventTarget.prototype.addEventListener;
+EventTarget.prototype.addEventListener = function(type) {
   if (type === 'unload' || type === 'beforeunload')
     generateDisabledMethodStub(type)();
   else
-    return $Function.apply(windowAddEventListener, window, arguments);
+    return $Function.apply(eventTargetAddEventListener, this, arguments);
 };
