@@ -80,6 +80,32 @@
 #endif
 #endif
 
+#if defined(__ANDROID__) || defined(ANDROID)
+// On android, there are no environment variables.
+// Instead, we use system properties, set via:
+//   adb shell setprop prop_name prop_value
+// From <sys/system_properties.h>,
+//   PROP_NAME_MAX   32
+//   PROP_VALUE_MAX  92
+#define HEAPPROFILE "heapprof"
+#define HEAP_PROFILE_ALLOCATION_INTERVAL "heapprof.allocation_interval"
+#define HEAP_PROFILE_DEALLOCATION_INTERVAL "heapprof.deallocation_interval"
+#define HEAP_PROFILE_INUSE_INTERVAL "heapprof.inuse_interval"
+#define HEAP_PROFILE_TIME_INTERVAL "heapprof.time_interval"
+#define HEAP_PROFILE_MMAP_LOG "heapprof.mmap_log"
+#define HEAP_PROFILE_MMAP "heapprof.mmap"
+#define HEAP_PROFILE_ONLY_MMAP "heapprof.only_mmap"
+#else  // defined(__ANDROID__) || defined(ANDROID)
+#define HEAPPROFILE "HEAPPROFILE"
+#define HEAP_PROFILE_ALLOCATION_INTERVAL "HEAP_PROFILE_ALLOCATION_INTERVAL"
+#define HEAP_PROFILE_DEALLOCATION_INTERVAL "HEAP_PROFILE_DEALLOCATION_INTERVAL"
+#define HEAP_PROFILE_INUSE_INTERVAL "HEAP_PROFILE_INUSE_INTERVAL"
+#define HEAP_PROFILE_TIME_INTERVAL "HEAP_PROFILE_TIME_INTERVAL"
+#define HEAP_PROFILE_MMAP_LOG "HEAP_PROFILE_MMAP_LOG"
+#define HEAP_PROFILE_MMAP "HEAP_PROFILE_MMAP"
+#define HEAP_PROFILE_ONLY_MMAP "HEAP_PROFILE_ONLY_MMAP"
+#endif  // defined(__ANDROID__) || defined(ANDROID)
+
 using STL_NAMESPACE::string;
 using STL_NAMESPACE::sort;
 
