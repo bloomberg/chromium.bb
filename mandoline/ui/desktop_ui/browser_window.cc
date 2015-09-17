@@ -238,11 +238,8 @@ void BrowserWindow::TopLevelNavigate(mojo::URLRequestPtr request) {
   Embed(request.Pass());
 }
 
-void BrowserWindow::LoadingStateChanged(bool is_loading) {
+void BrowserWindow::LoadingStateChanged(bool is_loading, double progress) {
   progress_bar_->SetIsLoading(is_loading);
-}
-
-void BrowserWindow::ProgressChanged(double progress) {
   progress_bar_->SetProgress(progress);
 }
 

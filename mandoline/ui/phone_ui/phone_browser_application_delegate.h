@@ -55,8 +55,7 @@ class PhoneBrowserApplicationDelegate :
 
   // Overridden from web_view::mojom::WebViewClient:
   void TopLevelNavigate(mojo::URLRequestPtr request) override;
-  void LoadingStateChanged(bool is_loading) override;
-  void ProgressChanged(double progress) override;
+  void LoadingStateChanged(bool is_loading, double progress) override;
   void BackForwardChanged(web_view::mojom::ButtonState back_button,
                           web_view::mojom::ButtonState forward_button) override;
   void TitleChanged(const mojo::String& title) override;

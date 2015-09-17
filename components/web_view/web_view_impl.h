@@ -72,8 +72,7 @@ class WebViewImpl : public mojom::WebView,
   bool CanPostMessageEventToFrame(const Frame* source,
                                   const Frame* target,
                                   HTMLMessageEvent* event) override;
-  void LoadingStateChanged(bool loading) override;
-  void ProgressChanged(double progress) override;
+  void LoadingStateChanged(bool loading, double progress) override;
   void TitleChanged(const mojo::String& title) override;
   void NavigateTopLevel(Frame* source, mojo::URLRequestPtr request) override;
   void CanNavigateFrame(Frame* target,

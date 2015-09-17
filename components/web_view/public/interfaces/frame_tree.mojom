@@ -74,15 +74,8 @@ interface FrameTreeServer {
                           uint32 target_frame_id,
                           HTMLMessageEvent event);
 
-  // Notifies the server that a load has started or stopped in this frame.
-  // When loading is started, progress is reset to 0, but when loading is
-  // stopped progress may not have reached 1.0.
-  LoadingStarted(uint32 frame_id);
-  LoadingStopped(uint32 frame_id);
-
-  // Called when the progress for this frame changes. Will only be called while
-  // a load is in progress.
-  ProgressChanged(uint32 frame_id, double progress);
+  // Notifies the server that the loading state and progress changed.
+  LoadingStateChanged(uint32 frame_id, bool loading, double progress);
 
   // Called when the title becomes available or changes.
   TitleChanged(uint32 frame_id, string? title);

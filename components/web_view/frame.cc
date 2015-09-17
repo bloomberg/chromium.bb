@@ -206,13 +206,14 @@ void Frame::ChangeClient(FrameTreeClient* frame_tree_client,
     frame_tree_server_binding->user_data = user_data_.Pass();
     frame_tree_server_binding->frame_tree_server_binding =
         frame_tree_server_binding_.Pass();
+  } else {
+    loading_ = false;
+    progress_ = 0.f;
   }
 
   user_data_ = user_data.Pass();
   frame_tree_client_ = frame_tree_client;
   frame_tree_server_binding_.reset();
-  loading_ = false;
-  progress_ = 0.f;
   app_id_ = app_id;
 
   InitClient(client_type, frame_tree_server_binding.Pass(),
@@ -304,23 +305,10 @@ void Frame::OnCanNavigateFrame(uint32_t app_id,
                app_id);
 }
 
-void Frame::LoadingStartedImpl() {
-  DCHECK(!loading_);
-  loading_ = true;
-  progress_ = 0.f;
-  tree_->LoadingStateChanged();
-}
-
-void Frame::LoadingStoppedImpl() {
-  DCHECK(loading_);
-  loading_ = false;
-  tree_->LoadingStateChanged();
-}
-
-void Frame::ProgressChangedImpl(double progress) {
-  DCHECK(loading_);
+void Frame::LoadingStateChangedImpl(bool loading, double progress) {
+  loading_ = loading;
   progress_ = progress;
-  tree_->ProgressChanged();
+  tree_->LoadingStateChanged();
 }
 
 void Frame::TitleChangedImpl(const mojo::String& title) {
@@ -455,22 +443,12 @@ void Frame::PostMessageEventToFrame(uint32_t source_frame_id,
                                                event.Pass());
 }
 
-void Frame::LoadingStarted(uint32_t frame_id) {
+void Frame::LoadingStateChanged(uint32 frame_id,
+                                bool loading,
+                                double progress) {
   Frame* target_frame = FindFrameWithIdFromSameApp(frame_id);
   if (target_frame)
-    target_frame->LoadingStartedImpl();
-}
-
-void Frame::LoadingStopped(uint32_t frame_id) {
-  Frame* target_frame = FindFrameWithIdFromSameApp(frame_id);
-  if (target_frame)
-    target_frame->LoadingStoppedImpl();
-}
-
-void Frame::ProgressChanged(uint32_t frame_id, double progress) {
-  Frame* target_frame = FindFrameWithIdFromSameApp(frame_id);
-  if (target_frame)
-    target_frame->ProgressChangedImpl(progress);
+    target_frame->LoadingStateChangedImpl(loading, progress);
 }
 
 void Frame::TitleChanged(uint32_t frame_id, const mojo::String& title) {

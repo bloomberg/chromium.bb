@@ -407,15 +407,15 @@ blink::WebEncryptedMediaClient* HTMLFrame::encryptedMediaClient() {
 }
 
 void HTMLFrame::didStartLoading(bool to_different_document) {
-  GetLocalRoot()->server_->LoadingStarted(id_);
+  GetLocalRoot()->server_->LoadingStateChanged(id_, true, 0.0);
 }
 
 void HTMLFrame::didStopLoading() {
-  GetLocalRoot()->server_->LoadingStopped(id_);
+  GetLocalRoot()->server_->LoadingStateChanged(id_, false, 1.0);
 }
 
 void HTMLFrame::didChangeLoadProgress(double load_progress) {
-  GetLocalRoot()->server_->ProgressChanged(id_, load_progress);
+  GetLocalRoot()->server_->LoadingStateChanged(id_, true, load_progress);
 }
 
 void HTMLFrame::didChangeName(blink::WebLocalFrame* frame,

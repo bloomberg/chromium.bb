@@ -192,12 +192,8 @@ bool WebViewImpl::CanPostMessageEventToFrame(const Frame* source,
   return true;
 }
 
-void WebViewImpl::LoadingStateChanged(bool loading) {
-  client_->LoadingStateChanged(loading);
-}
-
-void WebViewImpl::ProgressChanged(double progress) {
-  client_->ProgressChanged(progress);
+void WebViewImpl::LoadingStateChanged(bool loading, double progress) {
+  client_->LoadingStateChanged(loading, progress);
 }
 
 void WebViewImpl::TitleChanged(const mojo::String& title) {

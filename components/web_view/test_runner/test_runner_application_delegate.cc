@@ -120,8 +120,8 @@ void TestRunnerApplicationDelegate::TopLevelNavigate(
   web_view_->web_view()->LoadRequest(request.Pass());
 }
 
-void TestRunnerApplicationDelegate::LoadingStateChanged(bool is_loading) {}
-void TestRunnerApplicationDelegate::ProgressChanged(double progress) {}
+void TestRunnerApplicationDelegate::LoadingStateChanged(bool is_loading,
+                                                        double progress) {}
 void TestRunnerApplicationDelegate::BackForwardChanged(
     mojom::ButtonState back_button,
     mojom::ButtonState forward_button) {}

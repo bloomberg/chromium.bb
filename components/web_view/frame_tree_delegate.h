@@ -35,8 +35,7 @@ class FrameTreeDelegate {
                                           const Frame* target,
                                           HTMLMessageEvent* event) = 0;
 
-  virtual void LoadingStateChanged(bool loading) = 0;
-  virtual void ProgressChanged(double progress) = 0;
+  virtual void LoadingStateChanged(bool loading, double progress) = 0;
 
   virtual void TitleChanged(const mojo::String& title) = 0;
 

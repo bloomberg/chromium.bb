@@ -92,11 +92,10 @@ class WebViewTest : public mojo::ViewManagerTestBase,
 
   // Overridden from web_view::mojom::WebViewClient:
   void TopLevelNavigate(mojo::URLRequestPtr request) override {}
-  void LoadingStateChanged(bool is_loading) override {
+  void LoadingStateChanged(bool is_loading, double progress) override {
     if (is_loading == false)
       QuitNestedRunLoop();
   }
-  void ProgressChanged(double progress) override {}
   void BackForwardChanged(mojom::ButtonState back_button,
                           mojom::ButtonState forward_button) override {
     last_back_button_state_ = back_button;

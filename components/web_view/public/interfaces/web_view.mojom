@@ -17,8 +17,7 @@ interface WebViewClient {
   TopLevelNavigate(mojo.URLRequest request);
 
   // Loading and progress notifications.
-  LoadingStateChanged(bool is_loading);
-  ProgressChanged(double progress);
+  LoadingStateChanged(bool is_loading, double progress);
   BackForwardChanged(ButtonState back_button, ButtonState forward_button);
 
   // TODO(beng): also forward text direction.

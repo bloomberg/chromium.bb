@@ -395,8 +395,8 @@ TEST_F(FrameTest, CantSendProgressChangeTargettingWrongApp) {
 
   // Send LoadingStarted() from the root targetting a frame from another
   // connection. It should be ignored (not update the loading status).
-  root_view_and_frame()->frame_tree_server()->LoadingStarted(
-      shared_frame->id());
+  root_view_and_frame()->frame_tree_server()->LoadingStateChanged(
+      shared_frame->id(), true, .5);
   frame_tree_server_binding(frame_tree()->root())->WaitForIncomingMethodCall();
   EXPECT_FALSE(frame_tree()->root()->IsLoading());
 }

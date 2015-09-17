@@ -58,24 +58,19 @@ uint32_t FrameTree::AdvanceChangeID() {
 }
 
 void FrameTree::LoadingStateChanged() {
-  bool loading = root_->IsLoading();
-  if (delegate_)
-    delegate_->LoadingStateChanged(loading);
-}
-
-void FrameTree::ProgressChanged() {
-  int frame_count = 0;
-  double total_progress = root_->GatherProgress(&frame_count);
-  // Make sure the progress bar never runs backwards, even if that means
-  // accuracy takes a hit.
-  progress_ = std::max(progress_, total_progress / frame_count);
-  if (delegate_)
-    delegate_->ProgressChanged(progress_);
+  const bool loading = root_->IsLoading();
+  if (loading) {
+    int frame_count = 0;
+    const double total_progress = root_->GatherProgress(&frame_count);
+    // Make sure the progress bar never runs backwards, even if that means
+    // accuracy takes a hit.
+    progress_ = std::max(progress_, total_progress / frame_count);
+  }
+  delegate_->LoadingStateChanged(loading, progress_);
 }
 
 void FrameTree::TitleChanged(const mojo::String& title) {
-  if (delegate_)
-    delegate_->TitleChanged(title);
+  delegate_->TitleChanged(title);
 }
 
 void FrameTree::ClientPropertyChanged(const Frame* source,

@@ -170,9 +170,7 @@ class Frame : public mojo::ViewObserver, public FrameTreeServer {
 
   // The implementation of the various FrameTreeServer functions that take
   // frame_id call into these.
-  void LoadingStartedImpl();
-  void LoadingStoppedImpl();
-  void ProgressChangedImpl(double progress);
+  void LoadingStateChangedImpl(bool loading, double progress);
   void TitleChangedImpl(const mojo::String& title);
   void SetClientPropertyImpl(const mojo::String& name,
                              mojo::Array<uint8_t> value);
@@ -201,9 +199,9 @@ class Frame : public mojo::ViewObserver, public FrameTreeServer {
   void PostMessageEventToFrame(uint32_t source_frame_id,
                                uint32_t target_frame_id,
                                HTMLMessageEventPtr event) override;
-  void LoadingStarted(uint32_t frame_id) override;
-  void LoadingStopped(uint32_t frame_id) override;
-  void ProgressChanged(uint32_t frame_id, double progress) override;
+  void LoadingStateChanged(uint32 frame_id,
+                           bool loading,
+                           double progress) override;
   void TitleChanged(uint32_t frame_id, const mojo::String& title) override;
   void SetClientProperty(uint32_t frame_id,
                          const mojo::String& name,

@@ -107,14 +107,8 @@ void PhoneBrowserApplicationDelegate::TopLevelNavigate(
   web_view_.web_view()->LoadRequest(request.Pass());
 }
 
-void PhoneBrowserApplicationDelegate::LoadingStateChanged(bool is_loading) {
-  // ...
-}
-
-void PhoneBrowserApplicationDelegate::ProgressChanged(double progress) {
-  // ...
-}
-
+void PhoneBrowserApplicationDelegate::LoadingStateChanged(bool is_loading,
+                                                          double progress) {}
 
 void PhoneBrowserApplicationDelegate::BackForwardChanged(
     web_view::mojom::ButtonState back_button,

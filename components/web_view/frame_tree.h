@@ -60,7 +60,6 @@ class FrameTree {
   uint32_t AdvanceChangeID();
 
   void LoadingStateChanged();
-  void ProgressChanged();
   void TitleChanged(const mojo::String& title);
   void ClientPropertyChanged(const Frame* source,
                              const mojo::String& name,

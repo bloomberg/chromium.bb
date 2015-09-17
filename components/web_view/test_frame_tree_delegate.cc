@@ -54,9 +54,8 @@ bool TestFrameTreeDelegate::CanPostMessageEventToFrame(
   return true;
 }
 
-void TestFrameTreeDelegate::LoadingStateChanged(bool loading) {}
-
-void TestFrameTreeDelegate::ProgressChanged(double progress) {}
+void TestFrameTreeDelegate::LoadingStateChanged(bool loading, double progress) {
+}
 
 void TestFrameTreeDelegate::TitleChanged(const mojo::String& title) {}
 
