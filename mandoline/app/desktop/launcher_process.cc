@@ -103,12 +103,12 @@ int LauncherProcessMain(int argc, char** argv) {
   base::FilePath shell_dir;
   PathService::Get(base::DIR_MODULE, &shell_dir);
   mojo::runner::Context shell_context(shell_dir);
-  InitCoreServicesForContext(&shell_context);
   {
     base::MessageLoop message_loop;
     if (!shell_context.Init()) {
       return 0;
     }
+    InitCoreServicesForContext(&shell_context);
     if (g_tracing) {
       message_loop.PostDelayedTask(FROM_HERE,
                                    base::Bind(StopTracingAndFlushToDisk),

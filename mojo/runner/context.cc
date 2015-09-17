@@ -162,7 +162,9 @@ class TracingServiceProvider : public ServiceProvider {
 }  // namespace
 
 Context::Context(const base::FilePath& shell_file_root)
-    : shell_file_root_(shell_file_root), main_entry_time_(base::Time::Now()) {}
+    : shell_file_root_(shell_file_root),
+      package_manager_(nullptr),
+      main_entry_time_(base::Time::Now()) {}
 
 Context::~Context() {
   DCHECK(!base::MessageLoop::current());
