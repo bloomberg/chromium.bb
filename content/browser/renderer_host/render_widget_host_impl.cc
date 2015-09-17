@@ -47,7 +47,6 @@
 #include "content/browser/renderer_host/render_widget_helper.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
-#include "content/browser/renderer_host/render_widget_resize_helper.h"
 #include "content/common/content_constants_internal.h"
 #include "content/common/cursors/webcursor.h"
 #include "content/common/frame_messages.h"
@@ -77,6 +76,10 @@
 
 #if defined(OS_WIN)
 #include "content/common/plugin_constants_win.h"
+#endif
+
+#if defined(OS_MACOSX)
+#include "content/browser/renderer_host/render_widget_resize_helper_mac.h"
 #endif
 
 using base::Time;

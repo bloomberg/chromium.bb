@@ -26,7 +26,6 @@
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/renderer_host/render_widget_helper.h"
-#include "content/browser/renderer_host/render_widget_resize_helper.h"
 #include "content/common/child_process_host_impl.h"
 #include "content/common/child_process_messages.h"
 #include "content/common/content_constants_internal.h"
@@ -75,6 +74,10 @@
 
 #if defined(OS_ANDROID)
 #include "media/base/android/webaudio_media_codec_bridge.h"
+#endif
+
+#if defined(OS_MACOSX)
+#include "content/browser/renderer_host/render_widget_resize_helper_mac.h"
 #endif
 
 namespace content {

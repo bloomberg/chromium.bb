@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/renderer_host/render_widget_resize_helper.h"
+#include "content/browser/renderer_host/render_widget_resize_helper_mac.h"
 
 #include <list>
 
@@ -25,9 +25,7 @@ typedef base::Callback<void(base::WaitableEvent*, base::TimeDelta)>
 // yet, to avoid running them twice.
 class WrappedTask {
  public:
-  WrappedTask(
-      const base::Closure& closure,
-      base::TimeDelta delay);
+  WrappedTask(const base::Closure& closure, base::TimeDelta delay);
   ~WrappedTask();
   bool ShouldRunBefore(const WrappedTask& other);
   void Run();
@@ -53,17 +51,15 @@ class WrappedTask {
 // WaitForSingleWrappedTaskToRun during resizes, and posts the task to a
 // target task runner. The posted task will run only once, either through a
 // WaitForSingleWrappedTaskToRun call or through the target task runner.
-class PumpableTaskRunner
-    : public base::SingleThreadTaskRunner {
+class PumpableTaskRunner : public base::SingleThreadTaskRunner {
  public:
   explicit PumpableTaskRunner(
       const EventTimedWaitCallback& event_timed_wait_callback);
 
   // Enqueue WrappedTask and post it to |target_task_runner_|.
-  bool EnqueueAndPostWrappedTask(
-      const tracked_objects::Location& from_here,
-      WrappedTask* task,
-      base::TimeDelta delay);
+  bool EnqueueAndPostWrappedTask(const tracked_objects::Location& from_here,
+                                 WrappedTask* task,
+                                 base::TimeDelta delay);
 
   // Wait at most |max_delay| to run an enqueued task.
   bool WaitForSingleWrappedTaskToRun(const base::TimeDelta& max_delay);
@@ -125,14 +121,11 @@ base::LazyInstance<RenderWidgetResizeHelper> g_render_widget_task_runner =
 ////////////////////////////////////////////////////////////////////////////////
 // WrappedTask
 
-WrappedTask::WrappedTask(
-    const base::Closure& closure,
-    base::TimeDelta delay)
+WrappedTask::WrappedTask(const base::Closure& closure, base::TimeDelta delay)
     : closure_(closure),
       can_run_time_(base::TimeTicks::Now() + delay),
       has_run_(false),
-      sequence_number_(0) {
-}
+      sequence_number_(0) {}
 
 WrappedTask::~WrappedTask() {
   RemoveFromTaskRunnerQueue();
@@ -189,10 +182,10 @@ void WrappedTask::RemoveFromTaskRunnerQueue() {
 
 PumpableTaskRunner::PumpableTaskRunner(
     const EventTimedWaitCallback& event_timed_wait_callback)
-        : event_(false /* auto-reset */, false /* initially signalled */),
-          event_timed_wait_callback_(event_timed_wait_callback),
-          target_task_runner_(BrowserThread::GetMessageLoopProxyForThread(
-              BrowserThread::UI)) {}
+    : event_(false /* auto-reset */, false /* initially signalled */),
+      event_timed_wait_callback_(event_timed_wait_callback),
+      target_task_runner_(
+          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI)) {}
 
 PumpableTaskRunner::~PumpableTaskRunner() {
   // Because tasks hold a reference to the task runner, the task queue must
@@ -215,8 +208,8 @@ bool PumpableTaskRunner::WaitForSingleWrappedTaskToRun(
     {
       base::AutoLock lock(task_queue_lock_);
 
-      for (WrappedTaskQueue::iterator it = task_queue_.begin(); it !=
-               task_queue_.end(); ++it) {
+      for (WrappedTaskQueue::iterator it = task_queue_.begin();
+           it != task_queue_.end(); ++it) {
         WrappedTask* potential_task = *it;
 
         // If this task is scheduled for the future, take it into account when
@@ -230,7 +223,7 @@ bool PumpableTaskRunner::WaitForSingleWrappedTaskToRun(
         // task.
         if (task_to_execute &&
             task_to_execute->ShouldRunBefore(*potential_task)) {
-            continue;
+          continue;
         }
         task_to_execute = potential_task;
       }
@@ -265,7 +258,7 @@ bool PumpableTaskRunner::EnqueueAndPostWrappedTask(
   event_.Signal();
 
   return target_task_runner_->PostDelayedTask(
-        from_here, base::Bind(&WrappedTask::Run, base::Owned(task)), delay);
+      from_here, base::Bind(&WrappedTask::Run, base::Owned(task)), delay);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -275,10 +268,8 @@ bool PumpableTaskRunner::PostDelayedTask(
     const tracked_objects::Location& from_here,
     const base::Closure& task,
     base::TimeDelta delay) {
-  return EnqueueAndPostWrappedTask(
-      from_here,
-      new WrappedTask(task, delay),
-      delay);
+  return EnqueueAndPostWrappedTask(from_here, new WrappedTask(task, delay),
+                                   delay);
 }
 
 bool PumpableTaskRunner::PostNonNestableDelayedTask(
@@ -301,7 +292,7 @@ bool PumpableTaskRunner::RunsTasksOnCurrentThread() const {
 // RenderWidgetResizeHelper
 
 scoped_refptr<base::SingleThreadTaskRunner>
-    RenderWidgetResizeHelper::task_runner() const {
+RenderWidgetResizeHelper::task_runner() const {
   return task_runner_;
 }
 
@@ -317,25 +308,24 @@ bool RenderWidgetResizeHelper::WaitForSingleTaskToRun(
   return pumpable_task_runner->WaitForSingleWrappedTaskToRun(max_delay);
 }
 
-void RenderWidgetResizeHelper::PostRendererProcessMsg(
-    int render_process_id, const IPC::Message& msg) {
+void RenderWidgetResizeHelper::PostRendererProcessMsg(int render_process_id,
+                                                      const IPC::Message& msg) {
   PumpableTaskRunner* pumpable_task_runner =
       reinterpret_cast<PumpableTaskRunner*>(task_runner_.get());
   pumpable_task_runner->EnqueueAndPostWrappedTask(
       FROM_HERE,
       new WrappedTask(base::Bind(HandleRendererIPC, render_process_id, msg),
-                       base::TimeDelta()),
+                      base::TimeDelta()),
       base::TimeDelta());
 }
 
-void RenderWidgetResizeHelper::PostGpuProcessMsg(
-    int gpu_host_id, const IPC::Message& msg) {
+void RenderWidgetResizeHelper::PostGpuProcessMsg(int gpu_host_id,
+                                                 const IPC::Message& msg) {
   PumpableTaskRunner* pumpable_task_runner =
       reinterpret_cast<PumpableTaskRunner*>(task_runner_.get());
   pumpable_task_runner->EnqueueAndPostWrappedTask(
-      FROM_HERE,
-      new WrappedTask(base::Bind(HandleGpuIPC, gpu_host_id, msg),
-                      base::TimeDelta()),
+      FROM_HERE, new WrappedTask(base::Bind(HandleGpuIPC, gpu_host_id, msg),
+                                 base::TimeDelta()),
       base::TimeDelta());
 }
 
@@ -346,11 +336,10 @@ RenderWidgetResizeHelper::RenderWidgetResizeHelper() {
 RenderWidgetResizeHelper::~RenderWidgetResizeHelper() {}
 
 // static
-void RenderWidgetResizeHelper::EventTimedWait(
-    base::WaitableEvent* event, base::TimeDelta delay) {
+void RenderWidgetResizeHelper::EventTimedWait(base::WaitableEvent* event,
+                                              base::TimeDelta delay) {
   base::ThreadRestrictions::ScopedAllowWait allow_wait;
   event->TimedWait(delay);
 }
 
 }  // namespace content
-

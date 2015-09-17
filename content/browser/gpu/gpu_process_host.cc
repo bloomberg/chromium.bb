@@ -23,7 +23,6 @@
 #include "content/browser/gpu/gpu_process_host_ui_shim.h"
 #include "content/browser/gpu/shader_disk_cache.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
-#include "content/browser/renderer_host/render_widget_resize_helper.h"
 #include "content/common/child_process_host_impl.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "content/common/in_process_child_thread_params.h"
@@ -69,6 +68,10 @@
 #if defined(OS_MACOSX) && !defined(OS_IOS)
 #include "content/browser/browser_io_surface_manager_mac.h"
 #include "content/common/child_process_messages.h"
+#endif
+
+#if defined(OS_MACOSX)
+#include "content/browser/renderer_host/render_widget_resize_helper_mac.h"
 #endif
 
 namespace content {

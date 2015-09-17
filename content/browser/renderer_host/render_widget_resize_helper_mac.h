@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_RENDERER_HOST_RENDER_WIDGET_RESIZE_HELPER_H_
-#define CONTENT_BROWSER_RENDERER_HOST_RENDER_WIDGET_RESIZE_HELPER_H_
+#ifndef CONTENT_BROWSER_RENDERER_HOST_RENDER_WIDGET_RESIZE_HELPER_MAC_H_
+#define CONTENT_BROWSER_RENDERER_HOST_RENDER_WIDGET_RESIZE_HELPER_MAC_H_
 
 #include "base/lazy_instance.h"
 #include "base/single_thread_task_runner.h"
@@ -76,9 +76,7 @@ class RenderWidgetResizeHelper {
 
   // This helper is needed to create a ScopedAllowWait inside the scope of a
   // class where it is allowed.
-  static void EventTimedWait(
-      base::WaitableEvent* event,
-      base::TimeDelta delay);
+  static void EventTimedWait(base::WaitableEvent* event, base::TimeDelta delay);
 
   // The task runner to which the helper will post tasks. This also maintains
   // the task queue and does the actual work for WaitForSingleTaskToRun.
@@ -89,4 +87,4 @@ class RenderWidgetResizeHelper {
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_RENDERER_HOST_RENDER_WIDGET_RESIZE_HELPER_H_
+#endif  // CONTENT_BROWSER_RENDERER_HOST_RENDER_WIDGET_RESIZE_HELPER_MAC_H_

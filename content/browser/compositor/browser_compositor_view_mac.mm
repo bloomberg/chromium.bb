@@ -8,7 +8,7 @@
 #include "base/trace_event/trace_event.h"
 #include "content/browser/compositor/image_transport_factory.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
-#include "content/browser/renderer_host/render_widget_resize_helper.h"
+#include "content/browser/renderer_host/render_widget_resize_helper_mac.h"
 #include "content/public/browser/context_factory.h"
 #include "gpu/config/gpu_driver_bug_workaround_type.h"
 #include "ui/accelerated_widget_mac/accelerated_widget_mac.h"
