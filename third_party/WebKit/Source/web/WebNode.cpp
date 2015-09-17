@@ -252,7 +252,15 @@ WebElement WebNode::querySelector(const WebString& selector, WebExceptionCode& e
     return element;
 }
 
-void WebNode::querySelectorAll(const WebString& selector, WebExceptionCode& ec, WebVector<WebElement>& results) const
+WebElement WebNode::querySelector(const WebString& selector) const
+{
+    WebExceptionCode ec = 0;
+    WebElement element = querySelector(selector, ec);
+    ASSERT(!ec);
+    return element;
+}
+
+void WebNode::querySelectorAll(const WebString& selector, WebVector<WebElement>& results, WebExceptionCode& ec) const
 {
     if (!m_private->isContainerNode())
         return;
@@ -266,6 +274,13 @@ void WebNode::querySelectorAll(const WebString& selector, WebExceptionCode& ec, 
     for (unsigned i = 0; i < elements->length(); ++i)
         temp.append(WebElement(elements->item(i)));
     results.assign(temp);
+}
+
+void WebNode::querySelectorAll(const WebString& selector, WebVector<WebElement>& results) const
+{
+    WebExceptionCode ec = 0;
+    querySelectorAll(selector, results, ec);
+    ASSERT(!ec);
 }
 
 bool WebNode::focused() const

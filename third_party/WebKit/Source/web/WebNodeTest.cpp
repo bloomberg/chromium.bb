@@ -75,7 +75,7 @@ TEST_F(WebNodeTest, QuerySelectorAllMatches)
     setInnerHTML("<div id=x><span class=a></span></div>");
     WebExceptionCode ec;
     WebVector<WebElement> results;
-    root().querySelectorAll(".a, #x", ec, results);
+    root().querySelectorAll(".a, #x", results, ec);
     EXPECT_EQ(0, ec);
     EXPECT_EQ(2u, results.size());
     EXPECT_TRUE(results[0].hasHTMLTagName("div"));
@@ -87,7 +87,7 @@ TEST_F(WebNodeTest, QuerySelectorAllDoesNotMatch)
     setInnerHTML("<div id=x><span class=a></span></div>");
     WebExceptionCode ec;
     WebVector<WebElement> results;
-    root().querySelectorAll(".bar, #foo", ec, results);
+    root().querySelectorAll(".bar, #foo", results, ec);
     EXPECT_EQ(0, ec);
     EXPECT_TRUE(results.isEmpty());
 }
@@ -97,7 +97,7 @@ TEST_F(WebNodeTest, QuerySelectorAllError)
     setInnerHTML("<div></div>");
     WebExceptionCode ec;
     WebVector<WebElement> results;
-    root().querySelectorAll("@invalid-selector", ec, results);
+    root().querySelectorAll("@invalid-selector", results, ec);
     EXPECT_NE(0, ec);
     EXPECT_TRUE(results.isEmpty());
 }
