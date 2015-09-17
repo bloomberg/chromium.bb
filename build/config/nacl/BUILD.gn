@@ -5,7 +5,6 @@
 # Native Client Definitions
 config("nacl_defines") {
   defines = [
-    "NACL_ANDROID=0",
     "_DEFAULT_SOURCE=1",
     "_BSD_SOURCE=1",
     "_POSIX_C_SOURCE=199506",
@@ -13,52 +12,6 @@ config("nacl_defines") {
     "_GNU_SOURCE=1",
     "__STDC_LIMIT_MACROS=1",
   ]
-
-  if (is_win) {
-    defines += [ "NACL_WINDOWS=1" ]
-  } else {
-    defines += [ "NACL_WINDOWS=0" ]
-  }
-
-  if (is_linux) {
-    defines += [ "NACL_LINUX=1" ]
-  } else {
-    defines += [ "NACL_LINUX=0" ]
-  }
-
-  if (is_mac) {
-    defines += [ "NACL_OSX=1" ]
-  } else {
-    defines += [ "NACL_OSX=0" ]
-  }
-
-  if (current_cpu == "arm") {
-    defines += [
-      "NACL_BUILD_ARCH=arm",
-      "NACL_BUILD_SUBARCH=32",
-    ]
-  }
-
-  if (current_cpu == "mips") {
-    defines += [
-      "NACL_BUILD_ARCH=mips",
-      "NACL_BUILD_SUBARCH=32",
-    ]
-  }
-
-  if (current_cpu == "x86") {
-    defines += [
-      "NACL_BUILD_ARCH=x86",
-      "NACL_BUILD_SUBARCH=32",
-    ]
-  }
-
-  if (current_cpu == "x64") {
-    defines += [
-      "NACL_BUILD_ARCH=x86",
-      "NACL_BUILD_SUBARCH=64",
-    ]
-  }
 }
 
 config("nexe_defines") {
