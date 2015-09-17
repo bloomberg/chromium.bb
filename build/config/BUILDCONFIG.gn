@@ -135,29 +135,6 @@ declare_args() {
   # DON'T ADD MORE FLAGS HERE. Read the comment above.
 }
 
-# This flag indicates if the build is using the new optimization and symbol
-# level configs, or the old ones.
-#
-# This is part of a multi-repo landing. When all required deps (WebKit and
-# ffmpeg) have been updated to handle this flag, we can change the optimization
-# and symbol level configs and set this flag to true. Then delete the users of
-# the flag, wait for all deps rolls, then remove the flag.
-#
-# In the old scheme, this file sets the appropriate optimization or symbol
-# level config on targets depending on what the current build setup is. This
-# requires that targets know what the default is, and if they want to change it,
-# they have to figure out which one to remove depending on the state of the
-# current build. It also means that symbol_level and the sanitizer flags need
-# to be global.
-#
-# In the new scheme, this file sets a "default_symbols" and
-# "default_optimization" configs, which then expands to the right thing
-# depending on the current build. This means less information has to be global,
-# and there's only one config to remove that's the same in all cases for
-# targets that want to override it. It also means that the associated flags can
-# be non-global.
-using_new_global_compiler_configs = true
-
 # =============================================================================
 # OS DEFINITIONS
 # =============================================================================
