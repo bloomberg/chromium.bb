@@ -68,7 +68,7 @@ namespace {
 
 void setSelectionIfNeeded(FrameSelection& selection, const VisibleSelection& newSelection)
 {
-    if (VisibleSelection::InDOMTree::equalSelections(selection.selection(), newSelection))
+    if (equalSelectionsInDOMTree(selection.selection(), newSelection))
         return;
     selection.setSelection(newSelection);
 }

@@ -231,7 +231,7 @@ static bool areEquivalentSelections(const VisibleSelection& selection1, const Vi
 {
     if (RuntimeEnabledFeatures::selectionForComposedTreeEnabled())
         return VisibleSelection::InComposedTree::equalSelections(selection1, selection2);
-    return VisibleSelection::InDOMTree::equalSelections(selection1, selection2);
+    return equalSelectionsInDOMTree(selection1, selection2);
 }
 
 void FrameSelection::setSelection(const VisibleSelection& newSelection, SetSelectionOptions options, CursorAlignOnScroll align, TextGranularity granularity)
@@ -308,7 +308,7 @@ void FrameSelection::setSelection(const VisibleSelection& newSelection, SetSelec
     // boundary, selection for the DOM tree is shrunk while that for the
     // composed tree is not. Additionally, this case occurs in some edge cases.
     // See also: editing/pasteboard/4076267-3.html
-    if (VisibleSelection::InDOMTree::equalSelections(oldSelection, selection())) {
+    if (equalSelectionsInDOMTree(oldSelection, selection())) {
         m_frame->inputMethodController().cancelCompositionIfSelectionIsInvalid();
         return;
     }
