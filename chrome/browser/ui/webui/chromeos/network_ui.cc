@@ -177,6 +177,9 @@ NetworkUI::NetworkUI(content::WebUI* web_ui)
   html->AddLocalizedString("OncTypeVPN", IDS_NETWORK_TYPE_VPN);
   html->AddLocalizedString("OncTypeWiFi", IDS_NETWORK_TYPE_WIFI);
   html->AddLocalizedString("OncTypeWimax", IDS_NETWORK_TYPE_WIMAX);
+  html->AddLocalizedString(
+      "vpnNameTemplate",
+      IDS_OPTIONS_SETTINGS_SECTION_THIRD_PARTY_VPN_NAME_TEMPLATE);
 
   html->SetJsonPath("strings.js");
   html->AddResourcePath("network_ui.css", IDR_NETWORK_UI_CSS);

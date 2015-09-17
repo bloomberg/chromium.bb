@@ -2,22 +2,35 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// TODO: /** @typedef {chrome.networkingPrivate.ThirdPartyVPNProperties} */
+/**
+ * @typedef {{
+ *   ExtensionID: string,
+ *   ProviderName: string
+ * }}
+ */
+var ThirdPartyVPNProperties;
+
 /**
  * Partial definition of the result of networkingPrivate.getProperties()).
  * TODO(stevenjb): Replace with chrome.networkingPrivate.NetworkStateProperties
  * once that is fully speced.
  * @typedef {{
  *   ConnectionState: string,
- *   Cellular: {
+ *   Cellular: ?{
  *     Family: ?string,
  *     SIMPresent: ?boolean,
- *     SIMLockStatus: { LockType: ?string },
+ *     SIMLockStatus: ?{ LockType: ?string },
  *     SupportNetworkScan: ?boolean
  *   },
  *   GUID: string,
  *   Name: string,
  *   Source: string,
- *   Type: string
+ *   Type: string,
+ *   VPN: ?{
+ *     Type: string,
+ *     ThirdPartyVPN: ThirdPartyVPNProperties
+ *   }
  * }}
  * @see extensions/common/api/networking_private.idl
  */
@@ -118,9 +131,14 @@ cr.define('options.network', function() {
   function getNetworkName(data) {
     if (data.Type == 'Ethernet')
       return loadTimeData.getString('ethernetName');
-    if (data.Type == 'VPN')
-      return options.VPNProviders.formatNetworkName(new cr.onc.OncData(data));
-    return data.Name;
+    var name = data.Name;
+    if (data.Type == 'VPN' && data.VPN && data.VPN.Type == 'ThirdPartyVPN' &&
+        data.VPN.ThirdPartyVPN) {
+      var providerName = data.VPN.ThirdPartyVPN.ProviderName;
+      if (providerName)
+        return loadTimeData.getStringF('vpnNameTemplate', providerName, name);
+    }
+    return name;
   }
 
   /**

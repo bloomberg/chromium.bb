@@ -5,10 +5,17 @@
 #ifndef EXTENSIONS_BROWSER_API_NETWORKING_PRIVATE_NETWORKING_PRIVATE_CHROMEOS_H_
 #define EXTENSIONS_BROWSER_API_NETWORKING_PRIVATE_NETWORKING_PRIVATE_CHROMEOS_H_
 
+#include <string>
+
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "extensions/browser/api/networking_private/networking_private_delegate.h"
 
-namespace context {
+namespace base {
+class DictionaryValue;
+}
+
+namespace content {
 class BrowserContext;
 }
 
@@ -89,6 +96,20 @@ class NetworkingPrivateChromeOS : public NetworkingPrivateDelegate {
   bool RequestScan() override;
 
  private:
+  // Callback for both GetProperties and GetManagedProperties. Copies
+  // |dictionary| and appends any networkingPrivate API specific properties,
+  // then calls |callback| with the result.
+  void GetPropertiesCallback(const DictionaryCallback& callback,
+                             const std::string& service_path,
+                             const base::DictionaryValue& dictionary);
+
+  // Populate ThirdPartyVPN.ProviderName with the provider name for third-party
+  // VPNs. The provider name needs to be looked up from the list of extensions
+  // which is not available to the chromeos/network module.
+  void AppendThirdPartyProviderName(base::DictionaryValue* dictionary);
+
+  // Handles connection failures, possibly showing UI for configuration
+  // failures, then calls the appropriate callback.
   void ConnectFailureCallback(const std::string& guid,
                               const VoidCallback& success_callback,
                               const FailureCallback& failure_callback,

@@ -1941,6 +1941,9 @@ Press any key to continue exploring.
   <message name="IDS_OPTIONS_SETTINGS_SECTION_THIRD_PARTY_VPN_NAME_TEMPLATE" desc="Template for constructing the name of a VPN network that is handled by a third-party VPN provider from the provider name and the network name.">
     <ph name="PROVIDER_NAME">$1<ex>OpenVPN</ex></ph>: <ph name="NETWORK_NAME">$2<ex>Work Network</ex></ph>
   </message>
+  <message name="IDS_OPTIONS_SETTINGS_SECTION_DEFAULT_THIRD_PARTY_PROVIDER_NAME" desc="Default Third Party VPN Provider Name used when the extension is uninstalled or for non primary users." >
+    Third Party VPN
+  </message>
   <message name="IDS_OPTIONS_SETTINGS_SECTION_TITLE_ADD_CONNECTION" desc="Title for control to add a new network connection." >
     Add connection
   </message>

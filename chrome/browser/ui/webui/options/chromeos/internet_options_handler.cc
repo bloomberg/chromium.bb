@@ -67,8 +67,6 @@ const char kAddVPNConnectionMessage[] = "addVPNConnection";
 const char kAddNonVPNConnectionMessage[] = "addNonVPNConnection";
 const char kConfigureNetworkMessage[] = "configureNetwork";
 
-const char kLoadVPNProviders[] = "loadVPNProviders";
-
 // These are strings used to communicate with JavaScript.
 const char kTagSimOpChangePin[] = "changePin";
 const char kTagSimOpConfigure[] = "configure";
@@ -160,10 +158,6 @@ void InternetOptionsHandler::RegisterMessages() {
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback(kSimOperationMessage,
       base::Bind(&InternetOptionsHandler::SimOperationCallback,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
-      kLoadVPNProviders,
-      base::Bind(&InternetOptionsHandler::LoadVPNProvidersCallback,
                  base::Unretained(this)));
 }
 
@@ -333,11 +327,6 @@ void InternetOptionsHandler::ConfigureNetwork(const base::ListValue* args) {
   }
 
   NetworkConfigView::Show(service_path, GetNativeWindow());
-}
-
-void InternetOptionsHandler::LoadVPNProvidersCallback(
-    const base::ListValue* args) {
-  UpdateVPNProviders();
 }
 
 }  // namespace options

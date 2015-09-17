@@ -178,6 +178,9 @@ void AddInternetStrings(content::WebUIDataSource* html_source) {
   html_source->AddLocalizedString("OncTypeVPN", IDS_NETWORK_TYPE_VPN);
   html_source->AddLocalizedString("OncTypeWiFi", IDS_NETWORK_TYPE_WIFI);
   html_source->AddLocalizedString("OncTypeWimax", IDS_NETWORK_TYPE_WIMAX);
+  html_source->AddLocalizedString(
+      "vpnNameTemplate",
+      IDS_OPTIONS_SETTINGS_SECTION_THIRD_PARTY_VPN_NAME_TEMPLATE);
 }
 #endif
 

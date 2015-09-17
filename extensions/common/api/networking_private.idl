@@ -165,6 +165,7 @@ namespace networkingPrivate {
 
   dictionary ThirdPartyVPNProperties {
     DOMString ExtensionID;
+    DOMString? ProviderName;
   };
 
   dictionary VPNConfigProperties {

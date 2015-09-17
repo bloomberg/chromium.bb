@@ -52,29 +52,6 @@ cr.define('options', function() {
     addObserver_: function(observer) {
       this.observers_.push(observer);
     },
-
-    /**
-     * Formats a network name for display purposes. If the network belongs to
-     * a third-party VPN provider, the provider name is added to the network
-     * name.
-     * @param {cr.onc.OncData} onc ONC data describing this network.
-     * @return {string} The resulting display name.
-     * @private
-     */
-    formatNetworkName_: function(onc) {
-      var networkName = onc.getTranslatedValue('Name');
-      if (onc.getActiveValue('VPN.Type') != 'ThirdPartyVPN')
-        return networkName;
-      var extensionID = onc.getActiveValue('VPN.ThirdPartyVPN.ExtensionID');
-      for (var i = 0; i < this.providers_.length; ++i) {
-        if (extensionID == this.providers_[i].extensionID) {
-          return loadTimeData.getStringF('vpnNameTemplate',
-                                         this.providers_[i].name,
-                                         networkName);
-        }
-      }
-      return networkName;
-    },
   };
 
   /**
@@ -104,16 +81,6 @@ cr.define('options', function() {
    */
   VPNProviders.setProviders = function(providers) {
     VPNProviders.getInstance().providers = providers;
-  };
-
-  /**
-   * Formats a network name for display purposes. If the network belongs to a
-   * third-party VPN provider, the provider name is added to the network name.
-   * @param {cr.onc.OncData} onc ONC data describing this network.
-   * @return {string} The resulting display name.
-   */
-  VPNProviders.formatNetworkName = function(onc) {
-    return VPNProviders.getInstance().formatNetworkName_(onc);
   };
 
   // Export

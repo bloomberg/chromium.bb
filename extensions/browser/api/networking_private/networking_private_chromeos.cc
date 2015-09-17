@@ -7,6 +7,8 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
+#include "base/logging.h"
+#include "base/values.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/shill_manager_client.h"
 #include "chromeos/login/login_state.h"
@@ -26,7 +28,12 @@
 #include "components/onc/onc_constants.h"
 #include "content/public/browser/browser_context.h"
 #include "extensions/browser/api/networking_private/networking_private_api.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extensions_browser_client.h"
+#include "extensions/common/extension.h"
+#include "extensions/common/extension_set.h"
+#include "extensions/common/permissions/api_permission.h"
+#include "extensions/common/permissions/permissions_data.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 using chromeos::DeviceState;
@@ -61,9 +68,9 @@ bool GetServicePathFromGuid(const std::string& guid,
   return true;
 }
 
-bool GetUserIdHash(content::BrowserContext* browser_context,
-                   std::string* user_hash,
-                   std::string* error) {
+bool GetPrimaryUserIdHash(content::BrowserContext* browser_context,
+                          std::string* user_hash,
+                          std::string* error) {
   std::string context_user_hash =
       extensions::ExtensionsBrowserClient::Get()->GetUserIdHashFromContext(
           browser_context);
@@ -75,10 +82,12 @@ bool GetUserIdHash(content::BrowserContext* browser_context,
     // to avoid complexities with the policy code.
     LOG(ERROR) << "networkingPrivate API call from non primary user: "
                << context_user_hash;
-    *error = "Error.NonPrimaryUser";
+    if (error)
+      *error = "Error.NonPrimaryUser";
     return false;
   }
-  *user_hash = context_user_hash;
+  if (user_hash)
+    *user_hash = context_user_hash;
   return true;
 }
 
@@ -128,14 +137,6 @@ void AppendDeviceState(
   device_state_list->push_back(properties.Pass());
 }
 
-void NetworkHandlerDictionaryCallback(
-    const NetworkingPrivateDelegate::DictionaryCallback& callback,
-    const std::string& service_path,
-    const base::DictionaryValue& dictionary) {
-  scoped_ptr<base::DictionaryValue> dictionary_copy(dictionary.DeepCopy());
-  callback.Run(dictionary_copy.Pass());
-}
-
 void NetworkHandlerFailureCallback(
     const NetworkingPrivateDelegate::FailureCallback& callback,
     const std::string& error_name,
@@ -159,6 +160,40 @@ void RequirePinSuccess(
   NetworkHandler::Get()->network_device_handler()->ChangePin(
       device_path, current_pin, new_pin, success_callback,
       base::Bind(&NetworkHandlerFailureCallback, failure_callback));
+}
+
+// Returns the string corresponding to |key|. If the property is a managed
+// dictionary, returns the active value. If the property does not exist or
+// has no active value, returns an empty string.
+std::string GetStringFromDictionary(const base::DictionaryValue& dictionary,
+                                    const std::string& key) {
+  std::string result;
+  if (!dictionary.GetStringWithoutPathExpansion(key, &result)) {
+    const base::DictionaryValue* managed = nullptr;
+    if (dictionary.GetDictionaryWithoutPathExpansion(key, &managed)) {
+      managed->GetStringWithoutPathExpansion(::onc::kAugmentationActiveSetting,
+                                             &result);
+    }
+  }
+  return result;
+}
+
+base::DictionaryValue* GetThirdPartyVPNDictionary(
+    base::DictionaryValue* dictionary) {
+  const std::string type =
+      GetStringFromDictionary(*dictionary, ::onc::network_config::kType);
+  if (type != ::onc::network_config::kVPN)
+    return nullptr;
+  base::DictionaryValue* vpn_dict = nullptr;
+  if (!dictionary->GetDictionary(::onc::network_config::kVPN, &vpn_dict))
+    return nullptr;
+  if (GetStringFromDictionary(*vpn_dict, ::onc::vpn::kType) !=
+      ::onc::vpn::kThirdPartyVpn) {
+    return nullptr;
+  }
+  base::DictionaryValue* third_party_vpn = nullptr;
+  vpn_dict->GetDictionary(::onc::vpn::kThirdPartyVpn, &third_party_vpn);
+  return third_party_vpn;
 }
 
 }  // namespace
@@ -188,14 +223,15 @@ void NetworkingPrivateChromeOS::GetProperties(
   }
 
   std::string user_id_hash;
-  if (!GetUserIdHash(browser_context_, &user_id_hash, &error)) {
+  if (!GetPrimaryUserIdHash(browser_context_, &user_id_hash, &error)) {
     failure_callback.Run(error);
     return;
   }
 
   GetManagedConfigurationHandler()->GetProperties(
       user_id_hash, service_path,
-      base::Bind(&NetworkHandlerDictionaryCallback, success_callback),
+      base::Bind(&NetworkingPrivateChromeOS::GetPropertiesCallback,
+                 weak_ptr_factory_.GetWeakPtr(), success_callback),
       base::Bind(&NetworkHandlerFailureCallback, failure_callback));
 }
 
@@ -210,14 +246,15 @@ void NetworkingPrivateChromeOS::GetManagedProperties(
   }
 
   std::string user_id_hash;
-  if (!GetUserIdHash(browser_context_, &user_id_hash, &error)) {
+  if (!GetPrimaryUserIdHash(browser_context_, &user_id_hash, &error)) {
     failure_callback.Run(error);
     return;
   }
 
   GetManagedConfigurationHandler()->GetManagedProperties(
       user_id_hash, service_path,
-      base::Bind(&NetworkHandlerDictionaryCallback, success_callback),
+      base::Bind(&NetworkingPrivateChromeOS::GetPropertiesCallback,
+                 weak_ptr_factory_.GetWeakPtr(), success_callback),
       base::Bind(&NetworkHandlerFailureCallback, failure_callback));
 }
 
@@ -241,6 +278,7 @@ void NetworkingPrivateChromeOS::GetState(
 
   scoped_ptr<base::DictionaryValue> network_properties =
       chromeos::network_util::TranslateNetworkStateToONC(network_state);
+  AppendThirdPartyProviderName(network_properties.get());
 
   success_callback.Run(network_properties.Pass());
 }
@@ -268,7 +306,8 @@ void NetworkingPrivateChromeOS::CreateNetwork(
     const FailureCallback& failure_callback) {
   std::string user_id_hash, error;
   // Do not allow configuring a non-shared network from a non-primary user.
-  if (!shared && !GetUserIdHash(browser_context_, &user_id_hash, &error)) {
+  if (!shared &&
+      !GetPrimaryUserIdHash(browser_context_, &user_id_hash, &error)) {
     failure_callback.Run(error);
     return;
   }
@@ -305,6 +344,15 @@ void NetworkingPrivateChromeOS::GetNetworks(
   scoped_ptr<base::ListValue> network_properties_list =
       chromeos::network_util::TranslateNetworkListToONC(
           pattern, configured_only, visible_only, limit);
+
+  for (base::Value* value : *network_properties_list) {
+    base::DictionaryValue* network_dict = nullptr;
+    value->GetAsDictionary(&network_dict);
+    DCHECK(network_dict);
+    if (GetThirdPartyVPNDictionary(network_dict))
+      AppendThirdPartyProviderName(network_dict);
+  }
+
   success_callback.Run(network_properties_list.Pass());
 }
 
@@ -325,22 +373,6 @@ void NetworkingPrivateChromeOS::StartConnect(
                  weak_ptr_factory_.GetWeakPtr(), guid, success_callback,
                  failure_callback),
       check_error_state);
-}
-
-void NetworkingPrivateChromeOS::ConnectFailureCallback(
-    const std::string& guid,
-    const VoidCallback& success_callback,
-    const FailureCallback& failure_callback,
-    const std::string& error_name,
-    scoped_ptr<base::DictionaryValue> error_data) {
-  // TODO(stevenjb): Temporary workaround to show the configuration UI.
-  // Eventually the caller (e.g. Settings) should handle any failures and
-  // show its own configuration UI. crbug.com/380937.
-  if (ui_delegate()->HandleConnectFailed(guid, error_name)) {
-    success_callback.Run();
-    return;
-  }
-  failure_callback.Run(error_name);
 }
 
 void NetworkingPrivateChromeOS::StartDisconnect(
@@ -575,6 +607,56 @@ bool NetworkingPrivateChromeOS::DisableNetworkType(const std::string& type) {
 bool NetworkingPrivateChromeOS::RequestScan() {
   GetStateHandler()->RequestScan();
   return true;
+}
+
+// Private methods
+
+void NetworkingPrivateChromeOS::GetPropertiesCallback(
+    const DictionaryCallback& callback,
+    const std::string& service_path,
+    const base::DictionaryValue& dictionary) {
+  scoped_ptr<base::DictionaryValue> dictionary_copy(dictionary.DeepCopy());
+  AppendThirdPartyProviderName(dictionary_copy.get());
+  callback.Run(dictionary_copy.Pass());
+}
+
+// Populate ThirdPartyVPN.kProviderName for third-party VPNs.
+void NetworkingPrivateChromeOS::AppendThirdPartyProviderName(
+    base::DictionaryValue* dictionary) {
+  base::DictionaryValue* third_party_vpn =
+      GetThirdPartyVPNDictionary(dictionary);
+  if (!third_party_vpn)
+    return;
+
+  const std::string extension_id = GetStringFromDictionary(
+      *third_party_vpn, ::onc::third_party_vpn::kExtensionID);
+  const ExtensionSet& extensions =
+      ExtensionRegistry::Get(browser_context_)->enabled_extensions();
+  for (const auto& extension : extensions) {
+    if (extension->permissions_data()->HasAPIPermission(
+            APIPermission::kVpnProvider) &&
+        extension->id() == extension_id) {
+      third_party_vpn->SetStringWithoutPathExpansion(
+          ::onc::third_party_vpn::kProviderName, extension->name());
+      break;
+    }
+  }
+}
+
+void NetworkingPrivateChromeOS::ConnectFailureCallback(
+    const std::string& guid,
+    const VoidCallback& success_callback,
+    const FailureCallback& failure_callback,
+    const std::string& error_name,
+    scoped_ptr<base::DictionaryValue> error_data) {
+  // TODO(stevenjb): Temporary workaround to show the configuration UI.
+  // Eventually the caller (e.g. Settings) should handle any failures and
+  // show its own configuration UI. crbug.com/380937.
+  if (ui_delegate()->HandleConnectFailed(guid, error_name)) {
+    success_callback.Run();
+    return;
+  }
+  failure_callback.Run(error_name);
 }
 
 }  // namespace extensions

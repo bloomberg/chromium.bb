@@ -379,6 +379,7 @@ const char kPasswordAndOTP[] = "PasswordAndOTP";
 
 namespace third_party_vpn {
 const char kExtensionID[] = "ExtensionID";
+const char kProviderName[] = "ProviderName";
 }  // third_party_vpn
 
 namespace verify_x509 {

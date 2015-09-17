@@ -397,6 +397,7 @@ ONC_EXPORT extern const char kPasswordAndOTP[];
 
 namespace third_party_vpn {
 ONC_EXPORT extern const char kExtensionID[];
+ONC_EXPORT extern const char kProviderName[];
 }  // third_party_vpn
 
 namespace verify_x509 {

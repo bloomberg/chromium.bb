@@ -545,7 +545,8 @@ Polymer({
         fields.push('VPN.OpenVPN.Username');
       else if (state.VPN.Type == 'L2TP-IPsec')
         fields.push('VPN.L2TP.Username');
-      // TODO(stevenjb): ThirdPartyVPN
+      else if (state.VPN.Type == 'ThirdPartyVPN')
+        fields.push('VPN.ThirdPartyVPN.ProviderName');
     }
     if (state.Type == CrOnc.Type.WI_FI)
       fields.push('RestrictedConnectivity');

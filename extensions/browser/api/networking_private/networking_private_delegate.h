@@ -15,10 +15,6 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "extensions/common/api/networking_private.h"
 
-namespace content {
-class BrowserContext;
-}
-
 namespace extensions {
 
 class NetworkingPrivateDelegateObserver;

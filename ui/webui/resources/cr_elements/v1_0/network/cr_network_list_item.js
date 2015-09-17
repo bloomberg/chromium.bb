@@ -48,6 +48,23 @@ function getConnectionStateText(state, name) {
 };
 
 /**
+ * Returns the name to display for |network|.
+ * @param {?CrOnc.NetworkStateProperties} network
+ */
+function getNetworkName(network) {
+  var name = network.Name;
+  if (!name)
+    return getText('OncType' + network.Type);
+  if (network.Type == 'VPN' && network.VPN &&
+      network.VPN.Type == 'ThirdPartyVPN' && network.VPN.ThirdPartyVPN) {
+    var providerName = network.VPN.ThirdPartyVPN.ProviderName;
+    if (providerName)
+      return getText('vpnNameTemplate', [providerName, name]);
+  }
+  return name;
+}
+
+/**
  * Polymer class definition for 'cr-network-list-item'.
  * @element cr-network-list-item
  */
@@ -93,8 +110,8 @@ Polymer({
     var network = this.networkState;
     var isDisconnected =
         network.ConnectionState == CrOnc.ConnectionState.NOT_CONNECTED;
+    var name = getNetworkName(network);
     if (this.isListItem_(this.listItemType)) {
-      var name = network.Name || getText('OncType' + network.Type);
       this.$.networkName.textContent = name;
       this.$.networkName.classList.toggle('connected', !isDisconnected);
       return;
@@ -103,7 +120,7 @@ Polymer({
       this.$.networkName.textContent = getText('OncType' + network.Type);
       this.$.networkName.classList.toggle('connected', false);
       this.$.networkStateText.textContent =
-          getConnectionStateText(network.ConnectionState, network.Name);
+          getConnectionStateText(network.ConnectionState, name);
       this.$.networkStateText.classList.toggle('connected', !isDisconnected);
       return;
     }

@@ -224,7 +224,8 @@ chrome.networkingPrivate.OpenVPNProperties;
 
 /**
  * @typedef {{
- *   ExtensionID: string
+ *   ExtensionID: string,
+ *   ProviderName: (string|undefined)
  * }}
  * @see https://developer.chrome.com/extensions/networkingPrivate#type-ThirdPartyVPNProperties
  */

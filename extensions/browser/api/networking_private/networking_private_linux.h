@@ -14,7 +14,7 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "extensions/browser/api/networking_private/networking_private_delegate.h"
 
-namespace context {
+namespace content {
 class BrowserContext;
 }
 
