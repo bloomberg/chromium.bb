@@ -16,8 +16,8 @@ from devil.android.sdk import intent
 from pylib import constants
 from pylib import pexpect
 from pylib.gtest import gtest_test_instance
-from pylib.gtest import local_device_gtest_run
 from pylib.gtest.test_package import TestPackage
+from pylib.local.device import local_device_gtest_run
 
 
 class TestPackageApk(TestPackage):
@@ -40,7 +40,9 @@ class TestPackageApk(TestPackage):
       self._package_info = constants.PACKAGE_INFO['gtest']
 
     if suite_name == 'net_unittests':
-      self._extras = {'RunInSubThread': None}
+      self._extras = {
+        'org.chromium.native_test.NativeTestActivity.RunInSubThread': None
+      }
     else:
       self._extras = []
 
