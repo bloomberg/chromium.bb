@@ -18,6 +18,8 @@ if (!is_ios) {
       "content/content_serialized_navigation_builder.h",
       "content/content_serialized_navigation_driver.cc",
       "content/content_serialized_navigation_driver.h",
+      "content/content_tab_client_data.cc",
+      "content/content_tab_client_data.h",
     ]
 
     configs += [ ":implementation" ]
@@ -70,6 +72,7 @@ source_set("shared") {
     "core/serialized_navigation_driver.h",
     "core/session_constants.cc",
     "core/session_constants.h",
+    "core/tab_restore_service_client.cc",
     "core/tab_restore_service_client.h",
     "serialized_navigation_entry.cc",
     "serialized_navigation_entry.h",

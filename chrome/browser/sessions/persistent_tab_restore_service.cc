@@ -22,7 +22,6 @@
 #include "components/sessions/base_session_service_delegate.h"
 #include "components/sessions/core/session_constants.h"
 #include "components/sessions/session_command.h"
-#include "content/public/browser/session_storage_namespace.h"
 
 namespace {
 

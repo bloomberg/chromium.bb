@@ -17,7 +17,6 @@
 #include "components/sessions/session_types.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
-#include "content/public/browser/session_storage_namespace.h"
 #include "content/public/browser/web_contents.h"
 
 using content::NavigationController;
@@ -217,14 +216,10 @@ std::vector<content::WebContents*> TabRestoreServiceHelper::RestoreEntryById(
       for (size_t tab_i = 0; tab_i < window->tabs.size(); ++tab_i) {
         const Tab& tab = window->tabs[tab_i];
         WebContents* restored_tab = delegate->AddRestoredTab(
-            tab.navigations,
-            delegate->GetTabCount(),
-            tab.current_navigation_index,
-            tab.extension_app_id,
-            static_cast<int>(tab_i) == window->selected_tab_index,
-            tab.pinned,
-            tab.from_last_session,
-            tab.session_storage_namespace.get(),
+            tab.navigations, delegate->GetTabCount(),
+            tab.current_navigation_index, tab.extension_app_id,
+            static_cast<int>(tab_i) == window->selected_tab_index, tab.pinned,
+            tab.from_last_session, tab.client_data.get(),
             tab.user_agent_override);
         if (restored_tab) {
           restored_tab->GetController().LoadIfNecessary();
@@ -401,9 +396,8 @@ void TabRestoreServiceHelper::PopulateTab(
   tab->user_agent_override =
       controller->GetWebContents()->GetUserAgentOverride();
 
-  // TODO(ajwong): This does not correctly handle storage for isolated apps.
-  tab->session_storage_namespace =
-      controller->GetDefaultSessionStorageNamespace();
+  tab->client_data =
+      client_->GetTabClientDataForWebContents(controller->GetWebContents());
 
   // Delegate may be NULL during unit tests.
   if (delegate) {
@@ -421,12 +415,8 @@ TabRestoreServiceDelegate* TabRestoreServiceHelper::RestoreTab(
   WebContents* web_contents;
   if (disposition == CURRENT_TAB && delegate) {
     web_contents = delegate->ReplaceRestoredTab(
-        tab.navigations,
-        tab.current_navigation_index,
-        tab.from_last_session,
-        tab.extension_app_id,
-        tab.session_storage_namespace.get(),
-        tab.user_agent_override);
+        tab.navigations, tab.current_navigation_index, tab.from_last_session,
+        tab.extension_app_id, tab.client_data.get(), tab.user_agent_override);
   } else {
     // We only respsect the tab's original browser if there's no disposition.
     if (disposition == UNKNOWN && tab.has_browser()) {
@@ -455,15 +445,10 @@ TabRestoreServiceDelegate* TabRestoreServiceHelper::RestoreTab(
       tab_index = delegate->GetTabCount();
     }
 
-    web_contents = delegate->AddRestoredTab(tab.navigations,
-                                            tab_index,
-                                            tab.current_navigation_index,
-                                            tab.extension_app_id,
-                                            disposition != NEW_BACKGROUND_TAB,
-                                            tab.pinned,
-                                            tab.from_last_session,
-                                            tab.session_storage_namespace.get(),
-                                            tab.user_agent_override);
+    web_contents = delegate->AddRestoredTab(
+        tab.navigations, tab_index, tab.current_navigation_index,
+        tab.extension_app_id, disposition != NEW_BACKGROUND_TAB, tab.pinned,
+        tab.from_last_session, tab.client_data.get(), tab.user_agent_override);
     web_contents->GetController().LoadIfNecessary();
   }
   client_->OnTabRestored(

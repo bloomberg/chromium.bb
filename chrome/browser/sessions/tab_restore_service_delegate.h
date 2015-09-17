@@ -12,12 +12,12 @@
 
 namespace content {
 class NavigationController;
-class SessionStorageNamespace;
 class WebContents;
 }
 
 namespace sessions {
 class SerializedNavigationEntry;
+class TabClientData;
 }
 
 // Objects implement this interface to provide necessary functionality for
@@ -44,6 +44,10 @@ class TabRestoreServiceDelegate {
   virtual content::WebContents* GetWebContentsAt(int index) const = 0;
   virtual content::WebContents* GetActiveWebContents() const = 0;
   virtual bool IsTabPinned(int index) const = 0;
+
+  // Note: |tab_client_data| may be null (e.g., if |from_last_session| is true,
+  // as the tab client data is not persisted, or if the embedder did not supply
+  // client data for the tab in question).
   virtual content::WebContents* AddRestoredTab(
       const std::vector<sessions::SerializedNavigationEntry>& navigations,
       int tab_index,
@@ -52,14 +56,17 @@ class TabRestoreServiceDelegate {
       bool select,
       bool pin,
       bool from_last_session,
-      content::SessionStorageNamespace* storage_namespace,
+      const sessions::TabClientData* tab_client_data,
       const std::string& user_agent_override) = 0;
+
+  // Note: |tab_client_data| may be null (e.g., if |from_last_session| is true,
+  // as the tab client data is not persisted, or if the embedder did not supply
   virtual content::WebContents* ReplaceRestoredTab(
       const std::vector<sessions::SerializedNavigationEntry>& navigations,
       int selected_navigation,
       bool from_last_session,
       const std::string& extension_app_id,
-      content::SessionStorageNamespace* session_storage_namespace,
+      const sessions::TabClientData* tab_client_data,
       const std::string& user_agent_override) = 0;
   virtual void CloseTab() = 0;
 

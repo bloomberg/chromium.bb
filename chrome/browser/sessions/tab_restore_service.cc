@@ -4,8 +4,6 @@
 
 #include "chrome/browser/sessions/tab_restore_service.h"
 
-#include "content/public/browser/session_storage_namespace.h"
-
 // TimeFactory-----------------------------------------------------------------
 
 TabRestoreService::TimeFactory::~TimeFactory() {}
@@ -37,7 +35,36 @@ TabRestoreService::Tab::Tab()
       pinned(false) {
 }
 
+TabRestoreService::Tab::Tab(const TabRestoreService::Tab& tab)
+    : Entry(TAB),
+      navigations(tab.navigations),
+      current_navigation_index(tab.current_navigation_index),
+      browser_id(tab.browser_id),
+      tabstrip_index(tab.tabstrip_index),
+      pinned(tab.pinned),
+      extension_app_id(tab.extension_app_id),
+      user_agent_override(tab.user_agent_override) {
+  if (tab.client_data)
+    client_data = tab.client_data->Clone();
+}
+
 TabRestoreService::Tab::~Tab() {
+}
+
+TabRestoreService::Tab& TabRestoreService::Tab::operator=(
+    const TabRestoreService::Tab& tab) {
+  navigations = tab.navigations;
+  current_navigation_index = tab.current_navigation_index;
+  browser_id = tab.browser_id;
+  tabstrip_index = tab.tabstrip_index;
+  pinned = tab.pinned;
+  extension_app_id = tab.extension_app_id;
+  user_agent_override = tab.user_agent_override;
+
+  if (tab.client_data)
+    client_data = tab.client_data->Clone();
+
+  return *this;
 }
 
 // Window ---------------------------------------------------------------------

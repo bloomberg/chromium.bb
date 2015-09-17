@@ -12,17 +12,16 @@
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/sessions/core/tab_restore_service_client.h"
 #include "components/sessions/serialized_navigation_entry.h"
 #include "components/sessions/session_id.h"
 #include "components/sessions/session_types.h"
-#include "content/public/browser/session_storage_namespace.h"
 #include "ui/base/window_open_disposition.h"
 
 class TabRestoreServiceDelegate;
 class TabRestoreServiceObserver;
 
 namespace content {
-class SessionStorageNamespace;
 class WebContents;
 }
 
@@ -76,7 +75,10 @@ class TabRestoreService : public KeyedService {
   // Represents a previously open tab.
   struct Tab : public Entry {
     Tab();
+    Tab(const Tab& tab);
     ~Tab() override;
+
+    Tab& operator=(const Tab& tab);
 
     bool has_browser() const { return browser_id > 0; }
 
@@ -99,8 +101,8 @@ class TabRestoreService : public KeyedService {
     // If non-empty gives the id of the extension for the tab.
     std::string extension_app_id;
 
-    // The associated session storage namespace (if any).
-    scoped_refptr<content::SessionStorageNamespace> session_storage_namespace;
+    // The associated client data.
+    scoped_ptr<sessions::TabClientData> client_data;
 
     // The user agent override used for the tab's navigations (if applicable).
     std::string user_agent_override;

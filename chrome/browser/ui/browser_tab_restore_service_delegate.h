@@ -40,14 +40,14 @@ class BrowserTabRestoreServiceDelegate : public TabRestoreServiceDelegate {
       bool select,
       bool pin,
       bool from_last_session,
-      content::SessionStorageNamespace* storage_namespace,
+      const sessions::TabClientData* storage_namespace,
       const std::string& user_agent_override) override;
   content::WebContents* ReplaceRestoredTab(
       const std::vector<sessions::SerializedNavigationEntry>& navigations,
       int selected_navigation,
       bool from_last_session,
       const std::string& extension_app_id,
-      content::SessionStorageNamespace* session_storage_namespace,
+      const sessions::TabClientData* tab_client_data,
       const std::string& user_agent_override) override;
   void CloseTab() override;
 

@@ -7,8 +7,10 @@
 
 #include "base/callback.h"
 #include "base/files/file_path.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "components/sessions/session_id.h"
+#include "components/sessions/sessions_export.h"
 
 namespace base {
 class CancelableTaskTracker;
@@ -37,11 +39,23 @@ struct SessionWindow;
 typedef base::Callback<void(ScopedVector<SessionWindow>, SessionID::id_type)>
     GetLastSessionCallback;
 
+// A class that is used to associate embedder-specific data with
+// TabRestoreService::Tab. See TabRestoreServiceClient::GetClientData().
+// Subclasses of this class must be copyable by implementing the Clone() method
+// for usage by the Tab struct, which is itself copyable and assignable.
+class SESSIONS_EXPORT TabClientData {
+ public:
+  // TODO(blundell): Make this private once tab_restore_service.h is in the
+  // component and declare TabRestoreService::Tab a friend of this class.
+  virtual scoped_ptr<TabClientData> Clone() = 0;
+  virtual ~TabClientData();
+};
+
 // A client interface that needs to be supplied to the tab restore service by
 // the embedder.
-class TabRestoreServiceClient {
+class SESSIONS_EXPORT TabRestoreServiceClient {
  public:
-  virtual ~TabRestoreServiceClient() {}
+  virtual ~TabRestoreServiceClient();
 
   // Creates a TabRestoreServiceDelegate instance that is associated with
   // |host_desktop_type| and |app_name|. May return nullptr (e.g., if the
@@ -81,6 +95,12 @@ class TabRestoreServiceClient {
   virtual std::string GetExtensionAppIDForWebContents(
       content::WebContents* web_contents) = 0;
 
+  // Returns any client data that should be associated with the
+  // TabRestoreService::Tab corresponding to |web_contents|. That tab will own
+  // this TabClientData instance. The default implementation returns null.
+  virtual scoped_ptr<TabClientData> GetTabClientDataForWebContents(
+      content::WebContents* web_contents);
+
   // Get the sequenced worker pool for running tasks on the backend thread as
   // long as the system is not shutting down.
   virtual base::SequencedWorkerPool* GetBlockingPool() = 0;
@@ -102,7 +122,7 @@ class TabRestoreServiceClient {
 
   // Called when a tab is restored. |url| is the URL that the tab is currently
   // visiting.
-  virtual void OnTabRestored(const GURL& url) {}
+  virtual void OnTabRestored(const GURL& url);
 };
 
 }  // namespace sessions

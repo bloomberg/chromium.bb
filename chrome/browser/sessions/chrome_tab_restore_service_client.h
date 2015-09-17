@@ -30,6 +30,8 @@ class ChromeTabRestoreServiceClient : public sessions::TabRestoreServiceClient {
   bool ShouldTrackURLForRestore(const GURL& url) override;
   std::string GetExtensionAppIDForWebContents(
       content::WebContents* web_contents) override;
+  scoped_ptr<sessions::TabClientData> GetTabClientDataForWebContents(
+      content::WebContents* web_contents) override;
   base::SequencedWorkerPool* GetBlockingPool() override;
   base::FilePath GetPathToSaveTo() override;
   GURL GetNewTabURL() override;
