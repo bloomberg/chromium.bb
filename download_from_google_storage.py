@@ -55,7 +55,7 @@ def GetNormalizedPlatform():
 class Gsutil(object):
   """Call gsutil with some predefined settings.  This is a convenience object,
   and is also immutable."""
-  def __init__(self, path, boto_path=None, timeout=None, version='4.7'):
+  def __init__(self, path, boto_path=None, timeout=None, version='4.15'):
     if not os.path.exists(path):
       raise FileNotFoundError('GSUtil not found in %s' % path)
     self.path = path
