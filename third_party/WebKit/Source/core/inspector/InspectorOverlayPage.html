@@ -61,7 +61,7 @@ body.platform-linux {
     background-color: rgba(0, 0, 0, 0.31);
 }
 
-#canvas, #labels-canvas {
+#canvas, #labels-canvas, #layout-editor-matched-nodes-canvas {
     pointer-events: none;
 }
 
@@ -428,8 +428,9 @@ function reset(resetData)
     window.context = canvas.getContext("2d");
     resetCanvas(canvas);
     var matchedNodesCanvas = document.getElementById("layout-editor-matched-nodes-canvas");
-    resetCanvas(matchedNodesCanvas);
-    window.labelsCanvas = document.getElementById("labels-canvas");
+    if (matchedNodesCanvas)
+        resetCanvas(matchedNodesCanvas);
+
     resetLabelCanvas();
 
     window.canvasWidth = viewportSize.width;
@@ -834,11 +835,15 @@ function showSelectorTooltip()
     tooltipElement.textContent = (medias ? medias.join(", ") + " { "  : "") + selectorInfo.selector + ( medias ? " } " : "");
     tooltipElement.style.backgroundColor = "#eee";
 
-    var matchedNodesCanvas = document.getElementById("layout-editor-matched-nodes-canvas");
-    resetCanvas(matchedNodesCanvas);
-
     if (!selectorInfo.nodes)
         return;
+
+    var matchedNodesCanvas = document.getElementById("layout-editor-matched-nodes-canvas");
+    if (!matchedNodesCanvas) {
+        matchedNodesCanvas = createCanvas("layout-editor-matched-nodes-canvas");
+        canvas.parentElement.insertBefore(matchedNodesCanvas, canvas);
+    }
+    resetCanvas(matchedNodesCanvas);
 
     for (var nodeHighlight of selectorInfo.nodes)
         drawHighlight(nodeHighlight, matchedNodesCanvas.getContext("2d"));
@@ -909,6 +914,12 @@ function onDragEnd(event)
 
 function showLabel(anchorInfo, showLongDescription)
 {
+    var labelsCanvas = document.getElementById("labels-canvas");
+    if (!labelsCanvas) {
+        labelsCanvas = createCanvas("labels-canvas");
+        canvas.parentElement.insertBefore(labelsCanvas, labelsCanvas.nextSibling);
+    }
+
     var context =  labelsCanvas.getContext("2d");
     var secondaryColor = "rgba(255, 255, 255, 0.7)";
     var labelColor = labelColorForProperty(anchorInfo);
@@ -1106,6 +1117,10 @@ function consumeEvent(event)
 
 function resetLabelCanvas()
 {
+    var labelsCanvas = document.getElementById("labels-canvas");
+    if (!labelsCanvas)
+        return;
+
     delete window.labelCanvasState;
     resetCanvas(labelsCanvas);
     if (!window.draggedPropertyName && document.body.style.cursor)
@@ -1134,6 +1149,15 @@ function chooseAnchorPointer(direction)
     return pointers[maxIndex].name;
 }
 
+function createCanvas(id)
+{
+    var canvas = document.createElement("canvas");
+    canvas.id = id;
+    canvas.className = "fill";
+    resetCanvas(canvas);
+    return canvas;
+}
+
 window.addEventListener("DOMContentLoaded", onLoaded);
 document.addEventListener("keydown", onDocumentKeyDown);
 
@@ -1146,9 +1170,7 @@ document.addEventListener("keydown", onDocumentKeyDown);
     <div class="button" id="step-over-button" title="Step over next function call (F10)."><div class="glyph"></div></div>
 </div>
 </body>
-<canvas id="layout-editor-matched-nodes-canvas" class="fill"></canvas>
 <canvas id="canvas" class="fill"></canvas>
-<canvas id="labels-canvas" class="fill"></canvas>
 <div id="element-title">
   <span id="tag-name"></span><span id="node-id"></span><span id="class-name"></span>
   <span id="node-width"></span><span class="px">px</span><span class="px"> &#xD7; </span><span id="node-height"></span><span class="px">px</span>
