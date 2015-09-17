@@ -484,15 +484,12 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     # WEBGL 2 TESTS FAILURES
     ##############################################################
 
-    self.Fail('deqp/data/gles3/shaders/arrays.html', bug=483282)
     self.Fail('deqp/data/gles3/shaders/constant_expressions.html', bug=483282)
     self.Fail('deqp/data/gles3/shaders/constants.html', bug=483282)
     self.Skip('deqp/data/gles3/shaders/conversions.html', bug=483282)
     self.Skip('deqp/data/gles3/shaders/functions.html', bug=483282)
     self.Skip('deqp/data/gles3/shaders/linkage.html', bug=483282)
     self.Fail('deqp/data/gles3/shaders/preprocessor.html', bug=483282)
-    self.Fail('deqp/data/gles3/shaders/qualification_order.html', bug=483282)
-    self.Fail('deqp/data/gles3/shaders/scoping.html', bug=483282)
 
     self.Fail('deqp/framework/opengl/simplereference/referencecontext.html',
         bug=483282)
@@ -506,7 +503,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Fail('deqp/functional/gles3/fbodepthbuffer.html', bug=483282)
     self.Skip('deqp/functional/gles3/fbomultisample.html', bug=483282)
     self.Fail('deqp/functional/gles3/fborender.html', bug=483282)
-    self.Fail('deqp/functional/gles3/fbostencilbuffer.html', bug=483282)
     self.Fail('deqp/functional/gles3/fragdepth.html', bug=483282)
     self.Skip('deqp/functional/gles3/fragmentoutput.html', bug=483282)
     self.Skip('deqp/functional/gles3/framebufferblit.html', bug=483282)
@@ -547,14 +543,10 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Fail('conformance2/attribs/gl-vertexattribipointer.html', bug=483282)
     self.Fail('conformance2/attribs/gl-vertexattribipointer-offsets.html',
         bug=483282)
-    self.Fail('conformance2/buffers/buffer-copying-contents.html', bug=483282)
     self.Fail('conformance2/buffers/buffer-copying-restrictions.html',
         bug=483282)
     self.Fail('conformance2/buffers/buffer-type-restrictions.html', bug=483282)
-    self.Fail('conformance2/buffers/getBufferSubData.html', bug=483282)
     self.Fail('conformance2/buffers/uniform-buffers.html', bug=483282)
-    self.Fail('conformance2/context/constants-and-properties-2.html',
-        bug=483282)
 
     self.Fail('conformance2/glsl3/array-complex-indexing.html', bug=483282)
     self.Fail('conformance2/glsl3/attrib-location-length-limits.html',
@@ -568,24 +560,17 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Fail('conformance2/glsl3/' +
         'shader-with-1024-character-identifier.frag.html',
         bug=483282)
-    self.Fail('conformance2/glsl3/short-circuiting-in-loop-condition.html',
-        bug=483282)
     self.Fail('conformance2/glsl3/ternary-operator-on-arrays-glsl3.html',
         bug=483282)
     self.Fail('conformance2/glsl3/uniform-location-length-limits.html',
         bug=483282)
-    self.Fail('conformance2/glsl3/vector-dynamic-indexing.html', bug=483282)
     self.Fail('conformance2/misc/instanceof-test.html', bug=483282)
-    self.Fail('conformance2/query/query.html', bug=483282)
     self.Fail('conformance2/reading/read-pixels-from-fbo-test.html', bug=483282)
     self.Fail('conformance2/renderbuffers/framebuffer-test.html', bug=483282)
     self.Fail('conformance2/renderbuffers/invalidate-framebuffer.html',
         bug=483282)
     self.Fail('conformance2/renderbuffers/readbuffer.html', bug=483282)
-    self.Fail('conformance2/rendering/draw-buffers.html', bug=483282)
-    self.Fail('conformance2/samplers/samplers.html', bug=483282)
     self.Fail('conformance2/state/gl-enum-tests.html', bug=483282)
-    self.Fail('conformance2/state/gl-get-calls.html', bug=483282)
     self.Fail('conformance2/state/gl-object-get-calls.html', bug=483282)
     self.Fail('conformance2/textures/canvas/*', bug=483282)
     self.Fail('conformance2/textures/image_data/*', bug=483282)
@@ -594,14 +579,12 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Fail('conformance2/textures/video/*', bug=483282)
     self.Fail('conformance2/textures/webgl_canvas/*', bug=483282)
     self.Fail('conformance2/textures/misc/gl-get-tex-parameter.html',
-              bug=483282)
+        bug=483282)
     self.Fail('conformance2/textures/misc/tex-input-validation.html',
-              bug=483282)
+        bug=483282)
     self.Fail('conformance2/textures/misc/tex-mipmap-levels.html', bug=483282)
     self.Fail('conformance2/textures/misc/tex-new-formats.html', bug=483282)
     self.Fail('conformance2/textures/misc/tex-storage-2d.html', bug=483282)
-    self.Fail('conformance2/textures/misc/tex-storage-and-subimage-3d.html',
-        bug=483282)
     self.Fail('conformance2/textures/misc/texture-npot.html', bug=483282)
     self.Fail('conformance2/transform_feedback/transform_feedback.html',
         bug=483282)
@@ -609,28 +592,40 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     # Windows only.
     self.Fail('conformance2/glsl3/array-in-complex-expression.html',
         ['win'], bug=483282)
+    self.Fail('conformance2/glsl3/short-circuiting-in-loop-condition.html',
+        ['win'], bug=483282)
     self.Fail('conformance2/renderbuffers/framebuffer-object-attachment.html',
         ['win'], bug=1082) # angle bug ID
+    self.Fail('conformance2/rendering/draw-buffers.html',
+        ['win'], bug=483282)
+    self.Fail('conformance2/state/gl-get-calls.html',
+        ['win'], bug=483282)
 
     # Mac only.
-    self.Fail('conformance2/glsl3/array-as-return-value.html',
-        ['mac'], bug=483282)
-    self.Fail('conformance2/glsl3/array-assign.html',
-        ['mac'], bug=483282)
-    self.Fail('conformance2/glsl3/array-equality.html',
-        ['mac'], bug=483282)
-    self.Fail('conformance2/glsl3/array-in-complex-expression.html',
-        ['mac'], bug=483282)
     self.Fail('conformance2/renderbuffers/' +
         'multisampled-renderbuffer-initialization.html',
         ['mac'], bug=483282)
     self.Fail('conformance2/rendering/instanced-arrays.html',
         ['mac'], bug=483282)
+    self.Fail('conformance2/samplers/samplers.html',
+        ['mac'], bug=483282)
+    self.Fail('deqp/data/gles3/shaders/qualification_order.html',
+        ['mac'], bug=483282)
+    self.Fail('deqp/data/gles3/shaders/scoping.html',
+        ['mac'], bug=483282)
     self.Fail('deqp/functional/gles3/vertexarrayobject.html',
         ['mac'], bug=483282)
     self.Fail('deqp/functional/gles3/shaderswitch.html',
-        ['mac'], bug=483282)
+        ['mavericks'], bug=483282)
 
     # Linux only.
-    self.Fail('deqp/functional/gles3/shaderswitch.html',
+    self.Fail('conformance2/glsl3/vector-dynamic-indexing.html',
         ['linux'], bug=483282)
+    self.Fail('conformance2/rendering/draw-buffers.html',
+        ['linux'], bug=483282)
+    self.Fail('conformance2/samplers/samplers.html',
+        ['linux'], bug=483282)
+    self.Fail('deqp/data/gles3/shaders/arrays.html',
+        ['linux', 'amd'], bug=483282)
+    self.Fail('deqp/functional/gles3/shaderswitch.html',
+        ['linux', 'nvidia'], bug=483282)
