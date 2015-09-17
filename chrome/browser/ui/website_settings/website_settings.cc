@@ -28,7 +28,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ssl/chrome_ssl_host_state_delegate.h"
 #include "chrome/browser/ssl/chrome_ssl_host_state_delegate_factory.h"
-#include "chrome/browser/ssl/ssl_error_info.h"
 #include "chrome/browser/ui/website_settings/website_settings_ui.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -41,6 +40,7 @@
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/rappor/rappor_utils.h"
+#include "components/ssl_errors/error_info.h"
 #include "components/url_formatter/elide_url.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/cert_store.h"
@@ -485,9 +485,9 @@ void WebsiteSettings::Init(const GURL& url, const content::SSLStatus& ssl) {
       site_identity_status_ = SITE_IDENTITY_STATUS_ERROR;
 
     const base::string16 bullet = UTF8ToUTF16("\n • ");
-    std::vector<SSLErrorInfo> errors;
-    SSLErrorInfo::GetErrorsForCertStatus(ssl.cert_id, ssl.cert_status,
-                                         url, &errors);
+    std::vector<ssl_errors::ErrorInfo> errors;
+    ssl_errors::ErrorInfo::GetErrorsForCertStatus(cert, ssl.cert_status, url,
+                                                  &errors);
     for (size_t i = 0; i < errors.size(); ++i) {
       site_identity_details_ += bullet;
       site_identity_details_ += errors[i].short_description();
