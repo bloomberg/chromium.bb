@@ -8,9 +8,9 @@
 
 Import('env')
 
-# we do not have proper arm support and definitely no bitcode support
+# we do not have proper arm or mips support and definitely no bitcode support
 # BUG= http://code.google.com/p/nativeclient/issues/detail?id=2357
-if env.Bit('build_arm') or env.Bit('bitcode'):
+if env.Bit('build_arm') or env.Bit('build_mips32') or env.Bit('bitcode'):
   Return()
 
 libvalgrind = env.NaClSdkLibrary('libvalgrind', 'valgrind_interceptors.c')
