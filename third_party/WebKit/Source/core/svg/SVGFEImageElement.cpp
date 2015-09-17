@@ -159,8 +159,13 @@ void SVGFEImageElement::notifyFinished(Resource*)
 
 PassRefPtrWillBeRawPtr<FilterEffect> SVGFEImageElement::build(SVGFilterBuilder*, Filter* filter)
 {
-    if (m_cachedImage)
-        return FEImage::createWithImage(filter, m_cachedImage->imageForLayoutObject(layoutObject()), m_preserveAspectRatio->currentValue());
+    if (m_cachedImage) {
+        // Don't use the broken image icon on image loading errors.
+        RefPtr<Image> image = m_cachedImage->errorOccurred() ?
+            nullptr : m_cachedImage->imageForLayoutObject(layoutObject());
+        return FEImage::createWithImage(filter, image, m_preserveAspectRatio->currentValue());
+    }
+
     return FEImage::createWithIRIReference(filter, treeScope(), hrefString(), m_preserveAspectRatio->currentValue());
 }
 

@@ -38,7 +38,7 @@
 #include "platform/text/TextStream.h"
 #include "platform/transforms/AffineTransform.h"
 #include "third_party/skia/include/core/SkPicture.h"
-#include "third_party/skia/include/effects/SkBitmapSource.h"
+#include "third_party/skia/include/effects/SkImageSource.h"
 #include "third_party/skia/include/effects/SkPictureImageFilter.h"
 
 namespace blink {
@@ -187,23 +187,25 @@ PassRefPtr<SkImageFilter> FEImage::createImageFilterForLayoutObject(LayoutObject
 
 PassRefPtr<SkImageFilter> FEImage::createImageFilter(SkiaImageFilterBuilder* builder)
 {
-    LayoutObject* layoutObject = referencedLayoutObject();
-    if (!m_image && !layoutObject)
-        return adoptRef(SkBitmapSource::Create(SkBitmap()));
-
-    if (layoutObject)
+    if (auto* layoutObject = referencedLayoutObject())
         return createImageFilterForLayoutObject(*layoutObject, builder);
 
-    FloatRect srcRect = FloatRect(FloatPoint(), m_image->size());
     FloatRect dstRect = filterPrimitiveSubregion();
+
+    RefPtr<SkImage> image = m_image ? m_image->imageForCurrentFrame() : nullptr;
+    if (!image) {
+        // "A href reference that is an empty image (zero width or zero height), that fails
+        // to download, is non-existent, or that cannot be displayed (e.g. because it is
+        // not in a supported image format) fills the filter primitive subregion with
+        // transparent black."
+        return adoptRef(SkPictureImageFilter::Create(nullptr, dstRect));
+    }
+
+    FloatRect srcRect = FloatRect(FloatPoint(), m_image->size());
 
     m_preserveAspectRatio->transformRect(dstRect, srcRect);
 
-    SkBitmap bitmap;
-    if (!m_image->deprecatedBitmapForCurrentFrame(&bitmap))
-        return adoptRef(SkBitmapSource::Create(SkBitmap()));
-
-    return adoptRef(SkBitmapSource::Create(bitmap, srcRect, dstRect));
+    return adoptRef(SkImageSource::Create(image.get(), srcRect, dstRect, kHigh_SkFilterQuality));
 }
 
 } // namespace blink
