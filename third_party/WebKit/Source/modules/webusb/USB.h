@@ -9,6 +9,7 @@
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/events/EventTarget.h"
 #include "core/frame/LocalFrameLifecycleObserver.h"
+#include "platform/heap/Handle.h"
 #include "public/platform/modules/webusb/WebUSBClient.h"
 
 namespace blink {
@@ -24,6 +25,7 @@ class USB final
     , public WebUSBClient::Observer {
     DEFINE_WRAPPERTYPEINFO();
     REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(USB);
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(USB);
 public:
     static USB* create(LocalFrame& frame)
     {
