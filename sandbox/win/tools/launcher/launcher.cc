@@ -102,17 +102,19 @@ DWORD StartRestrictedProcessInJob(wchar_t* command_line,
   {
     HANDLE temp_thread = process_info.thread_handle();
     if (!::SetThreadToken(&temp_thread, impersonation_token.Get())) {
+      auto last_error = ::GetLastError();
       ::TerminateProcess(process_info.process_handle(),
                          0);  // exit code
-      return ::GetLastError();
+      return last_error;
     }
   }
 
   err_code = job.AssignProcessToJob(process_info.process_handle());
   if (ERROR_SUCCESS != err_code) {
+    auto last_error = ::GetLastError();
     ::TerminateProcess(process_info.process_handle(),
                        0);  // exit code
-    return ::GetLastError();
+    return last_error;
   }
 
   // Start the application

@@ -129,6 +129,7 @@ bool CheckBlankPasswordWithPrefs(const WCHAR* username,
                                    LOGON32_PROVIDER_DEFAULT,
                                    &handle);
 
+    auto last_error = GetLastError();
     // Win XP and later return ERROR_ACCOUNT_RESTRICTION for blank password.
     if (logon_result)
       CloseHandle(handle);
@@ -138,7 +139,7 @@ bool CheckBlankPasswordWithPrefs(const WCHAR* username,
     // ERROR_ACCOUNT_RESTRICTION.
     // http://msdn.microsoft.com/en-us/library/windows/desktop/ms681385
     blank_password = (logon_result ||
-                      GetLastError() == ERROR_ACCOUNT_RESTRICTION);
+                      last_error == ERROR_ACCOUNT_RESTRICTION);
   }
 
   // Account for clock skew between pulling the password age and

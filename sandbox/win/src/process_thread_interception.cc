@@ -279,6 +279,8 @@ BOOL WINAPI TargetCreateProcessW(CreateProcessWFunction orig_CreateProcessW,
   if (!SandboxFactory::GetTargetServices()->GetState()->InitCalled())
     return FALSE;
 
+  // Don't call GetLastError before InitCalled() succeeds because kernel32 may
+  // not be mapped yet.
   DWORD original_error = ::GetLastError();
 
   do {
@@ -338,6 +340,8 @@ BOOL WINAPI TargetCreateProcessA(CreateProcessAFunction orig_CreateProcessA,
   if (!SandboxFactory::GetTargetServices()->GetState()->InitCalled())
     return FALSE;
 
+  // Don't call GetLastError before InitCalled() succeeds because kernel32 may
+  // not be mapped yet.
   DWORD original_error = ::GetLastError();
 
   do {

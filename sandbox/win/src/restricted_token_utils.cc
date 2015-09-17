@@ -218,9 +218,10 @@ DWORD SetTokenIntegrityLevel(HANDLE token, IntegrityLevel integrity_level) {
   DWORD size = sizeof(TOKEN_MANDATORY_LABEL) + ::GetLengthSid(integrity_sid);
   BOOL result = ::SetTokenInformation(token, TokenIntegrityLevel, &label,
                                       size);
+  auto last_error = ::GetLastError();
   ::LocalFree(integrity_sid);
 
-  return result ? ERROR_SUCCESS : ::GetLastError();
+  return result ? ERROR_SUCCESS : last_error;
 }
 
 DWORD SetProcessIntegrityLevel(IntegrityLevel integrity_level) {

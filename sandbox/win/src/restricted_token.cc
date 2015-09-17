@@ -140,6 +140,7 @@ DWORD RestrictedToken::GetRestrictedToken(
                                 SecurityIdentification, TokenPrimary,
                                 &new_token_handle);
   }
+  auto last_error = ::GetLastError();
 
   if (deny_only_array)
     delete[] deny_only_array;
@@ -151,7 +152,7 @@ DWORD RestrictedToken::GetRestrictedToken(
     delete[] privileges_to_disable_array;
 
   if (!result)
-    return ::GetLastError();
+    return last_error;
 
   base::win::ScopedHandle new_token(new_token_handle);
 

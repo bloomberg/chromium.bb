@@ -77,8 +77,8 @@ bool InitializeSymbols() {
   if (!SymGetSearchPathW(GetCurrentProcess(),
                          symbols_path.get(),
                          kSymbolsArraySize)) {
-    DLOG(WARNING) << "SymGetSearchPath failed: " << g_init_error;
     g_init_error = GetLastError();
+    DLOG(WARNING) << "SymGetSearchPath failed: " << g_init_error;
     return false;
   }
 
