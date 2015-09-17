@@ -627,5 +627,7 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['linux'], bug=483282)
     self.Fail('deqp/data/gles3/shaders/arrays.html',
         ['linux', 'amd'], bug=483282)
+    self.Fail('deqp/data/gles3/shaders/qualification_order.html',
+        ['linux', 'amd'], bug=483282)
     self.Fail('deqp/functional/gles3/shaderswitch.html',
         ['linux', 'nvidia'], bug=483282)
