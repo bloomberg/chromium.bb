@@ -91,11 +91,11 @@ function invalidateScroller(testId, expectedCount) {
 
 // Invalidation counts are 2 (#t<n> and .scroller) plus pseudo elements
 
-invalidateScroller("t1", 4); // pseudo count 2: 2 bars
-invalidateScroller("t2", 8); // pseudo count 6: 2 bars + 4 buttons
-invalidateScroller("t3", 8); // pseudo count 6: 2 bars + 4 buttons
-invalidateScroller("t4", 4); // pseudo count 6: 2 bars + 4 buttons
-invalidateScroller("t5", 4); // pseudo count 2: 2 bars
-invalidateScroller("t6", 8); // pseudo count 6: 2 bars + 4 buttons
-invalidateScroller("t7", 8); // pseudo count 6: 2 bars + 4 buttons
+invalidateScroller("t1", 3); // pseudo count 2: 2 bars
+invalidateScroller("t2", 7); // pseudo count 6: 2 bars + 4 buttons
+invalidateScroller("t3", 7); // pseudo count 6: 2 bars + 4 buttons
+invalidateScroller("t4", 3); // pseudo count 6: 2 bars + 4 buttons
+invalidateScroller("t5", 3); // pseudo count 2: 2 bars
+invalidateScroller("t6", 7); // pseudo count 6: 2 bars + 4 buttons
+invalidateScroller("t7", 7); // pseudo count 6: 2 bars + 4 buttons
 </script>

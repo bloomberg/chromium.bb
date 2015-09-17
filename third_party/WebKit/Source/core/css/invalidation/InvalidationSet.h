@@ -69,6 +69,9 @@ public:
     void setWholeSubtreeInvalid();
     bool wholeSubtreeInvalid() const { return m_allDescendantsMightBeInvalid; }
 
+    void setInvalidatesSelf() { m_invalidatesSelf = true; }
+    bool invalidatesSelf() const { return m_invalidatesSelf; }
+
     void setTreeBoundaryCrossing() { m_treeBoundaryCrossing = true; }
     bool treeBoundaryCrossing() const { return m_treeBoundaryCrossing; }
 
@@ -104,6 +107,9 @@ private:
 
     // If true, all descendants might be invalidated, so a full subtree recalc is required.
     unsigned m_allDescendantsMightBeInvalid : 1;
+
+    // If true, the element itself is invalid.
+    unsigned m_invalidatesSelf : 1;
 
     // If true, all descendants which are custom pseudo elements must be invalidated.
     unsigned m_customPseudoInvalid : 1;

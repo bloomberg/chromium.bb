@@ -318,7 +318,7 @@ void RuleFeatureSet::updateInvalidationSetsForContentAttribute(const RuleData& r
         CSSFunctionValue* functionValue = toCSSFunctionValue(item.get());
         if (functionValue->functionType() != CSSValueAttr)
             continue;
-        ensureAttributeInvalidationSet(AtomicString(toCSSPrimitiveValue(functionValue->item(0))->getStringValue()));
+        ensureAttributeInvalidationSet(AtomicString(toCSSPrimitiveValue(functionValue->item(0))->getStringValue())).setInvalidatesSelf();
     }
 }
 
@@ -330,7 +330,9 @@ RuleFeatureSet::extractInvalidationSetFeatures(const CSSSelector& selector, Inva
         if (!negated)
             foundFeatures |= extractInvalidationSetFeature(*current, features);
         // Initialize the entry in the invalidation set map, if supported.
-        if (!invalidationSetForSelector(*current)) {
+        if (InvalidationSet* invalidationSet = invalidationSetForSelector(*current)) {
+            invalidationSet->setInvalidatesSelf();
+        } else {
             if (requiresSubtreeInvalidation(*current)) {
                 // Fall back to use subtree invalidations, even for features in the
                 // rightmost compound selector. Returning the start &selector here

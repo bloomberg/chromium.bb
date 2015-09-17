@@ -50,10 +50,11 @@ void StyleInvalidator::scheduleInvalidation(PassRefPtrWillBeRawPtr<InvalidationS
         clearInvalidation(element);
         return;
     }
-    if (invalidationSet->isEmpty()) {
+    if (invalidationSet->invalidatesSelf())
         element.setNeedsStyleRecalc(LocalStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::StyleInvalidator));
+
+    if (invalidationSet->isEmpty())
         return;
-    }
 
     InvalidationList& list = ensurePendingInvalidationList(element);
     list.append(invalidationSet);
@@ -128,6 +129,7 @@ ALWAYS_INLINE bool StyleInvalidator::checkInvalidationSetsAgainstElement(Element
         recursionData.setWholeSubtreeInvalid();
         return false;
     }
+    bool thisElementNeedsStyleRecalc = recursionData.matchesCurrentInvalidationSets(element);
     if (element.needsStyleInvalidation()) {
         if (InvalidationList* invalidationList = m_pendingInvalidationMap.get(&element)) {
             for (const auto& invalidationSet : *invalidationList)
@@ -138,11 +140,9 @@ ALWAYS_INLINE bool StyleInvalidator::checkInvalidationSetsAgainstElement(Element
                     TRACE_EVENT_SCOPE_THREAD,
                     "data", InspectorStyleInvalidatorInvalidateEvent::invalidationList(element, *invalidationList));
             }
-            return true;
         }
     }
-
-    return recursionData.matchesCurrentInvalidationSets(element);
+    return thisElementNeedsStyleRecalc;
 }
 
 bool StyleInvalidator::invalidateChildren(Element& element, StyleInvalidator::RecursionData& recursionData)

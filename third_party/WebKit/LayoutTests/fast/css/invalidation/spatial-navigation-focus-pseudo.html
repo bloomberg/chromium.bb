@@ -37,7 +37,7 @@ a.offsetTop; // Force recalc.
 a.className = "a";
 
 if (window.internals)
-    shouldBe("internals.updateStyleAndReturnAffectedElementCount()", "2");
+    shouldBe("internals.updateStyleAndReturnAffectedElementCount()", "1");
 
 shouldBe("getComputedStyle(b).backgroundColor", "green");
 </script>

@@ -86,7 +86,7 @@ test(function() {
     assert_equals(getComputedStyle(r2).backgroundColor, "rgba(0, 0, 0, 0)", "Background color should initially be transparent");
 
     t2.className = "";
-    assert_equals(internals.updateStyleAndReturnAffectedElementCount(), 2, "Recalc changed element and #r2");
+    assert_equals(internals.updateStyleAndReturnAffectedElementCount(), 1, "Recalc changed element and #r2");
     assert_equals(getComputedStyle(r2).backgroundColor, "rgb(0, 128, 0)", "Background color is green after class change");
 }, "Id descendant of negated class");
 
@@ -110,7 +110,7 @@ test(function() {
     assert_equals(getComputedStyle(r5).backgroundColor, "rgba(0, 0, 0, 0)", "Background color should initially be transparent");
 
     t5.className = "";
-    assert_equals(internals.updateStyleAndReturnAffectedElementCount(), 2, "Recalc changed element and #r5");
+    assert_equals(internals.updateStyleAndReturnAffectedElementCount(), 1, "Recalc changed element and #r5");
     assert_equals(getComputedStyle(r5).backgroundColor, "rgb(0, 128, 0)", "Background color is green after class change");
 }, "Id descendant of negated class in :-webkit-any");
 
@@ -118,7 +118,7 @@ test(function() {
     assert_equals(getComputedStyle(r6).backgroundColor, "rgba(0, 0, 0, 0)", "Background color should initially be transparent");
 
     t6.className = "t6";
-    assert_equals(internals.updateStyleAndReturnAffectedElementCount(), 2, "Recalc changed element and #r6");
+    assert_equals(internals.updateStyleAndReturnAffectedElementCount(), 1, "Recalc changed element and #r6");
     assert_equals(getComputedStyle(r6).backgroundColor, "rgb(0, 128, 0)", "Background color is green after class change");
 }, "Negated class with id descendant of class");
 

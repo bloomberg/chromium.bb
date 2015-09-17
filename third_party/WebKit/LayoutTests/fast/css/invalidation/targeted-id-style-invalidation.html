@@ -44,7 +44,7 @@ var outer3 = document.getElementById('outer3');
 // Style recalc should happen on "inner" and "outer", but not "inner2" or "mid".
 outer.offsetTop;
 outer.id = 'outer1on';
-shouldBe("internals.updateStyleAndReturnAffectedElementCount()", "2");
+shouldBe("internals.updateStyleAndReturnAffectedElementCount()", "1");
 shouldBe("getComputedStyle(inner).width", '"200px"');
 
 // Style recalc should happen on "inner", but not "innerChild".

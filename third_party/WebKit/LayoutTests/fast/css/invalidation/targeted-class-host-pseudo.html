@@ -42,7 +42,7 @@ document.body.offsetLeft; // force style recalc.
 
 host2.className = "c2";
 if (window.internals)
-    shouldBe("internals.updateStyleAndReturnAffectedElementCount()", "2");
+    shouldBe("internals.updateStyleAndReturnAffectedElementCount()", "1");
 shouldBe("getComputedStyle(inner, null).backgroundColor", "green");
 
 document.body.offsetLeft; // force style recalc.

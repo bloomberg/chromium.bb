@@ -45,7 +45,7 @@ forceLayout();
 t1.className = "a1";
 
 if (window.internals)
-    shouldBe("internals.updateStyleAndReturnAffectedElementCount()", "3");
+    shouldBe("internals.updateStyleAndReturnAffectedElementCount()", "2");
 
 shouldBe("getComputedStyle(r1, '::before').backgroundColor", "green");
 
@@ -57,7 +57,7 @@ forceLayout();
 t2.className = "a2";
 
 if (window.internals)
-    shouldBe("internals.updateStyleAndReturnAffectedElementCount()", "3");
+    shouldBe("internals.updateStyleAndReturnAffectedElementCount()", "2");
 
 shouldBe("getComputedStyle(r2, '::after').backgroundColor", "green");
 

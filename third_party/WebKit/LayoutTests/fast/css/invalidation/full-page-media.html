@@ -28,7 +28,7 @@ inner.offsetTop; // force recalc
 outer.className = "outer";
 
 if (window.internals)
-    shouldBe("internals.updateStyleAndReturnAffectedElementCount()", "2");
+    shouldBe("internals.updateStyleAndReturnAffectedElementCount()", "1");
 
 shouldBe("getComputedStyle(inner).backgroundColor", "green");
 </script>

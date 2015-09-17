@@ -53,6 +53,7 @@ void InvalidationSet::cacheTracingFlag()
 
 InvalidationSet::InvalidationSet()
     : m_allDescendantsMightBeInvalid(false)
+    , m_invalidatesSelf(false)
     , m_customPseudoInvalid(false)
     , m_treeBoundaryCrossing(false)
     , m_insertionPointCrossing(false)
@@ -106,6 +107,9 @@ void InvalidationSet::combine(const InvalidationSet& other)
         setWholeSubtreeInvalid();
         return;
     }
+
+    if (other.invalidatesSelf())
+        setInvalidatesSelf();
 
     if (other.customPseudoInvalid())
         setCustomPseudoInvalid();

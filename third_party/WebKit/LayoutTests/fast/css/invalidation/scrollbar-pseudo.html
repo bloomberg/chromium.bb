@@ -105,18 +105,18 @@ function testScrollbarPseudo(pseudoElm, scroller, classElement, testClass, expec
 // ::-webkit-scrollbar-track-piece: 1 scrollbar + 2 track pieces (in total 5 and 10)
 // ::-webkit-resizer: 1 scrollbar + 1 resizer (in total 4 and 9)
 
-testScrollbarPseudo("::-webkit-scrollbar", "scroller1", scrollerParent, "t1", 3);
+testScrollbarPseudo("::-webkit-scrollbar", "scroller1", scrollerParent, "t1", 2);
 testScrollbarPseudo("::-webkit-scrollbar", "scroller2", scrollerSibling, "t2", 8);
-testScrollbarPseudo("::-webkit-scrollbar-button", "scroller1", scrollerParent, "t3", 7);
+testScrollbarPseudo("::-webkit-scrollbar-button", "scroller1", scrollerParent, "t3", 6);
 testScrollbarPseudo("::-webkit-scrollbar-button", "scroller2", scrollerSibling, "t4", 12);
-testScrollbarPseudo("::-webkit-scrollbar-corner", "scroller1", scrollerParent, "t5", 4);
+testScrollbarPseudo("::-webkit-scrollbar-corner", "scroller1", scrollerParent, "t5", 3);
 testScrollbarPseudo("::-webkit-scrollbar-corner", "scroller2", scrollerSibling, "t6", 9);
-testScrollbarPseudo("::-webkit-scrollbar-thumb", "scroller1", scrollerParent, "t7", 4);
+testScrollbarPseudo("::-webkit-scrollbar-thumb", "scroller1", scrollerParent, "t7", 3);
 testScrollbarPseudo("::-webkit-scrollbar-thumb", "scroller2", scrollerSibling, "t8", 9);
-testScrollbarPseudo("::-webkit-scrollbar-track", "scroller1", scrollerParent, "t9", 4);
+testScrollbarPseudo("::-webkit-scrollbar-track", "scroller1", scrollerParent, "t9", 3);
 testScrollbarPseudo("::-webkit-scrollbar-track", "scroller2", scrollerSibling, "t10", 9);
-testScrollbarPseudo("::-webkit-scrollbar-track-piece", "scroller1", scrollerParent, "t11", 5);
+testScrollbarPseudo("::-webkit-scrollbar-track-piece", "scroller1", scrollerParent, "t11", 4);
 testScrollbarPseudo("::-webkit-scrollbar-track-piece", "scroller2", scrollerSibling, "t12", 10);
-testScrollbarPseudo("::-webkit-resizer", "scroller1", scrollerParent, "t13", 4);
+testScrollbarPseudo("::-webkit-resizer", "scroller1", scrollerParent, "t13", 3);
 testScrollbarPseudo("::-webkit-resizer", "scroller2", scrollerSibling, "t14", 9);
 </script>

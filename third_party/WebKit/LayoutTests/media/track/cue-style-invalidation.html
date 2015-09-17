@@ -31,28 +31,28 @@ function seeked() {
     ascendant.offsetTop;
     ascendant.classList.add("cue");
     if (window.internals)
-        testExpected("internals.updateStyleAndReturnAffectedElementCount()", 9);
+        testExpected("internals.updateStyleAndReturnAffectedElementCount()", 8);
     testExpected("getComputedStyle(cueNode).backgroundColor", green);
 
     testExpected("getComputedStyle(cNode).backgroundColor", red);
     ascendant.offsetTop;
     ascendant.classList.add("cuefunc");
     if (window.internals)
-        testExpected("internals.updateStyleAndReturnAffectedElementCount()", 2);
+        testExpected("internals.updateStyleAndReturnAffectedElementCount()", 1);
     testExpected("getComputedStyle(cNode).backgroundColor", green);
 
     testExpected("getComputedStyle(iNode).backgroundColor", red);
     ascendant.offsetTop;
     ascendant.classList.add("past");
     if (window.internals)
-        testExpected("internals.updateStyleAndReturnAffectedElementCount()", 2);
+        testExpected("internals.updateStyleAndReturnAffectedElementCount()", 1);
     testExpected("getComputedStyle(iNode).backgroundColor", green);
 
     testExpected("getComputedStyle(bNode).backgroundColor", red);
     ascendant.offsetTop;
     ascendant.classList.add("future");
     if (window.internals)
-        testExpected("internals.updateStyleAndReturnAffectedElementCount()", 2);
+        testExpected("internals.updateStyleAndReturnAffectedElementCount()", 1);
     testExpected("getComputedStyle(bNode).backgroundColor", green);
 
     endTest();

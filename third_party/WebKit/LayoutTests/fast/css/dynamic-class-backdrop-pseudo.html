@@ -21,7 +21,7 @@ document.body.offsetLeft;
 document.getElementById("t").className = "a";
 
 if (window.internals)
-    shouldBe("internals.updateStyleAndReturnAffectedElementCount()", "3");
+    shouldBe("internals.updateStyleAndReturnAffectedElementCount()", "2");
 
 shouldBe("getComputedStyle(dialog, '::backdrop').backgroundColor", "green");
 

@@ -72,14 +72,14 @@ document.body.offsetLeft; // force style recalc.
 
 document.getElementById("t2").className = "a2";
 if (window.internals)
-    shouldBe("internals.updateStyleAndReturnAffectedElementCount()", "2");
+    shouldBe("internals.updateStyleAndReturnAffectedElementCount()", "1");
 shouldBe("getComputedStyle(b2, null).backgroundColor", "green");
 
 document.body.offsetLeft; // force style recalc.
 
 document.getElementById("t3").className = "a3";
 if (window.internals)
-    shouldBe("internals.updateStyleAndReturnAffectedElementCount()", "3");
+    shouldBe("internals.updateStyleAndReturnAffectedElementCount()", "2");
 shouldBe("getComputedStyle(b3, null).backgroundColor", "green");
 shouldBe("getComputedStyle(c3, null).backgroundColor", "green");
 

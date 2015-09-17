@@ -36,13 +36,13 @@ document.body.offsetLeft; // force style recalc.
 
 document.getElementById("t1").className = "t1";
 if (window.internals)
-    shouldBe("internals.updateStyleAndReturnAffectedElementCount()", "2");
+    shouldBe("internals.updateStyleAndReturnAffectedElementCount()", "1");
 shouldBe("getComputedStyle(match1, null).backgroundColor", "green");
 
 document.body.offsetLeft; // force style recalc.
 
 document.getElementById("t2").className = "t2";
 if (window.internals)
-    shouldBe("internals.updateStyleAndReturnAffectedElementCount()", "2");
+    shouldBe("internals.updateStyleAndReturnAffectedElementCount()", "1");
 shouldBe("getComputedStyle(match2, null).backgroundColor", "green");
 </script>

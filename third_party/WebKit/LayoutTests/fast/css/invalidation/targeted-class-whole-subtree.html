@@ -32,7 +32,7 @@ outer.className = "b";
 inner.className = "a";
 
 if (window.internals)
-    shouldBe("internals.updateStyleAndReturnAffectedElementCount()", "5");
+    shouldBe("internals.updateStyleAndReturnAffectedElementCount()", "4");
 
 for (var i=0; i < innerDivs.length; i++)
     shouldBe("getComputedStyle(innerDivs[i], null).backgroundColor", "green");

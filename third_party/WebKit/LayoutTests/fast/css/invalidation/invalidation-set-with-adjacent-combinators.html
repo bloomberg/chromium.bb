@@ -56,7 +56,7 @@ if (window.internals)
 document.body.offsetTop; // Force style recalc.
 i3.className = "c3";
 if (window.internals)
-    shouldBe("internals.updateStyleAndReturnAffectedElementCount()", "2");
+    shouldBe("internals.updateStyleAndReturnAffectedElementCount()", "1");
 
 document.body.offsetTop; // Force style recalc.
 i4.className = "c4";
@@ -68,7 +68,7 @@ shouldBe("getComputedStyle(i1, null).backgroundColor", "transparent");
 document.body.offsetLeft; // force style recalc.
 i5.className = "c5";
 if (window.internals)
-    shouldBe("internals.updateStyleAndReturnAffectedElementCount()", "2");
+    shouldBe("internals.updateStyleAndReturnAffectedElementCount()", "1");
 
 shouldBe("getComputedStyle(i1, null).backgroundColor", "green");
 

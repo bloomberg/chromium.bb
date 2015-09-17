@@ -48,7 +48,7 @@ var i2 = host2.shadowRoot.getElementById("i2");
 i2.className = "c2";
 
 if (window.internals)
-    shouldBe("internals.updateStyleAndReturnAffectedElementCount()", "4");
+    shouldBe("internals.updateStyleAndReturnAffectedElementCount()", "3");
 
 shouldBe("getComputedStyle(r2, null).backgroundColor", "green");
 

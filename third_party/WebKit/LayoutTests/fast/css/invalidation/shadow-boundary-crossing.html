@@ -29,11 +29,11 @@ for (var j = 0; j < 10; ++j) {
 getComputedStyle(sandbox).color;
 sandbox.className = "shallow";
 if (window.internals)
-    shouldBe("internals.updateStyleAndReturnAffectedElementCount()", "11");
+    shouldBe("internals.updateStyleAndReturnAffectedElementCount()", "10");
 sandbox.className = "";
 
 getComputedStyle(sandbox).color;
 sandbox.className = "deep";
 if (window.internals)
-    shouldBe("internals.updateStyleAndReturnAffectedElementCount()", "31");
+    shouldBe("internals.updateStyleAndReturnAffectedElementCount()", "30");
 </script>

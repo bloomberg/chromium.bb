@@ -20,5 +20,5 @@ document.body.offsetLeft; // force style recalc.
 document.getElementById("inner1").className = "inner1";
 document.getElementById("inner2").className = "inner2";
 if (window.internals)
-    shouldBe("internals.updateStyleAndReturnAffectedElementCount()", "2");
+    shouldBe("internals.updateStyleAndReturnAffectedElementCount()", "0");
 </script>

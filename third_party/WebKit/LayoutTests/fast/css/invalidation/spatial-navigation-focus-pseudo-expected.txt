@@ -10,7 +10,7 @@ we need to either add the possibility to use internal css features in author sty
 support injecting UA style for tests, or drop this test.
 
 PASS getComputedStyle(b).backgroundColor is transparent
-PASS internals.updateStyleAndReturnAffectedElementCount() is 2
+PASS internals.updateStyleAndReturnAffectedElementCount() is 1
 PASS getComputedStyle(b).backgroundColor is green
 PASS successfullyParsed is true
 

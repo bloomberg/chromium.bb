@@ -14,9 +14,9 @@ PASS getComputedStyle(spans4[i], null).backgroundColor is transparent
 PASS getComputedStyle(d5, null).backgroundColor is transparent
 PASS internals.updateStyleAndReturnAffectedElementCount() is 1
 PASS getComputedStyle(t1, null).backgroundColor is green
-PASS internals.updateStyleAndReturnAffectedElementCount() is 2
+PASS internals.updateStyleAndReturnAffectedElementCount() is 1
 PASS getComputedStyle(b2, null).backgroundColor is green
-PASS internals.updateStyleAndReturnAffectedElementCount() is 3
+PASS internals.updateStyleAndReturnAffectedElementCount() is 2
 PASS getComputedStyle(b3, null).backgroundColor is green
 PASS getComputedStyle(c3, null).backgroundColor is green
 PASS internals.updateStyleAndReturnAffectedElementCount() is 5

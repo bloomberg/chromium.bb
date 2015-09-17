@@ -28,7 +28,7 @@ if (window.internals) {
 
     document.getElementById("t").className = "theme";
 
-    shouldBe("internals.updateStyleAndReturnAffectedElementCount()", "2");
+    shouldBe("internals.updateStyleAndReturnAffectedElementCount()", "1");
     shouldBe("getComputedStyle(fileUploadButton, null).backgroundColor", "green");
 }
 </script>

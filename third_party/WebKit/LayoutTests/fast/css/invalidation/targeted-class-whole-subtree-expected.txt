@@ -6,7 +6,7 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 PASS getComputedStyle(innerDivs[i], null).backgroundColor is transparent
 PASS getComputedStyle(innerDivs[i], null).backgroundColor is transparent
 PASS getComputedStyle(innerDivs[i], null).backgroundColor is transparent
-PASS internals.updateStyleAndReturnAffectedElementCount() is 5
+PASS internals.updateStyleAndReturnAffectedElementCount() is 4
 PASS getComputedStyle(innerDivs[i], null).backgroundColor is green
 PASS getComputedStyle(innerDivs[i], null).backgroundColor is green
 PASS getComputedStyle(innerDivs[i], null).backgroundColor is green

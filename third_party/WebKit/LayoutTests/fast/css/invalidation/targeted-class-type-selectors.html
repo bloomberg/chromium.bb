@@ -48,7 +48,7 @@ document.body.offsetTop; // Force style recalc.
 
 document.getElementById("t1").className = "a1";
 if (window.internals)
-    shouldBe("internals.updateStyleAndReturnAffectedElementCount()", "3");
+    shouldBe("internals.updateStyleAndReturnAffectedElementCount()", "2");
 shouldBe("getComputedStyle(children[0][0], null).backgroundColor", "green");
 shouldBe("getComputedStyle(children[0][1], null).backgroundColor", "green");
 shouldBe("getComputedStyle(children[0][2], null).backgroundColor", "transparent");
@@ -58,7 +58,7 @@ document.body.offsetLeft; // force style recalc.
 
 document.getElementById("t2").className = "a2";
 if (window.internals)
-    shouldBe("internals.updateStyleAndReturnAffectedElementCount()", "3");
+    shouldBe("internals.updateStyleAndReturnAffectedElementCount()", "2");
 shouldBe("getComputedStyle(children[1][0], null).backgroundColor", "transparent");
 shouldBe("getComputedStyle(children[1][1], null).backgroundColor", "transparent");
 shouldBe("getComputedStyle(children[1][2], null).backgroundColor", "green");
