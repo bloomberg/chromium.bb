@@ -495,7 +495,7 @@ TEST(FileTest, GetInfoForDirectory) {
 
   base::File dir(
       ::CreateFile(empty_dir.value().c_str(),
-                   FILE_ALL_ACCESS,
+                   GENERIC_READ | GENERIC_WRITE,
                    FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
                    NULL,
                    OPEN_EXISTING,

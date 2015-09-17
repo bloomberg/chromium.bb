@@ -134,7 +134,7 @@ class ReparsePoint {
   ReparsePoint(const FilePath& source, const FilePath& target) {
     dir_.Set(
       ::CreateFile(source.value().c_str(),
-                   FILE_ALL_ACCESS,
+                   GENERIC_READ | GENERIC_WRITE,
                    FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
                    NULL,
                    OPEN_EXISTING,
