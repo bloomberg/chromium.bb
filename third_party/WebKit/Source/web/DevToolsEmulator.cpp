@@ -62,6 +62,10 @@ DevToolsEmulator::DevToolsEmulator(WebViewImpl* webViewImpl)
     , m_embedderPreferCompositingToLCDTextEnabled(webViewImpl->page()->settings().preferCompositingToLCDTextEnabled())
     , m_embedderUseMobileViewport(webViewImpl->page()->settings().useMobileViewportStyle())
     , m_embedderPluginsEnabled(webViewImpl->page()->settings().pluginsEnabled())
+    , m_embedderAvailablePointerTypes(webViewImpl->page()->settings().availablePointerTypes())
+    , m_embedderPrimaryPointerType(webViewImpl->page()->settings().primaryPointerType())
+    , m_embedderAvailableHoverTypes(webViewImpl->page()->settings().availableHoverTypes())
+    , m_embedderPrimaryHoverType(webViewImpl->page()->settings().primaryHoverType())
     , m_touchEventEmulationEnabled(false)
     , m_doubleTapToZoomEnabled(false)
     , m_originalTouchEnabled(false)
@@ -163,6 +167,38 @@ void DevToolsEmulator::setHidePinchScrollbarsNearMinScale(bool enabled)
         m_webViewImpl->layerTreeView()->setHidePinchScrollbarsNearMinScale(enabled);
 }
 
+void DevToolsEmulator::setAvailablePointerTypes(int types)
+{
+    m_embedderAvailablePointerTypes = types;
+    bool emulateMobileEnabled = m_deviceMetricsEnabled && m_emulateMobileEnabled;
+    if (!emulateMobileEnabled)
+        m_webViewImpl->page()->settings().setAvailablePointerTypes(types);
+}
+
+void DevToolsEmulator::setPrimaryPointerType(PointerType pointerType)
+{
+    m_embedderPrimaryPointerType = pointerType;
+    bool emulateMobileEnabled = m_deviceMetricsEnabled && m_emulateMobileEnabled;
+    if (!emulateMobileEnabled)
+        m_webViewImpl->page()->settings().setPrimaryPointerType(pointerType);
+}
+
+void DevToolsEmulator::setAvailableHoverTypes(int types)
+{
+    m_embedderAvailableHoverTypes = types;
+    bool emulateMobileEnabled = m_deviceMetricsEnabled && m_emulateMobileEnabled;
+    if (!emulateMobileEnabled)
+        m_webViewImpl->page()->settings().setAvailableHoverTypes(types);
+}
+
+void DevToolsEmulator::setPrimaryHoverType(HoverType hoverType)
+{
+    m_embedderPrimaryHoverType = hoverType;
+    bool emulateMobileEnabled = m_deviceMetricsEnabled && m_emulateMobileEnabled;
+    if (!emulateMobileEnabled)
+        m_webViewImpl->page()->settings().setPrimaryHoverType(hoverType);
+}
+
 void DevToolsEmulator::enableDeviceEmulation(const WebDeviceEmulationParams& params)
 {
     if (!m_deviceMetricsEnabled) {
@@ -217,6 +253,10 @@ void DevToolsEmulator::enableMobileEmulation()
     m_webViewImpl->page()->settings().setPreferCompositingToLCDTextEnabled(true);
     m_webViewImpl->page()->settings().setUseMobileViewportStyle(true);
     m_webViewImpl->page()->settings().setPluginsEnabled(false);
+    m_webViewImpl->page()->settings().setAvailablePointerTypes(PointerTypeCoarse);
+    m_webViewImpl->page()->settings().setPrimaryPointerType(PointerTypeCoarse);
+    m_webViewImpl->page()->settings().setAvailableHoverTypes(HoverTypeOnDemand);
+    m_webViewImpl->page()->settings().setPrimaryHoverType(HoverTypeOnDemand);
     m_webViewImpl->setZoomFactorOverride(1);
 
     m_originalDefaultMinimumPageScaleFactor = m_webViewImpl->defaultMinimumPageScaleFactor();
@@ -237,6 +277,10 @@ void DevToolsEmulator::disableMobileEmulation()
     m_webViewImpl->page()->settings().setPreferCompositingToLCDTextEnabled(m_embedderPreferCompositingToLCDTextEnabled);
     m_webViewImpl->page()->settings().setUseMobileViewportStyle(m_embedderUseMobileViewport);
     m_webViewImpl->page()->settings().setPluginsEnabled(m_embedderPluginsEnabled);
+    m_webViewImpl->page()->settings().setAvailablePointerTypes(m_embedderAvailablePointerTypes);
+    m_webViewImpl->page()->settings().setPrimaryPointerType(m_embedderPrimaryPointerType);
+    m_webViewImpl->page()->settings().setAvailableHoverTypes(m_embedderAvailableHoverTypes);
+    m_webViewImpl->page()->settings().setPrimaryHoverType(m_embedderPrimaryHoverType);
     m_webViewImpl->setZoomFactorOverride(0);
     m_emulateMobileEnabled = false;
     m_webViewImpl->setDefaultPageScaleLimits(

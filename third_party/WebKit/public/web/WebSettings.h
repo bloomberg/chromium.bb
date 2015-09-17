@@ -113,10 +113,6 @@ public:
     virtual void setFromStrings(const WebString& name, const WebString& value) = 0;
 
     virtual bool mainFrameResizesAreOrientationChanges() const = 0;
-    virtual int availablePointerTypes() const = 0;
-    virtual PointerType primaryPointerType() const = 0;
-    virtual int availableHoverTypes() const = 0;
-    virtual HoverType primaryHoverType() const = 0;
     virtual bool shrinksViewportContentToFit() const = 0;
     virtual bool viewportEnabled() const = 0;
     virtual void setAccelerated2dCanvasEnabled(bool) = 0;

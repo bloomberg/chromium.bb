@@ -7770,14 +7770,14 @@ TEST_P(ParameterizedWebFrameTest, CrossDomainAccessErrorsUseCallingWindow)
     popupWebViewHelper.reset();
 }
 
-class ViewportOnResizeTest : public ParameterizedWebFrameTest {
+class DeviceEmulationTest : public ParameterizedWebFrameTest {
 protected:
-    ViewportOnResizeTest()
+    DeviceEmulationTest()
         : m_webViewHelper(this)
     {
-        registerMockedHttpURLLoad("viewport_emulation.html");
+        registerMockedHttpURLLoad("device_emulation.html");
         m_client.m_screenInfo.deviceScaleFactor = 1;
-        m_webViewHelper.initializeAndLoad(m_baseURL + "viewport_emulation.html", true, 0, &m_client);
+        m_webViewHelper.initializeAndLoad(m_baseURL + "device_emulation.html", true, 0, &m_client);
     }
 
     void testResize(const WebSize size, const String& expectedSize)
@@ -7786,24 +7786,29 @@ protected:
         m_client.m_screenInfo.availableRect = m_client.m_screenInfo.rect;
         m_webViewHelper.webView()->resize(size);
         m_webViewHelper.webView()->layout();
+        EXPECT_EQ(expectedSize, dumpSize("test"));
+    }
 
+    String dumpSize(const String& id)
+    {
+        String code = "dumpSize('" + id + "')";
         v8::HandleScope scope(v8::Isolate::GetCurrent());
         ScriptExecutionCallbackHelper callbackHelper(m_webViewHelper.webView()->mainFrame()->mainWorldScriptContext());
-        m_webViewHelper.webView()->mainFrame()->toWebLocalFrame()->requestExecuteScriptAndReturnValue(WebScriptSource(WebString("dumpSize()")), false, &callbackHelper);
+        m_webViewHelper.webView()->mainFrame()->toWebLocalFrame()->requestExecuteScriptAndReturnValue(WebScriptSource(WebString(code)), false, &callbackHelper);
         runPendingTasks();
         EXPECT_TRUE(callbackHelper.didComplete());
-        EXPECT_EQ(expectedSize, callbackHelper.stringValue());
+        return callbackHelper.stringValue();
     }
 
     FixedLayoutTestWebViewClient m_client;
     FrameTestHelpers::WebViewHelper m_webViewHelper;
 };
 
-INSTANTIATE_TEST_CASE_P(All, ViewportOnResizeTest, ::testing::Values(
+INSTANTIATE_TEST_CASE_P(All, DeviceEmulationTest, ::testing::Values(
     ParameterizedWebFrameTestConfig::Default,
     ParameterizedWebFrameTestConfig::RootLayerScrolls));
 
-TEST_P(ViewportOnResizeTest, ViewportInvalidatedOnResizeWithEmulation)
+TEST_P(DeviceEmulationTest, DeviceSizeInvalidatedOnResize)
 {
     WebDeviceEmulationParams params;
     params.screenPosition = WebDeviceEmulationParams::Mobile;
@@ -7818,6 +7823,15 @@ TEST_P(ViewportOnResizeTest, ViewportInvalidatedOnResizeWithEmulation)
     testResize(WebSize(690, 490), "200x200");
     testResize(WebSize(800, 600), "400x400");
 
+    m_webViewHelper.webView()->disableDeviceEmulation();
+}
+
+TEST_P(DeviceEmulationTest, PointerAndHoverTypes)
+{
+    WebDeviceEmulationParams params;
+    params.screenPosition = WebDeviceEmulationParams::Mobile;
+    m_webViewHelper.webView()->enableDeviceEmulation(params);
+    EXPECT_EQ("20x20", dumpSize("pointer"));
     m_webViewHelper.webView()->disableDeviceEmulation();
 }
 

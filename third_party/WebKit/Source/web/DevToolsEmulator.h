@@ -5,6 +5,7 @@
 #ifndef DevToolsEmulator_h
 #define DevToolsEmulator_h
 
+#include "core/css/PointerProperties.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
 #include "wtf/OwnPtr.h"
@@ -37,6 +38,10 @@ public:
     void setDoubleTapToZoomEnabled(bool);
     bool doubleTapToZoomEnabled() const;
     void setHidePinchScrollbarsNearMinScale(bool);
+    void setAvailablePointerTypes(int);
+    void setPrimaryPointerType(PointerType);
+    void setAvailableHoverTypes(int);
+    void setPrimaryHoverType(HoverType);
 
     // Emulation.
     void enableDeviceEmulation(const WebDeviceEmulationParams&);
@@ -65,6 +70,10 @@ private:
     bool m_embedderPreferCompositingToLCDTextEnabled;
     bool m_embedderUseMobileViewport;
     bool m_embedderPluginsEnabled;
+    int m_embedderAvailablePointerTypes;
+    PointerType m_embedderPrimaryPointerType;
+    int m_embedderAvailableHoverTypes;
+    HoverType m_embedderPrimaryHoverType;
 
     bool m_touchEventEmulationEnabled;
     bool m_doubleTapToZoomEnabled;
