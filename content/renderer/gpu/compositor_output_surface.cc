@@ -50,15 +50,28 @@ CompositorOutputSurface::CompositorOutputSurface(
       weak_ptrs_(this) {
   DCHECK(output_surface_filter_.get());
   DCHECK(frame_swap_message_queue_.get());
+  DetachFromThread();
   capabilities_.max_frames_pending = 1;
   message_sender_ = RenderThreadImpl::current()->sync_message_filter();
   DCHECK(message_sender_.get());
 }
 
-CompositorOutputSurface::~CompositorOutputSurface() {}
+CompositorOutputSurface::~CompositorOutputSurface() {
+  DCHECK(CalledOnValidThread());
+  if (!HasClient())
+    return;
+  UpdateSmoothnessTakesPriority(false);
+  if (output_surface_proxy_.get())
+    output_surface_proxy_->ClearOutputSurface();
+  output_surface_filter_->RemoveHandlerOnCompositorThread(
+                              routing_id_,
+                              output_surface_filter_handler_);
+}
 
 bool CompositorOutputSurface::BindToClient(
     cc::OutputSurfaceClient* client) {
+  DCHECK(CalledOnValidThread());
+
   if (!cc::OutputSurface::BindToClient(client))
     return false;
 
@@ -79,17 +92,6 @@ bool CompositorOutputSurface::BindToClient(
   }
 
   return true;
-}
-
-void CompositorOutputSurface::DetachFromClient() {
-  if (!HasClient())
-    return;
-  UpdateSmoothnessTakesPriority(false);
-  if (output_surface_proxy_.get())
-    output_surface_proxy_->ClearOutputSurface();
-  output_surface_filter_->RemoveHandlerOnCompositorThread(
-      routing_id_, output_surface_filter_handler_);
-  cc::OutputSurface::DetachFromClient();
 }
 
 void CompositorOutputSurface::ShortcutSwapAck(
@@ -154,7 +156,7 @@ void CompositorOutputSurface::SwapBuffers(cc::CompositorFrame* frame) {
 }
 
 void CompositorOutputSurface::OnMessageReceived(const IPC::Message& message) {
-  DCHECK(client_thread_checker_.CalledOnValidThread());
+  DCHECK(CalledOnValidThread());
   if (!HasClient())
     return;
   IPC_BEGIN_MESSAGE_MAP(CompositorOutputSurface, message)
@@ -168,7 +170,7 @@ void CompositorOutputSurface::OnMessageReceived(const IPC::Message& message) {
 void CompositorOutputSurface::OnUpdateVSyncParametersFromBrowser(
     base::TimeTicks timebase,
     base::TimeDelta interval) {
-  DCHECK(client_thread_checker_.CalledOnValidThread());
+  DCHECK(CalledOnValidThread());
   CommitVSyncParameters(timebase, interval);
 }
 

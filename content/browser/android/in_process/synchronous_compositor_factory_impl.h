@@ -28,7 +28,6 @@ class WebGraphicsContext3DInProcessCommandBufferImpl;
 namespace content {
 
 class InProcessChildThreadParams;
-class SynchronousCompositorContextProvider;
 
 class SynchronousCompositorFactoryImpl : public SynchronousCompositorFactory {
  public:
@@ -88,8 +87,6 @@ class SynchronousCompositorFactoryImpl : public SynchronousCompositorFactory {
 
   class VideoContextProvider;
   scoped_refptr<VideoContextProvider> video_context_provider_;
-
-  scoped_refptr<SynchronousCompositorContextProvider> shared_worker_context_;
 
   bool use_ipc_command_buffer_;
 

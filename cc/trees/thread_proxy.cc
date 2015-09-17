@@ -210,10 +210,11 @@ void ThreadProxy::RequestNewOutputSurface() {
   layer_tree_host()->RequestNewOutputSurface();
 }
 
-void ThreadProxy::SetOutputSurface(OutputSurface* output_surface) {
+void ThreadProxy::SetOutputSurface(scoped_ptr<OutputSurface> output_surface) {
   Proxy::ImplThreadTaskRunner()->PostTask(
-      FROM_HERE, base::Bind(&ThreadProxy::InitializeOutputSurfaceOnImplThread,
-                            impl_thread_weak_ptr_, output_surface));
+      FROM_HERE,
+      base::Bind(&ThreadProxy::InitializeOutputSurfaceOnImplThread,
+                 impl_thread_weak_ptr_, base::Passed(&output_surface)));
 }
 
 void ThreadProxy::DidInitializeOutputSurface(
@@ -1043,12 +1044,12 @@ void ThreadProxy::InitializeImplOnImplThread(CompletionEvent* completion) {
 }
 
 void ThreadProxy::InitializeOutputSurfaceOnImplThread(
-    OutputSurface* output_surface) {
+    scoped_ptr<OutputSurface> output_surface) {
   TRACE_EVENT0("cc", "ThreadProxy::InitializeOutputSurfaceOnImplThread");
   DCHECK(IsImplThread());
 
   LayerTreeHostImpl* host_impl = impl().layer_tree_host_impl.get();
-  bool success = host_impl->InitializeRenderer(output_surface);
+  bool success = host_impl->InitializeRenderer(output_surface.Pass());
   RendererCapabilities capabilities;
   if (success) {
     capabilities =

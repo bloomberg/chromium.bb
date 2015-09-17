@@ -35,14 +35,13 @@ class OcclusionTrackerPerfTest : public testing::Test {
                base::TimeDelta::FromMilliseconds(kTimeLimitMillis),
                kTimeCheckInterval),
         proxy_(base::ThreadTaskRunnerHandle::Get(), nullptr),
-        impl_(&proxy_),
-        output_surface_(FakeOutputSurface::Create3d()) {}
+        impl_(&proxy_) {}
   void CreateHost() {
     LayerTreeSettings settings;
     host_impl_ = LayerTreeHostImpl::Create(settings, &client_, &proxy_, &stats_,
                                            &shared_bitmap_manager_, nullptr,
                                            &task_graph_runner_, 1);
-    host_impl_->InitializeRenderer(output_surface_.get());
+    host_impl_->InitializeRenderer(FakeOutputSurface::Create3d());
 
     scoped_ptr<LayerImpl> root_layer = LayerImpl::Create(active_tree(), 1);
     root_layer->SetHasRenderSurface(true);
@@ -72,7 +71,6 @@ class OcclusionTrackerPerfTest : public testing::Test {
   FakeRenderingStatsInstrumentation stats_;
   TestSharedBitmapManager shared_bitmap_manager_;
   TestTaskGraphRunner task_graph_runner_;
-  scoped_ptr<OutputSurface> output_surface_;
   scoped_ptr<LayerTreeHostImpl> host_impl_;
 };
 

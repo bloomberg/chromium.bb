@@ -22,12 +22,12 @@ namespace {
 
 class LayerTreeImplTest : public LayerTreeHostCommonTest {
  public:
-  LayerTreeImplTest() : output_surface_(FakeOutputSurface::Create3d()) {
+  LayerTreeImplTest() {
     LayerTreeSettings settings;
     settings.layer_transforms_should_scale_layer_contents = true;
     host_impl_.reset(new FakeLayerTreeHostImpl(
         settings, &proxy_, &shared_bitmap_manager_, &task_graph_runner_));
-    EXPECT_TRUE(host_impl_->InitializeRenderer(output_surface_.get()));
+    EXPECT_TRUE(host_impl_->InitializeRenderer(FakeOutputSurface::Create3d()));
   }
 
   FakeLayerTreeHostImpl& host_impl() { return *host_impl_; }
@@ -42,7 +42,6 @@ class LayerTreeImplTest : public LayerTreeHostCommonTest {
   TestSharedBitmapManager shared_bitmap_manager_;
   TestTaskGraphRunner task_graph_runner_;
   FakeImplProxy proxy_;
-  scoped_ptr<OutputSurface> output_surface_;
   scoped_ptr<FakeLayerTreeHostImpl> host_impl_;
 };
 
@@ -98,11 +97,10 @@ TEST_F(LayerTreeImplTest, UpdateViewportAndHitTest) {
   FakeImplProxy proxy;
   LayerTreeSettings settings;
   settings.verify_property_trees = true;
-  scoped_ptr<OutputSurface> output_surface = FakeOutputSurface::Create3d();
   scoped_ptr<FakeLayerTreeHostImpl> host_impl;
   host_impl.reset(new FakeLayerTreeHostImpl(
       settings, &proxy, &shared_bitmap_manager, &task_graph_runner));
-  EXPECT_TRUE(host_impl->InitializeRenderer(output_surface.get()));
+  EXPECT_TRUE(host_impl->InitializeRenderer(FakeOutputSurface::Create3d()));
   scoped_ptr<LayerImpl> root =
       LayerImpl::Create(host_impl->active_tree(), 12345);
 

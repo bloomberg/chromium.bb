@@ -189,7 +189,6 @@ class TextureLayerTest : public testing::Test {
   TextureLayerTest()
       : fake_client_(
             FakeLayerTreeHostClient(FakeLayerTreeHostClient::DIRECT_3D)),
-        output_surface_(FakeOutputSurface::Create3d()),
         host_impl_(&proxy_, &shared_bitmap_manager_, &task_graph_runner_),
         test_data_(&shared_bitmap_manager_) {}
 
@@ -215,7 +214,6 @@ class TextureLayerTest : public testing::Test {
   FakeLayerTreeHostClient fake_client_;
   TestSharedBitmapManager shared_bitmap_manager_;
   TestTaskGraphRunner task_graph_runner_;
-  scoped_ptr<OutputSurface> output_surface_;
   FakeLayerTreeHostImpl host_impl_;
   CommonMailboxObjects test_data_;
   LayerSettings layer_settings_;
@@ -884,7 +882,7 @@ class TextureLayerImplWithMailboxTest : public TextureLayerTest {
     TextureLayerTest::SetUp();
     layer_tree_host_ =
         MockLayerTreeHost::Create(&fake_client_, &task_graph_runner_);
-    EXPECT_TRUE(host_impl_.InitializeRenderer(output_surface_.get()));
+    EXPECT_TRUE(host_impl_.InitializeRenderer(FakeOutputSurface::Create3d()));
   }
 
   bool WillDraw(TextureLayerImpl* layer, DrawMode mode) {

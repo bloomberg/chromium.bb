@@ -60,7 +60,7 @@ class CC_EXPORT Proxy {
 
   // Will call LayerTreeHost::OnCreateAndInitializeOutputSurfaceAttempted
   // with the result of this function.
-  virtual void SetOutputSurface(OutputSurface* output_surface) = 0;
+  virtual void SetOutputSurface(scoped_ptr<OutputSurface> output_surface) = 0;
 
   // Indicates that the compositing surface associated with our context is
   // ready to use.

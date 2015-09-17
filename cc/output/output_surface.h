@@ -11,7 +11,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/threading/thread_checker.h"
 #include "cc/base/cc_export.h"
 #include "cc/output/context_provider.h"
 #include "cc/output/overlay_candidate_validator.h"
@@ -113,13 +112,9 @@ class CC_EXPORT OutputSurface {
 
   // Called by the compositor on the compositor thread. This is a place where
   // thread-specific data for the output surface can be initialized, since from
-  // this point to when DetachFromClient() is called the output surface will
-  // only be used on the compositor thread.
+  // this point on the output surface will only be used on the compositor
+  // thread.
   virtual bool BindToClient(OutputSurfaceClient* client);
-
-  // Called by the compositor on the compositor thread. This is a place where
-  // thread-specific data for the output surface can be uninitialized.
-  virtual void DetachFromClient();
 
   virtual void EnsureBackbuffer();
   virtual void DiscardBackbuffer();
@@ -181,7 +176,6 @@ class CC_EXPORT OutputSurface {
   scoped_ptr<SoftwareOutputDevice> software_device_;
   gfx::Size surface_size_;
   float device_scale_factor_;
-  base::ThreadChecker client_thread_checker_;
 
   void CommitVSyncParameters(base::TimeTicks timebase,
                              base::TimeDelta interval);

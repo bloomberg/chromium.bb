@@ -46,7 +46,6 @@ class TileManagerTilePriorityQueueTest : public testing::Test {
         ready_to_activate_(false),
         id_(7),
         proxy_(base::ThreadTaskRunnerHandle::Get()),
-        output_surface_(FakeOutputSurface::Create3d()),
         host_impl_(LowResTilingsSettings(),
                    &proxy_,
                    &shared_bitmap_manager_,
@@ -75,7 +74,7 @@ class TileManagerTilePriorityQueueTest : public testing::Test {
   }
 
   virtual void InitializeRenderer() {
-    host_impl_.InitializeRenderer(output_surface_.get());
+    host_impl_.InitializeRenderer(FakeOutputSurface::Create3d());
   }
 
   void SetupDefaultTrees(const gfx::Size& layer_bounds) {
@@ -157,7 +156,6 @@ class TileManagerTilePriorityQueueTest : public testing::Test {
   bool ready_to_activate_;
   int id_;
   FakeImplProxy proxy_;
-  scoped_ptr<OutputSurface> output_surface_;
   FakeLayerTreeHostImpl host_impl_;
   FakePictureLayerImpl* pending_layer_;
   FakePictureLayerImpl* active_layer_;
@@ -1425,11 +1423,7 @@ TEST_F(TileManagerTilePriorityQueueTest, RasterQueueAllUsesCorrectTileBounds) {
 class TileManagerTest : public testing::Test {
  public:
   TileManagerTest()
-      : output_surface_(FakeOutputSurface::CreateSoftware(
-            make_scoped_ptr(new SoftwareOutputDevice))),
-        host_impl_(&proxy_, &shared_bitmap_manager_, &task_graph_runner_) {
-    host_impl_.InitializeRenderer(output_surface_.get());
-  }
+      : host_impl_(&proxy_, &shared_bitmap_manager_, &task_graph_runner_) {}
 
  protected:
   // MockLayerTreeHostImpl allows us to intercept tile manager callbacks.
@@ -1438,7 +1432,10 @@ class TileManagerTest : public testing::Test {
     MockLayerTreeHostImpl(Proxy* proxy,
                           SharedBitmapManager* manager,
                           TaskGraphRunner* task_graph_runner)
-        : FakeLayerTreeHostImpl(proxy, manager, task_graph_runner) {}
+        : FakeLayerTreeHostImpl(proxy, manager, task_graph_runner) {
+      InitializeRenderer(FakeOutputSurface::CreateSoftware(
+          make_scoped_ptr(new SoftwareOutputDevice)));
+    }
 
     MOCK_METHOD0(NotifyAllTileTasksCompleted, void());
   };
@@ -1446,7 +1443,6 @@ class TileManagerTest : public testing::Test {
   TestSharedBitmapManager shared_bitmap_manager_;
   TestTaskGraphRunner task_graph_runner_;
   FakeImplProxy proxy_;
-  scoped_ptr<OutputSurface> output_surface_;
   MockLayerTreeHostImpl host_impl_;
 };
 

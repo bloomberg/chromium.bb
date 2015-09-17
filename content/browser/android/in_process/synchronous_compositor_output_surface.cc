@@ -83,6 +83,11 @@ SynchronousCompositorOutputSurface::SynchronousCompositorOutputSurface(
 }
 
 SynchronousCompositorOutputSurface::~SynchronousCompositorOutputSurface() {
+  DCHECK(CalledOnValidThread());
+  if (registered_) {
+    SynchronousCompositorRegistry::GetInstance()->UnregisterOutputSurface(
+        routing_id_, this);
+  }
 }
 
 bool SynchronousCompositorOutputSurface::BindToClient(
@@ -98,15 +103,6 @@ bool SynchronousCompositorOutputSurface::BindToClient(
   registered_ = true;
 
   return true;
-}
-
-void SynchronousCompositorOutputSurface::DetachFromClient() {
-  DCHECK(CalledOnValidThread());
-  if (registered_) {
-    SynchronousCompositorRegistry::GetInstance()->UnregisterOutputSurface(
-        routing_id_, this);
-  }
-  cc::OutputSurface::DetachFromClient();
 }
 
 void SynchronousCompositorOutputSurface::SetCompositor(

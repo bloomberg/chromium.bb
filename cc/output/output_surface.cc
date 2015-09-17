@@ -32,7 +32,6 @@ OutputSurface::OutputSurface(
       device_scale_factor_(-1),
       external_stencil_test_enabled_(false),
       weak_ptr_factory_(this) {
-  client_thread_checker_.DetachFromThread();
 }
 
 OutputSurface::OutputSurface(
@@ -102,8 +101,12 @@ void OutputSurface::SetExternalDrawConstraints(
 }
 
 OutputSurface::~OutputSurface() {
-  if (client_)
-    DetachFromClient();
+  if (context_provider_.get()) {
+    context_provider_->SetLostContextCallback(
+        ContextProvider::LostContextCallback());
+    context_provider_->SetMemoryPolicyChangedCallback(
+        ContextProvider::MemoryPolicyChangedCallback());
+  }
 }
 
 bool OutputSurface::HasExternalStencilTest() const {
@@ -111,9 +114,7 @@ bool OutputSurface::HasExternalStencilTest() const {
 }
 
 bool OutputSurface::BindToClient(OutputSurfaceClient* client) {
-  DCHECK(client_thread_checker_.CalledOnValidThread());
   DCHECK(client);
-  DCHECK(!client_);
   client_ = client;
   bool success = true;
 
@@ -127,24 +128,16 @@ bool OutputSurface::BindToClient(OutputSurfaceClient* client) {
     }
   }
 
+  if (success && worker_context_provider_.get()) {
+    success = worker_context_provider_->BindToCurrentThread();
+    if (success)
+      worker_context_provider_->SetupLock();
+  }
+
   if (!success)
     client_ = NULL;
 
   return success;
-}
-
-void OutputSurface::DetachFromClient() {
-  DCHECK(client_thread_checker_.CalledOnValidThread());
-  DCHECK(client_);
-  if (context_provider_.get()) {
-    context_provider_->SetLostContextCallback(
-        ContextProvider::LostContextCallback());
-    context_provider_->SetMemoryPolicyChangedCallback(
-        ContextProvider::MemoryPolicyChangedCallback());
-  }
-  context_provider_ = nullptr;
-  client_ = nullptr;
-  weak_ptr_factory_.InvalidateWeakPtrs();
 }
 
 void OutputSurface::EnsureBackbuffer() {

@@ -149,7 +149,8 @@ void SingleThreadProxy::RequestNewOutputSurface() {
   layer_tree_host_->RequestNewOutputSurface();
 }
 
-void SingleThreadProxy::SetOutputSurface(OutputSurface* output_surface) {
+void SingleThreadProxy::SetOutputSurface(
+    scoped_ptr<OutputSurface> output_surface) {
   DCHECK(Proxy::IsMainThread());
   DCHECK(layer_tree_host_->output_surface_lost());
   DCHECK(output_surface_creation_requested_);
@@ -159,7 +160,7 @@ void SingleThreadProxy::SetOutputSurface(OutputSurface* output_surface) {
   {
     DebugScopedSetMainThreadBlocked main_thread_blocked(this);
     DebugScopedSetImplThread impl(this);
-    success = layer_tree_host_impl_->InitializeRenderer(output_surface);
+    success = layer_tree_host_impl_->InitializeRenderer(output_surface.Pass());
   }
 
   if (success) {
