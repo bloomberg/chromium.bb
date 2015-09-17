@@ -8,10 +8,16 @@ namespace settingsPrivate {
   // Type of a pref.
   enum PrefType { BOOLEAN, NUMBER, STRING, URL, LIST };
 
-  // Policy source of a pref.
-  enum PolicySource { DEVICE, USER };
+  // Source of a restricted pref, either by policy or other source.
+  enum PolicySource {
+    DEVICE_POLICY,
+    USER_POLICY,
+    OWNER,
+    PRIMARY_USER,
+    EXTENSION
+  };
 
-  // Policy enforcement of a pref.
+  // Enforcement type of a restricted pref.
   enum PolicyEnforcement { ENFORCED, RECOMMENDED };
 
   dictionary PrefObject {
@@ -31,6 +37,16 @@ namespace settingsPrivate {
     // The policy enforcement of the pref; must be specified if policySource is
     // also present.
     PolicyEnforcement? policyEnforcement;
+
+    // The recommended value if policyEnforcement == RECOMMENDED.
+    any? recommendedValue;
+
+    // The extension ID if policySource == EXTENSION.
+    DOMString? extensionId;
+
+    // True if the pref is not controlled by a policy or user, but it can not be
+    // modified (pref->IsUserModifiable() is false). Defaults to false.
+    boolean? readOnly;
   };
 
   callback OnPrefSetCallback = void (boolean success);

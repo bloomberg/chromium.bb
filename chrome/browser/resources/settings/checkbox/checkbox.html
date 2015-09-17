@@ -1,6 +1,7 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
 <link rel="import" href="chrome://resources/cr_elements/v1_0/cr_checkbox/cr_checkbox.html">
 <link rel="import" href="chrome://resources/cr_elements/v1_0/cr_events/cr_events.html">
+<link rel="import" href="chrome://resources/cr_elements/v1_0/policy/cr_policy_indicator.html">
 <link rel="import" href="chrome://md-settings/pref_tracker/pref_tracker.html">
 
 <dom-module id="cr-settings-checkbox">
@@ -9,11 +10,14 @@
     <cr-events id="events"></cr-events>
     <cr-settings-pref-tracker pref="[[pref]]"></cr-settings-pref-tracker>
 
-    <cr-checkbox id="checkbox" checked="{{checked}}"
-        disabled="[[disabled]]">
-      <span class="main-label">{{label}}</span>
-      <span class="sub-label">{{subLabel}}</span>
-    </cr-checkbox>
+    <div id="outerDiv" class="layout horizontal center">
+      <cr-checkbox id="checkbox" checked="{{checked}}"
+          disabled="[[checkboxDisabled_(disabled, pref)]]">
+        <span id="mainLabel">{{label}}</span>
+        <span id="subLabel">{{subLabel}}</span>
+      </cr-checkbox>
+      <cr-policy-indicator pref="[[pref]]"></cr-policy-indicator>
+    </div>
   </template>
   <script src="checkbox.js"></script>
 </dom-module>

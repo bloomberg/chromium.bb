@@ -1,0 +1,17 @@
+<link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/iron-icons.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/social-icons.html">
+
+<dom-module id="cr-policy-indicator">
+  <link rel="import" type="css" href="cr_policy_indicator.css">
+  <template>
+    <div class="layout horizontal">
+      <iron-icon id="indicator"
+          hidden$="[[!isIndicatorVisible_(indicatorType)]]"
+          icon="[[getIcon_(indicatorType)]]">
+      </iron-icon>
+    </div>
+  </template>
+  <script src="cr_policy_indicator.js"></script>
+</dom-module>

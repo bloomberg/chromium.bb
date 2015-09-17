@@ -33,8 +33,11 @@ chrome.settingsPrivate.PrefType = {
  * @see https://developer.chrome.com/extensions/settingsPrivate#type-PolicySource
  */
 chrome.settingsPrivate.PolicySource = {
-  DEVICE: 'DEVICE',
-  USER: 'USER',
+  DEVICE_POLICY: 'DEVICE_POLICY',
+  USER_POLICY: 'USER_POLICY',
+  OWNER: 'OWNER',
+  PRIMARY_USER: 'PRIMARY_USER',
+  EXTENSION: 'EXTENSION',
 };
 
 /**
@@ -52,7 +55,10 @@ chrome.settingsPrivate.PolicyEnforcement = {
  *   type: !chrome.settingsPrivate.PrefType,
  *   value: *,
  *   policySource: (!chrome.settingsPrivate.PolicySource|undefined),
- *   policyEnforcement: (!chrome.settingsPrivate.PolicyEnforcement|undefined)
+ *   policyEnforcement: (!chrome.settingsPrivate.PolicyEnforcement|undefined),
+ *   recommendedValue: (*|undefined),
+ *   extensionId: (string|undefined),
+ *   readOnly: (boolean|undefined)
  * }}
  * @see https://developer.chrome.com/extensions/settingsPrivate#type-PrefObject
  */

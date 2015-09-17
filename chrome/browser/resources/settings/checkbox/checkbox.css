@@ -8,14 +8,18 @@
   margin-top: 10px;
 }
 
-#checkbox {
+#outerDiv {
   -webkit-margin-end: 10px;
 }
 
-.main-label {
+#mainLabel {
   -webkit-margin-end: 10px;
 }
 
-.sub-label {
+#subLabel {
   color: rgba(0, 0, 0, .5);
+}
+
+cr-policy-indicator {
+  padding-bottom: 5px;
 }
