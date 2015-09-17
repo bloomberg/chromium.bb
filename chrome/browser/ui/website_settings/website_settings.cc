@@ -529,7 +529,7 @@ void WebsiteSettings::Init(const GURL& url, const content::SSLStatus& ssl) {
         IDS_PAGE_INFO_SECURITY_TAB_NOT_ENCRYPTED_CONNECTION_TEXT,
         subject_name));
   } else if (ssl.security_bits < 0) {
-    // Security strength is unknown.  Say nothing.
+    // Security strength is unknown. Say nothing.
     site_connection_status_ = SITE_CONNECTION_STATUS_ENCRYPTED_ERROR;
   } else if (ssl.security_bits == 0) {
     DCHECK_NE(ssl.security_style, content::SECURITY_STYLE_UNAUTHENTICATED);
@@ -628,12 +628,12 @@ void WebsiteSettings::Init(const GURL& url, const content::SSLStatus& ssl) {
   // SSL host errors for this host in the past.
   show_ssl_decision_revoke_button_ = delegate->HasAllowException(url.host());
 
-  // By default select the permissions tab that displays all the site
-  // permissions. In case of a connection error or an issue with the
-  // certificate presented by the website, select the connection tab to draw
-  // the user's attention to the issue. If the site does not provide a
-  // certificate because it was loaded over an unencrypted connection, don't
-  // select the connection tab.
+  // By default select the Permissions Tab that displays all the site
+  // permissions. In case of a connection error or an issue with the certificate
+  // presented by the website, select the Connection Tab to draw the user's
+  // attention to the issue. If the site does not provide a certificate because
+  // it was loaded over an unencrypted connection, don't select the Connection
+  // Tab.
   WebsiteSettingsUI::TabId tab_id = WebsiteSettingsUI::TAB_ID_PERMISSIONS;
   if (site_connection_status_ == SITE_CONNECTION_STATUS_ENCRYPTED_ERROR ||
       site_connection_status_ == SITE_CONNECTION_STATUS_MIXED_CONTENT ||
@@ -647,6 +647,7 @@ void WebsiteSettings::Init(const GURL& url, const content::SSLStatus& ssl) {
     RecordWebsiteSettingsAction(
       WEBSITE_SETTINGS_CONNECTION_TAB_SHOWN_IMMEDIATELY);
   }
+
   ui_->SetSelectedTab(tab_id);
 }
 
