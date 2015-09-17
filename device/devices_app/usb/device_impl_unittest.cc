@@ -567,25 +567,25 @@ TEST_F(USBDeviceImplTest, GenericTransfer) {
   AddMockOutboundData(fake_outbound_data);
   AddMockInboundData(fake_inbound_data);
 
-  EXPECT_CALL(mock_handle(), GenericTransfer(USB_DIRECTION_OUTBOUND, 0, _,
+  EXPECT_CALL(mock_handle(), GenericTransfer(USB_DIRECTION_OUTBOUND, 0x01, _,
                                              fake_outbound_data.size(), 0, _));
 
   {
     base::RunLoop loop;
     device->GenericTransferOut(
-        0, mojo::Array<uint8_t>::From(fake_outbound_data), 0,
+        1, mojo::Array<uint8_t>::From(fake_outbound_data), 0,
         base::Bind(&ExpectTransferStatusAndThen, TRANSFER_STATUS_COMPLETED,
                    loop.QuitClosure()));
     loop.Run();
   }
 
-  EXPECT_CALL(mock_handle(), GenericTransfer(USB_DIRECTION_INBOUND, 0, _,
+  EXPECT_CALL(mock_handle(), GenericTransfer(USB_DIRECTION_INBOUND, 0x81, _,
                                              fake_inbound_data.size(), 0, _));
 
   {
     base::RunLoop loop;
     device->GenericTransferIn(
-        0, static_cast<uint32_t>(fake_inbound_data.size()), 0,
+        1, static_cast<uint32_t>(fake_inbound_data.size()), 0,
         base::Bind(&ExpectTransferInAndThen, TRANSFER_STATUS_COMPLETED,
                    fake_inbound_data, loop.QuitClosure()));
     loop.Run();
@@ -612,7 +612,7 @@ TEST_F(USBDeviceImplTest, IsochronousTransfer) {
   AddMockInboundData(fake_inbound_packets);
 
   EXPECT_CALL(mock_handle(),
-              IsochronousTransfer(USB_DIRECTION_OUTBOUND, 0, _,
+              IsochronousTransfer(USB_DIRECTION_OUTBOUND, 0x01, _,
                                   fake_outbound_packets.size(), 4, 8, 0, _));
 
   {
@@ -626,14 +626,14 @@ TEST_F(USBDeviceImplTest, IsochronousTransfer) {
       packets[i].Swap(&bytes);
     }
     device->IsochronousTransferOut(
-        0, packets.Pass(), 0,
+        1, packets.Pass(), 0,
         base::Bind(&ExpectTransferStatusAndThen, TRANSFER_STATUS_COMPLETED,
                    loop.QuitClosure()));
     loop.Run();
   }
 
   EXPECT_CALL(mock_handle(),
-              IsochronousTransfer(USB_DIRECTION_INBOUND, 0, _,
+              IsochronousTransfer(USB_DIRECTION_INBOUND, 0x81, _,
                                   fake_inbound_packets.size(), 4, 8, 0, _));
 
   {
@@ -645,7 +645,7 @@ TEST_F(USBDeviceImplTest, IsochronousTransfer) {
                 inbound_packet_data.begin() + i * 8 + 8, packets[i].begin());
     }
     device->IsochronousTransferIn(
-        0, 4, 8, 0, base::Bind(&ExpectPacketsAndThen, TRANSFER_STATUS_COMPLETED,
+        1, 4, 8, 0, base::Bind(&ExpectPacketsAndThen, TRANSFER_STATUS_COMPLETED,
                                packets, loop.QuitClosure()));
     loop.Run();
   }

@@ -243,9 +243,10 @@ void DeviceImpl::GenericTransferIn(uint8_t endpoint_number,
     return;
   }
 
+  uint8_t endpoint_address = endpoint_number | 0x80;
   scoped_refptr<net::IOBuffer> buffer = CreateTransferBuffer(length);
   device_handle_->GenericTransfer(
-      USB_DIRECTION_INBOUND, endpoint_number, buffer, length, timeout,
+      USB_DIRECTION_INBOUND, endpoint_address, buffer, length, timeout,
       base::Bind(&DeviceImpl::OnTransferIn, weak_factory_.GetWeakPtr(),
                  callback));
 }
@@ -260,11 +261,12 @@ void DeviceImpl::GenericTransferOut(
     return;
   }
 
+  uint8_t endpoint_address = endpoint_number;
   scoped_refptr<net::IOBuffer> buffer = CreateTransferBuffer(data.size());
   const std::vector<uint8_t>& storage = data.storage();
   std::copy(storage.begin(), storage.end(), buffer->data());
   device_handle_->GenericTransfer(
-      USB_DIRECTION_OUTBOUND, endpoint_number, buffer, data.size(), timeout,
+      USB_DIRECTION_OUTBOUND, endpoint_address, buffer, data.size(), timeout,
       base::Bind(&DeviceImpl::OnTransferOut, weak_factory_.GetWeakPtr(),
                  callback));
 }
@@ -280,10 +282,11 @@ void DeviceImpl::IsochronousTransferIn(
     return;
   }
 
+  uint8_t endpoint_address = endpoint_number | 0x80;
   size_t transfer_size = static_cast<size_t>(num_packets) * packet_length;
   scoped_refptr<net::IOBuffer> buffer = CreateTransferBuffer(transfer_size);
   device_handle_->IsochronousTransfer(
-      USB_DIRECTION_INBOUND, endpoint_number, buffer, transfer_size,
+      USB_DIRECTION_INBOUND, endpoint_address, buffer, transfer_size,
       num_packets, packet_length, timeout,
       base::Bind(&DeviceImpl::OnIsochronousTransferIn,
                  weak_factory_.GetWeakPtr(), callback, packet_length));
@@ -299,6 +302,7 @@ void DeviceImpl::IsochronousTransferOut(
     return;
   }
 
+  uint8_t endpoint_address = endpoint_number;
   uint32_t packet_size = 0;
   for (size_t i = 0; i < packets.size(); ++i) {
     packet_size =
@@ -314,7 +318,7 @@ void DeviceImpl::IsochronousTransferOut(
     memcpy(packet, packets[i].storage().data(), packets[i].size());
   }
   device_handle_->IsochronousTransfer(
-      USB_DIRECTION_OUTBOUND, endpoint_number, buffer, transfer_size,
+      USB_DIRECTION_OUTBOUND, endpoint_address, buffer, transfer_size,
       static_cast<uint32_t>(packets.size()), packet_size, timeout,
       base::Bind(&DeviceImpl::OnIsochronousTransferOut,
                  weak_factory_.GetWeakPtr(), callback));
