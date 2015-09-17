@@ -11,7 +11,7 @@ declare_args() {
   # shipped with the system. In release builds of Chrome OS we use the
   # system version, but when building on dev workstations or the Chrome
   # waterfall we bundle it because Ubuntu doesn't ship a usable version.
-  use_system_minigbm = true
+  use_system_minigbm = false
 }
 
 if (!use_system_minigbm) {
