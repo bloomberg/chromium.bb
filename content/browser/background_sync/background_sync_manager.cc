@@ -1034,8 +1034,9 @@ void BackgroundSyncManager::EventCompleteImpl(
       RefCountedRegistration* active_registration =
           LookupActiveRegistration(service_worker_id, key);
       if (active_registration &&
-          active_registration->value()->id() == registration->id())
+          active_registration->value()->id() == registration->id()) {
         RemoveActiveRegistration(service_worker_id, key);
+      }
     }
   } else {
     // TODO(jkarlin): Add support for running periodic syncs. (crbug.com/479674)

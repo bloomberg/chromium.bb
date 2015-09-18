@@ -136,9 +136,6 @@ void BackgroundSyncServiceImpl::Unregister(
     int64_t sw_registration_id,
     const UnregisterCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  BackgroundSyncManager* background_sync_manager =
-      background_sync_context_->background_sync_manager();
-  DCHECK(background_sync_manager);
 
   BackgroundSyncRegistrationHandle* registration =
       active_handles_.Lookup(handle_id);

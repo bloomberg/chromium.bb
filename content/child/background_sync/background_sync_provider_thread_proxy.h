@@ -38,27 +38,27 @@ class BackgroundSyncProviderThreadProxy : public blink::WebSyncProvider,
       const blink::WebSyncRegistration* options,
       blink::WebServiceWorkerRegistration* service_worker_registration,
       bool requested_from_service_worker,
-      blink::WebSyncRegistrationCallbacks* callbacks);
+      blink::WebSyncRegistrationCallbacks* callbacks) override;
   void unregisterBackgroundSync(
       blink::WebSyncRegistration::Periodicity periodicity,
       int64_t id,
       const blink::WebString& tag,
       blink::WebServiceWorkerRegistration* service_worker_registration,
-      blink::WebSyncUnregistrationCallbacks* callbacks);
+      blink::WebSyncUnregistrationCallbacks* callbacks) override;
   void getRegistration(
       blink::WebSyncRegistration::Periodicity,
       const blink::WebString& tag,
       blink::WebServiceWorkerRegistration* service_worker_registration,
-      blink::WebSyncRegistrationCallbacks* callbacks);
+      blink::WebSyncRegistrationCallbacks* callbacks) override;
   void getRegistrations(
       blink::WebSyncRegistration::Periodicity periodicity,
       blink::WebServiceWorkerRegistration* service_worker_registration,
-      blink::WebSyncGetRegistrationsCallbacks* callbacks);
+      blink::WebSyncGetRegistrationsCallbacks* callbacks) override;
   void getPermissionStatus(
       blink::WebSyncRegistration::Periodicity periodicity,
       blink::WebServiceWorkerRegistration* service_worker_registration,
-      blink::WebSyncGetPermissionStatusCallbacks* callbacks);
-  void releaseRegistration(int64_t handle_id);
+      blink::WebSyncGetPermissionStatusCallbacks* callbacks) override;
+  void releaseRegistration(int64_t handle_id) override;
 
   // Given |handle_id|, ask the provider for a new handle with the same
   // underlying registration.
