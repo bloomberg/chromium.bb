@@ -260,6 +260,7 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
       QuicStreamId largest_peer_created_stream_id) {
     largest_peer_created_stream_id_ = largest_peer_created_stream_id;
   }
+  void set_error(QuicErrorCode error) { error_ = error; }
 
  private:
   friend class test::QuicSessionPeer;

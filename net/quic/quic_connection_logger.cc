@@ -366,9 +366,9 @@ void QuicConnectionLogger::OnFrameAddedToPacket(const QuicFrame& frame) {
       const uint8 max_ranges = std::numeric_limits<uint8>::max();
       // Compute an upper bound on the number of NACK ranges. If the bound
       // is below the max, then it clearly isn't truncated.
-      if (missing_packets.NumPackets() < max_ranges ||
+      if (missing_packets.NumPacketsSlow() < max_ranges ||
           (missing_packets.Max() - missing_packets.Min() -
-           missing_packets.NumPackets() + 1) < max_ranges) {
+           missing_packets.NumPacketsSlow() + 1) < max_ranges) {
         break;
       }
       size_t num_ranges = 0;

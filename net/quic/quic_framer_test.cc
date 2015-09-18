@@ -1723,7 +1723,7 @@ TEST_P(QuicFramerTest, AckFrameTwoTimestamp) {
   const QuicAckFrame& frame = *visitor_.ack_frames_[0];
   EXPECT_EQ(0xBA, frame.entropy_hash);
   EXPECT_EQ(UINT64_C(0x0123456789ABF), frame.largest_observed);
-  ASSERT_EQ(1u, frame.missing_packets.NumPackets());
+  ASSERT_EQ(1u, frame.missing_packets.NumPacketsSlow());
   ASSERT_EQ(2u, frame.received_packet_times.size());
   EXPECT_EQ(UINT64_C(0x0123456789ABE), frame.missing_packets.Min());
 
@@ -1839,7 +1839,7 @@ TEST_P(QuicFramerTest, AckFrameOneTimestamp) {
   const QuicAckFrame& frame = *visitor_.ack_frames_[0];
   EXPECT_EQ(0xBA, frame.entropy_hash);
   EXPECT_EQ(UINT64_C(0x0123456789ABF), frame.largest_observed);
-  ASSERT_EQ(1u, frame.missing_packets.NumPackets());
+  ASSERT_EQ(1u, frame.missing_packets.NumPacketsSlow());
   ASSERT_EQ(1u, frame.received_packet_times.size());
   EXPECT_EQ(UINT64_C(0x0123456789ABE), frame.missing_packets.Min());
 
@@ -1941,7 +1941,7 @@ TEST_P(QuicFramerTest, AckFrame) {
   const QuicAckFrame& frame = *visitor_.ack_frames_[0];
   EXPECT_EQ(0xBA, frame.entropy_hash);
   EXPECT_EQ(UINT64_C(0x0123456789ABF), frame.largest_observed);
-  ASSERT_EQ(1u, frame.missing_packets.NumPackets());
+  ASSERT_EQ(1u, frame.missing_packets.NumPacketsSlow());
   EXPECT_EQ(UINT64_C(0x0123456789ABE), frame.missing_packets.Min());
 
   const size_t kReceivedEntropyOffset = kQuicFrameTypeSize;
@@ -2039,7 +2039,7 @@ TEST_P(QuicFramerTest, AckFrameRevivedPackets) {
   const QuicAckFrame& frame = *visitor_.ack_frames_[0];
   EXPECT_EQ(0xBA, frame.entropy_hash);
   EXPECT_EQ(UINT64_C(0x0123456789ABF), frame.largest_observed);
-  ASSERT_EQ(1u, frame.missing_packets.NumPackets());
+  ASSERT_EQ(1u, frame.missing_packets.NumPacketsSlow());
   EXPECT_EQ(UINT64_C(0x0123456789ABE), frame.missing_packets.Min());
 
   const size_t kReceivedEntropyOffset = kQuicFrameTypeSize;
@@ -2197,7 +2197,7 @@ TEST_P(QuicFramerTest, AckFrame500Nacks) {
   EXPECT_EQ(0xBA, frame->entropy_hash);
   EXPECT_EQ(UINT64_C(0x0123456789ABF), frame->largest_observed);
   EXPECT_EQ(0u, frame->revived_packets.size());
-  ASSERT_EQ(500u, frame->missing_packets.NumPackets());
+  ASSERT_EQ(500u, frame->missing_packets.NumPacketsSlow());
   EXPECT_EQ(UINT64_C(0x0123456789ABE) - 499, frame->missing_packets.Min());
   EXPECT_EQ(UINT64_C(0x0123456789ABE), frame->missing_packets.Max());
 
@@ -4264,7 +4264,7 @@ TEST_P(QuicFramerTest, AckTruncationLargePacket) {
   QuicAckFrame& processed_ack_frame = *visitor_.ack_frames_[0];
   EXPECT_TRUE(processed_ack_frame.is_truncated);
   EXPECT_EQ(510u, processed_ack_frame.largest_observed);
-  ASSERT_EQ(255u, processed_ack_frame.missing_packets.NumPackets());
+  ASSERT_EQ(255u, processed_ack_frame.missing_packets.NumPacketsSlow());
   EXPECT_EQ(1u, processed_ack_frame.missing_packets.Min());
   EXPECT_EQ(509u, processed_ack_frame.missing_packets.Max());
 }
@@ -4300,7 +4300,7 @@ TEST_P(QuicFramerTest, AckTruncationSmallPacket) {
   QuicAckFrame& processed_ack_frame = *visitor_.ack_frames_[0];
   EXPECT_TRUE(processed_ack_frame.is_truncated);
   EXPECT_EQ(476u, processed_ack_frame.largest_observed);
-  ASSERT_EQ(238u, processed_ack_frame.missing_packets.NumPackets());
+  ASSERT_EQ(238u, processed_ack_frame.missing_packets.NumPacketsSlow());
   EXPECT_EQ(1u, processed_ack_frame.missing_packets.Min());
   EXPECT_EQ(475u, processed_ack_frame.missing_packets.Max());
 }

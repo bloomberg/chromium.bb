@@ -88,8 +88,7 @@ QuicTimeWaitListManager::QuicTimeWaitListManager(
           helper->CreateAlarm(new ConnectionIdCleanUpAlarm(this))),
       clock_(helper->GetClock()),
       writer_(writer),
-      visitor_(visitor),
-      num_connections_(0) {
+      visitor_(visitor) {
   SetConnectionIdCleanUpAlarm();
 }
 
@@ -118,7 +117,6 @@ void QuicTimeWaitListManager::AddConnectionIdToTimeWait(
     num_packets = it->second.num_packets;
     delete it->second.close_packet;
     connection_id_map_.erase(it);
-    --num_connections_;
   }
   TrimTimeWaitListIfNeeded();
   DCHECK_LT(num_connections(),
@@ -126,7 +124,6 @@ void QuicTimeWaitListManager::AddConnectionIdToTimeWait(
   ConnectionIdData data(num_packets, version, clock_->ApproximateNow(),
                         close_packet, connection_rejected_statelessly);
   connection_id_map_.insert(std::make_pair(connection_id, data));
-  ++num_connections_;
   if (new_connection_id) {
     visitor_->OnConnectionAddedToTimeWaitList(connection_id);
   }
@@ -291,7 +288,6 @@ bool QuicTimeWaitListManager::MaybeExpireOldestConnection(
   const QuicConnectionId connection_id = it->first;
   delete it->second.close_packet;
   connection_id_map_.erase(it);
-  --num_connections_;
   visitor_->OnConnectionRemovedFromTimeWaitList(connection_id);
   return true;
 }

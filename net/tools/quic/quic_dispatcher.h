@@ -8,6 +8,8 @@
 #ifndef NET_TOOLS_QUIC_QUIC_DISPATCHER_H_
 #define NET_TOOLS_QUIC_QUIC_DISPATCHER_H_
 
+#include <vector>
+
 #include "base/basictypes.h"
 #include "base/containers/hash_tables.h"
 #include "base/memory/scoped_ptr.h"
@@ -249,7 +251,7 @@ class QuicDispatcher : public QuicServerSessionVisitor,
   scoped_ptr<QuicTimeWaitListManager> time_wait_list_manager_;
 
   // The list of closed but not-yet-deleted sessions.
-  std::list<QuicServerSession*> closed_session_list_;
+  std::vector<QuicServerSession*> closed_session_list_;
 
   // The helper used for all connections.
   scoped_ptr<QuicConnectionHelperInterface> helper_;

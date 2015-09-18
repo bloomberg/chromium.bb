@@ -6,7 +6,6 @@
 
 #include "net/quic/congestion_control/tcp_cubic_bytes_sender.h"
 #include "net/quic/congestion_control/tcp_cubic_sender.h"
-#include "net/quic/quic_flags.h"
 #include "net/quic/quic_protocol.h"
 
 namespace net {
@@ -21,9 +20,7 @@ SendAlgorithmInterface* SendAlgorithmInterface::Create(
     QuicConnectionStats* stats,
     QuicPacketCount initial_congestion_window) {
   const QuicPacketCount max_congestion_window =
-      (kDefaultSocketReceiveBuffer * (FLAGS_quic_use_conservative_receive_buffer
-                                          ? kConservativeReceiveBufferFraction
-                                          : kUsableRecieveBufferFraction)) /
+      (kDefaultSocketReceiveBuffer * kConservativeReceiveBufferFraction) /
       kDefaultTCPMSS;
   switch (congestion_control_type) {
     case kCubic:

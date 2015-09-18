@@ -8,6 +8,8 @@
 
 #include "net/quic/reliable_quic_stream.h"
 
+using base::StringPiece;
+
 namespace net {
 namespace test {
 
@@ -61,6 +63,15 @@ void ReliableQuicStreamPeer::SetFecPolicy(ReliableQuicStream* stream,
 bool ReliableQuicStreamPeer::StreamContributesToConnectionFlowControl(
     ReliableQuicStream* stream) {
   return stream->stream_contributes_to_connection_flow_control_;
+}
+
+// static
+void ReliableQuicStreamPeer::WriteOrBufferData(
+    ReliableQuicStream* stream,
+    StringPiece data,
+    bool fin,
+    QuicAckNotifier::DelegateInterface* ack_notifier_delegate) {
+  stream->WriteOrBufferData(data, fin, ack_notifier_delegate);
 }
 
 }  // namespace test

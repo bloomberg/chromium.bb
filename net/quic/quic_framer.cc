@@ -989,7 +989,9 @@ QuicFramer::AckFrameInfo QuicFramer::GetAckFrameInfo(
   }
   DCHECK_GE(frame.largest_observed, frame.missing_packets.Max());
   size_t cur_range_length = 0;
-  PacketNumberSet::const_iterator iter = frame.missing_packets.begin();
+  PacketNumberQueue::const_iterator iter = frame.missing_packets.begin();
+  // TODO(jdorfman): Switch this logic to use the intervals in PacketNumberQueue
+  // instead of reconstructing them from the sequence.
   QuicPacketNumber last_missing = *iter;
   ++iter;
   for (; iter != frame.missing_packets.end(); ++iter) {

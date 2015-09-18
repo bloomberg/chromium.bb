@@ -159,9 +159,12 @@ vector<TestParams> GetTestParams() {
   for (const QuicTag congestion_control_tag : {kRENO, kQBIC}) {
     for (const bool use_fec : {false, true}) {
       for (const QuicVersionVector& client_versions : client_version_buckets) {
-        for (bool client_supports_stateless_rejects : {true, false}) {
-          for (bool server_uses_stateless_rejects_if_peer_supported :
-               {true, false}) {
+        // A number of end to end tests fail when stateless rejects are enabled
+        // *and* there are more than two QUIC versions.
+        // TODO(b/23745998) Re-enable client stateless reject support.
+        for (bool client_supports_stateless_rejects : {false}) {
+          // TODO(b/23745998) Re-enable server stateless reject support.
+          for (bool server_uses_stateless_rejects_if_peer_supported : {false}) {
             for (bool auto_tune_flow_control_window : {true, false}) {
               CHECK(!client_versions.empty());
               // Add an entry for server and client supporting all versions.

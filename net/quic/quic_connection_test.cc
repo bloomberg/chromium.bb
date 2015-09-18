@@ -17,7 +17,6 @@
 #include "net/quic/crypto/quic_decrypter.h"
 #include "net/quic/crypto/quic_encrypter.h"
 #include "net/quic/quic_ack_notifier.h"
-#include "net/quic/quic_flags.h"
 #include "net/quic/quic_protocol.h"
 #include "net/quic/quic_utils.h"
 #include "net/quic/test_tools/mock_clock.h"
@@ -540,8 +539,6 @@ class TestConnection : public QuicConnection {
   // client perspective and the higher value of MTU target is used.
   void EnablePathMtuDiscovery(MockSendAlgorithm* send_algorithm) {
     ASSERT_EQ(Perspective::IS_CLIENT, perspective());
-
-    FLAGS_quic_do_path_mtu_discovery = true;
 
     QuicConfig config;
     QuicTagVector connection_options;
@@ -3358,9 +3355,6 @@ TEST_P(QuicConnectionTest, SendMtuDiscoveryPacket) {
 TEST_P(QuicConnectionTest, MtuDiscoveryDisabled) {
   EXPECT_TRUE(connection_.connected());
 
-  // Restore the current value FLAGS_quic_do_path_mtu_discovery after the test.
-  ValueRestore<bool> old_flag(&FLAGS_quic_do_path_mtu_discovery, true);
-
   const QuicPacketCount number_of_packets = kPacketsBetweenMtuProbesBase * 2;
   for (QuicPacketCount i = 0; i < number_of_packets; i++) {
     SendStreamDataToPeer(3, ".", i, /*fin=*/false, nullptr);
@@ -3374,8 +3368,6 @@ TEST_P(QuicConnectionTest, MtuDiscoveryDisabled) {
 TEST_P(QuicConnectionTest, MtuDiscoveryEnabled) {
   EXPECT_TRUE(connection_.connected());
 
-  // Restore the current value FLAGS_quic_do_path_mtu_discovery after the test.
-  ValueRestore<bool> old_flag(&FLAGS_quic_do_path_mtu_discovery, true);
   connection_.EnablePathMtuDiscovery(send_algorithm_);
 
   // Send enough packets so that the next one triggers path MTU discovery.
@@ -3419,8 +3411,6 @@ TEST_P(QuicConnectionTest, MtuDiscoveryEnabled) {
 TEST_P(QuicConnectionTest, MtuDiscoveryFailed) {
   EXPECT_TRUE(connection_.connected());
 
-  // Restore the current value FLAGS_quic_do_path_mtu_discovery after the test.
-  ValueRestore<bool> old_flag(&FLAGS_quic_do_path_mtu_discovery, true);
   connection_.EnablePathMtuDiscovery(send_algorithm_);
 
   const QuicTime::Delta rtt = QuicTime::Delta::FromMilliseconds(100);
@@ -3536,8 +3526,6 @@ TEST_P(QuicConnectionTest, MtuDiscoveryWriterLimited) {
 TEST_P(QuicConnectionTest, NoMtuDiscoveryAfterConnectionClosed) {
   EXPECT_TRUE(connection_.connected());
 
-  // Restore the current value FLAGS_quic_do_path_mtu_discovery after the test.
-  ValueRestore<bool> old_flag(&FLAGS_quic_do_path_mtu_discovery, true);
   connection_.EnablePathMtuDiscovery(send_algorithm_);
 
   // Send enough packets so that the next one triggers path MTU discovery.

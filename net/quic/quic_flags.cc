@@ -46,16 +46,6 @@ bool FLAGS_enable_quic_stateless_reject_support = true;
 // If true, flow controller may grow the receive window size if necessary.
 bool FLAGS_quic_auto_tune_receive_window = true;
 
-// Enables server-side path MTU discovery in QUIC.
-bool FLAGS_quic_do_path_mtu_discovery = true;
-
-// Process QUIC frames as soon as they're parsed, instead of waiting for the
-// packet's parsing to complete.
-bool FLAGS_quic_process_frames_inline = true;
-
-// Estimate that only 60% of QUIC's receive buffer is usable as opposed to 95%.
-bool FLAGS_quic_use_conservative_receive_buffer = true;
-
 // Limits QUIC's max CWND to 200 packets.
 bool FLAGS_quic_limit_max_cwnd = true;
 
@@ -82,3 +72,7 @@ bool FLAGS_quic_limit_mtu_by_writer = true;
 // QUIC-specific flag. If true, Cubic's epoch is reset when the sender is
 // application-limited.
 bool FLAGS_reset_cubic_epoch_when_app_limited = true;
+
+// If true, use an interval set as the internal representation of a packet queue
+// instead of a set.
+bool FLAGS_quic_packet_queue_use_interval_set = true;

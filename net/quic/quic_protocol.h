@@ -24,6 +24,7 @@
 #include "net/base/iovec.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_export.h"
+#include "net/quic/interval_set.h"
 #include "net/quic/quic_bandwidth.h"
 #include "net/quic/quic_time.h"
 #include "net/quic/quic_types.h"
@@ -727,16 +728,55 @@ struct NET_EXPORT_PRIVATE QuicStopWaitingFrame {
 // larger new packet numbers are added, with the occasional random access.
 class NET_EXPORT_PRIVATE PacketNumberQueue {
  public:
+  // TODO(jdorfman): Once this is completely switched over to IntervalSet,
+  // remove const_iterator and change the callers to iterate over the intervals.
+  class NET_EXPORT_PRIVATE const_iterator
+      : public std::iterator<std::input_iterator_tag,
+                             QuicPacketNumber,
+                             std::ptrdiff_t,
+                             const QuicPacketNumber*,
+                             const QuicPacketNumber&> {
+   public:
+    explicit const_iterator(PacketNumberSet::const_iterator set_iter);
+    const_iterator(
+        IntervalSet<QuicPacketNumber>::const_iterator interval_set_iter,
+        QuicPacketNumber first,
+        QuicPacketNumber last);
+    const_iterator(const const_iterator& other);
+    const_iterator& operator=(const const_iterator& other);
+    // TODO(rtenneti): on windows RValue reference gives errors.
+    // const_iterator(const_iterator&& other);
+    ~const_iterator();
+
+    // TODO(rtenneti): on windows RValue reference gives errors.
+    // const_iterator& operator=(const_iterator&& other);
+    bool operator!=(const const_iterator& other) const;
+    bool operator==(const const_iterator& other) const;
+    value_type operator*() const;
+    const_iterator& operator++();
+    const_iterator operator++(int /* postincrement */);
+
+   private:
+    bool use_interval_set_;
+    PacketNumberSet::const_iterator set_iter_;
+    IntervalSet<QuicPacketNumber>::const_iterator interval_set_iter_;
+    QuicPacketNumber current_;
+    QuicPacketNumber last_;
+  };
+
   PacketNumberQueue();
   ~PacketNumberQueue();
-
-  using iterator = PacketNumberSet::iterator;
-  using const_iterator = PacketNumberSet::const_iterator;
+  PacketNumberQueue(const PacketNumberQueue& other);
+  PacketNumberQueue& operator=(const PacketNumberQueue& other);
+  // TODO(rtenneti): on windows RValue reference gives errors.
+  // PacketNumberQueue(PacketNumberQueue&& other);
+  // PacketNumberQueue& operator=(PacketNumberQueue&& other);
 
   // Adds |packet_number| to the set of packets in the queue.
   void Add(QuicPacketNumber packet_number);
 
-  // Adds packets between [lower, higher) to the set of packets in the queue.
+  // Adds packets between [lower, higher) to the set of packets in the queue. It
+  // is undefined behavior to call this with |higher| < |lower|.
   void Add(QuicPacketNumber lower, QuicPacketNumber higher);
 
   // Removes |packet_number| from the set of packets in the queue.
@@ -760,21 +800,25 @@ class NET_EXPORT_PRIVATE PacketNumberQueue {
   // behavior to call this if the queue is empty.
   QuicPacketNumber Max() const;
 
-  // Returns the number of unique packets stored in the queue.
-  size_t NumPackets() const;
+  // Returns the number of unique packets stored in the queue. Inefficient; only
+  // exposed for testing.
+  size_t NumPacketsSlow() const;
 
-  iterator begin() const;
-  iterator end() const;
+  // Returns iterators over the individual packet numbers.
+  const_iterator begin() const;
+  const_iterator end() const;
   const_iterator lower_bound(QuicPacketNumber packet_number) const;
-  const_iterator upper_bound(QuicPacketNumber packet_number) const;
+  // TODO(rtenneti): Implement upper_bound.
+  // const_iterator upper_bound(QuicPacketNumber packet_number) const;
 
   NET_EXPORT_PRIVATE friend std::ostream& operator<<(
       std::ostream& os,
       const PacketNumberQueue& q);
 
  private:
-  // TODO(jdorfman): Can be optimized using an interval set like data structure.
-  PacketNumberSet packet_numbers_;
+  bool use_interval_set_;
+  PacketNumberSet packet_number_set_;
+  IntervalSet<QuicPacketNumber> packet_number_intervals_;
 };
 
 struct NET_EXPORT_PRIVATE QuicAckFrame {

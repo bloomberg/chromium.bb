@@ -733,10 +733,6 @@ class NET_EXPORT_PRIVATE QuicConnection
   // Checks if the last packet should instigate an ack.
   bool ShouldLastPacketInstigateAck() const;
 
-  // Checks if the peer is waiting for packets that have been given up on, and
-  // therefore an ack frame should be sent with a larger least_unacked.
-  void UpdateStopWaitingCount();
-
   // Sends any packets which are a response to the last packet, including both
   // acks and pending writes if an ack opened the congestion window.
   void MaybeSendInResponseToPacket();
@@ -812,15 +808,7 @@ class NET_EXPORT_PRIVATE QuicConnection
   QuicByteCount last_size_;  // Size of the last received packet.
   EncryptionLevel last_decrypted_packet_level_;
   QuicPacketHeader last_header_;
-  std::vector<QuicStreamFrame> last_stream_frames_;
-  std::vector<QuicAckFrame> last_ack_frames_;
-  std::vector<QuicStopWaitingFrame> last_stop_waiting_frames_;
-  std::vector<QuicRstStreamFrame> last_rst_frames_;
-  std::vector<QuicGoAwayFrame> last_goaway_frames_;
-  std::vector<QuicWindowUpdateFrame> last_window_update_frames_;
-  std::vector<QuicBlockedFrame> last_blocked_frames_;
-  std::vector<QuicPingFrame> last_ping_frames_;
-  std::vector<QuicConnectionCloseFrame> last_close_frames_;
+  QuicStopWaitingFrame last_stop_waiting_frame_;
   bool should_last_packet_instigate_acks_;
 
   // Track some peer state so we can do less bookkeeping

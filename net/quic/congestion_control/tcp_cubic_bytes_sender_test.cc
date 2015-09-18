@@ -11,10 +11,12 @@
 #include "net/quic/congestion_control/rtt_stats.h"
 #include "net/quic/crypto/crypto_protocol.h"
 #include "net/quic/proto/cached_network_parameters.pb.h"
+#include "net/quic/quic_flags.h"
 #include "net/quic/quic_protocol.h"
 #include "net/quic/quic_utils.h"
 #include "net/quic/test_tools/mock_clock.h"
 #include "net/quic/test_tools/quic_config_peer.h"
+#include "net/quic/test_tools/quic_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {
@@ -400,6 +402,46 @@ TEST_F(TcpCubicBytesSenderTest, RetransmissionDelay) {
       static_cast<int64>(sender_->GetCongestionWindow() * kNumMicrosPerSecond /
                          sender_->rtt_stats_.smoothed_rtt().ToMicroseconds()),
       sender_->BandwidthEstimate().ToBytesPerSecond());
+}
+
+TEST_F(TcpCubicBytesSenderTest, TcpCubicResetEpochOnQuiescence) {
+  ValueRestore<bool> old_flag(&FLAGS_reset_cubic_epoch_when_app_limited, true);
+  const int kMaxCongestionWindow = 50;
+  const QuicByteCount kMaxCongestionWindowBytes =
+      kMaxCongestionWindow * kDefaultTCPMSS;
+  int num_sent = SendAvailableSendWindow();
+
+  // Make sure we fall out of slow start.
+  QuicByteCount saved_cwnd = sender_->GetCongestionWindow();
+  LoseNPackets(1);
+  EXPECT_GT(saved_cwnd, sender_->GetCongestionWindow());
+
+  // Ack the rest of the outstanding packets to get out of recovery.
+  for (int i = 1; i < num_sent; ++i) {
+    AckNPackets(1);
+  }
+  EXPECT_EQ(0u, bytes_in_flight_);
+
+  // Send a new window of data and ack all; cubic growth should occur.
+  saved_cwnd = sender_->GetCongestionWindow();
+  num_sent = SendAvailableSendWindow();
+  for (int i = 0; i < num_sent; ++i) {
+    AckNPackets(1);
+  }
+  EXPECT_LT(saved_cwnd, sender_->GetCongestionWindow());
+  EXPECT_GT(kMaxCongestionWindowBytes, sender_->GetCongestionWindow());
+  EXPECT_EQ(0u, bytes_in_flight_);
+
+  // Quiescent time of 100 seconds
+  clock_.AdvanceTime(QuicTime::Delta::FromMilliseconds(100000));
+
+  // Send new window of data and ack one packet. Cubic epoch should have
+  // been reset; ensure cwnd increase is not dramatic.
+  saved_cwnd = sender_->GetCongestionWindow();
+  SendAvailableSendWindow();
+  AckNPackets(1);
+  EXPECT_NEAR(saved_cwnd, sender_->GetCongestionWindow(), kDefaultTCPMSS);
+  EXPECT_GT(kMaxCongestionWindowBytes, sender_->GetCongestionWindow());
 }
 
 TEST_F(TcpCubicBytesSenderTest, MultipleLossesInOneWindow) {

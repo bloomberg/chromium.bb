@@ -5,6 +5,7 @@
 #include "net/quic/quic_protocol.h"
 
 #include "base/stl_util.h"
+#include "net/quic/quic_flags.h"
 #include "net/quic/quic_utils.h"
 
 using base::StringPiece;
@@ -314,74 +315,242 @@ ostream& operator<<(ostream& os, const QuicStopWaitingFrame& sent_info) {
   return os;
 }
 
-PacketNumberQueue::PacketNumberQueue() {}
+PacketNumberQueue::const_iterator::const_iterator(
+    PacketNumberSet::const_iterator set_iter)
+    : use_interval_set_(false), set_iter_(set_iter) {}
 
+PacketNumberQueue::const_iterator::const_iterator(
+    IntervalSet<QuicPacketNumber>::const_iterator interval_set_iter,
+    QuicPacketNumber first,
+    QuicPacketNumber last)
+    : use_interval_set_(true),
+      interval_set_iter_(interval_set_iter),
+      current_(first),
+      last_(last) {}
+
+PacketNumberQueue::const_iterator::const_iterator(const const_iterator& other) =
+    default;
+// TODO(rtenneti): on windows RValue reference gives errors.
+// PacketNumberQueue::const_iterator::const_iterator(const_iterator&& other) =
+//    default;
+PacketNumberQueue::const_iterator::~const_iterator(){};
+
+PacketNumberQueue::const_iterator& PacketNumberQueue::const_iterator::operator=(
+    const const_iterator& other) = default;
+// TODO(rtenneti): on windows RValue reference gives errors.
+// PacketNumberQueue::const_iterator&
+// PacketNumberQueue::const_iterator::operator=(
+//    const_iterator&& other) = default;
+
+bool PacketNumberQueue::const_iterator::operator!=(
+    const const_iterator& other) const {
+  if (use_interval_set_) {
+    return current_ != other.current_;
+  } else {
+    return set_iter_ != other.set_iter_;
+  }
+}
+
+bool PacketNumberQueue::const_iterator::operator==(
+    const const_iterator& other) const {
+  if (use_interval_set_) {
+    return current_ == other.current_;
+  } else {
+    return set_iter_ == other.set_iter_;
+  }
+}
+
+PacketNumberQueue::const_iterator::value_type
+    PacketNumberQueue::const_iterator::
+    operator*() const {
+  if (use_interval_set_) {
+    return current_;
+  } else {
+    return *set_iter_;
+  }
+}
+
+PacketNumberQueue::const_iterator& PacketNumberQueue::const_iterator::
+operator++() {
+  if (use_interval_set_) {
+    ++current_;
+    if (current_ < last_) {
+      if (current_ >= interval_set_iter_->max()) {
+        ++interval_set_iter_;
+        current_ = interval_set_iter_->min();
+      }
+    } else {
+      current_ = last_;
+    }
+  } else {
+    ++set_iter_;
+  }
+  return *this;
+}
+
+PacketNumberQueue::const_iterator PacketNumberQueue::const_iterator::operator++(
+    int /* postincrement */) {
+  PacketNumberQueue::const_iterator preincrement(*this);
+  operator++();
+  return preincrement;
+}
+
+PacketNumberQueue::PacketNumberQueue()
+    : use_interval_set_(FLAGS_quic_packet_queue_use_interval_set) {}
+
+PacketNumberQueue::PacketNumberQueue(const PacketNumberQueue& other) = default;
+PacketNumberQueue& PacketNumberQueue::operator=(
+    const PacketNumberQueue& other) = default;
+// TODO(rtenneti): on windows RValue reference gives errors.
+// PacketNumberQueue::PacketNumberQueue(PacketNumberQueue&& other) = default;
 PacketNumberQueue::~PacketNumberQueue() {}
 
+// TODO(rtenneti): on windows RValue reference gives errors.
+// PacketNumberQueue& PacketNumberQueue::operator=(PacketNumberQueue&& other) =
+//    default;
+
 void PacketNumberQueue::Add(QuicPacketNumber packet_number) {
-  packet_numbers_.insert(packet_number);
+  if (use_interval_set_) {
+    packet_number_intervals_.Add(packet_number, packet_number + 1);
+  } else {
+    packet_number_set_.insert(packet_number);
+  }
 }
 
 void PacketNumberQueue::Add(QuicPacketNumber lower, QuicPacketNumber higher) {
-  for (QuicPacketNumber packet_number = lower; packet_number < higher;
-       ++packet_number) {
-    Add(packet_number);
+  if (use_interval_set_) {
+    packet_number_intervals_.Add(lower, higher);
+  } else {
+    for (QuicPacketNumber packet_number = lower; packet_number < higher;
+         ++packet_number) {
+      Add(packet_number);
+    }
   }
 }
 
 void PacketNumberQueue::Remove(QuicPacketNumber packet_number) {
-  packet_numbers_.erase(packet_number);
+  if (use_interval_set_) {
+    packet_number_intervals_.Difference(packet_number, packet_number + 1);
+  } else {
+    packet_number_set_.erase(packet_number);
+  }
 }
 
 bool PacketNumberQueue::RemoveUpTo(QuicPacketNumber higher) {
-  size_t orig_size = packet_numbers_.size();
-  packet_numbers_.erase(packet_numbers_.begin(),
-                        packet_numbers_.lower_bound(higher));
-  return orig_size != packet_numbers_.size();
+  if (use_interval_set_) {
+    if (Empty()) {
+      return false;
+    }
+    const QuicPacketNumber old_min = Min();
+    packet_number_intervals_.Difference(0, higher);
+    return Empty() || old_min != Min();
+  } else {
+    const size_t orig_size = packet_number_set_.size();
+    packet_number_set_.erase(packet_number_set_.begin(),
+                             packet_number_set_.lower_bound(higher));
+    return orig_size != packet_number_set_.size();
+  }
 }
 
 bool PacketNumberQueue::Contains(QuicPacketNumber packet_number) const {
-  return ContainsKey(packet_numbers_, packet_number);
+  if (use_interval_set_) {
+    return packet_number_intervals_.Contains(packet_number);
+  } else {
+    return ContainsKey(packet_number_set_, packet_number);
+  }
 }
 
 bool PacketNumberQueue::Empty() const {
-  return packet_numbers_.empty();
+  if (use_interval_set_) {
+    return packet_number_intervals_.Empty();
+  } else {
+    return packet_number_set_.empty();
+  }
 }
 
 QuicPacketNumber PacketNumberQueue::Min() const {
   DCHECK(!Empty());
-  return *packet_numbers_.begin();
+  if (use_interval_set_) {
+    return packet_number_intervals_.begin()->min();
+  } else {
+    return *packet_number_set_.begin();
+  }
 }
 
 QuicPacketNumber PacketNumberQueue::Max() const {
   DCHECK(!Empty());
-  return *packet_numbers_.rbegin();
+  if (use_interval_set_) {
+    return packet_number_intervals_.rbegin()->max() - 1;
+  } else {
+    return *packet_number_set_.rbegin();
+  }
 }
 
-size_t PacketNumberQueue::NumPackets() const {
-  return packet_numbers_.size();
+size_t PacketNumberQueue::NumPacketsSlow() const {
+  if (use_interval_set_) {
+    size_t num_packets = 0;
+    for (const auto& interval : packet_number_intervals_) {
+      num_packets += interval.Length();
+    }
+    return num_packets;
+  } else {
+    return packet_number_set_.size();
+  }
 }
 
-PacketNumberQueue::iterator PacketNumberQueue::begin() const {
-  return packet_numbers_.begin();
+PacketNumberQueue::const_iterator PacketNumberQueue::begin() const {
+  if (use_interval_set_) {
+    QuicPacketNumber first;
+    QuicPacketNumber last;
+    if (packet_number_intervals_.Empty()) {
+      first = 0;
+      last = 0;
+    } else {
+      first = packet_number_intervals_.begin()->min();
+      last = packet_number_intervals_.rbegin()->max();
+    }
+    return const_iterator(packet_number_intervals_.begin(), first, last);
+  } else {
+    return const_iterator(packet_number_set_.begin());
+  }
 }
 
-PacketNumberQueue::iterator PacketNumberQueue::end() const {
-  return packet_numbers_.end();
+PacketNumberQueue::const_iterator PacketNumberQueue::end() const {
+  if (use_interval_set_) {
+    QuicPacketNumber last = packet_number_intervals_.Empty()
+                                ? 0
+                                : packet_number_intervals_.rbegin()->max();
+    return const_iterator(packet_number_intervals_.end(), last, last);
+  } else {
+    return const_iterator(packet_number_set_.end());
+  }
 }
 
 PacketNumberQueue::const_iterator PacketNumberQueue::lower_bound(
     QuicPacketNumber packet_number) const {
-  return packet_numbers_.lower_bound(packet_number);
-}
-
-PacketNumberQueue::const_iterator PacketNumberQueue::upper_bound(
-    QuicPacketNumber packet_number) const {
-  return packet_numbers_.upper_bound(packet_number);
+  if (use_interval_set_) {
+    QuicPacketNumber first;
+    QuicPacketNumber last;
+    if (packet_number_intervals_.Empty()) {
+      first = 0;
+      last = 0;
+      return const_iterator(packet_number_intervals_.begin(), first, last);
+    }
+    if (!packet_number_intervals_.Contains(packet_number)) {
+      return end();
+    }
+    IntervalSet<QuicPacketNumber>::const_iterator it =
+        packet_number_intervals_.Find(packet_number);
+    first = packet_number;
+    last = packet_number_intervals_.rbegin()->max();
+    return const_iterator(it, first, last);
+  } else {
+    return const_iterator(packet_number_set_.lower_bound(packet_number));
+  }
 }
 
 ostream& operator<<(ostream& os, const PacketNumberQueue& q) {
-  for (QuicPacketNumber packet_number : q.packet_numbers_) {
+  for (QuicPacketNumber packet_number : q) {
     os << packet_number << " ";
   }
   return os;

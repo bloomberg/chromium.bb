@@ -170,9 +170,7 @@ void QuicSentPacketManager::SetFromConfig(const QuicConfig& config) {
         max(kMinSocketReceiveBuffer,
             static_cast<QuicByteCount>(config.ReceivedSocketReceiveBuffer()));
     QuicByteCount max_cwnd_bytes = static_cast<QuicByteCount>(
-        receive_buffer_bytes_ * (FLAGS_quic_use_conservative_receive_buffer
-                                     ? kConservativeReceiveBufferFraction
-                                     : kUsableRecieveBufferFraction));
+        receive_buffer_bytes_ * kConservativeReceiveBufferFraction);
     if (FLAGS_quic_limit_max_cwnd) {
       max_cwnd_bytes =
           min(max_cwnd_bytes, kMaxCongestionWindow * kDefaultTCPMSS);

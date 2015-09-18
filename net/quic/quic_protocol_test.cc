@@ -169,7 +169,7 @@ TEST(PacketNumberQueueTest, AddRange) {
   EXPECT_FALSE(queue.Contains(52));
   EXPECT_TRUE(queue.Contains(53));
   EXPECT_FALSE(queue.Contains(54));
-  EXPECT_EQ(51u, queue.NumPackets());
+  EXPECT_EQ(51u, queue.NumPacketsSlow());
   EXPECT_EQ(1u, queue.Min());
   EXPECT_EQ(53u, queue.Max());
 
@@ -194,7 +194,7 @@ TEST(PacketNumberQueueTest, Removal) {
   EXPECT_TRUE(queue.Contains(52));
   EXPECT_FALSE(queue.Contains(53));
   EXPECT_TRUE(queue.Contains(54));
-  EXPECT_EQ(48u, queue.NumPackets());
+  EXPECT_EQ(48u, queue.NumPacketsSlow());
   EXPECT_EQ(51u, queue.Min());
   EXPECT_EQ(99u, queue.Max());
 
@@ -208,12 +208,12 @@ TEST(PacketNumberQueueTest, Removal) {
 TEST(PacketNumberQueueTest, Empty) {
   PacketNumberQueue queue;
   EXPECT_TRUE(queue.Empty());
-  EXPECT_EQ(0u, queue.NumPackets());
+  EXPECT_EQ(0u, queue.NumPacketsSlow());
 
   queue.Add(1, 100);
   EXPECT_TRUE(queue.RemoveUpTo(100));
   EXPECT_TRUE(queue.Empty());
-  EXPECT_EQ(0u, queue.NumPackets());
+  EXPECT_EQ(0u, queue.NumPacketsSlow());
 }
 
 // Tests that logging the state of a PacketNumberQueue does not crash.
@@ -244,8 +244,8 @@ TEST(PacketNumberQueueTest, Iterators) {
   PacketNumberQueue::const_iterator it_low = queue.lower_bound(10);
   EXPECT_EQ(10u, *it_low);
 
-  PacketNumberQueue::const_iterator it_up = queue.upper_bound(60);
-  EXPECT_EQ(61u, *it_up);
+  it_low = queue.lower_bound(101);
+  EXPECT_TRUE(queue.end() == it_low);
 }
 
 }  // namespace

@@ -25,7 +25,6 @@
 #include "net/quic/quic_connection.h"
 #include "net/quic/quic_connection_helper.h"
 #include "net/quic/quic_default_packet_writer.h"
-#include "net/quic/quic_flags.h"
 #include "net/quic/quic_http_utils.h"
 #include "net/quic/quic_reliable_client_stream.h"
 #include "net/quic/quic_write_blocked_list.h"
@@ -719,11 +718,7 @@ TEST_P(QuicHttpStreamTest, SendChunkedPostRequestWithOneEmptyDataPacket) {
 TEST_P(QuicHttpStreamTest, DestroyedEarly) {
   SetRequest("GET", "/", DEFAULT_PRIORITY);
   AddWrite(ConstructRequestHeadersPacket(1, kFin, DEFAULT_PRIORITY));
-  if (!FLAGS_quic_process_frames_inline) {
-    AddWrite(ConstructRstStreamCancelledPacket(2));
-  } else {
-    AddWrite(ConstructAckAndRstStreamPacket(2));
-  }
+  AddWrite(ConstructAckAndRstStreamPacket(2));
   use_closing_stream_ = true;
   Initialize();
 
@@ -758,11 +753,7 @@ TEST_P(QuicHttpStreamTest, DestroyedEarly) {
 TEST_P(QuicHttpStreamTest, Priority) {
   SetRequest("GET", "/", MEDIUM);
   AddWrite(ConstructRequestHeadersPacket(1, kFin, MEDIUM));
-  if (!FLAGS_quic_process_frames_inline) {
-    AddWrite(ConstructRstStreamCancelledPacket(2));
-  } else {
-    AddWrite(ConstructAckAndRstStreamPacket(2));
-  }
+  AddWrite(ConstructAckAndRstStreamPacket(2));
   use_closing_stream_ = true;
   Initialize();
 
