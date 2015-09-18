@@ -143,6 +143,38 @@ IN_PROC_BROWSER_TEST_F(GalleryBrowserTest, MAYBE_DeleteImageOnDrive) {
   StartTest();
 }
 
+#if defined(DISABLE_SLOW_FILESAPP_TESTS)
+#define MAYBE_CheckAvailabilityOfShareButtonOnDownloads \
+  DISABLED_CheckAvailabilityOfShareButtonOnDownloads
+#else
+#define MAYBE_CheckAvailabilityOfShareButtonOnDownloads \
+  CheckAvailabilityOfShareButtonOnDownloads
+#endif
+IN_PROC_BROWSER_TEST_F(GalleryBrowserTest,
+                       MAYBE_CheckAvailabilityOfShareButtonOnDownloads) {
+  set_test_case_name("checkAvailabilityOfShareButtonOnDownloads");
+  StartTest();
+}
+
+IN_PROC_BROWSER_TEST_F(GalleryBrowserTestInGuestMode,
+                       MAYBE_CheckAvailabilityOfShareButtonOnDownloads) {
+  set_test_case_name("checkAvailabilityOfShareButtonOnDownloads");
+  StartTest();
+}
+
+#if defined(DISABLE_SLOW_FILESAPP_TESTS)
+#define MAYBE_CheckAvailabilityOfShareButtonOnDrive \
+  DISABLED_CheckAvailabilityOfShareButtonOnDrive
+#else
+#define MAYBE_CheckAvailabilityOfShareButtonOnDrive \
+  CheckAvailabilityOfShareButtonOnDrive
+#endif
+IN_PROC_BROWSER_TEST_F(GalleryBrowserTest,
+                       MAYBE_CheckAvailabilityOfShareButtonOnDrive) {
+  set_test_case_name("checkAvailabilityOfShareButtonOnDrive");
+  StartTest();
+}
+
 IN_PROC_BROWSER_TEST_F(GalleryBrowserTest, RotateImageOnDownloads) {
   set_test_case_name("rotateImageOnDownloads");
   StartTest();

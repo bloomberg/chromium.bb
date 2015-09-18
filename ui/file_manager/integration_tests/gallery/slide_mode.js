@@ -87,6 +87,28 @@ function deleteImage(testVolumeName, volumeType) {
 }
 
 /**
+ * Runs test to check availability of share button.
+ *
+ * @param {string} testVolumeName Test volume name passed to the addEntries
+ *     function. Either 'drive' or 'local'.
+ * @param {VolumeManagerCommon.VolumeType} volumeType Volume type.
+ * @param {boolean} available True if share button should be available in test.
+ * @return {Promise} Promise to be fulfilled with on success.
+ */
+function checkAvailabilityOfShareButton(testVolumeName, volumeType, available) {
+  var appId;
+  return launch(
+      testVolumeName, volumeType, [ENTRIES.desktop]).then(function(args) {
+    appId = args.appId;
+    // Wait until UI has been initialized.
+    return gallery.waitForSlideImage(appId, 800, 600, 'My Desktop Background');
+  }).then(function() {
+    return gallery.waitForElement(appId,
+        'paper-button.share' + (available ? ':not([disabled])' : '[disabled]'));
+  });
+}
+
+/**
  * The traverseSlideImages test for Downloads.
  * @return {Promise} Promise to be fulfilled with on success.
  */
@@ -132,4 +154,21 @@ testcase.deleteImageOnDownloads = function() {
  */
 testcase.deleteImageOnDrive = function() {
   return deleteImage('drive', 'drive');
+};
+
+/**
+ * The checkAvailabilityOfShareButton test for Downloads.
+ * @return {Promise} Promise to be fulfilled with on success.
+ */
+testcase.checkAvailabilityOfShareButtonOnDownloads = function() {
+  return checkAvailabilityOfShareButton(
+      'local', 'downloads', false /* not available */);
+};
+
+/**
+ * The checkAvailabilityOfShareButton test for Google Drive.
+ * @return {Promise} Promise to be fulfilled with on success.
+ */
+testcase.checkAvailabilityOfShareButtonOnDrive = function() {
+  return checkAvailabilityOfShareButton('drive', 'drive', true /* available */);
 };

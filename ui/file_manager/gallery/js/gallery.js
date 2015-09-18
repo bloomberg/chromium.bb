@@ -772,7 +772,7 @@ Gallery.prototype.updateSelectionAndState_ = function() {
           ImageUtil.getDisplayNameFromName(this.selectedEntry_.name);
       this.resizeRenameField_();
 
-      this.shareButton_.hidden = !selectedItem.getLocationInfo().isDriveBased;
+      this.shareButton_.disabled = !selectedItem.getLocationInfo().isDriveBased;
     } else {
       if (this.context_.curDirEntry) {
         // If the Gallery was opened on search results the search query will not
@@ -787,7 +787,7 @@ Gallery.prototype.updateSelectionAndState_ = function() {
           strf('GALLERY_ITEMS_SELECTED', numSelectedItems);
       this.resizeRenameField_();
 
-      this.shareButton_.hidden = true;
+      this.shareButton_.disabled = true;
     }
   } else {
     document.title = '';
@@ -797,7 +797,7 @@ Gallery.prototype.updateSelectionAndState_ = function() {
 
     this.deleteButton_.disabled = true;
     this.slideshowButton_.disabled = true;
-    this.shareButton_.hidden = true;
+    this.shareButton_.disabled = true;
   }
 
   util.updateAppState(
