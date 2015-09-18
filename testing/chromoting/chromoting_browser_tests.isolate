@@ -72,7 +72,7 @@
       'variables': {
         'files': [
           '<(PRODUCT_DIR)/chrome_elf.dll',
-          '<(PRODUCT_DIR)/libglesv2.dll',
+          '<(PRODUCT_DIR)/libGLESv2.dll',
         ],
       },
     }],
