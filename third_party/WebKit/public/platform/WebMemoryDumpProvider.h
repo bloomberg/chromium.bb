@@ -14,8 +14,8 @@ class WebProcessMemoryDump;
 // Used to specify the type of memory dump the WebMemoryDumpProvider should
 // generate on dump requests.
 enum class WebMemoryDumpLevelOfDetail {
-    Low,
-    High
+    Light,
+    Detailed
 };
 
 // Base interface to be part of the memory tracing infrastructure. Blink classes

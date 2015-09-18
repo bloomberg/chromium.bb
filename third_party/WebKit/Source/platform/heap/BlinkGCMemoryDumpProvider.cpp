@@ -43,7 +43,7 @@ BlinkGCMemoryDumpProvider::~BlinkGCMemoryDumpProvider()
 
 bool BlinkGCMemoryDumpProvider::onMemoryDump(WebMemoryDumpLevelOfDetail levelOfDetail, blink::WebProcessMemoryDump* memoryDump)
 {
-    if (levelOfDetail == WebMemoryDumpLevelOfDetail::Low) {
+    if (levelOfDetail == WebMemoryDumpLevelOfDetail::Light) {
         dumpMemoryTotals(memoryDump);
         return true;
     }

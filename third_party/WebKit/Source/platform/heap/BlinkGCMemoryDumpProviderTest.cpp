@@ -17,7 +17,7 @@ TEST(BlinkGCDumpProviderTest, MemoryDump)
 {
     OwnPtr<WebProcessMemoryDump> dump = adoptPtr(Platform::current()->createProcessMemoryDump());
     ASSERT(dump);
-    BlinkGCMemoryDumpProvider::instance()->onMemoryDump(WebMemoryDumpLevelOfDetail::High, dump.get());
+    BlinkGCMemoryDumpProvider::instance()->onMemoryDump(WebMemoryDumpLevelOfDetail::Detailed, dump.get());
     ASSERT(dump->getMemoryAllocatorDump(String::format("blink_gc")));
     ASSERT(dump->getMemoryAllocatorDump(String::format("blink_gc/allocated_objects")));
 }

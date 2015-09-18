@@ -98,7 +98,7 @@ bool PartitionAllocMemoryDumpProvider::onMemoryDump(WebMemoryDumpLevelOfDetail l
         String::format("%s/%s", kPartitionAllocDumpName, kPartitionsDumpName));
 
     // This method calls memoryStats.partitionsDumpBucketStats with memory statistics.
-    WTF::Partitions::dumpMemoryStats(levelOfDetail == WebMemoryDumpLevelOfDetail::Low, &partitionStatsDumper);
+    WTF::Partitions::dumpMemoryStats(levelOfDetail == WebMemoryDumpLevelOfDetail::Light, &partitionStatsDumper);
 
     WebMemoryAllocatorDump* allocatedObjectsDump = memoryDump->createMemoryAllocatorDump(
         String::format("%s/allocated_objects", kPartitionAllocDumpName));
