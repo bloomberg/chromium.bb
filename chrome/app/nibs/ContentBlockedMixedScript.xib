@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="5056" systemVersion="13F1077" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none">
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="5056" systemVersion="13F1112" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none">
     <dependencies>
         <deployment version="1060" identifier="macosx"/>
         <development version="5100" identifier="xcode"/>
@@ -49,11 +49,11 @@
                                 </subviews>
                             </customView>
                             <customView id="29" customClass="GTMWidthBasedTweaker">
-                                <rect key="frame" x="152" y="-1" width="96.999999981872818" height="37"/>
+                                <rect key="frame" x="152" y="0.0" width="97" height="41"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMinX="YES" widthSizable="YES" flexibleMaxY="YES"/>
                                 <subviews>
                                     <button verticalHuggingPriority="750" id="17">
-                                        <rect key="frame" x="13.999999981872818" y="13" width="68" height="28"/>
+                                        <rect key="frame" x="14" y="13" width="68" height="28"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
                                         <buttonCell key="cell" type="push" title="^IDS_OK" bezelStyle="rounded" alignment="center" controlSize="small" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="18">
                                             <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
@@ -69,7 +69,7 @@ DQ
                                 </subviews>
                             </customView>
                             <customView id="28" customClass="GTMWidthBasedTweaker">
-                                <rect key="frame" x="0.0" y="-1" width="152" height="37"/>
+                                <rect key="frame" x="0.0" y="0.0" width="152" height="37"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <subviews>
                                     <button id="54">
