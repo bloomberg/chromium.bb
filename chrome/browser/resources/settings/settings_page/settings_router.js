@@ -126,6 +126,13 @@ Polymer({
       subpageTitles: ['siteSettings'],
     },
     {
+      url: '/clearBrowserData',
+      page: 'advanced',
+      section: 'privacy',
+      subpage: ['clear-browsing-data'],
+      subpageTitles: ['clearBrowsingData'],
+    },
+    {
       url: '/networkDetail',
       page: 'basic',
       section: 'internet',

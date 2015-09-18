@@ -4,14 +4,14 @@
 
 /**
  * @fileoverview
- * 'cr-settings-privacy-page' is the settings page containing privacy and
- * security settings.
+ * 'cr-settings-clear-browsing-data-page' provides options to delete browsing
+ * data that has been cached by chromium.
  *
  * Example:
  *
  *    <iron-animated-pages>
- *      <cr-settings-privacy-page prefs="{{prefs}}">
- *      </cr-settings-privacy-page>
+ *      <cr-settings-clear-browsing-data-page prefs="{{prefs}}">
+ *      </cr-settings-clear-browsing-data-page>
  *      ... other pages ...
  *    </iron-animated-pages>
  *
@@ -19,7 +19,7 @@
  * @element cr-settings-privacy-page
  */
 Polymer({
-  is: 'cr-settings-privacy-page',
+  is: 'cr-settings-clear-browsing-data-page',
 
   properties: {
     /**
@@ -37,20 +37,5 @@ Polymer({
       type: Object,
       notify: true,
     },
-  },
-
-  /** @private */
-  onManageCertificatesTap_: function() {
-    this.$.pages.setSubpageChain(['manage-certificates']);
-  },
-
-  /** @private */
-  onSiteSettingsTap_: function() {
-    this.$.pages.setSubpageChain(['site-settings']);
-  },
-
-  /** @private */
-  onClearBrowsingDataTap_: function() {
-    this.$.pages.setSubpageChain(['clear-browsing-data']);
   },
 });
