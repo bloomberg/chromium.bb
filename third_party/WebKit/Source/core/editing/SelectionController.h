@@ -81,9 +81,7 @@ private:
     void selectClosestWordFromMouseEvent(const MouseEventWithHitTestResults&);
     void selectClosestMisspellingFromMouseEvent(const MouseEventWithHitTestResults&);
     void selectClosestWordOrLinkFromMouseEvent(const MouseEventWithHitTestResults&);
-
-    template <typename Strategy>
-    bool updateSelectionForMouseDownDispatchingSelectStart(Node*, const VisibleSelectionTemplate<Strategy>&, TextGranularity);
+    bool updateSelectionForMouseDownDispatchingSelectStart(Node*, const VisibleSelection&, TextGranularity);
 
     FrameSelection& selection() const;
 

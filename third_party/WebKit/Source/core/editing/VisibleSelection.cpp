@@ -1148,122 +1148,6 @@ bool VisibleSelection::InComposedTree::equalSelections(const VisibleSelection& s
     return equalSelectionsAlgorithm<InComposedTree>(selection1, selection2);
 }
 
-// ----
-
-template <typename Strategy>
-VisibleSelectionTemplate<Strategy>::VisibleSelectionTemplate(const PositionAlgorithm<Strategy>& base, const PositionAlgorithm<Strategy>& extent, TextAffinity affinity)
-    : VisibleSelectionTemplate(VisibleSelection(base, extent, affinity))
-{
-}
-
-template <typename Strategy>
-VisibleSelectionTemplate<Strategy>::VisibleSelectionTemplate(const VisibleSelection& visibleSeleciton)
-    : m_visibleSelection(visibleSeleciton)
-{
-}
-
-template <typename Strategy>
-VisibleSelectionTemplate<Strategy>::VisibleSelectionTemplate(const VisiblePositionTemplate<Strategy>& visiblePosition)
-    : VisibleSelectionTemplate(VisibleSelection(visiblePosition.deepEquivalent(), visiblePosition.deepEquivalent(), visiblePosition.affinity()))
-{
-}
-
-template <typename Strategy>
-void VisibleSelectionTemplate<Strategy>::setBase(const VisiblePositionTemplate<Strategy>& newBase)
-{
-    return setBase(newBase.deepEquivalent());
-}
-
-template <typename Strategy>
-void VisibleSelectionTemplate<Strategy>::setExtent(const VisiblePositionTemplate<Strategy>& newExtent)
-{
-    return setExtent(newExtent.deepEquivalent());
-}
-
-template <>
-Position VisibleSelectionTemplate<EditingStrategy>::base() const
-{
-    return m_visibleSelection.base();
-}
-
-template <>
-Position VisibleSelectionTemplate<EditingStrategy>::extent() const
-{
-    return m_visibleSelection.extent();
-}
-
-template <>
-Position VisibleSelectionTemplate<EditingStrategy>::start() const
-{
-    return m_visibleSelection.start();
-}
-
-template <>
-Position VisibleSelectionTemplate<EditingStrategy>::end() const
-{
-    return m_visibleSelection.end();
-}
-
-template <>
-void VisibleSelectionTemplate<EditingStrategy>::setBase(const Position& newBase)
-{
-    m_visibleSelection.setBase(newBase);
-}
-
-template <>
-void VisibleSelectionTemplate<EditingStrategy>::setExtent(const Position& newExtent)
-{
-    m_visibleSelection.setExtent(newExtent);
-}
-
-template <>
-bool VisibleSelectionTemplate<EditingStrategy>::expandUsingGranularity(TextGranularity granularity)
-{
-    return m_visibleSelection.expandUsingGranularity(granularity);
-}
-
-template <>
-PositionInComposedTree VisibleSelectionTemplate<EditingInComposedTreeStrategy>::base() const
-{
-    return m_visibleSelection.baseInComposedTree();
-}
-
-template <>
-PositionInComposedTree VisibleSelectionTemplate<EditingInComposedTreeStrategy>::extent() const
-{
-    return m_visibleSelection.extentInComposedTree();
-}
-
-template <>
-PositionInComposedTree VisibleSelectionTemplate<EditingInComposedTreeStrategy>::start() const
-{
-    return m_visibleSelection.startInComposedTree();
-}
-
-template <>
-PositionInComposedTree VisibleSelectionTemplate<EditingInComposedTreeStrategy>::end() const
-{
-    return m_visibleSelection.endInComposedTree();
-}
-
-template <>
-void VisibleSelectionTemplate<EditingInComposedTreeStrategy>::setBase(const PositionInComposedTree& newBase)
-{
-    m_visibleSelection.setBase(newBase);
-}
-
-template <>
-void VisibleSelectionTemplate<EditingInComposedTreeStrategy>::setExtent(const PositionInComposedTree& newExtent)
-{
-    m_visibleSelection.setExtent(newExtent);
-}
-
-template <>
-bool VisibleSelectionTemplate<EditingInComposedTreeStrategy>::expandUsingGranularity(TextGranularity granularity)
-{
-    return m_visibleSelection.expandUsingGranularityInComposedTree(granularity);
-}
-
 #ifndef NDEBUG
 
 void VisibleSelection::debugPosition(const char* message) const
@@ -1331,9 +1215,6 @@ void VisibleSelection::showTreeForThis() const
 }
 
 #endif
-
-template class CORE_TEMPLATE_EXPORT VisibleSelectionTemplate<EditingStrategy>;
-template class CORE_TEMPLATE_EXPORT VisibleSelectionTemplate<EditingInComposedTreeStrategy>;
 
 } // namespace blink
 

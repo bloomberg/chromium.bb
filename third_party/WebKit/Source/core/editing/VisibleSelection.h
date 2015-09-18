@@ -250,47 +250,6 @@ private:
     bool m_isDirectional : 1; // Non-directional ignores m_baseIsFirst and selection always extends on shift + arrow key.
 };
 
-// TODO(yosin) This is transition version |VisibleSelectionTemplate| for
-// getting rid of |VisibleSelection::InDOMTree| and |InComposedTree|.
-// Final version of |VisibleSelectionTemplate| will replace |VisibleSelection|.
-template <typename Strategy>
-class CORE_TEMPLATE_CLASS_EXPORT VisibleSelectionTemplate final {
-    STACK_ALLOCATED();
-public:
-    VisibleSelectionTemplate(const PositionAlgorithm<Strategy>& base, const PositionAlgorithm<Strategy>& extent, TextAffinity = TextAffinity::Downstream);
-    explicit VisibleSelectionTemplate(const VisibleSelection&);
-    explicit VisibleSelectionTemplate(const VisiblePositionTemplate<Strategy>&);
-
-    operator const VisibleSelection&() const { return m_visibleSelection; }
-
-    PositionAlgorithm<Strategy> base() const;
-    PositionAlgorithm<Strategy> extent() const;
-    PositionAlgorithm<Strategy> start() const;
-    PositionAlgorithm<Strategy> end() const;
-
-    bool isCaretOrRange() const { return m_visibleSelection.isCaretOrRange(); }
-    bool isRange() const { return m_visibleSelection.isRange(); }
-    bool isValidFor(const Document& document) const { return m_visibleSelection.isValidFor(document); }
-
-    void setBase(const PositionAlgorithm<Strategy>&);
-    void setBase(const VisiblePositionTemplate<Strategy>&);
-    void setExtent(const PositionAlgorithm<Strategy>&);
-    void setExtent(const VisiblePositionTemplate<Strategy>&);
-
-    bool expandUsingGranularity(TextGranularity);
-
-    DEFINE_INLINE_TRACE()
-    {
-        visitor->trace(m_visibleSelection);
-    }
-
-private:
-    VisibleSelection m_visibleSelection;
-};
-
-extern template class CORE_TEMPLATE_CLASS_EXPORT VisiblePositionTemplate<EditingStrategy>;
-extern template class CORE_TEMPLATE_CLASS_EXPORT VisiblePositionTemplate<EditingInComposedTreeStrategy>;
-
 inline bool equalSelectionsInDOMTree(const VisibleSelection& selection1, const VisibleSelection& selection2)
 {
     return VisibleSelection::InDOMTree::equalSelections(selection1, selection2);
