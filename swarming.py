@@ -575,12 +575,14 @@ def convert_to_old_format(result):
   # Endpoints result 'state' as string. For compatibility with old code, convert
   # to int.
   result['state'] = State.from_enum(result['state'])
-  # tags
   result['try_number'] = (
       int(result['try_number']) if result.get('try_number') else None)
-  result['bot_dimensions'] = {
-    i['key']: i['value'] for i in result['bot_dimensions']
-  }
+  if 'bot_dimensions' in result:
+    result['bot_dimensions'] = {
+      i['key']: i['value'] for i in result['bot_dimensions']
+    }
+  else:
+    result['bot_dimensions'] = None
 
 
 def yield_results(
