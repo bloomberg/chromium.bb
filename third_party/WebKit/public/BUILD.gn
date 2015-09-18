@@ -17,7 +17,7 @@ if (is_android) {
 
 # GYP version: WebKit/public/blink.gyp:blink
 group("blink") {
-  deps = [
+  public_deps = [
     ":blink_headers",
     ":blink_minimal",
     "//third_party/WebKit/Source/web",
@@ -32,14 +32,14 @@ group("blink") {
 #
 # GYP version: WebKit/public/blink.gyp:blink_minimal
 group("blink_minimal") {
-  deps = [
+  public_deps = [
     "//third_party/WebKit/Source/platform:blink_common",
   ]
 }
 
 # GYP version: WebKit/public/blink.gyp:blink_test_support
 group("test_support") {
-  deps = [
+  public_deps = [
     "//third_party/WebKit/Source/web:test_support",
   ]
 }
@@ -49,7 +49,7 @@ group("all_blink") {
   # This includes some test targets. Don't link into production!
   testonly = true
 
-  deps = [
+  public_deps = [
     "//third_party/WebKit/Source/core",
     "//third_party/WebKit/Source/modules",
     "//third_party/WebKit/Source/platform:heap_unittests",
@@ -61,7 +61,7 @@ group("all_blink") {
 
   if (is_mac) {
     # TODO(GYP): Re-enable this as soon as we can link Blink binaries on mac.
-    deps -= [
+    public_deps -= [
       "//third_party/WebKit/Source/platform:heap_unittests",
       "//third_party/WebKit/Source/platform:platform_unittests",
       "//third_party/WebKit/Source/web:webkit_unit_tests",
@@ -119,14 +119,14 @@ source_set("blink_headers") {
 
 # GYP version: WebKit/public/blink_devtools.gyp:blink_devtools_frontend_resources
 group("blink_devtools_frontend_resources") {
-  deps = [
+  public_deps = [
     "//third_party/WebKit/Source/devtools:devtools_frontend_resources",
   ]
 }
 
 # GYP version: WebKit/public/blink_devtools.gyp:blink_generate_devtools_grd
 group("blink_generate_devtools_grd") {
-  deps = [
+  public_deps = [
     "//third_party/WebKit/Source/devtools:generate_devtools_grd",
   ]
 }

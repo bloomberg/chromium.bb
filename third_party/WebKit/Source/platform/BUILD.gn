@@ -156,7 +156,7 @@ action("color_data") {
 group("make_platform_generated") {
   visibility = []  # Allow re-assignment of list.
   visibility = [ "//third_party/WebKit/Source/*" ]
-  deps = [
+  public_deps = [
     ":blink_common",
     ":color_data",
     ":font_family_names",

@@ -14,7 +14,7 @@ write_file(core_idl_with_modules_dependency_files_list,
 
 # bindings_modules_generated in modules/v8/generated.gyp
 group("bindings_modules_generated") {
-  deps = [
+  public_deps = [
     ":bindings_modules_impl_generated",
     ":bindings_modules_v8_generated_aggregate",
     ":bindings_modules_v8_generated_individual",
