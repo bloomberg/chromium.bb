@@ -9,6 +9,7 @@
 #include "base/basictypes.h"
 #include "base/format_macros.h"
 #include "base/logging.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -38,8 +39,7 @@ void AppendUint32Header(const std::string& header_name,
                         uint32 header_value,
                         std::string* output) {
   if (header_value != 0) {
-    *output += (header_name + ": " + base::StringPrintf("%u", header_value) +
-                "\n");
+    *output += (header_name + ": " + base::UintToString(header_value) + "\n");
   }
 }
 
@@ -102,7 +102,7 @@ std::string Message::ToStringInternal(const std::string& indent,
         uint8 value = 0;
         if (!reader->PopByte(&value))
           return kBrokenMessage;
-        output += indent + "byte " + base::IntToString(value) + "\n";
+        output += indent + "byte " + base::UintToString(value) + "\n";
         break;
       }
       case BOOL: {
@@ -123,7 +123,7 @@ std::string Message::ToStringInternal(const std::string& indent,
         uint16 value = 0;
         if (!reader->PopUint16(&value))
           return kBrokenMessage;
-        output += indent + "uint16 " + base::IntToString(value) + "\n";
+        output += indent + "uint16 " + base::UintToString(value) + "\n";
         break;
       }
       case INT32: {
@@ -137,30 +137,28 @@ std::string Message::ToStringInternal(const std::string& indent,
         uint32 value = 0;
         if (!reader->PopUint32(&value))
           return kBrokenMessage;
-        output += indent + "uint32 " + base::StringPrintf("%u", value) + "\n";
+        output += indent + "uint32 " + base::UintToString(value) + "\n";
         break;
       }
       case INT64: {
         int64 value = 0;
         if (!reader->PopInt64(&value))
           return kBrokenMessage;
-        output += (indent + "int64 " +
-                   base::StringPrintf("%" PRId64, value) + "\n");
+        output += (indent + "int64 " + base::Int64ToString(value) + "\n");
         break;
       }
       case UINT64: {
         uint64 value = 0;
         if (!reader->PopUint64(&value))
           return kBrokenMessage;
-        output += (indent + "uint64 " +
-                   base::StringPrintf("%" PRIu64, value) + "\n");
+        output += (indent + "uint64 " + base::Uint64ToString(value) + "\n");
         break;
       }
       case DOUBLE: {
         double value = 0;
         if (!reader->PopDouble(&value))
           return kBrokenMessage;
-        output += indent + "double " + base::StringPrintf("%f", value) + "\n";
+        output += indent + "double " + base::DoubleToString(value) + "\n";
         break;
       }
       case STRING: {
@@ -696,7 +694,8 @@ void MessageWriter::AppendBasic(int dbus_type, const void* value) {
 }
 
 void MessageWriter::AppendVariantOfBasic(int dbus_type, const void* value) {
-  const std::string signature = base::StringPrintf("%c", dbus_type);
+  const std::string signature(1u,  // length
+                              base::checked_cast<char>(dbus_type));
   MessageWriter variant_writer(message_);
   OpenVariant(signature, &variant_writer);
   variant_writer.AppendBasic(dbus_type, value);
