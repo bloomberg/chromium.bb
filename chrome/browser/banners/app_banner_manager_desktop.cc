@@ -20,8 +20,13 @@ DEFINE_WEB_CONTENTS_USER_DATA_KEY(banners::AppBannerManagerDesktop);
 namespace banners {
 
 bool AppBannerManagerDesktop::IsEnabled() {
+#if defined(OS_CHROMEOS)
+  return !base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableAddToShelf);
+#else
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableAddToShelf);
+#endif
 }
 
 AppBannerDataFetcher* AppBannerManagerDesktop::CreateAppBannerDataFetcher(
