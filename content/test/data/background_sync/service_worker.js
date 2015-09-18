@@ -17,7 +17,7 @@ var resolveCallback = null;
 var rejectCallback = null;
 
 this.onmessage = function(event) {
-  if (event.data === 'completeDelayedOneShot') {
+  if (event.data['action'] === 'completeDelayedOneShot') {
     if (resolveCallback === null) {
       sendMessageToClients('sync', 'error - resolveCallback is null');
       return;
@@ -28,7 +28,7 @@ this.onmessage = function(event) {
     return;
   }
 
-  if (event.data === 'rejectDelayedOneShot') {
+  if (event.data['action'] === 'rejectDelayedOneShot') {
     if (rejectCallback === null) {
       sendMessageToClients('sync', 'error - rejectCallback is null');
       return;
@@ -36,6 +36,21 @@ this.onmessage = function(event) {
 
     rejectCallback();
     sendMessageToClients('sync', 'ok - delay rejected');
+  }
+
+  if (event.data['action'] === 'notifyWhenDone') {
+    var tag = event.data['tag'];
+    registration.sync.getRegistration(tag)
+      .then(function (syncRegistration) {
+        sendMessageToClients('sync', 'ok - ' + tag + ' done');
+        return syncRegistration.done;
+      })
+      .then(function(success) {
+        sendMessageToClients('sync', tag + " done result: " + success);
+      }, function(error) {
+        sendMessageToClients('sync', tag + " done result: error");
+      })
+      .catch(sendSyncErrorToClients);
   }
 }
 
@@ -95,4 +110,8 @@ function sendMessageToClients(type, data) {
   }, function(error) {
     console.log(error);
   });
+}
+
+function sendSyncErrorToClients(error) {
+  sendMessageToClients('sync', error.name + ' - ' + error.message);
 }

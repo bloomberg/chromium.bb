@@ -59,6 +59,9 @@ class BackgroundSyncProviderThreadProxy : public blink::WebSyncProvider,
       blink::WebServiceWorkerRegistration* service_worker_registration,
       blink::WebSyncGetPermissionStatusCallbacks* callbacks) override;
   void releaseRegistration(int64_t handle_id) override;
+  void notifyWhenDone(
+      int64_t handle_id,
+      blink::WebSyncNotifyWhenDoneCallbacks* callbacks) override;
 
   // Given |handle_id|, ask the provider for a new handle with the same
   // underlying registration.

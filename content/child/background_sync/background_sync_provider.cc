@@ -143,6 +143,21 @@ void BackgroundSyncProvider::releaseRegistration(int64_t handle_id) {
   GetBackgroundSyncServicePtr()->ReleaseRegistration(handle_id);
 }
 
+void BackgroundSyncProvider::notifyWhenDone(
+    int64_t handle_id,
+    blink::WebSyncNotifyWhenDoneCallbacks* callbacks) {
+  DCHECK(callbacks);
+
+  scoped_ptr<blink::WebSyncNotifyWhenDoneCallbacks> callbacks_ptr(callbacks);
+
+  // base::Unretained is safe here, as the mojo channel will be deleted (and
+  // will wipe its callbacks) before 'this' is deleted.
+  GetBackgroundSyncServicePtr()->NotifyWhenDone(
+      handle_id,
+      base::Bind(&BackgroundSyncProvider::NotifyWhenDoneCallback,
+                 base::Unretained(this), base::Passed(callbacks_ptr.Pass())));
+}
+
 void BackgroundSyncProvider::DuplicateRegistrationHandle(
     int handle_id,
     const BackgroundSyncService::DuplicateRegistrationHandleCallback&
@@ -307,6 +322,44 @@ void BackgroundSyncProvider::GetPermissionStatusCallback(
     case BACKGROUND_SYNC_ERROR_NOT_ALLOWED:
       // These errors should never be returned from
       // BackgroundSyncManager::GetPermissionStatus
+      NOTREACHED();
+      break;
+    case BACKGROUND_SYNC_ERROR_STORAGE:
+      callbacks->onError(
+          blink::WebSyncError(blink::WebSyncError::ErrorTypeUnknown,
+                              "Background Sync is disabled."));
+      break;
+    case BACKGROUND_SYNC_ERROR_NO_SERVICE_WORKER:
+      callbacks->onError(
+          blink::WebSyncError(blink::WebSyncError::ErrorTypeUnknown,
+                              "No service worker is active."));
+      break;
+  }
+}
+
+void BackgroundSyncProvider::NotifyWhenDoneCallback(
+    scoped_ptr<blink::WebSyncNotifyWhenDoneCallbacks> callbacks,
+    BackgroundSyncError error,
+    BackgroundSyncState state) {
+  switch (error) {
+    case BACKGROUND_SYNC_ERROR_NONE:
+      switch (state) {
+        case BACKGROUND_SYNC_STATE_PENDING:
+        case BACKGROUND_SYNC_STATE_FIRING:
+        case BACKGROUND_SYNC_STATE_UNREGISTERED_WHILE_FIRING:
+          NOTREACHED();
+          break;
+        case BACKGROUND_SYNC_STATE_SUCCESS:
+          callbacks->onSuccess(true);
+          break;
+        case BACKGROUND_SYNC_STATE_FAILED:
+        case BACKGROUND_SYNC_STATE_UNREGISTERED:
+          callbacks->onSuccess(false);
+          break;
+      }
+      break;
+    case BACKGROUND_SYNC_ERROR_NOT_FOUND:
+    case BACKGROUND_SYNC_ERROR_NOT_ALLOWED:
       NOTREACHED();
       break;
     case BACKGROUND_SYNC_ERROR_STORAGE:

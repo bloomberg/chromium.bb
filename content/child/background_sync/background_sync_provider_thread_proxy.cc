@@ -211,6 +211,20 @@ void BackgroundSyncProviderThreadProxy::releaseRegistration(int64_t handle_id) {
                             base::Unretained(sync_provider_), handle_id));
 }
 
+void BackgroundSyncProviderThreadProxy::notifyWhenDone(
+    int64_t handle_id,
+    blink::WebSyncNotifyWhenDoneCallbacks* callbacks) {
+  DCHECK(callbacks);
+
+  main_thread_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(
+          &BackgroundSyncProvider::notifyWhenDone,
+          base::Unretained(sync_provider_), handle_id,
+          new CallbackThreadAdapter<blink::WebSyncNotifyWhenDoneCallbacks>(
+              make_scoped_ptr(callbacks), WorkerThread::GetCurrentId())));
+}
+
 void BackgroundSyncProviderThreadProxy::DuplicateRegistrationHandle(
     int64 handle_id,
     const BackgroundSyncService::DuplicateRegistrationHandleCallback&

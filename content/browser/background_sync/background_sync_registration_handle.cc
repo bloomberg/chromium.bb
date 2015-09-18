@@ -26,6 +26,15 @@ void BackgroundSyncRegistrationHandle::Unregister(
       sw_registration_id, options()->periodicity, handle_id_, callback);
 }
 
+void BackgroundSyncRegistrationHandle::NotifyWhenDone(
+    const StatusAndStateCallback& callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(IsValid());
+  DCHECK(background_sync_manager_);
+
+  background_sync_manager_->NotifyWhenDone(handle_id_, callback);
+}
+
 bool BackgroundSyncRegistrationHandle::IsValid() const {
   return registration_ != nullptr;
 }

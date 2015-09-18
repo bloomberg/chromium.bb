@@ -163,6 +163,9 @@ class BackgroundSyncBrowserTest : public ContentBrowserTest {
   bool GetRegistrationsOneShot(const std::vector<std::string>& expected_tags);
   bool CompleteDelayedOneShot();
   bool RejectDelayedOneShot();
+  bool NotifyWhenDoneOneShot(const std::string& tag);
+  bool NotifyWhenDoneImmediateOneShot(const std::string& expected_msg);
+  bool StoreRegistrationOneShot(const std::string& tag);
 
  private:
   scoped_ptr<net::SpawnedTestServer> https_server_;
@@ -274,6 +277,27 @@ bool BackgroundSyncBrowserTest::RejectDelayedOneShot() {
   std::string script_result;
   EXPECT_TRUE(RunScript("rejectDelayedOneShot()", &script_result));
   return script_result == BuildExpectedResult("delay", "rejecting");
+}
+
+bool BackgroundSyncBrowserTest::NotifyWhenDoneOneShot(const std::string& tag) {
+  EXPECT_TRUE(content::ExecuteScript(
+      shell_->web_contents(), BuildScriptString("notifyWhenDoneOneShot", tag)));
+  return PopConsole(BuildExpectedResult(tag, "done"));
+}
+
+bool BackgroundSyncBrowserTest::NotifyWhenDoneImmediateOneShot(
+    const std::string& expected_msg) {
+  std::string script_result;
+  EXPECT_TRUE(RunScript("notifyWhenDoneImmediateOneShot()", &script_result));
+  return script_result == expected_msg;
+}
+
+bool BackgroundSyncBrowserTest::StoreRegistrationOneShot(
+    const std::string& tag) {
+  std::string script_result;
+  EXPECT_TRUE(
+      RunScript(BuildScriptString("storeRegistration", tag), &script_result));
+  return script_result == BuildExpectedResult(tag, "stored");
 }
 
 IN_PROC_BROWSER_TEST_F(BackgroundSyncBrowserTest, OneShotFires) {
@@ -419,6 +443,78 @@ IN_PROC_BROWSER_TEST_F(BackgroundSyncBrowserTest, UnregisterMidSync) {
 
   EXPECT_TRUE(RegisterOneShot("unregister"));
   EXPECT_TRUE(PopConsole("ok - unregister completed"));
+}
+
+IN_PROC_BROWSER_TEST_F(BackgroundSyncBrowserTest, CallDoneBeforeSyncSucceeds) {
+  EXPECT_TRUE(RegisterServiceWorker());
+  EXPECT_TRUE(LoadTestPage(kDefaultTestURL));  // Control the page.
+
+  SetOnline(false);
+  EXPECT_TRUE(RegisterOneShot("foo"));
+  EXPECT_TRUE(NotifyWhenDoneOneShot("foo"));
+
+  SetOnline(true);
+  // The ordering of PopConsole messages tells us that the event fired
+  // before done resolved.
+  EXPECT_TRUE(PopConsole("foo fired"));
+  EXPECT_TRUE(PopConsole("foo done result: true"));
+}
+
+IN_PROC_BROWSER_TEST_F(BackgroundSyncBrowserTest, CallDoneBeforeSyncFails) {
+  EXPECT_TRUE(RegisterServiceWorker());
+  EXPECT_TRUE(LoadTestPage(kDefaultTestURL));  // Control the page.
+
+  SetOnline(true);
+  EXPECT_TRUE(RegisterOneShot("delay"));
+  EXPECT_FALSE(OneShotPending("delay"));
+  EXPECT_TRUE(NotifyWhenDoneOneShot("delay"));
+
+  EXPECT_TRUE(RejectDelayedOneShot());
+  // The ordering of PopConsole messages tells us that the event fired
+  // before done resolved.
+  EXPECT_TRUE(PopConsole("ok - delay rejected"));
+  EXPECT_TRUE(PopConsole("delay done result: false"));
+}
+
+IN_PROC_BROWSER_TEST_F(BackgroundSyncBrowserTest, CallDoneAfterSyncSuceeds) {
+  EXPECT_TRUE(RegisterServiceWorker());
+  EXPECT_TRUE(LoadTestPage(kDefaultTestURL));  // Control the page.
+
+  SetOnline(false);
+  EXPECT_TRUE(RegisterOneShot("foo"));
+  EXPECT_TRUE(StoreRegistrationOneShot("foo"));
+
+  SetOnline(true);
+  EXPECT_TRUE(PopConsole("foo fired"));
+  EXPECT_FALSE(GetRegistrationOneShot("foo"));
+  EXPECT_TRUE(NotifyWhenDoneImmediateOneShot("ok - foo result: true"));
+}
+
+IN_PROC_BROWSER_TEST_F(BackgroundSyncBrowserTest,
+                       CallDoneAfterSyncUnregistered) {
+  EXPECT_TRUE(RegisterServiceWorker());
+  EXPECT_TRUE(LoadTestPage(kDefaultTestURL));  // Control the page.
+
+  SetOnline(false);
+  EXPECT_TRUE(RegisterOneShot("foo"));
+  EXPECT_TRUE(StoreRegistrationOneShot("foo"));
+  EXPECT_TRUE(UnregisterOneShot("foo"));
+  EXPECT_FALSE(GetRegistrationOneShot("foo"));
+  EXPECT_TRUE(NotifyWhenDoneImmediateOneShot("ok - foo result: false"));
+}
+
+IN_PROC_BROWSER_TEST_F(BackgroundSyncBrowserTest, CallDoneAfterSyncFails) {
+  EXPECT_TRUE(RegisterServiceWorker());
+  EXPECT_TRUE(LoadTestPage(kDefaultTestURL));  // Control the page.
+
+  SetOnline(true);
+  EXPECT_TRUE(RegisterOneShot("delay"));
+  EXPECT_FALSE(OneShotPending("delay"));
+  EXPECT_TRUE(StoreRegistrationOneShot("delay"));
+
+  EXPECT_TRUE(RejectDelayedOneShot());
+  EXPECT_TRUE(PopConsole("ok - delay rejected"));
+  EXPECT_TRUE(NotifyWhenDoneImmediateOneShot("ok - delay result: false"));
 }
 
 }  // namespace

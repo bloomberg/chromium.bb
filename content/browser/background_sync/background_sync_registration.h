@@ -5,6 +5,9 @@
 #ifndef CONTENT_BROWSER_BACKGROUND_SYNC_BACKGROUND_SYNC_REGISTRATION_H_
 #define CONTENT_BROWSER_BACKGROUND_SYNC_BACKGROUND_SYNC_REGISTRATION_H_
 
+#include <list>
+
+#include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/browser/background_sync/background_sync.pb.h"
@@ -18,13 +21,18 @@ namespace content {
 class CONTENT_EXPORT BackgroundSyncRegistration {
  public:
   using RegistrationId = int64_t;
+  using StateCallback = base::Callback<void(BackgroundSyncState)>;
+
   static const RegistrationId kInitialId;
 
-  BackgroundSyncRegistration() = default;
-  ~BackgroundSyncRegistration() = default;
+  BackgroundSyncRegistration();
+  ~BackgroundSyncRegistration();
 
   bool Equals(const BackgroundSyncRegistration& other) const;
   bool IsValid() const;
+  void AddDoneCallback(const StateCallback& callback);
+  void RunDoneCallbacks();
+  bool HasCompleted() const;
 
   const BackgroundSyncRegistrationOptions* options() const { return &options_; }
   BackgroundSyncRegistrationOptions* options() { return &options_; }
@@ -41,6 +49,8 @@ class CONTENT_EXPORT BackgroundSyncRegistration {
   BackgroundSyncRegistrationOptions options_;
   RegistrationId id_ = kInvalidRegistrationId;
   BackgroundSyncState sync_state_ = BACKGROUND_SYNC_STATE_PENDING;
+
+  std::list<StateCallback> notify_done_callbacks_;
 
   DISALLOW_COPY_AND_ASSIGN(BackgroundSyncRegistration);
 };

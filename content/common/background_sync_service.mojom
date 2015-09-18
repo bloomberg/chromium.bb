@@ -20,7 +20,10 @@ enum BackgroundSyncError {
 enum BackgroundSyncState {
   PENDING,
   FIRING,
-  FAILED
+  UNREGISTERED_WHILE_FIRING,
+  FAILED,
+  SUCCESS,
+  UNREGISTERED
  };
 
 interface BackgroundSyncService {
@@ -41,6 +44,7 @@ interface BackgroundSyncService {
   DuplicateRegistrationHandle(int32 handle_id) 
       => (BackgroundSyncError err, SyncRegistration? registration);  
   ReleaseRegistration(int32 handle_id);
+  NotifyWhenDone(int32 handle_id) => (BackgroundSyncError err, BackgroundSyncState final_status);
 };
 
 interface BackgroundSyncServiceClient {
