@@ -155,6 +155,8 @@ function updateHash() {
  */
 function navigateTo(id, opt_callback) {
   window.location.hash = id;
+
+  updateParentId(id);
   updateAllCommands();
 
   var metricsId = folderMetricsNameMap[id.replace(/^q=.*/, 'q=')] ||
