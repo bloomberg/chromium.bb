@@ -66,10 +66,12 @@ source_set("test_support") {
     "//base",
     "//net",
     "//remoting/base",
-    "//remoting/protocol",
-    "//remoting/codec",
     "//remoting/client",
+    "//remoting/codec",
+    "//remoting/protocol",
     "//remoting/signaling",
+    "//third_party/webrtc/modules/desktop_capture",
+    "//ui/gfx",
   ]
 
   deps = [

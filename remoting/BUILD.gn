@@ -20,6 +20,7 @@ group("remoting_all") {
   deps = [
     #"//remoting:remoting_browser_test_resources",
     "//remoting:remoting_unittests",
+    "//remoting/test:chromoting_test_driver",
 
     #"//remoting:remoting_webapp_unittests",
     #"//app_remoting_test.gyp:ar_sample_test_driver",
