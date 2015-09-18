@@ -89,6 +89,8 @@ class BookmarkTabHelper
   void DidStartNavigationToPendingEntry(
       const GURL& url,
       content::NavigationController::ReloadType reload_type) override;
+  void DidAttachInterstitialPage() override;
+  void DidDetachInterstitialPage() override;
 
   // Whether the current URL is starred.
   bool is_starred_;

@@ -204,4 +204,7 @@ IN_PROC_BROWSER_TEST_F(BookmarkBrowsertest,
   content::WaitForInterstitialAttach(web_contents);
   EXPECT_TRUE(web_contents->ShowingInterstitialPage());
   EXPECT_FALSE(bookmark_delegate.is_starred());
+
+  // The delegate is required to outlive the tab helper.
+  tab_helper->set_delegate(nullptr);
 }

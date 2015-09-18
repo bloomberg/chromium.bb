@@ -146,3 +146,14 @@ void BookmarkTabHelper::DidStartNavigationToPendingEntry(
     content::NavigationController::ReloadType /*reload_type*/) {
   UpdateStarredStateForCurrentURL();
 }
+
+void BookmarkTabHelper::DidAttachInterstitialPage() {
+  // Interstitials are not necessarily starred just because the page that
+  // created them is, so star state has to track interstitial attach/detach if
+  // necessary.
+  UpdateStarredStateForCurrentURL();
+}
+
+void BookmarkTabHelper::DidDetachInterstitialPage() {
+  UpdateStarredStateForCurrentURL();
+}
