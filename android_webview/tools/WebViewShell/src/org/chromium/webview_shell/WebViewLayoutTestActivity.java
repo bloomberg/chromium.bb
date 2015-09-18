@@ -51,6 +51,14 @@ public class WebViewLayoutTestActivity extends Activity {
             public boolean shouldOverrideUrlLoading(WebView webView, String url) {
                 return false;
             }
+
+            @Override
+            public void onReceivedError(WebView view, int errorCode, String description,
+                    String failingUrl) {
+                mConsoleLog.append("WebView error: " + description + ", " + failingUrl + "\n");
+                mConsoleLog.append(TEST_FINISHED_SENTINEL + "\n");
+                finishTest();
+            }
         });
 
         mWebView.setWebChromeClient(new WebChromeClient() {
