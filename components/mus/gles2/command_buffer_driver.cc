@@ -288,7 +288,7 @@ bool CommandBufferDriver::OnWaitSyncPoint(uint32_t sync_point) {
   gpu_state_->sync_point_manager()->AddSyncPointCallback(
       sync_point, base::Bind(&CommandBufferDriver::OnSyncPointRetired,
                              weak_factory_.GetWeakPtr()));
-  return scheduler_->IsScheduled();
+  return scheduler_->scheduled();
 }
 
 void CommandBufferDriver::OnSyncPointRetired() {

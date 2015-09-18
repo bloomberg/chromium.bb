@@ -65,13 +65,10 @@ class GPU_EXPORT GpuScheduler
   }
 
   // Sets whether commands should be processed by this scheduler. Setting to
-  // false unschedules. Setting to true reschedules. Whether or not the
-  // scheduler is currently scheduled is "reference counted". Every call with
-  // false must eventually be paired by a call with true.
-  void SetScheduled(bool is_scheduled);
+  // false unschedules. Setting to true reschedules.
+  void SetScheduled(bool scheduled);
 
-  // Returns whether the scheduler is currently able to process more commands.
-  bool IsScheduled();
+  bool scheduled() const { return scheduled_; }
 
   // Returns whether the scheduler needs to be polled again in the future to
   // process pending queries.
@@ -109,10 +106,6 @@ class GPU_EXPORT GpuScheduler
   }
 
  private:
-  // Artificially reschedule if the scheduler is still unscheduled after a
-  // timeout.
-  void RescheduleTimeOut();
-
   bool IsPreempted();
 
   // The GpuScheduler holds a weak reference to the CommandBuffer. The
@@ -133,12 +126,8 @@ class GPU_EXPORT GpuScheduler
   // This should be an argument to the constructor.
   scoped_ptr<CommandParser> parser_;
 
-  // Greater than zero if this is waiting to be rescheduled before continuing.
-  int unscheduled_count_;
-
-  // The number of times this scheduler has been artificially rescheduled on
-  // account of a timeout.
-  int rescheduled_count_;
+  // Whether the scheduler is currently able to process more commands.
+  bool scheduled_;
 
   SchedulingChangedCallback scheduling_changed_callback_;
   base::Closure descheduled_callback_;
@@ -147,10 +136,6 @@ class GPU_EXPORT GpuScheduler
   // If non-NULL and |preemption_flag_->IsSet()|, exit PutChanged early.
   scoped_refptr<PreemptionFlag> preemption_flag_;
   bool was_preempted_;
-
-  // A factory for outstanding rescheduling tasks that is invalidated whenever
-  // the scheduler is rescheduled.
-  base::WeakPtrFactory<GpuScheduler> reschedule_task_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuScheduler);
 };

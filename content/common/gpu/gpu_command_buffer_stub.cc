@@ -203,7 +203,7 @@ GpuCommandBufferStub::GpuCommandBufferStub(
       last_flush_count_(0),
       last_memory_allocation_valid_(false),
       watchdog_(watchdog),
-      sync_point_wait_count_(0),
+      waiting_for_sync_point_(false),
       previous_processed_num_(0),
       active_url_(active_url),
       total_gpu_memory_(0) {
@@ -333,7 +333,7 @@ bool GpuCommandBufferStub::Send(IPC::Message* message) {
 }
 
 bool GpuCommandBufferStub::IsScheduled() {
-  return (!scheduler_.get() || scheduler_->IsScheduled());
+  return (!scheduler_.get() || scheduler_->scheduled());
 }
 
 void GpuCommandBufferStub::PollWork() {
@@ -425,8 +425,7 @@ void GpuCommandBufferStub::ScheduleDelayedWork(base::TimeDelta delay) {
   // for more work at the rate idle work is performed. This also ensures
   // that idle work is done as efficiently as possible without any
   // unnecessary delays.
-  if (scheduler_.get() &&
-      scheduler_->IsScheduled() &&
+  if (scheduler_.get() && scheduler_->scheduled() &&
       scheduler_->HasMoreIdleWork()) {
     delay = base::TimeDelta();
   }
@@ -650,9 +649,8 @@ void GpuCommandBufferStub::OnInitialize(
                  base::Unretained(scheduler_.get())));
   command_buffer_->SetParseErrorCallback(
       base::Bind(&GpuCommandBufferStub::OnParseError, base::Unretained(this)));
-  scheduler_->SetSchedulingChangedCallback(
-      base::Bind(&GpuChannel::StubSchedulingChanged,
-                 base::Unretained(channel_)));
+  scheduler_->SetSchedulingChangedCallback(base::Bind(
+      &GpuCommandBufferStub::OnSchedulingChanged, base::Unretained(this)));
 
   if (watchdog_) {
     scheduler_->SetCommandProcessedCallback(
@@ -746,6 +744,12 @@ void GpuCommandBufferStub::OnParseError() {
       handle_.is_null(), state.context_lost_reason, active_url_));
 
   CheckContextLost();
+}
+
+void GpuCommandBufferStub::OnSchedulingChanged(bool scheduled) {
+  TRACE_EVENT1("gpu", "GpuCommandBufferStub::OnSchedulingChanged", "scheduled",
+               scheduled);
+  channel_->OnStubSchedulingChanged(this, scheduled);
 }
 
 void GpuCommandBufferStub::OnWaitForTokenInRange(int32 start,
@@ -930,6 +934,8 @@ void GpuCommandBufferStub::OnRetireSyncPoint(uint32 sync_point) {
 }
 
 bool GpuCommandBufferStub::OnWaitSyncPoint(uint32 sync_point) {
+  DCHECK(!waiting_for_sync_point_);
+  DCHECK(scheduler_->scheduled());
   if (!sync_point)
     return true;
   GpuChannelManager* manager = channel_->gpu_channel_manager();
@@ -938,27 +944,26 @@ bool GpuCommandBufferStub::OnWaitSyncPoint(uint32 sync_point) {
     return true;
   }
 
-  if (sync_point_wait_count_ == 0) {
-    TRACE_EVENT_ASYNC_BEGIN1("gpu", "WaitSyncPoint", this,
-                             "GpuCommandBufferStub", this);
-  }
+  TRACE_EVENT_ASYNC_BEGIN1("gpu", "WaitSyncPoint", this, "GpuCommandBufferStub",
+                           this);
+
   scheduler_->SetScheduled(false);
-  ++sync_point_wait_count_;
+  waiting_for_sync_point_ = true;
   manager->sync_point_manager()->AddSyncPointCallback(
       sync_point,
       base::Bind(&RunOnThread, task_runner_,
                  base::Bind(&GpuCommandBufferStub::OnWaitSyncPointCompleted,
                             this->AsWeakPtr(), sync_point)));
-  return scheduler_->IsScheduled();
+  return !waiting_for_sync_point_;
 }
 
 void GpuCommandBufferStub::OnWaitSyncPointCompleted(uint32 sync_point) {
+  DCHECK(waiting_for_sync_point_);
+  DCHECK(!scheduler_->scheduled());
+  TRACE_EVENT_ASYNC_END1("gpu", "WaitSyncPoint", this, "GpuCommandBufferStub",
+                         this);
   PullTextureUpdates(sync_point);
-  --sync_point_wait_count_;
-  if (sync_point_wait_count_ == 0) {
-    TRACE_EVENT_ASYNC_END1("gpu", "WaitSyncPoint", this,
-                           "GpuCommandBufferStub", this);
-  }
+  waiting_for_sync_point_ = false;
   scheduler_->SetScheduled(true);
 }
 

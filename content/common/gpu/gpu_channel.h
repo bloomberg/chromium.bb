@@ -108,16 +108,10 @@ class CONTENT_EXPORT GpuChannel
   void OnAddSubscription(unsigned int target) override;
   void OnRemoveSubscription(unsigned int target) override;
 
-  // This is called when a command buffer transitions from the unscheduled
-  // state to the scheduled state, which potentially means the channel
-  // transitions from the unscheduled to the scheduled state. When this occurs
-  // deferred IPC messaged are handled.
-  void OnScheduled();
-
   // This is called when a command buffer transitions between scheduled and
   // descheduled states. When any stub is descheduled, we stop preempting
   // other channels.
-  void StubSchedulingChanged(bool scheduled);
+  void OnStubSchedulingChanged(GpuCommandBufferStub* stub, bool scheduled);
 
   CreateCommandBufferResult CreateViewCommandBuffer(
       const gfx::GLSurfaceHandle& window,

@@ -683,7 +683,8 @@ void GpuChannel::OnRemoveSubscription(unsigned int target) {
       new GpuHostMsg_RemoveSubscription(client_id_, target));
 }
 
-void GpuChannel::StubSchedulingChanged(bool scheduled) {
+void GpuChannel::OnStubSchedulingChanged(GpuCommandBufferStub* stub,
+                                         bool scheduled) {
   bool a_stub_was_descheduled = num_stubs_descheduled_ > 0;
   if (scheduled) {
     num_stubs_descheduled_--;
@@ -1009,7 +1010,7 @@ void GpuChannel::OnDestroyCommandBuffer(int32 route_id) {
   // stub, we need to make sure to reschedule the GpuChannel here.
   if (!stub->IsScheduled()) {
     // This stub won't get a chance to reschedule, so update the count now.
-    StubSchedulingChanged(true);
+    OnStubSchedulingChanged(stub.get(), true);
   }
 }
 

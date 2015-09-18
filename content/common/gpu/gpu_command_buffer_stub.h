@@ -216,11 +216,13 @@ class GpuCommandBufferStub
                      gfx::BufferFormat format,
                      uint32 internalformat);
   void OnDestroyImage(int32 id);
+  void OnCreateStreamTexture(uint32 texture_id,
+                             int32 stream_id,
+                             bool* succeeded);
 
   void OnCommandProcessed();
   void OnParseError();
-  void OnCreateStreamTexture(
-      uint32 texture_id, int32 stream_id, bool* succeeded);
+  void OnSchedulingChanged(bool scheduled);
 
   void ReportState();
 
@@ -283,7 +285,7 @@ class GpuCommandBufferStub
 
   // A queue of sync points associated with this stub.
   std::deque<uint32> sync_points_;
-  int sync_point_wait_count_;
+  bool waiting_for_sync_point_;
 
   base::TimeTicks process_delayed_work_time_;
   uint32_t previous_processed_num_;
