@@ -40,6 +40,7 @@ class TestFrameTreeServer : public web_view::FrameTreeServer {
                                web_view::HTMLMessageEventPtr event) override {}
   void LoadingStateChanged(bool loading, double progress) override {}
   void TitleChanged(const mojo::String& title) override {}
+  void DidCommitProvisionalLoad() override {}
   void SetClientProperty(const mojo::String& name,
                          mojo::Array<uint8_t> value) override {}
   void OnCreatedFrame(

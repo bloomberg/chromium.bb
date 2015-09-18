@@ -78,6 +78,10 @@ void FrameTree::TitleChanged(const mojo::String& title) {
   delegate_->TitleChanged(title);
 }
 
+void FrameTree::DidCommitProvisionalLoad(Frame* source) {
+  delegate_->DidCommitProvisionalLoad(source);
+}
+
 void FrameTree::ClientPropertyChanged(const Frame* source,
                                       const mojo::String& name,
                                       const mojo::Array<uint8_t>& value) {

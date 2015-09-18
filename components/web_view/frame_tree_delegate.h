@@ -64,6 +64,9 @@ class FrameTreeDelegate {
   // Invoked when a navigation in |frame| has been initiated.
   virtual void DidStartNavigation(Frame* frame) = 0;
 
+  // Invoked when blink has started displaying the frame.
+  virtual void DidCommitProvisionalLoad(Frame* frame) = 0;
+
   // Notification of various frame state changes. Generally only useful for
   // tests.
   virtual void DidCreateFrame(Frame* frame);

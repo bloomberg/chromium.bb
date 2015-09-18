@@ -14,6 +14,7 @@
 #include "components/web_view/frame_connection.h"
 #include "components/web_view/frame_devtools_agent.h"
 #include "components/web_view/frame_tree.h"
+#include "components/web_view/navigation_entry.h"
 #include "components/web_view/pending_web_view_load.h"
 #include "components/web_view/url_request_cloneable.h"
 #include "mojo/application/public/cpp/application_impl.h"
@@ -42,9 +43,11 @@ WebViewImpl::WebViewImpl(mojo::ApplicationImpl* app,
       client_(client.Pass()),
       binding_(this, request.Pass()),
       root_(nullptr),
-      content_(nullptr) {
+      content_(nullptr),
+      navigation_controller_(this) {
   if (EnableRemoteDebugging())
     devtools_agent_.reset(new FrameDevToolsAgent(app_, this));
+  OnDidNavigate();
 }
 
 WebViewImpl::~WebViewImpl() {
@@ -78,34 +81,11 @@ void WebViewImpl::OnLoad() {
       frame_tree_client, frame_connection.Pass(), client_properties));
 }
 
-void WebViewImpl::LoadRequestImpl(mojo::URLRequestPtr request) {
-  client_->BackForwardChanged(
-      back_list_.empty() ? ButtonState::BUTTON_STATE_DISABLED
-                         : ButtonState::BUTTON_STATE_ENABLED,
-      forward_list_.empty() ? ButtonState::BUTTON_STATE_DISABLED
-                            : ButtonState::BUTTON_STATE_ENABLED);
-
-  current_page_request_.reset(new URLRequestCloneable(request.Pass()));
-  pending_load_.reset(new PendingWebViewLoad(this));
-  pending_load_->Init(current_page_request_->Clone());
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // WebViewImpl, WebView implementation:
 
 void WebViewImpl::LoadRequest(mojo::URLRequestPtr request) {
-  // Clear the forward list when performing a top level load request.
-  forward_list_.clear();
-
-  if (current_page_request_) {
-    // TODO(erg): This doesn't deal with redirect chains. If you navigate to a
-    // site, and it 300s, we put both the url which caused the 300 and the
-    // target url here, when we should not add the redirect url to the back
-    // list.
-    back_list_.push_back(current_page_request_.Pass());
-  }
-
-  LoadRequestImpl(request.Pass());
+  navigation_controller_.LoadURL(request.Pass());
 }
 
 void WebViewImpl::GetViewTreeClient(
@@ -114,28 +94,15 @@ void WebViewImpl::GetViewTreeClient(
 }
 
 void WebViewImpl::GoBack() {
-  if (back_list_.empty())
+  if (!navigation_controller_.CanGoBack())
     return;
-
-  // Take the current page request and put it in the forward list.
-  forward_list_.push_back(current_page_request_.Pass());
-
-  mojo::URLRequestPtr new_request = back_list_.back()->Clone();
-  back_list_.resize(back_list_.size() - 1);
-
-  LoadRequestImpl(new_request.Pass());
+  navigation_controller_.GoBack();
 }
 
 void WebViewImpl::GoForward() {
-  if (forward_list_.empty())
+  if (!navigation_controller_.CanGoForward())
     return;
-
-  back_list_.push_back(current_page_request_.Pass());
-
-  mojo::URLRequestPtr new_request = forward_list_.back()->Clone();
-  forward_list_.resize(forward_list_.size() - 1);
-
-  LoadRequestImpl(new_request.Pass());
+  navigation_controller_.GoForward();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -220,6 +187,10 @@ void WebViewImpl::CanNavigateFrame(Frame* target,
 
 void WebViewImpl::DidStartNavigation(Frame* frame) {}
 
+void WebViewImpl::DidCommitProvisionalLoad(Frame* frame) {
+  navigation_controller_.FrameDidCommitProvisionalLoad(frame);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // WebViewImpl, FrameDevToolsAgentDelegate implementation:
 
@@ -227,6 +198,23 @@ void WebViewImpl::HandlePageNavigateRequest(const GURL& url) {
   mojo::URLRequestPtr request(mojo::URLRequest::New());
   request->url = url.spec();
   client_->TopLevelNavigate(request.Pass());
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// WebViewImpl, NavigationControllerDelegate implementation:
+
+void WebViewImpl::OnNavigate(mojo::URLRequestPtr request) {
+  pending_load_.reset(new PendingWebViewLoad(this));
+  pending_load_->Init(request.Pass());
+}
+
+void WebViewImpl::OnDidNavigate() {
+  client_->BackForwardChanged(navigation_controller_.CanGoBack()
+                                  ? ButtonState::BUTTON_STATE_ENABLED
+                                  : ButtonState::BUTTON_STATE_DISABLED,
+                              navigation_controller_.CanGoForward()
+                                  ? ButtonState::BUTTON_STATE_ENABLED
+                                  : ButtonState::BUTTON_STATE_DISABLED);
 }
 
 }  // namespace web_view

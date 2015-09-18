@@ -7,11 +7,12 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/scoped_vector.h"
 #include "components/mus/public/cpp/view_observer.h"
 #include "components/mus/public/cpp/view_tree_delegate.h"
 #include "components/web_view/frame_devtools_agent_delegate.h"
 #include "components/web_view/frame_tree_delegate.h"
+#include "components/web_view/navigation_controller.h"
+#include "components/web_view/navigation_controller_delegate.h"
 #include "components/web_view/public/interfaces/web_view.mojom.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/strong_binding.h"
 
@@ -32,7 +33,8 @@ class WebViewImpl : public mojom::WebView,
                     public mus::ViewTreeDelegate,
                     public mus::ViewObserver,
                     public FrameTreeDelegate,
-                    public FrameDevToolsAgentDelegate {
+                    public FrameDevToolsAgentDelegate,
+                    public NavigationControllerDelegate {
  public:
   WebViewImpl(mojo::ApplicationImpl* app,
               mojom::WebViewClientPtr client,
@@ -44,11 +46,6 @@ class WebViewImpl : public mojom::WebView,
 
   // See description above |pending_load_| for details.
   void OnLoad();
-
-  // Actually performs the load and tells our delegate the state of the
-  // forward/back list is. This is the shared implementation between
-  // LoadRequest() and Go{Back,Forward}().
-  void LoadRequestImpl(mojo::URLRequestPtr request);
 
   // Overridden from WebView:
   void LoadRequest(mojo::URLRequestPtr request) override;
@@ -81,9 +78,14 @@ class WebViewImpl : public mojom::WebView,
                         mojo::URLRequestPtr request,
                         const CanNavigateFrameCallback& callback) override;
   void DidStartNavigation(Frame* frame) override;
+  void DidCommitProvisionalLoad(Frame* frame) override;
 
   // Overridden from FrameDevToolsAgent::Delegate:
   void HandlePageNavigateRequest(const GURL& url) override;
+
+  // Overridden from NavigationControllerDelegate:
+  void OnNavigate(mojo::URLRequestPtr request) override;
+  void OnDidNavigate() override;
 
   mojo::ApplicationImpl* app_;
   mojom::WebViewClientPtr client_;
@@ -99,14 +101,7 @@ class WebViewImpl : public mojom::WebView,
 
   scoped_ptr<FrameDevToolsAgent> devtools_agent_;
 
-  // It would be nice if mojo::URLRequest were cloneable; however, its use of
-  // ScopedDataPipieConsumerHandle means that it isn't.
-  ScopedVector<URLRequestCloneable> back_list_;
-  ScopedVector<URLRequestCloneable> forward_list_;
-
-  // The request which is either currently loading or completed. Added to
-  // |back_list_| or |forward_list_| on further navigation.
-  scoped_ptr<URLRequestCloneable> current_page_request_;
+  NavigationController navigation_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(WebViewImpl);
 };

@@ -426,6 +426,10 @@ void Frame::TitleChanged(const mojo::String& title) {
     tree_->TitleChanged(title);
 }
 
+void Frame::DidCommitProvisionalLoad() {
+  tree_->DidCommitProvisionalLoad(this);
+}
+
 void Frame::SetClientProperty(const mojo::String& name,
                               mojo::Array<uint8_t> value) {
   auto iter = client_properties_.find(name);

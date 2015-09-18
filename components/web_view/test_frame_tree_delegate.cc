@@ -79,6 +79,8 @@ void TestFrameTreeDelegate::CanNavigateFrame(
 
 void TestFrameTreeDelegate::DidStartNavigation(Frame* frame) {}
 
+void TestFrameTreeDelegate::DidCommitProvisionalLoad(Frame* frame) {}
+
 void TestFrameTreeDelegate::DidCreateFrame(Frame* frame) {
   if (waiting_for_create_frame_) {
     most_recent_frame_ = frame;

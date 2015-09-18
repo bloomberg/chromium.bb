@@ -438,6 +438,14 @@ void HTMLFrame::didCommitProvisionalLoad(
   state_.origin = FrameOrigin(frame);
   server_->SetClientProperty(kPropertyFrameOrigin,
                              FrameOriginToClientProperty(frame));
+
+  // TODO(erg): We need to pass way more information from here through to the
+  // other side. See FrameHostMsg_DidCommitProvisionalLoad_Params. It is a grab
+  // bag of everything and it looks like a combination of
+  // NavigatorImpl::DidNavigate and
+  // NavigationControllerImpl::RendererDidNavigate use everything passed
+  // through.
+  server_->DidCommitProvisionalLoad();
 }
 
 void HTMLFrame::didReceiveTitle(blink::WebLocalFrame* frame,

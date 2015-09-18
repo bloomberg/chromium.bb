@@ -78,6 +78,9 @@ interface FrameTreeServer {
   // Called when the title becomes available or changes.
   TitleChanged(string? title);
 
+  // Called when the response body has been received.
+  DidCommitProvisionalLoad();
+
   // Sets the value of the specified client property, notifying clients if the
   // value changed. If |value| is null the property is removed.
   SetClientProperty(string name, array<uint8>? value);
