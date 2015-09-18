@@ -1143,6 +1143,7 @@ enum HistogramValue {
   BLUETOOTHPRIVATE_PAIR,
   EASYUNLOCKPRIVATE_FINDSETUPCONNECTION,
   RESOURCESPRIVATE_GETSTRINGS,
+  USB_GETCONFIGURATIONS,
   // Last entry: Add new entries above, then run:
   // python tools/metrics/histograms/update_extension_histograms.py
   ENUM_BOUNDARY

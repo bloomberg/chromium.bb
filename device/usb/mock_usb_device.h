@@ -31,6 +31,12 @@ class MockUsbDevice : public UsbDevice {
   MockUsbDevice(uint16 vendor_id,
                 uint16 product_id,
                 const UsbConfigDescriptor& configuration);
+  MockUsbDevice(uint16 vendor_id,
+                uint16 product_id,
+                const std::string& manufacturer_string,
+                const std::string& product_string,
+                const std::string& serial_number,
+                const std::vector<UsbConfigDescriptor>& configurations);
 
   MOCK_METHOD1(Open, void(const OpenCallback&));
   MOCK_METHOD1(Close, bool(scoped_refptr<UsbDeviceHandle>));

@@ -98,8 +98,15 @@ class UsbApiTest : public ShellApiTest {
   void SetUpOnMainThread() override {
     ShellApiTest::SetUpOnMainThread();
 
-    mock_device_ =
-        new MockUsbDevice(0, 0, "Test Manufacturer", "Test Device", "ABC123");
+    std::vector<UsbConfigDescriptor> configs;
+    UsbConfigDescriptor config;
+    config.configuration_value = 1;
+    configs.push_back(config);
+    config.configuration_value = 2;
+    configs.push_back(config);
+
+    mock_device_ = new MockUsbDevice(0, 0, "Test Manufacturer", "Test Device",
+                                     "ABC123", configs);
     mock_device_handle_ = new MockUsbDeviceHandle(mock_device_.get());
     EXPECT_CALL(*mock_device_.get(), Open(_))
         .WillRepeatedly(InvokeCallback<0>(mock_device_handle_));
@@ -116,6 +123,8 @@ class UsbApiTest : public ShellApiTest {
 }  // namespace
 
 IN_PROC_BROWSER_TEST_F(UsbApiTest, DeviceHandling) {
+  EXPECT_CALL(*mock_device_.get(), GetActiveConfiguration())
+      .WillOnce(Return(&mock_device_->configurations()[0]));
   EXPECT_CALL(*mock_device_handle_.get(), Close()).Times(2);
   ASSERT_TRUE(RunAppTest("api_test/usb/device_handling"));
 }

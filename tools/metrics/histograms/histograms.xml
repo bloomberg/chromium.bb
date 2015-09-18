@@ -59326,6 +59326,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1082" label="BLUETOOTHPRIVATE_PAIR"/>
   <int value="1083" label="EASYUNLOCKPRIVATE_FINDSETUPCONNECTION"/>
   <int value="1084" label="RESOURCESPRIVATE_GETSTRINGS"/>
+  <int value="1085" label="USB_GETCONFIGURATIONS"/>
 </enum>
 
 <enum name="ExtensionInstallCause" type="int">

@@ -90,6 +90,8 @@ namespace usb {
   };
 
   [noinline_doc] dictionary ConfigDescriptor {
+    // Is this the active configuration?
+    boolean active;
     // The configuration number.
     long configurationValue;
     // Description of the configuration.
@@ -221,6 +223,7 @@ namespace usb {
 
   callback VoidCallback = void ();
   callback GetDevicesCallback = void (Device[] devices);
+  callback GetConfigurationsCallback = void (ConfigDescriptor[] configs);
   callback RequestAccessCallback = void (boolean success);
   callback OpenDeviceCallback = void (ConnectionHandle handle);
   callback FindDevicesCallback = void (ConnectionHandle[] handles);
@@ -245,6 +248,11 @@ namespace usb {
     // |callback|: Invoked with a list of chosen $(ref:Device)s.
     static void getUserSelectedDevices(DevicePromptOptions options,
                                        GetDevicesCallback callback);
+
+    // Returns the full set of device configuration descriptors.
+    // |device|: The $(ref:Device) to fetch descriptors from.
+    static void getConfigurations(Device device,
+                                  GetConfigurationsCallback callback);
 
     // Requests access from the permission broker to a device claimed by
     // Chrome OS if the given interface on the device is not claimed.

@@ -29,6 +29,7 @@ namespace ClaimInterface = usb::ClaimInterface;
 namespace CloseDevice = usb::CloseDevice;
 namespace ControlTransfer = usb::ControlTransfer;
 namespace FindDevices = usb::FindDevices;
+namespace GetConfigurations = usb::GetConfigurations;
 namespace GetDevices = usb::GetDevices;
 namespace GetUserSelectedDevices = usb::GetUserSelectedDevices;
 namespace InterruptTransfer = usb::InterruptTransfer;
@@ -644,6 +645,51 @@ void UsbGetUserSelectedDevicesFunction::OnDevicesChosen(
   Respond(OneArgument(result.Pass()));
 }
 
+UsbGetConfigurationsFunction::UsbGetConfigurationsFunction() {}
+
+UsbGetConfigurationsFunction::~UsbGetConfigurationsFunction() {}
+
+ExtensionFunction::ResponseAction UsbGetConfigurationsFunction::Run() {
+  scoped_ptr<extensions::api::usb::GetConfigurations::Params> parameters =
+      GetConfigurations::Params::Create(*args_);
+  EXTENSION_FUNCTION_VALIDATE(parameters.get());
+
+  UsbService* service = device::DeviceClient::Get()->GetUsbService();
+  if (!service) {
+    return RespondNow(Error(kErrorInitService));
+  }
+
+  std::string guid;
+  if (!UsbGuidMap::Get(browser_context())
+           ->GetGuidFromId(parameters->device.device, &guid)) {
+    return RespondNow(Error(kErrorNoDevice));
+  }
+
+  scoped_refptr<UsbDevice> device = service->GetDevice(guid);
+  if (!device.get()) {
+    return RespondNow(Error(kErrorNoDevice));
+  }
+
+  if (!HasDevicePermission(device)) {
+    // This function must act as if there is no such device. Otherwise it can be
+    // used to fingerprint unauthorized devices.
+    return RespondNow(Error(kErrorNoDevice));
+  }
+
+  scoped_ptr<base::ListValue> configs(new base::ListValue());
+  const UsbConfigDescriptor* active_config = device->GetActiveConfiguration();
+  for (const UsbConfigDescriptor& config : device->configurations()) {
+    ConfigDescriptor api_config;
+    ConvertConfigDescriptor(config, &api_config);
+    if (active_config &&
+        config.configuration_value == active_config->configuration_value) {
+      api_config.active = true;
+    }
+    configs->Append(api_config.ToValue());
+  }
+  return RespondNow(OneArgument(configs.Pass()));
+}
+
 UsbRequestAccessFunction::UsbRequestAccessFunction() {
 }
 
@@ -764,6 +810,7 @@ ExtensionFunction::ResponseAction UsbGetConfigurationFunction::Run() {
   if (config_descriptor) {
     ConfigDescriptor config;
     ConvertConfigDescriptor(*config_descriptor, &config);
+    config.active = true;
     return RespondNow(OneArgument(config.ToValue()));
   } else {
     return RespondNow(Error(kErrorNotConfigured));

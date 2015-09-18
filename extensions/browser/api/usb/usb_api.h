@@ -126,6 +126,21 @@ class UsbGetUserSelectedDevicesFunction : public UIThreadExtensionFunction {
   DISALLOW_COPY_AND_ASSIGN(UsbGetUserSelectedDevicesFunction);
 };
 
+class UsbGetConfigurationsFunction : public UsbPermissionCheckingFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("usb.getConfigurations", USB_GETCONFIGURATIONS);
+
+  UsbGetConfigurationsFunction();
+
+ private:
+  ~UsbGetConfigurationsFunction() override;
+
+  // ExtensionFunction:
+  ResponseAction Run() override;
+
+  DISALLOW_COPY_AND_ASSIGN(UsbGetConfigurationsFunction);
+};
+
 class UsbRequestAccessFunction : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("usb.requestAccess", USB_REQUESTACCESS)

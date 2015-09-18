@@ -22,6 +22,22 @@ function getDevices() {
   });
 }
 
+function getConfigurations() {
+  usb.getDevices({}, function(devices) {
+    chrome.test.assertNoLastError();
+    chrome.test.assertEq(1, devices.length);
+    chrome.usb.getConfigurations(devices[0], function(configs) {
+      chrome.test.assertNoLastError();
+      chrome.test.assertEq(2, configs.length);
+      chrome.test.assertTrue(configs[0].active);
+      chrome.test.assertEq(1, configs[0].configurationValue);
+      chrome.test.assertFalse(configs[1].active);
+      chrome.test.assertEq(2, configs[1].configurationValue);
+      chrome.test.succeed();
+    });
+  });
+}
+
 function explicitCloseDevice() {
   usb.findDevices({
       vendorId: 0,
@@ -33,5 +49,5 @@ function explicitCloseDevice() {
 }
 
 chrome.test.runTests([
-    getDevices, explicitCloseDevice
+    getDevices, getConfigurations, explicitCloseDevice
 ]);

@@ -45,6 +45,21 @@ MockUsbDevice::MockUsbDevice(uint16 vendor_id,
   configurations_.push_back(configuration);
 }
 
+MockUsbDevice::MockUsbDevice(
+    uint16 vendor_id,
+    uint16 product_id,
+    const std::string& manufacturer_string,
+    const std::string& product_string,
+    const std::string& serial_number,
+    const std::vector<UsbConfigDescriptor>& configurations)
+    : MockUsbDevice(vendor_id,
+                    product_id,
+                    manufacturer_string,
+                    product_string,
+                    serial_number) {
+  configurations_ = configurations;
+}
+
 MockUsbDevice::~MockUsbDevice() {
 }
 
