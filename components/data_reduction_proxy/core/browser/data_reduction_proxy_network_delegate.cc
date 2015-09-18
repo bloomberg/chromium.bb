@@ -227,18 +227,6 @@ void DataReductionProxyNetworkDelegate::OnCompletedInternal(
         GetAdjustedOriginalContentLength(request_type,
                                          original_content_length,
                                          received_content_length);
-    int64 data_used = request->GetTotalReceivedBytes();
-    // TODO(kundaji): Investigate why |compressed_size| can sometimes be
-    // less than |received_content_length|.
-    if (data_used < received_content_length)
-      data_used = received_content_length;
-
-    int64 original_size = data_used;
-    if (request_type == VIA_DATA_REDUCTION_PROXY) {
-      original_size = request->response_info().headers->raw_headers().size() +
-                      adjusted_original_content_length;
-    }
-
     std::string mime_type;
     if (request->status().status() == net::URLRequestStatus::SUCCESS)
       request->GetMimeType(&mime_type);
@@ -249,8 +237,9 @@ void DataReductionProxyNetworkDelegate::OnCompletedInternal(
       data_usage_host = request->url().HostNoBrackets();
     }
 
-    AccumulateDataUsage(data_used, original_size, request_type, data_usage_host,
-                        mime_type);
+    AccumulateDataUsage(received_content_length,
+                        adjusted_original_content_length, request_type,
+                        data_usage_host, mime_type);
 
     DCHECK(data_reduction_proxy_config_);
 
