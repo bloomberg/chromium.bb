@@ -5,9 +5,6 @@
 #include "net/quic/quic_http_stream.h"
 
 #include "base/callback_helpers.h"
-#ifdef TEMP_INSTRUMENTATION_468529
-#include "base/debug/alias.h"
-#endif
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
 #include "net/base/io_buffer.h"
@@ -49,16 +46,6 @@ QuicHttpStream::QuicHttpStream(
 }
 
 QuicHttpStream::~QuicHttpStream() {
-#ifdef TEMP_INSTRUMENTATION_468529
-  liveness_ = DEAD;
-  stack_trace_ = base::debug::StackTrace();
-
-  // Probably not necessary, but just in case compiler tries to optimize out the
-  // writes to liveness_ and stack_trace_.
-  base::debug::Alias(&liveness_);
-  base::debug::Alias(&stack_trace_);
-#endif
-
   Close(false);
   if (session_)
     session_->RemoveObserver(this);
@@ -380,8 +367,6 @@ void QuicHttpStream::DoCallback(int rv) {
 
 int QuicHttpStream::DoLoop(int rv) {
   do {
-    CrashIfInvalid();
-
     State state = next_state_;
     next_state_ = STATE_NONE;
     switch (state) {
@@ -562,24 +547,6 @@ void QuicHttpStream::ResetStream() {
   // read.
   if (request_body_stream_)
     request_body_stream_->Reset();
-}
-
-void QuicHttpStream::CrashIfInvalid() const {
-#ifdef TEMP_INSTRUMENTATION_468529
-  Liveness liveness = liveness_;
-
-  if (liveness == ALIVE)
-    return;
-
-  // Copy relevant variables onto the stack to guarantee they will be available
-  // in minidumps, and then crash.
-  base::debug::StackTrace stack_trace = stack_trace_;
-
-  base::debug::Alias(&liveness);
-  base::debug::Alias(&stack_trace);
-
-  CHECK_EQ(ALIVE, liveness);
-#endif
 }
 
 }  // namespace net
