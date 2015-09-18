@@ -15,7 +15,7 @@ make it easy to switch logging on or off for individual groups.
 Usage:
 
 ```java
-private static final String TAG = "cr.YourModuleTag";
+private static final String TAG = "YourModuleTag";
 ...
 Log.i(TAG, "Logged INFO message.");
 Log.d(TAG, "Some DEBUG info: %s", data);
@@ -24,12 +24,13 @@ Log.d(TAG, "Some DEBUG info: %s", data);
 Output:
 
 ```
-I/cr.YourModuleTag: ( 999): Logged INFO message
-D/cr.YourModuleTag: ( 999): [MyClass.java:42] Some DEBUG info: data.toString
+I/cr_YourModuleTag: ( 999): Logged INFO message
+D/cr_YourModuleTag: ( 999): [MyClass.java:42] Some DEBUG info: data.toString
 ```
 
 Here, **TAG** will be a feature or package name, "MediaRemote" or "NFC" for
-example. In most cases, the class name is not needed.
+example. In most cases, the class name is not needed. It will be prepended by
+the "cr_" prefix to make obvious which logs are coming from Chrome.
 
 ### Verbose and Debug logs have special handling ###
 
@@ -50,10 +51,10 @@ Log.i(TAG, "An error happened: %s", e)
 ```
 
 ```
-I/cr.YourModuleTag: ( 999): An error happened: This is the exception's message
-I/cr.YourModuleTag: ( 999): java.lang.Exception: This is the exception's message
-I/cr.YourModuleTag: ( 999):     at foo.bar.MyClass.test(MyClass.java:42)
-I/cr.YourModuleTag: ( 999):     ...
+I/cr_YourModuleTag: ( 999): An error happened: This is the exception's message
+I/cr_YourModuleTag: ( 999): java.lang.Exception: This is the exception's message
+I/cr_YourModuleTag: ( 999):     at foo.bar.MyClass.test(MyClass.java:42)
+I/cr_YourModuleTag: ( 999):     ...
 ```
 
 Having the exception as last parameter doesn't prevent it from being used for
@@ -187,16 +188,16 @@ Logcat allows filtering by specifying tags and the associated level:
 
 ```shell
 adb logcat [TAG_EXPR:LEVEL]...
-adb logcat cr.YourModuleTag:D *:S
+adb logcat cr_YourModuleTag:D *:S
 ```
 
 This shows only logs having a level higher or equal to DEBUG for
-`cr.YourModuleTag`, and SILENT (nothing is logged at this level or higher, so it
+`cr_YourModuleTag`, and SILENT (nothing is logged at this level or higher, so it
 silences the tags) for everything else. You can persist a filter by setting an
 environment variable:
 
 ```shell
-export ANDROID_LOG_TAGS="cr.YourModuleTag:D *:S"
+export ANDROID_LOG_TAGS="cr_YourModuleTag:D *:S"
 ```
 
 For more, see the [related page on developer.android.com]

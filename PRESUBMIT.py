@@ -1353,8 +1353,7 @@ def _CheckAndroidToastUsage(input_api, output_api):
 def _CheckAndroidCrLogUsage(input_api, output_api):
   """Checks that new logs using org.chromium.base.Log:
     - Are using 'TAG' as variable name for the tags (warn)
-    - Are using the suggested name format for the tags: "cr.<PackageTag>" (warn)
-    - Are using a tag that is shorter than 23 characters (error)
+    - Are using a tag that is shorter than 20 characters (error)
   """
   cr_log_import_pattern = input_api.re.compile(
       r'^import org\.chromium\.base\.Log;$', input_api.re.MULTILINE)
@@ -1365,9 +1364,8 @@ def _CheckAndroidCrLogUsage(input_api, output_api):
   # Extract the tag from lines like `Log.d(TAG, "*");` or `Log.d("TAG", "*");`
   log_call_pattern = input_api.re.compile(r'^\s*Log\.\w\((?P<tag>\"?\w+\"?)\,')
   log_decl_pattern = input_api.re.compile(
-      r'^\s*private static final String TAG = "(?P<name>(.*)")',
+      r'^\s*private static final String TAG = "(?P<name>(.*))";',
       input_api.re.MULTILINE)
-  log_name_pattern = input_api.re.compile(r'^cr[.\w]*')
 
   REF_MSG = ('See docs/android_logging.md '
             'or contact dgn@chromium.org for more info.')
@@ -1376,6 +1374,7 @@ def _CheckAndroidCrLogUsage(input_api, output_api):
   tag_decl_errors = []
   tag_length_errors = []
   tag_errors = []
+  tag_with_dot_errors = []
   util_log_errors = []
 
   for f in input_api.AffectedSourceFiles(sources):
@@ -1407,23 +1406,26 @@ def _CheckAndroidCrLogUsage(input_api, output_api):
     if has_modified_logs:
       # Make sure the tag is using the "cr" prefix and is not too long
       match = log_decl_pattern.search(file_content)
-      tag_name = match.group('name') if match else ''
-      if not log_name_pattern.search(tag_name ):
+      tag_name = match.group('name') if match else None
+      if not tag_name:
         tag_decl_errors.append(f.LocalPath())
-      if len(tag_name) > 23:
+      elif len(tag_name) > 20:
         tag_length_errors.append(f.LocalPath())
+      elif '.' in tag_name:
+        tag_with_dot_errors.append(f.LocalPath())
 
   results = []
   if tag_decl_errors:
     results.append(output_api.PresubmitPromptWarning(
         'Please define your tags using the suggested format: .\n'
-        '"private static final String TAG = "cr.<package tag>".\n' + REF_MSG,
+        '"private static final String TAG = "<package tag>".\n'
+        'They will be prepended with "cr_" automatically.\n' + REF_MSG,
         tag_decl_errors))
 
   if tag_length_errors:
     results.append(output_api.PresubmitError(
         'The tag length is restricted by the system to be at most '
-        '23 characters.\n' + REF_MSG,
+        '20 characters.\n' + REF_MSG,
         tag_length_errors))
 
   if tag_errors:
@@ -1435,6 +1437,11 @@ def _CheckAndroidCrLogUsage(input_api, output_api):
     results.append(output_api.PresubmitPromptWarning(
         'Please use org.chromium.base.Log for new logs.\n' + REF_MSG,
         util_log_errors))
+
+  if tag_with_dot_errors:
+    results.append(output_api.PresubmitPromptWarning(
+        'Dot in log tags cause them to be elided in crash reports.\n' + REF_MSG,
+        tag_with_dot_errors))
 
   return results
 
