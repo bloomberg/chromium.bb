@@ -309,9 +309,6 @@
                   'net/base/host_cache|' \
                   'net/dns/'
     },
-    'docs': {
-      'filepath': 'docs',
-    },
     'download': {
       'filepath': 'chrome/browser/download/|'\
                   'content/browser/download/',
@@ -992,7 +989,6 @@
                  'devtools-reviews@chromium.org'],
     'disk_cache': ['gavinp+disk@chromium.org'],
     'dns': ['mmenke@chromium.org'],
-    'docs': ['andybons@chromium.org', 'nodir@chromium.org'],
     'download_database': ['benjhayden+dwatch@chromium.org'],
     'download': ['benjhayden+dwatch@chromium.org', 'asanka@chromium.org'],
     'downloads_ext': ['benjhayden+dwatch@chromium.org'],
