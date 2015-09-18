@@ -5,6 +5,15 @@
 /** @fileoverview Suite of tests for cr-settings-prefs. */
 cr.define('cr_settings_prefs', function() {
   /**
+   * Creates a deep copy of the object.
+   * @param {!Object} obj
+   * @return {!Object}
+   */
+  function deepCopy(obj) {
+    return JSON.parse(JSON.stringify(obj));
+  }
+
+  /**
    * Mock of chrome.settingsPrivate API.
    * @constructor
    * @extends {chrome.settingsPrivate}
@@ -40,7 +49,7 @@ cr.define('cr_settings_prefs', function() {
       // Send a copy of prefs to keep our internal state private.
       var prefs = [];
       for (var key in this.prefs)
-        prefs.push(Object.assign({}, this.prefs[key]));
+        prefs.push(deepCopy(this.prefs[key]));
 
       callback(prefs);
     },
@@ -58,20 +67,19 @@ cr.define('cr_settings_prefs', function() {
       }
       assertNotEquals(true, this.disallowSetPref_);
 
-      // TODO(michaelpg): support list and dict prefs.
-      var changed = pref.value != value;
-      pref.value = value;
+      var changed = JSON.stringify(pref.value) != JSON.stringify(value);
+      pref.value = deepCopy(value);
       callback(true);
 
       // Like chrome.settingsPrivate, send a notification when prefs change.
       if (changed)
-        this.sendPrefChanges([{key: key, value: value}]);
+        this.sendPrefChanges([{key: key, value: deepCopy(value)}]);
     },
 
     getPref: function(key, callback) {
       var pref = this.prefs[key];
       assertNotEquals(undefined, pref);
-      callback(Object.assign({}, pref));
+      callback(deepCopy(pref));
     },
 
     // Functions used by tests.
@@ -100,7 +108,7 @@ cr.define('cr_settings_prefs', function() {
         var pref = this.prefs[change.key];
         assertNotEquals(undefined, pref);
         pref.value = change.value;
-        prefs.push(Object.assign({}, pref));
+        prefs.push(deepCopy(pref));
       }
       this.listener_(prefs);
     },
@@ -221,25 +229,28 @@ cr.define('cr_settings_prefs', function() {
 
       test('forwards pref changes to API', function() {
         // Test that cr-settings-prefs uses the setPref API.
-        for (var testCase of prefsTestCases)
-          prefs.set('prefs.' + testCase.key + '.value', testCase.values[1]);
-
+        for (var testCase of prefsTestCases) {
+          prefs.set('prefs.' + testCase.key + '.value',
+                    deepCopy(testCase.values[1]));
+        }
         // Check that setPref has been called for the right values.
         expectMockApiPrefsSet(1);
 
         // Test that when setPref fails, the pref is reverted locally.
         for (var testCase of prefsTestCases) {
           mockApi.failNextSetPref();
-          prefs.set('prefs.' + testCase.key + '.value', testCase.values[2]);
+          prefs.set('prefs.' + testCase.key + '.value',
+                    deepCopy(testCase.values[2]));
         }
 
         expectPrefsSet(1);
 
         // Test that setPref is not called when the pref doesn't change.
         mockApi.disallowSetPref();
-        for (var testCase of prefsTestCases)
-          prefs.set('prefs.' + testCase.key + '.value', testCase.values[1]);
-
+        for (var testCase of prefsTestCases) {
+          prefs.set('prefs.' + testCase.key + '.value',
+                    deepCopy(testCase.values[1]));
+        }
         expectMockApiPrefsSet(1);
         mockApi.allowSetPref();
       });

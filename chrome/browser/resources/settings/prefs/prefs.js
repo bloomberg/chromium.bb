@@ -20,63 +20,108 @@
  * @element cr-settings-prefs
  */
 
-/**
- * Pref state object. Copies values of PrefObjects received from
- * settingsPrivate to determine when pref values have changed.
- * This prototype works for primitive types, but more complex types should
- * override these functions.
- * @constructor
- * @param {!chrome.settingsPrivate.PrefObject} prefObj
- */
-function PrefWrapper(prefObj) {
-  this.key_ = prefObj.key;
-  this.value_ = prefObj.value;
-}
-
-/**
- * Checks if other's value equals this.value_. Both prefs wrapped by the
- * PrefWrappers should have the same keys.
- * @param {PrefWrapper} other
- * @return {boolean}
- */
-PrefWrapper.prototype.equals = function(other) {
-  assert(this.key_ == other.key_);
-  return this.value_ == other.value_;
-};
-
-/**
- * @constructor
- * @extends {PrefWrapper}
- * @param {!chrome.settingsPrivate.PrefObject} prefObj
- */
-function ListPrefWrapper(prefObj) {
-  // Copy the array so changes to prefObj aren't reflected in this.value_.
-  // TODO(michaelpg): Do a deep copy to support nested lists and objects.
-  this.value_ = prefObj.value.slice();
-}
-
-  ListPrefWrapper.prototype = {
-  __proto__: PrefWrapper.prototype,
-
-  /**
-   * Tests whether two ListPrefWrapper values contain the same list items.
-   * @override
-   */
-  equals: function(other) {
-    'use strict';
-    assert(this.key_ == other.key_);
-    if (this.value_.length != other.value_.length)
-      return false;
-    for (let i = 0; i < this.value_.length; i++) {
-      if (this.value_[i] != other.value_[i])
-        return false;
-    }
-    return true;
-  },
-};
-
 (function() {
   'use strict';
+
+  /**
+   * Checks whether two values are recursively equal. Only compares serializable
+   * data (primitives, serializable arrays and serializable objects).
+   * @param {*} val1 Value to compare.
+   * @param {*} val2 Value to compare with val1.
+   * @return {boolean} True if the values are recursively equal.
+   */
+  function deepEqual(val1, val2) {
+    if (val1 === val2)
+      return true;
+
+    if (Array.isArray(val1) || Array.isArray(val2)) {
+      if (!Array.isArray(val1) || !Array.isArray(val2))
+        return false;
+      return arraysEqual(/** @type {!Array} */(val1),
+                         /** @type {!Array} */(val2));
+    }
+
+    if (val1 instanceof Object && val2 instanceof Object)
+      return objectsEqual(val1, val2);
+
+    return false;
+  }
+
+  /**
+   * @param {!Array} arr1
+   * @param {!Array} arr2
+   * @return {boolean} True if the arrays are recursively equal.
+   */
+  function arraysEqual(arr1, arr2) {
+    if (arr1.length != arr2.length)
+      return false;
+
+    for (var i = 0; i < arr1.length; i++) {
+      if (!deepEqual(arr1[i], arr2[i]))
+        return false;
+    }
+
+    return true;
+  }
+
+  /**
+   * @param {!Object} obj1
+   * @param {!Object} obj2
+   * @return {boolean} True if the objects are recursively equal.
+   */
+  function objectsEqual(obj1, obj2) {
+    var keys1 = Object.keys(obj1);
+    var keys2 = Object.keys(obj2);
+    if (keys1.length != keys2.length)
+      return false;
+
+    for (var i = 0; i < keys1.length; i++) {
+      var key = keys1[i];
+      if (!deepEqual(obj1[key], obj2[key]))
+        return false;
+    }
+
+    return true;
+  }
+
+  /**
+   * Returns a recursive copy of the value.
+   * @param {*} val Value to copy. Should be a primitive or only contain
+   *     serializable data (primitives, serializable arrays and
+   *     serializable objects).
+   * @return {*} A deep copy of the value.
+   */
+  function deepCopy(val) {
+    if (!(val instanceof Object))
+      return val;
+    return Array.isArray(val) ? deepCopyArray(/** @type {!Array} */(val)) :
+        deepCopyObject(val);
+  };
+
+  /**
+   * @param {!Array} arr
+   * @return {!Array} Deep copy of the array.
+   */
+  function deepCopyArray(arr) {
+    var copy = [];
+    for (var i = 0; i < arr.length; i++)
+      copy.push(deepCopy(arr[i]));
+    return copy;
+  }
+
+  /**
+   * @param {!Object} obj
+   * @return {!Object} Deep copy of the object.
+   */
+  function deepCopyObject(obj) {
+    var copy = {};
+    var keys = Object.keys(obj);
+    for (var i = 0; i < keys.length; i++) {
+      var key = keys[i];
+      copy[key] = deepCopy(obj[key]);
+    }
+    return copy;
+  }
 
   Polymer({
     is: 'cr-settings-prefs',
@@ -91,12 +136,12 @@ function ListPrefWrapper(prefObj) {
       },
 
       /**
-       * Map of pref keys to PrefWrapper objects representing the state of the
-       * Chrome pref store.
-       * @type {Object<PrefWrapper>}
+       * Map of pref keys to values representing the state of the Chrome
+       * pref store as of the last update from the API.
+       * @type {Object<*>}
        * @private
        */
-      prefWrappers_: {
+      lastPrefValues_: {
         type: Object,
         value: function() { return {}; },
       },
@@ -132,9 +177,7 @@ function ListPrefWrapper(prefObj) {
         return;
 
       var key = this.getPrefKeyFromPath_(change.path);
-      var prefWrapper = this.prefWrappers_[key];
-      if (!prefWrapper)
-        return;
+      var prefStoreValue = this.lastPrefValues_[key];
 
       var prefObj = /** @type {chrome.settingsPrivate.PrefObject} */(
           this.get(key, this.prefs));
@@ -142,7 +185,7 @@ function ListPrefWrapper(prefObj) {
       // If settingsPrivate already has this value, do nothing. (Otherwise,
       // a change event from settingsPrivate could make us call
       // settingsPrivate.setPref and potentially trigger an IPC loop.)
-      if (prefWrapper.equals(this.createPrefWrapper_(prefObj)))
+      if (deepEqual(prefStoreValue, prefObj.value))
         return;
 
       this.settingsApi_.setPref(
@@ -201,10 +244,9 @@ function ListPrefWrapper(prefObj) {
       // Use the existing prefs object or create it.
       var prefs = this.prefs || {};
       newPrefs.forEach(function(newPrefObj) {
-        // Use the PrefObject from settingsPrivate to create a PrefWrapper in
-        // prefWrappers_ at the pref's key.
-        this.prefWrappers_[newPrefObj.key] =
-            this.createPrefWrapper_(newPrefObj);
+        // Use the PrefObject from settingsPrivate to create a copy in
+        // lastPrefValues_ at the pref's key.
+        this.lastPrefValues_[newPrefObj.key] = deepCopy(newPrefObj.value);
 
         // Add the pref to |prefs|.
         cr.exportPath(newPrefObj.key, newPrefObj, prefs);
@@ -232,24 +274,11 @@ function ListPrefWrapper(prefObj) {
 
       for (let i = 1; i <= parts.length; i++) {
         let key = parts.slice(0, i).join('.');
-        // The prefWrappers_ keys match the pref keys.
-        if (this.prefWrappers_[key] != undefined)
+        // The lastPrefValues_ keys match the pref keys.
+        if (this.lastPrefValues_.hasOwnProperty(key))
           return key;
       }
       return '';
-    },
-
-    /**
-     * Creates a PrefWrapper object from a chrome.settingsPrivate pref.
-     * @param {!chrome.settingsPrivate.PrefObject} prefObj
-     *     PrefObject received from chrome.settingsPrivate.
-     * @return {PrefWrapper} An object containing a copy of the PrefObject's
-     *     value.
-     * @private
-     */
-    createPrefWrapper_: function(prefObj) {
-      return prefObj.type == chrome.settingsPrivate.PrefType.LIST ?
-          new ListPrefWrapper(prefObj) : new PrefWrapper(prefObj);
     },
   });
 })();

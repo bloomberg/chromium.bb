@@ -35,4 +35,29 @@ var prefsTestCases = [{
   key: 'profile.name',
   type: chrome.settingsPrivate.PrefType.STRING,
   values: ['Puppy', 'Puppy', 'Horsey'],
+}, {
+  key: 'content.sites',
+  type: chrome.settingsPrivate.PrefType.LIST,
+  // Arrays of dictionaries.
+  values: [
+    [{javascript: ['chromium.org', 'example.com'],
+      cookies: ['example.net'],
+      mic: ['example.com'],
+      flash: []},
+     {some: 4,
+      other: 8,
+      dictionary: 16}],
+    [{javascript: ['example.com', 'example.net'],
+      cookies: ['example.net', 'example.com'],
+      mic: ['example.com']},
+     {some: 4,
+      other: 8,
+      dictionary: 16}],
+    [{javascript: ['chromium.org', 'example.com'],
+      cookies: ['chromium.org', 'example.net', 'example.com'],
+      flash: ['localhost'],
+      mic: ['example.com']},
+     {some: 2.2,
+      dictionary: 4.4}]
+  ],
 }];
