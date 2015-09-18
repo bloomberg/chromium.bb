@@ -42,6 +42,11 @@ void ScrollbarLayerImplBase::PushPropertiesTo(LayerImpl* layer) {
   PushScrollClipPropertiesTo(layer);
 }
 
+void ScrollbarLayerImplBase::DidBecomeActive() {
+  LayerImpl::DidBecomeActive();
+  UpdatePropertyTreeOpacity();
+}
+
 void ScrollbarLayerImplBase::PushScrollClipPropertiesTo(LayerImpl* layer) {
   DCHECK(layer->ToScrollbarLayer());
   layer->ToScrollbarLayer()->SetScrollLayerAndClipLayerByIds(ScrollLayerId(),

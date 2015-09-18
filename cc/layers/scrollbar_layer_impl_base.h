@@ -47,6 +47,7 @@ class CC_EXPORT ScrollbarLayerImplBase : public LayerImpl {
   bool CanScrollOrientation() const;
 
   void PushPropertiesTo(LayerImpl* layer) override;
+  void DidBecomeActive() override;
   ScrollbarLayerImplBase* ToScrollbarLayer() override;
   void PushScrollClipPropertiesTo(LayerImpl* layer);
 

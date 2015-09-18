@@ -148,7 +148,7 @@ void ScrollbarAnimationControllerThinning::ApplyOpacityAndThumbThicknessScale(
               ? AdjustScale(opacity, scrollbar->opacity(), opacity_change_)
               : 0;
 
-      scrollbar->SetOpacity(effectiveOpacity);
+      scrollbar->OnOpacityAnimated(effectiveOpacity);
       scrollbar->SetThumbThicknessScaleFactor(AdjustScale(
           thumb_thickness_scale, scrollbar->thumb_thickness_scale_factor(),
           thickness_change_));
