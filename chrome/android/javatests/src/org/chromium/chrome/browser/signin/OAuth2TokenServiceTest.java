@@ -18,6 +18,7 @@ import org.chromium.sync.test.util.MockAccountManager;
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 
+/** Tests for OAuth2TokenService. */
 public class OAuth2TokenServiceTest extends InstrumentationTestCase {
 
     private AdvancedMockContext mContext;
@@ -33,8 +34,11 @@ public class OAuth2TokenServiceTest extends InstrumentationTestCase {
         AccountManagerHelper.overrideAccountManagerHelperForTests(mContext, mAccountManager);
     }
 
-    @SmallTest
-    @Feature({"Sync"})
+    /*  http://crbug.com/533417
+     *  @SmallTest
+     *  @Feature({"Sync"})
+     */
+    @DisabledTest
     public void testGetAccountsNoAccountsRegistered() {
         String[] accounts = OAuth2TokenService.getAccounts(mContext);
         assertEquals("There should be no accounts registered", 0, accounts.length);
