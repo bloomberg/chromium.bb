@@ -46610,6 +46610,64 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Breakdown of sync's nigori node keystore migration state.</summary>
 </histogram>
 
+<histogram name="Sync.PageRevisitNavigationMatchAge" units="minutes">
+  <owner>skym@chromium.org</owner>
+  <summary>
+    Difference in time between finding the match and the creation of the most
+    recent foreign modification of the parent tab. The parent tab's modification
+    will not always be indicative of when the matching navigation occurred.
+  </summary>
+</histogram>
+
+<histogram name="Sync.PageRevisitNavigationMatchOffset">
+  <owner>skym@chromium.org</owner>
+  <summary>
+    The number of navigations forward or backwards the matching noncurrent
+    navigation is from the current navigation in its tab. Negative values
+    represent backwards and positive values represent forwards. Zero should not
+    occur since it would cease to be noncurrent.
+  </summary>
+</histogram>
+
+<histogram name="Sync.PageRevisitNavigationMatchTransition"
+    units="PageVisitTransitionType">
+  <owner>skym@chromium.org</owner>
+  <summary>Transition type that matched a synced navigation.</summary>
+</histogram>
+
+<histogram name="Sync.PageRevisitNavigationMissTransition"
+    units="PageVisitTransitionType">
+  <owner>skym@chromium.org</owner>
+  <summary>Transition type that didn't match a synced navigation.</summary>
+</histogram>
+
+<histogram name="Sync.PageRevisitSessionDuration" units="milliseconds">
+  <owner>skym@chromium.org</owner>
+  <summary>
+    The client side execution time to check for revisits with session data.
+  </summary>
+</histogram>
+
+<histogram name="Sync.PageRevisitTabMatchAge" units="minutes">
+  <owner>skym@chromium.org</owner>
+  <summary>
+    Difference in time between finding the match and the creation of the most
+    recent foreign modification of the given tab.
+  </summary>
+</histogram>
+
+<histogram name="Sync.PageRevisitTabMatchTransition"
+    units="PageVisitTransitionType">
+  <owner>skym@chromium.org</owner>
+  <summary>Transition type that matched a synced tab.</summary>
+</histogram>
+
+<histogram name="Sync.PageRevisitTabMissTransition"
+    units="PageVisitTransitionType">
+  <owner>skym@chromium.org</owner>
+  <summary>Transition type that didn't match a synced tab.</summary>
+</histogram>
+
 <histogram name="Sync.PartiallySyncedTypes">
   <owner>zea@chromium.org</owner>
   <summary>
@@ -67976,6 +68034,18 @@ To add a new entry, add it with any value and run test to compute valid value.
 <enum name="PageUsed" type="int">
   <int value="0" label="Discarded"/>
   <int value="1" label="Used"/>
+</enum>
+
+<enum name="PageVisitTransitionType" type="int">
+  <int value="0" label="Page"/>
+  <int value="1" label="Omnibox URL"/>
+  <int value="2" label="Omnibox default search"/>
+  <int value="3" label="Omnibox template search"/>
+  <int value="4" label="Bookmark"/>
+  <int value="5" label="Copy and paste"/>
+  <int value="6" label="Forward or backward"/>
+  <int value="7" label="Restore"/>
+  <int value="8" label="Unknown"/>
 </enum>
 
 <enum name="ParsedCookieStatus" type="int">
