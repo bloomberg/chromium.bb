@@ -8666,6 +8666,38 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="OfflinePages.ReloadButtonClicked">
+  <owner>jianli@chromium.org</owner>
+  <description>
+    Recorded when &quot;Reload&quot; button is clicked in the snackbar that is
+    shown when offline page is opened and there is network.
+  </description>
+</action>
+
+<action name="OfflinePages.ReloadButtonNotClicked">
+  <owner>jianli@chromium.org</owner>
+  <description>
+    Recorded when &quot;Reload&quot; button is not clicked in the snackbar that
+    is shown when offline page is opened and there is network.
+  </description>
+</action>
+
+<action name="OfflinePages.SaveButtonClicked">
+  <owner>jianli@chromium.org</owner>
+  <description>
+    Recorded when &quot;Save&quot; button is clicked in the snackbar that is
+    shown when bookmarked page without saved copy is opened.
+  </description>
+</action>
+
+<action name="OfflinePages.SaveButtonNotClicked">
+  <owner>jianli@chromium.org</owner>
+  <description>
+    Recorded when &quot;Save&quot; button is not clicked in the snackbar that is
+    shown when bookmarked page without saved copy is opened.
+  </description>
+</action>
+
 <action name="Omnibox.ServerSuggestDelete.Failure">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>

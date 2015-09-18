@@ -9,6 +9,7 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Environment;
 
+import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeBrowserProviderClient;
@@ -23,6 +24,12 @@ import org.chromium.ui.base.PageTransition;
  * A class holding static util functions for offline pages.
  */
 public class OfflinePageUtils {
+    private enum SnackbarButtonType {
+        NONE,
+        RELOAD,
+        SAVE,
+    };
+
     private static final long STORAGE_ALMOST_FULL_THRESHOLD_BYTES = 10L * (1 << 20); // 10M
 
     /**
@@ -98,8 +105,9 @@ public class OfflinePageUtils {
 
         int snackbarTextId = -1;
         int actionTextId = -1;
-        boolean reload = false;
+        SnackbarButtonType buttonType = SnackbarButtonType.NONE;
         if (save) {
+            buttonType = SnackbarButtonType.SAVE;
             snackbarTextId = R.string.offline_pages_save_page_offline;
             actionTextId = R.string.save;
         } else {
@@ -107,7 +115,7 @@ public class OfflinePageUtils {
 
             // Offer to reload the original page if there is network connection.
             if (isConnected(context)) {
-                reload = true;
+                buttonType = SnackbarButtonType.RELOAD;
                 actionTextId = R.string.reload;
             }
         }
@@ -119,24 +127,48 @@ public class OfflinePageUtils {
                 if (tab == null) {
                     return;
                 }
-                boolean reload = (boolean) actionData;
-                if (reload) {
-                    tab.loadUrl(new LoadUrlParams(
-                            tab.getOfflinePageOriginalUrl(), PageTransition.RELOAD));
-                } else {
-                    activity.saveBookmarkOffline(tab);
+                SnackbarButtonType buttonType = (SnackbarButtonType) actionData;
+                switch (buttonType) {
+                    case RELOAD:
+                        RecordUserAction.record("OfflinePages.ReloadButtonClicked");
+                        tab.loadUrl(new LoadUrlParams(
+                                tab.getOfflinePageOriginalUrl(), PageTransition.RELOAD));
+                        break;
+                    case SAVE:
+                        RecordUserAction.record("OfflinePages.SaveButtonClicked");
+                        activity.saveBookmarkOffline(tab);
+                        break;
+                    default:
+                        assert false;
+                        break;
                 }
             }
 
             @Override
-            public void onDismissNoAction(Object actionData) {}
+            public void onDismissNoAction(Object actionData) {
+                SnackbarButtonType buttonType = (SnackbarButtonType) actionData;
+                switch (buttonType) {
+                    case NONE:
+                        // No recording is needed.
+                        break;
+                    case RELOAD:
+                        RecordUserAction.record("OfflinePages.ReloadButtonNotClicked");
+                        break;
+                    case SAVE:
+                        RecordUserAction.record("OfflinePages.SaveButtonNotClicked");
+                        break;
+                    default:
+                        assert false;
+                        break;
+                }
+            }
 
             @Override
             public void onDismissForEachType(boolean isTimeout) {}
         };
         Snackbar snackbar = Snackbar.make(context.getString(snackbarTextId), snackbarController);
         if (actionTextId != -1) {
-            snackbar.setAction(context.getString(actionTextId), reload);
+            snackbar.setAction(context.getString(actionTextId), buttonType);
         }
         activity.getSnackbarManager().showSnackbar(snackbar);
     }
