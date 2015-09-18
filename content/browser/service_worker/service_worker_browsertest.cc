@@ -977,8 +977,14 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBrowserTest, Reload) {
   run_loop.Run();
 }
 
+// Flaky on Win/Mac: http://crbug.com/533631
+#if defined(OS_WIN) || defined(OS_MACOSX)
+#define MAYBE_ResponseFromHTTPSServiceWorkerIsMarkedAsSecure DISABLED_ResponseFromHTTPSServiceWorkerIsMarkedAsSecure
+#else
+#define MAYBE_ResponseFromHTTPSServiceWorkerIsMarkedAsSecure ResponseFromHTTPSServiceWorkerIsMarkedAsSecure
+#endif
 IN_PROC_BROWSER_TEST_F(ServiceWorkerBrowserTest,
-                       ResponseFromHTTPSServiceWorkerIsMarkedAsSecure) {
+                       MAYBE_ResponseFromHTTPSServiceWorkerIsMarkedAsSecure) {
   const char kPageUrl[] = "files/service_worker/fetch_event_blob.html";
   const char kWorkerUrl[] = "files/service_worker/fetch_event_blob.js";
   net::SpawnedTestServer https_server(
