@@ -191,6 +191,11 @@ bool WebNode::isTextNode() const
     return m_private->isTextNode();
 }
 
+bool WebNode::isCommentNode() const
+{
+    return m_private->nodeType() == Node::COMMENT_NODE;
+}
+
 bool WebNode::isFocusable() const
 {
     if (!m_private->isElementNode())

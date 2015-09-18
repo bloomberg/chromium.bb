@@ -103,6 +103,7 @@ public:
     BLINK_EXPORT bool hasChildNodes() const;
     BLINK_EXPORT WebNodeList childNodes();
     BLINK_EXPORT bool isLink() const;
+    BLINK_EXPORT bool isCommentNode() const;
     BLINK_EXPORT bool isTextNode() const;
     BLINK_EXPORT bool isFocusable() const;
     BLINK_EXPORT bool isContentEditable() const;
