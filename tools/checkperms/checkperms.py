@@ -180,7 +180,6 @@ IGNORED_PATHS = (
   'third_party/closure_linter/',
   'third_party/devscripts/licensecheck.pl.vanilla',
   'third_party/hyphen/',
-  'third_party/jemalloc/',
   'third_party/lcov-1.9/contrib/galaxy/conglomerate_functions.pl',
   'third_party/lcov-1.9/contrib/galaxy/gen_makefile.sh',
   'third_party/lcov/contrib/galaxy/conglomerate_functions.pl',

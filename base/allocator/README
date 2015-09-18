@@ -7,7 +7,6 @@ Currently we can, at runtime, switch between:
    the default windows allocator
    the windows low-fragmentation-heap
    tcmalloc
-   jemalloc (the heap used most notably within Mozilla Firefox)
 
 The mechanism for hooking LIBCMT in windows is rather tricky.  The core
 problem is that by default, the windows library does not declare malloc and
@@ -23,11 +22,10 @@ Source code
 This directory contains just the allocator (i.e. shim) layer that switches
 between the different underlying memory allocation implementations.
 
-The tcmalloc and jemalloc libraries originate outside of Chromium
-and exist in ../../third_party/tcmalloc and ../../third_party/jemalloc
-(currently, the actual locations are defined in the allocator.gyp file).
-The third party sources use a vendor-branch SCM pattern to track
-Chromium-specific changes independently from upstream changes.
+The tcmalloc library originates outside of Chromium and exists in
+../../third_party/tcmalloc (currently, the actual location is defined in the
+allocator.gyp file). The third party sources use a vendor-branch SCM pattern to
+track Chromium-specific changes independently from upstream changes.
 
 The general intent is to push local changes upstream so that over
 time we no longer need any forked files.
@@ -54,6 +52,5 @@ Usage
 You can use the different allocators by setting the environment variable
 CHROME_ALLOCATOR to:
    "tcmalloc"  - TC Malloc (default)
-   "jemalloc"  - JE Malloc
    "winheap"   - Windows default heap
    "winlfh"    - Windows Low-Fragmentation heap
