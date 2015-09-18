@@ -7,6 +7,8 @@
 #if defined(OS_WIN)
 #include <io.h>
 #include <windows.h>
+#include "base/files/file_path.h"
+#include "base/files/file_util.h"
 typedef HANDLE FileHandle;
 typedef HANDLE MutexHandle;
 // Windows warns on using write().  It prefers _write().
@@ -176,6 +178,9 @@ PathString GetDefaultLogFile() {
 #endif
 }
 
+// We don't need locks on Windows for atomically appending to files. The OS
+// provides this functionality.
+#if !defined(OS_WIN)
 // This class acts as a wrapper for locking the logging files.
 // LoggingLock::Init() should be called from the main thread before any logging
 // is done. Then whenever logging, be sure to have a local LoggingLock
@@ -196,48 +201,17 @@ class LoggingLock {
     if (initialized)
       return;
     lock_log_file = lock_log;
-    if (lock_log_file == LOCK_LOG_FILE) {
-#if defined(OS_WIN)
-      if (!log_mutex) {
-        std::wstring safe_name;
-        if (new_log_file)
-          safe_name = new_log_file;
-        else
-          safe_name = GetDefaultLogFile();
-        // \ is not a legal character in mutex names so we replace \ with /
-        std::replace(safe_name.begin(), safe_name.end(), '\\', '/');
-        std::wstring t(L"Global\\");
-        t.append(safe_name);
-        log_mutex = ::CreateMutex(nullptr, FALSE, t.c_str());
 
-        if (log_mutex == nullptr) {
-#if DEBUG
-          // Keep the error code for debugging
-          int error = GetLastError();  // NOLINT
-          base::debug::BreakDebugger();
-#endif
-          // Return nicely without putting initialized to true.
-          return;
-        }
-      }
-#endif
-    } else {
+    if (lock_log_file != LOCK_LOG_FILE)
       log_lock = new base::internal::LockImpl();
-    }
+
     initialized = true;
   }
 
  private:
   static void LockLogging() {
     if (lock_log_file == LOCK_LOG_FILE) {
-#if defined(OS_WIN)
-      ::WaitForSingleObject(log_mutex, INFINITE);
-      // WaitForSingleObject could have returned WAIT_ABANDONED. We don't
-      // abort the process here. UI tests might be crashy sometimes,
-      // and aborting the test binary only makes the problem worse.
-      // We also don't use LOG macros because that might lead to an infinite
-      // loop. For more info see http://crbug.com/18028.
-#elif defined(OS_POSIX)
+#if defined(OS_POSIX)
       pthread_mutex_lock(&log_mutex);
 #endif
     } else {
@@ -248,9 +222,7 @@ class LoggingLock {
 
   static void UnlockLogging() {
     if (lock_log_file == LOCK_LOG_FILE) {
-#if defined(OS_WIN)
-      ReleaseMutex(log_mutex);
-#elif defined(OS_POSIX)
+#if defined(OS_POSIX)
       pthread_mutex_unlock(&log_mutex);
 #endif
     } else {
@@ -265,9 +237,7 @@ class LoggingLock {
 
   // When we don't use a lock, we are using a global mutex. We need to do this
   // because LockFileEx is not thread safe.
-#if defined(OS_WIN)
-  static MutexHandle log_mutex;
-#elif defined(OS_POSIX)
+#if defined(OS_POSIX)
   static pthread_mutex_t log_mutex;
 #endif
 
@@ -282,12 +252,11 @@ base::internal::LockImpl* LoggingLock::log_lock = nullptr;
 // static
 LogLockingState LoggingLock::lock_log_file = LOCK_LOG_FILE;
 
-#if defined(OS_WIN)
-// static
-MutexHandle LoggingLock::log_mutex = nullptr;
-#elif defined(OS_POSIX)
+#if defined(OS_POSIX)
 pthread_mutex_t LoggingLock::log_mutex = PTHREAD_MUTEX_INITIALIZER;
 #endif
+
+#endif  // OS_WIN
 
 // Called by logging functions to ensure that |g_log_file| is initialized
 // and can be used for writing. Returns false if the file could not be
@@ -304,12 +273,23 @@ bool InitializeLogFileHandle() {
 
   if ((g_logging_destination & LOG_TO_FILE) != 0) {
 #if defined(OS_WIN)
-    g_log_file = CreateFile(g_log_file_name->c_str(), GENERIC_WRITE,
+    // The FILE_APPEND_DATA access mask ensures that the file is atomically
+    // appended to across accesses from multiple threads.
+    // https://msdn.microsoft.com/en-us/library/windows/desktop/aa364399(v=vs.85).aspx
+    // https://msdn.microsoft.com/en-us/library/windows/desktop/aa363858(v=vs.85).aspx
+    g_log_file = CreateFile(g_log_file_name->c_str(), FILE_APPEND_DATA,
                             FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr,
                             OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr);
     if (g_log_file == INVALID_HANDLE_VALUE || g_log_file == nullptr) {
       // try the current directory
-      g_log_file = CreateFile(L".\\debug.log", GENERIC_WRITE,
+      base::FilePath file_path;
+      if (!base::GetCurrentDirectory(&file_path))
+        return false;
+
+      *g_log_file_name = file_path.Append(
+          FILE_PATH_LITERAL("debug.log")).value();
+
+      g_log_file = CreateFile(g_log_file_name->c_str(), FILE_APPEND_DATA,
                               FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr,
                               OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr);
       if (g_log_file == INVALID_HANDLE_VALUE || g_log_file == nullptr) {
@@ -317,7 +297,6 @@ bool InitializeLogFileHandle() {
         return false;
       }
     }
-    SetFilePointer(g_log_file, 0, 0, FILE_END);
 #elif defined(OS_POSIX)
     g_log_file = fopen(g_log_file_name->c_str(), "a");
     if (g_log_file == nullptr)
@@ -380,8 +359,10 @@ bool BaseInitLoggingImpl(const LoggingSettings& settings) {
   if ((g_logging_destination & LOG_TO_FILE) == 0)
     return true;
 
+#if !defined(OS_WIN)
   LoggingLock::Init(settings.lock_log, settings.log_file);
   LoggingLock logging_lock;
+#endif
 
   // Calling InitLogging twice or after some log call has already opened the
   // default log file will re-initialize to the new options.
@@ -603,11 +584,12 @@ LogMessage::~LogMessage() {
     // to do this at the same time, there will be a race condition to create
     // the lock. This is why InitLogging should be called from the main
     // thread at the beginning of execution.
+#if !defined(OS_WIN)
     LoggingLock::Init(LOCK_LOG_FILE, nullptr);
     LoggingLock logging_lock;
+#endif
     if (InitializeLogFileHandle()) {
 #if defined(OS_WIN)
-      SetFilePointer(g_log_file, 0, 0, SEEK_END);
       DWORD num_written;
       WriteFile(g_log_file,
                 static_cast<const void*>(str_newline.c_str()),
@@ -767,7 +749,9 @@ ErrnoLogMessage::~ErrnoLogMessage() {
 #endif  // defined(OS_WIN)
 
 void CloseLogFile() {
+#if !defined(OS_WIN)
   LoggingLock logging_lock;
+#endif
   CloseLogFileUnlocked();
 }
 
@@ -806,6 +790,10 @@ void RawLog(int level, const char* message) {
 #undef write
 
 #if defined(OS_WIN)
+bool IsLoggingToFileEnabled() {
+  return g_logging_destination & LOG_TO_FILE;
+}
+
 std::wstring GetLogFileFullPath() {
   if (g_log_file_name)
     return *g_log_file_name;

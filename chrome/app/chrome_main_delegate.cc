@@ -388,6 +388,19 @@ void InitializeUserDataDir() {
     command_line->AppendSwitchPath(switches::kUserDataDir, user_data_dir);
 }
 
+#if !defined(OS_ANDROID)
+void InitLogging(const std::string& process_type) {
+  logging::OldFileDeletionState file_state =
+      logging::APPEND_TO_OLD_LOG_FILE;
+  if (process_type.empty()) {
+    file_state = logging::DELETE_OLD_LOG_FILE;
+  }
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
+  logging::InitChromeLogging(command_line, file_state);
+}
+#endif
+
 }  // namespace
 
 ChromeMainDelegate::ChromeMainDelegate() {
@@ -662,14 +675,10 @@ void ChromeMainDelegate::PreSandboxStartup() {
   if (command_line.HasSwitch(switches::kMessageLoopHistogrammer))
     base::MessageLoop::EnableHistogrammer(true);
 
-#if !defined(OS_ANDROID)
+#if !defined(OS_ANDROID) && !defined(OS_WIN)
   // Android does InitLogging when library is loaded. Skip here.
-  logging::OldFileDeletionState file_state =
-      logging::APPEND_TO_OLD_LOG_FILE;
-  if (process_type.empty()) {
-    file_state = logging::DELETE_OLD_LOG_FILE;
-  }
-  logging::InitChromeLogging(command_line, file_state);
+  // For windows we call InitLogging when the sandbox is initialized.
+  InitLogging(process_type);
 #endif
 
 #if defined(OS_WIN)
@@ -780,6 +789,7 @@ void ChromeMainDelegate::SandboxInitialized(const std::string& process_type) {
   AdjustLinuxOOMScore(process_type);
 #endif
 #if defined(OS_WIN)
+  InitLogging(process_type);
   SuppressWindowsErrorDialogs();
 #endif
 

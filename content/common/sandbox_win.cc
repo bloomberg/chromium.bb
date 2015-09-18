@@ -11,6 +11,7 @@
 #include "base/debug/profiler.h"
 #include "base/files/file_util.h"
 #include "base/hash.h"
+#include "base/logging.h"
 #include "base/memory/shared_memory.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/path_service.h"
@@ -739,6 +740,17 @@ base::Process StartSandboxedProcess(
   if (!AddGenericPolicy(policy)) {
     NOTREACHED();
     return base::Process();
+  }
+
+  // Allow the renderer and gpu processes to access the log file.
+  if (type_str == switches::kRendererProcess ||
+      type_str == switches::kGpuProcess) {
+    if (logging::IsLoggingToFileEnabled()) {
+      DCHECK(base::FilePath(logging::GetLogFileFullPath()).IsAbsolute());
+      policy->AddRule(sandbox::TargetPolicy::SUBSYS_FILES,
+                      sandbox::TargetPolicy::FILES_ALLOW_ANY,
+                      logging::GetLogFileFullPath().c_str());
+    }
   }
 
 #if !defined(OFFICIAL_BUILD)

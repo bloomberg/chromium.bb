@@ -892,6 +892,9 @@ BASE_EXPORT void RawLog(int level, const char* message);
   } while (0)
 
 #if defined(OS_WIN)
+// Returns true if logging to file is enabled.
+BASE_EXPORT bool IsLoggingToFileEnabled();
+
 // Returns the default log file path.
 BASE_EXPORT std::wstring GetLogFileFullPath();
 #endif
