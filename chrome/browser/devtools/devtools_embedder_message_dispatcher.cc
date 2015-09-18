@@ -50,148 +50,55 @@ struct StorageTraits<const T&> {
   using StorageType = T;
 };
 
-// TODO(dgozman): move back to variadic templates once it compiles everywhere.
-// See http://crbug.com/491973.
+template <typename... Ts>
+struct ParamTuple {
+  bool Parse(const base::ListValue& list,
+             const base::ListValue::const_iterator& it) {
+    return it == list.end();
+  }
 
-bool ParseAndHandle0(const base::Callback<void()>& handler,
-                     const DispatchCallback& callback,
-                     const base::ListValue& list) {
-  if (list.GetSize() != 0)
+  template <typename H, typename... As>
+  void Apply(const H& handler, As... args) {
+    handler.Run(args...);
+  }
+};
+
+template <typename T, typename... Ts>
+struct ParamTuple<T, Ts...> {
+  bool Parse(const base::ListValue& list,
+             const base::ListValue::const_iterator& it) {
+    return it != list.end() && GetValue(*it, &head) && tail.Parse(list, it + 1);
+  }
+
+  template <typename H, typename... As>
+  void Apply(const H& handler, As... args) {
+    tail.template Apply<H, As..., T>(handler, args..., head);
+  }
+
+  typename StorageTraits<T>::StorageType head;
+  ParamTuple<Ts...> tail;
+};
+
+template<typename... As>
+bool ParseAndHandle(const base::Callback<void(As...)>& handler,
+                    const DispatchCallback& callback,
+                    const base::ListValue& list) {
+  ParamTuple<As...> tuple;
+  if (!tuple.Parse(list, list.begin()))
     return false;
-  handler.Run();
+  tuple.Apply(handler);
   return true;
 }
 
-template<class A1>
-bool ParseAndHandle1(const base::Callback<void(A1)>& handler,
-                     const DispatchCallback& callback,
-                     const base::ListValue& list) {
-  if (list.GetSize() != 1)
-    return false;
-  const base::Value* value1;
-  list.Get(0, &value1);
-  typename StorageTraits<A1>::StorageType a1;
-  if (!GetValue(value1, &a1))
-    return false;
-  handler.Run(a1);
-  return true;
-}
-
-template<class A1, class A2>
-bool ParseAndHandle2(const base::Callback<void(A1, A2)>& handler,
-                     const DispatchCallback& callback,
-                     const base::ListValue& list) {
-  if (list.GetSize() != 2)
-    return false;
-  const base::Value* value1;
-  list.Get(0, &value1);
-  typename StorageTraits<A1>::StorageType a1;
-  if (!GetValue(value1, &a1))
-    return false;
-  const base::Value* value2;
-  list.Get(1, &value2);
-  typename StorageTraits<A2>::StorageType a2;
-  if (!GetValue(value2, &a2))
-    return false;
-  handler.Run(a1, a2);
-  return true;
-}
-
-template<class A1, class A2, class A3>
-bool ParseAndHandle3(const base::Callback<void(A1, A2, A3)>& handler,
-                     const DispatchCallback& callback,
-                     const base::ListValue& list) {
-  if (list.GetSize() != 3)
-    return false;
-  const base::Value* value1;
-  list.Get(0, &value1);
-  typename StorageTraits<A1>::StorageType a1;
-  if (!GetValue(value1, &a1))
-    return false;
-  const base::Value* value2;
-  list.Get(1, &value2);
-  typename StorageTraits<A2>::StorageType a2;
-  if (!GetValue(value2, &a2))
-    return false;
-  const base::Value* value3;
-  list.Get(2, &value3);
-  typename StorageTraits<A3>::StorageType a3;
-  if (!GetValue(value3, &a3))
-    return false;
-  handler.Run(a1, a2, a3);
-  return true;
-}
-
-bool ParseAndHandleWithCallback0(
-    const base::Callback<void(const DispatchCallback&)>& handler,
+template<typename... As>
+bool ParseAndHandleWithCallback(
+    const base::Callback<void(const DispatchCallback&, As...)>& handler,
     const DispatchCallback& callback,
     const base::ListValue& list) {
-  if (list.GetSize() != 0)
+  ParamTuple<As...> tuple;
+  if (!tuple.Parse(list, list.begin()))
     return false;
-  handler.Run(callback);
-  return true;
-}
-
-template<class A1>
-bool ParseAndHandleWithCallback1(
-   const base::Callback<void(const DispatchCallback&, A1)>& handler,
-   const DispatchCallback& callback,
-   const base::ListValue& list) {
-  if (list.GetSize() != 1)
-    return false;
-  const base::Value* value1;
-  list.Get(0, &value1);
-  typename StorageTraits<A1>::StorageType a1;
-  if (!GetValue(value1, &a1))
-    return false;
-  handler.Run(callback, a1);
-  return true;
-}
-
-template<class A1, class A2>
-bool ParseAndHandleWithCallback2(
-    const base::Callback<void(const DispatchCallback&, A1, A2)>& handler,
-    const DispatchCallback& callback,
-    const base::ListValue& list) {
-  if (list.GetSize() != 2)
-    return false;
-  const base::Value* value1;
-  list.Get(0, &value1);
-  typename StorageTraits<A1>::StorageType a1;
-  if (!GetValue(value1, &a1))
-    return false;
-  const base::Value* value2;
-  list.Get(1, &value2);
-  typename StorageTraits<A2>::StorageType a2;
-  if (!GetValue(value2, &a2))
-    return false;
-  handler.Run(callback, a1, a2);
-  return true;
-}
-
-template<class A1, class A2, class A3>
-bool ParseAndHandleWithCallback3(
-    const base::Callback<void(const DispatchCallback&, A1, A2, A3)>& handler,
-    const DispatchCallback& callback,
-    const base::ListValue& list) {
-  if (list.GetSize() != 3)
-    return false;
-  const base::Value* value1;
-  list.Get(0, &value1);
-  typename StorageTraits<A1>::StorageType a1;
-  if (!GetValue(value1, &a1))
-    return false;
-  const base::Value* value2;
-  list.Get(1, &value2);
-  typename StorageTraits<A2>::StorageType a2;
-  if (!GetValue(value2, &a2))
-    return false;
-  const base::Value* value3;
-  list.Get(2, &value3);
-  typename StorageTraits<A3>::StorageType a3;
-  if (!GetValue(value3, &a3))
-    return false;
-  handler.Run(callback, a1, a2, a3);
+  tuple.Apply(handler, callback);
   return true;
 }
 
@@ -216,79 +123,25 @@ class DispatcherImpl : public DevToolsEmbedderMessageDispatcher {
     return it != handlers_.end() && it->second.Run(callback, *params);
   }
 
+  template<typename... As>
   void RegisterHandler(const std::string& method,
-                       void (Delegate::*handler)(),
+                       void (Delegate::*handler)(As...),
                        Delegate* delegate) {
-    handlers_[method] = base::Bind(&ParseAndHandle0,
+    handlers_[method] = base::Bind(&ParseAndHandle<As...>,
                                    base::Bind(handler,
                                               base::Unretained(delegate)));
   }
 
-  template<class A1>
-  void RegisterHandler(const std::string& method,
-                       void (Delegate::*handler)(A1),
-                       Delegate* delegate) {
-    handlers_[method] = base::Bind(&ParseAndHandle1<A1>,
-                                   base::Bind(handler,
-                                              base::Unretained(delegate)));
-  }
-
-  template<class A1, class A2>
-  void RegisterHandler(const std::string& method,
-                       void (Delegate::*handler)(A1, A2),
-                       Delegate* delegate) {
-    handlers_[method] = base::Bind(&ParseAndHandle2<A1, A2>,
-                                   base::Bind(handler,
-                                              base::Unretained(delegate)));
-  }
-
-  template<class A1, class A2, class A3>
-  void RegisterHandler(const std::string& method,
-                       void (Delegate::*handler)(A1, A2, A3),
-                       Delegate* delegate) {
-    handlers_[method] = base::Bind(&ParseAndHandle3<A1, A2, A3>,
-                                   base::Bind(handler,
-                                              base::Unretained(delegate)));
-  }
-
+  template<typename... As>
   void RegisterHandlerWithCallback(
       const std::string& method,
-      void (Delegate::*handler)(const DispatchCallback&),
+      void (Delegate::*handler)(const DispatchCallback&, As...),
       Delegate* delegate) {
-    handlers_[method] = base::Bind(&ParseAndHandleWithCallback0,
+    handlers_[method] = base::Bind(&ParseAndHandleWithCallback<As...>,
                                    base::Bind(handler,
                                               base::Unretained(delegate)));
   }
 
-  template<class A1>
-  void RegisterHandlerWithCallback(
-      const std::string& method,
-      void (Delegate::*handler)(const DispatchCallback&, A1),
-      Delegate* delegate) {
-    handlers_[method] = base::Bind(&ParseAndHandleWithCallback1<A1>,
-                                   base::Bind(handler,
-                                              base::Unretained(delegate)));
-  }
-
-  template<class A1, class A2>
-  void RegisterHandlerWithCallback(
-      const std::string& method,
-      void (Delegate::*handler)(const DispatchCallback&, A1, A2),
-      Delegate* delegate) {
-    handlers_[method] = base::Bind(&ParseAndHandleWithCallback2<A1, A2>,
-                                   base::Bind(handler,
-                                              base::Unretained(delegate)));
-  }
-
-  template<class A1, class A2, class A3>
-  void RegisterHandlerWithCallback(
-      const std::string& method,
-      void (Delegate::*handler)(const DispatchCallback&, A1, A2, A3),
-      Delegate* delegate) {
-    handlers_[method] = base::Bind(&ParseAndHandleWithCallback3<A1, A2, A3>,
-                                   base::Bind(handler,
-                                              base::Unretained(delegate)));
-  }
 
  private:
   using Handler = base::Callback<bool(const DispatchCallback&,
