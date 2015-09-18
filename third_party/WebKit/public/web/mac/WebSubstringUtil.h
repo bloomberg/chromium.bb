@@ -60,6 +60,15 @@ public:
     BLINK_EXPORT static NSAttributedString* attributedSubstringInRange(WebLocalFrame*,
         size_t location,
         size_t length);
+
+    // Returns an autoreleased NSAttributedString that is a substring of the
+    // Frame at the given range, or nil on error.
+    // It also gets the baseline point for the given range for showing
+    // dictionary lookup bubble.
+    BLINK_EXPORT static NSAttributedString* attributedSubstringInRange(WebLocalFrame*,
+        size_t location,
+        size_t length,
+        WebPoint* baselinePoint);
 };
 
 } // namespace blink
