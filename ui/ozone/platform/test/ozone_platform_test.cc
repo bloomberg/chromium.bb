@@ -12,6 +12,7 @@
 #include "ui/events/platform/platform_event_source.h"
 #include "ui/ozone/common/native_display_delegate_ozone.h"
 #include "ui/ozone/common/stub_overlay_manager.h"
+#include "ui/ozone/platform/test/test_surface_factory.h"
 #include "ui/ozone/platform/test/test_window.h"
 #include "ui/ozone/platform/test/test_window_manager.h"
 #include "ui/ozone/public/cursor_factory_ozone.h"
@@ -47,7 +48,7 @@ class OzonePlatformTest : public OzonePlatform {
 
   // OzonePlatform:
   ui::SurfaceFactoryOzone* GetSurfaceFactoryOzone() override {
-    return window_manager_.get();
+    return surface_factory_.get();
   }
   OverlayManagerOzone* GetOverlayManager() override {
     return overlay_manager_.get();
@@ -83,6 +84,7 @@ class OzonePlatformTest : public OzonePlatform {
   void InitializeUI() override {
     window_manager_.reset(new TestWindowManager(file_path_));
     window_manager_->Initialize();
+    surface_factory_.reset(new TestSurfaceFactory(window_manager_.get()));
     // This unbreaks tests that create their own.
     if (!PlatformEventSource::GetInstance())
       platform_event_source_.reset(new TestPlatformEventSource);
@@ -96,11 +98,14 @@ class OzonePlatformTest : public OzonePlatform {
   }
 
   void InitializeGPU() override {
+    if (!surface_factory_)
+      surface_factory_.reset(new TestSurfaceFactory());
     gpu_platform_support_.reset(CreateStubGpuPlatformSupport());
   }
 
  private:
   scoped_ptr<TestWindowManager> window_manager_;
+  scoped_ptr<TestSurfaceFactory> surface_factory_;
   scoped_ptr<PlatformEventSource> platform_event_source_;
   scoped_ptr<CursorFactoryOzone> cursor_factory_ozone_;
   scoped_ptr<InputController> input_controller_;

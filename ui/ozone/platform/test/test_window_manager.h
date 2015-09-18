@@ -2,23 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_OZONE_PLATFORM_TEST_FILE_SURFACE_FACTORY_H_
-#define UI_OZONE_PLATFORM_TEST_FILE_SURFACE_FACTORY_H_
+#ifndef UI_OZONE_PLATFORM_TEST_TEST_WINDOW_MANAGER_H_
+#define UI_OZONE_PLATFORM_TEST_TEST_WINDOW_MANAGER_H_
 
 #include "base/files/file_path.h"
 #include "base/id_map.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "ui/gfx/native_widget_types.h"
-#include "ui/ozone/platform/test/test_window.h"
 #include "ui/ozone/public/surface_factory_ozone.h"
 
 namespace ui {
 
-class TestWindowManager : public SurfaceFactoryOzone {
+class TestWindow;
+
+class TestWindowManager {
  public:
   explicit TestWindowManager(const base::FilePath& dump_location);
-  ~TestWindowManager() override;
+  ~TestWindowManager();
 
   // Initialize (mainly check that we have a place to write output to).
   void Initialize();
@@ -29,15 +30,11 @@ class TestWindowManager : public SurfaceFactoryOzone {
   // Remove a window.
   void RemoveWindow(int32_t window_id, TestWindow* window);
 
+  // Find a window object by id;
+  TestWindow* GetWindow(int32_t window_id);
+
   // User-supplied path for images.
   base::FilePath base_path() const;
-
-  // SurfaceFactoryOzone:
-  scoped_ptr<SurfaceOzoneCanvas> CreateCanvasForWidget(
-      gfx::AcceleratedWidget w) override;
-  bool LoadEGLGLES2Bindings(
-      AddGLLibraryCallback add_gl_library,
-      SetGLGetProcAddressProcCallback set_gl_get_proc_address) override;
 
  private:
   base::FilePath location_;
@@ -50,4 +47,4 @@ class TestWindowManager : public SurfaceFactoryOzone {
 
 }  // namespace ui
 
-#endif  // UI_OZONE_PLATFORM_TEST_FILE_SURFACE_FACTORY_H_
+#endif  // UI_OZONE_PLATFORM_TEST_TEST_WINDOW_MANAGER_H_
