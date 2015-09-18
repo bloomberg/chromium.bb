@@ -21,7 +21,7 @@ cr.define('downloads', function() {
       this.destroy();
 
       this.addItem('name-file-link',
-                   '#content.is-active:not(.show-progress) #name');
+          'content.is-active:not(.show-progress):not(.dangerous) #name');
       assert(this.addItem('name-file-link', '#file-link'));
       assert(this.addItem('url', '#url'));
       this.addItem('show-retry', '#show');
