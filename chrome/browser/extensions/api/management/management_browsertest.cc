@@ -19,6 +19,7 @@
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
 #include "components/policy/core/common/policy_map.h"
+#include "components/policy/core/common/policy_types.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_view_host.h"
@@ -562,6 +563,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, ExternalPolicyRefresh) {
   policies.Set(policy::key::kExtensionInstallForcelist,
                policy::POLICY_LEVEL_MANDATORY,
                policy::POLICY_SCOPE_USER,
+               policy::POLICY_SOURCE_CLOUD,
                forcelist.DeepCopy(),
                NULL);
   UpdateProviderPolicy(policies);
@@ -651,6 +653,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest,
   policies.Set(policy::key::kExtensionInstallForcelist,
                policy::POLICY_LEVEL_MANDATORY,
                policy::POLICY_SCOPE_USER,
+               policy::POLICY_SOURCE_CLOUD,
                forcelist.DeepCopy(),
                NULL);
   UpdateProviderPolicy(policies);
@@ -692,6 +695,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest,
   policies.Set(policy::key::kExtensionInstallForcelist,
                policy::POLICY_LEVEL_MANDATORY,
                policy::POLICY_SCOPE_USER,
+               policy::POLICY_SOURCE_CLOUD,
                forcelist.DeepCopy(),
                NULL);
   UpdateProviderPolicy(policies);

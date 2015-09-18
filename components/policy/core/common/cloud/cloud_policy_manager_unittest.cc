@@ -15,6 +15,7 @@
 #include "components/policy/core/common/configuration_policy_provider_test.h"
 #include "components/policy/core/common/external_data_fetcher.h"
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
+#include "components/policy/core/common/policy_types.h"
 #include "components/policy/core/common/schema_registry.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -62,7 +63,8 @@ class TestHarness : public PolicyProviderTestHarness {
 };
 
 TestHarness::TestHarness(PolicyLevel level)
-    : PolicyProviderTestHarness(level, POLICY_SCOPE_USER) {}
+    : PolicyProviderTestHarness(level, POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD) {
+}
 
 TestHarness::~TestHarness() {}
 
@@ -87,6 +89,7 @@ void TestHarness::InstallStringPolicy(const std::string& policy_name,
   store_.policy_map_.Set(policy_name,
                          policy_level(),
                          policy_scope(),
+                         POLICY_SOURCE_CLOUD,
                          new base::StringValue(policy_value),
                          nullptr);
 }
@@ -96,7 +99,9 @@ void TestHarness::InstallIntegerPolicy(const std::string& policy_name,
   store_.policy_map_.Set(policy_name,
                          policy_level(),
                          policy_scope(),
-                         new base::FundamentalValue(policy_value),
+                         POLICY_SOURCE_CLOUD,
+                         new base::
+                         FundamentalValue(policy_value),
                          nullptr);
 }
 
@@ -105,21 +110,31 @@ void TestHarness::InstallBooleanPolicy(const std::string& policy_name,
   store_.policy_map_.Set(policy_name,
                          policy_level(),
                          policy_scope(),
-                         new base::FundamentalValue(policy_value),
+                         POLICY_SOURCE_CLOUD,
+                         new base::
+                         FundamentalValue(policy_value),
                          nullptr);
 }
 
 void TestHarness::InstallStringListPolicy(const std::string& policy_name,
                                           const base::ListValue* policy_value) {
-  store_.policy_map_.Set(policy_name, policy_level(), policy_scope(),
-                         policy_value->DeepCopy(), nullptr);
+  store_.policy_map_.Set(policy_name,
+                         policy_level(),
+                         policy_scope(),
+                         POLICY_SOURCE_CLOUD,
+                         policy_value->DeepCopy(),
+                         nullptr);
 }
 
 void TestHarness::InstallDictionaryPolicy(
     const std::string& policy_name,
     const base::DictionaryValue* policy_value) {
-  store_.policy_map_.Set(policy_name, policy_level(), policy_scope(),
-                         policy_value->DeepCopy(), nullptr);
+  store_.policy_map_.Set(policy_name,
+                         policy_level(),
+                         policy_scope(),
+                         POLICY_SOURCE_CLOUD,
+                         policy_value->DeepCopy(),
+                         nullptr);
 }
 
 // static
@@ -176,6 +191,7 @@ class CloudPolicyManagerTest : public testing::Test {
     policy_map_.Set("key",
                     POLICY_LEVEL_MANDATORY,
                     POLICY_SCOPE_USER,
+                    POLICY_SOURCE_CLOUD,
                     new base::StringValue("value"),
                     nullptr);
     expected_bundle_.Get(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()))

@@ -18,6 +18,7 @@
 #include "base/stl_util.h"
 #include "components/policy/core/common/policy_bundle.h"
 #include "components/policy/core/common/policy_load_status.h"
+#include "components/policy/core/common/policy_types.h"
 
 namespace policy {
 
@@ -165,7 +166,8 @@ void ConfigDirPolicyLoader::LoadFromPath(const base::FilePath& path,
 
     // Add chrome policy.
     PolicyMap policy_map;
-    policy_map.LoadFrom(dictionary_value, level, scope_);
+    policy_map.LoadFrom(dictionary_value, level, scope_,
+                        POLICY_SOURCE_PLATFORM);
     bundle->Get(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()))
         .MergeFrom(policy_map);
   }
@@ -215,7 +217,7 @@ void ConfigDirPolicyLoader::Merge3rdPartyPolicy(
       }
 
       PolicyMap policy;
-      policy.LoadFrom(policy_dictionary, level, scope_);
+      policy.LoadFrom(policy_dictionary, level, scope_, POLICY_SOURCE_PLATFORM);
       bundle->Get(PolicyNamespace(domain, components_it.key()))
           .MergeFrom(policy);
     }

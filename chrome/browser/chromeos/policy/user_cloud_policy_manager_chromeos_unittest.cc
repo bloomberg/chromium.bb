@@ -32,6 +32,7 @@
 #include "components/policy/core/common/cloud/mock_device_management_service.h"
 #include "components/policy/core/common/external_data_fetcher.h"
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
+#include "components/policy/core/common/policy_types.h"
 #include "components/policy/core/common/schema_registry.h"
 #include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
@@ -111,19 +112,22 @@ class UserCloudPolicyManagerChromeOSTest : public testing::Test {
     // Set up a policy map for testing.
     policy_map_.Set(key::kHomepageLocation,
                     POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+                    POLICY_SOURCE_CLOUD,
                     new base::StringValue("http://chromium.org"),
                     NULL);
     policy_map_.Set(key::kChromeOsMultiProfileUserBehavior,
                     POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+                    POLICY_SOURCE_ENTERPRISE_DEFAULT,
                     new base::StringValue("primary-only"),
                     NULL);
     policy_map_.Set(key::kEasyUnlockAllowed,
                     POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+                    POLICY_SOURCE_CLOUD,
                     new base::FundamentalValue(false),
                     NULL);
     policy_map_.Set(key::kCaptivePortalAuthenticationIgnoresProxy,
-                    POLICY_LEVEL_MANDATORY,
-                    POLICY_SCOPE_USER,
+                    POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+                    POLICY_SOURCE_CLOUD,
                     new base::FundamentalValue(false),
                     NULL);
     expected_bundle_.Get(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()))

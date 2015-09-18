@@ -9,6 +9,7 @@
 #include "base/values.h"
 #include "components/policy/core/common/external_data_fetcher.h"
 #include "components/policy/core/common/policy_map.h"
+#include "components/policy/core/common/policy_types.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace policy {
@@ -30,16 +31,19 @@ void AddTestPolicies(PolicyMap* policy) {
   policy->Set("mandatory-user",
               POLICY_LEVEL_MANDATORY,
               POLICY_SCOPE_USER,
+              POLICY_SOURCE_CLOUD,
               new base::FundamentalValue(123),
               NULL);
   policy->Set("mandatory-machine",
               POLICY_LEVEL_MANDATORY,
               POLICY_SCOPE_MACHINE,
+              POLICY_SOURCE_CLOUD,
               new base::StringValue("omg"),
               NULL);
   policy->Set("recommended-user",
               POLICY_LEVEL_RECOMMENDED,
               POLICY_SCOPE_USER,
+              POLICY_SOURCE_CLOUD,
               new base::FundamentalValue(true),
               NULL);
   base::DictionaryValue* dict = new base::DictionaryValue();
@@ -47,7 +51,7 @@ void AddTestPolicies(PolicyMap* policy) {
   dict->SetInteger("int", 456);
   dict->SetString("str", "bbq");
   policy->Set("recommended-machine", POLICY_LEVEL_RECOMMENDED,
-              POLICY_SCOPE_MACHINE, dict, NULL);
+              POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD, dict, nullptr);
 }
 
 // Adds test policies to |policy| based on the parameters:
@@ -62,13 +66,15 @@ void AddTestPoliciesWithParams(PolicyMap *policy,
   policy->Set(kPolicyClashing0,
               POLICY_LEVEL_MANDATORY,
               POLICY_SCOPE_USER,
+              POLICY_SOURCE_CLOUD,
               new base::FundamentalValue(value),
               NULL);
-  policy->Set(
-      kPolicyClashing1, level, scope, new base::FundamentalValue(value), NULL);
+  policy->Set(kPolicyClashing1, level, scope, POLICY_SOURCE_CLOUD,
+              new base::FundamentalValue(value), nullptr);
   policy->Set(name,
               POLICY_LEVEL_MANDATORY,
               POLICY_SCOPE_USER,
+              POLICY_SOURCE_CLOUD,
               new base::FundamentalValue(value),
               NULL);
 }
@@ -200,26 +206,31 @@ TEST(PolicyBundleTest, MergeFrom) {
   expected.Set(kPolicyClashing0,
                POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER,
+               POLICY_SOURCE_CLOUD,
                new base::FundamentalValue(0),
                NULL);
   expected.Set(kPolicyClashing1,
                POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_MACHINE,
+               POLICY_SOURCE_CLOUD,
                new base::FundamentalValue(1),
                NULL);
   expected.Set(kPolicy0,
                POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER,
+               POLICY_SOURCE_CLOUD,
                new base::FundamentalValue(0),
                NULL);
   expected.Set(kPolicy1,
                POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER,
+               POLICY_SOURCE_CLOUD,
                new base::FundamentalValue(1),
                NULL);
   expected.Set(kPolicy2,
                POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER,
+               POLICY_SOURCE_CLOUD,
                new base::FundamentalValue(2),
                NULL);
   EXPECT_TRUE(merged.Get(PolicyNamespace(POLICY_DOMAIN_CHROME,
@@ -263,6 +274,7 @@ TEST(PolicyBundleTest, Equals) {
       .Set(kPolicy0,
            POLICY_LEVEL_MANDATORY,
            POLICY_SCOPE_USER,
+           POLICY_SOURCE_CLOUD,
            new base::FundamentalValue(123),
            NULL);
   EXPECT_FALSE(bundle.Equals(other));
@@ -272,6 +284,7 @@ TEST(PolicyBundleTest, Equals) {
       .Set(kPolicy0,
            POLICY_LEVEL_MANDATORY,
            POLICY_SCOPE_MACHINE,
+           POLICY_SOURCE_CLOUD,
            new base::FundamentalValue(123),
            NULL);
   EXPECT_FALSE(bundle.Equals(other));
@@ -285,6 +298,7 @@ TEST(PolicyBundleTest, Equals) {
   policy_map.Set(kPolicy0,
                  POLICY_LEVEL_MANDATORY,
                  POLICY_SCOPE_USER,
+                 POLICY_SOURCE_CLOUD,
                  new base::FundamentalValue(123),
                  NULL);
   EXPECT_FALSE(bundle.Equals(other));

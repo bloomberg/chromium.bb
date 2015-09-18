@@ -184,6 +184,7 @@ void DeviceLocalAccountExternalPolicyLoaderTest::SetForceInstallListPolicy() {
   store_.policy_map_.Set(policy::key::kExtensionInstallForcelist,
                          policy::POLICY_LEVEL_MANDATORY,
                          policy::POLICY_SCOPE_USER,
+                         policy::POLICY_SOURCE_CLOUD,
                          forcelist.release(),
                          NULL);
   store_.NotifyStoreLoaded();

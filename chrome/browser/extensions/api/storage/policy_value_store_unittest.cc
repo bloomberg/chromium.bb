@@ -12,6 +12,7 @@
 #include "base/message_loop/message_loop.h"
 #include "components/policy/core/common/external_data_fetcher.h"
 #include "components/policy/core/common/policy_map.h"
+#include "components/policy/core/common/policy_types.h"
 #include "content/public/test/test_browser_thread.h"
 #include "extensions/browser/api/storage/settings_observer.h"
 #include "extensions/browser/value_store/leveldb_value_store.h"
@@ -120,9 +121,10 @@ TEST_F(PolicyValueStoreTest, DontProvideRecommendedPolicies) {
   policy::PolicyMap policies;
   base::FundamentalValue expected(123);
   policies.Set("must", policy::POLICY_LEVEL_MANDATORY,
-               policy::POLICY_SCOPE_USER, expected.DeepCopy(), NULL);
+               policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
+               expected.DeepCopy(), nullptr);
   policies.Set("may", policy::POLICY_LEVEL_RECOMMENDED,
-               policy::POLICY_SCOPE_USER,
+               policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
                new base::FundamentalValue(456), NULL);
   store_->SetCurrentPolicy(policies);
   ValueStore::ReadResult result = store_->Get();
@@ -165,7 +167,7 @@ TEST_F(PolicyValueStoreTest, NotifyOnChanges) {
 
   policy::PolicyMap policies;
   policies.Set("aaa", policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
-               value.DeepCopy(), NULL);
+               policy::POLICY_SOURCE_CLOUD, value.DeepCopy(), nullptr);
   store_->SetCurrentPolicy(policies);
   loop_.RunUntilIdle();
   Mock::VerifyAndClearExpectations(&observer_);
@@ -181,7 +183,7 @@ TEST_F(PolicyValueStoreTest, NotifyOnChanges) {
   }
 
   policies.Set("bbb", policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
-               value.DeepCopy(), NULL);
+               policy::POLICY_SOURCE_CLOUD, value.DeepCopy(), nullptr);
   store_->SetCurrentPolicy(policies);
   loop_.RunUntilIdle();
   Mock::VerifyAndClearExpectations(&observer_);
@@ -199,7 +201,7 @@ TEST_F(PolicyValueStoreTest, NotifyOnChanges) {
   }
 
   policies.Set("bbb", policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
-               new_value.DeepCopy(), NULL);
+               policy::POLICY_SOURCE_CLOUD, new_value.DeepCopy(), nullptr);
   store_->SetCurrentPolicy(policies);
   loop_.RunUntilIdle();
   Mock::VerifyAndClearExpectations(&observer_);

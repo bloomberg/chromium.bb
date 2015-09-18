@@ -16,6 +16,7 @@
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_pref_names.h"
 #include "components/policy/core/common/policy_service_impl.h"
+#include "components/policy/core/common/policy_types.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 // Note: this file should move to components/policy/core/browser, but the
@@ -55,8 +56,8 @@ TEST_F(ConfigurationPolicyPrefStoreListTest, SetValue) {
   in_value->Append(new base::StringValue("test1"));
   in_value->Append(new base::StringValue("test2,"));
   PolicyMap policy;
-  policy.Set(kTestPolicy, POLICY_LEVEL_MANDATORY,
-             POLICY_SCOPE_USER, in_value, NULL);
+  policy.Set(kTestPolicy, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+             POLICY_SOURCE_CLOUD, in_value, nullptr);
   UpdateProviderPolicy(policy);
   const base::Value* value = NULL;
   EXPECT_TRUE(store_->GetValue(kTestPref, &value));
@@ -83,6 +84,7 @@ TEST_F(ConfigurationPolicyPrefStoreStringTest, SetValue) {
   policy.Set(kTestPolicy,
              POLICY_LEVEL_MANDATORY,
              POLICY_SCOPE_USER,
+             POLICY_SOURCE_CLOUD,
              new base::StringValue("http://chromium.org"),
              NULL);
   UpdateProviderPolicy(policy);
@@ -111,6 +113,7 @@ TEST_F(ConfigurationPolicyPrefStoreBooleanTest, SetValue) {
   policy.Set(kTestPolicy,
              POLICY_LEVEL_MANDATORY,
              POLICY_SCOPE_USER,
+             POLICY_SOURCE_CLOUD,
              new base::FundamentalValue(false),
              NULL);
   UpdateProviderPolicy(policy);
@@ -125,6 +128,7 @@ TEST_F(ConfigurationPolicyPrefStoreBooleanTest, SetValue) {
   policy.Set(kTestPolicy,
              POLICY_LEVEL_MANDATORY,
              POLICY_SCOPE_USER,
+             POLICY_SOURCE_CLOUD,
              new base::FundamentalValue(true),
              NULL);
   UpdateProviderPolicy(policy);
@@ -155,6 +159,7 @@ TEST_F(ConfigurationPolicyPrefStoreIntegerTest, SetValue) {
   policy.Set(kTestPolicy,
              POLICY_LEVEL_MANDATORY,
              POLICY_SCOPE_USER,
+             POLICY_SOURCE_CLOUD,
              new base::FundamentalValue(2),
              NULL);
   UpdateProviderPolicy(policy);
@@ -191,6 +196,7 @@ TEST_F(ConfigurationPolicyPrefStoreRefreshTest, Refresh) {
   policy.Set(kTestPolicy,
              POLICY_LEVEL_MANDATORY,
              POLICY_SCOPE_USER,
+             POLICY_SOURCE_CLOUD,
              new base::StringValue("http://www.chromium.org"),
              NULL);
   UpdateProviderPolicy(policy);

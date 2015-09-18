@@ -28,6 +28,26 @@ enum PolicyLevel {
   POLICY_LEVEL_MANDATORY,
 };
 
+// The source of a policy indicates where its value is originating from. The
+// sources are ordered by priority (with weakest policy first).
+enum PolicySource {
+  // The policy was set because we are running in an enterprise environment.
+  POLICY_SOURCE_ENTERPRISE_DEFAULT,
+
+  // The policy was set by a cloud source.
+  POLICY_SOURCE_CLOUD,
+
+  // Any non-platform policy was overridden because we are running in an
+  // enterprise environment.
+  POLICY_SOURCE_ENTERPRISE_OVERRIDE,
+
+  // The policy was set by a platform source.
+  POLICY_SOURCE_PLATFORM,
+
+  // Number of source types. Has to be the last element.
+  POLICY_SOURCE_COUNT
+};
+
 }  // namespace policy
 
 #endif  // COMPONENTS_POLICY_CORE_COMMON_POLICY_TYPES_H_

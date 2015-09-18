@@ -8,6 +8,7 @@
 #include "chrome/browser/extensions/policy_handlers.h"
 #include "components/policy/core/browser/policy_error_map.h"
 #include "components/policy/core/common/policy_map.h"
+#include "components/policy/core/common/policy_types.h"
 #include "components/policy/core/common/schema.h"
 #include "extensions/browser/pref_names.h"
 #include "policy/policy_constants.h"
@@ -43,6 +44,7 @@ TEST(ExtensionListPolicyHandlerTest, CheckPolicySettings) {
   policy_map.Set(policy::key::kExtensionInstallBlacklist,
                  policy::POLICY_LEVEL_MANDATORY,
                  policy::POLICY_SCOPE_USER,
+                 policy::POLICY_SOURCE_CLOUD,
                  list.DeepCopy(),
                  NULL);
   errors.Clear();
@@ -53,6 +55,7 @@ TEST(ExtensionListPolicyHandlerTest, CheckPolicySettings) {
   policy_map.Set(policy::key::kExtensionInstallBlacklist,
                  policy::POLICY_LEVEL_MANDATORY,
                  policy::POLICY_SCOPE_USER,
+                 policy::POLICY_SOURCE_CLOUD,
                  list.DeepCopy(),
                  NULL);
   errors.Clear();
@@ -63,6 +66,7 @@ TEST(ExtensionListPolicyHandlerTest, CheckPolicySettings) {
   policy_map.Set(policy::key::kExtensionInstallBlacklist,
                  policy::POLICY_LEVEL_MANDATORY,
                  policy::POLICY_SCOPE_USER,
+                 policy::POLICY_SOURCE_CLOUD,
                  list.DeepCopy(),
                  NULL);
   errors.Clear();
@@ -73,6 +77,7 @@ TEST(ExtensionListPolicyHandlerTest, CheckPolicySettings) {
   policy_map.Set(policy::key::kExtensionInstallBlacklist,
                  policy::POLICY_LEVEL_MANDATORY,
                  policy::POLICY_SCOPE_USER,
+                 policy::POLICY_SOURCE_CLOUD,
                  list.DeepCopy(),
                  NULL);
   errors.Clear();
@@ -97,6 +102,7 @@ TEST(ExtensionListPolicyHandlerTest, ApplyPolicySettings) {
   policy_map.Set(policy::key::kExtensionInstallBlacklist,
                  policy::POLICY_LEVEL_MANDATORY,
                  policy::POLICY_SCOPE_USER,
+                 policy::POLICY_SOURCE_CLOUD,
                  policy.DeepCopy(),
                  NULL);
   handler.ApplyPolicySettings(policy_map, &prefs);
@@ -107,6 +113,7 @@ TEST(ExtensionListPolicyHandlerTest, ApplyPolicySettings) {
   policy_map.Set(policy::key::kExtensionInstallBlacklist,
                  policy::POLICY_LEVEL_MANDATORY,
                  policy::POLICY_SCOPE_USER,
+                 policy::POLICY_SOURCE_CLOUD,
                  policy.DeepCopy(),
                  NULL);
   handler.ApplyPolicySettings(policy_map, &prefs);
@@ -123,6 +130,7 @@ TEST(ExtensionInstallForcelistPolicyHandlerTest, CheckPolicySettings) {
   policy_map.Set(policy::key::kExtensionInstallForcelist,
                  policy::POLICY_LEVEL_MANDATORY,
                  policy::POLICY_SCOPE_USER,
+                 policy::POLICY_SOURCE_CLOUD,
                  list.DeepCopy(),
                  NULL);
   errors.Clear();
@@ -133,6 +141,7 @@ TEST(ExtensionInstallForcelistPolicyHandlerTest, CheckPolicySettings) {
   policy_map.Set(policy::key::kExtensionInstallForcelist,
                  policy::POLICY_LEVEL_MANDATORY,
                  policy::POLICY_SCOPE_USER,
+                 policy::POLICY_SOURCE_CLOUD,
                  list.DeepCopy(),
                  NULL);
   errors.Clear();
@@ -145,6 +154,7 @@ TEST(ExtensionInstallForcelistPolicyHandlerTest, CheckPolicySettings) {
   policy_map.Set(policy::key::kExtensionInstallForcelist,
                  policy::POLICY_LEVEL_MANDATORY,
                  policy::POLICY_SCOPE_USER,
+                 policy::POLICY_SOURCE_CLOUD,
                  list.DeepCopy(),
                  NULL);
   errors.Clear();
@@ -156,6 +166,7 @@ TEST(ExtensionInstallForcelistPolicyHandlerTest, CheckPolicySettings) {
   policy_map.Set(policy::key::kExtensionInstallForcelist,
                  policy::POLICY_LEVEL_MANDATORY,
                  policy::POLICY_SCOPE_USER,
+                 policy::POLICY_SOURCE_CLOUD,
                  list.DeepCopy(),
                  NULL);
   errors.Clear();
@@ -167,6 +178,7 @@ TEST(ExtensionInstallForcelistPolicyHandlerTest, CheckPolicySettings) {
   policy_map.Set(policy::key::kExtensionInstallForcelist,
                  policy::POLICY_LEVEL_MANDATORY,
                  policy::POLICY_SCOPE_USER,
+                 policy::POLICY_SOURCE_CLOUD,
                  list.DeepCopy(),
                  NULL);
   errors.Clear();
@@ -189,6 +201,7 @@ TEST(ExtensionInstallForcelistPolicyHandlerTest, ApplyPolicySettings) {
   policy_map.Set(policy::key::kExtensionInstallForcelist,
                  policy::POLICY_LEVEL_MANDATORY,
                  policy::POLICY_SCOPE_USER,
+                 policy::POLICY_SOURCE_CLOUD,
                  policy.DeepCopy(),
                  NULL);
   handler.ApplyPolicySettings(policy_map, &prefs);
@@ -201,6 +214,7 @@ TEST(ExtensionInstallForcelistPolicyHandlerTest, ApplyPolicySettings) {
   policy_map.Set(policy::key::kExtensionInstallForcelist,
                  policy::POLICY_LEVEL_MANDATORY,
                  policy::POLICY_SCOPE_USER,
+                 policy::POLICY_SOURCE_CLOUD,
                  policy.DeepCopy(),
                  NULL);
   handler.ApplyPolicySettings(policy_map, &prefs);
@@ -211,6 +225,7 @@ TEST(ExtensionInstallForcelistPolicyHandlerTest, ApplyPolicySettings) {
   policy_map.Set(policy::key::kExtensionInstallForcelist,
                  policy::POLICY_LEVEL_MANDATORY,
                  policy::POLICY_SCOPE_USER,
+                 policy::POLICY_SOURCE_CLOUD,
                  policy.DeepCopy(),
                  NULL);
   handler.ApplyPolicySettings(policy_map, &prefs);
@@ -228,6 +243,7 @@ TEST(ExtensionURLPatternListPolicyHandlerTest, CheckPolicySettings) {
   policy_map.Set(policy::key::kExtensionInstallSources,
                  policy::POLICY_LEVEL_MANDATORY,
                  policy::POLICY_SCOPE_USER,
+                 policy::POLICY_SOURCE_CLOUD,
                  list.DeepCopy(),
                  NULL);
   errors.Clear();
@@ -238,6 +254,7 @@ TEST(ExtensionURLPatternListPolicyHandlerTest, CheckPolicySettings) {
   policy_map.Set(policy::key::kExtensionInstallSources,
                  policy::POLICY_LEVEL_MANDATORY,
                  policy::POLICY_SCOPE_USER,
+                 policy::POLICY_SOURCE_CLOUD,
                  list.DeepCopy(),
                  NULL);
   errors.Clear();
@@ -248,6 +265,7 @@ TEST(ExtensionURLPatternListPolicyHandlerTest, CheckPolicySettings) {
   policy_map.Set(policy::key::kExtensionInstallSources,
                  policy::POLICY_LEVEL_MANDATORY,
                  policy::POLICY_SCOPE_USER,
+                 policy::POLICY_SOURCE_CLOUD,
                  list.DeepCopy(),
                  NULL);
   errors.Clear();
@@ -258,6 +276,7 @@ TEST(ExtensionURLPatternListPolicyHandlerTest, CheckPolicySettings) {
   policy_map.Set(policy::key::kExtensionInstallSources,
                  policy::POLICY_LEVEL_MANDATORY,
                  policy::POLICY_SCOPE_USER,
+                 policy::POLICY_SOURCE_CLOUD,
                  list.DeepCopy(),
                  NULL);
   errors.Clear();
@@ -271,6 +290,7 @@ TEST(ExtensionURLPatternListPolicyHandlerTest, CheckPolicySettings) {
   policy_map.Set(policy::key::kExtensionInstallSources,
                  policy::POLICY_LEVEL_MANDATORY,
                  policy::POLICY_SCOPE_USER,
+                 policy::POLICY_SOURCE_CLOUD,
                  list.DeepCopy(),
                  NULL);
   errors.Clear();
@@ -291,6 +311,7 @@ TEST(ExtensionURLPatternListPolicyHandlerTest, ApplyPolicySettings) {
   policy_map.Set(policy::key::kExtensionInstallSources,
                  policy::POLICY_LEVEL_MANDATORY,
                  policy::POLICY_SCOPE_USER,
+                 policy::POLICY_SOURCE_CLOUD,
                  list.DeepCopy(),
                  NULL);
   handler.ApplyPolicySettings(policy_map, &prefs);
@@ -314,6 +335,7 @@ TEST(ExtensionSettingsPolicyHandlerTest, CheckPolicySettings) {
   policy_map.Set(policy::key::kExtensionSettings,
                  policy::POLICY_LEVEL_MANDATORY,
                  policy::POLICY_SCOPE_USER,
+                 policy::POLICY_SOURCE_CLOUD,
                  policy_value.release(),
                  NULL);
   // CheckPolicySettings() fails due to missing update URL.
@@ -338,6 +360,7 @@ TEST(ExtensionSettingsPolicyHandlerTest, ApplyPolicySettings) {
   policy_map.Set(policy::key::kExtensionSettings,
                  policy::POLICY_LEVEL_MANDATORY,
                  policy::POLICY_SCOPE_USER,
+                 policy::POLICY_SOURCE_CLOUD,
                  policy_value->DeepCopy(),
                  NULL);
   EXPECT_TRUE(handler.CheckPolicySettings(policy_map, &errors));

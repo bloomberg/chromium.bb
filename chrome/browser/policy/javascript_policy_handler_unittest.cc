@@ -9,6 +9,7 @@
 #include "components/policy/core/browser/configuration_policy_pref_store_test.h"
 #include "components/policy/core/browser/policy_error_map.h"
 #include "components/policy/core/common/policy_map.h"
+#include "components/policy/core/common/policy_types.h"
 #include "policy/policy_constants.h"
 
 namespace policy {
@@ -27,6 +28,7 @@ TEST_F(JavascriptPolicyHandlerTest, JavascriptEnabled) {
   policy.Set(key::kJavascriptEnabled,
              POLICY_LEVEL_MANDATORY,
              POLICY_SCOPE_USER,
+             POLICY_SOURCE_CLOUD,
              new base::FundamentalValue(true),
              NULL);
   UpdateProviderPolicy(policy);
@@ -34,6 +36,7 @@ TEST_F(JavascriptPolicyHandlerTest, JavascriptEnabled) {
   policy.Set(key::kJavascriptEnabled,
              POLICY_LEVEL_MANDATORY,
              POLICY_SCOPE_USER,
+             POLICY_SOURCE_CLOUD,
              new base::FundamentalValue(false),
              NULL);
   UpdateProviderPolicy(policy);
@@ -49,6 +52,7 @@ TEST_F(JavascriptPolicyHandlerTest, JavascriptEnabledOverridden) {
   policy.Set(key::kJavascriptEnabled,
              POLICY_LEVEL_MANDATORY,
              POLICY_SCOPE_USER,
+             POLICY_SOURCE_CLOUD,
              new base::FundamentalValue(false),
              NULL);
   UpdateProviderPolicy(policy);
@@ -60,6 +64,7 @@ TEST_F(JavascriptPolicyHandlerTest, JavascriptEnabledOverridden) {
   policy.Set(key::kDefaultJavaScriptSetting,
              POLICY_LEVEL_MANDATORY,
              POLICY_SCOPE_USER,
+             POLICY_SOURCE_CLOUD,
              new base::FundamentalValue(CONTENT_SETTING_ALLOW),
              NULL);
   UpdateProviderPolicy(policy);

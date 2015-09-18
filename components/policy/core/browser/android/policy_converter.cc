@@ -190,6 +190,7 @@ void PolicyConverter::SetPolicyValue(const std::string& key,
   const PolicyNamespace ns(POLICY_DOMAIN_CHROME, std::string());
   policy_bundle_->Get(ns)
       .Set(key, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
+           POLICY_SOURCE_PLATFORM,
            ConvertValueToSchema(value.Pass(), schema).release(), nullptr);
 }
 
