@@ -58,22 +58,13 @@ class SigninManagerWrapper;
 class SyncErrorController;
 class SyncTypePreferenceProvider;
 
-namespace base {
-class CommandLine;
-};
-
 namespace browser_sync {
 class BackendMigrator;
 class FaviconCache;
-class JsController;
-
-namespace sessions {
-class SyncSessionSnapshot;
-}  // namespace sessions
+class SyncedWindowDelegatesGetter;
 }  // namespace browser_sync
 
 namespace sync_driver {
-class ChangeProcessor;
 class DataTypeManager;
 class DeviceInfoSyncService;
 class LocalDeviceInfoProvider;
