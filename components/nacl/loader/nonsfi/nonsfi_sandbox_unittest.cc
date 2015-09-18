@@ -665,8 +665,9 @@ class TgkillDelegate : public sandbox::BPFTesterDelegate {
     callback(pid_, tid_);
   }
 
-  int pid_;
-  int tid_;
+  // These are longs as a temporary workaround for crbug.com/532992.
+  long pid_;
+  long tid_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TgkillDelegate);
