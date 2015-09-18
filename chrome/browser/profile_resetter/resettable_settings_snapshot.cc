@@ -255,7 +255,7 @@ scoped_ptr<base::ListValue> GetReadableFeedbackForSnapshot(
           l10n_util::GetStringUTF16(IDS_RESET_PROFILE_SETTINGS_LOCALE),
           g_browser_process->GetApplicationLocale());
   AddPair(list.get(),
-          l10n_util::GetStringUTF16(IDS_RESET_PROFILE_SETTINGS_USER_AGENT),
+          l10n_util::GetStringUTF16(IDS_ABOUT_VERSION_USER_AGENT),
           GetUserAgent());
   std::string version = version_info::GetVersionNumber();
   version += chrome::GetChannelString();
@@ -303,16 +303,16 @@ scoped_ptr<base::ListValue> GetReadableFeedbackForSnapshot(
             snapshot.homepage());
   }
 
-  int is_ntp_message_id = snapshot.homepage_is_ntp() ?
-      IDS_RESET_PROFILE_SETTINGS_HOMEPAGE_IS_NTP_TRUE :
-      IDS_RESET_PROFILE_SETTINGS_HOMEPAGE_IS_NTP_FALSE;
+  int is_ntp_message_id = snapshot.homepage_is_ntp()
+      ? IDS_RESET_PROFILE_SETTINGS_YES
+      : IDS_RESET_PROFILE_SETTINGS_NO;
   AddPair(list.get(),
           l10n_util::GetStringUTF16(IDS_RESET_PROFILE_SETTINGS_HOMEPAGE_IS_NTP),
           l10n_util::GetStringUTF16(is_ntp_message_id));
 
-  int show_home_button_id = snapshot.show_home_button() ?
-      IDS_RESET_PROFILE_SETTINGS_SHOW_HOME_BUTTON_TRUE :
-      IDS_RESET_PROFILE_SETTINGS_SHOW_HOME_BUTTON_FALSE;
+  int show_home_button_id = snapshot.show_home_button()
+      ? IDS_RESET_PROFILE_SETTINGS_YES
+      : IDS_RESET_PROFILE_SETTINGS_NO;
   AddPair(
       list.get(),
       l10n_util::GetStringUTF16(IDS_RESET_PROFILE_SETTINGS_SHOW_HOME_BUTTON),

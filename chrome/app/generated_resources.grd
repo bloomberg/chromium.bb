@@ -10573,9 +10573,6 @@ I don't think this site should be blocked!
         <message name="IDS_RESET_PROFILE_SETTINGS_LOCALE" desc="Locale field in the feedback details of the Reset Profile Settings dialog">
           Locale
         </message>
-        <message name="IDS_RESET_PROFILE_SETTINGS_USER_AGENT" desc="User Agent field in the feedback details of the Reset Profile Settings dialog">
-          User Agent
-        </message>
         <message name="IDS_RESET_PROFILE_SETTINGS_STARTUP_URLS" desc="Startup URLs tag in the feedback details of the Reset Profile Settings dialog">
           Startup URLs
         </message>
@@ -10588,20 +10585,14 @@ I don't think this site should be blocked!
         <message name="IDS_RESET_PROFILE_SETTINGS_HOMEPAGE_IS_NTP" desc="Tag in the feedback details of the Reset Profile Settings dialog">
           Homepage is the New Tab page
         </message>
-        <message name="IDS_RESET_PROFILE_SETTINGS_HOMEPAGE_IS_NTP_TRUE" desc="Value of HOMEPAGE_IS_NTP in the feedback details of the Reset Profile Settings dialog">
+        <message name="IDS_RESET_PROFILE_SETTINGS_YES" desc="'Yes' value for 'Homepage is NTP' and 'Show homebutton' in the feedback details of the Reset Profile Settings dialog">
           Yes
         </message>
-        <message name="IDS_RESET_PROFILE_SETTINGS_HOMEPAGE_IS_NTP_FALSE" desc="Value of HOMEPAGE_IS_NTP in the feedback details of the Reset Profile Settings dialog">
+        <message name="IDS_RESET_PROFILE_SETTINGS_NO" desc="'No' value for 'Homepage is NTP' and 'Show homebutton' in the feedback details of the Reset Profile Settings dialog">
           No
         </message>
         <message name="IDS_RESET_PROFILE_SETTINGS_SHOW_HOME_BUTTON" desc="Tag in the feedback details of the Reset Profile Settings dialog">
           Show Home button
-        </message>
-        <message name="IDS_RESET_PROFILE_SETTINGS_SHOW_HOME_BUTTON_TRUE" desc="Value of SHOW_HOME_BUTTON in the feedback details of the Reset Profile Settings dialog">
-          Yes
-        </message>
-        <message name="IDS_RESET_PROFILE_SETTINGS_SHOW_HOME_BUTTON_FALSE" desc="Value of SHOW_HOME_BUTTON in the feedback details of the Reset Profile Settings dialog">
-          No
         </message>
         <message name="IDS_RESET_PROFILE_SETTINGS_DSE" desc="Default search engine in the feedback details of the Reset Profile Settings dialog">
           Default search engine
