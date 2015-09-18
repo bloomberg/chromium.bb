@@ -612,7 +612,7 @@ TEST(NetworkQualityEstimatorTest, TestLRUCacheMaximumSize) {
 
     estimator.SimulateNetworkChangeTo(
         net::NetworkChangeNotifier::ConnectionType::CONNECTION_WIFI,
-        base::IntToString(i));
+        base::SizeTToString(i));
     if (i < NetworkQualityEstimator::kMaximumNetworkQualityCacheSize)
       EXPECT_EQ(i, estimator.cached_network_qualities_.size());
     EXPECT_LE(estimator.cached_network_qualities_.size(),
@@ -626,7 +626,7 @@ TEST(NetworkQualityEstimatorTest, TestLRUCacheMaximumSize) {
       NetworkQualityEstimator::Observation(500, base::TimeTicks::Now()));
   estimator.SimulateNetworkChangeTo(
       net::NetworkChangeNotifier::ConnectionType::CONNECTION_WIFI,
-      base::IntToString(network_count - 1));
+      base::SizeTToString(network_count - 1));
   EXPECT_EQ(static_cast<size_t>(
                 NetworkQualityEstimator::kMaximumNetworkQualityCacheSize),
             estimator.cached_network_qualities_.size());

@@ -2526,7 +2526,7 @@ void SpdySession::OnWindowUpdate(SpdyStreamId stream_id,
       DoDrainSession(
           ERR_SPDY_PROTOCOL_ERROR,
           "Received WINDOW_UPDATE with an invalid delta_window_size " +
-              base::UintToString(delta_window_size));
+              base::IntToString(delta_window_size));
       return;
     }
 
