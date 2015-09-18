@@ -139,7 +139,12 @@ class InterfacePtr {
   // Unbinds the InterfacePtr and returns the information which could be used
   // to setup an InterfacePtr again. This method may be used to move the proxy
   // to a different thread (see class comments for details).
+  //
+  // It is an error to call PassInterface() while there are pending responses.
+  // TODO: fix this restriction, it's not always obvious when there is a
+  // pending response.
   InterfacePtrInfo<Interface> PassInterface() {
+    MOJO_DCHECK(!internal_state_.has_pending_callbacks());
     State state;
     internal_state_.Swap(&state);
 

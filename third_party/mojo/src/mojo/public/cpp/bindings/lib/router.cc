@@ -87,11 +87,8 @@ Router::Router(ScopedMessagePipeHandle message_pipe,
 Router::~Router() {
   weak_self_.set_value(nullptr);
 
-  for (ResponderMap::const_iterator i = responders_.begin();
-       i != responders_.end();
-       ++i) {
-    delete i->second;
-  }
+  for (auto& pair : responders_)
+    delete pair.second;
 }
 
 bool Router::Accept(Message* message) {

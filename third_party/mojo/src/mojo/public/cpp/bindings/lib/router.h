@@ -76,6 +76,9 @@ class Router : public MessageReceiverWithResponder {
 
   MessagePipeHandle handle() const { return connector_.handle(); }
 
+  // Returns true if this Router has any pending callbacks.
+  bool has_pending_responders() const { return !responders_.empty(); }
+
  private:
   typedef std::map<uint64_t, MessageReceiver*> ResponderMap;
 
@@ -98,6 +101,8 @@ class Router : public MessageReceiverWithResponder {
   Connector connector_;
   SharedData<Router*> weak_self_;
   MessageReceiverWithResponderStatus* incoming_receiver_;
+  // Maps from the id of a response to the MessageReceiver that handles the
+  // response.
   ResponderMap responders_;
   uint64_t next_request_id_;
   bool testing_mode_;

@@ -119,6 +119,11 @@ class InterfacePtrState {
     router_->set_connection_error_handler(error_handler);
   }
 
+  // Returns true if bound and awaiting a response to a message.
+  bool has_pending_callbacks() const {
+    return router_ && router_->has_pending_responders();
+  }
+
   Router* router_for_testing() {
     ConfigureProxyIfNecessary();
     return router_;
