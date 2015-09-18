@@ -30,10 +30,12 @@ bool HpackEncoder::EncodeHeaderSet(const SpdyHeaderBlock& header_set,
   // Separate header set into pseudo-headers and regular headers.
   Representations pseudo_headers;
   Representations regular_headers;
+  bool found_cookie = false;
   for (const auto& header : header_set) {
-    if (header.first == "cookie") {
+    if (!found_cookie && header.first == "cookie") {
       // Note that there can only be one "cookie" header, because header_set is
       // a map.
+      found_cookie = true;
       CookieToCrumbs(header, &regular_headers);
     } else if (header.first[0] == kPseudoHeaderPrefix) {
       DecomposeRepresentation(header, &pseudo_headers);
@@ -43,16 +45,20 @@ bool HpackEncoder::EncodeHeaderSet(const SpdyHeaderBlock& header_set,
   }
 
   // Encode pseudo-headers.
+  bool found_authority = false;
   for (const auto& header : pseudo_headers) {
     const HpackEntry* entry =
         header_table_.GetByNameAndValue(header.first, header.second);
     if (entry != NULL) {
       EmitIndex(entry);
     } else {
-      if (header.first == ":authority") {
-        // :authority is always present and rarely changes, and has moderate
-        // length, therefore it makes a lot of sense to index (insert in the
-        // header table).
+      // :authority is always present and rarely changes, and has moderate
+      // length, therefore it makes a lot of sense to index (insert in the
+      // header table).
+      if (!found_authority && header.first == ":authority") {
+        // Note that there can only be one ":authority" header, because
+        // |header_set| is a map.
+        found_authority = true;
         EmitIndexedLiteral(header);
       } else {
         // Most common pseudo-header fields are represented in the static table,
