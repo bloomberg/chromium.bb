@@ -14,7 +14,9 @@
 namespace extensions {
 
 DeclarativeContentConditionTrackerTest::DeclarativeContentConditionTrackerTest()
-    : profile_(new TestingProfile) {}
+    : profile_(new TestingProfile),
+      next_predicate_group_id_(1) {
+}
 
 DeclarativeContentConditionTrackerTest::
 ~DeclarativeContentConditionTrackerTest() {
@@ -36,6 +38,11 @@ DeclarativeContentConditionTrackerTest::GetMockRenderProcessHost(
     content::WebContents* contents) {
   return static_cast<content::MockRenderProcessHost*>(
       contents->GetRenderViewHost()->GetProcess());
+}
+
+const void* DeclarativeContentConditionTrackerTest::GeneratePredicateGroupID() {
+  // The group ID is opaque to the trackers.
+  return reinterpret_cast<const void*>(next_predicate_group_id_++);
 }
 
 }  // namespace extensions

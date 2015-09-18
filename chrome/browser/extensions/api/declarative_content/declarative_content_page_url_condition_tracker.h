@@ -11,7 +11,7 @@
 #include "base/callback.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/extensions/api/declarative_content/declarative_content_condition_tracker_delegate.h"
+#include "chrome/browser/extensions/api/declarative_content/content_predicate_evaluator.h"
 #include "components/url_matcher/url_matcher.h"
 #include "content/public/browser/web_contents_observer.h"
 
@@ -20,7 +20,6 @@ class Value;
 }
 
 namespace content {
-class BrowserContext;
 struct FrameNavigateParams;
 struct LoadCommittedDetails;
 class WebContents;
@@ -32,23 +31,31 @@ class Extension;
 
 // Tests the URL of a page against conditions specified with the
 // URLMatcherConditionSet.
-class DeclarativeContentPageUrlPredicate {
+class DeclarativeContentPageUrlPredicate : public ContentPredicate {
  public:
-  ~DeclarativeContentPageUrlPredicate();
+  ~DeclarativeContentPageUrlPredicate() override;
 
   url_matcher::URLMatcherConditionSet* url_matcher_condition_set() const {
     return url_matcher_condition_set_.get();
   }
 
   static scoped_ptr<DeclarativeContentPageUrlPredicate> Create(
+      ContentPredicateEvaluator* evaluator,
       url_matcher::URLMatcherConditionFactory* url_matcher_condition_factory,
       const base::Value& value,
       std::string* error);
 
+  // ContentPredicate:
+  ContentPredicateEvaluator* GetEvaluator() const override;
+
  private:
-  explicit DeclarativeContentPageUrlPredicate(
+  DeclarativeContentPageUrlPredicate(
+      ContentPredicateEvaluator* evaluator,
       scoped_refptr<url_matcher::URLMatcherConditionSet>
           url_matcher_condition_set);
+
+  // Weak.
+  ContentPredicateEvaluator* const evaluator_;
 
   scoped_refptr<url_matcher::URLMatcherConditionSet> url_matcher_condition_set_;
 
@@ -57,63 +64,30 @@ class DeclarativeContentPageUrlPredicate {
 
 // Supports tracking of URL matches across tab contents in a browser context,
 // and querying for the matching condition sets.
-class DeclarativeContentPageUrlConditionTracker {
+class DeclarativeContentPageUrlConditionTracker
+    : public ContentPredicateEvaluator {
  public:
-  using PredicateFactory =
-      base::Callback<scoped_ptr<DeclarativeContentPageUrlPredicate>(
-          const base::Value& value,
-          std::string* error)>;
+  explicit DeclarativeContentPageUrlConditionTracker(Delegate* delegate);
+  ~DeclarativeContentPageUrlConditionTracker() override;
 
-  DeclarativeContentPageUrlConditionTracker(
-      content::BrowserContext* context,
-      DeclarativeContentConditionTrackerDelegate* delegate);
-  ~DeclarativeContentPageUrlConditionTracker();
-
-  // Creates a new DeclarativeContentPageUrlPredicate from |value|. Sets
-  // *|error| and returns null if creation failed for any reason.
-  scoped_ptr<DeclarativeContentPageUrlPredicate> CreatePredicate(
+  // ContentPredicateEvaluator:
+  std::string GetPredicateApiAttributeName() const override;
+  scoped_ptr<const ContentPredicate> CreatePredicate(
       const Extension* extension,
       const base::Value& value,
-      std::string* error);
-
-  // Adds new URLMatcherConditionSet to the URL Matcher. Each condition set
-  // must have a unique ID.
-  void AddConditionSets(
-      const url_matcher::URLMatcherConditionSet::Vector& condition_sets);
-
-  // Removes the listed condition sets. All |condition_set_ids| must be
-  // currently registered.
-  void RemoveConditionSets(
-      const std::vector<url_matcher::URLMatcherConditionSet::ID>&
-      condition_set_ids);
-
-  // Removes all unused condition sets from the ConditionFactory.
-  void ClearUnusedConditionSets();
-
-  // Returns the URLMatcherConditionFactory that must be used to create
-  // URLMatcherConditionSets for this tracker.
-  url_matcher::URLMatcherConditionFactory* condition_factory() {
-    return url_matcher_.condition_factory();
-  }
-
-  // Requests that URL matches be tracked for |contents|.
-  void TrackForWebContents(content::WebContents* contents);
-
-  // Handles navigation of |contents|. We depend on the caller to notify us of
-  // this event rather than listening for it ourselves, so that the caller can
-  // coordinate evaluation with all the trackers that respond to it. If we
-  // listened ourselves and requested rule evaluation before another tracker
-  // received the notification, our conditions would be evaluated based on the
-  // new URL while the other tracker's conditions would still be evaluated based
-  // on the previous URL.
-  void OnWebContentsNavigation(content::WebContents* contents,
-                               const content::LoadCommittedDetails& details,
-                               const content::FrameNavigateParams& params);
-
-  // Returns the result of evaluating |predicate| on the per-tab state
-  // associated with |contents|.
-  bool EvaluatePredicate(const DeclarativeContentPageUrlPredicate* predicate,
-                         content::WebContents* contents) const;
+      std::string* error) override;
+  void TrackPredicates(
+      const std::map<const void*, std::vector<const ContentPredicate*>>&
+          predicates) override;
+  void StopTrackingPredicates(
+      const std::vector<const void*>& predicate_groups) override;
+  void TrackForWebContents(content::WebContents* contents) override;
+  void OnWebContentsNavigation(
+      content::WebContents* contents,
+      const content::LoadCommittedDetails& details,
+      const content::FrameNavigateParams& params) override;
+  bool EvaluatePredicate(const ContentPredicate* predicate,
+                         content::WebContents* tab) const override;
 
   // Returns true if this object retains no allocated data. Only for debugging.
   bool IsEmpty() const;
@@ -157,18 +131,19 @@ class DeclarativeContentPageUrlConditionTracker {
 
   void UpdateMatchesForAllTrackers();
 
+  // Weak.
+  Delegate* const delegate_;
+
   // Matches URLs for all WebContents.
   url_matcher::URLMatcher url_matcher_;
+
+  // Grouped predicates tracked by this object.
+  std::map<const void*, std::vector<const DeclarativeContentPageUrlPredicate*>>
+      tracked_predicates_;
 
   // Maps WebContents to the tracker for that WebContents state.
   std::map<content::WebContents*,
            linked_ptr<PerWebContentsTracker>> per_web_contents_tracker_;
-
-  // The context whose state we're monitoring for evaluation.
-  content::BrowserContext* context_;
-
-  // Weak.
-  DeclarativeContentConditionTrackerDelegate* delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(DeclarativeContentPageUrlConditionTracker);
 };

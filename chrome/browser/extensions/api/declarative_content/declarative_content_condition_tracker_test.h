@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_EXTENSIONS_API_DECLARATIVE_CONTENT_DECLARATIVE_CONTENT_CONDITION_TRACKER_TEST_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/extensions/api/declarative_content/declarative_content_condition_tracker_delegate.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/render_view_host.h"
@@ -41,6 +40,8 @@ class DeclarativeContentConditionTrackerTest : public testing::Test {
 
   TestingProfile* profile() { return profile_.get(); }
 
+  const void* GeneratePredicateGroupID();
+
  private:
   content::TestBrowserThreadBundle thread_bundle_;
 
@@ -48,6 +49,8 @@ class DeclarativeContentConditionTrackerTest : public testing::Test {
   content::RenderViewHostTestEnabler render_view_host_test_enabler_;
 
   const scoped_ptr<TestingProfile> profile_;
+
+  uintptr_t next_predicate_group_id_;
 
   DISALLOW_COPY_AND_ASSIGN(DeclarativeContentConditionTrackerTest);
 };

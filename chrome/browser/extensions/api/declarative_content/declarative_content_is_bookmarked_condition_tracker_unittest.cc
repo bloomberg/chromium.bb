@@ -14,6 +14,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/values_test_util.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
+#include "chrome/browser/extensions/api/declarative_content/content_predicate_evaluator.h"
 #include "chrome/browser/extensions/api/declarative_content/declarative_content_condition_tracker_test.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/bookmarks/browser/bookmark_model.h"
@@ -46,11 +47,13 @@ scoped_refptr<Extension> CreateExtensionWithBookmarksPermission(
 }
 
 scoped_ptr<DeclarativeContentIsBookmarkedPredicate> CreatePredicate(
+    ContentPredicateEvaluator* evaluator,
     const Extension* extension,
     bool is_bookmarked) {
   std::string error;
   scoped_ptr<DeclarativeContentIsBookmarkedPredicate> predicate =
       DeclarativeContentIsBookmarkedPredicate::Create(
+          evaluator,
           extension,
           *base::test::ParseJson(is_bookmarked ? "true" : "false"),
           &error);
@@ -69,7 +72,7 @@ using testing::UnorderedElementsAreArray;
 class DeclarativeContentIsBookmarkedConditionTrackerTest
     : public DeclarativeContentConditionTrackerTest {
  protected:
-  class Delegate : public DeclarativeContentConditionTrackerDelegate {
+  class Delegate : public ContentPredicateEvaluator::Delegate {
    public:
     Delegate() {}
 
@@ -77,7 +80,7 @@ class DeclarativeContentIsBookmarkedConditionTrackerTest
       return evaluation_requests_;
     }
 
-    // DeclarativeContentConditionTrackerDelegate:
+    // ContentPredicateEvaluator::Delegate:
     void RequestEvaluation(content::WebContents* contents) override {
       EXPECT_FALSE(ContainsKey(evaluation_requests_, contents));
       evaluation_requests_.insert(contents);
@@ -103,8 +106,10 @@ class DeclarativeContentIsBookmarkedConditionTrackerTest
         profile(),
         &delegate_));
     extension_ = CreateExtensionWithBookmarksPermission(true);
-    is_bookmarked_predicate_ = CreatePredicate(extension_.get(), true);
-    is_not_bookmarked_predicate_ = CreatePredicate(extension_.get(), false);
+    is_bookmarked_predicate_ = CreatePredicate(tracker_.get(), extension_.get(),
+                                               true);
+    is_not_bookmarked_predicate_ = CreatePredicate(tracker_.get(),
+                                                   extension_.get(), false);
   }
 
   void LoadURL(content::WebContents* tab, const GURL& url) {
@@ -163,6 +168,7 @@ TEST(DeclarativeContentIsBookmarkedPredicateTest,
   std::string error;
   scoped_ptr<DeclarativeContentIsBookmarkedPredicate> predicate =
       DeclarativeContentIsBookmarkedPredicate::Create(
+          nullptr,
           extension.get(),
           *base::test::ParseJson("true"),
           &error);
@@ -178,6 +184,7 @@ TEST(DeclarativeContentIsBookmarkedPredicateTest,
   std::string error;
   scoped_ptr<DeclarativeContentIsBookmarkedPredicate> predicate =
       DeclarativeContentIsBookmarkedPredicate::Create(
+          nullptr,
           extension.get(),
           *base::test::ParseJson("[]"),
           &error);
@@ -190,7 +197,7 @@ TEST(DeclarativeContentIsBookmarkedPredicateTest, IsBookmarkedPredicateTrue) {
   scoped_refptr<Extension> extension =
       CreateExtensionWithBookmarksPermission(true);
   scoped_ptr<DeclarativeContentIsBookmarkedPredicate> predicate =
-      CreatePredicate(extension.get(), true);
+      CreatePredicate(nullptr, extension.get(), true);
 }
 
 // Tests isBookmark: false. Predicate state is checked in CreatePredicate().
@@ -198,7 +205,7 @@ TEST(DeclarativeContentIsBookmarkedPredicateTest, IsBookmarkedPredicateFalse) {
   scoped_refptr<Extension> extension =
       CreateExtensionWithBookmarksPermission(true);
   scoped_ptr<DeclarativeContentIsBookmarkedPredicate> predicate =
-      CreatePredicate(extension.get(), false);
+      CreatePredicate(nullptr, extension.get(), false);
 }
 
 // Tests that starting tracking for a WebContents that has a bookmarked URL

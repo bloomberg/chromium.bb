@@ -12,7 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/scoped_observer.h"
-#include "chrome/browser/extensions/api/declarative_content/declarative_content_condition_tracker_delegate.h"
+#include "chrome/browser/extensions/api/declarative_content/content_predicate_evaluator.h"
 #include "components/bookmarks/browser/base_bookmark_model_observer.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "extensions/common/extension.h"
@@ -31,23 +31,31 @@ class WebContents;
 namespace extensions {
 
 // Tests the bookmarked state of the page.
-class DeclarativeContentIsBookmarkedPredicate {
+class DeclarativeContentIsBookmarkedPredicate : public ContentPredicate {
  public:
-  ~DeclarativeContentIsBookmarkedPredicate();
+  ~DeclarativeContentIsBookmarkedPredicate() override;
 
-  bool IsIgnored() const;
+  bool IsIgnored() const override;
 
   bool is_bookmarked() const { return is_bookmarked_; }
 
   static scoped_ptr<DeclarativeContentIsBookmarkedPredicate> Create(
+      ContentPredicateEvaluator* evaluator,
       const Extension* extension,
       const base::Value& value,
       std::string* error);
 
+  // ContentPredicate:
+  ContentPredicateEvaluator* GetEvaluator() const override;
+
  private:
   DeclarativeContentIsBookmarkedPredicate(
+      ContentPredicateEvaluator* evaluator,
       scoped_refptr<const Extension> extension,
       bool is_bookmarked);
+
+  // Weak.
+  ContentPredicateEvaluator* const evaluator_;
 
   scoped_refptr<const Extension> extension_;
   bool is_bookmarked_;
@@ -58,39 +66,32 @@ class DeclarativeContentIsBookmarkedPredicate {
 // Supports tracking of URL matches across tab contents in a browser context,
 // and querying for the matching condition sets.
 class DeclarativeContentIsBookmarkedConditionTracker
-    : public bookmarks::BaseBookmarkModelObserver {
+    : public ContentPredicateEvaluator,
+      public bookmarks::BaseBookmarkModelObserver {
  public:
   DeclarativeContentIsBookmarkedConditionTracker(
       content::BrowserContext* context,
-      DeclarativeContentConditionTrackerDelegate* delegate);
+      Delegate* delegate);
   ~DeclarativeContentIsBookmarkedConditionTracker() override;
 
-  // Creates a new DeclarativeContentIsBookmarkedPredicate from |value|. Sets
-  // *|error| and returns null if creation failed for any reason.
-  scoped_ptr<DeclarativeContentIsBookmarkedPredicate> CreatePredicate(
+  // ContentPredicateEvaluator:
+  std::string GetPredicateApiAttributeName() const override;
+  scoped_ptr<const ContentPredicate> CreatePredicate(
       const Extension* extension,
       const base::Value& value,
-      std::string* error);
-
-  // Requests that URL matches be tracked for |contents|.
-  void TrackForWebContents(content::WebContents* contents);
-
-  // Handles navigation of |contents|. We depend on the caller to notify us of
-  // this event rather than listening for it ourselves, so that the caller can
-  // coordinate evaluation with all the trackers that respond to it. If we
-  // listened ourselves and requested rule evaluation before another tracker
-  // received the notification, our conditions would be evaluated based on the
-  // new URL while the other tracker's conditions would still be evaluated based
-  // on the previous URL.
-  void OnWebContentsNavigation(content::WebContents* contents,
-                               const content::LoadCommittedDetails& details,
-                               const content::FrameNavigateParams& params);
-
-  // Returns the result of evaluating |predicate| on the per-tab state
-  // associated with |contents|.
-  bool EvaluatePredicate(
-      const DeclarativeContentIsBookmarkedPredicate* predicate,
-      content::WebContents* contents) const;
+      std::string* error) override;
+  void TrackPredicates(
+      const std::map<const void*, std::vector<const ContentPredicate*>>&
+          predicates) override;
+  void StopTrackingPredicates(
+      const std::vector<const void*>& predicate_groups) override;
+  void TrackForWebContents(content::WebContents* contents) override;
+  void OnWebContentsNavigation(
+      content::WebContents* contents,
+      const content::LoadCommittedDetails& details,
+      const content::FrameNavigateParams& params) override;
+  bool EvaluatePredicate(const ContentPredicate* predicate,
+                         content::WebContents* tab) const override;
 
  private:
   class PerWebContentsTracker : public content::WebContentsObserver {
@@ -152,6 +153,9 @@ class DeclarativeContentIsBookmarkedConditionTracker
   // Updates the bookmark state of all per-WebContents trackers.
   void UpdateAllPerWebContentsTrackers();
 
+  // Weak.
+  Delegate* const delegate_;
+
   // Maps WebContents to the tracker for that WebContents state.
   std::map<content::WebContents*,
            linked_ptr<PerWebContentsTracker>> per_web_contents_tracker_;
@@ -160,9 +164,6 @@ class DeclarativeContentIsBookmarkedConditionTracker
   // sync). The rules need only be evaluated once after the extensive changes
   // are complete.
   int extensive_bookmark_changes_in_progress_;
-
-  // Weak.
-  DeclarativeContentConditionTrackerDelegate* delegate_;
 
   ScopedObserver<bookmarks::BookmarkModel, bookmarks::BookmarkModelObserver>
       scoped_bookmarks_observer_;

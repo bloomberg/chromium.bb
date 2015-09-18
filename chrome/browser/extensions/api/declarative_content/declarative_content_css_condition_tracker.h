@@ -14,6 +14,7 @@
 #include "base/containers/hash_tables.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
+#include "chrome/browser/extensions/api/declarative_content/content_predicate_evaluator.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -23,7 +24,6 @@ class Value;
 }
 
 namespace content {
-class BrowserContext;
 struct FrameNavigateParams;
 struct LoadCommittedDetails;
 class RenderProcessHost;
@@ -35,76 +35,60 @@ namespace extensions {
 class Extension;
 
 // Tests whether all the specified CSS selectors match on the page.
-class DeclarativeContentCssPredicate {
+class DeclarativeContentCssPredicate : public ContentPredicate {
  public:
-  ~DeclarativeContentCssPredicate();
+  ~DeclarativeContentCssPredicate() override;
 
   const std::vector<std::string>& css_selectors() const {
     return css_selectors_;
   }
 
   static scoped_ptr<DeclarativeContentCssPredicate> Create(
+      ContentPredicateEvaluator* evaluator,
       const base::Value& value,
       std::string* error);
 
+  // ContentPredicate:
+  ContentPredicateEvaluator* GetEvaluator() const override;
+
  private:
-  explicit DeclarativeContentCssPredicate(
-      const std::vector<std::string>& css_selectors);
+  DeclarativeContentCssPredicate(ContentPredicateEvaluator* evaluator,
+                                 const std::vector<std::string>& css_selectors);
+
+  // Weak.
+  ContentPredicateEvaluator* const evaluator_;
   std::vector<std::string> css_selectors_;
 
   DISALLOW_COPY_AND_ASSIGN(DeclarativeContentCssPredicate);
 };
 
-class DeclarativeContentConditionTrackerDelegate;
-
 // Supports watching of CSS selectors to across tab contents in a browser
 // context, and querying for the matching CSS selectors for a context.
 class DeclarativeContentCssConditionTracker
-    : public content::NotificationObserver {
+    : public ContentPredicateEvaluator,
+      public content::NotificationObserver {
  public:
-  DeclarativeContentCssConditionTracker(
-      content::BrowserContext* context,
-      DeclarativeContentConditionTrackerDelegate* delegate);
+  explicit DeclarativeContentCssConditionTracker(Delegate* delegate);
   ~DeclarativeContentCssConditionTracker() override;
 
-  // Creates a new DeclarativeContentCssPredicate from |value|. Sets
-  // *|error| and returns null if creation failed for any reason.
-  scoped_ptr<DeclarativeContentCssPredicate> CreatePredicate(
+  // ContentPredicateEvaluator:
+  std::string GetPredicateApiAttributeName() const override;
+  scoped_ptr<const ContentPredicate> CreatePredicate(
       const Extension* extension,
       const base::Value& value,
-      std::string* error);
-
-  // Sets the set of CSS selectors to watch for CSS condition evaluation.
-  void SetWatchedCssSelectors(
-      const std::set<std::string>& watched_css_selectors);
-
-  // Requests that CSS conditions be tracked for |contents|.
-  void TrackForWebContents(content::WebContents* contents);
-
-  // Handles navigation of |contents|. We depend on the caller to notify us of
-  // this event rather than listening for it ourselves, so that the caller can
-  // coordinate evaluation with all the trackers that respond to it. If we
-  // listened ourselves and requested rule evaluation before another tracker
-  // received the notification, our conditions would be evaluated based on the
-  // new URL while the other tracker's conditions would still be evaluated based
-  // on the previous URL.
-  void OnWebContentsNavigation(content::WebContents* contents,
-                               const content::LoadCommittedDetails& details,
-                               const content::FrameNavigateParams& params);
-
-  // Returns the result of evaluating |predicate| on the per-tab state
-  // associated with |contents|.
-  bool EvaluatePredicate(const DeclarativeContentCssPredicate* predicate,
-                         content::WebContents* contents) const;
-
-  // TODO(wittman): Remove once DeclarativeChromeContentRulesRegistry no longer
-  // depends on concrete condition implementations. At that point
-  // DeclarativeChromeContentRulesRegistryTest.ActiveRulesDoesntGrow will be
-  // able to use a test condition object and not need to depend on force setting
-  // matching CSS seleectors.
-  void UpdateMatchingCssSelectorsForTesting(
+      std::string* error) override;
+  void TrackPredicates(
+      const std::map<const void*, std::vector<const ContentPredicate*>>&
+          predicates) override;
+  void StopTrackingPredicates(
+      const std::vector<const void*>& predicate_groups) override;
+  void TrackForWebContents(content::WebContents* contents) override;
+  void OnWebContentsNavigation(
       content::WebContents* contents,
-      const std::vector<std::string>& matching_css_selectors);
+      const content::LoadCommittedDetails& details,
+      const content::FrameNavigateParams& params) override;
+  bool EvaluatePredicate(const ContentPredicate* predicate,
+                         content::WebContents* tab) const override;
 
  private:
   // Monitors CSS selector matching state on one WebContents.
@@ -123,10 +107,6 @@ class DeclarativeContentCssConditionTracker
 
     void OnWebContentsNavigation(const content::LoadCommittedDetails& details,
                                  const content::FrameNavigateParams& params);
-
-    // See comment on similar function above.
-    void UpdateMatchingCssSelectorsForTesting(
-        const std::vector<std::string>& matching_css_selectors);
 
     const base::hash_set<std::string>& matching_css_selectors() const {
       return matching_css_selectors_;
@@ -153,27 +133,36 @@ class DeclarativeContentCssConditionTracker
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override;
 
+  // Informs renderer processes of a new set of watched CSS selectors.
+  void UpdateRenderersWatchedCssSelectors(
+      const std::vector<std::string>& watched_css_selectors);
+
+  // Returns the current list of watched CSS selectors.
+  std::vector<std::string> GetWatchedCssSelectors() const;
+
   // If the renderer process is associated with our browser context, tells it
   // what page attributes to watch for using an ExtensionMsg_WatchPages.
   void InstructRenderProcessIfManagingBrowserContext(
-      content::RenderProcessHost* process);
+      content::RenderProcessHost* process,
+      std::vector<std::string> watched_css_selectors);
 
   // Called by PerWebContentsTracker on web contents destruction.
   void DeletePerWebContentsTracker(content::WebContents* contents);
 
-  // The context whose state we're monitoring for evaluation.
-  content::BrowserContext* context_;
+  // Weak.
+  Delegate* delegate_;
 
-  // All CSS selectors that are watched for by any rule's conditions. This
-  // vector is sorted by construction.
-  std::vector<std::string> watched_css_selectors_;
+  // Maps the CSS selectors to watch to the number of predicates specifying
+  // them.
+  std::map<std::string, int> watched_css_selector_predicate_count_;
+
+  // Grouped predicates tracked by this object.
+  std::map<const void*, std::vector<const DeclarativeContentCssPredicate*>>
+      tracked_predicates_;
 
   // Maps WebContents to the tracker for that WebContents state.
   std::map<content::WebContents*, linked_ptr<PerWebContentsTracker>>
       per_web_contents_tracker_;
-
-  // Weak.
-  DeclarativeContentConditionTrackerDelegate* delegate_;
 
   // Manages our notification registrations.
   content::NotificationRegistrar registrar_;

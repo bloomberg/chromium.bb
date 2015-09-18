@@ -4,9 +4,11 @@
 
 #include "chrome/browser/extensions/api/chrome_extensions_api_client.h"
 
+#include "base/bind.h"
 #include "base/files/file_path.h"
 #include "chrome/browser/extensions/api/chrome_device_permissions_prompt.h"
 #include "chrome/browser/extensions/api/declarative_content/chrome_content_rules_registry.h"
+#include "chrome/browser/extensions/api/declarative_content/default_content_predicate_evaluators.h"
 #include "chrome/browser/extensions/api/management/chrome_management_api_delegate.h"
 #include "chrome/browser/extensions/api/storage/sync_value_store_cache.h"
 #include "chrome/browser/extensions/api/web_request/chrome_extension_web_request_event_router_delegate.h"
@@ -130,7 +132,11 @@ ChromeExtensionsAPIClient::CreateContentRulesRegistry(
     content::BrowserContext* browser_context,
     RulesCacheDelegate* cache_delegate) const {
   return scoped_refptr<ContentRulesRegistry>(
-      new ChromeContentRulesRegistry(browser_context, cache_delegate));
+      new ChromeContentRulesRegistry(
+          browser_context,
+          cache_delegate,
+          base::Bind(&CreateDefaultContentPredicateEvaluators,
+                     base::Unretained(browser_context))));
 }
 
 scoped_ptr<DevicePermissionsPrompt>
