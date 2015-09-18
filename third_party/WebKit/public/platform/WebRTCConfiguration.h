@@ -134,10 +134,6 @@ public:
     BLINK_PLATFORM_EXPORT void reset();
     bool isNull() const { return m_private.isNull(); }
 
-    // TODO(guoweis): Remove next 2 functions when WebKit rolls into Chromium.
-    BLINK_PLATFORM_EXPORT size_t numberOfServers() const;
-    BLINK_PLATFORM_EXPORT WebRTCICEServer server(size_t index) const;
-
     BLINK_PLATFORM_EXPORT WebRTCIceTransports iceTransports() const;
 
     BLINK_PLATFORM_EXPORT WebRTCBundlePolicy bundlePolicy() const;

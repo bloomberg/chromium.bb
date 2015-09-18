@@ -113,23 +113,6 @@ void WebRTCConfiguration::reset()
     m_private.reset();
 }
 
-// TODO(guoweis): Remove this function when WebKit rolls into Chromium.
-size_t WebRTCConfiguration::numberOfServers() const
-{
-    ASSERT(!isNull());
-    if (!m_private->iceServers()) {
-        return 0;
-    }
-    return m_private->iceServers()->numberOfServers();
-}
-
-// TODO(guoweis): Remove this function when WebKit rolls into Chromium.
-WebRTCICEServer WebRTCConfiguration::server(size_t index) const
-{
-    ASSERT(!isNull());
-    return WebRTCICEServer(m_private->iceServers()->server(index));
-}
-
 WebRTCIceTransports WebRTCConfiguration::iceTransports() const
 {
     ASSERT(!isNull());
