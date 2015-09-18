@@ -365,6 +365,11 @@ html[dir='rtl'] .site-domain {
   border-color: rgba(0, 0, 0, .5);
 }
 
+.site-domain-wrapper:hover .site-domain-row,
+.entry-box:hover {
+  background-color: rgba(0, 0, 0, .025);
+}
+
 .filter-status {
   -webkit-margin-start: 10px;
 }
