@@ -1053,6 +1053,8 @@
       'common/test_util.h',
       'renderer/test_extensions_renderer_client.cc',
       'renderer/test_extensions_renderer_client.h',
+      'test/background_page_watcher.cc',
+      'test/background_page_watcher.h',
       'test/extension_test_message_listener.cc',
       'test/extension_test_message_listener.h',
       'test/result_catcher.cc',

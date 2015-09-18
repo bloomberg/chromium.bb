@@ -9,11 +9,11 @@
 
 #include "base/callback.h"
 #include "base/containers/scoped_ptr_hash_map.h"
-#include "base/lazy_instance.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/synchronization/lock.h"
 #include "content/public/renderer/render_process_observer.h"
 #include "ipc/ipc_sync_message_filter.h"
 #include "v8/include/v8.h"
@@ -72,8 +72,14 @@ class WakeEventPage : public content::RenderProcessObserver {
 
   // For |requests_|.
   struct RequestData {
-    explicit RequestData(const OnResponseCallback& on_response);
+    RequestData(int thread_id, const OnResponseCallback& on_response);
     ~RequestData();
+
+    // The thread ID the request was made on. |on_response| must be called on
+    // that thread.
+    int thread_id;
+
+    // Callback to run when the response to the request arrives.
     OnResponseCallback on_response;
   };
 
@@ -95,10 +101,12 @@ class WakeEventPage : public content::RenderProcessObserver {
   // IPC sender. Belongs to the render thread, but thread safe.
   scoped_refptr<IPC::SyncMessageFilter> message_filter_;
 
-  // All in-flight requests, keyed by request ID.
+  // All in-flight requests, keyed by request ID. Used on multiple threads, so
+  // must be guarded by |requests_lock_|.
   base::ScopedPtrHashMap<int, scoped_ptr<RequestData>> requests_;
 
-  base::WeakPtrFactory<WakeEventPage> weak_ptr_factory_;
+  // Lock for |requests_|.
+  base::Lock requests_lock_;
 
   DISALLOW_COPY_AND_ASSIGN(WakeEventPage);
 };

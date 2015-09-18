@@ -7,8 +7,10 @@
 #include "base/atomic_sequence_num.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "content/public/child/worker_thread.h"
 #include "content/public/renderer/render_thread.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/renderer/object_backed_native_handler.h"
@@ -124,7 +126,8 @@ v8::Local<v8::Function> WakeEventPage::GetForContext(ScriptContext* context) {
     const char* kFunctionName = "WakeEventPage";
     WakeEventPageNativeHandler* native_handler = new WakeEventPageNativeHandler(
         context, kFunctionName, base::Bind(&WakeEventPage::MakeRequest,
-                                           weak_ptr_factory_.GetWeakPtr()));
+                                           // Safe, owned by a LazyInstance.
+                                           base::Unretained(this)));
 
     // Extract and cache the wake-event-page function from the native handler.
     wake_event_page = GetPropertyUnsafe(
@@ -136,12 +139,13 @@ v8::Local<v8::Function> WakeEventPage::GetForContext(ScriptContext* context) {
   return handle_scope.Escape(wake_event_page.As<v8::Function>());
 }
 
-WakeEventPage::RequestData::RequestData(const OnResponseCallback& on_response)
-    : on_response(on_response) {}
+WakeEventPage::RequestData::RequestData(int thread_id,
+                                        const OnResponseCallback& on_response)
+    : thread_id(thread_id), on_response(on_response) {}
 
 WakeEventPage::RequestData::~RequestData() {}
 
-WakeEventPage::WakeEventPage() : weak_ptr_factory_(this) {}
+WakeEventPage::WakeEventPage() {}
 
 WakeEventPage::~WakeEventPage() {}
 
@@ -149,7 +153,12 @@ void WakeEventPage::MakeRequest(const std::string& extension_id,
                                 const OnResponseCallback& on_response) {
   static base::AtomicSequenceNumber sequence_number;
   int request_id = sequence_number.GetNext();
-  requests_.set(request_id, make_scoped_ptr(new RequestData(on_response)));
+  {
+    scoped_ptr<RequestData> request_data(
+        new RequestData(content::WorkerThread::GetCurrentId(), on_response));
+    base::AutoLock lock(requests_lock_);
+    requests_.set(request_id, request_data.Pass());
+  }
   message_filter_->Send(
       new ExtensionHostMsg_WakeEventPage(request_id, extension_id));
 }
@@ -165,9 +174,21 @@ bool WakeEventPage::OnControlMessageReceived(const IPC::Message& message) {
 }
 
 void WakeEventPage::OnWakeEventPageResponse(int request_id, bool success) {
-  scoped_ptr<RequestData> request_data = requests_.take(request_id);
-  CHECK(request_data);
-  request_data->on_response.Run(success);
+  scoped_ptr<RequestData> request_data;
+  {
+    base::AutoLock lock(requests_lock_);
+    request_data = requests_.take(request_id);
+  }
+  CHECK(request_data) << "No request with ID " << request_id;
+  if (request_data->thread_id == 0) {
+    // Thread ID of 0 means it wasn't called on a worker thread, so safe to
+    // call immediately.
+    request_data->on_response.Run(success);
+  } else {
+    content::WorkerThread::PostTask(
+        request_data->thread_id,
+        base::Bind(request_data->on_response, success));
+  }
 }
 
 }  //  namespace extensions

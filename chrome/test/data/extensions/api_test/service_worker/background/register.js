@@ -2,6 +2,5 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-self.addEventListener('fetch', function(event) {
-  event.respondWith(new Response(typeof chrome));
-});
+// This test is simply that registration succeeds. Nothing has to be done the
+// service worker.

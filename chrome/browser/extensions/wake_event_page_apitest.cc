@@ -17,6 +17,7 @@
 #include "extensions/browser/process_manager.h"
 #include "extensions/browser/process_manager_observer.h"
 #include "extensions/common/extension.h"
+#include "extensions/test/background_page_watcher.h"
 #include "extensions/test/extension_test_message_listener.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -56,64 +57,6 @@ const char* kContentScriptJs =
     "chrome.test.getWakeEventPage()(function(success) {\n"
     "  chrome.test.sendMessage(success ? 'success' : 'failure');\n"
     "});\n";
-
-class BackgroundPageWatcher : public ProcessManagerObserver {
- public:
-  BackgroundPageWatcher(ProcessManager* process_manager,
-                        const Extension* extension)
-      : process_manager_(process_manager),
-        extension_id_(extension->id()),
-        is_waiting_for_open_(false),
-        is_waiting_for_close_(false) {}
-
-  // Returns when the background page is open. If the background page is
-  // already open, returns immediately.
-  void WaitForOpen() { WaitForOpenState(true); }
-
-  // Returns when the background page is closed. If the background page is
-  // already closed, returns immediately.
-  void WaitForClose() { WaitForOpenState(false); }
-
- private:
-  // Returns when the background page has open state of |wait_for_open|. If the
-  // background page is already in that state, returns immediately.
-  void WaitForOpenState(bool wait_for_open) {
-    if (IsBackgroundPageOpen() == wait_for_open)
-      return;
-    ScopedObserver<ProcessManager, ProcessManagerObserver> observer(this);
-    observer.Add(process_manager_);
-    bool* flag = wait_for_open ? &is_waiting_for_open_ : &is_waiting_for_close_;
-    base::AutoReset<bool> set_flag(flag, true);
-    base::RunLoop run_loop;
-    base::AutoReset<base::Closure> set_quit_run_loop(&quit_run_loop_,
-                                                     run_loop.QuitClosure());
-    CHECK_EQ(wait_for_open, IsBackgroundPageOpen());
-  }
-
-  bool IsBackgroundPageOpen() {
-    return process_manager_->GetBackgroundHostForExtension(extension_id_) !=
-           nullptr;
-  }
-
-  void OnBackgroundHostCreated(ExtensionHost* host) override {
-    if (is_waiting_for_open_ && host->extension()->id() == extension_id_)
-      quit_run_loop_.Run();
-  }
-
-  void OnBackgroundHostClose(const std::string& extension_id) override {
-    if (is_waiting_for_close_ && extension_id == extension_id_)
-      quit_run_loop_.Run();
-  }
-
-  ProcessManager* const process_manager_;
-  const std::string extension_id_;
-
-  base::Closure quit_run_loop_;
-  bool is_waiting_for_open_;
-  bool is_waiting_for_close_;
-
-  DISALLOW_COPY_AND_ASSIGN(BackgroundPageWatcher);
-};
 
 class WakeEventPageTest : public ExtensionBrowserTest {
  public:

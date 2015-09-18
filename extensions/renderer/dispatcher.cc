@@ -5,6 +5,7 @@
 #include "extensions/renderer/dispatcher.h"
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/containers/scoped_ptr_map.h"
@@ -384,17 +385,34 @@ void Dispatcher::DidInitializeServiceWorkerContextOnWorkerThread(
   v8::Local<v8::String> script = v8::String::NewExternal(
       isolate, new StaticV8ExternalOneByteStringResource(script_resource));
 
-  // Run the script to get the main function, then run the main function to
-  // inject service worker bindings.
-  v8::Local<v8::Value> result = context->RunScript(
-      v8_helpers::ToV8StringUnsafe(isolate, "service_worker"), script,
-      base::Bind(&CrashOnException));
-  CHECK(result->IsFunction());
+  // Run service_worker.js to get the main function.
+  v8::Local<v8::Function> main_function;
+  {
+    v8::Local<v8::Value> result = context->RunScript(
+        v8_helpers::ToV8StringUnsafe(isolate, "service_worker"), script,
+        base::Bind(&CrashOnException));
+    CHECK(result->IsFunction());
+    main_function = result.As<v8::Function>();
+  }
+
+  // Expose CHECK/DCHECK/NOTREACHED to the main function with a
+  // LoggingNativeHandler. Admire the neat base::Bind trick to both Invalidate
+  // and delete the native handler.
+  LoggingNativeHandler* logging = new LoggingNativeHandler(context);
+  context->AddInvalidationObserver(
+      base::Bind(&NativeHandler::Invalidate, base::Owned(logging)));
+
+  // Execute the main function with its dependencies passed in as arguments.
   v8::Local<v8::Value> args[] = {
+      // The extension's background URL.
       v8_helpers::ToV8StringUnsafe(
           isolate, BackgroundInfo::GetBackgroundURL(extension).spec()),
+      // The wake-event-page native function.
+      WakeEventPage::Get()->GetForContext(context),
+      // The logging module.
+      logging->NewInstance(),
   };
-  context->CallFunction(result.As<v8::Function>(), arraysize(args), args);
+  context->CallFunction(main_function, arraysize(args), args);
 
   const base::TimeDelta elapsed = base::TimeTicks::Now() - start_time;
   UMA_HISTOGRAM_TIMES(
