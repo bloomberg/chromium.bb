@@ -27,6 +27,25 @@
 
 namespace blink {
 
+// LayoutReplaced is the base class for a replaced element as defined by CSS:
+//
+// "An element whose content is outside the scope of the CSS formatting model,
+// such as an image, embedded document, or applet."
+// http://www.w3.org/TR/CSS2/conform.html#defs
+//
+// Blink consider that replaced elements have an intrinsic sizes (e.g. the
+// natural size of an image or a video). The intrinsic size is stored by
+// m_intrinsicSize.
+//
+// The computation sometimes ask for the intrinsic ratio, defined as follow:
+//
+//                      intrinsicWidth
+//   intrinsicRatio = -------------------
+//                      intrinsicHeight
+//
+// The intrinsic ratio is used to keep the same proportion as the intrinsic
+// size (thus avoiding visual distortions if width / height doesn't match
+// the intrinsic value).
 class CORE_EXPORT LayoutReplaced : public LayoutBox {
 public:
     LayoutReplaced(Element*);
@@ -73,6 +92,12 @@ protected:
     void styleDidChange(StyleDifference, const ComputedStyle* oldStyle) override;
 
     void setIntrinsicSize(const LayoutSize& intrinsicSize) { m_intrinsicSize = intrinsicSize; }
+
+    // This callback is invoked whenever the intrinsic size changed.
+    //
+    // The intrinsic size can change due to the network (from the default
+    // intrinsic size [see above] to the actual intrinsic size) or to some
+    // CSS properties like 'zoom' or 'image-orientation'.
     virtual void intrinsicSizeChanged();
 
     virtual LayoutBox* embeddedContentBox() const { return nullptr; }

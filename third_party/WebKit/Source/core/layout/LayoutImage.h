@@ -34,6 +34,15 @@ namespace blink {
 class HTMLAreaElement;
 class HTMLMapElement;
 
+// LayoutImage is used to display any image type.
+//
+// There is 2 types of images:
+// * normal images, e.g. <image>, <picture>.
+// * content images with "content: url(path/to/image.png)".
+// We store the type inside  m_isGeneratedContent.
+//
+// The class is image type agnostic as it only manipulates decoded images.
+// See LayoutImageResource that holds this image.
 class CORE_EXPORT LayoutImage : public LayoutReplaced {
 public:
     // These are the paddings to use when displaying either alt text or an image.
@@ -109,9 +118,19 @@ private:
     // Update the size of the image to be rendered. Object-fit may cause this to be different from the CSS box's content rect.
     void updateInnerContentRect();
 
-    // Text to display as long as the image isn't available.
+    // This member wraps the associated decoded image.
+    //
+    // This field is set using setImageResource above which can be called in
+    // several ways:
+    // * For normal images, from the network stack (ImageLoader) once we have
+    // some image data.
+    // * For generated content, the resource is loaded during style resolution
+    // and thus is stored in ComputedStyle (see ContentData::image) that gets
+    // propagated to the anonymous LayoutImage in LayoutObject::createObject.
     OwnPtrWillBePersistent<LayoutImageResource> m_imageResource;
     bool m_didIncrementVisuallyNonEmptyPixelCount;
+
+    // This field stores whether this image is generated with 'content'.
     bool m_isGeneratedContent;
     float m_imageDevicePixelRatio;
 };

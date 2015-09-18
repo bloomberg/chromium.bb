@@ -144,6 +144,13 @@ const int showTreeCharacterOffset = 39;
 // To save memory, especially for the common child class LayoutText, LayoutObject doesn't provide
 // storage for children. Descendant classes that do allow children have to have a LayoutObjectChildList
 // member that stores the actual children and override virtualChildren().
+//
+// LayoutObject is an ImageResourceClient, which means that it gets notified when associated images
+// are changed. This is used for 2 main use cases:
+// - reply to 'background-image' as we need to invalidate the background in this case.
+//   (See https://drafts.csswg.org/css-backgrounds-3/#the-background-image)
+// - image (LayoutImage, LayoutSVGImage) or video (LayoutVideo) objects that are placeholders for
+//   displaying them.
 class CORE_EXPORT LayoutObject : public ImageResourceClient {
     friend class LayoutObjectChildList;
     WTF_MAKE_NONCOPYABLE(LayoutObject);
@@ -1042,10 +1049,14 @@ public:
     virtual int previousOffsetForBackwardDeletion(int current) const;
     virtual int nextOffset(int current) const;
 
+    // ImageResourceClient override.
     void imageChanged(ImageResource*, const IntRect* = nullptr) final;
-    virtual void imageChanged(WrappedImagePtr, const IntRect* = nullptr) { }
     bool willRenderImage(ImageResource*) final;
     bool getImageAnimationPolicy(ImageResource*, ImageAnimationPolicy&) final;
+
+    // Sub-classes that have an associated image need to override this function
+    // to get notified of any image change.
+    virtual void imageChanged(WrappedImagePtr, const IntRect* = nullptr) { }
 
     void selectionStartEnd(int& spos, int& epos) const;
 
