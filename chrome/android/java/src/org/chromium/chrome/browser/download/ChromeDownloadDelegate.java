@@ -73,7 +73,8 @@ public class ChromeDownloadDelegate
                     protected Pair<String, String> doInBackground(Void... params) {
                         Pair<String, String> result = getDownloadDirectoryNameAndFullPath();
                         String fullDirPath = result.second;
-                        return doesFileAlreadyExists(fullDirPath, info) ? result : null;
+                        return doesFileAlreadyExists(fullDirPath, info.getFileName())
+                                ? result : null;
                     }
 
                     @Override
@@ -210,12 +211,9 @@ public class ChromeDownloadDelegate
                 downloadInfo.getMimeType(),
                 downloadInfo.getUrl(),
                 downloadInfo.getFileName());
-        final String path = TextUtils.isEmpty(downloadInfo.getFileName())
+        final String fileName = TextUtils.isEmpty(downloadInfo.getFileName())
                 ? fileName(downloadInfo.getUrl(), newMimeType, downloadInfo.getContentDisposition())
                 : downloadInfo.getFileName();
-        final File file = new File(path);
-        final String fileName = file.getName();
-
         new AsyncTask<Void, Void, Object[]>() {
             @Override
             protected Object[] doInBackground(Void... params) {
@@ -224,7 +222,7 @@ public class ChromeDownloadDelegate
                 Pair<String, String> result = getDownloadDirectoryNameAndFullPath();
                 String dirName = result.first;
                 String fullDirPath = result.second;
-                boolean fileExists = doesFileAlreadyExists(fullDirPath, downloadInfo);
+                boolean fileExists = doesFileAlreadyExists(fullDirPath, fileName);
 
                 return new Object[] {status, dirName, fullDirPath, fileExists};
             }
@@ -330,9 +328,8 @@ public class ChromeDownloadDelegate
         return new Pair<>(dirName, fullDirPath);
     }
 
-    private static boolean doesFileAlreadyExists(String dirPath, final DownloadInfo info) {
+    private static boolean doesFileAlreadyExists(String dirPath, final String fileName) {
         assert !ThreadUtils.runningOnUiThread();
-        final String fileName = info.getFileName();
         final File file = new File(dirPath, fileName);
         return file != null && file.exists();
     }
