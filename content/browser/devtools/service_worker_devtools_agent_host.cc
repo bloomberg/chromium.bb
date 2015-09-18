@@ -105,6 +105,10 @@ void ServiceWorkerDevToolsAgentHost::OnAttachedStateChanged(bool attached) {
                   attached));
 }
 
+int64 ServiceWorkerDevToolsAgentHost::service_worker_version_id() const {
+  return service_worker_->version_id();
+}
+
 bool ServiceWorkerDevToolsAgentHost::Matches(
     const ServiceWorkerIdentifier& other) {
   return service_worker_->Matches(other);

@@ -77,6 +77,8 @@ class ServiceWorkerContextObserver {
                                     const GURL& pattern) {}
   virtual void OnRegistrationDeleted(int64 registration_id,
                                      const GURL& pattern) {}
+  virtual void OnForceUpdateOnPageLoadChanged(int64 registration_id,
+                                              bool force_update_on_page_load) {}
 
   // Notified when the storage corruption recovery is completed and all stored
   // data is wiped out.

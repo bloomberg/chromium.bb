@@ -66,6 +66,15 @@ class CONTENT_EXPORT ServiceWorkerControlleeRequestHandler
       ServiceWorkerRegistration* registration,
       ServiceWorkerVersion* version);
 
+  void DidUpdateRegistration(
+      const scoped_refptr<ServiceWorkerRegistration>& original_registration,
+      ServiceWorkerStatusCode status,
+      const std::string& status_message,
+      int64 registration_id);
+  void OnUpdatedVersionStatusChanged(
+      const scoped_refptr<ServiceWorkerRegistration>& registration,
+      const scoped_refptr<ServiceWorkerVersion>& version);
+
   // For sub resource case.
   void PrepareForSubResource();
 
@@ -84,6 +93,7 @@ class CONTENT_EXPORT ServiceWorkerControlleeRequestHandler
   base::TimeTicks worker_start_time_;
   base::TimeTicks worker_ready_time_;
   bool skip_service_worker_;
+  bool force_update_started_;
   base::WeakPtrFactory<ServiceWorkerControlleeRequestHandler> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerControlleeRequestHandler);

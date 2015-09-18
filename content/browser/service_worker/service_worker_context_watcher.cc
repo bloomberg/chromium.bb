@@ -133,8 +133,14 @@ void ServiceWorkerContextWatcher::SendRegistrationInfo(
     const GURL& pattern,
     ServiceWorkerRegistrationInfo::DeleteFlag delete_flag) {
   std::vector<ServiceWorkerRegistrationInfo> registrations;
-  registrations.push_back(
-      ServiceWorkerRegistrationInfo(pattern, registration_id, delete_flag));
+  ServiceWorkerRegistration* registration =
+      context_->GetLiveRegistration(registration_id);
+  if (registration) {
+    registrations.push_back(registration->GetInfo());
+  } else {
+    registrations.push_back(
+        ServiceWorkerRegistrationInfo(pattern, registration_id, delete_flag));
+  }
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
                           base::Bind(registration_callback_, registrations));
 }
@@ -270,6 +276,19 @@ void ServiceWorkerContextWatcher::OnRegistrationDeleted(int64 registration_id,
                                                         const GURL& pattern) {
   SendRegistrationInfo(registration_id, pattern,
                        ServiceWorkerRegistrationInfo::IS_DELETED);
+}
+
+void ServiceWorkerContextWatcher::OnForceUpdateOnPageLoadChanged(
+    int64 registration_id,
+    bool force_update_on_page_load) {
+  ServiceWorkerRegistration* registration =
+      context_->GetLiveRegistration(registration_id);
+  if (!registration)
+    return;
+  std::vector<ServiceWorkerRegistrationInfo> registrations;
+  registrations.push_back(registration->GetInfo());
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                          base::Bind(registration_callback_, registrations));
 }
 
 }  // namespace content

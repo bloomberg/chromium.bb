@@ -347,6 +347,23 @@ void ServiceWorkerContextCore::UpdateServiceWorker(
                                       AsWeakPtr(), callback));
 }
 
+void ServiceWorkerContextCore::SetForceUpdateOnPageLoad(
+    int64_t registration_id,
+    bool force_update_on_page_load) {
+  ServiceWorkerRegistration* registration =
+      GetLiveRegistration(registration_id);
+  if (!registration)
+    return;
+  registration->set_force_update_on_page_load(force_update_on_page_load);
+
+  if (observer_list_.get()) {
+    observer_list_->Notify(
+        FROM_HERE,
+        &ServiceWorkerContextObserver::OnForceUpdateOnPageLoadChanged,
+        registration_id, force_update_on_page_load);
+  }
+}
+
 void ServiceWorkerContextCore::UnregisterServiceWorker(
     const GURL& pattern,
     const UnregistrationCallback& callback) {

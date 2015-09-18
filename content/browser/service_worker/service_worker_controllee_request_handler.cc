@@ -46,6 +46,7 @@ ServiceWorkerControlleeRequestHandler::ServiceWorkerControlleeRequestHandler(
       frame_type_(frame_type),
       body_(body),
       skip_service_worker_(false),
+      force_update_started_(false),
       weak_factory_(this) {}
 
 ServiceWorkerControlleeRequestHandler::
@@ -53,7 +54,7 @@ ServiceWorkerControlleeRequestHandler::
   // Navigation triggers an update to occur shortly after the page and
   // its initial subresources load.
   if (provider_host_ && provider_host_->active_version()) {
-    if (is_main_resource_load_)
+    if (is_main_resource_load_ && !force_update_started_)
       provider_host_->active_version()->ScheduleUpdate();
     else
       provider_host_->active_version()->DeferScheduledUpdate();
@@ -167,9 +168,12 @@ ServiceWorkerControlleeRequestHandler::DidLookupRegistrationForMainResource(
     ServiceWorkerStatusCode status,
     const scoped_refptr<ServiceWorkerRegistration>& registration) {
   DCHECK(job_.get());
-  if (provider_host_)
+  const bool need_to_update = !force_update_started_ && registration &&
+                              registration->force_update_on_page_load();
+
+  if (provider_host_ && !need_to_update)
     provider_host_->SetAllowAssociation(true);
-  if (status != SERVICE_WORKER_OK || !provider_host_) {
+  if (status != SERVICE_WORKER_OK || !provider_host_ || !context_) {
     job_->FallbackToNetwork();
     TRACE_EVENT_ASYNC_END1(
         "ServiceWorker",
@@ -191,6 +195,15 @@ ServiceWorkerControlleeRequestHandler::DidLookupRegistrationForMainResource(
         job_.get(),
         "Status", status,
         "Info", "ServiceWorker is blocked");
+    return;
+  }
+
+  if (need_to_update) {
+    force_update_started_ = true;
+    context_->UpdateServiceWorker(
+        registration.get(), true /* force_bypass_cache */, provider_host_.get(),
+        base::Bind(&self::DidUpdateRegistration, weak_factory_.GetWeakPtr(),
+                   registration));
     return;
   }
 
@@ -266,6 +279,56 @@ void ServiceWorkerControlleeRequestHandler::OnVersionStatusChanged(
   provider_host_->AssociateRegistration(registration,
                                         false /* notify_controllerchange */);
   job_->ForwardToServiceWorker();
+}
+
+void ServiceWorkerControlleeRequestHandler::DidUpdateRegistration(
+    const scoped_refptr<ServiceWorkerRegistration>& original_registration,
+    ServiceWorkerStatusCode status,
+    const std::string& status_message,
+    int64 registration_id) {
+  DCHECK(force_update_started_);
+  if (!context_) {
+    job_->FallbackToNetwork();
+    return;
+  }
+  if (status != SERVICE_WORKER_OK ||
+      !original_registration->installing_version()) {
+    // Update failed. Look up the registration again since the original
+    // registration was possibly unregistered in the meantime.
+    context_->storage()->FindRegistrationForDocument(
+        stripped_url_, base::Bind(&self::DidLookupRegistrationForMainResource,
+                                  weak_factory_.GetWeakPtr()));
+    return;
+  }
+  DCHECK_EQ(original_registration->id(), registration_id);
+  scoped_refptr<ServiceWorkerVersion> new_version =
+      original_registration->installing_version();
+  new_version->set_skip_waiting(true);
+  new_version->RegisterStatusChangeCallback(base::Bind(
+      &self::OnUpdatedVersionStatusChanged, weak_factory_.GetWeakPtr(),
+      original_registration, new_version));
+}
+
+void ServiceWorkerControlleeRequestHandler::OnUpdatedVersionStatusChanged(
+    const scoped_refptr<ServiceWorkerRegistration>& registration,
+    const scoped_refptr<ServiceWorkerVersion>& version) {
+  if (!context_) {
+    job_->FallbackToNetwork();
+    return;
+  }
+  if (version->status() == ServiceWorkerVersion::ACTIVATED ||
+      version->status() == ServiceWorkerVersion::REDUNDANT) {
+    // When the status is REDUNDANT, the update failed (eg: script error), we
+    // continue with the incumbent version.
+    // In case unregister job may have run, look up the registration again.
+    context_->storage()->FindRegistrationForDocument(
+        stripped_url_, base::Bind(&self::DidLookupRegistrationForMainResource,
+                                  weak_factory_.GetWeakPtr()));
+    return;
+  }
+  version->RegisterStatusChangeCallback(
+      base::Bind(&self::OnUpdatedVersionStatusChanged,
+                 weak_factory_.GetWeakPtr(), registration, version));
 }
 
 void ServiceWorkerControlleeRequestHandler::PrepareForSubResource() {

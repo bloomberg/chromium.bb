@@ -36,6 +36,8 @@ class ServiceWorkerDevToolsAgentHost : public WorkerDevToolsAgentHost {
   // WorkerDevToolsAgentHost overrides.
   void OnAttachedStateChanged(bool attached) override;
 
+  int64 service_worker_version_id() const;
+
   bool Matches(const ServiceWorkerIdentifier& other);
 
  private:

@@ -128,10 +128,13 @@ scoped_refptr<ServiceWorkerRegistration> CreateRegistrationDictionaryValue(
   scoped_refptr<ServiceWorkerRegistration> registration(
       ServiceWorkerRegistration::Create()
           ->set_registration_id(
-                base::Int64ToString(registration_info.registration_id))
+              base::Int64ToString(registration_info.registration_id))
           ->set_scope_url(registration_info.pattern.spec())
           ->set_is_deleted(registration_info.delete_flag ==
-                           ServiceWorkerRegistrationInfo::IS_DELETED));
+                           ServiceWorkerRegistrationInfo::IS_DELETED)
+          ->set_force_update_on_page_load(
+              registration_info.force_update_on_page_load ==
+              ServiceWorkerRegistrationInfo::IS_FORCED));
   return registration;
 }
 
@@ -146,7 +149,8 @@ scoped_refptr<ServiceWorkerDevToolsAgentHost> GetMatchingServiceWorker(
     std::string path = host->GetURL().path();
     std::string file = host->GetURL().ExtractFileName();
     std::string scope = path.substr(0, path.length() - file.length());
-    if (scope.length() > best_scope.length()) {
+    // Choose the latest, longest scope match worker.
+    if (scope.length() >= best_scope.length()) {
       best_host = host;
       best_scope = scope;
     }
@@ -396,7 +400,7 @@ Response ServiceWorkerHandler::InspectWorker(const std::string& version_id) {
   if (!context_)
     return CreateContextErrorResponse();
 
-  int64 id = 0;
+  int64 id = kInvalidServiceWorkerVersionId;
   if (!base::StringToInt64(version_id, &id))
     return CreateInvalidVersionIdErrorResponse();
   BrowserThread::PostTask(
@@ -413,7 +417,7 @@ Response ServiceWorkerHandler::SkipWaiting(const std::string& version_id) {
   if (!context_)
     return CreateContextErrorResponse();
 
-  int64 id = 0;
+  int64 id = kInvalidServiceWorkerVersionId;
   if (!base::StringToInt64(version_id, &id))
     return CreateInvalidVersionIdErrorResponse();
   context_->SimulateSkipWaiting(id);
@@ -423,6 +427,18 @@ Response ServiceWorkerHandler::SkipWaiting(const std::string& version_id) {
 Response ServiceWorkerHandler::SetDebugOnStart(bool debug_on_start) {
   ServiceWorkerDevToolsManager::GetInstance()
       ->set_debug_service_worker_on_start(debug_on_start);
+  return Response::OK();
+}
+
+Response ServiceWorkerHandler::SetForceUpdateOnPageLoad(
+    const std::string& registration_id,
+    bool force_update_on_page_load) {
+  if (!context_)
+    return CreateContextErrorResponse();
+  int64 id = kInvalidServiceWorkerRegistrationId;
+  if (!base::StringToInt64(registration_id, &id))
+    return CreateInvalidVersionIdErrorResponse();
+  context_->SetForceUpdateOnPageLoad(id, force_update_on_page_load);
   return Response::OK();
 }
 
@@ -576,9 +592,11 @@ void ServiceWorkerHandler::ReportWorkerCreated(
     return;
   attached_hosts_[host->GetId()] = host;
   host->AttachClient(this);
-  client_->WorkerCreated(WorkerCreatedParams::Create()->
-      set_worker_id(host->GetId())->
-      set_url(host->GetURL().spec()));
+  client_->WorkerCreated(WorkerCreatedParams::Create()
+                             ->set_worker_id(host->GetId())
+                             ->set_url(host->GetURL().spec())
+                             ->set_version_id(base::Int64ToString(
+                                 host->service_worker_version_id())));
 }
 
 void ServiceWorkerHandler::ReportWorkerTerminated(

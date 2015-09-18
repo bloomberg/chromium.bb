@@ -56,6 +56,8 @@ class ServiceWorkerHandler : public DevToolsAgentHostClient,
   Response InspectWorker(const std::string& version_id);
   Response SkipWaiting(const std::string& version_id);
   Response SetDebugOnStart(bool debug_on_start);
+  Response SetForceUpdateOnPageLoad(const std::string& registration_id,
+                                    bool force_update_on_page_load);
   Response DeliverPushMessage(const std::string& origin,
                               const std::string& registration_id,
                               const std::string& data);

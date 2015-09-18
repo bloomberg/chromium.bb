@@ -94,6 +94,8 @@ class ServiceWorkerContextWatcher
                             const GURL& pattern) override;
   void OnRegistrationDeleted(int64 registration_id,
                              const GURL& pattern) override;
+  void OnForceUpdateOnPageLoadChanged(int64 registration_id,
+                                      bool force_update_on_page_load) override;
 
   base::ScopedPtrHashMap<int64, scoped_ptr<ServiceWorkerVersionInfo>>
       version_info_map_;

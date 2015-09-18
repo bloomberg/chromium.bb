@@ -56,8 +56,8 @@ ServiceWorkerVersionInfo::~ServiceWorkerVersionInfo() {}
 ServiceWorkerRegistrationInfo::ServiceWorkerRegistrationInfo()
     : registration_id(kInvalidServiceWorkerRegistrationId),
       delete_flag(IS_NOT_DELETED),
-      stored_version_size_bytes(0) {
-}
+      force_update_on_page_load(IS_NOT_FORCED),
+      stored_version_size_bytes(0) {}
 
 ServiceWorkerRegistrationInfo::ServiceWorkerRegistrationInfo(
     const GURL& pattern,
@@ -66,13 +66,14 @@ ServiceWorkerRegistrationInfo::ServiceWorkerRegistrationInfo(
     : pattern(pattern),
       registration_id(registration_id),
       delete_flag(delete_flag),
-      stored_version_size_bytes(0) {
-}
+      force_update_on_page_load(IS_NOT_FORCED),
+      stored_version_size_bytes(0) {}
 
 ServiceWorkerRegistrationInfo::ServiceWorkerRegistrationInfo(
     const GURL& pattern,
     int64 registration_id,
     DeleteFlag delete_flag,
+    ForceUpdateOnPageLoad force_update_on_page_load,
     const ServiceWorkerVersionInfo& active_version,
     const ServiceWorkerVersionInfo& waiting_version,
     const ServiceWorkerVersionInfo& installing_version,
@@ -80,11 +81,11 @@ ServiceWorkerRegistrationInfo::ServiceWorkerRegistrationInfo(
     : pattern(pattern),
       registration_id(registration_id),
       delete_flag(delete_flag),
+      force_update_on_page_load(force_update_on_page_load),
       active_version(active_version),
       waiting_version(waiting_version),
       installing_version(installing_version),
-      stored_version_size_bytes(stored_version_size_bytes) {
-}
+      stored_version_size_bytes(stored_version_size_bytes) {}
 
 ServiceWorkerRegistrationInfo::~ServiceWorkerRegistrationInfo() {}
 

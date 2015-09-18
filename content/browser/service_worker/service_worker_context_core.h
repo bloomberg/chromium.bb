@@ -190,6 +190,14 @@ class CONTENT_EXPORT ServiceWorkerContextCore
                            ServiceWorkerProviderHost* provider_host,
                            const UpdateCallback& callback);
 
+  // Used in DevTools to update the service worker registration without
+  // consulting the browser cache while loading the controlled page. The loading
+  // is delayed until the update completes and the new worker is activated. The
+  // new worker skips the waiting state and immediately becomes active after
+  // installed.
+  void SetForceUpdateOnPageLoad(int64_t registration_id,
+                                bool force_update_on_page_load);
+
   // This class maintains collections of live instances, this class
   // does not own these object or influence their lifetime.
   ServiceWorkerRegistration* GetLiveRegistration(int64 registration_id);
