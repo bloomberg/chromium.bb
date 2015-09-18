@@ -106,6 +106,9 @@ public:
     void moveTo(const VisiblePosition&, const VisiblePosition&, EUserTriggered = NotUserTriggered);
     void moveTo(const Position&, TextAffinity, EUserTriggered = NotUserTriggered);
 
+    template <typename Strategy>
+    VisibleSelectionTemplate<Strategy> visibleSelection() const;
+
     const VisibleSelection& selection() const;
     void setSelection(const VisibleSelection&, SetSelectionOptions = CloseTyping | ClearTypingStyle, CursorAlignOnScroll = CursorAlignOnScroll::IfNeeded, TextGranularity = CharacterGranularity);
     void setSelection(const VisibleSelection& selection, TextGranularity granularity) { setSelection(selection, CloseTyping | ClearTypingStyle, CursorAlignOnScroll::IfNeeded, granularity); }
@@ -236,10 +239,15 @@ private:
     explicit FrameSelection(LocalFrame*);
 
     template <typename Strategy>
+    VisiblePositionTemplate<Strategy> originalBase() const;
+    void setOriginalBase(const VisiblePosition& newBase) { m_originalBase = newBase; }
+    void setOriginalBase(const VisiblePositionInComposedTree&);
+
+    template <typename Strategy>
     bool containsAlgorithm(const LayoutPoint&);
 
     template <typename Strategy>
-    void setNonDirectionalSelectionIfNeededAlgorithm(const VisibleSelection&, TextGranularity, EndPointsAdjustmentMode);
+    void setNonDirectionalSelectionIfNeededAlgorithm(const VisibleSelectionTemplate<Strategy>&, TextGranularity, EndPointsAdjustmentMode);
 
     void respondToNodeModification(Node&, bool baseRemoved, bool extentRemoved, bool startRemoved, bool endRemoved);
 
