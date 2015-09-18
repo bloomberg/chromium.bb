@@ -37,15 +37,6 @@ class NativeImageBuffer : public base::RefCountedThreadSafe<NativeImageBuffer> {
   DISALLOW_COPY_AND_ASSIGN(NativeImageBuffer);
 };
 
-class ScopedUpdateTexture {
- public:
-  ScopedUpdateTexture();
-  ~ScopedUpdateTexture();
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ScopedUpdateTexture);
-};
-
 // An immutable description that can be used to create a texture that shares
 // the underlying image buffer(s).
 class TextureDefinition {
@@ -60,7 +51,6 @@ class TextureDefinition {
 
   Texture* CreateTexture() const;
 
-  // Must be wrapped with ScopedUpdateTexture.
   void UpdateTexture(Texture* texture) const;
 
   unsigned int version() const { return version_; }

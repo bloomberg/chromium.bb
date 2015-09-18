@@ -238,9 +238,6 @@ class MailboxManagerSyncTest : public MailboxManagerTest {
     EXPECT_CALL(*gl_, BindTexture(GL_TEXTURE_2D, kCurrentTexture))
         .Times(1)
         .RetiresOnSaturation();
-    EXPECT_CALL(*gl_, Flush())
-        .Times(1)
-        .RetiresOnSaturation();
   }
 
   void TearDown() override {

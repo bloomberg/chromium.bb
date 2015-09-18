@@ -325,7 +325,6 @@ void MailboxManagerSync::PullTextureUpdates(uint32 sync_point) {
   }
 
   if (!needs_update.empty()) {
-    ScopedUpdateTexture scoped_update_texture;
     for (const TextureUpdatePair& pair : needs_update) {
       pair.second.UpdateTexture(pair.first);
     }

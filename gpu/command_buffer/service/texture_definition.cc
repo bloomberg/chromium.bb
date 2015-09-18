@@ -265,10 +265,6 @@ class NativeImageBufferStub : public NativeImageBuffer {
 
 bool g_avoid_egl_target_texture_reuse = false;
 
-#if DCHECK_IS_ON()
-base::LazyInstance<base::ThreadLocalBoolean> g_inside_scoped_update_texture;
-#endif
-
 }  // anonymous namespace
 
 // static
@@ -289,27 +285,6 @@ scoped_refptr<NativeImageBuffer> NativeImageBuffer::Create(GLuint texture_id) {
 // static
 void TextureDefinition::AvoidEGLTargetTextureReuse() {
   g_avoid_egl_target_texture_reuse = true;
-}
-
-ScopedUpdateTexture::ScopedUpdateTexture() {
-#if DCHECK_IS_ON()
-  DCHECK(!g_inside_scoped_update_texture.Get().Get());
-  g_inside_scoped_update_texture.Get().Set(true);
-#endif
-}
-
-ScopedUpdateTexture::~ScopedUpdateTexture() {
-#if DCHECK_IS_ON()
-  DCHECK(g_inside_scoped_update_texture.Get().Get());
-  g_inside_scoped_update_texture.Get().Set(false);
-#endif
-  // We have to make sure the changes are visible to other clients in this share
-  // group. As far as the clients are concerned, the mailbox semantics only
-  // demand a single flush from the client after changes are first made,
-  // and it is not visible to them when another share group boundary is crossed.
-  // We could probably track this and be a bit smarter about when to flush
-  // though.
-  glFlush();
 }
 
 TextureDefinition::LevelInfo::LevelInfo()
@@ -399,16 +374,12 @@ Texture* TextureDefinition::CreateTexture() const {
   glGenTextures(1, &texture_id);
 
   Texture* texture(new Texture(texture_id));
-  ScopedUpdateTexture scoped_update_texture;
   UpdateTextureInternal(texture);
 
   return texture;
 }
 
 void TextureDefinition::UpdateTextureInternal(Texture* texture) const {
-#if DCHECK_IS_ON()
-  DCHECK(g_inside_scoped_update_texture.Get().Get());
-#endif
   gfx::ScopedTextureBinder texture_binder(target_, texture->service_id());
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, min_filter_);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, mag_filter_);
