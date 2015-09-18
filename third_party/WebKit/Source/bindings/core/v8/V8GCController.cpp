@@ -378,7 +378,8 @@ void V8GCController::gcPrologue(v8::GCType type, v8::GCCallbackFlags flags)
     case v8::kGCTypeScavenge:
         // Finish Oilpan's complete sweeping before running a V8 minor GC.
         // This will let the minor GC collect more V8 objects.
-        ThreadState::current()->completeSweep();
+        if (ThreadState::current())
+            ThreadState::current()->completeSweep();
 
         TRACE_EVENT_BEGIN1("devtools.timeline,v8", "MinorGC", "usedHeapSizeBefore", usedHeapSize(isolate));
         if (isMainThread()) {
@@ -421,7 +422,8 @@ void V8GCController::gcEpilogue(v8::GCType type, v8::GCCallbackFlags flags)
         if (isMainThread()) {
             TRACE_EVENT_SET_NONCONST_SAMPLING_STATE(V8PerIsolateData::from(isolate)->previousSamplingState());
         }
-        ThreadState::current()->scheduleV8FollowupGCIfNeeded(ThreadState::V8MinorGC);
+        if (ThreadState::current())
+            ThreadState::current()->scheduleV8FollowupGCIfNeeded(ThreadState::V8MinorGC);
         break;
     case v8::kGCTypeMarkSweepCompact:
         TRACE_EVENT_END1("devtools.timeline,v8", "MajorGC", "usedHeapSizeAfter", usedHeapSize(isolate));
@@ -440,7 +442,8 @@ void V8GCController::gcEpilogue(v8::GCType type, v8::GCCallbackFlags flags)
         if (isMainThread()) {
             TRACE_EVENT_SET_NONCONST_SAMPLING_STATE(V8PerIsolateData::from(isolate)->previousSamplingState());
         }
-        ThreadState::current()->scheduleV8FollowupGCIfNeeded(ThreadState::V8MajorGC);
+        if (ThreadState::current())
+            ThreadState::current()->scheduleV8FollowupGCIfNeeded(ThreadState::V8MajorGC);
         break;
     default:
         ASSERT_NOT_REACHED();
@@ -467,7 +470,8 @@ void V8GCController::gcEpilogue(v8::GCType type, v8::GCCallbackFlags flags)
         Heap::collectGarbage(ThreadState::HeapPointersOnStack, ThreadState::GCWithSweep, Heap::ForcedGC);
 
         // Forces a precise GC at the end of the current event loop.
-        ThreadState::current()->setGCState(ThreadState::FullGCScheduled);
+        if (ThreadState::current())
+            ThreadState::current()->setGCState(ThreadState::FullGCScheduled);
     }
 
     TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "UpdateCounters", TRACE_EVENT_SCOPE_THREAD, "data", InspectorUpdateCountersEvent::data());
