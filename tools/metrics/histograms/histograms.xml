@@ -19165,6 +19165,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="MobileStartup.ToolbarFirstFocusTime" units="milliseconds">
+  <owner>mariakhomenko@chromium.org</owner>
+  <summary>
+    Android: The time it takes from launch to the first time the user focuses
+    the omnibox if the user does so within first 30s of the launch. This
+    excludes activity creation time spent in framework.
+  </summary>
+</histogram>
+
 <histogram name="ModuleIntegrityVerification.BytesModified" units="bytes">
   <owner>anthonyvd@chromium.org</owner>
   <summary>
@@ -75572,6 +75581,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <suffix name="CustomTabActivity"
       label="Activity launched with a CUSTOM TAB on Android"/>
   <affected-histogram name="MobileStartup.ToolbarFirstDrawTime"/>
+  <affected-histogram name="MobileStartup.ToolbarFirstFocusTime"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="ChromeOS.MachineIdRegen.AgeSeconds">
