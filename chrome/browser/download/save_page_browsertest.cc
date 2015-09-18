@@ -40,6 +40,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
@@ -783,7 +784,7 @@ class SavePageSitePerProcessBrowserTest : public SavePageBrowserTest {
 
     // TODO(lukasza): Enable --site-per-process once crbug.com/526786 is fixed.
     // (currently, when the line below is uncommented out, the test crashes
-    // under RenderViewImpl::OnGetAllSavableResourceLinksForCurrentPage).
+    // under RenderViewImpl::OnGetSerializedHtmlDataForCu...PageWithLocalLinks).
     // content::IsolateAllSitesForTesting(command_line);
   }
 

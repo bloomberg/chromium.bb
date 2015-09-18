@@ -147,6 +147,8 @@ class CONTENT_EXPORT SavePackage
 
   // WebContentsObserver implementation.
   bool OnMessageReceived(const IPC::Message& message) override;
+  bool OnMessageReceived(const IPC::Message& message,
+                         RenderFrameHost* render_frame_host) override;
 
   // DownloadItem::Observer implementation.
   void OnDownloadDestroyed(DownloadItem* download) override;
@@ -175,9 +177,18 @@ class CONTENT_EXPORT SavePackage
                         bool need_html_ext,
                         base::FilePath::StringType* generated_name);
 
-  // Get all savable resource links from current web page, include main
-  // frame and sub-frame.
-  void GetAllSavableResourceLinksForCurrentPage();
+  // Set of methods to get all savable resource links from current web page,
+  // including main frame and sub-frames.
+  void GetSavableResourceLinksForCurrentPage();
+  void GetSavableResourceLinksForFrame(RenderFrameHost* target);
+  void OnSavableResourceLinksResponse(
+      RenderFrameHost* sender,
+      const GURL& frame_url,
+      const std::vector<GURL>& resources_list,
+      const std::vector<Referrer>& referrers_list);
+  void OnSavableResourceLinksError(RenderFrameHost* sender);
+  void CompleteSavableResourceLinksResponseFromFrame();
+
   // Get html data by serializing all frames of current page with lists
   // which contain all resource links that have local copy.
   void GetSerializedHtmlDataForCurrentPageWithLocalLinks();
@@ -202,10 +213,6 @@ class CONTENT_EXPORT SavePackage
       const base::FilePath& final_name,
       SavePageType type,
       const SavePackageDownloadCreatedCallback& cb);
-  void OnReceivedSavableResourceLinksForCurrentPage(
-      const std::vector<GURL>& resources_list,
-      const std::vector<Referrer>& referrers_list,
-      const std::vector<GURL>& frames_list);
 
   void OnReceivedSerializedHtmlData(const GURL& frame_url,
                                     const std::string& data,
@@ -260,6 +267,15 @@ class CONTENT_EXPORT SavePackage
   typedef std::queue<SaveItem*> SaveItemQueue;
   // A queue for items we are about to start saving.
   SaveItemQueue waiting_item_queue_;
+
+  // Used to de-dupe urls that are being gathered into |waiting_item_queue_|.
+  std::set<GURL> unique_urls_to_save_;
+
+  // Temporarily stores urls of savable frames, until we can process them.
+  std::vector<GURL> frame_urls_to_save_;
+
+  // Number of frames that we still need to get a response from.
+  int number_of_frames_pending_response_;
 
   typedef base::hash_map<int32, SaveItem*> SavedItemMap;
   // saved_success_items_ is map of all saving job which are successfully saved.

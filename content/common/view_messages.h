@@ -559,11 +559,6 @@ IPC_MESSAGE_ROUTED1(ViewMsg_ReplaceDateTime,
 
 #endif
 
-// Get all savable resource links from current webpage, include main
-// frame and sub-frame.
-IPC_MESSAGE_ROUTED1(ViewMsg_GetAllSavableResourceLinksForCurrentPage,
-                    GURL /* url of page which is needed to save */)
-
 // Get html data by serializing all frames of current page with lists
 // which contain all resource links that have local copy.
 IPC_MESSAGE_ROUTED3(ViewMsg_GetSerializedHtmlDataForCurrentPageWithLocalLinks,
@@ -1283,11 +1278,6 @@ IPC_MESSAGE_CONTROL1(ViewHostMsg_UserMetricsRecordAction,
 IPC_MESSAGE_CONTROL2(ViewHostMsg_SavedPageAsMHTML,
                      int /* job_id */,
                      int64 /* size of the MHTML file, -1 if error */)
-
-IPC_MESSAGE_ROUTED3(ViewHostMsg_SendCurrentPageAllSavableResourceLinks,
-                    std::vector<GURL> /* all savable resource links */,
-                    std::vector<content::Referrer> /* all referrers */,
-                    std::vector<GURL> /* all frame links */)
 
 IPC_MESSAGE_ROUTED3(ViewHostMsg_SendSerializedHtmlData,
                     GURL /* frame's url */,

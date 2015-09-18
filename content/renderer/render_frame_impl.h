@@ -715,6 +715,7 @@ class CONTENT_EXPORT RenderFrameImpl
                           const RequestNavigationParams& request_params,
                           bool has_stale_copy_in_cache,
                           int error_code);
+  void OnGetSavableResourceLinks();
 
   // Virtual since overridden by WebTestProxy for layout tests.
   virtual blink::WebNavigationPolicy DecidePolicyForNavigation(

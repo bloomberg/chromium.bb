@@ -103,6 +103,7 @@
 #include "content/renderer/render_widget_fullscreen_pepper.h"
 #include "content/renderer/renderer_webapplicationcachehost_impl.h"
 #include "content/renderer/renderer_webcolorchooser_impl.h"
+#include "content/renderer/savable_resources.h"
 #include "content/renderer/screen_orientation/screen_orientation_dispatcher.h"
 #include "content/renderer/shared_worker_repository.h"
 #include "content/renderer/skia_benchmarking_extension.h"
@@ -1098,6 +1099,8 @@ bool RenderFrameImpl::OnMessageReceived(const IPC::Message& msg) {
                         OnTextTrackSettingsChanged)
     IPC_MESSAGE_HANDLER(FrameMsg_PostMessageEvent, OnPostMessageEvent)
     IPC_MESSAGE_HANDLER(FrameMsg_FailedNavigation, OnFailedNavigation)
+    IPC_MESSAGE_HANDLER(FrameMsg_GetSavableResourceLinks,
+                        OnGetSavableResourceLinks)
 #if defined(OS_ANDROID)
     IPC_MESSAGE_HANDLER(FrameMsg_SelectPopupMenuItems, OnSelectPopupMenuItems)
 #elif defined(OS_MACOSX)
@@ -4375,6 +4378,30 @@ WebNavigationPolicy RenderFrameImpl::DecidePolicyForNavigation(
   }
 
   return info.defaultPolicy;
+}
+
+void RenderFrameImpl::OnGetSavableResourceLinks() {
+  std::vector<GURL> resources_list;
+  std::vector<GURL> referrer_urls_list;
+  std::vector<blink::WebReferrerPolicy> referrer_policies_list;
+  SavableResourcesResult result(&resources_list, &referrer_urls_list,
+                                &referrer_policies_list);
+
+  if (!GetSavableResourceLinksForFrame(
+          frame_, &result, const_cast<const char**>(GetSavableSchemes()))) {
+    Send(new FrameHostMsg_SavableResourceLinksError(routing_id_));
+    return;
+  }
+
+  std::vector<Referrer> referrers_list;
+  CHECK_EQ(referrer_urls_list.size(), referrer_policies_list.size());
+  for (unsigned i = 0; i < referrer_urls_list.size(); ++i) {
+    referrers_list.push_back(
+        Referrer(referrer_urls_list[i], referrer_policies_list[i]));
+  }
+
+  Send(new FrameHostMsg_SavableResourceLinksResponse(
+      routing_id_, frame_->document().url(), resources_list, referrers_list));
 }
 
 void RenderFrameImpl::OpenURL(WebFrame* frame,

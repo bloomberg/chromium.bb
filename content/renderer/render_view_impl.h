@@ -644,7 +644,6 @@ class CONTENT_EXPORT RenderViewImpl
   void OnFind(int request_id,
               const base::string16&,
               const blink::WebFindOptions&);
-  void OnGetAllSavableResourceLinksForCurrentPage(const GURL& page_url);
   void OnGetSerializedHtmlDataForCurrentPageWithLocalLinks(
       const std::vector<GURL>& links,
       const std::vector<base::FilePath>& local_paths,

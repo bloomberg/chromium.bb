@@ -666,6 +666,10 @@ IPC_MESSAGE_ROUTED4(FrameMsg_FailedNavigation,
                     bool,                             /* stale_copy_in_cache */
                     int                               /* error_code */)
 
+// Request to enumerate and return links to all savable resources in the frame
+// Note: this covers only the immediate frame / doesn't cover subframes.
+IPC_MESSAGE_ROUTED0(FrameMsg_GetSavableResourceLinks)
+
 #if defined(ENABLE_PLUGINS)
 // Notifies the renderer of updates to the Plugin Power Saver origin whitelist.
 IPC_MESSAGE_ROUTED1(FrameMsg_UpdatePluginContentOriginWhitelist,
@@ -1151,6 +1155,17 @@ IPC_MESSAGE_ROUTED0(FrameHostMsg_DidDisplayInsecureContent)
 IPC_MESSAGE_ROUTED2(FrameHostMsg_DidRunInsecureContent,
                     std::string /* security_origin */,
                     GURL /* target URL */)
+
+// Response to FrameMsg_GetSavableResourceLinks.
+IPC_MESSAGE_ROUTED3(FrameHostMsg_SavableResourceLinksResponse,
+                    GURL /* frame URL */,
+                    std::vector<GURL> /* savable resource links */,
+                    std::vector<content::Referrer> /* referrers */)
+
+// Response to FrameMsg_GetSavableResourceLinks in case the frame contains
+// non-savable content (i.e. from a non-savable scheme) or if there were
+// errors gathering the links.
+IPC_MESSAGE_ROUTED0(FrameHostMsg_SavableResourceLinksError)
 
 #if defined(OS_MACOSX) || defined(OS_ANDROID)
 

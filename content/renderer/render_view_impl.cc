@@ -1350,8 +1350,6 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_MediaPlayerActionAt, OnMediaPlayerActionAt)
     IPC_MESSAGE_HANDLER(ViewMsg_PluginActionAt, OnPluginActionAt)
     IPC_MESSAGE_HANDLER(ViewMsg_SetActive, OnSetActive)
-    IPC_MESSAGE_HANDLER(ViewMsg_GetAllSavableResourceLinksForCurrentPage,
-                        OnGetAllSavableResourceLinksForCurrentPage)
     IPC_MESSAGE_HANDLER(
         ViewMsg_GetSerializedHtmlDataForCurrentPageWithLocalLinks,
         OnGetSerializedHtmlDataForCurrentPageWithLocalLinks)
@@ -2781,46 +2779,6 @@ void RenderViewImpl::OnPluginActionAt(const gfx::Point& location,
                                       const WebPluginAction& action) {
   if (webview())
     webview()->performPluginAction(action, location);
-}
-
-void RenderViewImpl::OnGetAllSavableResourceLinksForCurrentPage(
-    const GURL& page_url) {
-  // Prepare list to storage all savable resource links.
-  std::vector<GURL> resources_list;
-  std::vector<GURL> referrer_urls_list;
-  std::vector<blink::WebReferrerPolicy> referrer_policies_list;
-  std::vector<GURL> frames_list;
-  SavableResourcesResult result(&resources_list,
-                                &referrer_urls_list,
-                                &referrer_policies_list,
-                                &frames_list);
-
-  // webkit/ doesn't know about Referrer.
-  if (!GetAllSavableResourceLinksForCurrentPage(
-          webview(),
-          page_url,
-          &result,
-          const_cast<const char**>(GetSavableSchemes()))) {
-    // If something is wrong when collecting all savable resource links,
-    // send empty list to embedder(browser) to tell it failed.
-    referrer_urls_list.clear();
-    referrer_policies_list.clear();
-    resources_list.clear();
-    frames_list.clear();
-  }
-
-  std::vector<Referrer> referrers_list;
-  CHECK_EQ(referrer_urls_list.size(), referrer_policies_list.size());
-  for (unsigned i = 0; i < referrer_urls_list.size(); ++i) {
-    referrers_list.push_back(
-        Referrer(referrer_urls_list[i], referrer_policies_list[i]));
-  }
-
-  // Send result of all savable resource links to embedder.
-  Send(new ViewHostMsg_SendCurrentPageAllSavableResourceLinks(routing_id(),
-                                                              resources_list,
-                                                              referrers_list,
-                                                              frames_list));
 }
 
 void RenderViewImpl::OnGetSerializedHtmlDataForCurrentPageWithLocalLinks(

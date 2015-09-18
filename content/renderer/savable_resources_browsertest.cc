@@ -5,14 +5,16 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/renderer/render_view.h"
+#include "content/public/renderer/render_frame.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/renderer/savable_resources.h"
 #include "content/shell/browser/shell.h"
 #include "net/base/filename_util.h"
+#include "third_party/WebKit/public/web/WebLocalFrame.h"
 
 namespace content {
 
@@ -37,28 +39,22 @@ class SavableResourcesTest : public ContentBrowserTest {
     // Load the test file.
     NavigateToURL(shell(), file_url);
 
-    PostTaskToInProcessRendererAndWait(
-        base::Bind(&SavableResourcesTest::CheckResources,
-                   base::Unretained(this),
-                   page_file_path,
-                   expected_resources_set,
-                   file_url,
-                   shell()->web_contents()->GetRoutingID()));
+    PostTaskToInProcessRendererAndWait(base::Bind(
+        &SavableResourcesTest::CheckResources, base::Unretained(this),
+        page_file_path, expected_resources_set, file_url,
+        shell()->web_contents()->GetMainFrame()->GetRoutingID()));
   }
 
   void CheckResources(const base::FilePath& page_file_path,
                       const std::set<GURL>& expected_resources_set,
                       const GURL& file_url,
-                      int render_view_id) {
+                      int render_frame_routing_id) {
     // Get all savable resource links for the page.
     std::vector<GURL> resources_list;
     std::vector<GURL> referrer_urls_list;
     std::vector<blink::WebReferrerPolicy> referrer_policies_list;
-    std::vector<GURL> frames_list;
-    SavableResourcesResult result(&resources_list,
-                                  &referrer_urls_list,
-                                  &referrer_policies_list,
-                                  &frames_list);
+    SavableResourcesResult result(&resources_list, &referrer_urls_list,
+                                  &referrer_policies_list);
 
     const char* savable_schemes[] = {
       "http",
@@ -67,23 +63,16 @@ class SavableResourcesTest : public ContentBrowserTest {
       NULL
     };
 
-    RenderView* render_view = RenderView::FromRoutingID(render_view_id);
+    RenderFrame* render_frame =
+        RenderFrame::FromRoutingID(render_frame_routing_id);
 
-    ASSERT_TRUE(GetAllSavableResourceLinksForCurrentPage(
-        render_view->GetWebView(), file_url, &result, savable_schemes));
+    ASSERT_TRUE(GetSavableResourceLinksForFrame(
+        render_frame->GetWebFrame(),
+        &result, savable_schemes));
 
     // Check all links of sub-resource
-    for (std::vector<GURL>::const_iterator cit = resources_list.begin();
-         cit != resources_list.end(); ++cit) {
-      ASSERT_TRUE(expected_resources_set.find(*cit) !=
-                  expected_resources_set.end());
-    }
-
-    // Check all links of frame.
-    for (std::vector<GURL>::const_iterator cit = frames_list.begin();
-         cit != frames_list.end(); ++cit) {
-      ASSERT_TRUE(expected_resources_set.find(*cit) !=
-                  expected_resources_set.end());
+    for (const auto& resource : resources_list) {
+      ASSERT_TRUE(expected_resources_set.count(resource) != 0);
     }
   }
 };
