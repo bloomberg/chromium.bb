@@ -56,9 +56,11 @@ class MenuItemViewTestBasic : public MenuTestBase {
 #if defined(OS_WIN)
 // flaky on Windows - http://crbug.com/523255
 #define MAYBE_SelectItem2 DISABLED_SelectItem2
+#define MAYBE_SelectItem1 DISABLED_SelectItem1
 #define MAYBE_SelectItem0 DISABLED_SelectItem0
 #else
 #define MAYBE_SelectItem2 SelectItem2
+#define MAYBE_SelectItem1 SelectItem1
 #define MAYBE_SelectItem0 SelectItem0
 #endif
 
@@ -67,7 +69,7 @@ typedef MenuItemViewTestBasic<0> MenuItemViewTestBasic0;
 typedef MenuItemViewTestBasic<1> MenuItemViewTestBasic1;
 typedef MenuItemViewTestBasic<2> MenuItemViewTestBasic2;
 VIEW_TEST(MenuItemViewTestBasic0, MAYBE_SelectItem0)
-VIEW_TEST(MenuItemViewTestBasic1, SelectItem1)
+VIEW_TEST(MenuItemViewTestBasic1, MAYBE_SelectItem1)
 
 VIEW_TEST(MenuItemViewTestBasic2, MAYBE_SelectItem2)
 
@@ -166,12 +168,14 @@ VIEW_TEST(MenuItemViewTestInsert10, MAYBE_InsertItem10)
 #if defined(OS_WIN)
 // flaky on Windows - http://crbug.com/523255
 #define MAYBE_InsertItem12 DISABLED_InsertItem12
+#define MAYBE_InsertItem20 DISABLED_InsertItem20
 #else
 #define MAYBE_InsertItem12 InsertItem12
+#define MAYBE_InsertItem20 InsertItem20
 #endif
 VIEW_TEST(MenuItemViewTestInsert12, MAYBE_InsertItem12)
 
-VIEW_TEST(MenuItemViewTestInsert20, InsertItem20)
+VIEW_TEST(MenuItemViewTestInsert20, MAYBE_InsertItem20)
 
 #if defined(OS_WIN)
 // flaky on Windows - http://crbug.com/523255
@@ -311,8 +315,16 @@ typedef MenuItemViewTestRemove<1,0> MenuItemViewTestRemove10;
 typedef MenuItemViewTestRemove<1,1> MenuItemViewTestRemove11;
 typedef MenuItemViewTestRemove<2,0> MenuItemViewTestRemove20;
 typedef MenuItemViewTestRemove<2,1> MenuItemViewTestRemove21;
-VIEW_TEST(MenuItemViewTestRemove00, RemoveItem00)
-VIEW_TEST(MenuItemViewTestRemove01, RemoveItem01)
+#if defined(OS_WIN)
+// flaky on Windows - http://crbug.com/523255
+#define MAYBE_RemoveItem00 DISABLED_RemoveItem00
+#define MAYBE_RemoveItem01 DISABLED_RemoveItem01
+#else
+#define MAYBE_RemoveItem00 RemoveItem00
+#define MAYBE_RemoveItem01 RemoveItem01
+#endif
+VIEW_TEST(MenuItemViewTestRemove00, MAYBE_RemoveItem00)
+VIEW_TEST(MenuItemViewTestRemove01, MAYBE_RemoveItem01)
 
 #if defined(OS_WIN)
 // flaky on Windows - http://crbug.com/523255
@@ -333,12 +345,14 @@ VIEW_TEST(MenuItemViewTestRemove11, MAYBE_RemoveItem11)
 #if defined(OS_WIN)
 // flaky on Windows - http://crbug.com/523255
 #define MAYBE_RemoveItem20 DISABLED_RemoveItem20
+#define MAYBE_RemoveItem21 DISABLED_RemoveItem21
 #else
 #define MAYBE_RemoveItem20 RemoveItem20
+#define MAYBE_RemoveItem21 RemoveItem21
 #endif
 VIEW_TEST(MenuItemViewTestRemove20, MAYBE_RemoveItem20)
 
-VIEW_TEST(MenuItemViewTestRemove21, RemoveItem21)
+VIEW_TEST(MenuItemViewTestRemove21, MAYBE_RemoveItem21)
 
 // Test class for removing a menu item while a submenu is open.
 template<int REMOVE_INDEX>
