@@ -79,7 +79,6 @@ class NavigationManagerImpl : public NavigationManager {
   CRWSessionController* GetSessionController();
   int GetLastCommittedEntryIndex() const;
   bool RemoveEntryAtIndex(int index);
-  int GetPendingEntryIndex() const;
   void LoadURL(const GURL& url,
                const Referrer& referrer,
                ui::PageTransition type);
@@ -108,11 +107,13 @@ class NavigationManagerImpl : public NavigationManager {
   NavigationItem* GetLastCommittedItem() const override;
   NavigationItem* GetPendingItem() const override;
   void DiscardNonCommittedItems() override;
+  void LoadIfNecessary() override;
   void AddTransientURLRewriter(
       BrowserURLRewriter::URLRewriter rewriter) override;
   int GetEntryCount() const override;
   NavigationItem* GetItemAtIndex(size_t index) const override;
   int GetCurrentEntryIndex() const override;
+  int GetPendingItemIndex() const override;
 
   // Returns the current list of transient url rewriters, passing ownership to
   // the caller.

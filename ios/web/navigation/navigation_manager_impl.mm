@@ -134,6 +134,10 @@ void NavigationManagerImpl::DiscardNonCommittedItems() {
   [session_controller_ discardNonCommittedEntries];
 }
 
+void NavigationManagerImpl::LoadIfNecessary() {
+  // Nothing to do; iOS loads lazily.
+}
+
 NavigationItem* NavigationManagerImpl::GetTransientItem() const {
   return [[session_controller_ transientEntry] navigationItem];
 }
@@ -150,8 +154,7 @@ int NavigationManagerImpl::GetLastCommittedEntryIndex() const {
 }
 
 bool NavigationManagerImpl::RemoveEntryAtIndex(int index) {
-  if (index == GetLastCommittedEntryIndex() ||
-      index == GetPendingEntryIndex())
+  if (index == GetLastCommittedEntryIndex() || index == GetPendingItemIndex())
     return false;
 
   NSUInteger idx = static_cast<NSUInteger>(index);
@@ -171,12 +174,6 @@ NavigationItem* NavigationManagerImpl::GetLastUserItem() const {
 NavigationItem* NavigationManagerImpl::GetPreviousItem() const {
   CRWSessionEntry* entry = [session_controller_ previousEntry];
   return [entry navigationItem];
-}
-
-int NavigationManagerImpl::GetPendingEntryIndex() const {
-  if ([session_controller_ hasPendingEntry])
-    return GetCurrentEntryIndex();
-  return -1;
 }
 
 void NavigationManagerImpl::AddTransientURLRewriter(
@@ -200,6 +197,12 @@ NavigationItem* NavigationManagerImpl::GetItemAtIndex(size_t index) const {
 
 int NavigationManagerImpl::GetCurrentEntryIndex() const {
   return [session_controller_ currentNavigationIndex];
+}
+
+int NavigationManagerImpl::GetPendingItemIndex() const {
+  if ([session_controller_ hasPendingEntry])
+    return GetCurrentEntryIndex();
+  return -1;
 }
 
 scoped_ptr<std::vector<BrowserURLRewriter::URLRewriter>>

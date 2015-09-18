@@ -45,6 +45,13 @@ class NavigationManager {
   // Removes the transient and pending NavigationItems.
   virtual void DiscardNonCommittedItems() = 0;
 
+  // Currently a no-op, but present to be called in contexts where
+  // NavigationController::LoadIfNecessary() is called in the analogous
+  // //content-based context. In particular, likely will become more than
+  // a no-op if NavigationManager::SetNeedsReload() becomes necessary to
+  // match NavigationController::SetNeedsReload().
+  virtual void LoadIfNecessary() = 0;
+
   // Adds |rewriter| to a transient list of URL rewriters.  Transient URL
   // rewriters will be executed before the rewriters already added to the
   // BrowserURLRewriter singleton, and the list will be cleared after the next
@@ -61,6 +68,10 @@ class NavigationManager {
 
   // Returns the index from which web would go back/forward or reload.
   virtual int GetCurrentEntryIndex() const = 0;
+
+  // Returns the index of the pending item or -1 if the pending item
+  // corresponds to a new navigation.
+  virtual int GetPendingItemIndex() const = 0;
 };
 
 }  // namespace web
