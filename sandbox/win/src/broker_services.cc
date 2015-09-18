@@ -108,44 +108,6 @@ void DeregisterPeerTracker(PeerTracker* peer) {
   }
 }
 
-// Utility function to determine whether a token for the specified policy can
-// be cached.
-bool IsTokenCacheable(const sandbox::PolicyBase* policy) {
-  const sandbox::AppContainerAttributes* app_container =
-      policy->GetAppContainer();
-
-  // We cannot cache tokens with an app container or lowbox.
-  if (app_container || policy->GetLowBoxSid())
-    return false;
-
-  return true;
-}
-
-// Utility function to pack token values into a key for the cache map.
-uint32_t GenerateTokenCacheKey(const sandbox::PolicyBase* policy) {
-  const size_t kTokenShift = 3;
-  uint32_t key;
-
-  DCHECK(IsTokenCacheable(policy));
-
-  // Make sure our token values aren't too large to pack into the key.
-  static_assert(sandbox::USER_LAST <= (1 << kTokenShift),
-                "TokenLevel too large");
-  static_assert(sandbox::INTEGRITY_LEVEL_LAST <= (1 << kTokenShift),
-                "IntegrityLevel too large");
-  static_assert(sizeof(key) < (kTokenShift * 3),
-                "Token key type too small");
-
-  // The key is the enum values shifted to avoid overlap and OR'd together.
-  key = policy->GetInitialTokenLevel();
-  key <<= kTokenShift;
-  key |= policy->GetLockdownTokenLevel();
-  key <<= kTokenShift;
-  key |= policy->GetIntegrityLevel();
-
-  return key;
-}
-
 }  // namespace
 
 namespace sandbox {
@@ -220,9 +182,6 @@ BrokerServicesBase::~BrokerServicesBase() {
   }
 
   ::DeleteCriticalSection(&lock_);
-
-  // Close any token in the cache.
-  STLDeleteValues(&token_cache_);
 }
 
 TargetPolicy* BrokerServicesBase::CreatePolicy() {
@@ -368,42 +327,9 @@ ResultCode BrokerServicesBase::SpawnTarget(const wchar_t* exe_path,
   base::win::ScopedHandle lockdown_token;
   ResultCode result = SBOX_ALL_OK;
 
-  if (IsTokenCacheable(policy_base)) {
-    // Create the master tokens only once and save them in a cache. That way
-    // can just duplicate them to avoid hammering LSASS on every sandboxed
-    // process launch.
-    uint32_t token_key = GenerateTokenCacheKey(policy_base);
-    TokenCacheMap::iterator it = token_cache_.find(token_key);
-    TokenPair* tokens;
-    if (it != token_cache_.end()) {
-      tokens = it->second;
-    } else {
-      result = policy_base->MakeTokens(&initial_token, &lockdown_token);
-      if (SBOX_ALL_OK != result)
-        return result;
-
-      tokens = new TokenPair(initial_token.Pass(), lockdown_token.Pass());
-      token_cache_[token_key] = tokens;
-    }
-
-    HANDLE temp_token;
-    if (!::DuplicateToken(tokens->initial.Get(), SecurityImpersonation,
-                          &temp_token)) {
-      return SBOX_ERROR_GENERIC;
-    }
-    initial_token.Set(temp_token);
-
-    if (!::DuplicateTokenEx(tokens->lockdown.Get(), TOKEN_ALL_ACCESS, 0,
-                            SecurityIdentification, TokenPrimary,
-                            &temp_token)) {
-      return SBOX_ERROR_GENERIC;
-    }
-    lockdown_token.Set(temp_token);
-  } else {
-    result = policy_base->MakeTokens(&initial_token, &lockdown_token);
-    if (SBOX_ALL_OK != result)
-      return result;
-  }
+  result = policy_base->MakeTokens(&initial_token, &lockdown_token);
+  if (SBOX_ALL_OK != result)
+    return result;
 
   base::win::ScopedHandle job;
   result = policy_base->MakeJobObject(&job);

@@ -105,8 +105,6 @@ class BrokerServicesBase final : public BrokerServices,
   // job. Consult |jobless_process_handles_| for handles of pocess without job.
   std::set<DWORD> child_process_ids_;
 
-  TokenCacheMap token_cache_;
-
   DISALLOW_COPY_AND_ASSIGN(BrokerServicesBase);
 };
 
