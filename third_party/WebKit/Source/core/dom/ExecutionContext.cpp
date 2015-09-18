@@ -204,8 +204,9 @@ void ExecutionContext::runSuspendableTasks()
 int ExecutionContext::circularSequentialID()
 {
     ++m_circularSequentialID;
-    if (m_circularSequentialID <= 0)
+    if (m_circularSequentialID > ((1U << 31) - 1U))
         m_circularSequentialID = 1;
+
     return m_circularSequentialID;
 }
 

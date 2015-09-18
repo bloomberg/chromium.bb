@@ -178,7 +178,7 @@ private:
 #endif
     // LifecycleContext implementation.
 
-    int m_circularSequentialID;
+    unsigned m_circularSequentialID;
 
     bool m_inDispatchErrorEvent;
     class PendingException;
