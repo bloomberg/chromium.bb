@@ -1084,6 +1084,34 @@ def CMDcollect(parser, args):
     return 1
 
 
+@subcommand.usage('[filename]')
+def CMDput_bootstrap(parser, args):
+  """Uploads a new version of bootstrap.py."""
+  options, args = parser.parse_args(args)
+  if len(args) != 1:
+    parser.error('Must specify file to upload')
+  url = options.swarming + '/_ah/api/swarming/v1/server/put_bootstrap'
+  with open(args[0], 'rb') as f:
+    content = f.read().decode('utf-8')
+  data = net.url_read_json(url, data={'content': content})
+  print data
+  return 0
+
+
+@subcommand.usage('[filename]')
+def CMDput_bot_config(parser, args):
+  """Uploads a new version of bot_config.py."""
+  options, args = parser.parse_args(args)
+  if len(args) != 1:
+    parser.error('Must specify file to upload')
+  url = options.swarming + '/_ah/api/swarming/v1/server/put_bot_config'
+  with open(args[0], 'rb') as f:
+    content = f.read().decode('utf-8')
+  data = net.url_read_json(url, data={'content': content})
+  print data
+  return 0
+
+
 @subcommand.usage('[method name]')
 def CMDquery(parser, args):
   """Returns raw JSON information via an URL endpoint. Use 'query-list' to
