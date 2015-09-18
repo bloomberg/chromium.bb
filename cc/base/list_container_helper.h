@@ -18,6 +18,9 @@ class CC_EXPORT ListContainerHelper final {
   template <typename T>
   friend class ListContainer;
 
+  template <typename T>
+  friend class RandomAccessListContainer;
+
   explicit ListContainerHelper(size_t max_size_for_derived_class);
   ListContainerHelper(size_t max_size_for_derived_class,
                       size_t num_of_elements_to_reserve_for);

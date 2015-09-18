@@ -85,6 +85,7 @@
         'base/list_container_helper.h',
         'base/math_util.cc',
         'base/math_util.h',
+        'base/random_access_list_container.h',
         'base/region.cc',
         'base/region.h',
         'base/resource_id.h',

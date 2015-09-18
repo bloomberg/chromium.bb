@@ -22,6 +22,7 @@
       'base/histograms_unittest.cc',
       'base/list_container_unittest.cc',
       'base/math_util_unittest.cc',
+      'base/random_access_list_container_unittest.cc',
       'base/region_unittest.cc',
       'base/rolling_time_delta_history_unittest.cc',
       'base/scoped_ptr_vector_unittest.cc',
