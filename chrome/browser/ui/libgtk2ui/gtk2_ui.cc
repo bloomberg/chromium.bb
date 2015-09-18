@@ -47,6 +47,7 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/image/image.h"
+#include "ui/gfx/image/image_skia_source.h"
 #include "ui/gfx/skbitmap_operations.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/native_theme/native_theme.h"
@@ -79,6 +80,89 @@
 namespace libgtk2ui {
 
 namespace {
+
+class GtkThemeIconSource : public gfx::ImageSkiaSource {
+  public:
+    GtkThemeIconSource(int id, const char* icon, bool enabled)
+        : id_(id),
+          icon_(icon),
+          enabled_(enabled) {
+    }
+
+    ~GtkThemeIconSource() override {}
+
+    gfx::ImageSkiaRep GetImageForScale(float scale) override {
+      ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+      SkBitmap default_icon = rb.GetImageNamed(id_).AsBitmap();
+
+      int scalew = default_icon.width() * scale;
+      int scaleh = default_icon.height() * scale;
+
+      // Ask GTK to render the icon to a buffer, which we will steal from.
+      GtkIconTheme* icon_theme = gtk_icon_theme_get_default();
+      GdkPixbuf* gdk_icon = gtk_icon_theme_load_icon(
+          icon_theme,
+          icon_,
+          20 * scale,
+          (GtkIconLookupFlags)0,
+          NULL);
+
+      // This can theoretically happen if an icon theme doesn't provide a
+      // specific image. This should realistically never happen, but I bet there
+      // are some theme authors who don't reliably provide all icons.
+      if (!gdk_icon)
+        return gfx::ImageSkiaRep();
+
+#if GTK_MAJOR_VERSION == 2
+      GtkIconSource* icon_source = gtk_icon_source_new();
+      gtk_icon_source_set_pixbuf(icon_source, gdk_icon);
+
+      GdkPixbuf* temp = gtk_style_render_icon(
+          gtk_rc_get_style(NativeThemeGtk2::instance()->GetButton()),
+          icon_source,
+          GTK_TEXT_DIR_NONE,
+          enabled_ ? GTK_STATE_NORMAL : GTK_STATE_INSENSITIVE,
+          (GtkIconSize)-1,
+          NativeThemeGtk2::instance()->GetButton(),
+          NULL);
+
+      gtk_icon_source_free(icon_source);
+      g_object_unref(gdk_icon);
+
+      gdk_icon = temp;
+#endif
+
+      SkBitmap retval;
+      retval.allocN32Pixels(scalew, scaleh);
+      retval.eraseColor(0);
+
+      const SkBitmap icon = GdkPixbufToImageSkia(gdk_icon);
+      g_object_unref(gdk_icon);
+
+      SkCanvas canvas(retval);
+      SkPaint paint;
+
+#if GTK_MAJOR_VERSION > 2
+      if (!enabled_)
+        paint.setAlpha(128);
+#endif
+
+      canvas.drawBitmap(icon,
+                        (scalew / 2) - (icon.width() / 2),
+                        (scaleh / 2) - (icon.height() / 2),
+                        &paint);
+
+      return gfx::ImageSkiaRep(retval, scale);
+    }
+
+  private:
+    int id_;
+    const char* icon_;
+    bool enabled_;
+
+    DISALLOW_COPY_AND_ASSIGN(GtkThemeIconSource);
+};
+
 
 struct GObjectDeleter {
   void operator()(void* ptr) {
@@ -128,95 +212,7 @@ const color_utils::HSL kDefaultTintFrameIncognito = { -1, 0.2f, 0.35f };
 const color_utils::HSL kDefaultTintFrameIncognitoInactive = { -1, 0.3f, 0.6f };
 const color_utils::HSL kDefaultTintBackgroundTab = { -1, 0.5, 0.75 };
 
-// A list of images that we provide while in gtk mode.
-//
-// TODO(erg): We list both the normal and *_DESKTOP versions of some of these
-// images because in some contexts, we don't go through the
-// chrome::MapThemeImage interface. That should be fixed, but tracking that
-// down is Hard.
-const int kThemeImages[] = {
-  IDR_THEME_TOOLBAR,
-  IDR_THEME_TAB_BACKGROUND,
-  IDR_THEME_TAB_BACKGROUND_DESKTOP,
-  IDR_THEME_TAB_BACKGROUND_INCOGNITO,
-  IDR_THEME_TAB_BACKGROUND_INCOGNITO_DESKTOP,
-  IDR_FRAME,
-  IDR_FRAME_INACTIVE,
-  IDR_THEME_FRAME,
-  IDR_THEME_FRAME_INACTIVE,
-  IDR_THEME_FRAME_INCOGNITO,
-  IDR_THEME_FRAME_INCOGNITO_INACTIVE,
-};
 
-// A list of icons used in the autocomplete view that should be tinted to the
-// current gtk theme selection color so they stand out against the GtkEntry's
-// base color.
-// TODO(erg): Decide what to do about other icons that appear in the omnibox,
-// e.g. content settings icons.
-const int kAutocompleteImages[] = {
-  IDR_OMNIBOX_CALCULATOR,
-  IDR_OMNIBOX_EXTENSION_APP,
-  IDR_OMNIBOX_HTTP,
-  IDR_OMNIBOX_HTTP_DARK,
-  IDR_OMNIBOX_SEARCH,
-  IDR_OMNIBOX_SEARCH_DARK,
-  IDR_OMNIBOX_STAR,
-  IDR_OMNIBOX_STAR_DARK,
-  IDR_OMNIBOX_TTS,
-  IDR_OMNIBOX_TTS_DARK,
-};
-
-// This table converts button ids into a pair of gtk-stock id and state.
-struct IDRGtkMapping {
-  int idr;
-  const char* stock_id;
-  bool enabled;
-} const kGtkIcons[] = {
-  { IDR_BACK,      "go-previous",  true },
-  { IDR_BACK_D,    "go-previous",  false },
-
-  { IDR_FORWARD,   "go-next",      true },
-  { IDR_FORWARD_D, "go-next",      false },
-
-  { IDR_HOME,      "go-home",      true },
-
-  { IDR_RELOAD,    "view-refresh", true },
-  { IDR_RELOAD_D,  "view-refresh", false },
-
-  { IDR_STOP,      "process-stop", true },
-  { IDR_STOP_D,    "process-stop", false },
-};
-
-// The image resources that will be tinted by the 'button' tint value.
-const int kOtherToolbarButtonIDs[] = {
-  IDR_TOOLBAR_BEZEL_HOVER,
-  IDR_TOOLBAR_BEZEL_PRESSED,
-  IDR_BROWSER_ACTIONS_OVERFLOW,
-
-  // TODO(erg): The dropdown arrow should be tinted because we're injecting
-  // various background GTK colors, but the code that accesses them needs to be
-  // modified so that they ask their ui::ThemeProvider instead of the
-  // ResourceBundle. (i.e. in a light on dark theme, the dropdown arrow will be
-  // dark on dark)
-  IDR_MENU_DROPARROW
-};
-
-bool IsOverridableImage(int id) {
-  CR_DEFINE_STATIC_LOCAL(std::set<int>, images, ());
-  if (images.empty()) {
-    images.insert(kThemeImages, kThemeImages + arraysize(kThemeImages));
-    images.insert(kAutocompleteImages,
-                  kAutocompleteImages + arraysize(kAutocompleteImages));
-
-    for (unsigned int i = 0; i < arraysize(kGtkIcons); ++i)
-      images.insert(kGtkIcons[i].idr);
-
-    images.insert(kOtherToolbarButtonIDs,
-                  kOtherToolbarButtonIDs + arraysize(kOtherToolbarButtonIDs));
-  }
-
-  return images.count(id) > 0;
-}
 
 // Get ChromeGtkFrame theme colors. No-op in GTK3.
 void GetChromeStyleColor(const char* style_property, SkColor* ret_color) {
@@ -461,14 +457,16 @@ gfx::Image Gtk2UI::GetThemeImageNamed(int id) const {
   if (it != gtk_images_.end())
     return it->second;
 
-  if (IsOverridableImage(id)) {
-    gfx::Image image = gfx::Image(
-        gfx::ImageSkia::CreateFrom1xBitmap(GenerateGtkThemeBitmap(id)));
-    gtk_images_[id] = image;
-    return image;
+  gfx::Image image = GenerateGtkThemeImage(id);
+
+  if (image.IsEmpty()) {
+    SkBitmap bitmap = GenerateGtkThemeBitmap(id);
+    if (!bitmap.empty())
+      image = gfx::Image::CreateFrom1xBitmap(bitmap);
   }
 
-  return gfx::Image();
+  gtk_images_[id] = image;
+  return image;
 }
 
 bool Gtk2UI::GetColor(int id, SkColor* color) const {
@@ -482,7 +480,7 @@ bool Gtk2UI::GetColor(int id, SkColor* color) const {
 }
 
 bool Gtk2UI::HasCustomImage(int id) const {
-  return IsOverridableImage(id);
+  return !GetThemeImageNamed(id).IsEmpty();
 }
 
 SkColor Gtk2UI::GetFocusRingColor() const {
@@ -930,6 +928,48 @@ void Gtk2UI::SetThemeTint(int id, SkColor color) {
   tints_[id] = hsl;
 }
 
+gfx::Image Gtk2UI::GenerateGtkThemeImage(int id) const {
+  gfx::ImageSkiaSource* source = NULL;
+
+  switch (id) {
+    case IDR_BACK:
+      source = new GtkThemeIconSource(id, "go-previous", true);
+      break;
+    case IDR_BACK_D:
+      source = new GtkThemeIconSource(id, "go-previous", false);
+      break;
+
+    case IDR_FORWARD:
+      source = new GtkThemeIconSource(id, "go-next", true);
+      break;
+    case IDR_FORWARD_D:
+      source = new GtkThemeIconSource(id, "go-next", false);
+      break;
+
+    case IDR_HOME:
+      source = new GtkThemeIconSource(id, "go-home", true);
+      break;
+
+    case IDR_RELOAD:
+      source = new GtkThemeIconSource(id, "view-refresh", true);
+      break;
+    case IDR_RELOAD_D:
+      source = new GtkThemeIconSource(id, "view-refresh", false);
+      break;
+
+    case IDR_STOP:
+      source = new GtkThemeIconSource(id, "process-stop", true);
+      break;
+    case IDR_STOP_D:
+      source = new GtkThemeIconSource(id, "process-stop", false);
+      break;
+  }
+
+  if (source)
+    return gfx::Image(gfx::ImageSkia(source, 1));
+
+  return gfx::Image();
+}
 SkBitmap Gtk2UI::GenerateGtkThemeBitmap(int id) const {
   switch (id) {
     case IDR_THEME_TOOLBAR: {
@@ -940,6 +980,11 @@ SkBitmap Gtk2UI::GenerateGtkThemeBitmap(int id) const {
               ui::NativeTheme::kColorId_LabelBackgroundColor));
       return bitmap;
     }
+
+    // TODO(erg): We list both the normal and *_DESKTOP versions of these
+    // images because in some contexts, we don't go through the
+    // chrome::MapThemeImage interface. That should be fixed, but tracking that
+    // down is Hard.
     case IDR_THEME_TAB_BACKGROUND:
     case IDR_THEME_TAB_BACKGROUND_DESKTOP:
       return GenerateTabImage(IDR_THEME_FRAME);
@@ -987,27 +1032,22 @@ SkBitmap Gtk2UI::GenerateGtkThemeBitmap(int id) const {
     case IDR_OMNIBOX_TTS_DARK: {
       return GenerateTintedIcon(id, selected_entry_tint_);
     }
-    // In GTK mode, we need to manually render several icons.
-    case IDR_BACK:
-    case IDR_BACK_D:
-    case IDR_FORWARD:
-    case IDR_FORWARD_D:
-    case IDR_HOME:
-    case IDR_RELOAD:
-    case IDR_RELOAD_D:
-    case IDR_STOP:
-    case IDR_STOP_D: {
-      return GenerateGTKIcon(id);
-    }
+
     case IDR_TOOLBAR_BEZEL_HOVER:
       return GenerateToolbarBezel(
           ui::NativeTheme::kHovered, IDR_TOOLBAR_BEZEL_HOVER);
     case IDR_TOOLBAR_BEZEL_PRESSED:
       return GenerateToolbarBezel(
           ui::NativeTheme::kPressed, IDR_TOOLBAR_BEZEL_PRESSED);
-    default: {
+
+    // TODO(erg): The dropdown arrow should be tinted because we're injecting
+    // various background GTK colors, but the code that accesses them needs to
+    // be modified so that they ask their ui::ThemeProvider instead of the
+    // ResourceBundle. (i.e. in a light on dark theme, the dropdown arrow will
+    // be dark on dark)
+    case IDR_MENU_DROPARROW:
+    case IDR_BROWSER_ACTIONS_OVERFLOW:
       return GenerateTintedIcon(id, button_tint_);
-    }
   }
 
   return SkBitmap();
@@ -1111,79 +1151,6 @@ SkBitmap Gtk2UI::GenerateTintedIcon(
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   return SkBitmapOperations::CreateHSLShiftedBitmap(
       rb.GetImageNamed(base_id).AsBitmap(), tint);
-}
-
-SkBitmap Gtk2UI::GenerateGTKIcon(int base_id) const {
-  const char* stock_id = NULL;
-  bool enabled = true;
-  for (unsigned int i = 0; i < arraysize(kGtkIcons); ++i) {
-    if (kGtkIcons[i].idr == base_id) {
-      stock_id = kGtkIcons[i].stock_id;
-      enabled = kGtkIcons[i].enabled;
-      break;
-    }
-  }
-  DCHECK(stock_id);
-
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  SkBitmap default_bitmap = rb.GetImageNamed(base_id).AsBitmap();
-
-  // Ask GTK to render the icon to a buffer, which we will steal from.
-  GtkIconTheme* icon_theme = gtk_icon_theme_get_default();
-  GdkPixbuf* gdk_icon = gtk_icon_theme_load_icon(
-      icon_theme,
-      stock_id,
-      20,
-      (GtkIconLookupFlags)0,
-      NULL);
-
-  if (!gdk_icon) {
-    // This can theoretically happen if an icon theme doesn't provide a
-    // specific image. This should realistically never happen, but I bet there
-    // are some theme authors who don't reliably provide all icons.
-    return default_bitmap;
-  }
-
-#if GTK_MAJOR_VERSION == 2
-  GtkIconSource* icon_source = gtk_icon_source_new();
-  gtk_icon_source_set_pixbuf(icon_source, gdk_icon);
-
-  GdkPixbuf* temp = gtk_style_render_icon(
-      gtk_rc_get_style(NativeThemeGtk2::instance()->GetButton()),
-      icon_source,
-      GTK_TEXT_DIR_NONE,
-      enabled ? GTK_STATE_NORMAL : GTK_STATE_INSENSITIVE,
-      (GtkIconSize)-1,
-      NativeThemeGtk2::instance()->GetButton(),
-      NULL);
-
-  gtk_icon_source_free(icon_source);
-  g_object_unref(gdk_icon);
-
-  gdk_icon = temp;
-#endif
-
-  SkBitmap retval;
-  retval.allocN32Pixels(default_bitmap.width(), default_bitmap.height());
-  retval.eraseColor(0);
-
-  const SkBitmap icon = GdkPixbufToImageSkia(gdk_icon);
-  g_object_unref(gdk_icon);
-
-  SkCanvas canvas(retval);
-  SkPaint paint;
-
-#if GTK_MAJOR_VERSION > 2
-  if (!enabled)
-    paint.setAlpha(128);
-#endif
-
-  canvas.drawBitmap(icon,
-                    (default_bitmap.width() / 2) - (icon.width() / 2),
-                    (default_bitmap.height() / 2) - (icon.height() / 2),
-                    &paint);
-
-  return retval;
 }
 
 SkBitmap Gtk2UI::GenerateToolbarBezel(

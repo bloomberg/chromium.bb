@@ -145,7 +145,8 @@ class Gtk2UI : public views::LinuxUI {
   // Sets the underlying theme tints.
   void SetThemeTint(int id, SkColor color);
 
-  // Lazily generates each bitmap used in the gtk theme.
+  // Lazily generates each image used in the gtk theme.
+  gfx::Image GenerateGtkThemeImage(int id) const;
   SkBitmap GenerateGtkThemeBitmap(int id) const;
 
   // Creates a GTK+ version of IDR_THEME_FRAME. Instead of tinting, this
@@ -161,10 +162,6 @@ class Gtk2UI : public views::LinuxUI {
   // Tints an icon based on tint.
   SkBitmap GenerateTintedIcon(int base_id,
                               const color_utils::HSL& tint) const;
-
-  // Renders a GTK icon as a SkBitmap, with prelight/active border if
-  // appropriate.
-  SkBitmap GenerateGTKIcon(int base_id) const;
 
   // Renders a GTK button border the size of the image |sizing_idr| in
   // |state|.
