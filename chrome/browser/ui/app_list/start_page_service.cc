@@ -578,6 +578,19 @@ void StartPageService::DidNavigateMainFrame(
   ui_zoom::ZoomController::FromWebContents(contents_.get())->SetZoomLevel(0);
 }
 
+void StartPageService::DidFailProvisionalLoad(
+    content::RenderFrameHost* render_frame_host,
+    const GURL& validated_url,
+    int error_code,
+    const base::string16& error_description,
+    bool was_ignored_by_handler) {
+  // This avoids displaying a "Webpage Blocked" error or similar (which can
+  // happen if the URL is blacklisted by enterprise policy).
+  content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
+                                   base::Bind(&StartPageService::UnloadContents,
+                                              weak_factory_.GetWeakPtr()));
+}
+
 void StartPageService::WebUILoaded() {
   // There's a race condition between the WebUI loading, and calling its JS
   // functions. Specifically, calling LoadContents() doesn't mean that the page
