@@ -302,8 +302,7 @@ void CloudPolicyInvalidatorTest::StorePolicy(
   store_.policy_map_.LoadFrom(
       &policies,
       POLICY_LEVEL_MANDATORY,
-      POLICY_SCOPE_MACHINE,
-      POLICY_SOURCE_CLOUD);
+      POLICY_SCOPE_MACHINE);
   store_.NotifyStoreLoaded();
 }
 

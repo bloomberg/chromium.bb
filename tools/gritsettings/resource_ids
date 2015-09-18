@@ -262,26 +262,26 @@
   # We only use one file depending on whether we're building Chromium or
   # Google Chrome.
   "components/components_chromium_strings.grd": {
-    "messages": [30160],
+    "messages": [30140],
   },
   "components/components_google_chrome_strings.grd": {
-    "messages": [30160],
+    "messages": [30140],
   },
   "components/resources/components_resources.grd": {
-    "includes": [30175],
+    "includes": [30155],
   },
   "components/resources/components_scaled_resources.grd": {
-    "structures": [30350],
+    "structures": [30310],
   },
   "third_party/WebKit/public/blink_resources.grd": {
-    "includes": [30370],
-    "structures": [30670],
+    "includes": [30350],
+    "structures": [30650],
   },
   "chrome/browser/devtools/device/webrtc/resources.grd": {
-    "includes": [30820],
+    "includes": [30800],
   },
   "chrome/browser/resources/settings/settings_resources.grd": {
-    "structures": [30920],
+    "structures": [30900],
   },
 
   # Resource ids starting at 31000 are reserved for projects built on Chromium.

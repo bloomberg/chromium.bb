@@ -38,7 +38,6 @@
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
 #include "components/policy/core/common/policy_bundle.h"
 #include "components/policy/core/common/policy_map.h"
-#include "components/policy/core/common/policy_types.h"
 #include "components/policy/core/common/schema_registry.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_test_util.h"
@@ -144,7 +143,6 @@ void DeviceLocalAccountPolicyServiceTestBase::SetUp() {
   expected_policy_map_.Set(key::kDisableSpdy,
                            POLICY_LEVEL_MANDATORY,
                            POLICY_SCOPE_USER,
-                           POLICY_SOURCE_CLOUD,
                            new base::FundamentalValue(true),
                            NULL);
 
@@ -808,7 +806,6 @@ void DeviceLocalAccountPolicyProviderTest::SetUp() {
   expected_policy_map_.Set(key::kLidCloseAction,
                            POLICY_LEVEL_MANDATORY,
                            POLICY_SCOPE_MACHINE,
-                           POLICY_SOURCE_ENTERPRISE_OVERRIDE,
                            new base::FundamentalValue(
                                chromeos::PowerPolicyController::
                                    ACTION_STOP_SESSION),
@@ -816,19 +813,16 @@ void DeviceLocalAccountPolicyProviderTest::SetUp() {
   expected_policy_map_.Set(key::kShelfAutoHideBehavior,
                            POLICY_LEVEL_MANDATORY,
                            POLICY_SCOPE_MACHINE,
-                           POLICY_SOURCE_ENTERPRISE_OVERRIDE,
                            new base::StringValue("Never"),
                            NULL);
   expected_policy_map_.Set(key::kShowLogoutButtonInTray,
                            POLICY_LEVEL_MANDATORY,
                            POLICY_SCOPE_MACHINE,
-                           POLICY_SOURCE_ENTERPRISE_OVERRIDE,
                            new base::FundamentalValue(true),
                            NULL);
   expected_policy_map_.Set(key::kFullscreenAllowed,
                            POLICY_LEVEL_MANDATORY,
                            POLICY_SCOPE_MACHINE,
-                           POLICY_SOURCE_ENTERPRISE_OVERRIDE,
                            new base::FundamentalValue(false),
                            NULL);
 }
@@ -895,7 +889,6 @@ TEST_F(DeviceLocalAccountPolicyProviderTest, Policy) {
       .Set(key::kDisableSpdy,
            POLICY_LEVEL_MANDATORY,
            POLICY_SCOPE_USER,
-           POLICY_SOURCE_CLOUD,
            new base::FundamentalValue(false),
            NULL);
   EXPECT_TRUE(expected_policy_bundle.Equals(provider_->policies()));

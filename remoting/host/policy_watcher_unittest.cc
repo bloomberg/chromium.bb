@@ -186,8 +186,7 @@ class PolicyWatcherTest : public testing::Test {
     policy::PolicyBundle policy_bundle;
     policy::PolicyMap& policy_map = policy_bundle.Get(policy_namespace);
     policy_map.LoadFrom(&dict, policy::POLICY_LEVEL_MANDATORY,
-                        policy::POLICY_SCOPE_MACHINE,
-                        policy::POLICY_SOURCE_CLOUD);
+                        policy::POLICY_SCOPE_MACHINE);
 
     // Simulate a policy file/registry/preference update.
     policy_loader_->SetPolicies(policy_bundle);

@@ -72,7 +72,6 @@ TEST_F(DownloadDirPolicyHandlerTest, SetDownloadDirectory) {
   policy.Set(policy::key::kDownloadDirectory,
              policy::POLICY_LEVEL_MANDATORY,
              policy::POLICY_SCOPE_USER,
-             policy::POLICY_SOURCE_CLOUD,
              new base::StringValue(std::string()),
              NULL);
   UpdateProviderPolicy(policy);
@@ -96,7 +95,6 @@ TEST_F(DownloadDirPolicyHandlerTest, SetDownloadToDrive) {
   policy.Set(policy::key::kDownloadDirectory,
              policy::POLICY_LEVEL_MANDATORY,
              policy::POLICY_SCOPE_USER,
-             policy::POLICY_SOURCE_CLOUD,
              new base::StringValue(kDriveNamePolicyVariableName),
              NULL);
   UpdateProviderPolicy(policy);
@@ -123,7 +121,6 @@ TEST_F(DownloadDirPolicyHandlerTest, SetDownloadToDrive) {
   policy.Set(policy::key::kDownloadDirectory,
              policy::POLICY_LEVEL_MANDATORY,
              policy::POLICY_SCOPE_USER,
-             policy::POLICY_SOURCE_CLOUD,
              new base::StringValue(kUserIDHash),
              NULL);
   UpdateProviderPolicy(policy);
@@ -132,7 +129,6 @@ TEST_F(DownloadDirPolicyHandlerTest, SetDownloadToDrive) {
   policy.Set(policy::key::kDownloadDirectory,
              policy::POLICY_LEVEL_RECOMMENDED,
              policy::POLICY_SCOPE_USER,
-             policy::POLICY_SOURCE_CLOUD,
              new base::StringValue(std::string(kDriveNamePolicyVariableName) +
                                    kRelativeToDriveRoot),
              NULL);
@@ -151,7 +147,6 @@ TEST_F(DownloadDirPolicyHandlerTest, SetDownloadToDrive) {
   policy.Set(policy::key::kDownloadDirectory,
              policy::POLICY_LEVEL_RECOMMENDED,
              policy::POLICY_SCOPE_USER,
-             policy::POLICY_SOURCE_CLOUD,
              new base::StringValue(kUserIDHash),
              NULL);
   UpdateProviderPolicy(policy);

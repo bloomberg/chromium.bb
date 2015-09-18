@@ -266,7 +266,7 @@ void NetworkConfigurationPolicyHandler::PrepareForDisplaying(
     sanitized_config = base::Value::CreateNullValue().release();
 
   policies->Set(policy_name(), entry->level, entry->scope,
-                entry->source, sanitized_config, nullptr);
+                sanitized_config, NULL);
 }
 
 NetworkConfigurationPolicyHandler::NetworkConfigurationPolicyHandler(

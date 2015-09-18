@@ -28,7 +28,6 @@ scoped_ptr<PolicyMap::Entry> PolicyMap::Entry::DeepCopy() const {
   scoped_ptr<Entry> copy(new Entry);
   copy->level = level;
   copy->scope = scope;
-  copy->source = source;
   if (value)
     copy->value = value->DeepCopy();
   if (external_data_fetcher) {
@@ -49,8 +48,6 @@ bool PolicyMap::Entry::has_higher_priority_than(
 bool PolicyMap::Entry::Equals(const PolicyMap::Entry& other) const {
   return level == other.level &&
          scope == other.scope &&
-         source == other.source &&  // Necessary for PolicyUIHandler observers.
-                                    // They have to update when sources change.
          base::Value::Equals(value, other.value) &&
          ExternalDataFetcher::Equals(external_data_fetcher,
                                      other.external_data_fetcher);
@@ -76,14 +73,12 @@ const base::Value* PolicyMap::GetValue(const std::string& policy) const {
 void PolicyMap::Set(const std::string& policy,
                     PolicyLevel level,
                     PolicyScope scope,
-                    PolicySource source,
                     base::Value* value,
                     ExternalDataFetcher* external_data_fetcher) {
   Entry& entry = map_[policy];
   entry.DeleteOwnedMembers();
   entry.level = level;
   entry.scope = scope;
-  entry.source = source;
   entry.value = value;
   entry.external_data_fetcher = external_data_fetcher;
 }
@@ -104,11 +99,9 @@ void PolicyMap::CopyFrom(const PolicyMap& other) {
   Clear();
   for (const_iterator it = other.begin(); it != other.end(); ++it) {
     const Entry& entry = it->second;
-    Set(it->first, entry.level, entry.scope, entry.source,
-        entry.value->DeepCopy(),
-        entry.external_data_fetcher
-            ? new ExternalDataFetcher(*entry.external_data_fetcher)
-            : nullptr);
+    Set(it->first, entry.level, entry.scope,
+        entry.value->DeepCopy(), entry.external_data_fetcher ?
+            new ExternalDataFetcher(*entry.external_data_fetcher) : NULL);
   }
 }
 
@@ -122,12 +115,10 @@ void PolicyMap::MergeFrom(const PolicyMap& other) {
   for (const_iterator it = other.begin(); it != other.end(); ++it) {
     const Entry* entry = Get(it->first);
     if (!entry || it->second.has_higher_priority_than(*entry)) {
-      Set(it->first, it->second.level, it->second.scope, it->second.source,
-          it->second.value->DeepCopy(),
-          it->second.external_data_fetcher
-              ? new ExternalDataFetcher(
-                    *it->second.external_data_fetcher)
-              : nullptr);
+      Set(it->first, it->second.level, it->second.scope,
+          it->second.value->DeepCopy(), it->second.external_data_fetcher ?
+              new ExternalDataFetcher(*it->second.external_data_fetcher) :
+              NULL);
     }
   }
 }
@@ -135,11 +126,10 @@ void PolicyMap::MergeFrom(const PolicyMap& other) {
 void PolicyMap::LoadFrom(
     const base::DictionaryValue* policies,
     PolicyLevel level,
-    PolicyScope scope,
-    PolicySource source) {
+    PolicyScope scope) {
   for (base::DictionaryValue::Iterator it(*policies);
        !it.IsAtEnd(); it.Advance()) {
-    Set(it.key(), level, scope, source, it.value().DeepCopy(), nullptr);
+    Set(it.key(), level, scope, it.value().DeepCopy(), NULL);
   }
 }
 

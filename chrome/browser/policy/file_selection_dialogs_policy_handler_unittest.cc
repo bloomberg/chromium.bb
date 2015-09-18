@@ -7,7 +7,6 @@
 #include "chrome/browser/policy/file_selection_dialogs_policy_handler.h"
 #include "chrome/common/pref_names.h"
 #include "components/policy/core/common/policy_map.h"
-#include "components/policy/core/common/policy_types.h"
 #include "policy/policy_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -31,7 +30,6 @@ TEST_F(FileSelectionDialogsPolicyTest, EnableFileSelectionDialogs) {
   policy_.Set(key::kAllowFileSelectionDialogs,
               POLICY_LEVEL_MANDATORY,
               POLICY_SCOPE_USER,
-              POLICY_SOURCE_CLOUD,
               new base::FundamentalValue(true),
               NULL);
   handler_.ApplyPolicySettings(policy_, &prefs_);
@@ -45,7 +43,6 @@ TEST_F(FileSelectionDialogsPolicyTest, DisableFileSelectionDialogs) {
   policy_.Set(key::kAllowFileSelectionDialogs,
               POLICY_LEVEL_MANDATORY,
               POLICY_SCOPE_USER,
-              POLICY_SOURCE_CLOUD,
               new base::FundamentalValue(false),
               NULL);
   handler_.ApplyPolicySettings(policy_, &prefs_);

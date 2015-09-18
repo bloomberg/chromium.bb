@@ -12,7 +12,6 @@
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
 #include "components/policy/core/common/policy_map.h"
-#include "components/policy/core/common/policy_types.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/browser_test.h"
 #include "net/http/http_transaction_factory.h"
@@ -85,7 +84,7 @@ class QuicAllowedPolicyIsFalse: public QuicAllowedPolicyTestBase {
  protected:
   void GetQuicAllowedPolicy(PolicyMap* values) override {
     values->Set(key::kQuicAllowed, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
-        POLICY_SOURCE_CLOUD, new base::FundamentalValue(false), nullptr);
+        new base::FundamentalValue(false), NULL);
   }
 
  private:
@@ -104,7 +103,7 @@ class QuicAllowedPolicyIsTrue: public QuicAllowedPolicyTestBase {
  protected:
   void GetQuicAllowedPolicy(PolicyMap* values) override {
     values->Set(key::kQuicAllowed, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
-        POLICY_SOURCE_CLOUD, new base::FundamentalValue(true), nullptr);
+        new base::FundamentalValue(true), NULL);
   }
 
  private:

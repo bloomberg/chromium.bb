@@ -16,7 +16,6 @@
 #include "components/policy/core/browser/configuration_policy_handler.h"
 #include "components/policy/core/browser/policy_error_map.h"
 #include "components/policy/core/common/policy_map.h"
-#include "components/policy/core/common/policy_types.h"
 #include "grit/components_strings.h"
 #include "policy/policy_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -28,8 +27,7 @@ class RestoreOnStartupPolicyHandlerTest : public testing::Test {
  protected:
   void SetPolicyValue(const std::string& policy, base::Value* value) {
     policies_.Set(
-        policy, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-        value, nullptr);
+        policy, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER, value, NULL);
   }
   bool CheckPolicySettings() {
     return handler_.CheckPolicySettings(policies_, &errors_);

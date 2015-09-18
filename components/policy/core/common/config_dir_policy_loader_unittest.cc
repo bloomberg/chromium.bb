@@ -15,7 +15,6 @@
 #include "components/policy/core/common/configuration_policy_provider_test.h"
 #include "components/policy/core/common/policy_bundle.h"
 #include "components/policy/core/common/policy_map.h"
-#include "components/policy/core/common/policy_types.h"
 
 namespace policy {
 
@@ -69,9 +68,7 @@ class TestHarness : public PolicyProviderTestHarness {
 };
 
 TestHarness::TestHarness()
-    : PolicyProviderTestHarness(POLICY_LEVEL_MANDATORY,
-                                POLICY_SCOPE_MACHINE,
-                                POLICY_SOURCE_PLATFORM),
+    : PolicyProviderTestHarness(POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE),
       next_policy_file_index_(100) {}
 
 TestHarness::~TestHarness() {}
@@ -228,8 +225,7 @@ TEST_F(ConfigDirPolicyLoaderTest, ReadPrefsMergePrefs) {
   ASSERT_TRUE(bundle.get());
   PolicyBundle expected_bundle;
   expected_bundle.Get(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()))
-      .LoadFrom(&test_dict_foo, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-                POLICY_SOURCE_PLATFORM);
+      .LoadFrom(&test_dict_foo, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER);
   EXPECT_TRUE(bundle->Equals(expected_bundle));
 }
 

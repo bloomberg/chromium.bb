@@ -65,11 +65,9 @@ class PolicyTestBase : public testing::Test {
 // ConfigurationPolicyProviderTest below.
 class PolicyProviderTestHarness {
  public:
-  // |level|, |scope| and |source| are the level, scope and source of the
-  // policies returned by the providers from CreateProvider().
-  PolicyProviderTestHarness(PolicyLevel level,
-                            PolicyScope scope,
-                            PolicySource source);
+  // |level| and |scope| are the level and scope of the policies returned by
+  // the providers from CreateProvider().
+  PolicyProviderTestHarness(PolicyLevel level, PolicyScope scope);
   virtual ~PolicyProviderTestHarness();
 
   // Actions to run at gtest SetUp() time.
@@ -80,10 +78,9 @@ class PolicyProviderTestHarness {
       SchemaRegistry* registry,
       scoped_refptr<base::SequencedTaskRunner> task_runner) = 0;
 
-  // Returns the policy level, scope and source set by the policy provider.
+  // Returns the policy level and scope set by the policy provider.
   PolicyLevel policy_level() const;
   PolicyScope policy_scope() const;
-  PolicySource policy_source() const;
 
   // Helpers to configure the environment the policy provider reads from.
   virtual void InstallEmptyPolicy() = 0;
@@ -106,7 +103,6 @@ class PolicyProviderTestHarness {
  private:
   PolicyLevel level_;
   PolicyScope scope_;
-  PolicySource source_;
 
   DISALLOW_COPY_AND_ASSIGN(PolicyProviderTestHarness);
 };

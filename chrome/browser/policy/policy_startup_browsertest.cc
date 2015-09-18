@@ -12,7 +12,6 @@
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
 #include "components/policy/core/common/policy_map.h"
-#include "components/policy/core/common/policy_types.h"
 #include "policy/policy_constants.h"
 
 class PolicyMakeDefaultBrowserTest : public InProcessBrowserTest {
@@ -33,7 +32,6 @@ class PolicyMakeDefaultBrowserTest : public InProcessBrowserTest {
     values.Set(policy::key::kDefaultBrowserSettingEnabled,
                policy::POLICY_LEVEL_MANDATORY,
                policy::POLICY_SCOPE_MACHINE,
-               policy::POLICY_SOURCE_CLOUD,
                new base::FundamentalValue(false),
                NULL);
     provider_.UpdateChromePolicy(values);

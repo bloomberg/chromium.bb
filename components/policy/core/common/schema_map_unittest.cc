@@ -10,7 +10,6 @@
 #include "components/policy/core/common/external_data_manager.h"
 #include "components/policy/core/common/policy_bundle.h"
 #include "components/policy/core/common/policy_map.h"
-#include "components/policy/core/common/policy_types.h"
 #include "components/policy/core/common/schema.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -142,7 +141,6 @@ TEST_F(SchemaMapTest, FilterBundle) {
   expected_bundle.Get(chrome_ns).Set("ChromePolicy",
                                      POLICY_LEVEL_MANDATORY,
                                      POLICY_SCOPE_USER,
-                                     POLICY_SOURCE_CLOUD,
                                      new base::StringValue("value"),
                                      NULL);
   bundle.CopyFrom(expected_bundle);
@@ -152,7 +150,6 @@ TEST_F(SchemaMapTest, FilterBundle) {
   bundle.Get(another_extension_ns).Set("AnotherExtensionPolicy",
                                        POLICY_LEVEL_MANDATORY,
                                        POLICY_SCOPE_USER,
-                                       POLICY_SOURCE_CLOUD,
                                        new base::StringValue("value"),
                                        NULL);
   schema_map->FilterBundle(&bundle);
@@ -164,37 +161,32 @@ TEST_F(SchemaMapTest, FilterBundle) {
   list.AppendString("a");
   list.AppendString("b");
   map.Set("list", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-          POLICY_SOURCE_CLOUD, list.DeepCopy(), nullptr);
+          list.DeepCopy(), NULL);
   map.Set("boolean",
           POLICY_LEVEL_MANDATORY,
           POLICY_SCOPE_USER,
-          POLICY_SOURCE_CLOUD,
           new base::FundamentalValue(true),
           NULL);
   map.Set("integer",
           POLICY_LEVEL_MANDATORY,
           POLICY_SCOPE_USER,
-          POLICY_SOURCE_CLOUD,
           new base::FundamentalValue(1),
           NULL);
   map.Set("null", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-          POLICY_SOURCE_CLOUD, base::Value::CreateNullValue().release(),
-          nullptr);
+          base::Value::CreateNullValue().release(), NULL);
   map.Set("double",
           POLICY_LEVEL_MANDATORY,
           POLICY_SCOPE_USER,
-          POLICY_SOURCE_CLOUD,
           new base::FundamentalValue(1.2),
           NULL);
   base::DictionaryValue dict;
   dict.SetString("a", "b");
   dict.SetInteger("b", 2);
   map.Set("object", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-          POLICY_SOURCE_CLOUD, dict.DeepCopy(), nullptr);
+          dict.DeepCopy(), NULL);
   map.Set("string",
           POLICY_LEVEL_MANDATORY,
           POLICY_SCOPE_USER,
-          POLICY_SOURCE_CLOUD,
           new base::StringValue("value"),
           NULL);
 
@@ -202,7 +194,6 @@ TEST_F(SchemaMapTest, FilterBundle) {
   bundle.Get(extension_ns).Set("Unexpected",
                                POLICY_LEVEL_MANDATORY,
                                POLICY_SCOPE_USER,
-                               POLICY_SOURCE_CLOUD,
                                new base::StringValue("to-be-removed"),
                                NULL);
 
@@ -215,41 +206,35 @@ TEST_F(SchemaMapTest, FilterBundle) {
   badmap.Set("list",
              POLICY_LEVEL_MANDATORY,
              POLICY_SCOPE_USER,
-             POLICY_SOURCE_CLOUD,
              new base::FundamentalValue(false),
              NULL);
   badmap.Set("boolean",
              POLICY_LEVEL_MANDATORY,
              POLICY_SCOPE_USER,
-             POLICY_SOURCE_CLOUD,
              new base::FundamentalValue(0),
              NULL);
   badmap.Set("integer",
              POLICY_LEVEL_MANDATORY,
              POLICY_SCOPE_USER,
-             POLICY_SOURCE_CLOUD,
              new base::FundamentalValue(false),
              NULL);
   badmap.Set("null",
              POLICY_LEVEL_MANDATORY,
              POLICY_SCOPE_USER,
-             POLICY_SOURCE_CLOUD,
              new base::FundamentalValue(false),
              NULL);
   badmap.Set("double",
              POLICY_LEVEL_MANDATORY,
              POLICY_SCOPE_USER,
-             POLICY_SOURCE_CLOUD,
              new base::FundamentalValue(false),
              NULL);
   badmap.Set("object",
              POLICY_LEVEL_MANDATORY,
              POLICY_SCOPE_USER,
-             POLICY_SOURCE_CLOUD,
              new base::FundamentalValue(false),
              NULL);
   badmap.Set("string", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-             POLICY_SOURCE_CLOUD, nullptr,
+             NULL,
              new ExternalDataFetcher(base::WeakPtr<ExternalDataManager>(),
                                      std::string()));
 
@@ -281,7 +266,6 @@ TEST_F(SchemaMapTest, LegacyComponents) {
   bundle.Get(extension_ns).Set("String",
                                POLICY_LEVEL_MANDATORY,
                                POLICY_SCOPE_USER,
-                               POLICY_SOURCE_CLOUD,
                                new base::StringValue("value 1"),
                                NULL);
 
@@ -290,7 +274,6 @@ TEST_F(SchemaMapTest, LegacyComponents) {
   bundle.Get(chrome_ns).Set("ChromePolicy",
                             POLICY_LEVEL_MANDATORY,
                             POLICY_SCOPE_USER,
-                            POLICY_SOURCE_CLOUD,
                             new base::StringValue("value 3"),
                             NULL);
 
@@ -302,7 +285,6 @@ TEST_F(SchemaMapTest, LegacyComponents) {
   bundle.Get(without_schema_ns).Set("Schemaless",
                                     POLICY_LEVEL_MANDATORY,
                                     POLICY_SCOPE_USER,
-                                    POLICY_SOURCE_CLOUD,
                                     new base::StringValue("value 2"),
                                     NULL);
 
@@ -310,7 +292,6 @@ TEST_F(SchemaMapTest, LegacyComponents) {
   bundle.Get(extension_ns).Set("Surprise",
                                POLICY_LEVEL_MANDATORY,
                                POLICY_SCOPE_USER,
-                               POLICY_SOURCE_CLOUD,
                                new base::StringValue("value 4"),
                                NULL);
 
@@ -319,7 +300,6 @@ TEST_F(SchemaMapTest, LegacyComponents) {
   bundle.Get(unknown_ns).Set("Surprise",
                              POLICY_LEVEL_MANDATORY,
                              POLICY_SCOPE_USER,
-                             POLICY_SOURCE_CLOUD,
                              new base::StringValue("value 5"),
                              NULL);
 

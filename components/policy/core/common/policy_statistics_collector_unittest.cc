@@ -109,7 +109,6 @@ class PolicyStatisticsCollectorTest : public testing::Test {
     policy_map_.Set(name,
                     POLICY_LEVEL_MANDATORY,
                     POLICY_SCOPE_USER,
-                    POLICY_SOURCE_CLOUD,
                     new base::FundamentalValue(true),
                     NULL);
   }
