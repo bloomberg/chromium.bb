@@ -29,7 +29,6 @@
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
 #include "components/policy/core/common/policy_map.h"
-#include "components/policy/core/common/policy_types.h"
 #include "policy/policy_constants.h"
 #endif
 
@@ -192,7 +191,6 @@ IN_PROC_BROWSER_TEST_F(SyncedPrefChangeRegistrarTest,
   policies.Set(policy::key::kShowHomeButton,
                policy::POLICY_LEVEL_MANDATORY,
                policy::POLICY_SCOPE_USER,
-               policy::POLICY_SOURCE_CLOUD,
                new base::FundamentalValue(true),
                NULL);
   UpdateChromePolicy(policies);
@@ -214,7 +212,6 @@ IN_PROC_BROWSER_TEST_F(SyncedPrefChangeRegistrarTest,
   policies.Set(policy::key::kShowHomeButton,
                policy::POLICY_LEVEL_MANDATORY,
                policy::POLICY_SCOPE_USER,
-               policy::POLICY_SOURCE_CLOUD,
                new base::FundamentalValue(true),
                NULL);
   UpdateChromePolicy(policies);

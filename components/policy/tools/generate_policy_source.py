@@ -639,7 +639,6 @@ def _WritePolicyConstantSource(policies, os, f):
           '#include <climits>\n'
           '\n'
           '#include "base/logging.h"\n'
-          '#include "components/policy/core/common/policy_types.h"\n'
           '#include "components/policy/core/common/schema_internal.h"\n'
           '\n'
           'namespace policy {\n'
@@ -720,7 +719,6 @@ def _WritePolicyConstantSource(policies, os, f):
               '    policy_map->Set(key::k%s,\n'
               '                    POLICY_LEVEL_MANDATORY,\n'
               '                    POLICY_SCOPE_USER,\n'
-              '                    POLICY_SOURCE_ENTERPRISE_DEFAULT,\n'
               '                    %s,\n'
               '                    NULL);\n'
               '  }\n' % (policy.name, policy.name, creation_expression))
@@ -901,7 +899,6 @@ CPP_HEAD = '''
 #include "components/policy/core/common/cloud/cloud_external_data_manager.h"
 #include "components/policy/core/common/external_data_fetcher.h"
 #include "components/policy/core/common/policy_map.h"
-#include "components/policy/core/common/policy_types.h"
 #include "policy/policy_constants.h"
 #include "policy/proto/cloud_policy.pb.h"
 
@@ -1009,12 +1006,9 @@ def _WritePolicyCode(f, policy):
   f.write('        if (value) {\n')
   f.write('          ExternalDataFetcher* external_data_fetcher = %s;\n' %
           _CreateExternalDataFetcher(policy.policy_type, policy.name))
-  f.write('          map->Set(key::k%s, \n' % policy.name)
-  f.write('                   level, \n'
-          '                   POLICY_SCOPE_USER, \n'
-          '                   POLICY_SOURCE_CLOUD, \n'
-          '                   value, \n'
-          '                   external_data_fetcher);\n'
+  f.write('          map->Set(key::k%s, level, POLICY_SCOPE_USER,\n' %
+          policy.name)
+  f.write('                   value, external_data_fetcher);\n'
           '        }\n'
           '      }\n'
           '    }\n'

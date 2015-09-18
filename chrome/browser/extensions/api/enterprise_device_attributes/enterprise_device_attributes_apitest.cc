@@ -11,7 +11,6 @@
 #include "chromeos/dbus/fake_session_manager_client.h"
 #include "chromeos/login/user_names.h"
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
-#include "components/policy/core/common/policy_types.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/api_test_utils.h"
@@ -105,7 +104,7 @@ class EnterpriseDeviceAttributesTest : public ExtensionApiTest {
     policy::PolicyMap policy;
     policy.Set(policy::key::kExtensionInstallForcelist,
                policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_MACHINE,
-               policy::POLICY_SOURCE_CLOUD, forcelist.release(), nullptr);
+               forcelist.release(), NULL);
 
     // Set the policy and wait until the extension is installed.
     extensions::TestExtensionRegistryObserver observer(

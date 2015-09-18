@@ -7,7 +7,6 @@
 #include "chrome/common/pref_names.h"
 #include "components/policy/core/browser/configuration_policy_pref_store.h"
 #include "components/policy/core/browser/configuration_policy_pref_store_test.h"
-#include "components/policy/core/common/policy_types.h"
 #include "policy/policy_constants.h"
 
 namespace policy {
@@ -36,7 +35,6 @@ class IncognitoModePolicyHandlerTest
       policy.Set(key::kIncognitoEnabled,
                  POLICY_LEVEL_MANDATORY,
                  POLICY_SCOPE_USER,
-                 POLICY_SOURCE_CLOUD,
                  new base::FundamentalValue(incognito_enabled ==
                                             INCOGNITO_ENABLED_TRUE),
                  NULL);
@@ -45,7 +43,6 @@ class IncognitoModePolicyHandlerTest
       policy.Set(key::kIncognitoModeAvailability,
                  POLICY_LEVEL_MANDATORY,
                  POLICY_SCOPE_USER,
-                 POLICY_SOURCE_CLOUD,
                  new base::FundamentalValue(availability),
                  NULL);
     }

@@ -220,7 +220,6 @@ TEST(GeneratePolicySource, SetEnterpriseDefaults) {
   policy_map.Set(key::kChromeOsMultiProfileUserBehavior,
                  POLICY_LEVEL_MANDATORY,
                  POLICY_SCOPE_USER,
-                 POLICY_SOURCE_CLOUD,
                  new base::StringValue("test_value"),
                  NULL);
   SetEnterpriseUsersDefaults(&policy_map);

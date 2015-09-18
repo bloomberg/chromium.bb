@@ -9,7 +9,6 @@
 #include "components/policy/core/browser/url_blacklist_policy_handler.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_pref_names.h"
-#include "components/policy/core/common/policy_types.h"
 #include "policy/policy_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -30,8 +29,7 @@ const char kTestBlacklistValue[] = "kTestBlacklistValue";
 class URLBlacklistPolicyHandlerTest : public testing::Test {
  protected:
   void SetPolicy(const std::string& key, base::Value* value) {
-    policies_.Set(key, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-                  POLICY_SOURCE_CLOUD, value, nullptr);
+    policies_.Set(key, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER, value, NULL);
   }
   bool CheckPolicy(const std::string& key, base::Value* value) {
     SetPolicy(key, value);

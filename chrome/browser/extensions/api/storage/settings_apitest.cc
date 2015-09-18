@@ -35,7 +35,6 @@
 #include "components/policy/core/common/policy_bundle.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_namespace.h"
-#include "components/policy/core/common/policy_types.h"
 #include "components/policy/core/common/schema.h"
 #include "components/policy/core/common/schema_map.h"
 #include "components/policy/core/common/schema_registry.h"
@@ -135,8 +134,8 @@ class ExtensionSettingsApiTest : public ExtensionApiTest {
     scoped_ptr<policy::PolicyBundle> bundle(new policy::PolicyBundle());
     policy::PolicyMap& policy_map = bundle->Get(policy::PolicyNamespace(
         policy::POLICY_DOMAIN_EXTENSIONS, kManagedStorageExtensionId));
-    policy_map.LoadFrom(&policies, policy::POLICY_LEVEL_MANDATORY,
-                        policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD);
+    policy_map.LoadFrom(
+        &policies, policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER);
     policy_provider_.UpdatePolicy(bundle.Pass());
   }
 #endif

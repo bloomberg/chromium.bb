@@ -36,7 +36,6 @@
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
 #include "components/policy/core/common/policy_details.h"
 #include "components/policy/core/common/policy_map.h"
-#include "components/policy/core/common/policy_types.h"
 #include "components/policy/core/common/schema.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
@@ -520,7 +519,6 @@ class PolicyPrefsTest : public InProcessBrowserTest {
           it.key(),
           level,
           POLICY_SCOPE_USER,
-          POLICY_SOURCE_CLOUD,
           it.value().DeepCopy(),
           policy_details->max_external_data_size ?
               new ExternalDataFetcher(base::WeakPtr<ExternalDataManager>(),

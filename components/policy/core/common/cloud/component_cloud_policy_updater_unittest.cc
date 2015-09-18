@@ -111,13 +111,11 @@ void ComponentCloudPolicyUpdaterTest::SetUp() {
   policy.Set("Name",
              POLICY_LEVEL_MANDATORY,
              POLICY_SCOPE_USER,
-             POLICY_SOURCE_CLOUD,
              new base::StringValue("disabled"),
              NULL);
   policy.Set("Second",
              POLICY_LEVEL_RECOMMENDED,
              POLICY_SCOPE_USER,
-             POLICY_SOURCE_CLOUD,
              new base::StringValue("maybe"),
              NULL);
 }

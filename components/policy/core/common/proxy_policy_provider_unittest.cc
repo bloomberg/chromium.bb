@@ -6,7 +6,6 @@
 #include "base/callback.h"
 #include "components/policy/core/common/external_data_fetcher.h"
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
-#include "components/policy/core/common/policy_types.h"
 #include "components/policy/core/common/proxy_policy_provider.h"
 #include "components/policy/core/common/schema_registry.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -56,7 +55,6 @@ TEST_F(ProxyPolicyProviderTest, Delegate) {
       .Set("policy",
            POLICY_LEVEL_MANDATORY,
            POLICY_SCOPE_USER,
-           POLICY_SOURCE_CLOUD,
            new base::StringValue("value"),
            NULL);
   mock_provider_.UpdatePolicy(CopyBundle(bundle));
@@ -71,7 +69,6 @@ TEST_F(ProxyPolicyProviderTest, Delegate) {
       .Set("policy",
            POLICY_LEVEL_MANDATORY,
            POLICY_SCOPE_USER,
-           POLICY_SOURCE_CLOUD,
            new base::StringValue("new value"),
            NULL);
   mock_provider_.UpdatePolicy(CopyBundle(bundle));

@@ -86,8 +86,8 @@ scoped_ptr<PolicyBundle> PolicyLoaderMac::Load() {
     // TODO(joaodasilva): figure the policy scope.
     scoped_ptr<base::Value> policy = PropertyToValue(value);
     if (policy) {
-      chrome_policy.Set(it.key(), level, POLICY_SCOPE_USER,
-                        POLICY_SOURCE_PLATFORM, policy.release(), nullptr);
+      chrome_policy.Set(it.key(), level, POLICY_SCOPE_USER, policy.release(),
+                        NULL);
     } else {
       status.Add(POLICY_LOAD_STATUS_PARSE_ERROR);
     }
@@ -180,8 +180,8 @@ void PolicyLoaderMac::LoadPolicyForComponent(
         forced ? POLICY_LEVEL_MANDATORY : POLICY_LEVEL_RECOMMENDED;
     scoped_ptr<base::Value> policy_value = PropertyToValue(value);
     if (policy_value) {
-      policy->Set(it.key(), level, POLICY_SCOPE_USER, POLICY_SOURCE_PLATFORM,
-                  policy_value.release(), nullptr);
+      policy->Set(it.key(), level, POLICY_SCOPE_USER, policy_value.release(),
+                  NULL);
     }
   }
 }

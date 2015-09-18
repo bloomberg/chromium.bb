@@ -43,7 +43,6 @@
 #include "components/policy/core/common/cloud/cloud_policy_core.h"
 #include "components/policy/core/common/cloud/mock_device_management_service.h"
 #include "components/policy/core/common/external_data_fetcher.h"
-#include "components/policy/core/common/policy_types.h"
 #include "components/policy/core/common/schema_registry.h"
 #include "google_apis/gaia/gaia_oauth_client.h"
 #include "net/url_request/test_url_fetcher_factory.h"
@@ -185,7 +184,6 @@ class DeviceCloudPolicyManagerChromeOSTest
         .Set(key::kDeviceMetricsReportingEnabled,
              POLICY_LEVEL_MANDATORY,
              POLICY_SCOPE_MACHINE,
-             POLICY_SOURCE_CLOUD,
              new base::FundamentalValue(false),
              NULL);
     EXPECT_TRUE(manager_->policies().Equals(bundle));

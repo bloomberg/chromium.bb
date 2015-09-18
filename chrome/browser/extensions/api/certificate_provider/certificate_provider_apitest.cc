@@ -145,8 +145,7 @@ class CertificateProviderApiTest : public ExtensionApiTest {
     policy::PolicyMap policy;
     policy.Set(policy::key::kAutoSelectCertificateForUrls,
                policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
-               policy::POLICY_SOURCE_CLOUD, autoselect_policy.release(),
-               nullptr);
+               autoselect_policy.release(), nullptr);
     provider_.UpdateChromePolicy(policy);
 
     content::RunAllPendingInMessageLoop();

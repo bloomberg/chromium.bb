@@ -64,7 +64,6 @@ void ApplyDevicePolicyAsRecommendedPolicy(const std::string& device_policy,
     user_policy_map->Set(user_policy,
                          POLICY_LEVEL_RECOMMENDED,
                          POLICY_SCOPE_USER,
-                         POLICY_SOURCE_CLOUD,
                          value->DeepCopy(),
                          NULL);
   }
@@ -79,7 +78,6 @@ void ApplyValueAsMandatoryPolicy(const base::Value* value,
     user_policy_map->Set(user_policy,
                          POLICY_LEVEL_MANDATORY,
                          POLICY_SCOPE_USER,
-                         POLICY_SOURCE_CLOUD,
                          value->DeepCopy(),
                          NULL);
   }

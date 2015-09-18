@@ -129,13 +129,11 @@ class ComponentCloudPolicyServiceTest : public testing::Test {
     expected_policy_.Set("Name",
                          POLICY_LEVEL_MANDATORY,
                          POLICY_SCOPE_USER,
-                         POLICY_SOURCE_CLOUD,
                          new base::StringValue("disabled"),
                          nullptr);
     expected_policy_.Set("Second",
                          POLICY_LEVEL_RECOMMENDED,
                          POLICY_SCOPE_USER,
-                         POLICY_SOURCE_CLOUD,
                          new base::StringValue("maybe"),
                          nullptr);
   }
@@ -516,7 +514,6 @@ TEST_F(ComponentCloudPolicyServiceTest, LoadInvalidPolicyFromCache) {
   expected_bundle.Get(ns).Set("Name",
                               POLICY_LEVEL_MANDATORY,
                               POLICY_SCOPE_USER,
-                              POLICY_SOURCE_CLOUD,
                               new base::StringValue("published"),
                               nullptr);
   EXPECT_TRUE(service_->policy().Equals(expected_bundle));

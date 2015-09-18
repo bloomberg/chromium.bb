@@ -104,7 +104,6 @@ class TrayAccessibilityTest
       policy_map.Set(policy::key::kShowAccessibilityOptionsInSystemTrayMenu,
                      policy::POLICY_LEVEL_MANDATORY,
                      policy::POLICY_SCOPE_USER,
-                     policy::POLICY_SOURCE_CLOUD,
                      new base::FundamentalValue(value),
                      NULL);
       provider_.UpdateChromePolicy(policy_map);

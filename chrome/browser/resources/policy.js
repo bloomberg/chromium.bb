@@ -134,8 +134,6 @@ cr.define('policy', function() {
         this.querySelector('.level').textContent =
             loadTimeData.getString(value.level == 'recommended' ?
                 'levelRecommended' : 'levelMandatory');
-        this.querySelector('.source').textContent =
-            loadTimeData.getString(value.source);
         this.querySelector('.value').textContent = value.value;
         this.querySelector('.expanded-value').textContent = value.value;
       }
@@ -521,8 +519,7 @@ cr.define('policy', function() {
       var newTable = window.document.createElement('table');
       var tableHead = window.document.createElement('thead');
       var tableRow = window.document.createElement('tr');
-      var tableHeadings = ['Scope', 'Level', 'Source', 'Name', 'Value',
-          'Status'];
+      var tableHeadings = ['Scope', 'Level', 'Name', 'Value', 'Status'];
       for (var i = 0; i < tableHeadings.length; i++) {
         var tableHeader = window.document.createElement('th');
         tableHeader.classList.add(tableHeadings[i].toLowerCase() + '-column');

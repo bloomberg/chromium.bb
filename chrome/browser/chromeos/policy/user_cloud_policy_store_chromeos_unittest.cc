@@ -18,7 +18,6 @@
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/cloud/mock_cloud_policy_store.h"
 #include "components/policy/core/common/cloud/policy_builder.h"
-#include "components/policy/core/common/policy_types.h"
 #include "policy/policy_constants.h"
 #include "policy/proto/cloud_policy.pb.h"
 #include "policy/proto/device_management_local.pb.h"
@@ -157,7 +156,6 @@ class UserCloudPolicyStoreChromeOSTest : public testing::Test {
       previous_policy.Set(key::kHomepageLocation,
                           POLICY_LEVEL_MANDATORY,
                           POLICY_SCOPE_USER,
-                          POLICY_SOURCE_CLOUD,
                           new base::StringValue(previous_value), NULL);
     }
     EXPECT_TRUE(previous_policy.Equals(store_->policy_map()));
