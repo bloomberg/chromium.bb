@@ -463,9 +463,9 @@ void EnumerateUdevDevice(scoped_refptr<UsbDeviceImpl> device,
   }
 
   std::string bus_number =
-      base::IntToString(libusb_get_bus_number(device->platform_device()));
+      base::UintToString(libusb_get_bus_number(device->platform_device()));
   std::string device_address =
-      base::IntToString(libusb_get_device_address(device->platform_device()));
+      base::UintToString(libusb_get_device_address(device->platform_device()));
   udev_list_entry* devices =
       udev_enumerate_get_list_entry(udev_enumerate.get());
   for (udev_list_entry* i = devices; i != NULL;
