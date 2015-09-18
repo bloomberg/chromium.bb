@@ -189,16 +189,16 @@ static void adjustEndpointsAtBidiBoundary(VisiblePosition& visibleBase, VisibleP
     }
 }
 
-template <typename Strategy>
+template <typename SelectionStrategy>
 void FrameSelection::setNonDirectionalSelectionIfNeededAlgorithm(const VisibleSelection& passedNewSelection, TextGranularity granularity,
     EndPointsAdjustmentMode endpointsAdjustmentMode)
 {
     VisibleSelection newSelection = passedNewSelection;
     bool isDirectional = shouldAlwaysUseDirectionalSelection(m_frame) || newSelection.isDirectional();
 
-    VisiblePosition base = m_originalBase.isNotNull() ? m_originalBase : createVisiblePositionInDOMTree(Strategy::selectionBase(newSelection));
+    VisiblePosition base = m_originalBase.isNotNull() ? m_originalBase : createVisiblePositionInDOMTree(SelectionStrategy::selectionBase(newSelection));
     VisiblePosition newBase = base;
-    VisiblePosition extent = createVisiblePositionInDOMTree(Strategy::selectionExtent(newSelection));
+    VisiblePosition extent = createVisiblePositionInDOMTree(SelectionStrategy::selectionExtent(newSelection));
     VisiblePosition newExtent = extent;
     if (endpointsAdjustmentMode == AdjustEndpointsAtBidiBoundary)
         adjustEndpointsAtBidiBoundary(newBase, newExtent);
@@ -208,13 +208,13 @@ void FrameSelection::setNonDirectionalSelectionIfNeededAlgorithm(const VisibleSe
         newSelection.setBase(newBase);
         newSelection.setExtent(newExtent);
     } else if (m_originalBase.isNotNull()) {
-        if (Strategy::selectionBase(selection()) == Strategy::selectionBase(newSelection))
+        if (SelectionStrategy::selectionBase(selection()) == SelectionStrategy::selectionBase(newSelection))
             newSelection.setBase(m_originalBase);
         m_originalBase = VisiblePosition();
     }
 
     newSelection.setIsDirectional(isDirectional); // Adjusting base and extent will make newSelection always directional
-    if (Strategy::equalSelections(selection(), newSelection))
+    if (SelectionStrategy::equalSelections(selection(), newSelection))
         return;
 
     setSelection(newSelection, granularity);
@@ -677,10 +677,10 @@ void FrameSelection::paintCaret(GraphicsContext* context, const LayoutPoint& pai
     }
 }
 
-template <typename Strategy>
+template <typename SelectionStrategy>
 bool FrameSelection::containsAlgorithm(const LayoutPoint& point)
 {
-    using PositionType = typename Strategy::PositionType;
+    using Strategy = typename SelectionStrategy::Strategy;
 
     Document* document = m_frame->document();
 
@@ -701,14 +701,14 @@ bool FrameSelection::containsAlgorithm(const LayoutPoint& point)
     if (visiblePos.isNull())
         return false;
 
-    VisiblePosition visibleStart = Strategy::selectionVisibleStart(selection());
-    VisiblePosition visibleEnd = Strategy::selectionVisibleEnd(selection());
+    VisiblePosition visibleStart = SelectionStrategy::selectionVisibleStart(selection());
+    VisiblePosition visibleEnd = SelectionStrategy::selectionVisibleEnd(selection());
     if (visibleStart.isNull() || visibleEnd.isNull())
         return false;
 
-    PositionType start(Strategy::toPositionType(visibleStart.deepEquivalent()));
-    PositionType end(Strategy::toPositionType(visibleEnd.deepEquivalent()));
-    PositionType pos(Strategy::toPositionType(visiblePos.deepEquivalent()));
+    const PositionAlgorithm<Strategy> start(SelectionStrategy::toPositionType(visibleStart.deepEquivalent()));
+    const PositionAlgorithm<Strategy> end(SelectionStrategy::toPositionType(visibleEnd.deepEquivalent()));
+    const PositionAlgorithm<Strategy> pos(SelectionStrategy::toPositionType(visiblePos.deepEquivalent()));
     return start.compareTo(pos) <= 0 && pos.compareTo(end) <= 0;
 }
 
@@ -1065,11 +1065,11 @@ void FrameSelection::setFocusedNodeIfNeeded()
         m_frame->page()->focusController().setFocusedElement(0, m_frame);
 }
 
-template <typename SelectionType>
+template <typename SelectionStrategy>
 String extractSelectedTextAlgorithm(const FrameSelection& selection, TextIteratorBehavior behavior)
 {
     VisibleSelection visibleSelection = selection.selection();
-    EphemeralRangeTemplate<typename SelectionType::Strategy> range = normalizeRange(SelectionType::asRange(visibleSelection));
+    EphemeralRangeTemplate<typename SelectionStrategy::Strategy> range = normalizeRange(SelectionStrategy::asRange(visibleSelection));
     // We remove '\0' characters because they are not visibly rendered to the user.
     return plainText(range, behavior).replace(0, "");
 }
@@ -1081,11 +1081,11 @@ static String extractSelectedText(const FrameSelection& selection, TextIteratorB
     return extractSelectedTextAlgorithm<VisibleSelection::InDOMTree>(selection, behavior);
 }
 
-template <typename SelectionType>
+template <typename SelectionStrategy>
 static String extractSelectedHTMLAlgorithm(const FrameSelection& selection)
 {
     VisibleSelection visibleSelection = selection.selection();
-    EphemeralRangeTemplate<typename SelectionType::Strategy> range = normalizeRange(SelectionType::asRange(visibleSelection));
+    EphemeralRangeTemplate<typename SelectionStrategy::Strategy> range = normalizeRange(SelectionStrategy::asRange(visibleSelection));
     return createMarkup(range.startPosition(), range.endPosition(), AnnotateForInterchange, ConvertBlocksToInlines::NotConvert, ResolveNonLocalURLs);
 }
 
