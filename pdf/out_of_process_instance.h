@@ -169,8 +169,6 @@ class OutOfProcessInstance : public pp::Instance,
 
   void FormDidOpen(int32_t result);
 
-  std::string GetLocalizedString(PP_ResourceString id);
-
   void UserMetricsRecordAction(const std::string& action);
 
   enum DocumentLoadState {

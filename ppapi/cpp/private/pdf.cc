@@ -26,17 +26,6 @@ bool PDF::IsAvailable() {
 }
 
 // static
-Var PDF::GetLocalizedString(const InstanceHandle& instance,
-                            PP_ResourceString string_id) {
-  if (has_interface<PPB_PDF>()) {
-    return Var(PASS_REF,
-               get_interface<PPB_PDF>()->GetLocalizedString(
-                   instance.pp_instance(), string_id));
-  }
-  return Var();
-}
-
-// static
 PP_Resource PDF::GetFontFileWithFallback(
     const InstanceHandle& instance,
     const PP_BrowserFont_Trusted_Description* description,

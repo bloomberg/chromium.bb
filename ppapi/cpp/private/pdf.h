@@ -22,8 +22,6 @@ class PDF {
   // Returns true if the required interface is available.
   static bool IsAvailable();
 
-  static Var GetLocalizedString(const InstanceHandle& instance,
-                                PP_ResourceString string_id);
   static PP_Resource GetFontFileWithFallback(
       const InstanceHandle& instance,
       const PP_BrowserFont_Trusted_Description* description,

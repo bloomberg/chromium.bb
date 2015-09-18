@@ -71,8 +71,6 @@ class PepperPDFHost : public ppapi::host::ResourceHost {
       ppapi::host::HostMessageContext* context) override;
 
  private:
-  int32_t OnHostMsgGetLocalizedString(ppapi::host::HostMessageContext* context,
-                                      PP_ResourceString string_id);
   int32_t OnHostMsgDidStartLoading(ppapi::host::HostMessageContext* context);
   int32_t OnHostMsgDidStopLoading(ppapi::host::HostMessageContext* context);
   int32_t OnHostMsgSetContentRestriction(

@@ -13,7 +13,6 @@ namespace thunk {
 
 class PPB_PDF_API {
  public:
-  virtual PP_Var GetLocalizedString(PP_ResourceString string_id) = 0;
   virtual void SearchString(const unsigned short* input_string,
                             const unsigned short* input_term,
                             bool case_sensitive,

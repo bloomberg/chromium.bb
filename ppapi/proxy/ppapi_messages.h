@@ -114,7 +114,6 @@ IPC_ENUM_TRAITS(PP_PrintOutputFormat_Dev)
 IPC_ENUM_TRAITS(PP_PrintScalingOption_Dev)
 IPC_ENUM_TRAITS_MAX_VALUE(PP_PrivateDuplexMode_Dev, PP_PRIVATEDUPLEXMODE_LAST)
 IPC_ENUM_TRAITS(PP_PrivateFontCharset)
-IPC_ENUM_TRAITS(PP_ResourceString)
 IPC_ENUM_TRAITS_MAX_VALUE(PP_SessionType, PP_SESSIONTYPE_PERSISTENT_RELEASE)
 IPC_ENUM_TRAITS_MAX_VALUE(PP_TCPSocket_Option,
                           PP_TCPSOCKET_OPTION_RECV_BUFFER_SIZE)
@@ -2271,14 +2270,6 @@ IPC_SYNC_MESSAGE_ROUTED1_0(PpapiHostMsg_PPBFlashMessageLoop_Quit,
 
 // Creates the PDF resource.
 IPC_MESSAGE_CONTROL0(PpapiHostMsg_PDF_Create)
-
-// Requests the localized string for the given ID.
-IPC_MESSAGE_CONTROL1(PpapiHostMsg_PDF_GetLocalizedString,
-                     PP_ResourceString /* string_id */)
-// Reply for PpapiHostMsg_PDF_GetLocalizedString containing the localized
-// string.
-IPC_MESSAGE_CONTROL1(PpapiPluginMsg_PDF_GetLocalizedStringReply,
-                     std::string /* localized_string*/)
 
 // Notifies the renderer that the PDF started loading.
 IPC_MESSAGE_CONTROL0(PpapiHostMsg_PDF_DidStartLoading)

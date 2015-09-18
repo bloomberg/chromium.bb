@@ -16,13 +16,6 @@ namespace thunk {
 
 namespace {
 
-PP_Var GetLocalizedString(PP_Instance instance, PP_ResourceString string_id) {
-  EnterInstanceAPI<PPB_PDF_API> enter(instance);
-  if (enter.failed())
-    return PP_MakeUndefined();
-  return enter.functions()->GetLocalizedString(string_id);
-}
-
 PP_Resource GetFontFileWithFallback(
     PP_Instance instance,
     const PP_BrowserFont_Trusted_Description* description,
@@ -137,7 +130,6 @@ void GetV8ExternalSnapshotData(PP_Instance instance,
 }
 
 const PPB_PDF g_ppb_pdf_thunk = {
-  &GetLocalizedString,
   &GetFontFileWithFallback,
   &GetFontTableForPrivateFontFile,
   &SearchString,

@@ -18,13 +18,6 @@
 struct PP_FontDescription_Dev;
 
 typedef enum {
-  PP_RESOURCESTRING_PDFGETPASSWORD = 0,
-  PP_RESOURCESTRING_PDFLOADING = 1,
-  PP_RESOURCESTRING_PDFLOAD_FAILED = 2,
-  PP_RESOURCESTRING_PDFPROGRESSLOADING = 3
-} PP_ResourceString;
-
-typedef enum {
   PP_PDFFEATURE_HIDPI = 0,
   PP_PDFFEATURE_PRINTING = 1
 } PP_PDFFeature;
@@ -41,10 +34,6 @@ struct PP_PrivateFindResult {
 };
 
 struct PPB_PDF {
-  // Returns a localized string.
-  struct PP_Var (*GetLocalizedString)(PP_Instance instance,
-                                      PP_ResourceString string_id);
-
   // Returns a resource identifying a font file corresponding to the given font
   // request after applying the browser-specific fallback.
   //

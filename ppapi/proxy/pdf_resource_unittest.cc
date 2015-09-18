@@ -27,37 +27,6 @@ typedef PluginProxyTest PDFResourceTest;
 
 }  // namespace
 
-TEST_F(PDFResourceTest, GetLocalizedString) {
-  const PPB_PDF* pdf_iface = thunk::GetPPB_PDF_Thunk();
-
-  std::string expected_string = "hello";
-  PpapiPluginMsg_PDF_GetLocalizedStringReply reply_msg(expected_string);
-  ResourceSyncCallHandler handler(
-      &sink(),
-      PpapiHostMsg_PDF_GetLocalizedString::ID,
-      PP_OK,
-      reply_msg);
-  sink().AddFilter(&handler);
-
-  PP_Var var = pdf_iface->GetLocalizedString(
-      pp_instance(), PP_RESOURCESTRING_PDFGETPASSWORD);
-
-  {
-    ProxyAutoLock lock;
-    ScopedPPVar release_var(ScopedPPVar::PassRef(), var);
-    StringVar* string_var = StringVar::FromPPVar(var);
-    ASSERT_TRUE(string_var != NULL);
-    std::string actual_string = string_var->value();
-
-    ASSERT_EQ(PpapiHostMsg_PDF_GetLocalizedString::ID,
-              handler.last_handled_msg().type());
-    ASSERT_EQ(expected_string, actual_string);
-  }
-
-  // Remove the filter or it will be destroyed before the sink() is destroyed.
-  sink().RemoveFilter(&handler);
-}
-
 TEST_F(PDFResourceTest, SearchString) {
   ProxyAutoLock lock;
   // Instantiate a resource explicitly so we can specify the locale.

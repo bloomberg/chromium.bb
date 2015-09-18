@@ -8,7 +8,8 @@
   "offline_enabled": true,
   "incognito": "split",
   "permissions": [
-    "<all_urls>"
+    "<all_urls>",
+    "resourcesPrivate"
   ],
   "mime_types": [
     "application/pdf"

@@ -10,6 +10,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/common/extensions/api/resources_private.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/webui/web_ui_util.h"
 
@@ -26,6 +27,15 @@ namespace {
 void AddStringsForIdentity(base::DictionaryValue* dict) {
   dict->SetString("window-title",
                   l10n_util::GetStringUTF16(IDS_EXTENSION_CONFIRM_PERMISSIONS));
+}
+
+void AddStringsForPdf(base::DictionaryValue* dict) {
+  dict->SetString("passwordPrompt",
+                  l10n_util::GetStringUTF16(IDS_PDF_NEED_PASSWORD));
+  dict->SetString("pageLoading",
+                  l10n_util::GetStringUTF16(IDS_PDF_PAGE_LOADING));
+  dict->SetString("pageLoadFailed",
+                  l10n_util::GetStringUTF16(IDS_PDF_PAGE_LOAD_FAILED));
 }
 
 }  // namespace
@@ -45,6 +55,9 @@ ExtensionFunction::ResponseAction ResourcesPrivateGetStringsFunction::Run() {
   switch (component) {
     case api::resources_private::COMPONENT_IDENTITY:
       AddStringsForIdentity(dict.get());
+      break;
+    case api::resources_private::COMPONENT_PDF:
+      AddStringsForPdf(dict.get());
       break;
     case api::resources_private::COMPONENT_NONE:
       NOTREACHED();

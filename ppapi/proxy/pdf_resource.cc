@@ -48,16 +48,6 @@ thunk::PPB_PDF_API* PDFResource::AsPPB_PDF_API() {
   return this;
 }
 
-PP_Var PDFResource::GetLocalizedString(PP_ResourceString string_id) {
-  std::string localized_string;
-  int32_t result = SyncCall<PpapiPluginMsg_PDF_GetLocalizedStringReply>(
-      RENDERER, PpapiHostMsg_PDF_GetLocalizedString(string_id),
-      &localized_string);
-  if (result != PP_OK)
-    return PP_MakeUndefined();
-  return ppapi::StringVar::StringToPPVar(localized_string);
-}
-
 void PDFResource::SearchString(const unsigned short* input_string,
                                const unsigned short* input_term,
                                bool case_sensitive,

@@ -255,6 +255,9 @@ function PDFViewer(browserApi) {
                                   onNavigateInCurrentTab, onNavigateInNewTab);
   this.viewportScroller_ =
       new ViewportScroller(this.viewport_, this.plugin_, window);
+
+  // Request translated strings.
+  chrome.resourcesPrivate.getStrings('pdf', this.handleStrings_.bind(this));
 }
 
 PDFViewer.prototype = {
@@ -539,6 +542,22 @@ PDFViewer.prototype = {
 
   /**
    * @private
+   * Load a dictionary of translated strings into the UI. Used as a callback for
+   * chrome.resourcesPrivate.
+   * @param {Object} strings Dictionary of translated strings
+   */
+  handleStrings_: function(strings) {
+    this.passwordScreen_.text = strings.passwordPrompt;
+    if (!this.isMaterial_) {
+      this.progressBar_.text = strings.pageLoading;
+      if (!this.isPrintPreview_)
+        this.progressBar_.style.visibility = 'visible';
+    }
+    this.errorScreen_.text = strings.pageLoadFailed;
+  },
+
+  /**
+   * @private
    * An event handler for handling password-submitted events. These are fired
    * when an event is entered into the password screen.
    * @param {Object} event a password-submitted event.
@@ -617,15 +636,6 @@ PDFViewer.prototype = {
         if (message.data.y !== undefined)
           position.y = message.data.y;
         this.viewport_.position = position;
-        break;
-      case 'setTranslatedStrings':
-        this.passwordScreen_.text = message.data.getPasswordString;
-        if (!this.isMaterial_) {
-          this.progressBar_.text = message.data.loadingString;
-          if (!this.isPrintPreview_)
-            this.progressBar_.style.visibility = 'visible';
-        }
-        this.errorScreen_.text = message.data.loadFailedString;
         break;
       case 'cancelStreamUrl':
         chrome.mimeHandlerPrivate.abortStream();

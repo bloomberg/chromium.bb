@@ -4,7 +4,7 @@
 
 // resourcesPrivate.
 namespace resourcesPrivate {
-  enum Component { identity };
+  enum Component { identity, pdf };
 
   callback GetStringsCallback = void (object result);
 

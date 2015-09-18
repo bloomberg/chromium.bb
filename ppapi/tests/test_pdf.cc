@@ -18,17 +18,7 @@ TestPDF::TestPDF(TestingInstance* instance)
 }
 
 void TestPDF::RunTests(const std::string& filter) {
-  RUN_TEST(GetLocalizedString, filter);
   RUN_TEST(GetV8ExternalSnapshotData, filter);
-}
-
-std::string TestPDF::TestGetLocalizedString() {
-  pp::Var string = pp::PDF::GetLocalizedString(instance_,
-      PP_RESOURCESTRING_PDFGETPASSWORD);
-  ASSERT_TRUE(string.is_string());
-  ASSERT_EQ("This document is password protected.  Please enter a password.",
-            string.AsString());
-  PASS();
 }
 
 std::string TestPDF::TestGetV8ExternalSnapshotData() {

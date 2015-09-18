@@ -103,11 +103,6 @@ const char kJSPreviewPageIndex[] = "index";
 const char kJSSetScrollPositionType[] = "setScrollPosition";
 const char kJSPositionX[] = "x";
 const char kJSPositionY[] = "y";
-// Set translated strings (Plugin -> Page)
-const char kJSSetTranslatedStringsType[] = "setTranslatedStrings";
-const char kJSGetPasswordString[] = "getPasswordString";
-const char kJSLoadingString[] = "loadingString";
-const char kJSLoadFailedString[] = "loadFailedString";
 // Request accessibility JSON data (Page -> Plugin)
 const char kJSGetAccessibilityJSONType[] = "getAccessibilityJSON";
 const char kJSAccessibilityPageNumber[] = "page";
@@ -327,19 +322,6 @@ bool OutOfProcessInstance::Init(uint32_t argc,
   // Only allow the plugin to handle find requests if it is full frame.
   if (full_)
     SetPluginToHandleFindRequests();
-
-  // Send translated strings to the extension where they will be displayed.
-  // TODO(raymes): It would be better to get these in the extension directly
-  // through an API but no such API currently exists.
-  pp::VarDictionary translated_strings;
-  translated_strings.Set(kType, kJSSetTranslatedStringsType);
-  translated_strings.Set(kJSGetPasswordString,
-      GetLocalizedString(PP_RESOURCESTRING_PDFGETPASSWORD));
-  translated_strings.Set(kJSLoadingString,
-      GetLocalizedString(PP_RESOURCESTRING_PDFLOADING));
-  translated_strings.Set(kJSLoadFailedString,
-      GetLocalizedString(PP_RESOURCESTRING_PDFLOAD_FAILED));
-  PostMessage(translated_strings);
 
   text_input_.reset(new pp::TextInput_Dev(this));
 
@@ -1357,14 +1339,6 @@ void OutOfProcessInstance::SetZoom(double scale) {
   double old_zoom = zoom_;
   zoom_ = scale;
   OnGeometryChanged(old_zoom, device_scale_);
-}
-
-std::string OutOfProcessInstance::GetLocalizedString(PP_ResourceString id) {
-  pp::Var rv(pp::PDF::GetLocalizedString(this, id));
-  if (!rv.is_string())
-    return std::string();
-
-  return rv.AsString();
 }
 
 void OutOfProcessInstance::AppendBlankPrintPreviewPages() {
