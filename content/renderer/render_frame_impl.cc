@@ -1399,6 +1399,7 @@ void RenderFrameImpl::OnAdjustSelectionByCharacterOffset(int start_adjust,
   start += start_adjust;
   length += end_adjust - start_adjust;
 
+  base::AutoReset<bool> handling_select_range(&handling_select_range_, true);
   frame_->selectRange(WebRange::fromDocumentRange(frame_, start, length));
 }
 
