@@ -104,6 +104,8 @@
             'src/sandbox_policy_base.cc',
             'src/sandbox_policy_base.h',
             'src/sandbox_policy.h',
+            'src/sandbox_rand.cc',
+            'src/sandbox_rand.h',
             'src/sandbox_types.h',
             'src/sandbox_utils.cc',
             'src/sandbox_utils.h',

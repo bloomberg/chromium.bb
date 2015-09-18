@@ -6,8 +6,12 @@
 // The tests require private information so the whole interception.cc file is
 // included from this file.
 
+#include <algorithm>
+#include <set>
+
 #include <windows.h>
 
+#include "base/bits.h"
 #include "base/memory/scoped_ptr.h"
 #include "sandbox/win/src/interception.h"
 #include "sandbox/win/src/interceptors.h"
@@ -16,6 +20,10 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace sandbox {
+
+namespace internal {
+size_t GetGranularAlignedRandomOffset(size_t size);
+}
 
 // Walks the settings buffer, verifying that the values make sense and counting
 // objects.
@@ -73,6 +81,45 @@ void WalkBuffer(void* buffer, size_t size, int* num_dlls, int* num_functions,
     dll = reinterpret_cast<DllPatchInfo*>(reinterpret_cast<char*>(dll) +
                                           dll->record_bytes);
   }
+}
+
+TEST(InterceptionManagerTest, GetGranularAlignedRandomOffset) {
+  std::set<size_t> sizes;
+
+  // 544 is current value of interceptions_.size() * sizeof(ThunkData) +
+  // sizeof(DllInterceptionData).
+  const size_t kThunkBytes = 544;
+
+  // ciel(log2(544)) = 10.
+  // Alignment must be 2^10 = 1024.
+  const size_t kAlignmentBits = base::bits::Log2Ceiling(kThunkBytes);
+  const size_t kAlignment = 1 << kAlignmentBits;
+
+  const size_t kAllocGranularity = 65536;
+
+  // Generate enough sample data to ensure there is at least one value in each
+  // potential bucket.
+  for (size_t i = 0; i < 1000000; i++)
+    sizes.insert(internal::GetGranularAlignedRandomOffset(kThunkBytes));
+
+  size_t prev_val = 0;
+  size_t min_val = kAllocGranularity;
+  size_t min_nonzero_val = kAllocGranularity;
+  size_t max_val = 0;
+
+  for (size_t val : sizes) {
+    ASSERT_LT(val, kAllocGranularity);
+    if (prev_val)
+      ASSERT_EQ(val - prev_val, kAlignment);
+    if (val)
+      min_nonzero_val = std::min(val, min_nonzero_val);
+    min_val = std::min(val, min_val);
+    prev_val = val;
+    max_val = std::max(val, max_val);
+  }
+  ASSERT_EQ(max_val, kAllocGranularity - kAlignment);
+  ASSERT_EQ(min_val, 0);
+  ASSERT_EQ(min_nonzero_val, kAlignment);
 }
 
 TEST(InterceptionManagerTest, BufferLayout1) {

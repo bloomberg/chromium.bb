@@ -9,6 +9,7 @@
 #include "base/win/windows_version.h"
 #include "sandbox/win/src/nt_internals.h"
 #include "sandbox/win/src/restricted_token_utils.h"
+#include "sandbox/win/src/sandbox_rand.h"
 #include "sandbox/win/src/win_utils.h"
 
 namespace {
@@ -285,7 +286,7 @@ bool ApplyProcessMitigationsToSuspendedProcess(HANDLE process,
 #if !defined(_WIN64)
   if (flags & MITIGATION_BOTTOM_UP_ASLR) {
     unsigned int limit;
-    rand_s(&limit);
+    GetRandom(&limit);
     char* ptr = 0;
     const size_t kMask64k = 0xFFFF;
     // Random range (512k-16.5mb) in 64k steps.

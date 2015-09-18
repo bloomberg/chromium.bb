@@ -17,10 +17,13 @@
 #include "sandbox/win/src/interception_internal.h"
 #include "sandbox/win/src/interceptors.h"
 #include "sandbox/win/src/sandbox.h"
+#include "sandbox/win/src/sandbox_rand.h"
 #include "sandbox/win/src/service_resolver.h"
 #include "sandbox/win/src/target_interceptions.h"
 #include "sandbox/win/src/target_process.h"
 #include "sandbox/win/src/wow64.h"
+
+namespace sandbox {
 
 namespace {
 
@@ -28,13 +31,17 @@ namespace {
 const size_t kAllocGranularity = 65536;
 const size_t kPageSize = 4096;
 
+}  // namespace
+
+namespace internal {
+
 // Find a random offset within 64k and aligned to ceil(log2(size)).
 size_t GetGranularAlignedRandomOffset(size_t size) {
   CHECK_LE(size, kAllocGranularity);
   unsigned int offset;
 
   do {
-    rand_s(&offset);
+    GetRandom(&offset);
     offset &= (kAllocGranularity - 1);
   } while (offset > (kAllocGranularity - size));
 
@@ -46,9 +53,7 @@ size_t GetGranularAlignedRandomOffset(size_t size) {
   return offset & ~(align_size - 1);
 }
 
-}  // namespace
-
-namespace sandbox {
+}  // namespace internal
 
 SANDBOX_INTERCEPT SharedMemory* g_interceptions;
 
@@ -394,7 +399,7 @@ bool InterceptionManager::PatchNtdll(bool hot_patch_needed) {
   // Find an aligned, random location within the reserved range.
   size_t thunk_bytes = interceptions_.size() * sizeof(ThunkData) +
                        sizeof(DllInterceptionData);
-  size_t thunk_offset = GetGranularAlignedRandomOffset(thunk_bytes);
+  size_t thunk_offset = internal::GetGranularAlignedRandomOffset(thunk_bytes);
 
   // Split the base and offset along page boundaries.
   thunk_base += thunk_offset & ~(kPageSize - 1);
