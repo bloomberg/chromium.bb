@@ -142,20 +142,23 @@ bool DisplayItemList::clientCacheIsValid(DisplayItemClient client) const
     return m_validlyCachedClients.contains(client);
 }
 
-void DisplayItemList::invalidatePaintOffset(DisplayItemClient client)
+void DisplayItemList::invalidatePaintOffset(const DisplayItemClientWrapper& client)
 {
     ASSERT(RuntimeEnabledFeatures::slimmingPaintV2Enabled());
 
     updateValidlyCachedClientsIfNeeded();
-    m_validlyCachedClients.remove(client);
+    m_validlyCachedClients.remove(client.displayItemClient());
+
+    if (RuntimeEnabledFeatures::slimmingPaintV2Enabled() && m_trackedPaintInvalidationObjects)
+        m_trackedPaintInvalidationObjects->append(client.debugName());
 
 #if ENABLE(ASSERT)
-    m_clientsWithPaintOffsetInvalidations.add(client);
+    m_clientsWithPaintOffsetInvalidations.add(client.displayItemClient());
 
     // Ensure no phases slipped in using the old paint offset which would indicate
     // different phases used different paint offsets, which should not happen.
     for (const auto& item : m_newDisplayItems)
-        ASSERT(!item.isCached() || item.client() != client);
+        ASSERT(!item.isCached() || item.client() != client.displayItemClient());
 #endif
 }
 

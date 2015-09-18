@@ -1116,8 +1116,16 @@ public:
     void adjustPreviousPaintInvalidationForScrollIfNeeded(const DoubleSize& scrollDelta);
 
     // The previous position of the top-left corner of the object in its previous paint backing.
-    const LayoutPoint& previousPositionFromPaintInvalidationBacking() const { return m_previousPositionFromPaintInvalidationBacking; }
-    void setPreviousPositionFromPaintInvalidationBacking(const LayoutPoint& positionFromPaintInvalidationBacking) { m_previousPositionFromPaintInvalidationBacking = positionFromPaintInvalidationBacking; }
+    const LayoutPoint& previousPositionFromPaintInvalidationBacking() const
+    {
+        ASSERT(!RuntimeEnabledFeatures::slimmingPaintV2Enabled());
+        return m_previousPositionFromPaintInvalidationBacking;
+    }
+    void setPreviousPositionFromPaintInvalidationBacking(const LayoutPoint& positionFromPaintInvalidationBacking)
+    {
+        ASSERT(!RuntimeEnabledFeatures::slimmingPaintV2Enabled());
+        m_previousPositionFromPaintInvalidationBacking = positionFromPaintInvalidationBacking;
+    }
 
     PaintInvalidationReason fullPaintInvalidationReason() const { return m_bitfields.fullPaintInvalidationReason(); }
     bool shouldDoFullPaintInvalidation() const { return m_bitfields.fullPaintInvalidationReason() != PaintInvalidationNone; }

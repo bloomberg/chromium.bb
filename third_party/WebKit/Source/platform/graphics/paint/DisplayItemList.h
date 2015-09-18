@@ -69,7 +69,7 @@ public:
     void invalidateAll();
 
     // Record when paint offsets change during paint.
-    void invalidatePaintOffset(DisplayItemClient);
+    void invalidatePaintOffset(const DisplayItemClientWrapper&);
 #if ENABLE(ASSERT)
     bool paintOffsetWasInvalidated(DisplayItemClient) const;
 #endif

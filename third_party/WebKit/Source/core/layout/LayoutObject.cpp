@@ -1336,9 +1336,9 @@ PaintInvalidationReason LayoutObject::invalidatePaintIfNeeded(PaintInvalidationS
         return PaintInvalidationNone; // Don't invalidate paints if we're printing.
 
     const LayoutRect oldBounds = previousPaintInvalidationRect();
-    const LayoutPoint oldLocation = previousPositionFromPaintInvalidationBacking();
+    const LayoutPoint oldLocation = RuntimeEnabledFeatures::slimmingPaintV2Enabled() ? LayoutPoint() : previousPositionFromPaintInvalidationBacking();
     LayoutRect newBounds = boundsRectForPaintInvalidation(&paintInvalidationContainer, &paintInvalidationState);
-    LayoutPoint newLocation = DeprecatedPaintLayer::positionFromPaintInvalidationBacking(this, &paintInvalidationContainer, &paintInvalidationState);
+    LayoutPoint newLocation = RuntimeEnabledFeatures::slimmingPaintV2Enabled() ? LayoutPoint() : DeprecatedPaintLayer::positionFromPaintInvalidationBacking(this, &paintInvalidationContainer, &paintInvalidationState);
 
     // Composited scrolling should not be included in the bounds and position tracking, because the graphics layer backing the scroller
     // does not move on scroll.
@@ -1349,7 +1349,8 @@ PaintInvalidationReason LayoutObject::invalidatePaintIfNeeded(PaintInvalidationS
     }
 
     setPreviousPaintInvalidationRect(newBounds);
-    setPreviousPositionFromPaintInvalidationBacking(newLocation);
+    if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled())
+        setPreviousPositionFromPaintInvalidationBacking(newLocation);
 
     PaintInvalidationReason invalidationReason = paintInvalidationReason(paintInvalidationContainer, oldBounds, oldLocation, newBounds, newLocation);
 
@@ -3131,6 +3132,15 @@ static PaintInvalidationReason documentLifecycleBasedPaintInvalidationReason(con
 
 inline void LayoutObject::markContainerChainForPaintInvalidation()
 {
+    // Setting layer-needs-repaint doesn't mean we'll fully repaint the layer, but
+    // means we won't skip painting of the whole layer with a CachedSubsequenceDisplayItem.
+    // This is to ensure we'll check paint offset changes of the objects on the layer.
+    // We'll still use cached display items for non-invalidated objects on the layer.
+    if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
+        if (DeprecatedPaintLayer* enclosingLayer = this->enclosingLayer())
+            enclosingLayer->setNeedsRepaint();
+    }
+
     for (LayoutObject* container = this->containerCrossingFrameBoundaries(); container && !container->shouldCheckForPaintInvalidationRegardlessOfPaintInvalidationState(); container = container->containerCrossingFrameBoundaries())
         container->m_bitfields.setChildShouldCheckForPaintInvalidation(true);
 }

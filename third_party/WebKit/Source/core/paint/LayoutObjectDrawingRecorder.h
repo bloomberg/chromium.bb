@@ -53,7 +53,7 @@ public:
 
     LayoutObjectDrawingRecorder(GraphicsContext& context, const LayoutObject& layoutObject, DisplayItem::Type displayItemType, const FloatRect& clip, const LayoutPoint& paintOffset)
     {
-        updatePaintOffsetIfNeeded(context.displayItemList(), layoutObject.displayItemClient(), paintOffset);
+        updatePaintOffsetIfNeeded(context.displayItemList(), layoutObject, paintOffset);
         // We may paint a delayed-invalidation object before it's actually invalidated.
         if (layoutObject.fullPaintInvalidationReason() == PaintInvalidationDelayedFull)
             m_cacheSkipper.emplace(context);
@@ -74,7 +74,7 @@ public:
 
     LayoutObjectDrawingRecorder(GraphicsContext& context, const InlineBox& inlineBox, DisplayItem::Type displayItemType, const FloatRect& clip, const LayoutPoint& paintOffset)
     {
-        updatePaintOffsetIfNeeded(context.displayItemList(), inlineBox.displayItemClient(), paintOffset);
+        updatePaintOffsetIfNeeded(context.displayItemList(), inlineBox, paintOffset);
         m_drawingRecorder.emplace(context, inlineBox, displayItemType, clip);
     }
 
@@ -92,17 +92,17 @@ public:
 #endif
 
 private:
-    static void updatePaintOffsetIfNeeded(DisplayItemList* displayItemList, DisplayItemClient displayItemClient, const LayoutPoint& paintOffset)
+    static void updatePaintOffsetIfNeeded(DisplayItemList* displayItemList, const DisplayItemClientWrapper& client, const LayoutPoint& paintOffset)
     {
         if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled())
             return;
 
         // TODO(pdr): The paint offset cache should be stored on LayoutObject but is temporarily on the DisplayItemList.
-        if (!displayItemList->paintOffsetIsUnchanged(displayItemClient, paintOffset)) {
-            displayItemList->recordPaintOffset(displayItemClient, paintOffset);
-            displayItemList->invalidatePaintOffset(displayItemClient);
+        if (!displayItemList->paintOffsetIsUnchanged(client.displayItemClient(), paintOffset)) {
+            displayItemList->recordPaintOffset(client.displayItemClient(), paintOffset);
+            displayItemList->invalidatePaintOffset(client);
         } else {
-            ASSERT(!displayItemList->paintOffsetWasInvalidated(displayItemClient) || !displayItemList->clientCacheIsValid(displayItemClient));
+            ASSERT(!displayItemList->paintOffsetWasInvalidated(client.displayItemClient()) || !displayItemList->clientCacheIsValid(client.displayItemClient()));
         }
     }
 

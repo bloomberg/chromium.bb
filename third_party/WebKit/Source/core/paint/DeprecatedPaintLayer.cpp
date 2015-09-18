@@ -775,8 +775,11 @@ bool DeprecatedPaintLayer::updateLayerPosition()
     // FIXME: We'd really like to just get rid of the concept of a layer rectangle and rely on the layoutObjects.
     localPoint.moveBy(-inlineBoundingBoxOffset);
 
-    if (m_location != localPoint)
+    if (m_location != localPoint) {
         positionOrOffsetChanged = true;
+        if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
+            setNeedsRepaint();
+    }
     m_location = localPoint;
 
 #if ENABLE(ASSERT)
