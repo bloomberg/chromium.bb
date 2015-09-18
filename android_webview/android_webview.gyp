@@ -404,11 +404,22 @@
       'includes': [ '../build/java.gypi' ],
     },
     {
+      'target_name': 'system_webview_glue_java',
+      'variables': {
+        'android_sdk_jar': '../third_party/android_platform/webview/frameworks_6.0.jar',
+        'java_in_dir': 'glue/java',
+      },
+      'includes': [ 'apk/system_webview_glue_common.gypi' ],
+    },
+    {
       'target_name': 'system_webview_apk',
+      'dependencies': [
+        'system_webview_glue_java',
+      ],
       'variables': {
         'apk_name': 'SystemWebView',
         'android_sdk_jar': '../third_party/android_platform/webview/frameworks_6.0.jar',
-        'java_in_dir': 'glue/java',
+        'java_in_dir': '../build/android/empty',
         'resource_dir': 'apk/java/res',
       },
       'includes': [ 'apk/system_webview_apk_common.gypi' ],

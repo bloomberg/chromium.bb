@@ -206,7 +206,8 @@ class WebViewChromium implements WebViewProvider, WebViewProvider.ScrollDelegate
             } else {
                 Log.w(TAG, msg);
                 TextView warningLabel = new TextView(mContext);
-                warningLabel.setText(mContext.getString(R.string.private_browsing_warning));
+                warningLabel.setText(mContext.getString(
+                        org.chromium.android_webview.R.string.private_browsing_warning));
                 mWebView.addView(warningLabel);
             }
         }

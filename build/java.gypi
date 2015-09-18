@@ -187,7 +187,8 @@
             'python', '<(DEPTH)/build/android/gyp/process_resources.py',
             '--android-sdk', '<(android_sdk)',
             '--aapt-path', '<(android_aapt_path)',
-            '--non-constant-id',
+            # Need to generate onResourcesLoaded() in R.java, so could be used in java lib.
+            '--shared-resources',
 
             '--android-manifest', '<(android_manifest)',
             '--custom-package', '<(R_package)',

@@ -8,15 +8,11 @@
   'type': 'none',
   'dependencies': [
     '<(DEPTH)/android_webview/android_webview.gyp:libwebviewchromium',
-    '<(DEPTH)/android_webview/android_webview.gyp:android_webview_java',
-    '<(DEPTH)/android_webview/android_webview.gyp:android_webview_pak',
   ],
   'variables': {
     'native_lib_target': 'libwebviewchromium',
     'native_lib_version_name': '<(version_full)',
     'never_lint': 1,
-    'R_package': 'com.android.webview.chromium',
-    'R_package_relpath': 'com/android/webview/chromium',
     'shared_resources': 1,
     'extensions_to_not_compress': '.lpak,.pak,.bin,.dat',
     'asset_location': '<(INTERMEDIATE_DIR)/assets/',

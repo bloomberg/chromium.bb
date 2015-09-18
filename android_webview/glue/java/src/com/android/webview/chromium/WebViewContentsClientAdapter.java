@@ -1160,7 +1160,8 @@ public class WebViewContentsClientAdapter extends AwContentsClient {
                 // The ic_play_circle_outline_black_48dp icon is transparent so we need to draw it
                 // on a gray background.
                 Bitmap poster = BitmapFactory.decodeResource(
-                        mContext.getResources(), R.drawable.ic_play_circle_outline_black_48dp);
+                        mContext.getResources(),
+                        org.chromium.android_webview.R.drawable.ic_play_circle_outline_black_48dp);
                 result = Bitmap.createBitmap(
                         poster.getWidth(), poster.getHeight(), poster.getConfig());
                 result.eraseColor(Color.GRAY);
