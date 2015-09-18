@@ -1202,6 +1202,9 @@ SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostAnimationTestIsAnimating);
 class LayerTreeHostAnimationTestAnimationFinishesDuringCommit
     : public LayerTreeHostAnimationTest {
  public:
+  LayerTreeHostAnimationTestAnimationFinishesDuringCommit()
+      : signalled_(false) {}
+
   void SetupTree() override {
     LayerTreeHostAnimationTest::SetupTree();
     layer_ = FakePictureLayer::Create(layer_settings(), &client_);
@@ -1246,9 +1249,10 @@ class LayerTreeHostAnimationTestAnimationFinishesDuringCommit
   void UpdateAnimationState(LayerTreeHostImpl* host_impl,
                             bool has_unfinished_animation) override {
     if (host_impl->active_tree()->source_frame_number() == 1 &&
-        !has_unfinished_animation) {
+        !has_unfinished_animation && !signalled_) {
       // The animation has finished, so allow the main thread to commit.
       completion_.Signal();
+      signalled_ = true;
     }
   }
 
@@ -1258,6 +1262,7 @@ class LayerTreeHostAnimationTestAnimationFinishesDuringCommit
   scoped_refptr<Layer> layer_;
   FakeContentLayerClient client_;
   CompletionEvent completion_;
+  bool signalled_;
 };
 
 // An animation finishing during commit can only happen when we have a separate
