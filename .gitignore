@@ -154,6 +154,8 @@ TAGS
 /tests/uplow_with_unicode
 /tests/logging
 /tests/findTable
+/tests/yaml/*.log
+/tests/yaml/*.trs
 
 # /tests/doctests/
 /tests/doctests/Makefile
