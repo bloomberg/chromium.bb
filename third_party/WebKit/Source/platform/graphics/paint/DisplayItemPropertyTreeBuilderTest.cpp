@@ -64,10 +64,10 @@ protected:
     void processDisplayItem(const DisplayItem& displayItem) { m_builder.processDisplayItem(displayItem); }
     void processDisplayItem(PassOwnPtr<DisplayItem> displayItem) { processDisplayItem(*displayItem); }
     void processDummyDisplayItem() { processDisplayItem(DummyDisplayItem(newDummyClient())); }
-    const DummyClient& processBeginTransform3D(const TransformationMatrix& transform)
+    const DummyClient& processBeginTransform3D(const TransformationMatrix& transform, const FloatPoint3D& transformOrigin = FloatPoint3D())
     {
         const DummyClient& client = newDummyClient();
-        processDisplayItem(BeginTransform3DDisplayItem(client, DisplayItem::Transform3DElementTransform, transform));
+        processDisplayItem(BeginTransform3DDisplayItem(client, DisplayItem::Transform3DElementTransform, transform, transformOrigin));
         return client;
     }
     void processEndTransform3D(const DummyClient& client)

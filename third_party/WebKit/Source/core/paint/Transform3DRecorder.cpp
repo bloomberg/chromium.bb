@@ -11,7 +11,12 @@
 
 namespace blink {
 
-Transform3DRecorder::Transform3DRecorder(GraphicsContext& context, const DisplayItemClientWrapper& client, DisplayItem::Type type, const TransformationMatrix& transform)
+Transform3DRecorder::Transform3DRecorder(
+    GraphicsContext& context,
+    const DisplayItemClientWrapper& client,
+    DisplayItem::Type type,
+    const TransformationMatrix& transform,
+    const FloatPoint3D& transformOrigin)
     : m_context(context)
     , m_client(client)
     , m_type(type)
@@ -25,7 +30,7 @@ Transform3DRecorder::Transform3DRecorder(GraphicsContext& context, const Display
     ASSERT(m_context.displayItemList());
     if (m_context.displayItemList()->displayItemConstructionIsDisabled())
         return;
-    m_context.displayItemList()->createAndAppend<BeginTransform3DDisplayItem>(m_client, m_type, transform);
+    m_context.displayItemList()->createAndAppend<BeginTransform3DDisplayItem>(m_client, m_type, transform, transformOrigin);
 }
 
 Transform3DRecorder::~Transform3DRecorder()

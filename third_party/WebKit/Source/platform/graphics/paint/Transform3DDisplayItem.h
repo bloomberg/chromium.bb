@@ -5,6 +5,7 @@
 #ifndef Transform3DDisplayItem_h
 #define Transform3DDisplayItem_h
 
+#include "platform/geometry/FloatPoint3D.h"
 #include "platform/graphics/paint/DisplayItem.h"
 #include "platform/transforms/TransformationMatrix.h"
 #include "wtf/Assertions.h"
@@ -14,9 +15,14 @@ namespace blink {
 
 class PLATFORM_EXPORT BeginTransform3DDisplayItem final : public PairedBeginDisplayItem {
 public:
-    BeginTransform3DDisplayItem(const DisplayItemClientWrapper& client, Type type, const TransformationMatrix& transform)
+    BeginTransform3DDisplayItem(
+        const DisplayItemClientWrapper& client,
+        Type type,
+        const TransformationMatrix& transform,
+        const FloatPoint3D& transformOrigin)
         : PairedBeginDisplayItem(client, type, sizeof(*this))
         , m_transform(transform)
+        , m_transformOrigin(transformOrigin)
     {
         ASSERT(DisplayItem::isTransform3DType(type));
     }
@@ -25,6 +31,7 @@ public:
     void appendToWebDisplayItemList(WebDisplayItemList*) const override;
 
     const TransformationMatrix& transform() const { return m_transform; }
+    const FloatPoint3D& transformOrigin() const { return m_transformOrigin; }
 
 private:
 #ifndef NDEBUG
@@ -32,6 +39,7 @@ private:
 #endif
 
     const TransformationMatrix m_transform;
+    const FloatPoint3D m_transformOrigin;
 };
 
 class PLATFORM_EXPORT EndTransform3DDisplayItem final : public PairedEndDisplayItem {
