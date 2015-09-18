@@ -271,7 +271,7 @@ inline PassRefPtrWillBeRawPtr<CSSPrimitiveValue> CSSPropertyParser::createPrimit
     return cssValuePool().createValue(value->string, CSSPrimitiveValue::UnitType::CustomIdentifier);
 }
 
-inline PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::createCSSImageValueWithReferrer(const String& rawValue, const KURL& url)
+inline PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::createCSSImageValueWithReferrer(const AtomicString& rawValue, const KURL& url)
 {
     RefPtrWillBeRawPtr<CSSValue> imageValue = CSSImageValue::create(rawValue, url);
     toCSSImageValue(imageValue.get())->setReferrer(m_context.referrer());
@@ -533,7 +533,7 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
         while (value) {
             RefPtrWillBeRawPtr<CSSValue> image = nullptr;
             if (value->unit() == CSSPrimitiveValue::UnitType::URI) {
-                String uri = value->string;
+                AtomicString uri = value->string;
                 if (!uri.isNull())
                     image = createCSSImageValueWithReferrer(uri, completeURL(uri));
             } else if (value->m_unit == CSSParserValue::Function && value->function->id == CSSValueWebkitImageSet) {

@@ -38,9 +38,13 @@ class CSSImageValue : public CSSValue {
 public:
     static PassRefPtrWillBeRawPtr<CSSImageValue> create(const KURL& url, StyleImage* image = 0)
     {
-        return adoptRefWillBeNoop(new CSSImageValue(url, url, image));
+        return create(url.string(), url, image);
     }
     static PassRefPtrWillBeRawPtr<CSSImageValue> create(const String& rawValue, const KURL& url, StyleImage* image = 0)
+    {
+        return create(AtomicString(rawValue), url, image);
+    }
+    static PassRefPtrWillBeRawPtr<CSSImageValue> create(const AtomicString& rawValue, const KURL& url, StyleImage* image = 0)
     {
         return adoptRefWillBeNoop(new CSSImageValue(rawValue, url, image));
     }
@@ -72,10 +76,10 @@ public:
     void restoreCachedResourceIfNeeded(Document&);
 
 private:
-    CSSImageValue(const String& rawValue, const KURL&, StyleImage*);
+    CSSImageValue(const AtomicString& rawValue, const KURL&, StyleImage*);
 
-    String m_relativeURL;
-    String m_absoluteURL;
+    AtomicString m_relativeURL;
+    AtomicString m_absoluteURL;
     Referrer m_referrer;
     RefPtrWillBeMember<StyleImage> m_image;
     bool m_accessedImage;

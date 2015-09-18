@@ -271,7 +271,7 @@ private:
     PassRefPtrWillBeRawPtr<CSSPrimitiveValue> createPrimitiveStringValue(CSSParserValue*);
     PassRefPtrWillBeRawPtr<CSSPrimitiveValue> createPrimitiveCustomIdentValue(CSSParserValue*);
 
-    PassRefPtrWillBeRawPtr<CSSValue> createCSSImageValueWithReferrer(const String& rawValue, const KURL&);
+    PassRefPtrWillBeRawPtr<CSSValue> createCSSImageValueWithReferrer(const AtomicString& rawValue, const KURL&);
 
     PassRefPtrWillBeRawPtr<CSSBasicShape> parseInsetRoundedCorners(PassRefPtrWillBeRawPtr<CSSBasicShapeInset>, CSSParserValueList*);
 
