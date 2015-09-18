@@ -25,7 +25,7 @@
 #define CONTEXT_MARKER 31
 #define QUERY_MARKER 37
 
-#define CODE_SIZE 32
+#define CODE_SIZE 64
 
 #if NACL_ARCH(NACL_BUILD_ARCH) == NACL_mips
 # define NOP 0x00
@@ -50,6 +50,18 @@ const uint8_t sse41[] =
 const uint8_t sse41_plus_nontemporal[] =
     { 0x66, 0x0f, 0x3a, 0x0e, 0xd0, 0xc0,  // pblendw $0xc0,%xmm0,%xmm2
       0x0f, 0x18, 0x04, 0x24 };  // prefetchnta (%rsp)
+
+// Example of a valid JMP to outside the bundle, in a bundle containing an
+// instruction that gets stubbed out.
+const uint8_t sse41_plus_valid_jmp[] =
+    { 0x66, 0x0f, 0x3a, 0x0e, 0xd0, 0xc0,  // pblendw $0xc0,%xmm0,%xmm2
+      0xeb, 0x19 };  // jmp to a non-bundle-aligned nop in the next bundle
+
+// Example of an invalid JMP to outside the bundle, in a bundle containing
+// an instruction that gets stubbed out.
+const uint8_t sse41_plus_invalid_jmp[] =
+    { 0x66, 0x0f, 0x3a, 0x0e, 0xd0, 0xc0,  // pblendw $0xc0,%xmm0,%xmm2
+      0xeb, 0x39 };  // jmp to non-bundle-aligned address beyond the chunk end
 
 struct MockContext {
   int marker; /* Sanity check that we're getting the right object. */
@@ -167,7 +179,7 @@ class ValidationCachingInterfaceTests : public ::testing::Test {
   }
 
   NaClValidationStatus Validate() {
-    return validator->Validate(0, code_buffer, 32,
+    return validator->Validate(0, code_buffer, CODE_SIZE,
                                FALSE,  /* stubout_mode */
                                0,      /* flags */
                                FALSE,  /* readonly_text */
@@ -262,6 +274,61 @@ TEST_F(ValidationCachingInterfaceTests, NonTemporalStubout) {
   NaClValidationStatus status = Validate();
   EXPECT_EQ(NaClValidationSucceeded, status);
   EXPECT_EQ(true, context.query_destroyed);
+}
+
+TEST_F(ValidationCachingInterfaceTests, RevalidationOfValidJump) {
+  // This tests a case where an instruction gets rewritten (replaced with
+  // HLTs).  In this case, the validator should revalidate the bundle after
+  // modifying it.  This test case checks that the revalidation logic
+  // correctly handles JMPs to outside the bundle.
+  //
+  // This isn't strictly related to validation caching, but it is
+  // convenient to reuse its text fixtures.
+  memcpy(code_buffer, sse41_plus_valid_jmp, sizeof(sse41_plus_valid_jmp));
+  context.query_result = 0;
+  /* TODO(jfb) Use a safe cast here, this test should only run for x86. */
+  NaClSetCPUFeatureX86((NaClCPUFeaturesX86 *) cpu_features,
+                       NaClCPUFeatureX86_SSE41, 0);
+  NaClValidationStatus status = Validate();
+  EXPECT_EQ(NaClValidationSucceeded, status);
+  EXPECT_EQ(true, context.query_destroyed);
+}
+
+TEST_F(ValidationCachingInterfaceTests, RevalidationOfInvalidJump) {
+  // Like RevalidationOfValidJump, this is another test case for the
+  // revalidation logic.  This test checks that we don't allow an invalid
+  // jump to outside the code chunk.
+  memcpy(code_buffer, sse41_plus_invalid_jmp, sizeof(sse41_plus_invalid_jmp));
+  context.query_result = 0;
+  /* TODO(jfb) Use a safe cast here, this test should only run for x86. */
+  NaClSetCPUFeatureX86((NaClCPUFeaturesX86 *) cpu_features,
+                       NaClCPUFeatureX86_SSE41, 0);
+  NaClValidationStatus status = Validate();
+  EXPECT_EQ(NaClValidationFailed, status);
+  EXPECT_EQ(true, context.query_destroyed);
+}
+
+TEST_F(ValidationCachingInterfaceTests, MultipleStubout) {
+  // If a bundle contains multiple instructions that need to be rewritten,
+  // check that the revalidation logic handles this correctly.
+  memcpy(code_buffer, sse41, sizeof(sse41));
+  memcpy(code_buffer + sizeof(sse41), sse41, sizeof(sse41));
+  context.query_result = 0;
+  /* TODO(jfb) Use a safe cast here, this test should only run for x86. */
+  NaClSetCPUFeatureX86((NaClCPUFeaturesX86 *) cpu_features,
+                       NaClCPUFeatureX86_SSE41, 0);
+  NaClValidationStatus status = Validate();
+  EXPECT_EQ(NaClValidationSucceeded, status);
+  EXPECT_EQ(true, context.query_destroyed);
+
+  // Check that the SSE4.1 instructions get overwritten with HLTs.
+  for (size_t index = 0; index < CODE_SIZE; ++index) {
+    if (index < sizeof(sse41) * 2) {
+      EXPECT_EQ(0xf4 /* HLT */, code_buffer[index]);
+    } else {
+      EXPECT_EQ(NOP, code_buffer[index]);
+    }
+  }
 }
 #endif
 

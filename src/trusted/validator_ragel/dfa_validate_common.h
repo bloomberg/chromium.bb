@@ -16,6 +16,7 @@
 
 #include "native_client/src/shared/utils/types.h"
 #include "native_client/src/trusted/validator/ncvalidate.h"
+#include "native_client/src/trusted/validator_ragel/validator.h"
 
 /*
  * ia32 or x86-64 instructions can not be longer than 15 bytes, but we have some
@@ -32,7 +33,22 @@ Bool NaClDfaProcessValidationError(const uint8_t *begin, const uint8_t *end,
                                    uint32_t info, void *callback_data);
 
 struct StubOutCallbackData {
+  /* Input parameters: */
   uint32_t flags;
+  /*
+   * Input parameters used for revalidating instructions bundles that the
+   * validator has modified:
+   */
+  uint8_t *chunk_begin;
+  uint8_t *chunk_end;
+  NaClCPUFeaturesX86 *cpu_features;
+  Bool (*validate_chunk_func)(const uint8_t codeblock[],
+                              size_t size,
+                              uint32_t options,
+                              const NaClCPUFeaturesX86 *cpu_features,
+                              ValidationCallbackFunc user_callback,
+                              void *callback_data);
+  /* Output parameters: */
   /*
    * |did_rewrite| records whether the validator modified the code being
    * validated (e.g. to stub out instructions that aren't supported on this

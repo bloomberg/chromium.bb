@@ -41,7 +41,12 @@ NaClValidationStatus ApplyDfaValidator_x86_32(
   void *query = NULL;
   struct StubOutCallbackData callback_data;
   callback_data.flags = flags;
+  callback_data.chunk_begin = data;
+  callback_data.chunk_end = data + size;
+  callback_data.cpu_features = cpu_features;
+  callback_data.validate_chunk_func = ValidateChunkIA32;
   callback_data.did_rewrite = 0;
+
   UNREFERENCED_PARAMETER(guest_addr);
 
   if (stubout_mode)
