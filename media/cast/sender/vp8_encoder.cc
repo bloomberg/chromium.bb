@@ -7,7 +7,7 @@
 #include "base/logging.h"
 #include "media/base/video_frame.h"
 #include "media/cast/cast_defines.h"
-#include "third_party/libvpx/source/libvpx/vpx/vp8cx.h"
+#include "third_party/libvpx_new/source/libvpx/vpx/vp8cx.h"
 
 namespace media {
 namespace cast {

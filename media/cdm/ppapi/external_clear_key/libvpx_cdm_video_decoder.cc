@@ -14,8 +14,8 @@
 #define VPX_CODEC_DISABLE_COMPAT 1
 extern "C" {
 // Note: vpx_decoder.h must be first or compile will fail.
-#include "third_party/libvpx/source/libvpx/vpx/vp8dx.h"
-#include "third_party/libvpx/source/libvpx/vpx/vpx_decoder.h"  // NOLINT
+#include "third_party/libvpx_new/source/libvpx/vpx/vp8dx.h"
+#include "third_party/libvpx_new/source/libvpx/vpx/vpx_decoder.h"  // NOLINT
 }
 
 // Enable USE_COPYPLANE_WITH_LIBVPX to use |CopyPlane()| instead of memcpy to

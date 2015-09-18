@@ -16,7 +16,7 @@ source_set("codec") {
     "//media",
     "//media:shared_memory_support",
     "//remoting/proto",
-    "//third_party/libvpx",
+    "//third_party/libvpx_new",
     "//third_party/libyuv",
     "//third_party/opus",
     "//third_party/webrtc/modules/desktop_capture:primitives",

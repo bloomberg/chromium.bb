@@ -168,7 +168,7 @@ source_set("renderer") {
       "//ppapi/host",
       "//ppapi/proxy",
       "//ppapi/shared_impl",
-      "//third_party/libvpx",
+      "//third_party/libvpx_new",
       "//third_party/libyuv",
     ]
   }

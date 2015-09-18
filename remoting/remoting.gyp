@@ -199,7 +199,7 @@
         '../media/media.gyp:media',
         '../media/media.gyp:shared_memory_support',
         '../net/net.gyp:net',
-        '../third_party/libvpx/libvpx.gyp:libvpx',
+        '../third_party/libvpx_new/libvpx.gyp:libvpx_new',
         '../third_party/libyuv/libyuv.gyp:libyuv',
         '../third_party/opus/opus.gyp:opus',
         '../third_party/protobuf/protobuf.gyp:protobuf_lite',

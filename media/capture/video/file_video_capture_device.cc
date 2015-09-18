@@ -44,7 +44,7 @@ void ParseY4MRational(const base::StringPiece& token,
 // character, however all examples mentioned in the Y4M header description end
 // with a newline character instead. Also, some headers do _not_ specify pixel
 // format, in this case it means I420.
-// This code was inspired by third_party/libvpx/.../y4minput.* .
+// This code was inspired by third_party/libvpx_new/.../y4minput.* .
 void ParseY4MTags(const std::string& file_header,
                   media::VideoCaptureFormat* video_format) {
   media::VideoCaptureFormat format;

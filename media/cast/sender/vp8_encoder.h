@@ -10,7 +10,7 @@
 #include "base/threading/thread_checker.h"
 #include "media/cast/cast_config.h"
 #include "media/cast/sender/software_video_encoder.h"
-#include "third_party/libvpx/source/libvpx/vpx/vpx_encoder.h"
+#include "third_party/libvpx_new/source/libvpx/vpx/vpx_encoder.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace media {

@@ -144,7 +144,7 @@ source_set("sender") {
     ":net",
     "//media",
     "//media:shared_memory_support",
-    "//third_party/libvpx",
+    "//third_party/libvpx_new",
     "//third_party/opus",
     "//ui/gfx/geometry",
   ]
@@ -154,7 +154,7 @@ source_set("sender") {
     deps += [ "//media:media_for_cast_ios" ]
     deps -= [
       "//media",
-      "//third_party/libvpx",
+      "//third_party/libvpx_new",
       "//third_party/opus",
     ]
     sources -= [
@@ -201,7 +201,7 @@ source_set("receiver") {
     ":net",
     "//media",
     "//media:shared_memory_support",
-    "//third_party/libvpx",
+    "//third_party/libvpx_new",
     "//third_party/opus",
     "//ui/gfx",
   ]
@@ -211,7 +211,7 @@ source_set("receiver") {
     deps += [ "//media:media_for_cast_ios" ]
     deps -= [
       "//media",
-      "//third_party/libvpx",
+      "//third_party/libvpx_new",
       "//third_party/opus",
     ]
   }

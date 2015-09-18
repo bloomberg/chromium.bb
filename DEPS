@@ -33,7 +33,7 @@ vars = {
   'googlecode_url': 'http://%s.googlecode.com/svn',
   'webkit_revision': '10b2b4a9ad7f76e4104978bc83d391d07e5fd58a', # from svn revision 202548
   'chromium_git': 'https://chromium.googlesource.com',
-  'libvpx_revision': 'ac1772e3db5c885b554f6a72ca9dbac4245cb0e2',
+  'libvpx_revision': '0d6551cd1e1359423a7f4af503472d280437e9bb',
   'sfntly_revision': '1bdaae8fc788a5ac8936d68bf24f37d977a13dac',
   'skia_revision': 'd32087a613fde2623bbe0abfe551164fdf3d633e',
   # Three lines of non-changing comments so that
@@ -187,6 +187,9 @@ deps = {
 
   'src/third_party/libvpx':
    Var('chromium_git') + '/chromium/deps/libvpx.git' + '@' +  Var('libvpx_revision'),
+
+  'src/third_party/libvpx_new/source/libvpx':
+   Var('chromium_git') + '/webm/libvpx.git' + '@' +  'c5f11912ae328a912ef087fdcd074ff07e96d8f9',
 
   'src/third_party/ffmpeg':
    Var('chromium_git') + '/chromium/third_party/ffmpeg.git' + '@' + '67cde45fbfa5145bd7ebfe0fb811ae7a80902d43',

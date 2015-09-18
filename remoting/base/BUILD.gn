@@ -19,7 +19,7 @@ source_set("base") {
   ]
   deps = [
     "//base/third_party/dynamic_annotations",
-    "//third_party/libvpx",
+    "//third_party/libvpx_new",
     "//third_party/libyuv",
     "//third_party/webrtc/modules/desktop_capture:primitives",
   ]

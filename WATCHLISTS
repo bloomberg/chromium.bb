@@ -447,6 +447,9 @@
     'libwebp': {
       'filepath': 'third_party/libwebp'
     },
+    'libvpx': {
+      'filepath': 'third_party/libvpx_new'
+    },
     'linux_fonts': {
       'filepath': 'ui/gfx/font_render_params_.*|'\
                   'ui/gfx/platform_font_linux.*|'\
@@ -1030,6 +1033,8 @@
     'ipc': ['jam@chromium.org', 'darin-cc@chromium.org'],
     'libwebp': ['urvang@chromium.org', 'jzern@chromium.org',
                 'skal@google.com', 'vikasa@google.com'],
+    'libvpx': ['tomfinegan@chromium.org', 'jzern@chromium.org',
+               'fgalligan@chromium.org', 'johannkoenig@chromium.org'],
     'linux_fonts': ['derat+watch@chromium.org'],
     'linux_sandboxing': ['jln+watch@chromium.org'],
     'linux_seccomp_bpf': ['jln+watch@chromium.org'],

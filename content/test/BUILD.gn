@@ -148,7 +148,7 @@ source_set("test_support") {
       ]
       deps += [
         "//ui/compositor",
-        "//third_party/libvpx",
+        "//third_party/libvpx_new",
       ]
     }
 
@@ -658,7 +658,7 @@ test("content_unittests") {
     deps += [ "//testing/android/native_test:native_test_native_code" ]
   }
   if (!is_android && !is_ios) {
-    deps += [ "//third_party/libvpx" ]
+    deps += [ "//third_party/libvpx_new" ]
   }
 
   if (use_aura) {

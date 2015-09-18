@@ -26,7 +26,7 @@ REPLACEMENTS = {
   'use_system_libjpeg': 'third_party/libjpeg/libjpeg.gyp',
   'use_system_libpng': 'third_party/libpng/libpng.gyp',
   'use_system_libusb': 'third_party/libusb/libusb.gyp',
-  'use_system_libvpx': 'third_party/libvpx/libvpx.gyp',
+  'use_system_libvpx': 'third_party/libvpx_new/libvpx.gyp',
   'use_system_libwebp': 'third_party/libwebp/libwebp.gyp',
   'use_system_libxml': 'third_party/libxml/libxml.gyp',
   'use_system_libxnvctrl' : 'third_party/libXNVCtrl/libXNVCtrl.gyp',

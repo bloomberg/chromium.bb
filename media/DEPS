@@ -9,7 +9,7 @@ include_rules = [
   "+skia/ext",
   "+third_party/ffmpeg",
   "+third_party/libwebm",
-  "+third_party/libvpx",
+  "+third_party/libvpx_new",
   "+third_party/libyuv",
   "+third_party/opus",
   "+third_party/skia",

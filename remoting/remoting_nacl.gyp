@@ -106,7 +106,7 @@
         '../third_party/expat/expat_nacl.gyp:expat_nacl',
         '../third_party/khronos/khronos.gyp:khronos_headers',
         '../third_party/libjingle/libjingle_nacl.gyp:libjingle_nacl',
-        '../third_party/libvpx/libvpx_nacl.gyp:libvpx_nacl',
+        '../third_party/libvpx_new/libvpx_nacl.gyp:libvpx_nacl',
         '../third_party/libyuv/libyuv_nacl.gyp:libyuv_nacl',
         '../third_party/opus/opus_nacl.gyp:opus_nacl',
         'remoting_proto_nacl',

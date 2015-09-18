@@ -15,7 +15,7 @@ include_rules = [
   "+remoting/proto",
   "+third_party/google_toolbox_for_mac/src",
   "+third_party/libjingle",
-  "+third_party/libvpx",
+  "+third_party/libvpx_new",
   "+third_party/libyuv",
   "+third_party/webrtc/base",
   "+third_party/webrtc/libjingle",

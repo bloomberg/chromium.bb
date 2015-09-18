@@ -6,7 +6,7 @@ include_rules = [
   "+media/audio",
   "+media/base",
   "+media/video",
-  "+third_party/libvpx",
+  "+third_party/libvpx_new",
   "+third_party/libyuv",
   "+ui/base/ime",
   "+ui/base/range",

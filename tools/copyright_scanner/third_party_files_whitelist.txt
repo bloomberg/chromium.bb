@@ -75,7 +75,7 @@ content/renderer/input/input_scroll_elasticity_controller.h
 # Copyright Google Inc, no license. Not used on Android.
 google_update/google_update_idl.idl
 # Copyright WebM Project authors; BSD license. Copied and modified from
-# third_party/libvpx. Not used on Android.
+# third_party/libvpx_new. Not used on Android.
 media/filters/vp8_bool_decoder.h
 media/filters/vp8_bool_decoder.cc
 # Native client not used in Android. Contains the word "Copyright"

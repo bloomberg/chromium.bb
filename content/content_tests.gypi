@@ -984,7 +984,7 @@
           ],
           'dependencies': [
             '../ui/compositor/compositor.gyp:compositor',
-            '../third_party/libvpx/libvpx.gyp:libvpx',
+            '../third_party/libvpx_new/libvpx.gyp:libvpx_new',
           ],
         }],
         ['OS=="android"', {
@@ -1188,7 +1188,7 @@
         }],
         ['OS != "android" and OS != "ios"', {
           'dependencies': [
-            '../third_party/libvpx/libvpx.gyp:libvpx',
+            '../third_party/libvpx_new/libvpx.gyp:libvpx_new',
           ],
         }],
         ['use_aura!=1 and OS!="android"', {

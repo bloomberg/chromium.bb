@@ -54,7 +54,7 @@
             ['use_libvpx_in_clear_key_cdm == 1 and use_fake_video_decoder == 0' , {
               'defines': ['CLEAR_KEY_CDM_USE_LIBVPX_DECODER'],
               'dependencies': [
-                '<(DEPTH)/third_party/libvpx/libvpx.gyp:libvpx',
+                '<(DEPTH)/third_party/libvpx_new/libvpx.gyp:libvpx_new',
               ],
               'sources': [
                 'cdm/ppapi/external_clear_key/libvpx_cdm_video_decoder.cc',

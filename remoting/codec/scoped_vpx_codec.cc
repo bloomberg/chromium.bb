@@ -8,7 +8,7 @@
 
 extern "C" {
 #define VPX_CODEC_DISABLE_COMPAT 1
-#include "third_party/libvpx/source/libvpx/vpx/vpx_codec.h"
+#include "third_party/libvpx_new/source/libvpx/vpx/vpx_codec.h"
 }
 namespace remoting {
 
