@@ -166,7 +166,7 @@ void NavigationController::FrameDidCommitProvisionalLoad(Frame* frame) {
     }
 
     entries_.push_back(pending_entry_);
-    last_committed_entry_index_ = entries_.size() - 1;
+    last_committed_entry_index_ = static_cast<int>(entries_.size() - 1);
     pending_entry_ = nullptr;
   } else if (pending_entry_index_ != -1 && pending_entry_) {
     last_committed_entry_index_ = pending_entry_index_;
