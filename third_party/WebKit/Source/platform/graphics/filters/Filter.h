@@ -40,7 +40,7 @@ public:
         BoundingBox
     };
 
-    static PassRefPtrWillBeRawPtr<Filter> create(const FloatRect& referenceBox, const FloatRect& filterRegion, float scale, UnitScaling = UserSpace);
+    static PassRefPtrWillBeRawPtr<Filter> create(const FloatRect& referenceBox, const FloatRect& filterRegion, float scale, UnitScaling);
     static PassRefPtrWillBeRawPtr<Filter> create(float scale);
 
     ~Filter();

@@ -124,7 +124,9 @@ PassRefPtrWillBeRawPtr<Filter> ReferenceFilterBuilder::build(float zoom, Element
         referenceBox = toLayoutBoxModelObject(element->layoutObject())->borderBoundingBox();
     referenceBox.scale(1.0f / zoom);
     FloatRect filterRegion = SVGLengthContext::resolveRectangle<SVGFilterElement>(&filterElement, filterElement.filterUnits()->currentValue()->enumValue(), referenceBox);
-    RefPtrWillBeRawPtr<Filter> result(Filter::create(referenceBox, filterRegion, zoom));
+    bool primitiveBoundingBoxMode = filterElement.primitiveUnits()->currentValue()->enumValue() == SVGUnitTypes::SVG_UNIT_TYPE_OBJECTBOUNDINGBOX;
+    Filter::UnitScaling unitScaling = primitiveBoundingBoxMode ? Filter::BoundingBox : Filter::UserSpace;
+    RefPtrWillBeRawPtr<Filter> result(Filter::create(referenceBox, filterRegion, zoom, unitScaling));
     if (!previousEffect)
         previousEffect = result->sourceGraphic();
     RefPtrWillBeRawPtr<SVGFilterBuilder> builder = SVGFilterBuilder::create(previousEffect);
