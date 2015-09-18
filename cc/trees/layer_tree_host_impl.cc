@@ -2150,6 +2150,8 @@ void LayerTreeHostImpl::CleanUpTileManager() {
 }
 
 scoped_ptr<OutputSurface> LayerTreeHostImpl::ReleaseOutputSurface() {
+  TRACE_EVENT0("cc", "LayerTreeHostImpl::ReleaseOutputSurface");
+
   // Since we will create a new resource provider, we cannot continue to use
   // the old resources (i.e. render_surfaces and texture IDs). Clear them
   // before we destroy the old resource provider.

@@ -395,7 +395,7 @@ scoped_ptr<OutputSurface> LayerTreeHost::ReleaseOutputSurface() {
   DCHECK(!visible_);
   DCHECK(!output_surface_lost_);
 
-  output_surface_lost_ = true;
+  DidLoseOutputSurface();
   return proxy_->ReleaseOutputSurface();
 }
 
