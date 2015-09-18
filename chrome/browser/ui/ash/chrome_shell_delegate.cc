@@ -177,9 +177,10 @@ void ChromeShellDelegate::OpenKeyboardShortcutHelpPage() const {
   if (!browser) {
     browser = new Browser(
         Browser::CreateParams(profile, chrome::HOST_DESKTOP_TYPE_ASH));
-    browser->window()->Activate();
     browser->window()->Show();
   }
+
+  browser->window()->Activate();
 
   chrome::NavigateParams params(browser, GURL(kKeyboardShortcutHelpPageUrl),
                                 ui::PAGE_TRANSITION_AUTO_BOOKMARK);
