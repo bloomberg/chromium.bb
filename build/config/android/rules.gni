@@ -1604,6 +1604,9 @@ template("android_apk") {
   action(_create_incremental_script_rule_name) {
     script = "//build/android/incremental_install/create_install_script.py"
     depfile = "$target_gen_dir/$target_name.d"
+    deps = [
+      ":$build_config_target",
+    ]
 
     _generated_script_path =
         "${root_out_dir}/bin/install_incremental_${_template_name}"
