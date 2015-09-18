@@ -82,12 +82,12 @@ class CONTENT_EXPORT BrowserIOSurfaceManager : public IOSurfaceManager {
   void HandleRequest();
 
   // Message handlers that are invoked from HandleRequest.
-  bool HandleRegisterIOSurfaceRequest(
+  void HandleRegisterIOSurfaceRequest(
       const IOSurfaceManagerHostMsg_RegisterIOSurface& request,
       IOSurfaceManagerMsg_RegisterIOSurfaceReply* reply);
   bool HandleUnregisterIOSurfaceRequest(
       const IOSurfaceManagerHostMsg_UnregisterIOSurface& request);
-  bool HandleAcquireIOSurfaceRequest(
+  void HandleAcquireIOSurfaceRequest(
       const IOSurfaceManagerHostMsg_AcquireIOSurface& request,
       IOSurfaceManagerMsg_AcquireIOSurfaceReply* reply);
 

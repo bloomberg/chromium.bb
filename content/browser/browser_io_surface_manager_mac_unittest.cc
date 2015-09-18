@@ -31,7 +31,8 @@ class BrowserIOSurfaceManagerTest : public testing::Test {
   bool HandleRegisterIOSurfaceRequest(
       const IOSurfaceManagerHostMsg_RegisterIOSurface& request,
       IOSurfaceManagerMsg_RegisterIOSurfaceReply* reply) {
-    return io_surface_manager_.HandleRegisterIOSurfaceRequest(request, reply);
+    io_surface_manager_.HandleRegisterIOSurfaceRequest(request, reply);
+    return reply->result;
   }
 
   bool HandleUnregisterIOSurfaceRequest(
@@ -42,7 +43,8 @@ class BrowserIOSurfaceManagerTest : public testing::Test {
   bool HandleAcquireIOSurfaceRequest(
       const IOSurfaceManagerHostMsg_AcquireIOSurface& request,
       IOSurfaceManagerMsg_AcquireIOSurfaceReply* reply) {
-    return io_surface_manager_.HandleAcquireIOSurfaceRequest(request, reply);
+    io_surface_manager_.HandleAcquireIOSurfaceRequest(request, reply);
+    return reply->result;
   }
 
   // Helper function used to register an IOSurface for testing.

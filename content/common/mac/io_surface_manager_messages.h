@@ -59,6 +59,7 @@ struct IOSurfaceManagerMsg_AcquireIOSurfaceReply {
   mach_msg_header_t header;
   mach_msg_body_t body;
   mach_msg_port_descriptor_t io_surface_port;
+  boolean_t result;
 };
 
 }  // namespace content
