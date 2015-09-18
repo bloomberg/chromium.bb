@@ -469,7 +469,6 @@ class LayerTreeHostTimelinesTestCheckerboardDoesntStartAnimations
 
   void BeginTest() override {
     prevented_draw_ = 0;
-    added_animations_ = 0;
     started_times_ = 0;
 
     PostSetNeedsCommitToMainThread();
@@ -478,7 +477,8 @@ class LayerTreeHostTimelinesTestCheckerboardDoesntStartAnimations
   DrawResult PrepareToDrawOnThread(LayerTreeHostImpl* host_impl,
                                    LayerTreeHostImpl::FrameData* frame_data,
                                    DrawResult draw_result) override {
-    if (added_animations_ < 2)
+    // Don't checkerboard when the first animation wants to start.
+    if (host_impl->active_tree()->source_frame_number() < 2)
       return draw_result;
     if (TestEnded())
       return draw_result;
@@ -495,12 +495,10 @@ class LayerTreeHostTimelinesTestCheckerboardDoesntStartAnimations
         // The animation is longer than 1 BeginFrame interval.
         AddOpacityTransitionToPlayer(player_child_.get(), 0.1, 0.2f, 0.8f,
                                      false);
-        added_animations_++;
         break;
       case 2:
         // This second animation will not be drawn so it should not start.
         AddAnimatedTransformToPlayer(player_child_.get(), 0.1, 5, 5);
-        added_animations_++;
         break;
     }
   }
@@ -522,7 +520,6 @@ class LayerTreeHostTimelinesTestCheckerboardDoesntStartAnimations
   }
 
   int prevented_draw_;
-  int added_animations_;
   int started_times_;
   FakeContentLayerClient client_;
   scoped_refptr<FakePictureLayer> picture_;
