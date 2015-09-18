@@ -28,32 +28,4 @@ void RestoreDefaultExceptionHandler() {
                            EXCEPTION_DEFAULT, THREAD_STATE_NONE);
 }
 
-void ReplaceBootstrapPort(const std::string& new_bootstrap_name) {
-  // This function is called between fork() and exec(), so it should take care
-  // to run properly in that situation.
-
-  mach_port_t port = MACH_PORT_NULL;
-  kern_return_t kr = bootstrap_look_up(bootstrap_port,
-      new_bootstrap_name.c_str(), &port);
-  if (kr != KERN_SUCCESS) {
-    RAW_LOG(FATAL, "Failed to look up replacement bootstrap port.");
-  }
-
-  kr = task_set_bootstrap_port(mach_task_self(), port);
-  if (kr != KERN_SUCCESS) {
-    RAW_LOG(FATAL, "Failed to replace bootstrap port.");
-  }
-
-  // On OS X 10.10 and higher, libxpc uses the port stash to transfer the
-  // XPC root port. This is effectively the same connection as the Mach
-  // bootstrap port, but not transferred using the task special port.
-  // Therefore, stash the replacement bootstrap port, so that on 10.10 it
-  // will be retrieved by the XPC code and used as a replacement for the
-  // XPC root port as well.
-  kr = mach_ports_register(mach_task_self(), &port, 1);
-  if (kr != KERN_SUCCESS) {
-    RAW_LOG(ERROR, "Failed to register replacement bootstrap port.");
-  }
-}
-
 }  // namespace base

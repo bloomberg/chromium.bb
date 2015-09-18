@@ -10,6 +10,7 @@
 #include <map>
 #include <string>
 
+#include "base/mac/dispatch_source_mach.h"
 #include "base/mac/scoped_mach_port.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/process/process_handle.h"
@@ -20,38 +21,43 @@
 namespace sandbox {
 
 class LaunchdInterceptionServer;
+class PreExecDelegate;
 
 // The BootstrapSandbox is a second-layer sandbox for Mac. It is used to limit
 // the bootstrap namespace attack surface of child processes. The parent
 // process creates an instance of this class and registers policies that it
 // can enforce on its children.
 //
-// With this sandbox, the parent process must replace the bootstrap port prior
-// to the sandboxed target's execution. This should be done by setting the
-// base::LaunchOptions.replacement_bootstrap_name to the
-// server_bootstrap_name() of this class. Requests from the child that would
-// normally go to launchd are filtered based on the specified per-process
-// policies. If a request is permitted by the policy, it is forwarded on to
-// launchd for servicing. If it is not, then the sandbox will reply with a
-// primitive that does not grant additional capabilities to the receiver.
-//
-// Clients that which to use the sandbox must inform it of the creation and
-// death of child processes for which the sandbox should be enforced. The
-// client of the sandbox is intended to be an unsandboxed parent process that
-// fork()s sandboxed (and other unsandboxed) child processes.
+// With this sandbox, the parent process must create the client using the
+// sandbox's PreExecDelegate, which will replace the bootstrap port of the
+// child process. Requests from the child that would normally go to launchd
+// are filtered based on the specified per-process policies. If a request is
+// permitted by the policy, it is forwarded on to launchd for servicing. If it
+// is not, then the sandbox will reply with a primitive that does not grant
+// additional capabilities to the receiver.
 //
 // When the parent is ready to fork a new child process with this sandbox
-// being enforced, it should use the pair of methods PrepareToForkWithPolicy()
-// and FinishedFork(), and call fork() between them. The first method will
-// set the policy for the new process, and the second will finialize the
-// association between the process ID and sandbox policy ID.
+// being enforced, it should use NewClient() to create a PreExecDelegate for
+// a sandbox policy ID and set it to the base::LaunchOptions.pre_exec_delegate.
 //
-// All methods of this class may be called from any thread, but
-// PrepareToForkWithPolicy() and FinishedFork() must be non-nested and balanced.
+// When a child process exits, the parent should call InvalidateClient() to
+// clean up any mappings in this class.
+//
+// All methods of this class may be called from any thread.
 class SANDBOX_EXPORT BootstrapSandbox {
  public:
   // Creates a new sandbox manager. Returns NULL on failure.
   static scoped_ptr<BootstrapSandbox> Create();
+
+  // For use in newly created child processes. Checks in with the bootstrap
+  // sandbox manager running in the parent process. |sandbox_server_port| is
+  // the Mach send right to the sandbox |check_in_server_| (in the child).
+  // |sandbox_token| is the assigned token. On return, |bootstrap_port| is set
+  // to a new Mach send right to be used in the child as the task's bootstrap
+  // port.
+  static bool ClientCheckIn(mach_port_t sandbox_server_port,
+                            uint64_t sandbox_token,
+                            mach_port_t* bootstrap_port);
 
   ~BootstrapSandbox();
 
@@ -60,19 +66,17 @@ class SANDBOX_EXPORT BootstrapSandbox {
   void RegisterSandboxPolicy(int sandbox_policy_id,
                              const BootstrapSandboxPolicy& policy);
 
-  // Called in the parent prior to fork()ing a child. The policy registered
-  // to |sandbox_policy_id| will be enforced on the new child. This must be
-  // followed by a call to FinishedFork().
-  void PrepareToForkWithPolicy(int sandbox_policy_id);
+  // Creates a new PreExecDelegate to pass to base::LaunchOptions. This will
+  // enforce the policy with |sandbox_policy_id| on the new process.
+  scoped_ptr<PreExecDelegate> NewClient(int sandbox_policy_id);
 
-  // Called in the parent after fork()ing a child. It records the |handle|
-  // and associates it with the specified-above |sandbox_policy_id|.
-  // If fork() failed and a new child was not created, pass kNullProcessHandle.
-  void FinishedFork(base::ProcessHandle handle);
+  // If a client did not launch properly, the sandbox provided to the
+  // PreExecDelegate should be invalidated using this method.
+  void RevokeToken(uint64_t token);
 
   // Called in the parent when a process has died. It cleans up the references
   // to the process.
-  void ChildDied(base::ProcessHandle handle);
+  void InvalidateClient(base::ProcessHandle handle);
 
   // Looks up the policy for a given process ID. If no policy is associated
   // with the |pid|, this returns NULL.
@@ -83,6 +87,11 @@ class SANDBOX_EXPORT BootstrapSandbox {
 
  private:
   BootstrapSandbox();
+
+  // Dispatch callout for when a client sends a message on the
+  // |check_in_port_|. If the client message is valid, it will assign the
+  // client from |awaiting_processes_| to |sandboxed_processes_|.
+  void HandleChildCheckIn();
 
   // The name in the system bootstrap server by which the |server_|'s port
   // is known.
@@ -95,18 +104,25 @@ class SANDBOX_EXPORT BootstrapSandbox {
   // The |lock_| protects all the following variables.
   mutable base::Lock lock_;
 
-  // The sandbox_policy_id that will be enforced for the new child.
-  int effective_policy_id_;
-
   // All the policies that have been registered with this sandbox manager.
   std::map<int, const BootstrapSandboxPolicy> policies_;
 
   // The association between process ID and sandbox policy ID.
   std::map<base::ProcessHandle, int> sandboxed_processes_;
 
+  // The association between a new process' sandbox token and its policy ID.
+  // The entry is removed after the process checks in, and the mapping moves
+  // to |sandboxed_processes_|.
+  std::map<uint64_t, int> awaiting_processes_;
+
   // A Mach IPC message server that is used to intercept and filter bootstrap
   // requests.
-  scoped_ptr<LaunchdInterceptionServer> server_;
+  scoped_ptr<LaunchdInterceptionServer> launchd_server_;
+
+  // The port and dispatch source for receiving client check in messages sent
+  // via ClientCheckIn().
+  base::mac::ScopedMachReceiveRight check_in_port_;
+  scoped_ptr<base::DispatchSourceMach> check_in_server_;
 };
 
 }  // namespace sandbox

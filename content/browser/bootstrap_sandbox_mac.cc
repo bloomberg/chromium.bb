@@ -51,13 +51,13 @@ BootstrapSandboxPolicy* BootstrapSandboxPolicy::GetInstance() {
 
 void BootstrapSandboxPolicy::BrowserChildProcessHostDisconnected(
       const ChildProcessData& data) {
-  sandbox()->ChildDied(data.handle);
+  sandbox()->InvalidateClient(data.handle);
 }
 
 void BootstrapSandboxPolicy::BrowserChildProcessCrashed(
       const ChildProcessData& data,
       int exit_code) {
-  sandbox()->ChildDied(data.handle);
+  sandbox()->InvalidateClient(data.handle);
 }
 
 BootstrapSandboxPolicy::BootstrapSandboxPolicy()

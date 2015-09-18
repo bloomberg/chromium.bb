@@ -19,6 +19,8 @@
         'os_compatibility.h',
         'policy.cc',
         'policy.h',
+        'pre_exec_delegate.cc',
+        'pre_exec_delegate.h',
         'xpc.cc',
         'xpc.h',
         'xpc_message_server.cc',

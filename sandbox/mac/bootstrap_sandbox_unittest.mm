@@ -18,6 +18,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/test/multiprocess_test.h"
 #include "base/test/test_timeouts.h"
+#include "sandbox/mac/pre_exec_delegate.h"
 #include "sandbox/mac/xpc.h"
 #import "testing/gtest_mac.h"
 #include "testing/multiprocess_func_list.h"
@@ -104,12 +105,14 @@ class BootstrapSandboxTest : public base::MultiProcessTest {
   void RunChildWithPolicy(int policy_id,
                           const char* child_name,
                           base::ProcessHandle* out_pid) {
-    sandbox_->PrepareToForkWithPolicy(policy_id);
+    scoped_ptr<PreExecDelegate> pre_exec_delegate(
+        sandbox_->NewClient(policy_id));
+
     base::LaunchOptions options;
-    options.replacement_bootstrap_name = sandbox_->server_bootstrap_name();
+    options.pre_exec_delegate = pre_exec_delegate.get();
+
     base::Process process = SpawnChildWithOptions(child_name, options);
     ASSERT_TRUE(process.IsValid());
-    sandbox_->FinishedFork(process.Handle());
     int code = 0;
     EXPECT_TRUE(process.WaitForExit(&code));
     EXPECT_EQ(0, code);
@@ -453,12 +456,12 @@ TEST_F(BootstrapSandboxTest, ChildOutliveSandbox) {
   sandbox_->RegisterSandboxPolicy(kTestPolicyId, policy);
 
   // Launch the child.
-  sandbox_->PrepareToForkWithPolicy(kTestPolicyId);
+  scoped_ptr<PreExecDelegate> pre_exec_delegate(
+      sandbox_->NewClient(kTestPolicyId));
   base::LaunchOptions options;
-  options.replacement_bootstrap_name = sandbox_->server_bootstrap_name();
+  options.pre_exec_delegate = pre_exec_delegate.get();
   base::Process process = SpawnChildWithOptions("ChildOutliveSandbox", options);
   ASSERT_TRUE(process.IsValid());
-  sandbox_->FinishedFork(process.Handle());
 
   // Synchronize with the child.
   mach_msg_empty_rcv_t rcv_msg;
