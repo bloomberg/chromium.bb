@@ -193,17 +193,20 @@ base::DictionaryValue* CreateDownloadItemValue(
       download_item->GetTotalBytes()));
   file_value->SetBoolean("file_externally_removed",
                          download_item->GetFileExternallyRemoved());
-  file_value->SetBoolean("retry", false); // Overridden below if needed.
   file_value->SetBoolean("resume", download_item->CanResume());
 
   const char* danger_type = "";
   base::string16 last_reason_text;
+  // -2 is invalid, -1 means indeterminate, and 0-100 are in-progress.
+  int percent = -2;
   base::string16 progress_status_text;
+  bool retry = false;
+  const char* state = nullptr;
 
   switch (download_item->GetState()) {
     case content::DownloadItem::IN_PROGRESS: {
       if (download_item->IsDangerous()) {
-        file_value->SetString("state", "DANGEROUS");
+        state = "DANGEROUS";
         // These are the only danger states that the UI is equipped to handle.
         DCHECK(download_item->GetDangerType() ==
                    content::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE ||
@@ -219,55 +222,55 @@ base::DictionaryValue* CreateDownloadItemValue(
                    content::DOWNLOAD_DANGER_TYPE_POTENTIALLY_UNWANTED);
         danger_type = GetDangerTypeString(download_item->GetDangerType());
       } else if (download_item->IsPaused()) {
-        file_value->SetString("state", "PAUSED");
+        state = "PAUSED";
       } else {
-        file_value->SetString("state", "IN_PROGRESS");
+        state = "IN_PROGRESS";
       }
       progress_status_text = download_model.GetTabProgressStatusText();
 
-      int percent = download_item->PercentComplete();
+      percent = download_item->PercentComplete();
       if (!MdDownloadsEnabled())
         percent = std::max(0, percent);
-      file_value->SetInteger("percent", percent);
 
-      file_value->SetInteger("received",
-          static_cast<int>(download_item->GetReceivedBytes()));
       break;
     }
 
     case content::DownloadItem::INTERRUPTED:
-      file_value->SetString("state", "INTERRUPTED");
+      state = "INTERRUPTED";
       progress_status_text = download_model.GetTabProgressStatusText();
 
-      if (download_item->CanResume()) {
-        file_value->SetInteger("percent",
-            static_cast<int>(download_item->PercentComplete()));
-      }
-      file_value->SetInteger("received",
-          static_cast<int>(download_item->GetReceivedBytes()));
+      if (download_item->CanResume())
+        percent = download_item->PercentComplete();
+
       last_reason_text = download_model.GetInterruptReasonText();
       if (content::DOWNLOAD_INTERRUPT_REASON_CRASH ==
-          download_item->GetLastReason() && !download_item->CanResume())
-        file_value->SetBoolean("retry", true);
+          download_item->GetLastReason() && !download_item->CanResume()) {
+        retry = true;
+      }
       break;
 
     case content::DownloadItem::CANCELLED:
-      file_value->SetString("state", "CANCELLED");
-      file_value->SetBoolean("retry", true);
+      state = "CANCELLED";
+      retry = true;
       break;
 
     case content::DownloadItem::COMPLETE:
       DCHECK(!download_item->IsDangerous());
-      file_value->SetString("state", "COMPLETE");
+      state = "COMPLETE";
       break;
 
     case content::DownloadItem::MAX_DOWNLOAD_STATE:
       NOTREACHED();
   }
 
+  DCHECK(state);
+
   file_value->SetString("danger_type", danger_type);
   file_value->SetString("last_reason_text", last_reason_text);
+  file_value->SetInteger("percent", percent);
   file_value->SetString("progress_status_text", progress_status_text);
+  file_value->SetBoolean("retry", retry);
+  file_value->SetString("state", state);
 
   return file_value;
 }
