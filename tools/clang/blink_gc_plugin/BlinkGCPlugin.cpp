@@ -13,6 +13,7 @@
 #include "BlinkGCPluginOptions.h"
 #include "CheckFieldsVisitor.h"
 #include "CheckTraceVisitor.h"
+#include "CollectVisitor.h"
 #include "Config.h"
 #include "JsonWriter.h"
 #include "RecordInfo.h"
@@ -179,38 +180,6 @@ std::set<FunctionDecl*> GetLateParsedFunctionDecls(TranslationUnitDecl* decl) {
   v.TraverseDecl(decl);
   return v.late_parsed_decls;
 }
-
-typedef std::vector<CXXRecordDecl*> RecordVector;
-typedef std::vector<CXXMethodDecl*> MethodVector;
-
-// This visitor collects the entry points for the checker.
-class CollectVisitor : public RecursiveASTVisitor<CollectVisitor> {
- public:
-  CollectVisitor() {}
-
-  RecordVector& record_decls() { return record_decls_; }
-  MethodVector& trace_decls() { return trace_decls_; }
-
-  bool shouldVisitTemplateInstantiations() { return false; }
-
-  // Collect record declarations, including nested declarations.
-  bool VisitCXXRecordDecl(CXXRecordDecl* record) {
-    if (record->hasDefinition() && record->isCompleteDefinition())
-      record_decls_.push_back(record);
-    return true;
-  }
-
-  // Collect tracing method definitions, but don't traverse method bodies.
-  bool TraverseCXXMethodDecl(CXXMethodDecl* method) {
-    if (method->isThisDeclarationADefinition() && Config::IsTraceMethod(method))
-      trace_decls_.push_back(method);
-    return true;
-  }
-
- private:
-  RecordVector record_decls_;
-  MethodVector trace_decls_;
-};
 
 // This visitor checks that a finalizer method does not have invalid access to
 // fields that are potentially finalized. A potentially finalized field is
@@ -604,13 +573,15 @@ class BlinkGCPluginConsumer : public ASTConsumer {
       }
     }
 
-    for (RecordVector::iterator it = visitor.record_decls().begin();
+    for (CollectVisitor::RecordVector::iterator it =
+             visitor.record_decls().begin();
          it != visitor.record_decls().end();
          ++it) {
       CheckRecord(cache_.Lookup(*it));
     }
 
-    for (MethodVector::iterator it = visitor.trace_decls().begin();
+    for (CollectVisitor::MethodVector::iterator it =
+             visitor.trace_decls().begin();
          it != visitor.trace_decls().end();
          ++it) {
       CheckTracingMethod(*it);
