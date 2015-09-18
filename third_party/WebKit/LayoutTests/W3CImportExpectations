@@ -401,19 +401,6 @@ imported/csswg-test/css-writing-modes-3/block-flow-direction-018.xht [ Skip ]
 imported/csswg-test/css-writing-modes-3/line-box-direction-015.xht [ Skip ]
 imported/csswg-test/css-writing-modes-3/line-box-direction-016.xht [ Skip ]
 
-# CSS Writing Modes Level 3: Following tests require sideways-left, which we do not plan to support.
-imported/csswg-test/css-writing-modes-3/text-baseline-007.xht [ Skip ]
-imported/csswg-test/css-writing-modes-3/text-baseline-010.xht [ Skip ]
-imported/csswg-test/css-writing-modes-3/text-baseline-011.xht [ Skip ]
-imported/csswg-test/css-writing-modes-3/text-orientation-013.xht [ Skip ]
-imported/csswg-test/css-writing-modes-3/text-orientation-015.xht [ Skip ]
-imported/csswg-test/css-writing-modes-3/text-orientation-sideways-002.xht [ Skip ]
-imported/csswg-test/css-writing-modes-3/text-orientation-sideways-left-001.xht [ Skip ]
-imported/csswg-test/css-writing-modes-3/inline-block-alignment-007.xht [ Skip ]
-imported/csswg-test/css-writing-modes-3/inline-block-alignment-010.xht [ Skip ]
-imported/csswg-test/css-writing-modes-3/inline-block-alignment-011.xht [ Skip ]
-
-
 # CSS Writing Modes Level 3: Following tests require part of text-combine-upright we do not plan to support.
 imported/csswg-test/css-writing-modes-3/full-width-001.html [ Skip ]
 imported/csswg-test/css-writing-modes-3/full-width-002.html [ Skip ]

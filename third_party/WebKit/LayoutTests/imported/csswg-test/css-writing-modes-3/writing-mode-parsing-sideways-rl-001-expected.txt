@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+FAIL -webkit-writing-mode: sideways-rl assert_equals: expected "sideways-rl" but got "lr-tb"
+Harness: the test ran to completion.
+
