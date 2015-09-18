@@ -8,6 +8,7 @@
 #include <stdint.h>
 #include <string>
 
+#include "base/macros.h"
 #include "chrome/browser/notifications/notification_delegate.h"
 #include "url/gurl.h"
 
@@ -20,10 +21,10 @@ class BrowserContext;
 // JavaScript events can be fired on the associated Service Worker.
 class PersistentNotificationDelegate : public NotificationDelegate {
  public:
-  PersistentNotificationDelegate(
-      content::BrowserContext* browser_context,
-      int64_t persistent_notification_id,
-      const GURL& origin);
+  PersistentNotificationDelegate(content::BrowserContext* browser_context,
+                                 int64_t persistent_notification_id,
+                                 const GURL& origin,
+                                 int notification_settings_index);
 
   // Persistent id of this notification in the notification database. To be
   // used when retrieving all information associated with it.
@@ -45,8 +46,10 @@ class PersistentNotificationDelegate : public NotificationDelegate {
   content::BrowserContext* browser_context_;
   int64_t persistent_notification_id_;
   GURL origin_;
-
   std::string id_;
+  int notification_settings_index_;
+
+  DISALLOW_COPY_AND_ASSIGN(PersistentNotificationDelegate);
 };
 
 #endif  // CHROME_BROWSER_NOTIFICATIONS_PERSISTENT_NOTIFICATION_DELEGATE_H_

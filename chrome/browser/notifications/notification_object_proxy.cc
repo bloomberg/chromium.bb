@@ -5,11 +5,15 @@
 #include "chrome/browser/notifications/notification_object_proxy.h"
 
 #include "base/guid.h"
+#include "base/logging.h"
+#include "chrome/browser/notifications/platform_notification_service_impl.h"
 #include "content/public/browser/desktop_notification_delegate.h"
 
 NotificationObjectProxy::NotificationObjectProxy(
+    content::BrowserContext* browser_context,
     scoped_ptr<content::DesktopNotificationDelegate> delegate)
-    : delegate_(delegate.Pass()),
+    : browser_context_(browser_context),
+      delegate_(delegate.Pass()),
       displayed_(false),
       id_(base::GenerateGUID()) {}
 
@@ -31,6 +35,13 @@ void NotificationObjectProxy::Close(bool by_user) {
 
 void NotificationObjectProxy::Click() {
   delegate_->NotificationClick();
+}
+
+void NotificationObjectProxy::ButtonClick(int button_index) {
+  // Notification buttons not are supported for non persistent notifications.
+  DCHECK_EQ(button_index, 0);
+  PlatformNotificationServiceImpl::GetInstance()->OpenNotificationSettings(
+      browser_context_);
 }
 
 std::string NotificationObjectProxy::id() const {

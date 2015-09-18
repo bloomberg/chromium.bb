@@ -16,7 +16,7 @@ namespace message_center {
 
 // Interface used by views to report clicks and other user actions. The views
 // by themselves do not know how to perform those operations, they ask
-// MessageCenterController to do them. Implemented by MessageCeneterView and
+// MessageCenterController to do them. Implemented by MessageCenterView and
 // MessagePopupCollection.
 class MessageCenterController {
  public:

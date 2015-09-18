@@ -189,9 +189,6 @@ TEST_F(PlatformNotificationServiceTest, DisplayPageNotificationMatches) {
   notification_data.body = base::ASCIIToUTF16("Hello, world!");
   notification_data.vibration_pattern = vibration_pattern;
   notification_data.silent = true;
-  notification_data.actions.resize(2);
-  notification_data.actions[0].title = base::ASCIIToUTF16("Button 1");
-  notification_data.actions[1].title = base::ASCIIToUTF16("Button 2");
 
   MockDesktopNotificationDelegate* delegate
       = new MockDesktopNotificationDelegate();
@@ -213,6 +210,37 @@ TEST_F(PlatformNotificationServiceTest, DisplayPageNotificationMatches) {
 
   EXPECT_THAT(notification.vibration_pattern(),
       testing::ElementsAreArray(kNotificationVibrationPattern));
+
+  EXPECT_TRUE(notification.silent());
+}
+
+TEST_F(PlatformNotificationServiceTest, DisplayPersistentNotificationMatches) {
+  std::vector<int> vibration_pattern(
+      kNotificationVibrationPattern,
+      kNotificationVibrationPattern + arraysize(kNotificationVibrationPattern));
+
+  content::PlatformNotificationData notification_data;
+  notification_data.title = base::ASCIIToUTF16("My notification's title");
+  notification_data.body = base::ASCIIToUTF16("Hello, world!");
+  notification_data.vibration_pattern = vibration_pattern;
+  notification_data.silent = true;
+  notification_data.actions.resize(2);
+  notification_data.actions[0].title = base::ASCIIToUTF16("Button 1");
+  notification_data.actions[1].title = base::ASCIIToUTF16("Button 2");
+
+  service()->DisplayPersistentNotification(
+      profile(), 0u /* persistent notification */, GURL("https://chrome.com/"),
+      SkBitmap(), notification_data);
+
+  ASSERT_EQ(1u, ui_manager()->GetNotificationCount());
+
+  const Notification& notification = ui_manager()->GetNotificationAt(0);
+  EXPECT_EQ("https://chrome.com/", notification.origin_url().spec());
+  EXPECT_EQ("My notification's title", base::UTF16ToUTF8(notification.title()));
+  EXPECT_EQ("Hello, world!", base::UTF16ToUTF8(notification.message()));
+
+  EXPECT_THAT(notification.vibration_pattern(),
+              testing::ElementsAreArray(kNotificationVibrationPattern));
 
   EXPECT_TRUE(notification.silent());
 

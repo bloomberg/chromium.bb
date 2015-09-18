@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <string>
+#include <vector>
 
 #include "base/command_line.h"
 #include "base/files/file_path.h"
@@ -17,12 +18,15 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/website_settings/permission_bubble_manager.h"
+#include "chrome/common/chrome_switches.h"
+#include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/base/filename_util.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "ui/base/l10n/l10n_util.h"
 
 // -----------------------------------------------------------------------------
 
@@ -39,6 +43,7 @@ class PlatformNotificationServiceBrowserTest : public InProcessBrowserTest {
 
   // InProcessBrowserTest overrides.
   void SetUp() override;
+  void SetUpCommandLine(base::CommandLine* command_line) override;
   void SetUpOnMainThread() override;
   void TearDown() override;
 
@@ -95,6 +100,14 @@ PlatformNotificationServiceBrowserTest::PlatformNotificationServiceBrowserTest()
       // The test server has a base directory that doesn't exist in the
       // filesystem.
       test_page_url_(std::string("files/") + kTestFileName) {
+}
+
+void PlatformNotificationServiceBrowserTest::SetUpCommandLine(
+    base::CommandLine* command_line) {
+  const testing::TestInfo* const test_info =
+      testing::UnitTest::GetInstance()->current_test_info();
+  if (strcmp(test_info->name(), "WebNotificationSiteSettingsButton") == 0)
+    command_line->AppendSwitch(switches::kNotificationSettingsButton);
 }
 
 void PlatformNotificationServiceBrowserTest::SetUp() {
@@ -258,6 +271,28 @@ IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceBrowserTest,
+                       WebNotificationSiteSettingsButton) {
+  ASSERT_NO_FATAL_FAILURE(GrantNotificationPermissionForTest());
+
+  std::string script_result;
+  ASSERT_TRUE(
+      RunScript("DisplayPersistentAllOptionsNotification()", &script_result));
+  EXPECT_EQ("ok", script_result);
+
+  ASSERT_EQ(1u, ui_manager()->GetNotificationCount());
+
+  const Notification& notification = ui_manager()->GetNotificationAt(0);
+  const std::vector<message_center::ButtonInfo>& buttons =
+      notification.buttons();
+  EXPECT_EQ(1u, buttons.size());
+  EXPECT_EQ(l10n_util::GetStringUTF16(IDS_NOTIFICATION_SETTINGS),
+            buttons[0].title);
+
+  notification.delegate()->ButtonClick(0);
+  ASSERT_EQ(1u, ui_manager()->GetNotificationCount());
+}
+
+IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceBrowserTest,
                        WebNotificationOptionsVibrationPattern) {
   ASSERT_NO_FATAL_FAILURE(GrantNotificationPermissionForTest());
 
@@ -282,7 +317,7 @@ IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceBrowserTest,
 
   std::string script_result;
   ASSERT_TRUE(RunScript("DisplayPersistentNotification('action_close')",
-      &script_result));
+                        &script_result));
   EXPECT_EQ("ok", script_result);
 
   ASSERT_EQ(1u, ui_manager()->GetNotificationCount());

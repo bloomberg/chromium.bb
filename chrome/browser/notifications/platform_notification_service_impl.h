@@ -21,6 +21,10 @@ class NotificationDelegate;
 class NotificationUIManager;
 class Profile;
 
+namespace content {
+class BrowserContext;
+}
+
 namespace gcm {
 class PushMessagingBrowserTest;
 }
@@ -55,6 +59,10 @@ class PlatformNotificationServiceImpl
   // Returns the Notification UI Manager through which notifications can be
   // displayed to the user. Can be overridden for testing.
   NotificationUIManager* GetNotificationUIManager() const;
+
+  // Open the Notification settings screen when clicking the right button.
+  // Returns |true| if the settings screen could be successfully opened.
+  bool OpenNotificationSettings(content::BrowserContext* browser_context);
 
   // content::PlatformNotificationService implementation.
   blink::WebNotificationPermission CheckPermissionOnUIThread(
