@@ -1237,8 +1237,6 @@
       'browser/renderer_host/input/web_input_event_builders_win.h',
       'browser/renderer_host/input/web_input_event_util.cc',
       'browser/renderer_host/input/web_input_event_util.h',
-      'browser/renderer_host/input/web_input_event_util_posix.cc',
-      'browser/renderer_host/input/web_input_event_util_posix.h',
       'browser/renderer_host/legacy_render_widget_host_win.cc',
       'browser/renderer_host/legacy_render_widget_host_win.h',
       'browser/renderer_host/media/audio_input_debug_writer.cc',

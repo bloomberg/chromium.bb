@@ -7,9 +7,9 @@
 #include "base/logging.h"
 #include "content/browser/renderer_host/input/motion_event_android.h"
 #include "content/browser/renderer_host/input/web_input_event_util.h"
-#include "content/browser/renderer_host/input/web_input_event_util_posix.h"
 #include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
+#include "ui/events/keycodes/keyboard_code_conversion.h"
 #include "ui/events/keycodes/keyboard_code_conversion_android.h"
 #include "ui/events/keycodes/keyboard_codes_posix.h"
 
@@ -39,10 +39,9 @@ WebKeyboardEvent WebKeyboardEventBuilder::Build(WebInputEvent::Type type,
   result.type = type;
   result.modifiers = modifiers;
   result.timeStampSeconds = time_sec;
-  ui::KeyboardCode windows_key_code =
-      ui::KeyboardCodeFromAndroidKeyCode(keycode);
-  UpdateWindowsKeyCodeAndKeyIdentifier(&result, windows_key_code);
-  result.modifiers |= GetLocationModifiersFromWindowsKeyCode(windows_key_code);
+  result.windowsKeyCode = ui::LocatedToNonLocatedKeyboardCode(
+      ui::KeyboardCodeFromAndroidKeyCode(keycode));
+  result.modifiers |= DomCodeToWebInputEventModifiers(dom_code);
   result.nativeKeyCode = keycode;
   result.domCode = static_cast<int>(dom_code);
   result.unmodifiedText[0] = unicode_character;
@@ -54,6 +53,7 @@ WebKeyboardEvent WebKeyboardEventBuilder::Build(WebInputEvent::Type type,
   }
   result.text[0] = result.unmodifiedText[0];
   result.isSystemKey = is_system_key;
+  result.setKeyIdentifierFromWindowsKeyCode();
 
   return result;
 }

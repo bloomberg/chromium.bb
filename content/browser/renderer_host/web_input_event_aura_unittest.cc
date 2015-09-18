@@ -115,8 +115,7 @@ TEST(WebInputEventAuraTest, MAYBE_TestMakeWebKeyboardEventWindowsKeyCode) {
         ui::KeycodeConverter::DomCodeToNativeKeycode(ui::DomCode::CONTROL_LEFT);
     ui::KeyEvent event(xev);
     blink::WebKeyboardEvent webkit_event = MakeWebKeyboardEvent(event);
-    // ui::VKEY_LCONTROL, instead of ui::VKEY_CONTROL, should be filled.
-    EXPECT_EQ(ui::VKEY_LCONTROL, webkit_event.windowsKeyCode);
+    EXPECT_EQ(ui::VKEY_CONTROL, webkit_event.windowsKeyCode);
   }
   {
     // Press right Ctrl.
@@ -126,8 +125,7 @@ TEST(WebInputEventAuraTest, MAYBE_TestMakeWebKeyboardEventWindowsKeyCode) {
         ui::DomCode::CONTROL_RIGHT);
     ui::KeyEvent event(xev);
     blink::WebKeyboardEvent webkit_event = MakeWebKeyboardEvent(event);
-    // ui::VKEY_RCONTROL, instead of ui::VKEY_CONTROL, should be filled.
-    EXPECT_EQ(ui::VKEY_RCONTROL, webkit_event.windowsKeyCode);
+    EXPECT_EQ(ui::VKEY_CONTROL, webkit_event.windowsKeyCode);
   }
 #elif defined(OS_WIN)
   // TODO(yusukes): Add tests for win_aura once keyboardEvent() in
@@ -141,8 +139,7 @@ TEST(WebInputEventAuraTest, MAYBE_TestMakeWebKeyboardEventWindowsKeyCode) {
                        ui::DomCode::CONTROL_LEFT, ui::EF_CONTROL_DOWN,
                        ui::DomKey::CONTROL, ui::EventTimeForNow());
     blink::WebKeyboardEvent webkit_event = MakeWebKeyboardEvent(event);
-    // ui::VKEY_LCONTROL, instead of ui::VKEY_CONTROL, should be filled.
-    EXPECT_EQ(ui::VKEY_LCONTROL, webkit_event.windowsKeyCode);
+    EXPECT_EQ(ui::VKEY_CONTROL, webkit_event.windowsKeyCode);
   }
   {
     // Press right Ctrl.
@@ -150,8 +147,7 @@ TEST(WebInputEventAuraTest, MAYBE_TestMakeWebKeyboardEventWindowsKeyCode) {
                        ui::DomCode::CONTROL_RIGHT, ui::EF_CONTROL_DOWN,
                        ui::DomKey::CONTROL, ui::EventTimeForNow());
     blink::WebKeyboardEvent webkit_event = MakeWebKeyboardEvent(event);
-    // ui::VKEY_RCONTROL, instead of ui::VKEY_CONTROL, should be filled.
-    EXPECT_EQ(ui::VKEY_RCONTROL, webkit_event.windowsKeyCode);
+    EXPECT_EQ(ui::VKEY_CONTROL, webkit_event.windowsKeyCode);
   }
 }
 

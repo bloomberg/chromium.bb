@@ -19,12 +19,6 @@ class MotionEvent;
 
 namespace content {
 
-// Update |event|'s windowsKeyCode and keyIdentifer properties using the
-// provided |windows_key_code|.
-CONTENT_EXPORT void UpdateWindowsKeyCodeAndKeyIdentifier(
-    blink::WebKeyboardEvent* event,
-    ui::KeyboardCode windows_key_code);
-
 int WebEventModifiersToEventFlags(int modifiers);
 
 blink::WebInputEvent::Modifiers DomCodeToWebInputEventModifiers(
