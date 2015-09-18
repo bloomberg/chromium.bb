@@ -162,10 +162,8 @@ void BlinkAXTreeSource::GetChildren(
 
   bool is_iframe = false;
   WebNode node = parent.node();
-  if (!node.isNull() && node.isElementNode()) {
-    WebElement element = node.to<WebElement>();
-    is_iframe = (element.tagName() == ASCIIToUTF16("IFRAME"));
-  }
+  if (!node.isNull() && node.isElementNode())
+    is_iframe = node.to<WebElement>().hasHTMLTagName("iframe");
 
   for (unsigned i = 0; i < parent.childCount(); i++) {
     blink::WebAXObject child = parent.childAt(i);
@@ -375,7 +373,7 @@ void BlinkAXTreeSource::SerializeNode(blink::WebAXObject src,
 
   if (!node.isNull() && node.isElementNode()) {
     WebElement element = node.to<WebElement>();
-    is_iframe = (element.tagName() == ASCIIToUTF16("IFRAME"));
+    is_iframe = element.hasHTMLTagName("iframe");
 
     // TODO(ctguil): The tagName in WebKit is lower cased but
     // HTMLElement::nodeName calls localNameUpper. Consider adding
