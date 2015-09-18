@@ -57,9 +57,7 @@
             'SSE2_ENABLE',
           ],
           'sources': [
-            'src/tests/qcms_test_data_rgba_out_lut.c',
             'src/tests/qcms_test_tetra_clut_rgba.c',
-            'src/tests/qcms_test_main.c',
           ],
           'dependencies': [
             'qcms',

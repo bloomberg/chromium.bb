@@ -3,7 +3,8 @@
 // found in the Chromium LICENSE file.
 
 #include "qcms.h"
-#include "qcms_test_util.h"
+#include "qcmsint.h"
+#include "qcmstypes.h"
 #include "timing.h"
 
 #include <math.h>
@@ -25,6 +26,18 @@ extern void qcms_transform_data_tetra_clut_rgba_sse2(qcms_transform *transform,
                                                      size_t length,
                                                      qcms_format_type output_format);
 
+#define PIXEL_SIZE 4
+
+static void generate_source(unsigned char *src, size_t length)
+{
+    size_t bytes = length * PIXEL_SIZE;
+    size_t i;
+
+    for (i = 0; i < bytes; ++i) {
+        *src++ = rand() & 255;
+    }
+}
+
 static float *create_lut(size_t lutSize)
 {
     float *lut = malloc(lutSize * sizeof(float));
@@ -38,9 +51,10 @@ static float *create_lut(size_t lutSize)
 }
 
 static int diffs;
-static int validate(unsigned char *dst0, unsigned char *dst1, size_t length, int limit, const size_t pixel_size)
+
+static int validate(unsigned char *dst0, unsigned char *dst1, size_t length, int limit)
 {
-    size_t bytes = length * pixel_size;
+    size_t bytes = length * PIXEL_SIZE;
     size_t i;
 
     // Compare dst0/dst0 byte-by-byte, allowing for minor differences due
@@ -58,11 +72,7 @@ static int validate(unsigned char *dst0, unsigned char *dst1, size_t length, int
     return !diffs;
 }
 
-static int qcms_test_tetra_clut_rgba(size_t width,
-        size_t height,
-        int iterations,
-        const char *in_profile,
-        const char *out_profile)
+int main(int argc, const char **argv)
 {
     qcms_transform transform0, transform1;
     qcms_format_type format = {2, 0};
@@ -70,14 +80,27 @@ static int qcms_test_tetra_clut_rgba(size_t width,
     size_t lutSize;
     float *lut0, *lut1;
 
-    const size_t length = width * height;
-    const size_t pixel_size = 4;
+    int iterations = 1;
+    size_t height = 2000;
+    size_t width = 2000;
+    size_t length;
 
     double time0, time1;
     int i;
 
+    while (argc > 1) {
+        if (strcmp(argv[1], "-i") == 0)
+            iterations = abs(atoi(argv[2]));
+        else if (strcmp(argv[1], "-w") == 0)
+            width = (size_t) abs(atoi(argv[2]));
+        else if (strcmp(argv[1], "-h") == 0)
+            height = (size_t) abs(atoi(argv[2]));
+        (--argc, ++argv);
+    }
+
     printf("Test qcms clut transforms for %d iterations\n", iterations);
     printf("Test image size %u x %u pixels\n", (unsigned) width, (unsigned) height);
+    length = width * height;
     fflush(stdout);
 
     srand(0);
@@ -106,13 +129,13 @@ static int qcms_test_tetra_clut_rgba(size_t width,
     time1 = 0.0;
 
     for (i = 0; i < iterations; ++i) {
-        unsigned char *src0 = (unsigned char *)calloc(length, pixel_size);
-        unsigned char *src1 = (unsigned char *)calloc(length, pixel_size);
-        unsigned char *dst0 = (unsigned char *)calloc(length, pixel_size);
-        unsigned char *dst1 = (unsigned char *)calloc(length, pixel_size);
+        unsigned char *src0 = (unsigned char *)calloc(length, PIXEL_SIZE);
+        unsigned char *src1 = (unsigned char *)calloc(length, PIXEL_SIZE);
+        unsigned char *dst0 = (unsigned char *)calloc(length, PIXEL_SIZE);
+        unsigned char *dst1 = (unsigned char *)calloc(length, PIXEL_SIZE);
 
-        generate_source_uint8_t(src0, length, pixel_size);
-        memcpy(src1, src0, length * pixel_size);
+        generate_source(src0, length);
+        memcpy(src1, src0, length * PIXEL_SIZE);
 
 #define TRANSFORM_TEST0 qcms_transform_data_tetra_clut_rgba
 #define TRANSFORM_TEST1 qcms_transform_data_tetra_clut_rgba_sse2
@@ -120,7 +143,7 @@ static int qcms_test_tetra_clut_rgba(size_t width,
         TIME(TRANSFORM_TEST0(&transform0, src0, dst0, length, format), &time0);
         TIME(TRANSFORM_TEST1(&transform1, src1, dst1, length, format), &time1);
 
-        if (!validate(dst0, dst1, length, 0, pixel_size)) {
+        if (!validate(dst0, dst1, length, 0)) {
             fprintf(stderr, "Invalid transform output: %d diffs\n", diffs);
         }
 
@@ -134,20 +157,14 @@ static int qcms_test_tetra_clut_rgba(size_t width,
 #define STRING(s) STRINGIZE(s)
 
     printf("%.6lf (avg %.6lf) seconds " STRING(TRANSFORM_TEST0) "\n",
-            time0, time0 / iterations);
+           time0, time0 / iterations);
     printf("%.6lf (avg %.6lf) seconds " STRING(TRANSFORM_TEST1) "\n",
-            time1, time1 / iterations);
+           time1, time1 / iterations);
     printf("%.6lf speedup after %d iterations\n\n",
-            time0 / time1, iterations);
+           time0 / time1, iterations);
 
     free(lut0);
     free(lut1);
 
-    return diffs;
+    return EXIT_SUCCESS;
 }
-
-struct qcms_test_case qcms_test_tetra_clut_rgba_info = {
-        "qcms_test_tetra_clut_rgba",
-        qcms_test_tetra_clut_rgba,
-        QCMS_TEST_DISABLED
-};

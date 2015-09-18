@@ -411,7 +411,7 @@ static void qcms_transform_data_rgb_out_lut_precache(qcms_transform *transform, 
 	}
 }
 
-void qcms_transform_data_rgba_out_lut_precache(qcms_transform *transform, unsigned char *src, unsigned char *dest, size_t length, qcms_format_type output_format)
+static void qcms_transform_data_rgba_out_lut_precache(qcms_transform *transform, unsigned char *src, unsigned char *dest, size_t length, qcms_format_type output_format)
 {
 	const int r_out = output_format.r;
 	const int b_out = output_format.b;

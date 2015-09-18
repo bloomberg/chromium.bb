@@ -25,15 +25,13 @@
 #include "qcmsint.h"
 
 /* pre-shuffled: just load these into XMM reg instead of load-scalar/shufps sequence */
-#define FLOATSCALE  (float)(PRECACHE_OUTPUT_SIZE - 1)
-#define CLAMPMAXVAL 1.0f
+#define FLOATSCALE  (float)(PRECACHE_OUTPUT_SIZE)
+#define CLAMPMAXVAL ( ((float) (PRECACHE_OUTPUT_SIZE - 1)) / PRECACHE_OUTPUT_SIZE )
 static const ALIGN float floatScaleX4[4] =
     { FLOATSCALE, FLOATSCALE, FLOATSCALE, FLOATSCALE};
 static const ALIGN float clampMaxValueX4[4] =
     { CLAMPMAXVAL, CLAMPMAXVAL, CLAMPMAXVAL, CLAMPMAXVAL};
 
-// FIXME(radu.velea): Update this function to solve
-// https://code.google.com/p/chromium/issues/detail?id=532910
 void qcms_transform_data_rgb_out_lut_sse2(qcms_transform *transform,
                                           unsigned char *src,
                                           unsigned char *dest,
@@ -225,13 +223,13 @@ void qcms_transform_data_rgba_out_lut_sse2(qcms_transform *transform,
         alpha   = src[3];
 
         /* crunch, crunch, crunch */
-        vec_r  = _mm_add_ps(vec_b, _mm_add_ps(vec_r, vec_g));
+        vec_r  = _mm_add_ps(vec_r, _mm_add_ps(vec_g, vec_b));
         vec_r  = _mm_max_ps(min, vec_r);
         vec_r  = _mm_min_ps(max, vec_r);
         result = _mm_mul_ps(vec_r, scale);
 
         /* store calc'd output tables indices */
-        _mm_store_si128((__m128i*)output, _mm_cvttps_epi32(result));
+        _mm_store_si128((__m128i*)output, _mm_cvtps_epi32(result));
 
         /* load gamma values for next loop while store completes */
         vec_r = _mm_load_ss(&igtbl_r[src[0]]);
@@ -258,12 +256,12 @@ void qcms_transform_data_rgba_out_lut_sse2(qcms_transform *transform,
 
     dest[3] = alpha;
 
-    vec_r  = _mm_add_ps(vec_b, _mm_add_ps(vec_r, vec_g));
+    vec_r  = _mm_add_ps(vec_r, _mm_add_ps(vec_g, vec_b));
     vec_r  = _mm_max_ps(min, vec_r);
     vec_r  = _mm_min_ps(max, vec_r);
     result = _mm_mul_ps(vec_r, scale);
 
-    _mm_store_si128((__m128i*)output, _mm_cvttps_epi32(result));
+    _mm_store_si128((__m128i*)output, _mm_cvtps_epi32(result));
 
     dest[r_out] = otdata_r[output[0]];
     dest[1]     = otdata_g[output[1]];
