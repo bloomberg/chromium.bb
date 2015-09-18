@@ -4,8 +4,6 @@
 
 * {
   --downloads-item-width: 622px;
-  /* (1024 total width - 622 item width) / 2 = 201 room to play. */
-  --downloads-side-column-basis: 201px;
 }
 
 paper-button {

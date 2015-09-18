@@ -11,11 +11,9 @@
 
 <dom-module id="downloads-item">
   <template>
-    <div id="date-container">
-      <template is="dom-if" if="[[!hideDate]]">
-        <div>[[computeDate_(data_.since_string, data_.date_string)]]</div>
-      </template>
-    </div>
+    <template is="dom-if" if="[[!hideDate]]">
+      <div id="date">[[computeDate_(data_.since_string, data_.date_string)]]</div>
+    </template>
 
     <paper-material id="content" on-dragstart="onDragStart_"
         elevation$="[[computeElevation_(isActive_)]]"
@@ -101,8 +99,6 @@
 
       <div id="incognito" hidden$="[[!data_.otr]]"></div>
     </paper-material>
-
-    <div id="end-cap"></div>
 
   </template>
   <link rel="import" type="css" href="chrome://resources/css/action_link.css">

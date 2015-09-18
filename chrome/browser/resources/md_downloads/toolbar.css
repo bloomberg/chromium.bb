@@ -47,7 +47,8 @@
 
 #title,
 #search {
-  flex: 1 0 var(--downloads-side-column-basis);
+  /* (1024 total width - 622 item width) / 2 = 201 room to play. */
+  flex: 1 0 201px;
 }
 
 paper-icon-button {

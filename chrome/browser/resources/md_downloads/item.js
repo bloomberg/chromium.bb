@@ -20,7 +20,6 @@ cr.define('downloads', function() {
 
     properties: {
       hideDate: {
-        reflectToAttribute: true,
         type: Boolean,
         value: true,
       },

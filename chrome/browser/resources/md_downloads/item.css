@@ -4,30 +4,15 @@
 
 :host {
   display: flex;
-  margin: 24px 0;
+  flex-direction: column;
+  margin: 12px 0;
 }
 
-:host([hide-date]) {
-  margin-top: -12px;
-}
-
-:host(:first-of-type),
-:host(:not(:first-of-type):not([hide-date])) {
-  margin-top: 30px;
-}
-
-#date-container,
-#end-cap {
-  flex: 1 0 var(--downloads-side-column-basis);
-}
-
-#date-container > * {
+#date {
   color: #7c7c7c;
   font-weight: 500;
-}
-
-:host([hide-date]) #date-container {
-  visibility: hidden;
+  margin: 18px auto 16px;  /* This top margin + :host top margin = 30px. */
+  width: var(--downloads-item-width);
 }
 
 #content {
@@ -35,6 +20,7 @@
   border-radius: 2px;  /* TODO(dbeam): change to paper-card instead. */
   display: flex;
   flex: none;
+  margin: 0 auto;
   min-height: 103px;
   width: var(--downloads-item-width);
 }
@@ -182,38 +168,4 @@
                              url(2x/incognito_marker.png) 2x);
   position: absolute;
   right: 10px;
-}
-
-@media not all and (max-width: 1024px) {
-  /* Only show rule separators in wide mode. */
-  :host(:not(:first-of-type):not([hide-date])) {
-    border-top: 1px solid rgba(0, 0, 0, .14);
-    padding-top: 30px;
-  }
-
-  #date-container > * {
-    -webkit-margin-start: 24px;
-  }
-}
-
-@media all and (max-width: 1024px) {
-  /* In narrow windows, put the dates on top instead of on the side. */
-  :host {
-    flex-direction: column;
-  }
-
-  :host([hide-date]) #date-container,
-  #end-cap {
-    display: none;
-  }
-
-  #content {
-    margin: 0 auto;
-  }
-
-  #date-container {
-    flex: none !important;
-    margin: 0 auto 16px;
-    width: var(--downloads-item-width);
-  }
 }
