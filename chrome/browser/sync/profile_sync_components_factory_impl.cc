@@ -437,8 +437,10 @@ ProfileSyncComponentsFactoryImpl::CreateSyncBackendHost(
     invalidation::InvalidationService* invalidator,
     const base::WeakPtr<sync_driver::SyncPrefs>& sync_prefs,
     const base::FilePath& sync_folder) {
-  return new browser_sync::SyncBackendHostImpl(name, profile_, invalidator,
-                                               sync_prefs, sync_folder);
+  return new browser_sync::SyncBackendHostImpl(
+      name, profile_,
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
+      invalidator, sync_prefs, sync_folder);
 }
 
 scoped_ptr<sync_driver::LocalDeviceInfoProvider>

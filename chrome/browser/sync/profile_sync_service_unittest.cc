@@ -119,6 +119,8 @@ class SyncBackendHostNoReturn : public SyncBackendHostMock {
   void Initialize(
       sync_driver::SyncFrontend* frontend,
       scoped_ptr<base::Thread> sync_thread,
+      const scoped_refptr<base::SingleThreadTaskRunner>& db_thread,
+      const scoped_refptr<base::SingleThreadTaskRunner>& file_thread,
       const syncer::WeakHandle<syncer::JsEventHandler>& event_handler,
       const GURL& service_url,
       const std::string& sync_user_agent,
@@ -142,6 +144,8 @@ class SyncBackendHostMockCollectDeleteDirParam : public SyncBackendHostMock {
   void Initialize(
       sync_driver::SyncFrontend* frontend,
       scoped_ptr<base::Thread> sync_thread,
+      const scoped_refptr<base::SingleThreadTaskRunner>& db_thread,
+      const scoped_refptr<base::SingleThreadTaskRunner>& file_thread,
       const syncer::WeakHandle<syncer::JsEventHandler>& event_handler,
       const GURL& service_url,
       const std::string& sync_user_agent,
@@ -155,14 +159,12 @@ class SyncBackendHostMockCollectDeleteDirParam : public SyncBackendHostMock {
       scoped_ptr<syncer::SyncEncryptionHandler::NigoriState> saved_nigori_state)
       override {
     delete_dir_param_->push_back(delete_sync_data_folder);
-    SyncBackendHostMock::Initialize(frontend, sync_thread.Pass(),
-                                    event_handler, service_url, sync_user_agent,
-                                    credentials, delete_sync_data_folder,
-                                    sync_manager_factory.Pass(),
-                                    unrecoverable_error_handler,
-                                    report_unrecoverable_error_function,
-                                    network_resources,
-                                    saved_nigori_state.Pass());
+    SyncBackendHostMock::Initialize(
+        frontend, sync_thread.Pass(), db_thread, file_thread, event_handler,
+        service_url, sync_user_agent, credentials, delete_sync_data_folder,
+        sync_manager_factory.Pass(), unrecoverable_error_handler,
+        report_unrecoverable_error_function, network_resources,
+        saved_nigori_state.Pass());
   }
 
  private:

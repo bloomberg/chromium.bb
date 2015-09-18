@@ -538,10 +538,14 @@ void ProfileSyncService::InitializeBackend(bool delete_stale_data) {
   if (backend_mode_ == SYNC && delete_stale_data)
     ClearStaleErrors();
 
-  backend_->Initialize(this, sync_thread_.Pass(), GetJsEventHandler(),
-                       sync_service_url_,
-                       local_device_->GetSyncUserAgent(),
-                       credentials, delete_stale_data,
+  backend_->Initialize(this, sync_thread_.Pass(),
+                       content::BrowserThread::GetMessageLoopProxyForThread(
+                           content::BrowserThread::DB),
+                       content::BrowserThread::GetMessageLoopProxyForThread(
+                           content::BrowserThread::FILE),
+                       GetJsEventHandler(), sync_service_url_,
+                       local_device_->GetSyncUserAgent(), credentials,
+                       delete_stale_data,
                        scoped_ptr<syncer::SyncManagerFactory>(
                            new syncer::SyncManagerFactory(GetManagerType()))
                            .Pass(),

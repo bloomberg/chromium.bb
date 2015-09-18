@@ -21,6 +21,7 @@
 #include "components/invalidation/impl/profile_invalidation_provider.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/sync_driver/signin_manager_wrapper.h"
+#include "content/public/browser/browser_thread.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "sync/internal_api/public/test/sync_manager_factory_for_profile_sync_test.h"
 #include "sync/internal_api/public/test/test_internal_components_factory.h"
@@ -28,6 +29,7 @@
 #include "sync/protocol/encryption.pb.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
+using content::BrowserThread;
 using syncer::InternalComponentsFactory;
 using syncer::TestInternalComponentsFactory;
 using syncer::UserShare;
@@ -36,12 +38,17 @@ namespace browser_sync {
 
 SyncBackendHostForProfileSyncTest::SyncBackendHostForProfileSyncTest(
     Profile* profile,
+    const scoped_refptr<base::SingleThreadTaskRunner>& ui_thread,
     invalidation::InvalidationService* invalidator,
     const base::WeakPtr<sync_driver::SyncPrefs>& sync_prefs,
     base::Closure callback)
     : browser_sync::SyncBackendHostImpl(
-        profile->GetDebugName(), profile, invalidator,
-        sync_prefs, base::FilePath(FILE_PATH_LITERAL("test"))),
+          profile->GetDebugName(),
+          profile,
+          ui_thread,
+          invalidator,
+          sync_prefs,
+          base::FilePath(FILE_PATH_LITERAL("test"))),
       callback_(callback) {}
 
 SyncBackendHostForProfileSyncTest::~SyncBackendHostForProfileSyncTest() {}
@@ -151,16 +158,16 @@ TestProfileSyncService* TestProfileSyncService::BuildAutoStartAsyncInit(
   ProfileSyncComponentsFactoryMock* components =
       sync_service->components_factory_mock();
   // TODO(tim): Convert to a fake instead of mock.
-  EXPECT_CALL(*components,
-              CreateSyncBackendHost(testing::_, testing::_,
-                                    testing::_, testing::_)).
-      WillOnce(testing::Return(
-          new browser_sync::SyncBackendHostForProfileSyncTest(
+  EXPECT_CALL(*components, CreateSyncBackendHost(testing::_, testing::_,
+                                                 testing::_, testing::_))
+      .WillOnce(
+          testing::Return(new browser_sync::SyncBackendHostForProfileSyncTest(
               profile,
+              BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
               invalidation::ProfileInvalidationProviderFactory::GetForProfile(
-                  profile)->GetInvalidationService(),
-              sync_service->sync_prefs_.AsWeakPtr(),
-              callback)));
+                  profile)
+                  ->GetInvalidationService(),
+              sync_service->sync_prefs_.AsWeakPtr(), callback)));
   return sync_service;
 }
 

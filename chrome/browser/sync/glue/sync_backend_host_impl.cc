@@ -23,7 +23,6 @@
 #include "components/sync_driver/sync_driver_switches.h"
 #include "components/sync_driver/sync_frontend.h"
 #include "components/sync_driver/sync_prefs.h"
-#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "sync/internal_api/public/base_transaction.h"
@@ -58,14 +57,14 @@ void UpdateNetworkTimeOnUIThread(base::Time network_time,
       network_time, resolution, latency, post_time);
 }
 
-void UpdateNetworkTime(const base::Time& network_time,
-                       const base::TimeDelta& resolution,
-                       const base::TimeDelta& latency) {
-  content::BrowserThread::PostTask(
-      content::BrowserThread::UI,
-      FROM_HERE,
-      base::Bind(&UpdateNetworkTimeOnUIThread,
-                 network_time, resolution, latency, base::TimeTicks::Now()));
+void UpdateNetworkTime(
+    const scoped_refptr<base::SingleThreadTaskRunner>& ui_thread,
+    const base::Time& network_time,
+    const base::TimeDelta& resolution,
+    const base::TimeDelta& latency) {
+  ui_thread->PostTask(FROM_HERE,
+                      base::Bind(&UpdateNetworkTimeOnUIThread, network_time,
+                                 resolution, latency, base::TimeTicks::Now()));
 }
 
 }  // namespace
@@ -73,11 +72,13 @@ void UpdateNetworkTime(const base::Time& network_time,
 SyncBackendHostImpl::SyncBackendHostImpl(
     const std::string& name,
     Profile* profile,
+    const scoped_refptr<base::SingleThreadTaskRunner>& ui_thread,
     invalidation::InvalidationService* invalidator,
     const base::WeakPtr<sync_driver::SyncPrefs>& sync_prefs,
     const base::FilePath& sync_folder)
     : frontend_loop_(base::MessageLoop::current()),
       profile_(profile),
+      ui_thread_(ui_thread),
       name_(name),
       initialized_(false),
       sync_prefs_(sync_prefs),
@@ -101,6 +102,8 @@ SyncBackendHostImpl::~SyncBackendHostImpl() {
 void SyncBackendHostImpl::Initialize(
     sync_driver::SyncFrontend* frontend,
     scoped_ptr<base::Thread> sync_thread,
+    const scoped_refptr<base::SingleThreadTaskRunner>& db_thread,
+    const scoped_refptr<base::SingleThreadTaskRunner>& file_thread,
     const syncer::WeakHandle<syncer::JsEventHandler>& event_handler,
     const GURL& sync_service_url,
     const std::string& sync_user_agent,
@@ -112,9 +115,8 @@ void SyncBackendHostImpl::Initialize(
     const base::Closure& report_unrecoverable_error_function,
     syncer::NetworkResources* network_resources,
     scoped_ptr<syncer::SyncEncryptionHandler::NigoriState> saved_nigori_state) {
-  registrar_.reset(new browser_sync::SyncBackendRegistrar(name_,
-                                            profile_,
-                                            sync_thread.Pass()));
+  registrar_.reset(new browser_sync::SyncBackendRegistrar(
+      name_, profile_, sync_thread.Pass(), ui_thread_, db_thread, file_thread));
   CHECK(registrar_->sync_thread());
 
   frontend_ = frontend;
@@ -153,7 +155,7 @@ void SyncBackendHostImpl::Initialize(
       event_handler, sync_service_url, sync_user_agent,
       network_resources->GetHttpPostProviderFactory(
           make_scoped_refptr(profile_->GetRequestContext()),
-          base::Bind(&UpdateNetworkTime),
+          base::Bind(&UpdateNetworkTime, ui_thread_),
           core_->GetRequestContextCancelationSignal()),
       credentials, invalidator_ ? invalidator_->GetInvalidatorClientId() : "",
       sync_manager_factory.Pass(), delete_sync_data_folder,
@@ -610,7 +612,7 @@ void SyncBackendHostImpl::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK(ui_thread_->BelongsToCurrentThread());
   DCHECK_EQ(type, chrome::NOTIFICATION_SYNC_REFRESH_LOCAL);
 
   content::Details<const syncer::ModelTypeSet> state_details(details);
@@ -876,7 +878,7 @@ base::MessageLoop* SyncBackendHostImpl::GetSyncLoopForTesting() {
 }
 
 void SyncBackendHostImpl::RefreshTypesForTest(syncer::ModelTypeSet types) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK(ui_thread_->BelongsToCurrentThread());
 
   registrar_->sync_thread()->task_runner()->PostTask(
       FROM_HERE,
@@ -885,7 +887,7 @@ void SyncBackendHostImpl::RefreshTypesForTest(syncer::ModelTypeSet types) {
 
 void SyncBackendHostImpl::ClearServerData(
     const syncer::SyncManager::ClearServerDataCallback& callback) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK(ui_thread_->BelongsToCurrentThread());
   registrar_->sync_thread()->task_runner()->PostTask(
       FROM_HERE, base::Bind(&SyncBackendHostCore::DoClearServerData,
                             core_.get(), callback));
@@ -893,7 +895,7 @@ void SyncBackendHostImpl::ClearServerData(
 
 void SyncBackendHostImpl::ClearServerDataDoneOnFrontendLoop(
     const syncer::SyncManager::ClearServerDataCallback& frontend_callback) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK(ui_thread_->BelongsToCurrentThread());
   frontend_callback.Run();
 }
 

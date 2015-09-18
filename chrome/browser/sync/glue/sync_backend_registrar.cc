@@ -18,49 +18,24 @@
 #include "components/password_manager/sync/browser/password_model_worker.h"
 #include "components/sync_driver/change_processor.h"
 #include "components/sync_driver/glue/browser_thread_model_worker.h"
-#include "content/public/browser/browser_thread.h"
 #include "sync/internal_api/public/engine/passive_model_worker.h"
 #include "sync/internal_api/public/user_share.h"
 
-using content::BrowserThread;
-
 namespace browser_sync {
-
-namespace {
-
-// Returns true if the current thread is the native thread for the
-// given group (or if it is undeterminable).
-bool IsOnThreadForGroup(syncer::ModelType type, syncer::ModelSafeGroup group) {
-  switch (group) {
-    case syncer::GROUP_PASSIVE:
-      return IsControlType(type);
-    case syncer::GROUP_UI:
-      return BrowserThread::CurrentlyOn(BrowserThread::UI);
-    case syncer::GROUP_DB:
-      return BrowserThread::CurrentlyOn(BrowserThread::DB);
-    case syncer::GROUP_FILE:
-      return BrowserThread::CurrentlyOn(BrowserThread::FILE);
-    case syncer::GROUP_HISTORY:
-      // TODO(sync): How to check we're on the right thread?
-      return type == syncer::TYPED_URLS;
-    case syncer::GROUP_PASSWORD:
-      // TODO(sync): How to check we're on the right thread?
-      return type == syncer::PASSWORDS;
-    case syncer::MODEL_SAFE_GROUP_COUNT:
-    default:
-      return false;
-  }
-}
-
-}  // namespace
 
 SyncBackendRegistrar::SyncBackendRegistrar(
     const std::string& name,
     Profile* profile,
-    scoped_ptr<base::Thread> sync_thread) :
-    name_(name),
-    profile_(profile) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+    scoped_ptr<base::Thread> sync_thread,
+    const scoped_refptr<base::SingleThreadTaskRunner>& ui_thread,
+    const scoped_refptr<base::SingleThreadTaskRunner>& db_thread,
+    const scoped_refptr<base::SingleThreadTaskRunner>& file_thread)
+    : name_(name),
+      profile_(profile),
+      ui_thread_(ui_thread),
+      db_thread_(db_thread),
+      file_thread_(file_thread) {
+  DCHECK(ui_thread_->BelongsToCurrentThread());
   CHECK(profile_);
 
   sync_thread_ = sync_thread.Pass();
@@ -71,14 +46,12 @@ SyncBackendRegistrar::SyncBackendRegistrar(
     CHECK(sync_thread_->StartWithOptions(options));
   }
 
-  workers_[syncer::GROUP_DB] = new BrowserThreadModelWorker(
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB),
-      syncer::GROUP_DB, this);
+  workers_[syncer::GROUP_DB] =
+      new BrowserThreadModelWorker(db_thread_, syncer::GROUP_DB, this);
   workers_[syncer::GROUP_DB]->RegisterForLoopDestruction();
 
-  workers_[syncer::GROUP_FILE] = new BrowserThreadModelWorker(
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE),
-      syncer::GROUP_FILE, this);
+  workers_[syncer::GROUP_FILE] =
+      new BrowserThreadModelWorker(file_thread_, syncer::GROUP_FILE, this);
   workers_[syncer::GROUP_FILE]->RegisterForLoopDestruction();
 
   workers_[syncer::GROUP_UI] = new UIModelWorker(this);
@@ -142,7 +115,7 @@ void SyncBackendRegistrar::SetInitialTypes(syncer::ModelTypeSet initial_types) {
 }
 
 bool SyncBackendRegistrar::IsNigoriEnabled() const {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(ui_thread_->BelongsToCurrentThread());
   base::AutoLock lock(lock_);
   return routing_info_.find(syncer::NIGORI) != routing_info_.end();
 }
@@ -197,7 +170,7 @@ syncer::ModelTypeSet SyncBackendRegistrar::GetLastConfiguredTypes() const {
 }
 
 void SyncBackendRegistrar::RequestWorkerStopOnUIThread() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(ui_thread_->BelongsToCurrentThread());
   base::AutoLock lock(lock_);
   for (WorkerMap::const_iterator it = workers_.begin();
        it != workers_.end(); ++it) {
@@ -232,7 +205,7 @@ void SyncBackendRegistrar::ActivateDataType(
 void SyncBackendRegistrar::DeactivateDataType(syncer::ModelType type) {
   DVLOG(1) << "Deactivate: " << syncer::ModelTypeToString(type);
 
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) || IsControlType(type));
+  DCHECK(ui_thread_->BelongsToCurrentThread() || IsControlType(type));
   base::AutoLock lock(lock_);
 
   routing_info_.erase(type);
@@ -321,6 +294,30 @@ bool SyncBackendRegistrar::IsCurrentThreadSafeForModel(
   lock_.AssertAcquired();
   return IsOnThreadForGroup(model_type,
                             GetGroupForModelType(model_type, routing_info_));
+}
+
+bool SyncBackendRegistrar::IsOnThreadForGroup(
+    syncer::ModelType type,
+    syncer::ModelSafeGroup group) const {
+  switch (group) {
+    case syncer::GROUP_PASSIVE:
+      return IsControlType(type);
+    case syncer::GROUP_UI:
+      return ui_thread_->BelongsToCurrentThread();
+    case syncer::GROUP_DB:
+      return db_thread_->BelongsToCurrentThread();
+    case syncer::GROUP_FILE:
+      return file_thread_->BelongsToCurrentThread();
+    case syncer::GROUP_HISTORY:
+      // TODO(sync): How to check we're on the right thread?
+      return type == syncer::TYPED_URLS;
+    case syncer::GROUP_PASSWORD:
+      // TODO(sync): How to check we're on the right thread?
+      return type == syncer::PASSWORDS;
+    case syncer::MODEL_SAFE_GROUP_COUNT:
+    default:
+      return false;
+  }
 }
 
 SyncBackendRegistrar::~SyncBackendRegistrar() {

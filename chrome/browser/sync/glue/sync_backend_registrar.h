@@ -41,11 +41,15 @@ class UIModelWorker;
 class SyncBackendRegistrar : public syncer::SyncManager::ChangeDelegate,
                              public syncer::WorkerLoopDestructionObserver {
  public:
-  // |name| is used for debugging.  Does not take ownership of |profile| or
-  // |sync_loop|.  Must be created on the UI thread.
-  SyncBackendRegistrar(const std::string& name,
-                       Profile* profile,
-                       scoped_ptr<base::Thread> sync_thread);
+  // |name| is used for debugging.  Does not take ownership of |profile|.
+  // Must be created on the UI thread.
+  SyncBackendRegistrar(
+      const std::string& name,
+      Profile* profile,
+      scoped_ptr<base::Thread> sync_thread,
+      const scoped_refptr<base::SingleThreadTaskRunner>& ui_thread,
+      const scoped_refptr<base::SingleThreadTaskRunner>& db_thread,
+      const scoped_refptr<base::SingleThreadTaskRunner>& file_thread);
 
   // SyncBackendRegistrar must be destroyed as follows:
   //
@@ -153,6 +157,11 @@ class SyncBackendRegistrar : public syncer::SyncManager::ChangeDelegate,
   bool IsCurrentThreadSafeForModel(
       syncer::ModelType model_type) const;
 
+  // Returns true if the current thread is the native thread for the
+  // given group (or if it is undeterminable).
+  bool IsOnThreadForGroup(syncer::ModelType type,
+                          syncer::ModelSafeGroup group) const;
+
   // Name used for debugging.
   const std::string name_;
 
@@ -183,6 +192,11 @@ class SyncBackendRegistrar : public syncer::SyncManager::ChangeDelegate,
 
   // Parks stopped workers because they may still be referenced by syncer.
   std::vector<scoped_refptr<syncer::ModelSafeWorker> > stopped_workers_;
+
+  // References to the thread task runners that sync depends on.
+  const scoped_refptr<base::SingleThreadTaskRunner> ui_thread_;
+  const scoped_refptr<base::SingleThreadTaskRunner> db_thread_;
+  const scoped_refptr<base::SingleThreadTaskRunner> file_thread_;
 
   // Declare |sync_thread_| at the end so that it will be destroyed before
   // objects above because tasks on sync thread depend on those objects,

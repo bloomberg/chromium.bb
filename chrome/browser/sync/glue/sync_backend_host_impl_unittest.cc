@@ -163,12 +163,12 @@ class SyncBackendHostTest : public testing::Test {
     profile_ = profile_manager_.CreateTestingProfile(kTestProfileName);
     sync_prefs_.reset(new sync_driver::SyncPrefs(profile_->GetPrefs()));
     backend_.reset(new SyncBackendHostImpl(
-        profile_->GetDebugName(),
-        profile_,
+        profile_->GetDebugName(), profile_,
+        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
         invalidation::ProfileInvalidationProviderFactory::GetForProfile(
-            profile_)->GetInvalidationService(),
-        sync_prefs_->AsWeakPtr(),
-        base::FilePath(kTestSyncDir)));
+            profile_)
+            ->GetInvalidationService(),
+        sync_prefs_->AsWeakPtr(), base::FilePath(kTestSyncDir)));
     credentials_.email = "user@example.com";
     credentials_.sync_token = "sync_token";
     credentials_.scope_set.insert(GaiaConstants::kChromeSyncOAuth2Scope);
@@ -211,18 +211,13 @@ class SyncBackendHostTest : public testing::Test {
     EXPECT_CALL(mock_frontend_, OnBackendInitialized(_, _, _, expect_success)).
         WillOnce(InvokeWithoutArgs(QuitMessageLoop));
     backend_->Initialize(
-        &mock_frontend_,
-        scoped_ptr<base::Thread>(),
-        syncer::WeakHandle<syncer::JsEventHandler>(),
-        GURL(std::string()),
-        std::string(),
-        credentials_,
-        true,
-        fake_manager_factory_.Pass(),
+        &mock_frontend_, scoped_ptr<base::Thread>(),
+        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB),
+        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE),
+        syncer::WeakHandle<syncer::JsEventHandler>(), GURL(std::string()),
+        std::string(), credentials_, true, fake_manager_factory_.Pass(),
         MakeWeakHandle(test_unrecoverable_error_handler_.GetWeakPtr()),
-        base::Closure(),
-        network_resources_.get(),
-        saved_nigori_state_.Pass());
+        base::Closure(), network_resources_.get(), saved_nigori_state_.Pass());
     base::RunLoop run_loop;
     BrowserThread::PostDelayedTask(BrowserThread::UI, FROM_HERE,
                                    run_loop.QuitClosure(),

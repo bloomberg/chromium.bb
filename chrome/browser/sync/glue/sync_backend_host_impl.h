@@ -70,17 +70,21 @@ class SyncBackendHostImpl
   // it serves and communicates to via the SyncFrontend interface (on
   // the same thread it used to call the constructor).  Must outlive
   // |sync_prefs|.
-  SyncBackendHostImpl(const std::string& name,
-                      Profile* profile,
-                      invalidation::InvalidationService* invalidator,
-                      const base::WeakPtr<sync_driver::SyncPrefs>& sync_prefs,
-                      const base::FilePath& sync_folder);
+  SyncBackendHostImpl(
+      const std::string& name,
+      Profile* profile,
+      const scoped_refptr<base::SingleThreadTaskRunner>& ui_thread,
+      invalidation::InvalidationService* invalidator,
+      const base::WeakPtr<sync_driver::SyncPrefs>& sync_prefs,
+      const base::FilePath& sync_folder);
   ~SyncBackendHostImpl() override;
 
   // SyncBackendHost implementation.
   void Initialize(
       sync_driver::SyncFrontend* frontend,
       scoped_ptr<base::Thread> sync_thread,
+      const scoped_refptr<base::SingleThreadTaskRunner>& db_thread,
+      const scoped_refptr<base::SingleThreadTaskRunner>& file_thread,
       const syncer::WeakHandle<syncer::JsEventHandler>& event_handler,
       const GURL& service_url,
       const std::string& sync_user_agent,
@@ -322,6 +326,9 @@ class SyncBackendHostImpl
   base::MessageLoop* const frontend_loop_;
 
   Profile* const profile_;
+
+  // The UI thread's task runner.
+  const scoped_refptr<base::SingleThreadTaskRunner> ui_thread_;
 
   // Name used for debugging (set from profile_->GetDebugName()).
   const std::string name_;
