@@ -16,7 +16,7 @@ namespace shell {
 class ApplicationManager;
 
 // A class implementing this interface assists Shell::ConnectToApplication in
-// fetching the applications located therein.
+// resolving URLs and fetching the applications located therein.
 class PackageManager {
  public:
   PackageManager() {}
@@ -26,7 +26,12 @@ class PackageManager {
   // associated ApplicationManager.
   virtual void SetApplicationManager(ApplicationManager* manager) = 0;
 
-  // Asks the delegate to fetch the specified url.
+  // Resolves |url| to its canonical form. e.g. for mojo: urls, returns a file:
+  // url with a path ending in .mojo.
+  virtual GURL ResolveURL(const GURL& url) = 0;
+
+  // Asks the delegate to fetch the specified url. |url| must be unresolved,
+  // i.e. ResolveURL() above must not have been called on it.
   // TODO(beng): figure out how not to expose Fetcher at all at this layer.
   virtual void FetchRequest(
       URLRequestPtr request,
@@ -34,7 +39,8 @@ class PackageManager {
 
   // Determine if a content handler should handle the response received by
   // |fetcher|.
-  // |url| is the url requested initially by a call to ConnectToApplication().
+  // |unresolved_url| is the url requested initially by a call to
+  // Shell::ConnectToApplication() before any resolution is applied.
   // |task_runner| is a base::TaskRunner* that can be used to post callbacks.
   // |new_response| is the response that should be passed to
   // ContentHandler::StartApplication(), unchanged if the return value is false.
@@ -43,7 +49,7 @@ class PackageManager {
   // |qualifier| is the Identity qualifier that the content handler application
   // instance should be associated with, unchanged if the return value is false.
   virtual bool HandleWithContentHandler(Fetcher* fetcher,
-                                        const GURL& url,
+                                        const GURL& unresolved_url,
                                         base::TaskRunner* task_runner,
                                         URLResponsePtr* new_response,
                                         GURL* content_handler_url,

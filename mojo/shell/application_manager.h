@@ -99,6 +99,14 @@ class ApplicationManager {
   // Takes the contents of |params| only when it returns true.
   bool ConnectToRunningApplication(
       scoped_ptr<ConnectToApplicationParams>* params);
+  // |resolved_url| is the URL to load by |loader| (if loader is not null). It
+  // may be different from |(*params)->app_url()| because of mappings and
+  // resolution rules.
+  // Takes the contents of |params| only when it returns true.
+  void ConnectToApplicationWithLoader(
+      scoped_ptr<ConnectToApplicationParams>* params,
+      const GURL& resolved_url,
+      ApplicationLoader* loader);
 
   InterfaceRequest<Application> CreateInstance(
       scoped_ptr<ConnectToApplicationParams> params,

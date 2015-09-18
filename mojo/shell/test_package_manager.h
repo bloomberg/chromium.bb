@@ -30,11 +30,12 @@ class TestPackageManager : public PackageManager {
 
   // Overridden from PackageManager:
   void SetApplicationManager(ApplicationManager* manager) override;
+  GURL ResolveURL(const GURL& url) override;
   void FetchRequest(
       URLRequestPtr request,
       const Fetcher::FetchCallback& loader_callback) override;
   bool HandleWithContentHandler(Fetcher* fetcher,
-                                const GURL& url,
+                                const GURL& unresolved_url,
                                 base::TaskRunner* task_runner,
                                 URLResponsePtr* new_response,
                                 GURL* content_handler_url,
