@@ -248,6 +248,10 @@ void MediaRouterUI::CloseRoute(const MediaRoute::Id& route_id) {
   router_->CloseRoute(route_id);
 }
 
+void MediaRouterUI::AddIssue(const Issue& issue) {
+  router_->AddIssue(issue);
+}
+
 void MediaRouterUI::ClearIssue(const std::string& issue_id) {
   router_->ClearIssue(issue_id);
 }
@@ -290,9 +294,10 @@ void MediaRouterUI::OnRouteResponseReceived(const MediaSink::Id& sink_id,
                                             const std::string& presentation_id,
                                             const std::string& error) {
   DVLOG(1) << "OnRouteResponseReceived";
-  // TODO(imcheng): Display error in UI. (crbug.com/490372)
-  if (!route)
+  if (!route) {
+    // The provider will handle sending an issue for a failed route request.
     DVLOG(0) << "MediaRouteResponse returned error: " << error;
+  }
 
   handler_->OnCreateRouteResponseReceived(sink_id, route);
   has_pending_route_request_ = false;

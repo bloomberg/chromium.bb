@@ -175,6 +175,10 @@ void MediaRouterAndroid::SendRouteBinaryMessage(
   NOTIMPLEMENTED();
 }
 
+void MediaRouterAndroid::AddIssue(const Issue& issue) {
+  NOTIMPLEMENTED();
+}
+
 void MediaRouterAndroid::ClearIssue(const Issue::Id& issue_id) {
   NOTIMPLEMENTED();
 }

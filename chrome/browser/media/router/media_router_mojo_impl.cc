@@ -258,6 +258,11 @@ void MediaRouterMojoImpl::SendRouteBinaryMessage(
                         base::Passed(data.Pass()), callback));
 }
 
+void MediaRouterMojoImpl::AddIssue(const Issue& issue) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  issue_manager_.AddIssue(issue);
+}
+
 void MediaRouterMojoImpl::ClearIssue(const Issue::Id& issue_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
   issue_manager_.ClearIssue(issue_id);

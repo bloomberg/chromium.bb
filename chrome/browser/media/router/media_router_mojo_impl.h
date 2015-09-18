@@ -79,6 +79,7 @@ class MediaRouterMojoImpl : public MediaRouter,
       const MediaRoute::Id& route_id,
       scoped_ptr<std::vector<uint8>> data,
       const SendRouteMessageCallback& callback) override;
+  void AddIssue(const Issue& issue) override;
   void ClearIssue(const Issue::Id& issue_id) override;
   void OnPresentationSessionDetached(const MediaRoute::Id& route_id) override;
 

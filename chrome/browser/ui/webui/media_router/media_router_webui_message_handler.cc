@@ -8,8 +8,11 @@
 
 #include "base/bind.h"
 #include "base/strings/stringprintf.h"
+#include "chrome/browser/media/router/issue.h"
 #include "chrome/browser/ui/webui/media_router/media_router_ui.h"
+#include "chrome/grit/generated_resources.h"
 #include "extensions/common/constants.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace media_router {
 
@@ -283,7 +286,7 @@ void MediaRouterWebUIMessageHandler::OnCreateRoute(
   }
 
   if (sink_id.empty()) {
-    DVLOG(1) << "Media Route Provider Manager did not respond with a "
+    DVLOG(1) << "Media Route UI did not respond with a "
              << "valid sink ID. Aborting.";
     return;
   }
@@ -292,6 +295,12 @@ void MediaRouterWebUIMessageHandler::OnCreateRoute(
       static_cast<MediaRouterUI*>(web_ui()->GetController());
   if (media_router_ui->has_pending_route_request()) {
     DVLOG(1) << "UI already has pending route request. Ignoring.";
+    Issue issue(
+        l10n_util::GetStringUTF8(IDS_MEDIA_ROUTER_ISSUE_PENDING_ROUTE),
+        std::string(), IssueAction(IssueAction::TYPE_DISMISS),
+        std::vector<IssueAction>(), std::string(), Issue::NOTIFICATION,
+        false, std::string());
+    media_router_ui_->AddIssue(issue);
     return;
   }
 
@@ -309,9 +318,10 @@ void MediaRouterWebUIMessageHandler::OnCreateRoute(
     success = media_router_ui->CreateRoute(sink_id);
   }
 
-  // TODO(imcheng): Display error in UI. (crbug.com/490372)
-  if (!success)
+  if (!success) {
+    // The provider will handle sending an issue for a failed route request.
     DVLOG(1) << "Error initiating route request.";
+  }
 }
 
 void MediaRouterWebUIMessageHandler::OnActOnIssue(

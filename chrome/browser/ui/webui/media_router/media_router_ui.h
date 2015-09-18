@@ -104,6 +104,9 @@ class MediaRouterUI
   // Calls MediaRouter to close the given route.
   void CloseRoute(const MediaRoute::Id& route_id);
 
+  // Calls MediaRouter to add the given issue.
+  void AddIssue(const Issue& issue);
+
   // Calls MediaRouter to clear the given issue.
   void ClearIssue(const Issue::Id& issue_id);
 

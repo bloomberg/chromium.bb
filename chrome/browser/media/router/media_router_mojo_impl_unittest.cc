@@ -303,9 +303,20 @@ TEST_F(MediaRouterMojoImplTest, HandleIssue) {
 
   router()->ClearIssue(issue->id());
 
+  EXPECT_TRUE(Mock::VerifyAndClearExpectations(&issue_observer1));
+  EXPECT_TRUE(Mock::VerifyAndClearExpectations(&issue_observer2));
   router()->UnregisterIssuesObserver(&issue_observer1);
   interfaces::IssuePtr mojo_issue2 = CreateMojoIssue("title 2");
   const Issue& expected_issue2 = mojo_issue2.To<Issue>();
+
+  EXPECT_CALL(issue_observer2,
+              OnIssueUpdated(Pointee(EqualsIssue(expected_issue2))));
+  router()->AddIssue(expected_issue2);
+  EXPECT_TRUE(Mock::VerifyAndClearExpectations(&issue_observer2));
+
+  EXPECT_CALL(issue_observer2, OnIssueUpdated(nullptr));
+  router()->ClearIssue(issue->id());
+  EXPECT_TRUE(Mock::VerifyAndClearExpectations(&issue_observer2));
 
   EXPECT_CALL(issue_observer2,
               OnIssueUpdated(Pointee(EqualsIssue(expected_issue2))));
