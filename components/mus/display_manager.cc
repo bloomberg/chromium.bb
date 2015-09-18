@@ -298,8 +298,16 @@ void DefaultDisplayManager::DispatchEvent(ui::Event* event) {
             &transformed_point);
     id = ViewIdFromTransportId(
         cc::SurfaceIdAllocator::NamespaceForId(target_surface));
-    mojo_event->pointer_data->location->x = transformed_point.x();
-    mojo_event->pointer_data->location->y = transformed_point.y();
+
+    mojo::LocationData* location = nullptr;
+    if (mojo_event->pointer_data)
+      location = mojo_event->pointer_data->location.get();
+    else if (mojo_event->wheel_data)
+      location = mojo_event->wheel_data->location.get();
+
+    DCHECK(location);
+    location->x = transformed_point.x();
+    location->y = transformed_point.y();
   }
   delegate_->OnEvent(id, mojo_event.Pass());
 
