@@ -842,7 +842,7 @@ tests:
   - [princséged, ⠏⠗⠊⠝⠉⠎⠡⠛⠑⠙]
   - [proggyak, ⠏⠗⠕⠛⠹⠁⠅]
   - [protonnyalábok, ⠏⠗⠕⠞⠕⠝⠫⠁⠇⠈⠃⠕⠅]
-  - # this testcase look begcaps opcode working if a word containing both lowercase and uppercase letters]
+  - # this testcase look begcaps opcode working if a word containing both lowercase and uppercase letters
     - PSZÁF-összevonást
     - ⠨⠨⠏⠱⠈⠋⠤⠟⠱⠱⠑⠧⠕⠝⠈⠎⠞
   - [pszichológusszövetség, ⠏⠱⠊⠉⠓⠕⠇⠪⠛⠥⠎⠱⠟⠧⠑⠞⠎⠡⠛]
@@ -1171,10 +1171,10 @@ tests:
   - ['"Tamás még nem tudta, hogy mi vár rá."', ⠦⠨⠞⠁⠍⠈⠎ ⠍⠡⠛ ⠝⠑⠍ ⠞⠥⠙⠞⠁⠂ ⠓⠕⠹ ⠍⠊ ⠧⠈⠗ ⠗⠈⠄⠴]
   - [I don't no why happened this problem., ⠨⠊ ⠙⠕⠝⠠⠄⠞ ⠝⠕ ⠺⠓⠽ ⠓⠁⠏⠏⠑⠝⠑⠙ ⠞⠓⠊⠎ ⠏⠗⠕⠃⠇⠑⠍⠄]
   - [Az 1§ paragrafus alapján a kedvezmény igénybe vehető., ⠨⠁⠣ ⠼⠁⠼⠧ ⠏⠁⠗⠁⠛⠗⠁⠋⠥⠎ ⠁⠇⠁⠏⠚⠈⠝ ⠁ ⠅⠑⠙⠧⠑⠣⠍⠡⠫ ⠊⠛⠡⠫⠃⠑ ⠧⠑⠓⠑⠞⠻⠄]
-  - ['- A sivatagi karavánúton, negyven vagy ötven mérföldnyire innen. Egy
-      Ford. De mi nem megyünk magával. - Elővette az irattárcáját, és átadott Naszifnak
-      egy angol fontot. - Ha visszajön, keressen meg a vasútállomás mellett a Grand
-      Hotelban.', ⠤ ⠨⠁ ⠎⠊⠧⠁⠞⠁⠛⠊ ⠅⠁⠗⠁⠧⠈⠝⠬⠞⠕⠝⠂ ⠝⠑⠹⠧⠑⠝ ⠧⠁⠹ ⠟⠞⠧⠑⠝ ⠍⠡⠗⠋⠟⠇⠙⠫⠊⠗⠑ ⠊⠝⠝⠑⠝⠄ ⠨⠑⠹ ⠨⠋⠕⠗⠙⠄ ⠨⠙⠑ ⠍⠊ ⠝⠑⠍ ⠍⠑⠹⠷⠝⠅ ⠍⠁⠛⠈⠧⠁⠇⠄ ⠤ ⠨⠑⠇⠻⠧⠑⠞⠞⠑ ⠁⠣ ⠊⠗⠁⠞⠞⠈⠗⠉⠈⠚⠈⠞⠂ ⠡⠎ ⠈⠞⠁⠙⠕⠞⠞ ⠨⠝⠁⠱⠊⠋⠝⠁⠅ ⠑⠹ ⠁⠝⠛⠕⠇ ⠋⠕⠝⠞⠕⠞⠄ ⠤ ⠨⠓⠁ ⠧⠊⠱⠱⠁⠚⠟⠝⠂ ⠅⠑⠗⠑⠎⠎⠑⠝ ⠍⠑⠛ ⠁ ⠧⠁⠎⠬⠞⠈⠇⠇⠕⠍⠈⠎ ⠍⠑⠇⠇⠑⠞⠞ ⠁ ⠨⠛⠗⠁⠝⠙ ⠨⠓⠕⠞⠑⠇⠃⠁⠝⠄]
+  - ['- A sivatagi karavánúton, negyven vagy ötven mérföldnyire innen. Egy Ford. De
+      mi nem megyünk magával. - Elővette az irattárcáját, és átadott Naszifnak egy
+      angol fontot. - Ha visszajön, keressen meg a vasútállomás mellett a Grand Hotelban.',
+    ⠤ ⠨⠁ ⠎⠊⠧⠁⠞⠁⠛⠊ ⠅⠁⠗⠁⠧⠈⠝⠬⠞⠕⠝⠂ ⠝⠑⠹⠧⠑⠝ ⠧⠁⠹ ⠟⠞⠧⠑⠝ ⠍⠡⠗⠋⠟⠇⠙⠫⠊⠗⠑ ⠊⠝⠝⠑⠝⠄ ⠨⠑⠹ ⠨⠋⠕⠗⠙⠄ ⠨⠙⠑ ⠍⠊ ⠝⠑⠍ ⠍⠑⠹⠷⠝⠅ ⠍⠁⠛⠈⠧⠁⠇⠄ ⠤ ⠨⠑⠇⠻⠧⠑⠞⠞⠑ ⠁⠣ ⠊⠗⠁⠞⠞⠈⠗⠉⠈⠚⠈⠞⠂ ⠡⠎ ⠈⠞⠁⠙⠕⠞⠞ ⠨⠝⠁⠱⠊⠋⠝⠁⠅ ⠑⠹ ⠁⠝⠛⠕⠇ ⠋⠕⠝⠞⠕⠞⠄ ⠤ ⠨⠓⠁ ⠧⠊⠱⠱⠁⠚⠟⠝⠂ ⠅⠑⠗⠑⠎⠎⠑⠝ ⠍⠑⠛ ⠁ ⠧⠁⠎⠬⠞⠈⠇⠇⠕⠍⠈⠎ ⠍⠑⠇⠇⠑⠞⠞ ⠁ ⠨⠛⠗⠁⠝⠙ ⠨⠓⠕⠞⠑⠇⠃⠁⠝⠄]
   - [A vételár 1 €., ⠨⠁ ⠧⠡⠞⠑⠇⠈⠗ ⠼⠁ ⠰⠑⠄]
   - [De nekem nagyon nehezemre esik a levélírás (nézd el a helyesírási hibákat és a csúnya írásomat).,
     ⠨⠙⠑ ⠝⠑⠅⠑⠍ ⠝⠁⠹⠕⠝ ⠝⠑⠓⠑⠣⠑⠍⠗⠑ ⠑⠎⠊⠅ ⠁ ⠇⠑⠧⠡⠇⠌⠗⠈⠎ ⠮⠝⠡⠣⠙ ⠑⠇ ⠁ ⠓⠑⠸⠑⠎⠌⠗⠈⠎⠊ ⠓⠊⠃⠈⠅⠁⠞ ⠡⠎ ⠁ ⠩⠬⠫⠁ ⠌⠗⠈⠎⠕⠍⠁⠞⠵⠄]
@@ -1183,7 +1183,12 @@ tests:
   - [•A kiadás újdonságai., ⠠⠔⠨⠁ ⠅⠊⠁⠙⠈⠎ ⠬⠚⠙⠕⠝⠎⠈⠛⠁⠊⠄]
   - [A hu_list fájl nem létezik., ⠨⠁ ⠓⠥⠠⠤⠇⠊⠎⠞ ⠋⠈⠚⠇ ⠝⠑⠍ ⠇⠡⠞⠑⠣⠊⠅⠄]
   - ['Az e-mail címem: akarmi@akarmi.hu.', ⠨⠁⠣ ⠑⠤⠍⠁⠊⠇ ⠉⠌⠍⠑⠍⠒ ⠁⠅⠁⠗⠍⠊⠘⠁⠅⠁⠗⠍⠊⠄⠓⠥⠄]
-  # FIXME: the original json based test only specified one cursor
-  # position to be tested. Since I don't know the expected result I'm
-  # setting this test to xfail
-  - [bombázásszimulátor, ⠃⠕⠍⠃⠈⠣⠈⠎⠱⠊⠍⠥⠇⠈⠞⠕⠗, {cursorPos: [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17], xfail: true}]
+  - - bombázásszimulátor
+    - ⠃⠕⠍⠃⠈⠣⠈⠎⠱⠊⠍⠥⠇⠈⠞⠕⠗
+    - cursorPos: [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17]
+      # FIXME: for some reason this test passes and fails when run in
+      # the Python based harness tests. At the moment we do not know
+      # why it passes in the yaml tests. Is this a problem in the
+      # Python bindings, a problem in the way tests are run in
+      # brl_checks.c or in check_yaml.c?
+      xfail: off

@@ -4,5 +4,5 @@ tests:
     - "we've I'm wasn't you're"
     - ⠺⠑⠄⠧⠑ ⠠⠊⠄⠍ ⠺⠁⠎⠝⠄⠞ ⠽⠕⠥⠄⠗⠑
   - # Using right single apostrophes, as often found on the web.
-    - "we’ve I’m wasn’t you’re"
+    - we’ve I’m wasn’t you’re
     - ⠺⠑⠄⠧⠑ ⠠⠊⠄⠍ ⠺⠁⠎⠝⠄⠞ ⠽⠕⠥⠄⠗⠑

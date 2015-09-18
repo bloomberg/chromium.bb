@@ -50,28 +50,40 @@ tests:
   - [4th, ⠼⠙⠞⠓]
   - - one italic word
     - ⠕⠝⠑ ⠨⠂⠊⠞⠁⠇⠊⠉ ⠺⠕⠗⠙
-    - {xfail: true, typeform: '000011111100000'}
+    - typeform: '000011111100000'
+      # Emphasis doesn't always work
+      xfail: true
   - - two italic words
     - ⠨⠂⠞⠺⠕ ⠨⠂⠊⠞⠁⠇⠊⠉ ⠺⠕⠗⠙⠎
-    - {xfail: true, typeform: '1111111111000000'}
+    - typeform: '1111111111000000'
+      # Emphasis doesn't always work
+      xfail: true
   - - three italic words
     - ⠨⠶⠞⠓⠗⠑⠑ ⠊⠞⠁⠇⠊⠉ ⠺⠕⠗⠙⠎⠨⠄
     - {typeform: '111111111111111111'}
   - - one bold word
     - ⠕⠝⠑ ⠘⠂⠃⠕⠇⠙ ⠺⠕⠗⠙
-    - {xfail: true, typeform: '0000444400000'}
+    - typeform: '0000444400000'
+      # Emphasis doesn't always work
+      xfail: true
   - - two bold words
     - ⠘⠂⠞⠺⠕ ⠘⠂⠃⠕⠇⠙ ⠺⠕⠗⠙⠎
-    - {xfail: true, typeform: '44444444000000'}
+    - typeform: '44444444000000'
+      # Emphasis doesn't always work
+      xfail: true
   - - three bold words
     - ⠘⠶⠞⠓⠗⠑⠑ ⠃⠕⠇⠙ ⠺⠕⠗⠙⠎⠘⠄
     - {typeform: '4444444444444444'}
   - - one underlined word
     - ⠕⠝⠑ ⠸⠂⠥⠝⠙⠑⠗⠇⠊⠝⠑⠙ ⠺⠕⠗⠙
-    - {xfail: true, typeform: '0000222222222200000'}
+    - typeform: '0000222222222200000'
+      # Emphasis doesn't always work
+      xfail: true
   - - two underlined words
     - ⠸⠂⠞⠺⠕ ⠸⠂⠥⠝⠙⠑⠗⠇⠊⠝⠑⠙ ⠺⠕⠗⠙⠎
-    - {xfail: true, typeform: '22222222222222000000'}
+    - typeform: '22222222222222000000'
+      # Emphasis doesn't always work
+      xfail: true
   - - three underlined words
     - ⠸⠶⠞⠓⠗⠑⠑ ⠥⠝⠙⠑⠗⠇⠊⠝⠑⠙ ⠺⠕⠗⠙⠎⠸⠄
     - {typeform: '2222222222222222222222'}
