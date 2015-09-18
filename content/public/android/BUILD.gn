@@ -162,7 +162,7 @@ generate_jni("content_jni_headers") {
 
   if (enable_webvr) {
     sources += [ "//content/public/android/java/src/org/chromium/content/browser/input/CardboardVRDevice.java" ]
-    deps = [
+    public_deps = [
       "//third_party/cardboard-java:cardboard-java",
     ]
   }

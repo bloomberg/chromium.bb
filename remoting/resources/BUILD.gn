@@ -6,7 +6,7 @@ import("//remoting/remoting_locales.gni")
 import("//tools/grit/grit_rule.gni")
 
 group("resources") {
-  deps = [
+  public_deps = [
     ":copy_locales",
     ":strings",
 

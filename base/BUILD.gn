@@ -1578,7 +1578,7 @@ if (is_android) {
       "android/java/src/org/chromium/base/metrics/RecordUserAction.java",
     ]
 
-    deps = [
+    public_deps = [
       ":android_runtime_jni_headers",
     ]
 

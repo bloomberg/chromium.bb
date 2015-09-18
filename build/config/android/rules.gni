@@ -84,14 +84,14 @@ template("generate_jni") {
   }
 
   group(target_name) {
-    deps = []
+    public_deps = []
     forward_variables_from(invoker,
                            [
                              "deps",
                              "public_deps",
                              "visibility",
                            ])
-    deps += [ ":$foreach_target_name" ]
+    public_deps += [ ":$foreach_target_name" ]
     public_configs = [ ":jni_includes_${target_name}" ]
   }
 }
@@ -183,14 +183,14 @@ template("generate_jar_jni") {
   }
 
   group(target_name) {
-    deps = []
+    public_deps = []
     forward_variables_from(invoker,
                            [
                              "deps",
                              "public_deps",
                              "visibility",
                            ])
-    deps += jni_actions
+    public_deps += jni_actions
     public_configs = [ ":jni_includes_${target_name}" ]
   }
 }
@@ -308,7 +308,7 @@ template("java_cpp_template") {
 
   group(final_target_name) {
     forward_variables_from(invoker, [ "visibility" ])
-    deps = [
+    public_deps = [
       ":$zip_srcjar_target_name",
     ]
   }
@@ -391,7 +391,7 @@ template("java_cpp_enum") {
 
   group(final_target_name) {
     forward_variables_from(invoker, [ "visibility" ])
-    deps = [
+    public_deps = [
       ":$zip_srcjar_target_name",
     ]
   }
@@ -511,7 +511,7 @@ template("jinja_template_resources") {
   }
 
   group(target_name) {
-    deps = [
+    public_deps = [
       ":${target_name}__build_config",
       ":${target_name}__template",
     ]
@@ -574,7 +574,7 @@ template("locale_pak_resources") {
   }
 
   group(target_name) {
-    deps = [
+    public_deps = [
       ":${target_name}__build_config",
       ":${target_name}__create_resources_zip",
     ]
@@ -674,7 +674,7 @@ template("android_resources") {
 
   group(final_target_name) {
     forward_variables_from(invoker, [ "visibility" ])
-    deps = [
+    public_deps = [
       ":${target_name}__process_resources",
     ]
   }
@@ -737,7 +737,7 @@ template("java_strings_grd") {
   }
 
   group(target_name) {
-    deps = [
+    public_deps = [
       ":${target_name}__build_config",
       ":${target_name}__zip",
     ]
@@ -793,7 +793,7 @@ template("java_strings_grd_prebuilt") {
 
   group(final_target_name) {
     forward_variables_from(invoker, [ "visibility" ])
-    deps = [
+    public_deps = [
       ":$zip_target_name",
     ]
   }
@@ -1642,13 +1642,13 @@ template("android_apk") {
 
   group(target_name) {
     forward_variables_from(invoker, [ "data_deps" ])
-    deps = _final_deps
+    public_deps = _final_deps
   }
   group("${target_name}_incremental") {
     data_deps = []
     forward_variables_from(invoker, [ "data_deps" ])
     data_deps += [ "//build/android/pylib/device/commands" ]
-    deps = _incremental_final_deps
+    public_deps = _incremental_final_deps
   }
 }
 
@@ -1966,7 +1966,7 @@ template("create_native_executable_dist") {
 
   group(template_name) {
     forward_variables_from(invoker, [ "visibility" ])
-    deps = [
+    public_deps = [
       ":$copy_target_name",
     ]
   }

@@ -18,7 +18,7 @@ generate_jni("jni_headers") {
     "javatests/src/org/chromium/mojo/MojoTestCase.java",
     "javatests/src/org/chromium/mojo/bindings/ValidationTestUtil.java",
   ]
-  deps = [
+  public_deps = [
     ":system_java_jni_headers",
   ]
 

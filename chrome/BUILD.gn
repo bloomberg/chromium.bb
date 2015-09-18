@@ -335,31 +335,31 @@ if (is_multi_dll_chrome) {
 
 # GYP version: chromium_browser_dependencies variable in chrome.gyp
 group("browser_dependencies") {
-  deps = [
+  public_deps = [
     "//chrome/browser",
     "//chrome/common",
     "//sync",
   ]
   if (!is_ios) {
-    deps += [ "//ppapi/host" ]
+    public_deps += [ "//ppapi/host" ]
   }
 
   if (enable_basic_printing || enable_print_preview) {
-    deps += [ "//printing" ]
+    public_deps += [ "//printing" ]
     if (enable_print_preview) {
-      deps += [ "//chrome/service" ]
+      public_deps += [ "//chrome/service" ]
     }
   }
 }
 
 # GYP version: chromium_child_dependencies variable in chrome.gyp
 group("child_dependencies") {
-  deps = [
+  public_deps = [
     "//chrome/common",
     "//sync",
   ]
   if (!is_ios) {
-    deps += [
+    public_deps += [
       "//chrome/browser/devtools",
       "//chrome/child",
       "//chrome/plugin",
@@ -370,11 +370,11 @@ group("child_dependencies") {
     ]
   }
   if (cld_version == 2) {
-    deps += [ "//third_party/cld_2:cld2_platform_impl" ]
+    public_deps += [ "//third_party/cld_2:cld2_platform_impl" ]
   }
 
   if (enable_nacl) {
-    deps += [ "//components/nacl/renderer/plugin:nacl_trusted_plugin" ]
+    public_deps += [ "//components/nacl/renderer/plugin:nacl_trusted_plugin" ]
   }
 }
 
@@ -449,7 +449,7 @@ if (is_win) {
 
 # GYP version: chrome/chrome_resources.gyp:chrome_resources
 group("resources") {
-  deps = [
+  public_deps = [
     # Note: GYP lists some dependencies in addition to these actions. However,
     # these are just dependencies for the actions themselves, which our actions
     # list individually when needed.
@@ -459,13 +459,13 @@ group("resources") {
   ]
 
   if (enable_extensions) {
-    deps += [ "//chrome/common:extensions_api_resources" ]
+    public_deps += [ "//chrome/common:extensions_api_resources" ]
   }
 }
 
 # GYP version: chrome/chrome_resources.gyp:chrome_extra_resources
 group("extra_resources") {
-  deps = [
+  public_deps = [
     "//chrome/browser/resources:invalidations_resources",
     "//chrome/browser/resources:memory_internals_resources",
     "//chrome/browser/resources:net_internals_resources",
@@ -474,7 +474,7 @@ group("extra_resources") {
     "//chrome/browser/resources:translate_internals_resources",
   ]
   if (!is_ios) {
-    deps += [
+    public_deps += [
       "//chrome/browser/resources:component_extension_resources",
       "//chrome/browser/resources:options_resources",
       "//chrome/browser/resources:settings_resources",
@@ -482,11 +482,11 @@ group("extra_resources") {
   }
 
   if (is_chromeos) {
-    deps += [ "//chrome/browser/resources/chromeos/chromevox" ]
+    public_deps += [ "//chrome/browser/resources/chromeos/chromevox" ]
   }
 
   if (enable_extensions) {
-    deps += [
+    public_deps += [
       "//chrome/browser/resources:quota_internals_resources",
       "//chrome/browser/resources:sync_file_system_internals_resources",
     ]

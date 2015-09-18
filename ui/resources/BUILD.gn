@@ -7,7 +7,7 @@ import("//tools/grit/repack.gni")
 
 # GYP version: ui/resources/ui_resources.gyp:ui_resources
 group("resources") {
-  deps = [
+  public_deps = [
     ":ui_resources_grd",
     ":ui_unscaled_resources_grd",
     ":webui_resources_grd",

@@ -6,7 +6,7 @@ import("//tools/grit/grit_rule.gni")
 
 # In GYP: devtools_resources target.
 group("resources") {
-  deps = [
+  public_deps = [
     ":devtools_resources",
   ]
 }

@@ -7,7 +7,7 @@ import("//tools/grit/grit_rule.gni")
 # Meta target that includes both ui_strings and app_locale_settings. Most
 # targets want both. You can depend on the individually if you need to.
 group("strings") {
-  deps = [
+  public_deps = [
     ":ui_strings",
     ":app_locale_settings",
   ]

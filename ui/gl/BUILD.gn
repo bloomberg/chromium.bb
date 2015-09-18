@@ -352,12 +352,12 @@ if (is_android) {
   }
 
   generate_jni("gl_jni_headers") {
-    deps = [
-      ":surface_jni_headers",
-    ]
     sources = [
       "../android/java/src/org/chromium/ui/gl/SurfaceTextureListener.java",
       "../android/java/src/org/chromium/ui/gl/SurfaceTexturePlatformWrapper.java",
+    ]
+    public_deps = [
+      ":surface_jni_headers",
     ]
     jni_package = "ui/gl"
   }
