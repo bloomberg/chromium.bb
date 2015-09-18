@@ -109,7 +109,7 @@ class UI_TOUCH_SELECTION_EXPORT TouchHandle : public TouchSelectionDraggable {
   base::TimeTicks touch_down_time_;
 
   // Note that when a fade animation is active, |is_visible_| and |position_|
-  // may not reflect the actual visibilty and position of the drawable. This
+  // may not reflect the actual visibility and position of the drawable. This
   // discrepancy is resolved either upon fade completion or cancellation.
   base::TimeTicks fade_end_time_;
   gfx::PointF fade_start_position_;

@@ -79,7 +79,7 @@ cr.define('cr.ui', function() {
   };
 
   /**
-   * Updates version label visibilty.
+   * Updates version label visibility.
    * @param {boolean} show True if version label should be visible.
    */
   Oobe.showVersion = function(show) {

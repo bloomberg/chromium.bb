@@ -72,7 +72,7 @@ void NativeWidgetViewManager::OnWindowVisibilityChanged(aura::Window* window,
                                                         bool visible) {
   view_->SetVisible(visible);
   // NOTE: We could also update aura::Window's visibility when the View's
-  // visibilty changes, but this code isn't going to be around for very long so
+  // visibility changes, but this code isn't going to be around for very long so
   // I'm not bothering.
 }
 

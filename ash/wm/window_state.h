@@ -198,7 +198,7 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
     hide_shelf_when_fullscreen_ = value;
   }
 
-  // If the minimum visibilty is true, ash will try to keep a
+  // If the minimum visibility is true, ash will try to keep a
   // minimum amount of the window is always visible on the work area
   // when shown.
   // TODO(oshima): Consolidate this and window_position_managed

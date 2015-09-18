@@ -46,7 +46,7 @@ class MessageCenterButtonBar : public views::View,
 
  private:
   // Updates the layout manager which can have differing configuration
-  // depending on the visibilty of different parts of the button bar.
+  // depending on the visibility of different parts of the button bar.
   void ViewVisibilityChanged();
 
   // Overridden from views::View:

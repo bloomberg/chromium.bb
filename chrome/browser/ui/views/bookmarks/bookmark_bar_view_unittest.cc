@@ -158,7 +158,7 @@ TEST_F(BookmarkBarViewTest, AppsShortcutVisibility) {
   EXPECT_FALSE(test_helper_->apps_page_shortcut()->visible());
 }
 
-// Various assertions around visibilty of the overflow_button.
+// Various assertions around visibility of the overflow_button.
 TEST_F(BookmarkBarViewTest, OverflowVisibility) {
   profile()->CreateBookmarkModel(true);
   CreateBookmarkBarView();

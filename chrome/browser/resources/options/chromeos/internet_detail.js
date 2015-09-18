@@ -724,7 +724,7 @@ cr.define('options.internet', function() {
      * Updates visibility/enabled of the login/disconnect/configure buttons.
      * @private
      */
-    updateConnectionButtonVisibilty_: function() {
+    updateConnectionButtonVisibility_: function() {
       var onc = this.onc_;
       if (this.type_ == 'Ethernet') {
         // Ethernet can never be connected or disconnected and can always be
@@ -1385,7 +1385,7 @@ cr.define('options.internet', function() {
     detailsPage.onc_ = new OncData(oncData);
 
     detailsPage.populateHeader_();
-    detailsPage.updateConnectionButtonVisibilty_();
+    detailsPage.updateConnectionButtonVisibility_();
     detailsPage.updateDetails_();
   };
 
@@ -1404,7 +1404,7 @@ cr.define('options.internet', function() {
     sendShowDetailsMetrics(type, onc.getActiveValue('ConnectionState'));
 
     detailsPage.populateHeader_();
-    detailsPage.updateConnectionButtonVisibilty_();
+    detailsPage.updateConnectionButtonVisibility_();
     detailsPage.updateDetails_();
 
     // TODO(stevenjb): Some of the setup below should be moved to

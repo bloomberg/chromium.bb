@@ -324,7 +324,7 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest,
     RestoredTabsHaveCorrectVisibilityState) {
   // Create tabs.
   GURL test_page(ui_test_utils::GetTestUrl(base::FilePath(),
-      base::FilePath(FILE_PATH_LITERAL("tab-restore-visibilty.html"))));
+      base::FilePath(FILE_PATH_LITERAL("tab-restore-visibility.html"))));
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), test_page, NEW_FOREGROUND_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);

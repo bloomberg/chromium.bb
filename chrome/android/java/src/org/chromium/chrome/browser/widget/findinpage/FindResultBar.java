@@ -40,7 +40,7 @@ import java.util.List;
  * between the entries.
  */
 class FindResultBar extends View {
-    private static final int VISIBILTY_ANIMATION_DURATION_MS = 200;
+    private static final int VISIBILITY_ANIMATION_DURATION_MS = 200;
 
     private final int mBackgroundColor;
     private final int mBackgroundBorderColor;
@@ -136,7 +136,7 @@ class FindResultBar extends View {
                 MathUtils.flipSignIf(mBarTouchWidth, LocalizationUtils.isLayoutRtl()));
 
         mVisibilityAnimation = ObjectAnimator.ofFloat(this, TRANSLATION_X, 0);
-        mVisibilityAnimation.setDuration(VISIBILTY_ANIMATION_DURATION_MS);
+        mVisibilityAnimation.setDuration(VISIBILITY_ANIMATION_DURATION_MS);
         mVisibilityAnimation.setInterpolator(BakedBezierInterpolator.FADE_IN_CURVE);
         mTab.getWindowAndroid().startAnimationOverContent(mVisibilityAnimation);
     }
@@ -150,7 +150,7 @@ class FindResultBar extends View {
 
         mVisibilityAnimation = ObjectAnimator.ofFloat(this, TRANSLATION_X,
                 MathUtils.flipSignIf(mBarTouchWidth, LocalizationUtils.isLayoutRtl()));
-        mVisibilityAnimation.setDuration(VISIBILTY_ANIMATION_DURATION_MS);
+        mVisibilityAnimation.setDuration(VISIBILITY_ANIMATION_DURATION_MS);
         mVisibilityAnimation.setInterpolator(BakedBezierInterpolator.FADE_OUT_CURVE);
         mTab.getWindowAndroid().startAnimationOverContent(mVisibilityAnimation);
         mVisibilityAnimation.addListener(new AnimatorListenerAdapter() {

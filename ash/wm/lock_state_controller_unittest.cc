@@ -960,7 +960,7 @@ TEST_F(LockStateControllerTest, TestHiddenBackgroundLockCancel) {
   Advance(SessionStateAnimator::ANIMATION_SPEED_UNDO_MOVE_WINDOWS);
 
   // When the CancelPrelockAnimation sequence finishes it queues up a
-  // restore background visibilty sequence when the background is hidden.
+  // restore background visibility sequence when the background is hidden.
   ExpectRestoringBackgroundVisibility();
 
   Advance(SessionStateAnimator::ANIMATION_SPEED_IMMEDIATE);
@@ -1010,7 +1010,7 @@ TEST_F(LockStateControllerTest, TestHiddenBackgroundLockUnlock) {
   Advance(SessionStateAnimator::ANIMATION_SPEED_MOVE_WINDOWS);
 
   // When the StartUnlockAnimationAfterUIDestroyed sequence finishes it queues
-  // up a restore background visibilty sequence when the background is hidden.
+  // up a restore background visibility sequence when the background is hidden.
   ExpectRestoringBackgroundVisibility();
 
   Advance(SessionStateAnimator::ANIMATION_SPEED_IMMEDIATE);
