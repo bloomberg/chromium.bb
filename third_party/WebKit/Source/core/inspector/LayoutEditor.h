@@ -26,18 +26,18 @@ class JSONObject;
 class CORE_EXPORT LayoutEditor final : public NoBaseWillBeGarbageCollectedFinalized<LayoutEditor> {
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(LayoutEditor);
 public:
-    static PassOwnPtrWillBeRawPtr<LayoutEditor> create(InspectorCSSAgent* cssAgent, InspectorDOMAgent* domAgent)
+    static PassOwnPtrWillBeRawPtr<LayoutEditor> create(Element* element, InspectorCSSAgent* cssAgent, InspectorDOMAgent* domAgent)
     {
-        return adoptPtrWillBeNoop(new LayoutEditor(cssAgent, domAgent));
+        return adoptPtrWillBeNoop(new LayoutEditor(element, cssAgent, domAgent));
     }
 
-    void selectNode(Node*);
-    Node* node() { return m_element.get(); }
+    ~LayoutEditor();
+    Element* element() { return m_element.get(); }
     PassRefPtr<JSONObject> buildJSONInfo() const;
     void overlayStartedPropertyChange(const String&);
     void overlayPropertyChanged(float);
     void overlayEndedPropertyChange();
-    void clearSelection(bool);
+    void commitChanges();
     void nextSelector();
     void previousSelector();
     String currentSelectorInfo();
@@ -45,7 +45,7 @@ public:
     DECLARE_TRACE();
 
 private:
-    LayoutEditor(InspectorCSSAgent*, InspectorDOMAgent*);
+    LayoutEditor(Element*, InspectorCSSAgent*, InspectorDOMAgent*);
     RefPtrWillBeRawPtr<CSSPrimitiveValue> getPropertyCSSValue(CSSPropertyID) const;
     PassRefPtr<JSONObject> createValueDescription(const String&) const;
     void appendAnchorFor(JSONArray*, const String&, const String&, const FloatPoint&, const FloatPoint&) const;

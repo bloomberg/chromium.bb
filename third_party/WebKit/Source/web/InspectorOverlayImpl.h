@@ -160,12 +160,12 @@ private:
     bool m_needsUpdate;
     RawPtrWillBeMember<InspectorDebuggerAgent> m_debuggerAgent;
     RawPtrWillBeMember<InspectorDOMAgent> m_domAgent;
+    RawPtrWillBeMember<InspectorCSSAgent> m_cssAgent;
     OwnPtrWillBeMember<LayoutEditor> m_layoutEditor;
     OwnPtr<PageOverlay> m_pageOverlay;
     RefPtrWillBeMember<Node> m_hoveredNodeForInspectMode;
     InspectorDOMAgent::SearchMode m_inspectMode;
     OwnPtr<InspectorHighlightConfig> m_inspectModeHighlightConfig;
-    bool m_searchingInLayoutEditor;
 };
 
 } // namespace blink

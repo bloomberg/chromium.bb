@@ -197,16 +197,25 @@ void buildMediaListChain(CSSRule* rule, Vector<String>& mediaArray)
 
 } // namespace
 
-LayoutEditor::LayoutEditor(InspectorCSSAgent* cssAgent, InspectorDOMAgent* domAgent)
-    : m_element(nullptr)
+LayoutEditor::LayoutEditor(Element* element, InspectorCSSAgent* cssAgent, InspectorDOMAgent* domAgent)
+    : m_element(element)
     , m_cssAgent(cssAgent)
     , m_domAgent(domAgent)
     , m_changingProperty(CSSPropertyInvalid)
     , m_propertyInitialValue(0)
     , m_isDirty(false)
-    , m_matchedRules(StaticCSSRuleList::create())
-    , m_currentRuleIndex(0)
+    , m_matchedRules(m_cssAgent->matchedRulesList(element))
+    , m_currentRuleIndex(m_matchedRules->length())
 {
+}
+
+LayoutEditor::~LayoutEditor()
+{
+    if (!m_isDirty)
+        return;
+
+    ErrorString errorString;
+    m_domAgent->undo(&errorString);
 }
 
 DEFINE_TRACE(LayoutEditor)
@@ -217,25 +226,9 @@ DEFINE_TRACE(LayoutEditor)
     visitor->trace(m_matchedRules);
 }
 
-void LayoutEditor::selectNode(Node* node)
-{
-    Element* element = node && node->isElementNode() ? toElement(node) : nullptr;
-    if (element == m_element)
-        return;
-
-    ASSERT(!m_isDirty);
-    m_element = element;
-    m_changingProperty = CSSPropertyInvalid;
-    m_propertyInitialValue = 0;
-    m_matchedRules = m_cssAgent->matchedRulesList(m_element.get());
-    m_currentRuleIndex = m_matchedRules->length();
-}
 
 PassRefPtr<JSONObject> LayoutEditor::buildJSONInfo() const
 {
-    if (!m_element)
-        return nullptr;
-
     FloatQuad content, padding, border, margin;
     InspectorHighlight::buildNodeQuads(m_element.get(), &content, &padding, &border, &margin);
     FloatQuad orthogonals = orthogonalVectors(padding);
@@ -297,7 +290,7 @@ void LayoutEditor::appendAnchorFor(JSONArray* anchors, const String& type, const
 void LayoutEditor::overlayStartedPropertyChange(const String& anchorName)
 {
     m_changingProperty = cssPropertyID(anchorName);
-    if (!m_element || !m_changingProperty)
+    if (!m_changingProperty)
         return;
 
     RefPtrWillBeRawPtr<CSSPrimitiveValue> cssValue = getPropertyCSSValue(m_changingProperty);
@@ -342,18 +335,14 @@ void LayoutEditor::overlayEndedPropertyChange()
     m_valueUnitType = CSSPrimitiveValue::UnitType::Unknown;
 }
 
-void LayoutEditor::clearSelection(bool commitChanges)
+void LayoutEditor::commitChanges()
 {
-    ErrorString errorString;
-    if (commitChanges)
-        m_domAgent->markUndoableState(&errorString);
-    else if (m_isDirty)
-        m_domAgent->undo(&errorString);
+    if (!m_isDirty)
+        return;
 
-    m_element.clear();
     m_isDirty = false;
-    m_matchedRules = StaticCSSRuleList::create();
-    m_currentRuleIndex = 0;
+    ErrorString errorString;
+    m_domAgent->markUndoableState(&errorString);
 }
 
 bool LayoutEditor::currentStyleIsInline()
@@ -379,9 +368,6 @@ void LayoutEditor::previousSelector()
 
 String LayoutEditor::currentSelectorInfo()
 {
-    if (!m_element)
-        return String();
-
     RefPtr<JSONObject> object = JSONObject::create();
     String currentSelectorText = currentStyleIsInline() ? "inline style" : toCSSStyleRule(m_matchedRules->item(m_currentRuleIndex))->selectorText();
     object->setString("selector", currentSelectorText);
@@ -431,9 +417,6 @@ String LayoutEditor::currentSelectorInfo()
 
 bool LayoutEditor::setCSSPropertyValueInCurrentRule(const String& value)
 {
-    if (!m_element)
-        return false;
-
     RefPtrWillBeRawPtr<CSSStyleDeclaration> effectiveDeclaration = m_cssAgent->findEffectiveDeclaration(m_changingProperty, m_matchedRules.get(), m_element->style());
     bool forceImportant = false;
 
