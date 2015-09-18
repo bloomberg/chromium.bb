@@ -111,9 +111,10 @@ void PopulateResourceResponse(ResourceRequestInfoImpl* info,
     response->head.security_info = SerializeSecurityInfo(ssl_status);
   } else {
     // We should not have any SSL state.
-    DCHECK(!request->ssl_info().cert_status &&
-           request->ssl_info().security_bits == -1 &&
-           !request->ssl_info().connection_status);
+    DCHECK(!request->ssl_info().cert_status);
+    DCHECK_EQ(request->ssl_info().security_bits, -1);
+    DCHECK_EQ(request->ssl_info().key_exchange_info, 0);
+    DCHECK(!request->ssl_info().connection_status);
   }
 }
 

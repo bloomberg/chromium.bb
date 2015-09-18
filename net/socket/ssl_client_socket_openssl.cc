@@ -727,6 +727,8 @@ bool SSLClientSocketOpenSSL::GetSSLInfo(SSLInfo* ssl_info) {
   const SSL_CIPHER* cipher = SSL_get_current_cipher(ssl_);
   CHECK(cipher);
   ssl_info->security_bits = SSL_CIPHER_get_bits(cipher, NULL);
+  ssl_info->key_exchange_info =
+      SSL_SESSION_get_key_exchange_info(SSL_get_session(ssl_));
 
   ssl_info->connection_status = EncodeSSLConnectionStatus(
       static_cast<uint16>(SSL_CIPHER_get_id(cipher)), 0 /* no compression */,

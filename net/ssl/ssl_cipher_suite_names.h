@@ -60,6 +60,11 @@ NET_EXPORT bool IsSecureTLSCipherSuite(uint16 cipher_suite);
 // Returns true if |cipher_suite| is suitable for use with False Start.
 NET_EXPORT bool IsFalseStartableTLSCipherSuite(uint16 cipher_suite);
 
+// Returns the static curve name of |key_exchange_info| if the |cipher_suite|
+// is an elliptic curve, and a name is known. Returns nullptr otherwise.
+// Only defined for OpenSSL, returns nullptr otherwise.
+NET_EXPORT const char* ECCurveName(uint16 cipher_suite, int key_exchange_info);
+
 }  // namespace net
 
 #endif  // NET_SSL_SSL_CIPHER_SUITE_NAMES_H_

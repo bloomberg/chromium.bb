@@ -27,6 +27,7 @@ SSLInfo& SSLInfo::operator=(const SSLInfo& info) {
   unverified_cert = info.unverified_cert;
   cert_status = info.cert_status;
   security_bits = info.security_bits;
+  key_exchange_info = info.key_exchange_info;
   connection_status = info.connection_status;
   is_issued_by_known_root = info.is_issued_by_known_root;
   client_cert_sent = info.client_cert_sent;
@@ -44,6 +45,7 @@ void SSLInfo::Reset() {
   unverified_cert = NULL;
   cert_status = 0;
   security_bits = -1;
+  key_exchange_info = 0;
   connection_status = 0;
   is_issued_by_known_root = false;
   client_cert_sent = false;

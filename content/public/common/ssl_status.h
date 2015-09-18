@@ -45,6 +45,7 @@ struct CONTENT_EXPORT SSLStatus {
     return security_style == status.security_style &&
            cert_id == status.cert_id && cert_status == status.cert_status &&
            security_bits == status.security_bits &&
+           key_exchange_info == status.key_exchange_info &&
            connection_status == status.connection_status &&
            content_status == status.content_status &&
            signed_certificate_timestamp_ids ==
@@ -56,6 +57,7 @@ struct CONTENT_EXPORT SSLStatus {
   int cert_id;
   net::CertStatus cert_status;
   int security_bits;
+  int key_exchange_info;
   int connection_status;
   // A combination of the ContentStatusFlags above.
   int content_status;

@@ -93,6 +93,9 @@ enum {
 
   RESPONSE_INFO_UNUSED_SINCE_PREFETCH = 1 << 21,
 
+  // This bit is set if the response has a key-exchange-info field at the end.
+  RESPONSE_INFO_HAS_KEY_EXCHANGE_INFO = 1 << 22,
+
   // TODO(darin): Add other bits to indicate alternate request methods.
   // For now, we don't support storing those.
 };
@@ -273,6 +276,14 @@ bool HttpResponseInfo::InitFromPickle(const base::Pickle& pickle,
     }
   }
 
+  // Read key_exchange_info
+  if (flags & RESPONSE_INFO_HAS_KEY_EXCHANGE_INFO) {
+    int key_exchange_info;
+    if (!iter.ReadInt(&key_exchange_info))
+      return false;
+    ssl_info.key_exchange_info = key_exchange_info;
+  }
+
   was_fetched_via_spdy = (flags & RESPONSE_INFO_WAS_SPDY) != 0;
 
   was_npn_negotiated = (flags & RESPONSE_INFO_WAS_NPN) != 0;
@@ -297,6 +308,8 @@ void HttpResponseInfo::Persist(base::Pickle* pickle,
     flags |= RESPONSE_INFO_HAS_CERT_STATUS;
     if (ssl_info.security_bits != -1)
       flags |= RESPONSE_INFO_HAS_SECURITY_BITS;
+    if (ssl_info.key_exchange_info != 0)
+      flags |= RESPONSE_INFO_HAS_KEY_EXCHANGE_INFO;
     if (ssl_info.connection_status != 0)
       flags |= RESPONSE_INFO_HAS_SSL_CONNECTION_STATUS;
   }
@@ -368,6 +381,9 @@ void HttpResponseInfo::Persist(base::Pickle* pickle,
 
   if (connection_info != CONNECTION_INFO_UNKNOWN)
     pickle->WriteInt(static_cast<int>(connection_info));
+
+  if (ssl_info.is_valid() && ssl_info.key_exchange_info != 0)
+    pickle->WriteInt(ssl_info.key_exchange_info);
 }
 
 HttpResponseInfo::ConnectionInfo HttpResponseInfo::ConnectionInfoFromNextProto(

@@ -4,6 +4,9 @@
 
 #include "net/ssl/ssl_cipher_suite_names.h"
 
+#if defined(USE_OPENSSL)
+#include <openssl/ssl.h>
+#endif
 #include <stdlib.h>
 
 #include "base/logging.h"
@@ -417,6 +420,24 @@ bool IsFalseStartableTLSCipherSuite(uint16 cipher_suite) {
     return false;
 
   return true;
+}
+
+const char* ECCurveName(uint16 cipher_suite, int key_exchange_info) {
+#if defined(USE_OPENSSL)
+  int key_exchange, cipher, mac;
+  if (!GetCipherProperties(cipher_suite, &key_exchange, &cipher, &mac))
+    return nullptr;
+  switch (key_exchange) {
+    case 14:  // ECDHE_ECDSA
+    case 16:  // ECDHE_RSA
+      break;
+    default:
+      return nullptr;
+  }
+  return SSL_get_curve_name(key_exchange_info);
+#else
+  return nullptr;
+#endif
 }
 
 }  // namespace net

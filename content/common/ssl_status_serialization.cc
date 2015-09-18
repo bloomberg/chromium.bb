@@ -33,6 +33,7 @@ std::string SerializeSecurityInfo(const SSLStatus& ssl_status) {
   pickle.WriteInt(ssl_status.cert_id);
   pickle.WriteUInt32(ssl_status.cert_status);
   pickle.WriteInt(ssl_status.security_bits);
+  pickle.WriteInt(ssl_status.key_exchange_info);
   pickle.WriteInt(ssl_status.connection_status);
   pickle.WriteInt(ssl_status.signed_certificate_timestamp_ids.size());
   for (SignedCertificateTimestampIDStatusList::const_iterator iter =
@@ -59,6 +60,7 @@ bool DeserializeSecurityInfo(const std::string& state, SSLStatus* ssl_status) {
   if (!iter.ReadInt(&security_style) || !iter.ReadInt(&ssl_status->cert_id) ||
       !iter.ReadUInt32(&ssl_status->cert_status) ||
       !iter.ReadInt(&ssl_status->security_bits) ||
+      !iter.ReadInt(&ssl_status->key_exchange_info) ||
       !iter.ReadInt(&ssl_status->connection_status) ||
       !iter.ReadInt(&num_scts_to_read)) {
     *ssl_status = SSLStatus();
@@ -74,6 +76,12 @@ bool DeserializeSecurityInfo(const std::string& state, SSLStatus* ssl_status) {
 
   // Sanity check |security_bits|: the only allowed negative value is -1.
   if (ssl_status->security_bits < -1) {
+    *ssl_status = SSLStatus();
+    return false;
+  }
+
+  // Sanity check |key_exchange_info|: 0 or greater.
+  if (ssl_status->key_exchange_info < 0) {
     *ssl_status = SSLStatus();
     return false;
   }
