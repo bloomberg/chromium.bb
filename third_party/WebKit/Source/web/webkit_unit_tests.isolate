@@ -36,6 +36,6 @@
     '../../../../base/base.isolate',
     '../../../../gin/v8.isolate',
     # Required on Android to copy icudtl.dat to a device.
-    "../../../../third_party/icu/icu.isolate",
+    '../../../icu/icu.isolate',
   ],
 }
