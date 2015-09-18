@@ -202,7 +202,7 @@ void LocationBarView::Init() {
   gfx::FontList font_list = ResourceBundle::GetSharedInstance().GetFontList(
       ResourceBundle::BaseFont);
   const int current_font_size = font_list.GetFontSize();
-  const int desired_font_size = browser_defaults::kOmniboxFontPixelSize;
+  const int desired_font_size = GetLayoutConstant(OMNIBOX_FONT_PIXEL_SIZE);
   if (current_font_size != desired_font_size) {
     font_list =
         font_list.DeriveWithSizeDelta(desired_font_size - current_font_size);

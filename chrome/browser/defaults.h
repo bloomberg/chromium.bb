@@ -13,9 +13,6 @@
 
 namespace browser_defaults {
 
-// Size of the font used in the omnibox, in pixels.
-extern const int kOmniboxFontPixelSize;
-
 // Can the browser be alive without any browser windows?
 extern const bool kBrowserAliveWithNoWindows;
 

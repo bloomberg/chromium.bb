@@ -13,8 +13,9 @@ int GetLayoutConstant(LayoutConstant constant) {
   const int kLocationBarBubbleVerticalPadding[] = {1, 3, 3};
   const int kLocationBarHeight[] = {0, 28, 32};
   const int kLocationBarHorizontalPadding[] = {3, 6, 6};
-  const int kLocationBarVerticalPadding[] = {2, 6, 6};
+  const int kLocationBarVerticalPadding[] = {2, 2, 2};
   const int kOmniboxDropdownBorderInterior[] = {6, 0, 0};
+  const int kOmniboxFontPixelSize[] = {16, 14, 14};
   const int kToolbarViewContentShadowHeight[] = {0, 0, 0};
   const int kToolbarViewContentShadowHeightAsh[] = {2, 0, 0};
   const int kToolbarViewElementPadding[] = {0, 0, 8};
@@ -37,6 +38,8 @@ int GetLayoutConstant(LayoutConstant constant) {
       return kLocationBarVerticalPadding[mode];
     case OMNIBOX_DROPDOWN_BORDER_INTERIOR:
       return kOmniboxDropdownBorderInterior[mode];
+    case OMNIBOX_FONT_PIXEL_SIZE:
+      return kOmniboxFontPixelSize[mode];
     case TOOLBAR_VIEW_CONTENT_SHADOW_HEIGHT:
       return kToolbarViewContentShadowHeight[mode];
     case TOOLBAR_VIEW_CONTENT_SHADOW_HEIGHT_ASH:

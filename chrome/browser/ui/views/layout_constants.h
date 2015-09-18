@@ -34,6 +34,9 @@ enum LayoutConstant {
   // the actual border.
   OMNIBOX_DROPDOWN_BORDER_INTERIOR,
 
+  // The font size to use in the location bar and omnibox dropdown, in pixels.
+  OMNIBOX_FONT_PIXEL_SIZE,
+
   // Non-ash uses a rounded content area with no shadow in the assets.
   // Ash doesn't use a rounded content area and its top edge has an extra
   // shadow.

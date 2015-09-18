@@ -6,8 +6,6 @@
 
 namespace browser_defaults {
 
-const int kOmniboxFontPixelSize = 16;
-
 #if defined(OS_CHROMEOS) || defined(OS_MACOSX)
 const bool kBrowserAliveWithNoWindows = true;
 const bool kShowExitMenuItem = false;
