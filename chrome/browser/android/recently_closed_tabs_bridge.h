@@ -9,7 +9,7 @@
 
 #include "base/android/scoped_java_ref.h"
 #include "base/compiler_specific.h"
-#include "chrome/browser/sessions/tab_restore_service_observer.h"
+#include "components/sessions/core/tab_restore_service_observer.h"
 
 class Profile;
 class TabRestoreService;

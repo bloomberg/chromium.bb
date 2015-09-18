@@ -2,20 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SESSIONS_PERSISTENT_TAB_RESTORE_SERVICE_H_
-#define CHROME_BROWSER_SESSIONS_PERSISTENT_TAB_RESTORE_SERVICE_H_
+#ifndef COMPONENTS_SESSIONS_CORE_PERSISTENT_TAB_RESTORE_SERVICE_H_
+#define COMPONENTS_SESSIONS_CORE_PERSISTENT_TAB_RESTORE_SERVICE_H_
 
 #include <vector>
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/sessions/tab_restore_service.h"
-#include "chrome/browser/sessions/tab_restore_service_helper.h"
+#include "components/sessions/core/tab_restore_service.h"
 #include "components/sessions/core/tab_restore_service_client.h"
+#include "components/sessions/core/tab_restore_service_helper.h"
+#include "components/sessions/sessions_export.h"
 
 // Tab restore service that persists data on disk.
-class PersistentTabRestoreService : public TabRestoreService {
+class SESSIONS_EXPORT PersistentTabRestoreService : public TabRestoreService {
  public:
   // Does not take ownership of |time_factory|.
   PersistentTabRestoreService(
@@ -62,4 +63,4 @@ class PersistentTabRestoreService : public TabRestoreService {
   DISALLOW_COPY_AND_ASSIGN(PersistentTabRestoreService);
 };
 
-#endif  // CHROME_BROWSER_SESSIONS_PERSISTENT_TAB_RESTORE_SERVICE_H_
+#endif  // COMPONENTS_SESSIONS_CORE_PERSISTENT_TAB_RESTORE_SERVICE_H_

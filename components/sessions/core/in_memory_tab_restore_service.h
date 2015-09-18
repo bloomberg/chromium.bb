@@ -2,15 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SESSIONS_IN_MEMORY_TAB_RESTORE_SERVICE_H_
-#define CHROME_BROWSER_SESSIONS_IN_MEMORY_TAB_RESTORE_SERVICE_H_
+#ifndef COMPONENTS_SESSIONS_CORE_IN_MEMORY_TAB_RESTORE_SERVICE_H_
+#define COMPONENTS_SESSIONS_CORE_IN_MEMORY_TAB_RESTORE_SERVICE_H_
 
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/sessions/tab_restore_service.h"
-#include "chrome/browser/sessions/tab_restore_service_helper.h"
+#include "components/sessions/core/tab_restore_service.h"
 #include "components/sessions/core/tab_restore_service_client.h"
+#include "components/sessions/core/tab_restore_service_helper.h"
+#include "components/sessions/sessions_export.h"
 
 namespace sessions {
 class TabRestoreServiceClient;
@@ -20,7 +21,7 @@ class TabRestoreServiceClient;
 // Android where tabs persistence is implemented on the application side in
 // Java. Other platforms should use PersistentTabRestoreService which can be
 // instantiated through the TabRestoreServiceFactory.
-class InMemoryTabRestoreService : public TabRestoreService {
+class SESSIONS_EXPORT InMemoryTabRestoreService : public TabRestoreService {
  public:
   // Creates a new TabRestoreService and provides an object that provides the
   // current time. The TabRestoreService does not take ownership of
@@ -60,4 +61,4 @@ class InMemoryTabRestoreService : public TabRestoreService {
   DISALLOW_COPY_AND_ASSIGN(InMemoryTabRestoreService);
 };
 
-#endif  // CHROME_BROWSER_SESSIONS_IN_MEMORY_TAB_RESTORE_SERVICE_H_
+#endif  // COMPONENTS_SESSIONS_CORE_IN_MEMORY_TAB_RESTORE_SERVICE_H_

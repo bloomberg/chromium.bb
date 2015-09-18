@@ -9,9 +9,9 @@
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 
 #if defined(OS_ANDROID)
-#include "chrome/browser/sessions/in_memory_tab_restore_service.h"
+#include "components/sessions/core/in_memory_tab_restore_service.h"
 #else
-#include "chrome/browser/sessions/persistent_tab_restore_service.h"
+#include "components/sessions/core/persistent_tab_restore_service.h"
 #endif
 
 // static

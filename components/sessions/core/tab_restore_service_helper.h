@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SESSIONS_TAB_RESTORE_SERVICE_HELPER_H_
-#define CHROME_BROWSER_SESSIONS_TAB_RESTORE_SERVICE_HELPER_H_
+#ifndef COMPONENTS_SESSIONS_CORE_TAB_RESTORE_SERVICE_HELPER_H_
+#define COMPONENTS_SESSIONS_CORE_TAB_RESTORE_SERVICE_HELPER_H_
 
 #include <set>
 #include <vector>
@@ -11,9 +11,10 @@
 #include "base/basictypes.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
-#include "chrome/browser/sessions/tab_restore_service.h"
+#include "components/sessions/core/tab_restore_service.h"
 #include "components/sessions/session_id.h"
 #include "components/sessions/session_types.h"
+#include "components/sessions/sessions_export.h"
 
 class TabRestoreService;
 class TabRestoreServiceDelegate;
@@ -27,7 +28,7 @@ class TabRestoreServiceClient;
 // Helper class used to implement InMemoryTabRestoreService and
 // PersistentTabRestoreService. See tab_restore_service.h for method-level
 // comments.
-class TabRestoreServiceHelper {
+class SESSIONS_EXPORT TabRestoreServiceHelper {
  public:
   typedef TabRestoreService::Entries Entries;
   typedef TabRestoreService::Entry Entry;
@@ -187,4 +188,4 @@ class TabRestoreServiceHelper {
   DISALLOW_COPY_AND_ASSIGN(TabRestoreServiceHelper);
 };
 
-#endif  // CHROME_BROWSER_SESSIONS_TAB_RESTORE_SERVICE_HELPER_H_
+#endif  // COMPONENTS_SESSIONS_CORE_TAB_RESTORE_SERVICE_HELPER_H_

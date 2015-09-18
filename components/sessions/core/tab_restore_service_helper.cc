@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/sessions/tab_restore_service_helper.h"
+#include "components/sessions/core/tab_restore_service_helper.h"
 
 #include <algorithm>
 #include <iterator>
@@ -10,10 +10,10 @@
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/stl_util.h"
-#include "chrome/browser/sessions/tab_restore_service_delegate.h"
-#include "chrome/browser/sessions/tab_restore_service_observer.h"
 #include "components/sessions/core/live_tab.h"
 #include "components/sessions/core/tab_restore_service_client.h"
+#include "components/sessions/core/tab_restore_service_delegate.h"
+#include "components/sessions/core/tab_restore_service_observer.h"
 #include "components/sessions/serialized_navigation_entry.h"
 #include "components/sessions/session_types.h"
 

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/sessions/persistent_tab_restore_service.h"
+#include "components/sessions/core/persistent_tab_restore_service.h"
 
 #include <cstring>  // memcpy
 #include <vector>

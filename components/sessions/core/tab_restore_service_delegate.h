@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SESSIONS_TAB_RESTORE_SERVICE_DELEGATE_H_
-#define CHROME_BROWSER_SESSIONS_TAB_RESTORE_SERVICE_DELEGATE_H_
+#ifndef COMPONENTS_SESSIONS_CORE_TAB_RESTORE_SERVICE_DELEGATE_H_
+#define COMPONENTS_SESSIONS_CORE_TAB_RESTORE_SERVICE_DELEGATE_H_
 
 #include <string>
 #include <vector>
 
 #include "components/sessions/session_id.h"
+#include "components/sessions/sessions_export.h"
 
 namespace sessions {
 class LiveTab;
@@ -22,7 +23,7 @@ class TabClientData;
 // Objects implement this interface to provide necessary functionality for
 // TabRestoreService to operate. These methods are mostly copies of existing
 // Browser methods.
-class TabRestoreServiceDelegate {
+class SESSIONS_EXPORT TabRestoreServiceDelegate {
  public:
   // see BrowserWindow::Show()
   virtual void ShowBrowserWindow() = 0;
@@ -72,4 +73,4 @@ class TabRestoreServiceDelegate {
   virtual ~TabRestoreServiceDelegate() {}
 };
 
-#endif  // CHROME_BROWSER_SESSIONS_TAB_RESTORE_SERVICE_DELEGATE_H_
+#endif  // COMPONENTS_SESSIONS_CORE_TAB_RESTORE_SERVICE_DELEGATE_H_

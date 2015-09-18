@@ -6,7 +6,7 @@
 // only Chrome OS or Ash?
 #if defined(USE_AURA)
 
-#include "chrome/browser/sessions/persistent_tab_restore_service.h"
+#include "components/sessions/core/persistent_tab_restore_service.h"
 
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"

@@ -9,8 +9,8 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
-#include "chrome/browser/sessions/tab_restore_service_delegate.h"
 #include "chrome/browser/ui/host_desktop.h"
+#include "components/sessions/core/tab_restore_service_delegate.h"
 
 class Browser;
 class Profile;

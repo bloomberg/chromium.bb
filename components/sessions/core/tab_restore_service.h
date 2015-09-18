@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SESSIONS_TAB_RESTORE_SERVICE_H_
-#define CHROME_BROWSER_SESSIONS_TAB_RESTORE_SERVICE_H_
+#ifndef COMPONENTS_SESSIONS_CORE_TAB_RESTORE_SERVICE_H_
+#define COMPONENTS_SESSIONS_CORE_TAB_RESTORE_SERVICE_H_
 
 #include <list>
 #include <string>
@@ -16,6 +16,7 @@
 #include "components/sessions/serialized_navigation_entry.h"
 #include "components/sessions/session_id.h"
 #include "components/sessions/session_types.h"
+#include "components/sessions/sessions_export.h"
 #include "ui/base/window_open_disposition.h"
 
 class TabRestoreServiceDelegate;
@@ -36,10 +37,10 @@ class LiveTab;
 //
 // To listen for changes to the set of entries managed by the TabRestoreService
 // add an observer.
-class TabRestoreService : public KeyedService {
+class SESSIONS_EXPORT TabRestoreService : public KeyedService {
  public:
   // Interface used to allow the test to provide a custom time.
-  class TimeFactory {
+  class SESSIONS_EXPORT TimeFactory {
    public:
     virtual ~TimeFactory();
     virtual base::Time TimeNow() = 0;
@@ -51,7 +52,7 @@ class TabRestoreService : public KeyedService {
     WINDOW
   };
 
-  struct Entry {
+  struct SESSIONS_EXPORT Entry {
     Entry();
     explicit Entry(Type type);
     virtual ~Entry();
@@ -73,7 +74,7 @@ class TabRestoreService : public KeyedService {
   };
 
   // Represents a previously open tab.
-  struct Tab : public Entry {
+  struct SESSIONS_EXPORT Tab : public Entry {
     Tab();
     Tab(const Tab& tab);
     ~Tab() override;
@@ -109,7 +110,7 @@ class TabRestoreService : public KeyedService {
   };
 
   // Represents a previously open window.
-  struct Window : public Entry {
+  struct SESSIONS_EXPORT Window : public Entry {
     Window();
     ~Window() override;
 
@@ -191,4 +192,4 @@ class TabRestoreService : public KeyedService {
   virtual void DeleteLastSession() = 0;
 };
 
-#endif  // CHROME_BROWSER_SESSIONS_TAB_RESTORE_SERVICE_H_
+#endif  // COMPONENTS_SESSIONS_CORE_TAB_RESTORE_SERVICE_H_

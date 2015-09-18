@@ -14,11 +14,19 @@
       'sessions/base_session_service_commands.h',
       'sessions/base_session_service_delegate.h',
       'sessions/core/live_tab.h',
+      'sessions/core/persistent_tab_restore_service.cc',
+      'sessions/core/persistent_tab_restore_service.h',
       'sessions/core/serialized_navigation_driver.h',
       'sessions/core/session_constants.cc',
       'sessions/core/session_constants.h',
+      'sessions/core/tab_restore_service.cc',
+      'sessions/core/tab_restore_service.h',
       'sessions/core/tab_restore_service_client.cc',
       'sessions/core/tab_restore_service_client.h',
+      'sessions/core/tab_restore_service_helper.cc',
+      'sessions/core/tab_restore_service_helper.h',
+      'sessions/core/tab_restore_service_delegate.h',
+      'sessions/core/tab_restore_service_observer.h',
       'sessions/serialized_navigation_entry.cc',
       'sessions/serialized_navigation_entry.h',
       'sessions/session_backend.cc',
@@ -80,6 +88,7 @@
             '../ui/base/ui_base.gyp:ui_base',
             '../ui/gfx/gfx.gyp:gfx_geometry',
             '../url/url.gyp:url_lib',
+            'keyed_service_core',
           ],
           'include_dirs': [
             '..',
@@ -100,8 +109,19 @@
             'sessions/content/content_tab_client_data.cc',
             'sessions/content/content_tab_client_data.h',
           ],
-        },
-      ],
+          'conditions': [
+            ['OS=="android"', {
+             'sources': [
+               'sessions/core/in_memory_tab_restore_service.cc',
+               'sessions/core/in_memory_tab_restore_service.h',
+              ],
+              'sources!': [
+               'sessions/core/persistent_tab_restore_service.cc',
+              ],
+            },
+          ],
+        ],
+      }],
     }, {  # OS==ios
       'targets': [
         {
@@ -115,6 +135,7 @@
             '../ui/base/ui_base.gyp:ui_base',
             '../ui/gfx/gfx.gyp:gfx_geometry',
             '../url/url.gyp:url_lib',
+            'keyed_service_core',
           ],
           'include_dirs': [
             '..',
