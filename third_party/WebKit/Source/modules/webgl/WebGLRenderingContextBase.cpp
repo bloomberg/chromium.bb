@@ -4017,6 +4017,10 @@ void WebGLRenderingContextBase::texImage2DBase(GLenum target, GLint level, GLenu
 void WebGLRenderingContextBase::texImage2DImpl(GLenum target, GLint level, GLenum internalformat, GLenum format, GLenum type, Image* image, WebGLImageConversion::ImageHtmlDomSource domSource, bool flipY, bool premultiplyAlpha)
 {
     // All calling functions check isContextLost, so a duplicate check is not needed here.
+    if (type == GL_UNSIGNED_INT_10F_11F_11F_REV) {
+        // The UNSIGNED_INT_10F_11F_11F_REV type pack/unpack isn't implemented.
+        type = GL_FLOAT;
+    }
     Vector<uint8_t> data;
     WebGLImageConversion::ImageExtractor imageExtractor(image, domSource, premultiplyAlpha, m_unpackColorspaceConversion == GL_NONE);
     if (!imageExtractor.extractSucceeded()) {
@@ -4094,8 +4098,7 @@ bool WebGLRenderingContextBase::validateTexFunc(const char* functionName, TexIma
             synthesizeGLError(GL_INVALID_VALUE, functionName, "dimensions out of range");
             return false;
         }
-        // FIXME: Remove this restriction if it won't be needed for WebGL2.
-        if (texture->getType(target, level) != type) {
+        if (!isWebGL2OrHigher() && texture->getType(target, level) != type) {
             synthesizeGLError(GL_INVALID_OPERATION, functionName, "type of incoming data does not match that used to define the texture");
             return false;
         }
@@ -4176,6 +4179,10 @@ void WebGLRenderingContextBase::texImage2D(GLenum target, GLint level, GLenum in
     }
     if (isContextLost() || !validateTexFunc("texImage2D", NotTexSubImage2D, SourceImageData, target, level, internalformat, pixels->width(), pixels->height(), 0, format, type, 0, 0))
         return;
+    if (type == GL_UNSIGNED_INT_10F_11F_11F_REV) {
+        // The UNSIGNED_INT_10F_11F_11F_REV type pack/unpack isn't implemented.
+        type = GL_FLOAT;
+    }
     Vector<uint8_t> data;
     bool needConversion = true;
     // The data from ImageData is always of format RGBA8.
@@ -4200,6 +4207,10 @@ void WebGLRenderingContextBase::texImage2D(GLenum target, GLint level, GLenum in
 {
     if (isContextLost() || !validateHTMLImageElement("texImage2D", image, exceptionState))
         return;
+    if (type == GL_UNSIGNED_INT_10F_11F_11F_REV) {
+        // The UNSIGNED_INT_10F_11F_11F_REV type pack/unpack isn't implemented.
+        type = GL_FLOAT;
+    }
 
     RefPtr<Image> imageForRender = image->cachedImage()->imageForLayoutObject(image->layoutObject());
     if (imageForRender && imageForRender->isSVGImage())
@@ -4422,6 +4433,10 @@ void WebGLRenderingContextBase::texParameteri(GLenum target, GLenum pname, GLint
 void WebGLRenderingContextBase::texSubImage2DImpl(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLenum format, GLenum type, Image* image, WebGLImageConversion::ImageHtmlDomSource domSource, bool flipY, bool premultiplyAlpha)
 {
     // All calling functions check isContextLost, so a duplicate check is not needed here.
+    if (type == GL_UNSIGNED_INT_10F_11F_11F_REV) {
+        // The UNSIGNED_INT_10F_11F_11F_REV type pack/unpack isn't implemented.
+        type = GL_FLOAT;
+    }
     Vector<uint8_t> data;
     WebGLImageConversion::ImageExtractor imageExtractor(image, domSource, premultiplyAlpha, m_unpackColorspaceConversion == GL_NONE);
     if (!imageExtractor.extractSucceeded()) {
@@ -4485,7 +4500,10 @@ void WebGLRenderingContextBase::texSubImage2D(GLenum target, GLint level, GLint 
     }
     if (isContextLost() || !validateTexFunc("texSubImage2D", TexSubImage2D, SourceImageData, target, level, 0,  pixels->width(), pixels->height(), 0, format, type, xoffset, yoffset))
         return;
-
+    if (type == GL_UNSIGNED_INT_10F_11F_11F_REV) {
+        // The UNSIGNED_INT_10F_11F_11F_REV type pack/unpack isn't implemented.
+        type = GL_FLOAT;
+    }
     Vector<uint8_t> data;
     bool needConversion = true;
     // The data from ImageData is always of format RGBA8.
@@ -4510,6 +4528,11 @@ void WebGLRenderingContextBase::texSubImage2D(GLenum target, GLint level, GLint 
 {
     if (isContextLost() || !validateHTMLImageElement("texSubImage2D", image, exceptionState))
         return;
+
+    if (type == GL_UNSIGNED_INT_10F_11F_11F_REV) {
+        // The UNSIGNED_INT_10F_11F_11F_REV type pack/unpack isn't implemented.
+        type = GL_FLOAT;
+    }
 
     RefPtr<Image> imageForRender = image->cachedImage()->imageForLayoutObject(image->layoutObject());
     if (imageForRender && imageForRender->isSVGImage())
