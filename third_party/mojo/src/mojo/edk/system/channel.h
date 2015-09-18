@@ -7,6 +7,8 @@
 
 #include <stdint.h>
 
+#include <vector>
+
 #include "base/containers/hash_tables.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -214,7 +216,9 @@ class MOJO_SYSTEM_IMPL_EXPORT Channel final
   // and remote IDs. This will also send a
   // |Subtype::CHANNEL_ATTACH_AND_RUN_ENDPOINT| message to the remote side to
   // tell it to create an endpoint as well. This returns the *remote* ID (one
-  // for which |is_remote()| returns true).
+  // for which |is_remote()| returns true). If |WillShutdownSoon()| has been
+  // called, |endpoint| will not be attached to this channel, and this will
+  // return an invalid ID.
   //
   // TODO(vtl): Maybe limit the number of attached message pipes.
   ChannelEndpointId AttachAndRunEndpoint(
@@ -265,6 +269,13 @@ class MOJO_SYSTEM_IMPL_EXPORT Channel final
   // TODO(vtl): We need to keep track of remote IDs (so that we don't collide
   // if/when we wrap).
   RemoteChannelEndpointIdGenerator remote_id_generator_ MOJO_GUARDED_BY(mutex_);
+
+  using EndpointList = std::vector<scoped_refptr<ChannelEndpoint>>;
+  // List of endpoints that were created while this |Channel| was being shut
+  // down. These are created, but have not been attached to this |Channel| and
+  // need to be shut down after all attached |ChannelEndpoint|s have been
+  // detached.
+  EndpointList aborted_endpoints_ MOJO_GUARDED_BY(mutex_);
 
   MOJO_DISALLOW_COPY_AND_ASSIGN(Channel);
 };

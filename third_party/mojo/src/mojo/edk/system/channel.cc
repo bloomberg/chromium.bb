@@ -88,6 +88,29 @@ void Channel::Shutdown() {
   DVLOG_IF(2, num_live || num_zombies) << "Shut down Channel with " << num_live
                                        << " live endpoints and " << num_zombies
                                        << " zombies";
+  // At this point, there should be no attached endpoints. However, it is
+  // possible for this |Channel| to have created new endpoints. These have not
+  // been attached, but are tracked in |aborted_endpoints_| and also need to be
+  // detached.
+  // It is also important to note that because there are no attached endpoints,
+  // it should not be possible for anything to race with the rest of this
+  // function and create more endpoints.
+  EndpointList to_abort;
+  {
+    MutexLocker locker(&mutex_);
+    DCHECK(local_id_to_endpoint_map_.empty());
+    std::swap(to_abort, aborted_endpoints_);
+  }
+  for (auto& endpoint : to_abort)
+    endpoint->DetachFromChannel();
+  DVLOG_IF(2, !to_abort.empty()) << "Endpoints created while shutting down "
+                                 << "Channel: " << to_abort.size();
+#if DCHECK_IS_ON()
+  {
+    MutexLocker locker(&mutex_);
+    DCHECK(aborted_endpoints_.empty());
+  }
+#endif
 }
 
 void Channel::WillShutdownSoon() {
@@ -583,6 +606,28 @@ ChannelEndpointId Channel::AttachAndRunEndpoint(
 
     DLOG_IF(WARNING, is_shutting_down_)
         << "AttachAndRunEndpoint() while shutting down";
+    // Returning an invalid ID here prevents a race from occuring when
+    // |Shutdown()| is run at the same time on the IO thread. The race happens
+    // after |Shutdown()| has released |mutex_| and is iterating through the
+    // endpoints. It is possible for a new endpoint to be added while
+    // |Shutdown()| is iterating, which results in the new endpoint having a
+    // reference to this Channel. Since |ChannelEndpoint| holds a reference to a
+    // |Channel| by pointer (and not |scoped_refptr|), this |Channel| will
+    // likely be deleted after |Shutdown()|, causing a use-after-free when the
+    // endpoint later tries to send a message or even just close.  The invalid
+    // ID will be serialized and the receiving end will parse it in
+    // |DeserializeEndpoint()|, which handles invalid IDs (see comment in
+    // |DeserializeEndpoint()|).
+    if (is_shutting_down_) {
+      // The |ChannelEndpoint| is now in a half-created state. Where it may have
+      // a |ChannelEndpointClient|, but is not attached to a |Channel|. The
+      // endpoint needs to be shut down by calling
+      // |ChannelEndpoint::DetachFromChannel()|, but doing so inside this
+      // function can lead to a deadlock. Instead, record the endpoint in a list
+      // and let the racing call to |Shutdown()| take care of it.
+      aborted_endpoints_.push_back(endpoint);
+      return ChannelEndpointId();
+    }
 
     do {
       local_id = local_id_generator_.GetNext();

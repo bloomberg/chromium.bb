@@ -467,6 +467,32 @@ TEST_F(EmbedderTest, ChannelShutdownRace_MessagePipeClose) {
   }
 }
 
+TEST_F(EmbedderTest, ChannelShutdownRace_MessagePipePassing) {
+  const size_t kIterations = 1000;
+  mojo::test::ScopedIPCSupport ipc_support(test_io_task_runner());
+
+  for (size_t i = 0; i < kIterations; i++) {
+    PlatformChannelPair channel_pair;
+    scoped_ptr<ScopedTestChannel> server_channel(
+        new ScopedTestChannel(channel_pair.PassServerHandle()));
+    server_channel->WaitForChannelCreationCompletion();
+    server_channel->NoWaitOnShutdown();
+
+    MojoHandle server_mp = server_channel->bootstrap_message_pipe();
+    EXPECT_NE(server_mp, MOJO_HANDLE_INVALID);
+
+    MessagePipe test_pipe;
+    MojoHandle passing_handle = test_pipe.handle0.release().value();
+
+    // Race between channel shutdown and passing a message pipe.
+    server_channel.reset();
+    MojoWriteMessage(server_mp, nullptr, 0, &passing_handle, 1,
+                     MOJO_WRITE_MESSAGE_FLAG_NONE);
+    MojoClose(server_mp);
+    MojoClose(passing_handle);
+  }
+}
+
 MOJO_MULTIPROCESS_TEST_CHILD_TEST(MultiprocessMasterSlave) {
   ScopedPlatformHandle client_platform_handle =
       mojo::test::MultiprocessTestHelper::client_platform_handle.Pass();

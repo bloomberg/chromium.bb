@@ -129,7 +129,7 @@ void ChannelEndpoint::DetachFromChannel() {
     if (channel_)
       DieNoLock();
     else
-      DCHECK(state_ == State::DEAD);
+      DCHECK(state_ != State::RUNNING);
   }
 
   // If |ReplaceClient()| is called (from another thread) after the above locked
