@@ -505,7 +505,7 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoreIndividualTabFromWindow) {
     observer.Wait();
   }
 
-  TabRestoreService* service =
+  sessions::TabRestoreService* service =
       TabRestoreServiceFactory::GetForProfile(browser()->profile());
   service->ClearEntries();
 
@@ -515,18 +515,21 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoreIndividualTabFromWindow) {
 
   // Expect a window with three tabs.
   ASSERT_EQ(1U, service->entries().size());
-  ASSERT_EQ(TabRestoreService::WINDOW, service->entries().front()->type);
-  const TabRestoreService::Window* window =
-      static_cast<TabRestoreService::Window*>(service->entries().front());
+  ASSERT_EQ(sessions::TabRestoreService::WINDOW,
+            service->entries().front()->type);
+  const sessions::TabRestoreService::Window* window =
+      static_cast<sessions::TabRestoreService::Window*>(
+          service->entries().front());
   EXPECT_EQ(3U, window->tabs.size());
 
   // Find the SessionID for entry2. Since the session service was destroyed,
   // there is no guarantee that the SessionID for the tab has remained the same.
   base::Time timestamp;
   int http_status_code = 0;
-  for (std::vector<TabRestoreService::Tab>::const_iterator it =
-           window->tabs.begin(); it != window->tabs.end(); ++it) {
-    const TabRestoreService::Tab& tab = *it;
+  for (std::vector<sessions::TabRestoreService::Tab>::const_iterator it =
+           window->tabs.begin();
+       it != window->tabs.end(); ++it) {
+    const sessions::TabRestoreService::Tab& tab = *it;
     // If this tab held url2, then restore this single tab.
     if (tab.navigations[0].virtual_url() == url2) {
       timestamp = tab.navigations[0].timestamp();
@@ -546,8 +549,10 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoreIndividualTabFromWindow) {
 
   // Make sure that the restored tab is removed from the service.
   ASSERT_EQ(1U, service->entries().size());
-  ASSERT_EQ(TabRestoreService::WINDOW, service->entries().front()->type);
-  window = static_cast<TabRestoreService::Window*>(service->entries().front());
+  ASSERT_EQ(sessions::TabRestoreService::WINDOW,
+            service->entries().front()->type);
+  window = static_cast<sessions::TabRestoreService::Window*>(
+      service->entries().front());
   EXPECT_EQ(2U, window->tabs.size());
 
   // Make sure that the restored tab was restored with the correct
@@ -570,7 +575,7 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, WindowWithOneTab) {
   // Add a single tab.
   ui_test_utils::NavigateToURL(browser(), url);
 
-  TabRestoreService* service =
+  sessions::TabRestoreService* service =
       TabRestoreServiceFactory::GetForProfile(browser()->profile());
   service->ClearEntries();
   EXPECT_EQ(0U, service->entries().size());
@@ -582,9 +587,10 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, WindowWithOneTab) {
 
   // Expect the window to be converted to a tab by the TRS.
   EXPECT_EQ(1U, service->entries().size());
-  ASSERT_EQ(TabRestoreService::TAB, service->entries().front()->type);
-  const TabRestoreService::Tab* tab =
-      static_cast<TabRestoreService::Tab*>(service->entries().front());
+  ASSERT_EQ(sessions::TabRestoreService::TAB, service->entries().front()->type);
+  const sessions::TabRestoreService::Tab* tab =
+      static_cast<sessions::TabRestoreService::Tab*>(
+          service->entries().front());
 
   // Restore the tab.
   std::vector<sessions::LiveTab*> content =

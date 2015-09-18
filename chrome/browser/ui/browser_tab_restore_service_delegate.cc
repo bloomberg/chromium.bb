@@ -102,7 +102,7 @@ void BrowserTabRestoreServiceDelegate::CloseTab() {
 }
 
 // static
-TabRestoreServiceDelegate* BrowserTabRestoreServiceDelegate::Create(
+sessions::TabRestoreServiceDelegate* BrowserTabRestoreServiceDelegate::Create(
     Profile* profile,
     chrome::HostDesktopType host_desktop_type,
     const std::string& app_name) {
@@ -123,7 +123,7 @@ TabRestoreServiceDelegate* BrowserTabRestoreServiceDelegate::Create(
 }
 
 // static
-TabRestoreServiceDelegate*
+sessions::TabRestoreServiceDelegate*
 BrowserTabRestoreServiceDelegate::FindDelegateForWebContents(
     const WebContents* contents) {
   Browser* browser = chrome::FindBrowserWithWebContents(contents);
@@ -131,7 +131,8 @@ BrowserTabRestoreServiceDelegate::FindDelegateForWebContents(
 }
 
 // static
-TabRestoreServiceDelegate* BrowserTabRestoreServiceDelegate::FindDelegateWithID(
+sessions::TabRestoreServiceDelegate*
+BrowserTabRestoreServiceDelegate::FindDelegateWithID(
     SessionID::id_type desired_id,
     chrome::HostDesktopType host_desktop_type) {
   Browser* browser = chrome::FindBrowserWithID(desired_id);

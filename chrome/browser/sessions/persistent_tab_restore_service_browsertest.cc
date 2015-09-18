@@ -18,13 +18,14 @@
 #include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-typedef TabRestoreService::Window Window;
+typedef sessions::TabRestoreService::Window Window;
 
 typedef InProcessBrowserTest PersistentTabRestoreServiceBrowserTest;
 
 IN_PROC_BROWSER_TEST_F(PersistentTabRestoreServiceBrowserTest, RestoreApp) {
   Profile* profile = browser()->profile();
-  TabRestoreService* trs = TabRestoreServiceFactory::GetForProfile(profile);
+  sessions::TabRestoreService* trs =
+      TabRestoreServiceFactory::GetForProfile(profile);
   const char* app_name = "TestApp";
 
   Browser* app_browser = CreateBrowserForApp(app_name, profile);
@@ -36,10 +37,11 @@ IN_PROC_BROWSER_TEST_F(PersistentTabRestoreServiceBrowserTest, RestoreApp) {
 
   // One entry should be created.
   ASSERT_EQ(1U, trs->entries().size());
-  const TabRestoreService::Entry* restored_entry = trs->entries().front();
+  const sessions::TabRestoreService::Entry* restored_entry =
+      trs->entries().front();
 
   // It should be a window with an app.
-  ASSERT_EQ(TabRestoreService::WINDOW, restored_entry->type);
+  ASSERT_EQ(sessions::TabRestoreService::WINDOW, restored_entry->type);
   const Window* restored_window =
       static_cast<const Window*>(restored_entry);
   EXPECT_EQ(app_name, restored_window->app_name);

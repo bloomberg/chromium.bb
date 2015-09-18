@@ -363,7 +363,7 @@ void BrowsingDataRemover::RemoveImpl(int remove_mask,
     if (remove_url.is_empty()) {
       // We also delete the list of recently closed tabs. Since these expire,
       // they can't be more than a day old, so we can simply clear them all.
-      TabRestoreService* tab_service =
+      sessions::TabRestoreService* tab_service =
           TabRestoreServiceFactory::GetForProfile(profile_);
       if (tab_service) {
         tab_service->ClearEntries();

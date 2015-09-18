@@ -140,16 +140,18 @@ scoped_ptr<api::sessions::Session> CreateSessionModelHelper(
   return session_struct.Pass();
 }
 
-bool is_tab_entry(const TabRestoreService::Entry* entry) {
-  return entry->type == TabRestoreService::TAB;
+bool is_tab_entry(const sessions::TabRestoreService::Entry* entry) {
+  return entry->type == sessions::TabRestoreService::TAB;
 }
 
-bool is_window_entry(const TabRestoreService::Entry* entry) {
-  return entry->type == TabRestoreService::WINDOW;
+bool is_window_entry(const sessions::TabRestoreService::Entry* entry) {
+  return entry->type == sessions::TabRestoreService::WINDOW;
 }
 
 scoped_ptr<tabs::Tab> SessionsGetRecentlyClosedFunction::CreateTabModel(
-    const TabRestoreService::Tab& tab, int session_id, int selected_index) {
+    const sessions::TabRestoreService::Tab& tab,
+    int session_id,
+    int selected_index) {
   return CreateTabModelHelper(GetProfile(),
                               tab.navigations[tab.current_navigation_index],
                               base::IntToString(session_id),
@@ -160,9 +162,9 @@ scoped_ptr<tabs::Tab> SessionsGetRecentlyClosedFunction::CreateTabModel(
 }
 
 scoped_ptr<windows::Window>
-    SessionsGetRecentlyClosedFunction::CreateWindowModel(
-        const TabRestoreService::Window& window,
-        int session_id) {
+SessionsGetRecentlyClosedFunction::CreateWindowModel(
+    const sessions::TabRestoreService::Window& window,
+    int session_id) {
   DCHECK(!window.tabs.empty());
 
   scoped_ptr<std::vector<linked_ptr<tabs::Tab> > > tabs(
@@ -179,18 +181,20 @@ scoped_ptr<windows::Window>
 }
 
 scoped_ptr<api::sessions::Session>
-    SessionsGetRecentlyClosedFunction::CreateSessionModel(
-        const TabRestoreService::Entry* entry) {
+SessionsGetRecentlyClosedFunction::CreateSessionModel(
+    const sessions::TabRestoreService::Entry* entry) {
   scoped_ptr<tabs::Tab> tab;
   scoped_ptr<windows::Window> window;
   switch (entry->type) {
-    case TabRestoreService::TAB:
+    case sessions::TabRestoreService::TAB:
       tab = CreateTabModel(
-          *static_cast<const TabRestoreService::Tab*>(entry), entry->id, -1);
+          *static_cast<const sessions::TabRestoreService::Tab*>(entry),
+          entry->id, -1);
       break;
-    case TabRestoreService::WINDOW:
+    case sessions::TabRestoreService::WINDOW:
       window = CreateWindowModel(
-        *static_cast<const TabRestoreService::Window*>(entry), entry->id);
+          *static_cast<const sessions::TabRestoreService::Window*>(entry),
+          entry->id);
       break;
     default:
       NOTREACHED();
@@ -211,14 +215,14 @@ bool SessionsGetRecentlyClosedFunction::RunSync() {
       max_results <= api::sessions::MAX_SESSION_RESULTS);
 
   std::vector<linked_ptr<api::sessions::Session> > result;
-  TabRestoreService* tab_restore_service =
+  sessions::TabRestoreService* tab_restore_service =
       TabRestoreServiceFactory::GetForProfile(GetProfile());
 
   // TabRestoreServiceFactory::GetForProfile() can return NULL (i.e., when in
   // incognito mode)
   if (!tab_restore_service) {
     DCHECK_NE(GetProfile(), GetProfile()->GetOriginalProfile())
-        << "TabRestoreService expected for normal profiles";
+        << "sessions::TabRestoreService expected for normal profiles";
     results_ = GetRecentlyClosed::Results::Create(
         std::vector<linked_ptr<api::sessions::Session> >());
     return true;
@@ -227,11 +231,12 @@ bool SessionsGetRecentlyClosedFunction::RunSync() {
   // List of entries. They are ordered from most to least recent.
   // We prune the list to contain max 25 entries at any time and removes
   // uninteresting entries.
-  TabRestoreService::Entries entries = tab_restore_service->entries();
-  for (TabRestoreService::Entries::const_iterator it = entries.begin();
+  sessions::TabRestoreService::Entries entries = tab_restore_service->entries();
+  for (sessions::TabRestoreService::Entries::const_iterator it =
+           entries.begin();
        it != entries.end() && static_cast<int>(result.size()) < max_results;
        ++it) {
-    TabRestoreService::Entry* entry = *it;
+    sessions::TabRestoreService::Entry* entry = *it;
     result.push_back(make_linked_ptr(CreateSessionModel(entry).release()));
   }
 
@@ -441,10 +446,10 @@ bool SessionsRestoreFunction::SetResultRestoredWindow(int window_id) {
 }
 
 bool SessionsRestoreFunction::RestoreMostRecentlyClosed(Browser* browser) {
-  TabRestoreService* tab_restore_service =
+  sessions::TabRestoreService* tab_restore_service =
       TabRestoreServiceFactory::GetForProfile(GetProfile());
   chrome::HostDesktopType host_desktop_type = browser->host_desktop_type();
-  TabRestoreService::Entries entries = tab_restore_service->entries();
+  sessions::TabRestoreService::Entries entries = tab_restore_service->entries();
 
   if (entries.empty()) {
     SetError(kNoRecentlyClosedSessionsError);
@@ -452,7 +457,7 @@ bool SessionsRestoreFunction::RestoreMostRecentlyClosed(Browser* browser) {
   }
 
   bool is_window = is_window_entry(entries.front());
-  TabRestoreServiceDelegate* delegate =
+  sessions::TabRestoreServiceDelegate* delegate =
       BrowserTabRestoreServiceDelegate::FindDelegateForWebContents(
           browser->tab_strip_model()->GetActiveWebContents());
   std::vector<sessions::LiveTab*> restored_tabs =
@@ -472,10 +477,10 @@ bool SessionsRestoreFunction::RestoreMostRecentlyClosed(Browser* browser) {
 
 bool SessionsRestoreFunction::RestoreLocalSession(const SessionId& session_id,
                                                   Browser* browser) {
-  TabRestoreService* tab_restore_service =
+  sessions::TabRestoreService* tab_restore_service =
       TabRestoreServiceFactory::GetForProfile(GetProfile());
   chrome::HostDesktopType host_desktop_type = browser->host_desktop_type();
-  TabRestoreService::Entries entries = tab_restore_service->entries();
+  sessions::TabRestoreService::Entries entries = tab_restore_service->entries();
 
   if (entries.empty()) {
     SetInvalidIdError(session_id.ToString());
@@ -484,7 +489,7 @@ bool SessionsRestoreFunction::RestoreLocalSession(const SessionId& session_id,
 
   // Check if the recently closed list contains an entry with the provided id.
   bool is_window = false;
-  for (TabRestoreService::Entries::iterator it = entries.begin();
+  for (sessions::TabRestoreService::Entries::iterator it = entries.begin();
        it != entries.end(); ++it) {
     if ((*it)->id == session_id.id()) {
       // The only time a full window is being restored is if the entry ID
@@ -494,7 +499,7 @@ bool SessionsRestoreFunction::RestoreLocalSession(const SessionId& session_id,
     }
   }
 
-  TabRestoreServiceDelegate* delegate =
+  sessions::TabRestoreServiceDelegate* delegate =
       BrowserTabRestoreServiceDelegate::FindDelegateForWebContents(
           browser->tab_strip_model()->GetActiveWebContents());
   std::vector<sessions::LiveTab*> restored_tabs =
@@ -621,7 +626,7 @@ SessionsEventRouter::~SessionsEventRouter() {
 }
 
 void SessionsEventRouter::TabRestoreServiceChanged(
-    TabRestoreService* service) {
+    sessions::TabRestoreService* service) {
   scoped_ptr<base::ListValue> args(new base::ListValue());
   EventRouter::Get(profile_)->BroadcastEvent(make_scoped_ptr(
       new Event(events::SESSIONS_ON_CHANGED,
@@ -629,7 +634,7 @@ void SessionsEventRouter::TabRestoreServiceChanged(
 }
 
 void SessionsEventRouter::TabRestoreServiceDestroyed(
-    TabRestoreService* service) {
+    sessions::TabRestoreService* service) {
   tab_restore_service_ = NULL;
 }
 

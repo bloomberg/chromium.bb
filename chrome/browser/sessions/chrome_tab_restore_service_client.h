@@ -19,12 +19,12 @@ class ChromeTabRestoreServiceClient : public sessions::TabRestoreServiceClient {
 
  private:
   // TabRestoreServiceClient:
-  TabRestoreServiceDelegate* CreateTabRestoreServiceDelegate(
+  sessions::TabRestoreServiceDelegate* CreateTabRestoreServiceDelegate(
       int host_desktop_type,
       const std::string& app_name) override;
-  TabRestoreServiceDelegate* FindTabRestoreServiceDelegateForTab(
+  sessions::TabRestoreServiceDelegate* FindTabRestoreServiceDelegateForTab(
       const sessions::LiveTab* tab) override;
-  TabRestoreServiceDelegate* FindTabRestoreServiceDelegateWithID(
+  sessions::TabRestoreServiceDelegate* FindTabRestoreServiceDelegateWithID(
       SessionID::id_type desired_id,
       int host_desktop_type) override;
   bool ShouldTrackURLForRestore(const GURL& url) override;

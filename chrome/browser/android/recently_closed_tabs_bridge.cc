@@ -22,10 +22,10 @@ using base::android::ScopedJavaLocalRef;
 namespace {
 
 void AddTabToList(JNIEnv* env,
-                  TabRestoreService::Entry* entry,
+                  sessions::TabRestoreService::Entry* entry,
                   jobject jtabs_list) {
-  const TabRestoreService::Tab* tab =
-      static_cast<TabRestoreService::Tab*>(entry);
+  const sessions::TabRestoreService::Tab* tab =
+      static_cast<sessions::TabRestoreService::Tab*>(entry);
   const sessions::SerializedNavigationEntry& current_navigation =
       tab->navigations.at(tab->current_navigation_index);
   Java_RecentlyClosedBridge_pushTab(
@@ -36,15 +36,16 @@ void AddTabToList(JNIEnv* env,
 }
 
 void AddTabsToList(JNIEnv* env,
-                   const TabRestoreService::Entries& entries,
+                   const sessions::TabRestoreService::Entries& entries,
                    jobject jtabs_list,
                    int max_tab_count) {
   int added_count = 0;
-  for (TabRestoreService::Entries::const_iterator it = entries.begin();
+  for (sessions::TabRestoreService::Entries::const_iterator it =
+           entries.begin();
        it != entries.end() && added_count < max_tab_count; ++it) {
-    TabRestoreService::Entry* entry = *it;
-    DCHECK_EQ(entry->type, TabRestoreService::TAB);
-    if (entry->type == TabRestoreService::TAB) {
+    sessions::TabRestoreService::Entry* entry = *it;
+    DCHECK_EQ(entry->type, sessions::TabRestoreService::TAB);
+    if (entry->type == sessions::TabRestoreService::TAB) {
       AddTabToList(env, entry, jtabs_list);
       ++added_count;
     }
@@ -96,7 +97,7 @@ jboolean RecentlyClosedTabsBridge::OpenRecentlyClosedTab(JNIEnv* env,
 
   // Find and remove the corresponding tab entry from TabRestoreService.
   // We take ownership of the returned tab.
-  scoped_ptr<TabRestoreService::Tab> tab_entry(
+  scoped_ptr<sessions::TabRestoreService::Tab> tab_entry(
       tab_restore_service_->RemoveTabEntryById(recent_tab_id));
   if (!tab_entry)
     return false;
@@ -129,7 +130,7 @@ void RecentlyClosedTabsBridge::ClearRecentlyClosedTabs(JNIEnv* env,
 }
 
 void RecentlyClosedTabsBridge::TabRestoreServiceChanged(
-    TabRestoreService* service) {
+    sessions::TabRestoreService* service) {
   if (callback_.is_null())
     return;
   JNIEnv* env = AttachCurrentThread();
@@ -137,7 +138,7 @@ void RecentlyClosedTabsBridge::TabRestoreServiceChanged(
 }
 
 void RecentlyClosedTabsBridge::TabRestoreServiceDestroyed(
-    TabRestoreService* service) {
+    sessions::TabRestoreService* service) {
   tab_restore_service_ = NULL;
 }
 

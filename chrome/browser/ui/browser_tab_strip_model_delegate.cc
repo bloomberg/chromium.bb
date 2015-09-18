@@ -113,7 +113,7 @@ void BrowserTabStripModelDelegate::CreateHistoricalTab(
   if (!browser_->profile() || browser_->profile()->IsOffTheRecord())
     return;
 
-  TabRestoreService* service =
+  sessions::TabRestoreService* service =
       TabRestoreServiceFactory::GetForProfile(browser_->profile());
 
   // We only create historical tab entries for tabbed browser windows.

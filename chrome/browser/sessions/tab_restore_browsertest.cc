@@ -37,7 +37,7 @@
 
 // Class used to run a message loop waiting for the TabRestoreService to finish
 // loading. Does nothing if the TabRestoreService was already loaded.
-class WaitForLoadObserver : public TabRestoreServiceObserver {
+class WaitForLoadObserver : public sessions::TabRestoreServiceObserver {
  public:
   explicit WaitForLoadObserver(Browser* browser)
       : tab_restore_service_(
@@ -59,14 +59,16 @@ class WaitForLoadObserver : public TabRestoreServiceObserver {
 
  private:
   // Overridden from TabRestoreServiceObserver:
-  void TabRestoreServiceChanged(TabRestoreService* service) override {}
-  void TabRestoreServiceDestroyed(TabRestoreService* service) override {}
-  void TabRestoreServiceLoaded(TabRestoreService* service) override {
+  void TabRestoreServiceChanged(sessions::TabRestoreService* service) override {
+  }
+  void TabRestoreServiceDestroyed(
+      sessions::TabRestoreService* service) override {}
+  void TabRestoreServiceLoaded(sessions::TabRestoreService* service) override {
     DCHECK(do_wait_);
     run_loop_.Quit();
   }
 
-  TabRestoreService* tab_restore_service_;
+  sessions::TabRestoreService* tab_restore_service_;
   const bool do_wait_;
   base::RunLoop run_loop_;
 

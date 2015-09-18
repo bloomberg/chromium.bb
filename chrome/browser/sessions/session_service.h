@@ -215,7 +215,7 @@ class SessionService : public sessions::BaseSessionServiceDelegate,
       const sessions::GetLastSessionCallback& callback,
       base::CancelableTaskTracker* tracker);
 
-  // sessions::BaseSessionServiceDelegate:
+  // BaseSessionServiceDelegate:
   base::SequencedWorkerPool* GetBlockingPool() override;
   bool ShouldUseDelayedSave() override;
   void OnSavedCommands() override;

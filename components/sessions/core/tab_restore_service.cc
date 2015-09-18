@@ -4,6 +4,8 @@
 
 #include "components/sessions/core/tab_restore_service.h"
 
+namespace sessions {
+
 // TimeFactory-----------------------------------------------------------------
 
 TabRestoreService::TimeFactory::~TimeFactory() {}
@@ -79,3 +81,5 @@ TabRestoreService::Window::~Window() {
 
 TabRestoreService::~TabRestoreService() {
 }
+
+}  // namespace sessions

@@ -144,7 +144,7 @@ class RecentTabsSubMenuModelTest
 
   static scoped_ptr<KeyedService> GetTabRestoreService(
       content::BrowserContext* browser_context) {
-    return make_scoped_ptr(new PersistentTabRestoreService(
+    return make_scoped_ptr(new sessions::PersistentTabRestoreService(
         make_scoped_ptr(new ChromeTabRestoreServiceClient(
             Profile::FromBrowserContext(browser_context))),
         nullptr));

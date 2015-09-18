@@ -122,8 +122,9 @@ HistoryMenuBridge::~HistoryMenuBridge() {
   }
 }
 
-void HistoryMenuBridge::TabRestoreServiceChanged(TabRestoreService* service) {
-  const TabRestoreService::Entries& entries = service->entries();
+void HistoryMenuBridge::TabRestoreServiceChanged(
+    sessions::TabRestoreService* service) {
+  const sessions::TabRestoreService::Entries& entries = service->entries();
 
   // Clear the history menu before rebuilding.
   NSMenu* menu = HistoryMenu();
@@ -133,14 +134,16 @@ void HistoryMenuBridge::TabRestoreServiceChanged(TabRestoreService* service) {
   NSInteger index = [menu indexOfItemWithTag:kRecentlyClosedTitle] + 1;
   NSUInteger added_count = 0;
 
-  for (TabRestoreService::Entries::const_iterator it = entries.begin();
+  for (sessions::TabRestoreService::Entries::const_iterator it =
+           entries.begin();
        it != entries.end() && added_count < kRecentlyClosedCount; ++it) {
-    TabRestoreService::Entry* entry = *it;
+    sessions::TabRestoreService::Entry* entry = *it;
 
     // If this is a window, create a submenu for all of its tabs.
-    if (entry->type == TabRestoreService::WINDOW) {
-      TabRestoreService::Window* entry_win = (TabRestoreService::Window*)entry;
-      std::vector<TabRestoreService::Tab>& tabs = entry_win->tabs;
+    if (entry->type == sessions::TabRestoreService::WINDOW) {
+      sessions::TabRestoreService::Window* entry_win =
+          (sessions::TabRestoreService::Window*)entry;
+      std::vector<sessions::TabRestoreService::Tab>& tabs = entry_win->tabs;
       if (!tabs.size())
         continue;
 
@@ -172,9 +175,9 @@ void HistoryMenuBridge::TabRestoreServiceChanged(TabRestoreService* service) {
 
       // Loop over the window's tabs and add them to the submenu.
       NSInteger subindex = [[submenu itemArray] count];
-      std::vector<TabRestoreService::Tab>::const_iterator it;
+      std::vector<sessions::TabRestoreService::Tab>::const_iterator it;
       for (it = tabs.begin(); it != tabs.end(); ++it) {
-        TabRestoreService::Tab tab = *it;
+        sessions::TabRestoreService::Tab tab = *it;
         HistoryItem* tab_item = HistoryItemForTab(tab);
         if (tab_item) {
           item->tabs.push_back(tab_item);
@@ -197,9 +200,9 @@ void HistoryMenuBridge::TabRestoreServiceChanged(TabRestoreService* service) {
         [parent_item setSubmenu:submenu.get()];
         ++added_count;
       }
-    } else if (entry->type == TabRestoreService::TAB) {
-      TabRestoreService::Tab* tab =
-          static_cast<TabRestoreService::Tab*>(entry);
+    } else if (entry->type == sessions::TabRestoreService::TAB) {
+      sessions::TabRestoreService::Tab* tab =
+          static_cast<sessions::TabRestoreService::Tab*>(entry);
       HistoryItem* item = HistoryItemForTab(*tab);
       if (item) {
         AddItemToMenu(item, menu, kRecentlyClosed, index++);
@@ -210,7 +213,7 @@ void HistoryMenuBridge::TabRestoreServiceChanged(TabRestoreService* service) {
 }
 
 void HistoryMenuBridge::TabRestoreServiceDestroyed(
-    TabRestoreService* service) {
+    sessions::TabRestoreService* service) {
   // Intentionally left blank. We hold a weak reference to the service.
 }
 
@@ -372,7 +375,7 @@ void HistoryMenuBridge::OnVisitedHistoryResults(
 }
 
 HistoryMenuBridge::HistoryItem* HistoryMenuBridge::HistoryItemForTab(
-    const TabRestoreService::Tab& entry) {
+    const sessions::TabRestoreService::Tab& entry) {
   DCHECK(!entry.navigations.empty());
 
   const sessions::SerializedNavigationEntry& current_navigation =

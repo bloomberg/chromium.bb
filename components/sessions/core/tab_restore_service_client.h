@@ -17,19 +17,13 @@ class CancelableTaskTracker;
 class SequencedWorkerPool;
 }
 
-// TODO(blundell): Remove all references to WebContents from
-// TabRestoreServiceClient and get rid of this. crbug.com/530174
-namespace content {
-class WebContents;
-}
-
 class GURL;
-class TabRestoreServiceDelegate;
 
 namespace sessions {
 
 class LiveTab;
 struct SessionWindow;
+class TabRestoreServiceDelegate;
 
 // Callback from TabRestoreServiceClient::GetLastSession.
 // The second parameter is the id of the window that was last active.
@@ -81,7 +75,7 @@ class SESSIONS_EXPORT TabRestoreServiceClient {
   // Returns whether a given URL should be tracked for restoring.
   virtual bool ShouldTrackURLForRestore(const GURL& url) = 0;
 
-  // Returns the extension app ID for the given WebContents, or the empty string
+  // Returns the extension app ID for the given LiveTab, or the empty string
   // if there is no such ID (e.g., if extensions are not supported by the
   // embedder).
   virtual std::string GetExtensionAppIDForTab(LiveTab* tab) = 0;

@@ -8,10 +8,10 @@
 
 #include "base/compiler_specific.h"
 
-using sessions::LiveTab;
+namespace sessions {
 
 InMemoryTabRestoreService::InMemoryTabRestoreService(
-    scoped_ptr<sessions::TabRestoreServiceClient> client,
+    scoped_ptr<TabRestoreServiceClient> client,
     TabRestoreService::TimeFactory* time_factory)
     : client_(client.Pass()),
       helper_(this, NULL, client_.get(), time_factory) {}
@@ -86,3 +86,5 @@ void InMemoryTabRestoreService::DeleteLastSession() {
 
 void InMemoryTabRestoreService::Shutdown() {
 }
+
+}  // namespace

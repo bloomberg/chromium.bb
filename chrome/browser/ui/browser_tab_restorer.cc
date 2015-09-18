@@ -21,11 +21,12 @@ namespace {
 const char kBrowserTabRestorerKey[] = "BrowserTabRestorer";
 
 // BrowserTabRestorer is responsible for restoring a tab when the
-// TabRestoreService finishes loading. A TabRestoreService is associated with a
+// sessions::TabRestoreService finishes loading. A TabRestoreService is
+// associated with a
 // single Browser and deletes itself if the Browser is destroyed.
 // BrowserTabRestorer is installed on the Profile (by way of user data), only
 // one instance is created per profile at a time.
-class BrowserTabRestorer : public TabRestoreServiceObserver,
+class BrowserTabRestorer : public sessions::TabRestoreServiceObserver,
                            public chrome::BrowserListObserver,
                            public base::SupportsUserData::Data {
  public:
@@ -37,15 +38,16 @@ class BrowserTabRestorer : public TabRestoreServiceObserver,
   explicit BrowserTabRestorer(Browser* browser);
 
   // TabRestoreServiceObserver:
-  void TabRestoreServiceChanged(TabRestoreService* service) override;
-  void TabRestoreServiceDestroyed(TabRestoreService* service) override;
-  void TabRestoreServiceLoaded(TabRestoreService* service) override;
+  void TabRestoreServiceChanged(sessions::TabRestoreService* service) override;
+  void TabRestoreServiceDestroyed(
+      sessions::TabRestoreService* service) override;
+  void TabRestoreServiceLoaded(sessions::TabRestoreService* service) override;
 
   // BrowserListObserver:
   void OnBrowserRemoved(Browser* browser) override;
 
   Browser* browser_;
-  TabRestoreService* tab_restore_service_;
+  sessions::TabRestoreService* tab_restore_service_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserTabRestorer);
 };
@@ -77,14 +79,14 @@ BrowserTabRestorer::BrowserTabRestorer(Browser* browser)
   tab_restore_service_->LoadTabsFromLastSession();
 }
 
-void BrowserTabRestorer::TabRestoreServiceChanged(TabRestoreService* service) {
-}
+void BrowserTabRestorer::TabRestoreServiceChanged(
+    sessions::TabRestoreService* service) {}
 
 void BrowserTabRestorer::TabRestoreServiceDestroyed(
-    TabRestoreService* service) {
-}
+    sessions::TabRestoreService* service) {}
 
-void BrowserTabRestorer::TabRestoreServiceLoaded(TabRestoreService* service) {
+void BrowserTabRestorer::TabRestoreServiceLoaded(
+    sessions::TabRestoreService* service) {
   RestoreTab(browser_);
   // This deletes us.
   browser_->profile()->SetUserData(kBrowserTabRestorerKey, NULL);
@@ -99,7 +101,7 @@ void BrowserTabRestorer::OnBrowserRemoved(Browser* browser) {
 
 void RestoreTab(Browser* browser) {
   content::RecordAction(base::UserMetricsAction("RestoreTab"));
-  TabRestoreService* service =
+  sessions::TabRestoreService* service =
       TabRestoreServiceFactory::GetForProfile(browser->profile());
   if (!service)
     return;

@@ -12,10 +12,9 @@
 #include "components/sessions/core/tab_restore_service_observer.h"
 
 class Profile;
-class TabRestoreService;
 
 // Provides the list of recently closed tabs to Java.
-class RecentlyClosedTabsBridge : public TabRestoreServiceObserver {
+class RecentlyClosedTabsBridge : public sessions::TabRestoreServiceObserver {
  public:
   explicit RecentlyClosedTabsBridge(Profile* profile);
 
@@ -34,10 +33,11 @@ class RecentlyClosedTabsBridge : public TabRestoreServiceObserver {
 
   // Observer callback for TabRestoreServiceObserver. Notifies the registered
   // callback that the recently closed tabs list has changed.
-  void TabRestoreServiceChanged(TabRestoreService* service) override;
+  void TabRestoreServiceChanged(sessions::TabRestoreService* service) override;
 
   // Observer callback when our associated TabRestoreService is destroyed.
-  void TabRestoreServiceDestroyed(TabRestoreService* service) override;
+  void TabRestoreServiceDestroyed(
+      sessions::TabRestoreService* service) override;
 
   // Registers JNI methods.
   static bool Register(JNIEnv* env);
@@ -56,7 +56,7 @@ class RecentlyClosedTabsBridge : public TabRestoreServiceObserver {
   Profile* profile_;
 
   // TabRestoreService that we are observing.
-  TabRestoreService* tab_restore_service_;
+  sessions::TabRestoreService* tab_restore_service_;
 
   DISALLOW_COPY_AND_ASSIGN(RecentlyClosedTabsBridge);
 };

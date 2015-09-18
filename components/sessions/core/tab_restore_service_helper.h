@@ -16,14 +16,13 @@
 #include "components/sessions/session_types.h"
 #include "components/sessions/sessions_export.h"
 
+namespace sessions {
+
 class TabRestoreService;
+class TabRestoreServiceClient;
 class TabRestoreServiceDelegate;
 class TabRestoreServiceObserver;
 class TimeFactory;
-
-namespace sessions {
-class TabRestoreServiceClient;
-}
 
 // Helper class used to implement InMemoryTabRestoreService and
 // PersistentTabRestoreService. See tab_restore_service.h for method-level
@@ -65,7 +64,7 @@ class SESSIONS_EXPORT TabRestoreServiceHelper {
   // |time_factory| and |observer|. Note that |observer| can also be NULL.
   TabRestoreServiceHelper(TabRestoreService* tab_restore_service,
                           Observer* observer,
-                          sessions::TabRestoreServiceClient* client,
+                          TabRestoreServiceClient* client,
                           TimeFactory* time_factory);
 
   ~TabRestoreServiceHelper();
@@ -73,20 +72,19 @@ class SESSIONS_EXPORT TabRestoreServiceHelper {
   // Helper methods used to implement TabRestoreService.
   void AddObserver(TabRestoreServiceObserver* observer);
   void RemoveObserver(TabRestoreServiceObserver* observer);
-  void CreateHistoricalTab(sessions::LiveTab* live_tab, int index);
+  void CreateHistoricalTab(LiveTab* live_tab, int index);
   void BrowserClosing(TabRestoreServiceDelegate* delegate);
   void BrowserClosed(TabRestoreServiceDelegate* delegate);
   void ClearEntries();
   const Entries& entries() const;
-  std::vector<sessions::LiveTab*> RestoreMostRecentEntry(
+  std::vector<LiveTab*> RestoreMostRecentEntry(
       TabRestoreServiceDelegate* delegate,
       int host_desktop_type);
   Tab* RemoveTabEntryById(SessionID::id_type id);
-  std::vector<sessions::LiveTab*> RestoreEntryById(
-      TabRestoreServiceDelegate* delegate,
-      SessionID::id_type id,
-      int host_desktop_type,
-      WindowOpenDisposition disposition);
+  std::vector<LiveTab*> RestoreEntryById(TabRestoreServiceDelegate* delegate,
+                                         SessionID::id_type id,
+                                         int host_desktop_type,
+                                         WindowOpenDisposition disposition);
 
   // Notifies observers the tabs have changed.
   void NotifyTabsChanged();
@@ -121,7 +119,7 @@ class SESSIONS_EXPORT TabRestoreServiceHelper {
   void PopulateTab(Tab* tab,
                    int index,
                    TabRestoreServiceDelegate* delegate,
-                   sessions::LiveTab* live_tab);
+                   LiveTab* live_tab);
 
   // This is a helper function for RestoreEntryById() for restoring a single
   // tab. If |delegate| is NULL, this creates a new window for the entry. This
@@ -136,7 +134,7 @@ class SESSIONS_EXPORT TabRestoreServiceHelper {
                                         TabRestoreServiceDelegate* delegate,
                                         int host_desktop_type,
                                         WindowOpenDisposition disposition,
-                                        sessions::LiveTab** live_tab);
+                                        LiveTab** live_tab);
 
   // Returns true if |tab| has more than one navigation. If |tab| has more
   // than one navigation |tab->current_navigation_index| is constrained based
@@ -167,7 +165,7 @@ class SESSIONS_EXPORT TabRestoreServiceHelper {
 
   Observer* const observer_;
 
-  sessions::TabRestoreServiceClient* client_;
+  TabRestoreServiceClient* client_;
 
   // Set of entries. They are ordered from most to least recent.
   Entries entries_;
@@ -187,5 +185,7 @@ class SESSIONS_EXPORT TabRestoreServiceHelper {
 
   DISALLOW_COPY_AND_ASSIGN(TabRestoreServiceHelper);
 };
+
+}  // namespace sessions
 
 #endif  // COMPONENTS_SESSIONS_CORE_TAB_RESTORE_SERVICE_HELPER_H_

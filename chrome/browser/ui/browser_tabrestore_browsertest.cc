@@ -119,11 +119,11 @@ IN_PROC_BROWSER_TEST_F(BrowserTabRestoreTest, DelegateRestoreTabDisposition) {
 
   // Check the browser has a delegated restore service.
   Browser* browser = active_browser_list->get(0);
-  TabRestoreService* service =
+  sessions::TabRestoreService* service =
       TabRestoreServiceFactory::GetForProfile(browser->profile());
   bool has_tab_restore_service = !!service;
   ASSERT_TRUE(has_tab_restore_service);
-  TabRestoreServiceDelegate* delegate =
+  sessions::TabRestoreServiceDelegate* delegate =
       BrowserTabRestoreServiceDelegate::FindDelegateForWebContents(
           browser->tab_strip_model()->GetActiveWebContents());
   bool has_tab_restore_delegate = !!delegate;

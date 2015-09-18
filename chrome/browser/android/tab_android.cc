@@ -722,7 +722,7 @@ prerender::PrerenderManager* TabAndroid::GetPrerenderManager() const {
 void TabAndroid::CreateHistoricalTabFromContents(WebContents* web_contents) {
   DCHECK(web_contents);
 
-  TabRestoreService* service =
+  sessions::TabRestoreService* service =
       TabRestoreServiceFactory::GetForProfile(
           Profile::FromBrowserContext(web_contents->GetBrowserContext()));
   if (!service)

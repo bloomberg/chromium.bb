@@ -48,7 +48,7 @@ bool SystemMenuModelDelegate::IsCommandIdEnabled(int command_id) const {
   // a good way to dynamically update the menu when TabRestoreService finishes
   // loading.
   // TODO(sky): add a way to update menu.
-  TabRestoreService* trs =
+  sessions::TabRestoreService* trs =
       TabRestoreServiceFactory::GetForProfile(browser_->profile());
   if (!trs->IsLoaded()) {
     trs->LoadTabsFromLastSession();
@@ -72,11 +72,11 @@ base::string16 SystemMenuModelDelegate::GetLabelForCommandId(
 
   int string_id = IDS_RESTORE_TAB;
   if (IsCommandIdEnabled(command_id)) {
-    TabRestoreService* trs =
+    sessions::TabRestoreService* trs =
         TabRestoreServiceFactory::GetForProfile(browser_->profile());
     trs->LoadTabsFromLastSession();
     if (trs && !trs->entries().empty() &&
-        trs->entries().front()->type == TabRestoreService::WINDOW)
+        trs->entries().front()->type == sessions::TabRestoreService::WINDOW)
       string_id = IDS_RESTORE_WINDOW;
   }
   return l10n_util::GetStringUTF16(string_id);

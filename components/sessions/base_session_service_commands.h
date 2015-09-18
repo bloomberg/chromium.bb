@@ -45,7 +45,7 @@ SESSIONS_EXPORT scoped_ptr<SessionCommand> CreateSetWindowAppNameCommand(
 
 // Converts a SessionCommand previously created by
 // CreateUpdateTabNavigationCommand into a
-// sessions::SerializedNavigationEntry. Returns true on success. If
+// SerializedNavigationEntry. Returns true on success. If
 // successful |tab_id| is set to the id of the restored tab.
 SESSIONS_EXPORT bool RestoreUpdateTabNavigationCommand(
     const SessionCommand& command,

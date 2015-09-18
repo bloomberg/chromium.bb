@@ -8,19 +8,22 @@
 #include "base/memory/singleton.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 
-class TabRestoreService;
 class Profile;
+
+namespace sessions {
+class TabRestoreService;
+}
 
 // Singleton that owns all TabRestoreServices and associates them with
 // Profiles. Listens for the Profile's destruction notification and cleans up
 // the associated TabRestoreService.
 class TabRestoreServiceFactory : public BrowserContextKeyedServiceFactory {
  public:
-  static TabRestoreService* GetForProfile(Profile* profile);
+  static sessions::TabRestoreService* GetForProfile(Profile* profile);
 
   // Variant of GetForProfile() that returns NULL if TabRestoreService does not
   // exist.
-  static TabRestoreService* GetForProfileIfExisting(Profile* profile);
+  static sessions::TabRestoreService* GetForProfileIfExisting(Profile* profile);
 
   static void ResetForProfile(Profile* profile);
 

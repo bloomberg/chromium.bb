@@ -7,6 +7,8 @@
 
 #include "components/sessions/sessions_export.h"
 
+namespace sessions {
+
 class TabRestoreService;
 
 // Observer is notified when the set of entries managed by TabRestoreService
@@ -26,5 +28,7 @@ class SESSIONS_EXPORT TabRestoreServiceObserver {
  protected:
   virtual ~TabRestoreServiceObserver() {}
 };
+
+}  // namespace sessions
 
 #endif  // COMPONENTS_SESSIONS_CORE_TAB_RESTORE_SERVICE_OBSERVER_H_

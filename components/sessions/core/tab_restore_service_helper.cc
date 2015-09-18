@@ -17,7 +17,7 @@
 #include "components/sessions/serialized_navigation_entry.h"
 #include "components/sessions/session_types.h"
 
-using sessions::LiveTab;
+namespace sessions {
 
 // TabRestoreServiceHelper::Observer -------------------------------------------
 
@@ -37,7 +37,7 @@ void TabRestoreServiceHelper::Observer::OnAddEntry() {}
 TabRestoreServiceHelper::TabRestoreServiceHelper(
     TabRestoreService* tab_restore_service,
     Observer* observer,
-    sessions::TabRestoreServiceClient* client,
+    TabRestoreServiceClient* client,
     TabRestoreService::TimeFactory* time_factory)
     : tab_restore_service_(tab_restore_service),
       observer_(observer),
@@ -369,9 +369,9 @@ void TabRestoreServiceHelper::PopulateTab(Tab* tab,
     entry_count++;
   tab->navigations.resize(static_cast<int>(entry_count));
   for (int i = 0; i < entry_count; ++i) {
-    sessions::SerializedNavigationEntry entry =
-        (i == pending_index) ? live_tab->GetPendingEntry()
-                             : live_tab->GetEntryAtIndex(i);
+    SerializedNavigationEntry entry = (i == pending_index)
+                                          ? live_tab->GetPendingEntry()
+                                          : live_tab->GetEntryAtIndex(i);
     tab->navigations[i] = entry;
   }
   tab->timestamp = TimeNow();
@@ -533,3 +533,5 @@ void TabRestoreServiceHelper::UpdateTabBrowserIDs(SessionID::id_type old_id,
 base::Time TabRestoreServiceHelper::TimeNow() const {
   return time_factory_ ? time_factory_->TimeNow() : base::Time::Now();
 }
+
+}  // namespace sessions

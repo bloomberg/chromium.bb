@@ -41,7 +41,7 @@ using content::Referrer;
 - (void)openURLForItem:(const HistoryMenuBridge::HistoryItem*)node {
   // If this item can be restored using TabRestoreService, do so. Otherwise,
   // just load the URL.
-  TabRestoreService* service =
+  sessions::TabRestoreService* service =
       TabRestoreServiceFactory::GetForProfile(bridge_->profile());
   if (node->session_id && service) {
     Browser* browser = chrome::FindTabbedBrowser(bridge_->profile(), false,

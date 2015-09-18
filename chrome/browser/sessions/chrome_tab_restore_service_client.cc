@@ -48,7 +48,7 @@ ChromeTabRestoreServiceClient::ChromeTabRestoreServiceClient(Profile* profile)
 
 ChromeTabRestoreServiceClient::~ChromeTabRestoreServiceClient() {}
 
-TabRestoreServiceDelegate*
+sessions::TabRestoreServiceDelegate*
 ChromeTabRestoreServiceClient::CreateTabRestoreServiceDelegate(
     int host_desktop_type,
     const std::string& app_name) {
@@ -63,7 +63,7 @@ ChromeTabRestoreServiceClient::CreateTabRestoreServiceDelegate(
 #endif
 }
 
-TabRestoreServiceDelegate*
+sessions::TabRestoreServiceDelegate*
 ChromeTabRestoreServiceClient::FindTabRestoreServiceDelegateForTab(
     const sessions::LiveTab* tab) {
 #if defined(OS_ANDROID)
@@ -76,7 +76,7 @@ ChromeTabRestoreServiceClient::FindTabRestoreServiceDelegateForTab(
 #endif
 }
 
-TabRestoreServiceDelegate*
+sessions::TabRestoreServiceDelegate*
 ChromeTabRestoreServiceClient::FindTabRestoreServiceDelegateWithID(
     SessionID::id_type desired_id,
     int host_desktop_type) {

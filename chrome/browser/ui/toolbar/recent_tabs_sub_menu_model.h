@@ -44,7 +44,7 @@ class AcceleratorProvider;
 // opened tabs of other devices.
 class RecentTabsSubMenuModel : public ui::SimpleMenuModel,
                                public ui::SimpleMenuModel::Delegate,
-                               public TabRestoreServiceObserver {
+                               public sessions::TabRestoreServiceObserver {
  public:
   // Command Id for recently closed items header or disabled item to which the
   // accelerator string will be appended.
@@ -134,8 +134,9 @@ class RecentTabsSubMenuModel : public ui::SimpleMenuModel,
   sync_driver::OpenTabsUIDelegate* GetOpenTabsUIDelegate();
 
   // Overridden from TabRestoreServiceObserver:
-  void TabRestoreServiceChanged(TabRestoreService* service) override;
-  void TabRestoreServiceDestroyed(TabRestoreService* service) override;
+  void TabRestoreServiceChanged(sessions::TabRestoreService* service) override;
+  void TabRestoreServiceDestroyed(
+      sessions::TabRestoreService* service) override;
 
   Browser* browser_;  // Weak.
 

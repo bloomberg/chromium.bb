@@ -191,7 +191,7 @@ RecentTabsSubMenuModel::RecentTabsSubMenuModel(
   // Invoke asynchronous call to load tabs from local last session, which does
   // nothing if the tabs have already been loaded or they shouldn't be loaded.
   // TabRestoreServiceChanged() will be called after the tabs are loaded.
-  TabRestoreService* service =
+  sessions::TabRestoreService* service =
       TabRestoreServiceFactory::GetForProfile(browser_->profile());
   if (service) {
     service->LoadTabsFromLastSession();
@@ -231,7 +231,7 @@ RecentTabsSubMenuModel::RecentTabsSubMenuModel(
 }
 
 RecentTabsSubMenuModel::~RecentTabsSubMenuModel() {
-  TabRestoreService* service =
+  sessions::TabRestoreService* service =
       TabRestoreServiceFactory::GetForProfile(browser_->profile());
   if (service)
     service->RemoveObserver(this);
@@ -290,9 +290,9 @@ void RecentTabsSubMenuModel::ExecuteCommand(int command_id, int event_flags) {
   if (disposition == CURRENT_TAB)  // Force to open a new foreground tab.
     disposition = NEW_FOREGROUND_TAB;
 
-  TabRestoreService* service =
+  sessions::TabRestoreService* service =
       TabRestoreServiceFactory::GetForProfile(browser_->profile());
-  TabRestoreServiceDelegate* delegate =
+  sessions::TabRestoreServiceDelegate* delegate =
       BrowserTabRestoreServiceDelegate::FindDelegateForWebContents(
           browser_->tab_strip_model()->GetActiveWebContents());
   if (IsTabModelCommandId(command_id)) {
@@ -414,7 +414,7 @@ void RecentTabsSubMenuModel::BuildLocalEntries() {
   // We're appending if building the entries for the first time i.e. invoked
   // from Constructor(), inserting when local entries change subsequently i.e.
   // invoked from TabRestoreServiceChanged().
-  TabRestoreService* service =
+  sessions::TabRestoreService* service =
       TabRestoreServiceFactory::GetForProfile(browser_->profile());
 
   if (!service || service->entries().size() == 0) {
@@ -436,13 +436,14 @@ void RecentTabsSubMenuModel::BuildLocalEntries() {
 #endif
 
     int added_count = 0;
-    TabRestoreService::Entries entries = service->entries();
-    for (TabRestoreService::Entries::const_iterator it = entries.begin();
+    sessions::TabRestoreService::Entries entries = service->entries();
+    for (sessions::TabRestoreService::Entries::const_iterator it =
+             entries.begin();
          it != entries.end() && added_count < kMaxLocalEntries; ++it) {
-      TabRestoreService::Entry* entry = *it;
-      if (entry->type == TabRestoreService::TAB) {
-        TabRestoreService::Tab* tab =
-            static_cast<TabRestoreService::Tab*>(entry);
+      sessions::TabRestoreService::Entry* entry = *it;
+      if (entry->type == sessions::TabRestoreService::TAB) {
+        sessions::TabRestoreService::Tab* tab =
+            static_cast<sessions::TabRestoreService::Tab*>(entry);
         const sessions::SerializedNavigationEntry& current_navigation =
             tab->navigations.at(tab->current_navigation_index);
         BuildLocalTabItem(
@@ -451,10 +452,10 @@ void RecentTabsSubMenuModel::BuildLocalEntries() {
             current_navigation.virtual_url(),
             ++last_local_model_index_);
       } else  {
-        DCHECK_EQ(entry->type, TabRestoreService::WINDOW);
+        DCHECK_EQ(entry->type, sessions::TabRestoreService::WINDOW);
         BuildLocalWindowItem(
-            entry->id,
-            static_cast<TabRestoreService::Window*>(entry)->tabs.size(),
+            entry->id, static_cast<sessions::TabRestoreService::Window*>(entry)
+                           ->tabs.size(),
             ++last_local_model_index_);
       }
       ++added_count;
@@ -712,7 +713,7 @@ RecentTabsSubMenuModel::GetOpenTabsUIDelegate() {
 }
 
 void RecentTabsSubMenuModel::TabRestoreServiceChanged(
-    TabRestoreService* service) {
+    sessions::TabRestoreService* service) {
   ClearLocalEntries();
 
   BuildLocalEntries();
@@ -723,6 +724,6 @@ void RecentTabsSubMenuModel::TabRestoreServiceChanged(
 }
 
 void RecentTabsSubMenuModel::TabRestoreServiceDestroyed(
-    TabRestoreService* service) {
+    sessions::TabRestoreService* service) {
   TabRestoreServiceChanged(service);
 }

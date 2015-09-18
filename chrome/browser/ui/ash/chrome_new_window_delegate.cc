@@ -19,7 +19,8 @@
 namespace {
 
 void RestoreTabUsingProfile(Profile* profile) {
-  TabRestoreService* service = TabRestoreServiceFactory::GetForProfile(profile);
+  sessions::TabRestoreService* service =
+      TabRestoreServiceFactory::GetForProfile(profile);
   service->RestoreMostRecentEntry(NULL, chrome::HOST_DESKTOP_TYPE_ASH);
 }
 
@@ -38,29 +39,31 @@ ChromeNewWindowDelegate::~ChromeNewWindowDelegate() {}
 // this waits for it. Once the TabRestoreService finishes loading the tab is
 // restored.
 class ChromeNewWindowDelegate::TabRestoreHelper
-    : public TabRestoreServiceObserver {
+    : public sessions::TabRestoreServiceObserver {
  public:
   TabRestoreHelper(ChromeNewWindowDelegate* delegate,
                    Profile* profile,
-                   TabRestoreService* service)
-      : delegate_(delegate),
-        profile_(profile),
-        tab_restore_service_(service) {
+                   sessions::TabRestoreService* service)
+      : delegate_(delegate), profile_(profile), tab_restore_service_(service) {
     tab_restore_service_->AddObserver(this);
   }
 
   ~TabRestoreHelper() override { tab_restore_service_->RemoveObserver(this); }
 
-  TabRestoreService* tab_restore_service() { return tab_restore_service_; }
+  sessions::TabRestoreService* tab_restore_service() {
+    return tab_restore_service_;
+  }
 
-  void TabRestoreServiceChanged(TabRestoreService* service) override {}
+  void TabRestoreServiceChanged(sessions::TabRestoreService* service) override {
+  }
 
-  void TabRestoreServiceDestroyed(TabRestoreService* service) override {
+  void TabRestoreServiceDestroyed(
+      sessions::TabRestoreService* service) override {
     // This destroys us.
     delegate_->tab_restore_helper_.reset();
   }
 
-  void TabRestoreServiceLoaded(TabRestoreService* service) override {
+  void TabRestoreServiceLoaded(sessions::TabRestoreService* service) override {
     RestoreTabUsingProfile(profile_);
     // This destroys us.
     delegate_->tab_restore_helper_.reset();
@@ -69,7 +72,7 @@ class ChromeNewWindowDelegate::TabRestoreHelper
  private:
   ChromeNewWindowDelegate* delegate_;
   Profile* profile_;
-  TabRestoreService* tab_restore_service_;
+  sessions::TabRestoreService* tab_restore_service_;
 
   DISALLOW_COPY_AND_ASSIGN(TabRestoreHelper);
 };
@@ -111,7 +114,7 @@ void ChromeNewWindowDelegate::RestoreTab() {
     profile = ProfileManager::GetActiveUserProfile();
   if (profile->IsOffTheRecord())
     return;
-  TabRestoreService* service =
+  sessions::TabRestoreService* service =
       TabRestoreServiceFactory::GetForProfile(profile);
   if (!service)
     return;

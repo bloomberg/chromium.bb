@@ -237,7 +237,7 @@ BrowserCommandController::BrowserCommandController(Browser* browser)
 
   InitCommandState();
 
-  TabRestoreService* tab_restore_service =
+  sessions::TabRestoreService* tab_restore_service =
       TabRestoreServiceFactory::GetForProfile(profile());
   if (tab_restore_service) {
     tab_restore_service->AddObserver(this);
@@ -248,7 +248,7 @@ BrowserCommandController::BrowserCommandController(Browser* browser)
 BrowserCommandController::~BrowserCommandController() {
   // TabRestoreService may have been shutdown by the time we get here. Don't
   // trigger creating it.
-  TabRestoreService* tab_restore_service =
+  sessions::TabRestoreService* tab_restore_service =
       TabRestoreServiceFactory::GetForProfileIfExisting(profile());
   if (tab_restore_service)
     tab_restore_service->RemoveObserver(this);
@@ -827,17 +827,17 @@ void BrowserCommandController::TabBlockedStateChanged(
 // BrowserCommandController, TabRestoreServiceObserver implementation:
 
 void BrowserCommandController::TabRestoreServiceChanged(
-    TabRestoreService* service) {
+    sessions::TabRestoreService* service) {
   UpdateTabRestoreCommandState();
 }
 
 void BrowserCommandController::TabRestoreServiceDestroyed(
-    TabRestoreService* service) {
+    sessions::TabRestoreService* service) {
   service->RemoveObserver(this);
 }
 
 void BrowserCommandController::TabRestoreServiceLoaded(
-    TabRestoreService* service) {
+    sessions::TabRestoreService* service) {
   UpdateTabRestoreCommandState();
 }
 
@@ -1322,7 +1322,7 @@ void BrowserCommandController::UpdateReloadStopState(bool is_loading,
 }
 
 void BrowserCommandController::UpdateTabRestoreCommandState() {
-  TabRestoreService* tab_restore_service =
+  sessions::TabRestoreService* tab_restore_service =
       TabRestoreServiceFactory::GetForProfile(profile());
   // The command is enabled if the service hasn't loaded yet to trigger loading.
   // The command is updated once the load completes.

@@ -19,12 +19,11 @@
 #include "components/sessions/sessions_export.h"
 #include "ui/base/window_open_disposition.h"
 
+namespace sessions {
+
+class LiveTab;
 class TabRestoreServiceDelegate;
 class TabRestoreServiceObserver;
-
-namespace sessions {
-class LiveTab;
-}
 
 // TabRestoreService is responsible for maintaining the most recently closed
 // tabs and windows. When a tab is closed
@@ -84,7 +83,7 @@ class SESSIONS_EXPORT TabRestoreService : public KeyedService {
     bool has_browser() const { return browser_id > 0; }
 
     // The navigations.
-    std::vector<sessions::SerializedNavigationEntry> navigations;
+    std::vector<SerializedNavigationEntry> navigations;
 
     // Index of the selected navigation in navigations.
     int current_navigation_index;
@@ -103,7 +102,7 @@ class SESSIONS_EXPORT TabRestoreService : public KeyedService {
     std::string extension_app_id;
 
     // The associated client data.
-    scoped_ptr<sessions::TabClientData> client_data;
+    scoped_ptr<TabClientData> client_data;
 
     // The user agent override used for the tab's navigations (if applicable).
     std::string user_agent_override;
@@ -135,7 +134,7 @@ class SESSIONS_EXPORT TabRestoreService : public KeyedService {
 
   // Creates a Tab to represent |live_tab| and notifies observers the list of
   // entries has changed.
-  virtual void CreateHistoricalTab(sessions::LiveTab* live_tab, int index) = 0;
+  virtual void CreateHistoricalTab(LiveTab* live_tab, int index) = 0;
 
   // Invoked when a browser is closing. If |delegate| is a tabbed browser with
   // at least one tab, a Window is created, added to entries and observers are
@@ -159,7 +158,7 @@ class SESSIONS_EXPORT TabRestoreService : public KeyedService {
   // class and will be used only to pass back to the embedder via
   // TabRestoreServiceClient if necessary. Returns the LiveTab instances of the
   // restored tab(s).
-  virtual std::vector<sessions::LiveTab*> RestoreMostRecentEntry(
+  virtual std::vector<LiveTab*> RestoreMostRecentEntry(
       TabRestoreServiceDelegate* delegate,
       int host_desktop_type) = 0;
 
@@ -175,7 +174,7 @@ class SESSIONS_EXPORT TabRestoreService : public KeyedService {
   // this class and will be used only to pass back to the embedder via
   // TabRestoreServiceClient if necessary.  Returns the LiveTab instances of the
   // restored tab(s).
-  virtual std::vector<sessions::LiveTab*> RestoreEntryById(
+  virtual std::vector<LiveTab*> RestoreEntryById(
       TabRestoreServiceDelegate* delegate,
       SessionID::id_type id,
       int host_desktop_type,
@@ -191,5 +190,7 @@ class SESSIONS_EXPORT TabRestoreService : public KeyedService {
   // Deletes the last session.
   virtual void DeleteLastSession() = 0;
 };
+
+}  // namespace sessions
 
 #endif  // COMPONENTS_SESSIONS_CORE_TAB_RESTORE_SERVICE_H_

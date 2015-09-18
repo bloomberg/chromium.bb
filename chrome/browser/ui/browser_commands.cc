@@ -360,7 +360,8 @@ Browser* OpenEmptyWindow(Profile* profile, HostDesktopType desktop_type) {
 
 void OpenWindowWithRestoredTabs(Profile* profile,
                                 HostDesktopType host_desktop_type) {
-  TabRestoreService* service = TabRestoreServiceFactory::GetForProfile(profile);
+  sessions::TabRestoreService* service =
+      TabRestoreServiceFactory::GetForProfile(profile);
   if (service)
     service->RestoreMostRecentEntry(NULL, host_desktop_type);
 }
@@ -595,11 +596,11 @@ bool CanResetZoom(content::WebContents* contents) {
 
 TabStripModelDelegate::RestoreTabType GetRestoreTabType(
     const Browser* browser) {
-  TabRestoreService* service =
+  sessions::TabRestoreService* service =
       TabRestoreServiceFactory::GetForProfile(browser->profile());
   if (!service || service->entries().empty())
     return TabStripModelDelegate::RESTORE_NONE;
-  if (service->entries().front()->type == TabRestoreService::WINDOW)
+  if (service->entries().front()->type == sessions::TabRestoreService::WINDOW)
     return TabStripModelDelegate::RESTORE_WINDOW;
   return TabStripModelDelegate::RESTORE_TAB;
 }

@@ -27,7 +27,7 @@ namespace chrome {
 
 class BrowserCommandController : public CommandUpdaterDelegate,
                                  public TabStripModelObserver,
-                                 public TabRestoreServiceObserver {
+                                 public sessions::TabRestoreServiceObserver {
  public:
   explicit BrowserCommandController(Browser* browser);
   ~BrowserCommandController() override;
@@ -95,9 +95,10 @@ class BrowserCommandController : public CommandUpdaterDelegate,
                               int index) override;
 
   // Overridden from TabRestoreServiceObserver:
-  void TabRestoreServiceChanged(TabRestoreService* service) override;
-  void TabRestoreServiceDestroyed(TabRestoreService* service) override;
-  void TabRestoreServiceLoaded(TabRestoreService* service) override;
+  void TabRestoreServiceChanged(sessions::TabRestoreService* service) override;
+  void TabRestoreServiceDestroyed(
+      sessions::TabRestoreService* service) override;
+  void TabRestoreServiceLoaded(sessions::TabRestoreService* service) override;
 
   // Returns true if the regular Chrome UI (not the fullscreen one and
   // not the single-tab one) is shown. Used for updating window command states

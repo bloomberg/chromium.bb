@@ -22,8 +22,8 @@ class SESSIONS_EXPORT LiveTab {
   // Methods that return information about the navigation state of the tab.
   virtual int GetCurrentEntryIndex() = 0;
   virtual int GetPendingEntryIndex() = 0;
-  virtual sessions::SerializedNavigationEntry GetEntryAtIndex(int index) = 0;
-  virtual sessions::SerializedNavigationEntry GetPendingEntry() = 0;
+  virtual SerializedNavigationEntry GetEntryAtIndex(int index) = 0;
+  virtual SerializedNavigationEntry GetPendingEntry() = 0;
   virtual int GetEntryCount() = 0;
 
   // Loads the current page if necessary (where "necessary" is defined on a

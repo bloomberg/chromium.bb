@@ -26,13 +26,13 @@
 
 namespace {
 
-class MockTRS : public PersistentTabRestoreService {
+class MockTRS : public sessions::PersistentTabRestoreService {
  public:
   MockTRS(Profile* profile)
-      : PersistentTabRestoreService(
+      : sessions::PersistentTabRestoreService(
             make_scoped_ptr(new ChromeTabRestoreServiceClient(profile)),
             nullptr) {}
-  MOCK_CONST_METHOD0(entries, const TabRestoreService::Entries&());
+  MOCK_CONST_METHOD0(entries, const sessions::TabRestoreService::Entries&());
 };
 
 class MockBridge : public HistoryMenuBridge {

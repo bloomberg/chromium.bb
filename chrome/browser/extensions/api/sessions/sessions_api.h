@@ -34,14 +34,15 @@ class SessionsGetRecentlyClosedFunction : public ChromeSyncExtensionFunction {
                              SESSIONS_GETRECENTLYCLOSED)
 
  private:
-  scoped_ptr<api::tabs::Tab> CreateTabModel(const TabRestoreService::Tab& tab,
-                                            int session_id,
-                                            int selected_index);
+  scoped_ptr<api::tabs::Tab> CreateTabModel(
+      const sessions::TabRestoreService::Tab& tab,
+      int session_id,
+      int selected_index);
   scoped_ptr<api::windows::Window> CreateWindowModel(
-      const TabRestoreService::Window& window,
+      const sessions::TabRestoreService::Window& window,
       int session_id);
   scoped_ptr<api::sessions::Session> CreateSessionModel(
-      const TabRestoreService::Entry* entry);
+      const sessions::TabRestoreService::Entry* entry);
 };
 
 class SessionsGetDevicesFunction : public ChromeSyncExtensionFunction {
@@ -81,7 +82,7 @@ class SessionsRestoreFunction : public ChromeSyncExtensionFunction {
                              Browser* browser);
 };
 
-class SessionsEventRouter : public TabRestoreServiceObserver {
+class SessionsEventRouter : public sessions::TabRestoreServiceObserver {
  public:
   explicit SessionsEventRouter(Profile* profile);
   ~SessionsEventRouter() override;
@@ -89,17 +90,18 @@ class SessionsEventRouter : public TabRestoreServiceObserver {
   // Observer callback for TabRestoreServiceObserver. Sends data on
   // recently closed tabs to the javascript side of this page to
   // display to the user.
-  void TabRestoreServiceChanged(TabRestoreService* service) override;
+  void TabRestoreServiceChanged(sessions::TabRestoreService* service) override;
 
   // Observer callback to notice when our associated TabRestoreService
   // is destroyed.
-  void TabRestoreServiceDestroyed(TabRestoreService* service) override;
+  void TabRestoreServiceDestroyed(
+      sessions::TabRestoreService* service) override;
 
  private:
   Profile* profile_;
 
   // TabRestoreService that we are observing.
-  TabRestoreService* tab_restore_service_;
+  sessions::TabRestoreService* tab_restore_service_;
 
   DISALLOW_COPY_AND_ASSIGN(SessionsEventRouter);
 };

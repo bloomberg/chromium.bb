@@ -15,15 +15,16 @@
 #endif
 
 // static
-TabRestoreService* TabRestoreServiceFactory::GetForProfile(Profile* profile) {
-  return static_cast<TabRestoreService*>(
+sessions::TabRestoreService* TabRestoreServiceFactory::GetForProfile(
+    Profile* profile) {
+  return static_cast<sessions::TabRestoreService*>(
       GetInstance()->GetServiceForBrowserContext(profile, true));
 }
 
 // static
-TabRestoreService* TabRestoreServiceFactory::GetForProfileIfExisting(
+sessions::TabRestoreService* TabRestoreServiceFactory::GetForProfileIfExisting(
     Profile* profile) {
-  return static_cast<TabRestoreService*>(
+  return static_cast<sessions::TabRestoreService*>(
       GetInstance()->GetServiceForBrowserContext(profile, false));
 }
 
@@ -40,9 +41,8 @@ TabRestoreServiceFactory* TabRestoreServiceFactory::GetInstance() {
 
 TabRestoreServiceFactory::TabRestoreServiceFactory()
     : BrowserContextKeyedServiceFactory(
-        "TabRestoreService",
-        BrowserContextDependencyManager::GetInstance()) {
-}
+          "sessions::TabRestoreService",
+          BrowserContextDependencyManager::GetInstance()) {}
 
 TabRestoreServiceFactory::~TabRestoreServiceFactory() {
 }
@@ -59,8 +59,8 @@ KeyedService* TabRestoreServiceFactory::BuildServiceInstanceFor(
       new ChromeTabRestoreServiceClient(profile));
 
 #if defined(OS_ANDROID)
-  return new InMemoryTabRestoreService(client.Pass(), nullptr);
+  return new sessions::InMemoryTabRestoreService(client.Pass(), nullptr);
 #else
-  return new PersistentTabRestoreService(client.Pass(), nullptr);
+  return new sessions::PersistentTabRestoreService(client.Pass(), nullptr);
 #endif
 }

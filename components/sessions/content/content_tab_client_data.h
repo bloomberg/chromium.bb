@@ -10,6 +10,10 @@
 #include "components/sessions/sessions_export.h"
 #include "content/public/browser/session_storage_namespace.h"
 
+namespace content {
+class WebContents;
+}
+
 namespace sessions {
 
 // A //content-specific subclass of TabClientData that is used to associate

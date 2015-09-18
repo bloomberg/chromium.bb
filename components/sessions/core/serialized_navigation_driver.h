@@ -10,6 +10,7 @@
 #include "components/sessions/sessions_export.h"
 
 namespace sessions {
+
 class SerializedNavigationEntry;
 
 // The SerializedNavigationDriver interface allows SerializedNavigationEntry to

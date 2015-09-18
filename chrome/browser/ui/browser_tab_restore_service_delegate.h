@@ -21,7 +21,8 @@ class WebContents;
 
 // Implementation of TabRestoreServiceDelegate which uses an instance of
 // Browser in order to fulfil its duties.
-class BrowserTabRestoreServiceDelegate : public TabRestoreServiceDelegate {
+class BrowserTabRestoreServiceDelegate
+    : public sessions::TabRestoreServiceDelegate {
  public:
   explicit BrowserTabRestoreServiceDelegate(Browser* browser)
       : browser_(browser) {}
@@ -56,19 +57,19 @@ class BrowserTabRestoreServiceDelegate : public TabRestoreServiceDelegate {
   void CloseTab() override;
 
   // see Browser::Create
-  static TabRestoreServiceDelegate* Create(
+  static sessions::TabRestoreServiceDelegate* Create(
       Profile* profile,
       chrome::HostDesktopType host_desktop_type,
       const std::string& app_name);
 
   // see browser::FindBrowserForWebContents
-  static TabRestoreServiceDelegate* FindDelegateForWebContents(
+  static sessions::TabRestoreServiceDelegate* FindDelegateForWebContents(
       const content::WebContents* contents);
 
   // see chrome::FindBrowserWithID
   // Returns the TabRestoreServiceDelegate of the Browser with |desired_id| if
   // such a Browser exists and is on the desktop defined by |host_desktop_type|.
-  static TabRestoreServiceDelegate* FindDelegateWithID(
+  static sessions::TabRestoreServiceDelegate* FindDelegateWithID(
       SessionID::id_type desired_id,
       chrome::HostDesktopType host_desktop_type);
 

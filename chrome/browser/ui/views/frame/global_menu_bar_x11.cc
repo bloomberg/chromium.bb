@@ -534,7 +534,7 @@ void GlobalMenuBarX11::RegisterAccelerator(DbusmenuMenuitem* item,
 }
 
 GlobalMenuBarX11::HistoryItem* GlobalMenuBarX11::HistoryItemForTab(
-    const TabRestoreService::Tab& entry) {
+    const sessions::TabRestoreService::Tab& entry) {
   const sessions::SerializedNavigationEntry& current_navigation =
       entry.navigations.at(entry.current_navigation_index);
   HistoryItem* item = new HistoryItem();
@@ -736,8 +736,9 @@ void GlobalMenuBarX11::TopSitesChanged(history::TopSites* top_sites,
     GetTopSitesData();
 }
 
-void GlobalMenuBarX11::TabRestoreServiceChanged(TabRestoreService* service) {
-  const TabRestoreService::Entries& entries = service->entries();
+void GlobalMenuBarX11::TabRestoreServiceChanged(
+    sessions::TabRestoreService* service) {
+  const sessions::TabRestoreService::Entries& entries = service->entries();
 
   ClearMenuSection(history_menu_, TAG_RECENTLY_CLOSED);
 
@@ -747,14 +748,15 @@ void GlobalMenuBarX11::TabRestoreServiceChanged(TabRestoreService* service) {
                                         TAG_RECENTLY_CLOSED_HEADER) + 1;
 
   unsigned int added_count = 0;
-  for (TabRestoreService::Entries::const_iterator it = entries.begin();
+  for (sessions::TabRestoreService::Entries::const_iterator it =
+           entries.begin();
        it != entries.end() && added_count < kRecentlyClosedCount; ++it) {
-    TabRestoreService::Entry* entry = *it;
+    sessions::TabRestoreService::Entry* entry = *it;
 
-    if (entry->type == TabRestoreService::WINDOW) {
-      TabRestoreService::Window* entry_win =
-          static_cast<TabRestoreService::Window*>(entry);
-      std::vector<TabRestoreService::Tab>& tabs = entry_win->tabs;
+    if (entry->type == sessions::TabRestoreService::WINDOW) {
+      sessions::TabRestoreService::Window* entry_win =
+          static_cast<sessions::TabRestoreService::Window*>(entry);
+      std::vector<sessions::TabRestoreService::Tab>& tabs = entry_win->tabs;
       if (tabs.empty())
         continue;
 
@@ -790,9 +792,9 @@ void GlobalMenuBarX11::TabRestoreServiceChanged(TabRestoreService* service) {
 
       // Loop over the window's tabs and add them to the submenu.
       int subindex = 2;
-      std::vector<TabRestoreService::Tab>::const_iterator iter;
+      std::vector<sessions::TabRestoreService::Tab>::const_iterator iter;
       for (iter = tabs.begin(); iter != tabs.end(); ++iter) {
-        TabRestoreService::Tab tab = *iter;
+        sessions::TabRestoreService::Tab tab = *iter;
         HistoryItem* tab_item = HistoryItemForTab(tab);
         item->tabs.push_back(tab_item);
         AddHistoryItemToMenu(tab_item,
@@ -802,8 +804,9 @@ void GlobalMenuBarX11::TabRestoreServiceChanged(TabRestoreService* service) {
       }
 
       ++added_count;
-    } else if (entry->type == TabRestoreService::TAB) {
-      TabRestoreService::Tab* tab = static_cast<TabRestoreService::Tab*>(entry);
+    } else if (entry->type == sessions::TabRestoreService::TAB) {
+      sessions::TabRestoreService::Tab* tab =
+          static_cast<sessions::TabRestoreService::Tab*>(entry);
       HistoryItem* item = HistoryItemForTab(*tab);
       AddHistoryItemToMenu(item,
                            history_menu_,
@@ -815,7 +818,7 @@ void GlobalMenuBarX11::TabRestoreServiceChanged(TabRestoreService* service) {
 }
 
 void GlobalMenuBarX11::TabRestoreServiceDestroyed(
-    TabRestoreService* service) {
+    sessions::TabRestoreService* service) {
   tab_restore_service_ = nullptr;
 }
 
@@ -845,7 +848,7 @@ void GlobalMenuBarX11::OnHistoryItemActivated(DbusmenuMenuitem* sender,
 
   // If this item can be restored using TabRestoreService, do so. Otherwise,
   // just load the URL.
-  TabRestoreService* service =
+  sessions::TabRestoreService* service =
       TabRestoreServiceFactory::GetForProfile(profile_);
   if (item->session_id && service) {
     service->RestoreEntryById(browser_->tab_restore_service_delegate(),

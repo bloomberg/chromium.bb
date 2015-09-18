@@ -14,8 +14,8 @@
 #include "components/sessions/sessions_export.h"
 
 namespace sessions {
+
 class TabRestoreServiceClient;
-}
 
 // Tab restore service that doesn't persist tabs on disk. This is used on
 // Android where tabs persistence is implemented on the application side in
@@ -26,25 +26,24 @@ class SESSIONS_EXPORT InMemoryTabRestoreService : public TabRestoreService {
   // Creates a new TabRestoreService and provides an object that provides the
   // current time. The TabRestoreService does not take ownership of
   // |time_factory|.
-  InMemoryTabRestoreService(
-      scoped_ptr<sessions::TabRestoreServiceClient> client,
-      TimeFactory* time_factory);
+  InMemoryTabRestoreService(scoped_ptr<TabRestoreServiceClient> client,
+                            TimeFactory* time_factory);
 
   ~InMemoryTabRestoreService() override;
 
   // TabRestoreService:
   void AddObserver(TabRestoreServiceObserver* observer) override;
   void RemoveObserver(TabRestoreServiceObserver* observer) override;
-  void CreateHistoricalTab(sessions::LiveTab* live_tab, int index) override;
+  void CreateHistoricalTab(LiveTab* live_tab, int index) override;
   void BrowserClosing(TabRestoreServiceDelegate* delegate) override;
   void BrowserClosed(TabRestoreServiceDelegate* delegate) override;
   void ClearEntries() override;
   const Entries& entries() const override;
-  std::vector<sessions::LiveTab*> RestoreMostRecentEntry(
+  std::vector<LiveTab*> RestoreMostRecentEntry(
       TabRestoreServiceDelegate* delegate,
       int host_desktop_type) override;
   Tab* RemoveTabEntryById(SessionID::id_type id) override;
-  std::vector<sessions::LiveTab*> RestoreEntryById(
+  std::vector<LiveTab*> RestoreEntryById(
       TabRestoreServiceDelegate* delegate,
       SessionID::id_type id,
       int host_desktop_type,
@@ -55,10 +54,12 @@ class SESSIONS_EXPORT InMemoryTabRestoreService : public TabRestoreService {
   void Shutdown() override;
 
  private:
-  scoped_ptr<sessions::TabRestoreServiceClient> client_;
+  scoped_ptr<TabRestoreServiceClient> client_;
   TabRestoreServiceHelper helper_;
 
   DISALLOW_COPY_AND_ASSIGN(InMemoryTabRestoreService);
 };
+
+}  // namespace sessions
 
 #endif  // COMPONENTS_SESSIONS_CORE_IN_MEMORY_TAB_RESTORE_SERVICE_H_

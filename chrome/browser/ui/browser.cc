@@ -507,7 +507,7 @@ Browser::~Browser() {
   if (session_service)
     session_service->WindowClosed(session_id_);
 
-  TabRestoreService* tab_restore_service =
+  sessions::TabRestoreService* tab_restore_service =
       TabRestoreServiceFactory::GetForProfile(profile());
   if (tab_restore_service)
     tab_restore_service->BrowserClosed(tab_restore_service_delegate());
@@ -729,7 +729,7 @@ void Browser::OnWindowClosing() {
   if (session_service)
     session_service->WindowClosing(session_id());
 
-  TabRestoreService* tab_restore_service =
+  sessions::TabRestoreService* tab_restore_service =
       TabRestoreServiceFactory::GetForProfile(profile());
 
 #if defined(USE_AURA)
