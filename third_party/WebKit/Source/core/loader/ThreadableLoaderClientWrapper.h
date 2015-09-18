@@ -113,19 +113,16 @@ public:
 
     void didFailAccessControlCheck(const ResourceError& error)
     {
-        // Let the client first handle the failure by possibly issuing
-        // a didFail() with a cancellation error before marking this
-        // wrapper as 'done'.
+        m_done = true;
         if (m_client)
             m_client->didFailAccessControlCheck(error);
-        m_done = true;
     }
 
     void didFailRedirectCheck()
     {
+        m_done = true;
         if (m_client)
             m_client->didFailRedirectCheck();
-        m_done = true;
     }
 
     void didReceiveAuthenticationCancellation(unsigned long identifier, const ResourceResponse& response)
