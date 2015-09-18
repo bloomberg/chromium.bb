@@ -17,6 +17,7 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "base/values.h"
+#include "chrome/browser/extensions/api/easy_unlock_private/easy_unlock_private_connection_manager.h"
 #include "chrome/browser/extensions/api/easy_unlock_private/easy_unlock_private_crypto_delegate.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/easy_unlock_screenlock_state_handler.h"
@@ -74,6 +75,12 @@ EasyUnlockPrivateCryptoDelegate* GetCryptoDelegate(
       ->GetCryptoDelegate();
 }
 
+EasyUnlockPrivateConnectionManager* GetConnectionManager(
+    content::BrowserContext* context) {
+  return BrowserContextKeyedAPIFactory<EasyUnlockPrivateAPI>::Get(context)
+      ->get_connection_manager();
+}
+
 ScreenlockState ToScreenlockState(easy_unlock_private::State state) {
   switch (state) {
     case easy_unlock_private::STATE_NO_BLUETOOTH:
@@ -111,8 +118,8 @@ BrowserContextKeyedAPIFactory<EasyUnlockPrivateAPI>*
   return g_factory.Pointer();
 }
 
-EasyUnlockPrivateAPI::EasyUnlockPrivateAPI(content::BrowserContext* context) {
-}
+EasyUnlockPrivateAPI::EasyUnlockPrivateAPI(content::BrowserContext* context)
+    : connection_manager_(new EasyUnlockPrivateConnectionManager(context)) {}
 
 EasyUnlockPrivateAPI::~EasyUnlockPrivateAPI() {}
 
@@ -1043,10 +1050,14 @@ void EasyUnlockPrivateFindSetupConnectionFunction::
 
 void EasyUnlockPrivateFindSetupConnectionFunction::OnConnectionFound(
     scoped_ptr<proximity_auth::Connection> connection) {
-  results_ = easy_unlock_private::FindSetupConnection::Results::Create(0);
-  // TODO(sacomoto): Create a connection manager (associating |connectionId| <=>
-  // |connection->remote_device().bluetooth_address|) to handle |connection| and
-  // deal with future calls/events to send/receive data using |connection|.
+  // Connection are not persistent by default.
+  std::string device_address = connection->remote_device().bluetooth_address;
+  bool persistent = false;
+  int connection_id =
+      GetConnectionManager(browser_context())
+          ->AddConnection(extension(), connection.Pass(), persistent);
+  results_ = easy_unlock_private::FindSetupConnection::Results::Create(
+      connection_id, device_address);
   SendResponse(true);
 }
 
@@ -1073,6 +1084,61 @@ bool EasyUnlockPrivateFindSetupConnectionFunction::RunAsync() {
                                OnConnectionFinderTimedOut,
                            this));
 
+  return true;
+}
+
+EasyUnlockPrivateSetupConnectionStatusFunction::
+    EasyUnlockPrivateSetupConnectionStatusFunction() {}
+
+EasyUnlockPrivateSetupConnectionStatusFunction::
+    ~EasyUnlockPrivateSetupConnectionStatusFunction() {}
+
+bool EasyUnlockPrivateSetupConnectionStatusFunction::RunSync() {
+  scoped_ptr<easy_unlock_private::SetupConnectionStatus::Params> params =
+      easy_unlock_private::SetupConnectionStatus::Params::Create(*args_);
+  EXTENSION_FUNCTION_VALIDATE(params);
+  api::easy_unlock_private::ConnectionStatus status =
+      GetConnectionManager(browser_context())
+          ->ConnectionStatus(extension(), params->connection_id);
+  results_ =
+      easy_unlock_private::SetupConnectionStatus::Results::Create(status);
+  if (status == api::easy_unlock_private::CONNECTION_STATUS_NONE)
+    SetError("Invalid connectionId");
+  return true;
+}
+
+EasyUnlockPrivateSetupConnectionDisconnectFunction::
+    EasyUnlockPrivateSetupConnectionDisconnectFunction() {}
+
+EasyUnlockPrivateSetupConnectionDisconnectFunction::
+    ~EasyUnlockPrivateSetupConnectionDisconnectFunction() {}
+
+bool EasyUnlockPrivateSetupConnectionDisconnectFunction::RunSync() {
+  scoped_ptr<easy_unlock_private::SetupConnectionDisconnect::Params> params =
+      easy_unlock_private::SetupConnectionDisconnect::Params::Create(*args_);
+  EXTENSION_FUNCTION_VALIDATE(params);
+  bool success = GetConnectionManager(browser_context())
+                     ->Disconnect(extension(), params->connection_id);
+  if (!success)
+    SetError("Invalid connectionId.");
+  return true;
+}
+
+EasyUnlockPrivateSetupConnectionSendFunction::
+    EasyUnlockPrivateSetupConnectionSendFunction() {}
+
+EasyUnlockPrivateSetupConnectionSendFunction::
+    ~EasyUnlockPrivateSetupConnectionSendFunction() {}
+
+bool EasyUnlockPrivateSetupConnectionSendFunction::RunSync() {
+  scoped_ptr<easy_unlock_private::SetupConnectionSend::Params> params =
+      easy_unlock_private::SetupConnectionSend::Params::Create(*args_);
+  EXTENSION_FUNCTION_VALIDATE(params);
+  std::string payload(params->data.begin(), params->data.end());
+  bool success = GetConnectionManager(browser_context())
+                     ->SendMessage(extension(), params->connection_id, payload);
+  if (!success)
+    SetError("Invalid connectionId.");
   return true;
 }
 

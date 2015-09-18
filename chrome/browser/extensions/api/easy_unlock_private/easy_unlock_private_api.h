@@ -38,6 +38,7 @@ class SecureMessageDelegate;
 
 namespace extensions {
 
+class EasyUnlockPrivateConnectionManager;
 class EasyUnlockPrivateCryptoDelegate;
 
 class EasyUnlockPrivateAPI : public BrowserContextKeyedAPI {
@@ -52,6 +53,10 @@ class EasyUnlockPrivateAPI : public BrowserContextKeyedAPI {
 
   EasyUnlockPrivateCryptoDelegate* GetCryptoDelegate();
 
+  EasyUnlockPrivateConnectionManager* get_connection_manager() {
+    return connection_manager_.get();
+  }
+
  private:
   friend class BrowserContextKeyedAPIFactory<EasyUnlockPrivateAPI>;
 
@@ -59,6 +64,8 @@ class EasyUnlockPrivateAPI : public BrowserContextKeyedAPI {
   static const char* service_name() { return "EasyUnlockPrivate"; }
 
   scoped_ptr<EasyUnlockPrivateCryptoDelegate> crypto_delegate_;
+
+  scoped_ptr<EasyUnlockPrivateConnectionManager> connection_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(EasyUnlockPrivateAPI);
 };
@@ -478,6 +485,54 @@ class EasyUnlockPrivateFindSetupConnectionFunction
   scoped_ptr<base::Timer> timer_;
 
   DISALLOW_COPY_AND_ASSIGN(EasyUnlockPrivateFindSetupConnectionFunction);
+};
+
+class EasyUnlockPrivateSetupConnectionStatusFunction
+    : public SyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("easyUnlockPrivate.setupConnectionStatus",
+                             EASYUNLOCKPRIVATE_SETUPCONNECTIONSTATUS)
+  EasyUnlockPrivateSetupConnectionStatusFunction();
+
+ private:
+  ~EasyUnlockPrivateSetupConnectionStatusFunction() override;
+
+  // SyncExtensionFunction:
+  bool RunSync() override;
+
+  DISALLOW_COPY_AND_ASSIGN(EasyUnlockPrivateSetupConnectionStatusFunction);
+};
+
+class EasyUnlockPrivateSetupConnectionDisconnectFunction
+    : public SyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("easyUnlockPrivate.setupConnectionDisconnect",
+                             EASYUNLOCKPRIVATE_SETUPCONNECTIONDISCONNECT)
+  EasyUnlockPrivateSetupConnectionDisconnectFunction();
+
+ private:
+  ~EasyUnlockPrivateSetupConnectionDisconnectFunction() override;
+
+  // SyncExtensionFunction:
+  bool RunSync() override;
+
+  DISALLOW_COPY_AND_ASSIGN(EasyUnlockPrivateSetupConnectionDisconnectFunction);
+};
+
+class EasyUnlockPrivateSetupConnectionSendFunction
+    : public SyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("easyUnlockPrivate.setupConnectionSend",
+                             EASYUNLOCKPRIVATE_SETUPCONNECTIONSEND)
+  EasyUnlockPrivateSetupConnectionSendFunction();
+
+ private:
+  ~EasyUnlockPrivateSetupConnectionSendFunction() override;
+
+  // SyncExtensionFunction:
+  bool RunSync() override;
+
+  DISALLOW_COPY_AND_ASSIGN(EasyUnlockPrivateSetupConnectionSendFunction);
 };
 
 }  // namespace extensions

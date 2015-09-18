@@ -60,6 +60,8 @@ namespace easyUnlockPrivate {
   // Type of a permit. All lower case to match permit.PermitRecord.Type.
   enum PermitType {access, license};
 
+  enum ConnectionStatus {DISCONNECTED, IN_PROGRESS, CONNECTED};
+
   // Options that can be passed to |unwrapSecureMessage| method.
   dictionary UnwrapSecureMessageOptions {
     // The data associated with the message. For the message to be succesfully
@@ -236,7 +238,13 @@ namespace easyUnlockPrivate {
   // Callback for the |FindSetupConnectionCallback| method.
   // |connectionId|: The identifier of the connection found. To be used in
   // future calls refering to this connection.
-  callback FindSetupConnectionCallback = void(long connectionId);
+  // |deviceAddress|: The Bluetooth address of the remote device.
+  callback FindSetupConnectionCallback = void(long connectionId,
+                                              DOMString deviceAddress);
+
+  // Callback for the |setupConnectionStatus()| method.
+  // |status|: The status of the connection with |connection_id|.
+  callback SetupConnectionStatusCallback = void(ConnectionStatus status);
 
   interface Functions {
     // Gets localized strings required to render the API.
@@ -399,6 +407,19 @@ namespace easyUnlockPrivate {
     static void findSetupConnection(DOMString setupServiceUuid,
                                     long timeOut,
                                     FindSetupConnectionCallback callback);
+
+    // Returns the status of the connection with |connectionId|.
+    static void setupConnectionStatus(long connectionId,
+                                      SetupConnectionStatusCallback callback);
+
+    // Disconnects the connection with |connectionId|. 
+    static void setupConnectionDisconnect(long connectionId, 
+                                          optional EmptyCallback callback);
+
+    // Sends |data| through the connection with |connnectionId|.
+    static void setupConnectionSend(long connectionId,
+                                    ArrayBuffer data,
+                                    optional EmptyCallback callback);
   };
 
   interface Events {
@@ -410,5 +431,20 @@ namespace easyUnlockPrivate {
     // Event fired at the end of Easy bootstrap to start auto pairing so
     // that a proper cryptohome key could be generated for the user.
     static void onStartAutoPairing();
+
+    // Event fired when |connectionId| change status.
+    static void onConnectionStatusChanged(long connectionId,
+                                          ConnectionStatus oldStatus,
+                                          ConnectionStatus newStatus);
+
+    // Event fired when |connectionId| receives |data|.
+    static void onDataReceived(long connectionId,
+                               ArrayBuffer data);
+
+    // Event fired when |connectionId| sends |data|. |success| is true
+    // if the send operation was successful.
+    static void onSendCompleted(long connectionId,
+                                ArrayBuffer data,
+                                boolean success);
   };
 };

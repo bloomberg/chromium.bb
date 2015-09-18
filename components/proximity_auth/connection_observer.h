@@ -14,6 +14,8 @@ class WireMessage;
 // An interface for observing events that happen on a Connection.
 class ConnectionObserver {
  public:
+  virtual ~ConnectionObserver() {}
+
   // Called when the |connection|'s status changes from |old_status| to
   // |new_status|. The |connectoin| is guaranteed to be non-null.
   virtual void OnConnectionStatusChanged(Connection* connection,

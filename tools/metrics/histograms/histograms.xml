@@ -58235,6 +58235,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="386" label="WEB_VIEW_INTERNAL_ON_BEFORE_REDIRECT"/>
   <int value="387" label="WEB_VIEW_INTERNAL_ON_ERROR_OCCURRED"/>
   <int value="388" label="WEB_VIEW_INTERNAL_ON_SEND_HEADERS"/>
+  <int value="389" label="EASY_UNLOCK_PRIVATE_ON_CONNECTION_STATUS_CHANGED"/>
+  <int value="390" label="EASY_UNLOCK_PRIVATE_ON_DATA_RECEIVED"/>
+  <int value="391" label="EASY_UNLOCK_PRIVATE_ON_SEND_COMPLETED"/>
 </enum>
 
 <enum name="ExtensionFileWriteResult" type="int">
@@ -59365,6 +59368,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1083" label="EASYUNLOCKPRIVATE_FINDSETUPCONNECTION"/>
   <int value="1084" label="RESOURCESPRIVATE_GETSTRINGS"/>
   <int value="1085" label="USB_GETCONFIGURATIONS"/>
+  <int value="1086" label="EASYUNLOCKPRIVATE_SETUPCONNECTIONSTATUS"/>
+  <int value="1087" label="EASYUNLOCKPRIVATE_SETUPCONNECTIONDISCONNECT"/>
+  <int value="1088" label="EASYUNLOCKPRIVATE_SETUPCONNECTIONSEND"/>
 </enum>
 
 <enum name="ExtensionInstallCause" type="int">
