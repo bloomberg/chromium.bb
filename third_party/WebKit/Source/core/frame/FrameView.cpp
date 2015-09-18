@@ -1457,10 +1457,10 @@ void FrameView::maintainScrollPositionAtAnchor(Node* anchorNode)
     ASSERT(anchorNode);
     m_scrollAnchor = anchorNode;
 
-    // We need to update the layout before scrolling, otherwise we could
-    // really mess things up if an anchor scroll comes at a bad moment.
+    // We need to update the layout tree before scrolling.
     m_frame->document()->updateLayoutTreeIfNeeded();
-    // Only do a layout if changes have occurred that make it necessary.
+
+    // If layout is needed, we will scroll in performPostLayoutTasks. Otherwise, scroll immediately.
     LayoutView* layoutView = this->layoutView();
     if (layoutView && layoutView->needsLayout())
         layout();
@@ -1694,7 +1694,10 @@ void FrameView::handleLoadCompleted()
     // reduce the size of the frame.
     if (m_autoSizeInfo)
         m_autoSizeInfo->autoSizeIfNeeded();
-    clearScrollAnchor();
+
+    // If there is a pending layout, the scroll anchor will be cleared when it finishes.
+    if (!needsLayout())
+        clearScrollAnchor();
 }
 
 void FrameView::clearLayoutSubtreeRoot(const LayoutObject& root)
@@ -1850,6 +1853,11 @@ void FrameView::scrollToAnchor()
     if (!anchorNode->layoutObject())
         return;
 
+    // Scrolling is disabled during updateScrollbars (see isProgrammaticallyScrollable).
+    // Bail now to avoid clearing m_scrollAnchor before we actually have a chance to scroll.
+    if (m_inUpdateScrollbars)
+        return;
+
     LayoutRect rect;
     if (anchorNode != m_frame->document()) {
         rect = anchorNode->boundingBox();
@@ -1874,8 +1882,10 @@ void FrameView::scrollToAnchor()
     if (AXObjectCache* cache = m_frame->document()->existingAXObjectCache())
         cache->handleScrolledToAnchor(anchorNode.get());
 
-    // scrollRectToVisible can call into setScrollPosition(), which resets m_scrollAnchor.
-    m_scrollAnchor = anchorNode;
+    // The scroll anchor should only be maintained while the frame is still loading.
+    // If the frame is done loading, clear the anchor now. Otherwise, restore it
+    // since it may have been cleared during scrollRectToVisible.
+    m_scrollAnchor = m_frame->document()->isLoadCompleted() ? nullptr : anchorNode;
 }
 
 bool FrameView::updateWidgets()
