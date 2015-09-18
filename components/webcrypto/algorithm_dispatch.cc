@@ -6,12 +6,13 @@
 
 #include "base/logging.h"
 #include "components/webcrypto/algorithm_implementation.h"
+#include "components/webcrypto/algorithm_implementations.h"
 #include "components/webcrypto/algorithm_registry.h"
 #include "components/webcrypto/crypto_data.h"
 #include "components/webcrypto/generate_key_result.h"
-#include "components/webcrypto/platform_crypto.h"
 #include "components/webcrypto/status.h"
 #include "components/webcrypto/webcrypto_util.h"
+#include "crypto/openssl_util.h"
 #include "third_party/WebKit/public/platform/WebCryptoKeyAlgorithm.h"
 
 namespace webcrypto {
@@ -309,8 +310,8 @@ Status DeriveKey(const blink::WebCryptoAlgorithm& algorithm,
 
 scoped_ptr<blink::WebCryptoDigestor> CreateDigestor(
     blink::WebCryptoAlgorithmId algorithm) {
-  PlatformInit();
-  return CreatePlatformDigestor(algorithm);
+  crypto::EnsureOpenSSLInit();
+  return CreateDigestorImplementation(algorithm);
 }
 
 bool SerializeKeyForClone(const blink::WebCryptoKey& key,

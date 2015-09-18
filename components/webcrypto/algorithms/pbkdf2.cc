@@ -4,9 +4,9 @@
 
 #include "base/stl_util.h"
 #include "components/webcrypto/algorithm_implementation.h"
-#include "components/webcrypto/algorithms/key.h"
 #include "components/webcrypto/algorithms/util_openssl.h"
 #include "components/webcrypto/crypto_data.h"
+#include "components/webcrypto/key.h"
 #include "components/webcrypto/status.h"
 #include "components/webcrypto/webcrypto_util.h"
 #include "crypto/openssl_util.h"
@@ -71,8 +71,7 @@ class Pbkdf2Implementation : public AlgorithmImplementation {
     unsigned int keylen_bytes = optional_length_bits / 8;
     derived_bytes->resize(keylen_bytes);
 
-    const std::vector<uint8_t>& password =
-        SymKeyOpenSsl::Cast(base_key)->raw_key_data();
+    const std::vector<uint8_t>& password = GetSymmetricKeyData(base_key);
 
     if (!PKCS5_PBKDF2_HMAC(
             reinterpret_cast<const char*>(vector_as_array(&password)),
@@ -81,13 +80,6 @@ class Pbkdf2Implementation : public AlgorithmImplementation {
             vector_as_array(derived_bytes))) {
       return Status::OperationError();
     }
-    return Status::Success();
-  }
-
-  Status SerializeKeyForClone(
-      const blink::WebCryptoKey& key,
-      blink::WebVector<uint8_t>* key_data) const override {
-    key_data->assign(SymKeyOpenSsl::Cast(key)->serialized_key_data());
     return Status::Success();
   }
 
@@ -111,8 +103,8 @@ class Pbkdf2Implementation : public AlgorithmImplementation {
 
 }  // namespace
 
-AlgorithmImplementation* CreatePlatformPbkdf2Implementation() {
-  return new Pbkdf2Implementation;
+scoped_ptr<AlgorithmImplementation> CreatePbkdf2Implementation() {
+  return make_scoped_ptr(new Pbkdf2Implementation);
 }
 
 }  // namespace webcrypto

@@ -53,10 +53,6 @@ class AesAlgorithm : public AlgorithmImplementation {
   Status ExportKeyJwk(const blink::WebCryptoKey& key,
                       std::vector<uint8_t>* buffer) const override;
 
-  Status SerializeKeyForClone(
-      const blink::WebCryptoKey& key,
-      blink::WebVector<uint8_t>* key_data) const override;
-
   Status DeserializeKeyForClone(const blink::WebCryptoKeyAlgorithm& algorithm,
                                 blink::WebCryptoKeyType type,
                                 bool extractable,

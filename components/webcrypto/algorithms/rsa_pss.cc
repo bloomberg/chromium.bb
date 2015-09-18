@@ -53,8 +53,8 @@ class RsaPssImplementation : public RsaHashedAlgorithm {
 
 }  // namespace
 
-AlgorithmImplementation* CreatePlatformRsaPssImplementation() {
-  return new RsaPssImplementation;
+scoped_ptr<AlgorithmImplementation> CreateRsaPssImplementation() {
+  return make_scoped_ptr(new RsaPssImplementation);
 }
 
 }  // namespace webcrypto

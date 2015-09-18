@@ -8,11 +8,11 @@
 
 #include "base/logging.h"
 #include "base/stl_util.h"
-#include "components/webcrypto/algorithms/key.h"
 #include "components/webcrypto/algorithms/util_openssl.h"
 #include "components/webcrypto/crypto_data.h"
 #include "components/webcrypto/generate_key_result.h"
 #include "components/webcrypto/jwk.h"
+#include "components/webcrypto/key.h"
 #include "components/webcrypto/status.h"
 #include "components/webcrypto/webcrypto_util.h"
 #include "crypto/openssl_util.h"
@@ -396,7 +396,10 @@ Status RsaHashedAlgorithm::ExportKeyPkcs8(const blink::WebCryptoKey& key,
                                           std::vector<uint8_t>* buffer) const {
   if (key.type() != blink::WebCryptoKeyTypePrivate)
     return Status::ErrorUnexpectedKeyType();
-  *buffer = AsymKeyOpenSsl::Cast(key)->serialized_key_data();
+  // This relies on the fact that PKCS8 formatted data was already
+  // associated with the key during its creation (used by
+  // structured clone).
+  *buffer = GetSerializedKeyData(key);
   return Status::Success();
 }
 
@@ -404,7 +407,10 @@ Status RsaHashedAlgorithm::ExportKeySpki(const blink::WebCryptoKey& key,
                                          std::vector<uint8_t>* buffer) const {
   if (key.type() != blink::WebCryptoKeyTypePublic)
     return Status::ErrorUnexpectedKeyType();
-  *buffer = AsymKeyOpenSsl::Cast(key)->serialized_key_data();
+  // This relies on the fact that SPKI formatted data was already
+  // associated with the key during its creation (used by
+  // structured clone).
+  *buffer = GetSerializedKeyData(key);
   return Status::Success();
 }
 
@@ -412,7 +418,7 @@ Status RsaHashedAlgorithm::ExportKeyJwk(const blink::WebCryptoKey& key,
                                         std::vector<uint8_t>* buffer) const {
   crypto::OpenSSLErrStackTracer err_tracer(FROM_HERE);
 
-  EVP_PKEY* pkey = AsymKeyOpenSsl::Cast(key)->key();
+  EVP_PKEY* pkey = GetEVP_PKEY(key);
   crypto::ScopedRSA rsa(EVP_PKEY_get1_RSA(pkey));
   if (!rsa.get())
     return Status::ErrorUnexpected();
@@ -449,13 +455,6 @@ Status RsaHashedAlgorithm::ExportKeyJwk(const blink::WebCryptoKey& key,
     default:
       return Status::ErrorUnexpected();
   }
-}
-
-Status RsaHashedAlgorithm::SerializeKeyForClone(
-    const blink::WebCryptoKey& key,
-    blink::WebVector<uint8_t>* key_data) const {
-  key_data->assign(AsymKeyOpenSsl::Cast(key)->serialized_key_data());
-  return Status::Success();
 }
 
 // TODO(eroman): Defer import to the crypto thread. http://crbug.com/430763

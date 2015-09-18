@@ -4,6 +4,7 @@
 
 #include "components/webcrypto/algorithm_implementation.h"
 
+#include "components/webcrypto/key.h"
 #include "components/webcrypto/status.h"
 
 namespace webcrypto {
@@ -181,7 +182,8 @@ Status AlgorithmImplementation::ExportKeyJwk(
 Status AlgorithmImplementation::SerializeKeyForClone(
     const blink::WebCryptoKey& key,
     blink::WebVector<uint8_t>* key_data) const {
-  return Status::ErrorUnsupported();
+  *key_data = GetSerializedKeyData(key);
+  return Status::Success();
 }
 
 Status AlgorithmImplementation::DeserializeKeyForClone(

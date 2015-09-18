@@ -5,10 +5,10 @@
 #include "components/webcrypto/algorithms/aes.h"
 
 #include "base/logging.h"
-#include "components/webcrypto/algorithms/key.h"
 #include "components/webcrypto/algorithms/util_openssl.h"
 #include "components/webcrypto/crypto_data.h"
 #include "components/webcrypto/jwk.h"
+#include "components/webcrypto/key.h"
 #include "components/webcrypto/status.h"
 #include "components/webcrypto/webcrypto_util.h"
 #include "third_party/WebKit/public/platform/WebCryptoKeyAlgorithm.h"
@@ -133,26 +133,18 @@ Status AesAlgorithm::ImportKeyJwk(const CryptoData& key_data,
 
 Status AesAlgorithm::ExportKeyRaw(const blink::WebCryptoKey& key,
                                   std::vector<uint8_t>* buffer) const {
-  *buffer = SymKeyOpenSsl::Cast(key)->raw_key_data();
+  *buffer = GetSymmetricKeyData(key);
   return Status::Success();
 }
 
 Status AesAlgorithm::ExportKeyJwk(const blink::WebCryptoKey& key,
                                   std::vector<uint8_t>* buffer) const {
-  const std::vector<uint8_t>& raw_data =
-      SymKeyOpenSsl::Cast(key)->raw_key_data();
+  const std::vector<uint8_t>& raw_data = GetSymmetricKeyData(key);
 
   WriteSecretKeyJwk(CryptoData(raw_data),
                     MakeJwkAesAlgorithmName(jwk_suffix_, raw_data.size()),
                     key.extractable(), key.usages(), buffer);
 
-  return Status::Success();
-}
-
-Status AesAlgorithm::SerializeKeyForClone(
-    const blink::WebCryptoKey& key,
-    blink::WebVector<uint8_t>* key_data) const {
-  key_data->assign(SymKeyOpenSsl::Cast(key)->serialized_key_data());
   return Status::Success();
 }
 

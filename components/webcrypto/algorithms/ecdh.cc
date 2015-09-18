@@ -10,10 +10,10 @@
 #include "base/stl_util.h"
 #include "components/webcrypto/algorithm_implementation.h"
 #include "components/webcrypto/algorithms/ec.h"
-#include "components/webcrypto/algorithms/key.h"
 #include "components/webcrypto/algorithms/util_openssl.h"
 #include "components/webcrypto/crypto_data.h"
 #include "components/webcrypto/generate_key_result.h"
+#include "components/webcrypto/key.h"
 #include "components/webcrypto/status.h"
 #include "components/webcrypto/webcrypto_util.h"
 #include "crypto/openssl_util.h"
@@ -79,13 +79,13 @@ class EcdhImplementation : public EcAlgorithm {
     }
 
     crypto::ScopedEC_KEY public_key_ec(
-        EVP_PKEY_get1_EC_KEY(AsymKeyOpenSsl::Cast(public_key)->key()));
+        EVP_PKEY_get1_EC_KEY(GetEVP_PKEY(public_key)));
 
     const EC_POINT* public_key_point =
         EC_KEY_get0_public_key(public_key_ec.get());
 
     crypto::ScopedEC_KEY private_key_ec(
-        EVP_PKEY_get1_EC_KEY(AsymKeyOpenSsl::Cast(base_key)->key()));
+        EVP_PKEY_get1_EC_KEY(GetEVP_PKEY(base_key)));
 
     // The size of the shared secret is the field size in bytes (rounded up).
     // Note that, if rounding was required, the most significant bits of the
@@ -126,8 +126,8 @@ class EcdhImplementation : public EcAlgorithm {
 
 }  // namespace
 
-AlgorithmImplementation* CreatePlatformEcdhImplementation() {
-  return new EcdhImplementation;
+scoped_ptr<AlgorithmImplementation> CreateEcdhImplementation() {
+  return make_scoped_ptr(new EcdhImplementation);
 }
 
 }  // namespace webcrypto

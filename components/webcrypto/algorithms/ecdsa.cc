@@ -10,10 +10,10 @@
 #include "base/stl_util.h"
 #include "components/webcrypto/algorithm_implementation.h"
 #include "components/webcrypto/algorithms/ec.h"
-#include "components/webcrypto/algorithms/key.h"
 #include "components/webcrypto/algorithms/util_openssl.h"
 #include "components/webcrypto/crypto_data.h"
 #include "components/webcrypto/generate_key_result.h"
+#include "components/webcrypto/key.h"
 #include "components/webcrypto/status.h"
 #include "components/webcrypto/webcrypto_util.h"
 #include "crypto/openssl_util.h"
@@ -33,7 +33,7 @@ Status GetPKeyAndDigest(const blink::WebCryptoAlgorithm& algorithm,
                         const blink::WebCryptoKey& key,
                         EVP_PKEY** pkey,
                         const EVP_MD** digest) {
-  *pkey = AsymKeyOpenSsl::Cast(key)->key();
+  *pkey = GetEVP_PKEY(key);
   *digest = GetDigest(algorithm.ecdsaParams()->hash().id());
   if (!*digest)
     return Status::ErrorUnsupported();
@@ -259,8 +259,8 @@ class EcdsaImplementation : public EcAlgorithm {
 
 }  // namespace
 
-AlgorithmImplementation* CreatePlatformEcdsaImplementation() {
-  return new EcdsaImplementation;
+scoped_ptr<AlgorithmImplementation> CreateEcdsaImplementation() {
+  return make_scoped_ptr(new EcdsaImplementation);
 }
 
 }  // namespace webcrypto

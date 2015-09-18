@@ -124,11 +124,11 @@ class ShaImplementation : public AlgorithmImplementation {
 
 }  // namespace
 
-AlgorithmImplementation* CreatePlatformShaImplementation() {
-  return new ShaImplementation();
+scoped_ptr<AlgorithmImplementation> CreateShaImplementation() {
+  return make_scoped_ptr(new ShaImplementation());
 }
 
-scoped_ptr<blink::WebCryptoDigestor> CreatePlatformDigestor(
+scoped_ptr<blink::WebCryptoDigestor> CreateDigestorImplementation(
     blink::WebCryptoAlgorithmId algorithm) {
   return scoped_ptr<blink::WebCryptoDigestor>(new DigestorOpenSsl(algorithm));
 }

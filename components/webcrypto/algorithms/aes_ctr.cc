@@ -10,9 +10,9 @@
 #include "base/numerics/safe_math.h"
 #include "base/stl_util.h"
 #include "components/webcrypto/algorithms/aes.h"
-#include "components/webcrypto/algorithms/key.h"
 #include "components/webcrypto/algorithms/util_openssl.h"
 #include "components/webcrypto/crypto_data.h"
+#include "components/webcrypto/key.h"
 #include "components/webcrypto/status.h"
 #include "components/webcrypto/webcrypto_util.h"
 #include "crypto/openssl_util.h"
@@ -149,8 +149,7 @@ Status AesCtrEncryptDecrypt(const blink::WebCryptoAlgorithm& algorithm,
                             const CryptoData& data,
                             std::vector<uint8_t>* buffer) {
   const blink::WebCryptoAesCtrParams* params = algorithm.aesCtrParams();
-  const std::vector<uint8_t>& raw_key =
-      SymKeyOpenSsl::Cast(key)->raw_key_data();
+  const std::vector<uint8_t>& raw_key = GetSymmetricKeyData(key);
 
   if (params->counter().size() != 16)
     return Status::ErrorIncorrectSizeAesCtrCounter();
@@ -261,8 +260,8 @@ class AesCtrImplementation : public AesAlgorithm {
 
 }  // namespace
 
-AlgorithmImplementation* CreatePlatformAesCtrImplementation() {
-  return new AesCtrImplementation;
+scoped_ptr<AlgorithmImplementation> CreateAesCtrImplementation() {
+  return make_scoped_ptr(new AesCtrImplementation);
 }
 
 }  // namespace webcrypto

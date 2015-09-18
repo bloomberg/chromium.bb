@@ -7,10 +7,10 @@
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "components/webcrypto/algorithm_implementation.h"
-#include "components/webcrypto/algorithms/key.h"
 #include "components/webcrypto/algorithms/util_openssl.h"
 #include "components/webcrypto/crypto_data.h"
 #include "components/webcrypto/jwk.h"
+#include "components/webcrypto/key.h"
 #include "components/webcrypto/status.h"
 #include "components/webcrypto/webcrypto_util.h"
 #include "crypto/openssl_util.h"
@@ -160,14 +160,13 @@ class HmacImplementation : public AlgorithmImplementation {
 
   Status ExportKeyRaw(const blink::WebCryptoKey& key,
                       std::vector<uint8_t>* buffer) const override {
-    *buffer = SymKeyOpenSsl::Cast(key)->raw_key_data();
+    *buffer = GetSymmetricKeyData(key);
     return Status::Success();
   }
 
   Status ExportKeyJwk(const blink::WebCryptoKey& key,
                       std::vector<uint8_t>* buffer) const override {
-    SymKeyOpenSsl* sym_key = SymKeyOpenSsl::Cast(key);
-    const std::vector<uint8_t>& raw_data = sym_key->raw_key_data();
+    const std::vector<uint8_t>& raw_data = GetSymmetricKeyData(key);
 
     const char* algorithm_name =
         GetJwkHmacAlgorithmName(key.algorithm().hmacParams()->hash().id());
@@ -187,8 +186,7 @@ class HmacImplementation : public AlgorithmImplementation {
     const blink::WebCryptoAlgorithm& hash =
         key.algorithm().hmacParams()->hash();
 
-    return SignHmac(SymKeyOpenSsl::Cast(key)->raw_key_data(), hash, data,
-                    buffer);
+    return SignHmac(GetSymmetricKeyData(key), hash, data, buffer);
   }
 
   Status Verify(const blink::WebCryptoAlgorithm& algorithm,
@@ -211,13 +209,6 @@ class HmacImplementation : public AlgorithmImplementation {
     return Status::Success();
   }
 
-  Status SerializeKeyForClone(
-      const blink::WebCryptoKey& key,
-      blink::WebVector<uint8_t>* key_data) const override {
-    key_data->assign(SymKeyOpenSsl::Cast(key)->serialized_key_data());
-    return Status::Success();
-  }
-
   Status DeserializeKeyForClone(const blink::WebCryptoKeyAlgorithm& algorithm,
                                 blink::WebCryptoKeyType type,
                                 bool extractable,
@@ -237,8 +228,8 @@ class HmacImplementation : public AlgorithmImplementation {
 
 }  // namespace
 
-AlgorithmImplementation* CreatePlatformHmacImplementation() {
-  return new HmacImplementation;
+scoped_ptr<AlgorithmImplementation> CreateHmacImplementation() {
+  return make_scoped_ptr(new HmacImplementation);
 }
 
 }  // namespace webcrypto

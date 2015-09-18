@@ -5,10 +5,10 @@
 #include <openssl/evp.h>
 
 #include "base/stl_util.h"
-#include "components/webcrypto/algorithms/key.h"
 #include "components/webcrypto/algorithms/rsa.h"
 #include "components/webcrypto/algorithms/util_openssl.h"
 #include "components/webcrypto/crypto_data.h"
+#include "components/webcrypto/key.h"
 #include "components/webcrypto/status.h"
 #include "crypto/openssl_util.h"
 #include "crypto/scoped_openssl_types.h"
@@ -41,7 +41,7 @@ Status CommonEncryptDecrypt(InitFunc init_func,
                             std::vector<uint8_t>* buffer) {
   crypto::OpenSSLErrStackTracer err_tracer(FROM_HERE);
 
-  EVP_PKEY* pkey = AsymKeyOpenSsl::Cast(key)->key();
+  EVP_PKEY* pkey = GetEVP_PKEY(key);
   const EVP_MD* digest =
       GetDigest(key.algorithm().rsaHashedParams()->hash().id());
   if (!digest)
@@ -139,8 +139,8 @@ class RsaOaepImplementation : public RsaHashedAlgorithm {
 
 }  // namespace
 
-AlgorithmImplementation* CreatePlatformRsaOaepImplementation() {
-  return new RsaOaepImplementation;
+scoped_ptr<AlgorithmImplementation> CreateRsaOaepImplementation() {
+  return make_scoped_ptr(new RsaOaepImplementation);
 }
 
 }  // namespace webcrypto

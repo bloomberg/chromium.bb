@@ -9,9 +9,9 @@
 #include "base/numerics/safe_math.h"
 #include "base/stl_util.h"
 #include "components/webcrypto/algorithms/aes.h"
-#include "components/webcrypto/algorithms/key.h"
 #include "components/webcrypto/algorithms/util_openssl.h"
 #include "components/webcrypto/crypto_data.h"
+#include "components/webcrypto/key.h"
 #include "components/webcrypto/status.h"
 #include "crypto/openssl_util.h"
 #include "crypto/scoped_openssl_types.h"
@@ -45,8 +45,7 @@ Status AesKwEncryptDecrypt(EncryptOrDecrypt mode,
   if (data.byte_length() % 8)
     return Status::ErrorInvalidAesKwDataLength();
 
-  const std::vector<uint8_t>& raw_key =
-      SymKeyOpenSsl::Cast(key)->raw_key_data();
+  const std::vector<uint8_t>& raw_key = GetSymmetricKeyData(key);
 
   return AeadEncryptDecrypt(mode, raw_key, data,
                             8,             // tag_length_bytes
@@ -80,8 +79,8 @@ class AesKwImplementation : public AesAlgorithm {
 
 }  // namespace
 
-AlgorithmImplementation* CreatePlatformAesKwImplementation() {
-  return new AesKwImplementation;
+scoped_ptr<AlgorithmImplementation> CreateAesKwImplementation() {
+  return make_scoped_ptr(new AesKwImplementation);
 }
 
 }  // namespace webcrypto

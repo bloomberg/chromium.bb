@@ -6,8 +6,9 @@
 
 #include "base/lazy_instance.h"
 #include "components/webcrypto/algorithm_implementation.h"
-#include "components/webcrypto/platform_crypto.h"
+#include "components/webcrypto/algorithm_implementations.h"
 #include "components/webcrypto/status.h"
+#include "crypto/openssl_util.h"
 
 namespace webcrypto {
 
@@ -17,20 +18,20 @@ namespace {
 class AlgorithmRegistry {
  public:
   AlgorithmRegistry()
-      : sha_(CreatePlatformShaImplementation()),
-        aes_gcm_(CreatePlatformAesGcmImplementation()),
-        aes_cbc_(CreatePlatformAesCbcImplementation()),
-        aes_ctr_(CreatePlatformAesCtrImplementation()),
-        aes_kw_(CreatePlatformAesKwImplementation()),
-        hmac_(CreatePlatformHmacImplementation()),
-        rsa_ssa_(CreatePlatformRsaSsaImplementation()),
-        rsa_oaep_(CreatePlatformRsaOaepImplementation()),
-        rsa_pss_(CreatePlatformRsaPssImplementation()),
-        ecdsa_(CreatePlatformEcdsaImplementation()),
-        ecdh_(CreatePlatformEcdhImplementation()),
-        hkdf_(CreatePlatformHkdfImplementation()),
-        pbkdf2_(CreatePlatformPbkdf2Implementation()) {
-    PlatformInit();
+      : sha_(CreateShaImplementation()),
+        aes_gcm_(CreateAesGcmImplementation()),
+        aes_cbc_(CreateAesCbcImplementation()),
+        aes_ctr_(CreateAesCtrImplementation()),
+        aes_kw_(CreateAesKwImplementation()),
+        hmac_(CreateHmacImplementation()),
+        rsa_ssa_(CreateRsaSsaImplementation()),
+        rsa_oaep_(CreateRsaOaepImplementation()),
+        rsa_pss_(CreateRsaPssImplementation()),
+        ecdsa_(CreateEcdsaImplementation()),
+        ecdh_(CreateEcdhImplementation()),
+        hkdf_(CreateHkdfImplementation()),
+        pbkdf2_(CreatePbkdf2Implementation()) {
+    crypto::EnsureOpenSSLInit();
   }
 
   const AlgorithmImplementation* GetAlgorithm(

@@ -4,10 +4,10 @@
 
 #include "base/numerics/safe_math.h"
 #include "base/stl_util.h"
-#include "components/webcrypto/algorithms/key.h"
 #include "components/webcrypto/algorithms/rsa_sign.h"
 #include "components/webcrypto/algorithms/util_openssl.h"
 #include "components/webcrypto/crypto_data.h"
+#include "components/webcrypto/key.h"
 #include "components/webcrypto/status.h"
 #include "crypto/openssl_util.h"
 #include "crypto/scoped_openssl_types.h"
@@ -22,7 +22,7 @@ namespace {
 Status GetPKeyAndDigest(const blink::WebCryptoKey& key,
                         EVP_PKEY** pkey,
                         const EVP_MD** digest) {
-  *pkey = AsymKeyOpenSsl::Cast(key)->key();
+  *pkey = GetEVP_PKEY(key);
 
   *digest = GetDigest(key.algorithm().rsaHashedParams()->hash().id());
   if (!*digest)

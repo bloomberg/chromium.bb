@@ -8,9 +8,9 @@
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "components/webcrypto/algorithm_implementation.h"
-#include "components/webcrypto/algorithms/key.h"
 #include "components/webcrypto/algorithms/util_openssl.h"
 #include "components/webcrypto/crypto_data.h"
+#include "components/webcrypto/key.h"
 #include "components/webcrypto/status.h"
 #include "components/webcrypto/webcrypto_util.h"
 #include "crypto/openssl_util.h"
@@ -68,8 +68,7 @@ class HkdfImplementation : public AlgorithmImplementation {
 
     // Algorithm dispatch checks that the algorithm in |base_key| matches
     // |algorithm|.
-    const std::vector<uint8_t>& raw_key =
-        SymKeyOpenSsl::Cast(base_key)->raw_key_data();
+    const std::vector<uint8_t>& raw_key = GetSymmetricKeyData(base_key);
     if (!HKDF(vector_as_array(derived_bytes), derived_bytes_len,
               digest_algorithm, vector_as_array(&raw_key), raw_key.size(),
               params->salt().data(), params->salt().size(),
@@ -83,13 +82,6 @@ class HkdfImplementation : public AlgorithmImplementation {
     }
 
     TruncateToBitLength(optional_length_bits, derived_bytes);
-    return Status::Success();
-  }
-
-  Status SerializeKeyForClone(
-      const blink::WebCryptoKey& key,
-      blink::WebVector<uint8_t>* key_data) const override {
-    key_data->assign(SymKeyOpenSsl::Cast(key)->serialized_key_data());
     return Status::Success();
   }
 
@@ -113,8 +105,8 @@ class HkdfImplementation : public AlgorithmImplementation {
 
 }  // namespace
 
-AlgorithmImplementation* CreatePlatformHkdfImplementation() {
-  return new HkdfImplementation;
+scoped_ptr<AlgorithmImplementation> CreateHkdfImplementation() {
+  return make_scoped_ptr(new HkdfImplementation);
 }
 
 }  // namespace webcrypto

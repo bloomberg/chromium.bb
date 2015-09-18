@@ -9,10 +9,10 @@
 #include <openssl/rand.h>
 
 #include "base/stl_util.h"
-#include "components/webcrypto/algorithms/key.h"
+#include "components/webcrypto/algorithm_implementations.h"
 #include "components/webcrypto/crypto_data.h"
 #include "components/webcrypto/generate_key_result.h"
-#include "components/webcrypto/platform_crypto.h"
+#include "components/webcrypto/key.h"
 #include "components/webcrypto/status.h"
 #include "components/webcrypto/webcrypto_util.h"
 #include "crypto/openssl_util.h"
@@ -60,10 +60,6 @@ Status ExportPKeyPkcs8(EVP_PKEY* key, std::vector<uint8_t>* buffer) {
 }
 
 }  // namespace
-
-void PlatformInit() {
-  crypto::EnsureOpenSSLInit();
-}
 
 const EVP_MD* GetDigest(blink::WebCryptoAlgorithmId id) {
   switch (id) {
@@ -148,7 +144,7 @@ Status GenerateWebCryptoSecretKey(const blink::WebCryptoKeyAlgorithm& algorithm,
   }
 
   result->AssignSecretKey(blink::WebCryptoKey::create(
-      new SymKeyOpenSsl(CryptoData(random_bytes)),
+      CreateSymmetricKeyHandle(CryptoData(random_bytes)),
       blink::WebCryptoKeyTypeSecret, extractable, algorithm, usages));
 
   return Status::Success();
@@ -159,7 +155,7 @@ Status CreateWebCryptoSecretKey(const CryptoData& key_data,
                                 bool extractable,
                                 blink::WebCryptoKeyUsageMask usages,
                                 blink::WebCryptoKey* key) {
-  *key = blink::WebCryptoKey::create(new SymKeyOpenSsl(key_data),
+  *key = blink::WebCryptoKey::create(CreateSymmetricKeyHandle(key_data),
                                      blink::WebCryptoKeyTypeSecret, extractable,
                                      algorithm, usages);
   return Status::Success();
@@ -178,7 +174,7 @@ Status CreateWebCryptoPublicKey(crypto::ScopedEVP_PKEY public_key,
     return status;
 
   *key = blink::WebCryptoKey::create(
-      new AsymKeyOpenSsl(public_key.Pass(), CryptoData(spki_data)),
+      CreateAsymmetricKeyHandle(public_key.Pass(), spki_data),
       blink::WebCryptoKeyTypePublic, extractable, algorithm, usages);
   return Status::Success();
 }
@@ -196,7 +192,7 @@ Status CreateWebCryptoPrivateKey(crypto::ScopedEVP_PKEY private_key,
     return status;
 
   *key = blink::WebCryptoKey::create(
-      new AsymKeyOpenSsl(private_key.Pass(), CryptoData(pkcs8_data)),
+      CreateAsymmetricKeyHandle(private_key.Pass(), pkcs8_data),
       blink::WebCryptoKeyTypePrivate, extractable, algorithm, usages);
   return Status::Success();
 }

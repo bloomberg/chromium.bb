@@ -36,6 +36,10 @@ class Status;
 //   * The key usages have already been verified. In fact in the case of calls
 //     to Encrypt()/Decrypt() the corresponding key usages may not be present
 //     (when wrapping/unwrapping).
+//
+// An AlgorithmImplementation can also assume that
+// crypto::EnsureOpenSSLInit() will be called before any of its
+// methods are invoked (except the constructor).
 class AlgorithmImplementation {
  public:
   virtual ~AlgorithmImplementation();
@@ -204,9 +208,11 @@ class AlgorithmImplementation {
   //
   // Tests to verify structured cloning are available in:
   //   LayoutTests/crypto/clone-*.html
-  virtual Status SerializeKeyForClone(
-      const blink::WebCryptoKey& key,
-      blink::WebVector<uint8_t>* key_data) const;
+
+  // Note that SerializeKeyForClone() is not virtual because all
+  // implementations end up doing the same thing.
+  Status SerializeKeyForClone(const blink::WebCryptoKey& key,
+                              blink::WebVector<uint8_t>* key_data) const;
 
   virtual Status DeserializeKeyForClone(
       const blink::WebCryptoKeyAlgorithm& algorithm,

@@ -8,9 +8,9 @@
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "components/webcrypto/algorithms/aes.h"
-#include "components/webcrypto/algorithms/key.h"
 #include "components/webcrypto/algorithms/util_openssl.h"
 #include "components/webcrypto/crypto_data.h"
+#include "components/webcrypto/key.h"
 #include "components/webcrypto/status.h"
 #include "components/webcrypto/webcrypto_util.h"
 #include "crypto/openssl_util.h"
@@ -37,8 +37,7 @@ Status AesGcmEncryptDecrypt(EncryptOrDecrypt mode,
                             const blink::WebCryptoKey& key,
                             const CryptoData& data,
                             std::vector<uint8_t>* buffer) {
-  const std::vector<uint8_t>& raw_key =
-      SymKeyOpenSsl::Cast(key)->raw_key_data();
+  const std::vector<uint8_t>& raw_key = GetSymmetricKeyData(key);
   const blink::WebCryptoAesGcmParams* params = algorithm.aesGcmParams();
 
   unsigned int tag_length_bits;
@@ -73,8 +72,8 @@ class AesGcmImplementation : public AesAlgorithm {
 
 }  // namespace
 
-AlgorithmImplementation* CreatePlatformAesGcmImplementation() {
-  return new AesGcmImplementation;
+scoped_ptr<AlgorithmImplementation> CreateAesGcmImplementation() {
+  return make_scoped_ptr(new AesGcmImplementation);
 }
 
 }  // namespace webcrypto
