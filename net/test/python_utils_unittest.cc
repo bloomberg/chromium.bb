@@ -44,7 +44,12 @@ TEST(PythonUtils, Append) {
 #endif
 }
 
-TEST(PythonUtils, PythonRunTime) {
+#if defined(OS_ANDROID)
+#define MAYBE_PythonRunTime DISABLED_PythonRunTime
+#else
+#define MAYBE_PythonRunTime PythonRunTime
+#endif
+TEST(PythonUtils, MAYBE_PythonRunTime) {
   base::CommandLine cmd_line(base::CommandLine::NO_PROGRAM);
   EXPECT_TRUE(GetPythonCommand(&cmd_line));
 

@@ -7348,7 +7348,13 @@ TEST_F(URLRequestTestReferrerPolicy, HTTPToSameOriginHTTP) {
                               origin_server()->GetURL("path/to/file.html"));
 }
 
-TEST_F(URLRequestTestReferrerPolicy, HTTPToCrossOriginHTTP) {
+// Can't spin up more than one SpawnedTestServer on Android.
+#if defined(OS_ANDROID)
+#define MAYBE_HTTPToCrossOriginHTTP DISABLED_HTTPToCrosOriginHTTP
+#else
+#define MAYBE_HTTPToCrossOriginHTTP HTTPToCrossOriginHTTP
+#endif
+TEST_F(URLRequestTestReferrerPolicy, MAYBE_HTTPToCrossOriginHTTP) {
   InstantiateCrossOriginServers(SpawnedTestServer::TYPE_HTTP,
                                 SpawnedTestServer::TYPE_HTTP);
 
@@ -7395,7 +7401,13 @@ TEST_F(URLRequestTestReferrerPolicy, HTTPSToSameOriginHTTPS) {
                               origin_server()->GetURL("path/to/file.html"));
 }
 
-TEST_F(URLRequestTestReferrerPolicy, HTTPSToCrossOriginHTTPS) {
+// Can't spin up more than one SpawnedTestServer on Android.
+#if defined(OS_ANDROID)
+#define MAYBE_HTTPSToCrossOriginHTTPS DISABLED_HTTPSToCrosOriginHTTPS
+#else
+#define MAYBE_HTTPSToCrossOriginHTTPS HTTPSToCrossOriginHTTPS
+#endif
+TEST_F(URLRequestTestReferrerPolicy, MAYBE_HTTPSToCrossOriginHTTPS) {
   InstantiateCrossOriginServers(SpawnedTestServer::TYPE_HTTPS,
                                 SpawnedTestServer::TYPE_HTTPS);
 
@@ -7419,7 +7431,13 @@ TEST_F(URLRequestTestReferrerPolicy, HTTPSToCrossOriginHTTPS) {
                               origin_server()->GetURL("path/to/file.html"));
 }
 
-TEST_F(URLRequestTestReferrerPolicy, HTTPToHTTPS) {
+// Can't spin up more than one SpawnedTestServer on Android.
+#if defined(OS_ANDROID)
+#define MAYBE_HTTPToHTTPS DISABLED_HTTPToHTTPS
+#else
+#define MAYBE_HTTPToHTTPS HTTPToHTTPS
+#endif
+TEST_F(URLRequestTestReferrerPolicy, MAYBE_HTTPToHTTPS) {
   InstantiateCrossOriginServers(SpawnedTestServer::TYPE_HTTP,
                                 SpawnedTestServer::TYPE_HTTPS);
 
@@ -7443,7 +7461,13 @@ TEST_F(URLRequestTestReferrerPolicy, HTTPToHTTPS) {
                               origin_server()->GetURL("path/to/file.html"));
 }
 
-TEST_F(URLRequestTestReferrerPolicy, HTTPSToHTTP) {
+// Can't spin up more than one SpawnedTestServer on Android.
+#if defined(OS_ANDROID)
+#define MAYBE_HTTPSToHTTP DISABLED_HTTPSToHTTP
+#else
+#define MAYBE_HTTPSToHTTP HTTPSToHTTP
+#endif
+TEST_F(URLRequestTestReferrerPolicy, MAYBE_HTTPSToHTTP) {
   InstantiateCrossOriginServers(SpawnedTestServer::TYPE_HTTPS,
                                 SpawnedTestServer::TYPE_HTTP);
 
