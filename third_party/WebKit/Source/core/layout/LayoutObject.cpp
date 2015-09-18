@@ -697,6 +697,10 @@ bool LayoutObject::skipInvalidationWhenLaidOutChildren() const
     if (hasNonCompositedScrollbars())
         return false;
 
+    // We can't detect whether a plugin has box effects, so disable this optimization for that case.
+    if (isEmbeddedObject())
+        return false;
+
     return !hasBoxEffect();
 }
 
@@ -1425,7 +1429,7 @@ PaintInvalidationReason LayoutObject::paintInvalidationReason(const LayoutBoxMod
     // and they change size but don't have anything to paint. This is
     // a pretty common case for <body> as we add / remove children
     // (and the default background is done by FrameView).
-    if (skipInvalidationWhenLaidOutChildren())
+    if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled() && skipInvalidationWhenLaidOutChildren())
         return PaintInvalidationNone;
 
     // If the size is zero on one of our bounds then we know we're going to have

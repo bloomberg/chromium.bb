@@ -94,7 +94,7 @@ void LayoutReplaced::layout()
 
     clearNeedsLayout();
 
-    if (replacedContentRect() != oldContentRect)
+    if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled() && replacedContentRect() != oldContentRect)
         setShouldDoFullPaintInvalidation();
 }
 

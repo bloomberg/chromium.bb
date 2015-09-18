@@ -139,6 +139,16 @@ crbug.com/504613 crbug.com/524248 paint/images/image-backgrounds-not-antialiased
 crbug.com/504613 crbug.com/524248 virtual/spv2/paint/images/image-backgrounds-not-antialiased.html [ Skip ]
 crbug.com/502531 fast/borders/border-antialiasing.html [ ImageOnlyFailure ]
 
+crbug.com/510908 paint/invalidation/spv2/background-generated.html [ ImageOnlyFailure ]
+crbug.com/510908 paint/invalidation/spv2/intermediate-layout-position-clip.html [ ImageOnlyFailure ]
+crbug.com/510908 paint/invalidation/spv2/intermediate-layout-position.html [ ImageOnlyFailure ]
+crbug.com/510908 paint/invalidation/spv2/invalidation-with-zero-size-object.html [ ImageOnlyFailure ]
+crbug.com/510908 paint/invalidation/spv2/mix-blend-mode-separate-stacking-context.html [ ImageOnlyFailure ]
+crbug.com/510908 paint/invalidation/spv2/negative-shadow-box-shrink.html [ ImageOnlyFailure ]
+crbug.com/510908 paint/invalidation/spv2/overflow-into-content.html [ ImageOnlyFailure ]
+crbug.com/510908 paint/invalidation/spv2/resize-scrollable-div.html [ ImageOnlyFailure ]
+crbug.com/510908 paint/invalidation/spv2/transform-disable-layoutstate.html [ ImageOnlyFailure ]
+
 crbug.com/417782 [ Linux Win ] virtual/rootlayerscrolls/fast/scrolling/fractional-scroll-offset-fixed-position-non-composited.html [ ImageOnlyFailure ]
 crbug.com/492664 [ Linux XP ] imported/csswg-test/css-writing-modes-3/box-offsets-rel-pos-vlr-005.xht [ ImageOnlyFailure ]
 crbug.com/492664 [ Linux XP ] imported/csswg-test/css-writing-modes-3/box-offsets-rel-pos-vrl-004.xht [ ImageOnlyFailure ]
