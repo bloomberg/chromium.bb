@@ -169,13 +169,13 @@ FontCacheKey FontDescription::cacheKey(const FontFaceCreationParams& creationPar
     FontTraits fontTraits = desiredTraits.bitfield() ? desiredTraits : traits();
 
     unsigned options =
-        static_cast<unsigned>(m_syntheticItalic) << 5 | // bit 6
-        static_cast<unsigned>(m_syntheticBold) << 4 | // bit 5
-        static_cast<unsigned>(m_textRendering) << 2 | // bits 3-4
-        static_cast<unsigned>(m_orientation) << 1 | // bit 2
+        static_cast<unsigned>(m_syntheticItalic) << 6 | // bit 7
+        static_cast<unsigned>(m_syntheticBold) << 5 | // bit 6
+        static_cast<unsigned>(m_textRendering) << 3 | // bits 4-5
+        static_cast<unsigned>(m_orientation) << 1 | // bit 2-3
         static_cast<unsigned>(m_subpixelTextPosition); // bit 1
 
-    return FontCacheKey(creationParams, effectiveFontSize(), options | fontTraits.bitfield() << 8);
+    return FontCacheKey(creationParams, effectiveFontSize(), options | fontTraits.bitfield() << 7);
 }
 
 
