@@ -14,17 +14,19 @@ namespace extensions {
 
 namespace {
 
+const char kExtensionActionRedesignExperiment[] = "ExtensionActionRedesign";
+
 class CommonSwitches {
  public:
   CommonSwitches()
-      : easy_off_store_install(NULL, FeatureSwitch::DEFAULT_DISABLED),
+      : easy_off_store_install(nullptr, FeatureSwitch::DEFAULT_DISABLED),
         force_dev_mode_highlighting(switches::kForceDevModeHighlighting,
                                     FeatureSwitch::DEFAULT_DISABLED),
         prompt_for_external_extensions(
 #if defined(CHROMIUM_BUILD)
             switches::kPromptForExternalExtensions,
 #else
-            NULL,
+            nullptr,
 #endif
 #if defined(OS_WIN)
             FeatureSwitch::DEFAULT_ENABLED),
@@ -35,6 +37,7 @@ class CommonSwitches {
         enable_override_bookmarks_ui(switches::kEnableOverrideBookmarksUI,
                                      FeatureSwitch::DEFAULT_DISABLED),
         extension_action_redesign(switches::kExtensionActionRedesign,
+                                  kExtensionActionRedesignExperiment,
                                   FeatureSwitch::DEFAULT_DISABLED),
         extension_action_redesign_override(switches::kExtensionActionRedesign,
                                            FeatureSwitch::DEFAULT_ENABLED),
@@ -121,24 +124,33 @@ FeatureSwitch::ScopedOverride::~ScopedOverride() {
 }
 
 FeatureSwitch::FeatureSwitch(const char* switch_name,
-                             DefaultValue default_value) {
-  Init(base::CommandLine::ForCurrentProcess(), switch_name, default_value);
-}
+                             DefaultValue default_value)
+    : FeatureSwitch(base::CommandLine::ForCurrentProcess(),
+                    switch_name,
+                    default_value) {}
+
+FeatureSwitch::FeatureSwitch(const char* switch_name,
+                             const char* field_trial_name,
+                             DefaultValue default_value)
+    : FeatureSwitch(base::CommandLine::ForCurrentProcess(),
+                    switch_name,
+                    field_trial_name,
+                    default_value) {}
 
 FeatureSwitch::FeatureSwitch(const base::CommandLine* command_line,
                              const char* switch_name,
-                             DefaultValue default_value) {
-  Init(command_line, switch_name, default_value);
-}
+                             DefaultValue default_value)
+    : FeatureSwitch(command_line, switch_name, nullptr, default_value) {}
 
-void FeatureSwitch::Init(const base::CommandLine* command_line,
-                         const char* switch_name,
-                         DefaultValue default_value) {
-  command_line_ = command_line;
-  switch_name_ = switch_name;
-  default_value_ = default_value == DEFAULT_ENABLED;
-  override_value_ = OVERRIDE_NONE;
-}
+FeatureSwitch::FeatureSwitch(const base::CommandLine* command_line,
+                             const char* switch_name,
+                             const char* field_trial_name,
+                             DefaultValue default_value)
+    : command_line_(command_line),
+      switch_name_(switch_name),
+      field_trial_name_(field_trial_name),
+      default_value_(default_value == DEFAULT_ENABLED),
+      override_value_(OVERRIDE_NONE) {}
 
 bool FeatureSwitch::IsEnabled() const {
   if (override_value_ != OVERRIDE_NONE)
@@ -162,6 +174,15 @@ bool FeatureSwitch::IsEnabled() const {
 
   if (default_value_ && command_line_->HasSwitch(GetLegacyDisableFlag()))
     return false;
+
+  if (field_trial_name_) {
+    std::string group_name =
+        base::FieldTrialList::FindFullName(field_trial_name_);
+    if (group_name == "Enabled")
+      return true;
+    if (group_name == "Disabled")
+      return false;
+  }
 
   return default_value_;
 }
