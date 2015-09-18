@@ -287,6 +287,11 @@ void FrameProcessor::Reset() {
        itr != track_buffers_.end(); ++itr) {
     itr->second->Reset();
   }
+
+  if (sequence_mode_) {
+    DCHECK(kNoTimestamp() != group_end_timestamp_);
+    group_start_timestamp_ = group_end_timestamp_;
+  }
 }
 
 void FrameProcessor::OnPossibleAudioConfigUpdate(

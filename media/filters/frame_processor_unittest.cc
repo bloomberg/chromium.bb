@@ -740,6 +740,23 @@ TEST_P(FrameProcessorTest, PartialAppendWindowFilterNoNewMediaSegment) {
   CheckReadsThenReadStalls(video_.get(), "0 10");
 }
 
+TEST_F(FrameProcessorTest, AudioOnly_SequenceModeContinuityAcrossReset) {
+  InSequence s;
+  AddTestTracks(HAS_AUDIO);
+  new_media_segment_ = true;
+  frame_processor_->SetSequenceMode(true);
+  EXPECT_CALL(callbacks_, PossibleDurationIncrease(frame_duration_));
+  ProcessFrames("0K", "");
+  frame_processor_->Reset();
+  EXPECT_CALL(callbacks_, PossibleDurationIncrease(frame_duration_ * 2));
+  ProcessFrames("100K", "");
+
+  EXPECT_EQ(frame_duration_ * -9, timestamp_offset_);
+  EXPECT_FALSE(new_media_segment_);
+  CheckExpectedRangesByTimestamp(audio_.get(), "{ [0,20) }");
+  CheckReadsThenReadStalls(audio_.get(), "0 10:100");
+}
+
 INSTANTIATE_TEST_CASE_P(SequenceMode, FrameProcessorTest, Values(true));
 INSTANTIATE_TEST_CASE_P(SegmentsMode, FrameProcessorTest, Values(false));
 
