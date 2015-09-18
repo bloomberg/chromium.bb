@@ -11,12 +11,12 @@
 
 @class CRWWebViewScrollViewProxy;
 
-// Provides an interface for embedders to access the WebState's UIWebView in a
+// Provides an interface for embedders to access the WebState's web view in a
 // limited and controlled manner.
 // TODO(kkhorimoto): rename protocol to CRWContentViewProxy.
 @protocol CRWWebViewProxy<NSObject>
 
-// The UIWebView's bounding rectangle (relative to its parent).
+// The web view's bounding rectangle (relative to its parent).
 @property(readonly, assign) CGRect bounds;
 
 // The web view's frame rectangle.
@@ -26,7 +26,7 @@
 // the keyboard.
 @property(nonatomic, assign) BOOL keyboardDisplayRequiresUserAction;
 
-// Gives the embedder access to the UIWebView's UIScrollView in a limited and
+// Gives the embedder access to the web view's UIScrollView in a limited and
 // controlled manner.
 @property(nonatomic, readonly) CRWWebViewScrollViewProxy* scrollViewProxy;
 

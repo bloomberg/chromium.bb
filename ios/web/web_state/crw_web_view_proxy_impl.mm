@@ -69,7 +69,7 @@ UIView* GetFirstResponderSubview(UIView* view) {
   base::WeakNSObject<CRWContentView> _contentView;
   base::WeakNSObject<CRWWebController> _webController;
   base::scoped_nsobject<NSMutableDictionary> _registeredInsets;
-  // The WebViewScrollViewProxy is a wrapper around the UIWebView's
+  // The WebViewScrollViewProxy is a wrapper around the web view's
   // UIScrollView to give components access in a limited and controlled manner.
   base::scoped_nsobject<CRWWebViewScrollViewProxy> _contentViewScrollViewProxy;
 }
