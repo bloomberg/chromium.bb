@@ -85,8 +85,7 @@ SharedMemoryHandle SharedMemory::NULLHandle() {
 // static
 void SharedMemory::CloseHandle(const SharedMemoryHandle& handle) {
   DCHECK(handle != NULL);
-  const BOOL result = ::CloseHandle(handle);
-  CHECK(result);
+  ::CloseHandle(handle);
 }
 
 // static

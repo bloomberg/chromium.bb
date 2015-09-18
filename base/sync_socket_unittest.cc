@@ -89,14 +89,32 @@ void NormalSendReceivePeek() {
   SendReceivePeek(&socket_a, &socket_b);
 }
 
+template <class SocketType>
+void ClonedSendReceivePeek() {
+  SocketType socket_a, socket_b;
+  ASSERT_TRUE(SocketType::CreatePair(&socket_a, &socket_b));
+
+  // Create new SyncSockets from the paired handles.
+  SocketType socket_c(socket_a.handle()), socket_d(socket_b.handle());
+  SendReceivePeek(&socket_c, &socket_d);
+}
+
 }  // namespace
 
 TEST(SyncSocket, NormalSendReceivePeek) {
   NormalSendReceivePeek<base::SyncSocket>();
 }
 
+TEST(SyncSocket, ClonedSendReceivePeek) {
+  ClonedSendReceivePeek<base::SyncSocket>();
+}
+
 TEST(CancelableSyncSocket, NormalSendReceivePeek) {
   NormalSendReceivePeek<base::CancelableSyncSocket>();
+}
+
+TEST(CancelableSyncSocket, ClonedSendReceivePeek) {
+  ClonedSendReceivePeek<base::CancelableSyncSocket>();
 }
 
 TEST(CancelableSyncSocket, CancelReceiveShutdown) {
