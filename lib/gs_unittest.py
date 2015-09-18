@@ -177,7 +177,7 @@ class GetSizeTest(AbstractGSContextTest):
 
   def testBasic(self):
     """Simple test."""
-    self.gs_mock.AddCmdResult(['stat', self.GETSIZE_PATH],
+    self.gs_mock.AddCmdResult(['stat', '--', self.GETSIZE_PATH],
                               output=StatTest.STAT_OUTPUT)
     self.assertEqual(self.GetSize(), 74)
 
@@ -1009,11 +1009,11 @@ class GSContextTest(AbstractGSContextTest):
 
   def testGetGeneration(self):
     """Test ability to get the generation of a file."""
-    self.gs_mock.AddCmdResult(['stat', 'gs://abc/1'],
+    self.gs_mock.AddCmdResult(['stat', '--', 'gs://abc/1'],
                               output=StatTest.STAT_OUTPUT)
     ctx = gs.GSContext()
     ctx.GetGeneration('gs://abc/1')
-    self.gs_mock.assertCommandContains(['stat', 'gs://abc/1'])
+    self.gs_mock.assertCommandContains(['stat', '--', 'gs://abc/1'])
 
   def testCreateCached(self):
     """Test that the function runs through."""
@@ -1125,11 +1125,11 @@ class StatTest(AbstractGSContextTest):
 
   def testStat(self):
     """Test ability to get the generation of a file."""
-    self.gs_mock.AddCmdResult(['stat', 'gs://abc/1'],
+    self.gs_mock.AddCmdResult(['stat', '--', 'gs://abc/1'],
                               output=self.STAT_OUTPUT)
     ctx = gs.GSContext()
     result = ctx.Stat('gs://abc/1')
-    self.gs_mock.assertCommandContains(['stat', 'gs://abc/1'])
+    self.gs_mock.assertCommandContains(['stat', '--', 'gs://abc/1'])
 
     self.assertEqual(result.creation_time,
                      datetime.datetime(2014, 8, 23, 6, 53, 20))
@@ -1143,11 +1143,11 @@ class StatTest(AbstractGSContextTest):
 
   def testStatOlderOutput(self):
     """Test ability to get the generation of a file."""
-    self.gs_mock.AddCmdResult(['stat', 'gs://abc/1'],
+    self.gs_mock.AddCmdResult(['stat', '--', 'gs://abc/1'],
                               output=self.STAT_OUTPUT_OLDER)
     ctx = gs.GSContext()
     result = ctx.Stat('gs://abc/1')
-    self.gs_mock.assertCommandContains(['stat', 'gs://abc/1'])
+    self.gs_mock.assertCommandContains(['stat', '--', 'gs://abc/1'])
 
     self.assertEqual(result.creation_time,
                      datetime.datetime(2014, 8, 23, 6, 53, 20))
@@ -1161,12 +1161,12 @@ class StatTest(AbstractGSContextTest):
 
   def testStatNoExist(self):
     """Test ability to get the generation of a file."""
-    self.gs_mock.AddCmdResult(['stat', 'gs://abc/1'],
+    self.gs_mock.AddCmdResult(['stat', '--', 'gs://abc/1'],
                               error=self.STAT_ERROR_OUTPUT,
                               returncode=1)
     ctx = gs.GSContext()
     self.assertRaises(gs.GSNoSuchKey, ctx.Stat, 'gs://abc/1')
-    self.gs_mock.assertCommandContains(['stat', 'gs://abc/1'])
+    self.gs_mock.assertCommandContains(['stat', '--', 'gs://abc/1'])
 
 
 class UnmockedStatTest(cros_test_lib.TempDirTestCase):

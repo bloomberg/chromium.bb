@@ -956,7 +956,7 @@ class GSContext(object):
       Assorted GSContextException exceptions.
     """
     try:
-      res = self.DoCommand(['stat', path], redirect_stdout=True, **kwargs)
+      res = self.DoCommand(['stat', '--', path], redirect_stdout=True, **kwargs)
     except GSCommandError as e:
       # Because the 'gsutil stat' command logs errors itself (instead of
       # raising errors internally like other commands), we have to look
