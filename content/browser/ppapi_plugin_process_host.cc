@@ -16,6 +16,7 @@
 #include "content/browser/renderer_host/render_message_filter.h"
 #include "content/common/child_process_host_impl.h"
 #include "content/common/child_process_messages.h"
+#include "content/common/content_switches_internal.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_switches.h"
@@ -30,6 +31,7 @@
 
 #if defined(OS_WIN)
 #include "content/common/sandbox_win.h"
+#include "sandbox/win/src/process_mitigations.h"
 #include "sandbox/win/src/sandbox_policy.h"
 #endif
 
@@ -42,9 +44,8 @@ class PpapiPluginSandboxedProcessLauncherDelegate
   PpapiPluginSandboxedProcessLauncherDelegate(bool is_broker,
                                               const PepperPluginInfo& info,
                                               ChildProcessHost* host)
-      :
+      : info_(info),
 #if defined(OS_POSIX)
-        info_(info),
         ipc_fd_(host->TakeClientFileDescriptor()),
 #endif  // OS_POSIX
         is_broker_(is_broker) {}
@@ -59,19 +60,31 @@ class PpapiPluginSandboxedProcessLauncherDelegate
   void PreSpawnTarget(sandbox::TargetPolicy* policy, bool* success) override {
     if (is_broker_)
       return;
-    // The Pepper process as locked-down as a renderer execpt that it can
-    // create the server side of chrome pipes.
+    *success = false;
+    // The Pepper process is as locked-down as a renderer except that it can
+    // create the server side of Chrome pipes.
     sandbox::ResultCode result;
     result = policy->AddRule(sandbox::TargetPolicy::SUBSYS_NAMED_PIPES,
                              sandbox::TargetPolicy::NAMEDPIPES_ALLOW_ANY,
                              L"\\\\.\\pipe\\chrome.*");
-    *success = (result == sandbox::SBOX_ALL_OK);
-
+    if (result != sandbox::SBOX_ALL_OK)
+      return;
+#if !defined(NACL_WIN64)
+    for (const auto& mime_type : info_.mime_types) {
+      if (IsWin32kLockdownEnabledForMimeType(mime_type.mime_type)) {
+        if (!AddWin32kLockdownPolicy(policy))
+          return;
+        break;
+      }
+    }
+#endif
     const base::string16& sid =
         GetContentClient()->browser()->GetAppContainerSidForSandboxType(
             GetSandboxType());
     if (!sid.empty())
       AddAppContainerPolicy(policy, sid.c_str());
+
+    *success = true;
   }
 
 #elif defined(OS_POSIX)
@@ -90,8 +103,8 @@ class PpapiPluginSandboxedProcessLauncherDelegate
   }
 
  private:
-#if defined(OS_POSIX)
   const PepperPluginInfo& info_;
+#if defined(OS_POSIX)
   base::ScopedFD ipc_fd_;
 #endif  // OS_POSIX
   bool is_broker_;

@@ -287,6 +287,7 @@ extern const char kDisableThreadedEventHandlingMac[];
 CONTENT_EXPORT extern const char kDeviceScaleFactor[];
 CONTENT_EXPORT extern const char kDisableLegacyIntermediateWindow[];
 CONTENT_EXPORT extern const char kDisableWin32kRendererLockDown[];
+CONTENT_EXPORT extern const char kEnableWin32kLockDownMimeTypes[];
 CONTENT_EXPORT extern const char kEnableAcceleratedVpxDecode[];
 // Switch to pass the font cache shared memory handle to the renderer.
 CONTENT_EXPORT extern const char kFontCacheSharedHandle[];

@@ -946,6 +946,12 @@ const char kDisableLegacyIntermediateWindow[] = "disable-legacy-window";
 const char kDisableWin32kRendererLockDown[] =
     "disable-win32k-renderer-lockdown";
 
+// Enables the Win32K process mitigation policy for certain PPAPI mime
+// types. Each mime type is separated by a comma. Specify * to enable
+// the policy for all mime types.
+const char kEnableWin32kLockDownMimeTypes[] =
+    "enable-win32k-lockdown-mimetypes";
+
 // Enables experimental hardware acceleration for VP8/VP9 video decoding.
 const char kEnableAcceleratedVpxDecode[] = "enable-accelerated-vpx-decode";
 

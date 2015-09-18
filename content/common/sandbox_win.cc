@@ -570,6 +570,31 @@ void AddAppContainerPolicy(sandbox::TargetPolicy* policy, const wchar_t* sid) {
   }
 }
 
+bool AddWin32kLockdownPolicy(sandbox::TargetPolicy* policy) {
+#if !defined(NACL_WIN64)
+  if (!IsWin32kRendererLockdownEnabled())
+    return true;
+
+  // Enable win32k lockdown if not already.
+  sandbox::MitigationFlags flags = policy->GetProcessMitigations();
+  if ((flags & sandbox::MITIGATION_WIN32K_DISABLE) ==
+      sandbox::MITIGATION_WIN32K_DISABLE)
+    return true;
+
+  sandbox::ResultCode result =
+      policy->AddRule(sandbox::TargetPolicy::SUBSYS_WIN32K_LOCKDOWN,
+                      sandbox::TargetPolicy::FAKE_USER_GDI_INIT, nullptr);
+  if (result != sandbox::SBOX_ALL_OK)
+    return false;
+
+  flags |= sandbox::MITIGATION_WIN32K_DISABLE;
+  result = policy->SetProcessMitigations(flags);
+  if (result != sandbox::SBOX_ALL_OK)
+    return false;
+#endif
+  return true;
+}
+
 bool InitBrokerServices(sandbox::BrokerServices* broker_services) {
   // TODO(abarth): DCHECK(CalledOnValidThread());
   //               See <http://b/1287166>.
@@ -657,20 +682,16 @@ base::Process StartSandboxedProcess(
                                          sandbox::MITIGATION_DEP_NO_ATL_THUNK |
                                          sandbox::MITIGATION_SEHOP;
 
+  if (policy->SetProcessMitigations(mitigations) != sandbox::SBOX_ALL_OK)
+    return base::Process();
+
 #if !defined(NACL_WIN64)
   if (type_str == switches::kRendererProcess &&
       IsWin32kRendererLockdownEnabled()) {
-    if (policy->AddRule(sandbox::TargetPolicy::SUBSYS_WIN32K_LOCKDOWN,
-                        sandbox::TargetPolicy::FAKE_USER_GDI_INIT,
-                        NULL) != sandbox::SBOX_ALL_OK) {
+    if (!AddWin32kLockdownPolicy(policy))
       return base::Process();
-    }
-    mitigations |= sandbox::MITIGATION_WIN32K_DISABLE;
   }
 #endif
-
-  if (policy->SetProcessMitigations(mitigations) != sandbox::SBOX_ALL_OK)
-    return base::Process();
 
   mitigations = sandbox::MITIGATION_STRICT_HANDLE_CHECKS |
                 sandbox::MITIGATION_DLL_SEARCH_ORDER;
