@@ -42,18 +42,18 @@ const VisibleSelection& PendingSelection::visibleSelection() const
     return m_frameSelection->selection();
 }
 
-template <typename Strategy>
+template <typename SelectionStrategy>
 bool PendingSelection::isInDocumentAlgorithm(const Document& document) const
 {
-    using PositionType = typename Strategy::PositionType;
+    using Strategy = typename SelectionStrategy::Strategy;
 
-    PositionType start = Strategy::selectionStart(visibleSelection());
+    const PositionAlgorithm<Strategy> start = SelectionStrategy::selectionStart(visibleSelection());
     if (start.isNotNull() && (!start.inDocument() || start.document() != document))
         return false;
-    PositionType end = Strategy::selectionEnd(visibleSelection());
+    const PositionAlgorithm<Strategy> end = SelectionStrategy::selectionEnd(visibleSelection());
     if (end.isNotNull() && (!end.inDocument() || end.document() != document))
         return false;
-    PositionType extent = Strategy::selectionExtent(visibleSelection());
+    const PositionAlgorithm<Strategy> extent = SelectionStrategy::selectionExtent(visibleSelection());
     if (extent.isNotNull() && (!extent.inDocument() || extent.document() != document))
         return false;
     return true;
@@ -66,22 +66,22 @@ bool PendingSelection::isInDocument(const Document& document) const
     return isInDocumentAlgorithm<VisibleSelection::InDOMTree>(document);
 }
 
-template <typename Strategy>
+template <typename SelectionStrategy>
 VisibleSelection PendingSelection::calcVisibleSelectionAlgorithm() const
 {
-    using PositionType = typename Strategy::PositionType;
+    using Strategy = typename SelectionStrategy::Strategy;
 
-    PositionType start = Strategy::selectionStart(visibleSelection());
-    PositionType end = Strategy::selectionEnd(visibleSelection());
-    SelectionType selectionType = Strategy::selectionType(visibleSelection());
-    TextAffinity affinity = visibleSelection().affinity();
+    const PositionAlgorithm<Strategy> start = SelectionStrategy::selectionStart(visibleSelection());
+    const PositionAlgorithm<Strategy> end = SelectionStrategy::selectionEnd(visibleSelection());
+    SelectionType selectionType = SelectionStrategy::selectionType(visibleSelection());
+    const TextAffinity affinity = visibleSelection().affinity();
 
     bool paintBlockCursor = m_frameSelection->shouldShowBlockCursor() && selectionType == SelectionType::CaretSelection && !isLogicalEndOfLine(createVisiblePositionInDOMTree(end, affinity));
     VisibleSelection selection;
     if (enclosingTextFormControl(start.computeContainerNode())) {
         // TODO(yosin) We should use |PositionMoveType::Character| to avoid
         // ending paint at middle of character.
-        PositionType endPosition = paintBlockCursor ? nextPositionOf(Strategy::selectionExtent(visibleSelection()), PositionMoveType::CodePoint) : end;
+        PositionAlgorithm<Strategy> endPosition = paintBlockCursor ? nextPositionOf(SelectionStrategy::selectionExtent(visibleSelection()), PositionMoveType::CodePoint) : end;
         selection.setWithoutValidation(start, endPosition);
         return selection;
     }
@@ -96,10 +96,10 @@ VisibleSelection PendingSelection::calcVisibleSelectionAlgorithm() const
     return VisibleSelection(visibleStart, visibleEnd);
 }
 
-template <typename Strategy>
+template <typename SelectionStrategy>
 void PendingSelection::commitAlgorithm(LayoutView& layoutView)
 {
-    using PositionType = typename Strategy::PositionType;
+    using Strategy = typename SelectionStrategy::Strategy;
 
     if (!hasPendingSelection())
         return;
@@ -114,7 +114,7 @@ void PendingSelection::commitAlgorithm(LayoutView& layoutView)
     // valid, and the following steps assume a valid selection.
     // See <https://bugs.webkit.org/show_bug.cgi?id=69563> and
     // <rdar://problem/10232866>.
-    VisibleSelection selection = calcVisibleSelectionAlgorithm<Strategy>();
+    VisibleSelection selection = calcVisibleSelectionAlgorithm<SelectionStrategy>();
 
     if (!selection.isRange()) {
         layoutView.clearSelection();
@@ -127,11 +127,11 @@ void PendingSelection::commitAlgorithm(LayoutView& layoutView)
     // If we pass [foo, 3] as the start of the selection, the selection painting
     // code will think that content on the line containing 'foo' is selected
     // and will fill the gap before 'bar'.
-    PositionType startPos = Strategy::selectionStart(selection);
-    PositionType candidate = mostForwardCaretPosition(startPos);
+    PositionAlgorithm<Strategy> startPos = SelectionStrategy::selectionStart(selection);
+    PositionAlgorithm<Strategy> candidate = mostForwardCaretPosition(startPos);
     if (isVisuallyEquivalentCandidate(candidate))
         startPos = candidate;
-    PositionType endPos = Strategy::selectionEnd(selection);
+    PositionAlgorithm<Strategy> endPos = SelectionStrategy::selectionEnd(selection);
     candidate = mostBackwardCaretPosition(endPos);
     if (isVisuallyEquivalentCandidate(candidate))
         endPos = candidate;
@@ -139,7 +139,7 @@ void PendingSelection::commitAlgorithm(LayoutView& layoutView)
     // We can get into a state where the selection endpoints map to the same
     // |VisiblePosition| when a selection is deleted because we don't yet notify
     // the |FrameSelection| of text removal.
-    if (startPos.isNull() || endPos.isNull() || Strategy::selectionVisibleStart(selection).deepEquivalent() == Strategy::selectionVisibleEnd(selection).deepEquivalent())
+    if (startPos.isNull() || endPos.isNull() || SelectionStrategy::selectionVisibleStart(selection).deepEquivalent() == SelectionStrategy::selectionVisibleEnd(selection).deepEquivalent())
         return;
     LayoutObject* startLayoutObject = startPos.anchorNode()->layoutObject();
     LayoutObject* endLayoutObject = endPos.anchorNode()->layoutObject();
