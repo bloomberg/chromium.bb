@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import itertools
+import logging
 import os
 import posixpath
 
@@ -107,13 +108,10 @@ class _ExeDelegate(object):
     device.PushChangedFiles(host_device_tuples)
 
   def Run(self, test, device, flags=None, **kwargs):
-    tool = self._test_run.GetTool(device).GetTestWrapper()
-    if tool:
-      cmd = [tool]
-    else:
-      cmd = []
-    cmd.append(self._exe_device_path)
-
+    cmd = [
+        self._test_run.GetTool(device).GetTestWrapper(),
+        self._exe_device_path,
+    ]
     if test:
       cmd.append('--gtest_filter=%s' % ':'.join(test))
     if flags:
@@ -132,8 +130,14 @@ class _ExeDelegate(object):
     except (device_errors.CommandFailedError, KeyError):
       pass
 
-    output = device.RunShellCommand(
-        cmd, cwd=cwd, env=env, check_return=True, large_output=True, **kwargs)
+    # TODO(jbudorick): Switch to just RunShellCommand once perezju@'s CL
+    # for long shell commands lands.
+    with device_temp_file.DeviceTempFile(device.adb) as script_file:
+      script_contents = ' '.join(cmd)
+      logging.info('script contents: %r', script_contents)
+      device.WriteFile(script_file.name, script_contents)
+      output = device.RunShellCommand(['sh', script_file.name], cwd=cwd,
+                                      env=env, **kwargs)
     return output
 
   def PullAppFiles(self, device, files, directory):

@@ -63,10 +63,11 @@ public class NativeTestInstrumentationTestRunner extends Instrumentation {
             Pattern.compile("\\[ *([^ ]*) *\\] ?([^ ]+)( .*)?$");
 
     private ResultsBundleGenerator mBundleGenerator = new RobotiumBundleGenerator();
+    private String mCommandLineFile;
+    private String mCommandLineFlags;
     private Handler mHandler = new Handler();
-    private Bundle mLogBundle = new Bundle();
-    private SparseArray<ShardMonitor> mMonitors = new SparseArray<ShardMonitor>();
     private String mNativeTestActivity;
+    private Bundle mLogBundle = new Bundle();
     private TestStatusReceiver mReceiver;
     private Map<String, ResultsBundleGenerator.TestResult> mResults =
             new HashMap<String, ResultsBundleGenerator.TestResult>();
@@ -74,23 +75,20 @@ public class NativeTestInstrumentationTestRunner extends Instrumentation {
     private long mShardNanoTimeout = DEFAULT_SHARD_NANO_TIMEOUT;
     private int mShardSizeLimit = DEFAULT_SHARD_SIZE_LIMIT;
     private File mStdoutFile;
-    private Bundle mTransparentArguments;
+    private SparseArray<ShardMonitor> mMonitors = new SparseArray<ShardMonitor>();
 
     @Override
     public void onCreate(Bundle arguments) {
-        mTransparentArguments = new Bundle(arguments);
-
+        mCommandLineFile = arguments.getString(NativeTestActivity.EXTRA_COMMAND_LINE_FILE);
+        mCommandLineFlags = arguments.getString(NativeTestActivity.EXTRA_COMMAND_LINE_FLAGS);
         mNativeTestActivity = arguments.getString(EXTRA_NATIVE_TEST_ACTIVITY);
         if (mNativeTestActivity == null) mNativeTestActivity = DEFAULT_NATIVE_TEST_ACTIVITY;
-        mTransparentArguments.remove(EXTRA_NATIVE_TEST_ACTIVITY);
 
         String shardNanoTimeout = arguments.getString(EXTRA_SHARD_NANO_TIMEOUT);
         if (shardNanoTimeout != null) mShardNanoTimeout = Long.parseLong(shardNanoTimeout);
-        mTransparentArguments.remove(EXTRA_SHARD_NANO_TIMEOUT);
 
         String shardSizeLimit = arguments.getString(EXTRA_SHARD_SIZE_LIMIT);
         if (shardSizeLimit != null) mShardSizeLimit = Integer.parseInt(shardSizeLimit);
-        mTransparentArguments.remove(EXTRA_SHARD_SIZE_LIMIT);
 
         String testListFilePath = arguments.getString(EXTRA_TEST_LIST_FILE);
         if (testListFilePath != null) {
@@ -118,7 +116,6 @@ public class NativeTestInstrumentationTestRunner extends Instrumentation {
                 Log.e(TAG, "Error reading %s", testListFile.getAbsolutePath(), e);
             }
         }
-        mTransparentArguments.remove(EXTRA_TEST_LIST_FILE);
 
         try {
             mStdoutFile = File.createTempFile(
@@ -223,7 +220,14 @@ public class NativeTestInstrumentationTestRunner extends Instrumentation {
             Intent i = new Intent(Intent.ACTION_MAIN);
             i.setComponent(new ComponentName(getContext().getPackageName(), mNativeTestActivity));
             i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            i.putExtras(mTransparentArguments);
+            if (mCommandLineFile != null) {
+                Log.i(TAG, "Passing command line file extra: %s", mCommandLineFile);
+                i.putExtra(NativeTestActivity.EXTRA_COMMAND_LINE_FILE, mCommandLineFile);
+            }
+            if (mCommandLineFlags != null) {
+                Log.i(TAG, "Passing command line flag extra: %s", mCommandLineFlags);
+                i.putExtra(NativeTestActivity.EXTRA_COMMAND_LINE_FLAGS, mCommandLineFlags);
+            }
             if (mShards != null && !mShards.isEmpty()) {
                 ArrayList<String> shard = mShards.remove();
                 i.putStringArrayListExtra(NativeTestActivity.EXTRA_SHARD, shard);
