@@ -8,7 +8,7 @@
 #include <deque>
 
 #include "base/basictypes.h"
-#include "base/synchronization/lock.h"
+#include "base/threading/thread_checker.h"
 
 namespace remoting {
 
@@ -22,7 +22,7 @@ class RunningAverage {
   virtual ~RunningAverage();
 
   // Records a point sample.
-  void Record(int64 value);
+  void Record(int64_t value);
 
   // Returns the average over up to |window_size| of the most recent samples.
   double Average();
@@ -32,14 +32,13 @@ class RunningAverage {
   // with the size of |data_points_|.
   const size_t window_size_;
 
-  // Protects |data_points_| and |sum_|.
-  base::Lock lock_;
-
   // Stores the |window_size| most recently recorded samples.
-  std::deque<int64> data_points_;
+  std::deque<int64_t> data_points_;
 
   // Holds the sum of the samples in |data_points_|.
-  int64 sum_;
+  int64_t sum_;
+
+  base::ThreadChecker thread_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(RunningAverage);
 };

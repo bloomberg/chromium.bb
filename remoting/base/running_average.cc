@@ -14,11 +14,10 @@ RunningAverage::RunningAverage(int window_size)
   DCHECK_GT(window_size, 0);
 }
 
-RunningAverage::~RunningAverage() {
-}
+RunningAverage::~RunningAverage() {}
 
-void RunningAverage::Record(int64 value) {
-  base::AutoLock auto_lock(lock_);
+void RunningAverage::Record(int64_t value) {
+  DCHECK(thread_checker_.CalledOnValidThread());
 
   data_points_.push_back(value);
   sum_ += value;
@@ -30,7 +29,7 @@ void RunningAverage::Record(int64 value) {
 }
 
 double RunningAverage::Average() {
-  base::AutoLock auto_lock(lock_);
+  DCHECK(thread_checker_.CalledOnValidThread());
 
   if (data_points_.empty())
     return 0;
