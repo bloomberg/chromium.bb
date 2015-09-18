@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-
-
 /**
  * 'cr-settings-appearance-page' is the settings page containing appearance
  * settings.
@@ -21,17 +19,6 @@
  */
 Polymer({
   is: 'cr-settings-appearance-page',
-
-  /** @override */
-  attached: function() {
-    // Query the initial state.
-    cr.sendWithCallback('getResetThemeEnabled', undefined,
-                        this.setResetThemeEnabled.bind(this));
-
-    // Set up the change event listener.
-    cr.addWebUIListener('reset-theme-enabled-changed',
-                        this.setResetThemeEnabled.bind(this));
-  },
 
   properties: {
     /**
@@ -54,6 +41,17 @@ Polymer({
         };
       },
     },
+  },
+
+  /** @override */
+  attached: function() {
+    // Query the initial state.
+    cr.sendWithCallback('getResetThemeEnabled', undefined,
+                        this.setResetThemeEnabled.bind(this));
+
+    // Set up the change event listener.
+    cr.addWebUIListener('reset-theme-enabled-changed',
+                        this.setResetThemeEnabled.bind(this));
   },
 
   setResetThemeEnabled: function(enabled) {
