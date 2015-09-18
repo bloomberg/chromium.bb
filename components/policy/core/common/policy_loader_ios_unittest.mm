@@ -16,6 +16,7 @@
 #include "components/policy/core/common/policy_loader_ios.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_test_utils.h"
+#include "components/policy/core/common/policy_types.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace policy {
@@ -68,7 +69,8 @@ class TestHarness : public PolicyProviderTestHarness {
 };
 
 TestHarness::TestHarness(bool use_encoded_key)
-    : PolicyProviderTestHarness(POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE),
+    : PolicyProviderTestHarness(POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
+                                POLICY_SOURCE_PLATFORM),
       use_encoded_key_(use_encoded_key) {}
 
 TestHarness::~TestHarness() {
@@ -251,9 +253,11 @@ TEST(PolicyProviderIOSTest, ChromePolicyOverEncodedChromePolicy) {
   PolicyMap& expectedMap =
       expected.Get(PolicyNamespace(POLICY_DOMAIN_CHROME, ""));
   expectedMap.Set("shared", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
-                  new base::StringValue("right"), NULL);
+                  POLICY_SOURCE_PLATFORM, new base::StringValue("right"),
+                  nullptr);
   expectedMap.Set("key2", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
-                  new base::StringValue("value2"), NULL);
+                  POLICY_SOURCE_PLATFORM, new base::StringValue("value2"),
+                  nullptr);
 
   scoped_refptr<base::TestSimpleTaskRunner> taskRunner =
       new base::TestSimpleTaskRunner();

@@ -14,6 +14,7 @@
 #include "base/values.h"
 #include "components/policy/core/common/policy_bundle.h"
 #include "components/policy/core/common/policy_map.h"
+#include "components/policy/core/common/policy_types.h"
 #include "policy/policy_constants.h"
 
 namespace policy {
@@ -41,6 +42,7 @@ void FixDeprecatedPolicies(PolicyMap* policies) {
   // The highest (level, scope) pair for an existing proxy policy is determined
   // first, and then only policies with those exact attributes are merged.
   PolicyMap::Entry current_priority;  // Defaults to the lowest priority.
+  PolicySource inherited_source = POLICY_SOURCE_ENTERPRISE_DEFAULT;
   scoped_ptr<base::DictionaryValue> proxy_settings(new base::DictionaryValue);
   for (size_t i = 0; i < arraysize(kProxyPolicies); ++i) {
     const PolicyMap::Entry* entry = policies->Get(kProxyPolicies[i]);
@@ -48,6 +50,8 @@ void FixDeprecatedPolicies(PolicyMap* policies) {
       if (entry->has_higher_priority_than(current_priority)) {
         proxy_settings->Clear();
         current_priority = *entry;
+        if (entry->source > inherited_source)  // Higher priority?
+          inherited_source = entry->source;
       }
       if (!entry->has_higher_priority_than(current_priority) &&
           !current_priority.has_higher_priority_than(*entry)) {
@@ -64,6 +68,7 @@ void FixDeprecatedPolicies(PolicyMap* policies) {
     policies->Set(key::kProxySettings,
                   current_priority.level,
                   current_priority.scope,
+                  inherited_source,
                   proxy_settings.release(),
                   NULL);
   }

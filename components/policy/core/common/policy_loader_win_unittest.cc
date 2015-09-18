@@ -34,6 +34,7 @@
 #include "components/policy/core/common/external_data_fetcher.h"
 #include "components/policy/core/common/policy_bundle.h"
 #include "components/policy/core/common/policy_map.h"
+#include "components/policy/core/common/policy_types.h"
 #include "components/policy/core/common/preg_parser_win.h"
 #include "components/policy/core/common/schema_map.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -333,7 +334,10 @@ void ScopedGroupPolicyRegistrySandbox::DeleteKeys() {
 }
 
 RegistryTestHarness::RegistryTestHarness(HKEY hive, PolicyScope scope)
-    : PolicyProviderTestHarness(POLICY_LEVEL_MANDATORY, scope), hive_(hive) {}
+    : PolicyProviderTestHarness(POLICY_LEVEL_MANDATORY, scope,
+                                POLICY_SOURCE_PLATFORM),
+      hive_(hive) {
+}
 
 RegistryTestHarness::~RegistryTestHarness() {}
 
@@ -455,7 +459,9 @@ PolicyProviderTestHarness* RegistryTestHarness::CreateHKLM() {
 }
 
 PRegTestHarness::PRegTestHarness()
-    : PolicyProviderTestHarness(POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE) {}
+    : PolicyProviderTestHarness(POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
+                                POLICY_SOURCE_PLATFORM) {
+}
 
 PRegTestHarness::~PRegTestHarness() {}
 
@@ -758,7 +764,8 @@ class PolicyLoaderWinTest : public PolicyTestBase,
     expected_policy.SetString(test_keys::kKeyString, "registry");
     PolicyBundle expected;
     expected.Get(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()))
-        .LoadFrom(&expected_policy, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER);
+        .LoadFrom(&expected_policy, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+                  POLICY_SOURCE_PLATFORM);
     return Matches(expected);
   }
 
@@ -774,7 +781,7 @@ class PolicyLoaderWinTest : public PolicyTestBase,
     PolicyBundle expected;
     expected.Get(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()))
         .LoadFrom(&expected_policy, POLICY_LEVEL_MANDATORY,
-                  POLICY_SCOPE_MACHINE);
+                  POLICY_SCOPE_MACHINE, POLICY_SOURCE_PLATFORM);
     return Matches(expected);
   }
 
@@ -803,6 +810,7 @@ TEST_F(PolicyLoaderWinTest, HKLMOverHKCU) {
       .Set(test_keys::kKeyString,
            POLICY_LEVEL_MANDATORY,
            POLICY_SCOPE_MACHINE,
+           POLICY_SOURCE_PLATFORM,
            new base::StringValue("hklm"),
            NULL);
   EXPECT_TRUE(Matches(expected));
@@ -857,21 +865,25 @@ TEST_F(PolicyLoaderWinTest, Merge3rdPartyPolicies) {
   expected_policy.Set("a",
                       POLICY_LEVEL_MANDATORY,
                       POLICY_SCOPE_MACHINE,
+                      POLICY_SOURCE_PLATFORM,
                       new base::StringValue(kMachineMandatory),
                       NULL);
   expected_policy.Set("b",
                       POLICY_LEVEL_MANDATORY,
                       POLICY_SCOPE_USER,
+                      POLICY_SOURCE_PLATFORM,
                       new base::StringValue(kUserMandatory),
                       NULL);
   expected_policy.Set("c",
                       POLICY_LEVEL_RECOMMENDED,
                       POLICY_SCOPE_MACHINE,
+                      POLICY_SOURCE_PLATFORM,
                       new base::StringValue(kMachineRecommended),
                       NULL);
   expected_policy.Set("d",
                       POLICY_LEVEL_RECOMMENDED,
                       POLICY_SCOPE_USER,
+                      POLICY_SOURCE_PLATFORM,
                       new base::StringValue(kUserRecommended),
                       NULL);
   EXPECT_TRUE(Matches(expected));
@@ -930,7 +942,8 @@ TEST_F(PolicyLoaderWinTest, LoadStringEncodedValues) {
       InstallValue(encoded_policy, HKEY_CURRENT_USER, kPathSuffix, kMandatory));
 
   PolicyBundle expected;
-  expected.Get(ns).LoadFrom(&policy, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER);
+  expected.Get(ns).LoadFrom(&policy, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+                            POLICY_SOURCE_PLATFORM);
   EXPECT_TRUE(Matches(expected));
 }
 
@@ -962,7 +975,8 @@ TEST_F(PolicyLoaderWinTest, LoadIntegerEncodedValues) {
   policy.SetInteger("int", 123);
   policy.SetDouble("double", 456.0);
   PolicyBundle expected;
-  expected.Get(ns).LoadFrom(&policy, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER);
+  expected.Get(ns).LoadFrom(&policy, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+                            POLICY_SOURCE_PLATFORM);
   EXPECT_TRUE(Matches(expected));
 }
 
@@ -1012,8 +1026,8 @@ TEST_F(PolicyLoaderWinTest, DefaultPropertySchemaType) {
   base::DictionaryValue expected_policies;
   expected_policies.Set("policy", expected_policy.DeepCopy());
   PolicyBundle expected;
-  expected.Get(ns).LoadFrom(
-      &expected_policies, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER);
+  expected.Get(ns).LoadFrom(&expected_policies, POLICY_LEVEL_MANDATORY,
+                            POLICY_SCOPE_USER, POLICY_SOURCE_PLATFORM);
   EXPECT_TRUE(Matches(expected));
 }
 
@@ -1178,12 +1192,12 @@ TEST_F(PolicyLoaderWinTest, LoadExtensionPolicyAlternativeSpelling) {
   base::DictionaryValue expected_a;
   expected_a.SetInteger("policy 1", 3);
   expected_a.SetInteger("policy 2", 3);
-  expected.Get(ns_a).LoadFrom(
-      &expected_a, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE);
+  expected.Get(ns_a).LoadFrom(&expected_a, POLICY_LEVEL_MANDATORY,
+                              POLICY_SCOPE_MACHINE, POLICY_SOURCE_PLATFORM);
   base::DictionaryValue expected_b;
   expected_b.SetInteger("policy 1", 2);
-  expected.Get(ns_b).LoadFrom(
-      &expected_b, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE);
+  expected.Get(ns_b).LoadFrom(&expected_b, POLICY_LEVEL_MANDATORY,
+                              POLICY_SCOPE_MACHINE, POLICY_SOURCE_PLATFORM);
   EXPECT_TRUE(Matches(expected));
 }
 
@@ -1219,9 +1233,10 @@ TEST_F(PolicyLoaderWinTest, LBSSupport) {
   PolicyMap& expected_policy = expected.Get(ns);
   expected_policy.Set("alternative_browser_path",
                       POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
+                      POLICY_SOURCE_PLATFORM,
                       new base::StringValue("c:\\legacy\\browser.exe"), NULL);
   expected_policy.Set("url_list", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
-                      list.DeepCopy(), NULL);
+                      POLICY_SOURCE_PLATFORM, list.DeepCopy(), nullptr);
   EXPECT_TRUE(Matches(expected));
 }
 

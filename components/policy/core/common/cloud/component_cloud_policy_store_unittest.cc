@@ -17,6 +17,7 @@
 #include "components/policy/core/common/cloud/policy_builder.h"
 #include "components/policy/core/common/cloud/resource_cache.h"
 #include "components/policy/core/common/external_data_fetcher.h"
+#include "components/policy/core/common/policy_types.h"
 #include "crypto/sha2.h"
 #include "policy/proto/chrome_extension_policy.pb.h"
 #include "policy/proto/device_management_backend.pb.h"
@@ -88,11 +89,13 @@ class ComponentCloudPolicyStoreTest : public testing::Test {
     policy.Set("Name",
                POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER,
+               POLICY_SOURCE_CLOUD,
                new base::StringValue("disabled"),
                NULL);
     policy.Set("Second",
                POLICY_LEVEL_RECOMMENDED,
                POLICY_SCOPE_USER,
+               POLICY_SOURCE_CLOUD,
                new base::StringValue("maybe"),
                NULL);
   }

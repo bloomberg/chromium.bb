@@ -15,6 +15,7 @@
 #include "components/policy/core/common/policy_bundle.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_namespace.h"
+#include "components/policy/core/common/policy_types.h"
 #include "policy/policy_constants.h"
 
 namespace policy {
@@ -59,6 +60,7 @@ DeviceLocalAccountPolicyProvider::Create(
         key::kLidCloseAction,
         POLICY_LEVEL_MANDATORY,
         POLICY_SCOPE_MACHINE,
+        POLICY_SOURCE_ENTERPRISE_OVERRIDE,
         new base::FundamentalValue(
             chromeos::PowerPolicyController::ACTION_STOP_SESSION),
         NULL);
@@ -68,6 +70,7 @@ DeviceLocalAccountPolicyProvider::Create(
         key::kShelfAutoHideBehavior,
         POLICY_LEVEL_MANDATORY,
         POLICY_SCOPE_MACHINE,
+        POLICY_SOURCE_ENTERPRISE_OVERRIDE,
         new base::StringValue("Never"),
         NULL);
     // Force the |ShowLogoutButtonInTray| policy to |true|, ensuring that a big,
@@ -76,6 +79,7 @@ DeviceLocalAccountPolicyProvider::Create(
         key::kShowLogoutButtonInTray,
         POLICY_LEVEL_MANDATORY,
         POLICY_SCOPE_MACHINE,
+        POLICY_SOURCE_ENTERPRISE_OVERRIDE,
         new base::FundamentalValue(true),
         NULL);
     // Force the |FullscreenAllowed| policy to |false|, ensuring that the ash
@@ -84,6 +88,7 @@ DeviceLocalAccountPolicyProvider::Create(
         key::kFullscreenAllowed,
         POLICY_LEVEL_MANDATORY,
         POLICY_SCOPE_MACHINE,
+        POLICY_SOURCE_ENTERPRISE_OVERRIDE,
         new base::FundamentalValue(false),
         NULL);
   }
@@ -170,8 +175,12 @@ void DeviceLocalAccountPolicyProvider::UpdateFromBroker() {
          it != chrome_policy_overrides_->end();
          ++it) {
       const PolicyMap::Entry& entry = it->second;
-      chrome_policy.Set(
-          it->first, entry.level, entry.scope, entry.value->DeepCopy(), NULL);
+      chrome_policy.Set(it->first,
+                        entry.level,
+                        entry.scope,
+                        entry.source,
+                        entry.value->DeepCopy(),
+                        nullptr);
     }
   }
 

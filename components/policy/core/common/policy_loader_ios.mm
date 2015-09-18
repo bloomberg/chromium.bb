@@ -177,7 +177,8 @@ void PolicyLoaderIOS::LoadNSDictionaryToPolicyBundle(NSDictionary* dictionary,
   base::DictionaryValue* dict = NULL;
   if (value && value->GetAsDictionary(&dict)) {
     PolicyMap& map = bundle->Get(PolicyNamespace(POLICY_DOMAIN_CHROME, ""));
-    map.LoadFrom(dict, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE);
+    map.LoadFrom(dict, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
+                 POLICY_SOURCE_PLATFORM);
   }
 }
 

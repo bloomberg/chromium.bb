@@ -17,6 +17,7 @@
 #include "components/policy/core/common/policy_loader_mac.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_test_utils.h"
+#include "components/policy/core/common/policy_types.h"
 #include "components/policy/core/common/preferences_mock_mac.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -59,7 +60,8 @@ class TestHarness : public PolicyProviderTestHarness {
 };
 
 TestHarness::TestHarness()
-    : PolicyProviderTestHarness(POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER) {}
+    : PolicyProviderTestHarness(POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+                                POLICY_SOURCE_PLATFORM) {}
 
 TestHarness::~TestHarness() {}
 
@@ -190,6 +192,7 @@ TEST_F(PolicyLoaderMacTest, TestNonForcedValue) {
       .Set(test_keys::kKeyString,
            POLICY_LEVEL_RECOMMENDED,
            POLICY_SCOPE_USER,
+           POLICY_SOURCE_PLATFORM,
            new base::StringValue("string value"),
            NULL);
   EXPECT_TRUE(provider_->policies().Equals(expected_bundle));

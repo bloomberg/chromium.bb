@@ -41,6 +41,7 @@ namespace {
 std::vector<std::string> PopulateExpectedPolicy(
     const std::string& name,
     const std::string& value,
+    const std::string& source,
     const policy::PolicyMap::Entry* metadata,
     bool unknown) {
   std::vector<std::string> expected_policy;
@@ -62,6 +63,8 @@ std::vector<std::string> PopulateExpectedPolicy(
   } else {
     expected_policy.push_back(std::string());
   }
+  // Populate expected source name.
+  expected_policy.push_back(source);
 
   // Populate expected policy name.
   expected_policy.push_back(name);
@@ -118,9 +121,9 @@ void PolicyUITest::SetUpInProcessBrowserTestFixture() {
 }
 
 void PolicyUITest::UpdateProviderPolicy(const policy::PolicyMap& policy) {
- provider_.UpdateChromePolicy(policy);
- base::RunLoop loop;
- loop.RunUntilIdle();
+  provider_.UpdateChromePolicy(policy);
+  base::RunLoop loop;
+  loop.RunUntilIdle();
 }
 
 void PolicyUITest::VerifyPolicies(
@@ -187,7 +190,8 @@ IN_PROC_BROWSER_TEST_F(PolicyUITest, SendPolicyNames) {
   for (policy::Schema::Iterator it = chrome_schema.GetPropertiesIterator();
        !it.IsAtEnd(); it.Advance()) {
     expected_policies.push_back(
-        PopulateExpectedPolicy(it.key(), std::string(), NULL, false));
+        PopulateExpectedPolicy(
+            it.key(), std::string(), std::string(), nullptr, false));
   }
 
   // Retrieve the contents of the policy table from the UI and verify that it
@@ -211,24 +215,28 @@ IN_PROC_BROWSER_TEST_F(PolicyUITest, SendPolicyValues) {
   values.Set(policy::key::kRestoreOnStartupURLs,
              policy::POLICY_LEVEL_MANDATORY,
              policy::POLICY_SCOPE_USER,
+             policy::POLICY_SOURCE_CLOUD,
              restore_on_startup_urls,
              NULL);
   expected_values[policy::key::kRestoreOnStartupURLs] = "aaa,bbb,ccc";
   values.Set(policy::key::kHomepageLocation,
              policy::POLICY_LEVEL_MANDATORY,
              policy::POLICY_SCOPE_MACHINE,
+             policy::POLICY_SOURCE_CLOUD,
              new base::StringValue("http://google.com"),
              NULL);
   expected_values[policy::key::kHomepageLocation] = "http://google.com";
   values.Set(policy::key::kRestoreOnStartup,
              policy::POLICY_LEVEL_RECOMMENDED,
              policy::POLICY_SCOPE_USER,
+             policy::POLICY_SOURCE_CLOUD,
              new base::FundamentalValue(4),
              NULL);
   expected_values[policy::key::kRestoreOnStartup] = "4";
   values.Set(policy::key::kShowHomeButton,
              policy::POLICY_LEVEL_RECOMMENDED,
              policy::POLICY_SCOPE_MACHINE,
+             policy::POLICY_SOURCE_CLOUD,
              new base::FundamentalValue(true),
              NULL);
   expected_values[policy::key::kShowHomeButton] = "true";
@@ -237,6 +245,7 @@ IN_PROC_BROWSER_TEST_F(PolicyUITest, SendPolicyValues) {
   values.Set(kUnknownPolicy,
              policy::POLICY_LEVEL_MANDATORY,
              policy::POLICY_SCOPE_USER,
+             policy::POLICY_SOURCE_PLATFORM,
              new base::FundamentalValue(true),
              NULL);
   expected_values[kUnknownPolicy] = "true";
@@ -257,16 +266,19 @@ IN_PROC_BROWSER_TEST_F(PolicyUITest, SendPolicyValues) {
         expected_values.find(props.key());
     const std::string value =
         it == expected_values.end() ? std::string() : it->second;
+    const std::string source =
+        it == expected_values.end() ? std::string() : "Cloud";
     const policy::PolicyMap::Entry* metadata = values.Get(props.key());
     expected_policies.insert(
         metadata ? expected_policies.begin() + first_unset_position++ :
                    expected_policies.end(),
-        PopulateExpectedPolicy(props.key(), value, metadata, false));
+        PopulateExpectedPolicy(props.key(), value, source, metadata, false));
   }
   expected_policies.insert(
       expected_policies.begin() + first_unset_position++,
       PopulateExpectedPolicy(kUnknownPolicy,
                              expected_values[kUnknownPolicy],
+                             "Platform",
                              values.Get(kUnknownPolicy),
                              true));
 
@@ -318,11 +330,12 @@ IN_PROC_BROWSER_TEST_F(PolicyUITest, ExtensionLoadAndSendPolicy) {
   for (policy::Schema::Iterator it = chrome_schema.GetPropertiesIterator();
        !it.IsAtEnd(); it.Advance()) {
     expected_policies.push_back(
-        PopulateExpectedPolicy(it.key(), std::string(), NULL, false));
+        PopulateExpectedPolicy(
+            it.key(), std::string(), std::string(), nullptr, false));
   }
   // Add newly added policy to expected policy list.
   expected_policies.push_back(PopulateExpectedPolicy(
-      newly_added_policy_name, std::string(), NULL, false));
+      newly_added_policy_name, std::string(), std::string(), nullptr, false));
 
   // Verify if policy UI includes policy that extension have.
   VerifyPolicies(expected_policies);

@@ -86,6 +86,7 @@ TEST_F(SchemaRegistryTrackingPolicyProviderTest, PassOnChromePolicy) {
   bundle.Get(chrome_ns).Set("policy",
                             POLICY_LEVEL_MANDATORY,
                             POLICY_SCOPE_USER,
+                            POLICY_SOURCE_CLOUD,
                             new base::StringValue("visible"),
                             NULL);
 
@@ -96,6 +97,7 @@ TEST_F(SchemaRegistryTrackingPolicyProviderTest, PassOnChromePolicy) {
       .Set("foo",
            POLICY_LEVEL_MANDATORY,
            POLICY_SCOPE_USER,
+           POLICY_SOURCE_CLOUD,
            new base::StringValue("not visible"),
            NULL);
   mock_provider_.UpdatePolicy(delegate_bundle.Pass());
@@ -127,6 +129,7 @@ TEST_F(SchemaRegistryTrackingPolicyProviderTest, SchemaReadyWithComponents) {
   policy_map.Set("foo",
                  POLICY_LEVEL_MANDATORY,
                  POLICY_SCOPE_USER,
+                 POLICY_SOURCE_CLOUD,
                  new base::StringValue("omg"),
                  NULL);
   scoped_ptr<PolicyBundle> bundle(new PolicyBundle);
@@ -178,6 +181,7 @@ TEST_F(SchemaRegistryTrackingPolicyProviderTest, DelegateUpdates) {
   policy_map.Set("foo",
                  POLICY_LEVEL_MANDATORY,
                  POLICY_SCOPE_USER,
+                 POLICY_SOURCE_CLOUD,
                  new base::StringValue("omg"),
                  NULL);
   // Chrome policy updates are visible even if the components aren't ready.
@@ -221,6 +225,7 @@ TEST_F(SchemaRegistryTrackingPolicyProviderTest, RemoveAndAddComponent) {
   platform_policy.Get(ns).Set("foo",
                               POLICY_LEVEL_MANDATORY,
                               POLICY_SCOPE_USER,
+                              POLICY_SOURCE_CLOUD,
                               new base::StringValue("omg"),
                               NULL);
   scoped_ptr<PolicyBundle> copy(new PolicyBundle);

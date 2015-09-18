@@ -7,6 +7,7 @@
 #include "components/autofill/core/common/autofill_pref_names.h"
 #include "components/policy/core/browser/autofill_policy_handler.h"
 #include "components/policy/core/common/policy_map.h"
+#include "components/policy/core/common/policy_types.h"
 #include "policy/policy_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -28,6 +29,7 @@ TEST_F(AutofillPolicyHandlerTest, Enabled) {
   policy.Set(key::kAutoFillEnabled,
              POLICY_LEVEL_MANDATORY,
              POLICY_SCOPE_USER,
+             POLICY_SOURCE_CLOUD,
              new base::FundamentalValue(true),
              NULL);
   PrefValueMap prefs;
@@ -43,6 +45,7 @@ TEST_F(AutofillPolicyHandlerTest, Disabled) {
   policy.Set(key::kAutoFillEnabled,
              POLICY_LEVEL_MANDATORY,
              POLICY_SCOPE_USER,
+             POLICY_SOURCE_CLOUD,
              new base::FundamentalValue(false),
              NULL);
   PrefValueMap prefs;

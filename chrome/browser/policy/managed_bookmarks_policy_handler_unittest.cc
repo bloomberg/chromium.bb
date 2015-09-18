@@ -8,6 +8,7 @@
 #include "components/policy/core/browser/configuration_policy_pref_store.h"
 #include "components/policy/core/browser/configuration_policy_pref_store_test.h"
 #include "components/policy/core/common/policy_map.h"
+#include "components/policy/core/common/policy_types.h"
 #include "components/policy/core/common/schema.h"
 #include "policy/policy_constants.h"
 
@@ -31,7 +32,10 @@ TEST_F(ManagedBookmarksPolicyHandlerTest, ApplyPolicySettings) {
   EXPECT_FALSE(store_->GetValue(bookmarks::prefs::kManagedBookmarks, NULL));
 
   PolicyMap policy;
-  policy.Set(key::kManagedBookmarks, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+  policy.Set(key::kManagedBookmarks,
+             POLICY_LEVEL_MANDATORY,
+             POLICY_SCOPE_USER,
+             POLICY_SOURCE_CLOUD,
              base::JSONReader::Read("["
                                     "  {"
                                     "    \"name\": \"Google\","
@@ -112,6 +116,7 @@ TEST_F(ManagedBookmarksPolicyHandlerTest, WrongPolicyType) {
   policy.Set(key::kManagedBookmarks,
              POLICY_LEVEL_MANDATORY,
              POLICY_SCOPE_USER,
+             POLICY_SOURCE_CLOUD,
              new base::StringValue(
                  "["
                  "  {"
@@ -127,7 +132,10 @@ TEST_F(ManagedBookmarksPolicyHandlerTest, WrongPolicyType) {
 #if defined(ENABLE_EXTENSIONS)
 TEST_F(ManagedBookmarksPolicyHandlerTest, UnknownKeys) {
   PolicyMap policy;
-  policy.Set(key::kManagedBookmarks, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+  policy.Set(key::kManagedBookmarks,
+             POLICY_LEVEL_MANDATORY,
+             POLICY_SCOPE_USER,
+             POLICY_SOURCE_CLOUD,
              base::JSONReader::Read("["
                                     "  {"
                                     "    \"name\": \"Google\","
@@ -156,7 +164,10 @@ TEST_F(ManagedBookmarksPolicyHandlerTest, UnknownKeys) {
 #if defined(ENABLE_EXTENSIONS)
 TEST_F(ManagedBookmarksPolicyHandlerTest, BadBookmark) {
   PolicyMap policy;
-  policy.Set(key::kManagedBookmarks, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+  policy.Set(key::kManagedBookmarks,
+             POLICY_LEVEL_MANDATORY,
+             POLICY_SCOPE_USER,
+             POLICY_SOURCE_CLOUD,
              base::JSONReader::Read("["
                                     "  {"
                                     "    \"name\": \"Empty\","

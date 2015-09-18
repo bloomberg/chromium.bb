@@ -156,6 +156,7 @@ void CloudExternalDataManagerBaseTest::SetUp() {
   cloud_policy_store_.policy_map_.Set(kStringPolicy,
                                       POLICY_LEVEL_MANDATORY,
                                       POLICY_SCOPE_USER,
+                                      POLICY_SOURCE_CLOUD,
                                       new base::StringValue(std::string()),
                                       NULL);
   // Make |k10BytePolicy| reference 10 bytes of external data.
@@ -212,6 +213,7 @@ void CloudExternalDataManagerBaseTest::SetExternalDataReference(
       policy,
       POLICY_LEVEL_MANDATORY,
       POLICY_SCOPE_USER,
+      POLICY_SOURCE_CLOUD,
       metadata.release(),
       new ExternalDataFetcher(
           external_data_manager_->weak_factory_.GetWeakPtr(), policy));

@@ -27,6 +27,7 @@ TEST(ContextualSearchPolicyHandlerAndroidTest, Enabled) {
   policy.Set(key::kContextualSearchEnabled,
              POLICY_LEVEL_MANDATORY,
              POLICY_SCOPE_USER,
+             POLICY_SOURCE_PLATFORM,
              new base::FundamentalValue(true),
              NULL);
   PrefValueMap prefs;
@@ -44,6 +45,7 @@ TEST(ContextualSearchPolicyHandlerAndroidTest, Disabled) {
   policy.Set(key::kContextualSearchEnabled,
              POLICY_LEVEL_MANDATORY,
              POLICY_SCOPE_USER,
+             POLICY_SOURCE_PLATFORM,
              new base::FundamentalValue(false),
              NULL);
   PrefValueMap prefs;

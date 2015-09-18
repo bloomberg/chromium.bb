@@ -13,6 +13,7 @@
 #include "components/policy/core/common/policy_bundle.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_namespace.h"
+#include "components/policy/core/common/policy_types.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 using ::testing::Mock;
@@ -146,8 +147,9 @@ bool PolicyTestBase::RegisterSchema(const PolicyNamespace& ns,
 }
 
 PolicyProviderTestHarness::PolicyProviderTestHarness(PolicyLevel level,
-                                                     PolicyScope scope)
-    : level_(level), scope_(scope) {}
+                                                     PolicyScope scope,
+                                                     PolicySource source)
+    : level_(level), scope_(scope), source_(source) {}
 
 PolicyProviderTestHarness::~PolicyProviderTestHarness() {}
 
@@ -157,6 +159,10 @@ PolicyLevel PolicyProviderTestHarness::policy_level() const {
 
 PolicyScope PolicyProviderTestHarness::policy_scope() const {
   return scope_;
+}
+
+PolicySource PolicyProviderTestHarness::policy_source() const {
+  return source_;
 }
 
 void PolicyProviderTestHarness::Install3rdPartyPolicy(
@@ -224,6 +230,7 @@ void ConfigurationPolicyProviderTest::CheckValue(
       .Set(policy_name,
            test_harness_->policy_level(),
            test_harness_->policy_scope(),
+           test_harness_->policy_source(),
            expected_value.DeepCopy(),
            NULL);
   EXPECT_TRUE(provider_->policies().Equals(expected_bundle));
@@ -340,6 +347,7 @@ TEST_P(ConfigurationPolicyProviderTest, RefreshPolicies) {
       .Set(test_keys::kKeyString,
            test_harness_->policy_level(),
            test_harness_->policy_scope(),
+           test_harness_->policy_source(),
            new base::StringValue("value"),
            NULL);
   EXPECT_TRUE(provider_->policies().Equals(bundle));
@@ -392,6 +400,7 @@ TEST_P(Configuration3rdPartyPolicyProviderTest, Load3rdParty) {
   expected_policy.Set(test_keys::kKeyDictionary,
                       test_harness_->policy_level(),
                       test_harness_->policy_scope(),
+                      test_harness_->policy_source(),
                       policy_dict.DeepCopy(),
                       NULL);
   PolicyBundle expected_bundle;
@@ -400,7 +409,8 @@ TEST_P(Configuration3rdPartyPolicyProviderTest, Load3rdParty) {
   expected_policy.Clear();
   expected_policy.LoadFrom(&policy_dict,
                            test_harness_->policy_level(),
-                           test_harness_->policy_scope());
+                           test_harness_->policy_scope(),
+                           test_harness_->policy_source());
   expected_bundle.Get(PolicyNamespace(POLICY_DOMAIN_EXTENSIONS,
                                       "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"))
       .CopyFrom(expected_policy);

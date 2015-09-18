@@ -4,13 +4,15 @@
 
 #include "chrome/browser/ui/webui/policy_ui.h"
 
+#include <stddef.h>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
@@ -77,6 +79,28 @@ namespace em = enterprise_management;
 
 namespace {
 
+struct PolicySourceMap {
+  const char* key;
+  int string_id;
+};
+
+// Strings that map from PolicySource enum to i18n string keys and their IDs.
+const PolicySourceMap kPolicySources[policy::POLICY_SOURCE_COUNT] = {
+  {"sourceEnterpriseDefault", IDS_POLICY_SOURCE_ENTERPRISE_DEFAULT},
+  {"sourceCloud", IDS_POLICY_SOURCE_CLOUD},
+  {"sourceEnterpriseOverride", IDS_POLICY_SOURCE_ENTERPRISE_OVERRIDE},
+  {"sourcePlatform", IDS_POLICY_SOURCE_PLATFORM}
+};
+
+void AddLocalizedPoilcySourceStrings(content::WebUIDataSource* source) {
+  DCHECK_EQ(static_cast<size_t>(policy::POLICY_SOURCE_COUNT),
+            arraysize(kPolicySources));
+  for (size_t i = 0; i < arraysize(kPolicySources); ++i) {
+    source->AddLocalizedString(kPolicySources[i].key,
+                               kPolicySources[i].string_id);
+  }
+}
+
 content::WebUIDataSource* CreatePolicyUIHTMLSource() {
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUIPolicyHost);
@@ -108,6 +132,7 @@ content::WebUIDataSource* CreatePolicyUIHTMLSource() {
   source->AddLocalizedString("headerName", IDS_POLICY_HEADER_NAME);
   source->AddLocalizedString("headerValue", IDS_POLICY_HEADER_VALUE);
   source->AddLocalizedString("headerStatus", IDS_POLICY_HEADER_STATUS);
+  source->AddLocalizedString("headerSource", IDS_POLICY_HEADER_SOURCE);
   source->AddLocalizedString("showExpandedValue",
                              IDS_POLICY_SHOW_EXPANDED_VALUE);
   source->AddLocalizedString("hideExpandedValue",
@@ -120,6 +145,7 @@ content::WebUIDataSource* CreatePolicyUIHTMLSource() {
   source->AddLocalizedString("unset", IDS_POLICY_UNSET);
   source->AddLocalizedString("unknown", IDS_POLICY_UNKNOWN);
   source->AddLocalizedString("notSpecified", IDS_POLICY_NOT_SPECIFIED);
+  AddLocalizedPoilcySourceStrings(source);
 
   source->SetJsonPath("strings.js");
 
@@ -752,6 +778,7 @@ void PolicyUIHandler::GetPolicyValues(const policy::PolicyMap& map,
       value->SetString("level", "recommended");
     else
       value->SetString("level", "mandatory");
+    value->SetString("source", kPolicySources[entry->second.source].key);
     base::string16 error = errors->GetErrors(entry->first);
     if (!error.empty())
       value->SetString("error", error);
