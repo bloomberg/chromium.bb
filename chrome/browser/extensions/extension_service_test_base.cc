@@ -43,15 +43,15 @@ scoped_ptr<TestingProfile> BuildTestingProfile(
     const ExtensionServiceTestBase::ExtensionServiceInitParams& params) {
   TestingProfile::Builder profile_builder;
   // Create a PrefService that only contains user defined preference values.
-  PrefServiceMockFactory factory;
+  syncable_prefs::PrefServiceMockFactory factory;
   // If pref_file is empty, TestingProfile automatically creates
-  // TestingPrefServiceSyncable instance.
+  // syncable_prefs::TestingPrefServiceSyncable instance.
   if (!params.pref_file.empty()) {
     factory.SetUserPrefsFile(params.pref_file,
                              base::ThreadTaskRunnerHandle::Get().get());
     scoped_refptr<user_prefs::PrefRegistrySyncable> registry(
         new user_prefs::PrefRegistrySyncable);
-    scoped_ptr<PrefServiceSyncable> prefs(
+    scoped_ptr<syncable_prefs::PrefServiceSyncable> prefs(
         factory.CreateSyncable(registry.get()));
     chrome::RegisterUserProfilePrefs(registry.get());
     profile_builder.SetPrefService(prefs.Pass());

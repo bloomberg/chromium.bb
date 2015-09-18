@@ -10,7 +10,6 @@
 
 class PrefRegistry;
 class PrefService;
-class PrefServiceSyncable;
 class PrefStore;
 class TrackedPreferenceValidationDelegate;
 
@@ -25,6 +24,10 @@ class ChromeBrowserState;
 
 namespace policy {
 class PolicyService;
+}
+
+namespace syncable_prefs {
+class PrefServiceSyncable;
 }
 
 namespace user_prefs {
@@ -44,7 +47,7 @@ scoped_ptr<PrefService> CreateLocalState(
     const scoped_refptr<PrefRegistry>& pref_registry,
     bool async);
 
-scoped_ptr<PrefServiceSyncable> CreateBrowserStatePrefs(
+scoped_ptr<syncable_prefs::PrefServiceSyncable> CreateBrowserStatePrefs(
     const base::FilePath& browser_state_path,
     base::SequencedTaskRunner* pref_io_task_runner,
     TrackedPreferenceValidationDelegate* validation_delegate,
@@ -54,7 +57,8 @@ scoped_ptr<PrefServiceSyncable> CreateBrowserStatePrefs(
 
 // Creates an incognito copy of |pref_service| that shares most prefs but uses
 // a fresh non-persistent overlay for the user pref store.
-scoped_ptr<PrefServiceSyncable> CreateIncognitoBrowserStatePrefs(
-    PrefServiceSyncable* main_pref_store);
+scoped_ptr<syncable_prefs::PrefServiceSyncable>
+CreateIncognitoBrowserStatePrefs(
+    syncable_prefs::PrefServiceSyncable* main_pref_store);
 
 #endif  // IOS_CHROME_BROWSER_PREFS_IOS_CHROME_PREF_SERVICE_FACTORY_H_

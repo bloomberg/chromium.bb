@@ -154,8 +154,8 @@ class UserPolicySigninServiceTest : public testing::Test {
 
     // Create a testing profile with cloud-policy-on-signin enabled, and bring
     // up a UserCloudPolicyManager with a MockUserCloudPolicyStore.
-    scoped_ptr<TestingPrefServiceSyncable> prefs(
-        new TestingPrefServiceSyncable());
+    scoped_ptr<syncable_prefs::TestingPrefServiceSyncable> prefs(
+        new syncable_prefs::TestingPrefServiceSyncable());
     chrome::RegisterUserProfilePrefs(prefs->registry());
 
     // UserCloudPolicyManagerFactory isn't a real
@@ -166,7 +166,8 @@ class UserPolicySigninServiceTest : public testing::Test {
     UserCloudPolicyManagerFactory::GetInstance()->RegisterTestingFactory(
         BuildCloudPolicyManager);
     TestingProfile::Builder builder;
-    builder.SetPrefService(scoped_ptr<PrefServiceSyncable>(prefs.Pass()));
+    builder.SetPrefService(
+        scoped_ptr<syncable_prefs::PrefServiceSyncable>(prefs.Pass()));
     builder.AddTestingFactory(SigninManagerFactory::GetInstance(),
                               BuildFakeSigninManagerBase);
     builder.AddTestingFactory(ProfileOAuth2TokenServiceFactory::GetInstance(),

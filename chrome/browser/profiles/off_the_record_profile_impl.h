@@ -19,7 +19,9 @@
 using base::Time;
 using base::TimeDelta;
 
+namespace syncable_prefs {
 class PrefServiceSyncable;
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -126,7 +128,7 @@ class OffTheRecordProfileImpl : public Profile {
   Profile* profile_;
 
   // Weak pointer owned by |profile_|.
-  PrefServiceSyncable* prefs_;
+  syncable_prefs::PrefServiceSyncable* prefs_;
 
   scoped_ptr<content::HostZoomMap::Subscription> track_zoom_subscription_;
   scoped_ptr<ChromeZoomLevelPrefs::DefaultZoomLevelSubscription>

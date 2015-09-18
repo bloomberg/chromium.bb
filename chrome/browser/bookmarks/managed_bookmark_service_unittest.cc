@@ -131,7 +131,7 @@ class ManagedBookmarkServiceTest : public testing::Test {
 
   content::TestBrowserThreadBundle thread_bundle_;
   TestingProfile profile_;
-  TestingPrefServiceSyncable* prefs_;
+  syncable_prefs::TestingPrefServiceSyncable* prefs_;
   bookmarks::MockBookmarkModelObserver observer_;
   ManagedBookmarkService* managed_;
   BookmarkModel* model_;

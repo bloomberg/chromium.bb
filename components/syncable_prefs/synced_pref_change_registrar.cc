@@ -6,6 +6,8 @@
 
 #include "base/bind.h"
 
+namespace syncable_prefs {
+
 namespace {
 
 void InvokeUnnamedCallback(
@@ -64,3 +66,5 @@ void SyncedPrefChangeRegistrar::OnSyncedPrefChanged(const std::string& path,
     return;
   iter->second.Run(path, from_sync);
 }
+
+}  // namespace syncable_prefs

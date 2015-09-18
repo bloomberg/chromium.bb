@@ -19,17 +19,19 @@
 #include "sync/api/sync_data.h"
 #include "sync/api/syncable_service.h"
 
-class PrefModelAssociatorClient;
-class PrefRegistrySyncable;
-class PrefServiceSyncable;
+namespace base {
+class Value;
+}
 
 namespace sync_pb {
 class PreferenceSpecifics;
 }
 
-namespace base {
-class Value;
-}
+namespace syncable_prefs {
+
+class PrefModelAssociatorClient;
+class PrefRegistrySyncable;
+class PrefServiceSyncable;
 
 // Contains all preference sync related logic.
 // TODO(sync): Merge this into PrefService once we separate the profile
@@ -196,5 +198,7 @@ class PrefModelAssociator
 
   DISALLOW_COPY_AND_ASSIGN(PrefModelAssociator);
 };
+
+}  // namespace syncable_prefs
 
 #endif  // COMPONENTS_SYNCABLE_PREFS_PREF_MODEL_ASSOCIATOR_H_

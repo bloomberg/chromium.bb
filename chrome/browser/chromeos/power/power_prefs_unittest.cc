@@ -172,8 +172,8 @@ bool PowerPrefsTest::GetExpectedAllowScreenWakeLocksForProfile(
 
 TEST_F(PowerPrefsTest, LoginScreen) {
   // Set up login profile.
-  scoped_ptr<TestingPrefServiceSyncable> login_profile_prefs(
-      new TestingPrefServiceSyncable);
+  scoped_ptr<syncable_prefs::TestingPrefServiceSyncable> login_profile_prefs(
+      new syncable_prefs::TestingPrefServiceSyncable);
   chrome::RegisterLoginProfilePrefs(login_profile_prefs->registry());
   TestingProfile::Builder builder;
   builder.SetPath(

@@ -130,14 +130,13 @@ class ProfileSigninConfirmationHelperTest : public testing::Test {
     // Create the profile.
     TestingProfile::Builder builder;
     user_prefs_ = new TestingPrefStoreWithCustomReadError;
-    TestingPrefServiceSyncable* pref_service = new TestingPrefServiceSyncable(
-        new TestingPrefStore(),
-        user_prefs_,
-        new TestingPrefStore(),
-        new user_prefs::PrefRegistrySyncable(),
-        new PrefNotifierImpl());
+    syncable_prefs::TestingPrefServiceSyncable* pref_service =
+        new syncable_prefs::TestingPrefServiceSyncable(
+            new TestingPrefStore(), user_prefs_, new TestingPrefStore(),
+            new user_prefs::PrefRegistrySyncable(), new PrefNotifierImpl());
     chrome::RegisterUserProfilePrefs(pref_service->registry());
-    builder.SetPrefService(make_scoped_ptr<PrefServiceSyncable>(pref_service));
+    builder.SetPrefService(
+        make_scoped_ptr<syncable_prefs::PrefServiceSyncable>(pref_service));
     profile_ = builder.Build();
 
     // Initialize the services we check.

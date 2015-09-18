@@ -98,7 +98,7 @@ class ProxyPolicyTest : public testing::Test {
   void TearDown() override { provider_.Shutdown(); }
 
   scoped_ptr<PrefService> CreatePrefService(bool with_managed_policies) {
-    PrefServiceMockFactory factory;
+    syncable_prefs::PrefServiceMockFactory factory;
     factory.set_command_line_prefs(new CommandLinePrefStore(&command_line_));
     if (with_managed_policies) {
       factory.SetManagedPolicies(policy_service_.get(),
@@ -107,7 +107,7 @@ class ProxyPolicyTest : public testing::Test {
 
     scoped_refptr<user_prefs::PrefRegistrySyncable> registry(
         new user_prefs::PrefRegistrySyncable);
-    scoped_ptr<PrefServiceSyncable> prefs =
+    scoped_ptr<syncable_prefs::PrefServiceSyncable> prefs =
         factory.CreateSyncable(registry.get());
     chrome::RegisterUserProfilePrefs(registry.get());
     return prefs.Pass();

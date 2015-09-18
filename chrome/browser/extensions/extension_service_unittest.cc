@@ -1167,8 +1167,8 @@ class ExtensionServiceTest : public extensions::ExtensionServiceTestBase,
   }
 
  protected:
-  typedef extensions::ExtensionManagementPrefUpdater<TestingPrefServiceSyncable>
-      ManagementPrefUpdater;
+  typedef extensions::ExtensionManagementPrefUpdater<
+      syncable_prefs::TestingPrefServiceSyncable> ManagementPrefUpdater;
   extensions::ExtensionList loaded_;
   std::string unloaded_id_;
   UnloadedExtensionInfo::Reason unloaded_reason_;

@@ -173,7 +173,7 @@ ExtensionWelcomeNotification::~ExtensionWelcomeNotification() {
 
 void ExtensionWelcomeNotification::OnIsSyncingChanged() {
   DCHECK(delayed_notification_);
-  PrefServiceSyncable* const pref_service_syncable =
+  syncable_prefs::PrefServiceSyncable* const pref_service_syncable =
       PrefServiceSyncableFromProfile(profile_);
   if (pref_service_syncable->IsSyncing()) {
     pref_service_syncable->RemoveObserver(this);
@@ -186,7 +186,7 @@ void ExtensionWelcomeNotification::OnIsSyncingChanged() {
 void ExtensionWelcomeNotification::ShowWelcomeNotificationIfNecessary(
     const Notification& notification) {
   if ((notification.notifier_id() == notifier_id_) && !delayed_notification_) {
-    PrefServiceSyncable* const pref_service_syncable =
+    syncable_prefs::PrefServiceSyncable* const pref_service_syncable =
         PrefServiceSyncableFromProfile(profile_);
     if (pref_service_syncable->IsSyncing()) {
       PrefService* const pref_service = profile_->GetPrefs();

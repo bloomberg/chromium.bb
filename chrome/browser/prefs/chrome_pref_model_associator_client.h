@@ -15,7 +15,8 @@ template <typename T>
 struct DefaultSingletonTraits;
 }
 
-class ChromePrefModelAssociatorClient : public PrefModelAssociatorClient {
+class ChromePrefModelAssociatorClient
+    : public syncable_prefs::PrefModelAssociatorClient {
  public:
   // Returns the global instance.
   static ChromePrefModelAssociatorClient* GetInstance();
@@ -26,7 +27,7 @@ class ChromePrefModelAssociatorClient : public PrefModelAssociatorClient {
   ChromePrefModelAssociatorClient();
   ~ChromePrefModelAssociatorClient() override;
 
-  // PrefModelAssociatorClient implementation.
+  // syncable_prefs::PrefModelAssociatorClient implementation.
   bool IsMergeableListPreference(const std::string& pref_name) const override;
   bool IsMergeableDictionaryPreference(
       const std::string& pref_name) const override;

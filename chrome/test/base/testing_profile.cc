@@ -309,7 +309,7 @@ TestingProfile::TestingProfile(
 #if defined(ENABLE_EXTENSIONS)
     scoped_refptr<ExtensionSpecialStoragePolicy> extension_policy,
 #endif
-    scoped_ptr<PrefServiceSyncable> prefs,
+    scoped_ptr<syncable_prefs::PrefServiceSyncable> prefs,
     TestingProfile* parent,
     bool guest_session,
     const std::string& supervised_user_id,
@@ -633,7 +633,8 @@ scoped_refptr<base::SequencedTaskRunner> TestingProfile::GetIOTaskRunner() {
   return base::MessageLoop::current()->task_runner();
 }
 
-TestingPrefServiceSyncable* TestingProfile::GetTestingPrefService() {
+syncable_prefs::TestingPrefServiceSyncable*
+TestingProfile::GetTestingPrefService() {
   DCHECK(prefs_);
   DCHECK(testing_prefs_);
   return testing_prefs_;
@@ -734,7 +735,7 @@ net::CookieMonster* TestingProfile::GetCookieMonster() {
 
 void TestingProfile::CreateTestingPrefService() {
   DCHECK(!prefs_.get());
-  testing_prefs_ = new TestingPrefServiceSyncable();
+  testing_prefs_ = new syncable_prefs::TestingPrefServiceSyncable();
   prefs_.reset(testing_prefs_);
   user_prefs::UserPrefs::Set(this, prefs_.get());
   chrome::RegisterUserProfilePrefs(testing_prefs_->registry());
@@ -989,7 +990,7 @@ void TestingProfile::Builder::SetExtensionSpecialStoragePolicy(
 #endif
 
 void TestingProfile::Builder::SetPrefService(
-    scoped_ptr<PrefServiceSyncable> prefs) {
+    scoped_ptr<syncable_prefs::PrefServiceSyncable> prefs) {
   pref_service_ = prefs.Pass();
 }
 

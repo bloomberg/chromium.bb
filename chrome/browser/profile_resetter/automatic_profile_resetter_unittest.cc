@@ -1268,7 +1268,8 @@ TEST_F(AutomaticProfileResetterTest, InputManagedUserPreferencesCorrect) {
   SetTestingProgram(ConstructProgramToCheckPreferences());
   SetTestingHashSeed(kTestHashSeed);
 
-  TestingPrefServiceSyncable* prefs = profile()->GetTestingPrefService();
+  syncable_prefs::TestingPrefServiceSyncable* prefs =
+      profile()->GetTestingPrefService();
   prefs->SetManagedPref(kTestPreferencePath,
                         new base::StringValue(kTestPreferenceValue));
 

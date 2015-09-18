@@ -246,13 +246,10 @@ TEST_F(ProfileMenuControllerTest, DeleteActiveProfile) {
 
 TEST_F(ProfileMenuControllerTest, SupervisedProfile) {
   TestingProfileManager* manager = testing_profile_manager();
-  TestingProfile* supervised_profile =
-      manager->CreateTestingProfile("test1",
-                                    scoped_ptr<PrefServiceSyncable>(),
-                                    base::ASCIIToUTF16("Supervised User"),
-                                    0,
-                                    "TEST_ID",
-                                    TestingProfile::TestingFactories());
+  TestingProfile* supervised_profile = manager->CreateTestingProfile(
+      "test1", scoped_ptr<syncable_prefs::PrefServiceSyncable>(),
+      base::ASCIIToUTF16("Supervised User"), 0, "TEST_ID",
+      TestingProfile::TestingFactories());
   // The supervised profile is initially marked as omitted from the avatar menu
   // (in non-test code, until we have confirmation that it has actually been
   // created on the server). For the test, just tell the cache to un-hide it.

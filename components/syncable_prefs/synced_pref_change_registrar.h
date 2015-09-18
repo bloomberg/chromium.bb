@@ -12,6 +12,8 @@
 #include "components/syncable_prefs/pref_service_syncable.h"
 #include "components/syncable_prefs/synced_pref_observer.h"
 
+namespace syncable_prefs {
+
 // Manages the registration of one or more SyncedPrefObservers on a
 // PrefServiceSyncable. This is modeled after base::PrefChangeRegistrar, and
 // it should be used whenever it's necessary to determine whether a pref change
@@ -52,5 +54,7 @@ class SyncedPrefChangeRegistrar : public SyncedPrefObserver {
 
   DISALLOW_COPY_AND_ASSIGN(SyncedPrefChangeRegistrar);
 };
+
+}  // namespace syncable_prefs
 
 #endif  // COMPONENTS_SYNCABLE_PREFS_SYNCED_PREF_CHANGE_REGISTRAR_H_

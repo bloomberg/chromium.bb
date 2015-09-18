@@ -55,8 +55,10 @@ PrefMetricsService::PrefMetricsService(Profile* profile)
       weak_factory_(this) {
   RecordLaunchPrefs();
 
-  PrefServiceSyncable* prefs = PrefServiceSyncableFromProfile(profile_);
-  synced_pref_change_registrar_.reset(new SyncedPrefChangeRegistrar(prefs));
+  syncable_prefs::PrefServiceSyncable* prefs =
+      PrefServiceSyncableFromProfile(profile_);
+  synced_pref_change_registrar_.reset(
+      new syncable_prefs::SyncedPrefChangeRegistrar(prefs));
 
   RegisterSyncedPrefObservers();
 }
@@ -177,7 +179,8 @@ void PrefMetricsService::OnPrefChanged(
     const LogHistogramValueCallback& callback,
     const std::string& path,
     bool from_sync) {
-  PrefServiceSyncable* prefs = PrefServiceSyncableFromProfile(profile_);
+  syncable_prefs::PrefServiceSyncable* prefs =
+      PrefServiceSyncableFromProfile(profile_);
   const PrefService::Preference* pref = prefs->FindPreference(path.c_str());
   DCHECK(pref);
   std::string source_name(

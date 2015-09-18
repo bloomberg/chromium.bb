@@ -79,9 +79,9 @@ class GAIAInfoUpdateServiceTest : public ProfileInfoCacheTest {
     testing_factories.push_back(std::make_pair(
         ChromeSigninClientFactory::GetInstance(),
         signin::BuildTestSigninClient));
-    Profile* profile = testing_profile_manager_.CreateTestingProfile(name,
-        scoped_ptr<PrefServiceSyncable>(), base::UTF8ToUTF16(name), 0,
-        std::string(), testing_factories);
+    Profile* profile = testing_profile_manager_.CreateTestingProfile(
+        name, scoped_ptr<syncable_prefs::PrefServiceSyncable>(),
+        base::UTF8ToUTF16(name), 0, std::string(), testing_factories);
     // The testing manager sets the profile name manually, which counts as
     // a user-customized profile name. Reset this to match the default name
     // we are actually using.

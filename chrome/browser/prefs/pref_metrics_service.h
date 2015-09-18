@@ -83,7 +83,8 @@ class PrefMetricsService : public KeyedService {
   PrefService* prefs_;
   PrefService* local_state_;
 
-  scoped_ptr<SyncedPrefChangeRegistrar> synced_pref_change_registrar_;
+  scoped_ptr<syncable_prefs::SyncedPrefChangeRegistrar>
+      synced_pref_change_registrar_;
 
   base::WeakPtrFactory<PrefMetricsService> weak_factory_;
 

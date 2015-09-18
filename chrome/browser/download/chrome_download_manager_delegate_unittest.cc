@@ -161,7 +161,7 @@ class ChromeDownloadManagerDelegateTest
   DownloadPrefs* download_prefs();
 
  private:
-  TestingPrefServiceSyncable* pref_service_;
+  syncable_prefs::TestingPrefServiceSyncable* pref_service_;
   base::ScopedTempDir test_download_dir_;
   scoped_ptr<content::MockDownloadManager> download_manager_;
   scoped_ptr<TestChromeDownloadManagerDelegate> delegate_;

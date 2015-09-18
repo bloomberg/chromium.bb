@@ -133,7 +133,7 @@ TEST_F(SSLConfigServiceManagerPrefTest, BadDisabledCipherSuites) {
 TEST_F(SSLConfigServiceManagerPrefTest, NoCommandLinePrefs) {
   scoped_refptr<TestingPrefStore> local_state_store(new TestingPrefStore());
 
-  PrefServiceMockFactory factory;
+  syncable_prefs::PrefServiceMockFactory factory;
   factory.set_user_prefs(local_state_store);
   scoped_refptr<PrefRegistrySimple> registry = new PrefRegistrySimple;
   scoped_ptr<PrefService> local_state(factory.Create(registry.get()));
@@ -177,7 +177,7 @@ TEST_F(SSLConfigServiceManagerPrefTest, CommandLinePrefs) {
   command_line.AppendSwitchASCII(switches::kSSLVersionMin, "tls1.1");
   command_line.AppendSwitchASCII(switches::kSSLVersionMax, "tls1");
 
-  PrefServiceMockFactory factory;
+  syncable_prefs::PrefServiceMockFactory factory;
   factory.set_user_prefs(local_state_store);
   factory.set_command_line_prefs(new CommandLinePrefStore(&command_line));
   scoped_refptr<PrefRegistrySimple> registry = new PrefRegistrySimple;
@@ -221,7 +221,7 @@ TEST_F(SSLConfigServiceManagerPrefTest, NoSSL3) {
   base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
   command_line.AppendSwitchASCII(switches::kSSLVersionMin, "ssl3");
 
-  PrefServiceMockFactory factory;
+  syncable_prefs::PrefServiceMockFactory factory;
   factory.set_user_prefs(local_state_store);
   factory.set_command_line_prefs(new CommandLinePrefStore(&command_line));
   scoped_refptr<PrefRegistrySimple> registry = new PrefRegistrySimple;

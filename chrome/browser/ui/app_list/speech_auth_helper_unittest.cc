@@ -47,7 +47,7 @@ class SpeechAuthHelperTest : public testing::Test {
     ASSERT_TRUE(testing_profile_manager_->SetUp());
     profile_ = testing_profile_manager_->CreateTestingProfile(
         kTestUser,
-        scoped_ptr<PrefServiceSyncable>(),
+        scoped_ptr<syncable_prefs::PrefServiceSyncable>(),
         base::UTF8ToUTF16(kTestUser),
         0,
         std::string(),

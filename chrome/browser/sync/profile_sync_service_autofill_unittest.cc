@@ -440,7 +440,7 @@ class ProfileSyncServiceAutofillTest
         BuildAutoIssuingFakeProfileOAuth2TokenService));
     profile_ = profile_manager_.CreateTestingProfile(
         kTestProfileName,
-        scoped_ptr<PrefServiceSyncable>(),
+        scoped_ptr<syncable_prefs::PrefServiceSyncable>(),
         base::UTF8ToUTF16(kTestProfileName),
         0,
         std::string(),

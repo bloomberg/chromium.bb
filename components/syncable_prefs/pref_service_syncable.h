@@ -13,12 +13,14 @@
 #include "components/syncable_prefs/pref_model_associator.h"
 #include "components/syncable_prefs/synced_pref_observer.h"
 
-class PrefModelAssociatorClient;
-class PrefServiceSyncableObserver;
-
 namespace syncer {
 class SyncableService;
 }
+
+namespace syncable_prefs {
+
+class PrefModelAssociatorClient;
+class PrefServiceSyncableObserver;
 
 // A PrefService that can be synced. Users are forced to declare
 // whether preferences are syncable or not when registering them to
@@ -108,5 +110,7 @@ class PrefServiceSyncable : public PrefService {
 
   DISALLOW_COPY_AND_ASSIGN(PrefServiceSyncable);
 };
+
+}  // namespace syncable_prefs
 
 #endif  // COMPONENTS_SYNCABLE_PREFS_PREF_SERVICE_SYNCABLE_H_

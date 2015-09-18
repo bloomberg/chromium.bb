@@ -6,8 +6,12 @@
 
 #include "base/prefs/testing_pref_store.h"
 
+namespace syncable_prefs {
+
 PrefServiceMockFactory::PrefServiceMockFactory() {
     user_prefs_ = new TestingPrefStore;
 }
 
 PrefServiceMockFactory::~PrefServiceMockFactory() {}
+
+}  // namespace syncable_prefs

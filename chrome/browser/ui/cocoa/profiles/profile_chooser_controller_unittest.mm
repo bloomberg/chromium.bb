@@ -59,14 +59,13 @@ class ProfileChooserControllerTest : public CocoaProfileTest {
     gcm::GCMProfileServiceFactory::GetInstance()->SetTestingFactory(
         browser()->profile(), gcm::FakeGCMProfileService::Build);
 
-    testing_profile_manager()->
-        CreateTestingProfile("test1", scoped_ptr<PrefServiceSyncable>(),
-                             base::ASCIIToUTF16("Test 1"), 0, std::string(),
-                             testing_factories());
-    testing_profile_manager()->
-        CreateTestingProfile("test2", scoped_ptr<PrefServiceSyncable>(),
-                             base::ASCIIToUTF16("Test 2"), 1, std::string(),
-                             TestingProfile::TestingFactories());
+    testing_profile_manager()->CreateTestingProfile(
+        "test1", scoped_ptr<syncable_prefs::PrefServiceSyncable>(),
+        base::ASCIIToUTF16("Test 1"), 0, std::string(), testing_factories());
+    testing_profile_manager()->CreateTestingProfile(
+        "test2", scoped_ptr<syncable_prefs::PrefServiceSyncable>(),
+        base::ASCIIToUTF16("Test 2"), 1, std::string(),
+        TestingProfile::TestingFactories());
 
     menu_ = new AvatarMenu(testing_profile_manager()->profile_info_cache(),
                            NULL, NULL);
@@ -286,14 +285,14 @@ TEST_F(ProfileChooserControllerTest, OtherProfilesSortedAlphabetically) {
 
   // Add two extra profiles, to make sure sorting is alphabetical and not
   // by order of creation.
-  testing_profile_manager()->
-      CreateTestingProfile("test3", scoped_ptr<PrefServiceSyncable>(),
-                           base::ASCIIToUTF16("New Profile"), 1, std::string(),
-                           TestingProfile::TestingFactories());
-  testing_profile_manager()->
-      CreateTestingProfile("test4", scoped_ptr<PrefServiceSyncable>(),
-                           base::ASCIIToUTF16("Another Test"), 1, std::string(),
-                           TestingProfile::TestingFactories());
+  testing_profile_manager()->CreateTestingProfile(
+      "test3", scoped_ptr<syncable_prefs::PrefServiceSyncable>(),
+      base::ASCIIToUTF16("New Profile"), 1, std::string(),
+      TestingProfile::TestingFactories());
+  testing_profile_manager()->CreateTestingProfile(
+      "test4", scoped_ptr<syncable_prefs::PrefServiceSyncable>(),
+      base::ASCIIToUTF16("Another Test"), 1, std::string(),
+      TestingProfile::TestingFactories());
   StartFastUserSwitcher();
 
   NSArray* subviews = [[[controller() window] contentView] subviews];

@@ -16,16 +16,19 @@
 #include "components/proxy_config/proxy_config_pref_names.h"
 #endif
 
-PrefServiceSyncable* PrefServiceSyncableFromProfile(Profile* profile) {
-  return static_cast<PrefServiceSyncable*>(profile->GetPrefs());
+syncable_prefs::PrefServiceSyncable* PrefServiceSyncableFromProfile(
+    Profile* profile) {
+  return static_cast<syncable_prefs::PrefServiceSyncable*>(profile->GetPrefs());
 }
 
-PrefServiceSyncable* PrefServiceSyncableIncognitoFromProfile(Profile* profile) {
-  return static_cast<PrefServiceSyncable*>(profile->GetOffTheRecordPrefs());
+syncable_prefs::PrefServiceSyncable* PrefServiceSyncableIncognitoFromProfile(
+    Profile* profile) {
+  return static_cast<syncable_prefs::PrefServiceSyncable*>(
+      profile->GetOffTheRecordPrefs());
 }
 
-PrefServiceSyncable* CreateIncognitoPrefServiceSyncable(
-    PrefServiceSyncable* pref_service,
+syncable_prefs::PrefServiceSyncable* CreateIncognitoPrefServiceSyncable(
+    syncable_prefs::PrefServiceSyncable* pref_service,
     PrefStore* incognito_extension_pref_store) {
   // List of keys that cannot be changed in the user prefs file by the incognito
   // profile.  All preferences that store information about the browsing history

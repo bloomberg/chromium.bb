@@ -247,7 +247,7 @@ class ProfileSyncServiceTest : public ::testing::Test {
         BuildFakeProfileInvalidationProvider));
 
     profile_ = profile_manager_.CreateTestingProfile(
-        "sync-service-test", scoped_ptr<PrefServiceSyncable>(),
+        "sync-service-test", scoped_ptr<syncable_prefs::PrefServiceSyncable>(),
         base::UTF8ToUTF16("sync-service-test"), 0, std::string(),
         testing_factories);
   }

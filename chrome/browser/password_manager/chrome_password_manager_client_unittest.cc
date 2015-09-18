@@ -79,7 +79,7 @@ class ChromePasswordManagerClientTest : public ChromeRenderViewHostTestHarness {
       : service_(nullptr), field_trial_list_(nullptr) {}
   void SetUp() override;
 
-  TestingPrefServiceSyncable* prefs() {
+  syncable_prefs::TestingPrefServiceSyncable* prefs() {
     return profile()->GetTestingPrefService();
   }
 

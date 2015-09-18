@@ -170,7 +170,7 @@ class CommandLinePrefStoreProxyTest
     }
     scoped_refptr<PrefRegistrySimple> registry = new PrefRegistrySimple;
     PrefProxyConfigTrackerImpl::RegisterPrefs(registry.get());
-    PrefServiceMockFactory factory;
+    syncable_prefs::PrefServiceMockFactory factory;
     factory.set_command_line_prefs(new CommandLinePrefStore(&command_line_));
     pref_service_ = factory.Create(registry.get()).Pass();
     PrefProxyConfigTrackerImpl::ReadPrefConfig(pref_service_.get(),

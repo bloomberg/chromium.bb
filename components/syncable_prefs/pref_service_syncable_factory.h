@@ -7,9 +7,6 @@
 
 #include "base/prefs/pref_service_factory.h"
 
-class PrefModelAssociatorClient;
-class PrefServiceSyncable;
-
 namespace base {
 class CommandLine;
 }
@@ -22,6 +19,11 @@ class PolicyService;
 namespace user_prefs {
 class PrefRegistrySyncable;
 }
+
+namespace syncable_prefs {
+
+class PrefModelAssociatorClient;
+class PrefServiceSyncable;
 
 // A PrefServiceFactory that also knows how to build a
 // PrefServiceSyncable, and may know about Chrome concepts such as
@@ -50,5 +52,7 @@ class PrefServiceSyncableFactory : public base::PrefServiceFactory {
 
   DISALLOW_COPY_AND_ASSIGN(PrefServiceSyncableFactory);
 };
+
+}  // namespace syncable_prefs
 
 #endif  // COMPONENTS_SYNCABLE_PREFS_PREF_SERVICE_SYNCABLE_FACTORY_H_

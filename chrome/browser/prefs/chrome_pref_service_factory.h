@@ -19,6 +19,10 @@ namespace policy {
 class PolicyService;
 }
 
+namespace syncable_prefs {
+class PrefServiceSyncable;
+}
+
 namespace user_prefs {
 class PrefRegistrySyncable;
 }
@@ -27,7 +31,7 @@ class PrefHashStore;
 class PrefRegistry;
 class PrefRegistrySimple;
 class PrefService;
-class PrefServiceSyncable;
+
 class PrefStore;
 class Profile;
 class SupervisedUserSettingsService;
@@ -67,7 +71,7 @@ scoped_ptr<PrefService> CreateLocalState(
     const scoped_refptr<PrefRegistry>& pref_registry,
     bool async);
 
-scoped_ptr<PrefServiceSyncable> CreateProfilePrefs(
+scoped_ptr<syncable_prefs::PrefServiceSyncable> CreateProfilePrefs(
     const base::FilePath& pref_filename,
     base::SequencedTaskRunner* pref_io_task_runner,
     TrackedPreferenceValidationDelegate* validation_delegate,

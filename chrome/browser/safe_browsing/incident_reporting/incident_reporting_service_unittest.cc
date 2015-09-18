@@ -207,8 +207,8 @@ class IncidentReportingServiceTest : public testing::Test {
                                 OnProfileAdditionAction on_addition_action,
                                 scoped_ptr<base::Value> incidents_sent) {
     // Create prefs for the profile with safe browsing enabled or not.
-    scoped_ptr<TestingPrefServiceSyncable> prefs(
-        new TestingPrefServiceSyncable);
+    scoped_ptr<syncable_prefs::TestingPrefServiceSyncable> prefs(
+        new syncable_prefs::TestingPrefServiceSyncable);
     chrome::RegisterUserProfilePrefs(prefs->registry());
     prefs->SetBoolean(prefs::kSafeBrowsingEnabled,
                       safe_browsing_opt_in == SAFE_BROWSING_OPT_IN);

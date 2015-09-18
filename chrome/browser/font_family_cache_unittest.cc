@@ -35,7 +35,8 @@ TEST(FontFamilyCacheTest, Caching) {
   content::TestBrowserThreadBundle thread_bundle_;
   TestingProfile profile;
   TestingFontFamilyCache cache(&profile);
-  TestingPrefServiceSyncable* prefs = profile.GetTestingPrefService();
+  syncable_prefs::TestingPrefServiceSyncable* prefs =
+      profile.GetTestingPrefService();
 
   std::string font1("font 1");
   std::string font2("font 2");

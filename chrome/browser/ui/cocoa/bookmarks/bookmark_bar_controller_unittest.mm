@@ -1656,7 +1656,8 @@ TEST_F(BookmarkBarControllerTest, BookmarksWithoutAppsPageShortcut) {
 
 TEST_F(BookmarkBarControllerTest, ManagedShowAppsShortcutInBookmarksBar) {
   // By default the pref is not managed and the apps shortcut is shown.
-  TestingPrefServiceSyncable* prefs = profile()->GetTestingPrefService();
+  syncable_prefs::TestingPrefServiceSyncable* prefs =
+      profile()->GetTestingPrefService();
   EXPECT_FALSE(prefs->IsManagedPreference(
       bookmarks::prefs::kShowAppsShortcutInBookmarkBar));
   EXPECT_FALSE([bar_ appsPageShortcutButtonIsHidden]);

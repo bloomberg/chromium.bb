@@ -114,7 +114,7 @@ class ProfileSyncServiceStartupTest : public testing::Test {
                            BuildService));
 
     profile_ = profile_manager_.CreateTestingProfile(
-        "sync-startup-test", scoped_ptr<PrefServiceSyncable>(),
+        "sync-startup-test", scoped_ptr<syncable_prefs::PrefServiceSyncable>(),
         base::UTF8ToUTF16("sync-startup-test"), 0, std::string(),
         testing_facotries);
   }

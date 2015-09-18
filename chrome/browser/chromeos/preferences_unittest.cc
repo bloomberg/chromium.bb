@@ -203,7 +203,7 @@ class PreferencesTest : public testing::Test {
   // Not owned.
   const user_manager::User* test_user_;
   TestingProfile* test_profile_;
-  TestingPrefServiceSyncable* pref_service_;
+  syncable_prefs::TestingPrefServiceSyncable* pref_service_;
   input_method::MyMockInputMethodManager* mock_manager_;
 
  private:

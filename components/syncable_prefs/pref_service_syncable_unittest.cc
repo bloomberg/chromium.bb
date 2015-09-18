@@ -27,6 +27,8 @@
 using syncer::SyncChange;
 using syncer::SyncData;
 
+namespace syncable_prefs {
+
 namespace {
 
 const char kExampleUrl0[] = "http://example.com/0";
@@ -739,3 +741,5 @@ TEST_F(PrefServiceSyncableTest, DeletePreference) {
 }
 
 }  // namespace
+
+}  // namespace syncable_prefs

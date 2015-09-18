@@ -98,11 +98,8 @@ class UserCloudPolicyManagerChromeOSTest : public testing::Test {
                        BuildFakeProfileOAuth2TokenService));
     profile_ = profile_manager_->CreateTestingProfile(
         chrome::kInitialProfile,
-        scoped_ptr<PrefServiceSyncable>(),
-        base::UTF8ToUTF16(""),
-        0,
-        std::string(),
-        factories);
+        scoped_ptr<syncable_prefs::PrefServiceSyncable>(),
+        base::UTF8ToUTF16(""), 0, std::string(), factories);
     // Usually the signin Profile and the main Profile are separate, but since
     // the signin Profile is an OTR Profile then for this test it suffices to
     // attach it to the main Profile.

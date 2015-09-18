@@ -59,9 +59,10 @@ class PlatformStateStoreWinTest : public ::testing::Test {
         new_profile ? PersistentPrefStore::PREF_READ_ERROR_NO_FILE
                     : PersistentPrefStore::PREF_READ_ERROR_NONE);
     // Ownership of |user_pref_store| is passed to the service.
-    scoped_ptr<TestingPrefServiceSyncable> prefs(new TestingPrefServiceSyncable(
-        new TestingPrefStore(), user_pref_store, new TestingPrefStore(),
-        new user_prefs::PrefRegistrySyncable(), new PrefNotifierImpl()));
+    scoped_ptr<syncable_prefs::TestingPrefServiceSyncable> prefs(
+        new syncable_prefs::TestingPrefServiceSyncable(
+            new TestingPrefStore(), user_pref_store, new TestingPrefStore(),
+            new user_prefs::PrefRegistrySyncable(), new PrefNotifierImpl()));
     chrome::RegisterUserProfilePrefs(prefs->registry());
     profile_ = profile_manager_.CreateTestingProfile(
         kProfileName_, prefs.Pass(), base::UTF8ToUTF16(kProfileName_), 0,

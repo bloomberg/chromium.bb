@@ -13,7 +13,9 @@
 #include "components/syncable_prefs/pref_service_syncable_observer.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
 
+namespace syncable_prefs {
 class PrefServiceSyncable;
+}
 
 namespace user_prefs {
 class PrefRegistrySyncable;
@@ -28,10 +30,10 @@ namespace input_method {
 // except once: when the user first logs into the device.
 // Thus, the user's most recent changes to language and input method preferences
 // will be brought down when signing in to a new device but not in future syncs.
-class InputMethodSyncer : public PrefServiceSyncableObserver {
+class InputMethodSyncer : public syncable_prefs::PrefServiceSyncableObserver {
  public:
   InputMethodSyncer(
-      PrefServiceSyncable* prefs,
+      syncable_prefs::PrefServiceSyncable* prefs,
       scoped_refptr<input_method::InputMethodManager::State> ime_state);
   ~InputMethodSyncer() override;
 
@@ -63,7 +65,7 @@ class InputMethodSyncer : public PrefServiceSyncableObserver {
   // the local pref values.
   void OnPreferenceChanged(const std::string& pref_name);
 
-  // PrefServiceSyncableObserver implementation.
+  // syncable_prefs::PrefServiceSyncableObserver implementation.
   void OnIsSyncingChanged() override;
 
   StringPrefMember preferred_languages_;
@@ -77,7 +79,7 @@ class InputMethodSyncer : public PrefServiceSyncableObserver {
   StringPrefMember preload_engines_syncable_;
   StringPrefMember enabled_extension_imes_syncable_;
 
-  PrefServiceSyncable* prefs_;
+  syncable_prefs::PrefServiceSyncable* prefs_;
   scoped_refptr<input_method::InputMethodManager::State> ime_state_;
 
   // Used to ignore PrefChanged events while InputMethodManager is merging.

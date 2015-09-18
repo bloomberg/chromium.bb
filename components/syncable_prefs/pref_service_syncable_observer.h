@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_SYNCABLE_PREFS_PREF_SERVICE_SYNCABLE_OBSERVER_H_
 #define COMPONENTS_SYNCABLE_PREFS_PREF_SERVICE_SYNCABLE_OBSERVER_H_
 
+namespace syncable_prefs {
+
 class PrefServiceSyncableObserver {
  public:
   // Invoked when PrefService::IsSyncing() changes.
@@ -13,5 +15,7 @@ class PrefServiceSyncableObserver {
  protected:
   virtual ~PrefServiceSyncableObserver() {}
 };
+
+}  // namespace syncable_prefs
 
 #endif  // COMPONENTS_SYNCABLE_PREFS_PREF_SERVICE_SYNCABLE_OBSERVER_H_

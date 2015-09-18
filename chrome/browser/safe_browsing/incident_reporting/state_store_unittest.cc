@@ -102,7 +102,7 @@ class StateStoreTest : public PlatformStateStoreTestBase {
   void CreateProfile() {
     ASSERT_EQ(nullptr, profile_);
     // Create the testing profile with a file-backed user pref store.
-    PrefServiceSyncableFactory factory;
+    syncable_prefs::PrefServiceSyncableFactory factory;
     factory.SetUserPrefsFile(GetPrefsPath(), task_runner_.get());
     user_prefs::PrefRegistrySyncable* pref_registry =
         new user_prefs::PrefRegistrySyncable();

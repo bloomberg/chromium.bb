@@ -83,17 +83,18 @@ typedef ScopedVector<ChromeLauncherAppMenuItem> ChromeLauncherAppMenuItems;
 // * App windows have AppWindowLauncherItemController, owned by
 //   AppWindowLauncherController.
 // * Shortcuts have no LauncherItemController.
-class ChromeLauncherController : public ash::ShelfDelegate,
-                                 public ash::ShelfModelObserver,
-                                 public ash::ShellObserver,
-                                 public ash::WindowTreeHostManager::Observer,
-                                 public extensions::ExtensionRegistryObserver,
-                                 public extensions::AppIconLoader::Delegate,
-                                 public PrefServiceSyncableObserver,
-                                 public AppSyncUIStateObserver,
-                                 public ExtensionEnableFlowDelegate,
-                                 public ash::ShelfLayoutManagerObserver,
-                                 public ash::ShelfItemDelegateManagerObserver {
+class ChromeLauncherController
+    : public ash::ShelfDelegate,
+      public ash::ShelfModelObserver,
+      public ash::ShellObserver,
+      public ash::WindowTreeHostManager::Observer,
+      public extensions::ExtensionRegistryObserver,
+      public extensions::AppIconLoader::Delegate,
+      public syncable_prefs::PrefServiceSyncableObserver,
+      public AppSyncUIStateObserver,
+      public ExtensionEnableFlowDelegate,
+      public ash::ShelfLayoutManagerObserver,
+      public ash::ShelfItemDelegateManagerObserver {
  public:
   // Indicates if a shelf item is incognito or not.
   enum IncognitoState {
@@ -318,7 +319,7 @@ class ChromeLauncherController : public ash::ShelfDelegate,
       const extensions::Extension* extension,
       extensions::UnloadedExtensionInfo::Reason reason) override;
 
-  // PrefServiceSyncableObserver:
+  // syncable_prefs::PrefServiceSyncableObserver:
   void OnIsSyncingChanged() override;
 
   // AppSyncUIStateObserver:

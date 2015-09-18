@@ -16,11 +16,14 @@
 #include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/testing_profile.h"
 
-class PrefServiceSyncable;
 class ProfileInfoCache;
 class ProfileManager;
 class TestingBrowserProcess;
 class TestingProfile;
+
+namespace syncable_prefs {
+class PrefServiceSyncable;
+}
 
 // The TestingProfileManager is a TestingProfile factory for a multi-profile
 // environment. It will bring up a full ProfileManager and attach it to the
@@ -51,7 +54,7 @@ class TestingProfileManager {
   // |factories| contains BCKSs to use with the newly created profile.
   TestingProfile* CreateTestingProfile(
       const std::string& profile_name,
-      scoped_ptr<PrefServiceSyncable> prefs,
+      scoped_ptr<syncable_prefs::PrefServiceSyncable> prefs,
       const base::string16& user_name,
       int avatar_id,
       const std::string& supervised_user_id,

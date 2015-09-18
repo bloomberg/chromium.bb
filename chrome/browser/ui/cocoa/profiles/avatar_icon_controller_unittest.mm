@@ -102,8 +102,8 @@ TEST_F(AvatarIconControllerTest, SupervisedUserLabel) {
   // Create a second, supervised profile to enable the avatar menu.
   std::string name = "p2";
   TestingProfile* profile = testing_profile_manager()->CreateTestingProfile(
-      name, scoped_ptr<PrefServiceSyncable>(), base::ASCIIToUTF16(name), 0,
-      "asdf", TestingProfile::TestingFactories());
+      name, scoped_ptr<syncable_prefs::PrefServiceSyncable>(),
+      base::ASCIIToUTF16(name), 0, "asdf", TestingProfile::TestingFactories());
   EXPECT_TRUE(profile->IsSupervised());
 
   // http://crbug.com/39725

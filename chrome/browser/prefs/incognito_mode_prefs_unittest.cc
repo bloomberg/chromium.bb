@@ -14,7 +14,7 @@ class IncognitoModePrefsTest : public testing::Test {
     IncognitoModePrefs::RegisterProfilePrefs(prefs_.registry());
   }
 
-  TestingPrefServiceSyncable prefs_;
+  syncable_prefs::TestingPrefServiceSyncable prefs_;
 };
 
 TEST_F(IncognitoModePrefsTest, IntToAvailability) {

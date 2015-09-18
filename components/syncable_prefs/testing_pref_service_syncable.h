@@ -9,11 +9,13 @@
 #include "base/prefs/testing_pref_service.h"
 #include "components/syncable_prefs/pref_service_syncable.h"
 
-class PrefModelAssociatorClient;
-
 namespace user_prefs {
 class PrefRegistrySyncable;
 }
+
+namespace syncable_prefs {
+
+class PrefModelAssociatorClient;
 
 // Test version of PrefServiceSyncable.
 class TestingPrefServiceSyncable
@@ -39,8 +41,11 @@ class TestingPrefServiceSyncable
   DISALLOW_COPY_AND_ASSIGN(TestingPrefServiceSyncable);
 };
 
+}  // namespace syncable_prefs
+
 template <>
-TestingPrefServiceBase<PrefServiceSyncable, user_prefs::PrefRegistrySyncable>::
+TestingPrefServiceBase<syncable_prefs::PrefServiceSyncable,
+                       user_prefs::PrefRegistrySyncable>::
     TestingPrefServiceBase(TestingPrefStore* managed_prefs,
                            TestingPrefStore* user_prefs,
                            TestingPrefStore* recommended_prefs,

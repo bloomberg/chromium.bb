@@ -344,7 +344,8 @@ TEST_F(BookmarkContextMenuControllerTest,
       std::vector<const BookmarkNode*>());
 
   // By default, the pref is not managed and the command is enabled.
-  TestingPrefServiceSyncable* prefs = profile_->GetTestingPrefService();
+  syncable_prefs::TestingPrefServiceSyncable* prefs =
+      profile_->GetTestingPrefService();
   EXPECT_FALSE(prefs->IsManagedPreference(
       bookmarks::prefs::kShowAppsShortcutInBookmarkBar));
   EXPECT_TRUE(

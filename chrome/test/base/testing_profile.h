@@ -16,6 +16,10 @@
 #include "components/domain_reliability/clear_mode.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 
+class BrowserContextDependencyManager;
+class ExtensionSpecialStoragePolicy;
+class HostContentSettingsMap;
+
 namespace content {
 class MockResourceContext;
 class SSLHostStateDelegate;
@@ -37,11 +41,10 @@ namespace storage {
 class SpecialStoragePolicy;
 }
 
-class BrowserContextDependencyManager;
-class ExtensionSpecialStoragePolicy;
-class HostContentSettingsMap;
+namespace syncable_prefs {
 class PrefServiceSyncable;
 class TestingPrefServiceSyncable;
+}
 
 class TestingProfile : public Profile {
  public:
@@ -94,7 +97,7 @@ class TestingProfile : public Profile {
     void SetPath(const base::FilePath& path);
 
     // Sets the PrefService to be used by this profile.
-    void SetPrefService(scoped_ptr<PrefServiceSyncable> prefs);
+    void SetPrefService(scoped_ptr<syncable_prefs::PrefServiceSyncable> prefs);
 
     // Makes the Profile being built a guest profile.
     void SetGuestSession();
@@ -119,7 +122,7 @@ class TestingProfile : public Profile {
     bool build_called_;
 
     // Various staging variables where values are held until Build() is invoked.
-    scoped_ptr<PrefServiceSyncable> pref_service_;
+    scoped_ptr<syncable_prefs::PrefServiceSyncable> pref_service_;
 #if defined(ENABLE_EXTENSIONS)
     scoped_refptr<ExtensionSpecialStoragePolicy> extension_policy_;
 #endif
@@ -153,7 +156,7 @@ class TestingProfile : public Profile {
 #if defined(ENABLE_EXTENSIONS)
                  scoped_refptr<ExtensionSpecialStoragePolicy> extension_policy,
 #endif
-                 scoped_ptr<PrefServiceSyncable> prefs,
+                 scoped_ptr<syncable_prefs::PrefServiceSyncable> prefs,
                  TestingProfile* parent,
                  bool guest_session,
                  const std::string& supervised_user_id,
@@ -196,7 +199,7 @@ class TestingProfile : public Profile {
   // Allow setting a profile as Guest after-the-fact to simplify some tests.
   void SetGuestSession(bool guest);
 
-  TestingPrefServiceSyncable* GetTestingPrefService();
+  syncable_prefs::TestingPrefServiceSyncable* GetTestingPrefService();
 
   // Called on the parent of an incognito |profile|. Usually called from the
   // constructor of an incognito TestingProfile, but can also be used by tests
@@ -321,9 +324,9 @@ class TestingProfile : public Profile {
 
  protected:
   base::Time start_time_;
-  scoped_ptr<PrefServiceSyncable> prefs_;
+  scoped_ptr<syncable_prefs::PrefServiceSyncable> prefs_;
   // ref only for right type, lifecycle is managed by prefs_
-  TestingPrefServiceSyncable* testing_prefs_;
+  syncable_prefs::TestingPrefServiceSyncable* testing_prefs_;
 
  private:
   // Creates a temporary directory for use by this profile.

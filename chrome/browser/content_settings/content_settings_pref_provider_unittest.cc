@@ -139,20 +139,20 @@ TEST_F(PrefProviderTest, Incognito) {
   OverlayUserPrefStore* otr_user_prefs =
       new OverlayUserPrefStore(user_prefs);
 
-  PrefServiceMockFactory factory;
+  syncable_prefs::PrefServiceMockFactory factory;
   factory.set_user_prefs(make_scoped_refptr(user_prefs));
   scoped_refptr<user_prefs::PrefRegistrySyncable> registry(
       new user_prefs::PrefRegistrySyncable);
-  PrefServiceSyncable* regular_prefs =
+  syncable_prefs::PrefServiceSyncable* regular_prefs =
       factory.CreateSyncable(registry.get()).release();
 
   chrome::RegisterUserProfilePrefs(registry.get());
 
-  PrefServiceMockFactory otr_factory;
+  syncable_prefs::PrefServiceMockFactory otr_factory;
   otr_factory.set_user_prefs(make_scoped_refptr(otr_user_prefs));
   scoped_refptr<user_prefs::PrefRegistrySyncable> otr_registry(
       new user_prefs::PrefRegistrySyncable);
-  PrefServiceSyncable* otr_prefs =
+  syncable_prefs::PrefServiceSyncable* otr_prefs =
       otr_factory.CreateSyncable(otr_registry.get()).release();
 
   chrome::RegisterUserProfilePrefs(otr_registry.get());
@@ -391,7 +391,8 @@ TEST_F(PrefProviderTest, ResourceIdentifier) {
 
 TEST_F(PrefProviderTest, AutoSubmitCertificateContentSetting) {
   TestingProfile profile;
-  TestingPrefServiceSyncable* prefs = profile.GetTestingPrefService();
+  syncable_prefs::TestingPrefServiceSyncable* prefs =
+      profile.GetTestingPrefService();
   GURL primary_url("https://www.example.com");
   GURL secondary_url("https://www.sample.com");
 
@@ -424,7 +425,7 @@ TEST_F(PrefProviderTest, AutoSubmitCertificateContentSetting) {
 
 // http://crosbug.com/17760
 TEST_F(PrefProviderTest, Deadlock) {
-  TestingPrefServiceSyncable prefs;
+  syncable_prefs::TestingPrefServiceSyncable prefs;
   PrefProvider::RegisterProfilePrefs(prefs.registry());
 
   // Chain of events: a preference changes, |PrefProvider| notices it, and reads
@@ -483,7 +484,7 @@ TEST_F(PrefProviderTest, LastUsage) {
 }
 
 TEST_F(PrefProviderTest, IncognitoInheritsValueMap) {
-  TestingPrefServiceSyncable prefs;
+  syncable_prefs::TestingPrefServiceSyncable prefs;
   PrefProvider::RegisterProfilePrefs(prefs.registry());
 
   ContentSettingsPattern pattern_1 =
@@ -550,7 +551,7 @@ TEST_F(PrefProviderTest, IncognitoInheritsValueMap) {
 }
 
 TEST_F(PrefProviderTest, ClearAllContentSettingsRules) {
-  TestingPrefServiceSyncable prefs;
+  syncable_prefs::TestingPrefServiceSyncable prefs;
   PrefProvider::RegisterProfilePrefs(prefs.registry());
 
   ContentSettingsPattern pattern =

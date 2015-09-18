@@ -282,10 +282,10 @@ class ServicesCustomizationDocumentTest : public testing::Test {
 
   scoped_ptr<TestingProfile> CreateProfile() {
     TestingProfile::Builder profile_builder;
-    PrefServiceMockFactory factory;
+    syncable_prefs::PrefServiceMockFactory factory;
     scoped_refptr<user_prefs::PrefRegistrySyncable> registry(
         new user_prefs::PrefRegistrySyncable);
-    scoped_ptr<PrefServiceSyncable> prefs(
+    scoped_ptr<syncable_prefs::PrefServiceSyncable> prefs(
         factory.CreateSyncable(registry.get()));
     chrome::RegisterUserProfilePrefs(registry.get());
     profile_builder.SetPrefService(prefs.Pass());

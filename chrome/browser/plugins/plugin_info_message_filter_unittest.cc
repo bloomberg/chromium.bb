@@ -258,7 +258,8 @@ TEST_F(PluginInfoMessageFilterTest, GetPluginContentSetting) {
                              true, false);
 
   // Block plugins via policy.
-  TestingPrefServiceSyncable* prefs = profile()->GetTestingPrefService();
+  syncable_prefs::TestingPrefServiceSyncable* prefs =
+      profile()->GetTestingPrefService();
   prefs->SetManagedPref(prefs::kManagedDefaultPluginsSetting,
                         new base::FundamentalValue(CONTENT_SETTING_BLOCK));
 

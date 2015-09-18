@@ -98,7 +98,7 @@ class ChromePrefServiceWebKitPrefs : public ChromeRenderViewHostTestHarness {
     // harness is not supposed to overwrite a profile if it's already created.
 
     // Set some (WebKit) user preferences.
-    TestingPrefServiceSyncable* pref_services =
+    syncable_prefs::TestingPrefServiceSyncable* pref_services =
         profile()->GetTestingPrefService();
     pref_services->SetUserPref(prefs::kDefaultCharset,
                                new base::StringValue("utf8"));

@@ -16,8 +16,11 @@
 #include "components/sync_driver/sync_service_observer.h"
 #include "components/syncable_prefs/pref_service_syncable_observer.h"
 
-class PrefServiceSyncable;
 class Profile;
+
+namespace syncable_prefs {
+class PrefServiceSyncable;
+}
 
 namespace extensions {
 
@@ -26,7 +29,7 @@ namespace extensions {
 // Instances of this class are expected to be created and destroyed on the UI
 // thread and they are expecting public method calls from the UI thread.
 class ExternalPrefLoader : public ExternalLoader,
-                           public PrefServiceSyncableObserver,
+                           public syncable_prefs::PrefServiceSyncableObserver,
                            public sync_driver::SyncServiceObserver {
  public:
   enum Options {
@@ -67,7 +70,7 @@ class ExternalPrefLoader : public ExternalLoader,
  private:
   friend class base::RefCountedThreadSafe<ExternalLoader>;
 
-  // PrefServiceSyncableObserver:
+  // syncable_prefs::PrefServiceSyncableObserver:
   void OnIsSyncingChanged() override;
 
   // sync_driver::SyncServiceObserver
@@ -105,8 +108,9 @@ class ExternalPrefLoader : public ExternalLoader,
   // Needed for waiting for waiting priority sync.
   Profile* profile_;
 
-  // Used for registering observer for PrefServiceSyncable.
-  ScopedObserver<PrefServiceSyncable, PrefServiceSyncableObserver>
+  // Used for registering observer for syncable_prefs::PrefServiceSyncable.
+  ScopedObserver<syncable_prefs::PrefServiceSyncable,
+                 syncable_prefs::PrefServiceSyncableObserver>
       syncable_pref_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(ExternalPrefLoader);

@@ -23,7 +23,7 @@
 
 class NetPrefObserver;
 class PrefService;
-class PrefServiceSyncable;
+
 class ShortcutsBackend;
 class SSLConfigServiceManager;
 class TrackedPreferenceValidationDelegate;
@@ -53,6 +53,10 @@ namespace policy {
 class CloudPolicyManager;
 class ProfilePolicyConnector;
 class SchemaRegistryService;
+}
+
+namespace syncable_prefs {
+class PrefServiceSyncable;
 }
 
 namespace user_prefs {
@@ -223,8 +227,8 @@ class ProfileImpl : public Profile {
   // |net_pref_observer_|, |io_data_| and others store pointers to |prefs_| and
   // shall be destructed first.
   scoped_refptr<user_prefs::PrefRegistrySyncable> pref_registry_;
-  scoped_ptr<PrefServiceSyncable> prefs_;
-  scoped_ptr<PrefServiceSyncable> otr_prefs_;
+  scoped_ptr<syncable_prefs::PrefServiceSyncable> prefs_;
+  scoped_ptr<syncable_prefs::PrefServiceSyncable> otr_prefs_;
   ProfileImplIOData::Handle io_data_;
 #if defined(ENABLE_EXTENSIONS)
   scoped_refptr<ExtensionSpecialStoragePolicy>

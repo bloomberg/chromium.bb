@@ -18,6 +18,8 @@
 #include "components/syncable_prefs/pref_model_associator.h"
 #include "components/syncable_prefs/pref_service_syncable_observer.h"
 
+namespace syncable_prefs {
+
 PrefServiceSyncable::PrefServiceSyncable(
     PrefNotifierImpl* pref_notifier,
     PrefValueStore* pref_value_store,
@@ -180,3 +182,5 @@ void PrefServiceSyncable::ProcessPrefChange(const std::string& name) {
   pref_sync_associator_.ProcessPrefChange(name);
   priority_pref_sync_associator_.ProcessPrefChange(name);
 }
+
+}  // namespace syncable_prefs

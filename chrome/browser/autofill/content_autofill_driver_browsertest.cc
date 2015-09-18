@@ -47,7 +47,7 @@ class MockAutofillClient : public TestAutofillClient {
   MOCK_METHOD0(HideAutofillPopup, void());
 
  private:
-  TestingPrefServiceSyncable prefs_;
+  syncable_prefs::TestingPrefServiceSyncable prefs_;
 
   DISALLOW_COPY_AND_ASSIGN(MockAutofillClient);
 };

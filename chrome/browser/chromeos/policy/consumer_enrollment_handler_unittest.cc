@@ -74,7 +74,7 @@ class ConsumerEnrollmentHandlerTest : public testing::Test {
         std::make_pair(ProfileOAuth2TokenServiceFactory::GetInstance(),
                        BuildAutoIssuingFakeProfileOAuth2TokenService));
     profile_ = testing_profile_manager_->CreateTestingProfile(
-        kTestUser, scoped_ptr<PrefServiceSyncable>(),
+        kTestUser, scoped_ptr<syncable_prefs::PrefServiceSyncable>(),
         base::UTF8ToUTF16(kTestUser), 0, std::string(), factories);
 
     // Set up the authenticated user name and ID.

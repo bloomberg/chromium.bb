@@ -15,7 +15,7 @@ class TestingOffTheRecordDestructionProfile : public TestingProfile {
       : TestingProfile(base::FilePath(),
                        NULL,
                        scoped_refptr<ExtensionSpecialStoragePolicy>()
-                       scoped_ptr<PrefServiceSyncable>(),
+                       scoped_ptr<syncable_prefs::PrefServiceSyncable>(),
                        true,
                        TestingFactories()),
         destroyed_otr_profile_(false) {

@@ -18,6 +18,8 @@
 #include "components/policy/core/common/policy_types.h"
 #endif
 
+namespace syncable_prefs {
+
 PrefServiceSyncableFactory::PrefServiceSyncableFactory() {
 }
 
@@ -67,3 +69,5 @@ scoped_ptr<PrefServiceSyncable> PrefServiceSyncableFactory::CreateSyncable(
           async_));
   return pref_service.Pass();
 }
+
+}  // namespace syncable_prefs

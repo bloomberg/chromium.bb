@@ -13,7 +13,7 @@
 class SessionStartupPrefTest : public testing::Test {
  public:
   void SetUp() override {
-    pref_service_.reset(new TestingPrefServiceSyncable);
+    pref_service_.reset(new syncable_prefs::TestingPrefServiceSyncable);
     SessionStartupPref::RegisterProfilePrefs(registry());
     registry()->RegisterBooleanPref(prefs::kHomePageIsNewTabPage, true);
   }
@@ -31,7 +31,7 @@ class SessionStartupPrefTest : public testing::Test {
     return pref_service_->registry();
   }
 
-  scoped_ptr<TestingPrefServiceSyncable> pref_service_;
+  scoped_ptr<syncable_prefs::TestingPrefServiceSyncable> pref_service_;
 };
 
 TEST_F(SessionStartupPrefTest, URLListIsFixedUp) {

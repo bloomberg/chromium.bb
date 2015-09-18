@@ -70,7 +70,7 @@ class InputMethodPersistenceTest : public testing::Test {
   }
 
   content::TestBrowserThreadBundle thread_bundle_;
-  TestingPrefServiceSyncable* mock_user_prefs_;
+  syncable_prefs::TestingPrefServiceSyncable* mock_user_prefs_;
   MockInputMethodManager mock_manager_;
   TestingProfileManager mock_profile_manager_;
   chromeos::FakeChromeUserManager* fake_user_manager_;

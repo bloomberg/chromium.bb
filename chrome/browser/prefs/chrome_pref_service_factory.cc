@@ -420,7 +420,7 @@ scoped_ptr<ProfilePrefStoreManager> CreateProfilePrefStoreManager(
 }
 
 void PrepareFactory(
-    PrefServiceSyncableFactory* factory,
+    syncable_prefs::PrefServiceSyncableFactory* factory,
     policy::PolicyService* policy_service,
     SupervisedUserSettingsService* supervised_user_settings,
     scoped_refptr<PersistentPrefStore> user_pref_store,
@@ -478,7 +478,7 @@ scoped_ptr<PrefService> CreateLocalState(
     policy::PolicyService* policy_service,
     const scoped_refptr<PrefRegistry>& pref_registry,
     bool async) {
-  PrefServiceSyncableFactory factory;
+  syncable_prefs::PrefServiceSyncableFactory factory;
   PrepareFactory(
       &factory,
       policy_service,
@@ -490,7 +490,7 @@ scoped_ptr<PrefService> CreateLocalState(
   return factory.Create(pref_registry.get());
 }
 
-scoped_ptr<PrefServiceSyncable> CreateProfilePrefs(
+scoped_ptr<syncable_prefs::PrefServiceSyncable> CreateProfilePrefs(
     const base::FilePath& profile_path,
     base::SequencedTaskRunner* pref_io_task_runner,
     TrackedPreferenceValidationDelegate* validation_delegate,
@@ -512,7 +512,7 @@ scoped_ptr<PrefServiceSyncable> CreateProfilePrefs(
       base::Bind(sync_start_util::GetFlareForSyncableService(profile_path),
                  syncer::PREFERENCES);
 
-  PrefServiceSyncableFactory factory;
+  syncable_prefs::PrefServiceSyncableFactory factory;
   scoped_refptr<PersistentPrefStore> user_pref_store(
       CreateProfilePrefStoreManager(profile_path)
           ->CreateProfilePrefStore(pref_io_task_runner,
@@ -524,7 +524,7 @@ scoped_ptr<PrefServiceSyncable> CreateProfilePrefs(
                  user_pref_store,
                  extension_prefs,
                  async);
-  scoped_ptr<PrefServiceSyncable> pref_service =
+  scoped_ptr<syncable_prefs::PrefServiceSyncable> pref_service =
       factory.CreateSyncable(pref_registry.get());
 
   ConfigureDefaultSearchPrefMigrationToDictionaryValue(pref_service.get());

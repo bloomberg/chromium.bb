@@ -13,6 +13,8 @@
 #include "components/syncable_prefs/pref_service_syncable.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace syncable_prefs {
+
 namespace {
 
 const char kStringPrefName[] = "pref.string";
@@ -470,3 +472,5 @@ TEST_F(IndividualPreferenceMergeTest, ListPreference) {
 }
 
 }  // namespace
+
+}  // namespace syncable_prefs

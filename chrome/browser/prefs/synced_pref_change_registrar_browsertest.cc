@@ -85,11 +85,11 @@ class SyncedPrefChangeRegistrarTest : public InProcessBrowserTest {
     return prefs_->GetBoolean(name.c_str());
   }
 
-  PrefServiceSyncable* prefs() const {
+  syncable_prefs::PrefServiceSyncable* prefs() const {
     return prefs_;
   }
 
-  SyncedPrefChangeRegistrar* registrar() const {
+  syncable_prefs::SyncedPrefChangeRegistrar* registrar() const {
     return registrar_.get();
   }
 
@@ -112,16 +112,16 @@ class SyncedPrefChangeRegistrarTest : public InProcessBrowserTest {
         scoped_ptr<syncer::SyncChangeProcessor>(
             new syncer::FakeSyncChangeProcessor),
         scoped_ptr<syncer::SyncErrorFactory>(new syncer::SyncErrorFactoryMock));
-    registrar_.reset(new SyncedPrefChangeRegistrar(prefs_));
+    registrar_.reset(new syncable_prefs::SyncedPrefChangeRegistrar(prefs_));
   }
 
   void TearDownOnMainThread() override { registrar_.reset(); }
 
-  PrefServiceSyncable* prefs_;
+  syncable_prefs::PrefServiceSyncable* prefs_;
   syncer::SyncableService* syncer_;
   int next_sync_data_id_;
 
-  scoped_ptr<SyncedPrefChangeRegistrar> registrar_;
+  scoped_ptr<syncable_prefs::SyncedPrefChangeRegistrar> registrar_;
 #if defined(ENABLE_CONFIGURATION_POLICY)
   policy::MockConfigurationPolicyProvider policy_provider_;
 #endif

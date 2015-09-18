@@ -50,7 +50,7 @@ class SigninGlobalErrorTest : public testing::Test {
     testing_factories.push_back(std::make_pair(
         SigninManagerFactory::GetInstance(), BuildFakeSigninManagerBase));
     profile_ = profile_manager_.CreateTestingProfile(
-        "Person 1", scoped_ptr<PrefServiceSyncable>(),
+        "Person 1", scoped_ptr<syncable_prefs::PrefServiceSyncable>(),
         base::UTF8ToUTF16("Person 1"), 0, std::string(), testing_factories);
 
     SigninManagerFactory::GetForProfile(profile())

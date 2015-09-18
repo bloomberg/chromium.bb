@@ -11,10 +11,13 @@
 #include "ios/web/public/browser_state.h"
 
 class PrefService;
-class PrefServiceSyncable;
 
 namespace base {
 class SequencedTaskRunner;
+}
+
+namespace syncable_prefs {
+class PrefServiceSyncable;
 }
 
 namespace web {
@@ -62,8 +65,8 @@ class ChromeBrowserState : public web::BrowserState {
   virtual PrefService* GetPrefs() = 0;
 
   // Retrieves a pointer to the PrefService that manages the preferences as
-  // a PrefServiceSyncable.
-  virtual PrefServiceSyncable* GetSyncablePrefs() = 0;
+  // a syncable_prefs::PrefServiceSyncable.
+  virtual syncable_prefs::PrefServiceSyncable* GetSyncablePrefs() = 0;
 
  protected:
   ChromeBrowserState() {}

@@ -23,6 +23,8 @@
 using syncer::PREFERENCES;
 using syncer::PRIORITY_PREFERENCES;
 
+namespace syncable_prefs {
+
 namespace {
 
 const sync_pb::PreferenceSpecifics& GetSpecifics(const syncer::SyncData& pref) {
@@ -622,3 +624,5 @@ void PrefModelAssociator::NotifySyncedPrefObservers(const std::string& path,
   FOR_EACH_OBSERVER(SyncedPrefObserver, *observers,
                     OnSyncedPrefChanged(path, from_sync));
 }
+
+}  // namespace syncable_prefs

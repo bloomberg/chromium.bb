@@ -125,7 +125,7 @@ class PasswordStoreProxyMacTest
 
   base::ScopedTempDir db_dir_;
   scoped_refptr<PasswordStoreProxyMac> store_;
-  TestingPrefServiceSyncable testing_prefs_;
+  syncable_prefs::TestingPrefServiceSyncable testing_prefs_;
 };
 
 PasswordStoreProxyMacTest::PasswordStoreProxyMacTest() {

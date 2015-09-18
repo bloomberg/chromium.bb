@@ -184,7 +184,7 @@ void AccountReconcilorTest::SetUp() {
       MockAccountReconcilor::Build));
 
   profile_ = testing_profile_manager_.get()->CreateTestingProfile("name",
-                              scoped_ptr<PrefServiceSyncable>(),
+                              scoped_ptr<syncable_prefs::PrefServiceSyncable>(),
                               base::UTF8ToUTF16("name"), 0, std::string(),
                               factories);
 

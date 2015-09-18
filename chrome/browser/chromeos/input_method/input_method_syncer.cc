@@ -113,13 +113,12 @@ void MergeLists(std::vector<std::string>* dest,
 }  // anonymous namespace
 
 InputMethodSyncer::InputMethodSyncer(
-    PrefServiceSyncable* prefs,
+    syncable_prefs::PrefServiceSyncable* prefs,
     scoped_refptr<input_method::InputMethodManager::State> ime_state)
     : prefs_(prefs),
       ime_state_(ime_state),
       merging_(false),
-      weak_factory_(this) {
-}
+      weak_factory_(this) {}
 
 InputMethodSyncer::~InputMethodSyncer() {
   prefs_->RemoveObserver(this);

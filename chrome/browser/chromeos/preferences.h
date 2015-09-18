@@ -18,9 +18,11 @@
 
 class PrefRegistrySimple;
 class PrefService;
-class PrefServiceSyncable;
-
 class TracingManager;
+
+namespace syncable_prefs {
+class PrefServiceSyncable;
+}
 
 namespace user_prefs {
 class PrefRegistrySyncable;
@@ -39,7 +41,7 @@ class InputMethodSyncer;
 // is first initialized, it will initialize the OS settings to what's stored in
 // the preferences. These include touchpad settings, etc.
 // When the preferences change, we change the settings to reflect the new value.
-class Preferences : public PrefServiceSyncableObserver,
+class Preferences : public syncable_prefs::PrefServiceSyncableObserver,
                     public ash::ShellObserver,
                     public user_manager::UserManager::UserSessionStateObserver {
  public:
@@ -57,7 +59,7 @@ class Preferences : public PrefServiceSyncableObserver,
   void Init(Profile* profile, const user_manager::User* user);
 
   void InitUserPrefsForTesting(
-      PrefServiceSyncable* prefs,
+      syncable_prefs::PrefServiceSyncable* prefs,
       const user_manager::User* user,
       scoped_refptr<input_method::InputMethodManager::State> ime_state);
   void SetInputMethodListForTesting();
@@ -70,7 +72,7 @@ class Preferences : public PrefServiceSyncableObserver,
   };
 
   // Initializes all member prefs.
-  void InitUserPrefs(PrefServiceSyncable* prefs);
+  void InitUserPrefs(syncable_prefs::PrefServiceSyncable* prefs);
 
   // Callback method for preference changes.
   void OnPreferenceChanged(const std::string& pref_name);
@@ -101,7 +103,7 @@ class Preferences : public PrefServiceSyncableObserver,
   // on the cmd line.
   void ForceNaturalScrollDefault();
 
-  // PrefServiceSyncableObserver implementation.
+  // syncable_prefs::PrefServiceSyncableObserver implementation.
   void OnIsSyncingChanged() override;
 
   // Overriden from ash::ShellObserver.
@@ -112,7 +114,7 @@ class Preferences : public PrefServiceSyncableObserver,
 
   void ActivateInputMethods(const user_manager::User* active_user);
 
-  PrefServiceSyncable* prefs_;
+  syncable_prefs::PrefServiceSyncable* prefs_;
 
   input_method::InputMethodManager* input_method_manager_;
   scoped_ptr<TracingManager> tracing_manager_;

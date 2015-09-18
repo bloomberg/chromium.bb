@@ -31,7 +31,7 @@ void HandleReadError(PersistentPrefStore::PrefReadError error) {
                             PersistentPrefStore::PREF_READ_ERROR_MAX_ENUM);
 }
 
-void PrepareFactory(PrefServiceSyncableFactory* factory,
+void PrepareFactory(syncable_prefs::PrefServiceSyncableFactory* factory,
                     policy::PolicyService* policy_service,
                     const base::FilePath& pref_filename,
                     base::SequencedTaskRunner* pref_io_task_runner,
@@ -60,13 +60,13 @@ scoped_ptr<PrefService> CreateLocalState(
     policy::PolicyService* policy_service,
     const scoped_refptr<PrefRegistry>& pref_registry,
     bool async) {
-  PrefServiceSyncableFactory factory;
+  syncable_prefs::PrefServiceSyncableFactory factory;
   PrepareFactory(&factory, policy_service, pref_filename, pref_io_task_runner,
                  async);
   return factory.Create(pref_registry.get());
 }
 
-scoped_ptr<PrefServiceSyncable> CreateBrowserStatePrefs(
+scoped_ptr<syncable_prefs::PrefServiceSyncable> CreateBrowserStatePrefs(
     const base::FilePath& browser_state_path,
     base::SequencedTaskRunner* pref_io_task_runner,
     TrackedPreferenceValidationDelegate* validation_delegate,
@@ -78,18 +78,19 @@ scoped_ptr<PrefServiceSyncable> CreateBrowserStatePrefs(
   // preference modifications (as applications are sand-boxed), it can use a
   // simple JsonPrefStore to store them (which is what PrefStoreManager uses
   // on platforms that do not track preference modifications).
-  PrefServiceSyncableFactory factory;
+  syncable_prefs::PrefServiceSyncableFactory factory;
   PrepareFactory(&factory, policy_service,
                  browser_state_path.Append(kPreferencesFilename),
                  pref_io_task_runner, async);
-  scoped_ptr<PrefServiceSyncable> pref_service =
+  scoped_ptr<syncable_prefs::PrefServiceSyncable> pref_service =
       factory.CreateSyncable(pref_registry.get());
   ConfigureDefaultSearchPrefMigrationToDictionaryValue(pref_service.get());
   return pref_service.Pass();
 }
 
-scoped_ptr<PrefServiceSyncable> CreateIncognitoBrowserStatePrefs(
-    PrefServiceSyncable* pref_service) {
+scoped_ptr<syncable_prefs::PrefServiceSyncable>
+CreateIncognitoBrowserStatePrefs(
+    syncable_prefs::PrefServiceSyncable* pref_service) {
   // List of keys that cannot be changed in the user prefs file by the incognito
   // browser state. All preferences that store information about the browsing
   // history or behaviour of the user should have this property.

@@ -90,7 +90,7 @@ class CrossDevicePromoTest : public ::testing::Test {
   TestingProfile* profile() { return profile_; }
   FakeSigninManagerForTesting* signin_manager() { return signin_manager_; }
   base::HistogramTester* histogram_tester() { return &histogram_tester_; }
-  TestingPrefServiceSyncable* prefs() { return pref_service_; }
+  syncable_prefs::TestingPrefServiceSyncable* prefs() { return pref_service_; }
   FakeGaiaCookieManagerService* cookie_manager_service() {
     return cookie_manager_service_;
   }
@@ -104,7 +104,7 @@ class CrossDevicePromoTest : public ::testing::Test {
   TestingProfile* profile_;
   FakeSigninManagerForTesting* signin_manager_;
   FakeGaiaCookieManagerService* cookie_manager_service_;
-  TestingPrefServiceSyncable* pref_service_;
+  syncable_prefs::TestingPrefServiceSyncable* pref_service_;
   scoped_ptr<TestingProfileManager> testing_profile_manager_;
   base::HistogramTester histogram_tester_;
   scoped_ptr<base::FieldTrialList> field_trial_list_;
@@ -131,11 +131,12 @@ void CrossDevicePromoTest::SetUp() {
   factories.push_back(std::make_pair(SigninManagerFactory::GetInstance(),
                                      BuildFakeSigninManagerBase));
 
-  pref_service_ = new TestingPrefServiceSyncable();
+  pref_service_ = new syncable_prefs::TestingPrefServiceSyncable();
   chrome::RegisterUserProfilePrefs(pref_service_->registry());
 
   profile_ = testing_profile_manager_.get()->CreateTestingProfile(
-      "name", make_scoped_ptr<PrefServiceSyncable>(pref_service_),
+      "name",
+      make_scoped_ptr<syncable_prefs::PrefServiceSyncable>(pref_service_),
       base::UTF8ToUTF16("name"), 0, std::string(), factories);
 
   cookie_manager_service_ = static_cast<FakeGaiaCookieManagerService*>(

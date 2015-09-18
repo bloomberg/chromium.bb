@@ -41,8 +41,9 @@ class Profile;
 // connectivity.
 //
 // This class expects to be created and called from the UI thread.
-class ExtensionWelcomeNotification : public KeyedService,
-                                     public PrefServiceSyncableObserver {
+class ExtensionWelcomeNotification
+    : public KeyedService,
+      public syncable_prefs::PrefServiceSyncableObserver {
  public:
   // Allows for overriding global calls.
   class Delegate {
@@ -75,7 +76,7 @@ class ExtensionWelcomeNotification : public KeyedService,
   static ExtensionWelcomeNotification* Create(Profile* const profile,
                                               Delegate* const delegate);
 
-  // PrefServiceSyncableObserver
+  // syncable_prefs::PrefServiceSyncableObserver
   void OnIsSyncingChanged() override;
 
   // Adds in the welcome notification if required for components built

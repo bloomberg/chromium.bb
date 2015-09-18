@@ -37,7 +37,8 @@ class PolicyProviderTest : public testing::Test {
 
 TEST_F(PolicyProviderTest, DefaultGeolocationContentSetting) {
   TestingProfile profile;
-  TestingPrefServiceSyncable* prefs = profile.GetTestingPrefService();
+  syncable_prefs::TestingPrefServiceSyncable* prefs =
+      profile.GetTestingPrefService();
   PolicyProvider provider(prefs);
 
   Rules rules;
@@ -71,7 +72,8 @@ TEST_F(PolicyProviderTest, DefaultGeolocationContentSetting) {
 
 TEST_F(PolicyProviderTest, ManagedDefaultContentSettings) {
   TestingProfile profile;
-  TestingPrefServiceSyncable* prefs = profile.GetTestingPrefService();
+  syncable_prefs::TestingPrefServiceSyncable* prefs =
+      profile.GetTestingPrefService();
   PolicyProvider provider(prefs);
 
   prefs->SetManagedPref(prefs::kManagedDefaultPluginsSetting,
@@ -98,7 +100,8 @@ TEST_F(PolicyProviderTest, ManagedDefaultContentSettings) {
 // if the managed setting is removed.
 TEST_F(PolicyProviderTest, ObserveManagedSettingsChange) {
   TestingProfile profile;
-  TestingPrefServiceSyncable* prefs = profile.GetTestingPrefService();
+  syncable_prefs::TestingPrefServiceSyncable* prefs =
+      profile.GetTestingPrefService();
   PolicyProvider provider(prefs);
 
   MockObserver mock_observer;
@@ -125,7 +128,8 @@ TEST_F(PolicyProviderTest, ObserveManagedSettingsChange) {
 
 TEST_F(PolicyProviderTest, GettingManagedContentSettings) {
   TestingProfile profile;
-  TestingPrefServiceSyncable* prefs = profile.GetTestingPrefService();
+  syncable_prefs::TestingPrefServiceSyncable* prefs =
+      profile.GetTestingPrefService();
 
   base::ListValue* value = new base::ListValue();
   value->Append(new base::StringValue("[*.]google.com"));
@@ -197,7 +201,8 @@ TEST_F(PolicyProviderTest, GettingManagedContentSettings) {
 
 TEST_F(PolicyProviderTest, ResourceIdentifier) {
   TestingProfile profile;
-  TestingPrefServiceSyncable* prefs = profile.GetTestingPrefService();
+  syncable_prefs::TestingPrefServiceSyncable* prefs =
+      profile.GetTestingPrefService();
 
   base::ListValue* value = new base::ListValue();
   value->Append(new base::StringValue("[*.]google.com"));
@@ -234,7 +239,8 @@ TEST_F(PolicyProviderTest, ResourceIdentifier) {
 
 TEST_F(PolicyProviderTest, AutoSelectCertificateList) {
   TestingProfile profile;
-  TestingPrefServiceSyncable* prefs = profile.GetTestingPrefService();
+  syncable_prefs::TestingPrefServiceSyncable* prefs =
+      profile.GetTestingPrefService();
 
   PolicyProvider provider(prefs);
   GURL google_url("https://mail.google.com");

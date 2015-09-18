@@ -67,14 +67,14 @@ class RecommendationRestorerTest : public testing::Test {
   void VerifyTimerIsRunning() const;
 
   TestingPrefStore* recommended_prefs_;  // Not owned.
-  TestingPrefServiceSyncable* prefs_;    // Not owned.
+  syncable_prefs::TestingPrefServiceSyncable* prefs_;  // Not owned.
   RecommendationRestorer* restorer_;     // Not owned.
 
   scoped_refptr<base::TestSimpleTaskRunner> runner_;
   base::ThreadTaskRunnerHandle runner_handler_;
 
  private:
-  scoped_ptr<PrefServiceSyncable> prefs_owner_;
+  scoped_ptr<syncable_prefs::PrefServiceSyncable> prefs_owner_;
 
   TestingProfileManager profile_manager_;
 
@@ -83,7 +83,7 @@ class RecommendationRestorerTest : public testing::Test {
 
 RecommendationRestorerTest::RecommendationRestorerTest()
     : recommended_prefs_(new TestingPrefStore),
-      prefs_(new TestingPrefServiceSyncable(
+      prefs_(new syncable_prefs::TestingPrefServiceSyncable(
           new TestingPrefStore,
           new TestingPrefStore,
           recommended_prefs_,
@@ -93,8 +93,7 @@ RecommendationRestorerTest::RecommendationRestorerTest()
       runner_(new base::TestSimpleTaskRunner),
       runner_handler_(runner_),
       prefs_owner_(prefs_),
-      profile_manager_(TestingBrowserProcess::GetGlobal()) {
-}
+      profile_manager_(TestingBrowserProcess::GetGlobal()) {}
 
 void RecommendationRestorerTest::SetUp() {
   testing::Test::SetUp();
@@ -167,7 +166,7 @@ void RecommendationRestorerTest::NotifyOfUserActivity() {
 void RecommendationRestorerTest::VerifyPrefFollowsUser(
     const char* pref_name,
     const base::Value& expected_value) const {
-  const PrefServiceSyncable::Preference* pref =
+  const syncable_prefs::PrefServiceSyncable::Preference* pref =
       prefs_->FindPreference(pref_name);
   ASSERT_TRUE(pref);
   EXPECT_TRUE(pref->HasUserSetting());
@@ -194,7 +193,7 @@ void RecommendationRestorerTest::VerifyPrefsFollowUser() const {
 void RecommendationRestorerTest::VerifyPrefFollowsRecommendation(
     const char* pref_name,
     const base::Value& expected_value) const {
-  const PrefServiceSyncable::Preference* pref =
+  const syncable_prefs::PrefServiceSyncable::Preference* pref =
       prefs_->FindPreference(pref_name);
   ASSERT_TRUE(pref);
   EXPECT_TRUE(pref->IsRecommended());

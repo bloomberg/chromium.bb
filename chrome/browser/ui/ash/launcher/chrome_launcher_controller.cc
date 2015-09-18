@@ -248,9 +248,10 @@ ash::ShelfAlignment GetShelfAlignmentFromPrefs(Profile* profile,
 
 // If prefs have synced and no user-set value exists at |local_path|, the value
 // from |synced_path| is copied to |local_path|.
-void MaybePropagatePrefToLocal(PrefServiceSyncable* pref_service,
-                               const char* local_path,
-                               const char* synced_path) {
+void MaybePropagatePrefToLocal(
+    syncable_prefs::PrefServiceSyncable* pref_service,
+    const char* local_path,
+    const char* synced_path) {
   if (!pref_service->FindPreference(local_path)->HasUserSetting() &&
       pref_service->IsSyncing()) {
     // First time the user is using this machine, propagate from remote to
@@ -479,7 +480,8 @@ void ChromeLauncherController::Init() {
 #if defined(OS_CHROMEOS)
     SetVirtualKeyboardBehaviorFromPrefs();
 #endif  // defined(OS_CHROMEOS)
-    PrefServiceSyncable* prefs = PrefServiceSyncableFromProfile(profile_);
+    syncable_prefs::PrefServiceSyncable* prefs =
+        PrefServiceSyncableFromProfile(profile_);
     if (!prefs->FindPreference(prefs::kShelfAlignmentLocal)->HasUserSetting() ||
         !prefs->FindPreference(prefs::kShelfAutoHideBehaviorLocal)->
             HasUserSetting()) {
@@ -1239,7 +1241,8 @@ void ChromeLauncherController::OnDisplayConfigurationChanged() {
 }
 
 void ChromeLauncherController::OnIsSyncingChanged() {
-  PrefServiceSyncable* prefs = PrefServiceSyncableFromProfile(profile_);
+  syncable_prefs::PrefServiceSyncable* prefs =
+      PrefServiceSyncableFromProfile(profile_);
   MaybePropagatePrefToLocal(prefs,
                             prefs::kShelfAlignmentLocal,
                             prefs::kShelfAlignment);

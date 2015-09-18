@@ -325,8 +325,8 @@ class OffDomainInclusionDetectorTest : public testing::TestWithParam<TestCase> {
             NULL)));
 
     // Create default prefs for the test profile.
-    scoped_ptr<TestingPrefServiceSyncable> prefs(
-        new TestingPrefServiceSyncable);
+    scoped_ptr<syncable_prefs::TestingPrefServiceSyncable> prefs(
+        new syncable_prefs::TestingPrefServiceSyncable);
     chrome::RegisterUserProfilePrefs(prefs->registry());
 
     // |testing_profile_| is owned by |profile_manager_|.

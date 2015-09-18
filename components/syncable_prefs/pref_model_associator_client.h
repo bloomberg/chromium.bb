@@ -9,6 +9,8 @@
 
 #include "base/macros.h"
 
+namespace syncable_prefs {
+
 // This class allows the embedder to configure the PrefModelAssociator to
 // have a different behaviour when receiving preference synchronisations
 // events from the server.
@@ -41,5 +43,7 @@ class PrefModelAssociatorClient {
  private:
   DISALLOW_COPY_AND_ASSIGN(PrefModelAssociatorClient);
 };
+
+}  // namespace syncable_prefs
 
 #endif  // COMPONENTS_SYNCABLE_PREFS_PREF_MODEL_ASSOCIATOR_CLIENT_H_

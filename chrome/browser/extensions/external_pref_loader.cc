@@ -122,7 +122,8 @@ void ExternalPrefLoader::StartLoading() {
       (profile_ && profile_->IsSyncAllowed())) {
     if (!PostLoadIfPrioritySyncReady()) {
       DCHECK(profile_);
-      PrefServiceSyncable* prefs = PrefServiceSyncableFromProfile(profile_);
+      syncable_prefs::PrefServiceSyncable* prefs =
+          PrefServiceSyncableFromProfile(profile_);
       DCHECK(prefs);
       syncable_pref_observer_.Add(prefs);
       ProfileSyncService* service =
@@ -160,7 +161,8 @@ bool ExternalPrefLoader::PostLoadIfPrioritySyncReady() {
   DCHECK(options_ & DELAY_LOAD_UNTIL_PRIORITY_SYNC);
   DCHECK(profile_);
 
-  PrefServiceSyncable* prefs = PrefServiceSyncableFromProfile(profile_);
+  syncable_prefs::PrefServiceSyncable* prefs =
+      PrefServiceSyncableFromProfile(profile_);
   DCHECK(prefs);
   if (prefs->IsPrioritySyncing()) {
     PostLoadAndRemoveObservers();
@@ -171,7 +173,8 @@ bool ExternalPrefLoader::PostLoadIfPrioritySyncReady() {
 }
 
 void ExternalPrefLoader::PostLoadAndRemoveObservers() {
-  PrefServiceSyncable* prefs = PrefServiceSyncableFromProfile(profile_);
+  syncable_prefs::PrefServiceSyncable* prefs =
+      PrefServiceSyncableFromProfile(profile_);
   DCHECK(prefs);
   syncable_pref_observer_.Remove(prefs);
 

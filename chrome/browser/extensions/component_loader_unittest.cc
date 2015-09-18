@@ -110,7 +110,7 @@ class ComponentLoaderTest : public testing::Test {
   content::TestBrowserThreadBundle thread_bundle_;
   TestingProfile profile_;
   MockExtensionService extension_service_;
-  TestingPrefServiceSyncable prefs_;
+  syncable_prefs::TestingPrefServiceSyncable prefs_;
   TestingPrefServiceSimple local_state_;
   ComponentLoader component_loader_;
 

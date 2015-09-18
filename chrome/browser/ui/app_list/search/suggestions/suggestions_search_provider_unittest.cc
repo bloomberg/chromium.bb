@@ -59,7 +59,7 @@ class SuggestionsSearchProviderTest : public AppListTestBase {
     suggestions_search_.reset(
         new SuggestionsSearchProvider(profile_.get(), NULL));
 
-    TestingPrefServiceSyncable* pref_service =
+    syncable_prefs::TestingPrefServiceSyncable* pref_service =
         profile_->GetTestingPrefService();
     suggestions_store_.reset(new SuggestionsStore(pref_service));
   }

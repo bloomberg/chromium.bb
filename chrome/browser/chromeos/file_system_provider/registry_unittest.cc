@@ -50,7 +50,7 @@ void RememberFakeFileSystem(TestingProfile* profile,
                             const Watcher& watcher) {
   // Warning. Updating this code means that backward compatibility may be
   // broken, what is unexpected and should be avoided.
-  TestingPrefServiceSyncable* const pref_service =
+  syncable_prefs::TestingPrefServiceSyncable* const pref_service =
       profile->GetTestingPrefService();
   ASSERT_TRUE(pref_service);
 
@@ -167,7 +167,7 @@ TEST_F(FileSystemProviderRegistryTest, RememberFileSystem) {
 
   registry_->RememberFileSystem(file_system_info, watchers);
 
-  TestingPrefServiceSyncable* const pref_service =
+  syncable_prefs::TestingPrefServiceSyncable* const pref_service =
       profile_->GetTestingPrefService();
   ASSERT_TRUE(pref_service);
 
@@ -255,7 +255,7 @@ TEST_F(FileSystemProviderRegistryTest, ForgetFileSystem) {
 
   registry_->ForgetFileSystem(kExtensionId, kFileSystemId);
 
-  TestingPrefServiceSyncable* const pref_service =
+  syncable_prefs::TestingPrefServiceSyncable* const pref_service =
       profile_->GetTestingPrefService();
   ASSERT_TRUE(pref_service);
 
@@ -286,7 +286,7 @@ TEST_F(FileSystemProviderRegistryTest, UpdateWatcherTag) {
   fake_watcher_.last_tag = "updated-tag";
   registry_->UpdateWatcherTag(file_system_info, fake_watcher_);
 
-  TestingPrefServiceSyncable* const pref_service =
+  syncable_prefs::TestingPrefServiceSyncable* const pref_service =
       profile_->GetTestingPrefService();
   ASSERT_TRUE(pref_service);
 

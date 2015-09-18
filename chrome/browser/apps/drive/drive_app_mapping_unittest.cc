@@ -16,7 +16,7 @@ class DriveAppMappingTest : public testing::Test {
 
   // testing::Test:
   void SetUp() override {
-    pref_service_.reset(new TestingPrefServiceSyncable);
+    pref_service_.reset(new syncable_prefs::TestingPrefServiceSyncable);
     DriveAppMapping::RegisterProfilePrefs(pref_service_->registry());
 
     mapping_.reset(new DriveAppMapping(pref_service_.get()));
@@ -25,7 +25,7 @@ class DriveAppMappingTest : public testing::Test {
   DriveAppMapping* mapping() { return mapping_.get(); }
 
  private:
-  scoped_ptr<TestingPrefServiceSyncable> pref_service_;
+  scoped_ptr<syncable_prefs::TestingPrefServiceSyncable> pref_service_;
   scoped_ptr<DriveAppMapping> mapping_;
 
   DISALLOW_COPY_AND_ASSIGN(DriveAppMappingTest);

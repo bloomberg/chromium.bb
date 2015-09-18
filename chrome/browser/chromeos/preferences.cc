@@ -285,7 +285,7 @@ void Preferences::RegisterProfilePrefs(
   registry->RegisterBooleanPref(prefs::kForceMaximizeOnFirstRun, false);
 }
 
-void Preferences::InitUserPrefs(PrefServiceSyncable* prefs) {
+void Preferences::InitUserPrefs(syncable_prefs::PrefServiceSyncable* prefs) {
   prefs_ = prefs;
 
   BooleanPrefMember::NamedChangeCallback callback =
@@ -333,7 +333,8 @@ void Preferences::InitUserPrefs(PrefServiceSyncable* prefs) {
 void Preferences::Init(Profile* profile, const user_manager::User* user) {
   DCHECK(profile);
   DCHECK(user);
-  PrefServiceSyncable* prefs = PrefServiceSyncableFromProfile(profile);
+  syncable_prefs::PrefServiceSyncable* prefs =
+      PrefServiceSyncableFromProfile(profile);
   // This causes OnIsSyncingChanged to be called when the value of
   // PrefService::IsSyncing() changes.
   prefs->AddObserver(this);
@@ -370,7 +371,7 @@ void Preferences::Init(Profile* profile, const user_manager::User* user) {
 }
 
 void Preferences::InitUserPrefsForTesting(
-    PrefServiceSyncable* prefs,
+    syncable_prefs::PrefServiceSyncable* prefs,
     const user_manager::User* user,
     scoped_refptr<input_method::InputMethodManager::State> ime_state) {
   user_ = user;

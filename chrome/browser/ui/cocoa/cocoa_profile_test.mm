@@ -57,7 +57,7 @@ void CocoaProfileTest::SetUp() {
   ASSERT_TRUE(profile_manager_.SetUp());
 
   profile_ = profile_manager_.CreateTestingProfile(
-      "Person 1", scoped_ptr<PrefServiceSyncable>(),
+      "Person 1", scoped_ptr<syncable_prefs::PrefServiceSyncable>(),
       base::UTF8ToUTF16("Person 1"), 0, std::string(),
       testing_factories_);
   ASSERT_TRUE(profile_);

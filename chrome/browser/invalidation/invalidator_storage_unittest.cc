@@ -21,7 +21,7 @@ class InvalidatorStorageTest : public testing::Test {
   }
 
  protected:
-  TestingPrefServiceSyncable pref_service_;
+  syncable_prefs::TestingPrefServiceSyncable pref_service_;
 };
 
 // Clearing the storage should erase all version map entries, bootstrap data,
