@@ -260,6 +260,29 @@ function drawReceivedPropagationDelta(peerConnectionElement, report, deltas) {
   graphViews[graphViewId].updateEndDate(date);
 }
 
+// Get report types for SSRC reports. Returns 'audio' or 'video' where this type
+// can be deduced from existing stats labels. Otherwise empty string for
+// non-SSRC reports or where type (audio/video) can't be deduced.
+function getSsrcReportType(report) {
+  if (report.type != 'ssrc')
+    return '';
+  if (report.stats && report.stats.values) {
+    // Known stats keys for audio send/receive streams.
+    if (report.stats.values.indexOf('audioOutputLevel') != -1 ||
+        report.stats.values.indexOf('audioInputLevel') != -1) {
+      return 'audio';
+    }
+    // Known stats keys for video send/receive streams.
+    // TODO(pbos): Change to use some non-goog-prefixed stats when available for
+    // video.
+    if (report.stats.values.indexOf('googFrameRateReceived') != -1 ||
+        report.stats.values.indexOf('googFrameRateSent') != -1) {
+      return 'video';
+    }
+  }
+  return '';
+}
+
 // Ensures a div container to hold all stats graphs for one track is created as
 // a child of |peerConnectionElement|.
 function ensureStatsGraphTopContainer(peerConnectionElement, report) {
@@ -277,6 +300,9 @@ function ensureStatsGraphTopContainer(peerConnectionElement, report) {
         STATS_GRAPH_CONTAINER_HEADING_CLASS;
     container.firstChild.firstChild.textContent =
         'Stats graphs for ' + report.id;
+    var statsType = getSsrcReportType(report);
+    if (statsType != '')
+      container.firstChild.firstChild.textContent += ' (' + statsType + ')';
 
     if (report.type == 'ssrc') {
       var ssrcInfoElement = document.createElement('div');
