@@ -12,6 +12,7 @@
 
 #include "BlinkGCPluginOptions.h"
 #include "CheckFieldsVisitor.h"
+#include "CheckFinalizerVisitor.h"
 #include "CheckTraceVisitor.h"
 #include "CollectVisitor.h"
 #include "Config.h"
@@ -180,137 +181,6 @@ std::set<FunctionDecl*> GetLateParsedFunctionDecls(TranslationUnitDecl* decl) {
   v.TraverseDecl(decl);
   return v.late_parsed_decls;
 }
-
-// This visitor checks that a finalizer method does not have invalid access to
-// fields that are potentially finalized. A potentially finalized field is
-// either a Member, a heap-allocated collection or an off-heap collection that
-// contains Members.  Invalid uses are currently identified as passing the field
-// as the argument of a procedure call or using the -> or [] operators on it.
-class CheckFinalizerVisitor
-    : public RecursiveASTVisitor<CheckFinalizerVisitor> {
- private:
-  // Simple visitor to determine if the content of a field might be collected
-  // during finalization.
-  class MightBeCollectedVisitor : public EdgeVisitor {
-   public:
-    MightBeCollectedVisitor(bool is_eagerly_finalized)
-        : might_be_collected_(false)
-        , is_eagerly_finalized_(is_eagerly_finalized)
-        , as_eagerly_finalized_(false) {}
-    bool might_be_collected() { return might_be_collected_; }
-    bool as_eagerly_finalized() { return as_eagerly_finalized_; }
-    void VisitMember(Member* edge) override {
-      if (is_eagerly_finalized_) {
-        if (edge->ptr()->IsValue()) {
-          Value* member = static_cast<Value*>(edge->ptr());
-          if (member->value()->IsEagerlyFinalized()) {
-            might_be_collected_ = true;
-            as_eagerly_finalized_ = true;
-          }
-        }
-        return;
-      }
-      might_be_collected_ = true;
-    }
-    void VisitCollection(Collection* edge) override {
-      if (edge->on_heap() && !is_eagerly_finalized_) {
-        might_be_collected_ = !edge->is_root();
-      } else {
-        edge->AcceptMembers(this);
-      }
-    }
-
-   private:
-    bool might_be_collected_;
-    bool is_eagerly_finalized_;
-    bool as_eagerly_finalized_;
-  };
-
- public:
-  class Error {
-  public:
-    Error(MemberExpr *member,
-          bool as_eagerly_finalized,
-          FieldPoint* field)
-        : member_(member)
-        , as_eagerly_finalized_(as_eagerly_finalized)
-        , field_(field) {}
-
-    MemberExpr* member_;
-    bool as_eagerly_finalized_;
-    FieldPoint* field_;
-  };
-
-  typedef std::vector<Error> Errors;
-
-  CheckFinalizerVisitor(RecordCache* cache, bool is_eagerly_finalized)
-      : blacklist_context_(false)
-      , cache_(cache)
-      , is_eagerly_finalized_(is_eagerly_finalized) {}
-
-  Errors& finalized_fields() { return finalized_fields_; }
-
-  bool WalkUpFromCXXOperatorCallExpr(CXXOperatorCallExpr* expr) {
-    // Only continue the walk-up if the operator is a blacklisted one.
-    switch (expr->getOperator()) {
-      case OO_Arrow:
-      case OO_Subscript:
-        this->WalkUpFromCallExpr(expr);
-      default:
-        return true;
-    }
-  }
-
-  // We consider all non-operator calls to be blacklisted contexts.
-  bool WalkUpFromCallExpr(CallExpr* expr) {
-    bool prev_blacklist_context = blacklist_context_;
-    blacklist_context_ = true;
-    for (size_t i = 0; i < expr->getNumArgs(); ++i)
-      this->TraverseStmt(expr->getArg(i));
-    blacklist_context_ = prev_blacklist_context;
-    return true;
-  }
-
-  bool VisitMemberExpr(MemberExpr* member) {
-    FieldDecl* field = dyn_cast<FieldDecl>(member->getMemberDecl());
-    if (!field)
-      return true;
-
-    RecordInfo* info = cache_->Lookup(field->getParent());
-    if (!info)
-      return true;
-
-    RecordInfo::Fields::iterator it = info->GetFields().find(field);
-    if (it == info->GetFields().end())
-      return true;
-
-    if (seen_members_.find(member) != seen_members_.end())
-      return true;
-
-    bool as_eagerly_finalized = false;
-    if (blacklist_context_ &&
-        MightBeCollected(&it->second, as_eagerly_finalized)) {
-      finalized_fields_.push_back(
-          Error(member, as_eagerly_finalized, &it->second));
-      seen_members_.insert(member);
-    }
-    return true;
-  }
-
-  bool MightBeCollected(FieldPoint* point, bool& as_eagerly_finalized) {
-    MightBeCollectedVisitor visitor(is_eagerly_finalized_);
-    point->edge()->Accept(&visitor);
-    as_eagerly_finalized = visitor.as_eagerly_finalized();
-    return visitor.might_be_collected();
-  }
-
- private:
-  bool blacklist_context_;
-  Errors finalized_fields_;
-  std::set<MemberExpr*> seen_members_;
-  RecordCache* cache_;
-  bool is_eagerly_finalized_;
-};
 
 // This visitor checks that a method contains within its body, a call to a
 // method on the provided receiver class. This is used to check manual
@@ -1332,9 +1202,9 @@ class BlinkGCPluginConsumer : public ASTConsumer {
     for (CheckFinalizerVisitor::Errors::iterator it = fields->begin();
          it != fields->end();
          ++it) {
-      SourceLocation loc = it->member_->getLocStart();
+      SourceLocation loc = it->member->getLocStart();
       SourceManager& manager = instance_.getSourceManager();
-      bool as_eagerly_finalized = it->as_eagerly_finalized_;
+      bool as_eagerly_finalized = it->as_eagerly_finalized;
       unsigned diag_error = as_eagerly_finalized ?
           diag_finalizer_eagerly_finalized_field_ :
           diag_finalizer_accesses_finalized_field_;
@@ -1343,8 +1213,8 @@ class BlinkGCPluginConsumer : public ASTConsumer {
           diag_finalized_field_note_;
       FullSourceLoc full_loc(loc, manager);
       diagnostic_.Report(full_loc, diag_error)
-          << dtor << it->field_->field();
-      NoteField(it->field_, diag_note);
+          << dtor << it->field->field();
+      NoteField(it->field, diag_note);
     }
   }
 
