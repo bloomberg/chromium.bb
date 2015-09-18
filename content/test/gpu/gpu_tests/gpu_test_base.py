@@ -104,16 +104,10 @@ class ValidatorBase(page_test.PageTest):
     """Validates and measures the page, taking into account test
     expectations. Do not override this method. Override
     ValidateAndMeasurePageInner, below."""
-    try:
-      _PageOperationWrapper(
-        page, tab, page.GetExpectations(), True,
-        lambda: self.ValidateAndMeasurePageInner(page, tab, results),
-        results=results)
-    finally:
-      # Clear the error state of the page at this point so that if
-      # --page-repeat or --pageset-repeat are used, the subsequent
-      # iterations don't turn into no-ops.
-      page.ClearHadError()
+    _PageOperationWrapper(
+      page, tab, page.GetExpectations(), True,
+      lambda: self.ValidateAndMeasurePageInner(page, tab, results),
+      results=results)
 
   def WillNavigateToPageInner(self, page, tab):
     pass
@@ -133,10 +127,10 @@ def _CanRunOnBrowser(browser_info, page):
     browser_info.browser, page) != 'skip'
 
 def RunStoryWithRetries(cls, shared_page_state, results):
+  page = shared_page_state.current_page
   try:
     super(cls, shared_page_state).RunStory(results)
   except Exception:
-    page = shared_page_state.current_page
     tab = shared_page_state.current_tab
     num_retries = page.GetExpectations().GetFlakyRetriesForPage(
       tab.browser, page)
@@ -158,6 +152,11 @@ def RunStoryWithRetries(cls, shared_page_state, results):
     else:
       # Re-raise the exception.
       raise
+  finally:
+    # Clear the error state of the page at this point so that if
+    # --page-repeat or --pageset-repeat are used, the subsequent
+    # iterations don't turn into no-ops.
+    page.ClearHadError()
 
 class GpuSharedPageState(shared_page_state.SharedPageState):
   def CanRunOnBrowser(self, browser_info, page):
