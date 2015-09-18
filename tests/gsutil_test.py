@@ -144,8 +144,8 @@ class GsutilUnitTests(unittest.TestCase):
 
     # This should delete the old bin and rewrite it with 'Fake gsutil'
     self.assertRaises(
-        gsutil.InvalidGsutilError, gsutil.ensure_gsutil, version, self.tempdir)
-    self.assertTrue(os.path.isdir(os.path.join(self.tempdir, '.cache_dir')))
+        gsutil.InvalidGsutilError, gsutil.ensure_gsutil, version, self.tempdir,
+        False)
     self.assertTrue(os.path.exists(gsutil_bin))
     with open(gsutil_bin, 'r') as f:
       self.assertEquals(f.read(), fake_gsutil)
@@ -165,7 +165,7 @@ class GsutilUnitTests(unittest.TestCase):
     with open(gsutil_bin, 'w') as f:
       f.write('Foobar')
     self.assertEquals(
-        gsutil.ensure_gsutil(version, self.tempdir), gsutil_bin)
+        gsutil.ensure_gsutil(version, self.tempdir, False), gsutil_bin)
 
 if __name__ == '__main__':
   unittest.main()

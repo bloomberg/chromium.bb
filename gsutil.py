@@ -8,12 +8,15 @@
 
 import argparse
 import base64
+import contextlib
 import hashlib
 import json
 import os
 import shutil
 import subprocess
 import sys
+import tempfile
+import time
 import urllib2
 import zipfile
 
@@ -25,7 +28,6 @@ THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 DEFAULT_BIN_DIR = os.path.join(THIS_DIR, 'external_bin', 'gsutil')
 DEFAULT_FALLBACK_GSUTIL = os.path.join(
     THIS_DIR, 'third_party', 'gsutil', 'gsutil')
-
 
 class InvalidGsutilError(Exception):
   pass
@@ -73,33 +75,54 @@ def check_gsutil(gsutil_bin):
       [sys.executable, gsutil_bin, 'version'],
       stdout=subprocess.PIPE, stderr=subprocess.STDOUT) == 0
 
-def ensure_gsutil(version, target):
+@contextlib.contextmanager
+def temporary_directory(base):
+  tmpdir = tempfile.mkdtemp(prefix='gsutil_py', dir=base)
+  try:
+    yield tmpdir
+  finally:
+    if os.path.isdir(tmpdir):
+      shutil.rmtree(tmpdir)
+
+def ensure_gsutil(version, target, clean):
   bin_dir = os.path.join(target, 'gsutil_%s' % version)
   gsutil_bin = os.path.join(bin_dir, 'gsutil', 'gsutil')
-  if os.path.isfile(gsutil_bin) and check_gsutil(gsutil_bin):
+  if not clean and os.path.isfile(gsutil_bin) and check_gsutil(gsutil_bin):
     # Everything is awesome! we're all done here.
     return gsutil_bin
 
-  if os.path.isdir(bin_dir):
+  if not os.path.exists(target):
+    os.makedirs(target)
+  with temporary_directory(target) as instance_dir:
     # Clean up if we're redownloading a corrupted gsutil.
-    shutil.rmtree(bin_dir)
-  cache_dir = os.path.join(target, '.cache_dir')
-  if not os.path.isdir(cache_dir):
-    os.makedirs(cache_dir)
-  target_zip_filename = download_gsutil(version, cache_dir)
-  with zipfile.ZipFile(target_zip_filename, 'r') as target_zip:
-    target_zip.extractall(bin_dir)
+    cleanup_path = os.path.join(instance_dir, 'clean')
+    try:
+      os.rename(bin_dir, cleanup_path)
+    except (OSError, IOError):
+      cleanup_path = None
+    if cleanup_path:
+      shutil.rmtree(cleanup_path)
+
+    download_dir = os.path.join(instance_dir, 'download')
+    target_zip_filename = download_gsutil(version, instance_dir)
+    with zipfile.ZipFile(target_zip_filename, 'r') as target_zip:
+      target_zip.extractall(download_dir)
+
+    try:
+      os.rename(download_dir, bin_dir)
+    except (OSError, IOError):
+      # Something else did this in parallel.
+      pass
 
   # Final check that the gsutil bin is okay.  This should never fail.
   if not check_gsutil(gsutil_bin):
     raise InvalidGsutilError()
-
   return gsutil_bin
 
 
-def run_gsutil(force_version, fallback, target, args):
+def run_gsutil(force_version, fallback, target, args, clean=False):
   if force_version:
-    gsutil_bin = ensure_gsutil(force_version, target)
+    gsutil_bin = ensure_gsutil(force_version, target, clean)
   else:
     gsutil_bin = fallback
   cmd = [sys.executable, gsutil_bin] + args
@@ -107,10 +130,16 @@ def run_gsutil(force_version, fallback, target, args):
 
 
 def parse_args():
+  bin_dir = os.environ.get('DEPOT_TOOLS_GSUTIL_BIN_DIR', DEFAULT_BIN_DIR)
+
   parser = argparse.ArgumentParser()
   parser.add_argument('--force-version', default='4.13')
+  parser.add_argument('--clean', action='store_true',
+      help='Clear any existing gsutil package, forcing a new download.')
   parser.add_argument('--fallback', default=DEFAULT_FALLBACK_GSUTIL)
-  parser.add_argument('--target', default=DEFAULT_BIN_DIR)
+  parser.add_argument('--target', default=bin_dir,
+      help='The target directory to download/store a gsutil version in. '
+           '(default is %(default)s).')
   parser.add_argument('args', nargs=argparse.REMAINDER)
 
   args, extras = parser.parse_known_args()
@@ -118,12 +147,13 @@ def parse_args():
     args.args.pop(0)
   if extras:
     args.args = extras + args.args
-  return args.force_version, args.fallback, args.target, args.args
+  return args
 
 
 def main():
-  force_version, fallback, target, args = parse_args()
-  return run_gsutil(force_version, fallback, target, args)
+  args = parse_args()
+  return run_gsutil(args.force_version, args.fallback, args.target, args.args,
+                    clean=args.clean)
 
 if __name__ == '__main__':
   sys.exit(main())
