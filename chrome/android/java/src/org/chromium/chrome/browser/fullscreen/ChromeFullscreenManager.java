@@ -236,16 +236,6 @@ public class ChromeFullscreenManager
     protected FullscreenHtmlApiDelegate createApiDelegate() {
         return new FullscreenHtmlApiDelegate() {
             @Override
-            public View getNotificationAnchorView() {
-                return mControlContainer;
-            }
-
-            @Override
-            public int getNotificationOffsetY() {
-                return (int) getControlOffset();
-            }
-
-            @Override
             public void onEnterFullscreen() {
                 Tab tab = getActiveTab();
                 if (getControlOffset() == -mControlContainerHeight) {
@@ -273,7 +263,7 @@ public class ChromeFullscreenManager
             }
 
             @Override
-            public boolean shouldShowNotificationBubble() {
+            public boolean shouldShowNotificationToast() {
                 return !isOverlayVideoMode();
             }
         };
@@ -495,7 +485,6 @@ public class ChromeFullscreenManager
         float offset = getControlOffset();
         if (Float.compare(mPreviousControlOffset, offset) != 0) {
             mPreviousControlOffset = offset;
-            getHtmlApiHandler().updateBubblePosition();
 
             scheduleVisibilityUpdate();
             if (shouldShowAndroidControls()) mControlContainer.setTranslationY(getControlOffset());
@@ -655,7 +644,9 @@ public class ChromeFullscreenManager
         if (eventAction == MotionEvent.ACTION_DOWN
                 || eventAction == MotionEvent.ACTION_POINTER_DOWN) {
             mInGesture = true;
-            getHtmlApiHandler().hideNotificationBubble();
+            // TODO(qinmin): Probably there is no need to hide the toast as it will go away
+            // by itself.
+            getHtmlApiHandler().hideNotificationToast();
         } else if (eventAction == MotionEvent.ACTION_CANCEL
                 || eventAction == MotionEvent.ACTION_UP) {
             mInGesture = false;

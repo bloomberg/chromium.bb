@@ -1403,9 +1403,12 @@ You are signing in with a managed account and giving its administrator control o
       </message>
 
       <!-- Fullscreen -->
-      <message name="IDS_FULLSCREEN_API_NOTIFICATION" desc="Notification message when a site has entered fullscreen and the directions of how to exit.">
-        This site has gone fullscreen.
-Hit the back button to exit.
+      <message name="IDS_IMMERSIVE_FULLSCREEN_API_NOTIFICATION" desc="Notification message when a site has entered immersive fullscreen and the directions of how to exit.">
+        Drag from top and touch the back button to exit fullscreen.
+      </message>
+
+      <message name="IDS_FULLSCREEN_API_NOTIFICATION" desc="Notification message when a site has entered non-immsersive fullscreen and the directions of how to exit.">
+        Touch the back button to exit fullscreen.
       </message>
 
       <!-- Download UI -->
