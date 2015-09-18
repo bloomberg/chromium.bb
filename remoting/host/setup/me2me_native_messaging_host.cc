@@ -588,11 +588,14 @@ void Me2MeNativeMessagingHost::EnsureElevatedHostCreated() {
   }
 
   // Create a security descriptor that gives full access to the caller and
-  // denies access by anyone else.
+  // BUILTIN_ADMINISTRATORS and denies access by anyone else.
+  // Local admins need access because the privileged host process will run
+  // as a local admin which may not be the same user as the current user.
   std::string user_sid_ascii = base::UTF16ToASCII(user_sid);
   std::string security_descriptor =
-      base::StringPrintf("O:%sG:%sD:(A;;GA;;;%s)", user_sid_ascii.c_str(),
-                         user_sid_ascii.c_str(), user_sid_ascii.c_str());
+      base::StringPrintf("O:%sG:%sD:(A;;GA;;;%s)(A;;GA;;;BA)",
+                         user_sid_ascii.c_str(), user_sid_ascii.c_str(),
+                         user_sid_ascii.c_str());
 
   ScopedSd sd = ConvertSddlToSd(security_descriptor);
   if (!sd) {
