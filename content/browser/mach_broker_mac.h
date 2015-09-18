@@ -80,6 +80,10 @@ class CONTENT_EXPORT MachBroker : public base::ProcessMetrics::PortProvider,
                const NotificationSource& source,
                const NotificationDetails& details) override;
 
+  // Returns the Mach port name to use when sending or receiving messages.
+  // Does the Right Thing in the browser and in child processes.
+  static std::string GetMachPortName();
+
  private:
   friend class MachBrokerTest;
   friend struct base::DefaultSingletonTraits<MachBroker>;
@@ -102,10 +106,6 @@ class CONTENT_EXPORT MachBroker : public base::ProcessMetrics::PortProvider,
 
   // Removes all mappings belonging to |child_process_id| from the broker.
   void InvalidateChildProcessId(int child_process_id);
-
-  // Returns the Mach port name to use when sending or receiving messages.
-  // Does the Right Thing in the browser and in child processes.
-  static std::string GetMachPortName();
 
   // Callback used to register notifications on the UI thread.
   void RegisterNotifications();

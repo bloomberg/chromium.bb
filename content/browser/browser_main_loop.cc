@@ -102,7 +102,7 @@
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
 #include "base/memory/memory_pressure_monitor_mac.h"
-#include "content/browser/bootstrap_sandbox_mac.h"
+#include "content/browser/bootstrap_sandbox_manager_mac.h"
 #include "content/browser/browser_io_surface_manager_mac.h"
 #include "content/browser/cocoa/system_hotkey_helper_mac.h"
 #include "content/browser/compositor/browser_compositor_view_mac.h"
@@ -1247,10 +1247,10 @@ int BrowserMainLoop::BrowserThreadsStarted() {
 #if defined(OS_MACOSX)
   ThemeHelperMac::GetInstance();
   SystemHotkeyHelperMac::GetInstance()->DeferredLoadSystemHotkeys();
-  if (ShouldEnableBootstrapSandbox()) {
+  if (BootstrapSandboxManager::ShouldEnable()) {
     TRACE_EVENT0("startup",
                  "BrowserMainLoop::BrowserThreadsStarted:BootstrapSandbox");
-    CHECK(GetBootstrapSandbox());
+    CHECK(BootstrapSandboxManager::GetInstance());
   }
 #endif  // defined(OS_MACOSX)
 

@@ -147,6 +147,17 @@ void MachBroker::Observe(int type,
   }
 }
 
+// static
+std::string MachBroker::GetMachPortName() {
+  const base::CommandLine* command_line =
+      base::CommandLine::ForCurrentProcess();
+  const bool is_child = command_line->HasSwitch(switches::kProcessType);
+
+  // In non-browser (child) processes, use the parent's pid.
+  const pid_t pid = is_child ? getppid() : getpid();
+  return base::StringPrintf("%s.rohitfork.%d", base::mac::BaseBundleID(), pid);
+}
+
 MachBroker::MachBroker() : initialized_(false) {
 }
 
@@ -244,17 +255,6 @@ void MachBroker::InvalidateChildProcessId(int child_process_id) {
     mach_map_.erase(mach_it);
   }
   child_process_id_map_.erase(it);
-}
-
-// static
-std::string MachBroker::GetMachPortName() {
-  const base::CommandLine* command_line =
-      base::CommandLine::ForCurrentProcess();
-  const bool is_child = command_line->HasSwitch(switches::kProcessType);
-
-  // In non-browser (child) processes, use the parent's pid.
-  const pid_t pid = is_child ? getppid() : getpid();
-  return base::StringPrintf("%s.rohitfork.%d", base::mac::BaseBundleID(), pid);
 }
 
 void MachBroker::RegisterNotifications() {

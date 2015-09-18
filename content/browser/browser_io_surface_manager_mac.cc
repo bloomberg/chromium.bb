@@ -19,7 +19,7 @@ namespace {
 
 // Returns the Mach port name to use when sending or receiving messages. |pid|
 // is the process ID of the service.
-std::string GetMachPortName(pid_t pid) {
+std::string GetMachPortNameByPid(pid_t pid) {
   return base::StringPrintf("%s.iosurfacemgr.%d", base::mac::BaseBundleID(),
                             pid);
 }
@@ -43,13 +43,20 @@ base::mac::ScopedMachSendRight BrowserIOSurfaceManager::LookupServicePort(
   // the bootstrap server.
   mach_port_t port;
   kern_return_t kr =
-      bootstrap_look_up(bootstrap_port, GetMachPortName(pid).c_str(), &port);
+      bootstrap_look_up(bootstrap_port,
+                        GetMachPortNameByPid(pid).c_str(),
+                        &port);
   if (kr != KERN_SUCCESS) {
     BOOTSTRAP_LOG(ERROR, kr) << "bootstrap_look_up";
     return base::mac::ScopedMachSendRight();
   }
 
   return base::mac::ScopedMachSendRight(port);
+}
+
+// static
+std::string BrowserIOSurfaceManager::GetMachPortName() {
+  return GetMachPortNameByPid(getpid());
 }
 
 bool BrowserIOSurfaceManager::RegisterIOSurface(IOSurfaceId io_surface_id,
@@ -151,7 +158,7 @@ bool BrowserIOSurfaceManager::Initialize() {
   // Check in with launchd and publish the service name.
   mach_port_t port;
   kern_return_t kr = bootstrap_check_in(
-      bootstrap_port, GetMachPortName(getpid()).c_str(), &port);
+      bootstrap_port, GetMachPortName().c_str(), &port);
   if (kr != KERN_SUCCESS) {
     BOOTSTRAP_LOG(ERROR, kr) << "bootstrap_check_in";
     return false;

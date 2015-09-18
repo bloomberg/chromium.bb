@@ -188,6 +188,7 @@
 #endif
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
+#include "content/browser/bootstrap_sandbox_manager_mac.h"
 #include "content/browser/browser_io_surface_manager_mac.h"
 #endif
 
@@ -545,6 +546,11 @@ RenderProcessHostImpl::RenderProcessHostImpl(
   subscribe_uniform_enabled_ =
       base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableSubscribeUniformExtension);
+
+#if defined(OS_MACOSX)
+  if (BootstrapSandboxManager::ShouldEnable())
+    AddObserver(BootstrapSandboxManager::GetInstance());
+#endif
 
   // Note: When we create the RenderProcessHostImpl, it's technically
   //       backgrounded, because it has no visible listeners.  But the process

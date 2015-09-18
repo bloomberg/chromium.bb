@@ -26,7 +26,7 @@
 #include "content/common/sandbox_win.h"
 #include "content/public/common/sandbox_init.h"
 #elif defined(OS_MACOSX)
-#include "content/browser/bootstrap_sandbox_mac.h"
+#include "content/browser/bootstrap_sandbox_manager_mac.h"
 #include "content/browser/browser_io_surface_manager_mac.h"
 #include "content/browser/mach_broker_mac.h"
 #include "sandbox/mac/bootstrap_sandbox.h"
@@ -243,12 +243,15 @@ void LaunchOnLauncherThread(const NotifyCallback& callback,
     // Make sure the IOSurfaceManager service is running.
     BrowserIOSurfaceManager::GetInstance()->EnsureRunning();
 
-    const int bootstrap_sandbox_policy = delegate->GetSandboxType();
+    const SandboxType sandbox_type = delegate->GetSandboxType();
     scoped_ptr<sandbox::PreExecDelegate> pre_exec_delegate;
-    if (ShouldEnableBootstrapSandbox() &&
-        bootstrap_sandbox_policy != SANDBOX_TYPE_INVALID) {
-      pre_exec_delegate =
-          GetBootstrapSandbox()->NewClient(bootstrap_sandbox_policy).Pass();
+    if (BootstrapSandboxManager::ShouldEnable()) {
+      BootstrapSandboxManager* sandbox_manager =
+          BootstrapSandboxManager::GetInstance();
+      if (sandbox_manager->EnabledForSandbox(sandbox_type)) {
+        pre_exec_delegate =
+            sandbox_manager->sandbox()->NewClient(sandbox_type).Pass();
+      }
     }
     options.pre_exec_delegate = pre_exec_delegate.get();
 #endif  // defined(OS_MACOSX)
@@ -260,7 +263,7 @@ void LaunchOnLauncherThread(const NotifyCallback& callback,
       broker->AddPlaceholderForPid(process.Pid(), child_process_id);
     } else {
       if (pre_exec_delegate) {
-        GetBootstrapSandbox()->RevokeToken(
+        BootstrapSandboxManager::GetInstance()->sandbox()->RevokeToken(
             pre_exec_delegate->sandbox_token());
       }
     }
