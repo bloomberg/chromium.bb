@@ -36,14 +36,18 @@ public:
 
     const char* name() const override { return "LayoutBR"; }
 
-    LayoutRect selectionRectForPaintInvalidation(const LayoutBoxModelObject* /* paintInvalidationContainer */) const override { return LayoutRect(); }
+    LayoutRect selectionRectForPaintInvalidation(const LayoutBoxModelObject* /* paintInvalidationContainer */) const override
+    {
+        // TODO(wkorman): When selected we need to return a rect that includes the
+        // space highlighted to illustrate a newline.
+        return LayoutRect();
+    }
 
     float width(unsigned /* from */, unsigned /* len */, const Font&, LayoutUnit /* xpos */, TextDirection, HashSet<const SimpleFontData*>* = nullptr /* fallbackFonts */ , FloatRect* /* glyphBounds */ = nullptr) const override { return 0; }
     float width(unsigned /* from */, unsigned /* len */, LayoutUnit /* xpos */, TextDirection, bool = false /* firstLine */, HashSet<const SimpleFontData*>* = nullptr /* fallbackFonts */, FloatRect* /* glyphBounds */ = nullptr) const override { return 0; }
 
     int lineHeight(bool firstLine) const;
 
-    // overrides
     bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectBr || LayoutText::isOfType(type); }
 
     int caretMinOffset() const override;

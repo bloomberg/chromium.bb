@@ -126,6 +126,8 @@ private:
 
 public:
     SelectionState selectionState() const final;
+    bool hasWrappedSelectionNewline() const;
+    float newlineSpaceWidth() const;
 
 private:
     void setTruncation(unsigned);

@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<script src="../../resources/ahem.js"></script>
+<script src="../../fast/repaint/resources/text-based-repaint.js"></script>
+<script>
+// Selects two lines and expects a newline to be represented.
+function repaintTest() {
+    if (window.internals)
+        window.internals.setSelectionPaintingWithoutSelectionGapsEnabled(true);
+    var range = document.createRange();
+    range.setStart(container, 0);
+    range.setEnd(container, 1);
+    window.getSelection().addRange(range);
+};
+window.onload = runRepaintTest;
+</script>
+<style>
+div {
+    font-family: Ahem;
+    width: 2em;
+}
+</style>
+<div id="container">
+    xx y
+</div>

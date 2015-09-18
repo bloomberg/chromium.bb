@@ -49,10 +49,6 @@ private:
     unsigned underlinePaintStart(const CompositionUnderline&);
     unsigned underlinePaintEnd(const CompositionUnderline&);
     bool shouldPaintTextBox(const PaintInfo&);
-    // Returns whether a newline selection highlight should be painted for this text box.
-    bool shouldPaintWrappedSelectionNewline();
-    // Returns the width of the space character used to draw wrapped selected newlines.
-    float newlineSpaceWidth();
     void expandToIncludeNewlineForSelection(LayoutRect&);
 
     InlineTextBox& m_inlineTextBox;

@@ -185,6 +185,20 @@ SelectionState InlineTextBox::selectionState() const
     return state;
 }
 
+bool InlineTextBox::hasWrappedSelectionNewline() const
+{
+    SelectionState state = selectionState();
+    return RuntimeEnabledFeatures::selectionPaintingWithoutSelectionGapsEnabled()
+        && (root().lastSelectedBox() == this)
+        && (state == SelectionStart || state == SelectionInside);
+}
+
+float InlineTextBox::newlineSpaceWidth() const
+{
+    const ComputedStyle& styleToUse = lineLayoutItem().styleRef(isFirstLineStyle());
+    return styleToUse.font().spaceWidth();
+}
+
 LayoutRect InlineTextBox::localSelectionRect(int startPos, int endPos)
 {
     int sPos = std::max(startPos - m_start, 0);
@@ -220,9 +234,22 @@ LayoutRect InlineTextBox::localSelectionRect(int startPos, int endPos)
     else if (r.maxX() > logicalRight())
         logicalWidth = logicalRight() - r.x();
 
-    LayoutPoint topPoint = isHorizontal() ? LayoutPoint(r.x(), selTop) : LayoutPoint(selTop, r.x());
-    LayoutUnit width = isHorizontal() ? logicalWidth : selHeight;
-    LayoutUnit height = isHorizontal() ? selHeight : logicalWidth;
+    LayoutPoint topPoint;
+    LayoutUnit width;
+    LayoutUnit height;
+    if (isHorizontal()) {
+        topPoint = LayoutPoint(r.x(), selTop);
+        width = logicalWidth;
+        height = selHeight;
+        if (hasWrappedSelectionNewline())
+            width += newlineSpaceWidth();
+    } else {
+        topPoint = LayoutPoint(selTop, r.x());
+        width = selHeight;
+        height = logicalWidth;
+        if (hasWrappedSelectionNewline())
+            height += newlineSpaceWidth();
+    }
 
     return LayoutRect(topPoint, LayoutSize(width, height));
 }
