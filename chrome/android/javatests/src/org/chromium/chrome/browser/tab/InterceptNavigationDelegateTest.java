@@ -10,7 +10,6 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.chrome.test.util.TestHttpServerClient;
-import org.chromium.components.navigation_interception.InterceptNavigationDelegate;
 import org.chromium.components.navigation_interception.NavigationParams;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
@@ -43,10 +42,13 @@ public class InterceptNavigationDelegateTest extends ChromeActivityTestCaseBase<
     private ChromeActivity mActivity;
     private ArrayList<NavigationParams> mHistory = new ArrayList<NavigationParams>();
 
-    private TestInterceptNavigationDelegate mInterceptNavigationDelegate =
-            new TestInterceptNavigationDelegate();
+    private TestInterceptNavigationDelegate mInterceptNavigationDelegate;
 
-    class TestInterceptNavigationDelegate implements InterceptNavigationDelegate {
+    class TestInterceptNavigationDelegate extends InterceptNavigationDelegateImpl {
+        TestInterceptNavigationDelegate() {
+            super(mActivity, (ChromeTab) mActivity.getActivityTab());
+        }
+
         @Override
         public boolean shouldIgnoreNavigation(NavigationParams navigationParams) {
             mHistory.add(navigationParams);
@@ -82,6 +84,7 @@ public class InterceptNavigationDelegateTest extends ChromeActivityTestCaseBase<
     protected void setUp() throws Exception {
         super.setUp();
         mActivity = getActivity();
+        mInterceptNavigationDelegate = new TestInterceptNavigationDelegate();
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {

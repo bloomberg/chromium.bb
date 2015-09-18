@@ -35,9 +35,6 @@ import org.chromium.chrome.browser.document.DocumentUtils;
 import org.chromium.chrome.browser.document.DocumentWebContentsDelegate;
 import org.chromium.chrome.browser.dom_distiller.ReaderModeActivityDelegate;
 import org.chromium.chrome.browser.dom_distiller.ReaderModeManager;
-import org.chromium.chrome.browser.externalnav.ExternalNavigationHandler;
-import org.chromium.chrome.browser.externalnav.ExternalNavigationHandler.OverrideUrlLoadingResult;
-import org.chromium.chrome.browser.externalnav.ExternalNavigationParams;
 import org.chromium.chrome.browser.fullscreen.FullscreenManager;
 import org.chromium.chrome.browser.media.MediaCaptureNotificationService;
 import org.chromium.chrome.browser.media.ui.MediaSessionTabHelper;
@@ -54,17 +51,13 @@ import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
-import org.chromium.components.navigation_interception.InterceptNavigationDelegate;
-import org.chromium.components.navigation_interception.NavigationParams;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.crypto.CipherFactory;
 import org.chromium.content_public.browser.GestureStateListener;
 import org.chromium.content_public.browser.InvalidateTypes;
 import org.chromium.content_public.browser.LoadUrlParams;
-import org.chromium.content_public.browser.NavigationController;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsObserver;
-import org.chromium.content_public.common.ConsoleMessageLevel;
 import org.chromium.ui.WindowOpenDisposition;
 import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.base.WindowAndroid;
@@ -92,8 +85,6 @@ public class ChromeTab extends Tab {
     private TabRedirectHandler mTabRedirectHandler;
 
     private boolean mIsFullscreenWaitingForLoad = false;
-    private ExternalNavigationHandler.OverrideUrlLoadingResult mLastOverrideUrlLoadingResult =
-            ExternalNavigationHandler.OverrideUrlLoadingResult.NO_OVERRIDE;
 
     /**
      * Whether didCommitProvisionalLoadForFrame() hasn't yet been called for the current native page
@@ -142,13 +133,6 @@ public class ChromeTab extends Tab {
      * Listens to gesture events fired by the ContentViewCore.
      */
     private GestureStateListener mGestureStateListener;
-
-    /**
-     * Whether forward history should be cleared after navigation is committed.
-     */
-    private boolean mClearAllForwardHistoryRequired;
-
-    private boolean mShouldClearRedirectHistoryForTabClobbering;
 
     /**
      * Basic constructor. This is hidden, so that explicitly named factory methods are used to
@@ -522,34 +506,9 @@ public class ChromeTab extends Tab {
                         MSG_ID_ENABLE_FULLSCREEN_AFTER_LOAD, MAX_FULLSCREEN_LOAD_DELAY_MS);
                 updateFullscreenEnabledState();
 
-                // http://crbug/426679 : if navigation is canceled due to intent handling, we want
-                // to go back to the last committed entry index which was saved before the
-                // navigation, and remove the empty entries from the navigation history.
-                if (mClearAllForwardHistoryRequired && getWebContents() != null) {
-                    NavigationController navigationController =
-                            getWebContents().getNavigationController();
-                    int lastCommittedEntryIndex = getLastCommittedEntryIndex();
-                    while (navigationController.canGoForward()) {
-                        boolean ret = navigationController.removeEntryAtIndex(
-                                lastCommittedEntryIndex + 1);
-                        assert ret;
-                    }
-                } else if (mShouldClearRedirectHistoryForTabClobbering
-                        && getWebContents() != null) {
-                    // http://crbug/479056: Even if we clobber the current tab, we want to remove
-                    // redirect history to be consistent.
-                    NavigationController navigationController =
-                            getWebContents().getNavigationController();
-                    int indexBeforeRedirection = mTabRedirectHandler
-                            .getLastCommittedEntryIndexBeforeStartingNavigation();
-                    int lastCommittedEntryIndex = getLastCommittedEntryIndex();
-                    for (int i = lastCommittedEntryIndex - 1; i > indexBeforeRedirection; --i) {
-                        boolean ret = navigationController.removeEntryAtIndex(i);
-                        assert ret;
-                    }
+                if (getInterceptNavigationDelegate() != null) {
+                    getInterceptNavigationDelegate().maybeUpdateNavigationHistory();
                 }
-                mClearAllForwardHistoryRequired = false;
-                mShouldClearRedirectHistoryForTabClobbering = false;
             }
 
             @Override
@@ -772,7 +731,7 @@ public class ChromeTab extends Tab {
 
     @VisibleForTesting
     public AuthenticatorNavigationInterceptor getAuthenticatorHelper() {
-        return getInterceptNavigationDelegate().mAuthenticatorHelper;
+        return getInterceptNavigationDelegate().getAuthenticatorNavigationInterceptor();
     }
 
     /**
@@ -782,120 +741,10 @@ public class ChromeTab extends Tab {
         return mTabRedirectHandler;
     }
 
-    /**
-     * Delegate that handles intercepting top-level navigation.
-     */
-    protected class InterceptNavigationDelegateImpl implements InterceptNavigationDelegate {
-        final ExternalNavigationHandler mExternalNavHandler;
-        final AuthenticatorNavigationInterceptor mAuthenticatorHelper;
-
-        /**
-         * Defualt constructor of {@link InterceptNavigationDelegateImpl}.
-         */
-        public InterceptNavigationDelegateImpl() {
-            this(new ExternalNavigationHandler(mActivity));
-        }
-
-        /**
-         * Constructs a new instance of {@link InterceptNavigationDelegateImpl} with the given
-         * {@link ExternalNavigationHandler}.
-         */
-        public InterceptNavigationDelegateImpl(ExternalNavigationHandler externalNavHandler) {
-            mExternalNavHandler = externalNavHandler;
-            mAuthenticatorHelper = ((ChromeApplication) getApplicationContext())
-                    .createAuthenticatorNavigationInterceptor(ChromeTab.this);
-        }
-
-        public boolean shouldIgnoreNewTab(String url, boolean incognito) {
-            if (mAuthenticatorHelper != null && mAuthenticatorHelper.handleAuthenticatorUrl(url)) {
-                return true;
-            }
-
-            ExternalNavigationParams params = new ExternalNavigationParams.Builder(url, incognito)
-                    .setTab(ChromeTab.this)
-                    .setOpenInNewTab(true)
-                    .build();
-            return mExternalNavHandler.shouldOverrideUrlLoading(params)
-                    != ExternalNavigationHandler.OverrideUrlLoadingResult.NO_OVERRIDE;
-        }
-
-        @Override
-        public boolean shouldIgnoreNavigation(NavigationParams navigationParams) {
-            final String url = navigationParams.url;
-
-            if (mAuthenticatorHelper != null && mAuthenticatorHelper.handleAuthenticatorUrl(url)) {
-                return true;
-            }
-
-            mTabRedirectHandler.updateNewUrlLoading(navigationParams.pageTransitionType,
-                    navigationParams.isRedirect,
-                    navigationParams.hasUserGesture || navigationParams.hasUserGestureCarryover,
-                    mActivity.getLastUserInteractionTime(), getLastCommittedEntryIndex());
-            final boolean shouldCloseTab = shouldCloseContentsOnOverrideUrlLoadingAndLaunchIntent();
-            boolean isInitialTabLaunchInBackground =
-                    getLaunchType() == TabLaunchType.FROM_LONGPRESS_BACKGROUND && shouldCloseTab;
-            // http://crbug.com/448977: If a new tab is closed by this overriding, we should open an
-            // Intent in a new tab when Chrome receives it again.
-            ExternalNavigationParams params = new ExternalNavigationParams.Builder(
-                    url, isIncognito(), navigationParams.referrer,
-                    navigationParams.pageTransitionType,
-                    navigationParams.isRedirect)
-                    .setTab(ChromeTab.this)
-                    .setApplicationMustBeInForeground(true)
-                    .setRedirectHandler(mTabRedirectHandler)
-                    .setOpenInNewTab(shouldCloseTab)
-                    .setIsBackgroundTabNavigation(isHidden() && !isInitialTabLaunchInBackground)
-                    .setIsMainFrame(navigationParams.isMainFrame)
-                    .setHasUserGesture(navigationParams.hasUserGesture)
-                    .setShouldCloseContentsOnOverrideUrlLoadingAndLaunchIntent(shouldCloseTab
-                            && navigationParams.isMainFrame)
-                    .build();
-            ExternalNavigationHandler.OverrideUrlLoadingResult result =
-                    mExternalNavHandler.shouldOverrideUrlLoading(params);
-            mLastOverrideUrlLoadingResult = result;
-            switch (result) {
-                case OVERRIDE_WITH_EXTERNAL_INTENT:
-                    assert mExternalNavHandler.canExternalAppHandleUrl(url);
-                    if (navigationParams.isMainFrame) {
-                        onOverrideUrlLoadingAndLaunchIntent();
-                    }
-                    return true;
-                case OVERRIDE_WITH_CLOBBERING_TAB:
-                    mShouldClearRedirectHistoryForTabClobbering = true;
-                    return true;
-                case OVERRIDE_WITH_ASYNC_ACTION:
-                    if (!shouldCloseTab && navigationParams.isMainFrame) {
-                        onOverrideUrlLoadingAndLaunchIntent();
-                    }
-                    return true;
-                case NO_OVERRIDE:
-                default:
-                    if (navigationParams.isExternalProtocol) {
-                        logBlockedNavigationToDevToolsConsole(url);
-                        return true;
-                    }
-                    return false;
-            }
-        }
-
-        private void logBlockedNavigationToDevToolsConsole(String url) {
-            int resId = mExternalNavHandler.canExternalAppHandleUrl(url)
-                    ? R.string.blocked_navigation_warning
-                    : R.string.unreachable_navigation_warning;
-            getWebContents().addMessageToDevToolsConsole(
-                    ConsoleMessageLevel.WARNING, getApplicationContext().getString(resId, url));
-        }
-    }
-
     @Override
     protected boolean shouldIgnoreNewTab(String url, boolean incognito) {
         InterceptNavigationDelegateImpl delegate = getInterceptNavigationDelegate();
         return delegate != null && delegate.shouldIgnoreNewTab(url, incognito);
-    }
-
-    private int getLastCommittedEntryIndex() {
-        if (getWebContents() == null) return -1;
-        return getWebContents().getNavigationController().getLastCommittedEntryIndex();
     }
 
     /**
@@ -905,55 +754,8 @@ public class ChromeTab extends Tab {
         return INVALID_TAB_ID;
     }
 
-    private boolean shouldCloseContentsOnOverrideUrlLoadingAndLaunchIntent() {
-        if (getWebContents() == null) return false;
-        if (!getWebContents().getNavigationController().canGoToOffset(0)) return true;
-
-        // http://crbug/415948 : if the last committed entry index which was saved before this
-        // navigation is invalid, it means that this navigation is the first one since this tab was
-        // created.
-        // In such case, we would like to close this tab.
-        if (mTabRedirectHandler.isOnNavigation()) {
-            return mTabRedirectHandler.getLastCommittedEntryIndexBeforeStartingNavigation()
-                    == TabRedirectHandler.INVALID_ENTRY_INDEX;
-        }
-        return false;
-    }
-
-    /**
-     * Called when Chrome decides to override URL loading and show an intent picker.
-     */
-    protected void onOverrideUrlLoadingAndLaunchIntent() {
-        if (getWebContents() == null) return;
-
-        // Before leaving Chrome, close the empty child tab.
-        // If a new tab is created through JavaScript open to load this
-        // url, we would like to close it as we will load this url in a
-        // different Activity.
-        if (shouldCloseContentsOnOverrideUrlLoadingAndLaunchIntent()) {
-            if (getLaunchType() == TabLaunchType.FROM_EXTERNAL_APP) {
-                // Moving task back before closing the tab allows back button to function better
-                // when Chrome was an intermediate link redirector between two apps.
-                // crbug.com/487938.
-                mActivity.moveTaskToBack(true);
-            }
-            mActivity.getTabModelSelector().closeTab(this);
-        } else if (mTabRedirectHandler.isOnNavigation()) {
-            int lastCommittedEntryIndexBeforeNavigation =
-                    mTabRedirectHandler.getLastCommittedEntryIndexBeforeStartingNavigation();
-            if (getLastCommittedEntryIndex() > lastCommittedEntryIndexBeforeNavigation) {
-                // http://crbug/426679 : we want to go back to the last committed entry index which
-                // was saved before this navigation, and remove the empty entries from the
-                // navigation history.
-                mClearAllForwardHistoryRequired = true;
-                getWebContents().getNavigationController().goToNavigationIndex(
-                        lastCommittedEntryIndexBeforeNavigation);
-            }
-        }
-    }
-
     @Override
-    protected InterceptNavigationDelegateImpl getInterceptNavigationDelegate() {
+    public InterceptNavigationDelegateImpl getInterceptNavigationDelegate() {
         return (InterceptNavigationDelegateImpl) super.getInterceptNavigationDelegate();
     }
 
@@ -963,7 +765,7 @@ public class ChromeTab extends Tab {
      * @return A new instance of {@link InterceptNavigationDelegateImpl}.
      */
     protected InterceptNavigationDelegateImpl createInterceptNavigationDelegate() {
-        return new InterceptNavigationDelegateImpl();
+        return new InterceptNavigationDelegateImpl(mActivity, this);
     }
 
     /**
@@ -1024,9 +826,4 @@ public class ChromeTab extends Tab {
             }
         }
     };
-
-    @VisibleForTesting
-    public OverrideUrlLoadingResult getLastOverrideUrlLoadingResultForTests() {
-        return mLastOverrideUrlLoadingResult;
-    }
 }

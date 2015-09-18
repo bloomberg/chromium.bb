@@ -196,7 +196,8 @@ public class UrlOverridingTest extends ChromeActivityTestCaseBase<ChromeActivity
                         ChromeTab tab = (ChromeTab) latestTabHolder[0];
                         if (shouldLaunchExternalIntent
                                 != (OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT
-                                        == tab.getLastOverrideUrlLoadingResultForTests())) {
+                                        == tab.getInterceptNavigationDelegate()
+                                                .getLastOverrideUrlLoadingResultForTests())) {
                             return false;
                         }
                         return expectedFinalUrl == null

@@ -32,6 +32,7 @@ import org.chromium.chrome.browser.externalnav.ExternalNavigationHandler;
 import org.chromium.chrome.browser.ssl.ConnectionSecurityLevel;
 import org.chromium.chrome.browser.tab.ChromeTab;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
+import org.chromium.chrome.browser.tab.InterceptNavigationDelegateImpl;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabIdManager;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
@@ -200,7 +201,7 @@ public class CustomTab extends ChromeTab {
     protected InterceptNavigationDelegateImpl createInterceptNavigationDelegate() {
         mNavigationDelegate = new CustomTabNavigationDelegate(mActivity);
         mNavigationHandler = new ExternalNavigationHandler(mNavigationDelegate);
-        return new InterceptNavigationDelegateImpl(mNavigationHandler);
+        return new InterceptNavigationDelegateImpl(mNavigationHandler, mActivity, this);
     }
 
     /**
