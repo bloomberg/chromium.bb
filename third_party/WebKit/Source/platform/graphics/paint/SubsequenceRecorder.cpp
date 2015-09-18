@@ -15,6 +15,9 @@ namespace blink {
 
 bool SubsequenceRecorder::useCachedSubsequenceIfPossible(GraphicsContext& context, const DisplayItemClientWrapper& client)
 {
+    if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled())
+        return false;
+
     ASSERT(context.displayItemList());
 
     if (context.displayItemList()->displayItemConstructionIsDisabled() || RuntimeEnabledFeatures::slimmingPaintUnderInvalidationCheckingEnabled())
@@ -32,17 +35,17 @@ SubsequenceRecorder::SubsequenceRecorder(GraphicsContext& context, const Display
     , m_client(client)
     , m_beginSubsequenceIndex(0)
 {
-    ASSERT(m_displayItemList);
-    if (m_displayItemList->displayItemConstructionIsDisabled())
+    if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled())
         return;
 
+    ASSERT(m_displayItemList);
     m_beginSubsequenceIndex = m_displayItemList->newDisplayItems().size();
     m_displayItemList->createAndAppend<BeginSubsequenceDisplayItem>(m_client);
 }
 
 SubsequenceRecorder::~SubsequenceRecorder()
 {
-    if (m_displayItemList->displayItemConstructionIsDisabled())
+    if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled())
         return;
 
     if (m_displayItemList->lastDisplayItemIsNoopBegin()) {
@@ -60,7 +63,7 @@ SubsequenceRecorder::~SubsequenceRecorder()
 
 void SubsequenceRecorder::setUncacheable()
 {
-    if (m_displayItemList->displayItemConstructionIsDisabled())
+    if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled())
         return;
 
     ASSERT(m_displayItemList->newDisplayItems()[m_beginSubsequenceIndex].type() == DisplayItem::BeginSubsequence);

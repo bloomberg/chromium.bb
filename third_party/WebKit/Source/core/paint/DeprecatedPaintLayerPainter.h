@@ -47,7 +47,6 @@ private:
     enum ClipState { HasNotClipped, HasClipped };
 
     PaintResult paintLayerInternal(GraphicsContext*, const DeprecatedPaintLayerPaintingInfo&, PaintLayerFlags);
-    PaintResult paintLayerContentsInternal(GraphicsContext*, const DeprecatedPaintLayerPaintingInfo&, PaintLayerFlags, FragmentPolicy = AllowMultipleFragments);
     PaintResult paintLayerContentsAndReflection(GraphicsContext*, const DeprecatedPaintLayerPaintingInfo&, PaintLayerFlags, FragmentPolicy = AllowMultipleFragments);
     PaintResult paintLayerWithTransform(GraphicsContext*, const DeprecatedPaintLayerPaintingInfo&, PaintLayerFlags);
     PaintResult paintFragmentByApplyingTransform(GraphicsContext*, const DeprecatedPaintLayerPaintingInfo&, PaintLayerFlags, const LayoutPoint& fragmentTranslation);

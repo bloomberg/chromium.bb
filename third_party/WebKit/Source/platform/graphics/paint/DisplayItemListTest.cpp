@@ -20,13 +20,24 @@ namespace blink {
 class DisplayItemListTest : public ::testing::Test {
 public:
     DisplayItemListTest()
-        : m_displayItemList(DisplayItemList::create()) { }
+        : m_displayItemList(DisplayItemList::create())
+        , m_originalSlimmingPaintV2Enabled(RuntimeEnabledFeatures::slimmingPaintV2Enabled()) { }
 
 protected:
     DisplayItemList& displayItemList() { return *m_displayItemList; }
 
 private:
+    void SetUp() override
+    {
+        RuntimeEnabledFeatures::setSlimmingPaintV2Enabled(true);
+    }
+    void TearDown() override
+    {
+        RuntimeEnabledFeatures::setSlimmingPaintV2Enabled(m_originalSlimmingPaintV2Enabled);
+    }
+
     OwnPtr<DisplayItemList> m_displayItemList;
+    bool m_originalSlimmingPaintV2Enabled;
 };
 
 const DisplayItem::Type foregroundDrawingType = static_cast<DisplayItem::Type>(DisplayItem::DrawingPaintPhaseFirst + 4);

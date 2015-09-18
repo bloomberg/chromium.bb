@@ -270,6 +270,7 @@ DisplayItems::iterator DisplayItemList::findOutOfOrderCachedItemForward(const Di
 
 void DisplayItemList::copyCachedSubsequence(DisplayItems::iterator& currentIt, DisplayItems& updatedList)
 {
+    ASSERT(RuntimeEnabledFeatures::slimmingPaintV2Enabled());
     ASSERT(currentIt->type() == DisplayItem::BeginSubsequence);
     ASSERT(!currentIt->scope());
     DisplayItem::Id endSubsequenceId(currentIt->client(), DisplayItem::EndSubsequence, 0);
