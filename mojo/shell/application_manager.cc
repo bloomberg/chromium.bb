@@ -59,9 +59,8 @@ ApplicationManager::ApplicationManager(
 }
 
 ApplicationManager::~ApplicationManager() {
-  IdentityToContentHandlerMap identity_to_content_handler(
-      identity_to_content_handler_);
-  for (auto& pair : identity_to_content_handler)
+  URLToContentHandlerMap url_to_content_handler(url_to_content_handler_);
+  for (auto& pair : url_to_content_handler)
     pair.second->CloseConnection();
   TerminateShellConnections();
   STLDeleteValues(&url_to_loader_);
@@ -69,6 +68,28 @@ ApplicationManager::~ApplicationManager() {
 
 void ApplicationManager::TerminateShellConnections() {
   STLDeleteValues(&identity_to_instance_);
+}
+
+void ApplicationManager::ConnectToApplication(
+    ApplicationInstance* originator,
+    URLRequestPtr app_url_request,
+    const std::string& qualifier,
+    InterfaceRequest<ServiceProvider> services,
+    ServiceProviderPtr exposed_services,
+    const CapabilityFilter& filter,
+    const base::Closure& on_application_end,
+    const Shell::ConnectToApplicationCallback& connect_callback) {
+  scoped_ptr<ConnectToApplicationParams> params(new ConnectToApplicationParams);
+  params->SetOriginatorInfo(originator);
+  params->SetURLInfo(app_url_request.Pass());
+  params->set_qualifier(qualifier);
+  params->set_services(services.Pass());
+  params->set_exposed_services(exposed_services.Pass());
+  params->set_filter(filter);
+  params->set_on_application_end(on_application_end);
+  params->set_connect_callback(connect_callback);
+
+  ConnectToApplication(params.Pass());
 }
 
 void ApplicationManager::ConnectToApplication(
@@ -127,10 +148,10 @@ void ApplicationManager::ConnectToApplicationWithLoader(
   if (!(*params)->app_url().SchemeIs("mojo"))
     (*params)->SetURLInfo(resolved_url);
 
-  loader->Load(resolved_url, CreateInstance(params->Pass(), nullptr));
+  loader->Load(resolved_url, RegisterInstance(params->Pass(), nullptr));
 }
 
-InterfaceRequest<Application> ApplicationManager::CreateInstance(
+InterfaceRequest<Application> ApplicationManager::RegisterInstance(
     scoped_ptr<ConnectToApplicationParams> params,
     ApplicationInstance** resulting_instance) {
   Identity app_identity(params->app_url(), params->qualifier());
@@ -204,7 +225,7 @@ void ApplicationManager::HandleFetchCallback(
       params->connect_callback();
   params->set_connect_callback(EmptyConnectCallback());
   ApplicationInstance* app = nullptr;
-  InterfaceRequest<Application> request(CreateInstance(params.Pass(), &app));
+  InterfaceRequest<Application> request(RegisterInstance(params.Pass(), &app));
 
 
   GURL content_handler_url;
@@ -278,18 +299,17 @@ void ApplicationManager::LoadWithContentHandler(
     InterfaceRequest<Application> application_request,
     URLResponsePtr url_response) {
   ContentHandlerConnection* connection = nullptr;
-  Identity content_handler_identity(content_handler_url, qualifier);
+  std::pair<GURL, std::string> key(content_handler_url, qualifier);
   // TODO(beng): Figure out the extent to which capability filter should be
   //             factored into handler identity.
-  IdentityToContentHandlerMap::iterator iter =
-      identity_to_content_handler_.find(content_handler_identity);
-  if (iter != identity_to_content_handler_.end()) {
+  URLToContentHandlerMap::iterator iter = url_to_content_handler_.find(key);
+  if (iter != url_to_content_handler_.end()) {
     connection = iter->second;
   } else {
     connection = new ContentHandlerConnection(
         this, originator_identity, originator_filter, content_handler_url,
         qualifier, filter, ++content_handler_id_counter_);
-    identity_to_content_handler_[content_handler_identity] = connection;
+    url_to_content_handler_[key] = connection;
   }
 
   app->set_requesting_content_handler_id(connection->id());
@@ -330,16 +350,30 @@ void ApplicationManager::OnApplicationInstanceError(
 void ApplicationManager::OnContentHandlerConnectionClosed(
     ContentHandlerConnection* content_handler) {
   // Remove the mapping to the content handler.
-  auto it = identity_to_content_handler_.find(
-      Identity(content_handler->content_handler_url(),
-               content_handler->content_handler_qualifier()));
-  DCHECK(it != identity_to_content_handler_.end());
-  identity_to_content_handler_.erase(it);
+  auto it = url_to_content_handler_.find(
+      std::make_pair(content_handler->content_handler_url(),
+                     content_handler->content_handler_qualifier()));
+  DCHECK(it != url_to_content_handler_.end());
+  url_to_content_handler_.erase(it);
 }
 
 void ApplicationManager::CleanupRunner(NativeRunner* runner) {
   native_runners_.erase(
       std::find(native_runners_.begin(), native_runners_.end(), runner));
+}
+
+ScopedMessagePipeHandle ApplicationManager::ConnectToServiceByName(
+    const GURL& application_url,
+    const std::string& interface_name) {
+  ServiceProviderPtr services;
+  scoped_ptr<ConnectToApplicationParams> params(new ConnectToApplicationParams);
+  params->SetURLInfo(application_url);
+  params->set_services(GetProxy(&services));
+  params->set_filter(GetPermissiveCapabilityFilter());
+  ConnectToApplication(params.Pass());
+  MessagePipe pipe;
+  services->ConnectToService(interface_name, pipe.handle1.Pass());
+  return pipe.handle0.Pass();
 }
 
 Shell::ConnectToApplicationCallback EmptyConnectCallback() {

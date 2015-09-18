@@ -209,14 +209,11 @@ bool Context::Init() {
   new TracingServiceProvider(GetProxy(&tracing_service_provider_ptr));
   mojo::URLRequestPtr request(mojo::URLRequest::New());
   request->url = mojo::String::From("mojo:tracing");
-
-  scoped_ptr<shell::ConnectToApplicationParams> params(
-      new shell::ConnectToApplicationParams);
-  params->SetURLInfo(request.Pass());
-  params->set_services(GetProxy(&service_provider_ptr));
-  params->set_exposed_services(tracing_service_provider_ptr.Pass());
-  params->set_filter(shell::GetPermissiveCapabilityFilter());
-  application_manager_->ConnectToApplication(params.Pass());
+  application_manager_->ConnectToApplication(
+      nullptr, request.Pass(), std::string(), GetProxy(&service_provider_ptr),
+      tracing_service_provider_ptr.Pass(),
+      shell::GetPermissiveCapabilityFilter(), base::Closure(),
+      shell::EmptyConnectCallback());
 
   // Record the shell startup metrics used for performance testing.
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -266,16 +263,11 @@ void Context::Run(const GURL& url) {
   app_urls_.insert(url);
   mojo::URLRequestPtr request(mojo::URLRequest::New());
   request->url = mojo::String::From(url.spec());
-
-  scoped_ptr<shell::ConnectToApplicationParams> params(
-      new shell::ConnectToApplicationParams);
-  params->SetURLInfo(request.Pass());
-  params->set_services(GetProxy(&services));
-  params->set_exposed_services(exposed_services.Pass());
-  params->set_filter(shell::GetPermissiveCapabilityFilter());
-  params->set_on_application_end(
-      base::Bind(&Context::OnApplicationEnd, base::Unretained(this), url));
-  application_manager_->ConnectToApplication(params.Pass());
+  application_manager_->ConnectToApplication(
+      nullptr, request.Pass(), std::string(), GetProxy(&services),
+      exposed_services.Pass(), shell::GetPermissiveCapabilityFilter(),
+      base::Bind(&Context::OnApplicationEnd, base::Unretained(this), url),
+      shell::EmptyConnectCallback());
 }
 
 void Context::RunCommandLineApplication(const base::Closure& callback) {

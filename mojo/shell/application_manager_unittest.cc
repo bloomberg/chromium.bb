@@ -17,7 +17,6 @@
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/shell/application_loader.h"
 #include "mojo/shell/application_manager.h"
-#include "mojo/shell/connect_util.h"
 #include "mojo/shell/fetcher.h"
 #include "mojo/shell/test.mojom.h"
 #include "mojo/shell/test_package_manager.h"
@@ -513,8 +512,8 @@ class ApplicationManagerTest : public testing::Test {
         scoped_ptr<ApplicationLoader>(test_loader_));
 
     TestServicePtr service_proxy;
-    ConnectToService(application_manager_.get(), GURL(kTestURLString),
-                     &service_proxy);
+    application_manager_->ConnectToService(GURL(kTestURLString),
+                                           &service_proxy);
     test_client_.reset(new TestClient(service_proxy.Pass()));
   }
 
@@ -590,14 +589,12 @@ TEST_F(ApplicationManagerTest, SetLoaders) {
 
   // test::test1 should go to url_loader.
   TestServicePtr test_service;
-  ConnectToService(application_manager_.get(), GURL("test:test1"),
-                   &test_service);
+  application_manager_->ConnectToService(GURL("test:test1"), &test_service);
   EXPECT_EQ(1, url_loader->num_loads());
   EXPECT_EQ(0, default_loader->num_loads());
 
   // http::test1 should go to default loader.
-  ConnectToService(application_manager_.get(), GURL("http:test1"),
-                   &test_service);
+  application_manager_->ConnectToService(GURL("http:test1"), &test_service);
   EXPECT_EQ(1, url_loader->num_loads());
   EXPECT_EQ(1, default_loader->num_loads());
 }
@@ -612,7 +609,7 @@ TEST_F(ApplicationManagerTest, ACallB) {
   AddLoaderForURL(GURL(kTestBURLString), kTestAURLString);
 
   TestAPtr a;
-  ConnectToService(application_manager_.get(), GURL(kTestAURLString), &a);
+  application_manager_->ConnectToService(GURL(kTestAURLString), &a);
   a->CallB();
   loop_.Run();
   EXPECT_EQ(1, tester_context_.num_b_calls());
@@ -628,7 +625,7 @@ TEST_F(ApplicationManagerTest, BCallC) {
   AddLoaderForURL(GURL(kTestBURLString), kTestAURLString);
 
   TestAPtr a;
-  ConnectToService(application_manager_.get(), GURL(kTestAURLString), &a);
+  application_manager_->ConnectToService(GURL(kTestAURLString), &a);
   a->CallCFromB();
   loop_.Run();
 
@@ -644,7 +641,7 @@ TEST_F(ApplicationManagerTest, BDeleted) {
   AddLoaderForURL(GURL(kTestBURLString), std::string());
 
   TestAPtr a;
-  ConnectToService(application_manager_.get(), GURL(kTestAURLString), &a);
+  application_manager_->ConnectToService(GURL(kTestAURLString), &a);
 
   a->CallB();
   loop_.Run();
@@ -667,7 +664,7 @@ TEST_F(ApplicationManagerTest, ANoLoadB) {
   AddLoaderForURL(GURL(kTestBURLString), "test:TestC");
 
   TestAPtr a;
-  ConnectToService(application_manager_.get(), GURL(kTestAURLString), &a);
+  application_manager_->ConnectToService(GURL(kTestAURLString), &a);
   a->CallB();
   loop_.Run();
   EXPECT_EQ(0, tester_context_.num_b_calls());
@@ -682,7 +679,7 @@ TEST_F(ApplicationManagerTest, NoServiceNoLoad) {
   // There is no TestC service implementation registered with
   // ApplicationManager, so this cannot succeed (but also shouldn't crash).
   TestCPtr c;
-  ConnectToService(application_manager_.get(), GURL(kTestAURLString), &c);
+  application_manager_->ConnectToService(GURL(kTestAURLString), &c);
   c.set_connection_error_handler(
       []() { base::MessageLoop::current()->QuitWhenIdle(); });
 
@@ -745,29 +742,29 @@ TEST_F(ApplicationManagerTest, SameIdentityShouldNotCauseDuplicateLoad) {
   EXPECT_EQ(1, test_loader_->num_loads());
 
   TestServicePtr test_service;
-  ConnectToService(application_manager_.get(),
-                   GURL("http://www.example.org/abc?def"), &test_service);
+  application_manager_->ConnectToService(GURL("http://www.example.org/abc?def"),
+                                         &test_service);
   EXPECT_EQ(2, test_loader_->num_loads());
 
   // Exactly the same URL as above.
-  ConnectToService(application_manager_.get(),
-                   GURL("http://www.example.org/abc?def"), &test_service);
+  application_manager_->ConnectToService(GURL("http://www.example.org/abc?def"),
+                                         &test_service);
   EXPECT_EQ(2, test_loader_->num_loads());
 
   // The same identity as the one above because only the query string is
   // different.
-  ConnectToService(application_manager_.get(),
-                   GURL("http://www.example.org/abc"), &test_service);
+  application_manager_->ConnectToService(GURL("http://www.example.org/abc"),
+                                         &test_service);
   EXPECT_EQ(2, test_loader_->num_loads());
 
   // A different identity because the path is different.
-  ConnectToService(application_manager_.get(),
-                   GURL("http://www.example.org/another_path"), &test_service);
+  application_manager_->ConnectToService(
+      GURL("http://www.example.org/another_path"), &test_service);
   EXPECT_EQ(3, test_loader_->num_loads());
 
   // A different identity because the domain is different.
-  ConnectToService(application_manager_.get(),
-                   GURL("http://www.another_domain.org/abc"), &test_service);
+  application_manager_->ConnectToService(
+      GURL("http://www.another_domain.org/abc"), &test_service);
   EXPECT_EQ(4, test_loader_->num_loads());
 }
 

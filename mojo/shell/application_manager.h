@@ -16,6 +16,7 @@
 #include "mojo/application/public/interfaces/shell.mojom.h"
 #include "mojo/public/cpp/bindings/interface_ptr_info.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
+#include "mojo/services/updater/updater.mojom.h"
 #include "mojo/shell/application_loader.h"
 #include "mojo/shell/capability_filter.h"
 #include "mojo/shell/connect_to_application_params.h"
@@ -58,9 +59,32 @@ class ApplicationManager {
   ~ApplicationManager();
 
   // Loads a service if necessary and establishes a new client connection.
+  // |originator| can be NULL (e.g. for the first application or in tests), but
+  // typically is non-NULL and identifies the instance initiating the
+  // connection.
   // Please see the comments in connect_to_application_params.h for more details
   // about the parameters.
+  void ConnectToApplication(
+      ApplicationInstance* originator,
+      URLRequestPtr app_url_request,
+      const std::string& qualifier,
+      InterfaceRequest<ServiceProvider> services,
+      ServiceProviderPtr exposed_services,
+      const CapabilityFilter& filter,
+      const base::Closure& on_application_end,
+      const Shell::ConnectToApplicationCallback& connect_callback);
+
   void ConnectToApplication(scoped_ptr<ConnectToApplicationParams> params);
+
+  // Must only be used by shell internals and test code as it does not forward
+  // capability filters.
+  template <typename Interface>
+  inline void ConnectToService(const GURL& application_url,
+                               InterfacePtr<Interface>* ptr) {
+    ScopedMessagePipeHandle service_handle =
+        ConnectToServiceByName(application_url, Interface::Name_);
+    ptr->Bind(InterfacePtrInfo<Interface>(service_handle.Pass(), 0u));
+  }
 
   // Sets the default Loader to be used if not overridden by SetLoaderForURL().
   void set_default_loader(scoped_ptr<ApplicationLoader> loader) {
@@ -91,9 +115,10 @@ class ApplicationManager {
   ApplicationInstance* GetApplicationInstance(const Identity& identity) const;
 
  private:
-  using IdentityToInstanceMap = std::map<Identity, ApplicationInstance*>;
-  using IdentityToContentHandlerMap =
-      std::map<Identity, ContentHandlerConnection*>;
+  using IdentityToApplicationInstanceMap =
+      std::map<Identity, ApplicationInstance*>;
+  using URLToContentHandlerMap =
+      std::map<std::pair<GURL, std::string>, ContentHandlerConnection*>;
   using URLToLoaderMap = std::map<GURL, ApplicationLoader*>;
 
   // Takes the contents of |params| only when it returns true.
@@ -108,9 +133,9 @@ class ApplicationManager {
       const GURL& resolved_url,
       ApplicationLoader* loader);
 
-  InterfaceRequest<Application> CreateInstance(
+  InterfaceRequest<Application> RegisterInstance(
       scoped_ptr<ConnectToApplicationParams> params,
-      ApplicationInstance** instance);
+      ApplicationInstance** resulting_instance);
 
   // Called once |fetcher| has found app. |params->app_url()| is the url of
   // the requested application before any mappings/resolution have been applied.
@@ -141,6 +166,10 @@ class ApplicationManager {
 
   void CleanupRunner(NativeRunner* runner);
 
+  ScopedMessagePipeHandle ConnectToServiceByName(
+      const GURL& application_url,
+      const std::string& interface_name);
+
   scoped_ptr<PackageManager> const package_manager_;
   // Loader management.
   // Loaders are chosen in the order they are listed here.
@@ -148,10 +177,11 @@ class ApplicationManager {
   scoped_ptr<ApplicationLoader> default_loader_;
   scoped_ptr<NativeRunnerFactory> native_runner_factory_;
 
-  IdentityToInstanceMap identity_to_instance_;
-  IdentityToContentHandlerMap identity_to_content_handler_;
+  IdentityToApplicationInstanceMap identity_to_instance_;
+  URLToContentHandlerMap url_to_content_handler_;
 
   base::SequencedWorkerPool* blocking_pool_;
+  updater::UpdaterPtr updater_;
   ScopedVector<NativeRunner> native_runners_;
   // Counter used to assign ids to content_handlers.
   uint32_t content_handler_id_counter_;

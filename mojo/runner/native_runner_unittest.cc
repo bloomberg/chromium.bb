@@ -94,14 +94,10 @@ TEST_F(NativeApplicationLoaderTest, DoesNotExist) {
   ServiceProviderPtr service_provider;
   mojo::URLRequestPtr request(mojo::URLRequest::New());
   request->url = mojo::String::From(url.spec());
-
-  scoped_ptr<shell::ConnectToApplicationParams> params(
-      new shell::ConnectToApplicationParams);
-  params->SetURLInfo(request.Pass());
-  params->set_services(services.Pass());
-  params->set_exposed_services(service_provider.Pass());
-  params->set_filter(shell::GetPermissiveCapabilityFilter());
-  context_->application_manager()->ConnectToApplication(params.Pass());
+  context_->application_manager()->ConnectToApplication(
+      nullptr, request.Pass(), std::string(), services.Pass(),
+      service_provider.Pass(), shell::GetPermissiveCapabilityFilter(),
+      base::Closure(), shell::EmptyConnectCallback());
   EXPECT_FALSE(state_.runner_was_created);
   EXPECT_FALSE(state_.runner_was_started);
   EXPECT_FALSE(state_.runner_was_destroyed);

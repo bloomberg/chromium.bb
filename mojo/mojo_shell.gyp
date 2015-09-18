@@ -16,8 +16,6 @@
       'shell/capability_filter.h',
       'shell/connect_to_application_params.cc',
       'shell/connect_to_application_params.h',
-      'shell/connect_util.cc',
-      'shell/connect_util.h',
       'shell/content_handler_connection.cc',
       'shell/content_handler_connection.h',
       'shell/data_pipe_peek.cc',

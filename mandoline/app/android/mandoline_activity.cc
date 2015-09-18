@@ -7,7 +7,6 @@
 #include "mandoline/ui/desktop_ui/public/interfaces/launch_handler.mojom.h"
 #include "mojo/runner/android/main.h"
 #include "mojo/runner/context.h"
-#include "mojo/shell/connect_util.h"
 
 namespace mandoline {
 
@@ -15,9 +14,8 @@ static void LaunchURL(JNIEnv* env,
                       const JavaParamRef<jclass>& clazz,
                       const JavaParamRef<jstring>& jurl) {
   LaunchHandlerPtr launch_handler;
-  mojo::shell::ConnectToService(
-      mojo::runner::GetContext()->application_manager(), GURL("mojo:phone_ui"),
-      &launch_handler);
+  mojo::runner::GetContext()->application_manager()->ConnectToService(
+      GURL("mojo:phone_ui"), &launch_handler);
   launch_handler->LaunchURL(
       base::android::ConvertJavaStringToUTF8(env, jurl));
 }
