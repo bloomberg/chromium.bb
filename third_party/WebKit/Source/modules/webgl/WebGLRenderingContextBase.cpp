@@ -4294,7 +4294,7 @@ void WebGLRenderingContextBase::texImage2D(GLenum target, GLint level, GLenum in
     ASSERT(texture);
 
     // texImage2DCanvasByGPU relies on copyTextureCHROMIUM which doesn't support float type.
-    bool isFloatType = type == GL_FLOAT || type == GL_HALF_FLOAT_OES;
+    bool isFloatType = type == GL_FLOAT || type == GL_HALF_FLOAT || type == GL_HALF_FLOAT_OES;
     if (!canvas->renderingContext() || !canvas->renderingContext()->isAccelerated() || isFloatType) {
         // 2D canvas has only FrontBuffer.
         texImage2DImpl(target, level, internalformat, format, type, canvas->copiedImage(FrontBuffer).get(),
@@ -4554,7 +4554,7 @@ void WebGLRenderingContextBase::texSubImage2D(GLenum target, GLint level, GLint 
     WebGLTexture* texture = validateTextureBinding("texSubImage2D", target, true);
     ASSERT(texture);
 
-    bool isFloatType = type == GL_FLOAT || type == GL_HALF_FLOAT_OES;
+    bool isFloatType = type == GL_FLOAT || type == GL_HALF_FLOAT || type == GL_HALF_FLOAT_OES;
     if (!canvas->renderingContext() || !canvas->renderingContext()->isAccelerated() || isFloatType) {
         // 2D canvas has only FrontBuffer.
         texSubImage2DImpl(target, level, xoffset, yoffset, format, type, canvas->copiedImage(FrontBuffer).get(),
