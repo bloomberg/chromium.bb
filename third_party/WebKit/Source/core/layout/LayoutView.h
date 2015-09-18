@@ -41,10 +41,22 @@ namespace blink {
 class DeprecatedPaintLayerCompositor;
 class LayoutQuote;
 
-// The root of the layout tree, corresponding to the CSS initial containing block.
-// It's dimensions match that of the logical viewport (which may be different from
-// the visible viewport in fixed-layout mode), and it is always at position (0,0)
-// relative to the document (and so isn't necessarily in view).
+// LayoutView is the root of the layout tree and the Document's LayoutObject.
+//
+// It corresponds to the CSS concept of 'initial containing block' (or ICB).
+// http://www.w3.org/TR/CSS2/visudet.html#containing-block-details
+//
+// Its dimensions match that of the layout viewport. This viewport is used to
+// size elements, in particular fixed positioned elements.
+// LayoutView is always at position (0,0) relative to the document (and so isn't
+// necessarily in view).
+// See
+// https://www.chromium.org/developers/design-documents/blink-coordinate-spaces
+// about the different viewports.
+//
+// Because there is one LayoutView per rooted layout tree (or Frame), this class
+// is used to add members shared by this tree (e.g. m_layoutState or
+// m_layoutQuoteHead).
 class CORE_EXPORT LayoutView final : public LayoutBlockFlow {
 public:
     explicit LayoutView(Document*);
@@ -208,15 +220,37 @@ private:
     GC_PLUGIN_IGNORE("http://crbug.com/509911")
     FrameView* m_frameView;
 
+    // The current selection represented as 2 boundaries.
+    // Selection boundaries are represented in LayoutView by a tuple
+    // (LayoutObject, DOM node offset).
+    // See http://www.w3.org/TR/dom/#range for more information.
+    //
+    // |m_selectionStartPos| and |m_selectionEndPos| are only valid for
+    // |Text| node without 'transform' or 'first-letter'.
+    //
+    // Those are used for selection painting and paint invalidation upon
+    // selection change.
     LayoutObject* m_selectionStart;
     LayoutObject* m_selectionEnd;
 
+    // TODO(yosin): Clarify the meaning of these variables. editing/ passes
+    // them as offsets in the DOM tree  but layout uses them as offset in the
+    // layout tree.
     int m_selectionStartPos;
     int m_selectionEndPos;
 
+    // The page logical height.
+    // This is only used during printing to split the content into pages.
+    // Outside of printing, this is 0.
     LayoutUnit m_pageLogicalHeight;
     bool m_pageLogicalHeightChanged;
+
+    // LayoutState is an optimization used during layout.
+    // |m_layoutState| will be nullptr outside of layout.
+    //
+    // See the class comment for more details.
     LayoutState* m_layoutState;
+
     OwnPtr<DeprecatedPaintLayerCompositor> m_compositor;
     RefPtr<IntervalArena> m_intervalArena;
 

@@ -39,7 +39,30 @@ class LayoutFlowThread;
 class LayoutObject;
 class LayoutView;
 
+// LayoutState is an optimization used during layout.
+//
+// LayoutState's purpose is to cache information as we walk down the container
+// block chain during layout. In particular, the absolute layout offset for the
+// current LayoutObject is O(1) when using LayoutState, when it is
+// O(depthOfTree) without it (thus potentially making layout O(N^2)).
+// LayoutState incurs some memory overhead and is pretty intrusive (see next
+// paragraphs about those downsides).
+//
+// To use LayoutState, the layout() functions have to allocate a new LayoutSTate
+// object on the stack whenever the LayoutObject creates a new coordinate system
+// (which is pretty much all objects but LayoutTableRow).
+//
+// LayoutStates are linked together with a single linked list, acting in
+// practice like a stack that we push / pop. LayoutView holds the top-most
+// pointer to this stack.
+//
+// See the layout() functions on how to set it up during layout.
+// See e.g LayoutBox::offsetFromLogicalTopOfFirstPage on how to use LayoutState
+// for computations.
 class LayoutState {
+    // LayoutState is always allocated on the stack.
+    // The reason is that it is scoped to layout, thus we can avoid expensive
+    // mallocs.
     DISALLOW_ALLOCATION();
     WTF_MAKE_NONCOPYABLE(LayoutState);
 public:
