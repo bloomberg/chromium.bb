@@ -42,7 +42,7 @@ class OutputSurfaceClient;
 //      From here on, it will only be used on the compositor thread.
 //   3. If the 3D context is lost, then the compositor will delete the output
 //      surface (on the compositor thread) and go back to step 1.
-class CC_EXPORT OutputSurface {
+class CC_EXPORT OutputSurface : public base::trace_event::MemoryDumpProvider {
  public:
   enum {
     DEFAULT_MAX_FRAMES_PENDING = 2
@@ -61,7 +61,7 @@ class CC_EXPORT OutputSurface {
   OutputSurface(const scoped_refptr<ContextProvider>& context_provider,
                 scoped_ptr<SoftwareOutputDevice> software_device);
 
-  virtual ~OutputSurface();
+  ~OutputSurface() override;
 
   struct Capabilities {
     Capabilities()
@@ -164,6 +164,10 @@ class CC_EXPORT OutputSurface {
 
   // If this returns true, then the surface will not attempt to draw.
   virtual bool SurfaceIsSuspendForRecycle() const;
+
+  // base::trace_event::MemoryDumpProvider implementation.
+  bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
+                    base::trace_event::ProcessMemoryDump* pmd) override;
 
  protected:
   OutputSurfaceClient* client_;
