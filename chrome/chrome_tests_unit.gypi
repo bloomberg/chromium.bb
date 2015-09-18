@@ -1631,7 +1631,6 @@
     # Sources for Offline pages. For now only for Android.
     'chrome_unit_tests_offline_pages_sources': [
       'browser/android/offline_pages/offline_page_mhtml_archiver_unittest.cc',
-      'browser/android/offline_pages/offline_page_web_contents_observer_unittest.cc',
     ],
   },
   'targets': [

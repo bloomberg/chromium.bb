@@ -13,7 +13,6 @@
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/thread_task_runner_handle.h"
-#include "chrome/browser/android/offline_pages/offline_page_web_contents_observer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace offline_pages {

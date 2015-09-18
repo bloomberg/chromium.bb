@@ -10,7 +10,6 @@
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/android/offline_pages/offline_page_web_contents_observer.h"
 #include "content/public/browser/web_contents.h"
 #include "net/base/filename_util.h"
 
@@ -55,13 +54,6 @@ OfflinePageMHTMLArchiver::OfflinePageMHTMLArchiver(
 }
 
 OfflinePageMHTMLArchiver::~OfflinePageMHTMLArchiver() {
-  if (web_contents_) {
-    OfflinePageWebContentsObserver* web_contents_observer =
-        OfflinePageWebContentsObserver::FromWebContents(web_contents_);
-    if (web_contents_observer)
-      web_contents_observer->set_main_frame_document_loaded_callback(
-          base::Closure());
-  }
 }
 
 void OfflinePageMHTMLArchiver::CreateArchive(
@@ -86,19 +78,9 @@ void OfflinePageMHTMLArchiver::GenerateMHTML() {
     return;
   }
 
-  OfflinePageWebContentsObserver* web_contents_observer =
-      OfflinePageWebContentsObserver::FromWebContents(web_contents_);
-  if (!web_contents_observer) {
-    DVLOG(1) << "WebContentsObserver is missing. Can't create archive.";
+  if (!web_contents_->GetRenderViewHost()) {
+    DVLOG(1) << "RenderViewHost is not created yet. Can't create archive.";
     ReportFailure(ArchiverResult::ERROR_CONTENT_UNAVAILABLE);
-    return;
-  }
-
-  // If main frame document has not been loaded yet, wait until it is.
-  if (!web_contents_observer->is_document_loaded_in_main_frame()) {
-    web_contents_observer->set_main_frame_document_loaded_callback(
-        base::Bind(&OfflinePageMHTMLArchiver::DoGenerateMHTML,
-                   weak_ptr_factory_.GetWeakPtr()));
     return;
   }
 

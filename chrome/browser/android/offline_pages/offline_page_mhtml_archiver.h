@@ -79,8 +79,6 @@ class OfflinePageMHTMLArchiver : public OfflinePageArchiver {
   // archive will fail.
   const base::FilePath archive_dir_;
   // Contents of the web page to be serialized. Not owned.
-  // TODO(fgorski): Add WebContentsObserver to know when the page navigates away
-  // or shuts down.
   content::WebContents* web_contents_;
 
   CreateArchiveCallback callback_;

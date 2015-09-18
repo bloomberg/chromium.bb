@@ -1392,8 +1392,6 @@
       'browser/android/offline_pages/offline_page_mhtml_archiver.h',
       'browser/android/offline_pages/offline_page_model_factory.cc',
       'browser/android/offline_pages/offline_page_model_factory.h',
-      'browser/android/offline_pages/offline_page_web_contents_observer.cc',
-      'browser/android/offline_pages/offline_page_web_contents_observer.h',
     ],
     'chrome_browser_browser_process_sources': [
       'browser/browser_process.cc',
