@@ -53,15 +53,14 @@
             "Korean word 4: vacuum cleaner"
           ], 
           "input": "진공 청소기", 
-          "output": "⠨⠟⠈⠿⠀⠰⠻⠠⠥⠈⠕",
-          "xfail": "Fails because ?"
+          "output": "⠨⠟⠈⠿ ⠰⠻⠠⠥⠈⠕"
         },
         {
           "comment": [
             "Words within parentheses."
           ], 
           "input": "신라의 수도는 서라벌(오늘날 경주)였다.", 
-          "output": "⠠⠟⠐⠣⠺⠀⠠⠍⠊⠥⠉⠵⠀⠠⠎⠐⠣⠘⠞⠤⠥⠉⠮⠉⠂⠀⠈⠻⠨⠍⠤⠱⠌⠊⠚",
+          "output": "⠠⠟⠐⠣⠺ ⠠⠍⠊⠥⠉⠵ ⠠⠎⠐⠣⠘⠞⠤⠥⠉⠮⠉⠂ ⠈⠻⠨⠍⠤⠱⠌⠊⠚",
           "xfail": "Fails because ?"
         },
         {
@@ -69,7 +68,7 @@
             "English followed by Korean: name of a broadcasting company"
           ], 
           "input": "YTN 연합뉴스", 
-          "output": "⠴⠠⠠⠽⠞⠝⠀⠡⠚⠃⠉⠩⠠⠪",
+          "output": "⠴⠠⠠⠽⠞⠝ ⠡⠚⠃⠉⠩⠠⠪",
           "xfail": "Fails because ?"
         }
       ], 
