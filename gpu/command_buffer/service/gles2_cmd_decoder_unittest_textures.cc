@@ -402,6 +402,90 @@ TEST_P(GLES2DecoderTest, TexSubImage2DBadArgs) {
   EXPECT_NE(error::kNoError, ExecuteCmd(cmd));
 }
 
+TEST_P(GLES3DecoderTest, TexSubImage2DTypesDoNotMatchUnsizedFormat) {
+  const int kWidth = 16;
+  const int kHeight = 8;
+  DoBindTexture(GL_TEXTURE_2D, client_texture_id_, kServiceTextureId);
+  DoTexImage2D(GL_TEXTURE_2D,
+               1,
+               GL_RGBA,
+               kWidth,
+               kHeight,
+               0,
+               GL_RGBA,
+               GL_UNSIGNED_SHORT_4_4_4_4,
+               kSharedMemoryId,
+               kSharedMemoryOffset);
+  EXPECT_CALL(*gl_,
+              TexSubImage2D(GL_TEXTURE_2D,
+                            1,
+                            1,
+                            0,
+                            kWidth - 1,
+                            kHeight,
+                            GL_RGBA,
+                            GL_UNSIGNED_BYTE,
+                            shared_memory_address_))
+      .Times(1)
+      .RetiresOnSaturation();
+  TexSubImage2D cmd;
+  cmd.Init(GL_TEXTURE_2D,
+           1,
+           1,
+           0,
+           kWidth - 1,
+           kHeight,
+           GL_RGBA,
+           GL_UNSIGNED_BYTE,
+           kSharedMemoryId,
+           kSharedMemoryOffset,
+           GL_FALSE);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+}
+
+TEST_P(GLES3DecoderTest, TexSubImage2DTypesDoNotMatchSizedFormat) {
+  const int kWidth = 16;
+  const int kHeight = 8;
+  DoBindTexture(GL_TEXTURE_2D, client_texture_id_, kServiceTextureId);
+  DoTexImage2D(GL_TEXTURE_2D,
+               1,
+               GL_RGBA4,
+               kWidth,
+               kHeight,
+               0,
+               GL_RGBA,
+               GL_UNSIGNED_BYTE,
+               kSharedMemoryId,
+               kSharedMemoryOffset);
+  EXPECT_CALL(*gl_,
+              TexSubImage2D(GL_TEXTURE_2D,
+                            1,
+                            1,
+                            0,
+                            kWidth - 1,
+                            kHeight,
+                            GL_RGBA,
+                            GL_UNSIGNED_SHORT_4_4_4_4,
+                            shared_memory_address_))
+      .Times(1)
+      .RetiresOnSaturation();
+  TexSubImage2D cmd;
+  cmd.Init(GL_TEXTURE_2D,
+           1,
+           1,
+           0,
+           kWidth - 1,
+           kHeight,
+           GL_RGBA,
+           GL_UNSIGNED_SHORT_4_4_4_4,
+           kSharedMemoryId,
+           kSharedMemoryOffset,
+           GL_FALSE);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+}
+
 TEST_P(GLES2DecoderTest, CopyTexSubImage2DValidArgs) {
   const int kWidth = 16;
   const int kHeight = 8;

@@ -862,8 +862,7 @@ bool Texture::ValidForTexture(
     GLint zoffset,
     GLsizei width,
     GLsizei height,
-    GLsizei depth,
-    GLenum type) const {
+    GLsizei depth) const {
   size_t face_index = GLES2Util::GLTargetToFaceIndex(target);
   if (level >= 0 && face_index < face_infos_.size() &&
       static_cast<size_t>(level) < face_infos_[face_index].level_infos.size()) {
@@ -879,8 +878,7 @@ bool Texture::ValidForTexture(
            zoffset >= 0 &&
            max_x <= info.width &&
            max_y <= info.height &&
-           max_z <= info.depth &&
-           type == info.type;
+           max_z <= info.depth;
   }
   return false;
 }

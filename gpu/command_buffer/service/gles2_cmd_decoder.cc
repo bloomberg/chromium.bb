@@ -10455,7 +10455,7 @@ void GLES2DecoderImpl::DoCompressedTexSubImage3D(
     return;
   }
   if (!texture->ValidForTexture(target, level, xoffset, yoffset, zoffset,
-                                width, height, depth, type)) {
+                                width, height, depth)) {
     LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glCompressedTexSubImage3D",
         "bad dimensions");
     return;
@@ -10662,7 +10662,7 @@ void GLES2DecoderImpl::DoCompressedTexSubImage2D(
     return;
   }
   if (!texture->ValidForTexture(target, level, xoffset, yoffset, 0, width,
-                                height, 1, type)) {
+                                height, 1)) {
     LOCAL_SET_GL_ERROR(
         GL_INVALID_VALUE, "glCompressedTexSubImage2D", "bad dimensions.");
     return;
@@ -10872,7 +10872,7 @@ void GLES2DecoderImpl::DoCopyTexSubImage2D(
   GLenum format = 0;
   if (!texture->GetLevelType(target, level, &type, &format) ||
       !texture->ValidForTexture(
-          target, level, xoffset, yoffset, 0, width, height, 1, type)) {
+          target, level, xoffset, yoffset, 0, width, height, 1)) {
     LOCAL_SET_GL_ERROR(
         GL_INVALID_VALUE, "glCopyTexSubImage2D", "bad dimensions.");
     return;
@@ -11027,14 +11027,14 @@ bool GLES2DecoderImpl::ValidateTexSubImage2D(
       function_name, format, type, internal_format, level)) {
     return false;
   }
-  if (type != current_type) {
+  if (type != current_type && !feature_info_->IsES3Enabled()) {
     LOCAL_SET_GL_ERROR(
         GL_INVALID_OPERATION,
         function_name, "type does not match type of texture.");
     return false;
   }
   if (!texture->ValidForTexture(
-          target, level, xoffset, yoffset, 0, width, height, 1, type)) {
+          target, level, xoffset, yoffset, 0, width, height, 1)) {
     LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, function_name, "bad dimensions.");
     return false;
   }
@@ -13101,7 +13101,7 @@ void GLES2DecoderImpl::DoCopySubTextureCHROMIUM(
   source_texture->GetLevelType(source_texture->target(), 0, &source_type,
                                &source_internal_format);
   if (!source_texture->ValidForTexture(source_texture->target(), 0, x, y, 0,
-                                       width, height, 1, source_type)) {
+                                       width, height, 1)) {
     LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glCopySubTextureCHROMIUM",
                        "source texture bad dimensions.");
     return;
@@ -13117,7 +13117,7 @@ void GLES2DecoderImpl::DoCopySubTextureCHROMIUM(
     return;
   }
   if (!dest_texture->ValidForTexture(dest_texture->target(), 0, xoffset,
-                                     yoffset, 0, width, height, 1, dest_type)) {
+                                     yoffset, 0, width, height, 1)) {
     LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glCopySubTextureCHROMIUM",
                        "destination texture bad dimensions.");
     return;
@@ -13433,7 +13433,7 @@ void GLES2DecoderImpl::DoCompressedCopySubTextureCHROMIUM(GLenum target,
   source_texture->GetLevelType(source_texture->target(), 0, &source_type,
                                &source_internal_format);
   if (!source_texture->ValidForTexture(source_texture->target(), 0, x, y, 0,
-                                       width, height, 1, source_type)) {
+                                       width, height, 1)) {
     LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glCompressedCopySubTextureCHROMIUM",
                        "source texture bad dimensions.");
     return;
@@ -13450,7 +13450,7 @@ void GLES2DecoderImpl::DoCompressedCopySubTextureCHROMIUM(GLenum target,
     return;
   }
   if (!dest_texture->ValidForTexture(dest_texture->target(), 0, xoffset,
-                                     yoffset, 0, width, height, 1, dest_type)) {
+                                     yoffset, 0, width, height, 1)) {
     LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glCompressedCopySubTextureCHROMIUM",
                        "destination texture bad dimensions.");
     return;

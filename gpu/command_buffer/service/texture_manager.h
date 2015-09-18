@@ -146,7 +146,7 @@ class GPU_EXPORT Texture {
   }
 
   // Returns true of the given dimensions are inside the dimensions of the
-  // level and if the type matches the level.
+  // level.
   bool ValidForTexture(
       GLint target,
       GLint level,
@@ -155,8 +155,7 @@ class GPU_EXPORT Texture {
       GLint zoffset,
       GLsizei width,
       GLsizei height,
-      GLsizei depth,
-      GLenum type) const;
+      GLsizei depth) const;
 
   bool IsValid() const {
     return !!target();
