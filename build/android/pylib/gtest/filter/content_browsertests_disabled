@@ -34,6 +34,7 @@ RenderViewImplTest.*
 RendererAccessibilityTest.SendFullAccessibilityTreeOnReload
 RendererAccessibilityTest.HideAccessibilityObject
 RendererAccessibilityTest.ShowAccessibilityObject
+RendererAccessibilityTest.TextSelectionShouldSendRoot
 
 # http://crbug.com/215894
 DownloadContentTest.CancelInterruptedDownload
