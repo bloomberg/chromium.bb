@@ -13,13 +13,14 @@ namespace content {
 // Listens for changes to the online state and manages sending
 // updates to each RenderProcess via RenderProcessHost IPC.
 class BrowserOnlineStateObserver
-    : public net::NetworkChangeNotifier::ConnectionTypeObserver {
+    : public net::NetworkChangeNotifier::MaxBandwidthObserver {
  public:
   BrowserOnlineStateObserver();
   ~BrowserOnlineStateObserver() override;
 
-  // ConnectionTypeObserver implementation.
-  void OnConnectionTypeChanged(
+  // MaxBandwidthObserver implementation.
+  void OnMaxBandwidthChanged(
+      double max_bandwidth_mbps,
       net::NetworkChangeNotifier::ConnectionType type) override;
 
  private:

@@ -556,6 +556,81 @@ void NetworkChangeNotifier::GetMaxBandwidthAndConnectionType(
 }
 
 // static
+double NetworkChangeNotifier::GetMaxBandwidthForConnectionSubtype(
+    ConnectionSubtype subtype) {
+  switch (subtype) {
+    case SUBTYPE_GSM:
+      return 0.01;
+    case SUBTYPE_IDEN:
+      return 0.064;
+    case SUBTYPE_CDMA:
+      return 0.115;
+    case SUBTYPE_1XRTT:
+      return 0.153;
+    case SUBTYPE_GPRS:
+      return 0.237;
+    case SUBTYPE_EDGE:
+      return 0.384;
+    case SUBTYPE_UMTS:
+      return 2.0;
+    case SUBTYPE_EVDO_REV_0:
+      return 2.46;
+    case SUBTYPE_EVDO_REV_A:
+      return 3.1;
+    case SUBTYPE_HSPA:
+      return 3.6;
+    case SUBTYPE_EVDO_REV_B:
+      return 14.7;
+    case SUBTYPE_HSDPA:
+      return 14.3;
+    case SUBTYPE_HSUPA:
+      return 14.4;
+    case SUBTYPE_EHRPD:
+      return 21.0;
+    case SUBTYPE_HSPAP:
+      return 42.0;
+    case SUBTYPE_LTE:
+      return 100.0;
+    case SUBTYPE_LTE_ADVANCED:
+      return 100.0;
+    case SUBTYPE_BLUETOOTH_1_2:
+      return 1.0;
+    case SUBTYPE_BLUETOOTH_2_1:
+      return 3.0;
+    case SUBTYPE_BLUETOOTH_3_0:
+      return 24.0;
+    case SUBTYPE_BLUETOOTH_4_0:
+      return 1.0;
+    case SUBTYPE_ETHERNET:
+      return 10.0;
+    case SUBTYPE_FAST_ETHERNET:
+      return 100.0;
+    case SUBTYPE_GIGABIT_ETHERNET:
+      return 1000.0;
+    case SUBTYPE_10_GIGABIT_ETHERNET:
+      return 10000.0;
+    case SUBTYPE_WIFI_B:
+      return 11.0;
+    case SUBTYPE_WIFI_G:
+      return 54.0;
+    case SUBTYPE_WIFI_N:
+      return 600.0;
+    case SUBTYPE_WIFI_AC:
+      return 1300.0;
+    case SUBTYPE_WIFI_AD:
+      return 7000.0;
+    case SUBTYPE_UNKNOWN:
+      return std::numeric_limits<double>::infinity();
+    case SUBTYPE_NONE:
+      return 0.0;
+    case SUBTYPE_OTHER:
+      return std::numeric_limits<double>::infinity();
+  }
+  NOTREACHED();
+  return std::numeric_limits<double>::infinity();
+}
+
+// static
 void NetworkChangeNotifier::GetDnsConfig(DnsConfig* config) {
   if (!g_network_change_notifier) {
     *config = DnsConfig();
@@ -858,81 +933,6 @@ void NetworkChangeNotifier::GetCurrentMaxBandwidthAndConnectionType(
       *connection_type == CONNECTION_NONE
           ? GetMaxBandwidthForConnectionSubtype(SUBTYPE_NONE)
           : GetMaxBandwidthForConnectionSubtype(SUBTYPE_UNKNOWN);
-}
-
-// static
-double NetworkChangeNotifier::GetMaxBandwidthForConnectionSubtype(
-    ConnectionSubtype subtype) {
-  switch (subtype) {
-    case SUBTYPE_GSM:
-      return 0.01;
-    case SUBTYPE_IDEN:
-      return 0.064;
-    case SUBTYPE_CDMA:
-      return 0.115;
-    case SUBTYPE_1XRTT:
-      return 0.153;
-    case SUBTYPE_GPRS:
-      return 0.237;
-    case SUBTYPE_EDGE:
-      return 0.384;
-    case SUBTYPE_UMTS:
-      return 2.0;
-    case SUBTYPE_EVDO_REV_0:
-      return 2.46;
-    case SUBTYPE_EVDO_REV_A:
-      return 3.1;
-    case SUBTYPE_HSPA:
-      return 3.6;
-    case SUBTYPE_EVDO_REV_B:
-      return 14.7;
-    case SUBTYPE_HSDPA:
-      return 14.3;
-    case SUBTYPE_HSUPA:
-      return 14.4;
-    case SUBTYPE_EHRPD:
-      return 21.0;
-    case SUBTYPE_HSPAP:
-      return 42.0;
-    case SUBTYPE_LTE:
-      return 100.0;
-    case SUBTYPE_LTE_ADVANCED:
-      return 100.0;
-    case SUBTYPE_BLUETOOTH_1_2:
-      return 1.0;
-    case SUBTYPE_BLUETOOTH_2_1:
-      return 3.0;
-    case SUBTYPE_BLUETOOTH_3_0:
-      return 24.0;
-    case SUBTYPE_BLUETOOTH_4_0:
-      return 1.0;
-    case SUBTYPE_ETHERNET:
-      return 10.0;
-    case SUBTYPE_FAST_ETHERNET:
-      return 100.0;
-    case SUBTYPE_GIGABIT_ETHERNET:
-      return 1000.0;
-    case SUBTYPE_10_GIGABIT_ETHERNET:
-      return 10000.0;
-    case SUBTYPE_WIFI_B:
-      return 11.0;
-    case SUBTYPE_WIFI_G:
-      return 54.0;
-    case SUBTYPE_WIFI_N:
-      return 600.0;
-    case SUBTYPE_WIFI_AC:
-      return 1300.0;
-    case SUBTYPE_WIFI_AD:
-      return 7000.0;
-    case SUBTYPE_UNKNOWN:
-      return std::numeric_limits<double>::infinity();
-    case SUBTYPE_NONE:
-      return 0.0;
-    case SUBTYPE_OTHER:
-      return std::numeric_limits<double>::infinity();
-  }
-  NOTREACHED();
-  return std::numeric_limits<double>::infinity();
 }
 
 // static

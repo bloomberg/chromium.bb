@@ -460,7 +460,9 @@ class CONTENT_EXPORT RenderThreadImpl
 #if defined(ENABLE_PLUGINS)
   void OnPurgePluginListCache(bool reload_pages);
 #endif
-  void OnNetworkTypeChanged(net::NetworkChangeNotifier::ConnectionType type);
+  void OnNetworkConnectionChanged(
+      net::NetworkChangeNotifier::ConnectionType type,
+      double max_bandwidth_mbps);
   void OnGetAccessibilityTree();
   void OnUpdateTimezone(const std::string& zoneId);
   void OnMemoryPressure(

@@ -10,18 +10,20 @@
 namespace content {
 
 BrowserOnlineStateObserver::BrowserOnlineStateObserver() {
-  net::NetworkChangeNotifier::AddConnectionTypeObserver(this);
+  net::NetworkChangeNotifier::AddMaxBandwidthObserver(this);
 }
 
 BrowserOnlineStateObserver::~BrowserOnlineStateObserver() {
-  net::NetworkChangeNotifier::RemoveConnectionTypeObserver(this);
+  net::NetworkChangeNotifier::RemoveMaxBandwidthObserver(this);
 }
 
-void BrowserOnlineStateObserver::OnConnectionTypeChanged(
+void BrowserOnlineStateObserver::OnMaxBandwidthChanged(
+    double max_bandwidth_mbps,
     net::NetworkChangeNotifier::ConnectionType type) {
   for (RenderProcessHost::iterator it(RenderProcessHost::AllHostsIterator());
        !it.IsAtEnd(); it.Advance()) {
-    it.GetCurrentValue()->Send(new ViewMsg_NetworkTypeChanged(type));
+    it.GetCurrentValue()->Send(
+        new ViewMsg_NetworkConnectionChanged(type, max_bandwidth_mbps));
   }
 }
 

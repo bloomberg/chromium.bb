@@ -6,6 +6,10 @@ function getType() {
   sendValueToTest(navigator.connection.type);
 }
 
+function getDownlinkMax() {
+  sendValueToTest(navigator.connection.downlinkMax.toString());
+}
+
 function getOnLine() {
   sendValueToTest(navigator.onLine);
 }

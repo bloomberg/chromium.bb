@@ -1615,7 +1615,8 @@ bool RenderThreadImpl::OnControlMessageReceived(const IPC::Message& msg) {
     // TODO(port): removed from render_messages_internal.h;
     // is there a new non-windows message I should add here?
     IPC_MESSAGE_HANDLER(ViewMsg_New, OnCreateNewView)
-    IPC_MESSAGE_HANDLER(ViewMsg_NetworkTypeChanged, OnNetworkTypeChanged)
+    IPC_MESSAGE_HANDLER(ViewMsg_NetworkConnectionChanged,
+                        OnNetworkConnectionChanged)
     IPC_MESSAGE_HANDLER(WorkerProcessMsg_CreateWorker, OnCreateNewSharedWorker)
     IPC_MESSAGE_HANDLER(ViewMsg_TimezoneChange, OnUpdateTimezone)
 #if defined(OS_ANDROID)
@@ -1770,15 +1771,16 @@ void RenderThreadImpl::OnPurgePluginListCache(bool reload_pages) {
 }
 #endif
 
-void RenderThreadImpl::OnNetworkTypeChanged(
-    net::NetworkChangeNotifier::ConnectionType type) {
+void RenderThreadImpl::OnNetworkConnectionChanged(
+    net::NetworkChangeNotifier::ConnectionType type,
+    double max_bandwidth_mbps) {
   EnsureWebKitInitialized();
   bool online = type != net::NetworkChangeNotifier::CONNECTION_NONE;
   WebNetworkStateNotifier::setOnLine(online);
   FOR_EACH_OBSERVER(
       RenderProcessObserver, observers_, NetworkStateChanged(online));
-  WebNetworkStateNotifier::setWebConnectionType(
-      NetConnectionTypeToWebConnectionType(type));
+  WebNetworkStateNotifier::setWebConnection(
+      NetConnectionTypeToWebConnectionType(type), max_bandwidth_mbps);
 }
 
 void RenderThreadImpl::OnUpdateTimezone(const std::string& zone_id) {

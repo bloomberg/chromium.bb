@@ -500,9 +500,10 @@ WebPreferences RenderViewHostImpl::ComputeWebkitPrefs() {
     prefs.javascript_enabled = true;
   }
 
-  prefs.connection_type = net::NetworkChangeNotifier::GetConnectionType();
-  prefs.is_online =
-      prefs.connection_type != net::NetworkChangeNotifier::CONNECTION_NONE;
+  net::NetworkChangeNotifier::GetMaxBandwidthAndConnectionType(
+      &prefs.net_info_max_bandwidth_mbps, &prefs.net_info_connection_type);
+  prefs.is_online = prefs.net_info_connection_type !=
+                    net::NetworkChangeNotifier::CONNECTION_NONE;
 
   prefs.number_of_cpu_cores = base::SysInfo::NumberOfProcessors();
 

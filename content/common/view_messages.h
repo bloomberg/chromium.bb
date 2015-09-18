@@ -845,8 +845,9 @@ IPC_MESSAGE_ROUTED0(ViewMsg_WorkerConnected)
 
 // Tells the renderer that the network type has changed so that navigator.onLine
 // and navigator.connection can be updated.
-IPC_MESSAGE_CONTROL1(ViewMsg_NetworkTypeChanged,
-                     net::NetworkChangeNotifier::ConnectionType /* type */)
+IPC_MESSAGE_CONTROL2(ViewMsg_NetworkConnectionChanged,
+                     net::NetworkChangeNotifier::ConnectionType /* type */,
+                     double /* max bandwidth mbps */)
 
 #if defined(ENABLE_PLUGINS)
 // Reply to ViewHostMsg_OpenChannelToPpapiBroker

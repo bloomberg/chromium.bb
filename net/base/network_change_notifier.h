@@ -247,6 +247,12 @@ class NET_EXPORT NetworkChangeNotifier {
   static void GetMaxBandwidthAndConnectionType(double* max_bandwidth_mbps,
                                                ConnectionType* connection_type);
 
+  // Returns a theoretical upper limit (in Mbps) on download bandwidth given a
+  // connection subtype. The mapping of connection type to maximum bandwidth is
+  // provided in the NetInfo spec: http://w3c.github.io/netinfo/.
+  // TODO(jkarlin): Rename to GetMaxBandwidthMbpsForConnectionSubtype.
+  static double GetMaxBandwidthForConnectionSubtype(ConnectionSubtype subtype);
+
   // Retrieve the last read DnsConfig. This could be expensive if the system has
   // a large HOSTS file.
   static void GetDnsConfig(DnsConfig* config);
@@ -403,11 +409,6 @@ class NET_EXPORT NetworkChangeNotifier {
   virtual void GetCurrentMaxBandwidthAndConnectionType(
       double* max_bandwidth_mbps,
       ConnectionType* connection_type) const;
-
-  // Returns a theoretical upper limit on download bandwidth given a connection
-  // subtype. The mapping of connection type to maximum bandwidth is provided in
-  // the NetInfo spec: http://w3c.github.io/netinfo/.
-  static double GetMaxBandwidthForConnectionSubtype(ConnectionSubtype subtype);
 
   // Broadcasts a notification to all registered observers.  Note that this
   // happens asynchronously, even for observers on the current thread, even in

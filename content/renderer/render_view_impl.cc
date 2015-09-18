@@ -1122,8 +1122,9 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
 #endif
 
   WebNetworkStateNotifier::setOnLine(prefs.is_online);
-  WebNetworkStateNotifier::setWebConnectionType(
-      NetConnectionTypeToWebConnectionType(prefs.connection_type));
+  WebNetworkStateNotifier::setWebConnection(
+      NetConnectionTypeToWebConnectionType(prefs.net_info_connection_type),
+      prefs.net_info_max_bandwidth_mbps);
 
   settings->setPinchOverlayScrollbarThickness(
       prefs.pinch_overlay_scrollbar_thickness);
