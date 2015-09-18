@@ -31,7 +31,7 @@ struct DataForRecursion {
   EffectTree* effect_tree;
   LayerType* transform_tree_parent;
   LayerType* transform_fixed_parent;
-  LayerType* render_target;
+  int render_target;
   int clip_tree_parent;
   int effect_tree_parent;
   const LayerType* page_scale_layer;
@@ -94,6 +94,7 @@ static bool LayerClipsSubtree(LayerType* layer) {
 template <typename LayerType>
 void AddClipNodeIfNeeded(const DataForRecursion<LayerType>& data_from_ancestor,
                          LayerType* layer,
+                         bool created_render_surface,
                          bool created_transform_node,
                          DataForRecursion<LayerType>* data_for_children) {
   ClipNode* parent = GetClipParent(data_from_ancestor, layer);
@@ -119,9 +120,11 @@ void AddClipNodeIfNeeded(const DataForRecursion<LayerType>& data_from_ancestor,
   if (layer_clips_subtree)
     data_for_children->ancestor_clips_subtree = true;
 
-  if (has_unclipped_surface)
+  if (has_unclipped_surface) {
     parent_id = kUnclippedRootClipTreeNodeId;
-
+    data_for_children->effect_tree->Node(data_for_children->render_target)
+        ->data.clip_id = kUnclippedRootClipTreeNodeId;
+  }
   if (!RequiresClipNode(layer, data_from_ancestor, parent->data.transform_id,
                         ancestor_clips_subtree)) {
     // Unclipped surfaces reset the clip rect.
@@ -137,7 +140,8 @@ void AddClipNodeIfNeeded(const DataForRecursion<LayerType>& data_from_ancestor,
         gfx::PointF() + layer->offset_to_transform_parent(), layer->bounds());
     node.data.transform_id = transform_parent->transform_tree_index();
     node.data.target_id =
-        data_for_children->render_target->transform_tree_index();
+        data_for_children->effect_tree->Node(data_for_children->render_target)
+            ->data.transform_id;
     node.owner_id = layer->id();
     node.data.inherit_parent_target_space_clip = !layer_clips_subtree &&
                                                  layer->has_render_surface() &&
@@ -168,6 +172,7 @@ template <typename LayerType>
 bool AddTransformNodeIfNeeded(
     const DataForRecursion<LayerType>& data_from_ancestor,
     LayerType* layer,
+    bool created_render_surface,
     DataForRecursion<LayerType>* data_for_children) {
   const bool is_root = !layer->parent();
   const bool is_page_scale_layer = layer == data_from_ancestor.page_scale_layer;
@@ -267,11 +272,16 @@ bool AddTransformNodeIfNeeded(
   // Surfaces inherently flatten transforms.
   data_for_children->should_flatten =
       layer->should_flatten_transform() || has_surface;
+  DCHECK_GT(data_from_ancestor.effect_tree->size(), 0u);
+
   node->data.target_id =
-      data_from_ancestor.render_target->transform_tree_index();
+      data_for_children->effect_tree->Node(data_from_ancestor.render_target)
+          ->data.transform_id;
   node->data.content_target_id =
-      data_for_children->render_target->transform_tree_index();
+      data_for_children->effect_tree->Node(data_for_children->render_target)
+          ->data.transform_id;
   DCHECK_NE(node->data.target_id, kInvalidPropertyTreeNodeId);
+
   node->data.is_animated = has_potentially_animated_transform;
   if (has_potentially_animated_transform) {
     float maximum_animation_target_scale = 0.f;
@@ -374,34 +384,53 @@ bool IsAnimatingOpacity(LayerImpl* layer) {
 }
 
 template <typename LayerType>
-void AddEffectNodeIfNeeded(
+bool AddEffectNodeIfNeeded(
     const DataForRecursion<LayerType>& data_from_ancestor,
     LayerType* layer,
     DataForRecursion<LayerType>* data_for_children) {
   const bool is_root = !layer->parent();
   const bool has_transparency = layer->opacity() != 1.f;
   const bool has_animated_opacity = IsAnimatingOpacity(layer);
-  bool requires_node = is_root || has_transparency || has_animated_opacity;
+  const bool has_render_surface = layer->has_render_surface();
+  bool requires_node =
+      is_root || has_transparency || has_animated_opacity || has_render_surface;
 
   int parent_id = data_from_ancestor.effect_tree_parent;
 
   if (!requires_node) {
     layer->SetEffectTreeIndex(parent_id);
     data_for_children->effect_tree_parent = parent_id;
-    return;
+    return false;
   }
 
   EffectNode node;
   node.owner_id = layer->id();
   node.data.opacity = layer->opacity();
   node.data.screen_space_opacity = layer->opacity();
-  if (!is_root)
+  node.data.has_render_surface = has_render_surface;
+  if (!is_root) {
+    // For every effect node, we create a transform node, so it's safe to use
+    // the next available id from the transform tree as this effect node's
+    // transform id.
+    node.data.transform_id =
+        data_from_ancestor.transform_tree->next_available_id();
+    node.data.clip_id = data_from_ancestor.clip_tree_parent;
+
     node.data.screen_space_opacity *=
         data_from_ancestor.effect_tree->Node(parent_id)
             ->data.screen_space_opacity;
+  } else {
+    // Root render surface acts the unbounded and untransformed to draw content
+    // into. Transform node created from root layer (includes device scale
+    // factor) and clip node created from root layer (include viewports) applies
+    // to root render surface's content, but not root render surface itself.
+    node.data.transform_id = kRootPropertyTreeNodeId;
+    node.data.clip_id = kUnclippedRootClipTreeNodeId;
+  }
   data_for_children->effect_tree_parent =
       data_for_children->effect_tree->Insert(node, parent_id);
   layer->SetEffectTreeIndex(data_for_children->effect_tree_parent);
+  return has_render_surface;
 }
 
 template <typename LayerType>
@@ -410,18 +439,21 @@ void BuildPropertyTreesInternal(
     const DataForRecursion<LayerType>& data_from_parent) {
   layer->set_property_tree_sequence_number(data_from_parent.sequence_number);
   DataForRecursion<LayerType> data_for_children(data_from_parent);
-  if (layer->has_render_surface()) {
-    data_for_children.render_target = layer;
+
+  bool created_render_surface =
+      AddEffectNodeIfNeeded(data_from_parent, layer, &data_for_children);
+
+  if (created_render_surface) {
+    data_for_children.render_target = data_for_children.effect_tree_parent;
     layer->set_draw_blend_mode(SkXfermode::kSrcOver_Mode);
   } else {
     layer->set_draw_blend_mode(layer->blend_mode());
   }
 
-  bool created_transform_node =
-      AddTransformNodeIfNeeded(data_from_parent, layer, &data_for_children);
-  AddClipNodeIfNeeded(data_from_parent, layer, created_transform_node,
-                      &data_for_children);
-  AddEffectNodeIfNeeded(data_from_parent, layer, &data_for_children);
+  bool created_transform_node = AddTransformNodeIfNeeded(
+      data_from_parent, layer, created_render_surface, &data_for_children);
+  AddClipNodeIfNeeded(data_from_parent, layer, created_render_surface,
+                      created_transform_node, &data_for_children);
 
   if (layer == data_from_parent.page_scale_layer)
     data_for_children.in_subtree_of_page_scale_layer = true;
@@ -472,7 +504,7 @@ void BuildPropertyTreesTopLevelInternal(
   data_for_recursion.effect_tree = &property_trees->effect_tree;
   data_for_recursion.transform_tree_parent = nullptr;
   data_for_recursion.transform_fixed_parent = nullptr;
-  data_for_recursion.render_target = root_layer;
+  data_for_recursion.render_target = kRootPropertyTreeNodeId;
   data_for_recursion.clip_tree_parent = kUnclippedRootClipTreeNodeId;
   data_for_recursion.effect_tree_parent = kInvalidPropertyTreeNodeId;
   data_for_recursion.page_scale_layer = page_scale_layer;

@@ -105,7 +105,12 @@ ClipNodeData::ClipNodeData()
       requires_tight_clip_rect(true),
       render_surface_is_clipped(false) {}
 
-EffectNodeData::EffectNodeData() : opacity(1.f), screen_space_opacity(1.f) {}
+EffectNodeData::EffectNodeData()
+    : opacity(1.f),
+      screen_space_opacity(1.f),
+      has_render_surface(false),
+      transform_id(0),
+      clip_id(0) {}
 
 void TransformTree::clear() {
   PropertyTree<TransformNode>::clear();
@@ -393,10 +398,9 @@ void TransformTree::UpdateTargetSpaceTransform(TransformNode* node,
     node->data.to_target.Scale(node->data.sublayer_scale.x(),
                                node->data.sublayer_scale.y());
   } else {
-    const bool target_is_root_surface = target_node->id == 1;
     // In order to include the root transform for the root surface, we walk up
     // to the root of the transform tree in ComputeTransform.
-    int target_id = target_is_root_surface ? 0 : target_node->id;
+    int target_id = target_node->id;
     ComputeTransformWithDestinationSublayerScale(node->id, target_id,
                                                  &node->data.to_target);
   }

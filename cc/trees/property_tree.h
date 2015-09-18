@@ -175,6 +175,10 @@ struct CC_EXPORT EffectNodeData {
 
   float opacity;
   float screen_space_opacity;
+
+  bool has_render_surface;
+  int transform_id;
+  int clip_id;
 };
 
 typedef TreeNode<EffectNodeData> EffectNode;
@@ -211,6 +215,8 @@ class CC_EXPORT PropertyTree {
 
   void set_needs_update(bool needs_update) { needs_update_ = needs_update; }
   bool needs_update() const { return needs_update_; }
+
+  int next_available_id() const { return static_cast<int>(size()); }
 
  private:
   // Copy and assign are permitted. This is how we do tree sync.

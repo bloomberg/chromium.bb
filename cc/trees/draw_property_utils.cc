@@ -37,12 +37,9 @@ void CalculateVisibleRects(const std::vector<LayerType*>& visible_layer_list,
       const ClipNode* clip_node = clip_tree.Node(layer->clip_tree_index());
       const TransformNode* clip_transform_node =
           transform_tree.Node(clip_node->data.transform_id);
-      const bool target_is_root_surface =
-          transform_node->data.content_target_id == 1;
       // When the target is the root surface, we need to include the root
       // transform by walking up to the root of the transform tree.
-      const int target_id =
-          target_is_root_surface ? 0 : transform_node->data.content_target_id;
+      const int target_id = transform_node->data.content_target_id;
       const TransformNode* target_node = transform_tree.Node(target_id);
 
       gfx::Transform content_to_target = transform_node->data.to_target;
@@ -449,11 +446,9 @@ void ComputeClips(ClipTree* clip_tree, const TransformTree& transform_tree) {
     gfx::Transform parent_to_transform_target;
     gfx::Transform transform_target_to_target;
 
-    const bool target_is_root_surface = clip_node->data.target_id == 1;
     // When the target is the root surface, we need to include the root
     // transform by walking up to the root of the transform tree.
-    const int target_id =
-        target_is_root_surface ? 0 : clip_node->data.target_id;
+    const int target_id = clip_node->data.target_id;
 
     bool success = true;
     // When render surface applies clip, we need the clip from the target's
@@ -679,8 +674,6 @@ gfx::Transform SurfaceDrawTransform(const RenderSurfaceImpl* render_surface,
   if (node->id == 1)
     return render_surface_transform;
   const TransformNode* target_node = tree.Node(node->data.target_id);
-  if (target_node->id == 1)
-    target_node = tree.Node(0);
   tree.ComputeTransformWithDestinationSublayerScale(node->id, target_node->id,
                                                     &render_surface_transform);
   if (node->data.sublayer_scale.x() != 0.0 &&
