@@ -457,6 +457,8 @@ InspectorTest.expandAndDumpSelectedElementEventListeners = function(callback)
     {
         var listenerTypes = eventListenersWidget._eventListenersView._treeOutline.rootElement().children();
         for (var i = 0; i < listenerTypes.length; ++i) {
+            if (!listenerTypes[i].children().length)
+                continue;
             var eventType = listenerTypes[i]._title;
             InspectorTest.addResult("");
             InspectorTest.addResult("======== " + eventType + " ========");
