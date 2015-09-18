@@ -20,6 +20,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 import provision_devices
 from devil.android import device_utils
 from pylib import constants
+from pylib.gtest import gtest_config
 
 CHROME_SRC_DIR = bb_utils.CHROME_SRC
 DIR_BUILD_ROOT = os.path.dirname(CHROME_SRC_DIR)
@@ -30,46 +31,6 @@ SLAVE_SCRIPTS_DIR = os.path.join(bb_utils.BB_BUILD_DIR, 'scripts', 'slave')
 LOGCAT_DIR = os.path.join(bb_utils.CHROME_OUT_DIR, 'logcat')
 GS_URL = 'https://storage.googleapis.com'
 GS_AUTH_URL = 'https://storage.cloud.google.com'
-
-# gtest suite groups.
-ASAN_EXCLUDED_GTEST_SUITES = [
-    'breakpad_unittests',
-    'sandbox_linux_unittests'
-]
-
-EXPERIMENTAL_GTEST_SUITES = [
-    'components_browsertests',
-    'content_gl_tests',
-    'heap_profiler_unittests',
-    'devtools_bridge_tests',
-]
-
-STABLE_GTEST_SUITES = [
-    'android_webview_unittests',
-    'base_unittests',
-    'breakpad_unittests',
-    'cc_unittests',
-    'components_unittests',
-    'content_browsertests',
-    'content_unittests',
-    'events_unittests',
-    'gl_tests',
-    'gl_unittests',
-    'gpu_unittests',
-    'ipc_tests',
-    'media_unittests',
-    'midi_unittests',
-    'net_unittests',
-    'sandbox_linux_unittests',
-    'skia_unittests',
-    'sql_unittests',
-    'sync_unit_tests',
-    'ui_android_unittests',
-    'ui_base_unittests',
-    'ui_touch_selection_unittests',
-    'unit_tests',
-    'webkit_unit_tests',
-]
 
 # Describes an instrumation test suite:
 #   test: Name of test we're running.
@@ -87,6 +48,7 @@ I_TEST = collections.namedtuple('InstrumentationTest', [
 
 def SrcPath(*path):
   return os.path.join(CHROME_SRC_DIR, *path)
+
 
 def I(name, apk, apk_package, test_apk, test_data, isolate_file_path=None,
       host_driven_root=None, annotation=None, exclude_annotation=None,
@@ -517,10 +479,10 @@ def GetDeviceSetupStepCmds():
 
 
 def RunUnitTests(options):
-  suites = STABLE_GTEST_SUITES
+  suites = gtest_config.STABLE_TEST_SUITES
   if options.asan:
     suites = [s for s in suites
-              if s not in ASAN_EXCLUDED_GTEST_SUITES]
+              if s not in gtest_config.ASAN_EXCLUDED_TEST_SUITES]
   RunTestSuites(options, suites)
 
 
@@ -710,7 +672,7 @@ def MainTestWrapper(options):
       shutil.rmtree(coverage_html, ignore_errors=True)
 
     if options.experimental:
-      RunTestSuites(options, EXPERIMENTAL_GTEST_SUITES)
+      RunTestSuites(options, gtest_config.EXPERIMENTAL_TEST_SUITES)
 
   finally:
     # Run all post test steps
