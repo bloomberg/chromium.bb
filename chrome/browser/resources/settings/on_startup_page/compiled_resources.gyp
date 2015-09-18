@@ -22,6 +22,7 @@
       'variables': {
         'depends': [
           '../../../../../ui/webui/resources/js/compiled_resources.gyp:load_time_data',
+          '../../../../../ui/webui/resources/js/compiled_resources.gyp:cr',
         ],
         'externs': [
           '../../../../../third_party/closure_compiler/externs/settings_private.js'

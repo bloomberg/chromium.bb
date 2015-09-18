@@ -44,19 +44,24 @@ Polymer({
   ],
 
   attached: function() {
-    var updateFunction = this.updateStartupPages_.bind(this);
+    var self = this;
     cr.define('Settings', function() {
       return {
-        updateStartupPages: updateFunction,
+        updateStartupPages: function() {
+          return self.updateStartupPages_.apply(self, arguments);
+        },
       };
     });
   },
 
+
   /** @private */
   prefsChanged_: function(change) {
-    if (this.savedUrlList == undefined &&
-        this.get('prefs.session.startup_urls')) {
-      this.savedUrlList = this.prefs.session.startup_urls.value.slice();
+    if (!this.savedUrlList) {
+      var pref = /** @type {chrome.settingsPrivate.PrefObject} */(
+          this.get('prefs.session.startup_urls'));
+      if (pref)
+        this.savedUrlList = pref.value.slice();
     }
   },
 
