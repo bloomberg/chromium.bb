@@ -347,6 +347,8 @@ std::string SavePasswordProgressLogger::GetStringFromID(
       return "PasswordFormManager::ProcessFrame";
     case SavePasswordProgressLogger::STRING_FORM_SIGNATURE:
       return "Signature of form, followed by field signatures";
+    case SavePasswordProgressLogger::STRING_FORM_MANAGER_STATE:
+      return "PasswordFormManager::state_";
     case SavePasswordProgressLogger::STRING_ADDING_SIGNATURE:
       return "Adding manager for form with this signature";
     case SavePasswordProgressLogger::STRING_INVALID:

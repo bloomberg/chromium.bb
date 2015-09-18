@@ -339,6 +339,13 @@ void PasswordManager::ProvisionallySavePassword(const PasswordForm& form) {
   main_frame_url_ = client_->GetMainFrameURL();
 }
 
+void PasswordManager::UpdateFormManagers() {
+  for (PasswordFormManager* form_manager : pending_login_managers_) {
+    form_manager->FetchMatchingLoginsFromPasswordStore(
+        client_->GetAuthorizationPromptPolicy(form_manager->observed_form()));
+  }
+}
+
 void PasswordManager::RecordFailure(ProvisionalSaveFailure failure,
                                     const GURL& form_origin,
                                     BrowserSavePasswordProgressLogger* logger) {

@@ -286,6 +286,8 @@ void PasswordFormManager::Save() {
     metrics_util::LogPasswordGenerationSubmissionEvent(
         metrics_util::PASSWORD_USED);
   }
+
+  password_manager_->UpdateFormManagers();
 }
 
 void PasswordFormManager::Update(
@@ -300,14 +302,23 @@ void PasswordFormManager::Update(
 
 void PasswordFormManager::FetchMatchingLoginsFromPasswordStore(
     PasswordStore::AuthorizationPromptPolicy prompt_policy) {
-  DCHECK_EQ(state_, PRE_MATCHING_PHASE);
-  state_ = MATCHING_PHASE;
+  if (state_ == MATCHING_PHASE) {
+    // There is currently a password store query in progress. Remember the
+    // prompt policy for when the store results are back and another store query
+    // might be issued.
+    next_prompt_policy_.reset(
+        new PasswordStore::AuthorizationPromptPolicy(prompt_policy));
+    return;
+  }
 
   scoped_ptr<BrowserSavePasswordProgressLogger> logger;
   if (client_->IsLoggingActive()) {
     logger.reset(new BrowserSavePasswordProgressLogger(client_));
     logger->LogMessage(Logger::STRING_FETCH_LOGINS_METHOD);
+    logger->LogNumber(Logger::STRING_FORM_MANAGER_STATE, state_);
   }
+
+  state_ = MATCHING_PHASE;
 
   PasswordStore* password_store = client_->GetPasswordStore();
   if (!password_store) {
@@ -490,11 +501,21 @@ void PasswordFormManager::OnRequestDone(
 
 void PasswordFormManager::ProcessFrame(
     const base::WeakPtr<PasswordManagerDriver>& driver) {
-  if (state_ != POST_MATCHING_PHASE) {
-    drivers_.push_back(driver);
-    return;
+  if (state_ == POST_MATCHING_PHASE)
+    ProcessFrameInternal(driver);
+
+  for (auto const& old_driver : drivers_) {
+    // |drivers_| is not a set because WeakPtr has no good candidate for a key
+    // (the address may change to null). So let's weed out duplicates in O(N).
+    if (old_driver.get() == driver.get())
+      return;
   }
 
+  drivers_.push_back(driver);
+}
+
+void PasswordFormManager::ProcessFrameInternal(
+    const base::WeakPtr<PasswordManagerDriver>& driver) {
   if (!driver || manager_action_ == kManagerActionBlacklisted)
     return;
 
@@ -531,6 +552,14 @@ void PasswordFormManager::OnGetPasswordStoreResults(
     ScopedVector<PasswordForm> results) {
   DCHECK_EQ(state_, MATCHING_PHASE);
 
+  if (next_prompt_policy_) {
+    // The received results are no longer up-to-date, need to re-request.
+    state_ = PRE_MATCHING_PHASE;
+    FetchMatchingLoginsFromPasswordStore(*next_prompt_policy_);
+    next_prompt_policy_.reset();
+    return;
+  }
+
   scoped_ptr<BrowserSavePasswordProgressLogger> logger;
   if (client_->IsLoggingActive()) {
     logger.reset(new BrowserSavePasswordProgressLogger(client_));
@@ -549,9 +578,8 @@ void PasswordFormManager::OnGetPasswordStoreResults(
 
   if (manager_action_ != kManagerActionBlacklisted) {
     for (auto const& driver : drivers_)
-      ProcessFrame(driver);
+      ProcessFrameInternal(driver);
   }
-  drivers_.clear();
 }
 
 void PasswordFormManager::SaveAsNewLogin() {

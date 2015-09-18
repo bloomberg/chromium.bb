@@ -287,6 +287,10 @@ class PasswordFormManager : public PasswordStoreConsumer {
   static const int kMaxNumActionsTaken =
       kManagerActionMax * kUserActionMax * kSubmitResultMax;
 
+  // Through |driver|, supply the associated frame with appropriate information
+  // (fill data, whether to allow password generation, etc.).
+  void ProcessFrameInternal(const base::WeakPtr<PasswordManagerDriver>& driver);
+
   // Determines if we need to autofill given the results of the query.
   // Takes ownership of the elements in |result|.
   void OnRequestDone(ScopedVector<autofill::PasswordForm> result);
@@ -422,7 +426,7 @@ class PasswordFormManager : public PasswordStoreConsumer {
   base::string16 selected_username_;
 
   // PasswordManager owning this.
-  const PasswordManager* const password_manager_;
+  PasswordManager* const password_manager_;
 
   // Convenience pointer to entry in best_matches_ that is marked
   // as preferred. This is only allowed to be null if there are no best matches
@@ -457,13 +461,11 @@ class PasswordFormManager : public PasswordStoreConsumer {
   // The client which implements embedder-specific PasswordManager operations.
   PasswordManagerClient* client_;
 
-  // When |this| is created, it is because a form has been found in a frame,
-  // represented by a driver. For that frame, and for all others with an
-  // equivalent form, the associated drivers are needed to perform
-  // frame-specific operations (filling etc.). While |this| waits for the
-  // matching credentials from the PasswordStore, the drivers for frames needing
-  // fill information are buffered in |drivers_|, and served once the results
-  // arrive, if the drivers are still valid.
+  // |this| is created for a form in some frame, which is represented by a
+  // driver. Similar form can appear in more frames, represented with more
+  // drivers. The drivers are needed to perform frame-specific operations
+  // (filling etc.). These drivers are kept in |drivers_| to allow updating of
+  // the filling information when needed.
   std::vector<base::WeakPtr<PasswordManagerDriver>> drivers_;
 
   // These three fields record the "ActionsTaken" by the browser and
@@ -477,6 +479,11 @@ class PasswordFormManager : public PasswordStoreConsumer {
   // as our classification of the form can change depending on what data the
   // user has entered.
   FormType form_type_;
+
+  // Null unless FetchMatchingLoginsFromPasswordStore has been called again
+  // without the password store returning results in the meantime. In that case
+  // this stores the prompt policy for the refresh call.
+  scoped_ptr<PasswordStore::AuthorizationPromptPolicy> next_prompt_policy_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordFormManager);
 };

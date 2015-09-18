@@ -120,6 +120,10 @@ class PasswordManager : public LoginModel {
       password_manager::PasswordManagerDriver* driver,
       const std::vector<autofill::FormStructure*>& forms);
 
+  // Causes all |pending_login_managers_| to query the password store again.
+  // Results in updating the fill information on the page.
+  void UpdateFormManagers();
+
   PasswordManagerClient* client() { return client_; }
 
  private:

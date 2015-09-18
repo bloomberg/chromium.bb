@@ -2100,4 +2100,106 @@ TEST_F(PasswordFormManagerTest, GenerationStatusNotUpdatedIfPasswordUnchanged) {
                                      metrics_util::PASSWORD_USED, 1);
 }
 
+TEST_F(PasswordFormManagerTest,
+       FetchMatchingLoginsFromPasswordStore_Reentrance) {
+  const PasswordStore::AuthorizationPromptPolicy auth_policy =
+      PasswordStore::DISALLOW_PROMPT;
+  EXPECT_CALL(*mock_store(), GetLogins(form_manager()->observed_form(),
+                                       auth_policy, form_manager()))
+      .Times(2);
+  form_manager()->FetchMatchingLoginsFromPasswordStore(auth_policy);
+  form_manager()->FetchMatchingLoginsFromPasswordStore(auth_policy);
+
+  // First response from the store, should be ignored.
+  scoped_ptr<PasswordForm> saved_form(new PasswordForm(*saved_match()));
+  saved_form->username_value = ASCIIToUTF16("a@gmail.com");
+  ScopedVector<PasswordForm> results;
+  results.push_back(saved_form.Pass());
+  form_manager()->OnGetPasswordStoreResults(results.Pass());
+  EXPECT_TRUE(form_manager()->best_matches().empty());
+
+  // Second response from the store should not be ignored.
+  saved_form.reset(new PasswordForm(*saved_match()));
+  saved_form->username_value = ASCIIToUTF16("b@gmail.com");
+  results.push_back(saved_form.Pass());
+  saved_form.reset(new PasswordForm(*saved_match()));
+  saved_form->username_value = ASCIIToUTF16("c@gmail.com");
+  results.push_back(saved_form.Pass());
+  form_manager()->OnGetPasswordStoreResults(results.Pass());
+  EXPECT_EQ(2U, form_manager()->best_matches().size());
+}
+
+TEST_F(PasswordFormManagerTest, ProcessFrame) {
+  EXPECT_CALL(*client()->mock_driver(), FillPasswordForm(_));
+  SimulateMatchingPhase(form_manager(), RESULT_MATCH_FOUND);
+}
+
+TEST_F(PasswordFormManagerTest, ProcessFrame_MoreProcessFrameMoreFill) {
+  EXPECT_CALL(*client()->mock_driver(), FillPasswordForm(_)).Times(2);
+  SimulateMatchingPhase(form_manager(), RESULT_MATCH_FOUND);
+  form_manager()->ProcessFrame(client()->mock_driver()->AsWeakPtr());
+}
+
+TEST_F(PasswordFormManagerTest, ProcessFrame_TwoDrivers) {
+  NiceMock<MockPasswordManagerDriver> second_driver;
+
+  EXPECT_CALL(*client()->mock_driver(), FillPasswordForm(_));
+  EXPECT_CALL(second_driver, FillPasswordForm(_));
+  SimulateMatchingPhase(form_manager(), RESULT_MATCH_FOUND);
+  form_manager()->ProcessFrame(second_driver.AsWeakPtr());
+}
+
+TEST_F(PasswordFormManagerTest, ProcessFrame_DriverBeforeMatching) {
+  NiceMock<MockPasswordManagerDriver> extra_driver;
+
+  EXPECT_CALL(extra_driver, FillPasswordForm(_));
+
+  // Ask store for logins, but store should not respond yet.
+  EXPECT_CALL(*mock_store(),
+              GetLogins(form_manager()->observed_form(), _, form_manager()));
+  form_manager()->FetchMatchingLoginsFromPasswordStore(
+      PasswordStore::DISALLOW_PROMPT);
+
+  // Now add the extra driver.
+  form_manager()->ProcessFrame(extra_driver.AsWeakPtr());
+
+  // Password store responds.
+  scoped_ptr<PasswordForm> match(new PasswordForm(*saved_match()));
+  ScopedVector<PasswordForm> result_form;
+  result_form.push_back(match.Pass());
+  form_manager()->OnGetPasswordStoreResults(result_form.Pass());
+}
+
+TEST_F(PasswordFormManagerTest, ProcessFrame_StoreUpdatesCausesAutofill) {
+  EXPECT_CALL(*client()->mock_driver(), FillPasswordForm(_)).Times(2);
+  SimulateMatchingPhase(form_manager(), RESULT_MATCH_FOUND);
+  SimulateMatchingPhase(form_manager(), RESULT_MATCH_FOUND);
+}
+
+TEST_F(PasswordFormManagerTest, UpdateFormManagers_IsCalled) {
+  // Let |password_manager()| create one additional PasswordFormManager.
+  PasswordStoreConsumer* consumer = nullptr;  // Will point to the new PFM.
+  EXPECT_CALL(*mock_store(), GetLogins(_, _, _))
+      .WillOnce(SaveArg<2>(&consumer));
+  PasswordForm form;
+  std::vector<PasswordForm> observed;
+  observed.push_back(form);
+  password_manager()->OnPasswordFormsParsed(client()->mock_driver(), observed);
+  // Make sure that the additional PFM is in POST_MATCHING phase.
+  ASSERT_TRUE(consumer);
+  consumer->OnGetPasswordStoreResults(ScopedVector<PasswordForm>());
+
+  // Now prepare |form_manager()| for saving.
+  SimulateMatchingPhase(form_manager(), RESULT_NO_MATCH);
+  PasswordForm saved_form(*observed_form());
+  saved_form.preferred = true;
+  form_manager()->ProvisionallySave(
+      saved_form, PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
+
+  // Firing Save() should cause PasswordManager::UpdateFormManagers to make the
+  // additional PFM to call the password store again.
+  EXPECT_CALL(*mock_store(), GetLogins(_, _, _));
+  form_manager()->Save();
+}
+
 }  // namespace password_manager

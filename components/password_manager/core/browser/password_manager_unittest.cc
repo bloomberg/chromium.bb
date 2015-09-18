@@ -1256,4 +1256,24 @@ TEST_F(PasswordManagerTest, ForceSavingPasswords_Empty) {
   manager()->OnPasswordFormForceSaveRequested(&driver_, empty_password_form);
 }
 
+TEST_F(PasswordManagerTest, UpdateFormManagers) {
+  // Seeing some forms should result in creating PasswordFormManagers and
+  // querying PasswordStore. Calling UpdateFormManagers should result in
+  // querying the store again.
+  PasswordStoreConsumer* consumer = nullptr;
+  EXPECT_CALL(*store_, GetLogins(_, _, _)).WillOnce(SaveArg<2>(&consumer));
+
+  PasswordForm form;
+  std::vector<PasswordForm> observed;
+  observed.push_back(form);
+  manager()->OnPasswordFormsParsed(&driver_, observed);
+
+  // The first GetLogins should have fired, but to unblock the second, we need
+  // to first send a response from the store (to be ignored).
+  ASSERT_TRUE(consumer);
+  consumer->OnGetPasswordStoreResults(ScopedVector<PasswordForm>());
+  EXPECT_CALL(*store_, GetLogins(_, _, _));
+  manager()->UpdateFormManagers();
+}
+
 }  // namespace password_manager
