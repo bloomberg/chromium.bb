@@ -31,9 +31,6 @@ from pylib.base import environment_factory
 from pylib.base import test_dispatcher
 from pylib.base import test_instance_factory
 from pylib.base import test_run_factory
-from pylib.gtest import gtest_config
-from pylib.gtest import setup as gtest_setup
-from pylib.gtest import test_options as gtest_test_options
 from pylib.linker import setup as linker_setup
 from pylib.host_driven import setup as host_driven_setup
 from pylib.instrumentation import setup as instrumentation_setup
@@ -193,15 +190,10 @@ def AddDeviceOptions(parser):
 def AddGTestOptions(parser):
   """Adds gtest options to |parser|."""
 
-  gtest_suites = list(gtest_config.STABLE_TEST_SUITES
-                      + gtest_config.EXPERIMENTAL_TEST_SUITES)
-
   group = parser.add_argument_group('GTest Options')
   group.add_argument('-s', '--suite', dest='suite_name',
                      nargs='+', metavar='SUITE_NAME', required=True,
-                     help=('Executable name of the test suite to run. '
-                           'Available suites include (but are not limited to): '
-                            '%s' % ', '.join('"%s"' % s for s in gtest_suites)))
+                     help='Executable name of the test suite to run.')
   group.add_argument('--gtest_also_run_disabled_tests',
                      '--gtest-also-run-disabled-tests',
                      dest='run_disabled', action='store_true',
@@ -648,44 +640,6 @@ def AddPythonTestOptions(parser):
       choices=constants.PYTHON_UNIT_TEST_SUITES.keys(),
       help='Name of the test suite to run.')
   AddCommonOptions(parser)
-
-
-def _RunGTests(args, devices):
-  """Subcommand of RunTestsCommands which runs gtests."""
-  exit_code = 0
-  for suite_name in args.suite_name:
-    # TODO(jbudorick): Either deprecate multi-suite or move its handling down
-    # into the gtest code.
-    gtest_options = gtest_test_options.GTestOptions(
-        args.tool,
-        args.test_filter,
-        args.run_disabled,
-        args.test_arguments,
-        args.timeout,
-        args.isolate_file_path,
-        suite_name,
-        args.app_data_files,
-        args.app_data_file_dir,
-        args.delete_stale_data)
-    runner_factory, tests = gtest_setup.Setup(gtest_options, devices)
-
-    results, test_exit_code = test_dispatcher.RunTests(
-        tests, runner_factory, devices, shard=True, test_timeout=None,
-        num_retries=args.num_retries)
-
-    if test_exit_code and exit_code != constants.ERROR_EXIT_CODE:
-      exit_code = test_exit_code
-
-    report_results.LogFull(
-        results=results,
-        test_type='Unit test',
-        test_package=suite_name,
-        flakiness_server=args.flakiness_dashboard_server)
-
-    if args.json_results_file:
-      json_results.GenerateJsonResultsFile(results, args.json_results_file)
-
-  return exit_code
 
 
 def _RunLinkerTests(args, devices):
