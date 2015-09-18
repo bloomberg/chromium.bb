@@ -13,6 +13,7 @@
 #include "BlinkGCPluginOptions.h"
 #include "CheckFieldsVisitor.h"
 #include "CheckFinalizerVisitor.h"
+#include "CheckGCRootsVisitor.h"
 #include "CheckTraceVisitor.h"
 #include "CollectVisitor.h"
 #include "Config.h"
@@ -217,65 +218,6 @@ class CheckDispatchVisitor : public RecursiveASTVisitor<CheckDispatchVisitor> {
  private:
   RecordInfo* receiver_;
   bool dispatched_to_receiver_;
-};
-
-// This visitor checks that the fields of a class and the fields of
-// its part objects don't define GC roots.
-class CheckGCRootsVisitor : public RecursiveEdgeVisitor {
- public:
-  typedef std::vector<FieldPoint*> RootPath;
-  typedef std::set<RecordInfo*> VisitingSet;
-  typedef std::vector<RootPath> Errors;
-
-  CheckGCRootsVisitor() {}
-
-  Errors& gc_roots() { return gc_roots_; }
-
-  bool ContainsGCRoots(RecordInfo* info) {
-    for (RecordInfo::Fields::iterator it = info->GetFields().begin();
-         it != info->GetFields().end();
-         ++it) {
-      current_.push_back(&it->second);
-      it->second.edge()->Accept(this);
-      current_.pop_back();
-    }
-    return !gc_roots_.empty();
-  }
-
-  void VisitValue(Value* edge) override {
-    // TODO: what should we do to check unions?
-    if (edge->value()->record()->isUnion())
-      return;
-
-    // Prevent infinite regress for cyclic part objects.
-    if (visiting_set_.find(edge->value()) != visiting_set_.end())
-      return;
-
-    visiting_set_.insert(edge->value());
-    // If the value is a part object, then continue checking for roots.
-    for (Context::iterator it = context().begin();
-         it != context().end();
-         ++it) {
-      if (!(*it)->IsCollection())
-        return;
-    }
-    ContainsGCRoots(edge->value());
-    visiting_set_.erase(edge->value());
-  }
-
-  void VisitPersistent(Persistent* edge) override {
-    gc_roots_.push_back(current_);
-  }
-
-  void AtCollection(Collection* edge) override {
-    if (edge->is_root())
-      gc_roots_.push_back(current_);
-  }
-
- protected:
-  RootPath current_;
-  VisitingSet visiting_set_;
-  Errors gc_roots_;
 };
 
 class EmptyStmtVisitor

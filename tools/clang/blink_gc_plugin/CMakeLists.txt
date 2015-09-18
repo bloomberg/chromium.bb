@@ -4,6 +4,7 @@ set(plugin_sources
   BlinkGCPlugin.cpp
   CheckFieldsVisitor.cpp
   CheckFinalizerVisitor.cpp
+  CheckGCRootsVisitor.cpp
   CheckTraceVisitor.cpp
   CollectVisitor.cpp
   Config.cpp
