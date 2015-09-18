@@ -5,9 +5,6 @@ Running: selectInitialNode
 
 Running: testSimpleFiltering
 Filtering styles by: padding
-element.style {
-   margin:>1px
-}
 .mydiv {
    border:>1px solid black
 F  padding:v10px 10px 10px 10px
