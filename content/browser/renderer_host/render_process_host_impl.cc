@@ -2196,6 +2196,10 @@ void RenderProcessHostImpl::ProcessDied(bool already_dead,
   message_port_message_filter_ = NULL;
   RemoveUserData(kSessionStorageHolderKey);
 
+  // RenderProcessGone handlers might navigate or perform other actions that
+  // require a connection. Ensure that there is one before calling them.
+  mojo_application_host_.reset(new MojoApplicationHost);
+
   IDMap<IPC::Listener>::iterator iter(&listeners_);
   while (!iter.IsAtEnd()) {
     iter.GetCurrentValue()->OnMessageReceived(
@@ -2204,8 +2208,6 @@ void RenderProcessHostImpl::ProcessDied(bool already_dead,
                                        exit_code));
     iter.Advance();
   }
-
-  mojo_application_host_.reset(new MojoApplicationHost);
 
   // It's possible that one of the calls out to the observers might have caused
   // this object to be no longer needed.
