@@ -8,6 +8,7 @@
 #include <set>
 #include <vector>
 
+#include "base/threading/thread_checker.h"
 #include "components/history/core/browser/history_types.h"
 #include "sync/api/sync_change.h"
 #include "sync/api/sync_data.h"
@@ -17,7 +18,6 @@
 #include "ui/base/page_transition_types.h"
 
 class GURL;
-class TypedUrlSyncableServiceTest;
 
 namespace base {
 class MessageLoop;
@@ -30,9 +30,8 @@ class TypedUrlSpecifics;
 namespace history {
 
 class HistoryBackend;
+class TypedUrlSyncableServiceTest;
 class URLRow;
-
-extern const char kTypedUrlTag[];
 
 class TypedUrlSyncableService : public syncer::SyncableService {
  public:
@@ -58,12 +57,9 @@ class TypedUrlSyncableService : public syncer::SyncableService {
   void OnUrlVisited(ui::PageTransition transition, URLRow* row);
   void OnUrlsDeleted(bool all_history, bool expired, URLRows* rows);
 
- protected:
-  void GetSyncedUrls(std::set<GURL>* urls) {
-    urls->insert(synced_typed_urls_.begin(), synced_typed_urls_.end());
-  }
-
  private:
+  friend class TypedUrlSyncableServiceTest;
+
   typedef std::vector<std::pair<URLID, URLRow>> TypedUrlUpdateVector;
   typedef std::vector<std::pair<GURL, std::vector<VisitInfo>>>
       TypedUrlVisitVector;
@@ -73,13 +69,74 @@ class TypedUrlSyncableService : public syncer::SyncableService {
   typedef std::map<GURL,
                    std::pair<syncer::SyncChange::SyncChangeType,
                              URLRows::iterator>> TypedUrlMap;
+
   // This is a helper map used to associate visit vectors from the history db
   // to the typed urls in the above map.
   typedef std::map<GURL, VisitVector> UrlVisitVectorMap;
 
+  // Bitfield returned from MergeUrls to specify the result of a merge.
+  typedef uint32 MergeResult;
+  static const MergeResult DIFF_NONE = 0;
+  static const MergeResult DIFF_UPDATE_NODE = 1 << 0;
+  static const MergeResult DIFF_LOCAL_ROW_CHANGED = 1 << 1;
+  static const MergeResult DIFF_LOCAL_VISITS_ADDED = 1 << 2;
+
+  // Helper method for getting the set of synced urls.
+  void GetSyncedUrls(std::set<GURL>* urls) const;
+
+  // Helper function that clears our error counters (used to reset stats after
+  // model association so we can track model association errors separately).
+  void ClearErrorStats();
+
+  // Compares |typed_url| from the server against local history to decide how
+  // to merge any existing data, and updates appropriate data containers to
+  // write to server and backend.
+  void CreateOrUpdateUrl(const sync_pb::TypedUrlSpecifics& typed_url,
+                         history::URLRows* typed_urls,
+                         TypedUrlMap* loaded_data,
+                         UrlVisitVectorMap* visit_vectors,
+                         history::URLRows* new_synced_urls,
+                         TypedUrlVisitVector* new_synced_visits,
+                         history::URLRows* updated_synced_urls);
+
+  // Given a TypedUrlSpecifics object, removes all visits that are older than
+  // the current expiration time. Note that this can result in having no visits
+  // at all.
+  sync_pb::TypedUrlSpecifics FilterExpiredVisits(
+      const sync_pb::TypedUrlSpecifics& specifics);
+
+  // Merges the URL information in |typed_url| with the URL information from the
+  // history database in |url| and |visits|, and returns a bitmask with the
+  // results of the merge:
+  // DIFF_UPDATE_NODE - changes have been made to |new_url| and |visits| which
+  //   should be persisted to the sync node.
+  // DIFF_LOCAL_ROW_CHANGED - The history data in |new_url| should be persisted
+  //   to the history DB.
+  // DIFF_LOCAL_VISITS_ADDED - |new_visits| contains a list of visits that
+  //   should be written to the history DB for this URL. Deletions are not
+  //   written to the DB - each client is left to age out visits on their own.
+  static MergeResult MergeUrls(const sync_pb::TypedUrlSpecifics& typed_url,
+                               const history::URLRow& url,
+                               history::VisitVector* visits,
+                               history::URLRow* new_url,
+                               std::vector<history::VisitInfo>* new_visits);
+
+  // Writes new typed url data from sync server to history backend.
+  void WriteToHistoryBackend(const history::URLRows* new_urls,
+                             const history::URLRows* updated_urls,
+                             const TypedUrlVisitVector* new_visits,
+                             const history::VisitVector* deleted_visits);
+
+  // Returns the percentage of DB accesses that have resulted in an error.
+  int GetErrorPercentage() const;
+
   // Helper function that determines if we should ignore a URL for the purposes
   // of sync, because it contains invalid data.
   bool ShouldIgnoreUrl(const GURL& url);
+
+  // Helper function that determines if we should ignore a URL for the purposes
+  // of sync, based on the visits the URL had.
+  bool ShouldIgnoreVisits(const history::VisitVector& visits);
 
   // Returns true if the caller should sync as a result of the passed visit
   // notification. We use this to throttle the number of sync changes we send
@@ -93,9 +150,10 @@ class TypedUrlSyncableService : public syncer::SyncableService {
   bool CreateOrUpdateSyncNode(URLRow typed_url,
                               syncer::SyncChangeList* changes);
 
+  // Utility routine for building a change from a typed url.
   void AddTypedUrlToChangeList(syncer::SyncChange::SyncChangeType change_type,
-                               const URLRow& row,
-                               const VisitVector& visits,
+                               const history::URLRow& row,
+                               const history::VisitVector& visits,
                                std::string title,
                                syncer::SyncChangeList* change_list);
 
@@ -104,6 +162,11 @@ class TypedUrlSyncableService : public syncer::SyncableService {
   static void WriteToTypedUrlSpecifics(const URLRow& url,
                                        const VisitVector& visits,
                                        sync_pb::TypedUrlSpecifics* specifics);
+
+  // Fills |new_url| with formatted data from |typed_url|.
+  static void UpdateURLRowFromTypedUrlSpecifics(
+      const sync_pb::TypedUrlSpecifics& typed_url,
+      history::URLRow* new_url);
 
   // Fetches visits from the history DB corresponding to the passed URL. This
   // function compensates for the fact that the history DB has rather poor data
@@ -118,6 +181,7 @@ class TypedUrlSyncableService : public syncer::SyncableService {
   // cache of typed urls. See http://crbug.com/231689.
   std::set<GURL> synced_typed_urls_;
 
+  // The backend we're syncing local changes from and sync changes to.
   HistoryBackend* const history_backend_;
 
   // Whether we're currently processing changes from the syncer. While this is
@@ -134,24 +198,7 @@ class TypedUrlSyncableService : public syncer::SyncableService {
   int num_db_accesses_;
   int num_db_errors_;
 
-  base::MessageLoop* expected_loop_;
-
-  FRIEND_TEST_ALL_PREFIXES(TypedUrlSyncableServiceTest,
-                           AddLocalTypedUrlAndSync);
-  FRIEND_TEST_ALL_PREFIXES(TypedUrlSyncableServiceTest,
-                           UpdateLocalTypedUrlAndSync);
-  FRIEND_TEST_ALL_PREFIXES(TypedUrlSyncableServiceTest,
-                           LinkVisitLocalTypedUrlAndSync);
-  FRIEND_TEST_ALL_PREFIXES(TypedUrlSyncableServiceTest,
-                           TypedVisitLocalTypedUrlAndSync);
-  FRIEND_TEST_ALL_PREFIXES(TypedUrlSyncableServiceTest,
-                           DeleteLocalTypedUrlAndSync);
-  FRIEND_TEST_ALL_PREFIXES(TypedUrlSyncableServiceTest,
-                           DeleteAllLocalTypedUrlAndSync);
-  FRIEND_TEST_ALL_PREFIXES(TypedUrlSyncableServiceTest,
-                           MaxVisitLocalTypedUrlAndSync);
-  FRIEND_TEST_ALL_PREFIXES(TypedUrlSyncableServiceTest,
-                           ThrottleVisitLocalTypedUrlSync);
+  base::ThreadChecker thread_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(TypedUrlSyncableService);
 };

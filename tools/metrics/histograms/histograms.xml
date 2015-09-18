@@ -47095,6 +47095,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Sync.TypedUrlMergeAndStartSyncingErrors" units="%">
+  <owner>zea@chromium.org</owner>
+  <summary>
+    The percentage of history DB operations during merge data that return an
+    error. This is logged at the end of typed URL merge data, which happens once
+    each time sync starts up.
+  </summary>
+</histogram>
+
 <histogram name="Sync.TypedUrlModelAssociationErrors" units="%">
   <owner>zea@chromium.org</owner>
   <summary>
