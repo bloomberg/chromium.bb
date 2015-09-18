@@ -31,8 +31,8 @@ cr.define('cr.ui', function() {
     /** @type {cr.ui.FocusRow.Delegate|undefined} */
     this.delegate = opt_delegate;
 
-    /** @private {!EventTracker} */
-    this.eventTracker_ = new EventTracker;
+    /** @protected {!EventTracker} */
+    this.eventTracker = new EventTracker;
   }
 
   /** @interface */
@@ -117,17 +117,17 @@ cr.define('cr.ui', function() {
       element.setAttribute('focus-type', type);
       element.tabIndex = this.isActive() ? 0 : -1;
 
-      this.eventTracker_.add(element, 'blur', this.onBlur_.bind(this));
-      this.eventTracker_.add(element, 'focus', this.onFocus_.bind(this));
-      this.eventTracker_.add(element, 'keydown', this.onKeydown_.bind(this));
-      this.eventTracker_.add(element, 'mousedown',
+      this.eventTracker.add(element, 'blur', this.onBlur_.bind(this));
+      this.eventTracker.add(element, 'focus', this.onFocus_.bind(this));
+      this.eventTracker.add(element, 'keydown', this.onKeydown_.bind(this));
+      this.eventTracker.add(element, 'mousedown',
                              this.onMousedown_.bind(this));
       return true;
     },
 
     /** Dereferences nodes and removes event handlers. */
     destroy: function() {
-      this.eventTracker_.removeAll();
+      this.eventTracker.removeAll();
     },
 
     /**

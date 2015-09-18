@@ -71,7 +71,7 @@ cr.define('downloads', function() {
       var activeElement = this.shadowRoot.activeElement;
 
       var activeItem;
-      if (activeElement && activeElement.tagName == 'download-item')
+      if (activeElement && activeElement.tagName == 'downloads-item')
         activeItem = activeElement;
 
       var activeControl = activeItem && activeItem.shadowRoot.activeElement;
@@ -195,10 +195,12 @@ cr.define('downloads', function() {
 
       item.update(data);
 
-      if (activeControl && !cr.ui.FocusRow.isFocusable(activeControl)) {
-        var focusRow = this.focusGrid_.getRowForRoot(item.content);
-        focusRow.getEquivalentElement(activeControl).focus();
-      }
+      this.async(function() {
+        if (activeControl && !cr.ui.FocusRow.isFocusable(activeControl)) {
+          var focusRow = this.focusGrid_.getRowForRoot(item.content);
+          focusRow.getEquivalentElement(activeControl).focus();
+        }
+      }.bind(this));
     },
   });
 
