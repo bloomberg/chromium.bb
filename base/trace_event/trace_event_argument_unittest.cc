@@ -22,6 +22,19 @@ TEST(TraceEventArgumentTest, FlatDictionary) {
       json);
 }
 
+TEST(TraceEventArgumentTest, NoDotPathExpansion) {
+  scoped_refptr<TracedValue> value = new TracedValue();
+  value->SetInteger("in.t", 2014);
+  value->SetDouble("doub.le", 0.0);
+  value->SetBoolean("bo.ol", true);
+  value->SetString("str.ing", "str.ing");
+  std::string json;
+  value->AppendAsTraceFormat(&json);
+  EXPECT_EQ(
+      "{\"bo.ol\":true,\"doub.le\":0.0,\"in.t\":2014,\"str.ing\":\"str.ing\"}",
+      json);
+}
+
 TEST(TraceEventArgumentTest, Hierarchy) {
   scoped_refptr<TracedValue> value = new TracedValue();
   value->SetInteger("i0", 2014);

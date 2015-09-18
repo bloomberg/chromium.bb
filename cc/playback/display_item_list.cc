@@ -231,15 +231,16 @@ DisplayItemList::AsValue(bool include_items) const {
   scoped_refptr<base::trace_event::TracedValue> state =
       new base::trace_event::TracedValue();
 
+  state->BeginDictionary("params");
   if (include_items) {
-    state->BeginArray("params.items");
+    state->BeginArray("items");
     for (const DisplayItem* item : items_) {
       item->AsValueInto(state.get());
     }
-    state->EndArray();
+    state->EndArray();  // "items".
   }
-
-  state->SetValue("params.layer_rect", MathUtil::AsValue(layer_rect_));
+  state->SetValue("layer_rect", MathUtil::AsValue(layer_rect_));
+  state->EndDictionary();  // "params".
 
   if (!layer_rect_.IsEmpty()) {
     SkPictureRecorder recorder;
