@@ -2081,7 +2081,6 @@ class GLES2DecoderImpl : public GLES2Decoder,
 
   scoped_ptr<GPUTracer> gpu_tracer_;
   scoped_ptr<GPUStateTracer> gpu_state_tracer_;
-  const unsigned char* cb_command_trace_category_;
   const unsigned char* gpu_decoder_category_;
   int gpu_trace_level_;
   bool gpu_trace_commands_;
@@ -2595,8 +2594,6 @@ GLES2DecoderImpl::GLES2DecoderImpl(ContextGroup* group)
       viewport_max_width_(0),
       viewport_max_height_(0),
       texture_state_(group_->feature_info()->workarounds()),
-      cb_command_trace_category_(TRACE_EVENT_API_GET_CATEGORY_GROUP_ENABLED(
-          TRACE_DISABLED_BY_DEFAULT("cb_command"))),
       gpu_decoder_category_(TRACE_EVENT_API_GET_CATEGORY_GROUP_ENABLED(
           TRACE_DISABLED_BY_DEFAULT("gpu_decoder"))),
       gpu_trace_level_(2),
@@ -3931,8 +3928,7 @@ Logger* GLES2DecoderImpl::GetLogger() {
 void GLES2DecoderImpl::BeginDecoding() {
   gpu_tracer_->BeginDecoding();
   gpu_trace_commands_ = gpu_tracer_->IsTracing() && *gpu_decoder_category_;
-  gpu_debug_commands_ = log_commands() || debug() || gpu_trace_commands_ ||
-                        (*cb_command_trace_category_ != 0);
+  gpu_debug_commands_ = log_commands() || debug() || gpu_trace_commands_;
   query_manager_->ProcessFrameBeginUpdates();
 }
 
@@ -4377,14 +4373,9 @@ error::Error GLES2DecoderImpl::DoCommandsImpl(unsigned int num_commands,
       break;
     }
 
-    if (DebugImpl) {
-      TRACE_EVENT_BEGIN0(TRACE_DISABLED_BY_DEFAULT("cb_command"),
-                         GetCommandName(command));
-
-      if (log_commands()) {
-        LOG(ERROR) << "[" << logger_.GetLogPrefix() << "]"
-                   << "cmd: " << GetCommandName(command);
-      }
+    if (DebugImpl && log_commands()) {
+      LOG(ERROR) << "[" << logger_.GetLogPrefix() << "]"
+                 << "cmd: " << GetCommandName(command);
     }
 
     const unsigned int arg_count = size - 1;
@@ -4426,11 +4417,6 @@ error::Error GLES2DecoderImpl::DoCommandsImpl(unsigned int num_commands,
       }
     } else {
       result = DoCommonCommand(command, arg_count, cmd_data);
-    }
-
-    if (DebugImpl) {
-      TRACE_EVENT_END0(TRACE_DISABLED_BY_DEFAULT("cb_command"),
-                       GetCommandName(command));
     }
 
     if (result == error::kNoError &&

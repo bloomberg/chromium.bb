@@ -128,7 +128,7 @@ class GLHelperTest : public testing::Test {
         std::string trace_type;
         CHECK(dict->GetString("ph", &trace_type));
         // Count all except END traces, as they come in BEGIN/END pairs.
-        if (trace_type != "E")
+        if (trace_type != "E" && trace_type != "e")
           (*event_counts)[name]++;
         VLOG(1) << "trace name: " << name;
       }
@@ -1755,9 +1755,10 @@ TEST_F(GLHelperTest, RGB565ASyncReadbackTest) {
 }
 
 TEST_F(GLHelperPixelTest, YUVReadbackOptTest) {
-  // This test uses the cb_command tracing events to detect how many
-  // scaling passes are actually performed by the YUV readback pipeline.
-  StartTracing(TRACE_DISABLED_BY_DEFAULT("cb_command"));
+  // This test uses the gpu.service/gpu_decoder tracing events to detect how
+  // many scaling passes are actually performed by the YUV readback pipeline.
+  StartTracing(TRACE_DISABLED_BY_DEFAULT("gpu.service") ","
+               TRACE_DISABLED_BY_DEFAULT("gpu_decoder"));
 
   TestYUVReadback(800,
                   400,
