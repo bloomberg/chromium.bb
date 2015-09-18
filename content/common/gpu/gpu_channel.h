@@ -104,11 +104,6 @@ class CONTENT_EXPORT GpuChannel
   // IPC::Sender implementation:
   bool Send(IPC::Message* msg) override;
 
-  // Requeue the message that is currently being processed to the beginning of
-  // the queue. Used when the processing of a message gets aborted because of
-  // unscheduling conditions.
-  void RequeueMessage();
-
   // SubscriptionRefSet::Observer implementation
   void OnAddSubscription(unsigned int target) override;
   void OnRemoveSubscription(unsigned int target) override;
@@ -177,9 +172,17 @@ class CONTENT_EXPORT GpuChannel
   // Visible for testing.
   GpuChannelMessageFilter* filter() const { return filter_.get(); }
 
-  uint32_t GetCurrentOrderNum() const { return current_order_num_; }
-  uint32_t GetProcessedOrderNum() const { return processed_order_num_; }
+  // Returns the global order number of the IPC message that started processing
+  // last.
+  uint32_t current_order_num() const { return current_order_num_; }
+
+  // Returns the global order number for the last processed IPC message.
+  uint32_t GetProcessedOrderNum() const;
+
+  // Returns the global order number for the last unprocessed IPC message.
   uint32_t GetUnprocessedOrderNum() const;
+
+  void HandleMessage();
 
  protected:
   // The message filter on the io thread.
@@ -208,14 +211,11 @@ class CONTENT_EXPORT GpuChannel
     base::hash_set<int32> routes_;
   };
 
-  friend class GpuChannelMessageFilter;
-  friend class GpuChannelMessageQueue;
-
   void OnDestroy();
 
   bool OnControlMessageReceived(const IPC::Message& msg);
 
-  void HandleMessage();
+  void ScheduleHandleMessage();
 
   // Message handlers.
   void OnCreateOffscreenCommandBuffer(
@@ -225,9 +225,6 @@ class CONTENT_EXPORT GpuChannel
       bool* succeeded);
   void OnDestroyCommandBuffer(int32 route_id);
   void OnCreateJpegDecoder(int32 route_id, IPC::Message* reply_msg);
-
-  // Update processed order number and defer preemption.
-  void MessageProcessed(uint32_t order_number);
 
   // The lifetime of objects of this class is managed by a GpuChannelManager.
   // The GpuChannelManager destroy all the GpuChannels that they own when they
@@ -278,16 +275,12 @@ class CONTENT_EXPORT GpuChannel
   GpuWatchdog* watchdog_;
   bool software_;
 
-  // Current IPC order number being processed.
-  uint32_t current_order_num_;
-
-  // Last finished IPC order number.
-  uint32_t processed_order_num_;
-
   size_t num_stubs_descheduled_;
 
   // Map of stream id to stream state.
   base::hash_map<int32, StreamState> streams_;
+
+  uint32_t current_order_num_;
 
   bool allow_future_sync_points_;
   bool allow_real_time_streams_;
@@ -313,11 +306,10 @@ class CONTENT_EXPORT GpuChannel
 // - it generates mailbox names for clients of the GPU process on the IO thread.
 class GpuChannelMessageFilter : public IPC::MessageFilter {
  public:
-  GpuChannelMessageFilter(
-      scoped_refptr<GpuChannelMessageQueue> message_queue,
-      gpu::SyncPointManager* sync_point_manager,
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-      bool future_sync_points);
+  GpuChannelMessageFilter(GpuChannelMessageQueue* message_queue,
+                          gpu::SyncPointManager* sync_point_manager,
+                          base::SingleThreadTaskRunner* task_runner,
+                          bool future_sync_points);
 
   // IPC::MessageFilter implementation.
   void OnFilterAdded(IPC::Sender* sender) override;
@@ -393,6 +385,93 @@ class GpuChannelMessageFilter : public IPC::MessageFilter {
 
   // This number is only ever incremented/read on the IO thread.
   static uint32_t global_order_counter_;
+};
+
+struct GpuChannelMessage {
+  uint32_t order_number;
+  base::TimeTicks time_received;
+  IPC::Message message;
+
+  // TODO(dyen): Temporary sync point data, remove once new sync point lands.
+  bool retire_sync_point;
+  uint32 sync_point;
+
+  GpuChannelMessage(uint32_t order_num, const IPC::Message& msg)
+      : order_number(order_num),
+        time_received(base::TimeTicks::Now()),
+        message(msg),
+        retire_sync_point(false),
+        sync_point(0) {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(GpuChannelMessage);
+};
+
+class GpuChannelMessageQueue
+    : public base::RefCountedThreadSafe<GpuChannelMessageQueue> {
+ public:
+  static scoped_refptr<GpuChannelMessageQueue> Create(
+      const base::WeakPtr<GpuChannel>& gpu_channel,
+      base::SingleThreadTaskRunner* task_runner);
+
+  // Returns the global order number for the last processed IPC message.
+  uint32_t GetUnprocessedOrderNum() const;
+
+  // Returns the global order number for the last unprocessed IPC message.
+  uint32_t processed_order_num() const { return processed_order_num_; }
+
+  bool HasQueuedMessages() const;
+
+  base::TimeTicks GetNextMessageTimeTick() const;
+
+  GpuChannelMessage* GetNextMessage() const;
+
+  // Should be called after a message returned by GetNextMessage is processed.
+  // Returns true if there are more messages on the queue.
+  bool MessageProcessed(uint32_t order_number);
+
+  void PushBackMessage(uint32_t order_number, const IPC::Message& message);
+
+  bool GenerateSyncPointMessage(gpu::SyncPointManager* sync_point_manager,
+                                uint32_t order_number,
+                                const IPC::Message& message,
+                                bool retire_sync_point,
+                                uint32_t* sync_point_number);
+
+  void DeleteAndDisableMessages(GpuChannelManager* gpu_channel_manager);
+
+ private:
+  friend class base::RefCountedThreadSafe<GpuChannelMessageQueue>;
+
+  GpuChannelMessageQueue(const base::WeakPtr<GpuChannel>& gpu_channel,
+                         base::SingleThreadTaskRunner* task_runner);
+  ~GpuChannelMessageQueue();
+
+  void ScheduleHandleMessage();
+
+  void PushMessageHelper(scoped_ptr<GpuChannelMessage> msg);
+
+  bool HasQueuedMessagesHelper() const;
+
+  bool enabled_;
+
+  // Highest IPC order number seen, set when queued on the IO thread.
+  uint32_t unprocessed_order_num_;
+  // Both deques own the messages.
+  std::deque<GpuChannelMessage*> channel_messages_;
+  std::deque<GpuChannelMessage*> out_of_order_messages_;
+
+  // This lock protects enabled_, unprocessed_order_num_, and both deques.
+  mutable base::Lock channel_messages_lock_;
+
+  // Last finished IPC order number. Not protected by a lock as it's only
+  // accessed on the main thread.
+  uint32_t processed_order_num_;
+
+  base::WeakPtr<GpuChannel> gpu_channel_;
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+
+  DISALLOW_COPY_AND_ASSIGN(GpuChannelMessageQueue);
 };
 
 }  // namespace content

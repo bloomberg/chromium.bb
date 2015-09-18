@@ -108,12 +108,12 @@ class GPU_EXPORT GpuScheduler
     return parser_.get();
   }
 
-  bool IsPreempted();
-
  private:
   // Artificially reschedule if the scheduler is still unscheduled after a
   // timeout.
   void RescheduleTimeOut();
+
+  bool IsPreempted();
 
   // The GpuScheduler holds a weak reference to the CommandBuffer. The
   // CommandBuffer owns the GpuScheduler and holds a strong reference to it

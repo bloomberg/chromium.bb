@@ -288,7 +288,6 @@ bool GpuCommandBufferStub::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER_DELAY_REPLY(GpuCommandBufferMsg_WaitForGetOffsetInRange,
                                     OnWaitForGetOffsetInRange);
     IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_AsyncFlush, OnAsyncFlush);
-    IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_Rescheduled, OnRescheduled);
     IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_RegisterTransferBuffer,
                         OnRegisterTransferBuffer);
     IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_DestroyTransferBuffer,
@@ -361,8 +360,8 @@ void GpuCommandBufferStub::PerformWork() {
     return;
 
   if (scheduler_) {
-    const uint32_t current_unprocessed_num =
-        channel()->gpu_channel_manager()->UnprocessedOrderNumber();
+    uint32_t current_unprocessed_num =
+        channel()->gpu_channel_manager()->GetUnprocessedOrderNum();
     // We're idle when no messages were processed or scheduled.
     bool is_idle = (previous_processed_num_ == current_unprocessed_num);
     if (!is_idle && !last_idle_time_.is_null()) {
@@ -416,7 +415,7 @@ void GpuCommandBufferStub::ScheduleDelayedWork(base::TimeDelta delay) {
   // Idle when no messages are processed between now and when
   // PollWork is called.
   previous_processed_num_ =
-      channel()->gpu_channel_manager()->ProcessedOrderNumber();
+      channel()->gpu_channel_manager()->GetProcessedOrderNum();
   if (last_idle_time_.is_null())
     last_idle_time_ = current_time;
 
@@ -811,28 +810,23 @@ void GpuCommandBufferStub::OnAsyncFlush(
     const std::vector<ui::LatencyInfo>& latency_info) {
   TRACE_EVENT1(
       "gpu", "GpuCommandBufferStub::OnAsyncFlush", "put_offset", put_offset);
+  DCHECK(command_buffer_);
 
-  if (ui::LatencyInfo::Verify(latency_info,
+  // We received this message out-of-order. This should not happen but is here
+  // to catch regressions. Ignore the message.
+  DVLOG_IF(0, flush_count - last_flush_count_ >= 0x8000000U)
+      << "Received a Flush message out-of-order";
+
+  if (flush_count > last_flush_count_ &&
+      ui::LatencyInfo::Verify(latency_info,
                               "GpuCommandBufferStub::OnAsyncFlush") &&
       !latency_info_callback_.is_null()) {
     latency_info_callback_.Run(latency_info);
   }
-  DCHECK(command_buffer_.get());
-  if (flush_count - last_flush_count_ < 0x8000000U) {
-    last_flush_count_ = flush_count;
-    command_buffer_->Flush(put_offset);
-  } else {
-    // We received this message out-of-order. This should not happen but is here
-    // to catch regressions. Ignore the message.
-    NOTREACHED() << "Received a Flush message out-of-order";
-  }
 
-  ReportState();
-}
-
-void GpuCommandBufferStub::OnRescheduled() {
+  last_flush_count_ = flush_count;
   gpu::CommandBuffer::State pre_state = command_buffer_->GetLastState();
-  command_buffer_->Flush(command_buffer_->GetPutOffset());
+  command_buffer_->Flush(put_offset);
   gpu::CommandBuffer::State post_state = command_buffer_->GetLastState();
 
   if (pre_state.get_offset != post_state.get_offset)
@@ -916,8 +910,10 @@ void GpuCommandBufferStub::OnSetSurfaceVisible(bool visible) {
     memory_manager_client_state_->SetVisible(visible);
 }
 
-void GpuCommandBufferStub::AddSyncPoint(uint32 sync_point) {
+void GpuCommandBufferStub::AddSyncPoint(uint32 sync_point, bool retire) {
   sync_points_.push_back(sync_point);
+  if (retire)
+    OnRetireSyncPoint(sync_point);
 }
 
 void GpuCommandBufferStub::OnRetireSyncPoint(uint32 sync_point) {

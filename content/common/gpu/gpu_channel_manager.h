@@ -79,9 +79,6 @@ class CONTENT_EXPORT GpuChannelManager : public IPC::Listener,
   // Sender overrides.
   bool Send(IPC::Message* msg) override;
 
-  uint32_t ProcessedOrderNumber();
-  uint32_t UnprocessedOrderNumber();
-
   void LoseAllContexts();
 
   int GenerateRouteID();
@@ -94,7 +91,7 @@ class CONTENT_EXPORT GpuChannelManager : public IPC::Listener,
 
   GpuMemoryManager* gpu_memory_manager() { return &gpu_memory_manager_; }
 
-  GpuChannel* LookupChannel(int32 client_id);
+  GpuChannel* LookupChannel(int32 client_id) const;
 
   gpu::SyncPointManager* sync_point_manager() {
     return sync_point_manager_;
@@ -105,6 +102,14 @@ class CONTENT_EXPORT GpuChannelManager : public IPC::Listener,
   GpuMemoryBufferFactory* gpu_memory_buffer_factory() {
     return gpu_memory_buffer_factory_;
   }
+
+  // Returns the maximum order number for unprocessed IPC messages across all
+  // channels.
+  uint32_t GetUnprocessedOrderNum() const;
+
+  // Returns the maximum order number for processed IPC messages across all
+  // channels.
+  uint32_t GetProcessedOrderNum() const;
 
  protected:
   virtual scoped_ptr<GpuChannel> CreateGpuChannel(

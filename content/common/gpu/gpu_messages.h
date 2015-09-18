@@ -551,12 +551,6 @@ IPC_MESSAGE_ROUTED3(GpuCommandBufferMsg_AsyncFlush,
                     uint32 /* flush_count */,
                     std::vector<ui::LatencyInfo> /* latency_info */)
 
-// Asynchronously process any commands known to the GPU process. This is only
-// used in the event that a channel is unscheduled and needs to be flushed
-// again to process any commands issued subsequent to unscheduling. The GPU
-// process actually sends it (deferred) to itself.
-IPC_MESSAGE_ROUTED0(GpuCommandBufferMsg_Rescheduled)
-
 // Sent by the GPU process to display messages in the console.
 IPC_MESSAGE_ROUTED1(GpuCommandBufferMsg_ConsoleMsg,
                     GPUCommandBufferConsoleMessage /* msg */)
@@ -627,8 +621,7 @@ IPC_SYNC_MESSAGE_ROUTED1_1(GpuCommandBufferMsg_InsertSyncPoint,
                            bool /* retire */,
                            uint32 /* sync_point */)
 
-// Retires the sync point. Note: this message is not sent explicitly by the
-// renderer, but is synthesized by the GPU process.
+// Retires the sync point.
 IPC_MESSAGE_ROUTED1(GpuCommandBufferMsg_RetireSyncPoint,
                     uint32 /* sync_point */)
 

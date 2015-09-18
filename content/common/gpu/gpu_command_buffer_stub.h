@@ -105,11 +105,6 @@ class GpuCommandBufferStub
   // Whether this command buffer can currently handle IPC messages.
   bool IsScheduled();
 
-  // If the command buffer is pre-empted and cannot process commands.
-  bool IsPreempted() const {
-    return scheduler_.get() && scheduler_->IsPreempted();
-  }
-
   // Whether there are commands in the buffer that haven't been processed.
   bool HasUnprocessedCommands();
 
@@ -146,7 +141,7 @@ class GpuCommandBufferStub
 
   // Associates a sync point to this stub. When the stub is destroyed, it will
   // retire all sync points that haven't been previously retired.
-  void AddSyncPoint(uint32 sync_point);
+  void AddSyncPoint(uint32 sync_point, bool retire);
 
   void SetPreemptByFlag(scoped_refptr<gpu::PreemptionFlag> flag);
 
@@ -186,7 +181,6 @@ class GpuCommandBufferStub
                                  IPC::Message* reply_message);
   void OnAsyncFlush(int32 put_offset, uint32 flush_count,
                     const std::vector<ui::LatencyInfo>& latency_info);
-  void OnRescheduled();
   void OnRegisterTransferBuffer(int32 id,
                                 base::SharedMemoryHandle transfer_buffer,
                                 uint32 size);
