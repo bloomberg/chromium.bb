@@ -300,14 +300,18 @@ bool GpuProcessPolicy::PreSandboxHook() {
     if (IsAcceleratedVaapiVideoEncodeEnabled() ||
         IsAcceleratedVideoDecodeEnabled()) {
       const char* I965DrvVideoPath = NULL;
+      const char* I965HybridDrvVideoPath = NULL;
 
       if (IsArchitectureX86_64()) {
         I965DrvVideoPath = "/usr/lib64/va/drivers/i965_drv_video.so";
+        I965HybridDrvVideoPath = "/usr/lib64/va/drivers/hybrid_drv_video.so";
       } else if (IsArchitectureI386()) {
         I965DrvVideoPath = "/usr/lib/va/drivers/i965_drv_video.so";
       }
 
       dlopen(I965DrvVideoPath, RTLD_NOW|RTLD_GLOBAL|RTLD_NODELETE);
+      if (I965HybridDrvVideoPath)
+        dlopen(I965HybridDrvVideoPath, RTLD_NOW|RTLD_GLOBAL|RTLD_NODELETE);
       dlopen("libva.so.1", RTLD_NOW|RTLD_GLOBAL|RTLD_NODELETE);
 #if defined(USE_OZONE)
       dlopen("libva-drm.so.1", RTLD_NOW|RTLD_GLOBAL|RTLD_NODELETE);

@@ -872,8 +872,12 @@
         'common/gpu/media/h264_dpb.h',
         'common/gpu/media/vp8_decoder.cc',
         'common/gpu/media/vp8_decoder.h',
+        'common/gpu/media/vp9_decoder.cc',
+        'common/gpu/media/vp9_decoder.h',
         'common/gpu/media/vp8_picture.cc',
         'common/gpu/media/vp8_picture.h',
+        'common/gpu/media/vp9_picture.cc',
+        'common/gpu/media/vp9_picture.h',
       ],
     }],
     ['chromeos==1 and use_v4l2_codec==1', {
