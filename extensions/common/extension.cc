@@ -28,6 +28,7 @@
 #include "extensions/common/manifest.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/manifest_handler.h"
+#include "extensions/common/manifest_handlers/incognito_info.h"
 #include "extensions/common/manifest_handlers/permissions_parser.h"
 #include "extensions/common/permissions/permission_set.h"
 #include "extensions/common/permissions/permissions_data.h"
@@ -436,11 +437,6 @@ bool Extension::is_shared_module() const {
 
 bool Extension::is_theme() const {
   return manifest()->is_theme();
-}
-
-bool Extension::can_be_incognito_enabled() const {
-  // Only component platform apps are supported in incognito.
-  return !is_platform_app() || location() == Manifest::COMPONENT;
 }
 
 void Extension::AddWebExtentPattern(const URLPattern& pattern) {

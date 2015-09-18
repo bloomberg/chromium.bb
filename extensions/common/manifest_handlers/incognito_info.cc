@@ -14,9 +14,7 @@ namespace extensions {
 
 namespace keys = manifest_keys;
 
-IncognitoInfo::IncognitoInfo(bool incognito_split_mode)
-    : split_mode(incognito_split_mode) {
-}
+IncognitoInfo::IncognitoInfo(Mode mode) : mode(mode) {}
 
 IncognitoInfo::~IncognitoInfo() {
 }
@@ -25,7 +23,14 @@ IncognitoInfo::~IncognitoInfo() {
 bool IncognitoInfo::IsSplitMode(const Extension* extension) {
   IncognitoInfo* info = static_cast<IncognitoInfo*>(
       extension->GetManifestData(keys::kIncognito));
-  return info ? info->split_mode : false;
+  return info ? info->mode == Mode::SPLIT : false;
+}
+
+// static
+bool IncognitoInfo::IsIncognitoAllowed(const Extension* extension) {
+  IncognitoInfo* info =
+      static_cast<IncognitoInfo*>(extension->GetManifestData(keys::kIncognito));
+  return info ? info->mode != Mode::NOT_ALLOWED : true;
 }
 
 IncognitoHandler::IncognitoHandler() {
@@ -35,33 +40,35 @@ IncognitoHandler::~IncognitoHandler() {
 }
 
 bool IncognitoHandler::Parse(Extension* extension, base::string16* error) {
+  // Extensions and Chrome apps default to spanning mode.
+  // Hosted and legacy packaged apps default to split mode.
+  IncognitoInfo::Mode mode =
+      extension->is_hosted_app() || extension->is_legacy_packaged_app()
+          ? IncognitoInfo::Mode::SPLIT
+          : IncognitoInfo::Mode::SPANNING;
   if (!extension->manifest()->HasKey(keys::kIncognito)) {
-    // Extensions and Chrome apps default to spanning mode.
-    // Hosted and legacy packaged apps default to split mode.
-    extension->SetManifestData(
-        keys::kIncognito,
-        new IncognitoInfo(extension->is_hosted_app() ||
-                          extension->is_legacy_packaged_app()));
+    extension->SetManifestData(keys::kIncognito, new IncognitoInfo(mode));
     return true;
   }
 
-  bool split_mode = false;
   std::string incognito_string;
   if (!extension->manifest()->GetString(keys::kIncognito, &incognito_string)) {
     *error = base::ASCIIToUTF16(manifest_errors::kInvalidIncognitoBehavior);
     return false;
   }
 
-  if (incognito_string == manifest_values::kIncognitoSplit)
-    split_mode = true;
-  else if (incognito_string != manifest_values::kIncognitoSpanning) {
-    // If incognito_string == kIncognitoSpanning, it is valid and
-    // split_mode remains false.
+  if (incognito_string == manifest_values::kIncognitoSplit) {
+    mode = IncognitoInfo::Mode::SPLIT;
+  } else if (incognito_string == manifest_values::kIncognitoSpanning) {
+    mode = IncognitoInfo::Mode::SPANNING;
+  } else if (incognito_string == manifest_values::kIncognitoNotAllowed) {
+    mode = IncognitoInfo::Mode::NOT_ALLOWED;
+  } else {
     *error = base::ASCIIToUTF16(manifest_errors::kInvalidIncognitoBehavior);
     return false;
   }
 
-  extension->SetManifestData(keys::kIncognito, new IncognitoInfo(split_mode));
+  extension->SetManifestData(keys::kIncognito, new IncognitoInfo(mode));
   return true;
 }
 

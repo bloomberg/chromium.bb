@@ -7,6 +7,7 @@
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/manifest_handlers/app_isolation_info.h"
+#include "extensions/common/manifest_handlers/incognito_info.h"
 
 namespace extensions {
 namespace util {
@@ -46,6 +47,12 @@ bool SiteHasIsolatedStorage(const GURL& extension_site_url,
       enabled_extensions().GetExtensionOrAppByURL(extension_site_url);
 
   return extension && AppIsolationInfo::HasIsolatedStorage(extension);
+}
+
+bool CanBeIncognitoEnabled(const Extension* extension) {
+  return IncognitoInfo::IsIncognitoAllowed(extension) &&
+         (!extension->is_platform_app() ||
+          extension->location() == Manifest::COMPONENT);
 }
 
 }  // namespace util

@@ -37,6 +37,7 @@
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/browser/extension_util.h"
 #include "extensions/browser/extensions_browser_client.h"
 #include "extensions/browser/guest_view/web_view/web_view_guest.h"
 #include "extensions/browser/lazy_background_task_queue.h"
@@ -371,7 +372,7 @@ void MessageService::OpenChannelToExtension(
     //   that surface (e.g. chrome://extensions) should be the only one for
     //   enabling in incognito. In practice this means platform apps only.
     if (!is_web_connection || IncognitoInfo::IsSplitMode(target_extension) ||
-        target_extension->can_be_incognito_enabled()) {
+        util::CanBeIncognitoEnabled(target_extension)) {
       OnOpenChannelAllowed(params.Pass(), false);
       return;
     }

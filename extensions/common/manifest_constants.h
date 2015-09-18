@@ -195,6 +195,7 @@ namespace manifest_values {
 
 extern const char kApiKey[];
 extern const char kBrowserActionCommandEvent[];
+extern const char kIncognitoNotAllowed[];
 extern const char kIncognitoSplit[];
 extern const char kIncognitoSpanning[];
 extern const char kIsolatedStorage[];

@@ -28,6 +28,7 @@
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/browser/extension_util.h"
 #include "extensions/browser/management_policy.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_l10n_util.h"
@@ -511,7 +512,7 @@ void InstalledLoader::RecordExtensionsMetrics() {
     // extensions are boring.
     if (extension->ShouldDisplayInExtensionSettings() &&
         !Manifest::IsPolicyLocation(extension->location())) {
-      if (extension->can_be_incognito_enabled()) {
+      if (util::CanBeIncognitoEnabled(extension)) {
         if (util::IsIncognitoEnabled(extension->id(), profile))
           ++incognito_allowed_count;
         else

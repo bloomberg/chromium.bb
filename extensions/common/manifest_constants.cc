@@ -195,6 +195,7 @@ namespace manifest_values {
 
 const char kApiKey[] = "api_key";
 const char kBrowserActionCommandEvent[] = "_execute_browser_action";
+const char kIncognitoNotAllowed[] = "not_allowed";
 const char kIncognitoSplit[] = "split";
 const char kIncognitoSpanning[] = "spanning";
 const char kIsolatedStorage[] = "storage";

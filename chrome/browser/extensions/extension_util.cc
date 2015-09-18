@@ -119,7 +119,7 @@ bool IsIncognitoEnabled(const std::string& extension_id,
   const Extension* extension = ExtensionRegistry::Get(context)->
       GetExtensionById(extension_id, ExtensionRegistry::ENABLED);
   if (extension) {
-    if (!extension->can_be_incognito_enabled())
+    if (!util::CanBeIncognitoEnabled(extension))
       return false;
     // If this is an existing component extension we always allow it to
     // work in incognito mode.
@@ -139,7 +139,7 @@ void SetIsIncognitoEnabled(const std::string& extension_id,
       registry->GetExtensionById(extension_id, ExtensionRegistry::EVERYTHING);
 
   if (extension) {
-    if (!extension->can_be_incognito_enabled())
+    if (!util::CanBeIncognitoEnabled(extension))
       return;
 
     // TODO(treib,kalman): Should this be Manifest::IsComponentLocation(..)?

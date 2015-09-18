@@ -14,7 +14,7 @@ class BrowserContext;
 }
 
 namespace extensions {
-
+class Extension;
 struct ExtensionInfo;
 
 namespace util {
@@ -39,6 +39,9 @@ bool HasIsolatedStorage(const ExtensionInfo& info);
 // isolated storage.
 bool SiteHasIsolatedStorage(const GURL& extension_site_url,
                             content::BrowserContext* context);
+
+// Returns true if the extension can be enabled in incognito mode.
+bool CanBeIncognitoEnabled(const Extension* extension);
 
 }  // namespace util
 }  // namespace extensions

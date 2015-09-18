@@ -12,15 +12,22 @@
 namespace extensions {
 
 struct IncognitoInfo : public Extension::ManifestData {
-  explicit IncognitoInfo(bool split_mode);
+  enum Mode { SPLIT, SPANNING, NOT_ALLOWED };
+
+  explicit IncognitoInfo(Mode mode);
+
   ~IncognitoInfo() override;
 
   // If true, a separate process will be used for the extension in incognito
   // mode.
-  bool split_mode;
+  Mode mode;
 
   // Return the incognito mode information for the given |extension|.
   static bool IsSplitMode(const Extension* extension);
+
+  // Return whether this extension can be run in incognito mode as specified
+  // in its manifest.
+  static bool IsIncognitoAllowed(const Extension* extension);
 };
 
 // Parses the "incognito" manifest key.

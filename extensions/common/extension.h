@@ -358,8 +358,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   bool is_shared_module() const;
   bool is_theme() const;
 
-  bool can_be_incognito_enabled() const;
-
   void AddWebExtentPattern(const URLPattern& pattern);
   const URLPatternSet& web_extent() const { return extent_; }
 
