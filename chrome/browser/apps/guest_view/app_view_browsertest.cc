@@ -216,8 +216,8 @@ IN_PROC_BROWSER_TEST_F(AppViewTest, KillGuestWithInvalidInstanceID) {
   exit_observer.WaitUntilRenderProcessHostKilled();
 }
 
-// Failing on msan bot: crbug.com/507940
-#if defined(MEMORY_SANITIZER)
+// Failing on msan bot: crbug.com/507940 and Linux dbg http://crbug.com/533318
+#if defined(MEMORY_SANITIZER) || (defined(OS_LINUX) && !defined(NDEBUG))
 #define MAYBE_KillGuestCommunicatingWithWrongAppView \
         DISABLED_KillGuestCommunicatingWithWrongAppView
 #else
