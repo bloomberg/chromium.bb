@@ -64,11 +64,6 @@ public:
     // can easily avoid drawing the children directly.
     DeprecatedPaintLayerType layerTypeRequired() const final { return NormalDeprecatedPaintLayer; }
 
-    // Skip past a column spanner during flow thread layout. Spanners are not laid out inside the
-    // flow thread, since the flow thread is not in a spanner's containing block chain (since the
-    // containing block is the multicol container).
-    virtual void skipColumnSpanner(LayoutBox*, LayoutUnit logicalTopInFlowThread) { }
-
     virtual void flowThreadDescendantWasInserted(LayoutObject*) { }
     virtual void flowThreadDescendantWillBeRemoved(LayoutObject*) { }
     virtual void flowThreadDescendantStyleWillChange(LayoutBox*, StyleDifference, const ComputedStyle& newStyle) { }
