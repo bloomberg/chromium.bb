@@ -41,15 +41,6 @@ class AppBannerManager : public content::WebContentsObserver,
   AppBannerManager();
   ~AppBannerManager() override;
 
-  // WebContentsObserver overrides.
-  void DidCommitProvisionalLoadForFrame(
-      content::RenderFrameHost* render_frame_host,
-      const GURL& url,
-      ui::PageTransition transition_type) override;
-
-  void DidFinishLoad(content::RenderFrameHost* render_frame_host,
-                     const GURL& validated_url) override;
-
  protected:
   explicit AppBannerManager(content::WebContents* web_contents);
 
@@ -65,17 +56,18 @@ class AppBannerManager : public content::WebContentsObserver,
   scoped_refptr<AppBannerDataFetcher> data_fetcher() { return data_fetcher_; }
 
  private:
+  // WebContentsObserver overrides.
+  void DidNavigateMainFrame(
+      const content::LoadCommittedDetails& details,
+      const content::FrameNavigateParams& params) override;
+
+  void DidFinishLoad(content::RenderFrameHost* render_frame_host,
+                     const GURL& validated_url) override;
+
   // AppBannerDataFetcher::Delegate overrides.
   bool HandleNonWebApp(const std::string& platform,
                        const GURL& url,
                        const std::string& id) override;
-
-  // Called after the manager sends a message to the renderer regarding its
-  // intention to show a prompt. The renderer will send a message back with the
-  // opportunity to cancel.
-  void OnBannerPromptReply(content::RenderFrameHost* render_frame_host,
-                           int request_id,
-                           blink::WebAppBannerPromptReply reply);
 
   // Cancels an active DataFetcher, stopping its banners from appearing.
   void CancelActiveFetcher();

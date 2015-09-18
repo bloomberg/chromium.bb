@@ -21,6 +21,16 @@ bool gDisableSecureCheckForTesting = false;
 
 namespace banners {
 
+void AppBannerManager::DisableSecureSchemeCheckForTesting() {
+  gDisableSecureCheckForTesting = true;
+}
+
+void AppBannerManager::SetEngagementWeights(double direct_engagement,
+                                            double indirect_engagement) {
+  AppBannerSettingsHelper::SetEngagementWeights(direct_engagement,
+                                                indirect_engagement);
+}
+
 bool AppBannerManager::URLsAreForTheSamePage(const GURL& first,
                                              const GURL& second) {
   return first.GetWithEmptyPath() == second.GetWithEmptyPath() &&
@@ -44,11 +54,20 @@ AppBannerManager::~AppBannerManager() {
   CancelActiveFetcher();
 }
 
-void AppBannerManager::DidCommitProvisionalLoadForFrame(
-    content::RenderFrameHost* render_frame_host,
-    const GURL& url,
-    ui::PageTransition transition_type) {
-  last_transition_type_ = transition_type;
+void AppBannerManager::ReplaceWebContents(content::WebContents* web_contents) {
+  Observe(web_contents);
+  if (data_fetcher_.get())
+    data_fetcher_.get()->ReplaceWebContents(web_contents);
+}
+
+bool AppBannerManager::IsFetcherActive() {
+  return data_fetcher_ != nullptr && data_fetcher_->is_active();
+}
+
+void AppBannerManager::DidNavigateMainFrame(
+    const content::LoadCommittedDetails& details,
+    const content::FrameNavigateParams& params) {
+  last_transition_type_ = params.transition;
 }
 
 void AppBannerManager::DidFinishLoad(
@@ -81,31 +100,11 @@ bool AppBannerManager::HandleNonWebApp(const std::string& platform,
   return false;
 }
 
-void AppBannerManager::ReplaceWebContents(content::WebContents* web_contents) {
-  Observe(web_contents);
-  if (data_fetcher_.get())
-    data_fetcher_.get()->ReplaceWebContents(web_contents);
-}
-
 void AppBannerManager::CancelActiveFetcher() {
   if (data_fetcher_ != nullptr) {
     data_fetcher_->Cancel();
     data_fetcher_ = nullptr;
   }
-}
-
-bool AppBannerManager::IsFetcherActive() {
-  return data_fetcher_ != nullptr && data_fetcher_->is_active();
-}
-
-void AppBannerManager::DisableSecureSchemeCheckForTesting() {
-  gDisableSecureCheckForTesting = true;
-}
-
-void AppBannerManager::SetEngagementWeights(double direct_engagement,
-                                            double indirect_engagement) {
-  AppBannerSettingsHelper::SetEngagementWeights(direct_engagement,
-                                                indirect_engagement);
 }
 
 }  // namespace banners
