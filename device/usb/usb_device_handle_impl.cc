@@ -104,6 +104,20 @@ static UsbTransferStatus ConvertTransferStatus(
   }
 }
 
+static void RunTransferCallback(
+    scoped_refptr<base::TaskRunner> callback_task_runner,
+    const UsbDeviceHandle::TransferCallback& callback,
+    UsbTransferStatus status,
+    scoped_refptr<net::IOBuffer> buffer,
+    size_t result) {
+  if (callback_task_runner->RunsTasksOnCurrentThread()) {
+    callback.Run(status, buffer, result);
+  } else {
+    callback_task_runner->PostTask(
+        FROM_HERE, base::Bind(callback, status, buffer, result));
+  }
+}
+
 }  // namespace
 
 class UsbDeviceHandleImpl::InterfaceClaimer
@@ -833,13 +847,15 @@ void UsbDeviceHandleImpl::ControlTransferInternal(
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (!device_) {
-    callback.Run(USB_TRANSFER_DISCONNECT, buffer, 0);
+    RunTransferCallback(callback_task_runner, callback, USB_TRANSFER_DISCONNECT,
+                        buffer, 0);
     return;
   }
 
   if (length > UINT16_MAX) {
     USB_LOG(USER) << "Transfer too long.";
-    callback.Run(USB_TRANSFER_ERROR, buffer, 0);
+    RunTransferCallback(callback_task_runner, callback, USB_TRANSFER_ERROR,
+                        buffer, 0);
     return;
   }
 
@@ -847,7 +863,8 @@ void UsbDeviceHandleImpl::ControlTransferInternal(
   scoped_refptr<net::IOBuffer> resized_buffer(
       new net::IOBufferWithSize(static_cast<int>(resized_length)));
   if (!resized_buffer.get()) {
-    callback.Run(USB_TRANSFER_ERROR, buffer, 0);
+    RunTransferCallback(callback_task_runner, callback, USB_TRANSFER_ERROR,
+                        buffer, 0);
     return;
   }
   memcpy(resized_buffer->data() + LIBUSB_CONTROL_SETUP_SIZE, buffer->data(),
@@ -858,7 +875,8 @@ void UsbDeviceHandleImpl::ControlTransferInternal(
       value, index, static_cast<uint16>(length), resized_buffer, timeout,
       callback_task_runner, callback);
   if (!transfer) {
-    callback.Run(USB_TRANSFER_ERROR, buffer, 0);
+    RunTransferCallback(callback_task_runner, callback, USB_TRANSFER_ERROR,
+                        buffer, 0);
     return;
   }
 
@@ -876,13 +894,15 @@ void UsbDeviceHandleImpl::BulkTransferInternal(
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (!device_) {
-    callback.Run(USB_TRANSFER_DISCONNECT, buffer, 0);
+    RunTransferCallback(callback_task_runner, callback, USB_TRANSFER_DISCONNECT,
+                        buffer, 0);
     return;
   }
 
   if (length > INT_MAX) {
     USB_LOG(USER) << "Transfer too long.";
-    callback.Run(USB_TRANSFER_ERROR, buffer, 0);
+    RunTransferCallback(callback_task_runner, callback, USB_TRANSFER_ERROR,
+                        buffer, 0);
     return;
   }
 
@@ -904,13 +924,15 @@ void UsbDeviceHandleImpl::InterruptTransferInternal(
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (!device_) {
-    callback.Run(USB_TRANSFER_DISCONNECT, buffer, 0);
+    RunTransferCallback(callback_task_runner, callback, USB_TRANSFER_DISCONNECT,
+                        buffer, 0);
     return;
   }
 
   if (length > INT_MAX) {
     USB_LOG(USER) << "Transfer too long.";
-    callback.Run(USB_TRANSFER_ERROR, buffer, 0);
+    RunTransferCallback(callback_task_runner, callback, USB_TRANSFER_ERROR,
+                        buffer, 0);
     return;
   }
 
@@ -934,13 +956,15 @@ void UsbDeviceHandleImpl::IsochronousTransferInternal(
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (!device_) {
-    callback.Run(USB_TRANSFER_DISCONNECT, buffer, 0);
+    RunTransferCallback(callback_task_runner, callback, USB_TRANSFER_DISCONNECT,
+                        buffer, 0);
     return;
   }
 
   if (length > INT_MAX) {
     USB_LOG(USER) << "Transfer too long.";
-    callback.Run(USB_TRANSFER_ERROR, buffer, 0);
+    RunTransferCallback(callback_task_runner, callback, USB_TRANSFER_ERROR,
+                        buffer, 0);
     return;
   }
 
@@ -963,22 +987,24 @@ void UsbDeviceHandleImpl::GenericTransferInternal(
   if (!ContainsKey(endpoint_map_, endpoint)) {
     USB_LOG(DEBUG)
         << "Failed to do generic transfer since endpoint not in endpoint_map_.";
-    callback.Run(USB_TRANSFER_ERROR, buffer, 0);
+    RunTransferCallback(callback_task_runner, callback, USB_TRANSFER_ERROR,
+                        buffer, 0);
     return;
   }
 
   UsbTransferType transfer_type = endpoint_map_[endpoint].transfer_type;
   if (transfer_type == USB_TRANSFER_BULK) {
     BulkTransferInternal(direction, endpoint, buffer, length, timeout,
-                         task_runner_, callback);
+                         callback_task_runner, callback);
   } else if (transfer_type == USB_TRANSFER_INTERRUPT) {
     InterruptTransferInternal(direction, endpoint, buffer, length, timeout,
-                              task_runner_, callback);
+                              callback_task_runner, callback);
   } else {
     USB_LOG(DEBUG)
         << "Failed to do generic transfer since transfer_type is not "
            "bulk or interrupt.";
-    callback.Run(USB_TRANSFER_ERROR, buffer, 0);
+    RunTransferCallback(callback_task_runner, callback, USB_TRANSFER_ERROR,
+                        buffer, 0);
   }
 }
 
