@@ -737,6 +737,7 @@ void TabAndroid::CreateHistoricalTabFromContents(WebContents* web_contents) {
   }
 
   // TODO(jcivelli): is the index important?
+  sessions::ContentLiveTab::CreateForWebContents(web_contents);
   service->CreateHistoricalTab(
       sessions::ContentLiveTab::FromWebContents(web_contents), -1);
 }
