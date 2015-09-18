@@ -113,7 +113,6 @@ void ViewTreeHostImpl::DispatchInputEventToView(const ServerView* target,
       connection_manager_->GetConnectionWithRoot(target->id());
   if (!connection)
     connection = connection_manager_->GetConnection(target->id().connection_id);
-  DCHECK_EQ(this, connection->GetHost());
   connection->client()->OnViewInputEvent(ViewIdToTransportId(target->id()),
                                          event.Pass(),
                                          base::Bind(&base::DoNothing));
@@ -150,7 +149,15 @@ ServerView* ViewTreeHostImpl::GetRootView() {
   return root_.get();
 }
 
-void ViewTreeHostImpl::OnEvent(mojo::EventPtr event) {
+void ViewTreeHostImpl::OnEvent(ViewId id, mojo::EventPtr event) {
+  ServerView* view = connection_manager_->GetView(id);
+  // TODO(fsamuel): This should be a DCHECK but currently we use stale
+  // information to decide where to route input events. This should be fixed
+  // once we implement a UI scheduler.
+  if (view) {
+    DispatchInputEventToView(view, event.Pass());
+    return;
+  }
   event_dispatcher_.OnEvent(event.Pass());
 }
 

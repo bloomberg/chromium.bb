@@ -6,6 +6,7 @@
 
 #include "cc/output/compositor_frame.h"
 #include "cc/surfaces/display.h"
+#include "cc/surfaces/surface.h"
 #include "components/mus/gles2/gpu_state.h"
 #include "components/mus/surfaces/surfaces_context_provider.h"
 #include "components/mus/surfaces/surfaces_output_surface.h"
@@ -46,13 +47,11 @@ TopLevelDisplayClient::TopLevelDisplayClient(
 }
 
 TopLevelDisplayClient::~TopLevelDisplayClient() {
-  if (display_) {
-    factory_.Destroy(cc_id_);
-    surfaces_state_->scheduler()->RemoveDisplay(display_.get());
-    // By deleting the object after display_ is reset, OutputSurfaceLost can
-    // know not to do anything (which would result in double delete).
-    delete display_.release();
-  }
+  factory_.Destroy(cc_id_);
+  surfaces_state_->scheduler()->RemoveDisplay(display_.get());
+  // By deleting the object after display_ is reset, OutputSurfaceLost can
+  // know not to do anything (which would result in double delete).
+  delete display_.release();
 }
 
 void TopLevelDisplayClient::SubmitCompositorFrame(
@@ -67,6 +66,14 @@ void TopLevelDisplayClient::SubmitCompositorFrame(
   factory_.SubmitCompositorFrame(cc_id_, pending_frame_.Pass(),
                                  base::Bind(&CallCallback, callback));
   surfaces_state_->scheduler()->SetNeedsDraw();
+}
+
+const cc::CompositorFrame*
+TopLevelDisplayClient::GetLastCompositorFrame() const {
+  cc::Surface* surface = surfaces_state_->manager()->GetSurfaceForId(cc_id_);
+  if (!surface)
+    return nullptr;
+  return surface->GetEligibleFrame();
 }
 
 void TopLevelDisplayClient::CommitVSyncParameters(base::TimeTicks timebase,

@@ -255,8 +255,8 @@ void ServerView::SubmitCompositorFrame(
         new cc::SurfaceFactory(delegate_->GetSurfacesState()->manager(), this));
   }
   if (!surface_id_allocator_) {
-    surface_id_allocator_.reset(new cc::SurfaceIdAllocator(
-        delegate_->GetSurfacesState()->next_id_namespace()));
+    surface_id_allocator_.reset(
+        new cc::SurfaceIdAllocator(ViewIdToTransportId(id())));
   }
   if (surface_id().is_null()) {
     // Create a Surface ID for the first time for this view.

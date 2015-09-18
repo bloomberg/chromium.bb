@@ -8,6 +8,7 @@
 #include "base/stl_util.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/quads/shared_quad_state.h"
+#include "cc/quads/surface_draw_quad.h"
 #include "components/mus/client_connection.h"
 #include "components/mus/connection_manager_delegate.h"
 #include "components/mus/server_view.h"
@@ -446,18 +447,20 @@ bool ConnectionManager::ConvertSurfaceDrawQuad(
   ServerView* view = GetView(ViewIdFromTransportId(id));
   // If a CompositorFrame message arrives late, say during a navigation, then
   // it may contain view IDs that no longer exist.
-  if (!view)
+  if (!view || view->surface_id().is_null())
     return false;
-  gfx::Rect bounds(input->visible_rect.To<gfx::Rect>());
-  gfx::Point p;
-  sqs->quad_to_target_transform.TransformPoint(&p);
-  bounds.set_origin(p);
-  // TODO(fsamuel): This seems like a crude way to set the size that probably
-  // doesn't work correctly in the general case. We need to get transforms
-  // working correctly in the general case.
-  bounds.set_size(gfx::ToRoundedSize(
-      gfx::ScaleSize(bounds.size(), metadata->device_scale_factor)));
-  view->SetBounds(bounds);
+
+  // TODO(fsamuel): This shouldn't be in the ConnectionManager. Let's find a
+  // better home for it. http://crbug.com/533029.
+  cc::SurfaceDrawQuad* surface_quad =
+      render_pass->CreateAndAppendDrawQuad<cc::SurfaceDrawQuad>();
+  surface_quad->SetAll(
+      sqs,
+      input->rect.To<gfx::Rect>(),
+      input->opaque_rect.To<gfx::Rect>(),
+      input->visible_rect.To<gfx::Rect>(),
+      input->needs_blending,
+      view->surface_id());
   return true;
 }
 

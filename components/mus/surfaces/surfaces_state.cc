@@ -6,7 +6,10 @@
 
 namespace mus {
 
-SurfacesState::SurfacesState() : next_id_namespace_(1u) {}
+SurfacesState::SurfacesState()
+    : next_id_namespace_(1u),
+      hit_tester_(&manager_) {
+}
 
 SurfacesState::~SurfacesState() {}
 

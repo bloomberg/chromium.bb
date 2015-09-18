@@ -103,9 +103,19 @@ class DefaultDisplayManager : public DisplayManager,
 
  private:
   void WantToDraw();
+
+  // This method initiates a top level redraw of the display.
+  // TODO(fsamuel): This should use vblank as a signal rather than a timer
+  // http://crbug.com/533042
   void Draw();
+
+  // This is called after cc::Display has completed generating a new frame
+  // for the display. TODO(fsamuel): Idle time processing should happen here
+  // if there is budget for it.
   void DidDraw();
   void UpdateMetrics(const gfx::Size& size, float device_pixel_ratio);
+  scoped_ptr<cc::CompositorFrame> GenerateCompositorFrame();
+  const cc::CompositorFrame* GetLastCompositorFrame() const;
 
   // ui::PlatformWindowDelegate:
   void OnBoundsChanged(const gfx::Rect& new_bounds) override;

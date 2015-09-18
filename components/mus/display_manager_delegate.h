@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_MUS_DISPLAY_MANAGER_DELEGATE_H_
 #define COMPONENTS_MUS_DISPLAY_MANAGER_DELEGATE_H_
 
+#include "components/mus/ids.h"
 #include "components/mus/public/interfaces/view_tree.mojom.h"
 
 namespace mus {
@@ -23,7 +24,7 @@ class DisplayManagerDelegate {
   virtual void OnDisplayClosed() = 0;
 
   // Called when an event arrives.
-  virtual void OnEvent(mojo::EventPtr event) = 0;
+  virtual void OnEvent(ViewId id, mojo::EventPtr event) = 0;
 
   // Signals that the metrics of this display's viewport has changed.
   virtual void OnViewportMetricsChanged(

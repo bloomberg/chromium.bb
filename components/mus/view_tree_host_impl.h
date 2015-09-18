@@ -96,7 +96,7 @@ class ViewTreeHostImpl : public DisplayManagerDelegate,
 
   // DisplayManagerDelegate:
   ServerView* GetRootView() override;
-  void OnEvent(mojo::EventPtr event) override;
+  void OnEvent(ViewId id, mojo::EventPtr event) override;
   void OnDisplayClosed() override;
   void OnViewportMetricsChanged(
       const mojo::ViewportMetrics& old_metrics,

@@ -47,26 +47,39 @@ using mojo::Size;
 namespace mus {
 namespace {
 
+// DrawViewTree recursively visits ServerViews, creating a SurfaceDrawQuad for
+// each that lacks one. For Views that already have CompositorFrames, we can
+// skip this step and let cc::SurfaceAggregator do the heavy lifting.
+// |skip_view| indicates whether or not we should generate a SurfaceDrawQuad
+// for the provided |view|.
 void DrawViewTree(cc::RenderPass* pass,
                   const ServerView* view,
                   const gfx::Vector2d& parent_to_root_origin_offset,
-                  float opacity) {
+                  float opacity,
+                  bool skip_view) {
   if (!view->visible())
     return;
 
   const gfx::Rect absolute_bounds =
       view->bounds() + parent_to_root_origin_offset;
+
   std::vector<const ServerView*> children(view->GetChildren());
+  // TODO(rjkroege, fsamuel): Make sure we're handling alpha correctly.
   const float combined_opacity = opacity * view->opacity();
-  for (std::vector<const ServerView*>::reverse_iterator it = children.rbegin();
-       it != children.rend(); ++it) {
+  for (auto it = children.rbegin(); it != children.rend(); ++it) {
     DrawViewTree(pass, *it, absolute_bounds.OffsetFromOrigin(),
-                 combined_opacity);
+                combined_opacity,
+                view->parent() &&
+                    !view->surface_id().is_null() /* skip_view */);
   }
+
+  if (skip_view || view->surface_id().is_null())
+    return;
 
   gfx::Transform quad_to_target_transform;
   quad_to_target_transform.Translate(absolute_bounds.x(), absolute_bounds.y());
-  const gfx::Rect bounds_at_origin(view->bounds().size());
+  gfx::Rect bounds_at_origin(view->bounds().size());
+
   cc::SharedQuadState* sqs = pass->CreateAndAppendSharedQuadState();
   // TODO(fsamuel): These clipping and visible rects are incorrect. They need
   // to be populated from CompositorFrame structs.
@@ -192,19 +205,8 @@ void DefaultDisplayManager::Draw() {
   if (!delegate_->GetRootView()->visible())
     return;
 
-  scoped_ptr<cc::RenderPass> render_pass = cc::RenderPass::Create();
-  render_pass->damage_rect = dirty_rect_;
-  render_pass->output_rect = gfx::Rect(metrics_.size_in_pixels.To<gfx::Size>());
-
-  DrawViewTree(render_pass.get(), delegate_->GetRootView(), gfx::Vector2d(),
-               1.0f);
-
-  scoped_ptr<cc::DelegatedFrameData> frame_data(new cc::DelegatedFrameData);
-  frame_data->device_scale_factor = 1.f;
-  frame_data->render_pass_list.push_back(render_pass.Pass());
-
-  scoped_ptr<cc::CompositorFrame> frame(new cc::CompositorFrame);
-  frame->delegated_frame_data = frame_data.Pass();
+  // TODO(fsamuel): We should add a trace for generating a top level frame.
+  scoped_ptr<cc::CompositorFrame> frame(GenerateCompositorFrame());
   frame_pending_ = true;
   if (top_level_display_client_) {
     top_level_display_client_->SubmitCompositorFrame(
@@ -246,6 +248,34 @@ void DefaultDisplayManager::UpdateMetrics(const gfx::Size& size,
   delegate_->OnViewportMetricsChanged(old_metrics, metrics_);
 }
 
+scoped_ptr<cc::CompositorFrame>
+DefaultDisplayManager::GenerateCompositorFrame() {
+  scoped_ptr<cc::RenderPass> render_pass = cc::RenderPass::Create();
+  render_pass->damage_rect = dirty_rect_;
+  render_pass->output_rect = gfx::Rect(metrics_.size_in_pixels.To<gfx::Size>());
+
+  DrawViewTree(render_pass.get(),
+               delegate_->GetRootView(),
+               gfx::Vector2d(), 1.0f,
+               false /* skip_view */);
+
+  scoped_ptr<cc::DelegatedFrameData> frame_data(new cc::DelegatedFrameData);
+  frame_data->device_scale_factor = metrics_.device_pixel_ratio;
+  frame_data->render_pass_list.push_back(render_pass.Pass());
+
+  scoped_ptr<cc::CompositorFrame> frame(new cc::CompositorFrame);
+  frame->delegated_frame_data = frame_data.Pass();
+  return frame.Pass();
+}
+
+const cc::CompositorFrame*
+DefaultDisplayManager::GetLastCompositorFrame() const {
+  if (!top_level_display_client_)
+    return nullptr;
+
+  return top_level_display_client_->GetLastCompositorFrame();
+}
+
 void DefaultDisplayManager::OnBoundsChanged(const gfx::Rect& new_bounds) {
   UpdateMetrics(new_bounds.size(), metrics_.device_pixel_ratio);
 }
@@ -257,7 +287,21 @@ void DefaultDisplayManager::OnDamageRect(const gfx::Rect& damaged_region) {
 
 void DefaultDisplayManager::DispatchEvent(ui::Event* event) {
   mojo::EventPtr mojo_event(mojo::Event::From(*event));
-  delegate_->OnEvent(mojo_event.Pass());
+  ViewId id;
+  if (event->IsLocatedEvent() && !!top_level_display_client_) {
+    ui::LocatedEvent* located_event = static_cast<ui::LocatedEvent*>(event);
+    gfx::Point transformed_point;
+    cc::SurfaceId target_surface =
+        surfaces_state_->hit_tester()->GetTargetSurfaceAtPoint(
+            top_level_display_client_->surface_id(),
+            located_event->location(),
+            &transformed_point);
+    id = ViewIdFromTransportId(
+        cc::SurfaceIdAllocator::NamespaceForId(target_surface));
+    mojo_event->pointer_data->location->x = transformed_point.x();
+    mojo_event->pointer_data->location->y = transformed_point.y();
+  }
+  delegate_->OnEvent(id, mojo_event.Pass());
 
   switch (event->type()) {
     case ui::ET_MOUSE_PRESSED:
@@ -299,7 +343,7 @@ void DefaultDisplayManager::DispatchEvent(ui::Event* event) {
             key_press_event->GetLocatedWindowsKeyboardCode(),
             key_press_event->GetText(), key_press_event->GetUnmodifiedText())));
 
-    delegate_->OnEvent(mojo::Event::From(char_event));
+    delegate_->OnEvent(id, mojo::Event::From(char_event));
   }
 #endif
 }
