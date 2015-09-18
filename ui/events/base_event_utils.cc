@@ -34,7 +34,10 @@ uint32 GetNextTouchEventId() {
 }
 
 bool IsSystemKeyModifier(int flags) {
-  return (kSystemKeyModifierMask & flags) != 0;
+  // AltGr modifier is used to type alternative keys on certain keyboard layouts
+  // so we don't consider keys with the AltGr modifier as a system key.
+  return (kSystemKeyModifierMask & flags) != 0 &&
+         (EF_ALTGR_DOWN & flags) == 0;
 }
 
 }  // namespace ui

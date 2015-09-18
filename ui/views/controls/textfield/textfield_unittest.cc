@@ -727,6 +727,9 @@ TEST_F(TextfieldTest, KeysWithModifiersTest) {
   const int altgr = ui::EF_ALTGR_DOWN;
   const int shift = ui::EF_SHIFT_DOWN;
 
+  SendKeyPress(ui::VKEY_T, shift | alt | altgr);
+  SendKeyPress(ui::VKEY_H, alt);
+  SendKeyPress(ui::VKEY_E, altgr);
   SendKeyPress(ui::VKEY_T, shift);
   SendKeyPress(ui::VKEY_E, shift | altgr);
   SendKeyPress(ui::VKEY_X, 0);
@@ -737,9 +740,9 @@ TEST_F(TextfieldTest, KeysWithModifiersTest) {
   SendKeyPress(ui::VKEY_4, 0);
 
   if (TestingNativeCrOs())
-    EXPECT_STR_EQ("TEx34", textfield_->text());
+    EXPECT_STR_EQ("TeTEx34", textfield_->text());
   else
-    EXPECT_STR_EQ("TEx234", textfield_->text());
+    EXPECT_STR_EQ("TeTEx234", textfield_->text());
 }
 
 TEST_F(TextfieldTest, ControlAndSelectTest) {

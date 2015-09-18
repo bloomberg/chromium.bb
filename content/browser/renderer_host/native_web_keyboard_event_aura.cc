@@ -85,8 +85,7 @@ NativeWebKeyboardEvent::NativeWebKeyboardEvent(
   nativeKeyCode = character;
   text[0] = character;
   unmodifiedText[0] = character;
-  isSystemKey =
-      ui::IsSystemKeyModifier(state) && (state & ui::EF_ALTGR_DOWN) == 0;
+  isSystemKey = ui::IsSystemKeyModifier(state);
   setKeyIdentifierFromWindowsKeyCode();
 }
 
