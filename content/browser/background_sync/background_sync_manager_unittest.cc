@@ -526,6 +526,8 @@ class BackgroundSyncManagerTest : public testing::Test {
     EXPECT_FALSE(sync_fired_callback_.is_null());
   }
 
+  int MaxTagLength() const { return BackgroundSyncManager::kMaxTagLength; }
+
   TestBrowserThreadBundle browser_thread_bundle_;
   scoped_ptr<net::NetworkChangeNotifier> network_change_notifier_;
   TestPowerSource* power_monitor_source_;  // owned by power_monitor_
@@ -739,6 +741,16 @@ TEST_F(BackgroundSyncManagerTest, UnregisterBadBackend) {
   test_background_sync_manager_->set_corrupt_backend(false);
   EXPECT_FALSE(GetRegistration(sync_options_1_));
   EXPECT_FALSE(GetRegistration(sync_options_2_));
+}
+
+TEST_F(BackgroundSyncManagerTest, RegisterMaxTagLength) {
+  sync_options_1_.tag = std::string(MaxTagLength(), 'a');
+  EXPECT_TRUE(Register(sync_options_1_));
+  EXPECT_TRUE(Unregister(callback_registration_handle_.get()));
+
+  sync_options_1_.tag = std::string(MaxTagLength() + 1, 'a');
+  EXPECT_FALSE(Register(sync_options_1_));
+  EXPECT_EQ(BACKGROUND_SYNC_STATUS_NOT_ALLOWED, callback_status_);
 }
 
 TEST_F(BackgroundSyncManagerTest, RegistrationIncreasesId) {

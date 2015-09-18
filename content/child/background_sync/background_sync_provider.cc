@@ -188,9 +188,10 @@ void BackgroundSyncProvider::RegisterCallback(
                               "Background Sync is disabled."));
       break;
     case BACKGROUND_SYNC_ERROR_NOT_ALLOWED:
-      callbacks->onError(blink::WebSyncError(
-          blink::WebSyncError::ErrorTypeNoPermission,
-          "Cannot register a sync event without a window client."));
+      callbacks->onError(
+          blink::WebSyncError(blink::WebSyncError::ErrorTypeNoPermission,
+                              "Attempted to register a sync event without a "
+                              "window or registration tag too long."));
       break;
     case BACKGROUND_SYNC_ERROR_NO_SERVICE_WORKER:
       callbacks->onError(

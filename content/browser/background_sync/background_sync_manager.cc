@@ -333,6 +333,15 @@ void BackgroundSyncManager::RegisterImpl(
     return;
   }
 
+  if (options.tag.length() > kMaxTagLength) {
+    BackgroundSyncMetrics::CountRegister(
+        options.periodicity, registration_could_fire,
+        BackgroundSyncMetrics::REGISTRATION_IS_NOT_DUPLICATE,
+        BACKGROUND_SYNC_STATUS_NOT_ALLOWED);
+    PostErrorResponse(BACKGROUND_SYNC_STATUS_NOT_ALLOWED, callback);
+    return;
+  }
+
   ServiceWorkerRegistration* sw_registration =
       service_worker_context_->GetLiveRegistration(sw_registration_id);
   if (!sw_registration || !sw_registration->active_version()) {

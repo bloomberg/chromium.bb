@@ -131,6 +131,7 @@ class CONTENT_EXPORT BackgroundSyncManager
       const ServiceWorkerVersion::StatusCallback& callback);
 
  private:
+  friend class BackgroundSyncManagerTest;
   friend class BackgroundSyncRegistrationHandle;
 
   class RegistrationKey {
@@ -163,6 +164,8 @@ class CONTENT_EXPORT BackgroundSyncManager
 
   using PermissionStatusCallback = base::Callback<void(bool)>;
   using SWIdToRegistrationsMap = std::map<int64, BackgroundSyncRegistrations>;
+
+  static const size_t kMaxTagLength = 10240;
 
   scoped_ptr<BackgroundSyncRegistrationHandle> CreateRegistrationHandle(
       const scoped_refptr<RefCountedRegistration>& registration);
