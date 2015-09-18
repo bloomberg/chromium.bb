@@ -452,6 +452,7 @@ dictionary Preferences {
   boolean searchSuggestEnabled;
   boolean use24hourClock;
   boolean allowRedeemOffers;
+  DOMString timezone;
 };
 
 dictionary PreferencesChange {
@@ -649,7 +650,7 @@ interface Functions {
   // |entries| Array of entries
   // |callback|
   [nocompile]
-  static void executeTask(DOMString taskId, 
+  static void executeTask(DOMString taskId,
                           [instanceof=Entry] object[] entries,
                           ExecuteTaskCallback callback);
 

@@ -23,6 +23,7 @@
 #include "chrome/common/extensions/api/file_manager_private.h"
 #include "chromeos/disks/disk_mount_manager.h"
 #include "chromeos/network/network_state_handler_observer.h"
+#include "chromeos/settings/timezone_settings.h"
 #include "components/drive/file_system_observer.h"
 #include "components/drive/service/drive_service_interface.h"
 #include "components/drive/sync_client.h"
@@ -52,6 +53,7 @@ namespace file_manager {
 // affecting File Manager. Dispatches appropriate File Browser events.
 class EventRouter : public KeyedService,
                     public chromeos::NetworkStateHandlerObserver,
+                    public chromeos::system::TimezoneSettings::Observer,
                     public drive::FileSystemObserver,
                     public drive::DriveServiceObserver,
                     public VolumeManagerObserver {
@@ -110,6 +112,9 @@ class EventRouter : public KeyedService,
 
   // chromeos::NetworkStateHandlerObserver overrides.
   void DefaultNetworkChanged(const chromeos::NetworkState* network) override;
+
+  // chromeos::system::TimezoneSettings::Observer overrides.
+  void TimezoneChanged(const icu::TimeZone& timezone) override;
 
   // drive::DriveServiceObserver overrides.
   void OnRefreshTokenInvalid() override;

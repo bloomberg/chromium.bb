@@ -143,7 +143,8 @@ var FileWatchEvent;
  *   hostedFilesDisabled: boolean,
  *   searchSuggestEnabled: boolean,
  *   use24hourClock: boolean,
- *   allowRedeemOffers: boolean
+ *   allowRedeemOffers: boolean,
+ *   timezone: string
  * }}
  */
 var Preferences;

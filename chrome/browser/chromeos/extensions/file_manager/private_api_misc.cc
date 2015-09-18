@@ -37,6 +37,7 @@
 #include "chrome/common/extensions/api/file_manager_private_internal.h"
 #include "chrome/common/extensions/api/manifest_types.h"
 #include "chrome/common/pref_names.h"
+#include "chromeos/settings/timezone_settings.h"
 #include "components/drive/drive_pref_names.h"
 #include "components/drive/event_logger.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
@@ -129,6 +130,9 @@ bool FileManagerPrivateGetPreferencesFunction::RunSync() {
           &result.allow_redeem_offers)) {
     result.allow_redeem_offers = true;
   }
+  result.timezone =
+      UTF16ToUTF8(chromeos::system::TimezoneSettings::GetInstance()
+                      ->GetCurrentTimezoneID());
 
   SetResult(result.ToValue().release());
 

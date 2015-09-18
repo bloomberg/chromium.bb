@@ -450,6 +450,8 @@ void EventRouter::ObserveEvents() {
   pref_change_registrar_->Add(drive::prefs::kDisableDrive, callback);
   pref_change_registrar_->Add(prefs::kSearchSuggestEnabled, callback);
   pref_change_registrar_->Add(prefs::kUse24HourClock, callback);
+
+  chromeos::system::TimezoneSettings::GetInstance()->AddObserver(this);
 }
 
 // File watch setup routines.
@@ -600,6 +602,10 @@ void EventRouter::DefaultNetworkChanged(const chromeos::NetworkState* network) {
                     FILE_MANAGER_PRIVATE_ON_DRIVE_CONNECTION_STATUS_CHANGED,
       file_manager_private::OnDriveConnectionStatusChanged::kEventName,
       file_manager_private::OnDriveConnectionStatusChanged::Create());
+}
+
+void EventRouter::TimezoneChanged(const icu::TimeZone& timezone) {
+  OnFileManagerPrefsChanged();
 }
 
 void EventRouter::OnFileManagerPrefsChanged() {
