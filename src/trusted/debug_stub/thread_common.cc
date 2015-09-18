@@ -17,7 +17,9 @@
 
 namespace {
 
+#if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86
 const int kX86TrapFlag = 1 << 8;
+#endif
 
 bool IsZero(const uint8_t *buf, uint32_t size) {
   for (uint32_t i = 0; i < size; i++) {
