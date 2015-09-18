@@ -45,9 +45,9 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['win'], bug=485641)
     self.Fail('conformance/glsl/bugs/sampler-struct-function-arg.html',
         ['win'], bug=485642)
-    self.Fail('conformance/glsl/constructors/' +
-              'glsl-construct-vec-mat-index.html',
-              ['win'], bug=525188)
+    self.Flaky('conformance/glsl/constructors/' +
+               'glsl-construct-vec-mat-index.html',
+               ['win'], bug=525188)
 
     # Win7 / Intel failures
     self.Fail('conformance/rendering/gl-scissor-test.html',
@@ -318,6 +318,8 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Fail('conformance/textures/video/tex-image-and-sub-image-2d-with-' +
         'video-rgba-rgba-unsigned_byte.html',
         ['android', 'android-content-shell'], bug=499555)
+    self.Flaky('conformance/textures/misc/texture-npot-video.html',
+        ['android', 'android-content-shell'], bug=520638)
     # These are failing on the Nexus 5 and 6
     self.Fail('conformance/extensions/oes-texture-float-with-canvas.html',
               ['android', 'qualcomm'], bug=499555)
