@@ -32,15 +32,15 @@ class CONTENT_EXPORT BackgroundSyncRegistration {
   RegistrationId id() const { return id_; }
   void set_id(RegistrationId id) { id_ = id; }
 
-  SyncState sync_state() const { return sync_state_; }
-  void set_sync_state(SyncState state) { sync_state_ = state; }
+  BackgroundSyncState sync_state() const { return sync_state_; }
+  void set_sync_state(BackgroundSyncState state) { sync_state_ = state; }
 
  private:
   static const RegistrationId kInvalidRegistrationId;
 
   BackgroundSyncRegistrationOptions options_;
   RegistrationId id_ = kInvalidRegistrationId;
-  SyncState sync_state_ = SYNC_STATE_PENDING;
+  BackgroundSyncState sync_state_ = BACKGROUND_SYNC_STATE_PENDING;
 
   DISALLOW_COPY_AND_ASSIGN(BackgroundSyncRegistration);
 };

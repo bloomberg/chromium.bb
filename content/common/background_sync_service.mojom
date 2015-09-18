@@ -17,6 +17,12 @@ enum BackgroundSyncError {
   MAX=NOT_ALLOWED
 };
 
+enum BackgroundSyncState {
+  PENDING,
+  FIRING,
+  FAILED
+ };
+
 interface BackgroundSyncService {
   Register(SyncRegistration options, int64 service_worker_registration_id,
            bool requested_from_service_worker)

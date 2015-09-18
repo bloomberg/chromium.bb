@@ -33,7 +33,7 @@ class CONTENT_EXPORT BackgroundSyncRegistrationHandle {
     return registration_->options();
   }
 
-  SyncState sync_state() const {
+  BackgroundSyncState sync_state() const {
     DCHECK(background_sync_manager_);
     return registration_->sync_state();
   }

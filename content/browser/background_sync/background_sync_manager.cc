@@ -292,13 +292,6 @@ void BackgroundSyncManager::InitDidGetDataFromBackend(
         options->power_state = registration_proto.power_state();
 
         registration->set_id(registration_proto.id());
-        registration->set_sync_state(registration_proto.sync_state());
-
-        if (registration->sync_state() == SYNC_STATE_FIRING) {
-          // If the browser (or worker) closed while firing the event, consider
-          // it pending again>
-          registration->set_sync_state(SYNC_STATE_PENDING);
-        }
       }
     }
 
@@ -363,8 +356,8 @@ void BackgroundSyncManager::RegisterImpl(
       existing_registration_ref->value()->options()->Equals(options)) {
     BackgroundSyncRegistration* existing_registration =
         existing_registration_ref->value();
-    if (existing_registration->sync_state() == SYNC_STATE_FAILED) {
-      existing_registration->set_sync_state(SYNC_STATE_PENDING);
+    if (existing_registration->sync_state() == BACKGROUND_SYNC_STATE_FAILED) {
+      existing_registration->set_sync_state(BACKGROUND_SYNC_STATE_PENDING);
       StoreRegistrations(
           sw_registration_id,
           base::Bind(&BackgroundSyncManager::RegisterDidStore,
@@ -505,7 +498,6 @@ void BackgroundSyncManager::StoreRegistrations(
     BackgroundSyncRegistrationProto* registration_proto =
         registrations_proto.add_registration();
     registration_proto->set_id(registration.id());
-    registration_proto->set_sync_state(registration.sync_state());
     registration_proto->set_tag(registration.options()->tag);
     registration_proto->set_periodicity(registration.options()->periodicity);
     registration_proto->set_min_period(registration.options()->min_period);
@@ -836,7 +828,7 @@ bool BackgroundSyncManager::IsRegistrationReadyToFire(
   if (registration.options()->periodicity == SYNC_PERIODIC)
     return false;
 
-  if (registration.sync_state() != SYNC_STATE_PENDING)
+  if (registration.sync_state() != BACKGROUND_SYNC_STATE_PENDING)
     return false;
 
   DCHECK_EQ(SYNC_ONE_SHOT, registration.options()->periodicity);
@@ -853,7 +845,7 @@ void BackgroundSyncManager::SchedulePendingRegistrations() {
          sw_id_and_registrations.second.registration_map) {
       const BackgroundSyncRegistration& registration =
           *key_and_registration.second->value();
-      if (registration.sync_state() == SYNC_STATE_PENDING) {
+      if (registration.sync_state() == BACKGROUND_SYNC_STATE_PENDING) {
         if (registration.options()->periodicity == SYNC_ONE_SHOT) {
           keep_browser_alive_for_one_shot = true;
         } else {
@@ -910,7 +902,7 @@ void BackgroundSyncManager::FireReadyEventsImpl(const base::Closure& callback) {
         // The state change is not saved to persistent storage because
         // if the sync event is killed mid-sync then it should return to
         // SYNC_STATE_PENDING.
-        registration->set_sync_state(SYNC_STATE_FIRING);
+        registration->set_sync_state(BACKGROUND_SYNC_STATE_FIRING);
       }
     }
   }
@@ -1035,7 +1027,7 @@ void BackgroundSyncManager::EventCompleteImpl(
     if (status_code != SERVICE_WORKER_OK) {
       // TODO(jkarlin) Fire the sync event on the next page load controlled by
       // this registration. (crbug.com/479665)
-      registration->set_sync_state(SYNC_STATE_FAILED);
+      registration->set_sync_state(BACKGROUND_SYNC_STATE_FAILED);
     } else {
       RegistrationKey key(*registration);
       // Remove the registration if it's still active.
