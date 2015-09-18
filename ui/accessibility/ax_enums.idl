@@ -191,14 +191,14 @@
   };
 
   // TODO(dmazzoni): switch content/ to use AX_STATE_DISABLED instead of
-  // !AX_STATE_ENABLED, and AX_STATE_EDITABLE instead of !AX_STATE_READONLY.
+  // !AX_STATE_ENABLED.
   enum AXState {
     busy,
     checked,
     collapsed,
     default,
     disabled,  // ui/views only
-    editable,  // ui/views only
+    editable,
     enabled,   // content only
     expanded,
     focusable,
@@ -216,6 +216,7 @@
     protected,
     read_only,
     required,
+    richly_editable,
     selectable,
     selected,
     vertical,
@@ -273,7 +274,6 @@
     anchor_offset,
     focus_object_id,
     focus_offset,
-    // Deprecated.
     text_sel_start,
     text_sel_end,
 

@@ -1,3 +1,3 @@
 ROLE_SYSTEM_DOCUMENT READONLY FOCUSABLE caret_offset=0 n_selections=1 selection_start=0 selection_end=1
-++ROLE_SYSTEM_TEXT FOCUSABLE xml-roles:searchbox caret_offset=0 n_selections=1 selection_start=0 selection_end=21
-++++ROLE_SYSTEM_STATICTEXT name='ARIA role searchbox.' caret_offset=0 n_selections=1 selection_start=0 selection_end=21
+++ROLE_SYSTEM_TEXT FOCUSABLE xml-roles:searchbox caret_offset=0 n_selections=1 selection_start=0 selection_end=20
+++++ROLE_SYSTEM_STATICTEXT name='ARIA role searchbox.' caret_offset=0 n_selections=1 selection_start=0 selection_end=20

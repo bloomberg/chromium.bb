@@ -264,6 +264,8 @@ std::string AXNodeData::ToString() const {
     result += " CHECKED";
   if (state & (1 << AX_STATE_COLLAPSED))
     result += " COLLAPSED";
+  if (state & (1 << AX_STATE_EDITABLE))
+    result += " EDITABLE";
   if (state & (1 << AX_STATE_EXPANDED))
     result += " EXPANDED";
   if (state & (1 << AX_STATE_FOCUSABLE))
@@ -292,6 +294,8 @@ std::string AXNodeData::ToString() const {
     result += " READONLY";
   if (state & (1 << AX_STATE_REQUIRED))
     result += " REQUIRED";
+  if (state & (1 << AX_STATE_RICHLY_EDITABLE))
+    result += " RICHLY_EDITABLE";
   if (state & (1 << AX_STATE_SELECTABLE))
     result += " SELECTABLE";
   if (state & (1 << AX_STATE_SELECTED))

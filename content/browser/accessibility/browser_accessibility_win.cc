@@ -2648,10 +2648,10 @@ STDMETHODIMP BrowserAccessibilityWin::get_nodeInfo(
   *num_children = PlatformChildCount();
   *unique_id = unique_id_win_;
 
-  if (ia_role() == ROLE_SYSTEM_DOCUMENT) {
+  if (GetRole() == ui::AX_ROLE_ROOT_WEB_AREA ||
+    GetRole() == ui::AX_ROLE_WEB_AREA) {
     *node_type = NODETYPE_DOCUMENT;
-  } else if (ia_role() == ROLE_SYSTEM_TEXT &&
-             ((ia2_state() & IA2_STATE_EDITABLE) == 0)) {
+  } else if (IsTextOnlyObject()) {
     *node_type = NODETYPE_TEXT;
   } else {
     *node_type = NODETYPE_ELEMENT;
@@ -3753,7 +3753,8 @@ void BrowserAccessibilityWin::GetSelectionOffsets(
     int* selection_start, int* selection_end) const {
   DCHECK(selection_start && selection_end);
 
-  if (GetIntAttribute(ui::AX_ATTR_TEXT_SEL_START, selection_start) &&
+  if (IsEditableText() && !HasState(ui::AX_STATE_RICHLY_EDITABLE) &&
+      GetIntAttribute(ui::AX_ATTR_TEXT_SEL_START, selection_start) &&
       GetIntAttribute(ui::AX_ATTR_TEXT_SEL_END, selection_end)) {
     return;
   }
@@ -3767,8 +3768,11 @@ void BrowserAccessibilityWin::GetSelectionOffsets(
     std::swap(*selection_start, *selection_end);
 
   // IA2 Spec says that the end of the selection should be after the last
-  // embedded object character that is part of the selection.
-  ++(*selection_end);
+  // embedded object character that is part of the selection, if there is one.
+  if (hyperlink_offset_to_index().find(*selection_end) !=
+      hyperlink_offset_to_index().end()) {
+    ++(*selection_end);
+  }
 }
 
 base::string16 BrowserAccessibilityWin::GetNameRecursive() const {
@@ -4012,10 +4016,7 @@ void BrowserAccessibilityWin::InitRoleAndState() {
       ia_state |= STATE_SYSTEM_HOTTRACKED;
   }
 
-  // WebKit marks everything as readonly unless it's editable text, so if it's
-  // not readonly, mark it as editable now. The final computation of the
-  // READONLY state for MSAA is below, after the switch.
-  if (!HasState(ui::AX_STATE_READ_ONLY))
+  if (IsEditableText())
     ia2_state |= IA2_STATE_EDITABLE;
 
   if (GetBoolAttribute(ui::AX_ATTR_BUTTON_MIXED))
@@ -4427,7 +4428,6 @@ void BrowserAccessibilityWin::InitRoleAndState() {
         ia2_state |= IA2_STATE_MULTI_LINE;
       else
         ia2_state |= IA2_STATE_SINGLE_LINE;
-      ia2_state |= IA2_STATE_EDITABLE;
       ia2_state |= IA2_STATE_SELECTABLE_TEXT;
       break;
     case ui::AX_ROLE_TIME:

@@ -1562,8 +1562,7 @@ bool InitializeAccessibilityTreeSearch(
         NSAccessibilityCellForColumnAndRowParameterizedAttribute,
         nil]];
   }
-  if ([[self role] isEqualToString:NSAccessibilityTextFieldRole] ||
-      [[self role] isEqualToString:NSAccessibilityTextAreaRole]) {
+  if (browserAccessibility_->IsEditableText()) {
     [ret addObjectsFromArray:[NSArray arrayWithObjects:
         NSAccessibilityLineForIndexParameterizedAttribute,
         NSAccessibilityRangeForLineParameterizedAttribute,
@@ -1699,15 +1698,6 @@ bool InitializeAccessibilityTreeSearch(
         @"AXLoaded",
         @"AXLoadingProgress",
         nil]];
-  } else if ([role isEqualToString:NSAccessibilityTextFieldRole] ||
-             [role isEqualToString:NSAccessibilityTextAreaRole]) {
-    [ret addObjectsFromArray:[NSArray arrayWithObjects:
-        NSAccessibilityInsertionPointLineNumberAttribute,
-        NSAccessibilityNumberOfCharactersAttribute,
-        NSAccessibilitySelectedTextAttribute,
-        NSAccessibilitySelectedTextRangeAttribute,
-        NSAccessibilityVisibleCharacterRangeAttribute,
-        nil]];
   } else if ([role isEqualToString:NSAccessibilityTabGroupRole]) {
     [ret addObject:NSAccessibilityTabsAttribute];
   } else if ([role isEqualToString:NSAccessibilityProgressIndicatorRole] ||
@@ -1749,6 +1739,17 @@ bool InitializeAccessibilityTreeSearch(
     [ret addObjectsFromArray:[NSArray arrayWithObjects:
         NSAccessibilitySelectedChildrenAttribute,
         NSAccessibilityVisibleChildrenAttribute,
+        nil]];
+  }
+
+  // Caret navigation and text selection attributes.
+  if (browserAccessibility_->IsEditableText()) {
+    [ret addObjectsFromArray:[NSArray arrayWithObjects:
+        NSAccessibilityInsertionPointLineNumberAttribute,
+        NSAccessibilityNumberOfCharactersAttribute,
+        NSAccessibilitySelectedTextAttribute,
+        NSAccessibilitySelectedTextRangeAttribute,
+        NSAccessibilityVisibleCharacterRangeAttribute,
         nil]];
   }
 

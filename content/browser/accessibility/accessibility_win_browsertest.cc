@@ -871,7 +871,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
 IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
                        SupportsISimpleDOM) {
   LoadInitialAccessibilityTreeFromHtml(
-      "<body><input type='checkbox' /></body>");
+      "<body><input type='checkbox'></body>");
 
   // Get the IAccessible object for the document.
   base::win::ScopedComPtr<IAccessible> document_accessible(

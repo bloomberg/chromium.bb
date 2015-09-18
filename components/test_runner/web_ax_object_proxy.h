@@ -89,6 +89,7 @@ class WebAXObjectProxy : public gin::Wrappable<WebAXObjectProxy> {
 
   bool IsEnabled();
   bool IsRequired();
+  bool IsEditable();
   bool IsRichlyEditable();
   bool IsFocused();
   bool IsFocusable();

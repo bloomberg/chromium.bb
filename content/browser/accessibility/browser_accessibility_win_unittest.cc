@@ -823,7 +823,8 @@ TEST_F(BrowserAccessibilityTest, TestCaretAndSelectionInSimpleFields) {
   ui::AXNodeData combo_box;
   combo_box.id = 2;
   combo_box.role = ui::AX_ROLE_COMBO_BOX;
-  combo_box.state = (1 << ui::AX_STATE_FOCUSABLE) | (1 << ui::AX_STATE_FOCUSED);
+  combo_box.state = (1 << ui::AX_STATE_EDITABLE) |
+      (1 << ui::AX_STATE_FOCUSABLE) | (1 << ui::AX_STATE_FOCUSED);
   combo_box.SetValue("Test1");
   // Place the caret between 't' and 'e'.
   combo_box.AddIntAttribute(ui::AX_ATTR_TEXT_SEL_START, 1);
@@ -832,7 +833,8 @@ TEST_F(BrowserAccessibilityTest, TestCaretAndSelectionInSimpleFields) {
   ui::AXNodeData text_field;
   text_field.id = 3;
   text_field.role = ui::AX_ROLE_TEXT_FIELD;
-  text_field.state = 1 << ui::AX_STATE_FOCUSABLE;
+  text_field.state = (1 << ui::AX_STATE_EDITABLE) |
+      (1 << ui::AX_STATE_FOCUSABLE);
   text_field.SetValue("Test2");
   // Select the letter 'e'.
   text_field.AddIntAttribute(ui::AX_ATTR_TEXT_SEL_START, 1);
@@ -925,23 +927,27 @@ TEST_F(BrowserAccessibilityTest, TestCaretInContentEditables) {
   ui::AXNodeData div_editable;
   div_editable.id = 2;
   div_editable.role = ui::AX_ROLE_DIV;
-  div_editable.state = (1 << ui::AX_STATE_FOCUSABLE);
+  div_editable.state = (1 << ui::AX_STATE_EDITABLE) |
+      (1 << ui::AX_STATE_FOCUSABLE);
 
   ui::AXNodeData text;
   text.id = 3;
   text.role = ui::AX_ROLE_STATIC_TEXT;
+  text.state = (1 << ui::AX_STATE_EDITABLE);
   text.SetName("Click ");
 
   ui::AXNodeData link;
   link.id = 4;
   link.role = ui::AX_ROLE_LINK;
-  link.state = (1 << ui::AX_STATE_FOCUSABLE) | (1 << ui::AX_STATE_LINKED);
+  link.state = (1 << ui::AX_STATE_EDITABLE) |
+      (1 << ui::AX_STATE_FOCUSABLE) | (1 << ui::AX_STATE_LINKED);
   link.SetName("here");
 
   ui::AXNodeData link_text;
   link_text.id = 5;
   link_text.role = ui::AX_ROLE_STATIC_TEXT;
-  link_text.state = (1 << ui::AX_STATE_FOCUSABLE) | (1 << ui::AX_STATE_LINKED);
+  link_text.state = (1 << ui::AX_STATE_EDITABLE) |
+      (1 << ui::AX_STATE_FOCUSABLE) | (1 << ui::AX_STATE_LINKED);
   link_text.SetName("here");
 
   // Place the caret between 'h' and 'e'.

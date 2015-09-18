@@ -641,18 +641,7 @@ bool BrowserAccessibility::IsCellOrTableHeaderRole() const {
 }
 
 bool BrowserAccessibility::IsEditableText() const {
-  // These roles don't have readonly set, but they're not editable text.
-  if (GetRole() == ui::AX_ROLE_SCROLL_AREA ||
-      GetRole() == ui::AX_ROLE_COLUMN ||
-      GetRole() == ui::AX_ROLE_TABLE_HEADER_CONTAINER) {
-    return false;
-  }
-
-  // Note: WebAXStateReadonly being false means it's either a text control,
-  // or contenteditable. We also check for the text field role to cover
-  // elements that have role=textbox set on it.
-  return (!HasState(ui::AX_STATE_READ_ONLY) ||
-          GetRole() == ui::AX_ROLE_TEXT_FIELD);
+  return HasState(ui::AX_STATE_EDITABLE);
 }
 
 bool BrowserAccessibility::IsWebAreaForPresentationalIframe() const {
