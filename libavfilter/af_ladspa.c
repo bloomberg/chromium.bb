@@ -303,6 +303,10 @@ static int config_output(AVFilterLink *outlink)
 
         outlink->format      = inlink->format;
         outlink->sample_rate = inlink->sample_rate;
+        if (ctx->nb_inputs == ctx->nb_outputs) {
+            outlink->channel_layout = inlink->channel_layout;
+            outlink->channels = inlink->channels;
+        }
 
         ret = 0;
     } else {
@@ -392,7 +396,7 @@ static av_cold int init(AVFilterContext *ctx)
     AVFilterPad pad = { NULL };
     char *p, *arg, *saveptr = NULL;
     unsigned long nb_ports;
-    int i;
+    int i, j = 0;
 
     if (!s->dl_name) {
         av_log(ctx, AV_LOG_ERROR, "No plugin name provided\n");
@@ -539,8 +543,11 @@ static av_cold int init(AVFilterContext *ctx)
         p = NULL;
 
         if (sscanf(arg, "c%d=%f", &i, &val) != 2) {
-            av_log(ctx, AV_LOG_ERROR, "Invalid syntax.\n");
-            return AVERROR(EINVAL);
+            if (sscanf(arg, "%f", &val) != 1) {
+                av_log(ctx, AV_LOG_ERROR, "Invalid syntax.\n");
+                return AVERROR(EINVAL);
+            }
+            i = j++;
         }
 
         if ((ret = set_control(ctx, i, val)) < 0)
@@ -608,10 +615,14 @@ static int query_formats(AVFilterContext *ctx)
 
     if (s->nb_inputs == 1 && s->nb_outputs == 1) {
         // We will instantiate multiple LADSPA_Handle, one over each channel
-        layouts = ff_all_channel_layouts();
+        layouts = ff_all_channel_counts();
         if (!layouts)
             return AVERROR(ENOMEM);
 
+        ff_set_common_channel_layouts(ctx, layouts);
+    } else if (s->nb_inputs == 2 && s->nb_outputs == 2) {
+        layouts = NULL;
+        ff_add_channel_layout(&layouts, AV_CH_LAYOUT_STEREO);
         ff_set_common_channel_layouts(ctx, layouts);
     } else {
         AVFilterLink *outlink = ctx->outputs[0];

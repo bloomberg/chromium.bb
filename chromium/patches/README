@@ -38,10 +38,6 @@ Current patches:
     Add call to matroska_read_close() to mitigate memory leak caught by
     valgrind.
 
-  Preserve AVCodecID enum in libavcodec/avcodec.h (http://crbug.com/241212)
-    Insert AV_CODEC_ID_SNOW into the AVCodecID enum to avoid breaking
-    histograms.
-
   Fix pthreads emulation on Windows XP
     Emulation assumes Vista+ inside (_WIN32_WINNT >= 0x0600) checks. Replace
     with WINDOWS_XP_SUPPORT_NEEDED define in compat/w32pthreads.h.
@@ -56,15 +52,8 @@ Current patches:
     Add spaces between string literals and tokens in libavutil/timer.h and
     libavutil/internal.h.
 
-  Check the return value of init_get_bits in libavformat/oggparsedirac.c.
-    If it fails, the GetBitContext is invalid and mustn't be used.
-
-  Change printf format specifier for enum from PRIu8 to %d in libavformat/mov.
-
   Misc things that were not documented
     Enable av_max_alloc(0) to remove alloc size bound in libavutil/mem.c.
-
-    Misc changes in libavformat/mp3dec.c.
 
     Add FF_DISABLE_DEPRECATION_WARNINGS/FF_ENABLE_DEPRECATION_WARNINGS pairs in
     libavformat/mux.c.

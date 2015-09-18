@@ -22,7 +22,14 @@
       }],  # OS == "linux" and target_arch == "arm" and arm_neon == 1 and ffmpeg_branding == "ChromeOS"
       ['OS == "linux" and target_arch == "mipsel" and ffmpeg_branding == "ChromeOS"', {
         'c_sources': [
+          'libavcodec/mips/blockdsp_init_mips.c',
           'libavcodec/mips/h263dsp_init_mips.c',
+          'libavcodec/mips/idctdsp_init_mips.c',
+          'libavcodec/mips/me_cmp_init_mips.c',
+          'libavcodec/mips/mpegvideo_init_mips.c',
+          'libavcodec/mips/pixblockdsp_init_mips.c',
+          'libavcodec/mips/qpeldsp_init_mips.c',
+          'libavcodec/mips/xvididct_init_mips.c',
         ],
       }],  # OS == "linux" and target_arch == "mipsel" and ffmpeg_branding == "ChromeOS"
       ['(OS == "linux" and target_arch == "ia32" and ffmpeg_branding == "ChromeOS") or (OS == "linux" and target_arch == "x64" and ffmpeg_branding == "ChromeOS")', {
@@ -140,6 +147,7 @@
       }],  # (OS == "linux" and target_arch == "ia32" and ffmpeg_branding == "ChromeOS") or (OS == "linux" and target_arch == "ia32" and ffmpeg_branding == "ChromiumOS") or (OS == "linux" and target_arch == "x64" and ffmpeg_branding == "ChromeOS") or (OS == "linux" and target_arch == "x64" and ffmpeg_branding == "ChromiumOS")
       ['(OS == "linux" and target_arch == "ia32" and ffmpeg_branding == "Chrome") or (OS == "linux" and target_arch == "ia32" and ffmpeg_branding == "ChromeOS") or (OS == "linux" and target_arch == "x64" and ffmpeg_branding == "Chrome") or (OS == "linux" and target_arch == "x64" and ffmpeg_branding == "ChromeOS") or (OS == "mac" and ffmpeg_branding == "Chrome") or (OS == "win" and ffmpeg_branding == "Chrome")', {
         'c_sources': [
+          'libavcodec/x86/aacpsdsp_init.c',
           'libavcodec/x86/dct_init.c',
           'libavcodec/x86/h264_qpel.c',
           'libavcodec/x86/h264chroma_init.c',
@@ -148,6 +156,7 @@
           'libavcodec/x86/sbrdsp_init.c',
         ],
         'asm_sources': [
+          'libavcodec/x86/aacpsdsp.asm',
           'libavcodec/x86/dct32.asm',
           'libavcodec/x86/h264_chromamc.asm',
           'libavcodec/x86/h264_chromamc_10bit.asm',
@@ -197,6 +206,7 @@
       ['OS == "linux" and target_arch == "arm64"', {
         'c_sources': [
           'libavcodec/aarch64/fft_init_aarch64.c',
+          'libavcodec/aarch64/h264pred_init.c',
           'libavcodec/aarch64/hpeldsp_init_aarch64.c',
           'libavcodec/aarch64/videodsp_init.c',
           'libavcodec/aarch64/vorbisdsp_init.c',
@@ -204,6 +214,7 @@
           'libavutil/aarch64/float_dsp_init.c',
         ],
         'asm_sources': [
+          'libavcodec/aarch64/autorename_libavcodec_aarch64_h264pred_neon.S',
           'libavcodec/aarch64/autorename_libavcodec_aarch64_hpeldsp_neon.S',
           'libavcodec/aarch64/fft_neon.S',
           'libavcodec/aarch64/mdct_neon.S',
@@ -215,6 +226,8 @@
       ['OS == "linux" and target_arch == "mipsel"', {
         'c_sources': [
           'libavcodec/mips/h264pred_init_mips.c',
+          'libavcodec/mips/hpeldsp_init_mips.c',
+          'libavcodec/mips/vp8dsp_init_mips.c',
           'libavutil/mips/float_dsp_mips.c',
         ],
       }],  # OS == "linux" and target_arch == "mipsel"
@@ -316,7 +329,6 @@
           'libavutil/x86/lls_init.c',
         ],
         'asm_sources': [
-          'libavcodec/x86/deinterlace.asm',
           'libavcodec/x86/fft.asm',
           'libavcodec/x86/fpel.asm',
           'libavcodec/x86/h264_intrapred.asm',
@@ -403,8 +415,8 @@
           'libavcodec/aac_ac3_parser.c',
           'libavcodec/aac_parser.c',
           'libavcodec/aacadtsdec.c',
-          'libavcodec/aacps.c',
-          'libavcodec/aacpsdsp.c',
+          'libavcodec/aacps_float.c',
+          'libavcodec/aacpsdsp_float.c',
           'libavcodec/aacsbr.c',
           'libavcodec/aactab.c',
           'libavcodec/ac3tab.c',
@@ -424,6 +436,7 @@
           'libavcodec/mpegaudiodsp_float.c',
           'libavcodec/sbrdsp.c',
           'libavcodec/sinewin.c',
+          'libavcodec/sinewin_fixed.c',
           'libavformat/aacdec.c',
           'libavformat/apetag.c',
           'libavformat/img2.c',
@@ -530,7 +543,7 @@
           'libavformat/url.c',
           'libavformat/vorbiscomment.c',
           'libavformat/wavdec.c',
-          'libavutil/atomic.c',
+          'libavutil/aes.c',
           'libavutil/autorename_libavutil_cpu.c',
           'libavutil/avstring.c',
           'libavutil/base64.c',
@@ -564,10 +577,11 @@
           'libavutil/pixelutils.c',
           'libavutil/random_seed.c',
           'libavutil/rational.c',
+          'libavutil/reverse.c',
           'libavutil/samplefmt.c',
           'libavutil/sha.c',
-          'libavutil/softfloat.c',
           'libavutil/stereo3d.c',
+          'libavutil/tea.c',
           'libavutil/threadmessage.c',
           'libavutil/time.c',
           'libavutil/timecode.c',

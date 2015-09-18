@@ -1346,7 +1346,13 @@ static int flac_encode_frame(AVCodecContext *avctx, AVPacket *avpkt,
         av_md5_final(s->md5ctx, s->md5sum);
         write_streaminfo(s, avctx->extradata);
 
+#if FF_API_SIDEDATA_ONLY_PKT
+FF_DISABLE_DEPRECATION_WARNINGS
         if (avctx->side_data_only_packets && !s->flushed) {
+FF_ENABLE_DEPRECATION_WARNINGS
+#else
+        if (!s->flushed) {
+#endif
             uint8_t *side_data = av_packet_new_side_data(avpkt, AV_PKT_DATA_NEW_EXTRADATA,
                                                          avctx->extradata_size);
             if (!side_data)
@@ -1390,7 +1396,7 @@ static int flac_encode_frame(AVCodecContext *avctx, AVPacket *avpkt,
         }
     }
 
-    if ((ret = ff_alloc_packet2(avctx, avpkt, frame_bytes)) < 0)
+    if ((ret = ff_alloc_packet2(avctx, avpkt, frame_bytes, 0)) < 0)
         return ret;
 
     out_bytes = write_frame(s, avpkt);
@@ -1475,7 +1481,7 @@ AVCodec ff_flac_encoder = {
     .init           = flac_encode_init,
     .encode2        = flac_encode_frame,
     .close          = flac_encode_close,
-    .capabilities   = CODEC_CAP_SMALL_LAST_FRAME | CODEC_CAP_DELAY | CODEC_CAP_LOSSLESS,
+    .capabilities   = AV_CODEC_CAP_SMALL_LAST_FRAME | AV_CODEC_CAP_DELAY | AV_CODEC_CAP_LOSSLESS,
     .sample_fmts    = (const enum AVSampleFormat[]){ AV_SAMPLE_FMT_S16,
                                                      AV_SAMPLE_FMT_S32,
                                                      AV_SAMPLE_FMT_NONE },

@@ -2,8 +2,52 @@ Entries are sorted chronologically from oldest to youngest within each release,
 releases are sorted from youngest to oldest.
 
 version <next>:
+- DXV decoding
+- extrastereo filter
+- ocr filter
+- alimiter filter
+
+
+version 2.8:
 - colorkey video filter
-- BFSTM demuxer
+- BFSTM/BCSTM demuxer
+- little-endian ADPCM_THP decoder
+- Hap decoder and encoder
+- DirectDraw Surface image/texture decoder
+- ssim filter
+- optional new ASF demuxer
+- showvolume filter
+- Many improvements to the JPEG 2000 decoder
+- Go2Meeting decoding support
+- adrawgraph audio and drawgraph video filter
+- removegrain video filter
+- Intel QSV-accelerated MPEG-2 video and HEVC encoding
+- Intel QSV-accelerated MPEG-2 video and HEVC decoding
+- Intel QSV-accelerated VC-1 video decoding
+- libkvazaar HEVC encoder
+- erosion, dilation, deflate and inflate video filters
+- Dynamic Audio Normalizer as dynaudnorm filter
+- Reverse video and areverse audio filter
+- Random filter
+- deband filter
+- AAC fixed-point decoding
+- sidechaincompress audio filter
+- bitstream filter for converting HEVC from MP4 to Annex B
+- acrossfade audio filter
+- allyuv and allrgb video sources
+- atadenoise video filter
+- OS X VideoToolbox support
+- aphasemeter filter
+- showfreqs filter
+- vectorscope filter
+- waveform filter
+- hstack and vstack filter
+- Support DNx100 (1440x1080@8)
+- VAAPI hevc hwaccel
+- VDPAU hevc hwaccel
+- framerate filter
+- Switched default encoders for webm to VP9 and Opus
+- Removed experimental flag from the JPEG 2000 encoder
 
 
 version 2.7:

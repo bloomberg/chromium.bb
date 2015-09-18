@@ -31,7 +31,6 @@
 #include <libavcodec/avcodec.h>
 #include <libavformat/avformat.h>
 #include <libavfilter/avfiltergraph.h>
-#include <libavfilter/avcodec.h>
 #include <libavfilter/buffersink.h>
 #include <libavfilter/buffersrc.h>
 #include <libavutil/opt.h>
@@ -161,7 +160,7 @@ static int open_output_file(const char *filename)
         }
 
         if (ofmt_ctx->oformat->flags & AVFMT_GLOBALHEADER)
-            enc_ctx->flags |= CODEC_FLAG_GLOBAL_HEADER;
+            enc_ctx->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
 
     }
     av_dump_format(ofmt_ctx, 0, filename, 1);
@@ -449,7 +448,7 @@ static int flush_encoder(unsigned int stream_index)
     int got_frame;
 
     if (!(ofmt_ctx->streams[stream_index]->codec->codec->capabilities &
-                CODEC_CAP_DELAY))
+                AV_CODEC_CAP_DELAY))
         return 0;
 
     while (1) {

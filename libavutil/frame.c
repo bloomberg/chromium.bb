@@ -46,29 +46,35 @@ MAKE_ACCESSORS(AVFrame, frame, enum AVColorRange, color_range)
 
 AVDictionary **avpriv_frame_get_metadatap(AVFrame *frame) {return &frame->metadata;};
 
+#if FF_API_FRAME_QP
 int av_frame_set_qp_table(AVFrame *f, AVBufferRef *buf, int stride, int qp_type)
 {
     av_buffer_unref(&f->qp_table_buf);
 
     f->qp_table_buf = buf;
 
+FF_DISABLE_DEPRECATION_WARNINGS
     f->qscale_table = buf->data;
     f->qstride      = stride;
     f->qscale_type  = qp_type;
+FF_ENABLE_DEPRECATION_WARNINGS
 
     return 0;
 }
 
 int8_t *av_frame_get_qp_table(AVFrame *f, int *stride, int *type)
 {
+FF_DISABLE_DEPRECATION_WARNINGS
     *stride = f->qstride;
     *type   = f->qscale_type;
+FF_ENABLE_DEPRECATION_WARNINGS
 
     if (!f->qp_table_buf)
         return NULL;
 
     return f->qp_table_buf->data;
 }
+#endif
 
 const char *av_get_colorspace_name(enum AVColorSpace val)
 {
@@ -289,9 +295,6 @@ static int frame_copy_props(AVFrame *dst, const AVFrame *src, int force_copy)
     dst->palette_has_changed    = src->palette_has_changed;
     dst->sample_rate            = src->sample_rate;
     dst->opaque                 = src->opaque;
-#if FF_API_AVFRAME_LAVC
-    dst->type                   = src->type;
-#endif
     dst->pkt_pts                = src->pkt_pts;
     dst->pkt_dts                = src->pkt_dts;
     dst->pkt_pos                = src->pkt_pos;
@@ -345,6 +348,8 @@ static int frame_copy_props(AVFrame *dst, const AVFrame *src, int force_copy)
         av_dict_copy(&sd_dst->metadata, sd_src->metadata, 0);
     }
 
+#if FF_API_FRAME_QP
+FF_DISABLE_DEPRECATION_WARNINGS
     dst->qscale_table = NULL;
     dst->qstride      = 0;
     dst->qscale_type  = 0;
@@ -356,6 +361,8 @@ static int frame_copy_props(AVFrame *dst, const AVFrame *src, int force_copy)
             dst->qscale_type  = src->qscale_type;
         }
     }
+FF_ENABLE_DEPRECATION_WARNINGS
+#endif
 
     return 0;
 }
@@ -463,6 +470,9 @@ void av_frame_unref(AVFrame *frame)
 {
     int i;
 
+    if (!frame)
+        return;
+
     wipe_side_data(frame);
 
     for (i = 0; i < FF_ARRAY_ELEMS(frame->buf); i++)
@@ -471,7 +481,9 @@ void av_frame_unref(AVFrame *frame)
         av_buffer_unref(&frame->extended_buf[i]);
     av_freep(&frame->extended_buf);
     av_dict_free(&frame->metadata);
+#if FF_API_FRAME_QP
     av_buffer_unref(&frame->qp_table_buf);
+#endif
 
     get_frame_defaults(frame);
 }

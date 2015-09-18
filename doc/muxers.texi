@@ -549,7 +549,7 @@ MD5 testing format.
 This muxer computes and prints the MD5 hash of all the input audio
 and video frames. By default audio frames are converted to signed
 16-bit raw audio and video frames to raw video before computing the
-hash.
+hash. Timestamps are ignored.
 
 The output of the muxer consists of a single line of the form:
 MD5=@var{MD5}, where @var{MD5} is a hexadecimal number representing
@@ -667,6 +667,13 @@ point on IIS with this muxer. Example:
 ffmpeg -re @var{<normal input/transcoding options>} -movflags isml+frag_keyframe -f ismv http://server/publishingpoint.isml/Streams(Encoder1)
 @end example
 
+@subsection Audible AAX
+
+Audible AAX files are encrypted M4B files, and they can be decrypted by specifying a 4 byte activation secret.
+@example
+ffmpeg -activation_bytes 1CEB00DA -i test.aax -vn -c:a copy output.mp4
+@end example
+
 @section mp3
 
 The MP3 muxer writes a raw MP3 stream with the following optional features:
@@ -759,6 +766,10 @@ Set a constant muxrate (default VBR).
 @item -pcr_period @var{numer}
 Override the default PCR retransmission time (default 20ms), ignored
 if variable muxrate is selected.
+@item pat_period @var{number}
+Maximal time in seconds between PAT/PMT tables.
+@item sdt_period @var{number}
+Maximal time in seconds between SDT tables.
 @item -pes_payload_size @var{number}
 Set minimum PES packet payload in bytes.
 @item -mpegts_flags @var{flags}
@@ -810,6 +821,8 @@ Option mpegts_flags may take a set of such flags:
 Reemit PAT/PMT before writing the next packet.
 @item latm
 Use LATM packetization for AAC.
+@item pat_pmt_at_frames
+Reemit PAT and PMT at each video frame.
 @end table
 
 @subsection Example
@@ -964,13 +977,6 @@ Allow caching (only affects M3U8 list files).
 Allow live-friendly file generation.
 @end table
 
-@item segment_list_type @var{type}
-Select the listing format.
-@table @option
-@item @var{flat} use a simple flat list of entries.
-@item @var{hls} use a m3u8-like structure.
-@end table
-
 @item segment_list_size @var{size}
 Update the list file so that it contains at most @var{size}
 segments. If 0 the list file will contain all the segments. Default
@@ -979,6 +985,9 @@ value is 0.
 @item segment_list_entry_prefix @var{prefix}
 Prepend @var{prefix} to each entry. Useful to generate absolute paths.
 By default no prefix is applied.
+
+@item segment_list_type @var{type}
+Select the listing format.
 
 The following values are recognized:
 @table @samp

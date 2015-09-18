@@ -82,6 +82,15 @@ static void v210_planar_pack_10_c(const uint16_t *y, const uint16_t *u,
     }
 }
 
+av_cold void ff_v210enc_init(V210EncContext *s)
+{
+    s->pack_line_8  = v210_planar_pack_8_c;
+    s->pack_line_10 = v210_planar_pack_10_c;
+
+    if (ARCH_X86)
+        ff_v210enc_init_x86(s);
+}
+
 static av_cold int encode_init(AVCodecContext *avctx)
 {
     V210EncContext *s = avctx->priv_data;
@@ -91,17 +100,13 @@ static av_cold int encode_init(AVCodecContext *avctx)
         return AVERROR(EINVAL);
     }
 
-    avctx->coded_frame = av_frame_alloc();
-    if (!avctx->coded_frame)
-        return AVERROR(ENOMEM);
-
+#if FF_API_CODED_FRAME
+FF_DISABLE_DEPRECATION_WARNINGS
     avctx->coded_frame->pict_type = AV_PICTURE_TYPE_I;
+FF_ENABLE_DEPRECATION_WARNINGS
+#endif
 
-    s->pack_line_8  = v210_planar_pack_8_c;
-    s->pack_line_10 = v210_planar_pack_10_c;
-
-    if (ARCH_X86)
-        ff_v210enc_init_x86(s);
+    ff_v210enc_init(s);
 
     return 0;
 }
@@ -116,7 +121,7 @@ static int encode_frame(AVCodecContext *avctx, AVPacket *pkt,
     int h, w, ret;
     uint8_t *dst;
 
-    ret = ff_alloc_packet(pkt, avctx->height * stride);
+    ret = ff_alloc_packet2(avctx, pkt, avctx->height * stride, avctx->height * stride);
     if (ret < 0) {
         av_log(avctx, AV_LOG_ERROR, "Error getting output packet.\n");
         return ret;
@@ -213,13 +218,6 @@ static int encode_frame(AVCodecContext *avctx, AVPacket *pkt,
     return 0;
 }
 
-static av_cold int encode_close(AVCodecContext *avctx)
-{
-    av_frame_free(&avctx->coded_frame);
-
-    return 0;
-}
-
 AVCodec ff_v210_encoder = {
     .name           = "v210",
     .long_name      = NULL_IF_CONFIG_SMALL("Uncompressed 4:2:2 10-bit"),
@@ -228,6 +226,5 @@ AVCodec ff_v210_encoder = {
     .priv_data_size = sizeof(V210EncContext),
     .init           = encode_init,
     .encode2        = encode_frame,
-    .close          = encode_close,
     .pix_fmts       = (const enum AVPixelFormat[]){ AV_PIX_FMT_YUV422P10, AV_PIX_FMT_YUV422P, AV_PIX_FMT_NONE },
 };

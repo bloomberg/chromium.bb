@@ -26,6 +26,7 @@
 
 #include <bcm_host.h>
 #include <interface/mmal/mmal.h>
+#include <interface/mmal/mmal_parameters_video.h>
 #include <interface/mmal/util/mmal_util.h>
 #include <interface/mmal/util/mmal_util_params.h>
 #include <interface/mmal/util/mmal_default_components.h>
@@ -277,6 +278,9 @@ static int ffmal_update_format(AVCodecContext *avctx)
     if ((status = mmal_port_parameter_set_uint32(decoder->output[0], MMAL_PARAMETER_EXTRA_BUFFERS, ctx->extra_buffers)))
         goto fail;
 
+    if ((status = mmal_port_parameter_set_boolean(decoder->output[0], MMAL_PARAMETER_VIDEO_INTERPOLATE_TIMESTAMPS, 0)))
+        goto fail;
+
     if (avctx->pix_fmt == AV_PIX_FMT_MMAL) {
         format_out->encoding = MMAL_ENCODING_OPAQUE;
     } else {
@@ -361,10 +365,8 @@ static av_cold int ffmmal_init_decoder(AVCodecContext *avctx)
             ret = AVERROR(ENOSYS);
             goto fail;
         }
-        av_bitstream_filter_filter(ctx->bsfc, avctx, NULL, &dummy_p, &dummy_int, NULL, 0, 0);
-    }
-
-    if (avctx->extradata_size) {
+        av_bitstream_filter_filter(ctx->bsfc, avctx, "private_spspps_buf", &dummy_p, &dummy_int, NULL, 0, 0);
+    } else if (avctx->extradata_size) {
         if ((status = mmal_format_extradata_alloc(format_in, avctx->extradata_size)))
             goto fail;
         format_in->extradata_size = avctx->extradata_size;
@@ -447,13 +449,11 @@ static int ffmmal_add_packet(AVCodecContext *avctx, AVPacket *avpkt)
     uint8_t *start;
     int ret = 0;
 
-    ctx->packets_sent++;
-
     if (avpkt->size) {
         if (ctx->bsfc) {
             uint8_t *tmp_data;
             int tmp_size;
-            if ((ret = av_bitstream_filter_filter(ctx->bsfc, avctx, NULL,
+            if ((ret = av_bitstream_filter_filter(ctx->bsfc, avctx, "private_spspps_buf",
                                                   &tmp_data, &tmp_size,
                                                   avpkt->data, avpkt->size,
                                                   avpkt->flags & AV_PKT_FLAG_KEY)) < 0)
@@ -474,6 +474,14 @@ static int ffmmal_add_packet(AVCodecContext *avctx, AVPacket *avpkt)
         }
         size = buf->size;
         data = buf->data;
+        ctx->packets_sent++;
+    } else {
+        if (!ctx->packets_sent) {
+            // Short-cut the flush logic to avoid upsetting MMAL.
+            ctx->eos_sent = 1;
+            ctx->eos_received = 1;
+            goto done;
+        }
     }
 
     start = data;
@@ -611,10 +619,8 @@ static int ffmal_copy_frame(AVCodecContext *avctx,  AVFrame *frame,
         }
     }
 
-    if (buffer->pts != MMAL_TIME_UNKNOWN) {
-        frame->pkt_pts = buffer->pts;
-        frame->pts = buffer->pts;
-    }
+    frame->pkt_pts = buffer->pts == MMAL_TIME_UNKNOWN ? AV_NOPTS_VALUE : buffer->pts;
+    frame->pkt_dts = AV_NOPTS_VALUE;
 
 done:
     return ret;
@@ -643,13 +649,23 @@ static int ffmmal_read_frame(AVCodecContext *avctx, AVFrame *frame, int *got_fra
         // excessive buffering.
         // We also wait if we sent eos, but didn't receive it yet (think of decoding
         // stream with a very low number of frames).
-        if (ctx->frames_output || ctx->packets_sent > MAX_DELAYED_FRAMES || ctx->eos_sent) {
-            buffer = mmal_queue_wait(ctx->queue_decoded_frames);
+        if (ctx->frames_output || ctx->packets_sent > MAX_DELAYED_FRAMES ||
+            (ctx->packets_sent && ctx->eos_sent)) {
+            // MMAL will ignore broken input packets, which means the frame we
+            // expect here may never arrive. Dealing with this correctly is
+            // complicated, so here's a hack to avoid that it freezes forever
+            // in this unlikely situation.
+            buffer = mmal_queue_timedwait(ctx->queue_decoded_frames, 100);
+            if (!buffer) {
+                av_log(avctx, AV_LOG_ERROR, "Did not get output frame from MMAL.\n");
+                ret = AVERROR_UNKNOWN;
+                goto done;
+            }
         } else {
             buffer = mmal_queue_get(ctx->queue_decoded_frames);
+            if (!buffer)
+                goto done;
         }
-        if (!buffer)
-            goto done;
 
         ctx->eos_received |= !!(buffer->flags & MMAL_BUFFER_HEADER_FLAG_EOS);
         if (ctx->eos_received)
@@ -771,7 +787,8 @@ AVCodec ff_h264_mmal_decoder = {
     .decode         = ffmmal_decode,
     .flush          = ffmmal_flush,
     .priv_class     = &ffmmaldec_class,
-    .capabilities   = CODEC_CAP_DELAY,
+    .capabilities   = AV_CODEC_CAP_DELAY,
+    .caps_internal  = FF_CODEC_CAP_SETS_PKT_DTS,
     .pix_fmts       = (const enum AVPixelFormat[]) { AV_PIX_FMT_MMAL,
                                                      AV_PIX_FMT_YUV420P,
                                                      AV_PIX_FMT_NONE},

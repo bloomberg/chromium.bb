@@ -202,9 +202,9 @@ def BuildFFmpeg(target_os, target_arch, host_os, host_arch, parallel_jobs,
 
   if target_os in (host_os, host_os + '-noasm', 'android') and not config_only:
     libraries = [
-        os.path.join('libavcodec', GetDsoName(target_os, 'avcodec', 56)),
-        os.path.join('libavformat', GetDsoName(target_os, 'avformat', 56)),
-        os.path.join('libavutil', GetDsoName(target_os, 'avutil', 54)),
+        os.path.join('libavcodec', GetDsoName(target_os, 'avcodec', 57)),
+        os.path.join('libavformat', GetDsoName(target_os, 'avformat', 57)),
+        os.path.join('libavutil', GetDsoName(target_os, 'avutil', 55)),
     ]
     PrintAndCheckCall(
         ['make', '-j%d' % parallel_jobs] + libraries, cwd=config_dir)
@@ -310,6 +310,7 @@ def main(argv):
       '--disable-vaapi',
       '--disable-vda',
       '--disable-vdpau',
+      '--disable-videotoolbox',
 
       # Common codecs.
       '--enable-decoder=vorbis',
@@ -422,7 +423,7 @@ def main(argv):
 
       configure_flags['Common'].extend([
           '--enable-cross-compile',
-          '--cross-prefix=/usr/bin/mipsel-cros-linux-gnu-',
+          '--cross-prefix=mipsel-cros-linux-gnu-',
           '--target-os=linux',
           '--arch=mips',
           '--extra-cflags=-mips32',

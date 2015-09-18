@@ -109,7 +109,7 @@ static int query_formats(AVFilterContext *ctx)
     };
     int ret;
 
-    layouts = ff_all_channel_layouts();
+    layouts = ff_all_channel_counts();
     if (!layouts)
         return AVERROR(ENOMEM);
     ret = ff_set_common_channel_layouts(ctx, layouts);
@@ -396,6 +396,11 @@ static int config_output(AVFilterLink *outlink)
                 nb_attacks, nb_decays);
         uninit(ctx);
         return AVERROR(EINVAL);
+    }
+
+    for (i = nb_decays; i < channels; i++) {
+        s->channels[i].attack = s->channels[nb_decays - 1].attack;
+        s->channels[i].decay = s->channels[nb_decays - 1].decay;
     }
 
 #define S(x) s->segments[2 * ((x) + 1)]
