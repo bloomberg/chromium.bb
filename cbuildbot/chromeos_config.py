@@ -406,6 +406,7 @@ _x86_internal_release_boards = frozenset([
     'kunimitsu',
     'lakitu',
     'lakitu_mobbuild',
+    'lakitu_next',
     'leon',
     'link',
     'lulu',
@@ -497,6 +498,7 @@ _brillo_boards = frozenset([
     'kayle',
     'lakitu',
     'lakitu_mobbuild',
+    'lakitu_next',
     'panther_embedded',
     'purin',
     'storm',
@@ -525,12 +527,14 @@ _toolchains_from_source = frozenset([
 _noimagetest_boards = frozenset([
     'lakitu',
     'lakitu_mobbuild',
+    'lakitu_next',
 ])
 
 _nohwqual_boards = frozenset([
     'kayle',
     'lakitu',
     'lakitu_mobbuild',
+    'lakitu_next',
 ])
 
 _norootfs_verification_boards = frozenset([
@@ -539,6 +543,7 @@ _norootfs_verification_boards = frozenset([
 _base_layout_boards = frozenset([
     'lakitu',
     'lakitu_mobbuild',
+    'lakitu_next',
 ])
 
 _no_unittest_boards = frozenset((
@@ -547,6 +552,7 @@ _no_unittest_boards = frozenset((
 _upload_gce_images_boards = frozenset([
     'lakitu',
     'lakitu_mobbuild',
+    'lakitu_next',
 ])
 
 _no_vmtest_boards = _arm_boards | _brillo_boards
@@ -586,6 +592,7 @@ _waterfall_config_map = {
 
     constants.WATERFALL_INTERNAL: frozenset([
         # Experimental Paladins.
+        'lakitu_next-paladin',
         'panther_moblab-paladin',
         'stumpy_moblab-paladin',
 
@@ -598,6 +605,7 @@ _waterfall_config_map = {
         'bobcat-release',
         'daisy_winter-release',
         'kayle-release',
+        'lakitu_next-release',
         'nyan_freon-release',
         'panther_moblab-release',
         'rush_ryu-release',
@@ -607,6 +615,7 @@ _waterfall_config_map = {
         # Incremental Builders.
         'mario-incremental',
         'lakitu-incremental',
+        'lakitu_next-incremental',
 
         # Firmware Builders.
         'link-depthcharge-full-firmware',
@@ -1916,6 +1925,12 @@ def GetConfig():
       vm_tests=[constants.SMOKE_SUITE_TEST_TYPE],
   )
 
+  site_config.AddConfig(
+      internal_incremental, 'lakitu_next-incremental',
+      _base_configs['lakitu_next'],
+      vm_tests=[constants.SMOKE_SUITE_TEST_TYPE],
+  )
+
   site_config.AddConfigWithoutTemplate(
       'internal-toolchain-major',
       _toolchain_major, internal, official,
@@ -2322,6 +2337,13 @@ def GetConfig():
       vm_tests=[constants.SMOKE_SUITE_TEST_TYPE],
       signer_tests=False,
       important=True,
+  )
+
+  site_config.AddConfig(
+      _release, 'lakitu_next-release',
+      _base_configs['lakitu_next'],
+      vm_tests=[constants.SMOKE_SUITE_TEST_TYPE],
+      signer_tests=False,
   )
 
   _wificell_pre_cq = site_config.AddTemplate(
