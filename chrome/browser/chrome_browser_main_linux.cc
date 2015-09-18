@@ -8,7 +8,7 @@
 
 #include "chrome/browser/browser_process.h"
 #include "chrome/grit/chromium_strings.h"
-#include "components/crash/app/breakpad_linux.h"
+#include "components/crash/content/app/breakpad_linux.h"
 #include "components/metrics/metrics_service.h"
 #include "media/audio/audio_manager.h"
 #include "ui/base/l10n/l10n_util.h"

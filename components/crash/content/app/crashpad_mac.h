@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_CRASH_APP_CRASHPAD_MAC_H_
-#define COMPONENTS_CRASH_APP_CRASHPAD_MAC_H_
+#ifndef COMPONENTS_CRASH_CONTENT_APP_CRASHPAD_MAC_H_
+#define COMPONENTS_CRASH_CONTENT_APP_CRASHPAD_MAC_H_
 
 #include <time.h>
 
@@ -51,4 +51,4 @@ void GetUploadedReports(std::vector<UploadedReport>* uploaded_reports);
 
 }  // namespace crash_reporter
 
-#endif  // COMPONENTS_CRASH_APP_CRASHPAD_MAC_H_
+#endif  // COMPONENTS_CRASH_CONTENT_APP_CRASHPAD_MAC_H_
