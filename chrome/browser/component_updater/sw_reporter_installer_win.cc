@@ -237,7 +237,9 @@ class SwReporterInstallerTraits : public ComponentInstallerTraits {
 void RegisterSwReporterComponent(ComponentUpdateService* cus) {
   // The Sw reporter doesn't need to run if the user isn't reporting metrics and
   // isn't in the SRTPrompt field trial "On" group.
-  if (!ChromeMetricsServiceAccessor::IsMetricsReportingEnabled() &&
+  // TODO(mad): Reconsider this check to assure equal performance for metrics
+  // enabled and not enabled users crbug.com/533484
+  if (!ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled() &&
       !safe_browsing::IsInSRTPromptFieldTrialGroups()) {
     return;
   }

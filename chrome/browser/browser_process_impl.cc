@@ -43,6 +43,7 @@
 #include "chrome/browser/intranet_redirect_detector.h"
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
+#include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/metrics/metrics_services_manager.h"
 #include "chrome/browser/metrics/thread_watcher.h"
 #include "chrome/browser/net/chrome_net_log.h"
@@ -1192,7 +1193,7 @@ void BrowserProcessImpl::ApplyMetricsReportingPolicy() {
       BrowserThread::FILE, FROM_HERE,
       base::Bind(
           base::IgnoreResult(&GoogleUpdateSettings::SetCollectStatsConsent),
-          local_state()->GetBoolean(prefs::kMetricsReportingEnabled))));
+          ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled())));
 #endif
 }
 

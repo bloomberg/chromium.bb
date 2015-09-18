@@ -87,7 +87,7 @@ void InitiateMetricsReportingChange(
   if (!IsMetricsReportingUserChangable()) {
     if (!callback_fn.is_null()) {
       callback_fn.Run(
-          ChromeMetricsServiceAccessor::IsMetricsReportingEnabled());
+          ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled());
     }
     return;
   }

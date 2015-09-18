@@ -92,7 +92,8 @@ metrics::MetricsStateManager* MetricsServicesManager::GetMetricsStateManager() {
   if (!metrics_state_manager_) {
     metrics_state_manager_ = metrics::MetricsStateManager::Create(
         local_state_,
-        base::Bind(&ChromeMetricsServiceAccessor::IsMetricsReportingEnabled),
+        base::Bind(
+            &ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled),
         base::Bind(&PostStoreMetricsClientInfo),
         base::Bind(&GoogleUpdateSettings::LoadMetricsClientInfo));
   }
@@ -169,5 +170,6 @@ void MetricsServicesManager::UpdateRunningServices() {
 
 void MetricsServicesManager::UpdateUploadPermissions(bool may_upload) {
   return UpdatePermissions(
-      ChromeMetricsServiceAccessor::IsMetricsReportingEnabled(), may_upload);
+      ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled(),
+      may_upload);
 }

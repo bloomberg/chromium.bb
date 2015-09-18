@@ -16,8 +16,8 @@
 #include "base/stl_util.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/sequenced_worker_pool.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/database_manager.h"
 #include "chrome/browser/safe_browsing/incident_reporting/environment_data_collection.h"
@@ -734,12 +734,8 @@ void IncidentReportingService::UploadIfCollectionComplete() {
   ClientIncidentReport_EnvironmentData_Process* process =
       report->mutable_environment()->mutable_process();
 
-  // Not all platforms have a metrics reporting preference.
-  if (g_browser_process->local_state()->FindPreference(
-          prefs::kMetricsReportingEnabled)) {
-    process->set_metrics_consent(g_browser_process->local_state()->GetBoolean(
-        prefs::kMetricsReportingEnabled));
-  }
+  process->set_metrics_consent(
+      ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled());
 
   // Find the profile that benefits from the strongest protections.
   Profile* eligible_profile = FindEligibleProfile();

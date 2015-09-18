@@ -41,7 +41,7 @@ const size_t kMaxBuckets = 10000; // We don't ever want more than these many
 
 bool MetricsPrivateGetIsCrashReportingEnabledFunction::RunSync() {
   SetResult(new base::FundamentalValue(
-      ChromeMetricsServiceAccessor::IsCrashReportingEnabled()));
+      ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled()));
   return true;
 }
 

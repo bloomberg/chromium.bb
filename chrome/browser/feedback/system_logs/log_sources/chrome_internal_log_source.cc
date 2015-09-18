@@ -117,7 +117,7 @@ void ChromeInternalLogSource::PopulateSyncLogs(SystemLogsResponse* response) {
 
 void ChromeInternalLogSource::PopulateExtensionInfoLogs(
     SystemLogsResponse* response) {
-  if (!ChromeMetricsServiceAccessor::IsCrashReportingEnabled())
+  if (!ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled())
     return;
 
   Profile* primary_profile =

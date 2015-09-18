@@ -294,7 +294,7 @@ void FlashDOMHandler::MaybeRespondToPage() {
   // Crash information.
   AddPair(list, base::string16(), "--- Crash data ---");
   bool crash_reporting_enabled =
-      ChromeMetricsServiceAccessor::IsCrashReportingEnabled();
+      ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled();
   if (crash_reporting_enabled) {
     std::vector<CrashUploadList::UploadInfo> crashes;
     upload_list_->GetUploads(10, &crashes);

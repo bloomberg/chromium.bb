@@ -18,9 +18,7 @@
 #endif
 
 // static
-// TODO(asvitkine): This function does not report the correct value on Android,
-// see http://crbug.com/362192.
-bool ChromeMetricsServiceAccessor::IsMetricsReportingEnabled() {
+bool ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled() {
   // If the user permits metrics reporting with the checkbox in the
   // prefs, we turn on recording.  We disable metrics completely for
   // non-official builds, or when field trials are forced.
@@ -34,26 +32,15 @@ bool ChromeMetricsServiceAccessor::IsMetricsReportingEnabled() {
 #if defined(OS_CHROMEOS)
   chromeos::CrosSettings::Get()->GetBoolean(chromeos::kStatsReportingPref,
                                             &enabled);
+#elif defined(OS_ANDROID)
+  enabled = g_browser_process->local_state()->GetBoolean(
+      prefs::kCrashReportingEnabled);
 #else
   enabled = g_browser_process->local_state()->
       GetBoolean(prefs::kMetricsReportingEnabled);
 #endif  // #if defined(OS_CHROMEOS)
 #endif  // defined(GOOGLE_CHROME_BUILD)
   return enabled;
-}
-
-bool ChromeMetricsServiceAccessor::IsCrashReportingEnabled() {
-#if defined(GOOGLE_CHROME_BUILD)
-#if defined(OS_ANDROID)
-  // Android has its own settings for metrics / crash uploading.
-  const PrefService* prefs = g_browser_process->local_state();
-  return prefs->GetBoolean(prefs::kCrashReportingEnabled);
-#else
-  return ChromeMetricsServiceAccessor::IsMetricsReportingEnabled();
-#endif
-#else
-  return false;
-#endif
 }
 
 // static

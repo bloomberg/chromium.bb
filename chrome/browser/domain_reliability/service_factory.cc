@@ -6,10 +6,8 @@
 
 #include "base/command_line.h"
 #include "base/metrics/field_trial.h"
-#include "base/prefs/pref_service.h"
-#include "chrome/browser/browser_process.h"
+#include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/pref_names.h"
 #include "components/domain_reliability/service.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "content/public/browser/browser_context.h"
@@ -47,21 +45,6 @@ bool IsDomainReliabilityMonitoringEnabled() {
   return kDefaultEnabled;
 }
 
-bool IsMetricsReportingEnabled() {
-#if defined(OS_CHROMEOS)
-  bool enabled;
-  bool res = chromeos::CrosSettings::Get()->GetBoolean(
-      chromeos::kStatsReportingPref, &enabled);
-  return res && enabled;
-#elif defined(OS_ANDROID)
-  return g_browser_process->local_state()->GetBoolean(
-      prefs::kCrashReportingEnabled);
-#else
-  return g_browser_process->local_state()->GetBoolean(
-      prefs::kMetricsReportingEnabled);
-#endif
-}
-
 }  // namespace
 
 // static
@@ -90,8 +73,9 @@ KeyedService* DomainReliabilityServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   if (!IsDomainReliabilityMonitoringEnabled())
     return NULL;
-
-  if (!IsMetricsReportingEnabled())
+  // TODO(ttuttle): Move this check closer to where the data gets sent
+  // crbug.com/533486
+  if (!ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled())
     return NULL;
 
   return DomainReliabilityService::Create(kUploadReporterString);

@@ -568,8 +568,9 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
   values->SetString("doNotTrackLearnMoreURL", chrome::kDoNotTrackLearnMoreURL);
 
 #if !defined(OS_CHROMEOS)
-  values->SetBoolean("metricsReportingEnabledAtStart",
-       ChromeMetricsServiceAccessor::IsMetricsReportingEnabled());
+  values->SetBoolean(
+      "metricsReportingEnabledAtStart",
+      ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled());
 #endif
 
 #if defined(OS_CHROMEOS)
@@ -1666,8 +1667,7 @@ void BrowserOptionsHandler::HandleRestartBrowser(const base::ListValue* args) {
   // environment variable is defined. So we undefine this environment variable
   // before restarting, as the restarted processes will inherit their
   // environment variables from ours, thus suppressing crash uploads.
-  PrefService* pref_service = g_browser_process->local_state();
-  if (!pref_service->GetBoolean(prefs::kMetricsReportingEnabled)) {
+  if (!ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled()) {
     HMODULE exe_module = GetModuleHandle(chrome::kBrowserProcessExecutableName);
     if (exe_module) {
       typedef void (__cdecl *ClearBreakpadPipeEnvVar)();
@@ -2146,7 +2146,8 @@ void BrowserOptionsHandler::SetupExtensionControlledIndicators() {
 void BrowserOptionsHandler::SetupMetricsReportingCheckbox() {
   // This function does not work for ChromeOS and non-official builds.
 #if !defined(OS_CHROMEOS) && defined(GOOGLE_CHROME_BUILD)
-  bool checked = ChromeMetricsServiceAccessor::IsMetricsReportingEnabled();
+  bool checked =
+      ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled();
   bool disabled = !IsMetricsReportingUserChangable();
 
   SetMetricsReportingCheckbox(checked, disabled);

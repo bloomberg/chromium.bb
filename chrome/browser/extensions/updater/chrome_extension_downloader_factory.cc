@@ -38,7 +38,7 @@ ChromeExtensionDownloaderFactory::CreateForRequestContext(
       UpdateQueryParams::Get(UpdateQueryParams::CRX));
   downloader->set_ping_enabled_domain("google.com");
   downloader->set_enable_extra_update_metrics(
-      ChromeMetricsServiceAccessor::IsMetricsReportingEnabled());
+      ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled());
   return downloader.Pass();
 }
 

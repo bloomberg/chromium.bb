@@ -150,7 +150,7 @@ void CrashesDOMHandler::OnUploadListAvailable() {
 
 void CrashesDOMHandler::UpdateUI() {
   bool crash_reporting_enabled =
-      ChromeMetricsServiceAccessor::IsCrashReportingEnabled();
+      ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled();
   base::ListValue crash_list;
   bool system_crash_reporter = false;
 
