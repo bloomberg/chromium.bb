@@ -59,13 +59,6 @@
       "url_unittests",
       "views_unittests",
       "wm_unittests"
-    ],
-    "gtest_tests": [],
-    "scripts": [
-      {
-        "name": "gn_check",
-        "script": "gn_check.py"
-      }
     ]
   }
 }

@@ -61,6 +61,7 @@ source_set("test_support") {
       ":user_manager",
       "//base",
       "//skia",
+      "//ui/base",
     ]
   }
 }

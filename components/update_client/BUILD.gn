@@ -58,6 +58,7 @@ source_set("update_client") {
     "//third_party/libxml",
     "//third_party/zlib:zip",
     "//net",
+    "//ui/base",
     "//url",
   ]
 }

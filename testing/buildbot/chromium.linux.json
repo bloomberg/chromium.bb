@@ -68,12 +68,6 @@
       {
         "test": "view_manager_unittests"
       }
-    ],
-    "scripts": [
-      {
-        "name": "gn_check",
-        "script": "gn_check.py"
-      }
     ]
   },
   "Android GN (dbg)": {
@@ -577,10 +571,6 @@
       }
     ],
     "scripts": [
-      {
-        "name": "gn_check",
-        "script": "gn_check.py"
-      },
       {
         "args": [
           "chrome"

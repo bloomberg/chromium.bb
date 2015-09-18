@@ -353,7 +353,7 @@ class MetaBuildWrapper(object):
   def RunGNGen(self, vals):
     path = self.args.path[0]
 
-    cmd = self.GNCmd('gen', path, vals['gn_args'])
+    cmd = self.GNCmd('gen', path, vals['gn_args'], extra_args=['--check'])
 
     swarming_targets = []
     if self.args.swarming_targets_file:
@@ -437,7 +437,7 @@ class MetaBuildWrapper(object):
 
     return ret
 
-  def GNCmd(self, subcommand, path, gn_args=''):
+  def GNCmd(self, subcommand, path, gn_args='', extra_args=None):
     if self.platform == 'linux2':
       subdir = 'linux64'
     elif self.platform == 'darwin':
@@ -450,6 +450,8 @@ class MetaBuildWrapper(object):
     gn_args = gn_args.replace("$(goma_dir)", self.args.goma_dir)
     if gn_args:
       cmd.append('--args=%s' % gn_args)
+    if extra_args:
+      cmd.extend(extra_args)
     return cmd
 
   def RunGYPGen(self, vals):

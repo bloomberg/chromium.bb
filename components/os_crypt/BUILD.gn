@@ -46,6 +46,7 @@ source_set("unit_tests") {
   deps = [
     ":os_crypt",
     "//base",
+    "//crypto",
     "//testing/gtest",
   ]
 }

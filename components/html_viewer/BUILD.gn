@@ -197,6 +197,7 @@ source_set("lib") {
     "//ui/mojo/init",
     "//ui/native_theme",
     "//url",
+    "//v8",
   ]
 
   public_deps = [
@@ -228,6 +229,7 @@ mojo_native_application("html_viewer") {
   deps = [
     ":lib",
     ":pak",
+    "//base",
     "//mojo/application/public/cpp:sources",
     "//third_party/mojo/src/mojo/public/c/system:for_shared_library",
   ]
