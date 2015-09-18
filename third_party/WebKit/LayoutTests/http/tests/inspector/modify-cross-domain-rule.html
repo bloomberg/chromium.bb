@@ -51,7 +51,7 @@ function test()
         function testAddProperty(next)
         {
             for (var i = 0; i < allRules.length; ++i) {
-                if (allRules[i].isRegular) {
+                if (allRules[i].isRegular()) {
                     rule = allRules[i];
                     break;
                 }
