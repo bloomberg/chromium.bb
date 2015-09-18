@@ -193,16 +193,14 @@ void Frame::InitClient(
     // implement ViewTreeClient.
     frame_tree_server_binding_.reset(new mojo::Binding<FrameTreeServer>(
         this, GetProxy(&frame_tree_server_ptr).Pass()));
-    if (frame_tree_client_) {
-      frame_tree_client_->OnConnect(
-          frame_tree_server_ptr.Pass(), tree_->change_id(), id_,
-          client_type == ClientType::EXISTING_FRAME_SAME_APP
-              ? VIEW_CONNECT_TYPE_USE_EXISTING
-              : VIEW_CONNECT_TYPE_USE_NEW,
-          array.Pass(),
-          base::Bind(&OnConnectAck, base::Passed(&frame_tree_server_binding)));
-      tree_->delegate_->DidStartNavigation(this);
-    }
+    frame_tree_client_->OnConnect(
+        frame_tree_server_ptr.Pass(), tree_->change_id(), id_,
+        client_type == ClientType::EXISTING_FRAME_SAME_APP
+            ? VIEW_CONNECT_TYPE_USE_EXISTING
+            : VIEW_CONNECT_TYPE_USE_NEW,
+        array.Pass(),
+        base::Bind(&OnConnectAck, base::Passed(&frame_tree_server_binding)));
+    tree_->delegate_->DidStartNavigation(this);
   }
 }
 
@@ -321,6 +319,8 @@ void Frame::OnCanNavigateFrame(uint32_t app_id,
 void Frame::NotifyAdded(const Frame* source,
                         const Frame* added_node,
                         uint32_t change_id) {
+  // |frame_tree_client_| may be null during initial frame creation and
+  // parenting.
   if (frame_tree_client_)
     frame_tree_client_->OnFrameAdded(change_id, FrameToFrameData(added_node));
 
@@ -331,8 +331,7 @@ void Frame::NotifyAdded(const Frame* source,
 void Frame::NotifyRemoved(const Frame* source,
                           const Frame* removed_node,
                           uint32_t change_id) {
-  if (frame_tree_client_)
-    frame_tree_client_->OnFrameRemoved(change_id, removed_node->id());
+  frame_tree_client_->OnFrameRemoved(change_id, removed_node->id());
 
   for (Frame* child : children_)
     child->NotifyRemoved(source, removed_node, change_id);
@@ -341,7 +340,7 @@ void Frame::NotifyRemoved(const Frame* source,
 void Frame::NotifyClientPropertyChanged(const Frame* source,
                                         const mojo::String& name,
                                         const mojo::Array<uint8_t>& value) {
-  if (this != source && frame_tree_client_)
+  if (this != source)
     frame_tree_client_->OnFrameClientPropertyChanged(source->id(), name,
                                                      value.Clone());
 
