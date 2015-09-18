@@ -39,6 +39,7 @@ class CC_EXPORT SingleThreadProxy : public Proxy,
   bool IsStarted() const override;
   bool CommitToActiveTree() const override;
   void SetOutputSurface(scoped_ptr<OutputSurface>) override;
+  scoped_ptr<OutputSurface> ReleaseOutputSurface() override;
   void SetLayerTreeHostClientReady() override;
   void SetVisible(bool visible) override;
   void SetThrottleFrameProduction(bool throttle) override;

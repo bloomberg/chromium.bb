@@ -217,6 +217,19 @@ void ThreadProxy::SetOutputSurface(scoped_ptr<OutputSurface> output_surface) {
                  impl_thread_weak_ptr_, base::Passed(&output_surface)));
 }
 
+scoped_ptr<OutputSurface> ThreadProxy::ReleaseOutputSurface() {
+  DCHECK(IsMainThread());
+  DebugScopedSetMainThreadBlocked main_thread_blocked(this);
+  CompletionEvent completion;
+  scoped_ptr<OutputSurface> output_surface;
+  Proxy::ImplThreadTaskRunner()->PostTask(
+      FROM_HERE,
+      base::Bind(&ThreadProxy::ReleaseOutputSurfaceOnImplThread,
+                 impl_thread_weak_ptr_, &completion, &output_surface));
+  completion.Wait();
+  return output_surface.Pass();
+}
+
 void ThreadProxy::DidInitializeOutputSurface(
     bool success,
     const RendererCapabilities& capabilities) {
@@ -1065,6 +1078,17 @@ void ThreadProxy::InitializeOutputSurfaceOnImplThread(
 
   if (success)
     impl().scheduler->DidCreateAndInitializeOutputSurface();
+}
+
+void ThreadProxy::ReleaseOutputSurfaceOnImplThread(
+    CompletionEvent* completion,
+    scoped_ptr<OutputSurface>* output_surface) {
+  TRACE_EVENT0("cc", "ThreadProxy::ReleaseOutputSurfaceOnImplThread");
+  DCHECK(IsImplThread());
+
+  impl().scheduler->DidLoseOutputSurface();
+  *output_surface = impl().layer_tree_host_impl->ReleaseOutputSurface();
+  completion->Signal();
 }
 
 void ThreadProxy::FinishGLOnImplThread(CompletionEvent* completion) {

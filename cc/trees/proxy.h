@@ -62,6 +62,8 @@ class CC_EXPORT Proxy {
   // with the result of this function.
   virtual void SetOutputSurface(scoped_ptr<OutputSurface> output_surface) = 0;
 
+  virtual scoped_ptr<OutputSurface> ReleaseOutputSurface() = 0;
+
   // Indicates that the compositing surface associated with our context is
   // ready to use.
   virtual void SetLayerTreeHostClientReady() = 0;

@@ -363,7 +363,7 @@ class CC_EXPORT LayerTreeHostImpl
   int id() const { return id_; }
   bool CanDraw() const;
   OutputSurface* output_surface() const { return output_surface_.get(); }
-
+  scoped_ptr<OutputSurface> ReleaseOutputSurface();
   std::string LayerTreeAsJson() const;
 
   void FinishAllRendering();

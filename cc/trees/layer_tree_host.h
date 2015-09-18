@@ -111,6 +111,7 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   void WillCommit();
   void CommitComplete();
   void SetOutputSurface(scoped_ptr<OutputSurface> output_surface);
+  scoped_ptr<OutputSurface> ReleaseOutputSurface();
   void RequestNewOutputSurface();
   void DidInitializeOutputSurface();
   void DidFailToInitializeOutputSurface();

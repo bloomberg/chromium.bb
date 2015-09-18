@@ -177,6 +177,7 @@ class CC_EXPORT ThreadProxy : public Proxy,
   bool MainFrameWillHappenForTesting() override;
   void SetChildrenNeedBeginFrames(bool children_need_begin_frames) override;
   void SetAuthoritativeVSyncInterval(const base::TimeDelta& interval) override;
+  scoped_ptr<OutputSurface> ReleaseOutputSurface() override;
 
   // LayerTreeHostImplClient implementation
   void UpdateRendererCapabilitiesOnImplThread() override;
@@ -274,6 +275,9 @@ class CC_EXPORT ThreadProxy : public Proxy,
   void DeleteContentsTexturesOnImplThread(CompletionEvent* completion);
   void InitializeOutputSurfaceOnImplThread(
       scoped_ptr<OutputSurface> output_surface);
+  void ReleaseOutputSurfaceOnImplThread(
+      CompletionEvent* completion,
+      scoped_ptr<OutputSurface>* output_surface);
   void FinishGLOnImplThread(CompletionEvent* completion);
   void LayerTreeHostClosedOnImplThread(CompletionEvent* completion);
   DrawResult DrawSwapInternal(bool forced_draw);

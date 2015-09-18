@@ -382,6 +382,71 @@ class LayerTreeHostClientNotReadyDoesNotCreateOutputSurface
 SINGLE_AND_MULTI_THREAD_TEST_F(
     LayerTreeHostClientNotReadyDoesNotCreateOutputSurface);
 
+// This tests the OutputSurface release logic in the following sequence.
+// SetUp LTH and create and init OutputSurface
+// LTH::SetVisible(false);
+// LTH::ReleaseOutputSurface();
+// ...
+// LTH::SetVisible(true);
+// Create and init new OutputSurface
+class LayerTreeHostClientTakeAwayOutputSurface
+    : public LayerTreeHostContextTest {
+ public:
+  LayerTreeHostClientTakeAwayOutputSurface()
+      : LayerTreeHostContextTest(), setos_counter_(0) {}
+
+  void BeginTest() override { PostSetNeedsCommitToMainThread(); }
+
+  void RequestNewOutputSurface() override {
+    if (layer_tree_host()->visible())
+      CreateAndSetOutputSurface();
+  }
+
+  void CreateAndSetOutputSurface() {
+    scoped_ptr<OutputSurface> surface =
+        LayerTreeHostContextTest::CreateOutputSurface();
+    CHECK(surface);
+    setos_counter_++;
+    layer_tree_host()->SetOutputSurface(surface.Pass());
+  }
+
+  void HideAndReleaseOutputSurface() {
+    EXPECT_TRUE(layer_tree_host()->proxy()->IsMainThread());
+    layer_tree_host()->SetVisible(false);
+    scoped_ptr<OutputSurface> surface =
+        layer_tree_host()->ReleaseOutputSurface();
+    CHECK(surface);
+    surface->context_provider()->DetachFromThread();
+    MainThreadTaskRunner()->PostTask(
+        FROM_HERE,
+        base::Bind(&LayerTreeHostClientTakeAwayOutputSurface::MakeVisible,
+                   base::Unretained(this)));
+  }
+
+  void DidInitializeOutputSurface() override {
+    EXPECT_TRUE(layer_tree_host()->visible());
+    if (setos_counter_ == 1) {
+      MainThreadTaskRunner()->PostTask(
+          FROM_HERE, base::Bind(&LayerTreeHostClientTakeAwayOutputSurface::
+                                    HideAndReleaseOutputSurface,
+                                base::Unretained(this)));
+    } else {
+      EndTest();
+    }
+  }
+
+  void MakeVisible() {
+    EXPECT_TRUE(layer_tree_host()->proxy()->IsMainThread());
+    layer_tree_host()->SetVisible(true);
+  }
+
+  void AfterTest() override {}
+
+  int setos_counter_;
+};
+
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostClientTakeAwayOutputSurface);
+
 class MultipleCompositeDoesNotCreateOutputSurface
     : public LayerTreeHostContextTest {
  public:

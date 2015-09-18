@@ -2149,10 +2149,7 @@ void LayerTreeHostImpl::CleanUpTileManager() {
   single_thread_synchronous_task_graph_runner_ = nullptr;
 }
 
-bool LayerTreeHostImpl::InitializeRenderer(
-    scoped_ptr<OutputSurface> output_surface) {
-  TRACE_EVENT0("cc", "LayerTreeHostImpl::InitializeRenderer");
-
+scoped_ptr<OutputSurface> LayerTreeHostImpl::ReleaseOutputSurface() {
   // Since we will create a new resource provider, we cannot continue to use
   // the old resources (i.e. render_surfaces and texture IDs). Clear them
   // before we destroy the old resource provider.
@@ -2162,8 +2159,15 @@ bool LayerTreeHostImpl::InitializeRenderer(
   renderer_ = nullptr;
   CleanUpTileManager();
   resource_provider_ = nullptr;
-  output_surface_ = nullptr;
 
+  return output_surface_.Pass();
+}
+
+bool LayerTreeHostImpl::InitializeRenderer(
+    scoped_ptr<OutputSurface> output_surface) {
+  TRACE_EVENT0("cc", "LayerTreeHostImpl::InitializeRenderer");
+
+  ReleaseOutputSurface();
   if (!output_surface->BindToClient(this)) {
     // Avoid recreating tree resources because we might not have enough
     // information to do this yet (eg. we don't have a TileManager at this
