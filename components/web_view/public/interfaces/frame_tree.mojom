@@ -104,6 +104,9 @@ interface FrameTreeServer {
   // The frame navigated locally, for example, pushState() navigations in an
   // HTML application.
   DidNavigateLocally(string url);
+
+  // Dispatches a load event to the parent of the frame.
+  DispatchLoadEventToParent();
 };
 
 enum ViewConnectType {
@@ -147,4 +150,12 @@ interface FrameTreeClient {
   // FrameTreeClient that is rendering to the frame, and only when another
   // content handler is going to start handling the rendering.
   OnWillNavigate();
+
+  // Called to notify that |frame_id|'s loading state has changed. This is only
+  // called on the FrameTreeClient rendering the parent of |frame_id|.
+  OnFrameLoadingStateChanged(uint32 frame_id, bool loading);
+
+  // Called to dispatch a load event of |frame_id| in its parent. This is only
+  // called on the FrameTreeClient rendering the parent of |frame_id|.
+  OnDispatchFrameLoadEvent(uint32 frame_id);
 };

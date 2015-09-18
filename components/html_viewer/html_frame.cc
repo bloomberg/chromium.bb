@@ -363,6 +363,7 @@ blink::WebNavigationPolicy HTMLFrame::decidePolicyForNavigation(
   server_->RequestNavigate(
       WebNavigationPolicyToNavigationTarget(info.defaultPolicy), id_,
       url_request.Pass());
+
   return blink::WebNavigationPolicyIgnore;
 }
 
@@ -414,6 +415,13 @@ void HTMLFrame::didStopLoading() {
 
 void HTMLFrame::didChangeLoadProgress(double load_progress) {
   server_->LoadingStateChanged(true, load_progress);
+}
+
+void HTMLFrame::dispatchLoad() {
+  // According to comments of WebFrameClient::dispatchLoad(), this should only
+  // be called when the parent frame is remote.
+  DCHECK(parent_ && !parent_->IsLocal());
+  server_->DispatchLoadEventToParent();
 }
 
 void HTMLFrame::didChangeName(blink::WebLocalFrame* frame,
@@ -552,6 +560,9 @@ void HTMLFrame::SwapToRemote() {
   remote_frame->setReplicatedName(state_.name);
   remote_frame->setReplicatedOrigin(state_.origin);
   remote_frame->setReplicatedSandboxFlags(state_.sandbox_flags);
+  // Tell the frame that it is actually loading. This prevents its parent
+  // from prematurely dispatching load event.
+  remote_frame->didStartLoading();
   web_frame_ = remote_frame;
   SetView(nullptr);
   server_.reset();
@@ -746,6 +757,24 @@ void HTMLFrame::OnPostMessageEvent(uint32_t source_frame_id,
 void HTMLFrame::OnWillNavigate() {
   if (IsLocal() && this != frame_tree_manager_->local_root_)
     SwapToRemote();
+}
+
+void HTMLFrame::OnFrameLoadingStateChanged(uint32_t frame_id, bool loading) {
+  HTMLFrame* frame = frame_tree_manager_->root_->FindFrame(frame_id);
+  // TODO(yzshen): (Apply to this method and the one below.) Is it possible that
+  // at this point the frame is already hosting a different document?
+  if (frame && !frame->IsLocal()) {
+    if (loading)
+      frame->web_frame_->toWebRemoteFrame()->didStartLoading();
+    else
+      frame->web_frame_->toWebRemoteFrame()->didStopLoading();
+  }
+}
+
+void HTMLFrame::OnDispatchFrameLoadEvent(uint32_t frame_id) {
+  HTMLFrame* frame = frame_tree_manager_->root_->FindFrame(frame_id);
+  if (frame && !frame->IsLocal())
+    frame->web_frame_->toWebRemoteFrame()->DispatchLoadEventForFrameOwner();
 }
 
 void HTMLFrame::frameDetached(blink::WebRemoteFrameClient::DetachType type) {

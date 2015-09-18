@@ -180,6 +180,7 @@ class HTMLFrame : public blink::WebFrameClient,
   virtual void didStartLoading(bool to_different_document);
   virtual void didStopLoading();
   virtual void didChangeLoadProgress(double load_progress);
+  virtual void dispatchLoad();
   virtual void didChangeName(blink::WebLocalFrame* frame,
                              const blink::WebString& name);
   virtual void didCommitProvisionalLoad(
@@ -272,6 +273,8 @@ class HTMLFrame : public blink::WebFrameClient,
       uint32_t target_frame_id,
       web_view::HTMLMessageEventPtr serialized_event) override;
   void OnWillNavigate() override;
+  void OnFrameLoadingStateChanged(uint32_t frame_id, bool loading) override;
+  void OnDispatchFrameLoadEvent(uint32_t frame_id) override;
 
   // blink::WebRemoteFrameClient:
   virtual void frameDetached(blink::WebRemoteFrameClient::DetachType type);

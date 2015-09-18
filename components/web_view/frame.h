@@ -184,6 +184,8 @@ class Frame : public mus::ViewObserver, public FrameTreeServer {
   void NotifyClientPropertyChanged(const Frame* source,
                                    const mojo::String& name,
                                    const mojo::Array<uint8_t>& value);
+  void NotifyFrameLoadingStateChanged(const Frame* frame, bool loading);
+  void NotifyDispatchFrameLoadEvent(const Frame* frame);
 
   // mus::ViewObserver:
   void OnTreeChanged(const TreeChangeParams& params) override;
@@ -206,6 +208,7 @@ class Frame : public mus::ViewObserver, public FrameTreeServer {
                        uint32_t target_frame_id,
                        mojo::URLRequestPtr request) override;
   void DidNavigateLocally(const mojo::String& url) override;
+  void DispatchLoadEventToParent() override;
 
   FrameTree* const tree_;
   // WARNING: this may be null. See class description for details.

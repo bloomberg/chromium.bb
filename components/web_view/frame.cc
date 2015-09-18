@@ -348,6 +348,14 @@ void Frame::NotifyClientPropertyChanged(const Frame* source,
     child->NotifyClientPropertyChanged(source, name, value);
 }
 
+void Frame::NotifyFrameLoadingStateChanged(const Frame* frame, bool loading) {
+  frame_tree_client_->OnFrameLoadingStateChanged(frame->id(), loading);
+}
+
+void Frame::NotifyDispatchFrameLoadEvent(const Frame* frame) {
+  frame_tree_client_->OnDispatchFrameLoadEvent(frame->id());
+}
+
 void Frame::OnTreeChanged(const TreeChangeParams& params) {
   if (params.new_parent && this == tree_->root()) {
     Frame* child_frame = FindFrame(params.target->id());
@@ -397,9 +405,19 @@ void Frame::PostMessageEventToFrame(uint32_t target_frame_id,
 }
 
 void Frame::LoadingStateChanged(bool loading, double progress) {
+  bool loading_state_changed = loading_ != loading;
   loading_ = loading;
   progress_ = progress;
   tree_->LoadingStateChanged();
+
+  if (loading_state_changed && parent_ &&
+      !AreAppIdsEqual(app_id_, parent_->app_id_)) {
+    // We need to notify the parent if it is in a different app, so that it can
+    // keep track of this frame's loading state. If the parent is in the same
+    // app, we assume that the loading state is propagated directly within the
+    // app itself and no notification is needed from our side.
+    parent_->NotifyFrameLoadingStateChanged(this, loading_);
+  }
 }
 
 void Frame::TitleChanged(const mojo::String& title) {
@@ -474,6 +492,16 @@ void Frame::RequestNavigate(NavigationTargetType target_type,
 
 void Frame::DidNavigateLocally(const mojo::String& url) {
   NOTIMPLEMENTED();
+}
+
+void Frame::DispatchLoadEventToParent() {
+  if (parent_ && !AreAppIdsEqual(app_id_, parent_->app_id_)) {
+    // Send notification to fire a load event in the parent, if the parent is in
+    // a different app. If the parent is in the same app, we assume that the app
+    // itself handles firing load event directly and no notification is needed
+    // from our side.
+    parent_->NotifyDispatchFrameLoadEvent(this);
+  }
 }
 
 }  // namespace web_view

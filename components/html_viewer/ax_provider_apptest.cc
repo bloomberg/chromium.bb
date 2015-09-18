@@ -52,6 +52,7 @@ class TestFrameTreeServer : public web_view::FrameTreeServer {
                        uint32_t target_frame_id,
                        mojo::URLRequestPtr request) override {}
   void DidNavigateLocally(const mojo::String& url) override {}
+  void DispatchLoadEventToParent() override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestFrameTreeServer);
