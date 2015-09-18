@@ -523,6 +523,7 @@
             '../sync/sync.gyp:sync_unit_tests_run',
             '../third_party/WebKit/Source/platform/blink_platform_tests.gyp:blink_heap_unittests_run',
             '../third_party/WebKit/Source/platform/blink_platform_tests.gyp:blink_platform_unittests_run',
+            '../third_party/WebKit/Source/web/web_tests.gyp:webkit_unit_tests_run',
             '../third_party/WebKit/Source/wtf/wtf_tests.gyp:wtf_unittests_run',
             '../third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation_unittests_run',
             '../third_party/mojo/mojo_edk_tests.gyp:mojo_public_bindings_unittests_run',
