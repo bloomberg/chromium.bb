@@ -5,9 +5,6 @@
 #include "net/quic/quic_session.h"
 
 #include "base/stl_util.h"
-#ifdef TEMP_INSTRUMENTATION_473893
-#include "base/debug/alias.h"
-#endif
 #include "net/quic/crypto/proof_verifier.h"
 #include "net/quic/quic_connection.h"
 #include "net/quic/quic_flags.h"
@@ -128,16 +125,6 @@ void QuicSession::Initialize() {
 }
 
 QuicSession::~QuicSession() {
-#ifdef TEMP_INSTRUMENTATION_473893
-  liveness_ = DEAD;
-  stack_trace_ = base::debug::StackTrace();
-
-  // Probably not necessary, but just in case compiler tries to optimize out the
-  // writes to liveness_ and stack_trace_.
-  base::debug::Alias(&liveness_);
-  base::debug::Alias(&stack_trace_);
-#endif
-
   STLDeleteElements(&closed_streams_);
   STLDeleteValues(&dynamic_stream_map_);
 
@@ -756,24 +743,6 @@ bool QuicSession::IsStreamFlowControlBlocked() {
     }
   }
   return false;
-}
-
-void QuicSession::CrashIfInvalid() const {
-#ifdef TEMP_INSTRUMENTATION_473893
-  Liveness liveness = liveness_;
-
-  if (liveness == ALIVE)
-    return;
-
-  // Copy relevant variables onto the stack to guarantee they will be available
-  // in minidumps, and then crash.
-  base::debug::StackTrace stack_trace = stack_trace_;
-
-  base::debug::Alias(&liveness);
-  base::debug::Alias(&stack_trace);
-
-  CHECK_EQ(ALIVE, liveness);
-#endif
 }
 
 }  // namespace net

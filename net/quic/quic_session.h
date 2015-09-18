@@ -11,20 +11,8 @@
 #include <string>
 #include <vector>
 
-#include "build/build_config.h"
-
-// TODO(rtenneti): Temporary while investigating crbug.com/473893.
-//                 Note base::Debug::StackTrace() is not supported in NACL
-//                 builds so conditionally disabled it there.
-#ifndef OS_NACL
-#define TEMP_INSTRUMENTATION_473893
-#endif
-
 #include "base/compiler_specific.h"
 #include "base/containers/hash_tables.h"
-#ifdef TEMP_INSTRUMENTATION_473893
-#include "base/debug/stack_trace.h"
-#endif
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_piece.h"
 #include "net/base/ip_endpoint.h"
@@ -154,16 +142,8 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
   // not yet been created.
   bool IsClosedStream(QuicStreamId id);
 
-  QuicConnection* connection() {
-    // TODO(rtenneti): Temporary while investigating crbug.com/473893
-    CrashIfInvalid();
-    return connection_.get();
-  }
-  const QuicConnection* connection() const {
-    // TODO(rtenneti): Temporary while investigating crbug.com/473893
-    CrashIfInvalid();
-    return connection_.get();
-  }
+  QuicConnection* connection() { return connection_.get(); }
+  const QuicConnection* connection() const { return connection_.get(); }
   size_t num_active_requests() const { return dynamic_stream_map_.size(); }
   const IPEndPoint& peer_address() const {
     return connection_->peer_address();
@@ -266,14 +246,6 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
   friend class test::QuicSessionPeer;
   friend class VisitorShim;
 
-#ifdef TEMP_INSTRUMENTATION_473893
-  // TODO(rtenneti): Temporary while investigating crbug.com/473893
-  enum Liveness {
-    ALIVE = 0xCA11AB13,
-    DEAD = 0xDEADBEEF,
-  };
-#endif
-
   // Performs the work required to close |stream_id|.  If |locally_reset|
   // then the stream has been reset by this endpoint, not by the peer.
   void CloseStreamInner(QuicStreamId stream_id, bool locally_reset);
@@ -300,9 +272,6 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
   // Called in OnConfigNegotiated for finch trials to measure performance of
   // starting with smaller flow control receive windows and auto-tuning.
   void AdjustInitialFlowControlWindows(size_t stream_window);
-
-  // TODO(rtenneti): Temporary while investigating crbug.com/473893
-  void CrashIfInvalid() const;
 
   // Keep track of highest received byte offset of locally closed streams, while
   // waiting for a definitive final highest offset from the peer.
@@ -352,12 +321,6 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
 
   // Indicate if there is pending data for the crypto stream.
   bool has_pending_handshake_;
-
-#ifdef TEMP_INSTRUMENTATION_473893
-  // TODO(rtenneti): Temporary while investigating crbug.com/473893
-  Liveness liveness_ = ALIVE;
-  base::debug::StackTrace stack_trace_;
-#endif
 
   DISALLOW_COPY_AND_ASSIGN(QuicSession);
 };
