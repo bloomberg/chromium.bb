@@ -3083,15 +3083,6 @@ void SpdySession::CompleteStreamRequest(
   }
 }
 
-SSLClientSocket* SpdySession::GetSSLClientSocket() const {
-  if (!is_secure_)
-    return NULL;
-  SSLClientSocket* ssl_socket =
-      reinterpret_cast<SSLClientSocket*>(connection_->socket());
-  DCHECK(ssl_socket);
-  return ssl_socket;
-}
-
 void SpdySession::OnWriteBufferConsumed(
     size_t frame_payload_size,
     size_t consume_size,

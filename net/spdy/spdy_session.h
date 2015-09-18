@@ -954,10 +954,6 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
 
   size_t max_concurrent_streams() const { return max_concurrent_streams_; }
 
-  // Returns the SSLClientSocket that this SPDY session sits on top of,
-  // or NULL, if the transport is not SSL.
-  SSLClientSocket* GetSSLClientSocket() const;
-
   // Whether Do{Read,Write}Loop() is in the call stack. Useful for
   // making sure we don't destroy ourselves prematurely in that case.
   bool in_io_loop_;
