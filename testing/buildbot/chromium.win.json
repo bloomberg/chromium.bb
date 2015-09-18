@@ -169,12 +169,6 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "media_blink_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
         "test": "media_unittests"
       },
       {
@@ -524,12 +518,6 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "media_blink_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
         "test": "media_unittests"
       },
       {
@@ -746,7 +734,6 @@
       "keyboard_unittests",
       "mandoline:all",
       "media_unittests",
-      "media_blink_unittests",
       "message_center_unittests",
       "ppapi_unittests",
       "printing_unittests",
@@ -956,12 +943,6 @@
       },
       {
         "test": "keyboard_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "media_blink_unittests"
       },
       {
         "swarming": {
@@ -1304,12 +1285,6 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "media_blink_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
         "test": "media_unittests"
       },
       {
@@ -1510,7 +1485,6 @@
       "keyboard_unittests",
       "mandoline:all",
       "media_unittests",
-      "media_blink_unittests",
       "message_center_unittests",
       "ppapi_unittests",
       "printing_unittests",
@@ -1574,7 +1548,6 @@
       "keyboard_unittests",
       "mandoline:all",
       "media_unittests",
-      "media_blink_unittests",
       "message_center_unittests",
       "ppapi_unittests",
       "printing_unittests",
@@ -1628,7 +1601,6 @@
       "keyboard_unittests",
       "mandoline:all",
       "media_unittests",
-      "media_blink_unittests",
       "message_center_unittests",
       "ppapi_unittests",
       "printing_unittests",
@@ -1820,12 +1792,6 @@
           "can_use_on_swarming_builders": true
         },
         "test": "jingle_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "media_blink_unittests"
       },
       {
         "swarming": {

@@ -28,7 +28,6 @@
       "ipc_tests",
       "jingle_unittests",
       "media_unittests",
-      "media_blink_unittests",
       "mojo_common_unittests",
       "mojo_public_bindings_unittests",
       "mojo_public_environment_unittests",

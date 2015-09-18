@@ -28,7 +28,6 @@
       "ipc_tests",
       "jingle_unittests",
       "media_unittests",
-      "media_blink_unittests",
       "mojo_common_unittests",
       "mojo_public_bindings_unittests",
       "mojo_public_environment_unittests",
@@ -86,7 +85,6 @@
       "ipc_tests",
       "jingle_unittests",
       "media_unittests",
-      "media_blink_unittests",
       "mojo_common_unittests",
       "mojo_public_bindings_unittests",
       "mojo_public_environment_unittests",
@@ -271,12 +269,6 @@
           "can_use_on_swarming_builders": true
         },
         "test": "jingle_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "media_blink_unittests"
       },
       {
         "swarming": {
@@ -563,12 +555,6 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "media_blink_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
         "test": "media_unittests"
       },
       {
@@ -841,12 +827,6 @@
           "can_use_on_swarming_builders": true
         },
         "test": "jingle_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "media_blink_unittests"
       },
       {
         "swarming": {
