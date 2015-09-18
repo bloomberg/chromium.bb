@@ -121,7 +121,7 @@ bool AllocateSkBitmapTexture(GrContext* gr,
     return false;
 
   SkImageInfo info = SkImageInfo::MakeN32Premul(desc.fWidth, desc.fHeight);
-  SkGrPixelRef* pixel_ref = SkNEW_ARGS(SkGrPixelRef, (info, texture.get()));
+  SkGrPixelRef* pixel_ref = new SkGrPixelRef(info, texture.get());
   if (!pixel_ref)
     return false;
   bitmap->setInfo(info);
