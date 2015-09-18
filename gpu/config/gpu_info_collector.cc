@@ -9,6 +9,7 @@
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/metrics/sparse_histogram.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
@@ -104,6 +105,7 @@ CollectInfoResult CollectGraphicsInfoGL(GPUInfo* gpu_info) {
   GLint max_samples = 0;
   glGetIntegerv(GL_MAX_SAMPLES, &max_samples);
   gpu_info->max_msaa_samples = base::IntToString(max_samples);
+  UMA_HISTOGRAM_SPARSE_SLOWLY("GPU.MaxMSAASampleCount", max_samples);
 
   gfx::GLWindowSystemBindingInfo window_system_binding_info;
   if (GetGLWindowSystemBindingInfo(&window_system_binding_info)) {
