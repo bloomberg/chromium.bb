@@ -154,10 +154,10 @@ bool SelectionController::handleMousePressEventSingleClickAlgorithm(const MouseE
     }
 
     PositionWithAffinity eventPos = innerNode->layoutObject()->positionForPoint(event.localPoint());
-    VisiblePosition visiblePos = createVisiblePositionInDOMTree(SelectionStrategy::toPositionType(eventPos.position()), eventPos.affinity());
+    VisiblePosition visiblePos = createVisiblePositionInDOMTree(fromPositionInDOMTree<Strategy>(eventPos.position()), eventPos.affinity());
     if (visiblePos.isNull())
         visiblePos = createVisiblePosition(firstPositionInOrBeforeNode(innerNode));
-    PositionAlgorithm<Strategy> pos = SelectionStrategy::toPositionType(visiblePos.deepEquivalent());
+    PositionAlgorithm<Strategy> pos = fromPositionInDOMTree<Strategy>(visiblePos.deepEquivalent());
 
     VisibleSelection newSelection = selection().selection();
     TextGranularity granularity = CharacterGranularity;
@@ -214,7 +214,7 @@ void SelectionController::updateSelectionForMouseDragAlgorithm(const HitTestResu
         return;
 
     PositionWithAffinity rawTargetPosition = selection().selection().positionRespectingEditingBoundary(hitTestResult.localPoint(), target);
-    VisiblePosition targetPosition = createVisiblePositionInDOMTree(SelectionStrategy::toPositionType(rawTargetPosition.position()), rawTargetPosition.affinity());
+    VisiblePosition targetPosition = createVisiblePositionInDOMTree(fromPositionInDOMTree<Strategy>(rawTargetPosition.position()), rawTargetPosition.affinity());
     // Don't modify the selection if we're not on a node.
     if (targetPosition.isNull())
         return;
@@ -256,14 +256,14 @@ void SelectionController::updateSelectionForMouseDragAlgorithm(const HitTestResu
         } else {
             // Reset base for user select all when base is inside user-select-all area and extent < base.
             if (rootUserSelectAllForMousePressNode) {
-                PositionAlgorithm<Strategy> eventPosition = SelectionStrategy::toPositionType(target->layoutObject()->positionForPoint(hitTestResult.localPoint()).position());
-                PositionAlgorithm<Strategy> dragStartPosition = SelectionStrategy::toPositionType(mousePressNode->layoutObject()->positionForPoint(dragStartPos).position());
+                PositionAlgorithm<Strategy> eventPosition = fromPositionInDOMTree<Strategy>(target->layoutObject()->positionForPoint(hitTestResult.localPoint()).position());
+                PositionAlgorithm<Strategy> dragStartPosition = fromPositionInDOMTree<Strategy>(mousePressNode->layoutObject()->positionForPoint(dragStartPos).position());
                 if (eventPosition.compareTo(dragStartPosition) < 0)
                     newSelection.setBase(mostForwardCaretPosition(PositionAlgorithm<Strategy>::afterNode(rootUserSelectAllForMousePressNode), CanCrossEditingBoundary));
             }
 
             Node* rootUserSelectAllForTarget = EditingStrategy::rootUserSelectAllForNode(target);
-            if (rootUserSelectAllForTarget && mousePressNode->layoutObject() && SelectionStrategy::toPositionType(target->layoutObject()->positionForPoint(hitTestResult.localPoint()).position()).compareTo(SelectionStrategy::toPositionType(mousePressNode->layoutObject()->positionForPoint(dragStartPos).position())) < 0)
+            if (rootUserSelectAllForTarget && mousePressNode->layoutObject() && fromPositionInDOMTree<Strategy>(target->layoutObject()->positionForPoint(hitTestResult.localPoint()).position()).compareTo(fromPositionInDOMTree<Strategy>(mousePressNode->layoutObject()->positionForPoint(dragStartPos).position())) < 0)
                 newSelection.setExtent(mostBackwardCaretPosition(PositionAlgorithm<Strategy>::beforeNode(rootUserSelectAllForTarget), CanCrossEditingBoundary));
             else if (rootUserSelectAllForTarget && mousePressNode->layoutObject())
                 newSelection.setExtent(mostForwardCaretPosition(PositionAlgorithm<Strategy>::afterNode(rootUserSelectAllForTarget), CanCrossEditingBoundary));

@@ -78,7 +78,6 @@ public:
         static SelectionType selectionType(const VisibleSelection& selection) { return selection.selectionType(); }
         static VisiblePosition selectionVisibleStart(const VisibleSelection& selection) { return selection.visibleStart(); }
         static VisiblePosition selectionVisibleEnd(const VisibleSelection& selection) { return selection.visibleEnd(); }
-        static PositionType toPositionType(const Position& position) { return position; }
     };
 
     class InComposedTree {
@@ -103,7 +102,6 @@ public:
         {
             return createVisiblePositionInDOMTree(selectionEnd(selection), isRange(selection) ? TextAffinity::Upstream : selection.affinity());
         }
-        static PositionType toPositionType(const Position& position) { return toPositionInComposedTree(position); }
     };
 
     VisibleSelection();
