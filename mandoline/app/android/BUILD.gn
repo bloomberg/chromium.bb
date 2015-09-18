@@ -27,6 +27,7 @@ executable("mandoline_runner") {
     "//mojo/package_manager",
     "//mojo/runner:lib",
     "//mojo/runner:mojo_runner_lib",
+    "//mojo/shell",
   ]
 
   sources = [

@@ -343,10 +343,15 @@ class CapabilityFilterTest : public testing::Test {
         AddService<Validator>(validator_);
     URLRequestPtr request(URLRequest::New());
     request->url = String::From(url);
-    application_manager_->ConnectToApplication(
-        nullptr, request.Pass(), std::string(), GetProxy(&services),
-        exposed_services.Pass(), filter,
-        base::MessageLoop::QuitWhenIdleClosure(), EmptyConnectCallback());
+
+    scoped_ptr<ConnectToApplicationParams> params(
+        new ConnectToApplicationParams);
+    params->SetURLInfo(request.Pass());
+    params->set_services(GetProxy(&services));
+    params->set_exposed_services(exposed_services.Pass());
+    params->set_filter(filter);
+    params->set_on_application_end(base::MessageLoop::QuitWhenIdleClosure());
+    application_manager_->ConnectToApplication(params.Pass());
   }
 
   void InitValidator(const std::set<std::string>& expectations) {
