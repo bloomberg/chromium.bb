@@ -49,4 +49,9 @@ bool TranslateTransformOperation::canBlendWith(const TransformOperation& other) 
         || other.type() == Translate3D;
 }
 
+PassRefPtr<TranslateTransformOperation> TranslateTransformOperation::zoomTranslate(double factor)
+{
+    return create(m_x.zoom(factor), m_y.zoom(factor), m_z * factor, m_type);
+}
+
 } // namespace blink

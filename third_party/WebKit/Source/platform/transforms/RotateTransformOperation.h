@@ -69,6 +69,7 @@ private:
     }
 
     PassRefPtr<TransformOperation> blend(const TransformOperation* from, double progress, bool blendToIdentity = false) override;
+    PassRefPtr<TransformOperation> zoom(double factor) final { return this; }
 
     RotateTransformOperation(double x, double y, double z, double angle, OperationType type)
         : m_x(x)

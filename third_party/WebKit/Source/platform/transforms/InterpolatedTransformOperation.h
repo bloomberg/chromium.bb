@@ -56,6 +56,7 @@ private:
     void apply(TransformationMatrix&, const FloatSize& borderBoxSize) const override;
 
     PassRefPtr<TransformOperation> blend(const TransformOperation* from, double progress, bool blendToIdentity = false) override;
+    PassRefPtr<TransformOperation> zoom(double factor) final { return create(from.zoom(factor), to.zoom(factor), progress); }
 
     bool dependsOnBoxSize() const override
     {

@@ -299,7 +299,7 @@ CSSPrimitiveValue::CSSPrimitiveValue(const Length& length, float zoom)
         if (calc.pixels() && calc.percent()) {
             init(CSSCalcValue::create(
                 CSSCalcValue::createExpressionNode(calc.pixels() / zoom, calc.percent()),
-                calc.isNonNegative() ? ValueRangeNonNegative : ValueRangeAll));
+                calc.valueRange()));
             break;
         }
         if (calc.percent()) {

@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<style>
+#container {
+  position: absolute;
+  top: 0;
+  font-size: 10px;
+}
+.target {
+  width: 40px;
+  height: 40px;
+  border-top: solid;
+  border-left: solid;
+  margin-bottom: 20px;
+}
+</style>
+<div id="container"></div>
+<script>
+[
+  'perspective(200px) translate3D(10px, 10px, 10px)',
+  'matrix(0, 1, 1, 0, 10, 10)',
+  'matrix3d(' +
+    '0, 1, 0, 0, ' +
+    '1, 0, 0, 0, ' +
+    '0, 0, 1, 0, ' +
+    '10, 10, 10, 1)',
+  'perspective(200px) rotateY(45deg)',
+  'none', // Composited animations fail to zoom the last expectation correctly. ):
+].forEach(transform => {
+  var text = document.createElement('div');
+  text.textContent = transform;
+  container.appendChild(text);
+
+  var target = document.createElement('div');
+  target.classList.add('target');
+  container.appendChild(target);
+  target.animate([
+    {transform: transform},
+    {transform: transform},
+  ], 1e8);
+});
+
+internals.setZoomFactor(2);
+
+// We must wait a frame to let compositor animations render.
+if (window.testRunner)
+  testRunner.waitUntilDone();
+
+requestAnimationFrame(() => {
+  requestAnimationFrame(() => {
+    if (window.testRunner)
+      testRunner.notifyDone();
+  });
+});
+</script>

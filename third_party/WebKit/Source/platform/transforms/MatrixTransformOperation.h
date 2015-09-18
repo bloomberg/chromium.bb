@@ -68,6 +68,7 @@ private:
     }
 
     PassRefPtr<TransformOperation> blend(const TransformOperation* from, double progress, bool blendToIdentity = false) override;
+    PassRefPtr<TransformOperation> zoom(double factor) final;
 
     MatrixTransformOperation(double a, double b, double c, double d, double e, double f)
         : m_a(a)

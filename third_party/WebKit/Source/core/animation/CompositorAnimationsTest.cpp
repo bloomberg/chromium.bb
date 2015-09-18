@@ -176,7 +176,7 @@ public:
     {
         RefPtr<AnimatableValue> value = nullptr;
         if (id == CSSPropertyTransform)
-            value = AnimatableTransform::create(TransformOperations());
+            value = AnimatableTransform::create(TransformOperations(), 1);
         else
             value = AnimatableDouble::create(10.0);
 
@@ -210,7 +210,7 @@ public:
         OwnPtr<AnimatableValueKeyframeVector> frames = adoptPtr(new AnimatableValueKeyframeVector);
         for (size_t i = 0; i < values.size(); ++i) {
             double offset = 1.0f / (values.size() - 1) * i;
-            RefPtr<AnimatableTransform> value = AnimatableTransform::create(values[i]);
+            RefPtr<AnimatableTransform> value = AnimatableTransform::create(values[i], 1);
             frames->append(createReplaceOpKeyframe(CSSPropertyTransform, value.get(), offset).get());
         }
         return frames.release();
@@ -281,7 +281,7 @@ private:
 TEST_F(AnimationCompositorAnimationsTest, isCandidateForAnimationOnCompositorKeyframeMultipleCSSProperties)
 {
     RefPtr<AnimatableValueKeyframe> keyframeGoodMultiple = createDefaultKeyframe(CSSPropertyOpacity, EffectModel::CompositeReplace);
-    keyframeGoodMultiple->setPropertyValue(CSSPropertyTransform, AnimatableTransform::create(TransformOperations()).get());
+    keyframeGoodMultiple->setPropertyValue(CSSPropertyTransform, AnimatableTransform::create(TransformOperations(), 1).get());
     EXPECT_TRUE(duplicateSingleKeyframeAndTestIsCandidateOnResult(keyframeGoodMultiple.get()));
 
     RefPtr<AnimatableValueKeyframe> keyframeBadMultipleID = createDefaultKeyframe(CSSPropertyColor, EffectModel::CompositeReplace);
@@ -293,17 +293,17 @@ TEST_F(AnimationCompositorAnimationsTest, isNotCandidateForCompositorAnimationTr
 {
     TransformOperations ops;
     ops.operations().append(TranslateTransformOperation::create(Length(2, Fixed), Length(2, Fixed), TransformOperation::TranslateX));
-    RefPtr<AnimatableValueKeyframe> goodKeyframe = createReplaceOpKeyframe(CSSPropertyTransform, AnimatableTransform::create(ops).get());
+    RefPtr<AnimatableValueKeyframe> goodKeyframe = createReplaceOpKeyframe(CSSPropertyTransform, AnimatableTransform::create(ops, 1).get());
     EXPECT_TRUE(duplicateSingleKeyframeAndTestIsCandidateOnResult(goodKeyframe.get()));
 
     ops.operations().append(TranslateTransformOperation::create(Length(50, Percent), Length(2, Fixed), TransformOperation::TranslateX));
-    RefPtr<AnimatableValueKeyframe> badKeyframe = createReplaceOpKeyframe(CSSPropertyTransform, AnimatableTransform::create(ops).get());
+    RefPtr<AnimatableValueKeyframe> badKeyframe = createReplaceOpKeyframe(CSSPropertyTransform, AnimatableTransform::create(ops, 1).get());
     EXPECT_FALSE(duplicateSingleKeyframeAndTestIsCandidateOnResult(badKeyframe.get()));
 
     TransformOperations ops2;
     Length calcLength = Length(100, Percent).blend(Length(100, Fixed), 0.5, ValueRangeAll);
     ops2.operations().append(TranslateTransformOperation::create(calcLength, Length(0, Fixed), TransformOperation::TranslateX));
-    RefPtr<AnimatableValueKeyframe> badKeyframe2 = createReplaceOpKeyframe(CSSPropertyTransform, AnimatableTransform::create(ops2).get());
+    RefPtr<AnimatableValueKeyframe> badKeyframe2 = createReplaceOpKeyframe(CSSPropertyTransform, AnimatableTransform::create(ops2, 1).get());
     EXPECT_FALSE(duplicateSingleKeyframeAndTestIsCandidateOnResult(badKeyframe2.get()));
 }
 

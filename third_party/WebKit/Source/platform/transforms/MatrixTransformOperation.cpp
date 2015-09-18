@@ -47,4 +47,9 @@ PassRefPtr<TransformOperation> MatrixTransformOperation::blend(const TransformOp
     return MatrixTransformOperation::create(toT.a(), toT.b(), toT.c(), toT.d(), toT.e(), toT.f());
 }
 
+PassRefPtr<TransformOperation> MatrixTransformOperation::zoom(double factor)
+{
+    return create(m_a, m_b, m_c, m_d, m_e * factor, m_f * factor);
+}
+
 } // namespace blink

@@ -295,6 +295,8 @@ public:
 
     Length subtractFromOneHundredPercent() const;
 
+    Length zoom(double factor) const;
+
 private:
     int getIntValue() const
     {

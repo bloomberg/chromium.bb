@@ -210,6 +210,21 @@ Length Length::subtractFromOneHundredPercent() const
     return Length(result.pixels, Fixed);
 }
 
+Length Length::zoom(double factor) const
+{
+    switch (type()) {
+    case Fixed:
+        return Length(getFloatValue() * factor, Fixed);
+    case Calculated: {
+        PixelsAndPercent result = pixelsAndPercent();
+        result.pixels *= factor;
+        return Length(CalculationValue::create(result, calculationValue().valueRange()));
+    }
+    default:
+        return *this;
+    }
+}
+
 CalculationValue& Length::calculationValue() const
 {
     ASSERT(isCalculated());

@@ -59,6 +59,8 @@ public:
 
     static bool isMatchingOperationType(OperationType type) { return type == Translate || type == TranslateX || type == TranslateY || type == TranslateZ || type == Translate3D; }
 
+    PassRefPtr<TranslateTransformOperation> zoomTranslate(double factor);
+
 private:
     OperationType type() const override { return m_type; }
 
@@ -71,6 +73,7 @@ private:
     }
 
     PassRefPtr<TransformOperation> blend(const TransformOperation* from, double progress, bool blendToIdentity = false) override;
+    PassRefPtr<TransformOperation> zoom(double factor) final { return zoomTranslate(factor); }
 
     bool dependsOnBoxSize() const override
     {

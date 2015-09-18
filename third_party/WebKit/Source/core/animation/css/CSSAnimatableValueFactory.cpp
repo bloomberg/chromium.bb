@@ -259,11 +259,11 @@ static PassRefPtr<AnimatableValue> createFromFontStretch(FontStretch fontStretch
     return createFromDouble(fontStretchToDouble(fontStretch));
 }
 
-static PassRefPtr<AnimatableValue> createFromTransformProperties(PassRefPtr<TransformOperation> transform, PassRefPtr<TransformOperation> initialTransform)
+static PassRefPtr<AnimatableValue> createFromTransformProperties(PassRefPtr<TransformOperation> transform, double zoom, PassRefPtr<TransformOperation> initialTransform)
 {
     TransformOperations operation;
     operation.operations().append(transform ? transform : initialTransform);
-    return AnimatableTransform::create(operation);
+    return AnimatableTransform::create(operation, transform ? zoom : 1);
 }
 
 static double fontWeightToDouble(FontWeight fontWeight)
@@ -534,18 +534,18 @@ PassRefPtr<AnimatableValue> CSSAnimatableValueFactory::create(CSSPropertyID prop
     case CSSPropertyWebkitTextStrokeColor:
         return createFromColor(property, style);
     case CSSPropertyTransform:
-        return AnimatableTransform::create(style.transform());
+        return AnimatableTransform::create(style.transform(), style.effectiveZoom());
     case CSSPropertyTranslate: {
         DEFINE_STATIC_REF(TranslateTransformOperation, initialTranslate, TranslateTransformOperation::create(Length(0, Fixed), Length(0, Fixed), 0, TransformOperation::Translate3D));
-        return createFromTransformProperties(style.translate(), initialTranslate);
+        return createFromTransformProperties(style.translate(), style.effectiveZoom(), initialTranslate);
     }
     case CSSPropertyRotate: {
         DEFINE_STATIC_REF(RotateTransformOperation, initialRotate, RotateTransformOperation::create(0, 0, 1, 0, TransformOperation::Rotate3D));
-        return createFromTransformProperties(style.rotate(), initialRotate);
+        return createFromTransformProperties(style.rotate(), style.effectiveZoom(), initialRotate);
     }
     case CSSPropertyScale: {
         DEFINE_STATIC_REF(ScaleTransformOperation, initialScale, ScaleTransformOperation::create(1, 1, 1, TransformOperation::Scale3D));
-        return createFromTransformProperties(style.scale(), initialScale);
+        return createFromTransformProperties(style.scale(), style.effectiveZoom(), initialScale);
     }
     case CSSPropertyTransformOrigin:
         return createFromTransformOrigin(style.transformOrigin(), style);

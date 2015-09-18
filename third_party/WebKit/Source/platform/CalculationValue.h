@@ -53,6 +53,7 @@ public:
     }
     bool operator==(const CalculationValue& o) const { return pixels() == o.pixels() && percent() == o.percent(); }
     bool isNonNegative() const { return m_isNonNegative; }
+    ValueRange valueRange() const { return m_isNonNegative ? ValueRangeNonNegative : ValueRangeAll; }
     float pixels() const { return m_value.pixels; }
     float percent() const { return m_value.percent; }
     PixelsAndPercent pixelsAndPercent() const { return m_value; }

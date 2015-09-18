@@ -63,4 +63,9 @@ PassRefPtr<TransformOperation> PerspectiveTransformOperation::blend(const Transf
     return PerspectiveTransformOperation::create(0);
 }
 
+PassRefPtr<TransformOperation> PerspectiveTransformOperation::zoom(double factor)
+{
+    return create(m_p * factor);
+}
+
 } // namespace blink

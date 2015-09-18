@@ -40,23 +40,24 @@ namespace blink {
 class CORE_EXPORT AnimatableTransform final : public AnimatableValue {
 public:
     ~AnimatableTransform() override { }
-    static PassRefPtr<AnimatableTransform> create(const TransformOperations&);
-    const TransformOperations& transformOperations() const
-    {
-        return m_transform;
-    }
+    static PassRefPtr<AnimatableTransform> create(const TransformOperations&, double zoom);
+    const TransformOperations& transformOperations() const { return m_transform; }
+    double zoom() const { return m_zoom; }
 
 protected:
     PassRefPtr<AnimatableValue> interpolateTo(const AnimatableValue*, double fraction) const override;
 
 private:
-    explicit AnimatableTransform(const TransformOperations& transform)
+    explicit AnimatableTransform(const TransformOperations& transform, double zoom)
         : m_transform(transform)
+        , m_zoom(zoom)
     {
     }
     AnimatableType type() const override { return TypeTransform; }
     bool equalTo(const AnimatableValue*) const override;
+
     const TransformOperations m_transform;
+    const double m_zoom;
 };
 
 DEFINE_ANIMATABLE_VALUE_TYPE_CASTS(AnimatableTransform, isTransform());

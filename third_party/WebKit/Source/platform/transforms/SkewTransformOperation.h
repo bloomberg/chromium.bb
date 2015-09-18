@@ -57,6 +57,7 @@ private:
     }
 
     PassRefPtr<TransformOperation> blend(const TransformOperation* from, double progress, bool blendToIdentity = false) override;
+    PassRefPtr<TransformOperation> zoom(double factor) final { return this; }
 
     SkewTransformOperation(double angleX, double angleY, OperationType type)
         : m_angleX(angleX)

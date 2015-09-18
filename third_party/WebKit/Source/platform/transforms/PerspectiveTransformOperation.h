@@ -61,6 +61,7 @@ private:
     }
 
     PassRefPtr<TransformOperation> blend(const TransformOperation* from, double progress, bool blendToIdentity = false) override;
+    PassRefPtr<TransformOperation> zoom(double factor) final;
 
     PerspectiveTransformOperation(double p)
         : m_p(p)

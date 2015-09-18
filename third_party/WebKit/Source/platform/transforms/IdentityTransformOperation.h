@@ -56,6 +56,11 @@ private:
         return this;
     }
 
+    PassRefPtr<TransformOperation> zoom(double factor) final
+    {
+        return this;
+    }
+
     IdentityTransformOperation()
     {
     }

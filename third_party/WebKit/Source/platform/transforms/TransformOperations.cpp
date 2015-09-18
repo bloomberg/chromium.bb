@@ -379,4 +379,12 @@ TransformOperations TransformOperations::add(const TransformOperations& addend) 
     return result;
 }
 
+TransformOperations TransformOperations::zoom(double factor) const
+{
+    TransformOperations result;
+    for (auto& transformOperation : m_operations)
+        result.m_operations.append(transformOperation->zoom(factor));
+    return result;
+}
+
 } // namespace blink

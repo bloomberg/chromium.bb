@@ -66,6 +66,8 @@ private:
         return m_x == s->m_x && m_y == s->m_y && m_z == s->m_z;
     }
 
+    PassRefPtr<TransformOperation> zoom(double factor) final { return this; }
+
     ScaleTransformOperation(double sx, double sy, double sz, OperationType type)
         : m_x(sx)
         , m_y(sy)
