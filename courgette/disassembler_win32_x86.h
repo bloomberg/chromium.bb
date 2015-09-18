@@ -82,8 +82,6 @@ class DisassemblerWin32X86 : public Disassembler {
     return base_relocation_table_;
   }
 
-  bool IsValidRVA(RVA rva) const { return rva < size_of_image_; }
-
   // Returns description of the RVA, e.g. ".text+0x1243".  For debugging only.
   std::string DescribeRVA(RVA rva) const;
 

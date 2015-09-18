@@ -5,6 +5,7 @@
 #include "courgette/base_test_unittest.h"
 #include "courgette/disassembler_elf_32_arm.h"
 #include "courgette/disassembler_elf_32_x86.h"
+#include "courgette/image_utils.h"
 
 class TypedRVATest : public BaseTest {
  public:
