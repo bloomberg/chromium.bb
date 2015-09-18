@@ -10,6 +10,7 @@
 
 #date {
   color: #7c7c7c;
+  font-size: 100%;
   font-weight: 500;
   margin: 18px auto 16px;  /* This top margin + :host top margin = 30px. */
   width: var(--downloads-item-width);

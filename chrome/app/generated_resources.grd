@@ -1990,11 +1990,17 @@ Even if you have downloaded files from this website before, the website might ha
                desc="In the download view, 'Pause' link text">
         Pause
       </message>
-      <message name="IDS_DOWNLOAD_SEARCH_BUTTON" desc="Title of the button in the download page that triggers a search">
+      <message name="IDS_DOWNLOAD_SEARCH_BUTTON"
+               desc="Title of the button in the download page that triggers a search">
         Search downloads
       </message>
-      <message name="IDS_MD_DOWNLOAD_SEARCH" desc="Placeholder text/label for the search input in the download page">
+      <message name="IDS_MD_DOWNLOAD_SEARCH"
+               desc="Placeholder text/label for the search input in the download page">
         Search
+      </message>
+      <message name="IDS_DOWNLOAD_CLEAR_SEARCH"
+               desc="Tooltip text for the button that clears the search term on the downloads page.">
+        Clear search
       </message>
       <message name="IDS_DOWNLOAD_SEARCHRESULTSFOR" desc="Format string for search results">
         Search results for '<ph name="SEARCH_STRING">$1</ph>'
@@ -2091,6 +2097,10 @@ Even if you have downloaded files from this website before, the website might ha
       <message name="IDS_DOWNLOAD_BY_EXTENSION_URL"
                desc="Indicates which extension downloaded this file by name and URL.">
         Downloaded by &lt;a href=&quot;<ph name="URL">$1<ex>adblock.com</ex></ph>&quot;&gt;<ph name="EXTENSION">$2<ex>The Best Chrome Extension Ever</ex></ph>&lt;/a&gt;
+      </message>
+      <message name="IDS_DOWNLOAD_IN_INCOGNITO"
+               desc="Indicates a download was started in Incognito mode.">
+        Downloaded in Incognito
       </message>
 
       <!-- Download Context Menu Items -->

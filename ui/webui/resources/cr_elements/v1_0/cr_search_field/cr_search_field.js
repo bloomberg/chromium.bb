@@ -21,6 +21,11 @@ var SearchField = Polymer({
       value: '',
     },
 
+    clearLabel: {
+      type: String,
+      value: '',
+    },
+
     showingSearch_: {
       type: Boolean,
       value: false,

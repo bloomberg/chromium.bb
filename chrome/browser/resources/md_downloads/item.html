@@ -12,7 +12,7 @@
 <dom-module id="downloads-item">
   <template>
     <template is="dom-if" if="[[!hideDate]]">
-      <div id="date">[[computeDate_(data_.since_string, data_.date_string)]]</div>
+      <h3 id="date">[[computeDate_(data_.since_string, data_.date_string)]]</h3>
     </template>
 
     <paper-material id="content" on-dragstart="onDragStart_"
@@ -97,7 +97,8 @@
             on-click="onRemoveClick_"></paper-icon-button>
       </div>
 
-      <div id="incognito" hidden$="[[!data_.otr]]"></div>
+      <div id="incognito" i18n-values="title:inIncognito"
+          hidden$="[[!data_.otr]]"></div>
     </paper-material>
 
   </template>

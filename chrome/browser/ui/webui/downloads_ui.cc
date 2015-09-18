@@ -93,9 +93,11 @@ content::WebUIDataSource* CreateDownloadsUIHTMLSource(Profile* profile) {
                           IDR_DOWNLOADS_THROTTLED_ICON_LOADER_JS);
 
   if (MdDownloadsEnabled()) {
+    source->AddLocalizedString("clearSearch", IDS_DOWNLOAD_CLEAR_SEARCH);
     source->AddLocalizedString("controlRetry", IDS_MD_DOWNLOAD_LINK_RETRY);
     source->AddLocalizedString("controlledByUrl",
                                IDS_DOWNLOAD_BY_EXTENSION_URL);
+    source->AddLocalizedString("inIncognito", IDS_DOWNLOAD_IN_INCOGNITO);
     source->AddLocalizedString("moreActions", IDS_DOWNLOAD_MORE_ACTIONS);
     source->AddLocalizedString("noDownloads", IDS_MD_DOWNLOAD_NO_DOWNLOADS);
     source->AddLocalizedString("search", IDS_MD_DOWNLOAD_SEARCH);
