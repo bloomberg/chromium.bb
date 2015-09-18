@@ -1843,29 +1843,58 @@
             'dynamic_refresh': True,
             'per_profile': True,
           },
-          'example_value': ['lcncmkcnkcdbbanbjakcencbaoegdjlp;https://clients2.google.com/service/update2/crx'],
+          'example_value': ['gbchcmhmhahfdphkhkmpfmihenigjmpp;https://clients2.google.com/service/update2/crx'],
           'id': 34,
-          'caption': '''Configure the list of force-installed extensions''',
-          'desc': '''Allows you to specify a list of extensions that will be installed silently, without user interaction.
+          'caption': '''Configure the list of force-installed apps and extensions''',
+          'desc': '''
+          Specifies a list of apps and extensions that are installed silently,
+          without user interaction, and which cannot be uninstalled by the
+          user. All permissions requested by the apps/extensions are granted
+          implicitly, without user interaction, including any additional
+          permissions requested by future versions of the app/extension.
+          Furthermore, permissions are granted for the
+          enterprise.deviceAttributes and enterprise.platformKeys extension
+          APIs. (These two APIs are not available to apps/extensions that are
+          not force-installed.)
+
+          This policy takes precedence over a potentially conflicting
+          ExtensionsInstallBlacklist policy. If an app or extension that
+          previously had been force-installed is removed from this list, it is
+          automatically uninstalled by <ph name="PRODUCT_NAME">$1<ex>Google
+          Chrome</ex></ph>.
 
           For Windows instances that are not joined to an Active Directory
-          domain, forced installation is limited to extensions listed in the
-          Chrome Web Store.
+          domain, forced installation is limited to apps and extensions listed
+          in the Chrome Web Store.
 
-          Each item of the list is a string that contains an extension ID and an update URL delimited by a semicolon (<ph name="SEMICOLON">;</ph>). The extension ID is the 32-letter string found e.g. on <ph name="CHROME_EXTENSIONS_LINK">chrome://extensions</ph> when in developer mode. The update URL should point to an Update Manifest XML document as described at <ph name="LINK_TO_EXTENSION_DOC1">https://developer.chrome.com/extensions/autoupdate</ph>. Note that the update URL set in this policy is only used for the initial installation; subsequent updates of the extension will use the update URL indicated in the extension's manifest.
+          Note that the source code of any extension may be altered by users via
+          Developer Tools (potentially rendering the extension
+          dysfunctional). If this is a concern, the DeveloperToolsDisabled
+          policy should be set.
 
-          For each item, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will retrieve the extension specified by the extension ID from the update service at the specified update URL and silently install it.
+          Each list item of the policy is a string that contains an extension ID
+          and an "update" URL separated by a semicolon (<ph
+          name="SEMICOLON">;</ph>). The extension ID is the 32-letter string
+          found e.g. on <ph
+          name="CHROME_EXTENSIONS_LINK">chrome://extensions</ph> when in
+          developer mode. The "update" URL should point to an Update Manifest
+          XML document as described at <ph
+          name="LINK_TO_EXTENSION_DOC1">https://developer.chrome.com/extensions/autoupdate</ph>. Note
+          that the "update" URL set in this policy is only used for the initial
+          installation; subsequent updates of the extension employ the update
+          URL indicated in the extension's manifest.
 
-          For example, <ph name="EXTENSION_POLICY_EXAMPLE">lcncmkcnkcdbbanbjakcencbaoegdjlp;https://clients2.google.com/service/update2/crx</ph> installs the <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME">Google SSL Web Search</ph> extension from the standard Chrome Web Store update URL. For more information about hosting extensions, see: <ph name="LINK_TO_EXTENSION_DOC2">https://developer.chrome.com/extensions/hosting</ph>.
+          For example, <ph
+          name="EXTENSION_POLICY_EXAMPLE">gbchcmhmhahfdphkhkmpfmihenigjmpp;https://clients2.google.com/service/update2/crx</ph>
+          installs the <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME">Chrome
+          Remote Desktop</ph> app from the standard Chrome Web Store "update"
+          URL. For more information about hosting extensions, see: <ph
+          name="LINK_TO_EXTENSION_DOC2">https://developer.chrome.com/extensions/hosting</ph>.
 
-          Users will be unable to uninstall extensions that are specified by this policy. If you remove an extension from this list, then it will be automatically uninstalled by <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>. Extensions specified in this list are also automatically whitelisted for installation; the ExtensionsInstallBlacklist does not affect them.
-
-          Note that the source code of any extension may be altered (potentially
-          rendering the extension dysfunctional) by using Developer Tools. If
-          this is a concern, the DeveloperToolsDisabled policy should be set.
-
-          If this policy is left not set the user can uninstall any extension in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.''',
-          'label': '''Extension IDs and update URLs to be silently installed''',
+          If this policy is left not set, no apps or extensions are installed
+          automatically and the user can uninstall any app or extension in <ph
+          name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.''',
+          'label': '''Extension/App IDs and update URLs to be silently installed''',
         },
         {
           'name': 'ExtensionInstallSources',
