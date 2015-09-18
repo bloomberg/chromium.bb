@@ -2163,6 +2163,7 @@ def GetConfig():
   site_config.AddConfig(
       _release, 'smaug-release',
       _base_configs['smaug'],
+      images=['base', 'recovery', 'test'],
       sign_types=['nv_lp0_firmware'],
   )
 

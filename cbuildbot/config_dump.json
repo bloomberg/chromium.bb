@@ -16941,6 +16941,11 @@
         "factory": false,
         "factory_install_netboot": false,
         "factory_toolkit": false,
+        "images": [
+            "base",
+            "recovery",
+            "test"
+        ],
         "sign_types": [
             "nv_lp0_firmware"
         ],
