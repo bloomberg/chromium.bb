@@ -111,7 +111,7 @@ config("libresolv") {
 }
 
 # CrOS doesn't install GTK, gconf or any gnome packages.
-if (!is_chromeos) {
+if (!is_chromeos && use_gconf) {
   # These packages should _only_ be expected when building for a target.
   # If these extra checks are not run, gconf is required when building host
   # tools for a CrOS build.
