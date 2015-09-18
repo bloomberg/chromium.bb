@@ -69,35 +69,11 @@ bool GetComputerSid(const wchar_t* account_name, SID* sid, DWORD sid_size) {
 
 std::wstring ConvertSidToString(SID* sid) {
   std::wstring sid_string;
-#if _WIN32_WINNT >= 0x500
   wchar_t* sid_buffer = NULL;
   if (ConvertSidToStringSidW(sid, &sid_buffer)) {
     sid_string = sid_buffer;
     LocalFree(sid_buffer);
   }
-#else
-  SID_IDENTIFIER_AUTHORITY* sia = ::GetSidIdentifierAuthority(sid);
-
-  if(sia->Value[0] || sia->Value[1]) {
-    base::SStringPrintf(
-        &sid_string, L"S-%d-0x%02hx%02hx%02hx%02hx%02hx%02hx",
-        SID_REVISION, (USHORT)sia->Value[0], (USHORT)sia->Value[1],
-        (USHORT)sia->Value[2], (USHORT)sia->Value[3], (USHORT)sia->Value[4],
-        (USHORT)sia->Value[5]);
-  } else {
-    ULONG authority = 0;
-    for (int i = 2; i < 6; ++i) {
-      authority <<= 8;
-      authority |= sia->Value[i];
-    }
-    base::SStringPrintf(&sid_string, L"S-%d-%lu", SID_REVISION, authority);
-  }
-
-  int sub_auth_count = *::GetSidSubAuthorityCount(sid);
-  for(int i = 0; i < sub_auth_count; ++i)
-    base::StringAppendF(&sid_string, L"-%lu", *::GetSidSubAuthority(sid, i));
-#endif
-
   return sid_string;
 }
 
