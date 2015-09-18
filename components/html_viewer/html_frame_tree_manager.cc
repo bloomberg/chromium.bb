@@ -116,17 +116,14 @@ HTMLFrame* HTMLFrameTreeManager::CreateFrameAndAttachToTree(
     }
     existing_frame->SwapDelegate(delegate);
   } else {
-    // We're going to share a frame tree. There are two possibilities:
-    // . We already know about the frame, in which case we swap it to local.
-    // . We don't know about the frame (most likely because of timing issues),
-    //   but we better know about the parent. Create a new frame for it.
+    // We're going to share a frame tree. We should know about the frame.
     CHECK(view->id() != frame_data[0]->frame_id);
     HTMLFrame* existing_frame = frame_tree->root_->FindFrame(view->id());
-    size_t frame_data_index = 0u;
-    CHECK(FindFrameDataIndex(frame_data, view->id(), &frame_data_index));
-    const web_view::FrameDataPtr& data = frame_data[frame_data_index];
     if (existing_frame) {
       CHECK(!existing_frame->IsLocal());
+      size_t frame_data_index = 0u;
+      CHECK(FindFrameDataIndex(frame_data, view->id(), &frame_data_index));
+      const web_view::FrameDataPtr& data = frame_data[frame_data_index];
       existing_frame->SwapToLocal(delegate, view, data->client_properties);
     } else {
       // If we can't find the frame and the change_id of the incoming
@@ -139,12 +136,9 @@ HTMLFrame* HTMLFrameTreeManager::CreateFrameAndAttachToTree(
       if (frame_tree->pending_remove_ids_.count(view->id()))
         return nullptr;
 
-      // TODO(sky): rethink this. I suspect this should be a CHECK.
-      HTMLFrame* parent = frame_tree->root_->FindFrame(data->parent_id);
-      CHECK(parent);
-      HTMLFrame::CreateParams params(frame_tree, parent, view->id(), view,
-                                     data->client_properties, delegate);
-      delegate->GetHTMLFactory()->CreateHTMLFrame(&params);
+      // We don't know about the frame, but should. Something is wrong.
+      DVLOG(1) << "unable to locate frame to attach to";
+      return nullptr;
     }
   }
 
