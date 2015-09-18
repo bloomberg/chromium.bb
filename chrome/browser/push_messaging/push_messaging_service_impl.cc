@@ -11,6 +11,7 @@
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/browser_process.h"
@@ -86,10 +87,14 @@ void UnregisterCallbackToClosure(
 bool UseBackgroundMode() {
   // Note: if push is ever enabled in incognito, the background mode integration
   // should not be enabled for it.
+  std::string group_name =
+      base::FieldTrialList::FindFullName("PushApiBackgroundMode");
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kDisablePushApiBackgroundMode))
     return false;
-  return command_line->HasSwitch(switches::kEnablePushApiBackgroundMode);
+  if (command_line->HasSwitch(switches::kEnablePushApiBackgroundMode))
+    return true;
+  return group_name == "Enabled";
 }
 #endif  // defined(ENABLE_BACKGROUND)
 
