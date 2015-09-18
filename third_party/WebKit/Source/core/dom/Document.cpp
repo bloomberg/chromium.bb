@@ -3457,6 +3457,8 @@ bool Document::setFocusedElement(PassRefPtrWillBeRawPtr<Element> prpNewFocusedEl
                 focusChangeBlocked = true;
                 newFocusedElement = nullptr;
             }
+            // Event handlers might make newFocusedElement dirty.
+            updateLayoutIgnorePendingStylesheets();
         }
 
         if (view()) {
