@@ -70,14 +70,19 @@ public class AccountManagerHelper {
      */
     public interface GetAuthTokenCallback {
         /**
-         * Invoked on the UI thread once a token has been provided by the AccountManager.
-         * @param token Auth token, or null if no token is available (bad credentials,
-         *      permission denied, etc).
-         * @param isTransientError If the token is null, then this parameter indicates
-         *      if the error is transient or persistent.  If token is non-null, this
-         *      parameter is not used.
+         * Invoked on the UI thread if a token is provided by the AccountManager.
+         *
+         * @param token Auth token, guaranteed not to be null.
          */
-        void tokenAvailable(String token, boolean isTransientError);
+        void tokenAvailable(String token);
+
+        /**
+         * Invoked on the UI thread if no token is available.
+         *
+         * @param isTransientError Indicates if the error is transient (network timeout or
+         * unavailable, etc) or persistent (bad credentials, permission denied, etc).
+         */
+        void tokenUnavailable(boolean isTransientError);
     }
 
     /**
@@ -307,7 +312,7 @@ public class AccountManagerHelper {
             ThreadUtils.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    callback.tokenAvailable(null, false);
+                    callback.tokenUnavailable(false);
                 }
             });
             return;
@@ -332,10 +337,13 @@ public class AccountManagerHelper {
     private void onGotAuthTokenResult(Account account, String authTokenType, String authToken,
             GetAuthTokenCallback callback, AtomicInteger numTries, AtomicBoolean isTransientError,
             ConnectionRetry retry) {
-        if (authToken != null || !isTransientError.get()
+        if (authToken != null) {
+            callback.tokenAvailable(authToken);
+            return;
+        } else if (!isTransientError.get()
                 || numTries.incrementAndGet() == MAX_TRIES
                 || !NetworkChangeNotifier.isInitialized()) {
-            callback.tokenAvailable(authToken, isTransientError.get());
+            callback.tokenUnavailable(isTransientError.get());
             return;
         }
         if (retry == null) {

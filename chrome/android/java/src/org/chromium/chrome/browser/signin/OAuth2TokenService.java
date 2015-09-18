@@ -151,8 +151,13 @@ public final class OAuth2TokenService
         accountManagerHelper.getAuthToken(
                 account, oauth2Scope, new AccountManagerHelper.GetAuthTokenCallback() {
                     @Override
-                    public void tokenAvailable(String token, boolean isTransientError) {
-                        nativeOAuth2TokenFetched(token, isTransientError, nativeCallback);
+                    public void tokenAvailable(String token) {
+                        nativeOAuth2TokenFetched(token, false, nativeCallback);
+                    }
+
+                    @Override
+                    public void tokenUnavailable(boolean isTransientError) {
+                        nativeOAuth2TokenFetched(null, isTransientError, nativeCallback);
                     }
                 });
     }
@@ -194,8 +199,14 @@ public final class OAuth2TokenService
         getOAuth2AccessToken(
                 context, activity, account, scope, new AccountManagerHelper.GetAuthTokenCallback() {
                     @Override
-                    public void tokenAvailable(String token, boolean isTransientError) {
+                    public void tokenAvailable(String token) {
                         result.set(token);
+                        semaphore.release();
+                    }
+
+                    @Override
+                    public void tokenUnavailable(boolean isTransientError) {
+                        result.set(null);
                         semaphore.release();
                     }
                 });
