@@ -49,6 +49,12 @@ void DBDataOwner::StoreCurrentDataUsageBucket(
   data_usage_->StoreCurrentDataUsageBucket(*current.get());
 }
 
+void DBDataOwner::DeleteHistoricalDataUsage() {
+  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
+
+  data_usage_->DeleteHistoricalDataUsage();
+}
+
 base::WeakPtr<DBDataOwner> DBDataOwner::GetWeakPtr() {
   return weak_factory_.GetWeakPtr();
 }

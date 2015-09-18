@@ -126,6 +126,7 @@ class DataReductionProxyService
   void LoadCurrentDataUsageBucket(
       const LoadCurrentDataUsageCallback& load_current_data_usage_callback);
   void StoreCurrentDataUsageBucket(scoped_ptr<DataUsageBucket> current);
+  void DeleteHistoricalDataUsage();
 
   // Methods for adding/removing observers on |this|.
   void AddObserver(DataReductionProxyServiceObserver* observer);

@@ -217,6 +217,10 @@ class DataReductionProxyCompressionStats
   // is |LOADED|.
   void PersistDataUsage();
 
+  // Deletes all historical data usage from storage and memory. This method
+  // should not be called when |current_data_usage_load_status_| is |LOADING|.
+  void DeleteHistoricalDataUsage();
+
   // Called when |prefs::kDataUsageReportingEnabled| pref values changes.
   // Initializes data usage statistics in memory when pref is enabled and
   // persists data usage to memory when pref is disabled.

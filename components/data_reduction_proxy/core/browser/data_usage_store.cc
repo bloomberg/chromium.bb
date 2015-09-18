@@ -149,6 +149,13 @@ void DataUsageStore::StoreCurrentDataUsageBucket(
   }
 }
 
+void DataUsageStore::DeleteHistoricalDataUsage() {
+  for (int i = 0; i < kNumDataUsageBuckets; ++i)
+    db_->Delete(DbKeyForBucketIndex(i));
+
+  db_->Delete(kCurrentBucketIndexKey);
+}
+
 // static
 bool DataUsageStore::IsInCurrentInterval(const base::Time& time) {
   if (time.is_null())

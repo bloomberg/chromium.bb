@@ -46,6 +46,9 @@ class DataUsageStore {
   // network activity during an interval.
   void StoreCurrentDataUsageBucket(const DataUsageBucket& current_bucket);
 
+  // Deletes all historical data usage from storage.
+  void DeleteHistoricalDataUsage();
+
   // Returns whether |time| is within the current interval. Each hour is
   // divided into |kDataUsageBucketLengthMins| minute long intervals. Returns
   // true if |time| has NULL time since an uninitialized bucket can be assigned

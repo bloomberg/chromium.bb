@@ -409,6 +409,10 @@ class DataReductionProxyCompressionStatsTest : public testing::Test {
     compression_stats_->GetHistoricalDataUsage(onLoadDataUsage);
   }
 
+  void DeleteHistoricalDataUsage() {
+    compression_stats_->DeleteHistoricalDataUsage();
+  }
+
   void EnableDataUsageReporting() {
     pref_service()->SetBoolean(prefs::kDataUsageReportingEnabled, true);
   }
@@ -1163,6 +1167,32 @@ TEST_F(DataReductionProxyCompressionStatsTest,
   site_usage->set_data_used(1000);
   site_usage->set_original_size(1250);
 
+  DataUsageLoadVerifier verifier(expected_data_usage.Pass());
+
+  GetHistoricalDataUsage(base::Bind(&DataUsageLoadVerifier::OnLoadDataUsage,
+                                    base::Unretained(&verifier)));
+  base::RunLoop().RunUntilIdle();
+}
+
+TEST_F(DataReductionProxyCompressionStatsTest, DeleteHistoricalDataUsage) {
+  EnableDataUsageReporting();
+  base::RunLoop().RunUntilIdle();
+
+  RecordDataUsage("https://www.yahoo.com", 900, 1100);
+  // Fake above record to be from 15 minutes ago so that it is flushed to
+  // storage.
+  base::Time fifteen_mins_ago = base::Time::Now() - TimeDelta::FromMinutes(15);
+  SetLastUpdatedTimestamp(fifteen_mins_ago);
+
+  // This data usage will be in memory.
+  RecordDataUsage("https://www.google.com", 1000, 1250);
+
+  DeleteHistoricalDataUsage();
+  base::RunLoop().RunUntilIdle();
+
+  auto expected_data_usage =
+      make_scoped_ptr(new std::vector<data_reduction_proxy::DataUsageBucket>(
+          kNumExpectedBuckets));
   DataUsageLoadVerifier verifier(expected_data_usage.Pass());
 
   GetHistoricalDataUsage(base::Bind(&DataUsageLoadVerifier::OnLoadDataUsage,

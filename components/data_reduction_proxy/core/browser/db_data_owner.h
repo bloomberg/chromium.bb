@@ -47,6 +47,9 @@ class DBDataOwner {
   // Stores |current| to |DataStore|.
   void StoreCurrentDataUsageBucket(scoped_ptr<DataUsageBucket> current);
 
+  // Deletes all historical data usage from storage.
+  void DeleteHistoricalDataUsage();
+
   // Returns a weak pointer to self for use on UI thread.
   base::WeakPtr<DBDataOwner> GetWeakPtr();
 
