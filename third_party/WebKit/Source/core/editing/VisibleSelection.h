@@ -263,28 +263,19 @@ public:
 
     operator const VisibleSelection&() const { return m_visibleSelection; }
 
-    TextAffinity affinity() const { return m_visibleSelection.affinity(); }
     PositionAlgorithm<Strategy> base() const;
     PositionAlgorithm<Strategy> extent() const;
     PositionAlgorithm<Strategy> start() const;
     PositionAlgorithm<Strategy> end() const;
-    VisiblePositionTemplate<Strategy> visibleStart() const;
-    VisiblePositionTemplate<Strategy> visibleEnd() const;
-
-    bool operator==(const VisibleSelectionTemplate&) const;
 
     bool isCaretOrRange() const { return m_visibleSelection.isCaretOrRange(); }
-    bool isDirectional() const { return m_visibleSelection.isDirectional(); }
     bool isRange() const { return m_visibleSelection.isRange(); }
     bool isValidFor(const Document& document) const { return m_visibleSelection.isValidFor(document); }
-
-    EphemeralRangeTemplate<Strategy> toNormalizedEphemeralRange() const;
 
     void setBase(const PositionAlgorithm<Strategy>&);
     void setBase(const VisiblePositionTemplate<Strategy>&);
     void setExtent(const PositionAlgorithm<Strategy>&);
     void setExtent(const VisiblePositionTemplate<Strategy>&);
-    void setIsDirectional(bool isDirectional) { m_visibleSelection.setIsDirectional(isDirectional); }
 
     bool expandUsingGranularity(TextGranularity);
 
@@ -303,11 +294,6 @@ extern template class CORE_TEMPLATE_CLASS_EXPORT VisiblePositionTemplate<Editing
 inline bool equalSelectionsInDOMTree(const VisibleSelection& selection1, const VisibleSelection& selection2)
 {
     return VisibleSelection::InDOMTree::equalSelections(selection1, selection2);
-}
-
-inline bool equalSelectionsInComposedTree(const VisibleSelection& selection1, const VisibleSelection& selection2)
-{
-    return VisibleSelection::InComposedTree::equalSelections(selection1, selection2);
 }
 
 // We don't yet support multi-range selections, so we only ever have one range

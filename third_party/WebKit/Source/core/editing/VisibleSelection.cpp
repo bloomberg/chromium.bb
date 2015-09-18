@@ -1157,8 +1157,8 @@ VisibleSelectionTemplate<Strategy>::VisibleSelectionTemplate(const PositionAlgor
 }
 
 template <typename Strategy>
-VisibleSelectionTemplate<Strategy>::VisibleSelectionTemplate(const VisibleSelection& visibleSelection)
-    : m_visibleSelection(visibleSelection)
+VisibleSelectionTemplate<Strategy>::VisibleSelectionTemplate(const VisibleSelection& visibleSeleciton)
+    : m_visibleSelection(visibleSeleciton)
 {
 }
 
@@ -1166,12 +1166,6 @@ template <typename Strategy>
 VisibleSelectionTemplate<Strategy>::VisibleSelectionTemplate(const VisiblePositionTemplate<Strategy>& visiblePosition)
     : VisibleSelectionTemplate(VisibleSelection(visiblePosition.deepEquivalent(), visiblePosition.deepEquivalent(), visiblePosition.affinity()))
 {
-}
-
-template <typename Strategy>
-EphemeralRangeTemplate<Strategy> VisibleSelectionTemplate<Strategy>::toNormalizedEphemeralRange() const
-{
-    return normalizeRange(EphemeralRangeTemplate<Strategy>(start(), end()));
 }
 
 template <typename Strategy>
@@ -1184,12 +1178,6 @@ template <typename Strategy>
 void VisibleSelectionTemplate<Strategy>::setExtent(const VisiblePositionTemplate<Strategy>& newExtent)
 {
     return setExtent(newExtent.deepEquivalent());
-}
-
-template <>
-bool VisibleSelectionTemplate<EditingStrategy>::operator==(const VisibleSelectionTemplate<EditingStrategy>& other) const
-{
-    return equalSelectionsInDOMTree(m_visibleSelection, other.m_visibleSelection);
 }
 
 template <>
@@ -1217,18 +1205,6 @@ Position VisibleSelectionTemplate<EditingStrategy>::end() const
 }
 
 template <>
-VisiblePosition VisibleSelectionTemplate<EditingStrategy>::visibleStart() const
-{
-    return m_visibleSelection.visibleStart();
-}
-
-template <>
-VisiblePosition VisibleSelectionTemplate<EditingStrategy>::visibleEnd() const
-{
-    return m_visibleSelection.visibleEnd();
-}
-
-template <>
 void VisibleSelectionTemplate<EditingStrategy>::setBase(const Position& newBase)
 {
     m_visibleSelection.setBase(newBase);
@@ -1244,12 +1220,6 @@ template <>
 bool VisibleSelectionTemplate<EditingStrategy>::expandUsingGranularity(TextGranularity granularity)
 {
     return m_visibleSelection.expandUsingGranularity(granularity);
-}
-
-template <>
-bool VisibleSelectionTemplate<EditingInComposedTreeStrategy>::operator==(const VisibleSelectionTemplate<EditingInComposedTreeStrategy>& other) const
-{
-    return equalSelectionsInComposedTree(m_visibleSelection, other.m_visibleSelection);
 }
 
 template <>
@@ -1274,18 +1244,6 @@ template <>
 PositionInComposedTree VisibleSelectionTemplate<EditingInComposedTreeStrategy>::end() const
 {
     return m_visibleSelection.endInComposedTree();
-}
-
-template <>
-VisiblePositionInComposedTree VisibleSelectionTemplate<EditingInComposedTreeStrategy>::visibleStart() const
-{
-    return createVisiblePosition(m_visibleSelection.startInComposedTree(), isRange() ? TextAffinity::Downstream : affinity());
-}
-
-template <>
-VisiblePositionInComposedTree VisibleSelectionTemplate<EditingInComposedTreeStrategy>::visibleEnd() const
-{
-    return createVisiblePosition(m_visibleSelection.endInComposedTree(), isRange() ? TextAffinity::Upstream : affinity());
 }
 
 template <>

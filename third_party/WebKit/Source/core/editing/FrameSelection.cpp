@@ -112,35 +112,6 @@ FrameSelection::~FrameSelection()
 {
 }
 
-template <>
-VisiblePosition FrameSelection::originalBase<EditingStrategy>() const
-{
-    return m_originalBase;
-}
-
-template <>
-VisiblePositionInComposedTree FrameSelection::originalBase<EditingInComposedTreeStrategy>() const
-{
-    return createVisiblePosition(toPositionInComposedTree(m_originalBase.deepEquivalent()), m_originalBase.affinity());
-}
-
-void FrameSelection::setOriginalBase(const VisiblePositionInComposedTree& newBase)
-{
-    m_originalBase = createVisiblePosition(toPositionInDOMTree(newBase.deepEquivalent()), newBase.affinity());
-}
-
-template <>
-VisibleSelectionTemplate<EditingStrategy> FrameSelection::visibleSelection<EditingStrategy>() const
-{
-    return VisibleSelectionTemplate<EditingStrategy>(selection());
-}
-
-template <>
-VisibleSelectionTemplate<EditingInComposedTreeStrategy> FrameSelection::visibleSelection<EditingInComposedTreeStrategy>() const
-{
-    return VisibleSelectionTemplate<EditingInComposedTreeStrategy>(selection());
-}
-
 Element* FrameSelection::rootEditableElementOrDocumentElement() const
 {
     Element* selectionRoot = selection().rootEditableElement();
@@ -181,8 +152,7 @@ void FrameSelection::moveTo(const Position &pos, TextAffinity affinity, EUserTri
     setSelection(VisibleSelection(pos, affinity, selection().isDirectional()), options);
 }
 
-template <typename Strategy>
-static void adjustEndpointsAtBidiBoundary(VisiblePositionTemplate<Strategy>& visibleBase, VisiblePositionTemplate<Strategy>& visibleExtent)
+static void adjustEndpointsAtBidiBoundary(VisiblePosition& visibleBase, VisiblePosition& visibleExtent)
 {
     RenderedPosition base(visibleBase);
     RenderedPosition extent(visibleExtent);
@@ -193,7 +163,7 @@ static void adjustEndpointsAtBidiBoundary(VisiblePositionTemplate<Strategy>& vis
     if (base.atLeftBoundaryOfBidiRun()) {
         if (!extent.atRightBoundaryOfBidiRun(base.bidiLevelOnRight())
             && base.isEquivalent(extent.leftBoundaryOfBidiRun(base.bidiLevelOnRight()))) {
-            visibleBase = createVisiblePosition(fromPositionInDOMTree<Strategy>(base.positionAtLeftBoundaryOfBiDiRun()));
+            visibleBase = createVisiblePosition(base.positionAtLeftBoundaryOfBiDiRun());
             return;
         }
         return;
@@ -202,51 +172,49 @@ static void adjustEndpointsAtBidiBoundary(VisiblePositionTemplate<Strategy>& vis
     if (base.atRightBoundaryOfBidiRun()) {
         if (!extent.atLeftBoundaryOfBidiRun(base.bidiLevelOnLeft())
             && base.isEquivalent(extent.rightBoundaryOfBidiRun(base.bidiLevelOnLeft()))) {
-            visibleBase = createVisiblePosition(fromPositionInDOMTree<Strategy>(base.positionAtRightBoundaryOfBiDiRun()));
+            visibleBase = createVisiblePosition(base.positionAtRightBoundaryOfBiDiRun());
             return;
         }
         return;
     }
 
     if (extent.atLeftBoundaryOfBidiRun() && extent.isEquivalent(base.leftBoundaryOfBidiRun(extent.bidiLevelOnRight()))) {
-        visibleExtent = createVisiblePosition(fromPositionInDOMTree<Strategy>(extent.positionAtLeftBoundaryOfBiDiRun()));
+        visibleExtent = createVisiblePosition(extent.positionAtLeftBoundaryOfBiDiRun());
         return;
     }
 
     if (extent.atRightBoundaryOfBidiRun() && extent.isEquivalent(base.rightBoundaryOfBidiRun(extent.bidiLevelOnLeft()))) {
-        visibleExtent = createVisiblePosition(fromPositionInDOMTree<Strategy>(extent.positionAtRightBoundaryOfBiDiRun()));
+        visibleExtent = createVisiblePosition(extent.positionAtRightBoundaryOfBiDiRun());
         return;
     }
 }
 
-template <typename Strategy>
-void FrameSelection::setNonDirectionalSelectionIfNeededAlgorithm(const VisibleSelectionTemplate<Strategy>& passedNewSelection, TextGranularity granularity,
+template <typename SelectionStrategy>
+void FrameSelection::setNonDirectionalSelectionIfNeededAlgorithm(const VisibleSelection& passedNewSelection, TextGranularity granularity,
     EndPointsAdjustmentMode endpointsAdjustmentMode)
 {
-    VisibleSelectionTemplate<Strategy> newSelection = passedNewSelection;
+    VisibleSelection newSelection = passedNewSelection;
     bool isDirectional = shouldAlwaysUseDirectionalSelection(m_frame) || newSelection.isDirectional();
 
-    const VisiblePositionTemplate<Strategy> originalBase = this->originalBase<Strategy>();
-    const VisiblePositionTemplate<Strategy> base = m_originalBase.isNotNull() ? originalBase : createVisiblePosition(newSelection.base());
-    VisiblePositionTemplate<Strategy> newBase = base;
-    const VisiblePositionTemplate<Strategy> extent = createVisiblePosition(newSelection.extent());
-    VisiblePositionTemplate<Strategy> newExtent = extent;
+    VisiblePosition base = m_originalBase.isNotNull() ? m_originalBase : createVisiblePositionInDOMTree(SelectionStrategy::selectionBase(newSelection));
+    VisiblePosition newBase = base;
+    VisiblePosition extent = createVisiblePositionInDOMTree(SelectionStrategy::selectionExtent(newSelection));
+    VisiblePosition newExtent = extent;
     if (endpointsAdjustmentMode == AdjustEndpointsAtBidiBoundary)
         adjustEndpointsAtBidiBoundary(newBase, newExtent);
 
     if (newBase.deepEquivalent() != base.deepEquivalent() || newExtent.deepEquivalent() != extent.deepEquivalent()) {
-        setOriginalBase(base);
+        m_originalBase = base;
         newSelection.setBase(newBase);
         newSelection.setExtent(newExtent);
-    } else if (originalBase.isNotNull()) {
-        if (visibleSelection<Strategy>().base() == newSelection.base())
-            newSelection.setBase(originalBase);
-        setOriginalBase(VisiblePositionTemplate<Strategy>());
+    } else if (m_originalBase.isNotNull()) {
+        if (SelectionStrategy::selectionBase(selection()) == SelectionStrategy::selectionBase(newSelection))
+            newSelection.setBase(m_originalBase);
+        m_originalBase = VisiblePosition();
     }
 
-    // Adjusting base and extent will make newSelection always directional
-    newSelection.setIsDirectional(isDirectional);
-    if (visibleSelection<Strategy>() == newSelection)
+    newSelection.setIsDirectional(isDirectional); // Adjusting base and extent will make newSelection always directional
+    if (SelectionStrategy::equalSelections(selection(), newSelection))
         return;
 
     setSelection(newSelection, granularity);
@@ -255,14 +223,14 @@ void FrameSelection::setNonDirectionalSelectionIfNeededAlgorithm(const VisibleSe
 void FrameSelection::setNonDirectionalSelectionIfNeeded(const VisibleSelection& passedNewSelection, TextGranularity granularity, EndPointsAdjustmentMode endpointsAdjustmentMode)
 {
     if (RuntimeEnabledFeatures::selectionForComposedTreeEnabled())
-        return setNonDirectionalSelectionIfNeededAlgorithm<EditingInComposedTreeStrategy>(VisibleSelectionTemplate<EditingInComposedTreeStrategy>(passedNewSelection), granularity, endpointsAdjustmentMode);
-    setNonDirectionalSelectionIfNeededAlgorithm<EditingStrategy>(VisibleSelectionTemplate<EditingStrategy>(passedNewSelection), granularity, endpointsAdjustmentMode);
+        return setNonDirectionalSelectionIfNeededAlgorithm<VisibleSelection::InComposedTree>(passedNewSelection, granularity, endpointsAdjustmentMode);
+    setNonDirectionalSelectionIfNeededAlgorithm<VisibleSelection::InDOMTree>(passedNewSelection, granularity, endpointsAdjustmentMode);
 }
 
 static bool areEquivalentSelections(const VisibleSelection& selection1, const VisibleSelection& selection2)
 {
     if (RuntimeEnabledFeatures::selectionForComposedTreeEnabled())
-        return equalSelectionsInComposedTree(selection1, selection2);
+        return VisibleSelection::InComposedTree::equalSelections(selection1, selection2);
     return equalSelectionsInDOMTree(selection1, selection2);
 }
 
@@ -709,16 +677,17 @@ void FrameSelection::paintCaret(GraphicsContext* context, const LayoutPoint& pai
     }
 }
 
-template <typename Strategy>
+template <typename SelectionStrategy>
 bool FrameSelection::containsAlgorithm(const LayoutPoint& point)
 {
+    using Strategy = typename SelectionStrategy::Strategy;
+
     Document* document = m_frame->document();
-    if (!document->layoutView())
-        return false;
 
     // Treat a collapsed selection like no selection.
-    const VisibleSelectionTemplate<Strategy> visibleSelection = this->visibleSelection<Strategy>();
-    if (!visibleSelection.isRange())
+    if (!isRange())
+        return false;
+    if (!document->layoutView())
         return false;
 
     HitTestRequest request(HitTestRequest::ReadOnly | HitTestRequest::Active);
@@ -728,26 +697,26 @@ bool FrameSelection::containsAlgorithm(const LayoutPoint& point)
     if (!innerNode || !innerNode->layoutObject())
         return false;
 
-    const VisiblePositionTemplate<Strategy> visiblePos = createVisiblePosition(fromPositionInDOMTree<Strategy>(innerNode->layoutObject()->positionForPoint(result.localPoint())));
+    VisiblePosition visiblePos = createVisiblePosition(innerNode->layoutObject()->positionForPoint(result.localPoint()));
     if (visiblePos.isNull())
         return false;
 
-    const VisiblePositionTemplate<Strategy> visibleStart = visibleSelection.visibleStart();
-    const VisiblePositionTemplate<Strategy> visibleEnd = visibleSelection.visibleEnd();
+    VisiblePosition visibleStart = SelectionStrategy::selectionVisibleStart(selection());
+    VisiblePosition visibleEnd = SelectionStrategy::selectionVisibleEnd(selection());
     if (visibleStart.isNull() || visibleEnd.isNull())
         return false;
 
-    const PositionAlgorithm<Strategy> start = visibleStart.deepEquivalent();
-    const PositionAlgorithm<Strategy> end = visibleEnd.deepEquivalent();
-    const PositionAlgorithm<Strategy> pos = visiblePos.deepEquivalent();
+    const PositionAlgorithm<Strategy> start(fromPositionInDOMTree<Strategy>(visibleStart.deepEquivalent()));
+    const PositionAlgorithm<Strategy> end(fromPositionInDOMTree<Strategy>(visibleEnd.deepEquivalent()));
+    const PositionAlgorithm<Strategy> pos(fromPositionInDOMTree<Strategy>(visiblePos.deepEquivalent()));
     return start.compareTo(pos) <= 0 && pos.compareTo(end) <= 0;
 }
 
 bool FrameSelection::contains(const LayoutPoint& point)
 {
     if (RuntimeEnabledFeatures::selectionForComposedTreeEnabled())
-        return containsAlgorithm<EditingInComposedTreeStrategy>(point);
-    return containsAlgorithm<EditingStrategy>(point);
+        return containsAlgorithm<VisibleSelection::InComposedTree>(point);
+    return containsAlgorithm<VisibleSelection::InDOMTree>(point);
 }
 
 // Workaround for the fact that it's hard to delete a frame.
@@ -1096,11 +1065,11 @@ void FrameSelection::setFocusedNodeIfNeeded()
         m_frame->page()->focusController().setFocusedElement(0, m_frame);
 }
 
-template <typename Strategy>
+template <typename SelectionStrategy>
 String extractSelectedTextAlgorithm(const FrameSelection& selection, TextIteratorBehavior behavior)
 {
-    const VisibleSelectionTemplate<Strategy> visibleSelection = selection.visibleSelection<Strategy>();
-    const EphemeralRangeTemplate<Strategy> range = visibleSelection.toNormalizedEphemeralRange();
+    VisibleSelection visibleSelection = selection.selection();
+    EphemeralRangeTemplate<typename SelectionStrategy::Strategy> range = normalizeRange(SelectionStrategy::asRange(visibleSelection));
     // We remove '\0' characters because they are not visibly rendered to the user.
     return plainText(range, behavior).replace(0, "");
 }
@@ -1108,23 +1077,23 @@ String extractSelectedTextAlgorithm(const FrameSelection& selection, TextIterato
 static String extractSelectedText(const FrameSelection& selection, TextIteratorBehavior behavior)
 {
     if (RuntimeEnabledFeatures::selectionForComposedTreeEnabled())
-        return extractSelectedTextAlgorithm<EditingInComposedTreeStrategy>(selection, behavior);
-    return extractSelectedTextAlgorithm<EditingStrategy>(selection, behavior);
+        return extractSelectedTextAlgorithm<VisibleSelection::InComposedTree>(selection, behavior);
+    return extractSelectedTextAlgorithm<VisibleSelection::InDOMTree>(selection, behavior);
 }
 
-template <typename Strategy>
+template <typename SelectionStrategy>
 static String extractSelectedHTMLAlgorithm(const FrameSelection& selection)
 {
-    const VisibleSelectionTemplate<Strategy> visibleSelection = selection.visibleSelection<Strategy>();
-    const EphemeralRangeTemplate<Strategy> range = visibleSelection.toNormalizedEphemeralRange();
+    VisibleSelection visibleSelection = selection.selection();
+    EphemeralRangeTemplate<typename SelectionStrategy::Strategy> range = normalizeRange(SelectionStrategy::asRange(visibleSelection));
     return createMarkup(range.startPosition(), range.endPosition(), AnnotateForInterchange, ConvertBlocksToInlines::NotConvert, ResolveNonLocalURLs);
 }
 
 String FrameSelection::selectedHTMLForClipboard() const
 {
     if (!RuntimeEnabledFeatures::selectionForComposedTreeEnabled())
-        return extractSelectedHTMLAlgorithm<EditingStrategy>(*this);
-    return extractSelectedHTMLAlgorithm<EditingInComposedTreeStrategy>(*this);
+        return extractSelectedHTMLAlgorithm<VisibleSelection::InDOMTree>(*this);
+    return extractSelectedHTMLAlgorithm<VisibleSelection::InComposedTree>(*this);
 }
 
 String FrameSelection::selectedText() const
