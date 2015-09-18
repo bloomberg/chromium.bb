@@ -258,10 +258,8 @@ class CORE_TEMPLATE_CLASS_EXPORT VisibleSelectionTemplate final {
     STACK_ALLOCATED();
 public:
     VisibleSelectionTemplate(const PositionAlgorithm<Strategy>& base, const PositionAlgorithm<Strategy>& extent, TextAffinity = TextAffinity::Downstream);
-    VisibleSelectionTemplate(const VisiblePositionTemplate<Strategy>& base, const VisiblePositionTemplate<Strategy>& extent);
     explicit VisibleSelectionTemplate(const VisibleSelection&);
     explicit VisibleSelectionTemplate(const VisiblePositionTemplate<Strategy>&);
-    VisibleSelectionTemplate();
 
     operator const VisibleSelection&() const { return m_visibleSelection; }
 
@@ -270,7 +268,6 @@ public:
     PositionAlgorithm<Strategy> extent() const;
     PositionAlgorithm<Strategy> start() const;
     PositionAlgorithm<Strategy> end() const;
-    SelectionType selectionType() const { return m_visibleSelection.selectionType(); }
     VisiblePositionTemplate<Strategy> visibleStart() const;
     VisiblePositionTemplate<Strategy> visibleEnd() const;
 
@@ -288,7 +285,6 @@ public:
     void setExtent(const PositionAlgorithm<Strategy>&);
     void setExtent(const VisiblePositionTemplate<Strategy>&);
     void setIsDirectional(bool isDirectional) { m_visibleSelection.setIsDirectional(isDirectional); }
-    void setWithoutValidation(const PositionAlgorithm<Strategy>& base, const PositionAlgorithm<Strategy>& extent);
 
     bool expandUsingGranularity(TextGranularity);
 

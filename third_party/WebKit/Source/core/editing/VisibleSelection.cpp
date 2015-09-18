@@ -1157,12 +1157,6 @@ VisibleSelectionTemplate<Strategy>::VisibleSelectionTemplate(const PositionAlgor
 }
 
 template <typename Strategy>
-VisibleSelectionTemplate<Strategy>::VisibleSelectionTemplate(const VisiblePositionTemplate<Strategy>& base, const VisiblePositionTemplate<Strategy>& extent)
-    : VisibleSelectionTemplate(VisibleSelection(base.deepEquivalent(), extent.deepEquivalent(), base.affinity()))
-{
-}
-
-template <typename Strategy>
 VisibleSelectionTemplate<Strategy>::VisibleSelectionTemplate(const VisibleSelection& visibleSelection)
     : m_visibleSelection(visibleSelection)
 {
@@ -1171,11 +1165,6 @@ VisibleSelectionTemplate<Strategy>::VisibleSelectionTemplate(const VisibleSelect
 template <typename Strategy>
 VisibleSelectionTemplate<Strategy>::VisibleSelectionTemplate(const VisiblePositionTemplate<Strategy>& visiblePosition)
     : VisibleSelectionTemplate(VisibleSelection(visiblePosition.deepEquivalent(), visiblePosition.deepEquivalent(), visiblePosition.affinity()))
-{
-}
-
-template <typename Strategy>
-VisibleSelectionTemplate<Strategy>::VisibleSelectionTemplate()
 {
 }
 
@@ -1195,12 +1184,6 @@ template <typename Strategy>
 void VisibleSelectionTemplate<Strategy>::setExtent(const VisiblePositionTemplate<Strategy>& newExtent)
 {
     return setExtent(newExtent.deepEquivalent());
-}
-
-template <typename Strategy>
-void VisibleSelectionTemplate<Strategy>::setWithoutValidation(const PositionAlgorithm<Strategy>& base, const PositionAlgorithm<Strategy>& extent)
-{
-    m_visibleSelection.setWithoutValidation(base, extent);
 }
 
 template <>
