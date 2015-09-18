@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From pp_codecs.idl modified Thu May 21 15:11:01 2015. */
+/* From pp_codecs.idl modified Fri Sep 18 10:42:55 2015. */
 
 #ifndef PPAPI_C_PP_CODECS_H_
 #define PPAPI_C_PP_CODECS_H_
@@ -47,8 +47,7 @@ typedef enum {
  */
 typedef enum {
   PP_AUDIOPROFILE_OPUS = 0,
-  PP_AUDIOPROFILE_SPEEX = 1,
-  PP_AUDIOPROFILE_MAX = PP_AUDIOPROFILE_SPEEX
+  PP_AUDIOPROFILE_MAX = PP_AUDIOPROFILE_OPUS
 } PP_AudioProfile;
 
 /**
