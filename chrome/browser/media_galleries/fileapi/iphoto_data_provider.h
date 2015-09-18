@@ -51,7 +51,7 @@ class IPhotoDataProvider : public iapps::IAppsDataProvider {
  private:
   typedef base::hash_map<std::string, base::FilePath> FileIndex;
   // Map from album name to a map of filename to path.
-  typedef base::hash_map<std::string, FileIndex> DirIndex;
+  typedef std::map<std::string, FileIndex> DirIndex;
 
   void OnLibraryParsed(const ReadyCallback& ready_callback,
                        bool result,
