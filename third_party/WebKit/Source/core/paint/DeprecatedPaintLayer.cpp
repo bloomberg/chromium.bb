@@ -1195,12 +1195,14 @@ void DeprecatedPaintLayer::removeOnlyThisLayer()
     if (!m_parent)
         return;
 
-    {
+    if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
         DisableCompositingQueryAsserts disabler; // We need the current compositing status.
         if (isPaintInvalidationContainer()) {
             // Our children will be reparented and contained by a new paint invalidation container,
             // so need paint invalidation. CompositingUpdate can't see this layer (which has been
             // removed) so won't do this for us.
+            DisablePaintInvalidationStateAsserts disabler;
+            layoutObject()->invalidatePaintIncludingNonCompositingDescendants();
             layoutObject()->setShouldDoFullPaintInvalidationIncludingNonCompositingDescendants();
         }
     }
