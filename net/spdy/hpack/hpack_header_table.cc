@@ -9,7 +9,6 @@
 #include "base/logging.h"
 #include "net/spdy/hpack/hpack_constants.h"
 #include "net/spdy/hpack/hpack_static_table.h"
-#include "net/spdy/hpack/hpack_string_util.h"
 
 namespace net {
 

@@ -6,7 +6,6 @@
 
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
-#include "net/spdy/hpack/hpack_string_util.h"
 
 namespace net {
 
