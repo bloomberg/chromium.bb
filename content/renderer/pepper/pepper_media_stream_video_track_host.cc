@@ -18,11 +18,6 @@
 #include "ppapi/host/host_message_context.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/shared_impl/media_stream_buffer.h"
-
-// IS_ALIGNED is also defined in
-// third_party/webrtc/overrides/webrtc/base/basictypes.h
-// TODO(ronghuawu): Avoid undef.
-#undef IS_ALIGNED
 #include "third_party/libyuv/include/libyuv.h"
 
 using media::VideoFrame;

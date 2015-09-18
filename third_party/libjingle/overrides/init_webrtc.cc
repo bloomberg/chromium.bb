@@ -13,7 +13,6 @@
 #include "base/native_library.h"
 #include "base/path_service.h"
 #include "base/trace_event/trace_event.h"
-#include "third_party/webrtc/overrides/webrtc/base/basictypes.h"
 #include "third_party/webrtc/overrides/webrtc/base/logging.h"
 #include "third_party/webrtc/system_wrappers/interface/cpu_info.h"
 #include "third_party/webrtc/system_wrappers/interface/event_tracer.h"

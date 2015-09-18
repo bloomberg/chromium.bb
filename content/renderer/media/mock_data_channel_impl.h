@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/macros.h"
 #include "third_party/libjingle/source/talk/app/webrtc/peerconnectioninterface.h"
 
 namespace content {

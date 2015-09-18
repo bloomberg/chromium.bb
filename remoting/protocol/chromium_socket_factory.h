@@ -6,6 +6,7 @@
 #define REMOTING_PROTOCOL_CHROMIUM_SOCKET_FACTORY_H_
 
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "third_party/webrtc/p2p/base/packetsocketfactory.h"
 
 namespace remoting {
