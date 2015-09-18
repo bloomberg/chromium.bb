@@ -1,43 +1,4 @@
-harness_TESTS =					\
-	da-dk-g16-dictionary_harness.txt	\
-	da-dk-g18-dictionary_harness.txt	\
-	da-dk-g26-dictionary_harness.txt	\
-	da-dk-g28-dictionary_harness.txt	\
-	en-GB-g2_harness.txt			\
-	en-gb-g1_harness.txt			\
-	en-ueb-g2-dictionary_harness.txt.bak		\
-	en-ueb-g2-dictionary_harness.txt	\
-	en-us-g2-dictionary_harness.txt.bak		\
-	en-us-g2-dictionary_harness.txt		\
-	ethio-g1_harness.txt.bak		\
-	ethio-g1_harness.txt			\
-	ga-g1_harness.txt			\
-	ga-g2_harness.txt			\
-	fi_harness.txt				\
-	hu-hu-comp8_harness.txt			\
-	hu-hu-g1-hyph_harness.txt		\
-	hu-hu-g1_harness.txt			\
-	iu-ca-g1_harness.txt			\
-	ko-2006-g2_harness.txt.bak		\
-	ko-2006-g2_harness.txt		\
-	ko-g2_harness.txt.bak		\
-	ko-g2_harness.txt			\
-	letterDefTest_harness.txt		\
-	nocross_harness.txt			\
-	ta-ta-g1_harness.txt.bak \
-	ta-ta-g1_harness.txt			\
-	chr-us-g1_harness.txt		\
-	nl-BE-g1_harness.txt.bak		\
-	nl-BE-g0_harness.txt		\
-	nl-NL-g0_harness.txt		\
-	en-us-g2-end-emphasis_harness.txt.bak		\
-	en-us-g2-end-emphasis_harness.txt		\
-	pl-pl-comp8_harness.txt		\
-	fr-bfu-g2_harness.txt		\
-	en-ueb-g1_harness.txt.bak		\
-	en-ueb-g1_harness.txt		\
-	hr-8dots_harness.txt		\
-	sr-g1_harness.txt
+harness_TESTS =
 
 EXTRA_DIST = $(harness_TESTS)			\
 	     runHarness.py
