@@ -152,14 +152,15 @@ private:
 };
 
 struct ImageDataBuffer {
-    ImageDataBuffer(const IntSize& size, unsigned char* data) : m_data(data), m_size(size) { }
+    ImageDataBuffer(const IntSize& size, const unsigned char* data) : m_data(data), m_size(size) { }
     String PLATFORM_EXPORT toDataURL(const String& mimeType, const double* quality) const;
     bool PLATFORM_EXPORT encodeImage(const String& mimeType, const double* quality, Vector<char>* output) const;
-    unsigned char* pixels() const { return m_data; }
+    const unsigned char* pixels() const { return m_data; }
     int height() const { return m_size.height(); }
     int width() const { return m_size.width(); }
-    unsigned char* m_data;
-    IntSize m_size;
+
+    const unsigned char* m_data;
+    const IntSize m_size;
 };
 
 } // namespace blink

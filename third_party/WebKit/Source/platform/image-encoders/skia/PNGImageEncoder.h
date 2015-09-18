@@ -33,8 +33,6 @@
 
 #include "wtf/Vector.h"
 
-class SkBitmap;
-
 namespace blink {
 
 struct ImageDataBuffer;
@@ -42,7 +40,6 @@ struct ImageDataBuffer;
 class PNGImageEncoder {
 public:
     // Encode the input data with default compression quality. See also https://crbug.com/179289
-    static bool encode(const SkBitmap&, Vector<unsigned char>* output);
     static bool encode(const ImageDataBuffer&, Vector<unsigned char>* output);
 };
 

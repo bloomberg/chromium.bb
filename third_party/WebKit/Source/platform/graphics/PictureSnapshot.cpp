@@ -31,14 +31,17 @@
 #include "config.h"
 #include "platform/graphics/PictureSnapshot.h"
 
+#include "platform/geometry/IntSize.h"
 #include "platform/graphics/ImageBuffer.h"
 #include "platform/graphics/LoggingCanvas.h"
 #include "platform/graphics/ProfilingCanvas.h"
 #include "platform/graphics/ReplayingCanvas.h"
+#include "platform/graphics/skia/ImagePixelLocker.h"
 #include "platform/image-decoders/ImageDecoder.h"
 #include "platform/image-decoders/ImageFrame.h"
 #include "platform/image-encoders/skia/PNGImageEncoder.h"
 #include "third_party/skia/include/core/SkBitmapDevice.h"
+#include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkPictureRecorder.h"
 #include "third_party/skia/include/core/SkStream.h"
 #include "wtf/HexNumber.h"
@@ -103,6 +106,8 @@ bool PictureSnapshot::isEmpty() const
 PassOwnPtr<Vector<char>> PictureSnapshot::replay(unsigned fromStep, unsigned toStep, double scale) const
 {
     const SkIRect bounds = m_picture->cullRect().roundOut();
+
+    // TODO(fmalita): convert this to SkSurface/SkImage, drop the intermediate SkBitmap.
     SkBitmap bitmap;
     bitmap.allocPixels(SkImageInfo::MakeN32Premul(bounds.width(), bounds.height()));
     bitmap.eraseARGB(0, 0, 0, 0);
@@ -114,8 +119,17 @@ PassOwnPtr<Vector<char>> PictureSnapshot::replay(unsigned fromStep, unsigned toS
     }
     OwnPtr<Vector<char>> base64Data = adoptPtr(new Vector<char>());
     Vector<char> encodedImage;
-    if (!PNGImageEncoder::encode(bitmap, reinterpret_cast<Vector<unsigned char>*>(&encodedImage)))
+
+    RefPtr<SkImage> image = adoptRef(SkImage::NewFromBitmap(bitmap));
+    if (!image)
         return nullptr;
+
+    ImagePixelLocker pixelLocker(image, kUnpremul_SkAlphaType);
+    ImageDataBuffer imageData(IntSize(image->width(), image->height()),
+        static_cast<const unsigned char*>(pixelLocker.pixels()));
+    if (!PNGImageEncoder::encode(imageData, reinterpret_cast<Vector<unsigned char>*>(&encodedImage)))
+        return nullptr;
+
     base64Encode(encodedImage, *base64Data);
     return base64Data.release();
 }

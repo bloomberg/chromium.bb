@@ -31,7 +31,12 @@
 #include "config.h"
 #include "platform/graphics/LoggingCanvas.h"
 
+#include "platform/geometry/IntSize.h"
+#include "platform/graphics/ImageBuffer.h"
+#include "platform/graphics/skia/ImagePixelLocker.h"
 #include "platform/image-encoders/skia/PNGImageEncoder.h"
+#include "third_party/skia/include/core/SkImage.h"
+#include "third_party/skia/include/core/SkImageInfo.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "third_party/skia/include/core/SkPicture.h"
@@ -236,9 +241,17 @@ String colorTypeName(SkColorType colorType)
 
 PassRefPtr<JSONObject> objectForBitmapData(const SkBitmap& bitmap)
 {
-    RefPtr<JSONObject> dataItem = JSONObject::create();
     Vector<unsigned char> output;
-    PNGImageEncoder::encode(bitmap, &output);
+
+    if (RefPtr<SkImage> image = adoptRef(SkImage::NewFromBitmap(bitmap))) {
+        ImagePixelLocker pixelLocker(image, kUnpremul_SkAlphaType);
+        ImageDataBuffer imageData(IntSize(image->width(), image->height()),
+            static_cast<const unsigned char*>(pixelLocker.pixels()));
+
+        PNGImageEncoder::encode(imageData, &output);
+    }
+
+    RefPtr<JSONObject> dataItem = JSONObject::create();
     dataItem->setString("base64", WTF::base64Encode(reinterpret_cast<char*>(output.data()), output.size()));
     dataItem->setString("mimeType", "image/png");
     return dataItem.release();

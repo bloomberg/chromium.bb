@@ -695,6 +695,8 @@
       'graphics/paint/TransformDisplayItem.h',
       'graphics/paint/CompositingDisplayItem.cpp',
       'graphics/paint/CompositingDisplayItem.h',
+      'graphics/skia/ImagePixelLocker.cpp',
+      'graphics/skia/ImagePixelLocker.h',
       'graphics/skia/SkSizeHash.h',
       'graphics/skia/SkiaUtils.cpp',
       'graphics/skia/SkiaUtils.h',
