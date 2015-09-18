@@ -89,6 +89,10 @@ class CONTENT_EXPORT AudioInputSyncWriter
   size_t write_count_;
   size_t write_error_count_;
 
+  // Counts how many errors we get during renderer process teardown so that we
+  // can account for that (subtract) when we calculate the overall error count.
+  size_t trailing_error_count_;
+
   // Vector of audio buses allocated during construction and deleted in the
   // destructor.
   ScopedVector<media::AudioBus> audio_buses_;

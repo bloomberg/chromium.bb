@@ -39,7 +39,8 @@ AudioInputSyncWriter::AudioInputSyncWriter(void* shared_memory,
       next_read_buffer_index_(0),
       number_of_filled_segments_(0),
       write_count_(0),
-      write_error_count_(0) {
+      write_error_count_(0),
+      trailing_error_count_(0) {
   DCHECK_GT(shared_memory_segment_count, 0);
   DCHECK_EQ(shared_memory_size % shared_memory_segment_count, 0u);
   shared_memory_segment_size_ =
@@ -63,6 +64,15 @@ AudioInputSyncWriter::AudioInputSyncWriter(void* shared_memory,
 }
 
 AudioInputSyncWriter::~AudioInputSyncWriter() {
+  // Subtract 'trailing' errors that will happen if the renderer process was
+  // killed or e.g. the page refreshed while the input device was open etc.
+  // This trims off the end of both the error and write counts so that we
+  // preserve the proportion of errors before the teardown period.
+  DCHECK_LE(trailing_error_count_, write_error_count_);
+  DCHECK_LE(trailing_error_count_, write_count_);
+  write_error_count_ -= trailing_error_count_;
+  write_count_ -= trailing_error_count_;
+
   if (write_count_ == 0)
     return;
 
@@ -148,6 +158,7 @@ void AudioInputSyncWriter::Write(const media::AudioBus* data,
     LOG(ERROR) << error_message;
     AddToNativeLog(error_message);
     ++write_error_count_;
+    ++trailing_error_count_;
     return;
   }
 
@@ -167,7 +178,18 @@ void AudioInputSyncWriter::Write(const media::AudioBus* data,
   media::AudioBus* audio_bus = audio_buses_[current_segment_id_];
   data->CopyTo(audio_bus);
 
-  socket_->Send(&current_segment_id_, sizeof(current_segment_id_));
+  if (socket_->Send(&current_segment_id_, sizeof(current_segment_id_)) !=
+      sizeof(current_segment_id_)) {
+    const std::string error_message = "No room in socket buffer.";
+    LOG(ERROR) << error_message;
+    AddToNativeLog(error_message);
+    ++write_error_count_;
+    ++trailing_error_count_;
+    return;
+  }
+
+  // Successfully delivered the buffer. Clear the trailing failure count.
+  trailing_error_count_ = 0;
 
   if (++current_segment_id_ >= shared_memory_segment_count_)
     current_segment_id_ = 0;
