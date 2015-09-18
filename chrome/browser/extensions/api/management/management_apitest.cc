@@ -316,9 +316,11 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementApiTest, MAYBE_LaunchTabApp) {
 
   unsigned expected_browser_count = 2;
 #if defined(OS_MACOSX)
-  // Without the new Bookmark Apps, Mac has no way of making standalone browser
-  // windows for apps, so it will add to the tabstrip instead.
-  EXPECT_FALSE(extensions::util::IsNewBookmarkAppsEnabled());
+  // Without hosted apps being allowed to open in windows, Mac has no way of
+  // making standalone browser windows for apps, so it will add to the
+  // tabstrip instead.
+  EXPECT_TRUE(extensions::util::IsNewBookmarkAppsEnabled());
+  EXPECT_FALSE(extensions::util::CanHostedAppsOpenInWindows());
   expected_browser_count = 1;
   ASSERT_EQ(2, browser()->tab_strip_model()->count());
 #endif
