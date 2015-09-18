@@ -54,10 +54,12 @@ class TestDumpReaderMultipart(unittest.TestCase):
         '--boundary--',
     ]
 
-    def test_check_generate_breakpad_symbols_actually_exists(self):
-        host = Host()
-        dump_reader = DumpReaderMultipart(host, build_dir=None)
-        self.assertTrue(host.filesystem.exists(dump_reader._path_to_generate_breakpad_symbols()))
+# TODO: Uncomment this test once the generate_breakpad_symbols.py script has been moved; see
+#       https://codereview.chromium.org/1351923002.
+#     def test_check_generate_breakpad_symbols_actually_exists(self):
+#         host = Host()
+#         dump_reader = DumpReaderMultipart(host, build_dir=None)
+#         self.assertTrue(host.filesystem.exists(dump_reader._path_to_generate_breakpad_symbols()))
 
     def test_check_is_functional_breakpad_tools_not_found(self):
         host = MockHost()
