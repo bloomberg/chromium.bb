@@ -20,7 +20,8 @@
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkPictureRecorder.h"
-#include "third_party/skia/include/effects/SkBitmapSource.h"
+#include "third_party/skia/include/core/SkSurface.h"
+#include "third_party/skia/include/effects/SkImageSource.h"
 #include "third_party/skia/include/utils/SkPictureUtils.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/skia_util.h"
@@ -206,24 +207,26 @@ TEST(DisplayItemListTest, FilterItem) {
   scoped_refptr<DisplayItemList> list =
       DisplayItemList::Create(layer_rect, settings);
 
-  SkBitmap source_bitmap;
-  source_bitmap.allocN32Pixels(50, 50);
-  SkCanvas source_canvas(source_bitmap);
-  source_canvas.clear(SkColorSetRGB(128, 128, 128));
+  skia::RefPtr<SkSurface> source_surface =
+      skia::AdoptRef(SkSurface::NewRasterN32Premul(50, 50));
+  SkCanvas* source_canvas = source_surface->getCanvas();
+  source_canvas->clear(SkColorSetRGB(128, 128, 128));
+  skia::RefPtr<SkImage> source_image =
+      skia::AdoptRef(source_surface->newImageSnapshot());
 
   // For most SkImageFilters, the |dst| bounds computed by computeFastBounds are
   // dependent on the provided |src| bounds. This means, for example, that
   // translating |src| results in a corresponding translation of |dst|. But this
   // is not the case for all SkImageFilters; for some of them (e.g.
-  // SkBitmapSource), the computation of |dst| in computeFastBounds doesn't
+  // SkImageSource), the computation of |dst| in computeFastBounds doesn't
   // involve |src| at all. Incorrectly assuming such a relationship (e.g. by
   // translating |dst| after it is computed by computeFastBounds, rather than
   // translating |src| before it provided to computedFastBounds) can cause
   // incorrect clipping of filter output. To test for this, we include an
-  // SkBitmapSource filter in |filters|. Here, |src| is |filter_bounds|, defined
+  // SkImageSource filter in |filters|. Here, |src| is |filter_bounds|, defined
   // below.
   skia::RefPtr<SkImageFilter> image_filter =
-      skia::AdoptRef(SkBitmapSource::Create(source_bitmap));
+      skia::AdoptRef(SkImageSource::Create(source_image.get()));
   filters.Append(FilterOperation::CreateReferenceFilter(image_filter));
   filters.Append(FilterOperation::CreateBrightnessFilter(0.5f));
   gfx::RectF filter_bounds(10.f, 10.f, 50.f, 50.f);
