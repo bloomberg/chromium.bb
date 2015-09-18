@@ -50,10 +50,6 @@ class TemplateURLService;
 class TranslateIconView;
 class ZoomView;
 
-namespace content {
-struct SSLStatus;
-}
-
 namespace views {
 class BubbleDelegateView;
 class ImageButton;
@@ -110,9 +106,10 @@ class LocationBarView : public LocationBar,
         GetContentSettingBubbleModelDelegate() = 0;
 
     // Shows permissions and settings for the given web contents.
-    virtual void ShowWebsiteSettings(content::WebContents* web_contents,
-                                     const GURL& url,
-                                     const content::SSLStatus& ssl) = 0;
+    virtual void ShowWebsiteSettings(
+        content::WebContents* web_contents,
+        const GURL& url,
+        const SecurityStateModel::SecurityInfo& security_info) = 0;
 
    protected:
     virtual ~Delegate() {}

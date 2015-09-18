@@ -8,6 +8,7 @@
 #include <string>
 
 #include "chrome/browser/devtools/devtools_toggle_action.h"
+#include "chrome/browser/ssl/security_state_model.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_delegate.h"
 #include "content/public/common/page_zoom.h"
@@ -21,7 +22,6 @@ class Profile;
 namespace content {
 class PageState;
 class WebContents;
-struct SSLStatus;
 }
 
 namespace chrome {
@@ -110,7 +110,7 @@ void ShowFindBar(Browser* browser);
 void ShowWebsiteSettings(Browser* browser,
                          content::WebContents* web_contents,
                          const GURL& url,
-                         const content::SSLStatus& ssl);
+                         const SecurityStateModel::SecurityInfo& security_info);
 void Print(Browser* browser);
 bool CanPrint(Browser* browser);
 #if defined(ENABLE_BASIC_PRINTING)

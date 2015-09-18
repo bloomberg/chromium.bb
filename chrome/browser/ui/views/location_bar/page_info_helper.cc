@@ -36,6 +36,9 @@ void PageInfoHelper::ProcessEvent(const ui::LocatedEvent& event) {
   if (!nav_entry)
     return;
 
+  SecurityStateModel* security_model = SecurityStateModel::FromWebContents(tab);
+  DCHECK(security_model);
+
   location_bar_->delegate()->ShowWebsiteSettings(
-      tab, nav_entry->GetURL(), nav_entry->GetSSL());
+      tab, nav_entry->GetURL(), security_model->GetSecurityInfo());
 }

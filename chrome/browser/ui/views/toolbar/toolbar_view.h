@@ -130,9 +130,10 @@ class ToolbarView : public views::AccessiblePaneView,
       ExtensionAction* action) override;
   ContentSettingBubbleModelDelegate* GetContentSettingBubbleModelDelegate()
       override;
-  void ShowWebsiteSettings(content::WebContents* web_contents,
-                           const GURL& url,
-                           const content::SSLStatus& ssl) override;
+  void ShowWebsiteSettings(
+      content::WebContents* web_contents,
+      const GURL& url,
+      const SecurityStateModel::SecurityInfo& security_info) override;
 
   // CommandObserver:
   void EnabledStateChangedForCommand(int id, bool enabled) override;

@@ -9,6 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
+#include "chrome/browser/ssl/security_state_model.h"
 #include "chrome/browser/ui/views/website_settings/permission_selector_view_observer.h"
 #include "chrome/browser/ui/website_settings/website_settings_ui.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -22,7 +23,6 @@ class PopupHeaderView;
 class Profile;
 
 namespace content {
-struct SSLStatus;
 class WebContents;
 }
 
@@ -54,19 +54,20 @@ class WebsiteSettingsPopupView : public content::WebContentsObserver,
                         Profile* profile,
                         content::WebContents* web_contents,
                         const GURL& url,
-                        const content::SSLStatus& ssl);
+                        const SecurityStateModel::SecurityInfo& security_info);
 
   static bool IsPopupShowing();
 
  private:
   friend class test::WebsiteSettingsPopupViewTestApi;
 
-  WebsiteSettingsPopupView(views::View* anchor_view,
-                           gfx::NativeView parent_window,
-                           Profile* profile,
-                           content::WebContents* web_contents,
-                           const GURL& url,
-                           const content::SSLStatus& ssl);
+  WebsiteSettingsPopupView(
+      views::View* anchor_view,
+      gfx::NativeView parent_window,
+      Profile* profile,
+      content::WebContents* web_contents,
+      const GURL& url,
+      const SecurityStateModel::SecurityInfo& security_info);
 
   // WebContentsObserver implementation.
   void RenderFrameDeleted(content::RenderFrameHost* render_frame_host) override;

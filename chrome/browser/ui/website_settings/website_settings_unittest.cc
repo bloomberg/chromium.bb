@@ -79,7 +79,7 @@ class WebsiteSettingsTest : public ChromeRenderViewHostTestHarness {
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
     // Setup stub SSLStatus.
-    ssl_.security_style = content::SECURITY_STYLE_UNAUTHENTICATED;
+    security_info_.security_level = SecurityStateModel::NONE;
 
     // Create the certificate.
     cert_id_ = 1;
@@ -123,7 +123,9 @@ class WebsiteSettingsTest : public ChromeRenderViewHostTestHarness {
   MockCertStore* cert_store() { return &cert_store_; }
   int cert_id() { return cert_id_; }
   MockWebsiteSettingsUI* mock_ui() { return mock_ui_.get(); }
-  const SSLStatus& ssl() { return ssl_; }
+  const SecurityStateModel::SecurityInfo& security_info() {
+    return security_info_;
+  }
   TabSpecificContentSettings* tab_specific_content_settings() {
     return TabSpecificContentSettings::FromWebContents(web_contents());
   }
@@ -134,13 +136,13 @@ class WebsiteSettingsTest : public ChromeRenderViewHostTestHarness {
   WebsiteSettings* website_settings() {
     if (!website_settings_.get()) {
       website_settings_.reset(new WebsiteSettings(
-          mock_ui(), profile(), tab_specific_content_settings(),
-          web_contents(), url(), ssl(), cert_store()));
+          mock_ui(), profile(), tab_specific_content_settings(), web_contents(),
+          url(), security_info(), cert_store()));
     }
     return website_settings_.get();
   }
 
-  SSLStatus ssl_;
+  SecurityStateModel::SecurityInfo security_info_;
 
  private:
   scoped_ptr<WebsiteSettings> website_settings_;
@@ -286,14 +288,15 @@ TEST_F(WebsiteSettingsTest, HTTPConnection) {
 }
 
 TEST_F(WebsiteSettingsTest, HTTPSConnection) {
-  ssl_.security_style = content::SECURITY_STYLE_AUTHENTICATED;
-  ssl_.cert_id = cert_id();
-  ssl_.cert_status = 0;
-  ssl_.security_bits = 81;  // No error if > 80.
+  security_info_.security_level = SecurityStateModel::SECURE;
+  security_info_.scheme_is_cryptographic = true;
+  security_info_.cert_id = cert_id();
+  security_info_.cert_status = 0;
+  security_info_.security_bits = 81;  // No error if > 80.
   int status = 0;
   status = SetSSLVersion(status, net::SSL_CONNECTION_VERSION_TLS1);
   status = SetSSLCipherSuite(status, CR_TLS_RSA_WITH_AES_256_CBC_SHA256);
-  ssl_.connection_status = status;
+  security_info_.connection_status = status;
 
   SetDefaultUIExpectations(mock_ui());
   EXPECT_CALL(*mock_ui(), SetSelectedTab(
@@ -307,15 +310,17 @@ TEST_F(WebsiteSettingsTest, HTTPSConnection) {
 }
 
 TEST_F(WebsiteSettingsTest, HTTPSPassiveMixedContent) {
-  ssl_.security_style = content::SECURITY_STYLE_AUTHENTICATED;
-  ssl_.cert_id = cert_id();
-  ssl_.cert_status = 0;
-  ssl_.security_bits = 81;  // No error if > 80.
-  ssl_.content_status = SSLStatus::DISPLAYED_INSECURE_CONTENT;
+  security_info_.security_level = SecurityStateModel::NONE;
+  security_info_.scheme_is_cryptographic = true;
+  security_info_.cert_id = cert_id();
+  security_info_.cert_status = 0;
+  security_info_.security_bits = 81;  // No error if > 80.
+  security_info_.mixed_content_status =
+      SecurityStateModel::DISPLAYED_MIXED_CONTENT;
   int status = 0;
   status = SetSSLVersion(status, net::SSL_CONNECTION_VERSION_TLS1);
   status = SetSSLCipherSuite(status, CR_TLS_RSA_WITH_AES_256_CBC_SHA256);
-  ssl_.connection_status = status;
+  security_info_.connection_status = status;
 
   SetDefaultUIExpectations(mock_ui());
   EXPECT_CALL(*mock_ui(), SetSelectedTab(WebsiteSettingsUI::TAB_ID_CONNECTION));
@@ -331,15 +336,17 @@ TEST_F(WebsiteSettingsTest, HTTPSPassiveMixedContent) {
 }
 
 TEST_F(WebsiteSettingsTest, HTTPSActiveMixedContent) {
-  ssl_.security_style = content::SECURITY_STYLE_AUTHENTICATION_BROKEN;
-  ssl_.cert_id = cert_id();
-  ssl_.cert_status = 0;
-  ssl_.security_bits = 81;  // No error if > 80.
-  ssl_.content_status = SSLStatus::RAN_INSECURE_CONTENT;
+  security_info_.security_level = SecurityStateModel::SECURITY_ERROR;
+  security_info_.scheme_is_cryptographic = true;
+  security_info_.cert_id = cert_id();
+  security_info_.cert_status = 0;
+  security_info_.security_bits = 81;  // No error if > 80.
+  security_info_.mixed_content_status =
+      SecurityStateModel::RAN_AND_DISPLAYED_MIXED_CONTENT;
   int status = 0;
   status = SetSSLVersion(status, net::SSL_CONNECTION_VERSION_TLS1);
   status = SetSSLCipherSuite(status, CR_TLS_RSA_WITH_AES_256_CBC_SHA256);
-  ssl_.connection_status = status;
+  security_info_.connection_status = status;
 
   SetDefaultUIExpectations(mock_ui());
   EXPECT_CALL(*mock_ui(), SetSelectedTab(WebsiteSettingsUI::TAB_ID_CONNECTION));
@@ -363,15 +370,17 @@ TEST_F(WebsiteSettingsTest, HTTPSEVCert) {
   EXPECT_CALL(*cert_store(), RetrieveCert(ev_cert_id, _)).WillRepeatedly(
       DoAll(SetArgPointee<1>(ev_cert), Return(true)));
 
-  ssl_.security_style = content::SECURITY_STYLE_AUTHENTICATED;
-  ssl_.cert_id = ev_cert_id;
-  ssl_.cert_status = net::CERT_STATUS_IS_EV;
-  ssl_.security_bits = 81;  // No error if > 80.
-  ssl_.content_status = SSLStatus::DISPLAYED_INSECURE_CONTENT;
+  security_info_.security_level = SecurityStateModel::NONE;
+  security_info_.scheme_is_cryptographic = true;
+  security_info_.cert_id = ev_cert_id;
+  security_info_.cert_status = net::CERT_STATUS_IS_EV;
+  security_info_.security_bits = 81;  // No error if > 80.
+  security_info_.mixed_content_status =
+      SecurityStateModel::DISPLAYED_MIXED_CONTENT;
   int status = 0;
   status = SetSSLVersion(status, net::SSL_CONNECTION_VERSION_TLS1);
   status = SetSSLCipherSuite(status, CR_TLS_RSA_WITH_AES_256_CBC_SHA256);
-  ssl_.connection_status = status;
+  security_info_.connection_status = status;
 
   SetDefaultUIExpectations(mock_ui());
   EXPECT_CALL(*mock_ui(), SetSelectedTab(WebsiteSettingsUI::TAB_ID_CONNECTION));
@@ -385,14 +394,15 @@ TEST_F(WebsiteSettingsTest, HTTPSEVCert) {
 }
 
 TEST_F(WebsiteSettingsTest, HTTPSRevocationError) {
-  ssl_.security_style = content::SECURITY_STYLE_AUTHENTICATED;
-  ssl_.cert_id = cert_id();
-  ssl_.cert_status = net::CERT_STATUS_UNABLE_TO_CHECK_REVOCATION;
-  ssl_.security_bits = 81;  // No error if > 80.
+  security_info_.security_level = SecurityStateModel::SECURE;
+  security_info_.scheme_is_cryptographic = true;
+  security_info_.cert_id = cert_id();
+  security_info_.cert_status = net::CERT_STATUS_UNABLE_TO_CHECK_REVOCATION;
+  security_info_.security_bits = 81;  // No error if > 80.
   int status = 0;
   status = SetSSLVersion(status, net::SSL_CONNECTION_VERSION_TLS1);
   status = SetSSLCipherSuite(status, CR_TLS_RSA_WITH_AES_256_CBC_SHA256);
-  ssl_.connection_status = status;
+  security_info_.connection_status = status;
 
   SetDefaultUIExpectations(mock_ui());
   EXPECT_CALL(*mock_ui(), SetSelectedTab(WebsiteSettingsUI::TAB_ID_CONNECTION));
@@ -405,14 +415,15 @@ TEST_F(WebsiteSettingsTest, HTTPSRevocationError) {
 }
 
 TEST_F(WebsiteSettingsTest, HTTPSConnectionError) {
-  ssl_.security_style = content::SECURITY_STYLE_AUTHENTICATED;
-  ssl_.cert_id = cert_id();
-  ssl_.cert_status = 0;
-  ssl_.security_bits = -1;
+  security_info_.security_level = SecurityStateModel::SECURE;
+  security_info_.scheme_is_cryptographic = true;
+  security_info_.cert_id = cert_id();
+  security_info_.cert_status = 0;
+  security_info_.security_bits = -1;
   int status = 0;
   status = SetSSLVersion(status, net::SSL_CONNECTION_VERSION_TLS1);
   status = SetSSLCipherSuite(status, CR_TLS_RSA_WITH_AES_256_CBC_SHA256);
-  ssl_.connection_status = status;
+  security_info_.connection_status = status;
 
   SetDefaultUIExpectations(mock_ui());
   EXPECT_CALL(*mock_ui(), SetSelectedTab(WebsiteSettingsUI::TAB_ID_CONNECTION));
@@ -421,6 +432,51 @@ TEST_F(WebsiteSettingsTest, HTTPSConnectionError) {
             website_settings()->site_connection_status());
   EXPECT_EQ(WebsiteSettings::SITE_IDENTITY_STATUS_CERT,
             website_settings()->site_identity_status());
+  EXPECT_EQ(base::string16(), website_settings()->organization_name());
+}
+
+TEST_F(WebsiteSettingsTest, HTTPSPolicyCertConnection) {
+  security_info_.security_level = SecurityStateModel::SECURITY_POLICY_WARNING;
+  security_info_.scheme_is_cryptographic = true;
+  security_info_.cert_id = cert_id();
+  security_info_.cert_status = 0;
+  security_info_.security_bits = 81;  // No error if > 80.
+  int status = 0;
+  status = SetSSLVersion(status, net::SSL_CONNECTION_VERSION_TLS1);
+  status = SetSSLCipherSuite(status, CR_TLS_RSA_WITH_AES_256_CBC_SHA256);
+  security_info_.connection_status = status;
+
+  SetDefaultUIExpectations(mock_ui());
+  EXPECT_CALL(*mock_ui(), SetSelectedTab(WebsiteSettingsUI::TAB_ID_CONNECTION));
+
+  EXPECT_EQ(WebsiteSettings::SITE_CONNECTION_STATUS_ENCRYPTED,
+            website_settings()->site_connection_status());
+  EXPECT_EQ(WebsiteSettings::SITE_IDENTITY_STATUS_ADMIN_PROVIDED_CERT,
+            website_settings()->site_identity_status());
+  EXPECT_EQ(base::string16(), website_settings()->organization_name());
+}
+
+TEST_F(WebsiteSettingsTest, HTTPSSHA1Connection) {
+  security_info_.security_level = SecurityStateModel::NONE;
+  security_info_.scheme_is_cryptographic = true;
+  security_info_.cert_id = cert_id();
+  security_info_.cert_status = 0;
+  security_info_.security_bits = 81;  // No error if > 80.
+  int status = 0;
+  status = SetSSLVersion(status, net::SSL_CONNECTION_VERSION_TLS1);
+  status = SetSSLCipherSuite(status, CR_TLS_RSA_WITH_AES_256_CBC_SHA256);
+  security_info_.connection_status = status;
+  security_info_.sha1_deprecation_status =
+      SecurityStateModel::DEPRECATED_SHA1_WARNING;
+
+  SetDefaultUIExpectations(mock_ui());
+  EXPECT_CALL(*mock_ui(), SetSelectedTab(WebsiteSettingsUI::TAB_ID_CONNECTION));
+
+  EXPECT_EQ(WebsiteSettings::SITE_CONNECTION_STATUS_ENCRYPTED,
+            website_settings()->site_connection_status());
+  EXPECT_EQ(
+      WebsiteSettings::SITE_IDENTITY_STATUS_DEPRECATED_SIGNATURE_ALGORITHM,
+      website_settings()->site_identity_status());
   EXPECT_EQ(base::string16(), website_settings()->organization_name());
 }
 

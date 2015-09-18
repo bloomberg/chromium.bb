@@ -73,7 +73,6 @@
 #endif
 
 using content::NativeWebKeyboardEvent;
-using content::SSLStatus;
 using content::WebContents;
 
 namespace {
@@ -711,8 +710,9 @@ void BrowserWindowCocoa::ShowWebsiteSettings(
     Profile* profile,
     content::WebContents* web_contents,
     const GURL& url,
-    const content::SSLStatus& ssl) {
-  WebsiteSettingsUIBridge::Show(window(), profile, web_contents, url, ssl);
+    const SecurityStateModel::SecurityInfo& security_info) {
+  WebsiteSettingsUIBridge::Show(window(), profile, web_contents, url,
+                                security_info);
 }
 
 void BrowserWindowCocoa::ShowAppMenu() {

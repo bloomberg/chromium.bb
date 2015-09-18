@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_BROWSER_DIALOGS_H_
 
 #include "base/callback.h"
+#include "chrome/browser/ssl/security_state_model.h"
 #include "chrome/browser/ui/bookmarks/bookmark_editor.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/native_widget_types.h"
@@ -23,7 +24,6 @@ class BookmarkBubbleObserver;
 namespace content {
 class BrowserContext;
 class ColorChooser;
-struct SSLStatus;
 class WebContents;
 }
 
@@ -93,11 +93,12 @@ content::ColorChooser* ShowColorChooser(content::WebContents* web_contents,
 bool ToolkitViewsDialogsEnabled();
 
 // Shows a Views website settings bubble at the given anchor point.
-void ShowWebsiteSettingsBubbleViewsAtPoint(const gfx::Point& anchor_point,
-                                           Profile* profile,
-                                           content::WebContents* web_contents,
-                                           const GURL& url,
-                                           const content::SSLStatus& ssl);
+void ShowWebsiteSettingsBubbleViewsAtPoint(
+    const gfx::Point& anchor_point,
+    Profile* profile,
+    content::WebContents* web_contents,
+    const GURL& url,
+    const SecurityStateModel::SecurityInfo& security_info);
 
 // Show a Views bookmark bubble at the given point. This occurs when the
 // bookmark star is clicked or "Bookmark This Page..." is selected from a menu

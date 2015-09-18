@@ -7,6 +7,7 @@
 
 #include "base/strings/string16.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
+#include "chrome/browser/ssl/security_state_model.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "content/public/common/signed_certificate_timestamp_id_and_status.h"
@@ -14,7 +15,6 @@
 
 namespace content {
 class CertStore;
-struct SSLStatus;
 class WebContents;
 }
 
@@ -95,7 +95,7 @@ class WebsiteSettings : public TabSpecificContentSettings::SiteDataObserver {
                   TabSpecificContentSettings* tab_specific_content_settings,
                   content::WebContents* web_contents,
                   const GURL& url,
-                  const content::SSLStatus& ssl,
+                  const SecurityStateModel::SecurityInfo& security_info,
                   content::CertStore* cert_store);
   ~WebsiteSettings() override;
 
@@ -139,7 +139,8 @@ class WebsiteSettings : public TabSpecificContentSettings::SiteDataObserver {
 
  private:
   // Initializes the |WebsiteSettings|.
-  void Init(const GURL& url, const content::SSLStatus& ssl);
+  void Init(const GURL& url,
+            const SecurityStateModel::SecurityInfo& security_info);
 
   // Sets (presents) the information about the site's permissions in the |ui_|.
   void PresentSitePermissions();

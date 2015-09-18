@@ -46,7 +46,6 @@
 #include "content/public/browser/cert_store.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/ssl_status.h"
 #include "content/public/common/url_constants.h"
 #include "net/cert/cert_status_flags.h"
 #include "net/cert/x509_certificate.h"
@@ -99,32 +98,30 @@ ContentSettingsType kPermissionType[] = {
 };
 
 bool CertificateTransparencyStatusMatch(
-    const content::SignedCertificateTimestampIDStatusList& scts,
+    const std::vector<net::ct::SCTVerifyStatus>& sct_verify_statuses,
     net::ct::SCTVerifyStatus status) {
-  for (content::SignedCertificateTimestampIDStatusList::const_iterator it =
-           scts.begin();
-       it != scts.end();
-       ++it) {
-    if (it->status == status)
+  for (const auto& verify_status : sct_verify_statuses) {
+    if (verify_status == status)
       return true;
   }
-
   return false;
 }
 
 int GetSiteIdentityDetailsMessageByCTInfo(
-    const content::SignedCertificateTimestampIDStatusList& scts,
+    const std::vector<net::ct::SCTVerifyStatus>& sct_verify_statuses,
     bool is_ev) {
   // No SCTs - no CT information.
-  if (scts.empty())
+  if (sct_verify_statuses.empty())
     return (is_ev ? IDS_PAGE_INFO_SECURITY_TAB_SECURE_IDENTITY_EV_NO_CT
                   : IDS_PAGE_INFO_SECURITY_TAB_SECURE_IDENTITY_NO_CT);
 
-  if (CertificateTransparencyStatusMatch(scts, net::ct::SCT_STATUS_OK))
+  if (CertificateTransparencyStatusMatch(sct_verify_statuses,
+                                         net::ct::SCT_STATUS_OK))
     return (is_ev ? IDS_PAGE_INFO_SECURITY_TAB_SECURE_IDENTITY_EV_CT_VERIFIED
                   : IDS_PAGE_INFO_SECURITY_TAB_SECURE_IDENTITY_CT_VERIFIED);
 
-  if (CertificateTransparencyStatusMatch(scts, net::ct::SCT_STATUS_INVALID))
+  if (CertificateTransparencyStatusMatch(sct_verify_statuses,
+                                         net::ct::SCT_STATUS_INVALID))
     return (is_ev ? IDS_PAGE_INFO_SECURITY_TAB_SECURE_IDENTITY_EV_CT_INVALID
                   : IDS_PAGE_INFO_SECURITY_TAB_SECURE_IDENTITY_CT_INVALID);
 
@@ -138,9 +135,10 @@ int GetSiteIdentityDetailsMessageByCTInfo(
 // which failed verification, in which case it will return
 // SITE_IDENTITY_STATUS_ERROR.
 WebsiteSettings::SiteIdentityStatus GetSiteIdentityStatusByCTInfo(
-    const content::SignedCertificateTimestampIDStatusList& scts,
+    const std::vector<net::ct::SCTVerifyStatus>& sct_verify_statuses,
     bool is_ev) {
-  if (CertificateTransparencyStatusMatch(scts, net::ct::SCT_STATUS_INVALID))
+  if (CertificateTransparencyStatusMatch(sct_verify_statuses,
+                                         net::ct::SCT_STATUS_INVALID))
     return WebsiteSettings::SITE_IDENTITY_STATUS_ERROR;
 
   return is_ev ? WebsiteSettings::SITE_IDENTITY_STATUS_EV_CERT
@@ -162,7 +160,7 @@ WebsiteSettings::WebsiteSettings(
     TabSpecificContentSettings* tab_specific_content_settings,
     content::WebContents* web_contents,
     const GURL& url,
-    const content::SSLStatus& ssl,
+    const SecurityStateModel::SecurityInfo& security_info,
     content::CertStore* cert_store)
     : TabSpecificContentSettings::SiteDataObserver(
           tab_specific_content_settings),
@@ -179,7 +177,7 @@ WebsiteSettings::WebsiteSettings(
           ChromeSSLHostStateDelegateFactory::GetForProfile(profile)),
       did_revoke_user_ssl_decisions_(false),
       profile_(profile) {
-  Init(url, ssl);
+  Init(url, security_info);
 
   PresentSitePermissions();
   PresentSiteData();
@@ -356,7 +354,9 @@ void WebsiteSettings::OnRevokeSSLErrorBypassButtonPressed() {
   did_revoke_user_ssl_decisions_ = true;
 }
 
-void WebsiteSettings::Init(const GURL& url, const content::SSLStatus& ssl) {
+void WebsiteSettings::Init(
+    const GURL& url,
+    const SecurityStateModel::SecurityInfo& security_info) {
   bool isChromeUINativeScheme = false;
 #if defined(OS_ANDROID)
   isChromeUINativeScheme = url.SchemeIs(chrome::kChromeUINativeScheme);
@@ -373,25 +373,20 @@ void WebsiteSettings::Init(const GURL& url, const content::SSLStatus& ssl) {
 
   // Identity section.
   scoped_refptr<net::X509Certificate> cert;
-  cert_id_ = ssl.cert_id;
+  cert_id_ = security_info.cert_id;
 
-  if (ssl.cert_id &&
-      cert_store_->RetrieveCert(ssl.cert_id, &cert) &&
-      (!net::IsCertStatusError(ssl.cert_status) ||
-       net::IsCertStatusMinorError(ssl.cert_status))) {
+  // HTTPS with no or minor errors.
+  if (security_info.cert_id &&
+      cert_store_->RetrieveCert(security_info.cert_id, &cert) &&
+      (!net::IsCertStatusError(security_info.cert_status) ||
+       net::IsCertStatusMinorError(security_info.cert_status))) {
     // There are no major errors. Check for minor errors.
-#if defined(OS_CHROMEOS)
-    policy::PolicyCertService* service =
-        policy::PolicyCertServiceFactory::GetForProfile(profile_);
-    const bool used_policy_certs = service && service->UsedPolicyCertificates();
-#else
-    const bool used_policy_certs = false;
-#endif
-    if (used_policy_certs) {
+    if (security_info.security_level ==
+        SecurityStateModel::SECURITY_POLICY_WARNING) {
       site_identity_status_ = SITE_IDENTITY_STATUS_ADMIN_PROVIDED_CERT;
       site_identity_details_ = l10n_util::GetStringFUTF16(
           IDS_CERT_POLICY_PROVIDED_CERT_MESSAGE, UTF8ToUTF16(url.host()));
-    } else if (net::IsCertStatusMinorError(ssl.cert_status)) {
+    } else if (net::IsCertStatusMinorError(security_info.cert_status)) {
       site_identity_status_ = SITE_IDENTITY_STATUS_CERT_REVOCATION_UNKNOWN;
       base::string16 issuer_name(UTF8ToUTF16(cert->issuer().GetDisplayName()));
       if (issuer_name.empty()) {
@@ -401,24 +396,26 @@ void WebsiteSettings::Init(const GURL& url, const content::SSLStatus& ssl) {
 
       site_identity_details_.assign(l10n_util::GetStringFUTF16(
           GetSiteIdentityDetailsMessageByCTInfo(
-              ssl.signed_certificate_timestamp_ids, false /* not EV */),
+              security_info.sct_verify_statuses, false /* not EV */),
           issuer_name));
 
       site_identity_details_ += ASCIIToUTF16("\n\n");
-      if (ssl.cert_status & net::CERT_STATUS_UNABLE_TO_CHECK_REVOCATION) {
+      if (security_info.cert_status &
+          net::CERT_STATUS_UNABLE_TO_CHECK_REVOCATION) {
         site_identity_details_ += l10n_util::GetStringUTF16(
             IDS_PAGE_INFO_SECURITY_TAB_UNABLE_TO_CHECK_REVOCATION);
-      } else if (ssl.cert_status & net::CERT_STATUS_NO_REVOCATION_MECHANISM) {
+      } else if (security_info.cert_status &
+                 net::CERT_STATUS_NO_REVOCATION_MECHANISM) {
         site_identity_details_ += l10n_util::GetStringUTF16(
             IDS_PAGE_INFO_SECURITY_TAB_NO_REVOCATION_MECHANISM);
       } else {
         NOTREACHED() << "Need to specify string for this warning";
       }
     } else {
-      if (ssl.cert_status & net::CERT_STATUS_IS_EV) {
+      if (security_info.cert_status & net::CERT_STATUS_IS_EV) {
         // EV HTTPS page.
         site_identity_status_ = GetSiteIdentityStatusByCTInfo(
-            ssl.signed_certificate_timestamp_ids, true);
+            security_info.sct_verify_statuses, true);
         DCHECK(!cert->subject().organization_names.empty());
         organization_name_ = UTF8ToUTF16(cert->subject().organization_names[0]);
         // An EV Cert is required to have a city (localityName) and country but
@@ -441,14 +438,13 @@ void WebsiteSettings::Init(const GURL& url, const content::SSLStatus& ssl) {
         DCHECK(!cert->subject().organization_names.empty());
         site_identity_details_.assign(l10n_util::GetStringFUTF16(
             GetSiteIdentityDetailsMessageByCTInfo(
-                ssl.signed_certificate_timestamp_ids, true /* is EV */),
-            UTF8ToUTF16(cert->subject().organization_names[0]),
-            locality,
+                security_info.sct_verify_statuses, true /* is EV */),
+            UTF8ToUTF16(cert->subject().organization_names[0]), locality,
             UTF8ToUTF16(cert->issuer().GetDisplayName())));
       } else {
         // Non-EV OK HTTPS page.
         site_identity_status_ = GetSiteIdentityStatusByCTInfo(
-            ssl.signed_certificate_timestamp_ids, false);
+            security_info.sct_verify_statuses, false);
         base::string16 issuer_name(
             UTF8ToUTF16(cert->issuer().GetDisplayName()));
         if (issuer_name.empty()) {
@@ -458,15 +454,11 @@ void WebsiteSettings::Init(const GURL& url, const content::SSLStatus& ssl) {
 
         site_identity_details_.assign(l10n_util::GetStringFUTF16(
             GetSiteIdentityDetailsMessageByCTInfo(
-                ssl.signed_certificate_timestamp_ids, false /* not EV */),
+                security_info.sct_verify_statuses, false /* not EV */),
             issuer_name));
       }
-      // The date after which no new SHA-1 certificates may be issued.
-      // 2016-01-01 00:00:00 UTC
-      static const int64_t kSHA1LastIssuanceDate = INT64_C(13096080000000000);
-      if ((ssl.cert_status & net::CERT_STATUS_SHA1_SIGNATURE_PRESENT) &&
-          cert->valid_expiry() >
-              base::Time::FromInternalValue(kSHA1LastIssuanceDate)) {
+      if (security_info.sha1_deprecation_status !=
+          SecurityStateModel::NO_DEPRECATED_SHA1) {
         site_identity_status_ =
             SITE_IDENTITY_STATUS_DEPRECATED_SIGNATURE_ALGORITHM;
         site_identity_details_ +=
@@ -479,21 +471,21 @@ void WebsiteSettings::Init(const GURL& url, const content::SSLStatus& ssl) {
     // HTTP or HTTPS with errors (not warnings).
     site_identity_details_.assign(l10n_util::GetStringUTF16(
         IDS_PAGE_INFO_SECURITY_TAB_INSECURE_IDENTITY));
-    if (ssl.security_style == content::SECURITY_STYLE_UNAUTHENTICATED)
+    if (!security_info.scheme_is_cryptographic || !security_info.cert_id)
       site_identity_status_ = SITE_IDENTITY_STATUS_NO_CERT;
     else
       site_identity_status_ = SITE_IDENTITY_STATUS_ERROR;
 
     const base::string16 bullet = UTF8ToUTF16("\n • ");
     std::vector<ssl_errors::ErrorInfo> errors;
-    ssl_errors::ErrorInfo::GetErrorsForCertStatus(cert, ssl.cert_status, url,
-                                                  &errors);
+    ssl_errors::ErrorInfo::GetErrorsForCertStatus(
+        cert, security_info.cert_status, url, &errors);
     for (size_t i = 0; i < errors.size(); ++i) {
       site_identity_details_ += bullet;
       site_identity_details_ += errors[i].short_description();
     }
 
-    if (ssl.cert_status & net::CERT_STATUS_NON_UNIQUE_NAME) {
+    if (security_info.cert_status & net::CERT_STATUS_NON_UNIQUE_NAME) {
       site_identity_details_ += ASCIIToUTF16("\n\n");
       site_identity_details_ += l10n_util::GetStringUTF16(
           IDS_PAGE_INFO_SECURITY_TAB_NON_UNIQUE_NAME);
@@ -512,27 +504,19 @@ void WebsiteSettings::Init(const GURL& url, const content::SSLStatus& ssl) {
         l10n_util::GetStringUTF16(IDS_PAGE_INFO_SECURITY_TAB_UNKNOWN_PARTY));
   }
 
-  if (ssl.security_style == content::SECURITY_STYLE_UNKNOWN) {
-    // Page is still loading, so SSL status is not yet available. Say nothing.
-    DCHECK_EQ(ssl.security_bits, -1);
+  if (!security_info.cert_id || !security_info.scheme_is_cryptographic) {
+    // Page is still loading (so SSL status is not yet available) or
+    // loaded over HTTP or loaded over HTTPS with no cert.
     site_connection_status_ = SITE_CONNECTION_STATUS_UNENCRYPTED;
 
     site_connection_details_.assign(l10n_util::GetStringFUTF16(
         IDS_PAGE_INFO_SECURITY_TAB_NOT_ENCRYPTED_CONNECTION_TEXT,
         subject_name));
-  } else if (ssl.security_style == content::SECURITY_STYLE_UNAUTHENTICATED) {
-    // HTTPS without a certificate, or not HTTPS.
-    DCHECK(!ssl.cert_id);
-    site_connection_status_ = SITE_CONNECTION_STATUS_UNENCRYPTED;
-
-    site_connection_details_.assign(l10n_util::GetStringFUTF16(
-        IDS_PAGE_INFO_SECURITY_TAB_NOT_ENCRYPTED_CONNECTION_TEXT,
-        subject_name));
-  } else if (ssl.security_bits < 0) {
-    // Security strength is unknown. Say nothing.
+  } else if (security_info.security_bits < 0) {
+    // Security strength is unknown.  Say nothing.
     site_connection_status_ = SITE_CONNECTION_STATUS_ENCRYPTED_ERROR;
-  } else if (ssl.security_bits == 0) {
-    DCHECK_NE(ssl.security_style, content::SECURITY_STYLE_UNAUTHENTICATED);
+  } else if (security_info.security_bits == 0) {
+    DCHECK_NE(security_info.security_level, SecurityStateModel::NONE);
     site_connection_status_ = SITE_CONNECTION_STATUS_ENCRYPTED_ERROR;
     site_connection_details_.assign(l10n_util::GetStringFUTF16(
         IDS_PAGE_INFO_SECURITY_TAB_NOT_ENCRYPTED_CONNECTION_TEXT,
@@ -540,10 +524,10 @@ void WebsiteSettings::Init(const GURL& url, const content::SSLStatus& ssl) {
   } else {
     site_connection_status_ = SITE_CONNECTION_STATUS_ENCRYPTED;
 
-    if (net::SSLConnectionStatusToVersion(ssl.connection_status) >=
+    if (net::SSLConnectionStatusToVersion(security_info.connection_status) >=
             net::SSL_CONNECTION_VERSION_TLS1_2 &&
-        net::IsSecureTLSCipherSuite(
-            net::SSLConnectionStatusToCipherSuite(ssl.connection_status))) {
+        net::IsSecureTLSCipherSuite(net::SSLConnectionStatusToCipherSuite(
+            security_info.connection_status))) {
       site_connection_details_.assign(l10n_util::GetStringFUTF16(
           IDS_PAGE_INFO_SECURITY_TAB_ENCRYPTED_CONNECTION_TEXT,
           subject_name));
@@ -553,9 +537,13 @@ void WebsiteSettings::Init(const GURL& url, const content::SSLStatus& ssl) {
           subject_name));
     }
 
-    if (ssl.content_status) {
+    if (security_info.mixed_content_status !=
+        SecurityStateModel::NO_MIXED_CONTENT) {
       bool ran_insecure_content =
-          !!(ssl.content_status & content::SSLStatus::RAN_INSECURE_CONTENT);
+          (security_info.mixed_content_status ==
+               SecurityStateModel::RAN_MIXED_CONTENT ||
+           security_info.mixed_content_status ==
+               SecurityStateModel::RAN_AND_DISPLAYED_MIXED_CONTENT);
       site_connection_status_ = ran_insecure_content
                                     ? SITE_CONNECTION_STATUS_MIXED_SCRIPT
                                     : SITE_CONNECTION_STATUS_MIXED_CONTENT;
@@ -569,10 +557,10 @@ void WebsiteSettings::Init(const GURL& url, const content::SSLStatus& ssl) {
   }
 
   uint16 cipher_suite =
-      net::SSLConnectionStatusToCipherSuite(ssl.connection_status);
-  if (ssl.security_bits > 0 && cipher_suite) {
+      net::SSLConnectionStatusToCipherSuite(security_info.connection_status);
+  if (security_info.security_bits > 0 && cipher_suite) {
     int ssl_version =
-        net::SSLConnectionStatusToVersion(ssl.connection_status);
+        net::SSLConnectionStatusToVersion(security_info.connection_status);
     const char* ssl_version_str;
     net::SSLVersionToString(&ssl_version_str, ssl_version);
     site_connection_details_ += ASCIIToUTF16("\n\n");
@@ -581,8 +569,8 @@ void WebsiteSettings::Init(const GURL& url, const content::SSLStatus& ssl) {
         ASCIIToUTF16(ssl_version_str));
 
     bool no_renegotiation =
-        (ssl.connection_status &
-        net::SSL_CONNECTION_NO_RENEGOTIATION_EXTENSION) != 0;
+        (security_info.connection_status &
+         net::SSL_CONNECTION_NO_RENEGOTIATION_EXTENSION) != 0;
     const char *key_exchange, *cipher, *mac;
     bool is_aead;
     net::SSLCipherSuiteToStrings(
@@ -604,8 +592,8 @@ void WebsiteSettings::Init(const GURL& url, const content::SSLStatus& ssl) {
       site_connection_status_ = SITE_CONNECTION_STATUS_ENCRYPTED_ERROR;
     }
 
-    const bool did_fallback =
-        (ssl.connection_status & net::SSL_CONNECTION_VERSION_FALLBACK) != 0;
+    const bool did_fallback = (security_info.connection_status &
+                               net::SSL_CONNECTION_VERSION_FALLBACK) != 0;
     if (did_fallback) {
       site_connection_details_ += ASCIIToUTF16("\n\n");
       site_connection_details_ += l10n_util::GetStringUTF16(

@@ -340,10 +340,11 @@ class BrowserView : public BrowserWindow,
       bool app_modal,
       const base::Callback<void(bool)>& callback) override;
   void UserChangedTheme() override;
-  void ShowWebsiteSettings(Profile* profile,
-                           content::WebContents* web_contents,
-                           const GURL& url,
-                           const content::SSLStatus& ssl) override;
+  void ShowWebsiteSettings(
+      Profile* profile,
+      content::WebContents* web_contents,
+      const GURL& url,
+      const SecurityStateModel::SecurityInfo& security_info) override;
   void ShowAppMenu() override;
   bool PreHandleKeyboardEvent(const content::NativeWebKeyboardEvent& event,
                               bool* is_keyboard_shortcut) override;

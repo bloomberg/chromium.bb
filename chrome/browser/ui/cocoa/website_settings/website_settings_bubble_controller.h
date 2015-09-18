@@ -6,6 +6,7 @@
 
 #include "base/mac/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
+#include "chrome/browser/ssl/security_state_model.h"
 #import "chrome/browser/ui/cocoa/base_bubble_controller.h"
 #include "chrome/browser/ui/website_settings/website_settings_ui.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -106,13 +107,14 @@ class WebsiteSettingsUIBridge : public content::WebContentsObserver,
   // Creates a |WebsiteSettingsBubbleController| and displays the UI. |parent|
   // is the currently active window. |profile| points to the currently active
   // profile. |web_contents| points to the WebContents that wraps the currently
-  // active tab. |url| is the GURL of the currently active tab. |ssl| is the
-  // |SSLStatus| of the connection to the website in the currently active tab.
+  // active tab. |url| is the GURL of the currently active
+  // tab. |security_info| is the |SecurityStateModel::SecurityInfo| of
+  // the connection to the website in the currently active tab.
   static void Show(gfx::NativeWindow parent,
                    Profile* profile,
                    content::WebContents* web_contents,
                    const GURL& url,
-                   const content::SSLStatus& ssl);
+                   const SecurityStateModel::SecurityInfo& security_info);
 
   void set_bubble_controller(
       WebsiteSettingsBubbleController* bubble_controller);

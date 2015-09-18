@@ -8,6 +8,7 @@
 #include "base/callback_forward.h"
 #include "chrome/browser/lifetime/browser_close_manager.h"
 #include "chrome/browser/signin/chrome_signin_helper.h"
+#include "chrome/browser/ssl/security_state_model.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
 #include "chrome/browser/ui/bookmarks/bookmark_bar.h"
 #include "chrome/browser/ui/browser.h"
@@ -39,7 +40,6 @@ struct WebApplicationInfo;
 namespace content {
 class WebContents;
 struct NativeWebKeyboardEvent;
-struct SSLStatus;
 }
 
 namespace extensions {
@@ -310,10 +310,11 @@ class BrowserWindow : public ui::BaseWindow {
   // url of the page/frame the info applies to, |ssl| is the SSL information for
   // that page/frame.  If |show_history| is true, a section showing how many
   // times that URL has been visited is added to the page info.
-  virtual void ShowWebsiteSettings(Profile* profile,
-                                   content::WebContents* web_contents,
-                                   const GURL& url,
-                                   const content::SSLStatus& ssl) = 0;
+  virtual void ShowWebsiteSettings(
+      Profile* profile,
+      content::WebContents* web_contents,
+      const GURL& url,
+      const SecurityStateModel::SecurityInfo& security_info) = 0;
 
   // Shows the app menu (for accessibility).
   virtual void ShowAppMenu() = 0;

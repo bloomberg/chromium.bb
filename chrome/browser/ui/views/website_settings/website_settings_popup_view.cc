@@ -277,12 +277,13 @@ WebsiteSettingsPopupView::~WebsiteSettingsPopupView() {
 }
 
 // static
-void WebsiteSettingsPopupView::ShowPopup(views::View* anchor_view,
-                                         const gfx::Rect& anchor_rect,
-                                         Profile* profile,
-                                         content::WebContents* web_contents,
-                                         const GURL& url,
-                                         const content::SSLStatus& ssl) {
+void WebsiteSettingsPopupView::ShowPopup(
+    views::View* anchor_view,
+    const gfx::Rect& anchor_rect,
+    Profile* profile,
+    content::WebContents* web_contents,
+    const GURL& url,
+    const SecurityStateModel::SecurityInfo& security_info) {
   is_popup_showing = true;
   gfx::NativeView parent_window =
       anchor_view ? nullptr : web_contents->GetNativeView();
@@ -295,7 +296,7 @@ void WebsiteSettingsPopupView::ShowPopup(views::View* anchor_view,
     popup->GetWidget()->Show();
   } else {
     WebsiteSettingsPopupView* popup = new WebsiteSettingsPopupView(
-        anchor_view, parent_window, profile, web_contents, url, ssl);
+        anchor_view, parent_window, profile, web_contents, url, security_info);
     if (!anchor_view)
       popup->SetAnchorRect(anchor_rect);
     popup->GetWidget()->Show();
@@ -313,7 +314,7 @@ WebsiteSettingsPopupView::WebsiteSettingsPopupView(
     Profile* profile,
     content::WebContents* web_contents,
     const GURL& url,
-    const content::SSLStatus& ssl)
+    const SecurityStateModel::SecurityInfo& security_info)
     : content::WebContentsObserver(web_contents),
       BubbleDelegateView(anchor_view, views::BubbleBorder::TOP_LEFT),
       web_contents_(web_contents),
@@ -382,7 +383,7 @@ WebsiteSettingsPopupView::WebsiteSettingsPopupView(
 
   presenter_.reset(new WebsiteSettings(
       this, profile, TabSpecificContentSettings::FromWebContents(web_contents),
-      web_contents, url, ssl, content::CertStore::GetInstance()));
+      web_contents, url, security_info, content::CertStore::GetInstance()));
 }
 
 void WebsiteSettingsPopupView::RenderFrameDeleted(

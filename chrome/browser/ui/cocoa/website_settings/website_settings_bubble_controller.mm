@@ -1271,15 +1271,16 @@ void WebsiteSettingsUIBridge::set_bubble_controller(
   bubble_controller_ = controller;
 }
 
-void WebsiteSettingsUIBridge::Show(gfx::NativeWindow parent,
-                                   Profile* profile,
-                                   content::WebContents* web_contents,
-                                   const GURL& url,
-                                   const content::SSLStatus& ssl) {
+void WebsiteSettingsUIBridge::Show(
+    gfx::NativeWindow parent,
+    Profile* profile,
+    content::WebContents* web_contents,
+    const GURL& url,
+    const SecurityStateModel::SecurityInfo& security_info) {
   if (chrome::ToolkitViewsDialogsEnabled()) {
     chrome::ShowWebsiteSettingsBubbleViewsAtPoint(
         gfx::ScreenPointFromNSPoint(AnchorPointForWindow(parent)), profile,
-        web_contents, url, ssl);
+        web_contents, url, security_info);
     return;
   }
 
@@ -1302,7 +1303,7 @@ void WebsiteSettingsUIBridge::Show(gfx::NativeWindow parent,
     WebsiteSettings* presenter = new WebsiteSettings(
         bridge, profile,
         TabSpecificContentSettings::FromWebContents(web_contents), web_contents,
-        url, ssl, content::CertStore::GetInstance());
+        url, security_info, content::CertStore::GetInstance());
     [bubble_controller setPresenter:presenter];
   }
 

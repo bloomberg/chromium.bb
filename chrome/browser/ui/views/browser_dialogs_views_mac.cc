@@ -17,14 +17,15 @@
 
 namespace chrome {
 
-void ShowWebsiteSettingsBubbleViewsAtPoint(const gfx::Point& anchor_point,
-                                           Profile* profile,
-                                           content::WebContents* web_contents,
-                                           const GURL& url,
-                                           const content::SSLStatus& ssl) {
-  WebsiteSettingsPopupView::ShowPopup(nullptr,
-                                      gfx::Rect(anchor_point, gfx::Size()),
-                                      profile, web_contents, url, ssl);
+void ShowWebsiteSettingsBubbleViewsAtPoint(
+    const gfx::Point& anchor_point,
+    Profile* profile,
+    content::WebContents* web_contents,
+    const GURL& url,
+    const SecurityStateModel::SecurityInfo& security_info) {
+  WebsiteSettingsPopupView::ShowPopup(
+      nullptr, gfx::Rect(anchor_point, gfx::Size()), profile, web_contents, url,
+      security_info);
 }
 
 void ShowBookmarkBubbleViewsAtPoint(const gfx::Point& anchor_point,

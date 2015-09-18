@@ -171,7 +171,6 @@
 using base::TimeDelta;
 using base::UserMetricsAction;
 using content::NativeWebKeyboardEvent;
-using content::SSLStatus;
 using content::WebContents;
 using views::ColumnSet;
 using views::GridLayout;
@@ -1386,10 +1385,11 @@ void BrowserView::UserChangedTheme() {
   frame_->FrameTypeChanged();
 }
 
-void BrowserView::ShowWebsiteSettings(Profile* profile,
-                                      content::WebContents* web_contents,
-                                      const GURL& url,
-                                      const content::SSLStatus& ssl) {
+void BrowserView::ShowWebsiteSettings(
+    Profile* profile,
+    content::WebContents* web_contents,
+    const GURL& url,
+    const SecurityStateModel::SecurityInfo& security_info) {
   // Some browser windows have a location icon embedded in the frame. Try to
   // use that if it exists. If it doesn't exist, use the location icon from
   // the location bar.
@@ -1398,7 +1398,7 @@ void BrowserView::ShowWebsiteSettings(Profile* profile,
     popup_anchor = GetLocationBarView()->location_icon_view();
 
   WebsiteSettingsPopupView::ShowPopup(popup_anchor, gfx::Rect(), profile,
-                                      web_contents, url, ssl);
+                                      web_contents, url, security_info);
 }
 
 void BrowserView::ShowAppMenu() {

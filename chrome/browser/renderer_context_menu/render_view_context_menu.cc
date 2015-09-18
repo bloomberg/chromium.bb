@@ -44,6 +44,7 @@
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/spellchecker/spellcheck_host_metrics.h"
 #include "chrome/browser/spellchecker/spellcheck_service.h"
+#include "chrome/browser/ssl/security_state_model.h"
 #include "chrome/browser/tab_contents/retargeting_details.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
 #include "chrome/browser/translate/translate_service.h"
@@ -1693,8 +1694,12 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
         return;
       Browser* browser =
           chrome::FindBrowserWithWebContents(embedder_web_contents_);
+      SecurityStateModel* security_model =
+          SecurityStateModel::FromWebContents(embedder_web_contents_);
+      DCHECK(security_model);
       chrome::ShowWebsiteSettings(browser, embedder_web_contents_,
-                                  nav_entry->GetURL(), nav_entry->GetSSL());
+                                  nav_entry->GetURL(),
+                                  security_model->GetSecurityInfo());
       break;
     }
 
@@ -1742,8 +1747,14 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
     case IDC_CONTENT_CONTEXT_VIEWFRAMEINFO: {
       Browser* browser = chrome::FindBrowserWithWebContents(
           source_web_contents_);
+      SecurityStateModel::SecurityInfo security_info;
+      SecurityStateModel::SecurityInfoForRequest(
+          params_.frame_url, params_.security_info,
+          Profile::FromBrowserContext(
+              source_web_contents_->GetBrowserContext()),
+          &security_info);
       chrome::ShowWebsiteSettings(browser, source_web_contents_,
-                                  params_.frame_url, params_.security_info);
+                                  params_.frame_url, security_info);
       break;
     }
 

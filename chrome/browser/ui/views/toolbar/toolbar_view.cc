@@ -405,10 +405,11 @@ ToolbarView::GetContentSettingBubbleModelDelegate() {
   return browser_->content_setting_bubble_model_delegate();
 }
 
-void ToolbarView::ShowWebsiteSettings(content::WebContents* web_contents,
-                                      const GURL& url,
-                                      const content::SSLStatus& ssl) {
-  chrome::ShowWebsiteSettings(browser_, web_contents, url, ssl);
+void ToolbarView::ShowWebsiteSettings(
+    content::WebContents* web_contents,
+    const GURL& url,
+    const SecurityStateModel::SecurityInfo& security_info) {
+  chrome::ShowWebsiteSettings(browser_, web_contents, url, security_info);
 }
 
 views::Widget* ToolbarView::CreateViewsBubble(

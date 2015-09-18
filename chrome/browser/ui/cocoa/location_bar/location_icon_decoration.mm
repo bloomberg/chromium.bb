@@ -118,8 +118,12 @@ bool LocationIconDecoration::OnMousePressed(NSRect frame, NSPoint location) {
   if (!nav_entry)
     return true;
   Browser* browser = chrome::FindBrowserWithWebContents(tab);
+
+  SecurityStateModel* security_model = SecurityStateModel::FromWebContents(tab);
+  DCHECK(security_model);
+
   chrome::ShowWebsiteSettings(browser, tab, nav_entry->GetURL(),
-                              nav_entry->GetSSL());
+                              security_model->GetSecurityInfo());
   return true;
 }
 
