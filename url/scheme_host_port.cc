@@ -158,7 +158,7 @@ std::string SchemeHostPort::Serialize() const {
     return result;
   if (port_ != default_port) {
     result.push_back(':');
-    result.append(base::IntToString(port_));
+    result.append(base::UintToString(port_));
   }
 
   return result;
