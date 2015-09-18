@@ -92,7 +92,7 @@ function test()
             InspectorTest.CSSAgent.getMatchedStylesForNode(node.id, onMatchedStylesForNode);
         }
 
-        function onMatchedStylesForNode(error, matchedStyles)
+        function onMatchedStylesForNode(error, inlineStyle, attributeStyle, matchedStyles)
         {
             if (error) {
                 InspectorTest.addResult("error: " + error);

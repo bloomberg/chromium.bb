@@ -58,24 +58,15 @@ function test()
                 resultStyles.computedStyle = computedStyle;
             }
 
-            function inlineCallback(error, inlineStyle)
+            function matchedCallback(error, inlineStyle, attributeStyle, matchedCSSRules, pseudoElements, inherited)
             {
                 if (error) {
                     InspectorTest.addResult("error: " + error);
                     InspectorTest.completeTest();
                     return;
                 }
+
                 resultStyles.inlineStyle = inlineStyle;
-            }
-
-            function matchedCallback(error, matchedCSSRules, pseudoElements, inherited)
-            {
-                if (error) {
-                    InspectorTest.addResult("error: " + error);
-                    InspectorTest.completeTest();
-                    return;
-                }
-
                 resultStyles.matchedCSSRules = matchedCSSRules;
                 resultStyles.pseudoElements = pseudoElements;
                 resultStyles.inherited = inherited;
@@ -86,7 +77,6 @@ function test()
                 bodyId = node.id;
                 var promises = [
                     InspectorTest.CSSAgent.getComputedStyleForNode(node.id, computedCallback),
-                    InspectorTest.CSSAgent.getInlineStylesForNode(node.id, inlineCallback),
                     InspectorTest.CSSAgent.getMatchedStylesForNode(node.id, matchedCallback)
                 ];
                 Promise.all(promises).then(callback.bind(null, resultStyles));
@@ -99,7 +89,7 @@ function test()
             InspectorTest.CSSAgent.forcePseudoState(bodyId, ["hover"]);
             InspectorTest.CSSAgent.getMatchedStylesForNode(bodyId, matchedCallback);
 
-            function matchedCallback(error, matchedRules)
+            function matchedCallback(error, inlineStyle, attributeStyle, matchedRules)
             {
                 InspectorTest.addResult("=== BODY with forced :hover ===");
                 InspectorTest.dumpRuleMatchesArray(matchedRules);
@@ -174,7 +164,7 @@ function test()
 
         function test_addRule(next)
         {
-            function didGetStyles(error, matchedCSSRules)
+            function didGetStyles(error, inlineStyle, attributeStyle, matchedCSSRules)
             {
                 if (error) {
                     InspectorTest.addResult("error: " + error);

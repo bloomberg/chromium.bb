@@ -701,7 +701,7 @@ void InspectorCSSAgent::getMediaQueries(ErrorString* errorString, RefPtr<TypeBui
     }
 }
 
-void InspectorCSSAgent::getMatchedStylesForNode(ErrorString* errorString, int nodeId, RefPtr<TypeBuilder::Array<TypeBuilder::CSS::RuleMatch>>& matchedCSSRules, RefPtr<TypeBuilder::Array<TypeBuilder::CSS::PseudoIdMatches>>& pseudoIdMatches, RefPtr<TypeBuilder::Array<TypeBuilder::CSS::InheritedStyleEntry>>& inheritedEntries)
+void InspectorCSSAgent::getMatchedStylesForNode(ErrorString* errorString, int nodeId, RefPtr<TypeBuilder::CSS::CSSStyle>& inlineStyle, RefPtr<TypeBuilder::CSS::CSSStyle>& attributesStyle, RefPtr<TypeBuilder::Array<TypeBuilder::CSS::RuleMatch>>& matchedCSSRules, RefPtr<TypeBuilder::Array<TypeBuilder::CSS::PseudoIdMatches>>& pseudoIdMatches, RefPtr<TypeBuilder::Array<TypeBuilder::CSS::InheritedStyleEntry>>& inheritedEntries)
 {
     Element* element = elementForId(errorString, nodeId);
     if (!element) {
@@ -736,38 +736,46 @@ void InspectorCSSAgent::getMatchedStylesForNode(ErrorString* errorString, int no
     matchedCSSRules = buildArrayForMatchedRuleList(matchedRules.get(), originalElement, NOPSEUDO);
 
     // Pseudo elements.
-    if (!elementPseudoId) {
-        RefPtr<TypeBuilder::Array<TypeBuilder::CSS::PseudoIdMatches> > pseudoElements = TypeBuilder::Array<TypeBuilder::CSS::PseudoIdMatches>::create();
-        for (PseudoId pseudoId = FIRST_PUBLIC_PSEUDOID; pseudoId < AFTER_LAST_INTERNAL_PSEUDOID; pseudoId = static_cast<PseudoId>(pseudoId + 1)) {
-            RefPtrWillBeRawPtr<CSSRuleList> matchedRules = styleResolver.pseudoCSSRulesForElement(element, pseudoId, StyleResolver::AllCSSRules);
-            if (matchedRules && matchedRules->length()) {
-                RefPtr<TypeBuilder::CSS::PseudoIdMatches> matches = TypeBuilder::CSS::PseudoIdMatches::create()
-                    .setPseudoId(static_cast<int>(pseudoId))
-                    .setMatches(buildArrayForMatchedRuleList(matchedRules.get(), element, pseudoId));
-                pseudoElements->addItem(matches.release());
-            }
-        }
-        pseudoIdMatches = pseudoElements.release();
+    if (elementPseudoId)
+        return;
 
-        // Inherited styles.
-        RefPtr<TypeBuilder::Array<TypeBuilder::CSS::InheritedStyleEntry> > entries = TypeBuilder::Array<TypeBuilder::CSS::InheritedStyleEntry>::create();
-        Element* parentElement = element->parentOrShadowHostElement();
-        while (parentElement) {
-            StyleResolver& parentStyleResolver = parentElement->ownerDocument()->ensureStyleResolver();
-            RefPtrWillBeRawPtr<CSSRuleList> parentMatchedRules = parentStyleResolver.cssRulesForElement(parentElement, StyleResolver::AllCSSRules);
-            RefPtr<TypeBuilder::CSS::InheritedStyleEntry> entry = TypeBuilder::CSS::InheritedStyleEntry::create()
-                .setMatchedCSSRules(buildArrayForMatchedRuleList(parentMatchedRules.get(), parentElement, NOPSEUDO));
-            if (parentElement->style() && parentElement->style()->length()) {
-                InspectorStyleSheetForInlineStyle* styleSheet = asInspectorStyleSheet(parentElement);
-                if (styleSheet)
-                    entry->setInlineStyle(styleSheet->buildObjectForStyle(styleSheet->inlineStyle()));
-            }
-
-            entries->addItem(entry.release());
-            parentElement = parentElement->parentOrShadowHostElement();
-        }
-        inheritedEntries = entries.release();
+    InspectorStyleSheetForInlineStyle* inlineStyleSheet = asInspectorStyleSheet(element);
+    if (inlineStyleSheet) {
+        inlineStyle = inlineStyleSheet->buildObjectForStyle(element->style());
+        RefPtr<TypeBuilder::CSS::CSSStyle> attributes = buildObjectForAttributesStyle(element);
+        attributesStyle = attributes ? attributes.release() : nullptr;
     }
+
+    RefPtr<TypeBuilder::Array<TypeBuilder::CSS::PseudoIdMatches>> pseudoElements = TypeBuilder::Array<TypeBuilder::CSS::PseudoIdMatches>::create();
+    for (PseudoId pseudoId = FIRST_PUBLIC_PSEUDOID; pseudoId < AFTER_LAST_INTERNAL_PSEUDOID; pseudoId = static_cast<PseudoId>(pseudoId + 1)) {
+        RefPtrWillBeRawPtr<CSSRuleList> matchedRules = styleResolver.pseudoCSSRulesForElement(element, pseudoId, StyleResolver::AllCSSRules);
+        if (matchedRules && matchedRules->length()) {
+            RefPtr<TypeBuilder::CSS::PseudoIdMatches> matches = TypeBuilder::CSS::PseudoIdMatches::create()
+                .setPseudoId(static_cast<int>(pseudoId))
+                .setMatches(buildArrayForMatchedRuleList(matchedRules.get(), element, pseudoId));
+            pseudoElements->addItem(matches.release());
+        }
+    }
+    pseudoIdMatches = pseudoElements.release();
+
+    // Inherited styles.
+    RefPtr<TypeBuilder::Array<TypeBuilder::CSS::InheritedStyleEntry>> entries = TypeBuilder::Array<TypeBuilder::CSS::InheritedStyleEntry>::create();
+    Element* parentElement = element->parentOrShadowHostElement();
+    while (parentElement) {
+        StyleResolver& parentStyleResolver = parentElement->ownerDocument()->ensureStyleResolver();
+        RefPtrWillBeRawPtr<CSSRuleList> parentMatchedRules = parentStyleResolver.cssRulesForElement(parentElement, StyleResolver::AllCSSRules);
+        RefPtr<TypeBuilder::CSS::InheritedStyleEntry> entry = TypeBuilder::CSS::InheritedStyleEntry::create()
+            .setMatchedCSSRules(buildArrayForMatchedRuleList(parentMatchedRules.get(), parentElement, NOPSEUDO));
+        if (parentElement->style() && parentElement->style()->length()) {
+            InspectorStyleSheetForInlineStyle* styleSheet = asInspectorStyleSheet(parentElement);
+            if (styleSheet)
+                entry->setInlineStyle(styleSheet->buildObjectForStyle(styleSheet->inlineStyle()));
+        }
+
+        entries->addItem(entry.release());
+        parentElement = parentElement->parentOrShadowHostElement();
+    }
+    inheritedEntries = entries.release();
 }
 
 void InspectorCSSAgent::getInlineStylesForNode(ErrorString* errorString, int nodeId, RefPtr<TypeBuilder::CSS::CSSStyle>& inlineStyle, RefPtr<TypeBuilder::CSS::CSSStyle>& attributesStyle)

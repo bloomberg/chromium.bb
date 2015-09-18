@@ -37,47 +37,19 @@ function test()
             InspectorTest.addResult("['" + property.name + "':'" + property.value + "'" + (property.important ? " !important" : "") + (("parsedOk" in property) ? " non-parsed" : "") +"] @" + InspectorTest.rangeText(property.range));
         }
     }
-    
+
     InspectorTest.selectNodeWithId("mainBody", step1);
-
-    var resultStyles = {};
-
-    function inlineCallback(error, inlineStyle)
-    {
-        if (error) {
-             InspectorTest.addResult("error: " + error);
-             InspectorTest.completeTest();
-             return;
-        }
-
-        resultStyles.inlineStyle = inlineStyle;
-    }
-
-    function matchedCallback(error, matchedCSSRules)
-    {
-        if (error) {
-             InspectorTest.addResult("error: " + error);
-             InspectorTest.completeTest();
-             return;
-        }
-        resultStyles.matchedCSSRules = matchedCSSRules;
-    }
 
     function step1(node)
     {
-        var promises = [
-            InspectorTest.CSSAgent.getInlineStylesForNode(node.id, inlineCallback),
-            InspectorTest.CSSAgent.getMatchedStylesForNode(node.id, matchedCallback)
-        ];
-        Promise.all(promises).then(step2);
+        InspectorTest.CSSAgent.getMatchedStylesForNode(node.id, onMatchedStyles)
     }
 
-    function step2()
+    function onMatchedStyles(error, inlineStyle, attributeStyle, matchedCSSRules)
     {
-        var matchedCSSRules = resultStyles.matchedCSSRules;
         for (var i = 0; i < matchedCSSRules.length; ++i)
             dumpStyleData(matchedCSSRules[i].rule);
-        dumpStyleData(resultStyles.inlineStyle);
+        dumpStyleData(inlineStyle);
         InspectorTest.completeTest();
     }
 }

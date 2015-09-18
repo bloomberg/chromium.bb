@@ -24,7 +24,7 @@ function test()
         InspectorTest.CSSAgent.getMatchedStylesForNode(node.id, stylesLoaded);
     }
 
-    function stylesLoaded(error, rules)
+    function stylesLoaded(error, inlineStyle, attributeStyle, rules)
     {
         if (error) {
             InspectorTest.addResult("Failed to get styles: " + error);
