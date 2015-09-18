@@ -11,8 +11,9 @@
     chrome:maxChildWidth="@dimen/data_reduction_promo_screen_width">
 
     <ScrollView
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         android:layout_width="match_parent"
+        android:layout_gravity="center"
         android:fillViewport="true">
 
         <RelativeLayout
@@ -35,7 +36,8 @@
                 android:layout_height="wrap_content"
                 android:layout_width="match_parent"
                 android:layout_below="@+id/close_button"
-                android:layout_marginTop="16dp"
+                android:layout_marginBottom="30dp"
+                android:layout_marginTop="8dp"
                 android:orientation="vertical"
                 android:paddingEnd="24dp"
                 android:paddingStart="24dp" >
@@ -66,51 +68,38 @@
                     android:textSize="@dimen/data_reduction_promo_normal_text_size" />
             </LinearLayout>
 
-            <FrameLayout
+            <LinearLayout
                 android:layout_height="wrap_content"
                 android:layout_width="match_parent"
-                android:layout_alignParentBottom="true"
-                android:layout_below="@id/data_reduction_promo_text" >
+                android:layout_below="@id/data_reduction_promo_text"
+                android:layout_gravity="bottom"
+                android:orientation="horizontal"
+                android:clipToPadding="false"
+                android:padding="16dp"
+                android:gravity="end" >
 
-                <!-- The FrameLayout must have layout_below so that the buttons don't
-                     overlap the text. This causes the FrameLayout to extend from
-                     data_reduction_promo_text to the bottom of the RelativeLayout.
-                     In order for the buttons to adjust their height when the screen
-                     size causes multiple lines of text, but not be the size of the
-                     empty space between the text and bottom of the promo we need 
-                     this second LinearLayout. -->
-                <LinearLayout
-                    android:layout_height="wrap_content"
-                    android:layout_width="match_parent"
-                    android:layout_gravity="bottom"
-                    android:orientation="horizontal"
-                    android:clipToPadding="false"
-                    android:padding="16dp"
-                    android:gravity="end" >
+                <Button
+                    android:id="@+id/no_thanks_button"
+                    android:layout_height="match_parent"
+                    android:layout_width="wrap_content"
+                    android:layout_marginEnd="8dp"
+                    android:minHeight="40dp"
+                    android:text="@string/no_thanks"
+                    android:textColor="@color/light_normal_color"
+                    android:textSize="@dimen/data_reduction_promo_button_text_size"
+                    style="@style/ButtonCompatBorderless" />
 
-                    <Button
-                        android:id="@+id/no_thanks_button"
-                        android:layout_height="match_parent"
-                        android:layout_width="wrap_content"
-                        android:layout_marginEnd="8dp"
-                        android:minHeight="40dp"
-                        android:text="@string/no_thanks"
-                        android:textColor="@color/light_normal_color"
-                        android:textSize="@dimen/data_reduction_promo_button_text_size"
-                        style="@style/ButtonCompatBorderless" />
-
-                    <org.chromium.ui.widget.ButtonCompat
-                        android:id="@+id/enable_button"
-                        android:layout_height="match_parent"
-                        android:layout_width="wrap_content"
-                        android:elevation="0dp"
-                        android:minHeight="40dp"
-                        android:text="@string/data_reduction_enable_button"
-                        android:textColor="#FFFFFF"
-                        android:textSize="@dimen/data_reduction_promo_button_text_size"
-                        chrome:buttonColor="@color/light_active_color" />
-                </LinearLayout>
-            </FrameLayout>
+                <org.chromium.ui.widget.ButtonCompat
+                    android:id="@+id/enable_button"
+                    android:layout_height="match_parent"
+                    android:layout_width="wrap_content"
+                    android:elevation="0dp"
+                    android:minHeight="40dp"
+                    android:text="@string/data_reduction_enable_button"
+                    android:textColor="#FFFFFF"
+                    android:textSize="@dimen/data_reduction_promo_button_text_size"
+                   chrome:buttonColor="@color/light_active_color" />
+            </LinearLayout>
         </RelativeLayout>
     </ScrollView>
 </org.chromium.chrome.browser.widget.PaddedFrameLayout>
