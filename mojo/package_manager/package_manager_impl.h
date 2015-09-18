@@ -47,17 +47,17 @@ class PackageManagerImpl : public shell::PackageManager {
 
   // Overridden from shell::PackageManager:
   void SetApplicationManager(shell::ApplicationManager* manager) override;
-  GURL ResolveURL(const GURL& url) override;
   void FetchRequest(
       URLRequestPtr request,
       const shell::Fetcher::FetchCallback& loader_callback) override;
   bool HandleWithContentHandler(shell::Fetcher* fetcher,
-                                const GURL& unresolved_url,
+                                const GURL& url,
                                 base::TaskRunner* task_runner,
                                 URLResponsePtr* new_response,
                                 GURL* content_handler_url,
                                 std::string* qualifier) override;
 
+  GURL ResolveURL(const GURL& url);
 
   shell::ApplicationManager* application_manager_;
   scoped_ptr<fetcher::URLResolver> url_resolver_;

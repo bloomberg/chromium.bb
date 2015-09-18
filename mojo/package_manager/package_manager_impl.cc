@@ -56,10 +56,6 @@ void PackageManagerImpl::SetApplicationManager(
   application_manager_ = manager;
 }
 
-GURL PackageManagerImpl::ResolveURL(const GURL& url) {
-  return url_resolver_.get() ? url_resolver_->ResolveMojoURL(url) : url;
-}
-
 void PackageManagerImpl::FetchRequest(
     URLRequestPtr request,
     const shell::Fetcher::FetchCallback& loader_callback) {
@@ -75,7 +71,6 @@ void PackageManagerImpl::FetchRequest(
   }
 
   GURL resolved_url = ResolveURL(url);
-
   if (resolved_url.SchemeIsFile()) {
     // LocalFetcher uses the network service to infer MIME types from URLs.
     // Skip this for mojo URLs to avoid recursively loading the network service.
@@ -121,7 +116,7 @@ void PackageManagerImpl::FetchRequest(
 }
 
 bool PackageManagerImpl::HandleWithContentHandler(shell::Fetcher* fetcher,
-                                                  const GURL& unresolved_url,
+                                                  const GURL& url,
                                                   base::TaskRunner* task_runner,
                                                   URLResponsePtr* new_response,
                                                   GURL* content_handler_url,
@@ -152,11 +147,11 @@ bool PackageManagerImpl::HandleWithContentHandler(shell::Fetcher* fetcher,
   }
 
   // The response URL matches a registered content handler.
-  auto alias_iter = application_package_alias_.find(unresolved_url);
+  auto alias_iter = application_package_alias_.find(url);
   if (alias_iter != application_package_alias_.end()) {
     // We replace the qualifier with the one our package alias requested.
     *new_response = URLResponse::New();
-    (*new_response)->url = unresolved_url.spec();
+    (*new_response)->url = url.spec();
 
     // Why can't we use this in single process mode? Because of
     // base::AtExitManager. If you link in ApplicationRunner into your code, and
@@ -174,6 +169,10 @@ bool PackageManagerImpl::HandleWithContentHandler(shell::Fetcher* fetcher,
   }
 
   return false;
+}
+
+GURL PackageManagerImpl::ResolveURL(const GURL& url) {
+  return url_resolver_.get() ? url_resolver_->ResolveMojoURL(url) : url;
 }
 
 }  // namespace package_manager

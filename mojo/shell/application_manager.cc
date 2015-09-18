@@ -73,36 +73,23 @@ void ApplicationManager::TerminateShellConnections() {
 
 void ApplicationManager::ConnectToApplication(
     scoped_ptr<ConnectToApplicationParams> params) {
-  GURL original_url = params->app_url();
-  URLRequestPtr original_url_request = params->TakeAppURLRequest();
-
   TRACE_EVENT_INSTANT1("mojo_shell", "ApplicationManager::ConnectToApplication",
                        TRACE_EVENT_SCOPE_THREAD, "original_url",
-                       original_url.spec());
-  DCHECK(original_url.is_valid());
-  DCHECK(original_url_request);
+                       params->app_url().spec());
+  DCHECK(params->app_url().is_valid());
 
-  // We need to look for running instances based on both the unresolved and
-  // resolved urls.
+  // Connect to an existing matching instance, if possible.
   if (ConnectToRunningApplication(&params))
     return;
 
-  GURL resolved_url = package_manager_->ResolveURL(original_url);
-  params->SetURLInfo(resolved_url);
-  if (ConnectToRunningApplication(&params))
-    return;
-
-  // The application is not running, let's compute the parameters.
-  // NOTE: Set URL info using |original_url_request| instead of |original_url|
-  // because it may contain more information (e.g., it is a POST request).
-  params->SetURLInfo(original_url_request.Pass());
-  ApplicationLoader* loader = GetLoaderForURL(resolved_url);
+  ApplicationLoader* loader = GetLoaderForURL(params->app_url());
   if (loader) {
-    ConnectToApplicationWithLoader(&params, resolved_url, loader);
+    GURL url = params->app_url();
+    loader->Load(url, CreateInstance(params.Pass(), nullptr));
     return;
   }
 
-  original_url_request = params->TakeAppURLRequest();
+  URLRequestPtr original_url_request = params->TakeAppURLRequest();
   auto callback =
       base::Bind(&ApplicationManager::HandleFetchCallback,
                  weak_ptr_factory_.GetWeakPtr(), base::Passed(&params));
@@ -118,16 +105,6 @@ bool ApplicationManager::ConnectToRunningApplication(
 
   instance->ConnectToClient(params->Pass());
   return true;
-}
-
-void ApplicationManager::ConnectToApplicationWithLoader(
-    scoped_ptr<ConnectToApplicationParams>* params,
-    const GURL& resolved_url,
-    ApplicationLoader* loader) {
-  if (!(*params)->app_url().SchemeIs("mojo"))
-    (*params)->SetURLInfo(resolved_url);
-
-  loader->Load(resolved_url, CreateInstance(params->Pass(), nullptr));
 }
 
 InterfaceRequest<Application> ApplicationManager::CreateInstance(
@@ -153,10 +130,8 @@ InterfaceRequest<Application> ApplicationManager::CreateInstance(
 
 ApplicationInstance* ApplicationManager::GetApplicationInstance(
     const Identity& identity) const {
-  const auto& instance_it = identity_to_instance_.find(identity);
-  if (instance_it != identity_to_instance_.end())
-    return instance_it->second;
-  return nullptr;
+  const auto& it = identity_to_instance_.find(identity);
+  return it != identity_to_instance_.end() ? it->second : nullptr;
 }
 
 void ApplicationManager::HandleFetchCallback(
@@ -186,14 +161,8 @@ void ApplicationManager::HandleFetchCallback(
   // We already checked if the application was running before we fetched it, but
   // it might have started while the fetch was outstanding. We don't want to
   // have two copies of the app running, so check again.
-  //
-  // Also, it's possible the original URL was redirected to an app that is
-  // already running.
   if (ConnectToRunningApplication(&params))
     return;
-
-  if (params->app_url().scheme() != "mojo")
-    params->SetURLInfo(fetcher->GetURL());
 
   Identity originator_identity = params->originator_identity();
   CapabilityFilter originator_filter = params->originator_filter();
