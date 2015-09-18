@@ -35,7 +35,8 @@ class NET_EXPORT_PRIVATE NetworkChangeNotifierDelegateAndroid {
     virtual void OnConnectionTypeChanged() = 0;
 
     // Updates the current max bandwidth.
-    virtual void OnMaxBandwidthChanged(double max_bandwidth_mbps) = 0;
+    virtual void OnMaxBandwidthChanged(double max_bandwidth_mbps,
+                                       ConnectionType connection_type) = 0;
   };
 
   NetworkChangeNotifierDelegateAndroid();
@@ -67,7 +68,9 @@ class NET_EXPORT_PRIVATE NetworkChangeNotifierDelegateAndroid {
   ConnectionType GetCurrentConnectionType() const;
 
   // Can be called from any thread.
-  double GetCurrentMaxBandwidth() const;
+  void GetCurrentMaxBandwidthAndConnectionType(
+      double* max_bandwidth_mbps,
+      ConnectionType* connection_type) const;
 
   // Initializes JNI bindings.
   static bool Register(JNIEnv* env);

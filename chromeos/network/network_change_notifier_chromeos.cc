@@ -102,8 +102,11 @@ NetworkChangeNotifierChromeos::GetCurrentConnectionType() const {
   return connection_type_;
 }
 
-double NetworkChangeNotifierChromeos::GetCurrentMaxBandwidth() const {
-  return max_bandwidth_mbps_;
+void NetworkChangeNotifierChromeos::GetCurrentMaxBandwidthAndConnectionType(
+    double* max_bandwidth_mbps,
+    ConnectionType* connection_type) const {
+  *connection_type = connection_type_;
+  *max_bandwidth_mbps = max_bandwidth_mbps_;
 }
 
 void NetworkChangeNotifierChromeos::SuspendDone(
@@ -129,9 +132,10 @@ void NetworkChangeNotifierChromeos::DefaultNetworkChanged(
     NetworkChangeNotifier::NotifyObserversOfIPAddressChange();
   if (dns_changed)
     dns_config_service_->OnNetworkChange();
-  if (max_bandwidth_changed)
+  if (max_bandwidth_changed || connection_type_changed) {
     NetworkChangeNotifier::NotifyObserversOfMaxBandwidthChange(
-        max_bandwidth_mbps_);
+        max_bandwidth_mbps_, connection_type_);
+  }
 }
 
 void NetworkChangeNotifierChromeos::UpdateState(

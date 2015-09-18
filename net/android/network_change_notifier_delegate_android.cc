@@ -84,9 +84,13 @@ NetworkChangeNotifierDelegateAndroid::GetCurrentConnectionType() const {
   return connection_type_;
 }
 
-double NetworkChangeNotifierDelegateAndroid::GetCurrentMaxBandwidth() const {
+void NetworkChangeNotifierDelegateAndroid::
+    GetCurrentMaxBandwidthAndConnectionType(
+        double* max_bandwidth_mbps,
+        ConnectionType* connection_type) const {
   base::AutoLock auto_lock(connection_lock_);
-  return connection_max_bandwidth_;
+  *connection_type = connection_type_;
+  *max_bandwidth_mbps = connection_max_bandwidth_;
 }
 
 void NetworkChangeNotifierDelegateAndroid::NotifyConnectionTypeChanged(
@@ -111,10 +115,10 @@ void NetworkChangeNotifierDelegateAndroid::NotifyMaxBandwidthChanged(
     jobject obj,
     jdouble new_max_bandwidth) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(new_max_bandwidth != GetCurrentMaxBandwidth());
+
   SetCurrentMaxBandwidth(new_max_bandwidth);
   observers_->Notify(FROM_HERE, &Observer::OnMaxBandwidthChanged,
-                     new_max_bandwidth);
+                     new_max_bandwidth, GetCurrentConnectionType());
 }
 
 void NetworkChangeNotifierDelegateAndroid::AddObserver(

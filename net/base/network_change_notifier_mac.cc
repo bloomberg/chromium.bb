@@ -257,8 +257,13 @@ void NetworkChangeNotifierMac::ReachabilityCallback(
     old_type = notifier_mac->connection_type_;
     notifier_mac->connection_type_ = new_type;
   }
-  if (old_type != new_type)
+  if (old_type != new_type) {
     NotifyObserversOfConnectionTypeChange();
+    double max_bandwidth_mbps =
+        NetworkChangeNotifier::GetMaxBandwidthForConnectionSubtype(
+            new_type == CONNECTION_NONE ? SUBTYPE_NONE : SUBTYPE_UNKNOWN);
+    NotifyObserversOfMaxBandwidthChange(max_bandwidth_mbps, new_type);
+  }
 
 #if defined(OS_IOS)
   // On iOS, the SCDynamicStore API does not exist, and we use the reachability

@@ -14,8 +14,10 @@ namespace net {
 // alter the ranges of these tests.
 TEST(NetworkChangeNotifierTest, NetMaxBandwidthRange) {
   NetworkChangeNotifier::ConnectionType connection_type =
-      NetworkChangeNotifier::GetConnectionType();
-  double max_bandwidth = NetworkChangeNotifier::GetMaxBandwidth();
+      NetworkChangeNotifier::CONNECTION_NONE;
+  double max_bandwidth = 0.0;
+  NetworkChangeNotifier::GetMaxBandwidthAndConnectionType(&max_bandwidth,
+                                                          &connection_type);
 
   // Always accept infinity as it's the default value if the bandwidth is
   // unknown.

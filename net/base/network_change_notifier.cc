@@ -542,10 +542,17 @@ NetworkChangeNotifier::GetConnectionType() {
 }
 
 // static
-double NetworkChangeNotifier::GetMaxBandwidth() {
-  return g_network_change_notifier ?
-      g_network_change_notifier->GetCurrentMaxBandwidth() :
-      std::numeric_limits<double>::infinity();
+void NetworkChangeNotifier::GetMaxBandwidthAndConnectionType(
+    double* max_bandwidth_mbps,
+    ConnectionType* connection_type) {
+  if (!g_network_change_notifier) {
+    *connection_type = CONNECTION_UNKNOWN;
+    *max_bandwidth_mbps = GetMaxBandwidthForConnectionSubtype(SUBTYPE_UNKNOWN);
+    return;
+  }
+
+  g_network_change_notifier->GetCurrentMaxBandwidthAndConnectionType(
+      max_bandwidth_mbps, connection_type);
 }
 
 // static
@@ -792,6 +799,16 @@ void NetworkChangeNotifier::NotifyObserversOfInitialDNSConfigReadForTests() {
 }
 
 // static
+void NetworkChangeNotifier::NotifyObserversOfMaxBandwidthChangeForTests(
+    double max_bandwidth_mbps,
+    ConnectionType type) {
+  if (g_network_change_notifier) {
+    g_network_change_notifier->NotifyObserversOfMaxBandwidthChangeImpl(
+        max_bandwidth_mbps, type);
+  }
+}
+
+// static
 void NetworkChangeNotifier::SetTestNotificationsOnly(bool test_only) {
   DCHECK(!g_network_change_notifier);
   NetworkChangeNotifier::test_notifications_only_ = test_only;
@@ -830,13 +847,17 @@ NetworkChangeNotifier::GetAddressTrackerInternal() const {
 }
 #endif
 
-double NetworkChangeNotifier::GetCurrentMaxBandwidth() const {
+void NetworkChangeNotifier::GetCurrentMaxBandwidthAndConnectionType(
+    double* max_bandwidth_mbps,
+    ConnectionType* connection_type) const {
   // This default implementation conforms to the NetInfo V3 specification but
   // should be overridden to provide specific bandwidth data based on the
   // platform.
-  if (GetCurrentConnectionType() == CONNECTION_NONE)
-    return 0.0;
-  return std::numeric_limits<double>::infinity();
+  *connection_type = GetCurrentConnectionType();
+  *max_bandwidth_mbps =
+      *connection_type == CONNECTION_NONE
+          ? GetMaxBandwidthForConnectionSubtype(SUBTYPE_NONE)
+          : GetMaxBandwidthForConnectionSubtype(SUBTYPE_UNKNOWN);
 }
 
 // static
@@ -942,11 +963,12 @@ void NetworkChangeNotifier::NotifyObserversOfNetworkChange(
 
 // static
 void NetworkChangeNotifier::NotifyObserversOfMaxBandwidthChange(
-    double max_bandwidth_mbps) {
+    double max_bandwidth_mbps,
+    ConnectionType type) {
   if (g_network_change_notifier &&
       !NetworkChangeNotifier::test_notifications_only_) {
     g_network_change_notifier->NotifyObserversOfMaxBandwidthChangeImpl(
-        max_bandwidth_mbps);
+        max_bandwidth_mbps, type);
   }
 }
 
@@ -1015,10 +1037,11 @@ void NetworkChangeNotifier::NotifyObserversOfInitialDNSConfigReadImpl() {
 }
 
 void NetworkChangeNotifier::NotifyObserversOfMaxBandwidthChangeImpl(
-    double max_bandwidth_mbps) {
+    double max_bandwidth_mbps,
+    ConnectionType type) {
   max_bandwidth_observer_list_->Notify(
       FROM_HERE, &MaxBandwidthObserver::OnMaxBandwidthChanged,
-      max_bandwidth_mbps);
+      max_bandwidth_mbps, type);
 }
 
 NetworkChangeNotifier::DisableForTest::DisableForTest()

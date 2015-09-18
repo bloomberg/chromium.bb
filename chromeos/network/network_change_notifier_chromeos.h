@@ -37,7 +37,9 @@ class CHROMEOS_EXPORT NetworkChangeNotifierChromeos
   // NetworkChangeNotifier overrides.
   net::NetworkChangeNotifier::ConnectionType GetCurrentConnectionType()
       const override;
-  double GetCurrentMaxBandwidth() const override;
+  void GetCurrentMaxBandwidthAndConnectionType(
+      double* max_bandwidth_mbps,
+      ConnectionType* connection_type) const override;
 
   // PowerManagerClient::Observer overrides.
   void SuspendDone(const base::TimeDelta& sleep_duration) override;

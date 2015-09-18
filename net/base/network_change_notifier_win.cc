@@ -318,6 +318,11 @@ void NetworkChangeNotifierWin::NotifyParentOfConnectionTypeChange() {
   last_announced_offline_ = current_offline;
 
   NotifyObserversOfConnectionTypeChange();
+  double max_bandwidth_mbps = 0.0;
+  ConnectionType connection_type = CONNECTION_NONE;
+  GetCurrentMaxBandwidthAndConnectionType(&max_bandwidth_mbps,
+                                          &connection_type);
+  NotifyObserversOfMaxBandwidthChange(max_bandwidth_mbps, connection_type);
 }
 
 }  // namespace net
