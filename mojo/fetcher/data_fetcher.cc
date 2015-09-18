@@ -18,6 +18,8 @@ namespace fetcher {
 
 ScopedDataPipeConsumerHandle CreateConsumerHandleForString(
     const std::string& data) {
+  if (data.size() > std::numeric_limits<uint32_t>::max())
+    return ScopedDataPipeConsumerHandle();
   uint32_t num_bytes = static_cast<uint32_t>(data.size());
   MojoCreateDataPipeOptions options;
   options.struct_size = sizeof(MojoCreateDataPipeOptions);
