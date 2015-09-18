@@ -1050,9 +1050,9 @@ public class ToolbarPhone extends ToolbarLayout
                 mLocationBarBackground.draw(canvas);
             }
 
-            locationBarClipLeft = mUrlViewportBounds.left + mUrlBackgroundPadding.left
+            locationBarClipLeft = mUrlViewportBounds.left + mPhoneLocationBar.getPaddingLeft()
                     + mLocationBarBackgroundOffset.left;
-            locationBarClipRight = mUrlViewportBounds.right - mUrlBackgroundPadding.right
+            locationBarClipRight = mUrlViewportBounds.right - mPhoneLocationBar.getPaddingRight()
                     + mLocationBarBackgroundOffset.right;
 
             // When unexpanded, the location bar's visible content boundaries are inset from the
@@ -1069,9 +1069,9 @@ public class ToolbarPhone extends ToolbarLayout
                 locationBarClipRight -= rightDelta * inversePercent;
             }
 
-            locationBarClipTop = mUrlViewportBounds.top + mUrlBackgroundPadding.top
+            locationBarClipTop = mUrlViewportBounds.top + mPhoneLocationBar.getPaddingTop()
                     + mLocationBarBackgroundOffset.top;
-            locationBarClipBottom = mUrlViewportBounds.bottom - mUrlBackgroundPadding.bottom
+            locationBarClipBottom = mUrlViewportBounds.bottom - mPhoneLocationBar.getPaddingBottom()
                     + mLocationBarBackgroundOffset.bottom;
             // Clip the location bar child to the URL viewport calculated in onDraw.
             canvas.clipRect(
@@ -1882,6 +1882,16 @@ public class ToolbarPhone extends ToolbarLayout
         }
 
         mPhoneLocationBar.updateVisualsForState();
+        // Remove the side padding for incognito to ensure the badge icon aligns correctly with the
+        // background of the location bar.
+        if (isIncognito) {
+            mPhoneLocationBar.setPadding(
+                    0, mUrlBackgroundPadding.top, 0, mUrlBackgroundPadding.bottom);
+        } else {
+            mPhoneLocationBar.setPadding(
+                    mUrlBackgroundPadding.left, mUrlBackgroundPadding.top,
+                    mUrlBackgroundPadding.right, mUrlBackgroundPadding.bottom);
+        }
 
         // We update the alpha before comparing the visual state as we need to change
         // its value when entering and exiting TabSwitcher mode.
