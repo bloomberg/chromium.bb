@@ -66,6 +66,18 @@ const int32_t kCommandBufferSharedMemoryId = 4;
 // The size to set for the program cache.
 const size_t kDefaultMaxProgramCacheMemoryBytes = 6 * 1024 * 1024;
 
+// Namespace used to separate various command buffer types.
+enum CommandBufferNamespace {
+  INVALID = -1,
+
+  GPU_IO,
+  IN_PROCESS,
+  MOJO,
+
+  NUM_COMMAND_BUFFER_NAMESPACES
+};
+
+
 }  // namespace gpu
 
 #endif  // GPU_COMMAND_BUFFER_COMMON_CONSTANTS_H_

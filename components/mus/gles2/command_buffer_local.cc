@@ -210,6 +210,16 @@ bool CommandBufferLocal::IsGpuChannelLost() {
   return false;
 }
 
+gpu::CommandBufferNamespace CommandBufferLocal::GetNamespaceID() const {
+  NOTIMPLEMENTED();
+  return gpu::CommandBufferNamespace::INVALID;
+}
+
+uint64_t CommandBufferLocal::GetCommandBufferID() const {
+  NOTIMPLEMENTED();
+  return 0;
+}
+
 void CommandBufferLocal::PumpCommands() {
   if (!decoder_->MakeCurrent()) {
     command_buffer_->SetContextLostReason(decoder_->GetContextLostReason());

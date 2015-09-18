@@ -344,4 +344,12 @@ bool Display::IsGpuChannelLost() {
   return false;
 }
 
+gpu::CommandBufferNamespace Display::GetNamespaceID() const {
+  return gpu::CommandBufferNamespace::IN_PROCESS;
+}
+
+uint64_t Display::GetCommandBufferID() const {
+  return 0;
+}
+
 }  // namespace egl

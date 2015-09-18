@@ -12,6 +12,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "gpu/command_buffer/common/capabilities.h"
+#include "gpu/command_buffer/common/constants.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/gpu_export.h"
 
@@ -88,6 +89,12 @@ class GPU_EXPORT GpuControl {
   // Returns true if the channel to the Gpu is lost. When true, all contexts
   // should be considered as lost.
   virtual bool IsGpuChannelLost() = 0;
+
+  // The namespace and command buffer ID forms a unique pair for all existing
+  // GpuControl (on client) and matches for the corresponding command buffer
+  // (on server) in a single server process.
+  virtual CommandBufferNamespace GetNamespaceID() const = 0;
+  virtual uint64_t GetCommandBufferID() const = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(GpuControl);

@@ -29,7 +29,8 @@ class PPB_Graphics3D_Impl : public ppapi::PPB_Graphics3D_Shared {
       PP_Resource share_context,
       const int32_t* attrib_list,
       gpu::Capabilities* capabilities,
-      base::SharedMemoryHandle* shared_state_handle);
+      base::SharedMemoryHandle* shared_state_handle,
+      uint64_t* command_buffer_id);
 
   // PPB_Graphics3D_API trusted implementation.
   PP_Bool SetGetBuffer(int32_t transfer_buffer_id) override;
@@ -79,7 +80,8 @@ class PPB_Graphics3D_Impl : public ppapi::PPB_Graphics3D_Shared {
   bool InitRaw(PPB_Graphics3D_API* share_context,
                const int32_t* attrib_list,
                gpu::Capabilities* capabilities,
-               base::SharedMemoryHandle* shared_state_handle);
+               base::SharedMemoryHandle* shared_state_handle,
+               uint64_t* command_buffer_id);
 
   // Notifications received from the GPU process.
   void OnSwapBuffers();

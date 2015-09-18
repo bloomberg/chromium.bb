@@ -27,11 +27,20 @@
 
 namespace content {
 
+namespace {
+
+uint64_t CommandBufferProxyID(int channel_id, int32 route_id) {
+  return (static_cast<uint64_t>(channel_id) << 32) | route_id;
+}
+
+}  // namespace
+
 CommandBufferProxyImpl::CommandBufferProxyImpl(GpuChannelHost* channel,
                                                int32 route_id,
                                                int32 stream_id)
     : lock_(nullptr),
       channel_(channel),
+      command_buffer_id_(CommandBufferProxyID(channel->channel_id(), route_id)),
       route_id_(route_id),
       stream_id_(stream_id),
       flush_count_(0),
@@ -473,6 +482,14 @@ void CommandBufferProxyImpl::SetLock(base::Lock* lock) {
 
 bool CommandBufferProxyImpl::IsGpuChannelLost() {
   return !channel_ || channel_->IsLost();
+}
+
+gpu::CommandBufferNamespace CommandBufferProxyImpl::GetNamespaceID() const {
+  return gpu::CommandBufferNamespace::GPU_IO;
+}
+
+uint64_t CommandBufferProxyImpl::GetCommandBufferID() const {
+  return command_buffer_id_;
 }
 
 uint32 CommandBufferProxyImpl::InsertSyncPoint() {

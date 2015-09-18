@@ -17,8 +17,10 @@ PpapiCommandBufferProxy::PpapiCommandBufferProxy(
     const ppapi::HostResource& resource,
     PluginDispatcher* dispatcher,
     const gpu::Capabilities& capabilities,
-    const SerializedHandle& shared_state)
-    : capabilities_(capabilities),
+    const SerializedHandle& shared_state,
+    uint64_t command_buffer_id)
+    : command_buffer_id_(command_buffer_id),
+      capabilities_(capabilities),
       resource_(resource),
       dispatcher_(dispatcher) {
   shared_state_shm_.reset(
@@ -175,6 +177,14 @@ void PpapiCommandBufferProxy::SetLock(base::Lock*) {
 bool PpapiCommandBufferProxy::IsGpuChannelLost() {
   NOTIMPLEMENTED();
   return false;
+}
+
+gpu::CommandBufferNamespace PpapiCommandBufferProxy::GetNamespaceID() const {
+  return gpu::CommandBufferNamespace::GPU_IO;
+}
+
+uint64_t PpapiCommandBufferProxy::GetCommandBufferID() const {
+  return command_buffer_id_;
 }
 
 uint32 PpapiCommandBufferProxy::InsertSyncPoint() {

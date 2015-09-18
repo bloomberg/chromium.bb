@@ -112,6 +112,8 @@ class MockClientGpuControl : public GpuControl {
   MOCK_METHOD1(CreateStreamTexture, uint32(uint32));
   MOCK_METHOD1(SetLock, void(base::Lock*));
   MOCK_METHOD0(IsGpuChannelLost, bool());
+  MOCK_CONST_METHOD0(GetNamespaceID, CommandBufferNamespace());
+  MOCK_CONST_METHOD0(GetCommandBufferID, uint64_t());
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockClientGpuControl);

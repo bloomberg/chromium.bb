@@ -71,6 +71,8 @@ class CommandBufferLocal : public gpu::GpuControl {
   uint32 CreateStreamTexture(uint32 texture_id) override;
   void SetLock(base::Lock*) override;
   bool IsGpuChannelLost() override;
+  gpu::CommandBufferNamespace GetNamespaceID() const override;
+  uint64_t GetCommandBufferID() const override;
 
  private:
   void PumpCommands();

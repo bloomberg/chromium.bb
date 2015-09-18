@@ -126,6 +126,8 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
   uint32 CreateStreamTexture(uint32 texture_id) override;
   void SetLock(base::Lock*) override;
   bool IsGpuChannelLost() override;
+  CommandBufferNamespace GetNamespaceID() const override;
+  uint64_t GetCommandBufferID() const override;
 
   // The serializer interface to the GPU service (i.e. thread).
   class Service {
@@ -227,6 +229,8 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
   bool GetBufferChanged(int32 transfer_buffer_id);
   void PumpCommands();
   void PerformDelayedWork();
+
+  const uint64_t command_buffer_id_;
 
   // Members accessed on the gpu thread (possibly with the exception of
   // creation):

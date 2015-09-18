@@ -121,6 +121,8 @@ class CommandBufferProxyImpl
   uint32 CreateStreamTexture(uint32 texture_id) override;
   void SetLock(base::Lock* lock) override;
   bool IsGpuChannelLost() override;
+  gpu::CommandBufferNamespace GetNamespaceID() const override;
+  uint64_t GetCommandBufferID() const override;
 
   bool ProduceFrontBuffer(const gpu::Mailbox& mailbox);
   void SetContextLostCallback(const base::Closure& callback);
@@ -211,6 +213,7 @@ class CommandBufferProxyImpl
   // |*this| is owned by |*channel_| and so is always outlived by it, so using a
   // raw pointer is ok.
   GpuChannelHost* channel_;
+  const uint64_t command_buffer_id_;
   const int32 route_id_;
   const int32 stream_id_;
   uint32 flush_count_;

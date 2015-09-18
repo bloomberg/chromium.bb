@@ -54,6 +54,8 @@ namespace gpu {
 
 namespace {
 
+base::StaticAtomicSequenceNumber g_next_command_buffer_id;
+
 template <typename T>
 static void RunTaskWithResult(base::Callback<T(void)> task,
                               T* result,
@@ -174,7 +176,8 @@ gpu::gles2::ProgramCache* InProcessCommandBuffer::Service::program_cache() {
 
 InProcessCommandBuffer::InProcessCommandBuffer(
     const scoped_refptr<Service>& service)
-    : context_lost_(false),
+    : command_buffer_id_(g_next_command_buffer_id.GetNext()),
+      context_lost_(false),
       delayed_work_pending_(false),
       image_factory_(nullptr),
       last_put_offset_(-1),
@@ -847,6 +850,14 @@ bool InProcessCommandBuffer::IsGpuChannelLost() {
   // There is no such channel to lose for in-process contexts. This only
   // makes sense for out-of-process command buffers.
   return false;
+}
+
+CommandBufferNamespace InProcessCommandBuffer::GetNamespaceID() const {
+  return CommandBufferNamespace::IN_PROCESS;
+}
+
+uint64_t InProcessCommandBuffer::GetCommandBufferID() const {
+  return command_buffer_id_;
 }
 
 uint32 InProcessCommandBuffer::CreateStreamTextureOnGpuThread(

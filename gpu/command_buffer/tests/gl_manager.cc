@@ -438,4 +438,12 @@ bool GLManager::IsGpuChannelLost() {
   return false;
 }
 
+gpu::CommandBufferNamespace GLManager::GetNamespaceID() const {
+  return gpu::CommandBufferNamespace::IN_PROCESS;
+}
+
+uint64_t GLManager::GetCommandBufferID() const {
+  return 0;
+}
+
 }  // namespace gpu

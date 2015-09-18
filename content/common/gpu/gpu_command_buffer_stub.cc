@@ -161,6 +161,10 @@ void RunOnThread(scoped_refptr<base::SingleThreadTaskRunner> task_runner,
   }
 }
 
+uint64_t GetCommandBufferID(int channel_id, int32 route_id) {
+  return (static_cast<uint64_t>(channel_id) << 32) | route_id;
+}
+
 }  // namespace
 
 GpuCommandBufferStub::GpuCommandBufferStub(
@@ -191,6 +195,7 @@ GpuCommandBufferStub::GpuCommandBufferStub(
       requested_attribs_(attribs),
       gpu_preference_(gpu_preference),
       use_virtualized_gl_context_(use_virtualized_gl_context),
+      command_buffer_id_(GetCommandBufferID(channel->client_id(), route_id)),
       stream_id_(stream_id),
       route_id_(route_id),
       surface_id_(surface_id),

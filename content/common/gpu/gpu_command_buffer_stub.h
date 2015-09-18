@@ -117,6 +117,9 @@ class GpuCommandBufferStub
   gpu::GpuScheduler* scheduler() const { return scheduler_.get(); }
   GpuChannel* channel() const { return channel_; }
 
+  // Unique command buffer ID for this command buffer stub.
+  uint64_t command_buffer_id() const { return command_buffer_id_; }
+
   // Identifies the target surface.
   int32 surface_id() const { return surface_id_; }
 
@@ -262,6 +265,7 @@ class GpuCommandBufferStub
   std::vector<int32> requested_attribs_;
   gfx::GpuPreference gpu_preference_;
   bool use_virtualized_gl_context_;
+  const uint64_t command_buffer_id_;
   const int32 stream_id_;
   const int32 route_id_;
   const int32 surface_id_;

@@ -396,4 +396,16 @@ bool CommandBufferClientImpl::IsGpuChannelLost() {
   return false;
 }
 
+gpu::CommandBufferNamespace CommandBufferClientImpl::GetNamespaceID() const {
+  return gpu::CommandBufferNamespace::MOJO;
+}
+
+uint64_t CommandBufferClientImpl::GetCommandBufferID() const {
+  // TODO (rjkroege): This must correspond to the command buffer ID on the
+  // server side. Most likely a combination of the client-specific integer and
+  // the connect id.
+  NOTIMPLEMENTED();
+  return 0;
+}
+
 }  // namespace gles2

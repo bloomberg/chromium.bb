@@ -141,7 +141,8 @@ class ResourceCreationAPI {
       PP_Resource share_context,
       const int32_t* attrib_list,
       gpu::Capabilities* capabilities,
-      base::SharedMemoryHandle* shared_state) = 0;
+      base::SharedMemoryHandle* shared_state,
+      uint64_t* command_buffer_id) = 0;
   virtual PP_Resource CreateHostResolver(PP_Instance instance) = 0;
   virtual PP_Resource CreateHostResolverPrivate(PP_Instance instance) = 0;
   virtual PP_Resource CreateImageData(PP_Instance instance,

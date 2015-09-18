@@ -30,7 +30,8 @@ class PPAPI_PROXY_EXPORT PpapiCommandBufferProxy : public gpu::CommandBuffer,
   PpapiCommandBufferProxy(const HostResource& resource,
                           PluginDispatcher* dispatcher,
                           const gpu::Capabilities& capabilities,
-                          const SerializedHandle& shared_state);
+                          const SerializedHandle& shared_state,
+                          uint64_t command_buffer_id);
   ~PpapiCommandBufferProxy() override;
 
   // gpu::CommandBuffer implementation:
@@ -67,6 +68,8 @@ class PPAPI_PROXY_EXPORT PpapiCommandBufferProxy : public gpu::CommandBuffer,
   uint32 CreateStreamTexture(uint32 texture_id) override;
   void SetLock(base::Lock*) override;
   bool IsGpuChannelLost() override;
+  gpu::CommandBufferNamespace GetNamespaceID() const override;
+  uint64_t GetCommandBufferID() const override;
 
  private:
   bool Send(IPC::Message* msg);
@@ -79,6 +82,8 @@ class PPAPI_PROXY_EXPORT PpapiCommandBufferProxy : public gpu::CommandBuffer,
   gpu::CommandBufferSharedState* shared_state() const;
 
   void FlushInternal();
+
+  const uint64_t command_buffer_id_;
 
   gpu::Capabilities capabilities_;
   State last_state_;

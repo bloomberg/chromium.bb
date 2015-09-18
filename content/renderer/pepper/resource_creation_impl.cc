@@ -122,9 +122,11 @@ PP_Resource ResourceCreationImpl::CreateGraphics3DRaw(
     PP_Resource share_context,
     const int32_t* attrib_list,
     gpu::Capabilities* capabilities,
-    base::SharedMemoryHandle* shared_state) {
+    base::SharedMemoryHandle* shared_state,
+    uint64_t* command_buffer_id) {
   return PPB_Graphics3D_Impl::CreateRaw(instance, share_context, attrib_list,
-                                        capabilities, shared_state);
+                                        capabilities, shared_state,
+                                        command_buffer_id);
 }
 
 PP_Resource ResourceCreationImpl::CreateHostResolver(PP_Instance instance) {
