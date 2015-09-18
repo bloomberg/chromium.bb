@@ -25191,6 +25191,37 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Net.SSL_KeyExchange.DHE">
+  <owner>sigbjorn@opera.com</owner>
+  <owner>agl@chromium.org</owner>
+  <owner>rsleevi@chromium.org</owner>
+  <summary>
+    Bit strength of the key exchange for DHE. Recorded for each SSL/TLS
+    connection in the socket pool where Connect() succeeds.
+  </summary>
+</histogram>
+
+<histogram name="Net.SSL_KeyExchange.ECDHE" enum="ECDHECurves">
+  <owner>sigbjorn@opera.com</owner>
+  <owner>agl@chromium.org</owner>
+  <owner>rsleevi@chromium.org</owner>
+  <summary>
+    The curve used for key exchange for ECDHE. Recorded for each SSL/TLS
+    connection in the socket pool where Connect() succeeds.
+  </summary>
+</histogram>
+
+<histogram name="Net.SSL_KeyExchange.RSA">
+  <owner>sigbjorn@opera.com</owner>
+  <owner>agl@chromium.org</owner>
+  <owner>rsleevi@chromium.org</owner>
+  <summary>
+    Bit strength of the key exchange for RSA. Recorded for each SSL/TLS
+    connection in the socket pool where Connect() succeeds. See |SSL_SESSION|'s
+    key_exchange_info for more information.
+  </summary>
+</histogram>
+
 <histogram name="Net.SSLCertBlacklisted">
   <owner>agl@chromium.org</owner>
   <summary>
@@ -56748,6 +56779,13 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <enum name="EasyUnlockUnlockEvent" type="int">
   <int value="0" label="Screen unlocked (total)"/>
   <int value="1" label="Screen unlocked (via EasyUnlock)"/>
+</enum>
+
+<enum name="ECDHECurves" type="int">
+  <int value="21" label="P-224"/>
+  <int value="23" label="P-256"/>
+  <int value="24" label="P-384"/>
+  <int value="25" label="P-521"/>
 </enum>
 
 <enum name="EmbeddedWorkerStartingPhase" type="int">

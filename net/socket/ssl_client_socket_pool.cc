@@ -21,6 +21,7 @@
 #include "net/socket/ssl_client_socket.h"
 #include "net/socket/transport_client_socket_pool.h"
 #include "net/ssl/ssl_cert_request_info.h"
+#include "net/ssl/ssl_cipher_suite_names.h"
 #include "net/ssl/ssl_connection_status_flags.h"
 #include "net/ssl/ssl_info.h"
 
@@ -371,9 +372,28 @@ int SSLConnectJob::DoSSLConnectComplete(int result) {
                                                     ssl_info.connection_status),
                               SSL_CONNECTION_VERSION_MAX);
 
-    UMA_HISTOGRAM_SPARSE_SLOWLY("Net.SSL_CipherSuite",
-                                SSLConnectionStatusToCipherSuite(
-                                    ssl_info.connection_status));
+    uint16 cipher_suite =
+        SSLConnectionStatusToCipherSuite(ssl_info.connection_status);
+    UMA_HISTOGRAM_SPARSE_SLOWLY("Net.SSL_CipherSuite", cipher_suite);
+
+    const char *str, *cipher_str, *mac_str;
+    bool is_aead;
+    SSLCipherSuiteToStrings(&str, &cipher_str, &mac_str, &is_aead,
+                            cipher_suite);
+    // UMA_HISTOGRAM_... macros cache the Histogram instance and thus only work
+    // if the histogram name is constant, so don't generate it dynamically.
+    if (strcmp(str, "RSA") == 0) {
+      UMA_HISTOGRAM_SPARSE_SLOWLY("Net.SSL_KeyExchange.RSA",
+                                  ssl_info.key_exchange_info);
+    } else if (strncmp(str, "DHE_", 4) == 0) {
+      UMA_HISTOGRAM_SPARSE_SLOWLY("Net.SSL_KeyExchange.DHE",
+                                  ssl_info.key_exchange_info);
+    } else if (strncmp(str, "ECDHE_", 6) == 0) {
+      UMA_HISTOGRAM_SPARSE_SLOWLY("Net.SSL_KeyExchange.ECDHE",
+                                  ssl_info.key_exchange_info);
+    } else {
+      NOTREACHED();
+    }
 
     if (ssl_info.handshake_type == SSLInfo::HANDSHAKE_RESUME) {
       UMA_HISTOGRAM_CUSTOM_TIMES("Net.SSL_Connection_Latency_Resume_Handshake",
