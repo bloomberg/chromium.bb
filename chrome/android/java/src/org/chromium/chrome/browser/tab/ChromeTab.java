@@ -931,6 +931,12 @@ public class ChromeTab extends Tab {
         // url, we would like to close it as we will load this url in a
         // different Activity.
         if (shouldCloseContentsOnOverrideUrlLoadingAndLaunchIntent()) {
+            if (getLaunchType() == TabLaunchType.FROM_EXTERNAL_APP) {
+                // Moving task back before closing the tab allows back button to function better
+                // when Chrome was an intermediate link redirector between two apps.
+                // crbug.com/487938.
+                mActivity.moveTaskToBack(true);
+            }
             mActivity.getTabModelSelector().closeTab(this);
         } else if (mTabRedirectHandler.isOnNavigation()) {
             int lastCommittedEntryIndexBeforeNavigation =
