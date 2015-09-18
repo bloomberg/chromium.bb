@@ -58,6 +58,10 @@ T ConstructShaderVariable(
 #ifndef COMPILER_MSVC
 const GLuint TestHelper::kServiceBlackTexture2dId;
 const GLuint TestHelper::kServiceDefaultTexture2dId;
+const GLuint TestHelper::kServiceBlackTexture3dId;
+const GLuint TestHelper::kServiceDefaultTexture3dId;
+const GLuint TestHelper::kServiceBlackTexture2dArrayId;
+const GLuint TestHelper::kServiceDefaultTexture2dArrayId;
 const GLuint TestHelper::kServiceBlackTextureCubemapId;
 const GLuint TestHelper::kServiceDefaultTextureCubemapId;
 const GLuint TestHelper::kServiceBlackExternalTextureId;
@@ -93,10 +97,18 @@ void TestHelper::SetupTextureInitializationExpectations(
 
   bool needs_initialization = (target != GL_TEXTURE_EXTERNAL_OES);
   bool needs_faces = (target == GL_TEXTURE_CUBE_MAP);
+  bool is_3d_or_2d_array_target = (target == GL_TEXTURE_3D ||
+      target == GL_TEXTURE_2D_ARRAY);
 
   static GLuint texture_2d_ids[] = {
     kServiceBlackTexture2dId,
     kServiceDefaultTexture2dId };
+  static GLuint texture_3d_ids[] = {
+    kServiceBlackTexture3dId,
+    kServiceDefaultTexture3dId };
+  static GLuint texture_2d_array_ids[] = {
+    kServiceBlackTexture2dArrayId,
+    kServiceDefaultTexture2dArrayId };
   static GLuint texture_cube_map_ids[] = {
     kServiceBlackTextureCubemapId,
     kServiceDefaultTextureCubemapId };
@@ -111,6 +123,12 @@ void TestHelper::SetupTextureInitializationExpectations(
   switch (target) {
     case GL_TEXTURE_2D:
       texture_ids = &texture_2d_ids[0];
+      break;
+    case GL_TEXTURE_3D:
+      texture_ids = &texture_3d_ids[0];
+      break;
+    case GL_TEXTURE_2D_ARRAY:
+      texture_ids = &texture_2d_array_ids[0];
       break;
     case GL_TEXTURE_CUBE_MAP:
       texture_ids = &texture_cube_map_ids[0];
@@ -152,10 +170,17 @@ void TestHelper::SetupTextureInitializationExpectations(
               .RetiresOnSaturation();
         }
       } else {
-        EXPECT_CALL(*gl, TexImage2D(target, 0, GL_RGBA, 1, 1, 0, GL_RGBA,
-                                    GL_UNSIGNED_BYTE, _))
-            .Times(1)
-            .RetiresOnSaturation();
+        if (is_3d_or_2d_array_target) {
+          EXPECT_CALL(*gl, TexImage3D(target, 0, GL_RGBA, 1, 1, 1, 0, GL_RGBA,
+                                      GL_UNSIGNED_BYTE, _))
+              .Times(1)
+              .RetiresOnSaturation();
+        } else {
+          EXPECT_CALL(*gl, TexImage2D(target, 0, GL_RGBA, 1, 1, 0, GL_RGBA,
+                                      GL_UNSIGNED_BYTE, _))
+              .Times(1)
+              .RetiresOnSaturation();
+        }
       }
     }
   }
@@ -166,6 +191,7 @@ void TestHelper::SetupTextureInitializationExpectations(
 
 void TestHelper::SetupTextureManagerInitExpectations(
     ::gfx::MockGLInterface* gl,
+    bool is_es3_enabled,
     const char* extensions,
     bool use_default_textures) {
   InSequence sequence;
@@ -174,6 +200,13 @@ void TestHelper::SetupTextureManagerInitExpectations(
       gl, GL_TEXTURE_2D, use_default_textures);
   SetupTextureInitializationExpectations(
       gl, GL_TEXTURE_CUBE_MAP, use_default_textures);
+
+  if (is_es3_enabled) {
+    SetupTextureInitializationExpectations(
+        gl, GL_TEXTURE_3D, use_default_textures);
+    SetupTextureInitializationExpectations(
+        gl, GL_TEXTURE_2D_ARRAY, use_default_textures);
+  }
 
   bool ext_image_external = false;
   bool arb_texture_rectangle = false;
@@ -211,6 +244,12 @@ void TestHelper::SetupTextureDestructionExpectations(
     case GL_TEXTURE_2D:
       texture_id = kServiceDefaultTexture2dId;
       break;
+    case GL_TEXTURE_3D:
+      texture_id = kServiceDefaultTexture3dId;
+      break;
+    case GL_TEXTURE_2D_ARRAY:
+      texture_id = kServiceDefaultTexture2dArrayId;
+      break;
     case GL_TEXTURE_CUBE_MAP:
       texture_id = kServiceDefaultTextureCubemapId;
       break;
@@ -231,11 +270,19 @@ void TestHelper::SetupTextureDestructionExpectations(
 
 void TestHelper::SetupTextureManagerDestructionExpectations(
     ::gfx::MockGLInterface* gl,
+    bool is_es3_enabled,
     const char* extensions,
     bool use_default_textures) {
   SetupTextureDestructionExpectations(gl, GL_TEXTURE_2D, use_default_textures);
   SetupTextureDestructionExpectations(
       gl, GL_TEXTURE_CUBE_MAP, use_default_textures);
+
+  if (is_es3_enabled) {
+    SetupTextureDestructionExpectations(
+        gl, GL_TEXTURE_3D, use_default_textures);
+    SetupTextureDestructionExpectations(
+        gl, GL_TEXTURE_2D_ARRAY,use_default_textures);
+  }
 
   bool ext_image_external = false;
   bool arb_texture_rectangle = false;
@@ -260,7 +307,7 @@ void TestHelper::SetupTextureManagerDestructionExpectations(
         gl, GL_TEXTURE_RECTANGLE_ARB, use_default_textures);
   }
 
-  EXPECT_CALL(*gl, DeleteTextures(4, _))
+  EXPECT_CALL(*gl, DeleteTextures(TextureManager::kNumDefaultTextures, _))
       .Times(1)
       .RetiresOnSaturation();
 }
@@ -343,7 +390,8 @@ void TestHelper::SetupContextGroupInitExpectations(
   }
 
   bool use_default_textures = bind_generates_resource;
-  SetupTextureManagerInitExpectations(gl, extensions, use_default_textures);
+  SetupTextureManagerInitExpectations(
+      gl, false, extensions, use_default_textures);
 }
 
 void TestHelper::SetupFeatureInfoInitExpectations(

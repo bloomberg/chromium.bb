@@ -27,12 +27,16 @@ class TestHelper {
  public:
   static const GLuint kServiceBlackTexture2dId = 701;
   static const GLuint kServiceDefaultTexture2dId = 702;
-  static const GLuint kServiceBlackTextureCubemapId = 703;
-  static const GLuint kServiceDefaultTextureCubemapId = 704;
-  static const GLuint kServiceBlackExternalTextureId = 705;
-  static const GLuint kServiceDefaultExternalTextureId = 706;
-  static const GLuint kServiceBlackRectangleTextureId = 707;
-  static const GLuint kServiceDefaultRectangleTextureId = 708;
+  static const GLuint kServiceBlackTexture3dId = 703;
+  static const GLuint kServiceDefaultTexture3dId = 704;
+  static const GLuint kServiceBlackTexture2dArrayId = 705;
+  static const GLuint kServiceDefaultTexture2dArrayId = 706;
+  static const GLuint kServiceBlackTextureCubemapId = 707;
+  static const GLuint kServiceDefaultTextureCubemapId = 708;
+  static const GLuint kServiceBlackExternalTextureId = 709;
+  static const GLuint kServiceDefaultExternalTextureId = 710;
+  static const GLuint kServiceBlackRectangleTextureId = 711;
+  static const GLuint kServiceDefaultRectangleTextureId = 712;
 
   static const GLint kMaxSamples = 4;
   static const GLint kMaxRenderbufferSize = 1024;
@@ -83,10 +87,12 @@ class TestHelper {
       const char* gl_renderer,
       const char* gl_version);
   static void SetupTextureManagerInitExpectations(::gfx::MockGLInterface* gl,
+                                                  bool is_es3_enabled,
                                                   const char* extensions,
                                                   bool use_default_textures);
   static void SetupTextureManagerDestructionExpectations(
       ::gfx::MockGLInterface* gl,
+      bool is_es3_enabled,
       const char* extensions,
       bool use_default_textures);
 

@@ -1411,6 +1411,13 @@ bool TextureManager::Initialize() {
   default_textures_[kCubeMap] = CreateDefaultAndBlackTextures(
       GL_TEXTURE_CUBE_MAP, &black_texture_ids_[kCubeMap]);
 
+  if (feature_info_->IsES3Enabled()) {
+    default_textures_[kTexture3D] = CreateDefaultAndBlackTextures(
+        GL_TEXTURE_3D, &black_texture_ids_[kTexture3D]);
+    default_textures_[kTexture2DArray] = CreateDefaultAndBlackTextures(
+        GL_TEXTURE_2D_ARRAY, &black_texture_ids_[kTexture2DArray]);
+  }
+
   if (feature_info_->feature_flags().oes_egl_image_external) {
     default_textures_[kExternalOES] = CreateDefaultAndBlackTextures(
         GL_TEXTURE_EXTERNAL_OES, &black_texture_ids_[kExternalOES]);
@@ -1441,6 +1448,8 @@ scoped_refptr<TextureRef>
   // black values according to the spec.
   bool needs_initialization = (target != GL_TEXTURE_EXTERNAL_OES);
   bool needs_faces = (target == GL_TEXTURE_CUBE_MAP);
+  bool is_3d_or_2d_array_target = (target == GL_TEXTURE_3D ||
+      target == GL_TEXTURE_2D_ARRAY);
 
   // Make default textures and texture for replacing non-renderable textures.
   GLuint ids[2];
@@ -1455,8 +1464,13 @@ scoped_refptr<TextureRef>
                        GL_RGBA, GL_UNSIGNED_BYTE, black);
         }
       } else {
-        glTexImage2D(target, 0, GL_RGBA, 1, 1, 0, GL_RGBA,
-                     GL_UNSIGNED_BYTE, black);
+        if (is_3d_or_2d_array_target) {
+          glTexImage3D(target, 0, GL_RGBA, 1, 1, 1, 0, GL_RGBA,
+                       GL_UNSIGNED_BYTE, black);
+        } else {
+          glTexImage2D(target, 0, GL_RGBA, 1, 1, 0, GL_RGBA,
+                       GL_UNSIGNED_BYTE, black);
+        }
       }
     }
   }

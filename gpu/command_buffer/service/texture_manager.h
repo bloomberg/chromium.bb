@@ -583,6 +583,8 @@ class GPU_EXPORT TextureManager : public base::trace_event::MemoryDumpProvider {
 
   enum DefaultAndBlackTextures {
     kTexture2D,
+    kTexture3D,
+    kTexture2DArray,
     kCubeMap,
     kExternalOES,
     kRectangleARB,
@@ -737,6 +739,10 @@ class GPU_EXPORT TextureManager : public base::trace_event::MemoryDumpProvider {
     switch (target) {
       case GL_TEXTURE_2D:
         return default_textures_[kTexture2D].get();
+      case GL_TEXTURE_3D:
+        return default_textures_[kTexture3D].get();
+      case GL_TEXTURE_2D_ARRAY:
+        return default_textures_[kTexture2DArray].get();
       case GL_TEXTURE_CUBE_MAP:
         return default_textures_[kCubeMap].get();
       case GL_TEXTURE_EXTERNAL_OES:
@@ -769,6 +775,10 @@ class GPU_EXPORT TextureManager : public base::trace_event::MemoryDumpProvider {
     switch (target) {
       case GL_SAMPLER_2D:
         return black_texture_ids_[kTexture2D];
+      case GL_SAMPLER_3D:
+        return black_texture_ids_[kTexture3D];
+      case GL_SAMPLER_2D_ARRAY:
+        return black_texture_ids_[kTexture2DArray];
       case GL_SAMPLER_CUBE:
         return black_texture_ids_[kCubeMap];
       case GL_SAMPLER_EXTERNAL_OES:

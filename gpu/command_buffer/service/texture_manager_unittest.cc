@@ -78,7 +78,7 @@ class TextureManagerTest : public GpuServiceTest {
                                       kMax3DTextureSize,
                                       kUseDefaultTextures));
     TestHelper::SetupTextureManagerInitExpectations(
-        gl_.get(), "", kUseDefaultTextures);
+        gl_.get(), false, "", kUseDefaultTextures);
     manager_->Initialize();
     error_state_.reset(new ::testing::StrictMock<gles2::MockErrorState>());
   }
@@ -94,6 +94,23 @@ class TextureManagerTest : public GpuServiceTest {
     TestHelper::SetTexParameteriWithExpectations(
         gl_.get(), error_state_.get(), manager_.get(),
         texture_ref, pname, value, error);
+  }
+
+  void SetupFeatureInfo(const char* gl_extensions,
+                        const char* gl_version,
+                        bool enable_es3) {
+    TestHelper::SetupFeatureInfoInitExpectationsWithGLVersion(
+        gl_.get(), gl_extensions, "", gl_version);
+    feature_info_->Initialize();
+    if (enable_es3) {
+      EXPECT_CALL(*gl_, GetIntegerv(GL_MAX_COLOR_ATTACHMENTS, _))
+          .WillOnce(SetArgPointee<1>(8))
+          .RetiresOnSaturation();
+      EXPECT_CALL(*gl_, GetIntegerv(GL_MAX_DRAW_BUFFERS, _))
+          .WillOnce(SetArgPointee<1>(8))
+          .RetiresOnSaturation();
+      feature_info_->EnableES3Validators();
+    }
   }
 
   scoped_refptr<FeatureInfo> feature_info_;
@@ -177,10 +194,8 @@ TEST_F(TextureManagerTest, SetParameter) {
 
 TEST_F(TextureManagerTest, UseDefaultTexturesTrue) {
   bool use_default_textures = true;
-  scoped_refptr<FeatureInfo> feature_info(new FeatureInfo());
-
-  TestHelper::SetupTextureManagerInitExpectations(
-      gl_.get(), "GL_ANGLE_texture_usage", use_default_textures);
+  TestHelper::SetupTextureManagerInitExpectations(gl_.get(),
+      false, "GL_ANGLE_texture_usage", use_default_textures);
   TextureManager manager(NULL,
                          feature_info_.get(),
                          kMaxTextureSize,
@@ -200,8 +215,8 @@ TEST_F(TextureManagerTest, UseDefaultTexturesTrue) {
 
 TEST_F(TextureManagerTest, UseDefaultTexturesFalse) {
   bool use_default_textures = false;
-  TestHelper::SetupTextureManagerInitExpectations(
-      gl_.get(), "GL_ANGLE_texture_usage", use_default_textures);
+  TestHelper::SetupTextureManagerInitExpectations(gl_.get(),
+      false, "GL_ANGLE_texture_usage", use_default_textures);
   TextureManager manager(NULL,
                          feature_info_.get(),
                          kMaxTextureSize,
@@ -219,9 +234,49 @@ TEST_F(TextureManagerTest, UseDefaultTexturesFalse) {
   manager.Destroy(false);
 }
 
+TEST_F(TextureManagerTest, UseDefaultTexturesTrueES3) {
+  bool use_default_textures = true;
+  SetupFeatureInfo("", "OpenGL ES 3.0", true);
+  TestHelper::SetupTextureManagerInitExpectations(gl_.get(),
+      true, "", use_default_textures);
+  TextureManager manager(NULL,
+                         feature_info_.get(),
+                         kMaxTextureSize,
+                         kMaxCubeMapTextureSize,
+                         kMaxRectangleTextureSize,
+                         kMax3DTextureSize,
+                         use_default_textures);
+  manager.Initialize();
+
+  EXPECT_TRUE(manager.GetDefaultTextureInfo(GL_TEXTURE_3D) != NULL);
+  EXPECT_TRUE(manager.GetDefaultTextureInfo(GL_TEXTURE_2D_ARRAY) != NULL);
+
+  manager.Destroy(false);
+}
+
+TEST_F(TextureManagerTest, UseDefaultTexturesFalseES3) {
+  bool use_default_textures = false;
+  SetupFeatureInfo("", "OpenGL ES 3.0", true);
+  TestHelper::SetupTextureManagerInitExpectations(gl_.get(),
+      true, "", use_default_textures);
+  TextureManager manager(NULL,
+                         feature_info_.get(),
+                         kMaxTextureSize,
+                         kMaxCubeMapTextureSize,
+                         kMaxRectangleTextureSize,
+                         kMax3DTextureSize,
+                         use_default_textures);
+  manager.Initialize();
+
+  EXPECT_TRUE(manager.GetDefaultTextureInfo(GL_TEXTURE_3D) == NULL);
+  EXPECT_TRUE(manager.GetDefaultTextureInfo(GL_TEXTURE_2D_ARRAY) == NULL);
+
+  manager.Destroy(false);
+}
+
 TEST_F(TextureManagerTest, TextureUsageExt) {
   TestHelper::SetupTextureManagerInitExpectations(
-      gl_.get(), "GL_ANGLE_texture_usage", kUseDefaultTextures);
+      gl_.get(), false, "GL_ANGLE_texture_usage", kUseDefaultTextures);
   TextureManager manager(NULL,
                          feature_info_.get(),
                          kMaxTextureSize,
@@ -249,7 +304,7 @@ TEST_F(TextureManagerTest, Destroy) {
   const GLuint kClient1Id = 1;
   const GLuint kService1Id = 11;
   TestHelper::SetupTextureManagerInitExpectations(
-      gl_.get(), "", kUseDefaultTextures);
+      gl_.get(), false, "", kUseDefaultTextures);
   TextureManager manager(NULL,
                          feature_info_.get(),
                          kMaxTextureSize,
@@ -267,7 +322,7 @@ TEST_F(TextureManagerTest, Destroy) {
       .Times(1)
       .RetiresOnSaturation();
   TestHelper::SetupTextureManagerDestructionExpectations(
-      gl_.get(), "", kUseDefaultTextures);
+      gl_.get(), false, "", kUseDefaultTextures);
   manager.Destroy(true);
   // Check that resources got freed.
   texture = manager.GetTexture(kClient1Id);
@@ -1807,10 +1862,10 @@ class SharedTextureTest : public GpuServiceTest {
                            TextureManagerTest::kMax3DTextureSize,
                            kUseDefaultTextures));
     TestHelper::SetupTextureManagerInitExpectations(
-        gl_.get(), "", kUseDefaultTextures);
+        gl_.get(), false, "", kUseDefaultTextures);
     texture_manager1_->Initialize();
     TestHelper::SetupTextureManagerInitExpectations(
-        gl_.get(), "", kUseDefaultTextures);
+        gl_.get(), false, "", kUseDefaultTextures);
     texture_manager2_->Initialize();
   }
 
@@ -2055,12 +2110,6 @@ class TextureFormatTypeValidationTest : public TextureManagerTest {
   ~TextureFormatTypeValidationTest() override {}
 
  protected:
-  void SetupFeatureInfo(const char* gl_extensions, const char* gl_version) {
-    TestHelper::SetupFeatureInfoInitExpectationsWithGLVersion(
-        gl_.get(), gl_extensions, "", gl_version);
-    feature_info_->Initialize();
-  }
-
   void ExpectValid(GLenum format, GLenum type, GLenum internal_format) {
     EXPECT_TRUE(manager_->ValidateTextureParameters(
         error_state_.get(), "", format, type, internal_format, 0));
@@ -2086,7 +2135,7 @@ class TextureFormatTypeValidationTest : public TextureManagerTest {
 };
 
 TEST_F(TextureFormatTypeValidationTest, ES2Basic) {
-  SetupFeatureInfo("", "OpenGL ES 2.0");
+  SetupFeatureInfo("", "OpenGL ES 2.0", false);
 
   ExpectValid(GL_ALPHA, GL_UNSIGNED_BYTE, GL_ALPHA);
   ExpectValid(GL_RGB, GL_UNSIGNED_SHORT_5_6_5, GL_RGB);
@@ -2116,19 +2165,19 @@ TEST_F(TextureFormatTypeValidationTest, ES2Basic) {
 }
 
 TEST_F(TextureFormatTypeValidationTest, ES2WithExtTextureFormatBGRA8888) {
-  SetupFeatureInfo("GL_EXT_texture_format_BGRA8888", "OpenGL ES 2.0");
+  SetupFeatureInfo("GL_EXT_texture_format_BGRA8888", "OpenGL ES 2.0", false);
 
   ExpectValid(GL_BGRA_EXT, GL_UNSIGNED_BYTE, GL_BGRA_EXT);
 }
 
 TEST_F(TextureFormatTypeValidationTest, ES2WithAppleTextureFormatBGRA8888) {
-  SetupFeatureInfo("GL_APPLE_texture_format_BGRA8888", "OpenGL ES 2.0");
+  SetupFeatureInfo("GL_APPLE_texture_format_BGRA8888", "OpenGL ES 2.0", false);
 
   ExpectValid(GL_BGRA_EXT, GL_UNSIGNED_BYTE, GL_BGRA_EXT);
 }
 
 TEST_F(TextureFormatTypeValidationTest, ES2WithArbDepth) {
-  SetupFeatureInfo("GL_ARB_depth_texture", "OpenGL ES 2.0");
+  SetupFeatureInfo("GL_ARB_depth_texture", "OpenGL ES 2.0", false);
 
   ExpectValid(GL_DEPTH_COMPONENT, GL_UNSIGNED_SHORT, GL_DEPTH_COMPONENT);
   ExpectValid(GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, GL_DEPTH_COMPONENT);
@@ -2136,7 +2185,7 @@ TEST_F(TextureFormatTypeValidationTest, ES2WithArbDepth) {
 }
 
 TEST_F(TextureFormatTypeValidationTest, ES2WithOesDepth) {
-  SetupFeatureInfo("GL_OES_depth_texture", "OpenGL ES 2.0");
+  SetupFeatureInfo("GL_OES_depth_texture", "OpenGL ES 2.0", false);
 
   ExpectValid(GL_DEPTH_COMPONENT, GL_UNSIGNED_SHORT, GL_DEPTH_COMPONENT);
   ExpectValid(GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, GL_DEPTH_COMPONENT);
@@ -2144,7 +2193,7 @@ TEST_F(TextureFormatTypeValidationTest, ES2WithOesDepth) {
 }
 
 TEST_F(TextureFormatTypeValidationTest, ES2WithAngleDepth) {
-  SetupFeatureInfo("GL_ANGLE_depth_texture", "OpenGL ES 2.0");
+  SetupFeatureInfo("GL_ANGLE_depth_texture", "OpenGL ES 2.0", false);
 
   ExpectValid(GL_DEPTH_COMPONENT, GL_UNSIGNED_SHORT, GL_DEPTH_COMPONENT);
   ExpectValid(GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, GL_DEPTH_COMPONENT);
@@ -2153,7 +2202,9 @@ TEST_F(TextureFormatTypeValidationTest, ES2WithAngleDepth) {
 
 TEST_F(TextureFormatTypeValidationTest, ES2WithExtPackedDepthStencil) {
   SetupFeatureInfo(
-      "GL_EXT_packed_depth_stencil GL_ARB_depth_texture", "OpenGL ES 2.0");
+      "GL_EXT_packed_depth_stencil GL_ARB_depth_texture",
+      "OpenGL ES 2.0",
+      false);
 
   ExpectValid(GL_DEPTH_COMPONENT, GL_UNSIGNED_SHORT, GL_DEPTH_COMPONENT);
   ExpectValid(GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, GL_DEPTH_COMPONENT);
@@ -2163,7 +2214,8 @@ TEST_F(TextureFormatTypeValidationTest, ES2WithExtPackedDepthStencil) {
 TEST_F(TextureFormatTypeValidationTest, ES2WithRGWithFloat) {
   SetupFeatureInfo(
       "GL_EXT_texture_rg GL_OES_texture_float GL_OES_texture_half_float",
-      "OpenGL ES 2.0");
+      "OpenGL ES 2.0",
+      false);
 
   ExpectValid(GL_RED_EXT, GL_HALF_FLOAT_OES, GL_RED_EXT);
   ExpectValid(GL_RG_EXT, GL_HALF_FLOAT_OES, GL_RG_EXT);
@@ -2177,7 +2229,7 @@ TEST_F(TextureFormatTypeValidationTest, ES2WithRGWithFloat) {
 }
 
 TEST_F(TextureFormatTypeValidationTest, ES2WithRGNoFloat) {
-  SetupFeatureInfo("GL_ARB_texture_rg", "OpenGL ES 2.0");
+  SetupFeatureInfo("GL_ARB_texture_rg", "OpenGL ES 2.0", false);
 
   ExpectValid(GL_RED_EXT, GL_UNSIGNED_BYTE, GL_RED_EXT);
   ExpectValid(GL_RG_EXT, GL_UNSIGNED_BYTE, GL_RG_EXT);
@@ -2187,7 +2239,7 @@ TEST_F(TextureFormatTypeValidationTest, ES2WithRGNoFloat) {
 }
 
 TEST_F(TextureFormatTypeValidationTest, ES2OnTopOfES3) {
-  SetupFeatureInfo("", "OpenGL ES 3.0");
+  SetupFeatureInfo("", "OpenGL ES 3.0", false);
 
   ExpectInvalidEnum(GL_RGB, GL_FLOAT, GL_RGB);
   ExpectInvalidEnum(GL_RGBA, GL_FLOAT, GL_RGBA);
@@ -2200,7 +2252,7 @@ TEST_F(TextureFormatTypeValidationTest, ES2OnTopOfES3) {
 }
 
 TEST_F(TextureFormatTypeValidationTest, ES2WithOesTextureFloat) {
-  SetupFeatureInfo("GL_OES_texture_float", "OpenGL ES 2.0");
+  SetupFeatureInfo("GL_OES_texture_float", "OpenGL ES 2.0", false);
 
   ExpectValid(GL_RGB, GL_FLOAT, GL_RGB);
   ExpectValid(GL_RGBA, GL_FLOAT, GL_RGBA);
@@ -2217,7 +2269,9 @@ TEST_F(TextureFormatTypeValidationTest, ES2WithOesTextureFloat) {
 
 TEST_F(TextureFormatTypeValidationTest, ES2WithOesTextureFloatLinear) {
   SetupFeatureInfo(
-      "GL_OES_texture_float GL_OES_texture_float_linear", "OpenGL ES 2.0");
+      "GL_OES_texture_float GL_OES_texture_float_linear",
+      "OpenGL ES 2.0",
+      false);
 
   ExpectValid(GL_RGB, GL_FLOAT, GL_RGB);
   ExpectValid(GL_RGBA, GL_FLOAT, GL_RGBA);
@@ -2233,7 +2287,7 @@ TEST_F(TextureFormatTypeValidationTest, ES2WithOesTextureFloatLinear) {
 }
 
 TEST_F(TextureFormatTypeValidationTest, ES2WithOesTextureHalfFloat) {
-  SetupFeatureInfo("GL_OES_texture_half_float", "OpenGL ES 2.0");
+  SetupFeatureInfo("GL_OES_texture_half_float", "OpenGL ES 2.0", false);
 
   ExpectValid(GL_RGB, GL_HALF_FLOAT_OES, GL_RGB);
   ExpectValid(GL_RGBA, GL_HALF_FLOAT_OES, GL_RGBA);
@@ -2251,7 +2305,8 @@ TEST_F(TextureFormatTypeValidationTest, ES2WithOesTextureHalfFloat) {
 TEST_F(TextureFormatTypeValidationTest, ES2WithOesTextureHalfFloatLinear) {
   SetupFeatureInfo(
       "GL_OES_texture_half_float GL_OES_texture_half_float_linear",
-      "OpenGL ES 2.0");
+      "OpenGL ES 2.0",
+      false);
 
   ExpectValid(GL_RGB, GL_HALF_FLOAT_OES, GL_RGB);
   ExpectValid(GL_RGBA, GL_HALF_FLOAT_OES, GL_RGBA);
@@ -2267,14 +2322,7 @@ TEST_F(TextureFormatTypeValidationTest, ES2WithOesTextureHalfFloatLinear) {
 }
 
 TEST_F(TextureFormatTypeValidationTest, ES3Basic) {
-  SetupFeatureInfo("", "OpenGL ES 3.0");
-  EXPECT_CALL(*gl_, GetIntegerv(GL_MAX_COLOR_ATTACHMENTS, _))
-      .WillOnce(SetArgPointee<1>(8))
-      .RetiresOnSaturation();
-  EXPECT_CALL(*gl_, GetIntegerv(GL_MAX_DRAW_BUFFERS, _))
-      .WillOnce(SetArgPointee<1>(8))
-      .RetiresOnSaturation();
-  feature_info_->EnableES3Validators();
+  SetupFeatureInfo("", "OpenGL ES 3.0", true);
 
   ExpectValid(GL_ALPHA, GL_UNSIGNED_BYTE, GL_ALPHA);
   ExpectValid(GL_RGB, GL_UNSIGNED_SHORT_5_6_5, GL_RGB);
