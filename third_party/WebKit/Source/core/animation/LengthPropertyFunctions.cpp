@@ -276,6 +276,12 @@ bool LengthPropertyFunctions::getLength(CSSPropertyID property, const ComputedSt
             return false;
         result = style.baselineShiftValue();
         return true;
+    case CSSPropertyLineHeight:
+        // Percent Lengths are used to represent numbers on line-height.
+        if (style.specifiedLineHeight().hasPercent())
+            return false;
+        result = style.specifiedLineHeight();
+        return true;
     case CSSPropertyPerspective:
         if (!style.hasPerspective())
             return false;
@@ -324,9 +330,6 @@ bool LengthPropertyFunctions::setLength(CSSPropertyID property, ComputedStyle& s
         return true;
     case CSSPropertyLeft:
         style.setLeft(value);
-        return true;
-    case CSSPropertyLineHeight:
-        style.setLineHeight(value);
         return true;
     case CSSPropertyMarginBottom:
         style.setMarginBottom(value);
@@ -408,6 +411,13 @@ bool LengthPropertyFunctions::setLength(CSSPropertyID property, ComputedStyle& s
         return true;
     case CSSPropertyY:
         style.setY(value);
+        return true;
+
+    case CSSPropertyLineHeight:
+        // Percent Lengths are used to represent numbers on line-height.
+        if (value.hasPercent())
+            return false;
+        style.setLineHeight(value);
         return true;
 
     // TODO(alancutter): Support setters that take a numeric value (need to resolve percentages).

@@ -205,6 +205,10 @@ const Vector<const InterpolationType*>* applicableTypesForProperty(CSSPropertyID
     case CSSPropertyZIndex:
         applicableTypes->append(new NumberInterpolationType(property));
         break;
+    case CSSPropertyLineHeight:
+        applicableTypes->append(new LengthInterpolationType(property));
+        applicableTypes->append(new NumberInterpolationType(property));
+        break;
     default:
         // TODO(alancutter): Support all interpolable CSS properties here so we can stop falling back to the old StyleInterpolation implementation.
         if (CSSPropertyMetadata::isInterpolableProperty(property)) {
@@ -271,14 +275,6 @@ PassRefPtr<Interpolation> StringKeyframe::CSSPropertySpecificKeyframe::maybeCrea
         return createLegacyStyleInterpolation(property, end, element, baseStyle);
 
     switch (property) {
-    case CSSPropertyLineHeight:
-        if (LengthStyleInterpolation::canCreateFrom(*fromCSSValue) && LengthStyleInterpolation::canCreateFrom(*toCSSValue))
-            return LengthStyleInterpolation::create(*fromCSSValue, *toCSSValue, property, RangeNonNegative);
-        if (DoubleStyleInterpolation::canCreateFrom(*fromCSSValue) && DoubleStyleInterpolation::canCreateFrom(*toCSSValue))
-            return DoubleStyleInterpolation::create(*fromCSSValue, *toCSSValue, property, true, RangeNonNegative);
-
-        break;
-
     case CSSPropertyFontSize:
         if (LengthStyleInterpolation::canCreateFrom(*fromCSSValue) && LengthStyleInterpolation::canCreateFrom(*toCSSValue))
             return LengthStyleInterpolation::create(*fromCSSValue, *toCSSValue, property, RangeNonNegative);

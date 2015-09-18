@@ -67,6 +67,19 @@ bool NumberPropertyFunctions::getNumber(CSSPropertyID property, const ComputedSt
         result = style.zIndex();
         return true;
 
+    case CSSPropertyLineHeight: {
+        const Length& length = style.specifiedLineHeight();
+        // Numbers are represented by percentages.
+        if (length.type() != Percent)
+            return false;
+        double value = length.value();
+        // -100% represents the keyword "normal".
+        if (value == -100)
+            return false;
+        result = value / 100;
+        return true;
+    }
+
     default:
         return false;
     }
@@ -93,9 +106,10 @@ double NumberPropertyFunctions::clampNumber(CSSPropertyID property, double value
     case CSSPropertyOpacity:
         return clampTo<double>(value, 0, nextafterf(1, 0));
 
-    case CSSPropertyFontSizeAdjust:
     case CSSPropertyFlexGrow:
     case CSSPropertyFlexShrink:
+    case CSSPropertyFontSizeAdjust:
+    case CSSPropertyLineHeight:
         return clampTo<double>(value, 0);
 
     case CSSPropertyWebkitColumnRuleWidth:
@@ -123,6 +137,9 @@ bool NumberPropertyFunctions::setNumber(CSSPropertyID property, ComputedStyle& s
         return true;
     case CSSPropertyFloodOpacity:
         style.setFloodOpacity(value);
+        return true;
+    case CSSPropertyLineHeight:
+        style.setLineHeight(Length(value * 100, Percent));
         return true;
     case CSSPropertyOpacity:
         style.setOpacity(value);

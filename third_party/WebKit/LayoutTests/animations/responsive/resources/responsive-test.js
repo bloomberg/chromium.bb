@@ -29,6 +29,7 @@ configuration.
 It starts the interpolation in every configuration, changes the
 state to every other configuration (n * (n - 1) complexity) and asserts that
 each destination configuration's expectations are met.
+Each animation target can be assigned custom styles via the ".target" selector.
 This test is designed to catch stale interpolation caches.
 */
 
@@ -59,10 +60,13 @@ function createStateTransitions(configurations) {
   return stateTransitions;
 }
 
-function createElement(tag, container) {
+function createElement(tag, container, className) {
   var element = document.createElement(tag);
   if (container) {
     container.appendChild(element);
+  }
+  if (className) {
+    element.classList.add(className);
   }
   return element;
 }
@@ -70,7 +74,7 @@ function createElement(tag, container) {
 function createTargets(n, container) {
   var targets = [];
   for (var i = 0; i < n; i++) {
-    targets.push(createElement('div', container));
+    targets.push(createElement('div', container, 'target'));
   }
   return targets;
 }
