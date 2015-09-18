@@ -146,6 +146,53 @@
     You have certificates from these organizations that identify you:
   </message>
 
+  <!-- Clear Browsing Data -->
+  <message name="IDS_SETTINGS_CLEAR_FOLLOWING_ITEMS_FROM" desc="Label at the top of the client area of the dialog, preceding the period combo box">
+    Obliterate the following items from:
+  </message>
+  <message name="IDS_SETTINGS_CLEAR_BROWSING_HISTORY" desc="Checkbox for deleting Browsing History">
+    Browsing history
+  </message>
+  <message name="IDS_SETTINGS_CLEAR_DOWNLOAD_HISTORY" desc="Checkbox for deleting Download History">
+    Download history
+  </message>
+  <message name="IDS_SETTINGS_CLEAR_CACHE" desc="Checkbox for deleting Cache">
+    Cached images and files
+  </message>
+  <message name="IDS_SETTINGS_CLEAR_COOKIES" desc="Checkbox for deleting Cookies and other site data">
+    Cookies and other site data
+  </message>
+  <message name="IDS_SETTINGS_CLEAR_COOKIES_FLASH" desc="Checkbox for deleting Cookies and other site data">
+    Cookies and other site and plugin data
+  </message>
+  <message name="IDS_SETTINGS_CLEAR_PASSWORDS" desc="Checkbox for deleting Passwords">
+    Passwords
+  </message>
+  <message name="IDS_SETTINGS_CLEAR_FORM_DATA" desc="Checkbox for deleting form data saved for Autofill">
+    Autofill form data
+  </message>
+  <message name="IDS_SETTINGS_CLEAR_HOSTED_APP_DATA" desc="Checkbox for deleting data of hosted apps">
+    Hosted app data
+  </message>
+  <message name="IDS_SETTINGS_DEAUTHORIZE_CONTENT_LICENSES" desc="Checkbox for deauthorizing content licenses (DRM videos, etc.)">
+    Content licenses
+  </message>
+  <message name="IDS_SETTINGS_CLEAR_DATA_HOUR" desc="deletion period combo box: hour. In English this finishes the sentence that starts with 'Obliterate the following items from'.">
+    the past hour
+  </message>
+  <message name="IDS_SETTINGS_CLEAR_DATA_DAY" desc="deletion period combo box: day. In English this finishes the sentence that starts with 'Obliterate the following items from'.">
+    the past day
+  </message>
+  <message name="IDS_SETTINGS_CLEAR_DATA_WEEK" desc="deletion period combo box: week. In English this finishes the sentence that starts with 'Obliterate the following items from'.">
+    the past week
+  </message>
+  <message name="IDS_SETTINGS_CLEAR_DATA_4WEEKS" desc="deletion period combo box: 4 weeks. In English this finishes the sentence that starts with 'Obliterate the following items from'.">
+    the last 4 weeks
+  </message>
+  <message name="IDS_SETTINGS_CLEAR_DATA_EVERYTHING" desc="deletion period combo box: everything. In English this finishes the sentence that starts with 'Delete the following items from'.">
+    the beginning of time
+  </message>
+
   <!-- Downloads Page -->
   <message name="IDS_SETTINGS_DOWNLOADS" desc="Name of the settings page which displays download preferences.">
     Downloads

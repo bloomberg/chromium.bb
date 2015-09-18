@@ -127,6 +127,39 @@ void AddCertificateManagerStrings(content::WebUIDataSource* html_source) {
                                   IDS_SETTINGS_CERTIFICATE_MANAGER_DONE);
 }
 
+void AddClearBrowsingDataStrings(content::WebUIDataSource* html_source) {
+  html_source->AddLocalizedString("clearFollowingItemsFrom",
+                                  IDS_SETTINGS_CLEAR_FOLLOWING_ITEMS_FROM);
+  html_source->AddLocalizedString("clearBrowsingHistory",
+                                  IDS_SETTINGS_CLEAR_BROWSING_HISTORY);
+  html_source->AddLocalizedString("clearDownloadHistory",
+                                  IDS_SETTINGS_CLEAR_DOWNLOAD_HISTORY);
+  html_source->AddLocalizedString("clearCache",
+                                  IDS_SETTINGS_CLEAR_CACHE);
+  html_source->AddLocalizedString("clearCookies",
+                                  IDS_SETTINGS_CLEAR_COOKIES);
+  html_source->AddLocalizedString("clearCookiesFlash",
+                                  IDS_SETTINGS_CLEAR_COOKIES_FLASH);
+  html_source->AddLocalizedString("clearPasswords",
+                                  IDS_SETTINGS_CLEAR_PASSWORDS);
+  html_source->AddLocalizedString("clearFormData",
+                                  IDS_SETTINGS_CLEAR_FORM_DATA);
+  html_source->AddLocalizedString("clearHostedAppData",
+                                  IDS_SETTINGS_CLEAR_HOSTED_APP_DATA);
+  html_source->AddLocalizedString("clearDeauthorizeContentLicenses",
+                                  IDS_SETTINGS_DEAUTHORIZE_CONTENT_LICENSES);
+  html_source->AddLocalizedString("clearDataHour",
+                                  IDS_SETTINGS_CLEAR_DATA_HOUR);
+  html_source->AddLocalizedString("clearDataDay",
+                                  IDS_SETTINGS_CLEAR_DATA_DAY);
+  html_source->AddLocalizedString("clearDataWeek",
+                                  IDS_SETTINGS_CLEAR_DATA_WEEK);
+  html_source->AddLocalizedString("clearData4Weeks",
+                                  IDS_SETTINGS_CLEAR_DATA_4WEEKS);
+  html_source->AddLocalizedString("clearDataEverything",
+                                  IDS_SETTINGS_CLEAR_DATA_EVERYTHING);
+}
+
 void AddCommonStrings(content::WebUIDataSource* html_source) {
   html_source->AddLocalizedString("addLabel", IDS_ADD);
 }
@@ -426,6 +459,7 @@ void AddLocalizedStrings(content::WebUIDataSource* html_source) {
   AddA11yStrings(html_source);
   AddAppearanceStrings(html_source);
   AddCertificateManagerStrings(html_source);
+  AddClearBrowsingDataStrings(html_source);
   AddCommonStrings(html_source);
   AddDownloadsStrings(html_source);
   AddDateTimeStrings(html_source);
