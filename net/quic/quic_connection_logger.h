@@ -126,6 +126,8 @@ class NET_EXPORT_PRIVATE QuicConnectionLogger
   size_t last_received_packet_size_;
   // The size of the previously received packet.
   size_t previous_received_packet_size_;
+  // The timestamp of last packet sent.
+  QuicTime last_packet_sent_time_;
   // The largest packet number received.  In the case where a packet is
   // received late (out of order), this value will not be updated.
   QuicPacketNumber largest_received_packet_number_;

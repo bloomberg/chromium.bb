@@ -292,6 +292,7 @@ QuicConnectionLogger::QuicConnectionLogger(
       last_received_packet_number_(0),
       last_received_packet_size_(0),
       previous_received_packet_size_(0),
+      last_packet_sent_time_(base::TimeTicks()),
       largest_received_packet_number_(0),
       largest_received_missing_packet_number_(0),
       num_out_of_order_received_packets_(0),
@@ -456,6 +457,16 @@ void QuicConnectionLogger::OnPacketSent(
         base::Bind(&NetLogQuicPacketRetransmittedCallback,
                    original_packet_number, serialized_packet.packet_number));
   }
+  // Record time duration from last packet sent to the new packet sent.
+  if (last_packet_sent_time_.IsInitialized()) {
+    UMA_HISTOGRAM_CUSTOM_TIMES(
+        "Net.QuicTimeBetweenTwoPacketSent",
+        base::TimeDelta::FromMilliseconds(
+            sent_time.Subtract(last_packet_sent_time_).ToMilliseconds()),
+        base::TimeDelta::FromMilliseconds(1), base::TimeDelta::FromMinutes(10),
+        100);
+  }
+  last_packet_sent_time_ = sent_time;
 }
 
 void QuicConnectionLogger::OnPacketReceived(const IPEndPoint& self_address,

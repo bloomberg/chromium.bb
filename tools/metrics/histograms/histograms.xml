@@ -24446,6 +24446,13 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Net.QuicTimeBetweenTwoPacketSent" units="milliseconds">
+  <owner>zhongyi@chromium.org</owner>
+  <summary>
+    Time duration from last packet sent to a new packet sent in QUIC connection.
+  </summary>
+</histogram>
+
 <histogram name="Net.QuicVerifyProofFailed.HandshakeConfirmed"
     enum="BooleanHandshakeConfirmed">
   <owner>rtenneti@chromium.org</owner>
