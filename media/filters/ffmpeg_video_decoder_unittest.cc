@@ -400,15 +400,12 @@ TEST_F(FFmpegVideoDecoderTest, DecodeFrame_DecodeError) {
   EXPECT_TRUE(output_frames_.empty());
 }
 
-// Multi-threaded decoders have different behavior than single-threaded
-// decoders at the end of the stream. Multithreaded decoders hide errors
-// that happen on the last |codec_context_->thread_count| frames to avoid
-// prematurely signalling EOS. This test just exposes that behavior so we can
-// detect if it changes.
+// A corrupt frame followed by an EOS buffer should raise a decode error.
 TEST_F(FFmpegVideoDecoderTest, DecodeFrame_DecodeErrorAtEndOfStream) {
   Initialize();
 
-  EXPECT_EQ(VideoDecoder::kOk, DecodeSingleFrame(corrupt_i_frame_buffer_));
+  EXPECT_EQ(VideoDecoder::kDecodeError,
+            DecodeSingleFrame(corrupt_i_frame_buffer_));
 }
 
 // Decode |i_frame_buffer_| and then a frame with a larger width and verify

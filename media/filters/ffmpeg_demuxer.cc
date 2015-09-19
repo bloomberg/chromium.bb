@@ -1035,7 +1035,7 @@ void FFmpegDemuxer::OnFindStreamInfoDone(const PipelineStatusCB& status_cb,
           stream->codec->coded_height = stream->codec->height;
         }
         if (stream->codec->pix_fmt == AV_PIX_FMT_NONE) {
-          stream->codec->pix_fmt = PIX_FMT_YUV420P;
+          stream->codec->pix_fmt = AV_PIX_FMT_YUV420P;
         }
       }
 #endif

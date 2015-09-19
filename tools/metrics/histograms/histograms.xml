@@ -61056,6 +61056,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="-1920776714" label="a64_multi5"/>
   <int value="-1920272933" label="mlp"/>
   <int value="-1913457333" label="smackvideo"/>
+  <int value="-1910182388" label="dds"/>
   <int value="-1877492821" label="ws_vqa"/>
   <int value="-1868061100" label="avrp"/>
   <int value="-1866047250" label="brender_pix_deprecated"/>
@@ -61170,6 +61171,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="-780629337" label="adpcm_ima_oki"/>
   <int value="-777478450" label="iff_byterun1"/>
   <int value="-776406198" label="hdmv_pgs_subtitle"/>
+  <int value="-773314651" label="adpcm_thp_le"/>
   <int value="-755809410" label="xface"/>
   <int value="-750906124" label="sonic"/>
   <int value="-746782512" label="nuv"/>
@@ -61288,10 +61290,12 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="486681814" label="8bps"/>
   <int value="489448448" label="vc1"/>
   <int value="491790310" label="vcr1"/>
+  <int value="500576677" label="hap"/>
   <int value="503945275" label="motionpixels"/>
   <int value="525499602" label="vmnc"/>
   <int value="552661632" label="adpcm_xa"/>
   <int value="558339021" label="jpeg2000"/>
+  <int value="563328753" label="4gv"/>
   <int value="565711017" label="pcm_s24le"/>
   <int value="567624278" label="asv2"/>
   <int value="573633387" label="pcm_f64be"/>
@@ -61352,9 +61356,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1165132763" label="opus_deprecated"/>
   <int value="1194572884" label="g2m_deprecated"/>
   <int value="1210249397" label="avc"/>
+  <int value="1213003867" label="hdmv_text_subtitle"/>
   <int value="1236695157" label="pcm_s32le_planar"/>
   <int value="1244283551" label="mpeg1video"/>
   <int value="1246598929" label="flic"/>
+  <int value="1251286213" label="dxv"/>
   <int value="1258259575" label="pcm_lxf"/>
   <int value="1271374381" label="wmav1"/>
   <int value="1294385179" label="mp3"/>

@@ -126,7 +126,10 @@ FFMPEG_TEST_CASE(Cr242786, "security/242786.webm", PIPELINE_OK, PIPELINE_OK);
 // Test for out-of-bounds access with slightly corrupt file (detection logic
 // thinks it's a MONO file, but actually contains STEREO audio).
 FFMPEG_TEST_CASE(Cr275590, "security/275590.m4a", PIPELINE_OK, PIPELINE_OK);
-FFMPEG_TEST_CASE(Cr444522, "security/444522.mp4", PIPELINE_OK, PIPELINE_OK);
+FFMPEG_TEST_CASE(Cr444522,
+                 "security/444522.mp4",
+                 DEMUXER_ERROR_COULD_NOT_OPEN,
+                 DEMUXER_ERROR_COULD_NOT_OPEN);
 FFMPEG_TEST_CASE(Cr444539,
                  "security/444539.m4a",
                  DEMUXER_ERROR_COULD_NOT_OPEN,
