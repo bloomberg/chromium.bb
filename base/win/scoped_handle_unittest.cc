@@ -27,6 +27,6 @@ TEST(ScopedHandleTest, ScopedHandle) {
   handle = ::CreateMutex(nullptr, FALSE, nullptr);
   base::win::ScopedHandle handle_source(handle);
   ::SetLastError(magic_error);
-  handle_holder = std::move(handle_source);
+  handle_holder = handle_source.Pass();
   EXPECT_EQ(magic_error, ::GetLastError());
 }
