@@ -92,15 +92,12 @@ TEST_F(NativeApplicationLoaderTest, DoesNotExist) {
   GURL url(util::FilePathToFileURL(temp_dir.path().Append(nonexistent_file)));
   InterfaceRequest<ServiceProvider> services;
   ServiceProviderPtr service_provider;
-  mojo::URLRequestPtr request(mojo::URLRequest::New());
-  request->url = mojo::String::From(url.spec());
 
   scoped_ptr<shell::ConnectToApplicationParams> params(
       new shell::ConnectToApplicationParams);
-  params->SetURLInfo(request.Pass());
+  params->SetTargetURL(url);
   params->set_services(services.Pass());
   params->set_exposed_services(service_provider.Pass());
-  params->set_filter(shell::GetPermissiveCapabilityFilter());
   context_->application_manager()->ConnectToApplication(params.Pass());
   EXPECT_FALSE(state_.runner_was_created);
   EXPECT_FALSE(state_.runner_was_started);

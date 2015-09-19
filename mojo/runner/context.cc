@@ -125,11 +125,9 @@ void InitDevToolsServiceIfNeeded(shell::ApplicationManager* manager,
   ServiceProviderPtr devtools_service_provider;
   scoped_ptr<shell::ConnectToApplicationParams> params(
       new shell::ConnectToApplicationParams);
-  params->set_originator_identity(shell::Identity(GURL("mojo:shell")));
-  params->set_originator_filter(shell::GetPermissiveCapabilityFilter());
-  params->SetURLInfo(GURL("mojo:devtools_service"));
+  params->set_source(shell::Identity(GURL("mojo:shell")));
+  params->SetTargetURL(GURL("mojo:devtools_service"));
   params->set_services(GetProxy(&devtools_service_provider));
-  params->set_filter(shell::GetPermissiveCapabilityFilter());
   manager->ConnectToApplication(params.Pass());
 
   devtools_service::DevToolsCoordinatorPtr devtools_coordinator;
@@ -207,15 +205,12 @@ bool Context::Init() {
   ServiceProviderPtr service_provider_ptr;
   ServiceProviderPtr tracing_service_provider_ptr;
   new TracingServiceProvider(GetProxy(&tracing_service_provider_ptr));
-  mojo::URLRequestPtr request(mojo::URLRequest::New());
-  request->url = mojo::String::From("mojo:tracing");
 
   scoped_ptr<shell::ConnectToApplicationParams> params(
       new shell::ConnectToApplicationParams);
-  params->SetURLInfo(request.Pass());
+  params->SetTargetURL(GURL("mojo:tracing"));
   params->set_services(GetProxy(&service_provider_ptr));
   params->set_exposed_services(tracing_service_provider_ptr.Pass());
-  params->set_filter(shell::GetPermissiveCapabilityFilter());
   application_manager_->ConnectToApplication(params.Pass());
 
   // Record the shell startup metrics used for performance testing.
@@ -264,15 +259,12 @@ void Context::Run(const GURL& url) {
   ServiceProviderPtr exposed_services;
 
   app_urls_.insert(url);
-  mojo::URLRequestPtr request(mojo::URLRequest::New());
-  request->url = mojo::String::From(url.spec());
 
   scoped_ptr<shell::ConnectToApplicationParams> params(
       new shell::ConnectToApplicationParams);
-  params->SetURLInfo(request.Pass());
+  params->SetTargetURL(url);
   params->set_services(GetProxy(&services));
   params->set_exposed_services(exposed_services.Pass());
-  params->set_filter(shell::GetPermissiveCapabilityFilter());
   params->set_on_application_end(
       base::Bind(&Context::OnApplicationEnd, base::Unretained(this), url));
   application_manager_->ConnectToApplication(params.Pass());

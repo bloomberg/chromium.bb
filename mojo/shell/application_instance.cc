@@ -14,38 +14,17 @@
 
 namespace mojo {
 namespace shell {
-namespace {
-
-// It's valid to specify mojo: URLs in the filter either as mojo:foo or
-// mojo://foo/ - but we store the filter in the latter form.
-CapabilityFilter CanonicalizeFilter(const CapabilityFilter& filter) {
-  CapabilityFilter canonicalized;
-  for (CapabilityFilter::const_iterator it = filter.begin();
-       it != filter.end();
-       ++it) {
-    if (it->first == "*")
-      canonicalized[it->first] = it->second;
-    else
-      canonicalized[GURL(it->first).spec()] = it->second;
-  }
-  return canonicalized;
-}
-
-}  // namespace
 
 ApplicationInstance::ApplicationInstance(
     ApplicationPtr application,
     ApplicationManager* manager,
-    const Identity& originator_identity,
     const Identity& identity,
-    const CapabilityFilter& filter,
     uint32_t requesting_content_handler_id,
     const base::Closure& on_application_end)
     : manager_(manager),
-      originator_identity_(originator_identity),
       identity_(identity),
-      filter_(CanonicalizeFilter(filter)),
-      allow_any_application_(filter.size() == 1 && filter.count("*") == 1),
+      allow_any_application_(identity.filter().size() == 1 &&
+                             identity.filter().count("*") == 1),
       requesting_content_handler_id_(requesting_content_handler_id),
       on_application_end_(on_application_end),
       application_(application.Pass()),
@@ -63,7 +42,7 @@ ApplicationInstance::~ApplicationInstance() {
 void ApplicationInstance::InitializeApplication() {
   ShellPtr shell;
   binding_.Bind(GetProxy(&shell));
-  application_->Initialize(shell.Pass(), identity_.url.spec());
+  application_->Initialize(shell.Pass(), identity_.url().spec());
 }
 
 void ApplicationInstance::ConnectToClient(
@@ -90,23 +69,25 @@ void ApplicationInstance::ConnectToApplication(
     callback.Run(kInvalidContentHandlerID);
     return;
   }
-  if (allow_any_application_ || filter_.find(url.spec()) != filter_.end()) {
+  if (allow_any_application_ ||
+      identity_.filter().find(url.spec()) != identity_.filter().end()) {
     CapabilityFilter capability_filter = GetPermissiveCapabilityFilter();
     if (!filter.is_null())
       capability_filter = filter->filter.To<CapabilityFilter>();
 
     scoped_ptr<ConnectToApplicationParams> params(
         new ConnectToApplicationParams);
-    params->SetOriginatorInfo(this);
-    params->SetURLInfo(app_request.Pass());
+    params->SetSource(this);
+    params->SetTargetURLRequest(
+        app_request.Pass(),
+        Identity(GURL(app_request->url), std::string(), capability_filter));
     params->set_services(services.Pass());
     params->set_exposed_services(exposed_services.Pass());
-    params->set_filter(capability_filter);
     params->set_connect_callback(callback);
     manager_->ConnectToApplication(params.Pass());
   } else {
     LOG(WARNING) << "CapabilityFilter prevented connection from: " <<
-        identity_.url << " to: " << url.spec();
+        identity_.url() << " to: " << url.spec();
     callback.Run(kInvalidContentHandlerID);
   }
 }
@@ -123,13 +104,13 @@ void ApplicationInstance::CallAcceptConnection(
   params->connect_callback().Run(requesting_content_handler_id_);
   AllowedInterfaces interfaces;
   interfaces.insert("*");
-  if (!params->originator_identity().is_null())
-    interfaces = GetAllowedInterfaces(params->originator_filter(), identity_);
+  if (!params->source().is_null())
+    interfaces = GetAllowedInterfaces(params->source().filter(), identity_);
 
   application_->AcceptConnection(
-      params->originator_identity().url.spec(), params->TakeServices(),
+      params->source().url().spec(), params->TakeServices(),
       params->TakeExposedServices(), Array<String>::From(interfaces).Pass(),
-      params->app_url().spec());
+      params->target().url().spec());
 }
 
 void ApplicationInstance::OnConnectionError() {
@@ -142,8 +123,8 @@ void ApplicationInstance::OnConnectionError() {
   // If any queued requests came to shell during time it was shutting down,
   // start them now.
   for (auto request : queued_client_requests) {
-    // Unfortunately, it is possible that |request->app_url_request()| is null
-    // at this point. Consider the following sequence:
+    // Unfortunately, it is possible that |request->target_url_request()| is
+    // null at this point. Consider the following sequence:
     // 1) connect_request_1 arrives at the application manager; the manager
     //    decides to fetch the app.
     // 2) connect_request_2 arrives for the same app; because the app is not
@@ -160,10 +141,10 @@ void ApplicationInstance::OnConnectionError() {
     // before starting the fetch. So at step (2) the application manager knows
     // that it can wait for the first fetch to complete instead of doing a
     // second one directly.
-    if (!request->app_url_request()) {
+    if (!request->target_url_request()) {
       URLRequestPtr url_request = mojo::URLRequest::New();
-      url_request->url = request->app_url().spec();
-      request->SetURLInfo(url_request.Pass());
+      url_request->url = request->target().url().spec();
+      request->SetTargetURLRequest(url_request.Pass(), request->target());
     }
     manager->ConnectToApplication(make_scoped_ptr(request));
   }

@@ -20,7 +20,7 @@ CapabilityFilter GetPermissiveCapabilityFilter() {
 AllowedInterfaces GetAllowedInterfaces(const CapabilityFilter& filter,
                                        const Identity& identity) {
   // Start by looking for interfaces specific to the supplied identity.
-  auto it = filter.find(identity.url.spec());
+  auto it = filter.find(identity.url().spec());
   if (it != filter.end())
     return it->second;
 

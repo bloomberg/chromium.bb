@@ -21,7 +21,8 @@ ScopedMessagePipeHandle ConnectToServiceByName(
     const std::string& interface_name);
 
 // Must only be used by shell internals and test code as it does not forward
-// capability filters.
+// capability filters. Runs |application_url| with a permissive capability
+// filter.
 template <typename Interface>
 inline void ConnectToService(ApplicationManager* application_manager,
                              const GURL& application_url,

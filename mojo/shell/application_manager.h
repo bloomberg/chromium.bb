@@ -117,11 +117,8 @@ class ApplicationManager {
                             bool path_exists);
 
   void LoadWithContentHandler(
-      const Identity& originator_identity,
-      const CapabilityFilter& originator_filter,
-      const GURL& content_handler_url,
-      const std::string& qualifier,
-      const CapabilityFilter& filter,
+      const Identity& source,
+      const Identity& content_handler,
       const Shell::ConnectToApplicationCallback& connect_callback,
       ApplicationInstance* app,
       InterfaceRequest<Application> application_request,

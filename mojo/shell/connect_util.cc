@@ -17,9 +17,9 @@ ScopedMessagePipeHandle ConnectToServiceByName(
     const std::string& interface_name) {
   ServiceProviderPtr services;
   scoped_ptr<ConnectToApplicationParams> params(new ConnectToApplicationParams);
-  params->SetURLInfo(application_url);
+  params->SetTarget(Identity(application_url, std::string(),
+                             GetPermissiveCapabilityFilter()));
   params->set_services(GetProxy(&services));
-  params->set_filter(GetPermissiveCapabilityFilter());
   application_manager->ConnectToApplication(params.Pass());
   MessagePipe pipe;
   services->ConnectToService(interface_name, pipe.handle1.Pass());

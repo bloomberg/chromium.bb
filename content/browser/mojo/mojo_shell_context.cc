@@ -237,12 +237,12 @@ void MojoShellContext::ConnectToApplicationOnOwnThread(
     const mojo::Shell::ConnectToApplicationCallback& callback) {
   scoped_ptr<mojo::shell::ConnectToApplicationParams> params(
       new mojo::shell::ConnectToApplicationParams);
-  params->set_originator_identity(mojo::shell::Identity(requestor_url));
-  params->set_originator_filter(mojo::shell::GetPermissiveCapabilityFilter());
-  params->SetURLInfo(url);
+  params->set_source(
+      mojo::shell::Identity(requestor_url, std::string(),
+                            mojo::shell::GetPermissiveCapabilityFilter()));
+  params->SetTarget(mojo::shell::Identity(url, std::string(), filter));
   params->set_services(request.Pass());
   params->set_exposed_services(exposed_services.Pass());
-  params->set_filter(filter);
   params->set_on_application_end(base::Bind(&base::DoNothing));
   params->set_connect_callback(callback);
   application_manager_->ConnectToApplication(params.Pass());
