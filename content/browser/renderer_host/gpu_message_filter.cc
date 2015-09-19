@@ -37,22 +37,6 @@ struct GpuMessageFilter::CreateViewCommandBufferRequest {
   scoped_ptr<IPC::Message> reply;
 };
 
-struct GpuMessageFilter::FrameSubscription {
-  FrameSubscription(
-      int in_route_id,
-      scoped_ptr<RenderWidgetHostViewFrameSubscriber> in_subscriber)
-      : route_id(in_route_id),
-        surface_id(0),
-        subscriber(in_subscriber.Pass()),
-        factory(subscriber.get()) {
-  }
-
-  int route_id;
-  int surface_id;
-  scoped_ptr<RenderWidgetHostViewFrameSubscriber> subscriber;
-  base::WeakPtrFactory<RenderWidgetHostViewFrameSubscriber> factory;
-};
-
 GpuMessageFilter::GpuMessageFilter(int render_process_id,
                                    RenderWidgetHelper* render_widget_helper)
     : BrowserMessageFilter(GpuMsgStart),
@@ -65,7 +49,6 @@ GpuMessageFilter::GpuMessageFilter(int render_process_id,
 
 GpuMessageFilter::~GpuMessageFilter() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  EndAllFrameSubscriptions();
 }
 
 bool GpuMessageFilter::OnMessageReceived(const IPC::Message& message) {
@@ -78,28 +61,6 @@ bool GpuMessageFilter::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
-}
-
-void GpuMessageFilter::BeginFrameSubscription(
-    int route_id,
-    scoped_ptr<RenderWidgetHostViewFrameSubscriber> subscriber) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  linked_ptr<FrameSubscription> subscription(
-      new FrameSubscription(route_id, subscriber.Pass()));
-  BeginFrameSubscriptionInternal(subscription);
-}
-
-void GpuMessageFilter::EndFrameSubscription(int route_id) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  FrameSubscriptionList frame_subscription_list;
-  frame_subscription_list.swap(frame_subscription_list_);
-  for (FrameSubscriptionList::iterator it = frame_subscription_list.begin();
-       it != frame_subscription_list.end(); ++it) {
-    if ((*it)->route_id != route_id)
-      frame_subscription_list_.push_back(*it);
-    else
-      EndFrameSubscriptionInternal(*it);
-  }
 }
 
 void GpuMessageFilter::OnEstablishGpuChannel(
@@ -126,9 +87,6 @@ void GpuMessageFilter::OnEstablishGpuChannel(
     }
 
     gpu_process_id_ = host->host_id();
-
-    // Apply all frame subscriptions to the new GpuProcessHost.
-    BeginAllFrameSubscriptions();
   }
 
   bool share_contexts = true;
@@ -206,62 +164,6 @@ void GpuMessageFilter::CreateCommandBufferCallback(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   GpuHostMsg_CreateViewCommandBuffer::WriteReplyParams(reply.get(), result);
   Send(reply.release());
-}
-
-void GpuMessageFilter::BeginAllFrameSubscriptions() {
-  FrameSubscriptionList frame_subscription_list;
-  frame_subscription_list.swap(frame_subscription_list_);
-  for (FrameSubscriptionList::iterator it = frame_subscription_list.begin();
-       it != frame_subscription_list.end(); ++it) {
-    BeginFrameSubscriptionInternal(*it);
-  }
-}
-
-void GpuMessageFilter::EndAllFrameSubscriptions() {
-  for (FrameSubscriptionList::iterator it = frame_subscription_list_.begin();
-       it != frame_subscription_list_.end(); ++it) {
-    EndFrameSubscriptionInternal(*it);
-  }
-  frame_subscription_list_.clear();
-}
-
-void GpuMessageFilter::BeginFrameSubscriptionInternal(
-    linked_ptr<FrameSubscription> subscription) {
-  if (!subscription->surface_id) {
-    GpuSurfaceTracker* surface_tracker = GpuSurfaceTracker::Get();
-    subscription->surface_id = surface_tracker->LookupSurfaceForRenderer(
-        render_process_id_, subscription->route_id);
-
-    // If the surface ID cannot be found this subscription is dropped.
-    if (!subscription->surface_id)
-      return;
-  }
-  frame_subscription_list_.push_back(subscription);
-
-  // Frame subscriber is owned by this object, but it is shared with
-  // GpuProcessHost. GpuProcessHost can be destroyed in the case of crashing
-  // and we do not get a signal. This object can also be destroyed independent
-  // of GpuProcessHost. To ensure that GpuProcessHost does not reference a
-  // deleted frame subscriber, a weak reference is shared.
-  GpuProcessHost* host = GpuProcessHost::FromID(gpu_process_id_);
-  if (!host)
-    return;
-  host->BeginFrameSubscription(subscription->surface_id,
-                               subscription->factory.GetWeakPtr());
-}
-
-void GpuMessageFilter::EndFrameSubscriptionInternal(
-    linked_ptr<FrameSubscription> subscription) {
-  GpuProcessHost* host = GpuProcessHost::FromID(gpu_process_id_);
-
-  // An empty surface ID means subscription has never started in GpuProcessHost
-  // so it is not necessary to end it.
-  if (!host || !subscription->surface_id)
-    return;
-
-  // Note that GpuProcessHost here might not be the same one that frame
-  // subscription has applied.
-  host->EndFrameSubscription(subscription->surface_id);
 }
 
 }  // namespace content

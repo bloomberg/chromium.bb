@@ -1326,9 +1326,7 @@ bool RenderWidgetHostViewMac::CanCopyToVideoFrame() const {
 }
 
 bool RenderWidgetHostViewMac::CanSubscribeFrame() const {
-  if (delegated_frame_host_)
-    return delegated_frame_host_->CanSubscribeFrame();
-  return false;
+  return !!delegated_frame_host_;
 }
 
 void RenderWidgetHostViewMac::BeginFrameSubscription(

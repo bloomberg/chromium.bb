@@ -1117,7 +1117,7 @@ bool RenderWidgetHostViewAura::CanCopyToVideoFrame() const {
 }
 
 bool RenderWidgetHostViewAura::CanSubscribeFrame() const {
-  return delegated_frame_host_->CanSubscribeFrame();
+  return true;
 }
 
 void RenderWidgetHostViewAura::BeginFrameSubscription(

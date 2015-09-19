@@ -923,16 +923,6 @@ void GpuProcessHost::StopGpuProcess() {
   Send(new GpuMsg_Finalize());
 }
 
-void GpuProcessHost::BeginFrameSubscription(
-    int surface_id,
-    base::WeakPtr<RenderWidgetHostViewFrameSubscriber> subscriber) {
-  frame_subscribers_[surface_id] = subscriber;
-}
-
-void GpuProcessHost::EndFrameSubscription(int surface_id) {
-  frame_subscribers_.erase(surface_id);
-}
-
 bool GpuProcessHost::LaunchGpuProcess(const std::string& channel_id) {
   if (!(gpu_enabled_ &&
       GpuDataManagerImpl::GetInstance()->ShouldUseSwiftShader()) &&

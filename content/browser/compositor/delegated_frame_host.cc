@@ -184,10 +184,6 @@ bool DelegatedFrameHost::CanCopyToVideoFrame() const {
          client_->DelegatedFrameHostGetLayer()->has_external_content();
 }
 
-bool DelegatedFrameHost::CanSubscribeFrame() const {
-  return true;
-}
-
 void DelegatedFrameHost::BeginFrameSubscription(
     scoped_ptr<RenderWidgetHostViewFrameSubscriber> subscriber) {
   frame_subscriber_ = subscriber.Pass();

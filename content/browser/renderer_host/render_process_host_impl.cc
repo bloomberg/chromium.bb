@@ -2236,28 +2236,6 @@ size_t RenderProcessHost::GetActiveViewCount() {
   return num_active_views;
 }
 
-// Frame subscription API for this class is for accelerated composited path
-// only. These calls are redirected to GpuMessageFilter.
-void RenderProcessHostImpl::BeginFrameSubscription(
-    int route_id,
-    scoped_ptr<RenderWidgetHostViewFrameSubscriber> subscriber) {
-  if (!gpu_message_filter_)
-    return;
-  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE, base::Bind(
-      &GpuMessageFilter::BeginFrameSubscription,
-      gpu_message_filter_,
-      route_id, base::Passed(&subscriber)));
-}
-
-void RenderProcessHostImpl::EndFrameSubscription(int route_id) {
-  if (!gpu_message_filter_)
-    return;
-  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE, base::Bind(
-      &GpuMessageFilter::EndFrameSubscription,
-      gpu_message_filter_,
-      route_id));
-}
-
 #if defined(ENABLE_WEBRTC)
 void RenderProcessHostImpl::WebRtcLogMessage(const std::string& message) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);

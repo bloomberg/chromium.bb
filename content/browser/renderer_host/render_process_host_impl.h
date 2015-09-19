@@ -181,13 +181,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
     child_process_activity_time_ = base::TimeTicks::Now();
   }
 
-  // Start and end frame subscription for a specific renderer.
-  // This API only supports subscription to accelerated composited frames.
-  void BeginFrameSubscription(
-      int route_id,
-      scoped_ptr<RenderWidgetHostViewFrameSubscriber> subscriber);
-  void EndFrameSubscription(int route_id);
-
 #if defined(ENABLE_WEBRTC)
   // Fires the webrtc log message callback with |message|, if callback is set.
   void WebRtcLogMessage(const std::string& message);

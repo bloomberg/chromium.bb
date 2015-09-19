@@ -148,7 +148,6 @@ class CONTENT_EXPORT DelegatedFrameHost
       const scoped_refptr<media::VideoFrame>& target,
       const base::Callback<void(bool)>& callback);
   bool CanCopyToVideoFrame() const;
-  bool CanSubscribeFrame() const;
   void BeginFrameSubscription(
       scoped_ptr<RenderWidgetHostViewFrameSubscriber> subscriber);
   void EndFrameSubscription();

@@ -564,35 +564,18 @@ RenderWidgetHostViewBase::CreateSyntheticGestureTarget() {
 // platform independent. It should be set to the specific presenter on each
 // platform.
 bool RenderWidgetHostViewBase::CanSubscribeFrame() const {
-  NOTIMPLEMENTED();
+  NOTREACHED();
   return false;
 }
 
-// Base implementation for this method sets the subscriber to RenderProcessHost,
-// which is platform independent. Note: Implementation only support subscribing
-// to accelerated composited frames.
+// Base implementation is unimplemented.
 void RenderWidgetHostViewBase::BeginFrameSubscription(
     scoped_ptr<RenderWidgetHostViewFrameSubscriber> subscriber) {
-  RenderWidgetHostImpl* impl = NULL;
-  if (GetRenderWidgetHost())
-    impl = RenderWidgetHostImpl::From(GetRenderWidgetHost());
-  if (!impl)
-    return;
-  RenderProcessHostImpl* render_process_host =
-      static_cast<RenderProcessHostImpl*>(impl->GetProcess());
-  render_process_host->BeginFrameSubscription(impl->GetRoutingID(),
-                                              subscriber.Pass());
+  NOTREACHED();
 }
 
 void RenderWidgetHostViewBase::EndFrameSubscription() {
-  RenderWidgetHostImpl* impl = NULL;
-  if (GetRenderWidgetHost())
-    impl = RenderWidgetHostImpl::From(GetRenderWidgetHost());
-  if (!impl)
-    return;
-  RenderProcessHostImpl* render_process_host =
-      static_cast<RenderProcessHostImpl*>(impl->GetProcess());
-  render_process_host->EndFrameSubscription(impl->GetRoutingID());
+  NOTREACHED();
 }
 
 uint32 RenderWidgetHostViewBase::RendererFrameNumber() {

@@ -270,13 +270,6 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
   bool uma_memory_stats_received_;
   GPUMemoryUmaStats uma_memory_stats_;
 
-  // This map of frame subscribers are listening for frame presentation events.
-  // The key is the surface id and value is the subscriber.
-  typedef base::hash_map<int,
-                         base::WeakPtr<RenderWidgetHostViewFrameSubscriber> >
-  FrameSubscriberMap;
-  FrameSubscriberMap frame_subscribers_;
-
   typedef std::map<int32, scoped_refptr<ShaderDiskCache> >
       ClientIdToShaderCacheMap;
   ClientIdToShaderCacheMap client_id_to_shader_cache_;
