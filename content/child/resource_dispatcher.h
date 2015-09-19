@@ -190,7 +190,10 @@ class CONTENT_EXPORT ResourceDispatcher : public IPC::Listener {
                        base::SharedMemoryHandle shm_handle,
                        int shm_size,
                        base::ProcessId renderer_pid);
+  // TODO(erikchen): This dummy variable is temporary and is only intended to be
+  // present for one Canary release. http://crbug.com/527588.
   void OnReceivedData(int request_id,
+                      int /* dummy variable */,
                       int data_offset,
                       int data_length,
                       int encoded_data_length);

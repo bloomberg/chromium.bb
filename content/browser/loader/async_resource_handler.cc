@@ -335,7 +335,7 @@ bool AsyncResourceHandler::OnReadCompleted(int bytes_read, bool* defer) {
   CHECK_LE(data_offset, kBufferSize);
 
   filter->Send(new ResourceMsg_DataReceived(
-      GetRequestID(), data_offset, bytes_read, encoded_data_length));
+      GetRequestID(), 0, data_offset, bytes_read, encoded_data_length));
   ++pending_data_count_;
 
   if (!buffer_->CanAllocate()) {

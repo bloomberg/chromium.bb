@@ -345,8 +345,11 @@ IPC_MESSAGE_CONTROL4(ResourceMsg_SetDataBuffer,
 // Sent when some data from a resource request is ready.  The data offset and
 // length specify a byte range into the shared memory buffer provided by the
 // SetDataBuffer message.
-IPC_MESSAGE_CONTROL4(ResourceMsg_DataReceived,
+// TODO(erikchen): This dummy variable is temporary and is only intended to be
+// present for one Canary release. http://crbug.com/527588.
+IPC_MESSAGE_CONTROL5(ResourceMsg_DataReceived,
                      int /* request_id */,
+                     int /* dummy variable */,
                      int /* data_offset */,
                      int /* data_length */,
                      int /* encoded_data_length */)

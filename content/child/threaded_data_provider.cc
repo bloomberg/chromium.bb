@@ -38,7 +38,12 @@ class DataProviderMessageFilter : public IPC::MessageFilter {
  private:
   ~DataProviderMessageFilter() override {}
 
-  void OnReceivedData(int request_id, int data_offset, int data_length,
+  // TODO(erikchen): This dummy variable is temporary and is only intended to be
+  // present for one Canary release. http://crbug.com/527588.
+  void OnReceivedData(int request_id,
+                      int /* dummy variable */,
+                      int data_offset,
+                      int data_length,
                       int encoded_data_length);
 
   const scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
@@ -100,8 +105,8 @@ bool DataProviderMessageFilter::OnMessageReceived(
   if (request_id == request_id_) {
     ResourceMsg_DataReceived::Schema::Param arg;
     if (ResourceMsg_DataReceived::Read(&message, &arg)) {
-      OnReceivedData(base::get<0>(arg), base::get<1>(arg),
-                     base::get<2>(arg), base::get<3>(arg));
+      OnReceivedData(base::get<0>(arg), base::get<1>(arg), base::get<2>(arg),
+                     base::get<3>(arg), base::get<4>(arg));
       return true;
     }
   }
@@ -110,6 +115,7 @@ bool DataProviderMessageFilter::OnMessageReceived(
 }
 
 void DataProviderMessageFilter::OnReceivedData(int request_id,
+                                               int /* dummy variable */,
                                                int data_offset,
                                                int data_length,
                                                int encoded_data_length) {
