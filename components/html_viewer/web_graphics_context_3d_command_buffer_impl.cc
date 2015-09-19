@@ -55,6 +55,8 @@ WebGraphicsContext3DCommandBufferImpl::WebGraphicsContext3DCommandBufferImpl(
 
 WebGraphicsContext3DCommandBufferImpl::
     ~WebGraphicsContext3DCommandBufferImpl() {
+  if (gles2_context_)
+    MojoGLES2DestroyContext(gles2_context_);
 }
 
 // static

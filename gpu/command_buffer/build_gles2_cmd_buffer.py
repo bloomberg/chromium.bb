@@ -2136,6 +2136,7 @@ _FUNCTION_INFO = {
   },
   'ApplyScreenSpaceAntialiasingCHROMIUM': {
     'decoder_func': 'DoApplyScreenSpaceAntialiasingCHROMIUM',
+    'extension': 'CHROMIUM_screen_space_antialiasing',
     'extension_flag': 'chromium_screen_space_antialiasing',
     'unit_test': False,
     'client_test': False,
@@ -2325,7 +2326,7 @@ _FUNCTION_INFO = {
     'resource_type': 'Valuebuffer',
     'resource_types': 'Valuebuffers',
     'unit_test': False,
-    'extension': True,
+    'extension': 'CHROMIUM_subscribe_uniform',
     'chromium': True,
   },
   'DeleteValuebuffersCHROMIUM': {
@@ -2334,14 +2335,14 @@ _FUNCTION_INFO = {
     'resource_type': 'Valuebuffer',
     'resource_types': 'Valuebuffers',
     'unit_test': False,
-    'extension': True,
+    'extension': 'CHROMIUM_subscribe_uniform',
     'chromium': True,
   },
   'IsValuebufferCHROMIUM': {
     'type': 'Is',
     'decoder_func': 'DoIsValuebufferCHROMIUM',
     'expectation': False,
-    'extension': True,
+    'extension': 'CHROMIUM_subscribe_uniform',
     'chromium': True,
   },
   'BindValuebufferCHROMIUM': {
@@ -2349,25 +2350,25 @@ _FUNCTION_INFO = {
     'decoder_func': 'DoBindValueBufferCHROMIUM',
     'gen_func': 'GenValueBuffersCHROMIUM',
     'unit_test': False,
-    'extension': True,
+    'extension': 'CHROMIUM_subscribe_uniform',
     'chromium': True,
   },
   'SubscribeValueCHROMIUM': {
     'decoder_func': 'DoSubscribeValueCHROMIUM',
     'unit_test': False,
-    'extension': True,
+    'extension': 'CHROMIUM_subscribe_uniform',
     'chromium': True,
   },
   'PopulateSubscribedValuesCHROMIUM': {
     'decoder_func': 'DoPopulateSubscribedValuesCHROMIUM',
     'unit_test': False,
-    'extension': True,
+    'extension': 'CHROMIUM_subscribe_uniform',
     'chromium': True,
   },
   'UniformValuebufferCHROMIUM': {
     'decoder_func': 'DoUniformValueBufferCHROMIUM',
     'unit_test': False,
-    'extension': True,
+    'extension': 'CHROMIUM_subscribe_uniform',
     'chromium': True,
   },
   'ClearStencil': {
@@ -2381,7 +2382,7 @@ _FUNCTION_INFO = {
     'expectation': False,
     'cmd_args': 'GLuint bucket_id, GLint* result',
     'result': ['GLint'],
-    'extension': True,
+    'extension': 'GL_CHROMIUM_enable_feature',
     'chromium': True,
     'pepper_interface': 'ChromiumEnableFeature',
   },
@@ -2455,7 +2456,7 @@ _FUNCTION_INFO = {
     'client_test': False,
     'gen_cmd': False,
     'expectation': False,
-    'extension': "CHROMIUM_image",
+    'extension': "CHROMIUM_gpu_memory_buffer_image",
     'chromium': True,
     'trace_level': 1,
   },
@@ -2495,7 +2496,7 @@ _FUNCTION_INFO = {
   },
   'BlendBarrierKHR': {
     'gl_test_func': 'glBlendBarrierKHR',
-    'extension': True,
+    'extension': 'KHR_blend_equation_advanced',
     'extension_flag': 'blend_equation_advanced',
     'client_test': False,
   },
@@ -2666,6 +2667,7 @@ _FUNCTION_INFO = {
     'gl_test_func': 'glFramebufferTexture2DMultisampleEXT',
     'expectation': False,
     'unit_test': False,
+    'extension': 'EXT_multisampled_render_to_texture',
     'extension_flag': 'multisampled_render_to_texture',
     'trace_level': 1,
   },
@@ -2893,7 +2895,7 @@ _FUNCTION_INFO = {
     'type': 'Custom',
     'expectation': False,
     'impl_func': False,
-    'extension': True,
+    'extension': 'CHROMIUM_get_multiple',
     'chromium': True,
     'client_test': False,
     'cmd_args': 'GLidProgram program, uint32_t bucket_id',
@@ -3196,7 +3198,7 @@ _FUNCTION_INFO = {
   },
   'MapBufferSubDataCHROMIUM': {
     'gen_cmd': False,
-    'extension': True,
+    'extension': 'CHROMIUM_map_sub',
     'chromium': True,
     'client_test': False,
     'pepper_interface': 'ChromiumMapSub',
@@ -3281,6 +3283,7 @@ _FUNCTION_INFO = {
     'gl_test_func': 'glRenderbufferStorageMultisampleEXT',
     'expectation': False,
     'unit_test': False,
+    'extension': 'EXT_multisampled_render_to_texture',
     'extension_flag': 'multisampled_render_to_texture',
     'trace_level': 1,
   },
@@ -3633,7 +3636,7 @@ _FUNCTION_INFO = {
   },
   'UnmapBufferSubDataCHROMIUM': {
     'gen_cmd': False,
-    'extension': True,
+    'extension': 'CHROMIUM_map_sub',
     'chromium': True,
     'client_test': False,
     'pepper_interface': 'ChromiumMapSub',
@@ -3752,7 +3755,7 @@ _FUNCTION_INFO = {
     'impl_func': False,
     'client_test': False,
     'cmd_args': 'uint32_t bucket_id',
-    'extension': True,
+    'extension': 'CHROMIUM_request_extension',
     'chromium': True,
   },
   'RateLimitOffscreenContextCHROMIUM': {
@@ -3793,18 +3796,18 @@ _FUNCTION_INFO = {
   'CompressedCopyTextureCHROMIUM': {
     'decoder_func': 'DoCompressedCopyTextureCHROMIUM',
     'unit_test': False,
-    'extension': True,
+    'extension': 'CHROMIUM_copy_compressed_texture',
     'chromium': True,
   },
   'CompressedCopySubTextureCHROMIUM': {
     'decoder_func': 'DoCompressedCopySubTextureCHROMIUM',
     'unit_test': False,
-    'extension': True,
+    'extension': 'CHROMIUM_copy_compressed_texture',
     'chromium': True,
   },
   'TexStorage2DEXT': {
     'unit_test': False,
-    'extension': True,
+    'extension': 'EXT_texture_storage',
     'decoder_func': 'DoTexStorage2DEXT',
     'trace_level': 2,
   },
@@ -3812,7 +3815,7 @@ _FUNCTION_INFO = {
     'type': 'Manual',
     'cmd_args': 'GLenumDrawMode mode, GLint first, GLsizei count, '
                 'GLsizei primcount',
-    'extension': True,
+    'extension': 'ANGLE_instanced_arrays',
     'unit_test': False,
     'pepper_interface': 'InstancedArrays',
     'defer_draws': True,
@@ -3826,7 +3829,7 @@ _FUNCTION_INFO = {
     'unit_test': False,
     # could use 'extension_flag': 'ext_draw_buffers' but currently expected to
     # work without.
-    'extension': True,
+    'extension': 'EXT_draw_buffers',
     'pepper_interface': 'DrawBuffers',
     'trace_level': 2,
   },
@@ -3834,7 +3837,7 @@ _FUNCTION_INFO = {
     'type': 'Manual',
     'cmd_args': 'GLenumDrawMode mode, GLsizei count, '
                 'GLenumIndexType type, GLuint index_offset, GLsizei primcount',
-    'extension': True,
+    'extension': 'ANGLE_instanced_arrays',
     'unit_test': False,
     'client_test': False,
     'pepper_interface': 'InstancedArrays',
@@ -3844,7 +3847,7 @@ _FUNCTION_INFO = {
   'VertexAttribDivisorANGLE': {
     'type': 'Manual',
     'cmd_args': 'GLuint index, GLuint divisor',
-    'extension': True,
+    'extension': 'ANGLE_instanced_arrays',
     'unit_test': False,
     'pepper_interface': 'InstancedArrays',
   },
@@ -3952,7 +3955,7 @@ _FUNCTION_INFO = {
   },
   'BindUniformLocationCHROMIUM': {
     'type': 'GLchar',
-    'extension': True,
+    'extension': 'CHROMIUM_bind_uniform_location',
     'data_transfer_methods': ['bucket'],
     'needs_size': True,
     'gl_test_func': 'DoBindUniformLocationCHROMIUM',
@@ -3961,24 +3964,24 @@ _FUNCTION_INFO = {
     'type': 'GLcharN',
     'decoder_func': 'DoInsertEventMarkerEXT',
     'expectation': False,
-    'extension': True,
+    'extension': 'EXT_debug_marker',
   },
   'PushGroupMarkerEXT': {
     'type': 'GLcharN',
     'decoder_func': 'DoPushGroupMarkerEXT',
     'expectation': False,
-    'extension': True,
+    'extension': 'EXT_debug_marker',
   },
   'PopGroupMarkerEXT': {
     'decoder_func': 'DoPopGroupMarkerEXT',
     'expectation': False,
-    'extension': True,
+    'extension': 'EXT_debug_marker',
     'impl_func': False,
   },
 
   'GenVertexArraysOES': {
     'type': 'GENn',
-    'extension': True,
+    'extension': 'OES_vertex_array_object',
     'gl_test_func': 'glGenVertexArraysOES',
     'resource_type': 'VertexArray',
     'resource_types': 'VertexArrays',
@@ -3987,7 +3990,7 @@ _FUNCTION_INFO = {
   },
   'BindVertexArrayOES': {
     'type': 'Bind',
-    'extension': True,
+    'extension': 'OES_vertex_array_object',
     'gl_test_func': 'glBindVertexArrayOES',
     'decoder_func': 'DoBindVertexArrayOES',
     'gen_func': 'GenVertexArraysOES',
@@ -3997,7 +4000,7 @@ _FUNCTION_INFO = {
   },
   'DeleteVertexArraysOES': {
     'type': 'DELn',
-    'extension': True,
+    'extension': 'OES_vertex_array_object',
     'gl_test_func': 'glDeleteVertexArraysOES',
     'resource_type': 'VertexArray',
     'resource_types': 'VertexArrays',
@@ -4006,7 +4009,7 @@ _FUNCTION_INFO = {
   },
   'IsVertexArrayOES': {
     'type': 'Is',
-    'extension': True,
+    'extension': 'OES_vertex_array_object',
     'gl_test_func': 'glIsVertexArrayOES',
     'decoder_func': 'DoIsVertexArrayOES',
     'expectation': False,
@@ -4051,7 +4054,7 @@ _FUNCTION_INFO = {
     'impl_func': False,
     'client_test': False,
     'cmd_args': 'GLuint category_bucket_id, GLuint name_bucket_id',
-    'extension': True,
+    'extension': 'CHROMIUM_trace_marker',
     'chromium': True,
   },
   'TraceEndCHROMIUM': {
@@ -4059,7 +4062,7 @@ _FUNCTION_INFO = {
     'client_test': False,
     'decoder_func': 'DoTraceEndCHROMIUM',
     'unit_test': False,
-    'extension': True,
+    'extension': 'CHROMIUM_trace_marker',
     'chromium': True,
   },
   'DiscardFramebufferEXT': {
@@ -4068,13 +4071,14 @@ _FUNCTION_INFO = {
     'decoder_func': 'DoDiscardFramebufferEXT',
     'unit_test': False,
     'client_test': False,
+    'extension': 'EXT_discard_framebuffer',
     'extension_flag': 'ext_discard_framebuffer',
     'trace_level': 2,
   },
   'LoseContextCHROMIUM': {
     'decoder_func': 'DoLoseContextCHROMIUM',
     'unit_test': False,
-    'extension': True,
+    'extension': 'CHROMIUM_lose_context',
     'chromium': True,
     'trace_level': 1,
   },
@@ -4104,7 +4108,7 @@ _FUNCTION_INFO = {
       'impl_func': True,
       'unit_test': False,
       'client_test': False,
-      'extension': True,
+      'extension': 'CHROMIUM_schedule_overlay_plane',
       'chromium': True,
   },
   'MatrixLoadfCHROMIUM': {
@@ -4114,21 +4118,21 @@ _FUNCTION_INFO = {
     'decoder_func': 'DoMatrixLoadfCHROMIUM',
     'gl_test_func': 'glMatrixLoadfEXT',
     'chromium': True,
-    'extension': True,
+    'extension': 'CHROMIUM_path_rendering',
     'extension_flag': 'chromium_path_rendering',
   },
   'MatrixLoadIdentityCHROMIUM': {
     'decoder_func': 'DoMatrixLoadIdentityCHROMIUM',
     'gl_test_func': 'glMatrixLoadIdentityEXT',
     'chromium': True,
-    'extension': True,
+    'extension': 'CHROMIUM_path_rendering',
     'extension_flag': 'chromium_path_rendering',
   },
   'GenPathsCHROMIUM': {
     'type': 'Custom',
     'cmd_args': 'GLuint first_client_id, GLsizei range',
     'chromium': True,
-    'extension': True,
+    'extension': 'CHROMIUM_path_rendering',
     'extension_flag': 'chromium_path_rendering',
   },
   'DeletePathsCHROMIUM': {
@@ -4137,7 +4141,7 @@ _FUNCTION_INFO = {
     'impl_func': False,
     'unit_test': False,
     'chromium': True,
-    'extension': True,
+    'extension': 'CHROMIUM_path_rendering',
     'extension_flag': 'chromium_path_rendering',
   },
   'IsPathCHROMIUM': {
@@ -4145,26 +4149,26 @@ _FUNCTION_INFO = {
     'decoder_func': 'DoIsPathCHROMIUM',
     'gl_test_func': 'glIsPathNV',
     'chromium': True,
-    'extension': True,
+    'extension': 'CHROMIUM_path_rendering',
     'extension_flag': 'chromium_path_rendering',
   },
   'PathCommandsCHROMIUM': {
     'type': 'Manual',
     'immediate': False,
     'chromium': True,
-    'extension': True,
+    'extension': 'CHROMIUM_path_rendering',
     'extension_flag': 'chromium_path_rendering',
   },
   'PathParameterfCHROMIUM': {
     'type': 'Custom',
     'chromium': True,
-    'extension': True,
+    'extension': 'CHROMIUM_path_rendering',
     'extension_flag': 'chromium_path_rendering',
   },
   'PathParameteriCHROMIUM': {
     'type': 'Custom',
     'chromium': True,
-    'extension': True,
+    'extension': 'CHROMIUM_path_rendering',
     'extension_flag': 'chromium_path_rendering',
   },
   'PathStencilFuncCHROMIUM': {
@@ -4172,43 +4176,43 @@ _FUNCTION_INFO = {
     'state': 'PathStencilFuncCHROMIUM',
     'decoder_func': 'glPathStencilFuncNV',
     'chromium': True,
-    'extension': True,
+    'extension': 'CHROMIUM_path_rendering',
     'extension_flag': 'chromium_path_rendering',
   },
   'StencilFillPathCHROMIUM': {
     'type': 'Custom',
     'chromium': True,
-    'extension': True,
+    'extension': 'CHROMIUM_path_rendering',
     'extension_flag': 'chromium_path_rendering',
   },
   'StencilStrokePathCHROMIUM': {
     'type': 'Custom',
     'chromium': True,
-    'extension': True,
+    'extension': 'CHROMIUM_path_rendering',
     'extension_flag': 'chromium_path_rendering',
   },
   'CoverFillPathCHROMIUM': {
     'type': 'Custom',
     'chromium': True,
-    'extension': True,
+    'extension': 'CHROMIUM_path_rendering',
     'extension_flag': 'chromium_path_rendering',
   },
   'CoverStrokePathCHROMIUM': {
     'type': 'Custom',
     'chromium': True,
-    'extension': True,
+    'extension': 'CHROMIUM_path_rendering',
     'extension_flag': 'chromium_path_rendering',
   },
   'StencilThenCoverFillPathCHROMIUM': {
     'type': 'Custom',
     'chromium': True,
-    'extension': True,
+    'extension': 'CHROMIUM_path_rendering',
     'extension_flag': 'chromium_path_rendering',
   },
   'StencilThenCoverStrokePathCHROMIUM': {
     'type': 'Custom',
     'chromium': True,
-    'extension': True,
+    'extension': 'CHROMIUM_path_rendering',
     'extension_flag': 'chromium_path_rendering',
   },
 
@@ -4872,13 +4876,10 @@ TEST_P(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
     f.write("%s MojoGLES2Impl::%s(%s) {\n" %
                (func.return_type, func.original_name,
                 func.MakeTypedOriginalArgString("")))
-    extensions = ["CHROMIUM_sync_point", "CHROMIUM_texture_mailbox",
-                  "CHROMIUM_sub_image", "CHROMIUM_miscellaneous",
-                  "occlusion_query_EXT", "CHROMIUM_image",
-                  "CHROMIUM_copy_texture",
-                  "CHROMIUM_pixel_transfer_buffer_object",
-                  "chromium_framebuffer_multisample"]
-    if func.IsCoreGLFunction() or func.GetInfo("extension") in extensions:
+    is_core_gl_func = func.IsCoreGLFunction()
+    is_ext = bool(func.GetInfo("extension"))
+    is_safe = not func.IsUnsafe()
+    if is_core_gl_func or (is_safe and is_ext):
       f.write("MojoGLES2MakeCurrent(context_);");
       func_return = "gl" + func.original_name + "(" + \
           func.MakeOriginalArgString("") + ");"
@@ -10458,16 +10459,8 @@ class MojoGLES2Impl : public gpu::gles2::GLES2Interface {
 #include "mojo/gpu/mojo_gles2_impl_autogen.h"
 
 #include "base/logging.h"
-#include "third_party/mojo/src/mojo/public/c/gles2/chromium_copy_texture.h"
-#include "third_party/mojo/src/mojo/public/c/gles2/chromium_framebuffer_multisample.h"
-#include "third_party/mojo/src/mojo/public/c/gles2/chromium_image.h"
-#include "third_party/mojo/src/mojo/public/c/gles2/chromium_miscellaneous.h"
-#include "third_party/mojo/src/mojo/public/c/gles2/chromium_pixel_transfer_buffer_object.h"
-#include "third_party/mojo/src/mojo/public/c/gles2/chromium_sub_image.h"
-#include "third_party/mojo/src/mojo/public/c/gles2/chromium_sync_point.h"
-#include "third_party/mojo/src/mojo/public/c/gles2/chromium_texture_mailbox.h"
+#include "third_party/mojo/src/mojo/public/c/gles2/chromium_extension.h"
 #include "third_party/mojo/src/mojo/public/c/gles2/gles2.h"
-#include "third_party/mojo/src/mojo/public/c/gles2/occlusion_query_ext.h"
 
 namespace mojo {
 
@@ -10886,11 +10879,13 @@ const size_t GLES2Util::enum_to_string_table_len_ =
                                 func.MakeOriginalArgString("")))
     self.generated_cpp_filenames.append(filename)
 
-  def WriteMojoGLCallVisitorForExtension(self, filename, extension):
-    """Provides the GL implementation for mojo for a particular extension"""
+  def WriteMojoGLCallVisitorForExtension(self, filename):
+    """Provides the GL implementation for mojo for all extensions"""
     with CWriter(filename) as f:
       for func in self.original_functions:
-        if func.GetInfo("extension") != extension:
+        if not func.GetInfo("extension"):
+          continue
+        if func.IsUnsafe():
           continue
         f.write("VISIT_GL_CALL(%s, %s, (%s), (%s))\n" %
                                (func.name, func.return_type,
@@ -11011,32 +11006,7 @@ def main(argv):
                        "gles2_call_visitor")
   gen.WriteMojoGLCallVisitor(mojo_gles2_prefix + "_autogen.h")
   gen.WriteMojoGLCallVisitorForExtension(
-      mojo_gles2_prefix + "_chromium_texture_mailbox_autogen.h",
-      "CHROMIUM_texture_mailbox")
-  gen.WriteMojoGLCallVisitorForExtension(
-      mojo_gles2_prefix + "_chromium_sync_point_autogen.h",
-      "CHROMIUM_sync_point")
-  gen.WriteMojoGLCallVisitorForExtension(
-      mojo_gles2_prefix + "_chromium_sub_image_autogen.h",
-      "CHROMIUM_sub_image")
-  gen.WriteMojoGLCallVisitorForExtension(
-      mojo_gles2_prefix + "_chromium_miscellaneous_autogen.h",
-      "CHROMIUM_miscellaneous")
-  gen.WriteMojoGLCallVisitorForExtension(
-      mojo_gles2_prefix + "_occlusion_query_ext_autogen.h",
-      "occlusion_query_EXT")
-  gen.WriteMojoGLCallVisitorForExtension(
-      mojo_gles2_prefix + "_chromium_image_autogen.h",
-      "CHROMIUM_image")
-  gen.WriteMojoGLCallVisitorForExtension(
-      mojo_gles2_prefix + "_chromium_copy_texture_autogen.h",
-      "CHROMIUM_copy_texture")
-  gen.WriteMojoGLCallVisitorForExtension(
-      mojo_gles2_prefix + "_chromium_pixel_transfer_buffer_object_autogen.h",
-      "CHROMIUM_pixel_transfer_buffer_object")
-  gen.WriteMojoGLCallVisitorForExtension(
-      mojo_gles2_prefix + "_chromium_framebuffer_multisample_autogen.h",
-      "chromium_framebuffer_multisample")
+      mojo_gles2_prefix + "_chromium_extension_autogen.h")
 
   Format(gen.generated_cpp_filenames)
 
