@@ -15,6 +15,7 @@
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
 #include "chrome/browser/ui/tabs/tab_utils.h"
 #include "chrome/browser/ui/view_ids.h"
+#include "chrome/browser/ui/views/layout_constants.h"
 #include "chrome/browser/ui/views/tabs/media_indicator_button.h"
 #include "chrome/browser/ui/views/tabs/tab_controller.h"
 #include "chrome/browser/ui/views/theme_image_mapper.h"
@@ -57,12 +58,6 @@ using base::UserMetricsAction;
 
 namespace {
 
-// Padding around the "content" of a tab, occupied by the tab border graphics.
-const int kLeftPadding = 20;
-const int kTopPadding = 4;
-const int kRightPadding = 20;
-const int kBottomPadding = 2;
-
 // Height of the shadow at the top of the tab image assets.
 const int kDropShadowHeight = 4;
 
@@ -74,13 +69,7 @@ const int kTouchWidth = 120;
 
 const int kToolbarOverlap = 1;
 const int kExtraLeftPaddingToBalanceCloseButtonPadding = 2;
-const int kFaviconTitleSpacing = 4;
 const int kAfterTitleSpacing = 3;
-const int kCloseButtonRightPaddingOverlap = 3;
-const int kStandardTitleWidth = 175;
-
-// Width of the content inside a pinned tab.
-int kPinnedTabContentWidth = 25;
 
 // When a non-pinned tab becomes a pinned tab the width of the tab animates. If
 // the width of a pinned tab is at least kPinnedTabExtraWidthToRenderAsNormal
@@ -618,7 +607,7 @@ gfx::Size Tab::GetMinimumUnselectedSize() {
   // defined most accurately by the height of the end cap images.
   InitTabResources();
   int height = tab_active_.image_l->height();
-  return gfx::Size(kLeftPadding + kRightPadding, height);
+  return gfx::Size(GetLayoutInsets(TAB).width(), height);
 }
 
 // static
@@ -631,7 +620,9 @@ gfx::Size Tab::GetMinimumSelectedSize() {
 // static
 gfx::Size Tab::GetStandardSize() {
   gfx::Size standard_size = GetMinimumUnselectedSize();
-  standard_size.Enlarge(kFaviconTitleSpacing + kStandardTitleWidth, 0);
+  const int title_spacing = GetLayoutConstant(TAB_FAVICON_TITLE_SPACING);
+  const int title_width = GetLayoutConstant(TAB_MAXIMUM_TITLE_WIDTH);
+  standard_size.Enlarge(title_spacing + title_width, 0);
   return standard_size;
 }
 
@@ -642,7 +633,8 @@ int Tab::GetTouchWidth() {
 
 // static
 int Tab::GetPinnedWidth() {
-  return GetMinimumUnselectedSize().width() + kPinnedTabContentWidth;
+  return GetMinimumUnselectedSize().width() +
+      GetLayoutConstant(TAB_PINNED_CONTENT_WIDTH);
 }
 
 // static
@@ -763,7 +755,7 @@ void Tab::Layout() {
   if (lb.IsEmpty())
     return;
 
-  lb.Inset(kLeftPadding, kTopPadding, kRightPadding, kBottomPadding);
+  lb.Inset(GetLayoutInsets(TAB));
   showing_icon_ = ShouldShowIcon();
   // See comments in IconCapacity().
   const int extra_padding =
@@ -791,7 +783,8 @@ void Tab::Layout() {
     const gfx::Size close_button_size(close_button_->GetPreferredSize());
     const int top = lb.y() + (lb.height() - close_button_size.height() + 1) / 2;
     const int left = kAfterTitleSpacing;
-    const int close_button_end = lb.right() + kCloseButtonRightPaddingOverlap;
+    const int close_button_end = lb.right() +
+        GetLayoutConstant(TAB_CLOSE_BUTTON_TRAILING_PADDING_OVERLAP);
     close_button_->SetPosition(
         gfx::Point(close_button_end - close_button_size.width() - left, 0));
     const int bottom = height() - close_button_size.height() - top;
@@ -823,8 +816,9 @@ void Tab::Layout() {
   // Size the title to fill the remaining width and use all available height.
   const bool show_title = ShouldRenderAsNormalTab();
   if (show_title) {
+    const int title_spacing = GetLayoutConstant(TAB_FAVICON_TITLE_SPACING);
     int title_left = showing_icon_ ?
-        (favicon_bounds_.right() + kFaviconTitleSpacing) : start;
+        (favicon_bounds_.right() + title_spacing) : start;
     int title_width = lb.right() - title_left;
     if (showing_media_indicator_) {
       title_width =

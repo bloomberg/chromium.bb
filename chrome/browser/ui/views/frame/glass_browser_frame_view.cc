@@ -12,6 +12,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/layout_constants.h"
 #include "chrome/browser/ui/views/profiles/avatar_menu_button.h"
 #include "chrome/browser/ui/views/profiles/new_avatar_button.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
@@ -60,9 +61,6 @@ const int kAvatarRightSpacing = -2;
 const int kNewAvatarButtonOffset = 5;
 // The content left/right images have a shadow built into them.
 const int kContentEdgeShadowThickness = 2;
-// The top 3 px of the tabstrip is shadow; in maximized mode we push this off
-// the top of the screen so the tabs appear flush against the screen edge.
-const int kTabstripTopShadowThickness = 3;
 // In restored mode, the New Tab button isn't at the same height as the caption
 // buttons, but the space will look cluttered if it actually slides under them,
 // so we stop it when the gap between the two is down to 5 px.
@@ -347,7 +345,8 @@ int GlassBrowserFrameView::NonClientTopBorderHeight() const {
   // at the top (see AeroGlassFrame::OnGetMinMaxInfo()).
   return gfx::win::GetSystemMetricsInDIP(SM_CYSIZEFRAME) +
       (!frame()->ShouldLeaveOffsetNearTopBorder() ?
-      -kTabstripTopShadowThickness : kNonClientRestoredExtraThickness);
+          -GetLayoutConstant(TABSTRIP_TOP_SHADOW_HEIGHT) :
+          kNonClientRestoredExtraThickness);
 }
 
 void GlassBrowserFrameView::PaintToolbarBackground(gfx::Canvas* canvas) {
@@ -503,8 +502,9 @@ void GlassBrowserFrameView::LayoutNewStyleAvatar() {
   // We need to offset the button correctly in maximized mode, so that the
   // custom glass style aligns with the native control glass style. The
   // glass shadow is off by 1px, which was determined by visual inspection.
-  int button_y = !frame()->IsMaximized() ? 1 :
-      NonClientTopBorderHeight() + kTabstripTopShadowThickness - 1;
+  const int shadow_height = GetLayoutConstant(TABSTRIP_TOP_SHADOW_HEIGHT);
+  int button_y = frame()->IsMaximized() ?
+      (NonClientTopBorderHeight() + shadow_height - 1) : 1;
 
   new_avatar_button()->SetBounds(
       button_x,
@@ -530,9 +530,9 @@ void GlassBrowserFrameView::LayoutAvatar() {
   int avatar_bottom = GetTopInset() +
       browser_view()->GetTabStripHeight() - kAvatarBottomSpacing;
   int avatar_restored_y = avatar_bottom - incognito_icon.height();
+  const int shadow_height = GetLayoutConstant(TABSTRIP_TOP_SHADOW_HEIGHT);
   int avatar_y = frame()->IsMaximized() ?
-      (NonClientTopBorderHeight() + kTabstripTopShadowThickness) :
-      avatar_restored_y;
+      (NonClientTopBorderHeight() + shadow_height) : avatar_restored_y;
   avatar_bounds_.SetRect(avatar_x, avatar_y, incognito_icon.width(),
       browser_view()->ShouldShowAvatar() ? (avatar_bottom - avatar_y) : 0);
   if (avatar_button())

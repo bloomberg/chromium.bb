@@ -8,6 +8,7 @@
 #include "chrome/browser/ui/views/frame/browser_frame.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/browser_view_layout.h"
+#include "chrome/browser/ui/views/layout_constants.h"
 #include "grit/theme_resources.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/theme_provider.h"
@@ -146,7 +147,7 @@ void BrowserNonClientFrameViewMac::PaintToolbarBackground(gfx::Canvas* canvas) {
   ui::ThemeProvider* tp = GetThemeProvider();
   gfx::ImageSkia* border = tp->GetImageSkiaNamed(IDR_TOOLBAR_SHADE_TOP);
   const int top_inset =
-      BrowserViewLayout::kToolbarTabStripVerticalOverlap - border->height();
+      GetLayoutConstant(TABSTRIP_TOOLBAR_OVERLAP) - border->height();
 
   const int x = bounds.x();
   const int y = bounds.y() + top_inset;

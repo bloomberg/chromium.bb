@@ -20,6 +20,7 @@
 #include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
 #include "chrome/browser/ui/views/frame/top_container_view.h"
 #include "chrome/browser/ui/views/infobars/infobar_container_view.h"
+#include "chrome/browser/ui/views/layout_constants.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "components/web_modal/web_contents_modal_dialog_host.h"
 #include "ui/base/hit_test.h"
@@ -114,9 +115,6 @@ class BrowserViewLayout::WebContentsModalDialogHostViews
   DISALLOW_COPY_AND_ASSIGN(WebContentsModalDialogHostViews);
 };
 
-// static
-const int BrowserViewLayout::kToolbarTabStripVerticalOverlap = 3;
-
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserViewLayout, public:
 
@@ -175,7 +173,7 @@ gfx::Size BrowserViewLayout::GetMinimumSize() {
        browser()->SupportsWindowFeature(Browser::FEATURE_LOCATIONBAR)) ?
            toolbar_->GetMinimumSize() : gfx::Size());
   if (tabstrip_size.height() && toolbar_size.height())
-    toolbar_size.Enlarge(0, -kToolbarTabStripVerticalOverlap);
+    toolbar_size.Enlarge(0, -GetLayoutConstant(TABSTRIP_TOOLBAR_OVERLAP));
   gfx::Size bookmark_bar_size;
   if (bookmark_bar_ &&
       bookmark_bar_->visible() &&
@@ -401,7 +399,7 @@ int BrowserViewLayout::LayoutToolbar(int top) {
   bool toolbar_visible = delegate_->IsToolbarVisible();
   int y = top;
   y -= (toolbar_visible && delegate_->IsTabStripVisible()) ?
-        kToolbarTabStripVerticalOverlap : 0;
+      GetLayoutConstant(TABSTRIP_TOOLBAR_OVERLAP) : 0;
   int height = toolbar_visible ? toolbar_->GetPreferredSize().height() : 0;
   toolbar_->SetVisible(toolbar_visible);
   toolbar_->SetBounds(vertical_layout_rect_.x(), y, browser_view_width, height);

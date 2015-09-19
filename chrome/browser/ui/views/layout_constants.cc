@@ -16,6 +16,17 @@ int GetLayoutConstant(LayoutConstant constant) {
   const int kLocationBarVerticalPadding[] = {2, 2, 2};
   const int kOmniboxDropdownBorderInterior[] = {6, 0, 0};
   const int kOmniboxFontPixelSize[] = {16, 14, 14};
+  const int kTabCloseButtonTrailingPaddingOverlap[] = {3, 3, 3};
+  const int kTabFaviconTitleSpacing[] = {4, 4, 4};
+  const int kTabMaximumTitleWidth[] = {175, 175, 175};
+  const int kTabPinnedContentWidth[] = {25, 25, 25};
+#if defined(OS_MACOSX)
+  const int kTabstripTabOverlap[] = {19, 19, 19};
+#else
+  const int kTabstripTabOverlap[] = {26, 26, 26};
+#endif
+  const int kTabstripToolbarOverlap[] = {3, 3, 3};
+  const int kTabstripTopShadowHeight[] = {3, 3, 3};
   const int kToolbarViewContentShadowHeight[] = {0, 0, 0};
   const int kToolbarViewContentShadowHeightAsh[] = {2, 0, 0};
   const int kToolbarViewElementPadding[] = {0, 0, 8};
@@ -40,6 +51,20 @@ int GetLayoutConstant(LayoutConstant constant) {
       return kOmniboxDropdownBorderInterior[mode];
     case OMNIBOX_FONT_PIXEL_SIZE:
       return kOmniboxFontPixelSize[mode];
+    case TABSTRIP_TAB_OVERLAP:
+      return kTabstripTabOverlap[mode];
+    case TABSTRIP_TOOLBAR_OVERLAP:
+      return kTabstripToolbarOverlap[mode];
+    case TABSTRIP_TOP_SHADOW_HEIGHT:
+      return kTabstripTopShadowHeight[mode];
+    case TAB_CLOSE_BUTTON_TRAILING_PADDING_OVERLAP:
+      return kTabCloseButtonTrailingPaddingOverlap[mode];
+    case TAB_FAVICON_TITLE_SPACING:
+      return kTabFaviconTitleSpacing[mode];
+    case TAB_MAXIMUM_TITLE_WIDTH:
+      return kTabMaximumTitleWidth[mode];
+    case TAB_PINNED_CONTENT_WIDTH:
+      return kTabPinnedContentWidth[mode];
     case TOOLBAR_VIEW_CONTENT_SHADOW_HEIGHT:
       return kToolbarViewContentShadowHeight[mode];
     case TOOLBAR_VIEW_CONTENT_SHADOW_HEIGHT_ASH:
@@ -58,6 +83,10 @@ int GetLayoutConstant(LayoutConstant constant) {
 gfx::Insets GetLayoutInsets(LayoutInset inset) {
   const int kOmniboxDropdownMinIconVerticalPadding[] = {2, 4, 8};
   const int kOmniboxDropdownMinTextVerticalPadding[] = {3, 4, 8};
+  const int kTabBottomPadding[] = {2, 2, 2};
+  const int kTabLeftPadding[] = {20, 20, 20};
+  const int kTabRightPadding[] = {20, 20, 20};
+  const int kTabTopPadding[] = {4, 4, 4};
   const int kToolbarButtonBorderInset[] = {2, 6, 6};
   const int kToolbarViewBottomVerticalPadding[] = {5, 5, 5};
   const int kToolbarViewTopVerticalPadding[] = {5, 4, 4};
@@ -74,6 +103,9 @@ gfx::Insets GetLayoutInsets(LayoutInset inset) {
       const int padding = kOmniboxDropdownMinTextVerticalPadding[mode];
       return gfx::Insets(padding, 0, padding, 0);
     }
+    case TAB:
+      return gfx::Insets(kTabTopPadding[mode], kTabLeftPadding[mode],
+                         kTabBottomPadding[mode], kTabRightPadding[mode]);
     case TOOLBAR_BUTTON: {
       const int inset = kToolbarButtonBorderInset[mode];
       return gfx::Insets(inset, inset, inset, inset);

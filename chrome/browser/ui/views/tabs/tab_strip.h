@@ -378,9 +378,6 @@ class TabStrip : public views::View,
   // and drop to calculate offsets and positioning.
   int GetSizeNeededForTabs(const Tabs& tabs);
 
-  // Returns the amount of overlap between adjacent tabs.
-  int GetTabOverlap() const;
-
   // Returns the number of pinned tabs.
   int GetPinnedTabCount() const;
 

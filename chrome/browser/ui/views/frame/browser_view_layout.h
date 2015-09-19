@@ -38,9 +38,6 @@ class WebContentsModalDialogHost;
 // The layout manager used in chrome browser.
 class BrowserViewLayout : public views::LayoutManager {
  public:
-  // The vertical overlap between the TabStrip and the Toolbar.
-  static const int kToolbarTabStripVerticalOverlap;
-
   BrowserViewLayout();
   ~BrowserViewLayout() override;
 
