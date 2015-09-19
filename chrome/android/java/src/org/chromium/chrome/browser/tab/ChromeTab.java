@@ -4,35 +4,20 @@
 
 package org.chromium.chrome.browser.tab;
 
-import android.annotation.TargetApi;
-import android.app.ActivityManager;
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Rect;
-import android.media.AudioManager;
-import android.os.Build;
-import android.os.Handler;
-import android.os.Message;
 import android.text.TextUtils;
-import android.util.Pair;
-import android.view.KeyEvent;
-import android.view.View;
 
-import org.chromium.base.Log;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordUserAction;
-import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeApplication;
-import org.chromium.chrome.browser.ChromeWebContentsDelegateAndroid;
 import org.chromium.chrome.browser.FrozenNativePage;
 import org.chromium.chrome.browser.NativePage;
 import org.chromium.chrome.browser.TabState;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchTabHelper;
 import org.chromium.chrome.browser.crash.MinidumpUploadService;
-import org.chromium.chrome.browser.document.DocumentUtils;
-import org.chromium.chrome.browser.document.DocumentWebContentsDelegate;
 import org.chromium.chrome.browser.dom_distiller.ReaderModeActivityDelegate;
 import org.chromium.chrome.browser.dom_distiller.ReaderModeManager;
 import org.chromium.chrome.browser.fullscreen.FullscreenManager;
@@ -44,21 +29,15 @@ import org.chromium.chrome.browser.policy.PolicyAuditor;
 import org.chromium.chrome.browser.policy.PolicyAuditor.AuditEvent;
 import org.chromium.chrome.browser.rlz.RevenueStats;
 import org.chromium.chrome.browser.tab.TabUma.TabCreationState;
-import org.chromium.chrome.browser.tabmodel.TabCreatorManager.TabCreator;
-import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
-import org.chromium.chrome.browser.tabmodel.TabModelUtils;
-import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.crypto.CipherFactory;
 import org.chromium.content_public.browser.GestureStateListener;
-import org.chromium.content_public.browser.InvalidateTypes;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsObserver;
-import org.chromium.ui.WindowOpenDisposition;
 import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.base.WindowAndroid;
 
@@ -73,8 +52,6 @@ public class ChromeTab extends Tab {
 
     // URL didFailLoad error code. Should match the value in net_error_list.h.
     public static final int BLOCKED_BY_ADMINISTRATOR = -22;
-
-    private static final int MSG_ID_ENABLE_FULLSCREEN_AFTER_LOAD = 1;
 
     /** The maximum amount of time to wait for a page to load before entering fullscreen.  -1 means
      *  wait until the page finishes loading. */
@@ -97,37 +74,6 @@ public class ChromeTab extends Tab {
     private boolean mIsNativePageCommitPending;
 
     private WebContentsObserver mWebContentsObserver;
-
-    private Handler mHandler;
-
-    private final Runnable mCloseContentsRunnable = new Runnable() {
-        @Override
-        public void run() {
-            boolean isSelected = mActivity.getTabModelSelector().getCurrentTab() == ChromeTab.this;
-            mActivity.getTabModelSelector().closeTab(ChromeTab.this);
-
-            // If the parent Tab belongs to another Activity, fire the Intent to bring it back.
-            if (isSelected && getParentIntent() != null
-                    && mActivity.getIntent() != getParentIntent()) {
-                boolean mayLaunch = FeatureUtilities.isDocumentMode(mActivity)
-                        ? isParentInAndroidOverview() : true;
-                if (mayLaunch) mActivity.startActivity(getParentIntent());
-            }
-        }
-
-        /** If the API allows it, returns whether a Task still exists for the parent Activity. */
-        @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-        private boolean isParentInAndroidOverview() {
-            ActivityManager activityManager =
-                    (ActivityManager) mActivity.getSystemService(Context.ACTIVITY_SERVICE);
-            for (ActivityManager.AppTask task : activityManager.getAppTasks()) {
-                Intent taskIntent = DocumentUtils.getBaseIntentFromTask(task);
-                if (taskIntent != null && taskIntent.filterEquals(getParentIntent())) return true;
-            }
-            return false;
-        }
-    };
-
 
     /**
      * Listens to gesture events fired by the ContentViewCore.
@@ -159,15 +105,7 @@ public class ChromeTab extends Tab {
         }
 
         addObserver(mTabObserver);
-        mHandler = new Handler() {
-            @Override
-            public void handleMessage(Message msg) {
-                if (msg == null) return;
-                if (msg.what == MSG_ID_ENABLE_FULLSCREEN_AFTER_LOAD) {
-                    enableFullscreenAfterLoad();
-                }
-            }
-        };
+
         if (mActivity != null && creationState != null) {
             setTabUma(new TabUma(
                     this, creationState, mActivity.getTabModelSelector().getModel(incognito)));
@@ -242,229 +180,6 @@ public class ChromeTab extends Tab {
 
     public static ChromeTab fromTab(Tab tab) {
         return (ChromeTab) tab;
-    }
-
-    @Override
-    protected TabChromeWebContentsDelegateAndroid createWebContentsDelegate() {
-        return new TabChromeWebContentsDelegateAndroidImpl();
-    }
-
-    /**
-     * An implementation for this tab's web contents delegate.
-     */
-    public class TabChromeWebContentsDelegateAndroidImpl
-            extends TabChromeWebContentsDelegateAndroid {
-        private Pair<WebContents, String> mWebContentsUrlMapping;
-
-        protected TabModel getTabModel() {
-            // TODO(dfalcantara): Remove this when DocumentActivity.getTabModelSelector()
-            //                    can return a TabModelSelector that activateContents() can use.
-            return mActivity.getTabModelSelector().getModel(isIncognito());
-        }
-
-        @Override
-        public boolean shouldResumeRequestsForCreatedWindow() {
-            // Pause the WebContents if an Activity has to be created for it first.
-            TabCreator tabCreator = mActivity.getTabCreator(isIncognito());
-            assert tabCreator != null;
-            return !tabCreator.createsTabsAsynchronously();
-        }
-
-        @Override
-        public void webContentsCreated(WebContents sourceWebContents, long openerRenderFrameId,
-                String frameName, String targetUrl, WebContents newWebContents) {
-            super.webContentsCreated(sourceWebContents, openerRenderFrameId, frameName,
-                    targetUrl, newWebContents);
-
-            // The URL can't be taken from the WebContents if it's paused.  Save it for later.
-            assert mWebContentsUrlMapping == null;
-            mWebContentsUrlMapping = Pair.create(newWebContents, targetUrl);
-
-            // TODO(dfalcantara): Re-remove this once crbug.com/508366 is fixed.
-            TabCreator tabCreator = mActivity.getTabCreator(isIncognito());
-
-            if (tabCreator != null && tabCreator.createsTabsAsynchronously()) {
-                DocumentWebContentsDelegate.getInstance().attachDelegate(newWebContents);
-            }
-        }
-
-        @Override
-        public boolean addNewContents(WebContents sourceWebContents, WebContents webContents,
-                int disposition, Rect initialPosition, boolean userGesture) {
-            assert mWebContentsUrlMapping.first == webContents;
-
-            TabCreator tabCreator = mActivity.getTabCreator(isIncognito());
-            assert tabCreator != null;
-
-            // Grab the URL, which might not be available via the Tab.
-            String url = mWebContentsUrlMapping.second;
-            mWebContentsUrlMapping = null;
-
-            // Skip opening a new Tab if it doesn't make sense.
-            if (isClosing()) return false;
-
-            // Creating new Tabs asynchronously requires starting a new Activity to create the Tab,
-            // so the Tab returned will always be null.  There's no way to know synchronously
-            // whether the Tab is created, so assume it's always successful.
-            boolean createdSuccessfully = tabCreator.createTabWithWebContents(
-                    webContents, getId(), TabLaunchType.FROM_LONGPRESS_FOREGROUND, url);
-            boolean success = tabCreator.createsTabsAsynchronously() || createdSuccessfully;
-            if (success && disposition == WindowOpenDisposition.NEW_POPUP) {
-                PolicyAuditor auditor =
-                        ((ChromeApplication) getApplicationContext()).getPolicyAuditor();
-                auditor.notifyAuditEvent(getApplicationContext(), AuditEvent.OPEN_POPUP_URL_SUCCESS,
-                        url, "");
-            }
-
-            return success;
-        }
-
-        @Override
-        public void activateContents() {
-            boolean activityIsDestroyed = false;
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-                activityIsDestroyed = mActivity.isDestroyed();
-            }
-            if (activityIsDestroyed || !isInitialized()) {
-                Log.e(TAG, "Activity destroyed before calling activateContents().  Bailing out.");
-                return;
-            }
-
-            TabModel model = getTabModel();
-            int index = model.indexOf(ChromeTab.this);
-            if (index == TabModel.INVALID_TAB_INDEX) return;
-            TabModelUtils.setIndex(model, index);
-            bringActivityToForeground();
-        }
-
-        /**
-         * Brings chrome's Activity to foreground, if it is not so.
-         */
-        protected void bringActivityToForeground() {
-            // This intent is sent in order to get the activity back to the foreground if it was
-            // not already. The previous call will activate the right tab in the context of the
-            // TabModel but will only show the tab to the user if Chrome was already in the
-            // foreground.
-            // The intent is getting the tabId mostly because it does not cost much to do so.
-            // When receiving the intent, the tab associated with the tabId should already be
-            // active.
-            // Note that calling only the intent in order to activate the tab is slightly slower
-            // because it will change the tab when the intent is handled, which happens after
-            // Chrome gets back to the foreground.
-            Intent newIntent = Tab.createBringTabToFrontIntent(ChromeTab.this.getId());
-            newIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-
-            getApplicationContext().startActivity(newIntent);
-        }
-
-        @Override
-        public void navigationStateChanged(int flags) {
-            if ((flags & InvalidateTypes.TAB) != 0) {
-                MediaCaptureNotificationService.updateMediaNotificationForTab(
-                        getApplicationContext(), getId(), isCapturingAudio(),
-                        isCapturingVideo(), getUrl());
-            }
-            super.navigationStateChanged(flags);
-        }
-
-        @Override
-        public void onLoadProgressChanged(int progress) {
-            if (!isLoading()) return;
-            notifyLoadProgress(getProgress());
-        }
-
-        @Override
-        public void closeContents() {
-            // Execute outside of callback, otherwise we end up deleting the native
-            // objects in the middle of executing methods on them.
-            mHandler.removeCallbacks(mCloseContentsRunnable);
-            mHandler.post(mCloseContentsRunnable);
-        }
-
-        @Override
-        public boolean takeFocus(boolean reverse) {
-            if (reverse) {
-                View menuButton = mActivity.findViewById(R.id.menu_button);
-                if (menuButton == null || !menuButton.isShown()) {
-                    menuButton = mActivity.findViewById(R.id.document_menu_button);
-                }
-                if (menuButton != null && menuButton.isShown()) {
-                    return menuButton.requestFocus();
-                }
-
-                View tabSwitcherButton = mActivity.findViewById(R.id.tab_switcher_button);
-                if (tabSwitcherButton != null && tabSwitcherButton.isShown()) {
-                    return tabSwitcherButton.requestFocus();
-                }
-            } else {
-                View urlBar = mActivity.findViewById(R.id.url_bar);
-                if (urlBar != null) return urlBar.requestFocus();
-            }
-            return false;
-        }
-
-        @Override
-        public void handleKeyboardEvent(KeyEvent event) {
-            if (event.getAction() == KeyEvent.ACTION_DOWN) {
-                if (mActivity.onKeyDown(event.getKeyCode(), event)) return;
-
-                // Handle the Escape key here (instead of in KeyboardShortcuts.java), so it doesn't
-                // interfere with other parts of the activity (e.g. the URL bar).
-                if (event.getKeyCode() == KeyEvent.KEYCODE_ESCAPE && event.hasNoModifiers()) {
-                    WebContents wc = getWebContents();
-                    if (wc != null) wc.stop();
-                    return;
-                }
-            }
-            handleMediaKey(event);
-        }
-
-        /**
-         * Redispatches unhandled media keys. This allows bluetooth headphones with play/pause or
-         * other buttons to function correctly.
-         */
-        @TargetApi(19)
-        private void handleMediaKey(KeyEvent e) {
-            if (Build.VERSION.SDK_INT < 19) return;
-            switch (e.getKeyCode()) {
-                case KeyEvent.KEYCODE_MUTE:
-                case KeyEvent.KEYCODE_HEADSETHOOK:
-                case KeyEvent.KEYCODE_MEDIA_PLAY:
-                case KeyEvent.KEYCODE_MEDIA_PAUSE:
-                case KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE:
-                case KeyEvent.KEYCODE_MEDIA_STOP:
-                case KeyEvent.KEYCODE_MEDIA_NEXT:
-                case KeyEvent.KEYCODE_MEDIA_PREVIOUS:
-                case KeyEvent.KEYCODE_MEDIA_REWIND:
-                case KeyEvent.KEYCODE_MEDIA_RECORD:
-                case KeyEvent.KEYCODE_MEDIA_FAST_FORWARD:
-                case KeyEvent.KEYCODE_MEDIA_CLOSE:
-                case KeyEvent.KEYCODE_MEDIA_EJECT:
-                case KeyEvent.KEYCODE_MEDIA_AUDIO_TRACK:
-                    AudioManager am = (AudioManager) mActivity.getSystemService(
-                            Context.AUDIO_SERVICE);
-                    am.dispatchMediaKeyEvent(e);
-                    break;
-                default:
-                    break;
-            }
-        }
-
-        /**
-         * @return Whether audio is being captured.
-         */
-        private boolean isCapturingAudio() {
-            return !isClosing()
-                    && ChromeWebContentsDelegateAndroid.nativeIsCapturingAudio(getWebContents());
-        }
-
-        /**
-         * @return Whether video is being captured.
-         */
-        private boolean isCapturingVideo() {
-            return !isClosing()
-                    && ChromeWebContentsDelegateAndroid.nativeIsCapturingVideo(getWebContents());
-        }
     }
 
     private WebContentsObserver createWebContentsObserver(WebContents webContents) {
@@ -581,7 +296,8 @@ public class ChromeTab extends Tab {
         }
     }
 
-    private void enableFullscreenAfterLoad() {
+    @Override
+    protected void enableFullscreenAfterLoad() {
         if (!mIsFullscreenWaitingForLoad) return;
 
         mIsFullscreenWaitingForLoad = false;

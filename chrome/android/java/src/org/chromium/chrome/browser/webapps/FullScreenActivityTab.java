@@ -312,7 +312,7 @@ public class FullScreenActivityTab extends ChromeTab {
     }
 
     private class FullScreenTabWebContentsDelegateAndroid
-            extends TabChromeWebContentsDelegateAndroidImpl {
+            extends TabChromeWebContentsDelegateAndroid {
         @Override
         public void activateContents() {
             if (!(mActivity instanceof WebappActivity)) return;

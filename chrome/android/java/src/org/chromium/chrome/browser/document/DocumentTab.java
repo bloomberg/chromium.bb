@@ -143,8 +143,8 @@ public class DocumentTab extends ChromeTab {
     /**
      * A web contents delegate for handling opening new windows in Document mode.
      */
-    public class DocumentTabChromeWebContentsDelegateAndroidImpl
-            extends TabChromeWebContentsDelegateAndroidImpl {
+    public class DocumentTabChromeWebContentsDelegateAndroid
+            extends TabChromeWebContentsDelegateAndroid {
         /**
          * TODO(dfalcantara): Remove this when DocumentActivity.getTabModelSelector()
          *                    can return a TabModelSelector that activateContents() can use.
@@ -157,7 +157,7 @@ public class DocumentTab extends ChromeTab {
 
     @Override
     protected TabChromeWebContentsDelegateAndroid createWebContentsDelegate() {
-        return new DocumentTabChromeWebContentsDelegateAndroidImpl();
+        return new DocumentTabChromeWebContentsDelegateAndroid();
     }
 
     /**

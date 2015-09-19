@@ -346,7 +346,7 @@ public class CustomTab extends ChromeTab {
 
     @Override
     protected TabChromeWebContentsDelegateAndroid createWebContentsDelegate() {
-        return new TabChromeWebContentsDelegateAndroidImpl() {
+        return new TabChromeWebContentsDelegateAndroid() {
             private String mTargetUrl;
 
             @Override
