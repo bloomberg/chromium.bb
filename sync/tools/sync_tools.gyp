@@ -25,6 +25,8 @@
       '../sync.gyp:sync',
     ],
     'sources': [
+      'invalidation_helper.cc',
+      'invalidation_helper.h',
       'null_invalidation_state_tracker.cc',
       'null_invalidation_state_tracker.h',
     ],
@@ -40,7 +42,6 @@
     'dependencies': [
       '../../base/base.gyp:base',
       '../../components/components.gyp:invalidation_impl',
-      '../../components/components.gyp:sync_driver',
       '../../jingle/jingle.gyp:notifier',
       '../../net/net.gyp:net',
       '../../net/net.gyp:net_test_support',
@@ -63,7 +64,6 @@
     'dependencies': [
       '../../base/base.gyp:base',
       '../../components/components.gyp:invalidation_impl',
-      '../../components/components.gyp:sync_driver',
       '../../jingle/jingle.gyp:notifier',
       '../../net/net.gyp:net',
       '../../net/net.gyp:net_test_support',
