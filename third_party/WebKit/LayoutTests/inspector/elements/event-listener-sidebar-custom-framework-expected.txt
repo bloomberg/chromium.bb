@@ -5,7 +5,7 @@ Inspect Me
 
 ======== click ========
 == frameworkInternal
-[expanded] button#inspectedNodeevent-listener-sidebar-custom-framework.html:23
+[expanded] button#inspectedNodeRemoveevent-listener-sidebar-custom-framework.html:23
     useCapture: false
     handler: function internalHandler(e)
     {
@@ -37,7 +37,7 @@ Inspect Me
 
 ======== click ========
 == normal
-[expanded] button#inspectedNodeevent-listener-sidebar-custom-framework.html:23
+[expanded] button#inspectedNodeRemoveevent-listener-sidebar-custom-framework.html:23
     useCapture: false
     handler: function internalHandler(e)
     {

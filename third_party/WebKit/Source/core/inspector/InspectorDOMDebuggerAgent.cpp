@@ -375,8 +375,10 @@ PassRefPtr<TypeBuilder::DOMDebugger::EventListener> InspectorDOMDebuggerAgent::b
         .setType(type)
         .setUseCapture(useCapture)
         .setLocation(location);
-    if (!objectGroupId.isEmpty())
+    if (!objectGroupId.isEmpty()) {
         value->setHandler(injectedScript.wrapObject(ScriptValue(scriptState, function), objectGroupId));
+        value->setOriginalHandler(injectedScript.wrapObject(ScriptValue(scriptState, handler), objectGroupId));
+    }
     return value.release();
 }
 

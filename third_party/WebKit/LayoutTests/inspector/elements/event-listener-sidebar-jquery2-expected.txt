@@ -4,27 +4,32 @@ Inspect Me
 
 ======== click ========
 == frameworkUser
-[expanded] button#nodeevent-listener-sidebar-jquery2.html:11
+[expanded] button#nodeRemoveevent-listener-sidebar-jquery2.html:11
     useCapture: true
     handler: function (){ console.log("second jquery"); }
 == frameworkUser
-[expanded] button#nodeevent-listener-sidebar-jquery2.html:10
+[expanded] button#nodeRemoveevent-listener-sidebar-jquery2.html:10
     useCapture: true
     handler: function (){ console.log("first jquery"); }
 == normal
-[expanded] button#nodeevent-listener-sidebar-jquery2.html:12
+[expanded] button#nodeRemoveevent-listener-sidebar-jquery2.html:13
+    useCapture: false
+    handler: function () { constole.log("onclick"); }
+== normal
+[expanded] button#nodeRemoveevent-listener-sidebar-jquery2.html:12
     useCapture: false
     handler: function () { console.log("addEventListener"); }
 == frameworkInternal
-[expanded] button#nodejquery-2.1.4.min.js:3
+[expanded] button#nodeRemovejquery-2.1.4.min.js:3
     useCapture: false
     handler: function (b){return typeof n!==U&&n.event.triggered!==b.type?n.event.dispatch.apply(a,arguments):void 0}
 
 ======== load ========
 == normal
-[expanded] Windowevent-listener-sidebar-jquery2.html:36
+[expanded] WindowRemoveevent-listener-sidebar-jquery2.html:52
     useCapture: false
     handler: function onload(event) {
   onloadHandler()
 }
+Remove listeners..
 

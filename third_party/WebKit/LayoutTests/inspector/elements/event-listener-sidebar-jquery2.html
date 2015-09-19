@@ -10,6 +10,7 @@ function setupEventListeners()
     $("#node").click(function(){ console.log("first jquery"); });
     $("#node").click(function(){ console.log("second jquery"); });
     node.addEventListener("click", function() { console.log("addEventListener"); });
+    node.onclick = function() { constole.log("onclick"); }
 }
 
 function test()
@@ -21,7 +22,22 @@ function test()
 
     function step1()
     {
+        InspectorTest.expandAndDumpSelectedElementEventListeners(step2);
+    }
+
+    function step2()
+    {
+        InspectorTest.addResult("Remove listeners..");
+        var eventListenersWidget = InspectorTest.eventListenersWidget();
+        var listenerTypes = eventListenersWidget._eventListenersView._treeOutline.rootElement().children();
+        var promises = [];
+        for (var i in listenerTypes) {
+            var listenersItems = listenerTypes[i].children();
+            for (var j in listenersItems)
+                promises.push(listenersItems[j].eventListener().remove());
+        }
         InspectorTest.expandAndDumpSelectedElementEventListeners(InspectorTest.completeTest.bind(this));
+        Promise.all(promises).then(eventListenersWidget.doUpdate());
     }
 }
 
