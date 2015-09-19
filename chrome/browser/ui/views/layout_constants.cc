@@ -27,11 +27,11 @@ int GetLayoutConstant(LayoutConstant constant) {
 #endif
   const int kTabstripToolbarOverlap[] = {3, 3, 3};
   const int kTabstripTopShadowHeight[] = {3, 3, 3};
-  const int kToolbarViewContentShadowHeight[] = {0, 0, 0};
-  const int kToolbarViewContentShadowHeightAsh[] = {2, 0, 0};
-  const int kToolbarViewElementPadding[] = {0, 0, 8};
-  const int kToolbarViewLocationBarRightPadding[] = {0, 4, 8};
-  const int kToolbarViewStandardSpacing[] = {3, 4, 8};
+  const int kToolbarContentShadowHeight[] = {0, 0, 0};
+  const int kToolbarContentShadowHeightAsh[] = {2, 0, 0};
+  const int kToolbarElementPadding[] = {0, 0, 8};
+  const int kToolbarLocationBarRightPadding[] = {0, 4, 8};
+  const int kToolbarStandardSpacing[] = {3, 4, 8};
 
   const int mode = ui::MaterialDesignController::GetMode();
   switch (constant) {
@@ -65,56 +65,55 @@ int GetLayoutConstant(LayoutConstant constant) {
       return kTabMaximumTitleWidth[mode];
     case TAB_PINNED_CONTENT_WIDTH:
       return kTabPinnedContentWidth[mode];
-    case TOOLBAR_VIEW_CONTENT_SHADOW_HEIGHT:
-      return kToolbarViewContentShadowHeight[mode];
-    case TOOLBAR_VIEW_CONTENT_SHADOW_HEIGHT_ASH:
-      return kToolbarViewContentShadowHeightAsh[mode];
-    case TOOLBAR_VIEW_ELEMENT_PADDING:
-      return kToolbarViewElementPadding[mode];
-    case TOOLBAR_VIEW_LOCATION_BAR_RIGHT_PADDING:
-      return kToolbarViewLocationBarRightPadding[mode];
-    case TOOLBAR_VIEW_STANDARD_SPACING:
-      return kToolbarViewStandardSpacing[mode];
+    case TOOLBAR_CONTENT_SHADOW_HEIGHT:
+      return kToolbarContentShadowHeight[mode];
+    case TOOLBAR_CONTENT_SHADOW_HEIGHT_ASH:
+      return kToolbarContentShadowHeightAsh[mode];
+    case TOOLBAR_ELEMENT_PADDING:
+      return kToolbarElementPadding[mode];
+    case TOOLBAR_LOCATION_BAR_RIGHT_PADDING:
+      return kToolbarLocationBarRightPadding[mode];
+    case TOOLBAR_STANDARD_SPACING:
+      return kToolbarStandardSpacing[mode];
   }
   NOTREACHED();
   return 0;
 }
 
 gfx::Insets GetLayoutInsets(LayoutInset inset) {
-  const int kOmniboxDropdownMinIconVerticalPadding[] = {2, 4, 8};
-  const int kOmniboxDropdownMinTextVerticalPadding[] = {3, 4, 8};
+  const int kOmniboxDropdownIconPadding[] = {2, 4, 8};
+  const int kOmniboxDropdownTextPadding[] = {3, 4, 8};
   const int kTabBottomPadding[] = {2, 2, 2};
   const int kTabLeftPadding[] = {20, 20, 20};
   const int kTabRightPadding[] = {20, 20, 20};
   const int kTabTopPadding[] = {4, 4, 4};
-  const int kToolbarButtonBorderInset[] = {2, 6, 6};
-  const int kToolbarViewBottomVerticalPadding[] = {5, 5, 5};
-  const int kToolbarViewTopVerticalPadding[] = {5, 4, 4};
-  const int kToolbarViewLeftEdgeSpacing[] = {3, 4, 8};
-  const int kToolbarViewRightEdgeSpacing[] = {2, 4, 8};
+  const int kToolbarBottomPadding[] = {5, 5, 5};
+  const int kToolbarButtonPadding[] = {2, 6, 6};
+  const int kToolbarLeftPadding[] = {3, 4, 8};
+  const int kToolbarRightPadding[] = {2, 4, 8};
+  const int kToolbarTopPadding[] = {5, 4, 4};
 
   const int mode = ui::MaterialDesignController::GetMode();
   switch (inset) {
     case OMNIBOX_DROPDOWN_ICON: {
-      const int padding = kOmniboxDropdownMinIconVerticalPadding[mode];
+      const int padding = kOmniboxDropdownIconPadding[mode];
       return gfx::Insets(padding, 0, padding, 0);
     }
     case OMNIBOX_DROPDOWN_TEXT: {
-      const int padding = kOmniboxDropdownMinTextVerticalPadding[mode];
+      const int padding = kOmniboxDropdownTextPadding[mode];
       return gfx::Insets(padding, 0, padding, 0);
     }
     case TAB:
       return gfx::Insets(kTabTopPadding[mode], kTabLeftPadding[mode],
                          kTabBottomPadding[mode], kTabRightPadding[mode]);
+    case TOOLBAR:
+      return gfx::Insets(kToolbarTopPadding[mode], kToolbarLeftPadding[mode],
+                         kToolbarBottomPadding[mode],
+                         kToolbarRightPadding[mode]);
     case TOOLBAR_BUTTON: {
-      const int inset = kToolbarButtonBorderInset[mode];
+      const int inset = kToolbarButtonPadding[mode];
       return gfx::Insets(inset, inset, inset, inset);
     }
-    case TOOLBAR_VIEW:
-      return gfx::Insets(kToolbarViewTopVerticalPadding[mode],
-                         kToolbarViewLeftEdgeSpacing[mode],
-                         kToolbarViewBottomVerticalPadding[mode],
-                         kToolbarViewRightEdgeSpacing[mode]);
   }
   NOTREACHED();
   return gfx::Insets();

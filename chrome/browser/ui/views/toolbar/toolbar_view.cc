@@ -491,19 +491,19 @@ bool ToolbarView::GetAcceleratorForCommandId(int command_id,
 gfx::Size ToolbarView::GetPreferredSize() const {
   gfx::Size size(location_bar_->GetPreferredSize());
   if (is_display_mode_normal()) {
-    const int element_padding = GetLayoutConstant(TOOLBAR_VIEW_ELEMENT_PADDING);
+    const int element_padding = GetLayoutConstant(TOOLBAR_ELEMENT_PADDING);
     const int browser_actions_width =
         browser_actions_->GetPreferredSize().width();
     const int content_width =
-        GetLayoutInsets(TOOLBAR_VIEW).width() +
+        GetLayoutInsets(TOOLBAR).width() +
         back_->GetPreferredSize().width() + element_padding +
         forward_->GetPreferredSize().width() + element_padding +
         reload_->GetPreferredSize().width() +
         (show_home_button_.GetValue()
              ? element_padding + home_->GetPreferredSize().width()
              : 0) +
-        GetLayoutConstant(TOOLBAR_VIEW_STANDARD_SPACING) +
-        GetLayoutConstant(TOOLBAR_VIEW_LOCATION_BAR_RIGHT_PADDING) +
+        GetLayoutConstant(TOOLBAR_STANDARD_SPACING) +
+        GetLayoutConstant(TOOLBAR_LOCATION_BAR_RIGHT_PADDING) +
         browser_actions_width +
         (browser_actions_width > 0 ? element_padding : 0) +
         app_menu_->GetPreferredSize().width();
@@ -515,19 +515,19 @@ gfx::Size ToolbarView::GetPreferredSize() const {
 gfx::Size ToolbarView::GetMinimumSize() const {
   gfx::Size size(location_bar_->GetMinimumSize());
   if (is_display_mode_normal()) {
-    const int element_padding = GetLayoutConstant(TOOLBAR_VIEW_ELEMENT_PADDING);
+    const int element_padding = GetLayoutConstant(TOOLBAR_ELEMENT_PADDING);
     const int browser_actions_width =
         browser_actions_->GetMinimumSize().width();
     const int content_width =
-        GetLayoutInsets(TOOLBAR_VIEW).width() +
+        GetLayoutInsets(TOOLBAR).width() +
         back_->GetMinimumSize().width() + element_padding +
         forward_->GetMinimumSize().width() + element_padding +
         reload_->GetMinimumSize().width() +
         (show_home_button_.GetValue()
              ? element_padding + home_->GetMinimumSize().width()
              : 0) +
-        GetLayoutConstant(TOOLBAR_VIEW_STANDARD_SPACING) +
-        GetLayoutConstant(TOOLBAR_VIEW_LOCATION_BAR_RIGHT_PADDING) +
+        GetLayoutConstant(TOOLBAR_STANDARD_SPACING) +
+        GetLayoutConstant(TOOLBAR_LOCATION_BAR_RIGHT_PADDING) +
         browser_actions_width +
         (browser_actions_width > 0 ? element_padding : 0) +
         app_menu_->GetMinimumSize().width();
@@ -562,7 +562,7 @@ void ToolbarView::Layout() {
   //                http://crbug.com/5540
   bool maximized = browser_->window() && browser_->window()->IsMaximized();
   int back_width = back_->GetPreferredSize().width();
-  const gfx::Insets insets(GetLayoutInsets(TOOLBAR_VIEW));
+  const gfx::Insets insets(GetLayoutInsets(TOOLBAR));
   if (maximized) {
     back_->SetBounds(0, child_y, back_width + insets.left(), child_height);
     back_->SetLeadingMargin(insets.left());
@@ -570,7 +570,7 @@ void ToolbarView::Layout() {
     back_->SetBounds(insets.left(), child_y, back_width, child_height);
     back_->SetLeadingMargin(0);
   }
-  const int element_padding = GetLayoutConstant(TOOLBAR_VIEW_ELEMENT_PADDING);
+  const int element_padding = GetLayoutConstant(TOOLBAR_ELEMENT_PADDING);
   int next_element_x = back_->bounds().right() + element_padding;
 
   forward_->SetBounds(next_element_x, child_y,
@@ -591,14 +591,14 @@ void ToolbarView::Layout() {
     home_->SetVisible(false);
     home_->SetBounds(next_element_x, child_y, 0, child_height);
   }
-  next_element_x = home_->bounds().right() +
-                   GetLayoutConstant(TOOLBAR_VIEW_STANDARD_SPACING);
+  next_element_x =
+      home_->bounds().right() + GetLayoutConstant(TOOLBAR_STANDARD_SPACING);
 
   int browser_actions_desired_width =
       browser_actions_->GetPreferredSize().width();
   int app_menu_width = app_menu_->GetPreferredSize().width();
   const int location_bar_right_padding =
-      GetLayoutConstant(TOOLBAR_VIEW_LOCATION_BAR_RIGHT_PADDING);
+      GetLayoutConstant(TOOLBAR_LOCATION_BAR_RIGHT_PADDING);
 
   int available_width = std::max(
       0, width() - insets.right() - app_menu_width -
@@ -768,7 +768,7 @@ gfx::Size ToolbarView::SizeForContentSize(gfx::Size size) const {
     if (ui::MaterialDesignController::IsModeMaterial()) {
       int content_height = std::max(back_->GetPreferredSize().height(),
                                     location_bar_->GetPreferredSize().height());
-      int padding = GetLayoutInsets(TOOLBAR_VIEW).height();
+      int padding = GetLayoutInsets(TOOLBAR).height();
       size.SetToMax(gfx::Size(0, content_height + padding));
     } else {
       gfx::ImageSkia* normal_background =
@@ -840,7 +840,6 @@ void ToolbarView::OnShowHomeButtonChanged() {
 
 int ToolbarView::content_shadow_height() const {
   return GetLayoutConstant(
-      (browser_->host_desktop_type() == chrome::HOST_DESKTOP_TYPE_ASH)
-          ? TOOLBAR_VIEW_CONTENT_SHADOW_HEIGHT_ASH
-          : TOOLBAR_VIEW_CONTENT_SHADOW_HEIGHT);
+      (browser_->host_desktop_type() == chrome::HOST_DESKTOP_TYPE_ASH) ?
+          TOOLBAR_CONTENT_SHADOW_HEIGHT_ASH : TOOLBAR_CONTENT_SHADOW_HEIGHT);
 }

@@ -63,17 +63,17 @@ enum LayoutConstant {
   // Non-ash uses a rounded content area with no shadow in the assets.
   // Ash doesn't use a rounded content area and its top edge has an extra
   // shadow.
-  TOOLBAR_VIEW_CONTENT_SHADOW_HEIGHT,
-  TOOLBAR_VIEW_CONTENT_SHADOW_HEIGHT_ASH,
+  TOOLBAR_CONTENT_SHADOW_HEIGHT,
+  TOOLBAR_CONTENT_SHADOW_HEIGHT_ASH,
 
   // Additional horizontal padding between the elements in the toolbar.
-  TOOLBAR_VIEW_ELEMENT_PADDING,
+  TOOLBAR_ELEMENT_PADDING,
 
   // Padding between the right-edge of the location bar and browser actions.
-  TOOLBAR_VIEW_LOCATION_BAR_RIGHT_PADDING,
+  TOOLBAR_LOCATION_BAR_RIGHT_PADDING,
 
-  // The horizontal space between most items.
-  TOOLBAR_VIEW_STANDARD_SPACING,
+  // The horizontal space between most items in the toolbar.
+  TOOLBAR_STANDARD_SPACING,
 };
 
 enum LayoutInset {
@@ -88,12 +88,12 @@ enum LayoutInset {
   // The padding inside the tab bounds that defines the tab contents region.
   TAB,
 
-  // The spacing between a ToolbarButton's image and its border.
-  TOOLBAR_BUTTON,
-
   // The minimum padding of the toolbar.  The edge graphics have some built-in
   // spacing, shadowing, so this accounts for that as well.
-  TOOLBAR_VIEW,
+  TOOLBAR,
+
+  // The spacing between a ToolbarButton's image and its border.
+  TOOLBAR_BUTTON,
 };
 
 int GetLayoutConstant(LayoutConstant constant);
