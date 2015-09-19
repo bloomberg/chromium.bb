@@ -19,10 +19,6 @@ using ::base::SharedMemory;
 
 namespace gpu {
 
-#if defined(OS_WIN)
-const int64 kRescheduleTimeOutDelay = 1000;
-#endif
-
 GpuScheduler::GpuScheduler(CommandBufferServiceBase* command_buffer,
                            AsyncAPIInterface* handler,
                            gles2::GLES2Decoder* decoder)
