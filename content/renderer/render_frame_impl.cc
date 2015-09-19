@@ -313,7 +313,13 @@ GURL GetOriginalRequestURL(WebDataSource* ds) {
 NOINLINE void CrashIntentionally() {
   // NOTE(shess): Crash directly rather than using NOTREACHED() so
   // that the signature is easier to triage in crash reports.
-  volatile int* zero = NULL;
+  //
+  // Linker's ICF feature may merge this function with other functions with the
+  // same definition and it may confuse the crash report processing system.
+  static int static_variable_to_make_this_function_unique = 0;
+  base::debug::Alias(&static_variable_to_make_this_function_unique);
+
+  volatile int* zero = nullptr;
   *zero = 0;
 }
 
@@ -352,7 +358,7 @@ NOINLINE void MaybeTriggerAsanError(const GURL& url) {
   std::string crash_type(url.path());
   if (crash_type == kHeapOverflow) {
     base::debug::AsanHeapOverflow();
-  } else if (crash_type == kHeapUnderflow ) {
+  } else if (crash_type == kHeapUnderflow) {
     base::debug::AsanHeapUnderflow();
   } else if (crash_type == kUseAfterFree) {
     base::debug::AsanHeapUseAfterFree();

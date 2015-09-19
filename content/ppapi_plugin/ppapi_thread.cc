@@ -8,6 +8,7 @@
 
 #include "base/command_line.h"
 #include "base/cpu.h"
+#include "base/debug/alias.h"
 #include "base/debug/crash_logging.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
@@ -257,7 +258,8 @@ PP_Resource PpapiThread::CreateBrowserFont(
         connection, instance, desc, prefs))->GetReference();
 }
 
-uint32 PpapiThread::Register(ppapi::proxy::PluginDispatcher* plugin_dispatcher) {
+uint32 PpapiThread::Register(
+    ppapi::proxy::PluginDispatcher* plugin_dispatcher) {
   if (!plugin_dispatcher ||
       plugin_dispatchers_.size() >= std::numeric_limits<uint32>::max()) {
     return 0;
@@ -483,7 +485,13 @@ void PpapiThread::OnSetNetworkState(bool online) {
 
 void PpapiThread::OnCrash() {
   // Intentionally crash upon the request of the browser.
-  volatile int* null_pointer = NULL;
+  //
+  // Linker's ICF feature may merge this function with other functions with the
+  // same definition and it may confuse the crash report processing system.
+  static int static_variable_to_make_this_function_unique = 0;
+  base::debug::Alias(&static_variable_to_make_this_function_unique);
+
+  volatile int* null_pointer = nullptr;
   *null_pointer = 0;
 }
 
