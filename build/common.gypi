@@ -85,9 +85,9 @@
           # Enable top chrome material design.
           'enable_topchrome_md%' : 0,
 
-          # Force building against pre-built sysroot image on linux.  By default
-          # the sysroot image is only used for Official builds  or when cross
-          # compiling to arm or mips.
+          # Build against pre-built sysroot image on linux.  By default
+          # the sysroot image is only used for Official builds or when cross
+          # compiling.
           'use_sysroot%': 0,
 
           # Override buildtype to select the desired build flavor.
@@ -180,8 +180,6 @@
         'use_goma%': 0,
         'gomadir%': '',
 
-        # The system root for cross-compiles. Default: none.
-        'sysroot%': '',
         'chroot_cmd%': '',
 
         # The system libdir used for this ABI.
@@ -287,26 +285,27 @@
             'mips_arch_variant%': 'r1',
           }],
 
-          ['OS=="linux" and target_arch=="arm" and chromeos==0', {
+          # The system root for cross-compiles. Default: none.
+          ['OS=="linux" and chromeos==0 and ((branding=="Chrome" and buildtype=="Official") or target_arch=="arm" or target_arch=="mipsel" or use_sysroot==1)', {
             # sysroot needs to be an absolute path otherwise it generates
             # incorrect results when passed to pkg-config
-            'sysroot%': '<!(cd <(DEPTH) && pwd -P)/build/linux/debian_wheezy_arm-sysroot',
-          }], # OS=="linux" and target_arch=="arm" and chromeos==0
-
-          ['OS=="linux" and ((branding=="Chrome" and buildtype=="Official" and chromeos==0) or use_sysroot==1)' , {
             'conditions': [
+              ['target_arch=="arm"', {
+                'sysroot%': '<!(cd <(DEPTH) && pwd -P)/build/linux/debian_wheezy_arm-sysroot',
+              }],
               ['target_arch=="x64"', {
                 'sysroot%': '<!(cd <(DEPTH) && pwd -P)/build/linux/debian_wheezy_amd64-sysroot',
               }],
               ['target_arch=="ia32"', {
                 'sysroot%': '<!(cd <(DEPTH) && pwd -P)/build/linux/debian_wheezy_i386-sysroot',
               }],
-          ],
-          }], # OS=="linux" and branding=="Chrome" and buildtype=="Official" and chromeos==0
-
-          ['OS=="linux" and target_arch=="mipsel"', {
-            'sysroot%': '<!(cd <(DEPTH) && pwd -P)/build/linux/debian_wheezy_mips-sysroot',
-          }],
+              ['target_arch=="mipsel"', {
+                'sysroot%': '<!(cd <(DEPTH) && pwd -P)/build/linux/debian_wheezy_mips-sysroot',
+              }],
+            ],
+          }, {
+            'sysroot%': ''
+          }], # OS=="linux" and use_sysroot==1
         ],
       },
 
