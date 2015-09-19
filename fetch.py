@@ -235,9 +235,12 @@ def usage(msg=None):
        --no-history       Perform shallow clones, don't fetch the full git history.
 
     Valid fetch recipes:""") % os.path.basename(sys.argv[0])
-  for fname in os.listdir(os.path.join(SCRIPT_PATH, 'recipes')):
-    if fname.endswith('.py'):
-      print '  ' + fname[:-3]
+
+  recipes_dir = os.path.join(SCRIPT_PATH, 'recipes')
+  recipes = [f[:-3] for f in os.listdir(recipes_dir) if f.endswith('.py')]
+  recipes.sort()
+  for fname in recipes:
+    print '  ' + fname
 
   sys.exit(bool(msg))
 
