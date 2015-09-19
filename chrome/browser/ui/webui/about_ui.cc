@@ -872,11 +872,11 @@ void AboutMemoryHandler::OnDetailsAvailable() {
     if (!log_string.empty())
       log_string += base::ASCIIToUTF16(", ");
     log_string += browser_processes[index].name + base::ASCIIToUTF16(", ") +
-                  base::Int64ToString16(aggregate.working_set.priv) +
+                  base::SizeTToString16(aggregate.working_set.priv) +
                   base::ASCIIToUTF16(", ") +
-                  base::Int64ToString16(aggregate.working_set.shared) +
+                  base::SizeTToString16(aggregate.working_set.shared) +
                   base::ASCIIToUTF16(", ") +
-                  base::Int64ToString16(aggregate.working_set.shareable);
+                  base::SizeTToString16(aggregate.working_set.shareable);
   }
   if (!log_string.empty())
     VLOG(1) << "memory: " << log_string;

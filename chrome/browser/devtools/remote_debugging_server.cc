@@ -60,7 +60,7 @@ class TCPServerSocketFactory
     if (last_tethering_port_ == kMaxTetheringPort)
       last_tethering_port_ = kMinTetheringPort;
     uint16 port = ++last_tethering_port_;
-    *name = base::IntToString(port);
+    *name = base::UintToString(port);
     scoped_ptr<net::TCPServerSocket> socket(
         new net::TCPServerSocket(nullptr, net::NetLog::Source()));
     if (socket->ListenWithAddressAndPort("127.0.0.1", port, kBackLog) !=

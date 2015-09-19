@@ -135,7 +135,7 @@ Status PrepareCommandLine(uint16 port,
     switches.SetUnparsedSwitch(common_switch);
   for (const auto& desktop_switch : kDesktopSwitches)
     switches.SetUnparsedSwitch(desktop_switch);
-  switches.SetSwitch("remote-debugging-port", base::IntToString(port));
+  switches.SetSwitch("remote-debugging-port", base::UintToString(port));
   for (const auto& excluded_switch : capabilities.exclude_switches) {
     switches.RemoveSwitch(excluded_switch);
   }

@@ -85,7 +85,7 @@ bool PluginsHandler::Parse(Extension* extension, base::string16* error) {
     std::string path_str;
     if (!plugin_value->GetString(keys::kPluginsPath, &path_str)) {
       *error = ErrorUtils::FormatErrorMessageUTF16(
-          manifest_errors::kInvalidPluginsPath, base::IntToString(i));
+          manifest_errors::kInvalidPluginsPath, base::SizeTToString(i));
       return false;
     }
 
@@ -94,8 +94,7 @@ bool PluginsHandler::Parse(Extension* extension, base::string16* error) {
     if (plugin_value->HasKey(keys::kPluginsPublic)) {
       if (!plugin_value->GetBoolean(keys::kPluginsPublic, &is_public)) {
         *error = ErrorUtils::FormatErrorMessageUTF16(
-            manifest_errors::kInvalidPluginsPublic,
-            base::IntToString(i));
+            manifest_errors::kInvalidPluginsPublic, base::SizeTToString(i));
         return false;
       }
     }

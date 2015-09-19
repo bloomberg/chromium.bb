@@ -138,7 +138,7 @@ TEST_F(ErrorConsoleUnitTest, ReportErrors) {
 
   for (size_t i = 0; i < kNumTotalErrors; ++i) {
     error_console_->ReportError(
-        CreateNewManifestError(kId, base::UintToString(i)));
+        CreateNewManifestError(kId, base::SizeTToString(i)));
   }
 
   ASSERT_EQ(kNumTotalErrors, error_console_->GetErrorsForExtension(kId).size());

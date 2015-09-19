@@ -163,7 +163,7 @@ Status DeviceManager::AcquireDevice(scoped_ptr<Device>* device) {
 
   base::AutoLock lock(devices_lock_);
   status = Status(kUnknownError, "All devices are in use (" +
-                  base::IntToString(devices.size()) + " online)");
+                  base::SizeTToString(devices.size()) + " online)");
   std::vector<std::string>::iterator iter;
   for (iter = devices.begin(); iter != devices.end(); iter++) {
     if (!IsDeviceLocked(*iter)) {
@@ -213,4 +213,3 @@ bool DeviceManager::IsDeviceLocked(const std::string& device_serial) {
   return std::find(active_devices_.begin(), active_devices_.end(),
                    device_serial) != active_devices_.end();
 }
-

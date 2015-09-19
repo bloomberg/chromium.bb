@@ -615,8 +615,8 @@ void WebRtcLoggingHandlerHost::LogInitialInfoOnIOThread(
   LogToCircularBuffer(
       "Gpu: machine-model-name=" + gpu_info.machine_model_name +
       ", machine-model-version=" + gpu_info.machine_model_version +
-      ", vendor-id=" + IntToString(gpu_info.gpu.vendor_id) +
-      ", device-id=" + IntToString(gpu_info.gpu.device_id) +
+      ", vendor-id=" + base::UintToString(gpu_info.gpu.vendor_id) +
+      ", device-id=" + base::UintToString(gpu_info.gpu.device_id) +
       ", driver-vendor=" + gpu_info.driver_vendor +
       ", driver-version=" + gpu_info.driver_version);
   LogToCircularBuffer(
@@ -625,7 +625,7 @@ void WebRtcLoggingHandlerHost::LogInitialInfoOnIOThread(
       ", gl-version=" + gpu_info.gl_version);
 
   // Network interfaces
-  LogToCircularBuffer("Discovered " + IntToString(network_list.size()) +
+  LogToCircularBuffer("Discovered " + base::SizeTToString(network_list.size()) +
                       " network interfaces:");
   for (net::NetworkInterfaceList::const_iterator it = network_list.begin();
        it != network_list.end(); ++it) {

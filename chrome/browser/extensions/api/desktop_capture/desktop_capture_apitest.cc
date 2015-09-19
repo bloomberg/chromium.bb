@@ -132,7 +132,7 @@ class DesktopCaptureApiTest : public ExtensionApiTest {
 
  protected:
   GURL GetURLForPath(const std::string& host, const std::string& path) {
-    std::string port = base::IntToString(embedded_test_server()->port());
+    std::string port = base::UintToString(embedded_test_server()->port());
     GURL::Replacements replacements;
     replacements.SetHostStr(host);
     replacements.SetPortStr(port);

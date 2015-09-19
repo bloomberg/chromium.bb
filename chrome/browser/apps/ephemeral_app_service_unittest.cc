@@ -94,7 +94,7 @@ class EphemeralAppServiceTest : public testing::Test {
                            LaunchTimeAppMap* launch_times,
                            std::set<std::string>* generated_ids = NULL) {
     for (int i = 0; i < count; ++i) {
-      std::string app_id = base::IntToString(launch_times->size());
+      std::string app_id = base::SizeTToString(launch_times->size());
       launch_times->insert(std::make_pair(
           GetPastTime(reference_time, days_before, true),
           app_id));

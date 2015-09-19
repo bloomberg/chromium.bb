@@ -442,9 +442,10 @@ void ExtensionStorageMonitor::OnImageLoaded(
   notification.reset(new message_center::Notification(
       message_center::NOTIFICATION_TYPE_SIMPLE, notification_id,
       l10n_util::GetStringUTF16(IDS_EXTENSION_STORAGE_MONITOR_TITLE),
-      l10n_util::GetStringFUTF16(IDS_EXTENSION_STORAGE_MONITOR_TEXT,
-                                 base::UTF8ToUTF16(extension->name()),
-                                 base::IntToString16(current_usage / kMBytes)),
+      l10n_util::GetStringFUTF16(
+          IDS_EXTENSION_STORAGE_MONITOR_TEXT,
+          base::UTF8ToUTF16(extension->name()),
+          base::Int64ToString16(current_usage / kMBytes)),
       notification_image, base::string16() /* display source */, GURL(),
       message_center::NotifierId(message_center::NotifierId::SYSTEM_COMPONENT,
                                  kSystemNotifierId),

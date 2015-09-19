@@ -202,7 +202,7 @@ void OnUserManagerSystemProfileCreated(
     size_t index = cache.GetIndexOfProfileWithPath(profile_path_to_focus);
     if (index != std::string::npos) {
       page += "#";
-      page += base::IntToString(index);
+      page += base::SizeTToString(index);
     }
   } else if (profile_open_action ==
              profiles::USER_MANAGER_SELECT_PROFILE_TASK_MANAGER) {

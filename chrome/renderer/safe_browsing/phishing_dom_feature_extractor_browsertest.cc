@@ -205,7 +205,7 @@ IN_PROC_BROWSER_TEST_F(PhishingDOMFeatureExtractorTest, FormFeatures) {
       std::string("http://other.com/"));
   expected_features.AddBooleanFeature(features::kPageActionURL +
       std::string("http://host.com:") +
-      base::IntToString(embedded_test_server_->port()) +
+      base::UintToString(embedded_test_server_->port()) +
       std::string("/query"));
 
   FeatureMap features;
@@ -289,7 +289,7 @@ IN_PROC_BROWSER_TEST_F(PhishingDOMFeatureExtractorTest, LinkFeatures) {
   // The PhishingDOMFeatureExtractor depends on URLs being domains and not IPs,
   // so use a domain.
   std::string url_str = "https://host.com:";
-  url_str += base::IntToString(https_server.host_port_pair().port());
+  url_str += base::UintToString(https_server.host_port_pair().port());
   url_str += "/files/safe_browsing/secure_link_features.html";
   ui_test_utils::NavigateToURL(browser(), GURL(url_str));
 
@@ -340,7 +340,7 @@ IN_PROC_BROWSER_TEST_F(PhishingDOMFeatureExtractorTest,
   // The PhishingDOMFeatureExtractor depends on URLs being domains and not IPs,
   // so use a domain.
   std::string url_str = "https://host.com:";
-  url_str += base::IntToString(https_server.host_port_pair().port());
+  url_str += base::UintToString(https_server.host_port_pair().port());
   url_str += "/files/safe_browsing/secure_script_and_image.html";
   ui_test_utils::NavigateToURL(browser(), GURL(url_str));
 
@@ -360,7 +360,7 @@ IN_PROC_BROWSER_TEST_F(PhishingDOMFeatureExtractorTest, SubFrames) {
 
   // Test that features are aggregated across all frames.
 
-  std::string port = base::IntToString(embedded_test_server_->port());
+  std::string port = base::UintToString(embedded_test_server_->port());
   responses_[GetURL("host2.com", "").spec()] =
       "<html><head><script></script><body>"
       "<form action=\"http://host4.com/\"><input type=checkbox></form>"
@@ -474,7 +474,7 @@ IN_PROC_BROWSER_TEST_F(PhishingDOMFeatureExtractorTest, MAYBE_Continuation) {
   expected_features.AddRealFeature(features::kPageActionOtherDomainFreq, 0.5);
   expected_features.AddBooleanFeature(features::kPageActionURL +
       std::string("http://host.com:") +
-      base::IntToString(embedded_test_server_->port()) +
+      base::UintToString(embedded_test_server_->port()) +
       std::string("/ondomain"));
   expected_features.AddBooleanFeature(features::kPageActionURL +
       std::string("http://host2.com/"));

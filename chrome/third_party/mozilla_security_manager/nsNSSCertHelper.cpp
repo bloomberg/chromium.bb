@@ -678,7 +678,7 @@ std::string ProcessUserNotice(SECItem* der_notice) {
         if (itemList != notice->noticeReference.noticeNumbers)
           rv += ", ";
         rv += '#';
-        rv += base::UTF16ToUTF8(base::UintToString16(number));
+        rv += base::UTF16ToUTF8(base::Uint64ToString16(number));
       }
       itemList++;
     }

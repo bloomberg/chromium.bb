@@ -179,8 +179,8 @@ const Extension* ExtensionSettingsUIBrowserTest::InstallExtension(
 
   size_t num_after = registry->enabled_extensions().size();
   if (num_before + 1 != num_after) {
-    VLOG(1) << "Num extensions before: " << base::IntToString(num_before)
-            << " num after: " << base::IntToString(num_after)
+    VLOG(1) << "Num extensions before: " << base::SizeTToString(num_before)
+            << " num after: " << base::SizeTToString(num_after)
             << " Installed extensions follow:";
 
     for (const scoped_refptr<const Extension>& extension :

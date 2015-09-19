@@ -280,7 +280,7 @@ IN_PROC_BROWSER_TEST_F(PhishingClassifierDelegateTest, Navigation) {
 
   // Test an initial load.  We expect classification to happen normally.
   EXPECT_CALL(*classifier_, CancelPendingClassification()).Times(2);
-  std::string port = base::IntToString(embedded_test_server_->port());
+  std::string port = base::UintToString(embedded_test_server_->port());
   std::string html = "<html><body><iframe src=\"http://sub1.com:";
   html += port;
   html += "/\"></iframe></body></html>";
@@ -545,7 +545,7 @@ IN_PROC_BROWSER_TEST_F(PhishingClassifierDelegateTest,
   Mock::VerifyAndClearExpectations(classifier_);
 
   std::string url_str = "http://host4.com:";
-  url_str += base::IntToString(embedded_test_server_->port());
+  url_str += base::UintToString(embedded_test_server_->port());
   url_str += "/redir";
   OnStartPhishingDetection(GURL(url_str));
   page_text = ASCIIToUTF16("123");

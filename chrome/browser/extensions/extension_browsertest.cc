@@ -546,8 +546,8 @@ const Extension* ExtensionBrowserTest::InstallOrUpdateExtension(
   size_t num_after = registry->enabled_extensions().size();
   EXPECT_EQ(num_before + expected_change, num_after);
   if (num_before + expected_change != num_after) {
-    VLOG(1) << "Num extensions before: " << base::IntToString(num_before)
-            << " num after: " << base::IntToString(num_after)
+    VLOG(1) << "Num extensions before: " << base::SizeTToString(num_before)
+            << " num after: " << base::SizeTToString(num_after)
             << " Installed extensions follow:";
 
     for (const scoped_refptr<const Extension>& extension :

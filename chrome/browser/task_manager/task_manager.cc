@@ -480,14 +480,14 @@ base::string16 TaskManagerModel::GetResourceGDIHandles(int index) const {
   size_t current, peak;
   GetGDIHandles(index, &current, &peak);
   return l10n_util::GetStringFUTF16(IDS_TASK_MANAGER_HANDLES_CELL_TEXT,
-      base::IntToString16(current), base::IntToString16(peak));
+      base::SizeTToString16(current), base::SizeTToString16(peak));
 }
 
 base::string16 TaskManagerModel::GetResourceUSERHandles(int index) const {
   size_t current, peak;
   GetUSERHandles(index, &current, &peak);
   return l10n_util::GetStringFUTF16(IDS_TASK_MANAGER_HANDLES_CELL_TEXT,
-      base::IntToString16(current), base::IntToString16(peak));
+      base::SizeTToString16(current), base::SizeTToString16(peak));
 }
 
 base::string16 TaskManagerModel::GetResourceWebCoreImageCacheSize(

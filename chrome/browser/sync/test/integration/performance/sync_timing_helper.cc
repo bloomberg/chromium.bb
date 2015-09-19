@@ -45,5 +45,5 @@ void SyncTimingHelper::PrintResult(const std::string& measurement,
                                    const std::string& trace,
                                    const base::TimeDelta& dt) {
   printf("*RESULT %s: %s= %s ms\n", measurement.c_str(), trace.c_str(),
-         base::IntToString(dt.InMillisecondsF()).c_str());
+         base::Int64ToString(dt.InMilliseconds()).c_str());
 }

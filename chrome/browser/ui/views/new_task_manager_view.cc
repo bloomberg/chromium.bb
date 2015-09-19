@@ -183,8 +183,8 @@ class TaskManagerValuesStringifier {
 
   base::string16 GetWindowsHandlesText(int64 current, int64 peak) {
     return l10n_util::GetStringFUTF16(IDS_TASK_MANAGER_HANDLES_CELL_TEXT,
-                                      base::IntToString16(current),
-                                      base::IntToString16(peak));
+                                      base::Int64ToString16(current),
+                                      base::Int64ToString16(peak));
   }
 
   base::string16 GetNetworkUsageText(int64 network_usage) {
@@ -1243,4 +1243,3 @@ void NewTaskManagerView::ToggleColumnVisibility(int column_id) {
 }
 
 }  // namespace task_management
-

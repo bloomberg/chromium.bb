@@ -1245,7 +1245,7 @@ void ResourcePrefetchPredictor::ReportPredictedAccuracyStatsHelper(
   std::string prefix = key_type == PREFETCH_KEY_TYPE_HOST ?
       "ResourcePrefetchPredictor.Host.Predicted" :
       "ResourcePrefetchPredictor.Url.Predicted";
-  std::string suffix = "_" + base::IntToString(max_assumed_prefetched);
+  std::string suffix = "_" + base::SizeTToString(max_assumed_prefetched);
 
   // Macros to avoid using the STATIC_HISTOGRAM_POINTER_BLOCK in UMA_HISTOGRAM
   // definitions.

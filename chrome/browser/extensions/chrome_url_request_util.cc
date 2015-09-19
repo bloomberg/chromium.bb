@@ -69,7 +69,7 @@ class URLRequestResourceBundleJob : public net::URLRequestSimpleJob {
     // Add the Content-Length header now that we know the resource length.
     response_info_.headers->AddHeader(
         base::StringPrintf("%s: %s", net::HttpRequestHeaders::kContentLength,
-                           base::UintToString((*data)->size()).c_str()));
+                           base::SizeTToString((*data)->size()).c_str()));
 
     std::string* read_mime_type = new std::string;
     bool posted = base::PostTaskAndReplyWithResult(

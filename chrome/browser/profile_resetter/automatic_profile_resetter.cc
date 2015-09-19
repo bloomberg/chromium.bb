@@ -661,14 +661,14 @@ scoped_ptr<AutomaticProfileResetter::EvaluationResults>
   for (size_t i = 0; i < kCombinedStatusMaskNumberOfBits; ++i) {
     bool flag = false;
     std::string mask_i_th_bit_key =
-        kCombinedStatusMaskKeyPrefix + base::IntToString(i + 1);
+        kCombinedStatusMaskKeyPrefix + base::SizeTToString(i + 1);
     if (interpreter.GetOutputBoolean(mask_i_th_bit_key, &flag) && flag)
       results->combined_status_mask |= (1 << i);
   }
   for (size_t i = 0; i < kSatisfiedCriteriaMaskNumberOfBits; ++i) {
     bool flag = false;
     std::string mask_i_th_bit_key =
-        kSatisfiedCriteriaMaskKeyPrefix + base::IntToString(i + 1);
+        kSatisfiedCriteriaMaskKeyPrefix + base::SizeTToString(i + 1);
     if (interpreter.GetOutputBoolean(mask_i_th_bit_key, &flag) && flag)
       results->satisfied_criteria_mask |= (1 << i);
   }

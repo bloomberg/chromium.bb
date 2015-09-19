@@ -692,7 +692,7 @@ base::FilePath GetWebShortcutFilename(const GURL& url) {
   for (size_t i = 1; i < 100; ++i) {
     if (base::PathExists(base::FilePath(alternative_filepath))) {
       alternative_filepath = base::FilePath(
-          filepath.value() + "_" + base::IntToString(i) + ".desktop");
+          filepath.value() + "_" + base::SizeTToString(i) + ".desktop");
     } else {
       return base::FilePath(alternative_filepath).BaseName();
     }

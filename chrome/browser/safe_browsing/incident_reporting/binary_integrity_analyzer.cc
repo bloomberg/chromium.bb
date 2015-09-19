@@ -31,7 +31,7 @@ void RecordSignatureVerificationTime(size_t file_index,
 
   base::HistogramBase* signature_verification_time_histogram =
       base::Histogram::FactoryTimeGet(
-          std::string(kHistogramName) + base::IntToString(file_index),
+          std::string(kHistogramName) + base::SizeTToString(file_index),
           base::TimeDelta::FromMilliseconds(1),
           base::TimeDelta::FromSeconds(20),
           50,

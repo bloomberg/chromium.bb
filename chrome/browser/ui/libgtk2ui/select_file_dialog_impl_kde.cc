@@ -331,7 +331,7 @@ void SelectFileDialogImplKDE::GetKDialogCommandLine(
     command_line->AppendSwitchNative(
         desktop_ == base::nix::DESKTOP_ENVIRONMENT_KDE3 ?
             "--embed" : "--attach",
-        base::IntToString(parent));
+        base::Uint64ToString(parent));
   }
 
   // Set the correct title for the dialog.

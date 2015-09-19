@@ -57,10 +57,8 @@ bool LoadGlobsHelper(const base::DictionaryValue* content_script,
     std::string glob;
     if (!list->GetString(i, &glob)) {
       *error = ErrorUtils::FormatErrorMessageUTF16(
-          errors::kInvalidGlob,
-          base::IntToString(content_script_index),
-          globs_property_name,
-          base::IntToString(i));
+          errors::kInvalidGlob, base::IntToString(content_script_index),
+          globs_property_name, base::SizeTToString(i));
       return false;
     }
 
@@ -143,10 +141,8 @@ bool LoadUserScriptFromDictionary(const base::DictionaryValue* content_script,
     std::string match_str;
     if (!matches->GetString(j, &match_str)) {
       *error = ErrorUtils::FormatErrorMessageUTF16(
-          errors::kInvalidMatch,
-          base::IntToString(definition_index),
-          base::IntToString(j),
-          errors::kExpectString);
+          errors::kInvalidMatch, base::IntToString(definition_index),
+          base::SizeTToString(j), errors::kExpectString);
       return false;
     }
 
@@ -156,9 +152,8 @@ bool LoadUserScriptFromDictionary(const base::DictionaryValue* content_script,
     URLPattern::ParseResult parse_result = pattern.Parse(match_str);
     if (parse_result != URLPattern::PARSE_SUCCESS) {
       *error = ErrorUtils::FormatErrorMessageUTF16(
-          errors::kInvalidMatch,
-          base::IntToString(definition_index),
-          base::IntToString(j),
+          errors::kInvalidMatch, base::IntToString(definition_index),
+          base::SizeTToString(j),
           URLPattern::GetParseResultString(parse_result));
       return false;
     }
@@ -200,10 +195,8 @@ bool LoadUserScriptFromDictionary(const base::DictionaryValue* content_script,
       std::string match_str;
       if (!exclude_matches->GetString(j, &match_str)) {
         *error = ErrorUtils::FormatErrorMessageUTF16(
-            errors::kInvalidExcludeMatch,
-            base::IntToString(definition_index),
-            base::IntToString(j),
-            errors::kExpectString);
+            errors::kInvalidExcludeMatch, base::IntToString(definition_index),
+            base::SizeTToString(j), errors::kExpectString);
         return false;
       }
 
@@ -214,8 +207,8 @@ bool LoadUserScriptFromDictionary(const base::DictionaryValue* content_script,
       URLPattern::ParseResult parse_result = pattern.Parse(match_str);
       if (parse_result != URLPattern::PARSE_SUCCESS) {
         *error = ErrorUtils::FormatErrorMessageUTF16(
-            errors::kInvalidExcludeMatch,
-            base::IntToString(definition_index), base::IntToString(j),
+            errors::kInvalidExcludeMatch, base::IntToString(definition_index),
+            base::SizeTToString(j),
             URLPattern::GetParseResultString(parse_result));
         return false;
       }
@@ -269,9 +262,8 @@ bool LoadUserScriptFromDictionary(const base::DictionaryValue* content_script,
       std::string relative;
       if (!js->Get(script_index, &value) || !value->GetAsString(&relative)) {
         *error = ErrorUtils::FormatErrorMessageUTF16(
-            errors::kInvalidJs,
-            base::IntToString(definition_index),
-            base::IntToString(script_index));
+            errors::kInvalidJs, base::IntToString(definition_index),
+            base::SizeTToString(script_index));
         return false;
       }
       GURL url = extension->GetResourceURL(relative);
@@ -288,9 +280,8 @@ bool LoadUserScriptFromDictionary(const base::DictionaryValue* content_script,
       std::string relative;
       if (!css->Get(script_index, &value) || !value->GetAsString(&relative)) {
         *error = ErrorUtils::FormatErrorMessageUTF16(
-            errors::kInvalidCss,
-            base::IntToString(definition_index),
-            base::IntToString(script_index));
+            errors::kInvalidCss, base::IntToString(definition_index),
+            base::SizeTToString(script_index));
         return false;
       }
       GURL url = extension->GetResourceURL(relative);
@@ -406,8 +397,7 @@ bool ContentScriptsHandler::Parse(Extension* extension, base::string16* error) {
     const base::DictionaryValue* script_dict = NULL;
     if (!scripts_list->GetDictionary(i, &script_dict)) {
       *error = ErrorUtils::FormatErrorMessageUTF16(
-          errors::kInvalidContentScript,
-          base::IntToString(i));
+          errors::kInvalidContentScript, base::SizeTToString(i));
       return false;
     }
 

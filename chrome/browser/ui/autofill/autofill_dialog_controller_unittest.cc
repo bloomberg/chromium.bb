@@ -1517,7 +1517,7 @@ TEST_F(AutofillDialogControllerTest, IconReservedForCreditCardField) {
   };
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   for (size_t i = 0; i < arraysize(kSupportedCardIdrs); ++i) {
-    SCOPED_TRACE(base::IntToString(i));
+    SCOPED_TRACE(base::SizeTToString(i));
     gfx::Image supported_card_icon = rb.GetImageNamed(kSupportedCardIdrs[i]);
     EXPECT_GE(placeholder_icon.Width(), supported_card_icon.Width());
     EXPECT_GE(placeholder_icon.Height(), supported_card_icon.Height());
