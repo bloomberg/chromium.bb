@@ -32,6 +32,8 @@ public:
     }
 
     ~LayoutEditor();
+    void dispose();
+
     Element* element() { return m_element.get(); }
     PassRefPtr<JSONObject> buildJSONInfo() const;
     void overlayStartedPropertyChange(const String&);

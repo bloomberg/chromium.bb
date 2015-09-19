@@ -211,6 +211,10 @@ LayoutEditor::LayoutEditor(Element* element, InspectorCSSAgent* cssAgent, Inspec
 
 LayoutEditor::~LayoutEditor()
 {
+}
+
+void LayoutEditor::dispose()
+{
     if (!m_isDirty)
         return;
 

@@ -37,6 +37,7 @@
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
 #include "core/input/EventHandler.h"
+#include "core/inspector/InspectorCSSAgent.h"
 #include "core/inspector/InspectorDebuggerAgent.h"
 #include "core/inspector/InspectorOverlayHost.h"
 #include "core/inspector/LayoutEditor.h"
@@ -202,6 +203,7 @@ DEFINE_TRACE(InspectorOverlayImpl)
     visitor->trace(m_overlayHost);
     visitor->trace(m_debuggerAgent);
     visitor->trace(m_domAgent);
+    visitor->trace(m_cssAgent);
     visitor->trace(m_layoutEditor);
     visitor->trace(m_hoveredNodeForInspectMode);
 }
@@ -611,7 +613,10 @@ void InspectorOverlayImpl::overlayClearSelection(bool commitChanges)
     if (commitChanges)
         m_layoutEditor->commitChanges();
 
-    m_layoutEditor.clear();
+    if (m_layoutEditor) {
+        m_layoutEditor->dispose();
+        m_layoutEditor.clear();
+    }
 
     if (m_inspectModeHighlightConfig)
         highlightNode(m_hoveredNodeForInspectMode.get(), *m_inspectModeHighlightConfig, false);
