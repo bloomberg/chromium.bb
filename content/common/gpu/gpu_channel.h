@@ -178,6 +178,11 @@ class CONTENT_EXPORT GpuChannel
 
   void HandleMessage();
 
+  // Some messages such as WaitForGetOffsetInRange and WaitForTokenInRange are
+  // processed as soon as possible because the client is blocked until they
+  // are completed.
+  void HandleOutOfOrderMessage(const IPC::Message& msg);
+
  protected:
   // The message filter on the io thread.
   scoped_refptr<GpuChannelMessageFilter> filter_;
@@ -300,7 +305,8 @@ class CONTENT_EXPORT GpuChannel
 // - it generates mailbox names for clients of the GPU process on the IO thread.
 class GpuChannelMessageFilter : public IPC::MessageFilter {
  public:
-  GpuChannelMessageFilter(GpuChannelMessageQueue* message_queue,
+  GpuChannelMessageFilter(const base::WeakPtr<GpuChannel>& gpu_channel,
+                          GpuChannelMessageQueue* message_queue,
                           gpu::SyncPointManager* sync_point_manager,
                           base::SingleThreadTaskRunner* task_runner,
                           bool future_sync_points);
@@ -360,6 +366,7 @@ class GpuChannelMessageFilter : public IPC::MessageFilter {
   // It is reset when we transition to IDLE.
   base::TimeDelta max_preemption_time_;
 
+  base::WeakPtr<GpuChannel> gpu_channel_;
   // The message_queue_ is used to handle messages on the main thread.
   scoped_refptr<GpuChannelMessageQueue> message_queue_;
   IPC::Sender* sender_;
@@ -376,9 +383,6 @@ class GpuChannelMessageFilter : public IPC::MessageFilter {
 
   // True if this channel can create future sync points.
   bool future_sync_points_;
-
-  // This number is only ever incremented/read on the IO thread.
-  static uint32_t global_order_counter_;
 };
 
 struct GpuChannelMessage {
@@ -390,9 +394,9 @@ struct GpuChannelMessage {
   bool retire_sync_point;
   uint32 sync_point;
 
-  GpuChannelMessage(uint32_t order_num, const IPC::Message& msg)
-      : order_number(order_num),
-        time_received(base::TimeTicks::Now()),
+  GpuChannelMessage(const IPC::Message& msg)
+      : order_number(0),
+        time_received(base::TimeTicks()),
         message(msg),
         retire_sync_point(false),
         sync_point(0) {}
@@ -422,12 +426,11 @@ class GpuChannelMessageQueue
 
   // Should be called after a message returned by GetNextMessage is processed.
   // Returns true if there are more messages on the queue.
-  bool MessageProcessed(uint32_t order_number);
+  bool MessageProcessed();
 
-  void PushBackMessage(uint32_t order_number, const IPC::Message& message);
+  void PushBackMessage(const IPC::Message& message);
 
   bool GenerateSyncPointMessage(gpu::SyncPointManager* sync_point_manager,
-                                uint32_t order_number,
                                 const IPC::Message& message,
                                 bool retire_sync_point,
                                 uint32_t* sync_point_number);
@@ -445,7 +448,8 @@ class GpuChannelMessageQueue
 
   void PushMessageHelper(scoped_ptr<GpuChannelMessage> msg);
 
-  bool HasQueuedMessagesHelper() const;
+  // This number is only ever incremented/read on the IO thread.
+  static uint32_t global_order_counter_;
 
   bool enabled_;
 
@@ -453,9 +457,8 @@ class GpuChannelMessageQueue
   uint32_t unprocessed_order_num_;
   // Both deques own the messages.
   std::deque<GpuChannelMessage*> channel_messages_;
-  std::deque<GpuChannelMessage*> out_of_order_messages_;
 
-  // This lock protects enabled_, unprocessed_order_num_, and both deques.
+  // This lock protects enabled_, unprocessed_order_num_, and channel_messages_.
   mutable base::Lock channel_messages_lock_;
 
   // Last finished IPC order number. Not protected by a lock as it's only
