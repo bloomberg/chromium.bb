@@ -48,6 +48,21 @@ extern template class CORE_EXTERN_TEMPLATE_EXPORT PositionWithAffinityTemplate<E
 using PositionWithAffinity = PositionWithAffinityTemplate<EditingStrategy>;
 using PositionInComposedTreeWithAffinity = PositionWithAffinityTemplate<EditingInComposedTreeStrategy>;
 
+template <typename Strategy>
+PositionWithAffinityTemplate<Strategy> fromPositionInDOMTree(const PositionWithAffinity&);
+
+template <>
+inline PositionWithAffinity fromPositionInDOMTree<EditingStrategy>(const PositionWithAffinity& positionWithAffinity)
+{
+    return positionWithAffinity;
+}
+
+template <>
+inline PositionInComposedTreeWithAffinity fromPositionInDOMTree<EditingInComposedTreeStrategy>(const PositionWithAffinity& positionWithAffinity)
+{
+    return PositionInComposedTreeWithAffinity(toPositionInComposedTree(positionWithAffinity.position()), positionWithAffinity.affinity());
+}
+
 } // namespace blink
 
 #endif // PositionWithAffinity_h

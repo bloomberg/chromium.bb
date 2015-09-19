@@ -82,24 +82,24 @@ bool dispatchSelectStart(Node* node)
 }
 
 template <typename Strategy>
-VisibleSelection expandSelectionToRespectUserSelectAllAlgorithm(Node* targetNode, const VisibleSelection& selection)
+VisibleSelectionTemplate<Strategy> expandSelectionToRespectUserSelectAll(Node* targetNode, const VisibleSelectionTemplate<Strategy>& selection)
 {
     Node* rootUserSelectAll = Strategy::rootUserSelectAllForNode(targetNode);
     if (!rootUserSelectAll)
         return selection;
 
-    VisibleSelection newSelection(selection);
+    VisibleSelectionTemplate<Strategy> newSelection(selection);
     newSelection.setBase(mostBackwardCaretPosition(PositionAlgorithm<Strategy>::beforeNode(rootUserSelectAll), CanCrossEditingBoundary));
     newSelection.setExtent(mostForwardCaretPosition(PositionAlgorithm<Strategy>::afterNode(rootUserSelectAll), CanCrossEditingBoundary));
 
     return newSelection;
 }
 
-VisibleSelection expandSelectionToRespectUserSelectAll(Node* targetNode, const VisibleSelection& selection)
+// TODO(yosin) |expandSelectionToRespectUserSelectAll()| with |VisibleSelection|
+// should be removed once we have full version of |VisibleSelectionTemplate|.
+static VisibleSelectionTemplate<EditingStrategy> expandSelectionToRespectUserSelectAll(Node* targetNode, const VisibleSelection& selection)
 {
-    if (RuntimeEnabledFeatures::selectionForComposedTreeEnabled())
-        return expandSelectionToRespectUserSelectAllAlgorithm<EditingInComposedTreeStrategy>(targetNode, selection);
-    return expandSelectionToRespectUserSelectAllAlgorithm<EditingStrategy>(targetNode, selection);
+    return expandSelectionToRespectUserSelectAll(targetNode, VisibleSelectionTemplate<EditingStrategy>(selection));
 }
 
 bool expandSelectionUsingGranularity(VisibleSelection& selection, TextGranularity granularity)
@@ -128,11 +128,9 @@ bool canMouseDownStartSelect(Node* node)
 
 } // namespace
 
-template <typename SelectionStrategy>
+template <typename Strategy>
 bool SelectionController::handleMousePressEventSingleClickAlgorithm(const MouseEventWithHitTestResults& event)
 {
-    using Strategy = typename SelectionStrategy::Strategy;
-
     TRACE_EVENT0("blink", "SelectionController::handleMousePressEventSingleClick");
 
     m_frame->document()->updateLayoutIgnorePendingStylesheets();
@@ -153,36 +151,36 @@ bool SelectionController::handleMousePressEventSingleClickAlgorithm(const MouseE
         }
     }
 
-    PositionWithAffinity eventPos = innerNode->layoutObject()->positionForPoint(event.localPoint());
-    VisiblePosition visiblePos = createVisiblePositionInDOMTree(fromPositionInDOMTree<Strategy>(eventPos.position()), eventPos.affinity());
+    const PositionWithAffinity eventPos = innerNode->layoutObject()->positionForPoint(event.localPoint());
+    VisiblePositionTemplate<Strategy> visiblePos = createVisiblePosition(fromPositionInDOMTree<Strategy>(eventPos.position()), eventPos.affinity());
     if (visiblePos.isNull())
-        visiblePos = createVisiblePosition(firstPositionInOrBeforeNode(innerNode));
-    PositionAlgorithm<Strategy> pos = fromPositionInDOMTree<Strategy>(visiblePos.deepEquivalent());
+        visiblePos = createVisiblePosition(PositionAlgorithm<Strategy>::firstPositionInOrBeforeNode(innerNode));
+    PositionAlgorithm<Strategy> pos = visiblePos.deepEquivalent();
 
-    VisibleSelection newSelection = selection().selection();
+    VisibleSelectionTemplate<Strategy> newSelection(selection().selection());
     TextGranularity granularity = CharacterGranularity;
 
     if (extendSelection && newSelection.isCaretOrRange()) {
-        VisibleSelection selectionInUserSelectAll(expandSelectionToRespectUserSelectAll(innerNode, VisibleSelection(createVisiblePositionInDOMTree(pos))));
+        const VisibleSelectionTemplate<Strategy> selectionInUserSelectAll(expandSelectionToRespectUserSelectAll(innerNode, VisibleSelectionTemplate<Strategy>(createVisiblePosition(pos))));
         if (selectionInUserSelectAll.isRange()) {
-            if (SelectionStrategy::selectionStart(selectionInUserSelectAll).compareTo(SelectionStrategy::selectionStart(newSelection)) < 0)
-                pos = SelectionStrategy::selectionStart(selectionInUserSelectAll);
-            else if (SelectionStrategy::selectionEnd(newSelection).compareTo(SelectionStrategy::selectionEnd(selectionInUserSelectAll)) < 0)
-                pos = SelectionStrategy::selectionEnd(selectionInUserSelectAll);
+            if (selectionInUserSelectAll.start().compareTo(newSelection.start()) < 0)
+                pos = selectionInUserSelectAll.start();
+            else if (newSelection.end().compareTo(selectionInUserSelectAll.end()) < 0)
+                pos = selectionInUserSelectAll.end();
         }
 
         if (!m_frame->editor().behavior().shouldConsiderSelectionAsDirectional()) {
             if (pos.isNotNull()) {
                 // See <rdar://problem/3668157> REGRESSION (Mail): shift-click deselects when selection
                 // was created right-to-left
-                PositionAlgorithm<Strategy> start = SelectionStrategy::selectionStart(newSelection);
-                PositionAlgorithm<Strategy> end = SelectionStrategy::selectionEnd(newSelection);
+                const PositionAlgorithm<Strategy> start = newSelection.start();
+                const PositionAlgorithm<Strategy> end = newSelection.end();
                 int distanceToStart = textDistance(start, pos);
                 int distanceToEnd = textDistance(pos, end);
                 if (distanceToStart <= distanceToEnd)
-                    newSelection = VisibleSelection(end, pos);
+                    newSelection = VisibleSelectionTemplate<Strategy>(end, pos);
                 else
-                    newSelection = VisibleSelection(start, pos);
+                    newSelection = VisibleSelectionTemplate<Strategy>(start, pos);
             }
         } else {
             newSelection.setExtent(pos);
@@ -190,10 +188,10 @@ bool SelectionController::handleMousePressEventSingleClickAlgorithm(const MouseE
 
         if (selection().granularity() != CharacterGranularity) {
             granularity = selection().granularity();
-            expandSelectionUsingGranularity(newSelection, selection().granularity());
+            newSelection.expandUsingGranularity(selection().granularity());
         }
     } else if (m_selectionState != SelectionState::ExtendedSelection) {
-        newSelection = expandSelectionToRespectUserSelectAll(innerNode, VisibleSelection(visiblePos));
+        newSelection = expandSelectionToRespectUserSelectAll(innerNode, VisibleSelectionTemplate<Strategy>(visiblePos));
     }
 
     // Updating the selection is considered side-effect of the event and so it doesn't impact the handled state.
@@ -201,11 +199,9 @@ bool SelectionController::handleMousePressEventSingleClickAlgorithm(const MouseE
     return false;
 }
 
-template <typename SelectionStrategy>
+template <typename Strategy>
 void SelectionController::updateSelectionForMouseDragAlgorithm(const HitTestResult& hitTestResult, Node* mousePressNode, const LayoutPoint& dragStartPos, const IntPoint& lastKnownMousePosition)
 {
-    using Strategy = typename SelectionStrategy::Strategy;
-
     if (!m_mouseDownMayStartSelect)
         return;
 
@@ -213,19 +209,19 @@ void SelectionController::updateSelectionForMouseDragAlgorithm(const HitTestResu
     if (!target)
         return;
 
-    PositionWithAffinity rawTargetPosition = selection().selection().positionRespectingEditingBoundary(hitTestResult.localPoint(), target);
-    VisiblePosition targetPosition = createVisiblePositionInDOMTree(fromPositionInDOMTree<Strategy>(rawTargetPosition.position()), rawTargetPosition.affinity());
+    const PositionWithAffinity rawTargetPosition = selection().selection().positionRespectingEditingBoundary(hitTestResult.localPoint(), target);
+    const VisiblePositionTemplate<Strategy> targetPosition = createVisiblePosition(fromPositionInDOMTree<Strategy>(rawTargetPosition.position()), rawTargetPosition.affinity());
     // Don't modify the selection if we're not on a node.
     if (targetPosition.isNull())
         return;
 
     // Restart the selection if this is the first mouse move. This work is usually
     // done in handleMousePressEvent, but not if the mouse press was on an existing selection.
-    VisibleSelection newSelection = selection().selection();
+    VisibleSelectionTemplate<Strategy> newSelection(selection().selection());
 
     // Special case to limit selection to the containing block for SVG text.
     // FIXME: Isn't there a better non-SVG-specific way to do this?
-    if (Node* selectionBaseNode = SelectionStrategy::selectionBase(newSelection).anchorNode()) {
+    if (Node* selectionBaseNode = newSelection.base().anchorNode()) {
         if (LayoutObject* selectionBaseLayoutObject = selectionBaseNode->layoutObject()) {
             if (selectionBaseLayoutObject->isSVGText()) {
                 if (target->layoutObject()->containingBlock() != selectionBaseLayoutObject->containingBlock())
@@ -244,7 +240,7 @@ void SelectionController::updateSelectionForMouseDragAlgorithm(const HitTestResu
     if (m_selectionState != SelectionState::ExtendedSelection) {
         // Always extend selection here because it's caused by a mouse drag
         m_selectionState = SelectionState::ExtendedSelection;
-        newSelection = VisibleSelection(targetPosition);
+        newSelection = VisibleSelectionTemplate<Strategy>(targetPosition);
     }
 
     if (RuntimeEnabledFeatures::userSelectAllEnabled()) {
@@ -275,13 +271,14 @@ void SelectionController::updateSelectionForMouseDragAlgorithm(const HitTestResu
     }
 
     if (selection().granularity() != CharacterGranularity)
-        expandSelectionUsingGranularity(newSelection, selection().granularity());
+        newSelection.expandUsingGranularity(selection().granularity());
 
     selection().setNonDirectionalSelectionIfNeeded(newSelection, selection().granularity(),
         FrameSelection::AdjustEndpointsAtBidiBoundary);
 }
 
-bool SelectionController::updateSelectionForMouseDownDispatchingSelectStart(Node* targetNode, const VisibleSelection& selection, TextGranularity granularity)
+template <typename Strategy>
+bool SelectionController::updateSelectionForMouseDownDispatchingSelectStart(Node* targetNode, const VisibleSelectionTemplate<Strategy>& selection, TextGranularity granularity)
 {
     if (nodeIsUserSelectNone(targetNode))
         return false;
@@ -322,7 +319,7 @@ void SelectionController::selectClosestWordFromHitTestResult(const HitTestResult
     // If node is not editable and doesn't have text except space, tab or
     // line break, do not select that 'empty' area.
     if (!innerNode->hasEditableStyle()) {
-        EphemeralRangeTemplate<EditingInComposedTreeStrategy> range = VisibleSelection::InComposedTree::asRange(newSelection);
+        const EphemeralRangeInComposedTree range = EphemeralRangeInComposedTree(newSelection.startInComposedTree(), newSelection.endInComposedTree());
         String str = plainText(range, TextIteratorDefaultBehavior);
         if (str.isEmpty() || str.simplifyWhiteSpace().containsOnlyWhitespace())
             return;
@@ -443,8 +440,8 @@ bool SelectionController::handleMousePressEventTripleClick(const MouseEventWithH
 bool SelectionController::handleMousePressEventSingleClick(const MouseEventWithHitTestResults& event)
 {
     if (RuntimeEnabledFeatures::selectionForComposedTreeEnabled())
-        return handleMousePressEventSingleClickAlgorithm<VisibleSelection::InComposedTree>(event);
-    return handleMousePressEventSingleClickAlgorithm<VisibleSelection::InDOMTree>(event);
+        return handleMousePressEventSingleClickAlgorithm<EditingInComposedTreeStrategy>(event);
+    return handleMousePressEventSingleClickAlgorithm<EditingStrategy>(event);
 }
 
 void SelectionController::handleMousePressEvent(const MouseEventWithHitTestResults& event)
@@ -485,8 +482,8 @@ void SelectionController::updateSelectionForMouseDrag(Node* mousePressNode, cons
 void SelectionController::updateSelectionForMouseDrag(const HitTestResult& hitTestResult, Node* mousePressNode, const LayoutPoint& dragStartPos, const IntPoint& lastKnownMousePosition)
 {
     if (RuntimeEnabledFeatures::selectionForComposedTreeEnabled())
-        return updateSelectionForMouseDragAlgorithm<VisibleSelection::InComposedTree>(hitTestResult, mousePressNode, dragStartPos, lastKnownMousePosition);
-    updateSelectionForMouseDragAlgorithm<VisibleSelection::InDOMTree>(hitTestResult, mousePressNode, dragStartPos, lastKnownMousePosition);
+        return updateSelectionForMouseDragAlgorithm<EditingInComposedTreeStrategy>(hitTestResult, mousePressNode, dragStartPos, lastKnownMousePosition);
+    updateSelectionForMouseDragAlgorithm<EditingStrategy>(hitTestResult, mousePressNode, dragStartPos, lastKnownMousePosition);
 }
 
 bool SelectionController::handleMouseReleaseEvent(const MouseEventWithHitTestResults& event, const LayoutPoint& dragStartPos)

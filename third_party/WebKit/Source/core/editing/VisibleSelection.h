@@ -250,9 +250,83 @@ private:
     bool m_isDirectional : 1; // Non-directional ignores m_baseIsFirst and selection always extends on shift + arrow key.
 };
 
+#if COMPILER(GCC)
+// Clang and GCC don't agree on how attributes should work for explicitly
+// instantiated templates. GCC ignores attributes on explicit instantiations
+// (and emits a warning) while Clang requires the visiblity attribute on the
+// explicit instantiations for them to be visible to other compilation units.
+// Hopefully clang and GCC agree one day, and this can be cleaned up:
+// https://llvm.org/bugs/show_bug.cgi?id=24815
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wattributes"
+#endif
+
+// TODO(yosin) This is transition version |VisibleSelectionTemplate| for
+// getting rid of |VisibleSelection::InDOMTree| and |InComposedTree|.
+// Final version of |VisibleSelectionTemplate| will replace |VisibleSelection|.
+template <typename Strategy>
+class CORE_TEMPLATE_CLASS_EXPORT VisibleSelectionTemplate final {
+    STACK_ALLOCATED();
+public:
+    VisibleSelectionTemplate(const PositionAlgorithm<Strategy>& base, const PositionAlgorithm<Strategy>& extent, TextAffinity = TextAffinity::Downstream);
+    VisibleSelectionTemplate(const VisiblePositionTemplate<Strategy>& base, const VisiblePositionTemplate<Strategy>& extent);
+    explicit VisibleSelectionTemplate(const VisibleSelection&);
+    explicit VisibleSelectionTemplate(const VisiblePositionTemplate<Strategy>&);
+    VisibleSelectionTemplate();
+
+    operator const VisibleSelection&() const { return m_visibleSelection; }
+
+    TextAffinity affinity() const { return m_visibleSelection.affinity(); }
+    PositionAlgorithm<Strategy> base() const;
+    PositionAlgorithm<Strategy> extent() const;
+    PositionAlgorithm<Strategy> start() const;
+    PositionAlgorithm<Strategy> end() const;
+    SelectionType selectionType() const { return m_visibleSelection.selectionType(); }
+    VisiblePositionTemplate<Strategy> visibleStart() const;
+    VisiblePositionTemplate<Strategy> visibleEnd() const;
+
+    bool operator==(const VisibleSelectionTemplate&) const;
+
+    bool isCaretOrRange() const { return m_visibleSelection.isCaretOrRange(); }
+    bool isDirectional() const { return m_visibleSelection.isDirectional(); }
+    bool isRange() const { return m_visibleSelection.isRange(); }
+    bool isValidFor(const Document& document) const { return m_visibleSelection.isValidFor(document); }
+
+    EphemeralRangeTemplate<Strategy> toNormalizedEphemeralRange() const;
+
+    void setBase(const PositionAlgorithm<Strategy>&);
+    void setBase(const VisiblePositionTemplate<Strategy>&);
+    void setExtent(const PositionAlgorithm<Strategy>&);
+    void setExtent(const VisiblePositionTemplate<Strategy>&);
+    void setIsDirectional(bool isDirectional) { m_visibleSelection.setIsDirectional(isDirectional); }
+    void setWithoutValidation(const PositionAlgorithm<Strategy>& base, const PositionAlgorithm<Strategy>& extent);
+
+    bool expandUsingGranularity(TextGranularity);
+
+    DEFINE_INLINE_TRACE()
+    {
+        visitor->trace(m_visibleSelection);
+    }
+
+private:
+    VisibleSelection m_visibleSelection;
+};
+
+extern template class CORE_TEMPLATE_CLASS_EXPORT VisiblePositionTemplate<EditingStrategy>;
+extern template class CORE_TEMPLATE_CLASS_EXPORT VisiblePositionTemplate<EditingInComposedTreeStrategy>;
+
+#if COMPILER(GCC)
+#pragma GCC diagnostic pop
+#endif
+
 inline bool equalSelectionsInDOMTree(const VisibleSelection& selection1, const VisibleSelection& selection2)
 {
     return VisibleSelection::InDOMTree::equalSelections(selection1, selection2);
+}
+
+inline bool equalSelectionsInComposedTree(const VisibleSelection& selection1, const VisibleSelection& selection2)
+{
+    return VisibleSelection::InComposedTree::equalSelections(selection1, selection2);
 }
 
 // We don't yet support multi-range selections, so we only ever have one range

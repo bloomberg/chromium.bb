@@ -52,13 +52,9 @@ private:
     const VisibleSelection& visibleSelection() const;
 
     template <typename Strategy>
-    bool isInDocumentAlgorithm(const Document&) const;
-
-    template <typename Strategy>
-    VisibleSelection calcVisibleSelectionAlgorithm() const;
+    VisibleSelectionTemplate<Strategy> calcVisibleSelectionAlgorithm(const VisibleSelectionTemplate<Strategy>&) const;
     template <typename Strategy>
     void commitAlgorithm(LayoutView&);
-    bool isInDocument(const Document&) const;
 
     RawPtrWillBeMember<FrameSelection> m_frameSelection;
     bool m_hasPendingSelection : 1;
