@@ -1,10 +1,14 @@
-function selectRange(startElement, startIndex, endElement, endIndex) {
+function selectRangeAfterLayoutAndPaint(startElement, startIndex, endElement, endIndex) {
     runAfterLayoutAndPaint(function() {
-        if (window.internals)
-            window.internals.setSelectionPaintingWithoutSelectionGapsEnabled(true);
-        var range = document.createRange();
-        range.setStart(startElement, startIndex);
-        range.setEnd(endElement, endIndex);
-        window.getSelection().addRange(range);
+        selectRange(startElement, startIndex, endElement, endIndex);
       }, true);
+}
+
+function selectRange(startElement, startIndex, endElement, endIndex) {
+  if (window.internals)
+      window.internals.setSelectionPaintingWithoutSelectionGapsEnabled(true);
+  var range = document.createRange();
+  range.setStart(startElement, startIndex);
+  range.setEnd(endElement, endIndex);
+  window.getSelection().addRange(range);
 }
