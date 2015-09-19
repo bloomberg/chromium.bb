@@ -99,6 +99,7 @@ ThreadState::ThreadState()
     , m_gcForbiddenCount(0)
     , m_persistentAllocated(0)
     , m_persistentFreed(0)
+    , m_pageNavigationCount(0)
     , m_vectorBackingHeapIndex(Vector1HeapIndex)
     , m_currentHeapAges(0)
     , m_isTerminating(false)
@@ -703,6 +704,16 @@ void ThreadState::schedulePageNavigationGCIfNeeded(float estimatedRemovalRatio)
     ASSERT(!isSweepingInProgress());
     ASSERT(!sweepForbidden());
 
+    ++m_pageNavigationCount;
+    if (m_pageNavigationCount >= 5) {
+        // A frame retains a lot of memory in the V8 side. V8's GC cannot
+        // collect the memory until Oilpan's GC collects the frame. So we
+        // force a conservative GC if no Oilpan's GC has been observed in
+        // the past 5 frame navigations.
+        Heap::collectGarbage(HeapPointersOnStack, GCWithoutSweep, Heap::ConservativeGC);
+        return;
+    }
+
     if (shouldSchedulePageNavigationGC(estimatedRemovalRatio))
         schedulePageNavigationGC();
 }
@@ -986,6 +997,7 @@ void ThreadState::preGC()
     flushHeapDoesNotContainCacheIfNeeded();
     clearHeapAges();
     updatePersistentCounters();
+    m_pageNavigationCount = 0;
 }
 
 void ThreadState::postGC(GCType gcType)
