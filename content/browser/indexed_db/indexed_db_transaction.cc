@@ -315,7 +315,12 @@ leveldb::Status IndexedDBTransaction::CommitPhaseTwo() {
 
   if (committed) {
     abort_task_stack_.clear();
-    callbacks_->OnComplete(id_);
+    {
+      IDB_TRACE1(
+          "IndexedDBTransaction::CommitPhaseTwo.TransactionCompleteCallbacks",
+          "txn.id", id());
+      callbacks_->OnComplete(id_);
+    }
     database_->TransactionFinished(this, true);
   } else {
     while (!abort_task_stack_.empty())
@@ -409,6 +414,7 @@ void IndexedDBTransaction::Timeout() {
 }
 
 void IndexedDBTransaction::CloseOpenCursors() {
+  IDB_TRACE1("IndexedDBTransaction::CloseOpenCursors", "txn.id", id());
   for (auto* cursor : open_cursors_)
     cursor->Close();
   open_cursors_.clear();

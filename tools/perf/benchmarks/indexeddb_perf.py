@@ -24,15 +24,23 @@ import os
 
 from core import perf_benchmark
 
-from telemetry.core import util
 from telemetry import page as page_module
-from telemetry.page import page_test
 from telemetry import story
+from telemetry.core import util
+from telemetry.page import page_test
 from telemetry.value import scalar
 
 from metrics import memory
 from metrics import power
 
+import page_sets
+
+from telemetry.timeline import tracing_category_filter
+from telemetry.web_perf import timeline_based_measurement
+
+
+IDB_CATEGORY = 'IndexedDB'
+TIMELINE_REQUIRED_CATEGORY = 'blink.console'
 
 class _IndexedDbMeasurement(page_test.PageTest):
   def __init__(self):
@@ -54,8 +62,7 @@ class _IndexedDbMeasurement(page_test.PageTest):
 
   def ValidateAndMeasurePage(self, page, tab, results):
     tab.WaitForDocumentReadyStateToBeComplete()
-    tab.WaitForJavaScriptExpression(
-        'window.document.cookie.indexOf("__done=1") >= 0', 600)
+    tab.WaitForJavaScriptExpression('window.done', 600)
 
     self._power_metric.Stop(page, tab)
     self._memory_metric.Stop(page, tab)
@@ -82,7 +89,8 @@ class _IndexedDbMeasurement(page_test.PageTest):
     memory.MemoryMetric.CustomizeBrowserOptions(options)
     power.PowerMetric.CustomizeBrowserOptions(options)
 
-class IndexedDb(perf_benchmark.PerfBenchmark):
+
+class IndexedDbOriginal(perf_benchmark.PerfBenchmark):
   """Chromium's IndexedDB Performance tests."""
   test = _IndexedDbMeasurement
 
@@ -96,3 +104,34 @@ class IndexedDb(perf_benchmark.PerfBenchmark):
     ps = story.StorySet(base_dir=indexeddb_dir)
     ps.AddStory(page_module.Page('file://perf_test.html', ps, ps.base_dir))
     return ps
+
+
+class IndexedDbOriginalSectioned(perf_benchmark.PerfBenchmark):
+  """Chromium's IndexedDB Performance tests."""
+  test = _IndexedDbMeasurement
+  page_set = page_sets.IndexedDBEndurePageSet
+
+  @classmethod
+  def Name(cls):
+    return 'storage.indexeddb_endure'
+
+
+class IndexedDbTracing(perf_benchmark.PerfBenchmark):
+  """IndexedDB Performance tests that use tracing."""
+  page_set = page_sets.IndexedDBEndurePageSet
+
+  def CreateTimelineBasedMeasurementOptions(self):
+    cat_filter = tracing_category_filter.CreateMinimalOverheadFilter()
+    cat_filter.AddIncludedCategory(IDB_CATEGORY)
+    cat_filter.AddIncludedCategory(TIMELINE_REQUIRED_CATEGORY)
+
+    return timeline_based_measurement.Options(
+        overhead_level=cat_filter)
+
+  @classmethod
+  def Name(cls):
+    return 'storage.indexeddb_endure_tracing'
+
+  @classmethod
+  def ValueCanBeAddedPredicate(cls, value, is_first_result):
+    return 'idb' in value.name

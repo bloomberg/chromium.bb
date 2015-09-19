@@ -16,6 +16,9 @@ var kDontRead = false;
 var kAlternateWithReads = true;
 
 var tests = [
+// Create 30 databases, populate them with 20 object stores with 10 items
+// each, and then open them 60 times.  Each item is 100 bytes long.
+  [testCreateAndDeleteDatabases, 30, 60, 10, 20, 100],
 // Create a single small item in a single object store, then delete everything.
   [testCreateAndDeleteDatabase,  1,    1,    1],
 // Create many small items in a single object store, then delete everything.
@@ -32,26 +35,31 @@ var tests = [
   [testCreateKeysInStores, 1,     1000,  1],
 // Create many large items in a single object store.
   [testCreateKeysInStores, 1000,   1,    10000],
+
 // Read one item per transaction.
-  [testRandomReadsAndWrites, 1000, 1, 0, 1000, kDontUseIndex],
+  [testRandomReadsAndWritesWithoutIndex, 1000, 1, 0, 1000],
 // Read a few random items in each of many transactions.
-  [testRandomReadsAndWrites, 1000,  5,    0,  100, kDontUseIndex],
+  [testRandomReadsAndWritesWithoutIndex, 1000,  5,    0,  100],
 // Read many random items in each of a few transactions.
-  [testRandomReadsAndWrites, 1000,  500,   0,  5,  kDontUseIndex],
+  [testRandomReadsAndWritesWithoutIndex, 1000,  500,   0,  5],
 // Read many random items in each of a few transactions, in a large store.
-  [testRandomReadsAndWrites, 10000,  500,   0,  5,  kDontUseIndex],
+  [testRandomReadsAndWritesWithoutIndex, 10000,  500,   0,  5],
+// Read and write a few random items in each of many transactions.
+  [testRandomReadsAndWritesWithoutIndex, 1000,  5,    5,  50],
+
+// Read one item per transaction.
+  [testRandomReadsAndWritesWithIndex, 1000, 1, 0, 1000],
 // Read a few random items from an index, in each of many transactions.
-  [testRandomReadsAndWrites, 1000,  5,    0,  100, kUseIndex],
+  [testRandomReadsAndWritesWithIndex, 1000,  5,    0,  100],
 // Read many random items from an index, in each of a few transactions.
-  [testRandomReadsAndWrites, 1000,  500,   0,  5,  kUseIndex],
+  [testRandomReadsAndWritesWithIndex, 1000,  500,   0,  5],
 // Read many random items from an index, in each of a few transactions, in a
 // large store.
-  [testRandomReadsAndWrites, 10000,  500,   0,  5,  kUseIndex],
-// Read and write a few random items in each of many transactions.
-  [testRandomReadsAndWrites, 1000,  5,    5,  50, kDontUseIndex],
+  [testRandomReadsAndWritesWithIndex, 10000,  500,   0,  5],
 // Read and write a few random items, reading from an index, in each of many
 // transactions.
-  [testRandomReadsAndWrites, 1000,  5,    5,  50, kUseIndex],
+  [testRandomReadsAndWritesWithIndex, 1000,  5,    5,  50],
+
 // Read a long, contiguous sequence of an object store via a cursor.
   [testCursorReadsAndRandomWrites, kReadDataToo, kDontUseIndex, kDontWrite,
    kPlaceholderArg],
@@ -69,14 +77,16 @@ var tests = [
 // Read a sequence of an index into an object store via a key cursor.
   [testCursorReadsAndRandomWrites, kReadKeysOnly, kUseIndex, kDontWrite,
    kPlaceholderArg],
+
 // Make a small bunch of batches of reads of the same keys from an object store.
-  [testReadCache, 10, kDontUseIndex],
-// Make a bunch of batches of reads of the same keys from an index.
-  [testReadCache, 50, kUseIndex],
+  [testReadCacheWithoutIndex, 10],
+// Make a bunch of batches of reads of the same keys from an object store.
+  [testReadCacheWithoutIndex, 50],
 // Make a small bunch of batches of reads of the same keys from an object store.
-  [testReadCache, 10, kDontUseIndex],
+  [testReadCacheWithIndex, 10],
 // Make a bunch of batches of reads of the same keys from an index.
-  [testReadCache, 50, kUseIndex],
+  [testReadCacheWithIndex, 50],
+
 // Create and delete an index on a store that already contains data [produces
 // a timing result for each of creation and deletion].
   [testCreateAndDeleteIndex, 5000],
@@ -87,34 +97,74 @@ var tests = [
 // you've reached the end of each of them.
   [testWalkingMultipleCursors, 50],
 // Open an object store cursor, then continue(key) to the last value.
-  [testCursorSeeks, 2000, 10, 4, kDontUseIndex],
+  [testCursorSeeksWithoutIndex, 2000, 10, 4],
 // Open an index key cursor, then continue(key) to the last value.
-  [testCursorSeeks, 2000, 10, 4, kUseIndex],
+  [testCursorSeeksWithIndex, 2000, 10, 4],
 ];
 
+
+function testRandomReadsAndWritesWithIndex(
+    numKeys, numReadsPerTransaction, numWritesPerTransaction,
+    numTransactions, onTestComplete) {
+  testRandomReadsAndWrites(numKeys, numReadsPerTransaction,
+                           numWritesPerTransaction,
+                           numTransactions, true, onTestComplete);
+}
+
+function testRandomReadsAndWritesWithoutIndex(
+    numKeys, numReadsPerTransaction, numWritesPerTransaction,
+    numTransactions, onTestComplete) {
+  testRandomReadsAndWrites(numKeys, numReadsPerTransaction,
+                           numWritesPerTransaction,
+                           numTransactions, false, onTestComplete);
+}
+
+
+function testReadCacheWithIndex(numTransactions, onTestComplete) {
+  testReadCache(numTransactions, true, onTestComplete);
+}
+
+function testReadCacheWithoutIndex(numTransactions, onTestComplete) {
+  testReadCache(numTransactions, false, onTestComplete)
+}
+
+function testCursorSeeksWithIndex(numKeys, numSeeksPerTransaction,
+    numTransactions, onTestComplete) {
+  testCursorSeeks(numKeys, numSeeksPerTransaction, numTransactions,
+                  true, onTestComplete);
+}
+
+function testCursorSeeksWithoutIndex(numKeys, numSeeksPerTransaction,
+    numTransactions, onTestComplete) {
+  testCursorSeeks(numKeys, numSeeksPerTransaction, numTransactions,
+                  false, onTestComplete);
+}
+
+
+
 var currentTest = 0;
+var testFilter;
 var done = false;
 
 function test() {
+  done = false;
   runNextTest();
 }
 
-var testFilter;
 
 function runNextTest() {
-  var filter = testFilter | window.location.hash.slice(1);
-  var test, f;
+  var running_test, f;
   while (currentTest < tests.length) {
-    test = tests[currentTest];
-    f = test.shift();
-    if (!filter || f.name == filter)
+    running_test = tests[currentTest];
+    f = running_test.shift();
+    if (!testFilter || f.name == testFilter)
       break;
     ++currentTest;
   }
 
   if (currentTest < tests.length) {
-    test.push(runNextTest);
-    f.apply(null, test);
+    running_test.push(runNextTest);
+    f.apply(null, running_test);
     ++currentTest;
   } else {
     onAllTestsComplete();
@@ -126,6 +176,87 @@ function onAllTestsComplete() {
   automation.addResult("OverallTestDuration", overallDuration);
   automation.setDone();
   done = true;
+}
+
+function testCreateAndDeleteDatabases(
+    numDatabases, numOpens, numKeys, numStores,
+    payloadLength, onTestComplete) {
+  var testName = getDisplayName(arguments);
+  assert(numOpens >= 1);
+  assert(numKeys >= 0);
+  assert(numStores >= 1);
+  var objectStoreNames = [];
+  for (var i=0; i < numStores; ++i) {
+    objectStoreNames.push("store " + i);
+  }
+  var value = stringOfLength(payloadLength);
+  function getValue() {
+    return value;
+  }
+
+  automation.setStatus("Creating databases.");
+  var startTime = window.performance.now();
+
+  var numCreated = 0;
+  for (var i = 0; i < numDatabases; i++) {
+    createDatabase(testName + i, objectStoreNames, onCreated, onError);
+  }
+
+  function onCreated(db) {
+    automation.setStatus("Constructing transactions.");
+    var transaction =
+        getTransaction(db, objectStoreNames, "readwrite",
+            function() { openLoop(db, numOpens); });
+    putLinearValues(transaction, objectStoreNames, numKeys, null, getValue);
+  }
+
+  function openLoop(db, timesLeft) {
+    db.close();
+    if (timesLeft == 0) {
+      deleteDatabase(db.name, onDeleted);
+      return;
+    }
+    createDatabase(db.name, objectStoreNames,
+        function(db) { openLoop(db, timesLeft - 1); }, onError)
+  }
+
+  var numDeleted = 0;
+  function onDeleted() {
+    var duration = window.performance.now() - startTime;
+    automation.addResult(testName, duration);
+    automation.setStatus("Deleted database.");
+    if (++numDeleted == numDatabases) {
+      onTestComplete();
+    }
+  }
+}
+
+function testCreateKeysInStores(
+    numKeys, numStores, payloadLength, onTestComplete) {
+  var testName = getDisplayName(arguments);
+  assert(numKeys >= 0);
+  assert(numStores >= 1);
+  var objectStoreNames = [];
+  for (var i=0; i < numStores; ++i) {
+    objectStoreNames.push("store " + i);
+  }
+  var value = stringOfLength(payloadLength);
+  function getValue() {
+    return value;
+  }
+
+  automation.setStatus("Creating database.");
+  createDatabase(testName, objectStoreNames, onCreated, onError);
+
+  function onCreated(db) {
+    automation.setStatus("Constructing transaction.");
+    var completionFunc =
+        getCompletionFunc(db, testName, window.performance.now(),
+            onTestComplete);
+    var transaction =
+        getTransaction(db, objectStoreNames, "readwrite", completionFunc);
+    putLinearValues(transaction, objectStoreNames, numKeys, null, getValue);
+  }
 }
 
 // This is the only test that includes database creation and deletion in its

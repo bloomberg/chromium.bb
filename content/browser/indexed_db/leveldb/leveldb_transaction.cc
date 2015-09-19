@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/time/time.h"
+#include "content/browser/indexed_db/indexed_db_tracing.h"
 #include "content/browser/indexed_db/leveldb/leveldb_database.h"
 #include "content/browser/indexed_db/leveldb/leveldb_write_batch.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
@@ -88,6 +89,7 @@ leveldb::Status LevelDBTransaction::Get(const StringPiece& key,
 
 leveldb::Status LevelDBTransaction::Commit() {
   DCHECK(!finished_);
+  IDB_TRACE("LevelDBTransaction::Commit");
 
   if (data_.empty()) {
     finished_ = true;
@@ -482,6 +484,7 @@ void LevelDBDirectTransaction::Remove(const StringPiece& key) {
 
 leveldb::Status LevelDBDirectTransaction::Commit() {
   DCHECK(!finished_);
+  IDB_TRACE("LevelDBDirectTransaction::Commit");
 
   leveldb::Status s = db_->Write(*write_batch_);
   if (s.ok()) {

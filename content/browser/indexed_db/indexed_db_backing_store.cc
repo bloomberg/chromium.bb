@@ -565,6 +565,7 @@ template <typename TransactionType>
 static leveldb::Status GetBlobJournal(const StringPiece& key,
                                       TransactionType* transaction,
                                       BlobJournalType* journal) {
+  IDB_TRACE("IndexedDBBackingStore::GetBlobJournal");
   std::string data;
   bool found = false;
   leveldb::Status s = transaction->Get(key, &data, &found);
@@ -666,6 +667,7 @@ static leveldb::Status MergeDatabaseIntoBlobJournal(
     LevelDBDirectTransaction* transaction,
     const std::string& key,
     int64 database_id) {
+  IDB_TRACE("IndexedDBBackingStore::MergeDatabaseIntoBlobJournal");
   BlobJournalType journal;
   leveldb::Status s = GetBlobJournal(key, transaction, &journal);
   if (!s.ok())
@@ -1474,11 +1476,14 @@ leveldb::Status IndexedDBBackingStore::DeleteDatabase(
       metadata.id, DatabaseMetaDataKey::ORIGIN_NAME);
   const std::string stop_key = DatabaseMetaDataKey::Encode(
       metadata.id + 1, DatabaseMetaDataKey::ORIGIN_NAME);
-  scoped_ptr<LevelDBIterator> it = db_->CreateIterator();
-  for (s = it->Seek(start_key);
-       s.ok() && it->IsValid() && CompareKeys(it->Key(), stop_key) < 0;
-       s = it->Next())
-    transaction->Remove(it->Key());
+  {
+    IDB_TRACE("IndexedDBBackingStore::DeleteDatabase.DeleteEntries");
+    scoped_ptr<LevelDBIterator> it = db_->CreateIterator();
+    for (s = it->Seek(start_key);
+         s.ok() && it->IsValid() && CompareKeys(it->Key(), stop_key) < 0;
+         s = it->Next())
+      transaction->Remove(it->Key());
+  }
   if (!s.ok()) {
     INTERNAL_WRITE_ERROR_UNTESTED(DELETE_DATABASE);
     return s;
@@ -2692,6 +2697,7 @@ bool IndexedDBBackingStore::RemoveBlobDirectory(int64 database_id) const {
 
 leveldb::Status IndexedDBBackingStore::CleanUpBlobJournalEntries(
     const BlobJournalType& journal) const {
+  IDB_TRACE("IndexedDBBackingStore::CleanUpBlobJournalEntries");
   if (journal.empty())
     return leveldb::Status::OK();
   for (const auto& entry : journal) {
@@ -2712,6 +2718,7 @@ leveldb::Status IndexedDBBackingStore::CleanUpBlobJournalEntries(
 
 leveldb::Status IndexedDBBackingStore::CleanUpBlobJournal(
     const std::string& level_db_key) const {
+  IDB_TRACE("IndexedDBBackingStore::CleanUpBlobJournal");
   DCHECK(!committing_transaction_count_);
   leveldb::Status s;
   scoped_refptr<LevelDBTransaction> journal_transaction =
@@ -4223,6 +4230,7 @@ leveldb::Status IndexedDBBackingStore::Transaction::CommitPhaseTwo() {
   BlobJournalType primary_journal, live_journal, saved_primary_journal,
       dead_blobs;
   if (!blob_change_map_.empty()) {
+    IDB_TRACE("IndexedDBBackingStore::Transaction.BlobJournal");
     // Read the persisted states of the primary/live blob journals,
     // so that they can be updated correctly by the transaction.
     scoped_refptr<LevelDBTransaction> journal_transaction =
@@ -4317,6 +4325,8 @@ class IndexedDBBackingStore::Transaction::BlobWriteCallbackWrapper
                            scoped_refptr<BlobWriteCallback> callback)
       : transaction_(transaction), callback_(callback) {}
   void Run(bool succeeded) override {
+    IDB_ASYNC_TRACE_END("IndexedDBBackingStore::Transaction::WriteNewBlobs",
+                        transaction_);
     callback_->Run(succeeded);
     if (succeeded)  // Else it's already been deleted during rollback.
       transaction_->chained_blob_writer_ = NULL;
@@ -4336,6 +4346,8 @@ void IndexedDBBackingStore::Transaction::WriteNewBlobs(
     BlobEntryKeyValuePairVec* new_blob_entries,
     WriteDescriptorVec* new_files_to_write,
     scoped_refptr<BlobWriteCallback> callback) {
+  IDB_ASYNC_TRACE_BEGIN("IndexedDBBackingStore::Transaction::WriteNewBlobs",
+                        this);
   DCHECK_GT(new_files_to_write->size(), 0UL);
   DCHECK_GT(database_id_, 0);
   for (auto& blob_entry_iter : *new_blob_entries) {

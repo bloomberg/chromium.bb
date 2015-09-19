@@ -19,6 +19,7 @@
 #include "content/browser/indexed_db/indexed_db_database_error.h"
 #include "content/browser/indexed_db/indexed_db_metadata.h"
 #include "content/browser/indexed_db/indexed_db_return_value.h"
+#include "content/browser/indexed_db/indexed_db_tracing.h"
 #include "content/browser/indexed_db/indexed_db_value.h"
 #include "content/common/indexed_db/indexed_db_constants.h"
 #include "content/common/indexed_db/indexed_db_messages.h"
@@ -244,6 +245,7 @@ static bool CreateAllBlobs(
     const std::vector<IndexedDBBlobInfo>& blob_info,
     std::vector<IndexedDBMsg_BlobOrFileInfo>* blob_or_file_info,
     scoped_refptr<IndexedDBDispatcherHost> dispatcher_host) {
+  IDB_TRACE("IndexedDBCallbacks::CreateAllBlobs");
   DCHECK_EQ(blob_info.size(), blob_or_file_info->size());
   size_t i;
   if (!dispatcher_host->blob_storage_context())

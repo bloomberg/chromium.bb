@@ -10,4 +10,9 @@
 #define IDB_TRACE1(a, arg1_name, arg1_val) \
   TRACE_EVENT1("IndexedDB", (a), (arg1_name), (arg1_val));
 
+#define IDB_ASYNC_TRACE_BEGIN(a, id) \
+  TRACE_EVENT_ASYNC_BEGIN0("IndexedDB", (a), (id));
+#define IDB_ASYNC_TRACE_END(a, id) \
+  TRACE_EVENT_ASYNC_END0("IndexedDB", (a), (id));
+
 #endif  // CONTENT_BROWSER_INDEXED_DB_INDEXED_DB_TRACING_H_

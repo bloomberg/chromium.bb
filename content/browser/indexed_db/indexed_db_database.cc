@@ -1066,19 +1066,22 @@ void IndexedDBDatabase::PutOperation(scoped_ptr<PutOperationParams> params,
                                              error);
     return;
   }
-
-  for (size_t i = 0; i < index_writers.size(); ++i) {
-    IndexWriter* index_writer = index_writers[i];
-    index_writer->WriteIndexKeys(record_identifier,
-                                 backing_store_.get(),
-                                 transaction->BackingStoreTransaction(),
-                                 id(),
-                                 params->object_store_id);
+  {
+    IDB_TRACE1("IndexedDBDatabase::PutOperation.UpdateIndexes", "txn.id",
+               transaction->id());
+    for (size_t i = 0; i < index_writers.size(); ++i) {
+      IndexWriter* index_writer = index_writers[i];
+      index_writer->WriteIndexKeys(record_identifier, backing_store_.get(),
+                                   transaction->BackingStoreTransaction(), id(),
+                                   params->object_store_id);
+    }
   }
 
   if (object_store.auto_increment &&
       params->put_mode != blink::WebIDBPutModeCursorUpdate &&
       key->type() == WebIDBKeyTypeNumber) {
+    IDB_TRACE1("IndexedDBDatabase::PutOperation.AutoIncrement", "txn.id",
+               transaction->id());
     leveldb::Status s = UpdateKeyGenerator(backing_store_.get(),
                                            transaction,
                                            id(),
@@ -1095,8 +1098,11 @@ void IndexedDBDatabase::PutOperation(scoped_ptr<PutOperationParams> params,
       return;
     }
   }
-
-  params->callbacks->OnSuccess(*key);
+  {
+    IDB_TRACE1("IndexedDBDatabase::PutOperation.Callbacks", "txn.id",
+               transaction->id());
+    params->callbacks->OnSuccess(*key);
+  }
 }
 
 void IndexedDBDatabase::SetIndexKeys(int64 transaction_id,
@@ -1178,7 +1184,6 @@ void IndexedDBDatabase::SetIndexKeys(int64 transaction_id,
 void IndexedDBDatabase::SetIndexesReady(int64 transaction_id,
                                         int64,
                                         const std::vector<int64>& index_ids) {
-  IDB_TRACE1("IndexedDBDatabase::SetIndexesReady", "txn.id", transaction_id);
   IndexedDBTransaction* transaction = GetTransaction(transaction_id);
   if (!transaction)
     return;
@@ -1194,9 +1199,6 @@ void IndexedDBDatabase::SetIndexesReady(int64 transaction_id,
 void IndexedDBDatabase::SetIndexesReadyOperation(
     size_t index_count,
     IndexedDBTransaction* transaction) {
-  IDB_TRACE1("IndexedDBDatabase::SetIndexesReadyOperation",
-             "txn.id",
-             transaction->id());
   for (size_t i = 0; i < index_count; ++i)
     transaction->DidCompletePreemptiveEvent();
 }
@@ -1555,6 +1557,7 @@ void IndexedDBDatabase::VersionChangeOperation(
 
 void IndexedDBDatabase::TransactionFinished(IndexedDBTransaction* transaction,
                                             bool committed) {
+  IDB_TRACE1("IndexedDBTransaction::TransactionFinished", "txn.id", id());
   DCHECK(transactions_.find(transaction->id()) != transactions_.end());
   DCHECK_EQ(transactions_[transaction->id()], transaction);
   transactions_.erase(transaction->id());

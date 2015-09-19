@@ -17,6 +17,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/sys_info.h"
 #include "content/browser/indexed_db/indexed_db_class_factory.h"
+#include "content/browser/indexed_db/indexed_db_tracing.h"
 #include "content/browser/indexed_db/leveldb/leveldb_comparator.h"
 #include "content/browser/indexed_db/leveldb/leveldb_env.h"
 #include "content/browser/indexed_db/leveldb/leveldb_iterator_impl.h"
@@ -273,6 +274,7 @@ leveldb::Status LevelDBDatabase::Open(const base::FilePath& file_name,
                                       const LevelDBComparator* comparator,
                                       scoped_ptr<LevelDBDatabase>* result,
                                       bool* is_disk_full) {
+  IDB_TRACE("LevelDBDatabase::Open");
   base::TimeTicks begin_time = base::TimeTicks::Now();
 
   scoped_ptr<ComparatorAdapter> comparator_adapter(
@@ -423,6 +425,7 @@ const LevelDBComparator* LevelDBDatabase::Comparator() const {
 
 void LevelDBDatabase::Compact(const base::StringPiece& start,
                               const base::StringPiece& stop) {
+  IDB_TRACE("LevelDBDatabase::Compact");
   const leveldb::Slice start_slice = MakeSlice(start);
   const leveldb::Slice stop_slice = MakeSlice(stop);
   // NULL batch means just wait for earlier writes to be done
