@@ -253,7 +253,7 @@
     },
 
     'official': {
-      'gn_args': 'is_chrome_branded is_official_build=true is_debug=false is_component_build=false',
+      'gn_args': 'is_chrome_branded=true is_official_build=true is_debug=false is_component_build=false',
       'gyp_defines': 'branding="Chrome" buildtype="Official" component=static_library',
     },
 
