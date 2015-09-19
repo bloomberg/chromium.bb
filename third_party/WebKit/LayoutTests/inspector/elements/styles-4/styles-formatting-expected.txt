@@ -155,11 +155,25 @@ raw cssText:
     propC: valC;
 }
 
+Running: testFormattedWithMetaValue
+raw cssText:
+{
+    -webkit-animation: linear;
+    unicode-bidi: webkit-isolate;
+    propA: valA;
+    property1: value1;
+    propB: valB;
+    property2: value2;
+    property3: value3;
+    propC: valC;
+}
+
 Running: testFormattedWithAtoms
 raw cssText:
 {
     border-left: 1px solid rgb(1,1,1);
     -webkit-animation: linear;
+    unicode-bidi: webkit-isolate;
     propA: valA;
     property1: value1;
     propB: valB;

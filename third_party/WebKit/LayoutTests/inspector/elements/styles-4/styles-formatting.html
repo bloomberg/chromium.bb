@@ -121,6 +121,11 @@ function test()
             formattedStyle.insertPropertyAt(0, "-webkit-animation", "linear", dumpFormattedAndCallNext.bind(null, next));
         },
 
+        function testFormattedWithMetaValue(next)
+        {
+            formattedStyle.insertPropertyAt(1, "unicode-bidi", "webkit-isolate", dumpFormattedAndCallNext.bind(null, next));
+        },
+
         function testFormattedWithAtoms(next)
         {
             formattedStyle.insertPropertyAt(0, "border-left", "1px solid rgb(1,1,1)", dumpFormattedAndCallNext.bind(null, next));
