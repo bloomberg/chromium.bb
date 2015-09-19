@@ -176,6 +176,7 @@ class WebglConformance(gpu_test_base.TestBase):
     test_paths = []
     current_dir = os.path.dirname(path)
     full_path = os.path.normpath(os.path.join(conformance_path, path))
+    webgl_version = int(version.split('.')[0])
 
     if not os.path.exists(full_path):
       raise Exception('The WebGL conformance test path specified ' +
@@ -221,6 +222,8 @@ class WebglConformance(gpu_test_base.TestBase):
               include_path, version, webgl2_only, min_version_to_compare)
         else:
           test = os.path.join(current_dir, test_name)
+          if webgl_version > 1:
+            test += '?webglVersion=' + str(webgl_version)
           test_paths.append(test)
 
     return test_paths
