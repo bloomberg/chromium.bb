@@ -765,11 +765,12 @@ class NET_EXPORT_PRIVATE PacketNumberQueue {
   };
 
   PacketNumberQueue();
-  ~PacketNumberQueue();
   PacketNumberQueue(const PacketNumberQueue& other);
-  PacketNumberQueue& operator=(const PacketNumberQueue& other);
   // TODO(rtenneti): on windows RValue reference gives errors.
   // PacketNumberQueue(PacketNumberQueue&& other);
+  ~PacketNumberQueue();
+
+  PacketNumberQueue& operator=(const PacketNumberQueue& other);
   // PacketNumberQueue& operator=(PacketNumberQueue&& other);
 
   // Adds |packet_number| to the set of packets in the queue.
@@ -808,8 +809,6 @@ class NET_EXPORT_PRIVATE PacketNumberQueue {
   const_iterator begin() const;
   const_iterator end() const;
   const_iterator lower_bound(QuicPacketNumber packet_number) const;
-  // TODO(rtenneti): Implement upper_bound.
-  // const_iterator upper_bound(QuicPacketNumber packet_number) const;
 
   NET_EXPORT_PRIVATE friend std::ostream& operator<<(
       std::ostream& os,

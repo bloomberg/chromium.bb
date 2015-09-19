@@ -333,7 +333,7 @@ PacketNumberQueue::const_iterator::const_iterator(const const_iterator& other) =
 // TODO(rtenneti): on windows RValue reference gives errors.
 // PacketNumberQueue::const_iterator::const_iterator(const_iterator&& other) =
 //    default;
-PacketNumberQueue::const_iterator::~const_iterator(){};
+PacketNumberQueue::const_iterator::~const_iterator() {}
 
 PacketNumberQueue::const_iterator& PacketNumberQueue::const_iterator::operator=(
     const const_iterator& other) = default;
@@ -399,12 +399,12 @@ PacketNumberQueue::PacketNumberQueue()
     : use_interval_set_(FLAGS_quic_packet_queue_use_interval_set) {}
 
 PacketNumberQueue::PacketNumberQueue(const PacketNumberQueue& other) = default;
-PacketNumberQueue& PacketNumberQueue::operator=(
-    const PacketNumberQueue& other) = default;
 // TODO(rtenneti): on windows RValue reference gives errors.
 // PacketNumberQueue::PacketNumberQueue(PacketNumberQueue&& other) = default;
 PacketNumberQueue::~PacketNumberQueue() {}
 
+PacketNumberQueue& PacketNumberQueue::operator=(
+    const PacketNumberQueue& other) = default;
 // TODO(rtenneti): on windows RValue reference gives errors.
 // PacketNumberQueue& PacketNumberQueue::operator=(PacketNumberQueue&& other) =
 //    default;

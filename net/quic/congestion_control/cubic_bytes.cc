@@ -11,7 +11,6 @@
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "net/quic/quic_protocol.h"
-#include "net/quic/quic_time.h"
 
 using std::max;
 

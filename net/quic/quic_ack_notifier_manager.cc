@@ -70,7 +70,7 @@ void AckNotifierManager::OnPacketRetransmitted(
 
   // The old packet number is no longer of interest, copy the updated
   // AckNotifiers to the new packet number before deleting the old.
-  // TODO(rtenneti): use std::move whne chromium supports it.
+  // TODO(rtenneti): use std::move when chromium supports it.
   // ack_notifier_map_[new_packet_number] = std::move(ack_notifier_list);
   ack_notifier_map_[new_packet_number] = ack_notifier_list;
   ack_notifier_map_.erase(map_it);
