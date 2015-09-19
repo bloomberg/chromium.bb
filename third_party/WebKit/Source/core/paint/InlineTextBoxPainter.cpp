@@ -253,7 +253,10 @@ bool InlineTextBoxPainter::shouldPaintTextBox(const PaintInfo& paintInfo)
     // This code path is only called in PaintPhaseForeground whereas we would
     // expect PaintPhaseSelection. The existing haveSelection logic in paint()
     // tests for != PaintPhaseTextClip.
-    bool paintLineBreaks = RuntimeEnabledFeatures::selectionPaintingWithoutSelectionGapsEnabled();
+    bool paintLineBreaks = RuntimeEnabledFeatures::selectionPaintingWithoutSelectionGapsEnabled()
+        // TODO(wkorman): Remove horizontal and RTL restrictions once operational.
+        && m_inlineTextBox.isHorizontal()
+        && m_inlineTextBox.isLeftToRightDirection();
     if ((!paintLineBreaks && m_inlineTextBox.isLineBreak())
         || !paintInfo.shouldPaintWithinRoot(&m_inlineTextBox.layoutObject())
         || m_inlineTextBox.layoutObject().style()->visibility() != VISIBLE

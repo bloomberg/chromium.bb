@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<script src="../../resources/ahem.js"></script>
+<script src="../../fast/repaint/resources/text-based-repaint.js"></script>
+<script src="resources/selection.js"></script>
+<script>
+// Selects two lines and expects a newline to *not* be represented as newline
+// highlight selection is currently only enabled for LTR text.
+function repaintTest() {
+    selectRange(container, 0, container, 1);
+};
+window.onload = runRepaintTest;
+</script>
+<style>
+div {
+    direction: rtl;
+    font-family: Ahem;
+    unicode-bidi: bidi-override;
+    width: 2em;
+}
+</style>
+<div id="container">
+    xx y
+</div>

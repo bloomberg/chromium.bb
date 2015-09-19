@@ -189,6 +189,9 @@ bool InlineTextBox::hasWrappedSelectionNewline() const
 {
     SelectionState state = selectionState();
     return RuntimeEnabledFeatures::selectionPaintingWithoutSelectionGapsEnabled()
+        // TODO(wkorman): Remove horizontal and RTL restrictions once operational.
+        && isHorizontal()
+        && isLeftToRightDirection()
         && (root().lastSelectedBox() == this)
         && (state == SelectionStart || state == SelectionInside);
 }
