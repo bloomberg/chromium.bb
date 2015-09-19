@@ -1532,6 +1532,7 @@ ivi_layout_surface_add_notification(struct ivi_layout_surface *ivisurf,
 	prop_callback = malloc(sizeof *prop_callback);
 	if (prop_callback == NULL) {
 		weston_log("fails to allocate memory\n");
+		free(notification);
 		return IVI_FAILED;
 	}
 
