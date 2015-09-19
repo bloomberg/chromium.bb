@@ -7,7 +7,6 @@ include_rules = [
     "+third_party/skia",
     "+url",
     "+webp",
-    "+heap",
     "-bindings",
     "-core",
     "-modules",
