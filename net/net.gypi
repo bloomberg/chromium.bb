@@ -1094,6 +1094,7 @@
       'spdy/spdy_header_block.h',
       'spdy/spdy_headers_block_parser.cc',
       'spdy/spdy_headers_block_parser.h',
+      'spdy/spdy_headers_handler_interface.h',
       'spdy/spdy_http_stream.cc',
       'spdy/spdy_http_stream.h',
       'spdy/spdy_http_utils.cc',

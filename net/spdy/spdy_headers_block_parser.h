@@ -9,28 +9,11 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_piece.h"
 #include "net/base/net_export.h"
+#include "net/spdy/spdy_headers_handler_interface.h"
 #include "net/spdy/spdy_prefixed_buffer_reader.h"
 #include "net/spdy/spdy_protocol.h"
 
 namespace net {
-
-// A handler class for SPDY headers.
-class SpdyHeadersHandlerInterface {
- public:
-  virtual ~SpdyHeadersHandlerInterface() {}
-
-  // A callback method which notifies when the parser starts handling a new
-  // SPDY headers block, this method also notifies on the number of headers in
-  // the block.
-  virtual void OnHeaderBlock(uint32_t num_of_headers) = 0;
-
-  // A callback method which notifies on a SPDY header key value pair.
-  virtual void OnHeader(base::StringPiece key, base::StringPiece value) = 0;
-
-  // A callback method which notifies when the parser finishes handling a SPDY
-  // headers block. Also notifies on the total number of bytes in this block.
-  virtual void OnHeaderBlockEnd(size_t header_bytes_parsed) = 0;
-};
 
 namespace test {
 

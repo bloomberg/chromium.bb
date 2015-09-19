@@ -148,7 +148,7 @@ void SpdyHeadersBlockParser::ParseBlockLength(Reader* reader) {
     error_ = HEADER_BLOCK_TOO_LARGE;
   }
   if (error_ == NO_PARSER_ERROR) {
-    handler_->OnHeaderBlock(remaining_key_value_pairs_for_frame_);
+    handler_->OnHeaderBlockStart();
   }
 }
 
