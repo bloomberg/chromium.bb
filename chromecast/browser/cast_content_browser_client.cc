@@ -26,6 +26,7 @@
 #include "chromecast/browser/service/cast_service_simple.h"
 #include "chromecast/browser/url_request_context_factory.h"
 #include "chromecast/common/global_descriptors.h"
+#include "chromecast/media/audio/cast_audio_manager_factory.h"
 #include "chromecast/media/base/media_message_loop.h"
 #include "chromecast/public/cast_media_shlib.h"
 #include "chromecast/public/media/media_pipeline_backend.h"
@@ -81,9 +82,13 @@ scoped_ptr<CastService> CastContentBrowserClient::CreateCastService(
 
 scoped_ptr<::media::AudioManagerFactory>
 CastContentBrowserClient::CreateAudioManagerFactory() {
-  // Return nullptr. The factory will not be set, and the statically linked
+#if defined(OS_ANDROID)
+  // Return nullptr. The factory will not be set, and the default
   // implementation of AudioManager will be used.
   return scoped_ptr<::media::AudioManagerFactory>();
+#else
+  return make_scoped_ptr(new media::CastAudioManagerFactory());
+#endif
 }
 
 #if !defined(OS_ANDROID)

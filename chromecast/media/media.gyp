@@ -23,6 +23,21 @@
       'sources': ['empty.cc'],
     },
     {
+      'target_name': 'media_audio',
+      'type': '<(component)',
+      'dependencies': [
+        '../../media/media.gyp:media',
+      ],
+      'sources': [
+        'audio/cast_audio_manager.cc',
+        'audio/cast_audio_manager.h',
+        'audio/cast_audio_manager_factory.cc',
+        'audio/cast_audio_manager_factory.h',
+        'audio/cast_audio_output_stream.cc',
+        'audio/cast_audio_output_stream.h',
+      ],
+    },
+    {
       'target_name': 'media_base',
       'type': '<(component)',
       'dependencies': [
@@ -118,7 +133,7 @@
         'cma/base/media_task_runner.cc',
         'cma/base/media_task_runner.h',
         'cma/base/simple_media_task_runner.cc',
-        'cma/base/simple_media_task_runner.h',         
+        'cma/base/simple_media_task_runner.h',
       ],
     },
     {
@@ -252,6 +267,7 @@
         'cma_ipc_streamer',
         'cma_pipeline',
         'default_cma_backend',
+        'media_audio',
         'media_cdm',
       ],
     },
@@ -272,6 +288,7 @@
         '../../ui/gfx/gfx.gyp:gfx_test_support',
       ],
       'sources': [
+        'audio/cast_audio_output_stream_unittest.cc',
         'cdm/chromecast_init_data_unittest.cc',
         'cma/backend/audio_video_pipeline_device_unittest.cc',
         'cma/base/balanced_media_task_runner_unittest.cc',
