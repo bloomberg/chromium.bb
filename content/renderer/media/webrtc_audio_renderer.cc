@@ -271,10 +271,10 @@ bool WebRtcAudioRenderer::Initialize(WebRtcAudioRendererSource* source) {
   source_ = source;
 
   // Configure the audio rendering client and start rendering.
-  sink_ = AudioDeviceFactory::NewOutputDevice(source_render_frame_id_);
-
   DCHECK_GE(session_id_, 0);
-  sink_->InitializeWithSessionId(sink_params_, this, session_id_);
+  sink_ = AudioDeviceFactory::NewOutputDevice(
+      source_render_frame_id_, session_id_, std::string(), url::Origin());
+  sink_->Initialize(sink_params_, this);
 
   sink_->Start();
 

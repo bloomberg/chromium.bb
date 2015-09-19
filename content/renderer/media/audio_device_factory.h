@@ -5,13 +5,20 @@
 #ifndef CONTENT_RENDERER_MEDIA_AUDIO_DEVICE_FACTORY_H_
 #define CONTENT_RENDERER_MEDIA_AUDIO_DEVICE_FACTORY_H_
 
+#include <string>
+
 #include "base/basictypes.h"
+#include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
 
 namespace media {
 class AudioInputDevice;
 class AudioOutputDevice;
+}
+
+namespace url {
+class Origin;
 }
 
 namespace content {
@@ -21,11 +28,19 @@ namespace content {
 // provide specialized implementations.
 class CONTENT_EXPORT AudioDeviceFactory {
  public:
-  // Creates an AudioOutputDevice using the currently registered factory.
+  // Creates an AudioOutputDevice.
   // |render_frame_id| refers to the RenderFrame containing the entity
-  // producing the audio.
+  // producing the audio. If |session_id| is nonzero, it is used by the browser
+  // to select the correct input device ID and its associated output device, if
+  // it exists. If |session_id| is zero, |device_id| and |security_origin|
+  // identify the output device to use.
+  // If |session_id| is zero and |device_id| and |security_origin| are empty,
+  // the default output device will be selected.
   static scoped_refptr<media::AudioOutputDevice> NewOutputDevice(
-      int render_frame_id);
+      int render_frame_id,
+      int session_id,
+      const std::string& device_id,
+      const url::Origin& security_origin);
 
   // Creates an AudioInputDevice using the currently registered factory.
   // |render_frame_id| refers to the RenderFrame containing the entity
@@ -41,7 +56,11 @@ class CONTENT_EXPORT AudioDeviceFactory {
   // functions to provide alternate audio device implementations.
   // If the return value of either of these function is NULL, we fall back
   // on the default implementation.
-  virtual media::AudioOutputDevice* CreateOutputDevice(int render_frame_id) = 0;
+  virtual media::AudioOutputDevice* CreateOutputDevice(
+      int render_frame_id,
+      int sesssion_id,
+      const std::string& device_id,
+      const url::Origin& security_origin) = 0;
   virtual media::AudioInputDevice* CreateInputDevice(int render_frame_id) = 0;
 
  private:

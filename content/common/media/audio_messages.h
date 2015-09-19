@@ -16,7 +16,7 @@
 #include "media/audio/audio_input_ipc.h"
 #include "media/audio/audio_output_ipc.h"
 #include "media/audio/audio_parameters.h"
-#include "url/gurl.h"
+#include "url/origin.h"
 
 #undef IPC_MESSAGE_EXPORT
 #define IPC_MESSAGE_EXPORT CONTENT_EXPORT
@@ -43,6 +43,14 @@ IPC_STRUCT_BEGIN(AudioInputHostMsg_CreateStream_Config)
 IPC_STRUCT_END()
 
 // Messages sent from the browser to the renderer.
+
+// Tell the renderer process that an audio output device has been authorized
+// for a given stream. The renderer is given the output parameters for the
+// authorized device.
+IPC_MESSAGE_CONTROL3(AudioMsg_NotifyDeviceAuthorized,
+                     int /* stream id */,
+                     bool /* success */,
+                     media::AudioParameters /* output parameters */)
 
 // Tell the renderer process that an audio stream has been created.
 // The renderer process is given a shared memory handle for the audio data
@@ -84,20 +92,26 @@ IPC_MESSAGE_CONTROL2(AudioInputMsg_NotifyStreamVolume,
 
 // Notification message sent from AudioRendererHost to renderer for state
 // update after the renderer has requested a SwitchOutputDevice.
-IPC_MESSAGE_CONTROL3(AudioMsg_NotifyOutputDeviceSwitched,
+IPC_MESSAGE_CONTROL2(AudioMsg_NotifyOutputDeviceSwitched,
                      int /* stream id */,
-                     int /* request id */,
                      media::SwitchOutputDeviceResult /* result */)
 
 // Messages sent from the renderer to the browser.
 
-// Request that is sent to the browser for creating an audio output stream.
-// |render_frame_id| is the routing ID for the RenderFrame producing the audio
-// data.
-IPC_MESSAGE_CONTROL4(AudioHostMsg_CreateStream,
+// Message sent to the browser to request the use of an audio output
+// device. |render_frame_id| is the routing ID for the RenderFrame producing
+// the audio data.
+IPC_MESSAGE_CONTROL5(AudioHostMsg_RequestDeviceAuthorization,
                      int /* stream_id */,
                      int /* render_frame_id */,
                      int /* session_id */,
+                     std::string /* device_id */,
+                     url::Origin /* security_origin */)
+
+// Request that is sent to the browser for creating an audio output stream.
+IPC_MESSAGE_CONTROL3(AudioHostMsg_CreateStream,
+                     int /* stream_id */,
+                     int /* render_frame_id */,
                      media::AudioParameters /* params */)
 
 // Request that is sent to the browser for creating an audio input stream.
@@ -141,9 +155,8 @@ IPC_MESSAGE_CONTROL2(AudioInputHostMsg_SetVolume,
                      double /* volume */)
 
 // Switch the output device of the stream specified by stream_id.
-IPC_MESSAGE_CONTROL5(AudioHostMsg_SwitchOutputDevice,
+IPC_MESSAGE_CONTROL4(AudioHostMsg_SwitchOutputDevice,
                      int /* stream_id */,
                      int /* render_frame_id */,
                      std::string /* device_id */,
-                     GURL /* security_origin */,
-                     int /* request_id */)
+                     url::Origin /* security_origin */)

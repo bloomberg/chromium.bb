@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_AUDIO_FAKE_OUTPUT_DEVICE_H_
-#define MEDIA_AUDIO_FAKE_OUTPUT_DEVICE_H_
+#ifndef MEDIA_BASE_FAKE_OUTPUT_DEVICE_H_
+#define MEDIA_BASE_FAKE_OUTPUT_DEVICE_H_
 
 #include <string>
 
@@ -18,8 +18,9 @@ class FakeOutputDevice : public OutputDevice {
 
   // OutputDevice implementation.
   void SwitchOutputDevice(const std::string& device_id,
-                          const GURL& security_origin,
+                          const url::Origin& security_origin,
                           const SwitchOutputDeviceCB& callback) override;
+  AudioParameters GetOutputParameters() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FakeOutputDevice);
@@ -27,4 +28,4 @@ class FakeOutputDevice : public OutputDevice {
 
 }  // namespace media
 
-#endif  // MEDIA_AUDIO_FAKE_OUTPUT_DEVICE_H_
+#endif  // MEDIA_BASE_FAKE_OUTPUT_DEVICE_H_

@@ -53,7 +53,8 @@ class AudioRendererSink
   // Starts audio playback.
   virtual void Start() = 0;
 
-  // Stops audio playback.
+  // Stops audio playback and performs cleanup. It must be called before
+  // destruction.
   virtual void Stop() = 0;
 
   // Pauses playback.

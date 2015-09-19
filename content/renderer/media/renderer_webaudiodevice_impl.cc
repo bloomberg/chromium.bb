@@ -4,6 +4,8 @@
 
 #include "content/renderer/media/renderer_webaudiodevice_impl.h"
 
+#include <string>
+
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
@@ -65,8 +67,9 @@ void RendererWebAudioDeviceImpl::start() {
   RenderFrame* const render_frame =
       web_frame ? RenderFrame::FromWebFrame(web_frame) : NULL;
   output_device_ = AudioDeviceFactory::NewOutputDevice(
-      render_frame ? render_frame->GetRoutingID(): MSG_ROUTING_NONE);
-  output_device_->InitializeWithSessionId(params_, this, session_id_);
+      render_frame ? render_frame->GetRoutingID() : MSG_ROUTING_NONE,
+      session_id_, std::string(), url::Origin());
+  output_device_->Initialize(params_, this);
   output_device_->Start();
   start_null_audio_sink_callback_.Reset(
       base::Bind(&media::NullAudioSink::Play, null_audio_sink_));

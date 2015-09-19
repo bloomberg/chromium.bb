@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <string>
+
 #include "content/common/media/audio_messages.h"
 #include "content/renderer/media/audio_message_filter.h"
 #include "media/audio/audio_output_ipc.h"
@@ -23,6 +25,13 @@ class MockAudioDelegate : public media::AudioOutputIPCDelegate {
     state_ = state;
   }
 
+  void OnDeviceAuthorized(
+      bool success,
+      const media::AudioParameters& output_params) override {
+    device_authorized_received_ = true;
+    output_params_ = output_params;
+  }
+
   void OnStreamCreated(base::SharedMemoryHandle handle,
                        base::SyncSocket::Handle,
                        int length) override {
@@ -31,8 +40,7 @@ class MockAudioDelegate : public media::AudioOutputIPCDelegate {
     length_ = length;
   }
 
-  void OnOutputDeviceSwitched(int request_id,
-                              media::SwitchOutputDeviceResult result) override {
+  void OnOutputDeviceSwitched(media::SwitchOutputDeviceResult result) override {
     output_device_switched_received_ = true;
     switch_output_device_result_ = result;
   }
@@ -43,6 +51,9 @@ class MockAudioDelegate : public media::AudioOutputIPCDelegate {
     state_changed_received_ = false;
     state_ = media::AUDIO_OUTPUT_IPC_DELEGATE_STATE_ERROR;
 
+    device_authorized_received_ = false;
+    output_params_ = media::AudioParameters();
+
     created_received_ = false;
     handle_ = base::SharedMemory::NULLHandle();
     length_ = 0;
@@ -52,11 +63,14 @@ class MockAudioDelegate : public media::AudioOutputIPCDelegate {
 
     output_device_switched_received_ = false;
     switch_output_device_result_ =
-        media::SWITCH_OUTPUT_DEVICE_RESULT_ERROR_NOT_SUPPORTED;
+        media::SWITCH_OUTPUT_DEVICE_RESULT_ERROR_INTERNAL;
   }
 
   bool state_changed_received() { return state_changed_received_; }
   media::AudioOutputIPCDelegateState state() { return state_; }
+
+  bool device_authorized_received() { return device_authorized_received_; }
+  media::AudioParameters output_params() { return output_params_; }
 
   bool created_received() { return created_received_; }
   base::SharedMemoryHandle handle() { return handle_; }
@@ -73,6 +87,9 @@ class MockAudioDelegate : public media::AudioOutputIPCDelegate {
   bool state_changed_received_;
   media::AudioOutputIPCDelegateState state_;
 
+  bool device_authorized_received_;
+  media::AudioParameters output_params_;
+
   bool created_received_;
   base::SharedMemoryHandle handle_;
   int length_;
@@ -86,6 +103,13 @@ class MockAudioDelegate : public media::AudioOutputIPCDelegate {
   DISALLOW_COPY_AND_ASSIGN(MockAudioDelegate);
 };
 
+media::AudioParameters MockOutputParams() {
+  return media::AudioParameters(media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
+                                media::CHANNEL_LAYOUT_STEREO,
+                                media::AudioParameters::kAudioCDSampleRate, 16,
+                                100);
+}
+
 }  // namespace
 
 TEST(AudioMessageFilterTest, Basic) {
@@ -98,9 +122,21 @@ TEST(AudioMessageFilterTest, Basic) {
   const scoped_ptr<media::AudioOutputIPC> ipc =
       filter->CreateAudioOutputIPC(kRenderFrameId);
   static const int kSessionId = 0;
-  ipc->CreateStream(&delegate, media::AudioParameters(), kSessionId);
+  static const std::string kDeviceId;
+  static const url::Origin kSecurityOrigin;
+  ipc->RequestDeviceAuthorization(&delegate, kSessionId, kDeviceId,
+                                  kSecurityOrigin);
+  ipc->CreateStream(&delegate, media::AudioParameters());
   static const int kStreamId = 1;
   EXPECT_EQ(&delegate, filter->delegates_.Lookup(kStreamId));
+
+  // AudioMsg_NotifyDeviceAuthorized
+  EXPECT_FALSE(delegate.device_authorized_received());
+  filter->OnMessageReceived(
+      AudioMsg_NotifyDeviceAuthorized(kStreamId, true, MockOutputParams()));
+  EXPECT_TRUE(delegate.device_authorized_received());
+  EXPECT_TRUE(delegate.output_params().Equals(MockOutputParams()));
+  delegate.Reset();
 
   // AudioMsg_NotifyStreamCreated
   base::SyncSocket::TransitDescriptor socket_descriptor;
@@ -123,9 +159,8 @@ TEST(AudioMessageFilterTest, Basic) {
   delegate.Reset();
 
   // AudioMsg_NotifyOutputDeviceSwitched
-  static const int kSwitchOutputRequestId = 1;
   EXPECT_FALSE(delegate.output_device_switched_received());
-  filter->OnOutputDeviceSwitched(kStreamId, kSwitchOutputRequestId,
+  filter->OnOutputDeviceSwitched(kStreamId,
                                  media::SWITCH_OUTPUT_DEVICE_RESULT_SUCCESS);
   EXPECT_TRUE(delegate.output_device_switched_received());
   EXPECT_EQ(media::SWITCH_OUTPUT_DEVICE_RESULT_SUCCESS,
@@ -149,9 +184,8 @@ TEST(AudioMessageFilterTest, Delegates) {
       filter->CreateAudioOutputIPC(kRenderFrameId);
   const scoped_ptr<media::AudioOutputIPC> ipc2 =
       filter->CreateAudioOutputIPC(kRenderFrameId);
-  static const int kSessionId = 0;
-  ipc1->CreateStream(&delegate1, media::AudioParameters(), kSessionId);
-  ipc2->CreateStream(&delegate2, media::AudioParameters(), kSessionId);
+  ipc1->CreateStream(&delegate1, media::AudioParameters());
+  ipc2->CreateStream(&delegate2, media::AudioParameters());
   static const int kStreamId1 = 1;
   static const int kStreamId2 = 2;
   EXPECT_EQ(&delegate1, filter->delegates_.Lookup(kStreamId1));

@@ -10,7 +10,7 @@
 #include "base/callback.h"
 #include "media/audio/audio_parameters.h"
 #include "media/base/media_export.h"
-#include "url/gurl.h"
+#include "url/origin.h"
 
 namespace media {
 
@@ -19,10 +19,8 @@ enum SwitchOutputDeviceResult {
   SWITCH_OUTPUT_DEVICE_RESULT_SUCCESS = 0,
   SWITCH_OUTPUT_DEVICE_RESULT_ERROR_NOT_FOUND,
   SWITCH_OUTPUT_DEVICE_RESULT_ERROR_NOT_AUTHORIZED,
-  SWITCH_OUTPUT_DEVICE_RESULT_ERROR_OBSOLETE,
-  SWITCH_OUTPUT_DEVICE_RESULT_ERROR_NOT_SUPPORTED,
-  SWITCH_OUTPUT_DEVICE_RESULT_LAST =
-      SWITCH_OUTPUT_DEVICE_RESULT_ERROR_NOT_SUPPORTED,
+  SWITCH_OUTPUT_DEVICE_RESULT_ERROR_INTERNAL,
+  SWITCH_OUTPUT_DEVICE_RESULT_LAST = SWITCH_OUTPUT_DEVICE_RESULT_ERROR_INTERNAL,
 };
 
 typedef base::Callback<void(SwitchOutputDeviceResult)> SwitchOutputDeviceCB;
@@ -44,8 +42,13 @@ class OutputDevice {
   // threads. It is advisable to bind arguments such that they are released by
   // |callback| when it runs in order to avoid surprises.
   virtual void SwitchOutputDevice(const std::string& device_id,
-                                  const GURL& security_origin,
+                                  const url::Origin& security_origin,
                                   const SwitchOutputDeviceCB& callback) = 0;
+
+  // Returns the device's audio output parameters.
+  // If the parameters are not available, this method blocks until they
+  // become available. Must never be called on the IO thread.
+  virtual AudioParameters GetOutputParameters() = 0;
 
  protected:
   virtual ~OutputDevice() {}

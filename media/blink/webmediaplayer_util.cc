@@ -5,6 +5,7 @@
 #include "media/blink/webmediaplayer_util.h"
 
 #include <math.h>
+#include <string>
 
 #include "base/metrics/histogram.h"
 #include "media/base/bind_to_current_loop.h"
@@ -225,15 +226,10 @@ void RunSetSinkIdCallback(const SetSinkIdCallback& callback,
           blink::WebSetSinkIdError::ErrorTypeSecurity,
           "No permission to access device"));
       break;
-    case SWITCH_OUTPUT_DEVICE_RESULT_ERROR_OBSOLETE:
+    case SWITCH_OUTPUT_DEVICE_RESULT_ERROR_INTERNAL:
       callback.web_callback_->onError(new blink::WebSetSinkIdError(
           blink::WebSetSinkIdError::ErrorTypeAbort,
-          "The requested operation became obsolete and was aborted"));
-      break;
-    case SWITCH_OUTPUT_DEVICE_RESULT_ERROR_NOT_SUPPORTED:
-      callback.web_callback_->onError(new blink::WebSetSinkIdError(
-          blink::WebSetSinkIdError::ErrorTypeAbort,
-          "The requested operation cannot be performed and was aborted"));
+          "The requested operation could be performed and was aborted"));
       break;
     default:
       NOTREACHED();

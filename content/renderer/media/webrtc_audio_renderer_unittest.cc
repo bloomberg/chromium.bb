@@ -21,6 +21,7 @@
 #include "third_party/libjingle/source/talk/app/webrtc/mediastreaminterface.h"
 
 using testing::Return;
+using testing::_;
 
 namespace content {
 
@@ -34,17 +35,21 @@ class MockAudioOutputIPC : public media::AudioOutputIPC {
   MockAudioOutputIPC() {}
   virtual ~MockAudioOutputIPC() {}
 
-  MOCK_METHOD3(CreateStream, void(media::AudioOutputIPCDelegate* delegate,
-                                  const media::AudioParameters& params,
-                                  int session_id));
+  MOCK_METHOD4(RequestDeviceAuthorization,
+               void(media::AudioOutputIPCDelegate* delegate,
+                    int session_id,
+                    const std::string& device_id,
+                    const url::Origin& security_origin));
+  MOCK_METHOD2(CreateStream,
+               void(media::AudioOutputIPCDelegate* delegate,
+                    const media::AudioParameters& params));
   MOCK_METHOD0(PlayStream, void());
   MOCK_METHOD0(PauseStream, void());
   MOCK_METHOD0(CloseStream, void());
   MOCK_METHOD1(SetVolume, void(double volume));
-  MOCK_METHOD3(SwitchOutputDevice,
+  MOCK_METHOD2(SwitchOutputDevice,
                void(const std::string& device_id,
-                    const GURL& security_origin,
-                    int request_id));
+                    const url::Origin& security_origin));
 };
 
 class FakeAudioOutputDevice
@@ -54,7 +59,10 @@ class FakeAudioOutputDevice
       scoped_ptr<media::AudioOutputIPC> ipc,
       const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner)
       : AudioOutputDevice(ipc.Pass(),
-                          io_task_runner) {}
+                          io_task_runner,
+                          0,
+                          std::string(),
+                          url::Origin()) {}
   MOCK_METHOD0(Start, void());
   MOCK_METHOD0(Stop, void());
   MOCK_METHOD0(Pause, void());
@@ -70,7 +78,11 @@ class MockAudioDeviceFactory : public AudioDeviceFactory {
  public:
   MockAudioDeviceFactory() {}
   virtual ~MockAudioDeviceFactory() {}
-  MOCK_METHOD1(CreateOutputDevice, media::AudioOutputDevice*(int));
+  MOCK_METHOD4(CreateOutputDevice,
+               media::AudioOutputDevice*(int,
+                                         int,
+                                         const std::string&,
+                                         const url::Origin&));
   MOCK_METHOD1(CreateInputDevice, media::AudioInputDevice*(int));
 };
 
@@ -104,7 +116,7 @@ class WebRtcAudioRendererTest : public testing::Test {
                                           1,
                                           44100,
                                           kHardwareBufferSize)) {
-    EXPECT_CALL(*factory_.get(), CreateOutputDevice(1))
+    EXPECT_CALL(*factory_.get(), CreateOutputDevice(1, _, _, _))
         .WillOnce(Return(mock_output_device_.get()));
     EXPECT_CALL(*mock_output_device_.get(), Start());
     EXPECT_TRUE(renderer_->Initialize(source_.get()));

@@ -5,6 +5,7 @@
 #include "content/renderer/media/webmediaplayer_ms.h"
 
 #include <limits>
+#include <string>
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -259,13 +260,14 @@ void WebMediaPlayerMS::setSinkId(const blink::WebString& device_id,
     media::OutputDevice* output_device = audio_renderer_->GetOutputDevice();
     if (output_device) {
       const std::string device_id_str(device_id.utf8());
-      const GURL security_origin(frame_->securityOrigin().toString().utf8());
+      const url::Origin security_origin(
+          GURL(frame_->securityOrigin().toString().utf8()));
       output_device->SwitchOutputDevice(device_id_str, security_origin,
                                         callback);
       return;
     }
   }
-  callback.Run(media::SWITCH_OUTPUT_DEVICE_RESULT_ERROR_NOT_SUPPORTED);
+  callback.Run(media::SWITCH_OUTPUT_DEVICE_RESULT_ERROR_INTERNAL);
 }
 
 void WebMediaPlayerMS::setPreload(WebMediaPlayer::Preload preload) {

@@ -4,6 +4,8 @@
 
 #include "content/renderer/media/audio_renderer_mixer_manager.h"
 
+#include <string>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "content/renderer/media/audio_device_factory.h"
@@ -82,7 +84,8 @@ media::AudioRendererMixer* AudioRendererMixerManager::GetMixer(
   } else {
     mixer = new media::AudioRendererMixer(
         params, output_params,
-        AudioDeviceFactory::NewOutputDevice(source_render_frame_id));
+        AudioDeviceFactory::NewOutputDevice(source_render_frame_id, 0,
+                                            std::string(), url::Origin()));
   }
 
   AudioRendererMixerReference mixer_reference = { mixer, 1 };

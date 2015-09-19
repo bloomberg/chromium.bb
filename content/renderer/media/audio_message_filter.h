@@ -66,6 +66,12 @@ class CONTENT_EXPORT AudioMessageFilter : public IPC::MessageFilter {
   void OnFilterRemoved() override;
   void OnChannelClosing() override;
 
+  // Received when the browser process has checked authorization to use an
+  // audio output device.
+  void OnDeviceAuthorized(int stream_id,
+                          bool success,
+                          const media::AudioParameters& output_params);
+
   // Received when browser process has created an audio output stream.
   void OnStreamCreated(int stream_id, base::SharedMemoryHandle handle,
                        base::SyncSocket::TransitDescriptor socket_descriptor,
@@ -79,10 +85,9 @@ class CONTENT_EXPORT AudioMessageFilter : public IPC::MessageFilter {
   // Received when the browser process has finished processing a
   // SwitchOutputDevice request
   void OnOutputDeviceSwitched(int stream_id,
-                              int request_id,
                               media::SwitchOutputDeviceResult result);
 
-  // IPC sender for Send(); must only be accesed on |io_task_runner_|.
+  // IPC sender for Send(); must only be accessed on |io_task_runner_|.
   IPC::Sender* sender_;
 
   // A map of stream ids to delegates; must only be accessed on

@@ -4,8 +4,6 @@
 
 #include "media/audio/audio_output_device.h"
 
-#include <string>
-
 #include "base/callback_helpers.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
@@ -41,38 +39,41 @@ class AudioOutputDevice::AudioThreadCallback
 
 AudioOutputDevice::AudioOutputDevice(
     scoped_ptr<AudioOutputIPC> ipc,
-    const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner)
+    const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner,
+    int session_id,
+    const std::string& device_id,
+    const url::Origin& security_origin)
     : ScopedTaskRunnerObserver(io_task_runner),
       callback_(NULL),
       ipc_(ipc.Pass()),
       state_(IDLE),
+      start_on_authorized_(false),
       play_on_start_(true),
-      session_id_(-1),
+      session_id_(session_id),
+      device_id_(device_id),
+      security_origin_(security_origin),
       stopping_hack_(false),
-      current_switch_request_id_(0) {
+      switch_output_device_on_start_(false),
+      did_set_output_params_(true, false) {
   CHECK(ipc_);
 
   // The correctness of the code depends on the relative values assigned in the
   // State enum.
   static_assert(IPC_CLOSED < IDLE, "invalid enum value assignment 0");
-  static_assert(IDLE < CREATING_STREAM, "invalid enum value assignment 1");
-  static_assert(CREATING_STREAM < PAUSED, "invalid enum value assignment 2");
-  static_assert(PAUSED < PLAYING, "invalid enum value assignment 3");
-}
-
-void AudioOutputDevice::InitializeWithSessionId(const AudioParameters& params,
-                                                RenderCallback* callback,
-                                                int session_id) {
-  DCHECK(!callback_) << "Calling InitializeWithSessionId() twice?";
-  DCHECK(params.IsValid());
-  audio_parameters_ = params;
-  callback_ = callback;
-  session_id_ = session_id;
+  static_assert(IDLE < AUTHORIZING, "invalid enum value assignment 1");
+  static_assert(AUTHORIZING < AUTHORIZED, "invalid enum value assignment 2");
+  static_assert(AUTHORIZED < CREATING_STREAM,
+                "invalid enum value assignment 3");
+  static_assert(CREATING_STREAM < PAUSED, "invalid enum value assignment 4");
+  static_assert(PAUSED < PLAYING, "invalid enum value assignment 5");
 }
 
 void AudioOutputDevice::Initialize(const AudioParameters& params,
                                    RenderCallback* callback) {
-  InitializeWithSessionId(params, callback, 0);
+  DCHECK(!callback_) << "Calling Initialize() twice?";
+  DCHECK(params.IsValid());
+  audio_parameters_ = params;
+  callback_ = callback;
 }
 
 AudioOutputDevice::~AudioOutputDevice() {
@@ -84,9 +85,19 @@ AudioOutputDevice::~AudioOutputDevice() {
   // its bound parameters in the correct thread instead of implicitly releasing
   // them in the thread where this destructor runs.
   if (!current_switch_callback_.is_null()) {
-    base::ResetAndReturn(&current_switch_callback_).Run(
-        SWITCH_OUTPUT_DEVICE_RESULT_ERROR_OBSOLETE);
+    base::ResetAndReturn(&current_switch_callback_)
+        .Run(SWITCH_OUTPUT_DEVICE_RESULT_ERROR_INTERNAL);
   }
+
+  // Unblock any blocked threads waiting for parameters
+  did_set_output_params_.Signal();
+}
+
+void AudioOutputDevice::RequestDeviceAuthorization() {
+  task_runner()->PostTask(
+      FROM_HERE,
+      base::Bind(&AudioOutputDevice::RequestDeviceAuthorizationOnIOThread,
+                 this));
 }
 
 void AudioOutputDevice::Start() {
@@ -135,19 +146,61 @@ OutputDevice* AudioOutputDevice::GetOutputDevice() {
 
 void AudioOutputDevice::SwitchOutputDevice(
     const std::string& device_id,
-    const GURL& security_origin,
+    const url::Origin& security_origin,
     const SwitchOutputDeviceCB& callback) {
-  DVLOG(1) << __FUNCTION__ << "(" << device_id << ")";
   task_runner()->PostTask(
       FROM_HERE, base::Bind(&AudioOutputDevice::SwitchOutputDeviceOnIOThread,
                             this, device_id, security_origin, callback));
 }
 
+AudioParameters AudioOutputDevice::GetOutputParameters() {
+  CHECK(!task_runner()->BelongsToCurrentThread());
+  did_set_output_params_.Wait();
+  return output_params_;
+}
+
+void AudioOutputDevice::RequestDeviceAuthorizationOnIOThread() {
+  DCHECK(task_runner()->BelongsToCurrentThread());
+  DCHECK_EQ(state_, IDLE);
+  state_ = AUTHORIZING;
+  ipc_->RequestDeviceAuthorization(this, session_id_, device_id_,
+                                   security_origin_);
+}
+
 void AudioOutputDevice::CreateStreamOnIOThread(const AudioParameters& params) {
   DCHECK(task_runner()->BelongsToCurrentThread());
-  if (state_ == IDLE) {
-    state_ = CREATING_STREAM;
-    ipc_->CreateStream(this, params, session_id_);
+  switch (state_) {
+    case IPC_CLOSED:
+      if (callback_)
+        callback_->OnRenderError();
+      break;
+
+    case IDLE:
+      if (did_set_output_params_.IsSignaled() && device_id_.empty() &&
+          security_origin_.unique()) {
+        state_ = CREATING_STREAM;
+        ipc_->CreateStream(this, params);
+      } else {
+        RequestDeviceAuthorizationOnIOThread();
+        start_on_authorized_ = true;
+      }
+      break;
+
+    case AUTHORIZING:
+      start_on_authorized_ = true;
+      break;
+
+    case AUTHORIZED:
+      state_ = CREATING_STREAM;
+      ipc_->CreateStream(this, params);
+      start_on_authorized_ = false;
+      break;
+
+    case CREATING_STREAM:
+    case PAUSED:
+    case PLAYING:
+      NOTREACHED();
+      break;
   }
 }
 
@@ -179,10 +232,11 @@ void AudioOutputDevice::ShutDownOnIOThread() {
   DCHECK(task_runner()->BelongsToCurrentThread());
 
   // Close the stream, if we haven't already.
-  if (state_ >= CREATING_STREAM) {
+  if (state_ >= AUTHORIZING) {
     ipc_->CloseStream();
     state_ = IDLE;
   }
+  start_on_authorized_ = false;
 
   // We can run into an issue where ShutDownOnIOThread is called right after
   // OnStreamCreated is called in cases where Start/Stop are called before we
@@ -207,16 +261,24 @@ void AudioOutputDevice::SetVolumeOnIOThread(double volume) {
 
 void AudioOutputDevice::SwitchOutputDeviceOnIOThread(
     const std::string& device_id,
-    const GURL& security_origin,
+    const url::Origin& security_origin,
     const SwitchOutputDeviceCB& callback) {
   DCHECK(task_runner()->BelongsToCurrentThread());
-  DVLOG(1) << __FUNCTION__ << "(" << device_id << "," << security_origin << ")";
+
+  // Do not allow concurrent SwitchOutputDevice requests
+  if (!current_switch_callback_.is_null()) {
+    callback.Run(SWITCH_OUTPUT_DEVICE_RESULT_ERROR_INTERNAL);
+    return;
+  }
+
+  current_switch_callback_ = callback;
+  current_switch_device_id_ = device_id;
+  current_switch_security_origin_ = security_origin;
   if (state_ >= CREATING_STREAM) {
-    SetCurrentSwitchRequest(callback);
-    ipc_->SwitchOutputDevice(device_id, security_origin,
-                             current_switch_request_id_);
+    ipc_->SwitchOutputDevice(current_switch_device_id_,
+                             current_switch_security_origin_);
   } else {
-    callback.Run(SWITCH_OUTPUT_DEVICE_RESULT_ERROR_NOT_SUPPORTED);
+    switch_output_device_on_start_ = true;
   }
 }
 
@@ -250,6 +312,27 @@ void AudioOutputDevice::OnStateChanged(AudioOutputIPCDelegateState state) {
   }
 }
 
+void AudioOutputDevice::OnDeviceAuthorized(
+    bool success,
+    const media::AudioParameters& output_params) {
+  DCHECK(task_runner()->BelongsToCurrentThread());
+  DCHECK_EQ(state_, AUTHORIZING);
+
+  if (success) {
+    state_ = AUTHORIZED;
+    if (!did_set_output_params_.IsSignaled()) {
+      output_params_ = output_params;
+      did_set_output_params_.Signal();
+    }
+    if (start_on_authorized_)
+      CreateStreamOnIOThread(audio_parameters_);
+  } else {
+    OnIPCClosed();
+    if (callback_)
+      callback_->OnRenderError();
+  }
+}
+
 void AudioOutputDevice::OnStreamCreated(
     base::SharedMemoryHandle handle,
     base::SyncSocket::Handle socket_handle,
@@ -278,46 +361,39 @@ void AudioOutputDevice::OnStreamCreated(
   // delete as they see fit. AudioOutputDevice should internally use WeakPtr
   // to handle teardown and thread hopping. See http://crbug.com/151051 for
   // details.
-  base::AutoLock auto_lock(audio_thread_lock_);
-  if (stopping_hack_)
-    return;
+  {
+    base::AutoLock auto_lock(audio_thread_lock_);
+    if (stopping_hack_)
+      return;
 
-  DCHECK(audio_thread_.IsStopped());
-  audio_callback_.reset(new AudioOutputDevice::AudioThreadCallback(
-      audio_parameters_, handle, length, callback_));
-  audio_thread_.Start(
-      audio_callback_.get(), socket_handle, "AudioOutputDevice", true);
-  state_ = PAUSED;
+    DCHECK(audio_thread_.IsStopped());
+    audio_callback_.reset(new AudioOutputDevice::AudioThreadCallback(
+        audio_parameters_, handle, length, callback_));
+    audio_thread_.Start(audio_callback_.get(), socket_handle,
+                        "AudioOutputDevice", true);
+    state_ = PAUSED;
 
-  // We handle the case where Play() and/or Pause() may have been called
-  // multiple times before OnStreamCreated() gets called.
-  if (play_on_start_)
-    PlayOnIOThread();
-}
-
-void AudioOutputDevice::SetCurrentSwitchRequest(
-    const SwitchOutputDeviceCB& callback) {
-  DCHECK(task_runner()->BelongsToCurrentThread());
-  DVLOG(1) << __FUNCTION__;
-  // If there is a previous unresolved request, resolve it as obsolete
-  if (!current_switch_callback_.is_null()) {
-    base::ResetAndReturn(&current_switch_callback_).Run(
-        SWITCH_OUTPUT_DEVICE_RESULT_ERROR_OBSOLETE);
+    // We handle the case where Play() and/or Pause() may have been called
+    // multiple times before OnStreamCreated() gets called.
+    if (play_on_start_)
+      PlayOnIOThread();
   }
-  current_switch_callback_ = callback;
-  current_switch_request_id_++;
+
+  if (switch_output_device_on_start_) {
+    ipc_->SwitchOutputDevice(current_switch_device_id_,
+                             current_switch_security_origin_);
+  }
 }
 
 void AudioOutputDevice::OnOutputDeviceSwitched(
-    int request_id,
     SwitchOutputDeviceResult result) {
   DCHECK(task_runner()->BelongsToCurrentThread());
-  DCHECK(request_id <= current_switch_request_id_);
-  DVLOG(1) << __FUNCTION__
-           << "(" << request_id << ", " << result << ")";
-  if (request_id != current_switch_request_id_) {
-    return;
+  if (result == SWITCH_OUTPUT_DEVICE_RESULT_SUCCESS) {
+    session_id_ = 0;  // Output device is no longer attached to an input device
+    device_id_ = current_switch_device_id_;
+    security_origin_ = current_switch_security_origin_;
   }
+  DCHECK(!current_switch_callback_.is_null());
   base::ResetAndReturn(&current_switch_callback_).Run(result);
 }
 
@@ -325,6 +401,9 @@ void AudioOutputDevice::OnIPCClosed() {
   DCHECK(task_runner()->BelongsToCurrentThread());
   state_ = IPC_CLOSED;
   ipc_.reset();
+
+  // Signal to unblock any blocked threads waiting for parameters
+  did_set_output_params_.Signal();
 }
 
 void AudioOutputDevice::WillDestroyCurrentMessageLoop() {

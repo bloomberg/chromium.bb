@@ -72,6 +72,12 @@ void PepperPlatformAudioOutput::ShutDown() {
 void PepperPlatformAudioOutput::OnStateChanged(
     media::AudioOutputIPCDelegateState state) {}
 
+void PepperPlatformAudioOutput::OnDeviceAuthorized(
+    bool success,
+    const media::AudioParameters& output_params) {
+  NOTREACHED();
+}
+
 void PepperPlatformAudioOutput::OnStreamCreated(
     base::SharedMemoryHandle handle,
     base::SyncSocket::Handle socket_handle,
@@ -98,7 +104,6 @@ void PepperPlatformAudioOutput::OnStreamCreated(
 }
 
 void PepperPlatformAudioOutput::OnOutputDeviceSwitched(
-    int request_id,
     media::SwitchOutputDeviceResult result) {}
 
 void PepperPlatformAudioOutput::OnIPCClosed() { ipc_.reset(); }
@@ -143,9 +148,8 @@ bool PepperPlatformAudioOutput::Initialize(int sample_rate,
 void PepperPlatformAudioOutput::InitializeOnIOThread(
     const media::AudioParameters& params) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
-  const int kSessionId = 0;
   if (ipc_)
-    ipc_->CreateStream(this, params, kSessionId);
+    ipc_->CreateStream(this, params);
 }
 
 void PepperPlatformAudioOutput::StartPlaybackOnIOThread() {

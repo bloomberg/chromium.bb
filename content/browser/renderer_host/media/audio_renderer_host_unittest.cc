@@ -32,10 +32,12 @@ const int kRenderProcessId = 1;
 const int kRenderFrameId = 5;
 const int kStreamId = 50;
 const int kBadStreamId = 99;
-const int kSwitchOutputDeviceRequestId = 1;
-const GURL kSecurityOrigin("http://localhost");
-const std::string kDefaultDeviceID = "";
-const std::string kBadDeviceID = "bad-device-id";
+const url::Origin kSecurityOrigin(GURL("http://localhost"));
+const url::Origin kDefaultSecurityOrigin;
+const std::string kDefaultDeviceID;
+const std::string kBadDeviceID =
+    "badbadbadbadbadbadbadbadbadbadbadbadbadbadbadbadbadbadbadbadbad1";
+const std::string kInvalidDeviceID = "invalid-device-id";
 }  // namespace
 
 namespace content {
@@ -71,14 +73,16 @@ class MockAudioRendererHost : public AudioRendererHost {
         shared_memory_length_(0) {}
 
   // A list of mock methods.
+  MOCK_METHOD3(OnDeviceAuthorized,
+               void(int stream_id,
+                    bool success,
+                    const media::AudioParameters& output_params));
   MOCK_METHOD2(OnStreamCreated, void(int stream_id, int length));
   MOCK_METHOD1(OnStreamPlaying, void(int stream_id));
   MOCK_METHOD1(OnStreamPaused, void(int stream_id));
   MOCK_METHOD1(OnStreamError, void(int stream_id));
-  MOCK_METHOD3(OnOutputDeviceSwitched,
-               void(int stream_id,
-                    int request_id,
-                    media::SwitchOutputDeviceResult result));
+  MOCK_METHOD2(OnOutputDeviceSwitched,
+               void(int stream_id, media::SwitchOutputDeviceResult result));
 
  private:
   virtual ~MockAudioRendererHost() {
@@ -96,6 +100,8 @@ class MockAudioRendererHost : public AudioRendererHost {
     // we are the renderer.
     bool handled = true;
     IPC_BEGIN_MESSAGE_MAP(MockAudioRendererHost, *message)
+      IPC_MESSAGE_HANDLER(AudioMsg_NotifyDeviceAuthorized,
+                          OnNotifyDeviceAuthorized)
       IPC_MESSAGE_HANDLER(AudioMsg_NotifyStreamCreated,
                           OnNotifyStreamCreated)
       IPC_MESSAGE_HANDLER(AudioMsg_NotifyStreamStateChanged,
@@ -108,6 +114,12 @@ class MockAudioRendererHost : public AudioRendererHost {
 
     delete message;
     return true;
+  }
+
+  void OnNotifyDeviceAuthorized(int stream_id,
+                                bool success,
+                                const media::AudioParameters& output_params) {
+    OnDeviceAuthorized(stream_id, success, output_params);
   }
 
   void OnNotifyStreamCreated(
@@ -147,15 +159,13 @@ class MockAudioRendererHost : public AudioRendererHost {
   }
 
   void OnNotifyOutputDeviceSwitched(int stream_id,
-                                    int request_id,
                                     media::SwitchOutputDeviceResult result) {
     switch (result) {
       case media::SWITCH_OUTPUT_DEVICE_RESULT_SUCCESS:
       case media::SWITCH_OUTPUT_DEVICE_RESULT_ERROR_NOT_FOUND:
       case media::SWITCH_OUTPUT_DEVICE_RESULT_ERROR_NOT_AUTHORIZED:
-      case media::SWITCH_OUTPUT_DEVICE_RESULT_ERROR_OBSOLETE:
-      case media::SWITCH_OUTPUT_DEVICE_RESULT_ERROR_NOT_SUPPORTED:
-        OnOutputDeviceSwitched(stream_id, request_id, result);
+      case media::SWITCH_OUTPUT_DEVICE_RESULT_ERROR_INTERNAL:
+        OnOutputDeviceSwitched(stream_id, result);
         break;
       default:
         FAIL() << "Unknown SwitchOutputDevice result";
@@ -178,7 +188,12 @@ std::string ReturnMockSalt() {
 ResourceContext::SaltCallback GetMockSaltCallback() {
   return base::Bind(&ReturnMockSalt);
 }
+
+void WaitForEnumeration(base::RunLoop* loop,
+                        const AudioOutputDeviceEnumeration& e) {
+  loop->Quit();
 }
+}  // namespace
 
 class AudioRendererHostTest : public testing::Test {
  public:
@@ -187,6 +202,16 @@ class AudioRendererHostTest : public testing::Test {
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kUseFakeDeviceForMediaStream);
     media_stream_manager_.reset(new MediaStreamManager(audio_manager_.get()));
+
+    // Enable caching to make enumerations run in a single thread
+    media_stream_manager_->audio_output_device_enumerator()->SetCachePolicy(
+        AudioOutputDeviceEnumerator::CACHE_POLICY_MANUAL_INVALIDATION);
+    base::RunLoop().RunUntilIdle();
+    base::RunLoop run_loop;
+    media_stream_manager_->audio_output_device_enumerator()->Enumerate(
+        base::Bind(&WaitForEnumeration, &run_loop));
+    run_loop.Run();
+
     host_ = new MockAudioRendererHost(audio_manager_.get(), &mirroring_manager_,
                                       MediaInternals::GetInstance(),
                                       media_stream_manager_.get(),
@@ -209,6 +234,7 @@ class AudioRendererHostTest : public testing::Test {
 
  protected:
   void Create(bool unified_stream) {
+    EXPECT_CALL(*host_.get(), OnDeviceAuthorized(kStreamId, true, _));
     EXPECT_CALL(*host_.get(), OnStreamCreated(kStreamId, _));
 
     EXPECT_CALL(mirroring_manager_,
@@ -227,7 +253,10 @@ class AudioRendererHostTest : public testing::Test {
       // pass the permission check.
       session_id = AudioInputDeviceManager::kFakeOpenSessionId;
     }
-    host_->OnCreateStream(kStreamId, kRenderFrameId, session_id, params);
+    host_->OnRequestDeviceAuthorization(kStreamId, kRenderFrameId, session_id,
+                                        kDefaultDeviceID,
+                                        kDefaultSecurityOrigin);
+    host_->OnCreateStream(kStreamId, kRenderFrameId, params);
 
     // At some point in the future, a corresponding RemoveDiverter() call must
     // be made.
@@ -261,13 +290,13 @@ class AudioRendererHostTest : public testing::Test {
   }
 
   void SwitchOutputDevice(int stream_id,
-                          std::string device_id,
+                          const std::string& device_id,
+                          const url::Origin& security_origin,
                           media::SwitchOutputDeviceResult expected_result) {
     EXPECT_CALL(*host_.get(),
-                OnOutputDeviceSwitched(stream_id, kSwitchOutputDeviceRequestId,
-                                       expected_result));
+                OnOutputDeviceSwitched(stream_id, expected_result));
     host_->OnSwitchOutputDevice(stream_id, kRenderFrameId, device_id,
-                                kSecurityOrigin, kSwitchOutputDeviceRequestId);
+                                security_origin);
     SyncWithAudioThread();
   }
 
@@ -344,22 +373,29 @@ TEST_F(AudioRendererHostTest, SetVolume) {
 
 TEST_F(AudioRendererHostTest, SwitchOutputDevice) {
   Create(false);
-  SwitchOutputDevice(kStreamId, kDefaultDeviceID,
+  SwitchOutputDevice(kStreamId, kDefaultDeviceID, kDefaultSecurityOrigin,
                      media::SWITCH_OUTPUT_DEVICE_RESULT_SUCCESS);
   Close();
 }
 
 TEST_F(AudioRendererHostTest, SwitchOutputDeviceNotAuthorized) {
   Create(false);
-  SwitchOutputDevice(kStreamId, kBadDeviceID,
+  SwitchOutputDevice(kStreamId, kBadDeviceID, kSecurityOrigin,
                      media::SWITCH_OUTPUT_DEVICE_RESULT_ERROR_NOT_AUTHORIZED);
+  Close();
+}
+
+TEST_F(AudioRendererHostTest, SwitchOutputDeviceInvalidDeviceId) {
+  Create(false);
+  SwitchOutputDevice(kStreamId, kInvalidDeviceID, kSecurityOrigin,
+                     media::SWITCH_OUTPUT_DEVICE_RESULT_ERROR_INTERNAL);
   Close();
 }
 
 TEST_F(AudioRendererHostTest, SwitchOutputDeviceNoStream) {
   Create(false);
-  SwitchOutputDevice(kBadStreamId, kDefaultDeviceID,
-                     media::SWITCH_OUTPUT_DEVICE_RESULT_ERROR_OBSOLETE);
+  SwitchOutputDevice(kBadStreamId, kDefaultDeviceID, kDefaultSecurityOrigin,
+                     media::SWITCH_OUTPUT_DEVICE_RESULT_ERROR_INTERNAL);
   Close();
 }
 

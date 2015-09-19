@@ -406,10 +406,11 @@ void WebMediaPlayerImpl::setSinkId(const blink::WebString& device_id,
   OutputDevice* output_device = audio_source_provider_->GetOutputDevice();
   if (output_device) {
     std::string device_id_str(device_id.utf8());
-    GURL security_origin(frame_->securityOrigin().toString().utf8());
+    url::Origin security_origin(
+        GURL(frame_->securityOrigin().toString().utf8()));
     output_device->SwitchOutputDevice(device_id_str, security_origin, callback);
   } else {
-    callback.Run(SWITCH_OUTPUT_DEVICE_RESULT_ERROR_NOT_SUPPORTED);
+    callback.Run(SWITCH_OUTPUT_DEVICE_RESULT_ERROR_INTERNAL);
   }
 }
 

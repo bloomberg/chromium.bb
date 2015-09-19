@@ -9,6 +9,7 @@
 #include "content/renderer/media/audio_message_filter.h"
 #include "media/audio/audio_input_device.h"
 #include "media/audio/audio_output_device.h"
+#include "url/origin.h"
 
 namespace content {
 
@@ -17,17 +18,23 @@ AudioDeviceFactory* AudioDeviceFactory::factory_ = NULL;
 
 // static
 scoped_refptr<media::AudioOutputDevice> AudioDeviceFactory::NewOutputDevice(
-    int render_frame_id) {
+    int render_frame_id,
+    int session_id,
+    const std::string& device_id,
+    const url::Origin& security_origin) {
   if (factory_) {
-    media::AudioOutputDevice* const device =
-        factory_->CreateOutputDevice(render_frame_id);
+    media::AudioOutputDevice* const device = factory_->CreateOutputDevice(
+        render_frame_id, session_id, device_id, security_origin);
     if (device)
       return device;
   }
 
   AudioMessageFilter* const filter = AudioMessageFilter::Get();
-  return new media::AudioOutputDevice(
-      filter->CreateAudioOutputIPC(render_frame_id), filter->io_task_runner());
+  scoped_refptr<media::AudioOutputDevice> device = new media::AudioOutputDevice(
+      filter->CreateAudioOutputIPC(render_frame_id), filter->io_task_runner(),
+      session_id, device_id, security_origin);
+  device->RequestDeviceAuthorization();
+  return device;
 }
 
 // static

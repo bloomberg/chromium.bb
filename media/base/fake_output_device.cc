@@ -13,9 +13,15 @@ FakeOutputDevice::~FakeOutputDevice() {}
 
 void FakeOutputDevice::SwitchOutputDevice(
     const std::string& device_id,
-    const GURL& security_origin,
+    const url::Origin& security_origin,
     const SwitchOutputDeviceCB& callback) {
   callback.Run(SWITCH_OUTPUT_DEVICE_RESULT_SUCCESS);
+}
+
+AudioParameters FakeOutputDevice::GetOutputParameters() {
+  return media::AudioParameters(
+      media::AudioParameters::AUDIO_FAKE, media::CHANNEL_LAYOUT_STEREO,
+      media::AudioParameters::kTelephoneSampleRate, 16, 1);
 }
 
 }  // namespace media
