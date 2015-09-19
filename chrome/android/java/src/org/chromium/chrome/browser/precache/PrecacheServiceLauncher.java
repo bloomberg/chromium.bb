@@ -73,8 +73,8 @@ public class PrecacheServiceLauncher extends BroadcastReceiver {
      * PrecacheService will be stopped, and this receiver will do nothing when it receives an
      * intent.
      *
-     * @param context The application context.
-     * @param enabled Whether or not precaching is enabled.
+     * @param context the application context
+     * @param enabled whether or not precaching is enabled
      */
     public static void setIsPrecachingEnabled(Context context, boolean enabled) {
         Log.v(TAG, "setIsPrecachingEnabled(%s)", enabled);
@@ -97,8 +97,8 @@ public class PrecacheServiceLauncher extends BroadcastReceiver {
      * alarm for a subsequent run, and updates the last precache time. If not (i.e. the precache
      * attempt aborted), sets an alarm for another attempt.
      *
-     * @param context The application context.
-     * @param tryAgainSoon Whether precaching should be attempted again.
+     * @param context the application context
+     * @param tryAgainSoon whether precaching should be attempted again
      */
     public static void precachingFinished(Context context, boolean tryAgainSoon) {
         new PrecacheServiceLauncher().precachingFinishedInternal(context, tryAgainSoon);
@@ -124,7 +124,7 @@ public class PrecacheServiceLauncher extends BroadcastReceiver {
     /**
      * Returns true if precaching is able to run. Set by PrecacheLauncher#updatePrecachingEnabled.
      *
-     * @param context The application context.
+     * @param context the application context
      */
     @VisibleForTesting
     static boolean isPrecachingEnabled(Context context) {
@@ -135,7 +135,7 @@ public class PrecacheServiceLauncher extends BroadcastReceiver {
     /**
      * Returns the set of reasons that the last prefetch attempt failed to start.
      *
-     * @param context The context passed to onReceive().
+     * @param context the context passed to onReceive()
      */
     @VisibleForTesting
     EnumSet<FailureReason> failureReasons(Context context) {
@@ -155,7 +155,7 @@ public class PrecacheServiceLauncher extends BroadcastReceiver {
      *
      * If the native libraries are not already loaded, no histogram is recorded.
      *
-     * @param context The context passed to onReceive().
+     * @param context the context passed to onReceive()
      */
     @VisibleForTesting
     void recordFailureReasons(Context context) {
@@ -226,7 +226,7 @@ public class PrecacheServiceLauncher extends BroadcastReceiver {
     /**
      * Acquire the wakelock and start the PrecacheService.
      *
-     * @param context The Context to use to start the service.
+     * @param context the Context to use to start the service
      */
     private void acquireWakeLockAndStartService(Context context) {
         acquireWakeLock(context);
@@ -253,7 +253,7 @@ public class PrecacheServiceLauncher extends BroadcastReceiver {
     /**
      * Get a PendingIntent for setting an alarm to notify the PrecacheServiceLauncher.
      *
-     * @param context The Context to use for the PendingIntent.
+     * @param context the Context to use for the PendingIntent
      * @return The PendingIntent.
      */
     private static PendingIntent getPendingAlarmIntent(Context context) {
@@ -265,8 +265,8 @@ public class PrecacheServiceLauncher extends BroadcastReceiver {
     /**
      * Set an alarm to notify the PrecacheServiceLauncher in the future.
      *
-     * @param context The Context to use.
-     * @param delayMs Delay in milliseconds before the alarm goes off.
+     * @param context the Context to use
+     * @param delayMs delay in milliseconds before the alarm goes off
      */
     private void setAlarm(Context context, long delayMs) {
         setAlarmOnSystem(context, AlarmManager.ELAPSED_REALTIME_WAKEUP,
@@ -287,7 +287,7 @@ public class PrecacheServiceLauncher extends BroadcastReceiver {
     /**
      * Cancel a previously set alarm, if there is one. This method can be overridden in tests.
      *
-     * @param context The Context to use.
+     * @param context the Context to use
      */
     private void cancelAlarm(Context context) {
         cancelAlarmOnSystem(context, getPendingAlarmIntent(context));

@@ -10,7 +10,7 @@ import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
-import org.chromium.chrome.browser.preferences.privacy.PrivacyPreferencesManager;
+import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
 
 import java.util.EnumSet;
@@ -46,7 +46,7 @@ public abstract class PrecacheLauncher {
      */
     private boolean mCalled = false;
     private boolean mSyncInitialized = false;
-    private boolean mPrerenderEnabled = false;
+    private boolean mNetworkPredictionsAllowed = false;
     private boolean mShouldRun = false;
 
     /** Destroy the native PrecacheLauncher, releasing the memory that it was using. */
@@ -78,8 +78,8 @@ public abstract class PrecacheLauncher {
     /**
      * Called when a precache cycle completes.
      *
-     * @param tryAgainSoon True iff the precache failed to start due to a transient error and should
-     * be attempted again soon.
+     * @param tryAgainSoon true iff the precache failed to start due to a transient error and should
+     * be attempted again soon
      */
     protected abstract void onPrecacheCompleted(boolean tryAgainSoon);
 
@@ -87,8 +87,8 @@ public abstract class PrecacheLauncher {
      * Called by native code when the precache cycle completes. This method exists because an
      * abstract method cannot be directly called from native.
      *
-     * @param tryAgainSoon True iff the precache failed to start due to a transient error and should
-     * be attempted again soon.
+     * @param tryAgainSoon true iff the precache failed to start due to a transient error and should
+     * be attempted again soon
      */
     @CalledByNative
     private void onPrecacheCompletedCallback(boolean tryAgainSoon) {
@@ -109,23 +109,22 @@ public abstract class PrecacheLauncher {
      * This should be called only after the sync backend has been initialized. Must be called on the
      * UI thread.
      *
-     * @param context The application context.
+     * @param context any context within the application
      */
     private void updateEnabledSync(Context context) {
+        // PrefServiceBridge.getInstance() and nativeShouldRun() can only be executed on the UI
+        // thread.
         ThreadUtils.assertOnUiThread();
-        PrivacyPreferencesManager privacyPreferencesManager =
-                PrivacyPreferencesManager.getInstance(context);
 
-        boolean prerenderEnabled = privacyPreferencesManager.shouldPrerender();
+        boolean networkPredictionsAllowed =
+                PrefServiceBridge.getInstance().canPredictNetworkActions();
         boolean shouldRun = nativeShouldRun();
 
-        mPrerenderEnabled = prerenderEnabled;
+        mNetworkPredictionsAllowed = networkPredictionsAllowed;
         mShouldRun = shouldRun;
 
-        // privacyPreferencesManager.shouldPrerender() and nativeShouldRun() can only be executed on
-        // the UI thread.
         PrecacheServiceLauncher.setIsPrecachingEnabled(
-                context.getApplicationContext(), prerenderEnabled && shouldRun);
+                context.getApplicationContext(), networkPredictionsAllowed && shouldRun);
         Log.v(TAG, "updateEnabledSync complete");
     }
 
@@ -134,7 +133,7 @@ public abstract class PrecacheLauncher {
      * when conditions are right to start precaching. If precaching is disabled, prevent the
      * PrecacheService from ever starting.
      *
-     * @param context Any context within the application.
+     * @param context any context within the application
      */
     @VisibleForTesting
     void updateEnabled(final Context context) {
@@ -169,7 +168,7 @@ public abstract class PrecacheLauncher {
      * when conditions are right to start precaching. If precaching is disabled, prevent the
      * PrecacheService from ever starting.
      *
-     * @param context Any context within the application.
+     * @param context any context within the application
      */
     public static void updatePrecachingEnabled(final Context context) {
         sInstance.updateEnabled(context);
@@ -181,7 +180,7 @@ public abstract class PrecacheLauncher {
         EnumSet<FailureReason> reasons = EnumSet.noneOf(FailureReason.class);
         if (!mCalled) reasons.add(FailureReason.UPDATE_PRECACHING_ENABLED_NEVER_CALLED);
         if (!mSyncInitialized) reasons.add(FailureReason.SYNC_NOT_INITIALIZED);
-        if (!mPrerenderEnabled) {
+        if (!mNetworkPredictionsAllowed) {
             reasons.add(FailureReason.PRERENDER_PRIVACY_PREFERENCE_NOT_ENABLED);
         }
         if (!mShouldRun) reasons.add(FailureReason.NATIVE_SHOULD_RUN_IS_FALSE);
