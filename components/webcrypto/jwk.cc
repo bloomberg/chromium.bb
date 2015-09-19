@@ -368,35 +368,6 @@ void JwkWriter::ToJson(std::vector<uint8_t>* utf8_bytes) const {
   utf8_bytes->assign(json.begin(), json.end());
 }
 
-Status ReadSecretKeyNoExpectedAlg(const CryptoData& key_data,
-                                  bool expected_extractable,
-                                  blink::WebCryptoKeyUsageMask expected_usages,
-                                  std::vector<uint8_t>* raw_key_data,
-                                  JwkReader* jwk) {
-  Status status = jwk->Init(key_data, expected_extractable, expected_usages,
-                            "oct", std::string());
-  if (status.IsError())
-    return status;
-
-  std::string jwk_k_value;
-  status = jwk->GetBytes("k", &jwk_k_value);
-  if (status.IsError())
-    return status;
-  raw_key_data->assign(jwk_k_value.begin(), jwk_k_value.end());
-
-  return Status::Success();
-}
-
-void WriteSecretKeyJwk(const CryptoData& raw_key_data,
-                       const std::string& algorithm,
-                       bool extractable,
-                       blink::WebCryptoKeyUsageMask usages,
-                       std::vector<uint8_t>* jwk_key_data) {
-  JwkWriter writer(algorithm, extractable, usages, "oct");
-  writer.SetBytes("k", raw_key_data);
-  writer.ToJson(jwk_key_data);
-}
-
 bool Base64DecodeUrlSafe(const std::string& input, std::string* output) {
   // The JSON web signature spec specifically says that padding is omitted.
   if (input.find_first_of("+/=") != std::string::npos)

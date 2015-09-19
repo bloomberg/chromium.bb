@@ -127,40 +127,6 @@ Status AeadEncryptDecrypt(EncryptOrDecrypt mode,
   return Status::Success();
 }
 
-Status GenerateWebCryptoSecretKey(const blink::WebCryptoKeyAlgorithm& algorithm,
-                                  bool extractable,
-                                  blink::WebCryptoKeyUsageMask usages,
-                                  unsigned int keylen_bits,
-                                  GenerateKeyResult* result) {
-  crypto::OpenSSLErrStackTracer err_tracer(FROM_HERE);
-
-  unsigned int keylen_bytes = NumBitsToBytes(keylen_bits);
-  std::vector<unsigned char> random_bytes(keylen_bytes, 0);
-
-  if (keylen_bytes > 0) {
-    if (!(RAND_bytes(&random_bytes[0], keylen_bytes)))
-      return Status::OperationError();
-    TruncateToBitLength(keylen_bits, &random_bytes);
-  }
-
-  result->AssignSecretKey(blink::WebCryptoKey::create(
-      CreateSymmetricKeyHandle(CryptoData(random_bytes)),
-      blink::WebCryptoKeyTypeSecret, extractable, algorithm, usages));
-
-  return Status::Success();
-}
-
-Status CreateWebCryptoSecretKey(const CryptoData& key_data,
-                                const blink::WebCryptoKeyAlgorithm& algorithm,
-                                bool extractable,
-                                blink::WebCryptoKeyUsageMask usages,
-                                blink::WebCryptoKey* key) {
-  *key = blink::WebCryptoKey::create(CreateSymmetricKeyHandle(key_data),
-                                     blink::WebCryptoKeyTypeSecret, extractable,
-                                     algorithm, usages);
-  return Status::Success();
-}
-
 Status CreateWebCryptoPublicKey(crypto::ScopedEVP_PKEY public_key,
                                 const blink::WebCryptoKeyAlgorithm& algorithm,
                                 bool extractable,

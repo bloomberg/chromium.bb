@@ -206,6 +206,17 @@ std::vector<uint8_t> GetKeyDataFromJsonTestCase(
 blink::WebCryptoNamedCurve GetCurveNameFromDictionary(
     const base::DictionaryValue* dict);
 
+// Creates an HMAC import algorithm whose inner hash algorithm is determined by
+// the specified algorithm ID. It is an error to call this method with a hash
+// algorithm that is not SHA*.
+blink::WebCryptoAlgorithm CreateHmacImportAlgorithm(
+    blink::WebCryptoAlgorithmId hash_id,
+    unsigned int length_bits);
+
+// Same as above but without specifying a length.
+blink::WebCryptoAlgorithm CreateHmacImportAlgorithmNoLength(
+    blink::WebCryptoAlgorithmId hash_id);
+
 }  // namespace webcrypto
 
 #endif  // COMPONENTS_WEBCRYPTO_ALGORITHMS_TEST_HELPERS_H_

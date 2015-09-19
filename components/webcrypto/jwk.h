@@ -126,29 +126,6 @@ class JwkWriter {
   base::DictionaryValue dict_;
 };
 
-// Writes a JWK-formatted symmetric key to |jwk_key_data|.
-//  * raw_key_data: The actual key data
-//  * algorithm: The JWK algorithm name (i.e. "alg")
-//  * extractable: The JWK extractability (i.e. "ext")
-//  * usages: The JWK usages (i.e. "key_ops")
-void WriteSecretKeyJwk(const CryptoData& raw_key_data,
-                       const std::string& algorithm,
-                       bool extractable,
-                       blink::WebCryptoKeyUsageMask usages,
-                       std::vector<uint8_t>* jwk_key_data);
-
-// Parses a UTF-8 encoded JWK (key_data), and extracts the key material to
-// |*raw_key_data|. Returns Status::Success() on success, otherwise an error.
-// In order for this to succeed:
-//   * expected_extractable must be consistent with the JWK's "ext", if
-//     present.
-//   * expected_usages must be a subset of the JWK's "key_ops" if present.
-Status ReadSecretKeyNoExpectedAlg(const CryptoData& key_data,
-                                  bool expected_extractable,
-                                  blink::WebCryptoKeyUsageMask expected_usages,
-                                  std::vector<uint8_t>* raw_key_data,
-                                  JwkReader* jwk);
-
 // This decodes JWK's flavor of base64 encoding, as described by:
 // https://tools.ietf.org/html/draft-ietf-jose-json-web-signature-36#section-2
 //

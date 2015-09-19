@@ -8,6 +8,7 @@
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "components/webcrypto/algorithm_implementation.h"
+#include "components/webcrypto/algorithms/secret_key_util.h"
 #include "components/webcrypto/algorithms/util_openssl.h"
 #include "components/webcrypto/crypto_data.h"
 #include "components/webcrypto/key.h"

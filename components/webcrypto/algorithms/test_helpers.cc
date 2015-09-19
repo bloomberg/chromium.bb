@@ -645,4 +645,22 @@ blink::WebCryptoNamedCurve GetCurveNameFromDictionary(
   return blink::WebCryptoNamedCurveP384;
 }
 
+blink::WebCryptoAlgorithm CreateHmacImportAlgorithm(
+    blink::WebCryptoAlgorithmId hash_id,
+    unsigned int length_bits) {
+  DCHECK(blink::WebCryptoAlgorithm::isHash(hash_id));
+  return blink::WebCryptoAlgorithm::adoptParamsAndCreate(
+      blink::WebCryptoAlgorithmIdHmac,
+      new blink::WebCryptoHmacImportParams(CreateAlgorithm(hash_id), true,
+                                           length_bits));
+}
+
+blink::WebCryptoAlgorithm CreateHmacImportAlgorithmNoLength(
+    blink::WebCryptoAlgorithmId hash_id) {
+  DCHECK(blink::WebCryptoAlgorithm::isHash(hash_id));
+  return blink::WebCryptoAlgorithm::adoptParamsAndCreate(
+      blink::WebCryptoAlgorithmIdHmac,
+      new blink::WebCryptoHmacImportParams(CreateAlgorithm(hash_id), false, 0));
+}
+
 }  // namespace webcrypto

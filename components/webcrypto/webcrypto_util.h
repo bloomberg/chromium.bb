@@ -12,23 +12,16 @@
 #include "third_party/WebKit/public/platform/WebCryptoAlgorithm.h"
 #include "third_party/WebKit/public/platform/WebCryptoKey.h"
 
+// TODO(eroman): The remaining functions in this file need to be sorted
+// out. They should be moved to a more domain specific location (for
+// instance test helpers, asymmetric algorithm helpers, etc.).
+
 namespace webcrypto {
 
 class Status;
 
 // Creates a WebCryptoAlgorithm without any parameters.
 blink::WebCryptoAlgorithm CreateAlgorithm(blink::WebCryptoAlgorithmId id);
-
-// Creates an HMAC import algorithm whose inner hash algorithm is determined by
-// the specified algorithm ID. It is an error to call this method with a hash
-// algorithm that is not SHA*.
-blink::WebCryptoAlgorithm CreateHmacImportAlgorithm(
-    blink::WebCryptoAlgorithmId hash_id,
-    unsigned int length_bits);
-
-// Same as above but without specifying a length.
-blink::WebCryptoAlgorithm CreateHmacImportAlgorithmNoLength(
-    blink::WebCryptoAlgorithmId hash_id);
 
 // Creates an import algorithm for RSA algorithms that take a hash.
 // It is an error to call this with a hash_id that is not a SHA*.
@@ -44,23 +37,6 @@ blink::WebCryptoAlgorithm CreateEcImportAlgorithm(
 // Returns true if the set bits in b make up a subset of the set bits in a.
 bool ContainsKeyUsages(blink::WebCryptoKeyUsageMask a,
                        blink::WebCryptoKeyUsageMask b);
-
-Status GetAesGcmTagLengthInBits(const blink::WebCryptoAesGcmParams* params,
-                                unsigned int* tag_length_bits);
-
-Status GetAesKeyGenLengthInBits(const blink::WebCryptoAesKeyGenParams* params,
-                                unsigned int* keylen_bits);
-
-Status GetHmacKeyGenLengthInBits(const blink::WebCryptoHmacKeyGenParams* params,
-                                 unsigned int* keylen_bits);
-
-// Gets the requested key length in bits for an HMAC import operation.
-Status GetHmacImportKeyLengthBits(
-    const blink::WebCryptoHmacImportParams* params,
-    unsigned int key_data_byte_length,
-    unsigned int* keylen_bits);
-
-Status VerifyAesKeyLengthForImport(unsigned int keylen_bytes);
 
 Status CheckKeyCreationUsages(blink::WebCryptoKeyUsageMask all_possible_usages,
                               blink::WebCryptoKeyUsageMask actual_usages,
@@ -105,15 +81,6 @@ T NumBitsToBytes(T x) {
   return (x / 8) + (7 + (x % 8)) / 8;
 }
 
-// The "get key length" operation for AES keys.
-Status GetAesKeyLength(const blink::WebCryptoAlgorithm& key_length_algorithm,
-                       bool* has_length_bits,
-                       unsigned int* length_bits);
-
-// The "get key length" operation for HMAC keys.
-Status GetHmacKeyLength(const blink::WebCryptoAlgorithm& key_length_algorithm,
-                        bool* has_length_bits,
-                        unsigned int* length_bits);
 
 // Splits the combined usages given to GenerateKey() into the respective usages
 // for the public key and private key. Returns an error if the usages are

@@ -40,10 +40,18 @@ Status AesGcmEncryptDecrypt(EncryptOrDecrypt mode,
   const std::vector<uint8_t>& raw_key = GetSymmetricKeyData(key);
   const blink::WebCryptoAesGcmParams* params = algorithm.aesGcmParams();
 
-  unsigned int tag_length_bits;
-  Status status = GetAesGcmTagLengthInBits(params, &tag_length_bits);
-  if (status.IsError())
-    return status;
+  // The WebCrypto spec defines the default value for the tag length, as well as
+  // the allowed values for tag length.
+  unsigned int tag_length_bits = 128;
+  if (params->hasTagLengthBits()) {
+    tag_length_bits = params->optionalTagLengthBits();
+    if (tag_length_bits != 32 && tag_length_bits != 64 &&
+        tag_length_bits != 96 && tag_length_bits != 104 &&
+        tag_length_bits != 112 && tag_length_bits != 120 &&
+        tag_length_bits != 128) {
+      return Status::ErrorInvalidAesGcmTagLength();
+    }
+  }
 
   return AeadEncryptDecrypt(
       mode, raw_key, data, tag_length_bits / 8, CryptoData(params->iv()),

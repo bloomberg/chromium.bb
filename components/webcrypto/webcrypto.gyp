@@ -43,6 +43,8 @@
         'algorithms/rsa_sign.cc',
         'algorithms/rsa_sign.h',
         'algorithms/rsa_ssa.cc',
+        'algorithms/secret_key_util.cc',
+        'algorithms/secret_key_util.h',
         'algorithms/sha.cc',
         'algorithms/util_openssl.cc',
         'algorithms/util_openssl.h',

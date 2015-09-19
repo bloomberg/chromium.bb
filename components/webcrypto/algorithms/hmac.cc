@@ -5,8 +5,10 @@
 #include <openssl/hmac.h>
 
 #include "base/logging.h"
+#include "base/numerics/safe_math.h"
 #include "base/stl_util.h"
 #include "components/webcrypto/algorithm_implementation.h"
+#include "components/webcrypto/algorithms/secret_key_util.h"
 #include "components/webcrypto/algorithms/util_openssl.h"
 #include "components/webcrypto/crypto_data.h"
 #include "components/webcrypto/jwk.h"
@@ -21,6 +23,55 @@
 namespace webcrypto {
 
 namespace {
+
+// TODO(eroman): Use EVP_MD_block_size() instead.
+Status GetShaBlockSizeBits(const blink::WebCryptoAlgorithm& algorithm,
+                           unsigned int* block_size_bits) {
+  switch (algorithm.id()) {
+    case blink::WebCryptoAlgorithmIdSha1:
+    case blink::WebCryptoAlgorithmIdSha256:
+      *block_size_bits = 512;
+      return Status::Success();
+    case blink::WebCryptoAlgorithmIdSha384:
+    case blink::WebCryptoAlgorithmIdSha512:
+      *block_size_bits = 1024;
+      return Status::Success();
+    default:
+      return Status::ErrorUnsupported();
+  }
+}
+
+// Gets the requested key length in bits for an HMAC import operation.
+Status GetHmacImportKeyLengthBits(
+    const blink::WebCryptoHmacImportParams* params,
+    unsigned int key_data_byte_length,
+    unsigned int* keylen_bits) {
+  if (key_data_byte_length == 0)
+    return Status::ErrorHmacImportEmptyKey();
+
+  // Make sure that the key data's length can be represented in bits without
+  // overflow.
+  base::CheckedNumeric<unsigned int> checked_keylen_bits(key_data_byte_length);
+  checked_keylen_bits *= 8;
+
+  if (!checked_keylen_bits.IsValid())
+    return Status::ErrorDataTooLarge();
+
+  unsigned int data_keylen_bits = checked_keylen_bits.ValueOrDie();
+
+  // Determine how many bits of the input to use.
+  *keylen_bits = data_keylen_bits;
+  if (params->hasLengthBits()) {
+    // The requested bit length must be:
+    //   * No longer than the input data length
+    //   * At most 7 bits shorter.
+    if (NumBitsToBytes(params->optionalLengthBits()) != key_data_byte_length)
+      return Status::ErrorHmacImportBadLength();
+    *keylen_bits = params->optionalLengthBits();
+  }
+
+  return Status::Success();
+}
 
 const char* GetJwkHmacAlgorithmName(blink::WebCryptoAlgorithmId hash) {
   switch (hash) {
@@ -81,9 +132,16 @@ class HmacImplementation : public AlgorithmImplementation {
         algorithm.hmacKeyGenParams();
 
     unsigned int keylen_bits = 0;
-    status = GetHmacKeyGenLengthInBits(params, &keylen_bits);
-    if (status.IsError())
-      return status;
+    if (params->hasLengthBits()) {
+      keylen_bits = params->optionalLengthBits();
+      // Zero-length HMAC keys are disallowed by the spec.
+      if (keylen_bits == 0)
+        return Status::ErrorGenerateHmacKeyLengthZero();
+    } else {
+      status = GetShaBlockSizeBits(params->hash(), &keylen_bits);
+      if (status.IsError())
+        return status;
+    }
 
     return GenerateWebCryptoSecretKey(blink::WebCryptoKeyAlgorithm::createHmac(
                                           params->hash().id(), keylen_bits),
@@ -146,8 +204,8 @@ class HmacImplementation : public AlgorithmImplementation {
 
     std::vector<uint8_t> raw_data;
     JwkReader jwk;
-    Status status = ReadSecretKeyNoExpectedAlg(key_data, extractable, usages,
-                                               &raw_data, &jwk);
+    Status status = ReadSecretKeyNoExpectedAlgJwk(key_data, extractable, usages,
+                                                  &raw_data, &jwk);
     if (status.IsError())
       return status;
     status = jwk.VerifyAlg(algorithm_name);
@@ -222,7 +280,18 @@ class HmacImplementation : public AlgorithmImplementation {
   Status GetKeyLength(const blink::WebCryptoAlgorithm& key_length_algorithm,
                       bool* has_length_bits,
                       unsigned int* length_bits) const override {
-    return GetHmacKeyLength(key_length_algorithm, has_length_bits, length_bits);
+    const blink::WebCryptoHmacImportParams* params =
+        key_length_algorithm.hmacImportParams();
+
+    *has_length_bits = true;
+    if (params->hasLengthBits()) {
+      *length_bits = params->optionalLengthBits();
+      if (*length_bits == 0)
+        return Status::ErrorGetHmacKeyLengthZero();
+      return Status::Success();
+    }
+
+    return GetShaBlockSizeBits(params->hash(), length_bits);
   }
 };
 
