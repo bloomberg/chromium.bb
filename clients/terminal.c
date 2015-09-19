@@ -942,7 +942,7 @@ terminal_send_selection(struct terminal *terminal, int fd)
 		close(fd);
 		return;
 	}
-	for (row = 0; row < terminal->height; row++) {
+	for (row = terminal->selection_start_row; row < terminal->height; row++) {
 		p_row = terminal_get_row(terminal, row);
 		for (col = 0; col < terminal->width; col++) {
 			if (p_row[col].ch == 0x200B) /* space glyph */
