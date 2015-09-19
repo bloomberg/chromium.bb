@@ -222,7 +222,9 @@ void AutocompleteControllerAndroid::OnSuggestionSelected(
       content::WebContents::FromJavaWebContents(j_web_contents);
 
   OmniboxLog log(
-      input_.text(),
+      // For zero suggest, record an empty input string instead of the
+      // current URL.
+      input_.from_omnibox_focus() ? base::string16() : input_.text(),
       false, /* don't know */
       input_.type(),
       true,
