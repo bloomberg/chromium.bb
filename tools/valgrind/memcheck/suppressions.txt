@@ -3350,7 +3350,7 @@
    Memcheck:Uninitialized
    fun:av_packet_unpack_dictionary
    fun:add_metadata_from_side_data
-   fun:avcodec_decode_*
+   ...
 }
 {
    bug_448700_a
