@@ -181,7 +181,8 @@ class GNRoller(object):
   def WaitForBuildToFinish(self):
     print('Checking build')
     results = self.CheckBuild()
-    while any(r['state'] == 'pending' for r in results.values()):
+    while (len(results) or
+           any(r['state'] == 'pending' for r in results.values())):
       print()
       print('Sleeping for 30 seconds')
       time.sleep(30)
@@ -213,7 +214,7 @@ class GNRoller(object):
     try_job_results = patchset_data['try_job_results']
     if not try_job_results:
       print('No try jobs found on most recent patchset')
-      return 1
+      return {}
 
     results = {}
     for job in try_job_results:
