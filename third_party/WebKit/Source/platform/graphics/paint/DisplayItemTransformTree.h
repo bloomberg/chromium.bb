@@ -6,6 +6,7 @@
 #define DisplayItemTransformTree_h
 
 #include "platform/PlatformExport.h"
+#include "platform/geometry/FloatPoint3D.h"
 #include "platform/transforms/TransformationMatrix.h"
 #include "public/platform/WebDisplayItemTransformTree.h"
 #include "wtf/Vector.h"
@@ -30,12 +31,13 @@ public:
     const TransformNode& nodeAt(size_t index) const { return m_nodes[index]; }
 
     // Returns the new node index.
-    size_t createNewNode(size_t parentNodeIndex, const TransformationMatrix& matrix)
+    size_t createNewNode(size_t parentNodeIndex, const TransformationMatrix& matrix, const FloatPoint3D& transformOrigin)
     {
         ASSERT(parentNodeIndex != kInvalidIndex);
         m_nodes.append(TransformNode(
             parentNodeIndex,
-            TransformationMatrix::toSkMatrix44(matrix)));
+            TransformationMatrix::toSkMatrix44(matrix),
+            transformOrigin));
         return m_nodes.size() - 1;
     }
 

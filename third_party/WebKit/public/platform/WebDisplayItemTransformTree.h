@@ -8,6 +8,7 @@
 #include "public/platform/WebCommon.h"
 #include "public/platform/WebFloatSize.h"
 #include "public/platform/WebPrivateOwnPtr.h"
+#include "third_party/skia/include/core/SkPoint3.h"
 #include "third_party/skia/include/utils/SkMatrix44.h"
 
 namespace blink {
@@ -27,9 +28,10 @@ public:
     enum : size_t { kInvalidIndex = static_cast<size_t>(-1) };
 
     struct TransformNode {
-        TransformNode(size_t parent, const SkMatrix44& matrix44)
+        TransformNode(size_t parent, const SkMatrix44& matrix44, const SkPoint3& origin)
             : parentNodeIndex(parent)
             , matrix(matrix44)
+            , transformOrigin(origin)
         {
         }
 
@@ -40,6 +42,9 @@ public:
 
         // Transformation matrix of this node, relative to its parent.
         SkMatrix44 matrix;
+
+        // Origin of the transform given by |matrix|.
+        SkPoint3 transformOrigin;
     };
 
     WebDisplayItemTransformTree();

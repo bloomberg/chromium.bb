@@ -65,8 +65,12 @@ enum TransformKind { NotATransform = 0, Only2DTranslation, RequiresTransformNode
 enum ClipKind { NotAClip = 0, RequiresClipNode };
 
 struct BeginDisplayItemClassification {
+    // |transformOrigin| is irrelevant unless a non-translation matrix is
+    // provided.
     TransformKind transformKind = NotATransform;
     TransformationMatrix matrix;
+    FloatPoint3D transformOrigin;
+
     ClipKind clipKind = NotAClip;
     FloatRect clipRect;
 };
@@ -81,6 +85,7 @@ static BeginDisplayItemClassification classifyBeginItem(const DisplayItem& begin
     if (DisplayItem::isTransform3DType(type)) {
         const auto& begin3D = static_cast<const BeginTransform3DDisplayItem&>(beginDisplayItem);
         result.matrix = begin3D.transform();
+        result.transformOrigin = begin3D.transformOrigin();
         result.transformKind = result.matrix.isIdentityOr2DTranslation() ? Only2DTranslation : RequiresTransformNode;
     } else if (type == DisplayItem::BeginTransform) {
         const auto& begin2D = static_cast<const BeginTransformDisplayItem&>(beginDisplayItem);
@@ -120,7 +125,7 @@ void DisplayItemPropertyTreeBuilder::processBeginItem(const DisplayItem& display
     case RequiresTransformNode:
         // Emit a transform node.
         newState.transformNode = m_transformTree->createNewNode(
-            newState.transformNode, classification.matrix);
+            newState.transformNode, classification.matrix, classification.transformOrigin);
         newState.offset = FloatSize();
         break;
     }

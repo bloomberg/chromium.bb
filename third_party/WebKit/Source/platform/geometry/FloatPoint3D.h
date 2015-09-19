@@ -24,6 +24,7 @@
 #define FloatPoint3D_h
 
 #include "platform/geometry/FloatPoint.h"
+#include "third_party/skia/include/core/SkPoint3.h"
 
 namespace blink {
 
@@ -126,6 +127,8 @@ public:
     float length() const { return sqrtf(lengthSquared()); }
 
     float distanceTo(const FloatPoint3D& a) const;
+
+    operator SkPoint3() const { return SkPoint3::Make(m_x, m_y, m_z); }
 
 private:
     float m_x;
