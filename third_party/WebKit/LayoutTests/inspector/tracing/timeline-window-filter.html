@@ -35,7 +35,6 @@ function test()
         var view = timeline._currentViews[0];
         overviewPane._overviewGrid.setWindow(windowLeft, windowRight);
         view._refresh();
-        InspectorTest.addResult("mode = " + timeline._overviewModeSetting.get());
         InspectorTest.addResult("range = " + windowLeft + " - " + windowRight);
         InspectorTest.addResult("time range = " + view._windowStartTime + " - " + view._windowEndTime);
         InspectorTest.addResult("records count: " + view._presentationModel.filteredRecords().length);
@@ -49,7 +48,6 @@ function test()
         var mainView = timeline._currentViews[0]._mainView;
         overviewPane._overviewGrid.setWindow(windowLeft, windowRight);
         mainView.update();
-        InspectorTest.addResult("mode = " + timeline._overviewModeSetting.get());
         InspectorTest.addResult("range = " + windowLeft + " - " + windowRight);
         InspectorTest.addResult("time range = " + mainView._timeWindowLeft + " - " + mainView._timeWindowRight);
         mainView._calculator.setDisplayWindow(455 + WebInspector.TimelineCalculator._minWidth, 5);
@@ -65,19 +63,11 @@ function test()
         InspectorTest.addResult("divider offsets: [" + dividers.join(", ") + "]. We are expecting round numbers.");
     }
 
-    timeline._overviewModeSetting.set(WebInspector.TimelinePanel.OverviewMode.Events);
     timeline._onModeChanged();
     dumpRecordsCountForRange(0, 1);
     dumpRecordsCountForRange(0.25, 0.75);
     dumpRecordsCountForRange(0.33, 0.66);
 
-    timeline._overviewModeSetting.set(WebInspector.TimelinePanel.OverviewMode.Frames);
-    timeline._onModeChanged();
-    dumpRecordsCountForRange(0, 1);
-    dumpRecordsCountForRange(0.25, 0.75);
-    dumpRecordsCountForRange(0.33, 0.66);
-
-    timeline._overviewModeSetting.set(WebInspector.TimelinePanel.OverviewMode.Frames);
     timeline._flameChartEnabledSetting.set(true);
     timeline._onModeChanged();
     // FIXME(394762): uncomment once we support loading tracing events.
@@ -88,23 +78,14 @@ function test()
     overviewPane._overviewGrid.setWindow(0.1, 0.9);
 
     InspectorTest.addResult("--------------------------------------------------------");
-    InspectorTest.addResult("mode = " + timeline._overviewModeSetting.get());
-    InspectorTest.addResult("time range = " + timeline._windowStartTime + " - " + timeline._windowEndTime);
 
-    timeline._overviewModeSetting.set(WebInspector.TimelinePanel.OverviewMode.Events);
+    InspectorTest.addResult("time range = " + timeline._windowStartTime + " - " + timeline._windowEndTime);
     timeline._flameChartEnabledSetting.set(false);
     timeline._onModeChanged();
+
     InspectorTest.addResult("");
 
-    InspectorTest.addResult("mode = " + timeline._overviewModeSetting.get());
     InspectorTest.addResult("time range = " + timeline._windowStartTime + " - " + timeline._windowEndTime);
-    timeline._overviewModeSetting.set(WebInspector.TimelinePanel.OverviewMode.Frames);
-    timeline._onModeChanged();
-    InspectorTest.addResult("");
-
-    InspectorTest.addResult("mode = " + timeline._overviewModeSetting.get());
-    InspectorTest.addResult("time range = " + timeline._windowStartTime + " - " + timeline._windowEndTime);
-    timeline._overviewModeSetting.set(WebInspector.TimelinePanel.OverviewMode.Frames);
     timeline._flameChartEnabledSetting.set(true);
     timeline._onModeChanged();
 
