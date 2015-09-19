@@ -1,0 +1,47 @@
+<html>
+<head>
+<script src="../../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../../http/tests/inspector/debugger-test.js"></script>
+<script>
+function startWorker()
+{
+    var workerScript = "postMessage('Done.');";
+    var blob = new Blob([workerScript], { type: "text/javascript" });
+    var worker = new Worker(URL.createObjectURL(blob));
+}
+
+function test()
+{
+    var uiSourceCode;
+
+    window.confirm = confirmOverride;
+
+    WebInspector.scriptSnippetModel.project().createFile("", null, "", onCreated.bind(this));
+    function onCreated(path)
+    {
+        uiSourceCode = WebInspector.scriptSnippetModel.project().uiSourceCode(path);
+        uiSourceCode.requestContent(onContentAvailable);
+    }
+
+    function onContentAvailable()
+    {
+        uiSourceCode.setWorkingCopy("var a = 0;");
+        uiSourceCode.checkContentUpdated(onUpdated);
+    }
+
+    function confirmOverride()
+    {
+        InspectorTest.addResult("FAILED: confirmation dialog appeared");
+    }
+
+    function onUpdated()
+    {
+        InspectorTest.completeTest();
+    }
+}
+</script>
+</head>
+<body onload="runTest()">
+<p>Tests that checking content on the dirty snippet does not wipe it out.</p>
+</body>
+</html>
