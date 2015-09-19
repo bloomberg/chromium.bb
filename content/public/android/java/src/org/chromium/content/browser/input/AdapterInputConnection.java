@@ -548,26 +548,17 @@ public class AdapterInputConnection extends BaseInputConnection {
         if (a > textLength) a = textLength;
         if (b > textLength) b = textLength;
 
-        CharSequence regionText = null;
         if (a == b) {
             removeComposingSpans(mEditable);
         } else {
-            if (a == 0 && b == mEditable.length()) {
-                regionText = mEditable.subSequence(a, b);
-                // If setting composing region that matches, at least in length, of the entire
-                // editable region then check it for image placeholders.  If any are found,
-                // don't continue this operation.
-                // This fixes the problem where, on Android 4.3, pasting an image is followed
-                // by setting the composing region which then causes the image to be deleted.
-                // http://crbug.com/466755
-                for (int i = a; i < b; ++i) {
-                    if (regionText.charAt(i) == '\uFFFC') return true;
-                }
-            }
             super.setComposingRegion(a, b);
         }
         updateSelectionIfRequired();
 
+        CharSequence regionText = null;
+        if (b > a) {
+            regionText = mEditable.subSequence(a, b);
+        }
         return mImeAdapter.setComposingRegion(regionText, a, b);
     }
 
