@@ -50,7 +50,8 @@ BookmarkContextMenuController::BookmarkContextMenuController(
       navigator_(navigator),
       parent_(parent),
       selection_(selection),
-      model_(BookmarkModelFactory::GetForProfile(profile)) {
+      model_(BookmarkModelFactory::GetForProfile(profile)),
+      weak_factory_(this) {
   DCHECK(profile_);
   DCHECK(model_->loaded());
   menu_model_.reset(new ui::SimpleMenuModel(this));
@@ -135,6 +136,8 @@ void BookmarkContextMenuController::AddCheckboxItem(int id,
 void BookmarkContextMenuController::ExecuteCommand(int id, int event_flags) {
   if (delegate_)
     delegate_->WillExecuteCommand(id, selection_);
+
+  base::WeakPtr<BookmarkContextMenuController> ref(weak_factory_.GetWeakPtr());
 
   switch (id) {
     case IDC_BOOKMARK_BAR_OPEN_ALL:
@@ -297,6 +300,10 @@ void BookmarkContextMenuController::ExecuteCommand(int id, int event_flags) {
     default:
       NOTREACHED();
   }
+
+  // It's possible executing the command resulted in deleting |this|.
+  if (!ref)
+    return;
 
   if (delegate_)
     delegate_->DidExecuteCommand(id);

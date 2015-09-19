@@ -9,6 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "components/bookmarks/browser/base_bookmark_model_observer.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/gfx/native_widget_types.h"
@@ -99,6 +100,8 @@ class BookmarkContextMenuController
   std::vector<const bookmarks::BookmarkNode*> selection_;
   bookmarks::BookmarkModel* model_;
   scoped_ptr<ui::SimpleMenuModel> menu_model_;
+  // Used to detect deletion of |this| executing a command.
+  base::WeakPtrFactory<BookmarkContextMenuController> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkContextMenuController);
 };
