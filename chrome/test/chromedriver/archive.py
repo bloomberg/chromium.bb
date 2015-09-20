@@ -51,6 +51,7 @@ def DownloadChrome(revision, dest_dir, site=Site.CONTINUOUS):
       return 'chrome-mac'
     elif util.IsLinux():
       return 'chrome-linux'
+
   def GetChromePathFromPackage():
     if util.IsWindows():
       return 'chrome.exe'
@@ -80,9 +81,11 @@ def _GetDownloadPlatform():
     else:
       return 'Linux'
 
+
 def GetLatestSnapshotVersion():
   """Returns the latest revision of snapshot build."""
   return GetLatestRevision(GetSnapshotDownloadSite())
+
 
 def GetSnapshotDownloadSite():
   """Returns the site to download snapshot build according to the platform."""

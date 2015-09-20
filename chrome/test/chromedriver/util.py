@@ -161,7 +161,7 @@ def DoesUrlExist(url):
     conn = httplib.HTTPConnection(parsed.netloc)
     conn.request('HEAD', parsed.path)
     response = conn.getresponse()
-  except (socket.gaierror, socket.error):
+  except httplib.HTTPException:
     return False
   finally:
     conn.close()

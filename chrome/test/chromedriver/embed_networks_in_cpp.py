@@ -12,7 +12,6 @@ be parsed with JSONReader.
 """
 
 import optparse
-import os
 import re
 import subprocess
 import sys
@@ -33,6 +32,7 @@ def quotizeKeys(s, keys):
   for key in keys:
     s = re.sub('%s: ' % key, '"%s": ' % key, s)
   return s
+
 
 def evaluateMultiplications(s):
   """Returns the string s with each bare multiplication evaluated.

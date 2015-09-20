@@ -8,6 +8,7 @@ These classes abstract away the various setups needed to run the WebDriver java
 tests in various environments.
 """
 
+import logging
 import os
 import sys
 

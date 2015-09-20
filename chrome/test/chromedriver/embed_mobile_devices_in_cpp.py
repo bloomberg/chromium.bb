@@ -12,7 +12,6 @@ JSONReader.
 """
 
 import optparse
-import os
 import re
 import subprocess
 import sys
@@ -21,7 +20,7 @@ import cpp_source
 
 
 def quotizeKeys(s, keys):
-  """Returns the string s with each instance of each key wrapped in quotes.
+  """Returns the string |s| with each instance of each key wrapped in quotes.
 
   Args:
     s: a string containing keys that need to be wrapped in quotes.

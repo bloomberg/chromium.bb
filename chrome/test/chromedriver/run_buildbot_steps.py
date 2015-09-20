@@ -170,7 +170,7 @@ def _CommitPositionState(test_results_log, commit_position):
   """Check the state of tests at a given commit position.
 
   Considers tests as having passed at a commit position if they passed at
-  revisons both before and after.
+  revisions both before and after.
 
   Args:
     test_results_log: A test results log dictionary from _GetTestResultsLog().
@@ -541,7 +541,7 @@ def main():
     util.MarkBuildStepError()
 
   # Add a "cleanup" step so that errors from runtest.py or bb_device_steps.py
-  # (which invoke this script) are kept in thier own build step.
+  # (which invoke this script) are kept in their own build step.
   util.MarkBuildStepStart('cleanup')
 
 

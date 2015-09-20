@@ -23,7 +23,7 @@ def main():
   parser.add_option(
       '', '--directory', type='string', default='.',
       help='Path to directory where the cc/h  file should be created')
-  options, args = parser.parse_args()
+  options, _ = parser.parse_args()
 
   version = open(options.version_file, 'r').read().strip()
   revision = lastchange.FetchVersionInfo(None).revision
@@ -49,4 +49,3 @@ def main():
 
 if __name__ == '__main__':
   sys.exit(main())
-
