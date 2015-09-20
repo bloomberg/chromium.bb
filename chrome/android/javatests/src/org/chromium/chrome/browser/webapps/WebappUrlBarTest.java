@@ -36,7 +36,7 @@ public class WebappUrlBarTest extends WebappActivityTestBase {
     @MediumTest
     @Feature({"Webapps"})
     public void testUrlDisplay() {
-        final String scheme = "somescheme://";
+        final String scheme = "https://";
         final String host = "lorem.com";
         final String path = "/stuff/and/things.html";
         final String url = scheme + host + path;
@@ -49,7 +49,7 @@ public class WebappUrlBarTest extends WebappActivityTestBase {
                 ConnectionSecurityLevel.SECURITY_ERROR};
 
         for (int i : securityLevels) {
-            // http://crbug.com/297249
+            // TODO(palmer): http://crbug.com/297249
             if (i == ConnectionSecurityLevel.SECURITY_POLICY_WARNING) continue;
             mUrlBar.update(url, i);
 

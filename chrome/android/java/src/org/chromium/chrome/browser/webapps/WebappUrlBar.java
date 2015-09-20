@@ -162,7 +162,7 @@ public class WebappUrlBar extends FrameLayout implements View.OnLayoutChangeList
         boolean showScheme = mCurrentIconResource == 0;
         String displayUrl = originalUrl;
         if (uri != null) {
-            String shortenedUrl = UrlUtilities.getOriginForDisplay(uri, showScheme);
+            String shortenedUrl = UrlUtilities.formatUrlForSecurityDisplay(uri, showScheme);
             if (!TextUtils.isEmpty(shortenedUrl)) displayUrl = shortenedUrl;
         }
 

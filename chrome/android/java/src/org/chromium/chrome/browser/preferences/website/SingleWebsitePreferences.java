@@ -131,7 +131,8 @@ public class SingleWebsitePreferences extends PreferenceFragment
         Bundle fragmentArgs = new Bundle();
         // TODO(mvanouwerkerk): Define a pure getOrigin method in UrlUtilities that is the
         // equivalent of the call below, because this is perfectly fine for non-display purposes.
-        String origin = UrlUtilities.getOriginForDisplay(URI.create(url), true /*  schowScheme */);
+        String origin =
+                UrlUtilities.formatUrlForSecurityDisplay(URI.create(url), true /* showScheme */);
         fragmentArgs.putString(SingleWebsitePreferences.EXTRA_ORIGIN, origin);
         return fragmentArgs;
     }

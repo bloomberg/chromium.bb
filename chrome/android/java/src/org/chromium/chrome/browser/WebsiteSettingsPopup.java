@@ -504,7 +504,7 @@ public class WebsiteSettingsPopup implements OnClickListener {
             String originToDisplay;
             try {
                 URI parsedUrl = new URI(mFullUrl);
-                originToDisplay = UrlUtilities.getOriginForDisplay(parsedUrl, false);
+                originToDisplay = UrlUtilities.formatUrlForSecurityDisplay(parsedUrl, false);
             } catch (URISyntaxException e) {
                 // The URL is invalid - just display the full URL.
                 originToDisplay = mFullUrl;

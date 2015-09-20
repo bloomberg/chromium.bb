@@ -2,9 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <string>
+
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "components/google/core/browser/google_util.h"
+#include "components/url_formatter/elide_url.h"
 #include "components/url_formatter/url_fixer.h"
 #include "jni/UrlUtilities_jni.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
@@ -68,6 +71,24 @@ static jboolean IsGoogleSearchUrl(JNIEnv* env,
   if (gurl.is_empty())
     return false;
   return google_util::IsGoogleSearchUrl(gurl);
+}
+
+static ScopedJavaLocalRef<jstring> FormatUrlForSecurityDisplay(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& clazz,
+    const JavaParamRef<jstring>& url) {
+  return base::android::ConvertUTF16ToJavaString(
+      env, url_formatter::FormatUrlForSecurityDisplay(
+               ConvertJavaStringToGURL(env, url), std::string()));
+}
+
+static ScopedJavaLocalRef<jstring> FormatUrlForSecurityDisplayOmitScheme(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& clazz,
+    const JavaParamRef<jstring>& url) {
+  return base::android::ConvertUTF16ToJavaString(
+      env, url_formatter::FormatUrlForSecurityDisplayOmitScheme(
+               ConvertJavaStringToGURL(env, url), std::string()));
 }
 
 static jboolean IsGoogleHomePageUrl(JNIEnv* env,

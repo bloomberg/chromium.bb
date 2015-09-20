@@ -4,14 +4,14 @@
 
 package org.chromium.chrome.browser;
 
-import android.test.InstrumentationTestCase;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.test.util.Feature;
+import org.chromium.content.browser.test.NativeLibraryTestBase;
 
 import java.net.URI;
 
-public class UrlUtilitiesTest extends InstrumentationTestCase {
+public class UrlUtilitiesTest extends NativeLibraryTestBase {
     @SmallTest
     public void testIsAcceptedScheme() {
         assertTrue(UrlUtilities.isAcceptedScheme("about:awesome"));
@@ -73,36 +73,40 @@ public class UrlUtilitiesTest extends InstrumentationTestCase {
 
     @SmallTest
     @Feature({"Webapps"})
-    public void testGetOriginForDisplay() {
+    public void testFormatUrlForSecurityDisplay() {
+        loadNativeLibraryNoBrowserProcess();
+
         URI uri;
 
         uri = URI.create("http://chopped.com/is/awesome");
-        assertEquals("http://chopped.com", UrlUtilities.getOriginForDisplay(uri, true));
-        assertEquals("chopped.com", UrlUtilities.getOriginForDisplay(uri, false));
+        assertEquals("http://chopped.com", UrlUtilities.formatUrlForSecurityDisplay(uri, true));
+        assertEquals("chopped.com", UrlUtilities.formatUrlForSecurityDisplay(uri, false));
 
         uri = URI.create("http://lopped.com");
-        assertEquals("http://lopped.com", UrlUtilities.getOriginForDisplay(uri, true));
-        assertEquals("lopped.com", UrlUtilities.getOriginForDisplay(uri, false));
+        assertEquals("http://lopped.com", UrlUtilities.formatUrlForSecurityDisplay(uri, true));
+        assertEquals("lopped.com", UrlUtilities.formatUrlForSecurityDisplay(uri, false));
 
         uri = URI.create("http://dropped.com?things");
-        assertEquals("http://dropped.com", UrlUtilities.getOriginForDisplay(uri, true));
-        assertEquals("dropped.com", UrlUtilities.getOriginForDisplay(uri, false));
+        assertEquals("http://dropped.com", UrlUtilities.formatUrlForSecurityDisplay(uri, true));
+        assertEquals("dropped.com", UrlUtilities.formatUrlForSecurityDisplay(uri, false));
 
         uri = URI.create("http://dfalcant@stopped.com:1234");
-        assertEquals("http://stopped.com:1234", UrlUtilities.getOriginForDisplay(uri, true));
-        assertEquals("stopped.com:1234", UrlUtilities.getOriginForDisplay(uri, false));
+        assertEquals(
+                "http://stopped.com:1234", UrlUtilities.formatUrlForSecurityDisplay(uri, true));
+        assertEquals("stopped.com:1234", UrlUtilities.formatUrlForSecurityDisplay(uri, false));
 
         uri = URI.create("http://dfalcant:secret@stopped.com:9999");
-        assertEquals("http://stopped.com:9999", UrlUtilities.getOriginForDisplay(uri, true));
-        assertEquals("stopped.com:9999", UrlUtilities.getOriginForDisplay(uri, false));
+        assertEquals(
+                "http://stopped.com:9999", UrlUtilities.formatUrlForSecurityDisplay(uri, true));
+        assertEquals("stopped.com:9999", UrlUtilities.formatUrlForSecurityDisplay(uri, false));
 
         uri = URI.create("chrome://settings:443");
-        assertEquals("chrome://settings:443", UrlUtilities.getOriginForDisplay(uri, true));
-        assertEquals("settings:443", UrlUtilities.getOriginForDisplay(uri, false));
+        assertEquals("chrome://settings:443", UrlUtilities.formatUrlForSecurityDisplay(uri, true));
+        assertEquals("chrome://settings:443", UrlUtilities.formatUrlForSecurityDisplay(uri, false));
 
         uri = URI.create("about:blank");
-        assertEquals("about:blank", UrlUtilities.getOriginForDisplay(uri, true));
-        assertEquals("about:blank", UrlUtilities.getOriginForDisplay(uri, false));
+        assertEquals("about:blank", UrlUtilities.formatUrlForSecurityDisplay(uri, true));
+        assertEquals("about:blank", UrlUtilities.formatUrlForSecurityDisplay(uri, false));
     }
 
     @SmallTest

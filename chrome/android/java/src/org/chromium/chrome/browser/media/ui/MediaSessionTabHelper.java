@@ -68,7 +68,7 @@ public class MediaSessionTabHelper {
                 }
                 String origin = mTab.getUrl();
                 try {
-                    origin = UrlUtilities.getOriginForDisplay(new URI(origin), true);
+                    origin = UrlUtilities.formatUrlForSecurityDisplay(new URI(origin), true);
                 } catch (URISyntaxException e) {
                     Log.e(TAG, "Unable to parse the origin from the URL. "
                             + "Showing the full URL instead.");
