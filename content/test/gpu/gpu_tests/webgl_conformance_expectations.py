@@ -569,9 +569,12 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Fail('conformance2/textures/misc/tex-storage-2d.html', bug=483282)
 
     # Windows only.
+    self.Skip('deqp/functional/gles3/readpixel.html', ['win'], bug=483282)
     self.Fail('conformance2/glsl3/array-in-complex-expression.html',
         ['win'], bug=483282)
     self.Fail('conformance2/glsl3/short-circuiting-in-loop-condition.html',
+        ['win'], bug=483282)
+    self.Fail('conformance2/reading/read-pixels-from-fbo-test.html',
         ['win'], bug=483282)
     self.Fail('conformance2/renderbuffers/framebuffer-object-attachment.html',
         ['win'], bug=1082) # angle bug ID
@@ -579,6 +582,9 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['win'], bug=483282)
     self.Fail('conformance2/state/gl-get-calls.html',
         ['win'], bug=483282)
+    self.Fail('conformance2/state/gl-object-get-calls.html',
+        ['win'], bug=483282)
+    self.Fail('conformance2/textures/canvas/*', ['win'], bug=483282)
 
     # Mac only.
     self.Skip('deqp/data/gles3/shaders/qualification_order.html',
