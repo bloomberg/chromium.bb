@@ -84,13 +84,20 @@ class WebServiceWorkerNetworkProviderImpl
     scoped_ptr<RequestExtraData> extra_data(new RequestExtraData);
     extra_data->set_service_worker_provider_id(provider->provider_id());
     request.setExtraData(extra_data.release());
+    // Explicitly set the SkipServiceWorker flag for subresources here if the
+    // renderer process hasn't received SetControllerServiceWorker message.
+    if (request.requestContext() !=
+            blink::WebURLRequest::RequestContextSharedWorker &&
+        !provider->IsControlledByServiceWorker()) {
+      request.setSkipServiceWorker(true);
+    }
   }
 
   virtual bool isControlledByServiceWorker(
       blink::WebDataSource& data_source) {
     ServiceWorkerNetworkProvider* provider =
         GetNetworkProviderFromDataSource(&data_source);
-    return provider->context()->controller() != nullptr;
+    return provider->IsControlledByServiceWorker();
   }
 
   virtual int64_t serviceWorkerID(

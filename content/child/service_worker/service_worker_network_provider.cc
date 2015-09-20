@@ -75,4 +75,8 @@ void ServiceWorkerNetworkProvider::SetServiceWorkerVersionId(
       new ServiceWorkerHostMsg_SetVersionId(provider_id_, version_id));
 }
 
+bool ServiceWorkerNetworkProvider::IsControlledByServiceWorker() const {
+  return context() && context()->controller();
+}
+
 }  // namespace content

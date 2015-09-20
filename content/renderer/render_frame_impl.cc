@@ -3309,6 +3309,10 @@ void RenderFrameImpl::willSendRequest(
         ServiceWorkerNetworkProvider::FromDocumentState(
             DocumentState::FromDataSource(frame->dataSource()));
     provider_id = provider->provider_id();
+    // Explicitly set the SkipServiceWorker flag here if the renderer process
+    // hasn't received SetControllerServiceWorker message.
+    if (!provider->IsControlledByServiceWorker())
+      request.setSkipServiceWorker(true);
   }
 
   WebFrame* parent = frame->parent();
@@ -3733,7 +3737,7 @@ bool RenderFrameImpl::isControlledByServiceWorker(WebDataSource& data_source) {
   ServiceWorkerNetworkProvider* provider =
       ServiceWorkerNetworkProvider::FromDocumentState(
           DocumentState::FromDataSource(&data_source));
-  return provider->context() && provider->context()->controller();
+  return provider->IsControlledByServiceWorker();
 }
 
 int64_t RenderFrameImpl::serviceWorkerID(WebDataSource& data_source) {
