@@ -8,6 +8,6 @@
 #include <string>
 
 // Convert a dll name to a hash that can be sent via UMA.
-int DllNameToHash(std::string dll_name);
+int DllNameToHash(const std::string& dll_name);
 
 #endif  // CHROME_ELF_DLL_HASH_DLL_HASH_H_

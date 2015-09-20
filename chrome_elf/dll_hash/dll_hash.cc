@@ -5,7 +5,7 @@
 #include "base/hash.h"
 #include "chrome_elf/dll_hash/dll_hash.h"
 
-int DllNameToHash(std::string dll_name) {
+int DllNameToHash(const std::string& dll_name) {
   uint32 data = base::Hash(dll_name);
 
   // Strip off the signed bit because UMA doesn't support negative values,
