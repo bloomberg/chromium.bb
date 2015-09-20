@@ -244,30 +244,21 @@ void RegisterDefaultBrowserPromptPrefs(PrefRegistrySimple* registry) {
 }
 
 void ShowDefaultBrowserPrompt(Profile* profile, HostDesktopType desktop_type) {
-  // We do not check if we are the default browser if:
-  // - There is a policy in control of this setting.
-  // We check if we are the default browser but do not prompt if:
+  // Do not check if Chrome is the default browser if there is a policy in
+  // control of this setting.
+  if (g_browser_process->local_state()->IsManagedPreference(
+      prefs::kDefaultBrowserSettingEnabled)) {
+    // Handling of the browser.default_browser_setting_enabled policy setting is
+    // taken care of in BrowserProcessImpl.
+    return;
+  }
+
+  // Check if Chrome is the default browser but do not prompt if:
   // - The user said "don't ask me again" on the infobar earlier.
   // - The "suppress_default_browser_prompt_for_version" master preference is
   //     set to the current version.
   bool show_prompt =
       profile->GetPrefs()->GetBoolean(prefs::kCheckDefaultBrowser);
-
-  if (g_browser_process->local_state()->IsManagedPreference(
-      prefs::kDefaultBrowserSettingEnabled)) {
-    if (g_browser_process->local_state()->GetBoolean(
-        prefs::kDefaultBrowserSettingEnabled)) {
-      content::BrowserThread::PostTask(
-          content::BrowserThread::FILE, FROM_HERE,
-          base::Bind(
-              base::IgnoreResult(&ShellIntegration::SetAsDefaultBrowser)));
-    } else {
-      // TODO(pastarmovj): We can't really do anything meaningful here yet but
-      // just prevent showing the infobar.
-    }
-    return;
-  }
-
   if (show_prompt) {
     const std::string disable_version_string =
         g_browser_process->local_state()->GetString(
