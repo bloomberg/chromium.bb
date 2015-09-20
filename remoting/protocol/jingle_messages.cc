@@ -158,14 +158,14 @@ XmlElement* FormatIceCandidate(const JingleMessage::NamedCandidate& candidate) {
   result->SetAttr(QName(kEmptyNamespace, "address"),
                   candidate.candidate.address().ipaddr().ToString());
   result->SetAttr(QName(kEmptyNamespace, "port"),
-                  base::IntToString(candidate.candidate.address().port()));
+                  base::UintToString(candidate.candidate.address().port()));
   result->SetAttr(QName(kEmptyNamespace, "type"), candidate.candidate.type());
   result->SetAttr(QName(kEmptyNamespace, "protocol"),
                   candidate.candidate.protocol());
   result->SetAttr(QName(kEmptyNamespace, "priority"),
-                  base::DoubleToString(candidate.candidate.priority()));
+                  base::UintToString(candidate.candidate.priority()));
   result->SetAttr(QName(kEmptyNamespace, "generation"),
-                  base::IntToString(candidate.candidate.generation()));
+                  base::UintToString(candidate.candidate.generation()));
   return result;
 }
 

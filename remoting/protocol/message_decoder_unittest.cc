@@ -91,7 +91,7 @@ void SimulateReadSequence(const int read_sequence[], int sequence_size) {
   for (std::list<EventMessage*>::iterator it =
            message_list.begin();
        it != message_list.end(); ++it) {
-    SCOPED_TRACE("Message " + base::IntToString(index));
+    SCOPED_TRACE("Message " + base::UintToString(index));
 
     EventMessage* message = *it;
     // Partial update stream.

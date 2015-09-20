@@ -114,7 +114,7 @@ void JingleSession::StartConnection(const std::string& peer_jid,
   // concurrent session per host, so a random 64-bit integer provides
   // enough entropy. In the worst case connection will fail when two
   // clients generate the same session ID concurrently.
-  session_id_ = base::Int64ToString(base::RandGenerator(kint64max));
+  session_id_ = base::Uint64ToString(base::RandGenerator(kuint64max));
 
   quic_channel_factory_.reset(new QuicChannelFactory(session_id_, false));
 
