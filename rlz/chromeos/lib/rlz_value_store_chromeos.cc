@@ -61,7 +61,7 @@ base::FilePath GetRlzStoreLockPath() {
 }
 
 // Returns the dictionary key for storing access point-related prefs.
-std::string GetKeyName(std::string key, AccessPoint access_point) {
+std::string GetKeyName(const std::string& key, AccessPoint access_point) {
   std::string brand = SupplementaryBranding::GetBrand();
   if (brand.empty())
     brand = kNoSupplementaryBrand;
@@ -69,7 +69,7 @@ std::string GetKeyName(std::string key, AccessPoint access_point) {
 }
 
 // Returns the dictionary key for storing product-related prefs.
-std::string GetKeyName(std::string key, Product product) {
+std::string GetKeyName(const std::string& key, Product product) {
   std::string brand = SupplementaryBranding::GetBrand();
   if (brand.empty())
     brand = kNoSupplementaryBrand;
@@ -242,7 +242,7 @@ void RlzValueStoreChromeOS::WriteStore() {
     LOG(ERROR) << "Error writing RLZ store";
 }
 
-bool RlzValueStoreChromeOS::AddValueToList(std::string list_name,
+bool RlzValueStoreChromeOS::AddValueToList(const std::string& list_name,
                                            base::Value* value) {
   base::ListValue* list_value = NULL;
   if (!rlz_store_->GetList(list_name, &list_value)) {
@@ -253,7 +253,7 @@ bool RlzValueStoreChromeOS::AddValueToList(std::string list_name,
   return true;
 }
 
-bool RlzValueStoreChromeOS::RemoveValueFromList(std::string list_name,
+bool RlzValueStoreChromeOS::RemoveValueFromList(const std::string& list_name,
                                                 const base::Value& value) {
   base::ListValue* list_value = NULL;
   if (!rlz_store_->GetList(list_name, &list_value))

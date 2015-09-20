@@ -64,9 +64,10 @@ class RlzValueStoreChromeOS : public RlzValueStore,
   void WriteStore();
 
   // Adds |value| to list at |list_name| path in JSON store.
-  bool AddValueToList(std::string list_name, base::Value* value);
+  bool AddValueToList(const std::string& list_name, base::Value* value);
   // Removes |value| from list at |list_name| path in JSON store.
-  bool RemoveValueFromList(std::string list_name, const base::Value& value);
+  bool RemoveValueFromList(const std::string& list_name,
+                           const base::Value& value);
 
   // In-memory store with RLZ data.
   scoped_ptr<base::DictionaryValue> rlz_store_;
