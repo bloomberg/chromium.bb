@@ -13863,12 +13863,6 @@ After you create a new supervised user, you can manage their settings at any tim
 
       <!-- Aura strings -->
       <if expr="use_ash">
-        <message name="IDS_LAUNCHER_CONTEXT_MENU_NEW_TAB" desc="Title text for the 'open new' context menu item of the launcher for apps configured to open in a tab">
-          New tab
-        </message>
-        <message name="IDS_LAUNCHER_CONTEXT_MENU_NEW_WINDOW" desc="Title text for the 'open new' context menu item of the launcher for apps configured to open windowed">
-          New window
-        </message>
         <message name="IDS_LAUNCHER_CONTEXT_MENU_CLOSE" desc="Title text for the 'close' context menu item of the launcher">
           Close
         </message>
@@ -13877,12 +13871,6 @@ After you create a new supervised user, you can manage their settings at any tim
         </message>
         <message name="IDS_LAUNCHER_CONTEXT_MENU_UNPIN" desc="Title text for the 'unpin' context menu item of the launcher">
           Unpin
-        </message>
-        <message name="IDS_LAUNCHER_NEW_WINDOW" desc="The text label of the New Window menu item">
-          New window
-        </message>
-        <message name="IDS_LAUNCHER_NEW_INCOGNITO_WINDOW" desc="The text label of the New incognito window menu item">
-          New incognito window
         </message>
       </if>
 
