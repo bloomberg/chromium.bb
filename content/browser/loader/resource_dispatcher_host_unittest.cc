@@ -1154,11 +1154,6 @@ testing::AssertionResult ExtractDataOffsetAndLength(const IPC::Message& message,
   int request_id;
   if (!IPC::ReadParam(&message, &iter, &request_id))
     return testing::AssertionFailure() << "Could not read request_id";
-  // TODO(erikchen): This dummy variable is temporary and is only intended to be
-  // present for one Canary release. http://crbug.com/527588.
-  int dummy;
-  if (!IPC::ReadParam(&message, &iter, &dummy))
-    return testing::AssertionFailure() << "Could not read dummy variable";
   if (!IPC::ReadParam(&message, &iter, data_offset))
     return testing::AssertionFailure() << "Could not read data_offset";
   if (!IPC::ReadParam(&message, &iter, data_length))

@@ -17,7 +17,7 @@ void CheckContentsOfDataReceivedMessage(const IPC::Message* message) {
   ResourceMsg_DataReceived::Schema::Param arg;
   bool success = ResourceMsg_DataReceived::Read(message, &arg);
   CHECK(success);
-  int data_offset = base::get<2>(arg);
+  int data_offset = base::get<1>(arg);
   CHECK_LE(data_offset, 512 * 1024);
   base::debug::Alias(&data_offset);
 }

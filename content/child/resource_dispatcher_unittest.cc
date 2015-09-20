@@ -304,8 +304,8 @@ class ResourceDispatcherTest : public testing::Test, public IPC::Sender {
     memcpy(shared_memory_map_[request_id]->memory(), data.c_str(),
            data.length());
 
-    EXPECT_TRUE(dispatcher_.OnMessageReceived(ResourceMsg_DataReceived(
-        request_id, 0, 0, data.length(), data.length())));
+    EXPECT_TRUE(dispatcher_.OnMessageReceived(
+        ResourceMsg_DataReceived(request_id, 0, data.length(), data.length())));
   }
 
   void NotifyDataDownloaded(int request_id, int decoded_length,

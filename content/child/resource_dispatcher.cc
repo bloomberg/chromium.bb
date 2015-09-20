@@ -213,10 +213,7 @@ void ResourceDispatcher::OnSetDataBuffer(int request_id,
   request_info->buffer_size = shm_size;
 }
 
-// TODO(erikchen): This dummy variable is temporary and is only intended to be
-// present for one Canary release. http://crbug.com/527588.
 void ResourceDispatcher::OnReceivedData(int request_id,
-                                        int /* dummy variable */,
                                         int data_offset,
                                         int data_length,
                                         int encoded_data_length) {
