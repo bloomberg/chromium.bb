@@ -253,6 +253,7 @@ create_layout_transition(void)
 
 	transition->is_done = 0;
 
+	transition->is_transition_func = NULL;
 	transition->private_data = NULL;
 	transition->user_data = NULL;
 
