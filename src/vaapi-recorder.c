@@ -141,7 +141,7 @@ static void
 bitstream_start(struct bitstream *bs)
 {
 	bs->max_size_in_dword = BITSTREAM_ALLOCATE_STEPPING;
-	bs->buffer = calloc(bs->max_size_in_dword * sizeof(int), 1);
+	bs->buffer = calloc(bs->max_size_in_dword * sizeof(unsigned int), 1);
 	bs->bit_offset = 0;
 }
 
