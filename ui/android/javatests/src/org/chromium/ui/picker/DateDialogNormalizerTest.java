@@ -9,6 +9,7 @@ import android.test.suitebuilder.annotation.SmallTest;
 import android.widget.DatePicker;
 
 import java.util.Calendar;
+import java.util.TimeZone;
 
 /**
  * Tests methods in DateDialogNormalizer.
@@ -59,11 +60,23 @@ public class DateDialogNormalizerTest extends InstrumentationTestCase {
 
         picker.updateDate(2015, 5, 25);
 
+        TimeZone defaultTimeZone = TimeZone.getDefault();
+        // "Japan" timezone: earlier than UTC by 9 hours, no DST.
+        TimeZone.setDefault(TimeZone.getTimeZone("Japan"));
+
         // Same thing if it's not respected because it's in the future of the range
         // July 31 2012 to July 31 2014
         DateDialogNormalizer.setLimits(picker, 1343775600000L, 1406847600000L);
         assertEquals(2012, picker.getYear());
         assertEquals(6, picker.getMonth());
         assertEquals(31, picker.getDayOfMonth());
+
+        // MinDate and MaxDate should be translated to the defalut time zone.
+        final long millisPerHour = 60 * 60 * 1000;
+        // 1343692800000: July 31 2012 00:00 UTC
+        assertEquals(1343692800000L - 9 * millisPerHour, picker.getMinDate());
+        // 1406764800000: July 31 2014 00:00 UTC
+        assertEquals(1406764800000L - 9 * millisPerHour, picker.getMaxDate());
+        TimeZone.setDefault(defaultTimeZone);
     }
 }

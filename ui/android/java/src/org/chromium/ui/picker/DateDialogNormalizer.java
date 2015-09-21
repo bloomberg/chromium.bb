@@ -29,15 +29,22 @@ public class DateDialogNormalizer {
         int currentYear = picker.getYear();
         int currentMonth = picker.getMonth();
         int currentDayOfMonth = picker.getDayOfMonth();
+        TimeZone timeZone = TimeZone.getDefault();
 
         picker.updateDate(maxCal.get(Calendar.YEAR),
                 maxCal.get(Calendar.MONTH),
                 maxCal.get(Calendar.DAY_OF_MONTH));
-        picker.setMinDate(minCal.getTimeInMillis());
+        // setMinDate() requires milliseconds since 1970-01-01 00:00 in the
+        // default time zone, and minCal.getTimeInMillis() represents
+        // millisecnods since 1970-01-01 00:00 UTC.  We need to adjust it.
+        picker.setMinDate(minCal.getTimeInMillis() - timeZone.getOffset(minCal.getTimeInMillis()));
         picker.updateDate(minCal.get(Calendar.YEAR),
                 minCal.get(Calendar.MONTH),
                 minCal.get(Calendar.DAY_OF_MONTH));
-        picker.setMaxDate(maxCal.getTimeInMillis());
+        // setMaxDate() requires milliseconds since 1970-01-01 00:00 in the
+        // default time zone, and maxCal.getTimeInMillis() represents
+        // millisecnods since 1970-01-01 00:00 UTC.  We need to adjust it.
+        picker.setMaxDate(maxCal.getTimeInMillis() - timeZone.getOffset(maxCal.getTimeInMillis()));
 
         // Restore the current date, only if within the accepted range
         // This will keep the min/max settings

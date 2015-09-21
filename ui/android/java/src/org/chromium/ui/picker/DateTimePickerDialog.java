@@ -15,10 +15,12 @@ import android.widget.DatePicker.OnDateChangedListener;
 import android.widget.TimePicker;
 import android.widget.TimePicker.OnTimeChangedListener;
 
+import org.chromium.base.VisibleForTesting;
 import org.chromium.ui.R;
 
 import java.util.Calendar;
 import java.util.GregorianCalendar;
+import java.util.TimeZone;
 
 public class DateTimePickerDialog extends AlertDialog implements OnClickListener,
         OnDateChangedListener, OnTimeChangedListener {
@@ -120,17 +122,25 @@ public class DateTimePickerDialog extends AlertDialog implements OnClickListener
 
     @Override
     public void onTimeChanged(TimePicker view, int hourOfDay, int minute) {
-        Calendar calendar = new GregorianCalendar(mDatePicker.getYear(), mDatePicker.getMonth(),
-                mDatePicker.getDayOfMonth(), mTimePicker.getCurrentHour(),
-                mTimePicker.getCurrentMinute(), 0);
+        onTimeChangedInternal(mDatePicker.getYear(), mDatePicker.getMonth(),
+                mDatePicker.getDayOfMonth(), mTimePicker, mMinTimeMillis, mMaxTimeMillis);
+    }
+    @VisibleForTesting
+    public static void onTimeChangedInternal(int year, int month, int day, TimePicker picker,
+            long minTimeMillis, long maxTimeMillis) {
+        // Need to use a calendar object for UTC because we'd like to compare
+        // it with minimum/maximum values in UTC.
+        Calendar calendar = new GregorianCalendar(TimeZone.getTimeZone("UTC"));
+        calendar.clear();
+        calendar.set(year, month, day, picker.getCurrentHour(), picker.getCurrentMinute(), 0);
 
-        if (calendar.getTimeInMillis() < mMinTimeMillis) {
-            calendar.setTimeInMillis(mMinTimeMillis);
-        } else if (calendar.getTimeInMillis() > mMaxTimeMillis) {
-            calendar.setTimeInMillis(mMaxTimeMillis);
+        if (calendar.getTimeInMillis() < minTimeMillis) {
+            calendar.setTimeInMillis(minTimeMillis);
+        } else if (calendar.getTimeInMillis() > maxTimeMillis) {
+            calendar.setTimeInMillis(maxTimeMillis);
         }
-        mTimePicker.setCurrentHour(calendar.get(Calendar.HOUR_OF_DAY));
-        mTimePicker.setCurrentMinute(calendar.get(Calendar.MINUTE));
+        picker.setCurrentHour(calendar.get(Calendar.HOUR_OF_DAY));
+        picker.setCurrentMinute(calendar.get(Calendar.MINUTE));
     }
 
     /**
