@@ -338,8 +338,6 @@ crbug.com/248938 [ Win Debug ] virtual/threaded/transitions/transition-end-event
 crbug.com/248938 [ Win Debug ] virtual/threaded/transitions/transition-end-event-multiple-04.html [ Pass Failure ]
 crbug.com/352405 virtual/threaded/animations/transition-and-animation-1.html [ Pass Timeout ]
 
-crbug.com/529123 inspector/sources/debugger-breakpoints/debugger-reload-breakpoints-with-source-maps.html [ Pass Failure ]
-
 crbug.com/461179 virtual/spv2/paint/invalidation/invalidate-when-receiving-paint-layer.html [ ImageOnlyFailure ]
 
 crbug.com/524009 inspector/sources/debugger-pause/debugger-pause-in-internal.html [ NeedsManualRebaseline ]

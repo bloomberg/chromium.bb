@@ -8,6 +8,6 @@ source1.js:17}
 Page reloaded.
 Breakpoint sidebar pane Breakpoints after reload:
 
-source1.js:15
-source1.js:17
+source1.js:15    var handler = new ClickHandler();
+source1.js:17}
 

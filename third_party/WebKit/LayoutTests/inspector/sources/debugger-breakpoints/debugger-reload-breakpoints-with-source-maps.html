@@ -29,13 +29,30 @@ var test = function()
             if (!counter) {
                 //Both breakpoints are resolved before reload
                 InspectorTest.dumpBreakpointSidebarPane("Breakpoints before reload:");
-                InspectorTest.addSniffer(WebInspector.CompilerScriptMapping.prototype, "_sourceMapLoaded", onSourceMapLoaded);
+                waitForBreakpoints();
                 InspectorTest.reloadPage(onPageReloaded);
             }
         }
+
+        function waitForBreakpoints()
+        {
+            var breakpointAddCounter = 2;
+            var jsBreakpoints = WebInspector.panels.sources.sidebarPanes.jsBreakpoints;
+            jsBreakpoints.didReceiveBreakpointLineForTest = function(uiSourceCode)
+            {
+                if (WebInspector.CompilerScriptMapping.StubProjectID === uiSourceCode.project().id())
+                    return;
+                --breakpointAddCounter;
+                if (breakpointAddCounter)
+                    return;
+                breakpointSourcesReceived = true;
+                maybeCompleteTest();
+            }
+        }
+
     }
 
-    var sourceMapLoaded = false;
+    var breakpointSourcesReceived = false;
     var pageReloaded = false;
 
     function onPageReloaded()
@@ -44,15 +61,9 @@ var test = function()
         maybeCompleteTest();
     }
 
-    function onSourceMapLoaded()
-    {
-        sourceMapLoaded = true;
-        maybeCompleteTest();
-    }
-
     function maybeCompleteTest()
     {
-        if (!pageReloaded || !sourceMapLoaded)
+        if (!pageReloaded || !breakpointSourcesReceived)
             return;
         InspectorTest.dumpBreakpointSidebarPane("Breakpoints after reload:");
         InspectorTest.completeDebuggerTest();
