@@ -98,6 +98,7 @@ const int kPopupMarginRight = 0;
 const int kPermissionsSectionContentMinWidth = 300;
 const int kPermissionsSectionPaddingBottom = 6;
 const int kPermissionsSectionPaddingLeft = 18;
+const int kPermissionsSectionPaddingRight = 18;
 const int kPermissionsSectionPaddingTop = 16;
 
 // Space between the headline and the content of a section on the permissions
@@ -460,7 +461,7 @@ gfx::Size WebsiteSettingsPopupView::GetPreferredSize() const {
     width = std::max(width, permissions_content_->GetPreferredSize().width());
   if (header_)
     width = std::max(width, header_->GetPreferredSize().width());
-  width += kPermissionsSectionPaddingLeft;
+  width += kPermissionsSectionPaddingLeft + kPermissionsSectionPaddingRight;
   width = std::min(width, kMaxPopupWidth);
   return gfx::Size(width, height);
 }
