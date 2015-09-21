@@ -169,8 +169,7 @@ class CronetPerfTestMeasurement(
     super(CronetPerfTestMeasurement, self).__init__(options)
     self._device = device
 
-  def WillRunStoryForPageTest(self, tracing_controller,
-                              synthetic_delay_categories=None):
+  def WillRunStoryForPageTest(self, tracing_controller):
     # Skip parent implementation which doesn't apply to Cronet perf test app as
     # it is not a browser with a timeline interface.
     pass
