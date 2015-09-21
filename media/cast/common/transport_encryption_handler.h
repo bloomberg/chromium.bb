@@ -26,7 +26,7 @@ class TransportEncryptionHandler : public base::NonThreadSafe {
   TransportEncryptionHandler();
   ~TransportEncryptionHandler();
 
-  bool Initialize(std::string aes_key, std::string aes_iv_mask);
+  bool Initialize(const std::string& aes_key, const std::string& aes_iv_mask);
 
   bool Encrypt(uint32 frame_id,
                const base::StringPiece& data,

@@ -33,7 +33,7 @@ class InputBuilder {
   int GetIntInput() const;
 
  private:
-  bool ValidateInput(const std::string input) const;
+  bool ValidateInput(const std::string& input) const;
 
   const std::string title_;
   const std::string default_value_;

@@ -41,8 +41,8 @@ TransportEncryptionHandler::TransportEncryptionHandler()
 
 TransportEncryptionHandler::~TransportEncryptionHandler() {}
 
-bool TransportEncryptionHandler::Initialize(std::string aes_key,
-                                            std::string aes_iv_mask) {
+bool TransportEncryptionHandler::Initialize(const std::string& aes_key,
+                                            const std::string& aes_iv_mask) {
   is_activated_ = false;
   if (aes_iv_mask.size() == kAesKeySize && aes_key.size() == kAesKeySize) {
     iv_mask_ = aes_iv_mask;

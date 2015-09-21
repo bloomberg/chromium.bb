@@ -107,7 +107,7 @@ void QuitLoopOnInitializationResult(media::cast::OperationalStatus result) {
   base::MessageLoop::current()->Quit();
 }
 
-net::IPEndPoint CreateUDPAddress(std::string ip_str, uint16 port) {
+net::IPEndPoint CreateUDPAddress(const std::string& ip_str, uint16 port) {
   net::IPAddressNumber ip_number;
   CHECK(net::ParseIPLiteralToNumber(ip_str, &ip_number));
   return net::IPEndPoint(ip_number, port);

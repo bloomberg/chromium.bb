@@ -82,7 +82,7 @@ static const int kTargetPlayoutDelayMs = 100;
 // receiver.
 static const int kMaxAllowedPlayoutErrorMs = 30;
 
-std::string ConvertFromBase16String(const std::string base_16) {
+std::string ConvertFromBase16String(const std::string& base_16) {
   std::string compressed;
   DCHECK_EQ(base_16.size() % 2, 0u) << "Must be a multiple of 2";
   compressed.reserve(base_16.size() / 2);

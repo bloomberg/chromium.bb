@@ -28,7 +28,7 @@ static const char kVidPathTemplate[] =
 static const char kPidPathTemplate[] =
     "/sys/class/video4linux/%s/device/../idProduct";
 
-static bool ReadIdFile(const std::string path, std::string* id) {
+static bool ReadIdFile(const std::string& path, std::string* id) {
   char id_buf[kVidPidSize];
   FILE* file = fopen(path.c_str(), "rb");
   if (!file)
