@@ -58,6 +58,13 @@ def PrintTarProgress(tarinfo):
 
 
 def main():
+  if sys.platform == 'win32':
+    try:
+      subprocess.check_output(['grep', '--help'], shell=True)
+    except subprocess.CalledProcessError:
+      print 'Add gnuwin32 to your PATH, then try again.'
+      return 1
+
   parser = argparse.ArgumentParser(description='build and package clang')
   parser.add_argument('--gcc-toolchain',
                       help="the prefix for the GCC version used for building. "
