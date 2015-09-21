@@ -51,7 +51,7 @@ class CRWSessionControllerTest : public PlatformTest {
                                             browserState:&browser_state_]);
   }
 
-  web::Referrer MakeReferrer(std::string url) {
+  web::Referrer MakeReferrer(const std::string& url) {
     return web::Referrer(GURL(url), web::ReferrerPolicyDefault);
   }
 

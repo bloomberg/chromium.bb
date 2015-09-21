@@ -116,7 +116,8 @@ NSString* CleanNSStringForDisplay(NSString* dirty, BOOL removeGraphicChars) {
   return cleanString;
 }
 
-std::string CleanStringForDisplay(std::string dirty, BOOL removeGraphicChars) {
+std::string CleanStringForDisplay(const std::string& dirty,
+                                  BOOL removeGraphicChars) {
   return base::SysNSStringToUTF8(CleanNSStringForDisplay(
       base::SysUTF8ToNSString(dirty), removeGraphicChars));
 }

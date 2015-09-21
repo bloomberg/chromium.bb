@@ -27,7 +27,8 @@ NSCharacterSet* GraphicCharactersSet();
 NSString* CleanNSStringForDisplay(NSString* dirty, BOOL removeGraphicChars);
 
 // Cleans a std::string identically to CleanNSStringForDisplay()
-std::string CleanStringForDisplay(std::string dirty, BOOL removeGraphicChars);
+std::string CleanStringForDisplay(const std::string& dirty,
+                                  BOOL removeGraphicChars);
 
 // Find the longest leading substring of |string| that, when rendered with
 // |attributes|, will fit on a single line inside |targetWidth|. If |trailing|

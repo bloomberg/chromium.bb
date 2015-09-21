@@ -253,15 +253,13 @@ void CrNetEnvironment::CloseAllSpdySessionsInternal() {
   }
 }
 
-CrNetEnvironment::CrNetEnvironment(std::string user_agent_product_name)
+CrNetEnvironment::CrNetEnvironment(const std::string& user_agent_product_name)
     : spdy_enabled_(false),
       quic_enabled_(false),
       sdch_enabled_(false),
       main_context_(new net::URLRequestContext),
       user_agent_product_name_(user_agent_product_name),
-      net_log_(new net::NetLog) {
-
-}
+      net_log_(new net::NetLog) {}
 
 void CrNetEnvironment::Install() {
   // Threads setup.

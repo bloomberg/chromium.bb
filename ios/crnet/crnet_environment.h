@@ -36,7 +36,7 @@ class CrNetEnvironment {
   static void Initialize();
 
   // |user_agent_product_name| will be used to generate the user-agent.
-  CrNetEnvironment(std::string user_agent_product_name);
+  CrNetEnvironment(const std::string& user_agent_product_name);
   ~CrNetEnvironment();
 
   // Installs this CrNet environment so requests are intercepted.
