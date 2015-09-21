@@ -75,21 +75,21 @@ void ApplicationManager::ConnectToApplication(
     scoped_ptr<ConnectToApplicationParams> params) {
   TRACE_EVENT_INSTANT1("mojo_shell", "ApplicationManager::ConnectToApplication",
                        TRACE_EVENT_SCOPE_THREAD, "original_url",
-                       params->target().url().spec());
-  DCHECK(params->target().url().is_valid());
+                       params->app_url().spec());
+  DCHECK(params->app_url().is_valid());
 
   // Connect to an existing matching instance, if possible.
   if (ConnectToRunningApplication(&params))
     return;
 
-  ApplicationLoader* loader = GetLoaderForURL(params->target().url());
+  ApplicationLoader* loader = GetLoaderForURL(params->app_url());
   if (loader) {
-    GURL url = params->target().url();
+    GURL url = params->app_url();
     loader->Load(url, CreateInstance(params.Pass(), nullptr));
     return;
   }
 
-  URLRequestPtr original_url_request = params->TakeTargetURLRequest();
+  URLRequestPtr original_url_request = params->TakeAppURLRequest();
   auto callback =
       base::Bind(&ApplicationManager::HandleFetchCallback,
                  weak_ptr_factory_.GetWeakPtr(), base::Passed(&params));
@@ -98,7 +98,8 @@ void ApplicationManager::ConnectToApplication(
 
 bool ApplicationManager::ConnectToRunningApplication(
     scoped_ptr<ConnectToApplicationParams>* params) {
-  ApplicationInstance* instance = GetApplicationInstance((*params)->target());
+  ApplicationInstance* instance = GetApplicationInstance(
+      Identity((*params)->app_url(), (*params)->qualifier()));
   if (!instance)
     return false;
 
@@ -109,15 +110,17 @@ bool ApplicationManager::ConnectToRunningApplication(
 InterfaceRequest<Application> ApplicationManager::CreateInstance(
     scoped_ptr<ConnectToApplicationParams> params,
     ApplicationInstance** resulting_instance) {
-  Identity target_id = params->target();
+  Identity app_identity(params->app_url(), params->qualifier());
+
   ApplicationPtr application;
   InterfaceRequest<Application> application_request = GetProxy(&application);
   ApplicationInstance* instance = new ApplicationInstance(
-      application.Pass(), this, target_id, Shell::kInvalidContentHandlerID,
+      application.Pass(), this, params->originator_identity(), app_identity,
+      params->filter(), Shell::kInvalidContentHandlerID,
       params->on_application_end());
-  DCHECK(identity_to_instance_.find(target_id) ==
+  DCHECK(identity_to_instance_.find(app_identity) ==
          identity_to_instance_.end());
-  identity_to_instance_[target_id] = instance;
+  identity_to_instance_[app_identity] = instance;
   instance->InitializeApplication();
   instance->ConnectToClient(params.Pass());
   if (resulting_instance)
@@ -150,7 +153,7 @@ void ApplicationManager::HandleFetchCallback(
     header->name = "Referer";
     header->value = fetcher->GetRedirectReferer().spec();
     new_request->headers.push_back(header.Pass());
-    params->SetTargetURLRequest(new_request.Pass());
+    params->SetURLInfo(new_request.Pass());
     ConnectToApplication(params.Pass());
     return;
   }
@@ -161,8 +164,11 @@ void ApplicationManager::HandleFetchCallback(
   if (ConnectToRunningApplication(&params))
     return;
 
-  Identity source = params->source();
-  Identity target = params->target();
+  Identity originator_identity = params->originator_identity();
+  CapabilityFilter originator_filter = params->originator_filter();
+  CapabilityFilter filter = params->filter();
+  GURL app_url = params->app_url();
+  std::string qualifier = params->qualifier();
   Shell::ConnectToApplicationCallback connect_callback =
       params->connect_callback();
   params->set_connect_callback(EmptyConnectCallback());
@@ -172,25 +178,26 @@ void ApplicationManager::HandleFetchCallback(
 
   GURL content_handler_url;
   URLResponsePtr new_response;
-  std::string qualifier;
   if (package_manager_->HandleWithContentHandler(fetcher.get(),
-                                                 target.url(),
+                                                 app_url,
                                                  blocking_pool_,
                                                  &new_response,
                                                  &content_handler_url,
                                                  &qualifier)) {
-    Identity content_handler(content_handler_url, qualifier, target.filter());
-    LoadWithContentHandler(source, content_handler, connect_callback, app,
-                           request.Pass(), new_response.Pass());
+    LoadWithContentHandler(originator_identity, originator_filter,
+                           content_handler_url, qualifier, filter,
+                           connect_callback, app, request.Pass(),
+                           new_response.Pass());
   } else {
     // TODO(erg): Have a better way of switching the sandbox on. For now, switch
     // it on hard coded when we're using some of the sandboxable core services.
     bool start_sandboxed = false;
     if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
             switches::kMojoNoSandbox)) {
-      start_sandboxed = (target.url() == GURL("mojo://core_services/") &&
-                            target.qualifier() == "Core") ||
-                        target.url() == GURL("mojo://html_viewer/");
+      if (app_url == GURL("mojo://core_services/") && qualifier == "Core")
+        start_sandboxed = true;
+      else if (app_url == GURL("mojo://html_viewer/"))
+        start_sandboxed = true;
     }
 
     connect_callback.Run(Shell::kInvalidContentHandlerID);
@@ -230,23 +237,28 @@ void ApplicationManager::RunNativeApplication(
 }
 
 void ApplicationManager::LoadWithContentHandler(
-    const Identity& source,
-    const Identity& content_handler,
+    const Identity& originator_identity,
+    const CapabilityFilter& originator_filter,
+    const GURL& content_handler_url,
+    const std::string& qualifier,
+    const CapabilityFilter& filter,
     const Shell::ConnectToApplicationCallback& connect_callback,
     ApplicationInstance* app,
     InterfaceRequest<Application> application_request,
     URLResponsePtr url_response) {
   ContentHandlerConnection* connection = nullptr;
+  Identity content_handler_identity(content_handler_url, qualifier);
   // TODO(beng): Figure out the extent to which capability filter should be
   //             factored into handler identity.
   IdentityToContentHandlerMap::iterator iter =
-      identity_to_content_handler_.find(content_handler);
+      identity_to_content_handler_.find(content_handler_identity);
   if (iter != identity_to_content_handler_.end()) {
     connection = iter->second;
   } else {
     connection = new ContentHandlerConnection(
-        this, source, content_handler, ++content_handler_id_counter_);
-    identity_to_content_handler_[content_handler] = connection;
+        this, originator_identity, originator_filter, content_handler_url,
+        qualifier, filter, ++content_handler_id_counter_);
+    identity_to_content_handler_[content_handler_identity] = connection;
   }
 
   app->set_requesting_content_handler_id(connection->id());
@@ -287,7 +299,9 @@ void ApplicationManager::OnApplicationInstanceError(
 void ApplicationManager::OnContentHandlerConnectionClosed(
     ContentHandlerConnection* content_handler) {
   // Remove the mapping to the content handler.
-  auto it = identity_to_content_handler_.find(content_handler->identity());
+  auto it = identity_to_content_handler_.find(
+      Identity(content_handler->content_handler_url(),
+               content_handler->content_handler_qualifier()));
   DCHECK(it != identity_to_content_handler_.end());
   identity_to_content_handler_.erase(it);
 }

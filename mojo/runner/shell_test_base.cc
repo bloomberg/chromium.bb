@@ -47,12 +47,14 @@ ScopedMessagePipeHandle ShellTestBase::ConnectToService(
     const GURL& application_url,
     const std::string& service_name) {
   ServiceProviderPtr services;
+  mojo::URLRequestPtr request(mojo::URLRequest::New());
+  request->url = mojo::String::From(application_url.spec());
 
   scoped_ptr<shell::ConnectToApplicationParams> params(
       new shell::ConnectToApplicationParams);
-  params->SetTarget(shell::Identity(application_url, std::string(),
-                                    shell::GetPermissiveCapabilityFilter()));
+  params->SetURLInfo(request.Pass());
   params->set_services(GetProxy(&services));
+  params->set_filter(shell::GetPermissiveCapabilityFilter());
   params->set_on_application_end(base::Bind(&QuitIfRunning));
   shell_context_.application_manager()->ConnectToApplication(params.Pass());
   MessagePipe pipe;

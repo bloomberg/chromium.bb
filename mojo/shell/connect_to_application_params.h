@@ -12,6 +12,7 @@
 #include "mojo/application/public/interfaces/shell.mojom.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/services/network/public/interfaces/url_loader.mojom.h"
+#include "mojo/shell/capability_filter.h"
 #include "mojo/shell/identity.h"
 #include "url/gurl.h"
 
@@ -27,24 +28,35 @@ class ConnectToApplicationParams {
   ConnectToApplicationParams();
   ~ConnectToApplicationParams();
 
-  // Sets |source_|. If |source| is null, |source_| is reset.
-  void SetSource(ApplicationInstance* source);
+  // Sets both |originator_identity_| and |originator_filter_|. If |originator|
+  // is null, both fields are reset.
+  void SetOriginatorInfo(ApplicationInstance* originator);
 
-  // The following methods set both |target_| and |target_url_request_|.
-  void SetTarget(const Identity& target);
-  void SetTargetURL(const GURL& target_url);
-  void SetTargetURLRequest(URLRequestPtr request);
-  void SetTargetURLRequest(URLRequestPtr request, const Identity& target);
+  // Sets both |app_url_| and |app_url_request_|.
+  void SetURLInfo(const GURL& app_url);
+  // Sets both |app_url_| and |app_url_request_|.
+  void SetURLInfo(URLRequestPtr app_url_request);
 
-  void set_source(const Identity& source) { source_ = source;  }
-  const Identity& source() const { return source_; }
-  const Identity& target() const { return target_; }
-
-  const URLRequest* target_url_request() const {
-    return target_url_request_.get();
+  void set_originator_identity(const Identity& value) {
+    originator_identity_ = value;
   }
-  // NOTE: This doesn't reset |target_|.
-  URLRequestPtr TakeTargetURLRequest() { return target_url_request_.Pass(); }
+  const Identity& originator_identity() const { return originator_identity_; }
+
+  void set_originator_filter(const CapabilityFilter& value) {
+    originator_filter_ = value;
+  }
+  const CapabilityFilter& originator_filter() const {
+    return originator_filter_;
+  }
+
+  const GURL& app_url() const { return app_url_; }
+
+  const URLRequest* app_url_request() const { return app_url_request_.get(); }
+  // NOTE: This doesn't reset |app_url_|.
+  URLRequestPtr TakeAppURLRequest() { return app_url_request_.Pass(); }
+
+  void set_qualifier(const std::string& value) { qualifier_ = value; }
+  const std::string& qualifier() const { return qualifier_; }
 
   void set_services(InterfaceRequest<ServiceProvider> value) {
     services_ = value.Pass();
@@ -55,6 +67,9 @@ class ConnectToApplicationParams {
     exposed_services_ = value.Pass();
   }
   ServiceProviderPtr TakeExposedServices() { return exposed_services_.Pass(); }
+
+  void set_filter(const CapabilityFilter& value) { filter_ = value; }
+  const CapabilityFilter& filter() const { return filter_; }
 
   void set_on_application_end(const base::Closure& value) {
     on_application_end_ = value;
@@ -72,17 +87,21 @@ class ConnectToApplicationParams {
 
  private:
   // It may be null (i.e., is_null() returns true) which indicates that there is
-  // no source (e.g., for the first application or in tests).
-  Identity source_;
-  // The identity of the application being connected to.
-  Identity target_;
+  // no originator (e.g., for the first application or in tests).
+  Identity originator_identity_;
+  // Should be ignored if |originator_identity_| is null.
+  CapabilityFilter originator_filter_;
+  // The URL of the application that is being connected to.
+  GURL app_url_;
   // The URL request to fetch the application. It may contain more information
-  // than |target_| (e.g., headers, request body). When it is taken, |target_|
+  // than |app_url_| (e.g., headers, request body). When it is taken, |app_url_|
   // remains unchanged.
-  URLRequestPtr target_url_request_;
-
+  URLRequestPtr app_url_request_;
+  // Please see the comments in identity.h for the exact meaning of qualifier.
+  std::string qualifier_;
   InterfaceRequest<ServiceProvider> services_;
   ServiceProviderPtr exposed_services_;
+  CapabilityFilter filter_;
   base::Closure on_application_end_;
   Shell::ConnectToApplicationCallback connect_callback_;
 

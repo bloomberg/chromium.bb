@@ -13,7 +13,7 @@
 namespace mojo {
 namespace shell {
 
-class Identity;
+struct Identity;
 
 // A set of names of interfaces that may be exposed to an application.
 using AllowedInterfaces = std::set<std::string>;

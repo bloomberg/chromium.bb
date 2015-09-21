@@ -8,51 +8,21 @@
 
 namespace mojo {
 namespace shell {
-namespace {
-
-// It's valid to specify mojo: URLs in the filter either as mojo:foo or
-// mojo://foo/ - but we store the filter in the latter form.
-CapabilityFilter CanonicalizeFilter(const CapabilityFilter& filter) {
-  CapabilityFilter canonicalized;
-  for (CapabilityFilter::const_iterator it = filter.begin();
-       it != filter.end();
-       ++it) {
-    if (it->first == "*")
-      canonicalized[it->first] = it->second;
-    else
-      canonicalized[GURL(it->first).spec()] = it->second;
-  }
-  return canonicalized;
-}
-
-}  // namespace
 
 Identity::Identity() {}
 
-Identity::Identity(const GURL& url)
-    : url_(GetBaseURLAndQuery(url, nullptr)),
-      qualifier_(url_.spec()) {}
+Identity::Identity(const GURL& in_url, const std::string& in_qualifier)
+    : url(GetBaseURLAndQuery(in_url, nullptr)),
+      qualifier(in_qualifier.empty() ? url.spec() : in_qualifier) {}
 
-Identity::Identity(const GURL& url, const std::string& qualifier)
-    : url_(GetBaseURLAndQuery(url, nullptr)),
-      qualifier_(qualifier.empty() ? url_.spec() : qualifier) {}
-
-Identity::Identity(const GURL& url,
-                   const std::string& qualifier,
-                   CapabilityFilter filter)
-    : url_(GetBaseURLAndQuery(url, nullptr)),
-      qualifier_(qualifier.empty() ? url_.spec() : qualifier),
-      filter_(CanonicalizeFilter(filter)) {}
-
-Identity::~Identity() {}
+// explicit
+Identity::Identity(const GURL& in_url)
+    : url(GetBaseURLAndQuery(in_url, nullptr)), qualifier(url.spec()) {}
 
 bool Identity::operator<(const Identity& other) const {
-  // We specifically don't include filter in the equivalence check because we
-  // don't quite know how this should work yet.
-  // TODO(beng): figure out how it should work.
-  if (url_ != other.url_)
-    return url_ < other.url_;
-  return qualifier_ < other.qualifier_;
+  if (url != other.url)
+    return url < other.url;
+  return qualifier < other.qualifier;
 }
 
 }  // namespace shell

@@ -13,38 +13,27 @@ ConnectToApplicationParams::ConnectToApplicationParams() {}
 
 ConnectToApplicationParams::~ConnectToApplicationParams() {}
 
-void ConnectToApplicationParams::SetSource(ApplicationInstance* source) {
-  if (!source) {
-    source_ = Identity();
+void ConnectToApplicationParams::SetOriginatorInfo(
+    ApplicationInstance* originator) {
+  if (!originator) {
+    originator_identity_ = Identity();
+    originator_filter_.clear();
     return;
   }
 
-  source_ = source->identity();
+  originator_identity_ = originator->identity();
+  originator_filter_ = originator->filter();
 }
 
-void ConnectToApplicationParams::SetTarget(const Identity& target) {
-  target_ = target;
-  target_url_request_ = URLRequest::New();
-  target_url_request_->url = target_.url().spec();
+void ConnectToApplicationParams::SetURLInfo(const GURL& app_url) {
+  app_url_ = app_url;
+  app_url_request_ = URLRequest::New();
+  app_url_request_->url = app_url_.spec();
 }
 
-void ConnectToApplicationParams::SetTargetURL(const GURL& target_url) {
-  target_ = Identity(target_url, target_.qualifier(), target_.filter());
-  target_url_request_ = URLRequest::New();
-  target_url_request_->url = target_.url().spec();
-}
-
-void ConnectToApplicationParams::SetTargetURLRequest(URLRequestPtr request) {
-  Identity target = request ? Identity(GURL(request->url), target_.qualifier(),
-                                       target_.filter())
-                            : Identity();
-  SetTargetURLRequest(request.Pass(), target);
-}
-
-void ConnectToApplicationParams::SetTargetURLRequest(URLRequestPtr request,
-                                                     const Identity& target) {
-  target_url_request_ = request.Pass();
-  target_ = target;
+void ConnectToApplicationParams::SetURLInfo(URLRequestPtr app_url_request) {
+  app_url_request_ = app_url_request.Pass();
+  app_url_ = app_url_request_ ? GURL(app_url_request_->url) : GURL();
 }
 
 }  // namespace shell

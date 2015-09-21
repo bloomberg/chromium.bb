@@ -687,7 +687,8 @@ TEST_F(ApplicationManagerTest, TestEndApplicationClosure) {
 
   bool called = false;
   scoped_ptr<ConnectToApplicationParams> params(new ConnectToApplicationParams);
-  params->SetTargetURL(GURL("test:test"));
+  params->SetURLInfo(GURL("test:test"));
+  params->set_filter(GetPermissiveCapabilityFilter());
   params->set_on_application_end(
       base::Bind(&QuitClosure, base::Unretained(&called)));
   application_manager_->ConnectToApplication(params.Pass());
@@ -715,8 +716,10 @@ TEST(ApplicationManagerTest2, ContentHandlerConnectionGetsRequestorURL) {
 
   bool called = false;
   scoped_ptr<ConnectToApplicationParams> params(new ConnectToApplicationParams);
-  params->set_source(Identity(requestor_url));
-  params->SetTargetURL(GURL("test:test"));
+  params->set_originator_identity(Identity(requestor_url));
+  params->set_originator_filter(GetPermissiveCapabilityFilter());
+  params->SetURLInfo(GURL("test:test"));
+  params->set_filter(GetPermissiveCapabilityFilter());
   params->set_on_application_end(
       base::Bind(&QuitClosure, base::Unretained(&called)));
   application_manager.ConnectToApplication(params.Pass());
@@ -785,8 +788,10 @@ TEST(ApplicationManagerTest2,
     base::RunLoop run_loop;
     scoped_ptr<ConnectToApplicationParams> params(
         new ConnectToApplicationParams);
-    params->set_source(Identity(requestor_url));
-    params->SetTargetURL(GURL("test:test"));
+    params->set_originator_identity(Identity(requestor_url));
+    params->set_originator_filter(GetPermissiveCapabilityFilter());
+    params->SetURLInfo(GURL("test:test"));
+    params->set_filter(GetPermissiveCapabilityFilter());
     params->set_connect_callback([&content_handler_id, &run_loop](uint32_t t) {
       content_handler_id = t;
       run_loop.Quit();
@@ -801,8 +806,10 @@ TEST(ApplicationManagerTest2,
     base::RunLoop run_loop;
     scoped_ptr<ConnectToApplicationParams> params(
         new ConnectToApplicationParams);
-    params->set_source(Identity(requestor_url));
-    params->SetTargetURL(GURL("test:test"));
+    params->set_originator_identity(Identity(requestor_url));
+    params->set_originator_filter(GetPermissiveCapabilityFilter());
+    params->SetURLInfo(GURL("test:test"));
+    params->set_filter(GetPermissiveCapabilityFilter());
     params->set_connect_callback([&content_handler_id2, &run_loop](uint32_t t) {
       content_handler_id2 = t;
       run_loop.Quit();
@@ -839,8 +846,10 @@ TEST(ApplicationManagerTest2, DifferedContentHandlersGetDifferentIDs) {
     base::RunLoop run_loop;
     scoped_ptr<ConnectToApplicationParams> params(
         new ConnectToApplicationParams);
-    params->set_source(Identity(requestor_url));
-    params->SetTargetURL(GURL("test:test"));
+    params->set_originator_identity(Identity(requestor_url));
+    params->set_originator_filter(GetPermissiveCapabilityFilter());
+    params->SetURLInfo(GURL("test:test"));
+    params->set_filter(GetPermissiveCapabilityFilter());
     params->set_connect_callback([&content_handler_id, &run_loop](uint32_t t) {
       content_handler_id = t;
       run_loop.Quit();
@@ -869,8 +878,10 @@ TEST(ApplicationManagerTest2, DifferedContentHandlersGetDifferentIDs) {
     base::RunLoop run_loop;
     scoped_ptr<ConnectToApplicationParams> params(
         new ConnectToApplicationParams);
-    params->set_source(Identity(requestor_url));
-    params->SetTargetURL(GURL("test2:test2"));
+    params->set_originator_identity(Identity(requestor_url));
+    params->set_originator_filter(GetPermissiveCapabilityFilter());
+    params->SetURLInfo(GURL("test2:test2"));
+    params->set_filter(GetPermissiveCapabilityFilter());
     params->set_connect_callback([&content_handler_id2, &run_loop](uint32_t t) {
       content_handler_id2 = t;
       run_loop.Quit();
@@ -890,7 +901,8 @@ TEST_F(ApplicationManagerTest,
 
   uint32_t content_handler_id = 1u;
   scoped_ptr<ConnectToApplicationParams> params(new ConnectToApplicationParams);
-  params->SetTargetURL(GURL("test:test"));
+  params->SetURLInfo(GURL("test:test"));
+  params->set_filter(GetPermissiveCapabilityFilter());
   params->set_connect_callback(
       [&content_handler_id](uint32_t t) { content_handler_id = t; });
   application_manager_->ConnectToApplication(params.Pass());

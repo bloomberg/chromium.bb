@@ -341,11 +341,15 @@ class CapabilityFilterTest : public testing::Test {
     ServiceProviderPtr exposed_services;
     (new ServiceProviderImpl(GetProxy(&exposed_services)))->
         AddService<Validator>(validator_);
+    URLRequestPtr request(URLRequest::New());
+    request->url = String::From(url);
+
     scoped_ptr<ConnectToApplicationParams> params(
         new ConnectToApplicationParams);
-    params->SetTarget(Identity(GURL(url), std::string(), filter));
+    params->SetURLInfo(request.Pass());
     params->set_services(GetProxy(&services));
     params->set_exposed_services(exposed_services.Pass());
+    params->set_filter(filter);
     params->set_on_application_end(base::MessageLoop::QuitWhenIdleClosure());
     application_manager_->ConnectToApplication(params.Pass());
   }

@@ -14,19 +14,27 @@ namespace shell {
 
 ContentHandlerConnection::ContentHandlerConnection(
     ApplicationManager* manager,
-    const Identity& source,
-    const Identity& content_handler,
+    const Identity& originator_identity,
+    const CapabilityFilter& originator_filter,
+    const GURL& content_handler_url,
+    const std::string& qualifier,
+    const CapabilityFilter& filter,
     uint32_t id)
     : manager_(manager),
-      identity_(content_handler),
+      content_handler_url_(content_handler_url),
+      content_handler_qualifier_(qualifier),
       connection_closed_(false),
       id_(id) {
   ServiceProviderPtr services;
 
   scoped_ptr<ConnectToApplicationParams> params(new ConnectToApplicationParams);
-  params->set_source(source);
-  params->SetTarget(identity_);
+  params->set_originator_identity(originator_identity);
+  params->set_originator_filter(originator_filter);
+  params->SetURLInfo(content_handler_url);
+  params->set_qualifier(qualifier);
   params->set_services(GetProxy(&services));
+  params->set_filter(filter);
+
   manager->ConnectToApplication(params.Pass());
 
   MessagePipe pipe;

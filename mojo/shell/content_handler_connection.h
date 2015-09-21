@@ -8,14 +8,14 @@
 #include <string>
 
 #include "mojo/application/public/interfaces/content_handler.mojom.h"
-#include "mojo/shell/identity.h"
+#include "mojo/shell/capability_filter.h"
 #include "url/gurl.h"
 
 namespace mojo {
 namespace shell {
 
 class ApplicationManager;
-class Identity;
+struct Identity;
 
 // A ContentHandlerConnection is responsible for creating and maintaining a
 // connection to an app which provides the ContentHandler service.
@@ -27,22 +27,29 @@ class ContentHandlerConnection {
  public:
   // |id| is a unique identifier for this content handler.
   ContentHandlerConnection(ApplicationManager* manager,
-                           const Identity& source,
-                           const Identity& content_handler,
+                           const Identity& originator_identity,
+                           const CapabilityFilter& originator_filter,
+                           const GURL& content_handler_url,
+                           const std::string& qualifier,
+                           const CapabilityFilter& filter,
                            uint32_t id);
 
   // Closes the connection and destroys |this| object.
   void CloseConnection();
 
   ContentHandler* content_handler() { return content_handler_.get(); }
-  const Identity& identity() const { return identity_; }
+  const GURL& content_handler_url() { return content_handler_url_; }
+  const std::string& content_handler_qualifier() {
+    return content_handler_qualifier_;
+  }
   uint32_t id() const { return id_; }
 
  private:
   ~ContentHandlerConnection();
 
   ApplicationManager* manager_;
-  Identity identity_;
+  GURL content_handler_url_;
+  std::string content_handler_qualifier_;
   ContentHandlerPtr content_handler_;
   bool connection_closed_;
   // The id for this content handler.
