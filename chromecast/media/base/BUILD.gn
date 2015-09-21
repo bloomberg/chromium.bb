@@ -9,6 +9,7 @@ declare_args() {
   libcast_media_target = ""
 }
 
+# TODO(slan): See if the dependency on //media can be broken.
 source_set("base") {
   sources = [
     "decrypt_context_impl.cc",
@@ -58,10 +59,13 @@ shared_library("libcast_media_default") {
 
   configs += [ "//chromecast:config" ]
 
+  public_deps = [
+    "//chromecast/public",
+    "//chromecast/public/media",
+  ]
+
   deps = [
     "//build/config/sanitizers:deps",
     "//chromecast/media/cma/backend",
-    "//chromecast/public",
-    "//chromecast/public/media",
   ]
 }

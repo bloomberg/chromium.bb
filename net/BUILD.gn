@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/chromecast_build.gni")
 import("//build/config/compiler/compiler.gni")
 import("//build/config/crypto.gni")
 import("//build/config/features.gni")
@@ -31,9 +32,9 @@ gypi_values = exec_script("//build/gypi_to_gn.py",
                           "scope",
                           [ "net.gypi" ])
 
-# Disable Kerberos on ChromeOS, Android and iOS, at least for now. It needs
-# configuration (krb5.conf and so on).
-use_kerberos = !is_chromeos && !is_android && !is_ios
+# Disable Kerberos on ChromeOS, Android, iOS, and Chromecast, at least for now.
+# It needs configuration (krb5.conf and so on).
+use_kerberos = !is_chromeos && !is_android && !is_ios && !is_chromecast
 
 # The way the cache uses mmap() is inefficient on some Android devices. If
 # this flag is set, we hackily avoid using mmap() in the disk cache. We are
@@ -990,7 +991,7 @@ if (!is_ios && !is_android) {
         "//build/config/sanitizers:deps",
       ]
 
-      if (is_desktop_linux) {
+      if (is_desktop_linux && use_gconf) {
         configs += [
           "//build/config/linux:gconf",
           "//build/config/linux:glib",

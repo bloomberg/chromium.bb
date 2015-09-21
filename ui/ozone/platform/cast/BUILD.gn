@@ -1,0 +1,37 @@
+# Copyright 2015 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//build/config/chromecast_build.gni")
+import("//ui/ozone/ozone.gni")
+
+# GYP version: cast.gypi:ozone_platform_cast
+# TODO(slan): gn check needs deps on ozone and media to pass. Correct this.
+source_set("cast") {
+  sources = [
+    "client_native_pixmap_factory_cast.cc",
+    "client_native_pixmap_factory_cast.h",
+    "gpu_platform_support_cast.cc",
+    "gpu_platform_support_cast.h",
+    "overlay_manager_cast.cc",
+    "overlay_manager_cast.h",
+    "ozone_platform_cast.cc",
+    "ozone_platform_cast.h",
+    "platform_window_cast.cc",
+    "platform_window_cast.h",
+    "surface_factory_cast.cc",
+    "surface_factory_cast.h",
+    "surface_ozone_egl_cast.cc",
+    "surface_ozone_egl_cast.h",
+  ]
+
+  deps = [
+    "//base",
+    "//chromecast/graphics:libcast_graphics",
+    "//chromecast/media:libcast_media",
+    "//ui/gfx",
+    "//ui/gfx/geometry",
+    "//ui/ozone:ozone_base",
+    "//ui/platform_window",
+  ]
+}

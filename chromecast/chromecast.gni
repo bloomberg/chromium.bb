@@ -2,10 +2,35 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+# This args block should contain arguments used within the //chromecast
+# directory. Arguments which are used in other Chrome components should
+# be instead declared in //build/config/chromecast_build.gni.
 declare_args() {
-  # chromecast_branding is used to indicate build version. Set it to
-  # "public" for Chromium build.
+  # chromecast_branding is used to include or exclude Google-branded components.
+  # Set it to "public" for a Chromium build.
   chromecast_branding = "public"
 
+  # True if Chromecast build is targetted for linux desktop.
+  is_chromecast_desktop_build = is_linux && target_cpu != "arm"
+
+  # Use the stub graphics lib in //chromecast/graphics. If this is true, the
+  # value of |libcast_graphics_path| is ignored.
+  use_default_cast_graphics =
+      chromecast_branding == "public" || is_chromecast_desktop_build
+
+  # The path to the cast_graphics shared library. Any target pointed to must
+  # be named "libcast_graphics_1.0".
+  libcast_graphics_path = ""
+
+  # Use the stub media library in //chromecast/media. If this is true, the
+  # value of |libcast_media_path| is ignored.
+  use_default_cast_media =
+      chromecast_branding == "public" || is_chromecast_desktop_build
+
+  # The path to the cast_media shared library. Any target pointed to must be
+  # named "libcast_media_1.0".
+  libcast_media_path = ""
+
+  # Use Playready CDMs.
   use_playready = false
 }

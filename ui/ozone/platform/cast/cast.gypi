@@ -15,6 +15,7 @@
     ],
   },
   'targets': [
+    # GN target: //ui/ozone/platform/cast:cast
     {
       'target_name': 'ozone_platform_cast',
       'type': 'static_library',
@@ -28,9 +29,7 @@
         '../../chromecast/chromecast.gyp:cast_public_api',
         '../../chromecast/media/media.gyp:media_base',
       ],
-      'defines': [
-        'OZONE_IMPLEMENTATION',
-      ],
+
       'sources': [
         'client_native_pixmap_factory_cast.cc',
         'client_native_pixmap_factory_cast.h',

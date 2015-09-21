@@ -15,7 +15,7 @@ if (is_android) {
 
 # Common configuration for targets in the media/midi directory.
 config("midi_config") {
-  if (use_alsa) {
+  if (use_alsa && use_udev) {
     defines = [
       "USE_ALSA",
       "USE_UDEV",

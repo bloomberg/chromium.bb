@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//chromecast/chromecast.gni")
 import("//testing/test.gni")
 
 group("media") {
@@ -57,6 +58,18 @@ test("cast_media_unittests") {
     "//testing/gtest",
     "//ui/gfx/geometry",
   ]
+}
+
+group("libcast_media") {
+  if (use_default_cast_media) {
+    public_deps = [
+      "//chromecast/media/base:libcast_media_default",
+    ]
+  } else {
+    public_deps = [
+      "$libcast_media_path:libcast_media_1.0",
+    ]
+  }
 }
 
 # TODO(slan): delete this target once Chromecast M44/earlier is obsolete.

@@ -339,6 +339,16 @@ if (!is_android) {
         # TODO(gbillock): aura linux does not support the automation for
         # SendMouseMoveNotifyWhenDone
         sources -= [ "../browser/ui/views/toolbar/toolbar_button_test.cc" ]
+
+        if (!is_chromeos) {
+          # Desktop linux.
+          sources -= [
+            # TODO(port): This times out. Attempts have been made to fix the
+            # individual failures, but each time I disable a test from these
+            # suites, it seems like one or another starts timing out too.
+            "../browser/ui/views/keyboard_access_browsertest.cc",
+          ]
+        }
       }
       if (is_chromeos || !use_x11) {
         sources -= [
@@ -351,15 +361,7 @@ if (!is_android) {
       }
     }
 
-    if (is_linux && !is_chromeos) {
-      # Desktop linux.
-      sources -= [
-        # TODO(port): This times out. Attempts have been made to fix the
-        # individual failures, but each time I disable a test from these
-        # suites, it seems like one or another starts timing out too.
-        "../browser/ui/views/keyboard_access_browsertest.cc",
-      ]
-    } else {
+    if (!is_desktop_linux) {
       # Everything but desktop Linux.
       sources += rebase_path(
               chrome_tests_gypi_values.chrome_interactive_ui_test_non_desktop_linux_sources,
@@ -998,8 +1000,11 @@ if (!is_android) {
         "../browser/ui/ash/launcher/chrome_launcher_controller_browsertest.cc",
         "../browser/ui/ash/launcher/launcher_favicon_loader_browsertest.cc",
         "../browser/ui/ash/shelf_browsertest.cc",
-        "../browser/ui/views/frame/browser_non_client_frame_view_ash_browsertest.cc",
       ]
+
+      if (toolkit_views) {
+        sources -= [ "../browser/ui/views/frame/browser_non_client_frame_view_ash_browsertest.cc" ]
+      }
     }
     if (is_mac) {
       # TODO(mark): We really want this for all non-static library
@@ -1714,9 +1719,6 @@ if (!is_android) {
                 chrome_tests_unit_gypi_values.chrome_unit_tests_media_router_non_android_sources,
                 ".",
                 "//chrome")
-      }
-      if (!toolkit_views) {
-        sources -= [ "../browser/ui/views/media_router/media_router_ui_browsertest.cc" ]
       }
     }
     if (enable_webrtc) {

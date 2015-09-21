@@ -15,6 +15,7 @@
 # to set up feature flags.
 
 import("//build/config/chrome_build.gni")
+import("//build/config/chromecast_build.gni")
 if (is_android) {
   import("//build/config/android/config.gni")
 }
@@ -23,8 +24,8 @@ declare_args() {
   # Multicast DNS.
   enable_mdns = is_win || is_linux
 
-  enable_plugins = !is_android && !is_ios
-  enable_pdf = !is_android && !is_ios
+  enable_plugins = (!is_android && !is_ios) || is_chromecast
+  enable_pdf = !is_android && !is_ios && !is_chromecast
 
   # Enables Native Client support.
   # TODO(GYP): Get NaCl linking on other platforms.
@@ -36,9 +37,9 @@ declare_args() {
   # this will go away when Mac and Win are working and we can just use
   # the commented out logic.
   # Eventually we want this to be:
-  #   enable_nacl = !is_ios && !is_android
-  enable_nacl =
-      ((is_linux && !is_chromeos) || is_nacl) && current_cpu != "mipsel"
+  #   enable_nacl = !is_ios && !is_android && !is_chromecast
+  enable_nacl = ((is_linux && !is_chromeos) || is_nacl) &&
+                current_cpu != "mipsel" && !is_chromecast
   enable_nacl_untrusted = enable_nacl
   enable_pnacl = enable_nacl_untrusted
 
@@ -59,8 +60,7 @@ declare_args() {
   # Android OS includes support for proprietary codecs regardless of building
   # Chromium or Google Chrome. We also ship Google Chrome and Chromecast with
   # proprietary codecs.
-  # TODO(GYP) The GYP build has || chromecast==1 for this:
-  proprietary_codecs = is_android || is_chrome_branded
+  proprietary_codecs = is_android || is_chrome_branded || is_chromecast
 
   # TODO(GYP) This should be enabled on ios as well.
   enable_configuration_policy = !is_ios
@@ -86,22 +86,18 @@ declare_args() {
 
   enable_one_click_signin = is_win || is_mac || (is_linux && !is_chromeos)
 
-  enable_remoting = !is_ios && !is_android
+  enable_remoting = !is_ios && !is_android && !is_chromecast
 
   # Enable hole punching for the protected video.
-  enable_video_hole = is_android
+  enable_video_hole = is_android || is_chromecast
 
   # Enables browser side Content Decryption Modules. Required for embedders
   # (e.g. Android and ChromeCast) that use a browser side CDM.
-  enable_browser_cdms = is_android
+  enable_browser_cdms = is_android || is_chromecast
 
   # Hangout services is an extension that adds extra features to Hangouts.
   # For official GYP builds, this flag is set.
   enable_hangout_services_extension = false
-
-  # Enables the use of CDMs in pepper plugins. Chromecast requires that this
-  # can be explicitly disabled in gn args.
-  enable_pepper_cdms = enable_plugins && (is_linux || is_mac || is_win)
 
   # Variable safe_browsing is used to control the build time configuration
   # for safe browsing feature. Safe browsing can be compiled in 4 different
@@ -137,7 +133,7 @@ if (is_android || is_ios) {
 }
 
 # libudev usage. This currently only affects the content layer.
-use_udev = is_linux
+use_udev = is_linux && !is_chromecast
 
 # Enable the spell checker.
 enable_spellcheck = !is_ios
@@ -146,11 +142,15 @@ enable_spellcheck = !is_ios
 use_browser_spellchecker = is_android || is_mac
 
 # Enable basic printing support and UI.
-enable_basic_printing = !is_chromeos
+enable_basic_printing = !is_chromeos && !is_chromecast
 
 # Enable printing with print preview. It does not imply
 # enable_basic_printing. It's possible to build Chrome with preview only.
-enable_print_preview = !is_android
+enable_print_preview = !is_android && !is_chromecast
+
+# Enables the use of CDMs in pepper plugins.
+enable_pepper_cdms =
+    enable_plugins && (is_linux || is_mac || is_win) && !is_chromecast
 
 # The seccomp-bpf sandbox is only supported on three architectures
 # currently.
@@ -168,13 +168,13 @@ disable_ftp_support = is_ios
 
 enable_web_speech = !is_android && !is_ios
 
-use_dbus = is_linux
+use_dbus = is_linux && !is_chromecast
 
 enable_extensions = !is_android && !is_ios
 
 enable_task_manager = !is_ios && !is_android
 
-use_cups = is_desktop_linux || is_mac
+use_cups = (is_desktop_linux || is_mac) && !is_chromecast
 
 enable_themes = !is_android && !is_ios
 
@@ -204,8 +204,7 @@ use_brlapi = is_chromeos
 
 # Option controlling the use of GConf (the classic GNOME configuration
 # system).
-# TODO(GYP) also require !embedded to enable.
-use_gconf = is_linux && !is_chromeos
+use_gconf = is_linux && !is_chromeos && !is_chromecast
 
 # Whether to back up data before sync.
 enable_pre_sync_backup = is_win || is_mac || (is_linux && !is_chromeos)

@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/chromecast_build.gni")
+
 declare_args() {
   # Allows distributions to link pulseaudio directly (DT_NEEDED) instead of
   # using dlopen. This helps with automated detection of ABI mismatches and
@@ -36,22 +38,27 @@ declare_args() {
   # Enables runtime selection of ALSA library for audio.
   use_alsa = false
 
-  # TODO(GYP): How to handled the "embedded" use case?
-  # Original conditional: (OS=="linux" or OS=="freebsd" or OS=="solaris") and embedded!=1
-  if (is_posix && !is_android && !is_mac) {
+  # Alsa should be used on non-Android, non-Mac POSIX systems, and Chromecast
+  # builds for desktop Linux.
+  if ((is_posix && !is_android && !is_mac) ||
+      (is_chromecast && target_cpu != "arm" && is_linux)) {
     use_alsa = true
     if (!use_cras) {
       use_pulseaudio = true
     }
   }
 
+  # Use low-memory buffers on non-Android builds of Chromecast.
+  use_low_memory_buffer = is_chromecast && !is_android
+
   # Enables the MPEG2-TS stream parser for use with Media Source. Disabled by
-  # default since it's not available on the normal Web Platform and costs money.
-  enable_mpeg2ts_stream_parser = false
+  # default (except on Chromecast) since it's not available on the normal Web
+  # Platform and costs money.
+  enable_mpeg2ts_stream_parser = is_chromecast
 
   # Enable HEVC/H265 demuxing. Actual decoding must be provided by the
-  # platform.
-  enable_hevc_demuxing = false
+  # platform. Enable by default for Chromecast.
+  enable_hevc_demuxing = is_chromecast
 
   # Experiment to enable mojo media application: http://crbug.com/431776
   # Valid options are:

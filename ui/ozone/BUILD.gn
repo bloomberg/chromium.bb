@@ -35,6 +35,11 @@ if (ozone_platform_gbm) {
   ozone_platform_test_deps += [ "platform/drm:gbm_unittests" ]
 }
 
+if (ozone_platform_cast) {
+  ozone_platforms += [ "cast" ]
+  ozone_platform_deps += [ "platform/cast" ]
+}
+
 platform_list_cc_file = "$target_gen_dir/platform_list.cc"
 platform_list_h_file = "$target_gen_dir/platform_list.h"
 platform_list_txt_file = "$target_gen_dir/platform_list.txt"

@@ -2525,11 +2525,6 @@
             'browser/media/router/media_router.gyp:media_router_test_support',
             'test/media_router/media_router_tests.gypi:media_router_integration_test_files'
           ],
-          'conditions': [
-            ['toolkit_views==0', {
-              'sources!': [ 'browser/ui/views/media_router/media_router_ui_browsertest.cc' ],
-            }],
-          ],
         }],
         ['enable_mdns==1', {
           'sources' : [

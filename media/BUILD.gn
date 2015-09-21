@@ -207,8 +207,6 @@ component("media") {
     "filters/ivf_parser.h",
     "filters/jpeg_parser.cc",
     "filters/jpeg_parser.h",
-    "filters/source_buffer_platform.cc",
-    "filters/source_buffer_platform.h",
     "filters/source_buffer_range.cc",
     "filters/source_buffer_range.h",
     "filters/source_buffer_stream.cc",
@@ -502,6 +500,18 @@ component("media") {
       "formats/mpeg/mpeg1_audio_stream_parser.h",
       "formats/mpeg/mpeg_audio_stream_parser_base.cc",
       "formats/mpeg/mpeg_audio_stream_parser_base.h",
+    ]
+  }
+
+  if (use_low_memory_buffer) {
+    sources += [
+      "filters/source_buffer_platform.h",
+      "filters/source_buffer_platform_lowmem.cc",
+    ]
+  } else {
+    sources += [
+      "filters/source_buffer_platform.cc",
+      "filters/source_buffer_platform.h",
     ]
   }
 
