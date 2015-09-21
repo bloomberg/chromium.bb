@@ -1580,12 +1580,12 @@ pp::Buffer_Dev PDFiumEngine::PrintPagesAsPDF(
     if (!page_number_str.empty())
       page_number_str.append(",");
     page_number_str.append(
-        base::IntToString(page_ranges[index].first_page_number + 1));
+        base::UintToString(page_ranges[index].first_page_number + 1));
     if (page_ranges[index].first_page_number !=
             page_ranges[index].last_page_number) {
       page_number_str.append("-");
       page_number_str.append(
-          base::IntToString(page_ranges[index].last_page_number + 1));
+          base::UintToString(page_ranges[index].last_page_number + 1));
     }
   }
 
