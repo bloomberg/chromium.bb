@@ -332,8 +332,16 @@ void CancelAllTouches(UIScrollView* web_scroll_view) {
 // Generates the JavaScript string used to update the UIWebView's URL so that it
 // matches the URL displayed in the omnibox and sets window.history.state to
 // stateObject. Needed for history.pushState() and history.replaceState().
-- (NSString*)javascriptToReplaceWebViewURL:(const GURL&)url
+- (NSString*)javascriptToReplaceWebViewURL:(const GURL&)URL
                            stateObjectJSON:(NSString*)stateObject;
+// Injects JavaScript into the web view to update the URL to |URL|, to set
+// window.history.state to |stateObject|, and to trigger a popstate() event.
+// Upon the scripts completion, resets |urlOnStartLoading_| and
+// |_lastRegisteredRequestURL| to |URL|.  This is necessary so that sites that
+// depend on URL params/fragments continue to work correctly and that checks for
+// the URL don't incorrectly trigger |-pageChanged| calls.
+- (void)setPushedOrReplacedURL:(const GURL&)URL
+                   stateObject:(NSString*)stateObject;
 - (BOOL)isLoaded;
 // Called by NSNotificationCenter upon orientation changes.
 - (void)orientationDidChange;
@@ -1264,23 +1272,23 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   _webStateImpl->OnProvisionalNavigationStarted(requestURL);
 }
 
-- (NSString*)javascriptToReplaceWebViewURL:(const GURL&)url
+- (NSString*)javascriptToReplaceWebViewURL:(const GURL&)URL
                            stateObjectJSON:(NSString*)stateObject {
   std::string outURL;
-  base::EscapeJSONString(url.spec(), true, &outURL);
+  base::EscapeJSONString(URL.spec(), true, &outURL);
   return
       [NSString stringWithFormat:@"__gCrWeb.replaceWebViewURL(%@, %@);",
                                  base::SysUTF8ToNSString(outURL), stateObject];
 }
 
-- (void)finishPushStateNavigationToURL:(const GURL&)url
-                       withStateObject:(NSString*)stateObject {
+- (void)setPushedOrReplacedURL:(const GURL&)URL
+                   stateObject:(NSString*)stateObject {
   // TODO(stuartmorgan): Make CRWSessionController manage this internally (or
   // remove it; it's not clear this matches other platforms' behavior).
   _webStateImpl->GetNavigationManagerImpl().OnNavigationItemCommitted();
 
   NSString* replaceWebViewUrlJS =
-      [self javascriptToReplaceWebViewURL:url stateObjectJSON:stateObject];
+      [self javascriptToReplaceWebViewURL:URL stateObjectJSON:stateObject];
   std::string outState;
   base::EscapeJSONString(base::SysNSStringToUTF8(stateObject), true, &outState);
   NSString* popstateJS =
@@ -1288,7 +1296,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
                                  base::SysUTF8ToNSString(outState)];
   NSString* combinedJS =
       [NSString stringWithFormat:@"%@%@", replaceWebViewUrlJS, popstateJS];
-  GURL urlCopy(url);
+  GURL urlCopy(URL);
   base::WeakNSObject<CRWWebController> weakSelf(self);
   [self evaluateJavaScript:combinedJS
        stringResultHandler:^(NSString*, NSError*) {
@@ -1774,17 +1782,18 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 - (void)finishHistoryNavigationFromEntry:(CRWSessionEntry*)fromEntry {
   [_delegate webWillFinishHistoryNavigationFromEntry:fromEntry];
 
-  // Check if toEntry was created by a JavaScript window.history.pushState()
-  // call from fromEntry. If it was, don't load the URL. Instead update
-  // UIWebView's URL and dispatch a popstate event.
-  if ([_webStateImpl->GetNavigationManagerImpl().GetSessionController()
+  // If the current entry has a serialized state object, inject its state into
+  // the web view.
+  web::NavigationItemImpl* currentItem =
+      self.currentSessionEntry.navigationItemImpl;
+  NSString* state = currentItem->GetSerializedStateObject();
+  if (state.length)
+    [self setPushedOrReplacedURL:currentItem->GetURL() stateObject:state];
+  // Only load the new URL if the current entry was not created by a JavaScript
+  // window.history.pushState() call from |fromEntry|.
+  if (![_webStateImpl->GetNavigationManagerImpl().GetSessionController()
           isPushStateNavigationBetweenEntry:fromEntry
                                    andEntry:self.currentSessionEntry]) {
-    NSString* state = [self currentSessionEntry]
-                          .navigationItemImpl->GetSerializedStateObject();
-    [self finishPushStateNavigationToURL:[self currentNavigationURL]
-                         withStateObject:state];
-  } else {
     web::NavigationItem* currentItem =
         _webStateImpl->GetNavigationManagerImpl().GetVisibleItem();
     GURL endURL = [self URLForHistoryNavigationFromItem:fromEntry.navigationItem

@@ -185,12 +185,6 @@ class WebStateImpl;
 
 // Loads the URL indicated by current session state.
 - (void)loadCurrentURL;
-// Updates UIWebView's URL and urlOnStartLoading_ during back/forward navigation
-// over pushed URLs. Needed so that sites that depend on URL params/fragment
-// continue to work correctly and checks for the URL don't incorrectly trigger
-// -pageChanged calls.
-- (void)finishPushStateNavigationToURL:(const GURL&)url
-                       withStateObject:(NSString*)stateObject;
 // Loads the HTML into the page.
 - (void)loadHTML:(NSString*)html;
 // Loads HTML in the page and presents it as if it was originating from an
@@ -306,8 +300,8 @@ class WebStateImpl;
 - (void)restoreStateAfterURLRejection;
 
 // Helper method called at the end of history navigation methods goBack,
-// goForward, and goDelta. Determines whether to load a new URL or call
-// |finishPushStateNavigationToURL:withStateObject:|. |fromEntry| is the
+// goForward, and goDelta.  Loads a new URL if the current entry is not from a
+// pushState() navigation from |fromEntry|. |fromEntry| is the
 // CRWSessionEntry that was the current entry prior to the navigation.
 // TODO(rohitrao): This is only exposed so Tab can call it temporarily.  Remove
 // as soon as all the Tab calls have moved into CRWWebController.
