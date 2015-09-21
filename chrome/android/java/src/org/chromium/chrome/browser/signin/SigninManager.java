@@ -169,7 +169,6 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
                 GoogleServicesNotificationController.get(mContext);
         mSigninNotificationController = new SigninNotificationController(
                 mContext, controller, AccountManagementFragment.class);
-        ChromeSigninController.get(mContext).addListener(mSigninNotificationController);
         AccountTrackerService.get(mContext).addSystemAccountsSeededListener(this);
     }
 
@@ -426,8 +425,9 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
         boolean wipeData = getManagementDomain() != null;
         Log.d(TAG, "Signing out, wipe data? " + wipeData);
 
-        ChromeSigninController.get(mContext).clearSignedInUser();
         ProfileSyncService.get().signOut();
+        ChromeSigninController.get(mContext).setSignedInAccountName(null);
+        mSigninNotificationController.onClearSignedInUser();
         nativeSignOut(mNativeSigninManagerAndroid);
 
         if (wipeData) {

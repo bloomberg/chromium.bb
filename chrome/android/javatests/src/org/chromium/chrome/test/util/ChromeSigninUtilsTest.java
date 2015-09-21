@@ -30,7 +30,7 @@ public class ChromeSigninUtilsTest extends InstrumentationTestCase {
         super.setUp();
         mSigninUtil = new ChromeSigninUtils(getInstrumentation());
         mSigninController = ChromeSigninController.get(getInstrumentation().getTargetContext());
-        mSigninController.clearSignedInUser();
+        mSigninController.setSignedInAccountName(null);
         mSigninUtil.removeAllFakeAccountsFromOs();
         mSigninUtil.removeAllGoogleAccountsFromOs();
     }
@@ -145,7 +145,7 @@ public class ChromeSigninUtilsTest extends InstrumentationTestCase {
 
     @Override
     protected void tearDown() throws Exception {
-        mSigninController.clearSignedInUser();
+        mSigninController.setSignedInAccountName(null);
         mSigninUtil.removeAllFakeAccountsFromOs();
         mSigninUtil.removeAllGoogleAccountsFromOs();
         super.tearDown();

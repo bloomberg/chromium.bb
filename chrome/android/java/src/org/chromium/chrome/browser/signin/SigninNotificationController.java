@@ -12,13 +12,12 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.notifications.GoogleServicesNotificationController;
 import org.chromium.chrome.browser.notifications.NotificationConstants;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
-import org.chromium.sync.signin.ChromeSigninController;
 
 /**
  * {@link SigninNotificationController} provides functionality for displaying Android notifications
  * regarding the user sign-in status.
  */
-public class SigninNotificationController implements ChromeSigninController.Listener {
+public class SigninNotificationController {
     private final Context mApplicationContext;
     private final GoogleServicesNotificationController mNotificationController;
     private final Class<? extends Fragment> mAccountManagementFragment;
@@ -51,9 +50,8 @@ public class SigninNotificationController implements ChromeSigninController.List
     }
 
     /**
-     * Callback for {@link ChromeSigninController.Listener}.
+     * Called when the user signs outs.
      */
-    @Override
     public void onClearSignedInUser() {
         mNotificationController.cancelNotification(NotificationConstants.NOTIFICATION_ID_SIGNED_IN);
     }

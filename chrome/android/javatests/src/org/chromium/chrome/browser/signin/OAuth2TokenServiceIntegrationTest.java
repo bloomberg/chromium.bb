@@ -375,7 +375,7 @@ public class OAuth2TokenServiceIntegrationTest extends NativeLibraryTestBase {
         assertEquals(2, mObserver.getAvailableCallCount());
 
         // Remove all.
-        mChromeSigninController.clearSignedInUser();
+        mChromeSigninController.setSignedInAccountName(null);
         mAccountManager.removeAccountHolderExplicitly(TEST_ACCOUNT_HOLDER_1);
         mAccountManager.removeAccountHolderExplicitly(TEST_ACCOUNT_HOLDER_2);
 

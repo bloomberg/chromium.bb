@@ -62,7 +62,7 @@ public class ChromeSigninUtils {
         }
 
         if (ChromeSigninController.get(mContext).isSignedIn()) {
-            ChromeSigninController.get(mContext).clearSignedInUser();
+            ChromeSigninController.get(mContext).setSignedInAccountName(null);
         }
         ChromeSigninController.get(mContext).setSignedInAccountName(username);
     }

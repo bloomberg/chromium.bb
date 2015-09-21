@@ -7,9 +7,7 @@ package org.chromium.sync.signin;
 import android.accounts.Account;
 import android.content.Context;
 import android.preference.PreferenceManager;
-import android.util.Log;
 
-import org.chromium.base.ObserverList;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.sync.AndroidSyncSettings;
 
@@ -17,16 +15,6 @@ import org.chromium.sync.AndroidSyncSettings;
  * Caches the signed-in username in the app prefs.
  */
 public class ChromeSigninController {
-
-    /**
-     * Interface for listening to signin events from ChromeSigninController.
-     */
-    public interface Listener {
-        /**
-         * Called when the user signs out of Chrome.
-         */
-        void onClearSignedInUser();
-    }
 
     public static final String TAG = "ChromeSigninController";
 
@@ -38,8 +26,6 @@ public class ChromeSigninController {
     private static ChromeSigninController sChromeSigninController;
 
     private final Context mApplicationContext;
-
-    private final ObserverList<Listener> mListeners = new ObserverList<Listener>();
 
     private ChromeSigninController(Context context) {
         mApplicationContext = context.getApplicationContext();
@@ -81,33 +67,8 @@ public class ChromeSigninController {
         AndroidSyncSettings.updateAccount(mApplicationContext, getSignedInUser());
     }
 
-    public void clearSignedInUser() {
-        Log.d(TAG, "Clearing user signed in to Chrome");
-        setSignedInAccountName(null);
-
-        for (Listener listener : mListeners) {
-            listener.onClearSignedInUser();
-        }
-    }
-
     public String getSignedInAccountName() {
         return PreferenceManager.getDefaultSharedPreferences(mApplicationContext)
                 .getString(SIGNED_IN_ACCOUNT_KEY, null);
-    }
-
-    /**
-     * Adds a Listener.
-     * @param listener Listener to add.
-     */
-    public void addListener(Listener listener) {
-        mListeners.addObserver(listener);
-    }
-
-    /**
-     * Removes a Listener.
-     * @param listener Listener to remove from the list.
-     */
-    public void removeListener(Listener listener) {
-        mListeners.removeObserver(listener);
     }
 }

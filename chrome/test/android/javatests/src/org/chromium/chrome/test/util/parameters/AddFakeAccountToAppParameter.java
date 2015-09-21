@@ -40,13 +40,13 @@ public class AddFakeAccountToAppParameter extends BaseParameter {
     public void setUp() {
         String username = getStringArgument(ARGUMENT.USERNAME, ARGUMENT.DEFAULT.USERNAME);
 
-        mSigninController.clearSignedInUser();
+        mSigninController.setSignedInAccountName(null);
         mSigninUtil.addAccountToApp(username);
     }
 
     @Override
     public void tearDown() {
-        mSigninController.clearSignedInUser();
+        mSigninController.setSignedInAccountName(null);
     }
 
     /**
