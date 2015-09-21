@@ -117,10 +117,6 @@ const base::FilePath::CharType kHelperProcessExecutablePath[] = FPL("chrome");
 #if defined(OS_MACOSX)
 const base::FilePath::CharType kFrameworkName[] =
     FPL(PRODUCT_STRING " Framework.framework");
-
-const char* const kHelperFlavorSuffixes[] = {
-  NULL
-};
 #endif  // OS_MACOSX
 
 #if defined(OS_WIN)

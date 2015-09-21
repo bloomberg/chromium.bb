@@ -179,30 +179,6 @@
                          '--scm=1',
                          '--version=<(app_shell_version)'],
             },
-            {
-              # This postbuild step is responsible for creating the following
-              # helpers:
-              #
-              # App Shell Helper EH.app and App Shell Helper NP.app are
-              # created from App Shell Helper.app.
-              #
-              # The EH helper is marked for an executable heap. The NP helper
-              # is marked for no PIE (ASLR).
-              'postbuild_name': 'Make More Helpers',
-              'action': [
-                '../../build/mac/make_more_helpers.sh',
-                'Frameworks',
-                '<(app_shell_product_name)',
-              ],
-            },
-            {
-              # Make sure there isn't any Objective-C in the shell's
-              # executable.
-              'postbuild_name': 'Verify No Objective-C',
-              'action': [
-                '../../build/mac/verify_no_objc.sh',
-              ],
-            },
           ],
         }],
       ],
@@ -415,14 +391,6 @@
                          '--keystone=0',
                          '--scm=0',
                          '--version=<(app_shell_version)'],
-            },
-            {
-              # Make sure there isn't any Objective-C in the helper app's
-              # executable.
-              'postbuild_name': 'Verify No Objective-C',
-              'action': [
-                '../../build/mac/verify_no_objc.sh',
-              ],
             },
           ],
         },  # target app_shell_helper

@@ -41,16 +41,6 @@ extern const base::FilePath::CharType kHelperProcessExecutablePathChromium[];
 // TODO(tfarina): Remove the comment above, when you fix components to use plist
 // on Mac.
 extern const base::FilePath::CharType kFrameworkName[];
-
-// The helper .app bundle name and executable name may have one of these
-// suffixes to identify specific features, or it may have no suffix at all.
-// This is a NULL-terminated array of strings. If kHelperFlavorSuffixes
-// contains "EN", "MF", and NULL, it indicates that if the normal helper is
-// named Chromium Helper.app, helper executables could show up at any of
-// Chromium Helper.app/Contents/MacOS/Chromium Helper,
-// Chromium Helper EN.app/Contents/MacOS/Chromium Helper EN, and
-// Chromium Helper MF.app/Contents/MacOS/Chromium Helper MF.
-extern const base::FilePath::CharType* const kHelperFlavorSuffixes[];
 #endif  // OS_MACOSX
 #if defined(OS_WIN)
 extern const base::FilePath::CharType kBrowserResourcesDll[];

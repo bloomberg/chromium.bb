@@ -163,15 +163,6 @@ for SRC_NAME in "${SRC_NAMES[@]}"; do
                             "${SRC_STEM} Canary" "${SRC_STEM} Canary.app" \
                             "${ARCH}"
         ;;
-
-      "${SRC_APP_NAME} Helper.app")
-        # Google Chrome Helper EH and Google Chrome Helper NP are produced by
-        # build/mac/make_more_helpers.sh.
-        redump_syms_variant "${BPAD_SYM_PATH}" "${SRC_STEM}" \
-                            "${SRC_STEM} EH" "${SRC_STEM} EH.app" "${ARCH}"
-        redump_syms_variant "${BPAD_SYM_PATH}" "${SRC_STEM}" \
-                            "${SRC_STEM} NP" "${SRC_STEM} NP.app" "${ARCH}"
-        ;;
     esac
   done
 

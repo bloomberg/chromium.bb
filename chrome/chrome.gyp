@@ -230,14 +230,6 @@
                          '--keystone=0',
                          '--scm=0'],
             },
-            {
-              # Make sure there isn't any Objective-C in the helper app's
-              # executable.
-              'postbuild_name': 'Verify No Objective-C',
-              'action': [
-                '../build/mac/verify_no_objc.sh',
-              ],
-            },
           ],
           'conditions': [
             ['mac_breakpad==1', {
