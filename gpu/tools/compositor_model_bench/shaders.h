@@ -26,7 +26,7 @@ enum ShaderID {
   SHADER_ID_MAX
 };
 
-ShaderID ShaderIDFromString(std::string name);
+ShaderID ShaderIDFromString(const std::string& name);
 std::string ShaderNameFromID(ShaderID id);
 
 void ConfigAndActivateShaderForNode(CCNode* n);

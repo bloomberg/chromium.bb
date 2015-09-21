@@ -481,7 +481,7 @@ class TextureTestBase : public GpuServiceTest {
   ~TextureTestBase() override { texture_ref_ = NULL; }
 
  protected:
-  void SetUpBase(MemoryTracker* memory_tracker, std::string extensions) {
+  void SetUpBase(MemoryTracker* memory_tracker, const std::string& extensions) {
     GpuServiceTest::SetUp();
     if (!extensions.empty()) {
       TestHelper::SetupFeatureInfoInitExpectations(gl_.get(),

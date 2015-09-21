@@ -81,7 +81,7 @@ static void TranslateInPlace(float* m, float tx, float ty, float tz) {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-ShaderID ShaderIDFromString(std::string name) {
+ShaderID ShaderIDFromString(const std::string& name) {
   if (name == "VertexShaderPosTexYUVStretch")
     return VERTEX_SHADER_POS_TEX_YUV_STRETCH;
   if (name == "VertexShaderPosTex")

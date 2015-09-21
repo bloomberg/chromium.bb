@@ -23,7 +23,7 @@ using base::ReadFileToString;
 using std::string;
 using std::vector;
 
-GLenum TextureFormatFromString(std::string format) {
+GLenum TextureFormatFromString(const std::string& format) {
   if (format == "RGBA")
     return GL_RGBA;
   if (format == "RGB")

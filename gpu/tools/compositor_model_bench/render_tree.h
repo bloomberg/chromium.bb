@@ -35,7 +35,7 @@ struct Texture {
   GLenum format;
 };
 
-GLenum TextureFormatFromString(std::string format);
+GLenum TextureFormatFromString(const std::string& format);
 const char* TextureFormatName(GLenum format);
 int FormatBytesPerPixel(GLenum format);
 

@@ -23,8 +23,8 @@ class GpuBlacklistTest : public testing::Test {
     return gpu_info_;
   }
 
-  void RunFeatureTest(
-      const std::string feature_name, GpuFeatureType feature_type) {
+  void RunFeatureTest(const std::string& feature_name,
+                      GpuFeatureType feature_type) {
     const std::string json =
         "{\n"
         "  \"name\": \"gpu blacklist\",\n"
