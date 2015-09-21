@@ -74,11 +74,11 @@ void WebViewImpl::OnLoad() {
     devtools_agent_->AttachFrame(forward_agent.Pass(), &client_properties);
   }
 
-  FrameTreeClient* frame_tree_client = frame_connection->frame_tree_client();
+  mojom::FrameClient* frame_client = frame_connection->frame_client();
   const uint32_t content_handler_id = frame_connection->GetContentHandlerID();
-  frame_tree_.reset(new FrameTree(
-      content_handler_id, content_, view_tree_client.Pass(), this,
-      frame_tree_client, frame_connection.Pass(), client_properties));
+  frame_tree_.reset(new FrameTree(content_handler_id, content_,
+                                  view_tree_client.Pass(), this, frame_client,
+                                  frame_connection.Pass(), client_properties));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -155,14 +155,14 @@ void WebViewImpl::OnViewDestroyed(mus::View* view) {
 // WebViewImpl, FrameTreeDelegate implementation:
 
 scoped_ptr<FrameUserData> WebViewImpl::CreateUserDataForNewFrame(
-    FrameTreeClientPtr frame_tree_client) {
+    mojom::FrameClientPtr frame_client) {
   return make_scoped_ptr(
-      new ClientInitiatedFrameConnection(frame_tree_client.Pass()));
+      new ClientInitiatedFrameConnection(frame_client.Pass()));
 }
 
 bool WebViewImpl::CanPostMessageEventToFrame(const Frame* source,
                                              const Frame* target,
-                                             HTMLMessageEvent* event) {
+                                             mojom::HTMLMessageEvent* event) {
   return true;
 }
 

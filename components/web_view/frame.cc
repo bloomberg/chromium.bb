@@ -32,8 +32,8 @@ namespace {
 const uint32_t kNoParentId = 0u;
 const mus::ConnectionSpecificId kInvalidConnectionId = 0u;
 
-FrameDataPtr FrameToFrameData(const Frame* frame) {
-  FrameDataPtr frame_data(FrameData::New());
+mojom::FrameDataPtr FrameToFrameData(const Frame* frame) {
+  mojom::FrameDataPtr frame_data(mojom::FrameData::New());
   frame_data->frame_id = frame->id();
   frame_data->parent_id = frame->parent() ? frame->parent()->id() : kNoParentId;
   frame_data->client_properties =
@@ -44,9 +44,9 @@ FrameDataPtr FrameToFrameData(const Frame* frame) {
 
 }  // namespace
 
-struct Frame::FrameTreeServerBinding {
+struct Frame::FrameUserDataAndBinding {
   scoped_ptr<FrameUserData> user_data;
-  scoped_ptr<mojo::Binding<FrameTreeServer>> frame_tree_server_binding;
+  scoped_ptr<mojo::Binding<mojom::Frame>> frame_binding;
 };
 
 Frame::Frame(FrameTree* tree,
@@ -54,7 +54,7 @@ Frame::Frame(FrameTree* tree,
              uint32_t frame_id,
              uint32_t app_id,
              ViewOwnership view_ownership,
-             FrameTreeClient* frame_tree_client,
+             mojom::FrameClient* frame_client,
              scoped_ptr<FrameUserData> user_data,
              const ClientPropertyMap& client_properties)
     : tree_(tree),
@@ -65,7 +65,7 @@ Frame::Frame(FrameTree* tree,
       parent_(nullptr),
       view_ownership_(view_ownership),
       user_data_(user_data.Pass()),
-      frame_tree_client_(frame_tree_client),
+      frame_client_(frame_client),
       loading_(false),
       progress_(0.f),
       client_properties_(client_properties),
@@ -92,21 +92,21 @@ Frame::~Frame() {
 
 void Frame::Init(Frame* parent,
                  mojo::ViewTreeClientPtr view_tree_client,
-                 mojo::InterfaceRequest<FrameTreeServer> server_request) {
+                 mojo::InterfaceRequest<mojom::Frame> frame_request) {
   {
-    // Set the FrameTreeClient to null so that we don't notify the client of the
+    // Set the FrameClient to null so that we don't notify the client of the
     // add before OnConnect().
-    base::AutoReset<FrameTreeClient*> frame_tree_client_resetter(
-        &frame_tree_client_, nullptr);
+    base::AutoReset<mojom::FrameClient*> frame_client_resetter(&frame_client_,
+                                                               nullptr);
     if (parent)
       parent->Add(this);
   }
 
-  const ClientType client_type = server_request.is_pending()
+  const ClientType client_type = frame_request.is_pending()
                                      ? ClientType::NEW_CHILD_FRAME
                                      : ClientType::EXISTING_FRAME_NEW_APP;
   InitClient(client_type, nullptr, view_tree_client.Pass(),
-             server_request.Pass());
+             frame_request.Pass());
 
   tree_->delegate_->DidCreateFrame(this);
 }
@@ -155,11 +155,10 @@ double Frame::GatherProgress(int* frame_count) const {
   return progress_;
 }
 
-void Frame::InitClient(
-    ClientType client_type,
-    scoped_ptr<FrameTreeServerBinding> frame_tree_server_binding,
-    mojo::ViewTreeClientPtr view_tree_client,
-    mojo::InterfaceRequest<FrameTreeServer> server_request) {
+void Frame::InitClient(ClientType client_type,
+                       scoped_ptr<FrameUserDataAndBinding> data_and_binding,
+                       mojo::ViewTreeClientPtr view_tree_client,
+                       mojo::InterfaceRequest<mojom::Frame> frame_request) {
   if (client_type == ClientType::EXISTING_FRAME_NEW_APP &&
       view_tree_client.get()) {
     embedded_connection_id_ = kInvalidConnectionId;
@@ -172,43 +171,43 @@ void Frame::InitClient(
   if (client_type == ClientType::NEW_CHILD_FRAME) {
     // Don't install an error handler. We allow for the target to only
     // implement ViewTreeClient.
-    // This frame (and client) was created by an existing FrameTreeClient. There
+    // This frame (and client) was created by an existing FrameClient. There
     // is no need to send it OnConnect().
-    frame_tree_server_binding_.reset(
-        new mojo::Binding<FrameTreeServer>(this, server_request.Pass()));
-    frame_tree_client_->OnConnect(
-        nullptr, tree_->change_id(), id_, VIEW_CONNECT_TYPE_USE_NEW,
-        mojo::Array<FrameDataPtr>(),
-        base::Bind(&OnConnectAck, base::Passed(&frame_tree_server_binding)));
+    frame_binding_.reset(
+        new mojo::Binding<mojom::Frame>(this, frame_request.Pass()));
+    frame_client_->OnConnect(
+        nullptr, tree_->change_id(), id_, mojom::VIEW_CONNECT_TYPE_USE_NEW,
+        mojo::Array<mojom::FrameDataPtr>(),
+        base::Bind(&OnConnectAck, base::Passed(&data_and_binding)));
   } else {
     std::vector<const Frame*> frames;
     tree_->root()->BuildFrameTree(&frames);
 
-    mojo::Array<FrameDataPtr> array(frames.size());
+    mojo::Array<mojom::FrameDataPtr> array(frames.size());
     for (size_t i = 0; i < frames.size(); ++i)
       array[i] = FrameToFrameData(frames[i]).Pass();
 
-    FrameTreeServerPtr frame_tree_server_ptr;
+    mojom::FramePtr frame_ptr;
     // Don't install an error handler. We allow for the target to only
     // implement ViewTreeClient.
-    frame_tree_server_binding_.reset(new mojo::Binding<FrameTreeServer>(
-        this, GetProxy(&frame_tree_server_ptr).Pass()));
-    frame_tree_client_->OnConnect(
-        frame_tree_server_ptr.Pass(), tree_->change_id(), id_,
+    frame_binding_.reset(
+        new mojo::Binding<mojom::Frame>(this, GetProxy(&frame_ptr).Pass()));
+    frame_client_->OnConnect(
+        frame_ptr.Pass(), tree_->change_id(), id_,
         client_type == ClientType::EXISTING_FRAME_SAME_APP
-            ? VIEW_CONNECT_TYPE_USE_EXISTING
-            : VIEW_CONNECT_TYPE_USE_NEW,
+            ? mojom::VIEW_CONNECT_TYPE_USE_EXISTING
+            : mojom::VIEW_CONNECT_TYPE_USE_NEW,
         array.Pass(),
-        base::Bind(&OnConnectAck, base::Passed(&frame_tree_server_binding)));
+        base::Bind(&OnConnectAck, base::Passed(&data_and_binding)));
     tree_->delegate_->DidStartNavigation(this);
   }
 }
 
 // static
-void Frame::OnConnectAck(
-    scoped_ptr<FrameTreeServerBinding> frame_tree_server_binding) {}
+void Frame::OnConnectAck(scoped_ptr<FrameUserDataAndBinding> data_and_binding) {
+}
 
-void Frame::ChangeClient(FrameTreeClient* frame_tree_client,
+void Frame::ChangeClient(mojom::FrameClient* frame_client,
                          scoped_ptr<FrameUserData> user_data,
                          mojo::ViewTreeClientPtr view_tree_client,
                          uint32_t app_id) {
@@ -218,26 +217,25 @@ void Frame::ChangeClient(FrameTreeClient* frame_tree_client,
   ClientType client_type = view_tree_client.get() == nullptr
                                ? ClientType::EXISTING_FRAME_SAME_APP
                                : ClientType::EXISTING_FRAME_NEW_APP;
-  scoped_ptr<FrameTreeServerBinding> frame_tree_server_binding;
+  scoped_ptr<FrameUserDataAndBinding> data_and_binding;
 
   if (client_type == ClientType::EXISTING_FRAME_SAME_APP) {
     // See comment in InitClient() for details.
-    frame_tree_server_binding.reset(new FrameTreeServerBinding);
-    frame_tree_server_binding->user_data = user_data_.Pass();
-    frame_tree_server_binding->frame_tree_server_binding =
-        frame_tree_server_binding_.Pass();
+    data_and_binding.reset(new FrameUserDataAndBinding);
+    data_and_binding->user_data = user_data_.Pass();
+    data_and_binding->frame_binding = frame_binding_.Pass();
   } else {
     loading_ = false;
     progress_ = 0.f;
   }
 
   user_data_ = user_data.Pass();
-  frame_tree_client_ = frame_tree_client;
-  frame_tree_server_binding_.reset();
+  frame_client_ = frame_client;
+  frame_binding_.reset();
   app_id_ = app_id;
 
-  InitClient(client_type, frame_tree_server_binding.Pass(),
-             view_tree_client.Pass(), nullptr);
+  InitClient(client_type, data_and_binding.Pass(), view_tree_client.Pass(),
+             nullptr);
 }
 
 void Frame::OnEmbedAck(bool success, mus::ConnectionSpecificId connection_id) {
@@ -300,7 +298,7 @@ void Frame::StartNavigate(mojo::URLRequestPtr request) {
 }
 
 void Frame::OnCanNavigateFrame(uint32_t app_id,
-                               FrameTreeClient* frame_tree_client,
+                               mojom::FrameClient* frame_client,
                                scoped_ptr<FrameUserData> user_data,
                                mojo::ViewTreeClientPtr view_tree_client) {
   if (AreAppIdsEqual(app_id, app_id_)) {
@@ -309,20 +307,18 @@ void Frame::OnCanNavigateFrame(uint32_t app_id,
     // and ends up reusing it).
     DCHECK(!view_tree_client.get());
   } else {
-    frame_tree_client_->OnWillNavigate();
+    frame_client_->OnWillNavigate();
     DCHECK(view_tree_client.get());
   }
-  ChangeClient(frame_tree_client, user_data.Pass(), view_tree_client.Pass(),
-               app_id);
+  ChangeClient(frame_client, user_data.Pass(), view_tree_client.Pass(), app_id);
 }
 
 void Frame::NotifyAdded(const Frame* source,
                         const Frame* added_node,
                         uint32_t change_id) {
-  // |frame_tree_client_| may be null during initial frame creation and
-  // parenting.
-  if (frame_tree_client_)
-    frame_tree_client_->OnFrameAdded(change_id, FrameToFrameData(added_node));
+  // |frame_client_| may be null during initial frame creation and parenting.
+  if (frame_client_)
+    frame_client_->OnFrameAdded(change_id, FrameToFrameData(added_node));
 
   for (Frame* child : children_)
     child->NotifyAdded(source, added_node, change_id);
@@ -331,7 +327,7 @@ void Frame::NotifyAdded(const Frame* source,
 void Frame::NotifyRemoved(const Frame* source,
                           const Frame* removed_node,
                           uint32_t change_id) {
-  frame_tree_client_->OnFrameRemoved(change_id, removed_node->id());
+  frame_client_->OnFrameRemoved(change_id, removed_node->id());
 
   for (Frame* child : children_)
     child->NotifyRemoved(source, removed_node, change_id);
@@ -341,19 +337,19 @@ void Frame::NotifyClientPropertyChanged(const Frame* source,
                                         const mojo::String& name,
                                         const mojo::Array<uint8_t>& value) {
   if (this != source)
-    frame_tree_client_->OnFrameClientPropertyChanged(source->id(), name,
-                                                     value.Clone());
+    frame_client_->OnFrameClientPropertyChanged(source->id(), name,
+                                                value.Clone());
 
   for (Frame* child : children_)
     child->NotifyClientPropertyChanged(source, name, value);
 }
 
 void Frame::NotifyFrameLoadingStateChanged(const Frame* frame, bool loading) {
-  frame_tree_client_->OnFrameLoadingStateChanged(frame->id(), loading);
+  frame_client_->OnFrameLoadingStateChanged(frame->id(), loading);
 }
 
 void Frame::NotifyDispatchFrameLoadEvent(const Frame* frame) {
-  frame_tree_client_->OnDispatchFrameLoadEvent(frame->id());
+  frame_client_->OnDispatchFrameLoadEvent(frame->id());
 }
 
 void Frame::OnTreeChanged(const TreeChangeParams& params) {
@@ -393,15 +389,14 @@ void Frame::OnViewEmbeddedAppDisconnected(mus::View* view) {
 }
 
 void Frame::PostMessageEventToFrame(uint32_t target_frame_id,
-                                    HTMLMessageEventPtr event) {
+                                    mojom::HTMLMessageEventPtr event) {
   // NOTE: |target_frame_id| is allowed to be from another connection.
   Frame* target = tree_->root()->FindFrame(target_frame_id);
   if (!target || target == this ||
       !tree_->delegate_->CanPostMessageEventToFrame(this, target, event.get()))
     return;
 
-  target->frame_tree_client_->OnPostMessageEvent(id_, target_frame_id,
-                                                 event.Pass());
+  target->frame_client_->OnPostMessageEvent(id_, target_frame_id, event.Pass());
 }
 
 void Frame::LoadingStateChanged(bool loading, double progress) {
@@ -448,8 +443,8 @@ void Frame::SetClientProperty(const mojo::String& name,
 }
 
 void Frame::OnCreatedFrame(
-    mojo::InterfaceRequest<FrameTreeServer> server_request,
-    FrameTreeClientPtr client,
+    mojo::InterfaceRequest<mojom::Frame> frame_request,
+    mojom::FrameClientPtr client,
     uint32_t frame_id,
     mojo::Map<mojo::String, mojo::Array<uint8_t>> client_properties) {
   if ((frame_id >> 16) != embedded_connection_id_) {
@@ -470,15 +465,15 @@ void Frame::OnCreatedFrame(
   }
 
   Frame* child_frame = tree_->CreateChildFrame(
-      this, server_request.Pass(), client.Pass(), frame_id, app_id_,
+      this, frame_request.Pass(), client.Pass(), frame_id, app_id_,
       client_properties.To<ClientPropertyMap>());
   child_frame->embedded_connection_id_ = embedded_connection_id_;
 }
 
-void Frame::RequestNavigate(NavigationTargetType target_type,
+void Frame::RequestNavigate(mojom::NavigationTargetType target_type,
                             uint32_t target_frame_id,
                             mojo::URLRequestPtr request) {
-  if (target_type == NAVIGATION_TARGET_TYPE_EXISTING_FRAME) {
+  if (target_type == mojom::NAVIGATION_TARGET_TYPE_EXISTING_FRAME) {
     // |target_frame| is allowed to come from another connection.
     Frame* target_frame = tree_->root()->FindFrame(target_frame_id);
     if (!target_frame) {

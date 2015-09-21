@@ -12,7 +12,7 @@
 #include "components/html_viewer/html_frame_tree_manager.h"
 #include "components/html_viewer/replicated_frame_state.h"
 #include "components/mus/public/cpp/view_observer.h"
-#include "components/web_view/public/interfaces/frame_tree.mojom.h"
+#include "components/web_view/public/interfaces/frame.mojom.h"
 #include "mojo/services/tracing/public/interfaces/tracing.mojom.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "third_party/WebKit/public/web/WebFrameClient.h"
@@ -55,9 +55,9 @@ class WebLayerTreeViewImpl;
 // HTMLFrameTreeManager and can not be moved to another HTMLFrameTreeManager.
 // Local frames have a mus::View, remote frames do not.
 //
-// HTMLFrame serves as the FrameTreeClient. It implements it by forwarding
-// the calls to HTMLFrameTreeManager so that HTMLFrameTreeManager can update
-// the frame tree as appropriate.
+// HTMLFrame serves as the FrameClient. It implements it by forwarding the
+// calls to HTMLFrameTreeManager so that HTMLFrameTreeManager can update the
+// frame tree as appropriate.
 //
 // Local frames may share the connection (and client implementation) with an
 // ancestor. This happens when a child frame is created. Once a navigate
@@ -67,7 +67,7 @@ class WebLayerTreeViewImpl;
 // process. See HTMLFrameTreeManager for details.
 class HTMLFrame : public blink::WebFrameClient,
                   public blink::WebRemoteFrameClient,
-                  public web_view::FrameTreeClient,
+                  public web_view::mojom::FrameClient,
                   public mus::ViewObserver {
  public:
   struct CreateParams {
@@ -195,10 +195,10 @@ class HTMLFrame : public blink::WebFrameClient,
   friend class HTMLFrameTreeManager;
 
   // Binds this frame to the specified server. |this| serves as the
-  // FrameTreeClient for the server.
-  void Bind(web_view::FrameTreeServerPtr frame_tree_server,
-            mojo::InterfaceRequest<web_view::FrameTreeClient>
-                frame_tree_client_request);
+  // FrameClient for the server.
+  void Bind(web_view::mojom::FramePtr frame,
+            mojo::InterfaceRequest<web_view::mojom::FrameClient>
+                frame_client_request);
 
   // Sets the appropriate value from the client property. |name| identifies
   // the property and |new_data| the new value.
@@ -212,8 +212,8 @@ class HTMLFrame : public blink::WebFrameClient,
   // Returns the ApplicationImpl from the first ancestor with a delegate.
   mojo::ApplicationImpl* GetApp();
 
-  // Gets the FrameTreeServer to use for this frame.
-  web_view::FrameTreeServer* GetFrameTreeServer();
+  // Gets the server Frame to use for this frame.
+  web_view::mojom::Frame* GetServerFrame();
 
   void SetView(mus::View* view);
 
@@ -255,15 +255,15 @@ class HTMLFrame : public blink::WebFrameClient,
   void OnViewFocusChanged(mus::View* gained_focus,
                           mus::View* lost_focus) override;
 
-  // web_view::FrameTreeClient:
-  void OnConnect(web_view::FrameTreeServerPtr server,
+  // web_view::mojom::FrameClient:
+  void OnConnect(web_view::mojom::FramePtr server,
                  uint32_t change_id,
                  uint32_t view_id,
-                 web_view::ViewConnectType view_connect_type,
-                 mojo::Array<web_view::FrameDataPtr> frame_data,
+                 web_view::mojom::ViewConnectType view_connect_type,
+                 mojo::Array<web_view::mojom::FrameDataPtr> frame_data,
                  const OnConnectCallback& callback) override;
   void OnFrameAdded(uint32_t change_id,
-                    web_view::FrameDataPtr frame_data) override;
+                    web_view::mojom::FrameDataPtr frame_data) override;
   void OnFrameRemoved(uint32_t change_id, uint32_t frame_id) override;
   void OnFrameClientPropertyChanged(uint32_t frame_id,
                                     const mojo::String& name,
@@ -271,7 +271,7 @@ class HTMLFrame : public blink::WebFrameClient,
   void OnPostMessageEvent(
       uint32_t source_frame_id,
       uint32_t target_frame_id,
-      web_view::HTMLMessageEventPtr serialized_event) override;
+      web_view::mojom::HTMLMessageEventPtr serialized_event) override;
   void OnWillNavigate() override;
   void OnFrameLoadingStateChanged(uint32_t frame_id, bool loading) override;
   void OnDispatchFrameLoadEvent(uint32_t frame_id) override;
@@ -306,9 +306,8 @@ class HTMLFrame : public blink::WebFrameClient,
   scoped_ptr<cc_blink::WebLayerImpl> web_layer_;
 
   HTMLFrameDelegate* delegate_;
-  scoped_ptr<mojo::Binding<web_view::FrameTreeClient>>
-      frame_tree_client_binding_;
-  web_view::FrameTreeServerPtr server_;
+  scoped_ptr<mojo::Binding<web_view::mojom::FrameClient>> frame_client_binding_;
+  web_view::mojom::FramePtr server_;
 
   ReplicatedFrameState state_;
 

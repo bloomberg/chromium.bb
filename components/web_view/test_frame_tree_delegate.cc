@@ -49,15 +49,15 @@ void TestFrameTreeDelegate::WaitForFrameDisconnected(Frame* frame) {
 }
 
 scoped_ptr<FrameUserData> TestFrameTreeDelegate::CreateUserDataForNewFrame(
-    FrameTreeClientPtr frame_tree_client) {
+    mojom::FrameClientPtr frame_client) {
   return make_scoped_ptr(
-      new ClientInitiatedFrameConnection(frame_tree_client.Pass()));
+      new ClientInitiatedFrameConnection(frame_client.Pass()));
 }
 
 bool TestFrameTreeDelegate::CanPostMessageEventToFrame(
     const Frame* source,
     const Frame* target,
-    HTMLMessageEvent* event) {
+    mojom::HTMLMessageEvent* event) {
   return true;
 }
 

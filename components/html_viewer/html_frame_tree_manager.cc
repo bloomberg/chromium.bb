@@ -30,9 +30,10 @@ namespace {
 
 // Returns the index of the FrameData with the id of |frame_id| in |index|. On
 // success returns true, otherwise false.
-bool FindFrameDataIndex(const mojo::Array<web_view::FrameDataPtr>& frame_data,
-                        uint32_t frame_id,
-                        size_t* index) {
+bool FindFrameDataIndex(
+    const mojo::Array<web_view::mojom::FrameDataPtr>& frame_data,
+    uint32_t frame_id,
+    size_t* index) {
   for (size_t i = 0; i < frame_data.size(); ++i) {
     if (frame_data[i]->frame_id == frame_id) {
       *index = i;
@@ -74,16 +75,16 @@ HTMLFrame* HTMLFrameTreeManager::CreateFrameAndAttachToTree(
   if (!instances_)
     instances_ = new TreeMap;
 
-  mojo::InterfaceRequest<web_view::FrameTreeClient> frame_tree_client_request;
-  web_view::FrameTreeServerPtr frame_tree_server;
-  mojo::Array<web_view::FrameDataPtr> frame_data;
+  mojo::InterfaceRequest<web_view::mojom::FrameClient> frame_client_request;
+  web_view::mojom::FramePtr server_frame;
+  mojo::Array<web_view::mojom::FrameDataPtr> frame_data;
   uint32_t change_id;
   uint32_t view_id;
-  web_view::ViewConnectType view_connect_type;
-  web_view::FrameTreeClient::OnConnectCallback on_connect_callback;
-  resource_waiter->Release(&frame_tree_client_request, &frame_tree_server,
-                           &frame_data, &change_id, &view_id,
-                           &view_connect_type, &on_connect_callback);
+  web_view::mojom::ViewConnectType view_connect_type;
+  web_view::mojom::FrameClient::OnConnectCallback on_connect_callback;
+  resource_waiter->Release(&frame_client_request, &server_frame, &frame_data,
+                           &change_id, &view_id, &view_connect_type,
+                           &on_connect_callback);
   resource_waiter.reset();
 
   on_connect_callback.Run();
@@ -93,7 +94,7 @@ HTMLFrame* HTMLFrameTreeManager::CreateFrameAndAttachToTree(
 
   DCHECK(!frame_tree || change_id <= frame_tree->change_id_);
 
-  if (view_connect_type == web_view::VIEW_CONNECT_TYPE_USE_EXISTING &&
+  if (view_connect_type == web_view::mojom::VIEW_CONNECT_TYPE_USE_EXISTING &&
       !frame_tree) {
     DVLOG(1) << "was told to use existing view but do not have frame tree";
     return nullptr;
@@ -104,7 +105,8 @@ HTMLFrame* HTMLFrameTreeManager::CreateFrameAndAttachToTree(
     frame_tree->Init(delegate, view, frame_data, change_id);
     if (frame_data[0]->frame_id == view->id())
       (*instances_)[frame_data[0]->frame_id] = frame_tree;
-  } else if (view_connect_type == web_view::VIEW_CONNECT_TYPE_USE_EXISTING) {
+  } else if (view_connect_type ==
+             web_view::mojom::VIEW_CONNECT_TYPE_USE_EXISTING) {
     HTMLFrame* existing_frame = frame_tree->root_->FindFrame(view_id);
     if (!existing_frame) {
       DVLOG(1) << "was told to use existing view but could not find view";
@@ -123,7 +125,7 @@ HTMLFrame* HTMLFrameTreeManager::CreateFrameAndAttachToTree(
       CHECK(!existing_frame->IsLocal());
       size_t frame_data_index = 0u;
       CHECK(FindFrameDataIndex(frame_data, view->id(), &frame_data_index));
-      const web_view::FrameDataPtr& data = frame_data[frame_data_index];
+      const web_view::mojom::FrameDataPtr& data = frame_data[frame_data_index];
       existing_frame->SwapToLocal(delegate, view, data->client_properties);
     } else {
       // If we can't find the frame and the change_id of the incoming
@@ -144,7 +146,7 @@ HTMLFrame* HTMLFrameTreeManager::CreateFrameAndAttachToTree(
 
   HTMLFrame* frame = frame_tree->root_->FindFrame(view_id);
   DCHECK(frame);
-  frame->Bind(frame_tree_server.Pass(), frame_tree_client_request.Pass());
+  frame->Bind(server_frame.Pass(), frame_client_request.Pass());
   return frame;
 }
 
@@ -204,7 +206,7 @@ HTMLFrameTreeManager::~HTMLFrameTreeManager() {
 void HTMLFrameTreeManager::Init(
     HTMLFrameDelegate* delegate,
     mus::View* local_view,
-    const mojo::Array<web_view::FrameDataPtr>& frame_data,
+    const mojo::Array<web_view::mojom::FrameDataPtr>& frame_data,
     uint32_t change_id) {
   change_id_ = change_id;
   root_ = BuildFrameTree(delegate, frame_data, local_view->id(), local_view);
@@ -215,7 +217,7 @@ void HTMLFrameTreeManager::Init(
 
 HTMLFrame* HTMLFrameTreeManager::BuildFrameTree(
     HTMLFrameDelegate* delegate,
-    const mojo::Array<web_view::FrameDataPtr>& frame_data,
+    const mojo::Array<web_view::mojom::FrameDataPtr>& frame_data,
     uint32_t local_frame_id,
     mus::View* local_view) {
   std::vector<HTMLFrame*> parents;
@@ -257,8 +259,7 @@ void HTMLFrameTreeManager::RemoveFromInstances() {
 bool HTMLFrameTreeManager::PrepareForStructureChange(HTMLFrame* source,
                                                      uint32_t change_id) {
   // The change ids may differ if multiple HTMLDocuments are attached to the
-  // same tree (which means we have multiple FrameTreeClients for the same
-  // tree).
+  // same tree (which means we have multiple FrameClient for the same tree).
   if (change_id != (change_id_ + 1))
     return false;
 
@@ -275,7 +276,7 @@ bool HTMLFrameTreeManager::PrepareForStructureChange(HTMLFrame* source,
 void HTMLFrameTreeManager::ProcessOnFrameAdded(
     HTMLFrame* source,
     uint32_t change_id,
-    web_view::FrameDataPtr frame_data) {
+    web_view::mojom::FrameDataPtr frame_data) {
   if (!PrepareForStructureChange(source, change_id))
     return;
 

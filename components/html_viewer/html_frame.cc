@@ -72,26 +72,26 @@ using mojo::Rect;
 using mojo::ServiceProviderPtr;
 using mojo::URLResponsePtr;
 using mus::View;
-using web_view::HTMLMessageEvent;
-using web_view::HTMLMessageEventPtr;
+using web_view::mojom::HTMLMessageEvent;
+using web_view::mojom::HTMLMessageEventPtr;
 
 namespace html_viewer {
 namespace {
 
 const size_t kMaxTitleChars = 4 * 1024;
 
-web_view::NavigationTargetType WebNavigationPolicyToNavigationTarget(
+web_view::mojom::NavigationTargetType WebNavigationPolicyToNavigationTarget(
     blink::WebNavigationPolicy policy) {
   switch (policy) {
     case blink::WebNavigationPolicyCurrentTab:
-      return web_view::NAVIGATION_TARGET_TYPE_EXISTING_FRAME;
+      return web_view::mojom::NAVIGATION_TARGET_TYPE_EXISTING_FRAME;
     case blink::WebNavigationPolicyNewBackgroundTab:
     case blink::WebNavigationPolicyNewForegroundTab:
     case blink::WebNavigationPolicyNewWindow:
     case blink::WebNavigationPolicyNewPopup:
-      return web_view::NAVIGATION_TARGET_TYPE_NEW_FRAME;
+      return web_view::mojom::NAVIGATION_TARGET_TYPE_NEW_FRAME;
     default:
-      return web_view::NAVIGATION_TARGET_TYPE_NO_PREFERENCE;
+      return web_view::mojom::NAVIGATION_TARGET_TYPE_NO_PREFERENCE;
   }
 }
 
@@ -314,9 +314,9 @@ blink::WebFrame* HTMLFrame::createChildFrame(
                                ->CreateHTMLFrame(&params);
   child_frame->owned_view_.reset(new mus::ScopedViewPtr(child_view));
 
-  web_view::FrameTreeClientPtr client_ptr;
-  child_frame->frame_tree_client_binding_.reset(
-      new mojo::Binding<web_view::FrameTreeClient>(
+  web_view::mojom::FrameClientPtr client_ptr;
+  child_frame->frame_client_binding_.reset(
+      new mojo::Binding<web_view::mojom::FrameClient>(
           child_frame, mojo::GetProxy(&client_ptr)));
   server_->OnCreatedFrame(GetProxy(&(child_frame->server_)), client_ptr.Pass(),
                           child_view->id(), client_properties.Pass());
@@ -357,7 +357,7 @@ blink::WebNavigationPolicy HTMLFrame::decidePolicyForNavigation(
     return blink::WebNavigationPolicyCurrentTab;
   }
 
-  // Ask the FrameTreeServer to handle the navigation. By returning
+  // Ask the Frame to handle the navigation. By returning
   // WebNavigationPolicyIgnore the load is suppressed.
   mojo::URLRequestPtr url_request = mojo::URLRequest::From(info.urlRequest);
   server_->RequestNavigate(
@@ -460,15 +460,15 @@ void HTMLFrame::didReceiveTitle(blink::WebLocalFrame* frame,
   server_->TitleChanged(formatted);
 }
 
-void HTMLFrame::Bind(web_view::FrameTreeServerPtr frame_tree_server,
-                     mojo::InterfaceRequest<web_view::FrameTreeClient>
-                         frame_tree_client_request) {
+void HTMLFrame::Bind(
+    web_view::mojom::FramePtr frame,
+    mojo::InterfaceRequest<web_view::mojom::FrameClient> frame_client_request) {
   DCHECK(IsLocal());
-  server_ = frame_tree_server.Pass();
+  server_ = frame.Pass();
   server_.set_connection_error_handler(
       base::Bind(&HTMLFrame::Close, base::Unretained(this)));
-  frame_tree_client_binding_.reset(new mojo::Binding<web_view::FrameTreeClient>(
-      this, frame_tree_client_request.Pass()));
+  frame_client_binding_.reset(new mojo::Binding<web_view::mojom::FrameClient>(
+      this, frame_client_request.Pass()));
 }
 
 void HTMLFrame::SetValueFromClientProperty(const std::string& name,
@@ -497,15 +497,16 @@ mojo::ApplicationImpl* HTMLFrame::GetApp() {
   return GetFirstAncestorWithDelegate()->delegate_->GetApp();
 }
 
-web_view::FrameTreeServer* HTMLFrame::GetFrameTreeServer() {
-  // Prefer an ancestor with a FrameTreeServer.
+web_view::mojom::Frame* HTMLFrame::GetServerFrame() {
+  // Prefer an ancestor with a server Frame.
   for (HTMLFrame* frame = this; frame; frame = frame->parent_) {
     if (frame->server_.get())
       return frame->server_.get();
   }
 
   // No local root. This means we're a remote frame with no local frame
-  // ancestors. Use the local frame from the FrameTreeServer.
+  // ancestors. Use the server Frame from the local root of the
+  // HTMLFrameTreeManager.
   return frame_tree_manager_->local_root_->server_.get();
 }
 
@@ -574,7 +575,7 @@ void HTMLFrame::SwapToRemote() {
   web_frame_ = remote_frame;
   SetView(nullptr);
   server_.reset();
-  frame_tree_client_binding_.reset();
+  frame_client_binding_.reset();
   if (delegate)
     delegate->OnFrameSwappedToRemote();
 }
@@ -687,18 +688,18 @@ void HTMLFrame::OnViewFocusChanged(mus::View* gained_focus,
   UpdateFocus();
 }
 
-void HTMLFrame::OnConnect(web_view::FrameTreeServerPtr server,
+void HTMLFrame::OnConnect(web_view::mojom::FramePtr frame,
                           uint32_t change_id,
                           uint32_t view_id,
-                          web_view::ViewConnectType view_connect_type,
-                          mojo::Array<web_view::FrameDataPtr> frame_data,
+                          web_view::mojom::ViewConnectType view_connect_type,
+                          mojo::Array<web_view::mojom::FrameDataPtr> frame_data,
                           const OnConnectCallback& callback) {
   // This is called if this frame is created by way of OnCreatedFrame().
   callback.Run();
 }
 
 void HTMLFrame::OnFrameAdded(uint32_t change_id,
-                             web_view::FrameDataPtr frame_data) {
+                             web_view::mojom::FrameDataPtr frame_data) {
   frame_tree_manager_->ProcessOnFrameAdded(this, change_id, frame_data.Pass());
 }
 
@@ -834,8 +835,9 @@ void HTMLFrame::navigate(const blink::WebURLRequest& request,
   // TODO: support |should_replace_current_entry|.
   NOTIMPLEMENTED();  // for |should_replace_current_entry
   mojo::URLRequestPtr url_request = mojo::URLRequest::From(request);
-  GetFrameTreeServer()->RequestNavigate(
-      web_view::NAVIGATION_TARGET_TYPE_EXISTING_FRAME, id_, url_request.Pass());
+  GetServerFrame()->RequestNavigate(
+      web_view::mojom::NAVIGATION_TARGET_TYPE_EXISTING_FRAME, id_,
+      url_request.Pass());
 }
 
 void HTMLFrame::reload(bool ignore_cache, bool is_client_redirect) {

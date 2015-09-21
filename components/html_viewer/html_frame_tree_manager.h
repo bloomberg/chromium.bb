@@ -12,7 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
-#include "components/web_view/public/interfaces/frame_tree.mojom.h"
+#include "components/web_view/public/interfaces/frame.mojom.h"
 
 namespace blink {
 class WebView;
@@ -32,7 +32,7 @@ class HTMLFrameTreeManagerObserver;
 
 // HTMLFrameTreeManager is responsible for managing the frames that comprise a
 // document. Some of the frames may be remote. HTMLFrameTreeManager updates its
-// state in response to changes from the FrameTreeServer, as well as changes
+// state in response to changes from the server Frame, as well as changes
 // from the underlying frames. The frame tree has at least one local frame
 // that is backed by a mus::View.
 class HTMLFrameTreeManager {
@@ -72,13 +72,13 @@ class HTMLFrameTreeManager {
 
   void Init(HTMLFrameDelegate* delegate,
             mus::View* local_view,
-            const mojo::Array<web_view::FrameDataPtr>& frame_data,
+            const mojo::Array<web_view::mojom::FrameDataPtr>& frame_data,
             uint32_t change_id);
 
   // Creates a Frame per FrameData element in |frame_data|. Returns the root.
   HTMLFrame* BuildFrameTree(
       HTMLFrameDelegate* delegate,
-      const mojo::Array<web_view::FrameDataPtr>& frame_data,
+      const mojo::Array<web_view::mojom::FrameDataPtr>& frame_data,
       uint32_t local_frame_id,
       mus::View* local_view);
 
@@ -93,13 +93,13 @@ class HTMLFrameTreeManager {
   // true if the change should be applied, false otherwise.
   bool PrepareForStructureChange(HTMLFrame* source, uint32_t change_id);
 
-  // Each HTMLFrame delegates FrameTreeClient methods to the
-  // HTMLFrameTreeManager the frame is in. HTMLFrameTreeManager only responds
-  // to changes from the |local_root_| (this is because each FrameTreeClient
-  // sees the same change, and a change only need be processed once).
+  // Each HTMLFrame delegates FrameClient methods to the HTMLFrameTreeManager
+  // the frame is in. HTMLFrameTreeManager only responds to changes from the
+  // |local_root_| (this is because each FrameClient sees the same change, and
+  // a change only need be processed once).
   void ProcessOnFrameAdded(HTMLFrame* source,
                            uint32_t change_id,
-                           web_view::FrameDataPtr frame_data);
+                           web_view::mojom::FrameDataPtr frame_data);
   void ProcessOnFrameRemoved(HTMLFrame* source,
                              uint32_t change_id,
                              uint32_t frame_id);

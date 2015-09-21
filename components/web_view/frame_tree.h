@@ -15,9 +15,12 @@ class String;
 
 namespace web_view {
 
-class FrameTreeClient;
 class FrameTreeDelegate;
 class FrameUserData;
+
+namespace mojom {
+class FrameClient;
+}
 
 // FrameTree manages the set of Frames that comprise a single url. FrameTree
 // owns the root Frame and each Frame owns its children. Frames are
@@ -35,7 +38,7 @@ class FrameTree {
             mus::View* view,
             mojo::ViewTreeClientPtr view_tree_client,
             FrameTreeDelegate* delegate,
-            FrameTreeClient* root_client,
+            mojom::FrameClient* root_client,
             scoped_ptr<FrameUserData> user_data,
             const Frame::ClientPropertyMap& client_properties);
   ~FrameTree();
@@ -48,16 +51,14 @@ class FrameTree {
   friend class Frame;
 
   // Creates a new Frame parented to |parent|. The Frame is considered shared in
-  // that it is sharing the FrameTreeClient/FrameTreeServer of |parent|. There
-  // may or may not be a View identified by |frame_id| yet. See Frame for
-  // details.
-  Frame* CreateChildFrame(
-      Frame* parent,
-      mojo::InterfaceRequest<FrameTreeServer> server_request,
-      FrameTreeClientPtr client,
-      uint32_t frame_id,
-      uint32_t app_id,
-      const Frame::ClientPropertyMap& client_properties);
+  // that it is sharing the FrameClient/Frame of |parent|. There may or may not
+  // be a View identified by |frame_id| yet. See Frame for details.
+  Frame* CreateChildFrame(Frame* parent,
+                          mojo::InterfaceRequest<mojom::Frame> frame_request,
+                          mojom::FrameClientPtr client,
+                          uint32_t frame_id,
+                          uint32_t app_id,
+                          const Frame::ClientPropertyMap& client_properties);
 
   // Increments the change id, returning the new value.
   uint32_t AdvanceChangeID();

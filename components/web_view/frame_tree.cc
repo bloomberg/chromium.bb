@@ -13,7 +13,7 @@ FrameTree::FrameTree(uint32_t root_app_id,
                      mus::View* view,
                      mojo::ViewTreeClientPtr view_tree_client,
                      FrameTreeDelegate* delegate,
-                     FrameTreeClient* root_client,
+                     mojom::FrameClient* root_client,
                      scoped_ptr<FrameUserData> user_data,
                      const Frame::ClientPropertyMap& client_properties)
     : view_(view),
@@ -40,12 +40,12 @@ FrameTree::~FrameTree() {
 
 Frame* FrameTree::CreateChildFrame(
     Frame* parent,
-    mojo::InterfaceRequest<FrameTreeServer> server_request,
-    FrameTreeClientPtr client,
+    mojo::InterfaceRequest<mojom::Frame> frame_request,
+    mojom::FrameClientPtr client,
     uint32_t frame_id,
     uint32_t app_id,
     const Frame::ClientPropertyMap& client_properties) {
-  FrameTreeClient* raw_client = client.get();
+  mojom::FrameClient* raw_client = client.get();
   scoped_ptr<FrameUserData> user_data =
       delegate_->CreateUserDataForNewFrame(client.Pass());
   mus::View* frame_view = root_->view()->GetChildById(frame_id);
@@ -54,7 +54,7 @@ Frame* FrameTree::CreateChildFrame(
   Frame* frame =
       new Frame(this, frame_view, frame_id, app_id, ViewOwnership::OWNS_VIEW,
                 raw_client, user_data.Pass(), client_properties);
-  frame->Init(parent, nullptr, server_request.Pass());
+  frame->Init(parent, nullptr, frame_request.Pass());
   return frame;
 }
 

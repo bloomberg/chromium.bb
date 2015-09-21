@@ -10,35 +10,38 @@
 #include "base/callback_forward.h"
 #include "base/memory/scoped_ptr.h"
 #include "components/mus/public/interfaces/view_tree.mojom.h"
-#include "components/web_view/public/interfaces/frame_tree.mojom.h"
+#include "components/web_view/public/interfaces/frame.mojom.h"
 #include "mojo/services/network/public/interfaces/url_loader.mojom.h"
 
 namespace web_view {
 
 class Frame;
 class FrameUserData;
+
+namespace mojom {
 class HTMLMessageEvent;
+}
 
 class FrameTreeDelegate {
  public:
   // Callback from CanNavigateFrame(). The uint32_t is the id of the app the
-  // FrameTreeClient comes from; typically the content handler id.
+  // FrameClient comes from; typically the content handler id.
   using CanNavigateFrameCallback =
       base::Callback<void(uint32_t,
-                          FrameTreeClient*,
+                          mojom::FrameClient*,
                           scoped_ptr<FrameUserData>,
                           mojo::ViewTreeClientPtr)>;
 
   // Called when a Frame creates a new child Frame. |frame_tree_client| is the
-  // FrameTreeClient for the new frame.
+  // FrameClient for the new frame.
   virtual scoped_ptr<FrameUserData> CreateUserDataForNewFrame(
-      FrameTreeClientPtr frame_tree_client) = 0;
+      mojom::FrameClientPtr frame_client) = 0;
 
   // Returns whether a request to post a message from |source| to |target|
   // is allowed. |source| and |target| are never null.
   virtual bool CanPostMessageEventToFrame(const Frame* source,
                                           const Frame* target,
-                                          HTMLMessageEvent* event) = 0;
+                                          mojom::HTMLMessageEvent* event) = 0;
 
   virtual void LoadingStateChanged(bool loading, double progress) = 0;
 

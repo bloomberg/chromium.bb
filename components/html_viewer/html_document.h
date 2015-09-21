@@ -16,7 +16,7 @@
 #include "components/html_viewer/html_frame_delegate.h"
 #include "components/html_viewer/public/interfaces/test_html_viewer.mojom.h"
 #include "components/mus/public/cpp/view_tree_delegate.h"
-#include "components/web_view/public/interfaces/frame_tree.mojom.h"
+#include "components/web_view/public/interfaces/frame.mojom.h"
 #include "mojo/application/public/cpp/app_lifetime_helper.h"
 #include "mojo/application/public/cpp/interface_factory.h"
 #include "mojo/application/public/cpp/service_provider_impl.h"
@@ -52,7 +52,7 @@ class HTMLDocument
     : public mus::ViewTreeDelegate,
       public HTMLFrameDelegate,
       public mojo::InterfaceFactory<mojo::AxProvider>,
-      public mojo::InterfaceFactory<web_view::FrameTreeClient>,
+      public mojo::InterfaceFactory<web_view::mojom::FrameClient>,
       public mojo::InterfaceFactory<TestHTMLViewer>,
       public mojo::InterfaceFactory<devtools_service::DevToolsAgent>,
       public mojo::InterfaceFactory<mojo::ViewTreeClient> {
@@ -122,10 +122,10 @@ class HTMLDocument
   void Create(mojo::ApplicationConnection* connection,
               mojo::InterfaceRequest<mojo::AxProvider> request) override;
 
-  // mojo::InterfaceFactory<web_view::FrameTreeClient>:
+  // mojo::InterfaceFactory<web_view::mojom::FrameClient>:
   void Create(
       mojo::ApplicationConnection* connection,
-      mojo::InterfaceRequest<web_view::FrameTreeClient> request) override;
+      mojo::InterfaceRequest<web_view::mojom::FrameClient> request) override;
 
   // mojo::InterfaceFactory<TestHTMLViewer>:
   void Create(mojo::ApplicationConnection* connection,

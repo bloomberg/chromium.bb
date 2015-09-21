@@ -9,7 +9,7 @@
 #include "components/html_viewer/html_frame_tree_manager.h"
 #include "components/mus/public/cpp/view.h"
 
-using web_view::ViewConnectType;
+using web_view::mojom::ViewConnectType;
 
 namespace html_viewer {
 
@@ -22,8 +22,8 @@ DocumentResourceWaiter::DocumentResourceWaiter(GlobalState* global_state,
       root_(nullptr),
       change_id_(0u),
       view_id_(0u),
-      view_connect_type_(web_view::VIEW_CONNECT_TYPE_USE_NEW),
-      frame_tree_client_binding_(this),
+      view_connect_type_(web_view::mojom::VIEW_CONNECT_TYPE_USE_NEW),
+      frame_client_binding_(this),
       is_ready_(false),
       waiting_for_change_id_(false),
       target_frame_tree_(nullptr) {}
@@ -36,17 +36,16 @@ DocumentResourceWaiter::~DocumentResourceWaiter() {
 }
 
 void DocumentResourceWaiter::Release(
-    mojo::InterfaceRequest<web_view::FrameTreeClient>*
-        frame_tree_client_request,
-    web_view::FrameTreeServerPtr* frame_tree_server,
-    mojo::Array<web_view::FrameDataPtr>* frame_data,
+    mojo::InterfaceRequest<web_view::mojom::FrameClient>* frame_client_request,
+    web_view::mojom::FramePtr* frame,
+    mojo::Array<web_view::mojom::FrameDataPtr>* frame_data,
     uint32_t* change_id,
     uint32_t* view_id,
     ViewConnectType* view_connect_type,
     OnConnectCallback* on_connect_callback) {
   DCHECK(is_ready_);
-  *frame_tree_client_request = frame_tree_client_request_.Pass();
-  *frame_tree_server = server_.Pass();
+  *frame_client_request = frame_client_request_.Pass();
+  *frame = frame_.Pass();
   *frame_data = frame_data_.Pass();
   *change_id = change_id_;
   *view_id = view_id_;
@@ -66,12 +65,12 @@ void DocumentResourceWaiter::SetRoot(mus::View* root) {
 }
 
 void DocumentResourceWaiter::Bind(
-    mojo::InterfaceRequest<web_view::FrameTreeClient> request) {
-  if (frame_tree_client_binding_.is_bound() || !frame_data_.is_null()) {
-    DVLOG(1) << "Request for FrameTreeClient after already supplied one";
+    mojo::InterfaceRequest<web_view::mojom::FrameClient> request) {
+  if (frame_client_binding_.is_bound() || !frame_data_.is_null()) {
+    DVLOG(1) << "Request for FrameClient after already supplied one";
     return;
   }
-  frame_tree_client_binding_.Bind(request.Pass());
+  frame_client_binding_.Bind(request.Pass());
 }
 
 void DocumentResourceWaiter::UpdateIsReady() {
@@ -97,7 +96,8 @@ void DocumentResourceWaiter::UpdateIsReady() {
   // for metrics.
   bool is_ready =
       (!frame_data_.is_null() &&
-       ((view_connect_type_ == web_view::VIEW_CONNECT_TYPE_USE_EXISTING) ||
+       ((view_connect_type_ ==
+         web_view::mojom::VIEW_CONNECT_TYPE_USE_EXISTING) ||
         (root_ && root_->viewport_metrics().device_pixel_ratio != 0.0f)));
   if (is_ready) {
     HTMLFrameTreeManager* frame_tree =
@@ -121,26 +121,27 @@ void DocumentResourceWaiter::UpdateIsReady() {
 }
 
 void DocumentResourceWaiter::OnConnect(
-    web_view::FrameTreeServerPtr server,
+    web_view::mojom::FramePtr frame,
     uint32_t change_id,
     uint32_t view_id,
     ViewConnectType view_connect_type,
-    mojo::Array<web_view::FrameDataPtr> frame_data,
+    mojo::Array<web_view::mojom::FrameDataPtr> frame_data,
     const OnConnectCallback& callback) {
   DCHECK(frame_data_.is_null());
   change_id_ = change_id;
   view_id_ = view_id;
   view_connect_type_ = view_connect_type;
-  server_ = server.Pass();
+  frame_ = frame.Pass();
   frame_data_ = frame_data.Pass();
   on_connect_callback_ = callback;
   CHECK(frame_data_.size() > 0u);
-  frame_tree_client_request_ = frame_tree_client_binding_.Unbind();
+  frame_client_request_ = frame_client_binding_.Unbind();
   UpdateIsReady();
 }
 
-void DocumentResourceWaiter::OnFrameAdded(uint32_t change_id,
-                                          web_view::FrameDataPtr frame_data) {
+void DocumentResourceWaiter::OnFrameAdded(
+    uint32_t change_id,
+    web_view::mojom::FrameDataPtr frame_data) {
   // It is assumed we receive OnConnect() (which unbinds) before anything else.
   NOTREACHED();
 }
@@ -162,7 +163,7 @@ void DocumentResourceWaiter::OnFrameClientPropertyChanged(
 void DocumentResourceWaiter::OnPostMessageEvent(
     uint32_t source_frame_id,
     uint32_t target_frame_id,
-    web_view::HTMLMessageEventPtr event) {
+    web_view::mojom::HTMLMessageEventPtr event) {
   // It is assumed we receive OnConnect() (which unbinds) before anything else.
   NOTREACHED();
 }

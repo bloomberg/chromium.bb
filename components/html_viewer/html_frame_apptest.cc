@@ -18,7 +18,7 @@
 #include "components/web_view/frame.h"
 #include "components/web_view/frame_connection.h"
 #include "components/web_view/frame_tree.h"
-#include "components/web_view/public/interfaces/frame_tree.mojom.h"
+#include "components/web_view/public/interfaces/frame.mojom.h"
 #include "components/web_view/test_frame_tree_delegate.h"
 #include "mojo/application/public/cpp/application_impl.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
@@ -28,8 +28,8 @@ using mus::ViewManagerTestBase;
 using web_view::Frame;
 using web_view::FrameConnection;
 using web_view::FrameTree;
-using web_view::FrameTreeClient;
 using web_view::FrameTreeDelegate;
+using web_view::mojom::FrameClient;
 
 namespace mojo {
 
@@ -224,11 +224,11 @@ class HTMLFrameTest : public ViewManagerTestBase {
     if (!got_callback)
       return nullptr;
     FrameConnection* result = frame_connection.get();
-    FrameTreeClient* frame_tree_client = frame_connection->frame_tree_client();
+    FrameClient* frame_client = frame_connection->frame_client();
     ViewTreeClientPtr tree_client = frame_connection->GetViewTreeClient();
     frame_tree_.reset(
         new FrameTree(result->GetContentHandlerID(), view, tree_client.Pass(),
-                      frame_tree_delegate_.get(), frame_tree_client,
+                      frame_tree_delegate_.get(), frame_client,
                       frame_connection.Pass(), Frame::ClientPropertyMap()));
     frame_tree_delegate_->set_frame_tree(frame_tree_.get());
     return result;

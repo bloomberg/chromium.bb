@@ -39,7 +39,7 @@ void OnGotContentHandlerForFrame(
   }
   FrameConnection* connection_ptr = connection.get();
   callback.Run(connection_ptr->GetContentHandlerID(),
-               connection_ptr->frame_tree_client(), connection.Pass(),
+               connection_ptr->frame_client(), connection.Pass(),
                view_tree_client.Pass());
 }
 
@@ -109,7 +109,7 @@ void FrameConnection::Init(mojo::ApplicationImpl* app,
 
   application_connection_ = app->ConnectToApplicationWithCapabilityFilter(
       request.Pass(), filter.Pass());
-  application_connection_->ConnectToService(&frame_tree_client_);
+  application_connection_->ConnectToService(&frame_client_);
   application_connection_->AddContentHandlerIDCallback(on_got_id_callback);
 }
 

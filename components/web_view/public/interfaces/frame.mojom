@@ -2,21 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-module web_view;
+module web_view.mojom;
 
 import "network/public/interfaces/url_loader.mojom";
 
 // This files defines the interfaces and structures used for frames.
 //
 // When a client in the frame tree is connected to by way of the ViewManager a
-// FrameTreeClient is obtained (from the ServiceProvider interface request
-// passed in ViewManager::OnEmbed()). The FrameTreeClient is told the frame
-// tree (by way of OnConnection()), which allows the client to use other
-// frames in the tree (assuming the client has the appropriate permissions).
+// FrameClient is obtained (from the ServiceProvider interface request passed
+// in ViewManager::OnEmbed()). The FrameClient is told the frame tree (by way
+// of OnConnection()), which allows the client to use other frames in the tree
+// (assuming the client has the appropriate permissions).
 //
 // frame_ids are the same as views ids. This means that when a client creates
 // a new view to be part of the frame tree it immediately knows the id to use
-// for FrameTreeServer calls.
+// for Frame calls.
 //
 // The server provides an id that may be used to identify the state of the
 // tree. The change id is an integer that is incremented every time the
@@ -66,10 +66,10 @@ struct HTMLMessageEvent {
   // IPC_STRUCT_MEMBER(std::vector<int>, new_routing_ids)
 };
 
-interface FrameTreeServer {
+interface Frame {
   // Requests the server to message the specified frame with |event|. If the
   // operation is allowed OnPostMessageEvent() is called on the appropriate
-  // FrameTreeClient.
+  // FrameClient.
   PostMessageEventToFrame(uint32 target_frame_id, HTMLMessageEvent event);
 
   // Notifies the server that the loading state and progress changed.
@@ -90,10 +90,10 @@ interface FrameTreeServer {
   // parent. See FrameData::client_properties for details of
   // |client_properties|.
   //
-  // Note that the FrameTreeClient still gets an OnConnect(), but the only
-  // thing of interest is the callback.
-  OnCreatedFrame(FrameTreeServer& server_request,
-                 FrameTreeClient client,
+  // Note that the FrameClient still gets an OnConnect(), but the only thing of
+  // interest is the callback.
+  OnCreatedFrame(Frame& frame_request,
+                 FrameClient client,
                  uint32 frame_id,
                  map<string, array<uint8>> client_properties);
 
@@ -122,12 +122,12 @@ enum ViewConnectType {
   USE_NEW
 };
 
-interface FrameTreeClient {
+interface FrameClient {
   // Called once per client. |frame_data| gives the contents of the tree.
-  // |view_id| is the id of the view the FrameTreeClient should render to. If
-  // a ViewTreeClient is asked for then |view_id| is the same id as that of the
+  // |view_id| is the id of the view the FrameClient should render to. If a
+  // ViewTreeClient is asked for then |view_id| is the same id as that of the
   // View supplied to ViewTreeClient::OnEmbed().
-  OnConnect(FrameTreeServer? server,
+  OnConnect(Frame? frame,
             uint32 change_id,
             uint32 view_id,
             ViewConnectType view_connect_type,
@@ -150,15 +150,15 @@ interface FrameTreeClient {
                      HTMLMessageEvent event);
 
   // Called prior to starting a new navigation. This is only called on the
-  // FrameTreeClient that is rendering to the frame, and only when another
-  // content handler is going to start handling the rendering.
+  // FrameClient that is rendering to the frame, and only when another content
+  // handler is going to start handling the rendering.
   OnWillNavigate();
 
   // Called to notify that |frame_id|'s loading state has changed. This is only
-  // called on the FrameTreeClient rendering the parent of |frame_id|.
+  // called on the FrameClient rendering the parent of |frame_id|.
   OnFrameLoadingStateChanged(uint32 frame_id, bool loading);
 
   // Called to dispatch a load event of |frame_id| in its parent. This is only
-  // called on the FrameTreeClient rendering the parent of |frame_id|.
+  // called on the FrameClient rendering the parent of |frame_id|.
   OnDispatchFrameLoadEvent(uint32 frame_id);
 };

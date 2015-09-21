@@ -7,7 +7,7 @@ import("//third_party/mojo/src/mojo/public/tools/bindings/mojom.gni")
 
 mojom("interfaces") {
   sources = [
-    "frame_tree.mojom",
+    "frame.mojom",
     "web_view.mojom",
   ]
 

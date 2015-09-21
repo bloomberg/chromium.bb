@@ -104,7 +104,7 @@ HTMLDocument::HTMLDocument(mojo::ApplicationImpl* html_document_app,
       frame_(nullptr),
       delete_callback_(delete_callback),
       factory_(factory) {
-  connection->AddService<web_view::FrameTreeClient>(this);
+  connection->AddService<web_view::mojom::FrameClient>(this);
   connection->AddService<AxProvider>(this);
   connection->AddService<mojo::ViewTreeClient>(this);
   connection->AddService<devtools_service::DevToolsAgent>(this);
@@ -290,9 +290,9 @@ void HTMLDocument::Create(mojo::ApplicationConnection* connection,
 
 void HTMLDocument::Create(
     mojo::ApplicationConnection* connection,
-    mojo::InterfaceRequest<web_view::FrameTreeClient> request) {
+    mojo::InterfaceRequest<web_view::mojom::FrameClient> request) {
   if (frame_) {
-    DVLOG(1) << "Request for FrameTreeClient after one already vended.";
+    DVLOG(1) << "Request for FrameClient after one already vended.";
     return;
   }
   resource_waiter_->Bind(request.Pass());

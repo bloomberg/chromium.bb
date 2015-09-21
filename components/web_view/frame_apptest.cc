@@ -81,17 +81,19 @@ scoped_ptr<FrameConnection> CreateFrameConnection(mojo::ApplicationImpl* app) {
   return frame_connection;
 }
 
-class TestFrameTreeClient : public FrameTreeClient {
+class TestFrameClient : public mojom::FrameClient {
  public:
-  TestFrameTreeClient()
+  TestFrameClient()
       : connect_count_(0), last_dispatch_load_event_frame_id_(0) {}
-  ~TestFrameTreeClient() override {}
+  ~TestFrameClient() override {}
 
   int connect_count() const { return connect_count_; }
 
-  mojo::Array<FrameDataPtr> connect_frames() { return connect_frames_.Pass(); }
+  mojo::Array<mojom::FrameDataPtr> connect_frames() {
+    return connect_frames_.Pass();
+  }
 
-  mojo::Array<FrameDataPtr> adds() { return adds_.Pass(); }
+  mojo::Array<mojom::FrameDataPtr> adds() { return adds_.Pass(); }
 
   // Sets a callback to run once OnConnect() is received.
   void set_on_connect_callback(const base::Closure& closure) {
@@ -106,10 +108,10 @@ class TestFrameTreeClient : public FrameTreeClient {
     on_dispatch_load_event_callback_ = closure;
   }
 
-  FrameTreeServer* server() { return server_.get(); }
+  mojom::Frame* server_frame() { return server_frame_.get(); }
 
-  mojo::InterfaceRequest<FrameTreeServer> GetFrameTreeServerRequest() {
-    return GetProxy(&server_);
+  mojo::InterfaceRequest<mojom::Frame> GetServerFrameRequest() {
+    return GetProxy(&server_frame_);
   }
 
   void last_loading_state_changed_notification(uint32_t* frame_id,
@@ -122,22 +124,22 @@ class TestFrameTreeClient : public FrameTreeClient {
     return last_dispatch_load_event_frame_id_;
   }
 
-  // TestFrameTreeClient:
-  void OnConnect(FrameTreeServerPtr server,
+  // mojom::FrameClient:
+  void OnConnect(mojom::FramePtr frame,
                  uint32_t change_id,
                  uint32_t view_id,
-                 ViewConnectType view_connect_type,
-                 mojo::Array<FrameDataPtr> frames,
+                 mojom::ViewConnectType view_connect_type,
+                 mojo::Array<mojom::FrameDataPtr> frames,
                  const OnConnectCallback& callback) override {
     connect_count_++;
     connect_frames_ = frames.Pass();
-    if (server)
-      server_ = server.Pass();
+    if (frame)
+      server_frame_ = frame.Pass();
     callback.Run();
     if (!on_connect_callback_.is_null())
       on_connect_callback_.Run();
   }
-  void OnFrameAdded(uint32_t change_id, FrameDataPtr frame) override {
+  void OnFrameAdded(uint32_t change_id, mojom::FrameDataPtr frame) override {
     adds_.push_back(frame.Pass());
   }
   void OnFrameRemoved(uint32_t change_id, uint32_t frame_id) override {}
@@ -146,7 +148,7 @@ class TestFrameTreeClient : public FrameTreeClient {
                                     mojo::Array<uint8_t> new_data) override {}
   void OnPostMessageEvent(uint32_t source_frame_id,
                           uint32_t target_frame_id,
-                          HTMLMessageEventPtr event) override {}
+                          mojom::HTMLMessageEventPtr event) override {}
   void OnWillNavigate() override {}
   void OnFrameLoadingStateChanged(uint32_t frame_id, bool loading) override {
     last_loading_state_changed_notification_.frame_id = frame_id;
@@ -172,22 +174,22 @@ class TestFrameTreeClient : public FrameTreeClient {
   };
 
   int connect_count_;
-  mojo::Array<FrameDataPtr> connect_frames_;
-  FrameTreeServerPtr server_;
-  mojo::Array<FrameDataPtr> adds_;
+  mojo::Array<mojom::FrameDataPtr> connect_frames_;
+  mojom::FramePtr server_frame_;
+  mojo::Array<mojom::FrameDataPtr> adds_;
   base::Closure on_connect_callback_;
   base::Closure on_loading_state_changed_callback_;
   base::Closure on_dispatch_load_event_callback_;
   LoadingStateChangedNotification last_loading_state_changed_notification_;
   uint32_t last_dispatch_load_event_frame_id_;
 
-  DISALLOW_COPY_AND_ASSIGN(TestFrameTreeClient);
+  DISALLOW_COPY_AND_ASSIGN(TestFrameClient);
 };
 
 class FrameTest;
 
-// ViewAndFrame maintains the View and TestFrameTreeClient associated with
-// a single FrameTreeClient. In other words this maintains the data structures
+// ViewAndFrame maintains the View and TestFrameClient associated with
+// a single FrameClient. In other words this maintains the data structures
 // needed to represent a client side frame. To obtain one use
 // FrameTest::WaitForViewAndFrame().
 class ViewAndFrame : public mus::ViewTreeDelegate {
@@ -199,39 +201,37 @@ class ViewAndFrame : public mus::ViewTreeDelegate {
 
   // The View associated with the frame.
   mus::View* view() { return view_; }
-  TestFrameTreeClient* test_frame_tree_client() {
-    return &test_frame_tree_client_;
-  }
-  FrameTreeServer* frame_tree_server() {
-    return test_frame_tree_client_.server();
+  TestFrameClient* test_frame_client() { return &test_frame_tree_client_; }
+  mojom::Frame* server_frame() {
+    return test_frame_tree_client_.server_frame();
   }
 
  private:
   friend class FrameTest;
 
   ViewAndFrame()
-      : view_(nullptr), frame_tree_binding_(&test_frame_tree_client_) {}
+      : view_(nullptr), frame_client_binding_(&test_frame_tree_client_) {}
 
   void set_view(View* view) { view_ = view; }
 
   // Runs a message loop until the view and frame data have been received.
   void WaitForViewAndFrame() { run_loop_.Run(); }
 
-  mojo::InterfaceRequest<FrameTreeServer> GetFrameTreeServerRequest() {
-    return test_frame_tree_client_.GetFrameTreeServerRequest();
+  mojo::InterfaceRequest<mojom::Frame> GetServerFrameRequest() {
+    return test_frame_tree_client_.GetServerFrameRequest();
   }
 
-  FrameTreeClientPtr GetFrameTreeClientPtr() {
-    FrameTreeClientPtr client_ptr;
-    frame_tree_binding_.Bind(GetProxy(&client_ptr));
+  mojom::FrameClientPtr GetFrameClientPtr() {
+    mojom::FrameClientPtr client_ptr;
+    frame_client_binding_.Bind(GetProxy(&client_ptr));
     return client_ptr.Pass();
   }
 
-  void Bind(mojo::InterfaceRequest<FrameTreeClient> request) {
-    ASSERT_FALSE(frame_tree_binding_.is_bound());
+  void Bind(mojo::InterfaceRequest<mojom::FrameClient> request) {
+    ASSERT_FALSE(frame_client_binding_.is_bound());
     test_frame_tree_client_.set_on_connect_callback(
         base::Bind(&ViewAndFrame::OnGotConnect, base::Unretained(this)));
-    frame_tree_binding_.Bind(request.Pass());
+    frame_client_binding_.Bind(request.Pass());
   }
 
   void OnGotConnect() { QuitRunLoopIfNecessary(); }
@@ -252,8 +252,8 @@ class ViewAndFrame : public mus::ViewTreeDelegate {
 
   mus::View* view_;
   base::RunLoop run_loop_;
-  TestFrameTreeClient test_frame_tree_client_;
-  mojo::Binding<FrameTreeClient> frame_tree_binding_;
+  TestFrameClient test_frame_tree_client_;
+  mojo::Binding<mojom::FrameClient> frame_client_binding_;
 
   DISALLOW_COPY_AND_ASSIGN(ViewAndFrame);
 };
@@ -262,7 +262,7 @@ class FrameTest : public mojo::test::ApplicationTestBase,
                   public mojo::ApplicationDelegate,
                   public mus::ViewTreeDelegate,
                   public mojo::InterfaceFactory<mojo::ViewTreeClient>,
-                  public mojo::InterfaceFactory<FrameTreeClient> {
+                  public mojo::InterfaceFactory<mojom::FrameClient> {
  public:
   FrameTest() : most_recent_connection_(nullptr), window_manager_(nullptr) {}
 
@@ -278,16 +278,12 @@ class FrameTest : public mojo::test::ApplicationTestBase,
   FrameTree* frame_tree() { return frame_tree_.get(); }
   ViewAndFrame* root_view_and_frame() { return root_view_and_frame_.get(); }
 
-  mojo::Binding<FrameTreeServer>* frame_tree_server_binding(Frame* frame) {
-    return frame->frame_tree_server_binding_.get();
-  }
-
   scoped_ptr<ViewAndFrame> NavigateFrame(ViewAndFrame* view_and_frame) {
     mojo::URLRequestPtr request(mojo::URLRequest::New());
     request->url = mojo::String::From(application_impl()->url());
-    view_and_frame->frame_tree_server()->RequestNavigate(
-        NAVIGATION_TARGET_TYPE_EXISTING_FRAME, view_and_frame->view()->id(),
-        request.Pass());
+    view_and_frame->server_frame()->RequestNavigate(
+        mojom::NAVIGATION_TARGET_TYPE_EXISTING_FRAME,
+        view_and_frame->view()->id(), request.Pass());
     return WaitForViewAndFrame();
   }
 
@@ -301,9 +297,9 @@ class FrameTest : public mojo::test::ApplicationTestBase,
 
     mojo::Map<mojo::String, mojo::Array<uint8_t>> client_properties;
     client_properties.mark_non_null();
-    parent->frame_tree_server()->OnCreatedFrame(
-        view_and_frame->GetFrameTreeServerRequest(),
-        view_and_frame->GetFrameTreeClientPtr(), child_frame_view->id(),
+    parent->server_frame()->OnCreatedFrame(
+        view_and_frame->GetServerFrameRequest(),
+        view_and_frame->GetFrameClientPtr(), child_frame_view->id(),
         client_properties.Pass());
     frame_tree_delegate()->WaitForCreateFrame();
     return HasFatalFailure() ? nullptr : view_and_frame.Pass();
@@ -326,7 +322,7 @@ class FrameTest : public mojo::test::ApplicationTestBase,
   bool ConfigureIncomingConnection(
       mojo::ApplicationConnection* connection) override {
     connection->AddService<mojo::ViewTreeClient>(this);
-    connection->AddService<FrameTreeClient>(this);
+    connection->AddService<mojom::FrameClient>(this);
     return true;
   }
 
@@ -347,18 +343,18 @@ class FrameTest : public mojo::test::ApplicationTestBase,
     std::swap(window_manager_, most_recent_connection_);
 
     // Creates a FrameTree, which creates a single frame. Wait for the
-    // FrameTreeClient to be connected to.
+    // FrameClient to be connected to.
     frame_tree_delegate_.reset(new TestFrameTreeDelegate(application_impl()));
     scoped_ptr<FrameConnection> frame_connection =
         CreateFrameConnection(application_impl());
-    FrameTreeClient* frame_tree_client = frame_connection->frame_tree_client();
+    mojom::FrameClient* frame_client = frame_connection->frame_client();
     mojo::ViewTreeClientPtr view_tree_client =
         frame_connection->GetViewTreeClient();
     mus::View* frame_root_view = window_manager()->CreateView();
     window_manager()->GetRoot()->AddChild(frame_root_view);
     frame_tree_.reset(
         new FrameTree(0u, frame_root_view, view_tree_client.Pass(),
-                      frame_tree_delegate_.get(), frame_tree_client,
+                      frame_tree_delegate_.get(), frame_client,
                       frame_connection.Pass(), Frame::ClientPropertyMap()));
     root_view_and_frame_ = WaitForViewAndFrame();
   }
@@ -382,9 +378,9 @@ class FrameTest : public mojo::test::ApplicationTestBase,
     }
   }
 
-  // Overridden from mojo::InterfaceFactory<FrameTreeClient>:
+  // Overridden from mojo::InterfaceFactory<mojom::FrameClient>:
   void Create(mojo::ApplicationConnection* connection,
-              mojo::InterfaceRequest<FrameTreeClient> request) override {
+              mojo::InterfaceRequest<mojom::FrameClient> request) override {
     ASSERT_TRUE(view_and_frame_);
     view_and_frame_->Bind(request.Pass());
   }
@@ -406,30 +402,28 @@ class FrameTest : public mojo::test::ApplicationTestBase,
   MOJO_DISALLOW_COPY_AND_ASSIGN(FrameTest);
 };
 
-// Verifies the FrameData supplied to the root FrameTreeClient::OnConnect().
+// Verifies the FrameData supplied to the root FrameClient::OnConnect().
 TEST_F(FrameTest, RootFrameClientConnectData) {
-  mojo::Array<FrameDataPtr> frames =
-      root_view_and_frame()->test_frame_tree_client()->connect_frames();
+  mojo::Array<mojom::FrameDataPtr> frames =
+      root_view_and_frame()->test_frame_client()->connect_frames();
   ASSERT_EQ(1u, frames.size());
   EXPECT_EQ(root_view_and_frame()->view()->id(), frames[0]->frame_id);
   EXPECT_EQ(0u, frames[0]->parent_id);
 }
 
-// Verifies the FrameData supplied to a child FrameTreeClient::OnConnect().
+// Verifies the FrameData supplied to a child FrameClient::OnConnect().
 TEST_F(FrameTest, ChildFrameClientConnectData) {
   scoped_ptr<ViewAndFrame> child_view_and_frame(
       CreateChildViewAndFrame(root_view_and_frame()));
   ASSERT_TRUE(child_view_and_frame);
   // Initially created child frames don't get OnConnect().
-  EXPECT_EQ(0,
-            child_view_and_frame->test_frame_tree_client()->connect_count());
+  EXPECT_EQ(0, child_view_and_frame->test_frame_client()->connect_count());
 
   scoped_ptr<ViewAndFrame> navigated_child_view_and_frame =
       NavigateFrame(child_view_and_frame.get()).Pass();
 
-  mojo::Array<FrameDataPtr> frames_in_child =
-      navigated_child_view_and_frame->test_frame_tree_client()
-          ->connect_frames();
+  mojo::Array<mojom::FrameDataPtr> frames_in_child =
+      navigated_child_view_and_frame->test_frame_client()->connect_frames();
   EXPECT_EQ(child_view_and_frame->view()->id(),
             navigated_child_view_and_frame->view()->id());
   // We expect 2 frames. One for the root, one for the child.
@@ -466,17 +460,17 @@ TEST_F(FrameTest, NotifyRemoteParentWithLoadingState) {
   {
     base::RunLoop run_loop;
     root_view_and_frame()
-        ->test_frame_tree_client()
+        ->test_frame_client()
         ->set_on_loading_state_changed_callback(run_loop.QuitClosure());
 
-    child_view_and_frame->frame_tree_server()->LoadingStateChanged(true, .5);
+    child_view_and_frame->server_frame()->LoadingStateChanged(true, .5);
 
     run_loop.Run();
 
     uint32_t frame_id = 0;
     bool loading = false;
     root_view_and_frame()
-        ->test_frame_tree_client()
+        ->test_frame_client()
         ->last_loading_state_changed_notification(&frame_id, &loading);
     EXPECT_EQ(child_frame_id, frame_id);
     EXPECT_TRUE(loading);
@@ -484,20 +478,20 @@ TEST_F(FrameTest, NotifyRemoteParentWithLoadingState) {
   {
     base::RunLoop run_loop;
     root_view_and_frame()
-        ->test_frame_tree_client()
+        ->test_frame_client()
         ->set_on_loading_state_changed_callback(run_loop.QuitClosure());
 
     ASSERT_TRUE(child_view_and_frame);
-    ASSERT_TRUE(child_view_and_frame->frame_tree_server());
+    ASSERT_TRUE(child_view_and_frame->server_frame());
 
-    child_view_and_frame->frame_tree_server()->LoadingStateChanged(false, 1);
+    child_view_and_frame->server_frame()->LoadingStateChanged(false, 1);
 
     run_loop.Run();
 
     uint32_t frame_id = 0;
     bool loading = false;
     root_view_and_frame()
-        ->test_frame_tree_client()
+        ->test_frame_client()
         ->last_loading_state_changed_notification(&frame_id, &loading);
     EXPECT_EQ(child_frame_id, frame_id);
     EXPECT_FALSE(loading);
@@ -511,15 +505,15 @@ TEST_F(FrameTest, NotifyRemoteParentWithLoadEvent) {
 
   base::RunLoop run_loop;
   root_view_and_frame()
-      ->test_frame_tree_client()
+      ->test_frame_client()
       ->set_on_dispatch_load_event_callback(run_loop.QuitClosure());
 
-  child_view_and_frame->frame_tree_server()->DispatchLoadEventToParent();
+  child_view_and_frame->server_frame()->DispatchLoadEventToParent();
 
   run_loop.Run();
 
   uint32_t frame_id = root_view_and_frame()
-                          ->test_frame_tree_client()
+                          ->test_frame_client()
                           ->last_dispatch_load_event_frame_id();
   EXPECT_EQ(child_frame_id, frame_id);
 }

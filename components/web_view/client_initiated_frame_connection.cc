@@ -7,8 +7,8 @@
 namespace web_view {
 
 ClientInitiatedFrameConnection::ClientInitiatedFrameConnection(
-    FrameTreeClientPtr frame_tree_client)
-    : frame_tree_client_(frame_tree_client.Pass()) {}
+    mojom::FrameClientPtr frame_client)
+    : frame_client_(frame_client.Pass()) {}
 
 ClientInitiatedFrameConnection::~ClientInitiatedFrameConnection() {}
 

@@ -38,10 +38,10 @@ class TestFrameTreeDelegate : public FrameTreeDelegate {
 
   // TestFrameTreeDelegate:
   scoped_ptr<FrameUserData> CreateUserDataForNewFrame(
-      FrameTreeClientPtr frame_tree_client) override;
+      mojom::FrameClientPtr frame_client) override;
   bool CanPostMessageEventToFrame(const Frame* source,
                                   const Frame* target,
-                                  HTMLMessageEvent* event) override;
+                                  mojom::HTMLMessageEvent* event) override;
   void LoadingStateChanged(bool loading, double progress) override;
   void TitleChanged(const mojo::String& title) override;
   void NavigateTopLevel(Frame* source, mojo::URLRequestPtr request) override;
