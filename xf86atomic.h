@@ -93,7 +93,7 @@ typedef struct { LIBDRM_ATOMIC_TYPE atomic; } atomic_t;
 # define atomic_read(x) (int) ((x)->atomic)
 # define atomic_set(x, val) ((x)->atomic = (LIBDRM_ATOMIC_TYPE)(val))
 # define atomic_inc(x) (atomic_inc_uint (&(x)->atomic))
-# define atomic_inc_return (atomic_inc_uint_nv(&(x)->atomic))
+# define atomic_inc_return(x) (atomic_inc_uint_nv(&(x)->atomic))
 # define atomic_dec_and_test(x) (atomic_dec_uint_nv(&(x)->atomic) == 0)
 # define atomic_add(x, v) (atomic_add_int(&(x)->atomic, (v)))
 # define atomic_dec(x, v) (atomic_add_int(&(x)->atomic, -(v)))
