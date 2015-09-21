@@ -67,7 +67,7 @@ struct {
   { MediaAudioConstraints::kGoogExperimentalNoiseSuppression, false },
   // Beamforming will only be enabled if we are also provided with a
   // multi-microphone geometry.
-  { MediaAudioConstraints::kGoogBeamforming, false },
+  { MediaAudioConstraints::kGoogBeamforming, true },
   { kMediaStreamAudioHotword, false },
 };
 

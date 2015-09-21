@@ -83,12 +83,6 @@ bool IsDelayAgnosticAecEnabled() {
   return (group_name == "Enabled" || group_name == "DefaultEnabled");
 }
 
-bool IsBeamformingEnabled(const MediaAudioConstraints& audio_constraints) {
-  return base::FieldTrialList::FindFullName("ChromebookBeamforming") ==
-             "Enabled" ||
-         audio_constraints.GetProperty(MediaAudioConstraints::kGoogBeamforming);
-}
-
 }  // namespace
 
 // Wraps AudioBus to provide access to the array of channel pointers, since this
@@ -463,7 +457,8 @@ void MediaStreamAudioProcessor::InitializeAudioProcessingModule(
       MediaAudioConstraints::kGoogNoiseSuppression);
   const bool goog_experimental_ns = audio_constraints.GetProperty(
       MediaAudioConstraints::kGoogExperimentalNoiseSuppression);
-  const bool goog_beamforming = IsBeamformingEnabled(audio_constraints);
+  const bool goog_beamforming = audio_constraints.GetProperty(
+      MediaAudioConstraints::kGoogBeamforming);
   const bool goog_high_pass_filter = audio_constraints.GetProperty(
       MediaAudioConstraints::kGoogHighpassFilter);
   // Return immediately if no goog constraint is enabled.
