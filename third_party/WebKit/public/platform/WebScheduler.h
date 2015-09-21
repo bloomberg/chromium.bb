@@ -11,7 +11,7 @@
 
 namespace blink {
 
-class WebPageScheduler;
+class WebFrameHostScheduler;
 class WebTraceLocation;
 
 // This class is used to submit tasks and pass other information from Blink to
@@ -73,8 +73,8 @@ public:
     // Returns a WebTaskRunner for timer tasks. Can be called from any thread.
     virtual WebTaskRunner* timerTaskRunner() { return nullptr; }
 
-    // Creates a new WebPageScheduler. Must be called from the associated WebThread.
-    virtual WebPageScheduler* createPageScheduler() { return nullptr; }
+    // Creates a new WebFrameHostScheduler. Must be called from the associated WebThread.
+    virtual WebFrameHostScheduler* createFrameHostScheduler() { return nullptr; }
 
     // Suspends the timer queue and increments the timer queue suspension count.
     // May only be called from the main thread.
