@@ -138,12 +138,6 @@ public abstract class ChromeSwitches {
     public static final String ENABLE_ICON_NTP = "enable-icon-ntp";
 
     /**
-     * Enable Reader Mode button.
-     * Native switch - switches::kEnableReaderModeToolbarIcon
-     */
-    public static final String ENABLE_READER_MODE_BUTTON = "enable-reader-mode-toolbar-icon";
-
-    /**
      * Disable domain reliability
      * Native switch - switches::kDisableDomainReliability
      */

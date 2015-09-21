@@ -15,7 +15,6 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
-import org.chromium.chrome.browser.ChromeVersionInfo;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchManager;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchObserver;
 import org.chromium.chrome.browser.dom_distiller.ReaderModePanel.ReaderModePanelHost;
@@ -354,11 +353,6 @@ public class ReaderModeManager extends EmptyTabObserver
                 && !CommandLine.getInstance().hasSwitch(
                         ChromeSwitches.DISABLE_READER_MODE_BOTTOM_BAR)
                 && !DeviceFormFactor.isTablet(context);
-        if (ChromeVersionInfo.isBetaBuild() || ChromeVersionInfo.isStableBuild()) {
-            enabled = enabled
-                    && CommandLine.getInstance().hasSwitch(
-                               ChromeSwitches.ENABLE_READER_MODE_BUTTON);
-        }
         return enabled;
     }
 }

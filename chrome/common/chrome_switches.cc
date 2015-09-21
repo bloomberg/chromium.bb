@@ -1165,10 +1165,6 @@ const char kEnableDomDistillerButtonAnimation[] =
 // Enables chrome hosted mode for Android.
 const char kEnableHostedMode[] = "enable-hosted-mode";
 
-// Enables context-sensitive reader mode button in the toolbar.
-const char kEnableReaderModeToolbarIcon[] =
-    "enable-reader-mode-toolbar-icon";
-
 // Specifies Android phone page loading progress bar animation.
 const char kProgressBarAnimation[]          = "progress-bar-animation";
 
