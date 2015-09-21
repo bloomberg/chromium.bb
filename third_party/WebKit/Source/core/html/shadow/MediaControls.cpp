@@ -308,7 +308,6 @@ void MediaControls::makeOpaque()
 void MediaControls::makeTransparent()
 {
     m_panel->makeTransparent();
-    m_overlayCastButton->setIsWanted(false);
 }
 
 bool MediaControls::shouldHideMediaControls(unsigned behaviorFlags) const
@@ -605,6 +604,7 @@ void MediaControls::hideMediaControlsTimerFired(Timer<MediaControls>*)
         return;
 
     makeTransparent();
+    m_overlayCastButton->setIsWanted(false);
 }
 
 void MediaControls::startHideMediaControlsTimer()
