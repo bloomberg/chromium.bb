@@ -556,7 +556,7 @@ void BrowserView::Paint1pxHorizontalLine(gfx::Canvas* canvas,
 
   gfx::RectF line_rect =
       gfx::ScaleRect(gfx::RectF(bounds), canvas->image_scale());
-  line_rect.Inset(0, bounds.height() - 1, 0, 0);
+  line_rect.Inset(0, line_rect.height() - 1, 0, 0);
 
   SkPaint paint;
   paint.setColor(color);
