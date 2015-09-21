@@ -323,7 +323,6 @@ crbug.com/248938 virtual/threaded/transitions/change-duration-during-transition.
 crbug.com/248938 [ Win ] virtual/threaded/animations/change-keyframes.html [ Pass Failure ]
 crbug.com/248938 virtual/threaded/transitions/transition-end-event-nested.html [ Pass Failure ]
 crbug.com/503874 http/tests/inspector/sources/debugger/worker-debugging-script-mapping.html [ Pass Failure ]
-crbug.com/493895 inspector/sources/debugger-breakpoints/dom-breakpoints.html [ Pass Timeout ]
 crbug.com/503875 inspector/sources/debugger-step/debugger-step-into-document-write.html [ Pass Failure Timeout ]
 crbug.com/513143 virtual/threaded/fast/scroll-behavior/subframe-interrupted-scroll.html [ Failure Pass ]
 crbug.com/513143 virtual/threaded_animation_timelines/fast/scroll-behavior/subframe-interrupted-scroll.html [ Failure Pass ]
@@ -372,7 +371,7 @@ crbug.com/498539 inspector/tracing/timeline-injected-script-eval.html [ Pass Fai
 crbug.com/498539 inspector/tracing/timeline-receive-response-event.html [ Pass Failure ]
 crbug.com/498539 inspector/tracing/timeline-time.html [ Pass Failure Timeout ]
 crbug.com/498539 inspector/tracing/timeline-timer.html [ Pass Failure ]
-crbug.com/498539 inspector/elements/styles-3/styles-change-node-while-editing.html [ Failure Pass ]
+crbug.com/498539 crbug.com/534422 inspector/elements/styles-3/styles-change-node-while-editing.html [ Crash Failure Pass ]
 crbug.com/498539 [ Mac ] inspector-protocol/debugger/domdebugger-setInnerHTML.html [ Failure Pass Timeout ]
 crbug.com/498539 http/tests/inspector/console-fetch-logging.html [ Failure Pass Timeout ]
 crbug.com/498539 [ Precise MountainLion Trusty Linux32 XP SnowLeopard ] inspector/extensions/extensions-panel.html [ Failure Pass ]
@@ -427,9 +426,9 @@ crbug.com/498539 [ SnowLeopard ] inspector-protocol/heap-profiler/heap-objects-t
 crbug.com/498539 [ Win7 ] http/tests/inspector/service-workers/service-worker-manager.html [ Crash Pass ]
 crbug.com/521092 http/tests/inspector/service-workers/service-workers-view.html [ Crash Failure Pass ]
 crbug.com/498539 [ Win7 ] inspector/domdebugger/domdebugger-getEventListeners.html [ Crash Pass ]
-crbug.com/498539 [ Win7 ] inspector/elements/styles-2/perform-undo-perform-of-mergable-action.html [ Failure Pass ]
+crbug.com/498539 [ Win7 Release ] inspector/elements/styles-2/perform-undo-perform-of-mergable-action.html [ Failure Pass ]
 crbug.com/498539 [ Win7 ] inspector/elements/styles-3/selector-list.html [ Failure Pass ]
-crbug.com/498539 [ Win7 ] inspector/elements/styles-3/styles-computed-trace.html [ Crash Pass ]
+crbug.com/498539 [ Win7 Debug ] inspector/elements/styles-3/styles-computed-trace.html [ Crash Pass ]
 crbug.com/498539 [ Win7 ] inspector/elements/styles-4/styles-update-from-js.html [ Crash Pass ]
 
 crbug.com/248938 [ Win Debug ] virtual/threaded/animations/transition-and-animation-2.html [ Timeout ]
@@ -1686,6 +1685,24 @@ crbug.com/527281 [ Win10 ] compositing/overflow/scrolling-without-painting.html 
 crbug.com/524826 [ Win10 ] compositing/squashing/squashing-reflection-disallowed.html [ Pass Timeout ]
 
 crbug.com/526752 [ Win10 ] fast/css/fontfaceset-check-platform-fonts.html [ Failure Pass ]
+
+crbug.com/534422 [ Debug ] inspector/elements/edit/edit-style-attribute.html [ Crash Pass ]
+crbug.com/534422 [ Debug ] inspector/elements/edit/set-outer-html-2.html [ Crash Pass ]
+crbug.com/534422 [ Debug ] inspector/elements/node-reselect-on-append-child.html [ Crash Pass ]
+crbug.com/534422 [ Debug ] inspector/elements/styles-1/add-new-rule-invalid-selector.html [ Crash Pass ]
+crbug.com/534422 [ Debug ] inspector/elements/styles-2/perform-undo-perform-of-mergable-action.html [ Crash Pass ]
+crbug.com/534422 [ Debug ] inspector/elements/styles-3/styles-add-invalid-property.html [ Crash Pass ]
+crbug.com/534422 [ Mac Linux Debug ] inspector/elements/styles-3/styles-computed-trace.html [ Crash Pass ]
+crbug.com/534422 [ Debug ] inspector/elements/styles-3/styles-disable-then-delete.html [ Crash Pass ]
+crbug.com/534422 [ Debug ] inspector/elements/styles-3/styles-disable-then-enable-overriden-ua.html [ Crash Pass ]
+crbug.com/534422 [ Debug ] inspector/profiler/agents-disabled-check.html [ Crash Pass ]
+crbug.com/534422 [ Debug ] inspector/runtime/runtime-callFunctionOn.html [ Crash Pass ]
+crbug.com/534422 [ Debug ] inspector/sources/debugger-breakpoints/breakpoint-manager-listeners-count.html [ Crash Pass ]
+crbug.com/534422 [ Debug ] inspector/sources/debugger-breakpoints/dom-breakpoints.html [ Crash Pass ]
+crbug.com/534422 [ Debug ] inspector/sources/debugger-frameworks/frameworks-dom-xhr-event-breakpoints.html [ Crash Pass ]
+
+crbug.com/534423 [ Debug ] fast/frames/sandboxed-iframe-navigation-parent.html [ Crash Pass ]
+crbug.com/534423 [ Debug ] imported/web-platform-tests/html/syntax/parsing/html5lib_tests10.html [ Crash Pass ]
 
 # This test has different results in Debug and Release.
 crbug.com/529038 [ Debug ] virtual/gpu/fast/canvas/canvas-composite-repaint-by-all-imagesource.html [ Failure ]
