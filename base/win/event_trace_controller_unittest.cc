@@ -180,7 +180,7 @@ TEST_F(EtwTraceControllerTest, StartFileSession) {
 }
 
 // Disable until bug 525297 is fixed (hangs on Windows 7?)
-TEST_F(EtwTraceControllerTest, DISABLE_EnableDisable) {
+TEST_F(EtwTraceControllerTest, DISABLED_EnableDisable) {
   TestingProvider provider(test_provider_);
 
   EXPECT_EQ(ERROR_SUCCESS, provider.Register());
