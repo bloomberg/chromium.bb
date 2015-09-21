@@ -54,6 +54,7 @@ ATTR_OWNER_EMAIL = 'owner_email'
 ATTR_FAIL_COUNT = 'fail_count'
 ATTR_PASS_COUNT = 'pass_count'
 ATTR_TOTAL_FAIL_COUNT = 'total_fail_count'
+ATTR_COMMIT_MESSAGE = 'commit_message'
 
 ALL_ATTRS = (
     ATTR_REMOTE,
@@ -69,6 +70,7 @@ ALL_ATTRS = (
     ATTR_FAIL_COUNT,
     ATTR_PASS_COUNT,
     ATTR_TOTAL_FAIL_COUNT,
+    ATTR_COMMIT_MESSAGE,
 )
 
 def ParseSHA1(text, error_ok=True):
@@ -1499,7 +1501,8 @@ class GerritFetchOnlyPatch(GitRepoPatch):
 
   def __init__(self, project_url, project, ref, tracking_branch, remote,
                sha1, change_id, gerrit_number, patch_number, owner_email=None,
-               fail_count=0, pass_count=0, total_fail_count=0):
+               fail_count=0, pass_count=0, total_fail_count=0,
+               commit_message=None):
     """Initializes a GerritFetchOnlyPatch object."""
     super(GerritFetchOnlyPatch, self).__init__(
         project_url, project, ref, tracking_branch, remote,
@@ -1520,6 +1523,10 @@ class GerritFetchOnlyPatch(GitRepoPatch):
     self.fail_count = fail_count
     self.pass_count = pass_count
     self.total_fail_count = total_fail_count
+    # commit_message is herited from GitRepoPatch, only override it when passed
+    # in value is not None.
+    if commit_message:
+      self.commit_message = commit_message
 
   @classmethod
   def FromAttrDict(cls, attr_dict):
@@ -1541,7 +1548,10 @@ class GerritFetchOnlyPatch(GitRepoPatch):
                                 fail_count=int(attr_dict[ATTR_FAIL_COUNT]),
                                 pass_count=int(attr_dict[ATTR_PASS_COUNT]),
                                 total_fail_count=int(
-                                    attr_dict[ATTR_TOTAL_FAIL_COUNT]))
+                                    attr_dict[ATTR_TOTAL_FAIL_COUNT]),
+                                commit_message=attr_dict.get(
+                                    ATTR_COMMIT_MESSAGE))
+
 
   def _EnsureId(self, commit_message):
     """Ensure we have a usable Change-Id
@@ -1596,6 +1606,7 @@ class GerritFetchOnlyPatch(GitRepoPatch):
         ATTR_FAIL_COUNT: str(self.fail_count),
         ATTR_PASS_COUNT: str(self.pass_count),
         ATTR_TOTAL_FAIL_COUNT: str(self.total_fail_count),
+        ATTR_COMMIT_MESSAGE: self.commit_message,
     }
 
     return attr_dict
