@@ -36,13 +36,6 @@ public:
         return adoptRef(new SpotLightSource(position, direction, specularExponent, limitingConeAngle));
     }
 
-    PassRefPtr<LightSource> create(const FloatPoint3D& scale, const FloatSize& offset) const override
-    {
-        FloatPoint3D position(m_position.x() * scale.x() - offset.width(), m_position.y() * scale.y() - offset.height(), m_position.z() * scale.z());
-        FloatPoint3D direction(m_direction.x() * scale.x() - offset.width(), m_direction.y() * scale.y() - offset.height(), m_direction.z() * scale.z());
-        return adoptRef(new SpotLightSource(position, direction, m_specularExponent, m_limitingConeAngle));
-    }
-
     const FloatPoint3D& position() const { return m_position; }
     const FloatPoint3D& direction() const { return m_direction; }
     float specularExponent() const { return m_specularExponent; }

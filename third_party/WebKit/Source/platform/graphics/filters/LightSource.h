@@ -50,8 +50,6 @@ public:
     LightType type() const { return m_type; }
     virtual TextStream& externalRepresentation(TextStream&) const = 0;
 
-    virtual PassRefPtr<LightSource> create(const FloatPoint3D& scale, const FloatSize& offset) const = 0;
-
     virtual bool setAzimuth(float) { return false; }
     virtual bool setElevation(float) { return false; }
     virtual bool setPosition(const FloatPoint3D&) { return false; }
