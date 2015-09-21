@@ -1,11 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SYNC_GLUE_HISTORY_MODEL_WORKER_H_
-#define CHROME_BROWSER_SYNC_GLUE_HISTORY_MODEL_WORKER_H_
-
-#include "sync/internal_api/public/engine/model_safe_worker.h"
+#ifndef COMPONENTS_SYNC_DRIVER_GLUE_HISTORY_MODEL_WORKER_H_
+#define COMPONENTS_SYNC_DRIVER_GLUE_HISTORY_MODEL_WORKER_H_
 
 #include "base/basictypes.h"
 #include "base/callback_forward.h"
@@ -15,6 +13,7 @@
 #include "base/task/cancelable_task_tracker.h"
 #include "components/history/core/browser/history_db_task.h"
 #include "components/history/core/browser/history_service.h"
+#include "sync/internal_api/public/engine/model_safe_worker.h"
 
 namespace history {
 class HistoryService;
@@ -28,6 +27,7 @@ class HistoryModelWorker : public syncer::ModelSafeWorker {
  public:
   explicit HistoryModelWorker(
       const base::WeakPtr<history::HistoryService>& history_service,
+      const scoped_refptr<base::SingleThreadTaskRunner>& ui_thread,
       syncer::WorkerLoopDestructionObserver* observer);
 
   // syncer::ModelSafeWorker implementation. Called on syncapi SyncerThread.
@@ -46,12 +46,17 @@ class HistoryModelWorker : public syncer::ModelSafeWorker {
   ~HistoryModelWorker() override;
 
   const base::WeakPtr<history::HistoryService> history_service_;
+
+  // A reference to the UI thread's task runner.
+  const scoped_refptr<base::SingleThreadTaskRunner> ui_thread_;
+
   // Helper object to make sure we don't leave tasks running on the history
   // thread.
   scoped_ptr<base::CancelableTaskTracker> cancelable_tracker_;
+
   DISALLOW_COPY_AND_ASSIGN(HistoryModelWorker);
 };
 
 }  // namespace browser_sync
 
-#endif  // CHROME_BROWSER_SYNC_GLUE_HISTORY_MODEL_WORKER_H_
+#endif  // COMPONENTS_SYNC_DRIVER_GLUE_HISTORY_MODEL_WORKER_H_

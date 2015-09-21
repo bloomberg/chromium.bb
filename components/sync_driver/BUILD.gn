@@ -47,6 +47,8 @@ source_set("sync_driver") {
     "generic_change_processor_factory.h",
     "glue/browser_thread_model_worker.cc",
     "glue/browser_thread_model_worker.h",
+    "glue/history_model_worker.cc",
+    "glue/history_model_worker.h",
     "glue/synced_session.cc",
     "glue/synced_session.h",
     "glue/synced_window_delegate.h",

@@ -68,6 +68,8 @@
         'sync_driver/generic_change_processor_factory.h',
         'sync_driver/glue/browser_thread_model_worker.cc',
         'sync_driver/glue/browser_thread_model_worker.h',
+        'sync_driver/glue/history_model_worker.cc',
+        'sync_driver/glue/history_model_worker.h',
         'sync_driver/glue/synced_session.cc',
         'sync_driver/glue/synced_session.h',
         'sync_driver/glue/synced_window_delegate.h',
