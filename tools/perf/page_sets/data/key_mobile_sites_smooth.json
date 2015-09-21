@@ -14,6 +14,9 @@
         "key_mobile_sites_003.wpr": [
             "https://facebook.com/barackobama"
         ], 
+        "key_mobile_sites_010.wpr": [
+            "http://www.reddit.com/r/programming/comments/1g96ve"
+        ], 
         "key_mobile_sites_008.wpr": [
             "http://m.espn.go.com/nhl/rankings"
         ], 
@@ -58,7 +61,6 @@
             "http://www.deviantart.com/", 
             "http://www.baidu.com/s?wd=barack+obama&rsv_bp=0&rsv_spt=3&rsv_sug3=9&rsv_sug=0&rsv_sug4=3824&rsv_sug1=3&inputT=4920", 
             "http://www.bing.com/search?q=sloths", 
-            "http://www.reddit.com/r/programming/comments/1g96ve", 
             "http://www.boingboing.net"
         ], 
         "key_mobile_sites_002.wpr": [
