@@ -13,7 +13,7 @@ namespace device {
 MockBluetoothGattConnection::MockBluetoothGattConnection(
     scoped_refptr<device::BluetoothAdapter> adapter,
     const std::string& device_address)
-    : BluetoothGattConnection(/* Next Patch: adapter, device_address */) {
+    : BluetoothGattConnection(adapter, device_address) {
   ON_CALL(*this, GetDeviceAddress()).WillByDefault(Return(device_address));
   ON_CALL(*this, IsConnected()).WillByDefault(Return(true));
 }

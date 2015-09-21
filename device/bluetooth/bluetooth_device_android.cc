@@ -76,8 +76,11 @@ bool BluetoothDeviceAndroid::IsPaired() const {
 }
 
 bool BluetoothDeviceAndroid::IsConnected() const {
-  NOTIMPLEMENTED();
-  return false;
+  return IsGattConnected();
+}
+
+bool BluetoothDeviceAndroid::IsGattConnected() const {
+  return gatt_connected_;
 }
 
 bool BluetoothDeviceAndroid::IsConnectable() const {
@@ -185,18 +188,23 @@ void BluetoothDeviceAndroid::ConnectToServiceInsecurely(
   NOTIMPLEMENTED();
 }
 
-void BluetoothDeviceAndroid::CreateGattConnection(
-    const GattConnectionCallback& callback,
-    const ConnectErrorCallback& error_callback) {
-  NOTIMPLEMENTED();
-}
-
 BluetoothDeviceAndroid::BluetoothDeviceAndroid(BluetoothAdapterAndroid* adapter)
     : BluetoothDevice(adapter) {}
 
 std::string BluetoothDeviceAndroid::GetDeviceName() const {
   return ConvertJavaStringToUTF8(Java_ChromeBluetoothDevice_getDeviceName(
       AttachCurrentThread(), j_device_.obj()));
+}
+
+void BluetoothDeviceAndroid::CreateGattConnectionImpl() {
+  // Implemented in following patch https://codereview.chromium.org/1256313002
+  NOTIMPLEMENTED();
+  DidFailToConnectGatt(ERROR_UNKNOWN);
+}
+
+void BluetoothDeviceAndroid::DisconnectGatt() {
+  // Implemented in following patch https://codereview.chromium.org/1256313002
+  NOTIMPLEMENTED();
 }
 
 }  // namespace device

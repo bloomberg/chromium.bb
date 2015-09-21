@@ -34,7 +34,6 @@ class BluetoothGattConnectionChromeOS
   ~BluetoothGattConnectionChromeOS() override;
 
   // BluetoothGattConnection overrides.
-  std::string GetDeviceAddress() const override;
   bool IsConnected() override;
   void Disconnect() override;
 
@@ -47,12 +46,6 @@ class BluetoothGattConnectionChromeOS
 
   // True, if the connection is currently active.
   bool connected_;
-
-  // The Bluetooth adapter that this connection is associated with.
-  scoped_refptr<device::BluetoothAdapter> adapter_;
-
-  // Bluetooth address of the underlying device.
-  std::string device_address_;
 
   // D-Bus object path of the underlying device. This is used to filter observer
   // events.

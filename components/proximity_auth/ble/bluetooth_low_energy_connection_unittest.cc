@@ -134,10 +134,6 @@ class ProximityAuthBluetoothLowEnergyConnectionTest : public testing::Test {
         to_peripheral_char_uuid_(device::BluetoothUUID(kToPeripheralCharUUID)),
         from_peripheral_char_uuid_(
             device::BluetoothUUID(kFromPeripheralCharUUID)),
-        gatt_connection_(new NiceMock<device::MockBluetoothGattConnection>(
-            adapter_,
-            kBluetoothAddress)),
-        gatt_connection_alias_(gatt_connection_.get()),
         notify_session_alias_(NULL),
         bluetooth_throttler_(new NiceMock<MockBluetoothThrottler>),
         task_runner_(new base::TestSimpleTaskRunner) {}
@@ -165,6 +161,8 @@ class ProximityAuthBluetoothLowEnergyConnectionTest : public testing::Test {
     std::vector<const device::BluetoothDevice*> devices;
     devices.push_back(device_.get());
     ON_CALL(*adapter_, GetDevices()).WillByDefault(Return(devices));
+    ON_CALL(*adapter_, GetDevice(kBluetoothAddress))
+        .WillByDefault(Return(device_.get()));
     ON_CALL(*device_, GetGattService(kServiceID))
         .WillByDefault(Return(service_.get()));
     ON_CALL(*service_, GetCharacteristic(kFromPeripheralCharID))
@@ -357,8 +355,6 @@ class ProximityAuthBluetoothLowEnergyConnectionTest : public testing::Test {
   device::BluetoothUUID service_uuid_;
   device::BluetoothUUID to_peripheral_char_uuid_;
   device::BluetoothUUID from_peripheral_char_uuid_;
-  scoped_ptr<device::MockBluetoothGattConnection> gatt_connection_;
-  device::MockBluetoothGattConnection* gatt_connection_alias_;
   scoped_ptr<device::MockBluetoothDevice> device_;
   scoped_ptr<device::MockBluetoothGattService> service_;
   scoped_ptr<device::MockBluetoothGattCharacteristic> to_peripheral_char_;

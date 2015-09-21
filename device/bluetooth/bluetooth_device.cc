@@ -10,6 +10,8 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
+#include "device/bluetooth/bluetooth_adapter.h"
+#include "device/bluetooth/bluetooth_gatt_connection.h"
 #include "device/bluetooth/bluetooth_gatt_service.h"
 #include "grit/bluetooth_strings.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -21,6 +23,7 @@ BluetoothDevice::BluetoothDevice(BluetoothAdapter* adapter)
 
 BluetoothDevice::~BluetoothDevice() {
   STLDeleteValues(&gatt_services_);
+  DidDisconnectGatt();
 }
 
 BluetoothDevice::ConnectionInfo::ConnectionInfo()
@@ -200,6 +203,18 @@ bool BluetoothDevice::IsTrustable() const {
   return false;
 }
 
+void BluetoothDevice::CreateGattConnection(
+    const GattConnectionCallback& callback,
+    const ConnectErrorCallback& error_callback) {
+  create_gatt_connection_success_callbacks_.push_back(callback);
+  create_gatt_connection_error_callbacks_.push_back(error_callback);
+
+  if (IsGattConnected())
+    DidConnectGatt();
+
+  CreateGattConnectionImpl();
+}
+
 std::vector<BluetoothGattService*>
     BluetoothDevice::GetGattServices() const {
   std::vector<BluetoothGattService*> services;
@@ -271,6 +286,52 @@ BluetoothDevice::UUIDList BluetoothDevice::GetServiceDataUUIDs() const {
     iter.Advance();
   }
   return uuids;
+}
+
+void BluetoothDevice::DidConnectGatt() {
+  for (const auto& callback : create_gatt_connection_success_callbacks_) {
+    callback.Run(
+        make_scoped_ptr(new BluetoothGattConnection(adapter_, GetAddress())));
+  }
+  create_gatt_connection_success_callbacks_.clear();
+  create_gatt_connection_error_callbacks_.clear();
+}
+
+void BluetoothDevice::DidFailToConnectGatt(ConnectErrorCode error) {
+  for (const auto& error_callback : create_gatt_connection_error_callbacks_)
+    error_callback.Run(error);
+  create_gatt_connection_success_callbacks_.clear();
+  create_gatt_connection_error_callbacks_.clear();
+}
+
+void BluetoothDevice::DidDisconnectGatt() {
+  // Pending calls to connect GATT are not expected, if they were then
+  // DidFailToConnectGatt should be called. But in case callbacks exist
+  // flush them to ensure a consistent state.
+  if (create_gatt_connection_error_callbacks_.size() > 0) {
+    VLOG(1) << "Unexpected / unexplained DidDisconnectGatt call while "
+               "create_gatt_connection_error_callbacks_ are pending.";
+  }
+  DidFailToConnectGatt(ERROR_FAILED);
+
+  // Invalidate all BluetoothGattConnection objects.
+  for (BluetoothGattConnection* connection : gatt_connections_) {
+    connection->InvalidateConnectionReference();
+  }
+  gatt_connections_.clear();
+}
+
+void BluetoothDevice::AddGattConnection(BluetoothGattConnection* connection) {
+  auto result = gatt_connections_.insert(connection);
+  DCHECK(result.second);  // Check insert happened; there was no duplicate.
+}
+
+void BluetoothDevice::RemoveGattConnection(
+    BluetoothGattConnection* connection) {
+  size_t erased_count = gatt_connections_.erase(connection);
+  DCHECK(erased_count);
+  if (gatt_connections_.size() == 0)
+    DisconnectGatt();
 }
 
 void BluetoothDevice::ClearServiceData() { services_data_->Clear(); }

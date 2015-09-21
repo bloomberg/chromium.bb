@@ -147,6 +147,18 @@ std::string BluetoothDeviceWin::GetDeviceName() const {
   return name_;
 }
 
+void BluetoothDeviceWin::CreateGattConnectionImpl() {
+  // Windows implementation does not use the default CreateGattConnection
+  // implementation.
+  NOTIMPLEMENTED();
+}
+
+void BluetoothDeviceWin::DisconnectGatt() {
+  // Windows implementation does not use the default CreateGattConnection
+  // implementation.
+  NOTIMPLEMENTED();
+}
+
 std::string BluetoothDeviceWin::GetAddress() const {
   return address_;
 }
@@ -174,6 +186,11 @@ bool BluetoothDeviceWin::IsPaired() const {
 
 bool BluetoothDeviceWin::IsConnected() const {
   return connected_;
+}
+
+bool BluetoothDeviceWin::IsGattConnected() const {
+  NOTIMPLEMENTED();
+  return false;
 }
 
 bool BluetoothDeviceWin::IsConnectable() const {

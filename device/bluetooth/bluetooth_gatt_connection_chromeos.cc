@@ -16,9 +16,8 @@ BluetoothGattConnectionChromeOS::BluetoothGattConnectionChromeOS(
     scoped_refptr<device::BluetoothAdapter> adapter,
     const std::string& device_address,
     const dbus::ObjectPath& object_path)
-    : connected_(true),
-      adapter_(adapter),
-      device_address_(device_address),
+    : BluetoothGattConnection(adapter.get(), device_address),
+      connected_(true),
       object_path_(object_path) {
   DCHECK(adapter_.get());
   DCHECK(!device_address_.empty());
@@ -30,10 +29,6 @@ BluetoothGattConnectionChromeOS::BluetoothGattConnectionChromeOS(
 BluetoothGattConnectionChromeOS::~BluetoothGattConnectionChromeOS() {
   DBusThreadManager::Get()->GetBluetoothDeviceClient()->RemoveObserver(this);
   Disconnect();
-}
-
-std::string BluetoothGattConnectionChromeOS::GetDeviceAddress() const {
-  return device_address_;
 }
 
 bool BluetoothGattConnectionChromeOS::IsConnected() {

@@ -44,6 +44,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothLowEnergyDeviceMac
   uint16 GetDeviceID() const override;
   bool IsPaired() const override;
   bool IsConnected() const override;
+  bool IsGattConnected() const override;
   bool IsConnectable() const override;
   bool IsConnecting() const override;
   BluetoothDevice::UUIDList GetUUIDs() const override;
@@ -82,6 +83,8 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothLowEnergyDeviceMac
  protected:
   // BluetoothDevice override.
   std::string GetDeviceName() const override;
+  void CreateGattConnectionImpl() override;
+  void DisconnectGatt() override;
 
   // Updates information about the device.
   virtual void Update(CBPeripheral* peripheral,

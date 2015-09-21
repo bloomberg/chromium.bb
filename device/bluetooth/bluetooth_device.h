@@ -6,6 +6,7 @@
 #define DEVICE_BLUETOOTH_BLUETOOTH_DEVICE_H_
 
 #include <map>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -239,6 +240,9 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDevice {
   // they could be connected to the adapter but not to an application.
   virtual bool IsConnected() const = 0;
 
+  // Indicates whether an active GATT connection exists to the device.
+  virtual bool IsGattConnected() const = 0;
+
   // Indicates whether the paired device accepts connections initiated from the
   // adapter. This value is undefined for unpaired devices.
   virtual bool IsConnectable() const = 0;
@@ -406,9 +410,8 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDevice {
   // BluetoothAdapter::Observer::DeviceChanged method.
   typedef base::Callback<void(scoped_ptr<BluetoothGattConnection>)>
       GattConnectionCallback;
-  virtual void CreateGattConnection(
-      const GattConnectionCallback& callback,
-      const ConnectErrorCallback& error_callback) = 0;
+  virtual void CreateGattConnection(const GattConnectionCallback& callback,
+                                    const ConnectErrorCallback& error_callback);
 
   // Returns the list of discovered GATT services.
   virtual std::vector<BluetoothGattService*> GetGattServices() const;
@@ -430,10 +433,41 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDevice {
   static std::string CanonicalizeAddress(const std::string& address);
 
  protected:
+  // BluetoothGattConnection is a friend to call Add/RemoveGattConnection.
+  friend BluetoothGattConnection;
+
   BluetoothDevice(BluetoothAdapter* adapter);
 
   // Returns the internal name of the Bluetooth device, used by GetName().
   virtual std::string GetDeviceName() const = 0;
+
+  // Implements platform specific operations to initiate a GATT connection.
+  // Subclasses must also call DidConnectGatt, DidFailToConnectGatt, or
+  // DidDisconnectGatt immediately or asynchronously as the connection state
+  // changes.
+  virtual void CreateGattConnectionImpl() = 0;
+
+  // Disconnects GATT connection on platforms that maintain a specific GATT
+  // connection.
+  virtual void DisconnectGatt() = 0;
+
+  // Calls any pending callbacks for CreateGattConnection based on result of
+  // subclasses actions initiated in CreateGattConnectionImpl or related
+  // disconnection events. These may be called at any time, even multiple times,
+  // to ensure a change in platform state is correctly tracked.
+  //
+  // Under normal behavior it is expected that after CreateGattConnectionImpl
+  // an platform will call DidConnectGatt or DidFailToConnectGatt, but not
+  // DidDisconnectGatt.
+  void DidConnectGatt();
+  void DidFailToConnectGatt(ConnectErrorCode);
+  void DidDisconnectGatt();
+
+  // Tracks BluetoothGattConnection instances that act as a reference count
+  // keeping the GATT connection open. Instances call Add/RemoveGattConnection
+  // at creation & deletion.
+  void AddGattConnection(BluetoothGattConnection*);
+  void RemoveGattConnection(BluetoothGattConnection*);
 
   // Clears the list of service data.
   void ClearServiceData();
@@ -445,6 +479,13 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDevice {
   // Raw pointer to adapter owning this device object. Subclasses use platform
   // specific pointers via adapter_.
   BluetoothAdapter* adapter_;
+
+  // Callbacks for pending success and error result of CreateGattConnection.
+  std::vector<GattConnectionCallback> create_gatt_connection_success_callbacks_;
+  std::vector<ConnectErrorCallback> create_gatt_connection_error_callbacks_;
+
+  // BluetoothGattConnection objects keeping the GATT connection alive.
+  std::set<BluetoothGattConnection*> gatt_connections_;
 
   // Mapping from the platform-specific GATT service identifiers to
   // BluetoothGattService objects.
