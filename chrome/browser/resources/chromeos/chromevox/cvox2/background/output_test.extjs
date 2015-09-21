@@ -501,3 +501,24 @@ SYNC_TEST_F('OutputE2ETest', 'MessageIdAndEarconValidity', function() {
     }
   }
 });
+
+TEST_F('OutputE2ETest', 'DivOmitsRole', function() {
+  this.runWithLoadedTree(function() {/*!
+    <div>that has content</div>
+    <div></div>
+    <div role='group'><div>nested content</div></div>
+  */},
+  function(root) {
+    var el = root.firstChild.firstChild;
+    var range = cursors.Range.fromNode(el);
+    var o = new Output().withSpeechAndBraille(range, null, 'navigate');
+    assertEqualsJSON({string_: '|that has content',
+        spans_: [
+          {value: 'name', start: 1, end: 17}
+          ]}, o.speechOutputForTest);
+    checkBrailleOutput(
+        'that has content',
+        [{value: new Output.NodeSpan(el), start: 0, end: 16}],
+        o);
+  });
+});

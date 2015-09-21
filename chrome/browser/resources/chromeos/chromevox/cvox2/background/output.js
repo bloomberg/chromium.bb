@@ -385,6 +385,10 @@ Output.RULES = {
     dialog: {
       enter: '$name $role'
     },
+    div: {
+      enter: '$name',
+      speak: '$name'
+    },
     grid: {
       enter: '$name $role'
     },
