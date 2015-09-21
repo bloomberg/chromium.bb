@@ -72,7 +72,7 @@ function test()
             function successCallback(rule, doesAffectSelectedNode)
             {
                 InspectorTest.addResult("=== Selector changed ===");
-                InspectorTest.addResult(rule.selectorText + " {" + rule.style.cssText + "}");
+                InspectorTest.addResult(rule.selectorText() + " {" + rule.style.cssText + "}");
                 InspectorTest.addResult("Selectors matching the (#inspected) node: " + InspectorTest.matchingSelectors(rule));
                 next();
             }

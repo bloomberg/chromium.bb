@@ -30,7 +30,7 @@ function test()
             {
                 rule = section.styleRule.rule();
                 InspectorTest.addResult("=== Rule added ===");
-                InspectorTest.addResult(rule.selectorText + " {" + rule.style.cssText + "}");
+                InspectorTest.addResult(rule.selectorText() + " {" + rule.style.cssText + "}");
                 InspectorTest.addResult("Selectors matching the (#inspected) node: " + InspectorTest.matchingSelectors(rule));
                 next();
             }
@@ -56,7 +56,7 @@ function test()
             {
                 var doesAffectSelectedNode = rule.matchingSelectors.length > 0;
                 InspectorTest.addResult("=== Selector changed ===");
-                InspectorTest.addResult(rule.selectorText + " {" + rule.style.cssText + "}");
+                InspectorTest.addResult(rule.selectorText() + " {" + rule.style.cssText + "}");
                 InspectorTest.addResult("Selectors matching the (#inspected) node: " + InspectorTest.matchingSelectors(rule));
 
                 next();
