@@ -620,16 +620,33 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['mac'], bug=483282)
     self.Skip('deqp/data/gles3/shaders/scoping.html',
         ['mac'], bug=483282)
+    self.Skip('deqp/functional/gles3/defaultvertexattribute.html',
+        ['mac'], bug=483282)
     self.Skip('deqp/functional/gles3/vertexarrayobject.html',
         ['mac'], bug=483282)
     self.Skip('deqp/functional/gles3/shaderswitch.html',
         ['mavericks'], bug=483282)
+    self.Fail('conformance2/attribs/gl-vertex-attrib-i-render.html',
+        ['mac'], bug=483282)
+    self.Fail('conformance2/buffers/buffer-overflow-test.html',
+        ['mac'], bug=483282)
+    self.Fail('conformance2/buffers/buffer-type-restrictions.html',
+        ['mac'], bug=483282)
     self.Fail('conformance2/renderbuffers/' +
         'multisampled-renderbuffer-initialization.html',
         ['mac'], bug=483282)
     self.Fail('conformance2/rendering/instanced-arrays.html',
         ['mac'], bug=483282)
     self.Fail('conformance2/samplers/samplers.html',
+        ['mac'], bug=483282)
+    self.Fail('conformance2/state/gl-object-get-calls.html',
+        ['mac'], bug=483282)
+    self.Fail('conformance2/textures/canvas/*', ['mac'], bug=483282)
+    self.Fail('conformance2/textures/misc/gl-get-tex-parameter.html',
+        ['mac'], bug=483282)
+    self.Fail('conformance2/textures/misc/tex-storage-compressed-formats.html',
+        ['mac'], bug=483282)
+    self.Fail('conformance2/textures/misc/texture-npot.html',
         ['mac'], bug=483282)
 
     # Linux only.
