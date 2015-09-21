@@ -589,6 +589,31 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['win'], bug=483282)
     self.Fail('conformance2/textures/misc/tex-input-validation.html',
         ['win'], bug=483282)
+    # Windows 8 only.
+    self.Fail('conformance2/textures/image_data/tex-image-and-sub-image-2d' +
+        '-with-image-data-rgb565-rgb-unsigned_byte.html',
+        ['win8'], bug=483282)
+    self.Fail('conformance2/textures/image_data/tex-image-and-sub-image-2d' +
+        '-with-image-data-rgb5_a1-rgba-unsigned_byte.html',
+        ['win8'], bug=483282)
+    self.Fail('conformance2/textures/image/tex-image-and-sub-image-2d' +
+        '-with-image-rgb565-rgb-unsigned_byte.html',
+        ['win8'], bug=483282)
+    self.Fail('conformance2/textures/image/tex-image-and-sub-image-2d' +
+        '-with-image-rgb5_a1-rgba-unsigned_byte.html',
+        ['win8'], bug=483282)
+    self.Fail('conformance2/textures/svg_image/tex-image-and-sub-image-2d' +
+        '-with-svg-image-rgb565-rgb-unsigned_byte.html',
+        ['win8'], bug=483282)
+    self.Fail('conformance2/textures/svg_image/tex-image-and-sub-image-2d' +
+        '-with-svg-image-rgb5_a1-rgba-unsigned_byte.html',
+        ['win8'], bug=483282)
+    self.Fail('conformance2/textures/video/tex-image-and-sub-image-2d' +
+        '-with-video-rgb565-rgb-unsigned_byte.html',
+        ['win8'], bug=483282)
+    self.Fail('conformance2/textures/video/tex-image-and-sub-image-2d' +
+        '-with-video-rgb5_a1-rgba-unsigned_byte.html',
+        ['win8'], bug=483282)
 
     # Mac only.
     self.Skip('deqp/data/gles3/shaders/qualification_order.html',
