@@ -189,6 +189,22 @@ class QuicStreamFactoryPeer {
   static int GetNumPublicResetsPostHandshake(QuicStreamFactory* factory) {
     return factory->num_public_resets_post_handshake_;
   }
+
+  static void InitializeQuicSupportedServersAtStartup(
+      QuicStreamFactory* factory) {
+    factory->InitializeQuicSupportedServersAtStartup();
+  }
+
+  static bool GetQuicSupportedServersAtStartupInitialzied(
+      QuicStreamFactory* factory) {
+    return factory->quic_supported_servers_at_startup_initialzied_;
+  }
+
+  static bool SupportsQuicAtStartUp(QuicStreamFactory* factory,
+                                    HostPortPair host_port_pair) {
+    return ContainsKey(factory->quic_supported_servers_at_startup_,
+                       host_port_pair);
+  }
 };
 
 class MockQuicServerInfo : public QuicServerInfo {
@@ -2589,6 +2605,34 @@ TEST_P(QuicStreamFactoryTest, EnableDelayTcpRace) {
   EXPECT_TRUE(socket_data.AllReadDataConsumed());
   EXPECT_TRUE(socket_data.AllWriteDataConsumed());
   QuicStreamFactoryPeer::SetDelayTcpRace(&factory_, delay_tcp_race);
+}
+
+TEST_P(QuicStreamFactoryTest, QuicSupportedServersAtStartup) {
+  factory_.set_quic_server_info_factory(&quic_server_info_factory_);
+  QuicStreamFactoryPeer::SetTaskRunner(&factory_, runner_.get());
+
+  // Set up data in HttpServerProperties.
+  scoped_ptr<HttpServerProperties> http_server_properties(
+      new HttpServerPropertiesImpl());
+  QuicStreamFactoryPeer::SetHttpServerProperties(
+      &factory_, http_server_properties->GetWeakPtr());
+
+  const AlternativeService alternative_service1(QUIC, host_port_pair_.host(),
+                                                host_port_pair_.port());
+  AlternativeServiceInfoVector alternative_service_info_vector;
+  base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
+  alternative_service_info_vector.push_back(
+      AlternativeServiceInfo(alternative_service1, 1.0, expiration));
+
+  http_server_properties->SetAlternativeServices(
+      host_port_pair_, alternative_service_info_vector);
+
+  QuicStreamFactoryPeer::InitializeQuicSupportedServersAtStartup(&factory_);
+  EXPECT_TRUE(
+      QuicStreamFactoryPeer::GetQuicSupportedServersAtStartupInitialzied(
+          &factory_));
+  EXPECT_TRUE(
+      QuicStreamFactoryPeer::SupportsQuicAtStartUp(&factory_, host_port_pair_));
 }
 
 }  // namespace test

@@ -326,6 +326,10 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
       const QuicServerId& server_id,
       const scoped_ptr<QuicServerInfo>& server_info);
 
+  // Initialize |quic_supported_servers_at_startup_| with the list of servers
+  // that supported QUIC at start up.
+  void InitializeQuicSupportedServersAtStartup();
+
   void ProcessGoingAwaySession(QuicChromiumClientSession* session,
                                const QuicServerId& server_id,
                                bool was_session_active);
@@ -443,6 +447,7 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   // Local address of socket that was created in CreateSession.
   IPEndPoint local_address_;
   bool check_persisted_supports_quic_;
+  bool quic_supported_servers_at_startup_initialzied_;
   std::set<HostPortPair> quic_supported_servers_at_startup_;
 
   NetworkConnection network_connection_;
