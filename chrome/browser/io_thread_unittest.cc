@@ -177,17 +177,45 @@ TEST_F(IOThreadTest, EnableQuicFromFieldTrialGroup) {
 }
 
 TEST_F(IOThreadTest, EnableQuicFromQuicProxyFieldTrialGroup) {
-  base::FieldTrialList field_trial_list(new base::MockEntropyProvider());
-  base::FieldTrialList::CreateFieldTrial(
-      data_reduction_proxy::params::GetQuicFieldTrialName(), "Enabled");
+  const struct {
+    std::string field_trial_group_name;
+    bool expect_enable_quic;
+  } tests[] = {
+      {
+          std::string(), false,
+      },
+      {
+          "NotEnabled", false,
+      },
+      {
+          "Control", false,
+      },
+      {
+          "Disabled", false,
+      },
+      {
+          "EnabledControl", true,
+      },
+      {
+          "Enabled", true,
+      },
+  };
 
-  ConfigureQuicGlobals();
-  net::HttpNetworkSession::Params params;
-  InitializeNetworkSessionParams(&params);
-  EXPECT_FALSE(params.enable_quic);
-  EXPECT_TRUE(params.enable_quic_for_proxies);
-  EXPECT_TRUE(IOThread::ShouldEnableQuicForDataReductionProxy());
-  EXPECT_EQ(1024 * 1024, params.quic_socket_receive_buffer_size);
+  for (size_t i = 0; i < arraysize(tests); ++i) {
+    base::FieldTrialList field_trial_list(new base::MockEntropyProvider());
+    base::FieldTrialList::CreateFieldTrial(
+        data_reduction_proxy::params::GetQuicFieldTrialName(),
+        tests[i].field_trial_group_name);
+
+    ConfigureQuicGlobals();
+    net::HttpNetworkSession::Params params;
+    InitializeNetworkSessionParams(&params);
+    EXPECT_FALSE(params.enable_quic) << i;
+    EXPECT_EQ(tests[i].expect_enable_quic, params.enable_quic_for_proxies) << i;
+    EXPECT_EQ(tests[i].expect_enable_quic,
+              IOThread::ShouldEnableQuicForDataReductionProxy())
+        << i;
+  }
 }
 
 TEST_F(IOThreadTest, EnableQuicFromCommandLine) {

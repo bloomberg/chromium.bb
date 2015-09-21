@@ -665,8 +665,31 @@ TEST_F(DataReductionProxySettingsTest, CheckInitMetricsWhenNotAllowed) {
 }
 
 TEST_F(DataReductionProxySettingsTest, CheckQUICFieldTrials) {
-  for (int i = 0; i < 2; ++i) {
-    bool enable_quic = i == 0;
+  const struct {
+    bool enable_quic;
+    std::string field_trial_group_name;
+  } tests[] = {
+      {
+          false, std::string(),
+      },
+      {
+          false, "NotEnabled",
+      },
+      {
+          false, "Control",
+      },
+      {
+          false, "Disabled",
+      },
+      {
+          true, "EnabledControl",
+      },
+      {
+          true, "Enabled",
+      },
+  };
+
+  for (size_t i = 0; i < arraysize(tests); ++i) {
     // No call to |AddProxyToCommandLine()| was made, so the proxy feature
     // should be unavailable.
     // Clear the command line. Setting flags can force the proxy to be allowed.
@@ -682,23 +705,22 @@ TEST_F(DataReductionProxySettingsTest, CheckQUICFieldTrials) {
         test_context_->CreateDataReductionProxyService(settings_.get()));
 
     base::FieldTrialList field_trial_list(new base::MockEntropyProvider());
-    if (enable_quic) {
-      base::FieldTrialList::CreateFieldTrial(params::GetQuicFieldTrialName(),
-                                             "Enabled");
-    } else {
-      base::FieldTrialList::CreateFieldTrial(params::GetQuicFieldTrialName(),
-                                             "Disabled");
-    }
-    test_context_->config()->EnableQuic(enable_quic);
+
+    base::FieldTrialList::CreateFieldTrial(params::GetQuicFieldTrialName(),
+                                           tests[i].field_trial_group_name);
+    EXPECT_EQ(
+        tests[i].field_trial_group_name,
+        base::FieldTrialList::FindFullName(params::GetQuicFieldTrialName()));
+    test_context_->config()->EnableQuic(tests[i].enable_quic);
 
     settings_->SetCallbackToRegisterSyntheticFieldTrial(
         base::Bind(&DataReductionProxySettingsTestBase::
-                   SyntheticFieldTrialRegistrationCallback,
+                       SyntheticFieldTrialRegistrationCallback,
                    base::Unretained(this)));
 
     net::ProxyServer origin =
         test_context_->config()->test_params()->proxies_for_http().front();
-    EXPECT_EQ(enable_quic, origin.is_quic()) << i;
+    EXPECT_EQ(tests[i].enable_quic, origin.is_quic()) << i;
   }
 }
 

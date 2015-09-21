@@ -121,7 +121,7 @@ bool WarnIfNoDataReductionProxy() {
 }
 
 bool IsIncludedInQuicFieldTrial() {
-  return FieldTrialList::FindFullName(kQuicFieldTrial) == kEnabled;
+  return FieldTrialList::FindFullName(kQuicFieldTrial).find(kEnabled) == 0;
 }
 
 std::string GetQuicFieldTrialName() {
