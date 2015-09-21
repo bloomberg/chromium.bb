@@ -383,12 +383,12 @@ abstract class ToolbarLayout extends FrameLayout implements Toolbar {
     public void setCloseButtonImageResource(Drawable drawable) { }
 
     /**
-     * Adds a custom action button to the {@link ToolbarLayout} if it is supported.
+     * Sets/adds a custom action button to the {@link ToolbarLayout} if it is supported.
      * @param description  The content description for the button.
      * @param listener     The {@link OnClickListener} to use for clicks to the button.
      * @param buttonSource The {@link Bitmap} resource to use as the source for the button.
      */
-    public void addCustomActionButton(Drawable drawable, String description,
+    public void setCustomActionButton(Drawable drawable, String description,
             OnClickListener listener) { }
 
     /**

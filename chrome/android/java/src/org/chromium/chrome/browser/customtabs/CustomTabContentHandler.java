@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.customtabs;
 
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.os.IBinder;
 
 import org.chromium.content_public.browser.LoadUrlParams;
@@ -35,4 +36,10 @@ public interface CustomTabContentHandler {
      * @return Whether the intent should be ignored.
      */
     boolean shouldIgnoreIntent(Intent intent);
+
+    /**
+     * Updates the content of custom action button shown on the toolbar.
+     * @return Whether the action button has been updated.
+     */
+    boolean updateActionButton(Bitmap bitmap, String description);
 }

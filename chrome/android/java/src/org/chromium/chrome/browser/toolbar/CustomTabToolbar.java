@@ -136,7 +136,7 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
     }
 
     @Override
-    public void addCustomActionButton(Drawable drawable, String description,
+    public void setCustomActionButton(Drawable drawable, String description,
             OnClickListener listener) {
         Resources resources = getResources();
 
@@ -157,6 +157,7 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
         mCustomActionButton.setContentDescription(description);
         mCustomActionButton.setOnClickListener(listener);
         mCustomActionButton.setVisibility(VISIBLE);
+        updateButtonsTint();
     }
 
     /**
@@ -277,15 +278,7 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
     public void updateVisualsForState() {
         Resources resources = getResources();
         updateSecurityIcon(getSecurityLevel());
-        ColorStateList colorStateList = ApiCompatibilityUtils.getColorStateList(resources,
-                mUseDarkColors ? R.color.dark_mode_tint : R.color.light_mode_tint);
-        mMenuButton.setTint(colorStateList);
-        if (mCloseButton.getDrawable() instanceof TintedDrawable) {
-            ((TintedDrawable) mCloseButton.getDrawable()).setTint(colorStateList);
-        }
-        if (mCustomActionButton.getDrawable() instanceof TintedDrawable) {
-            ((TintedDrawable) mCustomActionButton.getDrawable()).setTint(colorStateList);
-        }
+        updateButtonsTint();
         mUrlBar.setUseDarkTextColors(mUseDarkColors);
 
         int titleTextColor = mUseDarkColors
@@ -306,6 +299,19 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
                 getProgressBar().setBackgroundColor(ApiCompatibilityUtils.getColor(resources,
                         progressBarBackgroundColorResource));
             }
+        }
+    }
+
+    private void updateButtonsTint() {
+        Resources resources = getResources();
+        ColorStateList colorStateList = ApiCompatibilityUtils.getColorStateList(resources,
+                mUseDarkColors ? R.color.dark_mode_tint : R.color.light_mode_tint);
+        mMenuButton.setTint(colorStateList);
+        if (mCloseButton.getDrawable() instanceof TintedDrawable) {
+            ((TintedDrawable) mCloseButton.getDrawable()).setTint(colorStateList);
+        }
+        if (mCustomActionButton.getDrawable() instanceof TintedDrawable) {
+            ((TintedDrawable) mCustomActionButton.getDrawable()).setTint(colorStateList);
         }
     }
 

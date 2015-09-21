@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.customtabs;
 
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.IBinder;
 import android.support.customtabs.CustomTabsCallback;
@@ -19,6 +20,7 @@ import android.view.Window;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Log;
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
@@ -93,6 +95,23 @@ public class CustomTabActivity extends ChromeActivity {
         return true;
     }
 
+    /**
+     * Checks whether the active {@link CustomTabContentHandler} belongs to the given session, and
+     * if true, update toolbar's action button.
+     * @param session     The {@link IBinder} that the calling client represents.
+     * @param bitmap      The new icon for action button.
+     * @param description The new content description for the action button.
+     * @return Whether the update is successful.
+     */
+    static boolean updateActionButton(IBinder session, Bitmap bitmap, String description) {
+        ThreadUtils.assertOnUiThread();
+        // Do nothing if there is no activity or the activity does not belong to this session.
+        if (sActiveContentHandler == null || !sActiveContentHandler.getSession().equals(session)) {
+            return false;
+        }
+        return sActiveContentHandler.updateActionButton(bitmap, description);
+    }
+
     @Override
     public boolean isCustomTab() {
         return true;
@@ -146,17 +165,7 @@ public class CustomTabActivity extends ChromeActivity {
 
         // Setting task title and icon to be null will preserve the client app's title and icon.
         ApiCompatibilityUtils.setTaskDescription(this, null, null, toolbarColor);
-        if (mIntentDataProvider.shouldShowActionButton()) {
-            getToolbarManager().addCustomActionButton(mIntentDataProvider.getActionButtonIcon(),
-                    mIntentDataProvider.getActionButtonDescription(), new OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            mIntentDataProvider.sendButtonPendingIntentWithUrl(
-                                    getApplicationContext(), mTab.getUrl());
-                            RecordUserAction.record("CustomTabsCustomActionButtonClick");
-                        }
-                    });
-        }
+        showActionButton();
     }
 
     @Override
@@ -216,6 +225,12 @@ public class CustomTabActivity extends ChromeActivity {
             public boolean shouldIgnoreIntent(Intent intent) {
                 return mIntentHandler.shouldIgnoreIntent(CustomTabActivity.this, intent);
             }
+
+            @Override
+            public boolean updateActionButton(Bitmap bitmap, String description) {
+                mIntentDataProvider.getActionButtonParams().update(bitmap, description);
+                return showActionButton();
+            }
         };
         loadUrlInCurrentTab(new LoadUrlParams(url),
                 IntentHandler.getTimestampFromIntent(getIntent()));
@@ -235,7 +250,6 @@ public class CustomTabActivity extends ChromeActivity {
                     externalId.ordinal(), ExternalAppId.INDEX_BOUNDARY.ordinal());
         }
     }
-
 
     @Override
     public void onPauseWithNative() {
@@ -321,6 +335,27 @@ public class CustomTabActivity extends ChromeActivity {
         } else {
             finish();
         }
+        return true;
+    }
+
+    /**
+     * Properly setup action button on the toolbar. Does nothing if invalid data is provided by
+     * clients.
+     */
+    private boolean showActionButton() {
+        if (!mIntentDataProvider.shouldShowActionButton()) return false;
+        ActionButtonParams params = mIntentDataProvider.getActionButtonParams();
+        getToolbarManager().setCustomActionButton(
+                params.getIcon(getResources()),
+                params.getDescription(),
+                new OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        mIntentDataProvider.sendButtonPendingIntentWithUrl(
+                                getApplicationContext(), mTab.getUrl());
+                        RecordUserAction.record("CustomTabsCustomActionButtonClick");
+                    }
+                });
         return true;
     }
 

@@ -406,8 +406,7 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
                 View.VISIBLE != actionButton.getVisibility());
 
         CustomTabIntentDataProvider dataProvider = mActivity.getIntentDataProvider();
-        assertNull(dataProvider.getActionButtonIcon());
-        assertNull(dataProvider.getActionButtonPendingIntentForTest());
+        assertNull(dataProvider.getActionButtonParams());
     }
 
     @SmallTest
