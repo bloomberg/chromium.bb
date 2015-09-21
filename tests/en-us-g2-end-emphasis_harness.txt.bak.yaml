@@ -1,7 +1,0 @@
-tables: [en-us-g2.ctb.bak]
-tests:
-  - [abcdefg, ab.'cd.-efg, {typeform: '0011000'}]
-  - [abcdef, ab.'cd.-ef, {typeform: '001100'}]
-  - [abcde, ab.'cd.-e, {typeform: '00110'}]
-  - [abcd, ab.'cd.-, {typeform: '0011'}]
-  - [abc, ab.3c, {typeform: '001'}]

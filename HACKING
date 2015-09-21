@@ -120,12 +120,12 @@ In order to use them, first get Docker at
 http://docs.docker.com/introduction/get-docker. Download the latest
 liblouis image with:
 
-  docker pull liblouis/libouis
+  docker pull liblouis/liblouis
 
 Then, enter the development environment by running the image in a
 Docker container:
 
-  docker run -it liblouis/libouis bash
+  docker run -it liblouis/liblouis bash
 
 Local files and directories can be "mounted" inside the container, in
 order to make it easier to edit files and to persist changes across
@@ -139,12 +139,12 @@ The same Docker image can be used as a development environment and as
 the application itself. For example, to run the lou_translate tool
 from inside a Docker container:
 
-  docker run -it liblouis/libouis lou_translate en-us-g1.ctb
+  docker run -it liblouis/liblouis lou_translate en-us-g1.ctb
 
 To rebuild the image yourself, run the following command in the root
 directory of the liblouis source:
 
-  docker build -t liblouis/liblouis
+  docker build -t liblouis/liblouis .
 
 ** How to run tests
 Tests are run with
