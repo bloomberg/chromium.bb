@@ -23,7 +23,6 @@ namespace {
 const char kClaimInterfaceFailed[] = "Unable to claim interface.";
 const char kClearHaltFailed[] = "Unable to clear endpoint.";
 const char kDeviceNoAccess[] = "Access denied.";
-const char kDeviceNotFound[] = "Device not found.";
 const char kDeviceNotOpened[] = "Device not opened.";
 const char kDeviceUnavailable[] = "Device unavailable.";
 const char kDeviceResetFailed[] = "Unable to reset the device.";
@@ -75,11 +74,6 @@ void OnOpenDevice(
   switch(error) {
     case device::usb::OPEN_DEVICE_ERROR_OK:
       scoped_callbacks->onSuccess();
-      break;
-    case device::usb::OPEN_DEVICE_ERROR_NOT_FOUND:
-      scoped_callbacks->onError(blink::WebUSBError(
-          blink::WebUSBError::Error::Device,
-          base::UTF8ToUTF16(kDeviceNotFound)));
       break;
     case device::usb::OPEN_DEVICE_ERROR_ACCESS_DENIED:
       scoped_callbacks->onError(blink::WebUSBError(
@@ -152,11 +146,9 @@ void OnTransferOut(
 
 }  // namespace
 
-WebUSBDeviceImpl::WebUSBDeviceImpl(device::usb::DeviceManagerPtr device_manager,
+WebUSBDeviceImpl::WebUSBDeviceImpl(device::usb::DevicePtr device,
                                    const blink::WebUSBDeviceInfo& device_info)
-    : device_manager_(device_manager.Pass()),
-      device_info_(device_info),
-      weak_factory_(this) {}
+    : device_(device.Pass()), device_info_(device_info), weak_factory_(this) {}
 
 WebUSBDeviceImpl::~WebUSBDeviceImpl() {}
 
@@ -166,10 +158,7 @@ const blink::WebUSBDeviceInfo& WebUSBDeviceImpl::info() const {
 
 void WebUSBDeviceImpl::open(blink::WebUSBDeviceOpenCallbacks* callbacks) {
   auto scoped_callbacks = MakeScopedUSBCallbacks(callbacks);
-  device_manager_->OpenDevice(
-      device_info_.guid.utf8(),
-      mojo::GetProxy(&device_),
-      base::Bind(&OnOpenDevice, base::Passed(&scoped_callbacks)));
+  device_->Open(base::Bind(&OnOpenDevice, base::Passed(&scoped_callbacks)));
 }
 
 void WebUSBDeviceImpl::close(blink::WebUSBDeviceCloseCallbacks* callbacks) {

@@ -89,22 +89,6 @@ class USBDeviceManagerImplTest : public testing::Test {
   scoped_ptr<base::MessageLoop> message_loop_;
 };
 
-class MockOpenCallback {
- public:
-  explicit MockOpenCallback(UsbDevice* device) : device_(device) {}
-
-  void Open(const UsbDevice::OpenCallback& callback) {
-    device_handle_ = new MockUsbDeviceHandle(device_);
-    callback.Run(device_handle_);
-  }
-
-  scoped_refptr<MockUsbDeviceHandle> mock_handle() { return device_handle_; }
-
- private:
-  UsbDevice* device_;
-  scoped_refptr<MockUsbDeviceHandle> device_handle_;
-};
-
 void ExpectDevicesAndThen(const std::set<std::string>& expected_guids,
                           const base::Closure& continuation,
                           mojo::Array<DeviceInfoPtr> results) {
@@ -137,17 +121,9 @@ void ExpectDeviceChangesAndThen(
 void ExpectDeviceInfoAndThen(const std::string& expected_guid,
                              const base::Closure& continuation,
                              DeviceInfoPtr device_info) {
+  ASSERT_TRUE(device_info);
   EXPECT_EQ(expected_guid, device_info->guid);
   continuation.Run();
-}
-
-void ExpectOpenDeviceError(OpenDeviceError expected_error,
-                           OpenDeviceError actual_error) {
-  EXPECT_EQ(expected_error, actual_error);
-}
-
-void FailOnGetDeviceInfoResponse(DeviceInfoPtr device_info) {
-  FAIL();
 }
 
 }  // namespace
@@ -187,7 +163,7 @@ TEST_F(USBDeviceManagerImplTest, GetDevices) {
 }
 
 // Test requesting a single Device by GUID.
-TEST_F(USBDeviceManagerImplTest, OpenDevice) {
+TEST_F(USBDeviceManagerImplTest, GetDevice) {
   scoped_refptr<MockUsbDevice> mock_device =
       new MockUsbDevice(0x1234, 0x5678, "ACME", "Frobinator", "ABCDEF");
 
@@ -195,37 +171,21 @@ TEST_F(USBDeviceManagerImplTest, OpenDevice) {
 
   DeviceManagerPtr device_manager = ConnectToDeviceManager();
 
-  // Should be called on the mock as a result of OpenDevice() below.
-  EXPECT_CALL(*mock_device.get(), Open(_));
-
-  MockOpenCallback open_callback(mock_device.get());
-  ON_CALL(*mock_device.get(), Open(_))
-      .WillByDefault(Invoke(&open_callback, &MockOpenCallback::Open));
-
   {
     base::RunLoop loop;
     DevicePtr device;
-    device_manager->OpenDevice(
-        mock_device->guid(), mojo::GetProxy(&device),
-        base::Bind(&ExpectOpenDeviceError, OPEN_DEVICE_ERROR_OK));
+    device_manager->GetDevice(mock_device->guid(), mojo::GetProxy(&device));
     device->GetDeviceInfo(base::Bind(&ExpectDeviceInfoAndThen,
                                      mock_device->guid(), loop.QuitClosure()));
     loop.Run();
   }
 
-  // The device should eventually be closed when its MessagePipe is closed.
-  DCHECK(open_callback.mock_handle());
-  EXPECT_CALL(*open_callback.mock_handle().get(), Close());
-
   DevicePtr bad_device;
-  device_manager->OpenDevice(
-      "not a real guid", mojo::GetProxy(&bad_device),
-      base::Bind(&ExpectOpenDeviceError, OPEN_DEVICE_ERROR_NOT_FOUND));
+  device_manager->GetDevice("not a real guid", mojo::GetProxy(&bad_device));
 
   {
     base::RunLoop loop;
     bad_device.set_connection_error_handler(loop.QuitClosure());
-    bad_device->GetDeviceInfo(base::Bind(&FailOnGetDeviceInfoResponse));
     loop.Run();
   }
 }

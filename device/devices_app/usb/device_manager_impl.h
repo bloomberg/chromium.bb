@@ -57,19 +57,16 @@ class DeviceManagerImpl : public DeviceManager {
   void GetDevices(EnumerationOptionsPtr options,
                   const GetDevicesCallback& callback) override;
   void GetDeviceChanges(const GetDeviceChangesCallback& callback) override;
-  void OpenDevice(const mojo::String& guid,
-                  mojo::InterfaceRequest<Device> device_request,
-                  const OpenDeviceCallback& callback) override;
-
-  void OnGotDeviceInfoForOpen(mojo::InterfaceRequest<Device> device_request,
-                              const OpenDeviceCallback& callback,
-                              DeviceInfoPtr device_info);
-  void OnOpenDevicePermissionCheckComplete(
-      mojo::InterfaceRequest<Device> device_request,
-      const OpenDeviceCallback& callback,
-      mojo::Array<mojo::String> allowed_guids);
+  void GetDevice(const mojo::String& guid,
+                 mojo::InterfaceRequest<Device> device_request) override;
 
   // Callbacks to handle the async responses from the underlying UsbService.
+  void OnGetDevice(mojo::InterfaceRequest<Device> device_request,
+                   scoped_refptr<UsbDevice> device);
+  void OnGetDevicePermissionCheckComplete(
+      scoped_refptr<device::UsbDevice> device,
+      mojo::InterfaceRequest<Device> device_request,
+      mojo::Array<mojo::String> allowed_guids);
   void OnGetDevices(EnumerationOptionsPtr options,
                     const GetDevicesCallback& callback,
                     const DeviceList& devices);

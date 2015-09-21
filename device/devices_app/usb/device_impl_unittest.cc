@@ -51,6 +51,13 @@ class ConfigBuilder {
   UsbConfigDescriptor config_;
 };
 
+void ExpectOpenAndThen(OpenDeviceError expected,
+                       const base::Closure& continuation,
+                       OpenDeviceError error) {
+  EXPECT_EQ(expected, error);
+  continuation.Run();
+}
+
 void ExpectDeviceInfoAndThen(const std::string& guid,
                              uint16_t vendor_id,
                              uint16_t product_id,
@@ -139,17 +146,17 @@ class USBDeviceImplTest : public testing::Test {
                                const std::string& manufacturer,
                                const std::string& product,
                                const std::string& serial) {
-    is_device_open_ = true;
-
     mock_device_ =
         new MockUsbDevice(vendor_id, product_id, manufacturer, product, serial);
     mock_handle_ = new MockUsbDeviceHandle(mock_device_.get());
 
     DevicePtr proxy;
-    new DeviceImpl(mock_handle_, mojo::GetProxy(&proxy));
+    new DeviceImpl(mock_device_, mojo::GetProxy(&proxy));
 
     // Set up mock handle calls to respond based on mock device configs
     // established by the test.
+    ON_CALL(mock_device(), Open(_))
+        .WillByDefault(Invoke(this, &USBDeviceImplTest::OpenMockHandle));
     ON_CALL(mock_handle(), Close())
         .WillByDefault(Invoke(this, &USBDeviceImplTest::CloseMockHandle));
     ON_CALL(mock_handle(), SetConfiguration(_, _))
@@ -192,6 +199,12 @@ class USBDeviceImplTest : public testing::Test {
   }
 
  private:
+  void OpenMockHandle(const UsbDevice::OpenCallback& callback) {
+    EXPECT_FALSE(is_device_open_);
+    is_device_open_ = true;
+    callback.Run(mock_handle_);
+  }
+
   void CloseMockHandle() {
     EXPECT_TRUE(is_device_open_);
     is_device_open_ = false;
@@ -334,16 +347,42 @@ class USBDeviceImplTest : public testing::Test {
 
 }  // namespace
 
+TEST_F(USBDeviceImplTest, Open) {
+  DevicePtr device = GetMockDeviceProxy();
+
+  EXPECT_FALSE(is_device_open());
+
+  EXPECT_CALL(mock_device(), Open(_));
+
+  base::RunLoop loop;
+  device->Open(
+      base::Bind(&ExpectOpenAndThen, OPEN_DEVICE_ERROR_OK, loop.QuitClosure()));
+  loop.Run();
+
+  EXPECT_CALL(mock_handle(), Close());
+}
+
 TEST_F(USBDeviceImplTest, Close) {
   DevicePtr device = GetMockDeviceProxy();
 
-  EXPECT_TRUE(is_device_open());
+  EXPECT_FALSE(is_device_open());
+
+  EXPECT_CALL(mock_device(), Open(_));
+
+  {
+    base::RunLoop loop;
+    device->Open(base::Bind(&ExpectOpenAndThen, OPEN_DEVICE_ERROR_OK,
+                            loop.QuitClosure()));
+    loop.Run();
+  }
 
   EXPECT_CALL(mock_handle(), Close());
 
-  base::RunLoop loop;
-  device->Close(loop.QuitClosure());
-  loop.Run();
+  {
+    base::RunLoop loop;
+    device->Close(loop.QuitClosure());
+    loop.Run();
+  }
 
   EXPECT_FALSE(is_device_open());
 }
@@ -359,20 +398,30 @@ TEST_F(USBDeviceImplTest, GetDeviceInfo) {
                                    mock_device().guid(), 0x1234, 0x5678, "ACME",
                                    "Frobinator", "ABCDEF", loop.QuitClosure()));
   loop.Run();
-
-  EXPECT_CALL(mock_handle(), Close());
 }
 
 TEST_F(USBDeviceImplTest, SetInvalidConfiguration) {
   DevicePtr device = GetMockDeviceProxy();
 
+  EXPECT_CALL(mock_device(), Open(_));
+
+  {
+    base::RunLoop loop;
+    device->Open(base::Bind(&ExpectOpenAndThen, OPEN_DEVICE_ERROR_OK,
+                            loop.QuitClosure()));
+    loop.Run();
+  }
+
   EXPECT_CALL(mock_handle(), SetConfiguration(42, _));
 
-  // SetConfiguration should fail because 42 is not a valid mock configuration.
-  base::RunLoop loop;
-  device->SetConfiguration(
-      42, base::Bind(&ExpectResultAndThen, false, loop.QuitClosure()));
-  loop.Run();
+  {
+    // SetConfiguration should fail because 42 is not a valid mock
+    // configuration.
+    base::RunLoop loop;
+    device->SetConfiguration(
+        42, base::Bind(&ExpectResultAndThen, false, loop.QuitClosure()));
+    loop.Run();
+  }
 
   EXPECT_CALL(mock_handle(), Close());
 }
@@ -380,15 +429,26 @@ TEST_F(USBDeviceImplTest, SetInvalidConfiguration) {
 TEST_F(USBDeviceImplTest, SetValidConfiguration) {
   DevicePtr device = GetMockDeviceProxy();
 
+  EXPECT_CALL(mock_device(), Open(_));
+
+  {
+    base::RunLoop loop;
+    device->Open(base::Bind(&ExpectOpenAndThen, OPEN_DEVICE_ERROR_OK,
+                            loop.QuitClosure()));
+    loop.Run();
+  }
+
   EXPECT_CALL(mock_handle(), SetConfiguration(42, _));
 
   AddMockConfig(ConfigBuilder(42));
 
-  // SetConfiguration should succeed because 42 is a valid mock configuration.
-  base::RunLoop loop;
-  device->SetConfiguration(
-      42, base::Bind(&ExpectResultAndThen, true, loop.QuitClosure()));
-  loop.Run();
+  {
+    // SetConfiguration should succeed because 42 is a valid mock configuration.
+    base::RunLoop loop;
+    device->SetConfiguration(
+        42, base::Bind(&ExpectResultAndThen, true, loop.QuitClosure()));
+    loop.Run();
+  }
 
   EXPECT_CALL(mock_handle(), Close());
 }
@@ -397,6 +457,15 @@ TEST_F(USBDeviceImplTest, SetValidConfiguration) {
 // ResetDevice() result.
 TEST_F(USBDeviceImplTest, Reset) {
   DevicePtr device = GetMockDeviceProxy();
+
+  EXPECT_CALL(mock_device(), Open(_));
+
+  {
+    base::RunLoop loop;
+    device->Open(base::Bind(&ExpectOpenAndThen, OPEN_DEVICE_ERROR_OK,
+                            loop.QuitClosure()));
+    loop.Run();
+  }
 
   EXPECT_CALL(mock_handle(), ResetDevice(_));
 
@@ -423,6 +492,15 @@ TEST_F(USBDeviceImplTest, Reset) {
 
 TEST_F(USBDeviceImplTest, ClaimAndReleaseInterface) {
   DevicePtr device = GetMockDeviceProxy();
+
+  EXPECT_CALL(mock_device(), Open(_));
+
+  {
+    base::RunLoop loop;
+    device->Open(base::Bind(&ExpectOpenAndThen, OPEN_DEVICE_ERROR_OK,
+                            loop.QuitClosure()));
+    loop.Run();
+  }
 
   // Now add a mock interface #1.
   AddMockConfig(ConfigBuilder(0).AddInterface(1, 0, 1, 2, 3));
@@ -472,6 +550,15 @@ TEST_F(USBDeviceImplTest, ClaimAndReleaseInterface) {
 TEST_F(USBDeviceImplTest, SetInterfaceAlternateSetting) {
   DevicePtr device = GetMockDeviceProxy();
 
+  EXPECT_CALL(mock_device(), Open(_));
+
+  {
+    base::RunLoop loop;
+    device->Open(base::Bind(&ExpectOpenAndThen, OPEN_DEVICE_ERROR_OK,
+                            loop.QuitClosure()));
+    loop.Run();
+  }
+
   AddMockConfig(ConfigBuilder(0)
                     .AddInterface(1, 0, 1, 2, 3)
                     .AddInterface(1, 42, 1, 2, 3)
@@ -500,6 +587,15 @@ TEST_F(USBDeviceImplTest, SetInterfaceAlternateSetting) {
 
 TEST_F(USBDeviceImplTest, ControlTransfer) {
   DevicePtr device = GetMockDeviceProxy();
+
+  EXPECT_CALL(mock_device(), Open(_));
+
+  {
+    base::RunLoop loop;
+    device->Open(base::Bind(&ExpectOpenAndThen, OPEN_DEVICE_ERROR_OK,
+                            loop.QuitClosure()));
+    loop.Run();
+  }
 
   std::vector<uint8_t> fake_data;
   fake_data.push_back(41);
@@ -555,6 +651,15 @@ TEST_F(USBDeviceImplTest, ControlTransfer) {
 TEST_F(USBDeviceImplTest, GenericTransfer) {
   DevicePtr device = GetMockDeviceProxy();
 
+  EXPECT_CALL(mock_device(), Open(_));
+
+  {
+    base::RunLoop loop;
+    device->Open(base::Bind(&ExpectOpenAndThen, OPEN_DEVICE_ERROR_OK,
+                            loop.QuitClosure()));
+    loop.Run();
+  }
+
   std::string message1 = "say hello please";
   std::vector<uint8_t> fake_outbound_data(message1.size());
   std::copy(message1.begin(), message1.end(), fake_outbound_data.begin());
@@ -596,6 +701,15 @@ TEST_F(USBDeviceImplTest, GenericTransfer) {
 
 TEST_F(USBDeviceImplTest, IsochronousTransfer) {
   DevicePtr device = GetMockDeviceProxy();
+
+  EXPECT_CALL(mock_device(), Open(_));
+
+  {
+    base::RunLoop loop;
+    device->Open(base::Bind(&ExpectOpenAndThen, OPEN_DEVICE_ERROR_OK,
+                            loop.QuitClosure()));
+    loop.Run();
+  }
 
   std::string outbound_packet_data = "aaaaaaaabbbbbbbbccccccccdddddddd";
   std::vector<uint8_t> fake_outbound_packets(outbound_packet_data.size());

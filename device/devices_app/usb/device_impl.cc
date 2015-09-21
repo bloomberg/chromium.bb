@@ -39,12 +39,9 @@ scoped_refptr<net::IOBuffer> CreateTransferBuffer(size_t size) {
 
 }  // namespace
 
-DeviceImpl::DeviceImpl(scoped_refptr<UsbDeviceHandle> device_handle,
+DeviceImpl::DeviceImpl(scoped_refptr<UsbDevice> device,
                        mojo::InterfaceRequest<Device> request)
-    : binding_(this, request.Pass()),
-      device_handle_(device_handle),
-      weak_factory_(this) {
-}
+    : binding_(this, request.Pass()), device_(device), weak_factory_(this) {}
 
 DeviceImpl::~DeviceImpl() {
   CloseHandle();
@@ -54,6 +51,12 @@ void DeviceImpl::CloseHandle() {
   if (device_handle_)
     device_handle_->Close();
   device_handle_ = nullptr;
+}
+
+void DeviceImpl::OnOpen(const OpenCallback& callback,
+                        scoped_refptr<UsbDeviceHandle> handle) {
+  device_handle_ = handle;
+  callback.Run(handle ? OPEN_DEVICE_ERROR_OK : OPEN_DEVICE_ERROR_ACCESS_DENIED);
 }
 
 void DeviceImpl::OnTransferIn(const MojoTransferInCallback& callback,
@@ -107,28 +110,23 @@ void DeviceImpl::OnIsochronousTransferOut(
   callback.Run(mojo::ConvertTo<TransferStatus>(status));
 }
 
+void DeviceImpl::GetDeviceInfo(const GetDeviceInfoCallback& callback) {
+  callback.Run(DeviceInfo::From(*device_));
+}
+
+void DeviceImpl::GetConfiguration(const GetConfigurationCallback& callback) {
+  const UsbConfigDescriptor* config = device_->GetActiveConfiguration();
+  callback.Run(config ? ConfigurationInfo::From(*config) : nullptr);
+}
+
+void DeviceImpl::Open(const OpenCallback& callback) {
+  device_->Open(
+      base::Bind(&DeviceImpl::OnOpen, weak_factory_.GetWeakPtr(), callback));
+}
+
 void DeviceImpl::Close(const CloseCallback& callback) {
   CloseHandle();
   callback.Run();
-}
-
-void DeviceImpl::GetDeviceInfo(const GetDeviceInfoCallback& callback) {
-  if (!device_handle_) {
-    callback.Run(DeviceInfoPtr());
-    return;
-  }
-
-  // TODO(rockot/reillyg): Converting configuration info should be done in the
-  // TypeConverter, but GetConfiguration() is non-const so we do it here for
-  // now.
-  DeviceInfoPtr info = DeviceInfo::From(*device_handle_->GetDevice());
-  const std::vector<UsbConfigDescriptor>& configs =
-      device_handle_->GetDevice()->configurations();
-  info->configurations = mojo::Array<ConfigurationInfoPtr>::New(configs.size());
-  for (size_t i = 0; i < configs.size(); ++i) {
-    info->configurations[i] = ConfigurationInfo::From(configs[i]);
-  }
-  callback.Run(info.Pass());
 }
 
 void DeviceImpl::SetConfiguration(uint8_t value,

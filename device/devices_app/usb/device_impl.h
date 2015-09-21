@@ -27,7 +27,7 @@ namespace usb {
 // lifetime.
 class DeviceImpl : public Device {
  public:
-  DeviceImpl(scoped_refptr<UsbDeviceHandle> device_handle,
+  DeviceImpl(scoped_refptr<UsbDevice> device,
              mojo::InterfaceRequest<Device> request);
   ~DeviceImpl() override;
 
@@ -37,13 +37,13 @@ class DeviceImpl : public Device {
 
   using MojoTransferOutCallback = mojo::Callback<void(TransferStatus)>;
 
-  // Closes the device if it's open. This will always set |handle_| to null.
+  // Closes the device if it's open. This will always set |device_handle_| to
+  // null.
   void CloseHandle();
 
-  // Handles a UsbDeviceHandle::ClaimInterface response.
-  void OnClaimInterface(uint8_t interface_number,
-                        const ClaimInterfaceCallback& callback,
-                        bool result);
+  // Handles completion of an open request.
+  void OnOpen(const OpenCallback& callback,
+              scoped_refptr<device::UsbDeviceHandle> handle);
 
   // Handles completion of an inbound transfer on the UsbDeviceHandle.
   void OnTransferIn(const MojoTransferInCallback& callback,
@@ -73,8 +73,10 @@ class DeviceImpl : public Device {
                                 size_t size);
 
   // Device implementation:
-  void Close(const CloseCallback& callback) override;
   void GetDeviceInfo(const GetDeviceInfoCallback& callback) override;
+  void GetConfiguration(const GetConfigurationCallback& callback) override;
+  void Open(const OpenCallback& callback) override;
+  void Close(const CloseCallback& callback) override;
   void SetConfiguration(uint8_t value,
                         const SetConfigurationCallback& callback) override;
   void ClaimInterface(uint8_t interface_number,
@@ -117,7 +119,9 @@ class DeviceImpl : public Device {
 
   mojo::StrongBinding<Device> binding_;
 
-  // The opened device handle. May be null if the device has been closed.
+  scoped_refptr<UsbDevice> device_;
+  // The device handle. Will be null before the device is opened and after it
+  // has been closed.
   scoped_refptr<UsbDeviceHandle> device_handle_;
 
   base::WeakPtrFactory<DeviceImpl> weak_factory_;

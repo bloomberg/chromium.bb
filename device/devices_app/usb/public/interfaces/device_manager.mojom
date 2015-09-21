@@ -6,17 +6,6 @@ module device.usb;
 
 import "device.mojom";
 
-enum OpenDeviceError {
-  // Opening the device succeeded.
-  OK,
-
-  // The device could not be opened because the request GUID is unknown.
-  NOT_FOUND,
-
-  // The operating system denied access to the device.
-  ACCESS_DENIED,
-};
-
 struct DeviceFilter {
   bool has_vendor_id;
   uint16 vendor_id;
@@ -53,6 +42,6 @@ interface DeviceManager {
   // and removed between calls will not be included.
   GetDeviceChanges() => (DeviceChangeNotification changes);
 
-  // Attempts to open a device given its GUID.
-  OpenDevice(string guid, Device& device_request) => (OpenDeviceError error);
+  // Requests a device by guid.
+  GetDevice(string guid, Device& device_request);
 };

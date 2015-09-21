@@ -4,6 +4,14 @@
 
 module device.usb;
 
+enum OpenDeviceError {
+  // Opening the device succeeded.
+  OK,
+
+  // The operating system denied access to the device.
+  ACCESS_DENIED,
+};
+
 enum TransferDirection {
   IN,
   OUT,
@@ -129,13 +137,19 @@ enum TransferStatus {
 };
 
 interface Device {
-  // Closes the device. Calling this effectively invalidates the Device object.
-  Close() => ();
-
   // Retrieve a DeviceInfo struct containing metadata about the device,
-  // including the set of all available device configurations. May return null
-  // if the device has been closed.
+  // including the set of all available device configurations.
   GetDeviceInfo() => (DeviceInfo? info);
+
+  // Retrieves the device's currently active configuration. May return null if
+  // the device is unconfigured.
+  GetConfiguration() => (ConfigurationInfo? info);
+
+  // Opens the device. Methods below require the device be opened first.
+  Open() => (OpenDeviceError error);
+
+  // Closes the device.
+  Close() => ();
 
   // Initiates a device control transfer to set the device's configuration to
   // one with the configuration value |value|.
