@@ -23,7 +23,6 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkColorPriv.h"
 #include "third_party/skia/include/core/SkShader.h"
-#include "ui/base/resource/material_design/material_design_controller.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/gdi_util.h"
 #include "ui/gfx/geometry/rect.h"
@@ -41,15 +40,16 @@ namespace {
 // Windows system color IDs cached and updated by the native theme.
 const int kSystemColors[] = {
   COLOR_3DFACE,
+  COLOR_BTNFACE,
   COLOR_BTNTEXT,
   COLOR_GRAYTEXT,
   COLOR_HIGHLIGHT,
   COLOR_HIGHLIGHTTEXT,
+  COLOR_HOTLIGHT,
+  COLOR_MENUHIGHLIGHT,
   COLOR_SCROLLBAR,
   COLOR_WINDOW,
   COLOR_WINDOWTEXT,
-  COLOR_BTNFACE,
-  COLOR_MENUHIGHLIGHT,
 };
 
 void SetCheckerboardShader(SkPaint* paint, const RECT& align_rect) {
@@ -472,6 +472,8 @@ SkColor NativeThemeWin::GetSystemColor(ColorId color_id) const {
   const SkColor kDisabledMenuItemForegroundColor = SkColorSetRGB(161, 161, 146);
   const SkColor kFocusedMenuItemBackgroundColor = SkColorSetRGB(246, 249, 253);
   const SkColor kMenuSeparatorColor = SkColorSetARGB(50, 0, 0, 0);
+  // Link:
+  const SkColor kLinkPressedColor = SkColorSetRGB(200, 0, 0);
   // Table:
   const SkColor kPositiveTextColor = SkColorSetRGB(0x0b, 0x80, 0x43);
   const SkColor kNegativeTextColor = SkColorSetRGB(0xc5, 0x39, 0x29);
@@ -552,7 +554,7 @@ SkColor NativeThemeWin::GetSystemColor(ColorId color_id) const {
     case kColorId_LinkEnabled:
       return system_colors_[COLOR_HOTLIGHT];
     case kColorId_LinkPressed:
-      return SkColorSetRGB(200, 0, 0);
+      return kLinkPressedColor;
 
     // Textfield
     case kColorId_TextfieldDefaultColor:
