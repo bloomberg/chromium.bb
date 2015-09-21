@@ -13,6 +13,7 @@
 #include "components/policy/core/common/cloud/cloud_policy_validator.h"
 #include "components/policy/core/common/external_data_fetcher.h"
 #include "components/policy/core/common/policy_map.h"
+#include "components/policy/core/common/policy_types.h"
 #include "crypto/sha2.h"
 #include "policy/proto/chrome_extension_policy.pb.h"
 #include "policy/proto/device_management_backend.pb.h"
@@ -353,7 +354,8 @@ bool ComponentCloudPolicyStore::ParsePolicy(const std::string& data,
     // If policy for components is ever used for device-level settings then
     // this must support a configurable scope; assuming POLICY_SCOPE_USER is
     // fine for now.
-    policy->Set(it.key(), level, POLICY_SCOPE_USER, value.release(), NULL);
+    policy->Set(it.key(), level, POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+                value.release(), nullptr);
   }
 
   return true;

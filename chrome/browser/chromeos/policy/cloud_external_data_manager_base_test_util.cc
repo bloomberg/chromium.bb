@@ -45,7 +45,7 @@ void SetExternalDataReference(CloudPolicyCore* core,
   ASSERT_TRUE(store);
   PolicyMap policy_map;
   policy_map.Set(policy,
-                 POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+                 POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
                  metadata.release(),
                  new ExternalDataFetcher(store->external_data_manager(),
                                          policy));

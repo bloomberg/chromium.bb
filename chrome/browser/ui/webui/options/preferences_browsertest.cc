@@ -201,7 +201,7 @@ void PreferencesBrowserTest::SetUserPolicies(
   policy::PolicyMap map;
   for (size_t i = 0; i < names.size(); ++i) {
     map.Set(names[i], level, policy::POLICY_SCOPE_USER,
-            values[i]->DeepCopy(), NULL);
+            policy::POLICY_SOURCE_CLOUD, values[i]->DeepCopy(), nullptr);
   }
   policy_provider_.UpdateChromePolicy(map);
 }
@@ -878,6 +878,7 @@ class ProxyPreferencesBrowserTest : public PreferencesBrowserTest {
     map.Set(policy_name,
             policy::POLICY_LEVEL_MANDATORY,
             scope,
+            policy::POLICY_SOURCE_CLOUD,
             new base::StringValue(onc_policy),
             NULL);
     policy_provider_.UpdateChromePolicy(map);

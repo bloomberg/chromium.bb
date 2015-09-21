@@ -354,6 +354,7 @@ void CloudExternalDataPolicyObserverTest::SetRegularUserAvatarPolicy(
         key::kUserAvatarImage,
         POLICY_LEVEL_MANDATORY,
         POLICY_SCOPE_USER,
+        POLICY_SOURCE_CLOUD,
         new base::StringValue(value),
         external_data_manager_.CreateExternalDataFetcher(
             key::kUserAvatarImage).release());

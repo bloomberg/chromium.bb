@@ -7,6 +7,7 @@
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "components/policy/core/common/external_data_manager.h"
+#include "components/policy/core/common/policy_types.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace policy {
@@ -25,13 +26,14 @@ const char kTestPolicyName8[] = "policy.test.8";
 
 // Utility functions for the tests.
 void SetPolicy(PolicyMap* map, const char* name, base::Value* value) {
-  map->Set(name, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER, value, NULL);
+  map->Set(name, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+           value, nullptr);
 }
 
 void SetPolicy(PolicyMap* map,
                const char* name,
                ExternalDataFetcher* external_data_fetcher) {
-  map->Set(name, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+  map->Set(name, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
            NULL, external_data_fetcher);
 }
 
@@ -64,15 +66,17 @@ TEST_F(PolicyMapTest, SetAndGet) {
   ASSERT_TRUE(entry != NULL);
   EXPECT_EQ(POLICY_LEVEL_MANDATORY, entry->level);
   EXPECT_EQ(POLICY_SCOPE_USER, entry->scope);
+  EXPECT_EQ(POLICY_SOURCE_CLOUD, entry->source);
   EXPECT_TRUE(ExternalDataFetcher::Equals(
       entry->external_data_fetcher, CreateExternalDataFetcher("dummy").get()));
-  map.Set(kTestPolicyName1, POLICY_LEVEL_RECOMMENDED,
-          POLICY_SCOPE_MACHINE, NULL, NULL);
+  map.Set(kTestPolicyName1, POLICY_LEVEL_RECOMMENDED, POLICY_SCOPE_MACHINE,
+          POLICY_SOURCE_ENTERPRISE_DEFAULT, nullptr, nullptr);
   EXPECT_FALSE(map.GetValue(kTestPolicyName1));
   entry = map.Get(kTestPolicyName1);
   ASSERT_TRUE(entry != NULL);
   EXPECT_EQ(POLICY_LEVEL_RECOMMENDED, entry->level);
   EXPECT_EQ(POLICY_SCOPE_MACHINE, entry->scope);
+  EXPECT_EQ(POLICY_SOURCE_ENTERPRISE_DEFAULT, entry->source);
   EXPECT_FALSE(entry->external_data_fetcher);
 }
 
@@ -164,24 +168,30 @@ TEST_F(PolicyMapTest, MergeFrom) {
   a.Set(kTestPolicyName1,
         POLICY_LEVEL_MANDATORY,
         POLICY_SCOPE_USER,
+        POLICY_SOURCE_CLOUD,
         new base::StringValue("google.com"),
         NULL);
   a.Set(kTestPolicyName2,
         POLICY_LEVEL_MANDATORY,
         POLICY_SCOPE_MACHINE,
+        POLICY_SOURCE_CLOUD,
         new base::FundamentalValue(true),
         NULL);
   a.Set(kTestPolicyName3,
-        POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
+        POLICY_LEVEL_MANDATORY,
+        POLICY_SCOPE_MACHINE,
+        POLICY_SOURCE_ENTERPRISE_DEFAULT,
         NULL, CreateExternalDataFetcher("a").release());
   a.Set(kTestPolicyName4,
         POLICY_LEVEL_RECOMMENDED,
         POLICY_SCOPE_USER,
+        POLICY_SOURCE_CLOUD,
         new base::FundamentalValue(false),
         NULL);
   a.Set(kTestPolicyName5,
         POLICY_LEVEL_RECOMMENDED,
         POLICY_SCOPE_MACHINE,
+        POLICY_SOURCE_CLOUD,
         new base::StringValue("google.com/q={x}"),
         NULL);
 
@@ -189,29 +199,36 @@ TEST_F(PolicyMapTest, MergeFrom) {
   b.Set(kTestPolicyName1,
         POLICY_LEVEL_MANDATORY,
         POLICY_SCOPE_MACHINE,
+        POLICY_SOURCE_CLOUD,
         new base::StringValue("chromium.org"),
         NULL);
   b.Set(kTestPolicyName2,
         POLICY_LEVEL_MANDATORY,
         POLICY_SCOPE_MACHINE,
+        POLICY_SOURCE_CLOUD,
         new base::FundamentalValue(false),
         NULL);
   b.Set(kTestPolicyName3,
-        POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
+        POLICY_LEVEL_MANDATORY,
+        POLICY_SCOPE_MACHINE,
+        POLICY_SOURCE_CLOUD,
         NULL, CreateExternalDataFetcher("b").release());
   b.Set(kTestPolicyName4,
         POLICY_LEVEL_RECOMMENDED,
         POLICY_SCOPE_MACHINE,
+        POLICY_SOURCE_ENTERPRISE_OVERRIDE,
         new base::FundamentalValue(true),
         NULL);
   b.Set(kTestPolicyName5,
         POLICY_LEVEL_MANDATORY,
         POLICY_SCOPE_MACHINE,
+        POLICY_SOURCE_PLATFORM,
         new base::StringValue(std::string()),
         NULL);
   b.Set(kTestPolicyName6,
         POLICY_LEVEL_RECOMMENDED,
         POLICY_SCOPE_USER,
+        POLICY_SOURCE_CLOUD,
         new base::FundamentalValue(true),
         NULL);
 
@@ -222,33 +239,40 @@ TEST_F(PolicyMapTest, MergeFrom) {
   c.Set(kTestPolicyName1,
         POLICY_LEVEL_MANDATORY,
         POLICY_SCOPE_MACHINE,
+        POLICY_SOURCE_CLOUD,
         new base::StringValue("chromium.org"),
         NULL);
   // |a| has precedence over |b|.
   c.Set(kTestPolicyName2,
         POLICY_LEVEL_MANDATORY,
         POLICY_SCOPE_MACHINE,
+        POLICY_SOURCE_CLOUD,
         new base::FundamentalValue(true),
         NULL);
   c.Set(kTestPolicyName3,
-        POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
+        POLICY_LEVEL_MANDATORY,
+        POLICY_SCOPE_MACHINE,
+        POLICY_SOURCE_ENTERPRISE_DEFAULT,
         NULL, CreateExternalDataFetcher("a").release());
   // POLICY_SCOPE_MACHINE over POLICY_SCOPE_USER for POLICY_LEVEL_RECOMMENDED.
   c.Set(kTestPolicyName4,
         POLICY_LEVEL_RECOMMENDED,
         POLICY_SCOPE_MACHINE,
+        POLICY_SOURCE_ENTERPRISE_OVERRIDE,
         new base::FundamentalValue(true),
         NULL);
   // POLICY_LEVEL_MANDATORY over POLICY_LEVEL_RECOMMENDED.
   c.Set(kTestPolicyName5,
         POLICY_LEVEL_MANDATORY,
         POLICY_SCOPE_MACHINE,
+        POLICY_SOURCE_PLATFORM,
         new base::StringValue(std::string()),
         NULL);
   // Merge new ones.
   c.Set(kTestPolicyName6,
         POLICY_LEVEL_RECOMMENDED,
         POLICY_SCOPE_USER,
+        POLICY_SOURCE_CLOUD,
         new base::FundamentalValue(true),
         NULL);
 
@@ -260,32 +284,41 @@ TEST_F(PolicyMapTest, GetDifferingKeys) {
   a.Set(kTestPolicyName1,
         POLICY_LEVEL_MANDATORY,
         POLICY_SCOPE_USER,
+        POLICY_SOURCE_CLOUD,
         new base::StringValue("google.com"),
         NULL);
   a.Set(kTestPolicyName2,
-        POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
+        POLICY_LEVEL_MANDATORY,
+        POLICY_SCOPE_MACHINE,
+        POLICY_SOURCE_CLOUD,
         NULL, CreateExternalDataFetcher("dummy").release());
   a.Set(kTestPolicyName3,
         POLICY_LEVEL_MANDATORY,
         POLICY_SCOPE_MACHINE,
+        POLICY_SOURCE_CLOUD,
         new base::FundamentalValue(true),
         NULL);
   a.Set(kTestPolicyName4,
-        POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
+        POLICY_LEVEL_MANDATORY,
+        POLICY_SCOPE_MACHINE,
+        POLICY_SOURCE_CLOUD,
         NULL, CreateExternalDataFetcher("a").release());
   a.Set(kTestPolicyName5,
         POLICY_LEVEL_RECOMMENDED,
         POLICY_SCOPE_USER,
+        POLICY_SOURCE_CLOUD,
         new base::FundamentalValue(false),
         NULL);
   a.Set(kTestPolicyName6,
         POLICY_LEVEL_RECOMMENDED,
         POLICY_SCOPE_MACHINE,
+        POLICY_SOURCE_CLOUD,
         new base::StringValue("google.com/q={x}"),
         NULL);
   a.Set(kTestPolicyName7,
         POLICY_LEVEL_MANDATORY,
         POLICY_SCOPE_USER,
+        POLICY_SOURCE_CLOUD,
         new base::FundamentalValue(true),
         NULL);
 
@@ -293,32 +326,41 @@ TEST_F(PolicyMapTest, GetDifferingKeys) {
   b.Set(kTestPolicyName1,
         POLICY_LEVEL_MANDATORY,
         POLICY_SCOPE_USER,
+        POLICY_SOURCE_CLOUD,
         new base::StringValue("google.com"),
         NULL);
   b.Set(kTestPolicyName2,
-        POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
+        POLICY_LEVEL_MANDATORY,
+        POLICY_SCOPE_MACHINE,
+        POLICY_SOURCE_CLOUD,
         NULL, CreateExternalDataFetcher("dummy").release());
   b.Set(kTestPolicyName3,
         POLICY_LEVEL_MANDATORY,
         POLICY_SCOPE_MACHINE,
+        POLICY_SOURCE_CLOUD,
         new base::FundamentalValue(false),
         NULL);
   b.Set(kTestPolicyName4,
-        POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
+        POLICY_LEVEL_MANDATORY,
+        POLICY_SCOPE_MACHINE,
+        POLICY_SOURCE_CLOUD,
         NULL, CreateExternalDataFetcher("b").release());
   b.Set(kTestPolicyName5,
         POLICY_LEVEL_MANDATORY,
         POLICY_SCOPE_USER,
+        POLICY_SOURCE_CLOUD,
         new base::FundamentalValue(false),
         NULL);
   b.Set(kTestPolicyName6,
         POLICY_LEVEL_RECOMMENDED,
         POLICY_SCOPE_USER,
+        POLICY_SOURCE_CLOUD,
         new base::StringValue("google.com/q={x}"),
         NULL);
   b.Set(kTestPolicyName8,
         POLICY_LEVEL_RECOMMENDED,
         POLICY_SCOPE_USER,
+        POLICY_SOURCE_CLOUD,
         new base::FundamentalValue(true),
         NULL);
 
@@ -345,6 +387,40 @@ TEST_F(PolicyMapTest, GetDifferingKeys) {
   EXPECT_TRUE(diff.find(kTestPolicyName7) != diff.end());
   // No surprises.
   EXPECT_EQ(6u, diff.size());
+}
+
+TEST_F(PolicyMapTest, LoadFromSetsLevelScopeAndSource) {
+  base::DictionaryValue policies;
+  policies.SetString("TestPolicy1", "google.com");
+  policies.SetBoolean("TestPolicy2", true);
+  policies.SetInteger("TestPolicy3", -12321);
+
+  PolicyMap loaded;
+  loaded.LoadFrom(&policies,
+                  POLICY_LEVEL_MANDATORY,
+                  POLICY_SCOPE_USER,
+                  POLICY_SOURCE_PLATFORM);
+
+  PolicyMap expected;
+  expected.Set("TestPolicy1",
+               POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER,
+               POLICY_SOURCE_PLATFORM,
+               new base::StringValue("google.com"),
+               nullptr);
+  expected.Set("TestPolicy2",
+               POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER,
+               POLICY_SOURCE_PLATFORM,
+               new base::FundamentalValue(true),
+               nullptr);
+  expected.Set("TestPolicy3",
+               POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER,
+               POLICY_SOURCE_PLATFORM,
+               new base::FundamentalValue(-12321),
+               nullptr);
+  EXPECT_TRUE(loaded.Equals(expected));
 }
 
 }  // namespace policy

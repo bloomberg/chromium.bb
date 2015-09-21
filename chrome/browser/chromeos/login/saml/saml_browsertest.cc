@@ -987,6 +987,7 @@ void SAMLPolicyTest::SetSAMLOfflineSigninTimeLimitPolicy(int limit) {
   user_policy.Set(policy::key::kSAMLOfflineSigninTimeLimit,
                   policy::POLICY_LEVEL_MANDATORY,
                   policy::POLICY_SCOPE_USER,
+                  policy::POLICY_SOURCE_CLOUD,
                   new base::FundamentalValue(limit),
                   NULL);
   provider_.UpdateChromePolicy(user_policy);

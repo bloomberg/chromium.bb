@@ -11,6 +11,7 @@
 #include "components/policy/core/common/cloud/mock_user_cloud_policy_store.h"
 #include "components/policy/core/common/external_data_fetcher.h"
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
+#include "components/policy/core/common/policy_types.h"
 #include "components/policy/core/common/schema_registry.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -35,6 +36,7 @@ class UserCloudPolicyManagerTest : public testing::Test {
     policy_map_.Set("key",
                     POLICY_LEVEL_MANDATORY,
                     POLICY_SCOPE_USER,
+                    POLICY_SOURCE_CLOUD,
                     new base::StringValue("value"),
                     NULL);
     expected_bundle_.Get(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()))

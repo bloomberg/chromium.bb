@@ -16,6 +16,7 @@
 #include "components/policy/core/common/policy_bundle.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_service.h"
+#include "components/policy/core/common/policy_types.h"
 #include "components/policy/core/common/schema_registry.h"
 #include "policy/policy_constants.h"
 #include "policy/proto/device_management_backend.pb.h"
@@ -97,6 +98,7 @@ TEST_F(ProfilePolicyConnectorTest, IsPolicyFromCloudPolicy) {
   cloud_policy_store_.policy_map_.Set(key::kAutoFillEnabled,
                                       POLICY_LEVEL_MANDATORY,
                                       POLICY_SCOPE_USER,
+                                      POLICY_SOURCE_CLOUD,
                                       new base::FundamentalValue(false),
                                       nullptr);
   cloud_policy_store_.NotifyStoreLoaded();
@@ -113,6 +115,7 @@ TEST_F(ProfilePolicyConnectorTest, IsPolicyFromCloudPolicy) {
   map.Set(key::kAutoFillEnabled,
           POLICY_LEVEL_MANDATORY,
           POLICY_SCOPE_USER,
+          POLICY_SOURCE_CLOUD,
           new base::FundamentalValue(true),
           nullptr);
   mock_provider_.UpdateChromePolicy(map);

@@ -8,6 +8,7 @@
 #include "chrome/browser/extensions/policy_handlers.h"
 #include "components/policy/core/browser/policy_error_map.h"
 #include "components/policy/core/common/policy_map.h"
+#include "components/policy/core/common/policy_types.h"
 #include "policy/policy_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -24,6 +25,7 @@ TEST(NativeMessagingHostListPolicyHandlerTest, CheckPolicySettings) {
   policy_map.Set(policy::key::kNativeMessagingBlacklist,
                  policy::POLICY_LEVEL_MANDATORY,
                  policy::POLICY_SCOPE_USER,
+                 policy::POLICY_SOURCE_CLOUD,
                  list.DeepCopy(),
                  NULL);
   {
@@ -36,6 +38,7 @@ TEST(NativeMessagingHostListPolicyHandlerTest, CheckPolicySettings) {
   policy_map.Set(policy::key::kNativeMessagingBlacklist,
                  policy::POLICY_LEVEL_MANDATORY,
                  policy::POLICY_SCOPE_USER,
+                 policy::POLICY_SOURCE_CLOUD,
                  list.DeepCopy(),
                  NULL);
   {
@@ -48,6 +51,7 @@ TEST(NativeMessagingHostListPolicyHandlerTest, CheckPolicySettings) {
   policy_map.Set(policy::key::kNativeMessagingBlacklist,
                  policy::POLICY_LEVEL_MANDATORY,
                  policy::POLICY_SCOPE_USER,
+                 policy::POLICY_SOURCE_CLOUD,
                  list.DeepCopy(),
                  NULL);
   {
@@ -60,6 +64,7 @@ TEST(NativeMessagingHostListPolicyHandlerTest, CheckPolicySettings) {
   policy_map.Set(policy::key::kNativeMessagingBlacklist,
                  policy::POLICY_LEVEL_MANDATORY,
                  policy::POLICY_SCOPE_USER,
+                 policy::POLICY_SOURCE_CLOUD,
                  list.DeepCopy(),
                  NULL);
   {
@@ -86,6 +91,7 @@ TEST(NativeMessagingHostListPolicyHandlerTest, ApplyPolicySettings) {
   policy_map.Set(policy::key::kNativeMessagingBlacklist,
                  policy::POLICY_LEVEL_MANDATORY,
                  policy::POLICY_SCOPE_USER,
+                 policy::POLICY_SOURCE_CLOUD,
                  policy.DeepCopy(),
                  NULL);
   handler.ApplyPolicySettings(policy_map, &prefs);
@@ -98,6 +104,7 @@ TEST(NativeMessagingHostListPolicyHandlerTest, ApplyPolicySettings) {
   policy_map.Set(policy::key::kNativeMessagingBlacklist,
                  policy::POLICY_LEVEL_MANDATORY,
                  policy::POLICY_SCOPE_USER,
+                 policy::POLICY_SOURCE_CLOUD,
                  policy.DeepCopy(),
                  NULL);
   handler.ApplyPolicySettings(policy_map, &prefs);
@@ -108,6 +115,7 @@ TEST(NativeMessagingHostListPolicyHandlerTest, ApplyPolicySettings) {
   policy_map.Set(policy::key::kNativeMessagingBlacklist,
                  policy::POLICY_LEVEL_MANDATORY,
                  policy::POLICY_SCOPE_USER,
+                 policy::POLICY_SOURCE_CLOUD,
                  policy.DeepCopy(),
                  NULL);
   handler.ApplyPolicySettings(policy_map, &prefs);

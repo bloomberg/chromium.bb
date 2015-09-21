@@ -5,6 +5,7 @@
 #include "base/prefs/pref_value_map.h"
 #include "base/values.h"
 #include "components/policy/core/common/policy_map.h"
+#include "components/policy/core/common/policy_types.h"
 #include "components/sync_driver/pref_names.h"
 #include "components/sync_driver/sync_policy_handler.h"
 #include "policy/policy_constants.h"
@@ -28,6 +29,7 @@ TEST_F(SyncPolicyHandlerTest, Enabled) {
   policy.Set(policy::key::kSyncDisabled,
              policy::POLICY_LEVEL_MANDATORY,
              policy::POLICY_SCOPE_USER,
+             policy::POLICY_SOURCE_CLOUD,
              new base::FundamentalValue(false),
              NULL);
   SyncPolicyHandler handler;
@@ -43,6 +45,7 @@ TEST_F(SyncPolicyHandlerTest, Disabled) {
   policy.Set(policy::key::kSyncDisabled,
              policy::POLICY_LEVEL_MANDATORY,
              policy::POLICY_SCOPE_USER,
+             policy::POLICY_SOURCE_CLOUD,
              new base::FundamentalValue(true),
              NULL);
   SyncPolicyHandler handler;

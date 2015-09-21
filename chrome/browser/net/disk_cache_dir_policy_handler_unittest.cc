@@ -9,6 +9,7 @@
 #include "chrome/browser/net/disk_cache_dir_policy_handler.h"
 #include "chrome/common/pref_names.h"
 #include "components/policy/core/common/policy_map.h"
+#include "components/policy/core/common/policy_types.h"
 #include "policy/policy_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -31,6 +32,7 @@ TEST_F(DiskCacheDirPolicyTest, SetPolicyInvalid) {
   policy_.Set(key::kDiskCacheDir,
               POLICY_LEVEL_MANDATORY,
               POLICY_SCOPE_USER,
+              POLICY_SOURCE_CLOUD,
               new base::FundamentalValue(false),
               NULL);
   handler_.ApplyPolicySettings(policy_, &prefs_);
@@ -43,6 +45,7 @@ TEST_F(DiskCacheDirPolicyTest, SetPolicyValid) {
   policy_.Set(key::kDiskCacheDir,
               POLICY_LEVEL_MANDATORY,
               POLICY_SCOPE_USER,
+              POLICY_SOURCE_CLOUD,
               new base::StringValue(in),
               NULL);
   handler_.ApplyPolicySettings(policy_, &prefs_);
