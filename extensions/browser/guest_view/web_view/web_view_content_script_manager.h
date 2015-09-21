@@ -27,8 +27,6 @@ class UserScript;
 
 // WebViewContentScriptManager manages the content scripts that each webview
 // guest adds and removes programmatically.
-// TODO(hanxi): crbug.com/476938. Introduce a new class to manage the lifetime
-// of <webview> and clean up WebViewContentScriptManager.
 class WebViewContentScriptManager : public base::SupportsUserData::Data,
                                     public UserScriptLoader::Observer {
  public:
