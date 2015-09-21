@@ -78,7 +78,7 @@ std::string NetworkingConfigService::LookupExtensionIdForHexSsid(
 }
 
 bool NetworkingConfigService::IsRegisteredForCaptivePortalEvent(
-    std::string extension_id) const {
+    const std::string& extension_id) const {
   return event_delegate_->HasExtensionRegisteredForEvent(extension_id);
 }
 

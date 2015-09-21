@@ -130,19 +130,22 @@ class ManifestTest : public testing::Test {
   };
 
   struct Testcase {
-    std::string manifest_filename_;
+    const std::string manifest_filename_;
     std::string expected_error_; // only used for ExpectedError tests
     extensions::Manifest::Location location_;
     int flags_;
 
-    Testcase(std::string manifest_filename, std::string expected_error,
-        extensions::Manifest::Location location, int flags);
+    Testcase(const std::string& manifest_filename,
+             const std::string& expected_error,
+             extensions::Manifest::Location location,
+             int flags);
 
-    Testcase(std::string manifest_filename, std::string expected_error);
+    Testcase(const std::string& manifest_filename,
+             const std::string& expected_error);
 
-    explicit Testcase(std::string manifest_filename);
+    explicit Testcase(const std::string& manifest_filename);
 
-    Testcase(std::string manifest_filename,
+    Testcase(const std::string& manifest_filename,
              extensions::Manifest::Location location,
              int flags);
   };

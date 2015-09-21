@@ -70,7 +70,7 @@ class NetworkingConfigService : public ExtensionRegistryObserver,
 
   // Returns true if the extension with id |extension_id| registered for
   // |onCaptivePortalDetected| events, otherwise false.
-  bool IsRegisteredForCaptivePortalEvent(std::string extension_id) const;
+  bool IsRegisteredForCaptivePortalEvent(const std::string& extension_id) const;
 
   // Registers |hex_ssid| as being handled by the extension with extension ID
   // |extension_id|. Returns true on success and false if another extension

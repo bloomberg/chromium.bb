@@ -195,38 +195,35 @@ void ManifestTest::LoadAndExpectError(
 }
 
 void ManifestTest::AddPattern(extensions::URLPatternSet* extent,
-                                       const std::string& pattern) {
+                              const std::string& pattern) {
   int schemes = URLPattern::SCHEME_ALL;
   extent->AddPattern(URLPattern(schemes, pattern));
 }
 
-ManifestTest::Testcase::Testcase(
-    std::string manifest_filename,
-    std::string expected_error,
-    extensions::Manifest::Location location,
-    int flags)
+ManifestTest::Testcase::Testcase(const std::string& manifest_filename,
+                                 const std::string& expected_error,
+                                 extensions::Manifest::Location location,
+                                 int flags)
     : manifest_filename_(manifest_filename),
       expected_error_(expected_error),
-      location_(location), flags_(flags) {
-}
+      location_(location),
+      flags_(flags) {}
 
-ManifestTest::Testcase::Testcase(std::string manifest_filename,
-                                          std::string expected_error)
+ManifestTest::Testcase::Testcase(const std::string& manifest_filename,
+                                 const std::string& expected_error)
     : manifest_filename_(manifest_filename),
       expected_error_(expected_error),
       location_(extensions::Manifest::INTERNAL),
-      flags_(Extension::NO_FLAGS) {
-}
+      flags_(Extension::NO_FLAGS) {}
 
-ManifestTest::Testcase::Testcase(std::string manifest_filename)
+ManifestTest::Testcase::Testcase(const std::string& manifest_filename)
     : manifest_filename_(manifest_filename),
       location_(extensions::Manifest::INTERNAL),
       flags_(Extension::NO_FLAGS) {}
 
-ManifestTest::Testcase::Testcase(
-    std::string manifest_filename,
-    extensions::Manifest::Location location,
-    int flags)
+ManifestTest::Testcase::Testcase(const std::string& manifest_filename,
+                                 extensions::Manifest::Location location,
+                                 int flags)
     : manifest_filename_(manifest_filename),
       location_(location),
       flags_(flags) {}

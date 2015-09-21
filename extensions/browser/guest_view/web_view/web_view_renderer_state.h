@@ -81,9 +81,8 @@ class WebViewRendererState {
     int web_view_count;
     std::string partition_id;
     WebViewPartitionInfo() {}
-    WebViewPartitionInfo(int count, std::string partition):
-      web_view_count(count),
-      partition_id(partition) {}
+    WebViewPartitionInfo(int count, const std::string& partition)
+        : web_view_count(count), partition_id(partition) {}
   };
 
   using WebViewPartitionIDMap = std::map<int, WebViewPartitionInfo>;

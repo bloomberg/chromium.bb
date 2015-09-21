@@ -40,9 +40,8 @@ class RulesRegistryService : public BrowserContextKeyedAPI,
   struct RulesRegistryKey {
     std::string event_name;
     int rules_registry_id;
-    RulesRegistryKey(const std::string event_name, int rules_registry_id)
-        : event_name(event_name),
-          rules_registry_id(rules_registry_id) {}
+    RulesRegistryKey(const std::string& event_name, int rules_registry_id)
+        : event_name(event_name), rules_registry_id(rules_registry_id) {}
     bool operator<(const RulesRegistryKey& other) const {
       return (event_name < other.event_name) ||
              ((event_name == other.event_name) &&
