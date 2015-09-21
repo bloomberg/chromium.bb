@@ -43,7 +43,7 @@ bool IsRunningOnOrLater(int32 major, int32 minor, int32 bug_fix) {
 
 bool IsInForcedRTL() {
   NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
-  return [defaults boolForKey:@"AppleTextDirection"];
+  return [defaults boolForKey:@"NSForceRightToLeftWritingDirection"];
 }
 
 }  // namespace ios

@@ -21,7 +21,10 @@ BASE_EXPORT bool IsRunningOnIOS9OrLater();
 BASE_EXPORT bool IsRunningOnOrLater(int32 major, int32 minor, int32 bug_fix);
 
 // Returns whether iOS is signalling that an RTL text direction should be used
-// regardless of the current locale.
+// regardless of the current locale. This should not return true if the current
+// language is a "real" RTL language such as Arabic or Urdu; it should only
+// return true in cases where the RTL text direction has been forced (for
+// example by using the "RTL Psuedolanguage" option when launching from XCode).
 BASE_EXPORT bool IsInForcedRTL();
 
 }  // namespace ios
