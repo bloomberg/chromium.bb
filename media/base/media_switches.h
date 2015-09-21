@@ -14,8 +14,6 @@ namespace switches {
 
 MEDIA_EXPORT extern const char kAudioBufferSize[];
 
-MEDIA_EXPORT extern const char kDisableNewVideoRenderer[];
-
 MEDIA_EXPORT extern const char kVideoThreads[];
 
 #if defined(OS_ANDROID)

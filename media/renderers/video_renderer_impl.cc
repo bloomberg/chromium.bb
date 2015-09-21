@@ -7,9 +7,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
-#include "base/command_line.h"
 #include "base/location.h"
-#include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
@@ -26,22 +24,6 @@
 
 namespace media {
 
-// TODO(dalecurtis): This experiment is temporary and should be removed once we
-// have enough data to support the primacy of the new video rendering path; see
-// http://crbug.com/485699 for details.
-static bool ShouldUseVideoRenderingPath() {
-  // Note: It's important to query the field trial state first, to ensure that
-  // UMA reports the correct group.
-  const std::string group_name =
-      base::FieldTrialList::FindFullName("NewVideoRendererTrial");
-  const bool disabled_via_cli =
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableNewVideoRenderer);
-  return !disabled_via_cli &&
-         !base::StartsWith(group_name, "Disabled",
-                           base::CompareCase::SENSITIVE);
-}
-
 VideoRendererImpl::VideoRendererImpl(
     const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
     const scoped_refptr<base::TaskRunner>& worker_task_runner,
@@ -51,7 +33,6 @@ VideoRendererImpl::VideoRendererImpl(
     const scoped_refptr<GpuVideoAcceleratorFactories>& gpu_factories,
     const scoped_refptr<MediaLog>& media_log)
     : task_runner_(media_task_runner),
-      use_new_video_renderering_path_(ShouldUseVideoRenderingPath()),
       sink_(sink),
       sink_started_(false),
       video_frame_stream_(
@@ -61,16 +42,13 @@ VideoRendererImpl::VideoRendererImpl(
       low_delay_(false),
       received_end_of_stream_(false),
       rendered_end_of_stream_(false),
-      frame_available_(&lock_),
       state_(kUninitialized),
       sequence_token_(0),
-      thread_(),
       pending_read_(false),
       drop_frames_(drop_frames),
       buffering_state_(BUFFERING_HAVE_NOTHING),
       frames_decoded_(0),
       frames_dropped_(0),
-      is_shutting_down_(false),
       tick_clock_(new base::DefaultTickClock()),
       was_background_rendering_(false),
       time_progressing_(false),
@@ -87,22 +65,13 @@ VideoRendererImpl::VideoRendererImpl(
 VideoRendererImpl::~VideoRendererImpl() {
   DCHECK(task_runner_->BelongsToCurrentThread());
 
-  if (!use_new_video_renderering_path_) {
-    base::AutoLock auto_lock(lock_);
-    is_shutting_down_ = true;
-    frame_available_.Signal();
-  }
-
-  if (!thread_.is_null())
-    base::PlatformThread::Join(thread_);
-
   if (!init_cb_.is_null())
     base::ResetAndReturn(&init_cb_).Run(PIPELINE_ERROR_ABORT);
 
   if (!flush_cb_.is_null())
     base::ResetAndReturn(&flush_cb_).Run();
 
-  if (use_new_video_renderering_path_ && sink_started_)
+  if (sink_started_)
     StopSink();
 }
 
@@ -110,7 +79,7 @@ void VideoRendererImpl::Flush(const base::Closure& callback) {
   DVLOG(1) << __FUNCTION__;
   DCHECK(task_runner_->BelongsToCurrentThread());
 
-  if (use_new_video_renderering_path_ && sink_started_)
+  if (sink_started_)
     StopSink();
 
   base::AutoLock auto_lock(lock_);
@@ -120,7 +89,6 @@ void VideoRendererImpl::Flush(const base::Closure& callback) {
 
   // This is necessary if the |video_frame_stream_| has already seen an end of
   // stream and needs to drain it before flushing it.
-  ready_frames_.clear();
   if (buffering_state_ != BUFFERING_HAVE_NOTHING) {
     buffering_state_ = BUFFERING_HAVE_NOTHING;
     buffering_state_cb_.Run(BUFFERING_HAVE_NOTHING);
@@ -128,8 +96,7 @@ void VideoRendererImpl::Flush(const base::Closure& callback) {
   received_end_of_stream_ = false;
   rendered_end_of_stream_ = false;
 
-  if (use_new_video_renderering_path_)
-    algorithm_->Reset();
+  algorithm_->Reset();
 
   video_frame_stream_->Reset(
       base::Bind(&VideoRendererImpl::OnVideoFrameStreamResetDone,
@@ -142,7 +109,6 @@ void VideoRendererImpl::StartPlayingFrom(base::TimeDelta timestamp) {
   base::AutoLock auto_lock(lock_);
   DCHECK_EQ(state_, kFlushed);
   DCHECK(!pending_read_);
-  DCHECK(ready_frames_.empty());
   DCHECK_EQ(buffering_state_, BUFFERING_HAVE_NOTHING);
 
   state_ = kPlaying;
@@ -190,8 +156,6 @@ void VideoRendererImpl::Initialize(
   buffering_state_cb_ = BindToCurrentLoop(buffering_state_cb);
 
   statistics_cb_ = statistics_cb;
-  paint_cb_ = base::Bind(&VideoRendererSink::PaintFrameUsingOldRenderingPath,
-                         base::Unretained(sink_));
   ended_cb_ = ended_cb;
   error_cb_ = error_cb;
   wall_clock_time_cb_ = wall_clock_time_cb;
@@ -208,7 +172,6 @@ scoped_refptr<VideoFrame> VideoRendererImpl::Render(
     base::TimeTicks deadline_max,
     bool background_rendering) {
   base::AutoLock auto_lock(lock_);
-  DCHECK(use_new_video_renderering_path_);
   DCHECK_EQ(state_, kPlaying);
 
   size_t frames_dropped = 0;
@@ -253,7 +216,7 @@ scoped_refptr<VideoFrame> VideoRendererImpl::Render(
   // dropped frames since they are likely just dropped due to being too old.
   if (!background_rendering && !was_background_rendering_)
     frames_dropped_ += frames_dropped;
-  UpdateStatsAndWait_Locked(base::TimeDelta());
+  UpdateStats_Locked();
   was_background_rendering_ = background_rendering;
 
   // After painting the first frame, if playback hasn't started, we post a
@@ -282,22 +245,7 @@ scoped_refptr<VideoFrame> VideoRendererImpl::Render(
 
 void VideoRendererImpl::OnFrameDropped() {
   base::AutoLock auto_lock(lock_);
-  DCHECK(use_new_video_renderering_path_);
   algorithm_->OnLastFrameDropped();
-}
-
-void VideoRendererImpl::CreateVideoThread() {
-  // This may fail and cause a crash if there are too many threads created in
-  // the current process. See http://crbug.com/443291
-  const base::ThreadPriority priority =
-#if defined(OS_WIN)
-      // Bump up our priority so our sleeping is more accurate.
-      // TODO(scherkus): find out if this is necessary, but it seems to help.
-      base::ThreadPriority::DISPLAY;
-#else
-      base::ThreadPriority::NORMAL;
-#endif
-  CHECK(base::PlatformThread::CreateWithPriority(0, this, &thread_, priority));
 }
 
 void VideoRendererImpl::OnVideoFrameStreamInitialized(bool success) {
@@ -317,109 +265,11 @@ void VideoRendererImpl::OnVideoFrameStreamInitialized(bool success) {
   // have not populated any buffers yet.
   state_ = kFlushed;
 
-  if (use_new_video_renderering_path_) {
-    algorithm_.reset(new VideoRendererAlgorithm(wall_clock_time_cb_));
-    if (!drop_frames_)
-      algorithm_->disable_frame_dropping();
-  } else {
-    CreateVideoThread();
-  }
+  algorithm_.reset(new VideoRendererAlgorithm(wall_clock_time_cb_));
+  if (!drop_frames_)
+    algorithm_->disable_frame_dropping();
 
   base::ResetAndReturn(&init_cb_).Run(PIPELINE_OK);
-}
-
-// PlatformThread::Delegate implementation.
-void VideoRendererImpl::ThreadMain() {
-  DCHECK(!use_new_video_renderering_path_);
-  base::PlatformThread::SetName("CrVideoRenderer");
-
-  // The number of milliseconds to idle when we do not have anything to do.
-  // Nothing special about the value, other than we're being more OS-friendly
-  // than sleeping for 1 millisecond.
-  //
-  // TODO(scherkus): switch to pure event-driven frame timing instead of this
-  // kIdleTimeDelta business http://crbug.com/106874
-  const base::TimeDelta kIdleTimeDelta =
-      base::TimeDelta::FromMilliseconds(10);
-
-  for (;;) {
-    base::AutoLock auto_lock(lock_);
-
-    // Thread exit condition.
-    if (is_shutting_down_)
-      return;
-
-    // Remain idle as long as we're not playing.
-    if (state_ != kPlaying || buffering_state_ != BUFFERING_HAVE_ENOUGH) {
-      UpdateStatsAndWait_Locked(kIdleTimeDelta);
-      continue;
-    }
-
-    base::TimeTicks now = tick_clock_->NowTicks();
-
-    // Remain idle until we have the next frame ready for rendering.
-    if (ready_frames_.empty()) {
-      base::TimeDelta wait_time = kIdleTimeDelta;
-      if (received_end_of_stream_) {
-        if (!rendered_end_of_stream_) {
-          rendered_end_of_stream_ = true;
-          task_runner_->PostTask(FROM_HERE, ended_cb_);
-        }
-      } else if (now >= latest_possible_paint_time_) {
-        // Declare HAVE_NOTHING if we don't have another frame by the time we
-        // are ready to paint the next one.
-        buffering_state_ = BUFFERING_HAVE_NOTHING;
-        task_runner_->PostTask(
-            FROM_HERE, base::Bind(buffering_state_cb_, BUFFERING_HAVE_NOTHING));
-      } else {
-        wait_time = std::min(kIdleTimeDelta, latest_possible_paint_time_ - now);
-      }
-
-      UpdateStatsAndWait_Locked(wait_time);
-      continue;
-    }
-
-    base::TimeTicks target_paint_time =
-        ConvertMediaTimestamp(ready_frames_.front()->timestamp());
-
-    // If media time has stopped, don't attempt to paint any more frames.
-    if (target_paint_time.is_null()) {
-      UpdateStatsAndWait_Locked(kIdleTimeDelta);
-      continue;
-    }
-
-    // Deadline is defined as the duration between this frame and the next
-    // frame, using the delta between this frame and the previous frame as the
-    // assumption for frame duration.
-    //
-    // TODO(scherkus): This can be vastly improved. Use a histogram to measure
-    // the accuracy of our frame timing code. http://crbug.com/149829
-    if (last_media_time_.is_null()) {
-      latest_possible_paint_time_ = now;
-    } else {
-      base::TimeDelta duration = target_paint_time - last_media_time_;
-      latest_possible_paint_time_ = target_paint_time + duration;
-    }
-
-    // Remain idle until we've reached our target paint window.
-    if (now < target_paint_time) {
-      UpdateStatsAndWait_Locked(
-          std::min(target_paint_time - now, kIdleTimeDelta));
-      continue;
-    }
-
-    if (ready_frames_.size() > 1 && now > latest_possible_paint_time_ &&
-        drop_frames_) {
-      DropNextReadyFrame_Locked();
-      continue;
-    }
-
-    // Congratulations! You've made it past the video frame timing gauntlet.
-    //
-    // At this point enough time has passed that the next frame that ready for
-    // rendering.
-    PaintNextReadyFrame_Locked();
-  }
 }
 
 void VideoRendererImpl::SetTickClockForTesting(
@@ -439,7 +289,7 @@ void VideoRendererImpl::OnTimeStateChanged(bool time_progressing) {
   // WARNING: Do not attempt to use |lock_| here as this may be a reentrant call
   // in response to callbacks firing above.
 
-  if (!use_new_video_renderering_path_ || sink_started_ == time_progressing_)
+  if (sink_started_ == time_progressing_)
     return;
 
   if (time_progressing_) {
@@ -450,38 +300,6 @@ void VideoRendererImpl::OnTimeStateChanged(bool time_progressing) {
   } else {
     StopSink();
   }
-}
-
-void VideoRendererImpl::PaintNextReadyFrame_Locked() {
-  DCHECK(!use_new_video_renderering_path_);
-  lock_.AssertAcquired();
-
-  scoped_refptr<VideoFrame> next_frame = ready_frames_.front();
-  ready_frames_.pop_front();
-
-  last_media_time_ = ConvertMediaTimestamp(next_frame->timestamp());
-
-  paint_cb_.Run(next_frame);
-
-  task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&VideoRendererImpl::AttemptRead, weak_factory_.GetWeakPtr()));
-}
-
-void VideoRendererImpl::DropNextReadyFrame_Locked() {
-  DCHECK(!use_new_video_renderering_path_);
-  TRACE_EVENT0("media", "VideoRendererImpl:frameDropped");
-
-  lock_.AssertAcquired();
-
-  last_media_time_ = ConvertMediaTimestamp(ready_frames_.front()->timestamp());
-
-  ready_frames_.pop_front();
-  frames_dropped_++;
-
-  task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&VideoRendererImpl::AttemptRead, weak_factory_.GetWeakPtr()));
 }
 
 void VideoRendererImpl::FrameReadyForCopyingToGpuMemoryBuffers(
@@ -552,15 +370,12 @@ void VideoRendererImpl::FrameReady(uint32_t sequence_token,
       received_end_of_stream_ = true;
 
       // See if we can fire EOS immediately instead of waiting for Render().
-      if (use_new_video_renderering_path_)
-        MaybeFireEndedCallback_Locked(time_progressing_);
+      MaybeFireEndedCallback_Locked(time_progressing_);
     } else {
       // Maintain the latest frame decoded so the correct frame is displayed
       // after prerolling has completed.
       if (frame->timestamp() <= start_timestamp_) {
-        if (use_new_video_renderering_path_)
-          algorithm_->Reset();
-        ready_frames_.clear();
+        algorithm_->Reset();
       }
       AddReadyFrame_Locked(frame);
     }
@@ -574,8 +389,7 @@ void VideoRendererImpl::FrameReady(uint32_t sequence_token,
     const bool have_nothing = buffering_state_ != BUFFERING_HAVE_ENOUGH;
     const bool have_nothing_and_paused = have_nothing && !sink_started_;
     if (was_background_rendering_ ||
-        (use_new_video_renderering_path_ && have_nothing_and_paused &&
-         drop_frames_)) {
+        (have_nothing_and_paused && drop_frames_)) {
       base::TimeTicks expiry_time;
       if (have_nothing_and_paused) {
         // Use the current media wall clock time plus the frame duration since
@@ -605,7 +419,7 @@ void VideoRendererImpl::FrameReady(uint32_t sequence_token,
     // data.
     if (have_nothing && HaveEnoughData_Locked()) {
       TransitionToHaveEnough_Locked();
-      if (use_new_video_renderering_path_ && !sink_started_ &&
+      if (!sink_started_ &&
           !rendered_end_of_stream_) {
         start_sink = true;
         render_first_frame_and_stop_ = true;
@@ -622,7 +436,7 @@ void VideoRendererImpl::FrameReady(uint32_t sequence_token,
 
   // If time is progressing, the sink has already been started; this may be true
   // if we have previously underflowed, yet weren't stopped because of audio.
-  if (use_new_video_renderering_path_ && start_sink) {
+  if (start_sink) {
     DCHECK(!sink_started_);
     StartSink();
   }
@@ -637,28 +451,19 @@ bool VideoRendererImpl::HaveEnoughData_Locked() {
   if (HaveReachedBufferingCap())
     return true;
 
-  if (use_new_video_renderering_path_ && was_background_rendering_ &&
-      frames_decoded_) {
+  if (was_background_rendering_ && frames_decoded_) {
     return true;
   }
 
   if (!low_delay_)
     return false;
 
-  return ready_frames_.size() > 0 ||
-         (use_new_video_renderering_path_ && algorithm_->frames_queued() > 0);
+  return algorithm_->frames_queued() > 0;
 }
 
 void VideoRendererImpl::TransitionToHaveEnough_Locked() {
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK_EQ(buffering_state_, BUFFERING_HAVE_NOTHING);
-
-  if (!ready_frames_.empty()) {
-    DCHECK(!use_new_video_renderering_path_);
-    // Because the clock might remain paused in for an undetermined amount
-    // of time (e.g., seeking while paused), paint the first frame.
-    PaintNextReadyFrame_Locked();
-  }
 
   buffering_state_ = BUFFERING_HAVE_ENOUGH;
   buffering_state_cb_.Run(BUFFERING_HAVE_ENOUGH);
@@ -683,18 +488,7 @@ void VideoRendererImpl::AddReadyFrame_Locked(
 
   frames_decoded_++;
 
-  if (use_new_video_renderering_path_) {
-    algorithm_->EnqueueFrame(frame);
-    return;
-  }
-
-  ready_frames_.push_back(frame);
-  DCHECK_LE(ready_frames_.size(),
-            static_cast<size_t>(limits::kMaxVideoFrames));
-
-  // Avoid needlessly waking up |thread_| unless playing.
-  if (state_ == kPlaying)
-    frame_available_.Signal();
+  algorithm_->EnqueueFrame(frame);
 }
 
 void VideoRendererImpl::AttemptRead() {
@@ -736,7 +530,6 @@ void VideoRendererImpl::AttemptRead_Locked() {
 void VideoRendererImpl::OnVideoFrameStreamResetDone() {
   base::AutoLock auto_lock(lock_);
   DCHECK_EQ(kFlushing, state_);
-  DCHECK(ready_frames_.empty());
   DCHECK(!received_end_of_stream_);
   DCHECK(!rendered_end_of_stream_);
   DCHECK_EQ(buffering_state_, BUFFERING_HAVE_NOTHING);
@@ -745,12 +538,10 @@ void VideoRendererImpl::OnVideoFrameStreamResetDone() {
   pending_read_ = false;
   sequence_token_++;
   state_ = kFlushed;
-  latest_possible_paint_time_ = last_media_time_ = base::TimeTicks();
   base::ResetAndReturn(&flush_cb_).Run();
 }
 
-void VideoRendererImpl::UpdateStatsAndWait_Locked(
-    base::TimeDelta wait_duration) {
+void VideoRendererImpl::UpdateStats_Locked() {
   lock_.AssertAcquired();
   DCHECK_GE(frames_decoded_, 0);
   DCHECK_GE(frames_dropped_, 0);
@@ -764,14 +555,10 @@ void VideoRendererImpl::UpdateStatsAndWait_Locked(
     frames_decoded_ = 0;
     frames_dropped_ = 0;
   }
-
-  if (wait_duration > base::TimeDelta())
-    frame_available_.TimedWait(wait_duration);
 }
 
 void VideoRendererImpl::MaybeStopSinkAfterFirstPaint() {
   DCHECK(task_runner_->BelongsToCurrentThread());
-  DCHECK(use_new_video_renderering_path_);
 
   if (!time_progressing_ && sink_started_)
     StopSink();
@@ -784,15 +571,11 @@ bool VideoRendererImpl::HaveReachedBufferingCap() {
   DCHECK(task_runner_->BelongsToCurrentThread());
   const size_t kMaxVideoFrames = limits::kMaxVideoFrames;
 
-  if (use_new_video_renderering_path_) {
-    // When the display rate is less than the frame rate, the effective frames
-    // queued may be much smaller than the actual number of frames queued.  Here
-    // we ensure that frames_queued() doesn't get excessive.
-    return algorithm_->EffectiveFramesQueued() >= kMaxVideoFrames ||
-           algorithm_->frames_queued() >= 3 * kMaxVideoFrames;
-  }
-
-  return ready_frames_.size() >= kMaxVideoFrames;
+  // When the display rate is less than the frame rate, the effective frames
+  // queued may be much smaller than the actual number of frames queued.  Here
+  // we ensure that frames_queued() doesn't get excessive.
+  return algorithm_->EffectiveFramesQueued() >= kMaxVideoFrames ||
+         algorithm_->frames_queued() >= 3 * kMaxVideoFrames;
 }
 
 void VideoRendererImpl::StartSink() {

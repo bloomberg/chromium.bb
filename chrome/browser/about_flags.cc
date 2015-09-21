@@ -1878,11 +1878,6 @@ const Experiment kExperiments[] = {
          autofill::switches::kEnableAccessorySuggestionView,
          autofill::switches::kDisableAccessorySuggestionView)},
 #endif  // defined(OS_ANDROID)
-    {"disable-new-video-renderer",
-     IDS_FLAGS_DISABLE_NEW_VIDEO_RENDERER_NAME,
-     IDS_FLAGS_DISABLE_NEW_VIDEO_RENDERER_DESCRIPTION,
-     kOsAll,
-     SINGLE_VALUE_TYPE(switches::kDisableNewVideoRenderer)},
     // Temporary flag to ease the transition to standard-compliant scrollTop
     // behavior.  Will be removed shortly after http://crbug.com/157855 ships.
     {"scroll-top-left-interop",

@@ -13,7 +13,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/synchronization/condition_variable.h"
 #include "base/synchronization/lock.h"
-#include "base/threading/platform_thread.h"
 #include "base/timer/timer.h"
 #include "media/base/decryptor.h"
 #include "media/base/demuxer_stream.h"
@@ -41,8 +40,7 @@ namespace media {
 // ready for rendering.
 class MEDIA_EXPORT VideoRendererImpl
     : public VideoRenderer,
-      public NON_EXPORTED_BASE(VideoRendererSink::RenderCallback),
-      public base::PlatformThread::Delegate {
+      public NON_EXPORTED_BASE(VideoRendererSink::RenderCallback) {
  public:
   // |decoders| contains the VideoDecoders to use when initializing.
   //
@@ -75,9 +73,6 @@ class MEDIA_EXPORT VideoRendererImpl
   void StartPlayingFrom(base::TimeDelta timestamp) override;
   void OnTimeStateChanged(bool time_progressing) override;
 
-  // PlatformThread::Delegate implementation.
-  void ThreadMain() override;
-
   void SetTickClockForTesting(scoped_ptr<base::TickClock> tick_clock);
   void SetGpuMemoryBufferVideoForTesting(
       scoped_ptr<GpuMemoryBufferVideoFramePool> gpu_memory_buffer_pool);
@@ -88,14 +83,7 @@ class MEDIA_EXPORT VideoRendererImpl
                                    bool background_rendering) override;
   void OnFrameDropped() override;
 
-  void disable_new_video_renderer_for_testing() {
-    use_new_video_renderering_path_ = false;
-  }
-
  private:
-  // Creates a dedicated |thread_| for video rendering.
-  void CreateVideoThread();
-
   // Callback for |video_frame_stream_| initialization.
   void OnVideoFrameStreamInitialized(bool success);
 
@@ -112,7 +100,7 @@ class MEDIA_EXPORT VideoRendererImpl
                   VideoFrameStream::Status status,
                   const scoped_refptr<VideoFrame>& frame);
 
-  // Helper method for adding a frame to |ready_frames_|.
+  // Helper method for enqueueing a frame to |alogorithm_|.
   void AddReadyFrame_Locked(const scoped_refptr<VideoFrame>& frame);
 
   // Helper method that schedules an asynchronous read from the
@@ -124,16 +112,6 @@ class MEDIA_EXPORT VideoRendererImpl
   // Called when VideoFrameStream::Reset() completes.
   void OnVideoFrameStreamResetDone();
 
-  // Runs |paint_cb_| with the next frame from |ready_frames_|.
-  //
-  // A read is scheduled to replace the frame.
-  void PaintNextReadyFrame_Locked();
-
-  // Drops the next frame from |ready_frames_| and runs |statistics_cb_|.
-  //
-  // A read is scheduled to replace the frame.
-  void DropNextReadyFrame_Locked();
-
   // Returns true if the renderer has enough data for playback purposes.
   // Note that having enough data may be due to reaching end of stream.
   bool HaveEnoughData_Locked();
@@ -141,9 +119,8 @@ class MEDIA_EXPORT VideoRendererImpl
   void TransitionToHaveNothing();
 
   // Runs |statistics_cb_| with |frames_decoded_| and |frames_dropped_|, resets
-  // them to 0, and then waits on |frame_available_| for up to the
-  // |wait_duration|.
-  void UpdateStatsAndWait_Locked(base::TimeDelta wait_duration);
+  // them to 0.
+  void UpdateStats_Locked();
 
   // Called after we've painted the first frame.  If |time_progressing_| is
   // false it Stop() on |sink_|.
@@ -173,11 +150,6 @@ class MEDIA_EXPORT VideoRendererImpl
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
-  // Enables the use of VideoRendererAlgorithm and VideoRendererSink for frame
-  // rendering instead of using a thread in a sleep-loop.  Set via the command
-  // line flag kEnableNewVideoRenderer or via test methods.
-  bool use_new_video_renderering_path_;
-
   // Sink which calls into VideoRendererImpl via Render() for video frames.  Do
   // not call any methods on the sink while |lock_| is held or the two threads
   // might deadlock. Do not call Start() or Stop() on the sink directly, use
@@ -200,18 +172,10 @@ class MEDIA_EXPORT VideoRendererImpl
   // Flag indicating low-delay mode.
   bool low_delay_;
 
-  // Queue of incoming frames yet to be painted.
-  typedef std::deque<scoped_refptr<VideoFrame>> VideoFrameQueue;
-  VideoFrameQueue ready_frames_;
-
   // Keeps track of whether we received the end of stream buffer and finished
   // rendering.
   bool received_end_of_stream_;
   bool rendered_end_of_stream_;
-
-  // Used to signal |thread_| as frames are added to |frames_|.  Rule of thumb:
-  // always check |state_| to see if it was set to STOPPED after waking up!
-  base::ConditionVariable frame_available_;
 
   // Important detail: being in kPlaying doesn't imply that video is being
   // rendered. Rather, it means that the renderer is ready to go. The actual
@@ -244,8 +208,6 @@ class MEDIA_EXPORT VideoRendererImpl
   // want to discard video frames that might be received after the stream has
   // been reset.
   uint32_t sequence_token_;
-  // Video thread handle.
-  base::PlatformThreadHandle thread_;
 
   // Keep track of the outstanding read on the VideoFrameStream. Flushing can
   // only complete once the read has completed.
@@ -268,23 +230,10 @@ class MEDIA_EXPORT VideoRendererImpl
 
   base::TimeDelta start_timestamp_;
 
-  // Embedder callback for notifying a new frame is available for painting.
-  PaintCB paint_cb_;
-
-  // The wallclock times of the last frame removed from the |ready_frames_|
-  // queue, either for calling |paint_cb_| or for dropping. Set to null during
-  // flushing.
-  base::TimeTicks last_media_time_;
-
-  // Equivalent to |last_media_time_| + the estimated duration of the frame.
-  base::TimeTicks latest_possible_paint_time_;
-
   // Keeps track of the number of frames decoded and dropped since the
   // last call to |statistics_cb_|. These must be accessed under lock.
   int frames_decoded_;
   int frames_dropped_;
-
-  bool is_shutting_down_;
 
   scoped_ptr<base::TickClock> tick_clock_;
 
