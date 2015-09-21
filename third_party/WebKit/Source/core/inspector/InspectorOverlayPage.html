@@ -427,11 +427,6 @@ function reset(resetData)
     window.canvas = document.getElementById("canvas");
     window.context = canvas.getContext("2d");
     resetCanvas(canvas);
-    var matchedNodesCanvas = document.getElementById("layout-editor-matched-nodes-canvas");
-    if (matchedNodesCanvas)
-        resetCanvas(matchedNodesCanvas);
-
-    resetLabelCanvas();
 
     window.canvasWidth = viewportSize.width;
     window.canvasHeight = viewportSize.height;
@@ -440,21 +435,13 @@ function reset(resetData)
     document.querySelector(".controls-line").style.visibility = "hidden";
     document.getElementById("element-title").style.visibility = "hidden";
     document.getElementById("tooltip-container").classList.add("hidden");
-    var editor = document.getElementById("editor");
-    editor.style.visibility = "hidden";
-    editor.textContent = "";
-    document.getElementById("selector-tooltip").style.visibility = "hidden";
     document.body.classList.remove("dimmed");
-    document.removeEventListener("mousedown", consumeEvent);
-    document.removeEventListener("mousemove", onLayoutEditorMouseMove);
-    document.removeEventListener("mouseup", consumeEvent);
-    document.removeEventListener("click", onLayoutEditorClick);
-    document.removeEventListener("keydown", onLayoutEditorKeyDown);
-    document.removeEventListener("mousewheel", onLayoutEditorMouseWheel);
 
-    delete window.hoverableAreas;
-    delete window.anchorsByType;
     window._gridPainted = false;
+    delete window.hoverableAreas;
+
+    if (window.layoutEditor)
+        window.layoutEditor.reset();
 }
 
 function _drawElementTitle(context, elementInfo, bounds)
@@ -797,356 +784,385 @@ function onDocumentKeyDown(event)
 
 function showLayoutEditor(info)
 {
-    var editorElement = document.getElementById("editor");
-    editorElement.style.visibility = "visible";
-    var anchors = info.anchors;
-    window.anchorsByType = new Map();
-    var selectedAnchorInfo = null;
-    for (var i = 0; i < anchors.length; ++i) {
-        var anchorInfo = anchors[i];
-        if (!anchorsByType.get(anchorInfo.type))
-            anchorsByType.set(anchorInfo.type, []);
-        anchorsByType.get(anchorInfo.type).push(anchorInfo);
-        editorElement.appendChild(createAnchor(anchorInfo));
-        if (anchorInfo.propertyName === window.draggedPropertyName)
-            selectedAnchorInfo = anchorInfo;
-    }
+    if (!window.layoutEditor)
+        window.layoutEditor = new LayoutEditor(canvas);
 
-    if (selectedAnchorInfo)
-        showLabels(selectedAnchorInfo.type, selectedAnchorInfo.propertyName);
-
-    document.addEventListener("mousedown", consumeEvent);
-    document.addEventListener("mousemove", onLayoutEditorMouseMove);
-    document.addEventListener("mouseup", consumeEvent);
-    document.addEventListener("click", onLayoutEditorClick);
-    document.addEventListener("keydown", onLayoutEditorKeyDown);
-    document.addEventListener("mousewheel", onLayoutEditorMouseWheel);
-    showSelectorTooltip();
+    window.layoutEditor.setState(info);
 }
 
-function showSelectorTooltip()
+function LayoutEditor(mainCanvas)
 {
-    var tooltipElement = document.getElementById("selector-tooltip");
-    tooltipElement.style.visibility = "visible";
-    tooltipElement.style.left = "100px";
-    tooltipElement.style.top = "100px";
-    var selectorInfo = JSON.parse(InspectorOverlayHost.currentSelectorInfo());
-    var medias = selectorInfo.medias ? selectorInfo.medias.map(function(media) {return "@media " + media + ""}) : "";
-    tooltipElement.textContent = (medias ? medias.join(", ") + " { "  : "") + selectorInfo.selector + ( medias ? " } " : "");
-    tooltipElement.style.backgroundColor = "#eee";
+    this._boundConsumeEvent = this._consumeEvent.bind(this);
+    this._boundMouseMove = this._onMouseMove.bind(this);
+    this._boundStrayClick = this._onStrayClick.bind(this);
+    this._boundKeyDown = this._onKeyDown.bind(this);
+    this._boundMouseWheel = this._onMouseWheel.bind(this);
 
-    if (!selectorInfo.nodes)
-        return;
+    this._anchorsByType = new Map();
+    this._editorElement = document.getElementById("editor");
+    this._tooltipElement = document.getElementById("selector-tooltip");
+    this._matchedNodesCanvas = createCanvas("layout-editor-matched-nodes-canvas");
+    mainCanvas.parentElement.insertBefore(this._matchedNodesCanvas, mainCanvas);
 
-    var matchedNodesCanvas = document.getElementById("layout-editor-matched-nodes-canvas");
-    if (!matchedNodesCanvas) {
-        matchedNodesCanvas = createCanvas("layout-editor-matched-nodes-canvas");
-        canvas.parentElement.insertBefore(matchedNodesCanvas, canvas);
-    }
-    resetCanvas(matchedNodesCanvas);
-
-    for (var nodeHighlight of selectorInfo.nodes)
-        drawHighlight(nodeHighlight, matchedNodesCanvas.getContext("2d"));
+    this._labelsCanvas = createCanvas("labels-canvas");
+    mainCanvas.parentElement.insertBefore(this._labelsCanvas, mainCanvas.nextSibling);
+    this._mainContext = mainCanvas.getContext("2d");
 }
 
-function createAnchor(anchorInfo)
-{
-    var handleWidth = 5;
-    context.save();
-    context.shadowColor = "rgba(0, 0, 0, 0.34)";
-    context.shadowBlur = 2;
-    context.fillStyle = anchorColorForProperty(anchorInfo);
-    context.beginPath();
-    context.arc(anchorInfo.x, anchorInfo.y, handleWidth, 0, 2 * Math.PI);
-    context.fill();
-    context.restore();
+LayoutEditor.prototype = {
 
-    var anchorElement = document.createElement("div");
-    anchorElement.className = "editor-anchor";
-    anchorElement.style.left = anchorInfo.x - handleWidth + "px";
-    anchorElement.style.top = anchorInfo.y - handleWidth + "px";
-    if (anchorInfo.propertyValue.mutable)
-        anchorElement.addEventListener("mousedown", onAnchorMouseDown.bind(null, anchorInfo));
-    anchorElement.addEventListener("mousemove", onAnchorMouseMove.bind(null, anchorInfo));
-    return anchorElement;
-}
+    reset: function()
+    {
+        this._anchorsByType.clear();
 
-function calculateDelta(deltaVector, moveDelta)
-{
-    return scalarProduct(deltaVector, moveDelta) / Math.sqrt(scalarProduct(deltaVector, deltaVector));
-}
+        resetCanvas(this._matchedNodesCanvas);
+        this._resetLabelCanvas();
 
-function onAnchorMouseDown(anchorInfo, event)
-{
-    // Only drag upon left button. Right will likely cause a context menu. So will ctrl-click on mac.
-    if (event.button || (window.platform == "mac" && event.ctrlKey))
-        return;
+        this._editorElement.style.visibility = "hidden";
+        this._editorElement.textContent = "";
+        this._tooltipElement.style.visibility = "hidden";
 
-    event.preventDefault();
-    window.boundDragMove = onDragMove.bind(null, new Point(event.screenX, event.screenY), anchorInfo.deltaVector);
-    document.addEventListener("mousemove", boundDragMove);
-    document.addEventListener("mouseup", onDragEnd);
-    InspectorOverlayHost.startPropertyChange(anchorInfo.propertyName);
-    window.draggedPropertyName = anchorInfo.propertyName;
-    showLabels(anchorInfo.type, anchorInfo.propertyName);
-}
+        document.removeEventListener("mousedown", this._boundConsumeEvent);
+        document.removeEventListener("mousemove", this._boundMouseMove);
+        document.removeEventListener("mouseup", this._boundConsumeEvent);
+        document.removeEventListener("click", this._boundStrayClick);
+        document.removeEventListener("keydown", this._boundKeyDown);
+        document.removeEventListener("mousewheel", this._boundMouseWheel);
+    },
 
-function onDragMove(mouseDownPoint, deltaVector, event)
-{
-    if (event.buttons !== 1) {
-        onDragEnd(event);
-        return;
-    }
-    event.preventDefault();
-    InspectorOverlayHost.changeProperty(calculateDelta(deltaVector, new Point(event.screenX - mouseDownPoint.x, event.screenY - mouseDownPoint.y)));
-}
+    setState: function(info)
+    {
+        this._editorElement.style.visibility = "visible";
+        var anchors = info.anchors;
+        this._anchorsByType.clear();
+        var selectedAnchorInfo = null;
+        for (var i = 0; i < anchors.length; ++i) {
+            var anchorInfo = anchors[i];
+            if (!this._anchorsByType.get(anchorInfo.type))
+                this._anchorsByType.set(anchorInfo.type, []);
+            this._anchorsByType.get(anchorInfo.type).push(anchorInfo);
+            this._editorElement.appendChild(this._createAnchor(anchorInfo));
+            if (anchorInfo.propertyName === this._draggedPropertyName)
+                selectedAnchorInfo = anchorInfo;
+        }
 
-function onDragEnd(event)
-{
-    document.removeEventListener("mousemove", boundDragMove);
-    delete window.boundDragMove;
-    delete window.draggedPropertyName;
-    document.removeEventListener("mouseup", onDragEnd);
-    event.preventDefault();
-    InspectorOverlayHost.endPropertyChange();
-    resetLabelCanvas();
-}
+        if (selectedAnchorInfo)
+            this._showLabels(selectedAnchorInfo.type, selectedAnchorInfo.propertyName);
 
-function showLabel(anchorInfo, showLongDescription)
-{
-    var labelsCanvas = document.getElementById("labels-canvas");
-    if (!labelsCanvas) {
-        labelsCanvas = createCanvas("labels-canvas");
-        canvas.parentElement.insertBefore(labelsCanvas, labelsCanvas.nextSibling);
-    }
+        document.addEventListener("mousedown", this._boundConsumeEvent);
+        document.addEventListener("mousemove", this._boundMouseMove);
+        document.addEventListener("mouseup", this._boundConsumeEvent);
+        document.addEventListener("click", this._boundStrayClick);
+        document.addEventListener("keydown", this._boundKeyDown);
+        document.addEventListener("mousewheel", this._boundMouseWheel);
+        this._showSelectorTooltip();
+    },
 
-    var context =  labelsCanvas.getContext("2d");
-    var secondaryColor = "rgba(255, 255, 255, 0.7)";
-    var labelColor = labelColorForProperty(anchorInfo);
-    var textDescription = [
-        {string: String(parseFloat(anchorInfo.propertyValue.value.toFixed(2))), color: "white" },
-        {string: "\u2009" + anchorInfo.propertyValue.unit, color: secondaryColor}
-    ];
+    _showSelectorTooltip: function()
+    {
+        this._tooltipElement.style.visibility = "visible";
+        this._tooltipElement.style.left = "100px";
+        this._tooltipElement.style.top = "100px";
+        var selectorInfo = JSON.parse(InspectorOverlayHost.currentSelectorInfo());
+        var medias = selectorInfo.medias ? selectorInfo.medias.map(function (media) {return "@media " + media + ""}) : "";
+        this._tooltipElement.textContent = (medias ? medias.join(", ") + " { " : "") + selectorInfo.selector + ( medias ? " } " : "");
+        this._tooltipElement.style.backgroundColor = "#eee";
 
-    if (showLongDescription)
-        textDescription.splice(0, 0, {string: anchorInfo.propertyName + ": ", color: secondaryColor});
-    _drawLabel(context, anchorInfo.x, anchorInfo.y, labelColor, textDescription, anchorInfo.deltaVector.x < 0);
-}
+        resetCanvas(this._matchedNodesCanvas);
 
-function showLabels(type, fullLabelName)
-{
-    if (!anchorsByType)
-        return;
+        if (!selectorInfo.nodes)
+            return;
 
-    if (window.labelCanvasState && labelCanvasState.type === type && labelCanvasState.fullLabelName === fullLabelName)
-        return;
+        for (var nodeHighlight of selectorInfo.nodes)
+            drawHighlight(nodeHighlight, this._matchedNodesCanvas.getContext("2d"));
+    },
 
-    resetLabelCanvas();
-    window.labelCanvasState = {type: type, fullLabelName: fullLabelName};
-    var anchors = anchorsByType.get(type) || [];
-    var selectedAnchorInfo = null;
-    for (var anchorInfo of anchors) {
-        if (fullLabelName !== anchorInfo.propertyName)
-            showLabel(anchorInfo, false);
+    _createAnchor: function(anchorInfo)
+    {
+        var handleWidth = 5;
+        this._mainContext.save();
+        this._mainContext.shadowColor = "rgba(0, 0, 0, 0.34)";
+        this._mainContext.shadowBlur = 2;
+        this._mainContext.fillStyle = this._anchorColorForProperty(anchorInfo);
+        this._mainContext.beginPath();
+        this._mainContext.arc(anchorInfo.x, anchorInfo.y, handleWidth, 0, 2 * Math.PI);
+        this._mainContext.fill();
+        this._mainContext.restore();
+
+        var anchorElement = document.createElement("div");
+        anchorElement.className = "editor-anchor";
+        anchorElement.style.left = anchorInfo.x - handleWidth + "px";
+        anchorElement.style.top = anchorInfo.y - handleWidth + "px";
+        if (anchorInfo.propertyValue.mutable)
+            anchorElement.addEventListener("mousedown", this._onAnchorMouseDown.bind(this, anchorInfo));
+        anchorElement.addEventListener("mousemove", this._onAnchorMouseMove.bind(this, anchorInfo));
+        return anchorElement;
+    },
+
+    _calculateDelta: function(deltaVector, moveDelta)
+    {
+        return scalarProduct(deltaVector, moveDelta) / Math.sqrt(scalarProduct(deltaVector, deltaVector));
+    },
+
+    _onAnchorMouseDown: function(anchorInfo, event)
+    {
+        // Only drag upon left button. Right will likely cause a context menu. So will ctrl-click on mac.
+        if (event.button || (window.platform == "mac" && event.ctrlKey))
+            return;
+
+        event.preventDefault();
+        this._boundDragMove = this._onDragMove.bind(this, new Point(event.screenX, event.screenY), anchorInfo.deltaVector);
+        this._boundDragEnd = this._onDragEnd.bind(this);
+        document.addEventListener("mousemove", this._boundDragMove);
+        document.addEventListener("mouseup", this._boundDragEnd);
+        InspectorOverlayHost.startPropertyChange(anchorInfo.propertyName);
+        this._draggedPropertyName = anchorInfo.propertyName;
+        this._showLabels(anchorInfo.type, anchorInfo.propertyName);
+    },
+
+    _onDragMove: function(mouseDownPoint, deltaVector, event)
+    {
+        if (event.buttons !== 1) {
+            this._onDragEnd(event);
+            return;
+        }
+        event.preventDefault();
+        InspectorOverlayHost.changeProperty(this._calculateDelta(deltaVector, new Point(event.screenX - mouseDownPoint.x, event.screenY - mouseDownPoint.y)));
+    },
+
+    _onDragEnd: function(event)
+    {
+        document.removeEventListener("mousemove", this._boundDragMove);
+        document.removeEventListener("mouseup", this._boundDragEnd);
+        delete this._boundDragMove;
+        delete this._boundDragEnd;
+        delete this._draggedPropertyName;
+        event.preventDefault();
+        InspectorOverlayHost.endPropertyChange();
+        this._resetLabelCanvas();
+    },
+
+    _showLabel: function(anchorInfo, showLongDescription)
+    {
+        var context = this._labelsCanvas.getContext("2d");
+        var secondaryColor = "rgba(255, 255, 255, 0.7)";
+        var labelColor = this._labelColorForProperty(anchorInfo);
+        var textDescription = [
+            {string: String(parseFloat(anchorInfo.propertyValue.value.toFixed(2))), color: "white"},
+            {string: "\u2009" + anchorInfo.propertyValue.unit, color: secondaryColor}
+        ];
+
+        if (showLongDescription)
+            textDescription.splice(0, 0, {string: anchorInfo.propertyName + ": ", color: secondaryColor});
+        this._drawLabel(context, anchorInfo.x, anchorInfo.y, labelColor, textDescription, anchorInfo.deltaVector.x < 0);
+    },
+
+    _showLabels: function(type, fullLabelName)
+    {
+        if (this._labelCanvasState && this._labelCanvasState.type === type && this._labelCanvasState.fullLabelName === fullLabelName)
+            return;
+
+        this._resetLabelCanvas();
+        this._labelCanvasState = {type: type, fullLabelName: fullLabelName};
+        var anchors = this._anchorsByType.get(type) || [];
+        var selectedAnchorInfo = null;
+
+        for (var anchorInfo of anchors) {
+            if (fullLabelName !== anchorInfo.propertyName)
+                this._showLabel(anchorInfo, false);
+            else
+                selectedAnchorInfo = anchorInfo;
+        }
+
+        if (!selectedAnchorInfo)
+            return;
+
+        this._showLabel(selectedAnchorInfo, true);
+        document.body.style.cursor = this._chooseAnchorPointer(selectedAnchorInfo.deltaVector);
+    },
+
+    _onAnchorMouseMove: function(anchorInfo, event)
+    {
+        if (this._draggedPropertyName)
+            return;
+
+        event.preventDefault();
+        event.stopPropagation();
+        this._showLabels(anchorInfo.type, anchorInfo.propertyName);
+    },
+
+    _drawLabel: function(context, anchorX, anchorY, labelColor, textDescription, toLeft)
+    {
+        var paddingX = 6;
+        var paddingY = 4;
+        var borderRadius = 2;
+        var arrowWidth = 6;
+        var offsetX = 6;
+        var fontSize = 10;
+
+        var wholeString = "";
+        for (var part of textDescription)
+            wholeString += part.string;
+
+        context.save();
+        context.font = fontSize + "px Arial, Roboto";
+
+        var textWidth = context.measureText(wholeString).width;
+        var fullWidth = textWidth + offsetX + arrowWidth + paddingX;
+        var height = fontSize + paddingY;
+        var fitRight = anchorX + fullWidth < viewportSize.width;
+        var fitLeft = anchorX - fullWidth > 0;
+        var mirror = !fitLeft || (!toLeft && fitRight);
+
+        var arrowX = -offsetX;
+        var arrowY = 0;
+        var right = arrowX - arrowWidth;
+        var top = arrowY - height / 2;
+        var bottom = arrowY + height / 2;
+        var left = -fullWidth;
+
+        context.save();
+        context.translate(anchorX, anchorY);
+        if (mirror)
+            context.scale(-1, 1);
+
+        context.fillStyle = labelColor;
+        context.shadowColor = "rgba(0, 0, 0, 0.34)";
+        context.shadowOffsetY = 1;
+        context.shadowBlur = 1;
+        context.beginPath();
+        context.moveTo(arrowX, arrowY);
+        context.lineTo(right, bottom);
+        context.lineTo(left + borderRadius, bottom);
+        context.quadraticCurveTo(left, bottom, left, bottom - borderRadius);
+        context.lineTo(left, top + borderRadius);
+        context.quadraticCurveTo(left, top, left + borderRadius, top);
+        context.lineTo(right, top);
+        context.lineTo(arrowX, arrowY);
+        context.closePath();
+        context.fill();
+        context.restore();
+
+        var textX = 0;
+        if (mirror)
+            textX = anchorX - right + paddingX / 2;
         else
-            selectedAnchorInfo = anchorInfo;
+            textX = anchorX + left + paddingX / 2;
+
+        var textY = anchorY + top + fontSize;
+        for (var part of textDescription) {
+            context.fillStyle = part.color;
+            context.fillText(part.string, textX, textY);
+            textX += context.measureText(part.string).width;
+        }
+        context.restore();
+    },
+
+    _labelColorForProperty: function(anchorInfo)
+    {
+        // TODO: find a better color
+        if (!anchorInfo.propertyValue.mutable)
+            return "rgb(159, 188, 191)";
+
+        var propertyName = anchorInfo.propertyName;
+        if (propertyName.startsWith("margin"))
+            return "rgb(246, 167, 35)";
+        return "rgb(91, 181, 0)";
+    },
+
+    _anchorColorForProperty: function(anchorInfo)
+    {
+        // TODO: find a better color
+        if (!anchorInfo.propertyValue.mutable)
+            return "rgb(159, 188, 191)";
+
+        var propertyName = anchorInfo.propertyName;
+        if (propertyName.startsWith("margin"))
+            return "rgb(246, 167, 35)";
+        return "rgb(107, 213, 0)";
+    },
+
+    _onMouseMove: function(event)
+    {
+        event.preventDefault();
+        // TODO: remove hoverableAreas from window
+        if (!window.hoverableAreas)
+            return;
+        var types = ["padding", "margin"];
+        for (var type of types) {
+            var path = hoverableAreas.get(type);
+            if (path && this._mainContext.isPointInPath(path, deviceScaleFactor * event.x, deviceScaleFactor * event.y)) {
+                this._showLabels(type);
+                return;
+            }
+        }
+        this._resetLabelCanvas();
+    },
+
+    _onStrayClick: function(event)
+    {
+        event.preventDefault();
+        InspectorOverlayHost.clearSelection(true);
+    },
+
+    _onKeyDown: function(event)
+    {
+        if (this._draggedPropertyName)
+            return;
+
+        // Clear selection on Esc.
+        if (event.keyIdentifier === "U+001B") {
+            event.preventDefault();
+            InspectorOverlayHost.clearSelection(false);
+        }
+    },
+
+    _onMouseWheel: function(event)
+    {
+        event.preventDefault();
+        if (event.wheelDelta > 0)
+            InspectorOverlayHost.previousSelector();
+        else
+            InspectorOverlayHost.nextSelector();
+
+        this._showSelectorTooltip();
+    },
+
+    _consumeEvent: function(event)
+    {
+        event.preventDefault();
+    },
+
+    _resetLabelCanvas: function()
+    {
+        delete this._labelCanvasState;
+        resetCanvas(this._labelsCanvas);
+        if (!this._draggedPropertyName && document.body.style.cursor)
+            document.body.style.cursor = "";
+    },
+
+    _chooseAnchorPointer: function(direction)
+    {
+        var pointers = [{name: "ns-resize", vector: new Point(0, -1)}, {name: "ew-resize", vector: new Point(-1, 0)},
+            {name: "ns-resize", vector: new Point(0, 1)}, {name: "ew-resize", vector: new Point(1, 0)}];
+
+        var maxValue = scalarProduct(direction, pointers[0].vector);
+        var maxIndex = 0;
+        for (var i = 1; i < pointers.length; ++i) {
+            var currentValue = scalarProduct(direction, pointers[i].vector);
+            if (currentValue > maxValue) {
+                maxValue = currentValue;
+                maxIndex = i;
+            }
+        }
+        return pointers[maxIndex].name;
     }
-
-    if (!selectedAnchorInfo)
-        return;
-
-    showLabel(selectedAnchorInfo, true);
-    document.body.style.cursor = chooseAnchorPointer(selectedAnchorInfo.deltaVector);
-}
-
-function onAnchorMouseMove(anchorInfo)
-{
-    if (window.draggedPropertyName)
-        return;
-    event.preventDefault();
-    event.stopPropagation();
-    showLabels(anchorInfo.type, anchorInfo.propertyName);
 }
 
 function Point(x, y)
 {
     this.x = x;
     this.y = y;
-}
-
-function _drawLabel(context, anchorX, anchorY, labelColor, textDescription, toLeft)
-{
-    var paddingX = 6;
-    var paddingY = 4;
-    var borderRadius = 2;
-    var arrowWidth = 6;
-    var offsetX = 6;
-    var fontSize = 10;
-
-    var wholeString = "";
-    for (var part of textDescription)
-        wholeString += part.string;
-
-    context.save();
-    context.font = fontSize + "px Arial, Roboto";
-    
-    var textWidth = context.measureText(wholeString).width;
-    var fullWidth = textWidth + offsetX + arrowWidth + paddingX;
-    var height = fontSize + paddingY;
-    var fitRight = anchorX + fullWidth < viewportSize.width;
-    var fitLeft = anchorX - fullWidth > 0;
-    var mirror = !fitLeft || (!toLeft && fitRight);
-
-    var arrowX = -offsetX;
-    var arrowY = 0;
-    var right = arrowX - arrowWidth;
-    var top = arrowY - height / 2;
-    var bottom = arrowY + height / 2;
-    var left = -fullWidth;
-
-    context.save();
-    context.translate(anchorX, anchorY);
-    if (mirror)
-      context.scale(-1, 1);
-
-    context.fillStyle = labelColor;
-    context.shadowColor = "rgba(0, 0, 0, 0.34)";
-    context.shadowOffsetY = 1;
-    context.shadowBlur = 1;  
-    context.beginPath();
-    context.moveTo(arrowX, arrowY);
-    context.lineTo(right, bottom);
-    context.lineTo(left + borderRadius, bottom);
-    context.quadraticCurveTo(left, bottom, left, bottom - borderRadius);
-    context.lineTo(left, top + borderRadius);
-    context.quadraticCurveTo(left, top, left + borderRadius, top);
-    context.lineTo(right, top);
-    context.lineTo(arrowX, arrowY);
-    context.closePath();
-    context.fill();
-    context.restore();
-
-    var textX = 0;
-    if (mirror) 
-        textX = anchorX - right + paddingX / 2;
-    else
-        textX = anchorX + left + paddingX / 2;
-
-    var textY = anchorY + top + fontSize;
-    for (var part of textDescription) {
-        context.fillStyle = part.color;
-        context.fillText(part.string, textX, textY);
-        textX += context.measureText(part.string).width;
-    }
-    context.restore();
-}
-
-function labelColorForProperty(anchorInfo)
-{
-    // TODO: find a better color
-    if (!anchorInfo.propertyValue.mutable)
-        return "rgb(159, 188, 191)";
-
-    var propertyName = anchorInfo.propertyName;
-    if (propertyName.startsWith("margin"))
-        return "rgb(246, 167, 35)";
-    return "rgb(91, 181, 0)";
-}
-
-function anchorColorForProperty(anchorInfo)
-{
-    // TODO: find a better color
-    if (!anchorInfo.propertyValue.mutable)
-        return "rgb(159, 188, 191)";
-
-    var propertyName = anchorInfo.propertyName;
-    if (propertyName.startsWith("margin"))
-        return "rgb(246, 167, 35)";
-    return "rgb(107, 213, 0)";
-}
-
-function onLayoutEditorMouseMove(event)
-{
-    event.preventDefault();
-    if (!window.hoverableAreas)
-        return;
-    var types = ["padding", "margin"];
-    for (var type of types) {
-        var path = hoverableAreas.get(type);
-        if (path && context.isPointInPath(path, deviceScaleFactor * event.x, deviceScaleFactor * event.y)) {
-            showLabels(type);
-            return;
-        }
-    }
-    resetLabelCanvas();
-}
-
-function onLayoutEditorClick(event)
-{
-    event.preventDefault();
-    InspectorOverlayHost.clearSelection(true);
-}
-
-function onLayoutEditorKeyDown(event)
-{
-    if (window.draggedPropertyName)
-        return;
-
-    // Clear selection on Esc.
-    if (event.keyIdentifier === "U+001B") {
-        event.preventDefault();
-        InspectorOverlayHost.clearSelection(false);
-    }
-}
-
-function onLayoutEditorMouseWheel(event)
-{
-    event.preventDefault();
-    if (event.wheelDelta > 0)
-        InspectorOverlayHost.previousSelector();
-    else
-        InspectorOverlayHost.nextSelector();
-
-    showSelectorTooltip();
-}
-
-function consumeEvent(event)
-{
-    event.preventDefault();
-}
-
-function resetLabelCanvas()
-{
-    var labelsCanvas = document.getElementById("labels-canvas");
-    if (!labelsCanvas)
-        return;
-
-    delete window.labelCanvasState;
-    resetCanvas(labelsCanvas);
-    if (!window.draggedPropertyName && document.body.style.cursor)
-        document.body.style.cursor = "";
-}
-
-function scalarProduct(v1, v2)
-{
-    return v1.x * v2.x + v1.y * v2.y;
-}
-
-var pointers = [ {name: "ns-resize", vector: new Point(0, -1)}, {name: "ew-resize", vector: new Point(-1, 0)},
-    {name: "ns-resize", vector: new Point(0, 1)}, {name: "ew-resize", vector: new Point(1, 0)}];
-
-function chooseAnchorPointer(direction)
-{
-    var maxValue = scalarProduct(direction, pointers[0].vector);
-    var maxIndex = 0;
-    for (var i = 1; i < pointers.length; ++i) {
-        var currentValue = scalarProduct(direction, pointers[i].vector);
-        if (currentValue > maxValue) {
-            maxValue = currentValue;
-            maxIndex = i;
-        }
-    }
-    return pointers[maxIndex].name;
 }
 
 function createCanvas(id)
@@ -1158,9 +1174,13 @@ function createCanvas(id)
     return canvas;
 }
 
+function scalarProduct(v1, v2)
+{
+    return v1.x * v2.x + v1.y * v2.y;
+}
+
 window.addEventListener("DOMContentLoaded", onLoaded);
 document.addEventListener("keydown", onDocumentKeyDown);
-
 </script>
 </head>
 <body class="fill">
