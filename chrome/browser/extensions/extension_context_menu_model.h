@@ -8,7 +8,6 @@
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/extensions/extension_uninstall_dialog.h"
 #include "ui/base/models/simple_menu_model.h"
 
 class Browser;
@@ -119,9 +118,6 @@ class ExtensionContextMenuModel : public ui::SimpleMenuModel,
 
   // The type of extension action to which this context menu is attached.
   ActionType action_type_;
-
-  // Keeps track of the extension uninstall dialog.
-  scoped_ptr<ExtensionUninstallDialog> extension_uninstall_dialog_;
 
   // Menu matcher for context menu items specified by the extension.
   scoped_ptr<ContextMenuMatcher> extension_items_;

@@ -13,6 +13,7 @@
 #include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
+#include "chrome/browser/extensions/extension_uninstall_dialog.h"
 #include "chrome/browser/extensions/menu_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
@@ -109,13 +110,27 @@ bool IsExtensionRequiredByPolicy(const Extension* extension,
 // A stub for the uninstall dialog.
 // TODO(devlin): Ideally, we would just have the uninstall dialog take a
 // base::Callback, but that's a bunch of churn.
-class StubUninstallDialogDelegate : public ExtensionUninstallDialog::Delegate {
+class UninstallDialogHelper : public ExtensionUninstallDialog::Delegate {
  public:
-  StubUninstallDialogDelegate() {}
+  // Kicks off the asynchronous process to confirm and uninstall the given
+  // |extension|.
+  static void UninstallExtension(Browser* browser, const Extension* extension) {
+    UninstallDialogHelper* helper = new UninstallDialogHelper();
+    helper->BeginUninstall(browser, extension);
+  }
 
  private:
   // This class handles its own lifetime.
-  ~StubUninstallDialogDelegate() override {}
+  UninstallDialogHelper() {}
+  ~UninstallDialogHelper() override {}
+
+  void BeginUninstall(Browser* browser, const Extension* extension) {
+    uninstall_dialog_.reset(ExtensionUninstallDialog::Create(
+        browser->profile(), browser->window()->GetNativeWindow(), this));
+    uninstall_dialog_->ConfirmUninstall(extension,
+                                        UNINSTALL_REASON_USER_INITIATED,
+                                        UNINSTALL_SOURCE_TOOLBAR_CONTEXT_MENU);
+  }
 
   // ExtensionUninstallDialog::Delegate:
   void OnExtensionUninstallDialogClosed(bool did_start_uninstall,
@@ -123,7 +138,9 @@ class StubUninstallDialogDelegate : public ExtensionUninstallDialog::Delegate {
     delete this;
   }
 
-  DISALLOW_COPY_AND_ASSIGN(StubUninstallDialogDelegate);
+  scoped_ptr<ExtensionUninstallDialog> uninstall_dialog_;
+
+  DISALLOW_COPY_AND_ASSIGN(UninstallDialogHelper);
 };
 
 }  // namespace
@@ -240,12 +257,7 @@ void ExtensionContextMenuModel::ExecuteCommand(int command_id,
       break;
     }
     case UNINSTALL: {
-      extension_uninstall_dialog_.reset(ExtensionUninstallDialog::Create(
-          profile_, browser_->window()->GetNativeWindow(),
-          new StubUninstallDialogDelegate()));
-      extension_uninstall_dialog_->ConfirmUninstall(
-          extension, UNINSTALL_REASON_USER_INITIATED,
-          UNINSTALL_SOURCE_TOOLBAR_CONTEXT_MENU);
+      UninstallDialogHelper::UninstallExtension(browser_, extension);
       break;
     }
     case MANAGE: {

@@ -18,7 +18,10 @@
 #include "chrome/test/base/test_browser_window.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/crx_file/id_util.h"
+#include "extensions/browser/extension_dialog_auto_confirm.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/browser/test_extension_registry_observer.h"
 #include "extensions/browser/test_management_policy.h"
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/feature_switch.h"
@@ -53,14 +56,6 @@ scoped_refptr<const Extension> BuildExtension(const std::string& name,
       .Build();
 }
 
-// Create a Browser for the ExtensionContextMenuModel to use.
-scoped_ptr<Browser> CreateBrowser(Profile* profile) {
-  Browser::CreateParams params(profile, chrome::GetActiveDesktop());
-  TestBrowserWindow test_window;
-  params.window = &test_window;
-  return scoped_ptr<Browser>(new Browser(params));
-}
-
 // Returns the index of the given |command_id| in the given |menu|, or -1 if it
 // is not found.
 int GetCommandIndex(const ExtensionContextMenuModel& menu, int command_id) {
@@ -93,8 +88,15 @@ class ExtensionContextMenuModelTest : public ExtensionServiceTestBase {
   // |kTestExtensionItemLabel|.
   int CountExtensionItems(const ExtensionContextMenuModel& model);
 
+  Browser* GetBrowser();
+
  private:
+  void CreateBrowser();
+
   int cur_id_;
+
+  scoped_ptr<TestBrowserWindow> test_window_;
+  scoped_ptr<Browser> browser_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionContextMenuModelTest);
 };
@@ -137,6 +139,20 @@ int ExtensionContextMenuModelTest::CountExtensionItems(
   return num_items_found;
 }
 
+Browser* ExtensionContextMenuModelTest::GetBrowser() {
+  if (!browser_)
+    CreateBrowser();
+  CHECK(browser_);
+  return browser_.get();
+}
+
+void ExtensionContextMenuModelTest::CreateBrowser() {
+  Browser::CreateParams params(profile(), chrome::GetActiveDesktop());
+  test_window_.reset(new TestBrowserWindow());
+  params.window = test_window_.get();
+  browser_.reset(new Browser(params));
+}
+
 // Tests that applicable menu items are disabled when a ManagementPolicy
 // prohibits them.
 TEST_F(ExtensionContextMenuModelTest, RequiredInstallationsDisablesItems) {
@@ -151,8 +167,7 @@ TEST_F(ExtensionContextMenuModelTest, RequiredInstallationsDisablesItems) {
   ASSERT_TRUE(extension.get());
   service()->AddExtension(extension.get());
 
-  scoped_ptr<Browser> browser = CreateBrowser(profile());
-  ExtensionContextMenuModel menu(extension.get(), browser.get());
+  ExtensionContextMenuModel menu(extension.get(), GetBrowser());
 
   ExtensionSystem* system = ExtensionSystem::Get(profile());
   system->management_policy()->UnregisterAllProviders();
@@ -191,8 +206,6 @@ TEST_F(ExtensionContextMenuModelTest, ComponentExtensionContextMenu) {
                          .Set("browser_action", DictionaryBuilder().Pass())
                          .Build();
 
-  scoped_ptr<Browser> browser = CreateBrowser(profile());
-
   {
   scoped_refptr<const Extension> extension =
       ExtensionBuilder().SetManifest(make_scoped_ptr(manifest->DeepCopy()))
@@ -201,7 +214,7 @@ TEST_F(ExtensionContextMenuModelTest, ComponentExtensionContextMenu) {
                         .Build();
   service()->AddExtension(extension.get());
 
-  ExtensionContextMenuModel menu(extension.get(), browser.get());
+  ExtensionContextMenuModel menu(extension.get(), GetBrowser());
 
   // A component extension's context menu should not include options for
   // managing extensions or removing it, and should only include an option for
@@ -225,7 +238,7 @@ TEST_F(ExtensionContextMenuModelTest, ComponentExtensionContextMenu) {
           .SetID(crx_file::id_util::GenerateId("component_opts"))
           .SetLocation(Manifest::COMPONENT)
           .Build();
-  ExtensionContextMenuModel menu(extension.get(), browser.get());
+  ExtensionContextMenuModel menu(extension.get(), GetBrowser());
   service()->AddExtension(extension.get());
   EXPECT_TRUE(extensions::OptionsPageInfo::HasOptionsPage(extension.get()));
   EXPECT_NE(-1, menu.GetIndexOfCommandId(ExtensionContextMenuModel::CONFIGURE));
@@ -242,8 +255,6 @@ TEST_F(ExtensionContextMenuModelTest, ExtensionItemTest) {
   ASSERT_TRUE(extension.get());
   service()->AddExtension(extension.get());
 
-  scoped_ptr<Browser> browser = CreateBrowser(profile());
-
   // Create a MenuManager for adding context items.
   MenuManager* manager = static_cast<MenuManager*>(
       (MenuManagerFactory::GetInstance()->SetTestingFactoryAndUse(
@@ -251,7 +262,7 @@ TEST_F(ExtensionContextMenuModelTest, ExtensionItemTest) {
           &MenuManagerFactory::BuildServiceInstanceForTesting)));
   ASSERT_TRUE(manager);
 
-  ExtensionContextMenuModel menu(extension.get(), browser.get());
+  ExtensionContextMenuModel menu(extension.get(), GetBrowser());
 
   // There should be no extension items yet.
   EXPECT_EQ(0, CountExtensionItems(menu));
@@ -309,8 +320,6 @@ TEST_F(ExtensionContextMenuModelTest, ExtensionContextMenuShowAndHide) {
   service()->AddExtension(page_action.get());
   service()->AddExtension(browser_action.get());
 
-  scoped_ptr<Browser> browser = CreateBrowser(profile());
-
   // For laziness.
   const ExtensionContextMenuModel::MenuEntries visibility_command =
       ExtensionContextMenuModel::TOGGLE_VISIBILITY;
@@ -324,7 +333,7 @@ TEST_F(ExtensionContextMenuModelTest, ExtensionContextMenuShowAndHide) {
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_KEEP_BUTTON_IN_TOOLBAR);
 
   {
-    ExtensionContextMenuModel menu(page_action.get(), browser.get(),
+    ExtensionContextMenuModel menu(page_action.get(), GetBrowser(),
                                    ExtensionContextMenuModel::VISIBLE, nullptr);
 
     int index = GetCommandIndex(menu, visibility_command);
@@ -334,7 +343,7 @@ TEST_F(ExtensionContextMenuModelTest, ExtensionContextMenuShowAndHide) {
   }
 
   {
-    ExtensionContextMenuModel menu(browser_action.get(), browser.get(),
+    ExtensionContextMenuModel menu(browser_action.get(), GetBrowser(),
                                    ExtensionContextMenuModel::VISIBLE, nullptr);
     int index = GetCommandIndex(menu, visibility_command);
     // Browser actions should have the visibility option.
@@ -348,7 +357,7 @@ TEST_F(ExtensionContextMenuModelTest, ExtensionContextMenuShowAndHide) {
   FeatureSwitch::ScopedOverride enable_toolbar_redesign(
       FeatureSwitch::extension_action_redesign(), true);
   {
-    ExtensionContextMenuModel menu(page_action.get(), browser.get(),
+    ExtensionContextMenuModel menu(page_action.get(), GetBrowser(),
                                    ExtensionContextMenuModel::VISIBLE, nullptr);
     int index = GetCommandIndex(menu, visibility_command);
   EXPECT_NE(-1, index);
@@ -358,7 +367,7 @@ TEST_F(ExtensionContextMenuModelTest, ExtensionContextMenuShowAndHide) {
   {
   // If the action is overflowed, it should have the "Show button in toolbar"
   // string.
-  ExtensionContextMenuModel menu(browser_action.get(), browser.get(),
+  ExtensionContextMenuModel menu(browser_action.get(), GetBrowser(),
                                  ExtensionContextMenuModel::OVERFLOWED,
                                  nullptr);
   int index = GetCommandIndex(menu, visibility_command);
@@ -370,12 +379,37 @@ TEST_F(ExtensionContextMenuModelTest, ExtensionContextMenuShowAndHide) {
   // If the action is transitively visible, as happens when it is showing a
   // popup, we should use a "Keep button in toolbar" string.
   ExtensionContextMenuModel menu(
-      browser_action.get(), browser.get(),
+      browser_action.get(), GetBrowser(),
       ExtensionContextMenuModel::TRANSITIVELY_VISIBLE, nullptr);
   int index = GetCommandIndex(menu, visibility_command);
   EXPECT_NE(-1, index);
   EXPECT_EQ(redesign_keep_string, menu.GetLabelAt(index));
   }
+}
+
+TEST_F(ExtensionContextMenuModelTest, ExtensionContextUninstall) {
+  InitializeEmptyExtensionService();
+
+  scoped_refptr<const Extension> extension = BuildExtension(
+      "extension", manifest_keys::kBrowserAction, Manifest::INTERNAL);
+  ASSERT_TRUE(extension.get());
+  service()->AddExtension(extension.get());
+  const std::string extension_id = extension->id();
+  ASSERT_TRUE(registry()->enabled_extensions().GetByID(extension_id));
+
+  ScopedTestDialogAutoConfirm auto_confirm(ScopedTestDialogAutoConfirm::ACCEPT);
+  TestExtensionRegistryObserver uninstalled_observer(registry());
+  {
+    // Scope the menu so that it's destroyed during the uninstall process. This
+    // reflects what normally happens (Chrome closes the menu when the uninstall
+    // dialog shows up).
+    ExtensionContextMenuModel menu(extension.get(), GetBrowser(),
+                                   ExtensionContextMenuModel::VISIBLE, nullptr);
+    menu.ExecuteCommand(ExtensionContextMenuModel::UNINSTALL, 0);
+  }
+  uninstalled_observer.WaitForExtensionUninstalled();
+  EXPECT_FALSE(registry()->GetExtensionById(extension_id,
+                                            ExtensionRegistry::EVERYTHING));
 }
 
 }  // namespace extensions
