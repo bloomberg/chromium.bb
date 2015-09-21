@@ -14,7 +14,7 @@ file. All content written to this directory will be uploaded upon termination
 and the .isolated file describing this directory will be printed to stdout.
 """
 
-__version__ = '0.5.1'
+__version__ = '0.5.2'
 
 import logging
 import optparse
@@ -322,6 +322,11 @@ def run_tha_test(
       isolated_hash, storage, cache, leak_temp_dir, root_dir, extra_args)
   logging.info('Result:\n%s', tools.format_json(result, dense=True))
   if result_json:
+    # We've found tests to delete 'work' when quitting, causing an exception
+    # here. Try to recreate the directory if necessary.
+    work_dir = os.path.dirname(result_json)
+    if not os.path.isdir(work_dir):
+      os.mkdir(work_dir)
     tools.write_json(result_json, result, dense=True)
     # Only return 1 if there was an internal error.
     return int(bool(result['internal_failure']))
