@@ -48,25 +48,9 @@ public:
     virtual void getPermissionStatus(blink::WebSyncRegistration::Periodicity, WebServiceWorkerRegistration*, WebSyncGetPermissionStatusCallbacks*) = 0;
 
     // Takes ownership of the WebSyncNotifyWhenDoneCallbacks.
-    virtual void notifyWhenDone(int64_t syncId, WebSyncNotifyWhenDoneCallbacks* callbacks)
-    {
-        // TODO(jkarlin): After landing both legs of the notifyWhenDone CLs, make this a pure virtual function.
-        callbacks->onError(WebSyncError(WebSyncError::ErrorTypeAbort, "Function not implemented."));
-        delete callbacks;
-    }
+    virtual void notifyWhenDone(int64_t syncId, WebSyncNotifyWhenDoneCallbacks*) = 0;
 
-    // Takes ownership of the WebServiceWorkerRegistration.
-    virtual void trackRegistration(WebSyncRegistration* registration)
-    {
-        // TODO(jkarlin): After landing both legs of the releaseRegistration CLs, make this a pure virtual function.
-        return;
-    }
-
-    virtual void releaseRegistration(int64_t syncId)
-    {
-        // TODO(jkarlin): After landing both legs of the releaseRegistration CLs, make this a pure virtual function.
-        return;
-    }
+    virtual void releaseRegistration(int64_t syncId) = 0;
 };
 
 } // namespace blink
