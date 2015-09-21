@@ -202,7 +202,7 @@ base::string16 FindChildTextInner(const WebNode& node,
     return base::string16();
 
   // Skip over comments.
-  if (node.nodeType() == WebNode::CommentNode)
+  if (node.isCommentNode())
     return FindChildTextInner(node.nextSibling(), depth - 1, divs_to_skip);
 
   if (!node.isElementNode() && !node.isTextNode())
@@ -281,7 +281,7 @@ base::string16 InferLabelFromSibling(const WebFormControlElement& element,
       break;
 
     // Skip over comments.
-    if (sibling.nodeType() == WebNode::CommentNode)
+    if (sibling.isCommentNode())
       continue;
 
     // Otherwise, only consider normal HTML elements and their contents.
