@@ -23,7 +23,6 @@
     <!-- Data Saver -->
     <dimen name="data_usage_chart_height">325dp</dimen>
     <dimen name="data_reduction_promo_screen_width">382dp</dimen>
-    <dimen name="data_reduction_promo_screen_height">800dp</dimen>
     <dimen name="data_reduction_promo_illustration_margin_bottom">62dp</dimen>
 
     <!-- Tab Strip Dimensions -->
