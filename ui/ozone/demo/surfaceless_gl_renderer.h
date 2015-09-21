@@ -26,15 +26,17 @@ class SurfacelessGlRenderer : public GlRenderer {
  private:
   // GlRenderer:
   void RenderFrame() override;
+  void PostRenderFrameTask(gfx::SwapResult result) override;
 
   class BufferWrapper {
    public:
     BufferWrapper();
     ~BufferWrapper();
 
+    gfx::GLImage* image() const { return image_.get(); }
+
     bool Initialize(gfx::AcceleratedWidget widget, const gfx::Size& size);
     void BindFramebuffer();
-    void SchedulePlane();
 
    private:
     gfx::AcceleratedWidget widget_ = gfx::kNullAcceleratedWidget;
@@ -45,7 +47,7 @@ class SurfacelessGlRenderer : public GlRenderer {
     unsigned int gl_tex_ = 0;
   };
 
-  BufferWrapper buffers_[2];
+  scoped_ptr<BufferWrapper> buffers_[2];
   int back_buffer_ = 0;
 
   base::WeakPtrFactory<SurfacelessGlRenderer> weak_ptr_factory_;

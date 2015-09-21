@@ -25,13 +25,12 @@ class GlRenderer : public RendererBase {
              const gfx::Size& size);
   ~GlRenderer() override;
 
-  void PostRenderFrameTask(gfx::SwapResult result);
-
   // Renderer:
   bool Initialize() override;
 
  protected:
   virtual void RenderFrame();
+  virtual void PostRenderFrameTask(gfx::SwapResult result);
 
   scoped_refptr<gfx::GLSurface> surface_;
   scoped_refptr<gfx::GLContext> context_;
