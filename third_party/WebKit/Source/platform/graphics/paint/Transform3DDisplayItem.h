@@ -37,6 +37,14 @@ private:
 #ifndef NDEBUG
     void dumpPropertiesAsDebugString(WTF::StringBuilder&) const final;
 #endif
+#if ENABLE(ASSERT)
+    bool equals(const DisplayItem& other) const final
+    {
+        return DisplayItem::equals(other)
+            && m_transform == static_cast<const BeginTransform3DDisplayItem&>(other).m_transform
+            && m_transformOrigin == static_cast<const BeginTransform3DDisplayItem&>(other).m_transformOrigin;
+    }
+#endif
 
     const TransformationMatrix m_transform;
     const FloatPoint3D m_transformOrigin;

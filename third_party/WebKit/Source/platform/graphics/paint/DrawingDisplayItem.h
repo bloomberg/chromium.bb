@@ -46,6 +46,7 @@ public:
 
 #if ENABLE(ASSERT)
     UnderInvalidationCheckingMode underInvalidationCheckingMode() const { return m_underInvalidationCheckingMode; }
+    bool equals(const DisplayItem& other) const final;
 #endif
 
 private:

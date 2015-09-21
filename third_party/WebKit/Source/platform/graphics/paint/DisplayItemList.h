@@ -43,6 +43,7 @@ public:
 #ifndef NDEBUG
         WTF::String originalDebugString = item.asDebugString();
 #endif
+        ASSERT(item.isValid());
         DisplayItem& result = ContiguousContainer::appendByMoving(item, item.derivedSize());
         // ContiguousContainer::appendByMoving() called in-place constructor on item, which invalidated it.
         ASSERT(!item.isValid());
@@ -198,7 +199,8 @@ private:
 #if ENABLE(ASSERT)
     // The following two methods are for checking under-invalidations
     // (when RuntimeEnabledFeatures::slimmingPaintUnderInvalidationCheckingEnabled).
-    void checkCachedDisplayItemIsUnchanged(const DisplayItem&, DisplayItemIndicesByClientMap&);
+    void checkUnderInvalidation(DisplayItems::iterator& newIt, DisplayItems::iterator& currentIt);
+    void checkCachedDisplayItemIsUnchanged(const char* messagePrefix, const DisplayItem& newItem, const DisplayItem& oldItem);
     void checkNoRemainingCachedDisplayItems();
 #endif
 

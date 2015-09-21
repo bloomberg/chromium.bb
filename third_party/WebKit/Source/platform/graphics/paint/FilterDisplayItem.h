@@ -32,6 +32,14 @@ private:
 #ifndef NDEBUG
     void dumpPropertiesAsDebugString(WTF::StringBuilder&) const override;
 #endif
+#if ENABLE(ASSERT)
+    bool equals(const DisplayItem& other) const final
+    {
+        return DisplayItem::equals(other)
+            // TODO(wangxianzhu): compare m_imageFilter and m_webFilterOperations.
+            && m_bounds == static_cast<const BeginFilterDisplayItem&>(other).m_bounds;
+    }
+#endif
 
     // FIXME: m_imageFilter should be replaced with m_webFilterOperations when copying data to the compositor.
     RefPtr<SkImageFilter> m_imageFilter;

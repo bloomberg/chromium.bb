@@ -319,12 +319,19 @@ public:
 
 #if ENABLE(ASSERT)
     virtual bool isEndAndPairedWith(DisplayItem::Type otherType) const { return false; }
+    virtual bool equals(const DisplayItem& other) const
+    {
+        return m_client == other.m_client
+            && m_scope == other.m_scope
+            && m_type == other.m_type
+            && m_derivedSize == other.m_derivedSize
+            && m_skippedCache == other.m_skippedCache;
+    }
 #endif
 
     virtual bool drawsContent() const { return false; }
 
     bool isValid() const { return m_client; }
-    void clearClientForUnderInvalidationChecking() { m_client = nullptr; }
 
 #ifndef NDEBUG
     static WTF::String typeAsDebugString(DisplayItem::Type);
@@ -348,11 +355,11 @@ private:
         , m_skippedCache(false)
     { }
 
-    DisplayItemClient m_client;
+    const DisplayItemClient m_client;
     unsigned m_scope;
     static_assert(TypeLast < (1 << 16), "DisplayItem::Type should fit in 16 bits");
     const Type m_type : 16;
-    unsigned m_derivedSize : 8; // size of the actual derived class
+    const unsigned m_derivedSize : 8; // size of the actual derived class
     unsigned m_skippedCache : 1;
 
 #ifndef NDEBUG

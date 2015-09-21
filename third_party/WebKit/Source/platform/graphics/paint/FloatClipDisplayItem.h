@@ -30,6 +30,13 @@ private:
 #ifndef NDEBUG
     void dumpPropertiesAsDebugString(WTF::StringBuilder&) const override;
 #endif
+#if ENABLE(ASSERT)
+    bool equals(const DisplayItem& other) const final
+    {
+        return DisplayItem::equals(other)
+            && m_clipRect == static_cast<const FloatClipDisplayItem&>(other).m_clipRect;
+    }
+#endif
 
     const FloatRect m_clipRect;
 };

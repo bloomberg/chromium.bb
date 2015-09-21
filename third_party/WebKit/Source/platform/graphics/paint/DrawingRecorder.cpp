@@ -19,13 +19,21 @@ bool DrawingRecorder::useCachedDrawingIfPossible(GraphicsContext& context, const
     ASSERT(context.displayItemList());
     ASSERT(DisplayItem::isDrawingType(type));
 
-    if (context.displayItemList()->displayItemConstructionIsDisabled() || RuntimeEnabledFeatures::slimmingPaintUnderInvalidationCheckingEnabled())
+    if (context.displayItemList()->displayItemConstructionIsDisabled())
         return false;
 
     if (!context.displayItemList()->clientCacheIsValid(client.displayItemClient()))
         return false;
 
     context.displayItemList()->createAndAppend<CachedDisplayItem>(client, DisplayItem::drawingTypeToCachedDrawingType(type));
+
+#if ENABLE(ASSERT)
+    // When under-invalidation checking is enabled, we output CachedDrawing display item
+    // followed by the display item containing forced painting.
+    if (RuntimeEnabledFeatures::slimmingPaintUnderInvalidationCheckingEnabled())
+        return false;
+#endif
+
     return true;
 }
 
@@ -44,6 +52,7 @@ DrawingRecorder::DrawingRecorder(GraphicsContext& context, const DisplayItemClie
 
     // Must check DrawingRecorder::useCachedDrawingIfPossible before creating the DrawingRecorder.
     ASSERT((RuntimeEnabledFeatures::slimmingPaintV2Enabled() && context.displayItemList()->paintOffsetWasInvalidated(displayItemClient.displayItemClient()))
+        || RuntimeEnabledFeatures::slimmingPaintUnderInvalidationCheckingEnabled()
         || !useCachedDrawingIfPossible(m_context, m_displayItemClient, m_displayItemType));
 
     ASSERT(DisplayItem::isDrawingType(displayItemType));

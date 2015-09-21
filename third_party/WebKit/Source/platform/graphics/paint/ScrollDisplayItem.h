@@ -30,8 +30,14 @@ private:
 #ifndef NDEBUG
     void dumpPropertiesAsDebugString(WTF::StringBuilder&) const final;
 #endif
+#if ENABLE(ASSERT)
+    bool equals(const DisplayItem& other) const final
+    {
+        return DisplayItem::equals(other)
+            && m_currentOffset == static_cast<const BeginScrollDisplayItem&>(other).m_currentOffset;
+    }
+#endif
 
-private:
     const IntSize m_currentOffset;
 };
 

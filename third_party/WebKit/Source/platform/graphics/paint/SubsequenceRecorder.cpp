@@ -20,13 +20,21 @@ bool SubsequenceRecorder::useCachedSubsequenceIfPossible(GraphicsContext& contex
 
     ASSERT(context.displayItemList());
 
-    if (context.displayItemList()->displayItemConstructionIsDisabled() || RuntimeEnabledFeatures::slimmingPaintUnderInvalidationCheckingEnabled())
+    if (context.displayItemList()->displayItemConstructionIsDisabled())
         return false;
 
     if (!context.displayItemList()->clientCacheIsValid(client.displayItemClient()))
         return false;
 
     context.displayItemList()->createAndAppend<CachedDisplayItem>(client, DisplayItem::CachedSubsequence);
+
+#if ENABLE(ASSERT)
+    // When under-invalidation checking is enabled, we output CachedSubsequence display item
+    // followed by forced painting of the subsequence.
+    if (RuntimeEnabledFeatures::slimmingPaintUnderInvalidationCheckingEnabled())
+        return false;
+#endif
+
     return true;
 }
 
