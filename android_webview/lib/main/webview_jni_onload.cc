@@ -4,10 +4,12 @@
 
 #include "android_webview/lib/main/webview_jni_onload.h"
 
+#include "android_webview/common/aw_version_info_values.h"
 #include "android_webview/lib/main/aw_main_delegate.h"
 #include "android_webview/native/android_webview_jni_registrar.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_registrar.h"
+#include "base/android/library_loader/library_loader_hooks.h"
 #include "base/bind.h"
 #include "components/external_video_surface/component_jni_registrar.h"
 #include "components/navigation_interception/component_jni_registrar.h"
@@ -45,6 +47,7 @@ bool RegisterJNI(JNIEnv* env) {
 }
 
 bool Init() {
+  base::android::SetVersionNumber(PRODUCT_VERSION);
   content::SetContentMainDelegate(new android_webview::AwMainDelegate());
 
   // Initialize url lib here while we are still single-threaded, in case we use
