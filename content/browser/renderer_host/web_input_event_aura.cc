@@ -191,7 +191,7 @@ blink::WebMouseEvent MakeWebMouseEvent(const ui::MouseEvent& event) {
 #if defined(OS_WIN)
   // On Windows we have WM_ events comming from desktop and pure aura
   // events comming from metro mode.
-  event.native_event().message ?
+  event.native_event().message && (event.type() != ui::ET_MOUSE_EXITED) ?
       MakeUntranslatedWebMouseEventFromNativeEvent(event.native_event()) :
       MakeWebMouseEventFromAuraEvent(event);
 #else

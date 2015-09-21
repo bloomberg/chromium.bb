@@ -788,18 +788,20 @@ bool RenderWidgetHostViewAura::CanRendererHandleEvent(
   if (event->type() == ui::ET_MOUSE_CAPTURE_CHANGED)
     return false;
 
-  if ((mouse_locked || selection_popup) &&
-      (event->type() == ui::ET_MOUSE_EXITED))
-    return false;
+  if (event->type() == ui::ET_MOUSE_EXITED) {
+    if (mouse_locked || selection_popup)
+      return false;
+#if defined(OS_WIN)
+    // Don't forward the mouse leave message which is received when the context
+    // menu is displayed by the page. This confuses the page and causes state
+    // changes.
+    if (showing_context_menu)
+      return false;
+#endif
+    return true;
+  }
 
 #if defined(OS_WIN)
-  // Don't forward the mouse leave message which is received when the context
-  // menu is displayed by the page. This confuses the page and causes state
-  // changes.
-  if (showing_context_menu) {
-    if (event->type() == ui::ET_MOUSE_EXITED)
-      return false;
-  }
   // Renderer cannot handle WM_XBUTTON or NC events.
   switch (event->native_event().message) {
     case WM_XBUTTONDOWN:
