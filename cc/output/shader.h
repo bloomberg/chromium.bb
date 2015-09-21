@@ -371,7 +371,7 @@ class FragmentTexBlendMode {
  protected:
   FragmentTexBlendMode();
 
-  std::string SetBlendModeFunctions(std::string shader_string) const;
+  std::string SetBlendModeFunctions(const std::string& shader_string) const;
 
   int backdrop_location_;
   int original_backdrop_location_;

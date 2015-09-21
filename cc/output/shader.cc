@@ -772,7 +772,7 @@ FragmentTexBlendMode::FragmentTexBlendMode()
 }
 
 std::string FragmentTexBlendMode::SetBlendModeFunctions(
-    std::string shader_string) const {
+    const std::string& shader_string) const {
   if (shader_string.find("ApplyBlendMode") == std::string::npos)
     return shader_string;
 
