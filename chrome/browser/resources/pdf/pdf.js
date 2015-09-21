@@ -247,6 +247,7 @@ function PDFViewer(browserApi) {
   // Setup the keyboard event listener.
   document.addEventListener('keydown', this.handleKeyEvent_.bind(this));
   document.addEventListener('mousemove', this.handleMouseEvent_.bind(this));
+  document.addEventListener('mouseout', this.handleMouseEvent_.bind(this));
 
   // Parse open pdf parameters.
   this.paramsParser_ =
@@ -401,8 +402,12 @@ PDFViewer.prototype = {
   },
 
   handleMouseEvent_: function(e) {
-    if (this.isMaterial_)
-      this.toolbarManager_.showToolbarsForMouseMove(e);
+    if (this.isMaterial_) {
+      if (e.type == 'mousemove')
+        this.toolbarManager_.showToolbarsForMouseMove(e);
+      else if (e.type == 'mouseout')
+        this.toolbarManager_.hideToolbarsForMouseOut();
+    }
   },
 
   /**

@@ -9,9 +9,12 @@ var HIDE_TIMEOUT = 2000;
 /** Time in ms after force hide before toolbar is shown again. */
 var FORCE_HIDE_TIMEOUT = 1000;
 /** Velocity required in a mousemove to reveal the UI (pixels/sample). */
-var SHOW_VELOCITY = 20;
-/** Distance from the top or right of the screen required to reveal the UI. */
-var EDGE_REVEAL = 100;
+var SHOW_VELOCITY = 25;
+/** Distance from the top of the screen required to reveal the toolbars. */
+var TOP_TOOLBAR_REVEAL_DISTANCE = 100;
+/** Distance from the bottom-right of the screen required to reveal toolbars. */
+var SIDE_TOOLBAR_REVEAL_DISTANCE_RIGHT = 150;
+var SIDE_TOOLBAR_REVEAL_DISTANCE_BOTTOM = 250;
 
 /**
  * Whether a mousemove event is high enough velocity to reveal the toolbars.
@@ -30,15 +33,17 @@ function isHighVelocityMouseMove(e) {
  * @return {boolean} True if the mouse is close to the top of the screen.
  */
 function isMouseNearTopToolbar(e) {
-  return e.y < EDGE_REVEAL;
+  return e.y < TOP_TOOLBAR_REVEAL_DISTANCE;
 }
 
 /**
  * @param {MouseEvent} e Event to test.
- * @return {boolean} True if the mouse is close to the side of the screen.
+ * @return {boolean} True if the mouse is close to the bottom-right of the
+ * screen.
  */
 function isMouseNearSideToolbar(e) {
-  return e.x > window.innerWidth - EDGE_REVEAL;
+  return e.x > window.innerWidth - SIDE_TOOLBAR_REVEAL_DISTANCE_RIGHT &&
+         e.y > window.innerHeight - SIDE_TOOLBAR_REVEAL_DISTANCE_BOTTOM;
 }
 
 /**
@@ -99,6 +104,16 @@ ToolbarManager.prototype = {
     if (this.toolbar_)
       this.toolbar_.show();
     this.zoomToolbar_.show();
+  },
+
+  /**
+   * Hide toolbars after a delay, regardless of the position of the mouse.
+   * Intended to be called when the mouse has moved out of the parent window.
+   */
+  hideToolbarsForMouseOut: function() {
+    this.isMouseNearTopToolbar_ = false;
+    this.isMouseNearSideToolbar_ = false;
+    this.hideToolbarsAfterTimeout();
   },
 
   /**
