@@ -4,20 +4,16 @@
 
 package org.chromium.chrome.browser.tab;
 
-import android.content.Context;
-import android.content.Intent;
 import android.text.TextUtils;
 
 import org.chromium.base.TraceEvent;
 import org.chromium.base.VisibleForTesting;
-import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.FrozenNativePage;
 import org.chromium.chrome.browser.NativePage;
 import org.chromium.chrome.browser.TabState;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchTabHelper;
-import org.chromium.chrome.browser.crash.MinidumpUploadService;
 import org.chromium.chrome.browser.dom_distiller.ReaderModeActivityDelegate;
 import org.chromium.chrome.browser.dom_distiller.ReaderModeManager;
 import org.chromium.chrome.browser.fullscreen.FullscreenManager;
@@ -307,21 +303,6 @@ public class ChromeTab extends Tab {
     @Override
     protected boolean isHidingTopControlsEnabled() {
         return super.isHidingTopControlsEnabled()  && !mIsFullscreenWaitingForLoad;
-    }
-
-    @Override
-    protected void handleTabCrash() {
-        super.handleTabCrash();
-
-        // Update the most recent minidump file with the logcat. Doing this asynchronously
-        // adds a race condition in the case of multiple simultaneously renderer crashses
-        // but because the data will be the same for all of them it is innocuous. We can
-        // attempt to do this regardless of whether it was a foreground tab in the event
-        // that it's a real crash and not just android killing the tab.
-        Context context = getApplicationContext();
-        Intent intent = MinidumpUploadService.createFindAndUploadLastCrashIntent(context);
-        context.startService(intent);
-        RecordUserAction.record("MobileBreakpadUploadAttempt");
     }
 
     @Override

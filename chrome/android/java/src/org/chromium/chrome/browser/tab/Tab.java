@@ -63,6 +63,7 @@ import org.chromium.chrome.browser.contextmenu.ChromeContextMenuPopulator;
 import org.chromium.chrome.browser.contextmenu.ContextMenuParams;
 import org.chromium.chrome.browser.contextmenu.ContextMenuPopulator;
 import org.chromium.chrome.browser.contextmenu.ContextMenuPopulatorWrapper;
+import org.chromium.chrome.browser.crash.MinidumpUploadService;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.document.DocumentUtils;
 import org.chromium.chrome.browser.document.DocumentWebContentsDelegate;
@@ -2929,8 +2930,18 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
     /**
      * Performs any subclass-specific tasks when the Tab crashes.
      */
-    protected void handleTabCrash() {
+    private void handleTabCrash() {
         if (mTabUma != null) mTabUma.onRendererCrashed();
+
+        // Update the most recent minidump file with the logcat. Doing this asynchronously
+        // adds a race condition in the case of multiple simultaneously renderer crashses
+        // but because the data will be the same for all of them it is innocuous. We can
+        // attempt to do this regardless of whether it was a foreground tab in the event
+        // that it's a real crash and not just android killing the tab.
+        Context context = getApplicationContext();
+        Intent intent = MinidumpUploadService.createFindAndUploadLastCrashIntent(context);
+        context.startService(intent);
+        RecordUserAction.record("MobileBreakpadUploadAttempt");
     }
 
     /**
