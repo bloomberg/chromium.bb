@@ -4,6 +4,11 @@
 
 import("//testing/test.gni")
 
+declare_args() {
+  # TODO(GYP) - make this work. crbug.com/471903
+  internal_khronos_glcts_tests = false
+}
+
 test("khronos_glcts_test") {
   sources = [
     "khronos_glcts_test.cc",
@@ -16,7 +21,6 @@ test("khronos_glcts_test") {
   ]
 
   # TODO(GYP) - make this work. crbug.com/471903
-  internal_khronos_glcts_tests = false
   if (internal_khronos_glcts_tests) {
     # TODO(GYP) implement me ...
   }
