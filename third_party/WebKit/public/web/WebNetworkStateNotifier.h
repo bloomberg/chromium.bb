@@ -39,8 +39,6 @@ namespace blink {
 class WebNetworkStateNotifier {
 public:
     BLINK_EXPORT static void setOnLine(bool);
-    // Remove after browser-side starts using setWebConnection.
-    BLINK_EXPORT static void setWebConnectionType(WebConnectionType);
     BLINK_EXPORT static void setWebConnection(WebConnectionType, double maxBandwidthMbps);
 
 private:

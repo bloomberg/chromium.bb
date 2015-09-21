@@ -40,11 +40,6 @@ void WebNetworkStateNotifier::setOnLine(bool onLine)
     networkStateNotifier().setOnLine(onLine);
 }
 
-void WebNetworkStateNotifier::setWebConnectionType(WebConnectionType type)
-{
-    setWebConnection(type, 0.0);
-}
-
 void WebNetworkStateNotifier::setWebConnection(WebConnectionType type, double maxBandwidthMbps)
 {
     networkStateNotifier().setWebConnection(type, maxBandwidthMbps);
