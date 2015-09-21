@@ -223,28 +223,28 @@ function test()
 
     // Data dumping
 
-    function dumpFormattedAndCallNext(next, style)
+    function dumpFormattedAndCallNext(next, success)
     {
-        if (!style) {
-            InspectorTest.addResult("error: empty style");
+        if (!success) {
+            InspectorTest.addResult("error: operation failed.");
             InspectorTest.completeTest();
+            return;
         }
 
-        formattedStyle = style;
-        dumpStyle(style);
+        dumpStyle(formattedStyle);
         if (next)
             next();
     }
 
-    function dumpUnformattedAndCallNext(next, style)
+    function dumpUnformattedAndCallNext(next, success)
     {
-        if (!style) {
-            InspectorTest.addResult("error: empty style");
+        if (!success) {
+            InspectorTest.addResult("error: operation failed.");
             InspectorTest.completeTest();
+            return;
         }
 
-        unformattedStyle = style;
-        dumpStyle(style);
+        dumpStyle(unformattedStyle);
         if (next)
             next();
     }

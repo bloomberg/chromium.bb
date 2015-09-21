@@ -103,7 +103,7 @@ function test()
                 var rule = matchedStyles[i].rule;
                 if (rule.origin !== "regular")
                     continue;
-                callback(WebInspector.CSSStyleDeclaration.parsePayload(InspectorTest.cssModel, rule.style));
+                callback(new WebInspector.CSSStyleDeclaration(InspectorTest.cssModel, null, rule.style));
                 return;
             }
             InspectorTest.addResult("error: did not find any regular rule");

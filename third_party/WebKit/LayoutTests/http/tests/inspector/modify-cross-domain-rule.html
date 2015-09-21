@@ -57,14 +57,14 @@ function test()
                 }
             }
             rule.style.appendProperty("width", "100%", callback);
-            function callback(newStyle)
+            function callback(success)
             {
                 InspectorTest.addResult("=== Rule modified ===");
-                if (!newStyle) {
+                if (!success) {
                     InspectorTest.addResult("[!] No valid rule style received");
                     InspectorTest.completeTest();
                 } else {
-                    dumpProperties(newStyle);
+                    dumpProperties(rule.style);
                     InspectorTest.cssModel.setRuleSelector(rule, nodeId, "body", successCallback, failureCallback);
                 }
             }
