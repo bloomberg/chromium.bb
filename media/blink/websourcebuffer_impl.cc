@@ -110,12 +110,6 @@ void WebSourceBufferImpl::append(
     *timestamp_offset = timestamp_offset_.InSecondsF();
 }
 
-// TODO(servolk): WebSourceBuffer::abort is being renamed into
-// resetParserState and will be removed soon
-void WebSourceBufferImpl::abort() {
-  resetParserState();
-}
-
 void WebSourceBufferImpl::resetParserState() {
   demuxer_->ResetParserState(id_,
                              append_window_start_, append_window_end_,

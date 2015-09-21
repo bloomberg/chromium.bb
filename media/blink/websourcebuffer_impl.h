@@ -30,9 +30,6 @@ class WebSourceBufferImpl : public blink::WebSourceBuffer {
       const unsigned char* data,
       unsigned length,
       double* timestamp_offset);
-  // TODO(servolk): WebSourceBuffer::abort is being renamed into
-  // resetParserState and will be removed soon
-  virtual void abort();
   virtual void resetParserState();
   virtual void remove(double start, double end);
   virtual bool setTimestampOffset(double offset);
