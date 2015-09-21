@@ -53976,6 +53976,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="94" label="CSDH_INVALID_ORIGIN"/>
   <int value="95" label="RDH_ILLEGAL_ORIGIN"/>
   <int value="96" label="RDH_UNAUTHORIZED_HEADER_REQUEST"/>
+  <int value="97" label="RDH_INVALID_URL"/>
 </enum>
 
 <enum name="BadMessageReasonExtensions" type="int">

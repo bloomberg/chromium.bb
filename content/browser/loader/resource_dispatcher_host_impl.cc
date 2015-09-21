@@ -1162,6 +1162,15 @@ void ResourceDispatcherHostImpl::BeginRequest(
   int process_type = filter_->process_type();
   int child_id = filter_->child_id();
 
+  // PlzNavigate: reject invalid renderer main resource request.
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableBrowserSideNavigation) &&
+      IsResourceTypeFrame(request_data.resource_type) &&
+      !request_data.url.SchemeIs(url::kBlobScheme)) {
+    bad_message::ReceivedBadMessage(filter_, bad_message::RDH_INVALID_URL);
+    return;
+  }
+
   // Reject invalid priority.
   if (request_data.priority < net::MINIMUM_PRIORITY ||
       request_data.priority > net::MAXIMUM_PRIORITY) {
@@ -1453,6 +1462,15 @@ scoped_ptr<ResourceHandler> ResourceDispatcherHostImpl::AddStandardHandlers(
     int child_id,
     int route_id,
     scoped_ptr<ResourceHandler> handler) {
+  // PlzNavigate: do not add ResourceThrottles for main resource requests from
+  // the renderer.  Decisions about the navigation should have been done in the
+  // initial request.
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableBrowserSideNavigation) &&
+      IsResourceTypeFrame(resource_type) && child_id != -1) {
+    DCHECK(request->url().SchemeIs(url::kBlobScheme));
+    return handler.Pass();
+  }
 
   PluginService* plugin_service = nullptr;
 #if defined(ENABLE_PLUGINS)
