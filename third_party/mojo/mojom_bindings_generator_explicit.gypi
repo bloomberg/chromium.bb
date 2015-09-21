@@ -64,7 +64,6 @@
         '<@(mojom_import_args)',
         '-o', '<(SHARED_INTERMEDIATE_DIR)',
         '--java_output_directory=<(java_out_dir)',
-        '--dart_mojo_root=//third_party/mojo/src',
       ],
       'message': 'Generating Mojo bindings from <@(mojom_files)',
     }

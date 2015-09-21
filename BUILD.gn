@@ -717,24 +717,11 @@ group("gn_mojo_targets") {
     # TODO(GYP): Figure out if any of these should be in gn_all
     # and figure out how cross-platform they are
     deps = [
-      "//chrome/browser/ui/webui/omnibox:mojo_bindings_python",
-      "//content/public/common:mojo_bindings_python",
-      "//content/common:mojo_bindings_python",
-      "//content/test:web_ui_test_mojo_bindings_python",
-      "//device/battery:mojo_bindings_python",
-      "//device/vibration:mojo_bindings_python",
       "//ipc/mojo:ipc_mojo_perftests",
-      "//ipc/mojo:client_channel_python",
-      "//media/mojo/interfaces:interfaces_python",
       "//media/mojo/services:cdm_service",
       "//media/mojo:tests",
       "//mojo:tests",
-      "//net/interfaces:interfaces_python",
       "//third_party/mojo/src/mojo/edk/js/test:js_integration_tests",
-      "//third_party/mojo/src/mojo/edk/js/tests:js_to_cpp_bindings_python",
-      "//third_party/mojo/src/mojo/public/python:packaged_application",
-      "//third_party/mojo/src/mojo/public/python:packaged_bindings",
-      "//third_party/mojo_services/src/accessibility/public/interfaces:interfaces_python",
     ]
   }
 }

@@ -20,10 +20,6 @@ group("public") {
     deps += [ "cpp/application:standalone" ]
   }
 
-  if (is_linux) {
-    deps += [ "python" ]
-  }
-
   if (is_android) {
     deps += [
       "java:system",

@@ -25,7 +25,6 @@ def main():
     print base + ".mojom.h"
     print base + ".mojom-internal.h"
     print base + ".mojom.js"
-    print base + "_mojom.py"
 
   return 0
 

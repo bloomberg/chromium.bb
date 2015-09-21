@@ -4,9 +4,9 @@
 
 import("../../mojo_sdk.gni")
 
-# Generate C++/JavaScript/Java/Python/Dart/Go source files from mojom files. The
-# output files will go under the generated file directory tree with the same
-# path as each input file.
+# Generate C++/JavaScript/Java source files from mojom files. The output files
+# will go under the generated file directory tree with the same path as each
+# input file.
 #
 # If a mojom target is intended for use in a client repo where the location of
 # the Mojo SDK will be different than its location in the Mojo repo,
@@ -80,12 +80,6 @@ template("mojom") {
       "$generator_root/generators/cpp_templates/wrapper_class_definition.tmpl",
       "$generator_root/generators/cpp_templates/wrapper_union_class_declaration.tmpl",
       "$generator_root/generators/cpp_templates/wrapper_union_class_definition.tmpl",
-      "$generator_root/generators/go_templates/encoding_macros.tmpl",
-      "$generator_root/generators/go_templates/enum.tmpl",
-      "$generator_root/generators/go_templates/interface.tmpl",
-      "$generator_root/generators/go_templates/source.tmpl",
-      "$generator_root/generators/go_templates/struct.tmpl",
-      "$generator_root/generators/go_templates/union.tmpl",
       "$generator_root/generators/java_templates/constant_definition.tmpl",
       "$generator_root/generators/java_templates/constants.java.tmpl",
       "$generator_root/generators/java_templates/data_types_definition.tmpl",
@@ -104,13 +98,9 @@ template("mojom") {
       "$generator_root/generators/js_templates/struct_definition.tmpl",
       "$generator_root/generators/js_templates/union_definition.tmpl",
       "$generator_root/generators/js_templates/validation_macros.tmpl",
-      "$generator_root/generators/python_templates/module.py.tmpl",
-      "$generator_root/generators/python_templates/module_macros.tmpl",
       "$generator_root/generators/mojom_cpp_generator.py",
-      "$generator_root/generators/mojom_go_generator.py",
       "$generator_root/generators/mojom_js_generator.py",
       "$generator_root/generators/mojom_java_generator.py",
-      "$generator_root/generators/mojom_python_generator.py",
       "$generator_root/pylib/mojom/__init__.py",
       "$generator_root/pylib/mojom/error.py",
       "$generator_root/pylib/mojom/generate/__init__.py",
@@ -133,13 +123,9 @@ template("mojom") {
     ]
     generator_js_outputs =
         [ "{{source_gen_dir}}/{{source_name_part}}.mojom.js" ]
-    generator_go_outputs = [ "${root_gen_dir}/go/src/{{source_dir}}/{{source_name_part}}/{{source_name_part}}.mojom.go" ]
-    generator_python_outputs =
-        [ "{{source_gen_dir}}/{{source_name_part}}_mojom.py" ]
     generator_java_outputs =
         [ "{{source_gen_dir}}/{{source_name_part}}.mojom.srcjar" ]
   }
-  generator_python_zip_output = "$target_out_dir/${target_name}_python.pyzip"
 
   rebased_mojo_sdk_public_deps = []
   if (defined(invoker.mojo_sdk_public_deps)) {
@@ -165,9 +151,8 @@ template("mojom") {
       script = generator_script
       inputs = generator_sources
       sources = invoker.sources
-      outputs = generator_cpp_outputs +
-                generator_go_outputs + generator_java_outputs +
-                generator_js_outputs + generator_python_outputs
+      outputs = generator_cpp_outputs + generator_java_outputs +
+                generator_js_outputs
       args = [
         "{{source}}",
         "--use_bundled_pylibs",
@@ -251,49 +236,6 @@ template("mojom") {
       name = get_label_info(d, "label_no_toolchain")
       toolchain = get_label_info(d, "toolchain")
       deps += [ "${name}__is_mojom(${toolchain})" ]
-    }
-  }
-
-  action("${target_name}_python") {
-    script = rebase_path("mojo/public/tools/gn/zip.py", ".", mojo_root)
-
-    deps = []
-    zip_inputs = []
-
-    if (defined(invoker.sources)) {
-      inputs = process_file_template(invoker.sources, generator_python_outputs)
-      deps += [ ":$generator_target_name" ]
-    }
-
-    foreach(d, all_deps) {
-      # Resolve the name, so that a target //mojo/something becomes
-      # //mojo/something:something and we can append "_python" to get the python
-      # dependency name.
-      full_name = get_label_info(d, "label_no_toolchain")
-      dep_name = get_label_info(d, "name")
-      dep_target_out_dir = get_label_info(d, "target_out_dir")
-      deps += [ "${full_name}_python" ]
-      zip_inputs += [ "$dep_target_out_dir/${dep_name}_python.pyzip" ]
-    }
-
-    output = generator_python_zip_output
-    outputs = [
-      output,
-    ]
-
-    rebase_base_dir = rebase_path(target_gen_dir, root_build_dir)
-    if (defined(invoker.sources)) {
-      rebase_inputs = rebase_path(inputs, root_build_dir)
-    }
-    rebase_zip_inputs = rebase_path(zip_inputs, root_build_dir)
-    rebase_output = rebase_path(output, root_build_dir)
-    args = [
-      "--base-dir=$rebase_base_dir",
-      "--zip-inputs=$rebase_zip_inputs",
-      "--output=$rebase_output",
-    ]
-    if (defined(invoker.sources)) {
-      args += [ "--inputs=$rebase_inputs" ]
     }
   }
 
