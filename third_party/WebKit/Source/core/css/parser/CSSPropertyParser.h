@@ -78,6 +78,7 @@ public:
 
     static bool isSystemColor(CSSValueID);
     static bool isColorKeyword(CSSValueID);
+    static bool isValidNumericValue(double);
 
 private:
     CSSPropertyParser(CSSParserValueList*, const CSSParserTokenRange&, const CSSParserContext&,

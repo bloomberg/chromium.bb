@@ -115,7 +115,7 @@ CSSParserValueList::CSSParserValueList(CSSParserTokenRange range)
             break;
         }
         case DimensionToken:
-            if (!std::isfinite(token.numericValue())) {
+            if (!CSSPropertyParser::isValidNumericValue(token.numericValue())) {
                 destroyAndClear();
                 return;
             }
@@ -141,7 +141,7 @@ CSSParserValueList::CSSParserValueList(CSSParserTokenRange range)
             // fallthrough
         case NumberToken:
         case PercentageToken:
-            if (!std::isfinite(token.numericValue())) {
+            if (!CSSPropertyParser::isValidNumericValue(token.numericValue())) {
                 destroyAndClear();
                 return;
             }
