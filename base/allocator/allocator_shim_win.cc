@@ -172,6 +172,9 @@ void* malloc(size_t size) {
   return ptr;
 }
 
+// Symbol to allow weak linkage to win_heap_malloc from memory_win.cc.
+void* (*malloc_unchecked)(size_t) = &win_heap_malloc;
+
 // free.c
 void free(void* p) {
   win_heap_free(p);

@@ -23,46 +23,10 @@
 #include <unistd.h>
 #endif
 
-#if defined(OS_WIN)
-#include <new.h>
-#endif
-
 using std::nothrow;
 using std::numeric_limits;
 
 namespace {
-
-#if defined(OS_WIN)
-// This is a permitted size but exhausts memory pretty quickly.
-const size_t kLargePermittedAllocation = 0x7FFFE000;
-
-int OnNoMemory(size_t) {
-  _exit(1);
-}
-
-void ExhaustMemoryWithMalloc() {
-  for (;;) {
-    // Without the |volatile|, clang optimizes away the allocation.
-    void* volatile buf = malloc(kLargePermittedAllocation);
-    if (!buf)
-      break;
-  }
-}
-
-void ExhaustMemoryWithRealloc() {
-  size_t size = kLargePermittedAllocation;
-  void* buf = malloc(size);
-  if (!buf)
-    return;
-  for (;;) {
-    size += kLargePermittedAllocation;
-    void* new_buf = realloc(buf, size);
-    if (!buf)
-      break;
-    buf = new_buf;
-  }
-}
-#endif
 
 // This function acts as a compiler optimization barrier. We use it to
 // prevent the compiler from making an expression a compile-time constant.
@@ -92,144 +56,16 @@ NOINLINE Type HideValueFromCompiler(volatile Type value) {
 #define MALLOC_OVERFLOW_TEST(function) DISABLED_##function
 #endif
 
-// TODO(jln): switch to std::numeric_limits<int>::max() when we switch to
-// C++11.
-const size_t kTooBigAllocSize = INT_MAX;
-
+#if defined(OS_LINUX) && defined(__x86_64__)
 // Detect runtime TCMalloc bypasses.
 bool IsTcMallocBypassed() {
-#if defined(OS_LINUX)
   // This should detect a TCMalloc bypass from Valgrind.
   char* g_slice = getenv("G_SLICE");
   if (g_slice && !strcmp(g_slice, "always-malloc"))
     return true;
-#endif
   return false;
 }
-
-bool CallocDiesOnOOM() {
-// The sanitizers' calloc dies on OOM instead of returning NULL.
-// The wrapper function in base/process_util_linux.cc that is used when we
-// compile without TCMalloc will just die on OOM instead of returning NULL.
-#if defined(ADDRESS_SANITIZER) || \
-    defined(MEMORY_SANITIZER) || \
-    defined(THREAD_SANITIZER) || \
-    (defined(OS_LINUX) && defined(NO_TCMALLOC))
-  return true;
-#else
-  return false;
 #endif
-}
-
-// Fake test that allow to know the state of TCMalloc by looking at bots.
-TEST(SecurityTest, MALLOC_OVERFLOW_TEST(IsTCMallocDynamicallyBypassed)) {
-  printf("Malloc is dynamically bypassed: %s\n",
-         IsTcMallocBypassed() ? "yes." : "no.");
-}
-
-// The MemoryAllocationRestrictions* tests test that we can not allocate a
-// memory range that cannot be indexed via an int. This is used to mitigate
-// vulnerabilities in libraries that use int instead of size_t.  See
-// crbug.com/169327.
-
-TEST(SecurityTest, MALLOC_OVERFLOW_TEST(MemoryAllocationRestrictionsMalloc)) {
-  if (!IsTcMallocBypassed()) {
-    scoped_ptr<char, base::FreeDeleter> ptr(static_cast<char*>(
-        HideValueFromCompiler(malloc(kTooBigAllocSize))));
-    ASSERT_TRUE(!ptr);
-  }
-}
-
-#if defined(GTEST_HAS_DEATH_TEST) && defined(OS_WIN)
-TEST(SecurityTest, MALLOC_OVERFLOW_TEST(MemoryAllocationMallocDeathTest)) {
-  _set_new_handler(&OnNoMemory);
-  _set_new_mode(1);
-  {
-    scoped_ptr<char, base::FreeDeleter> ptr;
-    EXPECT_DEATH(ptr.reset(static_cast<char*>(
-                      HideValueFromCompiler(malloc(kTooBigAllocSize)))),
-                  "");
-    ASSERT_TRUE(!ptr);
-  }
-  _set_new_handler(NULL);
-  _set_new_mode(0);
-}
-
-TEST(SecurityTest, MALLOC_OVERFLOW_TEST(MemoryAllocationExhaustDeathTest)) {
-  _set_new_handler(&OnNoMemory);
-  _set_new_mode(1);
-  {
-    ASSERT_DEATH(ExhaustMemoryWithMalloc(), "");
-  }
-  _set_new_handler(NULL);
-  _set_new_mode(0);
-}
-
-TEST(SecurityTest, MALLOC_OVERFLOW_TEST(MemoryReallocationExhaustDeathTest)) {
-  _set_new_handler(&OnNoMemory);
-  _set_new_mode(1);
-  {
-    ASSERT_DEATH(ExhaustMemoryWithRealloc(), "");
-  }
-  _set_new_handler(NULL);
-  _set_new_mode(0);
-}
-#endif
-
-TEST(SecurityTest, MALLOC_OVERFLOW_TEST(MemoryAllocationRestrictionsCalloc)) {
-  if (!IsTcMallocBypassed()) {
-    scoped_ptr<char, base::FreeDeleter> ptr(static_cast<char*>(
-        HideValueFromCompiler(calloc(kTooBigAllocSize, 1))));
-    ASSERT_TRUE(!ptr);
-  }
-}
-
-TEST(SecurityTest, MALLOC_OVERFLOW_TEST(MemoryAllocationRestrictionsRealloc)) {
-  if (!IsTcMallocBypassed()) {
-    char* orig_ptr = static_cast<char*>(malloc(1));
-    ASSERT_TRUE(orig_ptr);
-    scoped_ptr<char, base::FreeDeleter> ptr(static_cast<char*>(
-        HideValueFromCompiler(realloc(orig_ptr, kTooBigAllocSize))));
-    ASSERT_TRUE(!ptr);
-    // If realloc() did not succeed, we need to free orig_ptr.
-    free(orig_ptr);
-  }
-}
-
-typedef struct {
-  char large_array[kTooBigAllocSize];
-} VeryLargeStruct;
-
-TEST(SecurityTest, MALLOC_OVERFLOW_TEST(MemoryAllocationRestrictionsNew)) {
-  if (!IsTcMallocBypassed()) {
-    scoped_ptr<VeryLargeStruct> ptr(
-        HideValueFromCompiler(new (nothrow) VeryLargeStruct));
-    ASSERT_TRUE(!ptr);
-  }
-}
-
-#if defined(GTEST_HAS_DEATH_TEST) && defined(OS_WIN)
-TEST(SecurityTest, MALLOC_OVERFLOW_TEST(MemoryAllocationNewDeathTest)) {
-  _set_new_handler(&OnNoMemory);
-  {
-    scoped_ptr<VeryLargeStruct> ptr;
-    EXPECT_DEATH(
-        ptr.reset(HideValueFromCompiler(new (nothrow) VeryLargeStruct)), "");
-    ASSERT_TRUE(!ptr);
-  }
-  _set_new_handler(NULL);
-}
-#endif
-
-TEST(SecurityTest, MALLOC_OVERFLOW_TEST(MemoryAllocationRestrictionsNewArray)) {
-  if (!IsTcMallocBypassed()) {
-    scoped_ptr<char[]> ptr(
-        HideValueFromCompiler(new (nothrow) char[kTooBigAllocSize]));
-    ASSERT_TRUE(!ptr);
-  }
-}
-
-// The tests bellow check for overflows in new[] and calloc().
 
 // There are platforms where these tests are known to fail. We would like to
 // be able to easily check the status on the bots, but marking tests as
@@ -285,34 +121,6 @@ TEST(SecurityTest, MAYBE_NewOverflow) {
     OverflowTestsSoftExpectTrue(!array_pointer);
   }
 #endif  // !defined(OS_WIN) || !defined(ARCH_CPU_64_BITS)
-}
-
-// Call calloc(), eventually free the memory and return whether or not
-// calloc() did succeed.
-bool CallocReturnsNull(size_t nmemb, size_t size) {
-  scoped_ptr<char, base::FreeDeleter> array_pointer(
-      static_cast<char*>(calloc(nmemb, size)));
-  // We need the call to HideValueFromCompiler(): we have seen LLVM
-  // optimize away the call to calloc() entirely and assume the pointer to not
-  // be NULL.
-  return HideValueFromCompiler(array_pointer.get()) == NULL;
-}
-
-// Test if calloc() can overflow.
-TEST(SecurityTest, CallocOverflow) {
-  const size_t kArraySize = 4096;
-  const size_t kMaxSizeT = numeric_limits<size_t>::max();
-  const size_t kArraySize2 = kMaxSizeT / kArraySize + 10;
-  if (!CallocDiesOnOOM()) {
-    EXPECT_TRUE(CallocReturnsNull(kArraySize, kArraySize2));
-    EXPECT_TRUE(CallocReturnsNull(kArraySize2, kArraySize));
-  } else {
-    // It's also ok for calloc to just terminate the process.
-#if defined(GTEST_HAS_DEATH_TEST)
-    EXPECT_DEATH(CallocReturnsNull(kArraySize, kArraySize2), "");
-    EXPECT_DEATH(CallocReturnsNull(kArraySize2, kArraySize), "");
-#endif  // GTEST_HAS_DEATH_TEST
-  }
 }
 
 #if defined(OS_LINUX) && defined(__x86_64__)

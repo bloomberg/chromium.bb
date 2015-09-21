@@ -10,6 +10,21 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 
+// malloc_unchecked is required to implement UncheckedMalloc properly.
+// It's provided by allocator_shim_win.cc but since that's not always present,
+// we provide a default that falls back to regular malloc.
+typedef void* (*MallocFn)(size_t);
+extern "C" void* (*const malloc_unchecked)(size_t);
+extern "C" void* (*const malloc_default)(size_t) = &malloc;
+
+#if defined(_M_IX86)
+#pragma comment(linker, "/alternatename:_malloc_unchecked=_malloc_default")
+#elif defined(_M_X64) || defined(_M_ARM)
+#pragma comment(linker, "/alternatename:malloc_unchecked=malloc_default")
+#else
+#error Unsupported platform
+#endif
+
 namespace base {
 
 namespace {
@@ -17,10 +32,12 @@ namespace {
 #pragma warning(push)
 #pragma warning(disable: 4702)
 
-int OnNoMemory(size_t) {
+int OnNoMemory(size_t size) {
   // Kill the process. This is important for security since most of code
   // does not check the result of memory allocation.
-  __debugbreak();
+  LOG(FATAL) << "Out of memory, size = " << size;
+
+  // Safety check, make sure process exits here.
   _exit(1);
   return 0;
 }
@@ -88,14 +105,9 @@ HMODULE GetModuleFromAddress(void* address) {
   return instance;
 }
 
-// TODO(b.kelemen): implement it with the required semantics. On Linux this is
-// implemented with a weak symbol that is overridden by tcmalloc. This is
-// neccessary because base cannot have a direct dependency on tcmalloc. Since
-// weak symbols are not supported on Windows this will involve some build time
-// magic, much like what is done for libcrt in order to override the allocation
-// functions.
+// Implemented using a weak symbol.
 bool UncheckedMalloc(size_t size, void** result) {
-  *result = malloc(size);
+  *result = malloc_unchecked(size);
   return *result != NULL;
 }
 
