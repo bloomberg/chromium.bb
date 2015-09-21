@@ -156,6 +156,13 @@ class MESSAGE_CENTER_EXPORT Notification {
   const gfx::Image& icon() const { return icon_; }
   void set_icon(const gfx::Image& icon) { icon_ = icon; }
 
+  // Gets and sets whether to adjust the icon before displaying. The adjustment
+  // is designed to accomodate legacy HTML icons but isn't necessary for
+  // Chrome's hardcoded notifications. NB: this is currently ignored outside of
+  // Views.
+  bool adjust_icon() const { return adjust_icon_; }
+  void set_adjust_icon(bool adjust) { adjust_icon_ = adjust; }
+
   const gfx::Image& image() const { return optional_fields_.image; }
   void set_image(const gfx::Image& image) { optional_fields_.image = image; }
 
@@ -238,6 +245,10 @@ class MESSAGE_CENTER_EXPORT Notification {
 
   // Image data for the associated icon, used by Ash when available.
   gfx::Image icon_;
+
+  // True by default; controls whether to apply adjustments such as BG color and
+  // size scaling to |icon_|.
+  bool adjust_icon_;
 
   // The display string for the source of the notification.  Could be
   // the same as origin_url_, or the name of an extension.

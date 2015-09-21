@@ -36,6 +36,12 @@
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/message_center_style.h"
 
+#if !defined(OS_MACOSX)
+#include "ui/gfx/paint_vector_icon.h"
+#include "ui/gfx/vector_icons_public.h"
+#include "ui/native_theme/common_theme.h"
+#endif
+
 using base::UserMetricsAction;
 
 namespace {
@@ -154,6 +160,14 @@ void RecordButtonClickAction(DownloadCommands::Command command) {
   }
 }
 
+#if !defined(OS_MACOSX)
+gfx::Image GetVectorIcon(gfx::VectorIconId id, ui::NativeTheme::ColorId color) {
+  SkColor icon_color;
+  ui::CommonThemeGetSystemColor(color, &icon_color);
+  return gfx::Image(gfx::CreateVectorIcon(id, 40, icon_color));
+}
+#endif
+
 }  // anonymous namespace
 
 DownloadItemNotification::DownloadItemNotification(
@@ -161,25 +175,23 @@ DownloadItemNotification::DownloadItemNotification(
     DownloadNotificationManagerForProfile* manager)
     : item_(item),
       weak_factory_(this) {
-  ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
-
-  message_center::RichNotificationData data;
-  // Creates the notification instance. |title| and |body| will be overridden
-  // by UpdateNotificationData() below.
+  // Creates the notification instance. |title|, |body| and |icon| will be
+  // overridden by UpdateNotificationData() below.
   notification_.reset(new Notification(
       message_center::NOTIFICATION_TYPE_PROGRESS,
       base::string16(),  // title
       base::string16(),  // body
-      bundle.GetImageNamed(IDR_DOWNLOAD_NOTIFICATION_DOWNLOADING),
+      gfx::Image(),      // icon
       message_center::NotifierId(message_center::NotifierId::SYSTEM_COMPONENT,
                                  kDownloadNotificationNotifierId),
       base::string16(),                    // display_source
       GURL(kDownloadNotificationOrigin),   // origin_url
       base::UintToString(item_->GetId()),  // tag
-      data, watcher()));
+      message_center::RichNotificationData(), watcher()));
 
   notification_->set_progress(0);
   notification_->set_never_timeout(false);
+  notification_->set_adjust_icon(false);
 }
 
 DownloadItemNotification::~DownloadItemNotification() {
@@ -365,9 +377,6 @@ void DownloadItemNotification::UpdateNotificationData(
   } else {
     notification_->set_priority(message_center::DEFAULT_PRIORITY);
 
-    bool is_off_the_record = item_->GetBrowserContext() &&
-                             item_->GetBrowserContext()->IsOffTheRecord();
-
     switch (item_->GetState()) {
       case content::DownloadItem::IN_PROGRESS: {
         int percent_complete = item_->PercentComplete();
@@ -379,25 +388,14 @@ void DownloadItemNotification::UpdateNotificationData(
               message_center::NOTIFICATION_TYPE_BASE_FORMAT);
           notification_->set_progress(0);
         }
-        if (is_off_the_record) {
-          SetNotificationIcon(IDR_DOWNLOAD_NOTIFICATION_INCOGNITO);
-        } else {
-          SetNotificationIcon(IDR_DOWNLOAD_NOTIFICATION_DOWNLOADING);
-        }
+        UpdateNotificationIcon();
         break;
       }
       case content::DownloadItem::COMPLETE:
         DCHECK(item_->IsDone());
-
         notification_->set_type(message_center::NOTIFICATION_TYPE_BASE_FORMAT);
-
         notification_->set_progress(100);
-
-        if (is_off_the_record) {
-          SetNotificationIcon(IDR_DOWNLOAD_NOTIFICATION_INCOGNITO);
-        } else {
-          SetNotificationIcon(IDR_DOWNLOAD_NOTIFICATION_DOWNLOADING);
-        }
+        UpdateNotificationIcon();
         break;
       case content::DownloadItem::CANCELLED:
         // Confgirms that a download is cancelled by user action.
@@ -412,9 +410,8 @@ void DownloadItemNotification::UpdateNotificationData(
         // Shows a notifiation as progress type once so the visible content will
         // be updated. (same as the case of type = COMPLETE)
         notification_->set_type(message_center::NOTIFICATION_TYPE_BASE_FORMAT);
-
         notification_->set_progress(0);
-        SetNotificationIcon(IDR_DOWNLOAD_NOTIFICATION_ERROR);
+        UpdateNotificationIcon();
         break;
       case content::DownloadItem::MAX_DOWNLOAD_STATE:  // sentinel
         NOTREACHED();
@@ -505,6 +502,39 @@ void DownloadItemNotification::UpdateNotificationData(
   }
 }
 
+void DownloadItemNotification::UpdateNotificationIcon() {
+  bool is_off_the_record = item_->GetBrowserContext() &&
+                           item_->GetBrowserContext()->IsOffTheRecord();
+  switch (item_->GetState()) {
+    case content::DownloadItem::IN_PROGRESS:
+    case content::DownloadItem::COMPLETE:
+      if (is_off_the_record) {
+        // TODO(estade): vectorize.
+        SetNotificationIcon(IDR_DOWNLOAD_NOTIFICATION_INCOGNITO);
+      } else {
+#if defined(OS_MACOSX)
+        SetNotificationIcon(IDR_DOWNLOAD_NOTIFICATION_DOWNLOADING);
+#else
+        SetNotificationVectorIcon(gfx::VectorIconId::FILE_DOWNLOAD,
+                                  ui::NativeTheme::kColorId_GoogleBlue);
+#endif
+      }
+      break;
+
+    case content::DownloadItem::INTERRUPTED:
+      // TODO(estade): vectorize.
+      SetNotificationIcon(IDR_DOWNLOAD_NOTIFICATION_ERROR);
+      break;
+
+    case content::DownloadItem::CANCELLED:
+      break;
+
+    case content::DownloadItem::MAX_DOWNLOAD_STATE:
+      NOTREACHED();
+      break;
+  }
+}
+
 void DownloadItemNotification::OnDownloadRemoved(content::DownloadItem* item) {
   // The given |item| may be already free'd.
   DCHECK_EQ(item, item_);
@@ -525,6 +555,18 @@ void DownloadItemNotification::SetNotificationIcon(int resource_id) {
   image_resource_id_ = resource_id;
   notification_->set_icon(bundle.GetImageNamed(image_resource_id_));
 }
+
+#if !defined(OS_MACOSX)
+void DownloadItemNotification::SetNotificationVectorIcon(
+    gfx::VectorIconId id,
+    ui::NativeTheme::ColorId color) {
+  if (vector_icon_params_ == std::make_pair(id, color))
+    return;
+  vector_icon_params_ = std::make_pair(id, color);
+  image_resource_id_ = 0;
+  notification_->set_icon(GetVectorIcon(id, color));
+}
+#endif
 
 void DownloadItemNotification::OnImageLoaded(const std::string& image_data) {
   if (image_data.empty())

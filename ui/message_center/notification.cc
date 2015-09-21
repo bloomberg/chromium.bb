@@ -67,6 +67,7 @@ Notification::Notification(NotificationType type,
       title_(title),
       message_(message),
       icon_(icon),
+      adjust_icon_(true),
       display_source_(display_source),
       origin_url_(origin_url),
       notifier_id_(notifier_id),
@@ -82,6 +83,7 @@ Notification::Notification(const std::string& id, const Notification& other)
       title_(other.title_),
       message_(other.message_),
       icon_(other.icon_),
+      adjust_icon_(other.adjust_icon_),
       display_source_(other.display_source_),
       origin_url_(other.origin_url_),
       notifier_id_(other.notifier_id_),
@@ -97,6 +99,7 @@ Notification::Notification(const Notification& other)
       title_(other.title_),
       message_(other.message_),
       icon_(other.icon_),
+      adjust_icon_(other.adjust_icon_),
       display_source_(other.display_source_),
       origin_url_(other.origin_url_),
       notifier_id_(other.notifier_id_),
@@ -112,6 +115,7 @@ Notification& Notification::operator=(const Notification& other) {
   title_ = other.title_;
   message_ = other.message_;
   icon_ = other.icon_;
+  adjust_icon_ = other.adjust_icon_;
   display_source_ = other.display_source_;
   origin_url_ = other.origin_url_;
   notifier_id_ = other.notifier_id_;

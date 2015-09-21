@@ -242,7 +242,9 @@
       <structure type="chrome_scaled_image" name="IDR_DOWNLOAD_BUTTON_RIGHT_TOP_H" file="common/download_button_right_top_hover.png" />
       <structure type="chrome_scaled_image" name="IDR_DOWNLOAD_BUTTON_RIGHT_TOP_NO_DD" file="common/download_button_right_top_no_dd.png" />
       <structure type="chrome_scaled_image" name="IDR_DOWNLOAD_BUTTON_RIGHT_TOP_P" file="common/download_button_right_top_pressed.png" />
-      <structure type="chrome_scaled_image" name="IDR_DOWNLOAD_NOTIFICATION_DOWNLOADING" file="common/downloads/download_icon.png" />
+      <if expr="is_macosx">
+        <structure type="chrome_scaled_image" name="IDR_DOWNLOAD_NOTIFICATION_DOWNLOADING" file="legacy/download_icon.png" />
+      </if>
       <structure type="chrome_scaled_image" name="IDR_DOWNLOAD_NOTIFICATION_ERROR" file="common/downloads/download_error.png" />
       <structure type="chrome_scaled_image" name="IDR_DOWNLOAD_NOTIFICATION_INCOGNITO" file="common/downloads/download_icon_incognito.png" />
       <structure type="chrome_scaled_image" name="IDR_DOWNLOAD_NOTIFICATION_MENU_CANCEL" file="common/downloads/cancel.png" />

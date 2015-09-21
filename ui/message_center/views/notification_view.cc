@@ -648,19 +648,24 @@ void NotificationView::CreateOrUpdateIconView(
     const Notification& notification) {
   if (!icon_view_) {
     icon_view_ = new ProportionalImageView(gfx::Size(kIconSize, kIconSize));
-    icon_view_->set_background(
-        views::Background::CreateSolidBackground(kIconBackgroundColor));
     AddChildView(icon_view_);
   }
 
   gfx::ImageSkia icon = notification.icon().AsImageSkia();
-  gfx::Size max_image_size =
-      notification.type() == NOTIFICATION_TYPE_SIMPLE &&
-              (icon.width() < kIconSize || icon.height() < kIconSize ||
-               HasAlpha(icon, GetWidget()))
-          ? gfx::Size(kLegacyIconSize, kLegacyIconSize)
-          : gfx::Size(kIconSize, kIconSize);
-  icon_view_->SetImage(icon, max_image_size);
+  if (notification.adjust_icon()) {
+    icon_view_->set_background(
+        views::Background::CreateSolidBackground(kIconBackgroundColor));
+    gfx::Size max_image_size =
+        notification.type() == NOTIFICATION_TYPE_SIMPLE &&
+                (icon.width() < kIconSize || icon.height() < kIconSize ||
+                 HasAlpha(icon, GetWidget()))
+            ? gfx::Size(kLegacyIconSize, kLegacyIconSize)
+            : gfx::Size(kIconSize, kIconSize);
+    icon_view_->SetImage(icon, max_image_size);
+  } else {
+    icon_view_->SetImage(icon, icon.size());
+    icon_view_->set_background(nullptr);
+  }
 }
 
 void NotificationView::CreateOrUpdateImageView(

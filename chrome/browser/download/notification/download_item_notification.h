@@ -18,8 +18,16 @@
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/message_center_observer.h"
 
+#if !defined(OS_MACOSX)
+#include "ui/native_theme/native_theme.h"
+#endif
+
 namespace test {
 class DownloadItemNotificationTest;
+}
+
+namespace gfx {
+enum class VectorIconId;
 }
 
 class DownloadItemNotification : public DownloadNotification,
@@ -54,9 +62,15 @@ class DownloadItemNotification : public DownloadNotification,
   void CloseNotificationByNonUser();
   void Update();
   void UpdateNotificationData(NotificationUpdateType type);
+  void UpdateNotificationIcon();
 
   // Set icon of the notification.
   void SetNotificationIcon(int resource_id);
+
+#if !defined(OS_MACOSX)
+  void SetNotificationVectorIcon(gfx::VectorIconId id,
+                                 ui::NativeTheme::ColorId color);
+#endif
 
   // Set preview image of the notification. Must be called on IO thread.
   void OnImageLoaded(const std::string& image_data);
@@ -98,6 +112,9 @@ class DownloadItemNotification : public DownloadNotification,
   bool visible_ = false;
 
   int image_resource_id_ = 0;
+#if !defined(OS_MACOSX)
+  std::pair<gfx::VectorIconId, ui::NativeTheme::ColorId> vector_icon_params_;
+#endif
   content::DownloadItem::DownloadState previous_download_state_ =
       content::DownloadItem::MAX_DOWNLOAD_STATE;  // As uninitialized state
   bool previous_dangerous_state_ = false;
