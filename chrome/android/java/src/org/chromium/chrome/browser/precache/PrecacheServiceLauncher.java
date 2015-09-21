@@ -21,6 +21,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.components.precache.DeviceState;
 
 import java.util.ArrayDeque;
@@ -170,6 +171,7 @@ public class PrecacheServiceLauncher extends BroadcastReceiver {
             while ((reasonsToRecord = mFailureReasonsToRecord.poll()) != null) {
                 RecordHistogram.recordSparseSlowlyHistogram(
                         "Precache.Fetch.FailureReasons", reasonsToRecord);
+                RecordUserAction.record("Precache.Fetch.IntentReceived");
             }
         }
     }
