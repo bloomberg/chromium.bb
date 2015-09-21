@@ -19,6 +19,7 @@
 #include "components/bookmarks/browser/bookmark_utils.h"
 #include "components/query_parser/snippet.h"
 #include "third_party/icu/source/common/unicode/normalizer2.h"
+#include "third_party/icu/source/common/unicode/utypes.h"
 
 namespace bookmarks {
 
@@ -33,12 +34,19 @@ base::string16 Normalize(const base::string16& text) {
   UErrorCode status = U_ZERO_ERROR;
   const icu::Normalizer2* normalizer2 =
       icu::Normalizer2::getInstance(NULL, "nfkc", UNORM2_COMPOSE, status);
+  if (U_FAILURE(status)) {
+    // Log and crash right away to capture the error code in the crash report.
+    LOG(FATAL) << "failed to create a normalizer: " << u_errorName(status);
+  }
   icu::UnicodeString unicode_text(
       text.data(), static_cast<int32_t>(text.length()));
   icu::UnicodeString unicode_normalized_text;
   normalizer2->normalize(unicode_text, unicode_normalized_text, status);
-  if (U_FAILURE(status))
+  if (U_FAILURE(status)) {
+    // This should not happen. Log the error and fall back.
+    LOG(ERROR) << "normalization failed: " << u_errorName(status);
     return text;
+  }
   return base::string16(unicode_normalized_text.getBuffer(),
                         unicode_normalized_text.length());
 }
