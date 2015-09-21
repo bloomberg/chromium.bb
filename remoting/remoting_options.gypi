@@ -36,7 +36,7 @@
 
     # The ar_service_environment variable is used to define the target
     # environment for the app being built.
-    # The allowed values are dev, test, staging, prod, and prod-testing.
+    # The allowed values are dev and prod.
     'conditions': [
       ['buildtype == "Dev"', {
         'ar_service_environment%': 'dev',

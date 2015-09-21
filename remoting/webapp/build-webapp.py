@@ -145,8 +145,7 @@ def buildWebApp(buildtype, version, destination, zip_path,
                       structure, from the _locales directory down.
     jinja_paths: An array of paths to search for {%include} directives in
                  addition to the directory containing the manifest template.
-    service_environment: Used to point the webapp to one of the
-                         dev/test/staging/vendor/prod/prod-testing environments
+    service_environment: Used to point the webapp to the dev/prod environments.
     use_gcd: True if GCD support should be enabled.
   """
 
@@ -218,9 +217,7 @@ def buildWebApp(buildtype, version, destination, zip_path,
   is_app_remoting_webapp = webapp_type == 'app_remoting'
   is_app_remoting_shared_module = webapp_type == 'shared_module'
   is_app_remoting = is_app_remoting_webapp or is_app_remoting_shared_module
-  is_prod_service_environment = service_environment == 'vendor' or \
-                                service_environment == 'prod' or \
-                                service_environment == 'prod-testing'
+  is_prod_service_environment = service_environment == 'prod'
   is_desktop_remoting = not is_app_remoting
 
   # Allow host names for google services/apis to be overriden via env vars.
@@ -244,8 +241,8 @@ def buildWebApp(buildtype, version, destination, zip_path,
     # Release/Official builds are special because they are what we will upload
     # to the web store.  The checks below will validate that prod builds are
     # being generated correctly (no overrides) and with the correct buildtype.
-    # They also verify that folks are not accidentally building dev/test/staging
-    # apps for release (no impersonation) instead of dev.
+    # They also verify that folks are not accidentally building dev apps for
+    # Release (no impersonation) instead of Dev.
     if is_prod_service_environment and buildtype == 'Dev':
       raise Exception("Prod environment cannot be built for 'dev' builds")
 
@@ -279,7 +276,7 @@ def buildWebApp(buildtype, version, destination, zip_path,
   telemetryApiBaseUrl = remotingApiHost + '/v1/events'
 
   if is_app_remoting:
-    # Set the apiary endpoint and then set the endpoint version
+    # Set the base endpoint url first and then set the endpoint version.
     if not appRemotingApiHost:
       if is_prod_service_environment:
         appRemotingApiHost = 'https://www.googleapis.com'
@@ -292,16 +289,8 @@ def buildWebApp(buildtype, version, destination, zip_path,
     # module.
     if service_environment == 'dev' or is_app_remoting_shared_module:
       appRemotingServicePath = '/appremoting/v1beta1_dev'
-    elif service_environment == 'test':
-      appRemotingServicePath = '/appremoting/v1beta1'
-    elif service_environment == 'staging':
-      appRemotingServicePath = '/appremoting/v1beta1_staging'
-    elif service_environment == 'vendor':
-      appRemotingServicePath = '/appremoting/v1beta1_vendor'
     elif service_environment == 'prod':
       appRemotingServicePath = '/appremoting/v1beta1'
-    elif service_environment == 'prod-testing':
-      appRemotingServicePath = '/appremoting/v1beta1_prod_testing'
     else:
       raise Exception('Unknown service environment: ' + service_environment)
     appRemotingApiBaseUrl = appRemotingApiHost + appRemotingServicePath

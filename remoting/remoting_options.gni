@@ -30,7 +30,7 @@ branding_path = "../remoting/branding_<(branding)"
 
 # The ar_service_environment variable is used to define the target
 # environment for the app being built.
-# The allowed values are dev, test, staging, prod, and prod-testing.
+# The allowed values are dev and prod.
 if (is_debug) {
   ar_service_environment = "dev"
 } else {
