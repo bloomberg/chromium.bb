@@ -7,7 +7,6 @@
 #include "base/location.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
-#include "chrome/browser/sync/glue/ui_model_worker.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/sync_driver/change_processor_mock.h"
 #include "content/public/browser/browser_thread.h"

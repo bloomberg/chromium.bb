@@ -11,7 +11,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
-#include "chrome/browser/sync/glue/ui_model_worker.h"
+#include "components/sync_driver/glue/ui_model_worker.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -67,7 +67,9 @@ class SyncUIModelWorkerTest : public testing::Test {
     faux_syncer_thread_.Start();
     ui_thread_.reset(new content::TestBrowserThread(BrowserThread::UI,
                                                     &faux_ui_loop_));
-    bmw_ = new UIModelWorker(NULL);
+    bmw_ = new UIModelWorker(
+        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
+        nullptr);
     syncer_.reset(new Syncer(bmw_.get()));
   }
 

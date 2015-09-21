@@ -52,6 +52,8 @@ source_set("sync_driver") {
     "glue/synced_window_delegate.h",
     "glue/typed_url_model_associator.cc",
     "glue/typed_url_model_associator.h",
+    "glue/ui_model_worker.cc",
+    "glue/ui_model_worker.h",
     "invalidation_adapter.cc",
     "invalidation_adapter.h",
     "invalidation_helper.cc",

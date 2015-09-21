@@ -13,11 +13,11 @@
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/glue/history_model_worker.h"
-#include "chrome/browser/sync/glue/ui_model_worker.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/sync/browser/password_model_worker.h"
 #include "components/sync_driver/change_processor.h"
 #include "components/sync_driver/glue/browser_thread_model_worker.h"
+#include "components/sync_driver/glue/ui_model_worker.h"
 #include "sync/internal_api/public/engine/passive_model_worker.h"
 #include "sync/internal_api/public/user_share.h"
 
@@ -54,7 +54,7 @@ SyncBackendRegistrar::SyncBackendRegistrar(
       new BrowserThreadModelWorker(file_thread_, syncer::GROUP_FILE, this);
   workers_[syncer::GROUP_FILE]->RegisterForLoopDestruction();
 
-  workers_[syncer::GROUP_UI] = new UIModelWorker(this);
+  workers_[syncer::GROUP_UI] = new UIModelWorker(ui_thread_, this);
   workers_[syncer::GROUP_UI]->RegisterForLoopDestruction();
 
   // GROUP_PASSIVE worker does work on sync_loop_. But sync_loop_ is not

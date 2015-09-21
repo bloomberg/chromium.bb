@@ -73,6 +73,8 @@
         'sync_driver/glue/synced_window_delegate.h',
         'sync_driver/glue/typed_url_model_associator.cc',
         'sync_driver/glue/typed_url_model_associator.h',
+        'sync_driver/glue/ui_model_worker.cc',
+        'sync_driver/glue/ui_model_worker.h',
         'sync_driver/invalidation_adapter.cc',
         'sync_driver/invalidation_adapter.h',
         'sync_driver/invalidation_helper.cc',

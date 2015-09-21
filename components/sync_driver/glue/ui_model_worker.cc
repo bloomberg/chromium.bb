@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/sync/glue/ui_model_worker.h"
+#include "components/sync_driver/glue/ui_model_worker.h"
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -10,9 +10,6 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/third_party/dynamic_annotations/dynamic_annotations.h"
 #include "base/threading/thread_restrictions.h"
-#include "content/public/browser/browser_thread.h"
-
-using content::BrowserThread;
 
 namespace browser_sync {
 
@@ -41,28 +38,28 @@ void CallDoWorkAndSignalCallback(const syncer::WorkCallback& work,
 
 }  // namespace
 
-UIModelWorker::UIModelWorker(syncer::WorkerLoopDestructionObserver* observer)
-    : syncer::ModelSafeWorker(observer) {
-}
+UIModelWorker::UIModelWorker(
+    const scoped_refptr<base::SingleThreadTaskRunner>& ui_thread,
+    syncer::WorkerLoopDestructionObserver* observer)
+    : syncer::ModelSafeWorker(observer), ui_thread_(ui_thread) {}
 
 void UIModelWorker::RegisterForLoopDestruction() {
-  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  CHECK(ui_thread_->BelongsToCurrentThread());
   SetWorkingLoopToCurrent();
 }
 
 syncer::SyncerError UIModelWorker::DoWorkAndWaitUntilDoneImpl(
     const syncer::WorkCallback& work) {
   syncer::SyncerError error_info;
-  if (BrowserThread::CurrentlyOn(BrowserThread::UI)) {
+  if (ui_thread_->BelongsToCurrentThread()) {
     DLOG(WARNING) << "DoWorkAndWaitUntilDone called from "
-      << "ui_loop_. Probably a nested invocation?";
+                  << "ui_loop_. Probably a nested invocation?";
     return work.Run();
   }
 
-  if (!BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(&CallDoWorkAndSignalCallback,
-                 work, work_done_or_stopped(), &error_info))) {
+  if (!ui_thread_->PostTask(FROM_HERE,
+                            base::Bind(&CallDoWorkAndSignalCallback, work,
+                                       work_done_or_stopped(), &error_info))) {
     DLOG(WARNING) << "Could not post work to UI loop.";
     error_info = syncer::CANNOT_DO_WORK;
     return error_info;
@@ -76,7 +73,6 @@ syncer::ModelSafeGroup UIModelWorker::GetModelSafeGroup() {
   return syncer::GROUP_UI;
 }
 
-UIModelWorker::~UIModelWorker() {
-}
+UIModelWorker::~UIModelWorker() {}
 
 }  // namespace browser_sync

@@ -2894,8 +2894,6 @@
       'browser/sync/glue/typed_url_change_processor.h',
       'browser/sync/glue/typed_url_data_type_controller.cc',
       'browser/sync/glue/typed_url_data_type_controller.h',
-      'browser/sync/glue/ui_model_worker.cc',
-      'browser/sync/glue/ui_model_worker.h',
       'browser/sync/profile_sync_components_factory_impl.cc',
       'browser/sync/profile_sync_components_factory_impl.h',
       'browser/sync/profile_sync_service.cc',
