@@ -207,6 +207,16 @@ void UserMediaClientImpl::requestUserMedia(
       new UserMediaRequestInfo(request_id, user_media_request,
                                enable_automatic_output_device_selection));
 
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(&UserMediaClientImpl::DelayedRequestUserMedia,
+                            weak_factory_.GetWeakPtr(), request_id, options,
+                            security_origin));
+}
+
+void UserMediaClientImpl::DelayedRequestUserMedia(int request_id,
+                                                  const StreamOptions options,
+                                                  const GURL security_origin) {
+  DVLOG(1) << "UserMediaClientImpl::DelayedRequestUserMedia";
   media_stream_dispatcher_->GenerateStream(
       request_id,
       weak_factory_.GetWeakPtr(),
@@ -518,7 +528,7 @@ void UserMediaClientImpl::OnDeviceStopped(
   const blink::WebMediaStreamSource* source_ptr = FindLocalSource(device_info);
   if (!source_ptr) {
     // This happens if the same device is used in several guM requests or
-    // if a user happen stop a track from JS at the same time
+    // if a user happens to stop a track from JS at the same time
     // as the underlying media device is unplugged from the system.
     return;
   }
