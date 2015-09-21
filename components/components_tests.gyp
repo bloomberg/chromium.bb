@@ -396,6 +396,11 @@
       'packed_ct_ev_whitelist/bit_stream_reader_unittest.cc',
       'packed_ct_ev_whitelist/packed_ct_ev_whitelist_unittest.cc',
     ],
+    'page_load_metrics_unittest_sources': [
+      'page_load_metrics/browser/metrics_web_contents_observer_unittest.cc',
+      'page_load_metrics/renderer/metrics_render_frame_observer_unittest.cc',
+      'page_load_metrics/renderer/page_timing_metrics_sender_unittest.cc',
+    ],
     'password_manager_unittest_sources': [
       'password_manager/content/browser/credential_manager_dispatcher_unittest.cc',
       'password_manager/core/browser/affiliated_match_helper_unittest.cc',
@@ -1042,6 +1047,7 @@
             '<@(guest_view_unittest_sources)',
             '<@(navigation_interception_unittest_sources)',
             '<@(network_hints_unittest_sources)',
+            '<@(page_load_metrics_unittest_sources)',
             '<@(power_unittest_sources)',
             '<@(safe_json_unittest_sources)',
             '<@(scheduler_unittest_sources)',
@@ -1075,6 +1081,8 @@
             'components.gyp:network_hints_renderer',
             'components.gyp:metrics_gpu',
             'components.gyp:metrics_profiler',
+            'components.gyp:page_load_metrics_browser',
+            'components.gyp:page_load_metrics_renderer',
             'components.gyp:password_manager_content_browser',
             'components.gyp:password_manager_content_common',
             'components.gyp:power',

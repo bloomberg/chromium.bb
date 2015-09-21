@@ -93,6 +93,7 @@ source_set("ui") {
       "//components/autofill/content/browser:risk_proto",
       "//components/bubble:bubble",
       "//components/net_log",
+      "//components/page_load_metrics/browser",
       "//components/power",
       "//components/suggestions/proto",
       "//components/url_formatter",

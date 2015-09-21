@@ -25,6 +25,7 @@ NavigationHandleImpl::NavigationHandleImpl(const GURL& url,
       net_error_code_(net::OK),
       state_(DID_START),
       is_main_frame_(is_main_frame),
+      is_same_page_(false),
       is_transferring_(false),
       delegate_(delegate) {
   delegate_->DidStartNavigation(this);
@@ -46,6 +47,13 @@ bool NavigationHandleImpl::IsInMainFrame() const {
   return is_main_frame_;
 }
 
+bool NavigationHandleImpl::IsSamePage() {
+  DCHECK(state_ == DID_COMMIT || state_ == DID_COMMIT_ERROR_PAGE)
+      << "This accessor should not be called before the navigation has "
+         "committed.";
+  return is_same_page_;
+}
+
 bool NavigationHandleImpl::HasCommittedDocument() const {
   return state_ == DID_COMMIT;
 }
@@ -59,7 +67,8 @@ void NavigationHandleImpl::DidRedirectNavigation(const GURL& new_url) {
   delegate_->DidRedirectNavigation(this);
 }
 
-void NavigationHandleImpl::DidCommitNavigation() {
+void NavigationHandleImpl::DidCommitNavigation(bool same_page) {
+  is_same_page_ = same_page;
   state_ = net_error_code_ == net::OK ? DID_COMMIT : DID_COMMIT_ERROR_PAGE;
   delegate_->DidCommitNavigation(this);
 }

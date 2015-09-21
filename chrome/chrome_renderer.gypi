@@ -252,6 +252,7 @@
         '../components/components.gyp:omnibox_common',
         '../components/components.gyp:error_page_renderer',
         '../components/components.gyp:startup_metric_utils',
+        '../components/components.gyp:page_load_metrics_renderer',
         '../components/components.gyp:password_manager_content_renderer',
         '../components/components.gyp:plugins_renderer',
         '../components/components.gyp:translate_content_renderer',

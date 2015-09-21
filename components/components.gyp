@@ -112,6 +112,7 @@
         'drive.gypi',
         'message_port.gypi',
         'navigation_interception.gypi',
+        'page_load_metrics.gypi',
         'power.gypi',
         'safe_json.gypi',
         'visitedlink.gypi',

@@ -62,6 +62,7 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   const GURL& GetURL() const override;
   net::Error GetNetErrorCode() const override;
   bool IsInMainFrame() const override;
+  bool IsSamePage() override;
   bool HasCommittedDocument() const override;
   bool HasCommittedErrorPage() const override;
 
@@ -84,7 +85,7 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
 
   // Called when the navigation was committed. This will update the |state_|
   // and inform the delegate,
-  void DidCommitNavigation();
+  void DidCommitNavigation(bool same_page);
 
  private:
   // Used to track the state the navigation is currently in.
@@ -103,6 +104,7 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   net::Error net_error_code_;
   State state_;
   const bool is_main_frame_;
+  bool is_same_page_;
 
   // Whether the navigation is in the middle of a transfer. Set to false when
   // the DidStartProvisionalLoad is received from the new renderer.

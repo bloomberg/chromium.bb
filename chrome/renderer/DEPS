@@ -13,6 +13,7 @@ include_rules = [
   "+components/guest_view/renderer",
   "+components/nacl/common",
   "+components/nacl/renderer",
+  "+components/page_load_metrics/renderer",
   "+components/password_manager/content/renderer",
   "+components/pdf/renderer",
   "+components/plugins/renderer",

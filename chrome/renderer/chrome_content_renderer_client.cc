@@ -62,6 +62,7 @@
 #include "components/nacl/renderer/ppb_nacl_private.h"
 #include "components/nacl/renderer/ppb_nacl_private_impl.h"
 #include "components/network_hints/renderer/prescient_networking_dispatcher.h"
+#include "components/page_load_metrics/renderer/metrics_render_frame_observer.h"
 #include "components/password_manager/content/renderer/credential_manager_client.h"
 #include "components/pdf/renderer/pepper_pdf_host.h"
 #include "components/plugins/renderer/mobile_youtube_plugin.h"
@@ -562,6 +563,12 @@ void ChromeContentRendererClient::RenderFrameCreated(
     // Only attach NetErrorHelper to the main frame, since only the main frame
     // should get error pages.
     new NetErrorHelper(render_frame);
+  }
+
+  if (render_frame->GetWebFrame()->parent() == nullptr) {
+    // Only attach MainRenderFrameObserver to the main frame, since
+    // we only want to log page load metrics for the main frame.
+    new page_load_metrics::MetricsRenderFrameObserver(render_frame);
   }
 
   PasswordAutofillAgent* password_autofill_agent =

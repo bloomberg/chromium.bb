@@ -29643,6 +29643,32 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="PageLoad.Timing.NavigationToDOMContentLoadedEventFired"
+    units="milliseconds">
+  <owner>bmcquade@chromium.org</owner>
+  <summary>
+    Measures the time from navigation timing's navigation start to the time the
+    DOMContentLoaded event is fired, for main frame documents.
+  </summary>
+</histogram>
+
+<histogram name="PageLoad.Timing.NavigationToFirstLayout" units="milliseconds">
+  <owner>bmcquade@chromium.org</owner>
+  <summary>
+    Measures the time from navigation timing's navigation start to the time the
+    first layout is performed, for main frame documents.
+  </summary>
+</histogram>
+
+<histogram name="PageLoad.Timing.NavigationToLoadEventFired"
+    units="milliseconds">
+  <owner>bmcquade@chromium.org</owner>
+  <summary>
+    Measures the time from navigation timing's navigation start to the time the
+    load event is fired, for main frame documents.
+  </summary>
+</histogram>
+
 <histogram name="PartitionAlloc.CommittedSize" units="MB">
   <owner>haraken@chromium.org</owner>
   <summary>

@@ -28,6 +28,11 @@ class CONTENT_EXPORT NavigationHandle {
   // Whether the navigation is taking place in the main frame or in a subframe.
   virtual bool IsInMainFrame() const = 0;
 
+  // Whether the navigation happened in the same page. This is only known
+  // after the navigation has committed. It is an error to call this method
+  // before the navigation has committed.
+  virtual bool IsSamePage() = 0;
+
   // Whether the navigation has successfully committed a document.
   virtual bool HasCommittedDocument() const = 0;
 

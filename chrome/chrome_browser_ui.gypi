@@ -2792,6 +2792,7 @@
             '../components/components.gyp:app_modal',
             '../components/components.gyp:autofill_content_risk_proto',
             '../components/components.gyp:net_log',
+            '../components/components.gyp:page_load_metrics_browser',
             '../components/components.gyp:translate_content_common',
             '../content/app/resources/content_resources.gyp:content_resources',
             '../media/media.gyp:media',
