@@ -27,6 +27,7 @@
 #include "net/http/http_auth_handler_factory.h"
 #include "net/http/http_server_properties_manager.h"
 #include "net/log/write_to_file_net_log_observer.h"
+#include "net/proxy/proxy_config_service_android.h"
 #include "net/proxy/proxy_service.h"
 #include "net/sdch/sdch_owner.h"
 #include "net/url_request/url_request_context.h"
@@ -147,8 +148,14 @@ void CronetURLRequestContextAdapter::InitRequestContextOnMainThread(
     jobject jcaller) {
   base::android::ScopedJavaGlobalRef<jobject> jcaller_ref;
   jcaller_ref.Reset(env, jcaller);
-  proxy_config_service_.reset(net::ProxyService::CreateSystemProxyConfigService(
-      GetNetworkTaskRunner(), nullptr));
+  net::ProxyConfigServiceAndroid* android_proxy_config_service =
+      static_cast<net::ProxyConfigServiceAndroid*>(
+          net::ProxyService::CreateSystemProxyConfigService(
+              GetNetworkTaskRunner(), nullptr /* Ignored on Android */));
+  // If a PAC URL is present, ignore it and use the address and port of
+  // Android system's local HTTP proxy server. See: crbug.com/432539.
+  android_proxy_config_service->set_exclude_pac_url(true);
+  proxy_config_service_.reset(android_proxy_config_service);
   GetNetworkTaskRunner()->PostTask(
       FROM_HERE,
       base::Bind(&CronetURLRequestContextAdapter::InitializeOnNetworkThread,
@@ -187,7 +194,13 @@ void CronetURLRequestContextAdapter::InitializeOnNetworkThread(
 #endif  // defined(DATA_REDUCTION_PROXY_SUPPORT)
   context_builder.set_network_delegate(network_delegate.Pass());
   context_builder.set_net_log(net_log_.get());
-  context_builder.set_proxy_config_service(proxy_config_service_.Pass());
+
+  // Android provides a local HTTP proxy server that handles proxying when a PAC
+  // URL is present. Create a proxy service without a resolver and rely on this
+  // local HTTP proxy. See: crbug.com/432539.
+  context_builder.set_proxy_service(
+      net::ProxyService::CreateWithoutProxyResolver(
+          proxy_config_service_.release(), net_log_.get()));
   config->ConfigureURLRequestContextBuilder(&context_builder);
 
   // Set up pref file if storage path is specified.
