@@ -1,3 +1,0 @@
-# https://crbug.com/530688
-NewVideoRenderer/VideoRendererImplTest.DecodeError_Playing/0
-NewVideoRenderer/VideoRendererImplTest.RenderingStartedThenStopped/0

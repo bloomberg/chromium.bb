@@ -438,7 +438,14 @@ TEST_P(VideoRendererImplTest, DecodeError_Playing) {
   Initialize();
   QueueFrames("0 10 20 30");
   EXPECT_CALL(mock_cb_, FrameReceived(_)).Times(testing::AtLeast(1));
+
+  // Consider the case that rendering is faster than we setup the test event.
+  // In that case, when we run out of the frames, BUFFERING_HAVE_NOTHING will
+  // be called.
   EXPECT_CALL(mock_cb_, BufferingStateChange(BUFFERING_HAVE_ENOUGH));
+  EXPECT_CALL(mock_cb_, BufferingStateChange(BUFFERING_HAVE_NOTHING))
+      .Times(testing::AtMost(1));
+
   StartPlayingFrom(0);
   renderer_->OnTimeStateChanged(true);
   time_source_.StartTicking();
@@ -692,6 +699,14 @@ TEST_P(VideoRendererImplTest, RenderingStartedThenStopped) {
     EXPECT_EQ(0u, last_pipeline_statistics_.video_frames_dropped);
   }
 
+  // Consider the case that rendering is faster than we setup the test event.
+  // In that case, when we run out of the frames, BUFFERING_HAVE_NOTHING will
+  // be called. And then during SatisfyPendingReadWithEndOfStream,
+  // BUFFER_HAVE_ENOUGH will be called again.
+  EXPECT_CALL(mock_cb_, BufferingStateChange(BUFFERING_HAVE_ENOUGH))
+      .Times(testing::AtMost(1));
+  EXPECT_CALL(mock_cb_, BufferingStateChange(BUFFERING_HAVE_NOTHING))
+      .Times(testing::AtMost(1));
   renderer_->OnTimeStateChanged(true);
   time_source_.StartTicking();
 
