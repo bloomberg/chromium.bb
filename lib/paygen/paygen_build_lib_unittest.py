@@ -321,17 +321,30 @@ class PaygenBuildLibTest(BasePaygenBuildLibTest):
         False,
         paygen_build_lib.ImageMissing)
 
-  @unittest.skipIf(not paygen_build_lib.config, 'Internal crostools required.')
   def testDiscoverActiveFsiBuilds(self):
-    """Using test release.conf values, test _DiscoverActiveFsiBuilds."""
+    """Using test goldeneye values, test _DiscoverActiveFsiBuilds."""
+    # Set up mock goldeneye fsi information.
+    mock_return_fsi = paygen_build_lib.json.dumps(
+        {'fsis':
+         [{u'is_delta_supported': True, u'chrome_os_version': u'2465.105.0',
+           u'board':
+           {u'public_codename': u'valid-board', u'is_active': True},
+           u'is_lab_stable': True, u'chrome_version': u'31.0.1650.61'},
+          {u'is_delta_supported': True, u'chrome_os_version': u'2467.109.0',
+           u'board':
+           {u'public_codename': u'valid-board', u'is_active': True},
+           u'is_lab_stable': False, u'chrome_version': u'31.0.1650.61'},
+          {u'is_delta_supported': False, u'chrome_os_version': u'2913.331.0',
+           u'board':
+           {u'public_codename': u'valid-board', u'is_active': True},
+           u'is_lab_stable': True, u'chrome_version': u'31.0.1650.61'}]
+        }
+    )
 
-    test_config = """
-[valid-board]
-fsi_images: 2913.331.0,2465.105.0
-
-[no-fsi-board]
-"""
-    paygen_build_lib.config.LoadTestConfig(test_config)
+    self.mox.StubOutWithMock(gslib, 'Cat')
+    gslib.Cat(paygen_build_lib.FSI_URI).AndReturn(mock_return_fsi)
+    gslib.Cat(paygen_build_lib.FSI_URI).AndReturn(mock_return_fsi)
+    self.mox.ReplayAll()
 
     # Test a board with FSI values on stable-channel.
     paygen = paygen_build_lib._PaygenBuild(
@@ -347,7 +360,7 @@ fsi_images: 2913.331.0,2465.105.0
                        version='2465.105.0'),
          gspaths.Build(board='valid-board',
                        channel='stable-channel',
-                       version='2913.331.0')])
+                       version='2467.109.0')])
 
     # Test a board without FSI values on stable-channel.
     paygen = paygen_build_lib._PaygenBuild(
@@ -367,10 +380,7 @@ fsi_images: 2913.331.0,2465.105.0
 
     self.assertEqual(paygen._DiscoverActiveFsiBuilds(), [])
 
-    paygen_build_lib.config.LoadGlobalConfig()
-
   @cros_test_lib.NetworkTest()
-  @unittest.skipIf(not paygen_build_lib.config, 'Internal crostools required.')
   def testDiscoverAllFsiBuilds(self):
     """Using test release.conf values, test _DiscoverActiveFsiBuilds."""
     paygen = paygen_build_lib._PaygenBuild(
@@ -383,19 +393,56 @@ fsi_images: 2913.331.0,2465.105.0
     self.assertEqual(paygen._DiscoverAllFsiBuilds(),
                      ['0.12.433.257', '0.14.811.132', '1412.205.0'])
 
-  @unittest.skipIf(not paygen_build_lib.query, 'Internal crostools required.')
   def testDiscoverNmoBuild(self):
     """Test _DiscoverNmoBuild (N minus One)."""
     paygen = self._GetPaygenBuildInstance()
 
-    self.mox.StubOutWithMock(paygen_build_lib.query, 'FindLatestPublished')
+    # Set up mock goldeneye omaha status information.
+    mock_return_foo = paygen_build_lib.json.dumps(
+        {'omaha_data':
+         [{u'is_mp_keyset': True, u'chrome_version': u'47.0.2514.0',
+           u'keyset': u'foo-mp',
+           u'board':
+           {u'public_codename': u'foo-board', u'is_active': True},
+           u'chrome_os_version': u'7478.0.0', u'channel': u'foo-channel',
+           u'payloads':
+           [{u'max_fraction': False,
+             u'name': u'foo-channel/foo/7478.0.0/payloads/'
+                      u'chromeos_7475.0.0-7478.0.0_foo_foo'
+                      u'-channel_delta_mp.bin-877f148a914c1cdbe2'
+                      u'42aa4247a1d135.signed', u'fraction': 1.0},
+            {u'max_fraction': False,
+             u'name': u'foo-channel/foo/7478.0.0/payloads/'
+                      u'chromeos_7478.0.0_foo_foo-channel_'
+                      u'full_mp.bin-fddc0ae18c9845325c13704ee00b'
+                      u'd0a4.signed', u'fraction': 1.0}]}]
+        }
+    )
 
-    # Set up the test replay script.
-    paygen_build_lib.query.FindLatestPublished(
-        'foo-channel', 'foo-board').AndReturn('1.0.0')
+    mock_return_not_foo = paygen_build_lib.json.dumps(
+        {'omaha_data':
+         [{u'is_mp_keyset': True, u'chrome_version': u'47.0.2514.0',
+           u'keyset': u'notfoo-mp',
+           u'board':
+           {u'public_codename': u'notfoo-board', u'is_active': True},
+           u'chrome_os_version': u'7478.0.0', u'channel': u'notfoo-channel',
+           u'payloads':
+           [{u'max_fraction': False,
+             u'name': u'notfoo-channel/notfoo/7478.0.0/payloads/'
+                      u'chromeos_7475.0.0-7478.0.0_notfoo_notfoo'
+                      u'-channel_delta_mp.bin-877f148a914c1cdbe2'
+                      u'42aa4247a1d135.signed', u'fraction': 1.0},
+            {u'max_fraction': False,
+             u'name': u'notfoo-channel/notfoo/7478.0.0/payloads/'
+                      u'chromeos_7478.0.0_notfoo_notfoo-channel_'
+                      u'full_mp.bin-fddc0ae18c9845325c13704ee00b'
+                      u'd0a4.signed', u'fraction': 1.0}]}]
+        }
+    )
 
-    paygen_build_lib.query.FindLatestPublished(
-        'foo-channel', 'foo-board').AndReturn(None)
+    self.mox.StubOutWithMock(gslib, 'Cat')
+    gslib.Cat(paygen_build_lib.OMAHA_URI).AndReturn(mock_return_foo)
+    gslib.Cat(paygen_build_lib.OMAHA_URI).AndReturn(mock_return_not_foo)
 
     # Run the test verification.
     self.mox.ReplayAll()
@@ -404,7 +451,7 @@ fsi_images: 2913.331.0,2465.105.0
                      [gspaths.Build(bucket='crt',
                                     channel='foo-channel',
                                     board='foo-board',
-                                    version='1.0.0')])
+                                    version='7478.0.0')])
 
     self.assertEqual(paygen._DiscoverNmoBuild(), [])
 
@@ -1250,8 +1297,6 @@ fsi_images: 2913.331.0,2465.105.0
     self.assertTrue(result.startswith(
         os.path.join(self.tempdir, 'paygen_build-control_files')))
 
-  @unittest.skipIf(not paygen_build_lib.config,
-                   'Internal crostools repository needed.')
   @unittest.skipIf(not paygen_build_lib.test_control,
                    'Autotest repository needed.')
   def testEmitControlFile(self):
@@ -1526,11 +1571,25 @@ The suite job has another 2:39:39.789250 till timeout.
 
   def testValidateBoardConfig(self):
     """Test ValidateBoardConfig."""
+    mock_return = paygen_build_lib.json.dumps(
+        {'boards':
+         [{u'omaha_config_name': u'autoupdate-ascii-memento.config',
+           u'public_codename': u'x86-mario',
+           u'hwid_match': u'IEC MARIO FISH 2330|IEC MARIO FISH 2330 DEV|'
+                          u'IEC MARIO PONY 6101|IEC MARIO PONY DVT 8784|'
+                          u'IEC MARIO PONY EVT 3495|IEC MARIO PONY TEST 6101',
+           u'is_active': True,
+           u'app_id': u'{87efface-864d-49a5-9bb3-4b050a7c227a}',
+           u'config_name': u'cr48', u'is_test_blacklist': False,
+           u'omaha_ping_hwid_match': u'IEC MARIO FISH 2330 DEV',
+           u'is_in_canary_release': True}]
+        }
+    )
 
-    # If we are running on an external builder, we can't see the config.
-    # Without the config, we can't validate.
-    if not paygen_build_lib.config:
-      return
+    self.mox.StubOutWithMock(gslib, 'Cat')
+    gslib.Cat(paygen_build_lib.BOARDS_URI).AndReturn(mock_return)
+    gslib.Cat(paygen_build_lib.BOARDS_URI).AndReturn(mock_return)
+    self.mox.ReplayAll()
 
     # Test a known board works.
     paygen_build_lib.ValidateBoardConfig('x86-mario')

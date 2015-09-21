@@ -13,7 +13,6 @@ and setting flags to show that a build has been processed.
 
 from __future__ import print_function
 
-import ConfigParser
 import json
 import operator
 import os
@@ -51,17 +50,12 @@ sys.path.insert(0, AUTOTEST_DIR)
 # will fail. We quietly ignore the failure, but leave bombs around that will
 # explode if people try to really use this library.
 try:
-  from crostools.config import config
-  from crostools.omaha import query
-
   # pylint: disable=F0401
   from site_utils.autoupdate.lib import test_params
   from site_utils.autoupdate.lib import test_control
   # pylint: enable=F0401
 
 except ImportError:
-  config = None
-  query = None
   test_params = None
   test_control = None
 
@@ -72,8 +66,10 @@ RUN_SUITE_MIN_MSTONE = 30
 # Used to format timestamps on archived paygen.log file names in GS.
 PAYGEN_LOG_TIMESTAMP_FORMAT = '%Y%m%d-%H%M%S-UTC'
 
-# Used to lookup all FSIs for all boards.
+# Board and device information published by goldeneye.
+BOARDS_URI = 'gs://chromeos-build-release-console/boards.json'
 FSI_URI = 'gs://chromeos-build-release-console/fsis.json'
+OMAHA_URI = 'gs://chromeos-build-release-console/omaha_status.json'
 
 
 class Error(Exception):
@@ -118,7 +114,7 @@ class BuildNotReady(EarlyExit):
 
 
 class BoardNotConfigured(EarlyExit):
-  """The board does not exist in the crostools release config."""
+  """The board does not exist in the published goldeneye records."""
   RESULT = 26
 
 
@@ -570,28 +566,26 @@ class _PaygenBuild(object):
       List of gspaths.Build instances for each build so discovered. The list
       may be empty.
     """
-    # TODO(dgarrett): Switch to JSON mechanism in _DiscoverAllFsiBuilds
-    #   after it's in production, and after we clear the change with the TPMs.
-    #   At that time, check and ignore FSIs without the is_delta_supported flag.
-    # TODO(pprabhu): Can't switch to _DiscoverAllFsiBuilds till the HACK there
-    #   is removed.
+    results = []
 
     # FSI versions are only defined for the stable-channel.
     if self._build.channel != 'stable-channel':
-      return []
+      return results
 
-    try:
-      fsi_versions = config.GetListValue(self._build.board, 'fsi_images')
-    except ConfigParser.NoOptionError:
-      # fsi_images is an optional field.
-      return []
+    contents = json.loads(gslib.Cat(FSI_URI))
 
-    results = []
-    for version in fsi_versions:
-      results.append(gspaths.Build(version=version,
-                                   board=self._build.board,
-                                   channel=self._build.channel,
-                                   bucket=self._build.bucket))
+    for fsi in contents.get('fsis', []):
+      fsi_active = fsi['board']['is_active']
+      fsi_board = fsi['board']['public_codename']
+      fsi_version = fsi['chrome_os_version']
+      fsi_support_delta = fsi['is_delta_supported']
+
+      if fsi_active and fsi_support_delta and fsi_board == self._build.board:
+        results.append(gspaths.Build(version=fsi_version,
+                                     board=fsi_board,
+                                     channel=self._build.channel,
+                                     bucket=self._build.bucket))
+
     return results
 
   def _DiscoverAllFsiBuilds(self):
@@ -608,20 +602,14 @@ class _PaygenBuild(object):
       may be empty.
     """
     results = []
-    # XXX:HACK -- FSI builds for this board is known to brick the DUTs in the
-    # lab. As a workaround, we're dropping test coverage for this board
-    # temporarily (crbug.com/460174).
-    # TODO(pprabhu) Remove hack once we have a real solution (crbug.com/462320).
-    if self._build.board == 'peach-pit':
-      return results
-
     contents = json.loads(gslib.Cat(FSI_URI))
 
     for fsi in contents.get('fsis', []):
       fsi_board = fsi['board']['public_codename']
       fsi_version = fsi['chrome_os_version']
+      fsi_lab_stable = fsi['is_lab_stable']
 
-      if fsi_board == self._build.board:
+      if fsi_lab_stable and fsi_board == self._build.board:
         results.append(fsi_version)
 
     return results
@@ -638,16 +626,21 @@ class _PaygenBuild(object):
       know about the currently published version, this always contain zero or
       one entries.
     """
-    self._previous_version = query.FindLatestPublished(self._build.channel,
-                                                       self._build.board)
+    results = []
 
-    if self._previous_version:
-      return [gspaths.Build(gspaths.Build(version=self._previous_version,
-                                          board=self._build.board,
-                                          channel=self._build.channel,
-                                          bucket=self._build.bucket))]
+    contents = json.loads(gslib.Cat(OMAHA_URI))
+    for nmo in contents.get('omaha_data', []):
+      nmo_board = nmo['board']['public_codename']
+      nmo_channel = nmo['channel']
+      nmo_version = nmo['chrome_os_version']
 
-    return []
+      if nmo_board == self._build.board and nmo_channel == self._build.channel:
+        results.append(gspaths.Build(gspaths.Build(version=nmo_version,
+                                                   board=self._build.board,
+                                                   channel=self._build.channel,
+                                                   bucket=self._build.bucket)))
+
+    return results
 
   def _DiscoverRequiredFullPayloads(self, images):
     """Find the Payload objects for the images from the current build.
@@ -1413,8 +1406,11 @@ def ValidateBoardConfig(board):
     BoardNotConfigured if the board is unknown.
   """
   # Right now, we just validate that the board exists.
-  if board not in config.GetCompleteBoardSet():
-    raise BoardNotConfigured(board)
+  boards = json.loads(gslib.Cat(BOARDS_URI))
+  for b in boards.get('boards', []):
+    if b['public_codename'] == board:
+      return
+  raise BoardNotConfigured(board)
 
 
 def CreatePayloads(build, work_dir, site_config, dry_run=False,
