@@ -93,28 +93,28 @@
   </translations>
   <release allow_pseudo="false" seq="1">
     <messages fallback_to_english="true">
-      <message desc="Contextual action bar item for sharing a block of text via email, or other method. [CHAR-LIMIT=24]" name="IDS_ACTIONBAR_SHARE">
+      <message name="IDS_ACTIONBAR_SHARE" desc="Contextual action bar item for sharing a block of text via email, or other method. [CHAR-LIMIT=24]">
         Share
       </message>
-      <message desc="Contextual action bar item for using the selected text in a internet search. [CHAR-LIMIT=24]" name="IDS_ACTIONBAR_WEB_SEARCH">
+      <message name="IDS_ACTIONBAR_WEB_SEARCH" desc="Contextual action bar item for using the selected text in a internet search. [CHAR-LIMIT=24]">
         Web search
       </message>
-      <message desc="Title of the text selection contextual action bar on tablets. [CHAR-LIMIT=30]" name="IDS_ACTIONBAR_TEXTSELECTION_TITLE">
+      <message name="IDS_ACTIONBAR_TEXTSELECTION_TITLE" desc="Title of the text selection contextual action bar on tablets. [CHAR-LIMIT=30]">
         Text selection
       </message>
-      <message desc="NO DESCRIPTION [CHAR-LIMIT=32]" name="IDS_MEDIA_PLAYER_ERROR_TITLE">
+      <message name="IDS_MEDIA_PLAYER_ERROR_TITLE" desc="Title of dialog explaining that a video cannot be played due to an error [CHAR-LIMIT=32]">
         Cannot play video
       </message>
-      <message desc="NO DESCRIPTION [CHAR-LIMIT=100]" name="IDS_MEDIA_PLAYER_ERROR_TEXT_INVALID_PROGRESSIVE_PLAYBACK">
+      <message name="IDS_MEDIA_PLAYER_ERROR_TEXT_INVALID_PROGRESSIVE_PLAYBACK" desc="Dialog text explaining why a video cannot be played">
         Sorry, this video is not valid for streaming to this device.
       </message>
-      <message desc="NO DESCRIPTION [CHAR-LIMIT=100]" name="IDS_MEDIA_PLAYER_ERROR_TEXT_UNKNOWN">
+      <message name="IDS_MEDIA_PLAYER_ERROR_TEXT_UNKNOWN" desc="Dialog text explaining that a video cannot be played">
         Sorry, this video cannot be played.
       </message>
-      <message desc="NO DESCRIPTION [CHAR-LIMIT=16]" name="IDS_MEDIA_PLAYER_ERROR_BUTTON">
+      <message name="IDS_MEDIA_PLAYER_ERROR_BUTTON" desc="OK button to dismiss an error dialog [CHAR-LIMIT=16]">
         OK
       </message>
-      <message desc="NO DESCRIPTION [CHAR-LIMIT=16]" name="IDS_MEDIA_PLAYER_LOADING_VIDEO">
+      <message name="IDS_MEDIA_PLAYER_LOADING_VIDEO" desc="Text shown while a video is loading [CHAR-LIMIT=16]">
         Loading video
       </message>
       <message name="IDS_PROFILER_STARTED_TOAST" desc="Toast notifying the user that profiler started">
