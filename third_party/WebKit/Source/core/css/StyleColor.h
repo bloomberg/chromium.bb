@@ -31,6 +31,7 @@
 #ifndef StyleColor_h
 #define StyleColor_h
 
+#include "core/CSSValueKeywords.h"
 #include "platform/graphics/Color.h"
 #include "wtf/Allocator.h"
 
@@ -39,6 +40,7 @@ namespace blink {
 class StyleColor {
     DISALLOW_ALLOCATION();
 public:
+    StyleColor() : m_currentColor(true) { }
     StyleColor(Color color) : m_color(color), m_currentColor(false) { }
     static StyleColor currentColor() { return StyleColor(); }
 
@@ -47,8 +49,9 @@ public:
 
     Color resolve(Color currentColor) const { return m_currentColor ? currentColor : m_color; }
 
+    static Color colorFromKeyword(CSSValueID);
+
 private:
-    StyleColor() : m_currentColor(true) { }
     Color m_color;
     bool m_currentColor;
 };

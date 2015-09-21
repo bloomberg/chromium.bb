@@ -29,6 +29,7 @@
 #include "core/dom/TextLinkColors.h"
 
 #include "core/css/CSSPrimitiveValue.h"
+#include "core/css/StyleColor.h"
 #include "core/layout/LayoutTheme.h"
 #include "wtf/text/WTFString.h"
 
@@ -57,15 +58,6 @@ void TextLinkColors::resetActiveLinkColor()
     m_activeLinkColor = Color(255, 0, 0);
 }
 
-static Color colorForCSSValue(CSSValueID cssValueId)
-{
-    if (const char* valueName = getValueName(cssValueId)) {
-        if (const NamedColor* namedColor = findColor(valueName, strlen(valueName)))
-            return Color(namedColor->ARGBValue);
-    }
-    return LayoutTheme::theme().systemColor(cssValueId);
-}
-
 Color TextLinkColors::colorFromPrimitiveValue(const CSSPrimitiveValue* value, Color currentColor, bool forVisitedLink) const
 {
     if (value->isRGBColor())
@@ -87,7 +79,7 @@ Color TextLinkColors::colorFromPrimitiveValue(const CSSPrimitiveValue* value, Co
     case CSSValueCurrentcolor:
         return currentColor;
     default:
-        return colorForCSSValue(valueID);
+        return StyleColor::colorFromKeyword(valueID);
     }
 }
 

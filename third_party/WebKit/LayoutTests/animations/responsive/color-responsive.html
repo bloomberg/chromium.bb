@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<script src="resources/responsive-test.js"></script>
+<script>
+assertResponsive({
+  property: 'color',
+  from: 'inherit',
+  to: 'green',
+  configurations: [{
+    state: {inherited: 'blue'},
+    expect: [
+      {at: 0.25, is: 'rgb(0, 32, 191)'},
+      {at: 0.75, is: 'rgb(0, 96, 64)'},
+    ],
+  }, {
+    state: {inherited: 'yellow'},
+    expect: [
+      {at: 0.25, is: 'rgb(191, 223, 0)'},
+      {at: 0.75, is: 'rgb(64, 160, 0)'},
+    ],
+  }],
+});
+
+assertResponsive({
+  property: 'color',
+  from: 'currentcolor',
+  to: 'green',
+  configurations: [{
+    state: {inherited: 'blue'},
+    expect: [
+      {at: 0.25, is: 'rgb(0, 32, 191)'},
+      {at: 0.75, is: 'rgb(0, 96, 64)'},
+    ],
+  }, {
+    state: {inherited: 'yellow'},
+    expect: [
+      {at: 0.25, is: 'rgb(191, 223, 0)'},
+      {at: 0.75, is: 'rgb(64, 160, 0)'},
+    ],
+  }],
+});
+</script>

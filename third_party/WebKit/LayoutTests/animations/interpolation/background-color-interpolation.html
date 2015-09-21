@@ -10,6 +10,7 @@
   display: inline-block;
   border: 2px solid black;
   margin-right: 2px;
+  color: rgba(0, 0, 255, 0.5);
   background-color: black;
 }
 .expected {
@@ -31,6 +32,7 @@ assertInterpolation({
   {at: 1, is: 'rgb(0, 128, 0)'},
   {at: 1.5, is: 'rgb(0, 192, 0)'},
 ]);
+
 assertInterpolation({
   property: 'background-color',
   from: 'initial',
@@ -43,6 +45,7 @@ assertInterpolation({
   {at: 1, is: 'rgb(0, 128, 0)'},
   {at: 1.5, is: 'rgb(0, 192, 0)'},
 ]);
+
 assertInterpolation({
   property: 'background-color',
   from: 'inherit',
@@ -55,6 +58,7 @@ assertInterpolation({
   {at: 1, is: 'rgb(0, 128, 0)'},
   {at: 1.5, is: 'rgb(0, 73, 0)'},
 ]);
+
 assertInterpolation({
   property: 'background-color',
   from: 'unset',
@@ -79,6 +83,33 @@ assertInterpolation({
   {at: 0.6, is: 'rgb(255, 201, 102)'},
   {at: 1, is: 'orange'},
   {at: 1.5, is: 'rgb(255, 120, 0)'},
+]);
+
+assertInterpolation({
+  property: 'background-color',
+  from: 'transparent',
+  to: 'green',
+}, [
+  {at: -0.3, is: 'rgba(0, 0, 0, 0)'},
+  {at: 0, is: 'rgba(0, 0, 0, 0)'},
+  {at: 0.3, is: 'rgba(0, 128, 0, 0.3)'},
+  {at: 0.6, is: 'rgba(0, 128, 0, 0.6)'},
+  {at: 1, is: 'rgb(0, 128, 0)'},
+  {at: 1.5, is: 'rgb(0, 192, 0)'},
+]);
+
+assertInterpolation({
+  property: 'background-color',
+  from: 'currentcolor',
+  to: 'rgba(0, 255, 0, 0.75)',
+}, [
+  {at: -0.5, is: 'rgba(0, 0, 255, 0.37)'},
+  {at: 0, is: 'rgba(0, 0, 255, 0.5)'},
+  {at: 0.25, is: 'rgba(0, 85, 170, 0.56)'},
+  {at: 0.5, is: 'rgba(0, 153, 102, 0.62)'},
+  {at: 0.75, is: 'rgba(0, 209, 46, 0.69)'},
+  {at: 1, is: 'rgba(0, 255, 0, 0.75)'},
+  {at: 1.5, is: 'rgba(0, 255, 0, 0.87)'},
 ]);
 </script>
 </body>
