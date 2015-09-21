@@ -1487,43 +1487,29 @@ bool IsWebpageEmpty(const blink::WebFrame* frame) {
          IsWebElementEmpty(document.body());
 }
 
-bool IsWebElementEmpty(const blink::WebElement& element) {
-  // This array contains all tags which can be present in an empty page.
-  const char* const kAllowedValue[] = {
-    "script",
-    "meta",
-    "title",
-  };
-  const size_t kAllowedValueLength = arraysize(kAllowedValue);
+bool IsWebElementEmpty(const blink::WebElement& root) {
+  CR_DEFINE_STATIC_LOCAL(WebString, kScript, ("script"));
+  CR_DEFINE_STATIC_LOCAL(WebString, kMeta, ("meta"));
+  CR_DEFINE_STATIC_LOCAL(WebString, kTitle, ("title"));
 
-  if (element.isNull())
+  if (root.isNull())
     return true;
-  // The childNodes method is not a const method. Therefore it cannot be called
-  // on a const reference. Therefore we need a const cast.
-  const blink::WebNodeList& children =
-      const_cast<blink::WebElement&>(element).childNodes();
-  for (size_t i = 0; i < children.length(); ++i) {
-    const blink::WebNode& item = children.item(i);
 
-    if (item.isTextNode() &&
-        !base::ContainsOnlyChars(item.nodeValue().utf8(),
+  for (WebNode child = root.firstChild();
+      !child.isNull();
+      child = child.nextSibling()) {
+    if (child.isTextNode() &&
+        !base::ContainsOnlyChars(child.nodeValue().utf8(),
                                  base::kWhitespaceASCII))
       return false;
 
-    if (!item.isElementNode())
+    if (!child.isElementNode())
       continue;
 
-    bool tag_is_allowed = false;
-    // Test if the item name is in the kAllowedValue array
-    for (size_t allowed_value_index = 0;
-         allowed_value_index < kAllowedValueLength; ++allowed_value_index) {
-      if (HasTagName(item,
-                     WebString::fromUTF8(kAllowedValue[allowed_value_index]))) {
-        tag_is_allowed = true;
-        break;
-      }
-    }
-    if (!tag_is_allowed)
+    WebElement element = child.to<WebElement>();
+    if (!element.hasHTMLTagName(kScript) &&
+        !element.hasHTMLTagName(kMeta) &&
+        !element.hasHTMLTagName(kTitle))
       return false;
   }
   return true;
