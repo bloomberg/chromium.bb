@@ -198,7 +198,7 @@ class ToolbarActionsBarBridge : public ToolbarActionsBarDelegate {
                         int target_width,
                         bool suppress_chevron) override;
   void SetChevronVisibility(bool chevron_visible) override;
-  int GetWidth() const override;
+  int GetWidth(GetWidthTime get_width_time) const override;
   bool IsAnimating() const override;
   void StopAnimating() override;
   int GetChevronWidth() const override;
@@ -251,8 +251,12 @@ void ToolbarActionsBarBridge::SetChevronVisibility(bool chevron_visible) {
                         inFrame:[[controller_ containerView] frame]];
 }
 
-int ToolbarActionsBarBridge::GetWidth() const {
-  return NSWidth([[controller_ containerView] frame]);
+int ToolbarActionsBarBridge::GetWidth(GetWidthTime get_width_time) const {
+  NSRect frame =
+      get_width_time == ToolbarActionsBarDelegate::GET_WIDTH_AFTER_ANIMATION
+          ? [[controller_ containerView] animationEndFrame]
+          : [[controller_ containerView] frame];
+  return NSWidth(frame);
 }
 
 bool ToolbarActionsBarBridge::IsAnimating() const {

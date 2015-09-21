@@ -244,7 +244,7 @@ class BrowserActionsContainer
                         int target_width,
                         bool suppress_chevron) override;
   void SetChevronVisibility(bool chevron_visible) override;
-  int GetWidth() const override;
+  int GetWidth(GetWidthTime get_width_time) const override;
   bool IsAnimating() const override;
   void StopAnimating() override;
   int GetChevronWidth() const override;

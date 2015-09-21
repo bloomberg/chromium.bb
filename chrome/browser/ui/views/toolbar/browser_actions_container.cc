@@ -188,6 +188,7 @@ bool BrowserActionsContainer::ShownInsideMenu() const {
 }
 
 void BrowserActionsContainer::OnToolbarActionViewDragDone() {
+  toolbar_actions_bar_->OnDragEnded();
   FOR_EACH_OBSERVER(BrowserActionsContainerObserver,
                     observers_,
                     OnBrowserActionDragDone());
@@ -304,8 +305,11 @@ void BrowserActionsContainer::SetChevronVisibility(bool visible) {
     chevron_->SetVisible(visible);
 }
 
-int BrowserActionsContainer::GetWidth() const {
-  return width();
+int BrowserActionsContainer::GetWidth(GetWidthTime get_width_time) const {
+  return get_width_time == GET_WIDTH_AFTER_ANIMATION &&
+                 animation_target_size_ > 0
+             ? animation_target_size_
+             : width();
 }
 
 bool BrowserActionsContainer::IsAnimating() const {
@@ -583,6 +587,7 @@ void BrowserActionsContainer::GetAccessibleState(
 void BrowserActionsContainer::WriteDragDataForView(View* sender,
                                                    const gfx::Point& press_pt,
                                                    OSExchangeData* data) {
+  toolbar_actions_bar_->OnDragStarted();
   DCHECK(data);
 
   ToolbarActionViews::iterator iter = std::find(toolbar_action_views_.begin(),

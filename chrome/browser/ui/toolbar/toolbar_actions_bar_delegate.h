@@ -19,6 +19,11 @@ class ExtensionMessageBubbleController;
 // ToolbarActionsBar.
 class ToolbarActionsBarDelegate {
  public:
+  enum GetWidthTime {
+    GET_WIDTH_CURRENT,          // Returns the current width.
+    GET_WIDTH_AFTER_ANIMATION,  // Returns the width after a running animation.
+  };
+
   virtual ~ToolbarActionsBarDelegate() {}
 
   // Adds a view for the given |action| at |index|.
@@ -45,8 +50,8 @@ class ToolbarActionsBarDelegate {
   // Sets the overflow chevron's visibility.
   virtual void SetChevronVisibility(bool chevron_visible) = 0;
 
-  // Returns the current width of the view.
-  virtual int GetWidth() const = 0;
+  // Returns the width of the view according to |get_width_time|.
+  virtual int GetWidth(GetWidthTime get_width_time) const = 0;
 
   // Returns true if the view is animating.
   virtual bool IsAnimating() const = 0;

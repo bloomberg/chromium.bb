@@ -17,6 +17,13 @@
 #include "ui/views/controls/menu/menu_item_view.h"
 #include "ui/views/controls/menu/submenu_view.h"
 
+namespace {
+// The delay before we close the wrench menu if this was opened for a drop so
+// that the user can see a browser action if one was moved.
+// This can be changed for tests.
+int g_close_menu_delay = 300;
+}
+
 ExtensionToolbarMenuView::ExtensionToolbarMenuView(Browser* browser,
                                                    WrenchMenu* wrench_menu)
     : browser_(browser),
@@ -35,12 +42,10 @@ ExtensionToolbarMenuView::ExtensionToolbarMenuView(Browser* browser,
   // that will be visible in ShouldShow().
   container_->Layout();
 
-  // If we were opened for a drop command, we have to wait for the drop to
-  // finish so we can close the wrench menu.
-  if (wrench_menu_->for_drop()) {
-    browser_actions_container_observer_.Add(container_);
-    browser_actions_container_observer_.Add(main);
-  }
+  // Listen for the drop to finish so we can close the wrench menu, if
+  // necessary.
+  browser_actions_container_observer_.Add(container_);
+  browser_actions_container_observer_.Add(main);
 
   // In *very* extreme cases, it's possible that there are so many overflowed
   // actions, we won't be able to show them all. Cap the height so that the
@@ -86,16 +91,21 @@ void ExtensionToolbarMenuView::Layout() {
   views::ScrollView::Layout();
 }
 
-void ExtensionToolbarMenuView::OnBrowserActionDragDone() {
-  // The delay before we close the wrench menu if this was opened for a drop so
-  // that the user can see a browser action if one was moved.
-  static const int kCloseMenuDelay = 300;
+void ExtensionToolbarMenuView::set_close_menu_delay_for_testing(int delay) {
+  g_close_menu_delay = delay;
+}
 
-  DCHECK(wrench_menu_->for_drop());
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, base::Bind(&ExtensionToolbarMenuView::CloseWrenchMenu,
-                            weak_factory_.GetWeakPtr()),
-      base::TimeDelta::FromMilliseconds(kCloseMenuDelay));
+void ExtensionToolbarMenuView::OnBrowserActionDragDone() {
+  // We need to close the wrench menu if it was just opened for the drag and
+  // drop, or if there are no more extensions in the overflow menu after a drag
+  // and drop
+  if (wrench_menu_->for_drop() ||
+      container_->toolbar_actions_bar()->GetIconCount() == 0) {
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, base::Bind(&ExtensionToolbarMenuView::CloseWrenchMenu,
+                              weak_factory_.GetWeakPtr()),
+        base::TimeDelta::FromMilliseconds(g_close_menu_delay));
+  }
 }
 
 void ExtensionToolbarMenuView::CloseWrenchMenu() {

@@ -11,6 +11,7 @@
 #include "chrome/browser/ui/views/frame/test_with_browser_view.h"
 #include "chrome/browser/ui/views/tabs/tab_drag_controller_interactive_uitest.h"
 #include "chrome/browser/ui/views/toolbar/browser_actions_container.h"
+#include "chrome/browser/ui/views/toolbar/extension_toolbar_menu_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/browser/ui/views/toolbar/wrench_toolbar_button.h"
 #include "chrome/test/base/interactive_test_utils.h"
@@ -105,6 +106,9 @@ void ToolbarViewInteractiveUITest::DoDragAndDrop(const gfx::Point& start,
                             end.x(), end.y()),
       base::TimeDelta::FromMilliseconds(200));
   runner->Run();
+
+  // The wrench menu should have closed once the drag-and-drop completed.
+  EXPECT_FALSE(toolbar_view()->IsWrenchMenuShowing());
 }
 
 void ToolbarViewInteractiveUITest::TestWhileInDragOperation() {
@@ -133,6 +137,7 @@ void ToolbarViewInteractiveUITest::SetUpCommandLine(
 
 void ToolbarViewInteractiveUITest::SetUpOnMainThread() {
   ExtensionBrowserTest::SetUpOnMainThread();
+  ExtensionToolbarMenuView::set_close_menu_delay_for_testing(0);
 
   toolbar_view_ = BrowserView::GetBrowserViewForBrowser(browser())->toolbar();
   browser_actions_ = toolbar_view_->browser_actions();

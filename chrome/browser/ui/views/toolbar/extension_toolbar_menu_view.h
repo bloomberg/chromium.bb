@@ -39,6 +39,10 @@ class ExtensionToolbarMenuView : public views::ScrollView,
     return container_;
   }
 
+  // Sets the time delay the wrench menu takes to close after a drag-and-drop
+  // operation.
+  static void set_close_menu_delay_for_testing(int delay);
+
  private:
   // BrowserActionsContainerObserver:
   void OnBrowserActionDragDone() override;

@@ -158,6 +158,15 @@ class ToolbarActionsBar : public ToolbarActionsModel::Observer {
   // the new width is |width|.
   void OnResizeComplete(int width);
 
+  // Notifies the ToolbarActionsBar that the user has started a drag-and-drop
+  // sequence.
+  void OnDragStarted();
+
+  // Notifies the ToolbarActionsBar that a drag-and-drop sequence ended. This
+  // may not coincide with OnDragDrop(), since the view may be dropped somewhere
+  // else.
+  void OnDragEnded();
+
   // Notifies the ToolbarActionsBar that a user completed a drag and drop event,
   // and dragged the view from |dragged_index| to |dropped_index|.
   // |drag_type| indicates whether or not the icon was dragged between the
@@ -298,6 +307,9 @@ class ToolbarActionsBar : public ToolbarActionsModel::Observer {
   // True if we have checked to see if there is an extension bubble that should
   // be displayed, and, if there is, shown that bubble.
   bool checked_extension_bubble_;
+
+  // Whether or not the user is in the middle of a drag-and-drop operation.
+  bool is_drag_in_progress_;
 
   // The action, if any, which is currently "popped out" of the overflow in
   // order to show a popup.

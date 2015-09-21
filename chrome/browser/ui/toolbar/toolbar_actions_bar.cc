@@ -125,6 +125,7 @@ ToolbarActionsBar::ToolbarActionsBar(ToolbarActionsBarDelegate* delegate,
       suppress_layout_(false),
       suppress_animation_(true),
       checked_extension_bubble_(false),
+      is_drag_in_progress_(false),
       popped_out_action_(nullptr),
       weak_ptr_factory_(this) {
   if (model_)  // |model_| can be null in unittests.
@@ -269,13 +270,20 @@ size_t ToolbarActionsBar::GetStartIndexInBounds() const {
 }
 
 size_t ToolbarActionsBar::GetEndIndexInBounds() const {
-  return in_overflow_mode() ?
-      toolbar_actions_.size() : WidthToIconCount(delegate_->GetWidth());
+  // The end index for the main bar is however many icons can fit with the given
+  // width. We take the width-after-animation here so that we don't have to
+  // constantly adjust both this and the overflow as the size changes (the
+  // animations are small and fast enough that this doesn't cause problems).
+  return in_overflow_mode()
+             ? toolbar_actions_.size()
+             : WidthToIconCount(delegate_->GetWidth(
+                   ToolbarActionsBarDelegate::GET_WIDTH_AFTER_ANIMATION));
 }
 
 bool ToolbarActionsBar::NeedsOverflow() const {
   DCHECK(!in_overflow_mode());
-  return GetEndIndexInBounds() != toolbar_actions_.size();
+  return GetEndIndexInBounds() != toolbar_actions_.size() ||
+         is_drag_in_progress_;
 }
 
 gfx::Rect ToolbarActionsBar::GetFrameForIndex(
@@ -432,15 +440,30 @@ void ToolbarActionsBar::OnResizeComplete(int width) {
   model_->SetVisibleIconCount(resized_count);
 }
 
+void ToolbarActionsBar::OnDragStarted() {
+  // All drag-and-drop commands should go to the main bar.
+  ToolbarActionsBar* main_bar = in_overflow_mode() ? main_bar_ : this;
+  DCHECK(!main_bar->is_drag_in_progress_);
+  main_bar->is_drag_in_progress_ = true;
+}
+
+void ToolbarActionsBar::OnDragEnded() {
+  // All drag-and-drop commands should go to the main bar.
+  ToolbarActionsBar* main_bar = in_overflow_mode() ? main_bar_ : this;
+  DCHECK(main_bar->is_drag_in_progress_);
+  main_bar->is_drag_in_progress_ = false;
+}
+
 void ToolbarActionsBar::OnDragDrop(int dragged_index,
                                    int dropped_index,
                                    DragType drag_type) {
-  // All drag-and-drop commands should go to the main bar.
   if (in_overflow_mode()) {
+    // All drag-and-drop commands should go to the main bar.
     main_bar_->OnDragDrop(dragged_index, dropped_index, drag_type);
     return;
   }
 
+  is_drag_in_progress_ = false;
   int delta = 0;
   if (drag_type == DRAG_TO_OVERFLOW)
     delta = -1;
@@ -653,7 +676,8 @@ void ToolbarActionsBar::OnToolbarVisibleCountChanged() {
 void ToolbarActionsBar::ResizeDelegate(gfx::Tween::Type tween_type,
                                        bool suppress_chevron) {
   int desired_width = GetPreferredSize().width();
-  if (desired_width != delegate_->GetWidth()) {
+  if (desired_width !=
+      delegate_->GetWidth(ToolbarActionsBarDelegate::GET_WIDTH_CURRENT)) {
     delegate_->ResizeAndAnimate(tween_type, desired_width, suppress_chevron);
   } else if (delegate_->IsAnimating()) {
     // It's possible that we're right where we're supposed to be in terms of
