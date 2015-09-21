@@ -4,7 +4,6 @@
 
 #include "chrome/browser/stack_sampling_configuration.h"
 
-#include "base/rand_util.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/common/channel_info.h"
 #include "components/version_info/version_info.h"
@@ -21,11 +20,8 @@ bool IsProfilerEnabledForCurrentChannel() {
 }  // namespace
 
 StackSamplingConfiguration::StackSamplingConfiguration()
-    // We must do our own randomization here, rather than relying on a
-    // traditional field trial, because the configuration is needed to start the
-    // profiler before the metrics system is set up.
-    : configuration_(static_cast<ProfileConfiguration>(
-        base::RandInt(0, PROFILE_COUNT))) {
+    // Disabled pending fixes for deadlock scenarios. https://crbug.com/528129.
+    : configuration_(PROFILE_DISABLED) {
 }
 
 base::StackSamplingProfiler::SamplingParams
