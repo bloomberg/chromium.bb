@@ -35,6 +35,21 @@ void UIEventWithKeyState::didCreateEventInIsolatedWorld(bool ctrlKey, bool shift
     s_newTabModifierSetFromIsolatedWorld |= newTabModifierSet;
 }
 
+bool UIEventWithKeyState::getModifierState(const String& keyIdentifier) const
+{
+    // FIXME: The following keyIdentifiers are not supported yet (crbug.com/265458):
+    // "AltGraph", "CapsLock", "Fn", "NumLock", "ScrollLock", "SymbolLock", "OS".
+    if (keyIdentifier == "Control")
+        return ctrlKey();
+    if (keyIdentifier == "Shift")
+        return shiftKey();
+    if (keyIdentifier == "Alt")
+        return altKey();
+    if (keyIdentifier == "Meta")
+        return metaKey();
+    return false;
+}
+
 UIEventWithKeyState* findEventWithKeyState(Event* event)
 {
     for (Event* e = event; e; e = e->underlyingEvent())

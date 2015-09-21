@@ -76,8 +76,6 @@ public:
 
     unsigned location() const { return m_location; }
 
-    bool getModifierState(const String& keyIdentifier) const;
-
     const PlatformKeyboardEvent* keyEvent() const { return m_keyEvent.get(); }
 
     int keyCode() const; // key code for keydown and keyup, character for keypress

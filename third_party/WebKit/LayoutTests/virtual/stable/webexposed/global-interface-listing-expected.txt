@@ -2915,6 +2915,7 @@ interface MouseEvent
     getter x
     getter y
     method constructor
+    method getModifierState
     method initMouseEvent
 interface MutationEvent
     attribute ADDITION

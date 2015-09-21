@@ -34,7 +34,7 @@
     readonly attribute short            button;
     readonly attribute unsigned short   buttons;
     readonly attribute EventTarget?     relatedTarget;
-    // TODO(philipj): boolean getModifierState(DOMString keyArg);
+    boolean getModifierState(DOMString keyArg);
 
     // https://w3c.github.io/uievents/#idl-interface-MouseEvent-initializers
     // TODO(philipj): None of the initMouseEvent() arguments should be optional.

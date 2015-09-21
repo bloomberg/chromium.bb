@@ -42,6 +42,8 @@ public:
     static void clearNewTabModifierSetFromIsolatedWorld() { s_newTabModifierSetFromIsolatedWorld = false; }
     static void didCreateEventInIsolatedWorld(bool ctrlKey, bool shiftKey, bool altKey, bool metaKey);
 
+    bool getModifierState(const String& keyIdentifier) const;
+
 protected:
     UIEventWithKeyState()
         : m_ctrlKey(false)
