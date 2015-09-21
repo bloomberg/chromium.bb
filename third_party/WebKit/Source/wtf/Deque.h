@@ -225,6 +225,10 @@ namespace WTF {
         : m_start(0)
         , m_end(0)
     {
+        static_assert(!IsPolymorphic<T>::value || !VectorTraits<T>::canInitializeWithMemset, "Cannot initialize with memset if there is a vtable");
+#if ENABLE(OILPAN)
+        static_assert(Allocator::isGarbageCollected || !IsAllowOnlyInlineAllocation<T>::value || !NeedsTracing<T>::value, "Cannot put ALLOW_ONLY_INLINE_ALLOCATION objects that have trace methods into an off-heap Deque");
+#endif
     }
 
     template<typename T, size_t inlineCapacity, typename Allocator>
