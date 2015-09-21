@@ -394,6 +394,7 @@ void MediaDecoderJob::DecodeInternal(
     DVLOG(1) << "DecodeInternal needs flush.";
     input_eos_encountered_ = false;
     output_eos_encountered_ = false;
+    input_buf_index_ = -1;
     MediaCodecStatus reset_status = media_codec_bridge_->Reset();
     if (MEDIA_CODEC_OK != reset_status) {
       callback.Run(reset_status, kNoTimestamp(), kNoTimestamp());
