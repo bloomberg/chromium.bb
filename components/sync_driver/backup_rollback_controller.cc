@@ -2,19 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/sync/backup_rollback_controller.h"
+#include "components/sync_driver/backup_rollback_controller.h"
 
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/metrics/field_trial.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
-#include "chrome/common/chrome_switches.h"
 #include "components/sync_driver/signin_manager_wrapper.h"
 #include "components/sync_driver/sync_driver_switches.h"
 #include "components/sync_driver/sync_prefs.h"
 
-namespace browser_sync {
+namespace sync_driver {
 
 #if defined(ENABLE_PRE_SYNC_BACKUP)
 // Number of rollback attempts to try before giving up.
@@ -33,11 +32,9 @@ BackupRollbackController::BackupRollbackController(
     : sync_prefs_(sync_prefs),
       signin_(signin),
       start_backup_(start_backup),
-      start_rollback_(start_rollback) {
-}
+      start_rollback_(start_rollback) {}
 
-BackupRollbackController::~BackupRollbackController() {
-}
+BackupRollbackController::~BackupRollbackController() {}
 
 bool BackupRollbackController::StartBackup() {
   if (!IsBackupEnabled())
@@ -64,7 +61,7 @@ bool BackupRollbackController::StartRollback() {
 
   int rollback_tries = sync_prefs_->GetRemainingRollbackTries();
   if (rollback_tries <= 0)
-    return false;   // No pending rollback.
+    return false;  // No pending rollback.
 
   sync_prefs_->SetRemainingRollbackTries(rollback_tries - 1);
   base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, start_rollback_);
@@ -100,4 +97,4 @@ bool BackupRollbackController::IsBackupEnabled() {
 #endif
 }
 
-}  // namespace browser_sync
+}  // namespace sync_driver

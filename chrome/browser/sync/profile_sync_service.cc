@@ -258,7 +258,7 @@ ProfileSyncService::ProfileSyncService(
       base::Bind(&ProfileSyncService::StartUpSlowBackendComponents,
                  startup_controller_weak_factory_.GetWeakPtr(),
                  SYNC)));
-  backup_rollback_controller_.reset(new browser_sync::BackupRollbackController(
+  backup_rollback_controller_.reset(new sync_driver::BackupRollbackController(
       &sync_prefs_,
       signin_.get(),
       base::Bind(&ProfileSyncService::StartUpSlowBackendComponents,
@@ -361,7 +361,7 @@ void ProfileSyncService::Initialize() {
 #endif
 
   bool running_rollback = false;
-  if (browser_sync::BackupRollbackController::IsBackupEnabled()) {
+  if (sync_driver::BackupRollbackController::IsBackupEnabled()) {
     // Backup is needed if user's not signed in or signed in but previous
     // backup didn't finish, i.e. backend didn't switch from backup to sync.
     need_backup_ = !IsSignedIn() || sync_prefs_.GetFirstSyncTime().is_null();
@@ -2242,7 +2242,7 @@ void ProfileSyncService::GoogleSignedOut(const std::string& account_id,
   sync_disabled_by_admin_ = false;
   RequestStop(CLEAR_DATA);
 
-  if (browser_sync::BackupRollbackController::IsBackupEnabled()) {
+  if (sync_driver::BackupRollbackController::IsBackupEnabled()) {
     need_backup_ = true;
     backup_finished_ = false;
   }

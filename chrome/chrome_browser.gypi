@@ -2841,8 +2841,6 @@
       'browser/supervised_user/supervised_user_theme.h',
     ],
     'chrome_browser_sync_sources': [
-      'browser/sync/backup_rollback_controller.cc',
-      'browser/sync/backup_rollback_controller.h',
       'browser/sync/chrome_sync_client.cc',
       'browser/sync/chrome_sync_client.h',
       'browser/sync/glue/autofill_data_type_controller.cc',

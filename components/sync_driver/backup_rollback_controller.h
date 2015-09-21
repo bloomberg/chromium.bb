@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SYNC_BACKUP_ROLLBACK_CONTROLLER_H_
-#define CHROME_BROWSER_SYNC_BACKUP_ROLLBACK_CONTROLLER_H_
+#ifndef COMPONENTS_SYNC_DRIVER_BACKUP_ROLLBACK_CONTROLLER_H_
+#define COMPONENTS_SYNC_DRIVER_BACKUP_ROLLBACK_CONTROLLER_H_
 
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
@@ -11,10 +11,8 @@
 class SigninManagerWrapper;
 
 namespace sync_driver {
-class SyncPrefs;
-}
 
-namespace browser_sync {
+class SyncPrefs;
 
 // BackupRollbackController takes two closures for starting backup/rollback
 // process. It calls the closures according to user's signin status or
@@ -58,6 +56,6 @@ class BackupRollbackController {
   DISALLOW_COPY_AND_ASSIGN(BackupRollbackController);
 };
 
-}  // namespace browser_sync
+}  // namespace sync_driver
 
-#endif  // CHROME_BROWSER_SYNC_BACKUP_ROLLBACK_CONTROLLER_H_
+#endif  // COMPONENTS_SYNC_DRIVER_BACKUP_ROLLBACK_CONTROLLER_H_

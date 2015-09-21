@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/sync/backup_rollback_controller.h"
+#include "components/sync_driver/backup_rollback_controller.h"
 
 #include "base/command_line.h"
 #include "base/location.h"
@@ -59,7 +59,7 @@ class BackupRollbackControllerTest : public testing::Test {
     EXPECT_CALL(signin_wrapper_, GetEffectiveUsername())
         .WillRepeatedly(Return(""));
 
-    controller_.reset(new browser_sync::BackupRollbackController(
+    controller_.reset(new sync_driver::BackupRollbackController(
         &fake_prefs_, &signin_wrapper_,
         base::Bind(&BackupRollbackControllerTest::ControllerCallback,
                    base::Unretained(this), true),
@@ -75,7 +75,7 @@ class BackupRollbackControllerTest : public testing::Test {
 
   MockSigninManagerWrapper signin_wrapper_;
   FakeSyncPrefs fake_prefs_;
-  scoped_ptr<browser_sync::BackupRollbackController> controller_;
+  scoped_ptr<sync_driver::BackupRollbackController> controller_;
   bool backup_started_;
   bool rollback_started_;
   base::MessageLoop loop_;
@@ -143,4 +143,3 @@ TEST_F(BackupRollbackControllerTest, NoRollbackIfDisabled) {
 #endif
 
 }  // anonymous namespace
-

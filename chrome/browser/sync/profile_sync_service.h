@@ -22,12 +22,12 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/browsing_data/browsing_data_remover.h"
-#include "chrome/browser/sync/backup_rollback_controller.h"
 #include "chrome/browser/sync/glue/sync_backend_host.h"
 #include "chrome/browser/sync/sessions/sessions_sync_manager.h"
 #include "chrome/browser/sync/startup_controller.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/signin/core/browser/signin_manager_base.h"
+#include "components/sync_driver/backup_rollback_controller.h"
 #include "components/sync_driver/data_type_controller.h"
 #include "components/sync_driver/data_type_manager.h"
 #include "components/sync_driver/data_type_manager_observer.h"
@@ -937,8 +937,7 @@ class ProfileSyncService : public sync_driver::SyncService,
 
   scoped_ptr<browser_sync::StartupController> startup_controller_;
 
-  scoped_ptr<browser_sync::BackupRollbackController>
-      backup_rollback_controller_;
+  scoped_ptr<sync_driver::BackupRollbackController> backup_rollback_controller_;
 
   // Mode of current backend.
   BackendMode backend_mode_;
