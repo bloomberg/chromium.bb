@@ -718,11 +718,25 @@ PDFViewer.prototype = {
     var verticalScrollbarWidth = hasScrollbars.vertical ? scrollbarWidth : 0;
     var horizontalScrollbarWidth =
         hasScrollbars.horizontal ? scrollbarWidth : 0;
-    var toolbarRight = Math.max(PDFViewer.MIN_TOOLBAR_OFFSET, scrollbarWidth);
-    var toolbarBottom = Math.max(PDFViewer.MIN_TOOLBAR_OFFSET, scrollbarWidth);
-    toolbarRight -= verticalScrollbarWidth;
-    toolbarBottom -= horizontalScrollbarWidth;
-    if (!this.isMaterial_) {
+    if (this.isMaterial_) {
+      // Shift the zoom toolbar to the left by half a scrollbar width. This
+      // gives a compromise: if there is no scrollbar visible then the toolbar
+      // will be half a scrollbar width further left than the spec but if there
+      // is a scrollbar visible it will be half a scrollbar width further right
+      // than the spec.
+      this.zoomToolbar_.style.right = -verticalScrollbarWidth +
+          (scrollbarWidth / 2) + 'px';
+      // Having a horizontal scrollbar is much rarer so we don't offset the
+      // toolbar from the bottom any more than what the spec says. This means
+      // that when there is a scrollbar visible, it will be a full scrollbar
+      // width closer to the bottom of the screen than usual, but this is ok.
+      this.zoomToolbar_.style.bottom = -horizontalScrollbarWidth + 'px';
+    } else {
+      var toolbarRight = Math.max(PDFViewer.MIN_TOOLBAR_OFFSET, scrollbarWidth);
+      var toolbarBottom =
+          Math.max(PDFViewer.MIN_TOOLBAR_OFFSET, scrollbarWidth);
+      toolbarRight -= verticalScrollbarWidth;
+      toolbarBottom -= horizontalScrollbarWidth;
       this.toolbar_.style.right = toolbarRight + 'px';
       this.toolbar_.style.bottom = toolbarBottom + 'px';
       // Hide the toolbar if it doesn't fit in the viewport.

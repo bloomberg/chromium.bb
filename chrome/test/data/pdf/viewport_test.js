@@ -59,6 +59,43 @@ var tests = [
     chrome.test.assertTrue(scrollbars.vertical);
     chrome.test.assertFalse(scrollbars.horizontal);
     chrome.test.succeed();
+
+    // Test the case when there is a toolbar at the top.
+    var toolbarHeight = 10;
+    var viewport =
+        new Viewport(new MockWindow(100, 100), new MockSizer(), function() {},
+                     function() {}, function() {}, 10, 1, toolbarHeight);
+    var scrollbars;
+
+    viewport.setDocumentDimensions(new MockDocumentDimensions(90, 90));
+    scrollbars = viewport.documentNeedsScrollbars_(1);
+    chrome.test.assertFalse(scrollbars.vertical);
+    chrome.test.assertFalse(scrollbars.horizontal);
+
+    viewport.setDocumentDimensions(new MockDocumentDimensions(91, 91));
+    scrollbars = viewport.documentNeedsScrollbars_(1);
+    chrome.test.assertTrue(scrollbars.vertical);
+    chrome.test.assertFalse(scrollbars.horizontal);
+
+    viewport.setDocumentDimensions(new MockDocumentDimensions(100, 100));
+    scrollbars = viewport.documentNeedsScrollbars_(1);
+    chrome.test.assertTrue(scrollbars.vertical);
+    chrome.test.assertFalse(scrollbars.horizontal);
+
+    viewport.setDocumentDimensions(new MockDocumentDimensions(101, 101));
+    scrollbars = viewport.documentNeedsScrollbars_(1);
+    chrome.test.assertTrue(scrollbars.vertical);
+    chrome.test.assertTrue(scrollbars.horizontal);
+
+    viewport.setDocumentDimensions(new MockDocumentDimensions(45, 45));
+    scrollbars = viewport.documentNeedsScrollbars_(2);
+    chrome.test.assertFalse(scrollbars.vertical);
+    chrome.test.assertFalse(scrollbars.horizontal);
+
+    viewport.setDocumentDimensions(new MockDocumentDimensions(46, 46));
+    scrollbars = viewport.documentNeedsScrollbars_(2);
+    chrome.test.assertTrue(scrollbars.vertical);
+    chrome.test.assertFalse(scrollbars.horizontal);
   },
 
   function testSetZoom() {

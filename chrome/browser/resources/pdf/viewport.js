@@ -138,7 +138,8 @@ Viewport.prototype = {
       zoomedDimensions.width += this.scrollbarWidth_;
     return {
       horizontal: zoomedDimensions.width > this.window_.innerWidth,
-      vertical: zoomedDimensions.height > this.window_.innerHeight
+      vertical: zoomedDimensions.height + this.topToolbarHeight_ >
+          this.window_.innerHeight
     };
   },
 
