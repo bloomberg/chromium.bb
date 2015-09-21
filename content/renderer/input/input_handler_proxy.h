@@ -54,11 +54,20 @@ class CONTENT_EXPORT InputHandlerProxy
   void Animate(base::TimeTicks time) override;
   void MainThreadHasStoppedFlinging() override;
   void ReconcileElasticOverscrollAndRootScroll() override;
+  void UpdateRootLayerStateForSynchronousInputHandler(
+      const gfx::ScrollOffset& total_scroll_offset,
+      const gfx::ScrollOffset& max_scroll_offset,
+      const gfx::SizeF& scrollable_size,
+      float page_scale_factor,
+      float min_page_scale_factor,
+      float max_page_scale_factor) override;
 
   // SynchronousInputHandlerProxy implementation.
   void SetOnlySynchronouslyAnimateRootFlings(
       SynchronousInputHandler* synchronous_input_handler) override;
   void SynchronouslyAnimate(base::TimeTicks time) override;
+  void SynchronouslySetRootScrollOffset(
+      const gfx::ScrollOffset& root_offset) override;
 
   // blink::WebGestureCurveTarget implementation.
   virtual bool scrollBy(const blink::WebFloatSize& offset,

@@ -4557,21 +4557,26 @@ TEST_F(LayerTreeHostImplTest, ScrollViewportRounding) {
             inner_viewport_scroll_layer->MaxScrollOffset());
 }
 
-class TestScrollOffsetDelegate : public LayerScrollOffsetDelegate {
+class TestInputHandlerClient : public InputHandlerClient {
  public:
-  TestScrollOffsetDelegate()
+  TestInputHandlerClient()
       : page_scale_factor_(0.f),
         min_page_scale_factor_(-1.f),
         max_page_scale_factor_(-1.f) {}
+  ~TestInputHandlerClient() override {}
 
-  ~TestScrollOffsetDelegate() override {}
-
-  void UpdateRootLayerState(const gfx::ScrollOffset& total_scroll_offset,
-                            const gfx::ScrollOffset& max_scroll_offset,
-                            const gfx::SizeF& scrollable_size,
-                            float page_scale_factor,
-                            float min_page_scale_factor,
-                            float max_page_scale_factor) override {
+  // InputHandlerClient implementation.
+  void WillShutdown() override {}
+  void Animate(base::TimeTicks time) override {}
+  void MainThreadHasStoppedFlinging() override {}
+  void ReconcileElasticOverscrollAndRootScroll() override {}
+  void UpdateRootLayerStateForSynchronousInputHandler(
+      const gfx::ScrollOffset& total_scroll_offset,
+      const gfx::ScrollOffset& max_scroll_offset,
+      const gfx::SizeF& scrollable_size,
+      float page_scale_factor,
+      float min_page_scale_factor,
+      float max_page_scale_factor) override {
     DCHECK(total_scroll_offset.x() <= max_scroll_offset.x());
     DCHECK(total_scroll_offset.y() <= max_scroll_offset.y());
     last_set_scroll_offset_ = total_scroll_offset;
@@ -4616,51 +4621,56 @@ class TestScrollOffsetDelegate : public LayerScrollOffsetDelegate {
 };
 
 TEST_F(LayerTreeHostImplTest, RootLayerScrollOffsetDelegation) {
-  TestScrollOffsetDelegate scroll_delegate;
+  TestInputHandlerClient scroll_watcher;
   host_impl_->SetViewportSize(gfx::Size(10, 20));
   LayerImpl* scroll_layer = SetupScrollAndContentsLayers(gfx::Size(100, 100));
   LayerImpl* clip_layer = scroll_layer->parent()->parent();
   clip_layer->SetBounds(gfx::Size(10, 20));
 
-  // Setting the delegate results in the current scroll offset being set.
+  host_impl_->BindToClient(&scroll_watcher);
+
   gfx::Vector2dF initial_scroll_delta(10.f, 10.f);
   scroll_layer->PushScrollOffsetFromMainThread(gfx::ScrollOffset());
   scroll_layer->SetScrollDelta(initial_scroll_delta);
-  host_impl_->SetRootLayerScrollOffsetDelegate(&scroll_delegate);
-  EXPECT_EQ(initial_scroll_delta.ToString(),
-            scroll_delegate.last_set_scroll_offset().ToString());
+
+  EXPECT_EQ(gfx::ScrollOffset(), scroll_watcher.last_set_scroll_offset());
+
+  // Requesting an update results in the current scroll offset being set.
+  host_impl_->RequestUpdateForSynchronousInputHandler();
+  EXPECT_EQ(gfx::ScrollOffset(initial_scroll_delta),
+            scroll_watcher.last_set_scroll_offset());
 
   // Setting the delegate results in the scrollable_size, max_scroll_offset,
   // page_scale_factor and {min|max}_page_scale_factor being set.
-  EXPECT_EQ(gfx::SizeF(100, 100), scroll_delegate.scrollable_size());
-  EXPECT_EQ(gfx::ScrollOffset(90, 80), scroll_delegate.max_scroll_offset());
-  EXPECT_EQ(1.f, scroll_delegate.page_scale_factor());
-  EXPECT_EQ(1.f, scroll_delegate.min_page_scale_factor());
-  EXPECT_EQ(1.f, scroll_delegate.max_page_scale_factor());
+  EXPECT_EQ(gfx::SizeF(100, 100), scroll_watcher.scrollable_size());
+  EXPECT_EQ(gfx::ScrollOffset(90, 80), scroll_watcher.max_scroll_offset());
+  EXPECT_EQ(1.f, scroll_watcher.page_scale_factor());
+  EXPECT_EQ(1.f, scroll_watcher.min_page_scale_factor());
+  EXPECT_EQ(1.f, scroll_watcher.max_page_scale_factor());
 
   // Put a page scale on the tree.
   host_impl_->active_tree()->PushPageScaleFromMainThread(2.f, 0.5f, 4.f);
-  EXPECT_EQ(1.f, scroll_delegate.page_scale_factor());
-  EXPECT_EQ(1.f, scroll_delegate.min_page_scale_factor());
-  EXPECT_EQ(1.f, scroll_delegate.max_page_scale_factor());
+  EXPECT_EQ(1.f, scroll_watcher.page_scale_factor());
+  EXPECT_EQ(1.f, scroll_watcher.min_page_scale_factor());
+  EXPECT_EQ(1.f, scroll_watcher.max_page_scale_factor());
   // Activation will update the delegate.
   host_impl_->ActivateSyncTree();
-  EXPECT_EQ(2.f, scroll_delegate.page_scale_factor());
-  EXPECT_EQ(.5f, scroll_delegate.min_page_scale_factor());
-  EXPECT_EQ(4.f, scroll_delegate.max_page_scale_factor());
+  EXPECT_EQ(2.f, scroll_watcher.page_scale_factor());
+  EXPECT_EQ(.5f, scroll_watcher.min_page_scale_factor());
+  EXPECT_EQ(4.f, scroll_watcher.max_page_scale_factor());
 
   // Reset the page scale for the rest of the test.
   host_impl_->active_tree()->PushPageScaleFromMainThread(1.f, 0.5f, 4.f);
-  EXPECT_EQ(2.f, scroll_delegate.page_scale_factor());
-  EXPECT_EQ(.5f, scroll_delegate.min_page_scale_factor());
-  EXPECT_EQ(4.f, scroll_delegate.max_page_scale_factor());
+  EXPECT_EQ(2.f, scroll_watcher.page_scale_factor());
+  EXPECT_EQ(.5f, scroll_watcher.min_page_scale_factor());
+  EXPECT_EQ(4.f, scroll_watcher.max_page_scale_factor());
 
   // Animating page scale can change the root offset, so it should update the
   // delegate.
   host_impl_->Animate();
-  EXPECT_EQ(1.f, scroll_delegate.page_scale_factor());
-  EXPECT_EQ(.5f, scroll_delegate.min_page_scale_factor());
-  EXPECT_EQ(4.f, scroll_delegate.max_page_scale_factor());
+  EXPECT_EQ(1.f, scroll_watcher.page_scale_factor());
+  EXPECT_EQ(.5f, scroll_watcher.min_page_scale_factor());
+  EXPECT_EQ(4.f, scroll_watcher.max_page_scale_factor());
 
   // The pinch gesture doesn't put the delegate into a state where the scroll
   // offset is outside of the scroll range.  (this is verified by DCHECKs in the
@@ -4678,19 +4688,19 @@ TEST_F(LayerTreeHostImplTest, RootLayerScrollOffsetDelegation) {
 
   EXPECT_EQ(InputHandler::SCROLL_STARTED,
             host_impl_->ScrollBegin(gfx::Point(), InputHandler::GESTURE));
-  host_impl_->OnRootLayerDelegatedScrollOffsetChanged(current_offset);
+  host_impl_->SetSynchronousInputHandlerRootScrollOffset(current_offset);
 
   host_impl_->ScrollBy(gfx::Point(), scroll_delta);
   EXPECT_EQ(ScrollOffsetWithDelta(current_offset, scroll_delta),
-            scroll_delegate.last_set_scroll_offset());
+            scroll_watcher.last_set_scroll_offset());
 
   current_offset = gfx::ScrollOffset(42.f, 41.f);
-  host_impl_->OnRootLayerDelegatedScrollOffsetChanged(current_offset);
+  host_impl_->SetSynchronousInputHandlerRootScrollOffset(current_offset);
   host_impl_->ScrollBy(gfx::Point(), scroll_delta);
   EXPECT_EQ(current_offset + gfx::ScrollOffset(scroll_delta),
-            scroll_delegate.last_set_scroll_offset());
+            scroll_watcher.last_set_scroll_offset());
   host_impl_->ScrollEnd();
-  host_impl_->OnRootLayerDelegatedScrollOffsetChanged(gfx::ScrollOffset());
+  host_impl_->SetSynchronousInputHandlerRootScrollOffset(gfx::ScrollOffset());
 
   // Forces a full tree synchronization and ensures that the scroll delegate
   // sees the correct size of the new tree.
@@ -4699,16 +4709,10 @@ TEST_F(LayerTreeHostImplTest, RootLayerScrollOffsetDelegation) {
   host_impl_->pending_tree()->PushPageScaleFromMainThread(1.f, 1.f, 1.f);
   CreateScrollAndContentsLayers(host_impl_->pending_tree(), new_size);
   host_impl_->ActivateSyncTree();
-  EXPECT_EQ(new_size, scroll_delegate.scrollable_size());
+  EXPECT_EQ(new_size, scroll_watcher.scrollable_size());
 
-  // Un-setting the delegate should propagate the delegate's current offset to
-  // the root scrollable layer.
-  current_offset = gfx::ScrollOffset(13.f, 12.f);
-  host_impl_->OnRootLayerDelegatedScrollOffsetChanged(current_offset);
-  host_impl_->SetRootLayerScrollOffsetDelegate(NULL);
-
-  EXPECT_EQ(current_offset.ToString(),
-            scroll_layer->CurrentScrollOffset().ToString());
+  // Tear down the LayerTreeHostImpl before the InputHandlerClient.
+  host_impl_.reset();
 }
 
 void CheckLayerScrollDelta(LayerImpl* layer, gfx::Vector2dF scroll_delta) {
@@ -4723,12 +4727,10 @@ void CheckLayerScrollDelta(LayerImpl* layer, gfx::Vector2dF scroll_delta) {
 
 TEST_F(LayerTreeHostImplTest,
        ExternalRootLayerScrollOffsetDelegationReflectedInNextDraw) {
-  TestScrollOffsetDelegate scroll_delegate;
   host_impl_->SetViewportSize(gfx::Size(10, 20));
   LayerImpl* scroll_layer = SetupScrollAndContentsLayers(gfx::Size(100, 100));
   LayerImpl* clip_layer = scroll_layer->parent()->parent();
   clip_layer->SetBounds(gfx::Size(10, 20));
-  host_impl_->SetRootLayerScrollOffsetDelegate(&scroll_delegate);
 
   // Draw first frame to clear any pending draws and check scroll.
   DrawFrame();
@@ -4737,7 +4739,7 @@ TEST_F(LayerTreeHostImplTest,
 
   // Set external scroll delta on delegate and notify LayerTreeHost.
   gfx::ScrollOffset scroll_offset(10.f, 10.f);
-  host_impl_->OnRootLayerDelegatedScrollOffsetChanged(scroll_offset);
+  host_impl_->SetSynchronousInputHandlerRootScrollOffset(scroll_offset);
 
   // Check scroll delta reflected in layer.
   LayerTreeHostImpl::FrameData frame;
@@ -4746,8 +4748,6 @@ TEST_F(LayerTreeHostImplTest,
   host_impl_->DidDrawAllLayers(frame);
   EXPECT_FALSE(frame.has_no_damage);
   CheckLayerScrollDelta(scroll_layer, ScrollOffsetToVector2dF(scroll_offset));
-
-  host_impl_->SetRootLayerScrollOffsetDelegate(NULL);
 }
 
 TEST_F(LayerTreeHostImplTest, OverscrollRoot) {
@@ -7698,9 +7698,6 @@ TEST_F(LayerTreeHostImplVirtualViewportTest, ScrollBothInnerAndOuterLayer) {
 
   SetupVirtualViewportLayers(content_size, outer_viewport, inner_viewport);
 
-  TestScrollOffsetDelegate scroll_delegate;
-  host_impl_->SetRootLayerScrollOffsetDelegate(&scroll_delegate);
-
   LayerImpl* outer_scroll = host_impl_->OuterViewportScrollLayer();
   LayerImpl* inner_scroll = host_impl_->InnerViewportScrollLayer();
   DrawFrame();
@@ -7712,7 +7709,7 @@ TEST_F(LayerTreeHostImplVirtualViewportTest, ScrollBothInnerAndOuterLayer) {
 
     gfx::ScrollOffset current_offset(70.f, 100.f);
 
-    host_impl_->OnRootLayerDelegatedScrollOffsetChanged(current_offset);
+    host_impl_->SetSynchronousInputHandlerRootScrollOffset(current_offset);
     EXPECT_EQ(gfx::ScrollOffset(25.f, 40.f), inner_scroll->MaxScrollOffset());
     EXPECT_EQ(gfx::ScrollOffset(50.f, 80.f), outer_scroll->MaxScrollOffset());
 

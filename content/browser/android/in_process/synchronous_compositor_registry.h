@@ -41,7 +41,6 @@ class SynchronousCompositorRegistry {
       SynchronousCompositorOutputSurface* output_surface);
   void RegisterInputHandler(
       int routing_id,
-      cc::InputHandler* input_handler,
       SynchronousInputHandlerProxy* synchronous_input_handler_proxy);
   void UnregisterInputHandler(int routing_id);
 
@@ -54,7 +53,6 @@ class SynchronousCompositorRegistry {
     SynchronousCompositorImpl* compositor;
     SynchronousCompositorExternalBeginFrameSource* begin_frame_source;
     SynchronousCompositorOutputSurface* output_surface;
-    cc::InputHandler* input_handler;
     SynchronousInputHandlerProxy* synchronous_input_handler_proxy;
 
     Entry();

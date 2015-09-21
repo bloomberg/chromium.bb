@@ -57,7 +57,6 @@ void InputEventFilter::SetBoundHandler(const Handler& handler) {
 
 void InputEventFilter::DidAddInputHandler(
     int routing_id,
-    cc::InputHandler* input_handler,
     SynchronousInputHandlerProxy* synchronous_input_handler_proxy) {
   base::AutoLock locked(routes_lock_);
   routes_.insert(routing_id);

@@ -7,6 +7,11 @@
 
 #include "base/time/time.h"
 
+namespace gfx {
+class ScrollOffset;
+class SizeF;
+}
+
 namespace content {
 
 class CONTENT_EXPORT SynchronousInputHandler {
@@ -16,6 +21,16 @@ class CONTENT_EXPORT SynchronousInputHandler {
   // animation. The embedder/app may choose to override and ignore the
   // request for animation.
   virtual void SetNeedsSynchronousAnimateInput() = 0;
+
+  // Informs the Android WebView embedder of the current root scroll and page
+  // scale state.
+  virtual void UpdateRootLayerState(
+      const gfx::ScrollOffset& total_scroll_offset,
+      const gfx::ScrollOffset& max_scroll_offset,
+      const gfx::SizeF& scrollable_size,
+      float page_scale_factor,
+      float min_page_scale_factor,
+      float max_page_scale_factor) = 0;
 };
 
 // Android WebView requires synchronous scrolling from the WebView application.
@@ -38,6 +53,14 @@ class CONTENT_EXPORT SynchronousInputHandlerProxy {
   // it returns, it expects the animation scroll offsets to be visible to the
   // application.
   virtual void SynchronouslyAnimate(base::TimeTicks time) = 0;
+
+  // Called when the synchronous input handler wants to change the root scroll
+  // offset. Since it has the final say, this overrides values from compositor-
+  // controlled behaviour. After the offset is applied, the
+  // SynchronousInputHandler should be given back the result in case it differs
+  // from what was sent.
+  virtual void SynchronouslySetRootScrollOffset(
+      const gfx::ScrollOffset& root_offset) = 0;
 };
 
 }  // namespace content

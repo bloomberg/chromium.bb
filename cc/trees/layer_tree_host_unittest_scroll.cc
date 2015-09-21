@@ -1066,6 +1066,19 @@ class ThreadCheckingInputHandlerClient : public InputHandlerClient {
     }
   }
 
+  void UpdateRootLayerStateForSynchronousInputHandler(
+      const gfx::ScrollOffset& total_scroll_offset,
+      const gfx::ScrollOffset& max_scroll_offset,
+      const gfx::SizeF& scrollable_size,
+      float page_scale_factor,
+      float min_page_scale_factor,
+      float max_page_scale_factor) override {
+    if (!task_runner_->BelongsToCurrentThread()) {
+      ADD_FAILURE() << "UpdateRootLayerStateForSynchronousInputHandler called "
+                    << " on wrong thread";
+    }
+  }
+
  private:
   base::SingleThreadTaskRunner* task_runner_;
   bool* received_stop_flinging_;

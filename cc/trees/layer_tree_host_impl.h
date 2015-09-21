@@ -21,7 +21,6 @@
 #include "cc/debug/frame_timing_tracker.h"
 #include "cc/debug/micro_benchmark_controller_impl.h"
 #include "cc/input/input_handler.h"
-#include "cc/input/layer_scroll_offset_delegate.h"
 #include "cc/input/top_controls_manager_client.h"
 #include "cc/layers/layer_lists.h"
 #include "cc/layers/render_pass_sink.h"
@@ -173,9 +172,8 @@ class CC_EXPORT LayerTreeHostImpl
       const gfx::Vector2dF& scroll_delta) override;
   bool ScrollVerticallyByPage(const gfx::Point& viewport_point,
                               ScrollDirection direction) override;
-  void SetRootLayerScrollOffsetDelegate(
-      LayerScrollOffsetDelegate* root_layer_scroll_offset_delegate) override;
-  void OnRootLayerDelegatedScrollOffsetChanged(
+  void RequestUpdateForSynchronousInputHandler() override;
+  void SetSynchronousInputHandlerRootScrollOffset(
       const gfx::ScrollOffset& root_offset) override;
   void ScrollEnd() override;
   InputHandler::ScrollStatus FlingScrollBegin() override;
@@ -674,7 +672,8 @@ class CC_EXPORT LayerTreeHostImpl
 
   void NotifySwapPromiseMonitorsOfSetNeedsRedraw();
   void NotifySwapPromiseMonitorsOfForwardingToMainThread();
-  void NotifyRootLayerScrollOffsetDelegate();
+
+  void UpdateRootLayerStateForSynchronousInputHandler();
 
   void ScrollAnimationCreate(LayerImpl* layer_impl,
                              const gfx::ScrollOffset& target_offset,
@@ -736,9 +735,6 @@ class CC_EXPORT LayerTreeHostImpl
   scoped_ptr<ScrollElasticityHelper> scroll_elasticity_helper_;
 
   bool tile_priorities_dirty_;
-
-  // The optional delegate for the root layer scroll offset.
-  LayerScrollOffsetDelegate* root_layer_scroll_offset_delegate_;
 
   const LayerTreeSettings settings_;
   LayerTreeDebugState debug_state_;

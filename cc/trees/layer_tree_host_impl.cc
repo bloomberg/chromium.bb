@@ -185,7 +185,6 @@ LayerTreeHostImpl::LayerTreeHostImpl(
       scroll_affects_scroll_handler_(false),
       scroll_layer_id_when_mouse_over_scrollbar_(0),
       tile_priorities_dirty_(false),
-      root_layer_scroll_offset_delegate_(nullptr),
       settings_(settings),
       visible_(true),
       cached_managed_memory_policy_(
@@ -425,8 +424,9 @@ void LayerTreeHostImpl::Animate() {
   AnimateScrollbars(monotonic_time);
   AnimateTopControls(monotonic_time);
 
-  // Animating stuff can change the root scroll offset, so inform the delegate.
-  NotifyRootLayerScrollOffsetDelegate();
+  // Animating stuff can change the root scroll offset, so inform the
+  // synchronous input handler.
+  UpdateRootLayerStateForSynchronousInputHandler();
 }
 
 bool LayerTreeHostImpl::PrepareTiles() {
@@ -1929,8 +1929,9 @@ void LayerTreeHostImpl::ActivateSyncTree() {
         pending_page_scale_animation->scale,
         pending_page_scale_animation->duration);
   }
-  // Activation can change the root scroll offset, so inform the delegate.
-  NotifyRootLayerScrollOffsetDelegate();
+  // Activation can change the root scroll offset, so inform the synchronous
+  // input handler.
+  UpdateRootLayerStateForSynchronousInputHandler();
 }
 
 void LayerTreeHostImpl::SetVisible(bool visible) {
@@ -2714,8 +2715,9 @@ InputHandlerScrollResult LayerTreeHostImpl::ScrollBy(
   scroll_result.accumulated_root_overscroll = accumulated_root_overscroll_;
   scroll_result.unused_scroll_delta = unused_root_delta;
 
-  // Scrolling can change the root scroll offset, so inform the delegate.
-  NotifyRootLayerScrollOffsetDelegate();
+  // Scrolling can change the root scroll offset, so inform the synchronous
+  // input handler.
+  UpdateRootLayerStateForSynchronousInputHandler();
 
   return scroll_result;
 }
@@ -2762,20 +2764,17 @@ bool LayerTreeHostImpl::ScrollVerticallyByPage(const gfx::Point& viewport_point,
   return false;
 }
 
-void LayerTreeHostImpl::SetRootLayerScrollOffsetDelegate(
-      LayerScrollOffsetDelegate* root_layer_scroll_offset_delegate) {
-  root_layer_scroll_offset_delegate_ = root_layer_scroll_offset_delegate;
-  // When first set, clobber the delegate's scroll offset with compositor's.
-  NotifyRootLayerScrollOffsetDelegate();
+void LayerTreeHostImpl::RequestUpdateForSynchronousInputHandler() {
+  UpdateRootLayerStateForSynchronousInputHandler();
 }
 
-void LayerTreeHostImpl::OnRootLayerDelegatedScrollOffsetChanged(
+void LayerTreeHostImpl::SetSynchronousInputHandlerRootScrollOffset(
     const gfx::ScrollOffset& root_offset) {
   active_tree_->DistributeRootScrollOffset(root_offset);
   client_->SetNeedsCommitOnImplThread();
-  // After applying the delegate's scroll offset, tell it what we ended up with.
-  DCHECK(root_layer_scroll_offset_delegate_);
-  NotifyRootLayerScrollOffsetDelegate();
+  // After applying the synchronous input handler's scroll offset, tell it what
+  // we ended up with.
+  UpdateRootLayerStateForSynchronousInputHandler();
   // No need to SetNeedsRedraw, this is for WebView and every frame has redraw
   // requested by the WebView embedder already.
 }
@@ -2914,8 +2913,9 @@ void LayerTreeHostImpl::PinchGestureUpdate(float magnify_delta,
   client_->SetNeedsCommitOnImplThread();
   SetNeedsRedraw();
   client_->RenewTreePriority();
-  // Pinching can change the root scroll offset, so inform the delegate.
-  NotifyRootLayerScrollOffsetDelegate();
+  // Pinching can change the root scroll offset, so inform the synchronous input
+  // handler.
+  UpdateRootLayerStateForSynchronousInputHandler();
 }
 
 void LayerTreeHostImpl::PinchGestureEnd() {
@@ -3391,10 +3391,10 @@ void LayerTreeHostImpl::NotifySwapPromiseMonitorsOfForwardingToMainThread() {
     (*it)->OnForwardScrollUpdateToMainThreadOnImpl();
 }
 
-void LayerTreeHostImpl::NotifyRootLayerScrollOffsetDelegate() {
-  if (!root_layer_scroll_offset_delegate_)
+void LayerTreeHostImpl::UpdateRootLayerStateForSynchronousInputHandler() {
+  if (!input_handler_client_)
     return;
-  root_layer_scroll_offset_delegate_->UpdateRootLayerState(
+  input_handler_client_->UpdateRootLayerStateForSynchronousInputHandler(
       active_tree_->TotalScrollOffset(), active_tree_->TotalMaxScrollOffset(),
       active_tree_->ScrollableSize(), active_tree_->current_page_scale_factor(),
       active_tree_->min_page_scale_factor(),

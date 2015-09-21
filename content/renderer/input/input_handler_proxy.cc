@@ -816,19 +816,42 @@ void InputHandlerProxy::ReconcileElasticOverscrollAndRootScroll() {
     scroll_elasticity_controller_->ReconcileStretchAndScroll();
 }
 
+void InputHandlerProxy::UpdateRootLayerStateForSynchronousInputHandler(
+    const gfx::ScrollOffset& total_scroll_offset,
+    const gfx::ScrollOffset& max_scroll_offset,
+    const gfx::SizeF& scrollable_size,
+    float page_scale_factor,
+    float min_page_scale_factor,
+    float max_page_scale_factor) {
+  if (synchronous_input_handler_) {
+    synchronous_input_handler_->UpdateRootLayerState(
+        total_scroll_offset, max_scroll_offset, scrollable_size,
+        page_scale_factor, min_page_scale_factor, max_page_scale_factor);
+  }
+}
+
 void InputHandlerProxy::SetOnlySynchronouslyAnimateRootFlings(
     SynchronousInputHandler* synchronous_input_handler) {
-  allow_root_animate_ = false;
+  allow_root_animate_ = !synchronous_input_handler;
   synchronous_input_handler_ = synchronous_input_handler;
+  if (synchronous_input_handler_)
+    input_handler_->RequestUpdateForSynchronousInputHandler();
 }
 
 void InputHandlerProxy::SynchronouslyAnimate(base::TimeTicks time) {
   // When this function is used, SetOnlySynchronouslyAnimate() should have been
   // previously called. IOW you should either be entirely in synchronous mode or
   // not.
+  DCHECK(synchronous_input_handler_);
   DCHECK(!allow_root_animate_);
   base::AutoReset<bool> reset(&allow_root_animate_, true);
   Animate(time);
+}
+
+void InputHandlerProxy::SynchronouslySetRootScrollOffset(
+    const gfx::ScrollOffset& root_offset) {
+  DCHECK(synchronous_input_handler_);
+  input_handler_->SetSynchronousInputHandlerRootScrollOffset(root_offset);
 }
 
 void InputHandlerProxy::HandleOverscroll(

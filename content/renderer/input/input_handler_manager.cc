@@ -93,8 +93,7 @@ void InputHandlerManager::AddInputHandlerOnCompositorThread(
       "result", "AddingRoute");
   scoped_ptr<InputHandlerWrapper> wrapper(new InputHandlerWrapper(
       this, routing_id, main_task_runner, input_handler, render_view_impl));
-  client_->DidAddInputHandler(routing_id, input_handler.get(),
-                              wrapper->input_handler_proxy());
+  client_->DidAddInputHandler(routing_id, wrapper->input_handler_proxy());
   input_handlers_.add(routing_id, wrapper.Pass());
 }
 

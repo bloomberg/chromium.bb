@@ -107,13 +107,11 @@ void SynchronousCompositorRegistry::UnregisterOutputSurface(
 
 void SynchronousCompositorRegistry::RegisterInputHandler(
     int routing_id,
-    cc::InputHandler* input_handler,
     SynchronousInputHandlerProxy* synchronous_input_handler_proxy) {
   DCHECK(CalledOnValidThread());
-  DCHECK(input_handler);
+  DCHECK(synchronous_input_handler_proxy);
   Entry& entry = entry_map_[routing_id];
-  DCHECK(!entry.input_handler);
-  entry.input_handler = input_handler;
+  DCHECK(!entry.synchronous_input_handler_proxy);
   entry.synchronous_input_handler_proxy = synchronous_input_handler_proxy;
   CheckIsReady(routing_id);
 }
@@ -125,7 +123,7 @@ void SynchronousCompositorRegistry::UnregisterInputHandler(int routing_id) {
 
   if (entry.IsReady())
     UnregisterObjects(routing_id);
-  entry.input_handler = nullptr;
+  entry.synchronous_input_handler_proxy = nullptr;
   RemoveEntryIfNeeded(routing_id);
 }
 
@@ -134,7 +132,7 @@ void SynchronousCompositorRegistry::CheckIsReady(int routing_id) {
   Entry& entry = entry_map_[routing_id];
   if (entry.IsReady()) {
     entry.compositor->DidInitializeRendererObjects(
-        entry.output_surface, entry.begin_frame_source, entry.input_handler,
+        entry.output_surface, entry.begin_frame_source,
         entry.synchronous_input_handler_proxy);
   }
 }
@@ -150,7 +148,7 @@ void SynchronousCompositorRegistry::RemoveEntryIfNeeded(int routing_id) {
   DCHECK(entry_map_.find(routing_id) != entry_map_.end());
   Entry& entry = entry_map_[routing_id];
   if (!entry.compositor && !entry.begin_frame_source && !entry.output_surface &&
-      !entry.input_handler) {
+      !entry.synchronous_input_handler_proxy) {
     entry_map_.erase(routing_id);
   }
 }
@@ -163,11 +161,10 @@ SynchronousCompositorRegistry::Entry::Entry()
     : compositor(nullptr),
       begin_frame_source(nullptr),
       output_surface(nullptr),
-      input_handler(nullptr),
       synchronous_input_handler_proxy(nullptr) {}
 
 bool SynchronousCompositorRegistry::Entry::IsReady() {
-  return compositor && begin_frame_source && output_surface && input_handler &&
+  return compositor && begin_frame_source && output_surface &&
          synchronous_input_handler_proxy;
 }
 

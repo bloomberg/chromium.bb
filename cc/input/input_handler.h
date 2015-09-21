@@ -52,6 +52,13 @@ class CC_EXPORT InputHandlerClient {
   virtual void Animate(base::TimeTicks time) = 0;
   virtual void MainThreadHasStoppedFlinging() = 0;
   virtual void ReconcileElasticOverscrollAndRootScroll() = 0;
+  virtual void UpdateRootLayerStateForSynchronousInputHandler(
+      const gfx::ScrollOffset& total_scroll_offset,
+      const gfx::ScrollOffset& max_scroll_offset,
+      const gfx::SizeF& scrollable_size,
+      float page_scale_factor,
+      float min_page_scale_factor,
+      float max_page_scale_factor) = 0;
 
  protected:
   InputHandlerClient() {}
@@ -126,15 +133,13 @@ class CC_EXPORT InputHandler {
   // returned SCROLL_STARTED.
   virtual void ScrollEnd() = 0;
 
-  virtual void SetRootLayerScrollOffsetDelegate(
-      LayerScrollOffsetDelegate* root_layer_scroll_offset_delegate) = 0;
+  // Requests a callback to UpdateRootLayerStateForSynchronousInputHandler()
+  // giving the current root scroll and page scale information.
+  virtual void RequestUpdateForSynchronousInputHandler() = 0;
 
-  // Called when the delegate's root scroll offset has changed for reasons
-  // other than a SetTotalScrollOffset call. This passes along the new value of
-  // the offset.
-  // NOTE: This should only called after a valid delegate was set via a call to
-  // SetRootLayerScrollOffsetDelegate.
-  virtual void OnRootLayerDelegatedScrollOffsetChanged(
+  // Called when the root scroll offset has been changed in the synchronous
+  // input handler by the application (outside of input event handling).
+  virtual void SetSynchronousInputHandlerRootScrollOffset(
       const gfx::ScrollOffset& root_offset) = 0;
 
   virtual void PinchGestureBegin() = 0;

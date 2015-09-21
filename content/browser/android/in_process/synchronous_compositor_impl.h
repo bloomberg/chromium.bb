@@ -10,7 +10,6 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
-#include "cc/input/layer_scroll_offset_delegate.h"
 #include "content/browser/android/in_process/synchronous_compositor_output_surface.h"
 #include "content/common/input/input_event_ack_state.h"
 #include "content/public/browser/android/synchronous_compositor.h"
@@ -38,8 +37,7 @@ struct DidOverscrollParams;
 // This class is created on the main thread but most of the APIs are called
 // from the Compositor thread.
 class SynchronousCompositorImpl
-    : public cc::LayerScrollOffsetDelegate,
-      public SynchronousInputHandler,
+    : public SynchronousInputHandler,
       public SynchronousCompositor,
       public WebContentsUserData<SynchronousCompositorImpl> {
  public:
@@ -55,7 +53,6 @@ class SynchronousCompositorImpl
   void DidInitializeRendererObjects(
       SynchronousCompositorOutputSurface* output_surface,
       SynchronousCompositorExternalBeginFrameSource* begin_frame_source,
-      cc::InputHandler* input_handler,
       SynchronousInputHandlerProxy* synchronous_input_handler_proxy);
   void DidDestroyRendererObjects();
 
@@ -86,8 +83,6 @@ class SynchronousCompositorImpl
 
   // SynchronousInputHandler
   void SetNeedsSynchronousAnimateInput() override;
-
-  // LayerScrollOffsetDelegate
   void UpdateRootLayerState(const gfx::ScrollOffset& total_scroll_offset,
                             const gfx::ScrollOffset& max_scroll_offset,
                             const gfx::SizeF& scrollable_size,
@@ -117,7 +112,6 @@ class SynchronousCompositorImpl
   SynchronousCompositorExternalBeginFrameSource* begin_frame_source_;
   WebContents* contents_;
   const int routing_id_;
-  cc::InputHandler* input_handler_;
   SynchronousInputHandlerProxy* synchronous_input_handler_proxy_;
   bool registered_with_client_;
   bool is_active_;

@@ -165,7 +165,7 @@ TEST_F(InputEventFilterTest, Basic) {
   EXPECT_EQ(0U, event_recorder_.record_count());
   EXPECT_EQ(0U, message_recorder_.message_count());
 
-  filter_->DidAddInputHandler(kTestRoutingID, nullptr, nullptr);
+  filter_->DidAddInputHandler(kTestRoutingID, nullptr);
 
   AddEventsToFilter(filter_.get(), kEvents, arraysize(kEvents));
   ASSERT_EQ(arraysize(kEvents), ipc_sink_.message_count());
@@ -241,7 +241,7 @@ TEST_F(InputEventFilterTest, Basic) {
 }
 
 TEST_F(InputEventFilterTest, PreserveRelativeOrder) {
-  filter_->DidAddInputHandler(kTestRoutingID, nullptr, nullptr);
+  filter_->DidAddInputHandler(kTestRoutingID, nullptr);
   event_recorder_.set_send_to_widget(true);
 
 

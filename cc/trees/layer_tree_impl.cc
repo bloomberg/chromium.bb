@@ -19,7 +19,6 @@
 #include "cc/base/synced_property.h"
 #include "cc/debug/devtools_instrumentation.h"
 #include "cc/debug/traced_value.h"
-#include "cc/input/layer_scroll_offset_delegate.h"
 #include "cc/input/page_scale_animation.h"
 #include "cc/layers/heads_up_display_layer_impl.h"
 #include "cc/layers/layer.h"

@@ -35,7 +35,6 @@ class SynchronousInputEventFilter : public InputHandlerManagerClient {
   void SetBoundHandler(const Handler& handler) override;
   void DidAddInputHandler(
       int routing_id,
-      cc::InputHandler* input_handler,
       SynchronousInputHandlerProxy* synchronous_input_handler_proxy) override;
   void DidRemoveInputHandler(int routing_id) override;
   void DidOverscroll(int routing_id,

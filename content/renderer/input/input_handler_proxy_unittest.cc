@@ -17,6 +17,8 @@
 #include "third_party/WebKit/public/platform/WebPoint.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "ui/events/latency_info.h"
+#include "ui/gfx/geometry/scroll_offset.h"
+#include "ui/gfx/geometry/size_f.h"
 
 using blink::WebActiveWheelFlingParameters;
 using blink::WebFloatPoint;
@@ -132,12 +134,9 @@ class MockInputHandler : public cc::InputHandler {
   MOCK_METHOD1(HaveWheelEventHandlersAt, bool(const gfx::Point& point));
   MOCK_METHOD1(DoTouchEventsBlockScrollAt, bool(const gfx::Point& point));
 
-  void SetRootLayerScrollOffsetDelegate(
-      cc::LayerScrollOffsetDelegate* root_layer_scroll_offset_delegate)
-      override {}
-
-  void OnRootLayerDelegatedScrollOffsetChanged(
-      const gfx::ScrollOffset& root_offset) override {}
+  MOCK_METHOD0(RequestUpdateForSynchronousInputHandler, void());
+  MOCK_METHOD1(SetSynchronousInputHandlerRootScrollOffset,
+               void(const gfx::ScrollOffset& root_offset));
 
   bool IsCurrentlyScrollingRoot() const override { return is_scrolling_root_; }
   void set_is_scrolling_root(bool is) { is_scrolling_root_ = is; }
@@ -150,6 +149,13 @@ class MockInputHandler : public cc::InputHandler {
 class MockSynchronousInputHandler : public content::SynchronousInputHandler {
  public:
   MOCK_METHOD0(SetNeedsSynchronousAnimateInput, void());
+  MOCK_METHOD6(UpdateRootLayerState,
+               void(const gfx::ScrollOffset& total_scroll_offset,
+                    const gfx::ScrollOffset& max_scroll_offset,
+                    const gfx::SizeF& scrollable_size,
+                    float page_scale_factor,
+                    float min_page_scale_factor,
+                    float max_page_scale_factor));
 };
 
 // A simple WebGestureCurve implementation that flings at a constant velocity
@@ -247,9 +253,13 @@ class InputHandlerProxyTest
     scroll_result_did_not_scroll_.did_scroll = false;
 
     if (install_synchronous_handler_) {
+      EXPECT_CALL(mock_input_handler_,
+                  RequestUpdateForSynchronousInputHandler())
+          .Times(1);
       input_handler_->SetOnlySynchronouslyAnimateRootFlings(
           &mock_synchronous_input_handler_);
     }
+
     mock_input_handler_.set_is_scrolling_root(synchronous_root_scroll_);
   }
 
@@ -2311,6 +2321,8 @@ TEST_P(InputHandlerProxyTest, DidReceiveInputEvent_ForFling) {
   input_handler_.reset(
         new content::InputHandlerProxy(&mock_input_handler_, &mock_client));
   if (install_synchronous_handler_) {
+    EXPECT_CALL(mock_input_handler_, RequestUpdateForSynchronousInputHandler())
+        .Times(1);
     input_handler_->SetOnlySynchronouslyAnimateRootFlings(
         &mock_synchronous_input_handler_);
   }
@@ -2334,6 +2346,75 @@ TEST_P(InputHandlerProxyTest, DidReceiveInputEvent_ForFling) {
   Animate(time);
 
   VERIFY_AND_RESET_MOCKS();
+}
+
+TEST(SynchronousInputHandlerProxyTest, StartupShutdown) {
+  testing::StrictMock<MockInputHandler> mock_input_handler;
+  testing::StrictMock<MockInputHandlerProxyClient> mock_client;
+  testing::StrictMock<MockSynchronousInputHandler>
+      mock_synchronous_input_handler;
+  content::InputHandlerProxy proxy(&mock_input_handler, &mock_client);
+
+  // When adding a SynchronousInputHandler, immediately request an
+  // UpdateRootLayerStateForSynchronousInputHandler() call.
+  EXPECT_CALL(mock_input_handler, RequestUpdateForSynchronousInputHandler())
+      .Times(1);
+  proxy.SetOnlySynchronouslyAnimateRootFlings(&mock_synchronous_input_handler);
+
+  testing::Mock::VerifyAndClearExpectations(&mock_input_handler);
+  testing::Mock::VerifyAndClearExpectations(&mock_client);
+  testing::Mock::VerifyAndClearExpectations(&mock_synchronous_input_handler);
+
+  EXPECT_CALL(mock_input_handler, RequestUpdateForSynchronousInputHandler())
+      .Times(0);
+  proxy.SetOnlySynchronouslyAnimateRootFlings(nullptr);
+
+  testing::Mock::VerifyAndClearExpectations(&mock_input_handler);
+  testing::Mock::VerifyAndClearExpectations(&mock_client);
+  testing::Mock::VerifyAndClearExpectations(&mock_synchronous_input_handler);
+}
+
+TEST(SynchronousInputHandlerProxyTest, UpdateRootLayerState) {
+  testing::NiceMock<MockInputHandler> mock_input_handler;
+  testing::StrictMock<MockInputHandlerProxyClient> mock_client;
+  testing::StrictMock<MockSynchronousInputHandler>
+      mock_synchronous_input_handler;
+  content::InputHandlerProxy proxy(&mock_input_handler, &mock_client);
+
+  proxy.SetOnlySynchronouslyAnimateRootFlings(&mock_synchronous_input_handler);
+
+  // When adding a SynchronousInputHandler, immediately request an
+  // UpdateRootLayerStateForSynchronousInputHandler() call.
+  EXPECT_CALL(
+      mock_synchronous_input_handler,
+      UpdateRootLayerState(gfx::ScrollOffset(1, 2), gfx::ScrollOffset(3, 4),
+                           gfx::SizeF(5, 6), 7, 8, 9))
+      .Times(1);
+  proxy.UpdateRootLayerStateForSynchronousInputHandler(
+      gfx::ScrollOffset(1, 2), gfx::ScrollOffset(3, 4), gfx::SizeF(5, 6), 7, 8,
+      9);
+
+  testing::Mock::VerifyAndClearExpectations(&mock_input_handler);
+  testing::Mock::VerifyAndClearExpectations(&mock_client);
+  testing::Mock::VerifyAndClearExpectations(&mock_synchronous_input_handler);
+}
+
+TEST(SynchronousInputHandlerProxyTest, SetOffset) {
+  testing::NiceMock<MockInputHandler> mock_input_handler;
+  testing::StrictMock<MockInputHandlerProxyClient> mock_client;
+  testing::StrictMock<MockSynchronousInputHandler>
+      mock_synchronous_input_handler;
+  content::InputHandlerProxy proxy(&mock_input_handler, &mock_client);
+
+  proxy.SetOnlySynchronouslyAnimateRootFlings(&mock_synchronous_input_handler);
+
+  EXPECT_CALL(mock_input_handler, SetSynchronousInputHandlerRootScrollOffset(
+                                      gfx::ScrollOffset(5, 6)));
+  proxy.SynchronouslySetRootScrollOffset(gfx::ScrollOffset(5, 6));
+
+  testing::Mock::VerifyAndClearExpectations(&mock_input_handler);
+  testing::Mock::VerifyAndClearExpectations(&mock_client);
+  testing::Mock::VerifyAndClearExpectations(&mock_synchronous_input_handler);
 }
 
 INSTANTIATE_TEST_CASE_P(AnimateInput,
