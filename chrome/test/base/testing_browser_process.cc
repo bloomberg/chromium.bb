@@ -329,7 +329,7 @@ DownloadRequestLimiter* TestingBrowserProcess::download_request_limiter() {
   return nullptr;
 }
 
-ChromeNetLog* TestingBrowserProcess::net_log() {
+net_log::ChromeNetLog* TestingBrowserProcess::net_log() {
   return nullptr;
 }
 

@@ -147,7 +147,6 @@
       'browser/net/dns_probe_runner_unittest.cc',
       'browser/net/dns_probe_service_unittest.cc',
       'browser/net/net_error_tab_helper_unittest.cc',
-      'browser/net/net_log_temp_file_unittest.cc',
       'browser/net/predictor_unittest.cc',
       'browser/net/probe_message_unittest.cc',
       'browser/net/quota_policy_channel_id_store_unittest.cc',

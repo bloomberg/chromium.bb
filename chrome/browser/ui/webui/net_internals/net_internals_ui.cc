@@ -33,7 +33,6 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/io_thread.h"
-#include "chrome/browser/net/chrome_net_log.h"
 #include "chrome/browser/net/chrome_network_delegate.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings_factory.h"
@@ -47,6 +46,7 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_network_delegate.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_service.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_store.h"
+#include "components/net_log/chrome_net_log.h"
 #include "components/onc/onc_constants.h"
 #include "components/url_formatter/url_fixer.h"
 #include "components/version_info/version_info.h"
@@ -301,7 +301,7 @@ class NetInternalsMessageHandler::IOThreadImpl
 #endif
   void OnSetCaptureMode(const base::ListValue* list);
 
-  // ChromeNetLog::ThreadSafeObserver implementation:
+  // NetLog::ThreadSafeObserver implementation:
   void OnAddEntry(const net::NetLog::Entry& entry) override;
 
   // Helper that calls g_browser.receive in the renderer, passing in |command|
@@ -673,7 +673,11 @@ void NetInternalsMessageHandler::IOThreadImpl::OnRendererReady(
     PostPendingEntries();
   }
 
-  SendJavascriptCommand("receivedConstants", NetInternalsUI::GetConstants());
+  SendJavascriptCommand(
+      "receivedConstants",
+      net_log::ChromeNetLog::GetConstants(
+          base::CommandLine::ForCurrentProcess()->GetCommandLineString(),
+          chrome::GetChannelString()));
 
   PrePopulateEventList();
 
@@ -1161,37 +1165,6 @@ void NetInternalsMessageHandler::IOThreadImpl::SendNetInfo(int info_sources) {
 // NetInternalsUI
 //
 ////////////////////////////////////////////////////////////////////////////////
-
-// static
-base::Value* NetInternalsUI::GetConstants() {
-  scoped_ptr<base::DictionaryValue> constants_dict = net::GetNetConstants();
-  DCHECK(constants_dict);
-
-  // Add a dictionary with the version of the client and its command line
-  // arguments.
-  {
-    base::DictionaryValue* dict = new base::DictionaryValue();
-
-    // We have everything we need to send the right values.
-    dict->SetString("name", version_info::GetProductName());
-    dict->SetString("version", version_info::GetVersionNumber());
-    dict->SetString("cl", version_info::GetLastChange());
-    dict->SetString("version_mod", chrome::GetChannelString());
-    dict->SetString("official", version_info::IsOfficialBuild() ? "official"
-                                                                : "unofficial");
-    dict->SetString("os_type", version_info::GetOSType());
-    dict->SetString(
-        "command_line",
-        base::CommandLine::ForCurrentProcess()->GetCommandLineString());
-
-    constants_dict->Set("clientInfo", dict);
-
-    data_reduction_proxy::DataReductionProxyEventStore::AddConstants(
-        constants_dict.get());
-  }
-
-  return constants_dict.release();
-}
 
 NetInternalsUI::NetInternalsUI(content::WebUI* web_ui)
     : WebUIController(web_ui) {

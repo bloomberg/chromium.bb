@@ -105,7 +105,7 @@ class TestingBrowserProcess : public BrowserProcess {
   void StartAutoupdateTimer() override {}
 #endif
 
-  ChromeNetLog* net_log() override;
+  net_log::ChromeNetLog* net_log() override;
   component_updater::ComponentUpdateService* component_updater() override;
   CRLSetFetcher* crl_set_fetcher() override;
   component_updater::PnaclComponentInstaller* pnacl_component_installer()

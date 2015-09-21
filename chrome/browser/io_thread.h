@@ -26,7 +26,6 @@
 #include "net/http/http_network_session.h"
 #include "net/socket/next_proto.h"
 
-class ChromeNetLog;
 class PrefProxyConfigTracker;
 class PrefService;
 class PrefRegistrySimple;
@@ -69,6 +68,10 @@ class URLRequestContextGetter;
 class URLRequestJobFactory;
 class URLSecurityManager;
 }  // namespace net
+
+namespace net_log {
+class ChromeNetLog;
+}
 
 namespace policy {
 class PolicyService;
@@ -210,7 +213,7 @@ class IOThread : public content::BrowserThreadDelegate {
   // |net_log| must either outlive the IOThread or be NULL.
   IOThread(PrefService* local_state,
            policy::PolicyService* policy_service,
-           ChromeNetLog* net_log,
+           net_log::ChromeNetLog* net_log,
            extensions::EventRouterForwarder* extension_event_router_forwarder);
 
   ~IOThread() override;
@@ -225,7 +228,7 @@ class IOThread : public content::BrowserThreadDelegate {
   // IOThread global objects.
   void SetGlobalsForTesting(Globals* globals);
 
-  ChromeNetLog* net_log();
+  net_log::ChromeNetLog* net_log();
 
   // Handles changing to On The Record mode, discarding confidential data.
   void ChangedToOnTheRecord();
@@ -447,7 +450,7 @@ class IOThread : public content::BrowserThreadDelegate {
 
   // The NetLog is owned by the browser process, to allow logging from other
   // threads during shutdown, but is used most frequently on the IOThread.
-  ChromeNetLog* net_log_;
+  net_log::ChromeNetLog* net_log_;
 
 #if defined(ENABLE_EXTENSIONS)
   // The extensions::EventRouterForwarder allows for sending events to

@@ -284,6 +284,7 @@ source_set("browser") {
       "//components/history/content/browser",
       "//components/keyed_service/content",
       "//components/navigation_interception",
+      "//components/net_log",
       "//components/network_hints/common",
       "//components/password_manager/content/browser",
       "//components/password_manager/sync/browser",

@@ -83,7 +83,7 @@ class LogPrivateAPI : public BrowserContextKeyedAPI,
                            const Extension* extension,
                            UnloadedExtensionInfo::Reason reason) override;
 
-  // ChromeNetLog::ThreadSafeObserver implementation:
+  // NetLog::ThreadSafeObserver implementation:
   void OnAddEntry(const net::NetLog::Entry& entry) override;
 
   void PostPendingEntries();

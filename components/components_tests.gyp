@@ -857,6 +857,7 @@
         '<@(wallpaper_unittest_sources)',
         '<@(web_resource_unittest_sources)',
         '<@(webdata_unittest_sources)',
+        'net_log/net_log_temp_file_unittest.cc',
       ],
       'include_dirs': [
         '..',
@@ -936,6 +937,7 @@
         'components.gyp:metrics',
         'components.gyp:metrics_net',
         'components.gyp:metrics_test_support',
+        'components.gyp:net_log',
         'components.gyp:network_time',
         'components.gyp:offline_pages',
         'components.gyp:omnibox_browser',

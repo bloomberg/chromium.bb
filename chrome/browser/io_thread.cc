@@ -30,7 +30,6 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/net/async_dns_field_trial.h"
-#include "chrome/browser/net/chrome_net_log.h"
 #include "chrome/browser/net/chrome_network_delegate.h"
 #include "chrome/browser/net/connect_interceptor.h"
 #include "chrome/browser/net/dns_probe_service.h"
@@ -41,6 +40,7 @@
 #include "chrome/common/pref_names.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_prefs.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
+#include "components/net_log/chrome_net_log.h"
 #include "components/policy/core/common/policy_service.h"
 #include "components/proxy_config/pref_proxy_config_tracker.h"
 #include "components/variations/variations_associated_data.h"
@@ -421,7 +421,7 @@ IOThread::Globals::~Globals() {}
 IOThread::IOThread(
     PrefService* local_state,
     policy::PolicyService* policy_service,
-    ChromeNetLog* net_log,
+    net_log::ChromeNetLog* net_log,
     extensions::EventRouterForwarder* extension_event_router_forwarder)
     : net_log_(net_log),
 #if defined(ENABLE_EXTENSIONS)
@@ -509,7 +509,7 @@ void IOThread::SetGlobalsForTesting(Globals* globals) {
   globals_ = globals;
 }
 
-ChromeNetLog* IOThread::net_log() {
+net_log::ChromeNetLog* IOThread::net_log() {
   return net_log_;
 }
 

@@ -19,7 +19,6 @@
 #include "chrome/browser/ui/host_desktop.h"
 
 class BackgroundModeManager;
-class ChromeNetLog;
 class CRLSetFetcher;
 class DownloadRequestLimiter;
 class DownloadStatusUpdater;
@@ -74,6 +73,10 @@ class MetricsService;
 
 namespace net {
 class URLRequestContextGetter;
+}
+
+namespace net_log {
+class ChromeNetLog;
 }
 
 namespace network_time {
@@ -223,7 +226,7 @@ class BrowserProcess {
   virtual void StartAutoupdateTimer() = 0;
 #endif
 
-  virtual ChromeNetLog* net_log() = 0;
+  virtual net_log::ChromeNetLog* net_log() = 0;
 
   virtual component_updater::ComponentUpdateService* component_updater() = 0;
 

@@ -6,8 +6,8 @@
 
 #include "base/thread_task_runner_handle.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/net/chrome_net_log.h"
 #include "chrome/common/cast_messages.h"
+#include "components/net_log/chrome_net_log.h"
 #include "content/public/browser/power_save_blocker.h"
 #include "media/cast/net/cast_transport_sender.h"
 

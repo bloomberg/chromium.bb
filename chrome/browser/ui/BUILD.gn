@@ -92,6 +92,7 @@ source_set("ui") {
       "//chrome/installer/util",
       "//components/autofill/content/browser:risk_proto",
       "//components/bubble:bubble",
+      "//components/net_log",
       "//components/power",
       "//components/suggestions/proto",
       "//components/url_formatter",
@@ -345,9 +346,7 @@ source_set("ui") {
   if (is_win) {
     sources +=
         rebase_path(gypi_values.chrome_browser_ui_win_sources, ".", "//chrome")
-    sources -= [
-      "views/frame/taskbar_decorator.cc",
-    ]
+    sources -= [ "views/frame/taskbar_decorator.cc" ]
     public_deps += [
       "//ui/views",
       "//ui/views/controls/webview",

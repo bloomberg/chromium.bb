@@ -12,10 +12,10 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/net/chrome_net_log.h"
-#include "chrome/browser/net/net_log_temp_file.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/url_constants.h"
+#include "components/net_log/chrome_net_log.h"
+#include "components/net_log/net_log_temp_file.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/url_data_source.h"
 #include "content/public/browser/web_contents.h"
@@ -68,16 +68,17 @@ class NetExportMessageHandler
   // Calls NetLogTempFile's ProcessCommand with DO_START and DO_STOP commands.
   static void ProcessNetLogCommand(
       base::WeakPtr<NetExportMessageHandler> net_export_message_handler,
-      NetLogTempFile* net_log_temp_file,
-      NetLogTempFile::Command command);
+      net_log::NetLogTempFile* net_log_temp_file,
+      net_log::NetLogTempFile::Command command);
 
   // Returns the path to the file which has NetLog data.
-  static base::FilePath GetNetLogFileName(NetLogTempFile* net_log_temp_file);
+  static base::FilePath GetNetLogFileName(
+      net_log::NetLogTempFile* net_log_temp_file);
 
   // Send state/file information from NetLogTempFile.
   static void SendExportNetLogInfo(
       base::WeakPtr<NetExportMessageHandler> net_export_message_handler,
-      NetLogTempFile* net_log_temp_file);
+      net_log::NetLogTempFile* net_log_temp_file);
 
   // Send NetLog data via email. This runs on UI thread.
   static void SendEmail(const base::FilePath& file_to_send);
@@ -87,7 +88,7 @@ class NetExportMessageHandler
   void OnExportNetLogInfoChanged(base::Value* arg);
 
   // Cache of g_browser_process->net_log()->net_log_temp_file().
-  NetLogTempFile* net_log_temp_file_;
+  net_log::NetLogTempFile* net_log_temp_file_;
 
   base::WeakPtrFactory<NetExportMessageHandler> weak_ptr_factory_;
 
@@ -101,12 +102,10 @@ NetExportMessageHandler::NetExportMessageHandler()
 
 NetExportMessageHandler::~NetExportMessageHandler() {
   // Cancel any in-progress requests to collect net_log into temporary file.
-  BrowserThread::PostTask(
-      BrowserThread::FILE_USER_BLOCKING,
-      FROM_HERE,
-      base::Bind(&NetLogTempFile::ProcessCommand,
-                 base::Unretained(net_log_temp_file_),
-                 NetLogTempFile::DO_STOP));
+  BrowserThread::PostTask(BrowserThread::FILE_USER_BLOCKING, FROM_HERE,
+                          base::Bind(&net_log::NetLogTempFile::ProcessCommand,
+                                     base::Unretained(net_log_temp_file_),
+                                     net_log::NetLogTempFile::DO_STOP));
 }
 
 void NetExportMessageHandler::RegisterMessages() {
@@ -145,14 +144,14 @@ void NetExportMessageHandler::OnStartNetLog(const base::ListValue* list) {
   bool result = list->GetString(0, &log_mode);
   DCHECK(result);
 
-  NetLogTempFile::Command command;
+  net_log::NetLogTempFile::Command command;
   if (log_mode == "LOG_BYTES") {
-    command = NetLogTempFile::DO_START_LOG_BYTES;
+    command = net_log::NetLogTempFile::DO_START_LOG_BYTES;
   } else if (log_mode == "NORMAL") {
-    command = NetLogTempFile::DO_START;
+    command = net_log::NetLogTempFile::DO_START;
   } else {
     DCHECK_EQ("STRIP_PRIVATE_DATA", log_mode);
-    command = NetLogTempFile::DO_START_STRIP_PRIVATE_DATA;
+    command = net_log::NetLogTempFile::DO_START_STRIP_PRIVATE_DATA;
   }
 
   ProcessNetLogCommand(weak_ptr_factory_.GetWeakPtr(), net_log_temp_file_,
@@ -160,9 +159,8 @@ void NetExportMessageHandler::OnStartNetLog(const base::ListValue* list) {
 }
 
 void NetExportMessageHandler::OnStopNetLog(const base::ListValue* list) {
-  ProcessNetLogCommand(weak_ptr_factory_.GetWeakPtr(),
-                       net_log_temp_file_,
-                       NetLogTempFile::DO_STOP);
+  ProcessNetLogCommand(weak_ptr_factory_.GetWeakPtr(), net_log_temp_file_,
+                       net_log::NetLogTempFile::DO_STOP);
 }
 
 void NetExportMessageHandler::OnSendNetLog(const base::ListValue* list) {
@@ -177,8 +175,8 @@ void NetExportMessageHandler::OnSendNetLog(const base::ListValue* list) {
 // static
 void NetExportMessageHandler::ProcessNetLogCommand(
     base::WeakPtr<NetExportMessageHandler> net_export_message_handler,
-    NetLogTempFile* net_log_temp_file,
-    NetLogTempFile::Command command) {
+    net_log::NetLogTempFile* net_log_temp_file,
+    net_log::NetLogTempFile::Command command) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::FILE_USER_BLOCKING)) {
     BrowserThread::PostTask(
         BrowserThread::FILE_USER_BLOCKING,
@@ -197,7 +195,7 @@ void NetExportMessageHandler::ProcessNetLogCommand(
 
 // static
 base::FilePath NetExportMessageHandler::GetNetLogFileName(
-    NetLogTempFile* net_log_temp_file) {
+    net_log::NetLogTempFile* net_log_temp_file) {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE_USER_BLOCKING);
   base::FilePath net_export_file_path;
   net_log_temp_file->GetFilePath(&net_export_file_path);
@@ -207,7 +205,7 @@ base::FilePath NetExportMessageHandler::GetNetLogFileName(
 // static
 void NetExportMessageHandler::SendExportNetLogInfo(
     base::WeakPtr<NetExportMessageHandler> net_export_message_handler,
-    NetLogTempFile* net_log_temp_file) {
+    net_log::NetLogTempFile* net_log_temp_file) {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE_USER_BLOCKING);
   base::Value* value = net_log_temp_file->GetState();
   if (!BrowserThread::PostTask(

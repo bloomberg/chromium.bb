@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/net/net_log_temp_file.h"
+#include "components/net_log/net_log_temp_file.h"
 
 #include "base/basictypes.h"
+#include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_file.h"
@@ -14,24 +15,31 @@
 #include "base/message_loop/message_loop.h"
 #include "base/values.h"
 #include "build/build_config.h"
-#include "chrome/browser/net/chrome_net_log.h"
-#include "content/public/test/test_browser_thread.h"
+#include "components/net_log/chrome_net_log.h"
+#include "net/log/net_log_capture_mode.h"
 #include "net/log/write_to_file_net_log_observer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using content::BrowserThread;
+namespace {
+
+const char kChannelString[] = "SomeChannel";
+
+}  // namespace
+
+namespace net_log {
 
 class TestNetLogTempFile : public NetLogTempFile {
  public:
   explicit TestNetLogTempFile(ChromeNetLog* chrome_net_log)
-      : NetLogTempFile(chrome_net_log),
+      : NetLogTempFile(
+            chrome_net_log,
+            base::CommandLine::ForCurrentProcess()->GetCommandLineString(),
+            kChannelString),
         lie_about_net_export_log_directory_(false) {
     EXPECT_TRUE(net_log_temp_dir_.CreateUniqueTempDir());
   }
 
-  ~TestNetLogTempFile() override {
-    EXPECT_TRUE(net_log_temp_dir_.Delete());
-  }
+  ~TestNetLogTempFile() override { EXPECT_TRUE(net_log_temp_dir_.Delete()); }
 
   // NetLogTempFile implementation:
   bool GetNetExportLogBaseDirectory(base::FilePath* path) const override {
@@ -55,10 +63,12 @@ class TestNetLogTempFile : public NetLogTempFile {
 class NetLogTempFileTest : public ::testing::Test {
  public:
   NetLogTempFileTest()
-      : net_log_(new ChromeNetLog),
-        net_log_temp_file_(new TestNetLogTempFile(net_log_.get())),
-        file_user_blocking_thread_(BrowserThread::FILE_USER_BLOCKING,
-                                   &message_loop_) {
+      : net_log_(new ChromeNetLog(
+            base::FilePath(),
+            net::NetLogCaptureMode::Default(),
+            base::CommandLine::ForCurrentProcess()->GetCommandLineString(),
+            kChannelString)),
+        net_log_temp_file_(new TestNetLogTempFile(net_log_.get())) {
     EXPECT_TRUE(net_log_temp_file_->SetUpNetExportLogPath());
     net_export_log_ = net_log_temp_file_->log_path_;
   }
@@ -104,8 +114,7 @@ class NetLogTempFileTest : public ::testing::Test {
   // Verify state and GetFilePath return correct values if EnsureInit() fails.
   void VerifyFilePathAndStateAfterEnsureInitFailure() {
     EXPECT_EQ("UNINITIALIZED", GetStateString());
-    EXPECT_EQ(NetLogTempFile::STATE_UNINITIALIZED,
-              net_log_temp_file_->state());
+    EXPECT_EQ(NetLogTempFile::STATE_UNINITIALIZED, net_log_temp_file_->state());
 
     base::FilePath net_export_file_path;
     EXPECT_FALSE(net_log_temp_file_->GetFilePath(&net_export_file_path));
@@ -204,7 +213,6 @@ class NetLogTempFileTest : public ::testing::Test {
   }
 
   base::MessageLoop message_loop_;
-  content::TestBrowserThread file_user_blocking_thread_;
 };
 
 TEST_F(NetLogTempFileTest, EnsureInitFailure) {
@@ -264,8 +272,7 @@ TEST_F(NetLogTempFileTest, ProcessCommandDoStartAndStop) {
   net_log_temp_file_->ProcessCommand(
       NetLogTempFile::DO_START_STRIP_PRIVATE_DATA);
   VerifyFileAndStateAfterDoStart();
-  net_log_temp_file_->ProcessCommand(
-      NetLogTempFile::DO_START_LOG_BYTES);
+  net_log_temp_file_->ProcessCommand(NetLogTempFile::DO_START_LOG_BYTES);
   VerifyFileAndStateAfterDoStart();
 
   net_log_temp_file_->ProcessCommand(NetLogTempFile::DO_STOP);
@@ -295,8 +302,7 @@ TEST_F(NetLogTempFileTest,
   VerifyFileAndStateAfterDoStopWithStripPrivateData();
 }
 
-TEST_F(NetLogTempFileTest,
-       ProcessCommandDoStartAndStopWithByteLogging) {
+TEST_F(NetLogTempFileTest, ProcessCommandDoStartAndStopWithByteLogging) {
   net_log_temp_file_->ProcessCommand(NetLogTempFile::DO_START_LOG_BYTES);
   VerifyFileAndStateAfterDoStartLogBytes();
 
@@ -330,8 +336,8 @@ TEST_F(NetLogTempFileTest, DoStartClearsFile) {
 
   // Add some junk at the end of the file.
   std::string junk_data("Hello");
-  EXPECT_TRUE(base::AppendToFile(net_export_log_, junk_data.c_str(),
-                                 junk_data.size()));
+  EXPECT_TRUE(
+      base::AppendToFile(net_export_log_, junk_data.c_str(), junk_data.size()));
 
   int64 junk_file_size;
   EXPECT_TRUE(base::GetFileSize(net_export_log_, &junk_file_size));
@@ -382,3 +388,5 @@ TEST_F(NetLogTempFileTest, CheckAddEvent) {
   EXPECT_TRUE(base::GetFileSize(net_export_log_, &new_stop_file_size));
   EXPECT_GE(new_stop_file_size, stop_file_size);
 }
+
+}  // namespace net_log

@@ -13,8 +13,8 @@
 #include "chrome/browser/extensions/api/dial/dial_api.h"
 #include "chrome/browser/extensions/api/dial/dial_device_data.h"
 #include "chrome/browser/extensions/api/dial/dial_service.h"
-#include "chrome/browser/net/chrome_net_log.h"
 #include "chrome/common/extensions/api/dial.h"
+#include "components/net_log/chrome_net_log.h"
 
 using base::Time;
 using base::TimeDelta;

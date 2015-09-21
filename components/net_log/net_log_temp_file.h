@@ -2,15 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_NET_NET_LOG_TEMP_FILE_H_
-#define CHROME_BROWSER_NET_NET_LOG_TEMP_FILE_H_
+#ifndef COMPONENTS_NET_LOG_NET_LOG_TEMP_FILE_H_
+#define COMPONENTS_NET_LOG_NET_LOG_TEMP_FILE_H_
 
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/threading/thread_checker.h"
 #include "net/log/net_log.h"
 
 namespace base {
@@ -20,6 +22,8 @@ class DictionaryValue;
 namespace net {
 class WriteToFileNetLogObserver;
 }
+
+namespace net_log {
 
 class ChromeNetLog;
 
@@ -35,19 +39,18 @@ class ChromeNetLog;
 // c) Either Send or Start is allowed (STATE_NOT_LOGGING, anything but
 //    LOG_TYPE_NONE).
 //
-// This is created/destroyed on the UI thread, but all other function calls
-// occur on the FILE_USER_BLOCKING thread.
+// This is created/destroyed on the main thread, but all other function calls
+// occur on a background thread.
 //
-// This relies on the UI thread outlasting all other named threads for thread
-// safety.
+// This relies on the UI thread outlasting all other threads for thread safety.
 class NetLogTempFile {
  public:
   // This enum lists the UI button commands it could receive.
   enum Command {
     DO_START_LOG_BYTES,  // Call StartNetLog logging all bytes received.
-    DO_START,  // Call StartNetLog.
+    DO_START,            // Call StartNetLog.
     DO_START_STRIP_PRIVATE_DATA,  // Call StartNetLog stripping private data.
-    DO_STOP,   // Call StopNetLog.
+    DO_STOP,                      // Call StopNetLog.
   };
 
   virtual ~NetLogTempFile();
@@ -67,12 +70,13 @@ class NetLogTempFile {
  protected:
   // Constructs a NetLogTempFile. Only one instance is created in browser
   // process.
-  explicit NetLogTempFile(ChromeNetLog* chrome_net_log);
+  NetLogTempFile(ChromeNetLog* chrome_net_log,
+                 const base::CommandLine::StringType& command_line_string,
+                 const std::string& channel_string);
 
   // Returns path name to base::GetTempDir() directory. Returns false if
   // base::GetTempDir() fails.
-  virtual bool GetNetExportLogBaseDirectory(
-      base::FilePath* path) const;
+  virtual bool GetNetExportLogBaseDirectory(base::FilePath* path) const;
 
  private:
   friend class ChromeNetLog;
@@ -140,11 +144,13 @@ class NetLogTempFile {
   // Returns true if a file exists at |log_path_|.
   bool NetExportLogExists() const;
 
+  base::ThreadChecker thread_checker_;
+
   // Helper function for unit tests.
   State state() const { return state_; }
   LogType log_type() const { return log_type_; }
 
-  State state_;  // Current state of NetLogTempFile.
+  State state_;       // Current state of NetLogTempFile.
   LogType log_type_;  // Type of current log file on disk.
 
   base::FilePath log_path_;  // base::FilePath to the temporary file.
@@ -157,7 +163,12 @@ class NetLogTempFile {
   // using global (g_browser_process).
   ChromeNetLog* chrome_net_log_;
 
+  const base::CommandLine::StringType command_line_string_;
+  const std::string channel_string_;
+
   DISALLOW_COPY_AND_ASSIGN(NetLogTempFile);
 };
 
-#endif  // CHROME_BROWSER_NET_NET_LOG_TEMP_FILE_H_
+}  // namespace net_log
+
+#endif  // COMPONENTS_NET_LOG_NET_LOG_TEMP_FILE_H_

@@ -49,6 +49,7 @@
     'memory_pressure.gypi',
     'metrics.gypi',
     'navigation_metrics.gypi',
+    'net_log.gypi',
     'network_hints.gypi',
     'network_time.gypi',
     'offline_pages.gypi',

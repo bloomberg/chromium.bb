@@ -46,7 +46,7 @@
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/metrics/metrics_services_manager.h"
 #include "chrome/browser/metrics/thread_watcher.h"
-#include "chrome/browser/net/chrome_net_log.h"
+#include "chrome/browser/net/chrome_net_log_helper.h"
 #include "chrome/browser/net/crl_set_fetcher.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/plugins/chrome_plugin_service_filter.h"
@@ -78,6 +78,7 @@
 #include "components/component_updater/component_updater_service.h"
 #include "components/gcm_driver/gcm_driver.h"
 #include "components/metrics/metrics_service.h"
+#include "components/net_log/chrome_net_log.h"
 #include "components/network_time/network_time_tracker.h"
 #include "components/policy/core/common/policy_service.h"
 #include "components/safe_json/safe_json_parser.h"
@@ -192,7 +193,12 @@ BrowserProcessImpl::BrowserProcessImpl(
   print_job_manager_.reset(new printing::PrintJobManager);
 #endif
 
-  net_log_.reset(new ChromeNetLog);
+  base::FilePath net_log_path;
+  if (command_line.HasSwitch(switches::kLogNetLog))
+    net_log_path = command_line.GetSwitchValuePath(switches::kLogNetLog);
+  net_log_.reset(new net_log::ChromeNetLog(
+      net_log_path, GetNetCaptureModeFromCommandLine(command_line),
+      command_line.GetCommandLineString(), chrome::GetChannelString()));
 
   ChildProcessSecurityPolicy::GetInstance()->RegisterWebSafeScheme(
       extensions::kExtensionScheme);
@@ -885,7 +891,7 @@ void BrowserProcessImpl::StartAutoupdateTimer() {
 }
 #endif
 
-ChromeNetLog* BrowserProcessImpl::net_log() {
+net_log::ChromeNetLog* BrowserProcessImpl::net_log() {
   return net_log_.get();
 }
 
