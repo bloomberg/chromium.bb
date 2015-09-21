@@ -1642,12 +1642,14 @@ void RenderProcessHostImpl::OnChannelError() {
 void RenderProcessHostImpl::OnBadMessageReceived(const IPC::Message& message) {
   // Message de-serialization failed. We consider this a capital crime. Kill the
   // renderer if we have one.
-  LOG(ERROR) << "bad message " << message.type() << " terminating renderer.";
+  auto type = message.type();
+  LOG(ERROR) << "bad message " << type << " terminating renderer.";
   BrowserChildProcessHostImpl::HistogramBadMessageTerminated(
       PROCESS_TYPE_RENDERER);
 
   // Create a memory dump. This will contain enough stack frames to work out
   // what the bad message was.
+  base::debug::Alias(&type);
   base::debug::DumpWithoutCrashing();
 
   bad_message::ReceivedBadMessage(this,
