@@ -40,7 +40,6 @@
 #include "net/http/http_util.h"
 #include "net/ssl/ssl_cipher_suite_names.h"
 #include "net/ssl/ssl_connection_status_flags.h"
-#include "net/url_request/redirect_info.h"
 #include "net/url_request/url_request_data_job.h"
 #include "third_party/WebKit/public/platform/WebHTTPLoadInfo.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
@@ -513,27 +512,11 @@ bool WebURLLoaderImpl::Context::OnReceivedRedirect(
   PopulateURLResponse(request_.url(), info, &response,
                       request_.reportRawHeaders());
 
-  // TODO(darin): We lack sufficient information to construct the actual
-  // request that resulted from the redirect.
-  WebURLRequest new_request(redirect_info.new_url);
-  new_request.setFirstPartyForCookies(
-      redirect_info.new_first_party_for_cookies);
-  new_request.setDownloadToFile(request_.downloadToFile());
-  new_request.setUseStreamOnResponse(request_.useStreamOnResponse());
-  new_request.setRequestContext(request_.requestContext());
-  new_request.setFrameType(request_.frameType());
-  new_request.setSkipServiceWorker(!info.was_fetched_via_service_worker);
-  new_request.setShouldResetAppCache(request_.shouldResetAppCache());
-  new_request.setFetchRequestMode(request_.fetchRequestMode());
-  new_request.setFetchCredentialsMode(request_.fetchCredentialsMode());
-
-  new_request.setHTTPReferrer(WebString::fromUTF8(redirect_info.new_referrer),
-                              referrer_policy_);
-
-  std::string old_method = request_.httpMethod().utf8();
-  new_request.setHTTPMethod(WebString::fromUTF8(redirect_info.new_method));
-  if (redirect_info.new_method == old_method)
-    new_request.setHTTPBody(request_.httpBody());
+  WebURLRequest new_request;
+  new_request.initialize();
+  PopulateURLRequestForRedirect(request_, redirect_info, referrer_policy_,
+                                !info.was_fetched_via_service_worker,
+                                &new_request);
 
   // Protect from deletion during call to willSendRequest.
   scoped_refptr<Context> protect(this);
@@ -992,6 +975,35 @@ void WebURLLoaderImpl::PopulateURLResponse(const GURL& url,
     response->addHTTPHeaderField(WebString::fromLatin1(name),
                                  WebString::fromLatin1(value));
   }
+}
+
+void WebURLLoaderImpl::PopulateURLRequestForRedirect(
+    const blink::WebURLRequest& request,
+    const net::RedirectInfo& redirect_info,
+    blink::WebReferrerPolicy referrer_policy,
+    bool skip_service_worker,
+    blink::WebURLRequest* new_request) {
+  // TODO(darin): We lack sufficient information to construct the actual
+  // request that resulted from the redirect.
+  new_request->setURL(redirect_info.new_url);
+  new_request->setFirstPartyForCookies(
+      redirect_info.new_first_party_for_cookies);
+  new_request->setDownloadToFile(request.downloadToFile());
+  new_request->setUseStreamOnResponse(request.useStreamOnResponse());
+  new_request->setRequestContext(request.requestContext());
+  new_request->setFrameType(request.frameType());
+  new_request->setSkipServiceWorker(skip_service_worker);
+  new_request->setShouldResetAppCache(request.shouldResetAppCache());
+  new_request->setFetchRequestMode(request.fetchRequestMode());
+  new_request->setFetchCredentialsMode(request.fetchCredentialsMode());
+
+  new_request->setHTTPReferrer(WebString::fromUTF8(redirect_info.new_referrer),
+                              referrer_policy);
+
+  std::string old_method = request.httpMethod().utf8();
+  new_request->setHTTPMethod(WebString::fromUTF8(redirect_info.new_method));
+  if (redirect_info.new_method == old_method)
+    new_request->setHTTPBody(request.httpBody());
 }
 
 void WebURLLoaderImpl::loadSynchronously(const WebURLRequest& request,

@@ -40,6 +40,7 @@ class WebURLLoaderMock : public blink::WebURLLoader {
 
   // Simulates the redirect being served.
   blink::WebURLRequest ServeRedirect(
+      const blink::WebURLRequest& request,
       const blink::WebURLResponse& redirectResponse);
 
   // WebURLLoader methods:

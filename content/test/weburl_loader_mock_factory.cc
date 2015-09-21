@@ -89,7 +89,7 @@ void WebURLLoaderMockFactory::ServeAsynchronousRequests() {
     // Follow any redirects while the loader is still active.
     while (response.httpStatusCode() >= 300 &&
            response.httpStatusCode() < 400) {
-      WebURLRequest newRequest = loader->ServeRedirect(response);
+      WebURLRequest newRequest = loader->ServeRedirect(request, response);
       if (!IsPending(loader) || loader->isDeferred())
         break;
       LoadRequest(newRequest, &response, &error, &data);

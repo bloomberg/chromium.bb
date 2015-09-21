@@ -9,6 +9,7 @@
 #include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
 #include "content/public/common/resource_response.h"
+#include "net/url_request/redirect_info.h"
 #include "third_party/WebKit/public/platform/WebURLLoader.h"
 #include "url/gurl.h"
 
@@ -44,6 +45,12 @@ class CONTENT_EXPORT WebURLLoaderImpl
                                   const ResourceResponseInfo& info,
                                   blink::WebURLResponse* response,
                                   bool report_security_info);
+  static void PopulateURLRequestForRedirect(
+      const blink::WebURLRequest& request,
+      const net::RedirectInfo& redirect_info,
+      blink::WebReferrerPolicy referrer_policy,
+      bool skip_service_worker,
+      blink::WebURLRequest* new_request);
 
   // WebURLLoader methods:
   void loadSynchronously(
