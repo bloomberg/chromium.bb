@@ -87,6 +87,24 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
       settings_private::PrefType::PREF_TYPE_NUMBER;
   (*s_whitelist)["session.startup_urls"] =
       settings_private::PrefType::PREF_TYPE_LIST;
+  (*s_whitelist)["browser.clear_data.browsing_history"] =
+      settings_private::PrefType::PREF_TYPE_BOOLEAN;
+  (*s_whitelist)["browser.clear_data.download_history"] =
+      settings_private::PrefType::PREF_TYPE_BOOLEAN;
+  (*s_whitelist)["browser.clear_data.cache"] =
+      settings_private::PrefType::PREF_TYPE_BOOLEAN;
+  (*s_whitelist)["browser.clear_data.cookies"] =
+      settings_private::PrefType::PREF_TYPE_BOOLEAN;
+  (*s_whitelist)["browser.clear_data.passwords"] =
+      settings_private::PrefType::PREF_TYPE_BOOLEAN;
+  (*s_whitelist)["browser.clear_data.form_data"] =
+      settings_private::PrefType::PREF_TYPE_BOOLEAN;
+  (*s_whitelist)["browser.clear_data.hosted_apps_data"] =
+      settings_private::PrefType::PREF_TYPE_BOOLEAN;
+  (*s_whitelist)["browser.clear_data.content_licenses"] =
+      settings_private::PrefType::PREF_TYPE_BOOLEAN;
+  (*s_whitelist)["browser.clear_data.time_period"] =
+      settings_private::PrefType::PREF_TYPE_NUMBER;
 
 #if defined(OS_CHROMEOS)
   (*s_whitelist)["cros.accounts.allowBWSI"] =
