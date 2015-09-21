@@ -30,7 +30,7 @@ class NativeMessagingReaderTest : public testing::Test {
   void OnMessage(scoped_ptr<base::Value> message);
 
   // Writes a message (header+body) to the write-end of the pipe.
-  void WriteMessage(std::string message);
+  void WriteMessage(const std::string& message);
 
   // Writes some data to the write-end of the pipe.
   void WriteData(const char* data, int length);
@@ -74,7 +74,7 @@ void NativeMessagingReaderTest::OnMessage(scoped_ptr<base::Value> message) {
   message_ = message.Pass();
 }
 
-void NativeMessagingReaderTest::WriteMessage(std::string message) {
+void NativeMessagingReaderTest::WriteMessage(const std::string& message) {
   uint32 length = message.length();
   WriteData(reinterpret_cast<char*>(&length), 4);
   WriteData(message.data(), length);
