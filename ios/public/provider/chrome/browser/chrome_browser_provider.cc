@@ -116,4 +116,8 @@ rappor::RapporService* ChromeBrowserProvider::GetRapporService() {
   return nullptr;
 }
 
+bool ChromeBrowserProvider::IsOffTheRecordSessionActive() {
+  return false;
+}
+
 }  // namespace ios

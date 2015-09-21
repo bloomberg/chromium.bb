@@ -121,6 +121,8 @@ class ChromeBrowserProvider {
   virtual policy::BrowserPolicyConnector* GetBrowserPolicyConnector();
   // Returns the RapporService. May be null.
   virtual rappor::RapporService* GetRapporService();
+  // Returns whether there is an Off-The-Record session active.
+  virtual bool IsOffTheRecordSessionActive();
 };
 
 }  // namespace ios

@@ -408,6 +408,8 @@
         'browser/ui/autofill/autofill_client_ios.mm',
         'browser/ui/background_generator.h',
         'browser/ui/background_generator.mm',
+        'browser/ui/browser_otr_state.h',
+        'browser/ui/browser_otr_state.mm',
         'browser/ui/commands/UIKit+ChromeExecuteCommand.h',
         'browser/ui/commands/UIKit+ChromeExecuteCommand.mm',
         'browser/ui/commands/clear_browsing_data_command.h',
