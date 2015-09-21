@@ -39,7 +39,7 @@ namespace blink {
 
 FELighting::FELighting(Filter* filter, LightingType lightingType, const Color& lightingColor, float surfaceScale,
     float diffuseConstant, float specularConstant, float specularExponent,
-    float kernelUnitLengthX, float kernelUnitLengthY, PassRefPtr<LightSource> lightSource)
+    PassRefPtr<LightSource> lightSource)
     : FilterEffect(filter)
     , m_lightingType(lightingType)
     , m_lightSource(lightSource)
@@ -48,8 +48,6 @@ FELighting::FELighting(Filter* filter, LightingType lightingType, const Color& l
     , m_diffuseConstant(std::max(diffuseConstant, 0.0f))
     , m_specularConstant(std::max(specularConstant, 0.0f))
     , m_specularExponent(std::min(std::max(specularExponent, 1.0f), 128.0f))
-    , m_kernelUnitLengthX(kernelUnitLengthX)
-    , m_kernelUnitLengthY(kernelUnitLengthY)
 {
 }
 

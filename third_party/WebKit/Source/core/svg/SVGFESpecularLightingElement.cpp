@@ -73,11 +73,6 @@ bool SVGFESpecularLightingElement::setFilterEffectAttribute(FilterEffect* effect
         return specularLighting->setSpecularConstant(m_specularConstant->currentValue()->value());
     if (attrName == SVGNames::specularExponentAttr)
         return specularLighting->setSpecularExponent(m_specularExponent->currentValue()->value());
-    if (attrName == SVGNames::kernelUnitLengthAttr) {
-        bool changedX = specularLighting->setKernelUnitLengthX(m_kernelUnitLength->firstNumber()->currentValue()->value());
-        bool changedY = specularLighting->setKernelUnitLengthY(m_kernelUnitLength->secondNumber()->currentValue()->value());
-        return changedX || changedY;
-    }
 
     LightSource* lightSource = const_cast<LightSource*>(specularLighting->lightSource());
     SVGFELightElement* lightElement = SVGFELightElement::findLightElement(*this);
@@ -106,8 +101,7 @@ void SVGFESpecularLightingElement::svgAttributeChanged(const QualifiedName& attr
 {
     if (attrName == SVGNames::surfaceScaleAttr
         || attrName == SVGNames::specularConstantAttr
-        || attrName == SVGNames::specularExponentAttr
-        || attrName == SVGNames::kernelUnitLengthAttr) {
+        || attrName == SVGNames::specularExponentAttr) {
         SVGElement::InvalidationGuard invalidationGuard(this);
         primitiveAttributeChanged(attrName);
         return;
@@ -151,7 +145,7 @@ PassRefPtrWillBeRawPtr<FilterEffect> SVGFESpecularLightingElement::build(SVGFilt
 
     RefPtr<LightSource> lightSource = lightNode->lightSource(filter);
     RefPtrWillBeRawPtr<FilterEffect> effect = FESpecularLighting::create(filter, color, m_surfaceScale->currentValue()->value(), m_specularConstant->currentValue()->value(),
-        m_specularExponent->currentValue()->value(), kernelUnitLengthX()->currentValue()->value(), kernelUnitLengthY()->currentValue()->value(), lightSource.release());
+        m_specularExponent->currentValue()->value(), lightSource.release());
     effect->inputEffects().append(input1);
     return effect.release();
 }

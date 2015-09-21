@@ -24,8 +24,8 @@
 #ifndef FEConvolveMatrix_h
 #define FEConvolveMatrix_h
 
-#include "platform/geometry/FloatPoint.h"
-#include "platform/geometry/FloatSize.h"
+#include "platform/geometry/IntPoint.h"
+#include "platform/geometry/IntSize.h"
 #include "platform/graphics/filters/Filter.h"
 #include "platform/graphics/filters/FilterEffect.h"
 #include "wtf/Vector.h"
@@ -42,8 +42,7 @@ enum EdgeModeType {
 class PLATFORM_EXPORT FEConvolveMatrix : public FilterEffect {
 public:
     static PassRefPtrWillBeRawPtr<FEConvolveMatrix> create(Filter*, const IntSize&,
-            float, float, const IntPoint&, EdgeModeType, const FloatPoint&,
-            bool, const Vector<float>&);
+        float, float, const IntPoint&, EdgeModeType, bool, const Vector<float>&);
 
     IntSize kernelSize() const;
     void setKernelSize(const IntSize&);
@@ -63,9 +62,6 @@ public:
     EdgeModeType edgeMode() const;
     bool setEdgeMode(EdgeModeType);
 
-    FloatPoint kernelUnitLength() const;
-    bool setKernelUnitLength(const FloatPoint&);
-
     bool preserveAlpha() const;
     bool setPreserveAlpha(bool);
 
@@ -76,16 +72,14 @@ public:
     TextStream& externalRepresentation(TextStream&, int indention) const override;
 
 private:
-
     FEConvolveMatrix(Filter*, const IntSize&, float, float,
-            const IntPoint&, EdgeModeType, const FloatPoint&, bool, const Vector<float>&);
+        const IntPoint&, EdgeModeType, bool, const Vector<float>&);
 
     IntSize m_kernelSize;
     float m_divisor;
     float m_bias;
     IntPoint m_targetOffset;
     EdgeModeType m_edgeMode;
-    FloatPoint m_kernelUnitLength;
     bool m_preserveAlpha;
     Vector<float> m_kernelMatrix;
 };

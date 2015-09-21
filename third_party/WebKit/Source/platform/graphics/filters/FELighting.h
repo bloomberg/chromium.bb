@@ -50,7 +50,7 @@ protected:
     FloatRect mapPaintRect(const FloatRect&, bool forward = true) final;
     bool affectsTransparentPixels() override { return true; }
 
-    FELighting(Filter*, LightingType, const Color&, float, float, float, float, float, float, PassRefPtr<LightSource>);
+    FELighting(Filter*, LightingType, const Color&, float, float, float, float, PassRefPtr<LightSource>);
 
     LightingType m_lightingType;
     RefPtr<LightSource> m_lightSource;
@@ -60,8 +60,6 @@ protected:
     float m_diffuseConstant;
     float m_specularConstant;
     float m_specularExponent;
-    float m_kernelUnitLengthX;
-    float m_kernelUnitLengthY;
 };
 
 } // namespace blink

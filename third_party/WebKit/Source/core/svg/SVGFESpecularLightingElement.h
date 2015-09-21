@@ -54,9 +54,6 @@ private:
     void svgAttributeChanged(const QualifiedName&) override;
     PassRefPtrWillBeRawPtr<FilterEffect> build(SVGFilterBuilder*, Filter*) override;
 
-    static const AtomicString& kernelUnitLengthXIdentifier();
-    static const AtomicString& kernelUnitLengthYIdentifier();
-
     RefPtrWillBeMember<SVGAnimatedNumber> m_specularConstant;
     RefPtrWillBeMember<SVGAnimatedNumber> m_specularExponent;
     RefPtrWillBeMember<SVGAnimatedNumber> m_surfaceScale;

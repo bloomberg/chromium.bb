@@ -126,8 +126,6 @@ bool SVGFEConvolveMatrixElement::setFilterEffectAttribute(FilterEffect* effect, 
         return convolveMatrix->setTargetOffset(IntPoint(m_targetX->currentValue()->value(), m_targetY->currentValue()->value()));
     if (attrName == SVGNames::targetYAttr)
         return convolveMatrix->setTargetOffset(IntPoint(m_targetX->currentValue()->value(), m_targetY->currentValue()->value()));
-    if (attrName == SVGNames::kernelUnitLengthAttr)
-        return convolveMatrix->setKernelUnitLength(FloatPoint(kernelUnitLengthX()->currentValue()->value(), kernelUnitLengthY()->currentValue()->value()));
     if (attrName == SVGNames::preserveAlphaAttr)
         return convolveMatrix->setPreserveAlpha(m_preserveAlpha->currentValue()->value());
 
@@ -142,7 +140,6 @@ void SVGFEConvolveMatrixElement::svgAttributeChanged(const QualifiedName& attrNa
         || attrName == SVGNames::biasAttr
         || attrName == SVGNames::targetXAttr
         || attrName == SVGNames::targetYAttr
-        || attrName == SVGNames::kernelUnitLengthAttr
         || attrName == SVGNames::preserveAlphaAttr) {
         SVGElement::InvalidationGuard invalidationGuard(this);
         primitiveAttributeChanged(attrName);
@@ -195,17 +192,6 @@ PassRefPtrWillBeRawPtr<FilterEffect> SVGFEConvolveMatrixElement::build(SVGFilter
     if (!hasAttribute(SVGNames::targetYAttr))
         targetYValue = static_cast<int>(floorf(orderYValue / 2));
 
-    // Spec says default kernelUnitLength is 1.0, and a specified length cannot be 0.
-    // FIXME: Why is this cast from float -> int -> float?
-    int kernelUnitLengthXValue = kernelUnitLengthX()->currentValue()->value();
-    int kernelUnitLengthYValue = kernelUnitLengthY()->currentValue()->value();
-    if (!hasAttribute(SVGNames::kernelUnitLengthAttr)) {
-        kernelUnitLengthXValue = 1;
-        kernelUnitLengthYValue = 1;
-    }
-    if (kernelUnitLengthXValue <= 0 || kernelUnitLengthYValue <= 0)
-        return nullptr;
-
     float divisorValue = m_divisor->currentValue()->value();
     if (hasAttribute(SVGNames::divisorAttr) && !divisorValue)
         return nullptr;
@@ -219,7 +205,7 @@ PassRefPtrWillBeRawPtr<FilterEffect> SVGFEConvolveMatrixElement::build(SVGFilter
     RefPtrWillBeRawPtr<FilterEffect> effect = FEConvolveMatrix::create(filter,
         IntSize(orderXValue, orderYValue), divisorValue,
         m_bias->currentValue()->value(), IntPoint(targetXValue, targetYValue), m_edgeMode->currentValue()->enumValue(),
-        FloatPoint(kernelUnitLengthXValue, kernelUnitLengthYValue), m_preserveAlpha->currentValue()->value(), m_kernelMatrix->currentValue()->toFloatVector());
+        m_preserveAlpha->currentValue()->value(), m_kernelMatrix->currentValue()->toFloatVector());
     effect->inputEffects().append(input1);
     return effect.release();
 }

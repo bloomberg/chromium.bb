@@ -29,18 +29,16 @@
 namespace blink {
 
 FESpecularLighting::FESpecularLighting(Filter* filter, const Color& lightingColor, float surfaceScale,
-    float specularConstant, float specularExponent, float kernelUnitLengthX,
-    float kernelUnitLengthY, PassRefPtr<LightSource> lightSource)
-    : FELighting(filter, SpecularLighting, lightingColor, surfaceScale, 0, specularConstant, specularExponent, kernelUnitLengthX, kernelUnitLengthY, lightSource)
+    float specularConstant, float specularExponent, PassRefPtr<LightSource> lightSource)
+    : FELighting(filter, SpecularLighting, lightingColor, surfaceScale, 0, specularConstant, specularExponent, lightSource)
 {
 }
 
 PassRefPtrWillBeRawPtr<FESpecularLighting> FESpecularLighting::create(Filter* filter, const Color& lightingColor,
-    float surfaceScale, float specularConstant, float specularExponent,
-    float kernelUnitLengthX, float kernelUnitLengthY, PassRefPtr<LightSource> lightSource)
+    float surfaceScale, float specularConstant, float specularExponent, PassRefPtr<LightSource> lightSource)
 {
     return adoptRefWillBeNoop(new FESpecularLighting(filter, lightingColor, surfaceScale, specularConstant, specularExponent,
-        kernelUnitLengthX, kernelUnitLengthY, lightSource));
+        lightSource));
 }
 
 FESpecularLighting::~FESpecularLighting()
@@ -98,32 +96,6 @@ bool FESpecularLighting::setSpecularExponent(float specularExponent)
     if (m_specularExponent == specularExponent)
         return false;
     m_specularExponent = specularExponent;
-    return true;
-}
-
-float FESpecularLighting::kernelUnitLengthX() const
-{
-    return m_kernelUnitLengthX;
-}
-
-bool FESpecularLighting::setKernelUnitLengthX(float kernelUnitLengthX)
-{
-    if (m_kernelUnitLengthX == kernelUnitLengthX)
-        return false;
-    m_kernelUnitLengthX = kernelUnitLengthX;
-    return true;
-}
-
-float FESpecularLighting::kernelUnitLengthY() const
-{
-    return m_kernelUnitLengthY;
-}
-
-bool FESpecularLighting::setKernelUnitLengthY(float kernelUnitLengthY)
-{
-    if (m_kernelUnitLengthY == kernelUnitLengthY)
-        return false;
-    m_kernelUnitLengthY = kernelUnitLengthY;
     return true;
 }
 

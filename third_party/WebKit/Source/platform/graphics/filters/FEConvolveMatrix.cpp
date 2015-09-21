@@ -34,14 +34,13 @@ namespace blink {
 
 FEConvolveMatrix::FEConvolveMatrix(Filter* filter, const IntSize& kernelSize,
     float divisor, float bias, const IntPoint& targetOffset, EdgeModeType edgeMode,
-    const FloatPoint& kernelUnitLength, bool preserveAlpha, const Vector<float>& kernelMatrix)
+    bool preserveAlpha, const Vector<float>& kernelMatrix)
     : FilterEffect(filter)
     , m_kernelSize(kernelSize)
     , m_divisor(divisor)
     , m_bias(bias)
     , m_targetOffset(targetOffset)
     , m_edgeMode(edgeMode)
-    , m_kernelUnitLength(kernelUnitLength)
     , m_preserveAlpha(preserveAlpha)
     , m_kernelMatrix(kernelMatrix)
 {
@@ -51,9 +50,9 @@ FEConvolveMatrix::FEConvolveMatrix(Filter* filter, const IntSize& kernelSize,
 
 PassRefPtrWillBeRawPtr<FEConvolveMatrix> FEConvolveMatrix::create(Filter* filter, const IntSize& kernelSize,
     float divisor, float bias, const IntPoint& targetOffset, EdgeModeType edgeMode,
-    const FloatPoint& kernelUnitLength, bool preserveAlpha, const Vector<float>& kernelMatrix)
+    bool preserveAlpha, const Vector<float>& kernelMatrix)
 {
-    return adoptRefWillBeNoop(new FEConvolveMatrix(filter, kernelSize, divisor, bias, targetOffset, edgeMode, kernelUnitLength,
+    return adoptRefWillBeNoop(new FEConvolveMatrix(filter, kernelSize, divisor, bias, targetOffset, edgeMode,
         preserveAlpha, kernelMatrix));
 }
 
@@ -141,21 +140,6 @@ bool FEConvolveMatrix::setEdgeMode(EdgeModeType edgeMode)
     return true;
 }
 
-FloatPoint FEConvolveMatrix::kernelUnitLength() const
-{
-    return m_kernelUnitLength;
-}
-
-bool FEConvolveMatrix::setKernelUnitLength(const FloatPoint& kernelUnitLength)
-{
-    ASSERT(kernelUnitLength.x() > 0);
-    ASSERT(kernelUnitLength.y() > 0);
-    if (m_kernelUnitLength == kernelUnitLength)
-        return false;
-    m_kernelUnitLength = kernelUnitLength;
-    return true;
-}
-
 bool FEConvolveMatrix::preserveAlpha() const
 {
     return m_preserveAlpha;
@@ -231,7 +215,6 @@ TextStream& FEConvolveMatrix::externalRepresentation(TextStream& ts, int indent)
        << "bias=\"" << m_bias << "\" "
        << "target=\"" << m_targetOffset << "\" "
        << "edgeMode=\"" << m_edgeMode << "\" "
-       << "kernelUnitLength=\"" << m_kernelUnitLength << "\" "
        << "preserveAlpha=\"" << m_preserveAlpha << "\"]\n";
     inputEffect(0)->externalRepresentation(ts, indent + 1);
     return ts;
