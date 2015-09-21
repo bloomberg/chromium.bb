@@ -8,6 +8,7 @@
 #include "cc/layers/content_layer_client.h"
 #include "cc/layers/picture_layer_impl.h"
 #include "cc/playback/display_item_list_settings.h"
+#include "cc/test/fake_display_list_recording_source.h"
 #include "cc/test/fake_layer_tree_host.h"
 #include "cc/test/fake_picture_layer.h"
 #include "cc/test/fake_picture_layer_impl.h"
@@ -78,22 +79,36 @@ TEST(PictureLayerTest, NoTilesIfEmptyBounds) {
 }
 
 TEST(PictureLayerTest, SuitableForGpuRasterization) {
+  scoped_ptr<FakeDisplayListRecordingSource> recording_source_owned(
+      new FakeDisplayListRecordingSource(gfx::Size(100, 100)));
+  FakeDisplayListRecordingSource* recording_source =
+      recording_source_owned.get();
+
   MockContentLayerClient client;
-  scoped_refptr<PictureLayer> layer =
-      PictureLayer::Create(LayerSettings(), &client);
+  scoped_refptr<FakePictureLayer> layer =
+      FakePictureLayer::CreateWithRecordingSource(
+          LayerSettings(), &client, recording_source_owned.Pass());
+
   FakeLayerTreeHostClient host_client(FakeLayerTreeHostClient::DIRECT_3D);
   TestTaskGraphRunner task_graph_runner;
   scoped_ptr<FakeLayerTreeHost> host =
       FakeLayerTreeHost::Create(&host_client, &task_graph_runner);
   host->SetRootLayer(layer);
-  RecordingSource* recording_source = layer->GetRecordingSourceForTesting();
+
+  // Update layers to initialize the recording source.
+  gfx::Size layer_bounds(200, 200);
+  gfx::Rect layer_rect(layer_bounds);
+  Region invalidation(layer_rect);
+  recording_source->UpdateAndExpandInvalidation(
+      &client, &invalidation, layer_bounds, layer_rect, 1,
+      RecordingSource::RECORD_NORMALLY);
 
   // Layer is suitable for gpu rasterization by default.
   EXPECT_TRUE(recording_source->IsSuitableForGpuRasterization());
   EXPECT_TRUE(layer->IsSuitableForGpuRasterization());
 
   // Veto gpu rasterization.
-  recording_source->SetUnsuitableForGpuRasterizationForTesting();
+  recording_source->SetUnsuitableForGpuRasterization();
   EXPECT_FALSE(recording_source->IsSuitableForGpuRasterization());
   EXPECT_FALSE(layer->IsSuitableForGpuRasterization());
 }

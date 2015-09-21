@@ -95,7 +95,9 @@ class FakeDisplayListRecordingSource : public DisplayListRecordingSource {
   }
 
   bool IsSuitableForGpuRasterization() const override;
-  void SetUnsuitableForGpuRasterizationForTesting() override;
+  void SetUnsuitableForGpuRasterization() {
+    force_unsuitable_for_gpu_rasterization_ = true;
+  }
 
  private:
   FakeContentLayerClient client_;
