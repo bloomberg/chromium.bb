@@ -124,7 +124,7 @@ class ListContainer {
   template <typename DerivedElementType>
   DerivedElementType* ReplaceExistingElement(Iterator at) {
     at->~BaseElementType();
-    return new (*at) DerivedElementType();
+    return new (at.item_iterator) DerivedElementType();
   }
 
   // Insert |count| new elements of |DerivedElementType| before |at|. This will
@@ -135,7 +135,7 @@ class ListContainer {
     helper_.InsertBeforeAndInvalidateAllPointers(&at, count);
     Iterator result = at;
     for (size_t i = 0; i < count; ++i) {
-      new (*at) DerivedElementType();
+      new (at.item_iterator) DerivedElementType();
       ++at;
     }
     return result;
