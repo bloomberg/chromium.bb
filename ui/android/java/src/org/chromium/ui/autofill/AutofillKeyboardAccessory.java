@@ -18,6 +18,7 @@ import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.ui.R;
+import org.chromium.ui.UiUtils;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.gfx.DeviceDisplayInfo;
 
@@ -155,6 +156,7 @@ public class AutofillKeyboardAccessory extends LinearLayout
 
     @Override
     public void onClick(View v) {
+        UiUtils.hideKeyboard(this);
         mAutofillDelegate.suggestionSelected((int) v.getTag());
     }
 
