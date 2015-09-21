@@ -55,23 +55,6 @@ if (window.location.origin != get_host_info().UNAUTHENTICATED_ORIGIN) {
     }, 'watchPosition');
 
     async_test(function() {
-        var element = document.getElementById('target');
-        document.addEventListener('fullscreenerror', this.step_func(function(e) {
-            assert_unreached('requestFullscreen should succeed, but failed.');
-            this.done();
-        }));
-        document.addEventListener('fullscreenchange', this.step_func(function() {
-            this.done();
-        }));
-
-        var request = element.requestFullscreen.bind(element);
-        document.addEventListener("click", request);
-        eventSender.mouseDown();
-        eventSender.mouseUp();
-        document.removeEventListener("click", request);
-    }, 'fullscreen');
-
-    async_test(function() {
         testRunner.setMockDeviceMotion(true, 0, true, 0, true, 0,
                                        true, 0, true, 0, true, 0,
                                        true, 0, true, 0, true, 0,

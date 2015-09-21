@@ -207,7 +207,7 @@ void Fullscreen::requestFullscreen(Element& element, RequestType requestType)
     if (document()->isPrivilegedContext(errorMessage)) {
         UseCounter::count(document(), UseCounter::FullscreenSecureOrigin);
     } else {
-        UseCounter::countDeprecation(document(), UseCounter::FullscreenInsecureOrigin);
+        UseCounter::count(document(), UseCounter::FullscreenInsecureOrigin);
         OriginsUsingFeatures::countAnyWorld(*document(), OriginsUsingFeatures::Feature::FullscreenInsecureOrigin);
     }
 
