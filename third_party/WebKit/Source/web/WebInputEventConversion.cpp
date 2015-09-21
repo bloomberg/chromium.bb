@@ -109,6 +109,10 @@ static unsigned toPlatformKeyboardEventModifiers(int webModifiers)
         newModifiers |= PlatformEvent::IsKeyPad;
     if (webModifiers & WebInputEvent::IsAutoRepeat)
         newModifiers |= PlatformEvent::IsAutoRepeat;
+    if (webModifiers & WebInputEvent::IsLeft)
+        newModifiers |= PlatformEvent::IsLeft;
+    if (webModifiers & WebInputEvent::IsRight)
+        newModifiers |= PlatformEvent::IsRight;
     return newModifiers;
 }
 
@@ -326,28 +330,7 @@ PlatformKeyboardEventBuilder::PlatformKeyboardEventBuilder(const WebKeyboardEven
     m_key = Platform::current()->domKeyStringFromEnum(e.domKey);
 
     m_modifiers = toPlatformKeyboardEventModifiers(e.modifiers);
-
-    // FIXME: PlatformKeyboardEvents expect a locational version of the keycode (e.g. VK_LSHIFT
-    // instead of VK_SHIFT). This should be changed so the location/keycode are stored separately,
-    // as in other places in the code.
     m_windowsVirtualKeyCode = e.windowsKeyCode;
-    if (e.windowsKeyCode == VK_SHIFT) {
-        if (e.modifiers & WebInputEvent::IsLeft)
-            m_windowsVirtualKeyCode = VK_LSHIFT;
-        else if (e.modifiers & WebInputEvent::IsRight)
-            m_windowsVirtualKeyCode = VK_RSHIFT;
-    } else if (e.windowsKeyCode == VK_CONTROL) {
-        if (e.modifiers & WebInputEvent::IsLeft)
-            m_windowsVirtualKeyCode = VK_LCONTROL;
-        else if (e.modifiers & WebInputEvent::IsRight)
-            m_windowsVirtualKeyCode = VK_RCONTROL;
-    } else if (e.windowsKeyCode == VK_MENU) {
-        if (e.modifiers & WebInputEvent::IsLeft)
-            m_windowsVirtualKeyCode = VK_LMENU;
-        else if (e.modifiers & WebInputEvent::IsRight)
-            m_windowsVirtualKeyCode = VK_RMENU;
-    }
-
 }
 
 void PlatformKeyboardEventBuilder::setKeyType(Type type)

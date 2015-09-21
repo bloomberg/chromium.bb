@@ -84,6 +84,9 @@ public:
         LeftButtonDown   = 1 << 6,
         MiddleButtonDown = 1 << 7,
         RightButtonDown  = 1 << 8,
+
+        IsLeft           = 1 << 11,
+        IsRight          = 1 << 12,
     };
 
     enum RailsMode {
