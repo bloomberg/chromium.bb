@@ -559,6 +559,52 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
   }
 }
 
+// This tests that histogram values > upper reference value don't trigger.
+IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
+                       ReceiveTraceFailsOnHigherHistogramSample) {
+  {
+    SetupBackgroundTracingManager();
+
+    base::RunLoop run_loop;
+
+    BackgroundTracingManagerUploadConfigWrapper upload_config_wrapper(
+        run_loop.QuitClosure());
+
+    base::DictionaryValue dict;
+    dict.SetString("mode", "PREEMPTIVE_TRACING_MODE");
+    dict.SetString("category", "BENCHMARK");
+
+    scoped_ptr<base::ListValue> rules_list(new base::ListValue());
+    {
+      scoped_ptr<base::DictionaryValue> rules_dict(new base::DictionaryValue());
+      rules_dict->SetString(
+          "rule", "MONITOR_AND_DUMP_WHEN_SPECIFIC_HISTOGRAM_AND_VALUE");
+      rules_dict->SetString("histogram_name", "fake");
+      rules_dict->SetInteger("histogram_lower_value", 1);
+      rules_dict->SetInteger("histogram_upper_value", 3);
+      rules_list->Append(rules_dict.Pass());
+    }
+
+    dict.Set("configs", rules_list.Pass());
+
+    scoped_ptr<BackgroundTracingConfig> config(
+        BackgroundTracingConfigImpl::FromDict(&dict));
+    EXPECT_TRUE(config);
+
+    BackgroundTracingManager::GetInstance()->SetActiveScenario(
+        config.Pass(), upload_config_wrapper.get_receive_callback(),
+        BackgroundTracingManager::NO_DATA_FILTERING);
+
+    // This should fail to trigger a trace since the sample value > the
+    // the upper reference value above.
+    LOCAL_HISTOGRAM_COUNTS("fake", 0);
+
+    run_loop.RunUntilIdle();
+
+    EXPECT_TRUE(upload_config_wrapper.get_receive_count() == 0);
+  }
+}
+
 // This tests that invalid preemptive mode configs will fail.
 IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
                        SetActiveScenarioFailsWithInvalidPreemptiveConfig) {

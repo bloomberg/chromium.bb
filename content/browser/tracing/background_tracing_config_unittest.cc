@@ -191,8 +191,24 @@ TEST_F(BackgroundTracingConfigTest, PreemptiveConfigFromValidString) {
   EXPECT_EQ(config->category_preset(), BackgroundTracingConfigImpl::BENCHMARK);
   EXPECT_EQ(config->rules().size(), 1u);
   EXPECT_EQ(RuleToString(config->rules()[0]),
-            "{\"histogram_name\":\"foo\",\"histogram_value\":1,"
-            "\"rule\":\"MONITOR_AND_DUMP_WHEN_SPECIFIC_HISTOGRAM_AND_VALUE\"}");
+            "{\"histogram_lower_value\":1,\"histogram_name\":\"foo\","
+            "\"histogram_upper_value\":2147483647,\"rule\":\"MONITOR_AND_DUMP_"
+            "WHEN_SPECIFIC_HISTOGRAM_AND_VALUE\"}");
+
+  config = ReadFromJSONString(
+      "{\"mode\":\"PREEMPTIVE_TRACING_MODE\", \"category\": "
+      "\"BENCHMARK\",\"configs\": [{\"rule\": "
+      "\"MONITOR_AND_DUMP_WHEN_SPECIFIC_HISTOGRAM_AND_VALUE\", "
+      "\"histogram_name\":\"foo\", \"histogram_lower_value\": 1, "
+      "\"histogram_upper_value\": 2}]}");
+  EXPECT_TRUE(config);
+  EXPECT_EQ(config->tracing_mode(), BackgroundTracingConfig::PREEMPTIVE);
+  EXPECT_EQ(config->category_preset(), BackgroundTracingConfigImpl::BENCHMARK);
+  EXPECT_EQ(config->rules().size(), 1u);
+  EXPECT_EQ(RuleToString(config->rules()[0]),
+            "{\"histogram_lower_value\":1,\"histogram_name\":\"foo\","
+            "\"histogram_upper_value\":2,\"rule\":\"MONITOR_AND_DUMP_WHEN_"
+            "SPECIFIC_HISTOGRAM_AND_VALUE\"}");
 
   config = ReadFromJSONString(
       "{\"mode\":\"PREEMPTIVE_TRACING_MODE\", \"category\": "
@@ -328,14 +344,15 @@ TEST_F(BackgroundTracingConfigTest, ValidPreemptiveConfigToString) {
     second_dict->SetString(
         "rule", "MONITOR_AND_DUMP_WHEN_SPECIFIC_HISTOGRAM_AND_VALUE");
     second_dict->SetString("histogram_name", "foo");
-    second_dict->SetInteger("histogram_value", 1);
+    second_dict->SetInteger("histogram_lower_value", 1);
+    second_dict->SetInteger("histogram_upper_value", 2);
     config->AddPreemptiveRule(second_dict.get());
 
     EXPECT_EQ(ConfigToString(config.get()),
-              "{\"category\":\"BENCHMARK\",\"configs\":[{\"histogram_name\":"
-              "\"foo\",\"histogram_value\":1,\"rule\":\"MONITOR_AND_DUMP_WHEN_"
-              "SPECIFIC_HISTOGRAM_AND_VALUE\"}],\"mode\":\"PREEMPTIVE_TRACING_"
-              "MODE\"}");
+              "{\"category\":\"BENCHMARK\",\"configs\":[{\"histogram_lower_"
+              "value\":1,\"histogram_name\":\"foo\",\"histogram_upper_value\":"
+              "2,\"rule\":\"MONITOR_AND_DUMP_WHEN_SPECIFIC_HISTOGRAM_AND_"
+              "VALUE\"}],\"mode\":\"PREEMPTIVE_TRACING_MODE\"}");
   }
 }
 
@@ -349,6 +366,37 @@ TEST_F(BackgroundTracingConfigTest, InvalidPreemptiveConfigToString) {
     scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
     dict->SetString("rule", "MONITOR_AND_DUMP_WHEN_BROWSER_STARTUP_COMPLETE");
     config->AddPreemptiveRule(dict.get());
+
+    EXPECT_EQ(ConfigToString(config.get()),
+              "{\"category\":\"BENCHMARK\",\"configs\":[],\"mode\":"
+              "\"PREEMPTIVE_TRACING_MODE\"}");
+  }
+
+  {
+    config.reset(
+        new BackgroundTracingConfigImpl(BackgroundTracingConfig::PREEMPTIVE));
+
+    scoped_ptr<base::DictionaryValue> second_dict(new base::DictionaryValue());
+    second_dict->SetString(
+        "rule", "MONITOR_AND_DUMP_WHEN_SPECIFIC_HISTOGRAM_AND_VALUE");
+    second_dict->SetString("histogram_name", "foo");
+    second_dict->SetInteger("histogram_lower_value", 1);
+
+    EXPECT_EQ(ConfigToString(config.get()),
+              "{\"category\":\"BENCHMARK\",\"configs\":[],\"mode\":"
+              "\"PREEMPTIVE_TRACING_MODE\"}");
+  }
+
+  {
+    config.reset(
+        new BackgroundTracingConfigImpl(BackgroundTracingConfig::PREEMPTIVE));
+
+    scoped_ptr<base::DictionaryValue> second_dict(new base::DictionaryValue());
+    second_dict->SetString(
+        "rule", "MONITOR_AND_DUMP_WHEN_SPECIFIC_HISTOGRAM_AND_VALUE");
+    second_dict->SetString("histogram_name", "foo");
+    second_dict->SetInteger("histogram_lower_value", 1);
+    second_dict->SetInteger("histogram_upper_value", 1);
 
     EXPECT_EQ(ConfigToString(config.get()),
               "{\"category\":\"BENCHMARK\",\"configs\":[],\"mode\":"
