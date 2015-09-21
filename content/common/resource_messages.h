@@ -28,12 +28,6 @@ struct LoadTimingInfo;
 
 namespace content {
 struct ResourceDevToolsInfo;
-
-// TODO(erikchen): Temporary code to help track http://crbug.com/527588.
-// If |m| does not have type ResourceMsg_DataReceived, this method has no
-// effect. Otherwise, this method checks that the |data_offset| member is less
-// than 512kB.
-void CheckContentsOfDataReceivedMessage(const IPC::Message* m);
 }
 
 namespace IPC {

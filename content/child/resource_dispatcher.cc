@@ -80,9 +80,6 @@ ResourceDispatcher::~ResourceDispatcher() {
 }
 
 bool ResourceDispatcher::OnMessageReceived(const IPC::Message& message) {
-  // TODO(erikchen): Temporary code to help track http://crbug.com/527588.
-  content::CheckContentsOfDataReceivedMessage(&message);
-
   if (!IsResourceDispatcherMessage(message)) {
     return false;
   }
@@ -222,15 +219,8 @@ void ResourceDispatcher::OnReceivedData(int request_id,
   PendingRequestInfo* request_info = GetPendingRequestInfo(request_id);
   bool send_ack = true;
   if (request_info && data_length > 0) {
-    // TODO(erikchen): Temporary code to help track http://crbug.com/527588.
-    int buffer_size = request_info->buffer_size;
-
     CHECK(base::SharedMemory::IsHandleValid(request_info->buffer->handle()));
     CHECK_GE(request_info->buffer_size, data_offset + data_length);
-
-    // TODO(erikchen): Temporary code to help track http://crbug.com/527588.
-    base::debug::Alias(request_info);
-    base::debug::Alias(&buffer_size);
 
     // Ensure that the SHM buffer remains valid for the duration of this scope.
     // It is possible for Cancel() to be called before we exit this scope.

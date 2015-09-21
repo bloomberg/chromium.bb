@@ -169,11 +169,6 @@ class IPC_EXPORT Channel : public Endpoint {
 
   ~Channel() override;
 
-  // TODO(erikchen): Temporary code to help track http://crbug.com/527588.
-  using MessageVerifier = void (*)(const Message*);
-  static void SetMessageVerifier(MessageVerifier verifier);
-  static MessageVerifier GetMessageVerifier();
-
   // Connect the pipe.  On the server side, this will initiate
   // waiting for connections.  On the client, it attempts to
   // connect to a pre-existing pipe.  Note, calling Connect()
