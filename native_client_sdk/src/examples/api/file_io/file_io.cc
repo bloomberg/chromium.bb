@@ -100,7 +100,7 @@ class FileIoInstance : public pp::Instance {
     PostArrayMessage(command, StringVector());
   }
 
-  void PostArrayMessage(const char* command, std::string s) {
+  void PostArrayMessage(const char* command, const std::string& s) {
     StringVector sv;
     sv.push_back(s);
     PostArrayMessage(command, sv);
