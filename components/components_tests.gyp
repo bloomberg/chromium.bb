@@ -523,6 +523,7 @@
       'proximity_auth/logging/logging_unittest.cc',
       'proximity_auth/proximity_auth_system_unittest.cc',
       'proximity_auth/proximity_monitor_impl_unittest.cc',
+      'proximity_auth/remote_device_life_cycle_impl_unittest.cc',
       'proximity_auth/remote_status_update_unittest.cc',
       'proximity_auth/throttled_bluetooth_connection_finder_unittest.cc',
       'proximity_auth/unlock_manager_unittest.cc',

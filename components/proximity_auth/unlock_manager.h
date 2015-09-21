@@ -9,7 +9,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "components/proximity_auth/client_observer.h"
-#include "components/proximity_auth/controller.h"
+#include "components/proximity_auth/remote_device_life_cycle.h"
 #include "components/proximity_auth/remote_status_update.h"
 #include "components/proximity_auth/screenlock_bridge.h"
 #include "components/proximity_auth/screenlock_state.h"
@@ -54,12 +54,13 @@ class UnlockManager : public ClientObserver,
   // the remote devices is authenticated and in range.
   bool IsUnlockAllowed();
 
-  // Sets the |controller| to which local events are dispatched. A null
-  // controller indicates that proximity-based authentication is inactive.
-  void SetController(Controller* controller);
+  // Sets the |life_cycle| of the rmeote device to which local events are
+  // dispatched. A null |life_cycle| indicates that proximity-based
+  // authentication is inactive.
+  void SetRemoteDeviceLifeCycle(RemoteDeviceLifeCycle* life_cycle);
 
-  // Called when the controller's state changes.
-  void OnControllerStateChanged();
+  // Called when the life cycle's state changes.
+  void OnLifeCycleStateChanged();
 
  protected:
   // Called when the user pod is clicked for an authentication attempt of type
@@ -141,9 +142,9 @@ class UnlockManager : public ClientObserver,
   // update has yet been received.
   scoped_ptr<RemoteScreenlockState> remote_screenlock_state_;
 
-  // Controls the proximity auth flow logic. Not owned, and expcted to outlive
-  // |this| instance.
-  Controller* controller_;
+  // Controls the proximity auth flow logic for a remote device. Not owned, and
+  // expcted to outlive |this| instance.
+  RemoteDeviceLifeCycle* life_cycle_;
 
   // The client used to communicate with the remote device once a secure channel
   // is established. Null if no secure channel has been established yet. Not

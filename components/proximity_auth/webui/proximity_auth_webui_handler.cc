@@ -18,7 +18,6 @@
 #include "components/proximity_auth/ble/pref_names.h"
 #include "components/proximity_auth/bluetooth_connection_finder.h"
 #include "components/proximity_auth/bluetooth_throttler_impl.h"
-#include "components/proximity_auth/bluetooth_util.h"
 #include "components/proximity_auth/client_impl.h"
 #include "components/proximity_auth/cryptauth/base64url.h"
 #include "components/proximity_auth/cryptauth/cryptauth_enrollment_manager.h"
