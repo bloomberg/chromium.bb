@@ -1,6 +1,6 @@
 layer at (0,0) size 800x600 clip at (0,0) size 785x600 scrollHeight 2599
   LayoutView at (0,0) size 800x600
-layer at (0,0) size 785x2599 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
+layer at (0,0) size 785x2599 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
   LayoutBlockFlow {HTML} at (0,0) size 785x2599.22
     LayoutBlockFlow {BODY} at (8,21.44) size 769x2561.78 [bgcolor=#FFFFFF]
       LayoutBlockFlow {H1} at (0,0) size 769x37
@@ -239,5 +239,5 @@ layer at (0,0) size 785x2599 backgroundClip at (0,0) size 785x600 clip at (0,0) 
       LayoutBlockFlow {P} at (0,2543.78) size 769x18
         LayoutText {#text} at (0,0) size 185x17
           text run at (0,0) width 185: "Last updated in March 1999."
-layer at (592,2354) size 169x16 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 outlineClip at (0,0) size 785x600
+layer at (592,2354) size 169x16 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0
   LayoutBlockFlow {DIV} at (2,3) size 169x16

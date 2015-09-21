@@ -1,10 +1,10 @@
 layer at (0,0) size 800x600 clip at (0,0) size 785x600 scrollHeight 1856
   LayoutView at (0,0) size 800x600
-layer at (0,0) size 785x1856 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
+layer at (0,0) size 785x1856 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
   LayoutBlockFlow {HTML} at (0,0) size 785x1856
     LayoutBlockFlow {BODY} at (8,8) size 769x1840
       LayoutText {#text} at (0,0) size 0x0
-layer at (8,8) size 611x1840 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600 transparent
+layer at (8,8) size 611x1840 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 transparent
   LayoutInline {SPAN} at (0,0) size 611x1840 [bgcolor=#800000]
     LayoutText {#text} at (0,0) size 611x1840
       text run at (0,0) width 356: "This"

@@ -1,6 +1,6 @@
 layer at (0,0) size 800x600 clip at (0,0) size 785x585 scrollWidth 800 scrollHeight 605
   LayoutView at (0,0) size 800x600
-layer at (0,0) size 785x605 backgroundClip at (0,0) size 785x585 clip at (0,0) size 785x585 outlineClip at (0,0) size 785x585
+layer at (0,0) size 785x605 backgroundClip at (0,0) size 785x585 clip at (0,0) size 785x585
   LayoutBlockFlow {html} at (0,0) size 785x605
     LayoutInline {body} at (0,0) size 800x19
       LayoutText {#text} at (0,0) size 0x0

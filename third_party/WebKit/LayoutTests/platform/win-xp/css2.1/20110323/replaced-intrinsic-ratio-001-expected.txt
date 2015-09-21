@@ -1,6 +1,6 @@
 layer at (0,0) size 800x600 scrollHeight 871
   LayoutView at (0,0) size 800x600
-layer at (0,0) size 800x807 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600 outlineClip at (0,0) size 800x600
+layer at (0,0) size 800x807 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x807
     LayoutBlockFlow {BODY} at (8,8) size 242x784 [border: (1px dashed #C0C0C0)]
       LayoutBlockFlow {P} at (1,17) size 240x32
@@ -48,7 +48,7 @@ layer at (25,441) size 208x76
       LayoutSVGRoot {svg} at (0,0) size 176x44
         LayoutSVGRect {rect} at (0,0) size 176x44 [stroke={[type=SOLID] [color=#008000] [stroke width=12.00]}] [fill={[type=SOLID] [color=#00FF00]}] [x=0.00] [y=0.00] [width=1000.00] [height=250.00]
         LayoutSVGPath {path} at (26,8) size 124x28 [fill={[type=SOLID] [color=#008000]}] [data="M 500 50 L 150 200 L 850 200 Z"]
-layer at (25,616) size 208x76 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600 outlineClip at (0,0) size 800x600
+layer at (25,616) size 208x76 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600
   LayoutEmbeddedObject {OBJECT} at (16,0) size 208x76 [bgcolor=#FF0000] [border: (16px solid #0000FF)]
     layer at (0,0) size 176x44
       LayoutView at (0,0) size 176x44
@@ -56,7 +56,7 @@ layer at (25,616) size 208x76 backgroundClip at (0,0) size 800x600 clip at (0,0)
       LayoutSVGRoot {svg} at (0,0) size 176x44
         LayoutSVGRect {rect} at (0,0) size 176x44 [stroke={[type=SOLID] [color=#008000] [stroke width=12.00]}] [fill={[type=SOLID] [color=#00FF00]}] [x=0.00] [y=0.00] [width=1000.00] [height=250.00]
         LayoutSVGPath {path} at (26,8) size 124x28 [fill={[type=SOLID] [color=#008000]}] [data="M 500 50 L 150 200 L 850 200 Z"]
-layer at (25,791) size 208x76 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600 outlineClip at (0,0) size 800x600
+layer at (25,791) size 208x76 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600
   LayoutEmbeddedObject {OBJECT} at (16,0) size 208x76 [bgcolor=#FF0000] [border: (16px solid #0000FF)]
     layer at (0,0) size 176x44
       LayoutView at (0,0) size 176x44

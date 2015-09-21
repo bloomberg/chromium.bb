@@ -9,7 +9,7 @@ layer at (0,0) size 785x600
           text run at (0,18) width 760: "well. The original source of this text was ICU, and the test program said \"by it's very nature, Thai word breaking is not"
           text run at (0,36) width 762: "exact\", so the columns don't match exactly. In a future version we might decide to tweak the right column to match our"
           text run at (0,54) width 121: "expected behavior."
-layer at (236,96) size 1x25360 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
+layer at (236,96) size 1x25360 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
   LayoutBlockFlow (positioned) {DIV} at (235.50,96) size 1x25360
     LayoutText {#text} at (0,2) size 83x25357
       text run at (0,2) width 22: "\x{E1A}\x{E17}"
@@ -1280,7 +1280,7 @@ layer at (236,96) size 1x25360 backgroundClip at (0,0) size 785x600 clip at (0,0
       text run at (0,25302) width 33: "\x{E04}\x{E23}\x{E32}\x{E07}"
       text run at (0,25322) width 29: "\x{E2B}\x{E27}\x{E35}\x{E14}"
       text run at (0,25342) width 28: "\x{E2B}\x{E27}\x{E37}\x{E2D}"
-layer at (471,96) size 1x26658 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
+layer at (471,96) size 1x26658 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
   LayoutBlockFlow (positioned) {DIV} at (471,96) size 1x26658
     LayoutText {#text} at (0,2) size 68x26655
       text run at (0,2) width 22: "\x{E1A}\x{E17}"

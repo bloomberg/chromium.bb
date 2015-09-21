@@ -1,6 +1,6 @@
 layer at (0,0) size 800x600 clip at (0,0) size 785x600 scrollHeight 1341
   LayoutView at (0,0) size 800x600
-layer at (0,0) size 785x1341 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
+layer at (0,0) size 785x1341 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
   LayoutBlockFlow {HTML} at (0,0) size 785x1341
     LayoutBlockFlow {BODY} at (8,8) size 769x1325
       LayoutTable {TABLE} at (0,0) size 200x118 [bgcolor=#FFA500] [border: (10px solid #0000FF)]
@@ -171,7 +171,7 @@ layer at (8,144) size 200x118 clip at (18,144) size 180x118 scrollWidth 230
         LayoutTableCell {TD} at (82,15) size 53x20 [bgcolor=#FFFF00] [r=0 c=1 rs=1 cs=1]
           LayoutText {#text} at (1,1) size 132x18
             text run at (1,1) width 132: "contentwithoutspace"
-layer at (115,1273) size 53x20 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 outlineClip at (0,0) size 785x600 scrollWidth 134
+layer at (115,1273) size 53x20 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 scrollWidth 134
   LayoutTableCell {TD} at (82,0) size 53x20 [bgcolor=#FFFF00] [r=0 c=1 rs=1 cs=1]
     LayoutText {#text} at (1,1) size 132x18
       text run at (1,1) width 132: "contentwithoutspace"

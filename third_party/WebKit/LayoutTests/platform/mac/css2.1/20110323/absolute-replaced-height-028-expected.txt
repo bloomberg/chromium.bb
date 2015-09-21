@@ -12,7 +12,7 @@ layer at (8,146) size 306x6
   LayoutIFrame (positioned) {IFRAME} at (0,96) size 306x6 [border: (3px solid #FF0000)]
     layer at (0,0) size 300x0 scrollHeight 8
       LayoutView at (0,0) size 300x0
-    layer at (0,0) size 285x8 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 outlineClip at (0,0) size 0x0
+    layer at (0,0) size 285x8 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0
       LayoutBlockFlow {HTML} at (0,0) size 285x8
         LayoutBlockFlow {BODY} at (8,8) size 269x0
 layer at (8,146) size 306x6

@@ -10,7 +10,7 @@ layer at (8,8) size 769x161 clip at (8,8) size 754x146 scrollHeight 242
 layer at (8,58) size 754x96
   LayoutBlockFlow (relative positioned) {DIV} at (0,50) size 754x96
     LayoutBlockFlow {DIV} at (0,0) size 96x96 [bgcolor=#0000FF]
-layer at (8,154) size 96x96 backgroundClip at (8,8) size 754x146 clip at (8,8) size 754x146 outlineClip at (8,8) size 754x146
+layer at (8,154) size 96x96 backgroundClip at (8,8) size 754x146 clip at (8,8) size 754x146
   LayoutBlockFlow (relative positioned) {DIV} at (0,0) size 96x96
 layer at (104,58) size 96x96
   LayoutBlockFlow (positioned) {DIV} at (96,0) size 96x96 [bgcolor=#FFA500]

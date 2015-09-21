@@ -1,6 +1,6 @@
 layer at (0,0) size 800x600 scrollHeight 642
   LayoutView at (0,0) size 800x600
-layer at (0,0) size 800x642 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600 outlineClip at (0,0) size 800x600
+layer at (0,0) size 800x642 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x642
     LayoutBlockFlow {BODY} at (8,8) size 784x626 [bgcolor=#FFFFFF]
       LayoutTable {TABLE} at (0,0) size 308x56 [border: (1px outset #808080)]
@@ -182,20 +182,20 @@ layer at (167,513) size 138x24 clip at (168,514) size 136x22
   LayoutTableCell {TD} at (158,66) size 138x24 [bgcolor=#0000FF] [border: (1px inset #808080)] [r=1 c=1 rs=1 cs=1]
     LayoutText {#text} at (2,2) size 4x19
       text run at (2,2) width 4: " "
-layer at (11,543) size 254x62 backgroundClip at (11,543) size 254x57 clip at (12,544) size 252x56 outlineClip at (0,0) size 800x600
+layer at (11,543) size 254x62 backgroundClip at (11,543) size 254x57 clip at (12,544) size 252x56
   LayoutTableCell {TD} at (2,2) size 254x62 [bgcolor=#0000FF] [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
     LayoutBlockFlow {P} at (2,18) size 206x26 [border: (3px solid #000000)]
       LayoutText {#text} at (3,3) size 27x19
         text run at (3,3) width 27: "para"
-layer at (267,543) size 38x62 backgroundClip at (267,543) size 38x57 clip at (268,544) size 36x56 outlineClip at (0,0) size 800x600
+layer at (267,543) size 38x62 backgroundClip at (267,543) size 38x57 clip at (268,544) size 36x56
   LayoutTableCell {TD} at (258,21) size 38x24 [bgcolor=#0000FF] [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
     LayoutText {#text} at (2,2) size 4x19
       text run at (2,2) width 4: " "
-layer at (11,607) size 254x24 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 outlineClip at (0,0) size 800x600
+layer at (11,607) size 254x24 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0
   LayoutTableCell {TD} at (2,66) size 254x24 [bgcolor=#0000FF] [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
     LayoutText {#text} at (2,2) size 4x19
       text run at (2,2) width 4: " "
-layer at (267,607) size 38x24 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 outlineClip at (0,0) size 800x600
+layer at (267,607) size 38x24 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0
   LayoutTableCell {TD} at (258,66) size 38x24 [bgcolor=#0000FF] [border: (1px inset #808080)] [r=1 c=1 rs=1 cs=1]
     LayoutText {#text} at (2,2) size 4x19
       text run at (2,2) width 4: " "

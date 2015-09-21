@@ -630,11 +630,11 @@ void DeprecatedPaintLayerPainter::paintOutlineForFragments(const DeprecatedPaint
 {
     bool needsScope = layerFragments.size() > 1;
     for (auto& fragment : layerFragments) {
-        if (!fragment.outlineRect.isEmpty()) {
+        if (!fragment.backgroundRect.isEmpty()) {
             Optional<ScopeRecorder> scopeRecorder;
             if (needsScope)
                 scopeRecorder.emplace(*context);
-            paintFragmentWithPhase(PaintPhaseSelfOutline, fragment, context, fragment.outlineRect, localPaintingInfo, paintingRootForLayoutObject, paintFlags, HasNotClipped);
+            paintFragmentWithPhase(PaintPhaseSelfOutline, fragment, context, fragment.backgroundRect, localPaintingInfo, paintingRootForLayoutObject, paintFlags, HasNotClipped);
         }
     }
 }

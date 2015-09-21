@@ -1,6 +1,6 @@
 layer at (0,0) size 800x600 clip at (0,0) size 785x600 scrollHeight 623
   LayoutView at (0,0) size 800x600
-layer at (0,0) size 785x623 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
+layer at (0,0) size 785x623 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
   LayoutBlockFlow {HTML} at (0,0) size 785x623
     LayoutBlockFlow {BODY} at (8,8) size 769x607
       LayoutText {#text} at (46,61) size 4x17
@@ -166,12 +166,12 @@ layer at (194,370) size 56x83 clip at (195,371) size 39x81 scrollHeight 80
     LayoutBlockFlow {OPTION} at (1,21.19) size 38.69x29.80
       LayoutText {#text} at (2,0) size 35x27
         text run at (2,0) width 35: "bar"
-layer at (14,504) size 51x104 backgroundClip at (14,504) size 51x96 clip at (15,505) size 34x95 outlineClip at (0,0) size 785x600
+layer at (14,504) size 51x104 backgroundClip at (14,504) size 51x96 clip at (15,505) size 34x95
   LayoutListBox {SELECT} at (6,496) size 50.81x104 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
     LayoutBlockFlow {OPTION} at (1,1) size 33.81x25.50
       LayoutText {#text} at (3,0) size 28x22
         text run at (3,0) width 28: "foo"
-layer at (83,466) size 64x140 backgroundClip at (83,466) size 64x134 clip at (85,468) size 45x132 outlineClip at (0,0) size 785x600
+layer at (83,466) size 64x140 backgroundClip at (83,466) size 64x134 clip at (85,468) size 45x132
   LayoutListBox {SELECT} at (74.81,458) size 64.06x140 [bgcolor=#FFFFFF] [border: (2px solid #A9A9A9)]
     LayoutBlockFlow {OPTION} at (2,2) size 45.06x34
       LayoutText {#text} at (4,0) size 38x30

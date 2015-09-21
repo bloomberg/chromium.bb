@@ -10,5 +10,5 @@ layer at (0,0) size 800x400
         LayoutBR {BR} at (0,0) size 0x19
 layer at (8,172) size 220x220 clip at (18,182) size 200x200 scrollWidth 250 scrollHeight 250
   LayoutBlockFlow (relative positioned) zI: 1 {DIV} at (0,156) size 220x220 [bgcolor=#000000] [border: (10px solid #000000)]
-layer at (-32,132) size 300x300 backgroundClip at (18,182) size 200x200 clip at (18,182) size 200x200 outlineClip at (18,182) size 200x200
+layer at (-32,132) size 300x300 backgroundClip at (18,182) size 200x200 clip at (18,182) size 200x200
   LayoutBlockFlow {DIV} at (-40,-40) size 300x300

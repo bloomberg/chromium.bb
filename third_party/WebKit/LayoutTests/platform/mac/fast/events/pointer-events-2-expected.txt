@@ -88,22 +88,22 @@ layer at (210,440) size 80x80
   LayoutBlockFlow (positioned) {DIV} at (200,0) size 80x80
     LayoutText {#text} at (0,0) size 16x18
       text run at (0,0) width 16: "p5"
-layer at (10,540) size 300x100 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600 outlineClip at (0,0) size 800x600
+layer at (10,540) size 300x100 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600
   LayoutBlockFlow (positioned) {DIV} at (10,540) size 300x100
-layer at (10,540) size 80x80 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600 outlineClip at (0,0) size 800x600
+layer at (10,540) size 80x80 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600
   LayoutBlockFlow (positioned) {DIV} at (0,0) size 80x80
-layer at (10,540) size 80x80 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600 outlineClip at (0,0) size 800x600
+layer at (10,540) size 80x80 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600
   LayoutBlockFlow (positioned) {DIV} at (0,0) size 80x80
-layer at (10,540) size 80x80 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600 outlineClip at (0,0) size 800x600
+layer at (10,540) size 80x80 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600
   LayoutBlockFlow (positioned) {P} at (0,0) size 80x80 [bgcolor=#808080]
     LayoutText {#text} at (0,0) size 65x36
       text run at (0,0) width 51: "nested -"
       text run at (0,18) width 65: "auto outer"
-layer at (110,540) size 80x80 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600 outlineClip at (0,0) size 800x600
+layer at (110,540) size 80x80 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600
   LayoutBlockFlow (positioned) {DIV} at (100,0) size 80x80
     LayoutText {#text} at (0,0) size 16x18
       text run at (0,0) width 16: "p7"
-layer at (210,540) size 80x80 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600 outlineClip at (0,0) size 800x600
+layer at (210,540) size 80x80 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600
   LayoutBlockFlow (positioned) {DIV} at (200,0) size 80x80
     LayoutText {#text} at (0,0) size 16x18
       text run at (0,0) width 16: "p7"
@@ -175,11 +175,11 @@ layer at (540,440) size 80x80
   LayoutBlockFlow (positioned) {DIV} at (200,0) size 80x80
     LayoutText {#text} at (0,0) size 24x18
       text run at (0,0) width 24: "p14"
-layer at (340,540) size 300x100 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600 outlineClip at (0,0) size 800x600
+layer at (340,540) size 300x100 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600
   LayoutBlockFlow (positioned) {DIV} at (340,540) size 300x100
-layer at (340,540) size 80x80 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600 outlineClip at (0,0) size 800x600
+layer at (340,540) size 80x80 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600
   LayoutBlockFlow (positioned) {DIV} at (0,0) size 80x80
-layer at (340,540) size 80x80 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600 outlineClip at (0,0) size 800x600
+layer at (340,540) size 80x80 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600
   LayoutBlockFlow (positioned) {P} at (0,0) size 80x80 [bgcolor=#808080]
     LayoutInline {SPAN} at (0,0) size 37x18 [bgcolor=#FFFF00]
       LayoutText {#text} at (0,0) size 37x18
@@ -188,11 +188,11 @@ layer at (340,540) size 80x80 backgroundClip at (0,0) size 800x600 clip at (0,0)
       text run at (36,0) width 26: " has"
       text run at (0,18) width 80: "none, parent"
       text run at (0,36) width 28: "auto"
-layer at (440,540) size 80x80 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600 outlineClip at (0,0) size 800x600
+layer at (440,540) size 80x80 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600
   LayoutBlockFlow (positioned) {DIV} at (100,0) size 80x80
     LayoutText {#text} at (0,0) size 24x18
       text run at (0,0) width 24: "p15"
-layer at (540,540) size 80x80 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600 outlineClip at (0,0) size 800x600
+layer at (540,540) size 80x80 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600
   LayoutBlockFlow (positioned) {DIV} at (200,0) size 80x80
     LayoutText {#text} at (0,0) size 24x18
       text run at (0,0) width 24: "p15"

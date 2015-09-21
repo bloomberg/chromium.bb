@@ -3,7 +3,7 @@ layer at (0,0) size 800x600 scrollWidth 1983
 layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
-layer at (100,8) size 1883x82 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600 outlineClip at (0,0) size 800x600
+layer at (100,8) size 1883x82 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600
   LayoutBlockFlow (positioned) {DIV} at (100,8) size 1883.08x82 [border: (2px solid #FF0000)]
     LayoutText {#text} at (14,14) size 1856x53
       text run at (14,14) width 1833: "This div is absolutely positioned to the left. All the spaces in this div are replaced with non-breaking spaces, and the nbsp-mode for this div is 'space', so when calculating line breaks, the non-"

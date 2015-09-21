@@ -1,6 +1,6 @@
 layer at (0,0) size 800x600 scrollWidth 9600208 scrollHeight 1728
   LayoutView at (0,0) size 800x600
-layer at (0,0) size 800x1728 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600 outlineClip at (0,0) size 800x600
+layer at (0,0) size 800x1728 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x1728
     LayoutBlockFlow {BODY} at (8,16) size 784x1696
       LayoutBlockFlow {P} at (0,0) size 784x90 [bgcolor=#FFFFFF]
@@ -145,20 +145,20 @@ layer at (0,0) size 800x1728 backgroundClip at (0,0) size 800x600 clip at (0,0) 
         LayoutText {#text} at (0,0) size 457x17
           text run at (0,0) width 457: "The next line tests a large negative line spacing, and it should be blank."
       LayoutBlockFlow {P} at (0,1678) size 784x18 [bgcolor=#EEEEEE]
-layer at (8,722) size 81x17 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600 outlineClip at (0,0) size 800x600 transparent
+layer at (8,722) size 81x17 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600 transparent
   LayoutInline {SPAN} at (0,0) size 81x17 [bgcolor=#CCCCFF]
     LayoutText {#text} at (160,0) size 81x17
       text run at (160,0) width 81: "Hello, world"
-layer at (8,790) size 177x17 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600 outlineClip at (0,0) size 800x600 transparent
+layer at (8,790) size 177x17 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600 transparent
   LayoutInline {SPAN} at (0,0) size 177x17 [bgcolor=#CCCCFF]
     LayoutText {#text} at (160,0) size 177x17
       text run at (160,0) width 177: "Hello, world"
-layer at (8,858) size 19400x35 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600 outlineClip at (0,0) size 800x600 transparent
+layer at (8,858) size 19400x35 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600 transparent
   LayoutInline {SPAN} at (0,0) size 19400x35 [bgcolor=#CCCCFF]
     LayoutText {#text} at (160,0) size 19400x35
       text run at (160,0) width 19240: "Hello,"
       text run at (0,18) width 16038: "world"
-layer at (8,944) size 9600200x35 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600 outlineClip at (0,0) size 800x600 transparent
+layer at (8,944) size 9600200x35 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600 transparent
   LayoutInline {SPAN} at (0,0) size 9600200x35 [bgcolor=#CCCCFF]
     LayoutText {#text} at (160,0) size 9600200x35
       text run at (160,0) width 9600040: "Hello,"
@@ -175,7 +175,7 @@ layer at (8,1166) size 0x17 transparent
   LayoutInline {SPAN} at (0,0) size 0x17 [bgcolor=#CCCCFF]
     LayoutText {#text} at (160,0) size 0x17
       text run at (160,0) width 0: "Hello, world"
-layer at (8,1558) size 177x17 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600 outlineClip at (0,0) size 800x600 transparent
+layer at (8,1558) size 177x17 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600 transparent
   LayoutInline {SPAN} at (0,0) size 177x17 [bgcolor=#CCCCFF]
     LayoutText {#text} at (160,0) size 177x17
       text run at (160,0) width 177 RTL override: "Hello, world"

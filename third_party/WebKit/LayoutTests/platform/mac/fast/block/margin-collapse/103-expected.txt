@@ -1,6 +1,6 @@
 layer at (0,0) size 800x600 clip at (0,0) size 785x600 scrollHeight 1707
   LayoutView at (0,0) size 800x600
-layer at (0,0) size 785x1707 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
+layer at (0,0) size 785x1707 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
   LayoutBlockFlow {HTML} at (0,0) size 785x1706.95
     LayoutBlockFlow {BODY} at (8,20) size 769x1666.95 [bgcolor=#A6A972]
       LayoutBlockFlow {DIV} at (83.50,0) size 602x1666.95 [bgcolor=#FDFDE9] [border: (1px solid #000000)]
@@ -166,18 +166,18 @@ layer at (441,302) size 180x13
   LayoutBlockFlow {DIV} at (3,3) size 180x13
 layer at (441,321) size 180x13
   LayoutBlockFlow {DIV} at (3,3) size 180x13
-layer at (113,750) size 506x106 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 outlineClip at (0,0) size 785x600
+layer at (113,750) size 506x106 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0
   LayoutTextControl {TEXTAREA} at (0,476.98) size 506x106 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
     LayoutBlockFlow {DIV} at (3,3) size 500x13
-layer at (113,1037) size 506x106 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 outlineClip at (0,0) size 785x600
+layer at (113,1037) size 506x106 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0
   LayoutTextControl {TEXTAREA} at (0,763.97) size 506x106 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
     LayoutBlockFlow {DIV} at (3,3) size 500x13
-layer at (113,1168) size 506x106 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 outlineClip at (0,0) size 785x600
+layer at (113,1168) size 506x106 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0
   LayoutTextControl {TEXTAREA} at (0,894.97) size 506x106 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
     LayoutBlockFlow {DIV} at (3,3) size 500x13
-layer at (113,1299) size 506x106 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 outlineClip at (0,0) size 785x600
+layer at (113,1299) size 506x106 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0
   LayoutTextControl {TEXTAREA} at (0,1025.97) size 506x106 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
     LayoutBlockFlow {DIV} at (3,3) size 500x13
-layer at (113,1476) size 506x106 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 outlineClip at (0,0) size 785x600
+layer at (113,1476) size 506x106 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0
   LayoutTextControl {TEXTAREA} at (0,1202.97) size 506x106 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
     LayoutBlockFlow {DIV} at (3,3) size 500x13

@@ -1,6 +1,6 @@
 layer at (0,0) size 800x600 clip at (0,0) size 785x600 scrollHeight 1323
   LayoutView at (0,0) size 800x600
-layer at (0,0) size 785x1323 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
+layer at (0,0) size 785x1323 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
   LayoutBlockFlow {HTML} at (0,0) size 785x1322.75
     LayoutBlockFlow {BODY} at (8,8) size 769x1299.75
       LayoutBlockFlow {P} at (0,0) size 769x18
@@ -160,19 +160,19 @@ layer at (641,456) size 117x13
   LayoutBlockFlow {DIV} at (3,3) size 117x13
 layer at (641,511) size 117x13
   LayoutBlockFlow {DIV} at (3,3) size 117x13
-layer at (43,635) size 117x13 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 outlineClip at (0,0) size 785x600
+layer at (43,635) size 117x13 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0
   LayoutBlockFlow {DIV} at (3,3) size 117x13
-layer at (43,719) size 117x13 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 outlineClip at (0,0) size 785x600
+layer at (43,719) size 117x13 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0
   LayoutBlockFlow {DIV} at (3,3) size 117x13
-layer at (43,803) size 117x13 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 outlineClip at (0,0) size 785x600
+layer at (43,803) size 117x13 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0
   LayoutBlockFlow {DIV} at (3,3) size 117x13
-layer at (43,887) size 117x13 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 outlineClip at (0,0) size 785x600
+layer at (43,887) size 117x13 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0
   LayoutBlockFlow {DIV} at (3,3) size 117x13
-layer at (625,1023) size 117x13 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 outlineClip at (0,0) size 785x600
+layer at (625,1023) size 117x13 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0
   LayoutBlockFlow {DIV} at (3,3) size 117x13
-layer at (625,1107) size 117x13 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 outlineClip at (0,0) size 785x600
+layer at (625,1107) size 117x13 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0
   LayoutBlockFlow {DIV} at (3,3) size 117x13
-layer at (625,1191) size 117x13 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 outlineClip at (0,0) size 785x600
+layer at (625,1191) size 117x13 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0
   LayoutBlockFlow {DIV} at (3,3) size 117x13
-layer at (625,1275) size 117x13 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 outlineClip at (0,0) size 785x600
+layer at (625,1275) size 117x13 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0
   LayoutBlockFlow {DIV} at (3,3) size 117x13

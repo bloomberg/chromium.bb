@@ -100,7 +100,7 @@ layer at (18,78) size 40x40
   LayoutBlockFlow (positioned) {DIV} at (10,10) size 40x40 [bgcolor=#FFFF77]
 layer at (8,128) size 60x60
   LayoutBlockFlow (relative positioned) {DIV} at (0,120) size 60x60
-layer at (18,138) size 40x40 backgroundClip at (13,133) size 5x5 clip at (13,133) size 5x5 outlineClip at (13,133) size 5x5
+layer at (18,138) size 40x40 backgroundClip at (13,133) size 5x5 clip at (13,133) size 5x5
   LayoutBlockFlow (positioned) {DIV} at (10,10) size 40x40 [bgcolor=#FFFF77]
 layer at (18,198) size 40x40 transparent
   LayoutBlockFlow {DIV} at (10,190) size 40x40 [bgcolor=#FFFF77]
@@ -110,7 +110,7 @@ layer at (152,78) size 40x40
   LayoutBlockFlow (positioned) {DIV} at (10,10) size 40x40 [bgcolor=#FFFF77]
 layer at (142,128) size 60x60
   LayoutBlockFlow (relative positioned) {DIV} at (0,120) size 60x60
-layer at (152,138) size 40x40 backgroundClip at (147,178) size 5x5 clip at (147,178) size 5x5 outlineClip at (147,178) size 5x5
+layer at (152,138) size 40x40 backgroundClip at (147,178) size 5x5 clip at (147,178) size 5x5
   LayoutBlockFlow (positioned) {DIV} at (10,10) size 40x40 [bgcolor=#FFFF77]
 layer at (152,198) size 40x40 transparent
   LayoutBlockFlow {DIV} at (10,190) size 40x40 [bgcolor=#FFFF77]
@@ -120,7 +120,7 @@ layer at (285,78) size 40x40
   LayoutBlockFlow (positioned) {DIV} at (10,10) size 40x40 [bgcolor=#FFFF77]
 layer at (275,128) size 60x60
   LayoutBlockFlow (relative positioned) {DIV} at (0,120) size 60x60
-layer at (285,138) size 40x40 backgroundClip at (325,178) size 5x5 clip at (325,178) size 5x5 outlineClip at (325,178) size 5x5
+layer at (285,138) size 40x40 backgroundClip at (325,178) size 5x5 clip at (325,178) size 5x5
   LayoutBlockFlow (positioned) {DIV} at (10,10) size 40x40 [bgcolor=#FFFF77]
 layer at (285,198) size 40x40 transparent
   LayoutBlockFlow {DIV} at (10,190) size 40x40 [bgcolor=#FFFF77]
@@ -130,7 +130,7 @@ layer at (419,78) size 40x40
   LayoutBlockFlow (positioned) {DIV} at (10,10) size 40x40 [bgcolor=#FFFF77]
 layer at (409,128) size 60x60
   LayoutBlockFlow (relative positioned) {DIV} at (0,120) size 60x60
-layer at (419,138) size 40x40 backgroundClip at (459,133) size 5x5 clip at (459,133) size 5x5 outlineClip at (459,133) size 5x5
+layer at (419,138) size 40x40 backgroundClip at (459,133) size 5x5 clip at (459,133) size 5x5
   LayoutBlockFlow (positioned) {DIV} at (10,10) size 40x40 [bgcolor=#FFFF77]
 layer at (419,198) size 40x40 transparent
   LayoutBlockFlow {DIV} at (10,190) size 40x40 [bgcolor=#FFFF77]

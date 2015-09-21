@@ -1,6 +1,6 @@
 layer at (0,0) size 800x600 clip at (0,0) size 785x600 scrollY 1700.00 scrollHeight 4004
   LayoutView at (0,0) size 800x600
-layer at (0,0) size 785x4004 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
+layer at (0,0) size 785x4004 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
   LayoutBlockFlow {html} at (0,0) size 785x4004
     LayoutBlockFlow {body} at (0,0) size 785x4004
       LayoutSVGRoot {svg} at (266,1950) size 268x153

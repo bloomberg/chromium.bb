@@ -200,7 +200,7 @@ layer at (52,64) size 402x202
   LayoutIFrame {IFRAME} at (44,0) size 402x202 [border: (1px solid #000000)]
     layer at (0,0) size 400x200 clip at (0,0) size 385x200 scrollHeight 214
       LayoutView at (0,0) size 400x200
-    layer at (0,0) size 385x214 backgroundClip at (0,0) size 385x200 clip at (0,0) size 385x200 outlineClip at (0,0) size 385x200
+    layer at (0,0) size 385x214 backgroundClip at (0,0) size 385x200 clip at (0,0) size 385x200
       LayoutBlockFlow {HTML} at (0,0) size 385x214
         LayoutBlockFlow {BODY} at (8,8) size 369x198
           LayoutBlockFlow {P} at (0,0) size 369x100

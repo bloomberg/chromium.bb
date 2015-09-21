@@ -15,7 +15,7 @@ layer at (0,0) size 800x600
           LayoutText {#text} at (0,0) size 631x19
             text run at (0,0) width 388: "This footer should remain at the bottom of the browser window. "
             text run at (388,0) width 243: "It can wrap to multiple lines if necessary."
-layer at (0,40) size 812x540 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600 outlineClip at (0,0) size 800x600
+layer at (0,40) size 812x540 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600
   LayoutIFrame {IFRAME} at (0,40) size 812x540 [bgcolor=#008000] [border: (10px solid #808000)]
     layer at (0,0) size 792x520
       LayoutView at (0,0) size 792x520

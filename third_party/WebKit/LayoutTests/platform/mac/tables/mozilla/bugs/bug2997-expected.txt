@@ -116,7 +116,7 @@ layer at (232,44) size 141x18
       text run at (0,0) width 108: "Quick Start Link"
 layer at (8,82) size 367x20 clip at (9,83) size 365x18 scrollHeight 20
   LayoutBlockFlow {DIV} at (0,0) size 367x20 [border: (1px solid #C0C0C0)]
-layer at (10,84) size 363x18 backgroundClip at (10,84) size 363x17 clip at (10,84) size 363x17 outlineClip at (9,83) size 365x18
+layer at (10,84) size 363x18 backgroundClip at (10,84) size 363x17 clip at (10,84) size 363x17
   LayoutBlockFlow {DIV} at (2,2) size 363x18
     LayoutText {#text} at (0,0) size 62x18
       text run at (0,0) width 62: "Welcome"
@@ -134,7 +134,7 @@ layer at (232,161) size 141x18
       text run at (0,0) width 108: "Quick Start Link"
 layer at (8,206) size 367x20 clip at (9,207) size 365x18 scrollHeight 20
   LayoutBlockFlow {DIV} at (0,0) size 367x20 [border: (1px solid #C0C0C0)]
-layer at (10,208) size 363x18 backgroundClip at (10,208) size 363x17 clip at (10,208) size 363x17 outlineClip at (9,207) size 365x18
+layer at (10,208) size 363x18 backgroundClip at (10,208) size 363x17 clip at (10,208) size 363x17
   LayoutBlockFlow {DIV} at (2,2) size 363x18
     LayoutText {#text} at (0,0) size 62x18
       text run at (0,0) width 62: "Welcome"
@@ -152,7 +152,7 @@ layer at (232,278) size 141x18
       text run at (0,0) width 108: "Quick Start Link"
 layer at (8,324) size 367x20 clip at (9,325) size 365x18 scrollHeight 20
   LayoutBlockFlow {DIV} at (0,0) size 367x20 [border: (1px solid #C0C0C0)]
-layer at (10,326) size 363x18 backgroundClip at (10,326) size 363x17 clip at (10,326) size 363x17 outlineClip at (9,325) size 365x18
+layer at (10,326) size 363x18 backgroundClip at (10,326) size 363x17 clip at (10,326) size 363x17
   LayoutBlockFlow {DIV} at (2,2) size 363x18
     LayoutText {#text} at (0,0) size 62x18
       text run at (0,0) width 62: "Welcome"
@@ -170,7 +170,7 @@ layer at (239,407) size 141x18
       text run at (0,0) width 108: "Quick Start Link"
 layer at (11,449) size 367x20 clip at (12,450) size 365x18 scrollHeight 20
   LayoutBlockFlow {DIV} at (0,0) size 367x20 [border: (1px solid #C0C0C0)]
-layer at (13,451) size 363x18 backgroundClip at (13,451) size 363x17 clip at (13,451) size 363x17 outlineClip at (12,450) size 365x18
+layer at (13,451) size 363x18 backgroundClip at (13,451) size 363x17 clip at (13,451) size 363x17
   LayoutBlockFlow {DIV} at (2,2) size 363x18
     LayoutText {#text} at (0,0) size 62x18
       text run at (0,0) width 62: "Welcome"
@@ -188,7 +188,7 @@ layer at (232,524) size 141x18
       text run at (0,0) width 108: "Quick Start Link"
 layer at (8,562) size 367x20 clip at (9,563) size 365x18 scrollHeight 20
   LayoutBlockFlow {DIV} at (0,0) size 367x20 [border: (1px solid #C0C0C0)]
-layer at (10,564) size 363x18 backgroundClip at (10,564) size 363x17 clip at (10,564) size 363x17 outlineClip at (9,563) size 365x18
+layer at (10,564) size 363x18 backgroundClip at (10,564) size 363x17 clip at (10,564) size 363x17
   LayoutBlockFlow {DIV} at (2,2) size 363x18
     LayoutText {#text} at (0,0) size 62x18
       text run at (0,0) width 62: "Welcome"

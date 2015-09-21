@@ -44,13 +44,13 @@ layer at (8,354) size 102x102 clip at (9,355) size 85x100 scrollHeight 133
           LayoutTableCell {TD} at (2,2) size 2x2 [r=0 c=0 rs=1 cs=1]
 layer at (12,114) size 0x0
   LayoutBlockFlow (relative positioned) {DIV} at (1,1) size 0x0
-layer at (82,114) size 60x60 backgroundClip at (9,111) size 100x85 clip at (9,111) size 100x85 outlineClip at (9,111) size 100x85
+layer at (82,114) size 60x60 backgroundClip at (9,111) size 100x85 clip at (9,111) size 100x85
   LayoutBlockFlow (positioned) {DIV} at (70,0) size 60x60 [bgcolor=#C0C0C0]
 layer at (106,236) size 0x0
   LayoutBlockFlow (relative positioned) {DIV} at (1,1) size 0x0
-layer at (-24,236) size 60x60 backgroundClip at (9,233) size 100x85 clip at (9,233) size 100x85 outlineClip at (9,233) size 100x85
+layer at (-24,236) size 60x60 backgroundClip at (9,233) size 100x85 clip at (9,233) size 100x85
   LayoutBlockFlow (positioned) {DIV} at (-130,0) size 60x60 [bgcolor=#C0C0C0]
 layer at (12,358) size 0x0
   LayoutBlockFlow (relative positioned) {DIV} at (1,1) size 0x0
-layer at (12,428) size 60x60 backgroundClip at (9,355) size 85x100 clip at (9,355) size 85x100 outlineClip at (9,355) size 85x100
+layer at (12,428) size 60x60 backgroundClip at (9,355) size 85x100 clip at (9,355) size 85x100
   LayoutBlockFlow (positioned) {DIV} at (0,70) size 60x60 [bgcolor=#C0C0C0]

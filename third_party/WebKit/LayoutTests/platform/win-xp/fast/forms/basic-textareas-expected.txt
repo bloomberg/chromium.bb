@@ -1,10 +1,10 @@
 layer at (0,0) size 800x600 clip at (0,0) size 785x600 scrollHeight 1676
   LayoutView at (0,0) size 800x600
-layer at (0,0) size 785x1676 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
+layer at (0,0) size 785x1676 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
   LayoutBlockFlow {HTML} at (0,0) size 785x1676
     LayoutBlockFlow {BODY} at (0,0) size 785x1676
       LayoutText {#text} at (0,0) size 0x0
-layer at (0,0) size 785x861 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
+layer at (0,0) size 785x861 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
   LayoutIFrame {IFRAME} at (0,0) size 785x861
     layer at (0,0) size 785x861
       LayoutView at (0,0) size 785x861
@@ -687,7 +687,7 @@ layer at (0,0) size 785x861 backgroundClip at (0,0) size 785x600 clip at (0,0) s
             text run at (0,16) width 208: "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
             text run at (0,32) width 8: " "
             text run at (0,48) width 176: "abcdefghijklmnopqrstuv"
-layer at (0,861) size 785x815 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
+layer at (0,861) size 785x815 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
   LayoutIFrame {IFRAME} at (0,861) size 785x815
     layer at (0,0) size 785x815
       LayoutView at (0,0) size 785x815

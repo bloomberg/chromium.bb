@@ -9,7 +9,7 @@ layer at (0,0) size 800x136
           text run at (293,0) width 407: "This test makes sure overflow uses containing blocks when clipping."
 layer at (8,28) size 100x100 scrollWidth 300 scrollHeight 300
   LayoutBlockFlow {DIV} at (0,20) size 100x100 [bgcolor=#008000]
-layer at (108,128) size 100x100 backgroundClip at (8,28) size 100x100 clip at (8,28) size 100x100 outlineClip at (8,28) size 100x100
+layer at (108,128) size 100x100 backgroundClip at (8,28) size 100x100 clip at (8,28) size 100x100
   LayoutBlockFlow (relative positioned) {DIV} at (0,0) size 100x100 [bgcolor=#FF0000]
-layer at (208,228) size 100x100 backgroundClip at (8,28) size 100x100 clip at (8,28) size 100x100 outlineClip at (8,28) size 100x100
+layer at (208,228) size 100x100 backgroundClip at (8,28) size 100x100 clip at (8,28) size 100x100
   LayoutBlockFlow (positioned) {DIV} at (100,100) size 100x100

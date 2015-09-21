@@ -8,7 +8,7 @@ layer at (0,0) size 785x600
           text run at (0,0) width 121: "Content at the end."
 layer at (8,8) size 769x0
   LayoutBlockFlow (relative positioned) {DIV} at (0,0) size 769x0
-layer at (8,8) size 16x2160 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
+layer at (8,8) size 16x2160 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
   LayoutBlockFlow (positioned) {DIV} at (0,0) size 16x2160
     LayoutText {#text} at (0,0) size 8x17
       text run at (0,0) width 8: "1"

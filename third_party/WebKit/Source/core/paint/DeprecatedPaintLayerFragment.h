@@ -35,12 +35,11 @@ namespace blink {
 struct DeprecatedPaintLayerFragment {
     ALLOW_ONLY_INLINE_ALLOCATION();
 public:
-    void setRects(const LayoutRect& bounds, const ClipRect& background, const ClipRect& foreground, const ClipRect& outline)
+    void setRects(const LayoutRect& bounds, const ClipRect& background, const ClipRect& foreground)
     {
         layerBounds = bounds;
         backgroundRect = background;
         foregroundRect = foreground;
-        outlineRect = outline;
     }
 
     void moveBy(const LayoutPoint& offset)
@@ -48,7 +47,6 @@ public:
         layerBounds.moveBy(offset);
         backgroundRect.moveBy(offset);
         foregroundRect.moveBy(offset);
-        outlineRect.moveBy(offset);
         paginationClip.moveBy(offset);
     }
 
@@ -56,13 +54,11 @@ public:
     {
         backgroundRect.intersect(rect);
         foregroundRect.intersect(rect);
-        outlineRect.intersect(rect);
     }
 
     LayoutRect layerBounds;
     ClipRect backgroundRect;
     ClipRect foregroundRect;
-    ClipRect outlineRect;
 
     // Unique to paginated fragments. The physical translation to apply to shift the layer when painting/hit-testing.
     LayoutPoint paginationOffset;

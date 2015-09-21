@@ -1,6 +1,6 @@
 layer at (0,0) size 800x600 clip at (0,0) size 785x585 scrollWidth 933 scrollHeight 1037
   LayoutView at (0,0) size 800x600
-layer at (0,0) size 933x1037 backgroundClip at (0,0) size 785x585 clip at (0,0) size 785x585 outlineClip at (0,0) size 785x585
+layer at (0,0) size 933x1037 backgroundClip at (0,0) size 785x585 clip at (0,0) size 785x585
   LayoutSVGRoot {svg} at (186,73) size 551x765
     LayoutSVGContainer {g} at (186,73) size 551x765
       LayoutSVGText {text} at (179,35) size 92x19 contains 1 chunk(s)

@@ -1,6 +1,6 @@
 layer at (0,0) size 800x600 clip at (0,0) size 785x600 scrollHeight 989
   LayoutView at (0,0) size 800x600
-layer at (0,0) size 785x989 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
+layer at (0,0) size 785x989 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
   LayoutBlockFlow {HTML} at (0,0) size 785x989.13
     LayoutBlockFlow {BODY} at (8,21.44) size 769x951.69
       LayoutBlockFlow {H1} at (0,0) size 769x37
@@ -297,10 +297,10 @@ layer at (0,0) size 785x989 backgroundClip at (0,0) size 785x600 clip at (0,0) s
         LayoutInline {A} at (0,0) size 151x19 [color=#0000EE]
           LayoutText {#text} at (38,0) size 151x19
             text run at (38,0) width 151: "dbaron@fas.harvard.edu"
-layer at (8,865) size 88x31 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 outlineClip at (0,0) size 785x600 scrollHeight 62
+layer at (8,865) size 88x31 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 scrollHeight 62
   LayoutBlockFlow {DIV} at (0,0) size 88x31 [border: (1px solid #C0C0C0)]
     LayoutImage (floating) {IMG} at (2,2) size 16x16
-layer at (26,867) size 68x60 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 outlineClip at (0,0) size 0x0
+layer at (26,867) size 68x60 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0
   LayoutBlockFlow {DIV} at (18,2) size 68x60
     LayoutText {#text} at (0,0) size 43x59
       text run at (0,0) width 32: "Valid"

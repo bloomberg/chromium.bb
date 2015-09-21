@@ -1,6 +1,6 @@
 layer at (0,0) size 800x600 clip at (0,0) size 785x600 scrollHeight 1016
   LayoutView at (0,0) size 800x600
-layer at (0,0) size 785x1016 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
+layer at (0,0) size 785x1016 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
   LayoutBlockFlow {HTML} at (0,0) size 785x1016
     LayoutBlockFlow {BODY} at (8,8) size 769x1000
       LayoutBlockFlow (anonymous) at (0,0) size 769x18
@@ -93,17 +93,17 @@ layer at (0,0) size 785x1016 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         LayoutBR {BR} at (302,2) size 0x15
       LayoutBlockFlow (anonymous) at (0,878) size 769x18
         LayoutBR {BR} at (0,0) size 0x18
-layer at (8,661) size 304x104 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
+layer at (8,661) size 304x104 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
   LayoutBlockFlow (relative positioned) {DIV} at (0,653) size 304x104 [border: (2px solid #000000)]
-layer at (10,663) size 300x45 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
+layer at (10,663) size 300x45 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
   LayoutBlockFlow (positioned) {DIV} at (2,2) size 300x45
     LayoutText {#text} at (0,0) size 297x45
       text run at (0,0) width 297: "Eventhoughthishasareallylongword itsho"
       text run at (0,15) width 297: "uldnotstick out oftheenclosing300pxblo"
       text run at (0,30) width 24: "ck."
-layer at (8,904) size 304x104 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
+layer at (8,904) size 304x104 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
   LayoutBlockFlow (relative positioned) {DIV} at (0,896) size 304x104 [border: (2px solid #000000)]
-layer at (10,906) size 300x45 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
+layer at (10,906) size 300x45 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
   LayoutBlockFlow (positioned) {DIV} at (2,2) size 300x45
     LayoutText {#text} at (0,0) size 250x45
       text run at (0,0) width 250: "Eventhoughthishasareallylongword"

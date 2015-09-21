@@ -18,7 +18,7 @@ layer at (200,244) size 0x0
     LayoutText {#text} at (0,0) size 0x0
     LayoutInline {I} at (0,0) size 0x0
       LayoutText {#text} at (0,0) size 0x0
-layer at (200,244) size 784x20 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600 outlineClip at (0,0) size 800x600
+layer at (200,244) size 784x20 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600
   LayoutBlockFlow (anonymous) (relative positioned) at (0,36) size 784x20
     LayoutBlockFlow {DIV} at (0,0) size 192x20 [bgcolor=#FFA500]
       LayoutText {#text} at (0,0) size 68x19

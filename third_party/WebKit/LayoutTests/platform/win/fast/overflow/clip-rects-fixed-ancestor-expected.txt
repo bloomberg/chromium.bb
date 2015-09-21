@@ -1,6 +1,6 @@
 layer at (0,0) size 800x600 clip at (0,0) size 785x600 scrollY 64.00 scrollHeight 1029
   LayoutView at (0,0) size 800x600
-layer at (0,0) size 785x1029 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
+layer at (0,0) size 785x1029 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
   LayoutBlockFlow {HTML} at (0,0) size 785x1029.27
     LayoutBlockFlow {BODY} at (8,21.27) size 769x1000
       LayoutBlockFlow {H4} at (0,0) size 769x18
@@ -172,12 +172,12 @@ layer at (527,352) size 118x30
   LayoutBlockFlow (relative positioned) {DIV} at (11,29) size 118x30 [border: (1px solid #999999)]
     LayoutText {#text} at (6,6) size 52x17
       text run at (6,6) width 52: ".relative"
-layer at (705,149) size 162x370 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
+layer at (705,149) size 162x370 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
   LayoutBlockFlow (positioned) {DIV} at (705,85) size 162x370 [border: (1px solid #999999)]
     LayoutBlockFlow (anonymous) at (6,6) size 150x18
       LayoutText {#text} at (0,0) size 49x17
         text run at (0,0) width 49: "#fixed3"
-layer at (716,178) size 140x330 backgroundClip at (716,178) size 69x330 clip at (717,179) size 68x328 outlineClip at (0,0) size 785x600
+layer at (716,178) size 140x330 backgroundClip at (716,178) size 69x330 clip at (717,179) size 68x328
   LayoutBlockFlow {DIV} at (11,29) size 140x330 [border: (1px solid #999999)]
     LayoutBlockFlow (anonymous) at (6,6) size 128x18
       LayoutText {#text} at (0,0) size 109x17
@@ -185,7 +185,7 @@ layer at (716,178) size 140x330 backgroundClip at (716,178) size 69x330 clip at 
     LayoutBlockFlow {DIV} at (11,29) size 118x30 [border: (1px solid #999999)]
       LayoutText {#text} at (6,6) size 51x17
         text run at (6,6) width 51: "no style"
-layer at (727,277) size 118x70 backgroundClip at (727,277) size 58x70 clip at (728,278) size 57x68 outlineClip at (717,179) size 68x328
+layer at (727,277) size 118x70 backgroundClip at (727,277) size 58x70 clip at (728,278) size 57x68
   LayoutBlockFlow {DIV} at (11,99) size 118x70 [border: (1px solid #999999)]
     LayoutBlockFlow (anonymous) at (6,6) size 106x18
       LayoutText {#text} at (0,0) size 109x17
@@ -193,29 +193,29 @@ layer at (727,277) size 118x70 backgroundClip at (727,277) size 58x70 clip at (7
     LayoutBlockFlow {DIV} at (11,29) size 96x30 [border: (1px solid #999999)]
       LayoutText {#text} at (6,6) size 51x17
         text run at (6,6) width 51: "no style"
-layer at (727,352) size 118x70 backgroundClip at (727,352) size 58x70 clip at (728,353) size 57x68 outlineClip at (717,179) size 68x328
+layer at (727,352) size 118x70 backgroundClip at (727,352) size 58x70 clip at (728,353) size 57x68
   LayoutBlockFlow {DIV} at (11,174) size 118x70 [border: (1px solid #999999)]
     LayoutBlockFlow (anonymous) at (6,6) size 106x18
       LayoutText {#text} at (0,0) size 109x17
         text run at (0,0) width 109: ".overflowHidden"
-layer at (727,427) size 118x70 backgroundClip at (727,427) size 58x70 clip at (728,428) size 57x68 outlineClip at (717,179) size 68x328
+layer at (727,427) size 118x70 backgroundClip at (727,427) size 58x70 clip at (728,428) size 57x68
   LayoutBlockFlow {DIV} at (11,249) size 118x70 [border: (1px solid #999999)]
     LayoutBlockFlow (anonymous) at (6,6) size 106x18
       LayoutText {#text} at (0,0) size 109x17
         text run at (0,0) width 109: ".overflowHidden"
-layer at (738,456) size 96x30 backgroundClip at (738,456) size 47x30 clip at (739,457) size 46x28 outlineClip at (728,428) size 57x68 scrollWidth 119
+layer at (738,456) size 96x30 backgroundClip at (738,456) size 47x30 clip at (739,457) size 46x28 scrollWidth 119
   LayoutBlockFlow {DIV} at (11,29) size 96x30 [border: (1px solid #999999)]
     LayoutText {#text} at (6,6) size 109x17
       text run at (6,6) width 109: ".overflowHidden"
-layer at (727,242) size 118x30 backgroundClip at (717,179) size 68x328 clip at (717,179) size 68x328 outlineClip at (717,179) size 68x328
+layer at (727,242) size 118x30 backgroundClip at (717,179) size 68x328 clip at (717,179) size 68x328
   LayoutBlockFlow (relative positioned) {DIV} at (11,64) size 118x30 [border: (1px solid #999999)]
     LayoutText {#text} at (6,6) size 52x17
       text run at (6,6) width 52: ".relative"
-layer at (792,155) size 69x30 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
+layer at (792,155) size 69x30 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
   LayoutBlockFlow (positioned) {DIV} at (86.67,6) size 69.33x30 [border: (1px solid #999999)]
     LayoutText {#text} at (6,6) size 58x17
       text run at (6,6) width 58: ".absolute"
-layer at (738,381) size 96x30 backgroundClip at (728,353) size 57x68 clip at (728,353) size 57x68 outlineClip at (728,353) size 57x68
+layer at (738,381) size 96x30 backgroundClip at (728,353) size 57x68 clip at (728,353) size 57x68
   LayoutBlockFlow (relative positioned) {DIV} at (11,29) size 96x30 [border: (1px solid #999999)]
     LayoutText {#text} at (6,6) size 52x17
       text run at (6,6) width 52: ".relative"

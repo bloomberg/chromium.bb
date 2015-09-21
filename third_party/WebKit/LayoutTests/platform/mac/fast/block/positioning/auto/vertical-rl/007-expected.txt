@@ -3,7 +3,7 @@ layer at (0,0) size 800x600 scrollX 830.00 scrollWidth 1630
 layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
-layer at (-830,8) size 1622x202 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600 outlineClip at (0,0) size 800x600
+layer at (-830,8) size 1622x202 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600
   LayoutBlockFlow (positioned) {DIV} at (8,8) size 1622x202.02
     LayoutBlockFlow {P} at (72,0) size 83x202.02
       LayoutInline {A} at (0,0) size 83x166 [color=#0000EE]

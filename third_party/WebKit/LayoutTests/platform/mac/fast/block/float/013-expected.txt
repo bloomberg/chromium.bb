@@ -3,7 +3,7 @@ layer at (0,0) size 800x600 scrollWidth 808
 layer at (0,0) size 800x8
   LayoutBlockFlow {HTML} at (0,0) size 800x8
     LayoutBlockFlow {BODY} at (8,8) size 784x0
-layer at (8,64) size 800x108 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600 outlineClip at (0,0) size 800x600
+layer at (8,64) size 800x108 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600
   LayoutBlockFlow (positioned) {DIV} at (8,64) size 800x108 [bgcolor=#0000FF]
     LayoutBlockFlow {DIV} at (38.50,8) size 723x57 [bgcolor=#008000] [border: none (2px solid #888878) none]
       LayoutText {#text} at (0,0) size 187x18

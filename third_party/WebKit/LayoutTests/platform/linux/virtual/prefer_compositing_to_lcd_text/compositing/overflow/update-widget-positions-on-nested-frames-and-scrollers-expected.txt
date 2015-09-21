@@ -14,7 +14,7 @@ layer at (8,8) size 504x504
     layer at (8,8) size 484x302 clip at (9,9) size 467x300 scrollY 500.00 scrollHeight 909
       LayoutBlockFlow {DIV} at (0,0) size 484x302 [border: (1px solid #000000)]
         LayoutText {#text} at (0,0) size 0x0
-    layer at (9,-491) size 304x904 backgroundClip at (9,9) size 467x300 clip at (9,9) size 467x300 outlineClip at (9,9) size 467x300
+    layer at (9,-491) size 304x904 backgroundClip at (9,9) size 467x300 clip at (9,9) size 467x300
       LayoutIFrame {IFRAME} at (1,1) size 304x904 [border: (2px inset #EEEEEE)]
         layer at (0,0) size 300x900
           LayoutView at (0,0) size 300x900

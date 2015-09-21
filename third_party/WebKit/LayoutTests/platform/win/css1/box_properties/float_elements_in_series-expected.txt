@@ -1,6 +1,6 @@
 layer at (0,0) size 800x600 clip at (0,0) size 785x600 scrollHeight 712
   LayoutView at (0,0) size 800x600
-layer at (0,0) size 785x712 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
+layer at (0,0) size 785x712 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
   LayoutBlockFlow {HTML} at (0,0) size 785x712
     LayoutBlockFlow {BODY} at (8,8) size 769x684 [bgcolor=#CCCCCC]
       LayoutBlockFlow {P} at (0,0) size 769x18
@@ -227,72 +227,72 @@ layer at (608,433) size 20x4 clip at (609,434) size 18x2 scrollHeight 18
     LayoutImage (floating) {IMG} at (2,2) size 16x16
 layer at (626,435) size 0x0
   LayoutBlockFlow {DIV} at (18,2) size 0x0
-layer at (25,657) size 20x4 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 outlineClip at (0,0) size 785x600 scrollHeight 18
+layer at (25,657) size 20x4 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 scrollHeight 18
   LayoutBlockFlow {DIV} at (0,0) size 20x4 [border: (1px solid #C0C0C0)]
     LayoutImage (floating) {IMG} at (2,2) size 16x16
 layer at (43,659) size 0x0
   LayoutBlockFlow {DIV} at (18,2) size 0x0
-layer at (45,657) size 100x4 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 outlineClip at (0,0) size 785x600 scrollHeight 18
+layer at (45,657) size 100x4 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 scrollHeight 18
   LayoutBlockFlow {DIV} at (0,0) size 100x4 [border: (1px solid #C0C0C0)]
     LayoutImage (floating) {IMG} at (2,2) size 16x16
 layer at (63,659) size 80x0
   LayoutBlockFlow {DIV} at (18,2) size 80x0
-layer at (165,657) size 20x4 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 outlineClip at (0,0) size 785x600 scrollHeight 18
+layer at (165,657) size 20x4 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 scrollHeight 18
   LayoutBlockFlow {DIV} at (0,0) size 20x4 [border: (1px solid #C0C0C0)]
     LayoutImage (floating) {IMG} at (2,2) size 16x16
 layer at (183,659) size 0x0
   LayoutBlockFlow {DIV} at (18,2) size 0x0
-layer at (185,657) size 20x4 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 outlineClip at (0,0) size 785x600 scrollHeight 18
+layer at (185,657) size 20x4 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 scrollHeight 18
   LayoutBlockFlow {DIV} at (0,0) size 20x4 [border: (1px solid #C0C0C0)]
     LayoutImage (floating) {IMG} at (2,2) size 16x16
 layer at (203,659) size 0x0
   LayoutBlockFlow {DIV} at (18,2) size 0x0
-layer at (205,657) size 100x4 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 outlineClip at (0,0) size 785x600 scrollHeight 18
+layer at (205,657) size 100x4 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 scrollHeight 18
   LayoutBlockFlow {DIV} at (0,0) size 100x4 [border: (1px solid #C0C0C0)]
     LayoutImage (floating) {IMG} at (2,2) size 16x16
 layer at (223,659) size 80x0
   LayoutBlockFlow {DIV} at (18,2) size 80x0
-layer at (305,657) size 20x4 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 outlineClip at (0,0) size 785x600 scrollHeight 18
+layer at (305,657) size 20x4 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 scrollHeight 18
   LayoutBlockFlow {DIV} at (0,0) size 20x4 [border: (1px solid #C0C0C0)]
     LayoutImage (floating) {IMG} at (2,2) size 16x16
 layer at (323,659) size 0x0
   LayoutBlockFlow {DIV} at (18,2) size 0x0
-layer at (325,657) size 20x4 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 outlineClip at (0,0) size 785x600 scrollHeight 18
+layer at (325,657) size 20x4 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 scrollHeight 18
   LayoutBlockFlow {DIV} at (0,0) size 20x4 [border: (1px solid #C0C0C0)]
     LayoutImage (floating) {IMG} at (2,2) size 16x16
 layer at (343,659) size 0x0
   LayoutBlockFlow {DIV} at (18,2) size 0x0
-layer at (345,657) size 20x4 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 outlineClip at (0,0) size 785x600 scrollHeight 18
+layer at (345,657) size 20x4 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 scrollHeight 18
   LayoutBlockFlow {DIV} at (0,0) size 20x4 [border: (1px solid #C0C0C0)]
     LayoutImage (floating) {IMG} at (2,2) size 16x16
 layer at (363,659) size 0x0
   LayoutBlockFlow {DIV} at (18,2) size 0x0
-layer at (365,657) size 100x4 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 outlineClip at (0,0) size 785x600 scrollHeight 18
+layer at (365,657) size 100x4 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 scrollHeight 18
   LayoutBlockFlow {DIV} at (0,0) size 100x4 [border: (1px solid #C0C0C0)]
     LayoutImage (floating) {IMG} at (2,2) size 16x16
 layer at (383,659) size 80x0
   LayoutBlockFlow {DIV} at (18,2) size 80x0
-layer at (465,648) size 20x4 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 outlineClip at (0,0) size 785x600 scrollHeight 18
+layer at (465,648) size 20x4 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 scrollHeight 18
   LayoutBlockFlow {DIV} at (0,0) size 20x4 [border: (1px solid #C0C0C0)]
     LayoutImage (floating) {IMG} at (2,2) size 16x16
 layer at (483,650) size 0x0
   LayoutBlockFlow {DIV} at (18,2) size 0x0
-layer at (485,657) size 20x4 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 outlineClip at (0,0) size 785x600 scrollHeight 18
+layer at (485,657) size 20x4 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 scrollHeight 18
   LayoutBlockFlow {DIV} at (0,0) size 20x4 [border: (1px solid #C0C0C0)]
     LayoutImage (floating) {IMG} at (2,2) size 16x16
 layer at (503,659) size 0x0
   LayoutBlockFlow {DIV} at (18,2) size 0x0
-layer at (505,657) size 20x4 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 outlineClip at (0,0) size 785x600 scrollHeight 18
+layer at (505,657) size 20x4 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 scrollHeight 18
   LayoutBlockFlow {DIV} at (0,0) size 20x4 [border: (1px solid #C0C0C0)]
     LayoutImage (floating) {IMG} at (2,2) size 16x16
 layer at (523,659) size 0x0
   LayoutBlockFlow {DIV} at (18,2) size 0x0
-layer at (525,657) size 100x4 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 outlineClip at (0,0) size 785x600 scrollHeight 18
+layer at (525,657) size 100x4 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 scrollHeight 18
   LayoutBlockFlow {DIV} at (0,0) size 100x4 [border: (1px solid #C0C0C0)]
     LayoutImage (floating) {IMG} at (2,2) size 16x16
 layer at (543,659) size 80x0
   LayoutBlockFlow {DIV} at (18,2) size 80x0
-layer at (625,657) size 20x4 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 outlineClip at (0,0) size 785x600 scrollHeight 18
+layer at (625,657) size 20x4 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 scrollHeight 18
   LayoutBlockFlow {DIV} at (0,0) size 20x4 [border: (1px solid #C0C0C0)]
     LayoutImage (floating) {IMG} at (2,2) size 16x16
 layer at (643,659) size 0x0

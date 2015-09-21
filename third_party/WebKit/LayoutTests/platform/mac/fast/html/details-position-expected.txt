@@ -11,7 +11,7 @@ layer at (50,150) size 50x18
     LayoutDetailsMarker {DIV} at (0,4) size 10.55x10.55: right
     LayoutText {#text} at (16,0) size 34x18
       text run at (16,0) width 34: "fixed"
-layer at (158,158) size 784x18 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600 outlineClip at (0,0) size 800x600
+layer at (158,158) size 784x18 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600
   LayoutBlockFlow (relative positioned) {SUMMARY} at (0,0) size 784x18
     LayoutDetailsMarker {DIV} at (0,4) size 10.55x10.55: right
     LayoutText {#text} at (16,0) size 49x18

@@ -1,7 +1,7 @@
 EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
 layer at (0,0) size 800x600 scrollWidth 2008 scrollHeight 2096
   LayoutView at (0,0) size 800x600
-layer at (0,0) size 800x2096 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600 outlineClip at (0,0) size 800x600
+layer at (0,0) size 800x2096 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x2096
     LayoutBlockFlow {BODY} at (8,8) size 784x2080
       LayoutBlockFlow (anonymous) at (0,0) size 784x60

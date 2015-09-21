@@ -12,7 +12,7 @@ layer at (0,0) size 800x160
         LayoutTableSection {TBODY} at (1,1) size 7420x64
           LayoutTableRow {TR} at (0,2) size 7420x60
             LayoutTableCell {TD} at (2,2) size 7416x60 [r=0 c=0 rs=1 cs=1]
-layer at (12,103) size 7414x32 backgroundClip at (12,103) size 788x32 clip at (13,104) size 787x30 outlineClip at (0,0) size 800x600
+layer at (12,103) size 7414x32 backgroundClip at (12,103) size 788x32 clip at (13,104) size 787x30
   LayoutBlockFlow {PRE} at (1,14) size 7414x32 [border: (1px solid #0000FF)]
     LayoutText {#text} at (1,1) size 7412x30
       text run at (1,1) width 3121: "this is a very long line this is a very long line this is a very long line this is a very long line this is a very long line this is a very long line this is a very long line this is a very long line this is a very long line this is a very long line this is a very long line this is a very long line this is a very long line this is a very long line this is a very long line this is a very long line "

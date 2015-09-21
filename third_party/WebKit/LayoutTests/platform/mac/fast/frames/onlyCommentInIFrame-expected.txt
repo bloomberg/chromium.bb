@@ -23,7 +23,7 @@ layer at (8,94) size 788x14
   LayoutIFrame {IFRAME} at (0,86) size 788x14 [border: (2px inset #EEEEEE)]
     layer at (0,0) size 784x10 clip at (0,0) size 769x10 scrollHeight 169
       LayoutView at (0,0) size 784x10
-    layer at (0,0) size 769x169 backgroundClip at (0,0) size 769x10 clip at (0,0) size 769x10 outlineClip at (0,0) size 769x10
+    layer at (0,0) size 769x169 backgroundClip at (0,0) size 769x10 clip at (0,0) size 769x10
       LayoutBlockFlow {html} at (0,0) size 769x168.88
         LayoutBlockFlow {body} at (8,16) size 753x136.88
           LayoutBlockFlow {parsererror} at (16,0) size 721x136.88 [bgcolor=#FFDDDD] [border: (2px solid #CC7777)]

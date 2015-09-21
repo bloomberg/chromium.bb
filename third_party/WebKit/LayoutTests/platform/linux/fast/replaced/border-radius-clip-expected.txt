@@ -1,6 +1,6 @@
 layer at (0,0) size 800x600 clip at (0,0) size 785x600 scrollHeight 958
   LayoutView at (0,0) size 800x600
-layer at (0,0) size 785x934 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
+layer at (0,0) size 785x934 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
   LayoutBlockFlow {HTML} at (0,0) size 785x934
     LayoutBlockFlow {BODY} at (8,8) size 769x918
       LayoutText {#text} at (0,0) size 440x19
@@ -31,7 +31,7 @@ layer at (8,238) size 304x154
           LayoutImage {IMG} at (0,0) size 100x100
 layer at (8,397) size 300x150
   LayoutVideo {VIDEO} at (0,389) size 300x150
-layer at (8,552) size 556x406 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
+layer at (8,552) size 556x406 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
   LayoutEmbeddedObject {EMBED} at (0,544) size 556x406 [bgcolor=#00FF00] [border: (3px solid #000000)]
 layer at (8,397) size 300x150
   LayoutFlexibleBox (relative positioned) {DIV} at (0,0) size 300x150

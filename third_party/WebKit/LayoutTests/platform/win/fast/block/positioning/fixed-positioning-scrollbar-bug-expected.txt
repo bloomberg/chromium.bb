@@ -10,7 +10,7 @@ layer at (0,0) size 785x600
       LayoutText {#text} at (0,0) size 0x0
       LayoutText {#text} at (0,0) size 0x0
       LayoutText {#text} at (0,0) size 0x0
-layer at (8,26) size 1x2000 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
+layer at (8,26) size 1x2000 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
   LayoutBlockFlow (positioned) {DIV} at (8,26) size 1x2000
 layer at (8,500) size 100x100
   LayoutBlockFlow (positioned) {DIV} at (8,500) size 100x100 [bgcolor=#800080]

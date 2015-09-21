@@ -1,6 +1,6 @@
 layer at (0,0) size 800x600 clip at (0,0) size 785x600 scrollHeight 1033
   LayoutView at (0,0) size 800x600
-layer at (0,0) size 785x1033 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
+layer at (0,0) size 785x1033 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
   LayoutBlockFlow {HTML} at (0,0) size 785x1033
     LayoutBlockFlow {BODY} at (8,8) size 769x584
       LayoutBlockFlow (floating) {DIV} at (0,0) size 352x789 [border: (1px solid #FF0000)]
@@ -369,7 +369,7 @@ layer at (24,528) size 81x32 clip at (25,529) size 64x30 scrollHeight 134
         text run at (0,104) width 60: "klmnopqrst"
         text run at (0,117) width 13: "uv"
         text run at (12,117) width 4: " "
-layer at (24,579) size 141x136 backgroundClip at (24,579) size 141x21 clip at (25,580) size 139x20 outlineClip at (0,0) size 785x600
+layer at (24,579) size 141x136 backgroundClip at (24,579) size 141x21 clip at (25,580) size 139x20
   LayoutTextControl {TEXTAREA} at (14.61,1) size 141x136 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
     LayoutBlockFlow {DIV} at (3,3) size 135x52
       LayoutText {#text} at (0,0) size 131x52
@@ -380,7 +380,7 @@ layer at (24,579) size 141x136 backgroundClip at (24,579) size 141x21 clip at (2
         text run at (70,26) width 4: " "
         text run at (0,39) width 128: "abcdefghijklmnopqrstuv"
         text run at (127,39) width 4: " "
-layer at (24,734) size 51x58 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 outlineClip at (0,0) size 785x600 scrollHeight 251
+layer at (24,734) size 51x58 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 scrollHeight 251
   LayoutTextControl {TEXTAREA} at (14.61,1) size 51x58 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
     LayoutBlockFlow {DIV} at (3,3) size 30x247
       LayoutText {#text} at (0,0) size 30x247
@@ -599,7 +599,7 @@ layer at (376,484) size 60x60 clip at (377,485) size 58x58 scrollHeight 147
         text run at (0,117) width 53: "jklmnopqr"
         text run at (0,130) width 23: "stuv"
         text run at (22,130) width 4: " "
-layer at (376,563) size 60x60 backgroundClip at (376,563) size 60x37 clip at (377,564) size 43x36 outlineClip at (0,0) size 785x600 scrollHeight 173
+layer at (376,563) size 60x60 backgroundClip at (376,563) size 60x37 clip at (377,564) size 43x36 scrollHeight 173
   LayoutTextControl {TEXTAREA} at (14.61,1) size 60x60 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
     LayoutBlockFlow {DIV} at (3,3) size 39x169
       LayoutText {#text} at (0,0) size 39x169
@@ -621,7 +621,7 @@ layer at (376,563) size 60x60 backgroundClip at (376,563) size 60x37 clip at (37
         text run at (0,143) width 37: "nopqrs"
         text run at (0,156) width 17: "tuv"
         text run at (16,156) width 4: " "
-layer at (376,642) size 60x60 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 outlineClip at (0,0) size 785x600 scrollHeight 173
+layer at (376,642) size 60x60 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 scrollHeight 173
   LayoutTextControl {TEXTAREA} at (14.61,1) size 60x60 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
     LayoutBlockFlow {DIV} at (3,3) size 39x169
       LayoutText {#text} at (0,0) size 39x169
@@ -643,7 +643,7 @@ layer at (376,642) size 60x60 backgroundClip at (0,0) size 0x0 clip at (0,0) siz
         text run at (0,143) width 37: "nopqrs"
         text run at (0,156) width 17: "tuv"
         text run at (16,156) width 4: " "
-layer at (376,721) size 60x60 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 outlineClip at (0,0) size 785x600 scrollHeight 173
+layer at (376,721) size 60x60 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 scrollHeight 173
   LayoutTextControl {TEXTAREA} at (14.61,1) size 60x60 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
     LayoutBlockFlow {DIV} at (3,3) size 39x169
       LayoutText {#text} at (0,0) size 39x169
@@ -665,7 +665,7 @@ layer at (376,721) size 60x60 backgroundClip at (0,0) size 0x0 clip at (0,0) siz
         text run at (0,143) width 37: "nopqrs"
         text run at (0,156) width 17: "tuv"
         text run at (16,156) width 4: " "
-layer at (376,800) size 60x60 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 outlineClip at (0,0) size 785x600 scrollHeight 173
+layer at (376,800) size 60x60 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 scrollHeight 173
   LayoutTextControl {TEXTAREA} at (14.61,1) size 60x60 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
     LayoutBlockFlow {DIV} at (3,3) size 39x169
       LayoutText {#text} at (0,0) size 39x169
@@ -687,7 +687,7 @@ layer at (376,800) size 60x60 backgroundClip at (0,0) size 0x0 clip at (0,0) siz
         text run at (0,143) width 37: "nopqrs"
         text run at (0,156) width 17: "tuv"
         text run at (16,156) width 4: " "
-layer at (376,879) size 141x47 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 outlineClip at (0,0) size 785x600 scrollWidth 187 scrollHeight 212
+layer at (376,879) size 141x47 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 scrollWidth 187 scrollHeight 212
   LayoutTextControl {TEXTAREA} at (14.61,1) size 141x47 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
     LayoutBlockFlow {DIV} at (3,3) size 120x208
       LayoutText {#text} at (0,0) size 4x13
@@ -736,7 +736,7 @@ layer at (376,879) size 141x47 backgroundClip at (0,0) size 0x0 clip at (0,0) si
         text run at (0,182) width 186: "This is a text area with wrap=\"soft\""
       LayoutBR {BR} at (0,0) size 0x0
       LayoutBR {BR} at (0,195) size 0x13
-layer at (376,945) size 141x32 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 outlineClip at (0,0) size 785x600 scrollHeight 394
+layer at (376,945) size 141x32 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 scrollHeight 394
   LayoutTextControl {TEXTAREA} at (14.61,1) size 141x32 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
     LayoutBlockFlow {DIV} at (3,3) size 120x390
       LayoutText {#text} at (0,0) size 4x13
@@ -813,7 +813,7 @@ layer at (376,945) size 141x32 backgroundClip at (0,0) size 0x0 clip at (0,0) si
         text run at (0,364) width 64: "wrap=\"soft\""
       LayoutBR {BR} at (63,375) size 1x0
       LayoutBR {BR} at (0,377) size 0x13
-layer at (376,996) size 141x32 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 outlineClip at (0,0) size 785x600 scrollHeight 394
+layer at (376,996) size 141x32 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 scrollHeight 394
   LayoutTextControl {TEXTAREA} at (14.61,1) size 141x32 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
     LayoutBlockFlow {DIV} at (3,3) size 120x390
       LayoutText {#text} at (0,0) size 4x13

@@ -1,6 +1,6 @@
 layer at (0,0) size 800x600 clip at (0,0) size 785x600 scrollHeight 1432
   LayoutView at (0,0) size 800x600
-layer at (0,0) size 785x1432 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
+layer at (0,0) size 785x1432 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
   LayoutBlockFlow {HTML} at (0,0) size 785x1432
     LayoutBlockFlow {BODY} at (8,8) size 769x1416
       LayoutBlockFlow {DIV} at (0,0) size 769x200
@@ -39,7 +39,7 @@ layer at (208,208) size 569x59 clip at (210,210) size 550x40
     LayoutText {#text} at (2,2) size 513x39
       text run at (2,2) width 513: "This is an overflow:scroll region. It should sit on the same line as the float and wrap as"
       text run at (2,22) width 262: "needed to fit within the remaining line width."
-layer at (208,816) size 389x79 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 outlineClip at (0,0) size 785x600
+layer at (208,816) size 389x79 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0
   LayoutBlockFlow {DIV} at (200,0) size 388.50x79 [border: (2px solid #0000FF)]
     LayoutText {#text} at (2,2) size 368x59
       text run at (2,2) width 366: "This is an overflow:scroll region. It should sit on the same line"

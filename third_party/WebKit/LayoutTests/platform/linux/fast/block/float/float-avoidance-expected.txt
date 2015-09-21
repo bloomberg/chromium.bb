@@ -1,6 +1,6 @@
 layer at (0,0) size 800x600 clip at (0,0) size 785x600 scrollHeight 2414
   LayoutView at (0,0) size 800x600
-layer at (0,0) size 785x2414 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
+layer at (0,0) size 785x2414 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
   LayoutBlockFlow {HTML} at (0,0) size 785x2414
     LayoutBlockFlow {BODY} at (8,8) size 769x2398
       LayoutBlockFlow (anonymous) at (0,0) size 769x40
@@ -299,7 +299,7 @@ layer at (0,0) size 785x2414 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         LayoutBlockFlow {HR} at (110,38) size 100x2 [border: (1px inset #EEEEEE)]
         LayoutBlockFlow (anonymous) at (10,48) size 200x20
           LayoutBR {BR} at (100,0) size 0x19
-layer at (118,1388) size 100x100 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 outlineClip at (0,0) size 785x600
+layer at (118,1388) size 100x100 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0
   LayoutBlockFlow (floating) {DIV} at (110,30) size 100x100
     LayoutText {#text} at (0,0) size 99x99
       text run at (0,0) width 56: "This is an"
@@ -307,13 +307,13 @@ layer at (118,1388) size 100x100 backgroundClip at (0,0) size 0x0 clip at (0,0) 
       text run at (0,40) width 98: "with enough text"
       text run at (0,60) width 95: "to have to wrap"
       text run at (0,80) width 96: "to multiple lines."
-layer at (18,1588) size 200x60 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 outlineClip at (0,0) size 785x600
+layer at (18,1588) size 200x60 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0
   LayoutBlockFlow (floating) {DIV} at (10,50) size 200x60
     LayoutText {#text} at (0,0) size 188x59
       text run at (0,0) width 188: "This is an overflow section with"
       text run at (0,20) width 184: "enough text to have to wrap to"
       text run at (0,40) width 80: "multiple lines."
-layer at (118,1708) size 100x100 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 outlineClip at (0,0) size 785x600
+layer at (118,1708) size 100x100 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0
   LayoutBlockFlow {DIV} at (110,30) size 100x100
     LayoutText {#text} at (0,0) size 99x99
       text run at (0,0) width 56: "This is an"
@@ -321,7 +321,7 @@ layer at (118,1708) size 100x100 backgroundClip at (0,0) size 0x0 clip at (0,0) 
       text run at (0,40) width 98: "with enough text"
       text run at (0,60) width 95: "to have to wrap"
       text run at (0,80) width 96: "to multiple lines."
-layer at (118,1908) size 100x100 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 outlineClip at (0,0) size 785x600
+layer at (118,1908) size 100x100 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0
   LayoutBlockFlow {DIV} at (110,30) size 100x100
     LayoutText {#text} at (0,0) size 99x99
       text run at (0,0) width 56: "This is an"

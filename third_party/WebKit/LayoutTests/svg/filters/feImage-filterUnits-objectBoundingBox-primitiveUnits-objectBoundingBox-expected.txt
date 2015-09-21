@@ -1,6 +1,6 @@
 layer at (0,0) size 800x600 clip at (0,0) size 785x585 scrollWidth 800 scrollHeight 800
   LayoutView at (0,0) size 800x600
-layer at (0,0) size 800x800 backgroundClip at (0,0) size 785x585 clip at (0,0) size 785x585 outlineClip at (0,0) size 785x585
+layer at (0,0) size 800x800 backgroundClip at (0,0) size 785x585 clip at (0,0) size 785x585
   LayoutSVGRoot {svg} at (0,0) size 370x370
     LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
       LayoutSVGEllipse {circle} at (200,200) size 400x400 [fill={[type=SOLID] [color=#008000]}] [cx=400.00] [cy=400.00] [r=200.00]

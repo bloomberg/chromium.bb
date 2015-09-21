@@ -12,7 +12,7 @@ layer at (10,110) size 220x220
   LayoutIFrame {IFRAME} at (10,10) size 220x220
     layer at (0,0) size 200x200 scrollY 200.00 scrollHeight 400
       LayoutView at (0,0) size 200x200
-    layer at (0,0) size 200x400 backgroundClip at (0,0) size 200x200 clip at (0,0) size 200x200 outlineClip at (0,0) size 200x200
+    layer at (0,0) size 200x400 backgroundClip at (0,0) size 200x200 clip at (0,0) size 200x200
       LayoutBlockFlow {HTML} at (0,0) size 200x400
         LayoutBlockFlow {BODY} at (0,0) size 200x400
           LayoutBlockFlow {DIV} at (0,0) size 200x200 [bgcolor=#FF0000]

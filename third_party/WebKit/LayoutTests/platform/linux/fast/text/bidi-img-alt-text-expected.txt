@@ -24,9 +24,9 @@ layer at (8,8) size 302x102 clip at (9,9) size 300x100 scrollHeight 134
     LayoutBlockFlow {H2} at (1,20.91) size 300x27
       LayoutText {#text} at (0,0) size 164x26
         text run at (0,0) width 164: "ltr image, rtl alt"
-layer at (9,59) size 280x80 backgroundClip at (9,9) size 300x100 clip at (9,9) size 300x100 outlineClip at (9,9) size 300x100
+layer at (9,59) size 280x80 backgroundClip at (9,9) size 300x100 clip at (9,9) size 300x100
   LayoutBlockFlow (positioned) {IMG} at (1,51) size 280x80
-layer at (9,59) size 280x80 backgroundClip at (9,59) size 280x50 clip at (10,60) size 278x49 outlineClip at (9,9) size 300x100
+layer at (9,59) size 280x80 backgroundClip at (9,59) size 280x50 clip at (10,60) size 278x49
   LayoutBlockFlow {DIV} at (0,0) size 280x80 [border: (1px solid #C0C0C0)]
     LayoutImage (floating) {IMG} at (2,2) size 16x16
 layer at (27,61) size 260x20
@@ -38,9 +38,9 @@ layer at (314,8) size 302x102 clip at (315,9) size 300x100 scrollHeight 134
     LayoutBlockFlow {H2} at (1,20.91) size 300x27
       LayoutText {#text} at (0,0) size 164x26
         text run at (0,0) width 164: "rtl image, rtl alt"
-layer at (315,59) size 280x80 backgroundClip at (315,9) size 300x100 clip at (315,9) size 300x100 outlineClip at (315,9) size 300x100
+layer at (315,59) size 280x80 backgroundClip at (315,9) size 300x100 clip at (315,9) size 300x100
   LayoutBlockFlow (positioned) {IMG} at (1,51) size 280x80
-layer at (315,59) size 280x80 backgroundClip at (315,59) size 280x50 clip at (316,60) size 278x49 outlineClip at (315,9) size 300x100
+layer at (315,59) size 280x80 backgroundClip at (315,59) size 280x50 clip at (316,60) size 278x49
   LayoutBlockFlow {DIV} at (0,0) size 280x80 [border: (1px solid #C0C0C0)]
     LayoutImage (floating) {IMG} at (262,2) size 16x16
 layer at (317,61) size 260x20
@@ -52,9 +52,9 @@ layer at (8,115) size 302x102 clip at (9,116) size 300x100 scrollHeight 134
     LayoutBlockFlow {H2} at (1,20.91) size 300x27
       LayoutText {#text} at (0,0) size 164x26
         text run at (0,0) width 164: "ltr image, ltr alt"
-layer at (9,166) size 280x80 backgroundClip at (9,116) size 300x100 clip at (9,116) size 300x100 outlineClip at (9,116) size 300x100
+layer at (9,166) size 280x80 backgroundClip at (9,116) size 300x100 clip at (9,116) size 300x100
   LayoutBlockFlow (positioned) {IMG} at (1,51) size 280x80
-layer at (9,166) size 280x80 backgroundClip at (9,166) size 280x50 clip at (10,167) size 278x49 outlineClip at (9,116) size 300x100
+layer at (9,166) size 280x80 backgroundClip at (9,166) size 280x50 clip at (10,167) size 278x49
   LayoutBlockFlow {DIV} at (0,0) size 280x80 [border: (1px solid #C0C0C0)]
     LayoutImage (floating) {IMG} at (2,2) size 16x16
 layer at (27,168) size 260x20
@@ -66,9 +66,9 @@ layer at (314,115) size 302x102 clip at (315,116) size 300x100 scrollHeight 134
     LayoutBlockFlow {H2} at (1,20.91) size 300x27
       LayoutText {#text} at (0,0) size 164x26
         text run at (0,0) width 164: "rtl image, ltr alt"
-layer at (315,166) size 280x80 backgroundClip at (315,116) size 300x100 clip at (315,116) size 300x100 outlineClip at (315,116) size 300x100
+layer at (315,166) size 280x80 backgroundClip at (315,116) size 300x100 clip at (315,116) size 300x100
   LayoutBlockFlow (positioned) {IMG} at (1,51) size 280x80
-layer at (315,166) size 280x80 backgroundClip at (315,166) size 280x50 clip at (316,167) size 278x49 outlineClip at (315,116) size 300x100
+layer at (315,166) size 280x80 backgroundClip at (315,166) size 280x50 clip at (316,167) size 278x49
   LayoutBlockFlow {DIV} at (0,0) size 280x80 [border: (1px solid #C0C0C0)]
     LayoutImage (floating) {IMG} at (262,2) size 16x16
 layer at (317,168) size 260x20
@@ -80,9 +80,9 @@ layer at (8,222) size 302x102 clip at (9,223) size 300x100 scrollHeight 134
     LayoutBlockFlow {H2} at (1,20.91) size 300x27
       LayoutText {#text} at (0,0) size 191x26
         text run at (0,0) width 191: "ltr image, weak alt"
-layer at (9,273) size 280x80 backgroundClip at (9,223) size 300x100 clip at (9,223) size 300x100 outlineClip at (9,223) size 300x100
+layer at (9,273) size 280x80 backgroundClip at (9,223) size 300x100 clip at (9,223) size 300x100
   LayoutBlockFlow (positioned) {IMG} at (1,51) size 280x80
-layer at (9,273) size 280x80 backgroundClip at (9,273) size 280x50 clip at (10,274) size 278x49 outlineClip at (9,223) size 300x100
+layer at (9,273) size 280x80 backgroundClip at (9,273) size 280x50 clip at (10,274) size 278x49
   LayoutBlockFlow {DIV} at (0,0) size 280x80 [border: (1px solid #C0C0C0)]
     LayoutImage (floating) {IMG} at (2,2) size 16x16
 layer at (27,275) size 260x20
@@ -94,9 +94,9 @@ layer at (314,222) size 302x102 clip at (315,223) size 300x100 scrollHeight 134
     LayoutBlockFlow {H2} at (1,20.91) size 300x27
       LayoutText {#text} at (0,0) size 191x26
         text run at (0,0) width 191: "rtl image, weak alt"
-layer at (315,273) size 280x80 backgroundClip at (315,223) size 300x100 clip at (315,223) size 300x100 outlineClip at (315,223) size 300x100
+layer at (315,273) size 280x80 backgroundClip at (315,223) size 300x100 clip at (315,223) size 300x100
   LayoutBlockFlow (positioned) {IMG} at (1,51) size 280x80
-layer at (315,273) size 280x80 backgroundClip at (315,273) size 280x50 clip at (316,274) size 278x49 outlineClip at (315,223) size 300x100
+layer at (315,273) size 280x80 backgroundClip at (315,273) size 280x50 clip at (316,274) size 278x49
   LayoutBlockFlow {DIV} at (0,0) size 280x80 [border: (1px solid #C0C0C0)]
     LayoutImage (floating) {IMG} at (262,2) size 16x16
 layer at (317,275) size 260x20
@@ -108,9 +108,9 @@ layer at (8,329) size 302x102 clip at (9,330) size 300x100 scrollHeight 134
     LayoutBlockFlow {H2} at (1,20.91) size 300x27
       LayoutText {#text} at (0,0) size 200x26
         text run at (0,0) width 200: "ltr image, mixed alt"
-layer at (9,380) size 280x80 backgroundClip at (9,330) size 300x100 clip at (9,330) size 300x100 outlineClip at (9,330) size 300x100
+layer at (9,380) size 280x80 backgroundClip at (9,330) size 300x100 clip at (9,330) size 300x100
   LayoutBlockFlow (positioned) {IMG} at (1,51) size 280x80
-layer at (9,380) size 280x80 backgroundClip at (9,380) size 280x50 clip at (10,381) size 278x49 outlineClip at (9,330) size 300x100
+layer at (9,380) size 280x80 backgroundClip at (9,380) size 280x50 clip at (10,381) size 278x49
   LayoutBlockFlow {DIV} at (0,0) size 280x80 [border: (1px solid #C0C0C0)]
     LayoutImage (floating) {IMG} at (2,2) size 16x16
 layer at (27,382) size 260x20
@@ -124,9 +124,9 @@ layer at (314,329) size 302x102 clip at (315,330) size 300x100 scrollHeight 134
     LayoutBlockFlow {H2} at (1,20.91) size 300x27
       LayoutText {#text} at (0,0) size 200x26
         text run at (0,0) width 200: "rtl image, mixed alt"
-layer at (315,380) size 280x80 backgroundClip at (315,330) size 300x100 clip at (315,330) size 300x100 outlineClip at (315,330) size 300x100
+layer at (315,380) size 280x80 backgroundClip at (315,330) size 300x100 clip at (315,330) size 300x100
   LayoutBlockFlow (positioned) {IMG} at (1,51) size 280x80
-layer at (315,380) size 280x80 backgroundClip at (315,380) size 280x50 clip at (316,381) size 278x49 outlineClip at (315,330) size 300x100
+layer at (315,380) size 280x80 backgroundClip at (315,380) size 280x50 clip at (316,381) size 278x49
   LayoutBlockFlow {DIV} at (0,0) size 280x80 [border: (1px solid #C0C0C0)]
     LayoutImage (floating) {IMG} at (262,2) size 16x16
 layer at (317,382) size 260x20

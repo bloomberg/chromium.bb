@@ -15,7 +15,7 @@ layer at (165,562) size 243x28
   LayoutBlockFlow (positioned) {FONT} at (165,562) size 243x28
     LayoutText {#text} at (0,0) size 243x27
       text run at (0,0) width 243: "RTL-Center-Aligned"
-layer at (-84,466) size 92x84 backgroundClip at (0,0) size 900x600 clip at (0,0) size 900x600 outlineClip at (0,0) size 900x600
+layer at (-84,466) size 92x84 backgroundClip at (0,0) size 900x600 clip at (0,0) size 900x600
   LayoutBlockFlow (positioned) {FONT} at (-84,466) size 92x84
     LayoutText {#text} at (0,0) size 92x83
       text run at (0,0) width 61: "RTL-"

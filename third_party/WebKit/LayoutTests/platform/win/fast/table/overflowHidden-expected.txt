@@ -1,6 +1,6 @@
 layer at (0,0) size 800x600 clip at (0,0) size 785x600 scrollHeight 2424
   LayoutView at (0,0) size 800x600
-layer at (0,0) size 785x2424 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
+layer at (0,0) size 785x2424 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
   LayoutBlockFlow {HTML} at (0,0) size 785x2424
     LayoutBlockFlow {BODY} at (8,8) size 769x2408
       LayoutTable {TABLE} at (0,0) size 418x112 [border: (2px outset #808080)]
@@ -141,55 +141,55 @@ layer at (12,456) size 304x104 clip at (13,457) size 302x102 scrollWidth 601
       LayoutBlockFlow {DIV} at (0,0) size 600x18 [bgcolor=#008000]
         LayoutText {#text} at (0,0) size 28x17
           text run at (0,0) width 28: "Test"
-layer at (118,604) size 304x104 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 outlineClip at (0,0) size 785x600 scrollWidth 601
+layer at (118,604) size 304x104 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 scrollWidth 601
   LayoutTableCell {TD} at (108,52) size 304x4 [bgcolor=#808080] [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
     LayoutBlockFlow {DIV} at (2,-18) size 300x18 [bgcolor=#00FF00]
       LayoutBlockFlow {DIV} at (0,0) size 600x18 [bgcolor=#008000]
         LayoutText {#text} at (0,0) size 84x17
           text run at (0,0) width 84: "Reverse Test"
-layer at (12,752) size 304x104 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 outlineClip at (0,0) size 785x600 scrollWidth 601
+layer at (12,752) size 304x104 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 scrollWidth 601
   LayoutTableCell {TD} at (2,52) size 304x4 [bgcolor=#808080] [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
     LayoutBlockFlow {DIV} at (2,-18) size 300x18 [bgcolor=#00FF00]
       LayoutBlockFlow {DIV} at (0,0) size 600x18 [bgcolor=#008000]
         LayoutText {#text} at (0,0) size 83x17
           text run at (0,0) width 83: "Stacked Test"
-layer at (318,858) size 304x104 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 outlineClip at (0,0) size 785x600 scrollWidth 601
+layer at (318,858) size 304x104 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 scrollWidth 601
   LayoutTableCell {TD} at (308,158) size 304x4 [bgcolor=#808080] [border: (1px inset #808080)] [r=1 c=1 rs=1 cs=1]
     LayoutBlockFlow {DIV} at (2,-18) size 300x18 [bgcolor=#00FF00]
       LayoutBlockFlow {DIV} at (0,0) size 600x18 [bgcolor=#008000]
         LayoutText {#text} at (0,0) size 52x17
           text run at (0,0) width 52: "Reverse"
-layer at (12,1006) size 604x104 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 outlineClip at (0,0) size 785x600
+layer at (12,1006) size 604x104 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0
   LayoutTableCell {TD} at (2,43) size 604x22 [bgcolor=#808080] [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
-layer at (8,1446) size 300x100 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 outlineClip at (0,0) size 785x600 scrollWidth 600
+layer at (8,1446) size 300x100 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 scrollWidth 600
   LayoutTableCell {DIV} at (0,41) size 300x18 [r=0 c=0 rs=1 cs=1]
     LayoutBlockFlow {DIV} at (0,0) size 300x18
       LayoutBlockFlow {DIV} at (0,0) size 600x18 [bgcolor=#FFA500]
         LayoutText {#text} at (0,0) size 147x17
           text run at (0,0) width 147: "With display:table-cell"
-layer at (10,1720) size 605x107 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 outlineClip at (0,0) size 785x600
+layer at (10,1720) size 605x107 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0
   LayoutTableCell {TD} at (0,41) size 605x25 [bgcolor=#808080] [border: (3px inset #808080)] [r=0 c=0 rs=1 cs=1]
     LayoutBlockFlow {DIV} at (4,4) size 600x18 [bgcolor=#FFFF00]
       LayoutText {#text} at (0,0) size 221x17
         text run at (0,0) width 221: "Test with border-collapse:collapse"
-layer at (10,1868) size 605x107 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 outlineClip at (0,0) size 785x600
+layer at (10,1868) size 605x107 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0
   LayoutTableCell {TD} at (0,41) size 605x25 [border: (3px inset #808080)] [r=0 c=0 rs=1 cs=1]
     LayoutBlockFlow {DIV} at (4,4) size 600x18 [bgcolor=#FFFF00]
       LayoutText {#text} at (0,0) size 278x17
         text run at (0,0) width 278: "Test with border-collapse:collapse no color"
-layer at (12,2018) size 304x103 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 outlineClip at (0,0) size 785x600 scrollWidth 601
+layer at (12,2018) size 304x103 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 scrollWidth 601
   LayoutTableCell {TD} at (2,44) size 304x19 [bgcolor=#808080] [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
     LayoutBlockFlow {DIV} at (2,-18) size 300x18 [bgcolor=#00FF00]
       LayoutBlockFlow {DIV} at (0,0) size 600x18 [bgcolor=#008000]
         LayoutText {#text} at (0,0) size 154x17
           text run at (0,0) width 154: "Test with overflow:auto"
-layer at (12,2166) size 319x104 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 outlineClip at (0,0) size 785x600 scrollWidth 601
+layer at (12,2166) size 319x104 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 scrollWidth 601
   LayoutTableCell {TD} at (2,44) size 319x19 [bgcolor=#808080] [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
     LayoutBlockFlow {DIV} at (2,-18) size 300x18 [bgcolor=#00FF00]
       LayoutBlockFlow {DIV} at (0,0) size 600x18 [bgcolor=#008000]
         LayoutText {#text} at (0,0) size 162x17
           text run at (0,0) width 162: "Test with overflow:scroll"
-layer at (10,2312) size 362x102 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 outlineClip at (0,0) size 785x600 scrollWidth 601
+layer at (10,2312) size 362x102 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 scrollWidth 601
   LayoutTableCell {TD} at (2,5) size 362x95 [bgcolor=#808080] [border: (30px solid #000000)] [r=0 c=0 rs=1 cs=1]
     LayoutBlockFlow {DIV} at (31,31) size 300x18 [bgcolor=#00FF00]
       LayoutBlockFlow {DIV} at (0,0) size 600x18 [bgcolor=#008000]
@@ -208,21 +208,21 @@ layer at (12,308) size 604x104 clip at (13,309) size 602x102 transparent
     LayoutBlockFlow {DIV} at (2,2) size 600x18 [bgcolor=#00FFFF]
       LayoutText {#text} at (0,0) size 135x17
         text run at (0,0) width 135: "With opacity on cell."
-layer at (14,1049) size 600x18 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 outlineClip at (0,0) size 0x0
+layer at (14,1049) size 600x18 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0
   LayoutBlockFlow (relative positioned) {DIV} at (2,2) size 600x18 [bgcolor=#FFA500]
     LayoutText {#text} at (0,0) size 209x17
       text run at (0,0) width 209: "With relative positioning on div."
-layer at (12,1154) size 604x104 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 outlineClip at (0,0) size 785x600
+layer at (12,1154) size 604x104 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0
   LayoutTableCell (relative positioned) {TD} at (2,43) size 604x22 [bgcolor=#808080] [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
     LayoutBlockFlow {DIV} at (2,2) size 600x18 [bgcolor=#FFC0CB]
       LayoutText {#text} at (0,0) size 212x17
         text run at (0,0) width 212: "With relative positioning on cell."
-layer at (112,1302) size 604x104 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 outlineClip at (0,0) size 785x600
+layer at (112,1302) size 604x104 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0
   LayoutTableCell (relative positioned) {TD} at (2,43) size 604x22 [bgcolor=#808080] [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
     LayoutBlockFlow {DIV} at (2,2) size 600x18 [bgcolor=#FFC0CB]
       LayoutText {#text} at (0,0) size 298x17
         text run at (0,0) width 298: "With relative positioning and an offset on cell."
-layer at (108,1582) size 300x100 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 outlineClip at (0,0) size 785x600 scrollWidth 600
+layer at (108,1582) size 300x100 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 scrollWidth 600
   LayoutTableCell (relative positioned) {DIV} at (0,41) size 300x18 [r=0 c=0 rs=1 cs=1]
     LayoutBlockFlow {DIV} at (0,0) size 300x18
       LayoutBlockFlow {DIV} at (0,0) size 600x18 [bgcolor=#FFA500]

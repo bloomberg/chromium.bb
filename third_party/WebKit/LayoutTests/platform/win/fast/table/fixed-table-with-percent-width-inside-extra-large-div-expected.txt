@@ -8,7 +8,7 @@ layer at (0,0) size 800x600
           text run at (0,0) width 628: "Success! The width of the fixed table is 1994px, which is based on the width of its containing div."
       LayoutText {#text} at (0,0) size 0x0
       LayoutText {#text} at (0,0) size 0x0
-layer at (-9000,8) size 2000x30 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600 outlineClip at (0,0) size 800x600
+layer at (-9000,8) size 2000x30 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600
   LayoutBlockFlow (positioned) {DIV} at (-9000,8) size 2000x30
     LayoutTable {TABLE} at (0,0) size 2000x30 [bgcolor=#0000FF]
       LayoutTableSection {TBODY} at (0,0) size 2000x30

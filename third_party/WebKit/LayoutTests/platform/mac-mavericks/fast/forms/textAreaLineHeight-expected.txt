@@ -1,6 +1,6 @@
 layer at (0,0) size 800x600 clip at (0,0) size 785x600 scrollHeight 1199
   LayoutView at (0,0) size 800x600
-layer at (0,0) size 785x1199 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
+layer at (0,0) size 785x1199 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
   LayoutBlockFlow {HTML} at (0,0) size 785x1199.33
     LayoutBlockFlow {BODY} at (8,8) size 769x1175.33
       LayoutBlockFlow (anonymous) at (0,0) size 769x18
@@ -59,7 +59,7 @@ layer at (8,60) size 406x206 clip at (9,61) size 404x204
         text run at (0,18) width 384: "Demo text here that wraps a bit and should demonstrate"
         text run at (383,18) width 5: " "
         text run at (0,71) width 184: "the goodness of line-height"
-layer at (8,829) size 161x32 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 outlineClip at (0,0) size 785x600 scrollHeight 56
+layer at (8,829) size 161x32 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 scrollHeight 56
   LayoutTextControl {TEXTAREA} at (0,54) size 161x32 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
     LayoutBlockFlow {DIV} at (3,3) size 140x52
       LayoutText {#text} at (0,0) size 129x52
@@ -70,9 +70,9 @@ layer at (8,829) size 161x32 backgroundClip at (0,0) size 0x0 clip at (0,0) size
         text run at (0,26) width 88: "demonstrate the"
         text run at (87,26) width 5: " "
         text run at (0,39) width 129: "goodness of line-height"
-layer at (8,901) size 161x32 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 outlineClip at (0,0) size 785x600
+layer at (8,901) size 161x32 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0
   LayoutTextControl {TEXTAREA} at (0,126) size 161x32 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
     LayoutBlockFlow {DIV} at (3,3) size 155x13
-layer at (8,973) size 406x206 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 outlineClip at (0,0) size 785x600
+layer at (8,973) size 406x206 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0
   LayoutTextControl {TEXTAREA} at (0,198) size 406x206 [bgcolor=#FFFFFF] [border: (1px dotted #C0C0C0)]
     LayoutBlockFlow {DIV} at (3,3) size 400x53

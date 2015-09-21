@@ -111,7 +111,7 @@ layer at (336,0) size 36x0
   LayoutFrame {FRAME} at (0,0) size 36x0
     layer at (0,0) size 36x0 scrollHeight 8
       LayoutView at (0,0) size 36x0
-    layer at (0,0) size 21x8 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 outlineClip at (0,0) size 0x0
+    layer at (0,0) size 21x8 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0
       LayoutBlockFlow {HTML} at (0,0) size 21x8
         LayoutBlockFlow {BODY} at (8,8) size 5x0
 layer at (336,6) size 36x494
@@ -125,7 +125,7 @@ layer at (378,0) size 36x0
   LayoutFrame {FRAME} at (0,0) size 36x0
     layer at (0,0) size 36x0 scrollHeight 8
       LayoutView at (0,0) size 36x0
-    layer at (0,0) size 21x8 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 outlineClip at (0,0) size 0x0
+    layer at (0,0) size 21x8 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0
       LayoutBlockFlow {HTML} at (0,0) size 21x8
         LayoutBlockFlow {BODY} at (8,8) size 5x0
 layer at (378,6) size 36x494
@@ -139,7 +139,7 @@ layer at (420,0) size 36x0
   LayoutFrame {FRAME} at (0,0) size 36x0
     layer at (0,0) size 36x0 scrollHeight 8
       LayoutView at (0,0) size 36x0
-    layer at (0,0) size 21x8 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 outlineClip at (0,0) size 0x0
+    layer at (0,0) size 21x8 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0
       LayoutBlockFlow {HTML} at (0,0) size 21x8
         LayoutBlockFlow {BODY} at (8,8) size 5x0
 layer at (420,6) size 36x494
@@ -174,7 +174,7 @@ layer at (504,500) size 36x0
   LayoutFrame {FRAME} at (0,500) size 36x0
     layer at (0,0) size 36x0 scrollHeight 8
       LayoutView at (0,0) size 36x0
-    layer at (0,0) size 21x8 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 outlineClip at (0,0) size 0x0
+    layer at (0,0) size 21x8 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0
       LayoutBlockFlow {HTML} at (0,0) size 21x8
         LayoutBlockFlow {BODY} at (8,8) size 5x0
 layer at (546,0) size 36x250
@@ -230,7 +230,7 @@ layer at (672,500) size 36x0
   LayoutFrame {FRAME} at (0,500) size 36x0
     layer at (0,0) size 36x0 scrollHeight 8
       LayoutView at (0,0) size 36x0
-    layer at (0,0) size 21x8 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 outlineClip at (0,0) size 0x0
+    layer at (0,0) size 21x8 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0
       LayoutBlockFlow {HTML} at (0,0) size 21x8
         LayoutBlockFlow {BODY} at (8,8) size 5x0
 layer at (714,0) size 36x375

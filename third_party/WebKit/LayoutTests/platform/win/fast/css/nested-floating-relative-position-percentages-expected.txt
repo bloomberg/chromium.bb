@@ -6,7 +6,7 @@ layer at (0,0) size 800x600
       LayoutBlockFlow {DIV} at (0,0) size 784x18
         LayoutText {#text} at (0,0) size 393x17
           text run at (0,0) width 393: "The six boxes below should be centered in two rows of three."
-layer at (400,26) size 630x420 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600 outlineClip at (0,0) size 800x600
+layer at (400,26) size 630x420 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600
   LayoutBlockFlow (relative positioned) (floating) {DIV} at (0,18) size 630x420
     LayoutBR {BR} at (630,0) size 0x17
     LayoutText {#text} at (0,0) size 0x0

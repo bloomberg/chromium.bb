@@ -175,10 +175,10 @@ LayoutRect DeprecatedPaintLayerClipper::childrenClipRect() const
     // FIXME: Flow thread based columns not accounted for.
     DeprecatedPaintLayer* clippingRootLayer = clippingRootForPainting();
     LayoutRect layerBounds;
-    ClipRect backgroundRect, foregroundRect, outlineRect;
+    ClipRect backgroundRect, foregroundRect;
     // Need to use uncached clip rects, because the value of 'dontClipToOverflow' may be different from the painting path (<rdar://problem/11844909>).
     ClipRectsContext context(clippingRootLayer, UncachedClipRects);
-    calculateRects(context, LayoutRect(m_layoutObject.view()->unscaledDocumentRect()), layerBounds, backgroundRect, foregroundRect, outlineRect);
+    calculateRects(context, LayoutRect(m_layoutObject.view()->unscaledDocumentRect()), layerBounds, backgroundRect, foregroundRect);
     return LayoutRect(clippingRootLayer->layoutObject()->localToAbsoluteQuad(FloatQuad(FloatRect(foregroundRect.rect()))).enclosingBoundingBox());
 }
 
@@ -187,9 +187,9 @@ LayoutRect DeprecatedPaintLayerClipper::localClipRect() const
     // FIXME: border-radius not accounted for.
     DeprecatedPaintLayer* clippingRootLayer = clippingRootForPainting();
     LayoutRect layerBounds;
-    ClipRect backgroundRect, foregroundRect, outlineRect;
+    ClipRect backgroundRect, foregroundRect;
     ClipRectsContext context(clippingRootLayer, PaintingClipRects);
-    calculateRects(context, LayoutRect(LayoutRect::infiniteIntRect()), layerBounds, backgroundRect, foregroundRect, outlineRect);
+    calculateRects(context, LayoutRect(LayoutRect::infiniteIntRect()), layerBounds, backgroundRect, foregroundRect);
 
     LayoutRect clipRect = backgroundRect.rect();
     // TODO(chrishtr): avoid converting to IntRect and back.
@@ -204,7 +204,7 @@ LayoutRect DeprecatedPaintLayerClipper::localClipRect() const
 }
 
 void DeprecatedPaintLayerClipper::calculateRects(const ClipRectsContext& context, const LayoutRect& paintDirtyRect, LayoutRect& layerBounds,
-    ClipRect& backgroundRect, ClipRect& foregroundRect, ClipRect& outlineRect, const LayoutPoint* offsetFromRoot) const
+    ClipRect& backgroundRect, ClipRect& foregroundRect, const LayoutPoint* offsetFromRoot) const
 {
     bool isClippingRoot = m_layoutObject.layer() == context.rootLayer;
 
@@ -217,7 +217,6 @@ void DeprecatedPaintLayerClipper::calculateRects(const ClipRectsContext& context
     }
 
     foregroundRect = backgroundRect;
-    outlineRect = backgroundRect;
 
     LayoutPoint offset;
     if (offsetFromRoot)
@@ -250,8 +249,6 @@ void DeprecatedPaintLayerClipper::calculateRects(const ClipRectsContext& context
         backgroundRect.setIsClippedByClipCss();
         foregroundRect.intersect(newPosClip);
         foregroundRect.setIsClippedByClipCss();
-        outlineRect.intersect(newPosClip);
-        outlineRect.setIsClippedByClipCss();
     }
 }
 

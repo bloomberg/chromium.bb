@@ -1,10 +1,10 @@
 layer at (0,0) size 800x600 clip at (0,0) size 785x600 scrollHeight 790
   LayoutView at (0,0) size 800x600
-layer at (0,0) size 785x790 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
+layer at (0,0) size 785x790 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
   LayoutBlockFlow {html} at (0,0) size 785x790
     LayoutBlockFlow {body} at (8,8) size 769x774
       LayoutText {#text} at (0,0) size 0x0
-layer at (8,8) size 769x769 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
+layer at (8,8) size 769x769 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
   LayoutEmbeddedObject {object} at (0,0) size 769x769 [bgcolor=#FF0000]
     layer at (0,0) size 769x769
       LayoutView at (0,0) size 769x769

@@ -1,6 +1,6 @@
 layer at (0,0) size 800x600 clip at (0,0) size 785x600 scrollHeight 854
   LayoutView at (0,0) size 800x600
-layer at (0,0) size 785x854 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
+layer at (0,0) size 785x854 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
   LayoutBlockFlow {HTML} at (0,0) size 785x854
     LayoutBlockFlow {BODY} at (8,8) size 769x838
       LayoutBlockFlow {DIV} at (0,0) size 769x149
@@ -36,7 +36,7 @@ layer at (8,157) size 769x149
       LayoutBlockFlow {DIV} at (146,12) size 110x100 [bgcolor=#FFFFFF] [border: (20px double #0000FF7F)]
       LayoutText {#text} at (0,0) size 0x0
     LayoutText {#text} at (0,0) size 0x0
-layer at (8,306) size 159x540 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
+layer at (8,306) size 159x540 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
   LayoutBlockFlow {DIV} at (0,298) size 159x540
     LayoutBlockFlow {DIV} at (10,10) size 139x248
       LayoutBlockFlow {DIV} at (16,12) size 110x100 [bgcolor=#000000] [border: (20px solid #FFFFFF)]

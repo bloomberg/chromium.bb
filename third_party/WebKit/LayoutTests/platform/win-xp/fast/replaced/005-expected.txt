@@ -1,6 +1,6 @@
 layer at (0,0) size 800x600 scrollHeight 686
   LayoutView at (0,0) size 800x600
-layer at (0,0) size 800x686 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600 outlineClip at (0,0) size 800x600
+layer at (0,0) size 800x686 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x686
     LayoutBlockFlow {BODY} at (8,8) size 784x662
       LayoutTable {TABLE} at (0,0) size 784x216 [border: (2px outset #808080)]
