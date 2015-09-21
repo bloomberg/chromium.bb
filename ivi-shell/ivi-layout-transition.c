@@ -511,7 +511,8 @@ create_visibility_transition(struct ivi_layout_surface *surface,
 		destroy_func,
 		duration);
 
-	layout_transition_register(transition);
+	if(!layout_transition_register(transition))
+		layout_transition_destroy(transition);
 }
 
 static void
