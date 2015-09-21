@@ -227,10 +227,13 @@ public:
     //   - Grant universal access.
     //   - Grant loading of local resources.
     //   - Use path-based file:// origins.
-    //
-    // Note: It is dangerous to change the privileges of an origin
-    // at any other time than during initialization.
-    void transferPrivilegesFrom(const SecurityOrigin&);
+    struct PrivilegeData {
+        bool m_universalAccess;
+        bool m_canLoadLocalResources;
+        bool m_blockLocalAccessFromLocalOrigin;
+    };
+    PassOwnPtr<PrivilegeData> createPrivilegeData() const;
+    void transferPrivilegesFrom(PassOwnPtr<PrivilegeData>);
 
 private:
     // FIXME: After the merge with the Chromium repo, this should be refactored

@@ -39,6 +39,8 @@
 #include "wtf/HexNumber.h"
 #include "wtf/MainThread.h"
 #include "wtf/NotFound.h"
+#include "wtf/OwnPtr.h"
+#include "wtf/PassOwnPtr.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/text/StringBuilder.h"
 
@@ -541,11 +543,20 @@ const KURL& SecurityOrigin::urlWithUniqueSecurityOrigin()
     return uniqueSecurityOriginURL;
 }
 
-void SecurityOrigin::transferPrivilegesFrom(const SecurityOrigin& origin)
+PassOwnPtr<SecurityOrigin::PrivilegeData> SecurityOrigin::createPrivilegeData() const
 {
-    m_universalAccess = origin.m_universalAccess;
-    m_canLoadLocalResources = origin.m_canLoadLocalResources;
-    m_blockLocalAccessFromLocalOrigin = origin.m_blockLocalAccessFromLocalOrigin;
+    OwnPtr<PrivilegeData> privilegeData = adoptPtr(new PrivilegeData);
+    privilegeData->m_universalAccess = m_universalAccess;
+    privilegeData->m_canLoadLocalResources = m_canLoadLocalResources;
+    privilegeData->m_blockLocalAccessFromLocalOrigin = m_blockLocalAccessFromLocalOrigin;
+    return privilegeData.release();
+}
+
+void SecurityOrigin::transferPrivilegesFrom(PassOwnPtr<PrivilegeData> privilegeData)
+{
+    m_universalAccess = privilegeData->m_universalAccess;
+    m_canLoadLocalResources = privilegeData->m_canLoadLocalResources;
+    m_blockLocalAccessFromLocalOrigin = privilegeData->m_blockLocalAccessFromLocalOrigin;
 }
 
 } // namespace blink

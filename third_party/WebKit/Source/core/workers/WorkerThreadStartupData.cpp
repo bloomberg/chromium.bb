@@ -41,7 +41,7 @@ WorkerThreadStartupData::WorkerThreadStartupData(const KURL& scriptURL, const St
     , m_sourceCode(sourceCode.isolatedCopy())
     , m_cachedMetaData(cachedMetaData)
     , m_startMode(startMode)
-    , m_starterOrigin(starterOrigin)
+    , m_starterOriginPrivilegeData(starterOrigin ? starterOrigin->createPrivilegeData() : nullptr)
     , m_workerClients(workerClients)
     , m_v8CacheOptions(v8CacheOptions)
 {

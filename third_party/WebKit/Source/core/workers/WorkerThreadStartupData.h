@@ -70,13 +70,9 @@ public:
     // global scope, supply the Document's SecurityOrigin as the
     // 'starter origin'.
     //
-    // Ownership of this optional starter origin remain with the caller,
-    // and is assumed to stay alive until the new Worker thread has been
-    // initialized.
-    //
     // See SecurityOrigin::transferPrivilegesFrom() for details on what
     // privileges are transferred.
-    const SecurityOrigin* m_starterOrigin;
+    OwnPtr<SecurityOrigin::PrivilegeData> m_starterOriginPrivilegeData;
 
     // This object is created and initialized on the thread creating
     // a new worker context, but ownership of it and this WorkerThreadStartupData
