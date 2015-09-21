@@ -20,17 +20,16 @@
 
 class EnsembleTest : public BaseTest {
  public:
-
-  void TestEnsemble(std::string src_bytes, std::string tgt_bytes) const;
+  void TestEnsemble(const std::string& src_bytes,
+                    const std::string& tgt_bytes) const;
 
   void PeEnsemble() const;
   void Pe64Ensemble() const;
   void Elf32Ensemble() const;
 };
 
-void EnsembleTest::TestEnsemble(std::string src_bytes,
-                                std::string tgt_bytes) const {
-
+void EnsembleTest::TestEnsemble(const std::string& src_bytes,
+                                const std::string& tgt_bytes) const {
   courgette::SourceStream source;
   courgette::SourceStream target;
 
