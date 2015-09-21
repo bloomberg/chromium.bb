@@ -229,6 +229,12 @@ class WebStateImpl;
 
 - (void)reinitializeWebViewAndReload:(BOOL)reload;
 
+// Requires that the next display reload the page, using a placeholder while
+// loading. This could be used, e.g., to handle a crash in a WebController that
+// is not currently visible.
+// TODO(stuartmorgan): When revisiting the methods above, revisit this as well.
+- (void)requirePageReload;
+
 // Sets the closed property to true for the child window with the given name.
 - (void)childWindowClosed:(NSString*)windowName;
 
