@@ -23,7 +23,7 @@ class MapsValidator(cloud_storage_test_base.ValidatorBase):
   def CustomizeBrowserOptions(self, options):
     options.AppendExtraBrowserArgs('--enable-gpu-benchmarking')
 
-  def ValidateAndMeasurePageInner(self, page, tab, results):
+  def ValidateAndMeasurePage(self, page, tab, results):
     # TODO: This should not be necessary, but it's not clear if the test is
     # failing on the bots in it's absence. Remove once we can verify that it's
     # safe to do so.
@@ -81,7 +81,8 @@ class MapsPage(gpu_test_base.PageBase):
         expectations=expectations)
     self.pixel_expectations = 'data/maps_002_expectations.json'
 
-  def RunNavigateStepsInner(self, action_runner):
+  def RunNavigateSteps(self, action_runner):
+    super(MapsPage, self).RunNavigateSteps(action_runner)
     action_runner.WaitForJavaScriptCondition(
         'window.testDone', timeout_in_seconds=180)
 

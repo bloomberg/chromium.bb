@@ -22,7 +22,8 @@ class FunctionalVideoPage(GpuProcessTestsPage):
       story_set=story_set,
       expectations=expectations)
 
-  def RunNavigateStepsInner(self, action_runner):
+  def RunNavigateSteps(self, action_runner):
+    super(FunctionalVideoPage, self).RunNavigateSteps(action_runner)
     action_runner.WaitForJavaScriptCondition(
         'domAutomationController._finished', timeout_in_seconds=30)
 

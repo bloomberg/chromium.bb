@@ -37,7 +37,7 @@ class GpuRasterizationValidator(cloud_storage_test_base.ValidatorBase):
                                     '--force-gpu-rasterization',
                                     '--enable-gpu-benchmarking'])
 
-  def ValidateAndMeasurePageInner(self, page, tab, results):
+  def ValidateAndMeasurePage(self, page, tab, results):
     if not _DidTestSucceed(tab):
       raise page_test.Failure('Page indicated a failure')
 

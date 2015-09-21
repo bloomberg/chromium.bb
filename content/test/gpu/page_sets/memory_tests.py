@@ -13,7 +13,8 @@ class MemoryTestsPage(gpu_test_base.PageBase):
       name='Memory.CSS3D',
       expectations=expectations)
 
-  def RunNavigateStepsInner(self, action_runner):
+  def RunNavigateSteps(self, action_runner):
+    super(MemoryTestsPage, self).RunNavigateSteps(action_runner)
     action_runner.WaitForJavaScriptCondition(
         'domAutomationController._finished', timeout_in_seconds=60)
 

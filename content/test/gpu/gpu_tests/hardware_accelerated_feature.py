@@ -25,7 +25,7 @@ test_harness_script = r"""
 """;
 
 class HardwareAcceleratedFeatureValidator(gpu_test_base.ValidatorBase):
-  def ValidateAndMeasurePageInner(self, page, tab, results):
+  def ValidateAndMeasurePage(self, page, tab, results):
     feature = page.feature
     if not tab.EvaluateJavaScript('VerifyHardwareAccelerated("%s")' % feature):
       print 'Test failed. Printing page contents:'

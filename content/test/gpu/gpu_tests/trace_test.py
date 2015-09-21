@@ -34,7 +34,7 @@ class TraceValidatorBase(gpu_test_base.ValidatorBase):
   def GetCategoryName(self):
     raise NotImplementedError("GetCategoryName() Not implemented!")
 
-  def ValidateAndMeasurePageInner(self, page, tab, results):
+  def ValidateAndMeasurePage(self, page, tab, results):
     timeline_data = tab.browser.platform.tracing_controller.Stop()
     timeline_model = model_module.TimelineModel(timeline_data)
 
@@ -51,7 +51,7 @@ class TraceValidatorBase(gpu_test_base.ValidatorBase):
   def CustomizeBrowserOptions(self, options):
     options.AppendExtraBrowserArgs('--enable-logging')
 
-  def WillNavigateToPageInner(self, page, tab):
+  def WillNavigateToPage(self, page, tab):
     cat_string = ','.join(TOPLEVEL_CATEGORIES)
     cat_filter = tracing_category_filter.TracingCategoryFilter(cat_string)
     options = tracing_options.TracingOptions()

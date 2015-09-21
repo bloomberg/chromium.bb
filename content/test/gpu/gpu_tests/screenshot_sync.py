@@ -20,7 +20,7 @@ class ScreenshotSyncValidator(gpu_test_base.ValidatorBase):
   def CustomizeBrowserOptions(self, options):
     options.AppendExtraBrowserArgs('--force-gpu-rasterization')
 
-  def ValidateAndMeasurePageInner(self, page, tab, results):
+  def ValidateAndMeasurePage(self, page, tab, results):
     if not tab.screenshot_supported:
       raise page_test.Failure('Browser does not support screenshot capture')
 

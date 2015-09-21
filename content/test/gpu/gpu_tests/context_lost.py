@@ -64,7 +64,7 @@ class ContextLostValidator(gpu_test_base.ValidatorBase):
     # Required for about:gpucrash handling from Telemetry.
     options.AppendExtraBrowserArgs('--enable-gpu-benchmarking')
 
-  def ValidateAndMeasurePageInner(self, page, tab, results):
+  def ValidateAndMeasurePage(self, page, tab, results):
     def WaitForPageToFinish():
       print "Waiting for page to finish."
       try:
@@ -214,7 +214,9 @@ class GPUProcessCrashesExactlyOnce(gpu_test_base.PageBase):
     self.force_garbage_collection = False
     self.hide_tab_and_lose_context = False
 
-  def RunNavigateStepsInner(self, action_runner):
+  def RunNavigateSteps(self, action_runner):
+    super(GPUProcessCrashesExactlyOnce, self).RunNavigateSteps(
+      action_runner)
     action_runner.WaitForJavaScriptCondition(
         'window.domAutomationController._loaded')
 
@@ -233,7 +235,9 @@ class WebGLContextLostFromGPUProcessExitPage(gpu_test_base.PageBase):
     self.force_garbage_collection = False
     self.hide_tab_and_lose_context = False
 
-  def RunNavigateStepsInner(self, action_runner):
+  def RunNavigateSteps(self, action_runner):
+    super(WebGLContextLostFromGPUProcessExitPage, self).RunNavigateSteps(
+      action_runner)
     action_runner.WaitForJavaScriptCondition(
         'window.domAutomationController._loaded')
 
@@ -252,7 +256,9 @@ class WebGLContextLostFromLoseContextExtensionPage(gpu_test_base.PageBase):
     self.force_garbage_collection = False
     self.hide_tab_and_lose_context = False
 
-  def RunNavigateStepsInner(self, action_runner):
+  def RunNavigateSteps(self, action_runner):
+    super(WebGLContextLostFromLoseContextExtensionPage, self).RunNavigateSteps(
+      action_runner)
     action_runner.WaitForJavaScriptCondition(
         'window.domAutomationController._finished')
 
@@ -271,7 +277,9 @@ class WebGLContextLostInHiddenTabPage(gpu_test_base.PageBase):
     self.force_garbage_collection = False
     self.hide_tab_and_lose_context = True
 
-  def RunNavigateStepsInner(self, action_runner):
+  def RunNavigateSteps(self, action_runner):
+    super(WebGLContextLostInHiddenTabPage, self).RunNavigateSteps(
+      action_runner)
     action_runner.WaitForJavaScriptCondition(
         'window.domAutomationController._loaded')
 
@@ -290,7 +298,9 @@ class WebGLContextLostFromQuantityPage(gpu_test_base.PageBase):
     self.force_garbage_collection = True
     self.hide_tab_and_lose_context = False
 
-  def RunNavigateStepsInner(self, action_runner):
+  def RunNavigateSteps(self, action_runner):
+    super(WebGLContextLostFromQuantityPage, self).RunNavigateSteps(
+      action_runner)
     action_runner.WaitForJavaScriptCondition(
         'window.domAutomationController._loaded')
 
@@ -308,7 +318,9 @@ class WebGLContextLostFromSelectElementPage(gpu_test_base.PageBase):
     self.force_garbage_collection = False
     self.hide_tab_and_lose_context = False
 
-  def RunNavigateStepsInner(self, action_runner):
+  def RunNavigateSteps(self, action_runner):
+    super(WebGLContextLostFromSelectElementPage, self).RunNavigateSteps(
+      action_runner)
     action_runner.WaitForJavaScriptCondition(
         'window.domAutomationController._loaded')
 

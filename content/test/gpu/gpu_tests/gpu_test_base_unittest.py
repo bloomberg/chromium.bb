@@ -21,43 +21,6 @@ def _GetGpuDir(*subdirs):
 
 # Unit tests verifying invariants of classes in GpuTestBase.
 
-class NoOverridesTest(unittest.TestCase):
-  def testValidatorBase(self):
-    all_validators = discover.DiscoverClasses(
-      _GetGpuDir('gpu_tests'), _GetGpuDir(),
-      gpu_test_base.ValidatorBase,
-      index_by_class_name=True).values()
-    self.assertGreater(len(all_validators), 0)
-    for validator in all_validators:
-      self.assertEquals(gpu_test_base.ValidatorBase.WillNavigateToPage,
-                        validator.WillNavigateToPage,
-                        'Class %s should not override WillNavigateToPage'
-                        % validator.__name__)
-      self.assertEquals(gpu_test_base.ValidatorBase.DidNavigateToPage,
-                        validator.DidNavigateToPage,
-                        'Class %s should not override DidNavigateToPage'
-                        % validator.__name__)
-      self.assertEquals(gpu_test_base.ValidatorBase.ValidateAndMeasurePage,
-                        validator.ValidateAndMeasurePage,
-                        'Class %s should not override ValidateAndMeasurePage'
-                        % validator.__name__)
-
-  def testPageBase(self):
-    all_pages = discover.DiscoverClasses(
-      _GetGpuDir(), _GetGpuDir(),
-      gpu_test_base.PageBase,
-      index_by_class_name=True).values()
-    self.assertGreater(len(all_pages), 0)
-    for page in all_pages:
-      self.assertEquals(gpu_test_base.PageBase.RunNavigateSteps,
-                        page.RunNavigateSteps,
-                        'Class %s should not override RunNavigateSteps'
-                        % page.__name__)
-      self.assertEquals(gpu_test_base.PageBase.RunPageInteractions,
-                        page.RunPageInteractions,
-                        'Class %s should not override RunPageInteractions'
-                        % page.__name__)
-
 #
 # Tests verifying interactions between Telemetry and GpuTestBase.
 #
@@ -66,41 +29,26 @@ class FakeValidator(gpu_test_base.ValidatorBase):
   def __init__(self, manager_mock=None):
     super(FakeValidator, self).__init__()
     if manager_mock == None:
-      self.WillNavigateToPageInner = mock.Mock()
-      self.DidNavigateToPageInner = mock.Mock()
-      self.ValidateAndMeasurePageInner = mock.Mock()
+      self.WillNavigateToPage = mock.Mock()
+      self.DidNavigateToPage = mock.Mock()
+      self.ValidateAndMeasurePage = mock.Mock()
     else:
-      self.WillNavigateToPageInner = manager_mock.WillNavigateToPageInner
-      self.DidNavigateToPageInner = manager_mock.DidNavigateToPageInner
-      self.ValidateAndMeasurePageInner = \
-        manager_mock.ValidateAndMeasurePageInner
+      self.WillNavigateToPage = manager_mock.WillNavigateToPage
+      self.DidNavigateToPage = manager_mock.DidNavigateToPage
+      self.ValidateAndMeasurePage = \
+        manager_mock.ValidateAndMeasurePage
 
 
 class ValidatorWhichFailsNTimes(FakeValidator):
   def __init__(self, times_to_fail=0, manager_mock=None):
     super(ValidatorWhichFailsNTimes, self).__init__(manager_mock=manager_mock)
     self._times_to_fail = times_to_fail
-    self.ValidateAndMeasurePageInner.side_effect = self.maybeFail
+    self.ValidateAndMeasurePage.side_effect = self.maybeFail
 
   def maybeFail(self, page, tab, results):
     if self._times_to_fail > 0:
       self._times_to_fail = self._times_to_fail - 1
       raise Exception('Deliberate exception')
-
-
-class FakeGpuSharedPageState(fakes.FakeSharedPageState):
-  # NOTE: if you change this logic you must change the logic in
-  # GpuSharedPageState (gpu_test_base.py) as well.
-  def CanRunOnBrowser(self, browser_info, page):
-    expectations = page.GetExpectations()
-    return expectations.GetExpectationForPage(
-      browser_info.browser, page) != 'skip'
-
-  # NOTE: if you change this logic you must change the logic in
-  # GpuSharedPageState and DesktopGpuSharedPageState
-  # (gpu_test_base.py) as well.
-  def RunStory(self, results):
-    gpu_test_base.RunStoryWithRetries(FakeGpuSharedPageState, self, results)
 
 
 class FakePage(gpu_test_base.PageBase):
@@ -109,14 +57,14 @@ class FakePage(gpu_test_base.PageBase):
       name=name,
       url='http://nonexistentserver.com/' + name,
       page_set=benchmark.GetFakeStorySet(),
-      shared_page_state_class=FakeGpuSharedPageState,
+      shared_page_state_class=gpu_test_base.FakeGpuSharedPageState,
       expectations=benchmark.GetExpectations())
     if manager_mock == None:
-      self.RunNavigateStepsInner = mock.Mock()
-      self.RunPageInteractionsInner = mock.Mock()
+      self.RunNavigateSteps = mock.Mock()
+      self.RunPageInteractions = mock.Mock()
     else:
-      self.RunNavigateStepsInner = manager_mock.RunNavigateStepsInner
-      self.RunPageInteractionsInner = manager_mock.RunPageInteractionsInner
+      self.RunNavigateSteps = manager_mock.RunNavigateSteps
+      self.RunPageInteractions = manager_mock.RunPageInteractions
 
 
 class FakeTest(gpu_test_base.TestBase):
@@ -164,14 +112,14 @@ class FailingPage(FakePage):
   def __init__(self, benchmark, name, manager_mock=None):
     super(FailingPage, self).__init__(benchmark, name,
                                       manager_mock=manager_mock)
-    self.RunNavigateStepsInner.side_effect = Exception('Deliberate exception')
+    self.RunNavigateSteps.side_effect = Exception('Deliberate exception')
 
 
 class CrashingPage(FakePage):
   def __init__(self, benchmark, name, manager_mock=None):
     super(CrashingPage, self).__init__(benchmark, name,
                                        manager_mock=manager_mock)
-    self.RunNavigateStepsInner.side_effect = (
+    self.RunNavigateSteps.side_effect = (
       exceptions.DevtoolsTargetCrashException(None))
 
 
@@ -180,7 +128,7 @@ class PageWhichFailsNTimes(FakePage):
     super(PageWhichFailsNTimes, self).__init__(benchmark, name,
                                                manager_mock=manager_mock)
     self._times_to_fail = times_to_fail
-    self.RunNavigateStepsInner.side_effect = self.maybeFail
+    self.RunNavigateSteps.side_effect = self.maybeFail
 
   def maybeFail(self, action_runner):
     if self._times_to_fail > 0:
@@ -221,7 +169,7 @@ class PageExecutionTest(unittest.TestCase):
     return test, finder_options
 
   # Test page.Run() method is called by telemetry framework before
-  # ValidateAndMeasurePageInner.
+  # ValidateAndMeasurePage.
   def testPageRunMethodIsCalledBeforeValidateAndMeasurePage(self):
     manager = mock.Mock()
     test, finder_options = self.setupTest(manager_mock=manager)
@@ -231,7 +179,7 @@ class PageExecutionTest(unittest.TestCase):
     self.assertEqual(test.Run(finder_options), 0,
                      'Test should run with no errors')
     expected = [mock.call.Run(mock.ANY),
-                mock.call.validator.ValidateAndMeasurePageInner(
+                mock.call.validator.ValidateAndMeasurePage(
                   page, mock.ANY, mock.ANY)]
     self.assertEquals(manager.mock_calls, expected)
 
@@ -242,13 +190,13 @@ class PageExecutionTest(unittest.TestCase):
     test.AddFakePage(page)
     self.assertEqual(test.Run(finder_options), 0,
                      'Test should run with no errors')
-    expected = [mock.call.validator.WillNavigateToPageInner(
+    expected = [mock.call.validator.WillNavigateToPage(
                   page, mock.ANY),
-                mock.call.page.RunNavigateStepsInner(mock.ANY),
-                mock.call.validator.DidNavigateToPageInner(
+                mock.call.page.RunNavigateSteps(mock.ANY),
+                mock.call.validator.DidNavigateToPage(
                   page, mock.ANY),
-                mock.call.page.RunPageInteractionsInner(mock.ANY),
-                mock.call.validator.ValidateAndMeasurePageInner(
+                mock.call.page.RunPageInteractions(mock.ANY),
+                mock.call.validator.ValidateAndMeasurePage(
                   page, mock.ANY, mock.ANY)]
     self.assertTrue(manager.mock_calls == expected)
 
@@ -265,8 +213,8 @@ class PageExecutionTest(unittest.TestCase):
     test.GetExpectations().Fail('page1')
     self.assertEqual(test.Run(finder_options), 0,
                      'Test should run with no errors')
-    self.assertFalse(page.RunPageInteractionsInner.called)
-    self.assertFalse(test.validator.ValidateAndMeasurePageInner.called)
+    self.assertFalse(page.RunPageInteractions.called)
+    self.assertFalse(test.validator.ValidateAndMeasurePage.called)
 
   def testPageSetRepeatOfPageWhichFailsOnce(self):
     test, finder_options = self.setupTest()
@@ -278,29 +226,11 @@ class PageExecutionTest(unittest.TestCase):
                      'Test should run with no errors')
     # This will be called the second time through the page set, when
     # the page doesn't fail.
-    self.assertTrue(page.RunPageInteractionsInner.called)
+    self.assertTrue(page.RunPageInteractions.called)
 
-  def testSkipAtPageBaseLevel(self):
+  def testSkipping(self):
     test, finder_options = self.setupTest()
     page = FailingPage(test, 'page1')
-    test.AddFakePage(page)
-    test.GetExpectations().Skip('page1')
-    self.assertEqual(test.Run(finder_options), 0,
-                     'Test should run with no errors')
-    self.assertFalse(test.validator.WillNavigateToPageInner.called)
-    self.assertFalse(page.RunNavigateStepsInner.called)
-    self.assertFalse(test.validator.DidNavigateToPageInner.called)
-    self.assertFalse(page.RunPageInteractionsInner.called)
-    self.assertFalse(test.validator.ValidateAndMeasurePageInner.called)
-
-  def testSkipAtPageLevel(self):
-    test, finder_options = self.setupTest()
-    page = FakePage(test, 'page1')
-    page.RunNavigateSteps = mock.Mock()
-    page.RunPageInteractions = mock.Mock()
-    test.validator.WillNavigateToPage = mock.Mock()
-    test.validator.DidNavigateToPage = mock.Mock()
-    test.validator.ValidateAndMeasurePage = mock.Mock()
     test.AddFakePage(page)
     test.GetExpectations().Skip('page1')
     self.assertEqual(test.Run(finder_options), 0,
@@ -321,16 +251,16 @@ class PageExecutionTest(unittest.TestCase):
     test.AddFakePage(page2)
     self.assertEqual(test.Run(finder_options), 0,
                      'Test should run with no errors')
-    expected = [mock.call.validator.WillNavigateToPageInner(
+    expected = [mock.call.validator.WillNavigateToPage(
                   page1, mock.ANY),
-                mock.call.page1.RunNavigateStepsInner(mock.ANY),
-                mock.call.validator.WillNavigateToPageInner(
+                mock.call.page1.RunNavigateSteps(mock.ANY),
+                mock.call.validator.WillNavigateToPage(
                   page2, mock.ANY),
-                mock.call.page2.RunNavigateStepsInner(mock.ANY),
-                mock.call.validator.DidNavigateToPageInner(
+                mock.call.page2.RunNavigateSteps(mock.ANY),
+                mock.call.validator.DidNavigateToPage(
                   page2, mock.ANY),
-                mock.call.page2.RunPageInteractionsInner(mock.ANY),
-                mock.call.validator.ValidateAndMeasurePageInner(
+                mock.call.page2.RunPageInteractions(mock.ANY),
+                mock.call.validator.ValidateAndMeasurePage(
                   page2, mock.ANY, mock.ANY)]
     self.assertTrue(manager.mock_calls == expected)
 
@@ -342,9 +272,9 @@ class PageExecutionTest(unittest.TestCase):
     test.GetExpectations().Fail('page1')
     self.assertEqual(test.Run(finder_options), 0,
                      'Test should run with no errors')
-    expected = [mock.call.validator.WillNavigateToPageInner(
+    expected = [mock.call.validator.WillNavigateToPage(
                   page, mock.ANY),
-                mock.call.page.RunNavigateStepsInner(mock.ANY)]
+                mock.call.page.RunNavigateSteps(mock.ANY)]
     self.assertTrue(manager.mock_calls == expected)
 
   def testFlakyPage(self):
@@ -355,16 +285,16 @@ class PageExecutionTest(unittest.TestCase):
     test.GetExpectations().Flaky('page1')
     self.assertEqual(test.Run(finder_options), 0,
                      'Test should run with no errors')
-    expected = [mock.call.validator.WillNavigateToPageInner(
+    expected = [mock.call.validator.WillNavigateToPage(
                   page, mock.ANY),
-                mock.call.page.RunNavigateStepsInner(mock.ANY),
-                mock.call.validator.WillNavigateToPageInner(
+                mock.call.page.RunNavigateSteps(mock.ANY),
+                mock.call.validator.WillNavigateToPage(
                   page, mock.ANY),
-                mock.call.page.RunNavigateStepsInner(mock.ANY),
-                mock.call.validator.DidNavigateToPageInner(
+                mock.call.page.RunNavigateSteps(mock.ANY),
+                mock.call.validator.DidNavigateToPage(
                   page, mock.ANY),
-                mock.call.page.RunPageInteractionsInner(mock.ANY),
-                mock.call.validator.ValidateAndMeasurePageInner(
+                mock.call.page.RunPageInteractions(mock.ANY),
+                mock.call.validator.ValidateAndMeasurePage(
                   page, mock.ANY, mock.ANY)]
     self.assertTrue(manager.mock_calls == expected)
 
@@ -377,21 +307,21 @@ class PageExecutionTest(unittest.TestCase):
     test.GetExpectations().Flaky('page1')
     self.assertEqual(test.Run(finder_options), 0,
                      'Test should run with no errors')
-    expected = [mock.call.validator.WillNavigateToPageInner(
+    expected = [mock.call.validator.WillNavigateToPage(
                   page, mock.ANY),
-                mock.call.page.RunNavigateStepsInner(mock.ANY),
-                mock.call.validator.DidNavigateToPageInner(
+                mock.call.page.RunNavigateSteps(mock.ANY),
+                mock.call.validator.DidNavigateToPage(
                   page, mock.ANY),
-                mock.call.page.RunPageInteractionsInner(mock.ANY),
-                mock.call.validator.ValidateAndMeasurePageInner(
+                mock.call.page.RunPageInteractions(mock.ANY),
+                mock.call.validator.ValidateAndMeasurePage(
                   page, mock.ANY, mock.ANY),
-                mock.call.validator.WillNavigateToPageInner(
+                mock.call.validator.WillNavigateToPage(
                   page, mock.ANY),
-                mock.call.page.RunNavigateStepsInner(mock.ANY),
-                mock.call.validator.DidNavigateToPageInner(
+                mock.call.page.RunNavigateSteps(mock.ANY),
+                mock.call.validator.DidNavigateToPage(
                   page, mock.ANY),
-                mock.call.page.RunPageInteractionsInner(mock.ANY),
-                mock.call.validator.ValidateAndMeasurePageInner(
+                mock.call.page.RunPageInteractions(mock.ANY),
+                mock.call.validator.ValidateAndMeasurePage(
                   page, mock.ANY, mock.ANY)]
     self.assertTrue(manager.mock_calls == expected)
 
@@ -403,12 +333,12 @@ class PageExecutionTest(unittest.TestCase):
     test.GetExpectations().Flaky('page1', max_num_retries=1)
     self.assertNotEqual(test.Run(finder_options), 0,
                      'Test should fail')
-    expected = [mock.call.validator.WillNavigateToPageInner(
+    expected = [mock.call.validator.WillNavigateToPage(
                   page, mock.ANY),
-                mock.call.page.RunNavigateStepsInner(mock.ANY),
-                mock.call.validator.WillNavigateToPageInner(
+                mock.call.page.RunNavigateSteps(mock.ANY),
+                mock.call.validator.WillNavigateToPage(
                   page, mock.ANY),
-                mock.call.page.RunNavigateStepsInner(mock.ANY)]
+                mock.call.page.RunNavigateSteps(mock.ANY)]
     self.assertTrue(manager.mock_calls == expected)
 
   def testFlakyPageThenPassingPage(self):
@@ -421,24 +351,24 @@ class PageExecutionTest(unittest.TestCase):
     test.GetExpectations().Flaky('page1', max_num_retries=1)
     self.assertEqual(test.Run(finder_options), 0,
                      'Test should run with no errors')
-    expected = [mock.call.validator.WillNavigateToPageInner(
+    expected = [mock.call.validator.WillNavigateToPage(
                   page1, mock.ANY),
-                mock.call.page1.RunNavigateStepsInner(mock.ANY),
-                mock.call.validator.WillNavigateToPageInner(
+                mock.call.page1.RunNavigateSteps(mock.ANY),
+                mock.call.validator.WillNavigateToPage(
                   page1, mock.ANY),
-                mock.call.page1.RunNavigateStepsInner(mock.ANY),
-                mock.call.validator.DidNavigateToPageInner(
+                mock.call.page1.RunNavigateSteps(mock.ANY),
+                mock.call.validator.DidNavigateToPage(
                   page1, mock.ANY),
-                mock.call.page1.RunPageInteractionsInner(mock.ANY),
-                mock.call.validator.ValidateAndMeasurePageInner(
+                mock.call.page1.RunPageInteractions(mock.ANY),
+                mock.call.validator.ValidateAndMeasurePage(
                   page1, mock.ANY, mock.ANY),
-                mock.call.validator.WillNavigateToPageInner(
+                mock.call.validator.WillNavigateToPage(
                   page2, mock.ANY),
-                mock.call.page2.RunNavigateStepsInner(mock.ANY),
-                mock.call.validator.DidNavigateToPageInner(
+                mock.call.page2.RunNavigateSteps(mock.ANY),
+                mock.call.validator.DidNavigateToPage(
                   page2, mock.ANY),
-                mock.call.page2.RunPageInteractionsInner(mock.ANY),
-                mock.call.validator.ValidateAndMeasurePageInner(
+                mock.call.page2.RunPageInteractions(mock.ANY),
+                mock.call.validator.ValidateAndMeasurePage(
                   page2, mock.ANY, mock.ANY)]
     self.assertTrue(manager.mock_calls == expected)
 
@@ -452,23 +382,23 @@ class PageExecutionTest(unittest.TestCase):
     test.GetExpectations().Flaky('page2', max_num_retries=1)
     self.assertEqual(test.Run(finder_options), 0,
                      'Test should run with no errors')
-    expected = [mock.call.validator.WillNavigateToPageInner(
+    expected = [mock.call.validator.WillNavigateToPage(
                   page1, mock.ANY),
-                mock.call.page1.RunNavigateStepsInner(mock.ANY),
-                mock.call.validator.DidNavigateToPageInner(
+                mock.call.page1.RunNavigateSteps(mock.ANY),
+                mock.call.validator.DidNavigateToPage(
                   page1, mock.ANY),
-                mock.call.page1.RunPageInteractionsInner(mock.ANY),
-                mock.call.validator.ValidateAndMeasurePageInner(
+                mock.call.page1.RunPageInteractions(mock.ANY),
+                mock.call.validator.ValidateAndMeasurePage(
                   page1, mock.ANY, mock.ANY),
-                mock.call.validator.WillNavigateToPageInner(
+                mock.call.validator.WillNavigateToPage(
                   page2, mock.ANY),
-                mock.call.page2.RunNavigateStepsInner(mock.ANY),
-                mock.call.validator.WillNavigateToPageInner(
+                mock.call.page2.RunNavigateSteps(mock.ANY),
+                mock.call.validator.WillNavigateToPage(
                   page2, mock.ANY),
-                mock.call.page2.RunNavigateStepsInner(mock.ANY),
-                mock.call.validator.DidNavigateToPageInner(
+                mock.call.page2.RunNavigateSteps(mock.ANY),
+                mock.call.validator.DidNavigateToPage(
                   page2, mock.ANY),
-                mock.call.page2.RunPageInteractionsInner(mock.ANY),
-                mock.call.validator.ValidateAndMeasurePageInner(
+                mock.call.page2.RunPageInteractions(mock.ANY),
+                mock.call.validator.ValidateAndMeasurePage(
                   page2, mock.ANY, mock.ANY)]
     self.assertTrue(manager.mock_calls == expected)

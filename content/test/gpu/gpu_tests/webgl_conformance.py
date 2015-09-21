@@ -76,7 +76,7 @@ class WebglConformanceValidator(gpu_test_base.ValidatorBase):
   def __init__(self):
     super(WebglConformanceValidator, self).__init__()
 
-  def ValidateAndMeasurePageInner(self, page, tab, results):
+  def ValidateAndMeasurePage(self, page, tab, results):
     if not _DidWebGLTestSucceed(tab):
       raise page_test.Failure(_WebGLTestMessages(tab))
 
@@ -124,8 +124,8 @@ class WebglConformancePage(gpu_test_base.PageBase):
       expectations=expectations)
     self.script_to_evaluate_on_commit = conformance_harness_script
 
-  def RunNavigateStepsInner(self, action_runner):
-    self.RunDefaultNavigateSteps(action_runner)
+  def RunNavigateSteps(self, action_runner):
+    super(WebglConformancePage, self).RunNavigateSteps(action_runner)
     action_runner.WaitForJavaScriptCondition(
         'webglTestHarness._finished', timeout_in_seconds=180)
 

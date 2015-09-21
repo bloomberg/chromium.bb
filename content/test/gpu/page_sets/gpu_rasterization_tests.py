@@ -78,7 +78,8 @@ class GpuRasterizationBlueBoxPage(gpu_test_base.PageBase):
     ]
     self.test_rect = [0, 0, 220, 220]
 
-  def RunNavigateStepsInner(self, action_runner):
+  def RunNavigateSteps(self, action_runner):
+    super(GpuRasterizationBlueBoxPage, self).RunNavigateSteps(action_runner)
     action_runner.WaitForJavaScriptCondition(
         'domAutomationController._finished', timeout_in_seconds=30)
 
@@ -106,7 +107,9 @@ class GpuRasterizationConcavePathsPage(gpu_test_base.PageBase):
     ]
     self.test_rect = [0, 0, 100, 100]
 
-  def RunNavigateStepsInner(self, action_runner):
+  def RunNavigateSteps(self, action_runner):
+    super(GpuRasterizationConcavePathsPage, self).RunNavigateSteps(
+      action_runner)
     action_runner.WaitForJavaScriptCondition(
         'domAutomationController._finished', timeout_in_seconds=30)
 

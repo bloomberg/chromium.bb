@@ -16,7 +16,8 @@ class PixelTestsPage(gpu_test_base.PageBase):
     if expected_colors:
       self.expected_colors = expected_colors
 
-  def RunNavigateStepsInner(self, action_runner):
+  def RunNavigateSteps(self, action_runner):
+    super(PixelTestsPage, self).RunNavigateSteps(action_runner)
     action_runner.WaitForJavaScriptCondition(
         'domAutomationController._finished', timeout_in_seconds=30)
 

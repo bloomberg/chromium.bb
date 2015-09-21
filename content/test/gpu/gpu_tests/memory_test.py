@@ -64,8 +64,8 @@ test_harness_script = r"""
   }, false);
 """ % MEMORY_LIMIT_MB
 
-class _MemoryValidator(gpu_test_base.ValidatorBase):
-  def ValidateAndMeasurePageInner(self, page, tab, results):
+class MemoryValidator(gpu_test_base.ValidatorBase):
+  def ValidateAndMeasurePage(self, page, tab, results):
     timeline_data = tab.browser.platform.tracing_controller.Stop()
     timeline_model = model.TimelineModel(timeline_data)
     for process in timeline_model.GetAllProcesses():
@@ -101,7 +101,7 @@ class _MemoryValidator(gpu_test_base.ValidatorBase):
 
 class MemoryTest(gpu_test_base.TestBase):
   """Tests GPU memory limits"""
-  test = _MemoryValidator
+  test = MemoryValidator
 
   @classmethod
   def Name(cls):
