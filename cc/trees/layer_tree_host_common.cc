@@ -1190,17 +1190,11 @@ static void PreCalculateMetaInformationInternal(
   if (layer->clip_parent())
     recursive_data->num_unclipped_descendants++;
 
-  layer->set_num_children_with_scroll_parent(0);
   for (size_t i = 0; i < layer->children().size(); ++i) {
     Layer* child_layer = layer->child_at(i);
 
     PreCalculateMetaInformationRecursiveData data_for_child;
     PreCalculateMetaInformationInternal(child_layer, &data_for_child);
-
-    if (child_layer->scroll_parent()) {
-      layer->set_num_children_with_scroll_parent(
-          layer->num_children_with_scroll_parent() + 1);
-    }
     recursive_data->Merge(data_for_child);
   }
 

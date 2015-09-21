@@ -503,15 +503,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
     return num_layer_or_descendants_with_copy_request_;
   }
 
-  void set_num_children_with_scroll_parent(
-      int num_children_with_scroll_parent) {
-    num_children_with_scroll_parent_ = num_children_with_scroll_parent;
-  }
-
-  int num_children_with_scroll_parent() {
-    return num_children_with_scroll_parent_;
-  }
-
   void set_visited(bool visited);
   bool visited();
   void set_layer_or_descendant_is_drawn(bool layer_or_descendant_is_drawn);
@@ -661,7 +652,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   int clip_tree_index_;
   int property_tree_sequence_number_;
   int num_layer_or_descendants_with_copy_request_;
-  int num_children_with_scroll_parent_;
   gfx::Vector2dF offset_to_transform_parent_;
   bool should_flatten_transform_from_property_tree_ : 1;
   bool is_clipped_ : 1;

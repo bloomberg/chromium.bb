@@ -56,7 +56,6 @@ Layer::Layer(const LayerSettings& settings)
       clip_tree_index_(-1),
       property_tree_sequence_number_(-1),
       num_layer_or_descendants_with_copy_request_(0),
-      num_children_with_scroll_parent_(0),
       should_flatten_transform_from_property_tree_(false),
       is_clipped_(false),
       should_scroll_on_main_thread_(false),
@@ -821,9 +820,6 @@ void Layer::AddScrollChild(Layer* child) {
   if (!scroll_children_)
     scroll_children_.reset(new std::set<Layer*>);
   scroll_children_->insert(child);
-  if (layer_tree_host_ && !layer_tree_host_->needs_meta_info_recomputation()) {
-    num_children_with_scroll_parent_++;
-  }
   SetNeedsCommit();
 }
 
@@ -831,10 +827,6 @@ void Layer::RemoveScrollChild(Layer* child) {
   scroll_children_->erase(child);
   if (scroll_children_->empty())
     scroll_children_ = nullptr;
-  if (layer_tree_host_ && !layer_tree_host_->needs_meta_info_recomputation()) {
-    num_children_with_scroll_parent_--;
-    DCHECK_GE(num_children_with_scroll_parent_, 0);
-  }
   SetNeedsCommit();
 }
 
