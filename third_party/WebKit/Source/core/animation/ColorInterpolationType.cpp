@@ -24,7 +24,16 @@ enum InterpolableColorIndex {
     InterpolableColorIndexCount,
 };
 
-static PassOwnPtr<InterpolableValue> createInterpolableColor(const Color& color)
+static PassOwnPtr<InterpolableValue> createInterpolableColorForIndex(InterpolableColorIndex index)
+{
+    ASSERT(index < InterpolableColorIndexCount);
+    OwnPtr<InterpolableList> list = InterpolableList::create(InterpolableColorIndexCount);
+    for (int i = 0; i < InterpolableColorIndexCount; i++)
+        list->set(i, InterpolableNumber::create(i == index));
+    return list.release();
+}
+
+PassOwnPtr<InterpolableValue> ColorInterpolationType::createInterpolableColor(const Color& color)
 {
     OwnPtr<InterpolableList> list = InterpolableList::create(InterpolableColorIndexCount);
     list->set(Red, InterpolableNumber::create(color.red() * color.alpha()));
@@ -38,26 +47,17 @@ static PassOwnPtr<InterpolableValue> createInterpolableColor(const Color& color)
     return list.release();
 }
 
-static PassOwnPtr<InterpolableValue> createInterpolableColor(InterpolableColorIndex index)
-{
-    ASSERT(index < InterpolableColorIndexCount);
-    OwnPtr<InterpolableList> list = InterpolableList::create(InterpolableColorIndexCount);
-    for (int i = 0; i < InterpolableColorIndexCount; i++)
-        list->set(i, InterpolableNumber::create(i == index));
-    return list.release();
-}
-
-static PassOwnPtr<InterpolableValue> createInterpolableColor(CSSValueID keyword)
+PassOwnPtr<InterpolableValue> ColorInterpolationType::createInterpolableColor(CSSValueID keyword)
 {
     switch (keyword) {
     case CSSValueCurrentcolor:
-        return createInterpolableColor(Currentcolor);
+        return createInterpolableColorForIndex(Currentcolor);
     case CSSValueWebkitActivelink:
-        return createInterpolableColor(WebkitActivelink);
+        return createInterpolableColorForIndex(WebkitActivelink);
     case CSSValueWebkitLink:
-        return createInterpolableColor(WebkitLink);
+        return createInterpolableColorForIndex(WebkitLink);
     case CSSValueWebkitText:
-        return createInterpolableColor(WebkitText);
+        return createInterpolableColorForIndex(WebkitText);
     case CSSValueWebkitFocusRingColor:
         return createInterpolableColor(LayoutTheme::theme().focusRingColor());
     default:
@@ -66,14 +66,14 @@ static PassOwnPtr<InterpolableValue> createInterpolableColor(CSSValueID keyword)
     }
 }
 
-static PassOwnPtr<InterpolableValue> createInterpolableColor(const StyleColor& color)
+PassOwnPtr<InterpolableValue> ColorInterpolationType::createInterpolableColor(const StyleColor& color)
 {
     if (color.isCurrentColor())
-        return createInterpolableColor(Currentcolor);
+        return createInterpolableColorForIndex(Currentcolor);
     return createInterpolableColor(color.color());
 }
 
-static PassOwnPtr<InterpolableValue> maybeCreateInterpolableColor(const CSSValue& value)
+PassOwnPtr<InterpolableValue> ColorInterpolationType::maybeCreateInterpolableColor(const CSSValue& value)
 {
     if (!value.isPrimitiveValue())
         return nullptr;
@@ -96,7 +96,7 @@ static void addPremultipliedColor(double& red, double& green, double& blue, doub
     alpha += fraction * colorAlpha;
 }
 
-static Color resolveInterpolableColor(const InterpolableValue& interpolableColor, const StyleResolverState& state, bool isVisited, bool isTextDecoration)
+Color ColorInterpolationType::resolveInterpolableColor(const InterpolableValue& interpolableColor, const StyleResolverState& state, bool isVisited, bool isTextDecoration)
 {
     const InterpolableList& list = toInterpolableList(interpolableColor);
     ASSERT(list.length() == InterpolableColorIndexCount);

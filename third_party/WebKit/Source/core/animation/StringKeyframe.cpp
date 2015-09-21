@@ -32,6 +32,7 @@
 #include "core/animation/NumberInterpolationType.h"
 #include "core/animation/NumberOptionalNumberSVGInterpolation.h"
 #include "core/animation/NumberSVGInterpolation.h"
+#include "core/animation/PaintInterpolationType.h"
 #include "core/animation/PathSVGInterpolation.h"
 #include "core/animation/PointSVGInterpolation.h"
 #include "core/animation/RectSVGInterpolation.h"
@@ -225,6 +226,10 @@ const Vector<const InterpolationType*>* applicableTypesForProperty(CSSPropertyID
     case CSSPropertyWebkitTextStrokeColor:
         applicableTypes->append(new ColorInterpolationType(property));
         break;
+    case CSSPropertyFill:
+    case CSSPropertyStroke:
+        applicableTypes->append(new PaintInterpolationType(property));
+        break;
     default:
         // TODO(alancutter): Support all interpolable CSS properties here so we can stop falling back to the old StyleInterpolation implementation.
         if (CSSPropertyMetadata::isInterpolableProperty(property)) {
@@ -316,20 +321,6 @@ PassRefPtr<Interpolation> StringKeyframe::CSSPropertySpecificKeyframe::maybeCrea
             return VisibilityStyleInterpolation::create(*fromCSSValue, *toCSSValue, property);
 
         break;
-
-    case CSSPropertyFill:
-    case CSSPropertyStroke:
-        {
-            RefPtr<Interpolation> interpolation = ColorStyleInterpolation::maybeCreateFromColor(*fromCSSValue, *toCSSValue, property);
-            if (interpolation)
-                return interpolation.release();
-
-            // Current color should use LegacyStyleInterpolation
-            if (ColorStyleInterpolation::shouldUseLegacyStyleInterpolation(*fromCSSValue, *toCSSValue))
-                return createLegacyStyleInterpolation(property, end, element, baseStyle);
-
-            break;
-        }
 
     case CSSPropertyBorderImageSource:
     case CSSPropertyListStyleImage:
