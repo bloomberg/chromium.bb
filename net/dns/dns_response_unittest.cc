@@ -212,7 +212,7 @@ TEST(DnsResponseTest, InitParse) {
   EXPECT_FALSE(resp.IsValid());
 
   // Reject wrong id.
-  scoped_ptr<DnsQuery> other_query(query->CloneWithNewId(0xbeef));
+  scoped_ptr<DnsQuery> other_query = query->CloneWithNewId(0xbeef);
   EXPECT_FALSE(resp.InitParse(sizeof(response_data), *other_query));
   EXPECT_FALSE(resp.IsValid());
 

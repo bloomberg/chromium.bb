@@ -708,7 +708,7 @@ class DnsTransactionImpl : public DnsTransaction,
     if (attempts_.empty()) {
       query.reset(new DnsQuery(id, qnames_.front(), qtype_));
     } else {
-      query.reset(attempts_[0]->GetQuery()->CloneWithNewId(id));
+      query = attempts_[0]->GetQuery()->CloneWithNewId(id);
     }
 
     const DnsConfig& config = session_->config();
@@ -759,8 +759,8 @@ class DnsTransactionImpl : public DnsTransaction,
 
     // TODO(szym): Reuse the same id to help the server?
     uint16 id = session_->NextQueryId();
-    scoped_ptr<DnsQuery> query(
-        previous_attempt->GetQuery()->CloneWithNewId(id));
+    scoped_ptr<DnsQuery> query =
+        previous_attempt->GetQuery()->CloneWithNewId(id);
 
     RecordLostPacketsIfAny();
     // Cancel all other attempts, no point waiting on them.

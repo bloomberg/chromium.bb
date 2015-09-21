@@ -7,6 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_piece.h"
 #include "net/base/net_export.h"
 
@@ -24,7 +25,7 @@ class NET_EXPORT_PRIVATE DnsQuery {
   ~DnsQuery();
 
   // Clones |this| verbatim, with ID field of the header set to |id|.
-  DnsQuery* CloneWithNewId(uint16 id) const;
+  scoped_ptr<DnsQuery> CloneWithNewId(uint16 id) const;
 
   // DnsQuery field accessors.
   uint16 id() const;
