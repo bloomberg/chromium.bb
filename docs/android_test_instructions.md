@@ -123,7 +123,8 @@ builder.
 If you build in an output directory other than "out", you may have to tell
 test\_runner.py where you place it. Say you build your android code in
 out\_android, then do `export CHROMIUM_OUT_DIR=out_android` before running the
-command below.
+command below. You have to do this even if your "out" directory is a symlink
+pointing to "out_android".
 
 ## INSTALL\_FAILED\_CONTAINER\_ERROR or INSTALL\_FAILED\_INSUFFICIENT\_STORAGE
 
