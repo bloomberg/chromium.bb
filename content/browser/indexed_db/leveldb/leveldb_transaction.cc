@@ -99,16 +99,21 @@ leveldb::Status LevelDBTransaction::Commit() {
   base::TimeTicks begin_time = base::TimeTicks::Now();
   scoped_ptr<LevelDBWriteBatch> write_batch = LevelDBWriteBatch::Create();
 
-  for (const auto& iterator : data_) {
-    if (!iterator.second->deleted)
-      write_batch->Put(iterator.first, iterator.second->value);
+  auto it = data_.begin(), end = data_.end();
+  while (it != end) {
+    if (!it->second->deleted)
+      write_batch->Put(it->first, it->second->value);
     else
-      write_batch->Remove(iterator.first);
+      write_batch->Remove(it->first);
+
+    delete it->second;
+    data_.erase(it++);
   }
+
+  DCHECK(data_.empty());
 
   leveldb::Status s = db_->Write(*write_batch);
   if (s.ok()) {
-    Clear();
     finished_ = true;
     UMA_HISTOGRAM_TIMES("WebCore.IndexedDB.LevelDB.Transaction.CommitTime",
                          base::TimeTicks::Now() - begin_time);
