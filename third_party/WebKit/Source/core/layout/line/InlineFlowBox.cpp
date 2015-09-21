@@ -382,7 +382,7 @@ LayoutUnit InlineFlowBox::placeBoxRangeInInlineDirection(InlineBox* firstChild, 
     for (InlineBox* curr = firstChild; curr && curr != lastChild; curr = curr->nextOnLine()) {
         if (curr->layoutObject().isText()) {
             InlineTextBox* text = toInlineTextBox(curr);
-            LayoutText& rt = text->layoutObject();
+            LineLayoutText rt = text->lineLayoutItem();
             LayoutUnit space;
             if (rt.textLength()) {
                 if (needsWordSpacing && isSpaceOrNewline(rt.characterAt(text->start())))
@@ -908,7 +908,7 @@ void InlineFlowBox::computeOverflow(LayoutUnit lineTop, LayoutUnit lineBottom, G
 
         if (curr->layoutObject().isText()) {
             InlineTextBox* text = toInlineTextBox(curr);
-            LayoutText& rt = text->layoutObject();
+            LineLayoutText rt = text->lineLayoutItem();
             if (rt.isBR())
                 continue;
             LayoutRect textBoxOverflow(text->logicalFrameRect());

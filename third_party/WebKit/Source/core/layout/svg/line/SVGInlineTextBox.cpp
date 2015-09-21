@@ -169,11 +169,11 @@ void SVGInlineTextBox::paint(const PaintInfo& paintInfo, const LayoutPoint& pain
 
 TextRun SVGInlineTextBox::constructTextRun(const ComputedStyle& style, const SVGTextFragment& fragment) const
 {
-    LayoutText* text = &layoutObject();
+    LineLayoutText text = lineLayoutItem();
 
     // FIXME(crbug.com/264211): This should not be necessary but can occur if we
     //                          layout during layout. Remove this when 264211 is fixed.
-    RELEASE_ASSERT(!text->needsLayout());
+    RELEASE_ASSERT(!text.needsLayout());
 
     TextRun run(static_cast<const LChar*>(nullptr) // characters, will be set below if non-zero.
         , 0 // length, will be set below if non-zero.
@@ -184,17 +184,17 @@ TextRun SVGInlineTextBox::constructTextRun(const ComputedStyle& style, const SVG
         , dirOverride() || style.rtlOrdering() == VisualOrder /* directionalOverride */);
 
     if (fragment.length) {
-        if (text->is8Bit())
-            run.setText(text->characters8() + fragment.characterOffset, fragment.length);
+        if (text.is8Bit())
+            run.setText(text.characters8() + fragment.characterOffset, fragment.length);
         else
-            run.setText(text->characters16() + fragment.characterOffset, fragment.length);
+            run.setText(text.characters16() + fragment.characterOffset, fragment.length);
     }
 
     // We handle letter & word spacing ourselves.
     run.disableSpacing();
 
     // Propagate the maximum length of the characters buffer to the TextRun, even when we're only processing a substring.
-    run.setCharactersLength(text->textLength() - fragment.characterOffset);
+    run.setCharactersLength(text.textLength() - fragment.characterOffset);
     ASSERT(run.charactersLength() >= run.length());
     return run;
 }

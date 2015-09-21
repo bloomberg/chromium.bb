@@ -403,7 +403,7 @@ static inline void writeSVGInlineTextBox(TextStream& ts, SVGInlineTextBox* textB
     LayoutSVGInlineText& textLayoutObject = toLayoutSVGInlineText(textBox->layoutObject());
 
     const SVGComputedStyle& svgStyle = textLayoutObject.style()->svgStyle();
-    String text = textBox->layoutObject().text();
+    String text = textBox->lineLayoutItem().text();
 
     unsigned fragmentsSize = fragments.size();
     for (unsigned i = 0; i < fragmentsSize; ++i) {
