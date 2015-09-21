@@ -69,6 +69,7 @@ void WorkerLoaderClientBridgeSyncHelper::didSendData(unsigned long long bytesSen
 {
     MutexLocker lock(m_lock);
     ASSERT(isMainThread());
+    RELEASE_ASSERT(!m_done);
     m_clientTasks.append(threadSafeBind(&ThreadableLoaderClientWrapper::didSendData, AllowCrossThreadAccess(m_client.get()), bytesSent, totalBytesToBeSent));
 }
 
@@ -82,6 +83,7 @@ void WorkerLoaderClientBridgeSyncHelper::didReceiveResponse(unsigned long identi
 {
     MutexLocker lock(m_lock);
     ASSERT(isMainThread());
+    RELEASE_ASSERT(!m_done);
     m_clientTasks.append(threadSafeBind(&didReceiveResponseAdapter, AllowCrossThreadAccess(m_client.get()), identifier, response, handle));
 }
 
@@ -89,6 +91,7 @@ void WorkerLoaderClientBridgeSyncHelper::didReceiveData(const char* data, unsign
 {
     MutexLocker lock(m_lock);
     ASSERT(isMainThread());
+    RELEASE_ASSERT(!m_done);
     Vector<char>* buffer = new Vector<char>(dataLength);
     memcpy(buffer->data(), data, dataLength);
     m_receivedData.append(buffer);
@@ -99,6 +102,7 @@ void WorkerLoaderClientBridgeSyncHelper::didDownloadData(int dataLength)
 {
     MutexLocker lock(m_lock);
     ASSERT(isMainThread());
+    RELEASE_ASSERT(!m_done);
     m_clientTasks.append(threadSafeBind(&ThreadableLoaderClientWrapper::didDownloadData, AllowCrossThreadAccess(m_client.get()), dataLength));
 }
 
@@ -106,6 +110,7 @@ void WorkerLoaderClientBridgeSyncHelper::didReceiveCachedMetadata(const char* da
 {
     MutexLocker lock(m_lock);
     ASSERT(isMainThread());
+    RELEASE_ASSERT(!m_done);
     Vector<char>* buffer = new Vector<char>(dataLength);
     memcpy(buffer->data(), data, dataLength);
     m_receivedData.append(buffer);
@@ -116,6 +121,7 @@ void WorkerLoaderClientBridgeSyncHelper::didFinishLoading(unsigned long identifi
 {
     MutexLocker lock(m_lock);
     ASSERT(isMainThread());
+    RELEASE_ASSERT(!m_done);
     m_clientTasks.append(threadSafeBind(&ThreadableLoaderClientWrapper::didFinishLoading, AllowCrossThreadAccess(m_client.get()), identifier, finishTime));
     m_done = true;
     m_event->signal();
@@ -125,6 +131,7 @@ void WorkerLoaderClientBridgeSyncHelper::didFail(const ResourceError& error)
 {
     MutexLocker lock(m_lock);
     ASSERT(isMainThread());
+    RELEASE_ASSERT(!m_done);
     m_clientTasks.append(threadSafeBind(&ThreadableLoaderClientWrapper::didFail, AllowCrossThreadAccess(m_client.get()), error));
     m_done = true;
     m_event->signal();
@@ -134,6 +141,7 @@ void WorkerLoaderClientBridgeSyncHelper::didFailAccessControlCheck(const Resourc
 {
     MutexLocker lock(m_lock);
     ASSERT(isMainThread());
+    RELEASE_ASSERT(!m_done);
     m_clientTasks.append(threadSafeBind(&ThreadableLoaderClientWrapper::didFailAccessControlCheck, AllowCrossThreadAccess(m_client.get()), error));
     m_done = true;
     m_event->signal();
@@ -143,6 +151,7 @@ void WorkerLoaderClientBridgeSyncHelper::didFailRedirectCheck()
 {
     MutexLocker lock(m_lock);
     ASSERT(isMainThread());
+    RELEASE_ASSERT(!m_done);
     m_clientTasks.append(threadSafeBind(&ThreadableLoaderClientWrapper::didFailRedirectCheck, AllowCrossThreadAccess(m_client.get())));
     m_done = true;
     m_event->signal();
@@ -158,6 +167,7 @@ void WorkerLoaderClientBridgeSyncHelper::didReceiveResourceTiming(const Resource
 {
     MutexLocker lock(m_lock);
     ASSERT(isMainThread());
+    RELEASE_ASSERT(!m_done);
     m_clientTasks.append(threadSafeBind(&didReceiveResourceTimingAdapter, AllowCrossThreadAccess(m_client.get()), info));
 }
 
