@@ -37,8 +37,9 @@ class SkiaGpuTraceMemoryDump : public SkTraceMemoryDump {
  public:
   // This should never outlive the provided ProcessMemoryDump, as it should
   // always be scoped to a single OnMemoryDump funciton call.
-  explicit SkiaGpuTraceMemoryDump(base::trace_event::ProcessMemoryDump* pmd)
-      : pmd_(pmd) {}
+  explicit SkiaGpuTraceMemoryDump(base::trace_event::ProcessMemoryDump* pmd,
+                                  uint64_t share_group_tracing_guid)
+      : pmd_(pmd), share_group_tracing_guid_(share_group_tracing_guid) {}
 
   // Overridden from SkTraceMemoryDump:
   void dumpNumericValue(const char* dump_name,
@@ -65,7 +66,8 @@ class SkiaGpuTraceMemoryDump : public SkTraceMemoryDump {
     base::trace_event::MemoryAllocatorDumpGuid guid;
 
     if (strcmp(backing_type, kGLTextureBackingType) == 0) {
-      guid = gfx::GetGLTextureGUIDForTracing(tracing_process_id, gl_id);
+      guid = gfx::GetGLTextureClientGUIDForTracing(share_group_tracing_guid_,
+                                                   gl_id);
     } else if (strcmp(backing_type, kGLBufferBackingType) == 0) {
       guid = gfx::GetGLBufferGUIDForTracing(tracing_process_id, gl_id);
     } else if (strcmp(backing_type, kGLRenderbufferBackingType) == 0) {
@@ -100,6 +102,7 @@ class SkiaGpuTraceMemoryDump : public SkTraceMemoryDump {
   }
 
   base::trace_event::ProcessMemoryDump* pmd_;
+  uint64_t share_group_tracing_guid_;
 
   DISALLOW_COPY_AND_ASSIGN(SkiaGpuTraceMemoryDump);
 };
@@ -330,7 +333,8 @@ bool OutputSurface::OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
   if (auto* context_provider = this->context_provider()) {
     // No need to lock, main context provider is not shared.
     if (auto* gr_context = context_provider->GrContext()) {
-      SkiaGpuTraceMemoryDump trace_memory_dump(pmd);
+      SkiaGpuTraceMemoryDump trace_memory_dump(
+          pmd, context_provider->ContextSupport()->ShareGroupTracingGUID());
       gr_context->dumpMemoryStatistics(&trace_memory_dump);
     }
   }
@@ -338,7 +342,8 @@ bool OutputSurface::OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
     ContextProvider::ScopedContextLock scoped_context(context_provider);
 
     if (auto* gr_context = context_provider->GrContext()) {
-      SkiaGpuTraceMemoryDump trace_memory_dump(pmd);
+      SkiaGpuTraceMemoryDump trace_memory_dump(
+          pmd, context_provider->ContextSupport()->ShareGroupTracingGUID());
       gr_context->dumpMemoryStatistics(&trace_memory_dump);
     }
   }

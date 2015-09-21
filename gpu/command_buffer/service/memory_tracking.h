@@ -34,6 +34,9 @@ class MemoryTracker : public base::RefCounted<MemoryTracker> {
    // allocated.
    virtual uint64_t ClientTracingId() const = 0;
 
+   // Identifies the share group within which memory is being allocated.
+   virtual uint64_t ShareGroupTracingGUID() const = 0;
+
    // Raw ID identifying the GPU client for whom memory is being allocated.
    virtual int ClientId() const = 0;
 

@@ -209,6 +209,7 @@ class GLES2_IMPL_EXPORT GLES2Implementation
                             const gfx::RectF& uv_rect) override;
   GLuint InsertFutureSyncPointCHROMIUM() override;
   void RetireSyncPointCHROMIUM(GLuint sync_point) override;
+  uint64_t ShareGroupTracingGUID() const override;
 
   void GetProgramInfoCHROMIUMHelper(GLuint program, std::vector<int8>* result);
   GLint GetAttribLocationHelper(GLuint program, const char* name);

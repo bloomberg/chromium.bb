@@ -2185,8 +2185,8 @@ void TextureManager::DumpTextureRef(base::trace_event::ProcessMemoryDump* pmd,
 
   // Add the |client_guid| which expresses shared ownership with the client
   // process.
-  auto client_guid = gfx::GetGLTextureGUIDForTracing(
-      memory_tracker_->ClientTracingId(), ref->client_id());
+  auto client_guid = gfx::GetGLTextureClientGUIDForTracing(
+      memory_tracker_->ShareGroupTracingGUID(), ref->client_id());
   pmd->CreateSharedGlobalAllocatorDump(client_guid);
   pmd->AddOwnershipEdge(dump->guid(), client_guid);
 
@@ -2194,8 +2194,8 @@ void TextureManager::DumpTextureRef(base::trace_event::ProcessMemoryDump* pmd,
   // |client_guid|s.
   // TODO(ericrk): May need to ensure uniqueness using GLShareGroup and
   // potentially cross-share-group sharing via EGLImages. crbug.com/512534
-  auto service_guid =
-      gfx::GetGLTextureGUIDForTracing(0, ref->texture()->service_id());
+  auto service_guid = gfx::GetGLTextureServiceGUIDForTracing(
+      memory_tracker_->ShareGroupTracingGUID(), ref->texture()->service_id());
   pmd->CreateSharedGlobalAllocatorDump(service_guid);
 
   int importance = 0;  // Default importance.

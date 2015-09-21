@@ -548,7 +548,7 @@ bool BufferManager::OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
                     static_cast<uint64_t>(buffer->size()));
 
     auto guid = gfx::GetGLBufferGUIDForTracing(
-        memory_tracker_->ClientTracingId(), client_buffer_id);
+        memory_tracker_->ShareGroupTracingGUID(), client_buffer_id);
     pmd->CreateSharedGlobalAllocatorDump(guid);
     pmd->AddOwnershipEdge(dump->guid(), guid);
   }

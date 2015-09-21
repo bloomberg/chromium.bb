@@ -261,7 +261,7 @@ bool RenderbufferManager::OnMemoryDump(
                     static_cast<uint64_t>(renderbuffer->EstimatedSize()));
 
     auto guid = gfx::GetGLRenderbufferGUIDForTracing(
-        memory_tracker_->ClientTracingId(), client_renderbuffer_id);
+        memory_tracker_->ShareGroupTracingGUID(), client_renderbuffer_id);
     pmd->CreateSharedGlobalAllocatorDump(guid);
     pmd->AddOwnershipEdge(dump->guid(), guid);
   }

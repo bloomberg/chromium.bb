@@ -23,6 +23,7 @@ class GpuMemoryTracker : public gpu::gles2::MemoryTracker {
   bool EnsureGPUMemoryAvailable(size_t size_needed) override;
   uint64_t ClientTracingId() const override;
   int ClientId() const override;
+  uint64_t ShareGroupTracingGUID() const override;
 
  private:
   ~GpuMemoryTracker() override;

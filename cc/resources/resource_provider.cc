@@ -24,6 +24,7 @@
 #include "cc/resources/shared_bitmap_manager.h"
 #include "cc/resources/transferable_resource.h"
 #include "gpu/GLES2/gl2extchromium.h"
+#include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
 #include "third_party/khronos/GLES2/gl2.h"
@@ -1652,8 +1653,11 @@ bool ResourceProvider::OnMemoryDump(
     } else if (resource.shared_bitmap) {
       guid = GetSharedBitmapGUIDForTracing(resource.shared_bitmap->id());
     } else if (resource.gl_id && resource.allocated) {
-      guid =
-          gfx::GetGLTextureGUIDForTracing(tracing_process_id, resource.gl_id);
+      guid = gfx::GetGLTextureClientGUIDForTracing(
+          output_surface_->context_provider()
+              ->ContextSupport()
+              ->ShareGroupTracingGUID(),
+          resource.gl_id);
     }
 
     if (!guid.empty()) {

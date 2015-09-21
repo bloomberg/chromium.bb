@@ -91,4 +91,9 @@ void TestContextSupport::ScheduleOverlayPlane(
   }
 }
 
+uint64_t TestContextSupport::ShareGroupTracingGUID() const {
+  NOTIMPLEMENTED();
+  return 0;
+}
+
 }  // namespace cc

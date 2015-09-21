@@ -147,6 +147,7 @@ class MockMemoryTracker : public MemoryTracker {
   MOCK_METHOD1(EnsureGPUMemoryAvailable, bool(size_t size_needed));
   MOCK_CONST_METHOD0(ClientTracingId, uint64_t());
   MOCK_CONST_METHOD0(ClientId, int());
+  MOCK_CONST_METHOD0(ShareGroupTracingGUID, uint64_t());
 
  private:
   friend class ::testing::StrictMock<MockMemoryTracker>;

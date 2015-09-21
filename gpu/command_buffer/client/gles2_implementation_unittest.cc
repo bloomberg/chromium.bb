@@ -579,7 +579,8 @@ class GLES2ImplementationTest : public testing::Test {
 
   bool Initialize(const ContextInitOptions& init_options) {
     bool success = true;
-    share_group_ = new ShareGroup(init_options.bind_generates_resource_client);
+    share_group_ = new ShareGroup(init_options.bind_generates_resource_client,
+                                  0 /* tracing_id */);
 
     for (int i = 0; i < kNumTestContexts; i++) {
       if (!test_contexts_[i].Initialize(

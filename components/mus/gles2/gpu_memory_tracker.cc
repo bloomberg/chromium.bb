@@ -25,6 +25,13 @@ int GpuMemoryTracker::ClientId() const {
   return 0;
 }
 
+uint64_t GpuMemoryTracker::ShareGroupTracingGUID() const {
+  // TODO(rjkroege): This should return a GUID which identifies the share group
+  // we are tracking memory for. This GUID should correspond to the GUID of the
+  // first command buffer in the share group.
+  return 0;
+}
+
 GpuMemoryTracker::~GpuMemoryTracker() {}
 
 }  // namespace mus

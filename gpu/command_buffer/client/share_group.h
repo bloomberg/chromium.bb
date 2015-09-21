@@ -113,7 +113,7 @@ class RangeIdHandlerInterface {
 class GLES2_IMPL_EXPORT ShareGroup
     : public gpu::RefCountedThreadSafe<ShareGroup> {
  public:
-  ShareGroup(bool bind_generates_resource);
+  ShareGroup(bool bind_generates_resource, uint64_t tracing_guid);
 
   bool bind_generates_resource() const {
     return bind_generates_resource_;
@@ -140,6 +140,8 @@ class GLES2_IMPL_EXPORT ShareGroup
     }
   }
 
+  uint64_t TracingGUID() const { return tracing_guid_; }
+
  private:
   friend class gpu::RefCountedThreadSafe<ShareGroup>;
   friend class gpu::gles2::GLES2ImplementationTest;
@@ -154,6 +156,7 @@ class GLES2_IMPL_EXPORT ShareGroup
   scoped_ptr<ProgramInfoManager> program_info_manager_;
 
   bool bind_generates_resource_;
+  uint64_t tracing_guid_;
 
   DISALLOW_COPY_AND_ASSIGN(ShareGroup);
 };

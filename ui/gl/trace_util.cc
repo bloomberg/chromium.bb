@@ -9,25 +9,35 @@
 
 namespace gfx {
 
-base::trace_event::MemoryAllocatorDumpGuid GetGLTextureGUIDForTracing(
-    uint64_t tracing_id,
+base::trace_event::MemoryAllocatorDumpGuid GetGLTextureClientGUIDForTracing(
+    uint64_t share_group_guid,
     uint32_t texture_id) {
-  return base::trace_event::MemoryAllocatorDumpGuid(base::StringPrintf(
-      "gl-texture-x-process/%" PRIx64 "/%d", tracing_id, texture_id));
+  return base::trace_event::MemoryAllocatorDumpGuid(
+      base::StringPrintf("gl-texture-client-x-process/%" PRIx64 "/%d",
+                         share_group_guid, texture_id));
+}
+
+base::trace_event::MemoryAllocatorDumpGuid GetGLTextureServiceGUIDForTracing(
+    uint64_t share_group_guid,
+    uint32_t texture_id) {
+  return base::trace_event::MemoryAllocatorDumpGuid(
+      base::StringPrintf("gl-texture-service-x-process/%" PRIx64 "/%d",
+                         share_group_guid, texture_id));
 }
 
 base::trace_event::MemoryAllocatorDumpGuid GetGLBufferGUIDForTracing(
-    uint64_t tracing_id,
+    uint64_t share_group_guid,
     uint32_t buffer_id) {
   return base::trace_event::MemoryAllocatorDumpGuid(base::StringPrintf(
-      "gl-buffer-x-process/%" PRIx64 "/%d", tracing_id, buffer_id));
+      "gl-buffer-x-process/%" PRIx64 "/%d", share_group_guid, buffer_id));
 }
 
 base::trace_event::MemoryAllocatorDumpGuid GetGLRenderbufferGUIDForTracing(
-    uint64_t tracing_id,
+    uint64_t share_group_guid,
     uint32_t renderbuffer_id) {
-  return base::trace_event::MemoryAllocatorDumpGuid(base::StringPrintf(
-      "gl-renderbuffer-x-process/%" PRIx64 "/%d", tracing_id, renderbuffer_id));
+  return base::trace_event::MemoryAllocatorDumpGuid(
+      base::StringPrintf("gl-renderbuffer-x-process/%" PRIx64 "/%d",
+                         share_group_guid, renderbuffer_id));
 }
 
 }  // namespace ui

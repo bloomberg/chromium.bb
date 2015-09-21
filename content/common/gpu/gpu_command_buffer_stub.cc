@@ -65,13 +65,15 @@ namespace {
 // ContextGroup's memory type managers and the GpuMemoryManager class.
 class GpuCommandBufferMemoryTracker : public gpu::gles2::MemoryTracker {
  public:
-  explicit GpuCommandBufferMemoryTracker(GpuChannel* channel)
+  explicit GpuCommandBufferMemoryTracker(GpuChannel* channel,
+                                         uint64_t share_group_tracing_guid)
       : tracking_group_(
             channel->gpu_channel_manager()
                 ->gpu_memory_manager()
                 ->CreateTrackingGroup(channel->GetClientPID(), this)),
         client_tracing_id_(channel->client_tracing_id()),
-        client_id_(channel->client_id()) {}
+        client_id_(channel->client_id()),
+        share_group_tracing_guid_(share_group_tracing_guid) {}
 
   void TrackMemoryAllocatedChange(
       size_t old_size,
@@ -87,12 +89,16 @@ class GpuCommandBufferMemoryTracker : public gpu::gles2::MemoryTracker {
 
   uint64_t ClientTracingId() const override { return client_tracing_id_; }
   int ClientId() const override { return client_id_; }
+  uint64_t ShareGroupTracingGUID() const override {
+    return share_group_tracing_guid_;
+  }
 
  private:
   ~GpuCommandBufferMemoryTracker() override {}
   scoped_ptr<GpuMemoryTrackingGroup> tracking_group_;
   const uint64_t client_tracing_id_;
   const int client_id_;
+  const uint64_t share_group_tracing_guid_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuCommandBufferMemoryTracker);
 };
@@ -219,7 +225,8 @@ GpuCommandBufferStub::GpuCommandBufferStub(
            attrib_parser.bind_generates_resource);
   } else {
     context_group_ = new gpu::gles2::ContextGroup(
-        mailbox_manager, new GpuCommandBufferMemoryTracker(channel),
+        mailbox_manager,
+        new GpuCommandBufferMemoryTracker(channel, command_buffer_id_),
         channel_->gpu_channel_manager()->shader_translator_cache(),
         channel_->gpu_channel_manager()->framebuffer_completeness_cache(), NULL,
         subscription_ref_set, pending_valuebuffer_state,

@@ -1826,6 +1826,8 @@ class CountingMemoryTracker : public MemoryTracker {
 
   int ClientId() const override { return 0; }
 
+  uint64_t ShareGroupTracingGUID() const override { return 0; }
+
  private:
   ~CountingMemoryTracker() override {}
 

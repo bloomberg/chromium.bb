@@ -347,8 +347,9 @@ class RangeIdHandler : public RangeIdHandlerInterface {
   IdAllocator id_allocator_;
 };
 
-ShareGroup::ShareGroup(bool bind_generates_resource)
-    : bind_generates_resource_(bind_generates_resource) {
+ShareGroup::ShareGroup(bool bind_generates_resource, uint64_t tracing_guid)
+    : bind_generates_resource_(bind_generates_resource),
+      tracing_guid_(tracing_guid) {
   if (bind_generates_resource) {
     for (int i = 0; i < id_namespaces::kNumIdNamespaces; ++i) {
       if (i == id_namespaces::kProgramsAndShaders) {

@@ -1174,6 +1174,7 @@ class SizeOnlyMemoryTracker : public MemoryTracker {
 
   uint64_t ClientTracingId() const override { return 0; }
   int ClientId() const override { return 0; }
+  uint64_t ShareGroupTracingGUID() const override { return 0; }
 
  private:
   virtual ~SizeOnlyMemoryTracker() {}

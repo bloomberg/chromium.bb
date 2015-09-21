@@ -130,7 +130,9 @@ GLES2Implementation::GLES2Implementation(
   });
 
   share_group_ =
-      (share_group ? share_group : new ShareGroup(bind_generates_resource));
+      (share_group ? share_group
+                   : new ShareGroup(bind_generates_resource,
+                                    gpu_control_->GetCommandBufferID()));
   DCHECK(share_group_->bind_generates_resource() == bind_generates_resource);
 
   memset(&reserved_ids_, 0, sizeof(reserved_ids_));
@@ -5367,6 +5369,10 @@ void GLES2Implementation::RetireSyncPointCHROMIUM(GLuint sync_point) {
   DCHECK(capabilities_.future_sync_points);
   helper_->CommandBufferHelper::Flush();
   gpu_control_->RetireSyncPoint(sync_point);
+}
+
+uint64_t GLES2Implementation::ShareGroupTracingGUID() const {
+  return share_group_->TracingGUID();
 }
 
 namespace {
