@@ -24,6 +24,7 @@ import json
 import logging
 import os
 import posixpath
+import re
 import StringIO
 import subprocess
 import sys
@@ -99,7 +100,11 @@ def load_ninja_recursively(build_dir, ninja_path, build_steps):
 
 
 def load_ninja(build_dir):
-  """Loads the tree of .ninja files in build_dir."""
+  """Loads the tree of .ninja files in build_dir.
+
+  Returns:
+    dict(target: list of dependencies).
+  """
   build_steps = {}
   total = load_ninja_recursively(build_dir, 'build.ninja', build_steps)
   logging.info('Loaded %d ninja files, %d build steps', total, len(build_steps))
@@ -127,21 +132,54 @@ def using_blacklist(item):
   if ext in IGNORED:
     return False
   # Special case Windows, keep .dll.lib but discard .lib.
-  if item.endswith('.dll.lib'):
-    return True
-  if ext == '.lib':
-    return False
+  if sys.platform == 'win32':
+    if item.endswith('.dll.lib'):
+      return True
+    if ext == '.lib':
+      return False
   return item not in ('', '|', '||')
+
+# This is a whitelist of known ninja native rules.
+KNOWN_TOOLS = frozenset(
+    (
+      'copy',
+      'copy_infoplist',
+      'cxx',
+      'idl',
+      'link',
+      'link_embed',
+      'mac_tool',
+      'package_framework',
+      'phony',
+      'rc',
+      'solink',
+      'solink_embed',
+      'solink_module',
+      'solink_module_embed',
+      'solink_module_notoc',
+      'solink_notoc',
+      'stamp',
+    ))
 
 
 def raw_build_to_deps(item):
   """Converts a raw ninja build statement into the list of interesting
   dependencies.
   """
-  # TODO(maruel): Use a whitelist instead? .stamp, .so.TOC, .dylib.TOC,
-  # .dll.lib, .exe and empty.
-  # The first item is the build rule, e.g. 'link', 'cxx', 'phony', etc.
-  return filter(using_blacklist, item.split(' ')[1:])
+  items = filter(None, item.split(' '))
+  for i in xrange(len(items) - 2, 0, -1):
+    # Merge back '$ ' escaping.
+    # OMG please delete this code as soon as possible.
+    if items[i].endswith('$'):
+      items[i] = items[i][:-1] + ' ' + items[i+1]
+      items.pop(i+1)
+
+  # Always skip the first item; it is the build rule type, e.g. , etc.
+  if items[0] not in KNOWN_TOOLS:
+    # Check for phony ninja rules.
+    assert re.match(r'^[^.]+_[0-9a-f]{32}$', items[0]), items
+
+  return filter(using_blacklist, items[1:])
 
 
 def collect_deps(target, build_steps, dependencies_added, rules_seen):
@@ -167,37 +205,62 @@ def collect_deps(target, build_steps, dependencies_added, rules_seen):
 
 
 def post_process_deps(build_dir, dependencies):
-  """Processes the dependency list with OS specific rules."""
-  def filter_item(i):
-    if i.endswith('.so.TOC'):
-      # Remove only the suffix .TOC, not the .so!
-      return i[:-4]
-    if i.endswith('.dylib.TOC'):
-      # Remove only the suffix .TOC, not the .dylib!
-      return i[:-4]
-    if i.endswith('.dll.lib'):
-      # Remove only the suffix .lib, not the .dll!
-      return i[:-4]
-    return i
+  """Processes the dependency list with OS specific rules.
 
-  def is_exe(i):
-    # This script is only for adding new binaries that are created as part of
-    # the component build.
-    ext = os.path.splitext(i)[1]
-    # On POSIX, executables have no extension.
-    if ext not in ('', '.dll', '.dylib', '.exe', '.nexe', '.so'):
-      return False
+  Returns:
+    list of dependencies to add.
+  """
+  out = []
+  for i in dependencies:
     if os.path.isabs(i):
       # In some rare case, there's dependency set explicitly on files outside
-      # the checkout.
-      return False
-
-    # Check for execute access and strip directories. This gets rid of all the
-    # phony rules.
-    p = os.path.join(build_dir, i)
-    return os.access(p, os.X_OK) and not os.path.isdir(p)
-
-  return filter(is_exe, map(filter_item, dependencies))
+      # the checkout. In practice, it was observed on /usr/bin/eu-strip only on
+      # official Chrome build.
+      continue
+    if os.path.isdir(os.path.join(build_dir, i)):
+      if sys.platform == 'darwin':
+        # This is an application.
+        out.append(i + '/')
+    elif i.endswith('.so.TOC'):
+      out.append(i[:-4])
+    elif i.endswith('.dylib.TOC'):
+      i = i[:-4]
+      out.append(i)
+      # Debug symbols may not be present.
+      i += '.dSym'
+      if os.path.isdir(os.path.join(build_dir, i)):
+        out.append(i + '/')
+    elif i.endswith('.dylib'):
+      out.append(i)
+      # Debug symbols may not be present.
+      i += '.dSym'
+      if os.path.isdir(os.path.join(build_dir, i)):
+        out.append(i + '/')
+    elif i.endswith('.dll.lib'):
+      i = i[:-4]
+      out.append(i)
+      # Naming is inconsistent.
+      if os.path.isfile(os.path.join(build_dir, i + '.pdb')):
+        out.append(i + '.pdb')
+      if os.path.isfile(os.path.join(build_dir, i[:-4] + '.pdb')):
+        out.append(i[:-4] + '.pdb')
+    elif i.endswith('.exe'):
+      out.append(i)
+      # Naming is inconsistent.
+      if os.path.isfile(os.path.join(build_dir, i + '.pdb')):
+        out.append(i + '.pdb')
+      if os.path.isfile(os.path.join(build_dir, i[:-4] + '.pdb')):
+        out.append(i[:-4] + '.pdb')
+    elif i.endswith('.nexe'):
+      out.append(i)
+      i += '.debug'
+      if os.path.isfile(os.path.join(build_dir, i)):
+        out.append(i)
+    elif sys.platform != 'win32':
+      # On POSIX, executables have no extension.
+      if not os.path.splitext(i)[1]:
+        out.append(i)
+  return out
 
 
 def create_wrapper(args, isolate_index, isolated_index):
