@@ -860,8 +860,8 @@ def _WriteChromeSettingsProtobuf(policies, os, f):
   fields = []
   f.write('// PBs for individual settings.\n\n')
   for policy in policies:
-    # Note: this protobuf also gets the unsupported policies, since it's an
-    # exaustive list of all the supported user policies on any platform.
+    # Note: This protobuf also gets the unsupported policies, since it's an
+    # exhaustive list of all the supported user policies on any platform.
     if not policy.is_device_only:
       _WritePolicyProto(f, policy, fields)
 
