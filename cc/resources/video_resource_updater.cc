@@ -183,6 +183,13 @@ void VideoResourceUpdater::DeleteResource(ResourceList::iterator resource_it) {
 VideoFrameExternalResources VideoResourceUpdater::
     CreateExternalResourcesFromVideoFrame(
         const scoped_refptr<media::VideoFrame>& video_frame) {
+#if defined(VIDEO_HOLE)
+  if (video_frame->storage_type() == media::VideoFrame::STORAGE_HOLE) {
+    VideoFrameExternalResources external_resources;
+    external_resources.type = VideoFrameExternalResources::HOLE;
+    return external_resources;
+  }
+#endif  // defined(VIDEO_HOLE)
   if (video_frame->format() == media::PIXEL_FORMAT_UNKNOWN)
     return VideoFrameExternalResources();
   DCHECK(video_frame->HasTextures() || video_frame->IsMappable());
@@ -209,14 +216,6 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
     const scoped_refptr<media::VideoFrame>& video_frame) {
   TRACE_EVENT0("cc", "VideoResourceUpdater::CreateForSoftwarePlanes");
   const media::VideoPixelFormat input_frame_format = video_frame->format();
-
-#if defined(VIDEO_HOLE)
-  if (video_frame->storage_type() == media::VideoFrame::STORAGE_HOLE) {
-    VideoFrameExternalResources external_resources;
-    external_resources.type = VideoFrameExternalResources::HOLE;
-    return external_resources;
-  }
-#endif  // defined(VIDEO_HOLE)
 
   // Only YUV software video frames are supported.
   if (!media::IsYuvPlanar(input_frame_format)) {
