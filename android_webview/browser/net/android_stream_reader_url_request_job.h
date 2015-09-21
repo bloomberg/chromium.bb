@@ -16,11 +16,6 @@
 #include "net/http/http_byte_range.h"
 #include "net/url_request/url_request_job.h"
 
-namespace android_webview {
-class InputStream;
-class InputStreamReader;
-}
-
 namespace base {
 class TaskRunner;
 }
@@ -31,6 +26,10 @@ class HttpResponseInfo;
 class URLRequest;
 }
 
+namespace android_webview {
+
+class InputStream;
+class InputStreamReader;
 class InputStreamReaderWrapper;
 
 // A request job that reads data from a Java InputStream.
@@ -119,5 +118,7 @@ class AndroidStreamReaderURLRequestJob : public net::URLRequestJob {
 
   DISALLOW_COPY_AND_ASSIGN(AndroidStreamReaderURLRequestJob);
 };
+
+}  // namespace android_webview
 
 #endif  // ANDROID_WEBVIEW_NATIVE_ANDROID_STREAM_READER_URL_REQUEST_JOB_H_

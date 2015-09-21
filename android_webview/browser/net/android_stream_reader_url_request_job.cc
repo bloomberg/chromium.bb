@@ -29,11 +29,11 @@
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_job_manager.h"
 
-using android_webview::InputStream;
-using android_webview::InputStreamReader;
 using base::android::AttachCurrentThread;
 using base::PostTaskAndReplyWithResult;
 using content::BrowserThread;
+
+namespace android_webview {
 
 namespace {
 
@@ -63,7 +63,7 @@ class InputStreamReaderWrapper :
     DCHECK(input_stream_reader_);
   }
 
-  android_webview::InputStream* input_stream() {
+  InputStream* input_stream() {
     return input_stream_.get();
   }
 
@@ -79,8 +79,8 @@ class InputStreamReaderWrapper :
   friend class base::RefCountedThreadSafe<InputStreamReaderWrapper>;
   ~InputStreamReaderWrapper() {}
 
-  scoped_ptr<android_webview::InputStream> input_stream_;
-  scoped_ptr<android_webview::InputStreamReader> input_stream_reader_;
+  scoped_ptr<InputStream> input_stream_;
+  scoped_ptr<InputStreamReader> input_stream_reader_;
 
   DISALLOW_COPY_AND_ASSIGN(InputStreamReaderWrapper);
 };
@@ -365,3 +365,5 @@ void AndroidStreamReaderURLRequestJob::SetExtraRequestHeaders(
     }
   }
 }
+
+}  // namespace android_webview

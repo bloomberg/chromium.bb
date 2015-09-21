@@ -23,6 +23,7 @@
 #include "url/gurl.h"
 #include "url/url_constants.h"
 
+using android_webview::AndroidStreamReaderURLRequestJob;
 using android_webview::InputStream;
 using android_webview::InputStreamImpl;
 using base::android::AttachCurrentThread;
