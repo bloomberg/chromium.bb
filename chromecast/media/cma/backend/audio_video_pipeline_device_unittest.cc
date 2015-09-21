@@ -82,9 +82,9 @@ class AudioVideoPipelineDeviceTest : public testing::Test {
     CastMediaShlib::Finalize();
   }
 
-  void ConfigureForFile(std::string filename);
-  void ConfigureForAudioOnly(std::string filename);
-  void ConfigureForVideoOnly(std::string filename, bool raw_h264);
+  void ConfigureForFile(const std::string& filename);
+  void ConfigureForAudioOnly(const std::string& filename);
+  void ConfigureForVideoOnly(const std::string& filename, bool raw_h264);
 
   // Pattern loops, waiting >= pattern[i].delay against media clock between
   // pauses, then pausing for >= pattern[i].length against MessageLoop
@@ -99,8 +99,8 @@ class AudioVideoPipelineDeviceTest : public testing::Test {
  private:
   void Initialize();
 
-  void LoadAudioStream(std::string filename);
-  void LoadVideoStream(std::string filename, bool raw_h264);
+  void LoadAudioStream(const std::string& filename);
+  void LoadVideoStream(const std::string& filename, bool raw_h264);
 
   void MonitorLoop();
 
@@ -143,24 +143,28 @@ void AudioVideoPipelineDeviceTest::SetPausePattern(
   pause_pattern_ = pattern;
 }
 
-void AudioVideoPipelineDeviceTest::ConfigureForAudioOnly(std::string filename) {
+void AudioVideoPipelineDeviceTest::ConfigureForAudioOnly(
+    const std::string& filename) {
   Initialize();
   LoadAudioStream(filename);
 }
 
-void AudioVideoPipelineDeviceTest::ConfigureForVideoOnly(std::string filename,
-                                                         bool raw_h264) {
+void AudioVideoPipelineDeviceTest::ConfigureForVideoOnly(
+    const std::string& filename,
+    bool raw_h264) {
   Initialize();
   LoadVideoStream(filename, raw_h264);
 }
 
-void AudioVideoPipelineDeviceTest::ConfigureForFile(std::string filename) {
+void AudioVideoPipelineDeviceTest::ConfigureForFile(
+    const std::string& filename) {
   Initialize();
   LoadVideoStream(filename, false /* raw_h264 */);
   LoadAudioStream(filename);
 }
 
-void AudioVideoPipelineDeviceTest::LoadAudioStream(std::string filename) {
+void AudioVideoPipelineDeviceTest::LoadAudioStream(
+    const std::string& filename) {
   base::FilePath file_path = GetTestDataFilePath(filename);
   DemuxResult demux_result = FFmpegDemuxForTest(file_path, true /* audio */);
   BufferList frames = demux_result.frames;
@@ -186,7 +190,7 @@ void AudioVideoPipelineDeviceTest::LoadAudioStream(std::string filename) {
   component_device_feeders_.push_back(device_feeder);
 }
 
-void AudioVideoPipelineDeviceTest::LoadVideoStream(std::string filename,
+void AudioVideoPipelineDeviceTest::LoadVideoStream(const std::string& filename,
                                                    bool raw_h264) {
   BufferList frames;
   VideoConfig video_config;
