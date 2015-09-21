@@ -216,6 +216,7 @@ function PDFViewer(browserApi) {
 
     if (!this.isPrintPreview_) {
       this.materialToolbar_ = $('material-toolbar');
+      this.materialToolbar_.hidden = false;
       this.materialToolbar_.addEventListener('save', this.save_.bind(this));
       this.materialToolbar_.addEventListener('print', this.print_.bind(this));
       this.materialToolbar_.addEventListener('rotate-right',
