@@ -585,6 +585,10 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Fail('conformance2/state/gl-object-get-calls.html',
         ['win'], bug=483282)
     self.Fail('conformance2/textures/canvas/*', ['win'], bug=483282)
+    self.Fail('conformance2/textures/misc/gl-get-tex-parameter.html',
+        ['win'], bug=483282)
+    self.Fail('conformance2/textures/misc/tex-input-validation.html',
+        ['win'], bug=483282)
 
     # Mac only.
     self.Skip('deqp/data/gles3/shaders/qualification_order.html',
