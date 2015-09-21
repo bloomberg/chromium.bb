@@ -340,6 +340,7 @@ create_move_resize_view_transition(
 	data = malloc(sizeof(*data));
 	if (data == NULL) {
 		weston_log("%s: memory allocation fails\n", __func__);
+		free(transition);
 		return NULL;
 	}
 
@@ -468,6 +469,7 @@ create_fade_view_transition(
 	data = malloc(sizeof(*data));
 	if (data == NULL) {
 		weston_log("%s: memory allocation fails\n", __func__);
+		free(transition);
 		return NULL;
 	}
 
@@ -697,6 +699,7 @@ create_move_layer_transition(
 	data = malloc(sizeof(*data));
 	if (data == NULL) {
 		weston_log("%s: memory allocation fails\n", __func__);
+		free(transition);
 		return NULL;
 	}
 
