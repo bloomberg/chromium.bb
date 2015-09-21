@@ -12,6 +12,7 @@
 #include "net/base/chunked_upload_data_stream.h"
 #include "net/base/elements_upload_data_stream.h"
 #include "net/base/net_errors.h"
+#include "net/base/socket_performance_watcher.h"
 #include "net/base/test_completion_callback.h"
 #include "net/base/upload_bytes_element_reader.h"
 #include "net/http/http_response_headers.h"
@@ -222,7 +223,8 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<QuicVersion> {
                      /*is_secure=*/false, PRIVACY_MODE_DISABLED),
         /*cert_verify_flags=*/0, DefaultQuicConfig(), &crypto_config_,
         "CONNECTION_UNKNOWN", base::TimeTicks::Now(),
-        base::ThreadTaskRunnerHandle::Get().get(), nullptr));
+        base::ThreadTaskRunnerHandle::Get().get(),
+        /*socket_performance_watcher=*/nullptr, nullptr));
     session_->Initialize();
     session_->GetCryptoStream()->CryptoConnect();
     EXPECT_TRUE(session_->IsCryptoHandshakeConfirmed());

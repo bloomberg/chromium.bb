@@ -9,6 +9,7 @@
 
 #include "net/base/ip_endpoint.h"
 #include "net/base/network_change_notifier.h"
+#include "net/base/socket_performance_watcher.h"
 #include "net/log/net_log.h"
 #include "net/quic/quic_connection.h"
 #include "net/quic/quic_protocol.h"
@@ -27,9 +28,11 @@ class CertVerifyResult;
 class NET_EXPORT_PRIVATE QuicConnectionLogger
     : public QuicConnectionDebugVisitor {
  public:
-  QuicConnectionLogger(QuicSpdySession* session,
-                       const char* const connection_description,
-                       const BoundNetLog& net_log);
+  QuicConnectionLogger(
+      QuicSpdySession* session,
+      const char* const connection_description,
+      scoped_ptr<SocketPerformanceWatcher> socket_performance_watcher,
+      const BoundNetLog& net_log);
 
   ~QuicConnectionLogger() override;
 
@@ -68,6 +71,7 @@ class NET_EXPORT_PRIVATE QuicConnectionLogger
                        base::StringPiece payload) override;
   void OnConnectionClosed(QuicErrorCode error, bool from_peer) override;
   void OnSuccessfulVersionNegotiation(const QuicVersion& version) override;
+  void OnRttChanged(QuicTime::Delta rtt) const override;
 
   void OnCryptoHandshakeMessageReceived(
       const CryptoHandshakeMessage& message);
@@ -179,6 +183,9 @@ class NET_EXPORT_PRIVATE QuicConnectionLogger
   // The available type of connection (WiFi, 3G, etc.) when connection was first
   // used.
   const char* const connection_description_;
+  // Receives notifications regarding the performance of the underlying socket
+  // for the QUIC connection. May be null.
+  const scoped_ptr<SocketPerformanceWatcher> socket_performance_watcher_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicConnectionLogger);
 };

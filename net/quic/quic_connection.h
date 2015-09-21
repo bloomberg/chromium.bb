@@ -243,6 +243,10 @@ class NET_EXPORT_PRIVATE QuicConnectionDebugVisitor
   // Called when resuming previous connection state.
   virtual void OnResumeConnectionState(
       const CachedNetworkParameters& cached_network_params) {}
+
+  // Called when RTT may have changed, including when an RTT is read from
+  // the config.
+  virtual void OnRttChanged(QuicTime::Delta rtt) const {}
 };
 
 class NET_EXPORT_PRIVATE QuicConnectionHelperInterface {

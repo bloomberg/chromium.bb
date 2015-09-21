@@ -260,6 +260,7 @@ class QuicStreamFactoryTest : public ::testing::TestWithParam<TestParams> {
                  nullptr,
                  channel_id_service_.get(),
                  &transport_security_state_,
+                 /*SocketPerformanceWatcherFactory*/ nullptr,
                  &crypto_client_stream_factory_,
                  &random_generator_,
                  clock_,

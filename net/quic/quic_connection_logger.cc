@@ -22,6 +22,7 @@
 #include "net/quic/crypto/crypto_protocol.h"
 #include "net/quic/quic_address_mismatch.h"
 #include "net/quic/quic_socket_address_coder.h"
+#include "net/quic/quic_time.h"
 
 using base::StringPiece;
 using std::string;
@@ -286,6 +287,7 @@ AddressFamily GetRealAddressFamily(const IPAddressNumber& address) {
 QuicConnectionLogger::QuicConnectionLogger(
     QuicSpdySession* session,
     const char* const connection_description,
+    scoped_ptr<SocketPerformanceWatcher> socket_performance_watcher,
     const BoundNetLog& net_log)
     : net_log_(net_log),
       session_(session),
@@ -307,7 +309,8 @@ QuicConnectionLogger::QuicConnectionLogger(
       num_duplicate_packets_(0),
       num_blocked_frames_received_(0),
       num_blocked_frames_sent_(0),
-      connection_description_(connection_description) {}
+      connection_description_(connection_description),
+      socket_performance_watcher_(socket_performance_watcher.Pass()) {}
 
 QuicConnectionLogger::~QuicConnectionLogger() {
   UMA_HISTOGRAM_COUNTS("Net.QuicSession.OutOfOrderPacketsReceived",
@@ -795,6 +798,18 @@ float QuicConnectionLogger::ReceivedPacketLossRate() const {
     return 0.0f;
   float num_received = largest_received_packet_number_ - num_packets_received_;
   return num_received / largest_received_packet_number_;
+}
+
+void QuicConnectionLogger::OnRttChanged(QuicTime::Delta rtt) const {
+  // Notify socket performance watcher of the updated RTT value.
+  if (!socket_performance_watcher_)
+    return;
+
+  int64_t microseconds = rtt.ToMicroseconds();
+  if (microseconds != 0) {
+    socket_performance_watcher_->OnUpdatedRTTAvailable(
+        base::TimeDelta::FromMicroseconds(rtt.ToMicroseconds()));
+  }
 }
 
 void QuicConnectionLogger::RecordAggregatePacketLossRate() const {

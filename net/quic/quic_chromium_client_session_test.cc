@@ -10,6 +10,7 @@
 #include "base/files/file_path.h"
 #include "base/rand_util.h"
 #include "base/thread_task_runner_handle.h"
+#include "net/base/socket_performance_watcher.h"
 #include "net/base/test_completion_callback.h"
 #include "net/base/test_data_directory.h"
 #include "net/cert/cert_verify_result.h"
@@ -62,6 +63,7 @@ class QuicChromiumClientSessionTest
                  "CONNECTION_UNKNOWN",
                  base::TimeTicks::Now(),
                  base::ThreadTaskRunnerHandle::Get().get(),
+                 /*socket_performance_watcher=*/nullptr,
                  &net_log_) {
     session_.Initialize();
     // Advance the time, because timers do not like uninitialized times.

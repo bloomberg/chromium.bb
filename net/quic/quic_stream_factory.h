@@ -44,6 +44,7 @@ class QuicRandom;
 class QuicServerInfoFactory;
 class QuicServerId;
 class QuicStreamFactory;
+class SocketPerformanceWatcherFactory;
 class TransportSecurityState;
 
 namespace test {
@@ -116,6 +117,7 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
       CertPolicyEnforcer* cert_policy_enforcer,
       ChannelIDService* channel_id_service,
       TransportSecurityState* transport_security_state,
+      const SocketPerformanceWatcherFactory* socket_performance_watcher_factory,
       QuicCryptoClientStreamFactory* quic_crypto_client_stream_factory,
       QuicRandom* random_generator,
       QuicClock* clock,
@@ -347,6 +349,11 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   QuicRandom* random_generator_;
   scoped_ptr<QuicClock> clock_;
   const size_t max_packet_length_;
+
+  // Factory which is used to create socket performance watcher. A new watcher
+  // is created for every QUIC connection.
+  // |socket_performance_watcher_factory_| may be null.
+  const SocketPerformanceWatcherFactory* socket_performance_watcher_factory_;
 
   // The helper used for all connections.
   scoped_ptr<QuicConnectionHelper> helper_;

@@ -1697,6 +1697,8 @@ void QuicConnection::OnRttChange() {
     rtt = QuicTime::Delta::FromMicroseconds(
         sent_packet_manager_.GetRttStats()->initial_rtt_us());
   }
+  if (debug_visitor_)
+    debug_visitor_->OnRttChanged(rtt);
   packet_generator_.OnRttChange(rtt);
 }
 

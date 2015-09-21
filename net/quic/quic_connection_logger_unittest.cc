@@ -4,6 +4,7 @@
 
 #include "net/quic/quic_connection_logger.h"
 
+#include "net/base/socket_performance_watcher.h"
 #include "net/quic/quic_protocol.h"
 #include "net/quic/test_tools/quic_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -32,7 +33,10 @@ class QuicConnectionLoggerTest : public ::testing::Test {
  protected:
   QuicConnectionLoggerTest()
       : session_(new MockConnection(Perspective::IS_CLIENT)),
-        logger_(&session_, "CONNECTION_UNKNOWN", net_log_) {}
+        logger_(&session_,
+                "CONNECTION_UNKNOWN",
+                /*socket_performance_watcher=*/nullptr,
+                net_log_) {}
 
   BoundNetLog net_log_;
   MockQuicSpdySession session_;

@@ -8,6 +8,8 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/stl_util.h"
+#include "net/base/network_quality_estimator.h"
+#include "net/base/socket_performance_watcher.h"
 #include "net/base/test_completion_callback.h"
 #include "net/base/test_data_directory.h"
 #include "net/cert/mock_cert_verifier.h"
@@ -139,6 +141,61 @@ class ProxyHeadersHandler {
   bool was_called_;
 };
 
+class TestSocketPerformanceWatcher : public SocketPerformanceWatcher {
+ public:
+  TestSocketPerformanceWatcher()
+      : received_updated_rtt_available_notification_(false) {}
+
+  ~TestSocketPerformanceWatcher() override {}
+
+  void OnUpdatedRTTAvailable(const base::TimeDelta& rtt) override {
+    received_updated_rtt_available_notification_ = true;
+  }
+
+  bool received_updated_rtt_available_notification() const {
+    return received_updated_rtt_available_notification_;
+  }
+
+ private:
+  bool received_updated_rtt_available_notification_;
+  DISALLOW_COPY_AND_ASSIGN(TestSocketPerformanceWatcher);
+};
+
+class TestNetworkQualityEstimator : public NetworkQualityEstimator {
+ public:
+  TestNetworkQualityEstimator()
+      : NetworkQualityEstimator(scoped_ptr<net::ExternalEstimateProvider>(),
+                                std::map<std::string, std::string>()) {}
+
+  ~TestNetworkQualityEstimator() override {}
+
+  scoped_ptr<SocketPerformanceWatcher> CreateUDPSocketPerformanceWatcher()
+      const override {
+    TestSocketPerformanceWatcher* watcher = new TestSocketPerformanceWatcher();
+    watchers_.push_back(watcher);
+    return scoped_ptr<TestSocketPerformanceWatcher>(watcher);
+  }
+
+  scoped_ptr<SocketPerformanceWatcher> CreateTCPSocketPerformanceWatcher()
+      const override {
+    NOTIMPLEMENTED();
+    return nullptr;
+  }
+
+  bool IsRTTAvailableNotificationReceived() const {
+    for (const auto& watcher : watchers_)
+      if (watcher->received_updated_rtt_available_notification())
+        return true;
+    return false;
+  }
+
+  size_t GetWatchersCreated() const { return watchers_.size(); }
+
+ private:
+  mutable std::vector<TestSocketPerformanceWatcher*> watchers_;
+  DISALLOW_COPY_AND_ASSIGN(TestNetworkQualityEstimator);
+};
+
 class QuicNetworkTransactionTest
     : public PlatformTest,
       public ::testing::WithParamInterface<QuicVersion> {
@@ -146,6 +203,7 @@ class QuicNetworkTransactionTest
   QuicNetworkTransactionTest()
       : clock_(new MockClock),
         maker_(GetParam(), 0, clock_, kDefaultServerHostName),
+        test_network_quality_estimator_(new TestNetworkQualityEstimator()),
         ssl_config_service_(new SSLConfigServiceDefaults),
         proxy_service_(ProxyService::CreateDirect()),
         auth_handler_factory_(
@@ -248,6 +306,8 @@ class QuicNetworkTransactionTest
     params_.host_resolver = &host_resolver_;
     params_.cert_verifier = &cert_verifier_;
     params_.transport_security_state = &transport_security_state_;
+    params_.socket_performance_watcher_factory =
+        test_network_quality_estimator_.get();
     params_.proxy_service = proxy_service_.get();
     params_.ssl_config_service = ssl_config_service_.get();
     params_.http_auth_handler_factory = auth_handler_factory_.get();
@@ -372,6 +432,7 @@ class QuicNetworkTransactionTest
   MockHostResolver host_resolver_;
   MockCertVerifier cert_verifier_;
   TransportSecurityState transport_security_state_;
+  scoped_ptr<TestNetworkQualityEstimator> test_network_quality_estimator_;
   scoped_refptr<SSLConfigServiceDefaults> ssl_config_service_;
   scoped_ptr<ProxyService> proxy_service_;
   scoped_ptr<HttpAuthHandlerFactory> auth_handler_factory_;
@@ -430,7 +491,11 @@ TEST_P(QuicNetworkTransactionTest, ForceQuic) {
 
   CreateSession();
 
+  EXPECT_FALSE(
+      test_network_quality_estimator_->IsRTTAvailableNotificationReceived());
   SendRequestAndExpectQuicResponse("hello!");
+  EXPECT_TRUE(
+      test_network_quality_estimator_->IsRTTAvailableNotificationReceived());
 
   // Check that the NetLog was filled reasonably.
   TestNetLogEntry::List entries;
@@ -491,12 +556,16 @@ TEST_P(QuicNetworkTransactionTest, QuicProxy) {
 
   mock_quic_data.AddSocketDataToFactory(&socket_factory_);
 
+  EXPECT_FALSE(
+      test_network_quality_estimator_->IsRTTAvailableNotificationReceived());
   // There is no need to set up an alternate protocol job, because
   // no attempt will be made to speak to the proxy over TCP.
 
   CreateSession();
 
   SendRequestAndExpectQuicResponseFromProxyOnPort("hello!", 70);
+  EXPECT_TRUE(
+      test_network_quality_estimator_->IsRTTAvailableNotificationReceived());
 }
 
 // Regression test for https://crbug.com/492458.  Test that for an HTTP
@@ -548,19 +617,27 @@ TEST_P(QuicNetworkTransactionTest, ForceQuicWithErrorConnecting) {
   params_.origin_to_force_quic_on =
       HostPortPair::FromString("www.google.com:80");
 
-  MockQuicData mock_quic_data;
-  mock_quic_data.AddRead(ASYNC, ERR_SOCKET_NOT_CONNECTED);
+  MockQuicData mock_quic_data1;
+  mock_quic_data1.AddRead(ASYNC, ERR_SOCKET_NOT_CONNECTED);
 
-  mock_quic_data.AddSocketDataToFactory(&socket_factory_);
+  MockQuicData mock_quic_data2;
+  mock_quic_data2.AddRead(ASYNC, ERR_SOCKET_NOT_CONNECTED);
+
+  mock_quic_data1.AddSocketDataToFactory(&socket_factory_);
+  mock_quic_data2.AddSocketDataToFactory(&socket_factory_);
 
   CreateSession();
 
-  scoped_ptr<HttpNetworkTransaction> trans(
-      new HttpNetworkTransaction(DEFAULT_PRIORITY, session_.get()));
-  TestCompletionCallback callback;
-  int rv = trans->Start(&request_, callback.callback(), net_log_.bound());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
-  EXPECT_EQ(ERR_CONNECTION_CLOSED, callback.WaitForResult());
+  EXPECT_EQ(0U, test_network_quality_estimator_->GetWatchersCreated());
+  for (size_t i = 0; i < 2; ++i) {
+    scoped_ptr<HttpNetworkTransaction> trans(
+        new HttpNetworkTransaction(DEFAULT_PRIORITY, session_.get()));
+    TestCompletionCallback callback;
+    int rv = trans->Start(&request_, callback.callback(), net_log_.bound());
+    EXPECT_EQ(ERR_IO_PENDING, rv);
+    EXPECT_EQ(ERR_CONNECTION_CLOSED, callback.WaitForResult());
+    EXPECT_EQ(1 + i, test_network_quality_estimator_->GetWatchersCreated());
+  }
 }
 
 TEST_P(QuicNetworkTransactionTest, DoNotForceQuicForHttps) {
@@ -583,6 +660,7 @@ TEST_P(QuicNetworkTransactionTest, DoNotForceQuicForHttps) {
   CreateSession();
 
   SendRequestAndExpectHttpResponse("hello world");
+  EXPECT_EQ(0U, test_network_quality_estimator_->GetWatchersCreated());
 }
 
 TEST_P(QuicNetworkTransactionTest, UseAlternativeServiceForQuic) {
@@ -1721,6 +1799,8 @@ TEST_P(QuicNetworkTransactionTest, SecureResourceOverInsecureQuic) {
 TEST_P(QuicNetworkTransactionTest, SecureResourceOverSecureQuic) {
   params_.enable_insecure_quic = true;
   maker_.set_hostname("www.example.org");
+  EXPECT_FALSE(
+      test_network_quality_estimator_->IsRTTAvailableNotificationReceived());
   MockQuicData mock_quic_data;
   mock_quic_data.AddWrite(
       ConstructRequestHeadersPacket(1, kClientDataStreamId1, true, true,
@@ -1748,6 +1828,8 @@ TEST_P(QuicNetworkTransactionTest, SecureResourceOverSecureQuic) {
   CreateSessionWithNextProtos();
   AddQuicAlternateProtocolMapping(MockCryptoClientStream::CONFIRM_HANDSHAKE);
   SendRequestAndExpectQuicResponse("hello!");
+  EXPECT_TRUE(
+      test_network_quality_estimator_->IsRTTAvailableNotificationReceived());
 }
 
 }  // namespace test

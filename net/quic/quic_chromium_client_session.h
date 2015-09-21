@@ -17,6 +17,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "net/base/completion_callback.h"
+#include "net/base/socket_performance_watcher.h"
 #include "net/proxy/proxy_server.h"
 #include "net/quic/quic_client_session_base.h"
 #include "net/quic/quic_connection_logger.h"
@@ -119,6 +120,7 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
       const char* const connection_description,
       base::TimeTicks dns_resolution_end_time,
       base::TaskRunner* task_runner,
+      scoped_ptr<SocketPerformanceWatcher> socket_performance_watcher,
       NetLog* net_log);
   ~QuicChromiumClientSession() override;
 

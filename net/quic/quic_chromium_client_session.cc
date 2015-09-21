@@ -170,6 +170,7 @@ QuicChromiumClientSession::QuicChromiumClientSession(
     const char* const connection_description,
     base::TimeTicks dns_resolution_end_time,
     base::TaskRunner* task_runner,
+    scoped_ptr<SocketPerformanceWatcher> socket_performance_watcher,
     NetLog* net_log)
     : QuicClientSessionBase(connection, config),
       server_id_(server_id),
@@ -183,7 +184,10 @@ QuicChromiumClientSession::QuicChromiumClientSession(
       net_log_(BoundNetLog::Make(net_log, NetLog::SOURCE_QUIC_SESSION)),
       packet_reader_(socket_.get(), this, net_log_),
       dns_resolution_end_time_(dns_resolution_end_time),
-      logger_(new QuicConnectionLogger(this, connection_description, net_log_)),
+      logger_(new QuicConnectionLogger(this,
+                                       connection_description,
+                                       socket_performance_watcher.Pass(),
+                                       net_log_)),
       going_away_(false),
       disabled_reason_(QUIC_DISABLED_NOT),
       weak_factory_(this) {

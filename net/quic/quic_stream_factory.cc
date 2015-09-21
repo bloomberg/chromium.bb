@@ -19,6 +19,8 @@
 #include "base/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "net/base/net_errors.h"
+#include "net/base/socket_performance_watcher.h"
+#include "net/base/socket_performance_watcher_factory.h"
 #include "net/cert/cert_verifier.h"
 #include "net/dns/host_resolver.h"
 #include "net/dns/single_request_host_resolver.h"
@@ -570,6 +572,7 @@ QuicStreamFactory::QuicStreamFactory(
     CertPolicyEnforcer* cert_policy_enforcer,
     ChannelIDService* channel_id_service,
     TransportSecurityState* transport_security_state,
+    const SocketPerformanceWatcherFactory* socket_performance_watcher_factory,
     QuicCryptoClientStreamFactory* quic_crypto_client_stream_factory,
     QuicRandom* random_generator,
     QuicClock* clock,
@@ -602,6 +605,7 @@ QuicStreamFactory::QuicStreamFactory(
       random_generator_(random_generator),
       clock_(clock),
       max_packet_length_(max_packet_length),
+      socket_performance_watcher_factory_(socket_performance_watcher_factory),
       config_(InitializeQuicConfig(connection_options)),
       supported_versions_(supported_versions),
       enable_port_selection_(enable_port_selection),
@@ -1274,12 +1278,21 @@ int QuicStreamFactory::CreateSession(const QuicServerId& server_id,
     server_info->Start();
   }
 
+  // Use the factory to create a new socket performance watcher, and pass the
+  // ownership to QuicChromiumClientSession.
+  scoped_ptr<SocketPerformanceWatcher> socket_performance_watcher;
+  if (socket_performance_watcher_factory_) {
+    socket_performance_watcher = socket_performance_watcher_factory_
+                                     ->CreateUDPSocketPerformanceWatcher();
+  }
+
   *session = new QuicChromiumClientSession(
       connection, socket.Pass(), this, quic_crypto_client_stream_factory_,
       transport_security_state_, server_info.Pass(), server_id,
       cert_verify_flags, config, &crypto_config_,
       network_connection_.GetDescription(), dns_resolution_end_time,
-      base::ThreadTaskRunnerHandle::Get().get(), net_log.net_log());
+      base::ThreadTaskRunnerHandle::Get().get(),
+      socket_performance_watcher.Pass(), net_log.net_log());
 
   all_sessions_[*session] = server_id;  // owning pointer
 
