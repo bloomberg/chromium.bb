@@ -623,6 +623,12 @@ void BrowserMainLoop::PostMainMessageLoopStart() {
       IOSurfaceManager::SetInstance(BrowserIOSurfaceManager::GetInstance());
     }
   }
+
+  if (BootstrapSandboxManager::ShouldEnable()) {
+    TRACE_EVENT0("startup",
+                 "BrowserMainLoop::Subsystem:BootstrapSandbox");
+    CHECK(BootstrapSandboxManager::GetInstance());
+  }
 #endif
 
 #if defined(USE_OZONE)
@@ -1253,11 +1259,6 @@ int BrowserMainLoop::BrowserThreadsStarted() {
 #if defined(OS_MACOSX)
   ThemeHelperMac::GetInstance();
   SystemHotkeyHelperMac::GetInstance()->DeferredLoadSystemHotkeys();
-  if (BootstrapSandboxManager::ShouldEnable()) {
-    TRACE_EVENT0("startup",
-                 "BrowserMainLoop::BrowserThreadsStarted:BootstrapSandbox");
-    CHECK(BootstrapSandboxManager::GetInstance());
-  }
 #endif  // defined(OS_MACOSX)
 
 #endif  // !defined(OS_IOS)
