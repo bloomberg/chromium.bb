@@ -57,10 +57,6 @@ public:
     // at draw time. Defaults to false.
     virtual void setBlendBackgroundColor(bool) = 0;
 
-    // Sets whether this context should be rate limited by the compositor. Rate limiting works by blocking
-    // invalidate() and invalidateRect() calls if the compositor is too many frames behind.
-    virtual void setRateLimitContext(bool) = 0;
-
     // Sets whether this texture should use nearest neighbor interpolation as
     // opposed to bilinear. Defaults to false.
     virtual void setNearestNeighbor(bool) = 0;

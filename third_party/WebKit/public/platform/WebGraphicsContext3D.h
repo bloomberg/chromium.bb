@@ -195,9 +195,6 @@ public:
     virtual void blitFramebufferCHROMIUM(WGC3Dint srcX0, WGC3Dint srcY0, WGC3Dint srcX1, WGC3Dint srcY1, WGC3Dint dstX0, WGC3Dint dstY0, WGC3Dint dstX1, WGC3Dint dstY1, WGC3Dbitfield mask, WGC3Denum filter) = 0;
     virtual void renderbufferStorageMultisampleCHROMIUM(WGC3Denum target, WGC3Dsizei samples, WGC3Denum internalformat, WGC3Dsizei width, WGC3Dsizei height) = 0;
 
-    // GL_CHROMIUM_rate_limit_offscreen_context
-    virtual void rateLimitOffscreenContextCHROMIUM() { }
-
     // GL_CHROMIUM_lose_context
     virtual void loseContextCHROMIUM(WGC3Denum current, WGC3Denum other) { }
 
