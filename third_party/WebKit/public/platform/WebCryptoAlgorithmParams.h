@@ -316,7 +316,7 @@ public:
 
     virtual WebCryptoAlgorithmParamsType type() const { return WebCryptoAlgorithmParamsTypeEcdhKeyDeriveParams; }
 
-    const WebCryptoKey publicKey() const { return m_publicKey; }
+    const WebCryptoKey& publicKey() const { return m_publicKey; }
 
 private:
     const WebCryptoKey m_publicKey;
