@@ -178,19 +178,15 @@ void buildMediaListChain(CSSRule* rule, Vector<String>& mediaArray)
         collectMediaQueriesFromRule(rule, mediaArray);
         if (rule->parentRule()) {
             rule = rule->parentRule();
-        } else {
+        } else if (rule->parentStyleSheet()) {
             CSSStyleSheet* styleSheet = rule->parentStyleSheet();
-            // TODO: should be able to replace cycle by one iteration of it.
-            while (styleSheet) {
-                MediaList* mediaList = styleSheet->media();
-                if (mediaList && mediaList->length())
-                    mediaArray.append(mediaList->mediaText());
+            MediaList* mediaList = styleSheet->media();
+            if (mediaList && mediaList->length())
+                mediaArray.append(mediaList->mediaText());
 
-                rule = styleSheet->ownerRule();
-                if (rule)
-                    break;
-                styleSheet = styleSheet->parentStyleSheet();
-            }
+            rule = styleSheet->ownerRule();
+        } else {
+            break;
         }
     }
 }
