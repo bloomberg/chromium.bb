@@ -11,6 +11,27 @@ from pylib.base import test_run
 from pylib.base import test_collection
 
 
+def handle_shard_failures(f):
+  """A decorator that handles device failures for per-device functions.
+
+  Args:
+    f: the function being decorated. The function must take at least one
+      argument, and that argument must be the device.
+  """
+  def wrapper(dev, *args, **kwargs):
+    try:
+      return f(dev, *args, **kwargs)
+    except device_errors.CommandFailedError:
+      logging.exception('Shard failed: %s(%s)', f.__name__, str(dev))
+    except device_errors.CommandTimeoutError:
+      logging.exception('Shard timed out: %s(%s)', f.__name__, str(dev))
+    except device_errors.DeviceUnreachableError:
+      logging.exception('Shard died: %s(%s)', f.__name__, str(dev))
+    return None
+
+  return wrapper
+
+
 class LocalDeviceTestRun(test_run.TestRun):
 
   def __init__(self, env, test_instance):
@@ -21,6 +42,7 @@ class LocalDeviceTestRun(test_run.TestRun):
   def RunTests(self):
     tests = self._GetTests()
 
+    @handle_shard_failures
     def run_tests_on_device(dev, tests, results):
       for test in tests:
         try:
@@ -52,21 +74,14 @@ class LocalDeviceTestRun(test_run.TestRun):
       for t in tests:
         logging.debug('  %s', t)
 
-      try:
-        try_results = base_test_result.TestRunResults()
-        if self._ShouldShard():
-          tc = test_collection.TestCollection(self._CreateShards(tests))
-          self._env.parallel_devices.pMap(
-              run_tests_on_device, tc, try_results).pGet(None)
-        else:
-          self._env.parallel_devices.pMap(
-              run_tests_on_device, tests, try_results).pGet(None)
-      except device_errors.CommandFailedError:
-        logging.exception('Shard terminated: command failed')
-      except device_errors.CommandTimeoutError:
-        logging.exception('Shard terminated: command timed out')
-      except device_errors.DeviceUnreachableError:
-        logging.exception('Shard terminated: device became unreachable')
+      try_results = base_test_result.TestRunResults()
+      if self._ShouldShard():
+        tc = test_collection.TestCollection(self._CreateShards(tests))
+        self._env.parallel_devices.pMap(
+            run_tests_on_device, tc, try_results).pGet(None)
+      else:
+        self._env.parallel_devices.pMap(
+            run_tests_on_device, tests, try_results).pGet(None)
 
       for result in try_results.GetAll():
         if result.GetType() in (base_test_result.ResultType.PASS,

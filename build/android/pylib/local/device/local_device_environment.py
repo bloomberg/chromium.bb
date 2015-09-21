@@ -2,6 +2,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import logging
+import threading
+
 from devil.android import device_blacklist
 from devil.android import device_errors
 from devil.android import device_utils
@@ -17,6 +20,7 @@ class LocalDeviceEnvironment(environment.Environment):
                        if args.blacklist_file
                        else None)
     self._device_serial = args.test_device
+    self._devices_lock = threading.Lock()
     self._devices = []
     self._max_tries = 1 + args.num_retries
     self._tool_name = args.tool
@@ -38,11 +42,13 @@ class LocalDeviceEnvironment(environment.Environment):
 
   @property
   def devices(self):
+    if not self._devices:
+      raise device_errors.NoDevicesError()
     return self._devices
 
   @property
   def parallel_devices(self):
-    return parallelizer.SyncParallelizer(self._devices)
+    return parallelizer.SyncParallelizer(self.devices)
 
   @property
   def max_tries(self):
@@ -55,4 +61,16 @@ class LocalDeviceEnvironment(environment.Environment):
   #override
   def TearDown(self):
     pass
+
+  def BlacklistDevice(self, device):
+    if not self._blacklist:
+      logging.warning(
+          'Attempted to blacklist %s, but no blacklist was provided.',
+          str(device))
+      return
+
+    device_serial = device.adb.GetDeviceSerial()
+    self._blacklist.Extend([device_serial])
+    with self._devices_lock:
+      self._devices = [d for d in self._devices if str(d) != device_serial]
 

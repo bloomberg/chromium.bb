@@ -3,7 +3,6 @@
 # found in the LICENSE file.
 
 import itertools
-import logging
 import os
 import posixpath
 
@@ -108,10 +107,13 @@ class _ExeDelegate(object):
     device.PushChangedFiles(host_device_tuples)
 
   def Run(self, test, device, flags=None, **kwargs):
-    cmd = [
-        self._test_run.GetTool(device).GetTestWrapper(),
-        self._exe_device_path,
-    ]
+    tool = self._test_run.GetTool(device).GetTestWrapper()
+    if tool:
+      cmd = [tool]
+    else:
+      cmd = []
+    cmd.append(self._exe_device_path)
+
     if test:
       cmd.append('--gtest_filter=%s' % ':'.join(test))
     if flags:
@@ -130,14 +132,8 @@ class _ExeDelegate(object):
     except (device_errors.CommandFailedError, KeyError):
       pass
 
-    # TODO(jbudorick): Switch to just RunShellCommand once perezju@'s CL
-    # for long shell commands lands.
-    with device_temp_file.DeviceTempFile(device.adb) as script_file:
-      script_contents = ' '.join(cmd)
-      logging.info('script contents: %r', script_contents)
-      device.WriteFile(script_file.name, script_contents)
-      output = device.RunShellCommand(['sh', script_file.name], cwd=cwd,
-                                      env=env, **kwargs)
+    output = device.RunShellCommand(
+        cmd, cwd=cwd, env=env, check_return=True, large_output=True, **kwargs)
     return output
 
   def PullAppFiles(self, device, files, directory):
@@ -168,6 +164,7 @@ class LocalDeviceGtestRun(local_device_test_run.LocalDeviceTestRun):
   #override
   def SetUp(self):
 
+    @local_device_test_run.handle_shard_failures
     def individual_device_set_up(dev, host_device_tuples):
       # Install test APK.
       self._delegate.Install(dev)
@@ -207,10 +204,16 @@ class LocalDeviceGtestRun(local_device_test_run.LocalDeviceTestRun):
 
   #override
   def _GetTests(self):
-    tests = self._delegate.Run(
-        None, self._env.devices[0], flags='--gtest_list_tests')
-    tests = gtest_test_instance.ParseGTestListTests(tests)
-    tests = self._test_instance.FilterTests(tests)
+    @local_device_test_run.handle_shard_failures
+    def list_tests(dev):
+      tests = self._delegate.Run(
+          None, dev, flags='--gtest_list_tests', timeout=10)
+      tests = gtest_test_instance.ParseGTestListTests(tests)
+      tests = self._test_instance.FilterTests(tests)
+      return tests
+
+    test_lists = self._env.parallel_devices.pMap(list_tests).pGet(None)
+    tests = list(sorted(set().union(*[set(tl) for tl in test_lists if tl])))
     return tests
 
   #override
@@ -233,6 +236,7 @@ class LocalDeviceGtestRun(local_device_test_run.LocalDeviceTestRun):
 
   #override
   def TearDown(self):
+    @local_device_test_run.handle_shard_failures
     def individual_device_tear_down(dev):
       for s in self._servers[str(dev)]:
         s.TearDown()

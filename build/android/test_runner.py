@@ -32,8 +32,6 @@ from pylib.base import test_dispatcher
 from pylib.base import test_instance_factory
 from pylib.base import test_run_factory
 from pylib.gtest import gtest_config
-# TODO(jbudorick): Remove this once we stop selectively enabling platform mode.
-from pylib.gtest import gtest_test_instance
 from pylib.gtest import setup as gtest_setup
 from pylib.gtest import test_options as gtest_test_options
 from pylib.linker import setup as linker_setup
@@ -944,9 +942,7 @@ def RunTestsCommand(args, parser): # pylint: disable=too-many-return-statements
     raise Exception('Failed to reset test server port.')
 
   if command == 'gtest':
-    if args.suite_name[0] in gtest_test_instance.BROWSER_TEST_SUITES:
-      return RunTestsInPlatformMode(args, parser)
-    return _RunGTests(args, devices)
+    return RunTestsInPlatformMode(args, parser)
   elif command == 'linker':
     return _RunLinkerTests(args, devices)
   elif command == 'instrumentation':
@@ -975,13 +971,16 @@ _SUPPORTED_IN_PLATFORM_MODE = [
 
 def RunTestsInPlatformMode(args, parser):
 
-  if args.command not in _SUPPORTED_IN_PLATFORM_MODE:
-    parser.error('%s is not yet supported in platform mode' % args.command)
+  def infra_error(message):
+    parser.exit(status=constants.INFRA_EXIT_CODE, message=message)
 
-  with environment_factory.CreateEnvironment(args, parser.error) as env:
-    with test_instance_factory.CreateTestInstance(args, parser.error) as test:
+  if args.command not in _SUPPORTED_IN_PLATFORM_MODE:
+    infra_error('%s is not yet supported in platform mode' % args.command)
+
+  with environment_factory.CreateEnvironment(args, infra_error) as env:
+    with test_instance_factory.CreateTestInstance(args, infra_error) as test:
       with test_run_factory.CreateTestRun(
-          args, env, test, parser.error) as test_run:
+          args, env, test, infra_error) as test_run:
         results = test_run.RunTests()
 
         if args.environment == 'remote_device' and args.trigger:

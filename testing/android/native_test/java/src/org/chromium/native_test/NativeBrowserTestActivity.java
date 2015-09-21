@@ -15,7 +15,7 @@ import java.io.File;
  */
 public abstract class NativeBrowserTestActivity extends NativeTestActivity {
 
-    private static final String TAG = "cr.native_test";
+    private static final String TAG = "cr_NativeTest";
 
     private static final String BROWSER_TESTS_FLAGS[] = {
         // content::kSingleProcessTestsFlag

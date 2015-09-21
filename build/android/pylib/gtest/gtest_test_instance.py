@@ -23,6 +23,8 @@ BROWSER_TEST_SUITES = [
   'content_browsertests',
 ]
 
+RUN_IN_SUB_THREAD_TEST_SUITES = ['net_unittests']
+
 
 _DEFAULT_ISOLATE_FILE_PATHS = {
     'base_unittests': 'base/base_unittests.isolate',
@@ -73,6 +75,8 @@ _DEPS_EXCLUSION_LIST = [
 _EXTRA_NATIVE_TEST_ACTIVITY = (
     'org.chromium.native_test.NativeTestInstrumentationTestRunner.'
         'NativeTestActivity')
+_EXTRA_RUN_IN_SUB_THREAD = (
+    'org.chromium.native_test.NativeTestActivity.RunInSubThread')
 _EXTRA_SHARD_SIZE_LIMIT = (
     'org.chromium.native_test.NativeTestInstrumentationTestRunner.'
         'ShardSizeLimit')
@@ -148,6 +152,8 @@ class GtestTestInstance(test_instance.TestInstance):
       self._extras = {
         _EXTRA_NATIVE_TEST_ACTIVITY: self._activity,
       }
+      if self._suite in RUN_IN_SUB_THREAD_TEST_SUITES:
+        self._extras[_EXTRA_RUN_IN_SUB_THREAD] = 1
       if self._suite in BROWSER_TEST_SUITES:
         self._extras[_EXTRA_SHARD_SIZE_LIMIT] = 1
 

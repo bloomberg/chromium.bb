@@ -3,9 +3,9 @@
 # found in the LICENSE file.
 
 from pylib.gtest import gtest_test_instance
-from pylib.gtest import local_device_gtest_run
 from pylib.instrumentation import instrumentation_test_instance
 from pylib.local.device import local_device_environment
+from pylib.local.device import local_device_gtest_run
 from pylib.local.device import local_device_instrumentation_test_run
 from pylib.remote.device import remote_device_environment
 from pylib.remote.device import remote_device_gtest_run

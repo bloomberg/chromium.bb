@@ -17,7 +17,7 @@ import org.chromium.base.library_loader.NativeLibraries;
  */
 public class NativeUnitTestActivity extends NativeTestActivity {
 
-    private static final String TAG = "cr.native_test";
+    private static final String TAG = "cr_NativeTest";
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
