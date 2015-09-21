@@ -247,17 +247,4 @@ TEST_F(DataUsageStoreTest, StoreMultipleBuckets) {
             data_usage[kNumExpectedBuckets - 1].last_updated_timestamp());
 }
 
-TEST_F(DataUsageStoreTest, DeleteHistoricalDataUsage) {
-  DataUsageBucket bucket;
-  data_usage_store()->LoadCurrentDataUsageBucket(&bucket);
-
-  bucket.set_last_updated_timestamp(base::Time::Now().ToInternalValue());
-
-  data_usage_store()->StoreCurrentDataUsageBucket(bucket);
-  ASSERT_EQ(2u, store()->map()->size());
-
-  data_usage_store()->DeleteHistoricalDataUsage();
-  ASSERT_EQ(0u, store()->map()->size());
-}
-
 }  // namespace data_reduction_proxy

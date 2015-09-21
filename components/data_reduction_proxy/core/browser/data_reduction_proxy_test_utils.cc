@@ -242,12 +242,6 @@ DataStore::Status TestDataStore::Put(
   return OK;
 }
 
-DataStore::Status TestDataStore::Delete(const std::string& key) {
-  map_.erase(key);
-
-  return OK;
-}
-
 DataReductionProxyTestContext::Builder::Builder()
     : params_flags_(DataReductionProxyParams::kAllowed |
                     DataReductionProxyParams::kFallbackAllowed |

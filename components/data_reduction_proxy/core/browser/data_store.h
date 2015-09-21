@@ -33,8 +33,6 @@ class DataStore {
   // Persists the provided keys and values into the store.
   virtual Status Put(const std::map<std::string, std::string>& map);
 
-  virtual Status Delete(const std::string& key);
-
  private:
   DISALLOW_COPY_AND_ASSIGN(DataStore);
 };

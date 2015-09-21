@@ -692,8 +692,6 @@ void DataReductionProxyCompressionStats::OnCurrentDataUsageLoaded(
 }
 
 void DataReductionProxyCompressionStats::ClearDataSavingStatistics() {
-  DeleteHistoricalDataUsage();
-
   list_pref_map_.get(
       prefs::kDailyContentLengthHttpsWithDataReductionProxyEnabled)->Clear();
   list_pref_map_
@@ -1169,24 +1167,6 @@ void DataReductionProxyCompressionStats::PersistDataUsage() {
   data_usage_map_is_dirty_ = false;
 }
 
-void DataReductionProxyCompressionStats::DeleteHistoricalDataUsage() {
-  // This method does not support being called in |LOADING| status since this
-  // means that the in-memory data usage will get populated when data usage
-  // loads, which will undo the clear below. This method is called when users
-  // click on the "Clear Data" button, or when user deletes the extension. In
-  // both cases, enough time has passed since startup to load current data
-  // usage. Technically, this could occur, and will have the effect of not
-  // clearing data from the current bucket.
-  // TODO(kundaji): Use cancellable tasks and remove this DCHECK.
-  DCHECK(current_data_usage_load_status_ != LOADING);
-
-  data_usage_map_.clear();
-  data_usage_map_last_updated_ = base::Time();
-  data_usage_map_is_dirty_ = false;
-
-  service_->DeleteHistoricalDataUsage();
-}
-
 void DataReductionProxyCompressionStats::OnDataUsageReportingPrefChanged() {
   if (data_usage_reporting_enabled_.GetValue()) {
     if (current_data_usage_load_status_ == NOT_LOADED) {
@@ -1195,8 +1175,11 @@ void DataReductionProxyCompressionStats::OnDataUsageReportingPrefChanged() {
           &DataReductionProxyCompressionStats::OnCurrentDataUsageLoaded,
           weak_factory_.GetWeakPtr()));
     }
-  } else {
-    DeleteHistoricalDataUsage();
+  } else if (current_data_usage_load_status_ == LOADED) {
+    PersistDataUsage();
+    data_usage_map_.clear();
+    data_usage_map_last_updated_ = base::Time();
+    current_data_usage_load_status_ = NOT_LOADED;
   }
 }
 

@@ -24,8 +24,4 @@ DataStore::Status DataStore::Put(
   return DataStore::Status::OK;
 }
 
-DataStore::Status DataStore::Delete(const std::string& key) {
-  return DataStore::Status::OK;
-}
-
 }  // namespace data_reduction_proxy

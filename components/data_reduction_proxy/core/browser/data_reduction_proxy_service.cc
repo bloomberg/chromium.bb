@@ -53,7 +53,6 @@ DataReductionProxyService::DataReductionProxyService(
 
 DataReductionProxyService::~DataReductionProxyService() {
   DCHECK(CalledOnValidThread());
-  compression_stats_.reset();
   db_task_runner_->DeleteSoon(FROM_HERE, db_data_owner_.release());
 }
 
@@ -285,12 +284,6 @@ void DataReductionProxyService::StoreCurrentDataUsageBucket(
       FROM_HERE,
       base::Bind(&DBDataOwner::StoreCurrentDataUsageBucket,
                  db_data_owner_->GetWeakPtr(), base::Passed(&current)));
-}
-
-void DataReductionProxyService::DeleteHistoricalDataUsage() {
-  db_task_runner_->PostTask(FROM_HERE,
-                            base::Bind(&DBDataOwner::DeleteHistoricalDataUsage,
-                                       db_data_owner_->GetWeakPtr()));
 }
 
 void DataReductionProxyService::AddObserver(

@@ -61,8 +61,9 @@ DataStore::Status DataStoreImpl::Get(const std::string& key,
                                      std::string* value) {
   DCHECK(sequence_checker_.CalledOnValidSequencedThread());
 
-  if (!db_)
+  if (db_.get() == nullptr) {
     return MISC_ERROR;
+  }
 
   leveldb::ReadOptions read_options;
   read_options.verify_checksums = true;
@@ -78,8 +79,9 @@ DataStore::Status DataStoreImpl::Put(
     const std::map<std::string, std::string>& map) {
   DCHECK(sequence_checker_.CalledOnValidSequencedThread());
 
-  if (!db_)
+  if (db_.get() == nullptr) {
     return MISC_ERROR;
+  }
 
   leveldb::WriteBatch batch;
   for (const auto& iter : map) {
@@ -90,21 +92,6 @@ DataStore::Status DataStoreImpl::Put(
 
   leveldb::WriteOptions write_options;
   leveldb::Status status = db_->Write(write_options, &batch);
-  if (status.IsCorruption())
-    RecreateDB();
-
-  return LevelDbToDRPStoreStatus(status);
-}
-
-DataStore::Status DataStoreImpl::Delete(const std::string& key) {
-  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
-
-  if (!db_)
-    return MISC_ERROR;
-
-  leveldb::Slice slice(key);
-  leveldb::WriteOptions write_options;
-  leveldb::Status status = db_->Delete(write_options, slice);
   if (status.IsCorruption())
     RecreateDB();
 
