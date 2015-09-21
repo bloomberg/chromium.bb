@@ -27,6 +27,7 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <stdbool.h>
 
 #include "ivi-layout-export.h"
 #include "ivi-layout-private.h"
@@ -181,7 +182,7 @@ ivi_layout_transition_set_create(struct weston_compositor *ec)
 	return transitions;
 }
 
-static void
+static bool
 layout_transition_register(struct ivi_layout_transition *trans)
 {
 	struct ivi_layout *layout = get_instance();
@@ -190,11 +191,12 @@ layout_transition_register(struct ivi_layout_transition *trans)
 	node = malloc(sizeof(*node));
 	if (node == NULL) {
 		weston_log("%s: memory allocation fails\n", __func__);
-		return;
+		return false;
 	}
 
 	node->transition = trans;
 	wl_list_insert(&layout->pending_transition_list, &node->link);
+	return true;
 }
 
 static void
