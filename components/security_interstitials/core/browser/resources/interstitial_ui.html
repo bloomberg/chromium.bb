@@ -6,47 +6,49 @@
   <h2>Choose an interstitial</h2>
   <h3>SSL</h3>
   <div>
-    <a href='ssl'>example.com</a>
+    <a href="ssl">example.com (generic, overridable)</a>
   </div>
   <div>
-    <a href='ssl?url=https://google.com'>SSL (google.com)</a>
-  </div>
-  <div>
-    <a href='ssl?overridable=1&strict_enforcement=0'>
-      example.com (Overridable)
+    <a href="ssl?overridable=1&strict_enforcement=0">
+      example.com (generic, non-overridable)
     </a>
   </div>
   <div>
-    <a href='clock?clock_manipulation=2'>Clock is ahead</a>
+    <a href="ssl?overridable=1&strict_enforcement=1">
+      example.com (HSTS, non-overridable)
+    </a>
   </div>
   <div>
-    <a href='clock?clock_manipulation=-2'>Clock is behind</a>
+    <a href="clock?clock_manipulation=2">Clock is ahead</a>
+  </div>
+  <div>
+    <a href="clock?clock_manipulation=-2">Clock is behind</a>
   </div>
   <h3>SafeBrowsing</h3>
   <div>
-    <a href='safebrowsing?type=malware'>Malware</a>
+    <a href="safebrowsing?type=malware">Malware</a>
   </div>
   <div>
-    <a href='safebrowsing?type=phishing'>Phishing</a>
+    <a href="safebrowsing?type=phishing">Phishing</a>
   </div>
   <div>
-    <a href='safebrowsing?type=clientside_malware'>Client Side Malware</a>
+    <a href="safebrowsing?type=clientside_malware">Client Side Malware</a>
   </div>
   <div>
-    <a href='safebrowsing?type=clientside_phishing'>Client Side Phishing</a>
+    <a href="safebrowsing?type=clientside_phishing">Client Side Phishing</a>
   </div>
   <h3>Captive Portal</h3>
   <div>
-    <a href='captiveportal'>google.com (Captive Portal, Non-Wifi)</a>
+    <a href="captiveportal">Captive Portal, Non-WiFi</a>
   </div>
   <div>
-    <a href='captiveportal?is_wifi=1'>
-      google.com (Captive Portal, on some Wifi)
+    <a href="captiveportal?is_wifi=1">
+      Captive Portal, WiFi
     </a>
   </div>
   <div>
-    <a href='captiveportal?is_wifi=1&wifi_name=CoffeeShopWifi'>
-      google.com (CaptivePortal, on wifi "CoffeeShopWifi")
+    <a href="captiveportal?is_wifi=1&wifi_name=CoffeeShopWiFi">
+      Captive Portal, WiFi with network name "CoffeeShopWifi"
     </a>
   </div>
 </body>
