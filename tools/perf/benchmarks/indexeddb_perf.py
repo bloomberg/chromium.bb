@@ -24,6 +24,7 @@ import os
 
 from core import perf_benchmark
 
+from telemetry import benchmark
 from telemetry import page as page_module
 from telemetry import story
 from telemetry.core import util
@@ -116,6 +117,7 @@ class IndexedDbOriginalSectioned(perf_benchmark.PerfBenchmark):
     return 'storage.indexeddb_endure'
 
 
+@benchmark.Disabled('reference') # http://crbug.com/534409
 class IndexedDbTracing(perf_benchmark.PerfBenchmark):
   """IndexedDB Performance tests that use tracing."""
   page_set = page_sets.IndexedDBEndurePageSet
