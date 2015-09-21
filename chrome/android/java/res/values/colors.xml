@@ -103,6 +103,7 @@
 
     <!-- Progress Bar colors -->
     <color name="progress_bar_foreground">@color/light_active_color</color>
+    <color name="progress_bar_foreground_white">@android:color/white</color>
     <color name="progress_bar_background">#3d4386f7</color>
     <color name="progress_bar_background_white">#4d000000</color>
 
