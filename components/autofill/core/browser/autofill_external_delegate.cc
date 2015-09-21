@@ -293,8 +293,11 @@ void AutofillExternalDelegate::ApplyAutofillOptions(
   }
 
   // Append the 'Chrome Autofill options' menu item;
-  suggestions->push_back(Suggestion(
-      l10n_util::GetStringUTF16(IDS_AUTOFILL_OPTIONS_POPUP)));
+  // TODO(rouslan): Switch on the platform in the GRD file when keyboard
+  // accessory becomes default on Android.
+  suggestions->push_back(Suggestion(l10n_util::GetStringUTF16(
+      IsKeyboardAccessoryEnabled() ? IDS_AUTOFILL_OPTIONS_CONTENT_DESCRIPTION
+                                   : IDS_AUTOFILL_OPTIONS_POPUP)));
   suggestions->back().frontend_id = POPUP_ITEM_ID_AUTOFILL_OPTIONS;
   if (IsKeyboardAccessoryEnabled())
     suggestions->back().icon = base::ASCIIToUTF16("settings");

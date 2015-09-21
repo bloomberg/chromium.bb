@@ -126,6 +126,9 @@
       Chromium Autofill settings...
     </message>
   </if>
+  <message name="IDS_AUTOFILL_OPTIONS_CONTENT_DESCRIPTION" desc="The text verbalised by a screen reader for the button that directs the user to the Autofill settings UI. This string is not displayed.">
+    settings
+  </message>
 
   <message name="IDS_AUTOFILL_CREDIT_CARD_NOT_SUPPORTED_BY_WALLET" desc="Message displayed to user when user entered a credit card number that is not supported by Google Payments.">
     This type of card is not supported by Google Payments. Please select a different card.
