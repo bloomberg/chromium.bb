@@ -30,8 +30,13 @@ bool ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled() {
   bool enabled = false;
 #if defined(GOOGLE_CHROME_BUILD)
 #if defined(OS_CHROMEOS)
-  chromeos::CrosSettings::Get()->GetBoolean(chromeos::kStatsReportingPref,
-                                            &enabled);
+  // TODO(gayane): The check is added as a temporary fix for unittests. It's not
+  // expected to happen from production code. This should be cleaned up soon
+  // when metrics pref from cros will be eliminated.
+  if (chromeos::CrosSettings::IsInitialized()) {
+    chromeos::CrosSettings::Get()->GetBoolean(chromeos::kStatsReportingPref,
+                                              &enabled);
+  }
 #elif defined(OS_ANDROID)
   enabled = g_browser_process->local_state()->GetBoolean(
       prefs::kCrashReportingEnabled);
