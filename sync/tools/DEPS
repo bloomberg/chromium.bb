@@ -1,5 +1,6 @@
 include_rules = [
   "+components/invalidation",
+  "+components/sync_driver",
   "+google/cacheinvalidation",
   "+jingle/notifier/base",
   "+net",

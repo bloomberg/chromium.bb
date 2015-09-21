@@ -22,6 +22,7 @@
 #include "base/threading/thread.h"
 #include "components/invalidation/impl/non_blocking_invalidator.h"
 #include "components/invalidation/public/object_id_invalidation_map.h"
+#include "components/sync_driver/invalidation_helper.h"
 #include "jingle/notifier/base/notification_method.h"
 #include "jingle/notifier/base/notifier_options.h"
 #include "net/base/host_port_pair.h"
@@ -44,7 +45,6 @@
 #include "sync/js/js_event_details.h"
 #include "sync/js/js_event_handler.h"
 #include "sync/test/fake_encryptor.h"
-#include "sync/tools/invalidation_helper.h"
 #include "sync/tools/null_invalidation_state_tracker.h"
 #include "url/gurl.h"
 

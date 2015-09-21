@@ -10,8 +10,6 @@ if (is_linux && !is_chromeos) {
     testonly = true
 
     sources = [
-      "invalidation_helper.cc",
-      "invalidation_helper.h",
       "null_invalidation_state_tracker.cc",
       "null_invalidation_state_tracker.h",
     ]
@@ -19,6 +17,7 @@ if (is_linux && !is_chromeos) {
     deps = [
       "//base",
       "//components/invalidation/impl",
+      "//components/sync_driver",
       "//sync",
     ]
   }
@@ -34,6 +33,7 @@ if (is_linux && !is_chromeos) {
       ":common",
       "//base",
       "//components/invalidation/impl",
+      "//components/sync_driver",
       "//jingle:notifier",
       "//net",
       "//net:test_support",
@@ -53,6 +53,7 @@ if (is_linux && !is_chromeos) {
       ":common",
       "//base",
       "//components/invalidation/impl",
+      "//components/sync_driver",
       "//jingle:notifier",
       "//net",
       "//net:test_support",
