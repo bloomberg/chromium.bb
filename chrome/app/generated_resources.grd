@@ -4357,9 +4357,6 @@ Even if you have downloaded files from this website before, the website might ha
       <message name="IDS_EXTENSION_INSTALL_KIOSK_MODE_ONLY" desc="Error displayed during installation of an app with 'kiosk_only' attribute but user is not in Chrome OS kiosk mode.">
         App with 'kiosk_only' manifest attribute must be installed in Chrome OS kiosk mode.
       </message>
-      <message name="IDS_EXTENSION_INSTALL_DISALLOW_UNTRUSTED_EXTENSION" desc="Error displayed during installation of a side-loaded extension from an untrusted source.">
-        Cannot install untrusted extension with ID "<ph name="IMPORT_ID">$1<ex>aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa</ex></ph>."
-      </message>
       <message name="IDS_EXTENSION_OVERLAPPING_WEB_EXTENT" desc="Error message when a user tries to install an app with a web extent that overlaps another installed app.">
         Could not add application because it conflicts with "<ph name="APP_NAME">$1<ex>Google Mail</ex></ph>".
       </message>
