@@ -128,11 +128,10 @@ IOSurfaceRef ChildIOSurfaceManager::AcquireIOSurface(
     MACH_LOG(ERROR, kr) << "mach_msg";
     return nullptr;
   }
-
-  // Crash the renderer (for now) to see if this was the cause of renderer hangs
-  // that have recently been noticed.
-  // http://crbug.com/532149
-  CHECK(data.reply.msg.result);
+  if (!data.reply.msg.result) {
+    DLOG(ERROR) << "Browser refused AcquireIOSurface request";
+    return nullptr;
+  }
 
   // Deallocate the right after creating an IOSurface reference.
   base::mac::ScopedMachSendRight scoped_io_surface_right(
