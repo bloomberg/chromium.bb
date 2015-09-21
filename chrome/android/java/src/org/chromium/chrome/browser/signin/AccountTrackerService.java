@@ -124,7 +124,12 @@ public class AccountTrackerService {
                     notifyObserversOnSeedingComplete();
                 } else {
                     Log.w(TAG, "Invalid mapping of id/email");
-                    seedSystemAccounts();
+                    if (sAccountIdProvider.canBeUsed(mContext, null)) {
+                        seedSystemAccounts();
+                        return;
+                    }
+                    mSystemAccountsSeedingStatus = SystemAccountsSeedingStatus.SEEDING_NOT_STARTED;
+                    notifyObserversOnForceRefreshed();
                 }
             }
         }.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
