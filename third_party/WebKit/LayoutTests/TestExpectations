@@ -1735,3 +1735,4 @@ crbug.com/527009 fast/dom/plugin-attributes-enumeration.html [ NeedsManualRebase
 crbug.com/527743 [ Win10 ] paint/masks/table-cell-masks.html [ Pass Timeout ]
 
 crbug.com/531286 virtual/gpu/fast/canvas/yuv-video-on-accelerated-canvas.html [ ImageOnlyFailure ]
+crbug.com/534423 [ Debug ] imported/web-platform-tests/html/syntax/parsing/html5lib_tests2.html [ Pass Crash ]
