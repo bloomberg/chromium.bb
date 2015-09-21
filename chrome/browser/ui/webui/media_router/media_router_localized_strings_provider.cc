@@ -20,10 +20,6 @@ void AddMediaRouterStrings(content::WebUIDataSource* html_source) {
 void AddRouteDetailsStrings(content::WebUIDataSource* html_source) {
   html_source->AddLocalizedString("castingActivityStatus",
       IDS_MEDIA_ROUTER_CASTING_ACTIVITY_STATUS);
-  html_source->AddLocalizedString("selectCastModeHeader",
-      IDS_MEDIA_ROUTER_SELECT_CAST_MODE_HEADER);
-  html_source->AddLocalizedString("shareYourScreenSubheading",
-      IDS_MEDIA_ROUTER_SHARE_YOUR_SCREEN_SUBHEADING);
   html_source->AddLocalizedString("stopCastingButton",
       IDS_MEDIA_ROUTER_STOP_CASTING_BUTTON);
 }
@@ -35,9 +31,13 @@ void AddIssuesActionsStrings(content::WebUIDataSource* html_source) {
                                   IDS_MEDIA_ROUTER_LEARN_MORE_BUTTON);
 }
 
-void AddSinkListStrings(content::WebUIDataSource* html_source) {
+void AddMediaRouterContainerStrings(content::WebUIDataSource* html_source) {
   html_source->AddLocalizedString("deviceMissing",
                                   IDS_MEDIA_ROUTER_DEVICE_MISSING);
+  html_source->AddLocalizedString("selectCastModeHeader",
+      IDS_MEDIA_ROUTER_SELECT_CAST_MODE_HEADER);
+  html_source->AddLocalizedString("shareYourScreenSubheading",
+      IDS_MEDIA_ROUTER_SHARE_YOUR_SCREEN_SUBHEADING);
 }
 
 }  // namespace
@@ -48,7 +48,7 @@ void AddLocalizedStrings(content::WebUIDataSource* html_source) {
   AddMediaRouterStrings(html_source);
   AddRouteDetailsStrings(html_source);
   AddIssuesActionsStrings(html_source);
-  AddSinkListStrings(html_source);
+  AddMediaRouterContainerStrings(html_source);
   html_source->SetJsonPath(kLocalizedStringsFile);
 }
 
