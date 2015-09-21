@@ -15,9 +15,12 @@
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/components_strings.h"
-#include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/paint_vector_icon.h"
+#include "ui/gfx/vector_icons_public.h"
+#include "ui/native_theme/common_theme.h"
+#include "ui/native_theme/native_theme.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/button/blue_button.h"
 #include "ui/views/controls/image_view.h"
@@ -136,15 +139,18 @@ SadTabView::SadTabView(WebContents* web_contents, chrome::SadTabKind kind)
   columns->AddPaddingColumn(1, views::kPanelSubVerticalSpacing);
 
   views::ImageView* image = new views::ImageView();
+
+  SkColor icon_color;
+  ui::CommonThemeGetSystemColor(ui::NativeTheme::kColorId_ChromeIconGrey,
+                                &icon_color);
   image->SetImage(
-      ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(IDR_SAD_TAB));
+      gfx::CreateVectorIcon(gfx::VectorIconId::CRASHED_TAB, 48, icon_color));
   layout->AddPaddingRow(1, views::kPanelVerticalSpacing);
   layout->StartRow(0, column_set_id);
   layout->AddView(image, 2, 1);
 
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-
   title_ = CreateLabel(l10n_util::GetStringUTF16(IDS_SAD_TAB_TITLE));
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   title_->SetFontList(rb.GetFontList(ui::ResourceBundle::LargeFont));
   title_->SetMultiLine(true);
   title_->SetHorizontalAlignment(gfx::ALIGN_LEFT);

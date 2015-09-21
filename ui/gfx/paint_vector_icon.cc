@@ -31,6 +31,7 @@ CommandType CommandFromString(const std::string& source) {
   RETURN_IF_IS(PATH_COLOR_ARGB);
   RETURN_IF_IS(PATH_MODE_CLEAR);
   RETURN_IF_IS(STROKE);
+  RETURN_IF_IS(CAP_SQUARE);
   RETURN_IF_IS(MOVE_TO);
   RETURN_IF_IS(R_MOVE_TO);
   RETURN_IF_IS(LINE_TO);
@@ -116,6 +117,11 @@ void PaintPath(Canvas* canvas,
         paint.setStyle(SkPaint::kStroke_Style);
         SkScalar width = path_elements[++i].arg;
         paint.setStrokeWidth(width);
+        break;
+      }
+
+      case CAP_SQUARE: {
+        paint.setStrokeCap(SkPaint::kSquare_Cap);
         break;
       }
 

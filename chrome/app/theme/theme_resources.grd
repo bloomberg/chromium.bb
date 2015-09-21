@@ -816,7 +816,9 @@
       </if>
       <structure type="chrome_scaled_image" name="IDR_RESTORE_BUTTON_MASK" file="common/restore_button_mask.png" />
       <structure type="chrome_scaled_image" name="IDR_SAD_FAVICON" file="common/favicon_sad_tab.png" />
-      <structure type="chrome_scaled_image" name="IDR_SAD_TAB" file="common/sadtab.png" />
+      <if expr="is_macosx">
+        <structure type="chrome_scaled_image" name="IDR_SAD_TAB" file="legacy/sadtab.png" />
+      </if>
       <structure type="chrome_scaled_image" name="IDR_SAFEBROWSING_WARNING" file="common/safebrowsing_warning.png" />
       <structure type="chrome_scaled_image" name="IDR_SAVE_PASSWORD_ACTIVE" file="common/save_password_active.png" />
       <structure type="chrome_scaled_image" name="IDR_SAVE_PASSWORD_INACTIVE" file="common/save_password_inactive.png" />

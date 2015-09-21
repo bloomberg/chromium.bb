@@ -8,10 +8,7 @@ body {
 
 h1 {
   -webkit-padding-start: 75px;
-  background-image: -webkit-image-set(
-      url(../../app/theme/default_100_percent/common/sadtab.png) 1x,
-      url(../../app/theme/default_200_percent/common/sadtab.png) 2x,
-      url(../../app/theme/default_300_percent/common/sadtab.png) 3x);
+  background-image: url(../../app/theme/common/sadtab.svg);
   background-position: left;
   background-repeat: no-repeat;
   font-size: 156%;

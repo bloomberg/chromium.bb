@@ -29,6 +29,8 @@ enum CommandType {
   // By default, the path will be filled. This changes the paint action to
   // stroke at the given width.
   STROKE,
+  // By default, a stroke has a round cap. This sets it to square.
+  CAP_SQUARE,
   // These correspond to pathing commands.
   MOVE_TO,
   R_MOVE_TO,
