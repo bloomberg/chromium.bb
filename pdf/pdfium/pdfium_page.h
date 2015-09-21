@@ -109,8 +109,8 @@ class PDFiumPage {
   base::Value* GetTextBoxAsValue(double page_height, double left, double top,
                                  double right, double bottom, int rotation);
   // Helper functions for JSON generation
-  base::Value* CreateTextNode(std::string text);
-  base::Value* CreateURLNode(std::string text, std::string url);
+  base::Value* CreateTextNode(const std::string& text);
+  base::Value* CreateURLNode(const std::string& text, const std::string& url);
 
   class ScopedLoadCounter {
    public:

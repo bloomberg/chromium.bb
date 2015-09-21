@@ -240,14 +240,15 @@ base::Value* PDFiumPage::GetTextBoxAsValue(double page_height,
   return node;
 }
 
-base::Value* PDFiumPage::CreateTextNode(std::string text) {
+base::Value* PDFiumPage::CreateTextNode(const std::string& text) {
   base::DictionaryValue* node = new base::DictionaryValue();
   node->SetString(kTextNodeType, kTextNodeTypeText);
   node->SetString(kTextNodeText, text);
   return node;
 }
 
-base::Value* PDFiumPage::CreateURLNode(std::string text, std::string url) {
+base::Value* PDFiumPage::CreateURLNode(const std::string& text,
+                                       const std::string& url) {
   base::DictionaryValue* node = new base::DictionaryValue();
   node->SetString(kTextNodeType, kTextNodeTypeURL);
   node->SetString(kTextNodeText, text);
