@@ -123,8 +123,7 @@ public:
     void frameClearedScheduledNavigation(LocalFrame*);
     void willRunJavaScriptDialog(const String& message, ChromeClient::DialogType);
     void didRunJavaScriptDialog(bool result);
-    void didLayout();
-    void didScroll();
+    void didUpdateLayout();
     void didResizeMainFrame();
     void didRecalculateStyle(int);
 

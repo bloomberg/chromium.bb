@@ -697,13 +697,7 @@ void InspectorPageAgent::didRunJavaScriptDialog(bool result)
     frontend()->javascriptDialogClosed(result);
 }
 
-void InspectorPageAgent::didLayout()
-{
-    if (m_enabled && m_client)
-        m_client->pageLayoutInvalidated(false);
-}
-
-void InspectorPageAgent::didScroll()
+void InspectorPageAgent::didUpdateLayout()
 {
     if (m_enabled && m_client)
         m_client->pageLayoutInvalidated(false);

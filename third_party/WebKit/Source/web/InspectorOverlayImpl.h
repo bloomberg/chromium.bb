@@ -80,7 +80,6 @@ public:
 
     void init(InspectorCSSAgent*, InspectorDebuggerAgent*, InspectorDOMAgent*);
 
-    void update();
     void clear();
     bool handleInputEvent(const WebInputEvent&);
     void layout();
@@ -132,6 +131,7 @@ private:
     void onTimer(Timer<InspectorOverlayImpl>*);
     void rebuildOverlayPage();
     void invalidate();
+    void scheduleUpdate();
 
     bool handleMousePress();
     bool handleGestureEvent(const PlatformGestureEvent&);

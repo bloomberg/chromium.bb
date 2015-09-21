@@ -296,7 +296,7 @@ bool InspectorOverlayImpl::handleInputEvent(const WebInputEvent& inputEvent)
 void InspectorOverlayImpl::setPausedInDebuggerMessage(const String* message)
 {
     m_pausedInDebuggerMessage = message ? *message : String();
-    update();
+    scheduleUpdate();
 }
 
 void InspectorOverlayImpl::hideHighlight()
@@ -308,7 +308,7 @@ void InspectorOverlayImpl::hideHighlight()
     if (m_layoutEditor && m_inspectModeHighlightConfig)
         highlightNode(m_layoutEditor->element(), *m_inspectModeHighlightConfig, false);
     else
-        update();
+        scheduleUpdate();
 }
 
 void InspectorOverlayImpl::highlightNode(Node* node, const InspectorHighlightConfig& highlightConfig, bool omitTooltip)
@@ -322,7 +322,7 @@ void InspectorOverlayImpl::highlightNode(Node* node, Node* eventTarget, const In
     m_highlightNode = node;
     m_eventTargetNode = eventTarget;
     m_omitTooltip = omitTooltip;
-    update();
+    scheduleUpdate();
 }
 
 void InspectorOverlayImpl::setInspectMode(InspectorDOMAgent::SearchMode searchMode, PassOwnPtr<InspectorHighlightConfig> highlightConfig)
@@ -331,7 +331,7 @@ void InspectorOverlayImpl::setInspectMode(InspectorDOMAgent::SearchMode searchMo
         overlayClearSelection(true);
 
     m_inspectMode = searchMode;
-    update();
+    scheduleUpdate();
 
     if (searchMode != InspectorDOMAgent::NotSearching) {
         m_inspectModeHighlightConfig = highlightConfig;
@@ -346,7 +346,7 @@ void InspectorOverlayImpl::highlightQuad(PassOwnPtr<FloatQuad> quad, const Inspe
     m_quadHighlightConfig = highlightConfig;
     m_highlightQuad = quad;
     m_omitTooltip = false;
-    update();
+    scheduleUpdate();
 }
 
 bool InspectorOverlayImpl::isEmpty()
@@ -357,7 +357,7 @@ bool InspectorOverlayImpl::isEmpty()
     return !hasVisibleElements && m_inspectMode == InspectorDOMAgent::NotSearching;
 }
 
-void InspectorOverlayImpl::update()
+void InspectorOverlayImpl::scheduleUpdate()
 {
     if (isEmpty()) {
         if (m_pageOverlay)
@@ -536,7 +536,7 @@ void InspectorOverlayImpl::evaluateInOverlay(const String& method, PassRefPtr<JS
 void InspectorOverlayImpl::onTimer(Timer<InspectorOverlayImpl>*)
 {
     m_resizeTimerActive = false;
-    update();
+    scheduleUpdate();
 }
 
 void InspectorOverlayImpl::clear()
@@ -642,7 +642,7 @@ void InspectorOverlayImpl::pageLayoutInvalidated(bool resized)
         m_resizeTimerActive = true;
         m_timer.startOneShot(1, FROM_HERE);
     }
-    update();
+    scheduleUpdate();
 }
 
 void InspectorOverlayImpl::setShowViewportSizeOnResize(bool show, bool showGrid)

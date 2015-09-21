@@ -214,13 +214,13 @@ void VisualViewport::setScaleAndLocation(float scale, const FloatPoint& location
         document->enqueueScrollEventForNode(document);
 
         mainFrame()->loader().client()->didChangeScrollOffset();
-        InspectorInstrumentation::didScroll(mainFrame());
         valuesChanged = true;
     }
 
     if (!valuesChanged)
         return;
 
+    InspectorInstrumentation::didUpdateLayout(mainFrame());
     mainFrame()->loader().saveScrollState();
 
     clampToBoundaries();
