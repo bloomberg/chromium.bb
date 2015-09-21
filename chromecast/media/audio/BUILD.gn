@@ -26,10 +26,6 @@ source_set("audio") {
 source_set("test_support") {
   testonly = true
 
-  sources = [
-    "cast_audio_output_stream_unittest.cc",
-  ]
-
   configs += [ "//chromecast:config" ]
 
   deps = [

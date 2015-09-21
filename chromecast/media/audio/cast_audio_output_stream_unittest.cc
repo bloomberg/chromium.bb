@@ -80,8 +80,12 @@ class FakeAudioPipelineDevice : public AudioPipelineDevice {
         return kFramePending;
       case PIPELINE_STATUS_ERROR:
         return kFrameFailed;
+      default:
+        NOTREACHED();
     }
-    NOTREACHED();
+
+    // This will never be reached but is necessary for compiler warnings.
+    return kFrameFailed;
   }
   RenderingDelay GetRenderingDelay() const override { return RenderingDelay(); }
   bool GetStatistics(Statistics* stats) const override { return false; }

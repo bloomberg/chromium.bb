@@ -16,6 +16,7 @@ group("media") {
 
 test("cast_media_unittests") {
   sources = [
+    "audio/cast_audio_output_stream_unittest.cc",
     "cma/backend/audio_video_pipeline_device_unittest.cc",
     "cma/base/balanced_media_task_runner_unittest.cc",
     "cma/base/buffering_controller_unittest.cc",
