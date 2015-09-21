@@ -1700,9 +1700,15 @@ crbug.com/534422 [ Debug ] inspector/runtime/runtime-callFunctionOn.html [ Crash
 crbug.com/534422 [ Debug ] inspector/sources/debugger-breakpoints/breakpoint-manager-listeners-count.html [ Crash Pass ]
 crbug.com/534422 [ Debug ] inspector/sources/debugger-breakpoints/dom-breakpoints.html [ Crash Pass ]
 crbug.com/534422 [ Debug ] inspector/sources/debugger-frameworks/frameworks-dom-xhr-event-breakpoints.html [ Crash Pass ]
+crbug.com/534422 [ Debug ] http/tests/inspector/change-iframe-src.html [ Crash Pass ]
 
 crbug.com/534423 [ Debug ] fast/frames/sandboxed-iframe-navigation-parent.html [ Crash Pass ]
 crbug.com/534423 [ Debug ] imported/web-platform-tests/html/syntax/parsing/html5lib_tests10.html [ Crash Pass ]
+
+crbug.com/534429 fast/events/mouseclick-target-and-positioning.html [ Failure Pass ]
+crbug.com/534429 fast/events/platform-wheelevent-paging-x-in-scrolling-page.html [ Failure Pass ]
+crbug.com/534429 fast/events/popup-allowed-from-gesture-initiated-event.html [ Failure Pass ]
+crbug.com/534429 paint/selection/text-selection-drag.html [ ImageOnlyFailure Pass ]
 
 # This test has different results in Debug and Release.
 crbug.com/529038 [ Debug ] virtual/gpu/fast/canvas/canvas-composite-repaint-by-all-imagesource.html [ Failure ]
