@@ -234,7 +234,7 @@ class ChromotingInstance : public ClientUserInterface,
   // Callback for DelegatingSignalStrategy.
   void SendOutgoingIq(const std::string& iq);
 
-  void SendPerfStats();
+  void UpdatePerfStatsInUI();
 
   // Returns true if there is a ConnectionToHost and it is connected.
   bool IsConnected();
@@ -287,12 +287,14 @@ class ChromotingInstance : public ClientUserInterface,
 
   base::WeakPtr<TokenFetcherProxy> token_fetcher_proxy_;
 
-  // Weak reference to this instance, used for global logging and task posting.
-  base::WeakPtrFactory<ChromotingInstance> weak_factory_;
+  base::RepeatingTimer<ChromotingInstance> stats_update_timer_;
 
   base::TimeTicks connection_started_time;
   base::TimeTicks connection_authenticated_time_;
   base::TimeTicks connection_connected_time_;
+
+  // Weak reference to this instance, used for global logging and task posting.
+  base::WeakPtrFactory<ChromotingInstance> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromotingInstance);
 };

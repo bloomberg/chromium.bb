@@ -85,6 +85,9 @@ const int kConnectionDurationHistogramMinMinutes = 1;
 const int kConnectionDurationHistogramMaxMinutes = 24 * 60;
 const int kConnectionDurationHistogramBuckets = 50;
 
+// Update perf stats in the UI every second.
+const int kUIStatsUpdatePeriodSeconds = 1;
+
 // TODO(sergeyu): Ideally we should just pass ErrorCode to the webapp
 // and let it handle it, but it would be hard to fix it now because
 // client plugin and webapp versions may not be in sync. It should be
@@ -715,11 +718,10 @@ void ChromotingInstance::HandleConnect(const base::DictionaryValue& data) {
                  transport_factory.Pass(), host_jid, capabilities);
 
   // Start timer that periodically sends perf stats.
-  plugin_task_runner_->PostDelayedTask(
-      FROM_HERE, base::Bind(&ChromotingInstance::SendPerfStats,
-                            weak_factory_.GetWeakPtr()),
-      base::TimeDelta::FromSeconds(
-          protocol::PerformanceTracker::kStatsUpdateFrequencyInSeconds));
+  stats_update_timer_.Start(
+      FROM_HERE, base::TimeDelta::FromSeconds(kUIStatsUpdatePeriodSeconds),
+      base::Bind(&ChromotingInstance::UpdatePerfStatsInUI,
+                 base::Unretained(this)));
 }
 
 void ChromotingInstance::HandleDisconnect(const base::DictionaryValue& data) {
@@ -845,6 +847,7 @@ void ChromotingInstance::HandleVideoControl(const base::DictionaryValue& data) {
   bool pause_video = false;
   if (data.GetBoolean("pause", &pause_video)) {
     video_control.set_enable(!pause_video);
+    perf_tracker_.OnPauseStateChanged(pause_video);
   }
   bool lossless_encode = false;
   if (data.GetBoolean("losslessEncode", &lossless_encode)) {
@@ -988,6 +991,7 @@ void ChromotingInstance::Disconnect() {
   mouse_input_filter_.set_input_stub(nullptr);
   client_.reset();
   video_renderer_.reset();
+  stats_update_timer_.Stop();
 }
 
 void ChromotingInstance::PostChromotingMessage(const std::string& method,
@@ -1023,17 +1027,7 @@ void ChromotingInstance::SendOutgoingIq(const std::string& iq) {
   PostLegacyJsonMessage("sendOutgoingIq", data.Pass());
 }
 
-void ChromotingInstance::SendPerfStats() {
-  if (!video_renderer_.get()) {
-    return;
-  }
-
-  plugin_task_runner_->PostDelayedTask(
-      FROM_HERE, base::Bind(&ChromotingInstance::SendPerfStats,
-                            weak_factory_.GetWeakPtr()),
-      base::TimeDelta::FromSeconds(
-          protocol::PerformanceTracker::kStatsUpdateFrequencyInSeconds));
-
+void ChromotingInstance::UpdatePerfStatsInUI() {
   // Fetch performance stats from the VideoRenderer and send them to the client
   // for display to users.
   scoped_ptr<base::DictionaryValue> data(new base::DictionaryValue());
@@ -1045,11 +1039,6 @@ void ChromotingInstance::SendPerfStats() {
   data->SetDouble("renderLatency", perf_tracker_.video_paint_ms());
   data->SetDouble("roundtripLatency", perf_tracker_.round_trip_ms());
   PostLegacyJsonMessage("onPerfStats", data.Pass());
-
-  // Record the video frame-rate, packet-rate and bandwidth stats to UMA.
-  // TODO(anandc): Create a timer in PerformanceTracker to do this work.
-  // See http://crbug/508602.
-  perf_tracker_.UploadRateStatsToUma();
 }
 
 // static

@@ -6,6 +6,7 @@
 #define REMOTING_PROTOCOL_PERFORMANCE_TRACKER_H_
 
 #include "base/callback.h"
+#include "base/timer/timer.h"
 #include "remoting/base/rate_counter.h"
 #include "remoting/base/running_average.h"
 
@@ -37,7 +38,7 @@ class PerformanceTracker {
 
   // Constant used to calculate the average for rate metrics and used by the
   // plugin for the frequency at which stats should be updated.
-  static const int kStatsUpdateFrequencyInSeconds = 1;
+  static const int kStatsUpdatePeriodSeconds = 1;
 
   // Return rates and running-averages for different metrics.
   double video_bandwidth() { return video_bandwidth_.Rate(); }
@@ -62,10 +63,12 @@ class PerformanceTracker {
       UpdateUmaCustomHistogramCallback update_uma_custom_times_callback,
       UpdateUmaEnumHistogramCallback update_uma_enum_histogram_callback);
 
+  void OnPauseStateChanged(bool paused);
+
+ private:
   // Updates frame-rate, packet-rate and bandwidth UMA statistics.
   void UploadRateStatsToUma();
 
- private:
   // The video and packet rate metrics below are updated per video packet
   // received and then, for reporting, averaged over a 1s time-window.
   // Bytes per second for non-empty video-packets.
@@ -95,7 +98,11 @@ class PerformanceTracker {
   UpdateUmaEnumHistogramCallback uma_enum_histogram_updater_;
 
   // The latest input timestamp that a VideoPacket was seen annotated with.
-  int64 latest_input_event_timestamp_ = 0;
+  int64_t latest_input_event_timestamp_ = 0;
+
+  bool is_paused_ = false;
+
+  base::RepeatingTimer<PerformanceTracker> upload_uma_stats_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(PerformanceTracker);
 };

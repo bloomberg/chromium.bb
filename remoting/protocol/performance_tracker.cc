@@ -60,20 +60,18 @@ namespace remoting {
 namespace protocol {
 
 PerformanceTracker::PerformanceTracker()
-    : video_bandwidth_(
-          base::TimeDelta::FromSeconds(kStatsUpdateFrequencyInSeconds)),
+    : video_bandwidth_(base::TimeDelta::FromSeconds(kStatsUpdatePeriodSeconds)),
       video_frame_rate_(
-          base::TimeDelta::FromSeconds(kStatsUpdateFrequencyInSeconds)),
+          base::TimeDelta::FromSeconds(kStatsUpdatePeriodSeconds)),
       video_packet_rate_(
-          base::TimeDelta::FromSeconds(kStatsUpdateFrequencyInSeconds)),
+          base::TimeDelta::FromSeconds(kStatsUpdatePeriodSeconds)),
       video_capture_ms_(kLatencySampleSize),
       video_encode_ms_(kLatencySampleSize),
       video_decode_ms_(kLatencySampleSize),
       video_paint_ms_(kLatencySampleSize),
       round_trip_ms_(kLatencySampleSize) {}
 
-PerformanceTracker::~PerformanceTracker() {
-}
+PerformanceTracker::~PerformanceTracker() {}
 
 void PerformanceTracker::SetUpdateUmaCallbacks(
     UpdateUmaCustomHistogramCallback update_uma_custom_counts_callback,
@@ -85,6 +83,13 @@ void PerformanceTracker::SetUpdateUmaCallbacks(
 }
 
 void PerformanceTracker::RecordVideoPacketStats(const VideoPacket& packet) {
+  if (!is_paused_ && !upload_uma_stats_timer_.IsRunning()) {
+    upload_uma_stats_timer_.Start(
+        FROM_HERE, base::TimeDelta::FromSeconds(kStatsUpdatePeriodSeconds),
+        base::Bind(&PerformanceTracker::UploadRateStatsToUma,
+                   base::Unretained(this)));
+  }
+
   // Record this received packet, even if it is empty.
   video_packet_rate_.Record(1);
 
@@ -158,6 +163,15 @@ void PerformanceTracker::UploadRateStatsToUma() {
     uma_custom_counts_updater_.Run(
         kVideoBandwidthHistogram, video_bandwidth(), kBandwidthHistogramMinBps,
         kBandwidthHistogramMaxBps, kBandwidthHistogramBuckets);
+  }
+}
+
+void PerformanceTracker::OnPauseStateChanged(bool paused) {
+  is_paused_ = paused;
+  if (is_paused_) {
+    // Pause the UMA timer when the video is paused. It will be unpaused in
+    // RecordVideoPacketStats() when a new frame is received.
+    upload_uma_stats_timer_.Stop();
   }
 }
 
