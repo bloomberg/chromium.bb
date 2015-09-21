@@ -46,8 +46,9 @@ class RuntimeFeatureWriter(in_generator.Writer):
         'status': ['stable', 'experimental', 'test', 'deprecated'],
     }
     defaults = {
-        'condition' : None,
-        'depends_on' : [],
+        'condition': None,
+        'implied_by': [],
+        'depends_on': [],
         'custom': False,
         'status': None,
     }
@@ -68,8 +69,11 @@ class RuntimeFeatureWriter(in_generator.Writer):
             feature['first_lowered_name'] = lower_first(feature['name'])
             feature['status'] = self._status_aliases.get(feature['status'], feature['status'])
             # Most features just check their isFooEnabled bool
-            # but some depend on more than one bool.
+            # but some depend on or are implied by other bools.
             enabled_condition = 'is%sEnabled' % feature['name']
+            assert not feature['implied_by'] or not feature['depends_on'], 'Only one of implied_by and depends_on is allowed'
+            for implied_by_name in feature['implied_by']:
+                enabled_condition += ' || is%sEnabled' % implied_by_name
             for dependant_name in feature['depends_on']:
                 enabled_condition += ' && is%sEnabled' % dependant_name
             feature['enabled_condition'] = enabled_condition

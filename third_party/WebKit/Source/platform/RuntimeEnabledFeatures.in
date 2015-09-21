@@ -10,6 +10,11 @@
 // status=deprecated -> Alias for "test", will be removed at some point.
 // Features without a status are not enabled anywhere by default.
 //
+// "implied_by" or "depends_on" specifies relationship to other features:
+// implied_by=feature1[,feature2,...] -> The feature is automatically enabled if any implied_by features is enabled;
+// depends_on=feature1[,feature2,...] -> The feature is enabled only if all depends_on features are enabled.
+// Only one of "implied_by" and "depends_on" can be specified.
+//
 // "stable" features listed here should be rare, as anything which we've shipped stable
 // can have its runtime flag removed soon after.
 //
