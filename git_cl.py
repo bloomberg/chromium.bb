@@ -267,9 +267,10 @@ def trigger_try_jobs(auth_config, changelist, options, masters, category):
       print_text.append('  %s: %s' % (builder, tests))
       parameters = {
           'builder_name': builder,
-          'changes': [
-              {'author': {'email': issue_props['owner_email']}},
-          ],
+          'changes': [{
+              'author': {'email': issue_props['owner_email']},
+              'revision': options.revision,
+          }],
           'properties': {
               'category': category,
               'issue': issue,
@@ -278,7 +279,6 @@ def trigger_try_jobs(auth_config, changelist, options, masters, category):
               'patch_storage': 'rietveld',
               'patchset': patchset,
               'reason': options.name,
-              'revision': options.revision,
               'rietveld': rietveld_url,
               'testfilter': tests,
           },
