@@ -68,25 +68,37 @@ void UpdateToggleStateWithTag(NSInteger tag, id item, NSWindow* window) {
     [item setState:newState];
 }
 
-// Get the text for the "Enter/Exit Fullscreen/Presentation Mode" menu item.
+NSString* GetTitleForViewsFullscreenMenuItem(Browser* browser) {
+  return l10n_util::GetNSString(browser->window()->IsFullscreen()
+                                    ? IDS_EXIT_FULLSCREEN_MAC
+                                    : IDS_ENTER_FULLSCREEN_MAC);
+}
+
+// Get the text for the "Enter/Exit Fullscreen" menu item.
 // TODO(jackhou): Remove the dependency on BrowserWindowController(Private).
 NSString* GetTitleForFullscreenMenuItem(Browser* browser) {
   NSWindow* ns_window = browser->window()->GetNativeWindow();
   if (BrowserWindowController* controller = [ns_window windowController]) {
-    if (!chrome::mac::SupportsSystemFullscreen()) {
-      return l10n_util::GetNSString([controller inPresentationMode]
-                                        ? IDS_EXIT_PRESENTATION_MAC
-                                        : IDS_ENTER_PRESENTATION_MAC);
-    }
-
+    DCHECK(chrome::mac::SupportsSystemFullscreen());
     return l10n_util::GetNSString([controller isInAppKitFullscreen]
                                       ? IDS_EXIT_FULLSCREEN_MAC
                                       : IDS_ENTER_FULLSCREEN_MAC);
   }
 
-  return l10n_util::GetNSString(browser->window()->IsFullscreen()
-                                    ? IDS_EXIT_FULLSCREEN_MAC
-                                    : IDS_ENTER_FULLSCREEN_MAC);
+  return GetTitleForViewsFullscreenMenuItem(browser);
+}
+
+// Get the text for the "Enter/Exit Presentation Mode" menu item.
+// TODO(jackhou): Remove the dependency on BrowserWindowController(Private).
+NSString* GetTitleForPresentationModeMenuItem(Browser* browser) {
+  NSWindow* ns_window = browser->window()->GetNativeWindow();
+  if (BrowserWindowController* controller = [ns_window windowController]) {
+      return l10n_util::GetNSString([controller inPresentationMode]
+                                        ? IDS_EXIT_PRESENTATION_MAC
+                                        : IDS_ENTER_PRESENTATION_MAC);
+  }
+
+  return GetTitleForViewsFullscreenMenuItem(browser);
 }
 
 // Identify the actual Browser to which the command should be dispatched. It
@@ -151,10 +163,7 @@ Browser* FindBrowserForSender(id sender, NSWindow* window) {
     }
     case IDC_PRESENTATION_MODE: {
       if (NSMenuItem* menuItem = base::mac::ObjCCast<NSMenuItem>(item)) {
-        [menuItem setTitle:GetTitleForFullscreenMenuItem(browser)];
-
-        if (chrome::mac::SupportsSystemFullscreen())
-          [menuItem setAlternate:YES];
+        [menuItem setTitle:GetTitleForPresentationModeMenuItem(browser)];
       }
       break;
     }
@@ -206,13 +215,7 @@ Browser* FindBrowserForSender(id sender, NSWindow* window) {
 
 - (void)commandDispatch:(id)sender window:(NSWindow*)window {
   DCHECK(sender);
-
-  // When system fullscreen is available, it supercedes presentation mode.
   int command = [sender tag];
-  if (command == IDC_PRESENTATION_MODE &&
-      chrome::mac::SupportsSystemFullscreen())
-    command = IDC_FULLSCREEN;
-
   chrome::ExecuteCommand(FindBrowserForSender(sender, window), command);
 }
 
