@@ -82,6 +82,9 @@ template("process_version") {
       lastchange_path,
       branding_path,
     ]
+    if (defined(invoker.inputs)) {
+      inputs += invoker.inputs
+    }
     if (defined(invoker.template_file)) {
       inputs += [ invoker.template_file ]
     }

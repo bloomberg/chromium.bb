@@ -142,11 +142,11 @@ enable_spellcheck = !is_ios
 use_browser_spellchecker = is_android || is_mac
 
 # Enable basic printing support and UI.
-enable_basic_printing = !is_chromeos && !is_chromecast
+enable_basic_printing = !is_chromeos && !is_chromecast && !is_ios
 
 # Enable printing with print preview. It does not imply
 # enable_basic_printing. It's possible to build Chrome with preview only.
-enable_print_preview = !is_android && !is_chromecast
+enable_print_preview = !is_android && !is_chromecast && !is_ios
 
 # Enables the use of CDMs in pepper plugins.
 enable_pepper_cdms =

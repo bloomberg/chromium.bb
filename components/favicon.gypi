@@ -71,6 +71,11 @@
           'include_dirs': [
             '..',
           ],
+          'sources!': [
+            'favicon/core/fallback_icon_client.h',
+            'favicon/core/fallback_icon_service.cc',
+            'favicon/core/fallback_icon_service.h',
+          ],
         },
       ],
     }],

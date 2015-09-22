@@ -14,177 +14,194 @@ group("all_components") {
   visibility = [ "//:*" ]  # Only for the root targets to bring in.
 
   deps = [
-    "//components/about_handler",
-    "//components/auto_login_parser",
-    "//components/autofill/content/browser",
-    "//components/autofill/content/common",
-    "//components/autofill/content/renderer",
     "//components/bookmarks/browser",
     "//components/bookmarks/common",
     "//components/bookmarks/managed",
     "//components/bookmarks/test",
     "//components/bubble",
     "//components/captive_portal",
-    "//components/cdm/browser",
-    "//components/cdm/common",
-    "//components/cdm/renderer",
-    "//components/certificate_reporting",
-    "//components/cloud_devices/common",
     "//components/chrome_apps",
     "//components/component_updater",
     "//components/compression",
-    "//components/content_settings/core/browser",
-    "//components/content_settings/core/common",
-    "//components/crash/core/common",
-    "//components/crash/content/app",
-    "//components/crash/content/browser",
     "//components/crx_file",
     "//components/data_reduction_proxy/core/browser",
     "//components/data_reduction_proxy/core/common",
     "//components/device_event_log",
-    "//components/devtools_discovery",
-    "//components/devtools_http_handler",
-    "//components/dom_distiller/core",
-    "//components/domain_reliability",
-    "//components/enhanced_bookmarks",
-    "//components/favicon/core",
-    "//components/favicon_base",
-    "//components/feedback",
-    "//components/gcm_driver",
-    "//components/gcm_driver/crypto",
-    "//components/gcm_driver/instance_id",
-    "//components/google/core/browser",
-    "//components/history/content/browser",
-    "//components/history/core/browser",
-    "//components/history/core/common",
-    "//components/history/core/test",
-    "//components/infobars/core",
-    "//components/invalidation/impl",
-    "//components/json_schema",
-    "//components/keyed_service/content",
-    "//components/language_usage_metrics",
-    "//components/leveldb_proto",
-    "//components/login",
-    "//components/memory_pressure",
-    "//components/metrics",
-    "//components/mime_util",
-    "//components/navigation_interception",
-    "//components/navigation_metrics",
-    "//components/net_log",
-    "//components/network_hints/browser",
-    "//components/network_hints/common",
-    "//components/network_hints/renderer",
-    "//components/network_time",
-    "//components/offline_pages",
-    "//components/omnibox/browser",
-    "//components/onc",
-    "//components/open_from_clipboard",
-    "//components/os_crypt",
-    "//components/packed_ct_ev_whitelist",
-    "//components/pairing",
-    "//components/password_manager/content/browser",
-    "//components/password_manager/core/browser",
-    "//components/password_manager/core/common",
-    "//components/pdf/browser",
-    "//components/pdf/common",
-    "//components/pdf/renderer",
-    "//components/plugins/common",
-    "//components/plugins/renderer",
-    "//components/policy",
-    "//components/power",
-    "//components/precache/core",
-    "//components/precache/content",
-    "//components/proxy_config",
-    "//components/pref_registry",
-    "//components/query_parser",
-    "//components/rappor",
-    "//components/renderer_context_menu",
-    "//components/resources:components_resources",
-    "//components/search",
-    "//components/search_engines",
-    "//components/search_provider_logos",
-    "//components/security_interstitials/core",
-    "//components/sessions",
-    "//components/signin/core/browser",
-    "//components/ssl_errors",
-    "//components/startup_metric_utils",
-    "//components/strings",
-    "//components/sync_driver",
-    "//components/syncable_prefs",
-    "//components/tracing",
-    "//components/tracing:startup_tracing",
-    "//components/translate/content/browser",
-    "//components/translate/content/common",
-    "//components/translate/content/renderer",
-    "//components/translate/core/browser",
-    "//components/translate/core/common",
-    "//components/ui/zoom",
-    "//components/undo",
-    "//components/update_client",
-    "//components/upload_list",
-    "//components/url_formatter",
-    "//components/url_matcher",
-    "//components/user_manager",
-    "//components/user_prefs",
-    "//components/user_prefs/tracked:user_prefs_tracked",
-    "//components/variations",
-    "//components/variations/service",
-    "//components/version_info",
-    "//components/visitedlink/browser",
-    "//components/visitedlink/common",
-    "//components/visitedlink/renderer",
-    "//components/wallpaper",
-    "//components/web_cache/browser",
-    "//components/web_cache/common",
-    "//components/web_cache/renderer",
-    "//components/web_modal",
-    "//components/web_resource",
-    "//components/webdata/common",
-    "//components/wifi",
-    "//components/wifi_sync",
   ]
 
-  if (!is_android && !is_ios) {
+  if (!is_ios) {
     deps += [
-      "//components/audio_modem",
-      "//components/proximity_auth",
-      "//components/proximity_auth/cryptauth",
-      "//components/webusb",
-    ]
-  }
-
-  if (!enable_configuration_policy) {
-    deps -= [ "//components/policy" ]
-  }
-
-  if (!is_win && !is_mac) {
-    deps -= [ "//components/wifi" ]
-  }
-  if (!is_chromeos) {
-    deps -= [
-      "//components/pairing",
-      "//components/wifi_sync",
-    ]
-  }
-
-  if (!is_chromeos || !enable_extensions) {
-    deps -= [ "//components/chrome_apps" ]
-  }
-
-  if (is_ios) {
-    deps -= [
+      "//components/dom_distiller/core",
+      "//components/enhanced_bookmarks",
+      "//components/certificate_reporting",
+      "//components/cdm/browser",
+      "//components/about_handler",
+      "//components/auto_login_parser",
+      "//components/autofill/content/browser",
+      "//components/autofill/content/common",
+      "//components/autofill/content/renderer",
+      "//components/bubble",
+      "//components/captive_portal",
+      "//components/cdm/browser",
+      "//components/cdm/common",
+      "//components/cdm/renderer",
+      "//components/cloud_devices/common",
+      "//components/chrome_apps",
+      "//components/compression",
+      "//components/content_settings/core/browser",
+      "//components/content_settings/core/common",
+      "//components/crash/content/app",
+      "//components/crash/content/browser",
+      "//components/crx_file",
+      "//components/data_reduction_proxy/core/browser",
+      "//components/data_reduction_proxy/core/common",
+      "//components/device_event_log",
+      "//components/devtools_discovery",
+      "//components/devtools_http_handler",
+      "//components/dom_distiller/core",
+      "//components/domain_reliability",
+      "//components/favicon/core",
+      "//components/favicon_base",
+      "//components/feedback",
+      "//components/gcm_driver",
+      "//components/gcm_driver/crypto",
+      "//components/gcm_driver/instance_id",
+      "//components/google/core/browser",
       "//components/history/content/browser",
+      "//components/history/core/browser",
+      "//components/history/core/common",
+      "//components/history/core/test",
+      "//components/infobars/core",
+      "//components/invalidation/impl",
+      "//components/json_schema",
       "//components/keyed_service/content",
+      "//components/language_usage_metrics",
+      "//components/leveldb_proto",
+      "//components/login",
+      "//components/memory_pressure",
+      "//components/metrics",
+      "//components/mime_util",
+      "//components/navigation_interception",
+      "//components/navigation_metrics",
+      "//components/network_hints/browser",
+      "//components/network_hints/common",
       "//components/network_hints/renderer",
-    ]
-  }
-
-  if (!enable_plugins) {
-    deps -= [
+      "//components/network_time",
+      "//components/offline_pages",
+      "//components/omnibox/browser",
+      "//components/onc",
+      "//components/open_from_clipboard",
+      "//components/os_crypt",
+      "//components/packed_ct_ev_whitelist",
+      "//components/pairing",
+      "//components/password_manager/content/browser",
+      "//components/password_manager/core/browser",
+      "//components/password_manager/core/common",
       "//components/pdf/browser",
       "//components/pdf/common",
       "//components/pdf/renderer",
+      "//components/plugins/common",
+      "//components/plugins/renderer",
+      "//components/policy",
+      "//components/power",
+      "//components/precache/core",
+      "//components/precache/content",
+      "//components/proxy_config",
+      "//components/pref_registry",
+      "//components/query_parser",
+      "//components/rappor",
+      "//components/renderer_context_menu",
+      "//components/resources:components_resources",
+      "//components/search_engines",
+      "//components/search_provider_logos",
+      "//components/security_interstitials/core",
+      "//components/sessions",
+      "//components/signin/core/browser",
+      "//components/startup_metric_utils",
+      "//components/strings",
+      "//components/sync_driver",
+      "//components/tracing",
+      "//components/tracing:startup_tracing",
+      "//components/translate/content/browser",
+      "//components/translate/content/common",
+      "//components/translate/content/renderer",
+      "//components/translate/core/browser",
+      "//components/translate/core/common",
+      "//components/ui/zoom",
+      "//components/undo",
+      "//components/update_client",
+      "//components/upload_list",
+      "//components/url_formatter",
+      "//components/url_matcher",
+      "//components/user_manager",
+      "//components/user_prefs",
+      "//components/user_prefs/tracked:user_prefs_tracked",
+      "//components/variations",
+      "//components/variations/service",
+      "//components/version_info",
+      "//components/visitedlink/browser",
+      "//components/visitedlink/common",
+      "//components/visitedlink/renderer",
+      "//components/wallpaper",
+      "//components/web_cache/browser",
+      "//components/web_cache/common",
+      "//components/web_cache/renderer",
+      "//components/web_modal",
+      "//components/web_resource",
+      "//components/webcrypto",
+      "//components/webdata/common",
+      "//components/wifi",
+      "//components/wifi_sync",
+      "//components/app_modal",
+      "//components/browsing_data",
+      "//components/certificate_transparency",
+      "//components/guest_view/browser",
+      "//components/guest_view/common",
+      "//components/guest_view/renderer",
+      "//components/safe_json",
+      "//components/scheduler",
+      "//components/test_runner",
+      "//components/webcrypto",
     ]
+
+    if (!is_chromeos || !enable_extensions) {
+      deps -= [ "//components/chrome_apps" ]
+    }
+
+    if (!enable_plugins) {
+      deps -= [
+        "//components/pdf/browser",
+        "//components/pdf/common",
+        "//components/pdf/renderer",
+      ]
+    }
+
+    if (!is_android) {
+      # TODO(agrieve): Add to main deps list once compile errors are resolved.
+      deps += [
+        "//components/audio_modem",
+        "//components/proximity_auth",
+        "//components/proximity_auth/cryptauth",
+        "//components/webusb",
+        "//components/copresence",
+        "//components/storage_monitor",
+      ]
+    }
+
+    if (!is_win && !is_mac) {
+      deps -= [ "//components/wifi" ]
+    }
+
+    if (!is_chromeos) {
+      deps -= [
+        "//components/pairing",
+        "//components/wifi_sync",
+      ]
+    }
+  }
+
+  if (toolkit_views) {
+    deps += [ "//components/constrained_window" ]
   }
 
   if (is_android) {
@@ -242,35 +259,6 @@ group("all_components") {
       "//components/web_modal",  # Blocked on content.
     ]
   }
-
-  if (!is_ios && !is_android) {
-    deps += [
-      "//components/copresence",
-      "//components/storage_monitor",
-    ]
-  }
-
-  if (!is_ios) {
-    deps += [
-      "//components/app_modal",
-      "//components/browsing_data",
-      "//components/certificate_transparency",
-      "//components/guest_view/browser",
-      "//components/guest_view/common",
-      "//components/guest_view/renderer",
-      "//components/page_load_metrics/browser",
-      "//components/page_load_metrics/common",
-      "//components/page_load_metrics/renderer",
-      "//components/safe_json",
-      "//components/scheduler",
-      "//components/test_runner",
-      "//components/webcrypto",
-    ]
-  }
-
-  if (toolkit_views) {
-    deps += [ "//components/constrained_window" ]
-  }
 }
 
 # TODO(GYP): Delete this after we've converted everything to GN.
@@ -304,172 +292,24 @@ test("components_unittests") {
   # Add only ":unit_tests" dependencies here. If your tests have dependencies
   # (this would at least include the component itself), they should be on the
   # test source set and not here.
-  deps = [
-    "//components/auto_login_parser:unit_tests",
-    "//components/autofill/content/browser:unit_tests",
-    "//components/autofill/content/renderer:unit_tests",
-    "//components/autofill/core/browser:unit_tests",
-    "//components/autofill/core/common:unit_tests",
-    "//components/bookmarks/browser:unit_tests",
-    "//components/bookmarks/managed:unit_tests",
-    "//components/bubble:unit_tests",
-    "//components/captive_portal:unit_tests",
-    "//components/certificate_transparency:unit_tests",
-    "//components/cloud_devices/common:unit_tests",
-    "//components/component_updater:unit_tests",
-    "//components/content_settings/core/browser:unit_tests",
-    "//components/content_settings/core/common:unit_tests",
-    "//components/crash/core/common:unit_tests",
-    "//components/crx_file:unit_tests",
-    "//components/data_reduction_proxy/content/browser:unit_tests",
-    "//components/data_reduction_proxy/core/browser:unit_tests",
-    "//components/data_reduction_proxy/core/common:unit_tests",
-    "//components/device_event_log:unit_tests",
-    "//components/devtools_http_handler:unit_tests",
-    "//components/dom_distiller/content:unit_tests",
-    "//components/dom_distiller/core:unit_tests",
-    "//components/domain_reliability:unit_tests",
-    "//components/enhanced_bookmarks:unit_tests",
-    "//components/favicon/content:unit_tests",
-    "//components/favicon/core:unit_tests",
-    "//components/favicon_base:unit_tests",
-    "//components/gcm_driver/crypto:unit_tests",
-    "//components/gcm_driver/instance_id:unit_tests",
-    "//components/gcm_driver:unit_tests",
-    "//components/google/core/browser:unit_tests",
-    "//components/history/content/browser:unit_tests",
-    "//components/history/core/browser:unit_tests",
-    "//components/history/core/common:unit_tests",
-    "//components/invalidation/impl:unit_tests",
-    "//components/json_schema:unit_tests",
-    "//components/keyed_service/content:unit_tests",
-    "//components/keyed_service/core:unit_tests",
-    "//components/language_usage_metrics:unit_tests",
-    "//components/leveldb_proto:unit_tests",
-    "//components/login:unit_tests",
-    "//components/memory_pressure:unit_tests",
-    "//components/metrics:unit_tests",
-    "//components/mime_util:unit_tests",
-    "//components/net_log:unit_tests",
-    "//components/network_time:unit_tests",
-    "//components/offline_pages:unit_tests",
-    "//components/omnibox/browser:unit_tests",
-    "//components/open_from_clipboard:unit_tests",
-    "//components/os_crypt:unit_tests",
-    "//components/packed_ct_ev_whitelist:unit_tests",
-    "//components/password_manager/content/browser:unit_tests",
-    "//components/password_manager/core/browser:unit_tests",
-    "//components/password_manager/core/common:unit_tests",
-    "//components/password_manager/sync/browser:unit_tests",
-    "//components/precache/content:unit_tests",
-    "//components/precache/core:unit_tests",
-    "//components/proxy_config:unit_tests",
-    "//components/query_parser:unit_tests",
-    "//components/rappor:unit_tests",
-    "//components/search:unit_tests",
-    "//components/search_engines:unit_tests",
-    "//components/search_provider_logos:unit_tests",
-    "//components/signin/core/browser:unit_tests",
-    "//components/suggestions:unit_tests",
-    "//components/sync_driver:unit_tests",
-    "//components/syncable_prefs:unit_tests",
-    "//components/translate/core/browser:unit_tests",
-    "//components/translate/core/common:unit_tests",
-    "//components/translate/core/language_detection:unit_tests",
-    "//components/undo:unit_tests",
-    "//components/url_formatter:unit_tests",
-    "//components/url_matcher:unit_tests",
-    "//components/update_client:unit_tests",
-    "//components/upload_list:unit_tests",
-    "//components/user_prefs/tracked:unit_tests",
-    "//components/variations:unit_tests",
-    "//components/variations/service:unit_tests",
-    "//components/wallpaper:unit_tests",
-    "//components/web_resource:unit_tests",
-    "//components/webcrypto:unit_tests",
-    "//components/webdata/common:unit_tests",
 
-    # These are the deps required by the code in this target.
+  deps = [
     "//base",
     "//base/test:test_support",
-    "//components/policy:policy_component",
-    "//content/test:test_support",
+    "//components/bookmarks/browser:unit_tests",
+    "//components/content_settings/core/common",
     "//net",
     "//ui/base",
     "//ui/resources:ui_test_pak",
   ]
 
-  data_deps = [
-    ":components_tests_pak",
-    "//third_party/mesa:osmesa",
-    "//ui/resources:ui_test_pak",
-  ]
-
-  if (enable_rlz_support) {
-    deps += [ "//components/rlz:unit_tests" ]
-  }
-
-  if (is_android) {
-    isolate_file = "components_unittests.isolate"
-
-    deps += [ "//content/public/android:content_java" ]
-    deps -= [
-      "//components/gcm_driver:unit_tests",
-      "//components/gcm_driver/instance_id:unit_tests",
-      "//components/password_manager/content/browser:unit_tests",
-      "//components/password_manager/core/browser:unit_tests",
-      "//components/password_manager/core/common:unit_tests",
-      "//components/password_manager/sync/browser:unit_tests",
-    ]
-  }
-
-  if (!is_android && !is_ios) {
+  if (!is_ios) {
     deps += [
-      "//components/audio_modem:unit_tests",
-      "//components/copresence:unit_tests",
-      "//components/feedback:unit_tests",
-      "//components/proximity_auth:unit_tests",
-      "//components/sessions:unit_tests",
-      "//components/storage_monitor:unit_tests",
-      "//components/tracing:unit_tests",
-      "//components/webusb:unit_tests",
-    ]
-  }
-
-  if (is_chromeos) {
-    deps += [ "//components/ownership:unit_tests" ]
-  }
-
-  # TODO(GYP) need this target.
-  #'breakpad/app/crash_keys_win_unittest.cc',
-
-  if (enable_configuration_policy) {
-    deps += [
-      "//components/policy/core/browser:unit_tests",
-      "//components/policy/core/common:unit_tests",
-    ]
-  }
-
-  if (toolkit_views) {
-    # TODO bug 522654 Enable this when the undefined symbol is fixed in
-    # web_modal such that this links.
-    #deps += [ "//components/constrained_window:unit_tests" ]
-  }
-  if (is_win) {
-    deps += [ "//components/browser_watcher:unit_tests" ]
-  }
-  if (is_ios) {
-    deps += [ "//components/signin/core/browser:unit_tests" ]
-    deps -= [ "//components/devtools_http_handler:unit_tests" ]
-  } else {
-    # Non-iOS tests.
-    deps += [
+      "//components/enhanced_bookmarks:unit_tests",
       "//components/error_page/renderer:unit_tests",
       "//components/guest_view/browser:unit_tests",
       "//components/navigation_interception:unit_tests",
       "//components/network_hints/renderer:unit_tests",
-      "//components/page_load_metrics/browser:unit_tests",
-      "//components/page_load_metrics/renderer:unit_tests",
       "//components/power:unit_tests",
       "//components/safe_json:unit_tests",
       "//components/scheduler:unit_tests",
@@ -477,7 +317,144 @@ test("components_unittests") {
       "//components/ui/zoom:unit_tests",
       "//components/visitedlink/test:unit_tests",
       "//components/web_cache/browser:unit_tests",
+      "//components/auto_login_parser:unit_tests",
+      "//components/autofill/content/browser:unit_tests",
+      "//components/autofill/content/renderer:unit_tests",
+      "//components/autofill/core/browser:unit_tests",
+      "//components/autofill/core/common:unit_tests",
+      "//components/bubble:unit_tests",
+      "//components/captive_portal:unit_tests",
+      "//components/cloud_devices/common:unit_tests",
+      "//components/component_updater:unit_tests",
+      "//components/content_settings/core/browser:unit_tests",
+      "//components/content_settings/core/common:unit_tests",
+      "//components/crx_file:unit_tests",
+      "//components/data_reduction_proxy/content/browser:unit_tests",
+      "//components/data_reduction_proxy/core/browser:unit_tests",
+      "//components/data_reduction_proxy/core/common:unit_tests",
+      "//components/device_event_log:unit_tests",
+      "//components/devtools_http_handler:unit_tests",
+      "//components/dom_distiller/content:unit_tests",
+      "//components/dom_distiller/core:unit_tests",
+      "//components/domain_reliability:unit_tests",
+      "//components/favicon/content:unit_tests",
+      "//components/favicon/core:unit_tests",
+      "//components/favicon_base:unit_tests",
+      "//components/gcm_driver/crypto:unit_tests",
+      "//components/gcm_driver/instance_id:unit_tests",
+      "//components/gcm_driver:unit_tests",
+      "//components/google/core/browser:unit_tests",
+      "//components/history/content/browser:unit_tests",
+      "//components/history/core/browser:unit_tests",
+      "//components/history/core/common:unit_tests",
+      "//components/invalidation/impl:unit_tests",
+      "//components/json_schema:unit_tests",
+      "//components/keyed_service/content:unit_tests",
+      "//components/keyed_service/core:unit_tests",
+      "//components/language_usage_metrics:unit_tests",
+      "//components/leveldb_proto:unit_tests",
+      "//components/login:unit_tests",
+      "//components/memory_pressure:unit_tests",
+      "//components/metrics:unit_tests",
+      "//components/mime_util:unit_tests",
+      "//components/network_time:unit_tests",
+      "//components/offline_pages:unit_tests",
+      "//components/omnibox/browser:unit_tests",
+      "//components/open_from_clipboard:unit_tests",
+      "//components/os_crypt:unit_tests",
+      "//components/packed_ct_ev_whitelist:unit_tests",
+      "//components/password_manager/content/browser:unit_tests",
+      "//components/password_manager/core/browser:unit_tests",
+      "//components/password_manager/core/common:unit_tests",
+      "//components/password_manager/sync/browser:unit_tests",
+      "//components/precache/content:unit_tests",
+      "//components/precache/core:unit_tests",
+      "//components/proxy_config:unit_tests",
+      "//components/query_parser:unit_tests",
+      "//components/rappor:unit_tests",
+      "//components/search:unit_tests",
+      "//components/search_engines:unit_tests",
+      "//components/search_provider_logos:unit_tests",
+      "//components/signin/core/browser:unit_tests",
+      "//components/suggestions:unit_tests",
+      "//components/sync_driver:unit_tests",
+      "//components/translate/core/browser:unit_tests",
+      "//components/translate/core/common:unit_tests",
+      "//components/translate/core/language_detection:unit_tests",
+      "//components/undo:unit_tests",
+      "//components/url_formatter:unit_tests",
+      "//components/url_matcher:unit_tests",
+      "//components/update_client:unit_tests",
+      "//components/upload_list:unit_tests",
+      "//components/user_prefs/tracked:unit_tests",
+      "//components/variations:unit_tests",
+      "//components/wallpaper:unit_tests",
+      "//components/web_resource:unit_tests",
+      "//components/webcrypto:unit_tests",
+      "//components/webdata/common:unit_tests",
+
+      # These are the deps required by the code in this target.
+      "//components/policy:policy_component",
+      "//content/test:test_support",
     ]
+
+    if (!is_android) {
+      deps += [
+        "//components/audio_modem:unit_tests",
+        "//components/copresence:unit_tests",
+        "//components/feedback:unit_tests",
+        "//components/proximity_auth:unit_tests",
+        "//components/sessions:unit_tests",
+        "//components/storage_monitor:unit_tests",
+        "//components/tracing:unit_tests",
+        "//components/webusb:unit_tests",
+      ]
+    }
+    data_deps = [
+      ":components_tests_pak",
+      "//third_party/mesa:osmesa",
+      "//ui/resources:ui_test_pak",
+    ]
+
+    if (enable_rlz_support) {
+      deps += [ "//components/rlz:unit_tests" ]
+    }
+    if (is_android) {
+      isolate_file = "components_unittests.isolate"
+
+      deps += [ "//content/public/android:content_java" ]
+      deps -= [
+        "//components/gcm_driver:unit_tests",
+        "//components/gcm_driver/instance_id:unit_tests",
+        "//components/password_manager/content/browser:unit_tests",
+        "//components/password_manager/core/browser:unit_tests",
+        "//components/password_manager/core/common:unit_tests",
+        "//components/password_manager/sync/browser:unit_tests",
+      ]
+    }
+    if (is_chromeos) {
+      deps += [ "//components/ownership:unit_tests" ]
+    }
+
+    # TODO(GYP) need this target.
+    #'breakpad/app/crash_keys_win_unittest.cc',
+
+    if (enable_configuration_policy) {
+      deps += [
+        "//components/policy/core/browser:unit_tests",
+        "//components/policy/core/common:unit_tests",
+      ]
+    }
+  }
+
+  if (toolkit_views) {
+    # TODO bug 522654 Enable this when the undefined symbol is fixed in
+    # web_modal such that this links.
+    #deps += [ "//components/constrained_window:unit_tests" ]
+  }
+
+  if (is_win) {
+    deps += [ "//components/browser_watcher:unit_tests" ]
   }
 
   if (enable_basic_printing || enable_print_preview) {
@@ -496,7 +473,6 @@ repack("components_tests_pak") {
   ]
 
   output = "$root_out_dir/components_tests_resources.pak"
-
   deps = [
     "//components/resources",
     "//components/strings",
@@ -513,20 +489,22 @@ group("components_browsertests_run") {
 }
 
 test("components_browsertests") {
-  sources = [
-    "autofill/content/browser/risk/fingerprint_browsertest.cc",
-    "autofill/content/renderer/password_form_conversion_utils_browsertest.cc",
-    "dom_distiller/content/browser/distillable_page_utils_browsertest.cc",
-    "dom_distiller/content/browser/distiller_page_web_contents_browsertest.cc",
-    "dom_distiller/content/browser/test/dom_distiller_js_browsertest.cc",
-    "password_manager/content/renderer/credential_manager_client_browsertest.cc",
-  ]
+  sources = []
+  if (!is_ios) {
+    sources = [
+      "autofill/content/browser/risk/fingerprint_browsertest.cc",
+      "autofill/content/renderer/password_form_conversion_utils_browsertest.cc",
+      "dom_distiller/content/browser/distillable_page_utils_browsertest.cc",
+      "dom_distiller/content/browser/distiller_page_web_contents_browsertest.cc",
+      "dom_distiller/content/browser/test/dom_distiller_js_browsertest.cc",
+      "password_manager/content/renderer/credential_manager_client_browsertest.cc",
+    ]
 
-  data = [
-    "$root_out_dir/components_tests_resources.pak",
-    "$root_out_dir/content_shell.pak",
-  ]
-
+    data = [
+      "$root_out_dir/components_tests_resources.pak",
+      "$root_out_dir/content_shell.pak",
+    ]
+  }
   if (is_android || is_linux || is_mac || is_win) {
     data += [
       "test/data/",
@@ -540,33 +518,35 @@ test("components_browsertests") {
   }
 
   defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
-
   deps = [
-    "autofill/content/browser",
-    "autofill/content/renderer",
-    "content_settings/core/common",
-    "dom_distiller/content:content_browser",
-    "dom_distiller/core",
-    "dom_distiller/core:test_support",
-    "password_manager/content/browser",
-    "password_manager/content/common",
-    "password_manager/content/renderer",
     "strings",
     "//base",
     "//base/test:test_support",
-    "//content/test:browsertest_support",
-    "//content/test:test_support",
-    "//device/bluetooth",
     "//testing/gmock",
     "//testing/gtest",
-    "//ui/base",
   ]
+  if (!is_ios) {
+    deps += [
+      "autofill/content/browser",
+      "autofill/content/renderer",
+      "content_settings/core/common",
+      "dom_distiller/content:content_browser",
+      "dom_distiller/core",
+      "dom_distiller/core:test_support",
+      "password_manager/content/browser",
+      "password_manager/content/common",
+      "password_manager/content/renderer",
+      "//content/test:browsertest_support",
+      "//content/test:test_support",
+      "//device/bluetooth",
+      "//ui/base",
+    ]
 
-  data_deps = [
-    ":components_tests_pak",
-    "//third_party/mesa:osmesa",
-  ]
-
+    data_deps = [
+      ":components_tests_pak",
+      "//third_party/mesa:osmesa",
+    ]
+  }
   if (is_android) {
     sources += [ "test/android/browsertests_apk/components_browser_tests_jni_onload.cc" ]
     sources -= [ "autofill/content/browser/risk/fingerprint_browsertest.cc" ]
@@ -601,11 +581,15 @@ test("components_perftests") {
   configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
 
   deps = [
-    "//base",
-    "//base/test:test_support_perf",
     "//testing/gtest",
     "//testing/perf",
-    "//content/test:test_support",
-    "//components/visitedlink/browser",
   ]
+  if (!is_ios) {
+    deps += [
+      "//base",
+      "//base/test:test_support_perf",
+      "//content/test:test_support",
+      "//components/visitedlink/browser",
+    ]
+  }
 }

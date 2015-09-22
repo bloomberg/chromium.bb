@@ -205,22 +205,21 @@ source_set("unit_tests") {
     "//testing/gtest",
   ]
 
-  if (is_linux) {
-    sources += [ "serialization/serialization_utils_unittest.cc" ]
-    deps += [ ":serialization" ]
-  }
-
   if (!is_ios) {
+    deps += [
+      "//content/public/common",
+      ":gpu",
+      ":profiler",
+    ]
     sources += [
       "gpu/gpu_metrics_provider_unittest.cc",
       "profiler/profiler_metrics_provider_unittest.cc",
       "profiler/tracking_synchronizer_unittest.cc",
     ]
-    deps += [
-      ":gpu",
-      ":profiler",
-      "//content/public/common",
-    ]
+  }
+  if (is_linux) {
+    sources += [ "serialization/serialization_utils_unittest.cc" ]
+    deps += [ ":serialization" ]
   }
 }
 # TODO(GYP): metrics_chromeos

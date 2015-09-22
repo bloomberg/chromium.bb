@@ -67,6 +67,7 @@ group("both_gn_and_gyp") {
   deps = [
     "//base:base_unittests",
     "//chrome/installer",
+    "//components:components_unittests",
     "//net:net_unittests",
     "//skia:skia_unittests",
     "//sql:sql_unittests",
@@ -88,7 +89,6 @@ group("both_gn_and_gyp") {
       "//chrome/test:unit_tests",
       "//chrome/test/chromedriver:chromedriver_unittests",
       "//components:components_browsertests",
-      "//components:components_unittests",
       "//content/shell:content_shell",
       "//content/test:content_browsertests",
       "//content/test:content_perftests",

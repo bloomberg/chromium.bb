@@ -69,6 +69,7 @@ source_set("browser") {
     "//net",
     "//sql",
     "//third_party/icu",
+    "//components/signin/core/common",
     "//components/content_settings/core/browser",
     "//components/content_settings/core/common",
     "//components/google/core/browser",

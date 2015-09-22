@@ -4,9 +4,6 @@
 
 source_set("core") {
   sources = [
-    "fallback_icon_client.h",
-    "fallback_icon_service.cc",
-    "fallback_icon_service.h",
     "favicon_client.h",
     "favicon_driver.cc",
     "favicon_driver.h",
@@ -36,6 +33,13 @@ source_set("core") {
     "//ui/gfx",
     "//url",
   ]
+  if (!is_ios) {
+    sources += [
+      "fallback_icon_client.h",
+      "fallback_icon_service.cc",
+      "fallback_icon_service.h",
+    ]
+  }
 }
 
 source_set("unit_tests") {

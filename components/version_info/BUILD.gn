@@ -37,7 +37,9 @@ process_version("generate_version_info") {
     # to the version.py script, so it cannot be added to the sources variable
     # and instead need to be managed manually.
 
-    inputs += [ ios_extra_version_path ]
+    inputs = [
+      ios_extra_version_path,
+    ]
     extra_args = [
       "-f",
       rebase_path(ios_extra_version_path, root_build_dir),
