@@ -27,11 +27,6 @@
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager.h"
 
-#if defined(OS_ANDROID)
-#include "base/android/jni_android.h"
-#include "chrome/browser/supervised_user/child_accounts/child_account_service_android.h"
-#endif
-
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "components/user_manager/user_manager.h"
@@ -100,35 +95,9 @@ void ChildAccountService::RegisterProfilePrefs(
   registry->RegisterBooleanPref(prefs::kChildAccountStatusKnown, false);
 }
 
-void ChildAccountService::SetIsChildAccount(bool is_child_account) {
-  PropagateChildStatusToUser(is_child_account);
-  if (profile_->IsChild() != is_child_account) {
-    if (is_child_account) {
-      profile_->GetPrefs()->SetString(prefs::kSupervisedUserId,
-                                      supervised_users::kChildAccountSUID);
-    } else {
-      profile_->GetPrefs()->ClearPref(prefs::kSupervisedUserId);
-
-      ClearFirstCustodianPrefs();
-      ClearSecondCustodianPrefs();
-    }
-  }
-  profile_->GetPrefs()->SetBoolean(prefs::kChildAccountStatusKnown, true);
-
-  for (const auto& callback : status_received_callback_list_)
-    callback.Run();
-  status_received_callback_list_.clear();
-}
-
 void ChildAccountService::Init() {
   SupervisedUserServiceFactory::GetForProfile(profile_)->SetDelegate(this);
   AccountTrackerServiceFactory::GetForProfile(profile_)->AddObserver(this);
-
-#if defined(OS_ANDROID)
-  bool is_child_account = false;
-  if (GetJavaChildAccountStatus(&is_child_account))
-    SetIsChildAccount(is_child_account);
-#endif
 
   PropagateChildStatusToUser(profile_->IsChild());
 
@@ -210,6 +179,26 @@ bool ChildAccountService::SetActive(bool active) {
     sync_service->ReconfigureDatatypeManager();
 
   return true;
+}
+
+void ChildAccountService::SetIsChildAccount(bool is_child_account) {
+  PropagateChildStatusToUser(is_child_account);
+  if (profile_->IsChild() != is_child_account) {
+    if (is_child_account) {
+      profile_->GetPrefs()->SetString(prefs::kSupervisedUserId,
+                                      supervised_users::kChildAccountSUID);
+    } else {
+      profile_->GetPrefs()->ClearPref(prefs::kSupervisedUserId);
+
+      ClearFirstCustodianPrefs();
+      ClearSecondCustodianPrefs();
+    }
+  }
+  profile_->GetPrefs()->SetBoolean(prefs::kChildAccountStatusKnown, true);
+
+  for (const auto& callback : status_received_callback_list_)
+    callback.Run();
+  status_received_callback_list_.clear();
 }
 
 void ChildAccountService::OnAccountUpdated(const AccountInfo& info) {
