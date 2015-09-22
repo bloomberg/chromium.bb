@@ -408,15 +408,15 @@ TEST_F(RenderWidgetHostViewMacTest, GetFirstRectForCharacterRangeCaretCase) {
         gfx::Range(0, 1).ToNSRange(),
         &rect,
         &actual_range));
-  EXPECT_FALSE(rwhv_mac_->GetCachedFirstRectForCharacterRange(
+  EXPECT_TRUE(rwhv_mac_->GetCachedFirstRectForCharacterRange(
         gfx::Range(1, 1).ToNSRange(),
         &rect,
         &actual_range));
-  EXPECT_FALSE(rwhv_mac_->GetCachedFirstRectForCharacterRange(
+  EXPECT_TRUE(rwhv_mac_->GetCachedFirstRectForCharacterRange(
         gfx::Range(1, 2).ToNSRange(),
         &rect,
         &actual_range));
-  EXPECT_FALSE(rwhv_mac_->GetCachedFirstRectForCharacterRange(
+  EXPECT_TRUE(rwhv_mac_->GetCachedFirstRectForCharacterRange(
         gfx::Range(2, 2).ToNSRange(),
         &rect,
         &actual_range));

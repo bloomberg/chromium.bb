@@ -369,6 +369,9 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   void PluginImeCompositionCompleted(const base::string16& text, int plugin_id);
 
   const std::string& selected_text() const { return selected_text_; }
+  const gfx::Range& composition_range() const { return composition_range_; }
+  const base::string16& selection_text() const { return selection_text_; }
+  size_t selection_text_offset() const { return selection_text_offset_; }
 
   // Returns true and stores first rectangle for character range if the
   // requested |range| is already cached, otherwise returns false.
@@ -593,6 +596,9 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
 
   // The current caret bounds.
   gfx::Rect caret_rect_;
+
+  // The current first selection bounds.
+  gfx::Rect first_selection_rect_;
 
   // Factory used to safely scope delayed calls to ShutdownHost().
   base::WeakPtrFactory<RenderWidgetHostViewMac> weak_factory_;

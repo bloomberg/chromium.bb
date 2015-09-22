@@ -20,6 +20,7 @@
 #include "base/mac/sdk_forward_declarations.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
@@ -1267,6 +1268,7 @@ void RenderWidgetHostViewMac::SelectionBoundsChanged(
     const ViewHostMsg_SelectionBounds_Params& params) {
   if (params.anchor_rect == params.focus_rect)
     caret_rect_ = params.anchor_rect;
+  first_selection_rect_ = params.anchor_rect;
 }
 
 void RenderWidgetHostViewMac::SetShowingContextMenu(bool showing) {
@@ -1484,16 +1486,26 @@ bool RenderWidgetHostViewMac::GetCachedFirstRectForCharacterRange(
   TRACE_EVENT0("browser",
                "RenderWidgetHostViewMac::GetFirstRectForCharacterRange");
 
+  const gfx::Range requested_range(range);
   // If requested range is same as caret location, we can just return it.
-  if (selection_range_.is_empty() && gfx::Range(range) == selection_range_) {
+  if (selection_range_.is_empty() && requested_range == selection_range_) {
     if (actual_range)
       *actual_range = range;
     *rect = NSRectFromCGRect(caret_rect_.ToCGRect());
     return true;
   }
 
+  if (composition_range_.is_empty()) {
+    if (!selection_range_.Contains(requested_range))
+      return false;
+    if (actual_range)
+      *actual_range = selection_range_.ToNSRange();
+    *rect = NSRectFromCGRect(first_selection_rect_.ToCGRect());
+    return true;
+  }
+
   const gfx::Range request_range_in_composition =
-      ConvertCharacterRangeToCompositionRange(gfx::Range(range));
+      ConvertCharacterRangeToCompositionRange(requested_range);
   if (request_range_in_composition == gfx::Range::InvalidRange())
     return false;
 
@@ -3013,10 +3025,40 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
   // TODO(thakis): Pipe |actualRange| through TextInputClientMac machinery.
   if (actualRange)
     *actualRange = range;
-  NSAttributedString* str =
-      TextInputClientMac::GetInstance()->GetAttributedSubstringFromRange(
-          renderWidgetHostView_->render_widget_host_, range);
-  return str;
+
+  const gfx::Range requested_range(range);
+  if (requested_range.is_reversed())
+    return nil;
+
+  gfx::Range expected_range;
+  const base::string16* expected_text;
+
+  if (!renderWidgetHostView_->composition_range().is_empty()) {
+    expected_text = &markedText_;
+    expected_range = renderWidgetHostView_->composition_range();
+  } else {
+    expected_text = &renderWidgetHostView_->selection_text();
+    size_t offset = renderWidgetHostView_->selection_text_offset();
+    expected_range = gfx::Range(offset, offset + expected_text->size());
+  }
+
+  if (!expected_range.Contains(requested_range))
+    return nil;
+
+  // Gets the raw bytes to avoid unnecessary string copies for generating
+  // NSString.
+  const base::char16* bytes =
+      &(*expected_text)[requested_range.start() - expected_range.start()];
+  // Avoid integer overflow.
+  base::CheckedNumeric<size_t> requested_len = requested_range.length();
+  requested_len *= sizeof(base::char16);
+  NSUInteger bytes_len = base::strict_cast<NSUInteger, size_t>(
+      requested_len.ValueOrDefault(0));
+  base::scoped_nsobject<NSString> ns_string(
+      [[NSString alloc] initWithBytes:bytes
+                               length:bytes_len
+                             encoding:NSUTF16LittleEndianStringEncoding]);
+  return [[[NSAttributedString alloc] initWithString:ns_string] autorelease];
 }
 
 - (NSInteger)conversationIdentifier {
