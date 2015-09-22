@@ -261,7 +261,6 @@
         '../content/app/resources/content_resources.gyp:content_resources',
         '../content/app/strings/content_strings.gyp:content_strings',
         '../content/content.gyp:content_renderer',
-        '../media/media.gyp:media',
         '../net/net.gyp:net',
         '../skia/skia.gyp:skia',
         '../third_party/WebKit/public/blink.gyp:blink',

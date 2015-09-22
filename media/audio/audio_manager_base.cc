@@ -19,24 +19,23 @@
 #include "media/base/media_switches.h"
 
 namespace media {
-namespace {
 
-const int kStreamCloseDelaySeconds = 5;
+static const int kStreamCloseDelaySeconds = 5;
 
 // Default maximum number of output streams that can be open simultaneously
 // for all platforms.
-const int kDefaultMaxOutputStreams = 16;
+static const int kDefaultMaxOutputStreams = 16;
 
 // Default maximum number of input streams that can be open simultaneously
 // for all platforms.
-const int kDefaultMaxInputStreams = 16;
+static const int kDefaultMaxInputStreams = 16;
 
-const int kMaxInputChannels = 3;
+static const int kMaxInputChannels = 3;
 
-}  // namespace
-
+const char AudioManagerBase::kDefaultDeviceName[] = "Default";
 const char AudioManagerBase::kDefaultDeviceId[] = "default";
 const char AudioManagerBase::kCommunicationsDeviceId[] = "communications";
+const char AudioManagerBase::kCommunicationsDeviceName[] = "Communications";
 const char AudioManagerBase::kLoopbackInputDeviceId[] = "loopback";
 
 struct AudioManagerBase::DispatcherParams {

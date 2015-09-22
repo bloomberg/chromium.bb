@@ -163,9 +163,9 @@ void AudioManagerAlsa::GetAlsaDevicesInfo(
     // still empty.  Note, pulse has exclusively opened the default
     // device, so we must open the device via the "default" moniker.
     if (device_names->empty()) {
-      device_names->push_front(
-          media::AudioDeviceName(AudioManager::GetDefaultDeviceName(),
-                                 AudioManagerBase::kDefaultDeviceId));
+      device_names->push_front(media::AudioDeviceName(
+          AudioManagerBase::kDefaultDeviceName,
+          AudioManagerBase::kDefaultDeviceId));
     }
 
     // Get the unique device name for the device.

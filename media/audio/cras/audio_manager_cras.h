@@ -61,6 +61,10 @@ class MEDIA_EXPORT AudioManagerCras : public AudioManagerBase {
 
   bool has_keyboard_mic_;
 
+  // Holds the name and ID of the virtual beamforming devices.
+  const AudioDeviceName beamforming_on_device_name_;
+  const AudioDeviceName beamforming_off_device_name_;
+
   // Stores the mic positions field from the device.
   std::vector<Point> mic_positions_;
 

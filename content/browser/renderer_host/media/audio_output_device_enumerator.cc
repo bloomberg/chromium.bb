@@ -26,7 +26,7 @@ AudioOutputDeviceEnumeration EnumerateDevicesOnDeviceThread(
   // If no devices in enumeration, return a list with a default device
   if (device_names.empty()) {
     snapshot.push_back({media::AudioManagerBase::kDefaultDeviceId,
-                        media::AudioManager::GetDefaultDeviceName(),
+                        media::AudioManagerBase::kDefaultDeviceName,
                         audio_manager->GetDefaultOutputStreamParameters()});
     return snapshot;
   }
