@@ -70,7 +70,7 @@ To make a release of Weston and/or Wayland, follow these steps.
 
       The register_release script in wayland-web will generate an HTML
       snippet that can be pasted into releases.html (or e.g. in emacs
-      insert it via "C-u M-! register_release x.y.z RC2") and
+      insert it via "C-u M-! scripts/register_release x.y.z RC2") and
       customized.
 
       Once satisfied:
