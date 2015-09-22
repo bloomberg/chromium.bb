@@ -158,11 +158,14 @@ void DaemonControllerDelegateLinux::SetConfigAndStart(
 
   // Ensure the configuration directory exists.
   base::FilePath config_dir = GetConfigPath().DirName();
-  if (!base::DirectoryExists(config_dir) &&
-      !base::CreateDirectory(config_dir)) {
-    LOG(ERROR) << "Failed to create config directory " << config_dir.value();
-    done.Run(DaemonController::RESULT_FAILED);
-    return;
+  if (!base::DirectoryExists(config_dir)) {
+    base::File::Error error;
+    if (!base::CreateDirectoryAndGetError(config_dir, &error)) {
+      LOG(ERROR) << "Failed to create config directory " << config_dir.value()
+                 << ", error: " << base::File::ErrorToString(error);
+      done.Run(DaemonController::RESULT_FAILED);
+      return;
+    }
   }
 
   // Write config.
