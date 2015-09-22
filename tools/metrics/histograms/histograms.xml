@@ -2067,6 +2067,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Autofill.AutomaticProfileCreation" enum="BooleanCreated">
+  <owner>sebsg@chromium.org</owner>
+  <summary>
+    Whether a new Autofill profile was created automatically. In the
+    &quot;false&quot; case, an existing profile was used (and possibly updated).
+  </summary>
+</histogram>
+
 <histogram name="AutoFill.CCInfoBarAccepted">
   <obsolete>
     Deprecated as of 3/2011, replaced by Autofill.CreditCardInfoBar.

@@ -96,6 +96,19 @@ class TestPersonalDataManager : public PersonalDataManager {
     }
   }
 
+  // Overridden to add potential new profiles to the |web_profiles_|. Since
+  // there is no database set for the test, the original method would do
+  // nothing.
+  void SetProfiles(std::vector<AutofillProfile>* profiles) override {
+    // Only need to copy all the profiles. This adds any new profiles created at
+    // form submission.
+    web_profiles_.clear();
+    for (std::vector<AutofillProfile>::iterator iter = profiles->begin();
+         iter != profiles->end(); ++iter) {
+      web_profiles_.push_back(new AutofillProfile(*iter));
+    }
+  }
+
   void set_autofill_enabled(bool autofill_enabled) {
     autofill_enabled_ = autofill_enabled;
   }
@@ -3038,6 +3051,93 @@ TEST_F(AutofillMetricsTest, FormFillDuration) {
 
     autofill_manager_->Reset();
   }
+}
+
+// Verify that we correctly log metrics for profile creation on form submission.
+TEST_F(AutofillMetricsTest, AutomaticProfileCreation) {
+  base::HistogramTester histogram_tester;
+
+  // Load a fillable form.
+  FormData form;
+  form.name = ASCIIToUTF16("TestForm");
+  form.origin = GURL("http://example.com/form.html");
+  form.action = GURL("http://example.com/submit.html");
+
+  // Create the form's fields.
+  FormFieldData field;
+  test::CreateTestFormField("Name", "name", "", "text", &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("Email", "email", "", "text", &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("Phone", "phone", "", "text", &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("Address", "address", "", "text", &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("City", "city", "", "text", &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("Country", "country", "", "text", &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("State", "state", "", "text", &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("Zip", "zip", "", "text", &field);
+  form.fields.push_back(field);
+
+  std::vector<FormData> forms(1, form);
+
+  // Fill second form.
+  FormData second_form = form;
+  std::vector<FormData> second_forms(1, second_form);
+
+  // Fill a third form.
+  FormData third_form = form;
+  std::vector<FormData> third_forms(1, third_form);
+
+  // Fill the field values for the first form submission.
+  form.fields[0].value = ASCIIToUTF16("Albert Canuck");
+  form.fields[1].value = ASCIIToUTF16("can@gmail.com");
+  form.fields[2].value = ASCIIToUTF16("12345678901");
+  form.fields[3].value = ASCIIToUTF16("1234 McGill street.");
+  form.fields[4].value = ASCIIToUTF16("Montreal");
+  form.fields[5].value = ASCIIToUTF16("Canada");
+  form.fields[6].value = ASCIIToUTF16("Quebec");
+  form.fields[7].value = ASCIIToUTF16("A1A 1A1");
+
+  // Fill the field values for the second form submission (same as first form).
+  second_form.fields = form.fields;
+
+  // Fill the field values for the third form submission.
+  third_form.fields[0].value = ASCIIToUTF16("Jean-Paul Canuck");
+  third_form.fields[1].value = ASCIIToUTF16("can2@gmail.com");
+  third_form.fields[2].value = ASCIIToUTF16("12345678901");
+  third_form.fields[3].value = ASCIIToUTF16("1234 McGill street.");
+  third_form.fields[4].value = ASCIIToUTF16("Montreal");
+  third_form.fields[5].value = ASCIIToUTF16("Canada");
+  third_form.fields[6].value = ASCIIToUTF16("Quebec");
+  third_form.fields[7].value = ASCIIToUTF16("A1A 1A1");
+
+  // Expect to log true for the metric since a new profile is submitted.
+  autofill_manager_->OnFormsSeen(forms, TimeTicks::FromInternalValue(1));
+  autofill_manager_->SubmitForm(form, TimeTicks::FromInternalValue(17));
+  histogram_tester.ExpectBucketCount("Autofill.AutomaticProfileCreation",
+                                     true, 1);
+  histogram_tester.ExpectBucketCount("Autofill.AutomaticProfileCreation",
+                                     false, 0);
+
+  // Expect to log false for the metric since the same profile is submitted.
+  autofill_manager_->OnFormsSeen(second_forms, TimeTicks::FromInternalValue(1));
+  autofill_manager_->SubmitForm(second_form, TimeTicks::FromInternalValue(17));
+  histogram_tester.ExpectBucketCount("Autofill.AutomaticProfileCreation",
+                                     true, 1);
+  histogram_tester.ExpectBucketCount("Autofill.AutomaticProfileCreation",
+                                     false, 1);
+
+  // Expect to log true for the metric since a new profile is submitted.
+  autofill_manager_->OnFormsSeen(third_forms, TimeTicks::FromInternalValue(1));
+  autofill_manager_->SubmitForm(third_form, TimeTicks::FromInternalValue(17));
+  histogram_tester.ExpectBucketCount("Autofill.AutomaticProfileCreation",
+                                     true, 2);
+  histogram_tester.ExpectBucketCount("Autofill.AutomaticProfileCreation",
+                                     false, 1);
 }
 
 // Test class that shares setup code for testing ParseQueryResponse.

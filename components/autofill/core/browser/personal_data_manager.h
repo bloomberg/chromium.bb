@@ -255,7 +255,7 @@ class PersonalDataManager : public KeyedService,
   // updates in |profiles| make it to the DB.  This is why SetProfiles will
   // invoke Refresh after finishing, to ensure we get into a
   // consistent state.  See Refresh for details.
-  void SetProfiles(std::vector<AutofillProfile>* profiles);
+  virtual void SetProfiles(std::vector<AutofillProfile>* profiles);
 
   // Sets |credit_cards_| to the contents of |credit_cards| and updates the web
   // database by adding, updating and removing credit cards.

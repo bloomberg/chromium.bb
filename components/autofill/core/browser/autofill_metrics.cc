@@ -631,6 +631,11 @@ void AutofillMetrics::LogServerResponseHasDataForForm(bool has_data) {
   UMA_HISTOGRAM_BOOLEAN("Autofill.ServerResponseHasDataForForm", has_data);
 }
 
+// static
+void AutofillMetrics::LogAutomaticProfileCreation(bool created) {
+  UMA_HISTOGRAM_BOOLEAN("Autofill.AutomaticProfileCreation", created);
+}
+
 AutofillMetrics::FormEventLogger::FormEventLogger(bool is_for_credit_card)
     : is_for_credit_card_(is_for_credit_card),
       is_server_data_available_(false),

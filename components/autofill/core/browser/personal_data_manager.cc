@@ -1051,6 +1051,8 @@ std::string PersonalDataManager::MergeProfile(
   if (!matching_profile_found)
     merged_profiles->push_back(new_profile);
 
+  AutofillMetrics::LogAutomaticProfileCreation(!matching_profile_found);
+
   return guid;
 }
 
