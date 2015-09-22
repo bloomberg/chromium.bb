@@ -633,6 +633,7 @@ void RenderFrameDevToolsAgentHost::DisconnectWebContents() {
     DiscardPending();
   UpdateProtocolHandlers(nullptr);
   disconnected_ = current_.Pass();
+  disconnected_->Detach();
   WebContentsObserver::Observe(nullptr);
 }
 
