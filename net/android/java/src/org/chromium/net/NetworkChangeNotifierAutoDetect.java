@@ -147,6 +147,7 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver
     private ConnectivityManagerDelegate mConnectivityManagerDelegate;
     private WifiManagerDelegate mWifiManagerDelegate;
     private boolean mRegistered;
+    private final boolean mApplicationStateRegistered;
     private int mConnectionType;
     private String mWifiSSID;
     private double mMaxBandwidthMbps;
@@ -180,9 +181,11 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver
 
         if (alwaysWatchForChanges) {
             registerReceiver();
+            mApplicationStateRegistered = false;
         } else {
             ApplicationStatus.registerApplicationStateListener(this);
             onApplicationStateChange(getApplicationState());
+            mApplicationStateRegistered = true;
         }
     }
 
@@ -218,6 +221,7 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver
     }
 
     public void destroy() {
+        if (mApplicationStateRegistered) ApplicationStatus.unregisterApplicationStateListener(this);
         unregisterReceiver();
     }
 
