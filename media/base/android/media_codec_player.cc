@@ -74,6 +74,7 @@ MediaCodecPlayer::MediaCodecPlayer(
   seek_done_cb_ =
       base::Bind(&MediaPlayerManager::OnSeekComplete, manager, player_id);
   error_cb_ = base::Bind(&MediaPlayerManager::OnError, manager, player_id);
+
   attach_listener_cb_ = base::Bind(&MediaPlayerAndroid::AttachListener,
                                    WeakPtrForUIThread(), nullptr);
   detach_listener_cb_ =
@@ -207,10 +208,10 @@ void MediaCodecPlayer::Start() {
 
   switch (state_) {
     case kStatePaused:
-      // Prefetch or wait for initial configuration.
+      // Request play permission or wait for initial configuration.
       if (HasAudio() || HasVideo()) {
-        SetState(kStatePrefetching);
-        StartPrefetchDecoders();
+        SetState(kStateWaitingForPermission);
+        RequestPlayPermission();
       } else {
         SetState(kStateWaitingForConfig);
       }
@@ -220,6 +221,7 @@ void MediaCodecPlayer::Start() {
       SetPendingStart(true);
       break;
     case kStateWaitingForConfig:
+    case kStateWaitingForPermission:
     case kStatePrefetching:
     case kStatePlaying:
     case kStateWaitingForSurface:
@@ -240,6 +242,7 @@ void MediaCodecPlayer::Pause(bool is_media_related_action) {
 
   switch (state_) {
     case kStateWaitingForConfig:
+    case kStateWaitingForPermission:
     case kStatePrefetching:
     case kStateWaitingForSurface:
       SetState(kStatePaused);
@@ -271,6 +274,7 @@ void MediaCodecPlayer::SeekTo(base::TimeDelta timestamp) {
       RequestDemuxerSeek(timestamp);
       break;
     case kStateWaitingForConfig:
+    case kStateWaitingForPermission:
     case kStatePrefetching:
     case kStateWaitingForSurface:
       SetState(kStateWaitingForSeek);
@@ -470,10 +474,10 @@ void MediaCodecPlayer::OnDemuxerSeekDone(
 
   if (HasPendingStart()) {
     SetPendingStart(false);
-    // Prefetch or wait for initial configuration.
+    // Request play permission or wait for initial configuration.
     if (HasAudio() || HasVideo()) {
-      SetState(kStatePrefetching);
-      StartPrefetchDecoders();
+      SetState(kStateWaitingForPermission);
+      RequestPlayPermission();
     } else {
       SetState(kStateWaitingForConfig);
     }
@@ -537,6 +541,17 @@ bool MediaCodecPlayer::IsPrerollingForTests(DemuxerStream::Type type) const {
 
 // Events from Player, called on UI thread
 
+void MediaCodecPlayer::RequestPermissionAndPostResult(
+    base::TimeDelta duration) {
+  DCHECK(ui_task_runner_->BelongsToCurrentThread());
+  DVLOG(1) << __FUNCTION__ << " duration:" << duration;
+
+  bool granted = manager()->RequestPlay(player_id(), duration);
+  GetMediaTaskRunner()->PostTask(
+      FROM_HERE, base::Bind(&MediaCodecPlayer::OnPermissionDecided,
+                            media_weak_this_, granted));
+}
+
 void MediaCodecPlayer::OnMediaMetadataChanged(base::TimeDelta duration,
                                               const gfx::Size& video_size) {
   DCHECK(ui_task_runner_->BelongsToCurrentThread());
@@ -558,6 +573,35 @@ void MediaCodecPlayer::OnTimeUpdate(base::TimeDelta current_timestamp,
 
   current_time_cache_ = current_timestamp;
   manager()->OnTimeUpdate(player_id(), current_timestamp, current_time_ticks);
+}
+
+// Event from manager, called on Media thread
+
+void MediaCodecPlayer::OnPermissionDecided(bool granted) {
+  DCHECK(GetMediaTaskRunner()->BelongsToCurrentThread());
+
+  DVLOG(1) << __FUNCTION__ << ": " << (granted ? "granted" : "denied");
+
+  switch (state_) {
+    case kStateWaitingForPermission:
+      if (granted) {
+        SetState(kStatePrefetching);
+        StartPrefetchDecoders();
+      } else {
+        SetState(kStatePaused);
+        StopDecoders();
+      }
+      break;
+
+    case kStatePaused:
+    case kStateWaitingForSeek:
+    case kStateError:
+      break;  // ignore
+
+    default:
+      NOTREACHED() << __FUNCTION__ << ": wrong state " << AsString(state_);
+      break;
+  }
 }
 
 // Events from Decoders, called on Media thread
@@ -690,8 +734,8 @@ void MediaCodecPlayer::OnStopDone(DemuxerStream::Type type) {
         RequestDemuxerSeek(seek_time);
       } else if (HasPendingStart()) {
         SetPendingStart(false);
-        SetState(kStatePrefetching);
-        StartPrefetchDecoders();
+        SetState(kStateWaitingForPermission);
+        RequestPlayPermission();
       } else {
         SetState(kStatePaused);
       }
@@ -859,9 +903,21 @@ void MediaCodecPlayer::SetDemuxerConfigs(const DemuxerConfigs& configs) {
     video_decoder_->SetDemuxerConfigs(configs);
 
   if (state_ == kStateWaitingForConfig) {
-    SetState(kStatePrefetching);
-    StartPrefetchDecoders();
+    SetState(kStateWaitingForPermission);
+    RequestPlayPermission();
   }
+}
+
+void MediaCodecPlayer::RequestPlayPermission() {
+  DCHECK(GetMediaTaskRunner()->BelongsToCurrentThread());
+  DVLOG(1) << __FUNCTION__;
+
+  // Check that we have received demuxer config hence we know the duration.
+  DCHECK(HasAudio() || HasVideo());
+
+  ui_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&MediaPlayerAndroid::RequestPermissionAndPostResult,
+                            WeakPtrForUIThread(), duration_));
 }
 
 void MediaCodecPlayer::StartPrefetchDecoders() {
@@ -1171,6 +1227,7 @@ const char* MediaCodecPlayer::AsString(PlayerState state) {
   switch (state) {
     RETURN_STRING(kStatePaused);
     RETURN_STRING(kStateWaitingForConfig);
+    RETURN_STRING(kStateWaitingForPermission);
     RETURN_STRING(kStatePrefetching);
     RETURN_STRING(kStatePlaying);
     RETURN_STRING(kStateStopping);

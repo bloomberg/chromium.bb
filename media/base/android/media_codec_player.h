@@ -32,6 +32,10 @@
 //        |
 //        |
 //        | <----------------------------------------------
+//        |                                                |
+//   [ Waiting for permission ]                            |
+//        |                                                |
+//        |                                                |
 //        v                                                |
 //   [ Prefetching ] -------------------                   |
 //        |                             |                  |
@@ -54,17 +58,27 @@
 //    |                            ^  |                              /
 //    |                            |  |                             /
 //    |                    Pause:  |  | Start w/config:            /
-//    |                            |  |    dec.Prefetch           /
+//    |        Permission denied:  |  |    requestPermission      /
 //    |                            |  |                          /
 //    |                            |  |                         /
 //    |                            |  |                        /
 //    |                            |  |                       / DemuxerConfigs:
-//    |                            |  |                      /    dec.Prefetch
+//    |                            |  |                      / requestPermission
 //    |                            |  |                     /
 //    |                            |  |                    /
 //    |                            |  v                   /
 //    |                                                  /
-//    |   ------------------> [ Prefetching ]  <--------/      [   Waiting   ]
+//    |   ------------------> [ Waiting for ]  <--------/
+//    |   |                   [ permission  ]
+//    |   |                          |
+//    |   |                          |
+//    |   |                          | Permission granted:
+//    |   |                          |     dec.Prefetch
+//    |   |                          |
+//    |   |                          |
+//    |   |                          v
+//    |   |
+//    |   |                   [ Prefetching ]                  [   Waiting   ]
 //    |   |                   [             ] -------------->  [ for surface ]
 //    |   |                          |         PrefetchDone,         /
 //    |   |                          |          no surface:         /
@@ -102,17 +116,23 @@
 //                                           |         |  |
 //                                           |         |  |
 //                                           |         |  | Start:
-//                    Seek:                  |         |  |   SetPendingStart
-//                      dec.Stop             |         |  |
-//                      SetPendingSeek       |         |  |
+//                                           |         |  |   SetPendingStart
+//                Seek: dec.Stop             |         |  |
+//                      SetPendingStart      |         |  |
 //                      demuxer.RequestSeek  |         |  |
-//  [ Prefetching ] -----------------------> |         |  |
-//  [             ] <----------------------  |         |  | Pause:
-//        |          SeekDone                |         |  |   RemovePendingStart
+//  [ Waiting for ] -----------------------> |         |  |
+//  [ permission  ] <----------------------  |         |  | Pause:
+//                   SeekDone                |         |  |   RemovePendingStart
 //        |          w/pending start:        |         |  |
-//        |            dec.Prefetch          | Waiting |  |
+//        |            requestPermission     | Waiting |  |
 //        |                                  |   for   |  | Seek:
 //        |                                  |   seek  |  |   SetPendingSeek
+//        |                                  |         |  |
+//        |       Seek: dec.Stop             |         |  |
+//        v             SetPendingStart      |         |  |
+//                      demuxer.RequestSeek  |         |  |
+//   [ Prefetching ] ----------------------> |         |  |
+//                                           |         |  |
 //        |                                  |         |  |
 //        | PrefetchDone: dec.Start          |         |  |
 //        |                                  |         |  | SeekDone
@@ -213,6 +233,7 @@ class MEDIA_EXPORT MediaCodecPlayer : public MediaPlayerAndroid,
   enum PlayerState {
     kStatePaused,
     kStateWaitingForConfig,
+    kStateWaitingForPermission,
     kStatePrefetching,
     kStatePlaying,
     kStateStopping,
@@ -242,6 +263,12 @@ class MEDIA_EXPORT MediaCodecPlayer : public MediaPlayerAndroid,
   };
 
   // MediaPlayerAndroid implementation.
+
+  // This method requests playback permission from the manager on UI thread,
+  // passing total duration as an argiment. The duration must be known by the
+  // time of the call. The method posts the result to the media thread.
+  void RequestPermissionAndPostResult(base::TimeDelta duration) override;
+
   // This method caches the data and calls manager's OnMediaMetadataChanged().
   void OnMediaMetadataChanged(base::TimeDelta duration,
                               const gfx::Size& video_size) override;
@@ -249,6 +276,9 @@ class MEDIA_EXPORT MediaCodecPlayer : public MediaPlayerAndroid,
   // This method caches the current time and calls manager's OnTimeUpdate().
   void OnTimeUpdate(base::TimeDelta current_timestamp,
                     base::TimeTicks current_time_ticks) override;
+
+  // Callback from manager
+  void OnPermissionDecided(bool granted);
 
   // Callbacks from decoders
   void RequestDemuxerData(DemuxerStream::Type stream_type);
@@ -276,6 +306,7 @@ class MEDIA_EXPORT MediaCodecPlayer : public MediaPlayerAndroid,
   bool HasVideo() const;
   bool HasAudio() const;
   void SetDemuxerConfigs(const DemuxerConfigs& configs);
+  void RequestPlayPermission();
   void StartPrefetchDecoders();
   void StartPlaybackOrBrowserSeek();
   StartStatus StartPlaybackDecoders();

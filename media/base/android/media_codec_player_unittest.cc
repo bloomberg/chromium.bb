@@ -90,7 +90,8 @@ int GetFrameCount(base::TimeDelta duration,
 class MockMediaPlayerManager : public MediaPlayerManager {
  public:
   MockMediaPlayerManager()
-      : playback_completed_(false),
+      : playback_allowed_(true),
+        playback_completed_(false),
         num_seeks_completed_(0),
         num_audio_codecs_created_(0),
         num_video_codecs_created_(0),
@@ -134,7 +135,9 @@ class MockMediaPlayerManager : public MediaPlayerManager {
   void OnWaitingForDecryptionKey(int player_id) override {}
   MediaPlayerAndroid* GetFullscreenPlayer() override { return nullptr; }
   MediaPlayerAndroid* GetPlayer(int player_id) override { return nullptr; }
-  bool RequestPlay(int player_id) override { return true; }
+  bool RequestPlay(int player_id, base::TimeDelta duration) override {
+    return playback_allowed_;
+  }
 
   void OnMediaResourcesRequested(int player_id) {}
 
@@ -167,6 +170,8 @@ class MockMediaPlayerManager : public MediaPlayerManager {
   base::WeakPtr<MockMediaPlayerManager> GetWeakPtr() {
     return weak_ptr_factory_.GetWeakPtr();
   }
+
+  void SetPlaybackAllowed(bool value) { playback_allowed_ = value; }
 
   // Conditions to wait for.
   bool IsMetadataChanged() const { return media_metadata_.modified; }
@@ -206,6 +211,7 @@ class MockMediaPlayerManager : public MediaPlayerManager {
   Minimax<base::TimeDelta> pts_stat_;
 
  private:
+  bool playback_allowed_;
   bool playback_completed_;
   int num_seeks_completed_;
   int num_audio_codecs_created_;
@@ -967,6 +973,37 @@ TEST_F(MediaCodecPlayerTest, AudioPlayTillCompletion) {
   EXPECT_LT(duration - audio_pts_delay, manager_.pts_stat_.max());
 }
 
+TEST_F(MediaCodecPlayerTest, AudioNoPermission) {
+  SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
+
+  base::TimeDelta duration = base::TimeDelta::FromMilliseconds(1000);
+  base::TimeDelta start_timeout = base::TimeDelta::FromMilliseconds(800);
+
+  manager_.SetPlaybackAllowed(false);
+
+  demuxer_->SetAudioFactory(
+      scoped_ptr<AudioFactory>(new AudioFactory(duration)));
+
+  CreatePlayer();
+
+  // Wait till the player is initialized on media thread.
+  EXPECT_TRUE(WaitForCondition(base::Bind(&MockDemuxerAndroid::IsInitialized,
+                                          base::Unretained(demuxer_))));
+
+  // Post configuration after the player has been initialized.
+  demuxer_->PostInternalConfigs();
+
+  EXPECT_FALSE(manager_.IsPlaybackCompleted());
+
+  player_->Start();
+
+  // Playback should not start.
+  EXPECT_FALSE(
+      WaitForCondition(base::Bind(&MockMediaPlayerManager::IsPlaybackStarted,
+                                  base::Unretained(&manager_)),
+                       start_timeout));
+}
+
 TEST_F(MediaCodecPlayerTest, VideoPlayTillCompletion) {
   SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
 
@@ -982,6 +1019,39 @@ TEST_F(MediaCodecPlayerTest, VideoPlayTillCompletion) {
                        timeout));
 
   EXPECT_LE(duration, manager_.pts_stat_.max());
+}
+
+TEST_F(MediaCodecPlayerTest, VideoNoPermission) {
+  SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
+
+  base::TimeDelta duration = base::TimeDelta::FromMilliseconds(500);
+  const base::TimeDelta start_timeout = base::TimeDelta::FromMilliseconds(800);
+
+  manager_.SetPlaybackAllowed(false);
+
+  demuxer_->SetVideoFactory(
+      scoped_ptr<VideoFactory>(new VideoFactory(duration)));
+
+  CreatePlayer();
+
+  // Wait till the player is initialized on media thread.
+  EXPECT_TRUE(WaitForCondition(base::Bind(&MockDemuxerAndroid::IsInitialized,
+                                          base::Unretained(demuxer_))));
+
+  SetVideoSurface();
+
+  // Post configuration after the player has been initialized.
+  demuxer_->PostInternalConfigs();
+
+  // Start the player.
+  EXPECT_FALSE(manager_.IsPlaybackStarted());
+  player_->Start();
+
+  // Playback should not start.
+  EXPECT_FALSE(
+      WaitForCondition(base::Bind(&MockMediaPlayerManager::IsPlaybackStarted,
+                                  base::Unretained(&manager_)),
+                       start_timeout));
 }
 
 // http://crbug.com/518900

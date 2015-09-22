@@ -37,7 +37,7 @@ class MockMediaPlayerManager : public MediaPlayerManager {
   MOCK_METHOD1(OnWaitingForDecryptionKey, void(int player_id));
   MOCK_METHOD0(GetFullscreenPlayer, MediaPlayerAndroid*());
   MOCK_METHOD1(GetPlayer, MediaPlayerAndroid*(int player_id));
-  MOCK_METHOD1(RequestPlay, bool(int player_id));
+  MOCK_METHOD2(RequestPlay, bool(int player_id, base::TimeDelta duration));
 
   void OnMediaResourcesRequested(int player_id) {}
 };

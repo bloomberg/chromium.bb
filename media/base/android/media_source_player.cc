@@ -215,7 +215,7 @@ void MediaSourcePlayer::StartInternal() {
   if (pending_event_ != NO_EVENT_PENDING)
     return;
 
-  if (!manager()->RequestPlay(player_id())) {
+  if (!manager()->RequestPlay(player_id(), duration_)) {
     Pause(true);
     return;
   }

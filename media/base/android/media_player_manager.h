@@ -73,11 +73,11 @@ class MEDIA_EXPORT MediaPlayerManager {
   // Returns the player with the specified id.
   virtual MediaPlayerAndroid* GetPlayer(int player_id) = 0;
 
-  // Called by the player to request to play. The manager should use this
-  // opportunity to check if the current context is appropriate for a media to
-  // play.
+  // Called by the player to request the playback for given duration. The
+  // manager should use this opportunity to check if the current context is
+  // appropriate for a media to play.
   // Returns whether the request was granted.
-  virtual bool RequestPlay(int player_id) = 0;
+  virtual bool RequestPlay(int player_id, base::TimeDelta duration) = 0;
 };
 
 }  // namespace media

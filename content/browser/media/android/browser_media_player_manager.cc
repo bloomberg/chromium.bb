@@ -374,14 +374,13 @@ MediaPlayerAndroid* BrowserMediaPlayerManager::GetPlayer(int player_id) {
   return NULL;
 }
 
-bool BrowserMediaPlayerManager::RequestPlay(int player_id) {
-  MediaPlayerAndroid* player = GetPlayer(player_id);
-  DCHECK(player);
-
-  int64 duration = player->GetDuration().InSeconds();
+bool BrowserMediaPlayerManager::RequestPlay(int player_id,
+                                            base::TimeDelta duration) {
   MediaSession::Type media_session_type =
-      duration == 0 || duration > kMinimumDurationForContentInSeconds
-          ? MediaSession::Type::Content : MediaSession::Type::Transient;
+      duration == base::TimeDelta() ||
+              duration.InSeconds() > kMinimumDurationForContentInSeconds
+          ? MediaSession::Type::Content
+          : MediaSession::Type::Transient;
 
   bool succeeded = MediaSession::Get(web_contents())->AddPlayer(
       this, player_id, media_session_type);

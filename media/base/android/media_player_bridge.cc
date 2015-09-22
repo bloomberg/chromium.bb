@@ -445,7 +445,7 @@ void MediaPlayerBridge::UpdateAllowedOperations() {
 }
 
 void MediaPlayerBridge::StartInternal() {
-  if (!manager()->RequestPlay(player_id())) {
+  if (!manager()->RequestPlay(player_id(), duration_)) {
     Pause(true);
     return;
   }

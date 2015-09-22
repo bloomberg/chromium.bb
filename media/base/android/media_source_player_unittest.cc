@@ -81,7 +81,7 @@ class MockMediaPlayerManager : public MediaPlayerManager {
   MediaPlayerAndroid* GetFullscreenPlayer() override { return NULL; }
   MediaPlayerAndroid* GetPlayer(int player_id) override { return NULL; }
 
-  bool RequestPlay(int player_id) override {
+  bool RequestPlay(int player_id, base::TimeDelta duration) override {
     return allow_play_;
   }
 

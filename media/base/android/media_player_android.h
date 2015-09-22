@@ -80,6 +80,10 @@ class MEDIA_EXPORT MediaPlayerAndroid {
   // Associates the |cdm| with this player.
   virtual void SetCdm(BrowserCdm* cdm);
 
+  // Requests playback permission from MediaPlayerManager.
+  // Overridden in MediaCodecPlayer to pass data between threads.
+  virtual void RequestPermissionAndPostResult(base::TimeDelta duration) {}
+
   // Overridden in MediaCodecPlayer to pass data between threads.
   virtual void OnMediaMetadataChanged(base::TimeDelta duration,
                                       const gfx::Size& video_size) {}
