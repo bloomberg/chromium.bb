@@ -28,19 +28,21 @@ using base::android::ConvertUTF8ToJavaString;
 using base::android::ScopedJavaLocalRef;
 
 namespace media {
+namespace {
 
-static void AddDefaultDevice(AudioDeviceNames* device_names) {
+void AddDefaultDevice(AudioDeviceNames* device_names) {
   DCHECK(device_names->empty());
-  device_names->push_front(
-      AudioDeviceName(AudioManagerBase::kDefaultDeviceName,
-                      AudioManagerBase::kDefaultDeviceId));
+  device_names->push_front(AudioDeviceName(AudioManager::GetDefaultDeviceName(),
+                                           AudioManagerBase::kDefaultDeviceId));
 }
 
 // Maximum number of output streams that can be open simultaneously.
-static const int kMaxOutputStreams = 10;
+const int kMaxOutputStreams = 10;
 
-static const int kDefaultInputBufferSize = 1024;
-static const int kDefaultOutputBufferSize = 2048;
+const int kDefaultInputBufferSize = 1024;
+const int kDefaultOutputBufferSize = 2048;
+
+}  // namespace
 
 AudioManager* CreateAudioManager(AudioLogFactory* audio_log_factory) {
   return new AudioManagerAndroid(audio_log_factory);

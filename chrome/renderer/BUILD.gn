@@ -57,6 +57,7 @@ static_library("renderer") {
     "//content/app/resources",
     "//content/app/strings",
     "//content/public/renderer",
+    "//media",
     "//net",
     "//skia",
     "//storage/common",

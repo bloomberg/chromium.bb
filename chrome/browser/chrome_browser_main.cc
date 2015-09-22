@@ -100,6 +100,7 @@
 #include "chrome/common/crash_keys.h"
 #include "chrome/common/env_vars.h"
 #include "chrome/common/logging_chrome.h"
+#include "chrome/common/media/media_resource_provider.h"
 #include "chrome/common/net/net_resource_provider.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/profiling.h"
@@ -139,6 +140,7 @@
 #include "content/public/common/main_function_params.h"
 #include "grit/platform_locale_settings.h"
 #include "media/audio/audio_manager.h"
+#include "media/base/media_resources.h"
 #include "net/base/net_module.h"
 #include "net/cookies/cookie_monster.h"
 #include "net/http/http_network_layer.h"
@@ -1525,6 +1527,8 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
 
   // Configure modules that need access to resources.
   net::NetModule::SetResourceProvider(chrome_common_net::NetResourceProvider);
+  media::SetLocalizedStringProvider(
+      chrome_common_media::LocalizedStringProvider);
 
   // In unittest mode, this will do nothing.  In normal mode, this will create
   // the global IntranetRedirectDetector instance, which will promptly go to

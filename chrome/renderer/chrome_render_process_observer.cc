@@ -24,6 +24,7 @@
 #include "chrome/common/child_process_logging.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/media/media_resource_provider.h"
 #include "chrome/common/net/net_resource_provider.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/resource_usage_reporter.mojom.h"
@@ -38,6 +39,7 @@
 #include "content/public/renderer/render_view.h"
 #include "content/public/renderer/render_view_visitor.h"
 #include "crypto/nss_util.h"
+#include "media/base/media_resources.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_module.h"
 #include "third_party/WebKit/public/web/WebCache.h"
@@ -251,6 +253,8 @@ ChromeRenderProcessObserver::ChromeRenderProcessObserver()
 
   // Configure modules that need access to resources.
   net::NetModule::SetResourceProvider(chrome_common_net::NetResourceProvider);
+  media::SetLocalizedStringProvider(
+      chrome_common_media::LocalizedStringProvider);
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(USE_OPENSSL)
   // On platforms where we use system NSS shared libraries,
