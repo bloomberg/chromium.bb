@@ -16,6 +16,7 @@
 #include "base/memory/scoped_vector.h"
 #include "base/values.h"
 #include "content/public/browser/certificate_request_result_type.h"
+#include "content/public/browser/navigation_throttle.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/media_stream_request.h"
 #include "content/public/common/resource_type.h"
@@ -96,6 +97,7 @@ class DevToolsManagerDelegate;
 class ExternalVideoSurfaceContainer;
 class LocationProvider;
 class MediaObserver;
+class NavigationHandle;
 class NavigatorConnectContext;
 class NavigatorConnectServiceFactory;
 class PlatformNotificationService;
@@ -668,6 +670,14 @@ class CONTENT_EXPORT ContentBrowserClient {
 
   // Allows the embedder to record |metric| for a specific |url|.
   virtual void RecordURLMetric(const std::string& metric, const GURL& url) {}
+
+  // Allows the embedder to register one or more NavigationThrottles for the
+  // navigation indicated by |navigation_handle|.  A NavigationThrottle is used
+  // to control the flow of a navigation on the UI thread. The embedder is
+  // guaranteed that the throttles will be executed in the order they were
+  // provided.
+  virtual ScopedVector<NavigationThrottle> CreateThrottlesForNavigation(
+      NavigationHandle* navigation_handle);
 
   // Populates |mappings| with all files that need to be mapped before launching
   // a child process.

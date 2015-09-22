@@ -14,6 +14,7 @@
 #include "content/browser/site_instance_impl.h"
 #include "content/common/resource_request_body.h"
 #include "content/public/browser/navigation_controller.h"
+#include "content/public/browser/navigation_throttle.h"
 #include "content/public/browser/stream_handle.h"
 #include "content/public/common/content_client.h"
 #include "net/base/load_flags.h"
@@ -179,6 +180,20 @@ bool NavigationRequest::BeginNavigation() {
   state_ = STARTED;
 
   if (ShouldMakeNetworkRequestForURL(common_params_.url)) {
+    // TODO(clamy): pass the real value for |is_external_protocol| if needed.
+    NavigationThrottle::ThrottleCheckResult result =
+        navigation_handle_->WillStartRequest(
+            begin_params_.method == "POST",
+            Referrer::SanitizeForRequest(common_params_.url,
+                                         common_params_.referrer),
+            begin_params_.has_user_gesture, common_params_.transition, false);
+
+    // Abort the request if needed. This will destroy the NavigationRequest.
+    if (result == NavigationThrottle::CANCEL_AND_IGNORE) {
+      frame_tree_node_->ResetNavigationRequest(false);
+      return false;
+    }
+
     loader_ = NavigationURLLoader::Create(
         frame_tree_node_->navigator()->GetController()->GetBrowserContext(),
         frame_tree_node_->frame_tree_node_id(), info_.Pass(), this);
@@ -209,12 +224,24 @@ void NavigationRequest::TransferNavigationHandleOwnership(
 void NavigationRequest::OnRequestRedirected(
     const net::RedirectInfo& redirect_info,
     const scoped_refptr<ResourceResponse>& response) {
-  // TODO(davidben): Track other changes from redirects. These are important
-  // for, e.g., reloads.
   common_params_.url = redirect_info.new_url;
+  begin_params_.method = redirect_info.new_method;
+  common_params_.referrer.url = GURL(redirect_info.new_referrer);
 
-  // TODO(davidben): This where prerender and navigation_interceptor should be
-  // integrated. For now, just always follow all redirects.
+  // TODO(clamy): Have CSP + security upgrade checks here.
+  // TODO(clamy): Kill the renderer if FilterURL fails?
+  // TODO(clamy): pass the real value for |is_external_protocol| if needed.
+  NavigationThrottle::ThrottleCheckResult result =
+      navigation_handle_->WillRedirectRequest(
+          common_params_.url, begin_params_.method == "POST",
+          common_params_.referrer.url, false);
+
+  // Abort the request if needed. This will destroy the NavigationRequest.
+  if (result == NavigationThrottle::CANCEL_AND_IGNORE) {
+    frame_tree_node_->ResetNavigationRequest(false);
+    return;
+  }
+
   loader_->FollowRedirect();
 
   navigation_handle_->DidRedirectNavigation(redirect_info.new_url);

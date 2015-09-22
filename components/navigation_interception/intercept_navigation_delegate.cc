@@ -7,9 +7,10 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/callback.h"
-#include "components/navigation_interception/intercept_navigation_resource_throttle.h"
+#include "components/navigation_interception/intercept_navigation_throttle.h"
 #include "components/navigation_interception/navigation_params_android.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/navigation_throttle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/resource_request_info.h"
@@ -83,10 +84,12 @@ InterceptNavigationDelegate* InterceptNavigationDelegate::Get(
 }
 
 // static
-content::ResourceThrottle* InterceptNavigationDelegate::CreateThrottleFor(
-    net::URLRequest* request) {
-  return new InterceptNavigationResourceThrottle(
-      request, base::Bind(&CheckIfShouldIgnoreNavigationOnUIThread));
+scoped_ptr<content::NavigationThrottle>
+InterceptNavigationDelegate::CreateThrottleFor(
+    content::NavigationHandle* handle) {
+  return scoped_ptr<content::NavigationThrottle>(
+      new InterceptNavigationThrottle(
+          handle, base::Bind(&CheckIfShouldIgnoreNavigationOnUIThread)));
 }
 
 // static
