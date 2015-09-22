@@ -37,7 +37,7 @@ bool SyncedSessionTracker::LookupAllForeignSessions(
       for (sync_driver::SyncedSession::SyncedWindowMap::const_iterator iter =
                foreign_session->windows.begin();
            iter != foreign_session->windows.end(); ++iter) {
-        if (!SessionWindowHasNoTabsToSync(*(iter->second))) {
+        if (ShouldSyncSessionWindow(*(iter->second))) {
           found_tabs = true;
           break;
         }
@@ -61,7 +61,7 @@ bool SyncedSessionTracker::LookupSessionWindows(
   windows->clear();
   for (sync_driver::SyncedSession::SyncedWindowMap::const_iterator window_iter =
            iter->second->windows.begin();
-       window_iter != iter->second->windows.end(); window_iter++) {
+       window_iter != iter->second->windows.end(); ++window_iter) {
     windows->push_back(window_iter->second);
   }
   return true;
@@ -140,9 +140,12 @@ bool SyncedSessionTracker::DeleteSession(const std::string& session_tag) {
   if (iter != synced_session_map_.end()) {
     sync_driver::SyncedSession* session = iter->second;
     synced_session_map_.erase(iter);
-    delete session;  // Delete the SyncedSession object.
+    // SyncedSession's destructor will trigger deletion of windows which will in
+    // turn trigger the deletion of tabs. This doens't affect wrappers.
+    delete session;
     found_session = true;
   }
+  // These two erase(...) calls only affect the wrappers.
   synced_window_map_.erase(session_tag);
   // It's possible there was no header node but there were tab nodes.
   if (synced_tab_map_.erase(session_tag) > 0) {
@@ -180,11 +183,11 @@ void SyncedSessionTracker::ResetSessionTracking(
 
 bool SyncedSessionTracker::DeleteOldSessionWindowIfNecessary(
     SessionWindowWrapper window_wrapper) {
-  // Clear the tabs first, since we don't want the destructor to destroy
-  // them. Their deletion will be handled by DeleteOldSessionTab below.
   if (!window_wrapper.owned) {
     DVLOG(1) << "Deleting closed window "
              << window_wrapper.window_ptr->window_id.id();
+    // Clear the tabs first, since we don't want the destructor to destroy
+    // them. Their deletion will be handled by DeleteOldSessionTabIfNecessary.
     window_wrapper.window_ptr->tabs.clear();
     delete window_wrapper.window_ptr;
     return true;
@@ -231,10 +234,11 @@ void SyncedSessionTracker::CleanupSession(const std::string& session_tag) {
     for (IDToSessionTabMap::iterator iter = tab_iter->second.begin();
          iter != tab_iter->second.end();) {
       SessionTabWrapper tab_wrapper = iter->second;
-      if (DeleteOldSessionTabIfNecessary(tab_wrapper))
+      if (DeleteOldSessionTabIfNecessary(tab_wrapper)) {
         tab_iter->second.erase(iter++);
-      else
+      } else {
         ++iter;
+      }
     }
   }
 }
@@ -299,6 +303,11 @@ void SyncedSessionTracker::PutTabInWindow(const std::string& session_tag,
   // See http://crbug.com/360822.
   CHECK(!synced_tab_map_[session_tag][tab_id].owned);
 
+  // Only tabs that were just created in GetTabImpl(...) are still present in
+  // unmapped_tabs_. Most of the time when PutTabInWindow(...) is invoked, the
+  // specified tab was already a child of the specified window, and hasn't been
+  // in unmapped_tabs_ for quite some time. However, this is not a problem, as
+  // std::set::erase(...) will simply have no effect in these cases.
   unmapped_tabs_.erase(tab_ptr);
   synced_tab_map_[session_tag][tab_id].owned = true;
 
@@ -390,14 +399,13 @@ void SyncedSessionTracker::Clear() {
   STLDeleteValues(&synced_session_map_);
 
   // Go through and delete any tabs we had allocated but had not yet placed into
-  // a SyncedSessionobject.
+  // a SyncedSession object.
   STLDeleteElements(&unmapped_tabs_);
 
   // Get rid of our Window/Tab maps (does not delete the actual Window/Tabs
   // themselves; they should have all been deleted above).
   synced_window_map_.clear();
   synced_tab_map_.clear();
-
   local_session_tag_.clear();
 }
 

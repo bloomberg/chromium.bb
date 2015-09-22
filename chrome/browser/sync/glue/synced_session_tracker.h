@@ -149,6 +149,21 @@ class SyncedSessionTracker {
     }
   }
  private:
+  // This enum is only used as a named input param for wrapper constructors. The
+  // name of this enum and the wrapper's |owned| member variable are a bit
+  // misleading. Technically you could argue that the data objects are in charge
+  // of deleting their children data objects during their destructors, but this
+  // tracker will often circumvent this mechanism. This tracker ensures that the
+  // lifetime of both data object and wrapper are as identical as possible.
+
+  // Alternatively, this |owned| concept can be thought of as being orphaned or
+  // not. Although all data objects are tied to a session (via tag), they don't
+  // always have a parent. Suppose we have information about a tab but no
+  // information about it's parent window. This tab would be 'not owned', aka
+  // orphaned. CleanupSession(...) can then delete any orphanted data objects
+  // and wrapper for a given session via session tag.
+  enum OwnedState { IS_OWNED, NOT_OWNED };
+
   // Datatypes for accessing session data. Neither of the *Wrappers actually
   // have ownership of the Windows/Tabs, they just provide id-based access to
   // them. The ownership remains within its containing session (for windows and
@@ -159,10 +174,6 @@ class SyncedSessionTracker {
   // The wrappers also serve as a convenient place to augment state stored in
   // SessionTab for sync purposes, such as |tab_node_id|.
   // IsOwned is used as a wrapper constructor parameter for readability.
-  enum OwnedState {
-    IS_OWNED,
-    NOT_OWNED
-  };
   struct SessionTabWrapper {
     SessionTabWrapper() : tab_ptr(NULL),
                           owned(false),

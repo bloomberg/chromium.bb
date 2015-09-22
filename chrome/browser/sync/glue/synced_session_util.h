@@ -5,15 +5,25 @@
 #ifndef CHROME_BROWSER_SYNC_GLUE_SYNCED_SESSION_UTIL_H_
 #define CHROME_BROWSER_SYNC_GLUE_SYNCED_SESSION_UTIL_H_
 
+class GURL;
+
 namespace sessions {
+struct SessionTab;
 struct SessionWindow;
 }
 
 namespace browser_sync {
 
-// Checks whether the window has tabs to sync. If no tabs to sync, it returns
-// true, false otherwise.
-bool SessionWindowHasNoTabsToSync(const sessions::SessionWindow& window);
+// Checks if the given url is considered interesting enough to sync. Most urls
+// are considered interesting, examples of ones that are not are invalid urls,
+// files, and chrome internal pages.
+bool ShouldSyncURL(const GURL& url);
+
+// Returns if the tab has any navigation entries worth syncing or not.
+bool ShouldSyncSessionTab(const sessions::SessionTab& tab);
+
+// Returns if the window has any tabs worth syncing or not.
+bool ShouldSyncSessionWindow(const sessions::SessionWindow& window);
 
 }  // namespace browser_sync
 

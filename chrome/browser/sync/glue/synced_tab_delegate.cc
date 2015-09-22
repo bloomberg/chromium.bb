@@ -5,6 +5,7 @@
 #include "chrome/browser/sync/glue/synced_tab_delegate.h"
 
 #include "base/logging.h"
+#include "chrome/browser/sync/glue/synced_session_util.h"
 #include "chrome/browser/ui/sync/tab_contents_synced_tab_delegate.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/navigation_entry.h"
@@ -47,10 +48,7 @@ bool SyncedTabDelegate::ShouldSync() const {
     }
     const GURL& virtual_url = entry->GetVirtualURL();
 
-    if (virtual_url.is_valid() &&
-        !virtual_url.SchemeIs(content::kChromeUIScheme) &&
-        !virtual_url.SchemeIs(chrome::kChromeNativeScheme) &&
-        !virtual_url.SchemeIsFile()) {
+    if (ShouldSyncURL(virtual_url)) {
       found_valid_url = true;
     } else if (virtual_url == GURL(chrome::kChromeUIHistoryURL)) {
       // The history page is treated specially as we want it to trigger syncable

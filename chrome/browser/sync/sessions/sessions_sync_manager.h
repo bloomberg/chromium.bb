@@ -15,6 +15,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "chrome/browser/sync/glue/synced_session_tracker.h"
+#include "chrome/browser/sync/sessions/page_revisit_broadcaster.h"
 #include "components/sessions/session_id.h"
 #include "components/sessions/session_types.h"
 #include "components/sync_driver/device_info.h"
@@ -386,6 +387,9 @@ class SessionsSyncManager : public syncer::SyncableService,
 
   scoped_ptr<LocalSessionEventRouter> local_event_router_;
   scoped_ptr<SyncedWindowDelegatesGetter> synced_window_getter_;
+
+  // Owns revisiting instrumentation logic for page visit events.
+  PageRevisitBroadcaster page_revisit_broadcaster_;
 
   DISALLOW_COPY_AND_ASSIGN(SessionsSyncManager);
 };

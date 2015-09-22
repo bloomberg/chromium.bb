@@ -91,7 +91,8 @@ SessionsSyncManager::SessionsSyncManager(
       local_session_header_node_id_(TabNodePool::kInvalidTabNodeID),
       stale_session_threshold_days_(kDefaultStaleSessionThresholdDays),
       local_event_router_(router.Pass()),
-      synced_window_getter_(synced_window_getter.Pass()) {}
+      synced_window_getter_(synced_window_getter.Pass()),
+      page_revisit_broadcaster_(this, profile) {}
 
 LocalSessionEventRouter::~LocalSessionEventRouter() {}
 
@@ -356,6 +357,8 @@ void SessionsSyncManager::AssociateTab(SyncedTabDelegate* const tab,
   if (new_url != tab_link->url()) {
     tab_link->set_url(new_url);
     favicon_cache_.OnFaviconVisited(new_url, GetCurrentFaviconURL(*tab));
+    page_revisit_broadcaster_.OnPageVisit(
+        new_url, tab->GetCurrentEntryMaybePending()->GetTransitionType());
   }
 
   session_tracker_.GetSession(current_machine_tag())->modified_time =
@@ -537,13 +540,16 @@ syncer::SyncError SessionsSyncManager::ProcessSyncChanges(
           // get deleted.
           DisassociateForeignSession(session.session_tag());
         }
-        continue;
+        break;
       case syncer::SyncChange::ACTION_ADD:
       case syncer::SyncChange::ACTION_UPDATE:
         if (current_machine_tag() == session.session_tag()) {
           // We should only ever receive a change to our own machine's session
           // info if encryption was turned on. In that case, the data is still
           // the same, so we can ignore.
+          // TODO(skym): Is it really safe to return here? Why not continue?
+          // Couldn't there be multiple SessionSpecifics in the SyncChangeList
+          // that contain different session tags?
           LOG(WARNING) << "Dropping modification to local session.";
           return syncer::SyncError();
         }
@@ -594,6 +600,8 @@ bool SessionsSyncManager::InitFromSyncModel(
   for (syncer::SyncDataList::const_iterator it = sync_data.begin();
        it != sync_data.end();
        ++it) {
+    // TODO(skym): Why don't we ever look at data.change_type()? Why is this
+    // code path so much different from ProcessSyncChanges?
     const syncer::SyncData& data = *it;
     DCHECK(data.GetSpecifics().has_session());
     const sync_pb::SessionSpecifics& specifics = data.GetSpecifics().session();
@@ -641,9 +649,9 @@ void SessionsSyncManager::UpdateTrackerWithForeignSession(
   sync_driver::SyncedSession* foreign_session =
       session_tracker_.GetSession(foreign_session_tag);
   if (specifics.has_header()) {
-    // Read in the header data for this foreign session.
-    // Header data contains window information and ordered tab id's for each
-    // window.
+    // Read in the header data for this foreign session. Header data is
+    // essentially a collection of windows, each of which has an ordered id list
+    // for their tabs.
 
     if (!IsValidSessionHeader(specifics.header())) {
       LOG(WARNING) << "Ignoring foreign session node with invalid header "

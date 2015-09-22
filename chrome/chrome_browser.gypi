@@ -2902,6 +2902,8 @@
       'browser/sync/profile_sync_service_factory.h',
       'browser/sync/sessions/notification_service_sessions_router.cc',
       'browser/sync/sessions/notification_service_sessions_router.h',
+      'browser/sync/sessions/page_revisit_broadcaster.cc',
+      'browser/sync/sessions/page_revisit_broadcaster.h',
       'browser/sync/sessions/session_data_type_controller.cc',
       'browser/sync/sessions/session_data_type_controller.h',
       'browser/sync/sessions/sessions_sync_manager.cc',
