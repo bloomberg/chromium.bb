@@ -10,6 +10,7 @@ import ConfigParser
 import glob
 import os
 import pprint
+import re
 
 from chromite.cbuildbot import failures_lib
 from chromite.cbuildbot import constants
@@ -239,11 +240,9 @@ def GetStagesToIgnoreForChange(build_root, change):
 def GetTestSubsystemForChange(build_root, change):
   """Get a list of subsystem that a given |change| affects.
 
-  The list of the subsystem that a change affacts is specified in a config file
-  inside the project, named COMMIT-QUEUE.ini. The file would look like this:
-
-  [GENERAL]
-    subsystem: power graphics
+  If subsystem is specified in the commit message, use that. Otherwise, look in
+  appropriate COMMIT-QUEUE.ini. If subsystem is not specified anywhere,
+  'subsystem:default' will be used.
 
   Based on the subsystems a given |change| affects, the CQ could tell whether a
   failure is potentially caused by this |change|. The CQ could then submit some
@@ -256,8 +255,16 @@ def GetTestSubsystemForChange(build_root, change):
   Returns:
     A list of subsystem for the given |change|.
   """
-  result = GetOptionForChange(build_root, change, 'GENERAL', 'subsystem')
-  return result.split() if result else []
+  subsystems = []
+  if change.commit_message:
+    lines = cros_patch.GetOptionLinesFromCommitMessage(
+        change.commit_message, 'subsystem:')
+    if lines:
+      subsystems = [x for x in re.split("[, ]", ' '.join(lines)) if x]
+  if not subsystems:
+    result = GetOptionForChange(build_root, change, 'GENERAL', 'subsystem')
+    subsystems = result.split() if result else []
+  return subsystems if subsystems else ['default']
 
 class CategorizeChanges(object):
   """A collection of methods to help categorize GerritPatch changes.

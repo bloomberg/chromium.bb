@@ -397,6 +397,34 @@ class GetOptionsTest(patch_unittest.MockPatchBase):
       result = triage_lib.GetOptionForChange(build_root, change, 'a', 'b')
       self.assertEqual(None, result)
 
+  def testGetSubsystemFromValidCommitMessage(self):
+    """Test whether we can get subsystem from commit message."""
+    change = sync_stages_unittest.MockPatch(
+        commit_message='First line\nThird line\nsubsystem: network audio\n'
+                       'subsystem: wifi')
+    self.PatchObject(triage_lib, 'GetOptionForChange',
+                     return_value='power light')
+    result = triage_lib.GetTestSubsystemForChange('foo/build/root', change)
+    self.assertEqual(['network', 'audio', 'wifi'], result)
+
+  def testGetSubsystemFromInvalidCommitMessage(self):
+    """Test get subsystem from config file when commit message not have it."""
+    change = sync_stages_unittest.MockPatch(
+        commit_message='First line\nThird line\n')
+    self.PatchObject(triage_lib, 'GetOptionForChange',
+                     return_value='power light')
+    result = triage_lib.GetTestSubsystemForChange('foo/build/root', change)
+    self.assertEqual(['power', 'light'], result)
+
+  def testGetDefaultSubsystem(self):
+    """Test if we can get default subsystem when subsystem is not specified."""
+    change = sync_stages_unittest.MockPatch(
+        commit_message='First line\nThird line\n')
+    self.PatchObject(triage_lib, 'GetOptionForChange',
+                     return_value=None)
+    result = triage_lib.GetTestSubsystemForChange('foo/build/root', change)
+    self.assertEqual(['default'], result)
+
 
 class ConfigFileTest(cros_test_lib.MockTestCase):
   """Tests for functions that read config information for a patch."""
