@@ -18,7 +18,7 @@ SyncManagerFactory::~SyncManagerFactory() {
 }
 
 scoped_ptr<SyncManager> SyncManagerFactory::CreateSyncManager(
-      const std::string name) {
+    const std::string& name) {
   switch (type_) {
     case NORMAL:
       return scoped_ptr<SyncManager>(new SyncManagerImpl(name));

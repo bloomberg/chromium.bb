@@ -36,12 +36,12 @@ class TestIdFactory {
   }
 
   // Create a local ID from a name.
-  static syncable::Id MakeLocal(std::string name) {
+  static syncable::Id MakeLocal(const std::string& name) {
     return syncable::Id::CreateFromClientString(std::string("lient ") + name);
   }
 
   // Create a server ID from a string name.
-  static syncable::Id MakeServer(std::string name) {
+  static syncable::Id MakeServer(const std::string& name) {
     return syncable::Id::CreateFromServerId(std::string("erver ") + name);
   }
 

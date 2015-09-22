@@ -94,7 +94,7 @@ BookmarkEntity::BookmarkEntity(
   SetSpecifics(specifics);
 }
 
-void BookmarkEntity::SetParentId(string parent_id) {
+void BookmarkEntity::SetParentId(const string& parent_id) {
   parent_id_ = parent_id;
 }
 

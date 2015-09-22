@@ -17,7 +17,8 @@ SyncManagerFactoryForProfileSyncTest::SyncManagerFactoryForProfileSyncTest(
 SyncManagerFactoryForProfileSyncTest::~SyncManagerFactoryForProfileSyncTest() {}
 
 scoped_ptr<syncer::SyncManager>
-SyncManagerFactoryForProfileSyncTest::CreateSyncManager(std::string name) {
+SyncManagerFactoryForProfileSyncTest::CreateSyncManager(
+    const std::string& name) {
   return scoped_ptr<syncer::SyncManager>(
       new SyncManagerForProfileSyncTest(
           name,

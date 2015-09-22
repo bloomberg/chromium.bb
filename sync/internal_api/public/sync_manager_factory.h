@@ -26,7 +26,7 @@ class SYNC_EXPORT SyncManagerFactory {
   SyncManagerFactory(MANAGER_TYPE type);
   virtual ~SyncManagerFactory();
 
-  virtual scoped_ptr<SyncManager> CreateSyncManager(std::string name);
+  virtual scoped_ptr<SyncManager> CreateSyncManager(const std::string& name);
 
  private:
   MANAGER_TYPE type_;

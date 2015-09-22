@@ -64,7 +64,7 @@ class SyncEncryptionHandlerObserverMock
 };
 
 google::protobuf::RepeatedPtrField<google::protobuf::string>
-BuildEncryptionKeyProto(std::string encryption_key) {
+BuildEncryptionKeyProto(const std::string& encryption_key) {
   google::protobuf::RepeatedPtrField<google::protobuf::string> keys;
   keys.Add()->assign(encryption_key);
   return keys;

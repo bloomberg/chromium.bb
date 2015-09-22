@@ -58,7 +58,7 @@ const std::string& FakeServerEntity::GetName() const {
   return name_;
 }
 
-void FakeServerEntity::SetName(std::string name) {
+void FakeServerEntity::SetName(const std::string& name) {
   name_ = name;
 }
 

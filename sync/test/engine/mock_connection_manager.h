@@ -50,7 +50,7 @@ class MockConnectionManager : public ServerConnectionManager {
 
   // Set this if you want commit to perform commit time rename. Will request
   // that the client renames all commited entries, prepending this string.
-  void SetCommitTimeRename(std::string prepend);
+  void SetCommitTimeRename(const std::string& prepend);
 
   // Generic versions of AddUpdate functions. Tests using these function should
   // compile for both the int64 and string id based versions of the server.
@@ -60,55 +60,58 @@ class MockConnectionManager : public ServerConnectionManager {
   sync_pb::SyncEntity* AddUpdateDirectory(
       syncable::Id id,
       syncable::Id parent_id,
-      std::string name,
+      const std::string& name,
       int64 version,
       int64 sync_ts,
-      std::string originator_cache_guid,
-      std::string originator_client_item_id);
-  sync_pb::SyncEntity* AddUpdateBookmark(syncable::Id id,
-                                         syncable::Id parent_id,
-                                         std::string name,
-                                         int64 version,
-                                         int64 sync_ts,
-                                         std::string originator_cache_guid,
-                                         std::string originator_client_item_id);
+      const std::string& originator_cache_guid,
+      const std::string& originator_client_item_id);
+  sync_pb::SyncEntity* AddUpdateBookmark(
+      syncable::Id id,
+      syncable::Id parent_id,
+      const std::string& name,
+      int64 version,
+      int64 sync_ts,
+      const std::string& originator_cache_guid,
+      const std::string& originator_client_item_id);
   // Versions of the AddUpdate functions that accept integer IDs.
   sync_pb::SyncEntity* AddUpdateDirectory(
       int id,
       int parent_id,
-      std::string name,
+      const std::string& name,
       int64 version,
       int64 sync_ts,
-      std::string originator_cache_guid,
-      std::string originator_client_item_id);
-  sync_pb::SyncEntity* AddUpdateBookmark(int id,
-                                         int parent_id,
-                                         std::string name,
-                                         int64 version,
-                                         int64 sync_ts,
-                                         std::string originator_cache_guid,
-                                         std::string originator_client_item_id);
+      const std::string& originator_cache_guid,
+      const std::string& originator_client_item_id);
+  sync_pb::SyncEntity* AddUpdateBookmark(
+      int id,
+      int parent_id,
+      const std::string& name,
+      int64 version,
+      int64 sync_ts,
+      const std::string& originator_cache_guid,
+      const std::string& originator_client_item_id);
   // New protocol versions of the AddUpdate functions.
   sync_pb::SyncEntity* AddUpdateDirectory(
-      std::string id,
-      std::string parent_id,
-      std::string name,
+      const std::string& id,
+      const std::string& parent_id,
+      const std::string& name,
       int64 version,
       int64 sync_ts,
-      std::string originator_cache_guid,
-      std::string originator_client_item_id);
-  sync_pb::SyncEntity* AddUpdateBookmark(std::string id,
-                                         std::string parent_id,
-                                         std::string name,
-                                         int64 version,
-                                         int64 sync_ts,
-                                         std::string originator_cache_guid,
-                                         std::string originator_client_item_id);
+      const std::string& originator_cache_guid,
+      const std::string& originator_client_item_id);
+  sync_pb::SyncEntity* AddUpdateBookmark(
+      const std::string& id,
+      const std::string& parent_id,
+      const std::string& name,
+      int64 version,
+      int64 sync_ts,
+      const std::string& originator_cache_guid,
+      const std::string& originator_client_item_id);
   // Versions of the AddUpdate function that accept specifics.
   sync_pb::SyncEntity* AddUpdateSpecifics(
       int id,
       int parent_id,
-      std::string name,
+      const std::string& name,
       int64 version,
       int64 sync_ts,
       bool is_dir,
@@ -117,23 +120,23 @@ class MockConnectionManager : public ServerConnectionManager {
   sync_pb::SyncEntity* AddUpdateSpecifics(
       int id,
       int parent_id,
-      std::string name,
+      const std::string& name,
       int64 version,
       int64 sync_ts,
       bool is_dir,
       int64 position,
       const sync_pb::EntitySpecifics& specifics,
-      std::string originator_cache_guid,
-      std::string originator_client_item_id);
+      const std::string& originator_cache_guid,
+      const std::string& originator_client_item_id);
   sync_pb::SyncEntity* SetNigori(
       int id,
       int64 version,
       int64 sync_ts,
       const sync_pb::EntitySpecifics& specifics);
   // Unique client tag variant for adding items.
-  sync_pb::SyncEntity* AddUpdatePref(std::string id,
-                                     std::string parent_id,
-                                     std::string client_tag,
+  sync_pb::SyncEntity* AddUpdatePref(const std::string& id,
+                                     const std::string& parent_id,
+                                     const std::string& client_tag,
                                      int64 version,
                                      int64 sync_ts);
 
@@ -212,7 +215,7 @@ class MockConnectionManager : public ServerConnectionManager {
     use_legacy_bookmarks_protocol_ = value;
   }
 
-  void set_store_birthday(std::string new_birthday) {
+  void set_store_birthday(const std::string& new_birthday) {
     // Multiple threads can set store_birthday_ in our tests, need to lock it to
     // ensure atomic read/writes and avoid race conditions.
     base::AutoLock lock(store_birthday_lock_);
@@ -267,17 +270,23 @@ class MockConnectionManager : public ServerConnectionManager {
   sync_pb::SyncEntity* GetMutableLastUpdate();
 
  private:
-  sync_pb::SyncEntity* AddUpdateFull(syncable::Id id, syncable::Id parentid,
-                                     std::string name, int64 version,
+  sync_pb::SyncEntity* AddUpdateFull(syncable::Id id,
+                                     syncable::Id parentid,
+                                     const std::string& name,
+                                     int64 version,
                                      int64 sync_ts,
                                      bool is_dir);
-  sync_pb::SyncEntity* AddUpdateFull(std::string id,
-                                     std::string parentid, std::string name,
-                                     int64 version, int64 sync_ts,
+  sync_pb::SyncEntity* AddUpdateFull(const std::string& id,
+                                     const std::string& parentid,
+                                     const std::string& name,
+                                     int64 version,
+                                     int64 sync_ts,
                                      bool is_dir);
-  sync_pb::SyncEntity* AddUpdateMeta(std::string id, std::string parentid,
-                                    std::string name, int64 version,
-                                    int64 sync_ts);
+  sync_pb::SyncEntity* AddUpdateMeta(const std::string& id,
+                                     const std::string& parentid,
+                                     const std::string& name,
+                                     int64 version,
+                                     int64 sync_ts);
 
   // Functions to handle the various types of server request.
   void ProcessGetUpdates(sync_pb::ClientToServerMessage* csm,

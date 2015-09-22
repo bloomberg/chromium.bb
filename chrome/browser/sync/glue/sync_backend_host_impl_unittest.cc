@@ -123,7 +123,8 @@ class FakeSyncManagerFactory : public syncer::SyncManagerFactory {
   ~FakeSyncManagerFactory() override {}
 
   // SyncManagerFactory implementation.  Called on the sync thread.
-  scoped_ptr<SyncManager> CreateSyncManager(std::string name) override {
+  scoped_ptr<SyncManager> CreateSyncManager(
+      const std::string& /* name */) override {
     *fake_manager_ = new FakeSyncManager(initial_sync_ended_types_,
                                          progress_marker_types_,
                                          configure_fail_types_);

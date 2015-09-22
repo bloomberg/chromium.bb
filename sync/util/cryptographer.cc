@@ -187,7 +187,7 @@ bool Cryptographer::AddNonDefaultKey(const KeyParams& params) {
 }
 
 bool Cryptographer::AddKeyFromBootstrapToken(
-    const std::string restored_bootstrap_token) {
+    const std::string& restored_bootstrap_token) {
   // Create the new Nigori and make it the default encryptor.
   std::string serialized_nigori_key = UnpackBootstrapToken(
       restored_bootstrap_token);
@@ -361,7 +361,7 @@ std::string Cryptographer::GetDefaultNigoriKeyData() const {
   return key.SerializeAsString();
 }
 
-bool Cryptographer::ImportNigoriKey(const std::string serialized_nigori_key) {
+bool Cryptographer::ImportNigoriKey(const std::string& serialized_nigori_key) {
   if (serialized_nigori_key.empty())
     return false;
 
