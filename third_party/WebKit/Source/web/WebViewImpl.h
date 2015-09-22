@@ -72,7 +72,7 @@ class DataObject;
 class DevToolsEmulator;
 class Frame;
 class FullscreenController;
-class InspectorOverlayImpl;
+class InspectorOverlay;
 class LinkHighlightImpl;
 class PageOverlay;
 class PageScaleConstraintsSet;
@@ -525,7 +525,7 @@ public:
     FloatSize elasticOverscroll() const { return m_elasticOverscroll; }
 
 private:
-    InspectorOverlayImpl* inspectorOverlay();
+    InspectorOverlay* inspectorOverlay();
 
     void setPageScaleFactorAndLocation(float, const FloatPoint&);
 
@@ -703,7 +703,7 @@ private:
     // The popup associated with an input/select element.
     RefPtr<WebPagePopupImpl> m_pagePopup;
 
-    OwnPtrWillBePersistent<InspectorOverlayImpl> m_inspectorOverlay;
+    OwnPtrWillBePersistent<InspectorOverlay> m_inspectorOverlay;
     OwnPtrWillBePersistent<DevToolsEmulator> m_devToolsEmulator;
     OwnPtr<PageOverlay> m_pageColorOverlay;
 

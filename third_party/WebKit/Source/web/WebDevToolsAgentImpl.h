@@ -48,7 +48,7 @@ namespace blink {
 class DebuggerTask;
 class GraphicsLayer;
 class InspectorInspectorAgent;
-class InspectorOverlayImpl;
+class InspectorOverlay;
 class InspectorPageAgent;
 class InspectorResourceContentLoader;
 class LocalFrame;
@@ -82,7 +82,7 @@ public:
 
     void willBeDestroyed();
     WebDevToolsAgentClient* client() { return m_client; }
-    InspectorOverlayImpl* overlay() const { return m_overlay.get(); }
+    InspectorOverlay* overlay() const { return m_overlay.get(); }
     void flushPendingProtocolNotifications();
     void dispatchMessageFromFrontend(const String& message);
     void registerAgent(PassOwnPtrWillBeRawPtr<InspectorAgent>);
@@ -106,7 +106,7 @@ public:
     void evaluateInWebInspector(long callId, const WebString& script) override;
 
 private:
-    WebDevToolsAgentImpl(WebLocalFrameImpl*, WebDevToolsAgentClient*, PassOwnPtrWillBeRawPtr<InspectorOverlayImpl>);
+    WebDevToolsAgentImpl(WebLocalFrameImpl*, WebDevToolsAgentClient*, PassOwnPtrWillBeRawPtr<InspectorOverlay>);
 
     // InspectorStateClient implementation.
     void updateInspectorStateCookie(const WTF::String&) override;
@@ -140,7 +140,7 @@ private:
     OwnPtrWillBeMember<InjectedScriptManager> m_injectedScriptManager;
     OwnPtrWillBeMember<InspectorResourceContentLoader> m_resourceContentLoader;
     OwnPtrWillBeMember<InspectorCompositeState> m_state;
-    OwnPtrWillBeMember<InspectorOverlayImpl> m_overlay;
+    OwnPtrWillBeMember<InspectorOverlay> m_overlay;
 
     RawPtrWillBeMember<InspectorInspectorAgent> m_inspectorAgent;
     RawPtrWillBeMember<InspectorDOMAgent> m_domAgent;

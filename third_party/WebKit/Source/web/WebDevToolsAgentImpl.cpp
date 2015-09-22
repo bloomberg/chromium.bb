@@ -93,7 +93,7 @@
 #include "public/web/WebSettings.h"
 #include "web/DevToolsEmulator.h"
 #include "web/InspectorEmulationAgent.h"
-#include "web/InspectorOverlayImpl.h"
+#include "web/InspectorOverlay.h"
 #include "web/InspectorRenderingAgent.h"
 #include "web/WebFrameWidgetImpl.h"
 #include "web/WebInputEventConversion.h"
@@ -289,7 +289,7 @@ PassOwnPtrWillBeRawPtr<WebDevToolsAgentImpl> WebDevToolsAgentImpl::create(WebLoc
         return adoptPtrWillBeNoop(agent);
     }
 
-    WebDevToolsAgentImpl* agent = new WebDevToolsAgentImpl(frame, client, InspectorOverlayImpl::create(view));
+    WebDevToolsAgentImpl* agent = new WebDevToolsAgentImpl(frame, client, InspectorOverlay::create(view));
     agent->registerAgent(InspectorRenderingAgent::create(view));
     agent->registerAgent(InspectorEmulationAgent::create(view));
     // TODO(dgozman): migrate each of the following agents to frame once module is ready.
@@ -307,7 +307,7 @@ PassOwnPtrWillBeRawPtr<WebDevToolsAgentImpl> WebDevToolsAgentImpl::create(WebLoc
 WebDevToolsAgentImpl::WebDevToolsAgentImpl(
     WebLocalFrameImpl* webLocalFrameImpl,
     WebDevToolsAgentClient* client,
-    PassOwnPtrWillBeRawPtr<InspectorOverlayImpl> overlay)
+    PassOwnPtrWillBeRawPtr<InspectorOverlay> overlay)
     : m_client(client)
     , m_webLocalFrameImpl(webLocalFrameImpl)
     , m_attached(false)

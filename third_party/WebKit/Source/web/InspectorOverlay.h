@@ -26,8 +26,8 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef InspectorOverlayImpl_h
-#define InspectorOverlayImpl_h
+#ifndef InspectorOverlay_h
+#define InspectorOverlay_h
 
 #include "core/InspectorTypeBuilder.h"
 #include "core/inspector/InspectorDOMAgent.h"
@@ -61,21 +61,21 @@ class Page;
 class PageOverlay;
 class WebViewImpl;
 
-class InspectorOverlayImpl final
-    : public NoBaseWillBeGarbageCollectedFinalized<InspectorOverlayImpl>
+class InspectorOverlay final
+    : public NoBaseWillBeGarbageCollectedFinalized<InspectorOverlay>
     , public InspectorDOMAgent::Client
     , public InspectorPageAgent::Client
     , public InspectorProfilerAgent::Client
     , public InspectorOverlayHost::Listener {
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(InspectorOverlayImpl);
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(InspectorOverlayImpl);
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(InspectorOverlay);
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(InspectorOverlay);
 public:
-    static PassOwnPtrWillBeRawPtr<InspectorOverlayImpl> create(WebViewImpl* webViewImpl)
+    static PassOwnPtrWillBeRawPtr<InspectorOverlay> create(WebViewImpl* webViewImpl)
     {
-        return adoptPtrWillBeNoop(new InspectorOverlayImpl(webViewImpl));
+        return adoptPtrWillBeNoop(new InspectorOverlay(webViewImpl));
     }
 
-    ~InspectorOverlayImpl() override;
+    ~InspectorOverlay() override;
     DECLARE_TRACE();
 
     void init(InspectorCSSAgent*, InspectorDebuggerAgent*, InspectorDOMAgent*);
@@ -86,7 +86,7 @@ public:
     PageOverlay* pageOverlay() { return m_pageOverlay.get(); };
 
 private:
-    explicit InspectorOverlayImpl(WebViewImpl*);
+    explicit InspectorOverlay(WebViewImpl*);
     class InspectorOverlayChromeClient;
     class InspectorPageOverlayDelegate;
 
@@ -128,7 +128,7 @@ private:
     void reset(const IntSize& viewportSize, const IntPoint& documentScrollOffset);
     void evaluateInOverlay(const String& method, const String& argument);
     void evaluateInOverlay(const String& method, PassRefPtr<JSONValue> argument);
-    void onTimer(Timer<InspectorOverlayImpl>*);
+    void onTimer(Timer<InspectorOverlay>*);
     void rebuildOverlayPage();
     void invalidate();
     void scheduleUpdate();
@@ -154,7 +154,7 @@ private:
     bool m_drawViewSizeWithGrid;
     bool m_resizeTimerActive;
     bool m_omitTooltip;
-    Timer<InspectorOverlayImpl> m_timer;
+    Timer<InspectorOverlay> m_timer;
     int m_suspendCount;
     bool m_inLayout;
     bool m_needsUpdate;
@@ -171,4 +171,4 @@ private:
 } // namespace blink
 
 
-#endif // InspectorOverlayImpl_h
+#endif // InspectorOverlay_h

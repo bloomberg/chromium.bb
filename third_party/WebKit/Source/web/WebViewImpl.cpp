@@ -155,7 +155,7 @@
 #include "web/DevToolsEmulator.h"
 #include "web/FullscreenController.h"
 #include "web/GraphicsLayerFactoryChromium.h"
-#include "web/InspectorOverlayImpl.h"
+#include "web/InspectorOverlay.h"
 #include "web/LinkHighlightImpl.h"
 #include "web/PageOverlay.h"
 #include "web/PrerendererClientImpl.h"
@@ -497,10 +497,10 @@ WebDevToolsAgentImpl* WebViewImpl::mainFrameDevToolsAgentImpl()
     return mainFrame ? mainFrame->devToolsAgentImpl() : nullptr;
 }
 
-InspectorOverlayImpl* WebViewImpl::inspectorOverlay()
+InspectorOverlay* WebViewImpl::inspectorOverlay()
 {
     if (WebDevToolsAgentImpl* devtools = mainFrameDevToolsAgentImpl())
-        return static_cast<InspectorOverlayImpl*>(devtools->overlay());
+        return devtools->overlay();
     return nullptr;
 }
 
@@ -1901,7 +1901,7 @@ void WebViewImpl::layout()
 
     PageWidgetDelegate::layout(*m_page, *mainFrameImpl()->frame());
     updateLayerTreeBackgroundColor();
-    if (InspectorOverlayImpl* overlay = inspectorOverlay())
+    if (InspectorOverlay* overlay = inspectorOverlay())
         overlay->layout();
     for (size_t i = 0; i < m_linkHighlights.size(); ++i)
         m_linkHighlights[i]->updateGeometry();
@@ -2086,7 +2086,7 @@ bool WebViewImpl::handleInputEvent(const WebInputEvent& inputEvent)
     if (m_devToolsEmulator->handleInputEvent(inputEvent))
         return true;
 
-    if (InspectorOverlayImpl* overlay = inspectorOverlay()) {
+    if (InspectorOverlay* overlay = inspectorOverlay()) {
         if (overlay->handleInputEvent(inputEvent))
             return true;
     }
@@ -4437,7 +4437,7 @@ void WebViewImpl::updatePageOverlays()
 {
     if (m_pageColorOverlay)
         m_pageColorOverlay->update();
-    if (InspectorOverlayImpl* overlay = inspectorOverlay()) {
+    if (InspectorOverlay* overlay = inspectorOverlay()) {
         PageOverlay* inspectorPageOverlay = overlay->pageOverlay();
         if (inspectorPageOverlay)
             inspectorPageOverlay->update();
