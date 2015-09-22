@@ -69,7 +69,6 @@ class CONTENT_EXPORT TextInputClientMac {
   // allow the Get*() methods to continue/return.
   void SetCharacterIndexAndSignal(NSUInteger index);
   void SetFirstRectAndSignal(NSRect first_rect);
-  void SetSubstringAndSignal(NSAttributedString* string);
 
   // This async method is invoked from RenderWidgetHostViewCocoa's
   // -quickLookWithEvent:, when the user taps a word using 3 fingers.
@@ -115,7 +114,6 @@ class CONTENT_EXPORT TextInputClientMac {
 
   NSUInteger character_index_;
   NSRect first_rect_;
-  base::scoped_nsobject<NSAttributedString> substring_;
 
   base::Lock lock_;
   base::ConditionVariable condition_;

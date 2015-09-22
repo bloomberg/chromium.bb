@@ -204,37 +204,4 @@ TEST_F(TextInputClientMacTest, TimeoutRectForRange) {
   EXPECT_NSEQ(NSZeroRect, rect);
 }
 
-TEST_F(TextInputClientMacTest, GetSubstring) {
-  ScopedTestingThread thread(this);
-  NSDictionary* attributes =
-      [NSDictionary dictionaryWithObject:[NSColor purpleColor]
-                                  forKey:NSForegroundColorAttributeName];
-  base::scoped_nsobject<NSMutableAttributedString> kSuccessValue(
-      [[NSMutableAttributedString alloc]
-          initWithString:@"Barney is a purple dinosaur"
-              attributes:attributes]);
-
-  PostTask(FROM_HERE,
-           base::Bind(&TextInputClientMac::SetSubstringAndSignal,
-                      base::Unretained(service()),
-                      base::Unretained(kSuccessValue.get())));
-  NSAttributedString* string = service()->GetAttributedSubstringFromRange(
-      widget(), NSMakeRange(0, 32));
-
-  EXPECT_NSEQ(kSuccessValue, string);
-  EXPECT_NE(kSuccessValue.get(), string);  // |string| should be a copy.
-  EXPECT_EQ(1U, ipc_sink().message_count());
-  EXPECT_TRUE(ipc_sink().GetUniqueMessageMatching(
-      TextInputClientMsg_StringForRange::ID));
-}
-
-TEST_F(TextInputClientMacTest, TimeoutSubstring) {
-  NSAttributedString* string = service()->GetAttributedSubstringFromRange(
-      widget(), NSMakeRange(0, 32));
-  EXPECT_EQ(nil, string);
-  EXPECT_EQ(1U, ipc_sink().message_count());
-  EXPECT_TRUE(ipc_sink().GetUniqueMessageMatching(
-      TextInputClientMsg_StringForRange::ID));
-}
-
 }  // namespace content

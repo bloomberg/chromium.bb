@@ -64,7 +64,6 @@ void TextInputClientMac::GetStringFromRange(
 
 void TextInputClientMac::GetStringFromRangeReply(NSAttributedString* string,
                                                  NSPoint point) {
-  SetSubstringAndSignal(string);
   if (replyForRangeHandler_.get()) {
     replyForRangeHandler_.get()(string, point);
     replyForRangeHandler_.reset();
@@ -112,30 +111,6 @@ NSRect TextInputClientMac::GetFirstRectForRange(RenderWidgetHost* rwh,
   return first_rect_;
 }
 
-NSAttributedString* TextInputClientMac::GetAttributedSubstringFromRange(
-    RenderWidgetHost* rwh,
-    NSRange range) {
-  base::TimeTicks start = base::TimeTicks::Now();
-
-  BeforeRequest();
-  RenderWidgetHostImpl* rwhi = RenderWidgetHostImpl::From(rwh);
-  rwhi->Send(new TextInputClientMsg_StringForRange(rwhi->GetRoutingID(),
-                                                   gfx::Range(range)));
-  // http://crbug.com/121917
-  base::ThreadRestrictions::ScopedAllowWait allow_wait;
-  condition_.TimedWait(base::TimeDelta::FromMilliseconds(kWaitTimeout));
-  AfterRequest();
-
-  base::TimeDelta delta(base::TimeTicks::Now() - start);
-  UMA_HISTOGRAM_LONG_TIMES("TextInputClient.Substring",
-                           delta * base::Time::kMicrosecondsPerMillisecond);
-
-  // Lookup.framework calls this method repeatedly and expects that repeated
-  // calls don't deallocate previous results immediately. Returning an
-  // autoreleased string is better convention anyway.
-  return [[substring_.get() retain] autorelease];
-}
-
 void TextInputClientMac::SetCharacterIndexAndSignal(NSUInteger index) {
   lock_.Acquire();
   character_index_ = index;
@@ -146,13 +121,6 @@ void TextInputClientMac::SetCharacterIndexAndSignal(NSUInteger index) {
 void TextInputClientMac::SetFirstRectAndSignal(NSRect first_rect) {
   lock_.Acquire();
   first_rect_ = first_rect;
-  lock_.Release();
-  condition_.Signal();
-}
-
-void TextInputClientMac::SetSubstringAndSignal(NSAttributedString* string) {
-  lock_.Acquire();
-  substring_.reset([string copy]);
   lock_.Release();
   condition_.Signal();
 }
@@ -168,7 +136,6 @@ void TextInputClientMac::BeforeRequest() {
 
   character_index_ = NSNotFound;
   first_rect_ = NSZeroRect;
-  substring_.reset();
 }
 
 void TextInputClientMac::AfterRequest() {
