@@ -70,6 +70,10 @@ class NET_EXPORT_PRIVATE CryptoUtils {
                                    size_t result_len,
                                    std::string* result);
 
+  // Computes the FNV-1a hash of the provided DER-encoded cert for use in the
+  // XLCT tag.
+  static uint64 ComputeLeafCertHash(const std::string& cert);
+
  private:
   DISALLOW_COPY_AND_ASSIGN(CryptoUtils);
 };

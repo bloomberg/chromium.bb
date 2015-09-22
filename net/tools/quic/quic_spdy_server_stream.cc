@@ -8,6 +8,7 @@
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
+#include "base/strings/string_split.h"
 #include "net/quic/quic_data_stream.h"
 #include "net/quic/quic_spdy_session.h"
 #include "net/quic/spdy_utils.h"
@@ -99,17 +100,27 @@ bool QuicSpdyServerStream::ParseRequestHeaders(const char* data,
     body_.append(data + len, data_len - len);
   }
   if (ContainsKey(request_headers_, "content-length")) {
-    // Historically, if an input to SimpleAtoi contained null byte, anything
-    // past it would be silently ignored. This behavior is being removed, but
-    // this method relies on it (see cl/101239633). Hence, we explicitly call
-    // c_str() on request headers to simulate the old behavior.
-    // TODO(rch): Correctly handle null-separated value in content-length.
-    // b/23554022
-    StringPiece trimmed_header(request_headers_["content-length"].c_str());
-    if (!StringToInt(trimmed_header, &content_length_)) {
-      return false;  // Invalid content-length.
+    string delimiter;
+    delimiter.push_back('\0');
+    std::vector<string> values =
+        base::SplitString(request_headers_["content-length"], delimiter,
+                          base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
+
+    for (const string& value : values) {
+      int new_value;
+      if (!StringToInt(value, &new_value) || new_value < 0) {
+        return false;
+      }
+      if (content_length_ < 0) {
+        content_length_ = new_value;
+        continue;
+      }
+      if (new_value != content_length_) {
+        return false;
+      }
     }
   }
+
   return true;
 }
 

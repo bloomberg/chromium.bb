@@ -162,6 +162,10 @@ class NET_EXPORT_PRIVATE QuicCryptoServerStream : public QuicCryptoStream {
   // crypto_config_ contains crypto parameters for the handshake.
   const QuicCryptoServerConfig* crypto_config_;
 
+  // Server's certificate chain and signature of the server config, as provided
+  // by ProofSource::GetProof.
+  QuicCryptoProof crypto_proof_;
+
   // Pointer to the active callback that will receive the result of
   // the client hello validation request and forward it to
   // FinishProcessingHandshakeMessage for processing.  nullptr if no

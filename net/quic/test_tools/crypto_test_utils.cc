@@ -32,9 +32,6 @@ namespace test {
 
 namespace {
 
-const char kServerHostname[] = "test.example.com";
-const uint16 kServerPort = 80;
-
 // CryptoFramerVisitor is a framer visitor that records handshake messages.
 class CryptoFramerVisitor : public CryptoFramerVisitorInterface {
  public:
@@ -206,6 +203,7 @@ int CryptoTestUtils::HandshakeWithFakeServer(
 int CryptoTestUtils::HandshakeWithFakeClient(
     PacketSavingConnection* server_conn,
     QuicCryptoServerStream* server,
+    const QuicServerId& server_id,
     const FakeClientOptions& options) {
   PacketSavingConnection* client_conn =
       new PacketSavingConnection(Perspective::IS_CLIENT);
@@ -213,10 +211,8 @@ int CryptoTestUtils::HandshakeWithFakeClient(
   client_conn->AdvanceTime(QuicTime::Delta::FromSeconds(1));
 
   QuicCryptoClientConfig crypto_config;
-  bool is_https = false;
   AsyncTestChannelIDSource* async_channel_id_source = nullptr;
   if (options.channel_id_enabled) {
-    is_https = true;
 
     ChannelIDSource* source = ChannelIDSourceForTesting();
     if (options.channel_id_source_async) {
@@ -225,9 +221,7 @@ int CryptoTestUtils::HandshakeWithFakeClient(
     }
     crypto_config.SetChannelIDSource(source);
   }
-  QuicServerId server_id(kServerHostname, kServerPort, is_https,
-                         PRIVACY_MODE_DISABLED);
-  if (!options.dont_verify_certs) {
+  if (!options.dont_verify_certs && server_id.is_https()) {
 #if defined(USE_OPENSSL)
     crypto_config.SetProofVerifier(ProofVerifierForTesting());
 #else
@@ -250,7 +244,7 @@ int CryptoTestUtils::HandshakeWithFakeClient(
   if (options.channel_id_enabled) {
     scoped_ptr<ChannelIDKey> channel_id_key;
     QuicAsyncStatus status = crypto_config.channel_id_source()->GetChannelIDKey(
-        kServerHostname, &channel_id_key, nullptr);
+        server_id.host(), &channel_id_key, nullptr);
     EXPECT_EQ(QUIC_SUCCESS, status);
     EXPECT_EQ(channel_id_key->SerializeKey(),
               server->crypto_negotiated_params().channel_id);

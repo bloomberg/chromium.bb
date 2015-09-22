@@ -146,6 +146,7 @@ const QuicTag kSFCW = TAG('S', 'F', 'C', 'W');   // Initial stream flow control
 const QuicTag kCFCW = TAG('C', 'F', 'C', 'W');   // Initial session/connection
                                                  // flow control receive window.
 const QuicTag kUAID = TAG('U', 'A', 'I', 'D');   // Client's User Agent ID.
+const QuicTag kXLCT = TAG('X', 'L', 'C', 'T');   // Expected leaf certificate.
 
 // Rejection tags
 const QuicTag kRREJ = TAG('R', 'R', 'E', 'J');   // Reasons for server sending

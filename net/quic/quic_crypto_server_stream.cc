@@ -79,7 +79,9 @@ void QuicCryptoServerStream::OnHandshakeMessage(
   validate_client_hello_cb_ = new ValidateCallback(this);
   return crypto_config_->ValidateClientHello(
       message, session()->connection()->peer_address().address(),
-      session()->connection()->clock(), validate_client_hello_cb_);
+      session()->connection()->self_address().address(), version(),
+      session()->connection()->clock(), &crypto_proof_,
+      validate_client_hello_cb_);
 }
 
 void QuicCryptoServerStream::FinishProcessingHandshakeMessage(
@@ -253,7 +255,7 @@ QuicErrorCode QuicCryptoServerStream::ProcessClientHello(
       connection->peer_address(), version(), connection->supported_versions(),
       use_stateless_rejects_in_crypto_config, server_designated_connection_id,
       connection->clock(), connection->random_generator(),
-      &crypto_negotiated_params_, reply, error_details);
+      &crypto_negotiated_params_, &crypto_proof_, reply, error_details);
 }
 
 void QuicCryptoServerStream::OverrideQuicConfigDefaults(QuicConfig* config) {

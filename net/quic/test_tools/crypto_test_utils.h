@@ -31,6 +31,7 @@ class QuicCryptoServerConfig;
 class QuicCryptoServerStream;
 class QuicCryptoStream;
 class QuicRandom;
+class QuicServerId;
 
 namespace test {
 
@@ -77,6 +78,7 @@ class CryptoTestUtils {
   // returns: the number of client hellos that the client sent.
   static int HandshakeWithFakeClient(PacketSavingConnection* server_conn,
                                      QuicCryptoServerStream* server,
+                                     const QuicServerId& server_id,
                                      const FakeClientOptions& options);
 
   // SetupCryptoServerConfigForTest configures |config| and |crypto_config|

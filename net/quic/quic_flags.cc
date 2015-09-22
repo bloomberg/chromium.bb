@@ -66,9 +66,6 @@ bool FLAGS_send_goaway_after_client_migration = true;
 // number order.
 bool FLAGS_quic_close_connection_out_of_order_sending = true;
 
-// Allow QUIC packet writer to limit the MTU of the connection.
-bool FLAGS_quic_limit_mtu_by_writer = true;
-
 // QUIC-specific flag. If true, Cubic's epoch is reset when the sender is
 // application-limited.
 bool FLAGS_reset_cubic_epoch_when_app_limited = true;

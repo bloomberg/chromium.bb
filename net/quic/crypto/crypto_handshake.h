@@ -77,7 +77,10 @@ enum HandshakeFailureReason {
   // The source-address token has expired.
   SOURCE_ADDRESS_TOKEN_EXPIRED_FAILURE = 19,
 
-  MAX_FAILURE_REASON = 21,
+  // The expected leaf certificate hash could not be validated.
+  INVALID_EXPECTED_LEAF_CERTIFICATE = 21,
+
+  MAX_FAILURE_REASON = 22,
 };
 
 // These errors will be packed into an uint32 and we don't want to set the most
@@ -129,10 +132,20 @@ struct NET_EXPORT_PRIVATE QuicCryptoNegotiatedParameters {
 
   // Used when generating proof signature when sending server config updates.
   bool x509_ecdsa_supported;
+  bool x509_supported;
 
   // Used to generate cert chain when sending server config updates.
   std::string client_common_set_hashes;
   std::string client_cached_cert_hashes;
+};
+
+struct NET_EXPORT_PRIVATE QuicCryptoProof {
+  QuicCryptoProof();
+  ~QuicCryptoProof();
+
+  std::string signature;
+  // QuicCryptoProof does not take ownership of |certs|.
+  const std::vector<std::string>* certs;
 };
 
 // QuicCryptoConfig contains common configuration between clients and servers.

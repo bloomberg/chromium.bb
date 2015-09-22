@@ -2264,10 +2264,6 @@ QuicByteCount QuicConnection::LimitMaxPacketSize(
     return suggested_max_packet_size;
   }
 
-  if (!FLAGS_quic_limit_mtu_by_writer) {
-    return suggested_max_packet_size;
-  }
-
   if (peer_address_.address().empty()) {
     LOG(DFATAL) << "Attempted to use a connection without a valid peer address";
     return suggested_max_packet_size;

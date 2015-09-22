@@ -482,8 +482,11 @@ void QuicCryptoServerConfig::GetConfigIds(vector<string>* scids) const {
 
 void QuicCryptoServerConfig::ValidateClientHello(
     const CryptoHandshakeMessage& client_hello,
-    IPAddressNumber client_ip,
+    const IPAddressNumber& client_ip,
+    const IPAddressNumber& server_ip,
+    QuicVersion version,
     const QuicClock* clock,
+    QuicCryptoProof* crypto_proof,
     ValidateClientHelloResultCallback* done_cb) const {
   const QuicWallTime now(clock->WallNow());
 
@@ -517,7 +520,8 @@ void QuicCryptoServerConfig::ValidateClientHello(
   }
 
   if (result->error_code == QUIC_NO_ERROR) {
-    EvaluateClientHello(primary_orbit, requested_config, result, done_cb);
+    EvaluateClientHello(server_ip, version, primary_orbit, requested_config,
+                        crypto_proof, result, done_cb);
   } else {
     done_cb->Run(result);
   }
@@ -535,6 +539,7 @@ QuicErrorCode QuicCryptoServerConfig::ProcessClientHello(
     const QuicClock* clock,
     QuicRandom* rand,
     QuicCryptoNegotiatedParameters* params,
+    QuicCryptoProof* crypto_proof,
     CryptoHandshakeMessage* out,
     string* error_details) const {
   DCHECK(error_details);
@@ -601,14 +606,25 @@ QuicErrorCode QuicCryptoServerConfig::ProcessClientHello(
 
   out->Clear();
 
+  bool x509_supported = false;
+  bool x509_ecdsa_supported = false;
+  ParseProofDemand(client_hello, &x509_supported, &x509_ecdsa_supported);
+  if (proof_source_.get() && !crypto_proof->certs &&
+      !proof_source_->GetProof(server_ip, info.sni.as_string(),
+                               primary_config->serialized, x509_ecdsa_supported,
+                               &crypto_proof->certs,
+                               &crypto_proof->signature)) {
+    return QUIC_HANDSHAKE_FAILED;
+  }
+
   if (!info.valid_source_address_token ||
       !info.client_nonce_well_formed ||
       !info.unique ||
       !requested_config.get()) {
-    BuildRejection(server_ip, *primary_config.get(), client_hello, info,
+    BuildRejection(*primary_config, client_hello, info,
                    validate_chlo_result.cached_network_params,
                    use_stateless_rejects, server_designated_connection_id, rand,
-                   params, out);
+                   params, *crypto_proof, out);
     return QUIC_NO_ERROR;
   }
 
@@ -667,6 +683,18 @@ QuicErrorCode QuicCryptoServerConfig::ProcessClientHello(
   hkdf_suffix.append(client_hello_serialized.data(),
                      client_hello_serialized.length());
   hkdf_suffix.append(requested_config->serialized);
+  // The addition of x509_supported in this if statement is so that an insecure
+  // quic client talking to a secure quic server will not result in the secure
+  // quic server adding the cert to the kdf.
+  // TODO(nharper): Should a server that is configured to be secure (i.e. one
+  // that has a proof_source_) be accepting responses from an insecure client?
+  if (version > QUIC_VERSION_25 && proof_source_.get() && x509_supported) {
+    if (crypto_proof->certs->empty()) {
+      *error_details = "Failed to get certs";
+      return QUIC_CRYPTO_INTERNAL_ERROR;
+    }
+    hkdf_suffix.append(crypto_proof->certs->at(0));
+  }
 
   StringPiece cetv_ciphertext;
   if (requested_config->channel_id_enabled &&
@@ -911,8 +939,11 @@ void QuicCryptoServerConfig::SelectNewPrimaryConfig(
 }
 
 void QuicCryptoServerConfig::EvaluateClientHello(
+    const IPAddressNumber& server_ip,
+    QuicVersion version,
     const uint8* primary_orbit,
     scoped_refptr<Config> requested_config,
+    QuicCryptoProof* crypto_proof,
     ValidateClientHelloResultCallback::Result* client_hello_state,
     ValidateClientHelloResultCallback* done_cb) const {
   ValidateClientHelloHelper helper(client_hello_state, done_cb);
@@ -988,6 +1019,25 @@ void QuicCryptoServerConfig::EvaluateClientHello(
       return;
     }
     found_error = true;
+  }
+
+  if (version > QUIC_VERSION_25) {
+    bool x509_supported = false;
+    bool x509_ecdsa_supported = false;
+    ParseProofDemand(client_hello, &x509_supported, &x509_ecdsa_supported);
+    if (proof_source_.get() &&
+        !proof_source_->GetProof(server_ip, info->sni.as_string(),
+                                 requested_config->serialized,
+                                 x509_ecdsa_supported, &crypto_proof->certs,
+                                 &crypto_proof->signature)) {
+      found_error = true;
+      info->reject_reasons.push_back(SERVER_CONFIG_UNKNOWN_CONFIG_FAILURE);
+    }
+
+    if (!ValidateExpectedLeafCertificate(client_hello, *crypto_proof)) {
+      found_error = true;
+      info->reject_reasons.push_back(INVALID_EXPECTED_LEAF_CERTIFICATE);
+    }
   }
 
   if (!replay_protection_) {
@@ -1097,7 +1147,6 @@ bool QuicCryptoServerConfig::BuildServerConfigUpdateMessage(
 }
 
 void QuicCryptoServerConfig::BuildRejection(
-    const IPAddressNumber& server_ip,
     const Config& config,
     const CryptoHandshakeMessage& client_hello,
     const ClientHelloInfo& info,
@@ -1106,6 +1155,7 @@ void QuicCryptoServerConfig::BuildRejection(
     QuicConnectionId server_designated_connection_id,
     QuicRandom* rand,
     QuicCryptoNegotiatedParameters* params,
+    const QuicCryptoProof& crypto_proof,
     CryptoHandshakeMessage* out) const {
   if (FLAGS_enable_quic_stateless_reject_support && use_stateless_rejects) {
     DVLOG(1) << "QUIC Crypto server config returning stateless reject "
@@ -1130,38 +1180,14 @@ void QuicCryptoServerConfig::BuildRejection(
   out->SetVector(kRREJ, info.reject_reasons);
 
   // The client may have requested a certificate chain.
-  const QuicTag* their_proof_demands;
-  size_t num_their_proof_demands;
-
-  if (proof_source_.get() == nullptr ||
-      client_hello.GetTaglist(kPDMD, &their_proof_demands,
-                              &num_their_proof_demands) !=
-          QUIC_NO_ERROR) {
-    return;
-  }
-
   bool x509_supported = false;
-  for (size_t i = 0; i < num_their_proof_demands; i++) {
-    switch (their_proof_demands[i]) {
-      case kX509:
-        x509_supported = true;
-        params->x509_ecdsa_supported = true;
-        break;
-      case kX59R:
-        x509_supported = true;
-        break;
-    }
-  }
-
+  ParseProofDemand(client_hello, &x509_supported,
+                   &params->x509_ecdsa_supported);
   if (!x509_supported) {
     return;
   }
 
-  const vector<string>* certs;
-  string signature;
-  if (!proof_source_->GetProof(server_ip, info.sni.as_string(),
-                               config.serialized, params->x509_ecdsa_supported,
-                               &certs, &signature)) {
+  if (!proof_source_.get()) {
     return;
   }
 
@@ -1176,7 +1202,7 @@ void QuicCryptoServerConfig::BuildRejection(
   }
 
   const string compressed = CertCompressor::CompressChain(
-      *certs, params->client_common_set_hashes,
+      *crypto_proof.certs, params->client_common_set_hashes,
       params->client_cached_cert_hashes, config.common_cert_sets);
 
   // kREJOverheadBytes is a very rough estimate of how much of a REJ
@@ -1199,9 +1225,9 @@ void QuicCryptoServerConfig::BuildRejection(
   static_assert(kClientHelloMinimumSize * kMultiplier >= kREJOverheadBytes,
                 "overhead calculation may overflow");
   if (info.valid_source_address_token ||
-      signature.size() + compressed.size() < max_unverified_size) {
+      crypto_proof.signature.size() + compressed.size() < max_unverified_size) {
     out->SetStringPiece(kCertificateTag, compressed);
-    out->SetStringPiece(kPROF, signature);
+    out->SetStringPiece(kPROF, crypto_proof.signature);
   }
 }
 
@@ -1641,6 +1667,53 @@ HandshakeFailureReason QuicCryptoServerConfig::ValidateServerNonce(
     default:
       LOG(DFATAL) << "Unexpected server nonce error: " << nonce_error;
       return SERVER_NONCE_NOT_UNIQUE_FAILURE;
+  }
+}
+
+bool QuicCryptoServerConfig::ValidateExpectedLeafCertificate(
+    const CryptoHandshakeMessage& client_hello,
+    const QuicCryptoProof& crypto_proof) const {
+  // If the server doesn't use https, then the client won't send XLCT and
+  // proof_source_ will be null, so in this case return true.
+  if (!proof_source_.get()) {
+    return true;
+  }
+  if (crypto_proof.certs->empty()) {
+    return false;
+  }
+
+  uint64 hash_from_client;
+  if (client_hello.GetUint64(kXLCT, &hash_from_client) != QUIC_NO_ERROR) {
+    return false;
+  }
+  return CryptoUtils::ComputeLeafCertHash(crypto_proof.certs->at(0)) ==
+         hash_from_client;
+}
+
+void QuicCryptoServerConfig::ParseProofDemand(
+    const CryptoHandshakeMessage& client_hello,
+    bool* x509_supported,
+    bool* x509_ecdsa_supported) const {
+  const QuicTag* their_proof_demands;
+  size_t num_their_proof_demands;
+
+  if (proof_source_.get() == nullptr ||
+      client_hello.GetTaglist(kPDMD, &their_proof_demands,
+                              &num_their_proof_demands) != QUIC_NO_ERROR) {
+    return;
+  }
+
+  *x509_supported = false;
+  for (size_t i = 0; i < num_their_proof_demands; i++) {
+    switch (their_proof_demands[i]) {
+      case kX509:
+        *x509_supported = true;
+        *x509_ecdsa_supported = true;
+        break;
+      case kX59R:
+        *x509_supported = true;
+        break;
+    }
   }
 }
 
