@@ -30,8 +30,16 @@
   justify-content: center;
 }
 
-#actions paper-button {
-  -webkit-margin-end: 8px;
+#actions paper-button:first-of-type {
+  -webkit-margin-start: -0.57em;  /* Matches paper-button padding. */
+}
+
+#actions paper-button:not(:last-of-type) {
+  -webkit-margin-end: 8px;  /* Margin between items. */
+}
+
+#actions paper-button:last-of-type {
+  -webkit-margin-end: -0.57em;  /* Matches paper-button padding. */
 }
 
 /* TODO(dbeam): use --paper-button-flat-keyboard-focus when possible.
