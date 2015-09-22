@@ -494,6 +494,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   }
 
   void DidBeginTracing();
+  // TODO(weiliangc): this should move to the effect tree.
   void set_num_layer_or_descendant_with_copy_request(
       int num_layer_or_descendants_with_copy_request) {
     num_layer_or_descendants_with_copy_request_ =

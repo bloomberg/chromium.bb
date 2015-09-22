@@ -4590,19 +4590,18 @@ TEST_F(LayerTreeHostCommonTest, SubtreeHiddenWithCopyRequest) {
   inputs.can_adjust_raster_scales = true;
   LayerTreeHostCommon::CalculateDrawProperties(&inputs);
 
-  EXPECT_TRUE(root->draw_properties().layer_or_descendant_has_copy_request);
-  EXPECT_TRUE(copy_grand_parent_layer->draw_properties()
-                  .layer_or_descendant_has_copy_request);
-  EXPECT_TRUE(copy_parent_layer->draw_properties()
-                  .layer_or_descendant_has_copy_request);
-  EXPECT_TRUE(
-      copy_layer->draw_properties().layer_or_descendant_has_copy_request);
-  EXPECT_FALSE(
-      copy_child_layer->draw_properties().layer_or_descendant_has_copy_request);
-  EXPECT_FALSE(copy_grand_parent_sibling_before_layer->draw_properties()
-                   .layer_or_descendant_has_copy_request);
-  EXPECT_FALSE(copy_grand_parent_sibling_after_layer->draw_properties()
-                   .layer_or_descendant_has_copy_request);
+  EXPECT_GT(root->num_layer_or_descendants_with_copy_request(), 0);
+  EXPECT_GT(
+      copy_grand_parent_layer->num_layer_or_descendants_with_copy_request(), 0);
+  EXPECT_GT(copy_parent_layer->num_layer_or_descendants_with_copy_request(), 0);
+  EXPECT_GT(copy_layer->num_layer_or_descendants_with_copy_request(), 0);
+  EXPECT_EQ(copy_child_layer->num_layer_or_descendants_with_copy_request(), 0);
+  EXPECT_EQ(copy_grand_parent_sibling_before_layer
+                ->num_layer_or_descendants_with_copy_request(),
+            0);
+  EXPECT_EQ(copy_grand_parent_sibling_after_layer
+                ->num_layer_or_descendants_with_copy_request(),
+            0);
 
   // We should have three render surfaces, one for the root, one for the parent
   // since it owns a surface, and one for the copy_layer.

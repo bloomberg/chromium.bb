@@ -1211,6 +1211,8 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
   layer->SetShouldFlattenTransform(should_flatten_transform_);
   layer->set_should_flatten_transform_from_property_tree(
       should_flatten_transform_from_property_tree_);
+  layer->set_num_layer_or_descendant_with_copy_request(
+      num_layer_or_descendants_with_copy_request_);
   layer->set_is_clipped(is_clipped_);
   layer->set_draw_blend_mode(draw_blend_mode_);
   layer->SetUseParentBackfaceVisibility(use_parent_backface_visibility_);

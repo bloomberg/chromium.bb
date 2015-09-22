@@ -65,10 +65,6 @@ struct CC_EXPORT DrawProperties {
   // does not include our clip children because they are clipped by us.
   size_t num_unclipped_descendants;
 
-  // If true, the layer or some layer in its sub-tree has a CopyOutputRequest
-  // present on it.
-  bool layer_or_descendant_has_copy_request;
-
   // If true, the layer or one of its descendants has a wheel or touch handler.
   bool layer_or_descendant_has_input_handler;
 

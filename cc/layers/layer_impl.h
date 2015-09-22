@@ -674,8 +674,16 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   void set_sorted_for_recursion(bool sorted_for_recursion) {
     sorted_for_recursion_ = sorted_for_recursion;
   }
-
   bool sorted_for_recursion() { return sorted_for_recursion_; }
+
+  void set_num_layer_or_descendant_with_copy_request(
+      int num_layer_or_descendants_with_copy_request) {
+    num_layer_or_descendants_with_copy_request_ =
+        num_layer_or_descendants_with_copy_request;
+  }
+  int num_layer_or_descendants_with_copy_request() {
+    return num_layer_or_descendants_with_copy_request_;
+  }
 
   void UpdatePropertyTreeForScrollingAndAnimationIfNeeded();
 
@@ -865,6 +873,7 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   scoped_ptr<RenderSurfaceImpl> render_surface_;
 
   std::vector<FrameTimingRequest> frame_timing_requests_;
+  int num_layer_or_descendants_with_copy_request_;
   bool frame_timing_requests_dirty_;
   bool visited_;
   bool layer_or_descendant_is_drawn_;
