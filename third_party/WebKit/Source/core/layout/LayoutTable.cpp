@@ -372,10 +372,6 @@ void LayoutTable::layoutCaption(LayoutTableCaption& caption)
     }
     // Apply the margins to the location now that they are definitely available from layout
     LayoutUnit captionLogicalTop = collapsedMarginBeforeForChild(caption) + logicalHeight();
-    if (view()->layoutState()->isPaginated()) {
-        captionLogicalTop += caption.paginationStrut();
-        caption.setPaginationStrut(0);
-    }
     caption.setLogicalLocation(LayoutPoint(caption.marginStart(), captionLogicalTop));
 
     if (!selfNeedsLayout())

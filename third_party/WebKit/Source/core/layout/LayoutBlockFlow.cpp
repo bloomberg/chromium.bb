@@ -781,9 +781,16 @@ static inline bool shouldSetStrutOnBlock(const LayoutBlockFlow& block, const Roo
         if (totalLogicalHeight < pageLogicalHeightAtNewOffset)
             wantsStrutOnBlock = true;
     }
-    // If we want to break before the block, one final check is needed, since some block object
-    // types cannot handle struts.
-    return wantsStrutOnBlock && !block.isOutOfFlowPositioned() && !block.isTableCell();
+    // The block needs to be contained by a LayoutBlockFlow (and not by e.g. a flexbox or a table
+    // (which would be the case for table cell or table caption)). The reason for this limitation is
+    // simply that LayoutBlockFlow child layout code is the only place where we pick up the struts
+    // and handle them. We handle floats and regular in-flow children, and that's all. We could
+    // handle this in other layout modes as well (and even for out-of-flow children), but currently
+    // we don't.
+    if (!wantsStrutOnBlock || block.isOutOfFlowPositioned())
+        return false;
+    LayoutBlock* containingBlock = block.containingBlock();
+    return containingBlock && containingBlock->isLayoutBlockFlow();
 }
 
 void LayoutBlockFlow::adjustLinePositionForPagination(RootInlineBox& lineBox, LayoutUnit& delta)
