@@ -141,11 +141,11 @@ class SyncService : public DataTypeEncryptionHandler {
   // superset of the active types (see GetActiveDataTypes()).
   virtual syncer::ModelTypeSet GetPreferredDataTypes() const = 0;
 
-  // Called when a user chooses which data types to sync as part of the sync
-  // setup wizard.  |sync_everything| represents whether they chose the
-  // "keep everything synced" option; if true, |chosen_types| will be ignored
-  // and all data types will be synced.  |sync_everything| means "sync all
-  // current and future data types."
+  // Called when a user chooses which data types to sync. |sync_everything|
+  // represents whether they chose the "keep everything synced" option; if
+  // true, |chosen_types| will be ignored and all data types will be synced.
+  // |sync_everything| means "sync all current and future data types."
+  // |chosen_types| must be a subset of syncer::UserSelectableTypes().
   virtual void OnUserChoseDatatypes(bool sync_everything,
                                     syncer::ModelTypeSet chosen_types) = 0;
 
