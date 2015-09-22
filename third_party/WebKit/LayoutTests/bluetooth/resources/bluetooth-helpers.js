@@ -57,6 +57,26 @@ function requestDeviceWithKeyDown() {
   return callWithKeyDown(() => navigator.bluetooth.requestDevice.apply(navigator.bluetooth, args));
 }
 
+// Calls testRunner.getBluetoothManualChooserEvents() until it's returned
+// |expected_count| events. Or just once if |expected_count| is undefined.
+function getBluetoothManualChooserEvents(expected_count) {
+  if (expected_count === undefined) {
+    expected_count = 0;
+  }
+  return new Promise((resolve, reject) => {
+    let events = [];
+    let accumulate_events = new_events => {
+      events.push(...new_events);
+      if (events.length >= expected_count) {
+        resolve(events);
+      } else {
+        testRunner.getBluetoothManualChooserEvents(accumulate_events);
+      }
+    };
+    testRunner.getBluetoothManualChooserEvents(accumulate_events);
+  });
+}
+
 // errorUUID(alias) returns a UUID with the top 32 bits of
 // '00000000-97e5-4cd7-b9f1-f5a427670c59' replaced with the bits of |alias|.
 // For example, errorUUID(0xDEADBEEF) returns
@@ -84,4 +104,25 @@ function assert_promise_rejects_with_message(promise, expected, description) {
       assert_equals(error.message, expected.message, 'Unexpected Error Message:');
     }
   });
+}
+
+// Parses add-device(name)=id lines in
+// testRunner.getBluetoothManualChooserEvents() output, and exposes the name->id
+// mapping.
+class AddDeviceEventSet {
+  constructor() {
+    this._idsByName = new Map();
+    this._addDeviceRegex = /^add-device\(([^)]+)\)=(.+)$/;
+  }
+  assert_add_device_event(event, description) {
+    let match = this._addDeviceRegex.exec(event);
+    assert_true(!!match, event + "isn't an add-device event: " + description);
+    this._idsByName.set(match[1], match[2]);
+  }
+  has(name) {
+    return this._idsByName.has(name);
+  }
+  get(name) {
+    return this._idsByName.get(name);
+  }
 }
