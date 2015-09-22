@@ -49,11 +49,6 @@
 - (BOOL)hasSearchableTextContent;
 
 // Returns the currently visible keyboard accessory, or nil.
-// TODO(jdonnelly): Remove this once downstream code is updated to use
-// keyboardAccessory.
-- (UIView*)getKeyboardAccessory;
-
-// Returns the currently visible keyboard accessory, or nil.
 - (UIView*)keyboardAccessory;
 
 // Returns the currently visible keyboard input assistant item, or nil. Only

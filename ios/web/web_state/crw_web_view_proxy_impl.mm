@@ -138,10 +138,6 @@ UIView* GetFirstResponderSubview(UIView* view) {
   return _contentView != nil && [_webController contentIsHTML];
 }
 
-- (UIView*)getKeyboardAccessory {
-  return [self keyboardAccessory];
-}
-
 - (UIView*)keyboardAccessory {
   if (!_contentView)
     return nil;
