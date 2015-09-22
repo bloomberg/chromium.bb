@@ -17,7 +17,7 @@ static const char kAdjustOOMScoreSwitch[] = "--adjust-oom-score";
 static const char kSandboxDescriptorEnvironmentVarName[] = "SBX_D";
 static const char kSandboxHelperPidEnvironmentVarName[] = "SBX_HELPER_PID";
 
-static const long kSUIDSandboxApiNumber = 1;
+static const int kSUIDSandboxApiNumber = 1;
 static const char kSandboxEnvironmentApiRequest[] = "SBX_CHROME_API_RQ";
 static const char kSandboxEnvironmentApiProvides[] = "SBX_CHROME_API_PRV";
 

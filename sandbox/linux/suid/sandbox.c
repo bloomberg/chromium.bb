@@ -378,24 +378,27 @@ static bool SetupChildEnvironment() {
 bool CheckAndExportApiVersion() {
   // Check the environment to see if a specific API version was requested.
   // assume version 0 if none.
-  long api_number = -1;
+  int api_number = -1;
   char* api_string = getenv(kSandboxEnvironmentApiRequest);
   if (!api_string) {
     api_number = 0;
   } else {
     errno = 0;
     char* endptr = NULL;
-    api_number = strtol(api_string, &endptr, 10);
-    if (!endptr || *endptr || errno != 0)
+    long long_api_number = strtol(api_string, &endptr, 10);
+    if (!endptr || *endptr || errno != 0 || long_api_number < INT_MIN ||
+        long_api_number > INT_MAX) {
       return false;
+    }
+    api_number = long_api_number;
   }
 
   // Warn only for now.
   if (api_number != kSUIDSandboxApiNumber) {
     fprintf(
         stderr,
-        "The setuid sandbox provides API version %ld, "
-        "but you need %ld\n"
+        "The setuid sandbox provides API version %d, "
+        "but you need %d\n"
         "Please read "
         "https://code.google.com/p/chromium/wiki/LinuxSUIDSandboxDevelopment."
         "\n\n",
@@ -406,8 +409,7 @@ bool CheckAndExportApiVersion() {
   // Export our version so that the sandboxed process can verify it did not
   // use an old sandbox.
   char version_string[64];
-  snprintf(
-      version_string, sizeof(version_string), "%ld", kSUIDSandboxApiNumber);
+  snprintf(version_string, sizeof(version_string), "%d", kSUIDSandboxApiNumber);
   if (setenv(kSandboxEnvironmentApiProvides, version_string, 1)) {
     perror("setenv");
     return false;
@@ -428,7 +430,7 @@ int main(int argc, char** argv) {
 
   // Allow someone to query our API version
   if (argc == 2 && 0 == strcmp(argv[1], kSuidSandboxGetApiSwitch)) {
-    printf("%ld\n", kSUIDSandboxApiNumber);
+    printf("%d\n", kSUIDSandboxApiNumber);
     return 0;
   }
 
