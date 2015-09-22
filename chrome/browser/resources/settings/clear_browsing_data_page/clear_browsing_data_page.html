@@ -1,9 +1,44 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
+<link rel="import" href="chrome://md-settings/checkbox/checkbox.html">
 
 <dom-module id="cr-settings-clear-browsing-data-page">
   <link rel="import" type="css" href="clear_browsing_data_page.css">
   <template>
+    <div>
+      <cr-settings-checkbox
+          pref="{{prefs.browser.clear_data.browsing_history}}"
+          i18n-values="label:clearBrowsingHistory">
+      </cr-settings-checkbox>
+      <cr-settings-checkbox
+          pref="{{prefs.browser.clear_data.download_history}}"
+          i18n-values="label:clearDownloadHistory">
+      </cr-settings-checkbox>
+      <cr-settings-checkbox
+          pref="{{prefs.browser.clear_data.cache}}"
+          i18n-values="label:clearCache">
+      </cr-settings-checkbox>
+      <cr-settings-checkbox
+          pref="{{prefs.browser.clear_data.cookies}}"
+          i18n-values="label:clearCookies">
+      </cr-settings-checkbox>
+      <cr-settings-checkbox
+          pref="{{prefs.browser.clear_data.passwords}}"
+          i18n-values="label:clearPasswords">
+      </cr-settings-checkbox>
+      <cr-settings-checkbox
+          pref="{{prefs.browser.clear_data.form_data}}"
+          i18n-values="label:clearFormData">
+      </cr-settings-checkbox>
+      <cr-settings-checkbox
+          pref="{{prefs.browser.clear_data.hosted_apps_data}}"
+          i18n-values="label:clearHostedAppData">
+      </cr-settings-checkbox>
+      <cr-settings-checkbox
+          pref="{{prefs.browser.clear_data.content_licenses}}"
+          i18n-values="label:clearDeauthorizeContentLicenses">
+      </cr-settings-checkbox>
+    </div>
     <paper-button raised i18n-content="clearBrowsingData">
     </paper-button>
   </template>
