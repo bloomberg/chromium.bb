@@ -1205,11 +1205,6 @@ crbug.com/509025 [ Yosemite ] virtual/pointerevent/fast/events/context-no-desele
 crbug.com/509025 [ Yosemite ] virtual/trustedeventsdefaultaction/fast/events/context-no-deselect.html [ Failure ]
 crbug.com/509025 [ Yosemite ] virtual/prefer_compositing_to_lcd_text/compositing/overflow/theme-affects-visual-overflow.html [ Failure ]
 
-crbug.com/474759 paint/selection/text-selection-newline-rtl.html [ NeedsRebaseline ]
-crbug.com/474759 paint/selection/text-selection-newline-vertical.html [ NeedsRebaseline ]
-crbug.com/474759 virtual/spv2/paint/selection/text-selection-newline-rtl.html [ NeedsRebaseline ]
-crbug.com/474759 virtual/spv2/paint/selection/text-selection-newline-vertical.html [ NeedsRebaseline ]
-
 crbug.com/528431 paint/invalidation/spv2/fixed-img-src-change-after-scroll.html [ Skip ]
 crbug.com/528431 paint/invalidation/spv2/background-image-paint-invalidation.html [ Skip ]
 
