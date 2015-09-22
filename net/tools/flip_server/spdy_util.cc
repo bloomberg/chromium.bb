@@ -13,7 +13,9 @@ namespace net {
 bool g_need_to_encode_url = false;
 
 // Encode the URL.
-std::string EncodeURL(std::string uri, std::string host, std::string method) {
+std::string EncodeURL(const std::string& uri,
+                      const std::string& host,
+                      const std::string& method) {
   if (!g_need_to_encode_url) {
     // TODO(mbelshe): if uri is fully qualified, need to strip protocol/host.
     return std::string(method + "_" + uri);

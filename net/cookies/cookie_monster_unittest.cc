@@ -778,7 +778,7 @@ class DeferredCookieTaskTest : public CookieMonsterTest {
   // Declares an expectation that PersistentCookieStore::LoadCookiesForKey
   // will be called, saving the provided callback and sending a quit to the
   // message loop.
-  void ExpectLoadForKeyCall(std::string key, bool quit_queue) {
+  void ExpectLoadForKeyCall(const std::string& key, bool quit_queue) {
     if (quit_queue)
       EXPECT_CALL(*persistent_store_.get(), LoadCookiesForKey(key, testing::_))
           .WillOnce(

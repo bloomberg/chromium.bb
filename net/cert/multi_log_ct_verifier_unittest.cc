@@ -176,7 +176,8 @@ class MultiLogCTVerifierTest : public ::testing::Test {
   }
 
   // Histogram-related helper methods
-  int GetValueFromHistogram(std::string histogram_name, int sample_index) {
+  int GetValueFromHistogram(const std::string& histogram_name,
+                            int sample_index) {
     base::Histogram* histogram = static_cast<base::Histogram*>(
         base::StatisticsRecorder::FindHistogram(histogram_name));
 

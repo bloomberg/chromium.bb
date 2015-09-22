@@ -18,7 +18,7 @@ using std::string;
 namespace net {
 
 QuicStreamSequencer::FrameData::FrameData(QuicStreamOffset offset,
-                                          string segment)
+                                          const string& segment)
     : offset(offset), segment(segment) {}
 
 QuicStreamSequencer::QuicStreamSequencer(ReliableQuicStream* quic_stream)

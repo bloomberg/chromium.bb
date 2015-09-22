@@ -412,7 +412,7 @@ class PtrRecordCopyContainer {
     ttl_ = value->ttl();
   }
 
-  bool IsRecordWith(std::string name, std::string ptrdomain) {
+  bool IsRecordWith(const std::string& name, const std::string& ptrdomain) {
     return set_ && name_ == name && ptrdomain_ == ptrdomain;
   }
 

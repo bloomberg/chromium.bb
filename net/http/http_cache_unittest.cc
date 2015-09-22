@@ -463,7 +463,7 @@ const char kFullRangeData[] =
 
 // Verifies the response headers (|response|) match a partial content
 // response for the range starting at |start| and ending at |end|.
-void Verify206Response(std::string response, int start, int end) {
+void Verify206Response(const std::string& response, int start, int end) {
   std::string raw_headers(
       HttpUtil::AssembleRawHeaders(response.data(), response.size()));
   scoped_refptr<HttpResponseHeaders> headers(

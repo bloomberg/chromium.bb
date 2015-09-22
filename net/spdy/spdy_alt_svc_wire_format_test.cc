@@ -263,7 +263,7 @@ TEST(SpdyAltSvcWireFormatTest, ParseTruncatedHeaderFieldValue) {
   SpdyAltSvcWireFormat::AlternativeServiceVector altsvc_vector;
   const char* field_value_array[] = {
       "p=\":137\"", "p=\"foo:137\"", "p%25=\"foo\\\"bar\\\\baz:137\""};
-  for (std::string field_value : field_value_array) {
+  for (const std::string& field_value : field_value_array) {
     for (size_t len = 1; len < field_value.size(); ++len) {
       EXPECT_FALSE(SpdyAltSvcWireFormat::ParseHeaderFieldValue(
           field_value.substr(0, len), &altsvc_vector))

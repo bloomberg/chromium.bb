@@ -22,7 +22,7 @@ std::string ToString(const der::GeneralizedTime& time) {
       time.month, time.day, time.hours, time.minutes, time.seconds);
 }
 
-std::string GetFilePath(const std::string file_name) {
+std::string GetFilePath(const std::string& file_name) {
   return std::string("net/data/parse_certificate_unittest/") + file_name;
 }
 

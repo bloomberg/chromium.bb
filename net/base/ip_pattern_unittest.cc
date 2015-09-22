@@ -16,7 +16,7 @@ bool IsValidPattern(const std::string& pattern_text) {
   return pattern.ParsePattern(pattern_text);
 }
 
-bool CheckForMatch(const IPPattern& pattern, std::string address_text) {
+bool CheckForMatch(const IPPattern& pattern, const std::string& address_text) {
   IPAddressNumber address;
   EXPECT_TRUE(ParseIPLiteralToNumber(address_text, &address));
   return pattern.Match(address);

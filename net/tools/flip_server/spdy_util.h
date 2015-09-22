@@ -13,7 +13,9 @@ namespace net {
 extern bool g_need_to_encode_url;
 
 // Encode the URL.
-std::string EncodeURL(std::string uri, std::string host, std::string method);
+std::string EncodeURL(const std::string& uri,
+                      const std::string& host,
+                      const std::string& method);
 
 }  // namespace net
 

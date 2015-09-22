@@ -122,7 +122,7 @@ class NET_EXPORT_PRIVATE MDnsClientImpl : public MDnsClient {
     bool Init(MDnsSocketFactory* socket_factory);
 
     // Send a query with a specific rrtype and name. Returns true on success.
-    bool SendQuery(uint16 rrtype, std::string name);
+    bool SendQuery(uint16 rrtype, const std::string& name);
 
     // Add/remove a listener to the list of listeners.
     void AddListener(MDnsListenerImpl* listener);

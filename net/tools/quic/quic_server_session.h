@@ -91,7 +91,7 @@ class QuicServerSession : public QuicSpdySession {
     return GetCryptoStream()->peer_supports_stateless_rejects();
   }
 
-  void set_serving_region(std::string serving_region) {
+  void set_serving_region(const std::string& serving_region) {
     serving_region_ = serving_region;
   }
 

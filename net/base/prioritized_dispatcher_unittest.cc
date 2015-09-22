@@ -153,7 +153,7 @@ class PrioritizedDispatcherTest : public testing::Test {
     return job;
   }
 
-  void Expect(std::string log) {
+  void Expect(const std::string& log) {
     EXPECT_EQ(0u, dispatcher_->num_queued_jobs());
     EXPECT_EQ(0u, dispatcher_->num_running_jobs());
     EXPECT_EQ(log, log_);

@@ -85,7 +85,7 @@ class SdchFilterTest : public testing::Test {
         sdch_manager_->GetDictionarySet(url).Pass());
   }
 
-  std::string NewSdchCompressedData(const std::string dictionary) {
+  std::string NewSdchCompressedData(const std::string& dictionary) {
     std::string client_hash;
     std::string server_hash;
     SdchManager::GenerateHash(dictionary, &client_hash, &server_hash);

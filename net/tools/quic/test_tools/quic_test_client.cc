@@ -318,11 +318,11 @@ ssize_t QuicTestClient::SendMessage(const HTTPMessage& message) {
   return ret;
 }
 
-ssize_t QuicTestClient::SendData(string data, bool last_data) {
+ssize_t QuicTestClient::SendData(const string& data, bool last_data) {
   return SendData(data, last_data, nullptr);
 }
 
-ssize_t QuicTestClient::SendData(string data,
+ssize_t QuicTestClient::SendData(const string& data,
                                  bool last_data,
                                  QuicAckNotifier::DelegateInterface* delegate) {
   return GetOrCreateStreamAndSendRequest(nullptr, StringPiece(data), last_data,

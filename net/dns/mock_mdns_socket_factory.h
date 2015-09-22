@@ -58,7 +58,7 @@ class MockMDnsDatagramServerSocket : public DatagramServerSocket {
 
   MOCK_METHOD0(DetachFromThread, void());
 
-  void SetResponsePacket(std::string response_packet);
+  void SetResponsePacket(const std::string& response_packet);
 
   int HandleRecvNow(IOBuffer* buffer, int size, IPEndPoint* address,
                     const CompletionCallback& callback);

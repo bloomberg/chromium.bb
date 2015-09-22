@@ -89,9 +89,9 @@ class QuicTestClient : public SimpleClient,
   void SetUserAgentID(const std::string& user_agent_id);
 
   // Wraps data in a quic packet and sends it.
-  ssize_t SendData(std::string data, bool last_data);
+  ssize_t SendData(const std::string& data, bool last_data);
   // As above, but |delegate| will be notified when |data| is ACKed.
-  ssize_t SendData(std::string data,
+  ssize_t SendData(const std::string& data,
                    bool last_data,
                    QuicAckNotifier::DelegateInterface* delegate);
 

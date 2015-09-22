@@ -27,7 +27,7 @@ class NET_EXPORT_PRIVATE QuicStreamSequencer {
  public:
   // A contiguous segment received by a QUIC stream.
   struct FrameData {
-    FrameData(QuicStreamOffset offset, std::string segment);
+    FrameData(QuicStreamOffset offset, const std::string& segment);
 
     const QuicStreamOffset offset;
     std::string segment;

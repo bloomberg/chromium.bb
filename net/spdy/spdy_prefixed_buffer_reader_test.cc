@@ -16,7 +16,8 @@ using testing::ElementsAreArray;
 
 class SpdyPrefixedBufferReaderTest : public ::testing::Test {
  protected:
-  SpdyPrefixedBufferReader Build(std::string prefix, std::string suffix) {
+  SpdyPrefixedBufferReader Build(const std::string& prefix,
+                                 const std::string& suffix) {
     prefix_ = prefix;
     suffix_ = suffix;
     return SpdyPrefixedBufferReader(prefix_.data(), prefix_.length(),

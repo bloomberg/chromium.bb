@@ -52,7 +52,9 @@ class UDPSocketPerfTest : public PlatformTest {
 };
 
 // Creates and address from an ip/port and returns it in |address|.
-void CreateUDPAddress(std::string ip_str, uint16 port, IPEndPoint* address) {
+void CreateUDPAddress(const std::string& ip_str,
+                      uint16 port,
+                      IPEndPoint* address) {
   IPAddressNumber ip_number;
   bool rv = ParseIPLiteralToNumber(ip_str, &ip_number);
   if (!rv)

@@ -63,18 +63,18 @@ class SerialWorkerTest : public testing::Test {
   }
 
  protected:
-  void BreakCallback(std::string breakpoint) {
+  void BreakCallback(const std::string& breakpoint) {
     breakpoint_ = breakpoint;
     base::MessageLoop::current()->QuitNow();
   }
 
-  void BreakNow(std::string b) {
+  void BreakNow(const std::string& b) {
     message_loop_->task_runner()->PostTask(
         FROM_HERE, base::Bind(&SerialWorkerTest::BreakCallback,
                               base::Unretained(this), b));
   }
 
-  void RunUntilBreak(std::string b) {
+  void RunUntilBreak(const std::string& b) {
     message_loop_->Run();
     ASSERT_EQ(breakpoint_, b);
   }

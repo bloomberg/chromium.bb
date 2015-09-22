@@ -36,7 +36,7 @@ int MockMDnsDatagramServerSocket::GetLocalAddress(IPEndPoint* address) const {
 }
 
 void MockMDnsDatagramServerSocket::SetResponsePacket(
-    std::string response_packet) {
+    const std::string& response_packet) {
   response_packet_ = response_packet;
 }
 

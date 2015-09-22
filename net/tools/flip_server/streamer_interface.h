@@ -57,7 +57,7 @@ class StreamerSM : public BalsaVisitorInterface, public SMInterface {
                  const std::string& filename) override {}
   void SendEOF(uint32 stream_id) override {}
   void SendErrorNotFound(uint32 stream_id) override {}
-  virtual void SendOKResponse(uint32 stream_id, std::string output) {}
+  virtual void SendOKResponse(uint32 stream_id, const std::string& output) {}
   size_t SendSynStream(uint32 stream_id, const BalsaHeaders& headers) override;
   size_t SendSynReply(uint32 stream_id, const BalsaHeaders& headers) override;
   void SendDataFrame(uint32 stream_id,
@@ -67,7 +67,7 @@ class StreamerSM : public BalsaVisitorInterface, public SMInterface {
                      bool compress) override {}
   void set_is_request() override;
   static std::string forward_ip_header() { return forward_ip_header_; }
-  static void set_forward_ip_header(std::string value) {
+  static void set_forward_ip_header(const std::string& value) {
     forward_ip_header_ = value;
   }
 

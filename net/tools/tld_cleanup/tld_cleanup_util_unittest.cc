@@ -10,7 +10,8 @@
 namespace net {
 namespace tld_cleanup {
 
-std::string SetupData(std::string icann_domains, std::string private_domains) {
+std::string SetupData(const std::string& icann_domains,
+                      const std::string& private_domains) {
   return "// ===BEGIN ICANN DOMAINS===\n" +
          icann_domains +
          "// ===END ICANN DOMAINS===\n" +

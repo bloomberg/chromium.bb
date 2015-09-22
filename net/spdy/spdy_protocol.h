@@ -969,7 +969,7 @@ class NET_EXPORT_PRIVATE SpdyAltSvcIR : public SpdyFrameWithStreamIdIR {
     return altsvc_vector_;
   }
 
-  void set_origin(const std::string origin) { origin_ = origin; }
+  void set_origin(const std::string& origin) { origin_ = origin; }
   void add_altsvc(const SpdyAltSvcWireFormat::AlternativeService& altsvc) {
     altsvc_vector_.push_back(altsvc);
   }

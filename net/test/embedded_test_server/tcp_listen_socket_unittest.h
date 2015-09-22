@@ -46,7 +46,7 @@ class TCPListenSocketTestAction {
  public:
   TCPListenSocketTestAction() : action_(ACTION_NONE) {}
   explicit TCPListenSocketTestAction(ActionType action) : action_(action) {}
-  TCPListenSocketTestAction(ActionType action, std::string data)
+  TCPListenSocketTestAction(ActionType action, const std::string& data)
       : action_(action), data_(data) {}
 
   const std::string& data() const { return data_; }
