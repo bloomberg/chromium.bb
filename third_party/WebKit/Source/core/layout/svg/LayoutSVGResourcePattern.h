@@ -57,6 +57,8 @@ private:
     PassRefPtr<const SkPicture> asPicture(const FloatRect& tile, const AffineTransform&) const;
     PatternData* patternForLayoutObject(const LayoutObject&);
 
+    const LayoutSVGResourceContainer* resolveContentElement() const;
+
     bool m_shouldCollectPatternAttributes : 1;
 #if ENABLE(OILPAN)
     Persistent<PatternAttributesWrapper> m_attributesWrapper;

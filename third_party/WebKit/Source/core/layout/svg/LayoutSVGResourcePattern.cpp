@@ -22,8 +22,8 @@
 #include "config.h"
 #include "core/layout/svg/LayoutSVGResourcePattern.h"
 
-#include "core/dom/ElementTraversal.h"
 #include "core/layout/svg/SVGLayoutSupport.h"
+#include "core/layout/svg/SVGResources.h"
 #include "core/paint/SVGPaintContext.h"
 #include "core/paint/TransformRecorder.h"
 #include "core/svg/SVGFitToViewBox.h"
@@ -155,6 +155,31 @@ SVGPaintServer LayoutSVGResourcePattern::preparePaintServer(const LayoutObject& 
     return SVGPaintServer(patternData->pattern);
 }
 
+const LayoutSVGResourceContainer* LayoutSVGResourcePattern::resolveContentElement() const
+{
+    ASSERT(attributes().patternContentElement());
+    LayoutSVGResourceContainer* expectedLayoutObject =
+        toLayoutSVGResourceContainer(attributes().patternContentElement()->layoutObject());
+    // No content inheritance - avoid walking the inheritance chain.
+    if (this == expectedLayoutObject)
+        return this;
+    // Walk the inheritance chain on the LayoutObject-side. If we reach the
+    // expected LayoutObject, all is fine. If we don't, there's a cycle that
+    // the cycle resolver did break, and the resource will be content-less.
+    const LayoutSVGResourceContainer* contentLayoutObject = this;
+    while (SVGResources* resources = SVGResourcesCache::cachedResourcesForLayoutObject(contentLayoutObject)) {
+        LayoutSVGResourceContainer* linkedResource = resources->linkedResource();
+        if (!linkedResource)
+            break;
+        if (linkedResource == expectedLayoutObject)
+            return expectedLayoutObject;
+        contentLayoutObject = linkedResource;
+    }
+    // There was a cycle, just use this resource as the "content resource" even
+    // though it will be empty (have no children).
+    return this;
+}
+
 PassRefPtr<const SkPicture> LayoutSVGResourcePattern::asPicture(const FloatRect& tileBounds,
     const AffineTransform& tileTransform) const
 {
@@ -167,11 +192,8 @@ PassRefPtr<const SkPicture> LayoutSVGResourcePattern::asPicture(const FloatRect&
     FloatRect bounds(FloatPoint(), tileBounds.size());
     SkPictureBuilder pictureBuilder(bounds);
 
-    ASSERT(attributes().patternContentElement());
-    LayoutSVGResourceContainer* patternLayoutObject =
-        toLayoutSVGResourceContainer(attributes().patternContentElement()->layoutObject());
-    ASSERT(patternLayoutObject);
-    ASSERT(!patternLayoutObject->needsLayout());
+    const LayoutSVGResourceContainer* patternLayoutObject = resolveContentElement();
+    ASSERT(patternLayoutObject && !patternLayoutObject->needsLayout());
 
     SubtreeContentTransformScope contentTransformScope(contentTransform);
 
