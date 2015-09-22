@@ -347,8 +347,7 @@ bool InProcessCommandBuffer::InitializeOnGpuThread(
   if (service_->UseVirtualizedGLContexts() ||
       decoder_->GetContextGroup()
           ->feature_info()
-          ->workarounds()
-          .use_virtualized_gl_contexts) {
+          ->UseVirtualizedGLContexts()) {
     context_ = gl_share_group_->GetSharedContext();
     if (!context_.get()) {
       context_ = gfx::GLContext::CreateGLContext(

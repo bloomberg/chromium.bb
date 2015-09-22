@@ -220,6 +220,9 @@ void FeatureInfo::InitializeBasicState(const base::CommandLine* command_line) {
   enable_gl_path_rendering_switch_ =
       command_line->HasSwitch(switches::kEnableGLPathRendering);
 
+  disable_virtual_contexts_ =
+      command_line->HasSwitch(switches::kDisableVirtualContexts);
+
   // The shader translator is needed to translate from WebGL-conformant GLES SL
   // to normal GLES SL, enforce WebGL conformance, translate from GLES SL 1.0 to
   // target context GLSL, etc.

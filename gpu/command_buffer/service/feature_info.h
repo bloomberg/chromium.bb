@@ -143,6 +143,11 @@ class GPU_EXPORT FeatureInfo : public base::RefCounted<FeatureInfo> {
 
   bool disable_shader_translator() const { return disable_shader_translator_; }
 
+  bool UseVirtualizedGLContexts() const {
+    return !disable_virtual_contexts_ &&
+           workarounds_.use_virtualized_gl_contexts;
+  }
+
  private:
   friend class base::RefCounted<FeatureInfo>;
   friend class BufferManagerClientSideArraysTest;
@@ -173,6 +178,9 @@ class GPU_EXPORT FeatureInfo : public base::RefCounted<FeatureInfo> {
 
   // Whether the command line switch kEnableGLPathRendering is passed in.
   bool enable_gl_path_rendering_switch_;
+
+  // Whether the command line switch kDisableVirtualContexts is passed in.
+  bool disable_virtual_contexts_;
 
   bool disable_shader_translator_;
   scoped_ptr<gfx::GLVersionInfo> gl_version_info_;

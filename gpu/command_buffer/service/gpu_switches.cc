@@ -76,6 +76,10 @@ const char kEmulateShaderPrecision[] = "emulate-shader-precision";
 // and driver. This is used in GPU rasterization.
 const char kEnableGLPathRendering[] = "enable-gl-path-rendering";
 
+// Provide an override to disable virtual contexts, some systems may be
+// experiencing problems with it, and we need an easy way to confirm.
+const char kDisableVirtualContexts[] = "disable-virtual-contexts";
+
 const char* kGpuSwitches[] = {
     kCompileShaderAlwaysSucceeds,
     kDisableGLErrorLimit,
@@ -96,6 +100,7 @@ const char* kGpuSwitches[] = {
     kGLShaderIntermOutput,
     kEmulateShaderPrecision,
     kEnableGLPathRendering,
+    kDisableVirtualContexts,
 };
 
 const int kNumGpuSwitches = arraysize(kGpuSwitches);

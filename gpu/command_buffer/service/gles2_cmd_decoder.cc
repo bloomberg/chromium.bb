@@ -12175,7 +12175,7 @@ bool GLES2DecoderImpl::CheckResetStatus() {
                << GLES2Util::GetStringEnum(driver_status);
 
     // Don't pretend we know which client was responsible.
-    if (workarounds().use_virtualized_gl_contexts)
+    if (feature_info_->UseVirtualizedGLContexts())
       driver_status = GL_UNKNOWN_CONTEXT_RESET_ARB;
 
     switch (driver_status) {

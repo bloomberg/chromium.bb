@@ -31,6 +31,7 @@ GPU_EXPORT extern const char kEnableThreadedTextureMailboxes[];
 GPU_EXPORT extern const char kGLShaderIntermOutput[];
 GPU_EXPORT extern const char kEmulateShaderPrecision[];
 GPU_EXPORT extern const char kEnableGLPathRendering[];
+GPU_EXPORT extern const char kDisableVirtualContexts[];
 
 GPU_EXPORT extern const char* kGpuSwitches[];
 GPU_EXPORT extern const int kNumGpuSwitches;

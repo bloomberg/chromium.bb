@@ -234,7 +234,7 @@ GpuCommandBufferStub::GpuCommandBufferStub(
   }
 
   use_virtualized_gl_context_ |=
-      context_group_->feature_info()->workarounds().use_virtualized_gl_contexts;
+      context_group_->feature_info()->UseVirtualizedGLContexts();
 
   bool is_offscreen = surface_id_ == 0;
   if (is_offscreen && initial_size_.IsEmpty()) {
