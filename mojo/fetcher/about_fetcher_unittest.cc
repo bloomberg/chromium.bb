@@ -110,12 +110,9 @@ class AboutFetcherTest : public testing::Test {
     service_provider.set_connection_error_handler(
         [&run_loop]() { run_loop.Quit(); });
 
-    URLRequestPtr request(URLRequest::New());
-    request->url = url;
-
     scoped_ptr<shell::ConnectToApplicationParams> params(
         new shell::ConnectToApplicationParams);
-    params->SetURLInfo(request.Pass());
+    params->SetTargetURL(GURL(url));
     params->set_services(service_provider_request.Pass());
     application_manager_->ConnectToApplication(params.Pass());
 

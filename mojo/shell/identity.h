@@ -5,6 +5,7 @@
 #ifndef MOJO_SHELL_IDENTITY_H_
 #define MOJO_SHELL_IDENTITY_H_
 
+#include "mojo/shell/capability_filter.h"
 #include "url/gurl.h"
 
 namespace mojo {
@@ -17,16 +18,33 @@ namespace shell {
 // grouping for a given application URL. For example, the core services are
 // grouped into "Core"/"Files"/"Network"/etc. using qualifier; content handler's
 // qualifier is derived from the origin of the content.
-struct Identity {
+class Identity {
+ public:
   Identity();
-  Identity(const GURL& in_url, const std::string& in_qualifier);
   explicit Identity(const GURL& in_url);
+  Identity(const GURL& in_url, const std::string& in_qualifier);
+  Identity(const GURL& in_url,
+           const std::string& in_qualifier,
+           CapabilityFilter filter);
+  ~Identity();
 
   bool operator<(const Identity& other) const;
-  bool is_null() const { return url.is_empty(); }
+  bool is_null() const { return url_.is_empty(); }
 
-  GURL url;
-  std::string qualifier;
+  const GURL& url() const { return url_; }
+  const std::string& qualifier() const { return qualifier_; }
+  const CapabilityFilter& filter() const { return filter_; }
+
+ private:
+  GURL url_;
+  std::string qualifier_;
+
+  // TODO(beng): CapabilityFilter is not currently included in equivalence
+  //             checks for Identity since we're not currently clear on the
+  //             policy for instance disambiguation. Need to figure this out.
+  //             This field is supplied because it is logically part of the
+  //             instance identity of an application.
+  CapabilityFilter filter_;
 };
 
 }  // namespace shell

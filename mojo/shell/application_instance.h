@@ -31,9 +31,7 @@ class ApplicationInstance : public Shell {
   // is kInvalidContentHandlerID.
   ApplicationInstance(ApplicationPtr application,
                       ApplicationManager* manager,
-                      const Identity& originator_identity,
-                      const Identity& resolved_identity,
-                      const CapabilityFilter& filter,
+                      const Identity& identity,
                       uint32_t requesting_content_handler_id,
                       const base::Closure& on_application_end);
 
@@ -45,7 +43,6 @@ class ApplicationInstance : public Shell {
 
   Application* application() { return application_.get(); }
   const Identity& identity() const { return identity_; }
-  const CapabilityFilter& filter() const { return filter_; }
   base::Closure on_application_end() const { return on_application_end_; }
   void set_requesting_content_handler_id(uint32_t id) {
     requesting_content_handler_id_ = id;
@@ -71,9 +68,7 @@ class ApplicationInstance : public Shell {
   void OnQuitRequestedResult(bool can_quit);
 
   ApplicationManager* const manager_;
-  const Identity originator_identity_;
   const Identity identity_;
-  const CapabilityFilter filter_;
   const bool allow_any_application_;
   uint32_t requesting_content_handler_id_;
   base::Closure on_application_end_;
