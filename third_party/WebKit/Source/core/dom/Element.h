@@ -183,12 +183,12 @@ public:
     int clientTop();
     int clientWidth();
     int clientHeight();
-    virtual double scrollLeft();
-    virtual double scrollTop();
-    virtual void setScrollLeft(double);
-    virtual void setScrollTop(double);
-    virtual int scrollWidth();
-    virtual int scrollHeight();
+    double scrollLeft();
+    double scrollTop();
+    void setScrollLeft(double);
+    void setScrollTop(double);
+    int scrollWidth();
+    int scrollHeight();
 
     void scrollBy(double x, double y);
     virtual void scrollBy(const ScrollToOptions&);
