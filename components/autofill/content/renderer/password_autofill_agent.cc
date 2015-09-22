@@ -245,7 +245,7 @@ bool IsElementAutocompletable(const blink::WebInputElement& element) {
 }
 
 // Return true if either password_value or new_password_value is not empty and
-// not default.
+// not default.i
 bool FormContainsNonDefaultPasswordValue(const PasswordForm& password_form) {
   return (!password_form.password_value.empty() &&
           !password_form.password_value_is_default) ||
@@ -517,36 +517,84 @@ bool ContainsNonNullEntryForNonNullKey(
 
 
 // Helper function to check if there exist any form on |frame| where its action
-// equals |action| or input elements outside a <form> tag if |action| equals
-// the current url. Return true if so.
-bool IsFormVisible(
-    blink::WebFrame* frame,
-    const GURL& action,
-    const FormsPredictionsMap& form_predictions) {
+// equals |saved form|'s action or input elements outside a <form> tag if the
+// action equals the current url. Return true if so.
+// For forms with empty or unspecified actions, all form data are used for
+// comparing. All data comparing is disabled on Mac and Android because the
+// update prompt isn't implemented. It may cause many false password updates.
+// TODO(kolos) Turn on all data comparing when the update prompt will be
+// implemented on Mac and Android.
+bool IsFormVisible(blink::WebFrame* frame,
+                   const PasswordForm& saved_form,
+                   const FormsPredictionsMap& form_predictions) {
+  const GURL frame_url = GURL(frame->document().url().string().utf8());
   blink::WebVector<blink::WebFormElement> forms;
   frame->document().forms(forms);
 
+#if !defined(OS_MACOSX) && !defined(OS_ANDROID)
+  const bool saved_form_action_is_empty =
+      saved_form.action == saved_form.origin;
+#endif
+
+  // Since empty or unspecified action fields are automatically set to page URL,
+  // action field for forms cannot be used for comparing (all forms with
+  // empty/unspecified actions have the same value). If an action field is set
+  // to the page URL, this method checks ALL fields of the form instead (using
+  // FormData.SameFormAs). This is also true if the action was set to the page
+  // URL on purpose.
   for (size_t i = 0; i < forms.size(); ++i) {
     const blink::WebFormElement& form = forms[i];
     if (!IsWebNodeVisible(form))
       continue;
 
-    if (action == GetCanonicalActionForForm(form))
-      return true; // Form still exists
+    GURL canonical_action = GetCanonicalActionForForm(form);
+
+#if !defined(OS_MACOSX) && !defined(OS_ANDROID)
+    bool action_is_empty = canonical_action == frame_url;
+
+    if (saved_form_action_is_empty != action_is_empty)
+      continue;
+
+    if (action_is_empty) {  // Both actions are empty, compare all fields.
+      FormData form_data;
+      WebFormElementToFormData(form, blink::WebFormControlElement(),
+                               EXTRACT_NONE, &form_data, nullptr);
+      if (saved_form.form_data.SameFormAs(form_data)) {
+        return true;  // Form still exists.
+      }
+    } else {  // Both actions are non-empty, compare actions only.
+      if (saved_form.action == canonical_action) {
+        return true;  // Form still exists.
+      }
+    }
+#else  // OS_MACOSX or OS_ANDROID
+    if (saved_form.action == canonical_action) {
+      return true;  // Form still exists.
+    }
+#endif
   }
 
   scoped_ptr<PasswordForm> unowned_password_form(
-      CreatePasswordFormFromUnownedInputElements(
-          *frame, nullptr, &form_predictions));
+      CreatePasswordFormFromUnownedInputElements(*frame, nullptr,
+                                                 &form_predictions));
   std::vector<blink::WebFormControlElement> control_elements =
       GetUnownedAutofillableFormFieldElements(frame->document().all(), nullptr);
   if (unowned_password_form &&
-      action == unowned_password_form->action &&
       IsNamedElementVisible(control_elements,
                             unowned_password_form->username_element) &&
       IsNamedElementVisible(control_elements,
                             unowned_password_form->password_element)) {
-    return true;
+#if !defined(OS_MACOSX) && !defined(OS_ANDROID)
+    bool forms_are_same =
+        saved_form_action_is_empty
+            ? saved_form.form_data.SameFormAs(unowned_password_form->form_data)
+            : saved_form.action == unowned_password_form->action;
+    if (forms_are_same)
+      return true;  // Form still exists.
+#else               // OS_MACOSX or OS_ANDROID
+    if (saved_form.action == unowned_password_form->action)
+      return true;  // Form still exists.
+#endif
   }
 
   return false;
@@ -870,8 +918,7 @@ void PasswordAutofillAgent::OnSamePageNavigationCompleted() {
   // Prompt to save only if the form is now gone, either invisible or
   // removed from the DOM.
   blink::WebFrame* frame = render_frame()->GetWebFrame();
-  if (IsFormVisible(frame, provisionally_saved_form_->action,
-                    form_predictions_))
+  if (IsFormVisible(frame, *provisionally_saved_form_, form_predictions_))
     return;
 
   Send(new AutofillHostMsg_InPageNavigation(routing_id(),
@@ -1010,12 +1057,6 @@ void PasswordAutofillAgent::FrameWillClose() {
 
 void PasswordAutofillAgent::DidCommitProvisionalLoad(
     bool is_new_navigation, bool is_same_page_navigation) {
-  blink::WebFrame* frame = render_frame()->GetWebFrame();
-  // TODO(dvadym): check if we need to check if it is main frame navigation
-  // http://crbug.com/443155
-  if (frame->parent())
-    return; // Not a top-level navigation.
-
   if (is_same_page_navigation) {
     OnSamePageNavigationCompleted();
   }

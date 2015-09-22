@@ -1472,6 +1472,52 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
   EXPECT_FALSE(prompt_observer->IsShowingPrompt());
 }
 
+// The password manager should distinguish forms with empty actions. After
+// successful login, the login form disappears, but the another one shouldn't be
+// recognized as the login form. The save prompt should appear.
+// Disabled on Mac and Android.
+// TODO(kolos) Turn on this when the update prompt will be implemented on Mac
+// and Android.
+#if !defined(OS_MACOSX) && !defined(OS_ANDROID)
+IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
+                       PromptForPushStateWhenFormWithEmptyActionDisappears) {
+  NavigateToFile("/password/password_push_state.html");
+
+  NavigationObserver observer(WebContents());
+  observer.set_quit_on_entry_committed(true);
+  scoped_ptr<PromptObserver> prompt_observer(
+      PromptObserver::Create(WebContents()));
+  std::string fill_and_submit =
+      "document.getElementById('ea_username_field').value = 'temp';"
+      "document.getElementById('ea_password_field').value = 'random';"
+      "document.getElementById('ea_submit_button').click()";
+  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_submit));
+  observer.Wait();
+  EXPECT_TRUE(prompt_observer->IsShowingPrompt());
+}
+
+// Similar to the case above, but this time the form persists after
+// 'history.pushState()'. The password manager should find the login form even
+// if the action of the form is empty. Save password prompt should not show up.
+IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
+                       PromptForPushStateWhenFormWithEmptyActionPersists) {
+  NavigateToFile("/password/password_push_state.html");
+
+  NavigationObserver observer(WebContents());
+  observer.set_quit_on_entry_committed(true);
+  scoped_ptr<PromptObserver> prompt_observer(
+      PromptObserver::Create(WebContents()));
+  std::string fill_and_submit =
+      "should_delete_testform = false;"
+      "document.getElementById('ea_username_field').value = 'temp';"
+      "document.getElementById('ea_password_field').value = 'random';"
+      "document.getElementById('ea_submit_button').click()";
+  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_submit));
+  observer.Wait();
+  EXPECT_FALSE(prompt_observer->IsShowingPrompt());
+}
+#endif  // !OS_MACOSX && !OS_ANDROID
+
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
                        InFrameNavigationDoesNotClearPopupState) {
   // Mock out the AutofillClient so we know how long to wait. Unfortunately
