@@ -1,8 +1,9 @@
 # What is GN?
 
-GN is a meta-build system that generates [NinjaBuild](NinjaBuild.md)
-files.  It's meant to be faster and simpler than GYP. It outputs only
-Ninja build files.
+GN is a meta-build system that generates
+[NinjaBuild](https://chromium.googlesource.com/chromium/src/+/master/docs/ninja_build.md)
+files. It's meant to be faster and simpler than GYP. It outputs only Ninja build
+files.
 
 ## Why bother with GN?
 

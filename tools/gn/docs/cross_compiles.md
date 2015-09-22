@@ -76,15 +76,15 @@ variables, but should generally never need to.
 By default, dependencies listed in the `deps` variable of a rule use the
 same (currently active) toolchain. You may specify a different toolchain
 using the `foo(bar)` label notation as described in
-[GNLanguage#Labels](GNLanguage#Labels.md).
+[GNLanguage#Labels](language.md#Labels).
 
 ## As a //build/config or //build/toolchain author
 
 As described in
-[GNLanguage#Overall\_build\_flow](GNLanguage#Overall_build_flow.md), the
-`default_toolchain` is declared in the //build/config/BUILDCONFIG.gn
-file. Usually the default\_toolchain should be the toolchain for the
-target\_os and target\_cpu. The `current_toolchain` reflects the
+[GNLanguage#Overall-build-flow](language.md#Overall-build-flow), the
+`default_toolchain` is declared in the `//build/config/BUILDCONFIG.gn`
+file. Usually the `default_toolchain` should be the toolchain for the
+`target_os` and `target_cpu`. The `current_toolchain` reflects the
 toolchain that is currently in effect for a rule.
 
 Be sure you understand the differences between `host_cpu`, `target_cpu`,
