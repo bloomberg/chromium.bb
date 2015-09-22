@@ -16,16 +16,13 @@
 }
 
 #panel {
+  --paper-header-panel-shadow: {
+    display: none;
+  };
   --paper-header-panel-standard-container: {
     display: flex;
     overflow-y: overlay;
   };
-}
-
-/* TODO(dbeam): upgrade to 1.0.4 to use --paper-header-panel-shadow.
- * https://github.com/PolymerElements/paper-header-panel/pull/39 */
-#panel /deep/ #dropShadow {
-  display: none;
 }
 
 #no-downloads,
