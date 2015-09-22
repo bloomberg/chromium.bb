@@ -17,7 +17,6 @@
 #include "base/observer_list.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/time/time.h"
-#include "chrome/browser/chromeos/net/network_portal_notification_controller.h"
 #include "chromeos/network/network_state_handler_observer.h"
 #include "chromeos/network/portal_detector/network_portal_detector.h"
 #include "chromeos/network/portal_detector/network_portal_detector_strategy.h"
@@ -36,6 +35,7 @@ class URLRequestContextGetter;
 
 namespace chromeos {
 
+class NetworkPortalNotificationController;
 class NetworkState;
 
 // This class handles all notifications about network changes from
@@ -62,36 +62,29 @@ class NetworkPortalDetectorImpl
   static const char kSessionShillOfflineHistogram[];
   static const char kSessionPortalToOnlineHistogram[];
 
-  // Creates an instance of NetworkPortalDetectorImpl.
+  // Creates an instance of the implementation or a stub.
   static void Initialize(net::URLRequestContextGetter* url_context);
 
-  explicit NetworkPortalDetectorImpl(
-      const scoped_refptr<net::URLRequestContextGetter>& request_context);
+  NetworkPortalDetectorImpl(
+      const scoped_refptr<net::URLRequestContextGetter>& request_context,
+      bool create_notification_controller);
   ~NetworkPortalDetectorImpl() override;
-
-  // NetworkPortalDetector implementation:
-  void AddObserver(Observer* observer) override;
-  void AddAndFireObserver(Observer* observer) override;
-  void RemoveObserver(Observer* observer) override;
-  CaptivePortalState GetCaptivePortalState(const std::string& guid) override;
-  bool IsEnabled() override;
-  void Enable(bool start_detection) override;
-  bool StartDetectionIfIdle() override;
-  void SetStrategy(PortalDetectorStrategy::StrategyId id) override;
-  void OnLockScreenRequest() override;
-
-  // NetworkStateHandlerObserver implementation:
-  void DefaultNetworkChanged(const NetworkState* network) override;
-
-  // PortalDetectorStrategy::Delegate implementation:
-  int NoResponseResultCount() override;
-  base::TimeTicks AttemptStartTime() override;
-  base::TimeTicks NowTicks() override;
 
  private:
   friend class ::NetworkingConfigTest;
   friend class NetworkPortalDetectorImplTest;
   friend class NetworkPortalDetectorImplBrowserTest;
+
+  using CaptivePortalStateMap = base::hash_map<std::string, CaptivePortalState>;
+
+  enum State {
+    // No portal check is running.
+    STATE_IDLE = 0,
+    // Waiting for portal check.
+    STATE_PORTAL_CHECK_PENDING,
+    // Portal check is in progress.
+    STATE_CHECKING_FOR_PORTAL,
+  };
 
   struct DetectionAttemptCompletedReport {
     DetectionAttemptCompletedReport();
@@ -109,18 +102,6 @@ class NetworkPortalDetectorImpl
     std::string network_id;
     captive_portal::CaptivePortalResult result;
     int response_code;
-  };
-
-  typedef std::string NetworkId;
-  typedef base::hash_map<NetworkId, CaptivePortalState> CaptivePortalStateMap;
-
-  enum State {
-    // No portal check is running.
-    STATE_IDLE = 0,
-    // Waiting for portal check.
-    STATE_PORTAL_CHECK_PENDING,
-    // Portal check is in progress.
-    STATE_CHECKING_FOR_PORTAL,
   };
 
   // Starts detection process.
@@ -145,6 +126,25 @@ class NetworkPortalDetectorImpl
   // Called by CaptivePortalDetector when detection attempt completes.
   void OnAttemptCompleted(
       const captive_portal::CaptivePortalDetector::Results& results);
+
+  // NetworkPortalDetector implementation:
+  void AddObserver(Observer* observer) override;
+  void AddAndFireObserver(Observer* observer) override;
+  void RemoveObserver(Observer* observer) override;
+  CaptivePortalState GetCaptivePortalState(const std::string& guid) override;
+  bool IsEnabled() override;
+  void Enable(bool start_detection) override;
+  bool StartDetectionIfIdle() override;
+  void SetStrategy(PortalDetectorStrategy::StrategyId id) override;
+  void OnLockScreenRequest() override;
+
+  // NetworkStateHandlerObserver implementation:
+  void DefaultNetworkChanged(const NetworkState* network) override;
+
+  // PortalDetectorStrategy::Delegate implementation:
+  int NoResponseResultCount() override;
+  base::TimeTicks AttemptStartTime() override;
+  base::TimeTicks NowTicks() override;
 
   // content::NotificationObserver implementation:
   void Observe(int type,
@@ -220,7 +220,7 @@ class NetworkPortalDetectorImpl
   // Connection state of the default network.
   std::string default_connection_state_;
 
-  State state_;
+  State state_ = STATE_IDLE;
   CaptivePortalStateMap portal_state_map_;
   base::ObserverList<Observer> observers_;
 
@@ -234,7 +234,7 @@ class NetworkPortalDetectorImpl
   scoped_ptr<captive_portal::CaptivePortalDetector> captive_portal_detector_;
 
   // True if the NetworkPortalDetector is enabled.
-  bool enabled_;
+  bool enabled_ = false;
 
   // Start time of portal detection.
   base::TimeTicks detection_start_time_;
@@ -249,16 +249,16 @@ class NetworkPortalDetectorImpl
   scoped_ptr<PortalDetectorStrategy> strategy_;
 
   // Last received result from captive portal detector.
-  CaptivePortalStatus last_detection_result_;
+  CaptivePortalStatus last_detection_result_ = CAPTIVE_PORTAL_STATUS_UNKNOWN;
 
   // Number of detection attempts with same result in a row.
-  int same_detection_result_count_;
+  int same_detection_result_count_ = 0;
 
   // Number of detection attempts in a row with NO RESPONSE result.
-  int no_response_result_count_;
+  int no_response_result_count_ = 0;
 
   // UI notification controller about captive portal state.
-  NetworkPortalNotificationController notification_controller_;
+  scoped_ptr<NetworkPortalNotificationController> notification_controller_;
 
   content::NotificationRegistrar registrar_;
 

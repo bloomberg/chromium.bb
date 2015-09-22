@@ -128,7 +128,8 @@ class NetworkPortalDetectorImplBrowserTest
         base::Bind(&ErrorCallbackFunction));
 
     network_portal_detector_ = new NetworkPortalDetectorImpl(
-        g_browser_process->system_request_context());
+        g_browser_process->system_request_context(),
+        true /* create_notification_controller */);
     NetworkPortalDetector::InitializeForTesting(network_portal_detector_);
     network_portal_detector_->Enable(false /* start_detection */);
     set_detector(network_portal_detector_->captive_portal_detector_.get());
@@ -151,12 +152,12 @@ class NetworkPortalDetectorImplBrowserTest
 
   void SetIgnoreNoNetworkForTesting() {
     network_portal_detector_->notification_controller_
-        .SetIgnoreNoNetworkForTesting();
+        ->SetIgnoreNoNetworkForTesting();
   }
 
   const NetworkPortalWebDialog* GetDialog() const {
     return network_portal_detector_->notification_controller_
-        .GetDialogForTesting();
+        ->GetDialogForTesting();
   }
 
  private:

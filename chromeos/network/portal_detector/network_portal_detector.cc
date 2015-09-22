@@ -21,7 +21,8 @@ const char kCaptivePortalStatusUnrecognized[] = "Unrecognized";
 
 // static
 bool NetworkPortalDetector::set_for_testing_ = false;
-NetworkPortalDetector* NetworkPortalDetector::network_portal_detector_ = NULL;
+NetworkPortalDetector* NetworkPortalDetector::network_portal_detector_ =
+    nullptr;
 
 // static
 void NetworkPortalDetector::InitializeForTesting(
@@ -29,12 +30,11 @@ void NetworkPortalDetector::InitializeForTesting(
   if (network_portal_detector) {
     CHECK(!set_for_testing_)
         << "NetworkPortalDetector::InitializeForTesting is called twice";
-    CHECK(network_portal_detector);
     delete network_portal_detector_;
     network_portal_detector_ = network_portal_detector;
     set_for_testing_ = true;
   } else {
-    network_portal_detector_ = NULL;
+    network_portal_detector_ = nullptr;
     set_for_testing_ = false;
   }
 }
@@ -49,7 +49,7 @@ void NetworkPortalDetector::Shutdown() {
   CHECK(network_portal_detector_ || set_for_testing_)
       << "NetworkPortalDetector::Shutdown() called without Initialize()";
   delete network_portal_detector_;
-  network_portal_detector_ = NULL;
+  network_portal_detector_ = nullptr;
 }
 
 // static
@@ -77,49 +77,6 @@ std::string NetworkPortalDetector::CaptivePortalStatusString(
       NOTREACHED();
   }
   return kCaptivePortalStatusUnrecognized;
-}
-
-// NetworkPortalDetectorStubImpl
-
-NetworkPortalDetectorStubImpl::NetworkPortalDetectorStubImpl() {
-}
-
-NetworkPortalDetectorStubImpl::~NetworkPortalDetectorStubImpl() {
-}
-
-void NetworkPortalDetectorStubImpl::AddObserver(Observer* /* observer */) {
-}
-
-void NetworkPortalDetectorStubImpl::AddAndFireObserver(Observer* observer) {
-  if (observer)
-    observer->OnPortalDetectionCompleted(NULL, CaptivePortalState());
-}
-
-void NetworkPortalDetectorStubImpl::RemoveObserver(Observer* /* observer */) {
-}
-
-NetworkPortalDetector::CaptivePortalState
-NetworkPortalDetectorStubImpl::GetCaptivePortalState(
-    const std::string& /* service_path */) {
-  return CaptivePortalState();
-}
-
-bool NetworkPortalDetectorStubImpl::IsEnabled() {
-  return false;
-}
-
-void NetworkPortalDetectorStubImpl::Enable(bool /* start_detection */) {
-}
-
-bool NetworkPortalDetectorStubImpl::StartDetectionIfIdle() {
-  return false;
-}
-
-void NetworkPortalDetectorStubImpl::SetStrategy(
-    PortalDetectorStrategy::StrategyId /* id */) {
-}
-
-void NetworkPortalDetectorStubImpl::OnLockScreenRequest() {
 }
 
 }  // namespace chromeos

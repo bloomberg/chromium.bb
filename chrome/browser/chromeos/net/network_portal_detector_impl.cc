@@ -13,11 +13,13 @@
 #include "base/metrics/histogram.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/chromeos/net/network_portal_notification_controller.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/shill_profile_client.h"
 #include "chromeos/login/login_state.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
+#include "chromeos/network/portal_detector/network_portal_detector_stub.h"
 #include "components/device_event_log/device_event_log.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/common/content_switches.h"
@@ -209,34 +211,38 @@ const char NetworkPortalDetectorImpl::kSessionPortalToOnlineHistogram[] =
 // static
 void NetworkPortalDetectorImpl::Initialize(
     net::URLRequestContextGetter* url_context) {
-  if (NetworkPortalDetector::set_for_testing())
+  if (set_for_testing())
     return;
-  CHECK(!NetworkPortalDetector::network_portal_detector())
+  CHECK(!network_portal_detector())
       << "NetworkPortalDetector was initialized twice.";
-  NET_LOG(EVENT) << "NetworkPortalDetectorImpl::Initialize()";
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(::switches::kTestType))
-    set_network_portal_detector(new NetworkPortalDetectorStubImpl());
-  else
-    set_network_portal_detector(new NetworkPortalDetectorImpl(url_context));
+  NET_LOG(EVENT) << "NetworkPortalDetectorImpl::Initialize";
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          ::switches::kTestType)) {
+    set_network_portal_detector(new NetworkPortalDetectorStub());
+  } else {
+    set_network_portal_detector(
+        new NetworkPortalDetectorImpl(url_context, true));
+  }
 }
 
 NetworkPortalDetectorImpl::NetworkPortalDetectorImpl(
-    const scoped_refptr<net::URLRequestContextGetter>& request_context)
-    : state_(STATE_IDLE),
-      test_url_(CaptivePortalDetector::kDefaultURL),
-      enabled_(false),
+    const scoped_refptr<net::URLRequestContextGetter>& request_context,
+    bool create_notification_controller)
+    : test_url_(CaptivePortalDetector::kDefaultURL),
       strategy_(PortalDetectorStrategy::CreateById(
           PortalDetectorStrategy::STRATEGY_ID_LOGIN_SCREEN,
           this)),
-      last_detection_result_(CAPTIVE_PORTAL_STATUS_UNKNOWN),
-      same_detection_result_count_(0),
-      no_response_result_count_(0),
       weak_factory_(this) {
   NET_LOG(EVENT) << "NetworkPortalDetectorImpl::NetworkPortalDetectorImpl()";
   captive_portal_detector_.reset(new CaptivePortalDetector(request_context));
 
-  notification_controller_.set_retry_detection_callback(base::Bind(
-      &NetworkPortalDetectorImpl::RetryDetection, base::Unretained(this)));
+  if (create_notification_controller) {
+    notification_controller_.reset(
+        new NetworkPortalNotificationController(this));
+    notification_controller_->set_retry_detection_callback(
+        base::Bind(&NetworkPortalDetectorImpl::RetryDetection,
+                   weak_factory_.GetWeakPtr()));
+  }
 
   registrar_.Add(this,
                  chrome::NOTIFICATION_LOGIN_PROXY_CHANGED,
@@ -337,14 +343,14 @@ void NetworkPortalDetectorImpl::SetStrategy(
 }
 
 void NetworkPortalDetectorImpl::OnLockScreenRequest() {
-  notification_controller_.CloseDialog();
+  if (notification_controller_)
+    notification_controller_->CloseDialog();
 }
 
 void NetworkPortalDetectorImpl::DefaultNetworkChanged(
     const NetworkState* default_network) {
   DCHECK(CalledOnValidThread());
 
-  notification_controller_.DefaultNetworkChanged(default_network);
   if (!default_network) {
     NET_LOG(EVENT) << "Default network changed: None";
 
@@ -354,7 +360,7 @@ void NetworkPortalDetectorImpl::DefaultNetworkChanged(
 
     CaptivePortalState state;
     state.status = CAPTIVE_PORTAL_STATUS_OFFLINE;
-    OnDetectionCompleted(NULL, state);
+    OnDetectionCompleted(nullptr, state);
     return;
   }
 
@@ -608,7 +614,6 @@ void NetworkPortalDetectorImpl::NotifyDetectionCompleted(
     const CaptivePortalState& state) {
   FOR_EACH_OBSERVER(
       Observer, observers_, OnPortalDetectionCompleted(network, state));
-  notification_controller_.OnPortalDetectionCompleted(network, state);
 }
 
 bool NetworkPortalDetectorImpl::AttemptTimeoutIsCancelledForTesting() const {

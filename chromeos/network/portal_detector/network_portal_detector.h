@@ -101,6 +101,12 @@ class CHROMEOS_EXPORT NetworkPortalDetector {
   // doesn't equal to |id|, detection is restarted.
   virtual void SetStrategy(PortalDetectorStrategy::StrategyId id) = 0;
 
+  // Closes portal login window before screen is locked.
+  virtual void OnLockScreenRequest() = 0;
+
+  // Returns non-localized string representation of |status|.
+  static std::string CaptivePortalStatusString(CaptivePortalStatus status);
+
   // Initializes network portal detector for testing. The
   // |network_portal_detector| will be owned by the internal pointer
   // and deleted by Shutdown().
@@ -118,12 +124,6 @@ class CHROMEOS_EXPORT NetworkPortalDetector {
   // be used carefully in tests, because it can be changed "on the fly"
   // by calls to InitializeForTesting().
   static NetworkPortalDetector* Get();
-
-  // Returns non-localized string representation of |status|.
-  static std::string CaptivePortalStatusString(CaptivePortalStatus status);
-
-  // Closes portal login window before screen is locked.
-  virtual void OnLockScreenRequest() = 0;
 
  protected:
   NetworkPortalDetector() {}
@@ -143,29 +143,6 @@ class CHROMEOS_EXPORT NetworkPortalDetector {
   static NetworkPortalDetector* network_portal_detector_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkPortalDetector);
-};
-
-class CHROMEOS_EXPORT NetworkPortalDetectorStubImpl
-    : public NetworkPortalDetector {
- public:
-  NetworkPortalDetectorStubImpl();
-  ~NetworkPortalDetectorStubImpl() override;
-
- protected:
-  // NetworkPortalDetector
-  void AddObserver(Observer* observer) override;
-  void AddAndFireObserver(Observer* observer) override;
-  void RemoveObserver(Observer* observer) override;
-  CaptivePortalState GetCaptivePortalState(
-      const std::string& service_path) override;
-  bool IsEnabled() override;
-  void Enable(bool start_detection) override;
-  bool StartDetectionIfIdle() override;
-  void SetStrategy(PortalDetectorStrategy::StrategyId id) override;
-  void OnLockScreenRequest() override;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(NetworkPortalDetectorStubImpl);
 };
 
 }  // namespace chromeos

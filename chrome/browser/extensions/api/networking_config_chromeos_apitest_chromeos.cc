@@ -8,6 +8,7 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/net/network_portal_detector_impl.h"
+#include "chrome/browser/chromeos/net/network_portal_notification_controller.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/shill_device_client.h"
@@ -105,7 +106,8 @@ class NetworkingConfigTest
     content::RunAllPendingInMessageLoop();
 
     network_portal_detector_ = new NetworkPortalDetectorImpl(
-        g_browser_process->system_request_context());
+        g_browser_process->system_request_context(),
+        true /* create_notification_controller */);
     NetworkPortalDetector::InitializeForTesting(network_portal_detector_);
     network_portal_detector_->Enable(false /* start_detection */);
     set_detector(network_portal_detector_->captive_portal_detector_.get());
@@ -131,6 +133,12 @@ class NetworkingConfigTest
   void SimulateSuccessfulCaptivePortalAuth() {
     content::RunAllPendingInMessageLoop();
     CompleteURLFetch(net::OK, 204, nullptr);
+  }
+
+  NetworkPortalDetector::CaptivePortalStatus GetCaptivePortalStatus(
+      const std::string& guid) {
+    return network_portal_detector_->GetCaptivePortalState(kWifi1ServiceGUID)
+        .status;
   }
 
   NetworkPortalDetectorImpl* network_portal_detector_ = nullptr;
@@ -178,7 +186,6 @@ IN_PROC_BROWSER_TEST_F(NetworkingConfigTest, FullTest) {
   // Simulate the captive portal vanishing.
   SimulateSuccessfulCaptivePortalAuth();
 
-  NetworkPortalDetector::CaptivePortalState state =
-      network_portal_detector_->GetCaptivePortalState(kWifi1ServiceGUID);
-  ASSERT_EQ(NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE, state.status);
+  ASSERT_EQ(NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE,
+            GetCaptivePortalStatus(kWifi1ServiceGUID));
 }

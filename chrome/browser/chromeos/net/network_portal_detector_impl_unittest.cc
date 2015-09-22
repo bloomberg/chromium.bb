@@ -99,7 +99,7 @@ class NetworkPortalDetectorImplTest
     EXPECT_TRUE(user_manager::UserManager::Get()->GetPrimaryUser());
 
     network_portal_detector_.reset(
-        new NetworkPortalDetectorImpl(profile_->GetRequestContext()));
+        new NetworkPortalDetectorImpl(profile_->GetRequestContext(), false));
     network_portal_detector_->Enable(false);
 
     set_detector(network_portal_detector_->captive_portal_detector_.get());
@@ -150,6 +150,14 @@ class NetworkPortalDetectorImplTest
 
   NetworkPortalDetectorImpl* network_portal_detector() {
     return network_portal_detector_.get();
+  }
+
+  void AddObserver(NetworkPortalDetector::Observer* observer) {
+    network_portal_detector()->AddObserver(observer);
+  }
+
+  void RemoveObserver(NetworkPortalDetector::Observer* observer) {
+    network_portal_detector()->RemoveObserver(observer);
   }
 
   NetworkPortalDetectorImpl::State state() {
@@ -360,7 +368,7 @@ TEST_F(NetworkPortalDetectorImplTest, Online2Offline) {
   ASSERT_TRUE(is_state_idle());
 
   MockObserver observer;
-  network_portal_detector()->AddObserver(&observer);
+  AddObserver(&observer);
 
   NetworkPortalDetector::CaptivePortalState offline_state;
   offline_state.status = NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_OFFLINE;
@@ -401,7 +409,7 @@ TEST_F(NetworkPortalDetectorImplTest, Online2Offline) {
     Mock::VerifyAndClearExpectations(&observer);
   }
 
-  network_portal_detector()->RemoveObserver(&observer);
+  RemoveObserver(&observer);
 
   ASSERT_TRUE(
       MakeResultHistogramChecker()

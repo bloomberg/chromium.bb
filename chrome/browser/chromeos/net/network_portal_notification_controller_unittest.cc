@@ -64,7 +64,8 @@ class NotificationObserver : public message_center::MessageCenterObserver {
 class NetworkPortalNotificationControllerTest : public testing::Test {
  public:
   NetworkPortalNotificationControllerTest()
-      : user_manager_enabler_(new chromeos::FakeChromeUserManager()) {}
+      : user_manager_enabler_(new chromeos::FakeChromeUserManager()),
+        controller_(nullptr) {}
   ~NetworkPortalNotificationControllerTest() override {}
 
   void SetUp() override {

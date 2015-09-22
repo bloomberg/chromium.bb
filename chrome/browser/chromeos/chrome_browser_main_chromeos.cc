@@ -553,7 +553,6 @@ void ChromeBrowserMainPartsChromeos::PostProfileInit() {
   NetworkPortalDetectorImpl::Initialize(
       g_browser_process->system_request_context());
   {
-    NetworkPortalDetector* detector = NetworkPortalDetector::Get();
 #if defined(GOOGLE_CHROME_BUILD)
     bool is_official_build = true;
 #else
@@ -562,7 +561,7 @@ void ChromeBrowserMainPartsChromeos::PostProfileInit() {
     // Enable portal detector if EULA was previously accepted or if
     // this is an unofficial build.
     if (!is_official_build || StartupUtils::IsEulaAccepted())
-      detector->Enable(true);
+      NetworkPortalDetector::Get()->Enable(true);
   }
 
   // Initialize input methods.

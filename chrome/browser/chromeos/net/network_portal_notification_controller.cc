@@ -36,6 +36,7 @@
 #include "chrome/grit/theme_resources.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/network/network_state.h"
+#include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/network_type_pattern.h"
 #include "components/captive_portal/captive_portal_detector.h"
 #include "components/user_manager/user_manager.h"
@@ -235,12 +236,24 @@ const char NetworkPortalNotificationController::kNotificationMetric[] =
 const char NetworkPortalNotificationController::kUserActionMetric[] =
     "CaptivePortal.Notification.UserAction";
 
-NetworkPortalNotificationController::NetworkPortalNotificationController()
-    : dialog_(nullptr),
-      ignore_no_network_for_testing_(false),
-      weak_factory_(this) {}
+NetworkPortalNotificationController::NetworkPortalNotificationController(
+    NetworkPortalDetector* network_portal_detector)
+    : network_portal_detector_(network_portal_detector), weak_factory_(this) {
+  if (NetworkHandler::IsInitialized()) {  // NULL for unit tests.
+    NetworkHandler::Get()->network_state_handler()->AddObserver(this,
+                                                                FROM_HERE);
+  }
+  if (network_portal_detector_)
+    network_portal_detector_->AddObserver(this);
+}
 
 NetworkPortalNotificationController::~NetworkPortalNotificationController() {
+  if (network_portal_detector_)
+    network_portal_detector_->RemoveObserver(this);
+  if (NetworkHandler::IsInitialized()) {
+    NetworkHandler::Get()->network_state_handler()->RemoveObserver(this,
+                                                                   FROM_HERE);
+  }
 }
 
 void NetworkPortalNotificationController::DefaultNetworkChanged(

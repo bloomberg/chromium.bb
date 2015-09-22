@@ -9,22 +9,24 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "chromeos/network/network_state_handler_observer.h"
 #include "chromeos/network/portal_detector/network_portal_detector.h"
 #include "ui/message_center/notification.h"
 
 namespace extensions {
-
 class Extension;
 class NetworkingConfigService;
-
-}  // namespace extensions
+}
 
 namespace chromeos {
 
 class NetworkState;
 class NetworkPortalWebDialog;
+class NetworkPortalNotificationControllerTest;
 
-class NetworkPortalNotificationController {
+class NetworkPortalNotificationController
+    : public NetworkStateHandlerObserver,
+      public NetworkPortalDetector::Observer {
  public:
   // The values of these metrics are being used for UMA gathering, so it is
   // important that they don't change between releases.
@@ -53,8 +55,9 @@ class NetworkPortalNotificationController {
   static const char kNotificationMetric[];
   static const char kUserActionMetric[];
 
-  NetworkPortalNotificationController();
-  ~NetworkPortalNotificationController();
+  explicit NetworkPortalNotificationController(
+      NetworkPortalDetector* network_portal_dectector);
+  ~NetworkPortalNotificationController() override;
 
   // |retry_detection_callback| will be called if the controller learns about a
   // potential change of the captive portal (e.g. if an extension notifies about
@@ -65,12 +68,6 @@ class NetworkPortalNotificationController {
       const base::Closure& retry_detection_callback) {
     retry_detection_callback_ = retry_detection_callback;
   }
-
-  void DefaultNetworkChanged(const NetworkState* network);
-
-  void OnPortalDetectionCompleted(
-      const NetworkState* network,
-      const NetworkPortalDetector::CaptivePortalState& state);
 
   // Creates NetworkPortalWebDialog.
   void ShowDialog();
@@ -93,6 +90,8 @@ class NetworkPortalNotificationController {
   const NetworkPortalWebDialog* GetDialogForTesting() const;
 
  private:
+  friend NetworkPortalNotificationControllerTest;
+
   // Creates the default notification informing the user that a captive portal
   // has been detected. On click the captive portal login page is opened in the
   // browser.
@@ -116,14 +115,25 @@ class NetworkPortalNotificationController {
       const NetworkState* network,
       const NetworkPortalDetector::CaptivePortalState& state);
 
+  // NetworkStateHandlerObserver:
+  void DefaultNetworkChanged(const NetworkState* network) override;
+
+  // NetworkPortalDetector::Observer:
+  void OnPortalDetectionCompleted(
+      const NetworkState* network,
+      const NetworkPortalDetector::CaptivePortalState& state) override;
+
   // Last network path for which notification was displayed.
   std::string last_network_path_;
 
+  // Backpointer to owner.
+  NetworkPortalDetector* network_portal_detector_ = nullptr;
+
   // Currently displayed authorization dialog, or NULL if none.
-  NetworkPortalWebDialog* dialog_;
+  NetworkPortalWebDialog* dialog_ = nullptr;
 
   // Do not close Portal Login dialog on "No network" error in browser tests.
-  bool ignore_no_network_for_testing_;
+  bool ignore_no_network_for_testing_ = false;
 
   // This is called if the controller learns about a potential change of the
   // captive portal.
