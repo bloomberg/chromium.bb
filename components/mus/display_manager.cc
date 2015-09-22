@@ -290,12 +290,13 @@ void DefaultDisplayManager::DispatchEvent(ui::Event* event) {
   ViewId id;
   if (event->IsLocatedEvent() && !!top_level_display_client_) {
     ui::LocatedEvent* located_event = static_cast<ui::LocatedEvent*>(event);
-    gfx::Point transformed_point;
+    gfx::Point transformed_point(located_event->location());
+    gfx::Transform transform_to_target_surface;
     cc::SurfaceId target_surface =
         surfaces_state_->hit_tester()->GetTargetSurfaceAtPoint(
-            top_level_display_client_->surface_id(),
-            located_event->location(),
-            &transformed_point);
+            top_level_display_client_->surface_id(), located_event->location(),
+            &transform_to_target_surface);
+    transform_to_target_surface.TransformPoint(&transformed_point);
     id = ViewIdFromTransportId(
         cc::SurfaceIdAllocator::NamespaceForId(target_surface));
 

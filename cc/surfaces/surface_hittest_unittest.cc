@@ -69,6 +69,7 @@ void CreateRenderPassDrawQuad(RenderPass* pass,
                            gfx::Vector2dF(),
                            FilterOperations());
 }
+
 void CreateSurfaceDrawQuad(RenderPass* pass,
                            const gfx::Transform& transform,
                            const gfx::Rect& root_rect,
@@ -82,18 +83,34 @@ void CreateSurfaceDrawQuad(RenderPass* pass,
                        surface_id);
 }
 
+void CreateRenderPass(const RenderPassId& render_pass_id,
+                      const gfx::Rect& rect,
+                      const gfx::Transform& transform_to_root_target,
+                      RenderPassList* render_pass_list) {
+  scoped_ptr<RenderPass> render_pass = RenderPass::Create();
+  render_pass->SetNew(render_pass_id, rect, rect, transform_to_root_target);
+  render_pass_list->push_back(render_pass.Pass());
+}
+
+scoped_ptr<CompositorFrame> CreateCompositorFrameWithRenderPassList(
+    RenderPassList* render_pass_list) {
+  scoped_ptr<DelegatedFrameData> root_delegated_frame_data(
+      new DelegatedFrameData);
+  root_delegated_frame_data->render_pass_list.swap(*render_pass_list);
+  scoped_ptr<CompositorFrame> root_frame(new CompositorFrame);
+  root_frame->delegated_frame_data = root_delegated_frame_data.Pass();
+  return root_frame.Pass();
+}
+
 scoped_ptr<CompositorFrame> CreateCompositorFrame(
     const gfx::Rect& root_rect,
     RenderPass** render_pass) {
+  RenderPassList render_pass_list;
   RenderPassId root_id(1, 1);
-  scoped_ptr<RenderPass> root_pass = RenderPass::Create();
-  root_pass->SetNew(root_id, root_rect, root_rect, gfx::Transform());
+  CreateRenderPass(root_id, root_rect, gfx::Transform(), &render_pass_list);
 
-  scoped_ptr<DelegatedFrameData> root_delegated_frame_data(
-      new DelegatedFrameData);
-  root_delegated_frame_data->render_pass_list.push_back(root_pass.Pass());
-  scoped_ptr<CompositorFrame> root_frame(new CompositorFrame);
-  root_frame->delegated_frame_data = root_delegated_frame_data.Pass();
+  scoped_ptr<CompositorFrame> root_frame =
+      CreateCompositorFrameWithRenderPassList(&render_pass_list);
 
   *render_pass = root_frame->delegated_frame_data->render_pass_list.back();
   return root_frame.Pass();
@@ -135,10 +152,10 @@ TEST(SurfaceHittestTest, Hittest_BadCompositorFrameDoesNotCrash) {
   {
     SurfaceHittest hittest(&manager);
     // It is expected this test will complete without crashes.
-    gfx::Point transformed_point;
+    gfx::Transform transform;
     EXPECT_EQ(root_surface_id,
               hittest.GetTargetSurfaceAtPoint(
-                  root_surface_id, gfx::Point(100, 100), &transformed_point));
+                  root_surface_id, gfx::Point(100, 100), &transform));
   }
 
   factory.Destroy(root_surface_id);
@@ -164,11 +181,12 @@ TEST(SurfaceHittestTest, Hittest_SingleSurface) {
 
   {
     SurfaceHittest hittest(&manager);
-    gfx::Point transformed_point;
-    EXPECT_EQ(root_surface_id,
-              hittest.GetTargetSurfaceAtPoint(
-                  root_surface_id, gfx::Point(100, 100), &transformed_point));
-    EXPECT_EQ(gfx::Point(100, 100), transformed_point);
+    gfx::Point point(100, 100);
+    gfx::Transform transform;
+    EXPECT_EQ(root_surface_id, hittest.GetTargetSurfaceAtPoint(
+                                   root_surface_id, point, &transform));
+    transform.TransformPoint(&point);
+    EXPECT_EQ(gfx::Point(100, 100), point);
   }
 
   factory.Destroy(root_surface_id);
@@ -212,46 +230,44 @@ TEST(SurfaceHittestTest, Hittest_ChildSurface) {
 
   // Add a solid quad in the child surface.
   gfx::Rect child_solid_quad_rect(100, 100);
-  CreateSolidColorDrawQuad(child_pass,
-                           gfx::Transform(1.0f, 0.0f, 0.0f, 50.0f,
-                                         0.0f, 1.0f, 0.0f, 50.0f,
-                                         0.0f, 0.0f, 1.0f, 0.0f,
-                                         0.0f, 0.0f, 0.0f, 1.0f),
-                           root_rect,
-                           child_solid_quad_rect);
+  CreateSolidColorDrawQuad(
+      child_pass,
+      gfx::Transform(1.0f, 0.0f, 0.0f, 50.0f, 0.0f, 1.0f, 0.0f, 50.0f, 0.0f,
+                     0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f),
+      root_rect, child_solid_quad_rect);
 
   // Submit the frame.
   factory.Create(child_surface_id);
   factory.SubmitCompositorFrame(child_surface_id, child_frame.Pass(),
                                 SurfaceFactory::DrawCallback());
 
-  {
-    SurfaceHittest hittest(&manager);
-    gfx::Point transformed_point;
-    EXPECT_EQ(root_surface_id,
-              hittest.GetTargetSurfaceAtPoint(
-                  root_surface_id, gfx::Point(10, 10), &transformed_point));
-    EXPECT_EQ(gfx::Point(10, 10), transformed_point);
-    EXPECT_EQ(root_surface_id,
-              hittest.GetTargetSurfaceAtPoint(
-                  root_surface_id, gfx::Point(99, 99), &transformed_point));
-    EXPECT_EQ(gfx::Point(99, 99), transformed_point);
-    EXPECT_EQ(child_surface_id,
-              hittest.GetTargetSurfaceAtPoint(
-                  root_surface_id, gfx::Point(100, 100), &transformed_point));
-    EXPECT_EQ(gfx::Point(50, 50), transformed_point);
-    EXPECT_EQ(child_surface_id,
-              hittest.GetTargetSurfaceAtPoint(
-                  root_surface_id, gfx::Point(199, 199), &transformed_point));
-    EXPECT_EQ(gfx::Point(149, 149), transformed_point);
-    EXPECT_EQ(root_surface_id,
-              hittest.GetTargetSurfaceAtPoint(
-                  root_surface_id, gfx::Point(200, 200), &transformed_point));
-    EXPECT_EQ(gfx::Point(200, 200), transformed_point);
-    EXPECT_EQ(root_surface_id,
-              hittest.GetTargetSurfaceAtPoint(
-                  root_surface_id, gfx::Point(290, 290), &transformed_point));
-    EXPECT_EQ(gfx::Point(290, 290), transformed_point);
+  struct Test {
+    SurfaceId input_surface_id;
+    gfx::Point input_point;
+    SurfaceId expected_output_surface_id;
+    gfx::Point expected_output_point;
+  } tests[] = {{root_surface_id, gfx::Point(10, 10), root_surface_id,
+                gfx::Point(10, 10)},
+               {root_surface_id, gfx::Point(99, 99), root_surface_id,
+                gfx::Point(99, 99)},
+               {root_surface_id, gfx::Point(100, 100), child_surface_id,
+                gfx::Point(50, 50)},
+               {root_surface_id, gfx::Point(199, 199), child_surface_id,
+                gfx::Point(149, 149)},
+               {root_surface_id, gfx::Point(200, 200), root_surface_id,
+                gfx::Point(200, 200)},
+               {root_surface_id, gfx::Point(290, 290), root_surface_id,
+                gfx::Point(290, 290)}};
+
+  SurfaceHittest hittest(&manager);
+  for (const auto& test : tests) {
+    gfx::Point point(test.input_point);
+    gfx::Transform transform;
+    EXPECT_EQ(test.expected_output_surface_id,
+              hittest.GetTargetSurfaceAtPoint(test.input_surface_id, point,
+                                              &transform));
+    transform.TransformPoint(&point);
+    EXPECT_EQ(test.expected_output_point, point);
   }
 
   factory.Destroy(root_surface_id);
@@ -318,37 +334,154 @@ TEST(SurfaceHittestTest, Hittest_InvalidRenderPassDrawQuad) {
   factory.SubmitCompositorFrame(child_surface_id, child_frame.Pass(),
                                 SurfaceFactory::DrawCallback());
 
-  {
-    SurfaceHittest hittest(&manager);
-    gfx::Point transformed_point;
-    EXPECT_EQ(root_surface_id,
-              hittest.GetTargetSurfaceAtPoint(
-                  root_surface_id, gfx::Point(10, 10), &transformed_point));
-    EXPECT_EQ(gfx::Point(10, 10), transformed_point);
-    EXPECT_EQ(root_surface_id,
-              hittest.GetTargetSurfaceAtPoint(
-                  root_surface_id, gfx::Point(99, 99), &transformed_point));
-    EXPECT_EQ(gfx::Point(99, 99), transformed_point);
-    EXPECT_EQ(child_surface_id,
-              hittest.GetTargetSurfaceAtPoint(
-                  root_surface_id, gfx::Point(100, 100), &transformed_point));
-    EXPECT_EQ(gfx::Point(50, 50), transformed_point);
-    EXPECT_EQ(child_surface_id,
-              hittest.GetTargetSurfaceAtPoint(
-                  root_surface_id, gfx::Point(199, 199), &transformed_point));
-    EXPECT_EQ(gfx::Point(149, 149), transformed_point);
-    EXPECT_EQ(root_surface_id,
-              hittest.GetTargetSurfaceAtPoint(
-                  root_surface_id, gfx::Point(200, 200), &transformed_point));
-    EXPECT_EQ(gfx::Point(200, 200), transformed_point);
-    EXPECT_EQ(root_surface_id,
-              hittest.GetTargetSurfaceAtPoint(
-                  root_surface_id, gfx::Point(290, 290), &transformed_point));
-    EXPECT_EQ(gfx::Point(290, 290), transformed_point);
+  struct Test {
+    SurfaceId input_surface_id;
+    gfx::Point input_point;
+    SurfaceId expected_output_surface_id;
+    gfx::Point expected_output_point;
+  } tests[] = {{root_surface_id, gfx::Point(10, 10), root_surface_id,
+                gfx::Point(10, 10)},
+               {root_surface_id, gfx::Point(99, 99), root_surface_id,
+                gfx::Point(99, 99)},
+               {root_surface_id, gfx::Point(100, 100), child_surface_id,
+                gfx::Point(50, 50)},
+               {root_surface_id, gfx::Point(199, 199), child_surface_id,
+                gfx::Point(149, 149)},
+               {root_surface_id, gfx::Point(200, 200), root_surface_id,
+                gfx::Point(200, 200)},
+               {root_surface_id, gfx::Point(290, 290), root_surface_id,
+                gfx::Point(290, 290)}};
+
+  SurfaceHittest hittest(&manager);
+  for (const auto& test : tests) {
+    gfx::Point point(test.input_point);
+    gfx::Transform transform;
+    EXPECT_EQ(test.expected_output_surface_id,
+              hittest.GetTargetSurfaceAtPoint(test.input_surface_id, point,
+                                              &transform));
+    transform.TransformPoint(&point);
+    EXPECT_EQ(test.expected_output_point, point);
   }
 
   factory.Destroy(root_surface_id);
   factory.Destroy(child_surface_id);
+}
+
+TEST(SurfaceHittestTest, Hittest_RenderPassDrawQuad) {
+  SurfaceManager manager;
+  EmptySurfaceFactoryClient client;
+  SurfaceFactory factory(&manager, &client);
+
+  // Create a CompostiorFrame with two RenderPasses.
+  gfx::Rect root_rect(300, 300);
+  RenderPassList render_pass_list;
+
+  // Create a child RenderPass.
+  RenderPassId child_render_pass_id(1, 3);
+  gfx::Transform transform_to_root_target(1.0f, 0.0f, 0.0f, 50.0f,
+                                          0.0f, 1.0f, 0.0f, 50.0f,
+                                          0.0f, 0.0f, 1.0f, 0.0f,
+                                          0.0f, 0.0f, 0.0f, 1.0f);
+  CreateRenderPass(child_render_pass_id,
+                   gfx::Rect(100, 100),
+                   transform_to_root_target,
+                   &render_pass_list);
+
+  // Create the root RenderPass.
+  RenderPassId root_render_pass_id(1, 2);
+  CreateRenderPass(root_render_pass_id, root_rect, gfx::Transform(),
+                   &render_pass_list);
+
+  RenderPass* root_pass = nullptr;
+  scoped_ptr<CompositorFrame> root_frame =
+      CreateCompositorFrameWithRenderPassList(&render_pass_list);
+  root_pass = root_frame->delegated_frame_data->render_pass_list.back();
+
+  // Create a RenderPassDrawQuad.
+  gfx::Rect render_pass_quad_rect(100, 100);
+  CreateRenderPassDrawQuad(root_pass,
+                           transform_to_root_target,
+                           root_rect,
+                           render_pass_quad_rect,
+                           child_render_pass_id);
+
+  // Add a solid quad in the child render pass.
+  RenderPass* child_render_pass =
+      root_frame->delegated_frame_data->render_pass_list.front();
+  gfx::Rect child_solid_quad_rect(100, 100);
+  CreateSolidColorDrawQuad(child_render_pass,
+                           gfx::Transform(),
+                           gfx::Rect(100, 100),
+                           child_solid_quad_rect);
+
+  // Submit the root frame.
+  SurfaceIdAllocator root_allocator(1);
+  SurfaceId root_surface_id = root_allocator.GenerateId();
+  factory.Create(root_surface_id);
+  factory.SubmitCompositorFrame(root_surface_id, root_frame.Pass(),
+                                SurfaceFactory::DrawCallback());
+
+  struct Test {
+    SurfaceId input_surface_id;
+    gfx::Point input_point;
+    SurfaceId expected_output_surface_id;
+    gfx::Point expected_output_point;
+  } tests[] = {
+    // These tests just miss the RenderPassDrawQuad.
+    {
+      root_surface_id,
+      gfx::Point(49, 49),
+      root_surface_id,
+      gfx::Point(49, 49)
+    },
+    {
+      root_surface_id,
+      gfx::Point(150, 150),
+      root_surface_id,
+      gfx::Point(150, 150)
+    },
+    // These tests just hit the boundaries of the
+    // RenderPassDrawQuad.
+    {
+      root_surface_id,
+      gfx::Point(50, 50),
+      root_surface_id,
+      gfx::Point(50, 50)
+    },
+    {
+      root_surface_id,
+      gfx::Point(149, 149),
+      root_surface_id,
+      gfx::Point(149, 149)
+    },
+    // These tests fall somewhere in the center of the
+    // RenderPassDrawQuad.
+    {
+      root_surface_id,
+      gfx::Point(99, 99),
+      root_surface_id,
+      gfx::Point(99, 99)
+    },
+    {
+      root_surface_id,
+      gfx::Point(100, 100),
+      root_surface_id,
+      gfx::Point(100, 100)
+    }
+  };
+
+  SurfaceHittest hittest(&manager);
+  for (const auto& test : tests) {
+    gfx::Point point(test.input_point);
+    gfx::Transform transform;
+    EXPECT_EQ(test.expected_output_surface_id,
+              hittest.GetTargetSurfaceAtPoint(test.input_surface_id, point,
+                                              &transform));
+    transform.TransformPoint(&point);
+    EXPECT_EQ(test.expected_output_point, point);
+  }
+
+  factory.Destroy(root_surface_id);
 }
 
 }  // namespace cc

@@ -207,7 +207,12 @@ cc::SurfaceId DelegatedFrameHost::SurfaceIdAtPoint(
   if (surface_id_.is_null())
     return surface_id_;
   cc::SurfaceHittest hittest(GetSurfaceManager());
-  return hittest.GetTargetSurfaceAtPoint(surface_id_, point, transformed_point);
+  gfx::Transform target_transform;
+  cc::SurfaceId target_surface_id =
+      hittest.GetTargetSurfaceAtPoint(surface_id_, point, &target_transform);
+  if (!target_surface_id.is_null())
+    target_transform.TransformPoint(transformed_point);
+  return target_surface_id;
 }
 
 bool DelegatedFrameHost::ShouldSkipFrame(gfx::Size size_in_dip) const {

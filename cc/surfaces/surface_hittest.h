@@ -33,7 +33,7 @@ class CC_SURFACES_EXPORT SurfaceHittest {
   // surface space.
   SurfaceId GetTargetSurfaceAtPoint(SurfaceId surface_id,
                                     const gfx::Point& point,
-                                    gfx::Point* transformed_point);
+                                    gfx::Transform* transform);
 
  private:
   bool GetTargetSurfaceAtPointInternal(
@@ -42,7 +42,7 @@ class CC_SURFACES_EXPORT SurfaceHittest {
       const gfx::Point& point_in_root_target,
       std::set<const RenderPass*>* referenced_passes,
       SurfaceId* out_surface_id,
-      gfx::Point* out_transformed_point);
+      gfx::Transform* out_transform);
 
   const RenderPass* GetRenderPassForSurfaceById(
       SurfaceId surface_id,
@@ -50,6 +50,7 @@ class CC_SURFACES_EXPORT SurfaceHittest {
 
   bool PointInQuad(const DrawQuad* quad,
                    const gfx::Point& point_in_render_pass_space,
+                   gfx::Transform* target_to_quad_transform,
                    gfx::Point* point_in_quad_space);
 
   SurfaceManager* const manager_;
