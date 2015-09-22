@@ -119,7 +119,7 @@ IPC_STRUCT_TRAITS_BEGIN(safe_browsing::zip_analyzer::Results)
   IPC_STRUCT_TRAITS_MEMBER(has_executable)
   IPC_STRUCT_TRAITS_MEMBER(has_archive)
   IPC_STRUCT_TRAITS_MEMBER(archived_binary)
-  IPC_STRUCT_TRAITS_MEMBER(archived_archive_filetypes)
+  IPC_STRUCT_TRAITS_MEMBER(archived_archive_filenames)
 IPC_STRUCT_TRAITS_END()
 #endif  // FULL_SAFE_BROWSING
 

@@ -8,6 +8,7 @@
 
 #include "base/files/file_path.h"
 #include "base/logging.h"
+#include "base/strings/string_util.h"
 
 namespace safe_browsing {
 namespace download_protection_util {
@@ -345,7 +346,11 @@ const SafeBrowsingFiletype& GetFileType(const base::FilePath& file) {
     nullptr, EXTENSION_OTHER, false, false
   };
 
-  base::FilePath::StringType extension = file.FinalExtension();
+  base::FilePath::StringType file_basename = file.BaseName().value();
+  base::FilePath::StringPieceType trimmed_filename = base::TrimString(
+      file_basename, FILE_PATH_LITERAL(". "), base::TRIM_TRAILING);
+  base::FilePath::StringType extension =
+      base::FilePath(trimmed_filename).FinalExtension();
   SafeBrowsingFiletype needle = {extension.c_str()};
 
   const auto begin = kSafeBrowsingFileTypes;

@@ -22,7 +22,7 @@ struct Results {
   bool has_archive;
   google::protobuf::RepeatedPtrField<ClientDownloadRequest_ArchivedBinary>
       archived_binary;
-  std::vector<base::FilePath::StringType> archived_archive_filetypes;
+  std::vector<base::FilePath> archived_archive_filenames;
   Results();
   ~Results();
 };

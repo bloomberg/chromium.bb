@@ -77,12 +77,11 @@ void RecordFileExtensionType(const base::FilePath& file) {
       download_protection_util::kSBClientDownloadExtensionsMax);
 }
 
-void RecordArchivedArchiveFileExtensionType(
-    const base::FilePath::StringType& extension) {
+void RecordArchivedArchiveFileExtensionType(const base::FilePath& file_name) {
   UMA_HISTOGRAM_ENUMERATION(
       "SBClientDownload.ArchivedArchiveExtensions",
       download_protection_util::GetSBClientDownloadExtensionValueForUMA(
-          base::FilePath(extension)),
+          file_name),
       download_protection_util::kSBClientDownloadExtensionsMax);
 }
 
@@ -572,8 +571,8 @@ class DownloadProtectionService::CheckClientDownloadRequest
                           results.has_archive && !archived_executable_);
     UMA_HISTOGRAM_TIMES("SBClientDownload.ExtractZipFeaturesTime",
                         base::TimeTicks::Now() - zip_analysis_start_time_);
-    for (const auto& file_extension : results.archived_archive_filetypes)
-      RecordArchivedArchiveFileExtensionType(file_extension);
+    for (const auto& file_name : results.archived_archive_filenames)
+      RecordArchivedArchiveFileExtensionType(file_name);
 
     if (!archived_executable_ && !results.has_archive) {
       PostFinishTask(UNKNOWN, REASON_ARCHIVE_WITHOUT_BINARIES);

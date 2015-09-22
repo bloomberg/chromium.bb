@@ -13,6 +13,12 @@ namespace download_protection_util {
 TEST(DownloadProtectionUtilTest, KnownValues) {
   EXPECT_EQ(0, GetSBClientDownloadExtensionValueForUMA(
                    base::FilePath(FILE_PATH_LITERAL("foo.exe"))));
+  EXPECT_EQ(0, GetSBClientDownloadExtensionValueForUMA(
+                   base::FilePath(FILE_PATH_LITERAL("foo.exe."))));
+  EXPECT_EQ(0, GetSBClientDownloadExtensionValueForUMA(
+                   base::FilePath(FILE_PATH_LITERAL("foo.exe "))));
+  EXPECT_EQ(0, GetSBClientDownloadExtensionValueForUMA(
+                   base::FilePath(FILE_PATH_LITERAL("foo.exe.. . . .   "))));
   EXPECT_EQ(9, GetSBClientDownloadExtensionValueForUMA(
                    base::FilePath(FILE_PATH_LITERAL("foo.dll"))));
   EXPECT_EQ(29, GetSBClientDownloadExtensionValueForUMA(
@@ -24,6 +30,10 @@ TEST(DownloadProtectionUtilTest, KnownValues) {
   EXPECT_EQ(152, GetSBClientDownloadExtensionValueForUMA(
                     base::FilePath(FILE_PATH_LITERAL("foo.tbz2"))));
   EXPECT_TRUE(IsArchiveFile(base::FilePath(FILE_PATH_LITERAL("foo.zip"))));
+  EXPECT_TRUE(IsArchiveFile(base::FilePath(FILE_PATH_LITERAL("foo.zip."))));
+  EXPECT_TRUE(IsArchiveFile(base::FilePath(FILE_PATH_LITERAL("foo.zip "))));
+  EXPECT_TRUE(
+      IsArchiveFile(base::FilePath(FILE_PATH_LITERAL("foo.zip   ...."))));
   EXPECT_TRUE(
       IsSupportedBinaryFile(base::FilePath(FILE_PATH_LITERAL("foo.zip"))));
   EXPECT_TRUE(IsArchiveFile(base::FilePath(FILE_PATH_LITERAL("foo.rar"))));
@@ -37,6 +47,12 @@ TEST(DownloadProtectionUtilTest, KnownValues) {
   EXPECT_TRUE(IsSupportedBinaryFile(base::FilePath(FILE_PATH_LITERAL(".exe"))));
   EXPECT_TRUE(
       IsSupportedBinaryFile(base::FilePath(FILE_PATH_LITERAL("foo.msi"))));
+  EXPECT_TRUE(
+      IsSupportedBinaryFile(base::FilePath(FILE_PATH_LITERAL("foo.msi."))));
+  EXPECT_TRUE(
+      IsSupportedBinaryFile(base::FilePath(FILE_PATH_LITERAL("foo.msi "))));
+  EXPECT_TRUE(IsSupportedBinaryFile(
+      base::FilePath(FILE_PATH_LITERAL("foo.msi  .. .."))));
   EXPECT_FALSE(
       IsSupportedBinaryFile(base::FilePath(FILE_PATH_LITERAL("foo.txt"))));
   EXPECT_FALSE(IsSupportedBinaryFile(

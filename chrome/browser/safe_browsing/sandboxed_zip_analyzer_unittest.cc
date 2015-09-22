@@ -216,8 +216,9 @@ TEST_F(SandboxedZipAnalyzerTest, ZippedArchiveNoBinaries) {
   EXPECT_FALSE(results.has_executable);
   EXPECT_TRUE(results.has_archive);
   EXPECT_EQ(0, results.archived_binary.size());
-  ASSERT_EQ(1u, results.archived_archive_filetypes.size());
-  EXPECT_EQ(FILE_PATH_LITERAL(".zip"), results.archived_archive_filetypes[0]);
+  ASSERT_EQ(1u, results.archived_archive_filenames.size());
+  EXPECT_EQ(FILE_PATH_LITERAL("hello.zip"),
+            results.archived_archive_filenames[0].value());
 }
 
 TEST_F(SandboxedZipAnalyzerTest, ZippedRarArchiveNoBinaries) {
@@ -228,8 +229,9 @@ TEST_F(SandboxedZipAnalyzerTest, ZippedRarArchiveNoBinaries) {
   EXPECT_FALSE(results.has_executable);
   EXPECT_TRUE(results.has_archive);
   EXPECT_EQ(0, results.archived_binary.size());
-  ASSERT_EQ(1u, results.archived_archive_filetypes.size());
-  EXPECT_EQ(FILE_PATH_LITERAL(".rar"), results.archived_archive_filetypes[0]);
+  ASSERT_EQ(1u, results.archived_archive_filenames.size());
+  EXPECT_EQ(FILE_PATH_LITERAL("hello.rar"),
+            results.archived_archive_filenames[0].value());
 }
 
 TEST_F(SandboxedZipAnalyzerTest, ZippedArchiveAndBinaries) {
@@ -241,8 +243,31 @@ TEST_F(SandboxedZipAnalyzerTest, ZippedArchiveAndBinaries) {
   EXPECT_TRUE(results.has_archive);
   ASSERT_EQ(1, results.archived_binary.size());
   ExpectBinary(kSignedExe, results.archived_binary.Get(0));
-  ASSERT_EQ(1u, results.archived_archive_filetypes.size());
-  EXPECT_EQ(FILE_PATH_LITERAL(".7z"), results.archived_archive_filetypes[0]);
+  ASSERT_EQ(1u, results.archived_archive_filenames.size());
+  EXPECT_EQ(FILE_PATH_LITERAL("hello.7z"),
+            results.archived_archive_filenames[0].value());
+}
+
+TEST_F(SandboxedZipAnalyzerTest,
+       ZippedArchiveAndBinariesWithTrailingSpaceAndPeriodChars) {
+  zip_analyzer::Results results;
+  RunAnalyzer(dir_test_data_.AppendASCII("zipfile_two_binaries_one_archive_"
+                                         "trailing_space_and_period_chars.zip"),
+              &results);
+  ASSERT_TRUE(results.success);
+  EXPECT_TRUE(results.has_executable);
+  EXPECT_TRUE(results.has_archive);
+  ASSERT_EQ(2, results.archived_binary.size());
+
+  BinaryData SignedExe = kSignedExe;
+  SignedExe.file_basename = "signed.exe ";
+  BinaryData UnsignedExe = kUnsignedExe;
+  UnsignedExe.file_basename = "unsigned.exe.";
+  ExpectBinary(SignedExe, results.archived_binary.Get(0));
+  ExpectBinary(UnsignedExe, results.archived_binary.Get(1));
+  ASSERT_EQ(1u, results.archived_archive_filenames.size());
+  EXPECT_EQ(FILE_PATH_LITERAL("zipfile_no_binaries.zip  .  . "),
+            results.archived_archive_filenames[0].value());
 }
 
 TEST_F(SandboxedZipAnalyzerTest, ZippedJSEFile) {
@@ -253,7 +278,7 @@ TEST_F(SandboxedZipAnalyzerTest, ZippedJSEFile) {
   EXPECT_FALSE(results.has_archive);
   ASSERT_EQ(1, results.archived_binary.size());
   ExpectBinary(kJSEFile, results.archived_binary.Get(0));
-  EXPECT_TRUE(results.archived_archive_filetypes.empty());
+  EXPECT_TRUE(results.archived_archive_filenames.empty());
 }
 
 }  // namespace safe_browsing
