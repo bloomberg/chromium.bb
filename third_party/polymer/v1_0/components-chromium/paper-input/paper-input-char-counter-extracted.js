@@ -1,4 +1,5 @@
-Polymer({
+
+  Polymer({
     is: 'paper-input-char-counter',
 
     behaviors: [

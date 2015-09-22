@@ -1,4 +1,5 @@
-/**
+
+  /**
    * The `iron-iconset-svg` element allows users to define their own icon sets
    * that contain svg icons. The svg icon elements should be children of the
    * `iron-iconset-svg` element. Multiple icons should be given distinct id's.

@@ -1,4 +1,6 @@
-Polymer.IronOverlayManager = (function() {
+
+
+  Polymer.IronOverlayManager = (function() {
 
     var overlays = [];
     var DEFAULT_Z = 10;
@@ -93,3 +95,4 @@ Polymer.IronOverlayManager = (function() {
     };
 
   })();
+

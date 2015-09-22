@@ -1,4 +1,6 @@
-Polymer({
+
+
+    Polymer({
 
       is: 'iron-icon',
 
@@ -80,3 +82,5 @@ Polymer({
       }
 
     });
+
+  

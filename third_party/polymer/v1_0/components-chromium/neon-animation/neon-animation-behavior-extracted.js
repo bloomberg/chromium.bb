@@ -1,4 +1,6 @@
-/**
+
+
+  /**
    * Use `Polymer.NeonAnimationBehavior` to implement an animation.
    * @polymerBehavior
    */
@@ -66,3 +68,4 @@
     complete: function() {}
 
   };
+

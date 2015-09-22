@@ -1,4 +1,5 @@
-/**
+
+  /**
   Polymer.IronFormElementBehavior enables a custom element to be included
   in an `iron-form`.
 
@@ -69,3 +70,4 @@
     }
 
   };
+

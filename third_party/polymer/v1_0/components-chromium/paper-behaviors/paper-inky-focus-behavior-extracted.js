@@ -1,4 +1,6 @@
-/**
+
+
+  /**
    * `Polymer.PaperInkyFocusBehavior` implements a ripple when the element has keyboard focus.
    *
    * @polymerBehavior Polymer.PaperInkyFocusBehavior
@@ -25,3 +27,4 @@
     Polymer.IronControlState,
     Polymer.PaperInkyFocusBehaviorImpl
   ];
+

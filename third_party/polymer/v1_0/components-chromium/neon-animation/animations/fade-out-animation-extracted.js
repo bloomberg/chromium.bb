@@ -1,4 +1,6 @@
-Polymer({
+
+
+  Polymer({
 
     is: 'fade-out-animation',
 
@@ -16,3 +18,4 @@ Polymer({
     }
 
   });
+

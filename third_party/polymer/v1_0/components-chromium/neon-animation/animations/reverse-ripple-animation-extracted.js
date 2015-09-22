@@ -1,4 +1,5 @@
-Polymer({
+
+  Polymer({
     is: 'reverse-ripple-animation',
 
     behaviors: [

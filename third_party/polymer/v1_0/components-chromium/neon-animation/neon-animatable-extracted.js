@@ -1,4 +1,6 @@
-Polymer({
+
+
+  Polymer({
 
     is: 'neon-animatable',
 
@@ -7,3 +9,4 @@ Polymer({
     ]
 
   });
+

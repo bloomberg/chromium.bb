@@ -1,4 +1,6 @@
-(function() {
+
+
+  (function() {
 
     'use strict';
 
@@ -451,3 +453,4 @@
     });
 
   }());
+

@@ -1,5 +1,28 @@
-/** @polymerBehavior */
+
+
+  /** @polymerBehavior */
   Polymer.IronSelectableBehavior = {
+
+      /**
+       *  Fired when iron-selector is activated (selected or deselected).
+       *  It is fired before the selected items are changed.
+       *  Cancel the event to abort selection.
+       *
+       * @event iron-activate
+       *
+       **/
+      /**
+       *  Fired when an item is selected
+       *
+       * @event iron-select
+       *
+       **/
+      /**
+       *  Fired when an item is deselected
+       *
+       * @event iron-deselect
+       *
+       **/
 
     properties: {
 
@@ -54,7 +77,7 @@
       },
 
       /**
-       * This is a CSS selector sting.  If this is set, only items that matches the CSS selector
+       * This is a CSS selector string.  If this is set, only items that match the CSS selector
        * are selectable.
        *
        * @attribute selectable
@@ -82,17 +105,29 @@
       selectedAttribute: {
         type: String,
         value: null
-      }
+      },
 
+      /**
+       * The set of excluded elements where the key is the `localName` 
+       * of the element that will be ignored from the item list.
+       *
+       * @type {object}
+       * @default {template: 1}
+       */
+
+      excludedLocalNames: {
+        type: Object,
+        value: function() {
+          return {
+            'template': 1
+          };
+        }
+      }
     },
 
     observers: [
       '_updateSelected(attrForSelected, selected)'
     ],
-
-    excludedLocalNames: {
-      'template': 1
-    },
 
     created: function() {
       this._bindFilterItem = this._filterItem.bind(this);
@@ -172,9 +207,7 @@
     },
 
     _removeListener: function(eventName) {
-      // There is no unlisten yet...
-      // https://github.com/Polymer/polymer/issues/1639
-      //this.removeEventListener(eventName, this._bindActivateHandler);
+      this.unlisten(this, eventName, '_activateHandler');
     },
 
     _activateEventChanged: function(eventName, old) {
@@ -263,11 +296,6 @@
     },
 
     _activateHandler: function(e) {
-      // TODO: remove this when https://github.com/Polymer/polymer/issues/1639 is fixed so we
-      // can just remove the old event listener.
-      if (e.type !== this.activateEvent) {
-        return;
-      }
       var t = e.target;
       var items = this.items;
       while (t && t != this) {
@@ -289,3 +317,4 @@
     }
 
   };
+

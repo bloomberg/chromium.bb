@@ -1,3 +1,5 @@
+
+
 /*
 `<iron-input>` adds two-way binding and custom validators using `Polymer.IronValidatorBehavior`
 to `<input>`.
@@ -227,3 +229,4 @@ is separate from validation, and `allowed-pattern` does not affect how the input
   The `iron-input-validate` event is fired whenever `validate()` is called.
   @event iron-input-validate
   */
+

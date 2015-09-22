@@ -1,4 +1,5 @@
-Polymer({
+
+    Polymer({
       is: 'paper-checkbox',
 
       behaviors: [
@@ -76,3 +77,4 @@ Polymer({
         return checked ? '' : 'hidden';
       }
     });
+  

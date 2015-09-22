@@ -1,4 +1,6 @@
-Polymer({
+
+
+  Polymer({
 
     is: 'iron-media-query',
 
@@ -45,3 +47,4 @@ Polymer({
     }
 
   });
+

@@ -1,4 +1,6 @@
-Polymer({
+
+
+  Polymer({
 
     is: 'iron-pages',
 
@@ -28,3 +30,4 @@ Polymer({
       this.async(this.notifyResize);
     }
   });
+

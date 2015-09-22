@@ -1,4 +1,5 @@
-(function() {
+
+  (function() {
     'use strict';
 
     Polymer({

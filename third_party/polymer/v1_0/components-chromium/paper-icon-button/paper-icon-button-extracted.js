@@ -1,4 +1,5 @@
-Polymer({
+
+  Polymer({
     is: 'paper-icon-button',
 
     hostAttributes: {

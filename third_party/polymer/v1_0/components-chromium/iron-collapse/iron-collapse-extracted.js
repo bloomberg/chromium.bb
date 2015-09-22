@@ -1,4 +1,6 @@
-Polymer({
+
+
+  Polymer({
 
     is: 'iron-collapse',
 
@@ -116,3 +118,4 @@ Polymer({
 
 
   });
+

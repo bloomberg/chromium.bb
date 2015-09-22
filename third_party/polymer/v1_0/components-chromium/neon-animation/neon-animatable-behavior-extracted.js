@@ -1,4 +1,6 @@
-/**
+
+
+  /**
    * `Polymer.NeonAnimatableBehavior` is implemented by elements containing animations for use with
    * elements implementing `Polymer.NeonAnimationRunnerBehavior`.
    * @polymerBehavior
@@ -138,3 +140,4 @@
     }
 
   };
+

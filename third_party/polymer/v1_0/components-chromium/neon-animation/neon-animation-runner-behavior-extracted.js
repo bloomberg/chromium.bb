@@ -1,4 +1,6 @@
-/**
+
+
+  /**
    * `Polymer.NeonAnimationRunnerBehavior` adds a method to run animations.
    *
    * @polymerBehavior Polymer.NeonAnimationRunnerBehavior

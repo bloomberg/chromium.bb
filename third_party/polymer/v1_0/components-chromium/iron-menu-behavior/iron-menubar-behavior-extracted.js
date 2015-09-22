@@ -1,4 +1,6 @@
-/**
+
+
+  /**
    * `Polymer.IronMenubarBehavior` implements accessible menubar behavior.
    *
    * @polymerBehavior Polymer.IronMenubarBehavior
@@ -46,3 +48,4 @@
     Polymer.IronMenuBehavior,
     Polymer.IronMenubarBehaviorImpl
   ];
+

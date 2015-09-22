@@ -1,4 +1,5 @@
-/**
+
+  /**
   `iron-selector` is an element which can be used to manage a list of elements
   that can be selected.  Tapping on the item will make the item selected.  The `selected` indicates
   which item is being selected.  The default is to use the index of the item.
@@ -53,3 +54,4 @@
     ]
 
   });
+

@@ -1,4 +1,6 @@
-/**
+
+
+  /**
    * Use `Polymer.PaperInputBehavior` to implement inputs with `<paper-input-container>`. This
    * behavior is implemented by `<paper-input>`. It exposes a number of properties from
    * `<paper-input-container>` and `<input is="iron-input">` and they should be bound in your
@@ -11,6 +13,11 @@
   Polymer.PaperInputBehaviorImpl = {
 
     properties: {
+      /**
+       * Fired when the input changes due to user interaction.
+       *
+       * @event change
+       */
 
       /**
        * The label for this input. Bind this to `<paper-input-container>`'s `label` property.
@@ -381,9 +388,23 @@
         label.id = labelledBy;
       }
       this._ariaLabelledBy = labelledBy;
+    },
+
+    _onChange:function(event) {
+      // In the Shadow DOM, the `change` event is not leaked into the
+      // ancestor tree, so we must do this manually.
+      // See https://w3c.github.io/webcomponents/spec/shadow/#events-that-are-not-leaked-into-ancestor-trees.
+      if (this.shadowRoot) {
+        this.fire(event.type, {sourceEvent: event}, {
+          node: this,
+          bubbles: event.bubbles,
+          cancelable: event.cancelable
+        });
+      }
     }
 
   };
 
   /** @polymerBehavior */
   Polymer.PaperInputBehavior = [Polymer.IronControlState, Polymer.PaperInputBehaviorImpl];
+

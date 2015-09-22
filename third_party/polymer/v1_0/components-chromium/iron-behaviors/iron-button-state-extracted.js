@@ -1,4 +1,6 @@
-/**
+
+
+  /**
    * @demo demo/index.html
    * @polymerBehavior Polymer.IronButtonState
    */
@@ -213,3 +215,4 @@
     Polymer.IronA11yKeysBehavior,
     Polymer.IronButtonStateImpl
   ];
+

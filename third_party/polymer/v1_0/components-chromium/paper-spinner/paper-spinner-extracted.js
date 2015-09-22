@@ -1,4 +1,6 @@
-Polymer({
+
+
+    Polymer({
 
       is: 'paper-spinner',
 
@@ -93,3 +95,5 @@ Polymer({
       }
 
     });
+
+  

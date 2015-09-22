@@ -1,4 +1,6 @@
-/**
+
+
+  /**
    * Use `Polymer.NeonSharedElementAnimatableBehavior` to implement elements containing shared element
    * animations.
    * @polymerBehavior Polymer.NeonSharedElementAnimatableBehavior
@@ -24,3 +26,4 @@
     Polymer.NeonAnimatableBehavior,
     Polymer.NeonSharedElementAnimatableBehaviorImpl
   ];
+

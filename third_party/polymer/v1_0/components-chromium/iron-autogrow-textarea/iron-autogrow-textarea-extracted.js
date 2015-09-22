@@ -1,4 +1,6 @@
-Polymer({
+
+
+  Polymer({
 
     is: 'iron-autogrow-textarea',
 

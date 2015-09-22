@@ -1,4 +1,5 @@
-(function() {
+
+  (function() {
     var Utility = {
       distance: function(x1, y1, x2, y2) {
         var xDelta = (x1 - x2);

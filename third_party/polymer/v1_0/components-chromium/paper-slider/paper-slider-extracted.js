@@ -1,4 +1,6 @@
-Polymer({
+
+
+  Polymer({
     is: 'paper-slider',
 
     behaviors: [
@@ -368,3 +370,4 @@ Polymer({
    *
    * @event change
    */
+

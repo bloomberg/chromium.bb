@@ -1,4 +1,6 @@
-Polymer({
+
+
+  Polymer({
 
     is: 'ripple-animation',
 
@@ -48,3 +50,4 @@ Polymer({
     }
 
   });
+

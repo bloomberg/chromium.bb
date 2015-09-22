@@ -1,4 +1,5 @@
-Polymer({
+
+    Polymer({
       is: 'paper-tooltip',
 
       hostAttributes: {
@@ -222,3 +223,4 @@ Polymer({
         }
       },
     });
+  

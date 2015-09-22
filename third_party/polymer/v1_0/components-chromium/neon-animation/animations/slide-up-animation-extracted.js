@@ -1,4 +1,6 @@
-Polymer({
+
+
+  Polymer({
 
     is: 'slide-up-animation',
 
@@ -24,3 +26,4 @@ Polymer({
     }
 
   });
+

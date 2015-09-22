@@ -1,4 +1,5 @@
-Polymer({
+
+    Polymer({
       is: 'paper-radio-button',
 
       behaviors: [
@@ -59,4 +60,5 @@ Polymer({
           this.checked = this.active;
         }
       }
-    });
+    })
+  

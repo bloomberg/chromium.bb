@@ -1,4 +1,6 @@
-Polymer({
+
+
+  Polymer({
 
     is: 'cascaded-animation',
 
@@ -66,3 +68,4 @@ Polymer({
     }
 
   });
+

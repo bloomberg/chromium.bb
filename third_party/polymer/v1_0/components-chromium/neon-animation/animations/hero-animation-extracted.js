@@ -1,4 +1,6 @@
-Polymer({
+
+
+  Polymer({
 
     is: 'hero-animation',
 
@@ -42,3 +44,4 @@ Polymer({
     }
 
   });
+

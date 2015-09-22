@@ -1,4 +1,6 @@
-Polymer({
+
+
+  Polymer({
 
     is: 'scale-down-animation',
 
@@ -29,3 +31,4 @@ Polymer({
     }
 
   });
+
