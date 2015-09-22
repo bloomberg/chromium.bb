@@ -30,7 +30,7 @@ import javax.annotation.Nullable;
  */
 class ModernLinker extends Linker {
     // Log tag for this class.
-    private static final String TAG = "cr.library_loader";
+    private static final String TAG = "LibraryLoader";
 
     // Becomes true after linker initialization.
     private boolean mInitialized = false;
@@ -332,9 +332,7 @@ class ModernLinker extends Linker {
     /**
      * Load a native shared library with the Chromium linker. If the zip file
      * is not null, the shared library must be uncompressed and page aligned
-     * inside the zipfile. Note the crazy linker treats libraries and files as
-     * equivalent, so you can only open one library in a given zip file. The
-     * library must not be the Chromium linker library.
+     * inside the zipfile. The library must not be the Chromium linker library.
      *
      * If asked to wait for shared RELROs, this function will block library loads
      * until the shared RELROs bundle is received by useSharedRelros().

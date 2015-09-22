@@ -33,7 +33,7 @@ import javax.annotation.Nullable;
  */
 class LegacyLinker extends Linker {
     // Log tag for this class.
-    private static final String TAG = "cr.library_loader";
+    private static final String TAG = "LibraryLoader";
 
     // Becomes true after linker initialization.
     private boolean mInitialized = false;

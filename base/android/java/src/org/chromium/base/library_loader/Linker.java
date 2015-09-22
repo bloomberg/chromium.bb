@@ -146,7 +146,7 @@ import javax.annotation.Nullable;
  */
 public abstract class Linker {
     // Log tag for this class.
-    private static final String TAG = "cr.library_loader";
+    private static final String TAG = "LibraryLoader";
 
     // Name of the library that contains our JNI code.
     private static final String LINKER_JNI_LIBRARY = "chromium_android_linker";

@@ -14,7 +14,7 @@ import org.chromium.base.library_loader.Linker;
  */
 @JNINamespace("content")
 public class LinkerTests implements Linker.TestRunner {
-    private static final String TAG = "cr.linker_test";
+    private static final String TAG = "LinkerTest";
 
     public LinkerTests() {}
 

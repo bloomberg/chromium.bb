@@ -30,7 +30,7 @@ import org.chromium.ui.base.ActivityWindowAndroid;
  * Test activity used for verifying the different configuration options for the ContentLinker.
  */
 public class ChromiumLinkerTestActivity extends Activity {
-    private static final String TAG = "cr.linker_test";
+    private static final String TAG = "LinkerTest";
 
     public static final String COMMAND_LINE_FILE =
             "/data/local/tmp/chromium-linker-test-command-line";

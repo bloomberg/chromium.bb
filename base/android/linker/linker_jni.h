@@ -25,7 +25,7 @@
 // in base/ which hasn't been loaded yet.
 #define DEBUG 0
 
-#define TAG "cr.chromium_android_linker"
+#define TAG "cr_ChromiumAndroidLinker"
 
 #if DEBUG
 #define LOG_INFO(FORMAT, ...) \

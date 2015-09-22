@@ -52,9 +52,9 @@ _COMMAND_LINE_FILE = '/data/local/tmp/chromium-linker-test-command-line'
 # Logcat filters used during each test. Only the 'chromium' one is really
 # needed, but the logs are added to the TestResult in case of error, and
 # it is handy to have others as well when troubleshooting.
-_LOGCAT_FILTERS = ['*:s', 'chromium:v', 'cr.chromium:v',
-                   'cr.chromium_android_linker:v', 'cr.library_loader:v',
-                   'cr.linker_test:v']
+_LOGCAT_FILTERS = ['*:s', 'chromium:v', 'cr_chromium:v',
+                   'cr_ChromiumAndroidLinker:v', 'cr_LibraryLoader:v',
+                   'cr_LinkerTest:v']
 #_LOGCAT_FILTERS = ['*:v']  ## DEBUG
 
 # Regular expression used to match status lines in logcat.
