@@ -145,9 +145,24 @@ class Mirror(object):
     os.path.dirname(os.path.abspath(__file__)), 'gsutil.py')
   cachepath_lock = threading.Lock()
 
+  @staticmethod
+  def parse_fetch_spec(spec):
+    """Parses and canonicalizes a fetch spec.
+
+    Returns (fetchspec, value_regex), where value_regex can be used
+    with 'git config --replace-all'.
+    """
+    parts = spec.split(':', 1)
+    src = parts[0].lstrip('+').rstrip('/')
+    if not src.startswith('refs/'):
+      src = 'refs/heads/%s' % src
+    dest = parts[1].rstrip('/') if len(parts) > 1 else src
+    regex = r'\+%s:.*' % src.replace('*', r'\*')
+    return ('+%s:%s' % (src, dest), regex)
+
   def __init__(self, url, refs=None, print_func=None):
     self.url = url
-    self.refs = refs or []
+    self.fetch_specs = set([self.parse_fetch_spec(ref) for ref in (refs or [])])
     self.basedir = self.UrlToCacheDir(url)
     self.mirror_path = os.path.join(self.GetCachePath(), self.basedir)
     if print_func:
@@ -236,16 +251,9 @@ class Mirror(object):
     self.RunGit(['config', 'remote.origin.url', self.url], cwd=cwd)
     self.RunGit(['config', '--replace-all', 'remote.origin.fetch',
                  '+refs/heads/*:refs/heads/*', r'\+refs/heads/\*:.*'], cwd=cwd)
-    for ref in self.refs:
-      ref = ref.lstrip('+').rstrip('/')
-      if ref.startswith('refs/'):
-        refspec = '+%s:%s' % (ref, ref)
-        regex = r'\+%s:.*' % ref.replace('*', r'\*')
-      else:
-        refspec = '+refs/%s/*:refs/%s/*' % (ref, ref)
-        regex = r'\+refs/heads/%s:.*' % ref.replace('*', r'\*')
+    for spec, value_regex in self.fetch_specs:
       self.RunGit(
-          ['config', '--replace-all', 'remote.origin.fetch', refspec, regex],
+          ['config', '--replace-all', 'remote.origin.fetch', spec, value_regex],
           cwd=cwd)
 
   def bootstrap_repo(self, directory):
@@ -314,9 +322,27 @@ class Mirror(object):
   def exists(self):
     return os.path.isfile(os.path.join(self.mirror_path, 'config'))
 
+  def _preserve_fetchspec(self):
+    """Read and preserve remote.origin.fetch from an existing mirror.
+
+    This modifies self.fetch_specs.
+    """
+    if not self.exists():
+      return
+    try:
+      config_fetchspecs = subprocess.check_output(
+          [self.git_exe, 'config', '--get-all', 'remote.origin.fetch'],
+          cwd=self.mirror_path)
+      for fetchspec in config_fetchspecs.splitlines():
+        self.fetch_specs.add(self.parse_fetch_spec(fetchspec))
+    except subprocess.CalledProcessError:
+      logging.warn('Tried and failed to preserve remote.origin.fetch from the '
+                   'existing cache directory.  You may need to manually edit '
+                   '%s and "git cache fetch" again.'
+                   % os.path.join(self.mirror_path, 'config'))
+
   def _ensure_bootstrapped(self, depth, bootstrap, force=False):
     tempdir = None
-    config_file = os.path.join(self.mirror_path, 'config')
     pack_dir = os.path.join(self.mirror_path, 'objects', 'pack')
     pack_files = []
 
@@ -324,16 +350,19 @@ class Mirror(object):
       pack_files = [f for f in os.listdir(pack_dir) if f.endswith('.pack')]
 
     should_bootstrap = (force or
-                        not os.path.exists(config_file) or
+                        not self.exists() or
                         len(pack_files) > GC_AUTOPACKLIMIT)
     if should_bootstrap:
+      if self.exists():
+        # Re-bootstrapping an existing mirror; preserve existing fetch spec.
+        self._preserve_fetchspec()
       tempdir = tempfile.mkdtemp(
           prefix='_cache_tmp', suffix=self.basedir, dir=self.GetCachePath())
       bootstrapped = not depth and bootstrap and self.bootstrap_repo(tempdir)
       if bootstrapped:
         # Bootstrap succeeded; delete previous cache, if any.
         gclient_utils.rmtree(self.mirror_path)
-      elif not os.path.exists(config_file):
+      elif not self.exists():
         # Bootstrap failed, no previous cache; start with a bare git dir.
         self.RunGit(['init', '--bare'], cwd=tempdir)
       else:
@@ -563,6 +592,9 @@ def CMDpopulate(parser, args):
 def CMDfetch(parser, args):
   """Update mirror, and fetch in cwd."""
   parser.add_option('--all', action='store_true', help='Fetch all remotes')
+  parser.add_option('--no_bootstrap', '--no-bootstrap',
+                    action='store_true',
+                    help='Don\'t (re)bootstrap from Google Storage')
   options, args = parser.parse_args(args)
 
   # Figure out which remotes to fetch.  This mimics the behavior of regular
@@ -593,7 +625,7 @@ def CMDfetch(parser, args):
   git_dir = os.path.abspath(git_dir)
   if git_dir.startswith(cachepath):
     mirror = Mirror.FromPath(git_dir)
-    mirror.populate()
+    mirror.populate(bootstrap=not options.no_bootstrap)
     return 0
   for remote in remotes:
     remote_url = subprocess.check_output(
@@ -602,7 +634,7 @@ def CMDfetch(parser, args):
       mirror = Mirror.FromPath(remote_url)
       mirror.print = lambda *args: None
       print('Updating git cache...')
-      mirror.populate()
+      mirror.populate(bootstrap=not options.no_bootstrap)
     subprocess.check_call([Mirror.git_exe, 'fetch', remote])
   return 0
 
