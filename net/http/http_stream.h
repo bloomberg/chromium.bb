@@ -118,7 +118,7 @@ class NET_EXPORT_PRIVATE HttpStream {
   virtual bool CanReuseConnection() const = 0;
 
   // Get the total number of bytes received from network for this stream.
-  virtual int64 GetTotalReceivedBytes() const = 0;
+  virtual int64_t GetTotalReceivedBytes() const = 0;
 
   // Get the total number of bytes sent over the network for this stream.
   virtual int64_t GetTotalSentBytes() const = 0;

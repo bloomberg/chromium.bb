@@ -93,7 +93,7 @@ class DevToolsNetworkTransaction : public net::HttpTransaction {
            const net::CompletionCallback& callback) override;
   void StopCaching() override;
   bool GetFullRequestHeaders(net::HttpRequestHeaders* headers) const override;
-  int64 GetTotalReceivedBytes() const override;
+  int64_t GetTotalReceivedBytes() const override;
   int64_t GetTotalSentBytes() const override;
   void DoneReading() override;
   const net::HttpResponseInfo* GetResponseInfo() const override;

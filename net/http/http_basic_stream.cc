@@ -77,7 +77,7 @@ bool HttpBasicStream::CanReuseConnection() const {
   return parser()->CanReuseConnection();
 }
 
-int64 HttpBasicStream::GetTotalReceivedBytes() const {
+int64_t HttpBasicStream::GetTotalReceivedBytes() const {
   if (parser())
     return parser()->received_bytes();
   return 0;

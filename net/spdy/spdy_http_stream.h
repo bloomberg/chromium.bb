@@ -69,7 +69,7 @@ class NET_EXPORT_PRIVATE SpdyHttpStream : public SpdyStream::Delegate,
   // Total number of bytes received over the network of SPDY data, headers, and
   // push_promise frames associated with this stream, including the size of
   // frame headers, after SSL decryption and not including proxy overhead.
-  int64 GetTotalReceivedBytes() const override;
+  int64_t GetTotalReceivedBytes() const override;
   // Total number of bytes sent over the network of SPDY frames associated with
   // this stream, including the size of frame headers, before SSL encryption and
   // not including proxy overhead. Note that some SPDY frames such as pings are
@@ -129,7 +129,7 @@ class NET_EXPORT_PRIVATE SpdyHttpStream : public SpdyStream::Delegate,
   LoadTimingInfo closed_stream_load_timing_info_;
   // After |stream_| has been closed, this keeps track of the total number of
   // bytes received over the network for |stream_| while it was open.
-  int64 closed_stream_received_bytes_;
+  int64_t closed_stream_received_bytes_;
   // After |stream_| has been closed, this keeps track of the total number of
   // bytes sent over the network for |stream_| while it was open.
   int64_t closed_stream_sent_bytes_;

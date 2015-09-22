@@ -71,7 +71,7 @@ bool ProxyConnectRedirectHttpStream::CanReuseConnection() const {
   return false;
 }
 
-int64 ProxyConnectRedirectHttpStream::GetTotalReceivedBytes() const {
+int64_t ProxyConnectRedirectHttpStream::GetTotalReceivedBytes() const {
   return 0;
 }
 

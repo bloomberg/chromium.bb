@@ -150,7 +150,7 @@ bool URLRequestJob::GetFullRequestHeaders(HttpRequestHeaders* headers) const {
   return false;
 }
 
-int64 URLRequestJob::GetTotalReceivedBytes() const {
+int64_t URLRequestJob::GetTotalReceivedBytes() const {
   return 0;
 }
 

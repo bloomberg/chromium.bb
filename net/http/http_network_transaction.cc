@@ -387,8 +387,8 @@ bool HttpNetworkTransaction::GetFullRequestHeaders(
   return true;
 }
 
-int64 HttpNetworkTransaction::GetTotalReceivedBytes() const {
-  int64 total_received_bytes = total_received_bytes_;
+int64_t HttpNetworkTransaction::GetTotalReceivedBytes() const {
+  int64_t total_received_bytes = total_received_bytes_;
   if (stream_)
     total_received_bytes += stream_->GetTotalReceivedBytes();
   return total_received_bytes;

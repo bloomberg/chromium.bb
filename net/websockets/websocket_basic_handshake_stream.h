@@ -57,7 +57,7 @@ class NET_EXPORT_PRIVATE WebSocketBasicHandshakeStream
   bool IsConnectionReused() const override;
   void SetConnectionReused() override;
   bool CanReuseConnection() const override;
-  int64 GetTotalReceivedBytes() const override;
+  int64_t GetTotalReceivedBytes() const override;
   int64_t GetTotalSentBytes() const override;
   bool GetLoadTimingInfo(LoadTimingInfo* load_timing_info) const override;
   void GetSSLInfo(SSLInfo* ssl_info) override;

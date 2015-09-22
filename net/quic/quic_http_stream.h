@@ -53,7 +53,7 @@ class NET_EXPORT_PRIVATE QuicHttpStream
   bool IsConnectionReused() const override;
   void SetConnectionReused() override;
   bool CanReuseConnection() const override;
-  int64 GetTotalReceivedBytes() const override;
+  int64_t GetTotalReceivedBytes() const override;
   int64_t GetTotalSentBytes() const override;
   bool GetLoadTimingInfo(LoadTimingInfo* load_timing_info) const override;
   void GetSSLInfo(SSLInfo* ssl_info) override;
@@ -145,7 +145,7 @@ class NET_EXPORT_PRIVATE QuicHttpStream
   std::string request_;
 
   // Number of bytes received when the stream was closed.
-  int64 closed_stream_received_bytes_;
+  int64_t closed_stream_received_bytes_;
   // Number of bytes sent when the stream was closed.
   int64_t closed_stream_sent_bytes_;
 

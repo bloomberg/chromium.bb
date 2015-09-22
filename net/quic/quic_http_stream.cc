@@ -240,7 +240,7 @@ bool QuicHttpStream::CanReuseConnection() const {
   return false;
 }
 
-int64 QuicHttpStream::GetTotalReceivedBytes() const {
+int64_t QuicHttpStream::GetTotalReceivedBytes() const {
   // TODO(sclittle): Currently, this only includes response body bytes. Change
   // this to include headers and QUIC overhead as well.
   if (stream_) {

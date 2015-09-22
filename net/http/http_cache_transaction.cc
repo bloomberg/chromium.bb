@@ -522,8 +522,8 @@ bool HttpCache::Transaction::GetFullRequestHeaders(
   return false;
 }
 
-int64 HttpCache::Transaction::GetTotalReceivedBytes() const {
-  int64 total_received_bytes = total_received_bytes_;
+int64_t HttpCache::Transaction::GetTotalReceivedBytes() const {
+  int64_t total_received_bytes = total_received_bytes_;
   if (network_trans_)
     total_received_bytes += network_trans_->GetTotalReceivedBytes();
   return total_received_bytes;

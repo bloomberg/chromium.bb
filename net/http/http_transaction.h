@@ -124,7 +124,7 @@ class NET_EXPORT_PRIVATE HttpTransaction {
   virtual bool GetFullRequestHeaders(HttpRequestHeaders* headers) const = 0;
 
   // Get the number of bytes received from network.
-  virtual int64 GetTotalReceivedBytes() const = 0;
+  virtual int64_t GetTotalReceivedBytes() const = 0;
 
   // Get the number of bytes sent over the network.
   virtual int64_t GetTotalSentBytes() const = 0;

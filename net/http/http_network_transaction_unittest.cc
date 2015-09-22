@@ -13362,7 +13362,7 @@ class FakeStream : public HttpStream,
 
   bool CanReuseConnection() const override { return false; }
 
-  int64 GetTotalReceivedBytes() const override {
+  int64_t GetTotalReceivedBytes() const override {
     ADD_FAILURE();
     return 0;
   }
@@ -13578,7 +13578,7 @@ class FakeWebSocketBasicHandshakeStream : public WebSocketHandshakeStreamBase {
 
   bool CanReuseConnection() const override { return false; }
 
-  int64 GetTotalReceivedBytes() const override {
+  int64_t GetTotalReceivedBytes() const override {
     NOTREACHED();
     return 0;
   }

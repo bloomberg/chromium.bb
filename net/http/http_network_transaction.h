@@ -64,7 +64,7 @@ class NET_EXPORT_PRIVATE HttpNetworkTransaction
            const CompletionCallback& callback) override;
   void StopCaching() override;
   bool GetFullRequestHeaders(HttpRequestHeaders* headers) const override;
-  int64 GetTotalReceivedBytes() const override;
+  int64_t GetTotalReceivedBytes() const override;
   int64_t GetTotalSentBytes() const override;
   void DoneReading() override;
   const HttpResponseInfo* GetResponseInfo() const override;
@@ -324,7 +324,7 @@ class NET_EXPORT_PRIVATE HttpNetworkTransaction
 
   // Total number of bytes received on all destroyed HttpStreams for this
   // transaction.
-  int64 total_received_bytes_;
+  int64_t total_received_bytes_;
 
   // Total number of bytes sent on all destroyed HttpStreams for this
   // transaction.

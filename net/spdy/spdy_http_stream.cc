@@ -174,7 +174,7 @@ bool SpdyHttpStream::CanReuseConnection() const {
   return false;
 }
 
-int64 SpdyHttpStream::GetTotalReceivedBytes() const {
+int64_t SpdyHttpStream::GetTotalReceivedBytes() const {
   if (stream_closed_)
     return closed_stream_received_bytes_;
 

@@ -64,7 +64,7 @@ class HttpBasicStream : public HttpStream {
 
   bool CanReuseConnection() const override;
 
-  int64 GetTotalReceivedBytes() const override;
+  int64_t GetTotalReceivedBytes() const override;
 
   int64_t GetTotalSentBytes() const override;
 

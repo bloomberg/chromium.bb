@@ -197,7 +197,7 @@ class MockNetworkTransaction
 
   bool GetFullRequestHeaders(HttpRequestHeaders* headers) const override;
 
-  int64 GetTotalReceivedBytes() const override;
+  int64_t GetTotalReceivedBytes() const override;
 
   int64_t GetTotalSentBytes() const override;
 
@@ -256,7 +256,7 @@ class MockNetworkTransaction
   RequestPriority priority_;
   CreateHelper* websocket_handshake_stream_create_helper_;
   base::WeakPtr<MockNetworkLayer> transaction_factory_;
-  int64 received_bytes_;
+  int64_t received_bytes_;
   int64_t sent_bytes_;
 
   // NetLog ID of the fake / non-existent underlying socket used by the

@@ -85,7 +85,7 @@ class NET_EXPORT_PRIVATE HttpStreamParser {
   // false.
   bool CanReuseConnection() const;
 
-  int64 received_bytes() const { return received_bytes_; }
+  int64_t received_bytes() const { return received_bytes_; }
 
   int64_t sent_bytes() const { return sent_bytes_; }
 
@@ -211,7 +211,7 @@ class NET_EXPORT_PRIVATE HttpStreamParser {
 
   // The amount of received data.  If connection is reused then intermediate
   // value may be bigger than final.
-  int64 received_bytes_;
+  int64_t received_bytes_;
 
   // The amount of sent data.
   int64_t sent_bytes_;

@@ -48,7 +48,7 @@ class ProxyConnectRedirectHttpStream : public HttpStream {
   void SetConnectionReused() override;
   bool CanReuseConnection() const override;
 
-  int64 GetTotalReceivedBytes() const override;
+  int64_t GetTotalReceivedBytes() const override;
   int64_t GetTotalSentBytes() const override;
 
   // This function may be called.

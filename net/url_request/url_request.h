@@ -361,7 +361,7 @@ class NET_EXPORT URLRequest : NON_EXPORTED_BASE(public base::NonThreadSafe),
   // proxy handling. Pertains only to the last URLRequestJob issued by this
   // URLRequest, i.e. reset on redirects, but not reset when multiple roundtrips
   // are used for range requests or auth.
-  int64 GetTotalReceivedBytes() const;
+  int64_t GetTotalReceivedBytes() const;
 
   // Gets the total amount of data sent over the network before SSL encoding and
   // proxy handling. Pertains only to the last URLRequestJob issued by this

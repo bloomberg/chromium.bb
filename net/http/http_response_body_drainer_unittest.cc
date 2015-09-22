@@ -101,7 +101,7 @@ class MockHttpStream : public HttpStream {
   bool IsConnectionReused() const override { return false; }
   void SetConnectionReused() override {}
   bool CanReuseConnection() const override { return false; }
-  int64 GetTotalReceivedBytes() const override { return 0; }
+  int64_t GetTotalReceivedBytes() const override { return 0; }
   int64_t GetTotalSentBytes() const override { return 0; }
   void GetSSLInfo(SSLInfo* ssl_info) override {}
   void GetSSLCertRequestInfo(SSLCertRequestInfo* cert_request_info) override {}

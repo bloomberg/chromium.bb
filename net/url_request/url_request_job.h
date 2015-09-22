@@ -113,7 +113,7 @@ class NET_EXPORT URLRequestJob
 
   // Get the number of bytes received from network. The values returned by this
   // will never decrease over the lifetime of the URLRequestJob.
-  virtual int64 GetTotalReceivedBytes() const;
+  virtual int64_t GetTotalReceivedBytes() const;
 
   // Get the number of bytes sent over the network. The values returned by this
   // will never decrease over the lifetime of the URLRequestJob.

@@ -325,7 +325,7 @@ bool MockNetworkTransaction::GetFullRequestHeaders(
   return false;
 }
 
-int64 MockNetworkTransaction::GetTotalReceivedBytes() const {
+int64_t MockNetworkTransaction::GetTotalReceivedBytes() const {
   return received_bytes_;
 }
 

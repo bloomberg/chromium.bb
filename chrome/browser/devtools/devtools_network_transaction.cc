@@ -211,7 +211,7 @@ bool DevToolsNetworkTransaction::GetFullRequestHeaders(
   return network_transaction_->GetFullRequestHeaders(headers);
 }
 
-int64 DevToolsNetworkTransaction::GetTotalReceivedBytes() const {
+int64_t DevToolsNetworkTransaction::GetTotalReceivedBytes() const {
   return network_transaction_->GetTotalReceivedBytes();
 }
 

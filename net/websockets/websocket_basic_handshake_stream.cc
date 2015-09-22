@@ -408,7 +408,7 @@ bool WebSocketBasicHandshakeStream::CanReuseConnection() const {
   return false;
 }
 
-int64 WebSocketBasicHandshakeStream::GetTotalReceivedBytes() const {
+int64_t WebSocketBasicHandshakeStream::GetTotalReceivedBytes() const {
   return 0;
 }
 

@@ -142,7 +142,7 @@ class HttpCache::Transaction : public HttpTransaction {
            const CompletionCallback& callback) override;
   void StopCaching() override;
   bool GetFullRequestHeaders(HttpRequestHeaders* headers) const override;
-  int64 GetTotalReceivedBytes() const override;
+  int64_t GetTotalReceivedBytes() const override;
   int64_t GetTotalSentBytes() const override;
   void DoneReading() override;
   const HttpResponseInfo* GetResponseInfo() const override;
@@ -470,7 +470,7 @@ class HttpCache::Transaction : public HttpTransaction {
   base::TimeTicks first_cache_access_since_;
   base::TimeTicks send_request_since_;
 
-  int64 total_received_bytes_;
+  int64_t total_received_bytes_;
   int64_t total_sent_bytes_;
 
   // Load timing information for the last network request, if any.  Set in the
