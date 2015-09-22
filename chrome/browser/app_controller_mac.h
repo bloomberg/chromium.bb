@@ -147,9 +147,6 @@ class WorkAreaWatcherObserver;
 // Toggles the "Confirm to Quit" preference.
 - (IBAction)toggleConfirmToQuit:(id)sender;
 
-// Toggles the "Hide Notifications Icon" preference.
-- (IBAction)toggleDisplayMessageCenter:(id)sender;
-
 // Delegate method to return the dock menu.
 - (NSMenu*)applicationDockMenu:(NSApplication*)sender;
 

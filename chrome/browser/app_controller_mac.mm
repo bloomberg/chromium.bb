@@ -998,10 +998,6 @@ class AppControllerProfileObserver : public ProfileInfoCacheObserver {
   } else if (action == @selector(toggleConfirmToQuit:)) {
     [self updateConfirmToQuitPrefMenuItem:static_cast<NSMenuItem*>(item)];
     enable = YES;
-  } else if (action == @selector(toggleDisplayMessageCenter:)) {
-    // TODO(dewittj): Remove this (see crbug.com/530376) with a separate update
-    // to the xib file.
-    enable = NO;
   } else if (action == @selector(executeApplication:)) {
     enable = YES;
   }
@@ -1455,11 +1451,6 @@ class AppControllerProfileObserver : public ProfileInfoCacheObserver {
   PrefService* prefService = g_browser_process->local_state();
   bool enabled = prefService->GetBoolean(prefs::kConfirmToQuitEnabled);
   prefService->SetBoolean(prefs::kConfirmToQuitEnabled, !enabled);
-}
-
-- (IBAction)toggleDisplayMessageCenter:(id)sender {
-  // TODO(dewittj): Remove this (see crbug.com/530376) with a separate update to
-  // the xib file.
 }
 
 // Explicitly bring to the foreground when creating new windows from the dock.

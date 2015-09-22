@@ -84,12 +84,6 @@ CA
                                     <action selector="toggleConfirmToQuit:" target="483" id="688"/>
                                 </connections>
                             </menuItem>
-                            <menuItem title="^IDS_HIDE_NOTIFICATION_CENTER_OPTION" id="Uhg-Xg-lia">
-                                <modifierMask key="keyEquivalentModifierMask"/>
-                                <connections>
-                                    <action selector="toggleDisplayMessageCenter:" target="483" id="5NG-Ev-pV2"/>
-                                </connections>
-                            </menuItem>
                             <menuItem isSeparatorItem="YES" id="686"/>
                             <menuItem title="^IDS_EXIT_MAC$IDS_PRODUCT_NAME" tag="34031" keyEquivalent="q" id="136">
                                 <connections>

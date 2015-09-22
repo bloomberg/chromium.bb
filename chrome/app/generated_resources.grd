@@ -7585,11 +7585,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_CONFIRM_TO_QUIT_OPTION" desc="The label of the checkbox preference that enables the confirm-to-quit feature.">
           Warn Before Quitting (<ph name="KEY_EQUIVALENT">$1<ex>⌘Q</ex></ph>)
         </message>
-
-        <!-- Show/Hide notifications menubar extra -->
-        <message name="IDS_HIDE_NOTIFICATION_CENTER_OPTION" desc="The label of the checkbox preference that disables the notification center feature.">
-          Hide Notifications Icon
-        </message>
       </if>
 
       <!-- Importer Lock Dialog -->
