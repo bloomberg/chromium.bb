@@ -301,6 +301,7 @@ crbug.com/518915 [ Android ] accessibility/aria-labelledby-on-input.html [ Crash
 crbug.com/518917 [ Android ] animations/animation-shorthand-overriding.html [ Crash Pass ]
 crbug.com/445100 fast/block/float/marquee-shrink-to-avoid-floats.html [ Failure Pass ]
 crbug.com/469657 fast/events/mouse-event-buttons-attribute.html [ Failure Pass ]
+crbug.com/469657 virtual/pointerevent/fast/events/mouse-event-buttons-attribute.html [ Failure Pass ]
 crbug.com/432129 fast/html/marquee-scroll.html [ Failure Pass ]
 crbug.com/320139 fast/repaint/block-layout-inline-children-replaced.html [ Failure Pass ]
 crbug.com/518929 [ Precise Debug ] http/tests/appcache/obsolete-error-events.html [ Failure Pass Timeout ]
