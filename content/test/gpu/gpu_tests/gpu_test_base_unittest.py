@@ -5,7 +5,6 @@ import os
 import unittest
 
 from telemetry import benchmark
-from telemetry.core import discover
 from telemetry.core import exceptions
 from telemetry.core import util
 from telemetry.story import story_set as story_set_module
@@ -14,10 +13,6 @@ from telemetry.testing import fakes
 import mock # pylint: disable=import-error
 
 import gpu_test_base
-
-def _GetGpuDir(*subdirs):
-  gpu_dir = os.path.dirname(os.path.dirname(__file__))
-  return os.path.join(gpu_dir, *subdirs)
 
 # Unit tests verifying invariants of classes in GpuTestBase.
 
