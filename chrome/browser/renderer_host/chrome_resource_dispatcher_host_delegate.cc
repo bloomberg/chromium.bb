@@ -339,8 +339,25 @@ void ChromeResourceDispatcherHostDelegate::RequestBeginning(
       resource_context);
 
 #if defined(OS_ANDROID)
-  if (resource_type != content::RESOURCE_TYPE_MAIN_FRAME)
-    InterceptNavigationDelegate::UpdateUserGestureCarryoverInfo(request);
+  // TODO(davidben): This is insufficient to integrate with prerender properly.
+  // https://crbug.com/370595
+  if (!is_prerendering) {
+    if (resource_type == content::RESOURCE_TYPE_MAIN_FRAME) {
+      throttles->push_back(
+          InterceptNavigationDelegate::CreateThrottleFor(request));
+    } else {
+      InterceptNavigationDelegate::UpdateUserGestureCarryoverInfo(request);
+    }
+  }
+#else
+  if (resource_type == content::RESOURCE_TYPE_MAIN_FRAME) {
+    // Redirect some navigations to apps that have registered matching URL
+    // handlers ('url_handlers' in the manifest).
+    content::ResourceThrottle* url_to_app_throttle =
+        AppUrlRedirector::MaybeCreateThrottleFor(request, io_data);
+    if (url_to_app_throttle)
+      throttles->push_back(url_to_app_throttle);
+  }
 #endif
 
 #if defined(OS_CHROMEOS)

@@ -285,8 +285,6 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       content::WebContents* web_contents) override;
 
   void RecordURLMetric(const std::string& metric, const GURL& url) override;
-  ScopedVector<content::NavigationThrottle> CreateThrottlesForNavigation(
-      content::NavigationHandle* handle) override;
 
  private:
   friend class DisableWebRtcEncryptionFlagTest;

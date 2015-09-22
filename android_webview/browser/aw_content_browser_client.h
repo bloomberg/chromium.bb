@@ -142,8 +142,6 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
       std::map<int, base::MemoryMappedFile::Region>* regions) override;
   void OverrideWebkitPrefs(content::RenderViewHost* rvh,
                            content::WebPreferences* web_prefs) override;
-  ScopedVector<content::NavigationThrottle> CreateThrottlesForNavigation(
-      content::NavigationHandle* navigation_handle) override;
 #if defined(VIDEO_HOLE)
   content::ExternalVideoSurfaceContainer*
   OverrideCreateExternalVideoSurfaceContainer(

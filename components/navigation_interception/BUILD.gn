@@ -8,8 +8,8 @@ if (is_android) {
 
 source_set("navigation_interception") {
   sources = [
-    "intercept_navigation_throttle.cc",
-    "intercept_navigation_throttle.h",
+    "intercept_navigation_resource_throttle.cc",
+    "intercept_navigation_resource_throttle.h",
     "navigation_params.cc",
     "navigation_params.h",
   ]
@@ -49,7 +49,7 @@ if (is_android) {
 source_set("unit_tests") {
   testonly = true
   sources = [
-    "intercept_navigation_throttle_unittest.cc",
+    "intercept_navigation_resource_throttle_unittest.cc",
   ]
   deps = [
     ":navigation_interception",

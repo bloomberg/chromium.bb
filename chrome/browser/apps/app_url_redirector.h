@@ -6,22 +6,24 @@
 #define CHROME_BROWSER_APPS_APP_URL_REDIRECTOR_H_
 
 #include "base/basictypes.h"
-#include "base/memory/scoped_ptr.h"
-#include "content/public/browser/navigation_throttle.h"
 
 namespace content {
-class NavigationHandle;
-class NavigationThrottle;
-class WebContents;
+class ResourceThrottle;
 }
 
-// This class creates navigation throttles that redirect URLs to apps that have
-// a matching URL handler in the 'url_handlers' manifest key. Note that this is
-// a UI thread class.
+namespace net {
+class URLRequest;
+}
+
+class ProfileIOData;
+
+// This class creates resource throttles that redirect URLs to apps that
+// have a matching URL handler in the 'url_handlers' manifest key.
 class AppUrlRedirector {
  public:
-  static scoped_ptr<content::NavigationThrottle> MaybeCreateThrottleFor(
-      content::NavigationHandle* handle);
+  static content::ResourceThrottle* MaybeCreateThrottleFor(
+      net::URLRequest* request,
+      ProfileIOData* profile_io_data);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AppUrlRedirector);

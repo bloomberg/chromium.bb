@@ -159,7 +159,7 @@ void NavigatorImpl::DidStartProvisionalLoad(
   }
 
   render_frame_host->SetNavigationHandle(
-      NavigationHandleImpl::Create(validated_url, is_main_frame, delegate_));
+      NavigationHandleImpl::Create(url, is_main_frame, delegate_));
 }
 
 void NavigatorImpl::DidFailProvisionalLoadWithError(

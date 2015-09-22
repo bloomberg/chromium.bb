@@ -129,7 +129,6 @@ void WebContentsObserverSanityChecker::DidStartNavigation(
   CHECK(navigation_handle->GetNetErrorCode() == net::OK);
   CHECK(!navigation_handle->HasCommittedDocument());
   CHECK(!navigation_handle->HasCommittedErrorPage());
-  CHECK_EQ(navigation_handle->GetWebContents(), web_contents());
 
   ongoing_navigations_.insert(navigation_handle);
 }
@@ -142,7 +141,6 @@ void WebContentsObserverSanityChecker::DidRedirectNavigation(
   CHECK(navigation_handle->GetNetErrorCode() == net::OK);
   CHECK(!navigation_handle->HasCommittedDocument());
   CHECK(!navigation_handle->HasCommittedErrorPage());
-  CHECK_EQ(navigation_handle->GetWebContents(), web_contents());
 }
 
 void WebContentsObserverSanityChecker::ReadyToCommitNavigation(
@@ -165,7 +163,6 @@ void WebContentsObserverSanityChecker::DidCommitNavigation(
                 navigation_handle->GetNetErrorCode() == net::OK);
   CHECK_IMPLIES(navigation_handle->HasCommittedErrorPage(),
                 navigation_handle->GetNetErrorCode() != net::OK);
-  CHECK_EQ(navigation_handle->GetWebContents(), web_contents());
 
   ongoing_committed_navigations_.insert(navigation_handle);
 }
@@ -181,7 +178,6 @@ void WebContentsObserverSanityChecker::DidFinishNavigation(
                 navigation_handle->GetNetErrorCode() == net::OK);
   CHECK_IMPLIES(navigation_handle->HasCommittedErrorPage(),
                 navigation_handle->GetNetErrorCode() != net::OK);
-  CHECK_EQ(navigation_handle->GetWebContents(), web_contents());
 
   if (NavigationIsOngoingAndCommitted(navigation_handle))
     ongoing_committed_navigations_.erase(navigation_handle);

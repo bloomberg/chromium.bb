@@ -25,13 +25,10 @@
 #include "base/command_line.h"
 #include "base/path_service.h"
 #include "components/cdm/browser/cdm_message_filter_android.h"
-#include "components/navigation_interception/intercept_navigation_delegate.h"
 #include "content/public/browser/access_token_store.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/client_certificate_delegate.h"
-#include "content/public/browser/navigation_handle.h"
-#include "content/public/browser/navigation_throttle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
@@ -488,22 +485,6 @@ void AwContentBrowserClient::OverrideWebkitPrefs(
   }
   preferences_populater_->PopulateFor(
       content::WebContents::FromRenderViewHost(rvh), web_prefs);
-}
-
-ScopedVector<content::NavigationThrottle>
-AwContentBrowserClient::CreateThrottlesForNavigation(
-    content::NavigationHandle* navigation_handle) {
-  ScopedVector<content::NavigationThrottle> throttles;
-  if (navigation_handle->IsInMainFrame() ||
-      (!navigation_handle->GetURL().SchemeIs(url::kHttpScheme) &&
-       !navigation_handle->GetURL().SchemeIs(url::kHttpsScheme) &&
-       !navigation_handle->GetURL().SchemeIs(url::kAboutScheme))) {
-    throttles.push_back(
-        navigation_interception::InterceptNavigationDelegate::CreateThrottleFor(
-            navigation_handle)
-            .Pass());
-  }
-  return throttles.Pass();
 }
 
 #if defined(VIDEO_HOLE)

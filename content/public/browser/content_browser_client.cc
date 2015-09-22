@@ -359,12 +359,6 @@ void ContentBrowserClient::OpenURL(
   callback.Run(nullptr);
 }
 
-ScopedVector<NavigationThrottle>
-ContentBrowserClient::CreateThrottlesForNavigation(
-    NavigationHandle* navigation_handle) {
-  return ScopedVector<NavigationThrottle>();
-}
-
 #if defined(OS_WIN)
 const wchar_t* ContentBrowserClient::GetResourceDllName() {
   return nullptr;

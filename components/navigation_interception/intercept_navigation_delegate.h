@@ -12,8 +12,7 @@
 class GURL;
 
 namespace content {
-class NavigationHandle;
-class NavigationThrottle;
+class ResourceThrottle;
 class WebContents;
 }
 
@@ -33,8 +32,9 @@ class NavigationParams;
 // 1) the Java-side interface implementation must be associated (via the
 //    Associate method) with a WebContents for which URLRequests are to be
 //    intercepted,
-// 2) the NavigationThrottle obtained via CreateThrottleFor must be associated
-//    with the NavigationHandle in the ContentBrowserClient implementation.
+// 2) the ResourceThrottle obtained via CreateThrottleFor must be associated
+//    with the URLRequests in the ResourceDispatcherHostDelegate
+//    implementation.
 class InterceptNavigationDelegate : public base::SupportsUserData::Data {
  public:
   InterceptNavigationDelegate(JNIEnv* env, jobject jdelegate);
@@ -50,10 +50,10 @@ class InterceptNavigationDelegate : public base::SupportsUserData::Data {
   // can be null.
   static InterceptNavigationDelegate* Get(content::WebContents* web_contents);
 
-  // Creates a InterceptNavigationThrottle that will direct all callbacks to
-  // the InterceptNavigationDelegate.
-  static scoped_ptr<content::NavigationThrottle> CreateThrottleFor(
-      content::NavigationHandle* handle);
+  // Creates a InterceptNavigationResourceThrottle that will direct all
+  // callbacks to the InterceptNavigationDelegate.
+  static content::ResourceThrottle* CreateThrottleFor(
+      net::URLRequest* request);
 
   // Updates information to determine whether to have user gesture carryover or
   // not.

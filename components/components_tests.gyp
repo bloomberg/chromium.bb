@@ -354,7 +354,7 @@
       'nacl/zygote/nacl_fork_delegate_linux_unittest.cc',
     ],
     'navigation_interception_unittest_sources': [
-      'navigation_interception/intercept_navigation_throttle_unittest.cc',
+      'navigation_interception/intercept_navigation_resource_throttle_unittest.cc',
     ],
     'network_hints_unittest_sources': [
       'network_hints/renderer/dns_prefetch_queue_unittest.cc',
