@@ -5,6 +5,7 @@
 #include "base/sync_socket.h"
 
 #include "base/logging.h"
+#include "base/rand_util.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/win/scoped_handle.h"
 
@@ -39,9 +40,8 @@ bool CreatePairImpl(HANDLE* socket_a, HANDLE* socket_b, bool overlapped) {
     flags |= FILE_FLAG_OVERLAPPED;
 
   do {
-    unsigned int rnd_name;
-    if (rand_s(&rnd_name) != 0)
-      return false;
+    unsigned long rnd_name;
+    RandBytes(&rnd_name, sizeof(rnd_name));
 
     swprintf(name, kPipePathMax,
              kPipeNameFormat,
