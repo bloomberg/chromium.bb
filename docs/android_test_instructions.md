@@ -133,13 +133,12 @@ binaries to the AVD emulator, you may need to resize your userdata partition
 with the following commands:
 
 ```shell
-# Resize userdata partition to be 1G resize2fs
-android_emulator_sdk/sdk/system-images/android-19/x86/userdata.img 1G
+# Resize userdata partition to be 1G
+resize2fs android_emulator_sdk/sdk/system-images/android-19/x86/userdata.img 1G
 
 # Set filesystem parameter to continue on errors; Android doesn't like some
 # things e2fsprogs does.
-tune2fs -e continue
-android_emulator_sdk/sdk/system-images/android-19/x86/userdata.img
+tune2fs -e continue android_emulator_sdk/sdk/system-images/android-19/x86/userdata.img
 ```
 
 ## Symbolizing Crashes
