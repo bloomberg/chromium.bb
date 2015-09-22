@@ -34,6 +34,12 @@
   -webkit-margin-end: 8px;
 }
 
+/* TODO(dbeam): use --paper-button-flat-keyboard-focus when possible.
+ * https://github.com/PolymerElements/paper-button/pull/54 */
+#actions paper-button /deep/ .keyboard-focus {
+  color: white;
+}
+
 #actions {
   color: rgb(192, 199, 205);
 }
