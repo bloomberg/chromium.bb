@@ -119,8 +119,12 @@ String CSSCrossfadeValue::customCSSText() const
 
 PassRefPtrWillBeRawPtr<CSSCrossfadeValue> CSSCrossfadeValue::valueWithURLsMadeAbsolute()
 {
-    RefPtrWillBeRawPtr<CSSValue> fromValue = m_fromValue->isImageValue() ? toCSSImageValue(*m_fromValue).valueWithURLMadeAbsolute() : m_fromValue;
-    RefPtrWillBeRawPtr<CSSValue> toValue = m_toValue->isImageValue() ? toCSSImageValue(*m_toValue).valueWithURLMadeAbsolute() : m_toValue;
+    RefPtrWillBeRawPtr<CSSValue> fromValue = m_fromValue;
+    if (m_fromValue->isImageValue())
+        fromValue = toCSSImageValue(*m_fromValue).valueWithURLMadeAbsolute();
+    RefPtrWillBeRawPtr<CSSValue> toValue = m_toValue;
+    if (m_toValue->isImageValue())
+        toValue = toCSSImageValue(*m_toValue).valueWithURLMadeAbsolute();
     return CSSCrossfadeValue::create(fromValue.release(), toValue.release(), m_percentageValue);
 }
 

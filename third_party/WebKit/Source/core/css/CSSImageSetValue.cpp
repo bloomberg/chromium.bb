@@ -193,7 +193,7 @@ PassRefPtrWillBeRawPtr<CSSImageSetValue> CSSImageSetValue::valueWithURLsMadeAbso
     CSSImageSetValue* value = CSSImageSetValue::create().get();
     for (auto& item : *this)
         item->isImageValue() ? value->append(toCSSImageValue(*item).valueWithURLMadeAbsolute()) : value->append(item);
-    return adoptRef(value);
+    return adoptRefWillBeNoop(value);
 }
 
 
