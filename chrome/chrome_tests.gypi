@@ -3304,7 +3304,7 @@
                 },
               ],
             }],
-            ['OS=="win" or OS=="linux"', {
+            ['OS=="win" or OS=="linux" or OS=="mac"', {
               'targets': [
                 {
                   'target_name': 'angle_end2end_tests_run',
