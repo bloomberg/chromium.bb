@@ -220,9 +220,6 @@
         }],
       ],
       'sources': [
-        'async_socket_io_handler.h',
-        'async_socket_io_handler_posix.cc',
-        'async_socket_io_handler_win.cc',
         'auto_reset.h',
         'linux_util.cc',
         'linux_util.h',
@@ -432,7 +429,6 @@
         'android/path_utils_unittest.cc',
         'android/scoped_java_ref_unittest.cc',
         'android/sys_utils_unittest.cc',
-        'async_socket_io_handler_unittest.cc',
         'at_exit_unittest.cc',
         'atomicops_unittest.cc',
         'barrier_closure_unittest.cc',
@@ -1185,9 +1181,6 @@
             4267,
           ],
           'sources': [
-            'async_socket_io_handler.h',
-            'async_socket_io_handler_posix.cc',
-            'async_socket_io_handler_win.cc',
             'auto_reset.h',
             'linux_util.cc',
             'linux_util.h',

@@ -131,9 +131,6 @@ component("base") {
     "android/thread_utils.h",
     "android/trace_event_binding.cc",
     "android/trace_event_binding.h",
-    "async_socket_io_handler.h",
-    "async_socket_io_handler_posix.cc",
-    "async_socket_io_handler_win.cc",
     "at_exit.cc",
     "at_exit.h",
     "atomic_ref_count.h",
@@ -729,7 +726,6 @@ component("base") {
     set_sources_assignment_filter(sources_assignment_filter)
 
     sources -= [
-      "async_socket_io_handler_posix.cc",
       "cpu.cc",
       "files/file_enumerator_posix.cc",
       "files/file_proxy.cc",
@@ -1212,7 +1208,6 @@ test("base_unittests") {
     "android/path_utils_unittest.cc",
     "android/scoped_java_ref_unittest.cc",
     "android/sys_utils_unittest.cc",
-    "async_socket_io_handler_unittest.cc",
     "at_exit_unittest.cc",
     "atomicops_unittest.cc",
     "barrier_closure_unittest.cc",
