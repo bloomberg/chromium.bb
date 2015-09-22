@@ -55,6 +55,7 @@ LazyInstance<base::android::ScopedJavaGlobalRef<jobject>> g_main_activiy =
     LAZY_INSTANCE_INITIALIZER;
 
 void ConfigureAndroidServices(Context* context) {
+  CHECK(context->application_manager());
   context->application_manager()->SetLoaderForURL(
       make_scoped_ptr(
           new UIApplicationLoader(make_scoped_ptr(new mus::AndroidLoader()),
@@ -140,8 +141,8 @@ static void Init(JNIEnv* env,
   g_java_message_loop.Get().reset(new base::MessageLoopForUI);
   base::MessageLoopForUI::current()->Start();
 
-  ConfigureAndroidServices(shell_context);
   shell_context->Init();
+  ConfigureAndroidServices(shell_context);
 
   // This is done after the main message loop is started since it may post
   // tasks. This is consistent with the ordering from the desktop version of
