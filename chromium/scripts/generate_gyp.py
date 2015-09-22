@@ -28,7 +28,9 @@ __author__ = 'scherkus@chromium.org (Andrew Scherkus)'
 import collections
 import copy
 import datetime
+from enum import enum
 import fnmatch
+import credits_updater
 import itertools
 import optparse
 import os
@@ -37,13 +39,6 @@ import shutil
 import string
 import subprocess
 import sys
-
-# Python has enums now, but Goobuntu machines seem to run very old python. From:
-# http://stackoverflow.com/questions/36932/how-can-i-represent-an-enum-in-python
-
-
-def enum(*keys):
-  return collections.namedtuple('Enum', keys)(*keys)
 
 COPYRIGHT = """# Copyright %d The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
@@ -898,13 +893,7 @@ def CheckLicensesForSources(sources, source_dir, print_licenses):
   return True
 
 
-def CheckLicensesForStaticLinking(disjoint_sets, source_dir, print_licenses):
-  # Build up set of all sources and includes.
-  sources_to_check = set()
-  for source_set in disjoint_sets:
-    for source in source_set.sources:
-      GetIncludedSources(source, source_dir, sources_to_check)
-
+def CheckLicensesForStaticLinking(sources_to_check, source_dir, print_licenses):
   print 'Checking licenses...'
   return CheckLicensesForSources(sources_to_check, source_dir, print_licenses)
 
@@ -949,7 +938,7 @@ def FixObjectBasenameCollisions(disjoint_sets, all_sources):
         known_basenames.add(basename)
 
     for rename in renames:
-      print 'fixing basename collision: %s -> %s' % (rename.old_name,
+      print 'Fixing basename collision: %s -> %s' % (rename.old_name,
                                                      rename.new_name)
 
       shutil.copy2(rename.old_name, rename.new_name)
@@ -963,6 +952,15 @@ def FixObjectBasenameCollisions(disjoint_sets, all_sources):
   for source_name in all_sources:
     if RENAME_PREFIX in source_name and source_name not in all_renames:
       print 'WARNING: %s no longer collides. DELETE ME!' % source_name
+
+
+def UpdateCredits(sources_to_check, source_dir):
+  print 'Updating ffmpeg credits...'
+  updater = credits_updater.CreditsUpdater(source_dir)
+  for source_name in sources_to_check:
+    updater.ProcessFile(source_name)
+  updater.PrintStats()
+  updater.WriteCredits()
 
 
 def main():
@@ -1008,10 +1006,17 @@ def main():
 
   FixObjectBasenameCollisions(sets, source_files)
 
-  if not CheckLicensesForStaticLinking(sets, source_dir,
+  # Build up set of all sources and includes.
+  sources_to_check = set()
+  for source_set in sets:
+    for source in source_set.sources:
+      GetIncludedSources(source, source_dir, sources_to_check)
+
+  if not CheckLicensesForStaticLinking(sources_to_check, source_dir,
                                        options.print_licenses):
     exit('GENERATE FAILED: invalid licenses detected.')
   print 'License checks passed.'
+  UpdateCredits(sources_to_check, source_dir)
 
   def WriteOutputFile(outfile, func):
     output_name = os.path.join(options.source_dir, outfile)

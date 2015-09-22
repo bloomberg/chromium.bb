@@ -1,7 +1,7 @@
 Name: ffmpeg
 URL: http://ffmpeg.org/
 License: LGPL 2.1
-License File: LICENSE.md
+License File: CREDITS.chromium
 Upstream Git: git://source.ffmpeg.org/ffmpeg.git
 Last Upstream Merge: 98b95e746668a67250baa5533d61dda7aa26bff5, June 17 2015
 
