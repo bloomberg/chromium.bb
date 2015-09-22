@@ -69,6 +69,12 @@ CHROMEOS_EXPORT extern const char kWriteProtectSwitchBootKey[];
 CHROMEOS_EXPORT extern const char kWriteProtectSwitchBootValueOff[];
 CHROMEOS_EXPORT extern const char kWriteProtectSwitchBootValueOn[];
 
+// Regional data
+CHROMEOS_EXPORT extern const char kRegionKey[];
+CHROMEOS_EXPORT extern const char kInitialLocaleKey[];
+CHROMEOS_EXPORT extern const char kInitialTimezoneKey[];
+CHROMEOS_EXPORT extern const char kKeyboardLayoutKey[];
+
 // This interface provides access to Chrome OS statistics.
 class CHROMEOS_EXPORT StatisticsProvider {
  public:

@@ -529,6 +529,16 @@ const Experiment::Choice kProgressBarAnimationChoices[] = {
 };
 #endif  // defined(OS_ANDROID)
 
+#if defined(OS_CHROMEOS)
+const Experiment::Choice kCrosRegionsModeChoices[] = {
+  { IDS_FLAGS_CROS_REGIONS_MODE_DEFAULT, "", "" },
+  { IDS_FLAGS_CROS_REGIONS_MODE_OVERRIDE, chromeos::switches::kCrosRegionsMode,
+        chromeos::switches::kCrosRegionsModeOverride },
+  { IDS_FLAGS_CROS_REGIONS_MODE_HIDE, chromeos::switches::kCrosRegionsMode,
+        chromeos::switches::kCrosRegionsModeHide },
+};
+#endif  // defined(OS_CHROMEOS)
+
 // RECORDING USER METRICS FOR FLAGS:
 // -----------------------------------------------------------------------------
 // The first line of the experiment is the internal name. If you'd like to
@@ -2056,6 +2066,13 @@ const Experiment kExperiments[] = {
       kOsDesktop,
       SINGLE_VALUE_TYPE(switches::kEnableWebUsbOnAnyOrigin)},
 #endif
+#if defined(OS_CHROMEOS)
+    {"cros-regions-mode",
+     IDS_FLAGS_CROS_REGIONS_MODE_NAME,
+     IDS_FLAGS_CROS_REGIONS_MODE_DESCRIPTION,
+     kOsCrOS,
+     MULTI_VALUE_TYPE(kCrosRegionsModeChoices)},
+#endif  // OS_CHROMEOS
     // NOTE: Adding new command-line switches requires adding corresponding
     // entries to enum "LoginCustomFlags" in histograms.xml. See note in
     // histograms.xml and don't forget to run AboutFlagsHistogramTest unit test.

@@ -64945,6 +64945,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="-898005938" label="disable-pinch-virtual-viewport"/>
   <int value="-885601782" label="enable-contextual-search"/>
   <int value="-867087281" label="enable-virtual-keyboard"/>
+  <int value="-864266073" label="cros-regions-mode"/>
   <int value="-864205629" label="enable-offline-load-stale-cache"/>
   <int value="-853594220" label="disable-new-avatar-menu"/>
   <int value="-836123854" label="wallet-service-use-sandbox"/>

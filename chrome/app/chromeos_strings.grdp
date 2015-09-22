@@ -6363,6 +6363,21 @@ All users must sign out to continue.
   <message name="IDS_FILE_SYSTEM_REQUEST_FILE_SYSTEM_NOTIFICATION_WRITABLE_MESSAGE" desc="Message in a notification about granted full permissions (read, write, delete, create files and directories) to a volume (eg. USB drive, SD card, MTP device) with the specified name to the extension.">
     Read and write access to <ph name="VOLUME_NAME">$1<ex>FooBar 4GB</ex></ph> has been granted.
   </message>
+  <message name="IDS_FLAGS_CROS_REGIONS_MODE_NAME" desc="Title for the flag to select cros-regions file handling mode.">
+    Cros-regions load mode
+  </message>
+  <message name="IDS_FLAGS_CROS_REGIONS_MODE_DESCRIPTION" desc="Description for the flag to select cros-regions file handling mode.">
+    This flag controls cros-regions load mode
+  </message>
+  <message name="IDS_FLAGS_CROS_REGIONS_MODE_DEFAULT" desc="Name of the value for cros-regions file handling mode for 'default' mode.">
+    Default
+  </message>
+  <message name="IDS_FLAGS_CROS_REGIONS_MODE_OVERRIDE" desc="Name of the value for cros-regions file handling mode for 'override' mode (values from region file replace matching VPD values).">
+    Override VPD values.
+  </message>
+  <message name="IDS_FLAGS_CROS_REGIONS_MODE_HIDE" desc="Name of the value for cros-regions file handling mode for 'hide' mode (VPD values are hidden, only cros-region values are used).">
+    Hide VPD values.
+  </message>
 
   <!-- Webstore widget app -->
   <message name="IDS_WEBSTORE_WIDGET_APP_NAME" desc="App name for Webstore Gallery Widget app. The app shows a filtered list of extensions from Chrome Web Store. Extensions from the list can be installed directly from the app.">

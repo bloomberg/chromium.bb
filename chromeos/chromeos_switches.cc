@@ -312,6 +312,17 @@ const char kDisableDataSaverPrompt[] = "disable-datasaver-prompt";
 const char kEnableDataSaverPrompt[] = "enable-datasaver-prompt";
 const char kDataSaverPromptDemoMode[] = "demo";
 
+// Control regions data load:
+// ""         - default
+// "override" - regions data is read first
+// "hide"     - VPD values are hidden
+const char kCrosRegionsMode[] = "cros-regions-mode";
+const char kCrosRegionsModeOverride[] = "override";
+const char kCrosRegionsModeHide[] = "hide";
+
+// Forces CrOS region value.
+const char kCrosRegion[] = "cros-region";
+
 bool WakeOnWifiEnabled() {
   return !base::CommandLine::ForCurrentProcess()->HasSwitch(kDisableWakeOnWifi);
 }
