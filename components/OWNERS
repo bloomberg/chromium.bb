@@ -193,8 +193,6 @@ per-file ownership.gypi=alemate@chromium.org
 per-file packed_ct_ev_whitelist.gypi=eranm@chromium.org
 per-file packed_ct_ev_whitelist.gypi=rsleevi@chromium.org
 
-per-file page_load_metrics.gypi=bmcquade@chromium.org
-per-file page_load_metrics.gypi=csharrison@chromium.org
 per-file page_load_metrics.gypi=rdsmith@chromium.org
 per-file page_load_metrics.gypi=ttuttle@chromium.org
 
