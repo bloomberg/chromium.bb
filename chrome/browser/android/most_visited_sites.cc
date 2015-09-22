@@ -129,6 +129,17 @@ bool ShouldShowPopularSites() {
                           base::CompareCase::INSENSITIVE_ASCII);
 }
 
+std::string GetPopularSitesCountry() {
+  return variations::GetVariationParamValue(kPopularSitesFieldTrialName,
+                                            "country");
+}
+
+std::string GetPopularSitesVersion() {
+  return variations::GetVariationParamValue(kPopularSitesFieldTrialName,
+                                            "version");
+}
+
+// TODO(treib): Get rid of this.
 std::string GetPopularSitesFilename() {
   return variations::GetVariationParamValue(kPopularSitesFieldTrialName,
                                             "filename");
@@ -238,6 +249,8 @@ void MostVisitedSites::SetMostVisitedURLsObserver(JNIEnv* env,
       NeedPopularSites(profile_->GetPrefs(), num_sites_)) {
     popular_sites_.reset(new PopularSites(
         profile_,
+        GetPopularSitesCountry(),
+        GetPopularSitesVersion(),
         GetPopularSitesFilename(),
         base::Bind(&MostVisitedSites::OnPopularSitesAvailable,
                    base::Unretained(this))));

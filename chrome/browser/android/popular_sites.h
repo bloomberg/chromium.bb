@@ -46,9 +46,16 @@ class PopularSites {
   using FinishedCallback = base::Callback<void(bool /* success */)>;
 
   // Usually, the name of the file that's downloaded is based on the user's
-  // locale. |filename|, if non-empty, will override that default name.
+  // locale. |override_country| (if non-empty) is used to override the
+  // auto-detected country. |override_version|, if non-empty, will
+  // override the baked-in default version.
+  // |override_filename|, if non-empty, will override the full filename
+  // (so |override_country| and |override_version| are ignored in this case).
+  // TODO(treib): Get rid of |override_filename|.
   PopularSites(Profile* profile,
-               const std::string& filename,
+               const std::string& override_country,
+               const std::string& override_version,
+               const std::string& override_filename,
                const FinishedCallback& callback);
   ~PopularSites();
 
