@@ -62,11 +62,7 @@ run_and_ignore_error() {
   shift
 
   set +e
-  if [ "$(whoami)" = "$user" ]; then
-    "$@"
-  else
-    sudo -u "$user" $login_options "$@"
-  fi
+  sudo -u "$user" $login_options "$@"
 }
 
 do_start() {
