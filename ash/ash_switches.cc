@@ -54,6 +54,8 @@ const char kAshEnableMagnifierKeyScroller[] =
 // Enables unified desktop mode.
 const char kAshEnableUnifiedDesktop[] = "ash-enable-unified-desktop";
 
+// Enables the observation of accelerometer events to enter touch-view mode.
+const char kAshEnableTouchView[] = "enable-touchview";
 #endif
 
 // Enables mirrored screen.
@@ -64,10 +66,6 @@ const char kAshEnableMirroredScreen[] = "ash-enable-mirrored-screen";
 const char kAshDisableStableOverviewOrder[] =
     "ash-disable-stable-overview-order";
 const char kAshEnableStableOverviewOrder[] = "ash-enable-stable-overview-order";
-
-// Enables quick, non-cancellable locking of the screen when in maximize mode.
-const char kAshEnablePowerButtonQuickLock[] =
-    "ash-enable-power-button-quick-lock";
 
 // Enables software based mirroring.
 const char kAshEnableSoftwareMirroring[] = "ash-enable-software-mirroring";

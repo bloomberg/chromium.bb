@@ -107,7 +107,14 @@ MaximizeModeController::MaximizeModeController()
       ash::UMA_MAXIMIZE_MODE_INITIALLY_DISABLED);
 
 #if defined(OS_CHROMEOS)
-  chromeos::AccelerometerReader::GetInstance()->AddObserver(this);
+  // TODO(jonross): Do not create MaximizeModeController if the flag is
+  // unavailable. This will require refactoring
+  // IsMaximizeModeWindowManagerEnabled to check for the existance of the
+  // controller.
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kAshEnableTouchView)) {
+    chromeos::AccelerometerReader::GetInstance()->AddObserver(this);
+  }
   chromeos::DBusThreadManager::Get()->
       GetPowerManagerClient()->AddObserver(this);
 #endif  // OS_CHROMEOS
@@ -116,7 +123,10 @@ MaximizeModeController::MaximizeModeController()
 MaximizeModeController::~MaximizeModeController() {
   Shell::GetInstance()->RemoveShellObserver(this);
 #if defined(OS_CHROMEOS)
-  chromeos::AccelerometerReader::GetInstance()->RemoveObserver(this);
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kAshEnableTouchView)) {
+    chromeos::AccelerometerReader::GetInstance()->RemoveObserver(this);
+  }
   chromeos::DBusThreadManager::Get()->
       GetPowerManagerClient()->RemoveObserver(this);
 #endif  // OS_CHROMEOS

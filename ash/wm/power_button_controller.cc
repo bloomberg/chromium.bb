@@ -19,18 +19,21 @@
 
 namespace ash {
 
-PowerButtonController::PowerButtonController(
-    LockStateController* controller)
+PowerButtonController::PowerButtonController(LockStateController* controller)
     : power_button_down_(false),
       lock_button_down_(false),
       volume_down_pressed_(false),
       brightness_is_zero_(false),
       internal_display_off_and_external_display_on_(false),
       has_legacy_power_button_(
-          base::CommandLine::ForCurrentProcess()->HasSwitch(
-              switches::kAuraLegacyPowerButton)),
+          base::CommandLine::ForCurrentProcess()
+              ->HasSwitch(switches::kAuraLegacyPowerButton)),
+#if defined(OS_CHROMEOS)
       enable_quick_lock_(base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAshEnablePowerButtonQuickLock)),
+          switches::kAshEnableTouchView)),
+#else
+      enable_quick_lock_(false),
+#endif
       controller_(controller) {
 #if defined(OS_CHROMEOS)
   Shell::GetInstance()->display_configurator()->AddObserver(this);
