@@ -1240,8 +1240,7 @@
             'components.gyp:web_modal',
             'components.gyp:web_modal_test_support',
           ],
-        }],
-        ['OS != "android"', {
+        }, {
           'sources': [
             '<@(invalidation_unittest_sources)',
           ],
@@ -1476,6 +1475,45 @@
           },
           'includes': [ '../build/apk_browsertest.gypi' ],
         },
+        {
+          'target_name': 'components_unittests_apk',
+          'isolate_file': 'components_unittests.isolate',
+          'type': 'none',
+          'dependencies': [
+            'components_unittests',
+            'components.gyp:invalidation_java',
+            'components.gyp:signin_core_browser_java',
+          ],
+          'variables': {
+            'test_suite_name': 'components_unittests',
+          },
+          'includes': [ '../build/apk_test.gypi' ],
+        },
+        {
+          'target_name': 'components_junit_tests',
+          'type': 'none',
+          'dependencies': [
+            'components.gyp:invalidation_java',
+            '../base/base.gyp:base_java',
+            '../base/base.gyp:base_java_test_support',
+            '../testing/android/junit/junit_test.gyp:junit_test_support',
+          ],
+          'conditions': [
+            ['configuration_policy == 1', {
+              'dependencies': [
+                'components.gyp:policy_java',
+              ],
+            }],
+          ],
+          'variables': {
+            'main_class': 'org.chromium.testing.local.JunitTestMain',
+            'src_paths': [
+              'invalidation/impl/android/junit/',
+              'policy/android/junit/'
+            ],
+          },
+          'includes': [ '../build/host_jar.gypi' ],
+         },
       ],
     }],
     ['OS != "ios"', {
@@ -1673,49 +1711,6 @@
             }],
           ],
         },
-      ],
-    }],
-    ['OS == "android"', {
-      'targets': [
-        {
-          'target_name': 'components_unittests_apk',
-          'isolate_file': 'components_unittests.isolate',
-          'type': 'none',
-          'dependencies': [
-            'components_unittests',
-            'components.gyp:invalidation_java',
-            'components.gyp:signin_core_browser_java',
-          ],
-          'variables': {
-            'test_suite_name': 'components_unittests',
-          },
-          'includes': [ '../build/apk_test.gypi' ],
-        },
-        {
-          'target_name': 'components_junit_tests',
-          'type': 'none',
-          'dependencies': [
-            'components.gyp:invalidation_java',
-            '../base/base.gyp:base_java',
-            '../base/base.gyp:base_java_test_support',
-            '../testing/android/junit/junit_test.gyp:junit_test_support',
-          ],
-          'conditions': [
-            ['configuration_policy == 1', {
-              'dependencies': [
-                'components.gyp:policy_java',
-              ],
-            }],
-          ],
-          'variables': {
-            'main_class': 'org.chromium.testing.local.JunitTestMain',
-            'src_paths': [
-              'invalidation/impl/android/junit/',
-              'policy/android/junit/'
-            ],
-          },
-          'includes': [ '../build/host_jar.gypi' ],
-         },
       ],
     }],
   ],
