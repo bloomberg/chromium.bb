@@ -64,6 +64,21 @@ var tests = [
 
     chrome.test.succeed();
   },
+
+  /**
+   * Test that the escape key gets propogated to the outer frame (via the
+   * PDFScriptingAPI) in print preview.
+   */
+  function testEscKeyPropogationInPrintPreview() {
+    viewer.isPrintPreview_ = true;
+    scriptingAPI.setKeyEventCallback(chrome.test.callbackPass(function(e) {
+      chrome.test.assertEq(27, e.keyCode);
+    }));
+    var e = document.createEvent('Event');
+    e.initEvent('keydown');
+    e.keyCode = 27;
+    document.dispatchEvent(e);
+  }
 ];
 
 var scriptingAPI = new PDFScriptingAPI(window, window);

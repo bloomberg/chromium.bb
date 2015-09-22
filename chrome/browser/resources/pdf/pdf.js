@@ -306,7 +306,7 @@ PDFViewer.prototype = {
 
     switch (e.keyCode) {
       case 27:  // Escape key.
-        if (this.isMaterial_ && !this.isPrintPreview) {
+        if (this.isMaterial_ && !this.isPrintPreview_) {
           this.toolbarManager_.hideSingleToolbarLayer();
           return;
         }
