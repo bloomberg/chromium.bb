@@ -331,7 +331,7 @@
     "extension_types": ["extension"]
   },
   "enterprise.deviceAttributes": {
-    "channel": "dev",
+    "channel": "stable",
     "platforms": ["chromeos"],
     "extension_types": ["extension", "platform_app"],
     "location": "policy"
