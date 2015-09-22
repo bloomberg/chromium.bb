@@ -19,14 +19,19 @@ namespace {
 // In phase2, it will be relocated to MUS. Update this code at that time.
 void SetPropertiesFromEvent(const mojo::Event& event,
                             ui::PointerProperties* properties) {
-  properties->id = event.pointer_data->pointer_id;
-  properties->x = event.pointer_data->location->x;
-  properties->y = event.pointer_data->location->y;
-  properties->raw_x = event.pointer_data->location->screen_x;
-  properties->raw_y = event.pointer_data->location->screen_y;
+  if (event.pointer_data) {
+    properties->id = event.pointer_data->pointer_id;
+    if (event.pointer_data->location) {
+      properties->x = event.pointer_data->location->x;
+      properties->y = event.pointer_data->location->y;
+      properties->raw_x = event.pointer_data->location->screen_x;
+      properties->raw_y = event.pointer_data->location->screen_y;
+    }
+  }
 
-  if (event.pointer_data->kind == mojo::POINTER_KIND_TOUCH ||
-      event.pointer_data->kind == mojo::POINTER_KIND_PEN) {
+  if (event.pointer_data && event.pointer_data->brush_data &&
+      (event.pointer_data->kind == mojo::POINTER_KIND_TOUCH ||
+       event.pointer_data->kind == mojo::POINTER_KIND_PEN)) {
     properties->pressure = event.pointer_data->brush_data->pressure;
 
     // TODO(rjkroege): vary orientation for width, height.
@@ -185,9 +190,11 @@ void TouchHandler::SendMotionEventToGestureProvider() {
 void TouchHandler::PostProcessMotionEvent(const mojo::Event& event) {
   switch (event.action) {
     case mojo::EVENT_TYPE_POINTER_UP: {
-      const int index = current_motion_event_->FindPointerIndexOfId(
-          event.pointer_data->pointer_id);
-      current_motion_event_->RemovePointerAt(index);
+      if (event.pointer_data) {
+        const int index = current_motion_event_->FindPointerIndexOfId(
+            event.pointer_data->pointer_id);
+        current_motion_event_->RemovePointerAt(index);
+      }
       if (current_motion_event_->GetPointerCount() == 0)
         current_motion_event_.reset();
       break;

@@ -385,16 +385,14 @@ class PDFView : public mojo::ApplicationDelegate,
     // responsive to gesture events.
     if ((event->key_data &&
          event->key_data->windows_key_code == mojo::KEYBOARD_CODE_DOWN) ||
-        (event->wheel_data && event->wheel_data &&
-         event->wheel_data->delta_y < 0)) {
+        (event->wheel_data && event->wheel_data->delta_y < 0)) {
       if (current_page_ < (page_count_ - 1)) {
         current_page_++;
         DrawBitmap(embedder_for_roots_[view]);
       }
     } else if ((event->key_data &&
                 event->key_data->windows_key_code == mojo::KEYBOARD_CODE_UP) ||
-               (event->pointer_data && event->wheel_data &&
-                event->wheel_data->delta_y > 0)) {
+               (event->wheel_data && event->wheel_data->delta_y > 0)) {
       if (current_page_ > 0) {
         current_page_--;
         DrawBitmap(embedder_for_roots_[view]);

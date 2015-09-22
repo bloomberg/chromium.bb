@@ -68,6 +68,7 @@ mojo::EventPtr CreateEvent(mojo::EventType type,
   event->action = type;
   event->pointer_data = mojo::PointerData::New();
   event->pointer_data->pointer_id = pointer_id;
+  event->pointer_data->location = mojo::LocationData::New();
   event->pointer_data->location->x = x;
   event->pointer_data->location->y = y;
   return event.Pass();

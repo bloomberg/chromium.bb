@@ -72,7 +72,8 @@ void SetWebMouseEventLocation(const mojo::LocationData& location_data,
 scoped_ptr<blink::WebInputEvent> BuildWebMouseEventFrom(const EventPtr& event) {
   scoped_ptr<blink::WebMouseEvent> web_event(new blink::WebMouseEvent);
 
-  SetWebMouseEventLocation(*(event->pointer_data->location), web_event.get());
+  if (event->pointer_data && event->pointer_data->location)
+    SetWebMouseEventLocation(*(event->pointer_data->location), web_event.get());
 
   web_event->modifiers = EventFlagsToWebEventModifiers(event->flags);
   web_event->timeStampSeconds = EventTimeToWebEventTime(event);
@@ -145,41 +146,44 @@ scoped_ptr<blink::WebInputEvent> BuildWebMouseWheelEventFrom(
   web_event->modifiers = EventFlagsToWebEventModifiers(event->flags);
   web_event->timeStampSeconds = EventTimeToWebEventTime(event);
 
-  SetWebMouseEventLocation(*(event->wheel_data->location), web_event.get());
+  if (event->wheel_data) {
+    if (event->wheel_data->location)
+      SetWebMouseEventLocation(*(event->wheel_data->location), web_event.get());
 
-  // TODO(rjkroege): Update the following code once Blink supports
-  // DOM Level 3 wheel events
-  // (http://www.w3.org/TR/DOM-Level-3-Events/#events-wheelevents)
-  web_event->deltaX = event->wheel_data->delta_x;
-  web_event->deltaY = event->wheel_data->delta_y;
+    // TODO(rjkroege): Update the following code once Blink supports
+    // DOM Level 3 wheel events
+    // (http://www.w3.org/TR/DOM-Level-3-Events/#events-wheelevents)
+    web_event->deltaX = event->wheel_data->delta_x;
+    web_event->deltaY = event->wheel_data->delta_y;
 
-  web_event->wheelTicksX = web_event->deltaX / kPixelsPerTick;
-  web_event->wheelTicksY = web_event->deltaY / kPixelsPerTick;
+    web_event->wheelTicksX = web_event->deltaX / kPixelsPerTick;
+    web_event->wheelTicksY = web_event->deltaY / kPixelsPerTick;
 
-  // TODO(rjkroege): Mandoline currently only generates WHEEL_MODE_LINE
-  // wheel events so the other modes are not yet tested. Verify that
-  // the implementation is correct.
-  switch (event->wheel_data->mode) {
-    case mojo::WHEEL_MODE_PIXEL:
-      web_event->hasPreciseScrollingDeltas = true;
-      web_event->scrollByPage = false;
-      web_event->canScroll = true;
-      break;
-    case mojo::WHEEL_MODE_LINE:
-      web_event->hasPreciseScrollingDeltas = false;
-      web_event->scrollByPage = false;
-      web_event->canScroll = true;
-      break;
-    case mojo::WHEEL_MODE_PAGE:
-      web_event->hasPreciseScrollingDeltas = false;
-      web_event->scrollByPage = true;
-      web_event->canScroll = true;
-      break;
-    case mojo::WHEEL_MODE_SCALING:
-      web_event->hasPreciseScrollingDeltas = false;
-      web_event->scrollByPage = false;
-      web_event->canScroll = false;
-      break;
+    // TODO(rjkroege): Mandoline currently only generates WHEEL_MODE_LINE
+    // wheel events so the other modes are not yet tested. Verify that
+    // the implementation is correct.
+    switch (event->wheel_data->mode) {
+      case mojo::WHEEL_MODE_PIXEL:
+        web_event->hasPreciseScrollingDeltas = true;
+        web_event->scrollByPage = false;
+        web_event->canScroll = true;
+        break;
+      case mojo::WHEEL_MODE_LINE:
+        web_event->hasPreciseScrollingDeltas = false;
+        web_event->scrollByPage = false;
+        web_event->canScroll = true;
+        break;
+      case mojo::WHEEL_MODE_PAGE:
+        web_event->hasPreciseScrollingDeltas = false;
+        web_event->scrollByPage = true;
+        web_event->canScroll = true;
+        break;
+      case mojo::WHEEL_MODE_SCALING:
+        web_event->hasPreciseScrollingDeltas = false;
+        web_event->scrollByPage = false;
+        web_event->canScroll = false;
+        break;
+    }
   }
 
   return web_event.Pass();
@@ -196,8 +200,10 @@ TypeConverter<scoped_ptr<blink::WebInputEvent>, EventPtr>::Convert(
     case mojo::EVENT_TYPE_POINTER_UP:
     case mojo::EVENT_TYPE_POINTER_CANCEL:
     case mojo::EVENT_TYPE_POINTER_MOVE:
-      if (event->pointer_data->kind == mojo::POINTER_KIND_MOUSE)
+      if (event->pointer_data &&
+          event->pointer_data->kind == mojo::POINTER_KIND_MOUSE) {
         return BuildWebMouseEventFrom(event);
+    }
     case mojo::EVENT_TYPE_WHEEL:
       return BuildWebMouseWheelEventFrom(event);
     case mojo::EVENT_TYPE_KEY_PRESSED:

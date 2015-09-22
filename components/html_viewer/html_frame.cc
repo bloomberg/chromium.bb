@@ -350,8 +350,7 @@ blink::WebNavigationPolicy HTMLFrame::decidePolicyForNavigation(
     return blink::WebNavigationPolicyCurrentTab;
   }
 
-  // about:blank is treated as the same origin and is always allowed for
-  // frames.
+  // about:blank is treated as the same origin and is always allowed for frames.
   if (parent_ && info.urlRequest.url() == GURL(url::kAboutBlankURL) &&
       info.defaultPolicy == blink::WebNavigationPolicyCurrentTab) {
     return blink::WebNavigationPolicyCurrentTab;
@@ -650,7 +649,7 @@ void HTMLFrame::OnViewDestroyed(View* view) {
 }
 
 void HTMLFrame::OnViewInputEvent(View* view, const mojo::EventPtr& event) {
-  if (event->pointer_data) {
+  if (event->pointer_data && event->pointer_data->location) {
     // Blink expects coordintes to be in DIPs.
     event->pointer_data->location->x /= global_state()->device_pixel_ratio();
     event->pointer_data->location->y /= global_state()->device_pixel_ratio();
@@ -669,6 +668,7 @@ void HTMLFrame::OnViewInputEvent(View* view, const mojo::EventPtr& event) {
                          event->action == mojo::EVENT_TYPE_POINTER_UP ||
                          event->action == mojo::EVENT_TYPE_POINTER_CANCEL ||
                          event->action == mojo::EVENT_TYPE_POINTER_MOVE) &&
+      event->pointer_data &&
       event->pointer_data->kind == mojo::POINTER_KIND_TOUCH) {
     touch_handler_->OnTouchEvent(*event);
     return;

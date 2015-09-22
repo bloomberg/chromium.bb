@@ -71,7 +71,7 @@ bool EventDispatcher::FindAccelerator(const mojo::Event& event,
 
 ServerView* EventDispatcher::FindEventTarget(mojo::Event* event) {
   ServerView* focused_view = view_tree_host_->GetFocusedView();
-  if (event->pointer_data) {
+  if (event->pointer_data && event->pointer_data->location) {
     ServerView* root = view_tree_host_->root_view();
     const gfx::Point root_point(
         static_cast<int>(event->pointer_data->location->x),

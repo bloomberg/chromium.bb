@@ -20,7 +20,7 @@ namespace mojo {
 namespace {
 
 ui::EventType MojoMouseEventTypeToUIEvent(const EventPtr& event) {
-  DCHECK(!event->pointer_data.is_null());
+  DCHECK(event->pointer_data);
   DCHECK_EQ(POINTER_KIND_MOUSE, event->pointer_data->kind);
   switch (event->action) {
     case EVENT_TYPE_POINTER_DOWN:
@@ -46,7 +46,7 @@ ui::EventType MojoMouseEventTypeToUIEvent(const EventPtr& event) {
 }
 
 ui::EventType MojoTouchEventTypeToUIEvent(const EventPtr& event) {
-  DCHECK(!event->pointer_data.is_null());
+  DCHECK(event->pointer_data);
   DCHECK_EQ(POINTER_KIND_TOUCH, event->pointer_data->kind);
   switch (event->action) {
     case EVENT_TYPE_POINTER_DOWN:
@@ -69,7 +69,7 @@ ui::EventType MojoTouchEventTypeToUIEvent(const EventPtr& event) {
 }
 
 ui::EventType MojoWheelEventTypeToUIEvent(const EventPtr& event) {
-  DCHECK(!event->wheel_data.is_null());
+  DCHECK(event->wheel_data);
   return ui::ET_MOUSEWHEEL;
 }
 
@@ -275,7 +275,7 @@ scoped_ptr<ui::Event> TypeConverter<scoped_ptr<ui::Event>, EventPtr>::Convert(
     const EventPtr& input) {
   gfx::PointF location;
   gfx::PointF screen_location;
-  if (!input->pointer_data.is_null()) {
+  if (input->pointer_data && input->pointer_data->location) {
     location.SetPoint(input->pointer_data->location->x,
                       input->pointer_data->location->y);
     screen_location.SetPoint(input->pointer_data->location->screen_x,
@@ -321,6 +321,7 @@ scoped_ptr<ui::Event> TypeConverter<scoped_ptr<ui::Event>, EventPtr>::Convert(
           return event.Pass();
         } break;
         case POINTER_KIND_TOUCH: {
+          DCHECK(input->pointer_data->brush_data);
           scoped_ptr<ui::TouchEvent> touch_event(new ui::TouchEvent(
               MojoTouchEventTypeToUIEvent(input), location,
               ui::EventFlags(input->flags), input->pointer_data->pointer_id,
@@ -337,6 +338,7 @@ scoped_ptr<ui::Event> TypeConverter<scoped_ptr<ui::Event>, EventPtr>::Convert(
       }
     } break;
     case EVENT_TYPE_WHEEL: {
+      DCHECK(input->wheel_data);
       scoped_ptr<ui::MouseEvent> pre_wheel_event(new ui::MouseEvent(
           MojoWheelEventTypeToUIEvent(input), location, screen_location,
           ui::EventTimeForNow(), ui::EventFlags(input->flags),
