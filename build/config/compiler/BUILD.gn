@@ -44,9 +44,10 @@ declare_args() {
   # Requires profiling to be set to true.
   enable_full_stack_frames_for_profiling = false
 
-  # Use 64-bit gold for linking on both 64-bit Linux and 32-bit linux;
-  # 32-bit Gold runs out of address-space on 32-bit bit builds.
-  use_gold = is_linux && (current_cpu == "x64" || current_cpu == "x86")
+  # TODO(GYP): We should be using 64-bit gold for linking on both 64-bit Linux
+  # and 32-bit linux; 32-bit Gold runs out of address-space on 32-bit builds.
+  # However, something isn't quite working right on the 32-bit builds.
+  use_gold = is_linux && current_cpu == "x64"
 
   # When we are going to use gold we need to find it.
   if (use_gold) {

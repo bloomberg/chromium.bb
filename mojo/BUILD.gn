@@ -11,8 +11,14 @@ group("mojo") {
     ":tests",
     "//mojo/common",
     "//mojo/services",
-    "//third_party/mojo/src/mojo/public",
   ]
+
+  if (!(is_linux && target_cpu == "x86")) {
+    # TODO(GYP): Figure out if this needs to be supported. Right now
+    # it won't work on x86 official builds because it needs stuff in the
+    # sysroot that doesn't exist.
+    deps += [ "//third_party/mojo/src/mojo/public" ]
+  }
 
   if (is_android) {
     deps += [ "//mojo/android" ]

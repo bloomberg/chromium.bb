@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//build/module_args/v8.gni")
+import("//v8/snapshot_toolchain.gni")
 
 # Variables:
 #   test_type: One of 'webui', 'unit' or 'extension' indicating what
@@ -34,7 +35,8 @@ template("js2gtest") {
 
     sources = invoker.sources
 
-    d8_path = get_label_info("//v8:d8($host_toolchain)", "root_out_dir") + "/d8"
+    d8_path =
+        get_label_info("//v8:d8($snapshot_toolchain)", "root_out_dir") + "/d8"
     if (is_win) {
       d8_path += ".exe"
     }
@@ -85,7 +87,7 @@ template("js2gtest") {
     args += rebase_path(outputs, root_build_dir)
 
     deps = [
-      "//v8:d8($host_toolchain)",
+      "//v8:d8($snapshot_toolchain)",
     ]
     if (defined(invoker.deps)) {
       deps += invoker.deps
