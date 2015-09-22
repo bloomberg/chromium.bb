@@ -239,7 +239,6 @@ void MostVisitedSites::SetMostVisitedURLsObserver(JNIEnv* env,
     popular_sites_.reset(new PopularSites(
         profile_,
         GetPopularSitesFilename(),
-        profile_->GetRequestContext(),
         base::Bind(&MostVisitedSites::OnPopularSitesAvailable,
                    base::Unretained(this))));
   } else {

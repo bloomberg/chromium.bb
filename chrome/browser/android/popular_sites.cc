@@ -14,6 +14,7 @@
 #include "base/task_runner_util.h"
 #include "base/values.h"
 #include "chrome/browser/net/file_downloader.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/common/chrome_paths.h"
 #include "components/google/core/browser/google_util.h"
@@ -27,8 +28,9 @@ using content::BrowserThread;
 namespace {
 
 const char kPopularSitesURLFormat[] = "https://www.gstatic.com/chrome/ntp/%s";
-const char kPopularSitesFilenameFormat[] = "suggested_sites_%s_2.json";
+const char kPopularSitesServerFilenameFormat[] = "suggested_sites_%s_2.json";
 const char kPopularSitesDefaultCountryCode[] = "DEFAULT";
+const char kPopularSitesLocalFilename[] = "suggested_sites.json";
 
 
 // Find out the country code of the user by using the Google country code if
@@ -64,25 +66,24 @@ std::string GetCountryCode(Profile* profile) {
   return country_code;
 }
 
-std::string GetPopularSitesFilename(Profile* profile,
-                                    const std::string& filename) {
+std::string GetPopularSitesServerFilename(Profile* profile,
+                                          const std::string& filename) {
   if (!filename.empty())
     return filename;
 
-  return base::StringPrintf(kPopularSitesFilenameFormat,
+  return base::StringPrintf(kPopularSitesServerFilenameFormat,
                             GetCountryCode(profile).c_str());
-}
-
-base::FilePath GetPopularSitesPath(Profile* profile,
-                                   const std::string& filename) {
-  base::FilePath dir;
-  PathService::Get(chrome::DIR_USER_DATA, &dir);
-  return dir.AppendASCII(GetPopularSitesFilename(profile, filename));
 }
 
 GURL GetPopularSitesURL(Profile* profile, const std::string& filename) {
   return GURL(base::StringPrintf(kPopularSitesURLFormat,
-      GetPopularSitesFilename(profile, filename).c_str()));
+      GetPopularSitesServerFilename(profile, filename).c_str()));
+}
+
+base::FilePath GetPopularSitesPath() {
+  base::FilePath dir;
+  PathService::Get(chrome::DIR_USER_DATA, &dir);
+  return dir.AppendASCII(kPopularSitesLocalFilename);
 }
 
 scoped_ptr<std::vector<PopularSites::Site>> ReadAndParseJsonFile(
@@ -138,15 +139,15 @@ PopularSites::Site::~Site() {}
 
 PopularSites::PopularSites(Profile* profile,
                            const std::string& filename,
-                           net::URLRequestContextGetter* request_context,
                            const FinishedCallback& callback)
     : callback_(callback), weak_ptr_factory_(this) {
-  base::FilePath path = GetPopularSitesPath(profile, filename);
+  base::FilePath path = GetPopularSitesPath();
   // Re-download the file once on every Chrome startup, but use the cached
   // local file afterwards.
   static bool overwrite = true;
   downloader_.reset(new FileDownloader(
-      GetPopularSitesURL(profile, filename), path, overwrite, request_context,
+      GetPopularSitesURL(profile, filename), path, overwrite,
+      profile->GetRequestContext(),
       base::Bind(&PopularSites::OnDownloadDone, base::Unretained(this), path)));
   overwrite = false;
 }

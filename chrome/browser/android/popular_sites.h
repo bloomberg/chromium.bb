@@ -45,9 +45,10 @@ class PopularSites {
 
   using FinishedCallback = base::Callback<void(bool /* success */)>;
 
+  // Usually, the name of the file that's downloaded is based on the user's
+  // locale. |filename|, if non-empty, will override that default name.
   PopularSites(Profile* profile,
                const std::string& filename,
-               net::URLRequestContextGetter* request_context,
                const FinishedCallback& callback);
   ~PopularSites();
 
