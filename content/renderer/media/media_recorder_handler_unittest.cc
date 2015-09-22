@@ -57,14 +57,14 @@ class MediaRecorderHandlerTest
                                                     base::TimeTicks::Now());
   }
 
-  // The Class under test. Needs to be scoped_ptr to force its destruction.
-  scoped_ptr<MediaRecorderHandler> media_recorder_handler_;
-
   // A ChildProcess and a MessageLoopForUI are both needed to fool the Tracks
   // and Sources in |registry_| into believing they are on the right threads.
   const base::MessageLoopForUI message_loop_;
   const ChildProcess child_process_;
   MockMediaStreamRegistry registry_;
+
+  // The Class under test. Needs to be scoped_ptr to force its destruction.
+  scoped_ptr<MediaRecorderHandler> media_recorder_handler_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MediaRecorderHandlerTest);

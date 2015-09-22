@@ -11,6 +11,7 @@
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "media/base/video_frame.h"
+#include "ui/gfx/geometry/size.h"
 
 extern "C" {
 // VPX_CODEC_DISABLE_COMPAT excludes parts of the libvpx API that provide
@@ -51,8 +52,7 @@ void OnFrameEncodeCompleted(
     bool keyframe) {
   DVLOG(1) << (keyframe ? "" : "non ") << "keyframe "<< data->length() << "B, "
            << capture_timestamp << " ms";
-  on_encoded_video_cb.Run(frame, base::StringPiece(*data), capture_timestamp,
-                          keyframe);
+  on_encoded_video_cb.Run(frame, data.Pass(), capture_timestamp, keyframe);
 }
 
 }  // anonymous namespace

@@ -28,22 +28,23 @@ namespace content {
 
 class VideoTrackRecorder;
 
-// MediaRecorderHandler orchestrates the creation, lifetime mgmt and mapping
-// between:
+// MediaRecorderHandler orchestrates the creation, lifetime management and
+// mapping between:
 // - MediaStreamTrack(s) providing data,
 // - {Audio,Video}TrackRecorders encoding that data,
 // - a WebmMuxer class multiplexing encoded data into a WebM container, and
 // - a single recorder client receiving this contained data.
 // All methods are called on the same thread as construction and destruction,
-// i.e. the Main Render thread.
-// TODO(mcasas): Implement audio recording.
+// i.e. the Main Render thread. (Note that a BindToCurrentLoop is used to
+// guarantee this, since VideoTrackRecorder sends back frames on IO thread.)
+// TODO(mcasas): http://crbug.com/528519 Implement audio recording.
 class CONTENT_EXPORT MediaRecorderHandler final
     : public NON_EXPORTED_BASE(blink::WebMediaRecorderHandler) {
  public:
   MediaRecorderHandler();
   ~MediaRecorderHandler() override;
 
-  // See above, these methods should override blink::WebMediaRecorderHandler.
+  // blink::WebMediaRecorderHandler.
   bool canSupportMimeType(const blink::WebString& mimeType) override;
   bool initialize(blink::WebMediaRecorderHandlerClient* client,
                   const blink::WebMediaStream& media_stream,
@@ -57,7 +58,11 @@ class CONTENT_EXPORT MediaRecorderHandler final
  private:
   friend class MediaRecorderHandlerTest;
 
-  void WriteData(const base::StringPiece& data);
+  void OnEncodedVideo(const scoped_refptr<media::VideoFrame>& video_frame,
+                      scoped_ptr<std::string> encoded_data,
+                      base::TimeTicks timestamp,
+                      bool is_key_frame);
+  void WriteData(base::StringPiece data);
 
   void OnVideoFrameForTesting(const scoped_refptr<media::VideoFrame>& frame,
                               const base::TimeTicks& timestamp);

@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "media/base/limits.h"
 #include "media/base/video_frame.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace media {
 
@@ -34,16 +35,17 @@ WebmMuxer::WebmMuxer(const WriteDataCB& write_data_callback)
 }
 
 WebmMuxer::~WebmMuxer() {
-  // No need to segment_.Finalize() since is not Seekable(), i.e. a live stream,
-  // but is good practice.
+  // No need to segment_.Finalize() since is not Seekable(), i.e. a live
+  // stream, but is a good practice.
+  DCHECK(thread_checker_.CalledOnValidThread());
   segment_.Finalize();
 }
 
 void WebmMuxer::OnEncodedVideo(const scoped_refptr<VideoFrame>& video_frame,
-                               const base::StringPiece& encoded_data,
+                               scoped_ptr<std::string> encoded_data,
                                base::TimeTicks timestamp,
                                bool is_key_frame) {
-  DVLOG(1) << __FUNCTION__ << " - " << encoded_data.size() << "B";
+  DVLOG(1) << __FUNCTION__ << " - " << encoded_data->size() << "B";
   DCHECK(thread_checker_.CalledOnValidThread());
   if (!track_index_) {
     // |track_index_|, cannot be zero (!), initialize WebmMuxer in that case.
@@ -52,8 +54,8 @@ void WebmMuxer::OnEncodedVideo(const scoped_refptr<VideoFrame>& video_frame,
                   GetFrameRate(video_frame));
     first_frame_timestamp_ = timestamp;
   }
-  segment_.AddFrame(reinterpret_cast<const uint8_t*>(encoded_data.data()),
-                    encoded_data.size(),
+  segment_.AddFrame(reinterpret_cast<const uint8_t*>(encoded_data->data()),
+                    encoded_data->size(),
                     track_index_,
                     (timestamp - first_frame_timestamp_).InMicroseconds() *
                         base::Time::kNanosecondsPerMicrosecond,
@@ -98,7 +100,7 @@ mkvmuxer::int32 WebmMuxer::Write(const void* buf, mkvmuxer::uint32 len) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(buf);
   write_data_callback_.Run(base::StringPiece(reinterpret_cast<const char*>(buf),
-                                             len));
+                                            len));
   position_ += len;
   return 0;
 }

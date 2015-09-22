@@ -19,14 +19,7 @@ using ::testing::WithArgs;
 
 namespace media {
 
-// Dummy interface class to be able to MOCK its only function below.
-class EventHandlerInterface {
- public:
-  virtual void WriteCallback(const base::StringPiece& encoded_data) = 0;
-  virtual ~EventHandlerInterface() {}
-};
-
-class WebmMuxerTest : public testing::Test, public EventHandlerInterface {
+class WebmMuxerTest : public testing::Test {
  public:
   WebmMuxerTest()
       : webm_muxer_(base::Bind(&WebmMuxerTest::WriteCallback,
@@ -39,7 +32,7 @@ class WebmMuxerTest : public testing::Test, public EventHandlerInterface {
     EXPECT_FALSE(webm_muxer_.Seekable());
   }
 
-  MOCK_METHOD1(WriteCallback, void(const base::StringPiece&));
+  MOCK_METHOD1(WriteCallback, void(base::StringPiece));
 
   void SaveEncodedDataLen(const base::StringPiece& encoded_data) {
     last_encoded_length_ = encoded_data.size();
@@ -84,14 +77,14 @@ TEST_F(WebmMuxerTest, OnEncodedVideoTwoFrames) {
   const gfx::Size frame_size(160, 80);
   const scoped_refptr<VideoFrame> video_frame =
       VideoFrame::CreateBlackFrame(frame_size);
-  const base::StringPiece encoded_data("abcdefghijklmnopqrstuvwxyz");
+  const std::string encoded_data("abcdefghijklmnopqrstuvwxyz");
 
   EXPECT_CALL(*this, WriteCallback(_))
       .Times(AtLeast(1))
       .WillRepeatedly(WithArgs<0>(
           Invoke(this, &WebmMuxerTest::SaveEncodedDataLen)));
   webm_muxer_.OnEncodedVideo(video_frame,
-                             encoded_data,
+                             make_scoped_ptr(new std::string(encoded_data)),
                              base::TimeTicks::Now(),
                              false  /* keyframe */);
 
@@ -108,7 +101,7 @@ TEST_F(WebmMuxerTest, OnEncodedVideoTwoFrames) {
       .WillRepeatedly(WithArgs<0>(
           Invoke(this, &WebmMuxerTest::SaveEncodedDataLen)));
   webm_muxer_.OnEncodedVideo(video_frame,
-                             encoded_data,
+                             make_scoped_ptr(new std::string(encoded_data)),
                              base::TimeTicks::Now(),
                              false  /* keyframe */);
 

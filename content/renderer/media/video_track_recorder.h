@@ -7,11 +7,9 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/strings/string_piece.h"
 #include "base/threading/thread_checker.h"
 #include "content/public/renderer/media_stream_video_sink.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
-#include "ui/gfx/geometry/size.h"
 
 namespace media {
 class VideoFrame;
@@ -30,7 +28,7 @@ class CONTENT_EXPORT VideoTrackRecorder
  public:
   using OnEncodedVideoCB =
       base::Callback<void(const scoped_refptr<media::VideoFrame>& video_frame,
-                          const base::StringPiece& encoded_data,
+                          scoped_ptr<std::string> encoded_data,
                           base::TimeTicks capture_timestamp,
                           bool is_key_frame)>;
 

@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "content/renderer/media/video_track_recorder.h"
 #include "media/base/bind_to_current_loop.h"
+#include "media/base/video_frame.h"
 #include "media/capture/webm_muxer.h"
 #include "third_party/WebKit/public/platform/WebMediaRecorderHandlerClient.h"
 #include "third_party/WebKit/public/platform/WebString.h"
@@ -60,10 +61,10 @@ bool MediaRecorderHandler::start(int timeslice) {
   DCHECK(main_render_thread_checker_.CalledOnValidThread());
   DCHECK(!recording_);
   DCHECK(!media_stream_.isNull());
+  DCHECK(!webm_muxer_);
 
-  webm_muxer_.reset(new media::WebmMuxer(media::BindToCurrentLoop(base::Bind(
-      &MediaRecorderHandler::WriteData, weak_factory_.GetWeakPtr()))));
-  DCHECK(webm_muxer_);
+  webm_muxer_.reset(new media::WebmMuxer(base::Bind(
+      &MediaRecorderHandler::WriteData, weak_factory_.GetWeakPtr())));
 
   blink::WebVector<blink::WebMediaStreamTrack> video_tracks;
   media_stream_.videoTracks(video_tracks);
@@ -84,8 +85,8 @@ bool MediaRecorderHandler::start(int timeslice) {
     return false;
 
   const VideoTrackRecorder::OnEncodedVideoCB on_encoded_video_cb =
-      base::Bind(&media::WebmMuxer::OnEncodedVideo,
-                 base::Unretained(webm_muxer_.get()));
+      media::BindToCurrentLoop(base::Bind(&MediaRecorderHandler::OnEncodedVideo,
+                                          weak_factory_.GetWeakPtr()));
 
   video_recorders_.push_back(new VideoTrackRecorder(video_track,
                                                     on_encoded_video_cb));
@@ -100,7 +101,7 @@ void MediaRecorderHandler::stop() {
 
   recording_ = false;
   video_recorders_.clear();
-  webm_muxer_.reset(NULL);
+  webm_muxer_.reset();
 }
 
 void MediaRecorderHandler::pause() {
@@ -117,9 +118,21 @@ void MediaRecorderHandler::resume() {
   NOTIMPLEMENTED();
 }
 
-void MediaRecorderHandler::WriteData(const base::StringPiece& data) {
+void MediaRecorderHandler::OnEncodedVideo(
+    const scoped_refptr<media::VideoFrame>& video_frame,
+    scoped_ptr<std::string> encoded_data,
+    base::TimeTicks timestamp,
+    bool is_key_frame) {
   DCHECK(main_render_thread_checker_.CalledOnValidThread());
-  client_->writeData(data.data(), data.size(), false  /* lastInSlice */);
+  if (webm_muxer_) {
+    webm_muxer_->OnEncodedVideo(video_frame, encoded_data.Pass(), timestamp,
+                                is_key_frame);
+  }
+}
+
+void MediaRecorderHandler::WriteData(base::StringPiece data) {
+  DCHECK(main_render_thread_checker_.CalledOnValidThread());
+  client_->writeData(data.data(), data.length(), false  /* lastInSlice */);
 }
 
 void MediaRecorderHandler::OnVideoFrameForTesting(

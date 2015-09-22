@@ -37,7 +37,7 @@ class EncodedVideoHandlerInterface {
  public:
   virtual void OnEncodedVideo(
                    const scoped_refptr<media::VideoFrame>& video_frame,
-                   const base::StringPiece& encoded_data,
+                   scoped_ptr<std::string> encoded_data,
                    base::TimeTicks timestamp,
                    bool is_key_frame) = 0;
   virtual ~EncodedVideoHandlerInterface() {}
@@ -72,11 +72,18 @@ class VideoTrackRecorderTest : public testing::Test,
     EXPECT_TRUE(message_loop_.IsCurrent());
   }
 
-  MOCK_METHOD4(OnEncodedVideo,
+  MOCK_METHOD4(DoOnEncodedVideo,
                void(const scoped_refptr<media::VideoFrame>& frame,
-                    const base::StringPiece& encoded_data,
+                    std::string encoded_data,
                     base::TimeTicks timestamp,
                     bool keyframe));
+  void OnEncodedVideo(
+                   const scoped_refptr<media::VideoFrame>& video_frame,
+                   scoped_ptr<std::string> encoded_data,
+                   base::TimeTicks timestamp,
+                   bool is_key_frame) override {
+    DoOnEncodedVideo(video_frame, *encoded_data, timestamp, is_key_frame);
+  }
 
   void Encode(const scoped_refptr<media::VideoFrame>& frame,
               base::TimeTicks capture_time) {
@@ -121,7 +128,7 @@ TEST_F(VideoTrackRecorderTest, VideoEncoding) {
   InSequence s;
   const base::TimeTicks timeticks_now = base::TimeTicks::Now();
   base::StringPiece first_frame_encoded_data;
-  EXPECT_CALL(*this, OnEncodedVideo(video_frame, _, timeticks_now, true))
+  EXPECT_CALL(*this, DoOnEncodedVideo(video_frame, _, timeticks_now, true))
       .Times(1)
       .WillOnce(SaveArg<1>(&first_frame_encoded_data));
   Encode(video_frame, timeticks_now);
@@ -129,12 +136,12 @@ TEST_F(VideoTrackRecorderTest, VideoEncoding) {
   // Send another Video Frame.
   const base::TimeTicks timeticks_later = base::TimeTicks::Now();
   base::StringPiece second_frame_encoded_data;
-  EXPECT_CALL(*this, OnEncodedVideo(video_frame, _, timeticks_later, false))
+  EXPECT_CALL(*this, DoOnEncodedVideo(video_frame, _, timeticks_later, false))
       .Times(1)
       .WillOnce(SaveArg<1>(&second_frame_encoded_data));
   Encode(video_frame, timeticks_later);
 
-  // Send another Video Frame and expect only an OnEncodedVideo() callback.
+  // Send another Video Frame and expect only an DoOnEncodedVideo() callback.
   const gfx::Size frame_size2(180, 80);
   const scoped_refptr<media::VideoFrame> video_frame2 =
       media::VideoFrame::CreateBlackFrame(frame_size2);
@@ -143,7 +150,7 @@ TEST_F(VideoTrackRecorderTest, VideoEncoding) {
   base::Closure quit_closure = run_loop.QuitClosure();
 
   base::StringPiece third_frame_encoded_data;
-  EXPECT_CALL(*this, OnEncodedVideo(video_frame2, _, _, true))
+  EXPECT_CALL(*this, DoOnEncodedVideo(video_frame2, _, _, true))
       .Times(1)
       .WillOnce(DoAll(SaveArg<1>(&third_frame_encoded_data),
                 RunClosure(quit_closure)));

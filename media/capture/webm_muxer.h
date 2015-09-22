@@ -8,14 +8,16 @@
 #include <set>
 
 #include "base/callback.h"
-#include "base/gtest_prod_util.h"
 #include "base/numerics/safe_math.h"
 #include "base/strings/string_piece.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "media/base/media_export.h"
 #include "third_party/libwebm/source/mkvmuxer.hpp"
-#include "ui/gfx/geometry/size.h"
+
+namespace gfx {
+class Size;
+}  // namespace gfx
 
 namespace media {
 
@@ -25,29 +27,25 @@ class VideoFrame;
 // Matroska container [2], composed of an EBML header, and a single Segment
 // including at least a Track Section and a number of SimpleBlocks each
 // containing a single encoded video frame. WebM container has no Trailer.
-// Clients will push encoded VPx video frames one by one via the
-// OnEncodedVideo(). libwebm will eventually ping the WriteDataCB passed on
-// contructor with the wrapped encoded data.
-// WebmMuxer is created/destroyed on a thread, usually the Main Render thread,
-// and receives OnEncodedVideo()s on another thread, usually Render IO.
+// Clients will push encoded VPx video frames one by one via OnEncodedVideo().
+// libwebm will eventually ping the WriteDataCB passed on contructor with the
+// wrapped encoded data.
+// WebmMuxer is designed for single thread use throughout.
 // [1] http://www.webmproject.org/docs/container/
 // [2] http://www.matroska.org/technical/specs/index.html
 // TODO(mcasas): Add support for Audio muxing.
 class MEDIA_EXPORT WebmMuxer : public NON_EXPORTED_BASE(mkvmuxer::IMkvWriter) {
  public:
   // Callback to be called when WebmMuxer is ready to write a chunk of data,
-  // either any file header or a SingleBlock. The chunk is described as a byte
-  // array and a byte length.
-  using WriteDataCB = base::Callback<void(const base::StringPiece&)>;
+  // either any file header or a SingleBlock.
+  using WriteDataCB = base::Callback<void(base::StringPiece)>;
 
   explicit WebmMuxer(const WriteDataCB& write_data_callback);
   ~WebmMuxer() override;
 
   // Adds a |video_frame| with |encoded_data.data()| to WebM Segment.
-  // TODO(mcasas): Revisit how |encoded_data| is passed once the whole recording
-  // chain is setup (http://crbug.com/262211).
   void OnEncodedVideo(const scoped_refptr<VideoFrame>& video_frame,
-                      const base::StringPiece& encoded_data,
+                      scoped_ptr<std::string> encoded_data,
                       base::TimeTicks timestamp,
                       bool is_key_frame);
 
@@ -68,7 +66,7 @@ class MEDIA_EXPORT WebmMuxer : public NON_EXPORTED_BASE(mkvmuxer::IMkvWriter) {
   void ElementStartNotify(mkvmuxer::uint64 element_id,
                           mkvmuxer::int64 position) override;
 
-  // Used to DCHECK that we are called on the correct thread (usually IO)
+  // Used to DCHECK that we are called on the correct thread.
   base::ThreadChecker thread_checker_;
 
   // A caller-side identifier to interact with |segment_|, initialised upon
