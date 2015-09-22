@@ -762,12 +762,13 @@ static_library("test_support_sync_fake_server") {
     "//base",
     "//net",
     "//testing/gtest",
-    "//third_party/protobuf:protobuf_lite",
     "//sync",
     "//url",
   ]
 
-  forward_dependent_configs_from = [ "//third_party/protobuf:protobuf_lite" ]
+  public_deps = [
+    "//third_party/protobuf:protobuf_lite",
+  ]
 
   configs += [ "//build/config/compiler:wexit_time_destructors" ]
 }

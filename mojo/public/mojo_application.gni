@@ -96,9 +96,6 @@ template("mojo_native_application") {
                          ".",
                          mojo_root)
       deps += mojo_deps
-      if (defined(invoker.forward_dependent_configs_from)) {
-        forward_dependent_configs_from = invoker.forward_dependent_configs_from
-      }
       if (defined(invoker.public_deps)) {
         public_deps = invoker.public_deps
       }
@@ -214,9 +211,6 @@ template("mojo_native_application") {
                          ".",
                          mojo_root)
       deps += mojo_deps
-      if (defined(invoker.forward_dependent_configs_from)) {
-        forward_dependent_configs_from = invoker.forward_dependent_configs_from
-      }
       if (defined(invoker.public_deps)) {
         public_deps = invoker.public_deps
       }

@@ -107,7 +107,6 @@ template("ios_app") {
                              "data",
                              "data_deps",
                              "defines",
-                             "forward_dependent_configs_from",
                              "include_dirs",
                              "ldflags",
                              "public",
