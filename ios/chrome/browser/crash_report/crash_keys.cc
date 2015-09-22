@@ -7,7 +7,7 @@
 #include "base/debug/crash_logging.h"
 #include "base/macros.h"
 #include "breakpad/src/common/simple_string_dictionary.h"
-#include "components/crash_keys/crash_keys.h"
+#include "components/crash/core/common/crash_keys.h"
 
 namespace {
 

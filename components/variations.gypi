@@ -20,7 +20,7 @@
         '../third_party/mt19937ar/mt19937ar.gyp:mt19937ar',
         '../third_party/protobuf/protobuf.gyp:protobuf_lite',
         'compression',
-        'crash_keys',
+        'crash_core_common',
       ],
       'sources': [
         # Note: sources list duplicated in GN build.

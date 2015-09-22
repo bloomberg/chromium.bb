@@ -3,7 +3,59 @@
 # found in the LICENSE file.
 
 {
+  'targets': [
+    {
+      # GN version: //components/crash/core/common
+      'target_name': 'crash_core_common',
+      'type': 'static_library',
+      'include_dirs': [
+        '..',
+      ],
+      'dependencies': [
+        # List of dependencies is intentionally very minimal. Please avoid
+        # adding extra dependencies without first checking with OWNERS.
+        '../base/base.gyp:base',
+      ],
+      'sources': [
+        'crash/core/common/crash_keys.cc',
+        'crash/core/common/crash_keys.h',
+      ],
+      'conditions': [
+        ['OS=="mac" or OS=="ios"', {
+          'sources': [
+            'crash/core/common/objc_zombie.h',
+            'crash/core/common/objc_zombie.mm',
+          ],
+        }],
+      ],
+    },
+  ],
   'conditions': [
+    ['OS=="win" and target_arch=="ia32"', {
+      'targets': [
+        {
+          'target_name': 'crash_core_common_win64',
+          'type': 'static_library',
+          'include_dirs': [
+            '..',
+          ],
+          'dependencies': [
+            # List of dependencies is intentionally very minimal. Please avoid
+            # adding extra dependencies without first checking with OWNERS.
+            '../base/base.gyp:base_win64',
+          ],
+          'sources': [
+            'crash/core/common/crash_keys.cc',
+            'crash/core/common/crash_keys.h',
+          ],
+          'configurations': {
+            'Common_Base': {
+              'msvs_target_platform': 'x64',
+            },
+          },
+        },
+      ],
+    }],
     ['OS!="ios"', {
       'targets': [
         {

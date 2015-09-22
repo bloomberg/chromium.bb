@@ -107,7 +107,7 @@ if (!is_android) {
         "//chrome_elf",
         "//components/browser_watcher:browser_watcher_client",
         "//components/crash/content/app",
-        "//components/crash_keys",
+        "//components/crash/core/common",
         "//content:startup_helper_win",
         "//crypto",
         "//sandbox",

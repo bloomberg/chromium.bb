@@ -1937,7 +1937,7 @@ if (!is_android) {
         "//breakpad:client",
         "//chrome/browser",
         "//chrome/child",
-        "//components/crash_keys",
+        "//components/crash/core/common",
         "//base/test:run_all_unittests",
         "//base/test:test_support",
       ]

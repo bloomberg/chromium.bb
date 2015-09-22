@@ -63,7 +63,7 @@ static_library("common") {
     "//components/cloud_devices/common",
     "//components/component_updater",
     "//components/content_settings/core/common",
-    "//components/crash_keys",
+    "//components/crash/core/common",
     "//components/favicon_base",
     "//components/gcm_driver/common",
     "//components/json_schema",

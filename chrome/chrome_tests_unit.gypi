@@ -498,7 +498,6 @@
       'common/mac/cfbundle_blocker_unittest.mm',
       'common/mac/mock_launchd.cc',
       'common/mac/mock_launchd.h',
-      'common/mac/objc_zombie_unittest.mm',
       'common/partial_circular_buffer_unittest.cc',
       'common/pref_names_util_unittest.cc',
       'common/search_urls_unittest.cc',
@@ -617,8 +616,8 @@
       'browser/extensions/api/declarative/rules_registry_service_unittest.cc',
       'browser/extensions/api/declarative/rules_registry_with_cache_unittest.cc',
       'browser/extensions/api/declarative_content/chrome_content_rules_registry_unittest.cc',
-      'browser/extensions/api/declarative_content/content_condition_unittest.cc',
       'browser/extensions/api/declarative_content/content_action_unittest.cc',
+      'browser/extensions/api/declarative_content/content_condition_unittest.cc',
       'browser/extensions/api/declarative_content/declarative_content_condition_tracker_test.cc',
       'browser/extensions/api/declarative_content/declarative_content_condition_tracker_test.h',
       'browser/extensions/api/declarative_content/declarative_content_css_condition_tracker_unittest.cc',
@@ -2775,7 +2774,7 @@
         # 1) everything that the chrome binaries depend on:
         '<@(chromium_browser_dependencies)',
         '<@(chromium_child_dependencies)',
-        '../components/components.gyp:crash_keys',
+        '../components/components.gyp:crash_core_common',
         '../content/content.gyp:content_app_both',
         # 2) test-specific support libraries:
         '../base/base.gyp:run_all_unittests',

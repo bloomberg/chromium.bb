@@ -64,7 +64,7 @@ source_set("variations") {
     "//base",
     "//base:prefs",
     "//components/compression",
-    "//components/crash_keys",
+    "//components/crash/core/common",
     "//crypto",
     "//third_party/mt19937ar",
     "//third_party/protobuf:protobuf_lite",

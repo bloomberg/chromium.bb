@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/crash_keys/crash_keys.h"
+#include "components/crash/core/common/crash_keys.h"
 
 #include "base/debug/crash_logging.h"
 #include "base/format_macros.h"

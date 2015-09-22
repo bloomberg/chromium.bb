@@ -22,7 +22,7 @@
 #include "chrome/browser/ui/tab_contents/tab_contents_iterator.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/crash_keys.h"
-#import "chrome/common/mac/objc_zombie.h"
+#import "components/crash/core/common/objc_zombie.h"
 #include "content/public/browser/browser_accessibility_state.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"

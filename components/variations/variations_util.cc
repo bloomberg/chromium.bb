@@ -6,7 +6,7 @@
 
 #include <vector>
 
-#include "components/crash_keys/crash_keys.h"
+#include "components/crash/core/common/crash_keys.h"
 #include "components/variations/active_field_trials.h"
 
 namespace variations {

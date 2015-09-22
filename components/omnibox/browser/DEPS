@@ -1,6 +1,6 @@
 include_rules = [
   "+components/bookmarks/browser",
-  "+components/crash_keys",  # TODO(mpearson): remove once 464926 is fixed.
+  "+components/crash/core/common",  # TODO(mpearson): remove once 464926 is fixed.
   "+components/data_use_measurement/core",
   "+components/history/core/browser",
   "+components/keyed_service/core",

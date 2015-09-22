@@ -3,7 +3,7 @@
 include_rules = [
   "-components",
   "+components/compression",
-  "+components/crash_keys",
+  "+components/crash/core/common",
   "+components/variations",
   "+crypto",
   "-net",

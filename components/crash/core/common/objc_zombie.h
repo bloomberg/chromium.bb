@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_MAC_OBJC_ZOMBIE_H_
-#define CHROME_COMMON_MAC_OBJC_ZOMBIE_H_
+#ifndef COMPONENTS_CRASH_CORE_COMMON_OBJC_ZOMBIE_H_
+#define COMPONENTS_CRASH_CORE_COMMON_OBJC_ZOMBIE_H_
 
 #include "base/basictypes.h"
 
@@ -43,4 +43,4 @@ void ZombieDisable();
 #endif  // __OBJC__
 #endif  // OS_MACOSX
 
-#endif  // CHROME_COMMON_MAC_OBJC_ZOMBIE_H_
+#endif  // COMPONENTS_CRASH_CORE_COMMON_OBJC_ZOMBIE_H_

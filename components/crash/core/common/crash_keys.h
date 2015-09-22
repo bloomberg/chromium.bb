@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_CRASH_KEYS_CRASH_KEYS_H_
-#define COMPONENTS_CRASH_KEYS_CRASH_KEYS_H_
+#ifndef COMPONENTS_CRASH_CORE_COMMON_CRASH_KEYS_H_
+#define COMPONENTS_CRASH_CORE_COMMON_CRASH_KEYS_H_
 
 #include <string>
 #include <vector>
@@ -74,4 +74,4 @@ extern const char kZombieTrace[];
 
 }  // namespace crash_keys
 
-#endif  // COMPONENTS_CRASH_KEYS_CRASH_KEYS_H_
+#endif  // COMPONENTS_CRASH_CORE_COMMON_CRASH_KEYS_H_

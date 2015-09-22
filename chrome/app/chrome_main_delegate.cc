@@ -63,8 +63,8 @@
 #include "chrome/app/chrome_main_mac.h"
 #include "chrome/browser/mac/relauncher.h"
 #include "chrome/common/mac/cfbundle_blocker.h"
-#include "chrome/common/mac/objc_zombie.h"
 #include "components/crash/content/app/crashpad_mac.h"
+#include "components/crash/core/common/objc_zombie.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #endif
 

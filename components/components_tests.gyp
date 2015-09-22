@@ -120,6 +120,7 @@
     ],
     'crash_unittest_sources': [
       'crash/content/app/crash_keys_win_unittest.cc',
+      'crash/core/common/objc_zombie_unittest.mm',
     ],
     'crx_file_unittest_sources': [
       'crx_file/id_util_unittest.cc',
@@ -910,6 +911,7 @@
         'components.gyp:content_settings_core_browser',
         'components.gyp:content_settings_core_common',
         'components.gyp:content_settings_core_test_support',
+        'components.gyp:crash_core_common',
         'components.gyp:crx_file',
         'components.gyp:data_reduction_proxy_core_browser',
         'components.gyp:data_reduction_proxy_core_common',
@@ -995,6 +997,11 @@
         'url_formatter/url_formatter.gyp:url_formatter',
       ],
       'conditions': [
+        ['OS!="mac" and OS!="ios"', {
+          'sources!': [
+            'crash/core/common/objc_zombie_unittest.mm',
+          ],
+        }],
         ['enable_rlz_support==1', {
           'sources': [
             '<@(rlz_unittest_sources)',

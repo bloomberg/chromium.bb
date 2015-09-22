@@ -10,7 +10,7 @@
 #include <vector>
 
 #include "base/debug/crash_logging.h"
-#include "components/crash_keys/crash_keys.h"
+#include "components/crash/core/common/crash_keys.h"
 
 namespace base {
 class CommandLine;
