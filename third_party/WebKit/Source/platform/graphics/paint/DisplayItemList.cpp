@@ -263,7 +263,6 @@ DisplayItems::iterator DisplayItemList::findOutOfOrderCachedItemForward(const Di
 
 void DisplayItemList::copyCachedSubsequence(DisplayItems::iterator& currentIt, DisplayItems& updatedList)
 {
-    ASSERT(RuntimeEnabledFeatures::slimmingPaintV2Enabled());
     ASSERT(currentIt->type() == DisplayItem::BeginSubsequence);
     ASSERT(!currentIt->scope());
     DisplayItem::Id endSubsequenceId(currentIt->client(), DisplayItem::EndSubsequence, 0);
@@ -487,10 +486,12 @@ void DisplayItemList::checkUnderInvalidation(DisplayItems::iterator& newIt, Disp
         ASSERT(newIt != m_newDisplayItems.end());
         if (newIt->isCached())
             checkUnderInvalidation(newIt, currentIt);
-        else if (endSubsequenceId.matches(*newIt))
-            break;
         else
             checkCachedDisplayItemIsUnchanged(messagePrefix.data(), *newIt, *currentIt);
+
+        if (endSubsequenceId.matches(*newIt))
+            break;
+
         ++newIt;
         ++currentIt;
     }

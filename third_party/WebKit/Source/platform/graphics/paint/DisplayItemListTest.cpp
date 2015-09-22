@@ -21,23 +21,19 @@ class DisplayItemListTest : public ::testing::Test {
 public:
     DisplayItemListTest()
         : m_displayItemList(DisplayItemList::create())
-        , m_originalSlimmingPaintV2Enabled(RuntimeEnabledFeatures::slimmingPaintV2Enabled()) { }
+        , m_originalSlimmingPaintSubsequenceCachingEnabled(RuntimeEnabledFeatures::slimmingPaintSubsequenceCachingEnabled()) { }
 
 protected:
     DisplayItemList& displayItemList() { return *m_displayItemList; }
 
 private:
-    void SetUp() override
-    {
-        RuntimeEnabledFeatures::setSlimmingPaintV2Enabled(true);
-    }
     void TearDown() override
     {
-        RuntimeEnabledFeatures::setSlimmingPaintV2Enabled(m_originalSlimmingPaintV2Enabled);
+        RuntimeEnabledFeatures::setSlimmingPaintSubsequenceCachingEnabled(m_originalSlimmingPaintSubsequenceCachingEnabled);
     }
 
     OwnPtr<DisplayItemList> m_displayItemList;
-    bool m_originalSlimmingPaintV2Enabled;
+    bool m_originalSlimmingPaintSubsequenceCachingEnabled;
 };
 
 const DisplayItem::Type foregroundDrawingType = static_cast<DisplayItem::Type>(DisplayItem::DrawingPaintPhaseFirst + 4);
@@ -452,6 +448,8 @@ TEST_F(DisplayItemListTest, ComplexUpdateSwapOrder)
 
 TEST_F(DisplayItemListTest, CachedSubsequenceSwapOrder)
 {
+    RuntimeEnabledFeatures::setSlimmingPaintSubsequenceCachingEnabled(true);
+
     TestDisplayItemClient container1("container1");
     TestDisplayItemClient content1("content1");
     TestDisplayItemClient container2("container2");
@@ -542,6 +540,8 @@ TEST_F(DisplayItemListTest, OutOfOrderNoCrash)
 
 TEST_F(DisplayItemListTest, CachedNestedSubsequenceUpdate)
 {
+    RuntimeEnabledFeatures::setSlimmingPaintSubsequenceCachingEnabled(true);
+
     TestDisplayItemClient container1("container1");
     TestDisplayItemClient content1("content1");
     TestDisplayItemClient container2("container2");

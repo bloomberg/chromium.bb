@@ -16,7 +16,9 @@ namespace blink {
 
 class DisplayItemListPaintTest : public RenderingTest {
 public:
-    DisplayItemListPaintTest() { }
+    DisplayItemListPaintTest()
+        : m_originalSlimmingPaintSubsequenceCachingEnabled(RuntimeEnabledFeatures::slimmingPaintSubsequenceCachingEnabled())
+        { }
 
 protected:
     LayoutView& layoutView() { return *document().layoutView(); }
@@ -28,6 +30,12 @@ private:
         RenderingTest::SetUp();
         enableCompositing();
     }
+    void TearDown() override
+    {
+        RuntimeEnabledFeatures::setSlimmingPaintSubsequenceCachingEnabled(m_originalSlimmingPaintSubsequenceCachingEnabled);
+    }
+
+    bool m_originalSlimmingPaintSubsequenceCachingEnabled;
 };
 
 // Slimming paint v2 has subtly different behavior on some paint tests. This

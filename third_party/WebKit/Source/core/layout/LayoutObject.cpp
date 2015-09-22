@@ -1191,11 +1191,13 @@ void LayoutObject::invalidatePaintUsingContainer(const LayoutBoxModelObject& pai
 void LayoutObject::invalidateDisplayItemClient(const DisplayItemClientWrapper& displayItemClient) const
 {
     // Not using enclosingCompositedContainer() directly because this object may be in an orphaned subtree.
-    if (const DeprecatedPaintLayer* enclosingLayer = this->enclosingLayer()) {
+    if (DeprecatedPaintLayer* enclosingLayer = this->enclosingLayer()) {
         // This is valid because we want to invalidate the client in the display item list of the current backing.
         DisableCompositingQueryAsserts disabler;
         if (const DeprecatedPaintLayer* paintInvalidationLayer = enclosingLayer->enclosingLayerForPaintInvalidationCrossingFrameBoundaries())
             paintInvalidationLayer->layoutObject()->invalidateDisplayItemClientOnBacking(displayItemClient);
+
+        enclosingLayer->setNeedsRepaint();
     }
 }
 
@@ -1203,10 +1205,8 @@ void LayoutObject::invalidateDisplayItemClients(const LayoutBoxModelObject& pain
 {
     paintInvalidationContainer.invalidateDisplayItemClientOnBacking(*this);
 
-    if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
-        if (DeprecatedPaintLayer* enclosingLayer = this->enclosingLayer())
-            enclosingLayer->setNeedsRepaint();
-    }
+    if (DeprecatedPaintLayer* enclosingLayer = this->enclosingLayer())
+        enclosingLayer->setNeedsRepaint();
 }
 
 LayoutRect LayoutObject::boundsRectForPaintInvalidation(const LayoutBoxModelObject* paintInvalidationContainer, const PaintInvalidationState* paintInvalidationState) const
@@ -3140,10 +3140,8 @@ inline void LayoutObject::markContainerChainForPaintInvalidation()
     // means we won't skip painting of the whole layer with a CachedSubsequenceDisplayItem.
     // This is to ensure we'll check paint offset changes of the objects on the layer.
     // We'll still use cached display items for non-invalidated objects on the layer.
-    if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
-        if (DeprecatedPaintLayer* enclosingLayer = this->enclosingLayer())
-            enclosingLayer->setNeedsRepaint();
-    }
+    if (DeprecatedPaintLayer* enclosingLayer = this->enclosingLayer())
+        enclosingLayer->setNeedsRepaint();
 
     for (LayoutObject* container = this->containerCrossingFrameBoundaries(); container && !container->shouldCheckForPaintInvalidationRegardlessOfPaintInvalidationState(); container = container->containerCrossingFrameBoundaries())
         container->m_bitfields.setChildShouldCheckForPaintInvalidation(true);

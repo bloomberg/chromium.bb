@@ -567,6 +567,9 @@ public:
     void setNeedsRepaint();
     void clearNeedsRepaint() { m_needsRepaint = false; }
 
+    IntSize previousScrollOffsetAccumulationForPainting() const { return m_previousScrollOffsetAccumulationForPainting; }
+    void setPreviousScrollOffsetAccumulationForPainting(const IntSize& s) { m_previousScrollOffsetAccumulationForPainting = s; }
+
     // For subsequence display items.
     DisplayItemClient displayItemClient() const { return toDisplayItemClient(this); }
 
@@ -642,7 +645,7 @@ private:
 
     void blockSelectionGapsBoundsChanged();
 
-    void markCompositingContainerChainForNeedsRepaint();
+    void markAncestorChainForNeedsRepaint();
 
     DeprecatedPaintLayerType m_layerType;
 
@@ -752,6 +755,8 @@ private:
     OwnPtr<DeprecatedPaintLayerReflectionInfo> m_reflectionInfo;
 
     LayoutSize m_subpixelAccumulation; // The accumulated subpixel offset of a composited layer's composited bounds compared to absolute coordinates.
+
+    IntSize m_previousScrollOffsetAccumulationForPainting;
 };
 
 } // namespace blink

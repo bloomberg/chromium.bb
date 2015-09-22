@@ -777,8 +777,7 @@ bool DeprecatedPaintLayer::updateLayerPosition()
 
     if (m_location != localPoint) {
         positionOrOffsetChanged = true;
-        if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
-            setNeedsRepaint();
+        setNeedsRepaint();
     }
     m_location = localPoint;
 
@@ -1140,6 +1139,8 @@ void DeprecatedPaintLayer::addChild(DeprecatedPaintLayer* child, DeprecatedPaint
     dirtyAncestorChainVisibleDescendantStatus();
     dirtyAncestorChainHasSelfPaintingLayerDescendantStatus();
 
+    child->setNeedsRepaint();
+
     child->updateDescendantDependentFlags();
 }
 
@@ -1182,6 +1183,8 @@ DeprecatedPaintLayer* DeprecatedPaintLayer::removeChild(DeprecatedPaintLayer* ol
 
     if (oldChild->enclosingPaginationLayer())
         oldChild->clearPaginationRecursive();
+
+    setNeedsRepaint();
 
     return oldChild;
 }
@@ -2660,35 +2663,45 @@ void DeprecatedPaintLayer::computeSelfHitTestRects(LayerHitTestRects& rects) con
 
 void DeprecatedPaintLayer::setNeedsRepaint()
 {
-    ASSERT(RuntimeEnabledFeatures::slimmingPaintV2Enabled());
-
     DeprecatedPaintLayer* layer = this;
-    while (!layer->isSelfPaintingLayer() && !layer->hasSelfPaintingLayerDescendant()) {
+    while (layer && !layer->isSelfPaintingLayer() && !layer->hasSelfPaintingLayerDescendant())
         layer = layer->parent();
-        ASSERT(layer); // At least the root layer is self painting.
-    }
 
-    if (layer->m_needsRepaint)
+    // This layer is in an orphaned layer tree. Will mark ancestor for repaint when
+    // the orphaned tree is added into another tree.
+    if (!layer)
         return;
+
     layer->m_needsRepaint = true;
-    layer->markCompositingContainerChainForNeedsRepaint();
+
+    // Do this unconditionally to ensure container chain is marked when compositing status of the layer changes.
+    layer->markAncestorChainForNeedsRepaint();
 }
 
-void DeprecatedPaintLayer::markCompositingContainerChainForNeedsRepaint()
+void DeprecatedPaintLayer::markAncestorChainForNeedsRepaint()
 {
+    // Need to access compositingState(). We've ensured correct flag setting when compositingState() changes.
+    DisableCompositingQueryAsserts disabler;
+
+    if (compositingState() != NotComposited)
+        return;
+
     DeprecatedPaintLayer* layer = this;
     while (true) {
-        DeprecatedPaintLayer* container = layer->compositingContainer();
+        DeprecatedPaintLayer* container = layer->parent();
         if (!container) {
             LayoutObject* owner = layer->layoutObject()->frame()->ownerLayoutObject();
             if (!owner)
                 break;
             container = owner->enclosingLayer();
         }
-        if (container->m_needsRepaint)
-            break;
-        if (container->isSelfPaintingLayer() || container->hasSelfPaintingLayerDescendant())
+        if (container->isSelfPaintingLayer() || container->hasSelfPaintingLayerDescendant()) {
+            if (container->m_needsRepaint)
+                break;
             container->m_needsRepaint = true;
+        }
+        if (container->compositingState() != NotComposited)
+            break;
         layer = container;
     }
 }

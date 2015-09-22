@@ -76,9 +76,10 @@ DeprecatedPaintLayerPainter::PaintResult DeprecatedPaintLayerPainter::paintLayer
         }
     }
 
-    // Non self-painting leaf layers don't need to be painted as their layoutObject() should properly paint itself.
+    // Non self-painting layers without self-painting descendants don't need to be painted as their
+    // layoutObject() should properly paint itself.
     if (!m_paintLayer.isSelfPaintingLayer() && !m_paintLayer.hasSelfPaintingLayerDescendant()) {
-        ASSERT(!m_paintLayer.needsRepaint());
+        ASSERT(!m_paintLayer.needsRepaint() || !RuntimeEnabledFeatures::slimmingPaintV2Enabled());
         return FullyPainted;
     }
 
@@ -117,7 +118,7 @@ DeprecatedPaintLayerPainter::PaintResult DeprecatedPaintLayerPainter::paintLayer
     }
 
     localPaintFlags |= PaintLayerPaintingCompositingAllPhases;
-    if (paintLayerContents(context, paintingInfo, localPaintFlags, fragmentPolicy) == MaybeNotFullyPainted)
+    if (paintLayerContentsInternal(context, paintingInfo, localPaintFlags, fragmentPolicy) == MaybeNotFullyPainted)
         result = MaybeNotFullyPainted;
 
     return result;
@@ -185,7 +186,14 @@ private:
     GraphicsContext* m_context;
 };
 
-DeprecatedPaintLayerPainter::PaintResult DeprecatedPaintLayerPainter::paintLayerContents(GraphicsContext* context, const DeprecatedPaintLayerPaintingInfo& paintingInfoArg, PaintLayerFlags paintFlags, FragmentPolicy fragmentPolicy)
+DeprecatedPaintLayerPainter::PaintResult DeprecatedPaintLayerPainter::paintLayerContents(GraphicsContext* context, const DeprecatedPaintLayerPaintingInfo& paintingInfo, PaintLayerFlags paintFlags, FragmentPolicy fragmentPolicy)
+{
+    PaintResult result = paintLayerContentsInternal(context, paintingInfo, paintFlags, fragmentPolicy);
+    m_paintLayer.clearNeedsRepaint();
+    return result;
+}
+
+DeprecatedPaintLayerPainter::PaintResult DeprecatedPaintLayerPainter::paintLayerContentsInternal(GraphicsContext* context, const DeprecatedPaintLayerPaintingInfo& paintingInfoArg, PaintLayerFlags paintFlags, FragmentPolicy fragmentPolicy)
 {
     ASSERT(m_paintLayer.isSelfPaintingLayer() || m_paintLayer.hasSelfPaintingLayerDescendant());
     ASSERT(!(paintFlags & PaintLayerAppliedTransform));
@@ -207,20 +215,22 @@ DeprecatedPaintLayerPainter::PaintResult DeprecatedPaintLayerPainter::paintLayer
         || (!isPaintingScrollingContent && isPaintingCompositedForeground));
     bool shouldPaintContent = m_paintLayer.hasVisibleContent() && isSelfPaintingLayer && !isPaintingOverlayScrollbars;
 
-    bool needsRepaint = m_paintLayer.needsRepaint();
-    m_paintLayer.clearNeedsRepaint();
-
     PaintResult result = FullyPainted;
 
     if (paintFlags & PaintLayerPaintingRootBackgroundOnly && !m_paintLayer.layoutObject()->isLayoutView() && !m_paintLayer.layoutObject()->isDocumentElement())
         return result;
 
     Optional<SubsequenceRecorder> subsequenceRecorder;
-    if (isPaintingOverlayScrollbars) {
-        // We should have cleared the repaint flag in the first pass.
-        ASSERT(!needsRepaint);
-    } else {
-        if (!needsRepaint && SubsequenceRecorder::useCachedSubsequenceIfPossible(*context, m_paintLayer))
+
+    bool scrollOffsetAccumulationChanged = paintingInfoArg.scrollOffsetAccumulation != m_paintLayer.previousScrollOffsetAccumulationForPainting();
+    if (scrollOffsetAccumulationChanged)
+        m_paintLayer.setPreviousScrollOffsetAccumulationForPainting(paintingInfoArg.scrollOffsetAccumulation);
+
+    if (!isPaintingOverlayScrollbars
+        && !(paintingInfoArg.globalPaintFlags() & GlobalPaintFlattenCompositingLayers)
+        && !(paintFlags & PaintLayerPaintingReflection)
+        && !(paintFlags & PaintLayerPaintingRootBackgroundOnly)) {
+        if (!scrollOffsetAccumulationChanged && !m_paintLayer.needsRepaint() && SubsequenceRecorder::useCachedSubsequenceIfPossible(*context, m_paintLayer))
             return result;
         subsequenceRecorder.emplace(*context, m_paintLayer);
     }
