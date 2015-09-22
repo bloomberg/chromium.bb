@@ -1060,6 +1060,21 @@ TEST(URLCanonTest, Path) {
     {"/%7Ffp3%3Eju%3Dduvgw%3Dd", L"/%7Ffp3%3Eju%3Dduvgw%3Dd", "/%7Ffp3%3Eju%3Dduvgw%3Dd", Component(0, 24), true},
       // @ should be passed through unchanged (escaped or unescaped).
     {"/@asdf%40", L"/@asdf%40", "/@asdf%40", Component(0, 9), true},
+      // Nested escape sequences should result in escaping the leading '%' if
+      // unescaping would result in a new escape sequence.
+    {"/%A%42", L"/%A%42", "/%25AB", Component(0, 6), true},
+    {"/%%41B", L"/%%41B", "/%25AB", Component(0, 6), true},
+    {"/%%41%42", L"/%%41%42", "/%25AB", Component(0, 6), true},
+      // Make sure truncated "nested" escapes don't result in reading off the
+      // string end.
+    {"/%%41", L"/%%41", "/%A", Component(0, 3), true},
+      // Don't unescape the leading '%' if unescaping doesn't result in a valid
+      // new escape sequence.
+    {"/%%470", L"/%%470", "/%G0", Component(0, 4), true},
+    {"/%%2D%41", L"/%%2D%41", "/%-A", Component(0, 4), true},
+      // Don't erroneously downcast a UTF-16 charater in a way that makes it
+      // look like part of an escape sequence.
+    {NULL, L"/%%41\x0130", "/%A%C4%B0", Component(0, 9), true},
 
     // ----- encoding tests -----
       // Basic conversions
