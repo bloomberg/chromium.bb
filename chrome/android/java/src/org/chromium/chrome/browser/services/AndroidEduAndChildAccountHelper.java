@@ -4,20 +4,23 @@
 
 package org.chromium.chrome.browser.services;
 
-import android.app.Activity;
+import android.content.Context;
 
+import org.chromium.base.Log;
 import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.childaccounts.ChildAccountService;
 
 /**
  * A helper for Android EDU and child account checks.
  * Usage:
- * new AndroidEduAndChildAccountHelper() { override onParametersReady() }.start(activity).
+ * new AndroidEduAndChildAccountHelper() { override onParametersReady() }.start(appContext).
  */
 public abstract class AndroidEduAndChildAccountHelper
         implements ChildAccountService.HasChildAccountCallback, AndroidEduOwnerCheckCallback {
     private Boolean mIsAndroidEduDevice;
     private Boolean mHasChildAccount;
+    // Abbreviated to < 20 chars.
+    private static final String TAG = "EduChildHelper";
 
     /** The callback called when Android EDU and child account parameters are known. */
     public abstract void onParametersReady();
@@ -35,26 +38,26 @@ public abstract class AndroidEduAndChildAccountHelper
     /**
      * Starts fetching the Android EDU and child accounts information.
      * Calls onParametersReady() once the information is fetched.
-     * @param activity The context.
+     * @param appContext The application context.
      */
-    public void start(Activity activity) {
-        android.util.Log.i("AndroidEduAndChildAccountHelper", "before checking child and EDU");
-        ChildAccountService.getInstance(activity).checkHasChildAccount(this);
-        ((ChromeApplication) activity.getApplication()).checkIsAndroidEduDevice(this);
+    public void start(Context appContext) {
+        Log.d(TAG, "before checking child and EDU");
+        ChildAccountService.getInstance(appContext).checkHasChildAccount(this);
+        ((ChromeApplication) appContext).checkIsAndroidEduDevice(this);
         // TODO(aruslan): Should we start a watchdog to kill if Child/Edu stuff takes too long?
-        android.util.Log.i("AndroidEduAndChildAccountHelper", "returning from start");
+        Log.d(TAG, "returning from start");
     }
 
     private void checkDone() {
         if (mIsAndroidEduDevice == null || mHasChildAccount == null) return;
-        android.util.Log.i("AndroidEduAndChildAccountHelper", "parameters are ready");
+        Log.d(TAG, "parameters are ready");
         onParametersReady();
     }
 
     // AndroidEdu.OwnerCheckCallback:
     @Override
     public void onSchoolCheckDone(boolean isAndroidEduDevice) {
-        android.util.Log.i("AndroidEduAndChildAccountHelper", "onSchoolCheckDone");
+        Log.d(TAG, "onSchoolCheckDone");
         mIsAndroidEduDevice = isAndroidEduDevice;
         checkDone();
     }
@@ -62,7 +65,7 @@ public abstract class AndroidEduAndChildAccountHelper
     // ChildAccountManager.HasChildAccountCallback:
     @Override
     public void onChildAccountChecked(boolean hasChildAccount) {
-        android.util.Log.i("AndroidEduAndChildAccountHelper", "onChildAccountChecked");
+        Log.d(TAG, "onChildAccountChecked");
         mHasChildAccount = hasChildAccount;
         checkDone();
     }

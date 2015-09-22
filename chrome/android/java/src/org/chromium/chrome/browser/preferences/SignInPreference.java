@@ -15,7 +15,7 @@ import android.util.AttributeSet;
 import android.view.View;
 
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.firstrun.FirstRunSignInProcessor;
+import org.chromium.chrome.browser.firstrun.FirstRunSigninProcessor;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.profiles.ProfileDownloader;
 import org.chromium.chrome.browser.signin.AccountManagementFragment;
@@ -51,7 +51,7 @@ public class SignInPreference extends Preference implements SignInAllowedObserve
         SigninManager manager = SigninManager.get(getContext());
         manager.addSignInAllowedObserver(this);
         ProfileDownloader.addObserver(this);
-        FirstRunSignInProcessor.updateSigninManagerFirstRunCheckDone(getContext());
+        FirstRunSigninProcessor.updateSigninManagerFirstRunCheckDone(getContext());
     }
 
     /**

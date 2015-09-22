@@ -11,14 +11,13 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.text.TextUtils;
-import android.util.Log;
 
 import org.chromium.base.CommandLine;
+import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.preferences.Preferences;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
-import org.chromium.chrome.browser.services.AndroidEduAndChildAccountHelper;
 import org.chromium.chrome.browser.signin.SigninManager;
 import org.chromium.chrome.browser.signin.SigninManager.SignInFlowObserver;
 import org.chromium.chrome.browser.sync.ui.SyncCustomizationFragment;
@@ -28,10 +27,7 @@ import org.chromium.sync.signin.ChromeSigninController;
 
 /**
  * A helper to perform all necessary steps for the automatic FRE sign in.
- * The helper performs:
- * - necessary Android EDU and child account checks;
- * - automatic non-interactive forced sign in for Android EDU and child accounts; and
- * - any pending automatic non-interactive request to sign in from the First Run Experience.
+ * The helper performs any pending request to sign in from the First Run Experience.
  * The helper calls the observer's onSignInComplete() if
  * - nothing needs to be done, or when
  * - the sign in is complete.
@@ -40,11 +36,10 @@ import org.chromium.sync.signin.ChromeSigninController;
  * OnSignInCancelled.
  *
  * Usage:
- * new FirstRunSignInProcessor(activity, shouldShowNotification){
- *     override OnSignInComplete and OnSignInCancelled
- * }.start().
+ * FirstRunSigninProcessor.start(activity).
  */
-public class FirstRunSignInProcessor {
+public final class FirstRunSigninProcessor {
+    private static final String TAG = "FirstRunSigninProc";
     /**
      * SharedPreferences preference names to keep the state of the First Run Experience.
      */
@@ -53,147 +48,70 @@ public class FirstRunSignInProcessor {
             "first_run_signin_account_name";
     private static final String FIRST_RUN_FLOW_SIGNIN_SETUP_SYNC = "first_run_signin_setup_sync";
 
-    private final Activity mActivity;
-    private final SigninManager mSignInManager;
-    private final SignInFlowObserver mObserver;
-    private final boolean mShowSignInNotification;
-
-    private boolean mIsAndroidEduDevice;
-    private boolean mHasChildAccount;
-    private int mSignInType;
-
     /**
      * Initiates the automatic sign-in process in background.
      *
      * @param activity The context for the FRE parameters processor.
      */
-    public static void start(Activity activity) {
-        new FirstRunSignInProcessor(activity, false, null);
-    }
+    public static void start(final Activity activity) {
+        SigninManager signinManager = SigninManager.get(activity.getApplicationContext());
+        signinManager.onFirstRunCheckDone();
 
-    private FirstRunSignInProcessor(Activity activity, boolean showSignInNotification,
-            SignInFlowObserver observer) {
-        mActivity = activity;
-        mSignInManager = SigninManager.get(activity);
-        mObserver = observer;
-        mShowSignInNotification = showSignInNotification;
-
-        new AndroidEduAndChildAccountHelper() {
-            @Override
-            public void onParametersReady() {
-                mIsAndroidEduDevice = isAndroidEduDevice();
-                mHasChildAccount = hasChildAccount();
-                mSignInManager.onFirstRunCheckDone();
-                mSignInType = mHasChildAccount
-                        ? SigninManager.SIGNIN_TYPE_FORCED_CHILD_ACCOUNT
-                        : (mIsAndroidEduDevice
-                                ? SigninManager.SIGNIN_TYPE_FORCED_EDU
-                                : SigninManager.SIGNIN_TYPE_INTERACTIVE);
-
-                // We allow to pass-through without FRE being complete only if
-                // - FRE is disabled, or
-                // - FRE hasn't been completed, but the user has already seen the ToS in
-                //   the Setup Wizard.
-                boolean firstRunFlowComplete = FirstRunStatus.getFirstRunFlowComplete(mActivity);
-                if (CommandLine.getInstance().hasSwitch(ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE)
-                        || (!firstRunFlowComplete
-                                && ToSAckedReceiver.checkAnyUserHasSeenToS(mActivity))) {
-                    mSignInManager.onFirstRunCheckDone();
-                    if (mObserver != null) mObserver.onSigninComplete();
-                    return;
-                }
-
-                // Otherwise, the FRE must have been completed, so let's force it.
-                if (!firstRunFlowComplete) {
-                    requestToFireIntentAndFinish();
-                    return;
-                }
-
-                if (!getFirstRunFlowSignInComplete(mActivity)) {
-                    // Check if we need to complete any outstanding sign-in requests from FRE.
-                    // It setFirstRunFlowSignInComplete() once the sign-in is complete or if
-                    // it's unnecessary.
-                    completeFreSignInRequest();
-                } else {
-                    processAutomaticSignIn();
-                }
-            }
-        }.start(mActivity);
-    }
-
-    /**
-     * Processes the fully automatic non-FRE-related forced sign-in.
-     * This is used to enforce the environment for Android EDU and child accounts.
-     */
-    private void processAutomaticSignIn() {
-        // This is only for non-interactive forced sign-ins.
-        assert getFirstRunFlowSignInComplete(mActivity);
-        assert !mHasChildAccount || !mIsAndroidEduDevice;
-        if (!mIsAndroidEduDevice && !mHasChildAccount) return;
-
-        final Account[] googleAccounts =
-                AccountManagerHelper.get(mActivity).getGoogleAccounts();
-        SigninManager signinManager = SigninManager.get(mActivity.getApplicationContext());
-        if (!FeatureUtilities.canAllowSync(mActivity)
-                || !signinManager.isSignInAllowed()
-                || googleAccounts.length != 1) return;
-
-        signinManager.signInToSelectedAccount(mActivity, googleAccounts[0],
-                mSignInType, SigninManager.SIGNIN_SYNC_IMMEDIATELY, mShowSignInNotification,
-                mObserver);
-    }
-
-    /**
-     * Processes an outstanding FRE sign-in request if any.
-     */
-    private void completeFreSignInRequest() {
-        // This is only for completion of the FRE sign-in process.
-        assert !getFirstRunFlowSignInComplete(mActivity);
-
-        final String accountName = getFirstRunFlowSignInAccountName(mActivity);
-        SigninManager signinManager = SigninManager.get(mActivity.getApplicationContext());
-        if (!FeatureUtilities.canAllowSync(mActivity)
-                || !signinManager.isSignInAllowed()
-                || TextUtils.isEmpty(accountName)) {
-            setFirstRunFlowSignInComplete(mActivity, true);
-            if (mObserver != null) mObserver.onSigninComplete();
+        boolean firstRunFlowComplete = FirstRunStatus.getFirstRunFlowComplete(activity);
+        // We skip signin and the FRE only if
+        // - FRE is disabled, or
+        // - FRE hasn't been completed, but the user has already seen the ToS in the Setup Wizard.
+        if (CommandLine.getInstance().hasSwitch(ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE)
+                || (!firstRunFlowComplete && ToSAckedReceiver.checkAnyUserHasSeenToS(activity))) {
+            return;
+        }
+        // Otherwise, force trigger the FRE.
+        if (!firstRunFlowComplete) {
+            requestToFireIntentAndFinish(activity);
             return;
         }
 
-        final Account account =
-                AccountManagerHelper.get(mActivity).getAccountFromName(accountName);
+        // We are only processing signin from the FRE.
+        if (getFirstRunFlowSignInComplete(activity)) {
+            return;
+        }
+        final String accountName = getFirstRunFlowSignInAccountName(activity);
+        if (!FeatureUtilities.canAllowSync(activity) || !signinManager.isSignInAllowed()
+                || TextUtils.isEmpty(accountName)) {
+            setFirstRunFlowSignInComplete(activity, true);
+            return;
+        }
+
+        final Account account = AccountManagerHelper.get(activity).getAccountFromName(accountName);
         if (account == null) {
             // TODO(aruslan): handle the account being removed during the FRE.
-            requestToFireIntentAndFinish();
+            requestToFireIntentAndFinish(activity);
             return;
         }
 
-        final boolean delaySync = getFirstRunFlowSignInSetupSync(mActivity);
+        final boolean delaySync = getFirstRunFlowSignInSetupSync(activity);
         final int delaySyncType = delaySync
                 ? SigninManager.SIGNIN_SYNC_SETUP_IN_PROGRESS
                 : SigninManager.SIGNIN_SYNC_IMMEDIATELY;
-        signinManager.signInToSelectedAccount(mActivity, account,
-                mSignInType, delaySyncType, mShowSignInNotification,
+        signinManager.signInToSelectedAccount(activity, account,
+                SigninManager.SIGNIN_TYPE_INTERACTIVE, delaySyncType, false,
                 new SignInFlowObserver() {
                     private void completeSignIn() {
                         // Show sync settings if user pressed the "Settings" button.
                         if (delaySync) {
-                            openSyncSettings(
-                                    ChromeSigninController.get(mActivity).getSignedInAccountName());
+                            openSyncSettings(activity);
                         }
-                        setFirstRunFlowSignInComplete(mActivity, true);
+                        setFirstRunFlowSignInComplete(activity, true);
                     }
 
                     @Override
                     public void onSigninComplete() {
                         completeSignIn();
-                        if (mObserver != null) mObserver.onSigninComplete();
                     }
 
                     @Override
                     public void onSigninCancelled() {
                         completeSignIn();
-                        if (mObserver != null) mObserver.onSigninCancelled();
                     }
                 });
     }
@@ -202,30 +120,29 @@ public class FirstRunSignInProcessor {
      * Opens Sync settings as requested in the FRE sign-in dialog.
      * @param accountName The account to show the sync settings for.
      */
-    private void openSyncSettings(final String accountName) {
+    private static void openSyncSettings(Activity activity) {
+        String accountName = ChromeSigninController.get(activity).getSignedInAccountName();
         if (TextUtils.isEmpty(accountName)) return;
         Intent intent = PreferencesLauncher.createIntentForSettingsPage(
-                mActivity, SyncCustomizationFragment.class.getName());
+                activity, SyncCustomizationFragment.class.getName());
         Bundle args = new Bundle();
         args.putString(SyncCustomizationFragment.ARGUMENT_ACCOUNT, accountName);
         intent.putExtra(Preferences.EXTRA_SHOW_FRAGMENT_ARGUMENTS, args);
-        mActivity.startActivity(intent);
+        activity.startActivity(intent);
     }
 
     /**
      * Starts the full FRE and finishes the current activity.
      */
-    private void requestToFireIntentAndFinish() {
-        Log.e("FirstRunSignInProcessor", "Attempt to pass-through without completed FRE");
-        if (mObserver != null) mObserver.onSigninCancelled();
+    private static void requestToFireIntentAndFinish(Activity activity) {
+        Log.e(TAG, "Attempt to pass-through without completed FRE");
 
         // Things went wrong -- we want the user to go through the full FRE.
-        FirstRunStatus.setFirstRunFlowComplete(mActivity, false);
-        setFirstRunFlowSignInComplete(mActivity, false);
-        setFirstRunFlowSignInAccountName(mActivity, null);
-        setFirstRunFlowSignInSetupSync(mActivity, false);
-        mActivity.startActivity(FirstRunFlowSequencer.createGenericFirstRunIntent(
-                mActivity, true));
+        FirstRunStatus.setFirstRunFlowComplete(activity, false);
+        setFirstRunFlowSignInComplete(activity, false);
+        setFirstRunFlowSignInAccountName(activity, null);
+        setFirstRunFlowSignInSetupSync(activity, false);
+        activity.startActivity(FirstRunFlowSequencer.createGenericFirstRunIntent(activity, true));
     }
 
     /**
