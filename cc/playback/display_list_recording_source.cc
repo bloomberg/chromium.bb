@@ -52,8 +52,7 @@ DisplayListRecordingSource::DisplayListRecordingSource(
       background_color_(SK_ColorTRANSPARENT),
       pixel_record_distance_(kPixelDistanceToRecord),
       grid_cell_size_(grid_cell_size),
-      painter_reported_memory_usage_(0),
-      is_suitable_for_gpu_rasterization_(true) {}
+      painter_reported_memory_usage_(0) {}
 
 DisplayListRecordingSource::~DisplayListRecordingSource() {
 }
@@ -183,8 +182,6 @@ bool DisplayListRecordingSource::UpdateAndExpandInvalidation(
       painter->PaintContentsToDisplayList(recorded_viewport_, painting_control);
   painter_reported_memory_usage_ = painter->GetApproximateUnsharedMemoryUsage();
 
-  is_suitable_for_gpu_rasterization_ =
-      display_list_->IsSuitableForGpuRasterization();
   DetermineIfSolidColor();
   display_list_->EmitTraceSnapshot();
   if (gather_images_)
@@ -219,12 +216,12 @@ void DisplayListRecordingSource::SetRequiresClear(bool requires_clear) {
   requires_clear_ = requires_clear;
 }
 
-void DisplayListRecordingSource::SetUnsuitableForGpuRasterizationForTesting() {
-  is_suitable_for_gpu_rasterization_ = false;
-}
-
 bool DisplayListRecordingSource::IsSuitableForGpuRasterization() const {
-  return is_suitable_for_gpu_rasterization_;
+  // The display list needs to be created (see: UpdateAndExpandInvalidation)
+  // before checking for suitability. There are cases where an update will not
+  // create a display list (e.g., if the size is empty). We return true in these
+  // cases because the gpu suitability bit sticks false.
+  return !display_list_ || display_list_->IsSuitableForGpuRasterization();
 }
 
 scoped_refptr<RasterSource> DisplayListRecordingSource::CreateRasterSource(
@@ -235,7 +232,7 @@ scoped_refptr<RasterSource> DisplayListRecordingSource::CreateRasterSource(
 }
 
 void DisplayListRecordingSource::DetermineIfSolidColor() {
-  DCHECK(display_list_.get());
+  DCHECK(display_list_);
   is_solid_color_ = false;
   solid_color_ = SK_ColorTRANSPARENT;
 
@@ -250,7 +247,7 @@ void DisplayListRecordingSource::DetermineIfSolidColor() {
 
 void DisplayListRecordingSource::Clear() {
   recorded_viewport_ = gfx::Rect();
-  display_list_ = NULL;
+  display_list_ = nullptr;
   painter_reported_memory_usage_ = 0;
   is_solid_color_ = false;
 }

@@ -33,7 +33,6 @@ class CC_EXPORT DisplayListRecordingSource : public RecordingSource {
   void SetBackgroundColor(SkColor background_color) override;
   void SetRequiresClear(bool requires_clear) override;
   bool IsSuitableForGpuRasterization() const override;
-  void SetUnsuitableForGpuRasterizationForTesting() override;
   // Returns true if the new recorded viewport exposes enough new area to be
   // worth re-recording.
   static bool ExposesEnoughNewArea(
@@ -65,8 +64,6 @@ class CC_EXPORT DisplayListRecordingSource : public RecordingSource {
   friend class DisplayListRasterSource;
 
   void DetermineIfSolidColor();
-
-  bool is_suitable_for_gpu_rasterization_;
 
   DISALLOW_COPY_AND_ASSIGN(DisplayListRecordingSource);
 };
