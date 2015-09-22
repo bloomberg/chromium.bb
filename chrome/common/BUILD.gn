@@ -68,6 +68,7 @@ static_library("common") {
     "//components/gcm_driver/common",
     "//components/json_schema",
     "//components/metrics",
+    "//components/metrics:net",
     "//components/omnibox/common",
     "//components/policy:policy_component_common",
     "//components/strings",

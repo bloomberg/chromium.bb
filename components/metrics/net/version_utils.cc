@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/metrics/version_utils.h"
+#include "components/metrics/net/version_utils.h"
 
 #include "base/logging.h"
 #include "components/version_info/version_info.h"

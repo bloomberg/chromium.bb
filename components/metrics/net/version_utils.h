@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_METRICS_VERSION_UTILS_H_
-#define CHROME_COMMON_METRICS_VERSION_UTILS_H_
+#ifndef COMPONENTS_METRICS_NET_VERSION_UTILS_H_
+#define COMPONENTS_METRICS_NET_VERSION_UTILS_H_
 
 #include <string>
 
@@ -26,4 +26,4 @@ SystemProfileProto::Channel AsProtobufChannel(
 
 }  // namespace metrics
 
-#endif  // CHROME_COMMON_METRICS_VERSION_UTILS_H_
+#endif  // COMPONENTS_METRICS_NET_VERSION_UTILS_H_

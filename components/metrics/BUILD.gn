@@ -104,6 +104,8 @@ static_library("net") {
     "net/net_metrics_log_uploader.h",
     "net/network_metrics_provider.cc",
     "net/network_metrics_provider.h",
+    "net/version_utils.cc",
+    "net/version_utils.h",
     "net/wifi_access_point_info_provider.cc",
     "net/wifi_access_point_info_provider.h",
     "net/wifi_access_point_info_provider_chromeos.cc",
@@ -116,6 +118,7 @@ static_library("net") {
   deps = [
     "//base",
     "//components/data_use_measurement/core",
+    "//components/version_info",
     "//net",
     "//url",
   ]
