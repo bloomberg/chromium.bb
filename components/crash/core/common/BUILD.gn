@@ -21,6 +21,7 @@ source_set("common") {
 }
 
 source_set("unit_tests") {
+  testonly = true
   if (is_mac || is_ios) {
     sources = [
       "objc_zombie_unittest.mm",
