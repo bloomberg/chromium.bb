@@ -157,6 +157,7 @@
       'browser/net/url_info_unittest.cc',
       'browser/password_manager/chrome_password_manager_client_unittest.cc',
       'browser/password_manager/password_manager_internals_service_unittest.cc',
+      'browser/password_manager/password_manager_setting_migrator_service_unittest.cc',
       'browser/password_manager/password_store_mac_unittest.cc',
       'browser/password_manager/password_store_proxy_mac_unittest.cc',
       'browser/password_manager/password_store_win_unittest.cc',

@@ -12,6 +12,8 @@ const char kAllowToCollectURLBubbleWasShown[] =
 const char kAllowToCollectURLBubbleActivePeriodStartFactor[] =
     "password_manager_url_collection_bubble.active_period_start_id";
 
+const char kCredentialsEnableService[] = "credentials_enable_service";
+
 #if !defined(OS_MACOSX) && !defined(OS_CHROMEOS) && defined(OS_POSIX)
 const char kLocalProfileId[] = "profile.local_profile_id";
 #endif

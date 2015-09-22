@@ -21,6 +21,15 @@ extern const char kAllowToCollectURLBubbleWasShown[];
 // period, in which the "Allow to collect URL?" bubble can be shown.
 extern const char kAllowToCollectURLBubbleActivePeriodStartFactor[];
 
+// The value of this preference controls whether the Password Manager will save
+// credentials. When it is false, it doesn't ask if you want to save passwords
+// but will continue to fill passwords. This preference in a future will
+// substitute kPasswordManagerSavingEnabled, currently it's required that values
+// of these two preference are in sync with each other.
+// TODO(melandory): Preference should also control autofill behavior for the
+// passwords.
+extern const char kCredentialsEnableService[];
+
 #if !defined(OS_MACOSX) && !defined(OS_CHROMEOS) && defined(OS_POSIX)
 // The local profile id for this profile.
 extern const char kLocalProfileId[];

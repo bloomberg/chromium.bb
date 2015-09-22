@@ -12,10 +12,8 @@ namespace {
 
 const char kPasswordManagerSettingMigrationFieldTrialName[] =
     "PasswordManagerSettingsMigration";
-const char kEnabledPasswordManagerSettingsMigrationGroupName[] =
-    "PasswordManagerSettingsMigration.Enable";
-const char kDisablePasswordManagerSettingsMigrationGroupName[] =
-    "PasswordManagerSettingsMigration.Disable";
+const char kEnabledPasswordManagerSettingsMigrationGroupName[] = "Enable";
+const char kDisablePasswordManagerSettingsMigrationGroupName[] = "Disable";
 
 const char kPasswordManagerSettingsBehaviourChangeFieldTrialName[] =
     "PasswordManagerSettingsBehaviourChange";

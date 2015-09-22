@@ -5,14 +5,16 @@
 #include "components/password_manager/core/browser/password_manager_settings_migration_experiment.h"
 
 #include "base/metrics/field_trial.h"
+#include "base/strings/string_util.h"
 
 namespace password_manager {
 
 bool IsSettingsMigrationActive() {
   const char kFieldTrialName[] = "PasswordManagerSettingsMigration";
-  const char kEnabledGroupName[] = "PasswordManagerSettingsMigration.Enable";
-  return base::FieldTrialList::FindFullName(kFieldTrialName) ==
-         kEnabledGroupName;
+  const char kEnabledGroupNamePrefix[] = "Enable";
+  return base::StartsWith(base::FieldTrialList::FindFullName(kFieldTrialName),
+                          kEnabledGroupNamePrefix,
+                          base::CompareCase::INSENSITIVE_ASCII);
 }
 
 bool IsSettingsBehaviorChangeActive() {

@@ -26,10 +26,8 @@ enum UserType { SMART_LOCK_USER, NON_SMART_LOCK_USER };
 
 const char kPasswordManagerSettingMigrationFieldTrialName[] =
     "PasswordManagerSettingsMigration";
-const char kEnabledPasswordManagerSettingsMigrationGroupName[] =
-    "PasswordManagerSettingsMigration.Enable";
-const char kDisablePasswordManagerSettingsMigrationGroupName[] =
-    "PasswordManagerSettingsMigration.Disable";
+const char kEnabledPasswordManagerSettingsMigrationGroupName[] = "Enable";
+const char kDisablePasswordManagerSettingsMigrationGroupName[] = "Disable";
 
 const char kPasswordManagerSettingsBehaviourChangeFieldTrialName[] =
     "PasswordManagerSettingsBehaviourChange";

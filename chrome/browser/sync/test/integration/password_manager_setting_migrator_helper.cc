@@ -1,0 +1,50 @@
+// Copyright (c) 2015 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "chrome/browser/sync/test/integration/password_manager_setting_migrator_helper.h"
+
+#include "base/metrics/field_trial.h"
+#include "base/prefs/pref_service.h"
+#include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/sync/test/integration/preferences_helper.h"
+#include "components/password_manager/core/common/password_manager_pref_names.h"
+#include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_service.h"
+#include "content/public/browser/notification_source.h"
+#include "testing/gtest/include/gtest/gtest.h"
+
+using preferences_helper::GetPrefs;
+
+namespace {
+
+const char kFieldTrialName[] = "PasswordManagerSettingsMigration";
+const char kEnabledGroupName[] = "Enable";
+
+}  // namespace
+
+namespace password_manager_setting_migrater_helper {
+
+void SetupFieldTrial() {
+  base::FieldTrialList::CreateFieldTrial(kFieldTrialName, kEnabledGroupName);
+}
+
+void SendProfileAddNotification(Profile* profile) {
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_PROFILE_ADDED, content::Source<Profile>(profile),
+      content::NotificationService::NoDetails());
+}
+
+void ExpectPrefValuesOnClient(int index,
+                              bool new_pref_value,
+                              bool old_pref_value) {
+  using password_manager::prefs::kCredentialsEnableService;
+  using password_manager::prefs::kPasswordManagerSavingEnabled;
+  EXPECT_EQ(new_pref_value,
+            GetPrefs(index)->GetBoolean(kCredentialsEnableService));
+  EXPECT_EQ(old_pref_value,
+            GetPrefs(index)->GetBoolean(kPasswordManagerSavingEnabled));
+}
+
+}  // namespace password_manager_setting_migrater_helper
