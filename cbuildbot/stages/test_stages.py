@@ -290,6 +290,9 @@ class HWTestStage(generic_stages.BoardSpecificBuilderStage,
     current_board_dict = per_board_dict.get(self._current_board)
     if current_board_dict:
       subsystems = set(current_board_dict.get('subsystems_to_test', []))
+      # 'subsystem:all' indicates to skip the subsystem logic
+      if 'all' in subsystems:
+        subsystems = None
     else:
       subsystems = None
 
