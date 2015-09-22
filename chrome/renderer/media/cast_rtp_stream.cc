@@ -26,6 +26,7 @@
 #include "media/base/audio_converter.h"
 #include "media/base/audio_fifo.h"
 #include "media/base/bind_to_current_loop.h"
+#include "media/base/limits.h"
 #include "media/base/video_frame.h"
 #include "media/cast/cast_config.h"
 #include "media/cast/cast_defines.h"
@@ -79,8 +80,6 @@ CastRtpPayloadParams DefaultVp8Payload() {
 
 CastRtpPayloadParams DefaultH264Payload() {
   CastRtpPayloadParams payload;
-  // TODO(hshi): set different ssrc/rtpPayloadType values for H264 and VP8
-  // once b/13696137 is fixed.
   payload.payload_type = 96;
   payload.max_latency_ms = media::cast::kDefaultRtpMaxDelayMs;
   payload.ssrc = 11;
@@ -167,11 +166,10 @@ bool ToAudioSenderConfig(const CastRtpParams& params,
   config->receiver_ssrc = params.payload.feedback_ssrc;
   if (config->ssrc == config->receiver_ssrc)
     return false;
-  config->min_playout_delay =
-      base::TimeDelta::FromMilliseconds(
-          params.payload.min_latency_ms ?
-          params.payload.min_latency_ms :
-          params.payload.max_latency_ms);
+  config->min_playout_delay = base::TimeDelta::FromMilliseconds(
+                                  params.payload.min_latency_ms ?
+                                  params.payload.min_latency_ms :
+                                  params.payload.max_latency_ms);
   config->max_playout_delay =
       base::TimeDelta::FromMilliseconds(params.payload.max_latency_ms);
   if (config->min_playout_delay <= base::TimeDelta())
@@ -181,7 +179,7 @@ bool ToAudioSenderConfig(const CastRtpParams& params,
   config->rtp_payload_type = params.payload.payload_type;
   config->use_external_encoder = false;
   config->frequency = params.payload.clock_rate;
-  if (config->frequency < 8000)
+  if (config->frequency < media::cast::kMinSampleRateForEncoding)
     return false;
   config->channels = params.payload.channels;
   if (config->channels < 1)
@@ -202,11 +200,10 @@ bool ToVideoSenderConfig(const CastRtpParams& params,
   config->receiver_ssrc = params.payload.feedback_ssrc;
   if (config->ssrc == config->receiver_ssrc)
     return false;
-  config->min_playout_delay =
-      base::TimeDelta::FromMilliseconds(
-          params.payload.min_latency_ms ?
-          params.payload.min_latency_ms :
-          params.payload.max_latency_ms);
+  config->min_playout_delay = base::TimeDelta::FromMilliseconds(
+                                  params.payload.min_latency_ms ?
+                                  params.payload.min_latency_ms :
+                                  params.payload.max_latency_ms);
   config->max_playout_delay =
       base::TimeDelta::FromMilliseconds(params.payload.max_latency_ms);
   if (config->min_playout_delay <= base::TimeDelta())
@@ -222,7 +219,7 @@ bool ToVideoSenderConfig(const CastRtpParams& params,
   config->start_bitrate = config->min_bitrate;
   config->max_frame_rate = static_cast<int>(
       std::max(1.0, params.payload.max_frame_rate) + 0.5);
-  if (config->max_frame_rate > 120)
+  if (config->max_frame_rate > media::limits::kMaxFramesPerSecond)
     return false;
   if (params.payload.codec_name == kCodecNameVp8) {
     config->use_external_encoder = IsHardwareVP8EncodingSupported();
@@ -233,9 +230,8 @@ bool ToVideoSenderConfig(const CastRtpParams& params,
   } else {
     return false;
   }
-  if (!config->use_external_encoder) {
+  if (!config->use_external_encoder)
     config->number_of_encode_threads = NumberOfEncodeThreads();
-  }
   config->aes_key = params.payload.aes_key;
   config->aes_iv_mask = params.payload.aes_iv_mask;
   return true;

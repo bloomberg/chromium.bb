@@ -4,6 +4,10 @@
 
 #include "media/cast/cast_config.h"
 
+namespace {
+const float kDefaultCongestionControlBackOff = 0.875f;
+}  // namespace
+
 namespace media {
 namespace cast {
 
