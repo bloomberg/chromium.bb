@@ -80,7 +80,7 @@ class SystemTrayDelegateChromeOS
   bool GetTrayVisibilityOnStartup() override;
   ash::user::LoginStatus GetUserLoginStatus() const override;
   void ChangeProfilePicture() override;
-  const std::string GetEnterpriseDomain() const override;
+  std::string GetEnterpriseDomain() const override;
   const base::string16 GetEnterpriseMessage() const override;
   const std::string GetSupervisedUserManager() const override;
   const base::string16 GetSupervisedUserManagerName() const override;

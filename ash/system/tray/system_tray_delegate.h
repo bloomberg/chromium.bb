@@ -141,7 +141,7 @@ class ASH_EXPORT SystemTrayDelegate {
   virtual void ChangeProfilePicture();
 
   // Returns the domain that manages the device, if it is enterprise-enrolled.
-  virtual const std::string GetEnterpriseDomain() const;
+  virtual std::string GetEnterpriseDomain() const;
 
   // Returns notification for enterprise enrolled devices.
   virtual const base::string16 GetEnterpriseMessage() const;

@@ -362,7 +362,7 @@ void SystemTrayDelegateChromeOS::ChangeProfilePicture() {
   ShowSettingsSubPageForActiveUser(chrome::kChangeProfilePictureSubPage);
 }
 
-const std::string SystemTrayDelegateChromeOS::GetEnterpriseDomain() const {
+std::string SystemTrayDelegateChromeOS::GetEnterpriseDomain() const {
   return enterprise_domain_;
 }
 

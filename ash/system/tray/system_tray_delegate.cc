@@ -67,7 +67,7 @@ user::LoginStatus SystemTrayDelegate::GetUserLoginStatus() const {
 void SystemTrayDelegate::ChangeProfilePicture() {
 }
 
-const std::string SystemTrayDelegate::GetEnterpriseDomain() const {
+std::string SystemTrayDelegate::GetEnterpriseDomain() const {
   return std::string();
 }
 
