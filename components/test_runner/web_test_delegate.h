@@ -166,7 +166,9 @@ class WebTestDelegate {
   virtual void SetBluetoothManualChooser() = 0;
 
   // Returns the events recorded since the last call to this function.
-  virtual std::vector<std::string> GetBluetoothManualChooserEvents() = 0;
+  virtual void GetBluetoothManualChooserEvents(
+      const base::Callback<void(const std::vector<std::string>& events)>&
+          callback) = 0;
 
   // Calls the BluetoothChooser::EventHandler with the arguments here. Valid
   // event strings are:

@@ -112,8 +112,9 @@ IPC_MESSAGE_ROUTED1(ShellViewHostMsg_LeakDetectionDone,
 
 IPC_MESSAGE_ROUTED1(ShellViewHostMsg_SetBluetoothManualChooser,
                     bool /* enable */)
-IPC_SYNC_MESSAGE_ROUTED0_1(ShellViewHostMsg_GetBluetoothManualChooserEvents,
-                           std::vector<std::string> /* events */)
+IPC_MESSAGE_ROUTED0(ShellViewHostMsg_GetBluetoothManualChooserEvents)
+IPC_MESSAGE_ROUTED1(ShellViewMsg_ReplyBluetoothManualChooserEvents,
+                    std::vector<std::string> /* events */)
 IPC_MESSAGE_ROUTED2(ShellViewHostMsg_SendBluetoothManualChooserEvent,
                     std::string /* event */,
                     std::string /* argument */)

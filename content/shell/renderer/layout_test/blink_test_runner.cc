@@ -484,12 +484,13 @@ void BlinkTestRunner::SetBluetoothMockDataSet(const std::string& name) {
 void BlinkTestRunner::SetBluetoothManualChooser() {
   Send(new ShellViewHostMsg_SetBluetoothManualChooser(routing_id(), true));
 }
-std::vector<std::string> BlinkTestRunner::GetBluetoothManualChooserEvents() {
-  std::vector<std::string> result;
-  Send(new ShellViewHostMsg_GetBluetoothManualChooserEvents(routing_id(),
-                                                            &result));
-  return result;
+
+void BlinkTestRunner::GetBluetoothManualChooserEvents(
+    const base::Callback<void(const std::vector<std::string>&)>& callback) {
+  get_bluetooth_events_callbacks_.push_back(callback);
+  Send(new ShellViewHostMsg_GetBluetoothManualChooserEvents(routing_id()));
 }
+
 void BlinkTestRunner::SendBluetoothManualChooserEvent(
     const std::string& event,
     const std::string& argument) {
@@ -732,6 +733,8 @@ bool BlinkTestRunner::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ShellViewMsg_Reset, OnReset)
     IPC_MESSAGE_HANDLER(ShellViewMsg_NotifyDone, OnNotifyDone)
     IPC_MESSAGE_HANDLER(ShellViewMsg_TryLeakDetection, OnTryLeakDetection)
+    IPC_MESSAGE_HANDLER(ShellViewMsg_ReplyBluetoothManualChooserEvents,
+                        OnReplyBluetoothManualChooserEvents)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -909,6 +912,15 @@ void BlinkTestRunner::OnTryLeakDetection() {
   DCHECK(!main_frame->isLoading());
 
   leak_detector_->TryLeakDetection(main_frame);
+}
+
+void BlinkTestRunner::OnReplyBluetoothManualChooserEvents(
+    const std::vector<std::string>& events) {
+  DCHECK(!get_bluetooth_events_callbacks_.empty());
+  base::Callback<void(const std::vector<std::string>&)> callback =
+      get_bluetooth_events_callbacks_.front();
+  get_bluetooth_events_callbacks_.pop_front();
+  callback.Run(events);
 }
 
 void BlinkTestRunner::ReportLeakDetectionResult(

@@ -296,7 +296,7 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
   void SetViewSourceForFrame(const std::string& name, bool enabled);
   void SetBluetoothMockDataSet(const std::string& dataset_name);
   void SetBluetoothManualChooser();
-  std::vector<std::string> GetBluetoothManualChooserEvents();
+  void GetBluetoothManualChooserEvents(v8::Local<v8::Function> callback);
   void SendBluetoothManualChooserEvent(const std::string& event,
                                        const std::string& argument);
   void SetGeofencingMockProvider(bool service_available);
@@ -1350,10 +1350,10 @@ void TestRunnerBindings::SetBluetoothManualChooser() {
     runner_->SetBluetoothManualChooser();
 }
 
-std::vector<std::string> TestRunnerBindings::GetBluetoothManualChooserEvents() {
+void TestRunnerBindings::GetBluetoothManualChooserEvents(
+    v8::Local<v8::Function> callback) {
   if (runner_)
-    return runner_->GetBluetoothManualChooserEvents();
-  return std::vector<std::string>(1, "No Test Runner");
+    return runner_->GetBluetoothManualChooserEvents(callback);
 }
 
 void TestRunnerBindings::SendBluetoothManualChooserEvent(
@@ -2846,8 +2846,12 @@ void TestRunner::SetBluetoothManualChooser() {
   delegate_->SetBluetoothManualChooser();
 }
 
-std::vector<std::string> TestRunner::GetBluetoothManualChooserEvents() {
-  return delegate_->GetBluetoothManualChooserEvents();
+void TestRunner::GetBluetoothManualChooserEvents(
+    v8::Local<v8::Function> callback) {
+  scoped_ptr<InvokeCallbackTask> task(new InvokeCallbackTask(this, callback));
+  return delegate_->GetBluetoothManualChooserEvents(
+      base::Bind(&TestRunner::GetBluetoothManualChooserEventsCallback,
+                 weak_factory_.GetWeakPtr(), base::Passed(&task)));
 }
 
 void TestRunner::SendBluetoothManualChooserEvent(const std::string& event,
@@ -3059,6 +3063,28 @@ void TestRunner::DispatchBeforeInstallPromptCallback(
   argv[0] = v8::Boolean::New(isolate, canceled);
 
   task->SetArguments(1, argv);
+  InvokeCallback(task.Pass());
+}
+
+void TestRunner::GetBluetoothManualChooserEventsCallback(
+    scoped_ptr<InvokeCallbackTask> task,
+    const std::vector<std::string>& events) {
+  // Build the V8 context.
+  v8::Isolate* isolate = blink::mainThreadIsolate();
+  v8::HandleScope handle_scope(isolate);
+  v8::Local<v8::Context> context =
+      web_view_->mainFrame()->mainWorldScriptContext();
+  if (context.IsEmpty())
+    return;
+  v8::Context::Scope context_scope(context);
+
+  // Convert the argument.
+  v8::Local<v8::Value> arg[1];
+  if (!gin::TryConvertToV8(isolate, events, &arg[0]))
+    return;
+
+  // Call the callback.
+  task->SetArguments(1, arg);
   InvokeCallback(task.Pass());
 }
 

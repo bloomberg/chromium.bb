@@ -183,7 +183,7 @@ class BlinkTestController : public base::NonThreadSafe,
   void OnResetDone();
   void OnLeakDetectionDone(const content::LeakDetectionResult& result);
   void OnSetBluetoothManualChooser(bool enable);
-  void OnGetBluetoothManualChooserEvents(std::vector<std::string>* events);
+  void OnGetBluetoothManualChooserEvents();
   void OnSendBluetoothManualChooserEvent(const std::string& event,
                                          const std::string& argument);
 

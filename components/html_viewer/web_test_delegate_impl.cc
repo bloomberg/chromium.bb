@@ -201,10 +201,9 @@ void WebTestDelegateImpl::SetBluetoothManualChooser() {
   NOTIMPLEMENTED();
 }
 
-std::vector<std::string>
-WebTestDelegateImpl::GetBluetoothManualChooserEvents() {
+void WebTestDelegateImpl::GetBluetoothManualChooserEvents(
+    const base::Callback<void(const std::vector<std::string>&)>& callback) {
   NOTIMPLEMENTED();
-  return std::vector<std::string>();
 }
 
 void WebTestDelegateImpl::SendBluetoothManualChooserEvent(

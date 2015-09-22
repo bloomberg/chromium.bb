@@ -727,15 +727,16 @@ void BlinkTestController::OnSetBluetoothManualChooser(bool enable) {
   }
 }
 
-void BlinkTestController::OnGetBluetoothManualChooserEvents(
-    std::vector<std::string>* events) {
+void BlinkTestController::OnGetBluetoothManualChooserEvents() {
   if (!bluetooth_chooser_factory_) {
     printer_->AddErrorMessage(
         "FAIL: Must call setBluetoothManualChooser before "
         "getBluetoothManualChooserEvents.");
     return;
   }
-  *events = bluetooth_chooser_factory_->GetAndResetEvents();
+  Send(new ShellViewMsg_ReplyBluetoothManualChooserEvents(
+      main_window_->web_contents()->GetRoutingID(),
+      bluetooth_chooser_factory_->GetAndResetEvents()));
 }
 
 void BlinkTestController::OnSendBluetoothManualChooserEvent(

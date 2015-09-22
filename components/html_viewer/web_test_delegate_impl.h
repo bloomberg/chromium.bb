@@ -75,7 +75,9 @@ class WebTestDelegateImpl : public test_runner::WebTestDelegate {
   void SetDeviceColorProfile(const std::string& name) override;
   void SetBluetoothMockDataSet(const std::string& data_set) override;
   void SetBluetoothManualChooser() override;
-  std::vector<std::string> GetBluetoothManualChooserEvents() override;
+  void GetBluetoothManualChooserEvents(
+      const base::Callback<void(const std::vector<std::string>&)>& callback)
+      override;
   void SendBluetoothManualChooserEvent(const std::string& event,
                                        const std::string& argument) override;
   void SetGeofencingMockProvider(bool service_available) override;

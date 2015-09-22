@@ -529,8 +529,9 @@ class TestRunner : public WebTestRunner,
   // the test program on how to proceed.
   void SetBluetoothManualChooser();
 
-  // Returns the events recorded since the last call to this function.
-  std::vector<std::string> GetBluetoothManualChooserEvents();
+  // Calls |callback| with a DOMString[] representing the events recorded since
+  // the last call to this function.
+  void GetBluetoothManualChooserEvents(v8::Local<v8::Function> callback);
 
   // Calls the BluetoothChooser::EventHandler with the arguments here. Valid
   // event strings are:
@@ -623,6 +624,9 @@ class TestRunner : public WebTestRunner,
                              const SkBitmap& snapshot);
   void DispatchBeforeInstallPromptCallback(scoped_ptr<InvokeCallbackTask> task,
                                            bool canceled);
+  void GetBluetoothManualChooserEventsCallback(
+      scoped_ptr<InvokeCallbackTask> task,
+      const std::vector<std::string>& events);
 
   void CheckResponseMimeType();
   void CompleteNotifyDone();
