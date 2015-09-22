@@ -177,8 +177,7 @@ void KeyframeEffect::applyEffects()
     double iteration = currentIteration();
     ASSERT(iteration >= 0);
     OwnPtr<Vector<RefPtr<Interpolation>>> interpolations = m_sampledEffect ? m_sampledEffect->mutableInterpolations() : nullptr;
-    // FIXME: Handle iteration values which overflow int.
-    bool changed = m_model->sample(static_cast<int>(iteration), timeFraction(), iterationDuration(), interpolations);
+    bool changed = m_model->sample(clampTo<int>(iteration, 0), timeFraction(), iterationDuration(), interpolations);
     if (m_sampledEffect) {
         m_sampledEffect->setInterpolations(interpolations.release());
     } else if (interpolations && !interpolations->isEmpty()) {
