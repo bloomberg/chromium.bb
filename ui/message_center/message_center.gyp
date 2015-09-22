@@ -64,6 +64,8 @@
         'notification_types.h',
         'notifier_settings.cc',
         'notifier_settings.h',
+        'popup_timer.cc',
+        'popup_timer.h',
         'views/bounded_label.cc',
         'views/bounded_label.h',
         'views/constants.h',
