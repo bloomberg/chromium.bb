@@ -36,6 +36,7 @@ class WaitableEvent;
 
 namespace gpu {
 class PreemptionFlag;
+class SyncPointClientState;
 class SyncPointManager;
 union ValueState;
 class ValueStateMap;
@@ -166,15 +167,14 @@ class CONTENT_EXPORT GpuChannel
   // Visible for testing.
   GpuChannelMessageFilter* filter() const { return filter_.get(); }
 
-  // Returns the global order number of the IPC message that started processing
-  // last.
-  uint32_t current_order_num() const { return current_order_num_; }
-
   // Returns the global order number for the last processed IPC message.
   uint32_t GetProcessedOrderNum() const;
 
   // Returns the global order number for the last unprocessed IPC message.
   uint32_t GetUnprocessedOrderNum() const;
+
+  // Returns the shared sync point client state.
+  scoped_refptr<gpu::SyncPointClientState> GetSyncPointClientState();
 
   void HandleMessage();
 
@@ -278,8 +278,6 @@ class CONTENT_EXPORT GpuChannel
 
   // Map of stream id to stream state.
   base::hash_map<int32, StreamState> streams_;
-
-  uint32_t current_order_num_;
 
   bool allow_future_sync_points_;
   bool allow_real_time_streams_;
@@ -412,11 +410,13 @@ class GpuChannelMessageQueue
       const base::WeakPtr<GpuChannel>& gpu_channel,
       base::SingleThreadTaskRunner* task_runner);
 
-  // Returns the global order number for the last processed IPC message.
+  scoped_refptr<gpu::SyncPointClientState> GetSyncPointClientState();
+
+  // Returns the global order number for the last unprocessed IPC message.
   uint32_t GetUnprocessedOrderNum() const;
 
   // Returns the global order number for the last unprocessed IPC message.
-  uint32_t processed_order_num() const { return processed_order_num_; }
+  uint32_t GetProcessedOrderNum() const;
 
   bool HasQueuedMessages() const;
 
@@ -424,11 +424,14 @@ class GpuChannelMessageQueue
 
   GpuChannelMessage* GetNextMessage() const;
 
+  void BeginMessageProcessing(const GpuChannelMessage* msg);
+
   // Should be called after a message returned by GetNextMessage is processed.
   // Returns true if there are more messages on the queue.
   bool MessageProcessed();
 
-  void PushBackMessage(const IPC::Message& message);
+  void PushBackMessage(gpu::SyncPointManager* sync_point_manager,
+                       const IPC::Message& message);
 
   bool GenerateSyncPointMessage(gpu::SyncPointManager* sync_point_manager,
                                 const IPC::Message& message,
@@ -446,24 +449,19 @@ class GpuChannelMessageQueue
 
   void ScheduleHandleMessage();
 
-  void PushMessageHelper(scoped_ptr<GpuChannelMessage> msg);
-
-  // This number is only ever incremented/read on the IO thread.
-  static uint32_t global_order_counter_;
+  void PushMessageHelper(gpu::SyncPointManager* sync_point_manager,
+                         scoped_ptr<GpuChannelMessage> msg);
 
   bool enabled_;
 
-  // Highest IPC order number seen, set when queued on the IO thread.
-  uint32_t unprocessed_order_num_;
   // Both deques own the messages.
   std::deque<GpuChannelMessage*> channel_messages_;
 
-  // This lock protects enabled_, unprocessed_order_num_, and channel_messages_.
+  // This lock protects enabled_ and channel_messages_.
   mutable base::Lock channel_messages_lock_;
 
-  // Last finished IPC order number. Not protected by a lock as it's only
-  // accessed on the main thread.
-  uint32_t processed_order_num_;
+  // Keeps track of sync point related state such as message order numbers.
+  scoped_refptr<gpu::SyncPointClientState> sync_point_client_state_;
 
   base::WeakPtr<GpuChannel> gpu_channel_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;

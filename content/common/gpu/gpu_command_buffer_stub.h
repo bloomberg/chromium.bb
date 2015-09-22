@@ -34,6 +34,7 @@
 
 namespace gpu {
 struct Mailbox;
+class SyncPointClient;
 class ValueStateMap;
 namespace gles2 {
 class MailboxManager;
@@ -271,6 +272,7 @@ class GpuCommandBufferStub
   scoped_ptr<gpu::CommandBufferService> command_buffer_;
   scoped_ptr<gpu::gles2::GLES2Decoder> decoder_;
   scoped_ptr<gpu::GpuScheduler> scheduler_;
+  scoped_ptr<gpu::SyncPointClient> sync_point_client_;
   scoped_refptr<gfx::GLSurface> surface_;
 
   scoped_ptr<GpuMemoryManagerClientState> memory_manager_client_state_;

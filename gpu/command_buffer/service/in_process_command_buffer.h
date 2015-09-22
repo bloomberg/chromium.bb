@@ -47,6 +47,8 @@ class StreamTextureManagerInProcess;
 #endif
 
 namespace gpu {
+class SyncPointClient;
+class SyncPointClientState;
 class SyncPointManager;
 class ValueStateMap;
 
@@ -201,7 +203,7 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
 
   bool InitializeOnGpuThread(const InitializeOnGpuThreadParams& params);
   bool DestroyOnGpuThread();
-  void FlushOnGpuThread(int32 put_offset);
+  void FlushOnGpuThread(int32 put_offset, uint32_t order_num);
   void ScheduleDelayedWorkOnGpuThread();
   uint32 CreateStreamTextureOnGpuThread(uint32 client_texture_id);
   bool MakeCurrent();
@@ -240,6 +242,8 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
   scoped_ptr<gles2::GLES2Decoder> decoder_;
   scoped_refptr<gfx::GLContext> context_;
   scoped_refptr<gfx::GLSurface> surface_;
+  scoped_refptr<SyncPointClientState> sync_point_client_state_;
+  scoped_ptr<SyncPointClient> sync_point_client_;
   base::Closure context_lost_callback_;
   bool delayed_work_pending_;  // Used to throttle PerformDelayedWork.
   ImageFactory* image_factory_;

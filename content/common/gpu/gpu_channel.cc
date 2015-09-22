@@ -70,21 +70,22 @@ const int64 kStopPreemptThresholdMs = kVsyncIntervalMs;
 
 }  // anonymous namespace
 
-// Begin order numbers at 1 so 0 can mean no orders.
-uint32_t GpuChannelMessageQueue::global_order_counter_ = 1;
-
 scoped_refptr<GpuChannelMessageQueue> GpuChannelMessageQueue::Create(
     const base::WeakPtr<GpuChannel>& gpu_channel,
     base::SingleThreadTaskRunner* task_runner) {
   return new GpuChannelMessageQueue(gpu_channel, task_runner);
 }
 
+scoped_refptr<gpu::SyncPointClientState>
+    GpuChannelMessageQueue::GetSyncPointClientState() {
+  return sync_point_client_state_;
+}
+
 GpuChannelMessageQueue::GpuChannelMessageQueue(
     const base::WeakPtr<GpuChannel>& gpu_channel,
     base::SingleThreadTaskRunner* task_runner)
     : enabled_(true),
-      unprocessed_order_num_(0),
-      processed_order_num_(0),
+      sync_point_client_state_(gpu::SyncPointClientState::Create()),
       gpu_channel_(gpu_channel),
       task_runner_(task_runner) {}
 
@@ -93,14 +94,20 @@ GpuChannelMessageQueue::~GpuChannelMessageQueue() {
 }
 
 uint32_t GpuChannelMessageQueue::GetUnprocessedOrderNum() const {
-  base::AutoLock auto_lock(channel_messages_lock_);
-  return unprocessed_order_num_;
+  return sync_point_client_state_->unprocessed_order_num();
 }
 
-void GpuChannelMessageQueue::PushBackMessage(const IPC::Message& message) {
+uint32_t GpuChannelMessageQueue::GetProcessedOrderNum() const {
+  return sync_point_client_state_->processed_order_num();
+}
+
+void GpuChannelMessageQueue::PushBackMessage(
+    gpu::SyncPointManager* sync_point_manager, const IPC::Message& message) {
   base::AutoLock auto_lock(channel_messages_lock_);
-  if (enabled_)
-    PushMessageHelper(make_scoped_ptr(new GpuChannelMessage(message)));
+  if (enabled_) {
+    PushMessageHelper(sync_point_manager,
+                      make_scoped_ptr(new GpuChannelMessage(message)));
+  }
 }
 
 bool GpuChannelMessageQueue::GenerateSyncPointMessage(
@@ -118,7 +125,7 @@ bool GpuChannelMessageQueue::GenerateSyncPointMessage(
     msg->retire_sync_point = retire_sync_point;
     msg->sync_point = *sync_point;
 
-    PushMessageHelper(msg.Pass());
+    PushMessageHelper(sync_point_manager, msg.Pass());
     return true;
   }
   return false;
@@ -139,11 +146,19 @@ base::TimeTicks GpuChannelMessageQueue::GetNextMessageTimeTick() const {
 GpuChannelMessage* GpuChannelMessageQueue::GetNextMessage() const {
   base::AutoLock auto_lock(channel_messages_lock_);
   if (!channel_messages_.empty()) {
-    DCHECK_GT(channel_messages_.front()->order_number, processed_order_num_);
-    DCHECK_LE(channel_messages_.front()->order_number, unprocessed_order_num_);
+    DCHECK_GT(channel_messages_.front()->order_number,
+              sync_point_client_state_->processed_order_num());
+    DCHECK_LE(channel_messages_.front()->order_number,
+              sync_point_client_state_->unprocessed_order_num());
+
     return channel_messages_.front();
   }
   return nullptr;
+}
+
+void GpuChannelMessageQueue::BeginMessageProcessing(
+    const GpuChannelMessage* msg) {
+  sync_point_client_state_->BeginProcessingOrderNumber(msg->order_number);
 }
 
 bool GpuChannelMessageQueue::MessageProcessed() {
@@ -151,7 +166,7 @@ bool GpuChannelMessageQueue::MessageProcessed() {
   DCHECK(!channel_messages_.empty());
   scoped_ptr<GpuChannelMessage> msg(channel_messages_.front());
   channel_messages_.pop_front();
-  processed_order_num_ = msg->order_number;
+  sync_point_client_state_->FinishProcessingOrderNumber(msg->order_number);
   return !channel_messages_.empty();
 }
 
@@ -186,14 +201,15 @@ void GpuChannelMessageQueue::ScheduleHandleMessage() {
 }
 
 void GpuChannelMessageQueue::PushMessageHelper(
+    gpu::SyncPointManager* sync_point_manager,
     scoped_ptr<GpuChannelMessage> msg) {
   channel_messages_lock_.AssertAcquired();
   DCHECK(enabled_);
 
-  msg->order_number = global_order_counter_++;
+  msg->order_number =
+      sync_point_client_state_->GenerateUnprocessedOrderNumber(
+          sync_point_manager);
   msg->time_received = base::TimeTicks::Now();
-
-  unprocessed_order_num_ = msg->order_number;
 
   bool had_messages = !channel_messages_.empty();
   channel_messages_.push_back(msg.release());
@@ -339,7 +355,7 @@ bool GpuChannelMessageFilter::OnMessageReceived(const IPC::Message& message) {
                              base::Bind(&GpuChannel::HandleOutOfOrderMessage,
                                         gpu_channel_, message));
     } else {
-      message_queue_->PushBackMessage(message);
+      message_queue_->PushBackMessage(sync_point_manager_, message);
     }
     handled = true;
   }
@@ -611,7 +627,7 @@ base::ProcessId GpuChannel::GetClientPID() const {
 }
 
 uint32_t GpuChannel::GetProcessedOrderNum() const {
-  return message_queue_->processed_order_num();
+  return message_queue_->GetProcessedOrderNum();
 }
 
 uint32_t GpuChannel::GetUnprocessedOrderNum() const {
@@ -806,6 +822,10 @@ bool GpuChannel::OnControlMessageReceived(const IPC::Message& msg) {
   return handled;
 }
 
+scoped_refptr<gpu::SyncPointClientState> GpuChannel::GetSyncPointClientState() {
+  return message_queue_->GetSyncPointClientState();
+}
+
 void GpuChannel::HandleMessage() {
   // If we have been preempted by another channel, just post a task to wake up.
   if (preempted_flag_ && preempted_flag_->IsSet()) {
@@ -819,8 +839,8 @@ void GpuChannel::HandleMessage() {
   if (!m)
     return;
 
-  current_order_num_ = m->order_number;
   const IPC::Message& message = m->message;
+  message_queue_->BeginMessageProcessing(m);
   int32_t routing_id = message.routing_id();
   GpuCommandBufferStub* stub = stubs_.get(routing_id);
 

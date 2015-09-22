@@ -485,6 +485,8 @@ void GpuCommandBufferStub::Destroy() {
   // destroy it before those.
   scheduler_.reset();
 
+  sync_point_client_.reset();
+
   bool have_context = false;
   if (decoder_ && decoder_->GetGLContext()) {
     // Try to make the context current regardless of whether it was lost, so we
@@ -528,10 +530,22 @@ void GpuCommandBufferStub::OnInitialize(
   bool result = command_buffer_->Initialize();
   DCHECK(result);
 
+  GpuChannelManager* manager = channel_->gpu_channel_manager();
+  DCHECK(manager);
+
+  gpu::SyncPointManager* sync_point_manager = manager->sync_point_manager();
+  DCHECK(sync_point_manager);
+
   decoder_.reset(::gpu::gles2::GLES2Decoder::Create(context_group_.get()));
   scheduler_.reset(new gpu::GpuScheduler(command_buffer_.get(),
                                          decoder_.get(),
                                          decoder_.get()));
+  sync_point_client_ =
+      sync_point_manager->CreateSyncPointClient(
+          channel_->GetSyncPointClientState(),
+          gpu::CommandBufferNamespace::GPU_IO,
+          command_buffer_id_);
+
   if (preemption_flag_.get())
     scheduler_->SetPreemptByFlag(preemption_flag_);
 
@@ -551,7 +565,6 @@ void GpuCommandBufferStub::OnInitialize(
         this,
         handle_);
   } else {
-    GpuChannelManager* manager = channel_->gpu_channel_manager();
     surface_ = manager->GetDefaultOffscreenSurface();
   }
 
@@ -682,8 +695,7 @@ void GpuCommandBufferStub::OnInitialize(
   Send(reply_message);
 
   if (handle_.is_null() && !active_url_.is_empty()) {
-    GpuChannelManager* gpu_channel_manager = channel_->gpu_channel_manager();
-    gpu_channel_manager->Send(new GpuHostMsg_DidCreateOffscreenContext(
+    manager->Send(new GpuHostMsg_DidCreateOffscreenContext(
         active_url_));
   }
 
