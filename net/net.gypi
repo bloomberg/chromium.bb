@@ -1890,6 +1890,7 @@
       'docs/bug-triage.md',
       'docs/bug-triage-labels.md',
       'docs/bug-triage-suggested-workflow.md',
+      'docs/code-patterns.md',
       'docs/life-of-a-url-request.md',
       'sdch/README.md',
     ],
