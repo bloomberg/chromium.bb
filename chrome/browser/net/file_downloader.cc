@@ -21,6 +21,7 @@ const int kNumRetries = 1;
 
 FileDownloader::FileDownloader(const GURL& url,
                                const base::FilePath& path,
+                               bool overwrite,
                                net::URLRequestContextGetter* request_context,
                                const DownloadFinishedCallback& callback)
     : callback_(callback),
@@ -34,13 +35,17 @@ FileDownloader::FileDownloader(const GURL& url,
       path,
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE));
 
-  base::PostTaskAndReplyWithResult(
-      BrowserThread::GetBlockingPool()->GetTaskRunnerWithShutdownBehavior(
-          base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN).get(),
-      FROM_HERE,
-      base::Bind(&base::PathExists, path),
-      base::Bind(&FileDownloader::OnFileExistsCheckDone,
-                 weak_ptr_factory_.GetWeakPtr()));
+  if (overwrite) {
+    fetcher_->Start();
+  } else {
+    base::PostTaskAndReplyWithResult(
+        BrowserThread::GetBlockingPool()->GetTaskRunnerWithShutdownBehavior(
+            base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN).get(),
+        FROM_HERE,
+        base::Bind(&base::PathExists, path),
+        base::Bind(&FileDownloader::OnFileExistsCheckDone,
+                   weak_ptr_factory_.GetWeakPtr()));
+  }
 }
 
 FileDownloader::~FileDownloader() {}
@@ -53,14 +58,16 @@ void FileDownloader::OnURLFetchComplete(const net::URLFetcher* source) {
 
   const net::URLRequestStatus& status = source->GetStatus();
   if (!status.is_success()) {
-    DLOG(WARNING) << "URLRequestStatus error " << status.error();
+    DLOG(WARNING) << "URLRequestStatus error " << status.error()
+        << " while trying to download " << source->GetURL().spec();
     callback_.Run(false);
     return;
   }
 
   int response_code = source->GetResponseCode();
   if (response_code != net::HTTP_OK) {
-    DLOG(WARNING) << "HTTP error " << response_code;
+    DLOG(WARNING) << "HTTP error " << response_code
+        << " while trying to download " << source->GetURL().spec();
     callback_.Run(false);
     return;
   }

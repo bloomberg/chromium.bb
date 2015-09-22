@@ -22,9 +22,9 @@ class URLRequestContextGetter;
 class GURL;
 
 // Helper class to download a file from a given URL and store it in a local
-// file. If the local file already exists, reports success without downloading
-// anything.
-// TODO(treib): Add a "bool overwrite" param?
+// file. If |overwrite| is true, any existing file will be overwritten;
+// otherwise if the local file already exists, this will report success without
+// downloading anything.
 class FileDownloader : public net::URLFetcherDelegate {
  public:
   typedef base::Callback<void(bool /* success */)> DownloadFinishedCallback;
@@ -33,6 +33,7 @@ class FileDownloader : public net::URLFetcherDelegate {
   // If the instance is destroyed before it is finished, |callback| is not run.
   FileDownloader(const GURL& url,
                  const base::FilePath& path,
+                 bool overwrite,
                  net::URLRequestContextGetter* request_context,
                  const DownloadFinishedCallback& callback);
   ~FileDownloader() override;

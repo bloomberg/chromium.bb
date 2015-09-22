@@ -134,6 +134,27 @@ std::string GetPopularSitesFilename() {
                                             "filename");
 }
 
+// Determine whether we need any popular suggestions to fill up a grid of
+// |num_tiles| tiles.
+bool NeedPopularSites(const PrefService* prefs, size_t num_tiles) {
+  const base::ListValue* source_list =
+      prefs->GetList(prefs::kNTPSuggestionsIsPersonal);
+  // If there aren't enough previous suggestions to fill the grid, we need
+  // popular suggestions.
+  if (source_list->GetSize() < num_tiles)
+    return true;
+  // Otherwise, if any of the previous suggestions is not personal, then also
+  // get popular suggestions.
+  for (size_t i = 0; i < num_tiles; ++i) {
+    bool is_personal = false;
+    if (source_list->GetBoolean(i, &is_personal) && !is_personal)
+      return true;
+  }
+  // The whole grid is already filled with personal suggestions, no point in
+  // bothering with popular ones.
+  return false;
+}
+
 }  // namespace
 
 MostVisitedSites::Suggestion::Suggestion(const base::string16& title,
@@ -189,17 +210,6 @@ MostVisitedSites::MostVisitedSites(Profile* profile)
       ProfileSyncServiceFactory::GetForProfile(profile_);
   if (profile_sync_service)
     profile_sync_service->AddObserver(this);
-
-  if (ShouldShowPopularSites()) {
-    popular_sites_.reset(new PopularSites(
-        profile,
-        GetPopularSitesFilename(),
-        profile_->GetRequestContext(),
-        base::Bind(&MostVisitedSites::OnPopularSitesAvailable,
-                   base::Unretained(this))));
-  } else {
-    received_popular_sites_ = true;
-  }
 }
 
 MostVisitedSites::~MostVisitedSites() {
@@ -223,6 +233,18 @@ void MostVisitedSites::SetMostVisitedURLsObserver(JNIEnv* env,
                                                   jint num_sites) {
   observer_.Reset(env, j_observer);
   num_sites_ = num_sites;
+
+  if (ShouldShowPopularSites() &&
+      NeedPopularSites(profile_->GetPrefs(), num_sites_)) {
+    popular_sites_.reset(new PopularSites(
+        profile_,
+        GetPopularSitesFilename(),
+        profile_->GetRequestContext(),
+        base::Bind(&MostVisitedSites::OnPopularSitesAvailable,
+                   base::Unretained(this))));
+  } else {
+    received_popular_sites_ = true;
+  }
 
   QueryMostVisitedURLs();
 

@@ -142,9 +142,13 @@ PopularSites::PopularSites(Profile* profile,
                            const FinishedCallback& callback)
     : callback_(callback), weak_ptr_factory_(this) {
   base::FilePath path = GetPopularSitesPath(profile, filename);
+  // Re-download the file once on every Chrome startup, but use the cached
+  // local file afterwards.
+  static bool overwrite = true;
   downloader_.reset(new FileDownloader(
-      GetPopularSitesURL(profile, filename), path, request_context,
+      GetPopularSitesURL(profile, filename), path, overwrite, request_context,
       base::Bind(&PopularSites::OnDownloadDone, base::Unretained(this), path)));
+  overwrite = false;
 }
 
 PopularSites::~PopularSites() {}

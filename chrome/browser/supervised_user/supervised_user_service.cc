@@ -635,6 +635,7 @@ void SupervisedUserService::OnBlacklistFileChecked(const base::FilePath& path,
   blacklist_downloader_.reset(new FileDownloader(
       url,
       path,
+      false,
       profile_->GetRequestContext(),
       base::Bind(&SupervisedUserService::OnBlacklistDownloadDone,
                  base::Unretained(this), path)));
