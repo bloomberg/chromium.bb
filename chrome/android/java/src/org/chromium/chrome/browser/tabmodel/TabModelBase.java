@@ -6,7 +6,12 @@ package org.chromium.chrome.browser.tabmodel;
 
 import org.chromium.base.ObserverList;
 import org.chromium.base.TraceEvent;
+import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
+import org.chromium.chrome.browser.device.DeviceClassManager;
+import org.chromium.chrome.browser.partnercustomizations.HomepageManager;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tabmodel.TabCreatorManager.TabCreator;
 import org.chromium.chrome.browser.util.MathUtils;
 import org.chromium.content_public.browser.WebContents;
 
@@ -16,8 +21,12 @@ import java.util.List;
 /**
  * This is the default implementation of the {@link TabModel} interface.
  */
-public abstract class TabModelBase extends TabModelJniBridge {
-    private static final String TAG = "TabModelBase";
+public class TabModelBase extends TabModelJniBridge {
+    /**
+     * The application ID used for tabs opened from an application that does not specify an app ID
+     * in its VIEW intent extras.
+     */
+    public static final String UNKNOWN_APP_ID = "com.google.android.apps.chrome.unknown_app";
 
     /**
      * The main list of tabs.  Note that when this changes, all pending closures must be committed
@@ -27,10 +36,12 @@ public abstract class TabModelBase extends TabModelJniBridge {
      */
     private final List<Tab> mTabs = new ArrayList<Tab>();
 
+    private final ChromeActivity mActivity;
+    private final TabModelSelectorUma mUma;
     private final TabModelOrderController mOrderController;
-
-    protected final TabModelDelegate mModelDelegate;
-
+    private final TabContentManager mTabContentManager;
+    private final TabPersistentStore mTabSaver;
+    private final TabModelDelegate mModelDelegate;
     private final ObserverList<TabModelObserver> mObservers;
 
     // Undo State Tracking -------------------------------------------------------------------------
@@ -48,11 +59,16 @@ public abstract class TabModelBase extends TabModelJniBridge {
      */
     private int mIndex = INVALID_TAB_INDEX;
 
-    public TabModelBase(boolean incognito, TabModelOrderController orderController,
-            TabModelDelegate modelDelegate) {
+    public TabModelBase(boolean incognito, ChromeActivity activity, TabModelSelectorUma uma,
+            TabModelOrderController orderController, TabContentManager tabContentManager,
+            TabPersistentStore tabSaver, TabModelDelegate modelDelegate) {
         super(incognito);
         initializeNative();
+        mActivity = activity;
+        mUma = uma;
         mOrderController = orderController;
+        mTabContentManager = tabContentManager;
+        mTabSaver = tabSaver;
         mModelDelegate = modelDelegate;
         mObservers = new ObserverList<TabModelObserver>();
     }
@@ -214,7 +230,7 @@ public abstract class TabModelBase extends TabModelJniBridge {
 
     @Override
     public boolean supportsPendingClosures() {
-        return !isIncognito();
+        return !isIncognito() && DeviceClassManager.enableUndo(mActivity);
     }
 
     @Override
@@ -334,12 +350,32 @@ public abstract class TabModelBase extends TabModelJniBridge {
 
     @Override
     public void closeAllTabs(boolean allowDelegation, boolean uponExit) {
-        commitAllTabClosures();
+        mTabSaver.cancelLoadingTabs(isIncognito());
 
-        for (int i = 0; i < getCount(); i++) getTabAt(i).setClosing(true);
-        while (getCount() > 0) {
-            TabModelUtils.closeTabByIndex(this, 0);
+        if (uponExit) {
+            commitAllTabClosures();
+
+            for (int i = 0; i < getCount(); i++) getTabAt(i).setClosing(true);
+            while (getCount() > 0) TabModelUtils.closeTabByIndex(this, 0);
+            return;
         }
+
+        if (allowDelegation && mModelDelegate.closeAllTabsRequest(isIncognito())) return;
+
+        if (HomepageManager.isHomepageEnabled(mActivity)) {
+            commitAllTabClosures();
+
+            for (int i = 0; i < getCount(); i++) getTabAt(i).setClosing(true);
+            while (getCount() > 0) TabModelUtils.closeTabByIndex(this, 0);
+            return;
+        }
+
+        if (getCount() == 1) {
+            closeTab(getTabAt(0), true, false, true);
+            return;
+        }
+
+        closeAllTabs(true, false, true);
     }
 
     /**
@@ -429,6 +465,12 @@ public abstract class TabModelBase extends TabModelJniBridge {
 
             if (tab != null) {
                 for (TabModelObserver obs : mObservers) obs.didSelectTab(tab, type, lastId);
+
+                boolean wasAlreadySelected = tab.getId() == lastId;
+                if (!wasAlreadySelected && type == TabSelectionType.FROM_USER) {
+                    // We only want to record when the user actively switches to a different tab.
+                    mUma.userSwitchedToTab();
+                }
             }
 
         } finally {
@@ -496,6 +538,12 @@ public abstract class TabModelBase extends TabModelJniBridge {
      */
     private void finalizeTabClosure(Tab tab) {
         for (TabModelObserver obs : mObservers) obs.didCloseTab(tab);
+
+        mTabContentManager.removeTabThumbnail(tab.getId());
+        mTabSaver.removeTabFromQueues(tab);
+
+        if (!isIncognito()) tab.createHistoricalTab();
+
         tab.destroy();
     }
 
@@ -623,6 +671,18 @@ public abstract class TabModelBase extends TabModelJniBridge {
     @Override
     protected boolean closeTabAt(int index) {
         return closeTab(getTabAt(index));
+    }
+
+    @Override
+    protected TabCreator getTabCreator(boolean incognito) {
+        return mActivity.getTabCreator(incognito);
+    }
+
+    @Override
+    protected boolean createTabWithWebContents(
+            boolean incognito, WebContents webContents, int parentId) {
+        return mActivity.getTabCreator(incognito).createTabWithWebContents(
+                webContents, parentId, TabLaunchType.FROM_LONGPRESS_BACKGROUND);
     }
 
     @Override
