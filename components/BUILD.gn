@@ -27,6 +27,7 @@ group("all_components") {
     "//components/data_reduction_proxy/core/browser",
     "//components/data_reduction_proxy/core/common",
     "//components/device_event_log",
+    "//components/google/core/browser",
   ]
 
   if (!is_ios) {
@@ -66,7 +67,6 @@ group("all_components") {
       "//components/gcm_driver",
       "//components/gcm_driver/crypto",
       "//components/gcm_driver/instance_id",
-      "//components/google/core/browser",
       "//components/history/content/browser",
       "//components/history/core/browser",
       "//components/history/core/common",
@@ -301,6 +301,7 @@ test("components_unittests") {
     "//net",
     "//ui/base",
     "//ui/resources:ui_test_pak",
+    "//components/google/core/browser:unit_tests",
   ]
 
   if (!is_ios) {
@@ -343,7 +344,6 @@ test("components_unittests") {
       "//components/gcm_driver/crypto:unit_tests",
       "//components/gcm_driver/instance_id:unit_tests",
       "//components/gcm_driver:unit_tests",
-      "//components/google/core/browser:unit_tests",
       "//components/history/content/browser:unit_tests",
       "//components/history/core/browser:unit_tests",
       "//components/history/core/common:unit_tests",
