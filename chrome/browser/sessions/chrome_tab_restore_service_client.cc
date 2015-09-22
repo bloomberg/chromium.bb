@@ -9,7 +9,6 @@
 #include "chrome/browser/sessions/session_service_factory.h"
 #include "chrome/common/url_constants.h"
 #include "components/sessions/content/content_live_tab.h"
-#include "components/sessions/content/content_tab_client_data.h"
 #include "content/public/browser/browser_thread.h"
 
 #if defined(ENABLE_EXTENSIONS)
@@ -112,12 +111,6 @@ std::string ChromeTabRestoreServiceClient::GetExtensionAppIDForTab(
 #endif
 
   return extension_app_id;
-}
-
-scoped_ptr<sessions::TabClientData>
-ChromeTabRestoreServiceClient::GetTabClientDataForTab(sessions::LiveTab* tab) {
-  return make_scoped_ptr(new sessions::ContentTabClientData(
-      static_cast<sessions::ContentLiveTab*>(tab)->web_contents()));
 }
 
 base::SequencedWorkerPool* ChromeTabRestoreServiceClient::GetBlockingPool() {

@@ -30,18 +30,6 @@ class TabRestoreServiceDelegate;
 typedef base::Callback<void(ScopedVector<SessionWindow>, SessionID::id_type)>
     GetLastSessionCallback;
 
-// A class that is used to associate embedder-specific data with
-// TabRestoreService::Tab. See TabRestoreServiceClient::GetClientData().
-// Subclasses of this class must be copyable by implementing the Clone() method
-// for usage by the Tab struct, which is itself copyable and assignable.
-class SESSIONS_EXPORT TabClientData {
- public:
-  // TODO(blundell): Make this private once tab_restore_service.h is in the
-  // component and declare TabRestoreService::Tab a friend of this class.
-  virtual scoped_ptr<TabClientData> Clone() = 0;
-  virtual ~TabClientData();
-};
-
 // A client interface that needs to be supplied to the tab restore service by
 // the embedder.
 class SESSIONS_EXPORT TabRestoreServiceClient {
@@ -79,11 +67,6 @@ class SESSIONS_EXPORT TabRestoreServiceClient {
   // if there is no such ID (e.g., if extensions are not supported by the
   // embedder).
   virtual std::string GetExtensionAppIDForTab(LiveTab* tab) = 0;
-
-  // Returns any client data that should be associated with the
-  // TabRestoreService::Tab corresponding to |tab|. That tab will own
-  // this TabClientData instance. The default implementation returns null.
-  virtual scoped_ptr<TabClientData> GetTabClientDataForTab(LiveTab* tab);
 
   // Get the sequenced worker pool for running tasks on the backend thread as
   // long as the system is not shutting down.

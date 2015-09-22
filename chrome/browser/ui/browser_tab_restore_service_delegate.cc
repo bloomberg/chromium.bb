@@ -11,7 +11,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "components/sessions/content/content_live_tab.h"
-#include "components/sessions/content/content_tab_client_data.h"
+#include "components/sessions/content/content_platform_specific_tab_data.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/session_storage_namespace.h"
 
@@ -62,11 +62,12 @@ sessions::LiveTab* BrowserTabRestoreServiceDelegate::AddRestoredTab(
     bool select,
     bool pin,
     bool from_last_session,
-    const sessions::TabClientData* tab_client_data,
+    const sessions::PlatformSpecificTabData* tab_platform_data,
     const std::string& user_agent_override) {
   SessionStorageNamespace* storage_namespace =
-      tab_client_data
-          ? static_cast<const sessions::ContentTabClientData*>(tab_client_data)
+      tab_platform_data
+          ? static_cast<const sessions::ContentPlatformSpecificTabData*>(
+                tab_platform_data)
                 ->session_storage_namespace()
           : nullptr;
 
@@ -82,11 +83,12 @@ sessions::LiveTab* BrowserTabRestoreServiceDelegate::ReplaceRestoredTab(
     int selected_navigation,
     bool from_last_session,
     const std::string& extension_app_id,
-    const sessions::TabClientData* tab_client_data,
+    const sessions::PlatformSpecificTabData* tab_platform_data,
     const std::string& user_agent_override) {
   SessionStorageNamespace* storage_namespace =
-      tab_client_data
-          ? static_cast<const sessions::ContentTabClientData*>(tab_client_data)
+      tab_platform_data
+          ? static_cast<const sessions::ContentPlatformSpecificTabData*>(
+                tab_platform_data)
                 ->session_storage_namespace()
           : nullptr;
 

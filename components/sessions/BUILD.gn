@@ -16,25 +16,24 @@ if (!is_ios) {
     sources = [
       "content/content_live_tab.cc",
       "content/content_live_tab.h",
+      "content/content_platform_specific_tab_data.cc",
+      "content/content_platform_specific_tab_data.h",
       "content/content_serialized_navigation_builder.cc",
       "content/content_serialized_navigation_builder.h",
       "content/content_serialized_navigation_driver.cc",
       "content/content_serialized_navigation_driver.h",
-      "content/content_tab_client_data.cc",
-      "content/content_tab_client_data.h",
     ]
 
     configs += [ ":implementation" ]
 
     public_deps = [
       ":shared",
+      "//content/public/browser",
     ]
 
     deps = [
-      ":shared",
       "//base",
       "//base/third_party/dynamic_annotations",
-      "//content/public/browser",
       "//ui/base",
       "//url",
     ]
@@ -53,9 +52,7 @@ if (!is_ios) {
     ]
 
     deps = [
-      ":shared",
       "//base",
-
       # '../ios/web/ios_web.gyp:ios_web',  TODO(GYP) iOS.
     ]
   }
@@ -71,6 +68,7 @@ source_set("shared") {
     "base_session_service_commands.cc",
     "base_session_service_commands.h",
     "base_session_service_delegate.h",
+    "core/live_tab.cc",
     "core/live_tab.h",
     "core/serialized_navigation_driver.h",
     "core/session_constants.cc",
@@ -111,13 +109,15 @@ source_set("shared") {
 
   configs += [ ":implementation" ]
 
+  public_deps = [
+    "//components/keyed_service/core",
+    "//sync/protocol",
+  ]
+
   deps = [
     "//base",
-    "//components/keyed_service/core",
     "//skia",
     "//sync",
-    "//sync/protocol",
-    "//third_party/protobuf:protobuf_lite",
     "//ui/base",
     "//ui/gfx",
     "//url",
@@ -165,7 +165,6 @@ if (!is_ios && !is_android) {
       ":test_support",
       "//base/test:test_support",
       "//testing/gtest",
-      "//third_party/protobuf:protobuf_lite",
     ]
   }
 }

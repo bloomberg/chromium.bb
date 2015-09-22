@@ -12,7 +12,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "components/sessions/core/tab_restore_service_client.h"
 #include "components/sessions/serialized_navigation_entry.h"
 #include "components/sessions/session_id.h"
 #include "components/sessions/session_types.h"
@@ -22,6 +21,7 @@
 namespace sessions {
 
 class LiveTab;
+class PlatformSpecificTabData;
 class TabRestoreServiceDelegate;
 class TabRestoreServiceObserver;
 
@@ -102,7 +102,7 @@ class SESSIONS_EXPORT TabRestoreService : public KeyedService {
     std::string extension_app_id;
 
     // The associated client data.
-    scoped_ptr<TabClientData> client_data;
+    scoped_ptr<PlatformSpecificTabData> platform_data;
 
     // The user agent override used for the tab's navigations (if applicable).
     std::string user_agent_override;
@@ -189,6 +189,20 @@ class SESSIONS_EXPORT TabRestoreService : public KeyedService {
 
   // Deletes the last session.
   virtual void DeleteLastSession() = 0;
+};
+
+// A class that is used to associate platform-specific data with
+// TabRestoreService::Tab. See LiveTab::GetPlatformSpecificTabData().
+// Subclasses of this class must be copyable by implementing the Clone() method
+// for usage by the Tab struct, which is itself copyable and assignable.
+class SESSIONS_EXPORT PlatformSpecificTabData {
+ public:
+  virtual ~PlatformSpecificTabData();
+
+ private:
+  friend TabRestoreService::Tab;
+
+  virtual scoped_ptr<PlatformSpecificTabData> Clone() = 0;
 };
 
 }  // namespace sessions

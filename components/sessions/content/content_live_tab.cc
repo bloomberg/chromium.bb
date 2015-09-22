@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "components/sessions/content/content_live_tab.h"
+#include "components/sessions/content/content_platform_specific_tab_data.h"
 
 namespace {
 const char kContentLiveTabWebContentsUserDataKey[] = "content_live_tab";
@@ -52,6 +53,12 @@ sessions::SerializedNavigationEntry ContentLiveTab::GetPendingEntry() {
 
 int ContentLiveTab::GetEntryCount() {
   return navigation_controller().GetEntryCount();
+}
+
+scoped_ptr<sessions::PlatformSpecificTabData>
+ContentLiveTab::GetPlatformSpecificTabData() {
+  return make_scoped_ptr(
+      new sessions::ContentPlatformSpecificTabData(web_contents()));
 }
 
 void ContentLiveTab::LoadIfNecessary() {

@@ -13,6 +13,7 @@
       'sessions/base_session_service_commands.cc',
       'sessions/base_session_service_commands.h',
       'sessions/base_session_service_delegate.h',
+      'sessions/core/live_tab.cc',
       'sessions/core/live_tab.h',
       'sessions/core/persistent_tab_restore_service.cc',
       'sessions/core/persistent_tab_restore_service.h',
@@ -23,9 +24,9 @@
       'sessions/core/tab_restore_service.h',
       'sessions/core/tab_restore_service_client.cc',
       'sessions/core/tab_restore_service_client.h',
+      'sessions/core/tab_restore_service_delegate.h',
       'sessions/core/tab_restore_service_helper.cc',
       'sessions/core/tab_restore_service_helper.h',
-      'sessions/core/tab_restore_service_delegate.h',
       'sessions/core/tab_restore_service_observer.h',
       'sessions/serialized_navigation_entry.cc',
       'sessions/serialized_navigation_entry.h',
@@ -102,12 +103,12 @@
 
             'sessions/content/content_live_tab.cc',
             'sessions/content/content_live_tab.h',
+            'sessions/content/content_platform_specific_tab_data.cc',
+            'sessions/content/content_platform_specific_tab_data.h',
             'sessions/content/content_serialized_navigation_builder.cc',
             'sessions/content/content_serialized_navigation_builder.h',
             'sessions/content/content_serialized_navigation_driver.cc',
             'sessions/content/content_serialized_navigation_driver.h',
-            'sessions/content/content_tab_client_data.cc',
-            'sessions/content/content_tab_client_data.h',
           ],
           'conditions': [
             ['OS=="android"', {

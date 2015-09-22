@@ -2,12 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/sessions/core/tab_restore_service_client.h"
+#include "components/sessions/core/live_tab.h"
 
 namespace sessions {
 
-TabRestoreServiceClient::~TabRestoreServiceClient() {}
+LiveTab::~LiveTab() {}
 
-void TabRestoreServiceClient::OnTabRestored(const GURL& url) {}
+scoped_ptr<PlatformSpecificTabData> LiveTab::GetPlatformSpecificTabData() {
+  return nullptr;
+}
 
 }  // namespace sessions

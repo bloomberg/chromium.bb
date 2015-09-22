@@ -211,7 +211,7 @@ std::vector<LiveTab*> TabRestoreServiceHelper::RestoreEntryById(
             tab.navigations, delegate->GetTabCount(),
             tab.current_navigation_index, tab.extension_app_id,
             static_cast<int>(tab_i) == window->selected_tab_index, tab.pinned,
-            tab.from_last_session, tab.client_data.get(),
+            tab.from_last_session, tab.platform_data.get(),
             tab.user_agent_override);
         if (restored_tab) {
           restored_tab->LoadIfNecessary();
@@ -384,7 +384,7 @@ void TabRestoreServiceHelper::PopulateTab(Tab* tab,
 
   tab->user_agent_override = live_tab->GetUserAgentOverride();
 
-  tab->client_data = client_->GetTabClientDataForTab(live_tab);
+  tab->platform_data = live_tab->GetPlatformSpecificTabData();
 
   // Delegate may be NULL during unit tests.
   if (delegate) {
@@ -403,7 +403,7 @@ TabRestoreServiceDelegate* TabRestoreServiceHelper::RestoreTab(
   if (disposition == CURRENT_TAB && delegate) {
     restored_tab = delegate->ReplaceRestoredTab(
         tab.navigations, tab.current_navigation_index, tab.from_last_session,
-        tab.extension_app_id, tab.client_data.get(), tab.user_agent_override);
+        tab.extension_app_id, tab.platform_data.get(), tab.user_agent_override);
   } else {
     // We only respsect the tab's original browser if there's no disposition.
     if (disposition == UNKNOWN && tab.has_browser()) {
@@ -435,7 +435,8 @@ TabRestoreServiceDelegate* TabRestoreServiceHelper::RestoreTab(
     restored_tab = delegate->AddRestoredTab(
         tab.navigations, tab_index, tab.current_navigation_index,
         tab.extension_app_id, disposition != NEW_BACKGROUND_TAB, tab.pinned,
-        tab.from_last_session, tab.client_data.get(), tab.user_agent_override);
+        tab.from_last_session, tab.platform_data.get(),
+        tab.user_agent_override);
     restored_tab->LoadIfNecessary();
   }
   client_->OnTabRestored(

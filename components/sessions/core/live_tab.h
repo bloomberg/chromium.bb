@@ -6,6 +6,7 @@
 #define COMPONENTS_SESSIONS_CORE_LIVE_TAB_H_
 
 #include "base/basictypes.h"
+#include "components/sessions/core/tab_restore_service.h"
 #include "components/sessions/serialized_navigation_entry.h"
 #include "components/sessions/sessions_export.h"
 
@@ -17,7 +18,7 @@ namespace sessions {
 // //content-based platforms).
 class SESSIONS_EXPORT LiveTab {
  public:
-  virtual ~LiveTab() {}
+  virtual ~LiveTab();
 
   // Methods that return information about the navigation state of the tab.
   virtual int GetCurrentEntryIndex() = 0;
@@ -25,6 +26,11 @@ class SESSIONS_EXPORT LiveTab {
   virtual SerializedNavigationEntry GetEntryAtIndex(int index) = 0;
   virtual SerializedNavigationEntry GetPendingEntry() = 0;
   virtual int GetEntryCount() = 0;
+
+  // Returns any platform-specific data that should be associated with the
+  // TabRestoreService::Tab corresponding to this instance. The default
+  // implementation returns null.
+  virtual scoped_ptr<PlatformSpecificTabData> GetPlatformSpecificTabData();
 
   // Loads the current page if necessary (where "necessary" is defined on a
   // platform-specific basis).

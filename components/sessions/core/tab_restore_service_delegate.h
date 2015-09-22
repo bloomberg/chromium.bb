@@ -15,7 +15,7 @@ namespace sessions {
 
 class LiveTab;
 class SerializedNavigationEntry;
-class TabClientData;
+class PlatformSpecificTabData;
 
 // Objects implement this interface to provide necessary functionality for
 // TabRestoreService to operate. These methods are mostly copies of existing
@@ -41,9 +41,9 @@ class SESSIONS_EXPORT TabRestoreServiceDelegate {
   virtual LiveTab* GetActiveLiveTab() const = 0;
   virtual bool IsTabPinned(int index) const = 0;
 
-  // Note: |tab_client_data| may be null (e.g., if |from_last_session| is true,
-  // as the tab client data is not persisted, or if the embedder did not supply
-  // client data for the tab in question).
+  // Note: |tab_platform_data| may be null (e.g., if |from_last_session| is
+  // true, as this data is not persisted, or if the platform does not provide
+  // platform-specific data).
   virtual LiveTab* AddRestoredTab(
       const std::vector<SerializedNavigationEntry>& navigations,
       int tab_index,
@@ -52,17 +52,18 @@ class SESSIONS_EXPORT TabRestoreServiceDelegate {
       bool select,
       bool pin,
       bool from_last_session,
-      const TabClientData* tab_client_data,
+      const PlatformSpecificTabData* tab_platform_data,
       const std::string& user_agent_override) = 0;
 
-  // Note: |tab_client_data| may be null (e.g., if |from_last_session| is true,
-  // as the tab client data is not persisted, or if the embedder did not supply
+  // Note: |tab_platform_data| may be null (e.g., if |from_last_session| is
+  // true, as this data is not persisted, or if the platform does not provide
+  // platform-specific data).
   virtual LiveTab* ReplaceRestoredTab(
       const std::vector<SerializedNavigationEntry>& navigations,
       int selected_navigation,
       bool from_last_session,
       const std::string& extension_app_id,
-      const TabClientData* tab_client_data,
+      const PlatformSpecificTabData* tab_platform_data,
       const std::string& user_agent_override) = 0;
   virtual void CloseTab() = 0;
 

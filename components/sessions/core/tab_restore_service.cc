@@ -46,8 +46,8 @@ TabRestoreService::Tab::Tab(const TabRestoreService::Tab& tab)
       pinned(tab.pinned),
       extension_app_id(tab.extension_app_id),
       user_agent_override(tab.user_agent_override) {
-  if (tab.client_data)
-    client_data = tab.client_data->Clone();
+  if (tab.platform_data)
+    platform_data = tab.platform_data->Clone();
 }
 
 TabRestoreService::Tab::~Tab() {
@@ -63,8 +63,8 @@ TabRestoreService::Tab& TabRestoreService::Tab::operator=(
   extension_app_id = tab.extension_app_id;
   user_agent_override = tab.user_agent_override;
 
-  if (tab.client_data)
-    client_data = tab.client_data->Clone();
+  if (tab.platform_data)
+    platform_data = tab.platform_data->Clone();
 
   return *this;
 }
@@ -81,5 +81,10 @@ TabRestoreService::Window::~Window() {
 
 TabRestoreService::~TabRestoreService() {
 }
+
+// PlatformSpecificTabData
+// ------------------------------------------------------
+
+PlatformSpecificTabData::~PlatformSpecificTabData() {}
 
 }  // namespace sessions
