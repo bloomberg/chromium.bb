@@ -16,7 +16,7 @@ using ui::KeycodeConverter;
 namespace {
 
 #if defined(OS_WIN)
-const size_t kExpectedMappedKeyCount = 138;
+const size_t kExpectedMappedKeyCount = 139;
 #elif defined(OS_LINUX)
 const size_t kExpectedMappedKeyCount = 168;
 #elif defined(OS_MACOSX)

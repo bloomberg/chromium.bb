@@ -7,6 +7,13 @@
 
 namespace ui {
 
+namespace {
+
+const WORD kCtrlPauseScanCode = 0xe046;
+const WORD kPauseScanCode = 0x0045;
+
+}  // namespace
+
 WORD WindowsKeyCodeForKeyboardCode(KeyboardCode keycode) {
   return static_cast<WORD>(keycode);
 }
@@ -16,6 +23,11 @@ KeyboardCode KeyboardCodeForWindowsKeyCode(WORD keycode) {
 }
 
 DomCode CodeForWindowsScanCode(WORD scan_code) {
+  // Ctrl-Pause generates a special scancode; make sure
+  // we undo this special mapping.
+  if (scan_code == kCtrlPauseScanCode)
+    scan_code = kPauseScanCode;
+
   return ui::KeycodeConverter::NativeKeycodeToDomCode(scan_code);
 }
 
