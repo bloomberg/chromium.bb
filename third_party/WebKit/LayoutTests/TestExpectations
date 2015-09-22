@@ -1227,6 +1227,8 @@ crbug.com/474759 virtual/spv2/paint/selection/text-selection-newline-vertical.ht
 crbug.com/528431 paint/invalidation/spv2/fixed-img-src-change-after-scroll.html [ Skip ]
 crbug.com/528431 paint/invalidation/spv2/background-image-paint-invalidation.html [ Skip ]
 
+crbug.com/464736 http/tests/xmlhttprequest/ontimeout-event-override-after-failure.html [ Pass Failure ]
+
 # Unclear semantics of ToString (actually ToPrimitive) across iframes.
 crbug.com/532469 http/tests/security/cross-frame-access-custom.html [ NeedsManualRebaseline ]
 
