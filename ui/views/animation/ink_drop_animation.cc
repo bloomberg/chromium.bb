@@ -45,7 +45,7 @@ const int kActionPendingStateAnimationDurationMs = 500;
 const int kQuickActionStateAnimationDurationMs = 250;
 const int kSlowActionPendingStateAnimationDurationMs = 500;
 const int kSlowActionStateAnimationDurationMs = 250;
-const int kActivatedStateAnimationDurationMs = 250;
+const int kActivatedStateAnimationDurationMs = 125;
 const int kDeactivatedStateAnimationDurationMs = 250;
 
 // A multiplicative factor used to slow down InkDropState animations.
