@@ -626,6 +626,7 @@
       'common/dom_storage/dom_storage_map_unittest.cc',
       'common/dwrite_font_platform_win_unittest.cc',
       'common/fileapi/file_system_util_unittest.cc',
+      'common/font_warmup_win_unittest.cc',
       'common/gpu/client/gpu_memory_buffer_impl_unittest.cc',
       'common/gpu/gpu_channel_test_common.cc',
       'common/gpu/gpu_channel_test_common.h',

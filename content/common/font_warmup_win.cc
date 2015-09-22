@@ -5,9 +5,18 @@
 #include "content/common/font_warmup_win.h"
 
 #include <dwrite.h>
+#include <map>
 
 #include "base/debug/alias.h"
+#include "base/files/file_path.h"
+#include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "base/memory/ref_counted.h"
+#include "base/numerics/safe_conversions.h"
+#include "base/numerics/safe_math.h"
+#include "base/strings/utf_string_conversions.h"
+#include "base/synchronization/lock.h"
+#include "base/sys_byteorder.h"
 #include "base/win/iat_patch_function.h"
 #include "base/win/windows_version.h"
 #include "content/public/common/dwrite_font_platform_win.h"
@@ -185,6 +194,270 @@ void PatchDWriteFactory(IDWriteFactory* factory) {
   base::win::ModifyCode(function_ptr, &stub_function, sizeof(PROC));
 }
 
+// Class to fake out a DC or a Font object. Maintains a reference to a
+// SkTypeFace to emulate the simple operation of a DC and Font.
+class FakeGdiObject : public base::RefCountedThreadSafe<FakeGdiObject> {
+ public:
+  FakeGdiObject(uint32_t magic, void* handle)
+      : magic_(magic), handle_(handle) {}
+  ~FakeGdiObject() {}
+
+  void set_typeface(const skia::RefPtr<SkTypeface>& typeface) {
+    typeface_ = typeface;
+  }
+
+  skia::RefPtr<SkTypeface> typeface() { return typeface_; }
+  void* handle() { return handle_; }
+  uint32_t magic() { return magic_; }
+
+ private:
+  friend class base::RefCountedThreadSafe<FakeGdiObject>;
+
+  void* handle_;
+  uint32_t magic_;
+  skia::RefPtr<SkTypeface> typeface_;
+
+  DISALLOW_COPY_AND_ASSIGN(FakeGdiObject);
+};
+
+// This class acts as a factory for creating new fake GDI objects. It also maps
+// the new instances of the FakeGdiObject class to an incrementing handle value
+// which is passed to the caller of the emulated GDI function for later
+// reference.  We can't be sure that this won't be used in a multi-threaded
+// environment so we need to ensure a lock is taken before accessing the map of
+// issued objects.
+class FakeGdiObjectFactory {
+ public:
+  FakeGdiObjectFactory() : curr_handle_(0) {}
+
+  // Find a corresponding fake GDI object and verify its magic value.
+  // The returned value is either nullptr or the validated object.
+  scoped_refptr<FakeGdiObject> Validate(void* obj, uint32_t magic) {
+    if (obj) {
+      base::AutoLock scoped_lock(objects_lock_);
+      auto handle_entry = objects_.find(obj);
+      if (handle_entry != objects_.end() &&
+          handle_entry->second->magic() == magic) {
+        return handle_entry->second;
+      }
+    }
+    return nullptr;
+  }
+
+  scoped_refptr<FakeGdiObject> Create(uint32_t magic) {
+    base::AutoLock scoped_lock(objects_lock_);
+    curr_handle_++;
+    // We don't support wrapping the fake handle value.
+    void* handle = reinterpret_cast<void*>(curr_handle_.ValueOrDie());
+    scoped_refptr<FakeGdiObject> object(new FakeGdiObject(magic, handle));
+    objects_[handle] = object;
+    return object;
+  }
+
+  bool DeleteObject(void* obj, uint32_t magic) {
+    base::AutoLock scoped_lock(objects_lock_);
+    auto handle_entry = objects_.find(obj);
+    if (handle_entry != objects_.end() &&
+        handle_entry->second->magic() == magic) {
+      objects_.erase(handle_entry);
+      return true;
+    }
+    return false;
+  }
+
+  size_t GetObjectCount() {
+    base::AutoLock scoped_lock(objects_lock_);
+    return objects_.size();
+  }
+
+  void ResetObjectHandles() {
+    base::AutoLock scoped_lock(objects_lock_);
+    curr_handle_ = 0;
+    objects_.clear();
+  }
+
+ private:
+  base::CheckedNumeric<uintptr_t> curr_handle_;
+  std::map<void*, scoped_refptr<FakeGdiObject>> objects_;
+  base::Lock objects_lock_;
+
+  DISALLOW_COPY_AND_ASSIGN(FakeGdiObjectFactory);
+};
+
+base::LazyInstance<FakeGdiObjectFactory>::Leaky g_fake_gdi_object_factory =
+    LAZY_INSTANCE_INITIALIZER;
+
+// Magic values for the fake GDI objects.
+const uint32_t kFakeDCMagic = 'fkdc';
+const uint32_t kFakeFontMagic = 'fkft';
+
+skia::RefPtr<SkTypeface> GetTypefaceFromLOGFONT(const LOGFONTW* log_font) {
+  CHECK(g_warmup_fontmgr);
+  int weight = log_font->lfWeight;
+  if (weight == FW_DONTCARE)
+    weight = SkFontStyle::kNormal_Weight;
+
+  SkFontStyle style(weight, log_font->lfWidth,
+                    log_font->lfItalic ? SkFontStyle::kItalic_Slant
+                                       : SkFontStyle::kUpright_Slant);
+
+  std::string family_name = base::WideToUTF8(log_font->lfFaceName);
+  return skia::AdoptRef(
+      g_warmup_fontmgr->matchFamilyStyle(family_name.c_str(), style));
+}
+
+HDC WINAPI CreateCompatibleDCPatch(HDC dc_handle) {
+  scoped_refptr<FakeGdiObject> ret =
+      g_fake_gdi_object_factory.Get().Create(kFakeDCMagic);
+  return static_cast<HDC>(ret->handle());
+}
+
+HFONT WINAPI CreateFontIndirectWPatch(const LOGFONTW* log_font) {
+  if (!log_font)
+    return nullptr;
+
+  skia::RefPtr<SkTypeface> typeface = GetTypefaceFromLOGFONT(log_font);
+  if (!typeface)
+    return nullptr;
+
+  scoped_refptr<FakeGdiObject> ret =
+      g_fake_gdi_object_factory.Get().Create(kFakeFontMagic);
+  ret->set_typeface(typeface);
+
+  return static_cast<HFONT>(ret->handle());
+}
+
+BOOL WINAPI DeleteDCPatch(HDC dc_handle) {
+  return g_fake_gdi_object_factory.Get().DeleteObject(dc_handle, kFakeDCMagic);
+}
+
+BOOL WINAPI DeleteObjectPatch(HGDIOBJ object_handle) {
+  return g_fake_gdi_object_factory.Get().DeleteObject(object_handle,
+                                                      kFakeFontMagic);
+}
+
+int WINAPI EnumFontFamiliesExWPatch(HDC dc_handle,
+                                    LPLOGFONTW log_font,
+                                    FONTENUMPROCW enum_callback,
+                                    LPARAM callback_param,
+                                    DWORD flags) {
+  scoped_refptr<FakeGdiObject> dc_obj =
+      g_fake_gdi_object_factory.Get().Validate(dc_handle, kFakeDCMagic);
+  if (!dc_obj)
+    return 1;
+
+  if (!log_font || !enum_callback)
+    return 1;
+
+  skia::RefPtr<SkTypeface> typeface = GetTypefaceFromLOGFONT(log_font);
+  if (!typeface)
+    return 1;
+
+  ENUMLOGFONTEXDVW enum_log_font = {0};
+  enum_log_font.elfEnumLogfontEx.elfLogFont = *log_font;
+  // TODO: Fill in the rest of the text metric structure. Not yet needed for
+  // Flash support but might be in the future.
+  NEWTEXTMETRICEXW text_metric = {0};
+  text_metric.ntmTm.ntmFlags = NTM_PS_OPENTYPE;
+
+  return enum_callback(&enum_log_font.elfEnumLogfontEx.elfLogFont,
+                       reinterpret_cast<TEXTMETRIC*>(&text_metric),
+                       TRUETYPE_FONTTYPE, callback_param);
+}
+
+DWORD WINAPI GetFontDataPatch(HDC dc_handle,
+                              DWORD table_tag,
+                              DWORD table_offset,
+                              LPVOID buffer,
+                              DWORD buffer_length) {
+  scoped_refptr<FakeGdiObject> dc_obj =
+      g_fake_gdi_object_factory.Get().Validate(dc_handle, kFakeDCMagic);
+  if (!dc_obj)
+    return GDI_ERROR;
+
+  skia::RefPtr<SkTypeface> typeface = dc_obj->typeface();
+  if (!typeface)
+    return GDI_ERROR;
+
+  // |getTableData| handles |buffer| being nullptr. However if it is nullptr
+  // then set the size to INT32_MAX otherwise |getTableData| will return the
+  // minimum value between the table entry size and the size passed in. The
+  // common Windows idiom is to pass 0 as |buffer_length| when passing nullptr,
+  // which would in this case result in |getTableData| returning 0 which isn't
+  // the correct answer for emulating GDI. |table_tag| must also have its
+  // byte order swapped to counter the swap which occurs in the called method.
+  size_t length = typeface->getTableData(
+      base::ByteSwap(base::strict_cast<uint32_t>(table_tag)), table_offset,
+      buffer ? buffer_length : INT32_MAX, buffer);
+  // We can't distinguish between an empty table and an error.
+  if (length == 0)
+    return GDI_ERROR;
+
+  return base::checked_cast<DWORD>(length);
+}
+
+HGDIOBJ WINAPI SelectObjectPatch(HDC dc_handle, HGDIOBJ object_handle) {
+  scoped_refptr<FakeGdiObject> dc_obj =
+      g_fake_gdi_object_factory.Get().Validate(dc_handle, kFakeDCMagic);
+  if (!dc_obj)
+    return nullptr;
+
+  scoped_refptr<FakeGdiObject> font_obj =
+      g_fake_gdi_object_factory.Get().Validate(object_handle, kFakeFontMagic);
+  if (!font_obj)
+    return nullptr;
+
+  // Construct a new fake font object to handle the old font if there's one.
+  scoped_refptr<FakeGdiObject> new_font_obj;
+  skia::RefPtr<SkTypeface> old_typeface = dc_obj->typeface();
+  if (old_typeface) {
+    new_font_obj = g_fake_gdi_object_factory.Get().Create(kFakeFontMagic);
+    new_font_obj->set_typeface(old_typeface);
+  }
+  dc_obj->set_typeface(font_obj->typeface());
+
+  if (new_font_obj)
+    return static_cast<HGDIOBJ>(new_font_obj->handle());
+  return nullptr;
+}
+
+void DoSingleGdiPatch(base::win::IATPatchFunction& patch,
+                      const base::FilePath& path,
+                      const char* function_name,
+                      void* new_function) {
+  patch.Patch(path.value().c_str(), "gdi32.dll", function_name, new_function);
+}
+
+class GdiFontPatchDataImpl : public content::GdiFontPatchData {
+ public:
+  GdiFontPatchDataImpl(const base::FilePath& path);
+
+ private:
+  base::win::IATPatchFunction create_compatible_dc_patch_;
+  base::win::IATPatchFunction create_font_indirect_patch_;
+  base::win::IATPatchFunction create_delete_dc_patch_;
+  base::win::IATPatchFunction create_delete_object_patch_;
+  base::win::IATPatchFunction create_enum_font_families_patch_;
+  base::win::IATPatchFunction create_get_font_data_patch_;
+  base::win::IATPatchFunction create_select_object_patch_;
+};
+
+GdiFontPatchDataImpl::GdiFontPatchDataImpl(const base::FilePath& path) {
+  DoSingleGdiPatch(create_compatible_dc_patch_, path, "CreateCompatibleDC",
+                   CreateCompatibleDCPatch);
+  DoSingleGdiPatch(create_font_indirect_patch_, path, "CreateFontIndirectW",
+                   CreateFontIndirectWPatch);
+  DoSingleGdiPatch(create_delete_dc_patch_, path, "DeleteDC", DeleteDCPatch);
+  DoSingleGdiPatch(create_delete_object_patch_, path, "DeleteObject",
+                   DeleteObjectPatch);
+  DoSingleGdiPatch(create_enum_font_families_patch_, path,
+                   "EnumFontFamiliesExW", EnumFontFamiliesExWPatch);
+  DoSingleGdiPatch(create_get_font_data_patch_, path, "GetFontData",
+                   GetFontDataPatch);
+  DoSingleGdiPatch(create_select_object_patch_, path, "SelectObject",
+                   SelectObjectPatch);
+}
+
 }  // namespace
 
 void DoPreSandboxWarmupForTypeface(SkTypeface* typeface) {
@@ -207,6 +480,24 @@ SkFontMgr* GetPreSandboxWarmupFontMgr() {
     g_warmup_fontmgr = SkFontMgr_New_DirectWrite(factory);
   }
   return g_warmup_fontmgr;
+}
+
+GdiFontPatchData* PatchGdiFontEnumeration(const base::FilePath& path) {
+  // We assume the fontmgr is already warmed up before calling this.
+  DCHECK(g_warmup_fontmgr);
+  return new GdiFontPatchDataImpl(path);
+}
+
+size_t GetEmulatedGdiHandleCountForTesting() {
+  return g_fake_gdi_object_factory.Get().GetObjectCount();
+}
+
+void ResetEmulatedGdiHandlesForTesting() {
+  g_fake_gdi_object_factory.Get().ResetObjectHandles();
+}
+
+void SetPreSandboxWarmupFontMgrForTesting(SkFontMgr* fontmgr) {
+  g_warmup_fontmgr = fontmgr;
 }
 
 void WarmupDirectWrite() {

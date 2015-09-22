@@ -52,6 +52,7 @@
 #if defined(OS_WIN)
 #include "base/win/win_util.h"
 #include "base/win/windows_version.h"
+#include "content/common/font_warmup_win.h"
 #include "sandbox/win/src/sandbox.h"
 #elif defined(OS_MACOSX)
 #include "content/common/sandbox_init_mac.h"
@@ -405,6 +406,11 @@ void PpapiThread::OnLoadPlugin(const base::FilePath& path,
     rand_s(&dummy_rand);
 
     WarmupWindowsLocales(permissions);
+
+    if (!base::win::IsUser32AndGdi32Available() &&
+        permissions.HasPermission(ppapi::PERMISSION_FLASH)) {
+      PatchGdiFontEnumeration(path);
+    }
 
     g_target_services->LowerToken();
   }
