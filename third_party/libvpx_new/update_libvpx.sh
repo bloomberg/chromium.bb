@@ -7,7 +7,7 @@
 # This tool is used to update libvpx source code with the latest git
 # repository.
 #
-# Make sure you run this in a git checkout of deps/third_party/libvpx!
+# Make sure you run this in a git checkout of deps/third_party/libvpx_new!
 
 # Usage:
 #

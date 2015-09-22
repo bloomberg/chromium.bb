@@ -45,7 +45,7 @@
     ],
 
     # Location of the intermediate output.
-    'shared_generated_dir': '<(SHARED_INTERMEDIATE_DIR)/third_party/libvpx',
+    'shared_generated_dir': '<(SHARED_INTERMEDIATE_DIR)/third_party/libvpx_new',
   },
   'target_defaults': {
     'target_conditions': [
@@ -95,7 +95,7 @@
           'target_name': 'libvpx_new',
           'type': 'static_library',
           'variables': {
-            'yasm_output_path': '<(SHARED_INTERMEDIATE_DIR)/third_party/libvpx',
+            'yasm_output_path': '<(SHARED_INTERMEDIATE_DIR)/third_party/libvpx_new',
             'OS_CATEGORY%': '<(OS_CATEGORY)',
             'yasm_flags': [
               '-D', 'CHROMIUM',
@@ -193,7 +193,7 @@
           'type': 'static_library',
           'variables': {
             'shared_generated_dir':
-              '<(SHARED_INTERMEDIATE_DIR)/third_party/libvpx',
+              '<(SHARED_INTERMEDIATE_DIR)/third_party/libvpx_new',
           },
           'includes': [
             'libvpx_srcs_mips.gypi',
