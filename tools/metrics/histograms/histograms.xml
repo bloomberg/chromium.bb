@@ -41552,543 +41552,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="SimpleCache.App.CheckCRCResult" enum="CheckCRCResult">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    Whether or not the CRC was checked at the moment when the last reference to
-    a read-only entry stream is closed.
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.App.CreationToIndex" units="milliseconds">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    The time from the creation of the simple cache backend until the index has
-    been loaded from disk.
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.App.CreationToIndexFail" units="milliseconds">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    The time from the creation of the simple cache backend until the index fails
-    to load.
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.App.EntryCreatedAndStream2Omitted"
-    enum="SimpleCache.EntryCreatedAndStream2Omitted">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    Whether, upon creation of a new cache entry, the file for stream 2 was
-    omitted since that stream was empty.
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.App.EntryCreationResult" enum="BooleanSuccess">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    For entry creation operations that were sent to the disk, the result of
-    creation.
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.App.EntryCreationTime" units="milliseconds">
-  <owner>gavinp@chromium.org</owner>
-  <summary>The time, in ms, spent creating a new entry on disk.</summary>
-</histogram>
-
-<histogram name="SimpleCache.App.EntryOpenedAndStream2Removed"
-    enum="SimpleCache.EntryOpenedAndStream2Removed">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    Whether, upon opening of an existing cache entry, stream 2 was empty and the
-    file for that stream was therefore removed.
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.App.EntryOperationsPending">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    At the time that operations are run, the number of pending operations on a
-    particular entry.
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.App.Eviction.CacheSizeOnStart" units="bytes">
-  <owner>gavinp@chromium.org</owner>
-  <summary>The size of the cache at the beginning of an eviction.</summary>
-</histogram>
-
-<histogram name="SimpleCache.App.Eviction.CacheSizeOnStart2" units="KB">
-  <owner>gavinp@chromium.org</owner>
-  <summary>The size of the cache at the beginning of an eviction.</summary>
-</histogram>
-
-<histogram name="SimpleCache.App.Eviction.EntryCount">
-  <owner>gavinp@chromium.org</owner>
-  <summary>The number of entries to be erased in an eviction.</summary>
-</histogram>
-
-<histogram name="SimpleCache.App.Eviction.MaxCacheSizeOnStart" units="bytes">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    The maximum allowed size of the cache at the beginning of an eviction.
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.App.Eviction.MaxCacheSizeOnStart2" units="KB">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    The maximum allowed size of the cache at the beginning of an eviction.
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.App.Eviction.Result" enum="BooleanSuccess">
-  <owner>gavinp@chromium.org</owner>
-  <summary>The result of an eviction.</summary>
-</histogram>
-
-<histogram name="SimpleCache.App.Eviction.SizeOfEvicted" units="bytes">
-  <owner>gavinp@chromium.org</owner>
-  <summary>The number of bytes to be erased in an eviction.</summary>
-</histogram>
-
-<histogram name="SimpleCache.App.Eviction.SizeOfEvicted2" units="KB">
-  <owner>gavinp@chromium.org</owner>
-  <summary>The amount of memory freed in an eviction.</summary>
-</histogram>
-
-<histogram name="SimpleCache.App.Eviction.SizeWhenDone" units="bytes">
-  <owner>gavinp@chromium.org</owner>
-  <summary>The size of the cache after running an eviction.</summary>
-</histogram>
-
-<histogram name="SimpleCache.App.Eviction.SizeWhenDone2" units="KB">
-  <owner>gavinp@chromium.org</owner>
-  <summary>The size of the cache after running an eviction.</summary>
-</histogram>
-
-<histogram name="SimpleCache.App.Eviction.TimeToDone" units="milliseconds">
-  <owner>gavinp@chromium.org</owner>
-  <summary>Time spent completing an eviction.</summary>
-</histogram>
-
-<histogram name="SimpleCache.App.Eviction.TimeToSelectEntries"
-    units="milliseconds">
-  <owner>gavinp@chromium.org</owner>
-  <summary>Time spent selecting entries for eviction.</summary>
-</histogram>
-
-<histogram name="SimpleCache.App.FileDescriptorLimitHard">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    The maximum limit of how many file descriptors a process can open.  Emitted
-    each time the browser is launched, if the limit could be retrieved.  (This
-    is the highest value we could raise the current limit to if we liked.)
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.App.FileDescriptorLimitSoft">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    The current limit of how many file descriptors a process can open.  Emitted
-    each time the browser is launched, if the limit could be retrieved.  (We can
-    raise this to the maximum limit if we like, without root access.)
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.App.FileDescriptorLimitStatus"
-    enum="SimpleCache.FileDescriptorLimitStatus">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    The result of trying to get the file descriptor limit.  Emitted each time
-    the browser is launched.
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.App.GlobalOpenEntryCount">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    The number of open entries across all caches backed by the Simple Cache. An
-    entry is opened whenever a caller asks to open it to read or write cache
-    data, and remains open until the last caller asks to close it. Logged
-    whenever an entry is opened or closed.
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.App.HeaderSize" units="bytes">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    The size of the header stream of a Simple Cache entry, emitted every time
-    the headers are written or rewritten.
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.App.HeaderSizeChange"
-    enum="SimpleCacheHeaderSizeChange">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    How the header size has changed in a Simple Cache entry, emitted every time
-    a write operation occurs on the header stream.  (This includes the initial
-    write, rewrites, and other writes that we couldn't classify.)
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.App.HeaderSizeDecreaseAbsolute" units="bytes">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    The absolute size decrease of the header stream of a Simple Cache entry,
-    emitted every time the headers are rewritten with a smaller size.
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.App.HeaderSizeDecreasePercentage" units="percent">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    The relative size decrease of the header stream of a Simple Cache entry,
-    emitted every time the headers are rewritten with a smaller size.
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.App.HeaderSizeIncreaseAbsolute" units="bytes">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    The absolute size increase of the header stream of a Simple Cache entry,
-    emitted every time the headers are rewritten with a larger size.
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.App.HeaderSizeIncreasePercentage" units="percent">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    The relative size increase of the header stream of a Simple Cache entry,
-    emitted every time the headers are rewritten with a larger size.
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.App.IndexCorrupt" enum="BooleanCorrupt">
-  <owner>gavinp@chromium.org</owner>
-  <summary>For each index load, whether the index file was corrupt.</summary>
-</histogram>
-
-<histogram name="SimpleCache.App.IndexCreatedEntryCount">
-  <owner>gavinp@chromium.org</owner>
-  <summary>The number of entries in a newly created index file.</summary>
-</histogram>
-
-<histogram name="SimpleCache.App.IndexEntriesLoaded">
-  <owner>gavinp@chromium.org</owner>
-  <summary>Number of entries loaded from the index file on start.</summary>
-</histogram>
-
-<histogram name="SimpleCache.App.IndexEntriesRestored">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    Number of entries restored from disk when there was no index or the index
-    was corrupted.
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.App.IndexFileStateOnLoad" enum="SimpleIndexState">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    The state the index file is at when an attempt is made to load from it.
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.App.IndexInitializationWaiters">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    At the time of index initialization, the number of enqueued jobs awaiting
-    index initialization.
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.App.IndexInitializeMethod"
-    enum="SimpleCacheIndexInitializeMethod">
-  <owner>gavinp@chromium.org</owner>
-  <summary>The method used to initialize the simple cache index.</summary>
-</histogram>
-
-<histogram name="SimpleCache.App.IndexLoadTime" units="milliseconds">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    Time (as measured on the worker pool) spent loading the index file.
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.App.IndexNumEntriesOnWrite">
-  <owner>gavinp@chromium.org</owner>
-  <summary>The number of entries written to the index on a flush.</summary>
-</histogram>
-
-<histogram name="SimpleCache.App.IndexRestoreTime" units="milliseconds">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    Time (as measured on the worker pool) spent restoring the index file by
-    iterating directory entries.
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.App.IndexWriteInterval.Background"
-    units="milliseconds">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    The interval between index saves, for apps in the background.
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.App.IndexWriteInterval.Foreground"
-    units="milliseconds">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    The interval between index saves, for apps in the foreground.
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.App.IndexWriteToDiskTime.Background"
-    units="milliseconds">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    The amount of time spend writing the index file to disk, for apps in the
-    background, measured starting at the beginning of the write on the callback
-    thread, and calculated using the completion time on the worker pool.
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.App.IndexWriteToDiskTime.Foreground"
-    units="milliseconds">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    The amount of time spend writing the index file to disk, for apps in the
-    foreground, measured starting at the beginning of the write on the callback
-    thread, and calculated using the completion time on the worker pool.
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.App.KeyMatchedOnOpen" enum="BooleanMatched">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    For each call to OpenEntry, whether the key on disk matched the request key.
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.App.LastClusterLossPercent" units="percent">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    For each file in the Simple Cache, the percentage of disk space used by the
-    cluster loss, the unused disk space in the last 4096 byte cluster of the
-    file.
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.App.LastClusterSize" units="bytes">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    For each file in the Simple Cache, the number of bytes in the last 4096 byte
-    cluster when the entry is saved to disk.
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.App.OpenEntryIndexState"
-    enum="SimpleCacheOpenEntryIndexState">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    At the time that an entry is opened, the state of that entry in the index.
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.App.ReadIsParallelizable"
-    enum="SimpleCacheReadParallelizable">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    For each Read operation, whether it could have been issued in parallel of a
-    previous Read operation.
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.App.ReadResult" enum="SimpleCacheReadResult">
-  <owner>gavinp@chromium.org</owner>
-  <summary>The outcome of Entry::ReadData in the simple cache.</summary>
-</histogram>
-
-<histogram name="SimpleCache.App.SyncCheckEOFHasCrc" enum="BooleanHasCrc">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    For each EOFRecord found with a valid magic number, indicates if the record
-    also contains a CRC.
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.App.SyncCheckEOFResult"
-    enum="SimpleCacheSyncCheckEOFResult">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    The result, at the synchronous layer, of checking the EOF record of a cache
-    entry.
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.App.SyncCloseResult"
-    enum="SimpleCacheSyncCloseResult">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    The result, at the synchronous layer, of closing a cache entry.
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.App.SyncCreatePlatformFileError"
-    enum="PlatformFileError">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    The platform error reported when attempting to create a new cache entry at
-    the synchronous layer.
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.App.SyncCreatePlatformFileError_WithIndex"
-    enum="PlatformFileError">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    The platform error reported when attempting to create a new cache entry at
-    the synchronous layer when the index has already initialized.
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.App.SyncCreatePlatformFileError_WithoutIndex"
-    enum="PlatformFileError">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    The platform error reported when attempting to create a new cache entry at
-    the synchronous layer when the index has not yet initialized.
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.App.SyncCreateResult"
-    enum="SimpleCacheSyncCreateResult">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    The result, at the synchronous layer, reported when attempting to create a
-    new cache entry.
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.App.SyncCreateResult_WithIndex"
-    enum="SimpleCacheSyncCreateResult">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    The result, at the synchronous layer, reported when attempting to create a
-    new cache entry when the index has already initialized.
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.App.SyncCreateResult_WithoutIndex"
-    enum="SimpleCacheSyncCreateResult">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    The result, at the synchronous layer, reported when attempting to create a
-    new cache entry when the index has not yet initialized.
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.App.SyncOpenEntryAge" units="hours">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    The age of the entry (time since last modified), when opened at the
-    synchronous layer.
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.App.SyncOpenPlatformFileError"
-    enum="PlatformFileError">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    The platform error reported when attempting to create a new cache entry at
-    the synchronous layer.
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.App.SyncOpenPlatformFileError_WithIndex"
-    enum="PlatformFileError">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    The platform error reported when attempting to create a new cache entry at
-    the synchronous layer when the index has already initialized.
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.App.SyncOpenPlatformFileError_WithoutIndex"
-    enum="PlatformFileError">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    The platform error reported when attempting to create a new cache entry at
-    the synchronous layer when the index has not initialized.
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.App.SyncOpenResult"
-    enum="SimpleCacheSyncOpenResult">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    The result, at the synchronous layer, reported when attempting to open a new
-    cache entry.
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.App.SyncOpenResult_WithIndex"
-    enum="SimpleCacheSyncOpenResult">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    The result, at the synchronous layer, reported when attempting to open a new
-    cache entry when the index has already initialized.
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.App.SyncOpenResult_WithoutIndex"
-    enum="SimpleCacheSyncOpenResult">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    The result, at the synchronous layer, reported when attempting to open a new
-    cache entry when the index has not yet initialized.
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.App.SyncWriteResult"
-    enum="SimpleCacheSyncWriteResult">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    The result, at the synchronous layer, of writing to a cache entry.
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.App.WriteDependencyType"
-    enum="SimpleCacheWriteDependencyType">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    Shows whether a write operation depends on the previous operation in queue
-    particularly in the aspect of its possibility to run in parallel.
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.App.WriteResult" enum="SimpleCacheWriteResult">
-  <obsolete>
-    Replaced 2013/09/03 by WriteResult2, which adds &quot;fast empty
-    return&quot;, which previously showed up as &quot;success&quot;.
-  </obsolete>
-  <owner>gavinp@chromium.org</owner>
-  <summary>The outcome of Entry::WriteData in the simple cache.</summary>
-</histogram>
-
-<histogram name="SimpleCache.App.WriteResult2" enum="SimpleCacheWriteResult">
-  <owner>gavinp@chromium.org</owner>
-  <summary>The outcome of Entry::WriteData in the simple cache.</summary>
-</histogram>
-
 <histogram name="SimpleCache.CheckCRCResult" enum="CheckCRCResult">
-  <obsolete>
-    Deprecated 2013-08 in favor of cache type specific version (App or Http).
-  </obsolete>
   <owner>gavinp@chromium.org</owner>
   <summary>
     Whether or not the CRC was checked at the moment when the last reference to
@@ -42097,9 +41561,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="SimpleCache.CreationToIndex" units="milliseconds">
-  <obsolete>
-    Deprecated 2013-08 in favor of cache type specific version (App or Http).
-  </obsolete>
   <owner>gavinp@chromium.org</owner>
   <summary>
     The time from the creation of the simple cache backend until the index has
@@ -42108,9 +41569,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="SimpleCache.CreationToIndexFail" units="milliseconds">
-  <obsolete>
-    Deprecated 2013-08 in favor of cache type specific version (App or Http).
-  </obsolete>
   <owner>gavinp@chromium.org</owner>
   <summary>
     The time from the creation of the simple cache backend until the index fails
@@ -42126,10 +41584,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="SimpleCache.EntryCreatedAndStream2Omitted"
+    enum="SimpleCache.EntryCreatedAndStream2Omitted">
+  <owner>gavinp@chromium.org</owner>
+  <summary>
+    Whether, upon creation of a new cache entry, the file for stream 2 was
+    omitted since that stream was empty.
+  </summary>
+</histogram>
+
 <histogram name="SimpleCache.EntryCreationResult" enum="BooleanSuccess">
-  <obsolete>
-    Deprecated 2013-08 in favor of cache type specific version (App or Http).
-  </obsolete>
   <owner>gavinp@chromium.org</owner>
   <summary>
     For entry creation operations that were sent to the disk, the result of
@@ -42138,17 +41602,20 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="SimpleCache.EntryCreationTime" units="milliseconds">
-  <obsolete>
-    Deprecated 2013-08 in favor of cache type specific version (App or Http).
-  </obsolete>
   <owner>gavinp@chromium.org</owner>
   <summary>The time, in ms, spent creating a new entry on disk.</summary>
 </histogram>
 
+<histogram name="SimpleCache.EntryOpenedAndStream2Removed"
+    enum="SimpleCache.EntryOpenedAndStream2Removed">
+  <owner>gavinp@chromium.org</owner>
+  <summary>
+    Whether, upon opening of an existing cache entry, stream 2 was empty and the
+    file for that stream was therefore removed.
+  </summary>
+</histogram>
+
 <histogram name="SimpleCache.EntryOperationsPending">
-  <obsolete>
-    Deprecated 2013-08 in favor of cache type specific version (App or Http).
-  </obsolete>
   <owner>gavinp@chromium.org</owner>
   <summary>
     At the time that operations are run, the number of pending operations on a
@@ -42158,31 +41625,25 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="SimpleCache.Eviction.CacheSizeOnStart" units="bytes">
   <obsolete>
-    Deprecated 2013-08 in favor of cache type specific version (App or Http).
+    Deprecated 2013 in favour of SimpleCache.Eviction.CacheSizeOnStart2
   </obsolete>
   <owner>gavinp@chromium.org</owner>
   <summary>The size of the cache at the beginning of an eviction.</summary>
 </histogram>
 
 <histogram name="SimpleCache.Eviction.CacheSizeOnStart2" units="KB">
-  <obsolete>
-    Deprecated 2013-08 in favor of cache type specific version (App or Http).
-  </obsolete>
   <owner>gavinp@chromium.org</owner>
   <summary>The size of the cache at the beginning of an eviction.</summary>
 </histogram>
 
 <histogram name="SimpleCache.Eviction.EntryCount">
-  <obsolete>
-    Deprecated 2013-08 in favor of cache type specific version (App or Http).
-  </obsolete>
   <owner>gavinp@chromium.org</owner>
   <summary>The number of entries to be erased in an eviction.</summary>
 </histogram>
 
 <histogram name="SimpleCache.Eviction.MaxCacheSizeOnStart" units="bytes">
   <obsolete>
-    Deprecated 2013-08 in favor of cache type specific version (App or Http).
+    Deprecated 2013 in favour of SimpleCache.Eviction.MaxCacheSizeOnStart2
   </obsolete>
   <owner>gavinp@chromium.org</owner>
   <summary>
@@ -42191,9 +41652,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="SimpleCache.Eviction.MaxCacheSizeOnStart2" units="KB">
-  <obsolete>
-    Deprecated 2013-08 in favor of cache type specific version (App or Http).
-  </obsolete>
   <owner>gavinp@chromium.org</owner>
   <summary>
     The maximum allowed size of the cache at the beginning of an eviction.
@@ -42201,65 +41659,47 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="SimpleCache.Eviction.Result" enum="BooleanSuccess">
-  <obsolete>
-    Deprecated 2013-08 in favor of cache type specific version (App or Http).
-  </obsolete>
   <owner>gavinp@chromium.org</owner>
   <summary>The result of an eviction.</summary>
 </histogram>
 
 <histogram name="SimpleCache.Eviction.SizeOfEvicted" units="bytes">
   <obsolete>
-    Deprecated 2013-08 in favor of cache type specific version (App or Http).
+    Deprecated 2013 in favour of SimpleCache.Eviction.SizeOfEvicted2
   </obsolete>
   <owner>gavinp@chromium.org</owner>
   <summary>The number of bytes to be erased in an eviction.</summary>
 </histogram>
 
 <histogram name="SimpleCache.Eviction.SizeOfEvicted2" units="KB">
-  <obsolete>
-    Deprecated 2013-08 in favor of cache type specific version (App or Http).
-  </obsolete>
   <owner>gavinp@chromium.org</owner>
   <summary>The amount of memory freed in an eviction.</summary>
 </histogram>
 
 <histogram name="SimpleCache.Eviction.SizeWhenDone" units="bytes">
   <obsolete>
-    Deprecated 2013-08 in favor of cache type specific version (App or Http).
+    Deprecated 2013 in favour of SimpleCache.Eviction.SizeWhenDone2
   </obsolete>
   <owner>gavinp@chromium.org</owner>
   <summary>The size of the cache after running an eviction.</summary>
 </histogram>
 
 <histogram name="SimpleCache.Eviction.SizeWhenDone2" units="KB">
-  <obsolete>
-    Deprecated 2013-08 in favor of cache type specific version (App or Http).
-  </obsolete>
   <owner>gavinp@chromium.org</owner>
   <summary>The size of the cache after running an eviction.</summary>
 </histogram>
 
 <histogram name="SimpleCache.Eviction.TimeToDone" units="milliseconds">
-  <obsolete>
-    Deprecated 2013-08 in favor of cache type specific version (App or Http).
-  </obsolete>
   <owner>gavinp@chromium.org</owner>
   <summary>Time spent completing an eviction.</summary>
 </histogram>
 
 <histogram name="SimpleCache.Eviction.TimeToSelectEntries" units="milliseconds">
-  <obsolete>
-    Deprecated 2013-08 in favor of cache type specific version (App or Http).
-  </obsolete>
   <owner>gavinp@chromium.org</owner>
   <summary>Time spent selecting entries for eviction.</summary>
 </histogram>
 
 <histogram name="SimpleCache.FileDescriptorLimitHard">
-  <obsolete>
-    Deprecated 2013-08 in favor of cache type specific version (App or Http).
-  </obsolete>
   <owner>gavinp@chromium.org</owner>
   <summary>
     The maximum limit of how many file descriptors a process can open.  Emitted
@@ -42269,9 +41709,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="SimpleCache.FileDescriptorLimitSoft">
-  <obsolete>
-    Deprecated 2013-08 in favor of cache type specific version (App or Http).
-  </obsolete>
   <owner>gavinp@chromium.org</owner>
   <summary>
     The current limit of how many file descriptors a process can open.  Emitted
@@ -42282,9 +41719,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="SimpleCache.FileDescriptorLimitStatus"
     enum="SimpleCache.FileDescriptorLimitStatus">
-  <obsolete>
-    Deprecated 2013-08 in favor of cache type specific version (App or Http).
-  </obsolete>
   <owner>gavinp@chromium.org</owner>
   <summary>
     The result of trying to get the file descriptor limit.  Emitted each time
@@ -42293,9 +41727,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="SimpleCache.GlobalOpenEntryCount">
-  <obsolete>
-    Deprecated 2013-08 in favor of cache type specific version (App or Http).
-  </obsolete>
   <owner>gavinp@chromium.org</owner>
   <summary>
     The number of open entries across all caches backed by the Simple Cache. An
@@ -42306,9 +41737,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="SimpleCache.HeaderSize" units="bytes">
-  <obsolete>
-    Deprecated 2013-08 in favor of cache type specific version (App or Http).
-  </obsolete>
   <owner>gavinp@chromium.org</owner>
   <summary>
     The size of the header stream of a Simple Cache entry, emitted every time
@@ -42318,9 +41746,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="SimpleCache.HeaderSizeChange"
     enum="SimpleCacheHeaderSizeChange">
-  <obsolete>
-    Deprecated 2013-08 in favor of cache type specific version (App or Http).
-  </obsolete>
   <owner>gavinp@chromium.org</owner>
   <summary>
     How the header size has changed in a Simple Cache entry, emitted every time
@@ -42330,9 +41755,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="SimpleCache.HeaderSizeDecreaseAbsolute" units="bytes">
-  <obsolete>
-    Deprecated 2013-08 in favor of cache type specific version (App or Http).
-  </obsolete>
   <owner>gavinp@chromium.org</owner>
   <summary>
     The absolute size decrease of the header stream of a Simple Cache entry,
@@ -42341,9 +41763,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="SimpleCache.HeaderSizeDecreasePercentage" units="percent">
-  <obsolete>
-    Deprecated 2013-08 in favor of cache type specific version (App or Http).
-  </obsolete>
   <owner>gavinp@chromium.org</owner>
   <summary>
     The relative size decrease of the header stream of a Simple Cache entry,
@@ -42352,9 +41771,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="SimpleCache.HeaderSizeIncreaseAbsolute" units="bytes">
-  <obsolete>
-    Deprecated 2013-08 in favor of cache type specific version (App or Http).
-  </obsolete>
   <owner>gavinp@chromium.org</owner>
   <summary>
     The absolute size increase of the header stream of a Simple Cache entry,
@@ -42363,576 +41779,29 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="SimpleCache.HeaderSizeIncreasePercentage" units="percent">
-  <obsolete>
-    Deprecated 2013-08 in favor of cache type specific version (App or Http).
-  </obsolete>
   <owner>gavinp@chromium.org</owner>
   <summary>
     The relative size increase of the header stream of a Simple Cache entry,
     emitted every time the headers are rewritten with a larger size.
   </summary>
-</histogram>
-
-<histogram name="SimpleCache.Http.CheckCRCResult" enum="CheckCRCResult">
-  <summary>
-    Whether or not the CRC was checked at the moment when the last reference to
-    a read-only entry stream is closed.
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.Http.CreationToIndex" units="milliseconds">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    The time from the creation of the simple cache backend until the index has
-    been loaded from disk.
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.Http.CreationToIndexFail" units="milliseconds">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    The time from the creation of the simple cache backend until the index fails
-    to load.
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.Http.EntryCreatedAndStream2Omitted"
-    enum="SimpleCache.EntryCreatedAndStream2Omitted">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    Whether, upon creation of a new cache entry, the file for stream 2 was
-    omitted since that stream was empty.
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.Http.EntryCreationResult" enum="BooleanSuccess">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    For entry creation operations that were sent to the disk, the result of
-    creation.
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.Http.EntryCreationTime" units="milliseconds">
-  <owner>gavinp@chromium.org</owner>
-  <summary>The time, in ms, spent creating a new entry on disk.</summary>
-</histogram>
-
-<histogram name="SimpleCache.Http.EntryOpenedAndStream2Removed"
-    enum="SimpleCache.EntryOpenedAndStream2Removed">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    Whether, upon opening of an existing cache entry, stream 2 was empty and the
-    file for that stream was therefore removed.
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.Http.EntryOperationsPending">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    At the time that operations are run, the number of pending operations on a
-    particular entry.
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.Http.Eviction.CacheSizeOnStart" units="bytes">
-  <owner>gavinp@chromium.org</owner>
-  <summary>The size of the cache at the beginning of an eviction.</summary>
-</histogram>
-
-<histogram name="SimpleCache.Http.Eviction.CacheSizeOnStart2" units="KB">
-  <owner>gavinp@chromium.org</owner>
-  <summary>The size of the cache at the beginning of an eviction.</summary>
-</histogram>
-
-<histogram name="SimpleCache.Http.Eviction.EntryCount">
-  <owner>gavinp@chromium.org</owner>
-  <summary>The number of entries to be erased in an eviction.</summary>
-</histogram>
-
-<histogram name="SimpleCache.Http.Eviction.MaxCacheSizeOnStart" units="bytes">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    The maximum allowed size of the cache at the beginning of an eviction.
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.Http.Eviction.MaxCacheSizeOnStart2" units="KB">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    The maximum allowed size of the cache at the beginning of an eviction.
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.Http.Eviction.Result" enum="BooleanSuccess">
-  <owner>gavinp@chromium.org</owner>
-  <summary>The result of an eviction.</summary>
-</histogram>
-
-<histogram name="SimpleCache.Http.Eviction.SizeOfEvicted" units="bytes">
-  <owner>gavinp@chromium.org</owner>
-  <summary>The number of bytes to be erased in an eviction.</summary>
-</histogram>
-
-<histogram name="SimpleCache.Http.Eviction.SizeOfEvicted2" units="KB">
-  <owner>gavinp@chromium.org</owner>
-  <summary>The amount of memory freed in an eviction.</summary>
-</histogram>
-
-<histogram name="SimpleCache.Http.Eviction.SizeWhenDone" units="bytes">
-  <owner>gavinp@chromium.org</owner>
-  <summary>The size of the cache after running an eviction.</summary>
-</histogram>
-
-<histogram name="SimpleCache.Http.Eviction.SizeWhenDone2" units="KB">
-  <owner>gavinp@chromium.org</owner>
-  <summary>The size of the cache after running an eviction.</summary>
-</histogram>
-
-<histogram name="SimpleCache.Http.Eviction.TimeToDone" units="milliseconds">
-  <owner>gavinp@chromium.org</owner>
-  <summary>Time spent completing an eviction.</summary>
-</histogram>
-
-<histogram name="SimpleCache.Http.Eviction.TimeToSelectEntries"
-    units="milliseconds">
-  <owner>gavinp@chromium.org</owner>
-  <summary>Time spent selecting entries for eviction.</summary>
-</histogram>
-
-<histogram name="SimpleCache.Http.FileDescriptorLimitHard">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    The maximum limit of how many file descriptors a process can open.  Emitted
-    each time the browser is launched, if the limit could be retrieved.  (This
-    is the highest value we could raise the current limit to if we liked.)
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.Http.FileDescriptorLimitSoft">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    The current limit of how many file descriptors a process can open.  Emitted
-    each time the browser is launched, if the limit could be retrieved.  (We can
-    raise this to the maximum limit if we like, without root access.)
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.Http.FileDescriptorLimitStatus"
-    enum="SimpleCache.FileDescriptorLimitStatus">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    The result of trying to get the file descriptor limit.  Emitted each time
-    the browser is launched.
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.Http.GlobalOpenEntryCount">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    The number of open entries across all caches backed by the Simple Cache. An
-    entry is opened whenever a caller asks to open it to read or write cache
-    data, and remains open until the last caller asks to close it. Logged
-    whenever an entry is opened or closed.
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.Http.HeaderSize" units="bytes">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    The size of the header stream of a Simple Cache entry, emitted every time
-    the headers are written or rewritten.
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.Http.HeaderSizeChange"
-    enum="SimpleCacheHeaderSizeChange">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    How the header size has changed in a Simple Cache entry, emitted every time
-    a write operation occurs on the header stream.  (This includes the initial
-    write, rewrites, and other writes that we couldn't classify.)
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.Http.HeaderSizeDecreaseAbsolute" units="bytes">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    The absolute size decrease of the header stream of a Simple Cache entry,
-    emitted every time the headers are rewritten with a smaller size.
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.Http.HeaderSizeDecreasePercentage" units="percent">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    The relative size decrease of the header stream of a Simple Cache entry,
-    emitted every time the headers are rewritten with a smaller size.
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.Http.HeaderSizeIncreaseAbsolute" units="bytes">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    The absolute size increase of the header stream of a Simple Cache entry,
-    emitted every time the headers are rewritten with a larger size.
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.Http.HeaderSizeIncreasePercentage" units="percent">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    The relative size increase of the header stream of a Simple Cache entry,
-    emitted every time the headers are rewritten with a larger size.
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.Http.IndexCorrupt" enum="BooleanCorrupt">
-  <owner>gavinp@chromium.org</owner>
-  <summary>For each index load, whether the index file was corrupt.</summary>
-</histogram>
-
-<histogram name="SimpleCache.Http.IndexCreatedEntryCount">
-  <owner>gavinp@chromium.org</owner>
-  <summary>The number of entries in a newly created index file.</summary>
-</histogram>
-
-<histogram name="SimpleCache.Http.IndexEntriesLoaded">
-  <owner>gavinp@chromium.org</owner>
-  <summary>Number of entries loaded from the index file on start.</summary>
-</histogram>
-
-<histogram name="SimpleCache.Http.IndexEntriesRestored">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    Number of entries restored from disk when there was no index or the index
-    was corrupted.
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.Http.IndexFileStateOnLoad" enum="SimpleIndexState">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    The state the index file is at when an attempt is made to load from it.
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.Http.IndexInitializationWaiters">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    At the time of index initialization, the number of enqueued jobs awaiting
-    index initialization.
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.Http.IndexInitializeMethod"
-    enum="SimpleCacheIndexInitializeMethod">
-  <owner>gavinp@chromium.org</owner>
-  <summary>The method used to initialize the simple cache index.</summary>
-</histogram>
-
-<histogram name="SimpleCache.Http.IndexLoadTime" units="milliseconds">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    Time (as measured on the worker pool) spent loading the index file.
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.Http.IndexNumEntriesOnWrite">
-  <owner>gavinp@chromium.org</owner>
-  <summary>The number of entries written to the index on a flush.</summary>
-</histogram>
-
-<histogram name="SimpleCache.Http.IndexRestoreTime" units="milliseconds">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    Time (as measured on the worker pool) spent restoring the index file by
-    iterating directory entries.
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.Http.IndexWriteInterval.Background"
-    units="milliseconds">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    The interval between index saves, for apps in the background.
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.Http.IndexWriteInterval.Foreground"
-    units="milliseconds">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    The interval between index saves, for apps in the foreground.
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.Http.IndexWriteToDiskTime.Background"
-    units="milliseconds">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    The amount of time spend writing the index file to disk, for apps in the
-    background, measured starting at the beginning of the write on the callback
-    thread, and calculated using the completion time on the worker pool.
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.Http.IndexWriteToDiskTime.Foreground"
-    units="milliseconds">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    The amount of time spend writing the index file to disk, for apps in the
-    foreground, measured starting at the beginning of the write on the callback
-    thread, and calculated using the completion time on the worker pool.
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.Http.KeyMatchedOnOpen" enum="BooleanMatched">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    For each call to OpenEntry, whether the key on disk matched the request key.
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.Http.LastClusterLossPercent" units="percent">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    For each file in the Simple Cache, the percentage of disk space used by the
-    cluster loss, the unused disk space in the last 4096 byte cluster of the
-    file.
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.Http.LastClusterSize" units="bytes">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    For each file in the Simple Cache, the number of bytes in the last 4096 byte
-    cluster when the entry is saved to disk.
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.Http.OpenEntryIndexState"
-    enum="SimpleCacheOpenEntryIndexState">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    At the time that an entry is opened, the state of that entry in the index.
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.Http.ReadIsParallelizable"
-    enum="SimpleCacheReadParallelizable">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    For each Read operation, whether it could have been issued in parallel of a
-    previous Read operation.
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.Http.ReadResult" enum="SimpleCacheReadResult">
-  <owner>gavinp@chromium.org</owner>
-  <summary>The outcome of Entry::ReadData in the simple cache.</summary>
-</histogram>
-
-<histogram name="SimpleCache.Http.SyncCheckEOFHasCrc" enum="BooleanHasCrc">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    For each EOFRecord found with a valid magic number, indicates if the record
-    also contains a CRC.
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.Http.SyncCheckEOFResult"
-    enum="SimpleCacheSyncCheckEOFResult">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    The result, at the synchronous layer, of checking the EOF record of a cache
-    entry.
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.Http.SyncCloseResult"
-    enum="SimpleCacheSyncCloseResult">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    The result, at the synchronous layer, of closing a cache entry.
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.Http.SyncCreatePlatformFileError"
-    enum="PlatformFileError">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    The platform error reported when attempting to create a new cache entry at
-    the synchronous layer.
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.Http.SyncCreatePlatformFileError_WithIndex"
-    enum="PlatformFileError">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    The platform error reported when attempting to create a new cache entry at
-    the synchronous layer when the index has already initialized.
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.Http.SyncCreatePlatformFileError_WithoutIndex"
-    enum="PlatformFileError">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    The platform error reported when attempting to create a new cache entry at
-    the synchronous layer when the index has not yet initialized.
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.Http.SyncCreateResult"
-    enum="SimpleCacheSyncCreateResult">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    The result, at the synchronous layer, reported when attempting to create a
-    new cache entry.
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.Http.SyncCreateResult_WithIndex"
-    enum="SimpleCacheSyncCreateResult">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    The result, at the synchronous layer, reported when attempting to create a
-    new cache entry when the index has already initialized.
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.Http.SyncCreateResult_WithoutIndex"
-    enum="SimpleCacheSyncCreateResult">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    The result, at the synchronous layer, reported when attempting to create a
-    new cache entry when the index has not yet initialized.
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.Http.SyncOpenEntryAge" units="hours">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    The age of the entry (time since last modified), when opened at the
-    synchronous layer.
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.Http.SyncOpenPlatformFileError"
-    enum="PlatformFileError">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    The platform error reported when attempting to create a new cache entry at
-    the synchronous layer.
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.Http.SyncOpenPlatformFileError_WithIndex"
-    enum="PlatformFileError">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    The platform error reported when attempting to create a new cache entry at
-    the synchronous layer when the index has already initialized.
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.Http.SyncOpenPlatformFileError_WithoutIndex"
-    enum="PlatformFileError">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    The platform error reported when attempting to create a new cache entry at
-    the synchronous layer when the index has not initialized.
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.Http.SyncOpenResult"
-    enum="SimpleCacheSyncOpenResult">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    The result, at the synchronous layer, reported when attempting to open a new
-    cache entry.
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.Http.SyncOpenResult_WithIndex"
-    enum="SimpleCacheSyncOpenResult">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    The result, at the synchronous layer, reported when attempting to open a new
-    cache entry when the index has already initialized.
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.Http.SyncOpenResult_WithoutIndex"
-    enum="SimpleCacheSyncOpenResult">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    The result, at the synchronous layer, reported when attempting to open a new
-    cache entry when the index has not yet initialized.
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.Http.SyncWriteResult"
-    enum="SimpleCacheSyncWriteResult">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    The result, at the synchronous layer, of writing to a cache entry.
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.Http.WriteDependencyType"
-    enum="SimpleCacheWriteDependencyType">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    Shows whether a write operation depends on the previous operation in queue
-    particularly in the aspect of its possibility to run in parallel.
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.Http.WriteResult" enum="SimpleCacheWriteResult">
-  <obsolete>
-    Replaced 2013/09/03 by WriteResult2, which adds &quot;fast empty
-    return&quot;, which previously showed up as &quot;success&quot;.
-  </obsolete>
-  <owner>gavinp@chromium.org</owner>
-  <summary>The outcome of Entry::WriteData in the simple cache.</summary>
-</histogram>
-
-<histogram name="SimpleCache.Http.WriteResult2" enum="SimpleCacheWriteResult">
-  <owner>gavinp@chromium.org</owner>
-  <summary>The outcome of Entry::WriteData in the simple cache.</summary>
 </histogram>
 
 <histogram name="SimpleCache.IndexCorrupt" enum="BooleanCorrupt">
-  <obsolete>
-    Deprecated 2013-08 in favor of cache type specific version (App or Http).
-  </obsolete>
   <owner>gavinp@chromium.org</owner>
   <summary>For each index load, whether the index file was corrupt.</summary>
 </histogram>
 
 <histogram name="SimpleCache.IndexCreatedEntryCount">
-  <obsolete>
-    Deprecated 2013-08 in favor of cache type specific version (App or Http).
-  </obsolete>
   <owner>gavinp@chromium.org</owner>
   <summary>The number of entries in a newly created index file.</summary>
 </histogram>
 
 <histogram name="SimpleCache.IndexEntriesLoaded">
-  <obsolete>
-    Deprecated 2013-08 in favor of cache type specific version (App or Http).
-  </obsolete>
   <owner>gavinp@chromium.org</owner>
   <summary>Number of entries loaded from the index file on start.</summary>
 </histogram>
 
 <histogram name="SimpleCache.IndexEntriesRestored">
-  <obsolete>
-    Deprecated 2013-08 in favor of cache type specific version (App or Http).
-  </obsolete>
   <owner>gavinp@chromium.org</owner>
   <summary>
     Number of entries restored from disk when there was no index or the index
@@ -42941,9 +41810,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="SimpleCache.IndexFileStateOnLoad" enum="SimpleIndexState">
-  <obsolete>
-    Deprecated 2013-08 in favor of cache type specific version (App or Http).
-  </obsolete>
   <owner>gavinp@chromium.org</owner>
   <summary>
     The state the index file is at when an attempt is made to load from it.
@@ -42951,9 +41817,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="SimpleCache.IndexInitializationWaiters">
-  <obsolete>
-    Deprecated 2013-08 in favor of cache type specific version (App or Http).
-  </obsolete>
   <owner>gavinp@chromium.org</owner>
   <summary>
     At the time of index initialization, the number of enqueued jobs awaiting
@@ -42963,17 +41826,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="SimpleCache.IndexInitializeMethod"
     enum="SimpleCacheIndexInitializeMethod">
-  <obsolete>
-    Deprecated 2013-08 in favor of cache type specific version (App or Http).
-  </obsolete>
   <owner>gavinp@chromium.org</owner>
   <summary>The method used to initialize the simple cache index.</summary>
 </histogram>
 
 <histogram name="SimpleCache.IndexLoadTime" units="milliseconds">
-  <obsolete>
-    Deprecated 2013-08 in favor of cache type specific version (App or Http).
-  </obsolete>
   <owner>gavinp@chromium.org</owner>
   <summary>
     Time (as measured on the worker pool) spent loading the index file.
@@ -42981,17 +41838,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="SimpleCache.IndexNumEntriesOnWrite">
-  <obsolete>
-    Deprecated 2013-08 in favor of cache type specific version (App or Http).
-  </obsolete>
   <owner>gavinp@chromium.org</owner>
   <summary>The number of entries written to the index on a flush.</summary>
 </histogram>
 
 <histogram name="SimpleCache.IndexRestoreTime" units="milliseconds">
-  <obsolete>
-    Deprecated 2013-08 in favor of cache type specific version (App or Http).
-  </obsolete>
   <owner>gavinp@chromium.org</owner>
   <summary>
     Time (as measured on the worker pool) spent restoring the index file by
@@ -43009,9 +41860,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="SimpleCache.IndexWriteInterval.Background"
     units="milliseconds">
-  <obsolete>
-    Deprecated 2013-08 in favor of cache type specific version (App or Http).
-  </obsolete>
   <owner>gavinp@chromium.org</owner>
   <summary>
     The interval between index saves, for apps in the background.
@@ -43020,9 +41868,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="SimpleCache.IndexWriteInterval.Foreground"
     units="milliseconds">
-  <obsolete>
-    Deprecated 2013-08 in favor of cache type specific version (App or Http).
-  </obsolete>
   <owner>gavinp@chromium.org</owner>
   <summary>
     The interval between index saves, for apps in the foreground.
@@ -43045,9 +41890,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="SimpleCache.IndexWriteToDiskTime.Background"
     units="milliseconds">
-  <obsolete>
-    Deprecated 2013-08 in favor of cache type specific version (App or Http).
-  </obsolete>
   <owner>gavinp@chromium.org</owner>
   <summary>
     The amount of time spend writing the index file to disk, for apps in the
@@ -43058,9 +41900,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="SimpleCache.IndexWriteToDiskTime.Foreground"
     units="milliseconds">
-  <obsolete>
-    Deprecated 2013-08 in favor of cache type specific version (App or Http).
-  </obsolete>
   <owner>gavinp@chromium.org</owner>
   <summary>
     The amount of time spend writing the index file to disk, for apps in the
@@ -43070,9 +41909,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="SimpleCache.KeyMatchedOnOpen" enum="BooleanMatched">
-  <obsolete>
-    Deprecated 2013-08 in favor of cache type specific version (App or Http).
-  </obsolete>
   <owner>gavinp@chromium.org</owner>
   <summary>
     For each call to OpenEntry, whether the key on disk matched the request key.
@@ -43080,9 +41916,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="SimpleCache.LastClusterLossPercent" units="percent">
-  <obsolete>
-    Deprecated 2013-08 in favor of cache type specific version (App or Http).
-  </obsolete>
   <owner>gavinp@chromium.org</owner>
   <summary>
     For each file in the Simple Cache, the percentage of disk space used by the
@@ -43092,545 +41925,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="SimpleCache.LastClusterSize" units="bytes">
-  <obsolete>
-    Deprecated 2013-08 in favor of cache type specific version (App or Http).
-  </obsolete>
   <owner>gavinp@chromium.org</owner>
   <summary>
     For each file in the Simple Cache, the number of bytes in the last 4096 byte
     cluster when the entry is saved to disk.
   </summary>
-</histogram>
-
-<histogram name="SimpleCache.Media.CheckCRCResult" enum="CheckCRCResult">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    Whether or not the CRC was checked at the moment when the last reference to
-    a read-only entry stream is closed.
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.Media.CreationToIndex" units="milliseconds">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    The time from the creation of the simple cache backend until the index has
-    been loaded from disk.
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.Media.CreationToIndexFail" units="milliseconds">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    The time from the creation of the simple cache backend until the index fails
-    to load.
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.Media.EntryCreatedAndStream2Omitted"
-    enum="SimpleCache.EntryCreatedAndStream2Omitted">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    Whether, upon creation of a new cache entry, the file for stream 2 was
-    omitted since that stream was empty.
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.Media.EntryCreationResult" enum="BooleanSuccess">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    For entry creation operations that were sent to the disk, the result of
-    creation.
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.Media.EntryCreationTime" units="milliseconds">
-  <owner>gavinp@chromium.org</owner>
-  <summary>The time, in ms, spent creating a new entry on disk.</summary>
-</histogram>
-
-<histogram name="SimpleCache.Media.EntryOpenedAndStream2Removed"
-    enum="SimpleCache.EntryOpenedAndStream2Removed">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    Whether, upon opening of an existing cache entry, stream 2 was empty and the
-    file for that stream was therefore removed.
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.Media.EntryOperationsPending">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    At the time that operations are run, the number of pending operations on a
-    particular entry.
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.Media.Eviction.CacheSizeOnStart" units="bytes">
-  <owner>gavinp@chromium.org</owner>
-  <summary>The size of the cache at the beginning of an eviction.</summary>
-</histogram>
-
-<histogram name="SimpleCache.Media.Eviction.CacheSizeOnStart2" units="KB">
-  <owner>gavinp@chromium.org</owner>
-  <summary>The size of the cache at the beginning of an eviction.</summary>
-</histogram>
-
-<histogram name="SimpleCache.Media.Eviction.EntryCount">
-  <owner>gavinp@chromium.org</owner>
-  <summary>The number of entries to be erased in an eviction.</summary>
-</histogram>
-
-<histogram name="SimpleCache.Media.Eviction.MaxCacheSizeOnStart" units="bytes">
-  <summary>
-    The maximum allowed size of the cache at the beginning of an eviction.
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.Media.Eviction.MaxCacheSizeOnStart2" units="KB">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    The maximum allowed size of the cache at the beginning of an eviction.
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.Media.Eviction.Result" enum="BooleanSuccess">
-  <owner>gavinp@chromium.org</owner>
-  <summary>The result of an eviction.</summary>
-</histogram>
-
-<histogram name="SimpleCache.Media.Eviction.SizeOfEvicted" units="bytes">
-  <owner>gavinp@chromium.org</owner>
-  <summary>The number of bytes to be erased in an eviction.</summary>
-</histogram>
-
-<histogram name="SimpleCache.Media.Eviction.SizeOfEvicted2" units="KB">
-  <owner>gavinp@chromium.org</owner>
-  <summary>The amount of memory freed in an eviction.</summary>
-</histogram>
-
-<histogram name="SimpleCache.Media.Eviction.SizeWhenDone" units="bytes">
-  <owner>gavinp@chromium.org</owner>
-  <summary>The size of the cache after running an eviction.</summary>
-</histogram>
-
-<histogram name="SimpleCache.Media.Eviction.SizeWhenDone2" units="KB">
-  <owner>gavinp@chromium.org</owner>
-  <summary>The size of the cache after running an eviction.</summary>
-</histogram>
-
-<histogram name="SimpleCache.Media.Eviction.TimeToDone" units="milliseconds">
-  <owner>gavinp@chromium.org</owner>
-  <summary>Time spent completing an eviction.</summary>
-</histogram>
-
-<histogram name="SimpleCache.Media.Eviction.TimeToSelectEntries"
-    units="milliseconds">
-  <owner>gavinp@chromium.org</owner>
-  <summary>Time spent selecting entries for eviction.</summary>
-</histogram>
-
-<histogram name="SimpleCache.Media.FileDescriptorLimitHard">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    The maximum limit of how many file descriptors a process can open.  Emitted
-    each time the browser is launched, if the limit could be retrieved.  (This
-    is the highest value we could raise the current limit to if we liked.)
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.Media.FileDescriptorLimitSoft">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    The current limit of how many file descriptors a process can open.  Emitted
-    each time the browser is launched, if the limit could be retrieved.  (We can
-    raise this to the maximum limit if we like, without root access.)
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.Media.FileDescriptorLimitStatus"
-    enum="SimpleCache.FileDescriptorLimitStatus">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    The result of trying to get the file descriptor limit.  Emitted each time
-    the browser is launched.
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.Media.GlobalOpenEntryCount">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    The number of open entries across all caches backed by the Simple Cache. An
-    entry is opened whenever a caller asks to open it to read or write cache
-    data, and remains open until the last caller asks to close it. Logged
-    whenever an entry is opened or closed.
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.Media.HeaderSize" units="bytes">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    The size of the header stream of a Simple Cache entry, emitted every time
-    the headers are written or rewritten.
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.Media.HeaderSizeChange"
-    enum="SimpleCacheHeaderSizeChange">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    How the header size has changed in a Simple Cache entry, emitted every time
-    a write operation occurs on the header stream.  (This includes the initial
-    write, rewrites, and other writes that we couldn't classify.)
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.Media.HeaderSizeDecreaseAbsolute" units="bytes">
-  <summary>
-    The absolute size decrease of the header stream of a Simple Cache entry,
-    emitted every time the headers are rewritten with a smaller size.
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.Media.HeaderSizeDecreasePercentage"
-    units="percent">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    The relative size decrease of the header stream of a Simple Cache entry,
-    emitted every time the headers are rewritten with a smaller size.
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.Media.HeaderSizeIncreaseAbsolute" units="bytes">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    The absolute size increase of the header stream of a Simple Cache entry,
-    emitted every time the headers are rewritten with a larger size.
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.Media.HeaderSizeIncreasePercentage"
-    units="percent">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    The relative size increase of the header stream of a Simple Cache entry,
-    emitted every time the headers are rewritten with a larger size.
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.Media.IndexCorrupt" enum="BooleanCorrupt">
-  <owner>gavinp@chromium.org</owner>
-  <summary>For each index load, whether the index file was corrupt.</summary>
-</histogram>
-
-<histogram name="SimpleCache.Media.IndexCreatedEntryCount">
-  <owner>gavinp@chromium.org</owner>
-  <summary>The number of entries in a newly created index file.</summary>
-</histogram>
-
-<histogram name="SimpleCache.Media.IndexEntriesLoaded">
-  <owner>gavinp@chromium.org</owner>
-  <summary>Number of entries loaded from the index file on start.</summary>
-</histogram>
-
-<histogram name="SimpleCache.Media.IndexEntriesRestored">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    Number of entries restored from disk when there was no index or the index
-    was corrupted.
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.Media.IndexFileStateOnLoad"
-    enum="SimpleIndexState">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    The state the index file is at when an attempt is made to load from it.
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.Media.IndexInitializationWaiters">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    At the time of index initialization, the number of enqueued jobs awaiting
-    index initialization.
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.Media.IndexInitializeMethod"
-    enum="SimpleCacheIndexInitializeMethod">
-  <owner>gavinp@chromium.org</owner>
-  <summary>The method used to initialize the simple cache index.</summary>
-</histogram>
-
-<histogram name="SimpleCache.Media.IndexLoadTime" units="milliseconds">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    Time (as measured on the worker pool) spent loading the index file.
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.Media.IndexNumEntriesOnWrite">
-  <owner>gavinp@chromium.org</owner>
-  <summary>The number of entries written to the index on a flush.</summary>
-</histogram>
-
-<histogram name="SimpleCache.Media.IndexRestoreTime" units="milliseconds">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    Time (as measured on the worker pool) spent restoring the index file by
-    iterating directory entries.
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.Media.IndexWriteInterval.Background"
-    units="milliseconds">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    The interval between index saves, for apps in the background.
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.Media.IndexWriteInterval.Foreground"
-    units="milliseconds">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    The interval between index saves, for apps in the foreground.
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.Media.IndexWriteToDiskTime.Background"
-    units="milliseconds">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    The amount of time spend writing the index file to disk, for apps in the
-    background, measured starting at the beginning of the write on the callback
-    thread, and calculated using the completion time on the worker pool.
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.Media.IndexWriteToDiskTime.Foreground"
-    units="milliseconds">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    The amount of time spend writing the index file to disk, for apps in the
-    foreground, measured starting at the beginning of the write on the callback
-    thread, and calculated using the completion time on the worker pool.
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.Media.KeyMatchedOnOpen" enum="BooleanMatched">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    For each call to OpenEntry, whether the key on disk matched the request key.
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.Media.LastClusterLossPercent" units="percent">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    For each file in the Simple Cache, the percentage of disk space used by the
-    cluster loss, the unused disk space in the last 4096 byte cluster of the
-    file.
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.Media.LastClusterSize" units="bytes">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    For each file in the Simple Cache, the number of bytes in the last 4096 byte
-    cluster when the entry is saved to disk.
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.Media.OpenEntryIndexState"
-    enum="SimpleCacheOpenEntryIndexState">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    At the time that an entry is opened, the state of that entry in the index.
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.Media.ReadIsParallelizable"
-    enum="SimpleCacheReadParallelizable">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    For each Read operation, whether it could have been issued in parallel of a
-    previous Read operation.
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.Media.ReadResult" enum="SimpleCacheReadResult">
-  <owner>gavinp@chromium.org</owner>
-  <summary>The outcome of Entry::ReadData in the simple cache.</summary>
-</histogram>
-
-<histogram name="SimpleCache.Media.SyncCheckEOFHasCrc" enum="BooleanHasCrc">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    For each EOFRecord found with a valid magic number, indicates if the record
-    also contains a CRC.
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.Media.SyncCheckEOFResult"
-    enum="SimpleCacheSyncCheckEOFResult">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    The result, at the synchronous layer, of checking the EOF record of a cache
-    entry.
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.Media.SyncCloseResult"
-    enum="SimpleCacheSyncCloseResult">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    The result, at the synchronous layer, of closing a cache entry.
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.Media.SyncCreatePlatformFileError"
-    enum="PlatformFileError">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    The platform error reported when attempting to create a new cache entry at
-    the synchronous layer.
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.Media.SyncCreatePlatformFileError_WithIndex"
-    enum="PlatformFileError">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    The platform error reported when attempting to create a new cache entry at
-    the synchronous layer when the index has already initialized.
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.Media.SyncCreatePlatformFileError_WithoutIndex"
-    enum="PlatformFileError">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    The platform error reported when attempting to create a new cache entry at
-    the synchronous layer when the index has not yet initialized.
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.Media.SyncCreateResult"
-    enum="SimpleCacheSyncCreateResult">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    The result, at the synchronous layer, reported when attempting to create a
-    new cache entry.
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.Media.SyncCreateResult_WithIndex"
-    enum="SimpleCacheSyncCreateResult">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    The result, at the synchronous layer, reported when attempting to create a
-    new cache entry when the index has already initialized.
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.Media.SyncCreateResult_WithoutIndex"
-    enum="SimpleCacheSyncCreateResult">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    The result, at the synchronous layer, reported when attempting to create a
-    new cache entry when the index has not yet initialized.
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.Media.SyncOpenEntryAge" units="hours">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    The age of the entry (time since last modified), when opened at the
-    synchronous layer.
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.Media.SyncOpenPlatformFileError"
-    enum="PlatformFileError">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    The platform error reported when attempting to create a new cache entry at
-    the synchronous layer.
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.Media.SyncOpenPlatformFileError_WithIndex"
-    enum="PlatformFileError">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    The platform error reported when attempting to create a new cache entry at
-    the synchronous layer when the index has already initialized.
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.Media.SyncOpenPlatformFileError_WithoutIndex"
-    enum="PlatformFileError">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    The platform error reported when attempting to create a new cache entry at
-    the synchronous layer when the index has not initialized.
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.Media.SyncOpenResult"
-    enum="SimpleCacheSyncOpenResult">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    The result, at the synchronous layer, reported when attempting to open a new
-    cache entry.
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.Media.SyncOpenResult_WithIndex"
-    enum="SimpleCacheSyncOpenResult">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    The result, at the synchronous layer, reported when attempting to open a new
-    cache entry when the index has already initialized.
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.Media.SyncOpenResult_WithoutIndex"
-    enum="SimpleCacheSyncOpenResult">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    The result, at the synchronous layer, reported when attempting to open a new
-    cache entry when the index has not yet initialized.
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.Media.SyncWriteResult"
-    enum="SimpleCacheSyncWriteResult">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    The result, at the synchronous layer, of writing to a cache entry.
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.Media.WriteDependencyType"
-    enum="SimpleCacheWriteDependencyType">
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    Shows whether a write operation depends on the previous operation in queue
-    particularly in the aspect of its possibility to run in parallel.
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.Media.WriteResult2" enum="SimpleCacheWriteResult">
-  <summary>The outcome of Entry::WriteData in the simple cache.</summary>
 </histogram>
 
 <histogram name="SimpleCache.OpenEntryIndexState"
     enum="SimpleCacheOpenEntryIndexState">
-  <obsolete>
-    Deprecated 2013-08 in favor of cache type specific version (App or Http).
-  </obsolete>
   <owner>gavinp@chromium.org</owner>
   <summary>
     At the time that an entry is opened, the state of that entry in the index.
@@ -43639,9 +41942,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="SimpleCache.ReadIsParallelizable"
     enum="SimpleCacheReadParallelizable">
-  <obsolete>
-    Deprecated 2013-08 in favor of cache type specific version (App or Http).
-  </obsolete>
   <owner>gavinp@chromium.org</owner>
   <summary>
     For each Read operation, whether it could have been issued in parallel of a
@@ -43650,17 +41950,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="SimpleCache.ReadResult" enum="SimpleCacheReadResult">
-  <obsolete>
-    Deprecated 2013-08 in favor of cache type specific version (App or Http).
-  </obsolete>
   <owner>gavinp@chromium.org</owner>
   <summary>The outcome of Entry::ReadData in the simple cache.</summary>
 </histogram>
 
 <histogram name="SimpleCache.SyncCheckEOFHasCrc" enum="BooleanHasCrc">
-  <obsolete>
-    Deprecated 2013-08 in favor of cache type specific version (App or Http).
-  </obsolete>
   <owner>gavinp@chromium.org</owner>
   <summary>
     For each EOFRecord found with a valid magic number, indicates if the record
@@ -43670,9 +41964,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="SimpleCache.SyncCheckEOFResult"
     enum="SimpleCacheSyncCheckEOFResult">
-  <obsolete>
-    Deprecated 2013-08 in favor of cache type specific version (App or Http).
-  </obsolete>
   <owner>gavinp@chromium.org</owner>
   <summary>
     The result, at the synchronous layer, of checking the EOF record of a cache
@@ -43681,9 +41972,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="SimpleCache.SyncCloseResult" enum="SimpleCacheSyncCloseResult">
-  <obsolete>
-    Deprecated 2013-08 in favor of cache type specific version (App or Http).
-  </obsolete>
   <owner>gavinp@chromium.org</owner>
   <summary>
     The result, at the synchronous layer, of closing a cache entry.
@@ -43692,9 +41980,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="SimpleCache.SyncCreatePlatformFileError"
     enum="PlatformFileError">
-  <obsolete>
-    Deprecated 2013-08 in favor of cache type specific version (App or Http).
-  </obsolete>
   <owner>gavinp@chromium.org</owner>
   <summary>
     The platform error reported when attempting to create a new cache entry at
@@ -43702,35 +41987,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="SimpleCache.SyncCreatePlatformFileError_WithIndex"
-    enum="PlatformFileError">
-  <obsolete>
-    Deprecated 2013-08 in favor of cache type specific version (App or Http).
-  </obsolete>
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    The platform error reported when attempting to create a new cache entry at
-    the synchronous layer when the index has already initialized.
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.SyncCreatePlatformFileError_WithoutIndex"
-    enum="PlatformFileError">
-  <obsolete>
-    Deprecated 2013-08 in favor of cache type specific version (App or Http).
-  </obsolete>
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    The platform error reported when attempting to create a new cache entry at
-    the synchronous layer when the index has not yet initialized.
-  </summary>
-</histogram>
-
 <histogram name="SimpleCache.SyncCreateResult"
     enum="SimpleCacheSyncCreateResult">
-  <obsolete>
-    Deprecated 2013-08 in favor of cache type specific version (App or Http).
-  </obsolete>
   <owner>gavinp@chromium.org</owner>
   <summary>
     The result, at the synchronous layer, reported when attempting to create a
@@ -43738,34 +41996,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="SimpleCache.SyncCreateResult_WithIndex"
-    enum="SimpleCacheSyncCreateResult">
-  <obsolete>
-    Deprecated 2013-08 in favor of cache type specific version (App or Http).
-  </obsolete>
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    The result, at the synchronous layer, reported when attempting to create a
-    new cache entry when the index has already initialized.
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.SyncCreateResult_WithoutIndex"
-    enum="SimpleCacheSyncCreateResult">
-  <obsolete>
-    Deprecated 2013-08 in favor of cache type specific version (App or Http).
-  </obsolete>
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    The result, at the synchronous layer, reported when attempting to create a
-    new cache entry when the index has not yet initialized.
-  </summary>
-</histogram>
-
 <histogram name="SimpleCache.SyncOpenEntryAge" units="hours">
-  <obsolete>
-    Deprecated 2013-08 in favor of cache type specific version (App or Http).
-  </obsolete>
   <owner>gavinp@chromium.org</owner>
   <summary>
     The age of the entry (time since last modified), when opened at the
@@ -43775,9 +42006,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="SimpleCache.SyncOpenPlatformFileError"
     enum="PlatformFileError">
-  <obsolete>
-    Deprecated 2013-08 in favor of cache type specific version (App or Http).
-  </obsolete>
   <owner>gavinp@chromium.org</owner>
   <summary>
     The platform error reported when attempting to create a new cache entry at
@@ -43785,34 +42013,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="SimpleCache.SyncOpenPlatformFileError_WithIndex"
-    enum="PlatformFileError">
-  <obsolete>
-    Deprecated 2013-08 in favor of cache type specific version (App or Http).
-  </obsolete>
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    The platform error reported when attempting to create a new cache entry at
-    the synchronous layer when the index has already initialized.
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.SyncOpenPlatformFileError_WithoutIndex"
-    enum="PlatformFileError">
-  <obsolete>
-    Deprecated 2013-08 in favor of cache type specific version (App or Http).
-  </obsolete>
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    The platform error reported when attempting to create a new cache entry at
-    the synchronous layer when the index has not initialized.
-  </summary>
-</histogram>
-
 <histogram name="SimpleCache.SyncOpenResult" enum="SimpleCacheSyncOpenResult">
-  <obsolete>
-    Deprecated 2013-08 in favor of cache type specific version (App or Http).
-  </obsolete>
   <owner>gavinp@chromium.org</owner>
   <summary>
     The result, at the synchronous layer, reported when attempting to open a new
@@ -43820,34 +42021,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="SimpleCache.SyncOpenResult_WithIndex"
-    enum="SimpleCacheSyncOpenResult">
-  <obsolete>
-    Deprecated 2013-08 in favor of cache type specific version (App or Http).
-  </obsolete>
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    The result, at the synchronous layer, reported when attempting to open a new
-    cache entry when the index has already initialized.
-  </summary>
-</histogram>
-
-<histogram name="SimpleCache.SyncOpenResult_WithoutIndex"
-    enum="SimpleCacheSyncOpenResult">
-  <obsolete>
-    Deprecated 2013-08 in favor of cache type specific version (App or Http).
-  </obsolete>
-  <owner>gavinp@chromium.org</owner>
-  <summary>
-    The result, at the synchronous layer, reported when attempting to open a new
-    cache entry when the index has not yet initialized.
-  </summary>
-</histogram>
-
 <histogram name="SimpleCache.SyncWriteResult" enum="SimpleCacheSyncWriteResult">
-  <obsolete>
-    Deprecated 2013-08 in favor of cache type specific version (App or Http).
-  </obsolete>
   <owner>gavinp@chromium.org</owner>
   <summary>
     The result, at the synchronous layer, of writing to a cache entry.
@@ -43856,9 +42030,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="SimpleCache.WriteDependencyType"
     enum="SimpleCacheWriteDependencyType">
-  <obsolete>
-    Deprecated 2013-08 in favor of cache type specific version (App or Http).
-  </obsolete>
   <owner>gavinp@chromium.org</owner>
   <summary>
     Shows whether a write operation depends on the previous operation in queue
@@ -43868,8 +42039,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="SimpleCache.WriteResult" enum="SimpleCacheWriteResult">
   <obsolete>
-    Deprecated 2013-08 in favor of cache type specific version (App or Http).
+    Replaced 2013/09/03 by WriteResult2, which adds &quot;fast empty
+    return&quot;, which previously showed up as &quot;success&quot;.
   </obsolete>
+  <owner>gavinp@chromium.org</owner>
+  <summary>The outcome of Entry::WriteData in the simple cache.</summary>
+</histogram>
+
+<histogram name="SimpleCache.WriteResult2" enum="SimpleCacheWriteResult">
   <owner>gavinp@chromium.org</owner>
   <summary>The outcome of Entry::WriteData in the simple cache.</summary>
 </histogram>
@@ -75461,6 +73638,85 @@ To add a new entry, add it with any value and run test to compute valid value.
   <affected-histogram name="Platform.Storage.Flash.BadBlocks"/>
 </histogram_suffixes>
 
+<histogram_suffixes name="CacheInstance" separator="." ordering="prefix">
+  <suffix name="App"
+      label="Collected from the HTML5 Application Cache instance."/>
+  <suffix name="Http" label="Collected from the HTTP Cache instance."/>
+  <suffix name="Media" label="Collected from the Media Cache instance."/>
+  <affected-histogram name="SimpleCache.CheckCRCResult"/>
+  <affected-histogram name="SimpleCache.CreationToIndex"/>
+  <affected-histogram name="SimpleCache.CreationToIndexFail"/>
+  <affected-histogram name="SimpleCache.EntryCreatedAndStream2Omitted"/>
+  <affected-histogram name="SimpleCache.EntryCreationResult"/>
+  <affected-histogram name="SimpleCache.EntryCreationTime"/>
+  <affected-histogram name="SimpleCache.EntryOpenedAndStream2Removed"/>
+  <affected-histogram name="SimpleCache.EntryOperationsPending"/>
+  <affected-histogram name="SimpleCache.Eviction.CacheSizeOnStart"/>
+  <affected-histogram name="SimpleCache.Eviction.CacheSizeOnStart2"/>
+  <affected-histogram name="SimpleCache.Eviction.EntryCount"/>
+  <affected-histogram name="SimpleCache.Eviction.MaxCacheSizeOnStart"/>
+  <affected-histogram name="SimpleCache.Eviction.MaxCacheSizeOnStart2"/>
+  <affected-histogram name="SimpleCache.Eviction.Result"/>
+  <affected-histogram name="SimpleCache.Eviction.SizeOfEvicted"/>
+  <affected-histogram name="SimpleCache.Eviction.SizeOfEvicted2"/>
+  <affected-histogram name="SimpleCache.Eviction.SizeWhenDone"/>
+  <affected-histogram name="SimpleCache.Eviction.SizeWhenDone2"/>
+  <affected-histogram name="SimpleCache.Eviction.TimeToDone"/>
+  <affected-histogram name="SimpleCache.Eviction.TimeToSelectEntries"/>
+  <affected-histogram name="SimpleCache.FileDescriptorLimitHard"/>
+  <affected-histogram name="SimpleCache.FileDescriptorLimitSoft"/>
+  <affected-histogram name="SimpleCache.FileDescriptorLimitStatus"/>
+  <affected-histogram name="SimpleCache.GlobalOpenEntryCount"/>
+  <affected-histogram name="SimpleCache.HeaderSize"/>
+  <affected-histogram name="SimpleCache.HeaderSizeChange"/>
+  <affected-histogram name="SimpleCache.HeaderSizeDecreaseAbsolute"/>
+  <affected-histogram name="SimpleCache.HeaderSizeDecreasePercentage"/>
+  <affected-histogram name="SimpleCache.HeaderSizeIncreaseAbsolute"/>
+  <affected-histogram name="SimpleCache.HeaderSizeIncreasePercentage"/>
+  <affected-histogram name="SimpleCache.IndexCorrupt"/>
+  <affected-histogram name="SimpleCache.IndexCreatedEntryCount"/>
+  <affected-histogram name="SimpleCache.IndexEntriesLoaded"/>
+  <affected-histogram name="SimpleCache.IndexEntriesRestored"/>
+  <affected-histogram name="SimpleCache.IndexFileStateOnLoad"/>
+  <affected-histogram name="SimpleCache.IndexInitializationWaiters"/>
+  <affected-histogram name="SimpleCache.IndexInitializeMethod"/>
+  <affected-histogram name="SimpleCache.IndexLoadTime"/>
+  <affected-histogram name="SimpleCache.IndexNumEntriesOnWrite"/>
+  <affected-histogram name="SimpleCache.IndexRestoreTime"/>
+  <affected-histogram name="SimpleCache.IndexWriteInterval.Background"/>
+  <affected-histogram name="SimpleCache.IndexWriteInterval.Foreground"/>
+  <affected-histogram name="SimpleCache.IndexWriteToDiskTime.Background"/>
+  <affected-histogram name="SimpleCache.IndexWriteToDiskTime.Foreground"/>
+  <affected-histogram name="SimpleCache.KeyMatchedOnOpen"/>
+  <affected-histogram name="SimpleCache.LastClusterLossPercent"/>
+  <affected-histogram name="SimpleCache.LastClusterSize"/>
+  <affected-histogram name="SimpleCache.OpenEntryIndexState"/>
+  <affected-histogram name="SimpleCache.ReadIsParallelizable"/>
+  <affected-histogram name="SimpleCache.ReadResult"/>
+  <affected-histogram name="SimpleCache.SyncCheckEOFHasCrc"/>
+  <affected-histogram name="SimpleCache.SyncCheckEOFResult"/>
+  <affected-histogram name="SimpleCache.SyncCloseResult"/>
+  <affected-histogram name="SimpleCache.SyncCreatePlatformFileError"/>
+  <affected-histogram name="SimpleCache.SyncCreatePlatformFileError_WithIndex"/>
+  <affected-histogram
+      name="SimpleCache.SyncCreatePlatformFileError_WithoutIndex"/>
+  <affected-histogram name="SimpleCache.SyncCreateResult"/>
+  <affected-histogram name="SimpleCache.SyncCreateResult_WithIndex"/>
+  <affected-histogram name="SimpleCache.SyncCreateResult_WithoutIndex"/>
+  <affected-histogram name="SimpleCache.SyncOpenEntryAge"/>
+  <affected-histogram name="SimpleCache.SyncOpenPlatformFileError"/>
+  <affected-histogram name="SimpleCache.SyncOpenPlatformFileError_WithIndex"/>
+  <affected-histogram
+      name="SimpleCache.SyncOpenPlatformFileError_WithoutIndex"/>
+  <affected-histogram name="SimpleCache.SyncOpenResult"/>
+  <affected-histogram name="SimpleCache.SyncOpenResult_WithIndex"/>
+  <affected-histogram name="SimpleCache.SyncOpenResult_WithoutIndex"/>
+  <affected-histogram name="SimpleCache.SyncWriteResult"/>
+  <affected-histogram name="SimpleCache.WriteDependencyType"/>
+  <affected-histogram name="SimpleCache.WriteResult"/>
+  <affected-histogram name="SimpleCache.WriteResult2"/>
+</histogram_suffixes>
+
 <histogram_suffixes name="CacheListSize">
   <suffix name="CacheListSize_12" label="Control"/>
   <suffix name="CacheListSize_13" label="Extended deleted list (2x)"/>
@@ -79857,6 +78113,16 @@ To add a new entry, add it with any value and run test to compute valid value.
   <affected-histogram name="Signin.Reconciler.AddedToCookieJar"/>
   <affected-histogram name="Signin.Reconciler.DifferentPrimaryAccounts"/>
   <affected-histogram name="Signin.Reconciler.RemovedFromCookieJar"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="SimpleCacheWithOrWithoutIndex">
+  <affected-histogram name="SimpleCache.SyncCreatePlatformFileError"/>
+  <affected-histogram name="SimpleCache.SyncCreateResult"/>
+  <affected-histogram name="SimpleCache.SyncOpenPlatformFileError"/>
+  <suffix name="WithIndex" label="The Simple Cache index was loaded."/>
+  <suffix name="WithoutIndex"
+      label="The Simple Cache index was not yet loaded."/>
+  <affected-histogram name="SimpleCache.SyncOpenResult"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="SocketType">
