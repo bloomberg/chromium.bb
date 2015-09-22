@@ -319,7 +319,6 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
       const scoped_refptr<media::VideoFrame>& target,
       const base::Callback<void(bool)>& callback) override;
   bool CanCopyToVideoFrame() const override;
-  bool CanSubscribeFrame() const override;
   void BeginFrameSubscription(
       scoped_ptr<RenderWidgetHostViewFrameSubscriber> subscriber) override;
   void EndFrameSubscription() override;

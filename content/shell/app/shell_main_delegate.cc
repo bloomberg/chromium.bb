@@ -192,10 +192,6 @@ bool ShellMainDelegate::BasicStartupComplete(int* exit_code) {
     command_line.AppendSwitch(switches::kEnableInbandTextTracks);
     command_line.AppendSwitch(switches::kMuteAudio);
 
-    // TODO: crbug.com/311404 Make layout tests work w/ delegated renderer.
-    command_line.AppendSwitch(switches::kDisableDelegatedRenderer);
-    command_line.AppendSwitch(cc::switches::kCompositeToMailbox);
-
     command_line.AppendSwitch(cc::switches::kEnablePropertyTreeVerification);
 
     command_line.AppendSwitch(switches::kEnablePreciseMemoryInfo);

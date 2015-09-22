@@ -89,8 +89,6 @@ void SetContentCommandLineFlags(bool single_process,
 
   parsed_command_line->AppendSwitch(switches::kUIPrioritizeInGpuProcess);
 
-  parsed_command_line->AppendSwitch(switches::kEnableDelegatedRenderer);
-
   if (!plugin_descriptor.empty()) {
     parsed_command_line->AppendSwitchNative(
       switches::kRegisterPepperPlugins, plugin_descriptor);

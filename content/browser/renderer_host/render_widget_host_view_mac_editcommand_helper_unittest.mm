@@ -104,16 +104,11 @@ class RenderWidgetHostEditCommandCounter : public RenderWidgetHostImpl {
 class RenderWidgetHostViewMacEditCommandHelperTest : public PlatformTest {
  protected:
   void SetUp() override {
-    if (IsDelegatedRendererEnabled()) {
-      ImageTransportFactory::InitializeForUnitTests(
-          scoped_ptr<ImageTransportFactory>(
-              new NoTransportImageTransportFactory));
-    }
+    ImageTransportFactory::InitializeForUnitTests(
+        scoped_ptr<ImageTransportFactory>(
+            new NoTransportImageTransportFactory));
   }
-  void TearDown() override {
-    if (IsDelegatedRendererEnabled())
-      ImageTransportFactory::Terminate();
-  }
+  void TearDown() override { ImageTransportFactory::Terminate(); }
 };
 
 }  // namespace

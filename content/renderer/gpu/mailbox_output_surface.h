@@ -32,7 +32,6 @@ class MailboxOutputSurface : public CompositorOutputSurface {
       const scoped_refptr<ContextProviderCommandBuffer>& context_provider,
       const scoped_refptr<ContextProviderCommandBuffer>&
           worker_context_provider,
-      scoped_ptr<cc::SoftwareOutputDevice> software_device,
       scoped_refptr<FrameSwapMessageQueue> swap_frame_message_queue,
       cc::ResourceFormat format);
   ~MailboxOutputSurface() override;

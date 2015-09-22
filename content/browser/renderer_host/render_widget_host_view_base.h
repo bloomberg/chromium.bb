@@ -146,9 +146,6 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
   // be used to inject synthetic input events.
   virtual scoped_ptr<SyntheticGestureTarget> CreateSyntheticGestureTarget();
 
-  // Return true if frame subscription is supported on this platform.
-  virtual bool CanSubscribeFrame() const;
-
   // Create a BrowserAccessibilityManager for this view.
   virtual BrowserAccessibilityManager* CreateBrowserAccessibilityManager(
       BrowserAccessibilityDelegate* delegate);

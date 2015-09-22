@@ -1166,14 +1166,6 @@ const Experiment kExperiments[] = {
      kOsDesktop,
      ENABLE_DISABLE_VALUE_TYPE(switches::kEnableLCDText,
                                switches::kDisableLCDText)},
-#if defined(OS_ANDROID) || defined(OS_MACOSX)
-    {"delegated-renderer",
-     IDS_FLAGS_DELEGATED_RENDERER_NAME,
-     IDS_FLAGS_DELEGATED_RENDERER_DESCRIPTION,
-     kOsAndroid,  // TODO(ccameron) Add mac support soon.
-     ENABLE_DISABLE_VALUE_TYPE(switches::kEnableDelegatedRenderer,
-                               switches::kDisableDelegatedRenderer)},
-#endif
     {"enable-offer-store-unmasked-wallet-cards",
      IDS_FLAGS_ENABLE_OFFER_STORE_UNMASKED_WALLET_CARDS,
      IDS_FLAGS_ENABLE_OFFER_STORE_UNMASKED_WALLET_CARDS_DESCRIPTION,

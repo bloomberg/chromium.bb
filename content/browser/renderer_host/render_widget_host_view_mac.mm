@@ -595,10 +595,8 @@ RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget,
   [cocoa_view_ setLayer:background_layer_];
   [cocoa_view_ setWantsLayer:YES];
 
-  if (IsDelegatedRendererEnabled()) {
-    root_layer_.reset(new ui::Layer(ui::LAYER_SOLID_COLOR));
-    delegated_frame_host_.reset(new DelegatedFrameHost(this));
-  }
+  root_layer_.reset(new ui::Layer(ui::LAYER_SOLID_COLOR));
+  delegated_frame_host_.reset(new DelegatedFrameHost(this));
 
   gfx::Screen::GetScreenFor(cocoa_view_)->AddObserver(this);
 
@@ -1045,9 +1043,8 @@ bool RenderWidgetHostViewMac::HasFocus() const {
 }
 
 bool RenderWidgetHostViewMac::IsSurfaceAvailableForCopy() const {
-  if (delegated_frame_host_)
-    return delegated_frame_host_->CanCopyToBitmap();
-  return false;
+  DCHECK(delegated_frame_host_);
+  return delegated_frame_host_->CanCopyToBitmap();
 }
 
 bool RenderWidgetHostViewMac::IsShowing() {
@@ -1307,41 +1304,34 @@ void RenderWidgetHostViewMac::CopyFromCompositingSurface(
     const gfx::Size& dst_size,
     ReadbackRequestCallback& callback,
     const SkColorType preferred_color_type) {
-  if (delegated_frame_host_) {
-    delegated_frame_host_->CopyFromCompositingSurface(
-        src_subrect, dst_size, callback, preferred_color_type);
-  }
+  DCHECK(delegated_frame_host_);
+  delegated_frame_host_->CopyFromCompositingSurface(
+      src_subrect, dst_size, callback, preferred_color_type);
 }
 
 void RenderWidgetHostViewMac::CopyFromCompositingSurfaceToVideoFrame(
       const gfx::Rect& src_subrect,
       const scoped_refptr<media::VideoFrame>& target,
       const base::Callback<void(bool)>& callback) {
-  if (delegated_frame_host_) {
-    delegated_frame_host_->CopyFromCompositingSurfaceToVideoFrame(
-        src_subrect, target, callback);
-  }
+  DCHECK(delegated_frame_host_);
+  delegated_frame_host_->CopyFromCompositingSurfaceToVideoFrame(
+      src_subrect, target, callback);
 }
 
 bool RenderWidgetHostViewMac::CanCopyToVideoFrame() const {
-  if (delegated_frame_host_)
-    return delegated_frame_host_->CanCopyToVideoFrame();
-  return false;
-}
-
-bool RenderWidgetHostViewMac::CanSubscribeFrame() const {
-  return !!delegated_frame_host_;
+  DCHECK(delegated_frame_host_);
+  return delegated_frame_host_->CanCopyToVideoFrame();
 }
 
 void RenderWidgetHostViewMac::BeginFrameSubscription(
     scoped_ptr<RenderWidgetHostViewFrameSubscriber> subscriber) {
-  if (delegated_frame_host_)
-    delegated_frame_host_->BeginFrameSubscription(subscriber.Pass());
+  DCHECK(delegated_frame_host_);
+  delegated_frame_host_->BeginFrameSubscription(subscriber.Pass());
 }
 
 void RenderWidgetHostViewMac::EndFrameSubscription() {
-  if (delegated_frame_host_)
-    delegated_frame_host_->EndFrameSubscription();
+  DCHECK(delegated_frame_host_);
+  delegated_frame_host_->EndFrameSubscription();
 }
 
 void RenderWidgetHostViewMac::ForwardMouseEvent(const WebMouseEvent& event) {
@@ -1577,8 +1567,7 @@ void RenderWidgetHostViewMac::OnSwapCompositorFrame(
 }
 
 void RenderWidgetHostViewMac::ClearCompositorFrame() {
-  if (delegated_frame_host_)
-    delegated_frame_host_->ClearDelegatedFrame();
+  delegated_frame_host_->ClearDelegatedFrame();
 }
 
 void RenderWidgetHostViewMac::GetScreenInfo(blink::WebScreenInfo* results) {
@@ -1650,10 +1639,8 @@ void RenderWidgetHostViewMac::WheelEventAck(
 }
 
 uint32_t RenderWidgetHostViewMac::GetSurfaceIdNamespace() {
-  if (delegated_frame_host_)
-    return delegated_frame_host_->GetSurfaceIdNamespace();
-
-  return 0;
+  DCHECK(delegated_frame_host_);
+  return delegated_frame_host_->GetSurfaceIdNamespace();
 }
 
 uint32_t RenderWidgetHostViewMac::SurfaceIdNamespaceAtPoint(

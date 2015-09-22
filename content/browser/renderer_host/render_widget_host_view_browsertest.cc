@@ -333,11 +333,6 @@ IN_PROC_BROWSER_TEST_P(CompositingRenderWidgetHostViewBrowserTest,
                        FrameSubscriberTest) {
   SET_UP_SURFACE_OR_PASS_TEST(NULL);
   RenderWidgetHostViewBase* const view = GetRenderWidgetHostView();
-  if (!view->CanSubscribeFrame()) {
-    LOG(WARNING) << ("Blindly passing this test: Frame subscription not "
-                     "supported on this platform.");
-    return;
-  }
 
   base::RunLoop run_loop;
   scoped_ptr<RenderWidgetHostViewFrameSubscriber> subscriber(
@@ -619,15 +614,13 @@ class CompositingRenderWidgetHostViewBrowserTestTabCapture
         rwhv->CopyFromCompositingSurfaceToVideoFrame(
             copy_rect, video_frame, callback);
       } else {
-        if (IsDelegatedRendererEnabled()) {
-          if (!content::GpuDataManager::GetInstance()
-                   ->CanUseGpuBrowserCompositor()) {
-            // Skia rendering can cause color differences, particularly in the
-            // middle two columns.
-            SetAllowableError(2);
-            SetExcludeRect(gfx::Rect(
-                output_size.width() / 2 - 1, 0, 2, output_size.height()));
-          }
+        if (!content::GpuDataManager::GetInstance()
+                 ->CanUseGpuBrowserCompositor()) {
+          // Skia rendering can cause color differences, particularly in the
+          // middle two columns.
+          SetAllowableError(2);
+          SetExcludeRect(gfx::Rect(output_size.width() / 2 - 1, 0, 2,
+                                   output_size.height()));
         }
 
         ReadbackRequestCallback callback =

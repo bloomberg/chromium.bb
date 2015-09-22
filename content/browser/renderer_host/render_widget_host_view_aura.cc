@@ -1118,10 +1118,6 @@ bool RenderWidgetHostViewAura::CanCopyToVideoFrame() const {
   return delegated_frame_host_->CanCopyToVideoFrame();
 }
 
-bool RenderWidgetHostViewAura::CanSubscribeFrame() const {
-  return true;
-}
-
 void RenderWidgetHostViewAura::BeginFrameSubscription(
     scoped_ptr<RenderWidgetHostViewFrameSubscriber> subscriber) {
   delegated_frame_host_->BeginFrameSubscription(subscriber.Pass());

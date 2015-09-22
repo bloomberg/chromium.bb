@@ -6244,14 +6244,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_DISTANCE_FIELD_TEXT_DESCRIPTION" desc="Description of about:flags option for distance field text.">
         If enabled, text is rendered with signed distance fields rather than bitmap alpha masks.
       </message>
-      <if expr="is_android or is_macosx">
-        <message name="IDS_FLAGS_DELEGATED_RENDERER_NAME" desc="Name of about:flags option for delegated renderer.">
-          Delegated Renderer (AKA Übercompositor).
-        </message>
-        <message name="IDS_FLAGS_DELEGATED_RENDERER_DESCRIPTION" desc="Description of about:flags option for delegated renderer.">
-          If enabled, the renderer delegates compositing to the browser, merging both compositing passes.
-        </message>
-      </if>
       <message name="IDS_FLAGS_ENABLE_ZERO_COPY_NAME" desc="Name of about:flags option for zero-copy rasterizer.">
         Enable zero-copy rasterizer
       </message>

@@ -559,15 +559,6 @@ RenderWidgetHostViewBase::CreateSyntheticGestureTarget() {
       new SyntheticGestureTargetBase(host));
 }
 
-// Platform implementation should override this method to allow frame
-// subscription. Frame subscriber is set to RenderProcessHost, which is
-// platform independent. It should be set to the specific presenter on each
-// platform.
-bool RenderWidgetHostViewBase::CanSubscribeFrame() const {
-  NOTREACHED();
-  return false;
-}
-
 // Base implementation is unimplemented.
 void RenderWidgetHostViewBase::BeginFrameSubscription(
     scoped_ptr<RenderWidgetHostViewFrameSubscriber> subscriber) {

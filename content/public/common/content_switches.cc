@@ -93,9 +93,6 @@ const char kDisableDatabases[]              = "disable-databases";
 // Disables Delay Agnostic AEC in WebRTC.
 const char kDisableDelayAgnosticAec[]       = "disable-delay-agnostic-aec";
 
-// Disables delegated renderer.
-const char kDisableDelegatedRenderer[]      = "disable-delegated-renderer";
-
 // Handles URL requests by NPAPI plugins through the renderer.
 const char kDisableDirectNPAPIRequests[]    = "disable-direct-npapi-requests";
 
@@ -321,9 +318,6 @@ const char kEnableBrowserSideNavigation[]   = "enable-browser-side-navigation";
 
 // Enables Delay Agnostic AEC in WebRTC.
 const char kEnableDelayAgnosticAec[]        = "enable-delay-agnostic-aec";
-
-// Enables delegated renderer.
-const char kEnableDelegatedRenderer[]       = "enable-delegated-renderer";
 
 // Enables display list based 2d canvas implementation. Options:
 //  1. Enable: allow browser to use display list for 2d canvas (browser makes

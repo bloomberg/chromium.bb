@@ -17,9 +17,6 @@ namespace content {
 // default).
 CONTENT_EXPORT bool IsPropertyTreeVerificationEnabled();
 
-// Returns true if delegated-renderer is on (via flags, or platform default).
-CONTENT_EXPORT bool IsDelegatedRendererEnabled();
-
 // Returns true if zero-copy uploads is on (via flags, or platform default).
 // Only one of one-copy and zero-copy can be enabled at a time.
 CONTENT_EXPORT bool IsZeroCopyUploadEnabled();

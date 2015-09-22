@@ -1016,51 +1016,41 @@ scoped_ptr<cc::OutputSurface> RenderWidget::CreateOutputSurface(bool fallback) {
         CreateGraphicsContext3D(true), RENDER_COMPOSITOR_CONTEXT);
     if (!context_provider.get()) {
       // Cause the compositor to wait and try again.
-      return scoped_ptr<cc::OutputSurface>();
+      return nullptr;
     }
 
     worker_context_provider = ContextProviderCommandBuffer::Create(
         CreateGraphicsContext3D(false), RENDER_WORKER_CONTEXT);
     if (!worker_context_provider.get()) {
       // Cause the compositor to wait and try again.
-      return scoped_ptr<cc::OutputSurface>();
+      return nullptr;
     }
   }
 
   uint32 output_surface_id = next_output_surface_id_++;
-  if (command_line.HasSwitch(switches::kEnableDelegatedRenderer)) {
+  // Composite-to-mailbox is currently used for layout tests in order to cause
+  // them to draw inside in the renderer to do the readback there. This should
+  // no longer be the case when crbug.com/311404 is fixed.
+  if (!RenderThreadImpl::current() ||
+      !RenderThreadImpl::current()->layout_test_mode()) {
     DCHECK(compositor_deps_->GetCompositorImplThreadTaskRunner());
-    return scoped_ptr<cc::OutputSurface>(new DelegatedCompositorOutputSurface(
+    return make_scoped_ptr(new DelegatedCompositorOutputSurface(
         routing_id(), output_surface_id, context_provider,
         worker_context_provider, frame_swap_message_queue_));
   }
+
   if (!context_provider.get()) {
     scoped_ptr<cc::SoftwareOutputDevice> software_device(
         new cc::SoftwareOutputDevice());
 
-    return scoped_ptr<cc::OutputSurface>(new CompositorOutputSurface(
+    return make_scoped_ptr(new CompositorOutputSurface(
         routing_id(), output_surface_id, nullptr, nullptr,
         software_device.Pass(), frame_swap_message_queue_, true));
   }
 
-  if (command_line.HasSwitch(cc::switches::kCompositeToMailbox)) {
-    // Composite-to-mailbox is currently used for layout tests in order to cause
-    // them to draw inside in the renderer to do the readback there. This should
-    // no longer be the case when crbug.com/311404 is fixed.
-    DCHECK(RenderThreadImpl::current()->layout_test_mode());
-    cc::ResourceFormat format = cc::RGBA_8888;
-    if (base::SysInfo::IsLowEndDevice())
-      format = cc::RGB_565;
-    return scoped_ptr<cc::OutputSurface>(new MailboxOutputSurface(
-        routing_id(), output_surface_id, context_provider,
-        worker_context_provider, scoped_ptr<cc::SoftwareOutputDevice>(),
-        frame_swap_message_queue_, format));
-  }
-  bool use_swap_compositor_frame_message = false;
-  return scoped_ptr<cc::OutputSurface>(new CompositorOutputSurface(
+  return make_scoped_ptr(new MailboxOutputSurface(
       routing_id(), output_surface_id, context_provider,
-      worker_context_provider, scoped_ptr<cc::SoftwareOutputDevice>(),
-      frame_swap_message_queue_, use_swap_compositor_frame_message));
+      worker_context_provider, frame_swap_message_queue_, cc::RGBA_8888));
 }
 
 void RenderWidget::OnSwapBuffersAborted() {

@@ -289,7 +289,6 @@ void GpuProcessHostUIShim::OnAcceleratedSurfaceBuffersSwapped(
   // On Mac with delegated rendering, accelerated surfaces are not necessarily
   // associated with a RenderWidgetHostViewBase.
   AcceleratedSurfaceMsg_BufferPresented_Params ack_params;
-  DCHECK(IsDelegatedRendererEnabled());
 
   // If the frame was intended for an NSView that the gfx::AcceleratedWidget is
   // no longer attached to, do not pass the frame along to the widget. Just ack

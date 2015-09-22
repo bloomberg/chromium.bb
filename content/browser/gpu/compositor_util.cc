@@ -164,22 +164,6 @@ bool IsPropertyTreeVerificationEnabled() {
   return command_line.HasSwitch(cc::switches::kEnablePropertyTreeVerification);
 }
 
-bool IsDelegatedRendererEnabled() {
-  const base::CommandLine& command_line =
-      *base::CommandLine::ForCurrentProcess();
-  bool enabled = false;
-
-#if defined(USE_AURA) || defined(OS_MACOSX)
-  // Enable on Aura and Mac.
-  enabled = true;
-#endif
-
-  // Flags override.
-  enabled |= command_line.HasSwitch(switches::kEnableDelegatedRenderer);
-  enabled &= !command_line.HasSwitch(switches::kDisableDelegatedRenderer);
-  return enabled;
-}
-
 int NumberOfRendererRasterThreads() {
   int num_processors = base::SysInfo::NumberOfProcessors();
 
