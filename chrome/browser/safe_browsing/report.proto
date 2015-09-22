@@ -90,4 +90,10 @@ message ClientMalwareReportRequest {
 
   // Whether the report has HTTP Responses.
   optional bool complete = 5;
+
+  // Whether user chose to proceed.
+  optional bool did_proceed = 8;
+
+  // Whether user visited this origin before.
+  optional bool repeat_visit = 9;
 }

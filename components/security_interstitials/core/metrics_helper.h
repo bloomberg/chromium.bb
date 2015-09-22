@@ -91,6 +91,8 @@ class MetricsHelper {
   // histogram and potentially in a RAPPOR metric.
   void RecordUserDecision(Decision decision);
   void RecordUserInteraction(Interaction interaction);
+  // Number of times user visited this origin before. -1 means not-yet-set.
+  int NumVisits();
 
  protected:
   // Subclasses should implement any embedder-specific recording logic in these

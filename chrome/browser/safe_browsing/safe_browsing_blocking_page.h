@@ -122,7 +122,7 @@ class SafeBrowsingBlockingPage : public SecurityInterstitialPage {
   // pending malware details object, we look at the user's
   // preferences, and if the option to send malware details is
   // enabled, the report is scheduled to be sent on the |ui_manager_|.
-  void FinishMalwareDetails(int64 delay_ms);
+  void FinishMalwareDetails(int64 delay_ms, bool did_proceed, int num_visits);
 
   // A list of SafeBrowsingUIManager::UnsafeResource for a tab that the user
   // should be warned about.  They are queued when displaying more than one

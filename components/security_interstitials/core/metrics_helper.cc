@@ -134,6 +134,10 @@ void MetricsHelper::RecordUserInteraction(Interaction interaction) {
   RecordExtraUserInteractionMetrics(interaction);
 }
 
+int MetricsHelper::NumVisits() {
+  return num_visits_;
+}
+
 void MetricsHelper::OnGotHistoryCount(bool success,
                                       int num_visits,
                                       base::Time /*first_visit*/) {
