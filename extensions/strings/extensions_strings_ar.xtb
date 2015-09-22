@@ -21,12 +21,14 @@
 <translation id="388442998277590542">تعذر تحميل صفحة الخيارات "<ph name="OPTIONS_PAGE" />".</translation>
 <translation id="4115165561519362854">يطلب مشرف هذا الجهاز <ph name="EXTENSION_NAME" /> الحصول على الحد الأدنى لإصدار <ph name="EXTENSION_VERSION" />. ولا يمكن تمكينه حتى يتم تحديثه إلى هذا الإصدار (أو أعلى).</translation>
 <translation id="4233778200880751280">تعذر تحميل حول الصفحة "<ph name="ABOUT_PAGE" />".</translation>
+<translation id="4434145631756268951">{0,select, single{‏تحديد جهاز USB}multiple{‏تحديد أجهزة USB}other{UNUSED}}</translation>
 <translation id="4811956658694082538">‏تعذر تثبيت الحزمة بسبب تعطل معالجة الأداة المساعدة. جرّب إعادة تشغيل Chrome وحاول مرة أخرى.</translation>
 <translation id="4883436287898674711">جميع مواقع <ph name="WEBSITE_1" /></translation>
 <translation id="5026754133087629784">عرض الويب: <ph name="WEBVIEW_TAG_NAME" /></translation>
 <translation id="5356315618422219272">عرض التطبيق: <ph name="APPVIEW_TAG_NAME" /></translation>
 <translation id="5456409301717116725">تتضمن هذه الإضافة ملف المفتاح '<ph name="KEY_PATH" />'. ربما لا تريد إجراء ذلك.</translation>
 <translation id="5627523580512561598">الإضافة <ph name="EXTENSION_NAME" /></translation>
+<translation id="5630931906013276297">{0,select, single{‏تحديد جهاز واجهة بشرية HID}multiple{‏تحديد أجهزة واجهة بشرية HID}other{UNUSED}}</translation>
 <translation id="5960890139610307736">ExtensionView: <ph name="EXTENSIONVIEW_TAG_NAME" /></translation>
 <translation id="5972529113578162692">يتطلب مشرف هذا الجهاز تثبيت <ph name="EXTENSION_NAME" />. لا يمكن إلغاء تثبيته.</translation>
 <translation id="6027032947578871493">المنتج غير معروف <ph name="PRODUCT_ID" /> من <ph name="VENDOR_NAME" /> (الرقم التسلسلي <ph name="SERIAL_NUMBER" />)</translation>

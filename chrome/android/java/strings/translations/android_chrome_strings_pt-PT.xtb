@@ -5,7 +5,6 @@
 <translation id="10614374240317010">Nunca guardadas</translation>
 <translation id="1061441684050139317">O Chrome necessita de acesso ao microfone para o partilhar com este site.</translation>
 <translation id="1080790410959514870">Está a terminar sessão numa conta gerida por <ph name="DOMAIN_NAME" />. Esta ação elimina os dados do Chrome armazenados neste dispositivo, mas os dados permanecem na sua Conta Google.</translation>
-<translation id="1086169178231554178">Cartão SD indisponível</translation>
 <translation id="1091134514807961917">Tem sessão iniciada na seguinte Conta Google.</translation>
 <translation id="1095407227123756519">Adicione uma conta para aceder aos marcadores, ao histórico, às palavras-passe e a outras definições em todos os dispositivos.</translation>
 <translation id="1098052486217676340">Concluído</translation>
@@ -86,7 +85,6 @@
 <translation id="2351097562818989364">As definições de tradução foram repostas.</translation>
 <translation id="2354750644801399986">"Não Monitorizar"</translation>
 <translation id="2359808026110333948">Continuar</translation>
-<translation id="2360035970720276770">Só é possível transferir URLs com http ou https</translation>
 <translation id="2381756643783702095">Perguntar antes de enviar (recomendado)</translation>
 <translation id="2387895666653383613">Escala do texto</translation>
 <translation id="238909021488141516">Ocorreu um erro ao transferir o conteúdo.</translation>
@@ -127,7 +125,6 @@
 <translation id="2960796085439532066">Copyright <ph name="YEAR" /> Google Inc. Todos os direitos reservados.</translation>
 <translation id="2968755619301702150">Visualizador de certificados</translation>
 <translation id="2996809686854298943">URL obrigatório</translation>
-<translation id="3003595280608617736">Nenhum cartão SD</translation>
 <translation id="3029704984691124060">As frases de acesso não coincidem</translation>
 <translation id="3039671569659952257">Eliminar pasta</translation>
 <translation id="3063601790762993062">Guardar vídeo</translation>
@@ -232,6 +229,7 @@ Para ajustar o termo de pesquisa, prima continuamente para selecionar. Para refi
 <translation id="4816465935029283692">Tipos de dados</translation>
 <translation id="4827948050554950725">Adicionar cartão de crédito</translation>
 <translation id="4836364883164334657">A sua ligação a este site não é privada. É possível que utilizadores mal intencionados estejam a tentar roubar as suas informações (por exemplo, fotos, palavras-passe, mensagens e cartões de crédito) de <ph name="DOMAIN_NAME" />.</translation>
+<translation id="4850886885716139402">Ver</translation>
 <translation id="4871370605780490696">Adicionar marcador</translation>
 <translation id="4881695831933465202">Abrir</translation>
 <translation id="4885273946141277891">Número não suportado de instâncias do Chrome.</translation>
@@ -449,8 +447,6 @@ Por exemplo, alguns Websites podem responder a este pedido ao mostrar-lhe anúnc
 <translation id="7648422057306047504">Encriptar palavras-passe com credenciais Google</translation>
 <translation id="7658239707568436148">Cancelar</translation>
 <translation id="7665369617277396874">Adicionar conta</translation>
-<translation id="7711895876052978264">Este site entrou em modo de ecrã inteiro.
-Clique no botão de retrocesso para sair.</translation>
 <translation id="7764225426217299476">Adicionar endereço</translation>
 <translation id="7765158879357617694">Mover</translation>
 <translation id="7767746238359002192">Visitar página para guardar offline</translation>
@@ -469,7 +465,6 @@ Clique no botão de retrocesso para sair.</translation>
 <translation id="7961015016161918242">Nunca</translation>
 <translation id="7963646190083259054">Fornecedor:</translation>
 <translation id="7977858705483383621">Pesquisa segura</translation>
-<translation id="7981795308302452224">Falha ao iniciar a transferência</translation>
 <translation id="7987073022710626672">Termos de Utilização do Chrome</translation>
 <translation id="7989222512959629388">A guardar…</translation>
 <translation id="7998918019931843664">Reabrir separador fechado</translation>
@@ -482,7 +477,6 @@ Clique no botão de retrocesso para sair.</translation>
 <translation id="8073388330009372546">Abrir imagem num novo separad.</translation>
 <translation id="8084156870963450514">Iniciar sessão para aceder a todo o seu conteúdo da Web a partir de qualquer dispositivo</translation>
 <translation id="8106211421800660735">Número de cartão de crédito</translation>
-<translation id="8109148095642131923">Falha ao adicionar o item transferido ao gestor de transferências.</translation>
 <translation id="813082847718468539">Ver informações do Web site</translation>
 <translation id="8137558756159375272">Tocar para pesquisar envia a palavra selecionada e a página atual como contexto para a Pesquisa Google. Pode desativá-la em <ph name="BEGIN_LINK" />Definições<ph name="END_LINK" />.</translation>
 <translation id="8143660160623733249">Nome da pasta</translation>
@@ -567,5 +561,4 @@ Para obter licenças novas, ligue-se à Internet e reproduza o conteúdo transfe
 <translation id="969096075394517431">Alterar idiomas</translation>
 <translation id="971774202801778802">URL do marcador</translation>
 <translation id="983192555821071799">Fechar todos os separadores</translation>
-<translation id="988938288723502454">Não é possível criar o diretório de transferência no cartão SD.</translation>
 </translationbundle>

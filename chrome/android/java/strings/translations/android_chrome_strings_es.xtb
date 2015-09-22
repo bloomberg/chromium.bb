@@ -5,7 +5,6 @@
 <translation id="10614374240317010">Contraseñas que nunca se guardan</translation>
 <translation id="1061441684050139317">Chrome necesita acceder al micrófono para compartirlo con este sitio web.</translation>
 <translation id="1080790410959514870">Vas a salir de una cuenta administrada por <ph name="DOMAIN_NAME" />. Se eliminarán los datos de Chrome almacenados en este dispositivo, pero los datos permanecerán en tu cuenta de Google.</translation>
-<translation id="1086169178231554178">Tarjeta SD no disponible</translation>
 <translation id="1091134514807961917">Has iniciado sesión en la siguiente cuenta de Google.</translation>
 <translation id="1095407227123756519">Añade una cuenta para ver tus marcadores, tu historial, tus contraseñas y otras opciones en todos tus dispositivos.</translation>
 <translation id="1098052486217676340">Finalizado</translation>
@@ -86,7 +85,6 @@
 <translation id="2351097562818989364">Se han restablecido tus ajustes de traducción.</translation>
 <translation id="2354750644801399986">No realizar seguimiento</translation>
 <translation id="2359808026110333948">Continuar</translation>
-<translation id="2360035970720276770">Solo se pueden descargar URL de tipo http o https</translation>
 <translation id="2381756643783702095">Preguntar antes de enviar (recomendado)</translation>
 <translation id="2387895666653383613">Ajuste de texto</translation>
 <translation id="238909021488141516">Se ha producido un error al descargar el contenido.</translation>
@@ -127,7 +125,6 @@
 <translation id="2960796085439532066">Copyright <ph name="YEAR" /> Google Inc. Todos los derechos reservados.</translation>
 <translation id="2968755619301702150">Visor de certificados</translation>
 <translation id="2996809686854298943">URL necesaria</translation>
-<translation id="3003595280608617736">Falta la tarjeta SD</translation>
 <translation id="3029704984691124060">Las frases de contraseña no coinciden</translation>
 <translation id="3039671569659952257">Eliminar carpeta</translation>
 <translation id="3063601790762993062">Guardar vídeo</translation>
@@ -232,6 +229,7 @@ Para ajustar el término de búsqueda, mantén pulsado el texto para seleccionar
 <translation id="4816465935029283692">Tipos de datos</translation>
 <translation id="4827948050554950725">Añadir tarjeta de crédito</translation>
 <translation id="4836364883164334657">Tu conexión a este sitio web no es privada. Un atacante podría intentar robar tu información (fotos, contraseñas, mensajes, tarjetas de crédito, etc.) del dominio <ph name="DOMAIN_NAME" />.</translation>
+<translation id="4850886885716139402">Ver</translation>
 <translation id="4871370605780490696">Añadir marcador</translation>
 <translation id="4881695831933465202">Abrir</translation>
 <translation id="4885273946141277891">Número de instancias de Chrome no admitido.</translation>
@@ -449,8 +447,6 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="7648422057306047504">Cifrar contraseñas con credenciales de Google</translation>
 <translation id="7658239707568436148">Cancelar</translation>
 <translation id="7665369617277396874">Añadir cuenta</translation>
-<translation id="7711895876052978264">Se ha activado la pantalla completa en este sitio.
-Pulsa el botón de retroceso para salir.</translation>
 <translation id="7764225426217299476">Añadir dirección</translation>
 <translation id="7765158879357617694">Mover</translation>
 <translation id="7767746238359002192">Accede a la página para guardar una copia sin conexión</translation>
@@ -469,7 +465,6 @@ Pulsa el botón de retroceso para salir.</translation>
 <translation id="7961015016161918242">Nunca</translation>
 <translation id="7963646190083259054">Proveedor:</translation>
 <translation id="7977858705483383621">SafeSearch</translation>
-<translation id="7981795308302452224">Error al iniciar la descarga</translation>
 <translation id="7987073022710626672">Condiciones de servicio de Chrome</translation>
 <translation id="7989222512959629388">Guardando…</translation>
 <translation id="7998918019931843664">Volver a abrir pestaña cerrada</translation>
@@ -482,7 +477,6 @@ Pulsa el botón de retroceso para salir.</translation>
 <translation id="8073388330009372546">Abrir en pestaña nueva</translation>
 <translation id="8084156870963450514">Inicia sesión para acceder a todo tu contenido web desde cualquier dispositivo</translation>
 <translation id="8106211421800660735">Número de la tarjeta de crédito</translation>
-<translation id="8109148095642131923">Error al añadir un elemento descargado al administrador de descargas.</translation>
 <translation id="813082847718468539">Ver información del sitio</translation>
 <translation id="8137558756159375272">La función Tocar para buscar envía la palabra seleccionada y la página actual como contexto a la Búsqueda de Google. Puedes desactivarla en la <ph name="BEGIN_LINK" />configuración<ph name="END_LINK" />.</translation>
 <translation id="8143660160623733249">Nombre de carpeta</translation>
@@ -567,5 +561,4 @@ Para obtener nuevas licencias, conéctate a Internet y reproduce el contenido de
 <translation id="969096075394517431">Cambiar idiomas</translation>
 <translation id="971774202801778802">Añadir URL a marcadores</translation>
 <translation id="983192555821071799">Cerrar todas las pestañas</translation>
-<translation id="988938288723502454">No se puede crear un directorio de descarga en la tarjeta SD.</translation>
 </translationbundle>

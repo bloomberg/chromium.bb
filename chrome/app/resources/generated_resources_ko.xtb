@@ -41,7 +41,7 @@
 <translation id="1054153489933238809">새 탭에서 원본 이미지 열기</translation>
 <translation id="1055806300943943258">블루투스 및 USB 기기 검색 중...</translation>
 <translation id="1056898198331236512">경고</translation>
-<translation id="1056982457359827501">Chrome 앱에서 BLE Advertising을 사용 설정합니다. BLE Advertising은 정기적인 저전력 블루투스 기능 사용을 방해할 수 있습니다.</translation>
+<translation id="1056982457359827501">Chrome 앱에서 BLE Advertising을 사용 설정합니다. BLE Advertising은 일반적인 저전력 블루투스 기능 사용을 방해할 수 있습니다.</translation>
 <translation id="1058325955712687476">Site Engagement Service를 사용 설정합니다. 이 서비스를 사용하면 사이트와의 상호작용을 기록하고 그에 따라 리소스를 할당할 수 있습니다.</translation>
 <translation id="1058418043520174283"><ph name="INDEX" />/<ph name="COUNT" /></translation>
 <translation id="10614374240317010">비밀번호를 저장하지 않은 사이트</translation>
@@ -162,7 +162,6 @@
 <translation id="1205489148908752564">허용 목록에 있는 사용자를 읽고 변경하기</translation>
 <translation id="1208421848177517699">음역(namaste → નમસ્તે)</translation>
 <translation id="1209796539517632982">자동 이름 서버</translation>
-<translation id="121201262018556460"><ph name="DOMAIN" />에 접속하려 했으나 서버가 안전성이 낮은 키가 포함된 인증서를 전달했습니다. 공격자가 비공개 키를 손상시켰을 수 있으며 서버를 가장한 공격자와 통신 중일 수 있습니다.</translation>
 <translation id="1215411991991485844">새 백그라운드 앱을 추가함</translation>
 <translation id="121827551500866099">다운로드 항목 모두 표시...</translation>
 <translation id="122082903575839559">인증서 서명 알고리즘</translation>
@@ -173,7 +172,6 @@
 <translation id="1225177025209879837">요청을 처리하는 중...</translation>
 <translation id="1225211345201532184">서가 항목 5</translation>
 <translation id="1225404570112441414">이 사이트를 언제든지 사용할 수 있도록 실행기에 추가합니다.</translation>
-<translation id="1226375067743171974">머티리얼 디자인의 테스트용 터치 피드백 애니메이션입니다.</translation>
 <translation id="1227507814927581609">'<ph name="DEVICE_NAME" />'에 연결하는 동안 인증에 실패했습니다.</translation>
 <translation id="1231728991993914119">호스팅된 앱에 대한 중단 알림 사용</translation>
 <translation id="1232569758102978740">제목 없음</translation>
@@ -276,7 +274,6 @@
 <translation id="1399648040768741453">텔루구어 키보드(음역)</translation>
 <translation id="1401874662068168819">진예(Gin Yieh)</translation>
 <translation id="140250605646987970">휴대전화를 찾았습니다. 하지만 Smart Lock은 Android 5.0 이상이 설치된 기기에서만 작동합니다. &lt;a&gt;자세히 알아보기&lt;/a&gt;</translation>
-<translation id="140495917068443520">정사각형 잉크 드롭</translation>
 <translation id="1405126334425076373">마우스 커서</translation>
 <translation id="140520891692800925"><ph name="PROFILE_DISPLAY_NAME" />(관리 대상)</translation>
 <translation id="1406500794671479665">확인 중...</translation>
@@ -291,7 +288,6 @@
 <translation id="1413809658975081374">개인정보 보호 오류</translation>
 <translation id="1414648216875402825">개발 중인 기능을 포함하는 <ph name="PRODUCT_NAME" />의 불안정한 버전으로 업데이트합니다. 기기가 다운되거나 예기치 않은 버그가 발생할 수 있습니다. 주의해서 진행하시기 바랍니다.</translation>
 <translation id="1415990189994829608"><ph name="EXTENSION_NAME" />(확장 프로그램 ID '<ph name="EXTENSION_ID" />')은(는) 이 세션 유형에서 허용되지 않습니다.</translation>
-<translation id="1416599368291956791">{1,plural, =1{서버의 보안 인증서가 내일 발효될 예정이며 이에 따라 <ph name="DOMAIN" />임을 입증할 수 없습니다. 서버를 잘못 설정했거나 불법 사용자가 연결을 가로채고 있기 때문일 수 있습니다.}other{서버의 보안 인증서가 #일 후 발효될 예정이며 이에 따라 <ph name="DOMAIN" />임을 입증할 수 없습니다. 서버를 잘못 설정했거나 불법 사용자가 연결을 가로채고 있기 때문일 수 있습니다.}}</translation>
 <translation id="1416836038590872660">EAP-MD5</translation>
 <translation id="1420684932347524586">임의의 RSA 비공개 키를 생성하지 못했습니다.</translation>
 <translation id="1422780722984745882">여러 다른 위치 헤더를 수신했으나 HTTP 응답 분할 공격으로부터 보호하기 위해
@@ -511,7 +507,6 @@
 <translation id="168328519870909584">현재 <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />의 공격자가 사용 중인 기기에 사용자 정보(예: 사진, 비밀번호, 메시지, 신용카드)를 도용하거나 삭제하는 위험한 앱을 설치하려고 시도할 수 있습니다.</translation>
 <translation id="1685141618403317602">등록 취소</translation>
 <translation id="1685944703056982650">마우스 커서 예외</translation>
-<translation id="168841957122794586">서버 인증서에 안전성이 낮은 암호화 키가 포함되어 있습니다.</translation>
 <translation id="1691063574428301566">업데이트가 완료되면 컴퓨터가 다시 시작됩니다.</translation>
 <translation id="1691608011302982743">기기를 너무 빨리 분리했습니다.</translation>
 <translation id="1692602667007917253">문제가 발생했습니다.</translation>
@@ -810,14 +805,12 @@
 <translation id="215753907730220065">전체화면 종료</translation>
 <translation id="2157875535253991059">페이지가 현재 전체화면으로 전환되었습니다.</translation>
 <translation id="216169395504480358">Wi-Fi 추가</translation>
-<translation id="2163418719022613650">슬리밍 페인트 디스플레이 목록을 그림에 사용하지 마세요. 두 플래그 모두 표시되는 경우 이 플래그보다 슬리밍 페인트 사용 설정 플래그가 우선한다는 점에 유의하시기 바랍니다.</translation>
 <translation id="2163470535490402084"><ph name="DEVICE_TYPE" /> 기기에 로그인하려면 인터넷에 연결하세요.</translation>
 <translation id="2164862903024139959">베트남어 키보드(TCVN)</translation>
 <translation id="2167276631610992935">자바스크립트</translation>
 <translation id="2168214441502403371">페르시아어 키보드</translation>
 <translation id="2168725742002792683">파일 확장명</translation>
 <translation id="2169062631698640254">로그인</translation>
-<translation id="2171101176734966184"><ph name="DOMAIN" />에 접속하려 했으나 서버에서 안전성이 낮은 서명 알고리즘을 사용하여 서명된 인증서를 전달했습니다. 이는 서버에서 전달한 보안 자격증명 정보가 위조되었을 수 있으며 서버를 가장한 공격자와 통신 중일 수 있음을 의미합니다.</translation>
 <translation id="2175607476662778685">빠른 실행 표시줄</translation>
 <translation id="2176045495080708525">현재 설치된 확장 프로그램:</translation>
 <translation id="2177950615300672361">시크릿 탭: <ph name="TAB_NAME" /></translation>
@@ -837,7 +830,6 @@
 <translation id="220138918934036434">버튼 숨기기</translation>
 <translation id="2202898655984161076">프린터를 나열하는 데 문제가 발생했습니다. <ph name="CLOUD_PRINT_NAME" />에 성공적으로 등록되지 못한 프린터가 있을 수 있습니다.</translation>
 <translation id="2204034823255629767">입력한 항목 조회 및 변경</translation>
-<translation id="2208105671494637223">프랑스어 Bepo</translation>
 <translation id="2208158072373999562">Zip 아카이브</translation>
 <translation id="2208311832613497869">죄송합니다. 이 페이지를 방문해도 괜찮은지 부모님께 확인해야 합니다.</translation>
 <translation id="220858061631308971">'<ph name="DEVICE_NAME" />'의 PIN 코드를 입력하세요:</translation>
@@ -910,7 +902,6 @@
 <translation id="2278988676849463018">칸나다어 키보드(음역)</translation>
 <translation id="2279770628980885996">서버가 요청을 수행하는 동안 예상치 못한 상황이 발생했습니다.</translation>
 <translation id="2280486287150724112">오른쪽 여백</translation>
-<translation id="2280845493034384933">일부 상황에서 거꾸로 된 표시 영역 스크롤 순서를 사용하도록 설정합니다. 즉, 손가락으로 확대 축소하는 중에 시각적 표시 영역을 먼저 스크롤해야 하며 그런 다음 레이아웃 표시 영역을 스크롤합니다.</translation>
 <translation id="2282146716419988068">GPU 프로세스</translation>
 <translation id="2282872951544483773">사용할 수 없는 실험</translation>
 <translation id="2283117145434822734">F6</translation>
@@ -920,7 +911,6 @@
 <translation id="2291643155573394834">다음 탭</translation>
 <translation id="2294358108254308676"><ph name="PRODUCT_NAME" />을(를) 설치하시겠습니까?</translation>
 <translation id="2296019197782308739">EAP 방식:</translation>
-<translation id="229702904922032456">루트 또는 중개 인증서가 만료되었습니다.</translation>
 <translation id="2299552784526456191">보안이 약한 출처를 중립으로 표시</translation>
 <translation id="2301382460326681002">확장 프로그램 루트 디렉토리가 잘못되었습니다.</translation>
 <translation id="230155334948463882">새 카드인가요?</translation>
@@ -979,7 +969,6 @@
 <translation id="2384596874640104496">신할라어 키보드</translation>
 <translation id="238526402387145295"><ph name="SITE" /> 사이트에서 <ph name="BEGIN_LINK" />HSTS를 사용<ph name="END_LINK" />하고 있기 때문에 방문할 수 없습니다. 네트워크 오류와 공격은 대부분 일시적이므로 잠시 후 페이지가 정상화될 것입니다.</translation>
 <translation id="2385700042425247848">서비스 이름:</translation>
-<translation id="2386255080630008482">서버 인증서가 폐기되었습니다.</translation>
 <translation id="2386631145847373156">로그인했을 때만 로그아웃할 수 있습니다.</translation>
 <translation id="2386784019642337415">기본 및 맞춤 검색 엔진을 읽고 변경하기</translation>
 <translation id="2390045462562521613">네트워크 저장 안함</translation>
@@ -1002,7 +991,6 @@
 <translation id="2403091441537561402">게이트웨이:</translation>
 <translation id="241082044617551207">알 수 없는 플러그인</translation>
 <translation id="2412835451908901523"><ph name="CARRIER_ID" />에서 제공한 8자리 PIN 잠금해제 키를 입력하세요.</translation>
-<translation id="2413528052993050574">이 서버가 <ph name="DOMAIN" />임을 입증할 수 없으며 서버의 보안 인증서가 취소될 수 있습니다. 서버를 잘못 설정했거나 불법 사용자가 연결을 가로채고 있기 때문일 수 있습니다.</translation>
 <translation id="2413749388954403953">북마크 사용자 인터페이스 변경</translation>
 <translation id="2415294094132942411">데스크톱에 추가...</translation>
 <translation id="242184683889529951">스크롤 관련 입력 이벤트의 스레드 처리를 사용 중지하여 이러한 모든 스크롤 이벤트가 기본 스레드에서 처리되도록 하였습니다. 이렇게 하면 대부분 웹사이트의 스크롤 실행을 크게 손상시킬 수 있으며 테스트용으로만 사용할 수 있습니다.</translation>
@@ -1053,7 +1041,6 @@
 <translation id="2489428929217601177">지난 1일</translation>
 <translation id="2489435327075806094">포인터 속도:</translation>
 <translation id="2489918096470125693">폴더 추가(&amp;F)...</translation>
-<translation id="2491120439723279231">서버 인증서에 오류가 있습니다.</translation>
 <translation id="249113932447298600">죄송합니다. 현재 이 기기(<ph name="DEVICE_LABEL" />)는 지원되지 않습니다.</translation>
 <translation id="2493021387995458222">'한번에 한 단어' 선택</translation>
 <translation id="249303669840926644">등록을 완료할 수 없습니다.</translation>
@@ -1227,7 +1214,6 @@
 <translation id="2726306725839966998">겹친 경우 비활성 탭의 닫기 버튼 숨기기 사용 중지</translation>
 <translation id="2726934403674109201">(총 <ph name="COUNT" />개)</translation>
 <translation id="2727712005121231835">실제 크기</translation>
-<translation id="2728127805433021124">서버의 인증서가 안전성이 낮은 서명 알고리즘을 사용하여 서명되어 있습니다.</translation>
 <translation id="273093730430620027">카메라에 액세스하는 페이지입니다.</translation>
 <translation id="2731392572903530958">닫은 창 다시 열기(&amp;E)</translation>
 <translation id="2731700343119398978">잠시 기다려 주세요...</translation>
@@ -1390,13 +1376,11 @@
 <translation id="2909946352844186028">네트워크 변경이 감지되었습니다.</translation>
 <translation id="2911372483530471524">PID 네임스페이스</translation>
 <translation id="2912905526406334195"><ph name="HOST" />에서 사용자의 마이크를 사용하려고 합니다.</translation>
-<translation id="2915500479781995473">이 서버가 <ph name="DOMAIN" />임을 입증할 수 없으며 서버의 보안 인증서가 만료되었습니다. 서버를 잘못 설정했거나 해커가 연결을 가로채고 있기 때문일 수 있습니다. 컴퓨터의 시계가 현재 <ph name="CURRENT_TIME" />(으)로 설정되어 있습니다. 시간이 정확하지 않으면 시스템 시계를 수정한 다음 이 페이지를 새로고침하세요.</translation>
 <translation id="2916073183900451334">웹페이지에서 Tab 키를 누르면 링크 뿐 아니라 양식 입력란도 강조표시됩니다.</translation>
 <translation id="2916974515569113497">이 옵션을 사용하면 고정 위치 요소에 자체 합성된 레이어가 포함됩니다. 또한 이 옵션이 작동하려면 고정 위치 요소가 쌓이는 컨텍스트를 만들어야 합니다.</translation>
 <translation id="2918322085844739869">4</translation>
 <translation id="2918583523892407401">Chrome 동기화 샌드박스 사용</translation>
 <translation id="291886813706048071">여기에서 <ph name="SEARCH_ENGINE" />(으)로 검색할 수 있습니다.</translation>
-<translation id="2922350208395188000">서버 인증서를 확인할 수 없습니다.</translation>
 <translation id="2923240520113693977">에스토니아어</translation>
 <translation id="29232676912973978">연결 관리...</translation>
 <translation id="2923469375796950815">새로운 ZIP 압축 해제 프로그램 사용 중지</translation>
@@ -1411,7 +1395,6 @@
 <translation id="2937174152333875430">앱 런처 동기화 사용</translation>
 <translation id="2938225289965773019"><ph name="PROTOCOL" /> 링크 열기</translation>
 <translation id="2938685643439809023">몽고어</translation>
-<translation id="2941952326391522266">이 서버가 <ph name="DOMAIN" />임을 입증할 수 없으며 서버의 보안 인증서가 <ph name="DOMAIN2" />에서 제공한 것입니다. 서버를 잘못 설정했거나 불법 사용자가 연결을 가로채고 있기 때문일 수 있습니다.</translation>
 <translation id="2942290791863759244">독일어 NEO 2 키보드</translation>
 <translation id="2943400156390503548">프레젠테이션</translation>
 <translation id="2946119680249604491">연결 추가</translation>
@@ -1454,7 +1437,6 @@
 <translation id="300544934591011246">이전 비밀번호</translation>
 <translation id="3005723025932146533">저장된 사본 표시</translation>
 <translation id="3009300415590184725">모바일 데이터 서비스 설정 과정을 취소하시겠습니까?</translation>
-<translation id="3009507051774857955">슬리밍 페인트 사용</translation>
 <translation id="3009779501245596802">색인화된 데이터베이스</translation>
 <translation id="3010279545267083280">비밀번호 삭제됨</translation>
 <translation id="3011284594919057757">플래시 정보</translation>
@@ -1502,7 +1484,6 @@
 <translation id="3075874217500066906">Powerwash 프로세스를 시작하려면 다시 시작해야 합니다. 다시 시작하면 계속 진행할 지를 확인하는 메시지가 표시됩니다.</translation>
 <translation id="3076677906922146425">누구나 사용자를 Chrome에 추가할 수 있도록 합니다.</translation>
 <translation id="3076909148546628648"><ph name="DOWNLOAD_RECEIVED" />/<ph name="DOWNLOAD_TOTAL" /></translation>
-<translation id="3077195744811823826">이제 데스크톱에서 사용해 보세요.</translation>
 <translation id="3077734595579995578">Shift</translation>
 <translation id="3081104028562135154">증가</translation>
 <translation id="3082374807674020857"><ph name="PAGE_TITLE" /> - <ph name="PAGE_URL" /></translation>
@@ -1558,6 +1539,7 @@
 <translation id="3144135466825225871">crx 파일을 대체하지 못했습니다. 파일을 사용 중인지 확인하세요.</translation>
 <translation id="31454997771848827">도메인 그룹화</translation>
 <translation id="3147485256806412701">이 사이트는 새로운 기본 최상위 도메인을 사용합니다.</translation>
+<translation id="3149510190863420837">Chrome 앱</translation>
 <translation id="3150927491400159470">강력 새로고침</translation>
 <translation id="315116470104423982">모바일 데이터</translation>
 <translation id="315141861755603168">'<ph name="BUNDLE_NAME" />'을(를) 설치하면 다음 앱이 추가됩니다.</translation>
@@ -1612,7 +1594,6 @@
 <translation id="3224239078034945833">캐나다 다국어</translation>
 <translation id="3225319735946384299">코드 서명</translation>
 <translation id="3225579507836276307">타사 확장 프로그램이 이 웹페이지에 대한 액세스를 차단했습니다.</translation>
-<translation id="3225919329040284222">서버가 내장된 기대치와 일치하지 않는 인증서를 전달했습니다. 이러한 기대치는 사용자를 보호하기 위해 보안이 엄격한 특정 웹사이트에 포함됩니다.</translation>
 <translation id="3226128629678568754">페이지 로드에 필요한 데이터를 다시 제출하려면 새로고침 버튼을 누릅니다.</translation>
 <translation id="3227137524299004712">마이크</translation>
 <translation id="32279126412636473">새로고침(⌘R)</translation>
@@ -1837,14 +1818,12 @@
 <translation id="3517839692979918726"><ph name="APP_NAME" />에서 내 화면의 콘텐츠를 공유하려고 합니다. 공유할 항목을 선택하세요.</translation>
 <translation id="3518086201899641494">웹포털 인증 알림</translation>
 <translation id="3519867315646775981">음역(shalom ← שלום)</translation>
-<translation id="3520155764286810028">원형 잉크 드롭</translation>
 <translation id="3522159121915794564">사용자가 잘못된 TLS/SSL 인증서 체인 컬렉션을 선택하도록 허용합니다.</translation>
 <translation id="3522708245912499433">포르투갈어</translation>
 <translation id="3523642406908660543">사이트에서 플러그인을 사용하여 내 컴퓨터에 액세스하려 할 때 확인(권장)</translation>
 <translation id="3527085408025491307">폴더</translation>
 <translation id="3527276236624876118"><ph name="USER_DISPLAY_NAME" />(으)로 이름이 지정된 관리 대상 사용자가 생성되었습니다.</translation>
 <translation id="3528033729920178817">이 페이지에서는 사용자 위치를 추적합니다.</translation>
-<translation id="3528171143076753409">서버의 인증서를 신뢰할 수 없습니다.</translation>
 <translation id="3528498924003805721">바로가기 대상</translation>
 <translation id="3530751398950974194">동기화 암호 업데이트</translation>
 <translation id="3531250013160506608">비밀번호 입력란</translation>
@@ -1906,7 +1885,6 @@
 <translation id="3601395307734599350">모든 확장 프로그램이 여기에 표시됨</translation>
 <translation id="3603385196401704894">프랑스어(캐나다)</translation>
 <translation id="3603622770190368340">네트워크 인증서 받기</translation>
-<translation id="3603690020645187079">프랑스어 Bepo 키보드</translation>
 <translation id="3605780360466892872">와이셔츠</translation>
 <translation id="3608454375274108141">F10</translation>
 <translation id="3608576286259426129">사용자 이미지 미리보기</translation>
@@ -2013,7 +1991,6 @@
 <translation id="3726463242007121105">파일 시스템이 지원되지 않아 이 기기를 열 수 없습니다.</translation>
 <translation id="3726527440140411893">페이지를 표시했을 때 다음 쿠키가 설정됨:</translation>
 <translation id="3727187387656390258">팝업 검사</translation>
-<translation id="3727884750434605207">기본 Android 접근성 대신 스크립트 삽입을 사용합니다.</translation>
 <translation id="3728067901555601989">OTP:</translation>
 <translation id="3730639321086573427">로컬 대상</translation>
 <translation id="3733127536501031542">SSL 서버(Step-up 사용)</translation>
@@ -2052,7 +2029,6 @@
 <translation id="3776796446459804932">이 확장 프로그램은 Chrome 웹 스토어 정책을 위반합니다.</translation>
 <translation id="3778152852029592020">다운로드가 취소되었습니다.</translation>
 <translation id="3778740492972734840">개발자 도구(&amp;D)</translation>
-<translation id="3779689521379218195">머티리얼 디자인 잉크 드롭</translation>
 <translation id="378312418865624974">이 컴퓨터의 고유 식별자 조회</translation>
 <translation id="3783640748446814672">alt</translation>
 <translation id="3785308913036335955">앱 단축키 표시</translation>
@@ -2129,7 +2105,6 @@
 <translation id="3872687746103784075">기본 클라이언트 GDB 기반 디버깅</translation>
 <translation id="3873139305050062481">요소 검사(&amp;N)</translation>
 <translation id="3878840326289104869">관리 대상 사용자 만들기</translation>
-<translation id="3882882270042324158">접근성에 스크립트 삽입 사용</translation>
 <translation id="3888118750782905860">소비자 관리</translation>
 <translation id="3893536212201235195">접근성 설정 확인 및 변경</translation>
 <translation id="3893630138897523026">ChromeVox(음성 피드백)</translation>
@@ -2239,7 +2214,6 @@
 <translation id="404493185430269859">기본 검색엔진</translation>
 <translation id="4047112090469382184">이 기능이 안전한 이유</translation>
 <translation id="4047345532928475040">해당 없음</translation>
-<translation id="4048441759170415907">모든 그림에 슬리밍 페인트 디스플레이 목록을 사용하세요. 두 플래그 모두 표시되는 경우 슬리밍 페인트 사용 중지 플래그보다 우선합니다.</translation>
 <translation id="404928562651467259">경고</translation>
 <translation id="4052120076834320548">작게</translation>
 <translation id="4054376378714379870">잠재적으로 성가신 보안 기능 사용</translation>
@@ -2461,7 +2435,6 @@
 <translation id="4372884569765913867">1x1</translation>
 <translation id="4375035964737468845">다운로드한 파일 열기</translation>
 <translation id="4377039040362059580">테마 및 배경화면</translation>
-<translation id="4377125064752653719"><ph name="DOMAIN" />에 접속하려 했으나 발행기관에서 서버가 전달한 인증서를 폐기했습니다. 이는 서버가 제시한 보안 자격증명 정보를 신뢰할 수 없음을 의미합니다. 사용자는 현재 공격자와 통신 중일 수도 있습니다.</translation>
 <translation id="4377301101584272308">모든 사이트에서 내 실제 위치를 추적하도록 허용</translation>
 <translation id="4377363674125277448">서버의 인증서에 문제가 발생했습니다.</translation>
 <translation id="4378154925671717803">휴대전화</translation>
@@ -2648,7 +2621,6 @@
 <translation id="4672319956099354105">유효한 인증서</translation>
 <translation id="4672657274720418656">페이지 추출</translation>
 <translation id="46733879594767046">새 탭 페이지에 큰 아이콘 사용</translation>
-<translation id="467662567472608290">이 서버가 <ph name="DOMAIN" />임을 입증할 수 없으며 서버의 보안 인증서에 오류가 있습니다. 서버를 잘못 설정했거나 불법 사용자가 연결을 가로채고 있기 때문일 수 있습니다.</translation>
 <translation id="4677772697204437347">GPU 메모리</translation>
 <translation id="4680322106555328717">최근에 스크립트나 iframe 등의 안전하지 않은 콘텐츠가 사이트에서 실행되도록 허용했습니다.</translation>
 <translation id="4681260323810445443"><ph name="URL" />의 웹페이지에 액세스할 수 있는 권한이 없습니다. 로그인해야 할 수 있습니다.</translation>
@@ -2723,7 +2695,6 @@
 <translation id="4764029864566166446">플러그인 업데이트...</translation>
 <translation id="4764776831041365478"><ph name="URL" />의 웹페이지가 일시적으로 다운되었거나 새 웹 주소로 완전히 이동했을 수 있습니다.</translation>
 <translation id="4768698601728450387">이미지 자르기</translation>
-<translation id="4771973620359291008">알 수 없는 오류가 발생했습니다.</translation>
 <translation id="4773696473262035477">어느 브라우저에서나 비밀번호와 모든 <ph name="SAVED_PASSWORDS_LINK" />에 액세스할 수 있습니다.</translation>
 <translation id="477518548916168453">요청을 수행하는 데 필요한 기능을 서버가 지원하지 않습니다.</translation>
 <translation id="4776917500594043016"><ph name="USER_EMAIL_ADDRESS" />의 비밀번호</translation>
@@ -2928,7 +2899,6 @@
 <translation id="5081055027309504756">Seccomp-BPF 샌드박스</translation>
 <translation id="5085162214018721575">업데이트를 확인하는 중</translation>
 <translation id="5086082738160935172">HID</translation>
-<translation id="5087286274860437796">서버의 인증서가 현재 유효하지 않습니다.</translation>
 <translation id="5087864757604726239">뒤로</translation>
 <translation id="508794495705880051">새 신용카드 추가...</translation>
 <translation id="5088534251099454936">PKCS #1 SHA-512(RSA 암호화 사용)</translation>
@@ -3171,7 +3141,6 @@
 <translation id="540296380408672091"><ph name="HOST" />에서 쿠키 항상 차단</translation>
 <translation id="5409029099497331039">추천 받기</translation>
 <translation id="5409341371246664034"><ph name="PROVIDER" /> 제공</translation>
-<translation id="540969355065856584">이 서버가 <ph name="DOMAIN" />임을 입증할 수 없습니다. 서버의 보안 인증서가 현재 유효하지 않습니다. 서버를 잘못 설정했거나 해커가 연결을 가로채고 있기 때문일 수 있습니다.</translation>
 <translation id="5411472733320185105">다음 호스트와 도메인에서 프록시 설정을 사용 안함:</translation>
 <translation id="5411769601840150972">날짜와 시간이 자동으로 설정됩니다.</translation>
 <translation id="5412637665001827670">불가리아어 키보드</translation>
@@ -3217,7 +3186,6 @@
 <translation id="5457113250005438886">잘못된 데이터</translation>
 <translation id="5457459357461771897">컴퓨터에서 사진, 음악, 기타 미디어 조회 및 삭제</translation>
 <translation id="5457599981699367932">손님으로 로그인</translation>
-<translation id="5457858494714903578">ID가 '<ph name="IMPORT_ID" />'인 신뢰할 수 없는 확장 프로그램을 설치할 수 없습니다.</translation>
 <translation id="5458214261780477893">드보락</translation>
 <translation id="5463275305984126951"><ph name="LOCATION" />의 색인</translation>
 <translation id="5463856536939868464">숨은 북마크를 포함하는 메뉴</translation>
@@ -3462,7 +3430,6 @@
 <translation id="5803531701633845775">커서를 이동하지 않고 안쪽에서 구문 선택</translation>
 <translation id="5804241973901381774">권한</translation>
 <translation id="580571955903695899">제목순으로 다시 정렬</translation>
-<translation id="5808265053346186459">슬리밍 페인트 2단계 사용(레이어화, 하부 트리 페인팅 최적화 등에 기반한 디스플레이 목록), 슬리밍 페인트를 사용 설정해야 함</translation>
 <translation id="580886651983547002"><ph name="PRODUCT_NAME" />에서
         웹사이트에 연결할 수 없습니다. 이는 보통 네트워크 문제로 인해 발생하지만
         방화벽이나 프록시 서버 설정이 잘못되었기 때문일 수도 있습니다.</translation>
@@ -3710,7 +3677,6 @@
 <translation id="614998064310228828">기기 모델:</translation>
 <translation id="6150853954427645995">오프라인에서 사용하기 위해 이 파일을 저장하려면 온라인으로 돌아가서 마우스 오른쪽 버튼으로 파일을 클릭한 다음 <ph name="OFFLINE_CHECKBOX_NAME" /> 옵션을 선택하세요.</translation>
 <translation id="6151323131516309312"><ph name="SEARCH_KEY" />을(를) 눌러 <ph name="SITE_NAME" /> 검색</translation>
-<translation id="6151417162996330722">서버 인증서의 유효 기간이 너무 깁니다.</translation>
 <translation id="6151559892024914821">드래그 앤 드롭에서 시작된 터치 사용</translation>
 <translation id="615216289547575801">임시 앱이 Chrome 웹 스토어에서 실행되도록 사용 설정합니다. 임시 앱은 Chrome에 설치하지 않아도 실행됩니다. 단, 실험용 앱 런처를 사용 설정해야 합니다.</translation>
 <translation id="6154697846084421647">현재 로그인되어 있음</translation>
@@ -3963,7 +3929,6 @@
 <translation id="6527303717912515753">공유</translation>
 <translation id="653019979737152879"><ph name="FILE_NAME" />을(를) 동기화하는 중...</translation>
 <translation id="6533019874004191247">지원되지 않는 URL입니다.</translation>
-<translation id="6533965071487181681">사용 설정하면 chrome://md-settings/ URL에서 머티리얼 디자인 설정 페이지를 로드합니다.</translation>
 <translation id="6535131196824081346">이 오류는 보안(HTTPS) 서버에 연결할 때 발생할 수 있습니다.
         이것은 서버가 보안 연결하려고 하지만 잘못된
         설정 때문에 보안 연결이 되지 않음을 의미합니다.
@@ -4099,7 +4064,6 @@
 <translation id="6736329909263487977"><ph name="ISSUED_BY" />[<ph name="ISSUED_TO" />]</translation>
 <translation id="6739254200873843030">만료된 카드입니다. 날짜를 확인하거나 새 카드를 입력해 주세요.</translation>
 <translation id="6740369132746915122">보안 관련 위험에 대해 알고 있으면 <ph name="BEGIN_LINK" />안전하지 않은 사이트를 방문<ph name="END_LINK" />해도 됩니다.</translation>
-<translation id="674375294223700098">알 수 없는 서버 인증서 오류입니다.</translation>
 <translation id="6745592621698551453">지금 업데이트</translation>
 <translation id="6745994589677103306">취소</translation>
 <translation id="674632704103926902">탭 드래깅 사용</translation>
@@ -4197,6 +4161,7 @@
 <translation id="6897140037006041989">사용자 에이전트</translation>
 <translation id="6898440773573063262">이제 키오스크 애플리케이션이 기기에서 자동 실행되도록 설정할 수 있습니다.</translation>
 <translation id="6898699227549475383">조직(O)</translation>
+<translation id="6900284862687837908">백그라운드 앱: <ph name="BACKGROUND_APP_URL" /></translation>
 <translation id="6904344821472985372">파일 액세스 취소</translation>
 <translation id="6906268095242253962">계속하려면 인터넷에 접속하세요.</translation>
 <translation id="6909461304779452601">이 웹사이트에서 앱, 확장 프로그램, 사용자 스크립트 등을 추가할 수 없습니다.</translation>
@@ -4232,7 +4197,6 @@
 <translation id="6955446738988643816">팝업 검사</translation>
 <translation id="695755122858488207">선택하지 않은 버튼</translation>
 <translation id="6957703620025723294">실험용 캔버스 기능 사용</translation>
-<translation id="6957887021205513506">서버의 인증서가 위조된 것 같습니다.</translation>
 <translation id="696036063053180184">세벌식(shift 없음)</translation>
 <translation id="696203921837389374">모바일 데이터를 이용한 동기화 사용 설정</translation>
 <translation id="6964308487066031935">'<ph name="EXTENSION" />'에 폴더를 추가하시겠습니까?</translation>
@@ -4296,7 +4260,6 @@
 <translation id="7022303817801823406">유효하고 신뢰할 수 있는 서버 인증서를 사용하여 이 사이트에 연결하고 있습니다.</translation>
 <translation id="7022562585984256452">홈페이지가 설정되었습니다.</translation>
 <translation id="702373420751953740">PRL 버전:</translation>
-<translation id="7024180072211179766">리더 모드 툴바 아이콘 사용</translation>
 <translation id="7024867552176634416">사용할 이동식 저장 장치를 선택하세요.</translation>
 <translation id="7025190659207909717">모바일 데이터 서비스 관리</translation>
 <translation id="7025325401470358758">다음 창</translation>
@@ -4312,7 +4275,6 @@
 <translation id="7042418530779813870">붙여넣어 검색하기(&amp;S)</translation>
 <translation id="7047998246166230966">포인터</translation>
 <translation id="7048141481140415714">TouchView 최대화 모드를 전환하려면 Ctrl+Alt+Shift+8을 사용하도록 설정합니다.</translation>
-<translation id="7050187094878475250"><ph name="DOMAIN" />에 접속하려고 했지만 서버가 제시한 인증서의 유효 기간이 너무 길어서 신뢰할 수 없습니다.</translation>
 <translation id="7051943809462976355">마우스 검색 중...</translation>
 <translation id="7052237160939977163">성능 추적 데이터 전송</translation>
 <translation id="7052500709156631672">게이트웨이 또는 프록시 서버가 업스트림 서버에서 잘못된 응답을 받았습니다.</translation>
@@ -4409,7 +4371,6 @@
 <translation id="720210938761809882">페이지 차단됨</translation>
 <translation id="7205869271332034173">SSID:</translation>
 <translation id="7206693748120342859"><ph name="PLUGIN_NAME" />을(를) 다운로드 중...</translation>
-<translation id="7207163335165373476">{1,plural, =1{서버의 보안 인증서가 어제 만료되어 <ph name="DOMAIN" />임을 입증할 수 없습니다. 서버를 잘못 설정했거나 불법 사용자가 연결을 가로채고 있기 때문일 수 있습니다. 현재 컴퓨터의 시계가 <ph name="CURRENT_DATE" />로 설정되어 있습니다. 시간이 정확하지 않으면 시스템 시계를 수정한 뒤 이 페이지를 새로고침하세요.}other{서버의 보안 인증서가 #일 전에 만료되어 <ph name="DOMAIN" />임을 입증할 수 없습니다. 서버를 잘못 설정했거나 불법 사용자가 연결을 가로채고 있기 때문일 수 있습니다. 현재 컴퓨터의 시계가 <ph name="CURRENT_DATE" />로 설정되어 있습니다. 시간이 정확하지 않으면 시스템 시계를 수정한 뒤 이 페이지를 새로고침하세요.}}</translation>
 <translation id="7208384892394620321">이 사이트에서는 American Express를 사용할 수 없습니다.</translation>
 <translation id="7209475358897642338">언어를 선택하세요.</translation>
 <translation id="7210998213739223319">사용자 이름</translation>
@@ -4604,7 +4565,6 @@
 <translation id="7469894403370665791">네트워크에 자동 연결</translation>
 <translation id="747114903913869239">오류: 확장 프로그램을 디코딩할 수 없음</translation>
 <translation id="7472639616520044048">MIME 형식:</translation>
-<translation id="7473810335848400503">표시 영역 스크롤 순서 반전</translation>
 <translation id="7473891865547856676">건너뛰기</translation>
 <translation id="747459581954555080">모두 복원</translation>
 <translation id="7474889694310679759">캐나다 영어 키보드</translation>
@@ -4636,7 +4596,6 @@
 <translation id="7507930499305566459">상태 응답자 인증서</translation>
 <translation id="7508545000531937079">슬라이드쇼</translation>
 <translation id="7509179828847922845"><ph name="HOST_NAME" />에 대한 연결이 중단되었습니다.</translation>
-<translation id="7511149348717996334">머티리얼 디자인 설정 사용</translation>
 <translation id="7511955381719512146">사용 중인 Wi-Fi에서 <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" /> 방문을 요청할 수 있습니다.</translation>
 <translation id="7513996269498582533">사용자가 감지하도록 설정</translation>
 <translation id="751507702149411736">벨로루시어</translation>
@@ -4678,7 +4637,6 @@
 <translation id="756445078718366910">브라우저 창 열기</translation>
 <translation id="7564847347806291057">프로세스 종료</translation>
 <translation id="7566723889363720618">F12</translation>
-<translation id="7567204685887185387">이 서버가 <ph name="DOMAIN" />임을 입증할 수 없으며 서버의 보안 인증서가 부정한 방식으로 발행되었을 수 있습니다. 서버를 잘못 설정했거나 불법 사용자가 연결을 가로채고 있기 때문일 수 있습니다.</translation>
 <translation id="7567293639574541773">요소 검사(&amp;N)</translation>
 <translation id="7568790562536448087">업데이트</translation>
 <translation id="7570496663860904543">페이지를 로드하지 못했을 때 브라우저 캐시에 페이지의 오래된 사본이 있으면 사용자가 오래된 사본을 로드할 수 있는 버튼이 표시됩니다. 기본 사용을 선택하면 버튼이 오류 페이지에서 가장 눈에 띄는 곳에 표시되고 보조 사용을 선택하면 다시 새로고침 버튼 아래쪽에 표시됩니다.</translation>
@@ -4694,7 +4652,6 @@
 <translation id="7587108133605326224">발트어</translation>
 <translation id="7589461650300748890">주의하세요.</translation>
 <translation id="7589661784326793847">잠시만 기다려 주세요.</translation>
-<translation id="7592362899630581445">서버의 인증서가 이름 제약 조건을 위반합니다.</translation>
 <translation id="7595547011743502844"><ph name="ERROR" />(오류 코드: <ph name="ERROR_CODE" />).</translation>
 <translation id="7596831438341298034">가져오기</translation>
 <translation id="7596913374482479303">검색주소창에서 검색할 때 사용할 검색 엔진을 설정합니다.</translation>
@@ -4801,7 +4758,6 @@
 <translation id="7754704193130578113">다운로드 전에 각 파일의 저장 위치 확인</translation>
 <translation id="7756363132985736290">인증서가 이미 존재합니다.</translation>
 <translation id="7760004034676677601">설정한 시작 페이지가 맞습니까?</translation>
-<translation id="7761701407923456692">서버의 인증서가 URL과 일치하지 않습니다.</translation>
 <translation id="7765158879357617694">이동</translation>
 <translation id="7766807826975222231">둘러보기</translation>
 <translation id="7767646430896201896">옵션:</translation>
@@ -4812,7 +4768,6 @@
 <translation id="7772127298218883077"><ph name="PRODUCT_NAME" /> 정보</translation>
 <translation id="7773726648746946405">세션 저장소</translation>
 <translation id="7774497835322490043">GDB 디버깅 스터브를 사용하도록 설정합니다. 이렇게 하면 시작 시 기본 클라이언트 애플리케이션이 중단되고 NaCl SDK에서 온 nacl-gdb가 연결될 때까지 기다리게 됩니다.</translation>
-<translation id="7775325654940954648">이 웹페이지를 표시하는 동안 문제가 발생했습니다. 필요하지 않은 앱과 탭을 닫으면 이용 가능한 메모리 용량을 늘리는 데 도움이 될 수 있습니다.</translation>
 <translation id="7779249319235708104">피싱 공격 가능성 있음</translation>
 <translation id="7781069478569868053">새 탭 페이지</translation>
 <translation id="7781335840981796660">모든 사용자 계정과 로컬 데이터가 삭제됩니다.</translation>
@@ -4857,7 +4812,6 @@
 <translation id="7828106701649804503">기본 타일 너비를 지정합니다.</translation>
 <translation id="782886543891417279">사용 중인 Wi-Fi(<ph name="WIFI_NAME" />)에서 로그인 페이지 방문을 요청할 수 있습니다.</translation>
 <translation id="7831368056091621108">이 확장 프로그램, 방문 기록 및 기타 Chrome 설정을 모든 기기로 가져올 수 있습니다.</translation>
-<translation id="783140679984912140">슬리밍 페인트 사용 중지</translation>
 <translation id="7839051173341654115">미디어 보기/백업</translation>
 <translation id="7839192898639727867">인증서 대상 키 ID</translation>
 <translation id="7839580021124293374">3</translation>
@@ -4929,7 +4883,6 @@
 <translation id="7928710562641958568">기기 꺼내기</translation>
 <translation id="7935864848518524631">앱 파일 연결</translation>
 <translation id="7938594894617528435">현재 오프라인 상태</translation>
-<translation id="7938958445268990899">서버 인증서가 유효하지 않습니다.</translation>
 <translation id="7939412583708276221">계속 다운로드</translation>
 <translation id="7939997691108949385">관리자는 <ph name="MANAGEMENT_URL" /> 페이지에서 이 관리 대상 사용자에 대한 제한사항 및 설정을 지정할 수 있습니다.</translation>
 <translation id="7943385054491506837">영어(미국) 콜마크</translation>
@@ -5503,7 +5456,6 @@
 <translation id="8731332457891046104"><ph name="DEVICE_TYPE" /> 등록 취소</translation>
 <translation id="8732030010853991079">아이콘을 클릭하여 확장 프로그램을 사용합니다.</translation>
 <translation id="8732212173949624846">로그인한 모든 기기의 인터넷 사용 기록 조회 및 변경</translation>
-<translation id="8733326791725507133">Credential Manager API의 실험적 구현이 가능합니다. 이 작업이 웹상의 모든 사이트에 대한 모든 비밀번호를 노출하지 않는다는 보장은 없습니다. 진행 중인 작업에 대해 잘 모르는 경우에는 이 작업을 하지 않는 것이 좋습니다.</translation>
 <translation id="8734073480934656039">이 설정을 사용하면 시작 시 키오스크 애플리케이션이 자동으로 실행됩니다.</translation>
 <translation id="8736288397686080465">이 사이트는 백그라운드에서 업데이트되었습니다.</translation>
 <translation id="8737260648576902897">Adobe Reader 설치</translation>
@@ -5575,7 +5527,6 @@
 <translation id="8846141544112579928">키보드 검색 중...</translation>
 <translation id="8847988622838149491">USB</translation>
 <translation id="8848709220963126773">Shift 키 모드 전환</translation>
-<translation id="884923133447025588">폐기 매커니즘을 찾을 수 없습니다.</translation>
 <translation id="8852366862412129888">이 사이트에는 HTTP 리소스가 포함되어 있습니다.</translation>
 <translation id="8852742364582744935">추가된 앱 및 확장 프로그램:</translation>
 <translation id="885381502874625531">벨라루스어 키보드</translation>
@@ -5584,7 +5535,6 @@
 <translation id="8859057652521303089">언어 선택:</translation>
 <translation id="8859174528519900719">서브프레임: <ph name="SUBFRAME_SITE" /></translation>
 <translation id="8860454412039442620">Excel 스프레드시트</translation>
-<translation id="8861743108205592297">현재 페이지를 좀 더 읽기 쉬운 버전으로 표시하도록 툴바에 버튼을 추가합니다.</translation>
 <translation id="8863489667196658337">새 시스템을 북마크 앱 생성에 사용</translation>
 <translation id="8870318296973696995">홈페이지</translation>
 <translation id="8870413625673593573">최근에 닫은 탭</translation>
@@ -5662,7 +5612,6 @@
 <translation id="8965037249707889821">이전 비밀번호 입력</translation>
 <translation id="8965697826696209160">저장 공간이 부족합니다.</translation>
 <translation id="8968527460726243404">ChromeOS 시스템 이미지 작성기</translation>
-<translation id="8971063699422889582">서버 인증서가 만료되었습니다.</translation>
 <translation id="89720367119469899">Esc</translation>
 <translation id="8972513834460200407">네트워크 관리자에게 문의하여 방화벽이 Google 서버에서 다운로드를 차단하지 않는지 확인하시기 바랍니다.</translation>
 <translation id="8972727166872864532">죄송합니다. 이 페이지를 방문해도 괜찮은지 부모님께 확인해야 합니다.</translation>
@@ -5731,7 +5680,6 @@
 <translation id="904451693890288097">'<ph name="DEVICE_NAME" />'의 암호를 입력하세요:</translation>
 <translation id="904949795138183864"><ph name="URL" />의 웹페이지가 더 이상 존재하지 않습니다.</translation>
 <translation id="9049835026521739061">한글 모드</translation>
-<translation id="9049981332609050619"><ph name="DOMAIN" />에 접속하려 했지만 서버가 잘못된 인증서를 전달했습니다.</translation>
 <translation id="9050666287014529139">암호</translation>
 <translation id="9052208328806230490"><ph name="EMAIL" /> 계정을 사용하여 프린터를 <ph name="CLOUD_PRINT_NAME" />에 등록했습니다.</translation>
 <translation id="9053965862400494292">동기화를 설정하는 동안 오류가 발생했습니다.</translation>
@@ -5818,7 +5766,6 @@
 <translation id="9169664750068251925">이 사이트에서 항상 차단</translation>
 <translation id="9170848237812810038">실행 취소(&amp;U)</translation>
 <translation id="9170884462774788842">컴퓨터의 다른 프로그램에서 Chrome 작동에 영향을 줄 수 있는 테마를 추가했습니다.</translation>
-<translation id="917450738466192189">서버의 인증서가 유효하지 않습니다.</translation>
 <translation id="9177499212658576372">현재 <ph name="NETWORK_TYPE" /> 네트워크에 연결되어 있습니다.</translation>
 <translation id="9177556055091995297">신용카드 관리</translation>
 <translation id="917861274483335838">플러그인 차단 관리...</translation>

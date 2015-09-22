@@ -21,12 +21,14 @@
 <translation id="388442998277590542">ಆಯ್ಕೆಗಳ ಪುಟ '<ph name="OPTIONS_PAGE" />' ವನ್ನು ಲೋಡ್ ಮಾಡಲಾಗುವುದಿಲ್ಲ.</translation>
 <translation id="4115165561519362854">ಈ ಮೆಷಿನ್‌ನ ನಿರ್ವಾಹಕರಿಗೆ <ph name="EXTENSION_VERSION" /> ನ ಕನಿಷ್ಠ ಆವೃತಿಯನ್ನು <ph name="EXTENSION_NAME" /> ಹೊಂದಬೇಕಾದ ಅಗತ್ಯವಿದೆ. ಅದು ಹೊಸ ಆವೃತ್ತಿಗೆ (ಅಥವಾ ಹೆಚ್ಚಿನ) ನವೀಕರಣಗೊಳ್ಳುವವರೆಗೂ ಇದನ್ನು ಸಕ್ರಿಯಗೊಳಿಸಲಾಗುವುದಿಲ್ಲ.</translation>
 <translation id="4233778200880751280">'<ph name="ABOUT_PAGE" />' ಪುಟದ ಕುರಿತು ಲೋಡ್ ಮಾಡಲು ಸಾಧ್ಯವಾಗುತ್ತಿಲ್ಲ.</translation>
+<translation id="4434145631756268951">{0,select, single{USB ಸಾಧನವನ್ನು ಆಯ್ಕೆಮಾಡಿ}multiple{USB ಸಾಧನಗಳನ್ನು ಆಯ್ಕೆಮಾಡಿ}other{UNUSED}}</translation>
 <translation id="4811956658694082538">ಉಪಯುಕ್ತತೆಯ ಪ್ರಕ್ರಿಯೆಯು ಹಾಳಾಗಿರುವ ಕಾರಣ ಪ್ಯಾಕೇಜ್ ಅನ್ನು ಸ್ಥಾಪಿಸಲಾಗುವುದಿಲ್ಲ. Chrome ಮರುಪ್ರಾರಂಭಿಸಲು ಪ್ರಯತ್ನಿಸಿ ಹಾಗೂ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.</translation>
 <translation id="4883436287898674711">ಎಲ್ಲಾ <ph name="WEBSITE_1" /> ಸೈಟ್‌ಗಳು</translation>
 <translation id="5026754133087629784">ವೆಬ್‌ವೀಕ್ಷಣೆ: <ph name="WEBVIEW_TAG_NAME" /></translation>
 <translation id="5356315618422219272">ಅಪ್ಲಿಕೇಶನ್ ವೀಕ್ಷಣೆ: <ph name="APPVIEW_TAG_NAME" /></translation>
 <translation id="5456409301717116725">ಈ ವಿಸ್ತರಣೆಯು ಕೀ ಫೈಲ್ '<ph name="KEY_PATH" />' ಅನ್ನು ಒಳಗೊಂಡಿದೆ. ನೀವು ಸಾಮಾನ್ಯವಾಗಿ ಹಾಗೆ ಮಾಡಲು ಬಯಸುವುದಿಲ್ಲ.</translation>
 <translation id="5627523580512561598">ವಿಸ್ತರಣೆ<ph name="EXTENSION_NAME" /></translation>
+<translation id="5630931906013276297">{0,select, single{HID ಸಾಧನವನ್ನು ಆಯ್ಕೆಮಾಡಿ}multiple{HID ಸಾಧನಗಳನ್ನು ಆಯ್ಕೆಮಾಡಿ}other{UNUSED}}</translation>
 <translation id="5960890139610307736">ವಿಸ್ತರಣೆವೀಕ್ಷಣೆ: <ph name="EXTENSIONVIEW_TAG_NAME" /></translation>
 <translation id="5972529113578162692">ಈ ಯಂತ್ರದ ನಿರ್ವಾಹಕರಿಗೆ <ph name="EXTENSION_NAME" /> ಸ್ಥಾಪಿಸಲು ಅಗತ್ಯವಿದೆ. ಇದನ್ನು ಅಸ್ಥಾಪಿಸಲು ಸಾಧ್ಯವಿಲ್ಲ.</translation>
 <translation id="6027032947578871493"><ph name="VENDOR_NAME" /> ಅವರಿಂದ <ph name="PRODUCT_ID" /> ಅಪರಿಚಿತ ಉತ್ಪನ್ನ (ಕ್ರಮ ಸಂಖ್ಯೆ <ph name="SERIAL_NUMBER" />)</translation>

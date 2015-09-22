@@ -5,7 +5,6 @@
 <translation id="108122890477367602">Gensta&amp;rt Chromium i Windows 8-tilstand</translation>
 <translation id="1115445892567829615">Chromium kunne ikke synkronisere dine data. Opdater din adgangssætning til synkronisering.</translation>
 <translation id="1144202035120576837"><ph name="SITE" /> bruger normalt kryptering til at beskytte dine oplysninger. Da Chromium forsøgte at oprette forbindelse til <ph name="SITE" /> denne gang, returnerede websitet usædvanlige og forkerte loginoplysninger. Enten forsøger en hacker at give sig ud for at være <ph name="SITE" />, eller også har en Wi-Fi-loginskærm forstyrret forbindelsen. Dine oplysninger er fortsat sikre, da Chromium afbrød forbindelsen, inden der blev udvekslet data.</translation>
-<translation id="1150979032973867961">Denne server kunne ikke bevise, at den er <ph name="DOMAIN" />, da operativsystemet på din computer ikke har tillid til sikkerhedscertifikatet. Dette kan skyldes en fejlkonfiguration, eller at en hacker har opfanget din forbindelse.</translation>
 <translation id="1174473354587728743">Deler du en computer? Nu kan du konfigurere Chromium, præcist som du vil.</translation>
 <translation id="1185134272377778587">Om Chromium</translation>
 <translation id="1221340462641866827">Chromium OS understøtter ikke start af en ekstern applikation til at håndtere <ph name="SCHEME" />-links. Det link, der er anmodet om, er <ph name="PROTOLINK" />.</translation>
@@ -25,7 +24,6 @@
 <translation id="1708666629004767631">Der findes en ny og mere sikker version af Chromium.</translation>
 <translation id="1725059042853530269"><ph name="FILE_NAME" /> kan skade din weboplevelse, så Chromium har blokeret det.</translation>
 <translation id="1745962126679160932">Chromium vil lagre dine oplysninger på sikker vis, så du ikke behøver at angive dem igen, men du skal stadig bekræfte dit korts sikkerhedskode ved fremtidige betalinger.</translation>
-<translation id="1763864636252898013">Denne server kunne ikke bevise, at den er <ph name="DOMAIN" />, da operativsystemet på din enhed ikke har tillid til sikkerhedscertifikatet. Dette kan skyldes en fejlkonfiguration, eller at en hacker har opfanget din forbindelse.</translation>
 <translation id="1774152462503052664">Lad Chromium køre i baggrunden</translation>
 <translation id="1779356040007214683">For at gøre Chromium sikrere har vi slået nogle udvidelser fra, som ikke er anført i <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> og muligvis er blevet tilføjet, uden at du vidste det.</translation>
 <translation id="1808667845054772817">Geninstaller Chromium</translation>
@@ -136,7 +134,6 @@
 <translation id="4987820182225656817">Gæster kan bruge Chromium uden at efterlade noget.</translation>
 <translation id="4994636714258228724">Tilføj dig selv i Chromium</translation>
 <translation id="5032989939245619637">Gem oplysninger i Chromium</translation>
-<translation id="5094747076828555589">Denne server kunne ikke bevise, at den er <ph name="DOMAIN" />, da Chromium ikke har tillid til sikkerhedscertifikatet. Dette kan skyldes en fejlkonfiguration, eller at en hacker har opfanget din forbindelse.</translation>
 <translation id="5358375970380395591">Du er ved at logge ind med en administreret konto og giver dens administrator kontrol over din profil i Chromium. Dine Chromium-data, f.eks. dine apps, bogmærker, historikdata, adgangskoder og andre indstillinger, knyttes permanent til <ph name="USER_NAME" />. Du kan slette disse data via betjeningspanelet for Google Konti, men du kan ikke knytte disse data til en anden konto. <ph name="LEARN_MORE" /></translation>
 <translation id="5398878173008909840">Der er en ny version af Chromium til rådighed.</translation>
 <translation id="5427571867875391349">Angiv Chromium som din standardbrowser</translation>

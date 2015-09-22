@@ -86,7 +86,6 @@
       Si es defineix aquesta política, se substituirà el valor predeterminat de 3 hores. Els valors vàlids per a aquesta política es troben en un interval d'1.800.000 (30 minuts) a 86.400.000 (un dia). Tots els valors que no es trobin dins d'aquest interval quedaran en els límits respectius.
 
       Si no es defineix aquesta política, l'ús de <ph name="PRODUCT_OS_NAME" /> serà el valor predeterminat de tres hores.</translation>
-<translation id="1503959756075098984">ID de les extensions i URL de les actualitzacions que s'instal·laran en silenci</translation>
 <translation id="1504431521196476721">Testimoni remot</translation>
 <translation id="1509692106376861764">Aquesta política no està disponible des de la versió 29 de <ph name="PRODUCT_NAME" />.</translation>
 <translation id="1522425503138261032">Permet que els llocs facin un seguiment de la ubicació física dels usuaris</translation>
@@ -267,7 +266,7 @@ Si aquesta opció està desactivada o no especificada, no apareix cap botó gran
       Si aquesta política no es defineix o si es defineix com a True, en cas que un compte de dispositiu local s'hagi configurat per iniciar la sessió automàticament sense retard i el dispositiu no tingui accés a Internet, <ph name="PRODUCT_OS_NAME" /> mostrarà una sol·licitud de configuració de la xarxa.
 
       Si aquesta política es defineix com a False, es mostrarà un missatge d'error en comptes de la sol·licitud de configuració de la xarxa.</translation>
-<translation id="2498238926436517902">Amaga sempre la safata automàticament</translation>
+<translation id="2498238926436517902">Amaga sempre el prestatge automàticament</translation>
 <translation id="2514328368635166290">Especifica l'URL de la icona preferida del proveïdor de cerca predeterminat. Aquesta política és opcional. Si no es defineix, no apareixerà cap icona per al proveïdor de cerca. Aquesta política només es respecta si la política "DefaultSearchProviderEnabled" està activada.</translation>
 <translation id="2516525961735516234">Indica si l'activitat de vídeo afecta la gestió d'alimentació.
 
@@ -533,7 +532,7 @@ Si no es configura aquesta opció, no s'aplicarà cap restricció als tipus d'ex
 <translation id="3915395663995367577">URL d'un fitxer .pac d'un servidor intermediari</translation>
 <translation id="3964909636571393861">Permet l'accés a una llista d'URL</translation>
 <translation id="3965339130942650562">Temps d'espera fins que s'executi el tancament de sessió de l'usuari inactiu</translation>
-<translation id="3973371701361892765">No amaguis mai la safata automàticament</translation>
+<translation id="3973371701361892765">No amaguis mai el prestatge automàticament</translation>
 <translation id="3984028218719007910">Determina si <ph name="PRODUCT_OS_NAME" /> conserva les dades de comptes locals després de tancar la sessió. Si es defineix a «true» (cert), <ph name="PRODUCT_OS_NAME" /> no conserva cap compte persistent i es descartaran totes les dades de la sessió de l'usuari després de tancar la sessió. Si aquesta política es defineix a «false» (fals) o no es configura, el dispositiu pot conservar dades d'usuari locals (xifrades).</translation>
 <translation id="4001275826058808087">Els administradors de TI de dispositius empresarials poden utilitzar aquesta marca per controlar si es permet als usuaris bescanviar ofertes mitjançant el registre de Chrome OS.
 
@@ -1423,7 +1422,6 @@ Aquesta política s'ignora en els comptes d'usuari normals.</translation>
           Separeu diversos noms de servidor amb comes. Es permet l'ús de comodins (*).
 
           Si deixeu aquesta política sense definir, <ph name="PRODUCT_NAME" /> provarà de detectar si un servidor es troba a la intranet i, en aquest cas, respondrà a les sol·licituds IWA. Si es detecta un servidor com a Internet, aleshores <ph name="PRODUCT_NAME" /> ometrà les sol·licituds IWA que enviï.</translation>
-<translation id="8665076741187546529">Configura la llista d'extensions instal·lades per la força</translation>
 <translation id="8668394701842594241">Especifica una llista de connectors que s'activen a <ph name="PRODUCT_NAME" /> i impedeix que els usuaris canviïn aquesta configuració.
 
       Els caràcters comodí "*" i "?" es poden utilitzar per fer que coincideixin amb seqüències de caràcters arbitraris. "*" coincideix amb un nombre arbitrari de caràcters mentre que "?" especifica un únic caràcter opcional, és a dir, coincideix amb els caràcters zero i un. El caràcter d'escapada és "\", de manera que per tal que coincideixi amb els caràcters "*", "?", o "\" reals, podeu col·locar el caràcter "\" a davant.

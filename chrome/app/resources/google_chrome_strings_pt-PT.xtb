@@ -9,7 +9,6 @@
 <translation id="1073391069195728457">Chrome – Notificações</translation>
 <translation id="1104959162601287462">Acerca do SO &amp;Chrome</translation>
 <translation id="110877069173485804">Este é o seu Chrome</translation>
-<translation id="1150979032973867961">Este servidor não conseguiu provar que é o domínio <ph name="DOMAIN" />; o sistema operativo do seu computador não confia no respetivo certificado de segurança. Isto pode ser o resultado de uma configuração incorreta ou de um invasor a intercetar a sua ligação.</translation>
 <translation id="1225016890511909183">O Chrome armazenará as suas informações em segurança para que não necessite de as introduzir novamente, mas continuará a ser necessário confirmar o código de segurança do seu cartão para futuros pagamentos.</translation>
 <translation id="123620459398936149">O SO Chrome não conseguiu sincronizar os dados. Atualize a sua frase de acesso de sincronização.</translation>
 <translation id="127345590676626841">O Chrome é atualizado automaticamente para que tenha sempre a versão mais recente. Quando a transferência estiver concluída, o Chrome irá reiniciar e o processo estará terminado.</translation>
@@ -33,7 +32,6 @@
 <translation id="174539241580958092">O Google Chrome não conseguiu sincronizar os dados devido a um erro no início de sessão.</translation>
 <translation id="1759301979429102118">Os detalhes dos seus contactos podem ajudar a preencher formulários mais rapidamente no Chrome.</translation>
 <translation id="1759842336958782510">Chrome</translation>
-<translation id="1763864636252898013">Este servidor não conseguiu provar que é o domínio <ph name="DOMAIN" />; o sistema operativo do seu dispositivo não confia no respetivo certificado de segurança. Isto pode ser o resultado de uma configuração incorreta ou de um invasor a intercetar a sua ligação.</translation>
 <translation id="1773601347087397504">Obter ajuda para utilizar o SO Chrome</translation>
 <translation id="1818142563254268765">Não foi possível atualizar automaticamente o Chrome para a versão mais recente, pelo que está a perder novas funcionalidades e correções de segurança fantásticas. Tem de atualizar o Chrome.</translation>
 <translation id="1877026089748256423">O Chrome está desatualizado</translation>
@@ -105,7 +103,6 @@ Se, mesmo assim, iniciar sessão, as informações do Chrome, como marcadores, h
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="4367618624832907428">O Google Chrome não consegue apresentar a página, porque o seu computador não está ligado à Internet.</translation>
 <translation id="4407807842708586359">SO do Google Chrome</translation>
-<translation id="4424024547088906515">Este servidor não conseguiu provar que é o domínio <ph name="DOMAIN" />; o Chrome não confia no respetivo certificado de segurança. Isto pode ser o resultado de uma configuração incorreta ou de um invasor a intercetar a sua ligação.</translation>
 <translation id="4458285410772214805">Termine sessão e volte a iniciar sessão para que esta alteração tenha efeito.</translation>
 <translation id="4480040274068703980">O SO Chrome não conseguiu sincronizar os dados devido a um erro no início de sessão.</translation>
 <translation id="4513711165509885787">Os seus detalhes de faturação foram guardados no Chrome.</translation>

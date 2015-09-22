@@ -7,7 +7,6 @@ Kai kurios funkcijos gali būti nepasiekiamos ir nuostatų pakeitimai nebus išs
 <translation id="108122890477367602">&amp;Iš naujo paleisti „Chromium“ „Windows 8“ režimu</translation>
 <translation id="1115445892567829615">„Chromium“ negali sinchronizuoti jūsų duomenų. Atnaujinkite sinchronizavimo slaptafrazę.</translation>
 <translation id="1144202035120576837">Svetainė <ph name="SITE" /> paprastai naudoja šifruotę informacijai apsaugoti. Kai „Chromium“ šį kartą bandė prisijungti prie svetainės <ph name="SITE" />, ji pateikė mums neįprastus ir netinkamus prisijungimo duomenis. Užpuolėjas bando apsimesti svetaine <ph name="SITE" /> arba „Wi-Fi“ prisijungimo ekranas nutraukė ryšį. Informacija vis tiek yra apsaugota, nes „Chromium“ sustabdė ryšį, kol nebuvo pakeisti jokie duomenys.</translation>
-<translation id="1150979032973867961">Šiam serveriui nepavyko patvirtinti, kad tai yra <ph name="DOMAIN" />; jo saugos sertifikatas nėra patikimas kompiuterio operacinei sistemai. Taip gali nutikti dėl netinkamos konfigūracijos ar dėl ryšį pertraukusio užgrobėjo.</translation>
 <translation id="1174473354587728743">Bendrinate kompiuterį? Dabar galite nustatyti „Chromium“ kaip tik norite.</translation>
 <translation id="1185134272377778587">Apie „Chromium“</translation>
 <translation id="1221340462641866827">„Chromium“ OS nepalaikomas išorinės programos, skirtos „<ph name="SCHEME" />“ nuorodoms tvarkyti, paleidimas. Nuoroda, dėl kurios pateikta užklausa, yra <ph name="PROTOLINK" />.</translation>
@@ -27,7 +26,6 @@ Kai kurios funkcijos gali būti nepasiekiamos ir nuostatų pakeitimai nebus išs
 <translation id="1708666629004767631">Pasiekiama nauja, saugesnė „Chromium“ versija.</translation>
 <translation id="1725059042853530269">„<ph name="FILE_NAME" />“ gali pakenkti jūsų naršymo funkcijoms, todėl „Chromium“ jį užblokavo.</translation>
 <translation id="1745962126679160932">„Chromium“ patikimai saugos jūsų informaciją, kad nebereikėtų jos vėl įvesti, bet ateityje atlikdami mokėjimus vis tiek turėsite patvirtinti kortelės saugos kodą.</translation>
-<translation id="1763864636252898013">Šiam serveriui nepavyko patvirtinti, kad tai yra <ph name="DOMAIN" />; jo saugos sertifikatas nėra patikimas įrenginio operacinei sistemai. Taip gali nutikti dėl netinkamos konfigūracijos ar dėl ryšį pertraukusio užgrobėjo.</translation>
 <translation id="1774152462503052664">Paleisti „Chromium“ fone</translation>
 <translation id="1779356040007214683">Kad „Chromium“ padarytume saugesnę, išjungėme kai kuriuos plėtinius, kurių nėra „<ph name="IDS_EXTENSION_WEB_STORE_TITLE" />“ sąraše ir kurie galėjo būti pridėti be jūsų žinios.</translation>
 <translation id="1808667845054772817">Iš naujo įdiegti „Chromium“</translation>
@@ -138,7 +136,6 @@ Kai kurios funkcijos gali būti nepasiekiamos ir nuostatų pakeitimai nebus išs
 <translation id="4987820182225656817">Svečiai gali naudoti „Chromium“ nepalikdami jokių duomenų.</translation>
 <translation id="4994636714258228724">Pridėkite save prie „Chromium“</translation>
 <translation id="5032989939245619637">Išsaugoti išsamią informaciją „Chromium“</translation>
-<translation id="5094747076828555589">Šiam serveriui nepavyko patvirtinti, kad tai yra <ph name="DOMAIN" />; jo saugos sertifikatas nėra patikimas „Chromium“. Taip gali nutikti dėl netinkamos konfigūracijos ar dėl ryšį pertraukusio užgrobėjo.</translation>
 <translation id="5358375970380395591">Prisijungiate su valdoma paskyra ir leidžiate jos administratoriui valdyti jūsų „Chromium“ profilį. „Chromium“ duomenys, pvz., programos, žymės, istorija, slaptažodžiai ir kiti nustatymai, bus visam laikui susieti su <ph name="USER_NAME" />. Galėsite ištrinti šiuos duomenis naudodami „Google“ paskyrų informacijos suvestinę, bet negalėsite susieti šių duomenų su kita paskyra. <ph name="LEARN_MORE" /></translation>
 <translation id="5398878173008909840">Pasiekiama nauja „Chromium“ versija.</translation>
 <translation id="5427571867875391349">Nustatyti „Chromium“ kaip numatytąją naršyklę</translation>

@@ -5,7 +5,6 @@
 <translation id="10614374240317010">Netiek saglabātas</translation>
 <translation id="1061441684050139317">Pārlūkam Chrome ir nepieciešama piekļuve mikrofonam, lai kopīgotu to ar šo vietni.</translation>
 <translation id="1080790410959514870">Jūs izrakstāties no konta, kurš tiek pārvaldīts domēnā <ph name="DOMAIN_NAME" />. Tādējādi tiks dzēsti šajā ierīcē glabātie Chrome dati, taču tie joprojām būs pieejami jūsu Google kontā.</translation>
-<translation id="1086169178231554178">SD karte nav pieejama</translation>
 <translation id="1091134514807961917">Jūs esat pierakstījies tālāk norādītajā Google kontā.</translation>
 <translation id="1095407227123756519">Pievienojiet kontu, lai piekļūtu savām grāmatzīmēm, vēsturei, parolēm un citiem iestatījumiem no visām savām ierīcēm.</translation>
 <translation id="1098052486217676340">Pabeigts</translation>
@@ -86,7 +85,6 @@
 <translation id="2351097562818989364">Tulkošanas iestatījumi ir atiestatīti.</translation>
 <translation id="2354750644801399986">“Nesekot”</translation>
 <translation id="2359808026110333948">Turpināt</translation>
-<translation id="2360035970720276770">Var lejupielādēt tikai tos URL, kuri sākas ar “http” vai “https”.</translation>
 <translation id="2381756643783702095">Jautāt pirms sūtīšanas (ieteicams)</translation>
 <translation id="2387895666653383613">Teksta mērogošana</translation>
 <translation id="238909021488141516">Lejupielādējot saturu, radās kļūda.</translation>
@@ -127,7 +125,6 @@
 <translation id="2960796085439532066">Autortiesības <ph name="YEAR" /> Google Inc. Visas tiesības paturētas.</translation>
 <translation id="2968755619301702150">Sertifikātu skatītājs</translation>
 <translation id="2996809686854298943">URL ir jānorāda obligāti.</translation>
-<translation id="3003595280608617736">Nav SD kartes</translation>
 <translation id="3029704984691124060">Ieejas frāzes neatbilst.</translation>
 <translation id="3039671569659952257">Dzēst mapi</translation>
 <translation id="3063601790762993062">Saglabāt videoklipu</translation>
@@ -232,6 +229,7 @@ Lai pielāgotu meklēšanas vienumu, nospiediet un turiet to. Lai veiktu precīz
 <translation id="4816465935029283692">Datu tipi</translation>
 <translation id="4827948050554950725">Pievienot kredītkarti</translation>
 <translation id="4836364883164334657">Jūsu savienojums ar šo vietni nav privāts. Uzbrucēji var mēģināt nozagt jūsu informāciju (piemēram, fotoattēlus, paroles, ziņojumus vai kredītkaršu datus) no domēna <ph name="DOMAIN_NAME" />.</translation>
+<translation id="4850886885716139402">Skatīt</translation>
 <translation id="4871370605780490696">Pievienot grāmatzīmi</translation>
 <translation id="4881695831933465202">Atvērt</translation>
 <translation id="4885273946141277891">Neatbalstīts Chrome instanču skaits</translation>
@@ -449,8 +447,6 @@ Piemēram, dažas vietnes, reaģējot uz šo pieprasījumu, var rādīt jums tā
 <translation id="7648422057306047504">Šifrēt paroles, izmantojot Google akreditācijas datus</translation>
 <translation id="7658239707568436148">Atcelt</translation>
 <translation id="7665369617277396874">Pievienot kontu</translation>
-<translation id="7711895876052978264">Vietne ir atvērta pilnekrāna režīmā.
-Lai izietu, nospiediet pogu “Atpakaļ”.</translation>
 <translation id="7764225426217299476">Pievienot adresi</translation>
 <translation id="7765158879357617694">Pārvietot</translation>
 <translation id="7767746238359002192">Apmeklējiet lapu, ko saglabāt bezsaistē</translation>
@@ -469,7 +465,6 @@ Lai izietu, nospiediet pogu “Atpakaļ”.</translation>
 <translation id="7961015016161918242">Nekad</translation>
 <translation id="7963646190083259054">Nodrošina:</translation>
 <translation id="7977858705483383621">Droša meklēšana</translation>
-<translation id="7981795308302452224">Neizdevās sākt lejupielādi.</translation>
 <translation id="7987073022710626672">Lietošanas noteikumi</translation>
 <translation id="7989222512959629388">Notiek saglabāšana...</translation>
 <translation id="7998918019931843664">Vēlreiz atvērt aizvērto cilni</translation>
@@ -482,7 +477,6 @@ Lai izietu, nospiediet pogu “Atpakaļ”.</translation>
 <translation id="8073388330009372546">Atvērt attēlu jaunā cilnē</translation>
 <translation id="8084156870963450514">Pierakstieties, lai piekļūtu visam savam tīmekļa saturam jebkurā ierīcē.</translation>
 <translation id="8106211421800660735">Kredītkartes numurs</translation>
-<translation id="8109148095642131923">Neizdevās pievienot lejupielādēto vienumu lejupielāžu pārvaldniekam.</translation>
 <translation id="813082847718468539">Skatīt informāciju par vietni</translation>
 <translation id="8137558756159375272">Izmantojot meklēšanu pieskaroties, atlasītais vārds un pašreiz skatītā lapa tiek nosūtīta kā konteksts pakalpojumam Google meklēšana. Varat to izslēgt lapā <ph name="BEGIN_LINK" />Iestatījumi<ph name="END_LINK" />.</translation>
 <translation id="8143660160623733249">Mapes nosaukums</translation>
@@ -567,5 +561,4 @@ Lai iegūtu jaunas licences, izveidojiet savienojumu ar internetu un atskaņojie
 <translation id="969096075394517431">Mainīt valodas</translation>
 <translation id="971774202801778802">Grāmatzīmes URL</translation>
 <translation id="983192555821071799">Aizvērt visas cilnes</translation>
-<translation id="988938288723502454">Nevar izveidot lejupielāžu direktoriju SD kartē.</translation>
 </translationbundle>

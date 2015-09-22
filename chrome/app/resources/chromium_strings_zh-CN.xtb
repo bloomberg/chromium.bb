@@ -5,7 +5,6 @@
 <translation id="108122890477367602">以 Windows 8 模式重新启动 Chromium(&amp;R)</translation>
 <translation id="1115445892567829615">Chromium无法同步您的数据。请更新您的同步密码。</translation>
 <translation id="1144202035120576837"><ph name="SITE" /> 通常使用加密技术来保护您的信息。Chromium 此次尝试连接到 <ph name="SITE" /> 时，此网站返回了异常的错误凭据。这可能是因为有攻击程序在试图冒充 <ph name="SITE" />，或 Wi-Fi 登录屏幕中断了此次连接。请放心，您的信息仍然是安全的，因为 Chromium 尚未进行任何数据交换便停止了连接。</translation>
-<translation id="1150979032973867961">此服务器无法证明它是<ph name="DOMAIN" />；您计算机的操作系统不信任其安全证书。出现此问题的原因可能是配置有误或您的连接被拦截了。</translation>
 <translation id="1174473354587728743">与其他人共用计算机？现在，您可以随心所欲地设置Chromium。</translation>
 <translation id="1185134272377778587">关于 Chromium</translation>
 <translation id="1221340462641866827">Chromium 操作系统不支持启动外部应用处理 <ph name="SCHEME" /> 链接。请求的链接是 <ph name="PROTOLINK" />。</translation>
@@ -25,7 +24,6 @@
 <translation id="1708666629004767631">Chromium 现已推出更安全的新版本。</translation>
 <translation id="1725059042853530269"><ph name="FILE_NAME" />会影响您的浏览体验，因此Chromium已将其阻止。</translation>
 <translation id="1745962126679160932">Chromium 会妥善地存储您的信息，这样您日后就不必重新输入了。不过，您将来付款时仍需验证信用卡的安全码。</translation>
-<translation id="1763864636252898013">此服务器无法证明它是<ph name="DOMAIN" />；您设备的操作系统不信任其安全证书。出现此问题的原因可能是配置有误或您的连接被拦截了。</translation>
 <translation id="1774152462503052664">让 Chromium 在后台运行</translation>
 <translation id="1779356040007214683">为了提高 Chromium 的安全性，系统停用了一些未列在 <ph name="IDS_EXTENSION_WEB_STORE_TITLE" />中、可能是在您不知情的情况下添加的扩展程序。</translation>
 <translation id="1808667845054772817">重新安装Chromium</translation>
@@ -127,7 +125,6 @@
 <translation id="4987820182225656817">访客使用Chromium不会留下任何痕迹。</translation>
 <translation id="4994636714258228724">将您自己添加到Chromium</translation>
 <translation id="5032989939245619637">在 Chromium 中保存详细信息</translation>
-<translation id="5094747076828555589">此服务器无法证明它是<ph name="DOMAIN" />；Chromium不信任其安全证书。出现此问题的原因可能是配置有误或您的连接被拦截了。</translation>
 <translation id="5358375970380395591">您目前登录的帐户是一个托管帐户，该帐户的管理员将能够控制您的 Chromium 个人资料。您的 Chromium 数据（例如您的应用、书签、历史记录、密码和其他设置）将永远与 <ph name="USER_NAME" /> 相关联。您可以通过 Google 帐户信息中心删除这些数据，但无法将这些数据与其他帐户相关联。<ph name="LEARN_MORE" /></translation>
 <translation id="5398878173008909840">Chromium 现已推出新版本。</translation>
 <translation id="5427571867875391349">将Chromium设为默认浏览器</translation>

@@ -5,7 +5,6 @@
 <translation id="10614374240317010">Незапазвани никога</translation>
 <translation id="1061441684050139317">Chrome се нуждае от достъп до микрофона, за да го сподели с този сайт.</translation>
 <translation id="1080790410959514870">Излизате от профил, управляван от <ph name="DOMAIN_NAME" />. Съхраняваните на това устройство данни в Chrome ще се изтрият, но ще останат в профила ви в Google.</translation>
-<translation id="1086169178231554178">Няма достъп до SD картата</translation>
 <translation id="1091134514807961917">Влезли сте в следния профил в Google.</translation>
 <translation id="1095407227123756519">Добавете профил, за да получите своите отметки, история, пароли и други настройки на всичките си устройства.</translation>
 <translation id="1098052486217676340">Завършено</translation>
@@ -86,7 +85,6 @@
 <translation id="2351097562818989364">Настройките ви за превод са нулирани.</translation>
 <translation id="2354750644801399986">„Do Not Track“</translation>
 <translation id="2359808026110333948">Напред</translation>
-<translation id="2360035970720276770">Могат да се изтеглят само URL адреси, започващи с „http“ или „https“</translation>
 <translation id="2381756643783702095">Извеждане на запитване преди изпращане (препоръчително)</translation>
 <translation id="2387895666653383613">Мащабиране на текста</translation>
 <translation id="238909021488141516">При изтеглянето на съдържанието възникна грешка.</translation>
@@ -127,7 +125,6 @@
 <translation id="2960796085439532066">Авторски права <ph name="YEAR" /> Google Inc. Всички права запазени.</translation>
 <translation id="2968755619301702150">Визуализатор на сертификатите</translation>
 <translation id="2996809686854298943">Изисква се URL адрес</translation>
-<translation id="3003595280608617736">Няма SD карта</translation>
 <translation id="3029704984691124060">Пропуските не са идентични</translation>
 <translation id="3039671569659952257">Изтриване на папката</translation>
 <translation id="3063601790762993062">Запазване на видеоклипа</translation>
@@ -232,6 +229,7 @@
 <translation id="4816465935029283692">Типове данни</translation>
 <translation id="4827948050554950725">Добавяне на кредитна карта</translation>
 <translation id="4836364883164334657">Връзката ви с този сайт не е частна. Извършители на атаки може да опитат да откраднат информацията ви (например снимки, пароли, съобщения и номера на кредитни карти) от <ph name="DOMAIN_NAME" />.</translation>
+<translation id="4850886885716139402">Изглед</translation>
 <translation id="4871370605780490696">Добавяне на отметка</translation>
 <translation id="4881695831933465202">Отваряне</translation>
 <translation id="4885273946141277891">Неподдържан брой екземпляри на Chrome.</translation>
@@ -449,8 +447,6 @@
 <translation id="7648422057306047504">Шифроване на паролите с идентификационните данни за Google</translation>
 <translation id="7658239707568436148">Отказ</translation>
 <translation id="7665369617277396874">Добавяне на профил</translation>
-<translation id="7711895876052978264">Този сайт премина в режим на цял екран.
-За изход натиснете бутона за връщане назад.</translation>
 <translation id="7764225426217299476">Добавяне на адрес</translation>
 <translation id="7765158879357617694">Преместване</translation>
 <translation id="7767746238359002192">Посетете страницата, за да я запазите офлайн</translation>
@@ -469,7 +465,6 @@
 <translation id="7961015016161918242">Никога</translation>
 <translation id="7963646190083259054">Доставчик:</translation>
 <translation id="7977858705483383621">Безопасно търсене</translation>
-<translation id="7981795308302452224">Стартирането на изтеглянето не бе успешно</translation>
 <translation id="7987073022710626672">Общи условия на Chrome</translation>
 <translation id="7989222512959629388">Запазва се…</translation>
 <translation id="7998918019931843664">Повторно отваряне на затворения раздел</translation>
@@ -482,7 +477,6 @@
 <translation id="8073388330009372546">Отваряне в нов раздел</translation>
 <translation id="8084156870963450514">Влезте в профила си, за да имате достъп до всичките си неща в мрежата от всяко устройство</translation>
 <translation id="8106211421800660735">Номер на кредитната карта</translation>
-<translation id="8109148095642131923">Добавянето на изтегления елемент към мениджъра на изтеглянията не бе успешно.</translation>
 <translation id="813082847718468539">Преглед на информацията за сайта</translation>
 <translation id="8137558756159375272">При търсене с докосване избраната дума и текущата страница се изпращат като контекст до Google Търсене. Можете да изключите функцията от <ph name="BEGIN_LINK" />Настройки<ph name="END_LINK" />.</translation>
 <translation id="8143660160623733249">Име на папката</translation>
@@ -567,5 +561,4 @@
 <translation id="969096075394517431">Промяна на езиците</translation>
 <translation id="971774202801778802">URL адрес на отметката</translation>
 <translation id="983192555821071799">Затваряне на всички раздели</translation>
-<translation id="988938288723502454">В SD картата не може да се създаде директория за изтегляния.</translation>
 </translationbundle>

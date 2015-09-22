@@ -5,7 +5,6 @@
 <translation id="10614374240317010">Never saved</translation>
 <translation id="1061441684050139317">Chrome needs microphone access to share it with this site.</translation>
 <translation id="1080790410959514870">You are signing out of an account managed by <ph name="DOMAIN_NAME" />. This will delete the Chrome data stored on this device, but the data will remain in your Google Account.</translation>
-<translation id="1086169178231554178">SD card unavailable</translation>
 <translation id="1091134514807961917">You’re signed in to the following Google Account.</translation>
 <translation id="1095407227123756519">Add an account to get your bookmarks, history, passwords and other settings on all your devices.</translation>
 <translation id="1098052486217676340">Finished</translation>
@@ -86,7 +85,6 @@
 <translation id="2351097562818989364">Your translate settings have been reset.</translation>
 <translation id="2354750644801399986">‘Do Not Track’</translation>
 <translation id="2359808026110333948">Continue</translation>
-<translation id="2360035970720276770">Can only download http or https URLs</translation>
 <translation id="2381756643783702095">Ask before sending (recommended)</translation>
 <translation id="2387895666653383613">Text scaling</translation>
 <translation id="238909021488141516">An error occurred while downloading the content.</translation>
@@ -127,7 +125,6 @@
 <translation id="2960796085439532066">Copyright <ph name="YEAR" /> Google Inc. All rights reserved.</translation>
 <translation id="2968755619301702150">Certificate viewer</translation>
 <translation id="2996809686854298943">URL required</translation>
-<translation id="3003595280608617736">No SD card</translation>
 <translation id="3029704984691124060">Passphrases do not match</translation>
 <translation id="3039671569659952257">Delete folder</translation>
 <translation id="3063601790762993062">Save video</translation>
@@ -232,6 +229,7 @@ To adjust your search term, long press to select. To refine your search, slide t
 <translation id="4816465935029283692">Data types</translation>
 <translation id="4827948050554950725">Add credit card</translation>
 <translation id="4836364883164334657">Your connection to this site is not private. Attackers might be trying to steal your information (for example, photos, passwords, messages and credit cards) from <ph name="DOMAIN_NAME" />.</translation>
+<translation id="4850886885716139402">View</translation>
 <translation id="4871370605780490696">Add bookmark</translation>
 <translation id="4881695831933465202">Open</translation>
 <translation id="4885273946141277891">Unsupported number of Chrome instances.</translation>
@@ -449,8 +447,6 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="7648422057306047504">Encrypt passwords with Google credentials</translation>
 <translation id="7658239707568436148">Cancel</translation>
 <translation id="7665369617277396874">Add account</translation>
-<translation id="7711895876052978264">This site has gone full screen.
-Hit the back button to exit.</translation>
 <translation id="7764225426217299476">Add address</translation>
 <translation id="7765158879357617694">Move</translation>
 <translation id="7767746238359002192">Visit page to save offline</translation>
@@ -469,7 +465,6 @@ Hit the back button to exit.</translation>
 <translation id="7961015016161918242">Never</translation>
 <translation id="7963646190083259054">Vendor:</translation>
 <translation id="7977858705483383621">SafeSearch</translation>
-<translation id="7981795308302452224">Failed to start download</translation>
 <translation id="7987073022710626672">Chrome Terms of Service</translation>
 <translation id="7989222512959629388">Saving…</translation>
 <translation id="7998918019931843664">Re-open closed tab</translation>
@@ -482,7 +477,6 @@ Hit the back button to exit.</translation>
 <translation id="8073388330009372546">Open image in new tab</translation>
 <translation id="8084156870963450514">Sign in to access all your web stuff from any device</translation>
 <translation id="8106211421800660735">Credit card number</translation>
-<translation id="8109148095642131923">Failed to add downloaded item to the download manager.</translation>
 <translation id="813082847718468539">View site information</translation>
 <translation id="8137558756159375272">Touch to Search sends the selected word and the current page as context to Google Search. You can turn it off in <ph name="BEGIN_LINK" />Settings<ph name="END_LINK" />.</translation>
 <translation id="8143660160623733249">Folder name</translation>
@@ -565,5 +559,4 @@ Hit the back button to exit.</translation>
 <translation id="969096075394517431">Change languages</translation>
 <translation id="971774202801778802">Bookmark URL</translation>
 <translation id="983192555821071799">Close all tabs</translation>
-<translation id="988938288723502454">Cannot create download directory on SD card.</translation>
 </translationbundle>

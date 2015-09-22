@@ -5,7 +5,6 @@
 <translation id="108122890477367602">以 Windows 8 模式重新啟動 Chromium(&amp;R)</translation>
 <translation id="1115445892567829615">Chromium 無法同步處理您的資料，請更新您的同步通關密語。</translation>
 <translation id="1144202035120576837"><ph name="SITE" /> 通常會使用加密方式保護您的資訊。目前當 Chromium 嘗試連線至 <ph name="SITE" /> 時，該網站會傳回異常且錯誤的憑證。這可能是因為有攻擊者試圖偽裝成 <ph name="SITE" />，或是 Wi-Fi 登入畫面造成連線中斷。請放心，Chromium 並未交換任何資料即已停止連線，所以您的資訊仍然安全無虞。</translation>
-<translation id="1150979032973867961">伺服器無法證明其屬於 <ph name="DOMAIN" /> 網域；其安全性憑證未取得您電腦作業系統的信任。這可能是因為設定錯誤，或有攻擊者攔截您的連線所致。</translation>
 <translation id="1174473354587728743">如果您與他人共用電腦，現在可以依自己的喜好和習慣設定 Chromium。</translation>
 <translation id="1185134272377778587">關於 Chromium</translation>
 <translation id="1221340462641866827">Chromium 作業系統不支援啟用外部應用程式以處理 <ph name="SCHEME" /> 連結。所要求的連結為 <ph name="PROTOLINK" />。</translation>
@@ -25,7 +24,6 @@
 <translation id="1708666629004767631">新版 Chromium 現已推出，安全更上一層樓。</translation>
 <translation id="1725059042853530269"><ph name="FILE_NAME" /> 可能會影響您的瀏覽品質，因此 Chromium 已經予以封鎖。</translation>
 <translation id="1745962126679160932">Chromium 會妥善保存您的資訊，讓您日後付款時不必再重新輸入。不過，您仍然必需驗證驗證信用卡安全碼。</translation>
-<translation id="1763864636252898013">伺服器無法證明其屬於 <ph name="DOMAIN" /> 網域；其安全性憑證未取得您裝置作業系統的信任。這可能是因為設定錯誤，或有攻擊者攔截您的連線所致。</translation>
 <translation id="1774152462503052664">讓 Chromium 在背景執行</translation>
 <translation id="1779356040007214683">為了讓 Chromium 的安全性更有保障，我們已將部分未列在 <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> 中的擴充功能停用，它們可能在您不知情的情況下加入瀏覽器。</translation>
 <translation id="1808667845054772817">重新安裝 Chromium</translation>
@@ -136,7 +134,6 @@
 <translation id="4987820182225656817">以訪客身分使用 Chromium 不會留下任何紀錄。</translation>
 <translation id="4994636714258228724">新增為 Chromium 使用者</translation>
 <translation id="5032989939245619637">在 Chromium 中儲存詳細資料</translation>
-<translation id="5094747076828555589">伺服器無法證明其屬於 <ph name="DOMAIN" /> 網域；其安全性憑證未取得 Chromium 的信任。這可能是因為設定錯誤，或有攻擊者攔截您的連線所致。</translation>
 <translation id="5358375970380395591">您已登入管理化環境下的帳戶，並將管理控制權授予您的 Chromium 設定檔。您的 Chromium 資料 (例如應用程式、書籤、紀錄、密碼和其他設定) 均將永久與 <ph name="USER_NAME" /> 建立關聯。您可以透過 Google 帳戶資訊主頁刪除這些資料，但您無法將這些資料與其他帳戶建立關聯。<ph name="LEARN_MORE" /></translation>
 <translation id="5398878173008909840">新版 Chromium 現已推出。</translation>
 <translation id="5427571867875391349">將 Chromium 設為預設瀏覽器</translation>

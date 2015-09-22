@@ -5,7 +5,6 @@
 <translation id="10614374240317010">Niekada neišsaugota</translation>
 <translation id="1061441684050139317">„Chrome“ reikia galimybės pasiekti mikrofoną, kad jį būtų galima bendrinti su šia svetaine.</translation>
 <translation id="1080790410959514870">Atsijungiate nuo <ph name="DOMAIN_NAME" /> tvarkomos paskyros. Bus ištrinti šiame įrenginyje saugomi „Chrome“ duomenys, bet jie išliks „Google“ paskyroje.</translation>
-<translation id="1086169178231554178">SD kortelė nepasiekiama</translation>
 <translation id="1091134514807961917">Esate prisijungę prie nurodytos „Google“ paskyros.</translation>
 <translation id="1095407227123756519">Pridėkite paskyrą ir pasiekite žymių, istorijos, slaptažodžių bei kitų nustatymų duomenis visuose įrenginiuose.</translation>
 <translation id="1098052486217676340">Baigta</translation>
@@ -86,7 +85,6 @@
 <translation id="2351097562818989364">Vertimo nustatymai buvo nustatyti iš naujo.</translation>
 <translation id="2354750644801399986">Nestebėti</translation>
 <translation id="2359808026110333948">Tęsti</translation>
-<translation id="2360035970720276770">Galima atsisiųsti tik iš HTTP arba HTTPS protokolo URL</translation>
 <translation id="2381756643783702095">Klausti prieš siunčiant (rekomenduojama)</translation>
 <translation id="2387895666653383613">Teksto mastelio keitimas</translation>
 <translation id="238909021488141516">Atsisiunčiant turinį įvyko klaida.</translation>
@@ -127,7 +125,6 @@
 <translation id="2960796085439532066">Autorių teisės priklauso „Google Inc.“, <ph name="YEAR" /> m. Visos teisės saugomos.</translation>
 <translation id="2968755619301702150">Sertifikato peržiūros priemonė</translation>
 <translation id="2996809686854298943">Reikalingas URL</translation>
-<translation id="3003595280608617736">Nėra SD kortelės</translation>
 <translation id="3029704984691124060">Slaptafrazės neatitinka</translation>
 <translation id="3039671569659952257">Ištrinti aplanką</translation>
 <translation id="3063601790762993062">Išsaugoti vaizdo įrašą</translation>
@@ -232,6 +229,7 @@ Jei norite koreguoti paieškos terminą, paspauskite ir laikykite, kad jį pasir
 <translation id="4816465935029283692">Duomenų tipai</translation>
 <translation id="4827948050554950725">Pridėti kredito kortelę</translation>
 <translation id="4836364883164334657">Ryšys su šia svetaine nėra privatus. Užgrobėjai gali bandyti pavogti informaciją (pvz., nuotraukas, slaptažodžius, pranešimus ar kredito kortelių duomenis) iš <ph name="DOMAIN_NAME" />.</translation>
+<translation id="4850886885716139402">Žiūrėti</translation>
 <translation id="4871370605780490696">Žymės pridėjimas</translation>
 <translation id="4881695831933465202">Atidaryti</translation>
 <translation id="4885273946141277891">Nepalaikomas „Chrome“ atvejų skaičius.</translation>
@@ -450,8 +448,6 @@ Pavyzdžiui, kai kurios svetainės gali atsakyti į šią užklausą rodydamos j
 <translation id="7648422057306047504">Šifruoti slaptažodžius naudojant „Google“ kredencialus</translation>
 <translation id="7658239707568436148">Atšaukti</translation>
 <translation id="7665369617277396874">Pridėti paskyrą</translation>
-<translation id="7711895876052978264">Svetainė veikia viso ekrano režimu.
-Spustelėkite mygtuką „Atgal“, kad išeitumėte.</translation>
 <translation id="7764225426217299476">Pridėti adresą</translation>
 <translation id="7765158879357617694">Perkelti</translation>
 <translation id="7767746238359002192">Apsilankykite puslapyje, kad išsaugotumėte naudoti neprisijungus</translation>
@@ -470,7 +466,6 @@ Spustelėkite mygtuką „Atgal“, kad išeitumėte.</translation>
 <translation id="7961015016161918242">Niekada</translation>
 <translation id="7963646190083259054">Paslaugos teikėjas:</translation>
 <translation id="7977858705483383621">Saugi paieška</translation>
-<translation id="7981795308302452224">Pradedant atsisiuntimą įvyko klaida</translation>
 <translation id="7987073022710626672">„Chrome“ paslaugų teikimo sąlygos</translation>
 <translation id="7989222512959629388">Išsaugoma…</translation>
 <translation id="7998918019931843664">Iš naujo atidarykite uždarytą skirtuko lapą</translation>
@@ -483,7 +478,6 @@ Spustelėkite mygtuką „Atgal“, kad išeitumėte.</translation>
 <translation id="8073388330009372546">Atid. vaizdą nauj. skirt. lap.</translation>
 <translation id="8084156870963450514">Prisijunkite, kad pasiektumėte visus žiniatinklio elementus bet kuriuo įrenginiu.</translation>
 <translation id="8106211421800660735">Kredito kortelės numeris</translation>
-<translation id="8109148095642131923">Nepavyko prie atsisiuntimų tvarkytuvės pridėti atsisiųsto elemento.</translation>
 <translation id="813082847718468539">Žiūrėti svetainės informaciją</translation>
 <translation id="8137558756159375272">Paieška palietus siunčia pasirinktą žodį ir esamą puslapį kaip kontekstą „Google“ paieškai. Galite išjungti šią funkciją <ph name="BEGIN_LINK" />nustatymuose<ph name="END_LINK" />.</translation>
 <translation id="8143660160623733249">Aplanko pavadinimas</translation>
@@ -568,5 +562,4 @@ Jei norite gauti naujas licencijas, prisijunkite prie interneto ir leiskite atsi
 <translation id="969096075394517431">Pakeisti kalbas</translation>
 <translation id="971774202801778802">Žymės URL</translation>
 <translation id="983192555821071799">Uždar. visų skirtukų lapus</translation>
-<translation id="988938288723502454">Nepavyko sukurti atsisiuntimo katalogo SD kortelėje.</translation>
 </translationbundle>

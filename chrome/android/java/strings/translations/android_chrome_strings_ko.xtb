@@ -5,7 +5,6 @@
 <translation id="10614374240317010">비밀번호를 저장하지 않은 사이트</translation>
 <translation id="1061441684050139317">이 사이트에 공유하려면 Chrome에 마이크 액세스 권한이 있어야 합니다.</translation>
 <translation id="1080790410959514870"><ph name="DOMAIN_NAME" />에서 관리하는 계정에서 로그아웃합니다. 로그아웃하면 이 기기에 저장된 Chrome 데이터는 삭제되지만 Google 계정에는 데이터가 남습니다.</translation>
-<translation id="1086169178231554178">SD 카드를 사용할 수 없음</translation>
 <translation id="1091134514807961917">다음 Google 계정으로 로그인했습니다.</translation>
 <translation id="1095407227123756519">계정을 추가하면 모든 기기에서 북마크, 방문 기록, 비밀번호, 기타 설정을 사용할 수 있습니다.</translation>
 <translation id="1098052486217676340">완료</translation>
@@ -86,7 +85,6 @@
 <translation id="2351097562818989364">번역 설정이 재설정되었습니다.</translation>
 <translation id="2354750644801399986">'추적 안함'</translation>
 <translation id="2359808026110333948">계속</translation>
-<translation id="2360035970720276770">'http'나 'https' URL만 다운로드할 수 있습니다.</translation>
 <translation id="2381756643783702095">보내기 전에 확인(권장)</translation>
 <translation id="2387895666653383613">텍스트 크기 조정</translation>
 <translation id="238909021488141516">콘텐츠를 다운로드하는 중에 오류가 발생했습니다.</translation>
@@ -127,7 +125,6 @@
 <translation id="2960796085439532066">Copyright <ph name="YEAR" /> Google Inc. All rights reserved.</translation>
 <translation id="2968755619301702150">인증서 뷰어</translation>
 <translation id="2996809686854298943">URL이 필요합니다.</translation>
-<translation id="3003595280608617736">SD 카드 없음</translation>
 <translation id="3029704984691124060">암호가 일치하지 않습니다.</translation>
 <translation id="3039671569659952257">폴더 삭제</translation>
 <translation id="3063601790762993062">동영상 저장</translation>
@@ -232,6 +229,7 @@
 <translation id="4816465935029283692">데이터 유형</translation>
 <translation id="4827948050554950725">신용카드 추가</translation>
 <translation id="4836364883164334657">이 사이트에 비공개로 연결하도록 설정되지 않았습니다. 누군가가 <ph name="DOMAIN_NAME" />에서 사용자의 정보(예: 사진, 비밀번호, 메시지, 신용카드)를 도용하려고 공격을 시도하는 중일 수 있습니다.</translation>
+<translation id="4850886885716139402">보기</translation>
 <translation id="4871370605780490696">북마크 추가</translation>
 <translation id="4881695831933465202">열기</translation>
 <translation id="4885273946141277891">지원되지 않는 Chrome 인스턴스 수입니다.</translation>
@@ -449,8 +447,6 @@
 <translation id="7648422057306047504">비밀번호를 Google 사용자 인증 정보로 암호화</translation>
 <translation id="7658239707568436148">취소</translation>
 <translation id="7665369617277396874">계정 추가</translation>
-<translation id="7711895876052978264">사이트가 전체화면으로 전환되었습니다.
-종료하려면 뒤로 버튼을 누르세요.</translation>
 <translation id="7764225426217299476">주소 추가</translation>
 <translation id="7765158879357617694">이동</translation>
 <translation id="7767746238359002192">오프라인으로 저장할 페이지 방문</translation>
@@ -469,7 +465,6 @@
 <translation id="7961015016161918242">완료되지 않음</translation>
 <translation id="7963646190083259054">공급업체:</translation>
 <translation id="7977858705483383621">세이프서치</translation>
-<translation id="7981795308302452224">다운로드를 시작하지 못했습니다.</translation>
 <translation id="7987073022710626672">Chrome 서비스 약관</translation>
 <translation id="7989222512959629388">저장 중…</translation>
 <translation id="7998918019931843664">닫은 탭 다시 열기</translation>
@@ -482,7 +477,6 @@
 <translation id="8073388330009372546">새 탭에서 이미지 열기</translation>
 <translation id="8084156870963450514">모든 기기에서 모든 웹 항목에 액세스하려면 로그인하세요.</translation>
 <translation id="8106211421800660735">신용카드 번호</translation>
-<translation id="8109148095642131923">다운로드한 항목을 다운로드 관리자에 추가하지 못했습니다.</translation>
 <translation id="813082847718468539">사이트 정보 보기</translation>
 <translation id="8137558756159375272">터치하여 검색에서 선택한 단어와 현재 페이지를 Google 검색에 컨텍스트로 발송하세요. <ph name="BEGIN_LINK" />설정<ph name="END_LINK" />에서 이 기능을 사용 중지할 수 있습니다.</translation>
 <translation id="8143660160623733249">폴더 이름</translation>
@@ -567,5 +561,4 @@
 <translation id="969096075394517431">언어 변경</translation>
 <translation id="971774202801778802">북마크 URL</translation>
 <translation id="983192555821071799">탭 모두 닫기</translation>
-<translation id="988938288723502454">SD 카드에 다운로드 디렉토리를 만들 수 없습니다.</translation>
 </translationbundle>

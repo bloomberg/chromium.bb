@@ -8,7 +8,9 @@
 <translation id="111844081046043029">هل تريد بالتأكيد مغادرة هذه الصفحة؟</translation>
 <translation id="112840717907525620">ذاكرة التخزين المؤقت للسياسة بحالة جيدة</translation>
 <translation id="1132774398110320017">‏إعدادات الملء التلقائي في Chrome...</translation>
+<translation id="1150979032973867961">هذا الخادم لم يتمكن من إثبات أن ذلك <ph name="DOMAIN" />؛ بل إنه شهادة أمان غير موثقة من خلال نظام تشغيل الكمبيوتر. وربما يكون السبب في ذلك خطأ في التكوين أو مهاجمًا يعترض الاتصال.</translation>
 <translation id="1152921474424827756">الدخول إلى <ph name="BEGIN_LINK" />النسخة المخزنة مؤقتًا<ph name="END_LINK" /> من <ph name="URL" /></translation>
+<translation id="121201262018556460">لقد حاولت الوصول إلى <ph name="DOMAIN" />، ولكن الخادم قدّم شهادة تحتوي على مفتاح ضعيف. ربما قام أحد المهاجمين باختراق المفتاح الخاص، ولا يكون الخادم هو الخادم الذي تتوقعه (قد تكون على اتصال بأحد المهاجمين).</translation>
 <translation id="1227224963052638717">سياسة غير معروفة.</translation>
 <translation id="1227633850867390598">إخفاء القيمة</translation>
 <translation id="1228893227497259893">معرف الكيان خاطئ</translation>
@@ -22,8 +24,10 @@
 <translation id="1639239467298939599">جارٍ التحميل.</translation>
 <translation id="1640180200866533862">سياسات المستخدم</translation>
 <translation id="1644184664548287040">تهيئة الشبكة غير صالحة ويتعذر استيرادها.</translation>
+<translation id="168841957122794586">تحتوي شهادة الخادم على مفتاح تشفير ضعيف.</translation>
 <translation id="1693754753824026215">تعرض الصفحة في <ph name="SITE" />:</translation>
 <translation id="1734864079702812349">Amex</translation>
+<translation id="1763864636252898013">هذا الخادم لم يتمكن من إثبات أن ذلك <ph name="DOMAIN" />؛ بل إنه شهادة أمان غير موثوقة من خلال نظام تشغيل جهازك. وربما يكون السبب في ذلك خطأ في التكوين أو مهاجمًا يعترض الاتصال.</translation>
 <translation id="1821930232296380041">طلب غير صالح، أو معلمات طلب غير صالحة</translation>
 <translation id="1853748787962613237">أخفق عرض المقالة.</translation>
 <translation id="1871208020102129563">‏تم تعيين الخادم الوكيل لاستخدام الخوادم الوكيلة الثابتة وليس عنوان URL لنص برمجي pac.</translation>
@@ -46,20 +50,25 @@
 <translation id="2113977810652731515">البطاقة</translation>
 <translation id="2114841414352855701">تم تجاهلها نظرًا لتجاوزها بواسطة <ph name="POLICY_NAME" />.</translation>
 <translation id="213826338245044447">الإشارات المرجعية على الجوال</translation>
+<translation id="2171101176734966184">لقد حاولت الوصول إلى <ph name="DOMAIN" />، ولكن قدَّم الخادم شهادة موقّعة باستخدام خوارزمية توقيع ضعيفة، مما يعني أن بيانات اعتماد الأمان التي قدمها الخادم من المحتمل أنه تم تزييفها، وأن الخادم قد لا يكون هو الخادم الذي تتوقعه (قد تكون على اتصال بأحد المهاجمين).</translation>
 <translation id="2181821976797666341">السياسات</translation>
 <translation id="2212735316055980242">تعذر العثور على السياسة</translation>
 <translation id="2213606439339815911">جارٍ جلب الإدخالات...</translation>
 <translation id="225207911366869382">تم تجاهل القيمة لهذه السياسة.</translation>
 <translation id="2262243747453050782">‏خطأ HTTP</translation>
 <translation id="2270192940992995399">أخفق العثور على المقالة.</translation>
+<translation id="229702904922032456">انتهت صلاحية الشهادة الأساسية أو المتوسطة.</translation>
 <translation id="2328300916057834155">تم تجاهل الإشارة المرجعية غير الصالحة في الفهرس <ph name="ENTRY_INDEX" /></translation>
 <translation id="2354001756790975382">الإشارات الأخرى</translation>
 <translation id="2359808026110333948">المتابعة</translation>
 <translation id="2367567093518048410">المستوى</translation>
+<translation id="2386255080630008482">تم إبطال شهادة الخادم.</translation>
 <translation id="2392959068659972793">عرض السياسات التي لم يتم تعيين قيم لها</translation>
 <translation id="2396249848217231973">تراجع عن الحذ&amp;ف</translation>
+<translation id="2413528052993050574">هذا الخادم لم يتمكن من إثبات أن ذلك <ph name="DOMAIN" />؛ بل إنه شهادة أمان ربما تم إلغاء صلاحيتها. وربما يكون السبب في ذلك خطأ في التكوين أو مهاجمًا يعترض اتصالك.</translation>
 <translation id="2455981314101692989">عطلت صفحة الويب هذه الملء التلقائي لهذا النموذج.</translation>
 <translation id="2479410451996844060">‏عنوان URL للبحث غير صالح.</translation>
+<translation id="2491120439723279231">تحتوي شهادة الخادم على أخطاء.</translation>
 <translation id="2495083838625180221">‏محلل JSON اللغوي</translation>
 <translation id="2498091847651709837">فحص بطاقة جديدة</translation>
 <translation id="2556876185419854533">تراجع عن ا&amp;لتحرير</translation>
@@ -70,10 +79,14 @@
 <translation id="2639739919103226564">الحالة:</translation>
 <translation id="2704283930420550640">القيمة لا تطابق التنسيق.</translation>
 <translation id="2721148159707890343">تم إرسال الطلب بنجاح</translation>
+<translation id="2728127805433021124">شهادة الخادم موقّعة باستخدام خوارزمية توقيع ضعيفة.</translation>
 <translation id="2774256287122201187">يمكنك المتابعة. إذا تابعت إلى الصفحة، فلن يظهر هذا التحذير مرة أخرى لمدة خمس دقائق.</translation>
 <translation id="277499241957683684">سجِلّ الجهاز مفقود</translation>
 <translation id="2835170189407361413">محو النموذج</translation>
 <translation id="2855922900409897335">تحقق من <ph name="CREDIT_CARD" /></translation>
+<translation id="2915500479781995473">هذا الخادم لم يتمكن من إثبات أن ذلك <ph name="DOMAIN" />؛ بل إنه شهادة أمان منتهية الصلاحية. وربما يكون سبب ذلك خطأ في التهيئة أو مهاجمًا يعترض الاتصال. تم تعيين ساعة الكمبيوتر حاليًا على <ph name="CURRENT_TIME" />. هل تبدو الساعة صحيحة؟ إذا لم تكن كذلك، يجب عليك تصحيح ساعة النظام، ثم تحديث هذه الصفحة.</translation>
+<translation id="2922350208395188000">لا يمكن التحقق من شهادة الخادم.</translation>
+<translation id="2941952326391522266">هذا الخادم لم يتمكن من إثبات أن ذلك <ph name="DOMAIN" />؛ بل إنه شهادة أمان من <ph name="DOMAIN2" />. وربما سبب ذلك خطأ في التكوين أو مهاجمًا يعترض اتصالك.</translation>
 <translation id="2958431318199492670">‏لا تتوافق تهيئة الشبكة مع معيار ONC. قد لا يتم استيراد بعض أجزاء التهيئة.</translation>
 <translation id="2972581237482394796">إعا&amp;دة</translation>
 <translation id="3010559122411665027">إدخال القائمة "<ph name="ENTRY_INDEX" />": <ph name="ERROR" /></translation>
@@ -84,9 +97,11 @@
 <translation id="3169472444629675720">Discover</translation>
 <translation id="3174168572213147020">جزيرة</translation>
 <translation id="3219579145727097045">‏أدخل تاريخ انتهاء الصلاحية ورمز التحقق من البطاقة (CVC) المكوّن من أربعة أرقام من الجزء الأمامي من بطاقتك.</translation>
+<translation id="3225919329040284222">قدم الخادم شهادة لا تتطابق مع التوقعات المضمّنة. تم تضمين هذه التوقعات للحصول على مواقع ويب موثوقة وآمنة جدًا لتوفير الحماية لك.</translation>
 <translation id="3228969707346345236">أخفقت الترجمة لأن الصفحة باللغة <ph name="LANGUAGE" /> فعلاً.</translation>
 <translation id="3270847123878663523">تراجع عن إعادة الت&amp;رتيب</translation>
 <translation id="333371639341676808">منع هذه الصفحة من إنشاء مربّعات حوار إضافية.</translation>
+<translation id="3340978935015468852">الإعدادات</translation>
 <translation id="3369192424181595722">خطأ في الساعة</translation>
 <translation id="3369366829301677151">تحديث <ph name="CREDIT_CARD" /> والتحقق منها</translation>
 <translation id="337363190475750230">تم إلغاء التوفير</translation>
@@ -97,6 +112,7 @@
 <translation id="3450660100078934250">MasterCard</translation>
 <translation id="3452404311384756672">الفاصل الزمني للجلب:</translation>
 <translation id="3462200631372590220">الإخفاء (خيار متقدم)</translation>
+<translation id="3528171143076753409">شهادة الخادم غير موثوق فيها.</translation>
 <translation id="3542684924769048008">استخدام كلمة مرور لـ:</translation>
 <translation id="3583757800736429874">إ&amp;عادة النقل</translation>
 <translation id="3623476034248543066">عرض القيمة</translation>
@@ -126,13 +142,18 @@
 <translation id="4269787794583293679">(اسم المستخدم غير موجود)</translation>
 <translation id="4300246636397505754">اقتراحات الآباء</translation>
 <translation id="4372948949327679948">القيمة <ph name="VALUE_TYPE" /> المتوقعة.</translation>
+<translation id="4377125064752653719">لقد حاولت الوصول إلى <ph name="DOMAIN" />، ولكن جهة إصدار الشهادة التي قدمها الخادم قد أبطلت الشهادة. وهذا يعني أن بيانات اعتماد الأمان التي قدمها الخادم يجب عدم الوثوق بها مطلقًا. فقد تكون على اتصال بأحد المهاجمين.</translation>
+<translation id="4424024547088906515">‏هذا الخادم لم يتمكن من إثبات أن ذلك <ph name="DOMAIN" />؛ بل إنه شهادة أمان غير موثوقة من قبل Chrome. وربما يكون السبب في ذلك خطأ في التكوين أو مهاجمًا يعترض الاتصال.</translation>
 <translation id="443673843213245140">تم تعطيل استخدام الخادم الوكيل ولكن تم تحديد تهيئة صريحة للخادم الوكيل.</translation>
 <translation id="4506176782989081258">خطأ في عملية التحقق: <ph name="VALIDATION_ERROR" />.</translation>
 <translation id="4587425331216688090">‏هل تريد إزالة العنوان من Chrome؟</translation>
 <translation id="4594403342090139922">تراجع عن الحذ&amp;ف</translation>
 <translation id="4607653538520819196">لا يمكن إنشاء خادم وكيل لهذه الصفحة من خلال توفير البيانات.</translation>
 <translation id="4668929960204016307">،</translation>
+<translation id="467662567472608290">هذا الخادم لم يتمكن من إثبات أن ذلك <ph name="DOMAIN" />؛ بل إنه شهادة أمان تحتوي على أخطاء. وربما يكون السبب في ذلك خطأ في التكوين أو مهاجمًا يعترض اتصالك.</translation>
 <translation id="4726672564094551039">إعادة تحميل السياسات</translation>
+<translation id="4728558894243024398">النظام الأساسي</translation>
+<translation id="4771973620359291008">حدث خطأ غير محدّد.</translation>
 <translation id="4800132727771399293">‏تحقق من تاريخ انتهاء الصلاحية ورمز التحقق من البطاقة (CVC) وأعد المحاولة مرة أخرى.</translation>
 <translation id="4813512666221746211">حدث خطأ في الشبكة</translation>
 <translation id="4850886885716139402">عرض</translation>
@@ -142,7 +163,9 @@
 <translation id="498957508165411911">هل تريد الترجمة من <ph name="ORIGINAL_LANGUAGE" /> إلى <ph name="TARGET_LANGUAGE" />؟</translation>
 <translation id="5019198164206649151">التخزين المساعد في حالة سيئة</translation>
 <translation id="5031870354684148875">‏معلومات عن الترجمة من Google</translation>
+<translation id="5087286274860437796">شهادة الخادم ليست صالحة حاليًا.</translation>
 <translation id="5089810972385038852">بلد/دولة</translation>
+<translation id="5094747076828555589">‏هذا الخادم لم يتمكن من إثبات أن ذلك <ph name="DOMAIN" />؛ بل إنه شهادة أمان غير موثوقة من قبل Chromium. وربما يكون السبب في ذلك خطأ في التكوين أو مهاجمًا يعترض الاتصال.</translation>
 <translation id="5095208057601539847">الإقليم</translation>
 <translation id="5145883236150621069">يوجد رمز خطأ في استجابة السياسة</translation>
 <translation id="5172758083709347301">الجهاز</translation>
@@ -152,6 +175,7 @@
 <translation id="5299298092464848405">خطأ في تحليل السياسة</translation>
 <translation id="5317780077021120954">حفظ</translation>
 <translation id="536296301121032821">أخفق تخزين إعدادات السياسة</translation>
+<translation id="540969355065856584">لم يتمكن هذا الخادم من إثبات أنه <ph name="DOMAIN" />؛ بل إن شهادة الأمان الخاصة به غير صالحة حاليًا. وربما يكون السبب في ذلك وجود خطأ في التكوين أو اعترض أحد المهاجمين للاتصال.</translation>
 <translation id="5439770059721715174">حدث خطأ في مصادقة المخطط على "<ph name="ERROR_PATH" />": <ph name="ERROR" /></translation>
 <translation id="5455374756549232013">الطابع الزمني للسياسة سيئ</translation>
 <translation id="5470861586879999274">إعادة الت&amp;حرير</translation>
@@ -170,6 +194,7 @@
 <translation id="5989320800837274978">‏لم يتم تحديد أي من الخوادم الوكيلة الثابتة ولا عنوان URL للنص البرمجي pac.</translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6040143037577758943">إغلاق</translation>
+<translation id="6151417162996330722">فترة صلاحية شهادة الخادم طويلة جدًا.</translation>
 <translation id="6154808779448689242">لا يتطابق الرمز المميز لسياسة الإرجاع مع الرمز المميز الحالي</translation>
 <translation id="6165508094623778733">مزيد من المعلومات</translation>
 <translation id="6259156558325130047">إعادة إ&amp;جراء الترتيب</translation>
@@ -186,18 +211,21 @@
 <translation id="6628463337424475685">بحث <ph name="ENGINE" /></translation>
 <translation id="6644283850729428850">تم تجاهل هذه السياسة.</translation>
 <translation id="6646897916597483132">‏أدخل رمز التحقق من البطاقة (CVC) المكون من أربعة أرقام من الجزء الأمامي من بطاقتك</translation>
+<translation id="674375294223700098">حدث خطأ غير معروف في شهادة الخادم.</translation>
 <translation id="6753269504797312559">قيمة السياسة</translation>
 <translation id="6831043979455480757">ترجمة</translation>
 <translation id="6839929833149231406">المنطقة</translation>
 <translation id="6874604403660855544">إعا&amp;دة الإضافة</translation>
 <translation id="6891596781022320156">مستوى السياسة غير مدعوم.</translation>
 <translation id="6915804003454593391">المستخدم:</translation>
+<translation id="6957887021205513506">يبدو أن شهادة الخادم مزيفة.</translation>
 <translation id="6965382102122355670">موافق</translation>
 <translation id="6965978654500191972">جهاز</translation>
 <translation id="6970216967273061347">المنطقة</translation>
 <translation id="6973656660372572881">‏تم تحديد كل من الخوادم الوكيلة الثابتة وعنوان URL للنص البرمجي pac.</translation>
 <translation id="6980028882292583085">تنبيه جافا سكريبت</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
+<translation id="7050187094878475250">لقد حاولت الوصول إلى <ph name="DOMAIN" />، ولكن الخادم قدم شهادة مدة صلاحيتها طويلة جدًا مما يجعلها غير جديرة بالثقة.</translation>
 <translation id="7087282848513945231">المقاطعة/الإقليم/المنطقة</translation>
 <translation id="7108649287766967076">أخفقت الترجمة إلى <ph name="TARGET_LANGUAGE" />.</translation>
 <translation id="7139724024395191329">الإمارة</translation>
@@ -217,17 +245,21 @@
 <translation id="7521387064766892559">جافا سكريبت</translation>
 <translation id="7537536606612762813">إلزامية</translation>
 <translation id="7542995811387359312">تم تعطيل الملء التلقائي لبطاقة الائتمان لأن هذا النموذج لا يستخدم اتصالاً آمنًا.</translation>
+<translation id="7567204685887185387">هذا الخادم لم يتمكن من إثبات أن ذلك <ph name="DOMAIN" />؛ بل إنه شهادة أمان تم إصدارها عن طريق الاحتيال. وربما يكون سبب ذلك خطأ في التكوين أو مهاجمًا يعترض اتصالك.</translation>
 <translation id="7568593326407688803">تتوفر هذه الصفحة باللغة<ph name="ORIGINAL_LANGUAGE" />فهل تريد ترجمتها؟</translation>
 <translation id="7569952961197462199">‏هل تريد إزالة بطاقة الائتمان من Chrome؟</translation>
+<translation id="7592362899630581445">تنتهك شهادة الخادم القيود المفروضة على الاسم.</translation>
 <translation id="7600965453749440009">عدم الترجمة مطلقًا من اللغة <ph name="LANGUAGE" /></translation>
 <translation id="7610193165460212391">القيمة خارج النطاق <ph name="VALUE" />.</translation>
 <translation id="7752995774971033316">غير مُدار</translation>
+<translation id="7761701407923456692">‏لا تتطابق شهادة الخادم مع عنوان URL.</translation>
 <translation id="777702478322588152">الإدارة الأمنية</translation>
 <translation id="7791543448312431591">إضافة</translation>
 <translation id="7805768142964895445">الحالة</translation>
 <translation id="7813600968533626083">‏هل تريد إزالة اقتراح النموذج من Chrome؟</translation>
 <translation id="7887683347370398519">‏تحقق من رمز التحقق من البطاقة (CVC) ثم أعد المحاولة.</translation>
 <translation id="7935318582918952113">DOM Distiller</translation>
+<translation id="7938958445268990899">شهادة الخادم ليست صالحة بعد.</translation>
 <translation id="7956713633345437162">الإشارات المرجعية على الجوال</translation>
 <translation id="7961015016161918242">مطلقًا</translation>
 <translation id="7977590112176369853">&lt;أدخل طلب البحث&gt;</translation>
@@ -260,18 +292,22 @@
 <translation id="8824019021993735287">‏لم يتمكن Chrome من التحقق من بطاقتك في الوقت الحالي.يُرجى إعادة المحاولة في وقت لاحق.</translation>
 <translation id="8834246243508017242">تمكين الملء التلقائي باستخدام جهات الاتصال...</translation>
 <translation id="883848425547221593">إشارات أخرى</translation>
+<translation id="884923133447025588">لم يتمّ العثور على أي آلبة إبطال.</translation>
 <translation id="8866481888320382733">خطأ في إعدادات تحليل السياسة</translation>
 <translation id="8876793034577346603">أخفق تحليل تهيئة الشبكة</translation>
 <translation id="8891727572606052622">وضع الخادم الوكيل غير صالح.</translation>
 <translation id="8932102934695377596">توقيت ساعتك متأخر عن الوقت الحالي</translation>
 <translation id="8940229512486821554">تشغيل الأمر <ph name="EXTENSION_NAME" />:<ph name="SEARCH_TERMS" /></translation>
+<translation id="8971063699422889582">انتهت صلاحية شهادة الخادم.</translation>
 <translation id="8988760548304185580">‏أدخل تاريخ انتهاء الصلاحية ورمز التحقق من البطاقة (CVC) المكوّن من ثلاثة أرقام من الجزء الخلفي من بطاقتك.</translation>
 <translation id="9020542370529661692">تمت ترجمة هذه الصفحة إلى <ph name="TARGET_LANGUAGE" /></translation>
+<translation id="9049981332609050619">لقد حاولت الوصول إلى <ph name="DOMAIN" />, ولكن الخادم قدّم شهادة غير صالحة.</translation>
 <translation id="9125941078353557812">‏أدخل رمز التحقق من البطاقة (CVC) المكون من ثلاثة أرقام من الجزء الخلفي من بطاقتك</translation>
 <translation id="9137013805542155359">إظهار الصفحة الأصلية</translation>
 <translation id="9148507642005240123">تراجع عن ا&amp;لتحرير</translation>
 <translation id="9154176715500758432">البقاء في هذه الصفحة</translation>
 <translation id="9170848237812810038">&amp;إلغاء</translation>
+<translation id="917450738466192189">شهادة الخادم غير صالحة.</translation>
 <translation id="9207861905230894330">أخفقت إضافة مقالة.</translation>
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="935608979562296692">محو النموذج</translation>

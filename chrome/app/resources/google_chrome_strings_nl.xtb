@@ -11,7 +11,6 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 <translation id="1073391069195728457">Chrome - Meldingen</translation>
 <translation id="1104959162601287462">Over &amp;Chrome OS</translation>
 <translation id="110877069173485804">Personaliseer jouw Chrome</translation>
-<translation id="1150979032973867961">De server kan niet bewijzen dat dit <ph name="DOMAIN" /> is. Het beveiligingscertificaat van de server wordt niet vertrouwd door het besturingssysteem van je computer. Dit kan worden veroorzaakt door een verkeerde configuratie of een aanvaller die je verbinding onderschept.</translation>
 <translation id="1225016890511909183">Chrome slaat je gegevens veilig op, zodat je deze niet opnieuw hoeft op te geven, maar je moet nog steeds de beveiligingscode van je kaart opgeven voor toekomstige betalingen.</translation>
 <translation id="123620459398936149">Chrome OS kan je gegevens niet synchroniseren. Update je wachtwoordzin voor synchronisatie.</translation>
 <translation id="127345590676626841">Chrome wordt automatisch bijgewerkt, zodat je altijd beschikt over de nieuwste versie. Wanneer deze download is voltooid, wordt Chrome opnieuw gestart en kun je doorgaan.</translation>
@@ -37,7 +36,6 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 <translation id="174539241580958092">Google Chrome kan je gegevens niet synchroniseren vanwege een fout tijdens het inloggen.</translation>
 <translation id="1759301979429102118">Gegevens van je contacten kunnen je helpen sneller formulieren in te vullen in Chrome.</translation>
 <translation id="1759842336958782510">Chrome</translation>
-<translation id="1763864636252898013">De server kan niet bewijzen dat dit <ph name="DOMAIN" /> is. Het beveiligingscertificaat van de server wordt niet vertrouwd door het besturingssysteem van je apparaat. Dit kan worden veroorzaakt door een verkeerde configuratie of een aanvaller die je verbinding onderschept.</translation>
 <translation id="1773601347087397504">Hulp bij het gebruik van Chrome OS</translation>
 <translation id="1818142563254268765">Chrome kan niet automatisch worden geüpdatet naar de nieuwste versie, waardoor je geweldige nieuwe functies en beveiligingsoplossingen misloopt. Je moet Chrome updaten.</translation>
 <translation id="1877026089748256423">Chrome is verouderd</translation>
@@ -109,7 +107,6 @@ Als je inlogt, worden Chrome-gegevens zoals bladwijzers, geschiedenis en andere 
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="4367618624832907428">Google Chrome kan de internetpagina niet weergeven, omdat je computer niet is verbonden met internet.</translation>
 <translation id="4407807842708586359">Google Chrome OS</translation>
-<translation id="4424024547088906515">De server kan niet bewijzen dat dit <ph name="DOMAIN" /> is. Het beveiligingscertificaat van de server wordt niet vertrouwd door Chrome. Dit kan worden veroorzaakt door een verkeerde configuratie of een aanvaller die je verbinding onderschept.</translation>
 <translation id="4458285410772214805">Log uit en log weer in om deze wijziging door te voeren.</translation>
 <translation id="4480040274068703980">Chrome OS kan je gegevens niet synchroniseren door een fout tijdens het inloggen.</translation>
 <translation id="4513711165509885787">Je factureringsgegevens zijn opgeslagen in Chrome.</translation>

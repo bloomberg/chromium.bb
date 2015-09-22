@@ -9,7 +9,6 @@
 <translation id="1073391069195728457">Chrome – märguanded</translation>
 <translation id="1104959162601287462">Teave &amp;Chrome OS-i kohta</translation>
 <translation id="110877069173485804">See on teie Chrome</translation>
-<translation id="1150979032973867961">Server ei suutnud tõestada, et see on domeen <ph name="DOMAIN" />, arvuti operatsioonisüsteem ei usalda selle turvasertifikaati. Selle põhjuseks võib olla vale seadistus või ründaja, kes on sekkunud teie ühendusse.</translation>
 <translation id="1225016890511909183">Chrome salvestab turvaliselt teie teabe, nii et te ei pea seda uuesti sisestama, kuid peate ka tulevaste maksete puhul kinnitama oma kaardi turvakoodi.</translation>
 <translation id="123620459398936149">Chrome OS ei saanud teie andmeid sünkroonida. Värskendage oma sünkroonimisparooli.</translation>
 <translation id="127345590676626841">Chrome teeb värskendused automaatselt, nii et kasutate alati uusimat versiooni. Kui allalaadimine on lõppenud, siis Chrome taaskäivitub ja võite alustada kasutamist.</translation>
@@ -35,7 +34,6 @@
 <translation id="174539241580958092">Google Chrome ei saanud sisselogimisvea tõttu teie andmeid sünkroonida.</translation>
 <translation id="1759301979429102118">Kontaktide üksikasjad aitavad Chrome'is kiiremini vorme täita.</translation>
 <translation id="1759842336958782510">Chrome</translation>
-<translation id="1763864636252898013">Server ei suutnud tõestada, et see on domeen <ph name="DOMAIN" />, seadme operatsioonisüsteem ei usalda selle turvasertifikaati. Selle põhjuseks võib olla vale seadistus või ründaja, kes on sekkunud teie ühendusse.</translation>
 <translation id="1773601347087397504">Hankige abi Chrome OS-i kasutamise kohta</translation>
 <translation id="1818142563254268765">Chrome ei suutnud ennast uusimale versioonile värskendada, nii et te ei saa kasutada lahedaid uusi funktsioone ja turvaparandusi. Peate Chrome'i värskendama.</translation>
 <translation id="1877026089748256423">Chrome on aegunud</translation>
@@ -107,7 +105,6 @@ Kui logite siiski sisse, liidetakse Chrome'i teave, nagu järjehoidjad, ajalugu 
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="4367618624832907428">Google Chrome ei saa veebilehte kuvada, kuna teie arvuti pole Internetiga ühendatud.</translation>
 <translation id="4407807842708586359">Google Chrome OS</translation>
-<translation id="4424024547088906515">Server ei suutnud tõestada, et see on domeen <ph name="DOMAIN" />, Chrome ei usalda selle turvasertifikaati. Selle põhjuseks võib olla vale seadistus või ründaja, kes on sekkunud teie ühendusse.</translation>
 <translation id="4458285410772214805">Muudatuse jõustamiseks logige välja ja uuesti sisse.</translation>
 <translation id="4480040274068703980">Chrome OS ei saanud teie andmeid sünkroonida sisselogimisvea tõttu.</translation>
 <translation id="4513711165509885787">Teie arvelduse detailid on salvestatud Chrome'i.</translation>

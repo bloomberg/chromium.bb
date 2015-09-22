@@ -9,7 +9,6 @@
 <translation id="1073391069195728457">Chrome — paziņojumi</translation>
 <translation id="1104959162601287462">Par &amp;Chrome OS</translation>
 <translation id="110877069173485804">Šis ir jūsu pārlūks Chrome</translation>
-<translation id="1150979032973867961">Šis serveris nevarēja pierādīt, ka šī ir vietne <ph name="DOMAIN" />; tās drošības sertifikāts netiek uzskatīts par uzticamu jūsu datora operētājsistēmā. Iespējams, tas ir nepareizas konfigurācijas dēļ vai arī kāds ir ļaunprātīgi izmantojis jūsu savienojumu.</translation>
 <translation id="1225016890511909183">Chrome droši saglabās jūsu informāciju, lai tā vairs nebūtu atkārtoti jāievada, bet, veicot turpmākus maksājumus, jums joprojām būs jāapstiprina kartes drošības kods.</translation>
 <translation id="123620459398936149">Chrome OS nevarēja sinhronizēt jūsu datus. Lūdzu, atjauniniet savu sinhronizācijas ieejas frāzi.</translation>
 <translation id="127345590676626841">Pārlūks Chrome tiek atjaunināts automātiski, tādēļ jums vienmēr būs pieejama visjaunākā versija. Kad šī lejupielāde būs pabeigta, pārlūks Chrome tiks restartēts un varēsiet sākt lietot visjaunāko versiju.</translation>
@@ -35,7 +34,6 @@
 <translation id="174539241580958092">Google Chrome nevarēja sinhronizēt jūsu datus pierakstīšanās kļūdas dēļ.</translation>
 <translation id="1759301979429102118">Izmantojot datus no savas kontaktinformācijas, pārlūkā Chrome varat ērtāk aizpildīt veidlapas.</translation>
 <translation id="1759842336958782510">Chrome</translation>
-<translation id="1763864636252898013">Šis serveris nevarēja pierādīt, ka šī ir vietne <ph name="DOMAIN" />; tās drošības sertifikāts netiek uzskatīts par uzticamu jūsu ierīces operētājsistēmā. Iespējams, tas ir nepareizas konfigurācijas dēļ vai arī kāds ir ļaunprātīgi izmantojis jūsu savienojumu.</translation>
 <translation id="1773601347087397504">Saņemt palīdzību par Chrome OS izmantošanu</translation>
 <translation id="1818142563254268765">Pārlūku Chrome nevarēja automātiski atjaunināt uz jaunāko versiju, tāpēc jums nav pieejamas vairākas jaunas, noderīgas funkcijas un drošības uzlabojumi. Atjauniniet pārlūku Chrome.</translation>
 <translation id="1877026089748256423">Chrome versija ir novecojusi.</translation>
@@ -107,7 +105,6 @@ Ja pierakstīsieties tik un tā, Chrome informācija, piemēram, grāmatzīmes, 
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="4367618624832907428">Pārlūkā Google Chrome nevar parādīt šo tīmekļa lapu, jo jūsu datoram nav izveidots savienojums ar internetu.</translation>
 <translation id="4407807842708586359">Google Chrome OS</translation>
-<translation id="4424024547088906515">Šis serveris nevarēja pierādīt, ka šī ir vietne <ph name="DOMAIN" />; tās drošības sertifikāts netiek uzskatīts par uzticamu pārlūkā Chrome. Iespējams, tas ir nepareizas konfigurācijas dēļ vai arī kāds ir ļaunprātīgi izmantojis jūsu savienojumu.</translation>
 <translation id="4458285410772214805">Lūdzu, izrakstieties un pierakstieties vēlreiz, lai šīs izmaiņas stātos spēkā.</translation>
 <translation id="4480040274068703980">Chrome OS nevarēja sinhronizēt jūsu datus pierakstīšanās kļūdas dēļ.</translation>
 <translation id="4513711165509885787">Jūsu norēķinu dati ir saglabāti pārlūkā Chrome.</translation>

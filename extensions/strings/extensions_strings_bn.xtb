@@ -21,12 +21,14 @@
 <translation id="388442998277590542">বিকল্প পৃষ্ঠা '<ph name="OPTIONS_PAGE" />' লোড করা যায়নি৷</translation>
 <translation id="4115165561519362854"><ph name="EXTENSION_VERSION" /> এর কোনো সর্বনিম্ন সংস্করণ রাখতে, এই মেশিনের প্রশাসকের জন্য <ph name="EXTENSION_NAME" /> প্রয়োজন৷ এটিকে যতক্ষণ না পর্যন্ত সেই সংস্করণে আপডেট করা হচ্ছে (বা উচ্চতর) এটি সক্ষমিত হবে না৷</translation>
 <translation id="4233778200880751280"><ph name="ABOUT_PAGE" /> সম্পর্কিত পৃষ্ঠা লোড করা গেল না।</translation>
+<translation id="4434145631756268951">{0,select, single{একটি USB ডিভাইস নির্বাচন করুন}multiple{USB ডিভাইসগুলি নির্বাচন করুন}other{UNUSED}}</translation>
 <translation id="4811956658694082538">একটি ইউটিলিটি প্রক্রিয়া ক্র্যাশ করার কারণে প্যাকেজটি ইনস্টল করা যায়নি। Chrome কে পুনরায় চালু করার চেষ্টা করুন এবং আবার চেষ্টা করুন।</translation>
 <translation id="4883436287898674711">সব <ph name="WEBSITE_1" /> সাইট</translation>
 <translation id="5026754133087629784">ওয়েবদর্শন: <ph name="WEBVIEW_TAG_NAME" /></translation>
 <translation id="5356315618422219272">অ্যাপ্লিকেশান দর্শন: <ph name="APPVIEW_TAG_NAME" /></translation>
 <translation id="5456409301717116725">এই এক্সটেনশানটি '<ph name="KEY_PATH" />' মুখ্য ফাইলকে অন্তর্ভুক্ত করে৷ আপনি সম্ভবত এটি করতে চাইবেন না৷</translation>
 <translation id="5627523580512561598">এক্সটেনশান <ph name="EXTENSION_NAME" /></translation>
+<translation id="5630931906013276297">{0,select, single{একটি HID ডিভাইস নির্বাচন করুন}multiple{HID ডিভাইসগুলি নির্বাচন করুন}other{UNUSED}}</translation>
 <translation id="5960890139610307736">ExtensionView: <ph name="EXTENSIONVIEW_TAG_NAME" /></translation>
 <translation id="5972529113578162692">এই মেশিনের প্রশাসকের <ph name="EXTENSION_NAME" /> ইন্সটল করা প্রয়োজন। এটি আনইন্সটল করা যাবে না।</translation>
 <translation id="6027032947578871493"><ph name="VENDOR_NAME" /> এর থেকে অজানা পণ্য <ph name="PRODUCT_ID" /> (সিরিয়াল নম্বর <ph name="SERIAL_NUMBER" />)</translation>

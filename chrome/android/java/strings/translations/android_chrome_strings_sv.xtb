@@ -5,7 +5,6 @@
 <translation id="10614374240317010">Aldrig sparad</translation>
 <translation id="1061441684050139317">Chrome behöver tillgång till mikrofonen för att kunna dela den på den här webbplatsen.</translation>
 <translation id="1080790410959514870">Du loggar ut från ett konto som hanteras av <ph name="DOMAIN_NAME" />. Chrome-data som lagras på enheten kommer att tas bort, men all data finns kvar i ditt Google-konto.</translation>
-<translation id="1086169178231554178">SD-kort ej tillgängligt</translation>
 <translation id="1091134514807961917">Du är inloggad på följande Google-konto.</translation>
 <translation id="1095407227123756519">Lägg till ett konto och få åtkomst till bokmärken, historik, lösenord och andra inställningar på alla dina enheter.</translation>
 <translation id="1098052486217676340">Har avslutats</translation>
@@ -86,7 +85,6 @@
 <translation id="2351097562818989364">Översättningsinställningarna har återställts.</translation>
 <translation id="2354750644801399986">Do Not Track</translation>
 <translation id="2359808026110333948">Fortsätt</translation>
-<translation id="2360035970720276770">Bara adresser med http eller https kan hämtas</translation>
 <translation id="2381756643783702095">Fråga innan något skickas (rekommenderas)</translation>
 <translation id="2387895666653383613">Textskalning</translation>
 <translation id="238909021488141516">Ett fel uppstod när innehållet skulle laddas ned.</translation>
@@ -127,7 +125,6 @@
 <translation id="2960796085439532066">Upphovsrätt <ph name="YEAR" /> Google Inc. Med ensamrätt.</translation>
 <translation id="2968755619301702150">Certifikatvisare</translation>
 <translation id="2996809686854298943">En webbadress måste anges.</translation>
-<translation id="3003595280608617736">Inget SD-kort</translation>
 <translation id="3029704984691124060">Lösenfraserna matchar inte</translation>
 <translation id="3039671569659952257">Radera mappen</translation>
 <translation id="3063601790762993062">Spara video</translation>
@@ -232,6 +229,7 @@ Om du vill ändra söktermen trycker du länge för att välja. Om du vill förf
 <translation id="4816465935029283692">Datatyper</translation>
 <translation id="4827948050554950725">Lägg till ett kreditkort</translation>
 <translation id="4836364883164334657">Anslutningen till den här webbplatsen är inte privat. Hackare kan försöka stjäla information (till exempel bilder, lösenord, meddelanden och kreditkortsuppgifter) från <ph name="DOMAIN_NAME" />.</translation>
+<translation id="4850886885716139402">Visa</translation>
 <translation id="4871370605780490696">Lägg till bokmärke</translation>
 <translation id="4881695831933465202">Öppna</translation>
 <translation id="4885273946141277891">Fler Chrome-förekomster än det finns stöd för.</translation>
@@ -449,8 +447,6 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="7648422057306047504">Kryptera lösenord med användaruppgifter för Google</translation>
 <translation id="7658239707568436148">Avbryt</translation>
 <translation id="7665369617277396874">Lägg till konto</translation>
-<translation id="7711895876052978264">Webbplatsen visas i helskärmsläge.
-Tryck på bakåtknappen om du vill lämna det.</translation>
 <translation id="7764225426217299476">Lägg till adress</translation>
 <translation id="7765158879357617694">Flytta</translation>
 <translation id="7767746238359002192">Besök sidan om du vill spara offline</translation>
@@ -469,7 +465,6 @@ Tryck på bakåtknappen om du vill lämna det.</translation>
 <translation id="7961015016161918242">Aldrig</translation>
 <translation id="7963646190083259054">Leverantör:</translation>
 <translation id="7977858705483383621">SafeSearch</translation>
-<translation id="7981795308302452224">Det gick inte att starta hämtningen</translation>
 <translation id="7987073022710626672">Chromes användarvillkor</translation>
 <translation id="7989222512959629388">Sparar ...</translation>
 <translation id="7998918019931843664">Öppna en stängd flik på nytt</translation>
@@ -482,7 +477,6 @@ Tryck på bakåtknappen om du vill lämna det.</translation>
 <translation id="8073388330009372546">Öppna bild i ny flik</translation>
 <translation id="8084156870963450514">Logga in för att komma åt alla dina grejer på webben från vilken enhet som helst</translation>
 <translation id="8106211421800660735">Kreditkortsnummer</translation>
-<translation id="8109148095642131923">Det gick inte att lägga till det nedladdade objektet i nedladdningshanteraren.</translation>
 <translation id="813082847718468539">Visa information om webbplatsen</translation>
 <translation id="8137558756159375272">Funktionen Tryck för att söka skickar det markerade ordet till Google Sök med den aktuella sidan som kontext. Du kan stänga av funktionen i <ph name="BEGIN_LINK" />Inställningar<ph name="END_LINK" />.</translation>
 <translation id="8143660160623733249">Mappnamn</translation>
@@ -567,5 +561,4 @@ Du hämtar nya licenser genom att ansluta till internet och spela upp det nedlad
 <translation id="969096075394517431">Ändra språk</translation>
 <translation id="971774202801778802">Bokmärkets webbadress</translation>
 <translation id="983192555821071799">Stäng alla flikar</translation>
-<translation id="988938288723502454">Det går inte att skapa en katalog för hämtade filer på SD-kortet.</translation>
 </translationbundle>

@@ -21,12 +21,14 @@
 <translation id="388442998277590542">לא היתה אפשרות לטעון את דף האפשרויות '<ph name="OPTIONS_PAGE" />'.</translation>
 <translation id="4115165561519362854">מנהל המערכת של מחשב זה דורש שהגרסה המינימלית של <ph name="EXTENSION_NAME" /> תהיה <ph name="EXTENSION_VERSION" />. ההפעלה אינה אפשרית עד לעדכון לגרסה זו (ואילך).</translation>
 <translation id="4233778200880751280">לא ניתן לטעון את דף המידע '<ph name="ABOUT_PAGE" />'.</translation>
+<translation id="4434145631756268951">{0,select, single{‏בחר התקן USB}multiple{‏בחר התקני USB}other{לא בשימוש}}</translation>
 <translation id="4811956658694082538">‏לא ניתן היה להתקין את החבילה מפני שתהליך כלי השירות קרס. נסה לאתחל את Chrome ואז נסה שוב.</translation>
 <translation id="4883436287898674711">כל אתרי <ph name="WEBSITE_1" /></translation>
 <translation id="5026754133087629784">צפיות באתר: <ph name="WEBVIEW_TAG_NAME" /></translation>
 <translation id="5356315618422219272">‏Appview‏: <ph name="APPVIEW_TAG_NAME" /></translation>
 <translation id="5456409301717116725">תוסף זה כולל את קובץ המפתח "<ph name="KEY_PATH" />". מומלץ לא לעשות זאת.</translation>
 <translation id="5627523580512561598">תוסף <ph name="EXTENSION_NAME" /></translation>
+<translation id="5630931906013276297">{0,select, single{‏בחר התקן HID}multiple{‏בחר התקני HID}other{לא בשימוש}}</translation>
 <translation id="5960890139610307736">ExtensionView: <ph name="EXTENSIONVIEW_TAG_NAME" /></translation>
 <translation id="5972529113578162692">מנהל המערכת של מכשיר זה דורש התקנה של <ph name="EXTENSION_NAME" />. לא ניתן להסיר את ההתקנה.</translation>
 <translation id="6027032947578871493">מוצר לא ידוע <ph name="PRODUCT_ID" /> מהספק <ph name="VENDOR_NAME" /> (מספר סידורי <ph name="SERIAL_NUMBER" />)</translation>

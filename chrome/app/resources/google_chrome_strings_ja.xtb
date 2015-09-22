@@ -9,7 +9,6 @@
 <translation id="1073391069195728457">Chrome - お知らせ</translation>
 <translation id="1104959162601287462">Chrome OS について(&amp;C)</translation>
 <translation id="110877069173485804">自分好みに設定</translation>
-<translation id="1150979032973867961">このサーバーが <ph name="DOMAIN" /> であることを確認できませんでした。このサーバーのセキュリティ証明書は、ご使用のパソコンのオペレーティング システムによって信頼されているものではありません。原因としては、不適切な設定や、悪意のあるユーザーによる接続妨害が考えられます。</translation>
 <translation id="1225016890511909183">Chrome で情報が安全に保存されるので、再度入力する必要はありません。ただし、今後もお支払いの際にカードのセキュリティ コードを入力する必要があります。</translation>
 <translation id="123620459398936149">Chrome OS はデータを同期できませんでした。同期パスフレーズを更新してください。</translation>
 <translation id="127345590676626841">Chrome は自動的に更新されるため、常に最新版をご利用になれます。このダウンロードが完了すると、Chrome が再起動し、すぐにお使いいただけます。</translation>
@@ -33,7 +32,6 @@
 <translation id="174539241580958092">ログイン時にエラーが発生したため、Google Chrome はデータを同期できませんでした。</translation>
 <translation id="1759301979429102118">連絡先から詳細を取得すると、Chrome でのフォームの記入が楽になります。</translation>
 <translation id="1759842336958782510">Chrome</translation>
-<translation id="1763864636252898013">このサーバーが <ph name="DOMAIN" /> であることを確認できませんでした。このサーバーのセキュリティ証明書は、ご使用のデバイスのオペレーティング システムによって信頼されているものではありません。原因としては、不適切な設定や、悪意のあるユーザーによる接続妨害が考えられます。</translation>
 <translation id="1773601347087397504">Chrome OS の使用に関するアドバイス</translation>
 <translation id="1818142563254268765">Chrome を最新バージョンに自動更新できませんでした。新機能とセキュリティの修正が適用されていません。Chrome を更新する必要があります。</translation>
 <translation id="1877026089748256423">Chrome は古いバージョンです</translation>
@@ -105,7 +103,6 @@
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="4367618624832907428">パソコンがインターネットに接続されていないため、Google Chrome ではウェブページを表示できません。</translation>
 <translation id="4407807842708586359">Google Chrome OS</translation>
-<translation id="4424024547088906515">このサーバーが <ph name="DOMAIN" /> であることを確認できませんでした。このサーバーのセキュリティ証明書は Chrome によって信頼されているものではありません。原因としては、不適切な設定や、悪意のあるユーザーによる接続妨害が考えられます。</translation>
 <translation id="4458285410772214805">変更内容を反映するには、一度ログアウトして、もう一度ログインしてください。</translation>
 <translation id="4480040274068703980">ログイン時にエラーが発生したため、Chrome OS はデータを同期できませんでした。</translation>
 <translation id="4513711165509885787">お支払い情報を Chrome に保存しました。</translation>

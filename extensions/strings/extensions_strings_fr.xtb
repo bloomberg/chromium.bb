@@ -21,12 +21,14 @@
 <translation id="388442998277590542">Impossible de charger la page d'options "<ph name="OPTIONS_PAGE" />".</translation>
 <translation id="4115165561519362854">L'administrateur de cette machine exige que <ph name="EXTENSION_NAME" /> dispose, au minimum, de la version <ph name="EXTENSION_VERSION" />. L'activation sera impossible tant que la mise à jour vers cette version (ou une version ultérieure) n'aura pas été effectuée.</translation>
 <translation id="4233778200880751280">Impossible de charger la page "À propos" <ph name="ABOUT_PAGE" />.</translation>
+<translation id="4434145631756268951">{0,select, single{Sélectionner un appareil USB}multiple{Sélectionner des appareils USB}other{UNUSED}}</translation>
 <translation id="4811956658694082538">Impossible d'installer le package en raison du plantage d'un processus associé à un utilitaire. Veuillez redémarrer Chrome, puis réessayer.</translation>
 <translation id="4883436287898674711">Tous les sites <ph name="WEBSITE_1" /></translation>
 <translation id="5026754133087629784">Affichage du site Web : <ph name="WEBVIEW_TAG_NAME" /></translation>
 <translation id="5356315618422219272">Appview : <ph name="APPVIEW_TAG_NAME" /></translation>
 <translation id="5456409301717116725">Cette extension comprend le fichier clé <ph name="KEY_PATH" />. Vous ne voulez probablement pas poursuivre.</translation>
 <translation id="5627523580512561598">Extension <ph name="EXTENSION_NAME" /></translation>
+<translation id="5630931906013276297">{0,select, single{Sélectionner un appareil HID}multiple{Sélectionner des appareils HID}other{UNUSED}}</translation>
 <translation id="5960890139610307736">ExtensionView : <ph name="EXTENSIONVIEW_TAG_NAME" /></translation>
 <translation id="5972529113578162692">L'administrateur de cet ordinateur exige que l'extension <ph name="EXTENSION_NAME" /> soit installée. Cette extension ne pourra pas être désinstallée.</translation>
 <translation id="6027032947578871493">Produit inconnu <ph name="PRODUCT_ID" /> fourni par <ph name="VENDOR_NAME" /> (numéro de série : <ph name="SERIAL_NUMBER" />)</translation>

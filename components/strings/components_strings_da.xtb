@@ -8,7 +8,9 @@
 <translation id="111844081046043029">Er du sikker på, at du vil forlade denne side?</translation>
 <translation id="112840717907525620">Cache for politik er OK</translation>
 <translation id="1132774398110320017">Indstillinger for Autofyld i Chrome...</translation>
+<translation id="1150979032973867961">Denne server kunne ikke bevise, at den er <ph name="DOMAIN" />, da operativsystemet på din computer ikke har tillid til sikkerhedscertifikatet. Dette kan skyldes en fejlkonfiguration, eller at en hacker har opfanget din forbindelse.</translation>
 <translation id="1152921474424827756">Få adgang til en <ph name="BEGIN_LINK" />cachelagret kopi<ph name="END_LINK" /> af <ph name="URL" /></translation>
+<translation id="121201262018556460">Du har forsøgt at få fat i <ph name="DOMAIN" />, men serveren har præsenteret et certifikat med en svag nøgle. En hacker kan have knækket den private nøgle, og serveren er muligvis ikke den forventede server (du kommunikerer muligvis med en hacker).</translation>
 <translation id="1227224963052638717">Ukendt politik.</translation>
 <translation id="1227633850867390598">Skjul værdi</translation>
 <translation id="1228893227497259893">Forkert enheds-id</translation>
@@ -22,8 +24,10 @@
 <translation id="1639239467298939599">Indlæser...</translation>
 <translation id="1640180200866533862">Brugerpolitikker</translation>
 <translation id="1644184664548287040">Netværkskonfigurationen er ugyldig og kunne ikke importeres.</translation>
+<translation id="168841957122794586">Servercertifikatet indeholder en svag kryptografisk nøgle.</translation>
 <translation id="1693754753824026215">Siden på <ph name="SITE" /> siger:</translation>
 <translation id="1734864079702812349">Amex</translation>
+<translation id="1763864636252898013">Denne server kunne ikke bevise, at den er <ph name="DOMAIN" />, da operativsystemet på din enhed ikke har tillid til sikkerhedscertifikatet. Dette kan skyldes en fejlkonfiguration, eller at en hacker har opfanget din forbindelse.</translation>
 <translation id="1821930232296380041">Ugyldig anmodning eller anmodningsparametre</translation>
 <translation id="1853748787962613237">Artiklen kunne ikke vises.</translation>
 <translation id="1871208020102129563">Proxy er indstillet til at bruge faste proxyservere, ikke webadresser til .pac-scripts.</translation>
@@ -46,20 +50,25 @@
 <translation id="2113977810652731515">Kort</translation>
 <translation id="2114841414352855701">Ignoreret, da den blev tilsidesat af <ph name="POLICY_NAME" /> .</translation>
 <translation id="213826338245044447">Bogmærker på mobil</translation>
+<translation id="2171101176734966184">Du forsøgte at få fat på <ph name="DOMAIN" />, men serveren har præsenteret et certifikat, der er signeret med en svag signaturalgoritme. Det betyder, at sikkerhedsoplysningerne fra serveren kan være forfalskede, og at serveren muligvis ikke er den server, som du har forventet (du kommunikerer muligvis med en hacker).</translation>
 <translation id="2181821976797666341">Politikker</translation>
 <translation id="2212735316055980242">Politikken blev ikke fundet</translation>
 <translation id="2213606439339815911">Indlæg hentes...</translation>
 <translation id="225207911366869382">Denne værdi er forældet for denne politik.</translation>
 <translation id="2262243747453050782">HTTP-fejl</translation>
 <translation id="2270192940992995399">Artiklen kunne ikke findes.</translation>
+<translation id="229702904922032456">Et rodcertifikat eller et midlertidigt certifikat er udløbet.</translation>
 <translation id="2328300916057834155">Ugyldigt bogmærke ved indeks <ph name="ENTRY_INDEX" /> er ignoreret</translation>
 <translation id="2354001756790975382">Andre bogmærker</translation>
 <translation id="2359808026110333948">Fortsæt</translation>
 <translation id="2367567093518048410">Niveau</translation>
+<translation id="2386255080630008482">Serverens certifikat er blevet tilbagekaldt.</translation>
 <translation id="2392959068659972793">Vis politikker uden nogen værdier</translation>
 <translation id="2396249848217231973">&amp;Fortryd sletning</translation>
+<translation id="2413528052993050574">Denne server kunne ikke bevise, at den er <ph name="DOMAIN" />, da sikkerhedscertifikatet muligvis er blevet tilbagekaldt. Dette kan skyldes en fejlkonfiguration, eller at en hacker har opfanget din forbindelse.</translation>
 <translation id="2455981314101692989">Denne webside har deaktiveret automatisk udfyldning af denne formular.</translation>
 <translation id="2479410451996844060">Ugyldig søgewebadresse.</translation>
+<translation id="2491120439723279231">Serverens certifikat indeholder fejl.</translation>
 <translation id="2495083838625180221">Værktøj til parsing af JSON-filer</translation>
 <translation id="2498091847651709837">Scan et nyt kort</translation>
 <translation id="2556876185419854533">&amp;Fortryd redigering</translation>
@@ -70,10 +79,14 @@
 <translation id="2639739919103226564">Status:</translation>
 <translation id="2704283930420550640">Værdien stemmer ikke overens med formatet.</translation>
 <translation id="2721148159707890343">Anmodning lykkedes</translation>
+<translation id="2728127805433021124">Serverens certifikat er signeret ved hjælp af en svag signaturalgoritme.</translation>
 <translation id="2774256287122201187">Du kan nu fortsætte. Denne advarsel vises ikke igen i de næste fem minutter, hvis du fortsætter til siden.</translation>
 <translation id="277499241957683684">Manglende enhedsregistrering</translation>
 <translation id="2835170189407361413">Ryd formular</translation>
 <translation id="2855922900409897335">Bekræft dit <ph name="CREDIT_CARD" /></translation>
+<translation id="2915500479781995473">Denne server kunne ikke bevise, at den er <ph name="DOMAIN" />, da sikkerhedscertifikatet er udløbet. Dette kan skyldes en fejlkonfiguration, eller at en hacker har opfanget din forbindelse. Uret på din computer er indstillet til <ph name="CURRENT_TIME" />. Er det korrekt? Hvis ikke, skal du indstille uret og opdatere siden.</translation>
+<translation id="2922350208395188000">Serverens certifikat kan ikke kontrolleres.</translation>
+<translation id="2941952326391522266">Denne server kunne ikke bevise, at den er <ph name="DOMAIN" />, da sikkerhedscertifikatet er fra <ph name="DOMAIN2" />. Dette kan skyldes en fejlkonfiguration, eller at en hacker har opfanget din forbindelse.</translation>
 <translation id="2958431318199492670">Netværkskonfigurationen overholder ikke ONC-standarden. Dele af konfiguration kan muligvis ikke importeres.</translation>
 <translation id="2972581237482394796">&amp;Annuller fortryd</translation>
 <translation id="3010559122411665027">Angiv posten "<ph name="ENTRY_INDEX" />": <ph name="ERROR" /></translation>
@@ -84,9 +97,11 @@
 <translation id="3169472444629675720">Discover</translation>
 <translation id="3174168572213147020">Ø</translation>
 <translation id="3219579145727097045">Indtast udløbsdatoen og den firecifrede kontrolkode, som ses på forsiden af dit kort</translation>
+<translation id="3225919329040284222">Serveren præsenterede et certifikat, der ikke svarer til de indbyggede forventninger. Disse forventninger medtages for bestemte websites med høj sikkerhed for at beskytte dig.</translation>
 <translation id="3228969707346345236">Oversættelsen mislykkedes, fordi siden allerede er på <ph name="LANGUAGE" />.</translation>
 <translation id="3270847123878663523">&amp;Fortryd omarrangering</translation>
 <translation id="333371639341676808">Undgå, at denne side laver nye dialogbokse.</translation>
+<translation id="3340978935015468852">indstillinger</translation>
 <translation id="3369192424181595722">Urfejl</translation>
 <translation id="3369366829301677151">Opdater og bekræft dit <ph name="CREDIT_CARD" /></translation>
 <translation id="337363190475750230">Fjernet</translation>
@@ -97,6 +112,7 @@
 <translation id="3450660100078934250">MasterCard</translation>
 <translation id="3452404311384756672">Hent interval:</translation>
 <translation id="3462200631372590220">Skjul avanceret</translation>
+<translation id="3528171143076753409">Serverens certifikat er ikke troværdigt.</translation>
 <translation id="3542684924769048008">Brug adgangskode til:</translation>
 <translation id="3583757800736429874">&amp;Annuller fortryd flytning</translation>
 <translation id="3623476034248543066">Vis værdi</translation>
@@ -126,13 +142,18 @@
 <translation id="4269787794583293679">(Intet brugernavn)</translation>
 <translation id="4300246636397505754">Forslag fra forældre</translation>
 <translation id="4372948949327679948">Forventet <ph name="VALUE_TYPE" />-værdi.</translation>
+<translation id="4377125064752653719">Du har forsøgt at få fat på <ph name="DOMAIN" />, men serverens certifikat er blevet tilbagekaldt af udgiveren. Det betyder, at du bestemt ikke bør have tillid til serverens sikkerhedsoplysninger. Du kommunikerer muligvis med en hacker.</translation>
+<translation id="4424024547088906515">Denne server kunne ikke bevise, at den er <ph name="DOMAIN" />, da Chrome ikke har tillid til sikkerhedscertifikatet. Dette kan skyldes en fejlkonfiguration, eller at en hacker har opfanget din forbindelse.</translation>
 <translation id="443673843213245140">Brug af en proxy er deaktiveret, men en eksplicit proxykonfiguration er angivet.</translation>
 <translation id="4506176782989081258">Valideringsfejl: <ph name="VALIDATION_ERROR" /></translation>
 <translation id="4587425331216688090">Vil du fjerne adressen fra Chrome?</translation>
 <translation id="4594403342090139922">&amp;Fortryd sletning</translation>
 <translation id="4607653538520819196">Denne side kan ikke oprettes via proxy med datasparefunktion.</translation>
 <translation id="4668929960204016307">,</translation>
+<translation id="467662567472608290">Denne server kunne ikke bevise, at den er <ph name="DOMAIN" />, da sikkerhedscertifikatet indeholder fejl. Dette kan skyldes en fejlkonfiguration, eller at en hacker har opfanget din forbindelse.</translation>
 <translation id="4726672564094551039">Opdater politikker</translation>
+<translation id="4728558894243024398">Platform</translation>
+<translation id="4771973620359291008">Der er opstået en ukendt fejl.</translation>
 <translation id="4800132727771399293">Kontrollér, om din kontrolkode og udløbsdato er korrekte, og prøv igen.</translation>
 <translation id="4813512666221746211">Netværksfejl</translation>
 <translation id="4850886885716139402">Vis</translation>
@@ -142,7 +163,9 @@
 <translation id="498957508165411911">Vil du oversætte fra <ph name="ORIGINAL_LANGUAGE" /> til <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="5019198164206649151">Sikkerhedskopien er fejlbehæftet</translation>
 <translation id="5031870354684148875">Om Google Oversæt</translation>
+<translation id="5087286274860437796">Serverens certifikatet er ikke gyldigt i øjeblikket.</translation>
 <translation id="5089810972385038852">Delstat</translation>
+<translation id="5094747076828555589">Denne server kunne ikke bevise, at den er <ph name="DOMAIN" />, da Chromium ikke har tillid til sikkerhedscertifikatet. Dette kan skyldes en fejlkonfiguration, eller at en hacker har opfanget din forbindelse.</translation>
 <translation id="5095208057601539847">Provins</translation>
 <translation id="5145883236150621069">Fejlkode til stede i politiksvar</translation>
 <translation id="5172758083709347301">Maskine</translation>
@@ -152,6 +175,7 @@
 <translation id="5299298092464848405">Der opstod en fejl ved parsing af politik</translation>
 <translation id="5317780077021120954">Gem</translation>
 <translation id="536296301121032821">Der kunne ikke gemmes indstillinger for politik</translation>
+<translation id="540969355065856584">Denne server kunne ikke bevise, at den er <ph name="DOMAIN" />, da dens sikkerhedscertifikat ikke er gyldigt i øjeblikket. Dette kan skyldes en fejlkonfiguration, eller at en hacker har opfanget din forbindelse.</translation>
 <translation id="5439770059721715174">Skemavalideringsfejl på "<ph name="ERROR_PATH" />": <ph name="ERROR" /></translation>
 <translation id="5455374756549232013">Forkert tidsstempel for politik</translation>
 <translation id="5470861586879999274">&amp;Annuller fortryd redigering</translation>
@@ -170,6 +194,7 @@
 <translation id="5989320800837274978">Der er hverken angivet faste proxyservere eller en .pac-scriptwebadresse.</translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6040143037577758943">Luk</translation>
+<translation id="6151417162996330722">Servercertifikatet har en gyldighedsperiode, der er for lang.</translation>
 <translation id="6154808779448689242">Det returnerede token for politikken stemmer ikke overens med det nuværende token</translation>
 <translation id="6165508094623778733">Flere oplysninger</translation>
 <translation id="6259156558325130047">&amp;Annuller fortryd omarrangering</translation>
@@ -186,18 +211,21 @@
 <translation id="6628463337424475685"><ph name="ENGINE" /> Søg</translation>
 <translation id="6644283850729428850">Denne politik er forældet.</translation>
 <translation id="6646897916597483132">Indtast den firecifrede kontrolkode, som ses på forsiden af dit kort</translation>
+<translation id="674375294223700098">Ukendt fejl i servercertifikatet.</translation>
 <translation id="6753269504797312559">Politikkens værdi</translation>
 <translation id="6831043979455480757">Oversæt</translation>
 <translation id="6839929833149231406">Område</translation>
 <translation id="6874604403660855544">&amp;Annuller fortryd tilføjelse</translation>
 <translation id="6891596781022320156">Politikniveauet understøttes ikke.</translation>
 <translation id="6915804003454593391">Bruger:</translation>
+<translation id="6957887021205513506">Serverens certifikat ser ud til at være en forfalskning.</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6965978654500191972">Enhed</translation>
 <translation id="6970216967273061347">Distrikt</translation>
 <translation id="6973656660372572881">Både faste proxyservere og en webadresse for .pac-script angives.</translation>
 <translation id="6980028882292583085">JavaScript-advarsel</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
+<translation id="7050187094878475250">Du forsøgte at gå til <ph name="DOMAIN" />, men serveren præsenterede et certifikat, hvis gyldighedsperiode er for lang til at være pålidelig.</translation>
 <translation id="7087282848513945231">Amt/region</translation>
 <translation id="7108649287766967076">Oversættelsen til <ph name="TARGET_LANGUAGE" /> mislykkedes.</translation>
 <translation id="7139724024395191329">Emirat</translation>
@@ -217,17 +245,21 @@
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7537536606612762813">Obligatorisk</translation>
 <translation id="7542995811387359312">Automatisk udfyldning af kreditkort er deaktiveret, fordi formularen ikke bruger en sikker forbindelse.</translation>
+<translation id="7567204685887185387">Denne server kunne ikke bevise, at den er <ph name="DOMAIN" />, da sikkerhedscertifikatet er udstedt på ulovlig vis. Dette kan skyldes en fejlkonfiguration, eller at en hacker har opfanget din forbindelse.</translation>
 <translation id="7568593326407688803">Denne side er på<ph name="ORIGINAL_LANGUAGE" />Vil du oversætte den?</translation>
 <translation id="7569952961197462199">Vil du fjerne kreditkortet fra Chrome?</translation>
+<translation id="7592362899630581445">Begrænsningerne for serverens certifikatnavn er overtrådt.</translation>
 <translation id="7600965453749440009">Oversæt aldrig <ph name="LANGUAGE" /></translation>
 <translation id="7610193165460212391">Værdien er uden for intervallet <ph name="VALUE" />.</translation>
 <translation id="7752995774971033316">Administreres ikke</translation>
+<translation id="7761701407923456692">Serverens certifikat passer ikke til webadressen.</translation>
 <translation id="777702478322588152">Præfektur</translation>
 <translation id="7791543448312431591">Tilføj</translation>
 <translation id="7805768142964895445">Status</translation>
 <translation id="7813600968533626083">Vil du fjerne formularforslaget fra Chrome?</translation>
 <translation id="7887683347370398519">Kontrollér, om din kontrolkode er korrekt, og prøv igen.</translation>
 <translation id="7935318582918952113">DOM Distiller</translation>
+<translation id="7938958445268990899">Serverens certifikatet er endnu ikke gyldigt.</translation>
 <translation id="7956713633345437162">Bogmærker på mobil</translation>
 <translation id="7961015016161918242">Aldrig</translation>
 <translation id="7977590112176369853">&lt;indtast forespørgsel&gt;</translation>
@@ -260,18 +292,22 @@
 <translation id="8824019021993735287">Chrome kunne ikke bekræfte dit kort på dette tidspunkt. Prøv igen senere.</translation>
 <translation id="8834246243508017242">Aktivér autofyld med kontaktpersoner...</translation>
 <translation id="883848425547221593">Andre bogmærker</translation>
+<translation id="884923133447025588">Der blev ikke fundet nogen funktion til tilbagekaldelse.</translation>
 <translation id="8866481888320382733">Der opstod en fejl ved parsing af indstillinger for politik</translation>
 <translation id="8876793034577346603">Netværkskonfiguration kunne ikke parses.</translation>
 <translation id="8891727572606052622">Ugyldig proxytilstand.</translation>
 <translation id="8932102934695377596">Dit ur er bagud</translation>
 <translation id="8940229512486821554">Kør <ph name="EXTENSION_NAME" />-kommandoen: <ph name="SEARCH_TERMS" /></translation>
+<translation id="8971063699422889582">Serverens certifikat er udløbet.</translation>
 <translation id="8988760548304185580">Indtast udløbsdatoen og den trecifrede kontrolkode, som ses på bagsiden af dit kort</translation>
 <translation id="9020542370529661692">Denne side er oversat til <ph name="TARGET_LANGUAGE" /></translation>
+<translation id="9049981332609050619">Du har forsøgt at nå <ph name="DOMAIN" />, men serveren præsenterede et ugyldigt certifikat.</translation>
 <translation id="9125941078353557812">Indtast den trecifrede kontrolkode, som ses på bagsiden af dit kort</translation>
 <translation id="9137013805542155359">Vis oprindelig</translation>
 <translation id="9148507642005240123">&amp;Fortryd redigering</translation>
 <translation id="9154176715500758432">Bliv på denne side</translation>
 <translation id="9170848237812810038">&amp;Fortryd</translation>
+<translation id="917450738466192189">Serverens certifikat er ugyldigt.</translation>
 <translation id="9207861905230894330">Artiklen kunne ikke tilføjes.</translation>
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="935608979562296692">RYD FORMULAREN</translation>

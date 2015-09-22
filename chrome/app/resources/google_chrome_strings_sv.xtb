@@ -11,7 +11,6 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="1073391069195728457">Chrome – meddelanden</translation>
 <translation id="1104959162601287462">Om &amp;Chrome OS</translation>
 <translation id="110877069173485804">Det här är Chrome</translation>
-<translation id="1150979032973867961">Servern kunde inte bevisa att den är <ph name="DOMAIN" /> eftersom datorns operativsystem inte litar på dess säkerhetscertifikat. Detta kan orsakas av en felaktig konfigurering eller att någon spärrar anslutningen.</translation>
 <translation id="1225016890511909183">Chrome lagrar din information på ett säkert sätt så att du inte behöver ange den igen, men du måste fortfarande bekräfta kortets säkerhetskod för framtida betalningar.</translation>
 <translation id="123620459398936149">Det gick inte att synkronisera data med Chrome OS. Uppdatera lösenfrasen för synkronisering.</translation>
 <translation id="127345590676626841">Chrome uppdateras automatiskt så att du alltid har den senaste versionen. När den här nedladdningen är klar startas Chrome om och sedan är du igång.</translation>
@@ -37,7 +36,6 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="174539241580958092">Google Chrome kunde inte synkronisera data på grund av ett fel vid inloggningen.</translation>
 <translation id="1759301979429102118">Du kan fylla i formulär snabbare i Chrome med hjälp av uppgifter från dina kontakter.</translation>
 <translation id="1759842336958782510">Chrome</translation>
-<translation id="1763864636252898013">Servern kunde inte bevisa att den är <ph name="DOMAIN" /> eftersom enhetens operativsystem inte litar på dess säkerhetscertifikat. Detta kan orsakas av en felaktig konfigurering eller att någon spärrar anslutningen.</translation>
 <translation id="1773601347087397504">Få hjälp med att använda Chrome OS</translation>
 <translation id="1818142563254268765">Chrome kunde inte uppdateras till den senaste versionen automatiskt. Därför missar du de senaste nya funktionerna och säkerhetsuppdateringarna. Du måste uppdatera Chrome.</translation>
 <translation id="1877026089748256423">Den här versionen av Chrome är inaktuell</translation>
@@ -109,7 +107,6 @@ Om du loggar in ändå synkroniseras din information i Chrome, till exempel bokm
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="4367618624832907428">Det går inte att visa webbsidan i Google Chrome eftersom datorn inte är ansluten till internet.</translation>
 <translation id="4407807842708586359">Google Chrome OS</translation>
-<translation id="4424024547088906515">Servern kunde inte bevisa att den är <ph name="DOMAIN" /> eftersom Chrome inte litar på dess säkerhetscertifikat. Detta kan orsakas av en felaktig konfigurering eller att någon spärrar anslutningen.</translation>
 <translation id="4458285410772214805">Den här ändringen träder inte i kraft förrän du loggat ut och sedan loggar in igen.</translation>
 <translation id="4480040274068703980">Det gick inte att synkronisera data med Chrome OS på grund av ett inloggningsfel.</translation>
 <translation id="4513711165509885787">Dina faktureringsuppgifter har sparats i Chrome.</translation>

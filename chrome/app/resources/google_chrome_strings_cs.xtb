@@ -11,7 +11,6 @@ Některé funkce možná nebudou k dispozici a změny nastavení se neuloží.</
 <translation id="1073391069195728457">Chrome – oznámení</translation>
 <translation id="1104959162601287462">O operačním systému &amp;Chrome</translation>
 <translation id="110877069173485804">Toto je váš Chrome</translation>
-<translation id="1150979032973867961">Server nedokázal prokázat, že patří doméně <ph name="DOMAIN" />. Operační systém vašeho počítače nedůvěřuje jeho bezpečnostnímu certifikátu.Může to být způsobeno nesprávnou konfigurací nebo tím, že vaše připojení zachytává útočník.</translation>
 <translation id="1225016890511909183">Prohlížeč Chrome vaše informace bezpečně uloží, abyste je nemuseli zadávat znovu. I přesto však bude třeba ověřit bezpečnostní kód karty pro budoucí platby.</translation>
 <translation id="123620459398936149">Chrome OS vaše data nemohl synchronizovat. Aktualizujte prosím heslovou frázi pro synchronizaci.</translation>
 <translation id="127345590676626841">Chrome se automaticky aktualizuje, abyste měli vždy nejaktuálnější verzi. Až toto stahování skončí, Chrome se restartuje a budete moci pokračovat.</translation>
@@ -37,7 +36,6 @@ Některé funkce možná nebudou k dispozici a změny nastavení se neuloží.</
 <translation id="174539241580958092">Google Chrome vaše data nemohl synchronizovat z důvodu chyby při přihlášení.</translation>
 <translation id="1759301979429102118">Podrobnosti vašich kontaktů vám mohou pomoci vyplňovat formuláře v Chromu rychleji.</translation>
 <translation id="1759842336958782510">Chrome</translation>
-<translation id="1763864636252898013">Server nedokázal prokázat, že patří doméně <ph name="DOMAIN" />. Operační systém vašeho zařízení nedůvěřuje jeho bezpečnostnímu certifikátu. Může to být způsobeno nesprávnou konfigurací nebo tím, že vaše připojení zachytává útočník.</translation>
 <translation id="1773601347087397504">Pomoc s používáním systému Chrome OS</translation>
 <translation id="1818142563254268765">Prohlížeč Chrome se nemohl aktualizovat na nejnovější verzi. Nebudete mít proto k dispozici skvělé nové funkce a opravy zabezpečení. Chrome je potřeba aktualizovat.</translation>
 <translation id="1877026089748256423">Chrome je zastaralý</translation>
@@ -109,7 +107,6 @@ Pokud se přesto přihlásíte, budou data prohlížeče Chrome (například zá
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="4367618624832907428">Google Chrome nemůže webovou stránku zobrazit, protože počítač není připojen k internetu.</translation>
 <translation id="4407807842708586359">Google Chrome</translation>
-<translation id="4424024547088906515">Server nedokázal prokázat, že patří doméně <ph name="DOMAIN" />. Chrome jeho bezpečnostnímu certifikátu nedůvěřuje. Může to být způsobeno nesprávnou konfigurací nebo tím, že vaše připojení zachytává útočník.</translation>
 <translation id="4458285410772214805">Chcete-li, aby se změny projevily, odhlaste se a znovu se přihlaste.</translation>
 <translation id="4480040274068703980">Chrome OS vaše data nemohl synchronizovat z důvodu chyby při přihlášení.</translation>
 <translation id="4513711165509885787">Fakturační údaje byly uloženy do prohlížeče Chrome.</translation>

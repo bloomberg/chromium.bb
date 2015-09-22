@@ -103,7 +103,6 @@
       Als je dit beleid instelt, wordt de standaardwaarde van 3 uur overschreven. Geldige waarden voor dit beleid liggen tussen 1800000 (30 minuten) en 86400000 (1 dag). Alle waarden die niet binnen dit bereik vallen, worden afgerond tot de boven- of ondergrens.
 
       Als je dit beleid niet instelt, gebruikt <ph name="PRODUCT_OS_NAME" /> de standaardwaarde van 3 uur.</translation>
-<translation id="1503959756075098984">Extensie-id's en update-URL's worden op de achtergrond geïnstalleerd</translation>
 <translation id="1504431521196476721">Externe bevestiging</translation>
 <translation id="1509692106376861764">Dit beleid wordt niet meer gebruikt sinds <ph name="PRODUCT_NAME" /> versie 29.</translation>
 <translation id="1522425503138261032">Sites toestaan de fysieke locatie van gebruikers bij te houden</translation>
@@ -1165,7 +1164,7 @@ Als het beleid niet wordt ingesteld, of op 'False' wordt ingesteld, wordt het sp
 
           Dit beleid wordt alleen gerespecteerd als het beleid 'DefaultSearchProviderEnabled' is ingeschakeld.</translation>
 <translation id="6365608006609079612">
-          Als deze instelling is ingeschakeld, kunnen gebruikers <ph name="PRODUCT_NAME" /> wachtwoorden laten onthouden en deze wachtwoorden automatisch laten leveren wanneer ze weer inloggen bij een site.
+          Als deze instelling is ingeschakeld, kunnen gebruikers <ph name="PRODUCT_NAME" /> wachtwoorden laten onthouden en deze wachtwoorden automatisch laten laden wanneer ze weer inloggen bij een site.
 
           Als deze instelling is uitgeschakeld, kunnen gebruikers geen nieuwe wachtwoorden opslaan, maar kunnen ze nog steeds wachtwoorden gebruiken die eerder zijn opgeslagen.
 
@@ -1666,7 +1665,6 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
           Scheid meerdere servernamen van elkaar met komma's. Jokertekens (*) zijn toegestaan.
 
           Als je dit beleid niet instelt, probeert <ph name="PRODUCT_NAME" /> te detecteren of een server zich in het intranet bevindt en wordt daarna pas gereageerd op IWA-verzoeken. Als een server wordt gedetecteerd als intranet, worden IWA-verzoeken van de server genegeerd door <ph name="PRODUCT_NAME" />.</translation>
-<translation id="8665076741187546529">De lijst met automatisch geïnstalleerde extensies configureren</translation>
 <translation id="8668394701842594241">Hiermee wordt een lijst met plug-ins gespecificeerd die zijn ingeschakeld in <ph name="PRODUCT_NAME" /> en wordt voorkomen dat gebruikers deze instelling kunnen wijzigen.
 
       De jokertekens '*' en '?' kunnen worden gebruikt om overeenkomsten met willekeurige tekens te zoeken. '*' komt overeen met een willekeurig aantal tekens terwijl '?' één optioneel teken specificeert en dus kan overeenkomen met één of nul tekens. Het teken '\' kan worden gebruikt om deze tekens te escapen, dus als je overeenkomsten voor de letterlijke tekens '*', '?' of '\' wilt zoeken, moet je er een '\' vóór plaatsen.

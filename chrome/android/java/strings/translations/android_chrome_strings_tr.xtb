@@ -5,7 +5,6 @@
 <translation id="10614374240317010">Hiç kaydedilmeyecekler</translation>
 <translation id="1061441684050139317">Chrome'un mikrofonu bu siteyle paylaşması için mikrofon erişimine ihtiyacı var.</translation>
 <translation id="1080790410959514870"><ph name="DOMAIN_NAME" /> tarafından yönetilen bir hesaptan çıkış yapıyorsunuz. Bu işlem, bu cihazda depolanan Chrome verilerini siler, ancak veriler Google Hesabınızda kalmaya devam eder.</translation>
-<translation id="1086169178231554178">SD kart kullanılamıyor</translation>
 <translation id="1091134514807961917">Aşağıdaki Google Hesabı'nda oturum açtınız.</translation>
 <translation id="1095407227123756519">Yer işaretlerinize, geçmişinize, şifrelerinize ve diğer ayarlarınıza tüm cihazlarınızdan erişmek için bir hesap ekleyin.</translation>
 <translation id="1098052486217676340">Bitti</translation>
@@ -86,7 +85,6 @@
 <translation id="2351097562818989364">Çeviri ayarlarınız sıfırlandı.</translation>
 <translation id="2354750644801399986">"Do Not Track"</translation>
 <translation id="2359808026110333948">Devam Et</translation>
-<translation id="2360035970720276770">Yalnızca http veya https URL'leri indirilebilir</translation>
 <translation id="2381756643783702095">Göndermeden önce sor (önerilir)</translation>
 <translation id="2387895666653383613">Metin ölçekleme</translation>
 <translation id="238909021488141516">İçerik indirilirken bir hata oluştu.</translation>
@@ -127,7 +125,6 @@
 <translation id="2960796085439532066">Telif Hakkı <ph name="YEAR" /> Google Inc. Tüm hakları saklıdır.</translation>
 <translation id="2968755619301702150">Sertifika görüntüleyici</translation>
 <translation id="2996809686854298943">URL gerekli</translation>
-<translation id="3003595280608617736">SD kart yok</translation>
 <translation id="3029704984691124060">Parolalar eşleşmiyor</translation>
 <translation id="3039671569659952257">Klasörü sil</translation>
 <translation id="3063601790762993062">Videoyu kaydet</translation>
@@ -191,7 +188,7 @@ Arama teriminizi düzeltmek için uzun basarak terimi seçin. Aramanızı ayrın
 <translation id="4099578267706723511">Google'a kullanım istatistikleri ve kilitlenme raporları göndererek Chrome'u iyileştirmeye yardımcı olun.</translation>
 <translation id="411254640334432676">İndirme başarısız oldu.</translation>
 <translation id="4113030288477039509">Yöneticiniz tarafından yönetiliyor</translation>
-<translation id="4116939199945053760"><ph name="SITE" />, <ph name="BEGIN_LINK" />şu cihazla eşleşmek istiyor<ph name="END_LINK" />:</translation>
+<translation id="4116939199945053760"><ph name="SITE" />, <ph name="BEGIN_LINK" />şu cihazla eşlenmek istiyor<ph name="END_LINK" />:</translation>
 <translation id="4165986682804962316">Site ayarları</translation>
 <translation id="4170011742729630528">Hizmet kullanılamıyor, daha sonra tekrar deneyin.</translation>
 <translation id="4195643157523330669">Yeni sekmede aç</translation>
@@ -232,6 +229,7 @@ Arama teriminizi düzeltmek için uzun basarak terimi seçin. Aramanızı ayrın
 <translation id="4816465935029283692">Veri türleri</translation>
 <translation id="4827948050554950725">Kredi kartını ekle</translation>
 <translation id="4836364883164334657">Bu siteye bağlantınız gizli değil. Saldırganlar <ph name="DOMAIN_NAME" /> alan adından bilgilerinizi (ör. fotoğraflarınızı, şifrelerinizi, iletilerinizi ve kredi kartı bilgilerinizi) çalmaya çalışabilir.</translation>
+<translation id="4850886885716139402">Görüntüle</translation>
 <translation id="4871370605780490696">Yer işaretlerine ekleyin</translation>
 <translation id="4881695831933465202">Aç</translation>
 <translation id="4885273946141277891">Desteklenmeyen sayıda Chrome örneği var.</translation>
@@ -314,7 +312,7 @@ Yine de, görünmez olmazsınız. Gizli moda geçmeniz web'de yaptıklarınızı
 <translation id="5771382037724542929"><ph name="DIRECTORY_NAME" /> dizinindeki varolan <ph name="FILE_NAME" /> adını değiştirmek istiyor musunuz?</translation>
 <translation id="5804241973901381774">İzinler</translation>
 <translation id="5806294296882899667">Varsayılanı yükleme hatası</translation>
-<translation id="5817918615728894473">Eşleştir</translation>
+<translation id="5817918615728894473">Eşle</translation>
 <translation id="5832934273103296195">Genişletildi - Daraltmak için tıklayın</translation>
 <translation id="583891442612896534">Chrome, veri sıkıştırma için Google sunucularına erişemiyor. Veri tasarrufunuz sınırlı olabilir.</translation>
 <translation id="5860033963881614850">Kapalı</translation>
@@ -449,8 +447,6 @@ Yine de, görünmez olmazsınız. Gizli moda geçmeniz web'de yaptıklarınızı
 <translation id="7648422057306047504">Şifreleri Google kimlik bilgileriyle şifrele</translation>
 <translation id="7658239707568436148">İptal</translation>
 <translation id="7665369617277396874">Hesap ekle</translation>
-<translation id="7711895876052978264">Bu site tam ekran moduna girdi.
-Çıkmak için geri düğmesine basın.</translation>
 <translation id="7764225426217299476">Adres ekle</translation>
 <translation id="7765158879357617694">Taşı</translation>
 <translation id="7767746238359002192">Çevrimdışına kaydetmek için sayfayı ziyaret edin</translation>
@@ -469,7 +465,6 @@ Yine de, görünmez olmazsınız. Gizli moda geçmeniz web'de yaptıklarınızı
 <translation id="7961015016161918242">Hiçbir Zaman</translation>
 <translation id="7963646190083259054">Firma:</translation>
 <translation id="7977858705483383621">Güvenli Arama</translation>
-<translation id="7981795308302452224">İndirme işlemi başlatılamadı</translation>
 <translation id="7987073022710626672">Chrome Hizmet Şartları</translation>
 <translation id="7989222512959629388">Kaydediliyor…</translation>
 <translation id="7998918019931843664">Kapatılan sekmeyi yeniden aç</translation>
@@ -482,7 +477,6 @@ Yine de, görünmez olmazsınız. Gizli moda geçmeniz web'de yaptıklarınızı
 <translation id="8073388330009372546">Resmi yeni sekmede aç</translation>
 <translation id="8084156870963450514">Herhangi bir cihazdan tüm web öğelerinize erişmek için oturum açın</translation>
 <translation id="8106211421800660735">Kredi kartı numarası</translation>
-<translation id="8109148095642131923">İndirilen öğe indirme yöneticisine eklenemedi.</translation>
 <translation id="813082847718468539">Site bilgilerini görüntüle</translation>
 <translation id="8137558756159375272">Dokun ve Ara, seçilen kelimeyi ve geçerli sayfayı Google Arama'ya bağlam olarak gönderir. Bu özelliği <ph name="BEGIN_LINK" />Ayarlar<ph name="END_LINK" />'da kapatabilirsiniz.</translation>
 <translation id="8143660160623733249">Klasör adı</translation>
@@ -557,7 +551,7 @@ Yeni lisansları edinmek için İnternet'e bağlanın ve indirdiğiniz içeriği
 <translation id="9133515669113036225">Cihazın kimlik bilgilerini sıfırla</translation>
 <translation id="9137013805542155359">Orijinali göster</translation>
 <translation id="9156605176886108508">Yer işareti klasörü yok</translation>
-<translation id="9192643434065497760">Eşleştirmeye izin vermek için Bluetooth'u <ph name="BEGIN_LINK" />cihaz ayarlarında<ph name="END_LINK" /> açın.</translation>
+<translation id="9192643434065497760">Eşlemeye izin vermek için Bluetooth'u <ph name="BEGIN_LINK" />cihaz ayarlarında<ph name="END_LINK" /> açın.</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="932327136139879170">Ana Sayfa</translation>
 <translation id="938850635132480979">Hata: <ph name="ERROR_CODE" /></translation>
@@ -567,5 +561,4 @@ Yeni lisansları edinmek için İnternet'e bağlanın ve indirdiğiniz içeriği
 <translation id="969096075394517431">Dilleri değiştir</translation>
 <translation id="971774202801778802">Yer işareti URL'si</translation>
 <translation id="983192555821071799">Tüm sekmeleri kapat</translation>
-<translation id="988938288723502454">SD kartta indirme dizini oluşturulamıyor.</translation>
 </translationbundle>

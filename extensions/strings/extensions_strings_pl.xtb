@@ -21,12 +21,14 @@
 <translation id="388442998277590542">Nie można wczytać strony opcji „<ph name="OPTIONS_PAGE" />”.</translation>
 <translation id="4115165561519362854">Administrator tego urządzenia wymaga, by rozszerzenie <ph name="EXTENSION_NAME" /> było w wersji co najmniej <ph name="EXTENSION_VERSION" />. Jeśli rozszerzenie nie zostanie zaktualizowane do tej wersji (lub nowszej), nie zostanie włączone.</translation>
 <translation id="4233778200880751280">Nie udało się załadować strony z informacjami: „<ph name="ABOUT_PAGE" />”.</translation>
+<translation id="4434145631756268951">{0,select, single{Wybierz urządzenie USB}multiple{Wybierz urządzenia USB}other{UNUSED}}</translation>
 <translation id="4811956658694082538">Nie udało się zainstalować pakietu, ponieważ nastąpiła awaria procesu narzędzia. Uruchom ponownie Chrome i spróbuj jeszcze raz.</translation>
 <translation id="4883436287898674711">Wszystkie strony <ph name="WEBSITE_1" /></translation>
 <translation id="5026754133087629784">Webview: <ph name="WEBVIEW_TAG_NAME" /></translation>
 <translation id="5356315618422219272">Tag appview: <ph name="APPVIEW_TAG_NAME" /></translation>
 <translation id="5456409301717116725">To rozszerzenie zawiera plik klucza „<ph name="KEY_PATH" />”. Prawdopodobnie nie powinno tak być.</translation>
 <translation id="5627523580512561598">rozszerzenie <ph name="EXTENSION_NAME" /></translation>
+<translation id="5630931906013276297">{0,select, single{Wybierz urządzenie HID}multiple{Wybierz urządzenia HID}other{UNUSED}}</translation>
 <translation id="5960890139610307736">Tag ExtensionView: <ph name="EXTENSIONVIEW_TAG_NAME" /></translation>
 <translation id="5972529113578162692">Administrator tego urządzenia wymaga, by było na nim zainstalowane rozszerzenie <ph name="EXTENSION_NAME" />. Nie można go odinstalować.</translation>
 <translation id="6027032947578871493">Nieznany produkt <ph name="PRODUCT_ID" /> firmy <ph name="VENDOR_NAME" /> (numer seryjny <ph name="SERIAL_NUMBER" />)</translation>

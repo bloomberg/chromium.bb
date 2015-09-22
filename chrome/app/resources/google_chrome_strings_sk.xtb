@@ -11,7 +11,6 @@ Niektoré funkcie nemusia byť k dispozícii a zmeny vykonané v predvoľbách s
 <translation id="1073391069195728457">Chrome – upozornenia</translation>
 <translation id="1104959162601287462">Informácie o systéme &amp;Chrome OS</translation>
 <translation id="110877069173485804">Toto je váš prehliadač Chrome</translation>
-<translation id="1150979032973867961">Server nedokáže overiť, či ide o doménu <ph name="DOMAIN" />, operačný systém vášho počítača nedôveruje jej bezpečnostnému certifikátu. Môže to byť spôsobené nesprávnou konfiguráciou alebo tým, že vaše pripojenie zachytil útočník.</translation>
 <translation id="1225016890511909183">Chrome vaše informácie bezpečne uloží, aby ste ich už nemuseli zadávať znova. V prípade budúcich platieb však budete musieť bezpečnostný kód svojej karty stále overiť.</translation>
 <translation id="123620459398936149">Systému OS Chrome sa nepodarilo synchronizovať vaše údaje. Aktualizujte prístupovú frázu synchronizácie.</translation>
 <translation id="127345590676626841">Chrome sa aktualizuje automaticky, aby ste mali vždy k dispozícii najnovšiu verziu. Po dokončení sťahovania sa Chrome reštartujte a začnete používať aktuálnu verziu.</translation>
@@ -35,7 +34,6 @@ Niektoré funkcie nemusia byť k dispozícii a zmeny vykonané v predvoľbách s
 <translation id="174539241580958092">Prehliadaču Google Chrome sa nepodarilo synchronizovať vaše údaje z dôvodu chyby prihlásenia.</translation>
 <translation id="1759301979429102118">Podrobnosti z vašich kontaktov vám môžu pomôcť rýchlejšie vypĺňať formuláre v prehliadači Chrome.</translation>
 <translation id="1759842336958782510">Chrome</translation>
-<translation id="1763864636252898013">Server nedokáže overiť, či ide o doménu <ph name="DOMAIN" />, operačný systém vášho zariadenia nedôveruje jej bezpečnostnému certifikátu. Môže to byť spôsobené nesprávnou konfiguráciou alebo tým, že vaše pripojenie zachytil útočník.</translation>
 <translation id="1773601347087397504">Získajte pomoc pri používaní systému Chrome OS</translation>
 <translation id="1818142563254268765">Prehliadač Chrome sa nedokázal aktualizovať na najnovšiu verziu. K dispozícii tak nie sú niektoré skvelé nové funkcie a bezpečnostné opravy. Prehliadač Chrome je potrebné aktualizovať.</translation>
 <translation id="1877026089748256423">Prehliadač Chrome je zastaraný</translation>
@@ -107,7 +105,6 @@ Ak sa chcete aj napriek tomu prihlásiť, informácie prehliadača Chrome, ako s
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="4367618624832907428">Prehliadač Google Chrome nemôže zobraziť danú webstránku, pretože váš počítač nie je pripojený k internetu.</translation>
 <translation id="4407807842708586359">Google Chrome OS</translation>
-<translation id="4424024547088906515">Server nedokáže overiť, či ide o doménu <ph name="DOMAIN" />, Chrome nedôveruje jej bezpečnostnému certifikátu. Môže to byť spôsobené nesprávnou konfiguráciou alebo tým, že vaše pripojenie zachytil útočník.</translation>
 <translation id="4458285410772214805">Ak chcete, aby sa zmeny prejavili, odhláste sa a znova sa prihláste.</translation>
 <translation id="4480040274068703980">Systému OS Chrome sa nepodarilo synchronizovať vaše údaje, pretože sa pri prihlasovaní vyskytla chyba.</translation>
 <translation id="4513711165509885787">Vaše fakturačné údaje sa uložili do prehliadača Chrome.</translation>

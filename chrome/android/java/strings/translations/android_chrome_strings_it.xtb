@@ -5,7 +5,6 @@
 <translation id="10614374240317010">Mai salvate</translation>
 <translation id="1061441684050139317">Chrome deve avere accesso al microfono per condividerla con questo sito.</translation>
 <translation id="1080790410959514870">Stai per uscire da un account gestito da <ph name="DOMAIN_NAME" />. Verranno eliminati i dati di Chrome memorizzati su questo dispositivo, ma i dati rimarranno nel tuo account Google.</translation>
-<translation id="1086169178231554178">Scheda SD non disponibile</translation>
 <translation id="1091134514807961917">Hai eseguito l'accesso al seguente account Google.</translation>
 <translation id="1095407227123756519">Aggiungi un account per visualizzare i tuoi Preferiti, la cronologia, le password e altre impostazioni su tutti i tuoi dispositivi.</translation>
 <translation id="1098052486217676340">Terminata</translation>
@@ -86,7 +85,6 @@
 <translation id="2351097562818989364">Le impostazioni di traduzione sono state reimpostate.</translation>
 <translation id="2354750644801399986">"Non tenere traccia"</translation>
 <translation id="2359808026110333948">Continua</translation>
-<translation id="2360035970720276770">È possibile scaricare soltanto URL http o https</translation>
 <translation id="2381756643783702095">Chiedi prima di inviare (opzione consigliata)</translation>
 <translation id="2387895666653383613">Ridimensionamento testo</translation>
 <translation id="238909021488141516">Si è verificato un errore durante il download dei contenuti.</translation>
@@ -127,7 +125,6 @@
 <translation id="2960796085439532066">Copyright <ph name="YEAR" /> Google Inc. Tutti i diritti riservati.</translation>
 <translation id="2968755619301702150">Visualizzatore certificati</translation>
 <translation id="2996809686854298943">URL obbligatorio</translation>
-<translation id="3003595280608617736">Nessuna scheda SD</translation>
 <translation id="3029704984691124060">Le passphrase non corrispondono</translation>
 <translation id="3039671569659952257">Elimina cartella</translation>
 <translation id="3063601790762993062">Salva video</translation>
@@ -232,6 +229,7 @@ Per modificare il termine di ricerca, premi a lungo per selezionarlo. Per perfez
 <translation id="4816465935029283692">Tipi di dati</translation>
 <translation id="4827948050554950725">Aggiungi carta di credito</translation>
 <translation id="4836364883164334657">La tua connessione a questo sito non è privata. I malintenzionati potrebbero provare a impossessarsi dei tuoi dati da <ph name="DOMAIN_NAME" /> (ad esempio, foto, password, messaggi e carte di credito).</translation>
+<translation id="4850886885716139402">Visualizza</translation>
 <translation id="4871370605780490696">Aggiungi preferito</translation>
 <translation id="4881695831933465202">Apri</translation>
 <translation id="4885273946141277891">Numero di istanze di Chrome non supportato.</translation>
@@ -449,8 +447,6 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annun
 <translation id="7648422057306047504">Cripta le password con le credenziali Google</translation>
 <translation id="7658239707568436148">Annulla</translation>
 <translation id="7665369617277396874">Aggiungi account</translation>
-<translation id="7711895876052978264">È stata attivata la modalità a schermo intero del sito.
-Per uscire premi il pulsante Indietro.</translation>
 <translation id="7764225426217299476">Aggiungi indirizzo</translation>
 <translation id="7765158879357617694">Sposta</translation>
 <translation id="7767746238359002192">Visita la pagina da salvare offline</translation>
@@ -469,7 +465,6 @@ Per uscire premi il pulsante Indietro.</translation>
 <translation id="7961015016161918242">Mai</translation>
 <translation id="7963646190083259054">Fornitore:</translation>
 <translation id="7977858705483383621">SafeSearch</translation>
-<translation id="7981795308302452224">Impossibile avviare il download</translation>
 <translation id="7987073022710626672">Termini di servizio di Chrome</translation>
 <translation id="7989222512959629388">Salvataggio…</translation>
 <translation id="7998918019931843664">Riapri la scheda chiusa</translation>
@@ -482,7 +477,6 @@ Per uscire premi il pulsante Indietro.</translation>
 <translation id="8073388330009372546">Immagine in nuova scheda</translation>
 <translation id="8084156870963450514">Esegui l'accesso per accedere a tutti i tuoi contenuti web da qualsiasi dispositivo</translation>
 <translation id="8106211421800660735">Numero carta di credito</translation>
-<translation id="8109148095642131923">Impossibile aggiungere l'elemento scaricato in gestione dei download.</translation>
 <translation id="813082847718468539">Visualizza informazioni sul sito</translation>
 <translation id="8137558756159375272">La funzione Tocca per cercare invia la parola selezionata e la pagina corrente come contesto alla Ricerca Google. Puoi disattivare la funzione nelle <ph name="BEGIN_LINK" />Impostazioni<ph name="END_LINK" />.</translation>
 <translation id="8143660160623733249">Nome cartella</translation>
@@ -567,5 +561,4 @@ Per ottenere nuove licenze, connettiti a Internet e riproduci i contenuti scaric
 <translation id="969096075394517431">Cambia le lingue</translation>
 <translation id="971774202801778802">Aggiungi l'URL ai segnalibri</translation>
 <translation id="983192555821071799">Chiudi tutte le schede</translation>
-<translation id="988938288723502454">Impossibile creare la directory di download nella scheda SD.</translation>
 </translationbundle>

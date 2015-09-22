@@ -86,7 +86,6 @@
       设置此政策会替换默认值（3 小时）。此政策的有效值范围为 1800000（30 分钟）至 86400000（1 天）。任何超出此范围的值都会强制调整到相应范围内。
 
       如果未设置此政策，<ph name="PRODUCT_OS_NAME" />就会使用默认值（3 小时）。</translation>
-<translation id="1503959756075098984">要静默安装的扩展程序的 ID 和更新网址</translation>
 <translation id="1504431521196476721">远程认证</translation>
 <translation id="1509692106376861764">此政策从 <ph name="PRODUCT_NAME" /> 版本 29 起开始弃用。</translation>
 <translation id="1522425503138261032">允许网站跟踪用户的地理位置</translation>
@@ -1412,7 +1411,6 @@
           如果有多个服务器名称，要使用英文逗号分隔。允许使用通配符(*)。
 
           如果此政策未设置，<ph name="PRODUCT_NAME" />将会尝试检测某个服务器是否在内网上，只有当该服务器在内网上时，该浏览器才会回应IWA请求。如果检测到某个服务器在互联网上，<ph name="PRODUCT_NAME" />将忽略来自它的IWA请求。</translation>
-<translation id="8665076741187546529">配置强制安装的扩展程序的列表</translation>
 <translation id="8668394701842594241">指定在 <ph name="PRODUCT_NAME" />中启用的插件的列表，并禁止用户更改此设置。可使用通配符“*”和“?”匹配任意字符序列。“*”可匹配任意数量的字符，而“?”可指定单个可选的字符，即匹配零个或一个字符。转义字符为“\”，因此要匹配实际的“*”、“?”或“\”字符，您可以在这些字符前加上“\”。列表中指定的插件如果已安装，就会始终在 <ph name="PRODUCT_NAME" />中使用。这些插件在“about:plugins”中标记为“已启用”，而且用户无法停用它们。请注意，此政策可替换 DisabledPlugins 和 DisabledPluginsExceptions 这两者。如果未设置此政策，用户就可以停用系统中安装的任何插件。</translation>
 <translation id="8672321184841719703">目标自动更新版本</translation>
 <translation id="868187325500643455">允许所有网站自动运行插件</translation>

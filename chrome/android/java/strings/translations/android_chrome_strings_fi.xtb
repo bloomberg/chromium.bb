@@ -5,7 +5,6 @@
 <translation id="10614374240317010">Ei tallenneta</translation>
 <translation id="1061441684050139317">Chrome tarvitsee mikrofonin käyttöoikeuden voidakseen jakaa sen tämän sivuston kanssa.</translation>
 <translation id="1080790410959514870">Olet kirjautumassa ulos tilistä, jota hallinnoi <ph name="DOMAIN_NAME" />. Laitteelle tallennetut Chrome-tiedot poistetaan, mutta ne säilytetään Google-tililläsi.</translation>
-<translation id="1086169178231554178">SD-kortti ei käytettävissä</translation>
 <translation id="1091134514807961917">Olet kirjautunut seuraavaan Google-tiliin.</translation>
 <translation id="1095407227123756519">Lisää tili, niin voit käyttää kirjanmerkkejä, historiaa, salasanoja ja muita asetuksiasi kaikilla laitteillasi.</translation>
 <translation id="1098052486217676340">Päättyi</translation>
@@ -86,7 +85,6 @@
 <translation id="2351097562818989364">Käännösasetukset on nollattu.</translation>
 <translation id="2354750644801399986">Do Not Track</translation>
 <translation id="2359808026110333948">Jatka</translation>
-<translation id="2360035970720276770">Vain http- tai https-alkuisista URL-osoitteista voi ladata.</translation>
 <translation id="2381756643783702095">Kysy ennen lähettämistä (suositus)</translation>
 <translation id="2387895666653383613">Tekstin skaalaus</translation>
 <translation id="238909021488141516">Virhe ladattaessa sisältöä.</translation>
@@ -127,7 +125,6 @@
 <translation id="2960796085439532066">Copyright <ph name="YEAR" /> Google Inc. Kaikki oikeudet pidätetään.</translation>
 <translation id="2968755619301702150">Varmennetiedot</translation>
 <translation id="2996809686854298943">URL-osoite vaaditaan</translation>
-<translation id="3003595280608617736">Ei SD-korttia</translation>
 <translation id="3029704984691124060">Tunnuslauseet eivät vastaa toisiaan.</translation>
 <translation id="3039671569659952257">Poista kansio</translation>
 <translation id="3063601790762993062">Tallenna video</translation>
@@ -232,6 +229,7 @@ Muokkaa hakutermiä valitsemalla se pitkällä painalluksella. Tarkenna hakua li
 <translation id="4816465935029283692">Tietotyypit</translation>
 <translation id="4827948050554950725">Lisää luottokortti</translation>
 <translation id="4836364883164334657">Yhteytesi tälle sivulle ei ole salattu. Hyökkääjät voivat yrittää varastaa tietojasi (kuten kuvia, salasanoja, viestejä tai luottokorttitietoja) kohteesta <ph name="DOMAIN_NAME" />.</translation>
+<translation id="4850886885716139402">Näytä</translation>
 <translation id="4871370605780490696">Lisää kirjanmerkki</translation>
 <translation id="4881695831933465202">Avaa</translation>
 <translation id="4885273946141277891">Chromen versioiden määrää ei tueta.</translation>
@@ -449,8 +447,6 @@ Jotkin verkkosivut voivat vastata tähän pyyntöön esimerkiksi näyttämällä
 <translation id="7648422057306047504">Salaa salasanat Google-kirjautumistiedoilla.</translation>
 <translation id="7658239707568436148">Peruuta</translation>
 <translation id="7665369617277396874">Lisää tili</translation>
-<translation id="7711895876052978264">Sivusto näkyy nyt koko näytön tilassa.
-Palaa painamalla edellinen-painiketta.</translation>
 <translation id="7764225426217299476">Lisää osoite</translation>
 <translation id="7765158879357617694">Siirrä</translation>
 <translation id="7767746238359002192">Siirry sivulle tallentaaksesi offline-version.</translation>
@@ -469,7 +465,6 @@ Palaa painamalla edellinen-painiketta.</translation>
 <translation id="7961015016161918242">Ei koskaan</translation>
 <translation id="7963646190083259054">Toimittaja:</translation>
 <translation id="7977858705483383621">SafeSearch</translation>
-<translation id="7981795308302452224">Latauksen käynnistys epäonnistui.</translation>
 <translation id="7987073022710626672">Chromen käyttöehdot</translation>
 <translation id="7989222512959629388">Tallennetaan…</translation>
 <translation id="7998918019931843664">Avaa suljettu välilehti uudelleen</translation>
@@ -482,7 +477,6 @@ Palaa painamalla edellinen-painiketta.</translation>
 <translation id="8073388330009372546">Avaa kuva uudessa välilehdessä</translation>
 <translation id="8084156870963450514">Kirjaudu sisään, niin voit käyttää verkkosisältöäsi millä tahansa laitteella.</translation>
 <translation id="8106211421800660735">Luottokortin numero</translation>
-<translation id="8109148095642131923">Ladattua kohdetta ei voitu lisätä latausten hallintaan.</translation>
 <translation id="813082847718468539">Näytä sivuston tiedot</translation>
 <translation id="8137558756159375272">Koskettamalla hakeminen lähettää valitun sanan ja nykyisen sivun Google-haulle haun kontekstina. Voit poistaa ominaisuuden käytöstä <ph name="BEGIN_LINK" />asetuksissa<ph name="END_LINK" />.</translation>
 <translation id="8143660160623733249">Kansion nimi</translation>
@@ -567,5 +561,4 @@ Hanki uudet käyttöoik. muodostam. verkkoyhteys ja toistamalla ladattu sisält�
 <translation id="969096075394517431">Vaihda kieltä</translation>
 <translation id="971774202801778802">Lisää URL-osoite kirjanmerkkeihin</translation>
 <translation id="983192555821071799">Sulje kaikki välilehdet</translation>
-<translation id="988938288723502454">Lataushakemiston luominen SD-kortille epäonnistui.</translation>
 </translationbundle>

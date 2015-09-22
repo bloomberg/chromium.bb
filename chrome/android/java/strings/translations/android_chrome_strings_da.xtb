@@ -5,7 +5,6 @@
 <translation id="10614374240317010">Aldrig gemt</translation>
 <translation id="1061441684050139317">Chrome skal have adgang til mikrofonen for at kunne dele den med dette website.</translation>
 <translation id="1080790410959514870">Du er ved at logge ud af en konto, der administreres af <ph name="DOMAIN_NAME" />. Dette medfører sletning af de Chrome-data, der er gemt på denne enhed, men dataene forbliver på din Google-konto.</translation>
-<translation id="1086169178231554178">SD-kortet er utilgængeligt</translation>
 <translation id="1091134514807961917">Du er logget ind på følgende Google-konto.</translation>
 <translation id="1095407227123756519">Tilføj en konto for at få adgang til bogmærker, historik og andre indstillinger på alle dine enheder.</translation>
 <translation id="1098052486217676340">Afsluttet</translation>
@@ -86,7 +85,6 @@
 <translation id="2351097562818989364">Dine oversættelsesindstillinger er nulstillet.</translation>
 <translation id="2354750644801399986">"Do Not Track"</translation>
 <translation id="2359808026110333948">Fortsæt</translation>
-<translation id="2360035970720276770">Der kan kun downloades webadresser med "http" eller "https"</translation>
 <translation id="2381756643783702095">Spørg inden afsendelse (anbefales)</translation>
 <translation id="2387895666653383613">Skalering af tekst</translation>
 <translation id="238909021488141516">Der opstod en fejl under download af indholdet.</translation>
@@ -127,7 +125,6 @@
 <translation id="2960796085439532066">Copyright <ph name="YEAR" /> Google Inc. Alle rettigheder forbeholdes.</translation>
 <translation id="2968755619301702150">Certifikatfremviser</translation>
 <translation id="2996809686854298943">En webadresse er påkrævet</translation>
-<translation id="3003595280608617736">Der er intet SD-kort</translation>
 <translation id="3029704984691124060">Adgangssætningerne stemmer ikke overens</translation>
 <translation id="3039671569659952257">Slet mappe</translation>
 <translation id="3063601790762993062">Gem video</translation>
@@ -232,6 +229,7 @@ Tryk længe på din søgeterm for at vælge den og tilpasse den. Du kan afgræns
 <translation id="4816465935029283692">Datatyper</translation>
 <translation id="4827948050554950725">Tilføj kreditkort</translation>
 <translation id="4836364883164334657">Din forbindelse til dette website er ikke privat. Hackere kan forsøge at stjæle dine oplysninger (f.eks. billeder, adgangskoder, meddelelser og kreditkort) fra <ph name="DOMAIN_NAME" />.</translation>
+<translation id="4850886885716139402">Vis</translation>
 <translation id="4871370605780490696">Tilføj bogmærke</translation>
 <translation id="4881695831933465202">Åbn</translation>
 <translation id="4885273946141277891">Der er flere forekomster af Chrome, end der understøttes.</translation>
@@ -449,8 +447,6 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="7648422057306047504">Kryptér adgangskoder med Google-loginoplysninger</translation>
 <translation id="7658239707568436148">Annuller</translation>
 <translation id="7665369617277396874">Tilføj konto</translation>
-<translation id="7711895876052978264">Dette website er i fuldskærmstilstand.
-Tryk på tilbagetasten for at afslutte.</translation>
 <translation id="7764225426217299476">Tilføj adresse</translation>
 <translation id="7765158879357617694">Flyt</translation>
 <translation id="7767746238359002192">Gå til siden for at gemme den offline</translation>
@@ -469,7 +465,6 @@ Tryk på tilbagetasten for at afslutte.</translation>
 <translation id="7961015016161918242">Aldrig</translation>
 <translation id="7963646190083259054">Leverandør:</translation>
 <translation id="7977858705483383621">Beskyttet søgning</translation>
-<translation id="7981795308302452224">Download kunne ikke påbegyndes</translation>
 <translation id="7987073022710626672">Chromes servicevilkår</translation>
 <translation id="7989222512959629388">Gemmer…</translation>
 <translation id="7998918019931843664">Åbn lukket fane igen</translation>
@@ -482,7 +477,6 @@ Tryk på tilbagetasten for at afslutte.</translation>
 <translation id="8073388330009372546">Åbn billede på ny fane</translation>
 <translation id="8084156870963450514">Log ind for at få adgang til alle dine webting fra en enhver enhed</translation>
 <translation id="8106211421800660735">Kreditkortnummer</translation>
-<translation id="8109148095642131923">Det downloadede element kunne ikke føjes til downloadadministratoren.</translation>
 <translation id="813082847718468539">Se websiteoplysninger</translation>
 <translation id="8137558756159375272">Funktionen "Tryk for at søge" sender det markerede ord og den aktuelle side som kontekst til Google Søgning. Du kan slå den fra under <ph name="BEGIN_LINK" />Indstillinger<ph name="END_LINK" />.</translation>
 <translation id="8143660160623733249">Mappenavn</translation>
@@ -567,5 +561,4 @@ Du kan få nye licenser ved at oprette forbindelse til internettet og afspille d
 <translation id="969096075394517431">Skift sprog</translation>
 <translation id="971774202801778802">Bogmærkets webadresse</translation>
 <translation id="983192555821071799">Luk alle faner</translation>
-<translation id="988938288723502454">Downloadindeks på SD-kort kan ikke oprettes.</translation>
 </translationbundle>

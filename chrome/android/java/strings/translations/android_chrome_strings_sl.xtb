@@ -5,7 +5,6 @@
 <translation id="10614374240317010">Nikoli shranjeno</translation>
 <translation id="1061441684050139317">Chrome potrebuje dostop do mikrofona, če želite, da temu spletnemu mestu omogoči dostop do njega.</translation>
 <translation id="1080790410959514870">Odjavljate se iz računa, ki ga upravlja <ph name="DOMAIN_NAME" />. S tem bodo izbrisani podatki, ki jih je Chrome shranil v tej napravi, vendar bodo podatki ostali v vašem Google Računu.</translation>
-<translation id="1086169178231554178">Kartica SD ni na voljo</translation>
 <translation id="1091134514807961917">Prijavljeni ste v ta Google Račun.</translation>
 <translation id="1095407227123756519">Dodajte račun, da boste lahko dostopali do zaznamkov, zgodovine gesel in drugih nastavitev v vseh svojih napravah.</translation>
 <translation id="1098052486217676340">Končano</translation>
@@ -86,7 +85,6 @@
 <translation id="2351097562818989364">Nastavitve za prevajanje so ponastavljene.</translation>
 <translation id="2354750644801399986">»Ne sledi«</translation>
 <translation id="2359808026110333948">Nadaljuj</translation>
-<translation id="2360035970720276770">Prenesete lahko samo URL-je »http« ali »https«</translation>
 <translation id="2381756643783702095">Vprašaj pred pošiljanjem (priporočljivo)</translation>
 <translation id="2387895666653383613">Prilagajanje besedila</translation>
 <translation id="238909021488141516">Pri prenosu vsebine je prišlo do napake.</translation>
@@ -127,7 +125,6 @@
 <translation id="2960796085439532066">Copyright <ph name="YEAR" /> Google Inc. Vse pravice pridržane.</translation>
 <translation id="2968755619301702150">Pregledovalnik potrdil</translation>
 <translation id="2996809686854298943">URL je obvezen</translation>
-<translation id="3003595280608617736">Ni kartice SD</translation>
 <translation id="3029704984691124060">Gesli se ne ujemata</translation>
 <translation id="3039671569659952257">Izbriši mapo</translation>
 <translation id="3063601790762993062">Shrani videoposnetek</translation>
@@ -232,6 +229,7 @@ Prijavljate se z upravljanim računom in s tem njegovemu skrbniku omogočate nad
 <translation id="4816465935029283692">Vrste podatkov</translation>
 <translation id="4827948050554950725">Dodaj kreditno kartico</translation>
 <translation id="4836364883164334657">Vaša povezava s tem spletnim mestom ni zasebna. Napadalci morda poskušajo ukrasti vaše podatke (na primer fotografije, gesla, sporočila in podatke o kreditnih karticah) iz domene <ph name="DOMAIN_NAME" />.</translation>
+<translation id="4850886885716139402">Pogled</translation>
 <translation id="4871370605780490696">Dodajanje zaznamka</translation>
 <translation id="4881695831933465202">Odpri</translation>
 <translation id="4885273946141277891">To število primerkov Chroma ni podprto.</translation>
@@ -314,7 +312,7 @@ Kljub temu niste nevidni. Če uporabljate način brez beleženja zgodovine, ne s
 <translation id="5771382037724542929">Ali želite nadomestiti obstoječo datoteko <ph name="FILE_NAME" /> v imeniku <ph name="DIRECTORY_NAME" />?</translation>
 <translation id="5804241973901381774">Dovoljenja</translation>
 <translation id="5806294296882899667">Napaka pri nalaganju privzete mape</translation>
-<translation id="5817918615728894473">Seznanitev</translation>
+<translation id="5817918615728894473">Seznani</translation>
 <translation id="5832934273103296195">Razširjeno – kliknite, če želite strniti</translation>
 <translation id="583891442612896534">Chrome ne more dostopati do Googlovih strežnikov za stiskanje podatkov. Prihranek podatkov bo morda omejen.</translation>
 <translation id="5860033963881614850">Izklopljeno</translation>
@@ -449,8 +447,6 @@ Nekatera spletna mesta se lahko na primer na zahtevo odzovejo tako, da prikažej
 <translation id="7648422057306047504">Šifriranje gesel s poverilnicami za Google</translation>
 <translation id="7658239707568436148">Prekliči</translation>
 <translation id="7665369617277396874">Dodaj račun</translation>
-<translation id="7711895876052978264">To spletno mesto je v celozaslonskem načinu.
-Če ga želite zapreti, pritisnite gumb za nazaj.</translation>
 <translation id="7764225426217299476">Dodaj naslov</translation>
 <translation id="7765158879357617694">Premakni</translation>
 <translation id="7767746238359002192">Če želite stran shraniti za način brez povezave, jo obiščite</translation>
@@ -469,7 +465,6 @@ Nekatera spletna mesta se lahko na primer na zahtevo odzovejo tako, da prikažej
 <translation id="7961015016161918242">Nikoli</translation>
 <translation id="7963646190083259054">Ponudnik:</translation>
 <translation id="7977858705483383621">Varno iskanje</translation>
-<translation id="7981795308302452224">Prenosa ni bilo mogoče začeti</translation>
 <translation id="7987073022710626672">Pogoji storitve za Chrome</translation>
 <translation id="7989222512959629388">Shranjevanje …</translation>
 <translation id="7998918019931843664">Vnovično odpiranje zaprtega zavihka</translation>
@@ -482,7 +477,6 @@ Nekatera spletna mesta se lahko na primer na zahtevo odzovejo tako, da prikažej
 <translation id="8073388330009372546">Odpri sliko na novem zavihku</translation>
 <translation id="8084156870963450514">Prijavite se za dostop do vseh vaših spletnih stvari iz poljubne naprave</translation>
 <translation id="8106211421800660735">Številka kreditne kartice</translation>
-<translation id="8109148095642131923">Prenesenega elementa ni bilo mogoče dodati v upravitelja prenosov.</translation>
 <translation id="813082847718468539">Ogled podatkov o mestu</translation>
 <translation id="8137558756159375272">»Dotaknite se za iskanje« pošlje izbrano besedo in trenutno strank kot kontekst Iskanju Google. To lahko izklopite v <ph name="BEGIN_LINK" />nastavitvah<ph name="END_LINK" />.</translation>
 <translation id="8143660160623733249">Ime mape</translation>
@@ -567,5 +561,4 @@ Nove licence dobite tako, da se povežete v internet in predvajate preneseno vse
 <translation id="969096075394517431">Spreminjanje jezikov</translation>
 <translation id="971774202801778802">URL zaznamka</translation>
 <translation id="983192555821071799">Zapri vse zavihke</translation>
-<translation id="988938288723502454">Na kartici SD ni mogoče ustvariti imenika za prenos.</translation>
 </translationbundle>

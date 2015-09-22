@@ -82,7 +82,6 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
       A configuração desta política substitui o valor padrão de 3 horas. Os valores válidos para esta política devem corresponder ao período entre 1.800.000 (30 minutos) e 86.400.000 (1 dia). Qualquer valor fora deste intervalo será ajustado dentro do limite mais próximo.
 
       Deixar esta política sem definição fará o <ph name="PRODUCT_OS_NAME" /> utilizar o valor padrão de 3 horas.</translation>
-<translation id="1503959756075098984">IDs de extensão e URLs de atualização deverão ser instalados silenciosamente</translation>
 <translation id="1504431521196476721">Declaração remota</translation>
 <translation id="1509692106376861764">Esta política teve o uso suspenso a partir da versão 29 do <ph name="PRODUCT_NAME" />.</translation>
 <translation id="1522425503138261032">Permitir que os sites rastreiem a localização física dos usuários</translation>
@@ -1387,7 +1386,6 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
           Separe vários nomes de servidores com vírgulas. Caracteres curinga (*) são permitidos.
 
           Se esta política não é definida, o <ph name="PRODUCT_NAME" /> tenta detectar se um servidor está na Intranet e, só então, responde às solicitações IWA. Se um servidor é detectado como Internet, as solicitações IWA que partem dele são ignoradas pelo <ph name="PRODUCT_NAME" />.</translation>
-<translation id="8665076741187546529">Configurar a lista de extensões instaladas forçadamente</translation>
 <translation id="8668394701842594241">Especifica uma lista de plug-ins ativados em <ph name="PRODUCT_NAME" /> e impede que os usuários modifiquem esta configuração. Os caracteres curinga "*" e "?" podem ser utilizados para combinar seqüências de caracteres arbitrários. "*" corresponde a um número arbitrário de caracteres enquanto "?" especifica um único caractere opcional, ou seja, corresponde a zero ou um caractere. O caractere de escape é "\", ou seja, para fazer uma busca que inclua os caracteres "*", "?", ou "\", você pode adicionar um "\" à frente. A lista de plug-ins especificados será sempre utilizada em <ph name="PRODUCT_NAME" />, caso eles tenham sido instalados. Os plug-ins são marcados como ativados em "about: plugins" e os usuários não podem desativá-los. Esta política se sobrepõe tanto a DisabledPlugins como a DisabledPluginsExceptions. Se esta política for deixada sem definição, o usuário pode desativar qualquer plug-in instalado no sistema.</translation>
 <translation id="8672321184841719703">Versão de atualização automática de destino</translation>
 <translation id="868187325500643455">Permite que todos os sites executem automaticamente os plug-ins</translation>

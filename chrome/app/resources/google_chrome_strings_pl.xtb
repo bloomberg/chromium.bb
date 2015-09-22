@@ -9,7 +9,6 @@
 <translation id="1073391069195728457">Chrome – powiadomienia</translation>
 <translation id="1104959162601287462">System operacyjny &amp;Chrome – informacje</translation>
 <translation id="110877069173485804">Oto Twój Chrome</translation>
-<translation id="1150979032973867961">Ten serwer nie mógł udowodnić, że należy do <ph name="DOMAIN" />. Jego certyfikat bezpieczeństwa nie jest zaufany w systemie operacyjnym tego komputera. Może to być spowodowane błędną konfiguracją lub przechwyceniem połączenia przez atakującego.</translation>
 <translation id="1225016890511909183">Chrome będzie bezpiecznie przechowywać Twoje dane, dzięki czemu nie będzie trzeba wpisywać ich ponownie. W przypadku przyszłych płatności konieczne jednak będzie zweryfikowanie kodu bezpieczeństwa karty.</translation>
 <translation id="123620459398936149">System operacyjny Chrome nie może zsynchronizować danych. Zaktualizuj hasło synchronizacji.</translation>
 <translation id="127345590676626841">Chrome aktualizuje się automatycznie, więc zawsze masz najnowszą wersję. Po zakończeniu pobierania Chrome uruchomi się ponownie i będzie gotowy do działania.</translation>
@@ -33,7 +32,6 @@
 <translation id="174539241580958092">Google Chrome nie może zsynchronizować danych z powodu błędu podczas logowania.</translation>
 <translation id="1759301979429102118">Informacje z Twoich kontaktów pomogą Ci szybciej wypełniać formularze w Chrome.</translation>
 <translation id="1759842336958782510">Chrome</translation>
-<translation id="1763864636252898013">Ten serwer nie mógł udowodnić, że należy do <ph name="DOMAIN" />. Jego certyfikat bezpieczeństwa nie jest zaufany w systemie operacyjnym tego urządzenia. Może to być spowodowane błędną konfiguracją lub przechwyceniem połączenia przez atakującego.</translation>
 <translation id="1773601347087397504">Skorzystaj z pomocy dotyczącej używania systemu operacyjnego Chrome</translation>
 <translation id="1818142563254268765">Nie udało się zaktualizować Chrome do najnowszej wersji, więc nie masz nowych, przydatnych funkcji ani poprawek zabezpieczeń. Musisz zaktualizować Chrome.</translation>
 <translation id="1877026089748256423">Chrome jest nieaktualny</translation>
@@ -106,7 +104,6 @@ Jeśli jednak zalogujesz się teraz, informacje Chrome, takie jak zakładki, his
 </translation>
 <translation id="4367618624832907428">Google Chrome nie może wyświetlić strony internetowej, bo komputer nie ma połączenia z internetem.</translation>
 <translation id="4407807842708586359">System operacyjny Google Chrome</translation>
-<translation id="4424024547088906515">Ten serwer nie mógł udowodnić, że należy do <ph name="DOMAIN" />. Jego certyfikat bezpieczeństwa nie jest zaufany w Chrome. Może to być spowodowane błędną konfiguracją lub przechwyceniem połączenia przez atakującego.</translation>
 <translation id="4458285410772214805">Wyloguj się i zaloguj ponownie, by zmiana zaczęła obowiązywać.</translation>
 <translation id="4480040274068703980">System operacyjny Chrome nie może zsynchronizować danych z powodu błędu logowania.</translation>
 <translation id="4513711165509885787">Szczegóły płatności zostały zapisane w Chrome.</translation>

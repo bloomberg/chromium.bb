@@ -106,7 +106,6 @@ Pokud tuto zásadu nenastavíte, bude při prvním zobrazení obrazovky přihlá
       Nastavení této zásady přepíše výchozí hodnotu 3 hodiny. Platné hodnoty pro tuto zásadu jsou v rozmezí od 1800000 (30 minut) do 86400000 (1 den). Místo hodnot mimo tento rozsah bude použita příslušná mezní hodnota.
 
       Pokud tuto zásadu nenastavíte, bude systém <ph name="PRODUCT_OS_NAME" /> používat výchozí hodnotu, což jsou 3 hodiny.</translation>
-<translation id="1503959756075098984">ID rozšíření a adresy URL aktualizací, které se mají nainstalovat na pozadí</translation>
 <translation id="1504431521196476721">Vzdálené ověření identity</translation>
 <translation id="1509692106376861764">V prohlížečích <ph name="PRODUCT_NAME" /> verze 29 a novějších byla tato zásada zrušena.</translation>
 <translation id="1522425503138261032">Umožňuje webovým stránkám sledovat fyzickou polohu uživatele</translation>
@@ -1660,7 +1659,6 @@ Pokud ji ponecháte nenastavenou, režim vysokého kontrastu bude ve výchozím 
 Chcete-li zadat několik názvů serverů, oddělte je čárkami. Zástupné znaky (*) jsou povoleny.
 
 Pokud zásada zůstane nenastavena, pokusí se <ph name="PRODUCT_NAME" /> zjistit, zda se server nachází v intranetu, a teprve poté bude reagovat na požadavky IWA. Pokud bude server zjištěn jako internet, bude <ph name="PRODUCT_NAME" /> požadavky IWA ignorovat.</translation>
-<translation id="8665076741187546529">Konfigurace seznamu rozšíření, jejichž instalace je vynucena</translation>
 <translation id="8668394701842594241">Určuje seznam aktivovaných pluginů aplikace <ph name="PRODUCT_NAME" /> a brání uživatelům, aby toto nastavení změnili.
 
             Jako zástupné znaky lze použít znaky „*“ a „?“. Znak „*“ slouží jako zástupný znak pro několik libovolných znaků, zatímco znak „?“ zastupuje jeden znak (může zastupovat libovolný znak nebo také žádný znak). Řídicí znak je „\“, pokud tedy chcete zadat znaky „*“, „?“ nebo „\“ jako takové, stačí před ně umístit znak „\“.

@@ -5,7 +5,6 @@
 <translation id="10614374240317010">Nunca salvam</translation>
 <translation id="1061441684050139317">O Chrome precisa ter acesso ao microfone para compartilhá-lo com este site.</translation>
 <translation id="1080790410959514870">Você está se desconectando de uma conta gerenciada por <ph name="DOMAIN_NAME" />. Essa ação excluirá os dados do Google Chrome armazenados neste dispositivo, mas os dados permanecerão na sua Conta do Google.</translation>
-<translation id="1086169178231554178">Cartão SD indisponível</translation>
 <translation id="1091134514807961917">Você está conectado à Conta do Google a seguir.</translation>
 <translation id="1095407227123756519">Adicione uma conta para ver seus favoritos, histórico, senhas e outras configurações em todos os seus dispositivos.</translation>
 <translation id="1098052486217676340">Concluído</translation>
@@ -86,7 +85,6 @@
 <translation id="2351097562818989364">As configurações de tradução foram redefinidas.</translation>
 <translation id="2354750644801399986">"Não rastrear"</translation>
 <translation id="2359808026110333948">Continuar</translation>
-<translation id="2360035970720276770">Só é permitido o download de URLs http ou https</translation>
 <translation id="2381756643783702095">Perguntar antes de enviar (recomendado)</translation>
 <translation id="2387895666653383613">Escala do texto</translation>
 <translation id="238909021488141516">Ocorreu um erro durante o download do conteúdo.</translation>
@@ -127,7 +125,6 @@
 <translation id="2960796085439532066">Copyright <ph name="YEAR" /> Google Inc. Todos os direitos reservados.</translation>
 <translation id="2968755619301702150">Leitor de certificados</translation>
 <translation id="2996809686854298943">O URL é obrigatório</translation>
-<translation id="3003595280608617736">Nenhum cartão SD</translation>
 <translation id="3029704984691124060">As senhas não correspondem</translation>
 <translation id="3039671569659952257">Excluir pasta</translation>
 <translation id="3063601790762993062">Salvar vídeo</translation>
@@ -232,6 +229,7 @@ Para ajustar seu termo de pesquisa, mantenha-o pressionado para selecionar. Para
 <translation id="4816465935029283692">Tipos de dados</translation>
 <translation id="4827948050554950725">Adicionar cartão de crédito</translation>
 <translation id="4836364883164334657">Sua conexão com este site não é particular. Invasores podem tentar roubar suas informações, como fotos, senhas, mensagens e cartões de crédito de <ph name="DOMAIN_NAME" />.</translation>
+<translation id="4850886885716139402">Visualizar</translation>
 <translation id="4871370605780490696">Adicionar favorito</translation>
 <translation id="4881695831933465202">Abrir</translation>
 <translation id="4885273946141277891">Número de instâncias do Google Chrome não suportado.</translation>
@@ -448,8 +446,6 @@ Por exemplo, alguns websites podem responder a esta solicitação mostrando anú
 <translation id="7648422057306047504">Criptografar senhas com suas credenciais do Google</translation>
 <translation id="7658239707568436148">Cancelar</translation>
 <translation id="7665369617277396874">Adicionar conta</translation>
-<translation id="7711895876052978264">Este site entrou no modo de tela cheia.
-Aperte o botão "Voltar" para sair.</translation>
 <translation id="7764225426217299476">Adicionar endereço</translation>
 <translation id="7765158879357617694">Mover</translation>
 <translation id="7767746238359002192">Visitar página para salvar off-line</translation>
@@ -468,7 +464,6 @@ Aperte o botão "Voltar" para sair.</translation>
 <translation id="7961015016161918242">Nunca</translation>
 <translation id="7963646190083259054">Fornecedor:</translation>
 <translation id="7977858705483383621">SafeSearch</translation>
-<translation id="7981795308302452224">Falha ao iniciar o download</translation>
 <translation id="7987073022710626672">Termos de Serviço do Chrome</translation>
 <translation id="7989222512959629388">Salvando…</translation>
 <translation id="7998918019931843664">Reabrir guia fechada</translation>
@@ -481,7 +476,6 @@ Aperte o botão "Voltar" para sair.</translation>
 <translation id="8073388330009372546">Abrir imagem em nova guia</translation>
 <translation id="8084156870963450514">Faça login para acessar tudo o que você tem na Web, a partir de qualquer dispositivo</translation>
 <translation id="8106211421800660735">Número do cartão de crédito</translation>
-<translation id="8109148095642131923">Ocorreu uma falha ao fazer o download do item no gerenciador de download.</translation>
 <translation id="813082847718468539">Visualizar informações do site</translation>
 <translation id="8137558756159375272">"Toque para pesquisar" envia a palavra selecionada e a página atual como contexto para a Pesquisa Google. Desative esse recurso em <ph name="BEGIN_LINK" />Configurações<ph name="END_LINK" />.</translation>
 <translation id="8143660160623733249">Nome da pasta</translation>
@@ -565,5 +559,4 @@ Para receber novas licenças, conecte-se à Internet e use seu conteúdo baixado
 <translation id="969096075394517431">Alterar idiomas</translation>
 <translation id="971774202801778802">URL do favorito</translation>
 <translation id="983192555821071799">Fechar todas as guias</translation>
-<translation id="988938288723502454">Não é possível criar o diretório de download no cartão SD.</translation>
 </translationbundle>

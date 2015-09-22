@@ -6,7 +6,6 @@
 <translation id="1115445892567829615">Chromium, verilerinizi senkronize edemedi. Lütfen Senkronizasyon parolanızı güncelleyin.</translation>
 <translation id="1144202035120576837"><ph name="SITE" />, normal olarak bilgilerinizi korumak için şifreleme özelliğini kullanır. Chromium, <ph name="SITE" /> sitesine bu kez bağlanmaya çalıştığında,
 web sitesi alışılmışın dışında ve hatalı kimlik bilgileri gönderdi. Ya bir saldırgan, <ph name="SITE" /> gibi görünmeye çalışmaktadır ya da bir Kablosuz oturum açma ekranı bağlantıyı kesmiştir. Chromium herhangi bir veri alışverişi gerçekleştirilmeden önce bağlantıyı durdurduğundan bilgileriniz hâlâ güvencededir.</translation>
-<translation id="1150979032973867961">Bu sunucu <ph name="DOMAIN" /> olduğunu kanıtlayamadı. Bilgisayarınızın işletim sistemi, sunucunun güvenlik sertifikasına güvenmiyor. Bu durum, bir yanlış yapılandırmadan veya bağlantıya müdahale eden bir saldırgandan kaynaklanıyor olabilir.</translation>
 <translation id="1174473354587728743">Bilgisayarı paylaşıyor musunuz? Artık Chromium'u tam olarak istediğiniz gibi kurabilirsiniz.</translation>
 <translation id="1185134272377778587">Chromium hakkında</translation>
 <translation id="1221340462641866827">Chromium OS, <ph name="SCHEME" /> bağlantılarını kullanmak için harici uygulama başlatmayı desteklemiyor. İstenen bağlantı: <ph name="PROTOLINK" />.</translation>
@@ -26,7 +25,6 @@ web sitesi alışılmışın dışında ve hatalı kimlik bilgileri gönderdi. Y
 <translation id="1708666629004767631">Chromium'un kullanabileceğiniz yeni, daha güvenli bir sürümü var.</translation>
 <translation id="1725059042853530269"><ph name="FILE_NAME" />, göz atma deneyiminize olumsuz etki yapabileceği için Chromium tarafından engellendi.</translation>
 <translation id="1745962126679160932">Chromium, bilgilerinizi güvenli şekilde depoladığından bu bilgileri tekrar yazmak zorunda kalmazsınız, ancak yine de bundan sonraki ödemeler için kartınızın güvenlik kodunu doğrulamanız gerekir.</translation>
-<translation id="1763864636252898013">Bu sunucu <ph name="DOMAIN" /> olduğunu kanıtlayamadı. cihazınızın işletim sistemi, sunucunun güvenlik sertifikasına güvenmiyor. Bu durum, bir yanlış yapılandırmadan veya bağlantıya müdahale eden bir saldırgandan kaynaklanıyor olabilir.</translation>
 <translation id="1774152462503052664">Chromium'un arka planda çalışmasına izin ver</translation>
 <translation id="1779356040007214683">Chromium'u daha güvenli bir hale getirmek için <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> altında listelenmeyen ve bilginiz dışında eklenmiş olabilecek bazı uzantıları devre dışı bıraktık.</translation>
 <translation id="1808667845054772817">Chromium'u yeniden yükle</translation>
@@ -134,7 +132,6 @@ web sitesi alışılmışın dışında ve hatalı kimlik bilgileri gönderdi. Y
 <translation id="4987820182225656817">Misafirler Chromium'u geride hiçbir şey bırakmadan kullanabilir.</translation>
 <translation id="4994636714258228724">Kendinizi Chromium'a ekleyin</translation>
 <translation id="5032989939245619637">Ayrıntıları Chromium'a kaydet</translation>
-<translation id="5094747076828555589">Bu sunucu <ph name="DOMAIN" /> olduğunu kanıtlayamadı; Chromium, sunucunun güvenlik sertifikasına güvenmiyor. Bu durum, bir yanlış yapılandırmadan veya bağlantıya müdahale eden bir saldırgandan kaynaklanıyor olabilir.</translation>
 <translation id="5358375970380395591">Yönetilen bir hesapla oturum açıyor ve hesabın yöneticisine Chromium profilinizi denetleme izni veriyorsunuz. Uygulamalarınız, yer işaretleriniz, geçmişiniz, şifreleriniz ve diğer ayarlarınız gibi Chromium verileriniz kalıcı olarak <ph name="USER_NAME" /> ile bağlantılandırılacaktır. Google Hesapları Hesap Özeti'ni kullanarak bu verileri silebilecek, ancak bu verileri başka bir hesapla ilişkilendiremeyeceksiniz. <ph name="LEARN_MORE" /></translation>
 <translation id="5398878173008909840">Chromium'un yeni bir sürümü çıktı.</translation>
 <translation id="5427571867875391349">Chromium'u varsayılan tarayıcım olarak ayarla</translation>

@@ -161,7 +161,6 @@
 <translation id="1205489148908752564">Четене и промяна на потребителите в белия списък</translation>
 <translation id="1208421848177517699">Транслитерация (namaste → નમસ્તે)</translation>
 <translation id="1209796539517632982">Автоматично избиране на сървъри за имена</translation>
-<translation id="121201262018556460">Направихте опит да се свържете с/ъс <ph name="DOMAIN" />, но сървърът предостави сертификат, съдържащ слаб ключ. Възможно е извършител на атака да е пробил личния ключ и сървърът да не е този, който очаквате (възможно е да сте се свързали с извършител на атака).</translation>
 <translation id="1215411991991485844">Добавено е ново приложение на заден план</translation>
 <translation id="121827551500866099">Показване на всички изтеглени файлове...</translation>
 <translation id="122082903575839559">Алгоритъм за подписа на сертификата</translation>
@@ -172,7 +171,6 @@
 <translation id="1225177025209879837">Заявката се обработва...</translation>
 <translation id="1225211345201532184">Елемент 5 в лавицата</translation>
 <translation id="1225404570112441414">Добавете този сайт към лавицата си, за да го използвате по всяко време.</translation>
-<translation id="1226375067743171974">Експериментални анимации на material design за обратна връзка при докосване.</translation>
 <translation id="1227507814927581609">Удостоверяването не бе успешно при установяването на връзка с/ъс <ph name="DEVICE_NAME" />.</translation>
 <translation id="1231728991993914119">Активиране на известие за излизане за хостваните приложения.</translation>
 <translation id="1232569758102978740">Неозаглавен</translation>
@@ -275,7 +273,6 @@
 <translation id="1399648040768741453">Телугу клавиатура (фонетична)</translation>
 <translation id="1401874662068168819">Джин Йе</translation>
 <translation id="140250605646987970">Телефонът ви бе намерен, но Smart Lock работи само на устройства с Android 5.0 и по-нови версии. &lt;a&gt;Научете повече&lt;/a&gt;</translation>
-<translation id="140495917068443520">Квадратна мастилена капка</translation>
 <translation id="1405126334425076373">Курсор на мишката</translation>
 <translation id="140520891692800925"><ph name="PROFILE_DISPLAY_NAME" /> (контролиран потребител)</translation>
 <translation id="1406500794671479665">Потвърждава се...</translation>
@@ -290,7 +287,6 @@
 <translation id="1413809658975081374">Грешка, свързана в поверителността</translation>
 <translation id="1414648216875402825">Актуализирате до нестабилна версия на <ph name="PRODUCT_NAME" />, съдържаща функции, по които се работи. Ще има сривове и неочаквани програмни дефекти. Моля, действайте внимателно.</translation>
 <translation id="1415990189994829608">Разширението <ph name="EXTENSION_NAME" /> (с идентификационен номер „<ph name="EXTENSION_ID" />“) не е разрешено в този тип сесия.</translation>
-<translation id="1416599368291956791">{1,plural, =1{Сървърът не можа да докаже, че е <ph name="DOMAIN" />. Сертификатът му за сигурност е от утре. Това може да се дължи на неправилно конфигуриране или на прехващане на връзката ви от атакуващ.}other{Сървърът не можа да докаже, че е <ph name="DOMAIN" />. Сертификатът му за сигурност е от # дни в бъдещето. Това може да се дължи на неправилно конфигуриране или на прехващане на връзката ви от атакуващ.}}</translation>
 <translation id="1416836038590872660">EAP-MD5</translation>
 <translation id="1420684932347524586">Олеле! Генерирането на произволен RSA личен ключ не бе успешно.</translation>
 <translation id="1422780722984745882">Получени са няколко различни заглавки „Location“.  Това не е разрешено, за да се предотвратят атаки чрез разделяне на HTTP отговорите.</translation>
@@ -502,7 +498,6 @@
 <translation id="168328519870909584">Понастоящем извършители на атака срещу <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> може да опитат да инсталират опасни приложения на устройството ви, които крадат или изтриват информация (например снимки, пароли, съобщения и номера на кредитни карти).</translation>
 <translation id="1685141618403317602">Отмяна на записването</translation>
 <translation id="1685944703056982650">Изключения за курсора на мишката</translation>
-<translation id="168841957122794586">Сертификатът на сървъра съдържа слаб криптографски ключ.</translation>
 <translation id="1691063574428301566">Компютърът ви ще се рестартира, след като актуализацията завърши.</translation>
 <translation id="1691608011302982743">Премахнахте устройството си твърде скоро!</translation>
 <translation id="1692602667007917253">Ами сега! Нещо се обърка</translation>
@@ -800,14 +795,12 @@
 <translation id="215753907730220065">Изход от цял екран</translation>
 <translation id="2157875535253991059">Тази страница сега е на цял екран.</translation>
 <translation id="216169395504480358">Добавяне на Wi-Fi...</translation>
-<translation id="2163418719022613650">При изобразяване не се използват дисплейните списъци на Slimming Paint. Обърнете внимание, че флагът enable-slimming-paint е с предимство пред този, ако и двата са активирани.</translation>
 <translation id="2163470535490402084">Моля, свържете се с интернет, за да влезте в устройството си <ph name="DEVICE_TYPE" />.</translation>
 <translation id="2164862903024139959">Виетнамска клавиатура (TCVN)</translation>
 <translation id="2167276631610992935">Javascript</translation>
 <translation id="2168214441502403371">Персийска клавиатура</translation>
 <translation id="2168725742002792683">Разширения на файловете</translation>
 <translation id="2169062631698640254">Влизане въпреки това</translation>
-<translation id="2171101176734966184">Направихте опит да се свържете с/ъс <ph name="DOMAIN" />, но сървърът предостави сертификат, подписан със слаб алгоритъм. Това означава, че идентификационните данни за сигурност от сървъра може да са фалшифицирани и той да не е този, който очаквате (възможно е да сте се свързали с извършител на атака).</translation>
 <translation id="2175607476662778685">Лента за бързо стартиране</translation>
 <translation id="2176045495080708525">Следните разширения вече са инсталирани:</translation>
 <translation id="2177950615300672361">Раздел в режим „инкогнито“: <ph name="TAB_NAME" /></translation>
@@ -827,7 +820,6 @@
 <translation id="220138918934036434">Скриване на бутона</translation>
 <translation id="2202898655984161076">При изреждането на принтерите възникна проблем. Възможно е някои от тях да не са регистрирани успешно с/ъс <ph name="CLOUD_PRINT_NAME" />.</translation>
 <translation id="2204034823255629767">Четене и промяна на всичко, което въвеждате</translation>
-<translation id="2208105671494637223">френски (BEPO)</translation>
 <translation id="2208158072373999562">Компресиран архивен файл</translation>
 <translation id="2208311832613497869">Ами сега! Трябва да попитате свой родител дали може да посетите тази страница.</translation>
 <translation id="220858061631308971">Моля, въведете този ПИН код на „<ph name="DEVICE_NAME" />“:</translation>
@@ -900,7 +892,6 @@
 <translation id="2278988676849463018">Каннада клавиатура (фонетична)</translation>
 <translation id="2279770628980885996">Възникна неочаквано състояние, докато сървърът се опитваше да изпълни заявката.</translation>
 <translation id="2280486287150724112">Дясно поле</translation>
-<translation id="2280845493034384933">В някои случаи активира обратния ред на превъртане в прозоречния изглед. По-конкретно при промяна на мащаба чрез събиране или разтваряне на пръсти първо трябва да се превърти вътрешната част на прозореца за показване, а след това – външната.</translation>
 <translation id="2282146716419988068">Процес на графичния процесор</translation>
 <translation id="2282872951544483773">Експерименти, които не са налице</translation>
 <translation id="2283117145434822734">F6</translation>
@@ -910,7 +901,6 @@
 <translation id="2291643155573394834">Следващият раздел</translation>
 <translation id="2294358108254308676">Искате ли да инсталирате <ph name="PRODUCT_NAME" />?</translation>
 <translation id="2296019197782308739">Метод от EAP:</translation>
-<translation id="229702904922032456">Валидността на основен или междинен сертификат е изтекла.</translation>
 <translation id="2299552784526456191">Означаване на незащитените източници като неутрални.</translation>
 <translation id="2301382460326681002">Основната директория на разширението е невалидна.</translation>
 <translation id="230155334948463882">Нова карта?</translation>
@@ -969,7 +959,6 @@
 <translation id="2384596874640104496">Синхалска клавиатура</translation>
 <translation id="238526402387145295">В момента не можете да посетите <ph name="SITE" />, защото уебсайтът <ph name="BEGIN_LINK" />използва HSTS<ph name="END_LINK" />. Обикновено грешките в мрежата и атаките срещу нея са временни, така че тази страница вероятно ще работи по-късно.</translation>
 <translation id="2385700042425247848">Име на услугата:</translation>
-<translation id="2386255080630008482">Сертификатът на сървъра е анулиран.</translation>
 <translation id="2386631145847373156">Излизането е възможно само когато сте влезли в профила си.</translation>
 <translation id="2386784019642337415">Четене и промяна на основната и персонализираните търсещи машини</translation>
 <translation id="2390045462562521613">Забравяне на тази мрежа</translation>
@@ -992,7 +981,6 @@
 <translation id="2403091441537561402">Шлюз:</translation>
 <translation id="241082044617551207">Неизвестна приставка</translation>
 <translation id="2412835451908901523">Моля, въведете 8-цифрения ключ за отключване на ПИН, предоставен от <ph name="CARRIER_ID" />.</translation>
-<translation id="2413528052993050574">Сървърът не можа да докаже, че е <ph name="DOMAIN" />; възможно е сертификатът му за сигурност да е оттеглен. Това може да се дължи на неправилно конфигуриране или на прихващане на връзката ви от атакуващ.</translation>
 <translation id="2413749388954403953">Промяна на потребителския интерфейс за отметки</translation>
 <translation id="2415294094132942411">Добавяне към работния плот...</translation>
 <translation id="242184683889529951">Деактивиране на обработката в отделни нишки на свързаните с превъртане събития при въвеждане, така че всички такива събития да бъдат принудително обработвани в главната нишка. Обърнете внимание, че тази функция може значително да навреди на ефективността при превъртане на повечето сайтове и че е предназначена само за тестване.</translation>
@@ -1043,7 +1031,6 @@
 <translation id="2489428929217601177">последния ден</translation>
 <translation id="2489435327075806094">Скорост на курсора:</translation>
 <translation id="2489918096470125693">Добавяне на &amp;папка...</translation>
-<translation id="2491120439723279231">Сертификатът на сървъра съдържа грешки.</translation>
 <translation id="249113932447298600">За съжаление понастоящем устройството <ph name="DEVICE_LABEL" /> не се поддържа.</translation>
 <translation id="2493021387995458222">Избиране на дума по дума</translation>
 <translation id="249303669840926644">Регистрацията не можа да завърши</translation>
@@ -1217,7 +1204,6 @@
 <translation id="2726306725839966998">Деактивиране на скриването на бутоните за затваряне на неактивните раздели, насложени един върху друг</translation>
 <translation id="2726934403674109201">(Общо <ph name="COUNT" />)</translation>
 <translation id="2727712005121231835">Действителен размер</translation>
-<translation id="2728127805433021124">Сертификатът на сървъра е подписан със слаб алгоритъм.</translation>
 <translation id="273093730430620027">Тази страница осъществява достъп до камерата ви.</translation>
 <translation id="2731392572903530958">По&amp;вторно отваряне на затворения прозорец</translation>
 <translation id="2731700343119398978">Моля, изчакайте...</translation>
@@ -1377,13 +1363,11 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="2909946352844186028">Установена бе промяна в мрежата.</translation>
 <translation id="2911372483530471524">Пространства за имената за PID</translation>
 <translation id="2912905526406334195"><ph name="HOST" /> иска да използва микрофона ви.</translation>
-<translation id="2915500479781995473">Сървърът не можа да докаже, че е <ph name="DOMAIN" /> – сертификатът му за сигурност е изтекъл. Това може да се дължи на неправилно конфигуриране или на прихващане на връзката ви от извършител на атака. Понастоящем часовникът на компютъра ви показва <ph name="CURRENT_TIME" />. Това правилно ли е? Ако не е, трябва да сверите системния си часовник и след това да опресните страницата.</translation>
 <translation id="2916073183900451334">При натискането на клавиша „Tab“ върху уеб страница се открояват връзките, както и полетата на формулярите</translation>
 <translation id="2916974515569113497">С активирането на тази опция елементите с фиксирана позиция ще имат свои собствени комбинирани слоеве. Обърнете внимание, че за да работи опцията, тези елементи трябва също да създадат множествени контексти.</translation>
 <translation id="2918322085844739869">4</translation>
 <translation id="2918583523892407401">Използване на тестовата среда за синхронизирането в Chrome</translation>
 <translation id="291886813706048071">Можете да търсите оттук с <ph name="SEARCH_ENGINE" /></translation>
-<translation id="2922350208395188000">Сертификатът на сървъра не може да бъде проверен.</translation>
 <translation id="2923240520113693977">естонски</translation>
 <translation id="29232676912973978">Управление на връзките...</translation>
 <translation id="2923469375796950815">Деактивиране на новото разширение за разпакетиране на ZIP файлове.</translation>
@@ -1398,7 +1382,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="2937174152333875430">Активиране на синхронизирането на стартовия панел за приложения</translation>
 <translation id="2938225289965773019">Да отваря връзки от типа „<ph name="PROTOCOL" />“.</translation>
 <translation id="2938685643439809023">монголски</translation>
-<translation id="2941952326391522266">Сървърът не можа да докаже, че е <ph name="DOMAIN" />; сертификатът му за сигурност е от <ph name="DOMAIN2" />. Това може да се дължи на неправилно конфигуриране или на прихващане на връзката ви от атакуващ.</translation>
 <translation id="2942290791863759244">Немска клавиатура (NEO 2)</translation>
 <translation id="2943400156390503548">Презентации</translation>
 <translation id="2946119680249604491">Добавяне на връзка</translation>
@@ -1441,7 +1424,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="300544934591011246">Предишна парола</translation>
 <translation id="3005723025932146533">Показване на запазено копие</translation>
 <translation id="3009300415590184725">Наистина ли искате да анулирате процеса на настройка на мобилната услуга за данни?</translation>
-<translation id="3009507051774857955">Активиране на Slimming Paint.</translation>
 <translation id="3009779501245596802">Индексирани бази от данни</translation>
 <translation id="3010279545267083280">Паролата е изтрита</translation>
 <translation id="3011284594919057757">Всичко за Flash</translation>
@@ -1489,7 +1471,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="3075874217500066906">За започването на Powerwash се изисква рестартиране. След това ще бъдете помолени да потвърдите, че искате да продължите.</translation>
 <translation id="3076677906922146425">Разрешаване на всички да добавят хора към Chrome</translation>
 <translation id="3076909148546628648"><ph name="DOWNLOAD_RECEIVED" />/<ph name="DOWNLOAD_TOTAL" /></translation>
-<translation id="3077195744811823826">Сега на работния ви плот</translation>
 <translation id="3077734595579995578">shift</translation>
 <translation id="3081104028562135154">Увеличаване</translation>
 <translation id="3082374807674020857"><ph name="PAGE_TITLE" /> – <ph name="PAGE_URL" /></translation>
@@ -1545,6 +1526,7 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="3144135466825225871">Замяната на crx файла не бе успешна. Проверете дали не се използва.</translation>
 <translation id="31454997771848827">Домейни на групи</translation>
 <translation id="3147485256806412701">Този сайт използва нов общ домейн от първо ниво.</translation>
+<translation id="3149510190863420837">Приложения в Chrome</translation>
 <translation id="3150927491400159470">Твърдо презареждане</translation>
 <translation id="315116470104423982">Мобилни данни</translation>
 <translation id="315141861755603168">„<ph name="BUNDLE_NAME" />“ ще добави следните приложения:</translation>
@@ -1599,7 +1581,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="3224239078034945833">Канадска многоезична клавиатура</translation>
 <translation id="3225319735946384299">Подписване на код</translation>
 <translation id="3225579507836276307">Разширение на трета страна е блокирало достъпа до тази уеб страница.</translation>
-<translation id="3225919329040284222">Сървърът предостави сертификат, който не съответства на вградените очаквания. Те са включени за определени уебсайтове с голяма степен на сигурност, за да ви предпазим.</translation>
 <translation id="3226128629678568754">Натиснете бутона за презареждане, за да изпратите отново данните, необходими за отварянето на страницата.</translation>
 <translation id="3227137524299004712">Микрофон</translation>
 <translation id="32279126412636473">Презареждане (⌘+R)</translation>
@@ -1821,14 +1802,12 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="3517839692979918726"><ph name="APP_NAME" /> иска да сподели съдържанието на екрана ви. Изберете какво да се сподели.</translation>
 <translation id="3518086201899641494">Известия за портали за удостоверяване</translation>
 <translation id="3519867315646775981">Транслитерация (shalom ← שלום)</translation>
-<translation id="3520155764286810028">Кръгла мастилена капка</translation>
 <translation id="3522159121915794564">Разрешава на потребителите да се включат в събирането на невалидни вериги от TLS/SSL сертификати.</translation>
 <translation id="3522708245912499433">португалски</translation>
 <translation id="3523642406908660543">Извеждане на запитване, когато сайт иска да използва приставка за достъп до компютъра ви (препоръчително)</translation>
 <translation id="3527085408025491307">Папка</translation>
 <translation id="3527276236624876118">Създаден бе контролиран потребител на име <ph name="USER_DISPLAY_NAME" />.</translation>
 <translation id="3528033729920178817">Тази страница проследява местоположението ви.</translation>
-<translation id="3528171143076753409">Сертификатът на сървъра не е надежден.</translation>
 <translation id="3528498924003805721">Цели на преките пътища</translation>
 <translation id="3530751398950974194">Актуализиране на пропуска за синхронизиране</translation>
 <translation id="3531250013160506608">Текстово поле за парола</translation>
@@ -1890,7 +1869,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="3601395307734599350">Всичките ви разширения са тук</translation>
 <translation id="3603385196401704894">Канадска (френски) клавиатура</translation>
 <translation id="3603622770190368340">Получаване на мрежов сертификат</translation>
-<translation id="3603690020645187079">Френска (BEPO) клавиатура</translation>
 <translation id="3605780360466892872">Костюмар</translation>
 <translation id="3608454375274108141">F10</translation>
 <translation id="3608576286259426129">Визуализация на потребителското изображение</translation>
@@ -1993,7 +1971,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="3726463242007121105">Това устройство не може да бъде отворено, защото файловата му система не се поддържа.</translation>
 <translation id="3726527440140411893">Следните „бисквитки“ бяха зададени, когато разгледахте тази страница:</translation>
 <translation id="3727187387656390258">Инспектиране на изскачащ прозорец</translation>
-<translation id="3727884750434605207">Активирайте инжектирането на скриптове вместо стандартните функции на Android за достъпност.</translation>
 <translation id="3728067901555601989">ЕП:</translation>
 <translation id="3730639321086573427">Локални местоназначения</translation>
 <translation id="3733127536501031542">SSL сървър с повишаване на сигурността</translation>
@@ -2032,7 +2009,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="3776796446459804932">Това разширение нарушава правилата на уеб магазина на Chrome.</translation>
 <translation id="3778152852029592020">Изтеглянето бе анулирано.</translation>
 <translation id="3778740492972734840">&amp;Инструменти за програмисти</translation>
-<translation id="3779689521379218195">Мастилена капка на material design</translation>
 <translation id="378312418865624974">Четене на уникалния идентификатор на този компютър</translation>
 <translation id="3783640748446814672">alt</translation>
 <translation id="3785308913036335955">Показване на прекия път към приложенията</translation>
@@ -2109,7 +2085,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="3872687746103784075">Отстраняване на програмни грешки в клиента с директно изпълнение чрез инструмента GDB</translation>
 <translation id="3873139305050062481">П&amp;роверка на елемента</translation>
 <translation id="3878840326289104869">Създаване на контролиран потребител</translation>
-<translation id="3882882270042324158">Активиране на инжектирането на скриптове за достъпност.</translation>
 <translation id="3888118750782905860">Управление на потребителите</translation>
 <translation id="3893536212201235195">Да чете и променя настройките ви за достъпност</translation>
 <translation id="3893630138897523026">ChromeVox (обратна връзка с говор)</translation>
@@ -2218,7 +2193,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="404493185430269859">Основна търсеща машина</translation>
 <translation id="4047112090469382184">Защо това е сигурно</translation>
 <translation id="4047345532928475040">Няма данни</translation>
-<translation id="4048441759170415907">Дисплейните списъци на Slimming Paint се използват при всяко изобразяване. Този флаг е с предимство пред disable-slimming-paint, ако и двата са активирани.</translation>
 <translation id="404928562651467259">ПРЕДУПРЕЖДЕНИЕ</translation>
 <translation id="4052120076834320548">Миниатюрен</translation>
 <translation id="4054376378714379870">Активиране на потенциално натрапчивите защитни функции.</translation>
@@ -2442,7 +2416,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="4372884569765913867">1 x 1</translation>
 <translation id="4375035964737468845">Отваряне на изтеглени файлове</translation>
 <translation id="4377039040362059580">Теми и тапети</translation>
-<translation id="4377125064752653719">Направихте опит да се свържете с/ъс <ph name="DOMAIN" />, но сървърът предoстави сертификат, анулиран от издателя си. Това означава, че в никакъв случай не трябва да се доверявате на представените от сървъра идентификационни данни за сигурност. Възможно е да сте се свързали с извършител на атака.</translation>
 <translation id="4377301101584272308">Разрешаване на всички сайтове да проследяват физическото ви местоположение</translation>
 <translation id="4377363674125277448">Имаше проблем със сертификата на сървъра.</translation>
 <translation id="4378154925671717803">Телефон</translation>
@@ -2621,7 +2594,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="4672319956099354105">Валиден сертификат</translation>
 <translation id="4672657274720418656">Създаване на сбит вариант на страницата</translation>
 <translation id="46733879594767046">Активиране на големите икони в новия раздел в браузъра</translation>
-<translation id="467662567472608290">Сървърът не можа да докаже, че е <ph name="DOMAIN" />; сертификатът му за сигурност съдържа грешки. Това може да се дължи на неправилно конфигуриране или на прихващане на връзката ви от атакуващ.</translation>
 <translation id="4677772697204437347">Памет на графичния процесор</translation>
 <translation id="4680322106555328717">Наскоро сте разрешили изпълняването на несигурно съдържание (например скриптове или вложени рамки) на този сайт.</translation>
 <translation id="4681260323810445443">Нямате пълномощия за достъп до уеб страницата на адрес <ph name="URL" />.  Възможно е да трябва да влезете в профил.</translation>
@@ -2695,7 +2667,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="4764029864566166446">Актуализиране на приставката...</translation>
 <translation id="4764776831041365478">До уеб страницата на адрес <ph name="URL" /> може временно да няма достъп или да е преместена за постоянно на нов уеб адрес.</translation>
 <translation id="4768698601728450387">Подрязване на изображението</translation>
-<translation id="4771973620359291008">Възникна неизвестна грешка.</translation>
 <translation id="4773696473262035477">Тя и всичките ви <ph name="SAVED_PASSWORDS_LINK" /> са достъпни от всеки браузър.</translation>
 <translation id="477518548916168453">Сървърът не поддържа функционалността, необходима за изпълнение на заявката.</translation>
 <translation id="4776917500594043016">Парола за <ph name="USER_EMAIL_ADDRESS" /></translation>
@@ -2900,7 +2871,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="5081055027309504756">Тестова среда „Seccomp-BPF“</translation>
 <translation id="5085162214018721575">Проверява се за актуализации</translation>
 <translation id="5086082738160935172">HID</translation>
-<translation id="5087286274860437796">Понастоящем сертификатът на сървъра не е валиден.</translation>
 <translation id="5087864757604726239">назад</translation>
 <translation id="508794495705880051">Добавяне на нова кредитна карта...</translation>
 <translation id="5088534251099454936">PKCS 1 SHA-512 с RSA шифроване</translation>
@@ -3143,7 +3113,6 @@ PDF файл или в Google Диск.</translation>
 <translation id="540296380408672091">„Бисквитките“ от <ph name="HOST" /> да се блокират винаги</translation>
 <translation id="5409029099497331039">Изненадайте ме</translation>
 <translation id="5409341371246664034">чрез <ph name="PROVIDER" /></translation>
-<translation id="540969355065856584">Сървърът не можа да докаже, че е <ph name="DOMAIN" />. Понастоящем сертификатът му за сигурност не е валиден. Това може да се дължи на неправилно конфигуриране или на прихващане на връзката ви от извършител на атака.</translation>
 <translation id="5411472733320185105">Настройките за прокси сървър да не се използват за тези хостове или домейни:</translation>
 <translation id="5411769601840150972">Датата и часът се задават автоматично.</translation>
 <translation id="5412637665001827670">Българска клавиатура</translation>
@@ -3189,7 +3158,6 @@ PDF файл или в Google Диск.</translation>
 <translation id="5457113250005438886">Невалидно</translation>
 <translation id="5457459357461771897">Четене и изтриване на снимки, музика и друга мултимедия от компютъра ви</translation>
 <translation id="5457599981699367932">Сърфиране като гост</translation>
-<translation id="5457858494714903578">Ненадеждното разширение с идентификационен номер <ph name="IMPORT_ID" /> не може да се инсталира.</translation>
 <translation id="5458214261780477893">Дворак</translation>
 <translation id="5463275305984126951">Индекс на <ph name="LOCATION" /></translation>
 <translation id="5463856536939868464">Менюто съдържа скрити отметки</translation>
@@ -3435,7 +3403,6 @@ PDF файл или в Google Диск.</translation>
 <translation id="5803531701633845775">Да се избират фрази от обратната страна без преместване на курсора</translation>
 <translation id="5804241973901381774">Разрешения</translation>
 <translation id="580571955903695899">Преподреждане по азбучен ред</translation>
-<translation id="5808265053346186459">Активирайте фаза 2 на Slimming Paint (създаване на слоеве от дисплейни списъци, оптимизиране на изобразяването на поддървета и др.). Трябва да сте активирали Slimming Paint.</translation>
 <translation id="580886651983547002"><ph name="PRODUCT_NAME" />
         не може да се свърже с уебсайта.  Причина за това обикновено са проблеми с мрежата,
         но може да бъде и в резултат от грешна конфигурация на защитна стена или прокси сървър.</translation>
@@ -3679,7 +3646,6 @@ PDF файл или в Google Диск.</translation>
 <translation id="614998064310228828">Модел на устройството:</translation>
 <translation id="6150853954427645995">За да запазите този файл за използване офлайн, върнете се онлайн, кликнете с десния бутон на мишката върху него и изберете опцията „<ph name="OFFLINE_CHECKBOX_NAME" />“.</translation>
 <translation id="6151323131516309312">Натиснете <ph name="SEARCH_KEY" />, за да търсите с <ph name="SITE_NAME" /></translation>
-<translation id="6151417162996330722">Сертификатът на сървъра има твърде дълъг период на валидност.</translation>
 <translation id="6151559892024914821">Активиране на хващането и преместването чрез докосване</translation>
 <translation id="615216289547575801">Активира възможността преходните приложения, които се стартират без инсталиране в Chrome, да се стартират от уеб магазина на Chrome. Изисква да бъде активиран експерименталният стартов панел с приложения.</translation>
 <translation id="6154697846084421647">Сега сте в профила си</translation>
@@ -3932,7 +3898,6 @@ PDF файл или в Google Диск.</translation>
 <translation id="6527303717912515753">Споделяне</translation>
 <translation id="653019979737152879">„<ph name="FILE_NAME" />“ се синхронизира...</translation>
 <translation id="6533019874004191247">Неподдържан URL адр.</translation>
-<translation id="6533965071487181681">Ако функцията е активирана, URL адресът chrome://md-settings/ ще зарежда страницата „Настройки“ с material design.</translation>
 <translation id="6535131196824081346">Тази грешка може да възникне при връзка със защитен (HTTPS) сървър. Тя
         означава, че сървърът се опитва да изгради защитена връзка, но поради
         катастрофално грешно конфигуриране връзката изобщо няма да бъде защитена!
@@ -4068,7 +4033,6 @@ PDF файл или в Google Диск.</translation>
 <translation id="6736329909263487977"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />]</translation>
 <translation id="6739254200873843030">Валидността на картата е изтекла. Моля, проверете датата или въведете нова карта.</translation>
 <translation id="6740369132746915122">Ако разбирате рисковете за сигурността си, може <ph name="BEGIN_LINK" />да посетите този ненадежден сайт<ph name="END_LINK" />.</translation>
-<translation id="674375294223700098">Неизвестна грешка в сертификата на сървъра.</translation>
 <translation id="6745592621698551453">Актуализиране сега</translation>
 <translation id="6745994589677103306">Отказ</translation>
 <translation id="674632704103926902">Да се активира преместването чрез докосване</translation>
@@ -4166,6 +4130,7 @@ PDF файл или в Google Диск.</translation>
 <translation id="6897140037006041989">Потребителски агент</translation>
 <translation id="6898440773573063262">Сега приложенията в павилионен режим могат да се конфигурират да стартират автоматично на това устройство.</translation>
 <translation id="6898699227549475383">Организация (О)</translation>
+<translation id="6900284862687837908">Приложение на заден план: <ph name="BACKGROUND_APP_URL" /></translation>
 <translation id="6904344821472985372">Оттегляне на достъпа до файлове</translation>
 <translation id="6906268095242253962">Моля, свържете се с интернет, за да продължите.</translation>
 <translation id="6909461304779452601">Приложенията, разширенията и потребителските скриптове не могат да се добавят от този уебсайт.</translation>
@@ -4198,7 +4163,6 @@ PDF файл или в Google Диск.</translation>
 <translation id="6955446738988643816">Инспектиране на изскачащ прозорец</translation>
 <translation id="695755122858488207">Немаркиран бутон за избор</translation>
 <translation id="6957703620025723294">Активиране на експерименталните функции за увеличен изглед</translation>
-<translation id="6957887021205513506">Изглежда, че сертификатът на сървъра е подправен.</translation>
 <translation id="696036063053180184">Набор 3 (без отместване)</translation>
 <translation id="696203921837389374">Активиране на синхронизирането чрез мобилни данни</translation>
 <translation id="6964308487066031935">Искате ли да добавите папки към <ph name="EXTENSION" />?</translation>
@@ -4260,7 +4224,6 @@ PDF файл или в Google Диск.</translation>
 <translation id="7022303817801823406">За връзката с този сайт се използва валиден, надежден сертификат на сървъра.</translation>
 <translation id="7022562585984256452">Началната ви страница е зададена.</translation>
 <translation id="702373420751953740">Версия на списъка с предпочитания за роуминг:</translation>
-<translation id="7024180072211179766">Активиране на иконата на режима за четене в лентата с инструменти</translation>
 <translation id="7024867552176634416">Изберете изваждащо се устройство за съхранение</translation>
 <translation id="7025190659207909717">Управление на мобилната услуга за данни</translation>
 <translation id="7025325401470358758">Следващият панел</translation>
@@ -4276,7 +4239,6 @@ PDF файл или в Google Диск.</translation>
 <translation id="7042418530779813870">Поставяне и търсе&amp;не</translation>
 <translation id="7047998246166230966">Курсор</translation>
 <translation id="7048141481140415714">Активирайте „Ctrl+Alt+Shift+8“ за превключване на режима TouchView за максимално увеличаване.</translation>
-<translation id="7050187094878475250">Опитахте да се свържете с/ъс <ph name="DOMAIN" />, но сървърът предостави сертификат, чийто период на валидност е твърде дълъг, за да е надежден.</translation>
 <translation id="7051943809462976355">Търси се мишка...</translation>
 <translation id="7052237160939977163">Да се изпратят данните от проследяването на ефективността</translation>
 <translation id="7052500709156631672">Шлюзът или прокси сървърът получи невалиден отговор от последващ сървър.</translation>
@@ -4373,7 +4335,6 @@ PDF файл или в Google Диск.</translation>
 <translation id="720210938761809882">Страницата е блокирана</translation>
 <translation id="7205869271332034173">SSID:</translation>
 <translation id="7206693748120342859"><ph name="PLUGIN_NAME" /> се изтегля...</translation>
-<translation id="7207163335165373476">{1,plural, =1{Сървърът не можа да докаже, че е <ph name="DOMAIN" />. Сертификатът му за сигурност е изтекъл вчера. Това може да се дължи на неправилно конфигуриране или на прехващане на връзката ви от атакуващ. Понастоящем часовникът на компютъра ви показва <ph name="CURRENT_DATE" />. Това изглежда ли правилно? Ако не е, трябва да сверите системния часовник и след това да опресните страницата.}other{Сървърът не можа да докаже, че е <ph name="DOMAIN" />. Сертификатът му за сигурност е изтекъл преди # дни. Това може да се дължи на неправилно конфигуриране или на прехващане на връзката ви от атакуващ. Понастоящем часовникът на компютъра ви показва <ph name="CURRENT_DATE" />. Това изглежда ли правилно? Ако не е, трябва да сверите системния часовник и след това да опресните страницата.}}</translation>
 <translation id="7208384892394620321">Този сайт не приема American Express.</translation>
 <translation id="7209475358897642338">Кой е вашият език?</translation>
 <translation id="7210998213739223319">Потребителско име.</translation>
@@ -4564,7 +4525,6 @@ PDF файл или в Google Диск.</translation>
 <translation id="7469894403370665791">Автоматично свързване с тази мрежа</translation>
 <translation id="747114903913869239">Грешка: Разширението не може да се декодира</translation>
 <translation id="7472639616520044048">Типове MIME:</translation>
-<translation id="7473810335848400503">Обръщане на реда на превъртане в прозореца за показване.</translation>
 <translation id="7473891865547856676">Не, благодаря</translation>
 <translation id="747459581954555080">Възстановяване на всички</translation>
 <translation id="7474889694310679759">Канадска (английски) клавиатура</translation>
@@ -4596,7 +4556,6 @@ PDF файл или в Google Диск.</translation>
 <translation id="7507930499305566459">Сертификат за състоянието на респондер</translation>
 <translation id="7508545000531937079">Слайдшоу</translation>
 <translation id="7509179828847922845">Връзката с/ъс <ph name="HOST_NAME" /> бе прекъсната.</translation>
-<translation id="7511149348717996334">Активиране на настройките с material design</translation>
 <translation id="7511955381719512146">Използваната от вас Wi-Fi мрежа може да изисква да посетите <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />.</translation>
 <translation id="7513996269498582533">Откриване, от вас</translation>
 <translation id="751507702149411736">белоруски</translation>
@@ -4638,7 +4597,6 @@ PDF файл или в Google Диск.</translation>
 <translation id="756445078718366910">Отваряне на прозореца на браузъра</translation>
 <translation id="7564847347806291057">Прекратяване на процеса</translation>
 <translation id="7566723889363720618">F12</translation>
-<translation id="7567204685887185387">Сървърът не можа да докаже, че е <ph name="DOMAIN" />; възможно е сертификатът му за сигурност да е издаден измамнически. Това може да се дължи на неправилно конфигуриране или на прихващане на връзката ви от атакуващ.</translation>
 <translation id="7567293639574541773">&amp;Проверка на елемента</translation>
 <translation id="7568790562536448087">Актуализира се</translation>
 <translation id="7570496663860904543">Когато дадена страница не се зареди, ако в кеша на браузъра съществува неактуално нейно копие, ще бъде показан бутон, позволяващ на потребителя да зареди това копие. Активирането на бутона като основен го поставя на най-видимото място на страницата за грешка, а задаването му като алтернативен – до бутона за презареждане.</translation>
@@ -4654,7 +4612,6 @@ PDF файл или в Google Диск.</translation>
 <translation id="7587108133605326224">Балтийски</translation>
 <translation id="7589461650300748890">Не бързайте! Внимавайте.</translation>
 <translation id="7589661784326793847">Изчакайте само секунда</translation>
-<translation id="7592362899630581445">Сертификатът на сървъра нарушава ограниченията за име.</translation>
 <translation id="7595547011743502844"><ph name="ERROR" /> (код на грешка: <ph name="ERROR_CODE" />).</translation>
 <translation id="7596831438341298034">Добре, да се импортира</translation>
 <translation id="7596913374482479303">Задайте коя търсеща машина да се използва при търсене от полето за всичко.</translation>
@@ -4761,7 +4718,6 @@ PDF файл или в Google Диск.</translation>
 <translation id="7754704193130578113">Задаване на въпрос къде да бъде запазен всеки файл преди изтеглянето му</translation>
 <translation id="7756363132985736290">Сертификатът вече съществува.</translation>
 <translation id="7760004034676677601">Това ли е очакваната от вас страница при стартиране?</translation>
-<translation id="7761701407923456692">Сертификатът на сървъра не съответства на URL адреса.</translation>
 <translation id="7765158879357617694">Преместване</translation>
 <translation id="7766807826975222231">Направете обиколка</translation>
 <translation id="7767646430896201896">Опции:</translation>
@@ -4772,7 +4728,6 @@ PDF файл или в Google Диск.</translation>
 <translation id="7772127298218883077">Всичко за <ph name="PRODUCT_NAME" /></translation>
 <translation id="7773726648746946405">Хранилище за сесията</translation>
 <translation id="7774497835322490043">Активирайте фиктивния модул за инструмента на GNU за откриване и отстраняване на грешки (GDB). Това ще спре приложението, работещо с клиента с директно изпълнение, при стартиране и ще изчака инструмента (от комплекта за разработване на софтуер на клиента с директно изпълнение) да се прикачи към него.</translation>
-<translation id="7775325654940954648">Нещо се обърка при показването на тази уеб страница. Може да затворите приложенията и разделите, които не са ви необходими, за да се освободи повече памет.</translation>
 <translation id="7779249319235708104">Фишинг атака на хоризонта</translation>
 <translation id="7781069478569868053">Нов раздел в браузъра</translation>
 <translation id="7781335840981796660">Всички профили на потребители и локални данни ще бъдат премахнати.</translation>
@@ -4817,7 +4772,6 @@ PDF файл или в Google Диск.</translation>
 <translation id="7828106701649804503">Посочете стандартната ширина за плочките.</translation>
 <translation id="782886543891417279">Използваната от вас Wi-Fi мрежа (<ph name="WIFI_NAME" />) може да изисква да посетите страницата й за вход.</translation>
 <translation id="7831368056091621108">, за да получите това разширение, историята си и други настройки за Chrome на всичките си устройства.</translation>
-<translation id="783140679984912140">Деактивиране на Slimming Paint.</translation>
 <translation id="7839051173341654115">Преглед/създаване на резервно копие на носителя</translation>
 <translation id="7839192898639727867">Идентификатор (ИД) на ключ за субекта на сертификата</translation>
 <translation id="7839580021124293374">3</translation>
@@ -4889,7 +4843,6 @@ PDF файл или в Google Диск.</translation>
 <translation id="7928710562641958568">Изваждане на устройството</translation>
 <translation id="7935864848518524631">Файлови асоциирания за приложенията.</translation>
 <translation id="7938594894617528435">Понастоящем е офлайн</translation>
-<translation id="7938958445268990899">Сертификатът на сървъра още не е валиден.</translation>
 <translation id="7939412583708276221">Запазване въпреки това</translation>
 <translation id="7939997691108949385">Мениджърът ще може да конфигурира ограничения и настройки за този контролиран потребител на адрес <ph name="MANAGEMENT_URL" />.</translation>
 <translation id="7943385054491506837">Американска (Коулмак) клавиатура</translation>
@@ -5466,7 +5419,6 @@ PDF файл или в Google Диск.</translation>
 <translation id="8731332457891046104">Отписване на <ph name="DEVICE_TYPE" /></translation>
 <translation id="8732030010853991079">Използвайте това разширение, като кликнете върху съответната икона.</translation>
 <translation id="8732212173949624846">Четене и промяна на историята на сърфирането ви на всички устройства, на които сте влезли в профила си</translation>
-<translation id="8733326791725507133">Активира експериментално внедряване на приложния програмен интерфейс (API) за управление на идентификационните данни. Няма гаранции, че всички ваши пароли няма да бъдат разкрити на всеки сайт в мрежата. Активирайте функцията само ако сте наясно с последиците от това.</translation>
 <translation id="8734073480934656039">С активирането на тази настройка се разрешава павилионните приложения да се изпълняват автоматично при стартиране.</translation>
 <translation id="8736288397686080465">Този сайт бе актуализиран на заден план.</translation>
 <translation id="8737260648576902897">Инсталиране на Adobe Reader</translation>
@@ -5538,7 +5490,6 @@ PDF файл или в Google Диск.</translation>
 <translation id="8846141544112579928">Търси се клавиатура...</translation>
 <translation id="8847988622838149491">USB</translation>
 <translation id="8848709220963126773">Превключване между режими с клавиша „Shift“</translation>
-<translation id="884923133447025588">Не е намерен механизъм за анулиране.</translation>
 <translation id="8852366862412129888">Сайтът съдържа HTTP ресурси.</translation>
 <translation id="8852742364582744935">Следните приложения и разширения бяха добавени:</translation>
 <translation id="885381502874625531">Беларуска клавиатура</translation>
@@ -5547,7 +5498,6 @@ PDF файл или в Google Диск.</translation>
 <translation id="8859057652521303089">Изберете своя език:</translation>
 <translation id="8859174528519900719">Подрамка: <ph name="SUBFRAME_SITE" /></translation>
 <translation id="8860454412039442620">Електронна таблица в Excel</translation>
-<translation id="8861743108205592297">Добавя към лентата с инструменти бутон за преглед на по-четима версия на текущата страница.</translation>
 <translation id="8863489667196658337">Активира новата система за създаване на приложения за отметки.</translation>
 <translation id="8870318296973696995">Начална страница</translation>
 <translation id="8870413625673593573">Наскоро затворени</translation>
@@ -5625,7 +5575,6 @@ PDF файл или в Google Диск.</translation>
 <translation id="8965037249707889821">Въведете старата парола</translation>
 <translation id="8965697826696209160">Няма достатъчно място.</translation>
 <translation id="8968527460726243404">Запис на системни образи на ChromeOS</translation>
-<translation id="8971063699422889582">Сертификатът на сървъра е с изтекла валидност.</translation>
 <translation id="89720367119469899">Escape</translation>
 <translation id="8972513834460200407">Моля, обърнете се към системния си администратор, за да се уверите, че защитната стена не блокира изтеглянията от сървърите на Google.</translation>
 <translation id="8972727166872864532">Ами сега! Трябва да попитате родителите си дали може да посетите тази страница.</translation>
@@ -5694,7 +5643,6 @@ PDF файл или в Google Диск.</translation>
 <translation id="904451693890288097">Моля, въведете ключа за достъп за „<ph name="DEVICE_NAME" />“:</translation>
 <translation id="904949795138183864">Уеб страницата на адрес <ph name="URL" /> вече не съществува.</translation>
 <translation id="9049835026521739061">режим за хангъл</translation>
-<translation id="9049981332609050619">Опитахте да отворите <ph name="DOMAIN" />, но сървърът предостави невалиден сертификат.</translation>
 <translation id="9050666287014529139">Парола</translation>
 <translation id="9052208328806230490">Регистрирахте принтерите си в <ph name="CLOUD_PRINT_NAME" />, използвайки профила <ph name="EMAIL" /></translation>
 <translation id="9053965862400494292">При опита за настройване на синхронизирането възникна грешка.</translation>
@@ -5781,7 +5729,6 @@ PDF файл или в Google Диск.</translation>
 <translation id="9169664750068251925">Блокиране винаги на този сайт</translation>
 <translation id="9170848237812810038">&amp;Отмяна</translation>
 <translation id="9170884462774788842">Друга програма на компютъра ви добави тема, която може да промени начина на работа на Chrome.</translation>
-<translation id="917450738466192189">Сертификатът на сървъра е невалиден.</translation>
 <translation id="9177499212658576372">Понастоящем сте свързани с <ph name="NETWORK_TYPE" /> мрежа.</translation>
 <translation id="9177556055091995297">Управление на кредитните карти</translation>
 <translation id="917861274483335838">Управление на блокирането на приставки...</translation>

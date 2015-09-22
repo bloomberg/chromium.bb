@@ -21,12 +21,14 @@
 <translation id="388442998277590542">વિકલ્પોનું પૃષ્ઠ '<ph name="OPTIONS_PAGE" />' લોડ કરી શકાયું નથી.</translation>
 <translation id="4115165561519362854">આ મશીનનાં વ્યવસ્થાપકને <ph name="EXTENSION_VERSION" /> ના ન્યૂનતમ સંસ્કરણ માટે <ph name="EXTENSION_NAME" /> ની જરૂર છે. તે જ્યાં સુધી તે સંસ્કરણ (અથવા તે પછીના) પર અપડેટ ન થાય ત્યાં સુધી સક્ષમ થઈ શકતું નથી.</translation>
 <translation id="4233778200880751280">'<ph name="ABOUT_PAGE" />' વિશે પૃષ્ઠ લોડ કરી શકાયું નથી.</translation>
+<translation id="4434145631756268951">{0,select, single{USB ઉપકરણ પસંદ કરો}multiple{USB ઉપકરણો પસંદ કરો}other{UNUSED}}</translation>
 <translation id="4811956658694082538">એક ઉપયોગિતા પ્રક્રિયા ક્રેશ થઈ હોવાને કારણે પૅકેજ ઇન્સ્ટોલ કરી શકાયું નથી. Chrome પુનઃપ્રારંભ કરી અને ફરીથી પ્રયાસ કરવાનો પ્રયાસ કરો.</translation>
 <translation id="4883436287898674711">તમામ <ph name="WEBSITE_1" /> સાઇટ્સ</translation>
 <translation id="5026754133087629784">વેબવ્યુ: <ph name="WEBVIEW_TAG_NAME" /></translation>
 <translation id="5356315618422219272">Appview: <ph name="APPVIEW_TAG_NAME" /></translation>
 <translation id="5456409301717116725">આ એક્સટેન્શનમાં '<ph name="KEY_PATH" />' કી ફાઇલ શામેલ છે. તમે કદાચ એ કરવા માંગતા નથી.</translation>
 <translation id="5627523580512561598">એક્સ્ટેંશન <ph name="EXTENSION_NAME" /></translation>
+<translation id="5630931906013276297">{0,select, single{HID ઉપકરણ પસંદ કરો}multiple{HID ઉપકરણો પસંદ કરો}other{UNUSED}}</translation>
 <translation id="5960890139610307736">ExtensionView: <ph name="EXTENSIONVIEW_TAG_NAME" /></translation>
 <translation id="5972529113578162692">આ મશીનના વ્યવસ્થાપક માટે <ph name="EXTENSION_NAME" /> ઇન્સ્ટોલ કરેલું હોવું જરૂરી છે. તે અનઇન્સ્ટોલ કરી શકાતું નથી.</translation>
 <translation id="6027032947578871493"><ph name="VENDOR_NAME" /> વિક્રેતાનું અજાણ્યું ઉત્પાદન <ph name="PRODUCT_ID" /> (શૃંખલા ક્રમાંક <ph name="SERIAL_NUMBER" />)</translation>

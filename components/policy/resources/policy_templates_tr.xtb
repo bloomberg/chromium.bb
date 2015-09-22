@@ -107,7 +107,6 @@
       Bu politikanın ayarlanması, 3 saat olan varsayılan değeri geçersiz kılar. Bu politikaya ilişkin geçerli değerler 1800000 (30 dakika) ile 86400000 (1 gün) aralığında yer alır. Bu aralıkta olmayan değerler, göreceli sınıra bağlanır.
 
       Bu politika ayarlanmadan bırakıldığında, <ph name="PRODUCT_OS_NAME" /> 3 saat varsayılan değerini kullanır.</translation>
-<translation id="1503959756075098984">Uzantı kimlikleri ve güncelleme URL'leri sessizce yüklenir</translation>
 <translation id="1504431521196476721">Uzaktan Doğrulama</translation>
 <translation id="1509692106376861764">Bu politika, <ph name="PRODUCT_NAME" /> Sürüm 29 itibariyle kullanımdan kaldırılmıştır.</translation>
 <translation id="1522425503138261032">Sitelerin, kullanıcıların fiziksel konumlarını izlemesine izin ver</translation>
@@ -1665,7 +1664,6 @@ politikayı geçersiz kılamaz.
           Birden fazla sunucu adını virgülle ayırın. Joker karakterlere (*) izin verilir.
 
           Bu politikayı ayarlanmamış olarak bırakırsanız, <ph name="PRODUCT_NAME" /> sunucunun İntranet'te olup olmadığını saptamaya çalışır ve buna göre IWA taleplerini yanıtlar. Sunucunun İnternet'te olduğu saptanırsa, sunucudan gelen IWA talepleri <ph name="PRODUCT_NAME" /> tarafından yoksayılır.</translation>
-<translation id="8665076741187546529">Zorla yüklenen uzantıların listesini yapılandır</translation>
 <translation id="8668394701842594241"><ph name="PRODUCT_NAME" /> içinde etkinleştirilmiş olan eklentilerin bir listesini belirtir ve kullanıcıların bu ayarı değiştirmelerini önler. 
 
       '*' ve '?' joker karakterleri herhangi bir karakter dizesine uyacak şekilde kullanılabilir. '*' herhangi bir sayıda karakter ile eşleşirken '?' isteğe bağlı tek bir karakteri belirtir, yani sıfır veya bir karakterle eşleşir. Çıkış karakteri '\' olduğundan gerçek '*', '?' veya '\' joker karakterleri ile eşleştirmek için bu karakterlerin önüne '\' getirebilirsiniz. 

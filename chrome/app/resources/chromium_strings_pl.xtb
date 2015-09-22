@@ -5,7 +5,6 @@
 <translation id="108122890477367602">U&amp;ruchom Chromium ponownie w trybie Windows 8</translation>
 <translation id="1115445892567829615">Chromium nie może zsynchronizować Twoich danych. Zaktualizuj hasło synchronizacji.</translation>
 <translation id="1144202035120576837"><ph name="SITE" /> normalnie używa szyfrowania do ochrony Twoich informacji. Tym razem gdy Chrome próbował połączyć się ze stroną <ph name="SITE" />, odesłała ona nietypowe i nieprawidłowe dane logowania. Oznacza to, że osoba atakująca próbuje podszyć się pod stronę <ph name="SITE" /> albo ekran logowania Wi-Fi przerwał połączenie. Twoje informacje są nadal bezpieczne, bo Chromium zatrzymał połączenie przed wymianą jakichkolwiek danych.</translation>
-<translation id="1150979032973867961">Ten serwer nie mógł udowodnić, że należy do <ph name="DOMAIN" />. Jego certyfikat bezpieczeństwa nie jest zaufany w systemie operacyjnym tego komputera. Może to być spowodowane błędną konfiguracją lub przechwyceniem połączenia przez atakującego.</translation>
 <translation id="1174473354587728743">Używasz komputera, z którego korzystają inne osoby? Teraz możesz skonfigurować Chromium tak, jak chcesz.</translation>
 <translation id="1185134272377778587">Chromium – informacje</translation>
 <translation id="1221340462641866827">System operacyjny Chromium nie umożliwia uruchamiania zewnętrznej aplikacji w celu obsługi linków typu <ph name="SCHEME" />. Żądany link to <ph name="PROTOLINK" />.</translation>
@@ -25,7 +24,6 @@
 <translation id="1708666629004767631">Dostępna jest nowa, bezpieczniejsza wersja Chromium.</translation>
 <translation id="1725059042853530269">Plik <ph name="FILE_NAME" /> może wpływać na działanie Chromium, więc został zablokowany.</translation>
 <translation id="1745962126679160932">Chromium będzie bezpiecznie przechowywać Twoje dane, dzięki czemu nie będzie trzeba wpisywać ich ponownie. W przypadku przyszłych płatności konieczne jednak będzie zweryfikowanie kodu bezpieczeństwa karty.</translation>
-<translation id="1763864636252898013">Ten serwer nie mógł udowodnić, że należy do <ph name="DOMAIN" />. Jego certyfikat bezpieczeństwa nie jest zaufany w systemie operacyjnym tego urządzenia. Może to być spowodowane błędną konfiguracją lub przechwyceniem połączenia przez atakującego.</translation>
 <translation id="1774152462503052664">Zezwól Chromium na działanie w tle</translation>
 <translation id="1779356040007214683">Aby poprawić bezpieczeństwo Chromium, wyłączyliśmy niektóre rozszerzenia niedostępne w <ph name="IDS_EXTENSION_WEB_STORE_TITLE" />, które mogły zostać dodane bez Twojej wiedzy.</translation>
 <translation id="1808667845054772817">Ponownie zainstaluj Chromium</translation>
@@ -134,7 +132,6 @@
 <translation id="4987820182225656817">Goście mogą korzystać z Chromium, nie pozostawiając żadnych danych.</translation>
 <translation id="4994636714258228724">Dodaj siebie do Chromium</translation>
 <translation id="5032989939245619637">Zapisz szczegóły w Chromium</translation>
-<translation id="5094747076828555589">Ten serwer nie mógł udowodnić, że należy do <ph name="DOMAIN" />. Jego certyfikat bezpieczeństwa nie jest zaufany w Chromium. Może to być spowodowane błędną konfiguracją lub przechwyceniem połączenia przez atakującego.</translation>
 <translation id="5358375970380395591">Logujesz się na zarządzane konto i przekazujesz jego administratorowi kontrolę nad swoim profilem Chromium. Twoje dane Chromium, takie jak aplikacje, zakładki, historia, hasła i inne ustawienia, zostaną trwale powiązane z użytkownikiem <ph name="USER_NAME" />. Będzie można je usunąć w Panelu kont Google, ale nie będzie można ich powiązać z innym kontem. <ph name="LEARN_MORE" /></translation>
 <translation id="5398878173008909840">Pojawiła się nowa wersja Chromium.</translation>
 <translation id="5427571867875391349">Ustaw Chromium jako domyślną przeglądarkę</translation>

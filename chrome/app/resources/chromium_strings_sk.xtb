@@ -7,7 +7,6 @@ Niektoré funkcie nemusia byť k dispozícii a zmeny vykonané v predvoľbách s
 <translation id="108122890477367602">&amp;Spustiť Chromium v režime Windows 8</translation>
 <translation id="1115445892567829615">Prehliadaču Chromium sa nepodarilo synchronizovať vaše údaje. Aktualizujte prístupovú frázu synchronizácie.</translation>
 <translation id="1144202035120576837">Webové stránky <ph name="SITE" /> zvyčajne používajú na ochranu vašich informácií šifrovanie. Keď sa prehliadač Chromium teraz pokúsil pripojiť k stránkam <ph name="SITE" />, vrátili nezvyčajné a nesprávne poverenia. Buď sa za stránky <ph name="SITE" /> snaží vydávať útočník, alebo prihlasovacia obrazovka siete Wi-Fi prerušila spojenie. Vaše informácie sú stále zabezpečené, pretože Chromium zastavil pripojenie ešte predtým, než došlo k výmene údajov.</translation>
-<translation id="1150979032973867961">Server nedokáže overiť, či ide o doménu <ph name="DOMAIN" />, operačný systém vášho počítača nedôveruje jej bezpečnostnému certifikátu. Môže to byť spôsobené nesprávnou konfiguráciou alebo tým, že vaše pripojenie zachytil útočník.</translation>
 <translation id="1174473354587728743">Zdieľať počítač? Teraz si môžete prehliadač Chromium nastaviť podľa vlastných predstáv.</translation>
 <translation id="1185134272377778587">Informácie o prehliadači Chromium</translation>
 <translation id="1221340462641866827">Systém Chromium OS nepodporuje spustenie externej aplikácie na spracovanie odkazov typu <ph name="SCHEME" />. Typ požadovaného odkazu: <ph name="PROTOLINK" />.</translation>
@@ -27,7 +26,6 @@ Niektoré funkcie nemusia byť k dispozícii a zmeny vykonané v predvoľbách s
 <translation id="1708666629004767631">K dispozícii je nová bezpečnejšia verzia prehliadača Chromium.</translation>
 <translation id="1725059042853530269">Súbor <ph name="FILE_NAME" /> môže poškodiť vaše prostredie na prehliadanie, a preto ho prehliadač Chromium zablokoval.</translation>
 <translation id="1745962126679160932">Chromium vaše informácie bezpečne uloží, aby ste ich už nemuseli zadávať znova. V prípade budúcich platieb však budete musieť bezpečnostný kód svojej karty stále overiť.</translation>
-<translation id="1763864636252898013">Server nedokáže overiť, či ide o doménu <ph name="DOMAIN" />, operačný systém vášho zariadenia nedôveruje jej bezpečnostnému certifikátu. Môže to byť spôsobené nesprávnou konfiguráciou alebo tým, že vaše pripojenie zachytil útočník.</translation>
 <translation id="1774152462503052664">Povoliť prehliadaču Chromium spustenie na pozadí</translation>
 <translation id="1779356040007214683">Z dôvodu vyššej bezpečnosti prehliadača Chromium sme zakázali niektoré rozšírenia, ktoré nedodáva <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> a mohli byť pridané bez vášho vedomia.</translation>
 <translation id="1808667845054772817">Preinštalovať prehliadač Chromium</translation>
@@ -138,7 +136,6 @@ Niektoré funkcie nemusia byť k dispozícii a zmeny vykonané v predvoľbách s
 <translation id="4987820182225656817">Hostia môžu používať prehliadač Chromium bez toho, aby po sebe zanechali akékoľvek informácie.</translation>
 <translation id="4994636714258228724">Pridajte si účet do prehliadača Chromium</translation>
 <translation id="5032989939245619637">Uložiť podrobnosti v prehliadači Chromium</translation>
-<translation id="5094747076828555589">Server nedokáže overiť, či ide o doménu <ph name="DOMAIN" />, Chromium nedôveruje jej bezpečnostnému certifikátu. Môže to byť spôsobené nesprávnou konfiguráciou alebo tým, že vaše pripojenie zachytil útočník.</translation>
 <translation id="5358375970380395591">Prihlasujete sa pomocou spravovaného účtu a jeho správcovi dávate kontrolu nad vaším profilom Chromium. Vaše údaje prehliadača Chromium, ako sú aplikácie, záložky, história, heslá a iné nastavenia, sa natrvalo priradia k účtu <ph name="USER_NAME" />. Tieto údaje budete môcť odstrániť len pomocou panela Dashboard v Účtoch Google, ale nebudete ich môcť priradiť k inému účtu. <ph name="LEARN_MORE" /></translation>
 <translation id="5398878173008909840">K dispozícii je nová verzia prehliadača Chromium.</translation>
 <translation id="5427571867875391349">Nastaviť Chromium ako predvolený prehliadač</translation>

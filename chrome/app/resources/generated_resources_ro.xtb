@@ -162,7 +162,6 @@
 <translation id="1205489148908752564">Citește și schimbă utilizatorii trecuți în lista albă</translation>
 <translation id="1208421848177517699">Transliterație (namaste → નમસ્તે)</translation>
 <translation id="1209796539517632982">Servere de nume automate</translation>
-<translation id="121201262018556460">Ați încercat să accesați <ph name="DOMAIN" />, dar serverul a furnizat un certificat care conține o cheie slabă. Un atacator ar fi putut sparge cheia privată și este posibil ca serverul să nu fie cel așteptat de dvs. (este posibil să comunicați cu un atacator).</translation>
 <translation id="1215411991991485844">Nouă aplicație de fundal adăugată</translation>
 <translation id="121827551500866099">Afișează toate descărcările...</translation>
 <translation id="122082903575839559">Algoritm de semnare a certificatului</translation>
@@ -173,7 +172,6 @@
 <translation id="1225177025209879837">Se procesează solicitarea...</translation>
 <translation id="1225211345201532184">Elementul 5 din raft</translation>
 <translation id="1225404570112441414">Adaugă acest site pe raft pentru a-l folosi oricând.</translation>
-<translation id="1226375067743171974">Animații experimentale de feedback tactil pentru designul material.</translation>
 <translation id="1227507814927581609">Autentificarea nu a reușit în timpul conectării la „<ph name="DEVICE_NAME" />”.</translation>
 <translation id="1231728991993914119">Activează notificarea la ieșire pentru aplicațiile găzduite.</translation>
 <translation id="1232569758102978740">Fără titlu</translation>
@@ -276,7 +274,6 @@
 <translation id="1399648040768741453">Tastatură telugu (Fonetică)</translation>
 <translation id="1401874662068168819">Gin Yieh</translation>
 <translation id="140250605646987970">S-a găsit telefonul. Dar Smart Lock funcționează numai cu dispozitive care au Android 5.0 sau versiuni ulterioare. &lt;a&gt;Află mai multe&lt;/a&gt;</translation>
-<translation id="140495917068443520">Picătură de cerneală pătrat</translation>
 <translation id="1405126334425076373">Cursorul mouse-ului</translation>
 <translation id="140520891692800925"><ph name="PROFILE_DISPLAY_NAME" /> (monitorizat)</translation>
 <translation id="1406500794671479665">Se verifică...</translation>
@@ -291,7 +288,6 @@
 <translation id="1413809658975081374">Eroare legată de confidențialitate</translation>
 <translation id="1414648216875402825">Faceți actualizarea la o versiune <ph name="PRODUCT_NAME" /> instabilă. Aceasta conține funcții nefinalizate. Vor apărea blocări și erori neașteptate. Continuați cu atenție.</translation>
 <translation id="1415990189994829608">Extensia <ph name="EXTENSION_NAME" /> (cu ID-ul „<ph name="EXTENSION_ID" />”) nu este permisă în acest tip de sesiune.</translation>
-<translation id="1416599368291956791">{1,plural, =1{Acest server nu a putut dovedi că este <ph name="DOMAIN" />. Data de emitere a certificatului său de securitate este mâine. Cauza poate fi o eroare de configurare sau interceptarea conexiunii de către un atacator.}few{Acest server nu a putut dovedi că este <ph name="DOMAIN" />. Data de emitere a certificatului său de securitate este în viitor, peste # zile. Cauza poate fi o eroare de configurare sau interceptarea conexiunii de către un atacator.}other{Acest server nu a putut dovedi că este <ph name="DOMAIN" />. Data de emitere a certificatului său de securitate este în viitor, peste # de zile. Cauza poate fi o eroare de configurare sau interceptarea conexiunii de către un atacator.}}</translation>
 <translation id="1416836038590872660">EAP-MD5</translation>
 <translation id="1420684932347524586">Hopa! Generarea cheii private RSA aleatorii nu a reușit.</translation>
 <translation id="1422780722984745882">S-au primit mai multe anteturi Location. Acest lucru nu este permis, ca măsură de protecție împotriva atacurilor prin divizarea răspunsului HTTP.</translation>
@@ -509,7 +505,6 @@
 <translation id="168328519870909584">Atacatorii de pe <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> pot încerca să instaleze aplicații periculoase pe dispozitiv, care să îți fure sau să îți șteargă informațiile (de exemplu, fotografii, parole, mesaje și carduri de credit).</translation>
 <translation id="1685141618403317602">Anulează înregistrarea</translation>
 <translation id="1685944703056982650">Excepții privind cursorul mouse-ului</translation>
-<translation id="168841957122794586">Certificatul de server conține o cheie criptografică slabă.</translation>
 <translation id="1691063574428301566">Computerul va reporni când actualizarea este finalizată.</translation>
 <translation id="1691608011302982743">Ați scos gadgetul prea devreme!</translation>
 <translation id="1692602667007917253">Hopa! A apărut o eroare.</translation>
@@ -815,14 +810,12 @@
 <translation id="215753907730220065">Ieși din ecranul complet</translation>
 <translation id="2157875535253991059">Acum această pagină este în modul ecran complet.</translation>
 <translation id="216169395504480358">Adăugați o rețea Wi-Fi...</translation>
-<translation id="2163418719022613650">Nu folosi listele de afișare Slimming Paint pentru desen. Reține că marcajul enable-slimming-paint are prioritate față de acest marcaj, dacă ambele sunt prezente.</translation>
 <translation id="2163470535490402084">Accesează internetul pentru a te conecta pe dispozitivul tău <ph name="DEVICE_TYPE" />.</translation>
 <translation id="2164862903024139959">Tastatură vietnameză (TCVN)</translation>
 <translation id="2167276631610992935">Javascript</translation>
 <translation id="2168214441502403371">Tastatură persană</translation>
 <translation id="2168725742002792683">Extensii de fișier</translation>
 <translation id="2169062631698640254">Conectați-vă oricum</translation>
-<translation id="2171101176734966184">Ați încercat să accesați <ph name="DOMAIN" />, dar serverul a furnizat un certificat semnat utilizând un algoritm de semnare slab. Aceasta însemnă că este posibil ca acreditările de securitate furnizate de server să fie falsificate, iar serverul să nu fie cel așteptat (este posibil să comunicați cu un atacator).</translation>
 <translation id="2175607476662778685">Bara Lansare rapidă</translation>
 <translation id="2176045495080708525">Acum sunt instalate următoarele extensii:</translation>
 <translation id="2177950615300672361">Fila Incognito: <ph name="TAB_NAME" /></translation>
@@ -842,7 +835,6 @@
 <translation id="220138918934036434">Ascunde butonul</translation>
 <translation id="2202898655984161076">A apărut o problemă la listarea imprimantelor. Este posibil ca unele dintre imprimante să nu fi fost înregistrate la <ph name="CLOUD_PRINT_NAME" />.</translation>
 <translation id="2204034823255629767">Citește și modifică orice date introduse</translation>
-<translation id="2208105671494637223">Franceză Bepo</translation>
 <translation id="2208158072373999562">Arhivă zip</translation>
 <translation id="2208311832613497869">Hopa! Trebuie să-ți întrebi părintele dacă poți accesa această pagină.</translation>
 <translation id="220858061631308971">Introduceți acest cod PIN pe „<ph name="DEVICE_NAME" />”:</translation>
@@ -915,7 +907,6 @@ După ce creezi un utilizator monitorizat, poți gestiona setările oricând și
 <translation id="2278988676849463018">Tastatură kannada (Fonetică)</translation>
 <translation id="2279770628980885996">Când serverul a încercat să îndeplinească solicitarea, a apărut o situație neașteptată.</translation>
 <translation id="2280486287150724112">Margine la dreapta</translation>
-<translation id="2280845493034384933">Activează ordinea de derulare inversă a spațiilor vizibile, în anumite situații. Și anume, în timpul unui zoom prin ciupire, va fi derulat mai întâi spațiul vizibil al conținutului, apoi spațiul vizibil înconjurător.</translation>
 <translation id="2282146716419988068">Proces GPU</translation>
 <translation id="2282872951544483773">Experimente indisponibile</translation>
 <translation id="2283117145434822734">F6</translation>
@@ -925,7 +916,6 @@ După ce creezi un utilizator monitorizat, poți gestiona setările oricând și
 <translation id="2291643155573394834">Fila următoare</translation>
 <translation id="2294358108254308676">Doriți să instalezi <ph name="PRODUCT_NAME" />?</translation>
 <translation id="2296019197782308739">Metodă EAP:</translation>
-<translation id="229702904922032456">Un certificat rădăcină sau intermediar a expirat.</translation>
 <translation id="2299552784526456191">Marchează originile nesecurizate ca fiind neutre.</translation>
 <translation id="2301382460326681002">Directorul rădăcină pentru extensie este nevalid.</translation>
 <translation id="230155334948463882">Card nou?</translation>
@@ -987,7 +977,6 @@ După ce creezi un utilizator monitorizat, poți gestiona setările oricând și
 <translation id="2384596874640104496">Tastatură sinhala</translation>
 <translation id="238526402387145295">Nu puteți accesa acum site-ul <ph name="SITE" />, deoarece acesta <ph name="BEGIN_LINK" />folosește HSTS<ph name="END_LINK" />. Erorile de rețea și atacurile sunt de obicei temporare și probabil că această pagină va funcționa mai târziu.</translation>
 <translation id="2385700042425247848">Nume serviciu:</translation>
-<translation id="2386255080630008482">Certificatul serverului a fost revocat.</translation>
 <translation id="2386631145847373156">Vă puteți deconecta doar dacă sunteți conectat(ă).</translation>
 <translation id="2386784019642337415">Citește și modifică motoarele de căutare prestabilite și personalizate</translation>
 <translation id="2390045462562521613">Șterge această rețea</translation>
@@ -1010,7 +999,6 @@ După ce creezi un utilizator monitorizat, poți gestiona setările oricând și
 <translation id="2403091441537561402">Gateway:</translation>
 <translation id="241082044617551207">Plugin necunoscut</translation>
 <translation id="2412835451908901523">Introdu cheia de deblocare a codului PIN, formată din 8 cifre, oferită de <ph name="CARRIER_ID" />.</translation>
-<translation id="2413528052993050574">Acest server nu a putut dovedi că este <ph name="DOMAIN" />; este posibil ca certificatul său de securitate să fie revocat. Cauza poate fi o configurare greșită sau interceptarea conexiunii de către un atacator.</translation>
 <translation id="2413749388954403953">Modifică interfața de utilizare pentru marcaje</translation>
 <translation id="2415294094132942411">Adaugă pe desktop...</translation>
 <translation id="242184683889529951">S-a dezactivat gestionarea cu fire de execuție a evenimentelor de intrare prin derulare, forțând gestionarea tuturor acestor evenimente de derulare în firul principal. Reține că această opțiune poate afecta semnificativ performanța de derulare a majorității site-urilor și că este destinată numai pentru testare.</translation>
@@ -1061,7 +1049,6 @@ Nu cred că acest site ar trebui blocat!</translation>
 <translation id="2489428929217601177">ultima zi</translation>
 <translation id="2489435327075806094">Viteza cursorului:</translation>
 <translation id="2489918096470125693">Adăugați un &amp;dosar...</translation>
-<translation id="2491120439723279231">Certificatul serverului conține erori.</translation>
 <translation id="249113932447298600">Ne pare rău, dispozitivul <ph name="DEVICE_LABEL" /> nu este acceptat în prezent.</translation>
 <translation id="2493021387995458222">Selectează „câte un cuvânt”</translation>
 <translation id="249303669840926644">Înregistrarea nu s-a putut finaliza</translation>
@@ -1235,7 +1222,6 @@ Nu cred că acest site ar trebui blocat!</translation>
 <translation id="2726306725839966998">Dezactivează ascunderea butoanelor de închidere în filele inactive atunci când sunt stivuite</translation>
 <translation id="2726934403674109201">(<ph name="COUNT" /> în total)</translation>
 <translation id="2727712005121231835">Dimensiunea actuală</translation>
-<translation id="2728127805433021124">Certificatul serverului este semnat utilizând un algoritm de semnătură slab.</translation>
 <translation id="273093730430620027">Această pagină vă accesează camera.</translation>
 <translation id="2731392572903530958">R&amp;edeschide fereastra închisă</translation>
 <translation id="2731700343119398978">Așteptați...</translation>
@@ -1395,13 +1381,11 @@ Nu cred că acest site ar trebui blocat!</translation>
 <translation id="2909946352844186028">A fost detectată o schimbare a rețelei.</translation>
 <translation id="2911372483530471524">Valori namespace PID</translation>
 <translation id="2912905526406334195"><ph name="HOST" /> dorește să utilizeze microfonul.</translation>
-<translation id="2915500479781995473">Acest server nu a putut dovedi că este <ph name="DOMAIN" />; certificatul său de securitate a expirat. Cauza poate fi o configurare greșită sau interceptarea conexiunii de către un atacator. În prezent, ceasul computerului este setat la <ph name="CURRENT_TIME" />. Este corect? Dacă nu, trebuie să corectezi ora sistemului, apoi să actualizezi pagina.</translation>
 <translation id="2916073183900451334">Dacă apeși Tab când ești pe o pagină, se evidențiază linkurile și câmpurile formularelor</translation>
 <translation id="2916974515569113497">Prin activarea acestei opțiuni, elementele cu poziție fixă vor avea propriile straturi compuse. Rețineți că elementele cu poziție fixă trebuie, de asemenea, să creeze contexte de stivuire pentru ca această opțiune să funcționeze.</translation>
 <translation id="2918322085844739869">4</translation>
 <translation id="2918583523892407401">Folosește mediul de testare securizat pentru Sincronizarea Chrome</translation>
 <translation id="291886813706048071">Puteți căuta de aici utilizând <ph name="SEARCH_ENGINE" /></translation>
-<translation id="2922350208395188000">Certificatul serverului nu poate fi verificat.</translation>
 <translation id="2923240520113693977">Estonă</translation>
 <translation id="29232676912973978">Gestionați conexiunile...</translation>
 <translation id="2923469375796950815">Dezactivează noul Dezarhivator ZIP.</translation>
@@ -1416,7 +1400,6 @@ Nu cred că acest site ar trebui blocat!</translation>
 <translation id="2937174152333875430">Activați sincronizarea Lansatorului de aplicații</translation>
 <translation id="2938225289965773019">Deschide linkurile <ph name="PROTOCOL" /></translation>
 <translation id="2938685643439809023">Mongolă</translation>
-<translation id="2941952326391522266">Acest server nu a putut dovedi că este <ph name="DOMAIN" />; certificatul său de securitate provine de la <ph name="DOMAIN2" />. Cauza poate fi o configurare greșită sau interceptarea conexiunii de către un atacator.</translation>
 <translation id="2942290791863759244">Tastatură germană NEO 2</translation>
 <translation id="2943400156390503548">Prezentări</translation>
 <translation id="2946119680249604491">Adăugați o conexiune</translation>
@@ -1459,7 +1442,6 @@ Nu cred că acest site ar trebui blocat!</translation>
 <translation id="300544934591011246">Parola anterioară</translation>
 <translation id="3005723025932146533">Afișați o copie salvată</translation>
 <translation id="3009300415590184725">Sigur doriți să anulați procesul de configurare al serviciului de date mobile?</translation>
-<translation id="3009507051774857955">Activează Slimming Paint.</translation>
 <translation id="3009779501245596802">Baze de date indexate</translation>
 <translation id="3010279545267083280">Parolă ștearsă</translation>
 <translation id="3011284594919057757">Despre Flash</translation>
@@ -1507,7 +1489,6 @@ Nu cred că acest site ar trebui blocat!</translation>
 <translation id="3075874217500066906">Este necesară o repornire pentru a începe procesul de Powerwash. După repornire, ți se va solicita să confirmi dacă dorești să continui.</translation>
 <translation id="3076677906922146425">Permite oricui să adauge o persoană în Chrome</translation>
 <translation id="3076909148546628648"><ph name="DOWNLOAD_RECEIVED" />/<ph name="DOWNLOAD_TOTAL" /></translation>
-<translation id="3077195744811823826">Google Now pe desktop</translation>
 <translation id="3077734595579995578">shift</translation>
 <translation id="3081104028562135154">Creșteți</translation>
 <translation id="3082374807674020857"><ph name="PAGE_TITLE" /> - <ph name="PAGE_URL" /></translation>
@@ -1563,6 +1544,7 @@ Nu cred că acest site ar trebui blocat!</translation>
 <translation id="3144135466825225871">Înlocuirea fișierului crx a eșuat. Verificați dacă fișierul este în uz.</translation>
 <translation id="31454997771848827">Grupați după domenii</translation>
 <translation id="3147485256806412701">Acest site folosește un nou domeniu generic de nivel superior.</translation>
+<translation id="3149510190863420837">Aplicații Chrome</translation>
 <translation id="3150927491400159470">Reîncărcați forțat</translation>
 <translation id="315116470104423982">Date mobile</translation>
 <translation id="315141861755603168">„<ph name="BUNDLE_NAME" />” adaugă aceste aplicații:</translation>
@@ -1617,7 +1599,6 @@ Nu cred că acest site ar trebui blocat!</translation>
 <translation id="3224239078034945833">Canadiană multilingvă</translation>
 <translation id="3225319735946384299">Semnarea codului</translation>
 <translation id="3225579507836276307">O extensie terță parte a blocat accesul la această pagină web.</translation>
-<translation id="3225919329040284222">Serverul a prezentat un certificat care nu se potrivește cu așteptările încorporate. Aceste așteptări sunt incluse pentru anumite site-uri web, cu un grad sporit de securitate, pentru a vă proteja.</translation>
 <translation id="3226128629678568754">Apăsați butonul de reîncărcare pentru a retrimite datele necesare pentru încărcarea paginii.</translation>
 <translation id="3227137524299004712">Microfonul</translation>
 <translation id="32279126412636473">Reîncărcați (⌘R)</translation>
@@ -1840,14 +1821,12 @@ Nu cred că acest site ar trebui blocat!</translation>
 <translation id="3517839692979918726"><ph name="APP_NAME" /> dorește să trimită conținut de pe ecran. Alegeți ce doriți să trimiteți.</translation>
 <translation id="3518086201899641494">Notificări despre portaluri captive</translation>
 <translation id="3519867315646775981">Transliterație (shalom ← שלום)</translation>
-<translation id="3520155764286810028">Picătură de cerneală cerc</translation>
 <translation id="3522159121915794564">Permite înscrierea utilizatorilor la colecția de lanțuri nevalide de certificate TLS/SSL.</translation>
 <translation id="3522708245912499433">Portugheză</translation>
 <translation id="3523642406908660543">Întreabă-mă atunci când un site vrea să folosească un plugin să-mi acceseze computerul (recomandat).</translation>
 <translation id="3527085408025491307">Dosar</translation>
 <translation id="3527276236624876118">A fost creat un utilizator monitorizat, cu numele <ph name="USER_DISPLAY_NAME" />.</translation>
 <translation id="3528033729920178817">Această pagină îți urmărește locația.</translation>
-<translation id="3528171143076753409">Certificatul serverului nu este de încredere.</translation>
 <translation id="3528498924003805721">Țintele comenzilor rapide</translation>
 <translation id="3530751398950974194">Actualizați expresia de acces pentru sincronizare</translation>
 <translation id="3531250013160506608">Casetă text pentru parolă</translation>
@@ -1909,7 +1888,6 @@ Nu cred că acest site ar trebui blocat!</translation>
 <translation id="3601395307734599350">Toate extensiile tale sunt aici</translation>
 <translation id="3603385196401704894">Franceză canadiană</translation>
 <translation id="3603622770190368340">Obțineți certificatul de rețea</translation>
-<translation id="3603690020645187079">Tastatură franceză Bepo</translation>
 <translation id="3605780360466892872">Om de afaceri</translation>
 <translation id="3608454375274108141">F10</translation>
 <translation id="3608576286259426129">Previzualizare a imaginii utilizatorului</translation>
@@ -2015,7 +1993,6 @@ Nu cred că acest site ar trebui blocat!</translation>
 <translation id="3726463242007121105">Acest dispozitiv nu poate fi deschis, deoarece sistemul său de fișiere nu este acceptat.</translation>
 <translation id="3726527440140411893">Când s-a afișat această pagină au fost setate următoarele cookie-uri:</translation>
 <translation id="3727187387656390258">Fereastră pop-up de inspectare</translation>
-<translation id="3727884750434605207">Activează injectarea scripturilor în loc de accesibilitatea nativă din Android.</translation>
 <translation id="3728067901555601989">OTP:</translation>
 <translation id="3730639321086573427">Destinații locale</translation>
 <translation id="3733127536501031542">Server SSL cu Step-Up</translation>
@@ -2054,7 +2031,6 @@ Nu cred că acest site ar trebui blocat!</translation>
 <translation id="3776796446459804932">Această extensie încalcă politica Magazinului web Chrome.</translation>
 <translation id="3778152852029592020">Descărcarea a fost anulată.</translation>
 <translation id="3778740492972734840">Instrumente pentru &amp;dezvoltatori</translation>
-<translation id="3779689521379218195">Picătură de cerneală design material</translation>
 <translation id="378312418865624974">Citește un identificator unic pentru acest computer</translation>
 <translation id="3783640748446814672">alt</translation>
 <translation id="3785308913036335955">Afișați comanda rapidă pentru aplicații</translation>
@@ -2131,7 +2107,6 @@ Nu cred că acest site ar trebui blocat!</translation>
 <translation id="3872687746103784075">Depanare bazată pe GDB a Clientului nativ</translation>
 <translation id="3873139305050062481">I&amp;nspectează elementul</translation>
 <translation id="3878840326289104869">Se creează utilizatorul monitorizat</translation>
-<translation id="3882882270042324158">Activați injectarea scripturilor pentru accesibilitate.</translation>
 <translation id="3888118750782905860">Gestionarea consumatorilor</translation>
 <translation id="3893536212201235195">Citește și modifică setările de accesibilitate</translation>
 <translation id="3893630138897523026">ChromeVox (feedback rostit)</translation>
@@ -2240,7 +2215,6 @@ Nu cred că acest site ar trebui blocat!</translation>
 <translation id="404493185430269859">Motor de căutare prestabilit</translation>
 <translation id="4047112090469382184">Ce siguranță oferă</translation>
 <translation id="4047345532928475040">N/A</translation>
-<translation id="4048441759170415907">Folosește listele de afișare Slimming Paint pentru toate desenele. Are prioritate față de marcajul disable-slimming-paint, dacă ambele sunt prezente.</translation>
 <translation id="404928562651467259">AVERTISMENT</translation>
 <translation id="4052120076834320548">Mic</translation>
 <translation id="4054376378714379870">Activează funcții de securitate care pot fi deranjante.</translation>
@@ -2464,7 +2438,6 @@ Apăsați pe orice tastă pentru a continua explorarea.</translation>
 <translation id="4372884569765913867">1x1</translation>
 <translation id="4375035964737468845">Deschide fișierele descărcate</translation>
 <translation id="4377039040362059580">Teme și imagini de fundal</translation>
-<translation id="4377125064752653719">Ați încercat să accesați <ph name="DOMAIN" />, dar certificatul furnizat de server a fost revocat de emitentul său. Aceasta înseamnă că acreditările de securitate furnizate de server nu sunt deloc de încredere. Este posibil să comunicați cu un atacator.</translation>
 <translation id="4377301101584272308">Permite tuturor site-urilor să urmărească locația dvs. fizică</translation>
 <translation id="4377363674125277448">A apărut o problemă cu privire la certificatul serverului.</translation>
 <translation id="4378154925671717803">Telefon</translation>
@@ -2651,7 +2624,6 @@ Apăsați pe orice tastă pentru a continua explorarea.</translation>
 <translation id="4672319956099354105">Certificat valid</translation>
 <translation id="4672657274720418656">Faceți conversia paginii</translation>
 <translation id="46733879594767046">Activează pictogramele mari pe pagina Filă nouă</translation>
-<translation id="467662567472608290">Acest server nu a putut dovedi că este <ph name="DOMAIN" />; certificatul său de securitate conține erori. Cauza poate fi o configurare greșită sau interceptarea conexiunii de către un atacator.</translation>
 <translation id="4677772697204437347">Memorie GPU</translation>
 <translation id="4680322106555328717">Ai permis recent rularea de conținut nesigur (cum ar fi scripturi sau cadre iframe) pe acest site.</translation>
 <translation id="4681260323810445443">Nu ești autorizat(ă) să accesezi pagina web de la <ph name="URL" />. Poate fi necesar să te conectezi.</translation>
@@ -2726,7 +2698,6 @@ Apăsați pe orice tastă pentru a continua explorarea.</translation>
 <translation id="4764029864566166446">Actualizează pluginul...</translation>
 <translation id="4764776831041365478">Pagina web de la <ph name="URL" /> poate fi temporar nefuncțională sau a fost mutată definitiv la o nouă adresă web.</translation>
 <translation id="4768698601728450387">Decupează imaginea</translation>
-<translation id="4771973620359291008">A apărut o eroare necunoscută.</translation>
 <translation id="4773696473262035477">O poți accesa și poți accesa toate <ph name="SAVED_PASSWORDS_LINK" /> din orice browser.</translation>
 <translation id="477518548916168453">Serverul nu acceptă funcționalitatea necesară pentru a îndeplini solicitarea.</translation>
 <translation id="4776917500594043016">Parolă pentru <ph name="USER_EMAIL_ADDRESS" /></translation>
@@ -2931,7 +2902,6 @@ Apăsați pe orice tastă pentru a continua explorarea.</translation>
 <translation id="5081055027309504756">Mediu de testare securizat Seccomp-BPF</translation>
 <translation id="5085162214018721575">Se caută actualizări</translation>
 <translation id="5086082738160935172">HID</translation>
-<translation id="5087286274860437796">Momentan, certificatul serverului este nevalid.</translation>
 <translation id="5087864757604726239">înapoi</translation>
 <translation id="508794495705880051">Adaugă un card de credit nou...</translation>
 <translation id="5088534251099454936">PKCS #1 SHA-512 cu criptare RSA</translation>
@@ -3174,7 +3144,6 @@ Apăsați pe orice tastă pentru a continua explorarea.</translation>
 <translation id="540296380408672091">Blochează întotdeauna cookie-urile pe <ph name="HOST" /></translation>
 <translation id="5409029099497331039">Surpriză</translation>
 <translation id="5409341371246664034">prin <ph name="PROVIDER" /></translation>
-<translation id="540969355065856584">Acest server nu a putut dovedi că este <ph name="DOMAIN" />; momentan, certificatul de securitate nu este valid. Cauza poate fi o configurare greșită sau interceptarea conexiunii de un atacator.</translation>
 <translation id="5411472733320185105">Nu utiliza setările proxy pentru următoarele gazde și domenii:</translation>
 <translation id="5411769601840150972">Data și ora sunt setate automat.</translation>
 <translation id="5412637665001827670">Tastatură bulgară</translation>
@@ -3220,7 +3189,6 @@ Apăsați pe orice tastă pentru a continua explorarea.</translation>
 <translation id="5457113250005438886">Nevalide</translation>
 <translation id="5457459357461771897">Citește și șterge fotografii, muzică și alte tipuri de conținut media de pe computer</translation>
 <translation id="5457599981699367932">Navighează ca invitat</translation>
-<translation id="5457858494714903578">Nu se poate instala extensia care nu prezintă încredere, cu ID-ul „<ph name="IMPORT_ID" />”.</translation>
 <translation id="5458214261780477893">Dvorak</translation>
 <translation id="5463275305984126951">Index pentru <ph name="LOCATION" /></translation>
 <translation id="5463856536939868464">Meniu conținând marcajele ascunse</translation>
@@ -3465,7 +3433,6 @@ Apăsați pe orice tastă pentru a continua explorarea.</translation>
 <translation id="5803531701633845775">Alege expresii din fundal, fără să miști cursorul</translation>
 <translation id="5804241973901381774">Permisiuni</translation>
 <translation id="580571955903695899">Reordonați după titlu</translation>
-<translation id="5808265053346186459">Activează Slimming Paint, etapa a doua (suprapunere bazată pe listele de afișare, optimizare a desenului sub-arborilor etc.). Necesită ca Slimming Paint să fie activat.</translation>
 <translation id="580886651983547002"><ph name="PRODUCT_NAME" />
         nu poate accesa site-ul.  Acest fapt este cauzat în mod normal de probleme de rețea,
         dar poate fi rezultatul unei configurări greșite a unui program firewall sau a unui server proxy.</translation>
@@ -3710,7 +3677,6 @@ Apăsați pe orice tastă pentru a continua explorarea.</translation>
 <translation id="614998064310228828">Modelul dispozitivului:</translation>
 <translation id="6150853954427645995">Pentru a salva acest fișier pentru utilizare offline, revino online, dă clic dreapta pe fișier și selectează opțiunea <ph name="OFFLINE_CHECKBOX_NAME" />.</translation>
 <translation id="6151323131516309312">Apasă pe <ph name="SEARCH_KEY" /> pentru a căuta în <ph name="SITE_NAME" /></translation>
-<translation id="6151417162996330722">Certificatul de server are o perioadă de validitate prea lungă.</translation>
 <translation id="6151559892024914821">Activați tragerea și plasarea inițiată prin atingere</translation>
 <translation id="615216289547575801">Activează aplicațiile efemere, care sunt lansate fără a fi instalate în Chrome, pentru a fi lansate din Magazinul web Chrome. Necesită activarea Lansatorului de aplicații experimental.</translation>
 <translation id="6154697846084421647">Conectat în prezent</translation>
@@ -3963,7 +3929,6 @@ Apăsați pe orice tastă pentru a continua explorarea.</translation>
 <translation id="6527303717912515753">Trimite</translation>
 <translation id="653019979737152879">Se sincronizează <ph name="FILE_NAME" />...</translation>
 <translation id="6533019874004191247">Adresă URL neaccep.</translation>
-<translation id="6533965071487181681">Dacă este activat, adresa URL chrome://md-settings/ încarcă pagina de setări pentru designul material.</translation>
 <translation id="6535131196824081346">Această eroare poate avea loc când te conectezi la un server (HTTPS) sigur. Aceasta
         înseamnă că serverul încearcă să stabilească o conexiune sigură dar, din cauza
         unei erori de configurare, conexiunea nu ar fi deloc sigură!
@@ -4099,7 +4064,6 @@ Apăsați pe orice tastă pentru a continua explorarea.</translation>
 <translation id="6736329909263487977"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />]</translation>
 <translation id="6739254200873843030">Cardul a expirat. Verificați data sau introduceți un card nou.</translation>
 <translation id="6740369132746915122">Dacă îți asumi riscurile de securitate, poți să <ph name="BEGIN_LINK" />accesezi acest site nesigur<ph name="END_LINK" />.</translation>
-<translation id="674375294223700098">Eroare de certificat de server necunoscută.</translation>
 <translation id="6745592621698551453">Actualizați acum</translation>
 <translation id="6745994589677103306">Nicio acțiune</translation>
 <translation id="674632704103926902">Activați tragerea prin atingere</translation>
@@ -4197,6 +4161,7 @@ Apăsați pe orice tastă pentru a continua explorarea.</translation>
 <translation id="6897140037006041989">User Agent</translation>
 <translation id="6898440773573063262">Acum, aplicațiile de tip chioșc pot fi configurate pentru a se lansa automat pe acest dispozitiv.</translation>
 <translation id="6898699227549475383">Organizația (O)</translation>
+<translation id="6900284862687837908">Aplicația de fundal: <ph name="BACKGROUND_APP_URL" /></translation>
 <translation id="6904344821472985372">Revocați accesul la fișiere</translation>
 <translation id="6906268095242253962">Conectează-te la internet pentru a continua.</translation>
 <translation id="6909461304779452601">Nu puteți adăuga aplicații, extensii și scripturi de utilizator de pe acest site web.</translation>
@@ -4232,7 +4197,6 @@ Apăsați pe orice tastă pentru a continua explorarea.</translation>
 <translation id="6955446738988643816">Fereastră pop-up de inspectare</translation>
 <translation id="695755122858488207">Buton radio nebifat</translation>
 <translation id="6957703620025723294">Activați funcțiile experimentale ale obiectului Canvas.</translation>
-<translation id="6957887021205513506">Certificatul serverului pare a fi un fals.</translation>
 <translation id="696036063053180184">3 Set (No shift)</translation>
 <translation id="696203921837389374">Activează sincronizarea prin date mobile</translation>
 <translation id="6964308487066031935">Adăugați dosarele la „<ph name="EXTENSION" />”?</translation>
@@ -4297,7 +4261,6 @@ Apăsați pe orice tastă pentru a continua explorarea.</translation>
 <translation id="7022303817801823406">Conexiunea la acest site folosește un certificat de server de încredere valid.</translation>
 <translation id="7022562585984256452">Pagina de pornire a fost setată.</translation>
 <translation id="702373420751953740">Versiune PRL:</translation>
-<translation id="7024180072211179766">Activează pictograma din bara de instrumente pentru modul cititor</translation>
 <translation id="7024867552176634416">Alege un dispozitiv de stocare detașabil pentru utilizare</translation>
 <translation id="7025190659207909717">Gestionarea serviciului de date mobile</translation>
 <translation id="7025325401470358758">Panoul următor</translation>
@@ -4313,7 +4276,6 @@ Apăsați pe orice tastă pentru a continua explorarea.</translation>
 <translation id="7042418530779813870">In&amp;serează și caută</translation>
 <translation id="7047998246166230966">Cursor</translation>
 <translation id="7048141481140415714">Activează combinația Ctrl+Alt+Shift+8 pentru a activa/dezactiva modul de maximizare TouchView.</translation>
-<translation id="7050187094878475250">Ai încercat să accesezi <ph name="DOMAIN" />, dar serverul a prezentat un certificat a cărui perioadă de validitate este prea lungă pentru a fi de încredere.</translation>
 <translation id="7051943809462976355">Se caută mouse-ul...</translation>
 <translation id="7052237160939977163">Trimiteți datele privind urmărirea performanței</translation>
 <translation id="7052500709156631672">Serverul gateway sau proxy a primit un răspuns nevalid de la un server ierarhic superior.</translation>
@@ -4410,7 +4372,6 @@ Apăsați pe orice tastă pentru a continua explorarea.</translation>
 <translation id="720210938761809882">Pagină blocată</translation>
 <translation id="7205869271332034173">SSID:</translation>
 <translation id="7206693748120342859">Se descarcă pluginul <ph name="PLUGIN_NAME" />...</translation>
-<translation id="7207163335165373476">{1,plural, =1{Acest server nu a putut dovedi că este <ph name="DOMAIN" />. Certificatul său de securitate a expirat ieri. Cauza poate fi o eroare de configurare sau interceptarea conexiunii de către un atacator. În prezent, ora computerului este setată la <ph name="CURRENT_DATE" />. Este corect? Dacă nu este, corectează ora sistemului și actualizează pagina.}few{Acest server nu a putut dovedi că este <ph name="DOMAIN" />. Certificatul său de securitate a expirat acum # zile. Cauza poate fi o eroare de configurare sau interceptarea conexiunii de către un atacator. În prezent, ora computerului este setată la <ph name="CURRENT_DATE" />. Este corect? Dacă nu este, corectează ora sistemului și actualizează pagina.}other{Acest server nu a putut dovedi că este <ph name="DOMAIN" />. Certificatul său de securitate a expirat acum # de zile. Cauza poate fi o eroare de configurare sau interceptarea conexiunii de către un atacator. În prezent, ora computerului este setată la <ph name="CURRENT_DATE" />. Este corect? Dacă nu este, corectează ora sistemului și actualizează pagina.}}</translation>
 <translation id="7208384892394620321">Acest site nu acceptă American Express.</translation>
 <translation id="7209475358897642338">Ce limbă doriți să utilizați?</translation>
 <translation id="7210998213739223319">Nume de utilizator.</translation>
@@ -4607,7 +4568,6 @@ Data viitoare ați putea utiliza combinația <ph name="SHORTCUT_KEY" /> pentru a
 <translation id="7469894403370665791">Conectează-te automat la această rețea</translation>
 <translation id="747114903913869239">Eroare: extensia nu poate fi decodificată</translation>
 <translation id="7472639616520044048">Tipuri MIME:</translation>
-<translation id="7473810335848400503">Ordine de derulare inversă a spațiilor vizibile.</translation>
 <translation id="7473891865547856676">Nu, mulțumesc</translation>
 <translation id="747459581954555080">Restabilește-le pe toate</translation>
 <translation id="7474889694310679759">Tastatură engleză canadiană</translation>
@@ -4641,7 +4601,6 @@ Data viitoare ați putea utiliza combinația <ph name="SHORTCUT_KEY" /> pentru a
 <translation id="7509179828847922845">Conexiunea la
         <ph name="HOST_NAME" />
         a fost întreruptă.</translation>
-<translation id="7511149348717996334">Activează setările designului material</translation>
 <translation id="7511955381719512146">Rețeaua Wi-Fi pe care o folosești poate solicita accesarea adresei <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />.</translation>
 <translation id="7513996269498582533">Detectat de tine</translation>
 <translation id="751507702149411736">Belarusă</translation>
@@ -4683,7 +4642,6 @@ Data viitoare ați putea utiliza combinația <ph name="SHORTCUT_KEY" /> pentru a
 <translation id="756445078718366910">Deschide fereastra de browser</translation>
 <translation id="7564847347806291057">Oprește procesul</translation>
 <translation id="7566723889363720618">F12</translation>
-<translation id="7567204685887185387">Acest server nu a putut dovedi că este <ph name="DOMAIN" />; este posibil ca certificatul său de securitate să fi fost emis fraudulos. Cauza poate fi o configurare greșită sau interceptarea conexiunii de către un atacator.</translation>
 <translation id="7567293639574541773">I&amp;nspectează elementul</translation>
 <translation id="7568790562536448087">Se actualizează</translation>
 <translation id="7570496663860904543">Când o pagină nu se încarcă, dacă în memoria cache a browserului există o versiune veche a paginii respective, se va afișa un buton pentru ca utilizatorii să poată să încarce acea versiune veche.  Principala opțiune de activare pune butonul în cea mai proeminentă poziție pe pagina de eroare; opțiunea secundară de activare îl pune în poziția secundă față de butonul de actualizare.</translation>
@@ -4699,7 +4657,6 @@ Data viitoare ați putea utiliza combinația <ph name="SHORTCUT_KEY" /> pentru a
 <translation id="7587108133605326224">Baltic</translation>
 <translation id="7589461650300748890">Ușurel. Fiți atent(ă).</translation>
 <translation id="7589661784326793847">Așteptați puțin</translation>
-<translation id="7592362899630581445">Certificatul serverului încalcă limitările privind numele.</translation>
 <translation id="7595547011743502844"><ph name="ERROR" /> (cod de eroare <ph name="ERROR_CODE" />).</translation>
 <translation id="7596831438341298034">Ok, importați</translation>
 <translation id="7596913374482479303">Setează ce motor de căutare este folosit atunci când cauți din caseta polivalentă.</translation>
@@ -4806,7 +4763,6 @@ Data viitoare ați putea utiliza combinația <ph name="SHORTCUT_KEY" /> pentru a
 <translation id="7754704193130578113">Întreabă-mă unde se salvează fiecare fișier înainte de a-l descărca</translation>
 <translation id="7756363132985736290">Certificatul există deja.</translation>
 <translation id="7760004034676677601">Aceasta este pagina de pornire la care vă așteptați?</translation>
-<translation id="7761701407923456692">Certificatul serverului nu se potrivește cu adresa URL.</translation>
 <translation id="7765158879357617694">Mută</translation>
 <translation id="7766807826975222231">Faceți un tur</translation>
 <translation id="7767646430896201896">Opțiuni:</translation>
@@ -4817,7 +4773,6 @@ Data viitoare ați putea utiliza combinația <ph name="SHORTCUT_KEY" /> pentru a
 <translation id="7772127298218883077">Despre <ph name="PRODUCT_NAME" /></translation>
 <translation id="7773726648746946405">Stocare sesiune</translation>
 <translation id="7774497835322490043">Activați rutina de depanare GDB. Aceasta va opri aplicația Client nativ la pornire și va aștepta ca nacl-gdb (din NaCl SDK) să se atașeze la aceasta.</translation>
-<translation id="7775325654940954648">A apărut o eroare la afișarea acestei pagini web. Poți încerca să închizi aplicațiile și filele de care nu ai nevoie pentru a elibera mai multă memorie.</translation>
 <translation id="7779249319235708104">Avertizare de atac de phishing</translation>
 <translation id="7781069478569868053">Pagina Filă nouă</translation>
 <translation id="7781335840981796660">Toate conturile de utilizator și datele locale vor fi eliminate.</translation>
@@ -4862,7 +4817,6 @@ Data viitoare ați putea utiliza combinația <ph name="SHORTCUT_KEY" /> pentru a
 <translation id="7828106701649804503">Specificați lățimea prestabilită a panourilor.</translation>
 <translation id="782886543891417279">Rețeaua Wi-Fi pe care o folosești (<ph name="WIFI_NAME" />) poate solicita accesarea paginii de conectare.</translation>
 <translation id="7831368056091621108">pentru ca această extensie, istoricul și alte setări Chrome să fie disponibile pe toate dispozitivele pe care le utilizați.</translation>
-<translation id="783140679984912140">Dezactivează Slimming Paint.</translation>
 <translation id="7839051173341654115">Vezi/fă backup conținutului media</translation>
 <translation id="7839192898639727867">ID cheie pentru subiectul certificatului</translation>
 <translation id="7839580021124293374">3</translation>
@@ -4934,7 +4888,6 @@ Data viitoare ați putea utiliza combinația <ph name="SHORTCUT_KEY" /> pentru a
 <translation id="7928710562641958568">Scoateți dispozitivul</translation>
 <translation id="7935864848518524631">Asocierile de fișiere pentru aplicații.</translation>
 <translation id="7938594894617528435">Offline în prezent</translation>
-<translation id="7938958445268990899">Certificatul serverului nu este încă valid.</translation>
 <translation id="7939412583708276221">Păstrați oricum</translation>
 <translation id="7939997691108949385">Managerul va putea să configureze restricții și setări pentru acest utilizator monitorizat la <ph name="MANAGEMENT_URL" />.</translation>
 <translation id="7943385054491506837">S.U.A. Colemak</translation>
@@ -5511,7 +5464,6 @@ Păstrează fișierul cu cheia într-un loc sigur. Acesta va fi necesar la crear
 <translation id="8731332457891046104">Anulează înregistrarea dispozitivului <ph name="DEVICE_TYPE" /></translation>
 <translation id="8732030010853991079">Utilizați extensia dând clic pe această pictogramă.</translation>
 <translation id="8732212173949624846">Citește și modifică istoricul de navigare pe toate dispozitivele conectate</translation>
-<translation id="8733326791725507133">Activează o implementare experimentală a API-ului Credential Manager. Nu se garantează că acesta nu va expune toate parolele la toate site-urile de pe internet. Activează acest API doar în cazul în care știi ce faci.</translation>
 <translation id="8734073480934656039">Dacă activați această setare, aplicațiile de tip chioșc se pot lansa automat la pornire.</translation>
 <translation id="8736288397686080465">Acest site a fost actualizat în fundal.</translation>
 <translation id="8737260648576902897">Instalați Adobe Reader</translation>
@@ -5583,7 +5535,6 @@ Păstrează fișierul cu cheia într-un loc sigur. Acesta va fi necesar la crear
 <translation id="8846141544112579928">Se caută tastatura...</translation>
 <translation id="8847988622838149491">USB</translation>
 <translation id="8848709220963126773">Comutare mod tastă Shift</translation>
-<translation id="884923133447025588">Nu a fost găsit niciun mecanism de revocare.</translation>
 <translation id="8852366862412129888">Site-ul include resurse HTTP.</translation>
 <translation id="8852742364582744935">Au fost adăugate următoarele aplicații și extensii:</translation>
 <translation id="885381502874625531">Tastatură belarusă</translation>
@@ -5592,7 +5543,6 @@ Păstrează fișierul cu cheia într-un loc sigur. Acesta va fi necesar la crear
 <translation id="8859057652521303089">Selectează limba:</translation>
 <translation id="8859174528519900719">Subcadru: <ph name="SUBFRAME_SITE" /></translation>
 <translation id="8860454412039442620">Foaie de calcul Excel</translation>
-<translation id="8861743108205592297">Adaugă un buton în bara de instrumente pentru a vedea o versiune mai ușor de citit a paginii actuale.</translation>
 <translation id="8863489667196658337">Activează noul sistem pentru crearea aplicațiilor de marcaje.</translation>
 <translation id="8870318296973696995">Pagina de pornire</translation>
 <translation id="8870413625673593573">Închise recent</translation>
@@ -5670,7 +5620,6 @@ Păstrează fișierul cu cheia într-un loc sigur. Acesta va fi necesar la crear
 <translation id="8965037249707889821">Introduceți parola veche</translation>
 <translation id="8965697826696209160">Nu există spațiu suficient.</translation>
 <translation id="8968527460726243404">Instrument de scriere a imaginilor de sistem pentru sistemul de operare Chrome</translation>
-<translation id="8971063699422889582">Certificatul serverului a expirat.</translation>
 <translation id="89720367119469899">Tasta Esc</translation>
 <translation id="8972513834460200407">Contactați administratorul de rețea, pentru a vă asigura că firewallul nu blochează descărcările de pe serverele Google.</translation>
 <translation id="8972727166872864532">Hopa! Trebuie să-ți întrebi părinții dacă poți accesa această pagină.</translation>
@@ -5746,7 +5695,6 @@ Păstrează fișierul cu cheia într-un loc sigur. Acesta va fi necesar la crear
 <translation id="904451693890288097">Introduceți codul PIN pentru „<ph name="DEVICE_NAME" />":</translation>
 <translation id="904949795138183864">Pagina web de la <ph name="URL" /> nu mai există.</translation>
 <translation id="9049835026521739061">Mod Hangul</translation>
-<translation id="9049981332609050619">Ai încercat să accesezi <ph name="DOMAIN" />, dar serverul a prezentat un certificat nevalid.</translation>
 <translation id="9050666287014529139">Expresie de acces</translation>
 <translation id="9052208328806230490">Ai înregistrat imprimantele la <ph name="CLOUD_PRINT_NAME" /> utilizând contul <ph name="EMAIL" /></translation>
 <translation id="9053965862400494292">A apărut o eroare la configurarea sincronizării.</translation>
@@ -5836,7 +5784,6 @@ Păstrează fișierul cu cheia într-un loc sigur. Acesta va fi necesar la crear
 <translation id="9169664750068251925">Blocați întotdeauna pe acest site</translation>
 <translation id="9170848237812810038">&amp;Anulează</translation>
 <translation id="9170884462774788842">Un alt program de pe computerul dvs. a adăugat o temă care poate schimba modul în care funcționează Chrome.</translation>
-<translation id="917450738466192189">Certificatul serverului nu este valid.</translation>
 <translation id="9177499212658576372">În prezent, sunteți conectat la rețeaua <ph name="NETWORK_TYPE" />.</translation>
 <translation id="9177556055091995297">Gestionați cardurile de credit</translation>
 <translation id="917861274483335838">Gestionează blocarea pluginurilor...</translation>

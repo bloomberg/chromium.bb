@@ -8,7 +8,9 @@
 <translation id="111844081046043029">Jeste li sigurni da želite zatvoriti ovu stranicu?</translation>
 <translation id="112840717907525620">Predmemorija pravila ispravna je</translation>
 <translation id="1132774398110320017">Postavke Automatskog popunjavanja u Chromeu...</translation>
+<translation id="1150979032973867961">Poslužitelj nije mogao dokazati da je <ph name="DOMAIN" />; operativni sustav vašeg računala smatra da njegov sigurnosni certifikat nije pouzdan. To može biti uzrokovano pogrešnom konfiguracijom ili napadom na vašu vezu.</translation>
 <translation id="1152921474424827756">Pristupite <ph name="BEGIN_LINK" />predmemoriranoj kopiji<ph name="END_LINK" /> stranice <ph name="URL" /></translation>
+<translation id="121201262018556460">Pokušali ste doseći domenu <ph name="DOMAIN" />, ali poslužitelj je predstavio certifikat potpisan slabim ključem. Napadač je možda otkrio privatni ključ, a poslužitelj možda nije očekivani poslužitelj (možda ste u komunikaciji s napadačem).</translation>
 <translation id="1227224963052638717">Nepoznato pravilo.</translation>
 <translation id="1227633850867390598">Skrivanje vrijednosti</translation>
 <translation id="1228893227497259893">Pogrešan identifikator entiteta</translation>
@@ -22,8 +24,10 @@
 <translation id="1639239467298939599">Učitavanje</translation>
 <translation id="1640180200866533862">Korisnička pravila</translation>
 <translation id="1644184664548287040">Mrežna konfiguracija nije važeća i nije ju bilo moguće uvesti.</translation>
+<translation id="168841957122794586">Certifikat poslužitelja sadrži slab kriptografski ključ!</translation>
 <translation id="1693754753824026215">Stranica na web-lokaciji <ph name="SITE" /> navodi sljedeće:</translation>
 <translation id="1734864079702812349">Amex</translation>
+<translation id="1763864636252898013">Poslužitelj nije mogao dokazati da je <ph name="DOMAIN" />; operativni sustav vašeg uređaja smatra da njegov sigurnosni certifikat nije pouzdan. To može biti uzrokovano pogrešnom konfiguracijom ili napadom na vašu vezu.</translation>
 <translation id="1821930232296380041">Nevažeći zahtjev ili parametri zahtjeva</translation>
 <translation id="1853748787962613237">Prikaz članka nije uspio.</translation>
 <translation id="1871208020102129563">Proxy poslužitelj postavljen je na upotrebu fiksnih proxy poslužitelja, a ne URL .pac skripte.</translation>
@@ -46,20 +50,25 @@
 <translation id="2113977810652731515">Kartica</translation>
 <translation id="2114841414352855701">Zanemareno jer je nadjačano pravilom <ph name="POLICY_NAME" />.</translation>
 <translation id="213826338245044447">Mobilne oznake</translation>
+<translation id="2171101176734966184">Pokušali ste doseći domenu <ph name="DOMAIN" />, ali poslužitelj je predstavio certifikat potpisan slabim algoritmom potpisa. Znači da su sigurnosne vjerodajnice koje je poslužitelj predstavio možda krivotvorene, a poslužitelj možda nije poslužitelj koji očekujete (možda ste u komunikaciji s napadačem).</translation>
 <translation id="2181821976797666341">Pravila</translation>
 <translation id="2212735316055980242">Pravilo nije pronađeno</translation>
 <translation id="2213606439339815911">Dohvaćanje unosa...</translation>
 <translation id="225207911366869382">Ta je vrijednost obustavljena za to pravilo.</translation>
 <translation id="2262243747453050782">HTTP pogreška</translation>
 <translation id="2270192940992995399">Članak nije pronađen.</translation>
+<translation id="229702904922032456">Korijenski ili posrednički certifikat je istekao.</translation>
 <translation id="2328300916057834155">Zanemarena nevažeća oznaka u indeksu <ph name="ENTRY_INDEX" /></translation>
 <translation id="2354001756790975382">Druge oznake</translation>
 <translation id="2359808026110333948">Nastavi</translation>
 <translation id="2367567093518048410">Razina</translation>
+<translation id="2386255080630008482">Opozvan je certifikat poslužitelja.</translation>
 <translation id="2392959068659972793">Prikaži pravila bez postavljenih vrijednosti</translation>
 <translation id="2396249848217231973">&amp;Poništi brisanje</translation>
+<translation id="2413528052993050574">Poslužitelj nije mogao dokazati da je <ph name="DOMAIN" />; njegov sigurnosni certifikat možda je opozvan. To može biti uzrokovano pogrešnom konfiguracijom ili napadom na vašu vezu.</translation>
 <translation id="2455981314101692989">Ova web-stranica ima onemogućeno automatsko popunjavanje za taj obrazac.</translation>
 <translation id="2479410451996844060">Nevažeći URL pretraživanja.</translation>
+<translation id="2491120439723279231">Certifikat poslužitelja sadrži pogreške.</translation>
 <translation id="2495083838625180221">Raščlanjivanje JSON datoteka</translation>
 <translation id="2498091847651709837">Skeniraj novu karticu</translation>
 <translation id="2556876185419854533">&amp;Poništi uređivanje</translation>
@@ -70,10 +79,14 @@
 <translation id="2639739919103226564">Status:</translation>
 <translation id="2704283930420550640">Vrijednost ne odgovara formatu.</translation>
 <translation id="2721148159707890343">Zahtjev je uspio</translation>
+<translation id="2728127805433021124">Certifikat poslužitelja potpisan je slabim algoritmom potpisa.</translation>
 <translation id="2774256287122201187">Možete nastaviti. Ako otvorite stranicu, to će se upozorenje pojaviti tek za pet minuta.</translation>
 <translation id="277499241957683684">Zapis uređaja nije prisutan</translation>
 <translation id="2835170189407361413">Obriši obrazac</translation>
 <translation id="2855922900409897335">Potvrda kreditne kartice <ph name="CREDIT_CARD" /></translation>
+<translation id="2915500479781995473">Poslužitelj nije mogao dokazati da se radi o domeni <ph name="DOMAIN" />. Njezin je sigurnosni certifikat istekao. Uzrok može biti pogrešna konfiguracija ili napadač koji ometa vašu vezu. Sat vašeg računala trenutačno je postavljen na <ph name="CURRENT_TIME" />. Je li to u redu? Ako nije, podesite sat svog sustava, a zatim osvježite ovu stranicu.</translation>
+<translation id="2922350208395188000">Certifikat poslužitelja nije moguće provjeriti.</translation>
+<translation id="2941952326391522266">Poslužitelj nije mogao dokazati da je <ph name="DOMAIN" />; njegov je sigurnosni certifikat s domene <ph name="DOMAIN2" />. To može biti uzrokovano pogrešnom konfiguracijom ili napadom na vašu vezu.</translation>
 <translation id="2958431318199492670">Mrežna konfiguracija nije u skladu sa standardima ONC. Dijelove konfiguracije nije moguće uvesti.</translation>
 <translation id="2972581237482394796">&amp;Vrati poništeno</translation>
 <translation id="3010559122411665027">Unos popisa "<ph name="ENTRY_INDEX" />": <ph name="ERROR" /></translation>
@@ -84,9 +97,11 @@
 <translation id="3169472444629675720">Discover</translation>
 <translation id="3174168572213147020">Otok</translation>
 <translation id="3219579145727097045">Unesite datum isteka i četveroznamenkasti CVC s prednje strane kartice</translation>
+<translation id="3225919329040284222">Poslužitelj je pokazao certifikat koji ne odgovara ugrađenim očekivanjima. Ta su očekivanja uključena za određene web-lokacije s visokim stupnjem sigurnosti radi vaše zaštite.</translation>
 <translation id="3228969707346345236">Prijevod nije uspio jer stranica već je na jeziku: <ph name="LANGUAGE" />.</translation>
 <translation id="3270847123878663523">&amp;Poništi promjenu rasporeda</translation>
 <translation id="333371639341676808">Spriječite ovu stranicu od stvaranja dodatnih dijaloga.</translation>
+<translation id="3340978935015468852">postavke</translation>
 <translation id="3369192424181595722">Pogreška sata</translation>
 <translation id="3369366829301677151">Ažurirajte i potvrdite karticu <ph name="CREDIT_CARD" /></translation>
 <translation id="337363190475750230">Dodjela je uklonjena</translation>
@@ -97,6 +112,7 @@
 <translation id="3450660100078934250">MasterCard</translation>
 <translation id="3452404311384756672">Dohvati interval:</translation>
 <translation id="3462200631372590220">Sakrij napredno</translation>
+<translation id="3528171143076753409">Certifikat poslužitelja nije pouzdan.</translation>
 <translation id="3542684924769048008">Upotrijebite zaporku za:</translation>
 <translation id="3583757800736429874">&amp;Ponovi premještanje</translation>
 <translation id="3623476034248543066">Prikaži vrijednost</translation>
@@ -126,13 +142,18 @@
 <translation id="4269787794583293679">(Nema korisničkog imena)</translation>
 <translation id="4300246636397505754">Nadređeni prijedlozi</translation>
 <translation id="4372948949327679948">Očekivana vrijednost vrste <ph name="VALUE_TYPE" />.</translation>
+<translation id="4377125064752653719">Pokušali ste doseći domenu <ph name="DOMAIN" />, ali certifikat koji je poslužitelj predstavio povučen je od strane izdavača. Prema tome nikako ne biste trebali vjerovati sigurnosnim certifikatima koje predstavlja poslužitelj. Možda komunicirate s napadačem.</translation>
+<translation id="4424024547088906515">Poslužitelj nije mogao dokazati da je <ph name="DOMAIN" />; Chrome smatra da njegov sigurnosni certifikat nije pouzdan. To može biti uzrokovano pogrešnom konfiguracijom ili napadom na vašu vezu.</translation>
 <translation id="443673843213245140">Upotreba proxy poslužitelja onemogućena je, ali određena je izričita konfiguracija proxy poslužitelja.</translation>
 <translation id="4506176782989081258">Pogreška pri provjeri valjanosti: <ph name="VALIDATION_ERROR" />.</translation>
 <translation id="4587425331216688090">Želite li s Chromea ukloniti adresu?</translation>
 <translation id="4594403342090139922">&amp;Poništi brisanje</translation>
 <translation id="4607653538520819196">Ušteda podataka ne može obraditi stranicu putem proxyja.</translation>
 <translation id="4668929960204016307">,</translation>
+<translation id="467662567472608290">Poslužitelj nije mogao dokazati da je <ph name="DOMAIN" />; njegov sigurnosni certifikat sadrži pogreške. To može biti uzrokovano pogrešnom konfiguracijom ili napadom na vašu vezu.</translation>
 <translation id="4726672564094551039">Ponovo učitaj pravila</translation>
+<translation id="4728558894243024398">Platforma</translation>
+<translation id="4771973620359291008">Došlo je do nepoznate pogreške.</translation>
 <translation id="4800132727771399293">Provjerite datum isteka i CVC pa pokušajte ponovo</translation>
 <translation id="4813512666221746211">Pogreška mreže</translation>
 <translation id="4850886885716139402">Prikaz</translation>
@@ -142,7 +163,9 @@
 <translation id="498957508165411911">Želite li prijevod s jezika <ph name="ORIGINAL_LANGUAGE" /> na <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="5019198164206649151">Sigurnosno pohranjivanje u neispravnom je stanju</translation>
 <translation id="5031870354684148875">O Google Prevoditelju</translation>
+<translation id="5087286274860437796">Certifikat poslužitelja trenutačno nije važeći.</translation>
 <translation id="5089810972385038852">Država</translation>
+<translation id="5094747076828555589">Poslužitelj nije mogao dokazati da je <ph name="DOMAIN" />; Chromium smatra da njegov sigurnosni certifikat nije pouzdan. To može biti uzrokovano pogrešnom konfiguracijom ili napadom na vašu vezu.</translation>
 <translation id="5095208057601539847">Provincija</translation>
 <translation id="5145883236150621069">Odgovor na pravilo sadrži kôd pogreške</translation>
 <translation id="5172758083709347301">Strojno</translation>
@@ -152,6 +175,7 @@
 <translation id="5299298092464848405">Pogreška u pravilu analize</translation>
 <translation id="5317780077021120954">Spremi</translation>
 <translation id="536296301121032821">Pohrana postavki pravila nije uspjela</translation>
+<translation id="540969355065856584">Poslužitelj nije uspio dokazati da je <ph name="DOMAIN" />; njegov sigurnosni certifikat trenutačno nije važeći. Uzrok tomu može biti pogrešna konfiguracija ili napadač koji je prekinuo vašu vezu.</translation>
 <translation id="5439770059721715174">Pogreška provjere sheme na lokaciji "<ph name="ERROR_PATH" />": <ph name="ERROR" /></translation>
 <translation id="5455374756549232013">Vremenska oznaka pravila koje nije valjano</translation>
 <translation id="5470861586879999274">&amp;Ponovi uređivanje</translation>
@@ -170,6 +194,7 @@
 <translation id="5989320800837274978">Nisu određeni fiksni proxy poslužitelji ni URL .pac skripte.</translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6040143037577758943">Zatvori</translation>
+<translation id="6151417162996330722">Certifikat poslužitelja ima predugo razdoblje valjanosti.</translation>
 <translation id="6154808779448689242">Vraćeni token pravila ne odgovara trenutačnom tokenu</translation>
 <translation id="6165508094623778733">Saznajte više</translation>
 <translation id="6259156558325130047">&amp;Ponovi promjenu rasporeda</translation>
@@ -186,18 +211,21 @@
 <translation id="6628463337424475685"><ph name="ENGINE" /> Pretraživanje</translation>
 <translation id="6644283850729428850">Ovo je pravilo zastarjelo.</translation>
 <translation id="6646897916597483132">Unesite četveroznamenkasti CVC s prednje strane kartice</translation>
+<translation id="674375294223700098">Nepoznata pogreška certifikata poslužitelja</translation>
 <translation id="6753269504797312559">Vrijednost pravila</translation>
 <translation id="6831043979455480757">Prevedi</translation>
 <translation id="6839929833149231406">Područje</translation>
 <translation id="6874604403660855544">&amp;Ponovi dodavanje</translation>
 <translation id="6891596781022320156">Razina pravila nije podržana.</translation>
 <translation id="6915804003454593391">Korisnik:</translation>
+<translation id="6957887021205513506">Certifikat poslužitelja izgleda kao falsifikat.</translation>
 <translation id="6965382102122355670">U redu</translation>
 <translation id="6965978654500191972">Uređaj</translation>
 <translation id="6970216967273061347">Distrikt</translation>
 <translation id="6973656660372572881">Određeni su fiksni proxy poslužitelji i URL .pac skripte.</translation>
 <translation id="6980028882292583085">JavaScript upozorenje</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
+<translation id="7050187094878475250">Pokušali ste pristupiti domeni <ph name="DOMAIN" />, ali je poslužitelj pružio certifikat koji nije pouzdan zbog predugog razdoblja valjanosti.</translation>
 <translation id="7087282848513945231">Županija</translation>
 <translation id="7108649287766967076">Prijevod na <ph name="TARGET_LANGUAGE" /> nije uspio.</translation>
 <translation id="7139724024395191329">Emirat</translation>
@@ -217,17 +245,21 @@
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7537536606612762813">Obavezno</translation>
 <translation id="7542995811387359312">Automatsko popunjavanje kreditne kartice onemogućeno je jer se ovaj obrazac ne služi sigurnom vezom.</translation>
+<translation id="7567204685887185387">Poslužitelj nije mogao dokazati da je <ph name="DOMAIN" />; njegov sigurnosni certifikat možda je lažan. To može biti uzrokovano pogrešnom konfiguracijom ili napadom na vašu vezu.</translation>
 <translation id="7568593326407688803">Ova je stranica na ovom jeziku:<ph name="ORIGINAL_LANGUAGE" />Želite li je prevesti?</translation>
 <translation id="7569952961197462199">Želite li s Chromea ukloniti kreditnu karticu?</translation>
+<translation id="7592362899630581445">Certifikat poslužitelja krši ograničenja naziva.</translation>
 <translation id="7600965453749440009">Nikad ne prevodi <ph name="LANGUAGE" /></translation>
 <translation id="7610193165460212391">Vrijednost je izvan raspona <ph name="VALUE" />.</translation>
 <translation id="7752995774971033316">Nema upravitelja</translation>
+<translation id="7761701407923456692">Certifikat poslužitelja ne podudara se s URL-om.</translation>
 <translation id="777702478322588152">Prefektura</translation>
 <translation id="7791543448312431591">Dodaj</translation>
 <translation id="7805768142964895445">Status</translation>
 <translation id="7813600968533626083">Želite li s Chromea ukloniti prijedlog za obrasce?</translation>
 <translation id="7887683347370398519">Provjerite CVC i pokušajte ponovo</translation>
 <translation id="7935318582918952113">DOM Distiller</translation>
+<translation id="7938958445268990899">Certifkat poslužitelja još nije valjan.</translation>
 <translation id="7956713633345437162">Mobilne oznake</translation>
 <translation id="7961015016161918242">Nikad</translation>
 <translation id="7977590112176369853">&lt;unesite upit&gt;</translation>
@@ -260,18 +292,22 @@
 <translation id="8824019021993735287">Chrome nije uspio potvrditi vašu karticu u ovom trenutku. Pokušajte ponovo kasnije.</translation>
 <translation id="8834246243508017242">Omogući Automatsko popunjavanje pomoću Kontakata...</translation>
 <translation id="883848425547221593">Druge oznake</translation>
+<translation id="884923133447025588">Nije pronađen mehanizam za opoziv.</translation>
 <translation id="8866481888320382733">Pogreška pri analizi postavki pravila</translation>
 <translation id="8876793034577346603">Mrežna konfiguracija nije uspješno analizirana.</translation>
 <translation id="8891727572606052622">Nevažeći način proxy poslužitelja.</translation>
 <translation id="8932102934695377596">Sat kasni</translation>
 <translation id="8940229512486821554">Pokretanje proširenja <ph name="EXTENSION_NAME" /> za naredbu: <ph name="SEARCH_TERMS" /></translation>
+<translation id="8971063699422889582">Istekao je certifikat poslužitelja.</translation>
 <translation id="8988760548304185580">Unesite datum isteka i troznamenkasti CVC s poleđine kartice</translation>
 <translation id="9020542370529661692">Ova je stranica prevedena na <ph name="TARGET_LANGUAGE" /></translation>
+<translation id="9049981332609050619">Pokušali ste pristupiti domeni <ph name="DOMAIN" />, ali poslužitelj je prikazao nevažeći certifikat.</translation>
 <translation id="9125941078353557812">Unesite troznamenkasti CVC s prednje strane kartice</translation>
 <translation id="9137013805542155359">Prikaži original</translation>
 <translation id="9148507642005240123">&amp;Poništi uređivanje</translation>
 <translation id="9154176715500758432">Ostani na ovoj stranici</translation>
 <translation id="9170848237812810038">&amp;Poništi</translation>
+<translation id="917450738466192189">Certifikat poslužitelja nije valjan.</translation>
 <translation id="9207861905230894330">Dodavanje članka nije uspjelo.</translation>
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="935608979562296692">IZBRIŠI OBRAZAC</translation>

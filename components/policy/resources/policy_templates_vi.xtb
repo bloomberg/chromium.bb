@@ -107,7 +107,6 @@
       Việc đặt chính sách này sẽ ghi đè giá trị mặc định 3 giờ. Các giá trị hợp lệ cho chính sách này nằm trong khoảng từ 1800000 (30 phút) tới 86400000 (1 ngày). Mọi giá trị không nằm trong khoảng này sẽ được gắn với ranh giới tương ứng.
 
       Nếu không đặt chính sách này, <ph name="PRODUCT_OS_NAME" /> sẽ sử dụng giá trị mặc định là 3 giờ.</translation>
-<translation id="1503959756075098984">ID tiện ích và URL cập nhật cần cài đặt tĩnh</translation>
 <translation id="1504431521196476721">Chứng thực từ xa</translation>
 <translation id="1509692106376861764">Chính sách này đã chấm dứt kể từ phiên bản <ph name="PRODUCT_NAME" /> 29.</translation>
 <translation id="1522425503138261032">Cho phép các trang web theo dõi vị trí thực của người dùng</translation>
@@ -1168,7 +1167,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
 
           Nếu chính sách này được bật hoặc tắt, người dùng không thể thay đổi hoặc ghi đè
           chính sách trong <ph name="PRODUCT_NAME" />. Nếu chính sách
-          này chưa được đặt, bạn được phép lưu mật khẩu (nhưng người dùng có thể
+          này chưa được đặt, người dùng được phép lưu mật khẩu (nhưng họ có thể
           tắt).</translation>
 <translation id="6367755442345892511">Kênh phát hành có thể được định cấu hình bởi người dùng hay không</translation>
 <translation id="6368011194414932347">Định cấu hình URL trang chủ</translation>
@@ -1652,7 +1651,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
           Phân tách tên của nhiều máy chủ bằng dấu phẩy. Cho phép ký tự đại diện (*).
 
          Nếu bạn không đặt chính sách này, <ph name="PRODUCT_NAME" /> sẽ cố gắng phát hiện xem máy chủ có ở trên mạng nội bộ hay không, sau đó mới phản hồi yêu cầu IWA.  Nếu máy chủ được phát hiện là ở trên mạng Internet thì yêu cầu IWA từ máy chủ sẽ bị <ph name="PRODUCT_NAME" /> bỏ qua.</translation>
-<translation id="8665076741187546529">Định cấu hình danh sách các tiện ích bắt buộc cài đặt</translation>
 <translation id="8668394701842594241">Chỉ định danh sách các plugin được bật trong <ph name="PRODUCT_NAME" /> và ngăn người dùng thay đổi cài đặt này.
 
       Các ký tự đại diện '*' và '?' có thể được sử dụng để khớp với chuỗi các ký tự ngẫu nhiên. '*' khớp với một số ngẫu nhiên các ký tự còn '?' chỉ định ký tự đơn tùy chọn, tức là khớp với 0 hoặc 1 ký tự. Ký tự thoát là '\', vì vậy để khớp với các ký tự '*', '?' hoặc '\' thực, bạn có thể đặt '\' trước các ký tự này.

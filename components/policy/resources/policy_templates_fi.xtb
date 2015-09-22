@@ -86,7 +86,6 @@
       Tämän käytännön määrittäminen ohittaa oletusarvon (3 tuntia). Käytännölle voidaan määrittää arvoja väliltä 1800000 (30 minuuttia) – 86400000 (1 päivä). Tämän alueen ulkopuoliset arvot muutetaan lähimpään raja-arvoon.
 
       Jos tätä käytäntöä ei aseteta, <ph name="PRODUCT_OS_NAME" /> käyttää oletusarvoa (3 tuntia).</translation>
-<translation id="1503959756075098984">Laajennuksien tunnukset ja päivitys-URL-osoitteet asennetaan taustalla</translation>
 <translation id="1504431521196476721">Etätodennus</translation>
 <translation id="1509692106376861764">Tämä käytäntö on poistettu käytöstä tuotteen <ph name="PRODUCT_NAME" /> versiosta 29 lähtien.</translation>
 <translation id="1522425503138261032">Anna sivustojen seurata käyttäjien fyysistä sijaintia</translation>
@@ -1416,7 +1415,6 @@ Tämä käytäntö ei ole käytössä tavallisilla käyttäjätileillä.</transl
           Erota palvelinten nimet pilkulla. Jokerimerkit (*) sallitaan.
 
           Jos et aseta käytäntöä, <ph name="PRODUCT_NAME" /> pyrkii tarkistamaan, onko palvelin sisäverkossa, ja vastaa vasta sitten IWA-pyyntöihin. Jos palvelimen todetaan sijaitsevan sisäverkossa, <ph name="PRODUCT_NAME" /> ohittaa sen IWA-pyynnöt.</translation>
-<translation id="8665076741187546529">Määritä automaattisesti asennettavat laajennukset</translation>
 <translation id="8668394701842594241">Määrittää laajennukset, joita voi käyttää tuotteessa <ph name="PRODUCT_NAME" />, ja estää käyttäjiä muuttamasta tätä asetusta. Jokerimerkeillä * ja ? voidaan korvata mitä tahansa merkkejä. * korvaa rajoittamattoman määrän merkkejä, kun taas ? korvaa yksittäisen valinnaisen merkin, eli nolla merkkiä tai yhden merkin. Vaihtomerkki on \, joten jos haluat käyttää merkkejä *, ? tai \ ilman niiden jokerimerkkimerkitystä, lisää niiden eteen merkki \. Luettelossa olevia laajennuksia käytetään aina tuotteessa <ph name="PRODUCT_NAME" />, jos ne on asennettu. Laajennukset merkitään käytössä oleviksi kohdassa about:plugins, eivätkä käyttäjät voi poistaa niitä käytöstä. Huomaa, että tämä käytäntö ohittaa sekä käytännön DisabledPlugins että DisabledPluginsExceptions. Jos tätä käytäntöä ei ole määritetty, käyttäjä voi poistaa käytöstä minkä tahansa järjestelmään asennetun laajennuksen.</translation>
 <translation id="8672321184841719703">Automaattisen päivityksen version määrittäminen</translation>
 <translation id="868187325500643455">Salli kaikkien sivustojen käyttää laajennuksia automaattisesti</translation>

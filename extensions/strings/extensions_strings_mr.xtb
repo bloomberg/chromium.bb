@@ -21,12 +21,14 @@
 <translation id="388442998277590542">पर्याय पृष्ठ '<ph name="OPTIONS_PAGE" />' लोड करणे शक्य नाही.</translation>
 <translation id="4115165561519362854">या मशीनच्या प्रशासकाला <ph name="EXTENSION_NAME" /> कडे <ph name="EXTENSION_VERSION" /> ची किमान आवृत्ती असणे आवश्यक आहे. ही त्या आवृत्तीवर (किंवा उच्च) अद्यतनित करेपर्यंत हे सक्षम होऊ शकत नाही.</translation>
 <translation id="4233778200880751280">'<ph name="ABOUT_PAGE" />' पृष्ठाविषयी लोड करू शकलो नाही.</translation>
+<translation id="4434145631756268951">{0,select, single{एक USB डिव्हाइस निवडा}multiple{USB डिव्हाइस निवडा}other{UNUSED}}</translation>
 <translation id="4811956658694082538">उपयुक्तता प्रक्रिया क्रॅश झाल्यामुळे पॅकेज स्थापित करू शकलो नाही. Chrome रीस्टार्ट करून पहा आणि पुन्हा प्रयत्न करून पहा.</translation>
 <translation id="4883436287898674711">सर्व <ph name="WEBSITE_1" /> साइट</translation>
 <translation id="5026754133087629784">वेबदृश्य: <ph name="WEBVIEW_TAG_NAME" /></translation>
 <translation id="5356315618422219272">अॅपदृश्य: <ph name="APPVIEW_TAG_NAME" /></translation>
 <translation id="5456409301717116725">हा विस्तार मुख्य फाइल '<ph name="KEY_PATH" />' समाविष्ट करतो. आपण कदाचित ते करू इच्छित नसू शकता.</translation>
 <translation id="5627523580512561598">विस्तार <ph name="EXTENSION_NAME" /></translation>
+<translation id="5630931906013276297">{0,select, single{एक HID डिव्हाइस निवडा}multiple{HID डिव्हाइस निवडा}other{UNUSED}}</translation>
 <translation id="5960890139610307736">ExtensionView: <ph name="EXTENSIONVIEW_TAG_NAME" /></translation>
 <translation id="5972529113578162692">या मशीनच्या प्रशासकासाठी <ph name="EXTENSION_NAME" /> स्थापित करणे आवश्यक आहे. हे विस्थापित केले जाऊ शकत नाही.</translation>
 <translation id="6027032947578871493"><ph name="VENDOR_NAME" /> कडील <ph name="PRODUCT_ID" /> अज्ञात उत्पादन (अनुक्रमांक <ph name="SERIAL_NUMBER" />)</translation>

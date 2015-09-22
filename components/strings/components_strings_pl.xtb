@@ -8,7 +8,9 @@
 <translation id="111844081046043029">Czy na pewno chcesz opuścić tę stronę?</translation>
 <translation id="112840717907525620">Pamięć podręczna zasad: OK</translation>
 <translation id="1132774398110320017">Ustawienia autouzupełniania Chrome...</translation>
+<translation id="1150979032973867961">Ten serwer nie mógł udowodnić, że należy do <ph name="DOMAIN" />. Jego certyfikat bezpieczeństwa nie jest zaufany w systemie operacyjnym tego komputera. Może to być spowodowane błędną konfiguracją lub przechwyceniem połączenia przez atakującego.</translation>
 <translation id="1152921474424827756">Przejdź do <ph name="BEGIN_LINK" />kopii<ph name="END_LINK" /> <ph name="URL" /> w pamięci podręcznej</translation>
+<translation id="121201262018556460">Próbujesz wejść na <ph name="DOMAIN" />, ale serwer przedstawił certyfikat ze słabym kluczem. Intruz mógł uzyskać klucz prywatny, a serwer może nie być tym, którego oczekujesz (możliwe, że komunikujesz się z intruzem).</translation>
 <translation id="1227224963052638717">Nieznana zasada.</translation>
 <translation id="1227633850867390598">Ukryj wartość</translation>
 <translation id="1228893227497259893">Błędny identyfikator elementu</translation>
@@ -22,8 +24,10 @@
 <translation id="1639239467298939599">Wczytywanie</translation>
 <translation id="1640180200866533862">Zasady dotyczące użytkowników</translation>
 <translation id="1644184664548287040">Konfiguracja sieci jest nieprawidłowa i nie można jej zaimportować.</translation>
+<translation id="168841957122794586">Certyfikat serwera ma słaby klucz kryptograficzny.</translation>
 <translation id="1693754753824026215">Komunikat ze strony <ph name="SITE" />:</translation>
 <translation id="1734864079702812349">Amex</translation>
+<translation id="1763864636252898013">Ten serwer nie mógł udowodnić, że należy do <ph name="DOMAIN" />. Jego certyfikat bezpieczeństwa nie jest zaufany w systemie operacyjnym tego urządzenia. Może to być spowodowane błędną konfiguracją lub przechwyceniem połączenia przez atakującego.</translation>
 <translation id="1821930232296380041">Nieprawidłowe żądanie lub jego parametry</translation>
 <translation id="1853748787962613237">Nie udało się wyświetlić artykułu.</translation>
 <translation id="1871208020102129563">Proxy skonfigurowano do używania stałych serwerów proxy, a nie URL-a skryptu PAC.</translation>
@@ -46,20 +50,25 @@
 <translation id="2113977810652731515">Karta</translation>
 <translation id="2114841414352855701">Ignorowana, ponieważ jest zastąpiona przez <ph name="POLICY_NAME" />.</translation>
 <translation id="213826338245044447">Zakładki na komórce</translation>
+<translation id="2171101176734966184">Próbujesz wejść na <ph name="DOMAIN" />, ale serwer przedstawił certyfikat podpisany słabym algorytmem. Oznacza to, że dane uwierzytelniające podane przez serwer mogły zostać sfałszowane, a serwer może nie być tym, którego oczekujesz (możliwe, że komunikujesz się z intruzem).</translation>
 <translation id="2181821976797666341">Zasady</translation>
 <translation id="2212735316055980242">Nie znaleziono zasady</translation>
 <translation id="2213606439339815911">Pobieram wpisy...</translation>
 <translation id="225207911366869382">Ta wartość tej zasady została wycofana.</translation>
 <translation id="2262243747453050782">Błąd HTTP</translation>
 <translation id="2270192940992995399">Nie udało się znaleźć artykułu.</translation>
+<translation id="229702904922032456">Wygasł certyfikat główny lub pośredniczący.</translation>
 <translation id="2328300916057834155">Zignorowano nieprawidłową zakładkę w indeksie <ph name="ENTRY_INDEX" /></translation>
 <translation id="2354001756790975382">Inne zakładki</translation>
 <translation id="2359808026110333948">Kontynuuj</translation>
 <translation id="2367567093518048410">Poziom</translation>
+<translation id="2386255080630008482">Certyfikat serwera został unieważniony.</translation>
 <translation id="2392959068659972793">Pokaż zasady bez ustawionej wartości</translation>
 <translation id="2396249848217231973">&amp;Cofnij usunięcie</translation>
+<translation id="2413528052993050574">Ten serwer nie mógł udowodnić, że należy do <ph name="DOMAIN" />. Jego certyfikat bezpieczeństwa mógł zostać odwołany. Może to być spowodowane błędną konfiguracją lub przechwyceniem połączenia przez atakującego.</translation>
 <translation id="2455981314101692989">Automatyczne wypełnianie tego formularza zostało wyłączone przez stronę internetową.</translation>
 <translation id="2479410451996844060">Nieprawidłowy URL wyszukiwania</translation>
+<translation id="2491120439723279231">Certyfikat serwera zawiera błędy.</translation>
 <translation id="2495083838625180221">Parser JSON</translation>
 <translation id="2498091847651709837">Zeskanuj nową kartę</translation>
 <translation id="2556876185419854533">&amp;Cofnij edycję</translation>
@@ -70,10 +79,14 @@
 <translation id="2639739919103226564">Stan:</translation>
 <translation id="2704283930420550640">Wartość nie pasuje do formatu.</translation>
 <translation id="2721148159707890343">Żądanie wykonane pomyślnie</translation>
+<translation id="2728127805433021124">Certyfikat serwera został podpisany przy użyciu słabego algorytmu podpisu.</translation>
 <translation id="2774256287122201187">Możesz kontynuować. Jeśli otworzysz tę stronę, ostrzeżenie nie będzie wyświetlane przez pięć minut.</translation>
 <translation id="277499241957683684">Brak rekordu urządzenia</translation>
 <translation id="2835170189407361413">Wyczyść formularz</translation>
 <translation id="2855922900409897335">Zweryfikuj kartę <ph name="CREDIT_CARD" /></translation>
+<translation id="2915500479781995473">Ten serwer nie mógł udowodnić, że należy do <ph name="DOMAIN" />. Jego certyfikat bezpieczeństwa wygasł. Może to być spowodowane błędną konfiguracją lub przechwyceniem połączenia przez atakującego. Zegar Twojego komputera jest obecnie ustawiony na <ph name="CURRENT_TIME" />. Czy to poprawny czas? Jeśli nie, ustaw go, a następnie odśwież stronę.</translation>
+<translation id="2922350208395188000">Nie można sprawdzić certyfikatu serwera.</translation>
+<translation id="2941952326391522266">Ten serwer nie mógł udowodnić, że należy do <ph name="DOMAIN" />. Jego certyfikat pochodzi z <ph name="DOMAIN2" />. Może to być spowodowane błędną konfiguracją lub przechwyceniem połączenia przez atakującego.</translation>
 <translation id="2958431318199492670">Konfiguracja sieci jest niezgodna ze standardem ONC. Jej fragmenty mogły nie zostać zaimportowane.</translation>
 <translation id="2972581237482394796">&amp;Ponów</translation>
 <translation id="3010559122411665027">Pozycja listy „<ph name="ENTRY_INDEX" />”: <ph name="ERROR" /></translation>
@@ -84,9 +97,11 @@
 <translation id="3169472444629675720">Discover</translation>
 <translation id="3174168572213147020">Wyspa</translation>
 <translation id="3219579145727097045">Wpisz datę ważności i czterocyfrowy kod CVC widoczny na przodzie karty</translation>
+<translation id="3225919329040284222">Serwer przedstawił certyfikat, który nie pasuje do zaprogramowanych oczekiwań. Oczekiwania mają chronić Cię w określonych witrynach o wysokim poziomie zabezpieczeń.</translation>
 <translation id="3228969707346345236">Tłumaczenie nie powiodło się, ponieważ strona jest już w języku: <ph name="LANGUAGE" />.</translation>
 <translation id="3270847123878663523">&amp;Cofnij zmianę kolejności</translation>
 <translation id="333371639341676808">Zapobiegaj wyświetlaniu dodatkowych okien dialogowych na tej stronie.</translation>
+<translation id="3340978935015468852">ustawienia</translation>
 <translation id="3369192424181595722">Błąd zegara</translation>
 <translation id="3369366829301677151">Zaktualizuj i zweryfikuj kartę <ph name="CREDIT_CARD" /></translation>
 <translation id="337363190475750230">Anulowano obsługę</translation>
@@ -97,6 +112,7 @@
 <translation id="3450660100078934250">MasterCard</translation>
 <translation id="3452404311384756672">Okres pobierania:</translation>
 <translation id="3462200631372590220">Ukryj zaawansowane</translation>
+<translation id="3528171143076753409">Certyfikat serwera nie jest zaufany.</translation>
 <translation id="3542684924769048008">Używaj hasła dla:</translation>
 <translation id="3583757800736429874">&amp;Ponów przeniesienie</translation>
 <translation id="3623476034248543066">Pokaż wartość</translation>
@@ -126,13 +142,18 @@
 <translation id="4269787794583293679">(Brak nazwy użytkownika)</translation>
 <translation id="4300246636397505754">Propozycje rodziców</translation>
 <translation id="4372948949327679948">Oczekiwano wartości typu <ph name="VALUE_TYPE" />.</translation>
+<translation id="4377125064752653719">Próbujesz wejść na <ph name="DOMAIN" />, ale serwer przedstawił certyfikat unieważniony przez wystawcę. Oznacza to, że dane uwierzytelniające podane przez serwer są zupełnie niewiarygodne. Możliwe, że komunikujesz się z intruzem.</translation>
+<translation id="4424024547088906515">Ten serwer nie mógł udowodnić, że należy do <ph name="DOMAIN" />. Jego certyfikat bezpieczeństwa nie jest zaufany w Chrome. Może to być spowodowane błędną konfiguracją lub przechwyceniem połączenia przez atakującego.</translation>
 <translation id="443673843213245140">Korzystanie z serwera proxy jest wyłączone, ale podano konfigurację proxy.</translation>
 <translation id="4506176782989081258">Błąd sprawdzania poprawności: <ph name="VALIDATION_ERROR" /></translation>
 <translation id="4587425331216688090">Usunąć ten adres z Chrome?</translation>
 <translation id="4594403342090139922">&amp;Cofnij usunięcie</translation>
 <translation id="4607653538520819196">Oszczędzanie danych nie może przekazać tej strony.</translation>
 <translation id="4668929960204016307">,</translation>
+<translation id="467662567472608290">Ten serwer nie mógł udowodnić, że należy do <ph name="DOMAIN" />. Jego certyfikat bezpieczeństwa ma błędy. Może to być spowodowane błędną konfiguracją lub przechwyceniem połączenia przez atakującego.</translation>
 <translation id="4726672564094551039">Odśwież zasady</translation>
+<translation id="4728558894243024398">Platforma</translation>
+<translation id="4771973620359291008">Wystąpił nieznany błąd.</translation>
 <translation id="4800132727771399293">Sprawdź datę ważności i kod CVC, a potem spróbuj ponownie</translation>
 <translation id="4813512666221746211">Błąd sieci</translation>
 <translation id="4850886885716139402">Widok</translation>
@@ -142,7 +163,9 @@
 <translation id="498957508165411911">Przetłumaczyć z języka: <ph name="ORIGINAL_LANGUAGE" /> na <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="5019198164206649151">Nieprawidłowy stan magazynu wspomagającego</translation>
 <translation id="5031870354684148875">Tłumacz Google – informacje</translation>
+<translation id="5087286274860437796">Certyfikat serwera nie jest obecnie ważny.</translation>
 <translation id="5089810972385038852">Stan</translation>
+<translation id="5094747076828555589">Ten serwer nie mógł udowodnić, że należy do <ph name="DOMAIN" />. Jego certyfikat bezpieczeństwa nie jest zaufany w Chromium. Może to być spowodowane błędną konfiguracją lub przechwyceniem połączenia przez atakującego.</translation>
 <translation id="5095208057601539847">Prowincja</translation>
 <translation id="5145883236150621069">W odebranej polityce znajduje się kod błędu</translation>
 <translation id="5172758083709347301">Komputer</translation>
@@ -152,6 +175,7 @@
 <translation id="5299298092464848405">Podczas przetwarzania zasady wystąpił błąd</translation>
 <translation id="5317780077021120954">Zapisz</translation>
 <translation id="536296301121032821">Zapisanie ustawień zasady nie powiodło się</translation>
+<translation id="540969355065856584">Ten serwer nie może udowodnić, że należy do domeny <ph name="DOMAIN" />. Jego certyfikat bezpieczeństwa nie jest obecnie ważny. Może to być spowodowane nieprawidłową konfiguracją lub przechwyceniem połączenia przez atakującego.</translation>
 <translation id="5439770059721715174">Błąd podczas sprawdzania poprawności schematu – „<ph name="ERROR_PATH" />”: <ph name="ERROR" /></translation>
 <translation id="5455374756549232013">Nieprawidłowy czas zasady</translation>
 <translation id="5470861586879999274">&amp;Ponów edycję</translation>
@@ -170,6 +194,7 @@
 <translation id="5989320800837274978">Nie określono ani stałych serwerów proxy, ani adresu URL skryptu PAC.</translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6040143037577758943">Zamknij</translation>
+<translation id="6151417162996330722">Certyfikat serwera ma za długi okres ważności.</translation>
 <translation id="6154808779448689242">Zwrócony token zasady jest niezgodny z bieżącym</translation>
 <translation id="6165508094623778733">Więcej informacji</translation>
 <translation id="6259156558325130047">&amp;Ponów zmianę kolejności</translation>
@@ -186,18 +211,21 @@
 <translation id="6628463337424475685">Wyszukiwarka <ph name="ENGINE" /></translation>
 <translation id="6644283850729428850">Zasada jest przestarzała.</translation>
 <translation id="6646897916597483132">Wpisz czterocyfrowy kod CVC widoczny na przodzie karty</translation>
+<translation id="674375294223700098">Nieznany błąd certyfikatu serwera.</translation>
 <translation id="6753269504797312559">Wartość zasady</translation>
 <translation id="6831043979455480757">Tłumacz</translation>
 <translation id="6839929833149231406">Dzielnica</translation>
 <translation id="6874604403660855544">&amp;Ponów dodanie</translation>
 <translation id="6891596781022320156">Ten poziom zasad nie jest obsługiwany.</translation>
 <translation id="6915804003454593391">Użytkownik:</translation>
+<translation id="6957887021205513506">Certyfikat serwera wydaje się sfałszowany.</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6965978654500191972">Urządzenie</translation>
 <translation id="6970216967273061347">Okręg</translation>
 <translation id="6973656660372572881">Określono zarówno stałe serwery proxy, jak i URL skryptu PAC.</translation>
 <translation id="6980028882292583085">Alert JavaScript</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
+<translation id="7050187094878475250">Próbujesz połączyć się z domeną <ph name="DOMAIN" />, ale serwer przedstawił certyfikat, którego okres ważności jest za długi, by był wiarygodny.</translation>
 <translation id="7087282848513945231">Hrabstwo</translation>
 <translation id="7108649287766967076">Tłumaczenie na <ph name="TARGET_LANGUAGE" /> nie powiodło się.</translation>
 <translation id="7139724024395191329">Emirat</translation>
@@ -217,17 +245,21 @@
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7537536606612762813">Obowiązkowe</translation>
 <translation id="7542995811387359312">Automatyczne wypełnianie danych karty kredytowej jest wyłączone, ponieważ ten formularz nie korzysta z bezpiecznego połączenia.</translation>
+<translation id="7567204685887185387">Ten serwer nie mógł udowodnić, że należy do <ph name="DOMAIN" />. Jego certyfikat bezpieczeństwa mógł zostać wydany w celu oszustwa. Może to być spowodowane błędną konfiguracją lub przechwyceniem połączenia przez atakującego.</translation>
 <translation id="7568593326407688803">Język strony:<ph name="ORIGINAL_LANGUAGE" />Chcesz ją przetłumaczyć?</translation>
 <translation id="7569952961197462199">Usunąć tę kartę kredytową z Chrome?</translation>
+<translation id="7592362899630581445">Certyfikat serwera narusza ograniczenia dotyczące nazw.</translation>
 <translation id="7600965453749440009">Nigdy nie tłumacz z języka: <ph name="LANGUAGE" /></translation>
 <translation id="7610193165460212391">Wartość spoza zakresu (<ph name="VALUE" />)</translation>
 <translation id="7752995774971033316">Niezarządzany</translation>
+<translation id="7761701407923456692">Certyfikat serwera jest niezgodny z adresem URL.</translation>
 <translation id="777702478322588152">Prefektura</translation>
 <translation id="7791543448312431591">Dodaj</translation>
 <translation id="7805768142964895445">Stan</translation>
 <translation id="7813600968533626083">Usunąć tę podpowiedź do formularza z Chrome?</translation>
 <translation id="7887683347370398519">Sprawdź kod CVC i spróbuj ponownie</translation>
 <translation id="7935318582918952113">DOM Distiller</translation>
+<translation id="7938958445268990899">Certyfikat serwera nie jest jeszcze ważny.</translation>
 <translation id="7956713633345437162">Zakładki na komórce</translation>
 <translation id="7961015016161918242">Nigdy</translation>
 <translation id="7977590112176369853">&lt;wprowadź zapytanie&gt;</translation>
@@ -260,18 +292,22 @@
 <translation id="8824019021993735287">Chrome nie może obecnie zweryfikować karty. Spróbuj ponownie później.</translation>
 <translation id="8834246243508017242">Włącz Autouzupełnianie z kontaktami…</translation>
 <translation id="883848425547221593">Inne zakładki</translation>
+<translation id="884923133447025588">Nie znaleziono mechanizmu unieważniania.</translation>
 <translation id="8866481888320382733">Podczas przetwarzania ustawień zasady wystąpił błąd</translation>
 <translation id="8876793034577346603">Przetwarzanie konfiguracji sieci nie powiodło się.</translation>
 <translation id="8891727572606052622">Nieprawidłowy tryb proxy</translation>
 <translation id="8932102934695377596">Twój zegar się spóźnia</translation>
 <translation id="8940229512486821554">Uruchom polecenie rozszerzenia <ph name="EXTENSION_NAME" />: <ph name="SEARCH_TERMS" /></translation>
+<translation id="8971063699422889582">Ważność certyfikatu serwera wygasła.</translation>
 <translation id="8988760548304185580">Wpisz datę ważności i trzycyfrowy kod CVC widoczny na odwrocie karty</translation>
 <translation id="9020542370529661692">Ta strona została przetłumaczona na <ph name="TARGET_LANGUAGE" />.</translation>
+<translation id="9049981332609050619">Podjęto próbę nawiązania połączenia z witryną <ph name="DOMAIN" />, jednak serwer przedstawił nieprawidłowy certyfikat.</translation>
 <translation id="9125941078353557812">Wpisz trzycyfrowy kod CVC widoczny na odwrocie karty</translation>
 <translation id="9137013805542155359">Pokaż tekst oryginalny</translation>
 <translation id="9148507642005240123">&amp;Cofnij edycję</translation>
 <translation id="9154176715500758432">Pozostań na tej stronie</translation>
 <translation id="9170848237812810038">&amp;Cofnij</translation>
+<translation id="917450738466192189">Certyfikat serwera jest nieprawidłowy.</translation>
 <translation id="9207861905230894330">Nie udało się dodać artykułu.</translation>
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="935608979562296692">WYCZYŚĆ FORMULARZ</translation>

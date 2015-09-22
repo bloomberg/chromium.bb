@@ -8,7 +8,9 @@
 <translation id="111844081046043029">Voulez-vous vraiment quitter cette page ?</translation>
 <translation id="112840717907525620">Cache de la règle valide.</translation>
 <translation id="1132774398110320017">Paramètres de saisie automatique de Chrome…</translation>
+<translation id="1150979032973867961">Impossible de vérifier sur le serveur qu'il s'agit bien du domaine <ph name="DOMAIN" />, car son certificat de sécurité n'est pas considéré comme fiable par le système d'exploitation de votre ordinateur. Cela peut être dû à une mauvaise configuration ou bien à l'interception de votre connexion par un pirate informatique.</translation>
 <translation id="1152921474424827756">Accédez à une <ph name="BEGIN_LINK" />copie mise en cache<ph name="END_LINK" /> de <ph name="URL" />.</translation>
+<translation id="121201262018556460">Vous avez tenté d'accéder à <ph name="DOMAIN" />, mais le serveur a présenté un certificat contenant une clé faible. Il est possible qu'un pirate ait compromis la clé privée. Il est donc possible que le serveur auquel vous avez accédé ne soit pas celui que vous croyez, et que vous soyez en train de communiquer avec un pirate informatique.</translation>
 <translation id="1227224963052638717">Règle inconnue</translation>
 <translation id="1227633850867390598">Masquer la valeur</translation>
 <translation id="1228893227497259893">Identifiant d'entité incorrect.</translation>
@@ -22,8 +24,10 @@
 <translation id="1639239467298939599">Chargement en cours</translation>
 <translation id="1640180200866533862">Règles relatives aux utilisateurs</translation>
 <translation id="1644184664548287040">Impossible d'importer la configuration du réseau : elle n'est pas valide.</translation>
+<translation id="168841957122794586">Le certificat du serveur contient une clé de chiffrement faible.</translation>
 <translation id="1693754753824026215">La page à l'adresse <ph name="SITE" /> indique :</translation>
 <translation id="1734864079702812349">American Express</translation>
+<translation id="1763864636252898013">Impossible de vérifier sur le serveur qu'il s'agit bien du domaine <ph name="DOMAIN" />, car son certificat de sécurité n'est pas considéré comme fiable par le système d'exploitation de votre appareil. Cela peut être dû à une mauvaise configuration ou bien à l'interception de votre connexion par un pirate informatique.</translation>
 <translation id="1821930232296380041">La demande ou ses paramètres ne sont pas valides.</translation>
 <translation id="1853748787962613237">Échec de l'affichage de l'article.</translation>
 <translation id="1871208020102129563">Le proxy est configuré pour utiliser des serveurs proxy déterminés, pas une URL de script .pac.</translation>
@@ -46,20 +50,25 @@
 <translation id="2113977810652731515">Carte</translation>
 <translation id="2114841414352855701">Ignorée parce que remplacée par <ph name="POLICY_NAME" />.</translation>
 <translation id="213826338245044447">Favoris sur mobile</translation>
+<translation id="2171101176734966184">Vous avez tenté d'accéder à <ph name="DOMAIN" />, mais le serveur a présenté un certificat signé à l'aide d'un algorithme de signature faible. Il est possible que le certificat fourni par le serveur ait été falsifié. Il se peut donc que le serveur ne soit pas celui auquel vous souhaitez accéder, et qu'il s'agisse d'une tentative de piratage.</translation>
 <translation id="2181821976797666341">Règles</translation>
 <translation id="2212735316055980242">Règle introuvable.</translation>
 <translation id="2213606439339815911">Obtention des entrées en cours…</translation>
 <translation id="225207911366869382">Cette valeur n'est plus utilisée dans le cadre de cette règle.</translation>
 <translation id="2262243747453050782">Erreur HTTP.</translation>
 <translation id="2270192940992995399">Échec de la détection de l'article.</translation>
+<translation id="229702904922032456">Un certificat racine ou intermédiaire a expiré.</translation>
 <translation id="2328300916057834155">Favori non valide ignoré (index <ph name="ENTRY_INDEX" />)</translation>
 <translation id="2354001756790975382">Autres favoris</translation>
 <translation id="2359808026110333948">Continuer</translation>
 <translation id="2367567093518048410">Niveau</translation>
+<translation id="2386255080630008482">Le certificat du serveur a été révoqué.</translation>
 <translation id="2392959068659972793">Afficher les règles non paramétrées</translation>
 <translation id="2396249848217231973">&amp;Annuler la suppression</translation>
+<translation id="2413528052993050574">Impossible de vérifier sur le serveur qu'il s'agit bien du domaine <ph name="DOMAIN" />. Il se peut que son certificat de sécurité ait été révoqué. Cela peut être dû à une mauvaise configuration ou bien à l'interception de votre connexion par un pirate informatique.</translation>
 <translation id="2455981314101692989">Cette page Web a désactivé la saisie automatique dans ce formulaire.</translation>
 <translation id="2479410451996844060">URL de recherche incorrecte</translation>
+<translation id="2491120439723279231">Le certificat du serveur contient des erreurs.</translation>
 <translation id="2495083838625180221">Analyse de fichiers JSON</translation>
 <translation id="2498091847651709837">Lire une nouvelle carte</translation>
 <translation id="2556876185419854533">&amp;Annuler la modification</translation>
@@ -70,10 +79,14 @@
 <translation id="2639739919103226564">État :</translation>
 <translation id="2704283930420550640">La valeur ne respecte pas le format requis.</translation>
 <translation id="2721148159707890343">Demande réussie.</translation>
+<translation id="2728127805433021124">Le certificat du serveur a été signé avec un algorithme de signature faible.</translation>
 <translation id="2774256287122201187">Vous pouvez continuer. Si vous accédez à la page, cet avertissement ne s'affichera pas pendant cinq minutes.</translation>
 <translation id="277499241957683684">Enregistrement de l'appareil manquant.</translation>
 <translation id="2835170189407361413">Effacer le formulaire</translation>
 <translation id="2855922900409897335">Valider votre <ph name="CREDIT_CARD" /></translation>
+<translation id="2915500479781995473">Nous n'avons pas pu vérifier qu'il s'agissait du domaine <ph name="DOMAIN" />, car son certificat de sécurité a expiré. Cela peut être dû à une mauvaise configuration ou à une tentative d'interception de la connexion par un pirate informatique. L'horloge de votre ordinateur indique actuellement : <ph name="CURRENT_TIME" />. Cela vous semble-t-il correct ? Si ce n'est pas le cas, vous devez corriger l'horloge de votre système, puis réinitialiser la page.</translation>
+<translation id="2922350208395188000">Impossible de vérifier le certificat du serveur.</translation>
+<translation id="2941952326391522266">Impossible de vérifier sur le serveur qu'il s'agit bien du domaine <ph name="DOMAIN" />, car son certificat de sécurité provient du domaine <ph name="DOMAIN2" />. Cela peut être dû à une mauvaise configuration ou bien à l'interception de votre connexion par un pirate informatique.</translation>
 <translation id="2958431318199492670">La configuration du réseau ne respecte pas les normes de l'ONC. Il est possible que des parties de la configuration ne soient pas importées.</translation>
 <translation id="2972581237482394796">&amp;Rétablir</translation>
 <translation id="3010559122411665027">Entrée de la liste "<ph name="ENTRY_INDEX" />" : <ph name="ERROR" /></translation>
@@ -84,9 +97,11 @@
 <translation id="3169472444629675720">Discover</translation>
 <translation id="3174168572213147020">Île</translation>
 <translation id="3219579145727097045">Saisissez la date d'expiration et le code CVC à quatre chiffres figurant au recto de votre carte.</translation>
+<translation id="3225919329040284222">Le serveur dispose d'un certificat qui ne répond pas aux exigences intégrées. Celles-ci sont incluses dans certains sites Web très sécurisés afin de vous protéger.</translation>
 <translation id="3228969707346345236">La traduction a échoué, car la page est déjà en <ph name="LANGUAGE" />.</translation>
 <translation id="3270847123878663523">&amp;Annuler la réorganisation</translation>
 <translation id="333371639341676808">Empêcher cette page de générer des boîtes de dialogue supplémentaires</translation>
+<translation id="3340978935015468852">paramètres</translation>
 <translation id="3369192424181595722">Erreur de l'horloge</translation>
 <translation id="3369366829301677151">Mettre à jour votre <ph name="CREDIT_CARD" /> et la valider</translation>
 <translation id="337363190475750230">Révoqué</translation>
@@ -97,6 +112,7 @@
 <translation id="3450660100078934250">MasterCard</translation>
 <translation id="3452404311384756672">Intervalle de récupération :</translation>
 <translation id="3462200631372590220">Masquer les paramètres avancés</translation>
+<translation id="3528171143076753409">Le certificat du serveur n'est pas approuvé.</translation>
 <translation id="3542684924769048008">Utiliser un mot de passe pour :</translation>
 <translation id="3583757800736429874">&amp;Rétablir le déplacement</translation>
 <translation id="3623476034248543066">Afficher la valeur</translation>
@@ -126,13 +142,18 @@
 <translation id="4269787794583293679">(aucun nom d'utilisateur)</translation>
 <translation id="4300246636397505754">Suggestions des parents</translation>
 <translation id="4372948949327679948">Valeur attendue : <ph name="VALUE_TYPE" />.</translation>
+<translation id="4377125064752653719">Vous avez tenté d'accéder à <ph name="DOMAIN" />, mais le certificat présenté par le serveur a été révoqué par son émetteur. Cela signifie que le certificat présenté par le serveur ne doit pas être approuvé. Il est donc possible que vous communiquiez avec un pirate informatique.</translation>
+<translation id="4424024547088906515">Impossible de vérifier sur le serveur qu'il s'agit bien du domaine <ph name="DOMAIN" />, car son certificat de sécurité n'est pas considéré comme fiable par Chrome. Cela peut être dû à une mauvaise configuration ou bien à l'interception de votre connexion par un pirate informatique.</translation>
 <translation id="443673843213245140">L'utilisation d'un proxy est désactivée, mais une configuration de proxy explicite est spécifiée.</translation>
 <translation id="4506176782989081258">Erreur de validation : <ph name="VALIDATION_ERROR" />.</translation>
 <translation id="4587425331216688090">Supprimer l'adresse de Chrome ?</translation>
 <translation id="4594403342090139922">&amp;Annuler la suppression</translation>
 <translation id="4607653538520819196">Impossible d'envoyer cette page par proxy via l'économiseur de données</translation>
 <translation id="4668929960204016307">,</translation>
+<translation id="467662567472608290">Impossible de vérifier sur le serveur qu'il s'agit bien du domaine <ph name="DOMAIN" />, car son certificat de sécurité contient des erreurs. Cela peut être dû à une mauvaise configuration ou bien à l'interception de votre connexion par un pirate informatique.</translation>
 <translation id="4726672564094551039">Actualiser les règles</translation>
+<translation id="4728558894243024398">Plate-forme</translation>
+<translation id="4771973620359291008">Une erreur inconnue s'est produite.</translation>
 <translation id="4800132727771399293">Veuillez vérifier la date d'expiration et le code CVC, puis réessayez.</translation>
 <translation id="4813512666221746211">Erreur réseau.</translation>
 <translation id="4850886885716139402">Afficher</translation>
@@ -142,7 +163,9 @@
 <translation id="498957508165411911">Traduire en <ph name="TARGET_LANGUAGE" /> cette page affichée en <ph name="ORIGINAL_LANGUAGE" /> ?</translation>
 <translation id="5019198164206649151">L'espace de stockage destiné à la sauvegarde est en mauvais état.</translation>
 <translation id="5031870354684148875">À propos de Google Traduction</translation>
+<translation id="5087286274860437796">Le certificat actuel du serveur n'est pas valide.</translation>
 <translation id="5089810972385038852">État</translation>
+<translation id="5094747076828555589">Impossible de vérifier sur le serveur qu'il s'agit bien du domaine <ph name="DOMAIN" />, car son certificat de sécurité n'est pas considéré comme fiable par Chromium. Cela peut être dû à une mauvaise configuration ou bien à l'interception de votre connexion par un pirate informatique.</translation>
 <translation id="5095208057601539847">Province</translation>
 <translation id="5145883236150621069">Code d'erreur présent dans la réponse de la règle.</translation>
 <translation id="5172758083709347301">Ordinateur</translation>
@@ -152,6 +175,7 @@
 <translation id="5299298092464848405">Erreur d'analyse de la règle.</translation>
 <translation id="5317780077021120954">Enregistrer</translation>
 <translation id="536296301121032821">Échec du stockage des paramètres de la règle.</translation>
+<translation id="540969355065856584">Impossible de vérifier que ce serveur est bien <ph name="DOMAIN" />, car son certificat de sécurité actuel n'est pas valide. Cela peut être dû à une mauvaise configuration ou bien à l'interception de votre connexion par un pirate informatique.</translation>
 <translation id="5439770059721715174">Erreur de validation du schéma au niveau de "<ph name="ERROR_PATH" />" : <ph name="ERROR" /></translation>
 <translation id="5455374756549232013">Horodatage de la règle incorrect.</translation>
 <translation id="5470861586879999274">&amp;Rétablir la modification</translation>
@@ -170,6 +194,7 @@
 <translation id="5989320800837274978">Aucun serveur proxy déterminé ou URL de script .pac n'a été indiqué.</translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6040143037577758943">Fermer</translation>
+<translation id="6151417162996330722">La durée de validité du certificat du serveur est trop longue.</translation>
 <translation id="6154808779448689242">Le jeton de la règle renvoyé ne correspond pas au jeton actuel.</translation>
 <translation id="6165508094623778733">En savoir plus</translation>
 <translation id="6259156558325130047">&amp;Rétablir la réorganisation</translation>
@@ -186,18 +211,21 @@
 <translation id="6628463337424475685">Recherche <ph name="ENGINE" /></translation>
 <translation id="6644283850729428850">Cette règle est obsolète.</translation>
 <translation id="6646897916597483132">Saisissez le code CVC à quatre chiffres indiqué au recto de votre carte.</translation>
+<translation id="674375294223700098">Erreur inconnue liée au certificat du serveur.</translation>
 <translation id="6753269504797312559">Valeur de la règle</translation>
 <translation id="6831043979455480757">Traduire</translation>
 <translation id="6839929833149231406">Région</translation>
 <translation id="6874604403660855544">&amp;Rétablir l'ajout</translation>
 <translation id="6891596781022320156">Le niveau de la règle n'est pas accepté.</translation>
 <translation id="6915804003454593391">Utilisateur :</translation>
+<translation id="6957887021205513506">Le certificat du serveur semble être contrefait.</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6965978654500191972">Périphérique</translation>
 <translation id="6970216967273061347">District</translation>
 <translation id="6973656660372572881">Les serveurs proxy déterminés et une URL de script .pac sont spécifiés tous les deux.</translation>
 <translation id="6980028882292583085">Alerte JavaScript</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
+<translation id="7050187094878475250">Vous avez essayé d'accéder à <ph name="DOMAIN" />, mais la durée de validité du certificat du serveur est trop longue pour être fiable.</translation>
 <translation id="7087282848513945231">Comté</translation>
 <translation id="7108649287766967076">Échec de la traduction en <ph name="TARGET_LANGUAGE" />.</translation>
 <translation id="7139724024395191329">Émirat</translation>
@@ -217,17 +245,21 @@
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7537536606612762813">Obligatoire</translation>
 <translation id="7542995811387359312">La saisie automatique des numéros de carte de paiement est désactivée, car la connexion utilisée par ce formulaire n'est pas sécurisée.</translation>
+<translation id="7567204685887185387">Impossible de vérifier sur le serveur qu'il s'agit bien du domaine <ph name="DOMAIN" />. Il se peut que son certificat de sécurité ait été émis de manière frauduleuse. Cela peut être dû à une mauvaise configuration ou bien à l'interception de votre connexion par un pirate informatique.</translation>
 <translation id="7568593326407688803">Cette page est en<ph name="ORIGINAL_LANGUAGE" />Voulez-vous la traduire ?</translation>
 <translation id="7569952961197462199">Supprimer les données de carte de paiement de Chrome ?</translation>
+<translation id="7592362899630581445">Le certificat du serveur ne respecte pas les restrictions de noms.</translation>
 <translation id="7600965453749440009">Ne jamais traduire les pages rédigées en <ph name="LANGUAGE" /> </translation>
 <translation id="7610193165460212391">La valeur <ph name="VALUE" /> est hors limites.</translation>
 <translation id="7752995774971033316">Non géré</translation>
+<translation id="7761701407923456692">Le certificat du serveur ne correspond pas à l'URL.</translation>
 <translation id="777702478322588152">Préfecture</translation>
 <translation id="7791543448312431591">Ajouter</translation>
 <translation id="7805768142964895445">État</translation>
 <translation id="7813600968533626083">Supprimer la suggestion de saisie de formulaire de Chrome ?</translation>
 <translation id="7887683347370398519">Veuillez vérifier votre code CVC et réessayer.</translation>
 <translation id="7935318582918952113">DOM Distiller</translation>
+<translation id="7938958445268990899">Le certificat du serveur n'est pas encore valide.</translation>
 <translation id="7956713633345437162">Favoris sur mobile</translation>
 <translation id="7961015016161918242">Jamais</translation>
 <translation id="7977590112176369853">&lt;saisir une requête&gt;</translation>
@@ -260,18 +292,22 @@
 <translation id="8824019021993735287">Impossible de valider votre carte pour le moment. Veuillez réessayer ultérieurement.</translation>
 <translation id="8834246243508017242">Activer la saisie automatique à l'aide de la fonctionnalité Contacts</translation>
 <translation id="883848425547221593">Autres favoris</translation>
+<translation id="884923133447025588">Aucun système de révocation trouvé</translation>
 <translation id="8866481888320382733">Erreur d'analyse des paramètres de la règle.</translation>
 <translation id="8876793034577346603">Échec de l'analyse de la configuration du réseau.</translation>
 <translation id="8891727572606052622">Mode proxy non valide.</translation>
 <translation id="8932102934695377596">Votre horloge est en retard</translation>
 <translation id="8940229512486821554">Exécuter la commande <ph name="EXTENSION_NAME" /> : <ph name="SEARCH_TERMS" /></translation>
+<translation id="8971063699422889582">Le certificat du serveur a expiré.</translation>
 <translation id="8988760548304185580">Saisissez la date d'expiration et le code CVC à trois chiffres figurant au dos de votre carte.</translation>
 <translation id="9020542370529661692">Cette page a été traduite en <ph name="TARGET_LANGUAGE" />.</translation>
+<translation id="9049981332609050619">Vous avez tenté de contacter <ph name="DOMAIN" />, mais le certificat présenté par le serveur est incorrect.</translation>
 <translation id="9125941078353557812">Saisissez le code CVC à trois chiffres indiqué au dos de votre carte.</translation>
 <translation id="9137013805542155359">Afficher l'original</translation>
 <translation id="9148507642005240123">&amp;Annuler la modification</translation>
 <translation id="9154176715500758432">Rester sur cette page</translation>
 <translation id="9170848237812810038">Ann&amp;uler</translation>
+<translation id="917450738466192189">Le certificat du serveur n'est pas valide.</translation>
 <translation id="9207861905230894330">Échec de l'ajout de l'article.</translation>
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="935608979562296692">EFFACER LE FORMULAIRE</translation>

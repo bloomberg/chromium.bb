@@ -9,7 +9,6 @@
 <translation id="1073391069195728457">Chrome - Notifikasi</translation>
 <translation id="1104959162601287462">Tentang OS &amp;Chrome</translation>
 <translation id="110877069173485804">Ini Chrome Anda</translation>
-<translation id="1150979032973867961">Server ini tidak dapat membuktikan bahwa ini adalah <ph name="DOMAIN" />; sertifikat keamanannya tidak dipercaya oleh sistem operasi komputer Anda. Hal ini dapat disebabkan oleh kesalahan konfigurasi atau penyerang memotong sambungan Anda.</translation>
 <translation id="1225016890511909183">Chrome akan menyimpan informasi dengan aman sehingga Anda tidak harus mengetiknya lagi, tapi Anda masih harus memverifikasi kode keamanan kartu untuk pembayaran di masa mendatang.</translation>
 <translation id="123620459398936149">Chrome OS tidak dapat menyinkronkan data Anda. Perbarui frasa sandi Sinkronisasi Anda.</translation>
 <translation id="127345590676626841">Chrome diperbarui secara otomatis sehingga Anda selalu memiliki versi terbaru. Saat unduhan ini selesai, Chrome akan dimulai ulang dan segera siap digunakan.</translation>
@@ -33,7 +32,6 @@
 <translation id="174539241580958092">Google Chrome tidak dapat menyinkronkan data Anda karena kesalahan saat masuk.</translation>
 <translation id="1759301979429102118">Detail dari kontak dapat membantu Anda mengisi formulir lebih cepat di Chrome.</translation>
 <translation id="1759842336958782510">Chrome</translation>
-<translation id="1763864636252898013">Server ini tidak dapat membuktikan bahwa ini adalah <ph name="DOMAIN" />; sertifikat keamanannya tidak dipercaya oleh sistem operasi perangkat Anda. Hal ini dapat disebabkan oleh kesalahan konfigurasi atau penyerang memotong sambungan Anda.</translation>
 <translation id="1773601347087397504">Dapatkan bantuan tentang penggunaan Chrome OS</translation>
 <translation id="1818142563254268765">Chrome tidak dapat memperbarui dirinya sendiri ke versi terbaru, jadi Anda ketinggalan perbaikan keamanan dan fitur baru yang keren. Anda perlu memperbarui Chrome.</translation>
 <translation id="1877026089748256423">Chrome terlalu lawas</translation>
@@ -105,7 +103,6 @@ Tetap masuk akan menggabungkan informasi Chrome seperti bookmark, riwayat, dan s
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="4367618624832907428">Google Chrome tidak dapat menampilkan laman web karena komputer Anda tidak tersambung ke internet.</translation>
 <translation id="4407807842708586359">OS Google Chrome</translation>
-<translation id="4424024547088906515">Server ini tidak dapat membuktikan bahwa ini adalah <ph name="DOMAIN" />; sertifikat keamanannya tidak dipercaya oleh Chrome. Hal ini dapat disebabkan oleh kesalahan konfigurasi atau penyerang memotong sambungan Anda.</translation>
 <translation id="4458285410772214805">Keluar dan masuk lagi agar perubahan ini diterapkan.</translation>
 <translation id="4480040274068703980">Chrome OS tidak dapat menyinkronkan data Anda karena kesalahan saat masuk.</translation>
 <translation id="4513711165509885787">Detail penagihan Anda telah disimpan di Chrome.</translation>

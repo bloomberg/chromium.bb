@@ -9,7 +9,6 @@
 <translation id="1073391069195728457">Chrome – Értesítések</translation>
 <translation id="1104959162601287462">A &amp;Chrome OS névjegye</translation>
 <translation id="110877069173485804">Ez az Ön Chrome-ja</translation>
-<translation id="1150979032973867961">A szerver nem tudta bizonyítani, hogy valóban a(z) <ph name="DOMAIN" /> domainbe tartozik; biztonsági tanúsítványa az Ön számítógépének operációs rendszere szerint nem megbízható. Ennek oka lehet konfigurációs hiba, vagy hogy egy támadó eltérítette az Ön kapcsolódását.</translation>
 <translation id="1225016890511909183">A Chrome biztonságosan tárolja az adatait, így nem kell újra begépelnie azokat, de kártyája biztonsági kódját igazolnia kell majd a későbbi kifizetésekhez.</translation>
 <translation id="123620459398936149">A Chrome OS nem tudta szinkronizálni az adatokat. Kérjük, frissítse szinkronizálási összetett jelszavát.</translation>
 <translation id="127345590676626841">A Chrome automatikusan frissít, így Ön mindig a legújabb verzióval rendelkezik. A letöltés befejezése után a Chrome újraindul, és máris rendelkezésre áll.</translation>
@@ -33,7 +32,6 @@
 <translation id="174539241580958092">A Google Chrome egy bejelentkezési hiba miatt nem tudta szinkronizálni az adatokat.</translation>
 <translation id="1759301979429102118">A névjegyek részletei révén gyorsabban kitöltheti az űrlapokat a Chrome-ban.</translation>
 <translation id="1759842336958782510">Chrome</translation>
-<translation id="1763864636252898013">A szerver nem tudta bizonyítani, hogy valóban a(z) <ph name="DOMAIN" /> domainbe tartozik; biztonsági tanúsítványa az Ön eszközének operációs rendszere szerint nem megbízható. Ennek oka lehet konfigurációs hiba, vagy hogy egy támadó eltérítette az Ön kapcsolódását.</translation>
 <translation id="1773601347087397504">A Chrome OS használatával kapcsolatos súgó</translation>
 <translation id="1818142563254268765">A Chrome nem tudott frissíteni a legújabb verzióra, ezért Ön nem rendelkezik a remek új funkciókkal és biztonsági javításokkal. A Chrome frissítése szükséges.</translation>
 <translation id="1877026089748256423">A Chrome elavult</translation>
@@ -105,7 +103,6 @@ Ha mindenképp bejelentkezik, akkor egyesíti a(z) <ph name="ACCOUNT_EMAIL_NEW" 
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="4367618624832907428">A Google Chrome nem tudja megjeleníteni a weboldalt, mert számítógépe nem csatlakozik az internethez.</translation>
 <translation id="4407807842708586359">Google Chrome OS</translation>
-<translation id="4424024547088906515">A szerver nem tudta bizonyítani, hogy valóban a(z) <ph name="DOMAIN" /> domainbe tartozik; biztonsági tanúsítványa a Chrome szerint nem megbízható. Ennek oka lehet konfigurációs hiba, vagy hogy egy támadó eltérítette az Ön kapcsolódását.</translation>
 <translation id="4458285410772214805">Kérjük, jelentkezzen ki, majd jelentkezzen be újra a módosítás aktiválásához.</translation>
 <translation id="4480040274068703980">A Chrome OS egy bejelentkezési hiba miatt nem tudta szinkronizálni az adatokat.</translation>
 <translation id="4513711165509885787">Számlázási adatait a Chrome mentette.</translation>

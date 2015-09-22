@@ -5,7 +5,6 @@
 <translation id="10614374240317010">一律不保存</translation>
 <translation id="1061441684050139317">Chrome 需要具有麦克风使用权限，才能批准此网站的分享请求。</translation>
 <translation id="1080790410959514870">您要退出某个由 <ph name="DOMAIN_NAME" /> 管理的帐户。这会导致系统删除此设备上存储的 Chrome 数据，但这些数据仍会保留在您的 Google 帐户中。</translation>
-<translation id="1086169178231554178">SD 卡不可用</translation>
 <translation id="1091134514807961917">您已登录以下 Google 帐户。</translation>
 <translation id="1095407227123756519">请添加帐户，以便获取您所有设备上保存的书签、历史记录、密码和其他设置。</translation>
 <translation id="1098052486217676340">已完成</translation>
@@ -86,7 +85,6 @@
 <translation id="2351097562818989364">您的翻译设置已重置。</translation>
 <translation id="2354750644801399986">“不跟踪”</translation>
 <translation id="2359808026110333948">继续</translation>
-<translation id="2360035970720276770">只能从 http 或 https 网址下载</translation>
 <translation id="2381756643783702095">发送前先询问（推荐）</translation>
 <translation id="2387895666653383613">文字大小</translation>
 <translation id="238909021488141516">下载该内容时出现错误。</translation>
@@ -127,7 +125,6 @@
 <translation id="2960796085439532066">版权所有 <ph name="YEAR" /> Google Inc. 保留所有权利。</translation>
 <translation id="2968755619301702150">证书查看器</translation>
 <translation id="2996809686854298943">必须提供网址</translation>
-<translation id="3003595280608617736">无 SD 卡</translation>
 <translation id="3029704984691124060">密码不匹配</translation>
 <translation id="3039671569659952257">删除文件夹</translation>
 <translation id="3063601790762993062">保存视频</translation>
@@ -232,6 +229,7 @@
 <translation id="4816465935029283692">数据类型</translation>
 <translation id="4827948050554950725">添加信用卡</translation>
 <translation id="4836364883164334657">您与此网站之间的连接不是私密连接。攻击者可能会试图从 <ph name="DOMAIN_NAME" /> 窃取您的信息（例如照片、密码、电子邮件和信用卡信息）。</translation>
+<translation id="4850886885716139402">视图</translation>
 <translation id="4871370605780490696">添加书签</translation>
 <translation id="4881695831933465202">打开</translation>
 <translation id="4885273946141277891">Chrome 实例数量已超出上限。</translation>
@@ -449,8 +447,6 @@
 <translation id="7648422057306047504">使用 Google 凭据加密密码</translation>
 <translation id="7658239707568436148">取消</translation>
 <translation id="7665369617277396874">添加帐户</translation>
-<translation id="7711895876052978264">此网站已进入全屏模式。
-点击返回按钮即可退出该模式。</translation>
 <translation id="7764225426217299476">添加地址</translation>
 <translation id="7765158879357617694">移动</translation>
 <translation id="7767746238359002192">访问该网页以离线保存</translation>
@@ -469,7 +465,6 @@
 <translation id="7961015016161918242">一律不</translation>
 <translation id="7963646190083259054">供应商：</translation>
 <translation id="7977858705483383621">安全搜索</translation>
-<translation id="7981795308302452224">未能开始下载</translation>
 <translation id="7987073022710626672">Chrome 服务条款</translation>
 <translation id="7989222512959629388">正在保存…</translation>
 <translation id="7998918019931843664">重新打开关闭的标签页</translation>
@@ -482,7 +477,6 @@
 <translation id="8073388330009372546">在新标签页中打开图片</translation>
 <translation id="8084156870963450514">登录后即可通过任意设备查看您的所有在线内容</translation>
 <translation id="8106211421800660735">信用卡号</translation>
-<translation id="8109148095642131923">无法将下载的内容添加到下载管理器中。</translation>
 <translation id="813082847718468539">查看网站信息</translation>
 <translation id="8137558756159375272">“触摸搜索”会将所选字词和当前页面（作为上下文）一起发送给 Google 搜索。您可以在<ph name="BEGIN_LINK" />设置<ph name="END_LINK" />中停用此功能。</translation>
 <translation id="8143660160623733249">文件夹名称</translation>
@@ -567,5 +561,4 @@
 <translation id="969096075394517431">更改语言</translation>
 <translation id="971774202801778802">书签网址</translation>
 <translation id="983192555821071799">关闭所有标签页</translation>
-<translation id="988938288723502454">无法在 SD 卡中创建下载目录。</translation>
 </translationbundle>

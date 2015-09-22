@@ -107,7 +107,6 @@
       Nustačius šią politiką panaikinama numatytoji 3 valandų vertė. Galiojančios šios politikos vertės patenka į diapazoną nuo 1 800 000 (30 min.) iki 86 400 000 (1 d.). Bet kokioms į šį diapazoną nepatenkančioms vertėms bus taikomi atitinkami apribojimai.
 
       Nenustačius šios politikos „<ph name="PRODUCT_OS_NAME" />“ bus naudojama numatytoji 3 val. vertė.</translation>
-<translation id="1503959756075098984">Automatiškai diegiami plėtinių ID ir atnaujinimo URL</translation>
 <translation id="1504431521196476721">Nuotolinis patvirtinimas</translation>
 <translation id="1509692106376861764">Ši politika nebenaudojama 29 ir naujesnėse „<ph name="PRODUCT_NAME" />“ versijose.</translation>
 <translation id="1522425503138261032">Leisti svetainėse stebėti naudotojo buvimo vietą</translation>
@@ -1686,7 +1685,6 @@ Jei plėtinio nėra sąraše arba sąrašas nenustatytas, kreipiantis į API įv
           Kelis serverių pavadinimus atskirkite kableliais. Leidžiama naudoti pakaitos simbolius (*).
 
           Jei nenustatysite šios politikos, „<ph name="PRODUCT_NAME" />“ bandys nustatyti, ar serveris yra intranete ir tik tada atsakys į IWA užklausas. Jei serveris aptinkamas internete, „<ph name="PRODUCT_NAME" />“ nepaisys jo siunčiamų IWA užklausų.</translation>
-<translation id="8665076741187546529">Konfigūruoti plėtinių, kuriuos įdiegti buvo privaloma, sąrašą</translation>
 <translation id="8668394701842594241">Nurodomas „<ph name="PRODUCT_NAME" />“ įgalintų papildinių sąrašas ir naudotojams šio nustatymo keisti neleidžiama.
 
       Kad įrašai atitiktų abejotinų simbolių sekas, galima naudoti pakaitos simbolius „*“ ir „?“. „*“ atitinka abejotiną simbolių skaičių, o „?“ nurodo vieną pasirinktinį simbolį, t. y. atitinka nulio arba vieneto simbolį. Kaitos simbolis yra „\“, taigi, kad simboliai atitiktų faktinius „*“, „?“ arba „\“ simbolius, prieš juos galite įvesti „\“.

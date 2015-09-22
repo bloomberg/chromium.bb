@@ -5,7 +5,6 @@
 <translation id="10614374240317010">በጭራሽ አልተቀመጠም</translation>
 <translation id="1061441684050139317">Chrome እሱን ለዚህ ጣቢያ ለማጋራት የማይክሮፎን መዳረሻ ያስፈልገዋል።</translation>
 <translation id="1080790410959514870">በ <ph name="DOMAIN_NAME" />ከሚቀናበር መለያ ዘግተው እየወጡ ነው። ይሄ በዚህ መሣሪያ ላይ የተከማቸውን የChrome ውሂብ ይሰርዘዋል፣ ነገር ግን ውሂቡ በእርስዎ የGoogle መለያ ውስጥ እንዳለ ይቀራል።</translation>
-<translation id="1086169178231554178">የኤስዲ ካርድ አይገኝም</translation>
 <translation id="1091134514807961917">ወደሚከተለው የGoogle መለያ ገብተዋል።</translation>
 <translation id="1095407227123756519">የእርስዎን ዕልባቶች፣ ታሪክ፣ የይለፍ ቃላት እና ሌሎች ቅንብሮች በሁሉም መሣሪያዎችዎ ላይ ለማግኘት መለያ ያክሉ።</translation>
 <translation id="1098052486217676340">ተጠናቋል</translation>
@@ -86,7 +85,6 @@
 <translation id="2351097562818989364">የትርጉም ቅንብሮችዎ ዳግም እንዲጀምሩ ተደርገዋል።</translation>
 <translation id="2354750644801399986">ዱካ አትከታተል</translation>
 <translation id="2359808026110333948">ቀጥል</translation>
-<translation id="2360035970720276770">የኤችቲቲፒ ወይም ኤችቲቲፒኤስ ዩአርኤሎችን ብቻ ነው ማውረድ የሚቻለው</translation>
 <translation id="2381756643783702095">ከመላክ በፊት ጠይቅ (የሚመከር)</translation>
 <translation id="2387895666653383613">የጽሑፍ ልኬት</translation>
 <translation id="238909021488141516">ይዘቱን በማውረድ ላይ ሳለ ስህተት አጋጥሟል።</translation>
@@ -127,7 +125,6 @@
 <translation id="2960796085439532066">የቅጂ መብት <ph name="YEAR" /> Google Inc. ሁሉም መብቶች የተጠበቁ ናቸው።</translation>
 <translation id="2968755619301702150">የእውቅና ማረጋገጫ መመልከቻ</translation>
 <translation id="2996809686854298943">ዩአርኤል ያስፈልጋል</translation>
-<translation id="3003595280608617736">ምንም የኤስዲ ካርድ የለም</translation>
 <translation id="3029704984691124060">የይለፍ ሐረጎቹ አይዛመዱም</translation>
 <translation id="3039671569659952257">አቃፊ ሰርዝ</translation>
 <translation id="3063601790762993062">ቪዲዮ አስቀምጥ</translation>
@@ -232,6 +229,7 @@
 <translation id="4816465935029283692">የውሂብ ዓይነቶች</translation>
 <translation id="4827948050554950725">ክሬዲት ካርድ አክል</translation>
 <translation id="4836364883164334657">ከዚህ ጣቢያ ጋር ያለዎት ግንኙነት ግላዊ አይደለም። አጥቂዎች የእርስዎን መረጃ (ለምሳሌ፦ ፎቶዎች፣ የይለፍ ቃሎች፣ መልዕክቶች እና ክሬዲት ካርዶች) ከ<ph name="DOMAIN_NAME" /> እየሰረቁ ሊሆኑ ይችላሉ።</translation>
+<translation id="4850886885716139402">አሳይ</translation>
 <translation id="4871370605780490696">ዕልባት ያክሉ</translation>
 <translation id="4881695831933465202">ክፈት</translation>
 <translation id="4885273946141277891">የማይደገፍ የChrome አብነቶች ብዛት።</translation>
@@ -449,8 +447,6 @@
 <translation id="7648422057306047504">የይለፍ ቃላትን በGoogle ምስክርነቶች መስጥር</translation>
 <translation id="7658239707568436148">ይቅር</translation>
 <translation id="7665369617277396874">መለያ ያክሉ</translation>
-<translation id="7711895876052978264">ይህ ጣቢያ ወደ ሙሉ ገጽ ማያ ሄዷል።
-ለመውጣት ተመለስ የሚለውን አዝራር ይምቱ።</translation>
 <translation id="7764225426217299476">አድራሻ አክል</translation>
 <translation id="7765158879357617694">ውሰድ</translation>
 <translation id="7767746238359002192">ከመስመር ውጭ ለማስቀመጥ ገጽ ይጎብኙ</translation>
@@ -469,7 +465,6 @@
 <translation id="7961015016161918242">በፍጹም</translation>
 <translation id="7963646190083259054">አቅራቢ፦</translation>
 <translation id="7977858705483383621">SafeSearch</translation>
-<translation id="7981795308302452224">ውርድ ማስጀመር አልተሳካም</translation>
 <translation id="7987073022710626672">የChrome አገልግሎት ውል</translation>
 <translation id="7989222512959629388">በማስቀመጥ ላይ…</translation>
 <translation id="7998918019931843664">የተዘጋውን ትር ዳግም ይክፈቱ</translation>
@@ -482,7 +477,6 @@
 <translation id="8073388330009372546">ምስሉን በአዲስ ትር ውስጥ ክፈት</translation>
 <translation id="8084156870963450514">ከማናቸውም መሣሪያ ላይ የእርስዎን የድር ነገሮች ለመድረስ በመለያ ይግቡ።</translation>
 <translation id="8106211421800660735">የብድር ካርድ ቁጥር</translation>
-<translation id="8109148095642131923">የወረደውን ንጥል ወደ የማውረጃ አቀናባሪ ማከል አልተሳካም።</translation>
 <translation id="813082847718468539">የጣቢያ መረጃን ይመልከቱ</translation>
 <translation id="8137558756159375272">ፍለጋ ላይ መንካት የተመረጠ ቃልን እና አሁን ያለውን ገጽ ወደ Google ፍለጋ ይልካል። በ<ph name="BEGIN_LINK" />ቅንብሮች<ph name="END_LINK" /> ውስጥ ሊያጠፉት ይችላሉ።</translation>
 <translation id="8143660160623733249">የአቃፊ ስም</translation>
@@ -567,5 +561,4 @@
 <translation id="969096075394517431">ቋንቋዎችን ይቀይሩ</translation>
 <translation id="971774202801778802">የዕልባት ዩአርኤል</translation>
 <translation id="983192555821071799">ሁሉንም ትሮች ይዝጉ</translation>
-<translation id="988938288723502454">በኤስዲ ማህደረ ትውስታ ላይ የማውረጃ ማውጫ መፍጠር አልተቻለም።</translation>
 </translationbundle>

@@ -8,7 +8,9 @@
 <translation id="111844081046043029">آیا می‌خواهید این صفحه را ترک کنید؟</translation>
 <translation id="112840717907525620">حافظه پنهان خط‌مشی مورد تأیید است</translation>
 <translation id="1132774398110320017">‏تنظیمات تکمیل خودکار Chrome...</translation>
+<translation id="1150979032973867961">این سرور نتوانست اثبات کند که این <ph name="DOMAIN" /> است؛ گواهی امنیتی آن مورد اعتماد سیستم عامل رایانه شما نیست. ممکن است علت این موضوع پیکربندی اشتباه باشد یا مهاجی اتصال شما را قطع کرده است.</translation>
 <translation id="1152921474424827756">دسترسی به یک <ph name="BEGIN_LINK" />نسخه ذخیره شده در حافظه پنهان<ph name="END_LINK" /> از <ph name="URL" /></translation>
+<translation id="121201262018556460">شما می‌خواستید به <ph name="DOMAIN" /> دسترسی یابید، اما سرور یک گواهی دارای کلید ضعیف ارائه داد. یک مهاجم ممکن است کلید خصوصی را تخریب کرده باشد و سرور، همان سروری نباشد که شما انتظار داشتید (ممکن است در حال ارتباط با یک مهاجم باشید).</translation>
 <translation id="1227224963052638717">خط‌مشی ناشناخته.</translation>
 <translation id="1227633850867390598">پنهان کردن مقدار</translation>
 <translation id="1228893227497259893">‏شناسه entity نادرست</translation>
@@ -22,8 +24,10 @@
 <translation id="1639239467298939599">بارگیری</translation>
 <translation id="1640180200866533862">خط‌مشی‌های کاربر</translation>
 <translation id="1644184664548287040">پیکربندی شبکه نامعتبر است و نتوانست وارد شود.</translation>
+<translation id="168841957122794586">گواهی‌نامه سرور دارای یک کلید رمزنگاری ضعیف است.</translation>
 <translation id="1693754753824026215">صفحه <ph name="SITE" /> نشان می‌دهد:</translation>
 <translation id="1734864079702812349">Amex</translation>
+<translation id="1763864636252898013">این سرور نتوانست اثبات کند که این <ph name="DOMAIN" /> است؛ گواهی امنیتی آن مورد اعتماد سیستم عامل دستگاه شما نیست. ممکن است علت این موضوع پیکربندی اشتباه باشد یا مهاجی اتصال شما را قطع کرده است.</translation>
 <translation id="1821930232296380041">پارامترهای درخواست یا درخواست نامعتبر</translation>
 <translation id="1853748787962613237">نمایش مقاله ناموفق بود.</translation>
 <translation id="1871208020102129563">‏تنظیم پروکسی به گونه‌ای است که از سرورهای ثابت پروکسی استفاده کند و از آدرس اسکریپت pac. استفاده نکند.</translation>
@@ -46,20 +50,25 @@
 <translation id="2113977810652731515">کارت</translation>
 <translation id="2114841414352855701">نادیده گرفته شد زیرا <ph name="POLICY_NAME" /> آن را لغو می‌کند.</translation>
 <translation id="213826338245044447">نشانک‌های تلفن‌ همراه</translation>
+<translation id="2171101176734966184">شما سعی داشتید به <ph name="DOMAIN" /> دسترسی داشته باشید، اما گواهی ارائه شده از سوی سرور با استفاده از یک الگوریتم امضای ضعیف امضا شده است. یعنی ممکن است اطلاعات کاربری امنیتی ارائه شده از سوی سرور ساختگی باشد و ممکن است این سرور سروی نباشد که شما می‌خواستید (ممکن است شما با یک مهاجم در ارتباط باشید).</translation>
 <translation id="2181821976797666341">خط‌ مشی‌ها</translation>
 <translation id="2212735316055980242">خط‌مشی یافت نشد</translation>
 <translation id="2213606439339815911">در حال واکشی موارد...</translation>
 <translation id="225207911366869382">این مقدار برای این خط‌مشی منسوخ شده است؟</translation>
 <translation id="2262243747453050782">‏خطای HTTP</translation>
 <translation id="2270192940992995399">مقاله یافت نشد.</translation>
+<translation id="229702904922032456">گواهینامه واسط یا ریشه منقضی شده است.</translation>
 <translation id="2328300916057834155">نشانک نامعتبر در نمایه <ph name="ENTRY_INDEX" /> نادیده گرفته شد</translation>
 <translation id="2354001756790975382">نشانک‌های دیگر</translation>
 <translation id="2359808026110333948">ادامه</translation>
 <translation id="2367567093518048410">سطح</translation>
+<translation id="2386255080630008482">گواهی سرور باطل شده است.</translation>
 <translation id="2392959068659972793">نمایش خط‌مشی‌ها با مقدار تنظیم نشده</translation>
 <translation id="2396249848217231973">&amp;واگرد حذف</translation>
+<translation id="2413528052993050574">این سرور نتوانست اثبات کند که این <ph name="DOMAIN" /> است؛ ممکن است گواهی امنیتی آن باطل شده باشد. ممکن است علت این موضوع پیکربندی اشتباه باشد یا مهاجمی اتصال شما را قطع کرده است.</translation>
 <translation id="2455981314101692989">این صفحهٔ وب، تکمیل خودکار این فرم را غیر فعال کرده است.</translation>
 <translation id="2479410451996844060">‏URL جستجو نامعتبر است.</translation>
+<translation id="2491120439723279231">گواهی سرور دارای چندین خطاست.</translation>
 <translation id="2495083838625180221">‏تجزیه‌کننده JSON</translation>
 <translation id="2498091847651709837">اسکن کارت جدید</translation>
 <translation id="2556876185419854533">&amp;واگرد ویرایش</translation>
@@ -70,10 +79,14 @@
 <translation id="2639739919103226564">وضعیت:</translation>
 <translation id="2704283930420550640">مقدار با فرمت مطابقت ندارد.</translation>
 <translation id="2721148159707890343">درخواست با موفقیت انجام شد</translation>
+<translation id="2728127805433021124">گواهی سرور با استفاده از یک الگوریتم امضای ضعیف امضا شده است.</translation>
 <translation id="2774256287122201187">می‌توانید ادامه دهید. اگر رفتن به صفحه را ادامه دهید، این هشدار به مدت پنج دقیقه دوباره ظاهر نمی‌شود.</translation>
 <translation id="277499241957683684">ثبت دستگاه موجود نیست</translation>
 <translation id="2835170189407361413">پاک کردن فرم</translation>
 <translation id="2855922900409897335"><ph name="CREDIT_CARD" /> را تأیید کنید</translation>
+<translation id="2915500479781995473">این سرور نتوانست اثبات کند که این <ph name="DOMAIN" /> است؛ گواهینامه امنیتی آن منقضی شده است. ممکن است علت این موضوع پیکربندی اشتباه باشد یا مهاجمی اتصال شما را قطع کرده است. در حال حاضر ساعت رایانه‌تان روی <ph name="CURRENT_TIME" /> تنظیم شده است. آیا این زمان درست است؟ اگر درست نیست، باید ساعت سیستم‌تان را تنظیم کنید و سپس این صفحه را بازخوانی نمایید.</translation>
+<translation id="2922350208395188000">گواهی سرور بررسی نمی‌شود.</translation>
+<translation id="2941952326391522266">این سرور نتوانست اثبات کند که این <ph name="DOMAIN" /> است؛ گواهی امنیتی آن از <ph name="DOMAIN2" /> است. ممکن است علت این موضوع پیکربندی اشتباه باشد یا مهاجی اتصال شما را قطع کرده است.</translation>
 <translation id="2958431318199492670">‏پیکربندی شبکه با استاندارد ONC تطابق ندارد. بخشی از پیکربندی ممکن است وارد نشود.</translation>
 <translation id="2972581237482394796">انجام مجدد</translation>
 <translation id="3010559122411665027">ورودی لیست "<ph name="ENTRY_INDEX" />": <ph name="ERROR" /></translation>
@@ -84,9 +97,11 @@
 <translation id="3169472444629675720">کشف کردن</translation>
 <translation id="3174168572213147020">جزیره</translation>
 <translation id="3219579145727097045">‏تاریخ انقضا و کد تأیید چهار رقمی CVC را از پشت کارت‌تان وارد کنید</translation>
+<translation id="3225919329040284222">سرور گواهی را نشان می‌دهد که با موارد پیش‌بینی‌شده داخلی مطابقت ندارد. این پیش‌بینی‌ها به‌طور حتم وب‌سایتهای دارای امنیت بالا را جهت محافظت از شما در بر می‌گیرند.</translation>
 <translation id="3228969707346345236">ترجمه انجام نشد زیرا صفحه در حال حاضر به زبان <ph name="LANGUAGE" /> است.</translation>
 <translation id="3270847123878663523">&amp;واگرد ترتیب‌بندی مجدد</translation>
 <translation id="333371639341676808">از ایجاد کادرهای گفتگوی دیگر توسط این صفحه جلوگیری شود.</translation>
+<translation id="3340978935015468852">تنظیمات</translation>
 <translation id="3369192424181595722">خطای ساعت</translation>
 <translation id="3369366829301677151"><ph name="CREDIT_CARD" /> را به‌روزرسانی و تأیید کنید</translation>
 <translation id="337363190475750230">لغو مجوز شد</translation>
@@ -97,6 +112,7 @@
 <translation id="3450660100078934250">MasterCard</translation>
 <translation id="3452404311384756672">فاصله زمانی واکشی:</translation>
 <translation id="3462200631372590220">پنهان کردن پیشرفته</translation>
+<translation id="3528171143076753409">گواهی سرور مطمئن نیست.</translation>
 <translation id="3542684924769048008">استفاده از گذرواژه برای:</translation>
 <translation id="3583757800736429874">&amp;انجام مجدد انتقال</translation>
 <translation id="3623476034248543066">نشان دادن مقدار</translation>
@@ -126,13 +142,18 @@
 <translation id="4269787794583293679">(بدون نام کاربری)</translation>
 <translation id="4300246636397505754">پیشنهادات والدین</translation>
 <translation id="4372948949327679948">مقدار مورد انتظار <ph name="VALUE_TYPE" />.</translation>
+<translation id="4377125064752653719">شما سعی در دسترسی به <ph name="DOMAIN" /> را داشتید، اما صادر کننده، گواهی ارائه شده از سوی سرور را باطل کرده است. یعنی اصلاً نباید به اطلاعات کاربری که این سرور ارائه می‌کند اطمینان کرد. ممکن است شما با مهاجمی در ارتباط باشید.</translation>
+<translation id="4424024547088906515">‏این سرور نتوانست اثبات کند که این <ph name="DOMAIN" /> است؛ گواهی امنیتی آن مورد اعتماد Chrome نیست. ممکن است علت این موضوع پیکربندی اشتباه باشد یا مهاجی اتصال شما را قطع کرده است.</translation>
 <translation id="443673843213245140">استفاده از پروکسی غیرفعال است اما یک پیکربندی خاص برای پروکسی تعیین شده است.</translation>
 <translation id="4506176782989081258">خطای ارزیابی: <ph name="VALIDATION_ERROR" /></translation>
 <translation id="4587425331216688090">‏آدرس از Chrome پاک شود؟</translation>
 <translation id="4594403342090139922">&amp;واگرد حذف</translation>
 <translation id="4607653538520819196">این صفحه نمی‌تواند با «صرفه‌جویی در مصرف داده» پشتیبانی شود.</translation>
 <translation id="4668929960204016307">,</translation>
+<translation id="467662567472608290">این سرور نتوانست اثبات کند که این <ph name="DOMAIN" /> است؛ گواهی امنیتی آن خطاهایی دارد. ممکن است علت این موضوع پیکربندی اشتباه باشد یا مهاجمی اتصال شما را قطع کرده است.</translation>
 <translation id="4726672564094551039">تازه‌سازی خط مشی‌ها</translation>
+<translation id="4728558894243024398">پلت فورم</translation>
+<translation id="4771973620359291008">خطای ناشناخته‌ای رخ داد.</translation>
 <translation id="4800132727771399293">‏تاریخ انقضا و CVC را بررسی کرده و دوباره امتحان کنید</translation>
 <translation id="4813512666221746211">خطای شبکه</translation>
 <translation id="4850886885716139402">نما</translation>
@@ -142,7 +163,9 @@
 <translation id="498957508165411911">از <ph name="ORIGINAL_LANGUAGE" /> به <ph name="TARGET_LANGUAGE" /> ترجمه شود؟</translation>
 <translation id="5019198164206649151">پشتیبان‌گیری ذخیره در وضعیت نادرست است</translation>
 <translation id="5031870354684148875">‏درباره Google Translate</translation>
+<translation id="5087286274860437796">در حال حاضر گواهی سرور معتبر نیست.</translation>
 <translation id="5089810972385038852">ایالت</translation>
+<translation id="5094747076828555589">‏این سرور نتوانست اثبات کند که این <ph name="DOMAIN" /> است؛ گواهی امنیت آن مورد اعتماد Chromium نیست. علت این موضوع می‌توان پیکربندی اشتباه باشد یا مهاجمی اتصال شما را قطع کرده است.</translation>
 <translation id="5095208057601539847">استان</translation>
 <translation id="5145883236150621069">کد خطا در پاسخ خط‌مشی موجود است</translation>
 <translation id="5172758083709347301">دستگاه</translation>
@@ -152,6 +175,7 @@
 <translation id="5299298092464848405">خطا در تجزیه خط‌‌مشی</translation>
 <translation id="5317780077021120954">ذخیره</translation>
 <translation id="536296301121032821">تنظیمات خط‌‌مشی ذخیره نشد</translation>
+<translation id="540969355065856584">این سرور نتوانست ثابت کند که <ph name="DOMAIN" /> است؛ در حال حاضر، گواهی امنیتی آن معتبر نیست. ممکن است این مشکل به دلیل پیکربندی نادرست یا قطع اتصال شما توسط حمله‌کننده ایجاد شده باشد.</translation>
 <translation id="5439770059721715174">خطای تأیید طرح در «<ph name="ERROR_PATH" />»:‏ <ph name="ERROR" /></translation>
 <translation id="5455374756549232013">مهر زمان خط‌مشی نادرست است</translation>
 <translation id="5470861586879999274">&amp;انجام مجدد ویرایش</translation>
@@ -170,6 +194,7 @@
 <translation id="5989320800837274978">‏سرور پروکسی ثابت و URL اسکریپت pac. تعیین نشده‌اند.</translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6040143037577758943">بستن</translation>
+<translation id="6151417162996330722">دوره اعتبار گواهینامه سرور بسیار طولانی است.</translation>
 <translation id="6154808779448689242">نشانه خط‌مشی بازگشتی با نشانه فعلی تطابق ندارد</translation>
 <translation id="6165508094623778733">بیشتر بدانید</translation>
 <translation id="6259156558325130047">&amp;انجام مجدد ترتیب‌بندی مجدد</translation>
@@ -186,18 +211,21 @@
 <translation id="6628463337424475685">جستجوی <ph name="ENGINE" /></translation>
 <translation id="6644283850729428850">این قانون قدیمی شده است.</translation>
 <translation id="6646897916597483132">‏کد تأیید چهار رقمی CVC را از روی کارت‌تان وارد کنید</translation>
+<translation id="674375294223700098">خطای ناشناخته گواهی سرور.</translation>
 <translation id="6753269504797312559">مقدار خط‌‌مشی</translation>
 <translation id="6831043979455480757">ترجمه</translation>
 <translation id="6839929833149231406">منطقه حکومتی</translation>
 <translation id="6874604403660855544">&amp;انجام مجدد افزودن</translation>
 <translation id="6891596781022320156">سطح خط‌مشی پشتیبانی نمی‌شود.</translation>
 <translation id="6915804003454593391">کاربر:</translation>
+<translation id="6957887021205513506">به نظر می‌رسد که گواهی سرور جعلی باشد.</translation>
 <translation id="6965382102122355670">تأیید</translation>
 <translation id="6965978654500191972">دستگاه</translation>
 <translation id="6970216967273061347">حوزه</translation>
 <translation id="6973656660372572881">‏هم سرورهای پروکسی ثابت و هم آدرس اسکریپت pac. مشخص شده‌اند.</translation>
 <translation id="6980028882292583085">هشدار جاوا اسکریپت</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
+<translation id="7050187094878475250">تلاش کردید به دامنه <ph name="DOMAIN" /> بروید اما گواهینامه‌ای که سرور ارائه کرد، دارای یک تاریخ اعتبار بسیار طولانی است و مورد اعتماد نیست.</translation>
 <translation id="7087282848513945231">شهرستان</translation>
 <translation id="7108649287766967076">ترجمه به <ph name="TARGET_LANGUAGE" /> انجام نشد.</translation>
 <translation id="7139724024395191329">امارت</translation>
@@ -217,17 +245,21 @@
 <translation id="7521387064766892559">جاوا اسکریپت</translation>
 <translation id="7537536606612762813">اجباری</translation>
 <translation id="7542995811387359312">تکمیل خودکار کارت اعتباری غیر فعال است زیرا این فرم از یک اتصال امن استفاده نمی‌کند.</translation>
+<translation id="7567204685887185387">این سرور نتوانست اثبات کند که این <ph name="DOMAIN" /> است؛ ممکن است گواهی امنیتی آن به صورت تقلبی صادر شده باشد. ممکن است علت این موضوع پیکربندی اشتباه باشد یا مهاجمی اتصال شما را قطع کرده است.</translation>
 <translation id="7568593326407688803">این صفحه به <ph name="ORIGINAL_LANGUAGE" /> است، آیا مایلید ترجمه شود؟</translation>
 <translation id="7569952961197462199">‏کارت اعتباری از Chrome پاک شود؟</translation>
+<translation id="7592362899630581445">گواهی سرور محدودیت‌های نام را نقض می‌کند.</translation>
 <translation id="7600965453749440009">هرگز <ph name="LANGUAGE" /> ترجمه نشود</translation>
 <translation id="7610193165460212391">مقدار خارج از محدوده <ph name="VALUE" /> است.</translation>
 <translation id="7752995774971033316">مدیریت نشده</translation>
+<translation id="7761701407923456692">‏گواهی سرور با URL مطابقت ندارد.</translation>
 <translation id="777702478322588152">حوزه اداری</translation>
 <translation id="7791543448312431591">افزودن</translation>
 <translation id="7805768142964895445">وضعیت</translation>
 <translation id="7813600968533626083">‏پیشنهاد فرم از Chrome پاک شود؟</translation>
 <translation id="7887683347370398519">‏CVC را بررسی کرده و دوباره امتحان کنید</translation>
 <translation id="7935318582918952113">DOM Distiller</translation>
+<translation id="7938958445268990899">گواهی سرور هنوز معتبر نیست.</translation>
 <translation id="7956713633345437162">نشانک‌های تلفن‌ همراه</translation>
 <translation id="7961015016161918242">هرگز</translation>
 <translation id="7977590112176369853">&lt;واردکردن پرسش&gt;</translation>
@@ -260,18 +292,22 @@
 <translation id="8824019021993735287">‏Chrome در حال حاضر نمی‌تواند کارت‌تان را تأیید کند. لطفاً بعداً دوباره امتحان کنید.</translation>
 <translation id="8834246243508017242">فعال‌سازی تکمیل خودکار با استفاده از مخاطبین…</translation>
 <translation id="883848425547221593">نشانک‌های دیگر</translation>
+<translation id="884923133447025588">هیچ مکانیزم ابطالی یافت نشد.</translation>
 <translation id="8866481888320382733">خطا در تجزیه تنظیمات خط‌مشی</translation>
 <translation id="8876793034577346603">پیکربندی شبکه نتوانست تجزیه شود.</translation>
 <translation id="8891727572606052622">حالت پروکسی نامعتبر است.</translation>
 <translation id="8932102934695377596">ساعت شما عقب است</translation>
 <translation id="8940229512486821554">اجرای فرمان <ph name="EXTENSION_NAME" />: <ph name="SEARCH_TERMS" /></translation>
+<translation id="8971063699422889582">گواهی سرور منقضی شده است.</translation>
 <translation id="8988760548304185580">‏تاریخ انقضا و کد تأیید سه رقمی CVC را از پشت کارت‌تان وارد کنید</translation>
 <translation id="9020542370529661692">این صفحه به <ph name="TARGET_LANGUAGE" /> ترجمه شده است</translation>
+<translation id="9049981332609050619">شما سعی کردید به <ph name="DOMAIN" /> دسترسی داشته باشید، اما سرور یک گواهی نامعتبر را نشان داد.</translation>
 <translation id="9125941078353557812">‏کد تأیید سه رقمی CVC را از پشت کارت‌تان وارد کنید</translation>
 <translation id="9137013805542155359">نمایش مورد اصلی</translation>
 <translation id="9148507642005240123">&amp;واگرد ویرایش</translation>
 <translation id="9154176715500758432">ماندن در این صفحه</translation>
 <translation id="9170848237812810038">&amp;واگرد</translation>
+<translation id="917450738466192189">گواهی سرور نامعتبر است.</translation>
 <translation id="9207861905230894330">افزودن مقاله ناموفق بود.</translation>
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="935608979562296692">پاک کردن فرم</translation>

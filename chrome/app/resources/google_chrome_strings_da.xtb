@@ -9,7 +9,6 @@
 <translation id="1073391069195728457">Chrome – Underretninger</translation>
 <translation id="1104959162601287462">Om &amp;Chrome OS</translation>
 <translation id="110877069173485804">Dette er din Chrome-browser</translation>
-<translation id="1150979032973867961">Denne server kunne ikke bevise, at den er <ph name="DOMAIN" />, da operativsystemet på din computer ikke har tillid til sikkerhedscertifikatet. Dette kan skyldes en fejlkonfiguration, eller at en hacker har opfanget din forbindelse.</translation>
 <translation id="1225016890511909183">Chrome vil lagre dine oplysninger på sikker vis, så du ikke behøver at angive dem igen, men du skal stadig bekræfte dit korts sikkerhedskode ved fremtidige betalinger.</translation>
 <translation id="123620459398936149">Chrome OS kunne ikke synkronisere dine data. Opdater din adgangssætning til synkronisering.</translation>
 <translation id="127345590676626841">Chrome opdateres automatisk, så du altid har den nyeste version. Når downloaden er fuldført, genstartes Chrome, og så er du godt på vej.</translation>
@@ -33,7 +32,6 @@
 <translation id="174539241580958092">Google Chrome kunne ikke synkronisere dine data på grund af en loginfejl.</translation>
 <translation id="1759301979429102118">Oplysninger om dine kontaktpersoner kan hjælpe dig med at udfylde formularer hurtigere i Chrome.</translation>
 <translation id="1759842336958782510">Chrome</translation>
-<translation id="1763864636252898013">Denne server kunne ikke bevise, at den er <ph name="DOMAIN" />, da operativsystemet på din enhed ikke har tillid til sikkerhedscertifikatet. Dette kan skyldes en fejlkonfiguration, eller at en hacker har opfanget din forbindelse.</translation>
 <translation id="1773601347087397504">Få hjælp til at bruge Chrome OS</translation>
 <translation id="1818142563254268765">Chrome kunne ikke opdatere sig selv til den nyeste version, så du går glip af nye fantastiske funktioner og sikkerhedsrettelser. Du skal opdatere Chrome.</translation>
 <translation id="1877026089748256423">Chrome er forældet</translation>
@@ -105,7 +103,6 @@ Hvis du logger ind alligevel, flettes Chrome-oplysninger, som f.eks. bogmærker,
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="4367618624832907428">Google Chrome kan ikke vise websiden, fordi computeren ikke har forbindelse til internettet.</translation>
 <translation id="4407807842708586359">Google Chrome OS</translation>
-<translation id="4424024547088906515">Denne server kunne ikke bevise, at den er <ph name="DOMAIN" />, da Chrome ikke har tillid til sikkerhedscertifikatet. Dette kan skyldes en fejlkonfiguration, eller at en hacker har opfanget din forbindelse.</translation>
 <translation id="4458285410772214805">Du skal logge ud og logge ind igen, for at denne ændring kan træde i kraft.</translation>
 <translation id="4480040274068703980">Chrome OS kunne ikke synkronisere dine data på grund af en fejl under login.</translation>
 <translation id="4513711165509885787">Dine faktureringsoplysninger er nu gemt i Chrome.</translation>

@@ -8,7 +8,6 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="1115445892567829615">Chromium could not sync your data. Please update your Sync passphrase.</translation>
 <translation id="1144202035120576837"><ph name="SITE" /> normally uses encryption to protect your information. When Chromium tried to connect to <ph name="SITE" /> this time, the website sent back unusual
 and incorrect credentials. Either an attacker is trying to pretend to be <ph name="SITE" />, or a Wi-Fi sign-in screen has interrupted the connection. Your information is still secure because Chromium stopped the connection before any data was exchanged.</translation>
-<translation id="1150979032973867961">This server could not prove that it is <ph name="DOMAIN" />; its security certificate is not trusted by your computer's operating system. This may be caused by a misconfiguration or an attacker intercepting your connection.</translation>
 <translation id="1174473354587728743">Share a computer? Now you can set up Chromium just the way you like it.</translation>
 <translation id="1185134272377778587">About Chromium</translation>
 <translation id="1221340462641866827">Chromium OS does not support launching an external application to handle <ph name="SCHEME" /> links. The link requested is <ph name="PROTOLINK" />.</translation>
@@ -28,7 +27,6 @@ and incorrect credentials. Either an attacker is trying to pretend to be <ph nam
 <translation id="1708666629004767631">There's a new, safer version of Chromium available.</translation>
 <translation id="1725059042853530269"><ph name="FILE_NAME" /> may harm your browsing experience, so Chromium has blocked it.</translation>
 <translation id="1745962126679160932">Chromium will securely store your information so that you don't need to type it in again, but you will still need to verify your card's security code for future payments.</translation>
-<translation id="1763864636252898013">This server could not prove that it is <ph name="DOMAIN" />; its security certificate is not trusted by your device's operating system. This may be caused by a misconfiguration or an attacker intercepting your connection.</translation>
 <translation id="1774152462503052664">Let Chromium run in the background</translation>
 <translation id="1779356040007214683">To make Chromium safer, we disabled some extensions that aren't listed in the <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> and may have been added without your knowledge.</translation>
 <translation id="1808667845054772817">Reinstall Chromium</translation>
@@ -139,7 +137,6 @@ and incorrect credentials. Either an attacker is trying to pretend to be <ph nam
 <translation id="4987820182225656817">Guests can use Chromium without leaving anything behind.</translation>
 <translation id="4994636714258228724">Add yourself to Chromium</translation>
 <translation id="5032989939245619637">Save details in Chromium</translation>
-<translation id="5094747076828555589">This server could not prove that it is <ph name="DOMAIN" />; its security certificate is not trusted by Chromium. This may be caused by a misconfiguration or an attacker intercepting your connection.</translation>
 <translation id="5358375970380395591">You are signing in with a managed account and giving its administrator control over your Chromium profile. Your Chromium data, such as your apps, bookmarks, history, passwords and other settings will become permanently tied to <ph name="USER_NAME" />. You will be able to delete this data via the Google Accounts Dashboard, but you will not be able to associate this data with another account. <ph name="LEARN_MORE" /></translation>
 <translation id="5398878173008909840">There is a new version of Chromium available.</translation>
 <translation id="5427571867875391349">Set Chromium as your default browser</translation>

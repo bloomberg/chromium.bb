@@ -107,7 +107,6 @@
       Om du ställer in policyn ersätts standardvärdet 3 timmar. Giltiga värden för policyn är mellan 1800000 (30 minuter) och 86400000 (1 dag). Om ett värde utanför intervallet anges ändras det till närmaste gräns.
 
       Om du inte anger policyn används standardvärdet 3 timmar i <ph name="PRODUCT_OS_NAME" />.</translation>
-<translation id="1503959756075098984">Tilläggs-ID:n och uppdateringsadresser ska installeras obemärkt</translation>
 <translation id="1504431521196476721">Fjärrattestering</translation>
 <translation id="1509692106376861764">Den här principen gäller inte från version 29 av <ph name="PRODUCT_NAME" /> och senare.</translation>
 <translation id="1522425503138261032">Tillåt alla webbplatser att spåra användarnas fysiska plats</translation>
@@ -1687,7 +1686,6 @@
           Avgränsa flera servernamn med kommatecken. Jokertecken (*) tillåts.
 
           Om du inte ställer in den här principen kommer <ph name="PRODUCT_NAME" /> att försöka identifiera om en server finns i intranätet och endast då kommer den att svara på IWA-förfrågningar. Om en server identifieras som internet kommer IWA-förfrågningar därifrån att ignoreras av <ph name="PRODUCT_NAME" />.</translation>
-<translation id="8665076741187546529">Konfigurera listan med tillägg som måste installeras</translation>
 <translation id="8668394701842594241">Policyn anger en lista med plugin-program som är aktiverade i <ph name="PRODUCT_NAME" /> och förhindrar att användarna ändrar inställningen.
 
       Jokertecknen * och ? kan användas för att matcha sekvenser av arbiträra tecken. * matchar ett arbiträrt antal tecken medan ? specificerar ett enda valfritt tecken, det vill säga matchar noll till ett tecken. Escape-tecknet är \, så om du vill matcha de faktiska tecknen *, ? eller \ anger du \ framför dem.

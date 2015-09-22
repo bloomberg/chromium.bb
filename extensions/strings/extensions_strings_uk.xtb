@@ -21,12 +21,14 @@
 <translation id="388442998277590542">Не вдалося завантажити сторінку параметрів "<ph name="OPTIONS_PAGE" />".</translation>
 <translation id="4115165561519362854">Адміністратор цього комп’ютера вимагає встановити розширення <ph name="EXTENSION_NAME" /> принаймні такої версії: <ph name="EXTENSION_VERSION" />. Ви не зможете ввімкнути це розширення, доки не оновите його до цієї версії (або новішої).</translation>
 <translation id="4233778200880751280">Не вдалося завантажити сторінку з інформацією про "<ph name="ABOUT_PAGE" />".</translation>
+<translation id="4434145631756268951">{0,select, single{Вибрати пристрій USB}multiple{Вибрати пристрої USB}other{UNUSED}}</translation>
 <translation id="4811956658694082538">Не вдалося встановити пакет, оскільки відбувся збій процесу службової програми. Перезапустіть Chrome і повторіть спробу.</translation>
 <translation id="4883436287898674711">Усі сайти <ph name="WEBSITE_1" /></translation>
 <translation id="5026754133087629784">Веб-перегляд: <ph name="WEBVIEW_TAG_NAME" /></translation>
 <translation id="5356315618422219272">Тег Appview: <ph name="APPVIEW_TAG_NAME" /></translation>
 <translation id="5456409301717116725">Це розширення включає файл ключа "<ph name="KEY_PATH" />". Можливо, ви не хочете цього робити.</translation>
 <translation id="5627523580512561598">розширення <ph name="EXTENSION_NAME" /></translation>
+<translation id="5630931906013276297">{0,select, single{Вибрати пристрій HID}multiple{Вибрати пристрої HID}other{UNUSED}}</translation>
 <translation id="5960890139610307736">ExtensionView: <ph name="EXTENSIONVIEW_TAG_NAME" /></translation>
 <translation id="5972529113578162692">Адміністратор цього комп’ютера вимагає встановити розширення <ph name="EXTENSION_NAME" />. Його неможливо видалити.</translation>
 <translation id="6027032947578871493">Невідомий продукт <ph name="PRODUCT_ID" /> від постачальника <ph name="VENDOR_NAME" /> (серійний номер: <ph name="SERIAL_NUMBER" />)</translation>

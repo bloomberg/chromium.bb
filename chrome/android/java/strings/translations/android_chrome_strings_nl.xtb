@@ -5,7 +5,6 @@
 <translation id="10614374240317010">Nooit opgeslagen</translation>
 <translation id="1061441684050139317">Chrome heeft microfoontoegang nodig om het item te delen met deze site.</translation>
 <translation id="1080790410959514870">Je logt uit van een account dat wordt beheerd door <ph name="DOMAIN_NAME" />. Hiermee worden de Chrome-gegevens verwijderd die zijn opgeslagen op dit apparaat, maar de gegevens blijven bewaard in je Google-account.</translation>
-<translation id="1086169178231554178">SD-kaart niet beschikbaar</translation>
 <translation id="1091134514807961917">Je bent ingelogd met het volgende Google-account.</translation>
 <translation id="1095407227123756519">Voeg een account toe om je bladwijzers, geschiedenis, wachtwoorden en andere instellingen op al je apparaten te bekijken.</translation>
 <translation id="1098052486217676340">Afgelopen</translation>
@@ -86,7 +85,6 @@
 <translation id="2351097562818989364">Je vertaalinstellingen zijn opnieuw ingesteld.</translation>
 <translation id="2354750644801399986">'Niet bijhouden'</translation>
 <translation id="2359808026110333948">Doorgaan</translation>
-<translation id="2360035970720276770">Kan alleen URL's met 'http' of 'https' downloaden</translation>
 <translation id="2381756643783702095">Vragen vóór verzenden (aanbevolen)</translation>
 <translation id="2387895666653383613">Tekstschaal</translation>
 <translation id="238909021488141516">Er is een fout opgetreden tijdens het downloaden van de inhoud.</translation>
@@ -127,7 +125,6 @@
 <translation id="2960796085439532066">Copyright <ph name="YEAR" /> Google Inc. Alle rechten voorbehouden.</translation>
 <translation id="2968755619301702150">Certificaatviewer</translation>
 <translation id="2996809686854298943">URL vereist</translation>
-<translation id="3003595280608617736">Geen SD-kaart</translation>
 <translation id="3029704984691124060">Wachtwoordzinnen komen niet overeen</translation>
 <translation id="3039671569659952257">Map verwijderen</translation>
 <translation id="3063601790762993062">Video opslaan</translation>
@@ -232,6 +229,7 @@ Als je de zoekterm wilt aanpassen, houd je deze aangeraakt om de term te selecte
 <translation id="4816465935029283692">Gegevenstypen</translation>
 <translation id="4827948050554950725">Een creditcard toevoegen</translation>
 <translation id="4836364883164334657">Je verbinding met deze site is niet privé. Aanvallers kunnen mogelijk je informatie (bijvoorbeeld foto's, wachtwoorden, berichten en creditcardgegevens) stelen van <ph name="DOMAIN_NAME" />.</translation>
+<translation id="4850886885716139402">Weergave</translation>
 <translation id="4871370605780490696">Bladwijzer toevoegen</translation>
 <translation id="4881695831933465202">Openen</translation>
 <translation id="4885273946141277891">Niet-ondersteund aantal Chrome-instanties.</translation>
@@ -449,8 +447,6 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="7648422057306047504">Wachtwoorden versleutelen met Google-inloggegevens</translation>
 <translation id="7658239707568436148">Annuleren</translation>
 <translation id="7665369617277396874">Account toevoegen</translation>
-<translation id="7711895876052978264">Deze site is geopend op volledig scherm.
-Klik op de knop 'Terug' om te sluiten.</translation>
 <translation id="7764225426217299476">Adres toevoegen</translation>
 <translation id="7765158879357617694">Verplaatsen</translation>
 <translation id="7767746238359002192">Pagina bezoeken om offline op te slaan</translation>
@@ -469,7 +465,6 @@ Klik op de knop 'Terug' om te sluiten.</translation>
 <translation id="7961015016161918242">Nooit</translation>
 <translation id="7963646190083259054">Leverancier:</translation>
 <translation id="7977858705483383621">SafeSearch</translation>
-<translation id="7981795308302452224">Starten van download mislukt</translation>
 <translation id="7987073022710626672">Servicevoorwaarden van Chrome</translation>
 <translation id="7989222512959629388">Opslaan…</translation>
 <translation id="7998918019931843664">Gesloten tabblad opnieuw openen</translation>
@@ -482,7 +477,6 @@ Klik op de knop 'Terug' om te sluiten.</translation>
 <translation id="8073388330009372546">Openen op nieuw tabblad</translation>
 <translation id="8084156870963450514">Log in zodat al je online items toegankelijk zijn vanaf elk apparaat</translation>
 <translation id="8106211421800660735">Creditcardnummer</translation>
-<translation id="8109148095642131923">Gedownload item toevoegen aan de downloadmanager is mislukt.</translation>
 <translation id="813082847718468539">Sitegegevens bekijken</translation>
 <translation id="8137558756159375272">Met 'Tikken om te zoeken' worden het geselecteerde woord en de huidige pagina als context naar Google Zoeken verzonden. Je kunt deze functie uitschakelen via <ph name="BEGIN_LINK" />Instellingen<ph name="END_LINK" />.</translation>
 <translation id="8143660160623733249">Naam van map</translation>
@@ -567,5 +561,4 @@ Maak verbinding met internet en speel je gedownloade inhoud af om nieuwe licenti
 <translation id="969096075394517431">Talen wijzigen</translation>
 <translation id="971774202801778802">Bladwijzer-URL</translation>
 <translation id="983192555821071799">Alle tabbladen sluiten</translation>
-<translation id="988938288723502454">Kan geen downloaddirectory maken op de SD-kaart.</translation>
 </translationbundle>

@@ -5,7 +5,6 @@
 <translation id="10614374240317010">Hindi kailanman nag-save</translation>
 <translation id="1061441684050139317">Kailangan ng Chrome ng access sa mikropono upang maibahagi ito sa site na ito.</translation>
 <translation id="1080790410959514870">Nagsa-sign out ka sa isang account na pinamamahalaan ng <ph name="DOMAIN_NAME" />. Ide-delete nito ang data ng Chrome na nakaimbak sa device na ito, ngunit mananatili ang data sa iyong Google Account.</translation>
-<translation id="1086169178231554178">Hindi available ang SD card</translation>
 <translation id="1091134514807961917">Naka-sign in ka sa sumusunod na Google Account.</translation>
 <translation id="1095407227123756519">Magdagdag ng account upang makuha ang iyong mga bookmark, history, password at ibang mga setting sa lahat ng iyong device.</translation>
 <translation id="1098052486217676340">Tapos na</translation>
@@ -86,7 +85,6 @@
 <translation id="2351097562818989364">Na-reset ang iyong mga setting sa pag-translate.</translation>
 <translation id="2354750644801399986">‘Huwag Subaybayan’</translation>
 <translation id="2359808026110333948">Magpatuloy</translation>
-<translation id="2360035970720276770">Mga URL na http o https lang ang mada-download</translation>
 <translation id="2381756643783702095">Magtanong bago magpadala (inirerekomenda)</translation>
 <translation id="2387895666653383613">Pag-scale ng text</translation>
 <translation id="238909021488141516">Nagkaroon ng error habang dina-download ang content.</translation>
@@ -127,7 +125,6 @@
 <translation id="2960796085439532066">Copyright <ph name="YEAR" /> Google Inc. Nakalaan ang lahat ng karapatan.</translation>
 <translation id="2968755619301702150">Viewer ng certificate</translation>
 <translation id="2996809686854298943">Kinakailangan ang URL</translation>
-<translation id="3003595280608617736">Walang SD card</translation>
 <translation id="3029704984691124060">Hindi nagtutugma ang mga passphrase</translation>
 <translation id="3039671569659952257">Tanggalin ang folder</translation>
 <translation id="3063601790762993062">I-save ang video</translation>
@@ -232,6 +229,7 @@ Upang baguhin ang iyong termino para sa paghahanap, pindutin ito nang matagal up
 <translation id="4816465935029283692">Mga uri ng data</translation>
 <translation id="4827948050554950725">Magdagdag ng credit card</translation>
 <translation id="4836364883164334657">Hindi pribado ang iyong koneksyon sa site na ito. Maaaring subukan ng mga attacker na nakawin ang iyong impormasyon (halimbawa, mga larawan, password, mensahe at credit card) mula sa <ph name="DOMAIN_NAME" />.</translation>
+<translation id="4850886885716139402">View</translation>
 <translation id="4871370605780490696">Magdagdag ng bookmark</translation>
 <translation id="4881695831933465202">Buksan</translation>
 <translation id="4885273946141277891">Hindi sinusuportahang bilang ng mga instance ng Chrome.</translation>
@@ -449,8 +447,6 @@ Halimbawa, maaaring tumugon ang ilang website sa kahilingang ito sa pamamagitan 
 <translation id="7648422057306047504">I-encrypt ang mga password gamit ang mga kredensyal ng Google</translation>
 <translation id="7658239707568436148">Ikansela</translation>
 <translation id="7665369617277396874">Magdagdag ng account</translation>
-<translation id="7711895876052978264">Naging fullscreen na ang site na ito.
-Pindutin ang button na bumalik upang lumabas.</translation>
 <translation id="7764225426217299476">Magdagdag ng address</translation>
 <translation id="7765158879357617694">Ilipat</translation>
 <translation id="7767746238359002192">Bisitahin ang page upang i-save offline</translation>
@@ -469,7 +465,6 @@ Pindutin ang button na bumalik upang lumabas.</translation>
 <translation id="7961015016161918242">Hindi Kailanman</translation>
 <translation id="7963646190083259054">Vendor:</translation>
 <translation id="7977858705483383621">SafeSearch</translation>
-<translation id="7981795308302452224">Hindi nasimulan ang pag-download</translation>
 <translation id="7987073022710626672">Mga Tuntunin ng Serbisyo ng Chrome</translation>
 <translation id="7989222512959629388">Nagse-save…</translation>
 <translation id="7998918019931843664">Muling buksan ang isinarang tab</translation>
@@ -482,7 +477,6 @@ Pindutin ang button na bumalik upang lumabas.</translation>
 <translation id="8073388330009372546">Buksan ang larawan sa bagong tab</translation>
 <translation id="8084156870963450514">Mag-sign in upang i-access ang lahat ng iyong bagay sa web mula sa anumang device</translation>
 <translation id="8106211421800660735">Numero ng credit card</translation>
-<translation id="8109148095642131923">Hindi naidagdag ang na-download na item sa download manager.</translation>
 <translation id="813082847718468539">Tingnan ang impormasyon ng site</translation>
 <translation id="8137558756159375272">Ipinadadala ng Pindutin upang Hanapin ang piniling salita at ang kasalukuyang page bilang konteksto sa Paghahanap sa Google. Maaari mo itong i-off sa <ph name="BEGIN_LINK" />Mga Setting<ph name="END_LINK" />.</translation>
 <translation id="8143660160623733249">Pangalan ng folder</translation>
@@ -567,5 +561,4 @@ Upang makakuha ng mga bagong lisensya, kumonekta sa internet at i-play ang iyong
 <translation id="969096075394517431">Palitan ang mga wika</translation>
 <translation id="971774202801778802">URL ng Bookmark</translation>
 <translation id="983192555821071799">Isara ang lahat ng tab</translation>
-<translation id="988938288723502454">Hindi makakagawa ng direktoryo ng download sa SD card.</translation>
 </translationbundle>

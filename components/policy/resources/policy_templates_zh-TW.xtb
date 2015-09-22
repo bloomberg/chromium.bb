@@ -86,7 +86,6 @@
       設定這項政策會覆寫 3 小時的預設值。本政策的有效值範圍由 1800000 (30 分鐘) 到 86400000 (1 天)。超出範圍的值會自動歸類為上限值或下限值。
 
       如未設定這項政策，<ph name="PRODUCT_OS_NAME" /> 會使用 3 小時的預設值。</translation>
-<translation id="1503959756075098984">以無訊息方式安裝的擴充功能 ID 和更新網址</translation>
 <translation id="1504431521196476721">遠端證明</translation>
 <translation id="1509692106376861764">我們已於 <ph name="PRODUCT_NAME" /> 版本 29 中移除這項政策。</translation>
 <translation id="1522425503138261032">允許網站追蹤使用者的實際位置</translation>
@@ -1000,7 +999,7 @@
           只有在啟用「DefaultSearchProviderEnabled」時，系統才會遵循這項政策。</translation>
 <translation id="6365608006609079612">
           啟用這項設定後，使用者即可讓 <ph name="PRODUCT_NAME" /> 記住密碼，
-          並且在使用者下次登入網站時提供密碼。
+          並且在使用者下次登入網站時自動提供密碼。
 
           停用這項設定後，使用者將無法儲存新密碼，
           但仍可使用先前儲存的密碼。
@@ -1419,7 +1418,6 @@
           請以逗號分隔多個伺服器名稱。可允許萬用字元 (*)。
 
           如果未設定這項政策，<ph name="PRODUCT_NAME" /> 會嘗試偵測伺服器是否位於內部網路，然後回應伺服器傳來的 IWA 要求。如果伺服器位於網際網路，<ph name="PRODUCT_NAME" /> 就會忽略伺服器傳來的 IWA 要求。</translation>
-<translation id="8665076741187546529">設定強制安裝的擴充程式清單</translation>
 <translation id="8668394701842594241">指定在「<ph name="PRODUCT_NAME" />」中啟用的外掛程式清單並禁止使用者變更這項設定。萬用字元「*」和「?」可與任意字元序列相配。「*」可與任意數量的字元相配，但「?」只能指定選擇性的單一字元，例如與零或一個字元相配。逸出字元為「\」，因此如要與真正的「*」、「?」或「\」字元配對，請在這些字元前方插入「\」。如果已安裝指定清單上的外掛程式，這些指定清單的外掛程式會一律在「<ph name="PRODUCT_NAME" />」中使用。這些外掛程式會在「about:plugins」中標示為已啟用，且使用者無法停用這些外掛程式。請注意，本政策會同時覆寫 DisabledPlugins 和 DisabledPluginsExceptions。如果未設定這項政策，使用者可以停用系統上安裝的任何外掛程式。</translation>
 <translation id="8672321184841719703">指定目標的自動更新版本</translation>
 <translation id="868187325500643455">允許所有網站自動執行外掛程式</translation>

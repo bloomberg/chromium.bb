@@ -5,7 +5,6 @@
 <translation id="10614374240317010">Haijahifadhiwa kamwe</translation>
 <translation id="1061441684050139317">Chrome inahitaji idhini ya kufikia maikrofoni ili iishiriki na tovuti hii.</translation>
 <translation id="1080790410959514870">Unaondoka katika akaunti inayodhibitiwa na <ph name="DOMAIN_NAME" />. Hii itafuta data ya Chrome iliyohifadhiwa kwenye kifaa hiki, lakini data itasalia katika Akaunti yako ya Google.</translation>
-<translation id="1086169178231554178">Kadi ya SD haipatikani</translation>
 <translation id="1091134514807961917">Umeingia katika Akaunti ya Google inayofuata.</translation>
 <translation id="1095407227123756519">Ongeza akaunti ili upate alamisho, historia, manenosiri, na mipangilio yako mingine kwenye vifaa vyako vyote.</translation>
 <translation id="1098052486217676340">Imekamilika</translation>
@@ -86,7 +85,6 @@
 <translation id="2351097562818989364">Mipangilio yako ya kutafsiri imewekwa upya.</translation>
 <translation id="2354750644801399986">‘Usifuatilie’</translation>
 <translation id="2359808026110333948">Endelea</translation>
-<translation id="2360035970720276770">Inaweza kupakua http au https URL</translation>
 <translation id="2381756643783702095">Uliza kabla ya kutuma (imependekezwa)</translation>
 <translation id="2387895666653383613">Upimaji wa maandishi</translation>
 <translation id="238909021488141516">Hitilafu imetokea wakati wa kupakua maudhui.</translation>
@@ -127,7 +125,6 @@
 <translation id="2960796085439532066">Hakimiliki <ph name="YEAR" /> Google Inc. Haki zote zimehifadhiwa.</translation>
 <translation id="2968755619301702150">Kitazamaji vyeti</translation>
 <translation id="2996809686854298943">URL inahitajika</translation>
-<translation id="3003595280608617736">Hakuna kadi ya SD</translation>
 <translation id="3029704984691124060">Kaulisiri hazilingani</translation>
 <translation id="3039671569659952257">Futa folda</translation>
 <translation id="3063601790762993062">Hifadhi video</translation>
@@ -232,6 +229,7 @@ Ili kurekebisha hoja yako ya utafutaji, bonyeza kwa muda mrefu ili kuchagua. Ili
 <translation id="4816465935029283692">Aina za data</translation>
 <translation id="4827948050554950725">Ongeza kadi ya malipo</translation>
 <translation id="4836364883164334657">Muunganisho wako kwenye tovuti hii si wa faragha. Huenda wavamizi wanajaribu kuiba maelezo yako (kwa mfano, picha, manenosiri, ujumbe na kadi za mikopo) kutoka <ph name="DOMAIN_NAME" />.</translation>
+<translation id="4850886885716139402">Mwonekano</translation>
 <translation id="4871370605780490696">Ongeza alamisho</translation>
 <translation id="4881695831933465202">Fungua</translation>
 <translation id="4885273946141277891">Idadi ya matukio ya Chrome isiyoweza kutumika.</translation>
@@ -449,8 +447,6 @@ Kwa mfano, baadhi ya tovuti zinaweza kujibu ombi hili kwa kukuonyesha matangazo 
 <translation id="7648422057306047504">Simba kwa njia fiche manenosiri ukitumia kitambulisho cha Google</translation>
 <translation id="7658239707568436148">Ghairi</translation>
 <translation id="7665369617277396874">Ongeza akaunti</translation>
-<translation id="7711895876052978264">Tovuti hii inaonekana kwenye skrini nzima.
-Gonga kitufe cha nyuma ili uondoke.</translation>
 <translation id="7764225426217299476">Ongeza anwani</translation>
 <translation id="7765158879357617694">Sogeza</translation>
 <translation id="7767746238359002192">Tembelea ukurasa ili uhifadhi nje ya mtandao</translation>
@@ -469,7 +465,6 @@ Gonga kitufe cha nyuma ili uondoke.</translation>
 <translation id="7961015016161918242">Katu</translation>
 <translation id="7963646190083259054">Mchuuzi:</translation>
 <translation id="7977858705483383621">SafeSearch</translation>
-<translation id="7981795308302452224">Haijafaulu kuanzisha upakuaji</translation>
 <translation id="7987073022710626672">Sheria na Masharti ya Chrome</translation>
 <translation id="7989222512959629388">Inahifadhi...</translation>
 <translation id="7998918019931843664">Fungua tena kichupo kilichofungwa</translation>
@@ -482,7 +477,6 @@ Gonga kitufe cha nyuma ili uondoke.</translation>
 <translation id="8073388330009372546">Fungua picha katika kichupo kipya</translation>
 <translation id="8084156870963450514">Ingia katika akaunti ili ufikie mambo yako yote ya wavuti kutoka kwenye kifaa chochote</translation>
 <translation id="8106211421800660735">Nambari ya kadi ya malipo</translation>
-<translation id="8109148095642131923">Imeshindwa kuongeza kipengee kilichopakuliwa kwenye kidhibiti cha vipakuliwa.</translation>
 <translation id="813082847718468539">Angalia maelezo ya tovuti</translation>
 <translation id="8137558756159375272">Gusa ili Kutafuta kunatuma neno lililochaguliwa na ukurasa wa sasa kama muktadha kwenye Tafuta na Google. Unaweza kuizima katika <ph name="BEGIN_LINK" />Mipangilio<ph name="END_LINK" />.</translation>
 <translation id="8143660160623733249">Jina la folda</translation>
@@ -567,5 +561,4 @@ Ili kupata leseni mpya, unganisha kwenye intaneti na ucheze maudhui yako yaliyop
 <translation id="969096075394517431">Badilisha lugha</translation>
 <translation id="971774202801778802">URL ya alamisho</translation>
 <translation id="983192555821071799">Funga vichupo vyote</translation>
-<translation id="988938288723502454">Haiwezi kuunda saraka ya upakuaji kwenye kadi ya SD.</translation>
 </translationbundle>

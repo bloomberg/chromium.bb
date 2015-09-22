@@ -2,10 +2,12 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ms">
 <translation id="1012173283529841972">Item senarai</translation>
+<translation id="1013742170491673792">srched</translation>
 <translation id="1023866615269196768">Merentang.</translation>
 <translation id="1025074108959230262">Mod lekit dilumpuhkan</translation>
 <translation id="1031961866430398710">kemudian</translation>
 <translation id="1044777062731150180">Tiada pengepala</translation>
+<translation id="106222400312645156">rwhdr</translation>
 <translation id="1065552602950927991">Input tidak sah</translation>
 <translation id="1082209053475788238">Tiada tajuk tahap 6 terdahulu.</translation>
 <translation id="1088219014394087294">Tiada tajuk.</translation>
@@ -20,8 +22,10 @@
 <translation id="1167523994081052608">!</translation>
 <translation id="1177863135347784049">Tersuai</translation>
 <translation id="1188858454923323853">pelengkap</translation>
+<translation id="1206619573307042055">marki</translation>
 <translation id="1213216066620407844">ChromeVox - Memberikan Suara kepada Chrome</translation>
 <translation id="1229276918471378188">Langkauan sebelumnya</translation>
+<translation id="1237866625126425153">rdgrp</translation>
 <translation id="1251750620252348585">Tajuk tahap 6 seterusnya</translation>
 <translation id="1275718070701477396">Dipilih</translation>
 <translation id="1319608975892113573">Tiada petikan blok terdahulu.</translation>
@@ -33,7 +37,9 @@
 <translation id="1346748346194534595">Kanan</translation>
 <translation id="136718599399906424">Baris jadual seterusnya</translation>
 <translation id="1383876407941801731">Carian</translation>
+<translation id="1384553361428699420">xx</translation>
 <translation id="1385214448885562192">Tekan enter untuk menerima atau escape untuk membatalkan, ke bawah untuk seterusnya dan ke atas untuk sebelumnya.</translation>
+<translation id="1396114365388024581">tablst</translation>
 <translation id="1439316808600711881">rgn</translation>
 <translation id="1452236308086741652">Kotak teks kata laluan, <ph name="VALUE" /></translation>
 <translation id="1467432559032391204">Kiri</translation>
@@ -58,6 +64,7 @@
 <translation id="1674262202423278359">Navigasi ChromeVox</translation>
 <translation id="16777221443363124">Bar menu</translation>
 <translation id="1692077714702418899">garis struktur</translation>
+<translation id="1700517974991662022">Dilawati</translation>
 <translation id="1722567105086139392">Pautan</translation>
 <translation id="1727806147743597030">ftr</translation>
 <translation id="174268867904053074">Grafik seterusnya</translation>
@@ -71,6 +78,8 @@
 <translation id="188130072164734898">Sebutkan masa dan tarikh semasa.</translation>
 <translation id="1902396333223336119">Sel</translation>
 <translation id="1905379170753160525">Paparkan senarai tajuk</translation>
+<translation id="1912556590115083156">vlnk</translation>
+<translation id="1913761808037590218">#ed</translation>
 <translation id="1954623340234317532">Kawalan minggu untuk tahun</translation>
 <translation id="1964135212174907577">Objek Seterusnya</translation>
 <translation id="1969092762068865084">Julai</translation>
@@ -85,6 +94,7 @@
 <translation id="2089387485033699258">ms</translation>
 <translation id="2091933974477985526">Kawasan teks boleh edit sebelumnya</translation>
 <translation id="2100350898815792233">Semua tanda baca</translation>
+<translation id="2119965627982867824">spnbtn</translation>
 <translation id="2121067395472282800">kekunci akses:<ph name="KEY" /></translation>
 <translation id="2149594028072271924">x</translation>
 <translation id="2155457205053847599">Tukar jadual semasa braille 6 titik dengan membuat pilihan daripada senarai di bawah.</translation>
@@ -98,6 +108,7 @@
 <translation id="2318372665160196757">Utama</translation>
 <translation id="2329324941084714723">Panel tab</translation>
 <translation id="2344193891939537199">Kawalan tarikh masa</translation>
+<translation id="2359897517538099099">Bukan dalam mod jadual.</translation>
 <translation id="241124561063364910">diikuti oleh</translation>
 <translation id="2417569100218200841">Maklumat kandungan</translation>
 <translation id="2422937916923936891">Kotak pilihan item menu</translation>
@@ -108,9 +119,11 @@
 <translation id="2471138580042810658">Tajuk 6</translation>
 <translation id="248982282205370495">{COUNT,plural, =1{asterisk}other{# asterisk}}</translation>
 <translation id="2549392850788122959"><ph name="KEY" /> telah ditetapkan semula.</translation>
+<translation id="2553108862507765288">kesilapan tatabahasa</translation>
 <translation id="257674075312929031">Kumpulan</translation>
 <translation id="2582407057977008361">Ke sebelah</translation>
 <translation id="2589102159832527089">Halaman ini mengandungi teks yang dikeluarkan secara automatik daripada fail PDF &lt;b&gt;<ph name="FILENAME" />&lt;/b&gt;. &lt;a href="<ph name="URL" />"&gt;Klik di sini untuk melihat yang asal.&lt;/a&gt;</translation>
+<translation id="2606210917827248971">dengan {COUNT,plural, =1{# item}other{# item}}</translation>
 <translation id="2614981083756825552">Reka Letak ML Matematik</translation>
 <translation id="2626530649491650971">boleh klik</translation>
 <translation id="2628764385451019380">Tiada kotak kombo terdahulu.</translation>
@@ -118,9 +131,11 @@
 <translation id="2639750663247012216">Pengubah suai ChromeVox</translation>
 <translation id="2644542693584024604">tersalah eja</translation>
 <translation id="2667291555398229137">Klik item di bawah kekunci penghalaan</translation>
+<translation id="2697408785920771974">autoinl</translation>
 <translation id="2704429362613743330">{COUNT,plural, =1{tanda kurung buka}other{# tanda kurung buka}}</translation>
 <translation id="2705875883745373140">Tidak ditekan</translation>
 <translation id="2706462751667573066">Atas</translation>
+<translation id="2717271541250958000">tabpnl</translation>
 <translation id="2723001399770238859">audio</translation>
 <translation id="2732718972699418926">PG</translation>
 <translation id="2749275490991666823">Ditandai</translation>
@@ -163,10 +178,12 @@
 <translation id="308895241372589742">Tiada ungkapan matematik seterusnya.</translation>
 <translation id="3090532668523289635">grp</translation>
 <translation id="3093176084511590672">Mercu tanda seterusnya</translation>
+<translation id="3096671415663099226">cbo</translation>
 <translation id="3104705064753753826">alrt dlg</translation>
 <translation id="3109724472072898302">Diruntuhkan</translation>
 <translation id="3134461040845705080">rdonly</translation>
 <translation id="3138767756593758860">Paparkan senarai mercu tanda</translation>
+<translation id="3143851963874289911">cll</translation>
 <translation id="3149472044574196936">Baris Seterusnya</translation>
 <translation id="3155083529632865074">Tiada butang terdahulu.</translation>
 <translation id="3163593631834463955">Pengepala lajur kosong</translation>
@@ -174,7 +191,10 @@
 <translation id="3172700825913348768">{COUNT,plural, =1{ruang}other{# ruang}}</translation>
 <translation id="320961988183078793">memasukkan <ph name="TYPE" /></translation>
 <translation id="3223701887221307104">Tab, <ph name="NAME" /></translation>
+<translation id="3226035351387556942">chk</translation>
+<translation id="3229375994964697375">Pautan yang dilawati</translation>
 <translation id="323731244387692321">Buka bantuan papan kekunci ChromeVox</translation>
+<translation id="324093695619034148">( )</translation>
 <translation id="3241052487511142956">Pautan yang dilawati sebelumnya</translation>
 <translation id="3286390186030710347">Peluncur</translation>
 <translation id="3299925995433437805">Tiada pautan yang dilawati seterusnya.</translation>
@@ -182,8 +202,52 @@
 <translation id="3307886118343381874">Pergi ke hujung jadual</translation>
 <translation id="3311969765485641742">Tekan Alt+Shift+A untuk menyemak makluman</translation>
 <translation id="3312997241656799641">Pautan yang dilawati seterusnya</translation>
+<translation id="3321460131042519426">Dayakan balut kata</translation>
 <translation id="3322936298410871309">Tajuk tahap 1 sebelumnya</translation>
 <translation id="3323447499041942178">Kotak teks</translation>
+<translation id="3353420241558113817">{"ar": "Arab",
+        "bg": "Bulgaria",
+        "ca": "Catalan",
+        "cs": "Czech",
+        "da": "Denmark",
+        "de": "Jerman",
+        "de_CH": "Jerman (Switzerland)",
+        "de_DE": "Jerman (Jerman)",
+        "el": "Yunani",
+        "en": "Inggeris",
+        "en_CA": "Inggeris (Kanada)",
+        "en_GB": "Inggeris (United Kingdom)",
+        "en_US": "Inggeris (Amerika Syarikat)",
+        "es": "Sepanyol",
+        "et": "Estonia",
+        "fr": "Perancis",
+        "fr_CA": "Perancis (Kanada)",
+        "fr_FR": "Perancis (Perancis)",
+        "fi": "Finland",
+        "he": "Ibrani",
+        "hi": "Hindi",
+        "hr": "Croatia",
+        "hu": "Hungary",
+        "is": "Iceland",
+        "it": "Itali",
+        "ko": "Korea",
+        "lt": "Lithuania",
+        "lv": "Latvia",
+        "nb": "Norway Bokmål",
+        "nl": "Belanda",
+        "pl": "Poland",
+        "pt": "Portugis",
+        "ro": "Romania",
+        "ru": "Rusia",
+        "sk": "Slovakia",
+        "sl": "Slovenia",
+        "sr": "Serbia",
+        "sv": "Sweden",
+        "tr": "Turki",
+        "vi": "Vietnam",
+        "zh": "Cina",
+        "zh_TW": "Cina (Han Tradisional)"}</translation>
+<translation id="3359142382821736686">seprtr</translation>
 <translation id="3374537878095184207">{COUNT,plural, =1{campur}other{# tanda campur}}</translation>
 <translation id="338583716107319301">Pemisah</translation>
 <translation id="3389259863310851658">Medan borang sebelumnya</translation>
@@ -197,12 +261,14 @@
 <translation id="3486232535569802404"><ph name="V1" /> hingga <ph name="V2" /></translation>
 <translation id="3492609944033322585">{COUNT,plural, =1{tanda kurung kanan}other{# tanda kurung kanan}}</translation>
 <translation id="3493915602752813531">Tiada penambat seterusnya.</translation>
+<translation id="3494946239022273294">mnuitm</translation>
 <translation id="3497063866483065785">{COUNT,plural, =1{tanda soal}other{# tanda soal}}</translation>
 <translation id="3514822174137761109">{COUNT,plural, =1{karet}other{# karet}}</translation>
 <translation id="3568702578574425662">Kotak pilihan, <ph name="NAME" /> tidak ditandai</translation>
 <translation id="3599054940393788245">Bukan dalam matematik</translation>
 <translation id="3616113530831147358">Audio</translation>
 <translation id="3646890046000188562">{COUNT,plural, =1{tanda belakang}other{# tanda belakang}}</translation>
+<translation id="3650317109285159359">chkmnuitm</translation>
 <translation id="3655855170848725876">{COUNT,plural, =1{dolar}other{# tanda dolar}}</translation>
 <translation id="3659787053479271466">alrt</translation>
 <translation id="3665563998540286755">Kotak senarai, <ph name="VALUE" /></translation>
@@ -215,12 +281,15 @@
 <translation id="3762198587642264450">Pergi ke penghujung baris semasa</translation>
 <translation id="3777255250339039212">h1</translation>
 <translation id="3793710123303304873">Keluar dari dialog.</translation>
+<translation id="3795836767122514678">+{COUNT,plural, =1{#}other{#}}</translation>
 <translation id="3801735343383419236">Senarai autolengkap</translation>
+<translation id="3806689594022048154">-&gt;</translation>
 <translation id="3810838688059735925">Video</translation>
 <translation id="3816633764618089385">Media seterusnya</translation>
 <translation id="3819376190738087562">Tiada langkauan.</translation>
 <translation id="385383972552776628">Buka halaman pilihan</translation>
 <translation id="3856075812838139784">Baca sahaja</translation>
+<translation id="3887576927692165210">ed</translation>
 <translation id="3897092660631435901">Menu</translation>
 <translation id="3909320334364316587">Tajuk tahap 6 sebelumnya</translation>
 <translation id="3914173277599553213">Diperlukan</translation>
@@ -241,6 +310,7 @@
 <translation id="4116415223832267137">Makluman</translation>
 <translation id="4147126331795725888">Tiada kawalan seterusnya.</translation>
 <translation id="4148180433151187540">{COUNT,plural, =1{kurung panah kanan}other{# kurung panah kanan}}</translation>
+<translation id="4158704014418536539">Sensitif huruf.</translation>
 <translation id="4161663686871496107">Maklum balas pertuturan ChromeVox sudah sedia</translation>
 <translation id="4173994908659439270">Tiada medan teks boleh edit seterusnya.</translation>
 <translation id="4176463684765177261">Dilumpuhkan</translation>
@@ -254,9 +324,11 @@
 <translation id="423334822609210999">Tiada sel di kiri.</translation>
 <translation id="4243624244759495699"><ph name="LOCALE" />, Gred <ph name="GRADE" /></translation>
 <translation id="4253168017788158739">Nota</translation>
+<translation id="4254798249533888099">Pohon</translation>
 <translation id="4255943572433203166">Gunakan pilihan di bawah untuk menyesuaikan ChromeVox. Perubahan berkuat kuasa serta-merta.</translation>
 <translation id="4271220233568730077">Matematik seterusnya</translation>
 <translation id="4271521365602459209">Tiada lagi hasil carian.</translation>
+<translation id="4271999187965566439">(x)</translation>
 <translation id="4287520460805643128">Tiada artikel seterusnya.</translation>
 <translation id="4289540628985791613">Gambaran keseluruhan</translation>
 <translation id="4300318234632215983">Umumkan URL di sebalik pautan</translation>
@@ -267,6 +339,7 @@
 <translation id="4372435075475052704">min:<ph name="X" /></translation>
 <translation id="4372705107434148843">Hentikan pertuturan</translation>
 <translation id="4373197658375206385">Tiada item terdahulu yang bukan pautan.</translation>
+<translation id="4391478986194775161">cntntinfo</translation>
 <translation id="443163561286008705">tetapkan semula</translation>
 <translation id="4471074325120394300">Tiada pautan.</translation>
 <translation id="4476183483923481720">garisan baharu</translation>
@@ -283,6 +356,7 @@
 <translation id="4615592953348396470">Mengabaikan tekanan kekunci seterusnya</translation>
 <translation id="461613135510474570">Ayat</translation>
 <translation id="4647836961514597010">Pemilih warna</translation>
+<translation id="4661075872484491155">pohon</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="4688873778442829762">grd</translation>
 <translation id="4693675773662933727">Mercu tanda sebelumnya</translation>
@@ -300,6 +374,7 @@
 <translation id="4842108708071771135">Tiada petikan blok seterusnya.</translation>
 <translation id="4848993367330139335">tmr</translation>
 <translation id="4850023505158945298">Elemen serupa terdahulu.</translation>
+<translation id="4866956062845190338">rdmnuitm</translation>
 <translation id="4867316986324544967">Dayakan pengelogan TTS</translation>
 <translation id="4877261390094455813">Masukkan carian pertanyaan.</translation>
 <translation id="4886524826165775965"><ph name="INDEX" />/<ph name="TOTAL" /></translation>
@@ -331,8 +406,10 @@
 <translation id="5080758118274074384">diklik dua kali</translation>
 <translation id="5098541983634824365">Meninggalkan grid.</translation>
 <translation id="5102981729317424850">Bar alat</translation>
+<translation id="5105050547967751155">rq</translation>
 <translation id="5110983769041734144">Tiada medan borang terdahulu.</translation>
 <translation id="5111640677200759579">Pengepala lajur</translation>
+<translation id="5117636609870536415">@ed</translation>
 <translation id="5136967254288895616">Tiada pautan terdahulu.</translation>
 <translation id="513774504516943387">lnk</translation>
 <translation id="517143700877085897">, dinyahpilih</translation>
@@ -351,6 +428,7 @@
 <translation id="5321085947096604457">{COUNT,plural, =1{koma}other{# koma}}</translation>
 <translation id="532371086589123547">Kotak teks, <ph name="VALUE" /></translation>
 <translation id="5330443287809544590">Pautan, <ph name="NAME" /></translation>
+<translation id="5336381510091010269">autoinl+lst</translation>
 <translation id="536031132345979795">Langkau ke belakang semasa membaca berterusan</translation>
 <translation id="5368000168321181111">Earcon mati</translation>
 <translation id="5374320867641260420">Tiada butang seterusnya.</translation>
@@ -372,6 +450,7 @@
 <translation id="5546092960038624944">Tiada tajuk tahap 5 terdahulu.</translation>
 <translation id="556042886152191864">Butang</translation>
 <translation id="5561345396546889625">Senarai seterusnya</translation>
+<translation id="5562645715554321347">hdnggrp</translation>
 <translation id="5583640892426849032">Undur ruang</translation>
 <translation id="5585044216466955529">Edit teks, masukan e-mel</translation>
 <translation id="5597170376237141345">Kotak pilihan seterusnya</translation>
@@ -379,17 +458,21 @@
 <translation id="5598905979683743333">Butang radio, <ph name="NAME" /> dinyahpilih</translation>
 <translation id="5601172225407283979">Lakukan tindakan lalai</translation>
 <translation id="5608798115546226984">Autolengkap sebaris</translation>
+<translation id="561939826962581046">masa</translation>
+<translation id="5623778242535476823">rbtn</translation>
 <translation id="5623842676595125836">Log</translation>
 <translation id="5628125749885014029">h4</translation>
 <translation id="5637871198229500030">Tiada jadual terdahulu.</translation>
 <translation id="5655682562155942719">Perintah Melangkau</translation>
 <translation id="56637627897541303">Kawasan teks</translation>
+<translation id="5678161956734658133">mled</translation>
 <translation id="5681643281275621376">def</translation>
 <translation id="5682113568322255809">Mercu Tanda</translation>
 <translation id="5683155931978483559">Kotak pilihan sebelumnya</translation>
 <translation id="5684277895745049190">Senarai</translation>
 <translation id="5700650669149824506">Tiada tajuk tahap 4 terdahulu.</translation>
 <translation id="5709192780268610569">Tiada huraian panjang</translation>
+<translation id="5712244464475377681">popbtn</translation>
 <translation id="5712338278108304766">Lajur jadual seterusnya</translation>
 <translation id="571866080859340309">Meneroka kumpulan</translation>
 <translation id="5728409797179002635">Tiada jadual dijumpai.</translation>
@@ -414,17 +497,20 @@
 <translation id="5955304353782037793">apl</translation>
 <translation id="5956928062748260866">Dialog</translation>
 <translation id="5963413905009737549">Bahagian</translation>
+<translation id="5968607524793740041">Paparkan menu konteks</translation>
 <translation id="5983179082906765664">Tingkatkan kebutiran navigasi</translation>
 <translation id="5999630716831179808">Suara</translation>
 <translation id="6000417740266304866">Tukar jadual semasa braille 8 titik dengan membuat pilihan daripada senarai di bawah.</translation>
 <translation id="6006050241733874051">Borang</translation>
 <translation id="6006064078185310784">{COUNT,plural, =1{garis condong songsang}other{# garis condong songsang}}</translation>
 <translation id="6037602951055904232">Sorot ke hadapan</translation>
+<translation id="611827076493383239">vtd</translation>
 <translation id="6119955456199054975">Sel akhir.</translation>
 <translation id="6122013438240733403">btn</translation>
 <translation id="6129953537138746214">Ruang</translation>
 <translation id="6142308968191113180">Tajuk 4</translation>
 <translation id="6169420925157477918">Imej dengan huraian panjang</translation>
+<translation id="6172087735260766220">Tidak dapat mengakses teks yang boleh diakses daripada fail PDF yang dilindungi salin.</translation>
 <translation id="6186305613600865047">Langkau ke bahagian bawah halaman</translation>
 <translation id="6193330012414963395">PG PTG/MLM</translation>
 <translation id="622484624075952240">Bawah</translation>
@@ -468,10 +554,12 @@
 <translation id="6734854816611871228">Kotak kombo, <ph name="VALUE" /></translation>
 <translation id="6735257939857578167">dengan <ph name="NUM" /> item</translation>
 <translation id="6736510033526053669">tab dibuat</translation>
+<translation id="675895815784134693">pgbar</translation>
 <translation id="6786800275320335305">Artikel</translation>
 <translation id="6787839852456839824">Pintasan papan kekunci</translation>
 <translation id="6793101435925451627">lstbx</translation>
 <translation id="6833103209700200188">Pengaki</translation>
+<translation id="6871161210040114857">Mengabaikan huruf.</translation>
 <translation id="6877435256196695200">Tiada grafik seterusnya.</translation>
 <translation id="6897341342232909480">Alih ke kiri</translation>
 <translation id="6901540140423170855">tarikh</translation>
@@ -487,6 +575,7 @@
 <translation id="7041173719775863268">Tamatkan pemilihan</translation>
 <translation id="7095834689119144465">Edit teks angka sahaja</translation>
 <translation id="7096001299300236431">Media sebelumnya</translation>
+<translation id="7116595520562830928">multln</translation>
 <translation id="712735679809149106">gema perkataan</translation>
 <translation id="713824876195128146">Petikan blok seterusnya</translation>
 <translation id="7161771961008409533">Butang pop timbul</translation>
@@ -506,6 +595,8 @@
 <translation id="7273174640290488576">Kosong</translation>
 <translation id="7285387653379749618">Jadual</translation>
 <translation id="7289186959554153431">Tajuk 3</translation>
+<translation id="7292195267473691167"><ph name="LOCALE" /> (<ph name="VARIANT" />)</translation>
+<translation id="731121099745151312">tritm</translation>
 <translation id="731576946540457939">Kapsyen Braille dilumpuhkan.</translation>
 <translation id="7318872822751139669">Gunakan tetikus untuk menukar fokus.</translation>
 <translation id="7322388933135261569">Februari</translation>
@@ -514,6 +605,7 @@
 <translation id="7356165926712028380">Tukar kepada braille 8 titik</translation>
 <translation id="7362871137496673139">Tiada tajuk tahap 2 terdahulu.</translation>
 <translation id="7370432716629432284">{COUNT,plural, =1{ampersan}other{# ampersan}}</translation>
+<translation id="737396357417333429">clk</translation>
 <translation id="7374104575779636480">Meninggalkan jadual.</translation>
 <translation id="739763518212184081">Baris Sebelumnya</translation>
 <translation id="7400575256015741911">Kesilapan ejaan dikesan</translation>
@@ -521,6 +613,7 @@
 <translation id="7425395583360211003">pulangan</translation>
 <translation id="7434509671034404296">Pembangun</translation>
 <translation id="7439060726180460871">Direktori</translation>
+<translation id="744163271241493234">pwded</translation>
 <translation id="7491962110804786152">tab</translation>
 <translation id="7492049978501397201">Memasuki dialog</translation>
 <translation id="7532613204005497612">Jun</translation>
@@ -528,17 +621,21 @@
 <translation id="7586163296341959563">tampal.</translation>
 <translation id="7596919493010894443">pilihan dikosongkan</translation>
 <translation id="7604026522577407655">Pergi ke permulaan lajur semasa</translation>
+<translation id="7604451927827590395">hdng</translation>
 <translation id="7609342235116740824">Umumkan URL halaman semasa</translation>
 <translation id="7609363189280667021">Togol kapsyen braille</translation>
 <translation id="762020119231868829">Menjeda semua widget media yang sedang dimainkan</translation>
 <translation id="7625690649919402823">Jadual seterusnya</translation>
+<translation id="7628927569678398026"><ph name="LOCALE" /> (<ph name="VARIANT" />), Gred <ph name="GRADE" /></translation>
 <translation id="7641134354185483015">Tiada tajuk tahap 3 terdahulu.</translation>
 <translation id="7659376057562985921">Kotak teks, <ph name="VALUE" />, <ph name="NAME" /></translation>
 <translation id="7663318257180412551">Tajuk 2</translation>
 <translation id="7674576868851035240">Pautan seterusnya</translation>
 <translation id="7674768236845044097">tanda</translation>
 <translation id="7684431668231950609">Edit teks, masukan URL</translation>
+<translation id="7685589220304187312">tlbar</translation>
 <translation id="7693840228159394336">Butang radio sebelumnya</translation>
+<translation id="7701196182766842984">autolst</translation>
 <translation id="7770823902658038748">Kotak teks kata laluan, <ph name="VALUE" />, <ph name="NAME" /></translation>
 <translation id="7805247615045262757">navigasi lalai</translation>
 <translation id="7805768142964895445">Status</translation>
@@ -549,10 +646,13 @@
 <translation id="7851816175263618915">Beberapa tanda baca</translation>
 <translation id="7870596830398826354">Pepohon ML Matematik</translation>
 <translation id="78826985582142166">sldr</translation>
+<translation id="7894517696028036636">Togol ChromeVox klasik.</translation>
 <translation id="7895896691902835279">Pautan tidak diketahui</translation>
 <translation id="7927711904086083099">Tidak dipilih</translation>
+<translation id="7935627501098484003">Kawalan masa</translation>
 <translation id="7939428177581522200">ditambahkan pada pilihan</translation>
 <translation id="794091007957014205">{COUNT,plural, =1{di}other{# tanda di}}</translation>
+<translation id="7965147473449754028">menu ditutup</translation>
 <translation id="7974390230414479278">Item menu</translation>
 <translation id="8002119852008410879">{COUNT,plural, =1{titik seru}other{# titik seru}}</translation>
 <translation id="8007540374018858731">h3</translation>
@@ -583,6 +683,7 @@
 <translation id="8382679411218029383">Autolengkap sebaris dan senarai</translation>
 <translation id="8428603554127842284">tahap <ph name="DEPTH" /></translation>
 <translation id="842922884199979200">Tiada tajuk tahap 3 seterusnya.</translation>
+<translation id="8430049249787218991">mnubr</translation>
 <translation id="844681116543532394">Tiada kotak pilihan terdahulu.</translation>
 <translation id="8455868257606149352">Maks <ph name="X" /></translation>
 <translation id="84575901236241018">mempunyai kekunci akses, <ph name="KEY" /></translation>
@@ -599,10 +700,12 @@
 <translation id="8631359288236106450"><ph name="COUNT" /> item dipilih</translation>
 <translation id="8638532244051952400">Umumkan koordinat sel semasa</translation>
 <translation id="8650576015643545550">Tiada senarai terdahulu.</translation>
+<translation id="8653031188082306838">urled</translation>
 <translation id="8653646212587894517">Paparkan senarai pautan</translation>
 <translation id="8664519043722036194">saat</translation>
 <translation id="867187640362843212">Tajuk 5</translation>
 <translation id="8697111817566059991">{COUNT,plural, =1{paip}other{# paip menegak}}</translation>
+<translation id="8722779018229123609">(-)</translation>
 <translation id="8723726026961763755">Sistem telah dikemas kini. Mula semula disyorkan.</translation>
 <translation id="8735450637152821465">Mulakan pemilihan</translation>
 <translation id="8743786158317878347">masukkan kandungan berstruktur, seperti jadual</translation>
@@ -621,9 +724,12 @@
 <translation id="8896347895970027998">Togol ChromeVox aktif atau tidak aktif.</translation>
 <translation id="8898516272131543774">Gema tanda baca kitaran</translation>
 <translation id="8900148057318340779">Kekunci awalan</translation>
+<translation id="8908714597367957477">colhdr</translation>
 <translation id="8931936695772494138">Pengepala kosong</translation>
+<translation id="8937112856099038376">intlnk</translation>
 <translation id="8940925288729953902">Kunci Pengubah Suai</translation>
 <translation id="8943175951035496220">Tiada sel di kanan.</translation>
+<translation id="8978496506222343566">tltip</translation>
 <translation id="900114243503212879">fail</translation>
 <translation id="9027462562263121875">Tiada jadual.</translation>
 <translation id="9040132695316389094">Tajuk 1</translation>
@@ -635,9 +741,11 @@
 <translation id="9089864840575085222">Gema penaipan kitaran</translation>
 <translation id="9107530006868467849">Tiada widget media sebelumnya.</translation>
 <translation id="9108370397979208512">matematik</translation>
+<translation id="9108589040018540527">scbr</translation>
 <translation id="911476240645808512">{COUNT,plural, =1{peratus}other{# tanda peratus}}</translation>
 <translation id="9115913704608474258">November</translation>
 <translation id="9128414153595658330">dlg</translation>
+<translation id="9149560530563164529">sctn</translation>
 <translation id="9151211641321628915">Mengumumkan penerangan ringkas tentang kedudukan semasa</translation>
 <translation id="9153606228985488238">Nada <ph name="PERCENT" /> peratus</translation>
 <translation id="9160096769946561184">Pergi ke penghujung lajur semasa</translation>

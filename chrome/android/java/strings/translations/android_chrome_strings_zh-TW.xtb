@@ -5,7 +5,6 @@
 <translation id="10614374240317010">永不儲存</translation>
 <translation id="1061441684050139317">Chrome 需要存取麥克風，才能與這個網站分享。</translation>
 <translation id="1080790410959514870">您即將登出由 <ph name="DOMAIN_NAME" /> 所管理的帳戶。儲存在這個裝置上的 Chrome 資料將因此遭到刪除，但這些資料仍會保留在您的 Google 帳戶中。</translation>
-<translation id="1086169178231554178">無法使用 SD 卡</translation>
 <translation id="1091134514807961917">您已登入下列 Google 帳戶。</translation>
 <translation id="1095407227123756519">新增帳戶後，即可從任何裝置取得自己的書籤、歷史紀錄、密碼和其他設定。</translation>
 <translation id="1098052486217676340">已結束</translation>
@@ -86,7 +85,6 @@
 <translation id="2351097562818989364">您的翻譯設定已重設。</translation>
 <translation id="2354750644801399986">「不追蹤」</translation>
 <translation id="2359808026110333948">繼續</translation>
-<translation id="2360035970720276770">只能透過 http 或 https 網址下載檔案</translation>
 <translation id="2381756643783702095">傳送前詢問我 (建議)</translation>
 <translation id="2387895666653383613">文字大小</translation>
 <translation id="238909021488141516">下載這項內容時發生錯誤。</translation>
@@ -127,7 +125,6 @@
 <translation id="2960796085439532066">Copyright <ph name="YEAR" /> Google Inc. 版權所有。</translation>
 <translation id="2968755619301702150">憑證檢視器</translation>
 <translation id="2996809686854298943">必須要有網址</translation>
-<translation id="3003595280608617736">沒有 SD 卡</translation>
 <translation id="3029704984691124060">通關密語不符</translation>
 <translation id="3039671569659952257">刪除資料夾</translation>
 <translation id="3063601790762993062">儲存影片</translation>
@@ -232,6 +229,7 @@
 <translation id="4816465935029283692">資料類型</translation>
 <translation id="4827948050554950725">新增信用卡</translation>
 <translation id="4836364883164334657">您與這個網站之間的連線不是私人連線。攻擊者可能會嘗試從 <ph name="DOMAIN_NAME" /> 竊取您的資訊 (例如相片、密碼、郵件和信用卡資訊)。</translation>
+<translation id="4850886885716139402">檢視</translation>
 <translation id="4871370605780490696">新增書籤</translation>
 <translation id="4881695831933465202">開啟</translation>
 <translation id="4885273946141277891">Chrome 實例的數量已超出上限。</translation>
@@ -449,8 +447,6 @@
 <translation id="7648422057306047504">使用 Google 憑證為密碼加密</translation>
 <translation id="7658239707568436148">取消</translation>
 <translation id="7665369617277396874">新增帳戶</translation>
-<translation id="7711895876052978264">這個網站已進入全螢幕模式。
-點選返回按鈕即可結束全螢幕模式。</translation>
 <translation id="7764225426217299476">新增地址</translation>
 <translation id="7765158879357617694">移動</translation>
 <translation id="7767746238359002192">前往您要離線儲存的網頁</translation>
@@ -469,7 +465,6 @@
 <translation id="7961015016161918242">永不</translation>
 <translation id="7963646190083259054">供應商：</translation>
 <translation id="7977858705483383621">安全搜尋</translation>
-<translation id="7981795308302452224">無法開始下載</translation>
 <translation id="7987073022710626672">Chrome 服務條款</translation>
 <translation id="7989222512959629388">儲存中…</translation>
 <translation id="7998918019931843664">重新開啟先前關閉的分頁</translation>
@@ -482,7 +477,6 @@
 <translation id="8073388330009372546">在新分頁中開啟圖片</translation>
 <translation id="8084156870963450514">登入帳戶即可透過任何裝置存取您在網路上的所有資料</translation>
 <translation id="8106211421800660735">信用卡號碼</translation>
-<translation id="8109148095642131923">無法將已下載的項目加到下載管理員中。</translation>
 <translation id="813082847718468539">查看網站資訊</translation>
 <translation id="8137558756159375272">「輕觸搜尋」會將選取的字詞和目前所在的網頁 (以便建立關聯) 傳送給 Google 搜尋。您可以在<ph name="BEGIN_LINK" />設定<ph name="END_LINK" />中關閉這項功能。</translation>
 <translation id="8143660160623733249">資料夾名稱</translation>
@@ -567,5 +561,4 @@
 <translation id="969096075394517431">變更語言</translation>
 <translation id="971774202801778802">書籤網址</translation>
 <translation id="983192555821071799">關閉所有分頁</translation>
-<translation id="988938288723502454">無法在 SD 卡上建立下載目錄。</translation>
 </translationbundle>

@@ -11,7 +11,6 @@
 <translation id="1073391069195728457">Chrome - 알림</translation>
 <translation id="1104959162601287462">Chrome OS 정보(&amp;C)</translation>
 <translation id="110877069173485804">나만의 Chrome</translation>
-<translation id="1150979032973867961">이 서버가 <ph name="DOMAIN" />임을 입증할 수 없으며 컴퓨터의 운영체제에서 신뢰하는 보안 인증서가 아닙니다. 서버를 잘못 설정했거나 불법 사용자가 연결을 가로채고 있기 때문일 수 있습니다.</translation>
 <translation id="1225016890511909183">Chromium은 사용자의 정보를 안전하게 저장하므로 정보를 다시 입력할 필요가 없지만 향후 결제 시 카드의 보안 코드는 확인해야 합니다.</translation>
 <translation id="123620459398936149">Chrome OS에서 데이터를 동기화하지 못했습니다. 동기화 암호를 업데이트하세요.</translation>
 <translation id="127345590676626841">Chrome은 자동으로 업데이트되므로 항상 최신 버전을 사용할 수 있습니다. 이 다운로드가 완료되면 Chrome이 다시 시작되며 계속 작업할 수 있습니다.</translation>
@@ -37,7 +36,6 @@
 <translation id="174539241580958092">로그인 중 오류가 발생하여 Chrome에서 데이터를 동기화하지 못했습니다.</translation>
 <translation id="1759301979429102118">연락처 세부정보를 사용하면 Chrome에서 양식을 더욱 신속하게 작성할 수 있습니다.</translation>
 <translation id="1759842336958782510">Chrome</translation>
-<translation id="1763864636252898013">이 서버가 <ph name="DOMAIN" />임을 입증할 수 없으며 기기의 운영체제에서 신뢰하는 보안 인증서가 아닙니다. 서버를 잘못 설정했거나 불법 사용자가 연결을 가로채고 있기 때문일 수 있습니다.</translation>
 <translation id="1773601347087397504">Chrome OS 사용에 대한 도움말</translation>
 <translation id="1818142563254268765">Chrome을 최신 버전으로 자동 업데이트할 수 없기 때문에 새로운 기능과 보안 수정사항 업데이트가 누락될 수 있습니다. Chrome을 업데이트해야 합니다.</translation>
 <translation id="1877026089748256423">Chrome이 이전 버전임</translation>
@@ -109,7 +107,6 @@
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="4367618624832907428">컴퓨터가 인터넷에 연결되어 있지 않아 Chrome에서 웹페이지를 표시할 수 없습니다.</translation>
 <translation id="4407807842708586359">Chrome OS</translation>
-<translation id="4424024547088906515">이 서버가 <ph name="DOMAIN" />임을 입증할 수 없으며 Chrome에서 신뢰하는 보안 인증서가 아닙니다. 서버를 잘못 설정했거나 불법 사용자가 연결을 가로채고 있기 때문일 수 있습니다.</translation>
 <translation id="4458285410772214805">변경사항을 적용하려면 로그아웃했다가 다시 로그인하세요.</translation>
 <translation id="4480040274068703980">로그인 중 오류가 발생하여 Chrome OS에서 데이터를 동기화하지 못했습니다.</translation>
 <translation id="4513711165509885787">결제 세부정보가 Chrome에 저장되었습니다.</translation>

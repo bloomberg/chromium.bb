@@ -107,7 +107,6 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
        La définition de cette règle remplace la valeur par défaut de 3 heures. Les valeurs valides pour cette règle sont comprises entre 1 800 000 (30 minutes) et 86,4 millions (1 jour). Toutes les valeurs non comprises dans cette plage seront nivelées à la limite respective. 
 
        Si cette règle n'est pas définie, <ph name="PRODUCT_OS_NAME" /> utilise la valeur par défaut de 3 heures.</translation>
-<translation id="1503959756075098984">Identifiants d'extension et URL de mise à jour à installer en arrière-plan</translation>
 <translation id="1504431521196476721">Attestation à distance</translation>
 <translation id="1509692106376861764">Cette règle a été supprimée à partir de la version 29 de <ph name="PRODUCT_NAME" />.</translation>
 <translation id="1522425503138261032">Autoriser les sites à suivre la position géographique des utilisateurs</translation>
@@ -1679,7 +1678,6 @@ Si aucun paramètre n'est défini, <ph name="PRODUCT_NAME" /> utilise un nom de 
           Si vous utilisez plusieurs serveurs, séparez leur nom par une virgule. Les caractères génériques (*) sont autorisés.
 
           Si vous ne définissez pas cette règle, <ph name="PRODUCT_NAME" /> tente d'identifier si le serveur est sur l'Intranet, auquel cas il répond aux requêtes IWA. Si le serveur est sur Internet, les requêtes IWA sont ignorées par <ph name="PRODUCT_NAME" />.</translation>
-<translation id="8665076741187546529">Configurer la liste des extensions dont l'installation est forcée</translation>
 <translation id="8668394701842594241">Répertorie les plug-ins activés dans <ph name="PRODUCT_NAME" /> et empêche les utilisateurs de modifier ce paramètre. 
 
 Les caractères génériques "*" et "?" remplacent des séquences de caractères arbitraires. "*" correspond à un nombre aléatoire de caractères, tandis que "?" représente un caractère unique facultatif, c'est-à-dire qu'il remplace zéro ou un caractère. Placé devant les caractères "*", "?" ou "\", le caractère d'échappement "\" permet de rechercher ces caractères eux-mêmes.

@@ -86,7 +86,6 @@
       Durch das Festlegen dieser Richtlinie wird der Standardwert von 3 Stunden außer Kraft gesetzt. Gültige Werte für diese Richtlinie liegen im Bereich zwischen 1800000 (30 Minuten) und 86400000 (1 Tag). Alle Werte, die nicht in diesem Bereich liegen, werden auf den jeweiligen Grenzwert gesetzt.
 
       Wenn diese Richtlinie nicht konfiguriert ist, gilt in <ph name="PRODUCT_OS_NAME" /> der Standardwert von 3 Stunden.</translation>
-<translation id="1503959756075098984">Ohne Nutzereingriff zu installierende Erweiterungs-IDs und Aktualisierungs-URLs</translation>
 <translation id="1504431521196476721">Remote-Bestätigung</translation>
 <translation id="1509692106376861764">Diese Richtlinie wird ab <ph name="PRODUCT_NAME" />-Version 29 nicht mehr verwendet.</translation>
 <translation id="1522425503138261032">Ermittlung des physischen Standorts des Nutzers durch Websites zulassen</translation>
@@ -1411,7 +1410,6 @@ Wenn eine Erweiterung nicht in der Liste enthalten ist oder keine Liste festgele
           Fügen Sie zwischen den verschiedenen Servernamen ein Komma als Trennzeichen ein. Platzhalter (*) sind zulässig.
 
           Wenn Sie diese Richtlinie nicht konfigurieren, versucht <ph name="PRODUCT_NAME" /> zu ermitteln, ob der fragliche Server sich im Intranet befindet, und reagiert nur dann auf IWA-Anfragen. Wenn der Server sich dagegen im Internet befindet, werden dessen IWA-Anfragen von <ph name="PRODUCT_NAME" /> ignoriert.</translation>
-<translation id="8665076741187546529">Liste der Erweiterungen konfigurieren, deren Installation erzwungen wurde</translation>
 <translation id="8668394701842594241">Gibt eine Liste von Plug-ins an, die in <ph name="PRODUCT_NAME" /> aktiviert sind, und verhindert, dass Nutzer diese Einstellung ändern. Die Platzhalterzeichen "*" und "?" können verwendet werden, um Übereinstimmungen mit beliebigen Zeichenfolgen herbeizuführen. "*" ergibt Übereinstimmungen mit einer beliebigen Anzahl von Zeichen, während "?" für ein einziges optionales Zeichen steht, also keinem oder einem Zeichen entspricht. Das Escape-Zeichen ist "\", um also wirkliche Übereinstimmungen mit den Zeichen "*", "?" und "\" zu finden, können Sie das "\"-Zeichen davor platzieren. Die angegebene Liste der Plug-ins wird in <ph name="PRODUCT_NAME" /> immer verwendet, wenn sie installiert sind. Die Plug-ins sind in "about:plugins" als aktiv markiert und können von Nutzern nicht deaktiviert werden. Beachten Sie, dass diese Richtlinie sowohl "DisabledPlugins" als auch "DisabledPluginsExceptions" außer Kraft setzt. Wenn die Richtlinie nicht konfiguriert ist, können Nutzer beliebige auf dem System installierte Plug-ins deaktivieren.</translation>
 <translation id="8672321184841719703">Automatische Aktualisierung auf Zielversion</translation>
 <translation id="868187325500643455">Automatische Ausführung von Plug-ins für alle Websites zulassen</translation>

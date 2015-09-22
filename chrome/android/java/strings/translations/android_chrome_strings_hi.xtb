@@ -5,7 +5,6 @@
 <translation id="10614374240317010">कभी नहीं सहेजा गया</translation>
 <translation id="1061441684050139317">Chrome को माइक्रोफ़ोन ऐक्सेस की आवश्यकता है ताक‍ि माइक्रोफ़ोन को इस साइट के साथ साझा किया जा सके.</translation>
 <translation id="1080790410959514870">आप <ph name="DOMAIN_NAME" /> द्वारा प्रबंधित खाते से प्रस्थान कर रहे हैं. इससे इस डिवाइस पर संग्रहीत Chrome डेटा हट जाएगा, लेकिन डेटा आपके Google खाते में बना रहेगा.</translation>
-<translation id="1086169178231554178">SD कार्ड अनुपलब्ध</translation>
 <translation id="1091134514807961917">आपने निम्‍नलिखित Google खाते में प्रवेश किया हुआ है.</translation>
 <translation id="1095407227123756519">अपने सभी डिवाइस पर अपने बुकमार्क, इतिहास, पासवर्ड और अन्य सेटिंग प्राप्त करने के लिए कोई खाता जोड़ें.</translation>
 <translation id="1098052486217676340">समाप्त</translation>
@@ -86,7 +85,6 @@
 <translation id="2351097562818989364">आपकी अनुवाद सेटिंग रीसेट कर दी गई हैं.</translation>
 <translation id="2354750644801399986">‘नज़र ना रखें’</translation>
 <translation id="2359808026110333948">जारी रखें</translation>
-<translation id="2360035970720276770">केवल http या https URL ही डाउनलोड किए जा सकते हैं</translation>
 <translation id="2381756643783702095">भेजने से पहले पूछें (अनुशंसित)</translation>
 <translation id="2387895666653383613">लेख स्‍केलिंग</translation>
 <translation id="238909021488141516">सामग्री डाउनलोड करते समय कोई त्रुटि हुई.</translation>
@@ -127,7 +125,6 @@
 <translation id="2960796085439532066">कॉपीराइट <ph name="YEAR" /> Google Inc. सर्वाधिकार सुरक्षित.</translation>
 <translation id="2968755619301702150">प्रमाणपत्र व्यूअर</translation>
 <translation id="2996809686854298943">URL आवश्यक है</translation>
-<translation id="3003595280608617736">कोई SD कार्ड नहीं</translation>
 <translation id="3029704984691124060">पासफ़्रेज़ मिलान नहीं करते</translation>
 <translation id="3039671569659952257">फ़ोल्डर हटाएं</translation>
 <translation id="3063601790762993062">वीडियो सहेजें</translation>
@@ -232,6 +229,7 @@
 <translation id="4816465935029283692">डेटा प्रकार</translation>
 <translation id="4827948050554950725">क्रेडिट कार्ड जोड़ें</translation>
 <translation id="4836364883164334657">इस साइट से आपका कनेक्‍शन निजी नहीं है. हो सकता है कि हमलावर <ph name="DOMAIN_NAME" /> से आपकी जानकारी (उदाहरण के लिए, फ़ोटो, पासवर्ड, संदेश और क्रेडिट कार्ड) चुराने का प्रयास कर रहे हों.</translation>
+<translation id="4850886885716139402">देखें</translation>
 <translation id="4871370605780490696">बुकमार्क जोड़ें</translation>
 <translation id="4881695831933465202">खोलें</translation>
 <translation id="4885273946141277891">Chrome इंस्टेंस की असमर्थित संख्या.</translation>
@@ -449,8 +447,6 @@
 <translation id="7648422057306047504">Google प्रमाणिकता के साथ पासवर्ड एन्क्रिप्ट करें</translation>
 <translation id="7658239707568436148">अभी नहीं</translation>
 <translation id="7665369617277396874">खाता जोड़ें</translation>
-<translation id="7711895876052978264">यह साइट पूर्णस्‍क्रीन में चली गई है.
-बाहर निकलने के लिए वापस जाएं बटन दबाएं.</translation>
 <translation id="7764225426217299476">पता जोड़ें</translation>
 <translation id="7765158879357617694">ले जाएं</translation>
 <translation id="7767746238359002192">ऑफ़लाइन सहेजने के लिए पृष्‍ठ पर जाएं</translation>
@@ -469,7 +465,6 @@
 <translation id="7961015016161918242">कभी नहीं</translation>
 <translation id="7963646190083259054">विक्रेता:</translation>
 <translation id="7977858705483383621">सुरक्षित खोज</translation>
-<translation id="7981795308302452224">डाउनलोड प्रारंभ करने में विफल रहा</translation>
 <translation id="7987073022710626672">Chrome सेवा की शर्तें</translation>
 <translation id="7989222512959629388">सहेजा जा रहा है…</translation>
 <translation id="7998918019931843664">बंद टैब फिर से खोलें</translation>
@@ -482,7 +477,6 @@
 <translation id="8073388330009372546">चित्र नए टैब में खोलें</translation>
 <translation id="8084156870963450514">किसी भी डिवाइस से अपनी सभी वेब सामग्री एेक्‍सेस करने के लिए प्रवेश करें</translation>
 <translation id="8106211421800660735">क्रेडिट कार्ड संख्या</translation>
-<translation id="8109148095642131923">डाउनलोड प्रबंधक से डाउनलोड आइटम जोड़ने में विफल रहा.</translation>
 <translation id="813082847718468539">साइट जानकारी देखें</translation>
 <translation id="8137558756159375272">खोजने के लिए स्‍पर्श करें चयनित शब्‍द और वर्तमान पृष्‍ठ को संदर्भ के रूप में Google खोज पर भेजती है. आप उसे <ph name="BEGIN_LINK" />सेटिंग<ph name="END_LINK" /> में बंद कर सकते हैं.</translation>
 <translation id="8143660160623733249">फ़ोल्डर का नाम</translation>
@@ -567,5 +561,4 @@
 <translation id="969096075394517431">भाषाएं बदलें</translation>
 <translation id="971774202801778802">URL बुकमार्क करें</translation>
 <translation id="983192555821071799">सभी टैब बंद करें</translation>
-<translation id="988938288723502454">SD कार्ड पर डाउनलोड निर्देशिका नहीं बनाई जा सकती.</translation>
 </translationbundle>

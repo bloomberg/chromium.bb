@@ -9,7 +9,6 @@
 <translation id="1073391069195728457">Chrome – Notificări</translation>
 <translation id="1104959162601287462">Despre sistemul de operare &amp;Chrome</translation>
 <translation id="110877069173485804">Acesta este browserul dvs. Chrome</translation>
-<translation id="1150979032973867961">Acest server nu a putut dovedi că este <ph name="DOMAIN" />; sistemul de operare al computerului nu consideră că certificatul său de securitate este de încredere. Cauza poate fi o configurare greșită sau interceptarea conexiunii de către un atacator.</translation>
 <translation id="1225016890511909183">Chrome va stoca în siguranță informațiile dvs., astfel încât să nu trebuiască să le introduceți din nou, dar va trebui în continuare să confirmați codul de securitate al cardului pentru viitoarele plăți.</translation>
 <translation id="123620459398936149">Sistemul de operare Chrome nu a putut sincroniza datele. Actualizați parola de acces pentru sincronizare.</translation>
 <translation id="127345590676626841">Chrome se actualizează automat, deci vei avea întotdeauna cea mai recentă versiune. După această descărcare, Chrome va reporni și va fi gata de utilizare.</translation>
@@ -33,7 +32,6 @@
 <translation id="174539241580958092">Google Chrome nu a putut sincroniza datele din cauza unei erori la conectare.</translation>
 <translation id="1759301979429102118">Detaliile din agendă vă pot ajuta să completați mai rapid formularele în Chrome.</translation>
 <translation id="1759842336958782510">Chrome</translation>
-<translation id="1763864636252898013">Acest server nu a putut dovedi că este <ph name="DOMAIN" />; sistemul de operare al dispozitivului nu consideră că certificatul său de securitate este de încredere. Cauza poate fi o configurare greșită sau interceptarea conexiunii de către un atacator.</translation>
 <translation id="1773601347087397504">Obțineți ajutor în legătură cu utilizarea sistemului de operare Chrome</translation>
 <translation id="1818142563254268765">Chrome nu s-a putut actualiza automat la cea mai recentă versiune, astfel încât pierdeți noi funcții excelente și remedieri de securitate. Trebuie să actualizați Chrome.</translation>
 <translation id="1877026089748256423">Chrome nu este actualizat</translation>
@@ -105,7 +103,6 @@ Dacă totuși vă conectați, informațiile Chrome cum ar fi marcajele, istoricu
 <translation id="4331809312908958774">Sistemul de operare Chrome</translation>
 <translation id="4367618624832907428">Google Chrome nu poate afișa pagina web, deoarece computerul nu este conectat la internet.</translation>
 <translation id="4407807842708586359">Sistemul de operare Google Chrome</translation>
-<translation id="4424024547088906515">Acest server nu a putut dovedi că este <ph name="DOMAIN" />; Chrome nu consideră că certificatul său de securitate este de încredere. Cauza poate fi o configurare greșită sau interceptarea conexiunii de către un atacator.</translation>
 <translation id="4458285410772214805">Pentru ca modificarea să fie aplicată, deconectați-vă și conectați-vă din nou.</translation>
 <translation id="4480040274068703980">Sistemul de operare Chrome nu a putut sincroniza datele din cauza unei erori la conectare.</translation>
 <translation id="4513711165509885787">Detaliile de facturare au fost salvate în Chrome.</translation>

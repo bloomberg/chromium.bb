@@ -8,7 +8,9 @@
 <translation id="111844081046043029">Sigur vrei să ieși de pe această pagină?</translation>
 <translation id="112840717907525620">Memoria cache pentru politică este OK</translation>
 <translation id="1132774398110320017">Setări de completare automată în Chrome...</translation>
+<translation id="1150979032973867961">Acest server nu a putut dovedi că este <ph name="DOMAIN" />; sistemul de operare al computerului nu consideră că certificatul său de securitate este de încredere. Cauza poate fi o configurare greșită sau interceptarea conexiunii de către un atacator.</translation>
 <translation id="1152921474424827756">Accesați o <ph name="BEGIN_LINK" />copie păstrată în memoria cache<ph name="END_LINK" /> a site-ului <ph name="URL" /></translation>
+<translation id="121201262018556460">Ați încercat să accesați <ph name="DOMAIN" />, dar serverul a furnizat un certificat care conține o cheie slabă. Un atacator ar fi putut sparge cheia privată și este posibil ca serverul să nu fie cel așteptat de dvs. (este posibil să comunicați cu un atacator).</translation>
 <translation id="1227224963052638717">Politică necunoscută.</translation>
 <translation id="1227633850867390598">Ascundeți valoarea</translation>
 <translation id="1228893227497259893">Identificator greșit pentru entitate</translation>
@@ -22,8 +24,10 @@
 <translation id="1639239467298939599">Se încarcă</translation>
 <translation id="1640180200866533862">Politici privind utilizatorii</translation>
 <translation id="1644184664548287040">Configurația rețelei este nevalidă și nu a putut fi importată.</translation>
+<translation id="168841957122794586">Certificatul de server conține o cheie criptografică slabă.</translation>
 <translation id="1693754753824026215">Pagina de la <ph name="SITE" /> afișează mesajul:</translation>
 <translation id="1734864079702812349">Amex</translation>
+<translation id="1763864636252898013">Acest server nu a putut dovedi că este <ph name="DOMAIN" />; sistemul de operare al dispozitivului nu consideră că certificatul său de securitate este de încredere. Cauza poate fi o configurare greșită sau interceptarea conexiunii de către un atacator.</translation>
 <translation id="1821930232296380041">Solicitarea sau parametrii săi sunt greșiți</translation>
 <translation id="1853748787962613237">Articolul nu a fost afișat.</translation>
 <translation id="1871208020102129563">Configurația proxy este setată să utilizeze servere proxy fixe, și nu o adresă URL pentru scripturi .pac.</translation>
@@ -46,20 +50,25 @@
 <translation id="2113977810652731515">Card</translation>
 <translation id="2114841414352855701">Politica este ignorată, deoarece a fost înlocuită de <ph name="POLICY_NAME" />.</translation>
 <translation id="213826338245044447">Marcaje mobile</translation>
+<translation id="2171101176734966184">Ați încercat să accesați <ph name="DOMAIN" />, dar serverul a furnizat un certificat semnat utilizând un algoritm de semnare slab. Aceasta însemnă că este posibil ca acreditările de securitate furnizate de server să fie falsificate, iar serverul să nu fie cel așteptat (este posibil să comunicați cu un atacator).</translation>
 <translation id="2181821976797666341">Politici</translation>
 <translation id="2212735316055980242">Politica nu a fost găsită</translation>
 <translation id="2213606439339815911">Se preiau intrările...</translation>
 <translation id="225207911366869382">Valoarea este învechită pentru această politică.</translation>
 <translation id="2262243747453050782">Eroare HTTP</translation>
 <translation id="2270192940992995399">Articolul nu a fost găsit.</translation>
+<translation id="229702904922032456">Un certificat rădăcină sau intermediar a expirat.</translation>
 <translation id="2328300916057834155">Marcaj nevalid ignorat la indexul <ph name="ENTRY_INDEX" /></translation>
 <translation id="2354001756790975382">Alte marcaje</translation>
 <translation id="2359808026110333948">Continuă</translation>
 <translation id="2367567093518048410">Nivel</translation>
+<translation id="2386255080630008482">Certificatul serverului a fost revocat.</translation>
 <translation id="2392959068659972793">Afișați politicile care nu au valori setate</translation>
 <translation id="2396249848217231973">&amp;Anulați ștergerea</translation>
+<translation id="2413528052993050574">Acest server nu a putut dovedi că este <ph name="DOMAIN" />; este posibil ca certificatul său de securitate să fie revocat. Cauza poate fi o configurare greșită sau interceptarea conexiunii de către un atacator.</translation>
 <translation id="2455981314101692989">Această pagină web a dezactivat completarea automată a formularului.</translation>
 <translation id="2479410451996844060">Adresă URL de căutare nevalidă.</translation>
+<translation id="2491120439723279231">Certificatul serverului conține erori.</translation>
 <translation id="2495083838625180221">Analizor JSON</translation>
 <translation id="2498091847651709837">Scanează un card nou</translation>
 <translation id="2556876185419854533">&amp;Anulați editarea</translation>
@@ -70,10 +79,14 @@
 <translation id="2639739919103226564">Stare:</translation>
 <translation id="2704283930420550640">Valoarea nu se potrivește cu formatul.</translation>
 <translation id="2721148159707890343">Solicitarea a reușit</translation>
+<translation id="2728127805433021124">Certificatul serverului este semnat utilizând un algoritm de semnătură slab.</translation>
 <translation id="2774256287122201187">Poți continua. Dacă accesezi pagina, acest avertisment nu se va mai afișa în următoarele 5 minute.</translation>
 <translation id="277499241957683684">Lipsește o înregistrare pentru gadget</translation>
 <translation id="2835170189407361413">Golește formularul</translation>
 <translation id="2855922900409897335">Confirmă <ph name="CREDIT_CARD" /></translation>
+<translation id="2915500479781995473">Acest server nu a putut dovedi că este <ph name="DOMAIN" />; certificatul său de securitate a expirat. Cauza poate fi o configurare greșită sau interceptarea conexiunii de către un atacator. În prezent, ceasul computerului este setat la <ph name="CURRENT_TIME" />. Este corect? Dacă nu, trebuie să corectezi ora sistemului, apoi să actualizezi pagina.</translation>
+<translation id="2922350208395188000">Certificatul serverului nu poate fi verificat.</translation>
+<translation id="2941952326391522266">Acest server nu a putut dovedi că este <ph name="DOMAIN" />; certificatul său de securitate provine de la <ph name="DOMAIN2" />. Cauza poate fi o configurare greșită sau interceptarea conexiunii de către un atacator.</translation>
 <translation id="2958431318199492670">Configurația rețelei nu respectă standardul ONC. Este posibil ca anumite părți ale configurației să nu fie importate.</translation>
 <translation id="2972581237482394796">&amp;Repetă</translation>
 <translation id="3010559122411665027">Intrarea din listă „<ph name="ENTRY_INDEX" />”: <ph name="ERROR" /></translation>
@@ -84,9 +97,11 @@
 <translation id="3169472444629675720">Discover</translation>
 <translation id="3174168572213147020">Insulă</translation>
 <translation id="3219579145727097045">Introdu data de expirare și codul CVC alcătuit din 4 cifre înscris pe fața cardului</translation>
+<translation id="3225919329040284222">Serverul a prezentat un certificat care nu se potrivește cu așteptările încorporate. Aceste așteptări sunt incluse pentru anumite site-uri web, cu un grad sporit de securitate, pentru a vă proteja.</translation>
 <translation id="3228969707346345236">Pagina nu a fost tradusă, deoarece aceasta este deja în <ph name="LANGUAGE" />.</translation>
 <translation id="3270847123878663523">&amp;Anulați reordonarea</translation>
 <translation id="333371639341676808">Împiedică această pagină să creeze alte casete de dialog.</translation>
+<translation id="3340978935015468852">setări</translation>
 <translation id="3369192424181595722">Eroare de ceas</translation>
 <translation id="3369366829301677151">Actualizează și confirmă cardul <ph name="CREDIT_CARD" /></translation>
 <translation id="337363190475750230">Scos din uz</translation>
@@ -97,6 +112,7 @@
 <translation id="3450660100078934250">MasterCard</translation>
 <translation id="3452404311384756672">Interval de preluare:</translation>
 <translation id="3462200631372590220">Ascundeți detaliile avansate</translation>
+<translation id="3528171143076753409">Certificatul serverului nu este de încredere.</translation>
 <translation id="3542684924769048008">Folosește parola pentru:</translation>
 <translation id="3583757800736429874">&amp;Repetați mutarea</translation>
 <translation id="3623476034248543066">Afișați valoarea</translation>
@@ -126,13 +142,18 @@
 <translation id="4269787794583293679">(Niciun nume de utilizator)</translation>
 <translation id="4300246636397505754">Sugestii parentale</translation>
 <translation id="4372948949327679948">Se aștepta valoarea <ph name="VALUE_TYPE" />.</translation>
+<translation id="4377125064752653719">Ați încercat să accesați <ph name="DOMAIN" />, dar certificatul furnizat de server a fost revocat de emitentul său. Aceasta înseamnă că acreditările de securitate furnizate de server nu sunt deloc de încredere. Este posibil să comunicați cu un atacator.</translation>
+<translation id="4424024547088906515">Acest server nu a putut dovedi că este <ph name="DOMAIN" />; Chrome nu consideră că certificatul său de securitate este de încredere. Cauza poate fi o configurare greșită sau interceptarea conexiunii de către un atacator.</translation>
 <translation id="443673843213245140">Utilizarea unui proxy este dezactivată, dar o configurare proxy este specificată în mod explicit.</translation>
 <translation id="4506176782989081258">Eroare de validare: <ph name="VALIDATION_ERROR" /></translation>
 <translation id="4587425331216688090">Elimini adresa din Chrome?</translation>
 <translation id="4594403342090139922">&amp;Anulați ștergerea</translation>
 <translation id="4607653538520819196">Această pagină nu poate fi gestionată prin proxy de Economizorul de date.</translation>
 <translation id="4668929960204016307">,</translation>
+<translation id="467662567472608290">Acest server nu a putut dovedi că este <ph name="DOMAIN" />; certificatul său de securitate conține erori. Cauza poate fi o configurare greșită sau interceptarea conexiunii de către un atacator.</translation>
 <translation id="4726672564094551039">Reîncărcați politicile</translation>
+<translation id="4728558894243024398">Platformă</translation>
+<translation id="4771973620359291008">A apărut o eroare necunoscută.</translation>
 <translation id="4800132727771399293">Verifică data de expirare și codul CVC și încearcă din nou</translation>
 <translation id="4813512666221746211">Eroare de rețea</translation>
 <translation id="4850886885716139402">Afișează</translation>
@@ -142,7 +163,9 @@
 <translation id="498957508165411911">Se traduce din <ph name="ORIGINAL_LANGUAGE" /> în <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="5019198164206649151">Depozit de fundal în stare nevalidă</translation>
 <translation id="5031870354684148875">Despre Google Traducere</translation>
+<translation id="5087286274860437796">Momentan, certificatul serverului este nevalid.</translation>
 <translation id="5089810972385038852">Stat</translation>
+<translation id="5094747076828555589">Acest server nu a putut dovedi că este <ph name="DOMAIN" />; Chromium nu consideră că certificatul său de securitate este de încredere. Cauza poate fi o configurare greșită sau interceptarea conexiunii de către un atacator.</translation>
 <translation id="5095208057601539847">Provincie</translation>
 <translation id="5145883236150621069">Răspunsul pentru politică include un cod de eroare</translation>
 <translation id="5172758083709347301">Computer</translation>
@@ -152,6 +175,7 @@
 <translation id="5299298092464848405">Eroare la analizarea politicii</translation>
 <translation id="5317780077021120954">Salvează</translation>
 <translation id="536296301121032821">Setările pentru politică nu au putut fi stocate</translation>
+<translation id="540969355065856584">Acest server nu a putut dovedi că este <ph name="DOMAIN" />; momentan, certificatul de securitate nu este valid. Cauza poate fi o configurare greșită sau interceptarea conexiunii de un atacator.</translation>
 <translation id="5439770059721715174">Eroare de validare a schemei la „<ph name="ERROR_PATH" />”: <ph name="ERROR" /></translation>
 <translation id="5455374756549232013">Marcaj temporal greșit pentru politică</translation>
 <translation id="5470861586879999274">&amp;Repetați editarea</translation>
@@ -170,6 +194,7 @@
 <translation id="5989320800837274978">Nu sunt specificate nici servere proxy fixe și nici o adresă URL pentru scripturi .pac.</translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6040143037577758943">Închide</translation>
+<translation id="6151417162996330722">Certificatul de server are o perioadă de validitate prea lungă.</translation>
 <translation id="6154808779448689242">Indicativul returnat pentru politică nu corespunde cu indicativul actual</translation>
 <translation id="6165508094623778733">Află mai multe</translation>
 <translation id="6259156558325130047">&amp;Repetați reordonarea</translation>
@@ -186,18 +211,21 @@
 <translation id="6628463337424475685">Căutare <ph name="ENGINE" /></translation>
 <translation id="6644283850729428850">Această politică este învechită.</translation>
 <translation id="6646897916597483132">Introdu codul CVC alcătuit din 4 cifre înscris pe fața a cardului</translation>
+<translation id="674375294223700098">Eroare de certificat de server necunoscută.</translation>
 <translation id="6753269504797312559">Valoarea politicii</translation>
 <translation id="6831043979455480757">Tradu</translation>
 <translation id="6839929833149231406">Zonă</translation>
 <translation id="6874604403660855544">&amp;Repetați adăugarea</translation>
 <translation id="6891596781022320156">Nivelul politicii nu este acceptat.</translation>
 <translation id="6915804003454593391">Utilizator:</translation>
+<translation id="6957887021205513506">Certificatul serverului pare a fi un fals.</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6965978654500191972">Dispozitiv</translation>
 <translation id="6970216967273061347">Județ</translation>
 <translation id="6973656660372572881">Sunt specificate atât servere proxy fixe, cât și o adresă URL pentru scripturi .pac.</translation>
 <translation id="6980028882292583085">Alertă JavaScript</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
+<translation id="7050187094878475250">Ai încercat să accesezi <ph name="DOMAIN" />, dar serverul a prezentat un certificat a cărui perioadă de validitate este prea lungă pentru a fi de încredere.</translation>
 <translation id="7087282848513945231">Comitat</translation>
 <translation id="7108649287766967076">Traducerea în <ph name="TARGET_LANGUAGE" /> nu a reușit.</translation>
 <translation id="7139724024395191329">Emirat</translation>
@@ -217,17 +245,21 @@
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7537536606612762813">Obligatorie</translation>
 <translation id="7542995811387359312">Completarea automată a cardului de credit este dezactivată, deoarece acest formular nu utilizează o conexiune sigură.</translation>
+<translation id="7567204685887185387">Acest server nu a putut dovedi că este <ph name="DOMAIN" />; este posibil ca certificatul său de securitate să fi fost emis fraudulos. Cauza poate fi o configurare greșită sau interceptarea conexiunii de către un atacator.</translation>
 <translation id="7568593326407688803">Această pagină este în <ph name="ORIGINAL_LANGUAGE" /> Vrei să fie tradusă?</translation>
 <translation id="7569952961197462199">Elimini cardul de credit din Chrome?</translation>
+<translation id="7592362899630581445">Certificatul serverului încalcă limitările privind numele.</translation>
 <translation id="7600965453749440009">Nu traduce niciodată din <ph name="LANGUAGE" /></translation>
 <translation id="7610193165460212391">Valoarea este în afara intervalului <ph name="VALUE" />.</translation>
 <translation id="7752995774971033316">Negestionat</translation>
+<translation id="7761701407923456692">Certificatul serverului nu se potrivește cu adresa URL.</translation>
 <translation id="777702478322588152">Prefectură</translation>
 <translation id="7791543448312431591">Adaugă</translation>
 <translation id="7805768142964895445">Stare</translation>
 <translation id="7813600968533626083">Elimini sugestia pentru formular din Chrome?</translation>
 <translation id="7887683347370398519">Verifică codul CVC și încearcă din nou</translation>
 <translation id="7935318582918952113">DOM Distiller</translation>
+<translation id="7938958445268990899">Certificatul serverului nu este încă valid.</translation>
 <translation id="7956713633345437162">Marcaje mobile</translation>
 <translation id="7961015016161918242">Niciodată</translation>
 <translation id="7977590112176369853">&lt;introdu interogarea&gt;</translation>
@@ -260,18 +292,22 @@
 <translation id="8824019021993735287">Momentan, Chrome nu a putut confirma cardul. Încearcă mai târziu.</translation>
 <translation id="8834246243508017242">Activați completarea automată folosind Agenda…</translation>
 <translation id="883848425547221593">Alte marcaje</translation>
+<translation id="884923133447025588">Nu a fost găsit niciun mecanism de revocare.</translation>
 <translation id="8866481888320382733">Eroare la analizarea setărilor pentru politică</translation>
 <translation id="8876793034577346603">Configurația rețelei nu a putut fi analizată.</translation>
 <translation id="8891727572606052622">Mod proxy nevalid.</translation>
 <translation id="8932102934695377596">Ora este setată în trecut</translation>
 <translation id="8940229512486821554">Execută comanda <ph name="EXTENSION_NAME" />: <ph name="SEARCH_TERMS" /></translation>
+<translation id="8971063699422889582">Certificatul serverului a expirat.</translation>
 <translation id="8988760548304185580">Introdu data de expirare și codul CVC alcătuit din 3 cifre înscris pe spatele cardului</translation>
 <translation id="9020542370529661692">Această pagină a fost tradusă în <ph name="TARGET_LANGUAGE" /></translation>
+<translation id="9049981332609050619">Ai încercat să accesezi <ph name="DOMAIN" />, dar serverul a prezentat un certificat nevalid.</translation>
 <translation id="9125941078353557812">Introdu codul CVC alcătuit din 3 cifre înscris pe spatele cardului</translation>
 <translation id="9137013805542155359">Afișează originalul</translation>
 <translation id="9148507642005240123">&amp;Anulați editarea</translation>
 <translation id="9154176715500758432">Rămâi pe pagină</translation>
 <translation id="9170848237812810038">&amp;Anulează</translation>
+<translation id="917450738466192189">Certificatul serverului nu este valid.</translation>
 <translation id="9207861905230894330">Articolul nu a fost adăugat.</translation>
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="935608979562296692">GOLEȘTE FORMULARUL</translation>

@@ -11,7 +11,6 @@ Kai kurios funkcijos gali būti nepasiekiamos ir nuostatų pakeitimai nebus išs
 <translation id="1073391069195728457">„Chrome“ – pranešimai</translation>
 <translation id="1104959162601287462">Apie „&amp;Chrome“ OS</translation>
 <translation id="110877069173485804">Tai jūsų „Chrome“</translation>
-<translation id="1150979032973867961">Šiam serveriui nepavyko patvirtinti, kad tai yra <ph name="DOMAIN" />; jo saugos sertifikatas nėra patikimas kompiuterio operacinei sistemai. Taip gali nutikti dėl netinkamos konfigūracijos ar dėl ryšį pertraukusio užgrobėjo.</translation>
 <translation id="1225016890511909183">„Chrome“ patikimai saugos jūsų informaciją, kad nebereikėtų jos vėl įvesti, bet ateityje atlikdami mokėjimus vis tiek turėsite patvirtinti kortelės saugos kodą.</translation>
 <translation id="123620459398936149">„Chrome“ OS negali sinchronizuoti duomenų. Atnaujinkite sinchronizavimo slaptafrazę.</translation>
 <translation id="127345590676626841">„Chrome“ atnaujinama automatiškai, todėl visada naudojatės naujausia versija. Baigus atsisiųsti, „Chrome“ bus paleista iš naujo ir galėsite pradėti ja naudotis.</translation>
@@ -37,7 +36,6 @@ Kai kurios funkcijos gali būti nepasiekiamos ir nuostatų pakeitimai nebus išs
 <translation id="174539241580958092">„Google Chrome“ negali sinchronizuoti duomenų, nes prisijungiant įvyko klaida.</translation>
 <translation id="1759301979429102118">Turėdami išsamią kontaktų informaciją galite greičiau užpildyti formas „Chrome“.</translation>
 <translation id="1759842336958782510">Chrome</translation>
-<translation id="1763864636252898013">Šiam serveriui nepavyko patvirtinti, kad tai yra <ph name="DOMAIN" />; jo saugos sertifikatas nėra patikimas įrenginio operacinei sistemai. Taip gali nutikti dėl netinkamos konfigūracijos ar dėl ryšį pertraukusio užgrobėjo.</translation>
 <translation id="1773601347087397504">Gauti su „Chrome“ OS naudojimu susijusios pagalbos</translation>
 <translation id="1818142563254268765">„Chrome“ nepavyko atsinaujinti į naujausią versiją, todėl negalite naudoti puikių naujų funkcijų ir saugos pataisymų. Reikia atnaujinti „Chrome“.</translation>
 <translation id="1877026089748256423">„Chrome“ versija yra pasenusi</translation>
@@ -110,7 +108,6 @@ Prisijungus bet kuriuo būdu, „Chrome“ informacija, pvz., žymės, istorija 
 </translation>
 <translation id="4367618624832907428">„Google Chrome“ nepavyksta pateikti tinklalapio, nes kompiuteris neprijungtas prie interneto.</translation>
 <translation id="4407807842708586359">„Google Chrome OS“</translation>
-<translation id="4424024547088906515">Šiam serveriui nepavyko patvirtinti, kad tai yra <ph name="DOMAIN" />; jo saugos sertifikatas nėra patikimas „Chrome“. Taip gali nutikti dėl netinkamos konfigūracijos ar dėl ryšį pertraukusio užgrobėjo.</translation>
 <translation id="4458285410772214805">Atsijunkite ir prisijunkite iš naujo, kad šis pakeitimas būtų pritaikytas.</translation>
 <translation id="4480040274068703980">„Chrome“ OS negali sinchronizuoti duomenų, nes prisijungiant įvyko klaida.</translation>
 <translation id="4513711165509885787">Išsami atsiskaitymo informacija išsaugota „Chrome“.</translation>

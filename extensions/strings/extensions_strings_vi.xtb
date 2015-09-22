@@ -21,12 +21,14 @@
 <translation id="388442998277590542">Không thể tải trang tùy chọn '<ph name="OPTIONS_PAGE" />'.</translation>
 <translation id="4115165561519362854">Quản trị viên của máy này yêu cầu <ph name="EXTENSION_NAME" /> có phiên bản tối thiểu của <ph name="EXTENSION_VERSION" />. Không thể kích hoạt phiên bản cho đến khi máy cập nhật lên phiên bản đó (hoặc phiên bản cao hơn).</translation>
 <translation id="4233778200880751280">Không thể tải trang giới thiệu '<ph name="ABOUT_PAGE" />'.</translation>
+<translation id="4434145631756268951">{0,select, single{Chọn thiết bị USB}multiple{Chọn thiết bị USB}other{UNUSED}}</translation>
 <translation id="4811956658694082538">Không thể cài đặt gói vì một quá trình tiện ích bị lỗi. Thử khởi động lại Chrome rồi thử lại.</translation>
 <translation id="4883436287898674711">Tất cả trang web <ph name="WEBSITE_1" /></translation>
 <translation id="5026754133087629784">Chế độ xem web: <ph name="WEBVIEW_TAG_NAME" /></translation>
 <translation id="5356315618422219272">Appview: <ph name="APPVIEW_TAG_NAME" /></translation>
 <translation id="5456409301717116725">Tiện ích này bao gồm tệp khóa '<ph name="KEY_PATH" />'. Bạn có thể không muốn thực hiện việc đó.</translation>
 <translation id="5627523580512561598">tiện ích <ph name="EXTENSION_NAME" /></translation>
+<translation id="5630931906013276297">{0,select, single{Chọn thiết bị HID}multiple{Chọn thiết bị HID}other{UNUSED}}</translation>
 <translation id="5960890139610307736">ExtensionView: <ph name="EXTENSIONVIEW_TAG_NAME" /></translation>
 <translation id="5972529113578162692">Quản trị viên của máy này yêu cầu cài đặt <ph name="EXTENSION_NAME" />. Không thể gỡ cài đặt tiện ích này.</translation>
 <translation id="6027032947578871493">Sản phẩm không xác định <ph name="PRODUCT_ID" /> từ <ph name="VENDOR_NAME" /> (số sê-ri <ph name="SERIAL_NUMBER" />)</translation>

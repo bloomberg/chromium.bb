@@ -5,7 +5,6 @@
 <translation id="10614374240317010">Aldri lagret</translation>
 <translation id="1061441684050139317">Chrome må ha tilgang til mikrofonen for å kunne dele den med dette nettstedet.</translation>
 <translation id="1080790410959514870">Du er i ferd med å logge av en konto som er administrert av <ph name="DOMAIN_NAME" />. Dette fører til at Chrome-data som er lagret på enheten, slettes. Dataene er imidlertid fortsatt lagret i Google-kontoen din.</translation>
-<translation id="1086169178231554178">SD-kortet er utilgjengelig.</translation>
 <translation id="1091134514807961917">Du er pålogget følgende Google-konto.</translation>
 <translation id="1095407227123756519">Legg til en konto for å få bokmerkene, loggen, passordene og de andre innstillingene dine på alle enhetene du bruker.</translation>
 <translation id="1098052486217676340">Ferdig</translation>
@@ -86,7 +85,6 @@
 <translation id="2351097562818989364">Oversettelsesinnstillingene dine er tilbakestilt.</translation>
 <translation id="2354750644801399986">Ikke spor</translation>
 <translation id="2359808026110333948">Fortsett</translation>
-<translation id="2360035970720276770">Kan bare laste ned nettadresser som begynner på «http» eller «https».</translation>
 <translation id="2381756643783702095">Spør før noe sendes (anbefales).</translation>
 <translation id="2387895666653383613">Tekstskalering</translation>
 <translation id="238909021488141516">Det oppsto en feil under nedlastingen av innholdet.</translation>
@@ -127,7 +125,6 @@
 <translation id="2960796085439532066">Copyright <ph name="YEAR" /> Google Inc. Med enerett.</translation>
 <translation id="2968755619301702150">Visningsprogram for sertifikater</translation>
 <translation id="2996809686854298943">Nettadresse kreves</translation>
-<translation id="3003595280608617736">Ikke noe SD-kort</translation>
 <translation id="3029704984691124060">Passordfrasene stemmer ikke overens</translation>
 <translation id="3039671569659952257">Slett mappen</translation>
 <translation id="3063601790762993062">Lagre videoen</translation>
@@ -232,6 +229,7 @@ Hvis du vil endre søkeordet, kan du trykke på det og holde for å merke det. H
 <translation id="4816465935029283692">Datatyper</translation>
 <translation id="4827948050554950725">Legg til et kredittkort</translation>
 <translation id="4836364883164334657">Tilkoblingen din til dette nettstedet er ikke privat. Hackere kan prøve å stjele informasjonen din (for eksempel bilder, passord, meldinger og kredittkortinformasjon) fra <ph name="DOMAIN_NAME" />.</translation>
+<translation id="4850886885716139402">Visning</translation>
 <translation id="4871370605780490696">Legg til bokmerke</translation>
 <translation id="4881695831933465202">Åpne</translation>
 <translation id="4885273946141277891">For mange Chrome-forekomster.</translation>
@@ -449,8 +447,6 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="7648422057306047504">Kryptér passord med Google-legitimasjonen din</translation>
 <translation id="7658239707568436148">Avbryt</translation>
 <translation id="7665369617277396874">Legg til konto</translation>
-<translation id="7711895876052978264">Dette nettstedet er i fullskjermmodus.
-Trykk på tilbake-knappen for å avslutte.</translation>
 <translation id="7764225426217299476">Legg til adresse</translation>
 <translation id="7765158879357617694">Flytt</translation>
 <translation id="7767746238359002192">Åpne siden for å lagre den lokalt</translation>
@@ -469,7 +465,6 @@ Trykk på tilbake-knappen for å avslutte.</translation>
 <translation id="7961015016161918242">Aldri</translation>
 <translation id="7963646190083259054">Leverandør:</translation>
 <translation id="7977858705483383621">Sikkert Søk</translation>
-<translation id="7981795308302452224">Nedlastingen kunne ikke startes.</translation>
 <translation id="7987073022710626672">Vilkår for bruk av Chrome</translation>
 <translation id="7989222512959629388">Lagrer …</translation>
 <translation id="7998918019931843664">Åpne lukkede faner igjen</translation>
@@ -482,7 +477,6 @@ Trykk på tilbake-knappen for å avslutte.</translation>
 <translation id="8073388330009372546">Åpne bildet i en ny fane</translation>
 <translation id="8084156870963450514">Logg på, så får du tilgang til alt du har på nettet, på alle enheter du bruker</translation>
 <translation id="8106211421800660735">Kredittkortnummer</translation>
-<translation id="8109148095642131923">Kunne ikke legge til nedlastet element i Nedlaster.</translation>
 <translation id="813082847718468539">Vis nettstedsinformasjon</translation>
 <translation id="8137558756159375272">Trykk for å søke sender det valgte ordet og den aktive siden som kontekst til Google Søk. Du kan slå av dette i <ph name="BEGIN_LINK" />Innstillinger<ph name="END_LINK" />.</translation>
 <translation id="8143660160623733249">Mappenavn</translation>
@@ -567,5 +561,4 @@ For å få nye lisenser må du koble deg til Internett og spille av innholdet du
 <translation id="969096075394517431">Endre språk</translation>
 <translation id="971774202801778802">Bokmerkenettadresse</translation>
 <translation id="983192555821071799">Lukk alle faner</translation>
-<translation id="988938288723502454">Nedlastingskatalogen kan ikke opprettes på SD-kort.</translation>
 </translationbundle>

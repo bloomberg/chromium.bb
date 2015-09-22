@@ -5,7 +5,6 @@
 <translation id="10614374240317010">פריטים שאף פעם לא נשמרו</translation>
 <translation id="1061441684050139317">‏Chrome זקוק לגישה למיקרופון כדי לשתף אותו עם האתר הזה.</translation>
 <translation id="1080790410959514870">‏אתה מתנתק מחשבון המנוהל על ידי <ph name="DOMAIN_NAME" />. הפעולה הזו תמחק את נתוני Chrome המאוחסנים במכשיר הזה, אבל הנתונים יישמרו בחשבון Google שלך.</translation>
-<translation id="1086169178231554178">‏כרטיס SD לא זמין</translation>
 <translation id="1091134514807961917">‏אתה מחובר לחשבון Google הבא.</translation>
 <translation id="1095407227123756519">הוסף חשבון כדי לקבל גישה אל הסימניות, ההיסטוריה, הסיסמאות והגדרות נוספות בכל המכשירים שברשותך.</translation>
 <translation id="1098052486217676340">הסתיים</translation>
@@ -86,7 +85,6 @@
 <translation id="2351097562818989364">הגדרות התרגום שלך אופסו.</translation>
 <translation id="2354750644801399986">'אל תעקוב'</translation>
 <translation id="2359808026110333948">המשך</translation>
-<translation id="2360035970720276770">‏ניתן להוריד רק כתובות אתרים המתחילות ב-"http" או "https".</translation>
 <translation id="2381756643783702095">שאל לפני שליחה (מומלץ)</translation>
 <translation id="2387895666653383613">שינוי גודל טקסט</translation>
 <translation id="238909021488141516">אירעה שגיאה בזמן הורדת התוכן.</translation>
@@ -127,7 +125,6 @@
 <translation id="2960796085439532066">‏זכויות יוצרים <ph name="YEAR" /> Google Inc. כל הזכויות שמורות.</translation>
 <translation id="2968755619301702150">מציג האישורים</translation>
 <translation id="2996809686854298943">דרושה כתובת אתר</translation>
-<translation id="3003595280608617736">‏אין כרטיס SD</translation>
 <translation id="3029704984691124060">ביטויי הסיסמה אינם תואמים</translation>
 <translation id="3039671569659952257">מחק תיקייה</translation>
 <translation id="3063601790762993062">שמור סרטון</translation>
@@ -232,6 +229,7 @@
 <translation id="4816465935029283692">סוגי נתונים</translation>
 <translation id="4827948050554950725">הוסף כרטיס אשראי</translation>
 <translation id="4836364883164334657">החיבור אל האתר הזה אינו פרטי. ייתכן שתוקפים מנסים לגנוב את המידע שלך (לדוגמה: תמונות, סיסמאות, הודעות וכרטיסי אשראי) מ-<ph name="DOMAIN_NAME" />.</translation>
+<translation id="4850886885716139402">הצג</translation>
 <translation id="4871370605780490696">הוסף סימניה</translation>
 <translation id="4881695831933465202">פתח</translation>
 <translation id="4885273946141277891">‏מספר בלתי נתמך של מופעי Chrome.</translation>
@@ -449,8 +447,6 @@
 <translation id="7648422057306047504">‏הצפן סיסמאות באמצעות פרטי הכניסה שלך ל-Google</translation>
 <translation id="7658239707568436148">ביטול</translation>
 <translation id="7665369617277396874">הוסף חשבון</translation>
-<translation id="7711895876052978264">האתר הזה עבר לתצוגת מסך מלא.
-לחץ על לחצן 'הקודם' כדי לצאת.</translation>
 <translation id="7764225426217299476">הוסף כתובת</translation>
 <translation id="7765158879357617694">העבר</translation>
 <translation id="7767746238359002192">בקר בעמוד כדי לשמור באופן לא מקוון</translation>
@@ -469,7 +465,6 @@
 <translation id="7961015016161918242">אף פעם</translation>
 <translation id="7963646190083259054">ספק:</translation>
 <translation id="7977858705483383621">חיפוש בטוח</translation>
-<translation id="7981795308302452224">התחלת ההורדה נכשלה</translation>
 <translation id="7987073022710626672">‏התנאים וההגבלות של Chrome</translation>
 <translation id="7989222512959629388">שומר…</translation>
 <translation id="7998918019931843664">פתח מחדש כרטיסייה שנסגרה</translation>
@@ -482,7 +477,6 @@
 <translation id="8073388330009372546">פתח את התמונה בכרטיסייה חדשה</translation>
 <translation id="8084156870963450514">היכנס כדי לגשת לכל הדברים שלך באינטרנט מכל מכשיר</translation>
 <translation id="8106211421800660735">מספר כרטיס אשראי</translation>
-<translation id="8109148095642131923">לא ניתן היה להוסיף למנהל ההורדות את הפריט שהורדת.</translation>
 <translation id="813082847718468539">הצג נתוני אתר</translation>
 <translation id="8137558756159375272">‏'גע כדי לחפש' שולח אל חיפוש Google את המילה הנבחרת, יחד עם הדף הנוכחי בתור הקשר. תוכל לכבות זאת ב<ph name="BEGIN_LINK" />הגדרות<ph name="END_LINK" />.</translation>
 <translation id="8143660160623733249">שם תיקייה</translation>
@@ -524,7 +518,7 @@
 <translation id="8719023831149562936">לא ניתן להעביר תוכן מהכרטיסייה הנוכחית</translation>
 <translation id="8725066075913043281">נסה שוב</translation>
 <translation id="8730621377337864115">בוצע</translation>
-<translation id="8737542153238017984">הדף שנשמר אינו זמין במצב לא מקוון. האחסון כמעט מלא.</translation>
+<translation id="8737542153238017984">הדף שנשמר אינו זמין במצב לא מקוון. מיצית כמעט את כל נפח האחסון.</translation>
 <translation id="8793430725658173476">העתק כתובת אתר</translation>
 <translation id="8798099450830957504">ברירת מחדל</translation>
 <translation id="8820817407110198400">סימניות</translation>
@@ -555,7 +549,7 @@
 <translation id="9133515669113036225">אפס את פרטי הכניסה של המכשיר</translation>
 <translation id="9137013805542155359">הצג מקור</translation>
 <translation id="9156605176886108508">אין תיקיות של סימניות</translation>
-<translation id="9192643434065497760">‏הפעל את Bluetooth ב<ph name="BEGIN_LINK" />הגדרות מכשיר<ph name="END_LINK" /> כדי לאפשר התאמה.</translation>
+<translation id="9192643434065497760">‏הפעל את Bluetooth ב<ph name="BEGIN_LINK" />הגדרות המכשיר<ph name="END_LINK" /> כדי לאפשר התאמה.</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="932327136139879170">בית</translation>
 <translation id="938850635132480979">שגיאה: <ph name="ERROR_CODE" /></translation>
@@ -565,5 +559,4 @@
 <translation id="969096075394517431">החלף שפות</translation>
 <translation id="971774202801778802">כתובת אתר של סימניה</translation>
 <translation id="983192555821071799">סגור את כל הכרטיסיות</translation>
-<translation id="988938288723502454">‏לא ניתן ליצור ספריית הורדה בכרטיס SD.</translation>
 </translationbundle>

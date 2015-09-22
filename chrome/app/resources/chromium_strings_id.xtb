@@ -6,7 +6,6 @@
 <translation id="1115445892567829615">Chromium tidak dapat menyinkronkan data Anda. Perbarui frasa sandi Sinkronisasi Anda.</translation>
 <translation id="1144202035120576837"><ph name="SITE" /> biasanya menggunakan enkripsi untuk melindungi informasi Anda. Saat Chromium mencoba menyambung ke <ph name="SITE" /> saat ini, situs web mengembalikan kredensial yang salah
 dan tidak biasa. Bisa jadi penyerang berpura-pura menjadi <ph name="SITE" />, atau layar masuk Wi-Fi mengganggu sambungan. Informasi Anda masih aman karena Chromium menghentikan sambungan sebelum data apa pun dipertukarkan.</translation>
-<translation id="1150979032973867961">Server ini tidak dapat membuktikan bahwa ini adalah <ph name="DOMAIN" />; sertifikat keamanannya tidak dipercaya oleh sistem operasi komputer Anda. Hal ini dapat disebabkan oleh kesalahan konfigurasi atau penyerang memotong sambungan Anda.</translation>
 <translation id="1174473354587728743">Berbagi komputer? Kini Anda dapat menyiapkan Chromium seperti yang Anda inginkan.</translation>
 <translation id="1185134272377778587">Tentang Chromium</translation>
 <translation id="1221340462641866827">OS Chromium tidak mendukung peluncuran aplikasi eksternal untuk menangani tautan <ph name="SCHEME" />. Tautan yang diminta adalah <ph name="PROTOLINK" />.</translation>
@@ -26,7 +25,6 @@ dan tidak biasa. Bisa jadi penyerang berpura-pura menjadi <ph name="SITE" />, at
 <translation id="1708666629004767631">Tersedia versi Chromium yang baru dan lebih aman.</translation>
 <translation id="1725059042853530269"><ph name="FILE_NAME" /> dapat membahayakan pengalaman penjelajahan Anda sehingga Chromium telah memblokirnya.</translation>
 <translation id="1745962126679160932">Chromium akan menyimpan informasi Anda dengan aman sehingga Anda tidak harus mengetiknya lagi, namun Anda harus memverifikasi kode keamanan kartu untuk pembayaran di masa mendatang.</translation>
-<translation id="1763864636252898013">Server ini tidak dapat membuktikan bahwa ini adalah <ph name="DOMAIN" />; sertifikat keamanannya tidak dipercaya oleh sistem operasi perangkat Anda. Hal ini dapat disebabkan oleh kesalahan konfigurasi atau penyerang memotong sambungan Anda.</translation>
 <translation id="1774152462503052664">Jalankan Chromium di latar belakang</translation>
 <translation id="1779356040007214683">Agar Chromium lebih aman, kami menonaktifkan beberapa ekstensi yang tidak tercantum dalam <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> dan mungkin telah ditambahkan tanpa sepengetahuan Anda.</translation>
 <translation id="1808667845054772817">Pasang ulang Chromium</translation>
@@ -137,7 +135,6 @@ dan tidak biasa. Bisa jadi penyerang berpura-pura menjadi <ph name="SITE" />, at
 <translation id="4987820182225656817">Tamu dapat menggunakan Chromium tanpa meninggalkan apa pun.</translation>
 <translation id="4994636714258228724">Tambahkan diri Anda ke Chromium</translation>
 <translation id="5032989939245619637">Simpan detail di Chromium</translation>
-<translation id="5094747076828555589">Server ini tidak dapat membuktikan bahwa ini adalah <ph name="DOMAIN" />; sertifikat keamanannya tidak dipercaya oleh Chromium. Hal ini dapat disebabkan oleh kesalahan konfigurasi atau penyerang memotong sambungan Anda.</translation>
 <translation id="5358375970380395591">Anda masuk dengan akun yang dikelola dan memberikan administratornya kontrol atas profil Chromium Anda. Data Chromium Anda, seperti aplikasi, bookmark, riwayat, sandi, dan setelan lain selamanya akan dikaitkan ke <ph name="USER_NAME" />. Anda dapat menghapus data ini melalui Dasbor Akun Google, namun Anda tidak akan dapat mengaitkan data ini dengan akun yang lain. <ph name="LEARN_MORE" /></translation>
 <translation id="5398878173008909840">Tersedia Chromium versi baru.</translation>
 <translation id="5427571867875391349">Setel Chromium sebagai browser default</translation>

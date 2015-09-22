@@ -162,7 +162,6 @@
 <translation id="1205489148908752564">Просмотр и изменение белого списка пользователей</translation>
 <translation id="1208421848177517699">Транслитерация (namaste → નમસ્તે)</translation>
 <translation id="1209796539517632982">Автоматические серверы имен</translation>
-<translation id="121201262018556460">Вы попытались перейти на сайт <ph name="DOMAIN" />, но сервер предоставил сертификат с ненадежным ключом. Возможно, частный ключ был взломан злоумышленником, а сервер выдает себя за другой (вероятно, это атака).</translation>
 <translation id="1215411991991485844">Добавлено фоновое приложение</translation>
 <translation id="121827551500866099">Все скачанные файлы…</translation>
 <translation id="122082903575839559">Алгоритм подписи сертификатов</translation>
@@ -173,7 +172,6 @@
 <translation id="1225177025209879837">Обработка запроса...</translation>
 <translation id="1225211345201532184">5-й объект на панели запуска</translation>
 <translation id="1225404570112441414">Добавьте этот сайт на панель запуска, чтобы он всегда был у вас под рукой.</translation>
-<translation id="1226375067743171974">Включает экспериментальную анимацию при касании в Material Design.</translation>
 <translation id="1227507814927581609">При подключении к "<ph name="DEVICE_NAME" />" произошла ошибка аутентификации.</translation>
 <translation id="1231728991993914119">Включить оповещение о выходе для размещаемых приложений</translation>
 <translation id="1232569758102978740">Без имени</translation>
@@ -276,7 +274,6 @@
 <translation id="1399648040768741453">Раскладка телугу (фонетическая)</translation>
 <translation id="1401874662068168819">Джин-Йе</translation>
 <translation id="140250605646987970">Телефон обнаружен. К сожалению, функция Smart Lock доступна только на устройствах с Android 5.0 и следующих версий. &lt;a&gt;Подробнее…&lt;/a&gt;</translation>
-<translation id="140495917068443520">Чернильное пятно (квадрат)</translation>
 <translation id="1405126334425076373">Курсор</translation>
 <translation id="140520891692800925"><ph name="PROFILE_DISPLAY_NAME" /> (контролируемый профиль)</translation>
 <translation id="1406500794671479665">Проверка…</translation>
@@ -291,7 +288,6 @@
 <translation id="1413809658975081374">Ошибка нарушения конфиденциальности</translation>
 <translation id="1414648216875402825">Вы устанавливаете нестабильную версию <ph name="PRODUCT_NAME" />, которая содержит разрабатываемые в настоящий момент функции. Будьте осторожны: возможны сбои и неизвестные ошибки.</translation>
 <translation id="1415990189994829608">Расширение "<ph name="EXTENSION_NAME" />" (ID <ph name="EXTENSION_ID" />) запрещено использовать в ходе сеанса этого типа</translation>
-<translation id="1416599368291956791">{1,plural, =1{Не удалось подтвердить, что это сервер <ph name="DOMAIN" />. Его сертификат безопасности вступит в силу завтра. Возможно, сервер настроен неправильно или кто-то пытается перехватить ваши данные.}one{Не удалось подтвердить, что это сервер <ph name="DOMAIN" />. Его сертификат безопасности вступит в силу через # день. Возможно, сервер настроен неправильно или кто-то пытается перехватить ваши данные.}few{Не удалось подтвердить, что это сервер <ph name="DOMAIN" />. Его сертификат безопасности вступит в силу через # дня. Возможно, сервер настроен неправильно или кто-то пытается перехватить ваши данные.}many{Не удалось подтвердить, что это сервер <ph name="DOMAIN" />. Его сертификат безопасности вступит в силу через # дней. Возможно, сервер настроен неправильно или кто-то пытается перехватить ваши данные.}other{Не удалось подтвердить, что это сервер <ph name="DOMAIN" />. Его сертификат безопасности вступит в силу через # дня. Возможно, сервер настроен неправильно или кто-то пытается перехватить ваши данные.}}</translation>
 <translation id="1416836038590872660">EAP-MD5</translation>
 <translation id="1420684932347524586">Не удалось создать случайный закрытый ключ RSA.</translation>
 <translation id="1422780722984745882">Получено несколько раздельных заголовков Location. Это запрещено в целях защиты от атак с разделением HTTP-запросов.</translation>
@@ -505,7 +501,6 @@
 <translation id="168328519870909584">Через сайт <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> на ваш компьютер могут установить вредоносное ПО для кражи или удаления личной информации (например, фотографий, паролей, сообщений и реквизитов банковских карт).</translation>
 <translation id="1685141618403317602">Отменить регистрацию</translation>
 <translation id="1685944703056982650">Исключения для курсора</translation>
-<translation id="168841957122794586">Сертификат сервера содержит ненадежный криптографический ключ.</translation>
 <translation id="1691063574428301566">После установки обновления компьютер будет перезагружен.</translation>
 <translation id="1691608011302982743">Вы извлекли устройство слишком рано.</translation>
 <translation id="1692602667007917253">Ошибка</translation>
@@ -803,14 +798,12 @@
 <translation id="215753907730220065">Выход из полноэкранного режима</translation>
 <translation id="2157875535253991059">Эта страница отображается в полноэкранном режиме.</translation>
 <translation id="216169395504480358">Добавить подключение по Wi-Fi...</translation>
-<translation id="2163418719022613650">Не использовать дисплейные файлы Slimming Paint при визуализации. Учтите, что если вы отметите оба пункта (включить и отключить Slimming Paint), то файлы будут использоваться.</translation>
 <translation id="2163470535490402084">Чтобы войти в аккаунт на устройстве <ph name="DEVICE_TYPE" />, требуется подключение к Интернету.</translation>
 <translation id="2164862903024139959">Вьетнамская раскладка (TCVN)</translation>
 <translation id="2167276631610992935">JavaScript</translation>
 <translation id="2168214441502403371">Персидская раскладка</translation>
 <translation id="2168725742002792683">Расширения файлов</translation>
 <translation id="2169062631698640254">Выполнить вход</translation>
-<translation id="2171101176734966184">Вы попытались перейти на сайт <ph name="DOMAIN" />, однако сертификат, предоставленный сервером, подписан с использованием ненадежного алгоритма. Это означает, что учетные данные безопасности могут быть поддельными, а сервер может выдавать себя за другой (вероятно, это атака).</translation>
 <translation id="2175607476662778685">Панель быстрого запуска</translation>
 <translation id="2176045495080708525">Установлены следующие расширения:</translation>
 <translation id="2177950615300672361">Вкладка в режиме инкогнито: <ph name="TAB_NAME" /></translation>
@@ -830,7 +823,6 @@
 <translation id="220138918934036434">Скрыть кнопку</translation>
 <translation id="2202898655984161076">Возникла проблема с перечнем принтеров. Возможно, некоторые принтеры не удалось зарегистрировать при помощи <ph name="CLOUD_PRINT_NAME" />.</translation>
 <translation id="2204034823255629767">Просмотр и изменение вводимого текста</translation>
-<translation id="2208105671494637223">Французская BEPO-клавиатура</translation>
 <translation id="2208158072373999562">ZIP-архив</translation>
 <translation id="2208311832613497869">Чтобы просмотреть эту страницу, попросите разрешения у родителей.</translation>
 <translation id="220858061631308971">Введите PIN-код для устройства "<ph name="DEVICE_NAME" />":</translation>
@@ -903,7 +895,6 @@
 <translation id="2278988676849463018">Раскладка каннада (фонетическая)</translation>
 <translation id="2279770628980885996">При попытке сервера выполнить запрос возникла неожиданная ситуация.</translation>
 <translation id="2280486287150724112">Правое поле</translation>
-<translation id="2280845493034384933">Включает обратный порядок прокрутки области просмотра в некоторых ситуациях. Например, при масштабировании двумя пальцами сначала будет прокручена визуальная область просмотра, а затем ее макет.</translation>
 <translation id="2282146716419988068">Процесс GPU</translation>
 <translation id="2282872951544483773">Недоступные расширения</translation>
 <translation id="2283117145434822734">F6</translation>
@@ -913,7 +904,6 @@
 <translation id="2291643155573394834">Следующая вкладка</translation>
 <translation id="2294358108254308676">Установить <ph name="PRODUCT_NAME" />?</translation>
 <translation id="2296019197782308739">Метод EAP:</translation>
-<translation id="229702904922032456">Срок действия корневого или промежуточного сертификата истек.</translation>
 <translation id="2299552784526456191">Помечать незащищенные источники как нейтральные</translation>
 <translation id="2301382460326681002">Недействительный корневой каталог расширения.</translation>
 <translation id="230155334948463882">Добавить карту?</translation>
@@ -973,7 +963,6 @@
 <translation id="2384596874640104496">Сингальская раскладка</translation>
 <translation id="238526402387145295">Перейти на сайт <ph name="SITE" /> невозможно, так как он использует <ph name="BEGIN_LINK" />протокол HSTS<ph name="END_LINK" />. Это могло произойти из-за ошибки сети или атаки на сайт. Скорее всего, он заработает через некоторое время.</translation>
 <translation id="2385700042425247848">Название службы:</translation>
-<translation id="2386255080630008482">Сертификат сервера отозван.</translation>
 <translation id="2386631145847373156">Вы не вошли в систему.</translation>
 <translation id="2386784019642337415">Чтение и изменение поисковых систем (пользовательских и выбранных по умолчанию)</translation>
 <translation id="2390045462562521613">Забыть эту сеть</translation>
@@ -996,7 +985,6 @@
 <translation id="2403091441537561402">Шлюз:</translation>
 <translation id="241082044617551207">Неизвестный плагин</translation>
 <translation id="2412835451908901523">Введите восьмизначный ключ для разблокировки PIN-кода, предоставленный оператором <ph name="CARRIER_ID" />.</translation>
-<translation id="2413528052993050574">Не удалось подтвердить, что это сервер <ph name="DOMAIN" />. Его сертификат безопасности может быть отозван. Возможно, сервер настроен неправильно или кто-то пытается перехватить ваши данные.</translation>
 <translation id="2413749388954403953">Изменение пользовательского интерфейса закладок</translation>
 <translation id="2415294094132942411">Добавить на рабочий стол...</translation>
 <translation id="242184683889529951">Отключение потоковой обработки входных событий, связанных с прокруткой, и передача этой функции основному источнику. Может вызвать проблемы с прокруткой на большинстве сайтов. Только для тестирования.</translation>
@@ -1040,14 +1028,13 @@
 <translation id="2478830106132467213">Разблокировать устройство <ph name="DEVICE_TYPE" />, только когда телефон находится на расстоянии вытянутой руки</translation>
 <translation id="2479780645312551899">Однократно запустить все плагины</translation>
 <translation id="2480626392695177423">Переключение полного/половинного режима ширины пунктуации</translation>
-<translation id="2481332092278989943">Добавить на полку</translation>
+<translation id="2481332092278989943">Добавить на панель запуска</translation>
 <translation id="2482878487686419369">Оповещения</translation>
 <translation id="2485056306054380289">Сертификат сервера ЦС:</translation>
 <translation id="2489316678672211764">Плагин "<ph name="PLUGIN_NAME" />" не отвечает.</translation>
 <translation id="2489428929217601177">за вчерашний день</translation>
 <translation id="2489435327075806094">Скорость указателя:</translation>
 <translation id="2489918096470125693">Добавить &amp;папку</translation>
-<translation id="2491120439723279231">Сертификат сервера содержит ошибки.</translation>
 <translation id="249113932447298600">Устройство <ph name="DEVICE_LABEL" /> не поддерживается.</translation>
 <translation id="2493021387995458222">Выбрать "по одному слову"</translation>
 <translation id="249303669840926644">Не удалось завершить регистрацию</translation>
@@ -1223,7 +1210,6 @@
 <translation id="2726306725839966998">Не скрывать значки для закрытия неактивных вкладок, расположенных каскадом</translation>
 <translation id="2726934403674109201">(всего: <ph name="COUNT" />)</translation>
 <translation id="2727712005121231835">Фактический размер</translation>
-<translation id="2728127805433021124">Сертификат сервера подписан с использованием ненадежного алгоритма.</translation>
 <translation id="273093730430620027">Этой странице разрешен доступ к вашей камере.</translation>
 <translation id="2731392572903530958">Открыть закрытое окно</translation>
 <translation id="2731700343119398978">Подождите…</translation>
@@ -1383,13 +1369,11 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="2909946352844186028">Похоже, вы подключились к другой сети.</translation>
 <translation id="2911372483530471524">Пространства имен PID</translation>
 <translation id="2912905526406334195"><ph name="HOST" /> запрашивает разрешение на использование вашего микрофона.</translation>
-<translation id="2915500479781995473">Не удалось подтвердить, что это сервер <ph name="DOMAIN" />. Срок действия его сертификата безопасности истек. Возможно, сервер настроен неправильно или кто-то пытается перехватить ваши данные. Обратите внимание, что на компьютере установлено время <ph name="CURRENT_TIME" />. Если оно неправильное, измените его и обновите страницу.</translation>
 <translation id="2916073183900451334">Нажатие клавиши Tab на веб-странице приводит к выделению ссылок, а также полей формы</translation>
 <translation id="2916974515569113497">Этот параметр позволяет создавать составные слои для фиксированных элементов. Обратите внимание, что при этом для элементов должны создаваться контексты стека.</translation>
 <translation id="2918322085844739869">4</translation>
 <translation id="2918583523892407401">Использовать тестовую среду для синхронизации Chrome</translation>
 <translation id="291886813706048071">Ищите информацию с помощью <ph name="SEARCH_ENGINE" /></translation>
-<translation id="2922350208395188000">Не удается проверить сертификат сервера.</translation>
 <translation id="2923240520113693977">Эстонский</translation>
 <translation id="29232676912973978">Настроить подключения</translation>
 <translation id="2923469375796950815">Отключить новый Распаковщик ZIP</translation>
@@ -1404,7 +1388,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="2937174152333875430">Включить синхронизацию Панели запуска приложений</translation>
 <translation id="2938225289965773019">переход по ссылкам <ph name="PROTOCOL" /></translation>
 <translation id="2938685643439809023">Монгольский</translation>
-<translation id="2941952326391522266">Не удалось подтвердить, что это сервер <ph name="DOMAIN" />. Его сертификат безопасности относится к <ph name="DOMAIN2" />. Возможно, сервер настроен неправильно или кто-то пытается перехватить ваши данные.</translation>
 <translation id="2942290791863759244">Немецкая раскладка (NEO 2)</translation>
 <translation id="2943400156390503548">Слайды</translation>
 <translation id="2946119680249604491">Добавить подключение</translation>
@@ -1447,7 +1430,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="300544934591011246">Предыдущий пароль</translation>
 <translation id="3005723025932146533">Открыть сохраненную копию</translation>
 <translation id="3009300415590184725">Отменить настройку мобильной передачи данных?</translation>
-<translation id="3009507051774857955">Включить Slimming Paint</translation>
 <translation id="3009779501245596802">Индексированные базы данных</translation>
 <translation id="3010279545267083280">Пароль удален</translation>
 <translation id="3011284594919057757">О платформе Flash</translation>
@@ -1495,7 +1477,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="3075874217500066906">Для запуска процесса Powerwash необходимо перезагрузить устройство. После этого появится запрос подтверждения.</translation>
 <translation id="3076677906922146425">Разрешить всем создавать профили пользователей в Chrome</translation>
 <translation id="3076909148546628648"><ph name="DOWNLOAD_RECEIVED" />/<ph name="DOWNLOAD_TOTAL" /></translation>
-<translation id="3077195744811823826">Теперь на рабочем столе</translation>
 <translation id="3077734595579995578">shift</translation>
 <translation id="3081104028562135154">Увеличить</translation>
 <translation id="3082374807674020857"><ph name="PAGE_TITLE" /> - <ph name="PAGE_URL" /></translation>
@@ -1551,6 +1532,7 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="3144135466825225871">Не удалось переместить CRX-файл. Убедитесь, что он не используется.</translation>
 <translation id="31454997771848827">Домены группы</translation>
 <translation id="3147485256806412701">Этот сайт использует новый общий домен верхнего уровня.</translation>
+<translation id="3149510190863420837">Приложения Chrome</translation>
 <translation id="3150927491400159470">Аппаратная перезагрузка</translation>
 <translation id="315116470104423982">Мобильное подключение</translation>
 <translation id="315141861755603168">В набор "<ph name="BUNDLE_NAME" />" входят следующие приложения:</translation>
@@ -1605,7 +1587,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="3224239078034945833">Канадская (многоязычная)</translation>
 <translation id="3225319735946384299">Подписывание кода</translation>
 <translation id="3225579507836276307">Стороннее расширение заблокировало доступ к этой веб-странице.</translation>
-<translation id="3225919329040284222">Сертификат не соответствует встроенным параметрам определенных сайтов с высоким уровнем безопасности.</translation>
 <translation id="3226128629678568754">Чтобы повторно ввести данные, необходимые для загрузки страницы, нажмите "Обновить".</translation>
 <translation id="3227137524299004712">микрофон</translation>
 <translation id="32279126412636473">Обновить (⌘ + R)</translation>
@@ -1828,14 +1809,12 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="3517839692979918726"><ph name="APP_NAME" /> хочет предоставить доступ к вашему экрану. Выберите окно, которое вы хотите показать.</translation>
 <translation id="3518086201899641494">Уведомления об адаптивных порталах</translation>
 <translation id="3519867315646775981">Транслитерация (shalom ← שלום)</translation>
-<translation id="3520155764286810028">Чернильное пятно (круг)</translation>
 <translation id="3522159121915794564">Позволяет пользователям включить коллекцию цепочек недействительных сертификатов TLS/SSL.</translation>
 <translation id="3522708245912499433">Португальский</translation>
 <translation id="3523642406908660543">Предупреждать, что сайт пытается использовать плагин для доступа к компьютеру (рекомендуется)</translation>
 <translation id="3527085408025491307">Папка</translation>
 <translation id="3527276236624876118">Создан контролируемый профиль: <ph name="USER_DISPLAY_NAME" />.</translation>
 <translation id="3528033729920178817">Эта страница отслеживает ваше местоположение.</translation>
-<translation id="3528171143076753409">Сертификат сервера не является доверенным.</translation>
 <translation id="3528498924003805721">Ярлыки</translation>
 <translation id="3530751398950974194">Обновить кодовую фразу</translation>
 <translation id="3531250013160506608">Поле для ввода пароля</translation>
@@ -1897,7 +1876,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="3601395307734599350">Все ваши расширения теперь здесь</translation>
 <translation id="3603385196401704894">Канадская (французская)</translation>
 <translation id="3603622770190368340">Получение сетевого сертификата</translation>
-<translation id="3603690020645187079">Французская BEPO-клавиатура</translation>
 <translation id="3605780360466892872">Бизнесмен</translation>
 <translation id="3608454375274108141">F10</translation>
 <translation id="3608576286259426129">Предварительный просмотр фото</translation>
@@ -2004,7 +1982,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="3726463242007121105">Невозможно получить доступ к устройству, так как его файловая система не поддерживается.</translation>
 <translation id="3726527440140411893">При посещении этой страницы на вашем компьютере были сохранены следующие файлы cookie:</translation>
 <translation id="3727187387656390258">Просмотреть всплывающее окно</translation>
-<translation id="3727884750434605207">Разрешить замену встроенных специальных возможностей Android с помощью вставки скриптов</translation>
 <translation id="3728067901555601989">Одноразовый пароль:</translation>
 <translation id="3730639321086573427">Локальные места назначения</translation>
 <translation id="3733127536501031542">SSL-сервер с повышением</translation>
@@ -2043,7 +2020,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="3776796446459804932">Это расширение нарушает правила Интернет-магазина Chrome.</translation>
 <translation id="3778152852029592020">Скачивание отменено.</translation>
 <translation id="3778740492972734840">&amp;Инструменты разработчика</translation>
-<translation id="3779689521379218195">Анимация чернильного пятна в Material Design</translation>
 <translation id="378312418865624974">Просмотр уникального идентификатора этого компьютера</translation>
 <translation id="3783640748446814672">alt</translation>
 <translation id="3785308913036335955">Отображение ярлыков приложений</translation>
@@ -2120,7 +2096,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="3872687746103784075">Отладка Native Client с помощью GDB</translation>
 <translation id="3873139305050062481">Проверить элемент</translation>
 <translation id="3878840326289104869">Создание контролируемого профиля</translation>
-<translation id="3882882270042324158">Разрешить вставку скриптов для обеспечения специальных возможностей</translation>
 <translation id="3888118750782905860">Управление настройками клиентов</translation>
 <translation id="3893536212201235195">Чтение и изменение настроек специальных возможностей</translation>
 <translation id="3893630138897523026">ChromeVox (голосовое сопровождение)</translation>
@@ -2229,7 +2204,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="404493185430269859">Поисковая система по умолчанию</translation>
 <translation id="4047112090469382184">Почему это безопасно?</translation>
 <translation id="4047345532928475040">Н/Д</translation>
-<translation id="4048441759170415907">Использовать дисплейные файлы Slimming Paint при визуализации. Учтите, что если вы отметите оба пункта (включить и отключить Slimming Paint), то файлы будут использоваться.</translation>
 <translation id="404928562651467259">Внимание!</translation>
 <translation id="4052120076834320548">Мелкий</translation>
 <translation id="4054376378714379870">Включить экспериментальные функции защиты</translation>
@@ -2453,7 +2427,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="4372884569765913867">1x1</translation>
 <translation id="4375035964737468845">Открывание скачанных файлов</translation>
 <translation id="4377039040362059580">Темы и обои</translation>
-<translation id="4377125064752653719">Вы попытались перейти на сайт <ph name="DOMAIN" />, однако сертификат, предоставленный сервером, был отозван издателем. Это означает, что учетные данные безопасности, предоставленные сервером, не заслуживают доверия. Возможно, вы имеете дело со злоумышленниками.</translation>
 <translation id="4377301101584272308">Разрешить всем сайтам отслеживать мое местоположение</translation>
 <translation id="4377363674125277448">Возникла проблема с сертификатом сервера.</translation>
 <translation id="4378154925671717803">Телефон</translation>
@@ -2634,7 +2607,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="4672319956099354105">Действительный сертификат</translation>
 <translation id="4672657274720418656">Сжать страницу</translation>
 <translation id="46733879594767046">Включить крупные значки на странице быстрого доступа</translation>
-<translation id="467662567472608290">Не удалось подтвердить, что это сервер <ph name="DOMAIN" />. Его сертификат безопасности содержит ошибки. Возможно, сервер настроен неправильно или кто-то пытается перехватить ваши данные.</translation>
 <translation id="4677772697204437347">Память GPU</translation>
 <translation id="4680322106555328717">Вы недавно разрешили запуск небезопасного контента (скриптов или окон iframe) на этом сайте.</translation>
 <translation id="4681260323810445443">Вы не авторизованы для доступа к веб-странице по адресу <ph name="URL" />. Может понадобиться выполнить вход.</translation>
@@ -2709,7 +2681,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="4764029864566166446">Обновить плагин...</translation>
 <translation id="4764776831041365478">Веб-страница по адресу <ph name="URL" />, возможно, временно недоступна или постоянно перемещена по новому адресу.</translation>
 <translation id="4768698601728450387">Обрезать изображение</translation>
-<translation id="4771973620359291008">Произошла неизвестная ошибка.</translation>
 <translation id="4773696473262035477">Все <ph name="SAVED_PASSWORDS_LINK" /> доступны вам в любом браузере.</translation>
 <translation id="477518548916168453">Сервер не поддерживает функции, необходимые для выполнения этого запроса.</translation>
 <translation id="4776917500594043016">Пароль для адреса электронной почты <ph name="USER_EMAIL_ADDRESS" /></translation>
@@ -2914,7 +2885,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="5081055027309504756">Тестовая среда Seccomp-BPF</translation>
 <translation id="5085162214018721575">Проверка наличия обновлений</translation>
 <translation id="5086082738160935172">Устройства ввода (HID)</translation>
-<translation id="5087286274860437796">Сертификат сервера не действителен в настоящее время.</translation>
 <translation id="5087864757604726239">назад</translation>
 <translation id="508794495705880051">Добавить карту…</translation>
 <translation id="5088534251099454936">PKCS #1 SHA-512 с шифрованием RSA</translation>
@@ -3157,7 +3127,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="540296380408672091">Всегда блокировать файлы cookie на сайте <ph name="HOST" /></translation>
 <translation id="5409029099497331039">Удивите меня</translation>
 <translation id="5409341371246664034">с помощью <ph name="PROVIDER" /></translation>
-<translation id="540969355065856584">Не удалось подтвердить, что это сервер <ph name="DOMAIN" />. Его сертификат безопасности может быть недействителен в настоящее время. Возможно, сервер настроен неправильно или кто-то пытается перехватить ваши данные.</translation>
 <translation id="5411472733320185105">Не использовать прокси-сервер для подключения к следующим хостам и доменам:</translation>
 <translation id="5411769601840150972">Дата и время устанавливаются автоматически.</translation>
 <translation id="5412637665001827670">Болгарская раскладка</translation>
@@ -3203,7 +3172,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="5457113250005438886">Недопустимые данные</translation>
 <translation id="5457459357461771897">Доступ к фотографиям, музыке и другим медиафайлам на вашем компьютере, а также их удаление</translation>
 <translation id="5457599981699367932">Войти в гостевой режим</translation>
-<translation id="5457858494714903578">Не удалось установить ненадежное расширение с идентификатором <ph name="IMPORT_ID" /></translation>
 <translation id="5458214261780477893">Дворак</translation>
 <translation id="5463275305984126951">Содержание <ph name="LOCATION" /></translation>
 <translation id="5463856536939868464">Меню со скрытыми закладками</translation>
@@ -3448,7 +3416,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="5803531701633845775">Выбрать фразы в конце без перемещения курсора</translation>
 <translation id="5804241973901381774">Разрешения</translation>
 <translation id="580571955903695899">Упорядочить по заголовкам</translation>
-<translation id="5808265053346186459">Активирует фазу 2 Slimming Paint (создание слоев на основе дисплейных файлов, оптимизация визуализации с помощью ветвей и т. д.). Для работы флага требуется включить Slimming Paint.</translation>
 <translation id="580886651983547002"><ph name="PRODUCT_NAME" />
         не может получить доступ к сайту. Обычно это происходит из-за проблем в сети,
         но также может являться следствием неправильной настройки брандмауэра или прокси-сервера.</translation>
@@ -3561,7 +3528,7 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="5959471481388474538">Сеть недоступна</translation>
 <translation id="5963026469094486319">Выбрать тему</translation>
 <translation id="5963453369025043595"><ph name="NUM_HANDLES" /> (макс. <ph name="NUM_KILOBYTES_LIVE" />)</translation>
-<translation id="5965403572731919803">Добавить на полку...</translation>
+<translation id="5965403572731919803">Добавить на панель запуска...</translation>
 <translation id="5965661248935608907">Кроме того, расширение изменило страницу, которая отображается при нажатии кнопки "Главная страница", и поисковую систему, используемую по умолчанию при вводе запроса в омнибокс.</translation>
 <translation id="5966707198760109579">Неделя</translation>
 <translation id="5967271952920681214">https://passwords.google.com/?hl=<ph name="GRITLANGCODE_1" /></translation>
@@ -3692,8 +3659,7 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="6147020289383635445">Произошла ошибка предварительного просмотра печати.</translation>
 <translation id="614998064310228828">Модель устройства:</translation>
 <translation id="6150853954427645995">Чтобы работать с этим файлом в офлайн-режиме, подключитесь к Интернету, нажмите правой кнопкой мыши на документ и выберите вариант "<ph name="OFFLINE_CHECKBOX_NAME" />".</translation>
-<translation id="6151323131516309312">Нажмите <ph name="SEARCH_KEY" /> для поиска <ph name="SITE_NAME" /></translation>
-<translation id="6151417162996330722">Слишком долгий срок действия сертификата, предоставленного сервером.</translation>
+<translation id="6151323131516309312">Нажмите <ph name="SEARCH_KEY" /> для поиска на <ph name="SITE_NAME" /></translation>
 <translation id="6151559892024914821">Включить сенсорное перетаскивание</translation>
 <translation id="615216289547575801">Разрешает запускать экспериментальные приложения, которые не нужно устанавливать в браузере Chrome, прямо из Интернет-магазина Chrome. Для работы функции требуется включить экспериментальную Панель запуска приложений.</translation>
 <translation id="6154697846084421647">Вы вошли в этот аккаунт</translation>
@@ -3946,7 +3912,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="6527303717912515753">Поделиться</translation>
 <translation id="653019979737152879">Синхронизация файла "<ph name="FILE_NAME" />"…</translation>
 <translation id="6533019874004191247">Неподдерживаемый URL.</translation>
-<translation id="6533965071487181681">Через URL chrome://md-settings/ загружается страница настроек Material Design (если доступно).</translation>
 <translation id="6535131196824081346">Эта ошибка может возникать при подключении к безопасному серверу (HTTPS).
         Это означает, что сервер пытается настроить безопасное подключение, однако
         вследствие неправильной настройки подключение не может быть защищено.
@@ -4082,7 +4047,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="6736329909263487977"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />]</translation>
 <translation id="6739254200873843030">Срок действия карты истек. Проверьте дату или укажите новую карту.</translation>
 <translation id="6740369132746915122">Если вы готовы подвергнуть риску свои личные данные, то можете <ph name="BEGIN_LINK" />перейти на зараженный сайт<ph name="END_LINK" />.</translation>
-<translation id="674375294223700098">Неизвестная ошибка сертификата сервера.</translation>
 <translation id="6745592621698551453">Обновить сейчас</translation>
 <translation id="6745994589677103306">Ничего не делать</translation>
 <translation id="674632704103926902">Включить перетаскивание нажатием</translation>
@@ -4180,6 +4144,7 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="6897140037006041989">User Agent</translation>
 <translation id="6898440773573063262">Автозапуск киоск-приложений на этом устройстве разрешен</translation>
 <translation id="6898699227549475383">Организация (O)</translation>
+<translation id="6900284862687837908">Фоновое приложение: <ph name="BACKGROUND_APP_URL" /></translation>
 <translation id="6904344821472985372">Запретить доступ к файлам</translation>
 <translation id="6906268095242253962">Чтобы продолжить, подключитесь к Интернету</translation>
 <translation id="6909461304779452601">Невозможно добавить приложение, расширение или пользовательский скрипт с этого сайта.</translation>
@@ -4212,7 +4177,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="6955446738988643816">Просмотр всплывающего окна</translation>
 <translation id="695755122858488207">Отключенное положение переключателя</translation>
 <translation id="6957703620025723294">Поддержка экспериментальных функций canvas</translation>
-<translation id="6957887021205513506">Возможно, сертификат сервера фальсифицирован.</translation>
 <translation id="696036063053180184">3 Set (Sebeolsik Noshift)</translation>
 <translation id="696203921837389374">Синхронизировать по мобильной сети</translation>
 <translation id="6964308487066031935">Добавить папки в расширение "<ph name="EXTENSION" />"?</translation>
@@ -4275,7 +4239,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="7022303817801823406">Для подключения к этому сайту используется действительный сертификат сервера.</translation>
 <translation id="7022562585984256452">Главная страница настроена.</translation>
 <translation id="702373420751953740">Версия PRL:</translation>
-<translation id="7024180072211179766">Отображение значка "Режим чтения" на панели инструментов</translation>
 <translation id="7024867552176634416">Выберите съемный накопитель</translation>
 <translation id="7025190659207909717">Управление передачей данных в мобильных сетях</translation>
 <translation id="7025325401470358758">Следующая панель</translation>
@@ -4291,7 +4254,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="7042418530779813870">Вст&amp;авить из буфера и найти</translation>
 <translation id="7047998246166230966">Указатель</translation>
 <translation id="7048141481140415714">Включать и выключать режим TouchView нажатием клавиш Ctrl + Alt + Shift + 8</translation>
-<translation id="7050187094878475250">Вы попытались перейти на сайт <ph name="DOMAIN" />, но сервер предоставил не заслуживающий доверия сертификат со слишком долгим сроком действия.</translation>
 <translation id="7051943809462976355">Поиск мыши…</translation>
 <translation id="7052237160939977163">Отправлять данные отслеживания производительности</translation>
 <translation id="7052500709156631672">Шлюз или прокси-сервер получил недопустимый ответ от вышестоящего сервера.</translation>
@@ -4388,7 +4350,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="720210938761809882">Страница заблокирована</translation>
 <translation id="7205869271332034173">SSID:</translation>
 <translation id="7206693748120342859">Скачивание плагина <ph name="PLUGIN_NAME" />…</translation>
-<translation id="7207163335165373476">{1,plural, =1{Не удалось подтвердить, что это сервер <ph name="DOMAIN" />. Срок действия его сертификата безопасности истек вчера. Возможно, сервер настроен неправильно или кто-то пытается перехватить ваши данные. Обратите внимание, что на компьютере установлено время <ph name="CURRENT_DATE" />. Если оно неправильное, измените его и обновите страницу.}one{Не удалось подтвердить, что это сервер <ph name="DOMAIN" />. Срок действия его сертификата безопасности истек # день назад. Возможно, сервер настроен неправильно или кто-то пытается перехватить ваши данные. Обратите внимание, что на компьютере установлено время <ph name="CURRENT_DATE" />. Если оно неправильное, измените его и обновите страницу.}few{Не удалось подтвердить, что это сервер <ph name="DOMAIN" />. Срок действия его сертификата безопасности истек # дня назад. Возможно, сервер настроен неправильно или кто-то пытается перехватить ваши данные. Обратите внимание, что на компьютере установлено время <ph name="CURRENT_DATE" />. Если оно неправильное, измените его и обновите страницу.}many{Не удалось подтвердить, что это сервер <ph name="DOMAIN" />. Срок действия его сертификата безопасности истек # дней назад. Возможно, сервер настроен неправильно или кто-то пытается перехватить ваши данные. Обратите внимание, что на компьютере установлено время <ph name="CURRENT_DATE" />. Если оно неправильное, измените его и обновите страницу.}other{Не удалось подтвердить, что это сервер <ph name="DOMAIN" />. Срок действия его сертификата безопасности истек # дня назад. Возможно, сервер настроен неправильно или кто-то пытается перехватить ваши данные. Обратите внимание, что на компьютере установлено время <ph name="CURRENT_DATE" />. Если оно неправильное, измените его и обновите страницу.}}</translation>
 <translation id="7208384892394620321">На этом сайте карты American Express не принимаются.</translation>
 <translation id="7209475358897642338">Выберите язык</translation>
 <translation id="7210998213739223319">Имя пользователя.</translation>
@@ -4579,7 +4540,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="7469894403370665791">Автоматически подключаться к этой сети</translation>
 <translation id="747114903913869239">Ошибка: не удается расшифровать расширение</translation>
 <translation id="7472639616520044048">Типы MIME:</translation>
-<translation id="7473810335848400503">Поменять порядок прокрутки области просмотра на обратный</translation>
 <translation id="7473891865547856676">Пропустить</translation>
 <translation id="747459581954555080">Восстановить все</translation>
 <translation id="7474889694310679759">Канадская раскладка (английский)</translation>
@@ -4611,7 +4571,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="7507930499305566459">Сертификат ответчика о состоянии</translation>
 <translation id="7508545000531937079">Слайд-шоу</translation>
 <translation id="7509179828847922845">Подключение к <ph name="HOST_NAME" /> прервано.</translation>
-<translation id="7511149348717996334">Включить настройки Material Design</translation>
 <translation id="7511955381719512146">Возможно, вам нужно перейти на страницу <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" /> сети Wi-Fi.</translation>
 <translation id="7513996269498582533">Находить самостоятельно</translation>
 <translation id="751507702149411736">Белорусский</translation>
@@ -4653,7 +4612,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="756445078718366910">Открыть окно браузера</translation>
 <translation id="7564847347806291057">Завершить процесс</translation>
 <translation id="7566723889363720618">F12</translation>
-<translation id="7567204685887185387">Не удалось подтвердить, что это сервер <ph name="DOMAIN" />. Его сертификат безопасности мог быть выдан обманным путем. Возможно, сервер настроен неправильно или кто-то пытается перехватить ваши данные.</translation>
 <translation id="7567293639574541773">П&amp;росмотр кода элемента</translation>
 <translation id="7568790562536448087">Обновление</translation>
 <translation id="7570496663860904543">При ошибке загрузки страницы показывать кнопку, с помощью которой можно загрузить неактивную локальную копию, если она сохранена в кеше браузера. Если сделать кнопку основной, она будет располагаться на самом видном месте страницы ошибки, а если второстепенной – то рядом с кнопкой перезагрузки.</translation>
@@ -4669,7 +4627,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="7587108133605326224">Балтийская</translation>
 <translation id="7589461650300748890">Осторожно!</translation>
 <translation id="7589661784326793847">Подождите…</translation>
-<translation id="7592362899630581445">Сертификат сервера не соответствует ограничениям в отношении имен.</translation>
 <translation id="7595547011743502844"><ph name="ERROR" /> (код ошибки <ph name="ERROR_CODE" />).</translation>
 <translation id="7596831438341298034">ОК, импортировать</translation>
 <translation id="7596913374482479303">Выберите поисковую систему для омнибокса.</translation>
@@ -4776,7 +4733,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="7754704193130578113">Всегда указывать место для скачивания</translation>
 <translation id="7756363132985736290">Такой сертификат уже существует.</translation>
 <translation id="7760004034676677601">Другая стартовая страница?</translation>
-<translation id="7761701407923456692">Сертификат сервера не соответствует URL.</translation>
 <translation id="7765158879357617694">Переместить</translation>
 <translation id="7766807826975222231">Узнать больше</translation>
 <translation id="7767646430896201896">Варианты:</translation>
@@ -4787,7 +4743,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="7772127298218883077">О <ph name="PRODUCT_NAME" /></translation>
 <translation id="7773726648746946405">Хранение сеансов</translation>
 <translation id="7774497835322490043">Включить отладочную программу-"заглушку" GDB. В этом случае приложение Native Client останавливается при запуске и ожидает, пока к нему не будет прикреплен объект nacl-gdb (из NaCl SDK).</translation>
-<translation id="7775325654940954648">Не удается показать страницу. Закройте ненужные приложения и вкладки, чтобы освободить память устройства.</translation>
 <translation id="7779249319235708104">Осторожно, фишинг!</translation>
 <translation id="7781069478569868053">Страница быстрого доступа</translation>
 <translation id="7781335840981796660">Все пользовательские аккаунты и локальные данные будут удалены.</translation>
@@ -4832,7 +4787,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="7828106701649804503">Обозначает ширину изображения по умолчанию.</translation>
 <translation id="782886543891417279">Возможно, вам нужно перейти на страницу входа сети Wi-Fi (<ph name="WIFI_NAME" />).</translation>
 <translation id="7831368056091621108">чтобы сохранить это приложение, историю и другие настройки Chrome на всех своих устройствах.</translation>
-<translation id="783140679984912140">Отключить Slimming Paint</translation>
 <translation id="7839051173341654115">Просмотреть/сохранить медиафайлы</translation>
 <translation id="7839192898639727867">Идентификатор ключа субъекта сертификата</translation>
 <translation id="7839580021124293374">3</translation>
@@ -4904,7 +4858,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="7928710562641958568">Извлечь устройство</translation>
 <translation id="7935864848518524631">Связь типов файлов с приложениями.</translation>
 <translation id="7938594894617528435">Сейчас не в Сети</translation>
-<translation id="7938958445268990899">Сертификат сервера еще не действителен.</translation>
 <translation id="7939412583708276221">Все равно продолжить</translation>
 <translation id="7939997691108949385">Менеджер сможет устанавливать ограничения и настройки для этого контролируемого профиля на странице <ph name="MANAGEMENT_URL" />.</translation>
 <translation id="7943385054491506837">США (Colemak)</translation>
@@ -5479,7 +5432,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="8731332457891046104">Отмена регистрации устройства <ph name="DEVICE_TYPE" /></translation>
 <translation id="8732030010853991079">Активируйте расширение, нажав на этот значок.</translation>
 <translation id="8732212173949624846">Чтение и изменение истории просмотров на всех устройствах, где вы используете этот аккаунт</translation>
-<translation id="8733326791725507133">Включить экспериментальный Credential Manager API. Мы не гарантируем сохранность ваших паролей. Используйте эту функцию с осторожностью!</translation>
 <translation id="8734073480934656039">Если вы включите эту опцию, киоск-приложения смогут запускаться автоматически при включении компьютера</translation>
 <translation id="8736288397686080465">Этот сайт был обновлен в фоновом режиме</translation>
 <translation id="8737260648576902897">Установить Adobe Reader</translation>
@@ -5551,7 +5503,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="8846141544112579928">Поиск клавиатуры…</translation>
 <translation id="8847988622838149491">USB</translation>
 <translation id="8848709220963126773">Переключение режима с помощью клавиши Shift</translation>
-<translation id="884923133447025588">Не обнаружен механизм отзыва.</translation>
 <translation id="8852366862412129888">На сайте присутствует контент, загружаемый по HTTP.</translation>
 <translation id="8852742364582744935">Добавлены следующие приложения и расширения:</translation>
 <translation id="885381502874625531">Белорусская раскладка клавиатуры</translation>
@@ -5560,7 +5511,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="8859057652521303089">Выберите язык:</translation>
 <translation id="8859174528519900719">Субфрейм: <ph name="SUBFRAME_SITE" /></translation>
 <translation id="8860454412039442620">Электронные таблицы Excel</translation>
-<translation id="8861743108205592297">Добавляет на панель инструментов кнопку для преобразования текущей страницы в более удобный для чтения формат.</translation>
 <translation id="8863489667196658337">Включает новую систему создания приложений-закладок.</translation>
 <translation id="8870318296973696995">Главная страница</translation>
 <translation id="8870413625673593573">Недавно закрытые</translation>
@@ -5638,7 +5588,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="8965037249707889821">Введите старый пароль</translation>
 <translation id="8965697826696209160">Недостаточно свободного места.</translation>
 <translation id="8968527460726243404">Системное средство записи изображений в Chrome OS</translation>
-<translation id="8971063699422889582">Сертификат сервера устарел.</translation>
 <translation id="89720367119469899">Отключить</translation>
 <translation id="8972513834460200407">Уточните у администратора сети, не блокирует ли брандмауэр скачивание файлов с серверов Google.</translation>
 <translation id="8972727166872864532">Чтобы просмотреть эту страницу, попросите разрешения у родителей.</translation>
@@ -5707,7 +5656,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="904451693890288097">Введите пароль для устройства "<ph name="DEVICE_NAME" />":</translation>
 <translation id="904949795138183864">Веб-страница по адресу <ph name="URL" /> больше не существует.</translation>
 <translation id="9049835026521739061">Хангыль</translation>
-<translation id="9049981332609050619">Вы попытались открыть <ph name="DOMAIN" />, однако представленный сервером сертификат недействителен.</translation>
 <translation id="9050666287014529139">Кодовая фраза</translation>
 <translation id="9052208328806230490">Вы зарегистрировали принтеры в <ph name="CLOUD_PRINT_NAME" /> с использованием аккаунта <ph name="EMAIL" /></translation>
 <translation id="9053965862400494292">Произошел сбой во время синхронизации.</translation>
@@ -5793,7 +5741,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="9169664750068251925">Всегда блокировать на этом сайте</translation>
 <translation id="9170848237812810038">&amp;Отменить</translation>
 <translation id="9170884462774788842">Одна из программ на вашем компьютере установила тему, которая может влиять на работу Chrome.</translation>
-<translation id="917450738466192189">Сертификат сервера недействителен</translation>
 <translation id="9177499212658576372">Вы подключены к сети <ph name="NETWORK_TYPE" />.</translation>
 <translation id="9177556055091995297">Настроить карты</translation>
 <translation id="917861274483335838">Настройки блокирования плагинов...</translation>

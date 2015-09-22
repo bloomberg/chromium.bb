@@ -10,7 +10,6 @@ Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifica
 <translation id="1073391069195728457">Notifications – Chrome</translation>
 <translation id="1104959162601287462">À propos de &amp;Chrome OS</translation>
 <translation id="110877069173485804">Voici votre Chrome</translation>
-<translation id="1150979032973867961">Impossible de vérifier sur le serveur qu'il s'agit bien du domaine <ph name="DOMAIN" />, car son certificat de sécurité n'est pas considéré comme fiable par le système d'exploitation de votre ordinateur. Cela peut être dû à une mauvaise configuration ou bien à l'interception de votre connexion par un pirate informatique.</translation>
 <translation id="1225016890511909183">Chrome va stocker les informations vous concernant de manière sécurisée. Vous n'aurez donc pas besoin de les saisir à nouveau. En revanche, vous devrez valider le code de sécurité de votre carte lors de vos prochains paiements.</translation>
 <translation id="123620459398936149">Impossible de synchroniser vos données dans Chrome OS. Veuillez mettre à jour votre phrase secrète de synchronisation.</translation>
 <translation id="127345590676626841">Chrome est automatiquement mis à jour pour vous permettre de toujours disposer de la dernière version. Une fois le téléchargement terminé, Chrome redémarre et vous pouvez de nouveau l'utiliser.</translation>
@@ -36,7 +35,6 @@ Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifica
 <translation id="174539241580958092">Impossible de synchroniser vos données dans Google Chrome, car une erreur s'est produite lors de la connexion.</translation>
 <translation id="1759301979429102118">Les coordonnées de vos contacts peuvent vous aider à remplir les formulaires plus rapidement dans Chrome.</translation>
 <translation id="1759842336958782510">Chrome</translation>
-<translation id="1763864636252898013">Impossible de vérifier sur le serveur qu'il s'agit bien du domaine <ph name="DOMAIN" />, car son certificat de sécurité n'est pas considéré comme fiable par le système d'exploitation de votre appareil. Cela peut être dû à une mauvaise configuration ou bien à l'interception de votre connexion par un pirate informatique.</translation>
 <translation id="1773601347087397504">Obtenir de l'aide sur l'utilisation de Chrome OS</translation>
 <translation id="1818142563254268765">La mise à jour de Chrome a échoué. Vous n'utilisez pas la dernière version, qui vous permet de bénéficier de nouvelles fonctionnalités pratiques et de correctifs de sécurité. Vous devez mettre Chrome à jour.</translation>
 <translation id="1877026089748256423">Version de Chrome obsolète</translation>
@@ -109,7 +107,6 @@ Si vous vous connectez quand même, toutes les informations Chrome, comme les fa
 </translation>
 <translation id="4367618624832907428">Cette page Web ne peut pas s'afficher dans Google Chrome, car votre ordinateur n'est pas connecté à Internet.</translation>
 <translation id="4407807842708586359">Système d'exploitation Google Chrome</translation>
-<translation id="4424024547088906515">Impossible de vérifier sur le serveur qu'il s'agit bien du domaine <ph name="DOMAIN" />, car son certificat de sécurité n'est pas considéré comme fiable par Chrome. Cela peut être dû à une mauvaise configuration ou bien à l'interception de votre connexion par un pirate informatique.</translation>
 <translation id="4458285410772214805">Pour que cette modification soit prise en compte, veuillez vous déconnecter, puis vous reconnecter.</translation>
 <translation id="4480040274068703980">Impossible de synchroniser vos données dans Chrome OS, car une erreur s'est produite lors de la connexion.</translation>
 <translation id="4513711165509885787">Vos informations de facturation ont été enregistrées dans Chrome.</translation>

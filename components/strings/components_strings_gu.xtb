@@ -8,7 +8,9 @@
 <translation id="111844081046043029">શું તમે ખરેખર આ પૃષ્ઠ છોડવા માંગો છો?</translation>
 <translation id="112840717907525620">નીતિ કેશ ઑકે</translation>
 <translation id="1132774398110320017">Chrome સ્વતઃભરણ સેટિંગ્સ...</translation>
+<translation id="1150979032973867961">આ સર્વર સાબિત કરી શક્યું નથી કે તે <ph name="DOMAIN" /> છે; તેનું સુરક્ષા પ્રમાણપત્ર તમારા કમ્પ્યુટરની ઑપરેટિંગ સિસ્ટમ દ્વારા વિશ્વસનીય નથી. આ કોઈ ખોટી ગોઠવણીને કારણે થયું હશે અથવા કોઈ હુમલાખોર તમારા કનેક્શનને અટકાવી રહ્યો છે.</translation>
 <translation id="1152921474424827756"><ph name="URL" /> ની <ph name="BEGIN_LINK" />કેશ કરેલ કૉપિ<ph name="END_LINK" /> ઍક્સેસ કરો</translation>
+<translation id="121201262018556460">તમે <ph name="DOMAIN" /> સુધી પહોંચવાનો પ્રયાસ કર્યો, પણ પ્રમાણપત્ર રજૂ કરતા સર્વર પાસે નબળી કી છે. હુમલાખોરે ખાનગી કી તોડી હોઈ શકે છે, અને બને કે સર્વર તમારું અપેક્ષિત સર્વર ન હોય (તમે કોઈ હુમલાખોર સાથે વાર્તાલાપ કરી રહ્યાં હોઈ શકો છો).</translation>
 <translation id="1227224963052638717">અજ્ઞાત નીતિ.</translation>
 <translation id="1227633850867390598">મૂલ્ય છુપાવો</translation>
 <translation id="1228893227497259893">ખોટો અસ્તિત્વ ઓળખકર્તા</translation>
@@ -22,8 +24,10 @@
 <translation id="1639239467298939599">લોડ કરી રહ્યું છે</translation>
 <translation id="1640180200866533862">વપરાશકર્તા નીતિઓ</translation>
 <translation id="1644184664548287040">નેટવર્ક ગોઠવણી અમાન્ય છે અને આયાત કરી શકાઇ નથી.</translation>
+<translation id="168841957122794586">સર્વર પ્રમાણપત્ર એક નબળી ક્રિપ્ટોગ્રાફિક કી ધરાવે છે.</translation>
 <translation id="1693754753824026215"><ph name="SITE" /> પરનું પૃષ્ઠ કહે છે:</translation>
 <translation id="1734864079702812349">Amex</translation>
+<translation id="1763864636252898013">આ સર્વર સાબિત કરી શક્યું નથી કે તે <ph name="DOMAIN" /> છે; તેનું સુરક્ષા પ્રમાણપત્ર તમારા ઉપકરણની ઑપરેટિંગ સિસ્ટમ દ્વારા વિશ્વસનીય નથી. આ કોઈ ખોટી ગોઠવણીને કારણે થયું હશે અથવા કોઈ હુમલાખોર તમારા કનેક્શનને અટકાવી રહ્યો છે.</translation>
 <translation id="1821930232296380041">અમાન્ય વિનંતી અથવા વિનંતી પરિમાણો</translation>
 <translation id="1853748787962613237">લેખ પ્રદર્શિત કરવામાં નિષ્ફળ થયાં.</translation>
 <translation id="1871208020102129563">પ્રોક્સી નિયત કરેલા પ્રોક્સી સર્વરનો ઉપયોગ કરવા માટે સેટ કરેલી છે, .pac સ્ક્રિપ્ટ URL નથી.</translation>
@@ -46,20 +50,25 @@
 <translation id="2113977810652731515">કાર્ડ</translation>
 <translation id="2114841414352855701">અવગણ્યું કારણ કે તે <ph name="POLICY_NAME" /> દ્વારા ઓવરરાઇડ થયું હતું.</translation>
 <translation id="213826338245044447">મોબાઇલ બુકમાર્ક્સ</translation>
+<translation id="2171101176734966184">તમે <ph name="DOMAIN" /> પર પહોંચવાનો પ્રયાસ કર્યો, પરંતુ સર્વરે નબળા હસ્તાક્ષર અલ્ગોરિધમનો ઉપયોગ કરીને હસ્તાક્ષરિત કરેલું પ્રમાણપત્ર પ્રસ્તુત કર્યું. આનો અર્થ એ છે કે સર્વરે પ્રસ્તુત કરેલા સુરક્ષા પ્રમાણપત્રો બનાવટી હોઈ શકે છે અને તે સર્વર તમારું અપેક્ષિત સર્વર (તમે કોઈ હુમલાખોર સાથે વાર્તાલાપ કરી શકો છો) ન પણ હોય.</translation>
 <translation id="2181821976797666341">નીતિઓ</translation>
 <translation id="2212735316055980242">નીતિ મળી નથી</translation>
 <translation id="2213606439339815911">પ્રવિષ્ટિઓનું આનયન કરી રહ્યાં છે...</translation>
 <translation id="225207911366869382">આ નીતિ માટે આ મૂલ્યને નાપસંદ કરેલું છે.</translation>
 <translation id="2262243747453050782">HTTP ભૂલ</translation>
 <translation id="2270192940992995399">લેખ શોધવામાં નિષ્ફળ થયાં.</translation>
+<translation id="229702904922032456">રૂટ અથવા મધ્યવર્તી પ્રમાણપત્રની સમય-સીમા સમાપ્ત થઈ.</translation>
 <translation id="2328300916057834155"><ph name="ENTRY_INDEX" /> અનુક્રમણિકા પર અમાન્ય બુકમાર્ક અવગ્ણ્યો</translation>
 <translation id="2354001756790975382">અન્ય બુકમાર્ક્સ</translation>
 <translation id="2359808026110333948">ચાલુ રાખો</translation>
 <translation id="2367567093518048410">સ્તર</translation>
+<translation id="2386255080630008482">સર્વરનું પ્રમાણપત્ર રદ કરવામાં આવ્યું છે.</translation>
 <translation id="2392959068659972793">કોઈ કિંમત સેટ નહીં સાથે નીતિઓ બતાવો</translation>
 <translation id="2396249848217231973">&amp;કાઢી નાખવું પૂર્વવત્‌ કરો</translation>
+<translation id="2413528052993050574">આ સર્વર સાબિત કરી શક્યું નથી કે તે <ph name="DOMAIN" /> છે; તેનું સુરક્ષા પ્રમાણપત્ર રદબાતલ થયું હશે. આ કોઈ ખોટી ગોઠવણીને કારણે થયું હશે અથવા કોઈ હુમલાખોર તમારા કનેક્શનને અટકાવી રહ્યો છે.</translation>
 <translation id="2455981314101692989">આ વેબપૃષ્ઠે આ ફોર્મનું આપમેળે ભરણ અક્ષમ કર્યું છે.</translation>
 <translation id="2479410451996844060">અમાન્ય શોધ URL.</translation>
+<translation id="2491120439723279231">સર્વરના પ્રમાણપત્રમાં ભૂલો છે.</translation>
 <translation id="2495083838625180221">JSON વિશ્લેશક</translation>
 <translation id="2498091847651709837">નવું કાર્ડ સ્કૅન કરો</translation>
 <translation id="2556876185419854533">&amp;સંપાદિત કરવું પૂર્વવત્‌ કરો</translation>
@@ -70,10 +79,14 @@
 <translation id="2639739919103226564">સ્થિતિ:</translation>
 <translation id="2704283930420550640">મૂલ્ય ફોર્મેટથી મેળ ખાતું  નથી.</translation>
 <translation id="2721148159707890343">વિનંતી સફળ થઇ</translation>
+<translation id="2728127805433021124">સર્વરનું પ્રમાણપત્ર એક નબળા હસ્તાક્ષર અલ્ગોરિધમનો ઉપયોગ કરીને હસ્તાક્ષરિત કરેલું છે.</translation>
 <translation id="2774256287122201187">તમે ચાલુ રાખી શકો છો. જો તમે પૃષ્ઠ પર ચાલુ રહો છો, તો આ ચેતવણી પાંચ મિનિટ માટે ફરીથી દેખાશે નહીં.</translation>
 <translation id="277499241957683684">ઉપકરણ રેકોર્ડ ખૂટે છે</translation>
 <translation id="2835170189407361413">ફોર્મ સાફ કરો</translation>
 <translation id="2855922900409897335">તમારું <ph name="CREDIT_CARD" /> ચકાસો</translation>
+<translation id="2915500479781995473">આ સર્વર સાબિત કરી શક્યું નથી કે તે <ph name="DOMAIN" /> છે; તેના સુરક્ષા પ્રમાણપત્રની સમયસીમા સમાપ્ત થઈ છે. આ કોઈ ગેરગોઠવણના કારણે થયું છે અથવા કોઈ હુમલાખોર તમારા કનેક્શનને અટકાવી રહ્યો છે. તમારા કમ્પ્યુટરની ઘડિયાળ હાલમાં <ph name="CURRENT_TIME" /> પર સેટ છે. શું તે બરાબર છે? જો નહીં, તો તમારે તમારા સિસ્ટમની ઘડિયાળને ઠીક કરવી જોઈએ અને તે પછી આ પૃષ્ઠને ફરી તાજું કરો.</translation>
+<translation id="2922350208395188000">સર્વરનું પ્રમાણપત્ર તપાસી શકાતું નથી.</translation>
+<translation id="2941952326391522266">આ સર્વર સાબિત કરી શક્યું નથી કે તે <ph name="DOMAIN" /> છે; તેનું સુરક્ષા પ્રમાણપત્ર <ph name="DOMAIN2" /> નું છે. આ કોઈ ખોટી ગોઠવણીને કારણે થયું હશે અથવા કોઈ હુમલાખોર તમારા કનેક્શનને અટકાવી રહ્યો છે.</translation>
 <translation id="2958431318199492670">નેટવર્ક ગોઠવણી ONC માનકનું પાલન કરતી નથી. ગોઠવણીના ભાગો આયાત કરી શકાશે નહીં.</translation>
 <translation id="2972581237482394796">&amp;ફરી કરો</translation>
 <translation id="3010559122411665027">"<ph name="ENTRY_INDEX" />" એન્ટ્રીને સૂચિબદ્ધ કરો: <ph name="ERROR" /></translation>
@@ -84,9 +97,11 @@
 <translation id="3169472444629675720">Discover</translation>
 <translation id="3174168572213147020">આઇલેન્ડ</translation>
 <translation id="3219579145727097045">તમારા કાર્ડની આગળની બાજુ પરથી સમાપ્તિ તારીખ અને 4-અંકનો CVC દાખલ કરો</translation>
+<translation id="3225919329040284222">સર્વર એક પ્રમાણપત્ર પ્રસ્તુત કરે છે જે બિલ્ટ-ઇન અપેક્ષાઓ સાથે મેળ ખાતું નથી. આ અપેક્ષાઓમાં તમને સુરક્ષિત રાખવા માટે અમુક ચોક્કસ, ઉચ્ચ-સુરક્ષા વેબસાઇટ્સનો સમાવેશ થાય છે.</translation>
 <translation id="3228969707346345236">ભાષાંતર નિષ્ફળ રહ્યું કારણ કે પૃષ્ઠ પહેલાથી જ <ph name="LANGUAGE" /> માં છે.</translation>
 <translation id="3270847123878663523">&amp;પુનઃક્રમાંકિત કરવું પૂર્વવત્ કરો</translation>
 <translation id="333371639341676808">આ પૃષ્ઠને વધારાનાં સંવાદો બનાવવાથી રોકો.</translation>
+<translation id="3340978935015468852">સેટિંગ્સ</translation>
 <translation id="3369192424181595722">ઘડિયાળ ભૂલ</translation>
 <translation id="3369366829301677151">તમારું <ph name="CREDIT_CARD" /> અપડેટ કરો અને ચકાસો</translation>
 <translation id="337363190475750230">જોગવાઈ દૂર કરી</translation>
@@ -97,6 +112,7 @@
 <translation id="3450660100078934250">MasterCard</translation>
 <translation id="3452404311384756672">આનયન અંતરાલ:</translation>
 <translation id="3462200631372590220">વિગતવાર છુપાવો</translation>
+<translation id="3528171143076753409">સર્વરનું પ્રમાણપત્ર વિશ્વસનીય નથી.</translation>
 <translation id="3542684924769048008">આ માટે પાસવર્ડનો ઉપયોગ કરો:</translation>
 <translation id="3583757800736429874">&amp;ખસેડવું ફરી કરો</translation>
 <translation id="3623476034248543066">કિંમત બતાવો</translation>
@@ -126,13 +142,18 @@
 <translation id="4269787794583293679">(કોઇ વપરાશકર્તાનામ નથી)</translation>
 <translation id="4300246636397505754">પેરેન્ટ સૂચનો</translation>
 <translation id="4372948949327679948">અપેક્ષિત <ph name="VALUE_TYPE" /> મૂલ્ય.</translation>
+<translation id="4377125064752653719">તમે <ph name="DOMAIN" /> પર પહોંચવાનો પ્રયાસ કર્યો, પણ સર્વર દ્વારા પ્રસ્તુત કરવામાં આવેલું પ્રમાણપત્ર તેના રજૂકર્તા દ્વારા જ રદ કરવામાં આવ્યું છે. આનો અર્થ છે કે સર્વરે પ્રસ્તુત કરેલા સુરક્ષા પ્રમાણપત્રો પૂર્ણપણે વિશ્વસનીય નથી. તમે કોઈ હુમલાખોર જોડે વાત કરતા હોઈ શકો છો.</translation>
+<translation id="4424024547088906515">આ સર્વર સાબિત કરી શક્યું નથી કે તે <ph name="DOMAIN" /> છે; તેનું સુરક્ષા પ્રમાણપત્ર Chrome દ્વારા વિશ્વસનીય નથી. આ કોઈ ખોટી ગોઠવણીને કારણે થયું હશે અથવા કોઈ હુમલાખોર તમારા કનેક્શનને અટકાવી રહ્યો છે.</translation>
 <translation id="443673843213245140">પ્રોક્સીનો ઉપયોગ અક્ષમ કરેલો છે પણ એક સ્પષ્ટ પ્રોક્સી ગોઠવણી ઉલ્લેખિત છે.</translation>
 <translation id="4506176782989081258">માન્યતા ભૂલ: <ph name="VALIDATION_ERROR" /></translation>
 <translation id="4587425331216688090">Chrome માંથી સરનામું દૂર કરીએ?</translation>
 <translation id="4594403342090139922">&amp;કાઢી નાખવું પૂર્વવત્‌ કરો</translation>
 <translation id="4607653538520819196">આ પૃષ્ઠ ડેટા સેવર દ્વારા પ્રોક્સી કરી શકાતું નથી.</translation>
 <translation id="4668929960204016307">,</translation>
+<translation id="467662567472608290">આ સર્વર સાબિત કરી શક્યું નથી કે તે <ph name="DOMAIN" /> છે; તેના સુરક્ષા પ્રમાણપત્રમાં ભૂલો છે. આ કોઈ ખોટી ગોઠવણીને કારણે થયું હશે અથવા કોઈ હુમલાખોર તમારા કનેક્શનને અટકાવી રહ્યો છે.</translation>
 <translation id="4726672564094551039">નીતિઓ ફરીથી લોડ કરો</translation>
+<translation id="4728558894243024398">પ્લેટફોર્મ</translation>
+<translation id="4771973620359291008">કોઈ અજ્ઞાત ભૂલ આવી.</translation>
 <translation id="4800132727771399293">તમારી સમાપ્તિ તારીખ અને CVC તપાસો અને ફરીથી પ્રયાસ કરો</translation>
 <translation id="4813512666221746211">નેટવર્ક ભૂલ</translation>
 <translation id="4850886885716139402">જુઓ</translation>
@@ -142,7 +163,9 @@
 <translation id="498957508165411911">શું <ph name="ORIGINAL_LANGUAGE" /> માંથી <ph name="TARGET_LANGUAGE" /> માં અનુવાદ કરીએ?</translation>
 <translation id="5019198164206649151">બેકઅપ સ્ટોર કરવું ખરાબ સ્થિતિમાં છે</translation>
 <translation id="5031870354684148875">Google અનુવાદ વિશે</translation>
+<translation id="5087286274860437796">સર્વરનું પ્રમાણપત્ર આ સમયે માન્ય નથી.</translation>
 <translation id="5089810972385038852">રાજ્ય</translation>
+<translation id="5094747076828555589">આ સર્વર સાબિત કરી શક્યું નથી કે તે <ph name="DOMAIN" /> છે; તેનું સુરક્ષા પ્રમાણપત્ર Chromium દ્વારા વિશ્વસનીય નથી. આ કોઈ ખોટી ગોઠવણીને કારણે થયું હશે અથવા કોઈ હુમલાખોર તમારા કનેક્શનને અટકાવી રહ્યો છે.</translation>
 <translation id="5095208057601539847">પ્રાંત</translation>
 <translation id="5145883236150621069">નીતિ પ્રતિક્રિયામાં ભૂલ કોડ હાજર</translation>
 <translation id="5172758083709347301">મશીન</translation>
@@ -152,6 +175,7 @@
 <translation id="5299298092464848405">ભૂલ વિશ્લેષણ નીતિ</translation>
 <translation id="5317780077021120954">સાચવો</translation>
 <translation id="536296301121032821">નીતિ સેટિંગ્સ સ્ટોર કરવામાં નિષ્ફળ થયાં</translation>
+<translation id="540969355065856584">આ સર્વર સાબિત કરી શક્યું નથી કે તે <ph name="DOMAIN" /> છે; તેનું સુરક્ષા પ્રમાણપત્ર આ સમયે માન્ય નથી. આ કોઇ ખોટી ગોઠવણીને કારણે થયું હોય અથવા કોઈ હુમલાખોર તમારા કનેક્શનને અટકાવી રહ્યો હોઇ શકે છે.</translation>
 <translation id="5439770059721715174">"<ph name="ERROR_PATH" />" પર સ્કીમા માન્યતા ભૂલ: <ph name="ERROR" /></translation>
 <translation id="5455374756549232013">ખરાબ નીતિ સમયનોંધ</translation>
 <translation id="5470861586879999274">&amp;સંપાદિત કરવું ફરી કરો</translation>
@@ -170,6 +194,7 @@
 <translation id="5989320800837274978">નિયત પ્રોક્સી સર્વર્સ અથવા .pac સ્ક્રિપ્ટનો URL નો ઉલ્લેખ કરેલો નથી.</translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6040143037577758943">બંધ કરો</translation>
+<translation id="6151417162996330722">સર્વર પ્રમાણપત્ર પાસે ખૂબ લાંબી હોય એવી માન્યતા અવધિ છે.</translation>
 <translation id="6154808779448689242">પરત થયેલ નીતિ ટોકન વર્તમાન ટોકનથી મેળ ખાતો નથી</translation>
 <translation id="6165508094623778733">વધુ જાણો</translation>
 <translation id="6259156558325130047">&amp;પુનઃક્રમાંકિત કરવું ફરી કરો</translation>
@@ -186,18 +211,21 @@
 <translation id="6628463337424475685"><ph name="ENGINE" /> શોધ</translation>
 <translation id="6644283850729428850">આ નીતિ દૂર કરવામાં આવેલી છે.</translation>
 <translation id="6646897916597483132">તમારા કાર્ડની આગળની બાજુ પરથી 4-અંકનો CVC દાખલ કરો</translation>
+<translation id="674375294223700098">અજ્ઞાત સર્વર પ્રમાણપત્ર ભૂલ.</translation>
 <translation id="6753269504797312559">નીતિ મૂલ્ય</translation>
 <translation id="6831043979455480757">અનુવાદ કરો</translation>
 <translation id="6839929833149231406">વિસ્તાર</translation>
 <translation id="6874604403660855544">&amp;ઉમેરવું ફરી કરો</translation>
 <translation id="6891596781022320156">નીતિ સ્તર સમર્થિત નથી.</translation>
 <translation id="6915804003454593391">વપરાશકર્તા: </translation>
+<translation id="6957887021205513506">સર્વરનું પ્રમાણપત્ર બનાવટી હોય એવું લાગે છે.</translation>
 <translation id="6965382102122355670">ઓકે</translation>
 <translation id="6965978654500191972">ઉપકરણ</translation>
 <translation id="6970216967273061347">જીલ્લો</translation>
 <translation id="6973656660372572881">નિયત પ્રોક્સી સર્વર્સ અને .pac script URL બન્નેનો ઉલ્લેખ કરેલો છે.</translation>
 <translation id="6980028882292583085">Javascript ચેતવણી</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
+<translation id="7050187094878475250">તમે <ph name="DOMAIN" /> પર પહોંચવાનો પ્રયાસ કરેલો, પરંતુ સર્વરે એવું પ્રમાણપત્ર પ્રસ્તુત કર્યું જેની માન્યતા અવધિ, વિશ્વસનીય હોવા માટે ખૂબ લાંબી છે.</translation>
 <translation id="7087282848513945231">પરગણું</translation>
 <translation id="7108649287766967076"><ph name="TARGET_LANGUAGE" /> માં અનુવાદ નિષ્ફળ રહ્યો.</translation>
 <translation id="7139724024395191329">એમિરાત</translation>
@@ -217,17 +245,21 @@
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7537536606612762813">ફરજિયાત</translation>
 <translation id="7542995811387359312">આપમેળે ક્રેડિટ કાર્ડ ભરણ અક્ષમ કર્યું છે કારણ કે આ ફોર્મ સુરક્ષિત કનેક્શનનો ઉપયોગ કરતું નથી.</translation>
+<translation id="7567204685887185387">આ સર્વર સાબિત કરી શક્યું નથી કે તે <ph name="DOMAIN" /> છે; તેનું સુરક્ષા પ્રમાણપત્ર કપટપૂર્વક રજૂ કરવામાં આવેલ હોઈ શકે છે. આ કોઈ ખોટી ગોઠવણીને કારણે થયું હશે અથવા કોઈ હુમલાખોર તમારા કનેક્શનને અટકાવી રહ્યો છે.</translation>
 <translation id="7568593326407688803">આ પૃષ્ઠ<ph name="ORIGINAL_LANGUAGE" />માં છે શું તમે તેને અનુવાદિત કરવા માંગો છો?</translation>
 <translation id="7569952961197462199">Chrome માંથી ક્રેડિટ કાર્ડ દૂર કરીએ?</translation>
+<translation id="7592362899630581445">સર્વરનું પ્રમાણપત્ર, નામ નિગ્રહોનું ઉલ્લંઘન કરે છે.</translation>
 <translation id="7600965453749440009"><ph name="LANGUAGE" /> નું ક્યારેય અનુવાદ કરશો નહીં</translation>
 <translation id="7610193165460212391">મૂલ્ય <ph name="VALUE" /> શ્રેણી બહારનું છે.</translation>
 <translation id="7752995774971033316">બિનસંચાલિત</translation>
+<translation id="7761701407923456692">સર્વરનું પ્રમાણપત્ર URL સાથે મેળ ખાતું નથી.</translation>
 <translation id="777702478322588152">પ્રીફેચર</translation>
 <translation id="7791543448312431591">ઉમેરો</translation>
 <translation id="7805768142964895445">સ્થિતિ</translation>
 <translation id="7813600968533626083">Chrome માંથી ફોર્મ સૂચનો દૂર કરીએ?</translation>
 <translation id="7887683347370398519">તમારું CVC તપાસો અને ફરીથી પ્રયાસ કરો</translation>
 <translation id="7935318582918952113">DOM Distiller</translation>
+<translation id="7938958445268990899">સર્વરનું પ્રમાણપત્ર હજી માન્ય નથી.</translation>
 <translation id="7956713633345437162">મોબાઇલ બુકમાર્ક્સ</translation>
 <translation id="7961015016161918242">ક્યારેય નહીં</translation>
 <translation id="7977590112176369853">&lt;ક્વેરી દાખલ કરો&gt;</translation>
@@ -260,18 +292,22 @@
 <translation id="8824019021993735287">આ સમયે Chrome તમારું કાર્ડ ચકાસવા અસમર્થ હતું. કૃપા કરીને પછી ફરીથી પ્રયત્ન કરશો.</translation>
 <translation id="8834246243508017242">સંપર્કોનો ઉપયોગ કરીને સ્વતઃભરણ સક્ષમ કરો...</translation>
 <translation id="883848425547221593">અન્ય બુકમાર્ક્સ</translation>
+<translation id="884923133447025588">રદ કરવાની કોઈ મેકેનિઝમ મળી નથી.</translation>
 <translation id="8866481888320382733">ભૂલ વિશ્લેષણ નીતિ સેટિંગ્સ</translation>
 <translation id="8876793034577346603">નેટવર્ક ગોઠવણી વિશ્લેષિત થવામાં નિષ્ફળ થઇ.</translation>
 <translation id="8891727572606052622">અમાન્ય પ્રોક્સી મોડ.</translation>
 <translation id="8932102934695377596">તમારી ઘડિયાળ પાછળ છે</translation>
 <translation id="8940229512486821554"><ph name="EXTENSION_NAME" /> આદેશ ચલાવો: <ph name="SEARCH_TERMS" /></translation>
+<translation id="8971063699422889582">સર્વરના પ્રમાણપત્રની સમયસીમા સમાપ્ત થઈ છે.</translation>
 <translation id="8988760548304185580">તમારા કાર્ડની પાછળની બાજુ પરથી સમાપ્તિ તારીખ અને 3-અંકનો CVC દાખલ કરો</translation>
 <translation id="9020542370529661692">આ પૃષ્ઠનો <ph name="TARGET_LANGUAGE" /> માં અનુવાદ કરવામાં આવ્યો છે</translation>
+<translation id="9049981332609050619">તમે <ph name="DOMAIN" /> સુધી પહોંચવાનો પ્રયાસ કર્યો, પરંતુ સર્વરે અમાન્ય પ્રમાણપત્ર પ્રસ્તુત કર્યું. </translation>
 <translation id="9125941078353557812">તમારા કાર્ડની પાછળની બાજુ પરથી 3-અંકનો CVC દાખલ કરો</translation>
 <translation id="9137013805542155359">મૂળ બતાવો</translation>
 <translation id="9148507642005240123">&amp;સંપાદિત કરવું પૂર્વવત્‌ કરો</translation>
 <translation id="9154176715500758432">આ પૃષ્ઠ પર રહો</translation>
 <translation id="9170848237812810038">&amp;પૂર્વવત્ કરો</translation>
+<translation id="917450738466192189">સર્વરનું પ્રમાણપત્ર અમાન્ય છે.</translation>
 <translation id="9207861905230894330">લેખ ઉમેરવામાં નિષ્ફળ થયાં.</translation>
 <translation id="933712198907837967">ડાઇનર્સ ક્લબ</translation>
 <translation id="935608979562296692">ફોર્મ સાફ કરો</translation>

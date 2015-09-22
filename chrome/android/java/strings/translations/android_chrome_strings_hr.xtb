@@ -5,7 +5,6 @@
 <translation id="10614374240317010">Zaporke se nikad ne spremaju</translation>
 <translation id="1061441684050139317">Chrome treba imati pristup mikrofonu da bi ga dijelio s ovom web-lokacijom.</translation>
 <translation id="1080790410959514870">Odjavljujete se s računa kojim upravlja <ph name="DOMAIN_NAME" />. Time će se izbrisati podaci preglednika Chrome pohranjeni na ovom uređaju, ali ti će podaci ostati na vašem Google računu.</translation>
-<translation id="1086169178231554178">SD kartica nije dostupna</translation>
 <translation id="1091134514807961917">Prijavili ste se na sljedeći Google račun.</translation>
 <translation id="1095407227123756519">Dodajte račun da biste imali svoje oznake, povijest, zaporke i druge postavke na svim svojim uređajima.</translation>
 <translation id="1098052486217676340">Završeno</translation>
@@ -86,7 +85,6 @@
 <translation id="2351097562818989364">Vaše su postavke prevođenja vraćene na zadano.</translation>
 <translation id="2354750644801399986">"Nemoj pratiti"</translation>
 <translation id="2359808026110333948">Nastavi</translation>
-<translation id="2360035970720276770">Mogu se preuzeti samo http ili https URL-ovi</translation>
 <translation id="2381756643783702095">Pitanje prije slanja (preporučeno)</translation>
 <translation id="2387895666653383613">Skaliranje teksta</translation>
 <translation id="238909021488141516">Prilikom preuzimanja sadržaja dogodila se pogreška.</translation>
@@ -127,7 +125,6 @@
 <translation id="2960796085439532066">Autorska prava <ph name="YEAR" />. Google Inc. Sva prava pridržana.</translation>
 <translation id="2968755619301702150">Preglednik certifikata</translation>
 <translation id="2996809686854298943">Potreban URL</translation>
-<translation id="3003595280608617736">Nema SD kartice</translation>
 <translation id="3029704984691124060">Zaporke se ne podudaraju</translation>
 <translation id="3039671569659952257">Izbriši mapu</translation>
 <translation id="3063601790762993062">Spremi videozapis</translation>
@@ -232,6 +229,7 @@ Da biste prilagodili pojam za pretraživanje, dugo pritisnite za odabir. Da bist
 <translation id="4816465935029283692">Vrste podataka</translation>
 <translation id="4827948050554950725">Dodaj kreditnu karticu</translation>
 <translation id="4836364883164334657">Vaša veza s tom web-lokacijom nije privatna. Napadači možda pokušavaju ukrasti vaše podatke (na primjer, fotografije, zaporke, poruke i brojeve kreditnih kartica) s <ph name="DOMAIN_NAME" />.</translation>
+<translation id="4850886885716139402">Prikaz</translation>
 <translation id="4871370605780490696">Dodavanje oznake</translation>
 <translation id="4881695831933465202">Otvori</translation>
 <translation id="4885273946141277891">Nepodržan broj različitih verzija Chromea.</translation>
@@ -449,8 +447,6 @@ Na primjer, neke web-lokacije na taj zahtjev mogu odgovoriti tako da vam prikaž
 <translation id="7648422057306047504">Kriptiraj zaporke Googleovim vjerodajnicama</translation>
 <translation id="7658239707568436148">Odustani</translation>
 <translation id="7665369617277396874">Dodaj račun</translation>
-<translation id="7711895876052978264">Web-lokacija je prešla na cijeli zaslon.
-Za izlazak pritisnite gumb Natrag.</translation>
 <translation id="7764225426217299476">Dodaj adresu</translation>
 <translation id="7765158879357617694">Pomakni</translation>
 <translation id="7767746238359002192">Posjetite stranicu da biste je spremili za izvanmrežnu upotrebu</translation>
@@ -469,7 +465,6 @@ Za izlazak pritisnite gumb Natrag.</translation>
 <translation id="7961015016161918242">Nikad</translation>
 <translation id="7963646190083259054">Dobavljač:</translation>
 <translation id="7977858705483383621">Sigurno pretraživanje</translation>
-<translation id="7981795308302452224">Preuzimanje nije pokrenuto</translation>
 <translation id="7987073022710626672">Chromeovi uvjeti pružanja usluge</translation>
 <translation id="7989222512959629388">Spremanje…</translation>
 <translation id="7998918019931843664">Ponovno otvaranje zatvorene kartice</translation>
@@ -482,7 +477,6 @@ Za izlazak pritisnite gumb Natrag.</translation>
 <translation id="8073388330009372546">Otvori sliku u novoj kartici</translation>
 <translation id="8084156870963450514">Prijavite se za pristup svim svojim sadržajima na webu s bilo kojeg uređaja</translation>
 <translation id="8106211421800660735">Broj kreditne kartice</translation>
-<translation id="8109148095642131923">Dodavanje preuzete stavke na upravitelj preuzimanja nije uspjelo.</translation>
 <translation id="813082847718468539">Prikaz informacija o web-mjestu</translation>
 <translation id="8137558756159375272">Značajka Dodirnite za pretraživanje Google pretraživanju šalje odabranu riječ i trenutačnu stranicu kao kontekst. Možete je isključiti u <ph name="BEGIN_LINK" />Postavkama<ph name="END_LINK" />.</translation>
 <translation id="8143660160623733249">Naziv mape</translation>
@@ -567,5 +561,4 @@ Da biste dobili nove licence, povežite se s internetom i reproducirajte preuzet
 <translation id="969096075394517431">Promijenite jezike</translation>
 <translation id="971774202801778802">URL oznake</translation>
 <translation id="983192555821071799">Zatvori sve kartice</translation>
-<translation id="988938288723502454">Nije moguće izraditi direktorij preuzimanja na SD kartici.</translation>
 </translationbundle>

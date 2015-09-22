@@ -6,7 +6,6 @@
 <translation id="1115445892567829615">O Chromium não conseguiu sincronizar os dados. Atualize a frase de acesso da Sincronização.</translation>
 <translation id="1144202035120576837">O <ph name="SITE" /> normalmente utiliza a encriptação para proteger as suas informações. Quando o Chromium tentou ligar-se a <ph name="SITE" /> desta vez, o Website devolveu credenciais
 invulgares e incorretas. É possível que um utilizador mal intencionado esteja a tentar simular ser <ph name="SITE" /> ou que um ecrã de início de sessão Wi-Fi tenha interrompido a ligação. As suas informações ainda estão seguras, porque o Chromium interrompeu a ligação antes de qualquer troca de dados.</translation>
-<translation id="1150979032973867961">Este servidor não conseguiu provar que é o domínio <ph name="DOMAIN" />; o sistema operativo do seu computador não confia no respetivo certificado de segurança. Isto pode ser o resultado de uma configuração incorreta ou de um invasor a intercetar a sua ligação.</translation>
 <translation id="1174473354587728743">Partilha um computador? Agora pode configurar o Chromium exatamente como pretende.</translation>
 <translation id="1185134272377778587">Acerca do Chromium</translation>
 <translation id="1221340462641866827">O SO Chromium não suporta a abertura de uma aplicação externa para processar links de <ph name="SCHEME" />. O link solicitado é <ph name="PROTOLINK" />.</translation>
@@ -26,7 +25,6 @@ invulgares e incorretas. É possível que um utilizador mal intencionado esteja 
 <translation id="1708666629004767631">Está disponível uma versão nova e mais segura do Chromium.</translation>
 <translation id="1725059042853530269">O ficheiro <ph name="FILE_NAME" /> pode prejudicar a sua experiência de navegação, pelo que foi bloqueado pelo Chromium.</translation>
 <translation id="1745962126679160932">O Chromium armazenará as suas informações em segurança para que não necessite de as introduzir novamente, mas continuará a ser necessário confirmar o código de segurança do seu cartão para futuros pagamentos.</translation>
-<translation id="1763864636252898013">Este servidor não conseguiu provar que é o domínio <ph name="DOMAIN" />; o sistema operativo do seu dispositivo não confia no respetivo certificado de segurança. Isto pode ser o resultado de uma configuração incorreta ou de um invasor a intercetar a sua ligação.</translation>
 <translation id="1774152462503052664">Permitir que o Chromium seja executado em segundo plano</translation>
 <translation id="1779356040007214683">Para tornar o Chromium mais seguro, desativámos algumas extensões que não estão listadas na <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> e é possível que tenham sido adicionadas sem o seu conhecimento.</translation>
 <translation id="1808667845054772817">Reinstalar Chromium</translation>
@@ -137,7 +135,6 @@ invulgares e incorretas. É possível que um utilizador mal intencionado esteja 
 <translation id="4987820182225656817">Os convidados podem utilizar o Chromium sem perder qualquer funcionalidade.</translation>
 <translation id="4994636714258228724">Adicionar-se ao Chromium</translation>
 <translation id="5032989939245619637">Guardar os detalhes no Chromium</translation>
-<translation id="5094747076828555589">Este servidor não conseguiu provar que é o domínio <ph name="DOMAIN" />; o Chromium não confia no respetivo certificado de segurança. Isto pode ser o resultado de uma configuração incorreta ou de um invasor a intercetar a sua ligação.</translation>
 <translation id="5358375970380395591">Está a iniciar sessão com uma conta gerida e a permitir que o administrador controle o seu perfil do Chromium. Os seus dados do Chromium, como aplicações, marcadores, histórico, palavras-passe e outras definições, ficarão associados definitivamente a <ph name="USER_NAME" />. Poderá eliminar estes dados através do Painel de Controlo das Contas Google, mas não poderá associá-los a outra conta. <ph name="LEARN_MORE" /></translation>
 <translation id="5398878173008909840">Está disponível uma nova versão do Chromium.</translation>
 <translation id="5427571867875391349">Definir o Chromium como o seu navegador predefinido</translation>

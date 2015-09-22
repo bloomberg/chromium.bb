@@ -9,7 +9,6 @@
 <translation id="1073391069195728457">Chrome – varsler</translation>
 <translation id="1104959162601287462">Om &amp;Chrome OS</translation>
 <translation id="110877069173485804">Dette er din Chrome</translation>
-<translation id="1150979032973867961">Denne tjeneren kunne ikke bevise at den er <ph name="DOMAIN" />. Sikkerhetssertifikatet til tjeneren er ikke klarert av datamaskinens operativsystem. Dette kan være forårsaket av en feilkonfigurering eller en angriper som avskjærer tilkoblingen din.</translation>
 <translation id="1225016890511909183">Chrome lagrer informasjonen din sikkert, slik at du slipper å skrive den inn på nytt. Du må imidlertid bekrefte kortets sikkerhetskode ved fremtidig bruk.</translation>
 <translation id="123620459398936149">Chrome OS kunne ikke synkronisere dataene dine. Oppdater passordfrasen for synkronisering.</translation>
 <translation id="127345590676626841">Chrome oppdateres automatisk, sånn at du alltid har den nyeste versjonen. Når denne nedlastingen er fullført, kommer Chrome til å starte på nytt, og du er i gang.</translation>
@@ -33,7 +32,6 @@
 <translation id="174539241580958092">Google Chrome kunne ikke synkronisere dataene dine på grunn av en påloggingsfeil.</translation>
 <translation id="1759301979429102118">Informasjon fra kontaktene dine kan hjelpe deg med å fylle ut skjemaer raskere i Chrome.</translation>
 <translation id="1759842336958782510">Chrome</translation>
-<translation id="1763864636252898013">Denne tjeneren kunne ikke bevise at den er <ph name="DOMAIN" />. Sikkerhetssertifikatet til tjeneren er ikke klarert av enhetens operativsystem. Dette kan være forårsaket av en feilkonfigurering eller en angriper som avskjærer tilkoblingen din.</translation>
 <translation id="1773601347087397504">Få hjelp med å bruke Chrome OS</translation>
 <translation id="1818142563254268765">Chrome kan ikke oppdatere seg selv til den nyeste versjonen, så du går glipp av fantastiske nye funksjoner og sikkerhetsforbedringer. Du må oppdatere Chrome.</translation>
 <translation id="1877026089748256423">Chrome er utdatert</translation>
@@ -105,7 +103,6 @@ Hvis du logger deg på allikevel, blir Chrome-informasjon som bokmerker, loggen 
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="4367618624832907428">Google Chrome kan ikke vise nettsiden fordi datamaskinen din ikke har noen Internett-tilkobling.</translation>
 <translation id="4407807842708586359">Google Chromes operativsystem</translation>
-<translation id="4424024547088906515">Denne tjeneren kunne ikke bevise at den er <ph name="DOMAIN" />. Sikkerhetssertifikatet til tjeneren er ikke klarert av Chrome. Dette kan være forårsaket av en feilkonfigurering eller en angriper som avskjærer tilkoblingen din.</translation>
 <translation id="4458285410772214805">Logg deg av og så på igjen for at denne endringen skal tre i kraft.</translation>
 <translation id="4480040274068703980">Chrome OS kunne ikke synkronisere dataene dine på grunn av en feil under pålogging.</translation>
 <translation id="4513711165509885787">Faktureringsdetaljene dine er lagret i Chrome.</translation>

@@ -9,7 +9,6 @@
 <translation id="1073391069195728457">Chrome - 通知</translation>
 <translation id="1104959162601287462">關於 Chrome 作業系統(&amp;C)</translation>
 <translation id="110877069173485804">這是您專屬的 Chrome</translation>
-<translation id="1150979032973867961">伺服器無法證明其屬於 <ph name="DOMAIN" /> 網域；其安全性憑證未取得您電腦作業系統的信任。這可能是因為設定錯誤，或有攻擊者攔截您的連線所致。</translation>
 <translation id="1225016890511909183">Chrome 會妥善保存您的資訊，讓您日後付款時不必再重新輸入。不過，您仍然必需驗證驗證信用卡安全碼。</translation>
 <translation id="123620459398936149">Chrome OS 無法同步處理您的資料，請更新您的同步通關密語。</translation>
 <translation id="127345590676626841">Chrome 會自動更新，隨時讓您使用最新版本。完成這項下載作業後，Chrome 會重新啟動，自動為您進行更新。</translation>
@@ -33,7 +32,6 @@
 <translation id="174539241580958092">登入時發生錯誤，因此 Google Chrome 無法同步處理您的資料。</translation>
 <translation id="1759301979429102118">利用您的通訊錄詳細資料，快速在 Chrome 中填寫表單。</translation>
 <translation id="1759842336958782510">Chrome</translation>
-<translation id="1763864636252898013">伺服器無法證明其屬於 <ph name="DOMAIN" /> 網域；其安全性憑證未取得您裝置作業系統的信任。這可能是因為設定錯誤，或有攻擊者攔截您的連線所致。</translation>
 <translation id="1773601347087397504">前往 Chrome 作業系統說明頁面</translation>
 <translation id="1818142563254268765">由於 Chrome 無法更新至最新版本，您現在無法使用各種最新功能和安全性修正。請更新 Chrome。</translation>
 <translation id="1877026089748256423">Chrome 版本過舊</translation>
@@ -105,7 +103,6 @@
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="4367618624832907428">Google Chrome 無法顯示網頁，因為您的電腦並未連上網際網路。</translation>
 <translation id="4407807842708586359">Google Chrome 作業系統</translation>
-<translation id="4424024547088906515">伺服器無法證明其屬於 <ph name="DOMAIN" /> 網域；其安全性憑證未取得 Chrome 的信任。這可能是因為設定錯誤，或有攻擊者攔截您的連線所致。</translation>
 <translation id="4458285410772214805">請先登出，然後重新登入，這項變更才會生效。</translation>
 <translation id="4480040274068703980">登入時發生錯誤，因此 Chrome 作業系統無法同步處理您的資料。</translation>
 <translation id="4513711165509885787">Chrome 已儲存您的帳單詳細資訊。</translation>

@@ -5,7 +5,6 @@
 <translation id="10614374240317010">لم يتم الحفظ مطلقًا</translation>
 <translation id="1061441684050139317">‏يحتاج Chrome إلى الحصول على حق الوصول إلى الميكرفون لمشاركته مع هذا الموقع.</translation>
 <translation id="1080790410959514870">‏أنت بصدد الخروج من حساب تحت إدارة <ph name="DOMAIN_NAME" />. سيؤدي هذا إلى حذف بيانات Chrome المخزنة على هذا الجهاز، إلا أن البيانات ستظل في حسابك على Google.</translation>
-<translation id="1086169178231554178">‏بطاقة SD غير متوفرة</translation>
 <translation id="1091134514807961917">‏تم تسجيل دخولك إلى حساب Google التالي.</translation>
 <translation id="1095407227123756519">أضف حسابًا للحصول على الإشارات المرجعية والسجل وكلمة المرور والإعدادات الأخرى على كل أجهزتك.</translation>
 <translation id="1098052486217676340">تم الانتهاء</translation>
@@ -86,7 +85,6 @@
 <translation id="2351097562818989364">تم إعادة ضبط إعداداتك للترجمة.</translation>
 <translation id="2354750644801399986">"عدم التتبع"</translation>
 <translation id="2359808026110333948">المتابعة</translation>
-<translation id="2360035970720276770">‏يمكن تنزيل عناوين URL بالبادئة "http" أو "https" فقط</translation>
 <translation id="2381756643783702095">اسأل قبل الإرسال (موصى به)</translation>
 <translation id="2387895666653383613">تغيير حجم النص</translation>
 <translation id="238909021488141516">حدث خطأ أثناء تنزيل المحتوى.</translation>
@@ -127,7 +125,6 @@
 <translation id="2960796085439532066">‏حقوق الطبع والنشر لعام <ph name="YEAR" /> لصالح شركة .Google Inc. جميع الحقوق محفوظة.</translation>
 <translation id="2968755619301702150">عارض الشهادات</translation>
 <translation id="2996809686854298943">‏عنوان URL المطلوب</translation>
-<translation id="3003595280608617736">‏لا تتوفر بطاقة SD</translation>
 <translation id="3029704984691124060">عبارات المرور غير متطابقة</translation>
 <translation id="3039671569659952257">حذف مجلد</translation>
 <translation id="3063601790762993062">حفظ الفيديو</translation>
@@ -230,6 +227,7 @@
 <translation id="4816465935029283692">أنواع البيانات</translation>
 <translation id="4827948050554950725">إضافة بطاقة ائتمان</translation>
 <translation id="4836364883164334657">اتصالك بهذا الموقع ليس له خصوصية. قد يحاول المهاجمون سرقة معلوماتك (على سبيل المثال، الصور، وكلمات المرور، والرسائل وبطاقات الائتمان) من <ph name="DOMAIN_NAME" />.</translation>
+<translation id="4850886885716139402">عرض</translation>
 <translation id="4871370605780490696">إضافة إشارة مرجعية</translation>
 <translation id="4881695831933465202">فتح</translation>
 <translation id="4885273946141277891">‏عدد نسخ Chrome غير متوافق.</translation>
@@ -447,8 +445,6 @@
 <translation id="7648422057306047504">‏تشفير كلمات المرور باستخدام بيانات اعتماد Google</translation>
 <translation id="7658239707568436148">إلغاء</translation>
 <translation id="7665369617277396874">إضافة حساب</translation>
-<translation id="7711895876052978264">تم عرض هذا الموقع في وضع ملء الشاشة.
-اضغط على زر الرجوع للخروج من هذا الوضع.</translation>
 <translation id="7764225426217299476">إضافة عنوان</translation>
 <translation id="7765158879357617694">نقل</translation>
 <translation id="7767746238359002192">زيارة الصفحة لحفظها بلا اتصال</translation>
@@ -467,7 +463,6 @@
 <translation id="7961015016161918242">مطلقًا</translation>
 <translation id="7963646190083259054">المورّد:</translation>
 <translation id="7977858705483383621">البحث الآمن</translation>
-<translation id="7981795308302452224">أخفق بدء التنزيل</translation>
 <translation id="7987073022710626672">‏بنود خدمة Chrome</translation>
 <translation id="7989222512959629388">جارٍ الحفظ...</translation>
 <translation id="7998918019931843664">إعادة فتح علامة التبويب المغلقة</translation>
@@ -480,7 +475,6 @@
 <translation id="8073388330009372546">فتح الصورة بعلامة تبويب جديدة</translation>
 <translation id="8084156870963450514">سجّل الدخول للوصول إلى برامج الويب من أي جهاز.</translation>
 <translation id="8106211421800660735">رقم بطاقة الائتمان</translation>
-<translation id="8109148095642131923">أخفقت إضافة العنصر الذي تم تنزيله في مدير التنزيلات.</translation>
 <translation id="813082847718468539">عرض معلومات الموقع</translation>
 <translation id="8137558756159375272">‏يرسل "المس للبحث" الكلمة المحددة والصفحة الحالية كسياق إلى بحث Google. يمكنك إيقافه في <ph name="BEGIN_LINK" />الإعدادات<ph name="END_LINK" />.</translation>
 <translation id="8143660160623733249">اسم المجلد</translation>
@@ -565,5 +559,4 @@
 <translation id="969096075394517431">تغيير اللغات</translation>
 <translation id="971774202801778802">‏عنوان URL للإشارة</translation>
 <translation id="983192555821071799">إغلاق جميع علامات التبويب</translation>
-<translation id="988938288723502454">‏يتعذر إنشاء دليل تنزيل على بطاقة SD.</translation>
 </translationbundle>

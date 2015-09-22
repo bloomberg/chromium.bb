@@ -86,7 +86,6 @@
       Indstilling af denne politik tilsidesætter standardværdien på 3 timer. Gyldige værdier for denne politik er i intervallet 1.800.000 (30 minutter) til 86.400.000 (1 dag). Værdier, som ikke befinder sig inden for dette interval, tilknyttes den respektive grænse.
 
       Hvis denne politik ikke indstilles, anvender <ph name="PRODUCT_OS_NAME" /> standardværdien på 3 timer.</translation>
-<translation id="1503959756075098984">Udvidelses-id'er og opdateringswebadresser, der skal installeres ubemærket</translation>
 <translation id="1504431521196476721">Fjernattestering</translation>
 <translation id="1509692106376861764">Denne politik er trukket tilbage fra og med <ph name="PRODUCT_NAME" /> version 29.</translation>
 <translation id="1522425503138261032">Tillad, at websites registrerer brugernes fysiske placering</translation>
@@ -607,7 +606,7 @@ Hvis denne indstilling ikke er angivet, vil <ph name="PRODUCT_NAME" /> tillade b
 <translation id="4442582539341804154">Aktivér låsen, hvis enheden bliver inaktiv eller suspenderes</translation>
 <translation id="4445684791305970001">Deaktiverer udviklerværktøjerne og JavaScript-konsollen. Hvis du aktiverer denne indstilling, kan man ikke få adgang til udviklerværktøjerne, og webstedselementer kan ikke inspiceres. Alle tastaturgenveje og menuer eller genvejsmenuer, der åbner udviklerværktøjerne eller JavaScript-konsollen, vil blive deaktiveret. Hvis du deaktiverer denne indstilling eller ikke angiver den, tillades brugen af udviklerværktøjer og JavaScript-konsollen.</translation>
 <translation id="4467952432486360968">Bloker cookies fra tredjeparter</translation>
-<translation id="4474167089968829729">Aktivér lagring af adgangskoder i adgangskodemanageren</translation>
+<translation id="4474167089968829729">Aktivér lagring af adgangskoder i adgangskodeadministratoren</translation>
 <translation id="4480694116501920047">Gennemtving Beskyttet Søgning</translation>
 <translation id="4482640907922304445">Viser knappen Startside på værktøjslinjen i <ph name="PRODUCT_NAME" />. Hvis du aktiverer denne indstilling, vises knappen Startside altid. Hvis du deaktiverer denne indstilling, vises knappen Startside aldrig. Hvis du aktiverer eller deaktiverer denne indstilling, kan brugerne ikke ændre eller tilsidesætte denne indstilling i <ph name="PRODUCT_NAME" />. Hvis denne politik ikke angives, kan brugeren vælge, om knappen Startside skal vises.</translation>
 <translation id="4492287494009043413">Deaktiver skærmbilleder</translation>
@@ -1450,7 +1449,6 @@ Hvis denne politik slås fra eller indstilles til False (falsk), er udviklertils
           Adskil servernavne med kommaer. Jokertegn (*) er tilladt.
 
           Hvis denne politik ikke indstilles, prøver <ph name="PRODUCT_NAME" /> at registrere, om der er en server på intranettet, og kun i det tilfælde reageres der på IWA-anmodninger. Hvis en server registreres som internet, ignoreres IWA-anmodninger af <ph name="PRODUCT_NAME" />.</translation>
-<translation id="8665076741187546529">Konfigurer listen over udvidelser med tvungen installation</translation>
 <translation id="8668394701842594241">Angiver en liste over plugins, som er aktiveret i <ph name="PRODUCT_NAME" /> og forhindrer brugerne i at ændre indstillingen.
 
       Jokertegnene "*" og "?" kan bruges til at matche sekvenser af vilkårlige tegn. "*" kan matche et vilkårligt antal tegn, mens "?" angiver en et bestemt tegn efter eget valg, f.eks. tegnene 0 eller 1. Flugttegnet er "\", så du kan matche tegnene "*", "?" eller "\" ved at sætte "\" foran dem.

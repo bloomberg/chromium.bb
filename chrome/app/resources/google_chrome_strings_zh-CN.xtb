@@ -9,7 +9,6 @@
 <translation id="1073391069195728457">Chrome - 通知</translation>
 <translation id="1104959162601287462">关于 Chrome 操作系统(&amp;C)</translation>
 <translation id="110877069173485804">这是您的专属Chrome</translation>
-<translation id="1150979032973867961">此服务器无法证明它是<ph name="DOMAIN" />；您计算机的操作系统不信任其安全证书。出现此问题的原因可能是配置有误或您的连接被拦截了。</translation>
 <translation id="1225016890511909183">Chrome 会妥善地存储您的信息，这样您日后就不必重新输入了。不过，您将来付款时仍需验证信用卡的安全码。</translation>
 <translation id="123620459398936149">Chrome操作系统无法同步您的数据。请更新您的同步密码。</translation>
 <translation id="127345590676626841">Chrome会自动更新，因此您使用的始终都是最新版本。更新内容下载完毕后，Chrome会重新启动，然后您就可以开始使用了。</translation>
@@ -33,7 +32,6 @@
 <translation id="174539241580958092">由于在登录时出现错误，Google Chrome无法同步您的数据。</translation>
 <translation id="1759301979429102118">通讯录中的详细信息有助于您在Chrome中更快速地填写表单。</translation>
 <translation id="1759842336958782510">Chrome</translation>
-<translation id="1763864636252898013">此服务器无法证明它是<ph name="DOMAIN" />；您设备的操作系统不信任其安全证书。出现此问题的原因可能是配置有误或您的连接被拦截了。</translation>
 <translation id="1773601347087397504">获取 Chrome 操作系统使用帮助</translation>
 <translation id="1818142563254268765">Chrome无法自动更新到最新版本，因此其中缺少一些非常棒的新功能和安全修复程序。要获得这些内容，您需要更新Chrome。</translation>
 <translation id="1877026089748256423">Chrome版本太旧</translation>
@@ -106,7 +104,6 @@
 </translation>
 <translation id="4367618624832907428">您的计算机未连接到互联网，因此 Google Chrome 无法显示该网页。</translation>
 <translation id="4407807842708586359">Google Chrome 操作系统</translation>
-<translation id="4424024547088906515">此服务器无法证明它是<ph name="DOMAIN" />；Chrome不信任其安全证书。出现此问题的原因可能是配置有误或您的连接被拦截了。</translation>
 <translation id="4458285410772214805">请先退出，然后重新登录，以便此更改生效。</translation>
 <translation id="4480040274068703980">登录时出现错误，Chrome操作系统无法同步您的数据。</translation>
 <translation id="4513711165509885787">您的帐单明细已保存在 Chrome 中。</translation>

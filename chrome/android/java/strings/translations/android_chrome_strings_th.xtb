@@ -5,7 +5,6 @@
 <translation id="10614374240317010">ไม่เคยบันทึก</translation>
 <translation id="1061441684050139317">Chrome ต้องการเข้าถึงไมโครโฟนเพื่อแชร์กับเว็บไซต์นี้</translation>
 <translation id="1080790410959514870">คุณกำลังออกจากระบบบัญชีที่จัดการโดย <ph name="DOMAIN_NAME" /> การออกจากระบบจะลบข้อมูล Chrome ที่จัดเก็บในอุปกรณ์นี้ แต่ข้อมูลดังกล่าวจะยังคงอยู่ในบัญชี Google ของคุณ</translation>
-<translation id="1086169178231554178">การ์ด SD ไม่พร้อมใช้งาน</translation>
 <translation id="1091134514807961917">คุณได้ลงชื่อเข้าใช้บัญชี Google ต่อไปนี้</translation>
 <translation id="1095407227123756519">เพิ่มบัญชีเพื่อรับบุ๊กมาร์ก ประวัติการเข้าชม รหัสผ่าน และการตั้งค่าอื่นๆ บนอุปกรณ์ทั้งหมดของคุณ</translation>
 <translation id="1098052486217676340">เสร็จแล้ว</translation>
@@ -86,7 +85,6 @@
 <translation id="2351097562818989364">รีเซ็ตการตั้งค่าการแปลภาษาของคุณแล้ว</translation>
 <translation id="2354750644801399986">"ไม่ติดตาม"</translation>
 <translation id="2359808026110333948">ดำเนินการต่อ</translation>
-<translation id="2360035970720276770">ดาวน์โหลดได้เฉพาะ URL แบบ HTTP หรือ HTTPS</translation>
 <translation id="2381756643783702095">ถามก่อนที่จะส่ง (แนะนำ)</translation>
 <translation id="2387895666653383613">อัตราส่วนข้อความ</translation>
 <translation id="238909021488141516">เกิดข้อผิดพลาดขณะดาวน์โหลดเนื้อหานี้</translation>
@@ -127,7 +125,6 @@
 <translation id="2960796085439532066">ลิขสิทธิ์ <ph name="YEAR" /> Google Inc. สงวนลิขสิทธิ์</translation>
 <translation id="2968755619301702150">เครื่องมือดูใบรับรอง</translation>
 <translation id="2996809686854298943">ต้องระบุ URL</translation>
-<translation id="3003595280608617736">ไม่มีการ์ด SD</translation>
 <translation id="3029704984691124060">รหัสผ่านไม่ตรงกัน</translation>
 <translation id="3039671569659952257">ลบโฟลเดอร์</translation>
 <translation id="3063601790762993062">บันทึกวิดีโอ</translation>
@@ -232,6 +229,7 @@
 <translation id="4816465935029283692">ชนิดข้อมูล</translation>
 <translation id="4827948050554950725">เพิ่มบัตรเครดิต</translation>
 <translation id="4836364883164334657">การเชื่อมต่อเว็บไซต์นี้ไม่เป็นส่วนตัว ผู้บุกรุกอาจพยายามขโมยข้อมูลของคุณ (เช่น รูปภาพ รหัสผ่าน ข้อความ และบัตรเครดิต) จาก <ph name="DOMAIN_NAME" /></translation>
+<translation id="4850886885716139402">มุมมอง</translation>
 <translation id="4871370605780490696">เพิ่มบุ๊กมาร์ก</translation>
 <translation id="4881695831933465202">เปิด</translation>
 <translation id="4885273946141277891">อินสแตนซ์ของ Chrome เกินจำนวนที่สนับสนุน</translation>
@@ -449,8 +447,6 @@
 <translation id="7648422057306047504">เข้ารหัสรหัสผ่านด้วยข้อมูลรับรองของ Google</translation>
 <translation id="7658239707568436148">ยกเลิก</translation>
 <translation id="7665369617277396874">เพิ่มบัญชี</translation>
-<translation id="7711895876052978264">เว็บไซต์นี้ได้เข้าสู่การแสดงเต็มหน้าจอ
-โปรดกดปุ่มกลับเพื่อออก</translation>
 <translation id="7764225426217299476">เพิ่มที่อยู่</translation>
 <translation id="7765158879357617694">ย้าย</translation>
 <translation id="7767746238359002192">ไปที่หน้าเพื่อบันทึกแบบออฟไลน์</translation>
@@ -469,7 +465,6 @@
 <translation id="7961015016161918242">ไม่เคย</translation>
 <translation id="7963646190083259054">ผู้ขาย:</translation>
 <translation id="7977858705483383621">ค้นหาปลอดภัย</translation>
-<translation id="7981795308302452224">ไม่สามารถเริ่มต้นการดาวน์โหลดได้</translation>
 <translation id="7987073022710626672">ข้อกำหนดในการให้บริการของ Chrome</translation>
 <translation id="7989222512959629388">กำลังบันทึก…</translation>
 <translation id="7998918019931843664">เปิดแท็บที่ปิดไปแล้วขึ้นใหม่</translation>
@@ -482,7 +477,6 @@
 <translation id="8073388330009372546">เปิดภาพในแท็บใหม่</translation>
 <translation id="8084156870963450514">ลงชื่อเข้าใช้เพื่อเข้าถึงข้อมูลทั้งหมดของคุณในเว็บจากอุปกรณ์ใดก็ได้</translation>
 <translation id="8106211421800660735">หมายเลขบัตรเครดิต</translation>
-<translation id="8109148095642131923">ไม่สามารถเพิ่มรายการที่ดาวน์โหลดไปยัง Download Manager</translation>
 <translation id="813082847718468539">ดูข้อมูลเว็บไซต์</translation>
 <translation id="8137558756159375272">แตะเพื่อค้นหาจะส่งคำที่เลือกและหน้าปัจจุบันเป็นบริบทไปยัง Google Search คุณสามารถปิดคุณลักษณะนี้ใน<ph name="BEGIN_LINK" />การตั้งค่า<ph name="END_LINK" /></translation>
 <translation id="8143660160623733249">ชื่อโฟลเดอร์</translation>
@@ -567,5 +561,4 @@
 <translation id="969096075394517431">เปลี่ยนภาษา</translation>
 <translation id="971774202801778802">URL ของบุ๊กมาร์ก</translation>
 <translation id="983192555821071799">ปิดแท็บทั้งหมด</translation>
-<translation id="988938288723502454">ไม่สามารถสร้างไดเรกทอรีดาวน์โหลดในการ์ด SD</translation>
 </translationbundle>

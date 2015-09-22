@@ -107,7 +107,6 @@
       Iestatot šo politiku, tiek ignorēta noklusējuma vērtība: 3 stundas. Šīs politikas derīgās vērtības ir diapazonā no 1 800 000 (30 minūtēm) līdz 86 400 000 (1 dienai). Ja vērtība tiek iestatīta ārpus šī diapazona, tā tiek pielīdzināta attiecīgajai robežai.
 
       Ja šī politika nav iestatīta, produktā <ph name="PRODUCT_OS_NAME" /> tiek lietota noklusējuma vērtība: 3 stundas.</translation>
-<translation id="1503959756075098984">Paplašinājumu ID numuri un atjauninājumu vietrāži URL, kas jāinstalē klusajā režīmā</translation>
 <translation id="1504431521196476721">Attālinātā apstiprināšana</translation>
 <translation id="1509692106376861764">Šīs politikas darbība tika pārtraukta ar <ph name="PRODUCT_NAME" /> versiju 29.</translation>
 <translation id="1522425503138261032">Atļaut vietnēm izsekot lietotāju fizisko atrašanās vietu</translation>
@@ -1678,7 +1677,6 @@
           Serveru nosaukumus atdaliet ar komatu. Ir atļautas aizstājējzīmes (*).
 
           Ja neiestatīsiet šo politiku, <ph name="PRODUCT_NAME" /> mēģinās noteikt, vai serveris darbojas iekštīklā, un tikai pēc tam atbildēs IWA pieprasījumiem. Ja serveris ir atzīts par iekštīklu, <ph name="PRODUCT_NAME" /> ignorēs no tā nosūtītos IWA pieprasījumus.</translation>
-<translation id="8665076741187546529">Konfigurē piespiedu kārtā instalēto paplašinājumu sarakstu</translation>
 <translation id="8668394701842594241">Norāda produktā <ph name="PRODUCT_NAME" /> iespējoto spraudņu sarakstu un neļauj lietotājiem mainīt šo iestatījumu.
 
       Var lietot aizstājējzīmes * un ?, lai veidotu atbilstību mainīgām rakstzīmēm. * atbilst mainīgu rakstzīmju virknei, bet ? norāda vienu noteiktu rakstzīmi, piemēram, atbilst nullei vai vienai rakstzīmei. Atsoļa rakstzīme ir \, tādējādi, lai veidotu atbilstību faktiskajām rakstzīmēm *, ? un \, to sākumā var ievadīt \.

@@ -9,7 +9,6 @@
 <translation id="1073391069195728457">Chrome: notificacions</translation>
 <translation id="1104959162601287462">Quant a &amp;SO Chrome</translation>
 <translation id="110877069173485804">Aquest és el vostre Chrome</translation>
-<translation id="1150979032973867961">Aquest servidor no ha pogut comprovar que sigui <ph name="DOMAIN" /> perquè el sistema operatiu del vostre ordinador considera que el seu certificat de seguretat no és de confiança. Això pot ser a causa d'una configuració incorrecta o d'un atacant que intercepta la vostra connexió.</translation>
 <translation id="1225016890511909183">Chrome emmagatzemarà de manera segura la vostra informació perquè no hàgiu de tornar-la a escriure, però continuareu havent de verificar el codi de seguretat de la targeta per a pagaments futurs.</translation>
 <translation id="123620459398936149">Chrome OS no ha pogut sincronitzar les vostres dades. Actualitzeu la contrasenya de sincronització.</translation>
 <translation id="127345590676626841">Chrome s'actualitza automàticament perquè en tingueu sempre la versió més recent. Quan es completi aquesta baixada, Chrome es reiniciarà i ja el podreu utilitzar.</translation>
@@ -33,7 +32,6 @@
 <translation id="174539241580958092">Google Chrome no ha pogut sincronitzar les dades a causa d'un error en iniciar la sessió.</translation>
 <translation id="1759301979429102118">Disposar de detalls dels vostres contactes us pot ajudar a emplenar formularis amb més rapidesa a Chrome.</translation>
 <translation id="1759842336958782510">Chrome</translation>
-<translation id="1763864636252898013">Aquest servidor no ha pogut comprovar que sigui <ph name="DOMAIN" /> perquè el sistema operatiu del vostre dispositiu considera que el seu certificat de seguretat no és de confiança. Això pot ser a causa d'una configuració incorrecta o d'un atacant que intercepta la vostra connexió.</translation>
 <translation id="1773601347087397504">Obtén ajuda per a l'ús de Chrome OS</translation>
 <translation id="1818142563254268765">No s'ha pogut fer l'actualització de Chrome a la versió més recent, de manera que esteu perdent funcions noves i correccions de seguretat magnífiques. Cal que actualitzeu Chrome.</translation>
 <translation id="1877026089748256423">Chrome no està actualitzat</translation>
@@ -105,7 +103,6 @@ En iniciar la sessió, sigui amb l'usuari que sigui, es combinarà amb <ph name=
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="4367618624832907428">Google Chrome no pot mostrar la pàgina web perquè l'ordinador no està connectat a Internet.</translation>
 <translation id="4407807842708586359">SO de Google Chrome</translation>
-<translation id="4424024547088906515">Aquest servidor no ha pogut comprovar que sigui <ph name="DOMAIN" /> perquè Chrome considera que el seu certificat de seguretat no és de confiança. Això pot ser a causa d'una configuració incorrecta o d'un atacant que intercepta la vostra connexió.</translation>
 <translation id="4458285410772214805">Tanqueu la sessió i torneu a iniciar-la perquè aquest canvi es faci efectiu.</translation>
 <translation id="4480040274068703980">Chrome OS no ha pogut sincronitzar les vostres dades a causa d'un error en iniciar la sessió.</translation>
 <translation id="4513711165509885787">Els detalls de facturació s'han desat a Chrome.</translation>

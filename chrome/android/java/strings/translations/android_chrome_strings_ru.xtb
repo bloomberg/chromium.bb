@@ -5,7 +5,6 @@
 <translation id="10614374240317010">Сайты, пароли для которых не сохраняются</translation>
 <translation id="1061441684050139317">Предоставьте браузеру Chrome доступ к микрофону, чтобы пользоваться им на этом сайте.</translation>
 <translation id="1080790410959514870">Вы выходите из аккаунта, которым управляет администратор домена <ph name="DOMAIN_NAME" />. Все данные Chrome, хранящиеся на этом устройстве, будут удалены, но останутся в вашем аккаунте Google.</translation>
-<translation id="1086169178231554178">SD-карта недоступна</translation>
 <translation id="1091134514807961917">Вы вошли в аккаунт Google, указанный ниже.</translation>
 <translation id="1095407227123756519">Добавьте аккаунт, и вы сможете работать с одними и теми же закладками, историей, паролями и другими настройками на любом устройстве.</translation>
 <translation id="1098052486217676340">Завершено</translation>
@@ -86,7 +85,6 @@
 <translation id="2351097562818989364">Настройки перевода сброшены</translation>
 <translation id="2354750644801399986">Запрет отслеживания</translation>
 <translation id="2359808026110333948">Далее</translation>
-<translation id="2360035970720276770">Скачивать можно только с адресов http и https</translation>
 <translation id="2381756643783702095">Спрашивать разрешение перед отправкой (рекомендуется)</translation>
 <translation id="2387895666653383613">Масштабирование текста</translation>
 <translation id="238909021488141516">Во время скачивания произошла ошибка.</translation>
@@ -127,7 +125,6 @@
 <translation id="2960796085439532066">© Google Inc., <ph name="YEAR" />. Все права защищены.</translation>
 <translation id="2968755619301702150">Просмотр сертификатов</translation>
 <translation id="2996809686854298943">Необходимо указать URL</translation>
-<translation id="3003595280608617736">Нет SD-карты</translation>
 <translation id="3029704984691124060">Кодовые фразы не совпадают</translation>
 <translation id="3039671569659952257">Удалить папку</translation>
 <translation id="3063601790762993062">Сохранить видео</translation>
@@ -233,6 +230,7 @@
 <translation id="4816465935029283692">Типы данных</translation>
 <translation id="4827948050554950725">Добавить кредитную карту</translation>
 <translation id="4836364883164334657">Подключение не защищено. Злоумышленники могут похитить ваши данные (например, пароли, сообщения или номера банковских карт) в домене <ph name="DOMAIN_NAME" />.</translation>
+<translation id="4850886885716139402">Посмотреть</translation>
 <translation id="4871370605780490696">Добавить закладку</translation>
 <translation id="4881695831933465202">Открыть</translation>
 <translation id="4885273946141277891">Конфликт версий Chrome</translation>
@@ -450,8 +448,6 @@
 <translation id="7648422057306047504">Шифровать пароли с помощью учетных данных аккаунта Google</translation>
 <translation id="7658239707568436148">Отмена</translation>
 <translation id="7665369617277396874">Добавить аккаунт</translation>
-<translation id="7711895876052978264">Выбран полноэкранный режим просмотра.
-Чтобы вернуться к обычному режиму, нажмите кнопку "Назад".</translation>
 <translation id="7764225426217299476">Добавить адрес</translation>
 <translation id="7765158879357617694">Переместить</translation>
 <translation id="7767746238359002192">Чтобы сохранить страницу, откройте ее</translation>
@@ -470,7 +466,6 @@
 <translation id="7961015016161918242">Нет</translation>
 <translation id="7963646190083259054">Поставщик:</translation>
 <translation id="7977858705483383621">Безопасный поиск</translation>
-<translation id="7981795308302452224">Не удалось начать загрузку</translation>
 <translation id="7987073022710626672">Условия использования Chrome</translation>
 <translation id="7989222512959629388">Сохранение…</translation>
 <translation id="7998918019931843664">Восстановить закрытую вкладку</translation>
@@ -483,7 +478,6 @@
 <translation id="8073388330009372546">Открыть в новой вкладке</translation>
 <translation id="8084156870963450514">Войдите в аккаунт и получите доступ к своим данным, например вкладкам и истории просмотров, на любом устройстве</translation>
 <translation id="8106211421800660735">Номер карты</translation>
-<translation id="8109148095642131923">Не удалось добавить скачанный файл в диспетчер загрузки</translation>
 <translation id="813082847718468539">Сведения о сайте</translation>
 <translation id="8137558756159375272">Функция "Нажмите для поиска" отправляет в Google выбранное слово, а также текущую страницу в качестве контекста. Включить или отключить эту функцию можно в <ph name="BEGIN_LINK" />настройках<ph name="END_LINK" />.</translation>
 <translation id="8143660160623733249">Название папки</translation>
@@ -568,5 +562,4 @@
 <translation id="969096075394517431">Изменить языки</translation>
 <translation id="971774202801778802">URL закладки</translation>
 <translation id="983192555821071799">Закрыть все вкладки</translation>
-<translation id="988938288723502454">Не удается создать каталог для скачивания на SD-карте.</translation>
 </translationbundle>

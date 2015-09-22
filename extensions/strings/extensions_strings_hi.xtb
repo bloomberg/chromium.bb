@@ -21,12 +21,14 @@
 <translation id="388442998277590542">विकल्‍प पृष्ठ '<ph name="OPTIONS_PAGE" />' लोड नहीं कर सका.</translation>
 <translation id="4115165561519362854">इस मशीन का नियंत्रक चाहता है कि <ph name="EXTENSION_NAME" /> के पास <ph name="EXTENSION_VERSION" /> का एक न्‍यूनतम वर्शन हो. इसे तब तक सक्षम नहीं किया जा सकता जब तक कि उसे उस वर्शन (या बाद वाले वर्शन) में अपडेट ना कर दिया गया हो.</translation>
 <translation id="4233778200880751280">संक्षिप्त विवरण पृष्ठ '<ph name="ABOUT_PAGE" />' लोड नहीं हो सका.</translation>
+<translation id="4434145631756268951">{0,select, single{USB डिवाइस चुनें}multiple{USB डिवाइस चुनें}other{UNUSED}}</translation>
 <translation id="4811956658694082538">उपयोगिता प्रक्रिया क्रैश होने के कारण पैकेज इंस्‍टॉल नहीं किया जा सका. Chrome को पुन: प्रारंभ करके और पुन: प्रयास करके देखें.</translation>
 <translation id="4883436287898674711">सभी <ph name="WEBSITE_1" /> साइटें</translation>
 <translation id="5026754133087629784">वेबदृश्य: <ph name="WEBVIEW_TAG_NAME" /></translation>
 <translation id="5356315618422219272">ऐप्‍स दृश्‍य: <ph name="APPVIEW_TAG_NAME" /></translation>
 <translation id="5456409301717116725">एक्सटेंशन में कुंजी फ़ाइल '<ph name="KEY_PATH" />' शामिल है. संभवतः आप ऐसा नहीं करना चाहते हैं.</translation>
 <translation id="5627523580512561598">एक्सटेंशन <ph name="EXTENSION_NAME" /></translation>
+<translation id="5630931906013276297">{0,select, single{HID डिवाइस चुनें}multiple{HID डिवाइस चुनें}other{UNUSED}}</translation>
 <translation id="5960890139610307736">ExtensionView: <ph name="EXTENSIONVIEW_TAG_NAME" /></translation>
 <translation id="5972529113578162692">इस मशीन के व्‍यवस्‍थापक के लिए आवश्‍यक है कि <ph name="EXTENSION_NAME" /> इंस्‍टॉल किया जाए. उसे अनइंस्‍टॉल नहीं किया जा सकता.</translation>
 <translation id="6027032947578871493"><ph name="VENDOR_NAME" /> (क्रमांक <ph name="SERIAL_NUMBER" />) की ओर से अज्ञात <ph name="PRODUCT_ID" /> उत्पाद</translation>

@@ -5,7 +5,6 @@
 <translation id="10614374240317010">Nikdy se neukládají</translation>
 <translation id="1061441684050139317">Aby Chrome mohl s těmito webovými stránkami sdílet mikrofon, musí k němu mít přístup.</translation>
 <translation id="1080790410959514870">Odhlašujete se z účtu, který je spravován doménou <ph name="DOMAIN_NAME" />. Data prohlížeče Chrome uložená v tomto zařízení touto akcí smažete, avšak v účtu Google tato data zůstanou.</translation>
-<translation id="1086169178231554178">SD karta není dostupná</translation>
 <translation id="1091134514807961917">Jste přihlášeni k následujícímu účtu Google.</translation>
 <translation id="1095407227123756519">Přidejte účet a synchronizujte záložky, historii, hesla a další nastavení do všech svých zařízení.</translation>
 <translation id="1098052486217676340">Dokončeno</translation>
@@ -86,7 +85,6 @@
 <translation id="2351097562818989364">Nastavení překladů bylo resetováno.</translation>
 <translation id="2354750644801399986">Do Not Track</translation>
 <translation id="2359808026110333948">Pokračovat</translation>
-<translation id="2360035970720276770">Lze stahovat jen adresy URL typu http nebo https</translation>
 <translation id="2381756643783702095">Před odesláním se zeptat (doporučeno)</translation>
 <translation id="2387895666653383613">Zvětšení/zmenšení textu</translation>
 <translation id="238909021488141516">Při stahování obsahu došlo k chybě.</translation>
@@ -127,7 +125,6 @@
 <translation id="2960796085439532066">Copyright <ph name="YEAR" /> Google Inc. Všechna práva vyhrazena.</translation>
 <translation id="2968755619301702150">Prohlížeč certifikátů</translation>
 <translation id="2996809686854298943">Je požadována adresa URL</translation>
-<translation id="3003595280608617736">SD karta není k dispozici</translation>
 <translation id="3029704984691124060">Heslové fráze se neshodují</translation>
 <translation id="3039671569659952257">Smazat složku</translation>
 <translation id="3063601790762993062">Uložit video</translation>
@@ -232,6 +229,7 @@ Chcete-li vyhledávací dotaz upravit, proveďte výběr dlouhým stisknutím. C
 <translation id="4816465935029283692">Typy dat</translation>
 <translation id="4827948050554950725">Přidat platební kartu</translation>
 <translation id="4836364883164334657">Připojení k tomuto webu není soukromé. Útočníci se mohou pokusit ukrást vaše údaje na webu <ph name="DOMAIN_NAME" /> (například fotky, hesla, zprávy nebo informace o platebních kartách).</translation>
+<translation id="4850886885716139402">Zobrazit</translation>
 <translation id="4871370605780490696">Přidat záložku</translation>
 <translation id="4881695831933465202">Otevřít</translation>
 <translation id="4885273946141277891">Nepodporovaný počet instancí Chromu.</translation>
@@ -449,8 +447,6 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="7648422057306047504">Šifrovat hesla pomocí identifikačních údajů Google</translation>
 <translation id="7658239707568436148">Zrušit</translation>
 <translation id="7665369617277396874">Přidat účet</translation>
-<translation id="7711895876052978264">Tento web přešel do režimu celé obrazovky.
-Ukončíte jej stisknutím tlačítka Zpět.</translation>
 <translation id="7764225426217299476">Přidat adresu</translation>
 <translation id="7765158879357617694">Přesunout</translation>
 <translation id="7767746238359002192">Navštivte stránku, kterou chcete uložit offline</translation>
@@ -469,7 +465,6 @@ Ukončíte jej stisknutím tlačítka Zpět.</translation>
 <translation id="7961015016161918242">Nikdy</translation>
 <translation id="7963646190083259054">Dodavatel:</translation>
 <translation id="7977858705483383621">Bezpečné vyhledávání</translation>
-<translation id="7981795308302452224">Stahování se nepodařilo zahájit</translation>
 <translation id="7987073022710626672">Smluvní podmínky Chrome</translation>
 <translation id="7989222512959629388">Ukládání…</translation>
 <translation id="7998918019931843664">Znovu otevřít zavřenou kartu</translation>
@@ -482,7 +477,6 @@ Ukončíte jej stisknutím tlačítka Zpět.</translation>
 <translation id="8073388330009372546">Otevřít na nové kartě</translation>
 <translation id="8084156870963450514">Chcete-li mít přístup k webovému obsahu ve všech zařízeních, přihlaste se.</translation>
 <translation id="8106211421800660735">Číslo platební karty</translation>
-<translation id="8109148095642131923">Stahovanou položku se nepodařilo přidat do správce stahování.</translation>
 <translation id="813082847718468539">Zobrazit informace o stránkách</translation>
 <translation id="8137558756159375272">Vyhledání klepnutím odešle vybrané slovo a aktuální stránku jako kontext do Vyhledávání Google. Tuto funkci můžete vypnout v <ph name="BEGIN_LINK" />Nastavení<ph name="END_LINK" />.</translation>
 <translation id="8143660160623733249">Název složky</translation>
@@ -567,5 +561,4 @@ Chcete-li získat nové licence, připojte se k internetu a přehrajte stažen
 <translation id="969096075394517431">Změnit jazyky</translation>
 <translation id="971774202801778802">Adresa URL záložky</translation>
 <translation id="983192555821071799">Zavřít všechny karty</translation>
-<translation id="988938288723502454">Na SD kartě nelze vytvořit adresář pro stahování.</translation>
 </translationbundle>

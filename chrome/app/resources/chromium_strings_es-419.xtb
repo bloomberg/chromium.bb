@@ -5,7 +5,6 @@
 <translation id="108122890477367602">&amp;Reiniciar Chromium en modo Windows 8</translation>
 <translation id="1115445892567829615">Chromium no pudo sincronizar los datos. Actualiza la frase de contraseña de sincronización.</translation>
 <translation id="1144202035120576837"><ph name="SITE" /> normalmente usa la encriptación para proteger tu información. Cuando Chromium intentó conectarse a <ph name="SITE" /> esta vez, el sitio web devolvió credenciales inusuales e incorrectas. Puede tratarse de un atacante que finge ser <ph name="SITE" /> o una pantalla de acceso de Wi-Fi que interrumpió la conexión. La información sigue siendo segura porque Chromium detuvo la conexión antes del intercambio de datos.</translation>
-<translation id="1150979032973867961">Este servidor no pudo probar que su dominio es <ph name="DOMAIN" />; el sistema operativo de la computadora no confía en el certificado de seguridad. Es posible que esto se deba a una configuración incorrecta o a que un atacante interceptó la conexión.</translation>
 <translation id="1174473354587728743">¿Compartes una computadora? Ahora puedes configurar Chromium como a ti te gusta.</translation>
 <translation id="1185134272377778587">Acerca de Chromium</translation>
 <translation id="1221340462641866827">Chromium OS no admite la inicialización de una aplicación externa para utilizar vínculos <ph name="SCHEME" />. El vínculo solicitado es <ph name="PROTOLINK" />.</translation>
@@ -25,7 +24,6 @@
 <translation id="1708666629004767631">Hay una versión nueva y más segura de Chromium disponible.</translation>
 <translation id="1725059042853530269"><ph name="FILE_NAME" /> puede dañar tu experiencia de navegación, por eso Chromium lo bloqueó.</translation>
 <translation id="1745962126679160932">Chromium almacenará tu información de forma segura, de modo que no deberás ingresarla de nuevo. No obstante, deberás verificar el código de seguridad de tu tarjeta cuando realices pagos en el futuro.</translation>
-<translation id="1763864636252898013">Este servidor no pudo probar que su dominio es <ph name="DOMAIN" />; el sistema operativo del dispositivo no confía en el certificado de seguridad. Es posible que esto se deba a una configuración incorrecta o a que un atacante interceptó la conexión.</translation>
 <translation id="1774152462503052664">Permitir que Chromium se ejecute en segundo plano</translation>
 <translation id="1779356040007214683">Para que Chromium sea más seguro, inhabilitamos algunas extensiones que no figuran en <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> y que posiblemente se hayan agregado sin tu conocimiento.</translation>
 <translation id="1808667845054772817">Reinstalar Chromium</translation>
@@ -134,7 +132,6 @@
 <translation id="4987820182225656817">Los invitados pueden utilizar Chromium sin dejar nada detrás.</translation>
 <translation id="4994636714258228724">Agregarte a Chromium</translation>
 <translation id="5032989939245619637">Guardar los detalles en Chromium</translation>
-<translation id="5094747076828555589">Este servidor no pudo probar que su dominio es <ph name="DOMAIN" />; Chromium no confía en el certificado de seguridad. Es posible que esto se deba a una configuración incorrecta o a que un atacante interceptó la conexión.</translation>
 <translation id="5358375970380395591">Estás por acceder con una cuenta administrada, lo que significa que proporcionarás al administrador el control sobre tu perfil de Chromium. Tus datos de Chromium, como las aplicaciones, los marcadores, el historial, las contraseñas y otros parámetros de configuración quedarán vinculados a <ph name="USER_NAME" /> de forma permanente. Podrás eliminar estos datos a través del Panel de control de Cuentas de Google, pero no podrás asociarlos a otra cuenta. <ph name="LEARN_MORE" /></translation>
 <translation id="5398878173008909840">Hay una nueva versión de Chromium disponible.</translation>
 <translation id="5427571867875391349">Establecer Chromium como navegador predeterminado</translation>

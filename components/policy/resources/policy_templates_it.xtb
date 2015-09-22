@@ -84,7 +84,6 @@ Se la norma non viene impostata, la modalità ad alto contrasto viene disattivat
       Se viene impostata questa norma, il valore predefinito di tre ore viene ignorato. L'intervallo dei valori validi per la norma va da 1800000 (30 minuti) a 86400000 (un giorno). I valori non compresi in questo intervallo verranno bloccati sul corrispettivo limite.
 
       Se questa norma non viene impostata, per <ph name="PRODUCT_OS_NAME" /> verrà utilizzato il valore predefinito di tre ore.</translation>
-<translation id="1503959756075098984">ID estensioni e URL di aggiornamento da installare automaticamente</translation>
 <translation id="1504431521196476721">Attestazione da remoto</translation>
 <translation id="1509692106376861764">Questa norma non è più supportata a partire dalla versione 29 di <ph name="PRODUCT_NAME" />.</translation>
 <translation id="1522425503138261032">Consenti ai siti di monitorare la posizione fisica degli utenti</translation>
@@ -1393,7 +1392,6 @@ Se l'impostazione viene impostata su true, o se non viene impostata, l'attestazi
           Separa più nomi di server con delle virgole. Sono ammessi i caratteri jolly (*).
 
           Se questa norma non viene impostata <ph name="PRODUCT_NAME" /> tenterà di rilevare se sulla Intranet è presente un server e solo allora risponderà alle richieste IWA. Se viene rilevato un server su Internet, le sue richieste IWA verranno ignorate da <ph name="PRODUCT_NAME" />.</translation>
-<translation id="8665076741187546529">Configura l'elenco delle estensioni con installazione imposta</translation>
 <translation id="8668394701842594241">Consente di specificare un elenco di plug-in attivi in <ph name="PRODUCT_NAME" /> e di impedire agli utenti di modificare questa impostazione. È possibile utilizzare i caratteri jolly "*" e "?" in corrispondenza delle sequenze di caratteri arbitrari. Il carattere "*" corrisponde a un numero arbitrario di caratteri, mentre "?" indica un singolo carattere facoltativo, cioè corrisponde a zero caratteri o a uno solo. Il carattere di escape è "\" quindi, per indicare i caratteri "*", "?" e "\" effettivi, puoi inserire prima di tali caratteri un simbolo "\". L'elenco di plug-in specificato verrà utilizzato sempre in <ph name="PRODUCT_NAME" /> se i plug-in sono installati. I plug-in verranno contrassegnati come attivi in "about:plugins" e gli utenti non potranno disattivarli. Tieni presente che questa norma ha la precedenza sulle norme DisabledPlugins e DisabledPluginsExceptions. Se questa norma non viene impostata, gli utenti potranno disattivare qualsiasi plug-in installato sul sistema.</translation>
 <translation id="8672321184841719703">Scegli versione target dell'aggiornamento automatico</translation>
 <translation id="868187325500643455">Consenti l'esecuzione automatica dei plug-in in tutti i siti</translation>

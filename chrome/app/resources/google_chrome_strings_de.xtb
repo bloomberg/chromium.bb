@@ -9,7 +9,6 @@
 <translation id="1073391069195728457">Chrome-Benachrichtigungen</translation>
 <translation id="1104959162601287462">Über &amp;Chrome OS</translation>
 <translation id="110877069173485804">Dies ist Ihr persönlicher Chrome-Browser</translation>
-<translation id="1150979032973867961">Dieser Server konnte nicht beweisen, dass er <ph name="DOMAIN" /> ist. Sein Sicherheitszertifikat wird vom Betriebssystem Ihres Computers als nicht vertrauenswürdig eingestuft. Mögliche Gründe sind eine fehlerhafte Konfiguration oder ein Angreifer, der Ihre Verbindung abfängt.</translation>
 <translation id="1225016890511909183">Ihre Informationen werden von Chrome sicher gespeichert. Dadurch brauchen Sie sie nicht erneut einzugeben. Sie müssen aber bei zukünftigen Zahlungen immer noch den Sicherheitscode Ihrer Karte bestätigen.</translation>
 <translation id="123620459398936149">Chrome OS konnte Ihre Daten nicht synchronisieren. Bitte aktualisieren Sie Ihre Passphrase für die Synchronisierung.</translation>
 <translation id="127345590676626841">Chrome wird automatisch aktualisiert, sodass Sie immer über die neueste Version verfügen. Nach Abschluss des Downloads wird Chrome neu gestartet und Sie können fortfahren.</translation>
@@ -33,7 +32,6 @@
 <translation id="174539241580958092">Google Chrome konnte Ihre Daten aufgrund eines Fehlers bei der Anmeldung nicht synchronisieren.</translation>
 <translation id="1759301979429102118">Mithilfe von Angaben aus Ihren Kontakten können Sie Formulare in Chrome schneller ausfüllen.</translation>
 <translation id="1759842336958782510">Chrome</translation>
-<translation id="1763864636252898013">Dieser Server konnte nicht beweisen, dass er <ph name="DOMAIN" /> ist. Sein Sicherheitszertifikat wird vom Betriebssystem Ihres Geräts als nicht vertrauenswürdig eingestuft. Mögliche Gründe sind eine fehlerhafte Konfiguration oder ein Angreifer, der Ihre Verbindung abfängt.</translation>
 <translation id="1773601347087397504">Hilfe für Chrome OS aufrufen</translation>
 <translation id="1818142563254268765">Chrome konnte nicht automatisch auf die neueste Version aktualisiert werden. In Ihrer Version fehlen einige neue Funktionen und Sicherheitsmerkmale. Aktualisieren Sie Chrome manuell.</translation>
 <translation id="1877026089748256423">Chrome ist veraltet.</translation>
@@ -105,7 +103,6 @@ Sollten Sie sich trotzdem anmelden, werden die Chrome-Daten wie Lesezeichen, Ver
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="4367618624832907428">Die Webseite kann nicht in Google Chrome angezeigt werden, weil Ihr Computer nicht mit dem Internet verbunden ist.</translation>
 <translation id="4407807842708586359">Google Chrome OS</translation>
-<translation id="4424024547088906515">Dieser Server konnte nicht beweisen, dass er <ph name="DOMAIN" /> ist. Sein Sicherheitszertifikat wird von Chrome als nicht vertrauenswürdig eingestuft. Mögliche Gründe sind eine fehlerhafte Konfiguration oder ein Angreifer, der Ihre Verbindung abfängt.</translation>
 <translation id="4458285410772214805">Melden Sie sich ab und wieder an, damit diese Änderung wirksam wird.</translation>
 <translation id="4480040274068703980">Chrome OS konnte Ihre Daten aufgrund eines Fehlers bei der Anmeldung nicht synchronisieren.</translation>
 <translation id="4513711165509885787">Ihre Zahlungsangaben wurden in Chrome gespeichert.</translation>

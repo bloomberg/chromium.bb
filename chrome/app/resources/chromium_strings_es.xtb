@@ -8,7 +8,6 @@ Es posible que algunas funciones no estén disponibles y que no se guarden los c
 <translation id="1115445892567829615">Chromium no ha podido sincronizar los datos. Actualiza la frase de contraseña de sincronización.</translation>
 <translation id="1144202035120576837"><ph name="SITE" /> utiliza normalmente el cifrado para proteger tu información. Cuando Chromium intentó establecer conexión con <ph name="SITE" />, el sitio web devolvió credenciales inusuales
 e incorrectas. Por tanto, es posible que un atacante esté intentando suplantar la identidad de <ph name="SITE" /> o que una pantalla de inicio de sesión Wi-Fi haya interrumpido la conexión. No obstante, tu información sigue estando protegida porque Chromium ha detenido la conexión antes de que se intercambiaran los datos.</translation>
-<translation id="1150979032973867961">Este servidor no ha podido probar que su dominio es <ph name="DOMAIN" />, el sistema operativo de tu ordenador no confía en su certificado de seguridad. Este problema puede deberse a una configuración incorrecta o a que un atacante haya interceptado la conexión.</translation>
 <translation id="1174473354587728743">Si compartes un ordenador, ahora puedes configurar Chromium como quieras.</translation>
 <translation id="1185134272377778587">Acerca de Chromium</translation>
 <translation id="1221340462641866827">Chromium OS no puede iniciar una aplicación externa para gestionar enlaces <ph name="SCHEME" />. El enlace solicitado es <ph name="PROTOLINK" />.</translation>
@@ -28,7 +27,6 @@ e incorrectas. Por tanto, es posible que un atacante esté intentando suplantar 
 <translation id="1708666629004767631">Hay disponible una nueva versión más segura de Chromium.</translation>
 <translation id="1725059042853530269"><ph name="FILE_NAME" /> puede dañar tu experiencia de navegación, por lo que Chromium lo ha bloqueado.</translation>
 <translation id="1745962126679160932">Chromium almacenará de forma segura tu información, de modo que no tendrás que volver a introducirla, aunque tendrás que seguir verificando el código de seguridad de tu tarjeta para futuros pagos.</translation>
-<translation id="1763864636252898013">Este servidor no ha podido probar que su dominio es <ph name="DOMAIN" />, el sistema operativo de tu dispositivo no confía en su certificado de seguridad. Este problema puede deberse a una configuración incorrecta o a que un atacante haya interceptado la conexión.</translation>
 <translation id="1774152462503052664">Permitir que Chromium se ejecute en segundo plano</translation>
 <translation id="1779356040007214683">Para aumentar la seguridad de Chromium, hemos inhabilitado algunas extensiones que no figuran en <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> y que se podrían haber añadido sin tu conocimiento.</translation>
 <translation id="1808667845054772817">Reinstalar Chromium</translation>
@@ -139,7 +137,6 @@ e incorrectas. Por tanto, es posible que un atacante esté intentando suplantar 
 <translation id="4987820182225656817">Los invitados pueden utilizar Chromium sin dejar nada atrás.</translation>
 <translation id="4994636714258228724">Añadirte a Chromium</translation>
 <translation id="5032989939245619637">Guardar detalles en Chromium</translation>
-<translation id="5094747076828555589">Este servidor no ha podido probar que su dominio es <ph name="DOMAIN" />, Chromium no confía en su certificado de seguridad. Este problema puede deberse a una configuración incorrecta o a que un atacante haya interceptado la conexión.</translation>
 <translation id="5358375970380395591">Vas a iniciar sesión con una cuenta administrada, lo que significa que proporcionarás a su administrador control sobre tu perfil de Chromium. Tus datos de Chromium como, por ejemplo, tus aplicaciones, tus marcadores, tu historial, tus contraseñas y otras opciones se vincularán de forma permanente a la cuenta <ph name="USER_NAME" />. Podrás eliminar estos datos a través del Panel de control de cuentas de Google, pero no podrás asociarlos a otra cuenta. <ph name="LEARN_MORE" /></translation>
 <translation id="5398878173008909840">Hay una nueva versión de Chromium disponible.</translation>
 <translation id="5427571867875391349">Establecer Chromium como navegador predeterminado</translation>

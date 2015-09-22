@@ -5,7 +5,6 @@
 <translation id="10614374240317010">Không bao giờ được lưu</translation>
 <translation id="1061441684050139317">Chrome cần quyền truy cập micrô để chia sẻ micrô với trang web này.</translation>
 <translation id="1080790410959514870">Bạn đang đăng xuất tài khoản do <ph name="DOMAIN_NAME" /> quản lý. Thao tác này sẽ xóa dữ liệu Chrome được lưu trữ trên thiết bị này nhưng dữ liệu sẽ vẫn còn trong tài khoản Google của bạn.</translation>
-<translation id="1086169178231554178">Thẻ SD không khả dụng</translation>
 <translation id="1091134514807961917">Bạn đã đăng nhập vào tài khoản Google sau đây.</translation>
 <translation id="1095407227123756519">Thêm tài khoản để nhận dấu trang, lịch sử, mật khẩu và các cài đặt khác trên tất cả các thiết bị của bạn.</translation>
 <translation id="1098052486217676340">Đã hoàn thành</translation>
@@ -86,7 +85,6 @@
 <translation id="2351097562818989364">Đã đặt lại cài đặt dịch của bạn.</translation>
 <translation id="2354750644801399986">'Không theo dõi'</translation>
 <translation id="2359808026110333948">Tiếp tục</translation>
-<translation id="2360035970720276770">Chỉ có thể tải xuống URL http hoặc https</translation>
 <translation id="2381756643783702095">Hỏi trước khi gửi (được đề xuất)</translation>
 <translation id="2387895666653383613">Chia tỷ lệ văn bản</translation>
 <translation id="238909021488141516">Đã xảy ra lỗi khi tải xuống nội dung.</translation>
@@ -127,7 +125,6 @@
 <translation id="2960796085439532066">Bản quyền <ph name="YEAR" /> Google Inc. Mọi quyền được bảo lưu.</translation>
 <translation id="2968755619301702150">Trình xem chứng chỉ</translation>
 <translation id="2996809686854298943">Cần có URL</translation>
-<translation id="3003595280608617736">Không có thẻ SD nào</translation>
 <translation id="3029704984691124060">Cụm mật khẩu không khớp</translation>
 <translation id="3039671569659952257">Xóa thư mục</translation>
 <translation id="3063601790762993062">Lưu video</translation>
@@ -232,6 +229,7 @@ Bạn đang đăng nhập bằng tài khoản được quản lý và cung cấp
 <translation id="4816465935029283692">Loại dữ liệu</translation>
 <translation id="4827948050554950725">Thêm thẻ tín dụng</translation>
 <translation id="4836364883164334657">Kết nối của bạn tới trang web này không ở chế độ riêng tư. Những kẻ tấn công có thể tìm cách lấy cắp thông tin của bạn (ví dụ: ảnh, mật khẩu, tin nhắn và thẻ tín dụng) từ <ph name="DOMAIN_NAME" />.</translation>
+<translation id="4850886885716139402">Xem</translation>
 <translation id="4871370605780490696">Thêm dấu trang</translation>
 <translation id="4881695831933465202">Mở</translation>
 <translation id="4885273946141277891">Số phiên bản Chrome không được hỗ trợ.</translation>
@@ -449,8 +447,6 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="7648422057306047504">Mã hóa mật khẩu bằng thông tin đăng nhập Google</translation>
 <translation id="7658239707568436148">Hủy</translation>
 <translation id="7665369617277396874">Thêm tài khoản</translation>
-<translation id="7711895876052978264">Trang web này đã chuyển sang chế độ toàn màn hình.
-Nhấn nút quay lại để thoát.</translation>
 <translation id="7764225426217299476">Thêm địa chỉ</translation>
 <translation id="7765158879357617694">Di chuyển</translation>
 <translation id="7767746238359002192">Truy cập trang để lưu bản sao ngoại tuyến</translation>
@@ -469,7 +465,6 @@ Nhấn nút quay lại để thoát.</translation>
 <translation id="7961015016161918242">Chưa bao giờ</translation>
 <translation id="7963646190083259054">Nhà cung cấp:</translation>
 <translation id="7977858705483383621">Tìm kiếm an toàn</translation>
-<translation id="7981795308302452224">Không bắt đầu tải xuống được</translation>
 <translation id="7987073022710626672">Điều khoản dịch vụ của Chrome</translation>
 <translation id="7989222512959629388">Đang lưu…</translation>
 <translation id="7998918019931843664">Mở lại tab đã đóng</translation>
@@ -482,7 +477,6 @@ Nhấn nút quay lại để thoát.</translation>
 <translation id="8073388330009372546">Mở ảnh trong tab mới</translation>
 <translation id="8084156870963450514">Đăng nhập để truy cập tất cả nội dung trên trang web của bạn từ mọi thiết bị</translation>
 <translation id="8106211421800660735">Số thẻ tín dụng</translation>
-<translation id="8109148095642131923">Không thêm được mục đã tải xuống vào trình quản lý tải xuống.</translation>
 <translation id="813082847718468539">Xem thông tin trang web</translation>
 <translation id="8137558756159375272">Chạm để tìm kiếm sẽ gửi từ đã chọn và trang hiện tại làm ngữ cảnh cho Google Tìm kiếm. Bạn có thể tắt tính năng này trong <ph name="BEGIN_LINK" />Cài đặt<ph name="END_LINK" />.</translation>
 <translation id="8143660160623733249">Tên thư mục</translation>
@@ -567,5 +561,4 @@ Nhấn nút quay lại để thoát.</translation>
 <translation id="969096075394517431">Thay đổi ngôn ngữ</translation>
 <translation id="971774202801778802">URL dấu trang</translation>
 <translation id="983192555821071799">Đóng tất cả các tab</translation>
-<translation id="988938288723502454">Không thể tạo thư mục tải xuống trên thẻ SD.</translation>
 </translationbundle>

@@ -9,7 +9,6 @@
 <translation id="1073391069195728457">Google Chrome - Notificações</translation>
 <translation id="1104959162601287462">Sobre o Chrome OS</translation>
 <translation id="110877069173485804">Este é seu Chrome</translation>
-<translation id="1150979032973867961">Este servidor não conseguiu provar que é <ph name="DOMAIN" />. O certificado de segurança não é confiável para o sistema operacional do seu computador. Isso pode ser causado por uma configuração incorreta ou pela interceptação da sua conexão por um invasor.</translation>
 <translation id="1225016890511909183">O Google Chrome armazena suas informações com segurança para que não seja necessário digitá-las novamente, mas você ainda precisa confirmar o código de segurança de seu cartão para pagamentos futuros.</translation>
 <translation id="123620459398936149">O Google Chrome não pôde sincronizar seus dados. Atualize sua senha de sincronização.</translation>
 <translation id="127345590676626841">O Chrome é atualizado automaticamente para que você sempre tenha a versão mais recente. Quando o download estiver concluído, o Chrome será reiniciado e você estará pronto.</translation>
@@ -33,7 +32,6 @@
 <translation id="174539241580958092">O Google Chrome não pôde sincronizar seus dados devido a um erro no login.</translation>
 <translation id="1759301979429102118">Detalhes dos seus contatos podem ajudar a preencher formulários de forma mais rápida no Google Chrome.</translation>
 <translation id="1759842336958782510">Chrome</translation>
-<translation id="1763864636252898013">Este servidor não conseguiu provar que é <ph name="DOMAIN" />. O certificado de segurança não é confiável para o sistema operacional do seu dispositivo. Isso pode ser causado por uma configuração incorreta ou pela interceptação da sua conexão por um invasor.</translation>
 <translation id="1773601347087397504">Obter ajuda para usar o Chrome OS</translation>
 <translation id="1818142563254268765">Não foi possível atualizar o Google Chrome para a versão mais recente. Com isso, você está perdendo novos recursos e correções de segurança incríveis. Atualize o Chrome.</translation>
 <translation id="1877026089748256423">O Google Chrome está desatualizado</translation>
@@ -106,7 +104,6 @@ Se você decidir fazer login assim mesmo, as informações do Google Chrome, com
 </translation>
 <translation id="4367618624832907428">O Google Chrome não pode exibir a página da Web porque seu computador não está conectado à Internet.</translation>
 <translation id="4407807842708586359">Sistema operacional (OS) do Google Chrome</translation>
-<translation id="4424024547088906515">Este servidor não conseguiu provar que é <ph name="DOMAIN" />. O certificado de segurança não é confiável para o Chrome. Isso pode ser causado por uma configuração incorreta ou pela interceptação da sua conexão por um invasor.</translation>
 <translation id="4458285410772214805">Saia e faça login novamente para que esta alteração entre em vigor.</translation>
 <translation id="4480040274068703980">O Chrome OS não pôde sincronizar seus dados devido a um erro durante o login.</translation>
 <translation id="4513711165509885787">Seus dados para cobrança foram salvos no Google Chrome.</translation>

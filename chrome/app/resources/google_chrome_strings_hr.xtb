@@ -9,7 +9,6 @@
 <translation id="1073391069195728457">Chrome – obavijesti</translation>
 <translation id="1104959162601287462">O OS-u &amp;Chrome</translation>
 <translation id="110877069173485804">Ovo je vaš Chrome</translation>
-<translation id="1150979032973867961">Poslužitelj nije mogao dokazati da je <ph name="DOMAIN" />; operativni sustav vašeg računala smatra da njegov sigurnosni certifikat nije pouzdan. To može biti uzrokovano pogrešnom konfiguracijom ili napadom na vašu vezu.</translation>
 <translation id="1225016890511909183">Chrome će pohraniti vaše podatke na siguran način tako da ih ne morate ponovo unositi, ali ćete prilikom budućih plaćanja i dalje morati potvrđivati sigurnosni kôd kartice.</translation>
 <translation id="123620459398936149">OS Chrome nije mogao sinkronizirati vaše podatke. Ažurirajte zaporku za sinkronizaciju.</translation>
 <translation id="127345590676626841">Chrome se ažurira automatski, pa uvijek imate najnoviju verziju. Kada se ovo preuzimanje dovrši, Chrome će se ponovo pokrenuti i moći ćete nastaviti.</translation>
@@ -33,7 +32,6 @@
 <translation id="174539241580958092">Google Chrome nije mogao sinkronizirati vaše podatke zbog pogreške prilikom prijave.</translation>
 <translation id="1759301979429102118">Pojedinosti iz vaših kontakata mogu vam pomoći brže ispuniti obrasce na Chromeu.</translation>
 <translation id="1759842336958782510">Chrome</translation>
-<translation id="1763864636252898013">Poslužitelj nije mogao dokazati da je <ph name="DOMAIN" />; operativni sustav vašeg uređaja smatra da njegov sigurnosni certifikat nije pouzdan. To može biti uzrokovano pogrešnom konfiguracijom ili napadom na vašu vezu.</translation>
 <translation id="1773601347087397504">Pomoć za upotrebu OS-a Chrome</translation>
 <translation id="1818142563254268765">Chrome se nije uspio ažurirati na najnoviju verziju, tako da se nisu instalirale sjajne nove značajke i sigurnosni popravci. Trebate ažurirati Chrome.</translation>
 <translation id="1877026089748256423">Chrome je zastario</translation>
@@ -105,7 +103,6 @@ Ako se ipak prijavite, podaci sustava Chrome kao što su oznake, povijest i osta
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="4367618624832907428">Google Chrome ne može prikazati web-stranicu jer vaše računalo nije povezano s internetom.</translation>
 <translation id="4407807842708586359">Google Chrome OS</translation>
-<translation id="4424024547088906515">Poslužitelj nije mogao dokazati da je <ph name="DOMAIN" />; Chrome smatra da njegov sigurnosni certifikat nije pouzdan. To može biti uzrokovano pogrešnom konfiguracijom ili napadom na vašu vezu.</translation>
 <translation id="4458285410772214805">Odjavite se i prijavite se ponovo da bi ta promjena postala aktivna.</translation>
 <translation id="4480040274068703980">OS Chrome nije mogao sinkronizirati vaše podatke zbog pogreške prilikom prijave.</translation>
 <translation id="4513711165509885787">Vaše pojedinosti o naplati spremljene su u Chrome.</translation>

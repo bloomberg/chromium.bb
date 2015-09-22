@@ -6,7 +6,6 @@
 <translation id="1115445892567829615">Chromium kunne ikke synkronisere dataene dine. Oppdater passordfrasen for synkronisering.</translation>
 <translation id="1144202035120576837"><ph name="SITE" /> bruker vanligvis kryptering til å beskytte informasjonen din. Da Chromium prøvde å koble til <ph name="SITE" /> denne gangen, sendte nettstedet tilbake uvanlig
 og feil legitimasjon. Enten utgir en hacker seg for å være <ph name="SITE" />, eller så har en Wi-Fi-påloggingsskjerm avbrutt forbindelsen. Informasjonen din er fremdeles sikker fordi Chromium brøt forbindelsen før noen data ble utvekslet.</translation>
-<translation id="1150979032973867961">Denne tjeneren kunne ikke bevise at den er <ph name="DOMAIN" />. Sikkerhetssertifikatet til tjeneren er ikke klarert av datamaskinens operativsystem. Dette kan være forårsaket av en feilkonfigurering eller en angriper som avskjærer tilkoblingen din.</translation>
 <translation id="1174473354587728743">Deler du datamaskinen din med andre? Nå kan du konfigurere Chromium akkurat slik du vil.</translation>
 <translation id="1185134272377778587">Om Chromium</translation>
 <translation id="1221340462641866827">Chromium OS støtter ikke start av et eksternt program for å håndtere <ph name="SCHEME" />-linker. Den påkrevde linken er <ph name="PROTOLINK" />.</translation>
@@ -26,7 +25,6 @@ og feil legitimasjon. Enten utgir en hacker seg for å være <ph name="SITE" />,
 <translation id="1708666629004767631">En ny, sikrere versjon av Chromium er tilgjengelig.</translation>
 <translation id="1725059042853530269"><ph name="FILE_NAME" />-filen kan gi deg en dårligere leseopplevelse, så Chromium har blokkert den.</translation>
 <translation id="1745962126679160932">Chromium lagrer informasjonen din sikkert, slik at du slipper å skrive den inn på nytt. Du må imidlertid bekrefte sikkerhetskoden for kortet ved fremtidige betalinger.</translation>
-<translation id="1763864636252898013">Denne tjeneren kunne ikke bevise at den er <ph name="DOMAIN" />. Sikkerhetssertifikatet til tjeneren er ikke klarert av enhetens operativsystem. Dette kan være forårsaket av en feilkonfigurering eller en angriper som avskjærer tilkoblingen din.</translation>
 <translation id="1774152462503052664">La Chromium kjøre i bakgrunnen</translation>
 <translation id="1779356040007214683">For å gjøre Chromium tryggere, har vi deaktivert noen utvidelser som ikke er oppført i <ph name="IDS_EXTENSION_WEB_STORE_TITLE" />, og som kan ha blitt lagt uten at du har vært klar over det.</translation>
 <translation id="1808667845054772817">Installer Chromium på nytt</translation>
@@ -137,7 +135,6 @@ og feil legitimasjon. Enten utgir en hacker seg for å være <ph name="SITE" />,
 <translation id="4987820182225656817">Gjester kan bruke Chromium uten å etterlate seg spor.</translation>
 <translation id="4994636714258228724">Legg til deg selv i Chromium</translation>
 <translation id="5032989939245619637">Lagre detaljer i Chromium</translation>
-<translation id="5094747076828555589">Denne tjeneren kunne ikke bevise at den er <ph name="DOMAIN" />. Sikkerhetssertifikatet til tjeneren er ikke klarert av Chromium. Dette kan være forårsaket av en feilkonfigurering eller en angriper som avskjærer tilkoblingen din.</translation>
 <translation id="5358375970380395591">Du logger deg på med en administrert konto og gir tilhørende administratorer kontroll over Chromium-profilen din. Chromium-dataene dine, slik som apper, bokmerker, loggen, passord og andre innstillinger, knyttes permanent til <ph name="USER_NAME" />. Du kan slette disse dataene via oversikten for Google-kontoer, men du kan ikke knytte disse dataene til en annen konto. <ph name="LEARN_MORE" /></translation>
 <translation id="5398878173008909840">En nyere versjon av Chromium er tilgjengelig.</translation>
 <translation id="5427571867875391349">Bruk Chromium som standard nettleser</translation>

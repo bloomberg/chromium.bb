@@ -5,7 +5,6 @@
 <translation id="108122890477367602">Chromium を Windows 8 モードで再起動(&amp;R)</translation>
 <translation id="1115445892567829615">Chromium はデータを同期できませんでした。同期パスフレーズを更新してください。</translation>
 <translation id="1144202035120576837"><ph name="SITE" /> では通常、ユーザーの情報を保護するために暗号化が行われています。今回、Chromium から <ph name="SITE" /> への接続試行時に、このウェブサイトからいつもとは異なる誤った認証情報が返されました。悪意のあるユーザーが <ph name="SITE" /> になりすまそうとしているか、Wi-Fi ログイン画面で接続が止まっている可能性があります。データのやり取りが行われる前に Chromium によって接続が中断されたため、情報は引き続き保護されています。</translation>
-<translation id="1150979032973867961">このサーバーが <ph name="DOMAIN" /> であることを確認できませんでした。このサーバーのセキュリティ証明書は、ご使用のパソコンのオペレーティング システムによって信頼されているものではありません。原因としては、不適切な設定や、悪意のあるユーザーによる接続妨害が考えられます。</translation>
 <translation id="1174473354587728743">共有パソコンにするなど、Chromium をお好みの方法で設定できるようになりました。</translation>
 <translation id="1185134272377778587">Chromium について</translation>
 <translation id="1221340462641866827">Chromium OS では、<ph name="SCHEME" /> リンクの処理に必要な外部アプリケーションの起動がサポートされていません。リクエストされたリンクは <ph name="PROTOLINK" /> です。</translation>
@@ -25,7 +24,6 @@
 <translation id="1708666629004767631">Chromium がさらに安全になりました。最新バージョンをぜひお試しください。</translation>
 <translation id="1725059042853530269"><ph name="FILE_NAME" /> はブラウジング環境に害を及ぼす可能性があるため、Chromium によってブロックされました。</translation>
 <translation id="1745962126679160932">Chromium で情報が安全に保存されるので、再度入力する必要はありません。ただし、今後もお支払いの際にカードのセキュリティ コードを入力する必要があります。</translation>
-<translation id="1763864636252898013">このサーバーが <ph name="DOMAIN" /> であることを確認できませんでした。このサーバーのセキュリティ証明書は、ご使用のデバイスのオペレーティング システムによって信頼されているものではありません。原因としては、不適切な設定や、悪意のあるユーザーによる接続妨害が考えられます。</translation>
 <translation id="1774152462503052664">Chromium をバックグラウンドで実行する</translation>
 <translation id="1779356040007214683">Chromium をより安全にご利用いただくため、<ph name="IDS_EXTENSION_WEB_STORE_TITLE" />で提供していない一部の拡張機能を無効にしました。これらは知らないうちに追加された可能性があります。</translation>
 <translation id="1808667845054772817">Chromium を再インストール</translation>
@@ -136,7 +134,6 @@
 <translation id="4987820182225656817">ゲスト ユーザーは、記録を残さずに Chromium を使用できます。</translation>
 <translation id="4994636714258228724">Chromium に自分を追加</translation>
 <translation id="5032989939245619637">Chromium で詳細を保存する</translation>
-<translation id="5094747076828555589">このサーバーが <ph name="DOMAIN" /> であることを確認できませんでした。このサーバーのセキュリティ証明書は Chromium によって信頼されているものではありません。原因としては、不適切な設定や、悪意のあるユーザーによる接続妨害が考えられます。</translation>
 <translation id="5358375970380395591">現在、管理対象アカウントでログインしており、あなたの Chromium プロフィールを管理者が制御できる状態になっています。あなたの Chromium データ（アプリ、ブックマーク、履歴、パスワードなどの設定）は永続的に <ph name="USER_NAME" /> に関連付けられます。このデータは Google アカウントのダッシュボードを介して削除できますが、このデータを別のアカウントに関連付けることはできなくなります。<ph name="LEARN_MORE" /></translation>
 <translation id="5398878173008909840">Chromium の最新バージョンをぜひお試しください。</translation>
 <translation id="5427571867875391349">Chromium をデフォルト ブラウザに設定する</translation>

@@ -5,7 +5,6 @@
 <translation id="10614374240317010">Neuložené</translation>
 <translation id="1061441684050139317">Na to, aby Chrome mohol s týmito webovými stránkami zdieľať mikrofón, musí mať k nemu prístup.</translation>
 <translation id="1080790410959514870">Odhlasujete sa z účtu spravovaného doménou <ph name="DOMAIN_NAME" />. Vymažú sa údaje prehliadača Chrome uložené na tomto zariadení, ale údaje uložené v účte Google zostanú zachované.</translation>
-<translation id="1086169178231554178">SD karta je nedostupná</translation>
 <translation id="1091134514807961917">Ste prihlásený/-á do nasledujúceho účtu Google.</translation>
 <translation id="1095407227123756519">Pridajte si účet a získajte svoje záložky, históriu, heslá a nastavenia do všetkých svojich zariadení.</translation>
 <translation id="1098052486217676340">Dokončené</translation>
@@ -86,7 +85,6 @@
 <translation id="2351097562818989364">Nastavenia prekladov boli resetované.</translation>
 <translation id="2354750644801399986">„Nesledovať“</translation>
 <translation id="2359808026110333948">Pokračovať</translation>
-<translation id="2360035970720276770">Stiahnuť sa dajú len webové adresy typu http alebo https</translation>
 <translation id="2381756643783702095">Spýtať sa pred odoslaním (odporúčané)</translation>
 <translation id="2387895666653383613">Mierka textu</translation>
 <translation id="238909021488141516">Pri sťahovaní obsahu sa vyskytla chyba</translation>
@@ -127,7 +125,6 @@
 <translation id="2960796085439532066">Copyright <ph name="YEAR" /> Google Inc. Všetky práva vyhradené.</translation>
 <translation id="2968755619301702150">Zobrazovač certifikátov</translation>
 <translation id="2996809686854298943">Vyžaduje sa webová adresa</translation>
-<translation id="3003595280608617736">Žiadna SD karta</translation>
 <translation id="3029704984691124060">Prístupové frázy sa nezhodujú</translation>
 <translation id="3039671569659952257">Odstrániť priečinok</translation>
 <translation id="3063601790762993062">Uložiť video</translation>
@@ -232,6 +229,7 @@ Ak chcete upraviť hľadaný výraz, vyberte ho dlhým stlačením. Ak chcete vy
 <translation id="4816465935029283692">Typy údajov</translation>
 <translation id="4827948050554950725">Pridať kreditnú kartu</translation>
 <translation id="4836364883164334657">Vaše pripojenie k týmto webovým stránkam nie je súkromné. Útočníci sa môžu pokúsiť ukradnúť vaše informácie (ako sú napríklad fotky, heslá, správy alebo čísla kreditných kariet) z domény <ph name="DOMAIN_NAME" />.</translation>
+<translation id="4850886885716139402">Zobraziť</translation>
 <translation id="4871370605780490696">Pridanie záložky</translation>
 <translation id="4881695831933465202">Otvoriť</translation>
 <translation id="4885273946141277891">Nepodporovaný počet inštancií prehliadača Chrome.</translation>
@@ -449,8 +447,6 @@ Niektoré webové stránky môžu napríklad na túto žiadosť reagovať tak, �
 <translation id="7648422057306047504">Šifrovať heslá pomocou poverení Google</translation>
 <translation id="7658239707568436148">Zrušiť</translation>
 <translation id="7665369617277396874">Pridať účet</translation>
-<translation id="7711895876052978264">Web sa zobrazuje na celej obrazovke.
-Toto zobrazenie ukončíte pomocou tlačidla Späť.</translation>
 <translation id="7764225426217299476">Pridať adresu</translation>
 <translation id="7765158879357617694">Presunúť</translation>
 <translation id="7767746238359002192">Navštívením stránky ju uložíte offline</translation>
@@ -469,7 +465,6 @@ Toto zobrazenie ukončíte pomocou tlačidla Späť.</translation>
 <translation id="7961015016161918242">Nikdy</translation>
 <translation id="7963646190083259054">Dodávateľ:</translation>
 <translation id="7977858705483383621">Bezpečné vyhľadávanie</translation>
-<translation id="7981795308302452224">Sťahovanie sa nepodarilo spustiť</translation>
 <translation id="7987073022710626672">Zmluvné podmienky prehliadača Chrome</translation>
 <translation id="7989222512959629388">Ukladá sa...</translation>
 <translation id="7998918019931843664">Znova otvoriť zavretú kartu</translation>
@@ -482,7 +477,6 @@ Toto zobrazenie ukončíte pomocou tlačidla Späť.</translation>
 <translation id="8073388330009372546">Otvoriť obrázok na novej karte</translation>
 <translation id="8084156870963450514">Prihláste sa a získajte prístup k všetkým svojim položkám na webe z ľubovoľného zariadenia</translation>
 <translation id="8106211421800660735">Číslo kreditnej karty</translation>
-<translation id="8109148095642131923">Stiahnutú položku sa nepodarilo pridať do správcu sťahovania.</translation>
 <translation id="813082847718468539">Zobraziť informácie o stránkach</translation>
 <translation id="8137558756159375272">Funkcia vyhľadávania klepnutím odošle vybrané slovo a súčasnú stránku ako kontext do Vyhľadávania Google. Môžete ju vypnúť v <ph name="BEGIN_LINK" />Nastaveniach<ph name="END_LINK" />.</translation>
 <translation id="8143660160623733249">Názov priečinka</translation>
@@ -565,5 +559,4 @@ Toto zobrazenie ukončíte pomocou tlačidla Späť.</translation>
 <translation id="969096075394517431">Zmeniť jazyky</translation>
 <translation id="971774202801778802">Webová adresa záložky</translation>
 <translation id="983192555821071799">Zavrieť všetky karty</translation>
-<translation id="988938288723502454">Na SD karte nie je možné vytvoriť priečinok pre stiahnuté súbory</translation>
 </translationbundle>

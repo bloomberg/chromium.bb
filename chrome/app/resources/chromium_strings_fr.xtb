@@ -6,7 +6,6 @@ Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifica
 <translation id="108122890477367602">&amp;Relancer Chromium en mode Windows 8</translation>
 <translation id="1115445892567829615">Impossible de synchroniser vos données dans Chromium. Veuillez mettre à jour votre phrase secrète de synchronisation.</translation>
 <translation id="1144202035120576837">Un chiffrement est normalement utilisé sur le site <ph name="SITE" /> pour protéger vos informations. Lors de la dernière tentative de connexion de Chromium au site <ph name="SITE" />, des identifiants inhabituels et incorrects ont été retournés. Il est possible qu'un individu malveillant tente de se faire passer pour <ph name="SITE" /> ou qu'un écran de connexion Wi-Fi ait interrompu la connexion. Vos informations restent sécurisées, car nous avons arrêté la connexion avant l'échange des données.</translation>
-<translation id="1150979032973867961">Impossible de vérifier sur le serveur qu'il s'agit bien du domaine <ph name="DOMAIN" />, car son certificat de sécurité n'est pas considéré comme fiable par le système d'exploitation de votre ordinateur. Cela peut être dû à une mauvaise configuration ou bien à l'interception de votre connexion par un pirate informatique.</translation>
 <translation id="1174473354587728743">Vous partagez un ordinateur ? Vous pouvez désormais configurer Chromium selon vos besoins.</translation>
 <translation id="1185134272377778587">À propos de Chromium</translation>
 <translation id="1221340462641866827">Chromium OS ne permet pas le lancement d'une application externe pour gérer les liens <ph name="SCHEME" />. Le lien requis est <ph name="PROTOLINK" />.</translation>
@@ -26,7 +25,6 @@ Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifica
 <translation id="1708666629004767631">Une nouvelle version de Chromium encore plus sûre est disponible.</translation>
 <translation id="1725059042853530269"><ph name="FILE_NAME" /> peut nuire à votre confort de navigation, il a donc été bloqué par Chromium.</translation>
 <translation id="1745962126679160932">Chromium va stocker les informations vous concernant de manière sécurisée. Vous n'aurez donc pas besoin de les saisir à nouveau. En revanche, vous devrez valider le code de sécurité de votre carte lors de vos prochains paiements.</translation>
-<translation id="1763864636252898013">Impossible de vérifier sur le serveur qu'il s'agit bien du domaine <ph name="DOMAIN" />, car son certificat de sécurité n'est pas considéré comme fiable par le système d'exploitation de votre appareil. Cela peut être dû à une mauvaise configuration ou bien à l'interception de votre connexion par un pirate informatique.</translation>
 <translation id="1774152462503052664">Laisser Chromium s'exécuter en arrière-plan</translation>
 <translation id="1779356040007214683">Afin de rendre Chrome plus sûr, nous avons désactivé certaines extensions qui ne sont pas répertoriées sur le <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> et qui ont pu être ajoutées à votre insu.</translation>
 <translation id="1808667845054772817">Réinstaller Chromium</translation>
@@ -137,7 +135,6 @@ Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifica
 <translation id="4987820182225656817">Les invités peuvent utiliser Chromium sans laisser aucune trace.</translation>
 <translation id="4994636714258228724">Ajouter un utilisateur à Chromium</translation>
 <translation id="5032989939245619637">Enregistrer les détails dans Chromium</translation>
-<translation id="5094747076828555589">Impossible de vérifier sur le serveur qu'il s'agit bien du domaine <ph name="DOMAIN" />, car son certificat de sécurité n'est pas considéré comme fiable par Chromium. Cela peut être dû à une mauvaise configuration ou bien à l'interception de votre connexion par un pirate informatique.</translation>
 <translation id="5358375970380395591">Vous vous connectez avec un compte géré et donnez le contrôle de votre profil Chromium à son administrateur. Vos données Chromium, telles que les applications, les favoris, l'historique, les mots de passe et les autres paramètres, vont être définitivement associées à <ph name="USER_NAME" />. Vous pouvez supprimer ces données via le tableau de bord des comptes Google, mais vous ne pouvez pas les associer à un autre compte. <ph name="LEARN_MORE" /></translation>
 <translation id="5398878173008909840">Une nouvelle version de Chromium est disponible.</translation>
 <translation id="5427571867875391349">Définir Chromium comme navigateur par défaut</translation>

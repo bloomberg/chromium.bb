@@ -102,7 +102,6 @@
       Bruk av denne retningslinjen overstyrer standardverdien på 3 timer. Gyldige verdier for denne retningslinjen strekker seg fra 1 800 000 (30 minutter) til 86 400 000 (1 dag). Verdier som ikke er innenfor dette området, blir tilpasset dette verdiområdet.
 
       Hvis du ikke spesifiserer en periode, bruker <ph name="PRODUCT_OS_NAME" /> standardverdien på 3 timer.</translation>
-<translation id="1503959756075098984">Utvidelses-ID-er og oppdateringsnettadresser som skal gjennomføre stille installasjon</translation>
 <translation id="1504431521196476721">Ekstern attestering</translation>
 <translation id="1509692106376861764">Denne innstillingen ble trukket tilbake fra og med <ph name="PRODUCT_NAME" /> versjon 29.</translation>
 <translation id="1522425503138261032">Tillat nettsteder å spore brukernes fysiske plassering</translation>
@@ -1602,7 +1601,6 @@ programtillegg. Shockwave Flash-programtillegget tilhører for eksempel Adobe Fl
           Adskill tjenernavn med komma. Jokertegn (*) er tillatt.
 
           Hvis du ikke angir denne innstillingen, forsøker <ph name="PRODUCT_NAME" /> å registrere om en tjener er på intranett og bare da svare på IWA-forespørsler. Hvis en tjener registreres som Internett, ignorerer <ph name="PRODUCT_NAME" /> IWA-forespørsler fra tjeneren.</translation>
-<translation id="8665076741187546529">Konfigurer listen over tvangsinstallerte utvidelser</translation>
 <translation id="8668394701842594241">Angir en liste over programtillegg som er aktivert i <ph name="PRODUCT_NAME" />, og forhindrer brukerne i å endre denne innstillingen.
 
       Jokertegnene * og ? kan brukes til å samsvare sekvenser av vilkårlige tegn. Tegnet * samsvarer med et vilkårlig antall tegn, mens tegnet ? angir et valgfritt enkeltstående tegn, dvs. ingen tegn eller ett tegn. Nødutgangtegnet er \, så for å matche tegn som faktisk er et * eller et ?, setter du en \ foran dem.

@@ -5,7 +5,6 @@
 <translation id="10614374240317010">Az alábbi oldalakról soha ne mentsen jelszavakat</translation>
 <translation id="1061441684050139317">A Chrome-nak rendelkeznie kell hozzáféréssel a mikrofonhoz, hogy megoszthassa ezzel a webhellyel.</translation>
 <translation id="1080790410959514870">Kijelentkezik egy <ph name="DOMAIN_NAME" /> által felügyelt fiókból. Ezzel törli a Chrome-nak az eszközön tárolt adatait, Google-fiókjában azonban továbbra is megmaradnak.</translation>
-<translation id="1086169178231554178">SD-kártya nem érhető el</translation>
 <translation id="1091134514807961917">A következő Google-fiókba jelentkezett be.</translation>
 <translation id="1095407227123756519">Adjon hozzá egy fiókot, hogy könyvjelzőit, előzményeit, jelszavait és más beállításait az összes eszközén elérje.</translation>
 <translation id="1098052486217676340">Befejezve</translation>
@@ -86,7 +85,6 @@
 <translation id="2351097562818989364">A fordítási beállítások visszaállítása megtörtént.</translation>
 <translation id="2354750644801399986">„Nincs nyomon követés”</translation>
 <translation id="2359808026110333948">Folytatás</translation>
-<translation id="2360035970720276770">Csak „http” vagy „https” URL-ekről tölthet le</translation>
 <translation id="2381756643783702095">Kérdezzen rá küldés előtt (ajánlott)</translation>
 <translation id="2387895666653383613">Szöveg nagyítása</translation>
 <translation id="238909021488141516">Hiba történt a tartalom letöltésekor.</translation>
@@ -127,7 +125,6 @@
 <translation id="2960796085439532066">Copyright <ph name="YEAR" /> Google Inc. Minden jog fenntartva.</translation>
 <translation id="2968755619301702150">Tanúsítványmegtekintő</translation>
 <translation id="2996809686854298943">URL szükséges</translation>
-<translation id="3003595280608617736">Hiányzó SD-kártya</translation>
 <translation id="3029704984691124060">Az összetett jelszavak nem egyeznek</translation>
 <translation id="3039671569659952257">Mappa törlése</translation>
 <translation id="3063601790762993062">Videó mentése</translation>
@@ -232,6 +229,7 @@ A keresési kifejezés módosításához hosszú nyomva tartással hajthat végr
 <translation id="4816465935029283692">Adattípusok</translation>
 <translation id="4827948050554950725">Hitelkártya hozzáadása</translation>
 <translation id="4836364883164334657">Kapcsolódása ehhez a webhelyhez nem privát. Előfordulhat, hogy támadók megpróbálják ellopni az Ön adatait (például fotóit, jelszavait, üzeneteit és bankkártyaadatait) a(z) <ph name="DOMAIN_NAME" /> webhelyről.</translation>
+<translation id="4850886885716139402">Nézet</translation>
 <translation id="4871370605780490696">Könyvjelzõ hozzáadása</translation>
 <translation id="4881695831933465202">Megnyitás</translation>
 <translation id="4885273946141277891">Ilyen sok Chrome-példány nem futhat egyszerre.</translation>
@@ -449,8 +447,6 @@ Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jel
 <translation id="7648422057306047504">A jelszavak titkosítása a Google hitelesítési adataival</translation>
 <translation id="7658239707568436148">Mégse</translation>
 <translation id="7665369617277396874">Fiók hozzáadása</translation>
-<translation id="7711895876052978264">A webhely teljes képernyős nézetben van.
-A kilépéshez nyomja meg a vissza billentyűt.</translation>
 <translation id="7764225426217299476">Cím hozzáadása</translation>
 <translation id="7765158879357617694">Áthelyezés</translation>
 <translation id="7767746238359002192">Oldal felkeresése az offline állapotban megtekinthető példány mentéséhez</translation>
@@ -469,7 +465,6 @@ A kilépéshez nyomja meg a vissza billentyűt.</translation>
 <translation id="7961015016161918242">Soha</translation>
 <translation id="7963646190083259054">Szolgáltató:</translation>
 <translation id="7977858705483383621">Biztonságos Keresés</translation>
-<translation id="7981795308302452224">Nem sikerült elindítani a letöltést</translation>
 <translation id="7987073022710626672">Chrome – Általános Szerződési Feltételek</translation>
 <translation id="7989222512959629388">Mentés…</translation>
 <translation id="7998918019931843664">Bezárt lap megnyitása</translation>
@@ -482,7 +477,6 @@ A kilépéshez nyomja meg a vissza billentyűt.</translation>
 <translation id="8073388330009372546">Kép megnyitása új lapon</translation>
 <translation id="8084156870963450514">Jelentkezzen be, hogy bármely eszközről hozzáférhessen valamennyi internetes dolgához</translation>
 <translation id="8106211421800660735">Hitelkártya száma</translation>
-<translation id="8109148095642131923">A letöltött elemet nem sikerült hozzáadni a letöltéskezelőhöz.</translation>
 <translation id="813082847718468539">Az oldalinformációk megtekintése</translation>
 <translation id="8137558756159375272">Az Érintéssel keresés elküldi a kiválasztott szót és az aktuális oldalt kontextusként a Google Keresés számára. A funkciót a <ph name="BEGIN_LINK" />Beállítások<ph name="END_LINK" /> szakaszban kikapcsolhatja.</translation>
 <translation id="8143660160623733249">Mappa neve</translation>
@@ -567,5 +561,4 @@ Az új engedélyek beszerzéséhez kapcsolódjon az internethez, és játssza le
 <translation id="969096075394517431">Nyelvek módosítása</translation>
 <translation id="971774202801778802">Könyvjelző URL-je</translation>
 <translation id="983192555821071799">Az összes lap bezárása</translation>
-<translation id="988938288723502454">Nem lehetett letöltési könyvtárat létrehozni az SD-kártyán.</translation>
 </translationbundle>

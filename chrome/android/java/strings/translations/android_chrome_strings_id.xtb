@@ -5,7 +5,6 @@
 <translation id="10614374240317010">Jangan pernah disimpan</translation>
 <translation id="1061441684050139317">Chrome memerlukan akses mikrofon untuk berbagi dengan situs ini.</translation>
 <translation id="1080790410959514870">Anda keluar dari akun yang dikelola oleh <ph name="DOMAIN_NAME" />. Tindakan ini akan menghapus data Chrome yang tersimpan di perangkat ini, namun data akan tetap berada di Akun Google Anda.</translation>
-<translation id="1086169178231554178">Kartu SD tidak tersedia</translation>
 <translation id="1091134514807961917">Anda masuk ke Akun Google berikut.</translation>
 <translation id="1095407227123756519">Tambahkan akun untuk mendapatkan bookmark, riwayat, sandi, dan setelan lainnya di semua perangkat Anda.</translation>
 <translation id="1098052486217676340">Selesai</translation>
@@ -86,7 +85,6 @@
 <translation id="2351097562818989364">Setelan terjemah telah disetel ulang.</translation>
 <translation id="2354750644801399986">‘Jangan Lacak’</translation>
 <translation id="2359808026110333948">Lanjut</translation>
-<translation id="2360035970720276770">Hanya dapat mengunduh URL http atau https</translation>
 <translation id="2381756643783702095">Tanyakan sebelum mengirim (disarankan)</translation>
 <translation id="2387895666653383613">Penskalaan teks</translation>
 <translation id="238909021488141516">Terjadi kesalahan saat mengunduh konten.</translation>
@@ -127,7 +125,6 @@
 <translation id="2960796085439532066">Hak cipta <ph name="YEAR" /> Google Inc. Semua hak dilindungi undang-undang.</translation>
 <translation id="2968755619301702150">Penampil sertifikat</translation>
 <translation id="2996809686854298943">Perlu URL</translation>
-<translation id="3003595280608617736">Tidak ada kartu SD</translation>
 <translation id="3029704984691124060">Frasa sandi tidak cocok</translation>
 <translation id="3039671569659952257">Hapus folder</translation>
 <translation id="3063601790762993062">Simpan video</translation>
@@ -232,6 +229,7 @@ Untuk menyesuaikan istilah penelusuran, tekan lama untuk memilih. Untuk menyarin
 <translation id="4816465935029283692">Jenis data</translation>
 <translation id="4827948050554950725">Tambahkan kartu kredit</translation>
 <translation id="4836364883164334657">Koneksi Anda ke situs ini tidak bersifat pribadi. Penyerang mungkin mencoba mencuri informasi Anda (misalnya foto, sandi, pesan, dan kartu kredit) dari <ph name="DOMAIN_NAME" />.</translation>
+<translation id="4850886885716139402">Lihat</translation>
 <translation id="4871370605780490696">Tambahkan bookmark</translation>
 <translation id="4881695831933465202">Buka</translation>
 <translation id="4885273946141277891">Jumlah kemunculan Chrome tidak didukung.</translation>
@@ -449,8 +447,6 @@ Contohnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangk
 <translation id="7648422057306047504">Enkripsi sandi dengan kredensial Google</translation>
 <translation id="7658239707568436148">Batal</translation>
 <translation id="7665369617277396874">Tambahkan akun</translation>
-<translation id="7711895876052978264">Situs ini masuk ke mode layar penuh.
-Tekan tombol kembali untuk keluar.</translation>
 <translation id="7764225426217299476">Tambahkan alamat</translation>
 <translation id="7765158879357617694">Pindahkan</translation>
 <translation id="7767746238359002192">Kunjungi laman guna menyimpan untuk offline</translation>
@@ -469,7 +465,6 @@ Tekan tombol kembali untuk keluar.</translation>
 <translation id="7961015016161918242">Tidak pernah</translation>
 <translation id="7963646190083259054">Vendor:</translation>
 <translation id="7977858705483383621">TelusurAman</translation>
-<translation id="7981795308302452224">Gagal memulai unduhan</translation>
 <translation id="7987073022710626672">Persyaratan Layanan Chrome</translation>
 <translation id="7989222512959629388">Menyimpan…</translation>
 <translation id="7998918019931843664">Buka kembali tab yang ditutup</translation>
@@ -482,7 +477,6 @@ Tekan tombol kembali untuk keluar.</translation>
 <translation id="8073388330009372546">Buka gambar di tab baru</translation>
 <translation id="8084156870963450514">Masuk untuk mengakses semua file web Anda dari perangkat apa pun</translation>
 <translation id="8106211421800660735">Nomor kartu kredit</translation>
-<translation id="8109148095642131923">Gagal menambahkan item yang diunduh ke pengelola unduhan.</translation>
 <translation id="813082847718468539">Lihat informasi situs</translation>
 <translation id="8137558756159375272">Sentuh untuk Menelusuri mengirimkan kata yang dipilih dan laman yang dibuka sebagai konteks ke Google Penelusuran. Anda dapat menonaktifkannya di <ph name="BEGIN_LINK" />Setelan<ph name="END_LINK" />.</translation>
 <translation id="8143660160623733249">Nama folder</translation>
@@ -567,5 +561,4 @@ Untuk mendapatkan lisensi baru, sambungkan ke internet dan putar konten yang diu
 <translation id="969096075394517431">Ubah bahasa</translation>
 <translation id="971774202801778802">URL bookmark</translation>
 <translation id="983192555821071799">Tutup semua tab</translation>
-<translation id="988938288723502454">Tidak dapat membuat direktori unduhan pada kartu SD.</translation>
 </translationbundle>

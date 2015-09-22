@@ -107,7 +107,6 @@
       Nastavením tohto pravidla sa nahradí predvolená hodnota 3 hodiny. Platné hodnoty pre toto pravidlo sa pohybujú v rozmedzí od 1 800 000 (30 minút) do 86 400 000 (1 deň). Ak zadáte hodnoty mimo tento rozsah, použije sa príslušná medzná hodnota.
 
       Ak toto pravidlo ponecháte nenastavené, systém <ph name="PRODUCT_OS_NAME" /> použije predvolenú hodnotu 3 hodiny.</translation>
-<translation id="1503959756075098984">ID rozšírení a webové adresy aktualizácií, ktoré sa majú nainštalovať na pozadí</translation>
 <translation id="1504431521196476721">Diaľkové overenie</translation>
 <translation id="1509692106376861764">Toto pravidlo sa prestalo používať v prehliadači <ph name="PRODUCT_NAME" /> verzie 29.</translation>
 <translation id="1522425503138261032">Povoliť stránkam sledovať fyzickú polohu používateľov</translation>
@@ -1668,7 +1667,6 @@ Ak toto pravidlo nie je nastavené alebo je prázdne, akýkoľvek používateľ 
           Ak chcete zadať niekoľko názvov serverov, oddeľte ich čiarkami. Zástupné znaky (*) sú povolené.
 
           Ak pravidlo zostane nenastavené, prehliadač <ph name="PRODUCT_NAME" /> sa najprv pokúsi zistiť, či sa server nachádza v sieti intranet, a až potom bude reagovať na žiadosti IWA. Ak sa zistí, že je server v sieti internet, prehliadač <ph name="PRODUCT_NAME" /> bude žiadosti IWA ignorovať.</translation>
-<translation id="8665076741187546529">Konfigurovať zoznam vynútene nainštalovaných rozšírení</translation>
 <translation id="8668394701842594241">Určuje zoznam povolených doplnkov prehliadača <ph name="PRODUCT_NAME" /> a bráni používateľom toto nastavenie zmeniť.
 
       Ako zástupné znaky je možné použiť znaky „*“ a „?“. Znak „*“ slúži ako zástupný znak pre ľubovoľný počet znakov, zatiaľ čo znak „?“ určuje jeden voliteľný znak (môže teda zastupovať jeden ľubovoľný znak alebo chýbajúci znak). Znak zrušenia významu je „\“, takže ak chcete zadať samotné znaky „*“, „?“ alebo „\“, stačí pred ne umiestniť znak „\“.

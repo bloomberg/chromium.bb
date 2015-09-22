@@ -11,7 +11,6 @@ Nekatere funkcije morda niso na voljo in spremembe nastavitev ne bodo shranjene.
 <translation id="1073391069195728457">Chrome – Obvestila</translation>
 <translation id="1104959162601287462">O &amp;sistemu Chrome OS</translation>
 <translation id="110877069173485804">To je vaš Chrome</translation>
-<translation id="1150979032973867961">Strežniku ni uspelo dokazati, da je <ph name="DOMAIN" />; operacijski sistem vašega računalnika ne zaupa njegovemu varnostnemu potrdilu. Razlog za to je lahko napačna konfiguracija ali napadalčevo prestrezanje povezave.</translation>
 <translation id="1225016890511909183">Chrome bo varno shranil vaše podatke, tako da vam jih ne bo treba več vnesti, vendar boste za plačila v prihodnosti še vedno morali preveriti varnostno kodo kartice.</translation>
 <translation id="123620459398936149">Chrome OS ne more sinhronizirati vaših podatkov. Posodobite geslo za Google Sync.</translation>
 <translation id="127345590676626841">Chrome se samodejno posodablja, zato boste vedno imeli najnovejšo različico. Ko bo ta prenos končan, se bo Chrome znova zagnal in lahko boste nadaljevali z delom.</translation>
@@ -37,7 +36,6 @@ Nekatere funkcije morda niso na voljo in spremembe nastavitev ne bodo shranjene.
 <translation id="174539241580958092">Google Chrome ni mogel sinhronizirati podatkov zaradi napake pri prijavi.</translation>
 <translation id="1759301979429102118">S podatki iz stikov lahko hitreje izpolnjujete obrazce v Chromu.</translation>
 <translation id="1759842336958782510">Chrome</translation>
-<translation id="1763864636252898013">Strežniku ni uspelo dokazati, da je <ph name="DOMAIN" />; operacijski sistem vaše naprave ne zaupa njegovemu varnostnemu potrdilu. Razlog za to je lahko napačna konfiguracija ali napadalčevo prestrezanje povezave.</translation>
 <translation id="1773601347087397504">Pomoč pri uporabi sistema Chrome OS</translation>
 <translation id="1818142563254268765">Chrome se ni mogel posodobiti na najnovejšo različico, zato ste prikrajšani za izjemne nove funkcije in varnostne popravke. Chrome morate posodobiti.</translation>
 <translation id="1877026089748256423">Chrome je zastarel</translation>
@@ -109,7 +107,6 @@ Nekatere funkcije morda niso na voljo in spremembe nastavitev ne bodo shranjene.
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="4367618624832907428">Google Chrome ne more prikazati spletne strani, ker računalnik nima internetne povezave.</translation>
 <translation id="4407807842708586359">Google Chrome OS</translation>
-<translation id="4424024547088906515">Strežniku ni uspelo dokazati, da je <ph name="DOMAIN" />; Chrome ne zaupa njegovemu varnostnemu potrdilu. Razlog za to je lahko napačna konfiguracija ali napadalčevo prestrezanje povezave.</translation>
 <translation id="4458285410772214805">Odjavite se in znova prijavite, da bodo te spremembe začele veljati.</translation>
 <translation id="4480040274068703980">Chrome OS ni mogel sinhronizirati podatkov zaradi napake pri prijavi.</translation>
 <translation id="4513711165509885787">Vaše podrobnosti za obračun so shranjene v Chrome.</translation>

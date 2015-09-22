@@ -5,7 +5,6 @@
 <translation id="10614374240317010">هرگز ذخیره نمی‌شود</translation>
 <translation id="1061441684050139317">‏Chrome باید به میکروفون دسترسی داشته باشد تا آن را با این سایت به اشتراک بگذارد.</translation>
 <translation id="1080790410959514870">‏در حال خروج از حسابی هستید که توسط <ph name="DOMAIN_NAME" /> مدیریت می‌شود. این کار داده‌های Chrome ذخیره شده در این دستگاه را حذف خواهد کرد، اما داده‌ها در حساب Google شما باقی خواهد ماند.</translation>
-<translation id="1086169178231554178">‏کارت SD موجود نیست</translation>
 <translation id="1091134514807961917">‏وارد حساب Google زیر شده‌اید.</translation>
 <translation id="1095407227123756519">یک حساب اضافه کنید تا نشانک‌ها، سابقه و گذرواژه‌ها و سایر تنظیماتتان را در همه دستگاه‌هایتان، دریافت کنید.</translation>
 <translation id="1098052486217676340">پایان یافت</translation>
@@ -86,7 +85,6 @@
 <translation id="2351097562818989364">تنظیمات ترجمه شما بازنشانی شده است.</translation>
 <translation id="2354750644801399986">«ردیابی نشود»</translation>
 <translation id="2359808026110333948">ادامه</translation>
-<translation id="2360035970720276770">‏فقط می‌توانید نشانی‌های وب «http» یا «https» را دانلود کنید</translation>
 <translation id="2381756643783702095">قبل از ارسال سؤال شود (توصیه می‌شود)</translation>
 <translation id="2387895666653383613">اندازه قلم نوشتار</translation>
 <translation id="238909021488141516">هنگام دانلود محتوا خطایی روی داد.</translation>
@@ -127,7 +125,6 @@
 <translation id="2960796085439532066">‏حق نسخه‌برداری ‪<ph name="YEAR" /> Google Inc.‬. کلیه حقوق محفوظ است.</translation>
 <translation id="2968755619301702150">بیننده گواهی</translation>
 <translation id="2996809686854298943">نشانی وب لازم است</translation>
-<translation id="3003595280608617736">‏کارت SD موجود نیست</translation>
 <translation id="3029704984691124060">عبارت‌های عبور مطابقت ندارند</translation>
 <translation id="3039671569659952257">حذف پوشه</translation>
 <translation id="3063601790762993062">ذخیره ویدیو</translation>
@@ -230,6 +227,7 @@
 <translation id="4816465935029283692">انواع داده</translation>
 <translation id="4827948050554950725">افزودن کارت اعتباری</translation>
 <translation id="4836364883164334657">اتصال شما به این سایت خصوصی نیست. مهاجمین ممکن است برای سرقت اطلاعاتتان (به‌عنوان مثال، عکس‌ها، گذرواژه‌ها، پیام‌ها و کارت‌های اعتباری) از <ph name="DOMAIN_NAME" /> تلاش کنند.</translation>
+<translation id="4850886885716139402">نما</translation>
 <translation id="4871370605780490696">افزودن نشانک</translation>
 <translation id="4881695831933465202">باز کردن</translation>
 <translation id="4885273946141277891">‏این تعداد از نسخه‌های Chrome پشتیبانی نمی‌شود.</translation>
@@ -446,8 +444,6 @@
 <translation id="7648422057306047504">‏رمزگذاری گذرواژه‌ها با اعتبارنامه‌های Google</translation>
 <translation id="7658239707568436148">لغو</translation>
 <translation id="7665369617277396874">افزودن حساب</translation>
-<translation id="7711895876052978264">این سایت تمام‌صفحه شده است.
-برای خروج دکمه برگشت را فشار دهید.</translation>
 <translation id="7764225426217299476">افزودن آدرس</translation>
 <translation id="7765158879357617694">انتقال</translation>
 <translation id="7767746238359002192">برای ذخیره آفلاین از صفحه بازدید کنید</translation>
@@ -466,7 +462,6 @@
 <translation id="7961015016161918242">هرگز</translation>
 <translation id="7963646190083259054">ارائه‌دهنده:</translation>
 <translation id="7977858705483383621">جستجوی ایمن</translation>
-<translation id="7981795308302452224">دانلود شروع نشد</translation>
 <translation id="7987073022710626672">‏شرایط خدمات Chrome</translation>
 <translation id="7989222512959629388">در حال ذخیره…</translation>
 <translation id="7998918019931843664">بازکردن مجدد برگه‌های بسته شده</translation>
@@ -479,7 +474,6 @@
 <translation id="8073388330009372546">باز کردن تصویر در برگه جدید</translation>
 <translation id="8084156870963450514">به سیستم وارد شوید تا از هر دستگاهی به محتوای وبی‌تان دسترسی داشته باشید</translation>
 <translation id="8106211421800660735">شماره کارت اعتباری</translation>
-<translation id="8109148095642131923">مورد دانلود شده به مدیریت دانلود افزوده نشد.</translation>
 <translation id="813082847718468539">مشاهدهٔ اطلاعات سایت</translation>
 <translation id="8137558756159375272">‏«لمس برای جستجو» کلمه انتخاب شده و صفحه کنونی را به عنوان محتوای زمینه به جستجوی Google ارسال می‌کند. می‌توانید آن را در <ph name="BEGIN_LINK" />تنظیمات<ph name="END_LINK" /> خاموش کنید.</translation>
 <translation id="8143660160623733249">نام پوشه</translation>
@@ -564,5 +558,4 @@
 <translation id="969096075394517431">تغییر زبان‌ها</translation>
 <translation id="971774202801778802">نشانی وب نشانک</translation>
 <translation id="983192555821071799">بستن همه برگه‌ها</translation>
-<translation id="988938288723502454">‏ایجاد پوشه دانلود در کارت SD امکان‌پذیر نیست.</translation>
 </translationbundle>

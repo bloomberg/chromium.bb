@@ -88,7 +88,6 @@
       Akceptowane są wartości z zakresu od 1 800 000 (30 minut) do 86 400 000 (1 dzień). Wartości spoza tego zakresu są zamieniane na odpowiednie wartości graniczne.
 
       W przypadku nieskonfigurowania tej zasady <ph name="PRODUCT_OS_NAME" /> będzie używać wartości domyślnej wynoszącej 3 godziny.</translation>
-<translation id="1503959756075098984">Identyfikatory rozszerzeń i adresy URL aktualizacji, które mają być instalowane dyskretnie</translation>
 <translation id="1504431521196476721">Zdalne poświadczanie</translation>
 <translation id="1509692106376861764">Ta zasada została wycofana w <ph name="PRODUCT_NAME" /> w wersji 29.</translation>
 <translation id="1522425503138261032">Zezwalaj witrynom na śledzenie fizycznej lokalizacji użytkownika</translation>
@@ -596,7 +595,7 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 <translation id="4442582539341804154">Włącz blokadę w przypadku bezczynności lub zawieszenia działania urządzenia</translation>
 <translation id="4445684791305970001">Wyłącza narzędzia dla programistów i konsolę JavaScript. Jeśli włączysz to ustawienie, niemożliwe będzie uzyskanie dostępu do narzędzi dla programistów i dokonanie przeglądu elementów witryny. Wszelkie skróty klawiszowe oraz pozycje w menu aplikacji i menu kontekstowym umożliwiające otwarcie narzędzi dla programistów lub konsoli JavaScript będą nieaktywne. Wyłączenie lub nieskonfigurowanie tej opcji umożliwi korzystanie z narzędzi dla programistów i konsoli JavaScript.</translation>
 <translation id="4467952432486360968">Blokuj pliki cookie innych firm</translation>
-<translation id="4474167089968829729">Włącz zapisywanie haseł w menadżerze haseł</translation>
+<translation id="4474167089968829729">Włącz zapisywanie haseł w menedżerze haseł</translation>
 <translation id="4480694116501920047">Wymuś stosowanie filtru SafeSearch</translation>
 <translation id="4482640907922304445">Powoduje pokazanie przycisku strony startowej na pasku narzędzi <ph name="PRODUCT_NAME" />. Jeśli włączysz to ustawienie, przycisk strony startowej będzie zawsze widoczny. W przypadku wyłączenia ustawienia przycisk nigdy nie jest widoczny. Jeśli ustawienie jest włączone lub wyłączone, użytkownicy nie mogą go zmienić ani zastąpić w <ph name="PRODUCT_NAME" />. W przypadku nieskonfigurowania tej zasady użytkownik będzie mógł wybrać, czy chce, aby przycisk strony startowej był pokazywany.</translation>
 <translation id="4492287494009043413">Wyłącza tworzenie zrzutów ekranu</translation>
@@ -1408,7 +1407,6 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
           Nazwy serwerów należy rozdzielić przecinkami. Można używać symboli wieloznacznych (*).
 
           Jeśli nie ustawisz tej zasady, <ph name="PRODUCT_NAME" /> próbuje wykryć, czy serwer jest w intranecie, i tylko wtedy odpowiada na żądania IWA. W przypadku serwera internetowego <ph name="PRODUCT_NAME" /> ignoruje żądania IWA.</translation>
-<translation id="8665076741187546529">Konfiguruj listę rozszerzeń, których instalacja jest wymuszana</translation>
 <translation id="8668394701842594241">Określa listę wtyczek włączonych w <ph name="PRODUCT_NAME" /> i uniemożliwia użytkownikom zmianę tego ustawienia. Możesz użyć symboli wieloznacznych „*” i „?”, które zastąpią sekwencje dowolnych znaków. Symbol „*” odpowiada dowolnej liczbie znaków, natomiast „?” oznacza jeden opcjonalny znak (czyli jeden lub zero znaków). Znakiem zmiany znaczenia jest „\”, dlatego aby wprowadzić faktyczny znak „*”, „?” lub „\”, musisz umieścić przed nim znak „\”. Wtyczki wymienione na liście są zawsze używane w <ph name="PRODUCT_NAME" />, jeśli zostały zainstalowane. Wtyczki są oznaczone jako włączone na stronie „about:plugins”, a użytkownicy nie mogą ich wyłączyć. Pamiętaj, że ta zasada zastępuje zasady DisabledPlugins i DisabledPluginsExceptions. Jeśli zasada nie zostanie skonfigurowana, użytkownik będzie mógł wyłączyć każdą wtyczkę zainstalowaną w systemie.</translation>
 <translation id="8672321184841719703">Wersja docelowa automatycznych aktualizacji</translation>
 <translation id="868187325500643455">Zezwalaj na automatyczne uruchamianie wtyczek we wszystkich witrynach</translation>

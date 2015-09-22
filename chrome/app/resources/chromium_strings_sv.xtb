@@ -7,7 +7,6 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="108122890477367602">&amp;Starta om Chromium i Windows 8-läge</translation>
 <translation id="1115445892567829615">Chromium kunde inte synkronisera data. Uppdatera lösenfrasen för synkroniseringen.</translation>
 <translation id="1144202035120576837"><ph name="SITE" /> använder normalt kryptering för att skydda dina uppgifter. När Chromium försökte ansluta till <ph name="SITE" /> den här gången skickade webbplatsen tillbaka ovanliga och felaktiga användaruppgifter. Antingen utger sig en hackare för att vara <ph name="SITE" /> eller så har anslutningen avbrutits av en Wi-Fi-inloggningsskärm. Dina uppgifter är fortfarande skyddade eftersom Chromium avbröt anslutningen innan någon data utbyttes.</translation>
-<translation id="1150979032973867961">Servern kunde inte bevisa att den är <ph name="DOMAIN" /> eftersom datorns operativsystem inte litar på dess säkerhetscertifikat. Detta kan orsakas av en felaktig konfigurering eller att någon spärrar anslutningen.</translation>
 <translation id="1174473354587728743">Delar du dator? Nu kan du konfigurera Chromium precis som du vill.</translation>
 <translation id="1185134272377778587">Om Chromium</translation>
 <translation id="1221340462641866827">Chromium OS stöder inte att ett externt program startas för att hantera <ph name="SCHEME" />-länkar. Den länk som efterfrågas är <ph name="PROTOLINK" />.</translation>
@@ -27,7 +26,6 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="1708666629004767631">Det finns en ny, ännu säkrare version av Chromium.</translation>
 <translation id="1725059042853530269">Filen <ph name="FILE_NAME" /> kan skada din surfupplevelse och har därför blockerats av Chromium.</translation>
 <translation id="1745962126679160932">Chromium lagrar din information på ett säkert sätt så att du inte behöver skriva in den igen, men du måste dock bekräfta kortets säkerhetskod vid framtida betalningar.</translation>
-<translation id="1763864636252898013">Servern kunde inte bevisa att den är <ph name="DOMAIN" /> eftersom enhetens operativsystem inte litar på dess säkerhetscertifikat. Detta kan orsakas av en felaktig konfigurering eller att någon spärrar anslutningen.</translation>
 <translation id="1774152462503052664">Låt Chromium köras i bakgrunden</translation>
 <translation id="1779356040007214683">Vi har gjort Chromium säkrare genom att inaktivera vissa tillägg som inte finns i <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> och som kan ha lagts till utan att du vet om det.</translation>
 <translation id="1808667845054772817">Installera om Chromium</translation>
@@ -138,7 +136,6 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="4987820182225656817">Gäster kan använda Chromium utan att lämna spår efter sig.</translation>
 <translation id="4994636714258228724">Lägg till dig själv i Chromium</translation>
 <translation id="5032989939245619637">Spara information i Chromium</translation>
-<translation id="5094747076828555589">Servern kunde inte bevisa att den är <ph name="DOMAIN" /> eftersom Chromium inte litar på dess säkerhetscertifikat. Detta kan orsakas av en felaktig konfigurering eller att någon spärrar anslutningen.</translation>
 <translation id="5358375970380395591">Du loggar in med ett hanterat konto och ger dess administratör kontroll över din Chromium-profil. Dina uppgifter i Chromium, t.ex. dina appar, bokmärken, din historik, ditt lösenord och andra inställningar, kopplas då permanent till <ph name="USER_NAME" />. Du kommer att kunna ta bort dessa uppgifter via instrumentpanelen i Google Konton, men du kommer inte att kunna koppla dem till något annat konto. <ph name="LEARN_MORE" /></translation>
 <translation id="5398878173008909840">Det finns en ny version av Chromium.</translation>
 <translation id="5427571867875391349">Använd Chromium som standardwebbläsare</translation>

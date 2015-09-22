@@ -5,7 +5,6 @@
 <translation id="10614374240317010">Contrasenyes que no es desen mai</translation>
 <translation id="1061441684050139317">Chrome necessita accés al micròfon per compartir-lo amb aquest lloc web.</translation>
 <translation id="1080790410959514870">Esteu tancant la sessió d'un compte que gestiona <ph name="DOMAIN_NAME" />. Aquesta acció farà que se suprimeixin les dades de Chrome emmagatzemades en aquest dispositiu, però les dades es conservaran al vostre compte de Google.</translation>
-<translation id="1086169178231554178">Targeta SD no disponible</translation>
 <translation id="1091134514807961917">Heu iniciat la sessió al compte de Google següent.</translation>
 <translation id="1095407227123756519">Afegiu un compte per tenir les adreces d'interès, l'historial, les contrasenyes i altres configuracions en tots els vostres dispositius.</translation>
 <translation id="1098052486217676340">Finalitzat</translation>
@@ -86,7 +85,6 @@
 <translation id="2351097562818989364">S'ha restablert la configuració de traducció.</translation>
 <translation id="2354750644801399986">No segueixis</translation>
 <translation id="2359808026110333948">Continua</translation>
-<translation id="2360035970720276770">Només es poden baixar URL http o https</translation>
 <translation id="2381756643783702095">Demana permís abans de fer cap enviament (recomanat)</translation>
 <translation id="2387895666653383613">Canvia la mida del text</translation>
 <translation id="238909021488141516">S'ha produït un error en baixar el contingut.</translation>
@@ -127,7 +125,6 @@
 <translation id="2960796085439532066">Copyright <ph name="YEAR" /> Google Inc. Tots els drets reservats.</translation>
 <translation id="2968755619301702150">Lector de certificats</translation>
 <translation id="2996809686854298943">Es necessita un URL</translation>
-<translation id="3003595280608617736">No hi ha cap targeta SD</translation>
 <translation id="3029704984691124060">Les frases de contrasenya no coincideixen</translation>
 <translation id="3039671569659952257">Suprimeix la carpeta</translation>
 <translation id="3063601790762993062">Desa el vídeo</translation>
@@ -191,7 +188,7 @@ Per ajustar el terme de la cerca, manteniu-lo premut per seleccionar-lo. Per def
 <translation id="4099578267706723511">Ajudeu a millorar Chrome mitjançant l'enviament d'estadístiques d'ús i d'informes d'error a Google.</translation>
 <translation id="411254640334432676">S'ha produït un error durant la baixada.</translation>
 <translation id="4113030288477039509">Gestionat per l'administrador</translation>
-<translation id="4116939199945053760"><ph name="SITE" /> vol <ph name="BEGIN_LINK" />sincronitzar-se amb<ph name="END_LINK" />:</translation>
+<translation id="4116939199945053760"><ph name="SITE" /> vol <ph name="BEGIN_LINK" />vincular-se amb<ph name="END_LINK" />:</translation>
 <translation id="4165986682804962316">Configuració del lloc</translation>
 <translation id="4170011742729630528">El servei no està disponible. Torneu-ho a provar més tard.</translation>
 <translation id="4195643157523330669">Obre en una pestanya nova</translation>
@@ -232,6 +229,7 @@ Per ajustar el terme de la cerca, manteniu-lo premut per seleccionar-lo. Per def
 <translation id="4816465935029283692">Tipus de dades</translation>
 <translation id="4827948050554950725">Afegeix una targeta de crèdit</translation>
 <translation id="4836364883164334657">La vostra connexió a aquest lloc no és privada. És possible que alguns atacants provin de robar-vos informació (per exemple, fotos, contrasenyes, missatges i dades de targetes de crèdit) del domini <ph name="DOMAIN_NAME" />.</translation>
+<translation id="4850886885716139402">Visualització</translation>
 <translation id="4871370605780490696">Afegeix una adreça d'interès</translation>
 <translation id="4881695831933465202">Obre</translation>
 <translation id="4885273946141277891">No s'admet aquest nombre d'instàncies de Chrome.</translation>
@@ -314,7 +312,7 @@ Tanmateix, no sou invisible. El vostre cap, el vostre proveïdor de serveis d'In
 <translation id="5771382037724542929">Voleu substituir el fitxer <ph name="FILE_NAME" /> de <ph name="DIRECTORY_NAME" />?</translation>
 <translation id="5804241973901381774">Permisos</translation>
 <translation id="5806294296882899667">Error en carregar el valor predeterminat</translation>
-<translation id="5817918615728894473">Sincronitza</translation>
+<translation id="5817918615728894473">Vincula</translation>
 <translation id="5832934273103296195">Vista ampliada (feu clic per reduir-la)</translation>
 <translation id="583891442612896534">Chrome no es pot connectar amb els servidors de Google per comprimir les dades. És possible que només pugueu desar dades de manera limitada.</translation>
 <translation id="5860033963881614850">Desactivat</translation>
@@ -449,8 +447,6 @@ Per exemple, és possible que alguns llocs web responguin a aquesta sol·licitud
 <translation id="7648422057306047504">Encripta les contrasenyes amb credencials de Google</translation>
 <translation id="7658239707568436148">Cancel·la</translation>
 <translation id="7665369617277396874">Afegeix un compte</translation>
-<translation id="7711895876052978264">Aquest lloc es mostra en pantalla completa
-Premeu el botó Enrere per sortir-ne.</translation>
 <translation id="7764225426217299476">Afegeix una adreça</translation>
 <translation id="7765158879357617694">Desplaça</translation>
 <translation id="7767746238359002192">Visiteu la pàgina per desar-la sense connexió</translation>
@@ -469,7 +465,6 @@ Premeu el botó Enrere per sortir-ne.</translation>
 <translation id="7961015016161918242">Mai</translation>
 <translation id="7963646190083259054">Proveïdor:</translation>
 <translation id="7977858705483383621">SafeSearch</translation>
-<translation id="7981795308302452224">No s'ha pogut iniciar la baixada</translation>
 <translation id="7987073022710626672">Condicions del servei de Chrome</translation>
 <translation id="7989222512959629388">S'està desant...</translation>
 <translation id="7998918019931843664">Torna a obrir la pestanya tancada</translation>
@@ -482,7 +477,6 @@ Premeu el botó Enrere per sortir-ne.</translation>
 <translation id="8073388330009372546">Obre en una pestanya nova</translation>
 <translation id="8084156870963450514">Inicieu la sessió per accedir a tots els vostres recursos d'Internet des de qualsevol dispositiu.</translation>
 <translation id="8106211421800660735">Número de targeta de crèdit</translation>
-<translation id="8109148095642131923">No s'ha pogut afegir al Gestor de baixades l'element que s'ha baixat.</translation>
 <translation id="813082847718468539">Mostra la informació del lloc</translation>
 <translation id="8137558756159375272">La funció Toca per cercar envia la paraula seleccionada i la pàgina actual com a context a la Cerca de Google. La podeu desactivar a <ph name="BEGIN_LINK" />Configuració<ph name="END_LINK" />.</translation>
 <translation id="8143660160623733249">Nom de la carpeta</translation>
@@ -557,7 +551,7 @@ Per obtenir llicències noves, connecteu-vos a Internet i reproduïu el contingu
 <translation id="9133515669113036225">Restableix les credencials del dispositiu</translation>
 <translation id="9137013805542155359">Mostra l'original</translation>
 <translation id="9156605176886108508">No hi ha carpetes d'adreces d'interès</translation>
-<translation id="9192643434065497760">Activeu el Bluetooth a la <ph name="BEGIN_LINK" />configuració del dispositiu<ph name="END_LINK" /> per permetre la sincronització.</translation>
+<translation id="9192643434065497760">Activeu el Bluetooth a la <ph name="BEGIN_LINK" />configuració del dispositiu<ph name="END_LINK" /> per permetre la vinculació.</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="932327136139879170">Pàgina d'inici</translation>
 <translation id="938850635132480979">Error: <ph name="ERROR_CODE" /></translation>
@@ -567,5 +561,4 @@ Per obtenir llicències noves, connecteu-vos a Internet i reproduïu el contingu
 <translation id="969096075394517431">Canvia els idiomes</translation>
 <translation id="971774202801778802">URL de l'adreça d'interès</translation>
 <translation id="983192555821071799">Tanca totes les pestanyes</translation>
-<translation id="988938288723502454">No es pot crear un directori de baixada a la targeta SD.</translation>
 </translationbundle>

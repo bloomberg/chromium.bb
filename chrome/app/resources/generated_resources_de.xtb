@@ -160,7 +160,6 @@
 <translation id="1205489148908752564">Nutzer auf der weißen Liste lesen und ändern</translation>
 <translation id="1208421848177517699">Transliteration (namaste → નમસ્તે)</translation>
 <translation id="1209796539517632982">Automatische Wahl des Nameservers</translation>
-<translation id="121201262018556460">Sie haben versucht, auf <ph name="DOMAIN" /> zuzugreifen, der Server hat jedoch ein Zertifikat mit einem schwachen Schlüssel übermittelt. Ein Hacker könnte den privaten Schlüssel geknackt haben, sodass es sich möglicherweise nicht um den erwarteten Server handelt, sondern Sie stattdessen mit einem Hacker kommunizieren.</translation>
 <translation id="1215411991991485844">Neue Hintergrund-App hinzugefügt</translation>
 <translation id="121827551500866099">Alle Downloads anzeigen...</translation>
 <translation id="122082903575839559">Algorithmus für Zertifikatsignatur</translation>
@@ -171,7 +170,6 @@
 <translation id="1225177025209879837">Ihre Anfrage wird verarbeitet...</translation>
 <translation id="1225211345201532184">Ablageartikel 5</translation>
 <translation id="1225404570112441414">Fügen Sie diese Website Ihrer Ablage hinzu, um sie jederzeit zu verwenden.</translation>
-<translation id="1226375067743171974">Experimentelle Animationen für Berühren von Feedback für Material Design.</translation>
 <translation id="1227507814927581609">Beim Herstellen der Verbindung zu "<ph name="DEVICE_NAME" />" ist ein Authentifizierungsfehler aufgetreten.</translation>
 <translation id="1231728991993914119">Beenden-Benachrichtigung für gehostete Apps aktivieren</translation>
 <translation id="1232569758102978740">Unbenannt</translation>
@@ -274,7 +272,6 @@
 <translation id="1399648040768741453">Telugu-Tastatur (phonetisch)</translation>
 <translation id="1401874662068168819">Gin Yieh</translation>
 <translation id="140250605646987970">Ihr Smartphone wurde gefunden, aber Smart Lock funktioniert nur auf Geräten mit Android 5.0 und höher. &lt;a&gt;Weitere Informationen&lt;/a&gt;</translation>
-<translation id="140495917068443520">Quadratischer Tintentropfen</translation>
 <translation id="1405126334425076373">Mauszeiger</translation>
 <translation id="140520891692800925"><ph name="PROFILE_DISPLAY_NAME" /> (betreut)</translation>
 <translation id="1406500794671479665">Überprüfung wird durchgeführt...</translation>
@@ -289,7 +286,6 @@
 <translation id="1413809658975081374">Datenschutzfehler</translation>
 <translation id="1414648216875402825">Sie aktualisieren auf eine instabile Version von <ph name="PRODUCT_NAME" />. Diese enthält Funktionen, die sich noch in der Entwicklung befinden. Es können Abstürze und unerwartete Fehler auftreten. Gehen Sie daher bitte vorsichtig vor.</translation>
 <translation id="1415990189994829608"><ph name="EXTENSION_NAME" /> (Erweiterungs-ID "<ph name="EXTENSION_ID" />") ist bei diesem Sitzungstyp nicht zulässig.</translation>
-<translation id="1416599368291956791">{1,plural, =1{Dieser Server konnte nicht beweisen, dass er <ph name="DOMAIN" /> ist. Sein Sicherheitszertifikat gilt vermutlich erst ab morgen. Mögliche Gründe sind eine fehlerhafte Konfiguration oder ein Angreifer, der Ihre Verbindung abfängt.}other{Dieser Server konnte nicht beweisen, dass er <ph name="DOMAIN" /> ist. Sein Sicherheitszertifikat gilt vermutlich erst in # Tagen. Mögliche Gründe sind eine fehlerhafte Konfiguration oder ein Angreifer, der Ihre Verbindung abfängt.}}</translation>
 <translation id="1416836038590872660">EAP-MD5</translation>
 <translation id="1420684932347524586">Der per Zufallsauswahl generierte private RSA-Schlüssel konnte nicht erstellt werden.</translation>
 <translation id="1422780722984745882">Es wurden mehrere unterschiedliche "Location"-Header empfangen. Dies ist zum Schutz vor HTTP Response Splitting-Angriffen unzulässig.</translation>
@@ -501,7 +497,6 @@
 <translation id="168328519870909584">Hacker, die derzeit auf <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> zugreifen, versuchen unter Umständen, gefährliche Programme auf Ihrem Gerät zu installieren, um Ihre Daten zu stehlen oder zu löschen, zum Beispiel Fotos, Passwörter, Nachrichten und Kreditkartendaten.</translation>
 <translation id="1685141618403317602">Registrierung aufheben</translation>
 <translation id="1685944703056982650">Ausnahmen für Mauszeiger</translation>
-<translation id="168841957122794586">Das Serverzertifikat weist einen schwachen kryptografischen Schlüssel auf.</translation>
 <translation id="1691063574428301566">Der Computer wird neu gestartet, sobald die Aktualisierung abgeschlossen ist.</translation>
 <translation id="1691608011302982743">Sie haben das Gerät zu früh entfernt!</translation>
 <translation id="1692602667007917253">Hoppla... etwas ist schiefgelaufen.</translation>
@@ -799,14 +794,12 @@
 <translation id="215753907730220065">Vollbildmodus aus</translation>
 <translation id="2157875535253991059">Diese Seite wird nun im Vollbildmodus angezeigt.</translation>
 <translation id="216169395504480358">WLAN hinzufügen...</translation>
-<translation id="2163418719022613650">Die Slimming Paint-Anzeigelisten werden nicht für Zeichnungen verwendet. Hinweis: Die Markierung "Slimming Paint aktivieren" hat Vorrang vor dieser Markierung, falls beide aktiviert sind.</translation>
 <translation id="2163470535490402084">Stellen Sie eine Internetverbindung her, um sich auf Ihrem Gerät (<ph name="DEVICE_TYPE" />) anzumelden.</translation>
 <translation id="2164862903024139959">Vietnamesische Tastatur (TCVN)</translation>
 <translation id="2167276631610992935">JavaScript</translation>
 <translation id="2168214441502403371">Persische Tastatur</translation>
 <translation id="2168725742002792683">Dateiendungen</translation>
 <translation id="2169062631698640254">Trotzdem anmelden</translation>
-<translation id="2171101176734966184">Sie haben versucht, auf <ph name="DOMAIN" /> zuzugreifen, der Server hat jedoch ein Zertifikat übermittelt, das einen schwachen Signaturalgorithmus verwendet. Das bedeutet, dass die vom Server übermittelten Sicherheitsinformationen gefälscht sein könnten und es sich möglicherweise gar nicht um den erwarteten Server handelt, sondern Sie mit einem Hacker kommunizieren.</translation>
 <translation id="2175607476662778685">Schnellstartleiste</translation>
 <translation id="2176045495080708525">Die folgenden Erweiterungen sind nun installiert:</translation>
 <translation id="2177950615300672361">Inkognito-Tab: <ph name="TAB_NAME" /></translation>
@@ -826,7 +819,6 @@
 <translation id="220138918934036434">Schaltfläche ausblenden</translation>
 <translation id="2202898655984161076">Problem beim Erstellen der Druckerliste. Einige Ihrer Drucker wurden möglicherweise nicht richtig bei <ph name="CLOUD_PRINT_NAME" /> registriert.</translation>
 <translation id="2204034823255629767">Ihre Eingaben lesen und ändern</translation>
-<translation id="2208105671494637223">Französisch – Bépo</translation>
 <translation id="2208158072373999562">ZIP-Archiv</translation>
 <translation id="2208311832613497869">Hoppla! Du musst deine Eltern fragen, ob du diese Seite besuchen darfst.</translation>
 <translation id="220858061631308971">Geben Sie diesen PIN-Code bitte auf "<ph name="DEVICE_NAME" /> " ein:</translation>
@@ -899,7 +891,6 @@ Nach der Erstellung eines neuen betreuten Nutzers können Sie die Einstellungen 
 <translation id="2278988676849463018">Kannada-Tastatur (phonetisch)</translation>
 <translation id="2279770628980885996">Beim Versuch des Servers, die Anforderung zu verarbeiten, ist eine unerwartete Bedingung aufgetreten.</translation>
 <translation id="2280486287150724112">Rechter Rand</translation>
-<translation id="2280845493034384933">Aktiviert in einigen Situationen die umgekehrte Scrollreihenfolge für den Darstellungsbereich. Das heißt, dass beim Zoomen durch Zusammenziehen zuerst der visuelle Darstellungsbereich und dann der Layout-Darstellungsbereich gescrollt wird.</translation>
 <translation id="2282146716419988068">GPU-Verarbeitung</translation>
 <translation id="2282872951544483773">Nicht verfügbare Experimente</translation>
 <translation id="2283117145434822734">F6</translation>
@@ -909,7 +900,6 @@ Nach der Erstellung eines neuen betreuten Nutzers können Sie die Einstellungen 
 <translation id="2291643155573394834">Nächster Tab</translation>
 <translation id="2294358108254308676">Möchten Sie <ph name="PRODUCT_NAME" /> installieren?</translation>
 <translation id="2296019197782308739">EAP-Methode:</translation>
-<translation id="229702904922032456">Ein Stamm- oder Zwischenzertifikat ist abgelaufen.</translation>
 <translation id="2299552784526456191">Nicht sicheren Ursprung als neutral markieren</translation>
 <translation id="2301382460326681002">Stammverzeichnis der Erweiterung ist ungültig.</translation>
 <translation id="230155334948463882">Neue Karte?</translation>
@@ -968,7 +958,6 @@ Nach der Erstellung eines neuen betreuten Nutzers können Sie die Einstellungen 
 <translation id="2384596874640104496">Singhalesische Tastatur</translation>
 <translation id="238526402387145295"><ph name="SITE" /> kann zurzeit nicht aufgerufen werden, da die Website <ph name="BEGIN_LINK" />HSTS verwendet<ph name="END_LINK" />. Netzwerkfehler und Angriffe sind in der Regel nur vorübergehend, sodass die Seite wahrscheinlich später wieder funktioniert.</translation>
 <translation id="2385700042425247848">Dienstname</translation>
-<translation id="2386255080630008482">Das Serverzertifikat wurde aufgehoben.</translation>
 <translation id="2386631145847373156">Eine Abmeldung ist nur bei vorheriger Anmeldung möglich.</translation>
 <translation id="2386784019642337415">Standardmäßige und benutzerdefinierte Suchmaschinen lesen und ändern</translation>
 <translation id="2390045462562521613">Dieses Netzwerk löschen</translation>
@@ -991,7 +980,6 @@ Nach der Erstellung eines neuen betreuten Nutzers können Sie die Einstellungen 
 <translation id="2403091441537561402">Gateway:</translation>
 <translation id="241082044617551207">Unbekanntes Plug-in</translation>
 <translation id="2412835451908901523">Geben Sie den achtstelligen PIN-Entsperrschlüssel ein, der von <ph name="CARRIER_ID" /> bereitgestellt wurde.</translation>
-<translation id="2413528052993050574">Dieser Server konnte nicht beweisen, dass er <ph name="DOMAIN" /> ist. Sein Sicherheitszertifikat wurde möglicherweise widerrufen. Mögliche Gründe sind eine fehlerhafte Konfiguration oder ein Angreifer, der Ihre Verbindung abfängt.</translation>
 <translation id="2413749388954403953">Benutzeroberfläche für Lesezeichen ändern</translation>
 <translation id="2415294094132942411">Zu Desktop hinzufügen...</translation>
 <translation id="242184683889529951">Damit wird die threadbasierte Verarbeitung von Scrolling-Eingabeereignissen deaktiviert. Alle Scrolling-Ereignisse werden dann im Hauptthread verarbeitet. Diese Funktion kann die Scrolling-Leistung der meisten Websites deutlich vermindern. Sie ist nur zu Testzwecken gedacht.</translation>
@@ -1042,7 +1030,6 @@ Ich glaube nicht, dass diese Website blockiert werden sollte.</translation>
 <translation id="2489428929217601177">Letzter Tag</translation>
 <translation id="2489435327075806094">Zeigergeschwindigkeit:</translation>
 <translation id="2489918096470125693">&amp;Ordner hinzufügen...</translation>
-<translation id="2491120439723279231">Das Serverzertifikat enthält Fehler.</translation>
 <translation id="249113932447298600">Das Gerät <ph name="DEVICE_LABEL" /> wird derzeit nicht unterstützt.</translation>
 <translation id="2493021387995458222">"Jeweils ein Wort" auswählen</translation>
 <translation id="249303669840926644">Registrierung konnte nicht abgeschlossen werden</translation>
@@ -1215,7 +1202,6 @@ Ich glaube nicht, dass diese Website blockiert werden sollte.</translation>
 <translation id="2726306725839966998">Ausblenden der Schaltflächen zum Schließen inaktiver Tabs beim Stapeln deaktivieren</translation>
 <translation id="2726934403674109201">(insgesamt <ph name="COUNT" />)</translation>
 <translation id="2727712005121231835">Originalgröße</translation>
-<translation id="2728127805433021124">Das Serverzertifikat ist mit einem schwachen Signaturalgorithmus signiert.</translation>
 <translation id="273093730430620027">Diese Seite greift auf Ihre Kamera zu.</translation>
 <translation id="2731392572903530958">Geschlossenes Fenster wieder öffn&amp;en</translation>
 <translation id="2731700343119398978">Bitte warten...</translation>
@@ -1375,13 +1361,11 @@ Ich glaube nicht, dass diese Website blockiert werden sollte.</translation>
 <translation id="2909946352844186028">Eine Netzwerkänderung ist aufgetreten.</translation>
 <translation id="2911372483530471524">PID-Namespaces</translation>
 <translation id="2912905526406334195"><ph name="HOST" /> möchte Ihr Mikrofon verwenden.</translation>
-<translation id="2915500479781995473">Dieser Server konnte nicht nachweisen, dass es sich dabei um <ph name="DOMAIN" /> handelt, da das Sicherheitszertifikat abgelaufen ist. Der Grund hierfür könnte eine fehlerhafte Konfiguration oder ein Angreifer sein, der Ihre Verbindung abfängt. Die Uhr Ihres Computers zeigt derzeit <ph name="CURRENT_TIME" /> an. Ist das korrekt? Falls nicht, stellen Sie die Uhr Ihres Systems richtig ein und aktualisieren Sie dann diese Seite.</translation>
 <translation id="2916073183900451334">Durch Drücken der Tab-Taste auf einer Webseite werden Links sowie Formularfelder markiert.</translation>
 <translation id="2916974515569113497">Bei Aktivierung dieser Option erhalten Elemente mit fester Position eine eigene zusammengesetzte Ebene. Beachten Sie, dass von Elementen mit fester Position dafür auch Stapelkontexte erstellt werden müssen.</translation>
 <translation id="2918322085844739869">4</translation>
 <translation id="2918583523892407401">Sandbox für Chrome-Synchronisierung verwenden</translation>
 <translation id="291886813706048071">Sie können von hier aus eine Suche mit <ph name="SEARCH_ENGINE" /> durchführen.</translation>
-<translation id="2922350208395188000">Das Serverzertifikat kann nicht überprüft werden.</translation>
 <translation id="2923240520113693977">Estnisch</translation>
 <translation id="29232676912973978">Verbindungen verwalten...</translation>
 <translation id="2923469375796950815">Neuen ZIP-Datei-Entpacker deaktivieren</translation>
@@ -1396,7 +1380,6 @@ Ich glaube nicht, dass diese Website blockiert werden sollte.</translation>
 <translation id="2937174152333875430">App Launcher-Synchronisierung aktivieren</translation>
 <translation id="2938225289965773019"><ph name="PROTOCOL" />-Links öffnen</translation>
 <translation id="2938685643439809023">Mongolisch</translation>
-<translation id="2941952326391522266">Dieser Server konnte nicht beweisen, dass er <ph name="DOMAIN" /> ist. Sein Sicherheitszertifikat stammt von <ph name="DOMAIN2" />. Mögliche Gründe sind eine fehlerhafte Konfiguration oder ein Angreifer, der Ihre Verbindung abfängt.</translation>
 <translation id="2942290791863759244">Deutsche Neo2-Tastatur</translation>
 <translation id="2943400156390503548">Präsentationen</translation>
 <translation id="2946119680249604491">Verbindung hinzufügen</translation>
@@ -1439,7 +1422,6 @@ Ich glaube nicht, dass diese Website blockiert werden sollte.</translation>
 <translation id="300544934591011246">Vorheriges Passwort</translation>
 <translation id="3005723025932146533">Gespeicherte Kopie anzeigen</translation>
 <translation id="3009300415590184725">Möchten Sie die Einrichtung des mobilen Datendiensts wirklich abbrechen?</translation>
-<translation id="3009507051774857955">Slimming Paint aktivieren</translation>
 <translation id="3009779501245596802">Indexierte Datenbanken</translation>
 <translation id="3010279545267083280">Passwort wurde gelöscht.</translation>
 <translation id="3011284594919057757">Über Flash</translation>
@@ -1487,7 +1469,6 @@ Ich glaube nicht, dass diese Website blockiert werden sollte.</translation>
 <translation id="3075874217500066906">Zu Beginn des Powerwashs ist ein Neustart erforderlich. Nach dem Neustart werden Sie gefragt, ob der Vorgang fortgesetzt werden soll.</translation>
 <translation id="3076677906922146425">Jeder darf Personen zu Chrome hinzufügen.</translation>
 <translation id="3076909148546628648"><ph name="DOWNLOAD_RECEIVED" />/<ph name="DOWNLOAD_TOTAL" /></translation>
-<translation id="3077195744811823826">Google Now auf Ihrem Desktop</translation>
 <translation id="3077734595579995578">Shift</translation>
 <translation id="3081104028562135154">Erhöhen</translation>
 <translation id="3082374807674020857"><ph name="PAGE_TITLE" /> - <ph name="PAGE_URL" /></translation>
@@ -1543,6 +1524,7 @@ Ich glaube nicht, dass diese Website blockiert werden sollte.</translation>
 <translation id="3144135466825225871">CRX-Datei konnte nicht ersetzt werden. Überprüfen Sie, ob die Datei verwendet wird.</translation>
 <translation id="31454997771848827">Nach Domain gruppieren</translation>
 <translation id="3147485256806412701">Diese Website verwendet eine neue allgemeine Top-Level-Domain.</translation>
+<translation id="3149510190863420837">Chrome-Apps</translation>
 <translation id="3150927491400159470">Vollständiges Aktualisieren (Hard Reload)</translation>
 <translation id="315116470104423982">Mobilfunk</translation>
 <translation id="315141861755603168">"<ph name="BUNDLE_NAME" />" fügt diese Apps hinzu:</translation>
@@ -1597,7 +1579,6 @@ Ich glaube nicht, dass diese Website blockiert werden sollte.</translation>
 <translation id="3224239078034945833">Kanadisch – mehrsprachig</translation>
 <translation id="3225319735946384299">Codesignatur</translation>
 <translation id="3225579507836276307">Eine Drittanbietererweiterung hat den Zugang zu dieser Webseite blockiert.</translation>
-<translation id="3225919329040284222">Der Server hat ein Zertifikat übermittelt, das nicht mit den integrierten Erwartungen übereinstimmt. Diese Erwartungen sind zu Ihrem Schutz in bestimmten Websites mit hohen Sicherheitsstandards enthalten.</translation>
 <translation id="3226128629678568754">Klicken Sie auf die Schaltfläche zum erneuten Laden, um die für das Laden der Seite erforderlichen Daten erneut zu senden.</translation>
 <translation id="3227137524299004712">Mikrofon</translation>
 <translation id="32279126412636473">Aktualisieren (⌘R)</translation>
@@ -1611,7 +1592,7 @@ Ich glaube nicht, dass diese Website blockiert werden sollte.</translation>
 <translation id="3241720467332021590">Irisch</translation>
 <translation id="3242118113727675434">HUD für Berührungspunkte ansehen</translation>
 <translation id="3242765319725186192">Vorinstallierter Schlüssel:</translation>
-<translation id="3244621381664913240">Zum Starten der Sprachsuche "Ok Google" aktivieren</translation>
+<translation id="3244621381664913240">"Ok Google" zum Starten der Sprachsuche aktivieren</translation>
 <translation id="3245321423178950146">Unbekannter Musiker</translation>
 <translation id="324533084080637716">Mit nach Artikeln strukturiertem Markup</translation>
 <translation id="324743268744517458">Achtung: Sie sind nicht mit den Produktionsservern von Google Payments verbunden. Ausgestellte Karten sind ungültig.</translation>
@@ -1821,14 +1802,12 @@ Ich glaube nicht, dass diese Website blockiert werden sollte.</translation>
 <translation id="3517839692979918726"><ph name="APP_NAME" /> möchte den Inhalt Ihres Bildschirms teilen. Wählen Sie aus, was geteilt werden soll.</translation>
 <translation id="3518086201899641494">Benachrichtigungen zu Erfassungsportalen</translation>
 <translation id="3519867315646775981">Transliteration (shalom ← שלום)</translation>
-<translation id="3520155764286810028">Kreisförmiger Tintentropfen</translation>
 <translation id="3522159121915794564">Hiermit können Nutzer die Erfassung ungültiger TLS/SSL-Zertifikatketten aktivieren.</translation>
 <translation id="3522708245912499433">Portugiesisch</translation>
 <translation id="3523642406908660543">Nachfragen, wenn eine Website ein Plug-in für den Zugriff auf Ihren Computer verwenden möchte (empfohlen)</translation>
 <translation id="3527085408025491307">Ordner</translation>
 <translation id="3527276236624876118">Ein betreuter Nutzer mit dem Namen <ph name="USER_DISPLAY_NAME" /> wurde erstellt.</translation>
 <translation id="3528033729920178817">Diese Seite verfolgt Ihren Standort.</translation>
-<translation id="3528171143076753409">Serverzertifikat ist nicht vertrauenswürdig.</translation>
 <translation id="3528498924003805721">Verknüpfungsziele</translation>
 <translation id="3530751398950974194">Passphrase für die Synchronisierung aktualisieren</translation>
 <translation id="3531250013160506608">Passwort-Textfeld</translation>
@@ -1890,7 +1869,6 @@ Ich glaube nicht, dass diese Website blockiert werden sollte.</translation>
 <translation id="3601395307734599350">Alle Ihre Erweiterungen sind hier aufgeführt.</translation>
 <translation id="3603385196401704894">Kanadisches Französisch</translation>
 <translation id="3603622770190368340">Netzwerkzertifikat anfordern</translation>
-<translation id="3603690020645187079">Französische Bépo-Tastatur</translation>
 <translation id="3605780360466892872">Hemdträger</translation>
 <translation id="3608454375274108141">F10</translation>
 <translation id="3608576286259426129">Vorschau für Nutzerbild</translation>
@@ -1997,7 +1975,6 @@ Ich glaube nicht, dass diese Website blockiert werden sollte.</translation>
 <translation id="3726463242007121105">Dieses Gerät kann nicht geöffnet werden, da das zugehörige Dateisystem nicht unterstützt wird.</translation>
 <translation id="3726527440140411893">Beim Anzeigen dieser Seite wurden die folgenden Cookies eingerichtet:</translation>
 <translation id="3727187387656390258">Pop-up prüfen</translation>
-<translation id="3727884750434605207">Skripteinschleusung statt nativer Android-Bedienungshilfen aktivieren</translation>
 <translation id="3728067901555601989">OTP:</translation>
 <translation id="3730639321086573427">Lokale Ziele</translation>
 <translation id="3733127536501031542">SSL-Server mit Step-up</translation>
@@ -2036,7 +2013,6 @@ Ich glaube nicht, dass diese Website blockiert werden sollte.</translation>
 <translation id="3776796446459804932">Diese Erweiterung verletzt die Chrome Web Store-Richtlinien.</translation>
 <translation id="3778152852029592020">Der Download wurde abgebrochen.</translation>
 <translation id="3778740492972734840">E&amp;ntwicklertools</translation>
-<translation id="3779689521379218195">Material Design-Tintentropfen</translation>
 <translation id="378312418865624974">Eindeutige Kennung für diesen Computer lesen</translation>
 <translation id="3783640748446814672">Alt</translation>
 <translation id="3785308913036335955">Verknüpfung "Apps" anzeigen</translation>
@@ -2113,7 +2089,6 @@ Ich glaube nicht, dass diese Website blockiert werden sollte.</translation>
 <translation id="3872687746103784075">GDB-Debugging für Native Client</translation>
 <translation id="3873139305050062481">Eleme&amp;nt untersuchen</translation>
 <translation id="3878840326289104869">Betreuter Nutzer wird erstellt...</translation>
-<translation id="3882882270042324158">Skripteinschleusung für Bedienungshilfen aktivieren</translation>
 <translation id="3888118750782905860">Nutzerverwaltung</translation>
 <translation id="3893536212201235195">Einstellungen für Eingabehilfen lesen und ändern</translation>
 <translation id="3893630138897523026">ChromeVox (gesprochenes Feedback)</translation>
@@ -2222,7 +2197,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="404493185430269859">Standardsuchmaschine</translation>
 <translation id="4047112090469382184">Warum ist das sicher?</translation>
 <translation id="4047345532928475040">k.A.</translation>
-<translation id="4048441759170415907">Die Slimming Paint-Anzeigelisten werden für alle Zeichnungen verwendet. Diese Markierung hat Vorrang vor der Markierung "Slimming Paint deaktivieren", falls beide aktiviert sind.</translation>
 <translation id="404928562651467259">Warnung</translation>
 <translation id="4052120076834320548">Winzig</translation>
 <translation id="4054376378714379870">Möglicherweise störende Sicherheitsfunktionen aktivieren</translation>
@@ -2446,7 +2420,6 @@ Drücken Sie eine beliebige Taste, um fortzufahren.</translation>
 <translation id="4372884569765913867">1 x 1</translation>
 <translation id="4375035964737468845">Heruntergeladene Dateien öffnen</translation>
 <translation id="4377039040362059580">Designs &amp; Hintergründe</translation>
-<translation id="4377125064752653719">Sie haben versucht, auf <ph name="DOMAIN" /> zuzugreifen, das vom Server übermittelte Zertifikat wurde jedoch vom entsprechenden Aussteller widerrufen. Das bedeutet, dass die vom Server übermittelten Sicherheitsinformationen nicht vertrauenswürdig sind. Möglicherweise kommunizieren Sie mit einem Hacker.</translation>
 <translation id="4377301101584272308">Abrufen Ihres physischen Standorts für alle Websites zulassen</translation>
 <translation id="4377363674125277448">Beim Zertifikat des Servers ist ein Problem aufgetreten.</translation>
 <translation id="4378154925671717803">Telefon</translation>
@@ -2633,7 +2606,6 @@ Drücken Sie eine beliebige Taste, um fortzufahren.</translation>
 <translation id="4672319956099354105">Gültiges Zertifikat</translation>
 <translation id="4672657274720418656">Seite konvertieren</translation>
 <translation id="46733879594767046">Große Symbole auf der "Neuer Tab"-Seite aktivieren</translation>
-<translation id="467662567472608290">Dieser Server konnte nicht beweisen, dass er <ph name="DOMAIN" /> ist. Sein Sicherheitszertifikat enthält Fehler. Mögliche Gründe sind eine fehlerhafte Konfiguration oder ein Angreifer, der Ihre Verbindung abfängt.</translation>
 <translation id="4677772697204437347">GPU-Speicher</translation>
 <translation id="4680322106555328717">Sie haben vor Kurzem die Ausführung unsicherer Inhalte wie Skripts oder Iframes auf dieser Website zugelassen.</translation>
 <translation id="4681260323810445443">Sie sind nicht berechtigt, die Webseite unter <ph name="URL" /> anzuzeigen. Möglicherweise müssen Sie sich anmelden.</translation>
@@ -2704,7 +2676,6 @@ Drücken Sie eine beliebige Taste, um fortzufahren.</translation>
 <translation id="4764029864566166446">Plug-in aktualisieren...</translation>
 <translation id="4764776831041365478">Die Webseite unter <ph name="URL" /> ist möglicherweise vorübergehend nicht verfügbar oder wurde dauerhaft an eine neue Webadresse verschoben.</translation>
 <translation id="4768698601728450387">Bild zuschneiden</translation>
-<translation id="4771973620359291008">Ein unbekannter Fehler ist aufgetreten.</translation>
 <translation id="4773696473262035477"><ph name="SAVED_PASSWORDS_LINK" /> können Sie von jedem Browser aus aufrufen.</translation>
 <translation id="477518548916168453">Der Server unterstützt nicht die erforderliche Funktion, um die Anforderung zu erfüllen.</translation>
 <translation id="4776917500594043016">Passwort für <ph name="USER_EMAIL_ADDRESS" /></translation>
@@ -2909,7 +2880,6 @@ Drücken Sie eine beliebige Taste, um fortzufahren.</translation>
 <translation id="5081055027309504756">"Seccomp-BPF"-Sandbox</translation>
 <translation id="5085162214018721575">Suche nach Updates...</translation>
 <translation id="5086082738160935172">HID</translation>
-<translation id="5087286274860437796">Das Serverzertifikat ist zurzeit ungültig.</translation>
 <translation id="5087864757604726239">zurück</translation>
 <translation id="508794495705880051">Neue Kreditkarte hinzufügen...</translation>
 <translation id="5088534251099454936">PKCS #1 SHA-512 mit RSA-Verschlüsselung</translation>
@@ -3150,7 +3120,6 @@ Drücken Sie eine beliebige Taste, um fortzufahren.</translation>
 <translation id="540296380408672091">Cookies auf <ph name="HOST" /> immer blockieren</translation>
 <translation id="5409029099497331039">Überraschung</translation>
 <translation id="5409341371246664034">über <ph name="PROVIDER" /></translation>
-<translation id="540969355065856584">Dieser Server konnte nicht beweisen, dass er <ph name="DOMAIN" /> ist. Sein Sicherheitszertifikat ist zurzeit ungültig. Mögliche Gründe sind eine fehlerhafte Konfiguration oder ein Angreifer, der Ihre Verbindung abfängt.</translation>
 <translation id="5411472733320185105">Proxy-Einstellungen nicht für diese Hosts und Domains verwenden:</translation>
 <translation id="5411769601840150972">Datum und Uhrzeit werden automatisch eingestellt.</translation>
 <translation id="5412637665001827670">Bulgarische Tastatur</translation>
@@ -3196,7 +3165,6 @@ Drücken Sie eine beliebige Taste, um fortzufahren.</translation>
 <translation id="5457113250005438886">Ungültig</translation>
 <translation id="5457459357461771897">Fotos, Musik und andere Medien auf Ihrem Computer lesen und löschen</translation>
 <translation id="5457599981699367932">Als Gast nutzen</translation>
-<translation id="5457858494714903578">Die Erweiterung mit der ID "<ph name="IMPORT_ID" />" kann nicht installiert werden, da sie nicht vertrauenswürdig ist.</translation>
 <translation id="5458214261780477893">Dvorak</translation>
 <translation id="5463275305984126951">Index von <ph name="LOCATION" /></translation>
 <translation id="5463856536939868464">Menü enthält ausgeblendete Lesezeichen</translation>
@@ -3441,7 +3409,6 @@ Drücken Sie eine beliebige Taste, um fortzufahren.</translation>
 <translation id="5803531701633845775">Wortgruppen von hinten wählen, ohne den Cursor zu bewegen</translation>
 <translation id="5804241973901381774">Berechtigungen</translation>
 <translation id="580571955903695899">Neu sortieren nach Titel</translation>
-<translation id="5808265053346186459">Phase 2 von Slimming Paint aktivieren (auf Anzeigeliste basierende Ebenen, Optimierung der Rasterung von Baumunterelementen usw.). Slimming Paint muss dazu aktiviert sein.</translation>
 <translation id="580886651983547002"><ph name="PRODUCT_NAME" />
         kann die Website nicht erreichen. Dies wird üblicherweise durch Netzwerkprobleme verursacht, kann jedoch auch das Ergebnis einer falsch konfigurierten Firewall bzw. eines falsch konfigurierten Proxyservers sein.</translation>
 <translation id="580961539202306967">Nachfragen, wenn eine Website mir Push-Nachrichten senden möchte (empfohlen)</translation>
@@ -3674,7 +3641,6 @@ Drücken Sie eine beliebige Taste, um fortzufahren.</translation>
 <translation id="614998064310228828">Gerätemodell:</translation>
 <translation id="6150853954427645995">Wenn Sie diese Datei zur Offline-Nutzung speichern möchten, gehen Sie online, klicken Sie mit der rechten Maustaste auf die Datei und wählen Sie die Option "<ph name="OFFLINE_CHECKBOX_NAME" />" aus.</translation>
 <translation id="6151323131516309312">Drücken Sie <ph name="SEARCH_KEY" />, um <ph name="SITE_NAME" /> zu durchsuchen.</translation>
-<translation id="6151417162996330722">Die Gültigkeitsdauer des Serverzertifikats ist zu lang.</translation>
 <translation id="6151559892024914821">Drag &amp; Drop durch Berührung aktivieren</translation>
 <translation id="615216289547575801">Hiermit werden ephemere Apps aktiviert, die ohne Installation in Chrome über den Chrome Web Store geöffnet werden. Dazu muss der experimentelle App Launcher aktiviert werden.</translation>
 <translation id="6154697846084421647">Angemeldet</translation>
@@ -3927,7 +3893,6 @@ Drücken Sie eine beliebige Taste, um fortzufahren.</translation>
 <translation id="6527303717912515753">Teilen</translation>
 <translation id="653019979737152879"><ph name="FILE_NAME" /> wird synchronisiert...</translation>
 <translation id="6533019874004191247">URL nicht unterstützt</translation>
-<translation id="6533965071487181681">Wenn die Funktion aktiviert ist, lädt die URL "chrome://md-settings/" die Material Design-Einstellungsseite.</translation>
 <translation id="6535131196824081346">Dieser Fehler kann auftreten, wenn eine Verbindung zu einem sicheren bzw. HTTPS-Server hergestellt wird. Er bedeutet, dass der Server versucht, eine sichere Verbindung herzustellen, die Verbindung aber aufgrund einer katastrophalen Fehlkonfiguration alles andere als sicher wäre.<ph name="LINE_BREAK" />In diesem Fall
 muss dies auf dem Server behoben werden. <ph name="PRODUCT_NAME" /> greift zum Schutz Ihrer Daten
 nicht auf unsichere Verbindungen zurück.</translation>
@@ -4059,7 +4024,6 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="6736329909263487977"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />]</translation>
 <translation id="6739254200873843030">Die Karte ist abgelaufen. Bitte überprüfen Sie das Datum oder geben Sie eine neue Karte ein.</translation>
 <translation id="6740369132746915122">Wenn Sie die Sicherheitsrisiken kennen, können Sie <ph name="BEGIN_LINK" />diese unsichere Website aufrufen<ph name="END_LINK" />.</translation>
-<translation id="674375294223700098">Fehler wegen unbekanntem Serverzertifikat</translation>
 <translation id="6745592621698551453">Jetzt aktualisieren</translation>
 <translation id="6745994589677103306">Nicht starten</translation>
 <translation id="674632704103926902">Ziehen von Tabs aktivieren</translation>
@@ -4157,6 +4121,7 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="6897140037006041989">User-Agent</translation>
 <translation id="6898440773573063262">Für Kioskanwendungen kann nun das automatische Starten auf diesem Gerät konfiguriert werden.</translation>
 <translation id="6898699227549475383">Organisation (O)</translation>
+<translation id="6900284862687837908">Hintergrund-App: <ph name="BACKGROUND_APP_URL" /></translation>
 <translation id="6904344821472985372">Dateizugriff aufheben</translation>
 <translation id="6906268095242253962">Stellen Sie zum Fortfahren eine Internetverbindung her.</translation>
 <translation id="6909461304779452601">Von dieser Website können keine Apps, Erweiterungen und Nutzerskripte hinzugefügt werden.</translation>
@@ -4188,7 +4153,6 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="6955446738988643816">Pop-up prüfen</translation>
 <translation id="695755122858488207">Deaktiviertes Optionsfeld</translation>
 <translation id="6957703620025723294">Experimentelle Canvas-Funktionen aktivieren</translation>
-<translation id="6957887021205513506">Das Zertifikat des Servers ist möglicherweise eine Fälschung.</translation>
 <translation id="696036063053180184">3 Set (Kein Shift)</translation>
 <translation id="696203921837389374">Synchronisierung über mobile Daten aktivieren</translation>
 <translation id="6964308487066031935">Ordner zu "<ph name="EXTENSION" />" hinzufügen?</translation>
@@ -4250,7 +4214,6 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="7022303817801823406">Für die Verbindung zu dieser Website wird ein gültiges, vertrauenswürdiges Serverzertifikat verwendet.</translation>
 <translation id="7022562585984256452">Ihre Startseite wurde eingerichtet.</translation>
 <translation id="702373420751953740">PRL-Version:</translation>
-<translation id="7024180072211179766">Symbol für Lesemodus in der Symbolleiste aktivieren</translation>
 <translation id="7024867552176634416">Zu verwendendes Wechselspeichergerät auswählen</translation>
 <translation id="7025190659207909717">Verwaltung mobiler Datendienste</translation>
 <translation id="7025325401470358758">Nächster Bereich</translation>
@@ -4266,7 +4229,6 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="7042418530779813870">Einfügen und &amp;suchen</translation>
 <translation id="7047998246166230966">Mauszeiger</translation>
 <translation id="7048141481140415714">Drücken Sie Strg + Alt + Shift + 8, um den Maximierungsmodus in TouchView zu aktivieren bzw. deaktivieren.</translation>
-<translation id="7050187094878475250">Sie haben versucht, <ph name="DOMAIN" /> zu erreichen. Der Server hat jedoch ein Zertifikat präsentiert, dessen Gültigkeitsdauer zu lang ist, um vertrauenswürdig zu sein.</translation>
 <translation id="7051943809462976355">Suche nach Maus läuft...</translation>
 <translation id="7052237160939977163">Daten der Leistungsnachverfolgung senden</translation>
 <translation id="7052500709156631672">Das Gateway oder der Proxyserver hat eine ungültige Antwort von einem Upstream-Server erhalten.</translation>
@@ -4363,7 +4325,6 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="720210938761809882">Seite blockiert</translation>
 <translation id="7205869271332034173">SSID:</translation>
 <translation id="7206693748120342859"><ph name="PLUGIN_NAME" /> wird heruntergeladen...</translation>
-<translation id="7207163335165373476">{1,plural, =1{Dieser Server konnte nicht beweisen, dass er <ph name="DOMAIN" /> ist. Sein Sicherheitszertifikat ist gestern abgelaufen. Mögliche Gründe sind eine fehlerhafte Konfiguration oder ein Angreifer, der Ihre Verbindung abfängt. Die Uhr Ihres Computers ist derzeit auf <ph name="CURRENT_DATE" /> eingestellt. Ist das korrekt? Falls nicht, stellen Sie die Uhr Ihres Systems richtig ein und aktualisieren Sie anschließend diese Seite.}other{Dieser Server konnte nicht beweisen, dass er <ph name="DOMAIN" /> ist. Sein Sicherheitszertifikat ist vor # Tagen abgelaufen. Mögliche Gründe sind eine fehlerhafte Konfiguration oder ein Angreifer, der Ihre Verbindung abfängt. Die Uhr Ihres Computers ist derzeit auf <ph name="CURRENT_DATE" /> eingestellt. Ist das korrekt? Falls nicht, stellen Sie die Uhr Ihres Systems richtig ein und aktualisieren Sie anschließend diese Seite.}}</translation>
 <translation id="7208384892394620321">American Express wird von dieser Website nicht akzeptiert.</translation>
 <translation id="7209475358897642338">Welche Sprache sprechen Sie?</translation>
 <translation id="7210998213739223319">Nutzername</translation>
@@ -4557,7 +4518,6 @@ Geheimtipp: Verwenden Sie nächstes Mal den Inkognitomodus (<ph name="SHORTCUT_K
 <translation id="7469894403370665791">Verbindung zu diesem Netzwerk automatisch herstellen</translation>
 <translation id="747114903913869239">Fehler: Erweiterung kann nicht entschlüsselt werden.</translation>
 <translation id="7472639616520044048">MIME-Typen:</translation>
-<translation id="7473810335848400503">Scrollreihenfolge für den Darstellungsbereich umkehren</translation>
 <translation id="7473891865547856676">Nein danke</translation>
 <translation id="747459581954555080">Alle wiederherstellen</translation>
 <translation id="7474889694310679759">Kanadisch-englische Tastatur</translation>
@@ -4589,7 +4549,6 @@ Geheimtipp: Verwenden Sie nächstes Mal den Inkognitomodus (<ph name="SHORTCUT_K
 <translation id="7507930499305566459">Zertifikat für Statusantwortdienst</translation>
 <translation id="7508545000531937079">Diashow</translation>
 <translation id="7509179828847922845">Die Verbindung zu <ph name="HOST_NAME" /> wurde unterbrochen.</translation>
-<translation id="7511149348717996334">Material Design-Einstellungen aktivieren</translation>
 <translation id="7511955381719512146">Unter Umständen erfordert das verwendete WLAN, dass Sie <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" /> aufrufen.</translation>
 <translation id="7513996269498582533">Erkennen (Ihre Auswahl)</translation>
 <translation id="751507702149411736">Weißrussisch</translation>
@@ -4631,7 +4590,6 @@ Geheimtipp: Verwenden Sie nächstes Mal den Inkognitomodus (<ph name="SHORTCUT_K
 <translation id="756445078718366910">Browserfenster öffnen</translation>
 <translation id="7564847347806291057">Prozess beenden</translation>
 <translation id="7566723889363720618">F12</translation>
-<translation id="7567204685887185387">Dieser Server konnte nicht beweisen, dass er <ph name="DOMAIN" /> ist. Sein Sicherheitszertifikat wurde möglicherweise in betrügerischer Absicht ausgegeben. Mögliche Gründe sind eine fehlerhafte Konfiguration oder ein Angreifer, der Ihre Verbindung abfängt.</translation>
 <translation id="7567293639574541773">Element u&amp;ntersuchen</translation>
 <translation id="7568790562536448087">Aktualisierung läuft</translation>
 <translation id="7570496663860904543">Wenn eine Seite nicht geladen werden kann und eine veraltete Kopie der Seite im Browser-Cache vorhanden ist, erscheint eine Schaltfläche, über die der Nutzer diese veraltete Kopie laden kann. Mit der Option "Primär" erscheint die Schaltfläche an der auffälligsten Stelle der Fehlerseite. Mit der Option "Sekundär" erscheint sie zweitrangig nach der Schaltfläche zum erneuten Laden.</translation>
@@ -4647,7 +4605,6 @@ Geheimtipp: Verwenden Sie nächstes Mal den Inkognitomodus (<ph name="SHORTCUT_K
 <translation id="7587108133605326224">Baltisch</translation>
 <translation id="7589461650300748890">Vorsicht!</translation>
 <translation id="7589661784326793847">Einen Moment bitte</translation>
-<translation id="7592362899630581445">Das Serverzertifikat verstößt gegen Namensbeschränkungen.</translation>
 <translation id="7595547011743502844"><ph name="ERROR" /> (Fehlercode <ph name="ERROR_CODE" />).</translation>
 <translation id="7596831438341298034">Ok, importieren</translation>
 <translation id="7596913374482479303">Legen Sie fest, welche Suchmaschine bei einer Suche über die Omnibox verwendet werden soll.</translation>
@@ -4754,7 +4711,6 @@ Geheimtipp: Verwenden Sie nächstes Mal den Inkognitomodus (<ph name="SHORTCUT_K
 <translation id="7754704193130578113">Vor dem Download von Dateien nach dem Speicherort fragen</translation>
 <translation id="7756363132985736290">Das Zertifikat ist bereits vorhanden.</translation>
 <translation id="7760004034676677601">Ist das Ihre erwartete Startseite?</translation>
-<translation id="7761701407923456692">Das Serverzertifikat stimmt nicht mit der URL überein.</translation>
 <translation id="7765158879357617694">Verschieben</translation>
 <translation id="7766807826975222231">Tour starten</translation>
 <translation id="7767646430896201896">Optionen:</translation>
@@ -4765,7 +4721,6 @@ Geheimtipp: Verwenden Sie nächstes Mal den Inkognitomodus (<ph name="SHORTCUT_K
 <translation id="7772127298218883077">Über <ph name="PRODUCT_NAME" /></translation>
 <translation id="7773726648746946405">Sitzungsspeicher</translation>
 <translation id="7774497835322490043">Ermöglicht GDB-Debugging mit Stub-Datei. Dadurch wird eine Native Client-App beim Start gestoppt, bis nacl-gdb aus dem NaCl-SDK anhängt wird.</translation>
-<translation id="7775325654940954648">Beim Anzeigen dieser Webseite ist ein Fehler aufgetreten. Durch das Schließen nicht benötigter Apps und Tabs können Sie mehr Speicherplatz freigeben und das Problem so möglicherweise beheben.</translation>
 <translation id="7779249319235708104">Vorsicht vor Phishingangriff</translation>
 <translation id="7781069478569868053">"Neuer Tab"-Seite</translation>
 <translation id="7781335840981796660">Alle Benutzerkonten und lokalen Daten werden entfernt.</translation>
@@ -4810,7 +4765,6 @@ Geheimtipp: Verwenden Sie nächstes Mal den Inkognitomodus (<ph name="SHORTCUT_K
 <translation id="7828106701649804503">Geben Sie die Standardgröße der Kacheln an.</translation>
 <translation id="782886543891417279">Unter Umständen müssen Sie die Anmeldeseite des verwendeten WLANs (<ph name="WIFI_NAME" />) aufrufen.</translation>
 <translation id="7831368056091621108">So können Sie diese Erweiterung, Ihren Verlauf und andere Chrome-Einstellungen auf all Ihren Geräten nutzen.</translation>
-<translation id="783140679984912140">Slimming Paint deaktivieren</translation>
 <translation id="7839051173341654115">Medien anzeigen/sichern</translation>
 <translation id="7839192898639727867">Schlüssel-ID für Antragsteller des Zertifikats</translation>
 <translation id="7839580021124293374">3</translation>
@@ -4882,7 +4836,6 @@ Geheimtipp: Verwenden Sie nächstes Mal den Inkognitomodus (<ph name="SHORTCUT_K
 <translation id="7928710562641958568">Gerät auswerfen</translation>
 <translation id="7935864848518524631">Dateiverknüpfungen für Apps</translation>
 <translation id="7938594894617528435">Derzeit offline</translation>
-<translation id="7938958445268990899">Serverzertifikat ist noch nicht gültig.</translation>
 <translation id="7939412583708276221">Trotzdem beibehalten</translation>
 <translation id="7939997691108949385">Der Manager kann unter <ph name="MANAGEMENT_URL" /> Beschränkungen und Einstellungen für diesen betreuten Nutzer konfigurieren.</translation>
 <translation id="7943385054491506837">USA – Colemak</translation>
@@ -5457,7 +5410,6 @@ Speichern Sie Ihre Schlüsseldatei an einem sicheren Ort. Sie benötigen die Dat
 <translation id="8731332457891046104">Registrierung von <ph name="DEVICE_TYPE" /> aufheben</translation>
 <translation id="8732030010853991079">Klicken Sie auf dieses Symbol, um die Erweiterung zu verwenden.</translation>
 <translation id="8732212173949624846">Browserverlauf auf all Ihren angemeldeten Geräten lesen und ändern</translation>
-<translation id="8733326791725507133">Durch Aktivieren dieser Option erfolgt eine experimentelle Implementierung der Credential Manager-API. Es kann nicht garantiert werden, dass dadurch nicht sämtliche Websites Ihre Passwörter einsehen können. Aktivieren Sie diese Option nur, wenn Sie sich absolut sicher sind.</translation>
 <translation id="8734073480934656039">Bei Aktivierung dieser Einstellung dürfen Kioskanwendungen beim Systemstart automatisch gestartet werden.</translation>
 <translation id="8736288397686080465">Diese Website wurde im Hintergrund aktualisiert.</translation>
 <translation id="8737260648576902897">Adobe Reader installieren</translation>
@@ -5529,7 +5481,6 @@ Speichern Sie Ihre Schlüsseldatei an einem sicheren Ort. Sie benötigen die Dat
 <translation id="8846141544112579928">Suche nach Tastatur läuft...</translation>
 <translation id="8847988622838149491">USB</translation>
 <translation id="8848709220963126773">Moduswechsel mit Shift</translation>
-<translation id="884923133447025588">Kein Sperrmechanismus gefunden.</translation>
 <translation id="8852366862412129888">Die Website enthält HTTP-Ressourcen.</translation>
 <translation id="8852742364582744935">Folgende Apps und Erweiterungen wurden hinzugefügt:</translation>
 <translation id="885381502874625531">Weißrussische Tastatur</translation>
@@ -5538,7 +5489,6 @@ Speichern Sie Ihre Schlüsseldatei an einem sicheren Ort. Sie benötigen die Dat
 <translation id="8859057652521303089">Sprache auswählen:</translation>
 <translation id="8859174528519900719">Subframe: <ph name="SUBFRAME_SITE" /></translation>
 <translation id="8860454412039442620">Excel-Tabelle</translation>
-<translation id="8861743108205592297">Fügt der Symbolleiste eine Schaltfläche hinzu, mit der eine besser lesbare Version der aktuellen Seite angezeigt werden kann.</translation>
 <translation id="8863489667196658337">Aktiviert das neue System zum Erstellen von Lesezeichen-Apps</translation>
 <translation id="8870318296973696995">Startseite</translation>
 <translation id="8870413625673593573">Kürzlich geschlossen</translation>
@@ -5616,7 +5566,6 @@ Speichern Sie Ihre Schlüsseldatei an einem sicheren Ort. Sie benötigen die Dat
 <translation id="8965037249707889821">Altes Passwort eingeben</translation>
 <translation id="8965697826696209160">Nicht genügend Speicherplatz.</translation>
 <translation id="8968527460726243404">ChromeOS-Systemabbild-Writer</translation>
-<translation id="8971063699422889582">Das Serverzertifikat ist abgelaufen.</translation>
 <translation id="89720367119469899">Esc-Taste</translation>
 <translation id="8972513834460200407">Bitten Sie Ihren Netzwerkadministrator, zu überprüfen, ob Downloads von Google-Servern von der Firewall blockiert werden.</translation>
 <translation id="8972727166872864532">Hoppla! Du musst deine Eltern fragen, ob du diese Seite besuchen darfst.</translation>
@@ -5685,7 +5634,6 @@ Speichern Sie Ihre Schlüsseldatei an einem sicheren Ort. Sie benötigen die Dat
 <translation id="904451693890288097">Geben Sie bitte den Zugangscode für "<ph name="DEVICE_NAME" />" ein:</translation>
 <translation id="904949795138183864">Die Webseite unter <ph name="URL" /> existiert nicht mehr.</translation>
 <translation id="9049835026521739061">Hangul-Modus</translation>
-<translation id="9049981332609050619">Sie haben versucht, auf <ph name="DOMAIN" /> zuzugreifen, der Server hat sich jedoch mit einem ungültigen Zertifikat ausgewiesen.</translation>
 <translation id="9050666287014529139">Passphrase</translation>
 <translation id="9052208328806230490">Sie haben Ihre Drucker unter dem Konto <ph name="EMAIL" /> bei <ph name="CLOUD_PRINT_NAME" /> registriert.</translation>
 <translation id="9053965862400494292">Bei der Einrichtung der Synchronisierung ist ein Fehler aufgetreten.</translation>
@@ -5771,7 +5719,6 @@ Speichern Sie Ihre Schlüsseldatei an einem sicheren Ort. Sie benötigen die Dat
 <translation id="9169664750068251925">Auf dieser Website immer blockieren</translation>
 <translation id="9170848237812810038">&amp;Rückgängig</translation>
 <translation id="9170884462774788842">Ein anderes Programm auf Ihrem Computer hat ein Design hinzugefügt, das sich möglicherweise auf die Funktionsweise von Chrome auswirkt.</translation>
-<translation id="917450738466192189">Das Serverzertifikat ist ungültig.</translation>
 <translation id="9177499212658576372">Sie sind derzeit mit dem <ph name="NETWORK_TYPE" />-Netzwerk verbunden.</translation>
 <translation id="9177556055091995297">Kreditkarten verwalten</translation>
 <translation id="917861274483335838">Plug-in-Blockierung verwalten...</translation>

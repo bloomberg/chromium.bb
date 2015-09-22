@@ -6,7 +6,6 @@
 <translation id="1115445892567829615">O Chromium não pôde sincronizar seus dados. Atualize sua senha de sincronização.</translation>
 <translation id="1144202035120576837"><ph name="SITE" /> normalmente usa criptografia para proteger suas informações. Quando o Chromium tentou se conectar a <ph name="SITE" />, o website enviou de volta credenciais
 incomuns e incorretas. Um invasor está tentando fingir ser <ph name="SITE" />, ou uma tela de login do Wi-Fi interrompeu a ligação. Suas informações ainda estão protegidas porque o Chromium parou a conexão antes que algum dado fosse trocado.</translation>
-<translation id="1150979032973867961">Este servidor não conseguiu provar que é <ph name="DOMAIN" />. O certificado de segurança não é confiável para o sistema operacional do seu computador. Isso pode ser causado por uma configuração incorreta ou pela interceptação da sua conexão por um invasor.</translation>
 <translation id="1174473354587728743">Você compartilha um computador? Agora é possível configurar o Chromium do jeito que você gosta.</translation>
 <translation id="1185134272377778587">Sobre o Chromium</translation>
 <translation id="1221340462641866827">O Chromium OS não suporta a inicialização de um aplicativo externo para lidar com links <ph name="SCHEME" />. O link solicitado é <ph name="PROTOLINK" />.</translation>
@@ -26,7 +25,6 @@ incomuns e incorretas. Um invasor está tentando fingir ser <ph name="SITE" />, 
 <translation id="1708666629004767631">Há uma nova versão mais segura do Chromium disponível.</translation>
 <translation id="1725059042853530269">O Chromium bloqueou o arquivo <ph name="FILE_NAME" />, porque ele pode prejudicar sua experiência de navegação.</translation>
 <translation id="1745962126679160932">O Chromium armazena suas informações com segurança para que não seja necessário digitá-las novamente, mas ainda é necessário confirmar o código de segurança de seu cartão para pagamentos futuros.</translation>
-<translation id="1763864636252898013">Este servidor não conseguiu provar que é <ph name="DOMAIN" />. O certificado de segurança não é confiável para o sistema operacional do seu dispositivo. Isso pode ser causado por uma configuração incorreta ou pela interceptação da sua conexão por um invasor.</translation>
 <translation id="1774152462503052664">Permitir que o Chromium seja executado em segundo plano</translation>
 <translation id="1779356040007214683">Para tornar o Chromium mais seguro, desativamos algumas extensões que não estão listadas na <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> e podem ser sido adicionadas sem seu conhecimento.</translation>
 <translation id="1808667845054772817">Reinstalar o Chromium</translation>
@@ -135,7 +133,6 @@ incomuns e incorretas. Um invasor está tentando fingir ser <ph name="SITE" />, 
 <translation id="4987820182225656817">Convidados podem usar o Chromium sem deixar nada para trás.</translation>
 <translation id="4994636714258228724">Cadastrar-se no Chromium</translation>
 <translation id="5032989939245619637">Salvar detalhes no Chromium</translation>
-<translation id="5094747076828555589">Este servidor não conseguiu provar que é <ph name="DOMAIN" />. O certificado de segurança não é confiável para o Chromium. Isso pode ser causado por uma configuração incorreta ou pela interceptação da sua conexão por um invasor.</translation>
 <translation id="5358375970380395591">Você está fazendo login com uma conta gerenciada e concedendo ao administrador da conta o controle sobre seu perfil do Chromium. Seus dados do Chromium, como aplicativos, favoritos, histórico, senhas e outras configurações serão permanentemente vinculados a <ph name="USER_NAME" />. Você pode excluir esses dados pelo painel das Contas do Google, mas não pode associá-los a outra conta. <ph name="LEARN_MORE" /></translation>
 <translation id="5398878173008909840">Há uma nova versão do Chromium disponível.</translation>
 <translation id="5427571867875391349">Definir o Chromium como seu navegador padrão</translation>

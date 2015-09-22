@@ -107,7 +107,6 @@
       Selle reegli määramisel alistatakse vaikeväärtus (3 tundi). Reegli sobilikud väärtused on vahemikus 1 800 000 (30 minutit) kuni 86 400 000 (1 päev). Vahemikust välja jäävad väärtused kohandatakse nendesse piiridesse.
 
       Kui jätate selle reegli määramata, siis kasutab <ph name="PRODUCT_OS_NAME" /> vaikeväärtust 3 tundi.</translation>
-<translation id="1503959756075098984">Taustal installitavate laienduste ID-d ja värskenduste URL-id</translation>
 <translation id="1504431521196476721">Kaugatesteerimine</translation>
 <translation id="1509692106376861764">Reegel on alates rakenduse <ph name="PRODUCT_NAME" /> versioonist 29 kasutusest kõrvaldatud.</translation>
 <translation id="1522425503138261032">Luba saitidel kasutaja füüsilist asukohta jälgida</translation>
@@ -1657,7 +1656,6 @@ Kui jätate reegli määramata või keelate selle, siis kasutatakse kirjete jaga
           Eraldage serveri nimed komadega. Metamärgid (*) on lubatud.
 
           Kui jätate selle reegli määramata, üritab <ph name="PRODUCT_NAME" /> tuvastada, kas server on intranetis, ja alles siis vastab IWA taotlustele. Kui server tuvastatakse Internetis, siis eirab <ph name="PRODUCT_NAME" /> sealt tulevaid IWA taotlusi.</translation>
-<translation id="8665076741187546529">Sunnitult installitud laienduste loendi seadistamine</translation>
 <translation id="8668394701842594241">Määrab pistikprogrammide loendi, mis on rakenduses <ph name="PRODUCT_NAME" /> lubatud, ja takistab kasutajatel selle seade muutmist.
 
       Metamärke „*” ja „?” saab kasutada määramata märgijadade vastendamiseks. Metamärk „*” vastendab suvalise arvu märke ja metamärk „?” määrab valikulise üksiku tähemärgi, st see vastab ühele või mitte ühelegi tähemärgile. Paomärk on „\”, seetõttu saate märkide „*”, „?” ja „\” vastendamiseks lisada nende ette paomärgi „\”.

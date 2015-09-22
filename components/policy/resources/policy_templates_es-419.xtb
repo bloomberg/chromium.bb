@@ -86,7 +86,6 @@ Si esta política no se configura, se utilizará 'Permitir complementos' y el us
       Al establecer esta política, se anula el valor predeterminado de tres horas. Los valores válidos están comprendidos entre 1.800.000 (30 minutos) y 86.400.000 (un día). Si el valor no está incluido en este intervalo, se redondeará al límite correspondiente.
 
       Si no se establece esta política, <ph name="PRODUCT_OS_NAME" />usará el valor predeterminado de tres horas.</translation>
-<translation id="1503959756075098984">Identificaciones de extensión y direcciones URL de actualización para instalar en silencio</translation>
 <translation id="1504431521196476721">Atestación remota</translation>
 <translation id="1509692106376861764">Esta política se eliminó a partir de la versión 29 de <ph name="PRODUCT_NAME" />.</translation>
 <translation id="1522425503138261032">Permitir a los sitios que rastreen la ubicación física de los usuarios.</translation>
@@ -993,9 +992,9 @@ Si esta política no se configura, se utilizará 'Permitir complementos' y el us
 
           Esta política solo se respeta si se habilita la política "DefaultSearchProviderEnabled".</translation>
 <translation id="6365608006609079612">
-          Si esta configuración está habilitada, los usuarios pueden hacer que<ph name="PRODUCT_NAME" />memorice contraseñas
+          Si está habilitada esta configuración, los usuarios pueden hacer que <ph name="PRODUCT_NAME" /> memorice contraseñas
 y se las proporcione automáticamente la próxima vez que inicien sesión en un sitio.
-Si esta configuración está inhabilitada, los usuarios no pueden guardar contraseñas nuevas, pero
+Si está inhabilitada esta configuración, los usuarios no pueden guardar contraseñas nuevas, pero
 pueden usar las contraseñas que hayan guardado anteriormente.
 Si esta política está habilitada o inhabilitada, los usuarios no pueden cambiarla ni anularla
 en <ph name="PRODUCT_NAME" />. Si esta
@@ -1415,7 +1414,6 @@ desactivarlo).</translation>
           Los distintos nombres de servidor se deben separar con comas. Se permite el uso de caracteres comodín (*).
 
           Si no se establece esta política, <ph name="PRODUCT_NAME" /> intentará detectar si un servidor se encuentra en la intranet y solo entonces responderá las solicitudes de IWA. Si se detecta un servidor como Internet, <ph name="PRODUCT_NAME" /> ignorará las solicitudes de IWA que provengan de ese servidor.</translation>
-<translation id="8665076741187546529">Configurar la lista de extensiones instaladas a la fuerza</translation>
 <translation id="8668394701842594241">Especifica una lista de complementos que están habilitados en <ph name="PRODUCT_NAME" /> y evita que los usuarios cambien esta configuración. Los caracteres comodines "*" y "?" se pueden usar para que coincidan con las secuencias de caracteres arbitrarios. "*" coincide con un número arbitrario de caracteres y "?" especifica un solo carácter opcional, es decir, coincide con un carácter o con ninguno. El carácter de escape es "\" y se puede colocar delante de "*", "?" o "\" para obtener coincidencias con ellos. <ph name="PRODUCT_NAME" /> usa siempre la lista especificada de complementos, si están instalados. Los complementos se marcan como habilitados en "about: plugins" y los usuarios no pueden inhabilitarlos. Ten en cuenta que esta política anula tanto DisabledPlugins como DisabledPluginsExceptions. Si esta política no se configura, el usuario puede inhabilitar cualquier complemento instalado en el sistema.</translation>
 <translation id="8672321184841719703">Versión de destino para las actualizaciones automáticas</translation>
 <translation id="868187325500643455">Permitir a todos los sitios que ejecuten automáticamente complementos</translation>

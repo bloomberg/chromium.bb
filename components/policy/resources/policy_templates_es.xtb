@@ -107,7 +107,6 @@ Si esta política se establece en False, no se informará sobre el estado del co
       Al establecer esta política, se anula el valor predeterminado de tres horas. Los valores válidos están comprendidos entre 1.800.000 (30 minutos) y 86.400.000 (un día). Si el valor no está incluido en este intervalo, se redondeará al límite correspondiente.
 
       Si no se establece esta política, <ph name="PRODUCT_OS_NAME" /> usará el valor predeterminado de tres horas.</translation>
-<translation id="1503959756075098984">ID de extensiones y URL de actualización que se instalan automáticamente</translation>
 <translation id="1504431521196476721">Confirmación remota</translation>
 <translation id="1509692106376861764">Esta política no está disponible desde la versión 29 de <ph name="PRODUCT_NAME" />.</translation>
 <translation id="1522425503138261032">Permitir que los sitios puedan hacer un seguimiento de la ubicación física de los usuarios</translation>
@@ -1681,7 +1680,6 @@ Si no se establece esta política, cualquier complemento que coincida con los pa
           Los distintos nombres de servidor se deben separar con comas. Se permite el uso de caracteres comodín (*).
 
           Si no se establece esta política, <ph name="PRODUCT_NAME" /> intentará detectar si un servidor se encuentra en la intranet y solo entonces responderá a las solicitudes de IWA. Si se detecta Internet como servidor, <ph name="PRODUCT_NAME" /> ignorará las solicitudes de IWA que procedan de él.</translation>
-<translation id="8665076741187546529">Configurar lista de extensiones de instalación forzada</translation>
 <translation id="8668394701842594241">Permite especificar una lista de complementos habilitados en <ph name="PRODUCT_NAME" /> e impide que los usuarios cambien esta configuración.
 
       Se pueden utilizar los caracteres comodín "*" y "?" para obtener coincidencias de secuencias de caracteres arbitrarios. "*" puede coincidir con un número arbitrario de caracteres y "?" especifica un único carácter opcional (puede coincidir con un carácter o con ninguno). Se puede escribir el carácter de escape ("\") delante de "*", de "?" o de "\" para obtener coincidencias con esos caracteres.

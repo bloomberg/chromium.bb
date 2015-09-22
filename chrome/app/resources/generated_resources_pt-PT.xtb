@@ -162,7 +162,6 @@
 <translation id="1205489148908752564">Ler e alterar utilizadores na lista de autorizações</translation>
 <translation id="1208421848177517699">Transliteração (namaste → નમસ્તે)</translation>
 <translation id="1209796539517632982">Servidores de nome automático</translation>
-<translation id="121201262018556460">Tentou aceder a <ph name="DOMAIN" />, mas o servidor apresentou um certificado que contém uma chave fraca. Um utilizador mal intencionado poderá ter quebrado a chave privada e o servidor pode não ser o servidor esperado (pode estar a comunicar com um utilizador mal intencionado).</translation>
 <translation id="1215411991991485844">Nova aplicação de segundo plano adicionada</translation>
 <translation id="121827551500866099">Mostrar todas as  transferências...</translation>
 <translation id="122082903575839559">Algoritmo de assinatura do certificado</translation>
@@ -173,7 +172,6 @@
 <translation id="1225177025209879837">A processar o pedido...</translation>
 <translation id="1225211345201532184">Artigo de prateleira 5</translation>
 <translation id="1225404570112441414">Adicione este site à prateleira para o utilizar a qualquer momento.</translation>
-<translation id="1226375067743171974">Animações da resposta tátil experimental para o material design.</translation>
 <translation id="1227507814927581609">A autenticação falhou ao ligar a "<ph name="DEVICE_NAME" />".</translation>
 <translation id="1231728991993914119">Ativar a notificação de saída em aplicações alojadas.</translation>
 <translation id="1232569758102978740">Sem nome</translation>
@@ -276,7 +274,6 @@
 <translation id="1399648040768741453">Teclado telugu (fonético)</translation>
 <translation id="1401874662068168819">Gin Yieh</translation>
 <translation id="140250605646987970">Encontrámos o seu telemóvel. No entanto, o Smart Lock só funciona em dispositivos com o Android 5.0 ou superior. &lt;a&gt;Saiba mais&lt;/a&gt;</translation>
-<translation id="140495917068443520">Gota de tinta quadrada</translation>
 <translation id="1405126334425076373">Cursor do rato</translation>
 <translation id="140520891692800925"><ph name="PROFILE_DISPLAY_NAME" /> (supervisionado)</translation>
 <translation id="1406500794671479665">A confirmar...</translation>
@@ -291,7 +288,6 @@
 <translation id="1413809658975081374">Erro de privacidade</translation>
 <translation id="1414648216875402825">Está a atualizar para uma versão instável do <ph name="PRODUCT_NAME" /> que contém funcionalidades que estão em curso. Ocorrerão falhas e erros inesperados. Prossiga com cuidado.</translation>
 <translation id="1415990189994829608">A extensão <ph name="EXTENSION_NAME" /> (ID da extensão "<ph name="EXTENSION_ID" />") não é permitida neste tipo de sessão.</translation>
-<translation id="1416599368291956791">{1,plural, =1{Este servidor não conseguiu provar que é <ph name="DOMAIN" />; o seu certificado de segurança é supostamente de amanhã.  Isto pode ser o resultado de uma configuração incorreta ou de um invasor a intercetar a sua ligação.}other{Este servidor não conseguiu provar que é <ph name="DOMAIN" />; o seu certificado de segurança é supostamente de # dias mais adiante. Isto pode ser o resultado de uma configuração incorreta ou de um invasor a intercetar a sua ligação.}}</translation>
 <translation id="1416836038590872660">EAP-MD5</translation>
 <translation id="1420684932347524586">Ora bolas! Falha ao gerar chave privada RSA aleatória.</translation>
 <translation id="1422780722984745882">Foram recebidos vários cabeçalhos de Localização. Isto não é permitido como proteção contra ataques de divisão de resposta HTTP.</translation>
@@ -425,7 +421,7 @@
 
 <ph name="EXTENSION_NAME" /></translation>
 <translation id="1587275751631642843">Consola de &amp;JavaScript</translation>
-<translation id="158809615184981282">Teclado faroé</translation>
+<translation id="158809615184981282">Teclado faroense</translation>
 <translation id="1588343017533984630">Desativa a criação de shims de aplicações em Mac ao criar aplicações alojadas.</translation>
 <translation id="1588870296199743671">Abrir Link Com...</translation>
 <translation id="1589055389569595240">Mostrar ortografia e gramática</translation>
@@ -507,7 +503,6 @@
 <translation id="168328519870909584">Os utilizadores mal intencionados que se encontram em <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> podem tentar instalar aplicações perigosas no seu dispositivo que roubem ou eliminem as suas informações (por exemplo, fotos, palavras-passe, mensagens e cartões de crédito).</translation>
 <translation id="1685141618403317602">Anular a inscrição</translation>
 <translation id="1685944703056982650">Exceções do cursor do rato</translation>
-<translation id="168841957122794586">O certificado do servidor contém uma chave criptográfica fraca.</translation>
 <translation id="1691063574428301566">O seu computador será reiniciado quando a actualização estiver concluída.</translation>
 <translation id="1691608011302982743">Removeu o dispositivo muito cedo!</translation>
 <translation id="1692602667007917253">Ups! Algo correu mal.</translation>
@@ -805,14 +800,12 @@
 <translation id="215753907730220065">Sair do modo de ecrã inteiro</translation>
 <translation id="2157875535253991059">Esta página está agora em ecrã inteiro.</translation>
 <translation id="216169395504480358">Adicionar Wi-Fi...</translation>
-<translation id="2163418719022613650">Não utilize as listas de visualização slimming paint para desenhos. Tenha em atenção que o sinalizador enable-slimming-paint tem prioridade sobre este sinalizador se ambos estiverem presentes.</translation>
 <translation id="2163470535490402084">Ligue-se à Internet para iniciar sessão no <ph name="DEVICE_TYPE" />.</translation>
 <translation id="2164862903024139959">Teclado vietnamita (TCVN)</translation>
 <translation id="2167276631610992935">Javascript</translation>
 <translation id="2168214441502403371">Teclado persa</translation>
 <translation id="2168725742002792683">Extensões de ficheiro</translation>
 <translation id="2169062631698640254">Continuar com o início de sessão</translation>
-<translation id="2171101176734966184">Tentou aceder a <ph name="DOMAIN" />, mas o servidor apresentou um certificado assinado utilizando um algoritmo de assinatura fraco. Significa que as credenciais de segurança apresentadas pelo servidor podem ter sido falsificadas e que o servidor pode não ser aquele que pretende (pode estar a comunicar com um utilizador mal intencionado).</translation>
 <translation id="2175607476662778685">Barra de início rápido</translation>
 <translation id="2176045495080708525">As seguintes extensões estão agora instaladas:</translation>
 <translation id="2177950615300672361">Separador de navegação anónima: <ph name="TAB_NAME" /></translation>
@@ -832,7 +825,6 @@
 <translation id="220138918934036434">Ocultar botão</translation>
 <translation id="2202898655984161076">Ocorreu um problema ao listar as impressoras. Algumas impressoras podem não ter sido registadas com êxito no <ph name="CLOUD_PRINT_NAME" />.</translation>
 <translation id="2204034823255629767">Ler e alterar tudo o que introduzir</translation>
-<translation id="2208105671494637223">BEPO francês</translation>
 <translation id="2208158072373999562">Ficheiro zip</translation>
 <translation id="2208311832613497869">Ups! Tens de perguntar aos teus pais se podes aceder a esta página.</translation>
 <translation id="220858061631308971">Introduza este código PIN no "<ph name="DEVICE_NAME" />":</translation>
@@ -905,7 +897,6 @@ Depois de criar um novo utilizador supervisionado, pode gerir as respetivas defi
 <translation id="2278988676849463018">Teclado canarim (fonético)</translation>
 <translation id="2279770628980885996">Foi encontrada uma condição inesperada quando o servidor tentava satisfazer o pedido.</translation>
 <translation id="2280486287150724112">Margem direita</translation>
-<translation id="2280845493034384933">Ativa a ordem de deslocamento da área visível invertida nalgumas situações. Por exemplo, durante a ação de juntar os dedos para aumentar o zoom, a área visível deve ser deslocada primeiro e, em seguida, a área visível do esquema.</translation>
 <translation id="2282146716419988068">Processo GPU</translation>
 <translation id="2282872951544483773">Experiências Indisponíveis</translation>
 <translation id="2283117145434822734">F6</translation>
@@ -915,7 +906,6 @@ Depois de criar um novo utilizador supervisionado, pode gerir as respetivas defi
 <translation id="2291643155573394834">Separador seguinte</translation>
 <translation id="2294358108254308676">Pretende instalar o <ph name="PRODUCT_NAME" />?</translation>
 <translation id="2296019197782308739">Método EAP:</translation>
-<translation id="229702904922032456">Um certificado de raiz ou intermédio expirou.</translation>
 <translation id="2299552784526456191">Marque as origens não seguras como neutras.</translation>
 <translation id="2301382460326681002">O directório de raiz da extensão é inválido.</translation>
 <translation id="230155334948463882">Tem um cartão novo?</translation>
@@ -976,7 +966,6 @@ Depois de criar um novo utilizador supervisionado, pode gerir as respetivas defi
 <translation id="2384596874640104496">Teclado sinhala</translation>
 <translation id="238526402387145295">De momento não é possível visitar <ph name="SITE" /> porque o Website <ph name="BEGIN_LINK" />utiliza HSTS<ph name="END_LINK" />. Os erros de rede e os ataques normalmente são temporários, por isso, esta página voltará provavelmente a funcionar.</translation>
 <translation id="2385700042425247848">Nome do serviço:</translation>
-<translation id="2386255080630008482">O certificado do servidor foi revogado.</translation>
 <translation id="2386631145847373156">Só é possível terminar sessão depois de iniciar sessão.</translation>
 <translation id="2386784019642337415">Ler e alterar os motores de pesquisa predefinidos e personalizados</translation>
 <translation id="2390045462562521613">Esquecer esta rede</translation>
@@ -999,7 +988,6 @@ Depois de criar um novo utilizador supervisionado, pode gerir as respetivas defi
 <translation id="2403091441537561402">Gateway:</translation>
 <translation id="241082044617551207">Plug-in desconhecido</translation>
 <translation id="2412835451908901523">Insira a chave de desbloqueio. É um código PIN de 8 dígitos fornecido por <ph name="CARRIER_ID" /></translation>
-<translation id="2413528052993050574">Este servidor não conseguiu provar que é o domínio <ph name="DOMAIN" />; o respetivo certificado de segurança poderá ser revogado. Isto pode ser o resultado de uma configuração incorreta ou de um invasor a intercetar a sua ligação.</translation>
 <translation id="2413749388954403953">Alterar a interface de utilizador dos marcadores</translation>
 <translation id="2415294094132942411">Adicionar ao ambiente de trabalho…</translation>
 <translation id="242184683889529951">O processamento de threads dos eventos de entrada relacionados com deslocamento foi desativado; por conseguinte, todos os eventos de deslocamento serão processados no thread principal. Tenha em atenção que esta ação pode afetar significativamente o desempenho de deslocamento da maioria dos Websites e destina-se apenas a fins de teste.</translation>
@@ -1050,7 +1038,6 @@ Acho que este site não deveria estar bloqueado.</translation>
 <translation id="2489428929217601177">dia anterior</translation>
 <translation id="2489435327075806094">Velocidade do ponteiro:</translation>
 <translation id="2489918096470125693">Adicionar &amp;Pasta...</translation>
-<translation id="2491120439723279231">O certificado do servidor contém erros.</translation>
 <translation id="249113932447298600">Lamentamos, mas de momento o aparelho <ph name="DEVICE_LABEL" /> não é suportado.</translation>
 <translation id="2493021387995458222">Seleccionar "palavra de cada vez"</translation>
 <translation id="249303669840926644">Não foi possível concluir o registo</translation>
@@ -1224,7 +1211,6 @@ Acho que este site não deveria estar bloqueado.</translation>
 <translation id="2726306725839966998">Não ocultar os botões fechar dos separadores inativos quando empilhados</translation>
 <translation id="2726934403674109201">(total de <ph name="COUNT" />)</translation>
 <translation id="2727712005121231835">Tamanho real</translation>
-<translation id="2728127805433021124">O certificado do servidor foi assinado utilizando um algoritmo de assinatura fraco.</translation>
 <translation id="273093730430620027">Esta página está a aceder à sua câmara.</translation>
 <translation id="2731392572903530958">Voltar a Abrir a Jan&amp;ela Fechada</translation>
 <translation id="2731700343119398978">Aguarde...</translation>
@@ -1384,13 +1370,11 @@ Acho que este site não deveria estar bloqueado.</translation>
 <translation id="2909946352844186028">Foi detetada uma alteração de rede.</translation>
 <translation id="2911372483530471524">Espaços de nomes de PID</translation>
 <translation id="2912905526406334195"><ph name="HOST" /> pretende utilizar o seu microfone.</translation>
-<translation id="2915500479781995473">Este servidor não conseguir provar que é o domínio <ph name="DOMAIN" />; o respetivo certificado de segurança expirou. Isto pode ser o resultado de uma configuração incorreta ou de um atacante a intercetar a sua ligação. Atualmente, o relógio do computador está definido para as <ph name="CURRENT_TIME" />. Esta hora parece-lhe correta? Em caso negativo, corrija o relógio do sistema e, em seguida, atualize esta página.</translation>
 <translation id="2916073183900451334">Premir Separador numa página Web realça links e campos de formulários</translation>
 <translation id="2916974515569113497">Se ativar esta opção, os elementos de posição fixa terão as suas próprias camadas compostas. Tenha em atenção que os elementos de posição fixa também têm de criar contextos de empilhamento para que esta opção funcione.</translation>
 <translation id="2918322085844739869">4</translation>
 <translation id="2918583523892407401">Utilizar o isolamento de processos da Sincronização do Chrome</translation>
 <translation id="291886813706048071">Pode pesquisar a partir daqui com o <ph name="SEARCH_ENGINE" /></translation>
-<translation id="2922350208395188000">Não é possível verificar o certificado do servidor.</translation>
 <translation id="2923240520113693977">Estónio</translation>
 <translation id="29232676912973978">Gerir ligações...</translation>
 <translation id="2923469375796950815">Desative o novo ZIP unpacker.</translation>
@@ -1405,7 +1389,6 @@ Acho que este site não deveria estar bloqueado.</translation>
 <translation id="2937174152333875430">Ativar a sincronização do App Launcher.</translation>
 <translation id="2938225289965773019">Abrir links de <ph name="PROTOCOL" /></translation>
 <translation id="2938685643439809023">Mongol</translation>
-<translation id="2941952326391522266">Este servidor não conseguiu provar que é o domínio <ph name="DOMAIN" />; o respetivo certificado de segurança é do domínio <ph name="DOMAIN2" />. Isto pode ser o resultado de uma configuração incorreta ou de um invasor a intercetar a sua ligação.</translation>
 <translation id="2942290791863759244">Teclado NEO 2 alemão</translation>
 <translation id="2943400156390503548">Apresentações</translation>
 <translation id="2946119680249604491">Adicionar ligação</translation>
@@ -1449,7 +1432,6 @@ Pretende pará-lo?</translation>
 <translation id="300544934591011246">Palavra-passe anterior</translation>
 <translation id="3005723025932146533">Mostrar cópia guardada</translation>
 <translation id="3009300415590184725">Tem a certeza de que pretende cancelar o processo de configuração do serviço de dados móveis?</translation>
-<translation id="3009507051774857955">Ativar slimming paint.</translation>
 <translation id="3009779501245596802">Bases de dados indexadas</translation>
 <translation id="3010279545267083280">Palavra-passe eliminada</translation>
 <translation id="3011284594919057757">Acerca do Flash</translation>
@@ -1497,7 +1479,6 @@ Pretende pará-lo?</translation>
 <translation id="3075874217500066906">É necessário reiniciar para começar o processo Powerwash. Depois do reinício, terá de confirmar que pretende prosseguir.</translation>
 <translation id="3076677906922146425">Permitir que qualquer pessoa adicione alguém ao Chrome</translation>
 <translation id="3076909148546628648"><ph name="DOWNLOAD_RECEIVED" />/<ph name="DOWNLOAD_TOTAL" /></translation>
-<translation id="3077195744811823826">Atualmente no seu ambiente de trabalho</translation>
 <translation id="3077734595579995578">shift</translation>
 <translation id="3081104028562135154">Aumentar</translation>
 <translation id="3082374807674020857"><ph name="PAGE_TITLE" /> - <ph name="PAGE_URL" /></translation>
@@ -1553,6 +1534,7 @@ Pretende pará-lo?</translation>
 <translation id="3144135466825225871">Falha ao substituir o ficheiro crx. Verifique se o ficheiro está a ser utilizado.</translation>
 <translation id="31454997771848827">Domínios de grupos</translation>
 <translation id="3147485256806412701">Este site está a utilizar um novo domínio de nível superior genérico.</translation>
+<translation id="3149510190863420837">Aplicações do Chrome</translation>
 <translation id="3150927491400159470">Atualização Pesada</translation>
 <translation id="315116470104423982">Dados móveis</translation>
 <translation id="315141861755603168">"<ph name="BUNDLE_NAME" />" adiciona as seguintes aplicações:</translation>
@@ -1607,7 +1589,6 @@ Pretende pará-lo?</translation>
 <translation id="3224239078034945833">Canadiano multilingue</translation>
 <translation id="3225319735946384299">Assinatura de código</translation>
 <translation id="3225579507836276307">Uma extensão de terceiros bloqueou o acesso a esta página Web.</translation>
-<translation id="3225919329040284222">O servidor apresentou um certificado que não corresponde às expectativas existentes. Estas expectativas são incluídas para determinados Web sites de alta segurança para sua proteção.</translation>
 <translation id="3226128629678568754">Prima o botão de atualização para enviar novamente os dados necessários para carregar a página.</translation>
 <translation id="3227137524299004712">Microfone</translation>
 <translation id="32279126412636473">Atualizar (⌘A)</translation>
@@ -1830,14 +1811,12 @@ Pretende pará-lo?</translation>
 <translation id="3517839692979918726">O <ph name="APP_NAME" /> pretende partilhar o conteúdo do seu ecrã. Escolha o que pretende partilhar.</translation>
 <translation id="3518086201899641494">Notificações acerca de portais cativos</translation>
 <translation id="3519867315646775981">Transliteração (shalom ← שלום)</translation>
-<translation id="3520155764286810028">Gota de tinta circular</translation>
 <translation id="3522159121915794564">Permite aos utilizadores optar pela recolha de cadeias de certificados TLS/SSL inválidos.</translation>
 <translation id="3522708245912499433">Português</translation>
 <translation id="3523642406908660543">Perguntar quando um site pretender utilizar um plug-in para aceder ao seu computador (recomendado)</translation>
 <translation id="3527085408025491307">Pasta</translation>
 <translation id="3527276236624876118">Foi criado um utilizador supervisionado com o nome <ph name="USER_DISPLAY_NAME" />.</translation>
 <translation id="3528033729920178817">Esta página está a monitorizar a sua localização.</translation>
-<translation id="3528171143076753409">O certificado do servidor não é fidedigno.</translation>
 <translation id="3528498924003805721">Destinos dos atalhos</translation>
 <translation id="3530751398950974194">Atualizar frase de acesso de sincronização</translation>
 <translation id="3531250013160506608">Caixa de texto da palavra-passe</translation>
@@ -1899,7 +1878,6 @@ Pretende pará-lo?</translation>
 <translation id="3601395307734599350">Todas as suas extensões estão aqui</translation>
 <translation id="3603385196401704894">Francês canadiano</translation>
 <translation id="3603622770190368340">Obter certificado de rede</translation>
-<translation id="3603690020645187079">Teclado BEPO francês</translation>
 <translation id="3605780360466892872">Empresário</translation>
 <translation id="3608454375274108141">F10</translation>
 <translation id="3608576286259426129">Pré-visualização da imagem do utilizador</translation>
@@ -2006,7 +1984,6 @@ Pretende pará-lo?</translation>
 <translation id="3726463242007121105">Não é possível abrir este aparelho porque o sistema de ficheiros não é suportado.</translation>
 <translation id="3726527440140411893">Foram definidos os seguintes cookies quando visualizou esta página:</translation>
 <translation id="3727187387656390258">Inspeccionar pop-up</translation>
-<translation id="3727884750434605207">Ativar injeção de scripts em vez da acessibilidade Android nativa.</translation>
 <translation id="3728067901555601989">Palavra-passe de Utilização Única:</translation>
 <translation id="3730639321086573427">Destinos locais</translation>
 <translation id="3733127536501031542">Servidor SSL com "Step-up"</translation>
@@ -2045,7 +2022,6 @@ Pretende pará-lo?</translation>
 <translation id="3776796446459804932">Esta extensão viola a política da Chrome Web Store.</translation>
 <translation id="3778152852029592020">A transferência foi cancelada.</translation>
 <translation id="3778740492972734840">Ferramentas &amp;do programador</translation>
-<translation id="3779689521379218195">Gota de tinta do material design</translation>
 <translation id="378312418865624974">Ler um identificador único para este computador</translation>
 <translation id="3783640748446814672">alt</translation>
 <translation id="3785308913036335955">Mostrar Atalho das Aplicações</translation>
@@ -2064,7 +2040,7 @@ Pretende pará-lo?</translation>
 <translation id="3798449238516105146">Versão</translation>
 <translation id="3800503346337426623">Ignorar início de sessão e navegar como Convidado</translation>
 <translation id="3800764353337460026">Estilo do símbolo</translation>
-<translation id="3801082500826908679">Faroé</translation>
+<translation id="3801082500826908679">Faroense</translation>
 <translation id="3803991353670408298">Adicione outro método de introdução antes de remover este.</translation>
 <translation id="380408572480438692">A ativação da recolha de dados de desempenho ajudará a Google a melhorar o sistema ao longo do tempo. Não serão enviados quaisquer dados enquanto não apresentar um relatório de comentários (Alt-Shift-I) e incluir os dados de desempenho. É possível regressar a este ecrã para desativar a recolha em qualquer altura.</translation>
 <translation id="3807747707162121253">&amp;Cancelar</translation>
@@ -2122,7 +2098,6 @@ Pretende pará-lo?</translation>
 <translation id="3872687746103784075">Depuração baseada em GDB de Native Client</translation>
 <translation id="3873139305050062481">I&amp;nspeccionar Elemento</translation>
 <translation id="3878840326289104869">A criar utilizador supervisionado</translation>
-<translation id="3882882270042324158">Ativar injeção de scripts para acessibilidade.</translation>
 <translation id="3888118750782905860">Gestão do consumidor</translation>
 <translation id="3893536212201235195">Ler e alterar as suas definições de acessibilidade</translation>
 <translation id="3893630138897523026">ChromeVox (respostas faladas)</translation>
@@ -2231,7 +2206,6 @@ Pretende pará-lo?</translation>
 <translation id="404493185430269859">Motor de pesquisa predefinido</translation>
 <translation id="4047112090469382184">Por que é que é seguro</translation>
 <translation id="4047345532928475040">N/D</translation>
-<translation id="4048441759170415907">Utilize as listas de visualização slimming paint para todos os desenhos. Tem prioridade sobre o sinalizador desable-slimming-paint se ambos estiverem ativos.</translation>
 <translation id="404928562651467259">AVISO</translation>
 <translation id="4052120076834320548">Minúsculo</translation>
 <translation id="4054376378714379870">Ative as funcionalidades de segurança possivelmente incomodativas.</translation>
@@ -2455,7 +2429,6 @@ Prima qualquer tecla para continuar a explorar.</translation>
 <translation id="4372884569765913867">1 x 1</translation>
 <translation id="4375035964737468845">Abrir ficheiros transferidos</translation>
 <translation id="4377039040362059580">Temas e imagens de fundo</translation>
-<translation id="4377125064752653719">Tentou aceder a <ph name="DOMAIN" />, mas o certificado que o servidor apresentou foi revogado pelo emissor. Isto significa que as credenciais de segurança apresentadas pelo servidor não deverão, em circunstância alguma, ser consideradas fidedignas. Pode estar a comunicar com um utilizador mal intencionado.</translation>
 <translation id="4377301101584272308">Permitir que todos os sites monitorizem a sua localização física</translation>
 <translation id="4377363674125277448">Ocorreu um problema com o certificado do servidor.</translation>
 <translation id="4378154925671717803">Telefone</translation>
@@ -2642,7 +2615,6 @@ Prima qualquer tecla para continuar a explorar.</translation>
 <translation id="4672319956099354105">Certificado válido</translation>
 <translation id="4672657274720418656">Página de destilação</translation>
 <translation id="46733879594767046">Ativar ícones grandes na página novo separador</translation>
-<translation id="467662567472608290">Este servidor não conseguiu provar que é o domínio <ph name="DOMAIN" />; o respetivo certificado de segurança contém erros. Isto pode ser o resultado de uma configuração incorreta ou de um invasor a intercetar a sua ligação.</translation>
 <translation id="4677772697204437347">Memória de GPU</translation>
 <translation id="4680322106555328717">Recentemente, permitiu a execução de conteúdos não seguros (como scripts ou iframes) neste site.</translation>
 <translation id="4681260323810445443">Não tem autorização para aceder à página Web em <ph name="URL" />. Poderá ser necessário iniciar sessão.</translation>
@@ -2717,7 +2689,6 @@ Prima qualquer tecla para continuar a explorar.</translation>
 <translation id="4764029864566166446">Atualizar plug-in...</translation>
 <translation id="4764776831041365478">A página Web em <ph name="URL" /> poderá estar temporariamente inactiva ou poderá ter sido movida permanentemente para um novo endereço Web.</translation>
 <translation id="4768698601728450387">Recortar imagem</translation>
-<translation id="4771973620359291008">Ocorreu um erro desconhecido.</translation>
 <translation id="4773696473262035477">Pode aceder à mesma e a todas as suas <ph name="SAVED_PASSWORDS_LINK" /> a partir de qualquer navegador.</translation>
 <translation id="477518548916168453">O servidor não suporta a funcionalidade necessária para satisfazer o pedido.</translation>
 <translation id="4776917500594043016">Palavra-passe para <ph name="USER_EMAIL_ADDRESS" /></translation>
@@ -2922,7 +2893,6 @@ Prima qualquer tecla para continuar a explorar.</translation>
 <translation id="5081055027309504756">Isolamento de processos Seccomp-BPF</translation>
 <translation id="5085162214018721575">A verificar existência de atualizações</translation>
 <translation id="5086082738160935172">HID</translation>
-<translation id="5087286274860437796">De momento, o certificado do servidor não é válido.</translation>
 <translation id="5087864757604726239">anterior</translation>
 <translation id="508794495705880051">Adicionar novo cartão de crédito...</translation>
 <translation id="5088534251099454936">PKCS #1 SHA-512 Com encriptação RSA</translation>
@@ -3165,7 +3135,6 @@ Prima qualquer tecla para continuar a explorar.</translation>
 <translation id="540296380408672091">Bloquear sempre cookies em <ph name="HOST" /></translation>
 <translation id="5409029099497331039">Surpreenda-me</translation>
 <translation id="5409341371246664034">através de <ph name="PROVIDER" /></translation>
-<translation id="540969355065856584">Este servidor não conseguiu provar que é <ph name="DOMAIN" />; de momento, o respetivo certificado de segurança não é válido. Isto pode ser provocado por uma configuração incorreta ou por um atacante que esteja a intercetar a sua ligação.</translation>
 <translation id="5411472733320185105">Não utilize as definições de proxy para os anfitriões e domínios seguintes:</translation>
 <translation id="5411769601840150972">A data e hora são definidas automaticamente.</translation>
 <translation id="5412637665001827670">Teclado búlgaro</translation>
@@ -3211,7 +3180,6 @@ Prima qualquer tecla para continuar a explorar.</translation>
 <translation id="5457113250005438886">Inválido</translation>
 <translation id="5457459357461771897">Ler e eliminar fotografias, música e outros elementos multimédia a partir do computador</translation>
 <translation id="5457599981699367932">Navegar como convidado</translation>
-<translation id="5457858494714903578">Não é possível instalar a extensão não fidedigna com o ID "<ph name="IMPORT_ID" />".</translation>
 <translation id="5458214261780477893">Dvorak</translation>
 <translation id="5463275305984126951">Índice de <ph name="LOCATION" /></translation>
 <translation id="5463856536939868464">Menu com marcadores ocultos</translation>
@@ -3457,7 +3425,6 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="5803531701633845775">Escolher expressões anteriores, sem mover o cursor</translation>
 <translation id="5804241973901381774">Permissões</translation>
 <translation id="580571955903695899">Reordenar por título</translation>
-<translation id="5808265053346186459">Ativar a fase 2 da slimming paint (apresentar estrutura de camadas baseada em lista, otimização de pintura de ramos, etc.). Requer que a slimming paint esteja ativada.</translation>
 <translation id="580886651983547002">O <ph name="PRODUCT_NAME" />
         não consegue aceder ao Web site. Normalmente, isto acontece devido a problemas de rede,
         mas também pode ser resultado de uma firewall ou servidor proxy configurado incorrectamente.</translation>
@@ -3703,7 +3670,6 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="614998064310228828">Modelo do dispositivo:</translation>
 <translation id="6150853954427645995">Para guardar este ficheiro para utilização offline, ligue-se novamente à Internet, clique com o botão direito do rato no ficheiro e selecione a opção <ph name="OFFLINE_CHECKBOX_NAME" />.</translation>
 <translation id="6151323131516309312">Prima <ph name="SEARCH_KEY" /> para pesquisar no <ph name="SITE_NAME" /></translation>
-<translation id="6151417162996330722">O certificado do servidor tem um período de validade demasiado longo.</translation>
 <translation id="6151559892024914821">Ativar arrastar e largar iniciado por toque</translation>
 <translation id="615216289547575801">Ativa as aplicações efémeras, que são iniciadas sem instalação no Chrome, para serem iniciadas a partir da Web Store do Chrome. É necessário o Iniciador de Aplicações experimental para ser ativada.</translation>
 <translation id="6154697846084421647">Atualmente com sessão iniciada</translation>
@@ -3956,7 +3922,6 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="6527303717912515753">Partilhar</translation>
 <translation id="653019979737152879">A sincronizar <ph name="FILE_NAME" />…</translation>
 <translation id="6533019874004191247">URL não suportado.</translation>
-<translation id="6533965071487181681">Se ativado, o URL chrome://md-settings/ carrega a página de definições do Material Design.</translation>
 <translation id="6535131196824081346">Este erro pode ocorrer ao tentar estabelecer ligação a um servidor seguro (HTTPS).
         Significa que o servidor está a tentar configurar uma ligação segura, mas,
         devido a uma configuração desastrosa, a ligação não seria de todo segura!
@@ -4092,7 +4057,6 @@ para proteger a sua privacidade.</translation>
 <translation id="6736329909263487977"><ph name="ISSUED_BY" /> [ <ph name="ISSUED_TO" /> ]</translation>
 <translation id="6739254200873843030">O cartão expirou. Verifique a data ou introduza um cartão novo.</translation>
 <translation id="6740369132746915122">Se compreende os riscos para a sua segurança, pode <ph name="BEGIN_LINK" />aceder a este site não seguro<ph name="END_LINK" />.</translation>
-<translation id="674375294223700098">Erro de certificado de servidor desconhecido.</translation>
 <translation id="6745592621698551453">Atualizar agora</translation>
 <translation id="6745994589677103306">Não fazer nada</translation>
 <translation id="674632704103926902">Ativar arrastamento através do toque</translation>
@@ -4191,6 +4155,7 @@ para proteger a sua privacidade.</translation>
 <translation id="6897140037006041989">Agente do utilizador</translation>
 <translation id="6898440773573063262">Já é possível configurar aplicações de quiosque para início automático neste dispositivo.</translation>
 <translation id="6898699227549475383">Organização (O)</translation>
+<translation id="6900284862687837908">Aplicação em segundo plano: <ph name="BACKGROUND_APP_URL" /></translation>
 <translation id="6904344821472985372">Revogar acesso a ficheiros</translation>
 <translation id="6906268095242253962">Para continuar, ligue-se à internet.</translation>
 <translation id="6909461304779452601">Não é possível adicionar aplicações, extensões e scripts de utilizador a partir deste Website.</translation>
@@ -4222,7 +4187,6 @@ para proteger a sua privacidade.</translation>
 <translation id="6955446738988643816">Inspecionar Pop-up</translation>
 <translation id="695755122858488207">Botão de opção não selecionado</translation>
 <translation id="6957703620025723294">Ativar funcionalidades de tela experimentais</translation>
-<translation id="6957887021205513506">O certificado do servidor parece ser uma falsificação.</translation>
 <translation id="696036063053180184">3 Set (No shift)</translation>
 <translation id="696203921837389374">Ativar a sincronização através de dados móveis</translation>
 <translation id="6964308487066031935">Adicionar pastas a "<ph name="EXTENSION" />"?</translation>
@@ -4284,7 +4248,6 @@ para proteger a sua privacidade.</translation>
 <translation id="7022303817801823406">A ligação a este site está a utilizar um certificado de servidor válido e fidedigno.</translation>
 <translation id="7022562585984256452">A sua página inicial foi definida.</translation>
 <translation id="702373420751953740">Versão de PRL:</translation>
-<translation id="7024180072211179766">Ícone da barra de ferramentas Ativar Modo de leitura</translation>
 <translation id="7024867552176634416">Selecionar um dispositivo de armazenagem amovível a utilizar</translation>
 <translation id="7025190659207909717">Gestão de serviços de dados móveis</translation>
 <translation id="7025325401470358758">Painel seguinte</translation>
@@ -4300,7 +4263,6 @@ para proteger a sua privacidade.</translation>
 <translation id="7042418530779813870">Colar e pesqui&amp;sar</translation>
 <translation id="7047998246166230966">Ponteiro</translation>
 <translation id="7048141481140415714">Ative Ctrl+Alt+Shift+8 para alternar para o modo de maximização TouchView.</translation>
-<translation id="7050187094878475250">Tentou aceder a <ph name="DOMAIN" />, mas o servidor apresentou um certificado cujo período de validade é demasiado longo para ser fidedigno.</translation>
 <translation id="7051943809462976355">A pesquisar rato...</translation>
 <translation id="7052237160939977163">Enviar dados de rastreio do desempenho</translation>
 <translation id="7052500709156631672">O gateway ou o servidor proxy recebeu uma resposta inválida de um servidor a jusante.</translation>
@@ -4397,7 +4359,6 @@ para proteger a sua privacidade.</translation>
 <translation id="720210938761809882">Página bloqueada</translation>
 <translation id="7205869271332034173">SSID:</translation>
 <translation id="7206693748120342859">A transferir <ph name="PLUGIN_NAME" />...</translation>
-<translation id="7207163335165373476">{1,plural, =1{Este servidor não conseguiu provar que é <ph name="DOMAIN" />; o seu certificado de segurança expirou ontem. Isto pode ser o resultado de uma configuração incorreta ou de um invasor a intercetar a sua ligação. O relógio do seu computador está atualmente configurado para <ph name="CURRENT_DATE" />. Será que isso está correto? Em caso negativo, deverá corrigir o relógio do seu sistema e depois atualizar esta página.}other{Este servidor não conseguiu provar que é <ph name="DOMAIN" />; o seu certificado de segurança expirou há # dias atrás. Isto pode ser o resultado de uma configuração incorreta ou de um invasor a intercetar a sua ligação. O relógio do seu computador está atualmente configurado para <ph name="CURRENT_DATE" />. Será que isso está correto? Em caso negativo, deverá corrigir o relógio do seu sistema e depois atualizar esta página.}}</translation>
 <translation id="7208384892394620321">Este site não aceita o cartão American Express.</translation>
 <translation id="7209475358897642338">Qual é o seu idioma?</translation>
 <translation id="7210998213739223319">Nome de utilizador.</translation>
@@ -4588,7 +4549,6 @@ O modo de navegação anónima <ph name="SHORTCUT_KEY" /> pode ser útil da pró
 <translation id="7469894403370665791">Ligar automaticamente a esta rede</translation>
 <translation id="747114903913869239">Erro: não foi possível descodificar a extensão</translation>
 <translation id="7472639616520044048">Tipos de MIME:</translation>
-<translation id="7473810335848400503">Inverter a ordem de deslocamento da área visível.</translation>
 <translation id="7473891865547856676">Não, obrigado</translation>
 <translation id="747459581954555080">Restaurar tudo</translation>
 <translation id="7474889694310679759">Teclado canadiano (inglês)</translation>
@@ -4620,7 +4580,6 @@ O modo de navegação anónima <ph name="SHORTCUT_KEY" /> pode ser útil da pró
 <translation id="7507930499305566459">Certificado do dispositivo de resposta do estado</translation>
 <translation id="7508545000531937079">Apresentação de diapositivos</translation>
 <translation id="7509179828847922845">A ligação a <ph name="HOST_NAME" /> foi interrompida.</translation>
-<translation id="7511149348717996334">Ativar as definições do Material Design</translation>
 <translation id="7511955381719512146">A rede Wi-Fi que está a utilizar pode exigir que visite <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />.</translation>
 <translation id="7513996269498582533">Detetado por si</translation>
 <translation id="751507702149411736">Bielorrusso</translation>
@@ -4662,7 +4621,6 @@ O modo de navegação anónima <ph name="SHORTCUT_KEY" /> pode ser útil da pró
 <translation id="756445078718366910">Abrir janela do navegador</translation>
 <translation id="7564847347806291057">Concluir processo</translation>
 <translation id="7566723889363720618">F12</translation>
-<translation id="7567204685887185387">Este servidor não conseguiu provar que é o domínio <ph name="DOMAIN" />; o respetivo certificado de segurança poderá ter sido emitido de forma fraudulenta. Isto pode ser o resultado de uma configuração incorreta ou de um invasor a intercetar a sua ligação.</translation>
 <translation id="7567293639574541773">I&amp;nspeccionar elemento</translation>
 <translation id="7568790562536448087">A atualizar</translation>
 <translation id="7570496663860904543">Quando uma página não carrega, se existir uma cópia desatualizada da página na cache do navegador, é apresentado um botão para permitir que o utilizador carregue essa cópia desatualizada. A opção de ativação principal coloca o botão na posição mais visível na página de erro. A opção de ativação secundária coloca-o ao lado do botão atualizar.</translation>
@@ -4678,7 +4636,6 @@ O modo de navegação anónima <ph name="SHORTCUT_KEY" /> pode ser útil da pró
 <translation id="7587108133605326224">Báltico</translation>
 <translation id="7589461650300748890">Pare. Tenha cuidado.</translation>
 <translation id="7589661784326793847">Aguarde um momento</translation>
-<translation id="7592362899630581445">O certificado do servidor viola as restrições de nome.</translation>
 <translation id="7595547011743502844"><ph name="ERROR" /> (código de erro <ph name="ERROR_CODE" />).</translation>
 <translation id="7596831438341298034">Ok, importar</translation>
 <translation id="7596913374482479303">Defina que motor de pesquisa é utilizado quando pesquisar a partir da caixa geral.</translation>
@@ -4785,7 +4742,6 @@ O modo de navegação anónima <ph name="SHORTCUT_KEY" /> pode ser útil da pró
 <translation id="7754704193130578113">Perguntar onde guardar cada ficheiro antes da transferência</translation>
 <translation id="7756363132985736290">O certificado já existe.</translation>
 <translation id="7760004034676677601">É esta a página inicial de que estava à espera?</translation>
-<translation id="7761701407923456692">O certificado do servidor não corresponde ao URL.</translation>
 <translation id="7765158879357617694">Mover</translation>
 <translation id="7766807826975222231">Faça uma visita guiada</translation>
 <translation id="7767646430896201896">Opções:</translation>
@@ -4796,7 +4752,6 @@ O modo de navegação anónima <ph name="SHORTCUT_KEY" /> pode ser útil da pró
 <translation id="7772127298218883077">Acerca do <ph name="PRODUCT_NAME" /></translation>
 <translation id="7773726648746946405">Armazenamento da sessão</translation>
 <translation id="7774497835322490043">Ativa o stub de depuração de GDB. Isto irá parar uma aplicação Native Client no arranque e esperar pela anexação de nacl-gdb (a partir de NaCl SDK).</translation>
-<translation id="7775325654940954648">Ocorreu um erro ao apresentar esta página Web. Experimente fechar as aplicações e os separadores de que não necessita para libertar alguma memória.</translation>
 <translation id="7779249319235708104">Aproxima-se um ataque de phishing</translation>
 <translation id="7781069478569868053">Página Novo separador</translation>
 <translation id="7781335840981796660">Serão removidas todas as contas de utilizador e dados locais.</translation>
@@ -4841,7 +4796,6 @@ O modo de navegação anónima <ph name="SHORTCUT_KEY" /> pode ser útil da pró
 <translation id="7828106701649804503">Especifica a largura predefinida do mosaico.</translation>
 <translation id="782886543891417279">A rede Wi-Fi que está a utilizar (<ph name="WIFI_NAME" />) pode exigir que visite a respetiva página de início de sessão.</translation>
 <translation id="7831368056091621108">para obter esta extensão, o histórico e outras definições do Chrome em todos os dispositivos.</translation>
-<translation id="783140679984912140">Desativar slimming paint.</translation>
 <translation id="7839051173341654115">Ver/fazer cópia de segurança de multimédia</translation>
 <translation id="7839192898639727867">ID da chave de requerente do certificado</translation>
 <translation id="7839580021124293374">3</translation>
@@ -4913,7 +4867,6 @@ O modo de navegação anónima <ph name="SHORTCUT_KEY" /> pode ser útil da pró
 <translation id="7928710562641958568">Ejetar aparelho</translation>
 <translation id="7935864848518524631">Associações de ficheiro de aplicações.</translation>
 <translation id="7938594894617528435">Atualmente offline</translation>
-<translation id="7938958445268990899">O certificado do servidor ainda não é válido.</translation>
 <translation id="7939412583708276221">Manter na mesma</translation>
 <translation id="7939997691108949385">O gestor poderá configurar restrições e definições para este utilizador supervisionado em <ph name="MANAGEMENT_URL" />.</translation>
 <translation id="7943385054491506837">EUA Colemak</translation>
@@ -5488,7 +5441,6 @@ Mantenha o seu ficheiro de chave num local seguro, pois irá precisar dele para 
 <translation id="8731332457891046104">Anular inscrição de <ph name="DEVICE_TYPE" /></translation>
 <translation id="8732030010853991079">Clique neste ícone para utilizar esta extensão.</translation>
 <translation id="8732212173949624846">Ler e alterar o histórico de navegação em todos os dispositivos com sessão iniciada</translation>
-<translation id="8733326791725507133">Ativa uma implementação experimental da API do Gestor de credenciais. Não é garantido que esta ação não exponha todas as suas palavras-passe em todos os sites da Web, pelo que apenas a deve ativar se tiver conhecimentos sobre a matéria.</translation>
 <translation id="8734073480934656039">A ativação desta definição permite que aplicações do quiosque sejam iniciadas automaticamente no arranque.</translation>
 <translation id="8736288397686080465">Este site foi atualizado em segundo plano.</translation>
 <translation id="8737260648576902897">Instalar o Adobe Reader</translation>
@@ -5560,7 +5512,6 @@ Mantenha o seu ficheiro de chave num local seguro, pois irá precisar dele para 
 <translation id="8846141544112579928">A pesquisar teclado...</translation>
 <translation id="8847988622838149491">USB</translation>
 <translation id="8848709220963126773">Alteração de modo com tecla Shift</translation>
-<translation id="884923133447025588">Não foi encontrado qualquer mecanismo de revogação.</translation>
 <translation id="8852366862412129888">O site inclui recursos HTTP.</translation>
 <translation id="8852742364582744935">Foram adicionadas as seguintes aplicações e extensões:</translation>
 <translation id="885381502874625531">Teclado em bielorrusso</translation>
@@ -5569,7 +5520,6 @@ Mantenha o seu ficheiro de chave num local seguro, pois irá precisar dele para 
 <translation id="8859057652521303089">Selecionar idioma:</translation>
 <translation id="8859174528519900719">Subestrutura: <ph name="SUBFRAME_SITE" /></translation>
 <translation id="8860454412039442620">Folha de cálculo do Excel</translation>
-<translation id="8861743108205592297">Adiciona um botão à barra de ferramentas para ver uma versão mais legível da página atual.</translation>
 <translation id="8863489667196658337">Permite que o novo sistema crie aplicações de marcadores.</translation>
 <translation id="8870318296973696995">Página inicial</translation>
 <translation id="8870413625673593573">Fechadas recentemente</translation>
@@ -5647,7 +5597,6 @@ Mantenha o seu ficheiro de chave num local seguro, pois irá precisar dele para 
 <translation id="8965037249707889821">Introduzir palavra-passe antiga</translation>
 <translation id="8965697826696209160">Não existe espaço suficiente.</translation>
 <translation id="8968527460726243404">Criador de imagem do sistema do SO Chrome</translation>
-<translation id="8971063699422889582">O certificado do servidor expirou.</translation>
 <translation id="89720367119469899">Escape</translation>
 <translation id="8972513834460200407">Consulte o seu administrador de rede para ter a certeza de que a firewall não está a bloquear as transferências dos servidores da Google.</translation>
 <translation id="8972727166872864532">Ups! Tens de perguntar aos teus pais se podes aceder a esta página.</translation>
@@ -5716,7 +5665,6 @@ Mantenha o seu ficheiro de chave num local seguro, pois irá precisar dele para 
 <translation id="904451693890288097">Introduza a chave de acesso para "<ph name="DEVICE_NAME" />":</translation>
 <translation id="904949795138183864">A página Web em <ph name="URL" /> já não existe.</translation>
 <translation id="9049835026521739061">Modo Hangul (caracteres coreanos)</translation>
-<translation id="9049981332609050619">Tentou aceder a <ph name="DOMAIN" />, mas o servidor apresentou um certificado inválido.</translation>
 <translation id="9050666287014529139">Frase de acesso</translation>
 <translation id="9052208328806230490">Registou as suas impressoras com <ph name="CLOUD_PRINT_NAME" /> utilizando a conta <ph name="EMAIL" /></translation>
 <translation id="9053965862400494292">Ocorreu um erro ao tentar configurar a sincronização.</translation>
@@ -5802,7 +5750,6 @@ Mantenha o seu ficheiro de chave num local seguro, pois irá precisar dele para 
 <translation id="9169664750068251925">Bloquear sempre neste Website</translation>
 <translation id="9170848237812810038">An&amp;ular</translation>
 <translation id="9170884462774788842">Outro programa do computador adicionou um tema que pode alterar o funcionamento do Chrome.</translation>
-<translation id="917450738466192189">O certificado do servidor é inválido.</translation>
 <translation id="9177499212658576372">Está atualmente ligado à rede <ph name="NETWORK_TYPE" />.</translation>
 <translation id="9177556055091995297">Gerir cartões de crédito</translation>
 <translation id="917861274483335838">Gerir bloqueio de plug-ins...</translation>

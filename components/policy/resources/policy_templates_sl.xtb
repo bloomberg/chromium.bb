@@ -107,7 +107,6 @@ Vrednost prilagoditve mora biti 100 % ali več.</translation>
       Nastavitev tega pravilnika preglasi privzeto vrednost 3 ur. Veljavne vrednosti za ta pravilnik so v obsegu od 1.800.000 (30 minut) do 8.6400.000 (1 dan). Vrednosti, ki niso v tem obsegu, bodo prilagojene omejitvi.
 
       Če ta pravilnik ni nastavljen, bo <ph name="PRODUCT_OS_NAME" /> uporabil privzeto vrednost 3 ur.</translation>
-<translation id="1503959756075098984">ID-ji razširitev in URL-ji posodobitev za namestitev brez obveščanja</translation>
 <translation id="1504431521196476721">Potrditev na daljavo</translation>
 <translation id="1509692106376861764">Ta pravilnik se ne uporablja od uveljavitve različice brskalnika <ph name="PRODUCT_NAME" /> 29.</translation>
 <translation id="1522425503138261032">Dovoli mestom sledenje fizične lokacije uporabnika</translation>
@@ -1684,7 +1683,6 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
           Imena strežnikov ločite z vejicami. Nadomestni znaki (*) so dovoljeni.
 
           Če tega pravilnika ne nastavite, <ph name="PRODUCT_NAME" /> poskuša zaznati, ali je strežnik v intranetu, in se šele potem odzove na zahteve IWA. Če je strežnik zaznan kot internet, <ph name="PRODUCT_NAME" /> prezre zahteve IWA, poslane iz tega strežnika.</translation>
-<translation id="8665076741187546529">Nastavite seznam vsiljenih namestitev razširitev</translation>
 <translation id="8668394701842594241">Določa seznam vtičnikov, ki so omogočeni v brskalniku <ph name="PRODUCT_NAME" />, in prepreči uporabnikom spreminjanje te nastavitve.
 
       Nadomestna znaka * in ? je mogoče uporabiti za nadomeščanje zaporedij poljubnih znakov. Znak * nadomešča poljubno število znakov, znak ? pa izbirni posamezen znak, tj. nadomešča nič znakov ali en znak. Ubežni znak je \; če torej želite nadomestiti dejanske znake *, ? ali \, lahko postavite prednje znak \.
