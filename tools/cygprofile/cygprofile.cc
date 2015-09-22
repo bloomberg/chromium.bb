@@ -32,7 +32,7 @@ namespace cygprofile {
 namespace {
 
 // Allow 8 MBytes of data for each thread log.
-const int kMaxBufferSize = 8 * 1024 * 1024 / sizeof(LogEntry);
+const size_t kMaxBufferSize = 8 * 1024 * 1024 / sizeof(LogEntry);
 
 // Have the background internal thread do its flush every 15 sec.
 const int kFlushThreadIdleTimeSec = 15;
@@ -83,7 +83,7 @@ struct ImmutableFileHeaderLine {
   // stored in |line| at position |start_offset| was successfully stored in
   // |result|.
   static bool ParseAddress(const std::string& line,
-                           off_t start_offset,
+                           size_t start_offset,
                            size_t length,
                            uint64* result) {
     if (start_offset >= line.length())
@@ -243,7 +243,7 @@ void ThreadLog::FlushInternal(std::vector<LogEntry>* entries) const {
 
   for (std::vector<LogEntry>::const_iterator it = entries->begin();
        it != entries->end(); ++it) {
-    fprintf(file.get(), "%ld %ld\t%d:%ld\t%p\n", it->time.tv_sec,
+    fprintf(file.get(), "%ld %ld\t%d:%d\t%p\n", it->time.tv_sec,
             it->time.tv_nsec / 1000, it->pid, it->tid, it->address);
   }
 
