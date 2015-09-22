@@ -87,6 +87,7 @@ void StartupUtils::MarkOobeCompleted() {
   SaveBoolPreferenceForced(prefs::kEnrollmentRecoveryRequired, false);
 }
 
+// static
 void StartupUtils::SaveOobePendingScreen(const std::string& screen) {
   SaveStringPreferenceForced(prefs::kOobeScreenPending, screen);
 }
@@ -95,7 +96,8 @@ void StartupUtils::SaveOobePendingScreen(const std::string& screen) {
 // completed.
 // On chrome device, returns /home/chronos/.oobe_completed.
 // On Linux desktop, returns {DIR_USER_DATA}/.oobe_completed.
-static base::FilePath GetOobeCompleteFlagPath() {
+// static
+base::FilePath StartupUtils::GetOobeCompleteFlagPath() {
   // The constant is defined here so it won't be referenced directly.
   const char kOobeCompleteFlagFilePath[] = "/home/chronos/.oobe_completed";
 
@@ -110,7 +112,8 @@ static base::FilePath GetOobeCompleteFlagPath() {
 
 static void CreateOobeCompleteFlagFile() {
   // Create flag file for boot-time init scripts.
-  base::FilePath oobe_complete_path = GetOobeCompleteFlagPath();
+  const base::FilePath oobe_complete_path =
+      StartupUtils::GetOobeCompleteFlagPath();
   if (!base::PathExists(oobe_complete_path)) {
     FILE* oobe_flag_file = base::OpenFile(oobe_complete_path, "w+b");
     if (oobe_flag_file == NULL)

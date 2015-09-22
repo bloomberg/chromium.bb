@@ -1829,6 +1829,10 @@ const char kOobeComplete[] = "OobeComplete";
 // The name of the screen that has to be shown if OOBE has been interrupted.
 const char kOobeScreenPending[] = "OobeScreenPending";
 
+// A boolean pref for whether the Goodies promotion webpage has been displayed,
+// or otherwise disqualified for auto-display, on this device.
+const char kCanShowOobeGoodiesPage[] = "CanShowOobeGoodiesPage";
+
 // A boolean pref of the device registered flag (second part after first login).
 const char kDeviceRegistered[] = "DeviceRegistered";
 

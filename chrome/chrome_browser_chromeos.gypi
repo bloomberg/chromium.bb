@@ -313,6 +313,8 @@
         'browser/chromeos/first_run/first_run_controller.h',
         'browser/chromeos/first_run/first_run_view.cc',
         'browser/chromeos/first_run/first_run_view.h',
+        'browser/chromeos/first_run/goodies_displayer.cc',
+        'browser/chromeos/first_run/goodies_displayer.h',
         'browser/chromeos/first_run/step.cc',
         'browser/chromeos/first_run/step.h',
         'browser/chromeos/first_run/step_names.cc',

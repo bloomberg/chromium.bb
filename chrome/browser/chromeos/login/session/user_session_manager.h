@@ -40,6 +40,10 @@ class User;
 
 namespace chromeos {
 
+namespace first_run {
+class GoodiesDisplayer;
+}  // namespace first_run
+
 namespace test {
 class UserSessionManagerTestApi;
 }  // namespace test
@@ -235,6 +239,12 @@ class UserSessionManager
 
   // Returns the auth request context associated with auth data.
   net::URLRequestContextGetter* GetAuthRequestContext() const;
+
+  // Create observer to display OOBE Goodies page on first run browser start.
+  void CreateGoodiesDisplayer();
+
+  // Remove observer for OOBE Goodies page when no longer needed.
+  void DestroyGoodiesDisplayer();
 
   // Removes a profile from the per-user input methods states map.
   void RemoveProfileForTesting(Profile* profile);
@@ -474,6 +484,9 @@ class UserSessionManager
 
   // Child account status is necessary for InitializeStartUrls call.
   bool waiting_for_child_account_status_;
+
+  // Used to display OOBE Goodies page when browser is first opened.
+  scoped_ptr<first_run::GoodiesDisplayer> goodies_displayer_;
 
   base::WeakPtrFactory<UserSessionManager> weak_factory_;
 

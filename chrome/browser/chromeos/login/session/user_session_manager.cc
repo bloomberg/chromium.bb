@@ -32,6 +32,7 @@
 #include "chrome/browser/chromeos/base/locale_util.h"
 #include "chrome/browser/chromeos/boot_times_recorder.h"
 #include "chrome/browser/chromeos/first_run/first_run.h"
+#include "chrome/browser/chromeos/first_run/goodies_displayer.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/chromeos/login/auth/chrome_cryptohome_authenticator.h"
 #include "chrome/browser/chromeos/login/chrome_restart_request.h"
@@ -350,6 +351,7 @@ void UserSessionManager::OverrideHomedir() {
 void UserSessionManager::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterStringPref(prefs::kRLZBrand, std::string());
   registry->RegisterBooleanPref(prefs::kRLZDisabled, false);
+  registry->RegisterBooleanPref(prefs::kCanShowOobeGoodiesPage, true);
 }
 
 UserSessionManager::UserSessionManager()
@@ -1137,6 +1139,9 @@ void UserSessionManager::FinalizePrepareProfile(Profile* profile) {
   // launch browser.
   bool browser_launched = InitializeUserSession(profile);
 
+  // Check whether to, then set up for, display OOBE Goodies page on first run.
+  first_run::GoodiesDisplayer::Init();
+
   // TODO(nkostylev): This pointer should probably never be NULL, but it looks
   // like OnProfileCreated() may be getting called before
   // UserSessionManager::PrepareProfile() has set |delegate_| when Chrome is
@@ -1518,6 +1523,15 @@ UserSessionManager::GetAuthRequestContext() const {
   return auth_request_context;
 }
 
+void UserSessionManager::CreateGoodiesDisplayer() {
+  if (goodies_displayer_ == nullptr)
+    goodies_displayer_.reset(new first_run::GoodiesDisplayer);
+}
+
+void UserSessionManager::DestroyGoodiesDisplayer() {
+  goodies_displayer_.reset();
+}
+
 void UserSessionManager::AttemptRestart(Profile* profile) {
   // Restart unconditionally in case if we are stuck somewhere in a session
   // restore process. http://crbug.com/520346.
@@ -1754,6 +1768,7 @@ bool UserSessionManager::TokenHandlesEnabled() {
 void UserSessionManager::Shutdown() {
   token_handle_fetcher_.reset();
   token_handle_util_.reset();
+  goodies_displayer_.reset();
 }
 
 void UserSessionManager::CreateTokenUtilIfMissing() {

@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/callback.h"
+#include "base/files/file_path.h"
 
 class PrefRegistrySimple;
 
@@ -31,6 +32,9 @@ class StartupUtils {
 
   // Stores the next pending OOBE screen in case it will need to be resumed.
   static void SaveOobePendingScreen(const std::string& screen);
+
+  // Path to flag file indicating oobe completion.
+  static base::FilePath GetOobeCompleteFlagPath();
 
   // Returns device registration completion status, i.e. second part of OOBE.
   static bool IsDeviceRegistered();
