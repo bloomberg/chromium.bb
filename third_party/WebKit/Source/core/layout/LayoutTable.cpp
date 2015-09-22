@@ -437,7 +437,6 @@ void LayoutTable::layout()
     // section down (it is quite unlikely that any of the following sections
     // did not shift).
     bool sectionMoved = false;
-    LayoutUnit movedSectionLogicalTop = 0;
     {
         LayoutState state(*this, locationOffset());
         LayoutUnit oldLogicalWidth = logicalWidth();
@@ -494,10 +493,7 @@ void LayoutTable::layout()
                     continue;
                 layoutCaption(*m_captions[i]);
             }
-            if (logicalHeight() != oldTableLogicalTop) {
-                sectionMoved = true;
-                movedSectionLogicalTop = std::min(logicalHeight(), oldTableLogicalTop);
-            }
+            sectionMoved = logicalHeight() != oldTableLogicalTop;
         }
 
         LayoutUnit borderAndPaddingBefore = borderBefore() + (collapsing ? LayoutUnit() : paddingBefore());
@@ -541,10 +537,8 @@ void LayoutTable::layout()
         // position the table sections
         LayoutTableSection* section = topSection();
         while (section) {
-            if (!sectionMoved && section->logicalTop() != logicalHeight()) {
+            if (!sectionMoved && section->logicalTop() != logicalHeight())
                 sectionMoved = true;
-                movedSectionLogicalTop = std::min(logicalHeight(), section->logicalTop()) + (style()->isHorizontalWritingMode() ? section->visualOverflowRect().y() : section->visualOverflowRect().x());
-            }
             section->setLogicalLocation(LayoutPoint(sectionLogicalLeft, logicalHeight()));
 
             // As we may skip invalidation on the table, we need to ensure that sections are invalidated when they moved.
