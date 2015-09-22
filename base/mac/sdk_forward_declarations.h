@@ -491,6 +491,10 @@ BASE_EXPORT extern NSString* const NSAppearanceNameVibrantDark;
 - (NSString*)UUIDString;
 @end
 
+@interface NSViewController (YosemiteSDK)
+- (void)viewDidLoad;
+@end
+
 #endif  // MAC_OS_X_VERSION_10_10
 
 // ----------------------------------------------------------------------------

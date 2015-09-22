@@ -5,6 +5,7 @@
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_controller.h"
 
 #include "base/mac/bundle_locations.h"
+#include "base/mac/sdk_forward_declarations.h"
 #include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/sys_string_conversions.h"
@@ -151,7 +152,7 @@ void RecordAppLaunch(Profile* profile, GURL url) {
 
 }  // namespace
 
-@interface BookmarkBarController(Private)
+@interface BookmarkBarController ()
 
 // Moves to the given next state (from the current state), possibly animating.
 // If |animate| is NO, it will stop any running animation and jump to the given
@@ -224,7 +225,6 @@ void RecordAppLaunch(Profile* profile, GURL url) {
 - (void)clearMenuTagMap;
 - (int)preferredHeight;
 - (void)addButtonsToView;
-- (BOOL)setBookmarkButtonVisibility;
 - (BOOL)setManagedBookmarksButtonVisibility;
 - (BOOL)setSupervisedBookmarksButtonVisibility;
 - (BOOL)setOtherBookmarksButtonVisibility;
@@ -400,6 +400,17 @@ void RecordAppLaunch(Profile* profile, GURL url) {
 }
 
 - (void)awakeFromNib {
+  [self viewDidLoad];
+}
+
+- (void)viewDidLoad {
+  if (bridge_) {
+    // When running on 10.10, expect both -awakeFromNib and -viewDidLoad to be
+    // called, but only initialize once.
+    DCHECK(base::mac::IsOSYosemiteOrLater());
+    return;
+  }
+
   // We default to NOT open, which means height=0.
   DCHECK([[self view] isHidden]);  // Hidden so it's OK to change.
 

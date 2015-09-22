@@ -9,6 +9,7 @@
 #include "base/mac/bundle_locations.h"
 #include "base/mac/foundation_util.h"
 #include "base/mac/mac_util.h"
+#include "base/mac/sdk_forward_declarations.h"
 #include "base/memory/singleton.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_util.h"
@@ -120,10 +121,6 @@ CGFloat BrowserActionsContainerDelegate::GetMaxAllowedWidth() {
 }
 
 }  // namespace
-
-@interface ToolbarController (YosemiteSDK)
-- (void)viewDidLoad;
-@end
 
 @interface ToolbarController()
 @property(assign, nonatomic) Browser* browser;
@@ -265,12 +262,7 @@ class NotificationBridge : public WrenchMenuBadgeController::Delegate {
   // When linking and running on 10.10+, both -awakeFromNib and -viewDidLoad may
   // be called, don't initialize twice.
   if (locationBarView_) {
-#if defined(MAC_OS_X_VERSION_10_10) && \
-    MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_10
     DCHECK(base::mac::IsOSYosemiteOrLater());
-#else
-    NOTREACHED();
-#endif
     return;
   }
 
