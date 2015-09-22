@@ -11,6 +11,7 @@
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_message_attachment_set.h"
 #include "ipc/ipc_message_macros.h"
+#include "ipc/ipc_message_start.h"
 
 namespace IPC {
 namespace internal {
@@ -189,6 +190,12 @@ void ChannelReader::DispatchMessage(Message* m) {
     handled = GetAttachmentBroker()->OnMessageReceived(*m);
   }
 #endif  // USE_ATTACHMENT_BROKER
+
+  // TODO(erikchen): Temporary code to help track http://crbug.com/527588.
+  Channel::MessageVerifier verifier = Channel::GetMessageVerifier();
+  if (verifier)
+    verifier(m);
+
   if (!handled)
     listener_->OnMessageReceived(*m);
   if (m->dispatch_error())

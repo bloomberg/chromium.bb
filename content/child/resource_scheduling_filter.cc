@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "content/child/resource_dispatcher.h"
+#include "content/common/resource_messages.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_message_start.h"
 
@@ -26,6 +27,9 @@ ResourceSchedulingFilter::~ResourceSchedulingFilter() {
 }
 
 bool ResourceSchedulingFilter::OnMessageReceived(const IPC::Message& message) {
+  // TODO(erikchen): Temporary code to help track http://crbug.com/527588.
+  content::CheckContentsOfDataReceivedMessage(&message);
+
   main_thread_task_runner_->PostTask(
       FROM_HERE, base::Bind(&ResourceSchedulingFilter::DispatchMessage,
                             weak_ptr_factory_.GetWeakPtr(), message));

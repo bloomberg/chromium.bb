@@ -149,7 +149,7 @@ void Message::FindNext(const char* range_start,
   // The data is not copied.
   size_t pickle_len = static_cast<size_t>(pickle_end - range_start);
   Message message(range_start, static_cast<int>(pickle_len));
-  int num_attachments = message.header()->num_brokered_attachments;
+  size_t num_attachments = message.header()->num_brokered_attachments;
 
   // Check for possible overflows.
   size_t max_size_t = std::numeric_limits<size_t>::max();
@@ -165,7 +165,7 @@ void Message::FindNext(const char* range_start,
   if (buffer_length < attachment_length + pickle_len)
     return;
 
-  for (int i = 0; i < num_attachments; ++i) {
+  for (size_t i = 0; i < num_attachments; ++i) {
     const char* attachment_start =
         pickle_end + i * BrokerableAttachment::kNonceSize;
     BrokerableAttachment::AttachmentId id(attachment_start,
