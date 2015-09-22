@@ -27,6 +27,7 @@
 #include "content/test/test_render_view_host.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "testing/gtest_mac.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 #import "third_party/ocmock/ocmock_extensions.h"
 #include "ui/events/test/cocoa_test_event_utils.h"
@@ -231,7 +232,12 @@ class RenderWidgetHostViewMacTest : public RenderViewHostImplTestHarness {
     base::MessageLoop::current()->RunUntilIdle();
     pool_.Recycle();
   }
- protected:
+
+  void DestroyHostViewRetainCocoaView() {
+    test_rvh()->SetView(nullptr);
+    rwhv_mac_->Destroy();
+  }
+
  private:
   // This class isn't derived from PlatformTest.
   base::mac::ScopedNSAutoreleasePool pool_;
@@ -655,6 +661,31 @@ TEST_F(RenderWidgetHostViewMacTest, UpdateCompositionMultilineCase) {
   EXPECT_EQ(
       GetExpectedRect(kOrigin, kBoundsUnit, gfx::Range(0, 10), 1),
       gfx::Rect(NSRectToCGRect(rect)));
+}
+
+// Check that events coming from AppKit via -[NSTextInputClient
+// firstRectForCharacterRange:actualRange] are handled in a sane manner if they
+// arrive after the C++ RenderWidgetHostView is destroyed.
+TEST_F(RenderWidgetHostViewMacTest, CompositionEventAfterDestroy) {
+  // The test view isn't in an NSWindow to perform the final coordinate
+  // conversion, so use an origin of 0,0, but verify the size.
+  const gfx::Rect composition_bounds(0, 0, 30, 40);
+  const gfx::Range range(0, 1);
+  rwhv_mac_->ImeCompositionRangeChanged(
+      range, std::vector<gfx::Rect>(1, composition_bounds));
+
+  NSRange actual_range = NSMakeRange(0, 0);
+  NSRect rect = [rwhv_cocoa_ firstRectForCharacterRange:range.ToNSRange()
+                                            actualRange:&actual_range];
+  EXPECT_NSEQ(NSMakeRect(0, 0, 30, 40), rect);
+  EXPECT_EQ(range, gfx::Range(actual_range));
+
+  DestroyHostViewRetainCocoaView();
+  actual_range = NSMakeRange(0, 0);
+  rect = [rwhv_cocoa_ firstRectForCharacterRange:range.ToNSRange()
+                                     actualRange:&actual_range];
+  EXPECT_NSEQ(NSZeroRect, rect);
+  EXPECT_EQ(gfx::Range(), gfx::Range(actual_range));
 }
 
 // Verify that |SetActive()| calls |RenderWidgetHostImpl::Blur()| and

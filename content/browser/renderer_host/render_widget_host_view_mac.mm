@@ -2988,6 +2988,13 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
 
 - (NSRect)firstRectForCharacterRange:(NSRange)theRange
                          actualRange:(NSRangePointer)actualRange {
+  // During tab closure, events can arrive after RenderWidgetHostViewMac::
+  // Destroy() is called, which will have set |render_widget_host_| to null.
+  if (!renderWidgetHostView_->render_widget_host_) {
+    [self cancelComposition];
+    return NSZeroRect;
+  }
+
   NSRect rect = [self firstViewRectForCharacterRange:theRange
                                          actualRange:actualRange];
 
