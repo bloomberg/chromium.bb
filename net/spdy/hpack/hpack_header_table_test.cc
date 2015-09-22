@@ -79,7 +79,7 @@ class HpackHeaderTableTest : public ::testing::Test {
     EXPECT_GE(size, HpackEntry::kSizeOverhead);
     string name((size - HpackEntry::kSizeOverhead) / 2, 'n');
     string value(size - HpackEntry::kSizeOverhead - name.size(), 'v');
-    HpackEntry entry(name, value);
+    HpackEntry entry(name, value, false, 0);
     EXPECT_EQ(size, entry.Size());
     return entry;
   }

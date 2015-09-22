@@ -5,8 +5,6 @@
 #ifndef NET_SPDY_HPACK_ENTRY_H_
 #define NET_SPDY_HPACK_ENTRY_H_
 
-#include <cstddef>
-#include <set>
 #include <string>
 
 #include "base/basictypes.h"
@@ -35,6 +33,7 @@ class NET_EXPORT_PRIVATE HpackEntry {
   //
   // The combination of |is_static| and |insertion_index| allows an
   // HpackEntryTable to determine the index of an HpackEntry in O(1) time.
+  // Copies |name| and |value|.
   HpackEntry(base::StringPiece name,
              base::StringPiece value,
              bool is_static,
@@ -42,7 +41,11 @@ class NET_EXPORT_PRIVATE HpackEntry {
 
   // Create a 'lookup' entry (only) suitable for querying a HpackEntrySet. The
   // instance InsertionIndex() always returns 0 and IsLookup() returns true.
+  // The memory backing |name| and |value| must outlive this object.
   HpackEntry(base::StringPiece name, base::StringPiece value);
+
+  HpackEntry(const HpackEntry& other);
+  HpackEntry& operator=(const HpackEntry& other);
 
   // Creates an entry with empty name and value. Only defined so that
   // entries can be stored in STL containers.
@@ -50,8 +53,8 @@ class NET_EXPORT_PRIVATE HpackEntry {
 
   ~HpackEntry();
 
-  const std::string& name() const { return name_; }
-  const std::string& value() const { return value_; }
+  base::StringPiece name() const { return name_ref_; }
+  base::StringPiece value() const { return value_ref_; }
 
   // Returns whether this entry is a member of the static (as opposed to
   // dynamic) table.
@@ -76,9 +79,14 @@ class NET_EXPORT_PRIVATE HpackEntry {
     STATIC,
   };
 
-  // TODO(jgraettinger): Reduce copies, possibly via SpdyPinnableBufferPiece.
+  // These members are not used for LOOKUP entries.
   std::string name_;
   std::string value_;
+
+  // These members are always valid. For DYNAMIC and STATIC entries, they
+  // always point to |name_| and |value_|.
+  base::StringPiece name_ref_;
+  base::StringPiece value_ref_;
 
   // The entry's index in the total set of entries ever inserted into the header
   // table.

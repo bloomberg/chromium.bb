@@ -189,7 +189,7 @@ bool HpackDecoder::DecodeNextName(HpackInputStream* input_stream,
     *next_name = entry->name();
   } else {
     // |entry| could be evicted as part of this insertion. Preemptively copy.
-    key_buffer_.assign(entry->name());
+    key_buffer_.assign(entry->name().data(), entry->name().size());
     *next_name = key_buffer_;
   }
   return true;
