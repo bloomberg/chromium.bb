@@ -282,8 +282,8 @@ IN_PROC_BROWSER_TEST_F(HistoryBrowserTest,
   LoadAndWaitForFile("history_length_test_page_21.html");
 }
 
-// http://crbug.com/22111
-#if defined(OS_LINUX)
+// http://crbug.com/22111 (linux), http://crbug.com/530246 (win)
+#if defined(OS_LINUX) || defined(OS_WIN)
 #define MAYBE_HistorySearchXSS DISABLED_HistorySearchXSS
 #else
 #define MAYBE_HistorySearchXSS HistorySearchXSS
