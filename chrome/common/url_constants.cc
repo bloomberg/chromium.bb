@@ -266,6 +266,7 @@ const char kChromeUISandboxHost[] = "sandbox";
 
 #if defined(OS_ANDROID)
 const char kChromeUIContextualSearchPromoHost[] = "contextual-search-promo";
+const char kChromeUIPopularSitesInternalsHost[] = "popular-sites-internals";
 #endif
 
 #if defined(OS_CHROMEOS)

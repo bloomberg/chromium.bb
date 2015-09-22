@@ -252,6 +252,7 @@ void MostVisitedSites::SetMostVisitedURLsObserver(JNIEnv* env,
         GetPopularSitesCountry(),
         GetPopularSitesVersion(),
         GetPopularSitesFilename(),
+        false,
         base::Bind(&MostVisitedSites::OnPopularSitesAvailable,
                    base::Unretained(this))));
   } else {

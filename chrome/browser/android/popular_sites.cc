@@ -155,18 +155,19 @@ PopularSites::PopularSites(Profile* profile,
                            const std::string& override_country,
                            const std::string& override_version,
                            const std::string& override_filename,
+                           bool force_download,
                            const FinishedCallback& callback)
     : callback_(callback), weak_ptr_factory_(this) {
   base::FilePath path = GetPopularSitesPath();
   // Re-download the file once on every Chrome startup, but use the cached
   // local file afterwards.
-  static bool overwrite = true;
+  static bool first_time = true;
   downloader_.reset(new FileDownloader(
       GetPopularSitesURL(
           profile, override_country, override_version, override_filename),
-      path, overwrite, profile->GetRequestContext(),
+      path, first_time || force_download, profile->GetRequestContext(),
       base::Bind(&PopularSites::OnDownloadDone, base::Unretained(this), path)));
-  overwrite = false;
+  first_time = false;
 }
 
 PopularSites::~PopularSites() {}

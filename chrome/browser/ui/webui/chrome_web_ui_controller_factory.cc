@@ -114,6 +114,10 @@
 #include "chrome/browser/ui/webui/inspect_ui.h"
 #endif
 
+#if defined(OS_ANDROID)
+#include "chrome/browser/ui/webui/popular_sites_internals_ui.h"
+#endif
+
 #if defined(OS_CHROMEOS)
 #include "base/sys_info.h"
 #include "chrome/browser/ui/webui/chromeos/bluetooth_pairing_ui.h"
@@ -499,6 +503,10 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
   // extensions aren't supported.
   if (url.host() == chrome::kChromeUIInspectHost)
     return &NewWebUI<InspectUI>;
+#endif
+#if defined(OS_ANDROID)
+  if (url.host() == chrome::kChromeUIPopularSitesInternalsHost)
+    return &NewWebUI<PopularSitesInternalsUI>;
 #endif
 #if !defined(OS_CHROMEOS) && !defined(OS_ANDROID) && !defined(OS_IOS)
   if (url.host() == chrome::kChromeUIUserManagerHost &&

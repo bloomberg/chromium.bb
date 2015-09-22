@@ -251,6 +251,7 @@ extern const char kChromeUISandboxHost[];
 
 #if defined(OS_ANDROID)
 extern const char kChromeUIContextualSearchPromoHost[];
+extern const char kChromeUIPopularSitesInternalsHost[];
 #endif
 
 #if defined(OS_CHROMEOS)
