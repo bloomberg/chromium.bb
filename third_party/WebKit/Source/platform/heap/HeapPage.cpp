@@ -667,11 +667,15 @@ void NormalPageHeap::promptlyFreeObject(HeapObjectHeader* header)
         header->finalize(payload, payloadSize);
         if (address + size == m_currentAllocationPoint) {
             m_currentAllocationPoint = address;
-            if (m_lastRemainingAllocationSize == m_remainingAllocationSize) {
-                Heap::decreaseAllocatedObjectSize(size);
-                m_lastRemainingAllocationSize += size;
-            }
             m_remainingAllocationSize += size;
+            // Sync recorded allocated-object size:
+            //  - if previous alloc checkpoint is larger, allocation size has increased.
+            //  - if smaller, a net reduction in size since last call to updateRemainingAllocationSize().
+            if (m_lastRemainingAllocationSize > m_remainingAllocationSize)
+                Heap::increaseAllocatedObjectSize(m_lastRemainingAllocationSize - m_remainingAllocationSize);
+            else if (m_lastRemainingAllocationSize != m_remainingAllocationSize)
+                Heap::decreaseAllocatedObjectSize(m_remainingAllocationSize - m_lastRemainingAllocationSize);
+            m_lastRemainingAllocationSize = m_remainingAllocationSize;
             SET_MEMORY_INACCESSIBLE(address, size);
             return;
         }
