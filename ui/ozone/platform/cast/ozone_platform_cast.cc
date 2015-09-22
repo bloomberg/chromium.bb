@@ -5,6 +5,7 @@
 #include "ui/ozone/platform/cast/ozone_platform_cast.h"
 
 #include "base/command_line.h"
+#include "base/lazy_instance.h"
 #include "chromecast/public/cast_egl_platform.h"
 #include "chromecast/public/cast_egl_platform_shlib.h"
 #include "ui/ozone/common/native_display_delegate_ozone.h"
@@ -22,6 +23,9 @@ using chromecast::CastEglPlatform;
 
 namespace ui {
 namespace {
+
+base::LazyInstance<scoped_ptr<GpuPlatformSupport>> g_gpu_platform_support =
+    LAZY_INSTANCE_INITIALIZER;
 
 // Ozone platform implementation for Cast.  Implements functionality
 // common to all Cast implementations:
@@ -50,7 +54,7 @@ class OzonePlatformCast : public OzonePlatform {
     return input_controller_.get();
   }
   GpuPlatformSupport* GetGpuPlatformSupport() override {
-    return gpu_platform_support_.get();
+    return g_gpu_platform_support.Get().get();
   }
   GpuPlatformSupportHost* GetGpuPlatformSupportHost() override {
     return gpu_platform_support_host_.get();
@@ -79,8 +83,8 @@ class OzonePlatformCast : public OzonePlatform {
   }
   void InitializeGPU() override {
     surface_factory_.reset(new SurfaceFactoryCast(egl_platform_.Pass()));
-    gpu_platform_support_.reset(
-        new GpuPlatformSupportCast(surface_factory_.get()));
+    g_gpu_platform_support.Get() =
+        make_scoped_ptr(new GpuPlatformSupportCast(surface_factory_.get()));
   }
 
  private:
@@ -88,7 +92,6 @@ class OzonePlatformCast : public OzonePlatform {
   scoped_ptr<SurfaceFactoryCast> surface_factory_;
   scoped_ptr<CursorFactoryOzone> cursor_factory_;
   scoped_ptr<InputController> input_controller_;
-  scoped_ptr<GpuPlatformSupportCast> gpu_platform_support_;
   scoped_ptr<GpuPlatformSupportHost> gpu_platform_support_host_;
   scoped_ptr<OverlayManagerOzone> overlay_manager_;
 

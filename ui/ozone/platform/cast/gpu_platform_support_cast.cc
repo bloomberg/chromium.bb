@@ -8,6 +8,15 @@
 
 namespace ui {
 
+GpuPlatformSupportCast::GpuPlatformSupportCast(SurfaceFactoryCast* parent)
+    : parent_(parent) {
+  DCHECK(parent_);
+}
+
+GpuPlatformSupportCast::~GpuPlatformSupportCast() {
+  parent_->ShutdownHardware();
+}
+
 bool GpuPlatformSupportCast::OnMessageReceived(const IPC::Message& msg) {
   return false;
 }

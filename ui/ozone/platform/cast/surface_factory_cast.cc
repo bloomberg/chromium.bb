@@ -33,7 +33,6 @@ gfx::Size GetMinDisplaySize() {
 
 SurfaceFactoryCast::SurfaceFactoryCast(scoped_ptr<CastEglPlatform> egl_platform)
     : state_(kUninitialized),
-      destroy_window_pending_state_(kNoDestroyPending),
       display_type_(0),
       have_display_type_(false),
       window_(0),
@@ -43,7 +42,7 @@ SurfaceFactoryCast::SurfaceFactoryCast(scoped_ptr<CastEglPlatform> egl_platform)
 }
 
 SurfaceFactoryCast::~SurfaceFactoryCast() {
-  DestroyDisplayTypeAndWindow();
+  ShutdownHardware();
 }
 
 void SurfaceFactoryCast::InitializeHardware() {
@@ -61,6 +60,9 @@ void SurfaceFactoryCast::InitializeHardware() {
 }
 
 void SurfaceFactoryCast::ShutdownHardware() {
+  if (state_ != kInitialized)
+    return;
+
   DestroyDisplayTypeAndWindow();
 
   egl_platform_->ShutdownHardware();
@@ -134,50 +136,12 @@ scoped_ptr<SurfaceOzoneEGL> SurfaceFactoryCast::CreateEGLSurfaceForWidget(
     gfx::AcceleratedWidget widget) {
   new_display_size_ = gfx::Size(widget >> 16, widget & 0xFFFF);
   new_display_size_.SetToMax(GetMinDisplaySize());
-  destroy_window_pending_state_ = kSurfaceExists;
-  SendRelinquishResponse();
   return make_scoped_ptr<SurfaceOzoneEGL>(new SurfaceOzoneEglCast(this));
 }
 
-void SurfaceFactoryCast::SetToRelinquishDisplay(const base::Closure& callback) {
-  // This is called in response to a RelinquishDisplay message from the
-  // browser task. This call may come before or after the display surface
-  // is actually destroyed.
-  relinquish_display_callback_ = callback;
-  switch (destroy_window_pending_state_) {
-    case kNoDestroyPending:
-    case kSurfaceDestroyedRecently:
-      DestroyDisplayTypeAndWindow();
-      SendRelinquishResponse();
-      destroy_window_pending_state_ = kNoDestroyPending;
-      break;
-    case kSurfaceExists:
-      destroy_window_pending_state_ = kWindowDestroyPending;
-      break;
-    case kWindowDestroyPending:
-      break;
-    default:
-      NOTREACHED();
-  }
-}
-
 void SurfaceFactoryCast::ChildDestroyed() {
-  if (destroy_window_pending_state_ == kWindowDestroyPending) {
-    DestroyDisplayTypeAndWindow();
-    SendRelinquishResponse();
-    destroy_window_pending_state_ = kNoDestroyPending;
-  } else {
-    if (egl_platform_->MultipleSurfaceUnsupported()) {
-      DestroyWindow();
-    }
-    destroy_window_pending_state_ = kSurfaceDestroyedRecently;
-  }
-}
-
-void SurfaceFactoryCast::SendRelinquishResponse() {
-  if (!relinquish_display_callback_.is_null()) {
-    base::ResetAndReturn(&relinquish_display_callback_).Run();
-  }
+  if (egl_platform_->MultipleSurfaceUnsupported())
+    DestroyWindow();
 }
 
 const int32* SurfaceFactoryCast::GetEGLSurfaceProperties(

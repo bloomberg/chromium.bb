@@ -5,7 +5,6 @@
 #ifndef UI_OZONE_PLATFORM_CAST_SURFACE_FACTORY_CAST_H_
 #define UI_OZONE_PLATFORM_CAST_SURFACE_FACTORY_CAST_H_
 
-#include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/ozone/public/surface_factory_ozone.h"
@@ -37,35 +36,20 @@ class SurfaceFactoryCast : public SurfaceFactoryOzone {
       AddGLLibraryCallback add_gl_library,
       SetGLGetProcAddressProcCallback set_gl_get_proc_address) override;
 
-  void SetToRelinquishDisplay(const base::Closure& callback);
   intptr_t GetNativeWindow();
   bool ResizeDisplay(gfx::Size viewport_size);
   void ChildDestroyed();
-  void SendRelinquishResponse();
+  void ShutdownHardware();
 
  private:
   enum HardwareState { kUninitialized, kInitialized, kFailed };
-
-  // Window is destroyed if both SetToDestroyEGLDisplay()
-  // and destructor are called (in either order) before the next
-  // SurfaceOzoneEglCast is created in order to preserve the
-  // window across surface creation whenever possible.
-  enum DestroyWindowPendingState {
-    kNoDestroyPending = 0,      // Surface does not exist
-    kSurfaceExists,             // surface and window both exist
-    kWindowDestroyPending,      // Relinquish before surface Destroy
-    kSurfaceDestroyedRecently,  // surface Destroy before Relinquish
-  };
 
   void CreateDisplayTypeAndWindowIfNeeded();
   void DestroyDisplayTypeAndWindow();
   void DestroyWindow();
   void InitializeHardware();
-  void ShutdownHardware();
 
   HardwareState state_;
-  DestroyWindowPendingState destroy_window_pending_state_;
-  base::Closure relinquish_display_callback_;
   void* display_type_;
   bool have_display_type_;
   void* window_;
