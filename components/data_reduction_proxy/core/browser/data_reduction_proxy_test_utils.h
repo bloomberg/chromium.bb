@@ -212,6 +212,8 @@ class TestDataStore : public data_reduction_proxy::DataStore {
 
   DataStore::Status Put(const std::map<std::string, std::string>& map) override;
 
+  DataStore::Status Delete(const std::string& key) override;
+
   std::map<std::string, std::string>* map() { return &map_; }
 
  private:

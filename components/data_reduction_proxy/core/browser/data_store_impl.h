@@ -33,6 +33,8 @@ class DataStoreImpl : public DataStore {
 
   Status Put(const std::map<std::string, std::string>& map) override;
 
+  Status Delete(const std::string& key) override;
+
  private:
   // Opens the underlying LevelDB for read and write.
   Status OpenDB();
