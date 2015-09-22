@@ -156,7 +156,10 @@ function updateHash() {
 function navigateTo(id, opt_callback) {
   window.location.hash = id;
 
-  updateParentId(id);
+  var sameParent = bmm.list.parentId == id;
+  if (!sameParent)
+    updateParentId(id);
+
   updateAllCommands();
 
   var metricsId = folderMetricsNameMap[id.replace(/^q=.*/, 'q=')] ||
@@ -165,7 +168,7 @@ function navigateTo(id, opt_callback) {
       'BookmarkManager_NavigateTo_' + metricsId);
 
   if (opt_callback) {
-    if (bmm.list.parentId == id)
+    if (sameParent)
       opt_callback();
     else
       addOneShotEventListener(bmm.list, 'load', opt_callback);
