@@ -131,8 +131,14 @@ bool ChannelWin::ProcessMessageForDelivery(Message* message) {
   OutputElement* element = new OutputElement(message);
   output_queue_.push(element);
 
-  // TODO(erikchen): Serialize the brokerable attachments and add them to the
-  // output_queue_. http://crbug.com/493414.
+#if USE_ATTACHMENT_BROKER
+  if (message->HasBrokerableAttachments()) {
+    // |output_queue_| takes ownership of |ids.buffer|.
+    Message::SerializedAttachmentIds ids =
+        message->SerializedIdsOfBrokerableAttachments();
+    output_queue_.push(new OutputElement(ids.buffer, ids.size));
+  }
+#endif
 
   // ensure waiting to write
   if (!waiting_connect_) {

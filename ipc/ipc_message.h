@@ -189,6 +189,18 @@ class IPC_EXPORT Message : public base::Pickle {
     std::vector<BrokerableAttachment::AttachmentId> attachment_ids;
   };
 
+  struct SerializedAttachmentIds {
+    void* buffer;
+    size_t size;
+  };
+  // Creates a buffer that contains a serialization of the ids of the brokerable
+  // attachments of the message. This buffer is intended to be sent over the IPC
+  // channel immediately after the pickled message. The caller takes ownership
+  // of the buffer.
+  // This method should only be called if the message has brokerable
+  // attachments.
+  SerializedAttachmentIds SerializedIdsOfBrokerableAttachments();
+
   // |info| is an output parameter and must not be nullptr.
   static void FindNext(const char* range_start,
                        const char* range_end,
