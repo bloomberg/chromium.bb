@@ -193,7 +193,11 @@ class CHROMEOS_EXPORT NetworkConnectionHandler
                                  const std::string& error_name,
                                  const std::string& error_message);
 
+  // Note: |service_path| is passed by value here, because in some cases
+  // the value may be located in the map and then it can be deleted, producing
+  // a reference to invalid memory.
   void CheckPendingRequest(const std::string service_path);
+
   void CheckAllPendingRequests();
 
   // Notify caller and observers that the connect request succeeded.

@@ -187,14 +187,14 @@ void AudioDevicesPrefHandlerImpl::SaveDevicesVolumePref() {
 }
 
 void AudioDevicesPrefHandlerImpl::MigrateDeviceMuteSettings(
-    std::string active_device) {
+    const std::string& active_device) {
   int old_mute = local_state_->GetInteger(prefs::kAudioMute);
   device_mute_settings_->SetInteger(active_device, old_mute);
   SaveDevicesMutePref();
 }
 
 void AudioDevicesPrefHandlerImpl::MigrateDeviceVolumeSettings(
-    std::string active_device) {
+    const std::string& active_device) {
   double old_volume = local_state_->GetDouble(prefs::kAudioVolumePercent);
   device_volume_settings_->SetDouble(active_device, old_volume);
   SaveDevicesVolumePref();

@@ -64,8 +64,8 @@ class CHROMEOS_EXPORT AudioDevicesPrefHandlerImpl
   // previous global pref value to the new per device pref value for the
   // current active device. If a previous global setting doesn't exist, we'll
   // use default values of mute = off and volume = 75%.
-  void MigrateDeviceMuteSettings(std::string active_device);
-  void MigrateDeviceVolumeSettings(std::string active_device);
+  void MigrateDeviceMuteSettings(const std::string& active_device);
+  void MigrateDeviceVolumeSettings(const std::string& active_device);
 
   // Notifies the AudioPrefObserver for audio policy pref changes.
   void NotifyAudioPolicyChange();

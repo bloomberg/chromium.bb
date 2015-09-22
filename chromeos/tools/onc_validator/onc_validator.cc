@@ -82,7 +82,7 @@ void PrintHelp() {
           kStatusArgumentError);
 }
 
-scoped_ptr<base::DictionaryValue> ReadDictionary(std::string filename) {
+scoped_ptr<base::DictionaryValue> ReadDictionary(const std::string& filename) {
   base::FilePath path(filename);
   JSONFileValueDeserializer deserializer(path);
   deserializer.set_allow_trailing_comma(true);
@@ -151,7 +151,7 @@ int main(int argc, const char* argv[]) {
   chromeos::onc::Validator::Result result;
   validator.ValidateAndRepairObject(signature, *onc_object, &result);
 
-  switch(result) {
+  switch (result) {
     case chromeos::onc::Validator::VALID:
       return kStatusValid;
     case chromeos::onc::Validator::VALID_WITH_WARNINGS:

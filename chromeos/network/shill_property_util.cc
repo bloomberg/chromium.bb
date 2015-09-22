@@ -61,7 +61,7 @@ bool CopyStringFromDictionary(const base::DictionaryValue& source,
 
 }  // namespace
 
-void SetSSID(const std::string ssid, base::DictionaryValue* properties) {
+void SetSSID(const std::string& ssid, base::DictionaryValue* properties) {
   std::string hex_ssid = base::HexEncode(ssid.c_str(), ssid.size());
   properties->SetStringWithoutPathExpansion(shill::kWifiHexSsid, hex_ssid);
 }

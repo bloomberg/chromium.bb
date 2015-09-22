@@ -22,7 +22,7 @@ class NetworkUIData;
 namespace shill_property_util {
 
 // Sets the |ssid| in |properties|.
-CHROMEOS_EXPORT void SetSSID(const std::string ssid,
+CHROMEOS_EXPORT void SetSSID(const std::string& ssid,
                              base::DictionaryValue* properties);
 
 // Returns the SSID from |properties| in UTF-8 encoding. If |verbose_logging| is

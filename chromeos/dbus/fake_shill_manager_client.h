@@ -126,7 +126,8 @@ class CHROMEOS_EXPORT FakeShillManagerClient
   // {wifi,cellular,etc}={on,off,disabled,none} - sets initial state for type
   void ParseCommandLineSwitch();
   bool ParseOption(const std::string& arg0, const std::string& arg1);
-  bool SetInitialNetworkState(std::string type_arg, std::string state_arg);
+  bool SetInitialNetworkState(std::string type_arg,
+                              const std::string& state_arg);
   std::string GetInitialStateForType(const std::string& type,
                                      bool* enabled);
 

@@ -97,7 +97,8 @@ class ONCCertificateImporterImplTest : public testing::Test {
     web_trust_certificates_ = onc_trusted_certificates;
   }
 
-  void AddCertificatesFromFile(std::string filename, bool expected_success) {
+  void AddCertificatesFromFile(const std::string& filename,
+                               bool expected_success) {
     scoped_ptr<base::DictionaryValue> onc =
         test_utils::ReadTestDictionary(filename);
     scoped_ptr<base::Value> certificates_value;
@@ -122,7 +123,7 @@ class ONCCertificateImporterImplTest : public testing::Test {
     private_list_ = ListCertsInPrivateSlot();
   }
 
-  void AddCertificateFromFile(std::string filename,
+  void AddCertificateFromFile(const std::string& filename,
                               net::CertType expected_type,
                               std::string* guid) {
     std::string guid_temporary;

@@ -1115,8 +1115,9 @@ bool FakeShillManagerClient::ParseOption(const std::string& arg0,
   return SetInitialNetworkState(arg0, arg1);
 }
 
-bool FakeShillManagerClient::SetInitialNetworkState(std::string type_arg,
-                                                    std::string state_arg) {
+bool FakeShillManagerClient::SetInitialNetworkState(
+    std::string type_arg,
+    const std::string& state_arg) {
   int state_arg_as_int = -1;
   base::StringToInt(state_arg, &state_arg_as_int);
 
