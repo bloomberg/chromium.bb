@@ -100,6 +100,12 @@ private:
 // order through DeprecatedPaintLayerStackingNode and handle lots of complex
 // graphics operations LayoutObjects don't handle (e.g. 'filter' and 'opacity').
 //
+// The compositing code is also based on DeprecatedPaintLayer. The entry to it
+// is the DeprecatedPaintLayerCompositor, which fills
+// |m_compositedDeprecatedPaintLayerMapping| for hardware accelerated layers.
+//
+// TODO(jchaffraix): Expand the documentation about hardware acceleration.
+//
 // The class is DEPRECATED, which means that we would like to remove it. The
 // reason for removal is that it has been a dumping ground for features for too
 // long and is the wrong level of abstraction, bearing no correspondence to any

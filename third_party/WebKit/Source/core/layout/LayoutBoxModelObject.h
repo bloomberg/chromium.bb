@@ -81,6 +81,10 @@ class InlineFlowBox;
 // central to painting and hit-testing (see its class comment).
 // DeprecatedPaintLayers are instantiated for several reasons based on the
 // return value of layerTypeRequired().
+// Interestingly, most SVG objects inherit from LayoutSVGModelObject and thus
+// can't have a DeprecatedPaintLayer. This is an unfortunate artifact of our
+// design as it limits code sharing and prevents hardware accelerating SVG
+// (the current design require a DeprecatedPaintLayer for compositing).
 //
 // In order to fully understand LayoutBoxModelObject and the inherited classes,
 // we need to introduce the concept of coordinate systems.

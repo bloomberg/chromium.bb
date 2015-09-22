@@ -27,6 +27,18 @@ namespace blink {
 
 class SVGForeignObjectElement;
 
+// LayoutSVGForeignObject is the LayoutObject associated with <foreignobject>.
+// http://www.w3.org/TR/SVG/extend.html#ForeignObjectElement
+//
+// Foreign object is a way of inserting arbitrary non-SVG content into SVG.
+// A good example of this is HTML in SVG. Because of this, CSS content has to
+// be aware of SVG: e.g. when determining containing blocks we stop at the
+// enclosing foreign object (see LayoutObject::canContainFixedPositionObjects).
+//
+// Note that SVG is also allowed in HTML with the HTML5 parsing rules so SVG
+// content also has to be aware of CSS objects.
+// See http://www.w3.org/TR/html5/syntax.html#elements-0 with the rules for
+// 'foreign elements'. TODO(jchaffraix): Find a better place for this paragraph.
 class LayoutSVGForeignObject final : public LayoutSVGBlock {
 public:
     explicit LayoutSVGForeignObject(SVGForeignObjectElement*);
