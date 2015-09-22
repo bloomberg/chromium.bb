@@ -30,24 +30,6 @@ class PLATFORM_EXPORT FEDropShadow : public FilterEffect {
 public:
     static PassRefPtrWillBeRawPtr<FEDropShadow> create(Filter*, float, float, float, float, const Color&, float);
 
-    float stdDeviationX() const { return m_stdX; }
-    void setStdDeviationX(float stdX) { m_stdX = stdX; }
-
-    float stdDeviationY() const { return m_stdY; }
-    void setStdDeviationY(float stdY) { m_stdY = stdY; }
-
-    float dx() const { return m_dx; }
-    void setDx(float dx) { m_dx = dx; }
-
-    float dy() const { return m_dy; }
-    void setDy(float dy) { m_dy = dy; }
-
-    Color shadowColor() const { return m_shadowColor; }
-    void setShadowColor(const Color& shadowColor) { m_shadowColor = shadowColor; }
-
-    float shadowOpacity() const { return m_shadowOpacity; }
-    void setShadowOpacity(float shadowOpacity) { m_shadowOpacity = shadowOpacity; }
-
     FloatRect mapRect(const FloatRect&, bool forward = true) final;
 
     TextStream& externalRepresentation(TextStream&, int indention) const override;
