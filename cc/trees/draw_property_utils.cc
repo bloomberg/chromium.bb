@@ -259,7 +259,7 @@ static inline bool SubtreeShouldBeSkipped(LayerImpl* layer,
 
   // When we need to do a readback/copy of a layer's output, we can not skip
   // it or any of its ancestors.
-  if (layer->num_layer_or_descendants_with_copy_request() > 0)
+  if (layer->draw_properties().layer_or_descendant_has_copy_request)
     return false;
 
   // If the layer is not drawn, then skip it and its subtree.
