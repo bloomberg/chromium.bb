@@ -22,6 +22,9 @@ error prone as it's _one more thing_ to mess up.
 Because having this safety is handy, Chrome now has a way to optionally
 typecheck your JavaScript and produce compiled output with
 [Closure Compiler](https://developers.google.com/closure/compiler/).
+The type information is
+[annotated in comment tags](https://developers.google.com/closure/compiler/docs/js-for-compiler)
+that are briefly described below.
 
 See also:
 [the design doc](https://docs.google.com/a/chromium.org/document/d/1Ee9ggmp6U-lM-w9WmxN5cSLkK9B5YAq14939Woo-JY0/edit).
