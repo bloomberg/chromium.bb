@@ -9,6 +9,8 @@ import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.test.util.Feature;
 import org.chromium.net.TestUrlRequestListener.ResponseStep;
+import org.chromium.net.UrlRequest.Status;
+import org.chromium.net.UrlRequest.StatusListener;
 
 /**
  * Tests that {@link CronetUrlRequest#getStatus} works as expected.
@@ -55,13 +57,13 @@ public class GetStatusTest extends CronetTestBase {
         listener.setAutoAdvance(false);
         UrlRequest urlRequest =
                 mActivity.mUrlRequestContext.createRequest(url, listener, listener.getExecutor());
-        // Calling before request is started should give RequestStatus.INVALID,
+        // Calling before request is started should give Status.INVALID,
         // since the native adapter is not created.
         TestStatusListener statusListener0 = new TestStatusListener();
         urlRequest.getStatus(statusListener0);
         statusListener0.waitUntilOnStatusCalled();
         assertTrue(statusListener0.mOnStatusCalled);
-        assertEquals(RequestStatus.INVALID, statusListener0.mStatus);
+        assertEquals(Status.INVALID, statusListener0.mStatus);
 
         urlRequest.start();
 
@@ -70,8 +72,8 @@ public class GetStatusTest extends CronetTestBase {
         urlRequest.getStatus(statusListener1);
         statusListener1.waitUntilOnStatusCalled();
         assertTrue(statusListener1.mOnStatusCalled);
-        assertTrue(statusListener1.mStatus >= RequestStatus.IDLE);
-        assertTrue(statusListener1.mStatus <= RequestStatus.READING_RESPONSE);
+        assertTrue(statusListener1.mStatus >= Status.IDLE);
+        assertTrue(statusListener1.mStatus <= Status.READING_RESPONSE);
 
         listener.waitForNextStep();
         assertEquals(ResponseStep.ON_RESPONSE_STARTED, listener.mResponseStep);
@@ -82,8 +84,8 @@ public class GetStatusTest extends CronetTestBase {
         urlRequest.getStatus(statusListener2);
         statusListener2.waitUntilOnStatusCalled();
         assertTrue(statusListener2.mOnStatusCalled);
-        assertTrue(statusListener1.mStatus >= RequestStatus.IDLE);
-        assertTrue(statusListener1.mStatus <= RequestStatus.READING_RESPONSE);
+        assertTrue(statusListener1.mStatus >= Status.IDLE);
+        assertTrue(statusListener1.mStatus <= Status.READING_RESPONSE);
 
         listener.waitForNextStep();
         assertEquals(ResponseStep.ON_READ_COMPLETED, listener.mResponseStep);
@@ -91,13 +93,13 @@ public class GetStatusTest extends CronetTestBase {
         listener.startNextRead(urlRequest);
         listener.blockForDone();
 
-        // Calling after request done should give RequestStatus.INVALID, since
+        // Calling after request done should give Status.INVALID, since
         // the native adapter is destroyed.
         TestStatusListener statusListener3 = new TestStatusListener();
         urlRequest.getStatus(statusListener3);
         statusListener3.waitUntilOnStatusCalled();
         assertTrue(statusListener3.mOnStatusCalled);
-        assertEquals(RequestStatus.INVALID, statusListener3.mStatus);
+        assertEquals(Status.INVALID, statusListener3.mStatus);
 
         assertEquals(200, listener.mResponseInfo.getHttpStatusCode());
         assertEquals("GET", listener.mResponseAsString);
@@ -107,14 +109,14 @@ public class GetStatusTest extends CronetTestBase {
     @Feature({"Cronet"})
     public void testInvalidLoadState() throws Exception {
         try {
-            RequestStatus.convertLoadState(LoadState.WAITING_FOR_APPCACHE);
+            Status.convertLoadState(LoadState.WAITING_FOR_APPCACHE);
             fail();
         } catch (IllegalArgumentException e) {
             // Expected because LoadState.WAITING_FOR_APPCACHE is not mapped.
         }
 
         try {
-            RequestStatus.convertLoadState(-1);
+            Status.convertLoadState(-1);
             fail();
         } catch (AssertionError e) {
             // Expected.
@@ -124,7 +126,7 @@ public class GetStatusTest extends CronetTestBase {
         }
 
         try {
-            RequestStatus.convertLoadState(16);
+            Status.convertLoadState(16);
             fail();
         } catch (AssertionError e) {
             // Expected.

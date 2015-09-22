@@ -9,6 +9,7 @@ import android.util.Pair;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.JNIAdditionalImport;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeClassQualifiedName;
 
@@ -31,6 +32,8 @@ import java.util.concurrent.RejectedExecutionException;
  * any thread it is protected by mUrlRequestAdapterLock.
  */
 @JNINamespace("cronet")
+// Qualifies UrlRequest.StatusListener which is used in onStatus, a JNI method.
+@JNIAdditionalImport(UrlRequest.class)
 final class CronetUrlRequest implements UrlRequest {
     /* Native adapter object, owned by UrlRequest. */
     private long mUrlRequestAdapter;
@@ -424,7 +427,7 @@ final class CronetUrlRequest implements UrlRequest {
     }
 
     @Override
-    public void getStatus(final StatusListener listener) {
+    public void getStatus(final UrlRequest.StatusListener listener) {
         synchronized (mUrlRequestAdapterLock) {
             if (mUrlRequestAdapter != 0) {
                 nativeGetStatus(mUrlRequestAdapter, listener);
@@ -434,7 +437,7 @@ final class CronetUrlRequest implements UrlRequest {
         Runnable task = new Runnable() {
             @Override
             public void run() {
-                listener.onStatus(RequestStatus.INVALID);
+                listener.onStatus(UrlRequest.Status.INVALID);
             }
         };
         postTaskToExecutor(task);
@@ -754,11 +757,11 @@ final class CronetUrlRequest implements UrlRequest {
      */
     @SuppressWarnings("unused")
     @CalledByNative
-    private void onStatus(final StatusListener listener, final int loadState) {
+    private void onStatus(final UrlRequest.StatusListener listener, final int loadState) {
         Runnable task = new Runnable() {
             @Override
             public void run() {
-                listener.onStatus(RequestStatus.convertLoadState(loadState));
+                listener.onStatus(UrlRequest.Status.convertLoadState(loadState));
             }
         };
         postTaskToExecutor(task);
@@ -804,7 +807,7 @@ final class CronetUrlRequest implements UrlRequest {
     private native String nativeGetProxyServer(long nativePtr);
 
     @NativeClassQualifiedName("CronetURLRequestAdapter")
-    private native void nativeGetStatus(long nativePtr, StatusListener listener);
+    private native void nativeGetStatus(long nativePtr, UrlRequest.StatusListener listener);
 
     @NativeClassQualifiedName("CronetURLRequestAdapter")
     private native boolean nativeGetWasCached(long nativePtr);
