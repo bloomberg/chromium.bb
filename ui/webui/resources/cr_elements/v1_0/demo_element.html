@@ -1,7 +1,7 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/classes/iron-flex-layout.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-checkbox/paper-checkbox.html">
 <link rel="import" href="chrome://resources/cr_elements/v1_0/cr_button/cr_button.html">
-<link rel="import" href="chrome://resources/cr_elements/v1_0/cr_checkbox/cr_checkbox.html">
 <link rel="import" href="chrome://resources/cr_elements/v1_0/cr_collapse/cr_collapse.html">
 <link rel="import" href="chrome://resources/cr_elements/v1_0/cr_expand_button/cr_expand_button.html">
 <link rel="import" href="chrome://resources/cr_elements/v1_0/cr_input/cr_input.html">
@@ -23,19 +23,6 @@
         <cr-button toggles>Toggle Button1</cr-button>
         <cr-button toggles>Toggle Button2</cr-button>
       </div>
-    </div>
-
-    <h3>cr-checkbox</h3>
-    <div class="layout vertical">
-      <div class="layout horizontal">
-        <cr-checkbox checked="{{checkboxChecked1}}">Checkbox1</cr-checkbox>
-        <cr-checkbox checked="{{checkboxChecked2}}">Checkbox2</cr-checkbox>
-      </div>
-      <cr-checkbox checked="{{checkboxChecked}}">Checkbox Linked</cr-checkbox>
-      <cr-checkbox checked="{{checkboxChecked}}">
-        <span>[[checkboxLabel]]</span>&nbsp;
-        <span>[[subLabel]]</span>
-      </cr-checkbox>
     </div>
 
     <h3>cr-input</h3>
@@ -60,9 +47,9 @@
       <cr-toggle-button checked="{{toggleButtonChecked}}">
         Toggle Button
       </cr-toggle-button>
-      <cr-checkbox checked="{{toggleButtonChecked}}">
+      <paper-checkbox checked="{{toggleButtonChecked}}">
         Bound Checkbox
-      </cr-checkbox>
+      </paper-checkbox>
       <div class="layout horizontal">
         <cr-toggle-button checked="{{toggleButtonChecked2}}">
           Toggle Button 2
@@ -81,8 +68,8 @@
       <cr-collapse opened="[[collapseOpened]]">
         <div class="layout vertical">
           <span>Collapsable Section 1</span>
-          <cr-checkbox>Advanced option 1</cr-checkbox>
-          <cr-checkbox>Advanced option 2</cr-checkbox>
+          <paper-checkbox>Advanced option 1</paper-checkbox>
+          <paper-checkbox>Advanced option 2</paper-checkbox>
         </div>
       </cr-collapse>
       <cr-button toggles active="{{collapseOpened2}}">

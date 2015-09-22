@@ -1,5 +1,5 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
-<link rel="import" href="chrome://resources/cr_elements/v1_0/cr_checkbox/cr_checkbox.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-checkbox/paper-checkbox.html">
 <link rel="import" href="chrome://resources/cr_elements/v1_0/network/cr_onc_types.html">
 <link rel="import" href="network_property_list.html">
 
@@ -7,9 +7,9 @@
   <link rel="import" type="css" href="network_ip_config.css">
   <template>
     <div id="outer" class="layout vertical">
-      <cr-checkbox checked="{{automatic}}" disabled="[[!editable]]">
+      <paper-checkbox checked="{{automatic}}" disabled="[[!editable]]">
           Configure IP Address Automatically
-      </cr-checkbox>
+      </paper-checkbox>
       <network-property-list
           fields="[[ipConfigFields_]]" network-state="[[ipConfig]]"
           edit-field-types="[[getIPEditFields_(ipConfig, editable, automatic)]]"

@@ -7,7 +7,6 @@
       'target_name': 'cr_elements_resources',
       'type': 'none',
       'dependencies': [
-        'cr_checkbox/compiled_resources.gyp:*',
         'network/compiled_resources.gyp:*',
         'policy/compiled_resources.gyp:*',
       ],

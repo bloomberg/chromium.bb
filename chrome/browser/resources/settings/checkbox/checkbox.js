@@ -36,13 +36,17 @@ Polymer({
     checked: {
       type: Boolean,
       value: false,
+      notify: true,
       observer: 'checkedChanged_',
+      reflectToAttribute: true
     },
 
     /** Disabled property for the element. */
     disabled: {
       type: Boolean,
       value: false,
+      notify: true,
+      reflectToAttribute: true
     },
 
     /** Checkbox label. */

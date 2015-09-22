@@ -15,7 +15,7 @@ paper-radio-button {
   display: flex;
 }
 
-.checkbox-container-row > cr-checkbox {
+.checkbox-container-row > paper-checkbox {
   display: flex;
   flex-basis: 0;
   flex-grow: 1;

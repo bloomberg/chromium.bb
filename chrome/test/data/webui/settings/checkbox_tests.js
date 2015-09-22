@@ -2,43 +2,38 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/** @fileoverview Suite of tests for cr-checkbox. */
-cr.define('cr_checkbox', function() {
+/** @fileoverview Suite of tests for cr-settings-checkbox. */
+cr.define('cr_settings_checkbox', function() {
   function registerTests() {
-    suite('CrCheckbox', function() {
+    suite('CrSettingsCheckbox', function() {
       /**
        * Checkbox created before each test.
-       * @type {CrCheckbox}
+       * @type {CrSettingsCheckbox}
        */
       var checkbox;
 
-      // Import cr_checkbox.html before running suite.
+      /**
+       * Pref value used in tests, should reflect checkbox 'checked' attribute.
+       * @type {CrSettingsCheckbox}
+       */
+      var pref = {
+        key: 'test',
+        type: chrome.settingsPrivate.PrefType.BOOLEAN,
+        value: true
+      };
+
+      // Import cr_settings_checkbox.html before running suite.
       suiteSetup(function() {
         return PolymerTest.importHtml(
-            'chrome://resources/cr_elements/v1_0/cr_checkbox/cr_checkbox.html');
+            'chrome://md-settings/checkbox/checkbox.html');
       });
 
-      // Initialize a checked cr-checkbox before each test.
-      setup(function(done) {
+      // Initialize a checked cr-settings-checkbox before each test.
+      setup(function() {
         PolymerTest.clearBody();
-        checkbox = document.createElement('cr-checkbox');
-        checkbox.setAttribute('checked', '');
+        checkbox = document.createElement('cr-settings-checkbox');
+        checkbox.set('pref', pref);
         document.body.appendChild(checkbox);
-
-        // Allow for the checkbox to be created and attached.
-        setTimeout(done);
-      });
-
-      test('can toggle', function() {
-        assertTrue(checkbox.checked);
-
-        checkbox.toggle();
-        assertFalse(checkbox.checked);
-        assertFalse(checkbox.hasAttribute('checked'));
-
-        checkbox.toggle();
-        assertTrue(checkbox.checked);
-        assertTrue(checkbox.hasAttribute('checked'));
       });
 
       test('responds to checked attribute', function() {
@@ -46,9 +41,11 @@ cr.define('cr_checkbox', function() {
 
         checkbox.removeAttribute('checked');
         assertFalse(checkbox.checked);
+        assertFalse(pref.value);
 
         checkbox.setAttribute('checked', '');
         assertTrue(checkbox.checked);
+        assertTrue(pref.value);
       });
 
       test('fires a change event', function(done) {
@@ -63,6 +60,7 @@ cr.define('cr_checkbox', function() {
         checkbox.checked = false;
         checkbox.setAttribute('disabled', '');
         assertTrue(checkbox.disabled);
+        assertTrue(checkbox.$.checkbox.disabled);
 
         MockInteractions.tap(checkbox.$.checkbox);
         assertFalse(checkbox.checked);

@@ -1,6 +1,6 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-checkbox/paper-checkbox.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/paper-styles.html">
-<link rel="import" href="chrome://resources/cr_elements/v1_0/cr_checkbox/cr_checkbox.html">
 <link rel="import" href="chrome://resources/cr_elements/v1_0/cr_input/cr_input.html">
 <link rel="import" href="chrome://resources/cr_elements/v1_0/network/cr_onc_types.html">
 <link rel="import" href="network_property_list.html">
@@ -35,9 +35,9 @@
 
       <div hidden$="[[!matches_(proxy.Type, ProxySettingsType.MANUAL)]]"
           class="layout vertical">
-        <cr-checkbox id="useUrl" checked="{{useSameProxy}}">
+        <paper-checkbox id="useUrl" checked="{{useSameProxy}}">
             Use the same proxy for all protocols
-        </cr-checkbox>
+        </paper-checkbox>
         <div hidden$="[[!useSameProxy]]" class="layout vertical">
           <network-proxy-input editable="[[editable]]"
               value="{{proxy.Manual.HTTPProxy}}"
