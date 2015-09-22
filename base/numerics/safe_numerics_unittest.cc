@@ -19,6 +19,7 @@ using std::numeric_limits;
 using base::CheckedNumeric;
 using base::checked_cast;
 using base::IsValueInRangeForNumericType;
+using base::IsValueNegative;
 using base::SizeT;
 using base::StrictNumeric;
 using base::saturated_cast;
@@ -630,6 +631,18 @@ TEST(SafeNumerics, CastTests) {
   EXPECT_TRUE(CheckedNumeric<uint64_t>(StrictNumeric<unsigned>(1U)).IsValid());
   EXPECT_TRUE(CheckedNumeric<int>(StrictNumeric<unsigned>(1U)).IsValid());
   EXPECT_FALSE(CheckedNumeric<unsigned>(StrictNumeric<int>(-1)).IsValid());
+
+  EXPECT_TRUE(IsValueNegative(-1));
+  EXPECT_TRUE(IsValueNegative(numeric_limits<int>::min()));
+  EXPECT_FALSE(IsValueNegative(numeric_limits<unsigned>::min()));
+  EXPECT_TRUE(IsValueNegative(-numeric_limits<double>::max()));
+  EXPECT_FALSE(IsValueNegative(0));
+  EXPECT_FALSE(IsValueNegative(1));
+  EXPECT_FALSE(IsValueNegative(0u));
+  EXPECT_FALSE(IsValueNegative(1u));
+  EXPECT_FALSE(IsValueNegative(numeric_limits<int>::max()));
+  EXPECT_FALSE(IsValueNegative(numeric_limits<unsigned>::max()));
+  EXPECT_FALSE(IsValueNegative(numeric_limits<double>::max()));
 
   // These casts and coercions will fail to compile:
   // EXPECT_EQ(0, strict_cast<int>(static_cast<size_t>(0)));
