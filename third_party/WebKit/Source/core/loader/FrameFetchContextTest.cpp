@@ -336,6 +336,9 @@ TEST_F(FrameFetchContextHintsTest, MonitorResourceWidthHints)
     expectHeader("http://www.example.com/1.gif", "Width", true, "500", 500);
     expectHeader("http://www.example.com/1.gif", "Width", true, "667", 666.6666);
     expectHeader("http://www.example.com/1.gif", "DPR", false, "");
+    dummyPageHolder->page().setDeviceScaleFactor(2.5);
+    expectHeader("http://www.example.com/1.gif", "Width", true, "1250", 500);
+    expectHeader("http://www.example.com/1.gif", "Width", true, "1667", 666.6666);
 }
 
 TEST_F(FrameFetchContextHintsTest, MonitorViewportWidthHints)

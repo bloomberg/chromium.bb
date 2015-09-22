@@ -641,8 +641,10 @@ void FrameFetchContext::addClientHintsIfNecessary(FetchRequest& fetchRequest)
 
     if (shouldSendResourceWidth) {
         FetchRequest::ResourceWidth resourceWidth = fetchRequest.resourceWidth();
-        if (resourceWidth.isSet)
-            fetchRequest.mutableResourceRequest().addHTTPHeaderField("Width", AtomicString(String::number(ceil(resourceWidth.width))));
+        if (resourceWidth.isSet) {
+            float physicalWidth = resourceWidth.width * m_document->devicePixelRatio();
+            fetchRequest.mutableResourceRequest().addHTTPHeaderField("Width", AtomicString(String::number(ceil(physicalWidth))));
+        }
     }
 
     if (shouldSendViewportWidth && frame()->view())
