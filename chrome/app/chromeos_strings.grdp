@@ -4943,8 +4943,8 @@ Battery full
   <message name="IDS_STATUSBAR_LAYOUT_SPAIN_CATALAN" desc="In the language menu button, this shows the input mode [Catalan keyboard].">
     Catalan
   </message>
-  <message name="IDS_STATUSBAR_LAYOUT_FRANCE_BEPO" desc="In the language menu button, this shows the input mode [French Bepo keyboard].">
-    French Bepo
+  <message name="IDS_STATUSBAR_LAYOUT_FRANCE_BEPO" desc="In the language menu button, this shows the input mode [French BÉPO keyboard].">
+    French BÉPO
   </message>
   <message name="IDS_STATUSBAR_LAYOUT_FRANCE" desc="In the language menu button, this shows the input mode [French keyboard].">
     French
@@ -5052,8 +5052,8 @@ Battery full
   <message name="IDS_IME_NAME_KEYBOARD_FINNISH" desc="The input method name shows in system tray menu, this shows [Finnish keyboard].">
     Finnish keyboard
   </message>
-  <message name="IDS_IME_NAME_KEYBOARD_FRENCH_BEPO" desc="The input method name shows in system tray menu, this shows [French Bepo keyboard].">
-    French Bepo keyboard
+  <message name="IDS_IME_NAME_KEYBOARD_FRENCH_BEPO" desc="The input method name shows in system tray menu, this shows [French BÉPO keyboard].">
+    French BÉPO keyboard
   </message>
   <message name="IDS_IME_NAME_KEYBOARD_FRENCH" desc="The input method name shows in system tray menu, this shows [French keyboard].">
     French keyboard
