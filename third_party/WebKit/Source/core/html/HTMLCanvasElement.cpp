@@ -692,7 +692,7 @@ PassOwnPtr<ImageBufferSurface> HTMLCanvasElement::createImageBufferSurface(const
 void HTMLCanvasElement::createImageBuffer()
 {
     createImageBufferInternal(nullptr);
-    if (m_didFailToCreateImageBuffer && m_context->is2d())
+    if (m_didFailToCreateImageBuffer && m_context->is2d() && !size().isEmpty())
         m_context->loseContext(CanvasRenderingContext::SyntheticLostContext);
 }
 

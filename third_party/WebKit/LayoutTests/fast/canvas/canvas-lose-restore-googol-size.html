@@ -19,11 +19,11 @@ var ctx = canvas.getContext('2d');
 var lostEventHasFired = false;
 verifyContextLost(false);
 
-var googol = Math.pow(10,100);
-canvas.width = googol;
-canvas.height = googol;
+var bigsize = 1000000000;
+canvas.width = bigsize;
+canvas.height = bigsize;
 verifyContextLost(true);
-canvas.width = googol;
+canvas.width = bigsize;
 verifyContextLost(true);
 canvas.width = 100;
 canvas.height = 100;
