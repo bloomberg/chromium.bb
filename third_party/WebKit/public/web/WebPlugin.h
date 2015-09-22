@@ -178,7 +178,6 @@ public:
     virtual void rotateView(RotationType type) { }
 
     virtual bool isPlaceholder() { return true; }
-    virtual bool shouldPersist() const { return false; }
 
 protected:
     ~WebPlugin() { }
