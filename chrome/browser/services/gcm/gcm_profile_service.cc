@@ -22,16 +22,18 @@
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/services/gcm/gcm_desktop_utils.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
+#include "chrome/common/channel_info.h"
 #include "components/gcm_driver/gcm_account_tracker.h"
 #include "components/gcm_driver/gcm_channel_status_syncer.h"
 #include "components/gcm_driver/gcm_client_factory.h"
+#include "components/gcm_driver/gcm_desktop_utils.h"
 #include "components/gcm_driver/gcm_driver_desktop.h"
 #include "components/signin/core/browser/profile_identity_provider.h"
 #include "components/signin/core/browser/signin_manager.h"
+#include "content/public/browser/browser_thread.h"
 #include "google_apis/gaia/account_tracker.h"
 #include "google_apis/gaia/identity_provider.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -174,11 +176,24 @@ GCMProfileService::GCMProfileService(
     : profile_(profile) {
   DCHECK(!profile->IsOffTheRecord());
 
+  base::SequencedWorkerPool* worker_pool =
+      content::BrowserThread::GetBlockingPool();
+  scoped_refptr<base::SequencedTaskRunner> blocking_task_runner(
+      worker_pool->GetSequencedTaskRunnerWithShutdownBehavior(
+          worker_pool->GetSequenceToken(),
+          base::SequencedWorkerPool::SKIP_ON_SHUTDOWN));
+
   driver_ = CreateGCMDriverDesktop(
       gcm_client_factory.Pass(),
       profile_->GetPrefs(),
       profile_->GetPath().Append(chrome::kGCMStoreDirname),
-      profile_->GetRequestContext());
+      profile_->GetRequestContext(),
+      chrome::GetChannel(),
+      content::BrowserThread::GetMessageLoopProxyForThread(
+          content::BrowserThread::UI),
+      content::BrowserThread::GetMessageLoopProxyForThread(
+          content::BrowserThread::IO),
+      blocking_task_runner);
 
   identity_observer_.reset(new IdentityObserver(profile, driver_.get()));
 }

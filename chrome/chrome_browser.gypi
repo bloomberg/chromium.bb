@@ -1253,8 +1253,6 @@
       'browser/search/local_ntp_source.h',
       'browser/search/search_terms_tracker.cc',
       'browser/search/search_terms_tracker.h',
-      'browser/services/gcm/gcm_desktop_utils.cc',
-      'browser/services/gcm/gcm_desktop_utils.h',
       'browser/signin/signin_promo.cc',
       'browser/signin/signin_promo.h',
       'browser/signin/signin_ui_util.cc',
