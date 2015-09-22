@@ -392,9 +392,8 @@ public:
         if (m_needsRestart) {
             m_needsRestart = false;
             m_nextReadPosition = m_restartPosition;
-        } else if (m_lastSetByte != m_info.src->next_input_byte) {
-            // next_input_byte was updated by jpeg, meaning that it found a restart position.
-            m_restartPosition = m_nextReadPosition - m_info.src->bytes_in_buffer;
+        } else {
+            updateRestartPosition();
         }
 
         const char* segment;
@@ -402,10 +401,7 @@ public:
         if (bytes == 0) {
             // We had to suspend. When we resume, we will need to start from the restart position.
             m_needsRestart = true;
-            // Let libjpeg know that the buffer needs to be refilled.
-            m_info.src->bytes_in_buffer = 0;
-            m_info.src->next_input_byte = nullptr;
-            m_lastSetByte = nullptr;
+            clearBuffer();
             return false;
         }
 
@@ -431,9 +427,7 @@ public:
         // Otherwise, empty the buffer, and leave the position the same, so fillBuffer continues
         // reading from the same position in the new SharedBuffer.
         m_nextReadPosition -= m_info.src->bytes_in_buffer;
-        m_info.src->bytes_in_buffer = 0;
-        m_info.src->next_input_byte = nullptr;
-        m_lastSetByte = nullptr;
+        clearBuffer();
     }
 
     bool decode(bool onlySize)
@@ -531,6 +525,17 @@ public:
             }
 
             if (onlySize) {
+                // This exits the function while there is still potentially
+                // data in the buffer. Before this function is called again,
+                // the SharedBuffer may be collapsed (by a call to
+                // mergeSegmentsIntoBuffer), invalidating the "buffer" (which
+                // in reality is a pointer into the SharedBuffer's data).
+                // Defensively empty the buffer, but first find the latest
+                // restart position and signal to restart, so the next call to
+                // fillBuffer will resume from the correct point.
+                m_needsRestart = true;
+                updateRestartPosition();
+                clearBuffer();
                 return true;
             }
         // FALL THROUGH
@@ -682,6 +687,22 @@ public:
 #endif
 
 private:
+    void updateRestartPosition()
+    {
+        if (m_lastSetByte != m_info.src->next_input_byte) {
+            // next_input_byte was updated by jpeg, meaning that it found a restart position.
+            m_restartPosition = m_nextReadPosition - m_info.src->bytes_in_buffer;
+        }
+    }
+
+    void clearBuffer()
+    {
+        // Let libjpeg know that the buffer needs to be refilled.
+        m_info.src->bytes_in_buffer = 0;
+        m_info.src->next_input_byte = nullptr;
+        m_lastSetByte = nullptr;
+    }
+
     RefPtr<SharedBuffer> m_data;
     JPEGImageDecoder* m_decoder;
     // True if we need to back up to m_restartPosition.
