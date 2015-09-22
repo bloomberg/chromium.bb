@@ -22,6 +22,7 @@ class USBConfiguration
 public:
     static USBConfiguration* create(const USBDevice*, size_t configurationIndex);
     static USBConfiguration* create(const USBDevice*, size_t configurationValue, ExceptionState&);
+    static USBConfiguration* createFromValue(const USBDevice*, uint8_t configurationValue);
 
     USBConfiguration(const USBDevice*, size_t configurationIndex);
 

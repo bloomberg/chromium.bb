@@ -72,6 +72,29 @@ String convertTransferStatus(const WebUSBTransferInfo::Status& status)
     }
 }
 
+class GetConfigurationPromiseAdapter : public WebCallbacks<uint8_t, const WebUSBError&> {
+public:
+    GetConfigurationPromiseAdapter(USBDevice* device, ScriptPromiseResolver* resolver) : m_device(device), m_resolver(resolver) {}
+
+    void onSuccess(uint8_t value) override
+    {
+        if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped())
+            return;
+        m_resolver->resolve(USBConfiguration::createFromValue(m_device, value));
+    }
+
+    void onError(const WebUSBError& e) override
+    {
+        if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped())
+            return;
+        m_resolver->reject(USBError::take(m_resolver, e));
+    }
+
+private:
+    Persistent<USBDevice> m_device;
+    Persistent<ScriptPromiseResolver> m_resolver;
+};
+
 class InputTransferResult {
     WTF_MAKE_NONCOPYABLE(InputTransferResult);
 public:
@@ -149,6 +172,14 @@ ScriptPromise USBDevice::close(ScriptState* scriptState)
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
     m_device->close(new CallbackPromiseAdapter<void, USBError>(resolver));
+    return promise;
+}
+
+ScriptPromise USBDevice::getConfiguration(ScriptState* scriptState)
+{
+    ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
+    ScriptPromise promise = resolver->promise();
+    m_device->getConfiguration(new GetConfigurationPromiseAdapter(this, resolver));
     return promise;
 }
 

@@ -64,6 +64,7 @@ public:
 
     ScriptPromise open(ScriptState*);
     ScriptPromise close(ScriptState*);
+    ScriptPromise getConfiguration(ScriptState*);
     ScriptPromise setConfiguration(ScriptState*, uint8_t configurationValue);
     ScriptPromise claimInterface(ScriptState*, uint8_t interfaceNumber);
     ScriptPromise releaseInterface(ScriptState*, uint8_t interfaceNumber);

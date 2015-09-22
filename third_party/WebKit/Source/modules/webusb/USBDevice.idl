@@ -35,6 +35,7 @@ enum USBTransferStatus {
 
     [CallWith=ScriptState] Promise<void> open();
     [CallWith=ScriptState] Promise<void> close();
+    [CallWith=ScriptState] Promise<void> getConfiguration();
     [CallWith=ScriptState] Promise<void> setConfiguration(octet configurationValue);
     [CallWith=ScriptState] Promise<void> claimInterface(octet interfaceNumber);
     [CallWith=ScriptState] Promise<void> releaseInterface(octet interfaceNumber);

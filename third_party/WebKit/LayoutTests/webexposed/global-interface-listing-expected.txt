@@ -5551,6 +5551,7 @@ interface USBDevice
     method constructor
     method controlTransferIn
     method controlTransferOut
+    method getConfiguration
     method open
     method releaseInterface
     method reset

@@ -17,6 +17,7 @@ struct WebUSBTransferInfo;
 
 using WebUSBDeviceOpenCallbacks = WebCallbacks<void, const WebUSBError&>;
 using WebUSBDeviceCloseCallbacks = WebCallbacks<void, const WebUSBError&>;
+using WebUSBDeviceGetConfigurationCallbacks = WebCallbacks<uint8_t, const WebUSBError&>;
 using WebUSBDeviceSetConfigurationCallbacks = WebCallbacks<void, const WebUSBError&>;
 using WebUSBDeviceClaimInterfaceCallbacks = WebCallbacks<void, const WebUSBError&>;
 using WebUSBDeviceReleaseInterfaceCallbacks = WebCallbacks<void, const WebUSBError&>;
@@ -71,6 +72,10 @@ public:
     // Closes the device.
     // Ownership of the WebUSBDeviceCloseCallbacks is transferred to the client.
     virtual void close(WebUSBDeviceCloseCallbacks*) = 0;
+
+    // Gets the active configuration of the device.
+    // Ownership of the WebUSBDeviceGetConfigurationCallbacks is transferred to the client.
+    virtual void getConfiguration(WebUSBDeviceGetConfigurationCallbacks*) { }
 
     // Sets the active configuration for the device.
     // Ownership of the WebUSBDeviceSetConfigurationCallbacks is transferred to the client.

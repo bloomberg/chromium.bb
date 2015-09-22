@@ -26,6 +26,15 @@ USBConfiguration* USBConfiguration::create(const USBDevice* device, size_t confi
     return nullptr;
 }
 
+USBConfiguration* USBConfiguration::createFromValue(const USBDevice* device, uint8_t configurationValue)
+{
+    for (size_t i = 0; i < device->info().configurations.size(); ++i) {
+        if (device->info().configurations[i].configurationValue == configurationValue)
+            return new USBConfiguration(device, i);
+    }
+    return nullptr;
+}
+
 USBConfiguration::USBConfiguration(const USBDevice* device, size_t configurationIndex)
     : m_device(device)
     , m_configurationIndex(configurationIndex)
