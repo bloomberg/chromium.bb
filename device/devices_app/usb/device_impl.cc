@@ -116,7 +116,7 @@ void DeviceImpl::GetDeviceInfo(const GetDeviceInfoCallback& callback) {
 
 void DeviceImpl::GetConfiguration(const GetConfigurationCallback& callback) {
   const UsbConfigDescriptor* config = device_->GetActiveConfiguration();
-  callback.Run(config ? ConfigurationInfo::From(*config) : nullptr);
+  callback.Run(config ? config->configuration_value : 0);
 }
 
 void DeviceImpl::Open(const OpenCallback& callback) {

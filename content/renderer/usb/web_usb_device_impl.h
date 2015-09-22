@@ -32,6 +32,8 @@ class WebUSBDeviceImpl : public blink::WebUSBDevice {
   const blink::WebUSBDeviceInfo& info() const override;
   void open(blink::WebUSBDeviceOpenCallbacks* callbacks) override;
   void close(blink::WebUSBDeviceCloseCallbacks* callbacks) override;
+  void getConfiguration(
+      blink::WebUSBDeviceGetConfigurationCallbacks* callbacks) override;
   void setConfiguration(
       uint8_t configuration_value,
       blink::WebUSBDeviceSetConfigurationCallbacks* callbacks) override;
