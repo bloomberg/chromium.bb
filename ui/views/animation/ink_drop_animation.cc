@@ -34,7 +34,7 @@ const float kMinimumCircleScale = 0.001f;
 const SkColor kInkDropColor = SK_ColorBLACK;
 
 // The opacity of the ink drop when it is visible.
-const float kVisibleOpacity = 0.12f;
+const float kVisibleOpacity = 0.14f;
 
 // The opacity of the ink drop when it is not visible.
 const float kHiddenOpacity = 0.0f;
