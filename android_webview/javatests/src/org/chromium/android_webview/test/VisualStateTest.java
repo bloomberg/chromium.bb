@@ -121,7 +121,7 @@ public class VisualStateTest extends AwTestBase {
         runTestOnUiThread(new Runnable() {
             @Override
             public void run() {
-                final long requestId = 20;
+                final long requestId = 0x123456789abcdef0L; // ensure requestId is not truncated.
                 awContents.insertVisualStateCallback(requestId,
                         new AwContents.VisualStateCallback() {
                             @Override

@@ -136,7 +136,7 @@ class AwContents : public FindHelper::Listener,
   void EnableOnNewPicture(JNIEnv* env, jobject obj, jboolean enabled);
   void InsertVisualStateCallback(JNIEnv* env,
                         jobject obj,
-                        long request_id,
+                        jlong request_id,
                         jobject callback);
   void ClearView(JNIEnv* env, jobject obj);
   void SetExtraHeadersForUrl(JNIEnv* env, jobject obj,
