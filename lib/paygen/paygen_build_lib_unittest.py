@@ -1312,9 +1312,9 @@ image_type = 'test'
 update_type = 'delta'
 source_release = '1.2.3'
 target_release = '1.2.3'
-source_image_uri = 'gs://foo/bar.tar.bz2'
 target_payload_uri = 'None'
 SUITE = 'paygen_foo'
+source_image_uri = 'gs://foo/bar.tar.bz2'
 source_archive_uri = 'gs://chromeos-releases/foo-channel/foo-board/1.2.3'
 
 AUTHOR = "Chromium OS"
