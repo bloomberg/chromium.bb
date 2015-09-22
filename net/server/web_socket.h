@@ -27,9 +27,10 @@ class WebSocket final {
     FRAME_ERROR
   };
 
-  static WebSocket* CreateWebSocket(HttpServer* server,
-                                    HttpConnection* connection,
-                                    const HttpServerRequestInfo& request);
+  static scoped_ptr<WebSocket> CreateWebSocket(
+      HttpServer* server,
+      HttpConnection* connection,
+      const HttpServerRequestInfo& request);
 
   void Accept(const HttpServerRequestInfo& request);
   ParseResult Read(std::string* message);

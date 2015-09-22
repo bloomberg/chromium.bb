@@ -34,9 +34,10 @@ WebSocket::WebSocket(HttpServer* server,
 
 WebSocket::~WebSocket() {}
 
-WebSocket* WebSocket::CreateWebSocket(HttpServer* server,
-                                      HttpConnection* connection,
-                                      const HttpServerRequestInfo& request) {
+scoped_ptr<WebSocket> WebSocket::CreateWebSocket(
+    HttpServer* server,
+    HttpConnection* connection,
+    const HttpServerRequestInfo& request) {
   std::string version = request.GetHeaderValue("sec-websocket-version");
   if (version != "8" && version != "13") {
     server->SendResponse(
@@ -55,7 +56,7 @@ WebSocket* WebSocket::CreateWebSocket(HttpServer* server,
             "specified."));
     return nullptr;
   }
-  return new WebSocket(server, connection, request);
+  return make_scoped_ptr(new WebSocket(server, connection, request));
 }
 
 void WebSocket::Accept(const HttpServerRequestInfo& request) {
