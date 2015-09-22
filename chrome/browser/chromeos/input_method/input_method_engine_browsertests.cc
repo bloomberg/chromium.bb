@@ -13,6 +13,7 @@
 #include "extensions/test/extension_test_message_listener.h"
 #include "ui/base/ime/chromeos/component_extension_ime_manager.h"
 #include "ui/base/ime/chromeos/composition_text_chromeos.h"
+#include "ui/base/ime/chromeos/extension_ime_util.h"
 #include "ui/base/ime/chromeos/ime_bridge.h"
 #include "ui/base/ime/chromeos/input_method_descriptor.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
@@ -984,6 +985,59 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest,
       ASSERT_TRUE(focus_listener.WaitUntilSatisfied());
       ASSERT_TRUE(focus_listener.was_satisfied());
     }
+  }
+  {
+    SCOPED_TRACE("changeInputMethod with uncommited text test");
+    // For http://crbug.com/529999.
+
+    mock_input_context->Reset();
+    mock_candidate_window->Reset();
+
+    EXPECT_TRUE(mock_input_context->last_commit_text().empty());
+
+    const char set_composition_test_script[] =
+        "chrome.input.ime.setComposition({"
+        "  contextID: engineBridge.getFocusedContextID().contextID,"
+        "  text:'us',"
+        "  cursor:2,"
+        "  segments : [{"
+        "    start: 0,"
+        "    end: 1,"
+        "    style: 'underline'"
+        "  }]"
+        "});";
+
+    ASSERT_TRUE(content::ExecuteScript(host->host_contents(),
+                                       set_composition_test_script));
+    EXPECT_EQ(2U, mock_input_context->last_update_composition_arg().cursor_pos);
+    EXPECT_TRUE(mock_input_context->last_update_composition_arg().is_visible);
+
+    const CompositionText& composition_text =
+        mock_input_context->last_update_composition_arg().composition_text;
+    EXPECT_EQ(base::UTF8ToUTF16("us"), composition_text.text());
+    const std::vector<CompositionText::UnderlineAttribute>& underlines =
+        composition_text.underline_attributes();
+
+    ASSERT_EQ(1U, underlines.size());
+    EXPECT_EQ(CompositionText::COMPOSITION_TEXT_UNDERLINE_SINGLE,
+              underlines[0].type);
+    EXPECT_EQ(0U, underlines[0].start_index);
+    EXPECT_EQ(1U, underlines[0].end_index);
+    EXPECT_TRUE(mock_input_context->last_commit_text().empty());
+
+    InputMethodManager::Get()->GetActiveIMEState()->ChangeInputMethod(
+        kIdentityIMEID, false /* show_message */);
+    EXPECT_EQ("us", mock_input_context->last_commit_text());
+
+    InputMethodManager::Get()->GetActiveIMEState()->ChangeInputMethod(
+        extension_ime_util::GetInputMethodIDByEngineID("zh-t-i0-pinyin"),
+        false /* show_message */);
+    EXPECT_EQ("", mock_input_context->last_commit_text());
+
+    InputMethodManager::Get()->GetActiveIMEState()->ChangeInputMethod(
+        extension_ime_util::GetInputMethodIDByEngineID("xkb:us::eng"),
+        false /* show_message */);
+    EXPECT_EQ("", mock_input_context->last_commit_text());
   }
 
   IMEBridge::Get()->SetInputContextHandler(NULL);

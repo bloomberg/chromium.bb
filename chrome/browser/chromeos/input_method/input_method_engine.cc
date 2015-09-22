@@ -594,6 +594,7 @@ void InputMethodEngine::Disable() {
   active_component_id_.clear();
   IMEBridge::Get()->GetInputContextHandler()->CommitText(
       base::UTF16ToUTF8(composition_text_->text()));
+  composition_text_.reset(new CompositionText());
   observer_->OnDeactivated(active_component_id_);
 }
 
