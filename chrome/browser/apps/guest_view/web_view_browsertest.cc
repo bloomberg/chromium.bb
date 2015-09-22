@@ -2222,15 +2222,7 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, Dialog_TestAlertDialog) {
   TestHelper("testAlertDialog", "web_view/dialog", NO_TEST_SERVER);
 }
 
-#if defined(OS_MACOSX)
-// http://crbug.com/530660
-#define MAYBE_TestConfirmDialog\
-    DISABLED_TestConfirmDialog
-#else
-#define MAYBE_TestConfirmDialog\
-   TestConfirmDialog
-#endif
-IN_PROC_BROWSER_TEST_F(WebViewTest, MAYBE_TestConfirmDialog) {
+IN_PROC_BROWSER_TEST_F(WebViewTest, TestConfirmDialog) {
   TestHelper("testConfirmDialog", "web_view/dialog", NO_TEST_SERVER);
 }
 
