@@ -20,6 +20,9 @@ CONTENT_EXPORT void DoPreSandboxWarmupForTypeface(SkTypeface* typeface);
 // fonts.
 CONTENT_EXPORT SkFontMgr* GetPreSandboxWarmupFontMgr();
 
+// Warmup the direct write font manager for content processes.
+CONTENT_EXPORT void WarmupDirectWrite();
+
 }  // namespace content
 
 #endif  // CONTENT_COMMON_FONT_WARMUP_WIN_H_

@@ -709,8 +709,9 @@ base::Process StartSandboxedProcess(
   if (!disable_default_policy && !AddPolicyForSandboxedProcess(policy))
     return base::Process();
 
-  if (type_str == switches::kRendererProcess) {
 #if !defined(NACL_WIN64)
+  if (type_str == switches::kRendererProcess ||
+      type_str == switches::kPpapiPluginProcess) {
     if (gfx::win::ShouldUseDirectWrite()) {
       AddDirectory(base::DIR_WINDOWS_FONTS,
                   NULL,
@@ -734,8 +735,10 @@ base::Process StartSandboxedProcess(
             base::UintToString(reinterpret_cast<unsigned int>(shared_handle)));
       }
     }
+  }
 #endif
-  } else {
+
+  if (type_str != switches::kRendererProcess) {
     // Hack for Google Desktop crash. Trick GD into not injecting its DLL into
     // this subprocess. See
     // http://code.google.com/p/chromium/issues/detail?id=25580

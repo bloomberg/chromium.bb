@@ -11,10 +11,13 @@
 #include "base/win/iat_patch_function.h"
 #include "base/win/windows_version.h"
 #include "content/public/common/dwrite_font_platform_win.h"
+#include "skia/ext/fontmgr_default_win.h"
+#include "skia/ext/refptr.h"
 #include "third_party/WebKit/public/web/win/WebFontRendering.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/ports/SkFontMgr.h"
 #include "third_party/skia/include/ports/SkTypeface_win.h"
+#include "ui/gfx/hud_font.h"
 
 namespace content {
 
@@ -204,6 +207,21 @@ SkFontMgr* GetPreSandboxWarmupFontMgr() {
     g_warmup_fontmgr = SkFontMgr_New_DirectWrite(factory);
   }
   return g_warmup_fontmgr;
+}
+
+void WarmupDirectWrite() {
+  // The objects used here are intentionally not freed as we want the Skia
+  // code to use these objects after warmup.
+  SetDefaultSkiaFactory(GetPreSandboxWarmupFontMgr());
+
+  // We need to warm up *some* font for DirectWrite. We also need to pass one
+  // down for the CC HUD code, so use the same one here. Note that we don't use
+  // a monospace as would be nice in an attempt to avoid a small startup time
+  // regression, see http://crbug.com/463613.
+  skia::RefPtr<SkTypeface> hud_typeface = skia::AdoptRef(
+      GetPreSandboxWarmupFontMgr()->legacyCreateTypeface("Times New Roman", 0));
+  DoPreSandboxWarmupForTypeface(hud_typeface.get());
+  gfx::SetHudTypeface(hud_typeface);
 }
 
 }  // namespace content

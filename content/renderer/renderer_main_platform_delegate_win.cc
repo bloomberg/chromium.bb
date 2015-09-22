@@ -17,13 +17,10 @@
 #include "content/public/renderer/render_thread.h"
 #include "content/renderer/render_thread_impl.h"
 #include "sandbox/win/src/sandbox.h"
-#include "skia/ext/fontmgr_default_win.h"
 #include "third_party/WebKit/public/web/WebRuntimeFeatures.h"
 #include "third_party/WebKit/public/web/win/WebFontRendering.h"
 #include "third_party/icu/source/i18n/unicode/timezone.h"
-#include "third_party/skia/include/ports/SkFontMgr.h"
 #include "third_party/skia/include/ports/SkTypeface_win.h"
-#include "ui/gfx/hud_font.h"
 #include "ui/gfx/win/direct_write.h"
 #include "ui/gfx/win/dpi.h"
 
@@ -39,21 +36,6 @@ void SkiaPreCacheFont(const LOGFONT& logfont) {
   if (render_thread) {
     render_thread->PreCacheFont(logfont);
   }
-}
-
-void WarmupDirectWrite() {
-  // The objects used here are intentionally not freed as we want the Skia
-  // code to use these objects after warmup.
-  SetDefaultSkiaFactory(GetPreSandboxWarmupFontMgr());
-
-  // We need to warm up *some* font for DirectWrite. We also need to pass one
-  // down for the CC HUD code, so use the same one here. Note that we don't use
-  // a monospace as would be nice in an attempt to avoid a small startup time
-  // regression, see http://crbug.com/463613.
-  skia::RefPtr<SkTypeface> hud_typeface = skia::AdoptRef(
-      GetPreSandboxWarmupFontMgr()->legacyCreateTypeface("Times New Roman", 0));
-  DoPreSandboxWarmupForTypeface(hud_typeface.get());
-  gfx::SetHudTypeface(hud_typeface);
 }
 
 }  // namespace

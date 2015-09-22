@@ -25,8 +25,14 @@
 #include "ui/base/ui_base_switches.h"
 
 #if defined(OS_WIN)
+#include "base/win/win_util.h"
+#include "base/win/windows_version.h"
+#include "content/common/font_warmup_win.h"
 #include "sandbox/win/src/sandbox.h"
+#include "third_party/WebKit/public/web/win/WebFontRendering.h"
 #include "third_party/skia/include/ports/SkTypeface_win.h"
+#include "ui/gfx/win/direct_write.h"
+#include "ui/gfx/win/dpi.h"
 #endif
 
 #if defined(OS_CHROMEOS)
@@ -135,7 +141,17 @@ int PpapiPluginMain(const MainFunctionParams& parameters) {
       new PpapiThread(parameters.command_line, false));  // Not a broker.
 
 #if defined(OS_WIN)
-  SkTypeface_SetEnsureLOGFONTAccessibleProc(SkiaPreCacheFont);
+  if (!base::win::IsUser32AndGdi32Available())
+    gfx::win::MaybeInitializeDirectWrite();
+  bool use_direct_write = gfx::win::IsDirectWriteEnabled();
+  if (use_direct_write) {
+    WarmupDirectWrite();
+  } else {
+    SkTypeface_SetEnsureLOGFONTAccessibleProc(SkiaPreCacheFont);
+  }
+
+  blink::WebFontRendering::setUseDirectWrite(use_direct_write);
+  blink::WebFontRendering::setDeviceScaleFactor(gfx::GetDPIScale());
 #endif
 
   main_message_loop.Run();
