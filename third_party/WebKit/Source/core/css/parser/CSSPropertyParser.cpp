@@ -7,10 +7,14 @@
 
 #include "core/StylePropertyShorthand.h"
 #include "core/css/CSSCalculationValue.h"
+#include "core/css/CSSFontFaceSrcValue.h"
+#include "core/css/CSSFontFeatureValue.h"
+#include "core/css/CSSUnicodeRangeValue.h"
 #include "core/css/CSSValuePool.h"
 #include "core/css/parser/CSSParserFastPaths.h"
 #include "core/css/parser/CSSParserValues.h"
 #include "core/frame/UseCounter.h"
+#include "wtf/text/StringBuilder.h"
 
 namespace blink {
 
@@ -91,6 +95,42 @@ static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> consumeString(CSSParserTokenRan
     return cssValuePool().createValue(range.consumeIncludingWhitespace().value(), CSSPrimitiveValue::UnitType::String);
 }
 
+static String consumeUrl(CSSParserTokenRange& range)
+{
+    const CSSParserToken& token = range.peek();
+    if (token.type() == UrlToken) {
+        range.consumeIncludingWhitespace();
+        return token.value();
+    }
+    if (token.functionId() == CSSValueUrl) {
+        CSSParserTokenRange urlRange = range;
+        CSSParserTokenRange urlArgs = urlRange.consumeBlock();
+        const CSSParserToken& next = urlArgs.consumeIncludingWhitespace();
+        if (next.type() == BadStringToken || !urlArgs.atEnd())
+            return String();
+        ASSERT(next.type() == StringToken);
+        range = urlRange;
+        range.consumeWhitespace();
+        return next.value();
+    }
+
+    return String();
+}
+
+static CSSParserTokenRange consumeFunction(CSSParserTokenRange& range)
+{
+    ASSERT(range.peek().type() == FunctionToken);
+    CSSParserTokenRange contents = range.consumeBlock();
+    range.consumeWhitespace();
+    contents.consumeWhitespace();
+    return contents;
+}
+
+static inline bool isCSSWideKeyword(const CSSValueID& id)
+{
+    return id == CSSValueInitial || id == CSSValueInherit || id == CSSValueUnset || id == CSSValueDefault;
+}
+
 // Methods for consuming non-shorthand properties starts here.
 static PassRefPtrWillBeRawPtr<CSSValue> consumeWillChange(CSSParserTokenRange& range)
 {
@@ -142,6 +182,51 @@ static PassRefPtrWillBeRawPtr<CSSValue> consumeWillChange(CSSParserTokenRange& r
     return values.release();
 }
 
+static PassRefPtrWillBeRawPtr<CSSFontFeatureValue> consumeFontFeatureTag(CSSParserTokenRange& range)
+{
+    // Feature tag name consists of 4-letter characters.
+    static const unsigned tagNameLength = 4;
+
+    const CSSParserToken& token = range.consumeIncludingWhitespace();
+    // Feature tag name comes first
+    if (token.type() != StringToken)
+        return nullptr;
+    if (token.value().length() != tagNameLength)
+        return nullptr;
+    AtomicString tag = token.value();
+    for (unsigned i = 0; i < tagNameLength; ++i) {
+        // Limits the range of characters to 0x20-0x7E, following the tag name rules defiend in the OpenType specification.
+        UChar character = tag[i];
+        if (character < 0x20 || character > 0x7E)
+            return nullptr;
+    }
+
+    int tagValue = 1;
+    // Feature tag values could follow: <integer> | on | off
+    if (range.peek().type() == NumberToken && range.peek().numericValueType() == IntegerValueType && range.peek().numericValue() >= 0) {
+        tagValue = clampTo<int>(range.consumeIncludingWhitespace().numericValue());
+        if (tagValue < 0)
+            return nullptr;
+    } else if (range.peek().id() == CSSValueOn || range.peek().id() == CSSValueOff) {
+        tagValue = range.consumeIncludingWhitespace().id() == CSSValueOn;
+    }
+    return CSSFontFeatureValue::create(tag, tagValue);
+}
+
+static PassRefPtrWillBeRawPtr<CSSValue> consumeFontFeatureSettings(CSSParserTokenRange& range)
+{
+    if (range.peek().id() == CSSValueNormal)
+        return consumeIdent(range);
+    RefPtrWillBeRawPtr<CSSValueList> settings = CSSValueList::createCommaSeparated();
+    do {
+        RefPtrWillBeRawPtr<CSSFontFeatureValue> fontFeatureValue = consumeFontFeatureTag(range);
+        if (!fontFeatureValue)
+            return nullptr;
+        settings->append(fontFeatureValue);
+    } while (consumeCommaIncludingWhitespace(range));
+    return settings.release();
+}
+
 static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> consumePage(CSSParserTokenRange& range)
 {
     if (range.peek().id() == CSSValueAuto)
@@ -149,7 +234,6 @@ static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> consumePage(CSSParserTokenRange
     return consumeCustomIdent(range);
 }
 
-// [ <string> <string> ]+ | none
 static PassRefPtrWillBeRawPtr<CSSValue> consumeQuotes(CSSParserTokenRange& range)
 {
     if (range.peek().id() == CSSValueNone)
@@ -218,6 +302,48 @@ static PassRefPtrWillBeRawPtr<CSSValue> consumeFontVariantLigatures(CSSParserTok
     return ligatureValues.release();
 }
 
+PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::consumeFontVariant()
+{
+    if (m_ruleType != StyleRule::FontFace) {
+        if (m_range.peek().id() != CSSValueNormal && m_range.peek().id() != CSSValueSmallCaps)
+            return nullptr;
+        return consumeIdent(m_range);
+    }
+    RefPtrWillBeRawPtr<CSSValueList> values = CSSValueList::createCommaSeparated();
+    do {
+        if (m_range.peek().id() == CSSValueAll) {
+            // FIXME: CSSPropertyParser::parseFontVariant() implements
+            // the old css3 draft:
+            // http://www.w3.org/TR/2002/WD-css3-webfonts-20020802/#font-variant
+            // 'all' is only allowed in @font-face and with no other values.
+            if (values->length())
+                return nullptr;
+            return consumeIdent(m_range);
+        }
+        if (m_range.peek().id() == CSSValueNormal || m_range.peek().id() == CSSValueSmallCaps)
+            values->append(consumeIdent(m_range));
+    } while (consumeCommaIncludingWhitespace(m_range));
+
+    if (values->length())
+        return values.release();
+
+    return nullptr;
+}
+
+static PassRefPtrWillBeRawPtr<CSSValue> consumeFontWeight(CSSParserTokenRange& range)
+{
+    const CSSParserToken& token = range.peek();
+    if (token.id() >= CSSValueNormal && token.id() <= CSSValueLighter)
+        return consumeIdent(range);
+    if (token.type() != NumberToken || token.numericValueType() != IntegerValueType)
+        return nullptr;
+    int weight = static_cast<int>(token.numericValue());
+    if ((weight % 100) || weight < 100 || weight > 900)
+        return nullptr;
+    range.consumeIncludingWhitespace();
+    return cssValuePool().createIdentifierValue(static_cast<CSSValueID>(CSSValue100 + weight / 100 - 1));
+}
+
 PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSPropertyID propId)
 {
     m_range.consumeWhitespace();
@@ -232,9 +358,188 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSProperty
         return consumeWebkitHighlight(m_range);
     case CSSPropertyFontVariantLigatures:
         return consumeFontVariantLigatures(m_range);
+    case CSSPropertyWebkitFontFeatureSettings:
+        return consumeFontFeatureSettings(m_range);
+    case CSSPropertyFontVariant:
+        return consumeFontVariant();
+    case CSSPropertyFontFamily:
+        return consumeFontFamily();
+    case CSSPropertyFontWeight:
+        return consumeFontWeight(m_range);
     default:
         return nullptr;
     }
+}
+
+static PassRefPtrWillBeRawPtr<CSSValueList> consumeFontFaceUnicodeRange(CSSParserTokenRange& range)
+{
+    RefPtrWillBeRawPtr<CSSValueList> values = CSSValueList::createCommaSeparated();
+
+    do {
+        const CSSParserToken& token = range.consumeIncludingWhitespace();
+        if (token.type() != UnicodeRangeToken)
+            return nullptr;
+
+        UChar32 start = token.unicodeRangeStart();
+        UChar32 end = token.unicodeRangeEnd();
+        if (start > end)
+            return nullptr;
+        values->append(CSSUnicodeRangeValue::create(start, end));
+    } while (consumeCommaIncludingWhitespace(range));
+
+    return values.release();
+}
+
+PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::consumeFontFaceSrcURI()
+{
+    String url = consumeUrl(m_range);
+    if (url.isNull())
+        return nullptr;
+    RefPtrWillBeRawPtr<CSSFontFaceSrcValue> uriValue(CSSFontFaceSrcValue::create(completeURL(url), m_context.shouldCheckContentSecurityPolicy()));
+    uriValue->setReferrer(m_context.referrer());
+
+    if (m_range.peek().functionId() != CSSValueFormat)
+        return uriValue.release();
+
+    // FIXME: https://drafts.csswg.org/css-fonts says that format() contains a comma-separated list of strings,
+    // but CSSFontFaceSrcValue stores only one format. Allowing one format for now.
+    // FIXME: IdentToken should not be supported here.
+    CSSParserTokenRange args = consumeFunction(m_range);
+    const CSSParserToken& arg = args.consumeIncludingWhitespace();
+    if ((arg.type() != StringToken && arg.type() != IdentToken) || !args.atEnd())
+        return nullptr;
+    uriValue->setFormat(arg.value());
+    return uriValue.release();
+}
+
+static String concatenateFamilyName(CSSParserTokenRange& range)
+{
+    StringBuilder builder;
+    bool addedSpace = false;
+    const CSSParserToken& firstToken = range.peek();
+    while (range.peek().type() == IdentToken) {
+        if (!builder.isEmpty()) {
+            builder.append(' ');
+            addedSpace = true;
+        }
+        builder.append(range.consumeIncludingWhitespace().value());
+    }
+    if (!addedSpace && isCSSWideKeyword(firstToken.id())) {
+        return String();
+}
+    return builder.toString();
+}
+
+PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::consumeFontFaceSrcLocal()
+{
+    CSSParserTokenRange args = consumeFunction(m_range);
+    ContentSecurityPolicyDisposition shouldCheckContentSecurityPolicy = m_context.shouldCheckContentSecurityPolicy();
+    if (args.peek().type() == StringToken) {
+        const CSSParserToken& arg = args.consumeIncludingWhitespace();
+        if (!args.atEnd())
+            return nullptr;
+        return CSSFontFaceSrcValue::createLocal(arg.value(), shouldCheckContentSecurityPolicy);
+    }
+    if (args.peek().type() == IdentToken) {
+        String familyName = concatenateFamilyName(args);
+        if (!args.atEnd())
+            return nullptr;
+        return CSSFontFaceSrcValue::createLocal(familyName, shouldCheckContentSecurityPolicy);
+    }
+    return nullptr;
+}
+
+PassRefPtrWillBeRawPtr<CSSValueList> CSSPropertyParser::consumeFontFaceSrc()
+{
+    RefPtrWillBeRawPtr<CSSValueList> values(CSSValueList::createCommaSeparated());
+
+    do {
+        const CSSParserToken& token = m_range.peek();
+        RefPtrWillBeRawPtr<CSSValue> parsedValue = nullptr;
+        if (token.functionId() == CSSValueLocal)
+            parsedValue = consumeFontFaceSrcLocal();
+        else
+            parsedValue = consumeFontFaceSrcURI();
+        if (!parsedValue)
+            return nullptr;
+        values->append(parsedValue);
+    } while (consumeCommaIncludingWhitespace(m_range));
+    return values.release();
+}
+
+static PassRefPtrWillBeRawPtr<CSSValue> consumeFamilyName(CSSParserTokenRange& range)
+{
+    if (range.peek().type() == StringToken)
+        return cssValuePool().createFontFamilyValue(range.consumeIncludingWhitespace().value());
+    if (range.peek().type() != IdentToken)
+        return nullptr;
+    String familyName = concatenateFamilyName(range);
+    if (familyName.isNull())
+        return nullptr;
+    return cssValuePool().createFontFamilyValue(familyName);
+}
+
+static PassRefPtrWillBeRawPtr<CSSValue> consumeGenericFamily(CSSParserTokenRange& range)
+{
+    if (range.peek().id() >= CSSValueSerif && range.peek().id() <= CSSValueWebkitBody)
+        return consumeIdent(range);
+    return nullptr;
+}
+
+PassRefPtrWillBeRawPtr<CSSValueList> CSSPropertyParser::consumeFontFamily()
+{
+    RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createCommaSeparated();
+    do {
+        RefPtrWillBeRawPtr<CSSValue> parsedValue = nullptr;
+        if ((parsedValue = consumeGenericFamily(m_range))) {
+            list->append(parsedValue);
+        } else if ((parsedValue = consumeFamilyName(m_range))) {
+            list->append(parsedValue);
+        } else {
+            return nullptr;
+        }
+    } while (consumeCommaIncludingWhitespace(m_range));
+    if (m_ruleType == StyleRule::FontFace && list->length() > 1)
+        return nullptr;
+    return list.release();
+}
+
+bool CSSPropertyParser::parseFontFaceDescriptor(CSSPropertyID propId)
+{
+    RefPtrWillBeRawPtr<CSSValue> parsedValue = nullptr;
+
+    m_range.consumeWhitespace();
+    switch (propId) {
+    case CSSPropertySrc: // This is a list of urls or local references.
+        parsedValue = consumeFontFaceSrc();
+        break;
+    case CSSPropertyUnicodeRange:
+        parsedValue = consumeFontFaceUnicodeRange(m_range);
+        break;
+    case CSSPropertyFontStretch:
+    case CSSPropertyFontStyle: {
+        CSSValueID id = m_range.consumeIncludingWhitespace().id();
+        if (!CSSParserFastPaths::isValidKeywordPropertyAndValue(propId, id))
+            return false;
+        parsedValue = cssValuePool().createIdentifierValue(id);
+        break;
+    }
+    // TODO(rwlbuis): check there is only one family-name in font-face descriptor case
+    case CSSPropertyFontFamily:
+    case CSSPropertyFontVariant:
+    case CSSPropertyFontWeight:
+    case CSSPropertyWebkitFontFeatureSettings:
+        parsedValue = parseSingleValue(propId);
+        break;
+    default:
+        break;
+    }
+
+    if (!parsedValue || !m_range.atEnd())
+        return false;
+
+    addProperty(propId, parsedValue.release(), false);
+    return true;
 }
 
 bool CSSPropertyParser::parseShorthand(CSSPropertyID propId, bool important)

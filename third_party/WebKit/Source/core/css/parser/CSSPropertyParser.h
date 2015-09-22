@@ -188,6 +188,7 @@ private:
     bool parseFont(bool important);
     bool parseSystemFont(bool important);
     PassRefPtrWillBeRawPtr<CSSValueList> parseFontFamily();
+    PassRefPtrWillBeRawPtr<CSSValueList> consumeFontFamily();
 
     PassRefPtrWillBeRawPtr<CSSValue> parseCounter(int defaultValue);
     PassRefPtrWillBeRawPtr<CSSValue> parseCounterContent(CSSParserValueList* args, bool counters);
@@ -201,10 +202,9 @@ private:
 
     PassRefPtrWillBeRawPtr<CSSPrimitiveValue> parseLineHeight();
     bool parseFontSize(bool important);
-    bool parseFontVariant(bool important);
+    PassRefPtrWillBeRawPtr<CSSValue> consumeFontVariant();
     bool parseFontWeight(bool important);
-    PassRefPtrWillBeRawPtr<CSSValueList> parseFontFaceSrc();
-    PassRefPtrWillBeRawPtr<CSSValueList> parseFontFaceUnicodeRange();
+    PassRefPtrWillBeRawPtr<CSSValueList> consumeFontFaceSrc();
 
     bool parseSVGValue(CSSPropertyID propId, bool important);
     PassRefPtrWillBeRawPtr<CSSValue> parseSVGStrokeDasharray();
@@ -263,9 +263,6 @@ private:
 
     bool parseCalculation(CSSParserValue*, ValueRange);
 
-    bool parseFontFeatureTag(CSSValueList*);
-    PassRefPtrWillBeRawPtr<CSSValue> parseFontFeatureSettings();
-
     bool parseGeneratedImage(CSSParserValueList*, RefPtrWillBeRawPtr<CSSValue>&);
 
     PassRefPtrWillBeRawPtr<CSSPrimitiveValue> createPrimitiveNumericValue(CSSParserValue*);
@@ -287,8 +284,8 @@ private:
     PassRefPtrWillBeRawPtr<CSSValueList> parseSize();
     SizeParameterType parseSizeParameter(CSSValueList* parsedValues, CSSParserValue*, SizeParameterType prevParamType);
 
-    bool parseFontFaceSrcURI(CSSValueList*);
-    bool parseFontFaceSrcLocal(CSSValueList*);
+    PassRefPtrWillBeRawPtr<CSSValue> consumeFontFaceSrcURI();
+    PassRefPtrWillBeRawPtr<CSSValue> consumeFontFaceSrcLocal();
 
     class ImplicitScope {
         STACK_ALLOCATED();

@@ -35,8 +35,6 @@
 #include "core/css/CSSCounterValue.h"
 #include "core/css/CSSCrossfadeValue.h"
 #include "core/css/CSSCursorImageValue.h"
-#include "core/css/CSSFontFaceSrcValue.h"
-#include "core/css/CSSFontFeatureValue.h"
 #include "core/css/CSSFunctionValue.h"
 #include "core/css/CSSGridLineNamesValue.h"
 #include "core/css/CSSImageSetValue.h"
@@ -50,7 +48,6 @@
 #include "core/css/CSSSVGDocumentValue.h"
 #include "core/css/CSSShadowValue.h"
 #include "core/css/CSSTimingFunctionValue.h"
-#include "core/css/CSSUnicodeRangeValue.h"
 #include "core/css/CSSValuePair.h"
 #include "core/css/CSSValuePool.h"
 #include "core/css/HashTools.h"
@@ -469,9 +466,6 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
         }
         break;
 
-    case CSSPropertyFontWeight: // normal | bold | bolder | lighter | 100 | 200 | 300 | 400 | 500 | 600 | 700 | 800 | 900 | inherit
-        return parseFontWeight(important) && !m_valueList->next();
-
     case CSSPropertyBorderSpacing: {
         ShorthandScope scope(this, CSSPropertyBorderSpacing);
         if (!parseValue(CSSPropertyWebkitBorderHorizontalSpacing, important))
@@ -747,9 +741,6 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
     case CSSPropertyFontSize:
         return parseFontSize(important);
 
-    case CSSPropertyFontVariant:         // normal | small-caps | inherit
-        return parseFontVariant(important);
-
     case CSSPropertyVerticalAlign:
         // baseline | sub | super | top | text-top | middle | bottom | text-bottom |
         // <percentage> | <length> | inherit
@@ -812,12 +803,6 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
         else
             parsedValue = parseCounter(0);
         break;
-    case CSSPropertyFontFamily:
-        // [[ <family-name> | <generic-family> ],]* [<family-name> | <generic-family>] | inherit
-    {
-        parsedValue = parseFontFamily();
-        break;
-    }
 
     case CSSPropertyTextDecoration:
         // Fall through 'text-decoration-line' parsing if CSS 3 Text Decoration
@@ -1376,13 +1361,6 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
             validPrimitive = true;
         break;
 
-    case CSSPropertyWebkitFontFeatureSettings:
-        if (id == CSSValueNormal)
-            validPrimitive = true;
-        else
-            parsedValue = parseFontFeatureSettings();
-        break;
-
     case CSSPropertyWebkitClipPath:
         if (id == CSSValueNone) {
             validPrimitive = true;
@@ -1442,6 +1420,10 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
     case CSSPropertyQuotes:
     case CSSPropertyWebkitHighlight:
     case CSSPropertyFontVariantLigatures:
+    case CSSPropertyWebkitFontFeatureSettings:
+    case CSSPropertyFontVariant:
+    case CSSPropertyFontFamily:
+    case CSSPropertyFontWeight:
         validPrimitive = false;
         break;
 
@@ -4672,55 +4654,6 @@ bool CSSPropertyParser::parseFontSize(bool important)
     return validPrimitive;
 }
 
-bool CSSPropertyParser::parseFontVariant(bool important)
-{
-    RefPtrWillBeRawPtr<CSSValueList> values = nullptr;
-    if (m_valueList->size() > 1)
-        values = CSSValueList::createCommaSeparated();
-    bool expectComma = false;
-    for (CSSParserValue* val = m_valueList->current(); val; val = m_valueList->current()) {
-        RefPtrWillBeRawPtr<CSSPrimitiveValue> parsedValue = nullptr;
-        if (!expectComma) {
-            expectComma = true;
-            if (val->id == CSSValueNormal || val->id == CSSValueSmallCaps)
-                parsedValue = cssValuePool().createIdentifierValue(val->id);
-            else if (val->id == CSSValueAll && !values) {
-                // FIXME: CSSPropertyParser::parseFontVariant() implements
-                // the old css3 draft:
-                // http://www.w3.org/TR/2002/WD-css3-webfonts-20020802/#font-variant
-                // 'all' is only allowed in @font-face and with no other values. Make a value list to
-                // indicate that we are in the @font-face case.
-                values = CSSValueList::createCommaSeparated();
-                parsedValue = cssValuePool().createIdentifierValue(val->id);
-            }
-        } else if (consumeComma(m_valueList)) {
-            expectComma = false;
-            continue;
-        }
-
-        if (!parsedValue)
-            return false;
-
-        m_valueList->next();
-
-        if (values)
-            values->append(parsedValue.release());
-        else {
-            addProperty(CSSPropertyFontVariant, parsedValue.release(), important);
-            return true;
-        }
-    }
-
-    if (values && values->length()) {
-        if (m_ruleType != StyleRule::FontFace)
-            return false;
-        addProperty(CSSPropertyFontVariant, values.release(), important);
-        return true;
-    }
-
-    return false;
-}
-
 bool CSSPropertyParser::parseFontWeight(bool important)
 {
     CSSParserValue* value = m_valueList->current();
@@ -4736,99 +4669,6 @@ bool CSSPropertyParser::parseFontWeight(bool important)
         }
     }
     return false;
-}
-
-bool CSSPropertyParser::parseFontFaceSrcURI(CSSValueList* valueList)
-{
-    RefPtrWillBeRawPtr<CSSFontFaceSrcValue> uriValue(CSSFontFaceSrcValue::create(completeURL(m_valueList->current()->string), m_context.shouldCheckContentSecurityPolicy()));
-    uriValue->setReferrer(m_context.referrer());
-
-    CSSParserValue* value = m_valueList->next();
-    if (!value || value->m_unit != CSSParserValue::Function || value->function->id != CSSValueFormat) {
-        valueList->append(uriValue.release());
-        return true;
-    }
-
-    // FIXME: http://www.w3.org/TR/2011/WD-css3-fonts-20111004/ says that format() contains a comma-separated list of strings,
-    // but CSSFontFaceSrcValue stores only one format. Allowing one format for now.
-    CSSParserValueList* args = value->function->args.get();
-    if (!args || args->size() != 1 || (args->current()->unit() != CSSPrimitiveValue::UnitType::String && args->current()->m_unit != CSSParserValue::Identifier))
-        return false;
-    uriValue->setFormat(args->current()->string);
-    valueList->append(uriValue.release());
-    m_valueList->next();
-    return true;
-}
-
-bool CSSPropertyParser::parseFontFaceSrcLocal(CSSValueList* valueList)
-{
-    CSSParserValueList* args = m_valueList->current()->function->args.get();
-    if (!args || !args->size())
-        return false;
-    m_valueList->next();
-
-    ContentSecurityPolicyDisposition shouldCheckContentSecurityPolicy = m_context.shouldCheckContentSecurityPolicy();
-    if (args->size() == 1 && args->current()->unit() == CSSPrimitiveValue::UnitType::String) {
-        valueList->append(CSSFontFaceSrcValue::createLocal(args->current()->string, shouldCheckContentSecurityPolicy));
-    } else if (args->current()->m_unit == CSSParserValue::Identifier) {
-        StringBuilder builder;
-        for (CSSParserValue* localValue = args->current(); localValue; localValue = args->next()) {
-            if (localValue->m_unit != CSSParserValue::Identifier)
-                return false;
-            if (!builder.isEmpty())
-                builder.append(' ');
-            builder.append(localValue->string);
-        }
-        valueList->append(CSSFontFaceSrcValue::createLocal(builder.toString(), shouldCheckContentSecurityPolicy));
-    } else
-        return false;
-
-    return true;
-}
-
-PassRefPtrWillBeRawPtr<CSSValueList> CSSPropertyParser::parseFontFaceSrc()
-{
-    RefPtrWillBeRawPtr<CSSValueList> values(CSSValueList::createCommaSeparated());
-
-    while (true) {
-        CSSParserValue* value = m_valueList->current();
-        if (!value)
-            return nullptr;
-        if (value->unit() == CSSPrimitiveValue::UnitType::URI) {
-            if (!parseFontFaceSrcURI(values.get()))
-                return nullptr;
-        } else if (value->m_unit == CSSParserValue::Function && value->function->id == CSSValueLocal) {
-            if (!parseFontFaceSrcLocal(values.get()))
-                return nullptr;
-        } else {
-            return nullptr;
-        }
-
-        if (!m_valueList->current())
-            return values.release();
-        if (!consumeComma(m_valueList))
-            return nullptr;
-    }
-}
-
-PassRefPtrWillBeRawPtr<CSSValueList> CSSPropertyParser::parseFontFaceUnicodeRange()
-{
-    RefPtrWillBeRawPtr<CSSValueList> values = CSSValueList::createCommaSeparated();
-
-    do {
-        CSSParserValue* current = m_valueList->current();
-        if (!current || current->m_unit != CSSParserValue::UnicodeRange)
-            return nullptr;
-
-        UChar32 start = current->m_unicodeRange.start;
-        UChar32 end = current->m_unicodeRange.end;
-        if (start > end)
-            return nullptr;
-        values->append(CSSUnicodeRangeValue::create(start, end));
-        m_valueList->next();
-    } while (consumeComma(m_valueList));
-
-    return values.release();
 }
 
 inline int CSSPropertyParser::colorIntFromValue(CSSParserValue* v)
@@ -6967,57 +6807,6 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseTextIndent()
     return list.release();
 }
 
-bool CSSPropertyParser::parseFontFeatureTag(CSSValueList* settings)
-{
-    // Feature tag name consists of 4-letter characters.
-    static const unsigned tagNameLength = 4;
-
-    CSSParserValue* value = m_valueList->current();
-    // Feature tag name comes first
-    if (value->unit() != CSSPrimitiveValue::UnitType::String)
-        return false;
-    if (value->string.length() != tagNameLength)
-        return false;
-    for (unsigned i = 0; i < tagNameLength; ++i) {
-        // Limits the range of characters to 0x20-0x7E, following the tag name rules defiend in the OpenType specification.
-        UChar character = value->string[i];
-        if (character < 0x20 || character > 0x7E)
-            return false;
-    }
-
-    AtomicString tag = value->string;
-    int tagValue = 1;
-    // Feature tag values could follow: <integer> | on | off
-    value = m_valueList->next();
-    if (value) {
-        if (value->unit() == CSSPrimitiveValue::UnitType::Number && value->isInt && value->fValue >= 0) {
-            tagValue = clampTo<int>(value->fValue);
-            if (tagValue < 0)
-                return false;
-            m_valueList->next();
-        } else if (value->id == CSSValueOn || value->id == CSSValueOff) {
-            tagValue = value->id == CSSValueOn;
-            m_valueList->next();
-        }
-    }
-    settings->append(CSSFontFeatureValue::create(tag, tagValue));
-    return true;
-}
-
-PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseFontFeatureSettings()
-{
-    RefPtrWillBeRawPtr<CSSValueList> settings = CSSValueList::createCommaSeparated();
-    while (true) {
-        if (!m_valueList->current() || !parseFontFeatureTag(settings.get()))
-            return nullptr;
-        if (!m_valueList->current())
-            break;
-        if (!consumeComma(m_valueList))
-            return nullptr;
-    }
-    return settings.release();
-}
-
 bool CSSPropertyParser::parseCalculation(CSSParserValue* value, ValueRange range)
 {
     ASSERT(isCalculation(value));
@@ -7030,54 +6819,6 @@ bool CSSPropertyParser::parseCalculation(CSSParserValue* value, ValueRange range
     if (!m_parsedCalculation)
         return false;
 
-    return true;
-}
-
-bool CSSPropertyParser::parseFontFaceDescriptor(CSSPropertyID propId)
-{
-    CSSParserValue* value = m_valueList->current();
-    ASSERT(value);
-    CSSValueID id = value->id;
-    RefPtrWillBeRawPtr<CSSValue> parsedValue = nullptr;
-
-    switch (propId) {
-    case CSSPropertyFontFamily:
-        // <family-name>
-        // TODO(rwlbuis): check there is only one family-name
-        parsedValue = parseFontFamily();
-        break;
-    case CSSPropertySrc: // This is a list of urls or local references.
-        parsedValue = parseFontFaceSrc();
-        break;
-    case CSSPropertyUnicodeRange:
-        parsedValue = parseFontFaceUnicodeRange();
-        break;
-    case CSSPropertyFontWeight: // normal | bold | 100 | 200 | 300 | 400 | 500 | 600 | 700 | 800 | 900
-        return parseFontWeight(false) && !m_valueList->next();
-    case CSSPropertyFontStretch:
-    case CSSPropertyFontStyle:
-        if (!CSSParserFastPaths::isValidKeywordPropertyAndValue(propId, id))
-            return false;
-        addProperty(propId, cssValuePool().createIdentifierValue(id), false);
-        return true;
-    case CSSPropertyFontVariant: // normal | small-caps | inherit
-        return parseFontVariant(false);
-    case CSSPropertyWebkitFontFeatureSettings:
-        if (id == CSSValueNormal) {
-            parsedValue = cssValuePool().createIdentifierValue(CSSValueNormal);
-            m_valueList->next();
-        } else {
-            parsedValue = parseFontFeatureSettings();
-        }
-        break;
-    default:
-        break;
-    }
-
-    if (!parsedValue || m_valueList->current())
-        return false;
-
-    addProperty(propId, parsedValue.release(), false);
     return true;
 }
 
