@@ -13616,6 +13616,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="GCM.SuspendTime" units="milliseconds">
+  <owner>zea@chromium.org</owner>
+  <summary>Time elapsed from machine suspend until resume.</summary>
+</histogram>
+
 <histogram name="GCM.UnregistrationCompleteTime" units="milliseconds">
   <owner>jianli@chromium.org</owner>
   <summary>

@@ -25,6 +25,8 @@ const int kWifiHeartbeatDefaultMs = 1000 * 60 * 15;  // 15 minutes.
 const int kHeartbeatAckDefaultMs = 1000 * 60 * 1;  // 1 minute.
 // Minimum allowed client default heartbeat interval.
 const int kMinClientHeartbeatIntervalMs = 1000 * 60 * 2;  // 2 minutes.
+// Minimum time spent sleeping before we force a new heartbeat.
+const int kMinSuspendTimeMs = 1000 * 10; // 10 seconds.
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
 // The period at which to check if the heartbeat time has passed. Used to
@@ -118,8 +120,23 @@ void HeartbeatManager::UpdateHeartbeatTimer(scoped_ptr<base::Timer> timer) {
     heartbeat_timer_->Start(FROM_HERE, remaining_delay, timer_task);
 }
 
+void HeartbeatManager::OnSuspend() {
+  // The system is going to sleep. Record the time, so on resume we know how
+  // much time the machine was suspended.
+  suspend_time_ = base::Time::Now();
+}
+
 void HeartbeatManager::OnResume() {
-  CheckForMissedHeartbeat();
+  // The system just resumed from sleep. It's likely that the connection to
+  // MCS was silently lost during that time, even if a heartbeat is not yet
+  // due. Force a heartbeat to detect if the connection is still good.
+  base::TimeDelta elapsed = base::Time::Now() - suspend_time_;
+  UMA_HISTOGRAM_LONG_TIMES("GCM.SuspendTime", elapsed);
+
+  // Make sure a minimum amount of time has passed before forcing a heartbeat to
+  // avoid any tight loop scenarios.
+  if (elapsed > base::TimeDelta::FromMilliseconds(kMinSuspendTimeMs))
+    OnHeartbeatTriggered();
 }
 
 void HeartbeatManager::OnHeartbeatTriggered() {
