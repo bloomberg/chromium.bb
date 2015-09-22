@@ -185,56 +185,56 @@ void UIDataTypeController::Associate() {
     return;
   }
 
-  // TODO(robliao): Remove ScopedTracker below once https://crbug.com/471403 is
-  // fixed.
-  tracked_objects::ScopedTracker tracking_profile4(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "471403 UIDataTypeController::Associate4"));
-  base::TimeTicks start_time = base::TimeTicks::Now();
-  syncer::SyncDataList initial_sync_data;
-  syncer::SyncError error =
-      shared_change_processor_->GetAllSyncDataReturnError(
-          type(), &initial_sync_data);
-  if (error.IsSet()) {
-    local_merge_result.set_error(error);
-    StartDone(ASSOCIATION_FAILED,
-              local_merge_result,
-              syncer_merge_result);
-    return;
-  }
+  // Scope for |initial_sync_data| which might be expensive, so we don't want
+  // to keep it in memory longer than necessary.
+  {
+    syncer::SyncDataList initial_sync_data;
 
-  // TODO(robliao): Remove ScopedTracker below once https://crbug.com/471403 is
-  // fixed.
-  tracked_objects::ScopedTracker tracking_profile5(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "471403 UIDataTypeController::Associate5"));
-  std::string datatype_context;
-  if (shared_change_processor_->GetDataTypeContext(&datatype_context)) {
-    local_service_->UpdateDataTypeContext(
-        type(), syncer::SyncChangeProcessor::NO_REFRESH, datatype_context);
-  }
+    // TODO(robliao): Remove ScopedTracker below once https://crbug.com/471403
+    // is fixed.
+    tracked_objects::ScopedTracker tracking_profile4(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION(
+            "471403 UIDataTypeController::Associate4"));
+    base::TimeTicks start_time = base::TimeTicks::Now();
+    syncer::SyncError error =
+        shared_change_processor_->GetAllSyncDataReturnError(type(),
+                                                            &initial_sync_data);
+    if (error.IsSet()) {
+      local_merge_result.set_error(error);
+      StartDone(ASSOCIATION_FAILED, local_merge_result, syncer_merge_result);
+      return;
+    }
 
-  // TODO(robliao): Remove ScopedTracker below once https://crbug.com/471403 is
-  // fixed.
-  tracked_objects::ScopedTracker tracking_profile6(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "471403 UIDataTypeController::Associate6"));
-  syncer_merge_result.set_num_items_before_association(
-      initial_sync_data.size());
-  // Passes a reference to |shared_change_processor_|.
-  local_merge_result = local_service_->MergeDataAndStartSyncing(
-      type(),
-      initial_sync_data,
-      scoped_ptr<syncer::SyncChangeProcessor>(
-          new SharedChangeProcessorRef(shared_change_processor_)),
-      scoped_ptr<syncer::SyncErrorFactory>(
-          new SharedChangeProcessorRef(shared_change_processor_)));
-  RecordAssociationTime(base::TimeTicks::Now() - start_time);
-  if (local_merge_result.error().IsSet()) {
-    StartDone(ASSOCIATION_FAILED,
-              local_merge_result,
-              syncer_merge_result);
-    return;
+    // TODO(robliao): Remove ScopedTracker below once https://crbug.com/471403
+    // is fixed.
+    tracked_objects::ScopedTracker tracking_profile5(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION(
+            "471403 UIDataTypeController::Associate5"));
+    std::string datatype_context;
+    if (shared_change_processor_->GetDataTypeContext(&datatype_context)) {
+      local_service_->UpdateDataTypeContext(
+          type(), syncer::SyncChangeProcessor::NO_REFRESH, datatype_context);
+    }
+
+    // TODO(robliao): Remove ScopedTracker below once https://crbug.com/471403
+    // is fixed.
+    tracked_objects::ScopedTracker tracking_profile6(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION(
+            "471403 UIDataTypeController::Associate6"));
+    syncer_merge_result.set_num_items_before_association(
+        initial_sync_data.size());
+    // Passes a reference to |shared_change_processor_|.
+    local_merge_result = local_service_->MergeDataAndStartSyncing(
+        type(), initial_sync_data,
+        scoped_ptr<syncer::SyncChangeProcessor>(
+            new SharedChangeProcessorRef(shared_change_processor_)),
+        scoped_ptr<syncer::SyncErrorFactory>(
+            new SharedChangeProcessorRef(shared_change_processor_)));
+    RecordAssociationTime(base::TimeTicks::Now() - start_time);
+    if (local_merge_result.error().IsSet()) {
+      StartDone(ASSOCIATION_FAILED, local_merge_result, syncer_merge_result);
+      return;
+    }
   }
 
   // TODO(robliao): Remove ScopedTracker below once https://crbug.com/471403 is

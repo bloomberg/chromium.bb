@@ -410,6 +410,11 @@ syncer::SyncError GenericChangeProcessor::ProcessSyncChanges(
     const syncer::SyncChangeList& list_of_changes) {
   DCHECK(CalledOnValidThread());
 
+  if (list_of_changes.empty()) {
+    // No work. Exit without entering WriteTransaction.
+    return syncer::SyncError();
+  }
+
   // Keep track of brand new attachments so we can persist them on this device
   // and upload them to the server.
   syncer::AttachmentIdSet new_attachments;
