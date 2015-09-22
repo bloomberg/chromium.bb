@@ -9854,7 +9854,7 @@ I don't think this site should be blocked!
         Aw, Snap!
       </message>
       <message name="IDS_SAD_TAB_MESSAGE" desc="The message displayed on the sad tab page." formatter_data="android_java">
-        Something went wrong while displaying this webpage. Closing the apps and tabs that you don’t need may help by making more memory available.
+        Something went wrong while displaying this webpage.
       </message>
       <message name="IDS_SAD_TAB_HELP_MESSAGE" desc="The help message displayed on the sad tab page, with IDS_SAD_TAB_HELP_LINK embedded as a link to help.">
         If you're seeing this frequently, try these <ph name="HELP_LINK">$1<ex>suggestions</ex></ph>.
