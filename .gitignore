@@ -331,7 +331,6 @@ v8.log
 /third_party/libaddressinput/src
 /third_party/libexif/sources
 /third_party/libjingle/source
-/third_party/libjingle/source_internal
 /third_party/libjpeg_turbo
 /third_party/liblouis/src
 /third_party/libphonenumber/libphonenumber.xml
@@ -402,8 +401,6 @@ v8.log
 /third_party/WebKit
 /third_party/webpagereplay/
 /third_party/webrtc
-/third_party/webrtc/internal
-/third_party/webrtc/modules/video_coding/codecs/vp8_internal
 /third_party/widevine/cdm/chromeos
 /third_party/widevine/cdm/linux
 /third_party/widevine/cdm/mac
