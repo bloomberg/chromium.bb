@@ -46,12 +46,14 @@ public @interface Parameter {
      * The tool to read Parameter related annotations.
      */
     class Reader {
-        private AnnotatedElement mAnnotatedElement;
+        private AnnotatedElement mAnnotatedTestClass;
+        private AnnotatedElement mAnnotatedTestMethod;
         private ParameterizedTest mParameterizedTest;
 
         public Reader(TestCase testCase) {
             try {
-                mAnnotatedElement = testCase.getClass().getMethod(testCase.getName());
+                mAnnotatedTestClass = testCase.getClass();
+                mAnnotatedTestMethod = testCase.getClass().getMethod(testCase.getName());
             } catch (NoSuchMethodException e) {
                 // ignore
             }
@@ -64,10 +66,17 @@ public @interface Parameter {
          */
         public List<ParameterizedTest> getParameterizedTests() {
             List<ParameterizedTest> parameterizedTests = new ArrayList<>();
-            if (mAnnotatedElement.isAnnotationPresent(ParameterizedTest.Set.class)) {
-                Collections.addAll(parameterizedTests, getParameterizedTestSet().tests());
-            } else if (mAnnotatedElement.isAnnotationPresent(ParameterizedTest.class)) {
-                parameterizedTests.add(getParameterizedTest());
+            if (mAnnotatedTestClass.isAnnotationPresent(ParameterizedTest.Set.class)) {
+                Collections.addAll(parameterizedTests,
+                        getParameterizedTestSet(mAnnotatedTestClass).tests());
+            } else if (mAnnotatedTestClass.isAnnotationPresent(ParameterizedTest.class)) {
+                parameterizedTests.add(getParameterizedTest(mAnnotatedTestClass));
+            }
+            if (mAnnotatedTestMethod.isAnnotationPresent(ParameterizedTest.Set.class)) {
+                Collections.addAll(parameterizedTests,
+                        getParameterizedTestSet(mAnnotatedTestMethod).tests());
+            } else if (mAnnotatedTestMethod.isAnnotationPresent(ParameterizedTest.class)) {
+                parameterizedTests.add(getParameterizedTest(mAnnotatedTestMethod));
             }
             return parameterizedTests;
         }
@@ -78,8 +87,8 @@ public @interface Parameter {
          *
          * @return a {@link ParameterizedTest} of the current test's parameters.
          */
-        private ParameterizedTest getParameterizedTest() {
-            return mAnnotatedElement.getAnnotation(ParameterizedTest.class);
+        private ParameterizedTest getParameterizedTest(AnnotatedElement element) {
+            return element.getAnnotation(ParameterizedTest.class);
         }
 
         /**
@@ -87,13 +96,15 @@ public @interface Parameter {
          *
          * @return a {@link ParameterizedTest.Set} of the current test's parameters.
          */
-        private ParameterizedTest.Set getParameterizedTestSet() {
-            return mAnnotatedElement.getAnnotation(ParameterizedTest.Set.class);
+        private ParameterizedTest.Set getParameterizedTestSet(AnnotatedElement element) {
+            return element.getAnnotation(ParameterizedTest.Set.class);
         }
 
         public boolean isParameterizedTest() {
-            return mAnnotatedElement.isAnnotationPresent(ParameterizedTest.class)
-                    || mAnnotatedElement.isAnnotationPresent(ParameterizedTest.Set.class);
+            return mAnnotatedTestClass.isAnnotationPresent(ParameterizedTest.class)
+                    || mAnnotatedTestClass.isAnnotationPresent(ParameterizedTest.Set.class)
+                    || mAnnotatedTestMethod.isAnnotationPresent(ParameterizedTest.class)
+                    || mAnnotatedTestMethod.isAnnotationPresent(ParameterizedTest.Set.class);
         }
 
         public void setCurrentParameterizedTest(ParameterizedTest parameterizedTest) {
