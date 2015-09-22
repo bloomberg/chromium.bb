@@ -9,6 +9,7 @@
 #include "core/fileapi/Blob.h"
 #include "modules/EventModules.h"
 #include "modules/EventTargetModules.h"
+#include "modules/mediarecorder/BlobEvent.h"
 #include "modules/mediarecorder/MediaRecorderErrorEvent.h"
 #include "platform/NotImplemented.h"
 #include "platform/blob/BlobData.h"
@@ -152,7 +153,7 @@ void MediaRecorder::requestData(ExceptionState& exceptionState)
         return;
     }
 
-    createBlobEvent(BlobData::create());
+    createBlobEvent(nullptr);
 }
 
 String MediaRecorder::canRecordMimeType(const String& mimeType)
@@ -212,10 +213,9 @@ void MediaRecorder::writeData(const char* data, size_t length, bool lastInSlice)
 
     // TODO(mcasas): Act as |m_ignoredMutedMedia| instructs if |m_stream| track(s) is in muted() state.
     // TODO(mcasas): Use |lastInSlice| to indicate to JS that recording is done.
-
     OwnPtr<BlobData> blobData = BlobData::create();
     blobData->appendBytes(data, length);
-    createBlobEvent(blobData.release());
+    createBlobEvent(Blob::create(BlobDataHandle::create(blobData.release(), length)));
 }
 
 void MediaRecorder::failOutOfMemory(const WebString& message)
@@ -245,10 +245,10 @@ void MediaRecorder::failOtherRecordingError(const WebString& message)
         stopRecording();
 }
 
-void MediaRecorder::createBlobEvent(PassOwnPtr<BlobData> blobData)
+void MediaRecorder::createBlobEvent(Blob* blob)
 {
-    // TODO(mcasas): Launch a BlobEvent when that class is landed, but also see https://github.com/w3c/mediacapture-record/issues/17.
-    notImplemented();
+    // TODO(mcasas): Consider launching an Event with a TypedArray inside, see https://github.com/w3c/mediacapture-record/issues/17.
+    scheduleDispatchEvent(BlobEvent::create(EventTypeNames::dataavailable, blob));
 }
 
 void MediaRecorder::stopRecording()
@@ -258,7 +258,7 @@ void MediaRecorder::stopRecording()
 
     m_recorderHandler->stop();
 
-    createBlobEvent(BlobData::create());
+    createBlobEvent(nullptr);
 
     scheduleDispatchEvent(Event::create(EventTypeNames::stop));
 }

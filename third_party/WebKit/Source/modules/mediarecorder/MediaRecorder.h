@@ -16,7 +16,7 @@
 
 namespace blink {
 
-class BlobData;
+class Blob;
 class ExceptionState;
 
 class MODULES_EXPORT MediaRecorder final
@@ -81,7 +81,7 @@ public:
 private:
     MediaRecorder(ExecutionContext*, MediaStream*, const String& mimeType, ExceptionState&);
 
-    void createBlobEvent(PassOwnPtr<BlobData> blobData);
+    void createBlobEvent(Blob*);
 
     void stopRecording();
     void scheduleDispatchEvent(PassRefPtrWillBeRawPtr<Event>);

@@ -10,6 +10,7 @@ enum RecordingStateEnum { "inactive", "recording", "paused" };
     GarbageCollected,
     ActiveDOMObject,
     // TODO(mcasas): consider changing |mimeType| to a dictionary with said key, see https://github.com/w3c/mediacapture-record/issues/19
+    // TODO(mcasas): Remove [TreatUndefinedAs], see https://github.com/w3c/mediacapture-record/issues/7
     Constructor(MediaStream stream, [TreatUndefinedAs=Missing] optional DOMString mimeType),
     ConstructorCallWith=ExecutionContext,
     RaisesException=Constructor,

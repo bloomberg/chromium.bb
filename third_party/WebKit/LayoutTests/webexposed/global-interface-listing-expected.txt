@@ -286,6 +286,9 @@ interface Blob
     method close
     method constructor
     method slice
+interface BlobEvent
+    getter data
+    method constructor
 interface BluetoothDevice
     getter deviceClass
     getter instanceID

@@ -4,19 +4,33 @@
 <script>
 
 var test = async_test('checks the video-only MediaRecorder API.');
+var recorder;
 
 recorderOnDataAvailable = test.step_func(function(event) {
-    assert_greater_than(event.data.size, 0, 'Recorded data size should be > 0');
-    assert_equals(recorder.state, "recording");
+    if (event) {
+      assert_greater_than(event.data.size, 0, 'Recorded data size should be > 0');
+      assert_equals(recorder.state, "recording");
+    } else {
+      assert_equals(recorder.state, "inactive");
+    }
 
     // TODO(mcasas): Let the test record for a while.
     // TODO(mcasas): Consider storing the recorded data and playing it back.
 
+    recorder.onstop = recorderOnStopExpected;
+    recorder.stop();
+});
+
+recorderOnStopExpected = test.step_func(function() {
     test.done();
 });
 
-recorderOnStop = test.step_func(function() {
+recorderOnStopUnexpected = test.step_func(function() {
     assert_unreached('Recording stopped.');
+});
+
+recorderOnError = test.step_func(function() {
+    assert_unreached('Recording error.');
 });
 
 gotStream = test.step_func(function(stream) {
@@ -32,7 +46,8 @@ gotStream = test.step_func(function(stream) {
 
     assert_equals(recorder.state, "inactive");
     recorder.ondataavailable = recorderOnDataAvailable;
-    recorder.onstop = recorderOnStop;
+    recorder.onstop = recorderOnStopUnexpected;
+    recorder.onerror = recorderOnError;
     recorder.start();
 
     assert_equals(recorder.state, "recording");
