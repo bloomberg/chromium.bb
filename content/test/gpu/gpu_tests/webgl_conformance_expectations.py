@@ -642,6 +642,7 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Fail('conformance2/state/gl-object-get-calls.html',
         ['mac'], bug=483282)
     self.Fail('conformance2/textures/canvas/*', ['mac'], bug=483282)
+    self.Fail('conformance2/textures/video/*', ['mac'], bug=483282)
     self.Fail('conformance2/textures/misc/gl-get-tex-parameter.html',
         ['mac'], bug=483282)
     self.Fail('conformance2/textures/misc/tex-storage-compressed-formats.html',
