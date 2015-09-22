@@ -16,8 +16,7 @@ cr.define('options.contentSettings', function() {
    */
   function IsEditableType(contentType) {
     // Exceptions of the following lists are not editable for now.
-    return !(contentType == 'notifications' ||
-             contentType == 'location' ||
+    return !(contentType == 'location' ||
              contentType == 'fullscreen' ||
              contentType == 'media-stream-mic' ||
              contentType == 'media-stream-camera' ||

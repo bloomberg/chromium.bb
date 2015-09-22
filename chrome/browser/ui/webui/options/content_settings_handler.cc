@@ -1418,7 +1418,6 @@ void ContentSettingsHandler::SetException(const base::ListValue* args) {
 
   ContentSettingsType type = ContentSettingsTypeFromGroupName(type_string);
   if (type == CONTENT_SETTINGS_TYPE_GEOLOCATION ||
-      type == CONTENT_SETTINGS_TYPE_NOTIFICATIONS ||
       type == CONTENT_SETTINGS_TYPE_MEDIASTREAM ||
       type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC ||
       type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA) {
