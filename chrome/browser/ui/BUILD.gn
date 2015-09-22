@@ -87,6 +87,7 @@ source_set("ui") {
     deps += [
       "//chrome/browser/devtools",
       "//chrome/browser/ui/views",
+      "//chrome/browser/ui/webui/engagement:mojo_bindings",
       "//chrome/browser/ui/webui/omnibox:mojo_bindings",
       "//chrome/common/net",
       "//chrome/installer/util",

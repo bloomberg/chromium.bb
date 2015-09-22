@@ -420,6 +420,8 @@
       'browser/ui/webui/device_log_ui.h',
       'browser/ui/webui/domain_reliability_internals_ui.cc',
       'browser/ui/webui/domain_reliability_internals_ui.h',
+      'browser/ui/webui/engagement/site_engagement_ui.cc',
+      'browser/ui/webui/engagement/site_engagement_ui.h',
       'browser/ui/webui/fallback_icon_source.cc',
       'browser/ui/webui/fallback_icon_source.h',
       'browser/ui/webui/favicon_source.cc',
@@ -2783,6 +2785,7 @@
             '<@(chrome_browser_ui_non_ios_sources)',
             '<@(chrome_browser_ui_toolbar_model_sources)',
             '<(SHARED_INTERMEDIATE_DIR)/chrome/browser/ui/webui/omnibox/omnibox.mojom.cc',
+            '<(SHARED_INTERMEDIATE_DIR)/chrome/browser/ui/webui/engagement/site_engagement.mojom.cc',
           ],
           'dependencies': [
             'chrome_web_ui_mojo_bindings.gyp:web_ui_mojo_bindings',

@@ -930,9 +930,6 @@ grit("resources") {
     "browser_resources.pak",
   ]
 
-  omnibox_mojom_file =
-      "$root_gen_dir/chrome/browser/ui/webui/omnibox/omnibox.mojom.js"
-
   grit_flags = [
     "-E",
     "about_credits_file=" + rebase_path(about_credits_file, root_build_dir),
@@ -940,7 +937,7 @@ grit("resources") {
     "additional_modules_list_file=" +
         rebase_path(additional_modules_list_file, root_build_dir),
     "-E",
-    "omnibox_mojom_file=" + rebase_path(omnibox_mojom_file, root_build_dir),
+    "root_gen_dir=" + rebase_path(root_gen_dir, root_build_dir),
   ]
 
   deps = [
@@ -949,10 +946,8 @@ grit("resources") {
 
     # Depend only on the generated mojo bindings since we read the .mojom.js
     # file, rather than the whole mojo target which will link the C++ bindings.
+    "//chrome/browser/ui/webui/engagement:mojo_bindings__generator",
     "//chrome/browser/ui/webui/omnibox:mojo_bindings__generator",
-  ]
-  inputs = [
-    omnibox_mojom_file,
   ]
 }
 

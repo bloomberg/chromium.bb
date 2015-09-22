@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_ENGAGEMENT_SITE_ENGAGEMENT_SERVICE_H_
 #define CHROME_BROWSER_ENGAGEMENT_SITE_ENGAGEMENT_SERVICE_H_
 
+#include <map>
+
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/time/default_clock.h"
@@ -113,6 +115,9 @@ class SiteEngagementService : public KeyedService,
 
   explicit SiteEngagementService(Profile* profile);
   ~SiteEngagementService() override;
+
+  // Returns a map of all stored origins and their engagement scores.
+  std::map<GURL, int> GetScoreMap();
 
   // Update the karma score of the origin matching |url| for user navigation.
   void HandleNavigation(const GURL& url);

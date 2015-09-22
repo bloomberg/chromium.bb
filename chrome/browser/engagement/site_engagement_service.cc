@@ -216,3 +216,23 @@ int SiteEngagementService::GetTotalEngagementPoints() {
   }
   return total_score;
 }
+
+std::map<GURL, int> SiteEngagementService::GetScoreMap() {
+  std::map<GURL, int> score_map;
+  HostContentSettingsMap* settings_map =
+      HostContentSettingsMapFactory::GetForProfile(profile_);
+  ContentSettingsForOneType engagement_settings;
+  settings_map->GetSettingsForOneType(CONTENT_SETTINGS_TYPE_SITE_ENGAGEMENT,
+                                      std::string(), &engagement_settings);
+  for (const auto& site : engagement_settings) {
+    GURL origin(site.primary_pattern.ToString());
+    if (!origin.is_valid())
+      continue;
+
+    scoped_ptr<base::DictionaryValue> score_dict =
+        GetScoreDictForOrigin(settings_map, origin);
+    SiteEngagementScore score(&clock_, *score_dict);
+    score_map[origin] = score.Score();
+  }
+  return score_map;
+}

@@ -71,6 +71,7 @@ extern const char kChromeUIMdSettingsURL[];
 extern const char kChromeUISettingsURL[];
 extern const char kChromeUIContentSettingsURL[];
 extern const char kChromeUISettingsFrameURL[];
+extern const char kChromeUISiteEngagementHost[];
 extern const char kChromeUISuggestionsURL[];
 extern const char kChromeUISupervisedUserPassphrasePageURL[];
 extern const char kChromeUITermsURL[];
