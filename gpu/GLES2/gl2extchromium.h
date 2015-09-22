@@ -227,15 +227,6 @@ typedef void (GL_APIENTRYP PFNGLRELEASETEXIMAGE2DCHROMIUMPROC) (
     GLenum target, GLint imageId);
 #endif  /* GL_CHROMIUM_texture_from_image */
 
-/* GL_CHROMIUM_rate_limit_offscreen_context */
-#ifndef GL_CHROMIUM_rate_limit_offscreen_context
-#define GL_CHROMIUM_rate_limit_offscreen_context 1
-#ifdef GL_GLEXT_PROTOTYPES
-GL_APICALL void GL_APIENTRY glRateLimitOffscreenContextCHROMIUM();
-#endif
-typedef void (GL_APIENTRYP PFNGLRATELIMITOFFSCREENCONTEXTCHROMIUMPROC) ();
-#endif  /* GL_CHROMIUM_rate_limit_offscreen_context */
-
 /* GL_CHROMIUM_post_sub_buffer */
 #ifndef GL_CHROMIUM_post_sub_buffer
 #define GL_CHROMIUM_post_sub_buffer 1

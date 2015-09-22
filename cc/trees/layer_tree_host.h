@@ -17,7 +17,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
-#include "base/timer/timer.h"
 #include "cc/animation/animation_events.h"
 #include "cc/base/cc_export.h"
 #include "cc/base/scoped_ptr_vector.h"
@@ -244,12 +243,6 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   void ApplyScrollAndScale(ScrollAndScaleSet* info);
   void SetImplTransform(const gfx::Transform& transform);
 
-  // Virtual for tests.
-  virtual void StartRateLimiter();
-  virtual void StopRateLimiter();
-
-  void RateLimit();
-
   void SetDeviceScaleFactor(float device_scale_factor);
   float device_scale_factor() const { return device_scale_factor_; }
 
@@ -424,7 +417,6 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
 
   void SetPropertyTreesNeedRebuild();
 
-  bool inside_begin_main_frame_;
   bool needs_full_tree_sync_;
   bool needs_meta_info_recomputation_;
 
@@ -454,8 +446,6 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   float device_scale_factor_;
 
   bool visible_;
-
-  base::OneShotTimer<LayerTreeHost> rate_limit_timer_;
 
   float page_scale_factor_;
   float min_page_scale_factor_;

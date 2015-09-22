@@ -236,55 +236,6 @@ TEST_F(TextureLayerTest, CheckPropertyChangeCausesCorrectBehavior) {
   EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetBlendBackgroundColor(true));
 }
 
-TEST_F(TextureLayerTest, RateLimiter) {
-  FakeTextureLayerClient client;
-  scoped_refptr<TextureLayer> test_layer =
-      TextureLayer::CreateForMailbox(layer_settings_, &client);
-  test_layer->SetIsDrawable(true);
-  EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(AnyNumber());
-  layer_tree_host_->SetRootLayer(test_layer);
-
-  // Don't rate limit until we invalidate.
-  EXPECT_CALL(*layer_tree_host_, StartRateLimiter()).Times(0);
-  test_layer->SetRateLimitContext(true);
-  Mock::VerifyAndClearExpectations(layer_tree_host_.get());
-
-  // Do rate limit after we invalidate.
-  EXPECT_CALL(*layer_tree_host_, StartRateLimiter());
-  test_layer->SetNeedsDisplay();
-  Mock::VerifyAndClearExpectations(layer_tree_host_.get());
-
-  // Stop rate limiter when we don't want it any more.
-  EXPECT_CALL(*layer_tree_host_, StopRateLimiter());
-  test_layer->SetRateLimitContext(false);
-  Mock::VerifyAndClearExpectations(layer_tree_host_.get());
-
-  // Or we clear the client.
-  test_layer->SetRateLimitContext(true);
-  EXPECT_CALL(*layer_tree_host_, StopRateLimiter());
-  EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(AnyNumber());
-  test_layer->ClearClient();
-  Mock::VerifyAndClearExpectations(layer_tree_host_.get());
-
-  // Reset to a layer with a client, that started the rate limiter.
-  test_layer = TextureLayer::CreateForMailbox(layer_settings_, &client);
-  test_layer->SetIsDrawable(true);
-  test_layer->SetRateLimitContext(true);
-  EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(AnyNumber());
-  layer_tree_host_->SetRootLayer(test_layer);
-  EXPECT_CALL(*layer_tree_host_, StartRateLimiter()).Times(0);
-  Mock::VerifyAndClearExpectations(layer_tree_host_.get());
-  EXPECT_CALL(*layer_tree_host_, StartRateLimiter());
-  test_layer->SetNeedsDisplay();
-  Mock::VerifyAndClearExpectations(layer_tree_host_.get());
-
-  // Stop rate limiter when we're removed from the tree.
-  EXPECT_CALL(*layer_tree_host_, StopRateLimiter());
-  EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(1);
-  layer_tree_host_->SetRootLayer(nullptr);
-  Mock::VerifyAndClearExpectations(layer_tree_host_.get());
-}
-
 class TestMailboxHolder : public TextureLayer::TextureMailboxHolder {
  public:
   using TextureLayer::TextureMailboxHolder::Create;

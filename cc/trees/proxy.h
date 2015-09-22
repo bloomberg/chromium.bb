@@ -95,10 +95,6 @@ class CC_EXPORT Proxy {
   virtual void Start() = 0;
   virtual void Stop() = 0;   // Must be called before deleting the proxy.
 
-  // Forces 3D commands on all contexts to wait for all previous SwapBuffers
-  // to finish before executing in the GPU process.
-  virtual void ForceSerializeOnSwapBuffers() = 0;
-
   virtual bool SupportsImplScrolling() const = 0;
 
   virtual void SetChildrenNeedBeginFrames(bool children_need_begin_frames) = 0;

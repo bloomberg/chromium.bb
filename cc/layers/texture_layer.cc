@@ -34,7 +34,6 @@ TextureLayer::TextureLayer(const LayerSettings& settings,
       uv_bottom_right_(1.f, 1.f),
       premultiplied_alpha_(true),
       blend_background_color_(false),
-      rate_limit_context_(false),
       needs_set_mailbox_(false) {
   vertex_opacity_[0] = 1.0f;
   vertex_opacity_[1] = 1.0f;
@@ -46,8 +45,6 @@ TextureLayer::~TextureLayer() {
 }
 
 void TextureLayer::ClearClient() {
-  if (rate_limit_context_ && client_ && layer_tree_host())
-    layer_tree_host()->StopRateLimiter();
   client_ = nullptr;
   ClearTexture();
   UpdateDrawsContent(HasDrawableContent());
@@ -118,13 +115,6 @@ void TextureLayer::SetBlendBackgroundColor(bool blend) {
   SetNeedsCommit();
 }
 
-void TextureLayer::SetRateLimitContext(bool rate_limit) {
-  if (!rate_limit && rate_limit_context_ && client_ && layer_tree_host())
-    layer_tree_host()->StopRateLimiter();
-
-  rate_limit_context_ = rate_limit;
-}
-
 void TextureLayer::SetTextureMailboxInternal(
     const TextureMailbox& mailbox,
     scoped_ptr<SingleReleaseCallback> release_callback,
@@ -185,9 +175,6 @@ void TextureLayer::SetTextureMailboxWithoutReleaseCallback(
 
 void TextureLayer::SetNeedsDisplayRect(const gfx::Rect& dirty_rect) {
   Layer::SetNeedsDisplayRect(dirty_rect);
-
-  if (rate_limit_context_ && client_ && layer_tree_host() && DrawsContent())
-    layer_tree_host()->StartRateLimiter();
 }
 
 void TextureLayer::SetLayerTreeHost(LayerTreeHost* host) {
@@ -196,10 +183,6 @@ void TextureLayer::SetLayerTreeHost(LayerTreeHost* host) {
     return;
   }
 
-  if (layer_tree_host()) {
-    if (rate_limit_context_ && client_)
-      layer_tree_host()->StopRateLimiter();
-  }
   // If we're removed from the tree, the TextureLayerImpl will be destroyed, and
   // we will need to set the mailbox again on a new TextureLayerImpl the next
   // time we push.

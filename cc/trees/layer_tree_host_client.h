@@ -58,12 +58,6 @@ class LayerTreeHostClient {
   // implementation is ready.
   virtual void SendBeginFramesToChildren(const BeginFrameArgs& args) {}
 
-  // Requests that the client insert a rate limiting token in the shared main
-  // thread context's command stream that will block if the context gets too far
-  // ahead of the compositor's command stream. Only needed if the tree contains
-  // a TextureLayer that calls SetRateLimitContext(true).
-  virtual void RateLimitSharedMainThreadContext() {}
-
  protected:
   virtual ~LayerTreeHostClient() {}
 };

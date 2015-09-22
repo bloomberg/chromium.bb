@@ -73,8 +73,6 @@ class CC_EXPORT Renderer {
   // Waits for rendering to finish.
   virtual void Finish() = 0;
 
-  virtual void DoNoOp() {}
-
   // Puts backbuffer onscreen.
   virtual void SwapBuffers(const CompositorFrameMetadata& metadata) = 0;
   virtual void ReceiveSwapBuffersAck(const CompositorFrameAck& ack) {}

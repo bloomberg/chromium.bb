@@ -598,16 +598,6 @@ void SingleThreadProxy::CompositeImmediately(base::TimeTicks frame_begin_time) {
   }
 }
 
-void SingleThreadProxy::ForceSerializeOnSwapBuffers() {
-  {
-    DebugScopedSetImplThread impl(this);
-    if (layer_tree_host_impl_->renderer()) {
-      DCHECK(!layer_tree_host_->output_surface_lost());
-      layer_tree_host_impl_->renderer()->DoNoOp();
-    }
-  }
-}
-
 bool SingleThreadProxy::SupportsImplScrolling() const {
   return false;
 }

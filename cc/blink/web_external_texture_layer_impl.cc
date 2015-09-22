@@ -57,10 +57,6 @@ void WebExternalTextureLayerImpl::setBlendBackgroundColor(bool blend) {
   static_cast<TextureLayer*>(layer_->layer())->SetBlendBackgroundColor(blend);
 }
 
-void WebExternalTextureLayerImpl::setRateLimitContext(bool rate_limit) {
-  static_cast<TextureLayer*>(layer_->layer())->SetRateLimitContext(rate_limit);
-}
-
 void WebExternalTextureLayerImpl::setNearestNeighbor(bool nearest_neighbor) {
   static_cast<TextureLayer*>(layer_->layer())
       ->SetNearestNeighbor(nearest_neighbor);

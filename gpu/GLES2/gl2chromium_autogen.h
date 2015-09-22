@@ -280,8 +280,6 @@
 #define glGetRequestableExtensionsCHROMIUM \
   GLES2_GET_FUN(GetRequestableExtensionsCHROMIUM)
 #define glRequestExtensionCHROMIUM GLES2_GET_FUN(RequestExtensionCHROMIUM)
-#define glRateLimitOffscreenContextCHROMIUM \
-  GLES2_GET_FUN(RateLimitOffscreenContextCHROMIUM)
 #define glGetProgramInfoCHROMIUM GLES2_GET_FUN(GetProgramInfoCHROMIUM)
 #define glGetUniformBlocksCHROMIUM GLES2_GET_FUN(GetUniformBlocksCHROMIUM)
 #define glGetTransformFeedbackVaryingsCHROMIUM \

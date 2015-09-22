@@ -876,8 +876,6 @@ const GLchar* GetRequestableExtensionsCHROMIUM() override;
 
 void RequestExtensionCHROMIUM(const char* extension) override;
 
-void RateLimitOffscreenContextCHROMIUM() override;
-
 void GetProgramInfoCHROMIUM(GLuint program,
                             GLsizei bufsize,
                             GLsizei* size,

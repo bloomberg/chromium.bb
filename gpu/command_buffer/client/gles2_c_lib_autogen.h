@@ -1269,9 +1269,6 @@ const GLchar* GL_APIENTRY GLES2GetRequestableExtensionsCHROMIUM() {
 void GL_APIENTRY GLES2RequestExtensionCHROMIUM(const char* extension) {
   gles2::GetGLContext()->RequestExtensionCHROMIUM(extension);
 }
-void GL_APIENTRY GLES2RateLimitOffscreenContextCHROMIUM() {
-  gles2::GetGLContext()->RateLimitOffscreenContextCHROMIUM();
-}
 void GL_APIENTRY GLES2GetProgramInfoCHROMIUM(GLuint program,
                                              GLsizei bufsize,
                                              GLsizei* size,
@@ -2559,11 +2556,6 @@ extern const NameToFunc g_gles2_function_table[] = {
     {
         "glRequestExtensionCHROMIUM",
         reinterpret_cast<GLES2FunctionPointer>(glRequestExtensionCHROMIUM),
-    },
-    {
-        "glRateLimitOffscreenContextCHROMIUM",
-        reinterpret_cast<GLES2FunctionPointer>(
-            glRateLimitOffscreenContextCHROMIUM),
     },
     {
         "glGetProgramInfoCHROMIUM",

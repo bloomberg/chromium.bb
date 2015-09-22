@@ -1005,16 +1005,6 @@ void RenderWidgetCompositor::RecordFrameTimingEvents(
   }
 }
 
-void RenderWidgetCompositor::RateLimitSharedMainThreadContext() {
-  cc::ContextProvider* provider =
-      compositor_deps_->GetSharedMainThreadContextProvider();
-  // provider can be NULL after the GPU process crashed enough times and we
-  // don't want to restart it any more (falling back to software).
-  if (!provider)
-    return;
-  provider->ContextGL()->RateLimitOffscreenContextCHROMIUM();
-}
-
 void RenderWidgetCompositor::SetSurfaceIdNamespace(
     uint32_t surface_id_namespace) {
   layer_tree_host_->set_surface_id_namespace(surface_id_namespace);

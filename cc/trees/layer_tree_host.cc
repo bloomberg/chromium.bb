@@ -87,7 +87,6 @@ scoped_ptr<LayerTreeHost> LayerTreeHost::CreateSingleThreaded(
 LayerTreeHost::LayerTreeHost(InitParams* params)
     : micro_benchmark_controller_(this),
       next_ui_resource_id_(1),
-      inside_begin_main_frame_(false),
       needs_full_tree_sync_(true),
       needs_meta_info_recomputation_(true),
       client_(params->client),
@@ -223,9 +222,7 @@ void LayerTreeHost::BeginMainFrameNotExpectedSoon() {
 }
 
 void LayerTreeHost::BeginMainFrame(const BeginFrameArgs& args) {
-  inside_begin_main_frame_ = true;
   client_->BeginMainFrame(args);
-  inside_begin_main_frame_ = false;
 }
 
 void LayerTreeHost::DidStopFlinging() {
@@ -861,30 +858,6 @@ void LayerTreeHost::ApplyScrollAndScale(ScrollAndScaleSet* info) {
         info->top_controls_delta);
     SetNeedsUpdateLayers();
   }
-}
-
-void LayerTreeHost::StartRateLimiter() {
-  if (inside_begin_main_frame_)
-    return;
-
-  if (!rate_limit_timer_.IsRunning()) {
-    rate_limit_timer_.Start(FROM_HERE,
-                            base::TimeDelta(),
-                            this,
-                            &LayerTreeHost::RateLimit);
-  }
-}
-
-void LayerTreeHost::StopRateLimiter() {
-  rate_limit_timer_.Stop();
-}
-
-void LayerTreeHost::RateLimit() {
-  // Force a no-op command on the compositor context, so that any ratelimiting
-  // commands will wait for the compositing context, and therefore for the
-  // SwapBuffers.
-  proxy_->ForceSerializeOnSwapBuffers();
-  client_->RateLimitSharedMainThreadContext();
 }
 
 void LayerTreeHost::SetDeviceScaleFactor(float device_scale_factor) {

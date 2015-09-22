@@ -502,11 +502,6 @@ void GLRenderer::BeginDrawingFrame(DrawingFrame* frame) {
   ReinitializeGLState();
 }
 
-void GLRenderer::DoNoOp() {
-  gl_->BindFramebuffer(GL_FRAMEBUFFER, 0);
-  gl_->Flush();
-}
-
 void GLRenderer::DoDrawQuad(DrawingFrame* frame,
                             const DrawQuad* quad,
                             const gfx::QuadF* clip_region) {

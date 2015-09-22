@@ -149,7 +149,6 @@ VISIT_GL_CALL(RequestExtensionCHROMIUM,
               void,
               (const char* extension),
               (extension))
-VISIT_GL_CALL(RateLimitOffscreenContextCHROMIUM, void, (), ())
 VISIT_GL_CALL(GetProgramInfoCHROMIUM,
               void,
               (GLuint program, GLsizei bufsize, GLsizei* size, void* info),

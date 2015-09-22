@@ -623,24 +623,6 @@ void ThreadProxy::Stop() {
   main().started = false;
 }
 
-void ThreadProxy::ForceSerializeOnSwapBuffers() {
-  DebugScopedSetMainThreadBlocked main_thread_blocked(this);
-  CompletionEvent completion;
-  Proxy::ImplThreadTaskRunner()->PostTask(
-      FROM_HERE,
-      base::Bind(&ThreadProxy::ForceSerializeOnSwapBuffersOnImplThread,
-                 impl_thread_weak_ptr_,
-                 &completion));
-  completion.Wait();
-}
-
-void ThreadProxy::ForceSerializeOnSwapBuffersOnImplThread(
-    CompletionEvent* completion) {
-  if (impl().layer_tree_host_impl->renderer())
-    impl().layer_tree_host_impl->renderer()->DoNoOp();
-  completion->Signal();
-}
-
 bool ThreadProxy::SupportsImplScrolling() const {
   return true;
 }

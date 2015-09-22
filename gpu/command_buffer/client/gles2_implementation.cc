@@ -4655,17 +4655,6 @@ void GLES2Implementation::RequestExtensionCHROMIUM(const char* extension) {
   }
 }
 
-void GLES2Implementation::RateLimitOffscreenContextCHROMIUM() {
-  GPU_CLIENT_SINGLE_THREAD_CHECK();
-  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glRateLimitOffscreenCHROMIUM()");
-  // Wait if this would add too many rate limit tokens.
-  if (rate_limit_tokens_.size() == kMaxSwapBuffers) {
-    helper_->WaitForToken(rate_limit_tokens_.front());
-    rate_limit_tokens_.pop();
-  }
-  rate_limit_tokens_.push(helper_->InsertToken());
-}
-
 void GLES2Implementation::GetProgramInfoCHROMIUMHelper(
     GLuint program, std::vector<int8>* result) {
   DCHECK(result);

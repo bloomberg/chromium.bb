@@ -649,7 +649,6 @@ virtual void ResizeCHROMIUM(GLuint width,
                             GLfloat scale_factor) = 0;
 virtual const GLchar* GetRequestableExtensionsCHROMIUM() = 0;
 virtual void RequestExtensionCHROMIUM(const char* extension) = 0;
-virtual void RateLimitOffscreenContextCHROMIUM() = 0;
 virtual void GetProgramInfoCHROMIUM(GLuint program,
                                     GLsizei bufsize,
                                     GLsizei* size,

@@ -1853,12 +1853,6 @@ void GLES2TraceImplementation::RequestExtensionCHROMIUM(const char* extension) {
   gl_->RequestExtensionCHROMIUM(extension);
 }
 
-void GLES2TraceImplementation::RateLimitOffscreenContextCHROMIUM() {
-  TRACE_EVENT_BINARY_EFFICIENT0(
-      "gpu", "GLES2Trace::RateLimitOffscreenContextCHROMIUM");
-  gl_->RateLimitOffscreenContextCHROMIUM();
-}
-
 void GLES2TraceImplementation::GetProgramInfoCHROMIUM(GLuint program,
                                                       GLsizei bufsize,
                                                       GLsizei* size,

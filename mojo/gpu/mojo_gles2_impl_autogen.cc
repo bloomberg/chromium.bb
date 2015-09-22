@@ -1422,10 +1422,6 @@ void MojoGLES2Impl::RequestExtensionCHROMIUM(const char* extension) {
   MojoGLES2MakeCurrent(context_);
   glRequestExtensionCHROMIUM(extension);
 }
-void MojoGLES2Impl::RateLimitOffscreenContextCHROMIUM() {
-  MojoGLES2MakeCurrent(context_);
-  glRateLimitOffscreenContextCHROMIUM();
-}
 void MojoGLES2Impl::GetProgramInfoCHROMIUM(GLuint program,
                                            GLsizei bufsize,
                                            GLsizei* size,

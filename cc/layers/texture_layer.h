@@ -124,11 +124,6 @@ class CC_EXPORT TextureLayer : public Layer {
   // at draw time. Defaults to false.
   void SetBlendBackgroundColor(bool blend);
 
-  // Sets whether this context should rate limit on damage to prevent too many
-  // frames from being queued up before the compositor gets a chance to run.
-  // Requires a non-nil client.  Defaults to false.
-  void SetRateLimitContext(bool rate_limit);
-
   // Code path for plugins which supply their own mailbox.
   void SetTextureMailbox(const TextureMailbox& mailbox,
                          scoped_ptr<SingleReleaseCallback> release_callback);
@@ -167,7 +162,6 @@ class CC_EXPORT TextureLayer : public Layer {
   float vertex_opacity_[4];
   bool premultiplied_alpha_;
   bool blend_background_color_;
-  bool rate_limit_context_;
 
   scoped_ptr<TextureMailboxHolder::MainThreadReference> holder_ref_;
   bool needs_set_mailbox_;

@@ -652,7 +652,6 @@ class MojoGLES2Impl : public gpu::gles2::GLES2Interface {
                       GLfloat scale_factor) override;
   const GLchar* GetRequestableExtensionsCHROMIUM() override;
   void RequestExtensionCHROMIUM(const char* extension) override;
-  void RateLimitOffscreenContextCHROMIUM() override;
   void GetProgramInfoCHROMIUM(GLuint program,
                               GLsizei bufsize,
                               GLsizei* size,

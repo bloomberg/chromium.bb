@@ -3758,12 +3758,6 @@ _FUNCTION_INFO = {
     'extension': 'CHROMIUM_request_extension',
     'chromium': True,
   },
-  'RateLimitOffscreenContextCHROMIUM': {
-    'gen_cmd': False,
-    'extension': True,
-    'chromium': True,
-    'client_test': False,
-  },
   'CreateStreamTextureCHROMIUM':  {
     'type': 'HandWritten',
     'impl_func': False,

@@ -42,7 +42,6 @@ class FakeProxy : public Proxy {
   bool CommitRequested() const override;
   void Start() override {}
   void Stop() override {}
-  void ForceSerializeOnSwapBuffers() override {}
   bool SupportsImplScrolling() const override;
   bool MainFrameWillHappenForTesting() override;
   void SetChildrenNeedBeginFrames(bool children_need_begin_frames) override {}
