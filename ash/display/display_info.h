@@ -122,6 +122,10 @@ class ASH_EXPORT DisplayInfo {
   float device_scale_factor() const { return device_scale_factor_; }
   void set_device_scale_factor(float scale) { device_scale_factor_ = scale; }
 
+  // Gets/Sets the device DPI of the display.
+  float device_dpi() const { return device_dpi_; }
+  void set_device_dpi(float dpi) { device_dpi_ = dpi; }
+
   // The native bounds for the display. The size of this can be
   // different from the |size_in_pixel| when overscan insets are set
   // and/or |configured_ui_scale_| is set.
@@ -259,6 +263,9 @@ class ASH_EXPORT DisplayInfo {
   // layers properly.
   float device_scale_factor_;
   gfx::Rect bounds_in_native_;
+
+  // This specifies the device's DPI.
+  float device_dpi_;
 
   // The size of the display in use. The size can be different from the size
   // of |bounds_in_native_| if the display has overscan insets and/or rotation.

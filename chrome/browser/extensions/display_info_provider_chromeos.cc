@@ -366,12 +366,13 @@ void DisplayInfoProviderChromeOS::UpdateDisplayUnitInfoForPlatform(
         base::Int64ToString(display_manager->mirroring_display_id());
   }
 
-  // TODO(hshi): determine the DPI of the screen.
-  const float kDpi96 = 96.0;
-
-  const float dpi = display.device_scale_factor() * kDpi96;
-  unit->dpi_x = dpi;
-  unit->dpi_y = dpi;
+  const ash::DisplayInfo& display_info =
+      display_manager->GetDisplayInfo(display.id());
+  const float device_dpi = display_info.device_dpi();
+  unit->dpi_x = device_dpi * display.size().width() /
+                display_info.bounds_in_native().width();
+  unit->dpi_y = device_dpi * display.size().height() /
+                display_info.bounds_in_native().height();
 
   const gfx::Insets overscan_insets =
       display_manager->GetOverscanInsets(display.id());

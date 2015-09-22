@@ -165,7 +165,7 @@ TEST_F(DisplayInfoProviderChromeosTest, GetRotation) {
   EXPECT_EQ(0, result[0]->rotation);
 }
 
-TEST_F(DisplayInfoProviderChromeosTest, GetHiDPI) {
+TEST_F(DisplayInfoProviderChromeosTest, GetDPI) {
   UpdateDisplay("500x600,400x520*2");
   DisplayInfo result;
   result = DisplayInfoProvider::Get()->GetAllDisplaysInfo();
@@ -178,8 +178,10 @@ TEST_F(DisplayInfoProviderChromeosTest, GetHiDPI) {
 
   EXPECT_EQ("500,0 200x260",
             SystemInfoDisplayBoundsToString(result[1]->bounds));
-  EXPECT_EQ(2 * 96, result[1]->dpi_x);
-  EXPECT_EQ(2 * 96, result[1]->dpi_y);
+  // DPI should be 96 (native dpi) * 200 (display) / 400 (native) when ui scale
+  // is 2.
+  EXPECT_EQ(96 / 2, result[1]->dpi_x);
+  EXPECT_EQ(96 / 2, result[1]->dpi_y);
 
   GetWindowTreeHostManager()->SwapPrimaryDisplay();
 
@@ -193,8 +195,8 @@ TEST_F(DisplayInfoProviderChromeosTest, GetHiDPI) {
   EXPECT_EQ(96, result[0]->dpi_y);
 
   EXPECT_EQ("0,0 200x260", SystemInfoDisplayBoundsToString(result[1]->bounds));
-  EXPECT_EQ(2 * 96, result[1]->dpi_x);
-  EXPECT_EQ(2 * 96, result[1]->dpi_y);
+  EXPECT_EQ(96 / 2, result[1]->dpi_x);
+  EXPECT_EQ(96 / 2, result[1]->dpi_y);
 }
 
 TEST_F(DisplayInfoProviderChromeosTest, GetVisibleArea) {

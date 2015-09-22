@@ -29,6 +29,7 @@ const int64 kSynthesizedDisplayIdStart = 2200000000LL;
 
 int64 synthesized_display_id = kSynthesizedDisplayIdStart;
 
+const float kDpi96 = 96.0;
 bool use_125_dsf_for_ui_scaling = true;
 
 // Check the content of |spec| and fill |bounds| and |device_scale_factor|.
@@ -237,29 +238,27 @@ DisplayInfo::DisplayInfo()
       has_overscan_(false),
       touch_support_(gfx::Display::TOUCH_SUPPORT_UNKNOWN),
       device_scale_factor_(1.0f),
+      device_dpi_(kDpi96),
       overscan_insets_in_dip_(0, 0, 0, 0),
       configured_ui_scale_(1.0f),
       native_(false),
       is_aspect_preserving_scaling_(false),
       clear_overscan_insets_(false),
-      color_profile_(ui::COLOR_PROFILE_STANDARD) {
-}
+      color_profile_(ui::COLOR_PROFILE_STANDARD) {}
 
-DisplayInfo::DisplayInfo(int64 id,
-                         const std::string& name,
-                         bool has_overscan)
+DisplayInfo::DisplayInfo(int64 id, const std::string& name, bool has_overscan)
     : id_(id),
       name_(name),
       has_overscan_(has_overscan),
       touch_support_(gfx::Display::TOUCH_SUPPORT_UNKNOWN),
       device_scale_factor_(1.0f),
+      device_dpi_(kDpi96),
       overscan_insets_in_dip_(0, 0, 0, 0),
       configured_ui_scale_(1.0f),
       native_(false),
       is_aspect_preserving_scaling_(false),
       clear_overscan_insets_(false),
-      color_profile_(ui::COLOR_PROFILE_STANDARD) {
-}
+      color_profile_(ui::COLOR_PROFILE_STANDARD) {}
 
 DisplayInfo::~DisplayInfo() {
 }
@@ -291,6 +290,7 @@ void DisplayInfo::Copy(const DisplayInfo& native_info) {
   device_scale_factor_ = native_info.device_scale_factor_;
   DCHECK(!native_info.bounds_in_native_.IsEmpty());
   bounds_in_native_ = native_info.bounds_in_native_;
+  device_dpi_ = native_info.device_dpi_;
   size_in_pixel_ = native_info.size_in_pixel_;
   is_aspect_preserving_scaling_ = native_info.is_aspect_preserving_scaling_;
   display_modes_ = native_info.display_modes_;

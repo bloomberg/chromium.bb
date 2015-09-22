@@ -187,12 +187,14 @@ void DisplayChangeObserver::OnDisplayModeChanged(
       continue;
 
     float device_scale_factor = 1.0f;
+    // Sets dpi only if the screen size is not blacklisted.
+    float dpi = ui::IsDisplaySizeBlackListed(state->physical_size())
+                    ? 0
+                    : kInchInMm * mode_info->size().width() /
+                          state->physical_size().width();
     if (state->type() == ui::DISPLAY_CONNECTION_TYPE_INTERNAL) {
-      if (!ui::IsDisplaySizeBlackListed(state->physical_size())) {
-        device_scale_factor =
-            FindDeviceScaleFactor((kInchInMm * mode_info->size().width() /
-                                   state->physical_size().width()));
-      }
+      if (dpi)
+        device_scale_factor = FindDeviceScaleFactor(dpi);
     } else {
       DisplayMode mode;
       if (Shell::GetInstance()->display_manager()->GetSelectedModeForDisplayId(
@@ -234,6 +236,8 @@ void DisplayChangeObserver::OnDisplayModeChanged(
     new_info.set_native(true);
     new_info.set_is_aspect_preserving_scaling(
         state->is_aspect_preserving_scaling());
+    if (dpi)
+      new_info.set_device_dpi(dpi);
 
     std::vector<DisplayMode> display_modes =
         (state->type() == ui::DISPLAY_CONNECTION_TYPE_INTERNAL)
