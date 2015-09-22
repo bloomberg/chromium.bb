@@ -42,6 +42,11 @@ PassRefPtrWillBeRawPtr<CSSValue> StyleGeneratedImage::cssValue() const
     return m_imageGeneratorValue.get();
 }
 
+PassRefPtrWillBeRawPtr<CSSValue> StyleGeneratedImage::computedCSSValue() const
+{
+    return m_imageGeneratorValue->valueWithURLsMadeAbsolute();
+}
+
 LayoutSize StyleGeneratedImage::imageSize(const LayoutObject* layoutObject, float multiplier) const
 {
     if (m_fixedSize) {

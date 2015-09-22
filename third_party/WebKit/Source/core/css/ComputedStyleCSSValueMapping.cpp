@@ -321,7 +321,7 @@ static PassRefPtrWillBeRawPtr<CSSValue> valueForNinePieceImage(const NinePieceIm
     // Image first.
     RefPtrWillBeRawPtr<CSSValue> imageValue = nullptr;
     if (image.image())
-        imageValue = image.image()->cssValue();
+        imageValue = image.image()->computedCSSValue();
 
     // Create the image slice.
     RefPtrWillBeRawPtr<CSSBorderImageSliceValue> imageSlices = valueForNinePieceImageSlice(image);
@@ -426,7 +426,7 @@ static PassRefPtrWillBeRawPtr<CSSValueList> valuesForBackgroundShorthand(const C
             ASSERT(value);
             beforeSlash->append(value);
         }
-        beforeSlash->append(currLayer->image() ? currLayer->image()->cssValue() : cssValuePool().createIdentifierValue(CSSValueNone));
+        beforeSlash->append(currLayer->image() ? currLayer->image()->computedCSSValue() : cssValuePool().createIdentifierValue(CSSValueNone));
         beforeSlash->append(valueForFillRepeat(currLayer->repeatX(), currLayer->repeatY()));
         beforeSlash->append(cssValuePool().createValue(currLayer->attachment()));
         beforeSlash->append(createPositionListForLayer(CSSPropertyBackgroundPosition, *currLayer, style));
@@ -1012,7 +1012,7 @@ static PassRefPtrWillBeRawPtr<CSSValue> valueForContentData(const ComputedStyle&
         } else if (contentData->isImage()) {
             const StyleImage* image = toImageContentData(contentData)->image();
             ASSERT(image);
-            list->append(image->cssValue());
+            list->append(image->computedCSSValue());
         } else if (contentData->isText()) {
             list->append(cssValuePool().createValue(toTextContentData(contentData)->text(), CSSPrimitiveValue::UnitType::String));
         } else if (contentData->isQuote()) {
@@ -1056,7 +1056,7 @@ static PassRefPtrWillBeRawPtr<CSSValue> valueForShape(const ComputedStyle& style
         return cssValuePool().createValue(shapeValue->cssBox());
     if (shapeValue->type() == ShapeValue::Image) {
         if (shapeValue->image())
-            return shapeValue->image()->cssValue();
+            return shapeValue->image()->computedCSSValue();
         return cssValuePool().createIdentifierValue(CSSValueNone);
     }
 
@@ -1378,7 +1378,7 @@ PassRefPtrWillBeRawPtr<CSSValue> ComputedStyleCSSValueMapping::get(CSSPropertyID
         const FillLayer* currLayer = propertyID == CSSPropertyWebkitMaskImage ? &style.maskLayers() : &style.backgroundLayers();
         for (; currLayer; currLayer = currLayer->next()) {
             if (currLayer->image())
-                list->append(currLayer->image()->cssValue());
+                list->append(currLayer->image()->computedCSSValue());
             else
                 list->append(cssValuePool().createIdentifierValue(CSSValueNone));
         }
@@ -1475,7 +1475,7 @@ PassRefPtrWillBeRawPtr<CSSValue> ComputedStyleCSSValueMapping::get(CSSPropertyID
         return zoomAdjustedPixelValue(style.verticalBorderSpacing(), style);
     case CSSPropertyBorderImageSource:
         if (style.borderImageSource())
-            return style.borderImageSource()->cssValue();
+            return style.borderImageSource()->computedCSSValue();
         return cssValuePool().createIdentifierValue(CSSValueNone);
     case CSSPropertyBorderTopColor:
         return allowVisitedStyle ? cssValuePool().createColorValue(style.visitedDependentColor(CSSPropertyBorderTopColor).rgb()) : currentColorOrValidColor(style, style.borderTopColor());
@@ -1574,7 +1574,7 @@ PassRefPtrWillBeRawPtr<CSSValue> ComputedStyleCSSValueMapping::get(CSSPropertyID
             list = CSSValueList::createCommaSeparated();
             for (unsigned i = 0; i < cursors->size(); ++i) {
                 if (StyleImage* image = cursors->at(i).image())
-                    list->append(image->cssValue());
+                    list->append(image->computedCSSValue());
             }
         }
         RefPtrWillBeRawPtr<CSSValue> value = cssValuePool().createValue(style.cursor());
@@ -1763,7 +1763,7 @@ PassRefPtrWillBeRawPtr<CSSValue> ComputedStyleCSSValueMapping::get(CSSPropertyID
         return valueForLineHeight(style);
     case CSSPropertyListStyleImage:
         if (style.listStyleImage())
-            return style.listStyleImage()->cssValue();
+            return style.listStyleImage()->computedCSSValue();
         return cssValuePool().createIdentifierValue(CSSValueNone);
     case CSSPropertyListStylePosition:
         return cssValuePool().createValue(style.listStylePosition());
@@ -2212,7 +2212,7 @@ PassRefPtrWillBeRawPtr<CSSValue> ComputedStyleCSSValueMapping::get(CSSPropertyID
         return valueForNinePieceImageQuad(style.maskBoxImage().borderSlices(), style);
     case CSSPropertyWebkitMaskBoxImageSource:
         if (style.maskBoxImageSource())
-            return style.maskBoxImageSource()->cssValue();
+            return style.maskBoxImageSource()->computedCSSValue();
         return cssValuePool().createIdentifierValue(CSSValueNone);
     case CSSPropertyWebkitFontSizeDelta:
         // Not a real style property -- used by the editing engine -- so has no computed value.

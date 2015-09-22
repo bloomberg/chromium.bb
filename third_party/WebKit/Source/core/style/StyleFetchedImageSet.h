@@ -48,6 +48,7 @@ public:
     ~StyleFetchedImageSet() override;
 
     PassRefPtrWillBeRawPtr<CSSValue> cssValue() const override;
+    PassRefPtrWillBeRawPtr<CSSValue> computedCSSValue() const override;
 
     // FIXME: This is used by StyleImage for equals comparison, but this implementation
     // only looks at the image from the set that we have loaded. I'm not sure if that is

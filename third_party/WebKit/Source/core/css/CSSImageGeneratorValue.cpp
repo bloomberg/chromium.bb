@@ -66,6 +66,13 @@ void CSSImageGeneratorValue::addClient(LayoutObject* layoutObject, const IntSize
     }
 }
 
+PassRefPtrWillBeRawPtr<CSSImageGeneratorValue> CSSImageGeneratorValue::valueWithURLsMadeAbsolute()
+{
+    if (isCrossfadeValue())
+        return toCSSCrossfadeValue(this)->valueWithURLsMadeAbsolute();
+    return this;
+}
+
 void CSSImageGeneratorValue::removeClient(LayoutObject* layoutObject)
 {
     ASSERT(layoutObject);

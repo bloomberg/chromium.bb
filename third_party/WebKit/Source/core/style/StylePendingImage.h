@@ -49,6 +49,13 @@ public:
     WrappedImagePtr data() const override { return m_value; }
 
     PassRefPtrWillBeRawPtr<CSSValue> cssValue() const override { return m_value; }
+
+    PassRefPtrWillBeRawPtr<CSSValue> computedCSSValue() const override
+    {
+        ASSERT_NOT_REACHED();
+        return nullptr;
+    }
+
     CSSImageValue* cssImageValue() const { return m_value->isImageValue() ? toCSSImageValue(m_value) : 0; }
     CSSImageGeneratorValue* cssImageGeneratorValue() const { return m_value->isImageGeneratorValue() ? toCSSImageGeneratorValue(m_value) : 0; }
     CSSCursorImageValue* cssCursorImageValue() const { return m_value->isCursorImageValue() ? toCSSCursorImageValue(m_value) : 0; }

@@ -63,6 +63,8 @@ public:
         float scaleFactor;
     };
 
+    PassRefPtrWillBeRawPtr<CSSImageSetValue> valueWithURLsMadeAbsolute();
+
     bool hasFailedOrCanceledSubresources() const;
 
     DECLARE_TRACE_AFTER_DISPATCH();

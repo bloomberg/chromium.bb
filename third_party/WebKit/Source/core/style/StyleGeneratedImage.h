@@ -42,6 +42,7 @@ public:
     WrappedImagePtr data() const override { return m_imageGeneratorValue.get(); }
 
     PassRefPtrWillBeRawPtr<CSSValue> cssValue() const override;
+    PassRefPtrWillBeRawPtr<CSSValue> computedCSSValue() const override;
 
     LayoutSize imageSize(const LayoutObject*, float multiplier) const override;
     bool imageHasRelativeWidth() const override { return !m_fixedSize; }

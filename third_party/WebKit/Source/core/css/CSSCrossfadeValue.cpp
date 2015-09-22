@@ -117,6 +117,13 @@ String CSSCrossfadeValue::customCSSText() const
     return result.toString();
 }
 
+PassRefPtrWillBeRawPtr<CSSCrossfadeValue> CSSCrossfadeValue::valueWithURLsMadeAbsolute()
+{
+    RefPtrWillBeRawPtr<CSSValue> fromValue = m_fromValue->isImageValue() ? toCSSImageValue(*m_fromValue).valueWithURLMadeAbsolute() : m_fromValue;
+    RefPtrWillBeRawPtr<CSSValue> toValue = m_toValue->isImageValue() ? toCSSImageValue(*m_toValue).valueWithURLMadeAbsolute() : m_toValue;
+    return CSSCrossfadeValue::create(fromValue.release(), toValue.release(), m_percentageValue);
+}
+
 IntSize CSSCrossfadeValue::fixedSize(const LayoutObject* layoutObject)
 {
     Image* fromImage = renderableImageForCSSValue(m_fromValue.get(), layoutObject);

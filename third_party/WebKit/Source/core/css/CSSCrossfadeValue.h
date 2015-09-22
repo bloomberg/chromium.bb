@@ -64,6 +64,8 @@ public:
 
     bool equals(const CSSCrossfadeValue&) const;
 
+    PassRefPtrWillBeRawPtr<CSSCrossfadeValue> valueWithURLsMadeAbsolute();
+
     // Promptly remove as a ImageResource client.
     EAGERLY_FINALIZE();
 #if ENABLE(OILPAN)

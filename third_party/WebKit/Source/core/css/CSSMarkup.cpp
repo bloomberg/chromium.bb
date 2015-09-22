@@ -263,4 +263,21 @@ String serializeString(const String& string)
     return builder.toString();
 }
 
+String serializeStringWithoutQuotations(const String& string)
+{
+    StringBuilder appendTo;
+    unsigned index = 0;
+    while (index < string.length()) {
+        UChar32 c = string.characterStartingAt(index);
+        index += U16_LENGTH(c);
+        if (c <= 0x1f)
+            serializeCharacterAsCodePoint(c, appendTo);
+        else if (c == 0x22 || c == 0x5c)
+            serializeCharacter(c, appendTo);
+        else
+            appendTo.append(c);
+    }
+    return appendTo.toString();
+}
+
 } // namespace blink

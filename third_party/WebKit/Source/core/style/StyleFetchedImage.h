@@ -45,6 +45,7 @@ public:
     WrappedImagePtr data() const override { return m_image.get(); }
 
     PassRefPtrWillBeRawPtr<CSSValue> cssValue() const override;
+    PassRefPtrWillBeRawPtr<CSSValue> computedCSSValue() const override;
 
     bool canRender(const LayoutObject&, float multiplier) const override;
     bool isLoaded() const override;

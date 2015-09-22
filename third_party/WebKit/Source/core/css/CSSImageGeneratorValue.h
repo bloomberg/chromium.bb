@@ -68,6 +68,8 @@ public:
 
     void loadSubimages(Document*);
 
+    PassRefPtrWillBeRawPtr<CSSImageGeneratorValue> valueWithURLsMadeAbsolute();
+
     DEFINE_INLINE_TRACE_AFTER_DISPATCH() { CSSValue::traceAfterDispatch(visitor); }
 
 protected:

@@ -108,7 +108,8 @@ bool CSSImageValue::equals(const CSSImageValue& other) const
 
 String CSSImageValue::customCSSText() const
 {
-    return "url(" + quoteCSSURLIfNeeded(m_absoluteURL) + ")";
+    // TODO(nainar): Serialise with quotation marks to match spec: https://drafts.csswg.org/cssom/#serialize-a-url
+    return "url(" + quoteCSSURLIfNeeded(serializeStringWithoutQuotations(m_relativeURL)) + ")";
 }
 
 bool CSSImageValue::knownToBeOpaque(const LayoutObject* layoutObject) const

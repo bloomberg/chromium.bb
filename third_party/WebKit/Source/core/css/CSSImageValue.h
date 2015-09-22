@@ -70,6 +70,11 @@ public:
 
     bool knownToBeOpaque(const LayoutObject*) const;
 
+    PassRefPtrWillBeRawPtr<CSSImageValue> valueWithURLMadeAbsolute()
+    {
+        return create(KURL(ParsedURLString, m_absoluteURL), m_image.get());
+    }
+
     void setInitiator(const AtomicString& name) { m_initiatorName = name; }
 
     DECLARE_TRACE_AFTER_DISPATCH();

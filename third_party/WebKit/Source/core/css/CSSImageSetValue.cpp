@@ -188,4 +188,13 @@ DEFINE_TRACE_AFTER_DISPATCH(CSSImageSetValue)
     CSSValueList::traceAfterDispatch(visitor);
 }
 
+PassRefPtrWillBeRawPtr<CSSImageSetValue> CSSImageSetValue::valueWithURLsMadeAbsolute()
+{
+    CSSImageSetValue* value = CSSImageSetValue::create().get();
+    for (auto& item : *this)
+        item->isImageValue() ? value->append(toCSSImageValue(*item).valueWithURLMadeAbsolute()) : value->append(item);
+    return adoptRef(value);
+}
+
+
 } // namespace blink
