@@ -151,48 +151,20 @@ int sys_sigprocmask(int how, const sigset_t* set, decltype(nullptr) oldset) {
                  sizeof(linux_value));
 }
 
-#if (defined(MEMORY_SANITIZER) || defined(THREAD_SANITIZER) ||  \
-     (defined(ARCH_CPU_X86_FAMILY) && !defined(__clang__))) && \
-    !defined(OS_NACL_NONSFI)
-// If MEMORY_SANITIZER or THREAD_SANITIZER is enabled, it is necessary to call
-// sigaction() here, rather than the direct syscall (sys_sigaction() defined
-// by ourselves).
-// It is because, if MEMORY_SANITIZER or THREAD_SANITIZER is enabled, sigaction
-// is wrapped, and |act->sa_handler| is injected in order to unpoisonize the
-// memory passed via callback's arguments for MEMORY_SANITIZER, or handle
-// signals to check thread consistency for THREAD_SANITIZER. Please see
-// msan_interceptors.cc and tsan_interceptors.cc for more details.
-// So, specifically, if MEMORY_SANITIZER is enabled while the direct syscall is
-// used, as MEMORY_SANITIZER does not know about it, sigaction() invocation in
-// other places would be broken (in more precise, returned |oldact| would have
-// a broken |sa_handler| callback).
-// Practically, it would break NaCl's signal handler installation.
-// cf) native_client/src/trusted/service_runtime/linux/nacl_signal.c.
-// As for THREAD_SANITIZER, the intercepted signal handlers are processed more
-// in other libc functions' interceptors (such as for raise()), so that it
-// would not work properly.
-//
-// Also on x86 architectures, we need naked function for rt_sigreturn.
-// However, there is no simple way to define it with GCC. Note that the body
-// of function is actually very small (only two instructions), but we need to
-// define much debug information in addition, otherwise backtrace() used by
-// base::StackTrace would not work so that some tests would fail.
-//
 // When this is built with PNaCl toolchain, we should always use sys_sigaction
 // below, because sigaction() provided by the toolchain is incompatible with
-// Linux's ABI. So, otherwise, it would just fail. Note that it is not
-// necessary to think about sigaction() invocation in other places even with
-// MEMORY_SANITIZER or THREAD_SANITIZER, because it would just fail there.
+// Linux's ABI.
+#if !defined(OS_NACL_NONSFI)
 int sys_sigaction(int signum,
                   const struct sigaction* act,
                   struct sigaction* oldact) {
   return sigaction(signum, act, oldact);
 }
 #else
-// On X86_64, sa_restorer is required. We specify it on x86 as well in order to
-// support kernels with VDSO disabled.
 #if defined(ARCH_CPU_X86_FAMILY)
 
+// On x86_64, sa_restorer is required. We specify it on x86 as well in order to
+// support kernels with VDSO disabled.
 #if !defined(SA_RESTORER)
 #define SA_RESTORER 0x04000000
 #endif
@@ -205,6 +177,8 @@ int sys_sigaction(int signum,
 // rt_sigreturn is a special system call that interacts with the user land
 // stack. Thus, here prologue must not be created, which implies syscall()
 // does not work properly, too. Note that rt_sigreturn does not return.
+// TODO(rickyz): These assembly functions may still break stack unwinding on
+// nonsfi NaCl builds.
 #if defined(ARCH_CPU_X86_64)
 
 extern "C" {
