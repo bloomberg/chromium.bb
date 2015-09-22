@@ -741,6 +741,8 @@ TEST_F(TextfieldTest, KeysWithModifiersTest) {
 
   if (TestingNativeCrOs())
     EXPECT_STR_EQ("TeTEx34", textfield_->text());
+  else if (TestingNativeMac())
+    EXPECT_STR_EQ("TheTEx134", textfield_->text());
   else
     EXPECT_STR_EQ("TeTEx234", textfield_->text());
 }
