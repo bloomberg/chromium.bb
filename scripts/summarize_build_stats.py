@@ -7,6 +7,7 @@
 from __future__ import print_function
 
 import datetime
+import itertools
 import numpy
 import re
 import sys
@@ -14,6 +15,7 @@ import sys
 from chromite.cbuildbot import constants
 from chromite.lib import cidb
 from chromite.lib import commandline
+from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 
 
@@ -36,6 +38,8 @@ class CLStatsEngine(object):
     self.blames = {}
     self.summary = {}
     self.builds_by_build_id = {}
+    self.slave_builds_by_master_id = {}
+    self.slave_builds_by_config = {}
 
   def GatherBuildAnnotations(self):
     """Gather the failure annotations for builds from cidb."""
@@ -158,6 +162,16 @@ class CLStatsEngine(object):
     self.builds_by_build_id.update(
         {b['id'] : b for b in self.builds})
 
+    # Gather slave statuses for each of the master builds. For now this is a
+    # separate query per CQ run, but this could be consolidated to a single
+    # query if necessary (requires adding a cidb.py API method).
+    for bid in self.builds_by_build_id:
+      self.slave_builds_by_master_id[bid] = self.db.GetSlaveStatuses(bid)
+
+    self.slave_builds_by_config = cros_build_lib.GroupByKey(
+        itertools.chain(*self.slave_builds_by_master_id.values()),
+        'build_config')
+
   def _PrintCounts(self, reasons, fmt):
     """Print a sorted list of reasons in descending order of frequency.
 
@@ -215,7 +229,7 @@ class CLStatsEngine(object):
         times.append(td)
     return times
 
-  def Summarize(self, build_type):
+  def Summarize(self, build_type, bad_patch_candidates=False):
     """Process, print, and return a summary of statistics.
 
     As a side effect, save summary to self.summary.
@@ -224,11 +238,11 @@ class CLStatsEngine(object):
       A dictionary summarizing the statistics.
     """
     if build_type == 'cq':
-      return self.SummarizeCQ()
+      return self.SummarizeCQ(bad_patch_candidates=bad_patch_candidates)
     else:
       return self.SummarizePFQ()
 
-  def SummarizeCQ(self):
+  def SummarizeCQ(self, bad_patch_candidates=False):
     """Process, print, and return a summary of cl action statistics.
 
     As a side effect, save summary to self.summary.
@@ -308,6 +322,18 @@ class CLStatsEngine(object):
       for x in range(max(rejection_counts) + 1):
         good_patch_rejection_breakdown.append((x, rejection_counts.count(x)))
 
+    # For CQ runs that passed, track which slave was the long pole, i.e. the
+    # last to finish.
+    long_pole_slave_counts = {}
+    for bid, master_build in self.builds_by_build_id.items():
+      if master_build['status'] == constants.BUILDER_STATUS_PASSED:
+        if not self.slave_builds_by_master_id[bid]:
+          continue
+        _, long_config = max((slave['finish_time'], slave['build_config'])
+                             for slave in self.slave_builds_by_master_id[bid])
+        long_pole_slave_counts[long_config] = (
+            long_pole_slave_counts.get(long_config, 0) + 1)
+
     summary = {
         'total_cl_actions': len(self.claction_history),
         'unique_cls': len(self.claction_history.affected_cls),
@@ -324,6 +350,7 @@ class CLStatsEngine(object):
         'patch_handling_time': patch_handle_times,
         'bad_cl_candidates': bad_cl_candidates,
         'unique_blames_change_count': len(unique_cl_blames),
+        'long_pole_slave_counts': long_pole_slave_counts,
     }
 
     logging.info('CQ committed %s changes', summary['submitted_patches'])
@@ -416,8 +443,9 @@ class CLStatsEngine(object):
     for bot_type, patches in summary['bad_cl_candidates'].items():
       logging.info('%d bad patch candidates were rejected by the %s',
                    len(patches), bot_type)
-      for k in patches:
-        logging.info('Bad patch candidate in: %s', k)
+      if bad_patch_candidates:
+        for k in patches:
+          logging.info('Bad patch candidate in: %s', k)
 
     fmt_fai = '  %(cnt)d failures in %(reason)s'
     fmt_rej = '  %(cnt)d rejections due to %(reason)s'
@@ -430,6 +458,18 @@ class CLStatsEngine(object):
 
     logging.info('Reasons why builds failed:')
     self._PrintCounts(build_reason_counts, fmt_fai)
+
+    total_counts = sum(long_pole_slave_counts.values())
+    logging.info('Slowest CQ slaves out of %s passing runs:', total_counts)
+    for (count, config) in sorted(
+        (v, k) for (k, v) in long_pole_slave_counts.items()):
+      if count < (total_counts / 20.0):
+        continue
+      build_times = self.GetBuildRunTimes(self.slave_builds_by_config[config])
+      logging.info('%s times the slowest slave was %s', count, config)
+      logging.info('  50th percentile: %.2f hours, 90th percentile: %.2f hours',
+                   numpy.percentile(build_times, 50) / 3600.0,
+                   numpy.percentile(build_times, 90) / 3600.0)
 
     return summary
 
@@ -515,6 +555,10 @@ def GetParser():
   parser.add_argument('--build-type', choices=['cq', 'chrome-pfq'],
                       default='cq',
                       help='Build type to summarize. Default: cq.')
+  parser.add_argument('--bad-patch-candidates', action='store_true',
+                      default=False,
+                      help='In CQ mode, whether to print bad patch '
+                           'candidates.')
   return parser
 
 
@@ -552,4 +596,5 @@ def main(argv):
   cl_stats_engine = CLStatsEngine(db)
   cl_stats_engine.Gather(start_date, end_date, master_config,
                          starting_build_number=options.starting_build)
-  cl_stats_engine.Summarize(options.build_type)
+  cl_stats_engine.Summarize(options.build_type,
+                            options.bad_patch_candidates)

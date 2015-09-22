@@ -195,6 +195,11 @@ class FakeCIDBConnection(object):
     """Gets the status of the builds."""
     return [self.buildTable[x -1] for x in build_ids]
 
+  def GetSlaveStatuses(self, master_build_id):
+    """Gets the slaves of given build."""
+    return [b for b in self.buildTable
+            if b['master_build_id'] == master_build_id]
+
   def GetBuildHistory(self, build_config, num_results,
                       ignore_build_id=None, start_date=None, end_date=None,
                       starting_build_number=None):

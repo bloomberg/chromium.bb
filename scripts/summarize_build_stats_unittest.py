@@ -177,6 +177,7 @@ class TestCLActionLogic(cros_test_lib.TestCase):
           'good_patch_rejection_count': {CQ: 1, PRE_CQ: 1},
           'good_patch_rejections': 2,
           'false_rejection_rate': {CQ: 20., PRE_CQ: 20., 'combined': 100. / 3},
+          'long_pole_slave_counts': {},
           'submitted_patches': 4,
           'submit_fails': 0,
           'unique_cls': 4,
