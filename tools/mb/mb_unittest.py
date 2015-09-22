@@ -15,15 +15,22 @@ import mb
 
 
 class FakeMBW(mb.MetaBuildWrapper):
-  def __init__(self):
+  def __init__(self, win32=False):
     super(FakeMBW, self).__init__()
 
     # Override vars for test portability.
-    self.chromium_src_dir = '/fake_src'
-    self.default_config = '/fake_src/tools/mb/mb_config.pyl'
-    self.executable = 'python'
-    self.platform = 'linux2'
-    self.sep = '/'
+    if win32:
+      self.chromium_src_dir = 'c:\\fake_src'
+      self.default_config = 'c:\\fake_src\\tools\\mb\\mb_config.pyl'
+      self.platform = 'win32'
+      self.executable = 'c:\\python\\python.exe'
+      self.sep = '\\'
+    else:
+      self.chromium_src_dir = '/fake_src'
+      self.default_config = '/fake_src/tools/mb/mb_config.pyl'
+      self.executable = '/usr/bin/python'
+      self.platform = 'linux2'
+      self.sep = '/'
 
     self.files = {}
     self.calls = []
@@ -99,7 +106,7 @@ TEST_CONFIG = """\
   'common_dev_configs': ['gn_debug'],
   'configs': {
     'gyp_rel_bot': ['gyp', 'rel', 'goma'],
-    'gn_debug': ['gn', 'debug'],
+    'gn_debug': ['gn', 'debug', 'goma'],
     'gyp_debug': ['gyp', 'debug'],
     'gn_rel_bot': ['gn', 'rel', 'goma'],
     'private': ['gyp', 'rel', 'fake_feature1'],
@@ -126,7 +133,7 @@ TEST_CONFIG = """\
     'gn': {'type': 'gn'},
     'goma': {
       'gn_args': 'use_goma=true goma_dir="$(goma_dir)"',
-      'gyp_defines': 'goma=1 gomadir="$(goma_dir)"',
+      'gyp_defines': 'goma=1 gomadir=$(goma_dir)',
     },
     'rel': {
       'gn_args': 'is_debug=false',
@@ -142,8 +149,8 @@ TEST_CONFIG = """\
 
 
 class UnitTest(unittest.TestCase):
-  def fake_mbw(self, files=None):
-    mbw = FakeMBW()
+  def fake_mbw(self, files=None, win32=False):
+    mbw = FakeMBW(win32=win32)
     mbw.files.setdefault(mbw.default_config, TEST_CONFIG)
     if files:
       for path, contents in files.items():
@@ -248,8 +255,19 @@ class UnitTest(unittest.TestCase):
     })
 
   def test_gn_gen(self):
-    self.check(['gen', '-c', 'gn_debug', '//out/Default'], ret=0)
-    self.check(['gen', '-c', 'gyp_rel_bot', '//out/Release'], ret=0)
+    self.check(['gen', '-c', 'gn_debug', '//out/Default', '-g', '/goma'],
+               ret=0,
+               out=('/fake_src/buildtools/linux64/gn gen //out/Default '
+                    '\'--args=is_debug=true use_goma=true goma_dir="/goma"\' '
+                    '--check\n'))
+
+    mbw = self.fake_mbw(win32=True)
+    self.check(['gen', '-c', 'gn_debug', '-g', 'c:\\goma', '//out/Debug'],
+               mbw=mbw, ret=0,
+               out=('c:\\fake_src\\buildtools\\win\\gn gen //out/Debug '
+                    '"--args=is_debug=true use_goma=true goma_dir=\\"'
+                    'c:\\goma\\"" --check\n'))
+
 
   def test_gn_gen_fails(self):
     mbw = self.fake_mbw()
@@ -285,7 +303,7 @@ class UnitTest(unittest.TestCase):
 
   def test_gn_lookup_goma_dir_expansion(self):
     self.check(['lookup', '-c', 'gn_rel_bot', '-g', '/foo'], ret=0,
-               out=("/fake_src/buildtools/linux64/gn gen '<path>' "
+               out=("/fake_src/buildtools/linux64/gn gen _path_ "
                     "'--args=is_debug=false use_goma=true "
                     "goma_dir=\"/foo\"'\n" ))
 
@@ -303,16 +321,14 @@ class UnitTest(unittest.TestCase):
   def test_gyp_gen(self):
     self.check(['gen', '-c', 'gyp_rel_bot', '-g', '/goma', '//out/Release'],
                ret=0,
-               out=("python build/gyp_chromium -G output_dir=out "
-                    "-D goma=1 -D gomadir=/goma\n"))
+               out=("GYP_DEFINES='goma=1 gomadir=/goma'\n"
+                    "python build/gyp_chromium -G output_dir=out\n"))
 
-    # simulate win32
-    mbw = self.fake_mbw()
-    mbw.sep = '\\'
+    mbw = self.fake_mbw(win32=True)
     self.check(['gen', '-c', 'gyp_rel_bot', '-g', 'c:\\goma', '//out/Release'],
                mbw=mbw, ret=0,
-               out=("python 'build\\gyp_chromium' -G output_dir=out "
-                    "-D goma=1 -D 'gomadir=c:\\goma'\n"))
+               out=("set GYP_DEFINES=goma=1 gomadir='c:\\goma'\n"
+                    "python build\\gyp_chromium -G output_dir=out\n"))
 
   def test_gyp_gen_fails(self):
     mbw = self.fake_mbw()
@@ -321,8 +337,8 @@ class UnitTest(unittest.TestCase):
 
   def test_gyp_lookup_goma_dir_expansion(self):
     self.check(['lookup', '-c', 'gyp_rel_bot', '-g', '/foo'], ret=0,
-               out=("python build/gyp_chromium -G 'output_dir=<path>' "
-                    "-D goma=1 -D gomadir=/foo\n"))
+               out=("GYP_DEFINES='goma=1 gomadir=/foo'\n"
+                    "python build/gyp_chromium -G output_dir=_path_\n"))
 
   def test_help(self):
     orig_stdout = sys.stdout

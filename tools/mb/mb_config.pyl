@@ -212,6 +212,8 @@
     'gn': {'type': 'gn'},
 
     'goma': {
+      # The MB code will properly escape goma_dir if necessary in the GYP
+      # code path; the GN code path needs no escaping.
       'gn_args': 'use_goma=true goma_dir="$(goma_dir)"',
       'gyp_defines': 'use_goma=1 gomadir=$(goma_dir)',
     },
@@ -254,7 +256,7 @@
 
     'official': {
       'gn_args': 'is_chrome_branded=true is_official_build=true is_debug=false is_component_build=false',
-      'gyp_defines': 'branding="Chrome" buildtype="Official" component=static_library',
+      'gyp_defines': 'branding=Chrome buildtype=Official component=static_library',
     },
 
     'release': {

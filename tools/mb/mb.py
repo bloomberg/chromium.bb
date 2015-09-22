@@ -18,7 +18,7 @@ import json
 import os
 import pipes
 import pprint
-import shlex
+import re
 import shutil
 import sys
 import subprocess
@@ -144,15 +144,16 @@ class MetaBuildWrapper(object):
   def CmdLookup(self):
     vals = self.GetConfig()
     if vals['type'] == 'gn':
-      cmd = self.GNCmd('gen', '<path>', vals['gn_args'])
+      cmd = self.GNCmd('gen', '_path_', vals['gn_args'])
+      env = None
     elif vals['type'] == 'gyp':
       if vals['gyp_crosscompile']:
         self.Print('GYP_CROSSCOMPILE=1')
-      cmd = self.GYPCmd('<path>', vals['gyp_defines'])
+      cmd, env = self.GYPCmd('_path_', vals['gyp_defines'])
     else:
       raise MBErr('Unknown meta-build type "%s"' % vals['type'])
 
-    self.PrintCmd(cmd)
+    self.PrintCmd(cmd, env)
     return 0
 
   def CmdHelp(self):
@@ -344,6 +345,9 @@ class MetaBuildWrapper(object):
         self.Print("%s/mb_type missing, clobbering to be safe" % path)
         needs_clobber = True
 
+    if self.args.dryrun:
+      return
+
     if needs_clobber:
       self.RemoveDirectory(build_dir)
 
@@ -458,12 +462,8 @@ class MetaBuildWrapper(object):
     path = self.args.path[0]
 
     output_dir = self.ParseGYPConfigPath(path)
-    cmd = self.GYPCmd(output_dir, vals['gyp_defines'])
-    env = None
+    cmd, env = self.GYPCmd(output_dir, vals['gyp_defines'])
     if vals['gyp_crosscompile']:
-      if self.args.verbose:
-        self.Print('Setting GYP_CROSSCOMPILE=1 in the environment')
-      env = os.environ.copy()
       env['GYP_CROSSCOMPILE'] = '1'
     ret, _, _ = self.Run(cmd, env=env)
     return ret
@@ -477,11 +477,11 @@ class MetaBuildWrapper(object):
       self.PrintJSON(inp)
       self.Print()
 
-    cmd = self.GYPCmd(output_dir, vals['gyp_defines'])
+    cmd, env = self.GYPCmd(output_dir, vals['gyp_defines'])
     cmd.extend(['-f', 'analyzer',
                 '-G', 'config_path=%s' % self.args.input_path[0],
                 '-G', 'analyzer_output_path=%s' % self.args.output_path[0]])
-    ret, _, _ = self.Run(cmd)
+    ret, _, _ = self.Run(cmd, env=env)
     if not ret and self.args.verbose:
       outp = json.loads(self.ReadFile(self.args.output_path[0]))
       self.Print()
@@ -587,16 +587,24 @@ class MetaBuildWrapper(object):
     return output_dir
 
   def GYPCmd(self, output_dir, gyp_defines):
-    gyp_defines = gyp_defines.replace("$(goma_dir)", self.args.goma_dir)
+    goma_dir = self.args.goma_dir
+
+    # GYP uses shlex.split() to split the gyp defines into separate arguments,
+    # so we can support backslashes and and spaces in arguments by quoting
+    # them, even on Windows, where this normally wouldn't work.
+    if '\\' in goma_dir or ' ' in goma_dir:
+      goma_dir = "'%s'" % goma_dir
+    gyp_defines = gyp_defines.replace("$(goma_dir)", goma_dir)
+
     cmd = [
         self.executable,
         self.PathJoin('build', 'gyp_chromium'),
         '-G',
         'output_dir=' + output_dir,
     ]
-    for d in shlex.split(gyp_defines):
-      cmd += ['-D', d]
-    return cmd
+    env = os.environ.copy()
+    env['GYP_DEFINES'] = gyp_defines
+    return cmd, env
 
   def RunGNAnalyze(self, vals):
     # analyze runs before 'gn gen' now, so we need to run gn gen
@@ -726,10 +734,26 @@ class MetaBuildWrapper(object):
       raise MBErr('Error %s writing to the output path "%s"' %
                  (e, path))
 
-  def PrintCmd(self, cmd):
+  def PrintCmd(self, cmd, env):
+    if self.platform == 'win32':
+      env_prefix = 'set '
+      env_quoter = QuoteForSet
+      shell_quoter = QuoteForCmd
+    else:
+      env_prefix = ''
+      env_quoter = pipes.quote
+      shell_quoter = pipes.quote
+
+    def print_env(var):
+      if env and var in env:
+        self.Print('%s%s=%s' % (env_prefix, var, env_quoter(env[var])))
+
+    print_env('GYP_CROSSCOMPILE')
+    print_env('GYP_DEFINES')
+
     if cmd[0] == self.executable:
       cmd = ['python'] + cmd[1:]
-    self.Print(*[pipes.quote(c) for c in cmd])
+    self.Print(*[shell_quoter(arg) for arg in cmd])
 
   def PrintJSON(self, obj):
     self.Print(json.dumps(obj, indent=2, sort_keys=True))
@@ -741,7 +765,7 @@ class MetaBuildWrapper(object):
   def Run(self, cmd, env=None, force_verbose=True):
     # This function largely exists so it can be overridden for testing.
     if self.args.dryrun or self.args.verbose or force_verbose:
-      self.PrintCmd(cmd)
+      self.PrintCmd(cmd, env)
     if self.args.dryrun:
       return 0, '', ''
 
@@ -813,6 +837,35 @@ class MetaBuildWrapper(object):
 
 class MBErr(Exception):
   pass
+
+
+# See http://goo.gl/l5NPDW and http://goo.gl/4Diozm for the painful
+# details of this next section, which handles escaping command lines
+# so that they can be copied and pasted into a cmd window.
+UNSAFE_FOR_SET = set('^<>&|')
+UNSAFE_FOR_CMD = UNSAFE_FOR_SET.union(set('()%'))
+ALL_META_CHARS = UNSAFE_FOR_CMD.union(set('"'))
+
+
+def QuoteForSet(arg):
+  if any(a in UNSAFE_FOR_SET for a in arg):
+    arg = ''.join('^' + a if a in UNSAFE_FOR_SET else a for a in arg)
+  return arg
+
+
+def QuoteForCmd(arg):
+  # First, escape the arg so that CommandLineToArgvW will parse it properly.
+  # From //tools/gyp/pylib/gyp/msvs_emulation.py:23.
+  if arg == '' or ' ' in arg or '"' in arg:
+    quote_re = re.compile(r'(\\*)"')
+    arg = '"%s"' % (quote_re.sub(lambda mo: 2 * mo.group(1) + '\\"', arg))
+
+  # Then check to see if the arg contains any metacharacters other than
+  # double quotes; if it does, quote everything (including the double
+  # quotes) for safety.
+  if any(a in UNSAFE_FOR_CMD for a in arg):
+    arg = ''.join('^' + a if a in ALL_META_CHARS else a for a in arg)
+  return arg
 
 
 if __name__ == '__main__':
