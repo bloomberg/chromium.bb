@@ -44,29 +44,22 @@ class TracedValue;
 class WorkerThread;
 class XMLHttpRequest;
 
-class InspectorLayoutEvent {
-    STATIC_ONLY(InspectorLayoutEvent);
-public:
-    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> beginData(FrameView*);
-    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> endData(LayoutObject* rootForThisLayout);
-};
+namespace InspectorLayoutEvent {
+PassRefPtr<TraceEvent::ConvertableToTraceFormat> beginData(FrameView*);
+PassRefPtr<TraceEvent::ConvertableToTraceFormat> endData(LayoutObject* rootForThisLayout);
+}
 
-class InspectorScheduleStyleInvalidationTrackingEvent {
-    STATIC_ONLY(InspectorScheduleStyleInvalidationTrackingEvent);
-public:
-    static const char Attribute[];
-    static const char Class[];
-    static const char Id[];
-    static const char Pseudo[];
+namespace InspectorScheduleStyleInvalidationTrackingEvent {
+extern const char Attribute[];
+extern const char Class[];
+extern const char Id[];
+extern const char Pseudo[];
 
-    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> attributeChange(Element&, const InvalidationSet&, const QualifiedName&);
-    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> classChange(Element&, const InvalidationSet&, const AtomicString&);
-    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> idChange(Element&, const InvalidationSet&, const AtomicString&);
-    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> pseudoChange(Element&, const InvalidationSet&, CSSSelector::PseudoType);
-
-private:
-    static PassRefPtr<TracedValue> fillCommonPart(Element&, const InvalidationSet&, const char* invalidatedSelector);
-};
+PassRefPtr<TraceEvent::ConvertableToTraceFormat> attributeChange(Element&, const InvalidationSet&, const QualifiedName&);
+PassRefPtr<TraceEvent::ConvertableToTraceFormat> classChange(Element&, const InvalidationSet&, const AtomicString&);
+PassRefPtr<TraceEvent::ConvertableToTraceFormat> idChange(Element&, const InvalidationSet&, const AtomicString&);
+PassRefPtr<TraceEvent::ConvertableToTraceFormat> pseudoChange(Element&, const InvalidationSet&, CSSSelector::PseudoType);
+}
 
 #define TRACE_SCHEDULE_STYLE_INVALIDATION(element, invalidationSet, changeType, ...) \
     TRACE_EVENT_INSTANT1( \
@@ -74,34 +67,27 @@ private:
         "ScheduleStyleInvalidationTracking", \
         TRACE_EVENT_SCOPE_THREAD, \
         "data", \
-        InspectorScheduleStyleInvalidationTrackingEvent::changeType((element), (invalidationSet), __VA_ARGS__))
+        InspectorScheduleStyleInvalidationTrackingEvent::changeType((element), (invalidationSet), __VA_ARGS__));
 
-class InspectorStyleRecalcInvalidationTrackingEvent {
-    STATIC_ONLY(InspectorStyleRecalcInvalidationTrackingEvent);
-public:
-    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(Node*, const StyleChangeReasonForTracing&);
-};
+namespace InspectorStyleRecalcInvalidationTrackingEvent {
+PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(Node*, const StyleChangeReasonForTracing&);
+}
 
 String descendantInvalidationSetToIdString(const InvalidationSet&);
 
-class InspectorStyleInvalidatorInvalidateEvent {
-    STATIC_ONLY(InspectorStyleInvalidatorInvalidateEvent);
-public:
-    static const char ElementHasPendingInvalidationList[];
-    static const char InvalidateCustomPseudo[];
-    static const char InvalidationSetMatchedAttribute[];
-    static const char InvalidationSetMatchedClass[];
-    static const char InvalidationSetMatchedId[];
-    static const char InvalidationSetMatchedTagName[];
-    static const char PreventStyleSharingForParent[];
+namespace InspectorStyleInvalidatorInvalidateEvent {
+extern const char ElementHasPendingInvalidationList[];
+extern const char InvalidateCustomPseudo[];
+extern const char InvalidationSetMatchedAttribute[];
+extern const char InvalidationSetMatchedClass[];
+extern const char InvalidationSetMatchedId[];
+extern const char InvalidationSetMatchedTagName[];
+extern const char PreventStyleSharingForParent[];
 
-    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(Element&, const char* reason);
-    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> selectorPart(Element&, const char* reason, const InvalidationSet&, const String&);
-    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> invalidationList(Element&, const WillBeHeapVector<RefPtrWillBeMember<InvalidationSet>>&);
-
-private:
-    static PassRefPtr<TracedValue> fillCommonPart(Element&, const char* reason);
-};
+PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(Element&, const char* reason);
+PassRefPtr<TraceEvent::ConvertableToTraceFormat> selectorPart(Element&, const char* reason, const InvalidationSet&, const String&);
+PassRefPtr<TraceEvent::ConvertableToTraceFormat> invalidationList(Element&, const WillBeHeapVector<RefPtrWillBeMember<InvalidationSet>>&);
+}
 
 #define TRACE_STYLE_INVALIDATOR_INVALIDATION(element, reason) \
     TRACE_EVENT_INSTANT1( \
@@ -162,231 +148,162 @@ extern const char ScrollbarChanged[];
 // not depend on this value.
 typedef const char LayoutInvalidationReasonForTracing[];
 
-class CORE_EXPORT InspectorLayoutInvalidationTrackingEvent {
-    STATIC_ONLY(InspectorLayoutInvalidationTrackingEvent);
-public:
-    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(const LayoutObject*, LayoutInvalidationReasonForTracing);
-};
+namespace InspectorLayoutInvalidationTrackingEvent {
+PassRefPtr<TraceEvent::ConvertableToTraceFormat> CORE_EXPORT data(const LayoutObject*, LayoutInvalidationReasonForTracing);
+}
 
-class InspectorPaintInvalidationTrackingEvent {
-    STATIC_ONLY(InspectorPaintInvalidationTrackingEvent);
-public:
-    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(const LayoutObject*, const LayoutObject& paintContainer);
-};
+namespace InspectorPaintInvalidationTrackingEvent {
+PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(const LayoutObject*, const LayoutObject& paintContainer);
+}
 
-class InspectorScrollInvalidationTrackingEvent {
-    STATIC_ONLY(InspectorScrollInvalidationTrackingEvent);
-public:
-    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(const LayoutObject&);
-};
+namespace InspectorScrollInvalidationTrackingEvent {
+PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(const LayoutObject&);
+}
 
-class InspectorSendRequestEvent {
-    STATIC_ONLY(InspectorSendRequestEvent);
-public:
-    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(unsigned long identifier, LocalFrame*, const ResourceRequest&);
-};
+namespace InspectorSendRequestEvent {
+PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(unsigned long identifier, LocalFrame*, const ResourceRequest&);
+}
 
-class InspectorReceiveResponseEvent {
-    STATIC_ONLY(InspectorReceiveResponseEvent);
-public:
-    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(unsigned long identifier, LocalFrame*, const ResourceResponse&);
-};
+namespace InspectorReceiveResponseEvent {
+PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(unsigned long identifier, LocalFrame*, const ResourceResponse&);
+}
 
-class InspectorReceiveDataEvent {
-    STATIC_ONLY(InspectorReceiveDataEvent);
-public:
-    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(unsigned long identifier, LocalFrame*, int encodedDataLength);
-};
+namespace InspectorReceiveDataEvent {
+PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(unsigned long identifier, LocalFrame*, int encodedDataLength);
+}
 
-class InspectorResourceFinishEvent {
-    STATIC_ONLY(InspectorResourceFinishEvent);
-public:
-    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(unsigned long identifier, double finishTime, bool didFail);
-};
+namespace InspectorResourceFinishEvent {
+PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(unsigned long identifier, double finishTime, bool didFail);
+}
 
-class InspectorTimerInstallEvent {
-    STATIC_ONLY(InspectorTimerInstallEvent);
-public:
-    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(ExecutionContext*, int timerId, int timeout, bool singleShot);
-};
+namespace InspectorTimerInstallEvent {
+PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(ExecutionContext*, int timerId, int timeout, bool singleShot);
+}
 
-class InspectorTimerRemoveEvent {
-    STATIC_ONLY(InspectorTimerRemoveEvent);
-public:
-    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(ExecutionContext*, int timerId);
-};
+namespace InspectorTimerRemoveEvent {
+PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(ExecutionContext*, int timerId);
+}
 
-class InspectorTimerFireEvent {
-    STATIC_ONLY(InspectorTimerFireEvent);
-public:
-    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(ExecutionContext*, int timerId);
-};
+namespace InspectorTimerFireEvent {
+PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(ExecutionContext*, int timerId);
+}
 
-class InspectorAnimationFrameEvent {
-    STATIC_ONLY(InspectorAnimationFrameEvent);
-public:
-    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(ExecutionContext*, int callbackId);
-};
+namespace InspectorAnimationFrameEvent {
+PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(ExecutionContext*, int callbackId);
+}
 
-class InspectorParseHtmlEvent {
-    STATIC_ONLY(InspectorParseHtmlEvent);
-public:
-    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> beginData(Document*, unsigned startLine);
-    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> endData(unsigned endLine);
-};
+namespace InspectorParseHtmlEvent {
+PassRefPtr<TraceEvent::ConvertableToTraceFormat> beginData(Document*, unsigned startLine);
+PassRefPtr<TraceEvent::ConvertableToTraceFormat> endData(unsigned endLine);
+}
 
-class InspectorParseAuthorStyleSheetEvent {
-    STATIC_ONLY(InspectorParseAuthorStyleSheetEvent);
-public:
-    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(const CSSStyleSheetResource*);
-};
+namespace InspectorParseAuthorStyleSheetEvent {
+PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(const CSSStyleSheetResource*);
+}
 
-class InspectorXhrReadyStateChangeEvent {
-    STATIC_ONLY(InspectorXhrReadyStateChangeEvent);
-public:
-    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(ExecutionContext*, XMLHttpRequest*);
-};
+namespace InspectorXhrReadyStateChangeEvent {
+PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(ExecutionContext*, XMLHttpRequest*);
+}
 
-class InspectorXhrLoadEvent {
-    STATIC_ONLY(InspectorXhrLoadEvent);
-public:
-    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(ExecutionContext*, XMLHttpRequest*);
-};
+namespace InspectorXhrLoadEvent {
+PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(ExecutionContext*, XMLHttpRequest*);
+}
 
-class InspectorLayerInvalidationTrackingEvent {
-    STATIC_ONLY(InspectorLayerInvalidationTrackingEvent);
-public:
-    static const char SquashingLayerGeometryWasUpdated[];
-    static const char AddedToSquashingLayer[];
-    static const char RemovedFromSquashingLayer[];
-    static const char ReflectionLayerChanged[];
-    static const char NewCompositedLayer[];
+namespace InspectorLayerInvalidationTrackingEvent {
+extern const char SquashingLayerGeometryWasUpdated[];
+extern const char AddedToSquashingLayer[];
+extern const char RemovedFromSquashingLayer[];
+extern const char ReflectionLayerChanged[];
+extern const char NewCompositedLayer[];
 
-    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(const DeprecatedPaintLayer*, const char* reason);
-};
+PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(const DeprecatedPaintLayer*, const char* reason);
+}
+
 #define TRACE_LAYER_INVALIDATION(LAYER, REASON) \
     TRACE_EVENT_INSTANT1( \
         TRACE_DISABLED_BY_DEFAULT("devtools.timeline.invalidationTracking"), \
         "LayerInvalidationTracking", \
         TRACE_EVENT_SCOPE_THREAD, \
         "data", \
-        InspectorLayerInvalidationTrackingEvent::data((LAYER), (REASON)))
+        InspectorLayerInvalidationTrackingEvent::data((LAYER), (REASON)));
 
-class InspectorPaintEvent {
-    STATIC_ONLY(InspectorPaintEvent);
-public:
-    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(LayoutObject*, const LayoutRect& clipRect, const GraphicsLayer*);
-};
+namespace InspectorPaintEvent {
+PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(LayoutObject*, const LayoutRect& clipRect, const GraphicsLayer*);
+}
 
-class InspectorPaintImageEvent {
-    STATIC_ONLY(InspectorPaintImageEvent);
-public:
-    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(const LayoutImage&);
-    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(const LayoutObject&, const StyleImage&);
-    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(const LayoutObject*, const ImageResource&);
-};
+namespace InspectorPaintImageEvent {
+PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(const LayoutImage&);
+PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(const LayoutObject&, const StyleImage&);
+PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(const LayoutObject*, const ImageResource&);
+}
 
-class InspectorCommitLoadEvent {
-    STATIC_ONLY(InspectorCommitLoadEvent);
-public:
-    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(LocalFrame*);
-};
+namespace InspectorCommitLoadEvent {
+PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(LocalFrame*);
+}
 
-class InspectorMarkLoadEvent {
-    STATIC_ONLY(InspectorMarkLoadEvent);
-public:
-    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(LocalFrame*);
-};
+namespace InspectorMarkLoadEvent {
+PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(LocalFrame*);
+}
 
-class InspectorScrollLayerEvent {
-    STATIC_ONLY(InspectorScrollLayerEvent);
-public:
-    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(LayoutObject*);
-};
+namespace InspectorScrollLayerEvent {
+PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(LayoutObject*);
+}
 
-class InspectorUpdateLayerTreeEvent {
-    STATIC_ONLY(InspectorUpdateLayerTreeEvent);
-public:
-    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(LocalFrame*);
-};
+namespace InspectorUpdateLayerTreeEvent {
+PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(LocalFrame*);
+}
 
-class InspectorEvaluateScriptEvent {
-    STATIC_ONLY(InspectorEvaluateScriptEvent);
-public:
-    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(LocalFrame*, const String& url, int lineNumber);
-};
+namespace InspectorEvaluateScriptEvent {
+PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(LocalFrame*, const String& url, int lineNumber);
+}
 
-class InspectorFunctionCallEvent {
-    STATIC_ONLY(InspectorFunctionCallEvent);
-public:
-    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(ExecutionContext*, int scriptId, const String& scriptName, int scriptLine);
-};
+namespace InspectorFunctionCallEvent {
+PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(ExecutionContext*, int scriptId, const String& scriptName, int scriptLine);
+}
 
-class InspectorUpdateCountersEvent {
-    STATIC_ONLY(InspectorUpdateCountersEvent);
-public:
-    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data();
-};
+namespace InspectorUpdateCountersEvent {
+PassRefPtr<TraceEvent::ConvertableToTraceFormat> data();
+}
 
-class InspectorInvalidateLayoutEvent {
-    STATIC_ONLY(InspectorInvalidateLayoutEvent);
-public:
-    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(LocalFrame*);
-};
+namespace InspectorInvalidateLayoutEvent {
+PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(LocalFrame*);
+}
 
-class InspectorRecalculateStylesEvent {
-    STATIC_ONLY(InspectorRecalculateStylesEvent);
-public:
-    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(LocalFrame*);
-};
+namespace InspectorRecalculateStylesEvent {
+PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(LocalFrame*);
+}
 
-class InspectorEventDispatchEvent {
-    STATIC_ONLY(InspectorEventDispatchEvent);
-public:
-    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(const Event&);
-};
+namespace InspectorEventDispatchEvent {
+PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(const Event&);
+}
 
-class InspectorTimeStampEvent {
-    STATIC_ONLY(InspectorTimeStampEvent);
-public:
-    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(ExecutionContext*, const String& message);
-};
+namespace InspectorTimeStampEvent {
+PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(ExecutionContext*, const String& message);
+}
 
-class InspectorTracingSessionIdForWorkerEvent {
-    STATIC_ONLY(InspectorTracingSessionIdForWorkerEvent);
-public:
-    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(const String& sessionId, const String& workerId, WorkerThread*);
-};
+namespace InspectorTracingSessionIdForWorkerEvent {
+PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(const String& sessionId, const String& workerId, WorkerThread*);
+}
 
-class InspectorTracingStartedInFrame {
-    STATIC_ONLY(InspectorTracingStartedInFrame);
-public:
-    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(const String& sessionId, LocalFrame*);
-};
+namespace InspectorTracingStartedInFrame {
+PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(const String& sessionId, LocalFrame*);
+}
 
-class InspectorSetLayerTreeId {
-    STATIC_ONLY(InspectorSetLayerTreeId);
-public:
-    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(const String& sessionId, int layerTreeId);
-};
+namespace InspectorSetLayerTreeId {
+PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(const String& sessionId, int layerTreeId);
+}
 
-class InspectorAnimationEvent {
-    STATIC_ONLY(InspectorAnimationEvent);
-public:
-    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(const Animation&);
-};
+namespace InspectorAnimationEvent {
+PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(const Animation&);
+}
 
-class InspectorAnimationStateEvent {
-    STATIC_ONLY(InspectorAnimationStateEvent);
-public:
-    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(const Animation&);
-};
+namespace InspectorAnimationStateEvent {
+PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(const Animation&);
+}
 
-class InspectorHitTestEvent {
-    STATIC_ONLY(InspectorHitTestEvent);
-public:
-    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> endData(const HitTestRequest&, const HitTestLocation&, const HitTestResult&);
-};
+namespace InspectorHitTestEvent {
+PassRefPtr<TraceEvent::ConvertableToTraceFormat> endData(const HitTestRequest&, const HitTestLocation&, const HitTestResult&);
+}
 
 CORE_EXPORT String toHexString(const void* p);
 CORE_EXPORT void setCallStack(TracedValue*);

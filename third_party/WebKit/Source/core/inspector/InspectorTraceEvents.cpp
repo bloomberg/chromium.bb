@@ -159,7 +159,8 @@ const char* pseudoTypeToString(CSSSelector::PseudoType pseudoType)
 
 }
 
-PassRefPtr<TracedValue> InspectorScheduleStyleInvalidationTrackingEvent::fillCommonPart(Element& element, const InvalidationSet& invalidationSet, const char* invalidatedSelector)
+namespace InspectorScheduleStyleInvalidationTrackingEvent {
+PassRefPtr<TracedValue> fillCommonPart(Element& element, const InvalidationSet& invalidationSet, const char* invalidatedSelector)
 {
     RefPtr<TracedValue> value = TracedValue::create();
     value->setString("frame", toHexString(element.document().frame()));
@@ -170,6 +171,7 @@ PassRefPtr<TracedValue> InspectorScheduleStyleInvalidationTrackingEvent::fillCom
         stackTrace->toTracedValue(value.get(), "stackTrace");
     return value.release();
 }
+} // namespace InspectorScheduleStyleInvalidationTrackingEvent
 
 const char InspectorScheduleStyleInvalidationTrackingEvent::Attribute[] = "attribute";
 const char InspectorScheduleStyleInvalidationTrackingEvent::Class[] = "class";
@@ -217,7 +219,8 @@ const char InspectorStyleInvalidatorInvalidateEvent::InvalidationSetMatchedId[] 
 const char InspectorStyleInvalidatorInvalidateEvent::InvalidationSetMatchedTagName[] = "Invalidation set matched tagName";
 const char InspectorStyleInvalidatorInvalidateEvent::PreventStyleSharingForParent[] = "Prevent style sharing for parent";
 
-PassRefPtr<TracedValue> InspectorStyleInvalidatorInvalidateEvent::fillCommonPart(Element& element, const char* reason)
+namespace InspectorStyleInvalidatorInvalidateEvent {
+PassRefPtr<TracedValue> fillCommonPart(Element& element, const char* reason)
 {
     RefPtr<TracedValue> value = TracedValue::create();
     value->setString("frame", toHexString(element.document().frame()));
@@ -225,6 +228,7 @@ PassRefPtr<TracedValue> InspectorStyleInvalidatorInvalidateEvent::fillCommonPart
     value->setString("reason", reason);
     return value.release();
 }
+} // namespace InspectorStyleInvalidatorInvalidateEvent
 
 PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorStyleInvalidatorInvalidateEvent::data(Element& element, const char* reason)
 {
