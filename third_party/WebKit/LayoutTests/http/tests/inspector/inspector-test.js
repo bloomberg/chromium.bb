@@ -969,6 +969,7 @@ function runTest(enableWatchDogWhileDebugging)
             "profiler": "profiles",
             "resource-tree": "resources",
             "search": "sources",
+            "security": "security",
             "service-workers": "resources",
             "sources": "sources",
             "timeline": "timeline",

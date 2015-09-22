@@ -1,0 +1,24 @@
+Tests active mixed content blocking in the security panel.
+
+<DIV class=security-explanation security-state-secure >
+This page is secure (valid HTTPS).
+</DIV>
+<DIV class=security-section security-explanation >
+    <DIV class=lock-icon lock-icon-info >
+    </DIV>
+    <DIV class=security-section-text >
+        <DIV class=security-section-title >
+Blocked mixed content
+        </DIV>
+        <DIV class=security-explanation >
+Your page requested insecure resources that were blocked.
+        </DIV>
+        <DIV class=security-mixed-content link >
+View 1 request in Network Panel
+        </DIV>
+    </DIV>
+</DIV>
+<DIV class=security-explanation >
+Your page requested insecure resources that were blocked.
+</DIV>
+
