@@ -13,7 +13,6 @@ import android.widget.PopupWindow;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.RenderCoordinates;
 import org.chromium.ui.DropdownAdapter;
-import org.chromium.ui.DropdownItem;
 import org.chromium.ui.DropdownPopupWindow;
 
 import java.util.List;
@@ -31,7 +30,7 @@ public class SelectPopupDropdown implements SelectPopup {
     private boolean mSelectionNotified;
 
     public SelectPopupDropdown(ContentViewCore contentViewCore, List<SelectPopupItem> items,
-            Rect bounds, int[] selected) {
+            Rect bounds, int[] selected, boolean rightAligned) {
         mContentViewCore = contentViewCore;
         mContext = mContentViewCore.getContext();
         mDropdownPopupWindow = new DropdownPopupWindow(mContext,
@@ -46,8 +45,8 @@ public class SelectPopupDropdown implements SelectPopup {
         if (selected.length > 0) {
             mInitialSelection = selected[0];
         }
-        DropdownItem[] dropdownItems = items.toArray(new DropdownItem[items.size()]);
-        mDropdownPopupWindow.setAdapter(new DropdownAdapter(mContext, dropdownItems, null));
+        mDropdownPopupWindow.setAdapter(new DropdownAdapter(mContext, items, null));
+        mDropdownPopupWindow.setRtl(rightAligned);
         RenderCoordinates renderCoordinates = mContentViewCore.getRenderCoordinates();
         float anchorX = renderCoordinates.fromPixToDip(
                 renderCoordinates.fromLocalCssToPix(bounds.left));

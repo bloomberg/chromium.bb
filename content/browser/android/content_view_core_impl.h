@@ -226,7 +226,8 @@ class ContentViewCoreImpl : public ContentViewCore,
                            const gfx::Rect& bounds,
                            const std::vector<MenuItem>& items,
                            int selected_item,
-                           bool multiple);
+                           bool multiple,
+                           bool right_aligned);
   // Hides a visible popup menu.
   void HideSelectPopupMenu();
 

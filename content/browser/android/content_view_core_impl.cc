@@ -434,7 +434,8 @@ void ContentViewCoreImpl::ShowSelectPopupMenu(
     const gfx::Rect& bounds,
     const std::vector<MenuItem>& items,
     int selected_item,
-    bool multiple) {
+    bool multiple,
+    bool right_aligned) {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> j_obj = java_ref_.get(env);
   if (j_obj.is_null())
@@ -478,14 +479,10 @@ void ContentViewCoreImpl::ShowSelectPopupMenu(
   }
   ScopedJavaLocalRef<jobjectArray> items_array(
       base::android::ToJavaArrayOfStrings(env, labels));
-  Java_ContentViewCore_showSelectPopup(env,
-                                       j_obj.obj(),
-                                       reinterpret_cast<intptr_t>(frame),
-                                       bounds_rect.obj(),
-                                       items_array.obj(),
-                                       enabled_array.obj(),
-                                       multiple,
-                                       selected_array.obj());
+  Java_ContentViewCore_showSelectPopup(
+      env, j_obj.obj(), reinterpret_cast<intptr_t>(frame), bounds_rect.obj(),
+      items_array.obj(), enabled_array.obj(), multiple, selected_array.obj(),
+      right_aligned);
 }
 
 void ContentViewCoreImpl::HideSelectPopupMenu() {

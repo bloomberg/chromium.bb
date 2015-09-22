@@ -2508,7 +2508,7 @@ public class ContentViewCore implements
     @SuppressWarnings("unused")
     @CalledByNative
     private void showSelectPopup(long nativeSelectPopupSourceFrame, Rect bounds, String[] items,
-            int[] enabled, boolean multiple, int[] selectedIndices) {
+            int[] enabled, boolean multiple, int[] selectedIndices, boolean rightAligned) {
         if (mContainerView.getParent() == null || mContainerView.getVisibility() != View.VISIBLE) {
             mNativeSelectPopupSourceFrame = nativeSelectPopupSourceFrame;
             selectPopupMenuItems(null);
@@ -2524,7 +2524,8 @@ public class ContentViewCore implements
             popupItems.add(new SelectPopupItem(items[i], enabled[i]));
         }
         if (DeviceFormFactor.isTablet(mContext) && !multiple && !isTouchExplorationEnabled()) {
-            mSelectPopup = new SelectPopupDropdown(this, popupItems, bounds, selectedIndices);
+            mSelectPopup = new SelectPopupDropdown(
+                    this, popupItems, bounds, selectedIndices, rightAligned);
         } else {
             mSelectPopup = new SelectPopupDialog(this, popupItems, multiple, selectedIndices);
         }

@@ -173,11 +173,9 @@ void WebContentsViewAndroid::ShowPopupMenu(
     bool right_aligned,
     bool allow_multiple_selection) {
   if (content_view_core_) {
-    content_view_core_->ShowSelectPopupMenu(render_frame_host,
-                                            bounds,
-                                            items,
-                                            selected_item,
-                                            allow_multiple_selection);
+    content_view_core_->ShowSelectPopupMenu(
+        render_frame_host, bounds, items, selected_item,
+        allow_multiple_selection, right_aligned);
   }
 }
 
