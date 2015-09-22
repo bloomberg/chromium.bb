@@ -34,6 +34,9 @@ const int kMaxSpliceGenerationSuccessLogs = 20;
 // Limit the number of MEDIA_LOG() logs for track buffer time gaps.
 const int kMaxTrackBufferGapWarningLogs = 20;
 
+// Limit the number of MEDIA_LOG() logs for MSE GC algorithm warnings.
+const int kMaxGarbageCollectAlgorithmWarningLogs = 20;
+
 // Helper method that returns true if |ranges| is sorted in increasing order,
 // false otherwise.
 bool IsRangeListSorted(const std::list<media::SourceBufferRange*>& ranges) {
@@ -614,13 +617,23 @@ void SourceBufferStream::SetConfigIds(const BufferQueue& buffers) {
 bool SourceBufferStream::GarbageCollectIfNeeded(DecodeTimestamp media_time,
                                                 size_t newDataSize) {
   DCHECK(media_time != kNoDecodeTimestamp());
+  // Garbage collection should only happen before/during appending new data,
+  // which should not happen in end-of-stream state.
+  DCHECK(!end_of_stream_);
   // Compute size of |ranges_|.
   size_t ranges_size = GetBufferedSize();
 
   // Sanity and overflow checks
   if ((newDataSize > memory_limit_) ||
-      (ranges_size + newDataSize < ranges_size))
+      (ranges_size + newDataSize < ranges_size)) {
+    LIMITED_MEDIA_LOG(DEBUG, media_log_, num_garbage_collect_algorithm_logs_,
+                      kMaxGarbageCollectAlgorithmWarningLogs)
+        << GetStreamTypeName() << " stream: "
+        << "new append of newDataSize=" << newDataSize
+        << " bytes exceeds memory_limit_=" << memory_limit_
+        << ", currently buffered ranges_size=" << ranges_size;
     return false;
+  }
 
   // Return if we're under or at the memory limit.
   if (ranges_size + newDataSize <= memory_limit_)
@@ -631,6 +644,7 @@ bool SourceBufferStream::GarbageCollectIfNeeded(DecodeTimestamp media_time,
   DVLOG(2) << __FUNCTION__ << " " << GetStreamTypeName() << ": Before GC"
            << " media_time=" << media_time.InSecondsF()
            << " ranges_=" << RangesToString(ranges_)
+           << " seek_pending_=" << seek_pending_
            << " ranges_size=" << ranges_size
            << " newDataSize=" << newDataSize
            << " memory_limit_=" << memory_limit_
@@ -649,22 +663,59 @@ bool SourceBufferStream::GarbageCollectIfNeeded(DecodeTimestamp media_time,
              << " ranges_=" << RangesToString(ranges_);
     bytes_freed += between;
 
-    // If the last append happened before the current playback position
-    // |media_time|, then JS player is probably preparing to seek back and we
-    // should try to preserve all most recently appended data (which is in
-    // range_for_next_append_) from being removed by GC (see crbug.com/440173)
+    // Some players start appending data at the new seek target position before
+    // actually initiating the seek operation (i.e. they try to improve seek
+    // performance by prebuffering some data at the seek target position and
+    // initiating seek once enough data is pre-buffered. In those cases we'll
+    // see that data is being appended at some new position, but there is no
+    // pending seek reported yet. In this situation we need to try preserving
+    // the most recently appended data, i.e. data belonging to the same buffered
+    // range as the most recent append.
     if (range_for_next_append_ != ranges_.end()) {
       DCHECK((*range_for_next_append_)->GetStartTimestamp() <= media_time);
       media_time = (*range_for_next_append_)->GetStartTimestamp();
     }
   }
 
+  // If there is an unsatisfied pending seek, we can safely remove all data that
+  // is earlier than seek target, then remove from the back until we reach the
+  // most recently appended GOP and then remove from the front if we still don't
+  // have enough space for the upcoming append.
+  if (bytes_freed < bytes_to_free && seek_pending_) {
+    DCHECK(!ranges_.empty());
+    // All data earlier than the seek target |media_time| can be removed safely
+    size_t front = FreeBuffers(bytes_to_free - bytes_freed, media_time, false);
+    DVLOG(3) << __FUNCTION__ << " Removed " << front << " bytes from the"
+             << " front. ranges_=" << RangesToString(ranges_);
+    bytes_freed += front;
+
+    // If removing data earlier than |media_time| didn't free up enough space,
+    // then try deleting from the back until we reach most recently appended GOP
+    if (bytes_freed < bytes_to_free) {
+      size_t back = FreeBuffers(bytes_to_free - bytes_freed, media_time, true);
+      DVLOG(3) << __FUNCTION__ << " Removed " << back << " bytes from the back"
+               << " ranges_=" << RangesToString(ranges_);
+      bytes_freed += back;
+    }
+
+    // If even that wasn't enough, then try greedily deleting from the front,
+    // that should allow us to remove as much data as necessary to succeed.
+    if (bytes_freed < bytes_to_free) {
+      size_t front2 = FreeBuffers(bytes_to_free - bytes_freed,
+                                  ranges_.back()->GetEndTimestamp(), false);
+      DVLOG(3) << __FUNCTION__ << " Removed " << front << " bytes from the"
+               << " front. ranges_=" << RangesToString(ranges_);
+      bytes_freed += front2;
+    }
+    DCHECK(bytes_freed >= bytes_to_free);
+  }
+
   // Try removing data from the front of the SourceBuffer up to |media_time|
   // position.
   if (bytes_freed < bytes_to_free) {
     size_t front = FreeBuffers(bytes_to_free - bytes_freed, media_time, false);
-    DVLOG(3) << __FUNCTION__ << " Removed " << front << " bytes from the front"
-             << " ranges_=" << RangesToString(ranges_);
+    DVLOG(3) << __FUNCTION__ << " Removed " << front << " bytes from the"
+             << " front. ranges_=" << RangesToString(ranges_);
     bytes_freed += front;
   }
 
@@ -672,7 +723,7 @@ bool SourceBufferStream::GarbageCollectIfNeeded(DecodeTimestamp media_time,
   // most recent append position.
   if (bytes_freed < bytes_to_free) {
     size_t back = FreeBuffers(bytes_to_free - bytes_freed, media_time, true);
-    DVLOG(3) << __FUNCTION__ << " Removed " << back << " bytes from the back"
+    DVLOG(3) << __FUNCTION__ << " Removed " << back << " bytes from the back."
              << " ranges_=" << RangesToString(ranges_);
     bytes_freed += back;
   }

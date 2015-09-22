@@ -445,6 +445,7 @@ class MEDIA_EXPORT SourceBufferStream {
   int num_splice_generation_warning_logs_ = 0;
   int num_splice_generation_success_logs_ = 0;
   int num_track_buffer_gap_warning_logs_ = 0;
+  int num_garbage_collect_algorithm_logs_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(SourceBufferStream);
 };

@@ -3362,6 +3362,127 @@ TEST_F(ChunkDemuxerTest, SetMemoryLimitType) {
   CheckExpectedRanges(DemuxerStream::VIDEO, "{ [1000,1165) }");
 }
 
+TEST_F(ChunkDemuxerTest, GCDuringSeek_SingleRange_SeekForward) {
+  ASSERT_TRUE(InitDemuxer(HAS_AUDIO));
+  demuxer_->SetMemoryLimits(DemuxerStream::AUDIO, 10 * kBlockSize);
+  // Append some data at position 1000ms
+  AppendSingleStreamCluster(kSourceId, kAudioTrackNum, 1000, 10);
+  CheckExpectedRanges(kSourceId, "{ [1000,1230) }");
+
+  // GC should be able to evict frames in the currently buffered range, since
+  // those frames are earlier than the seek target position.
+  base::TimeDelta seek_time = base::TimeDelta::FromMilliseconds(2000);
+  Seek(seek_time);
+  EXPECT_TRUE(demuxer_->EvictCodedFrames(kSourceId, seek_time, 5 * kBlockSize));
+
+  // Append data to complete seek operation
+  AppendSingleStreamCluster(kSourceId, kAudioTrackNum, 2000, 5);
+  CheckExpectedRanges(kSourceId, "{ [1115,1230) [2000,2115) }");
+}
+
+TEST_F(ChunkDemuxerTest, GCDuringSeek_SingleRange_SeekBack) {
+  ASSERT_TRUE(InitDemuxer(HAS_AUDIO));
+  demuxer_->SetMemoryLimits(DemuxerStream::AUDIO, 10 * kBlockSize);
+  // Append some data at position 1000ms
+  AppendSingleStreamCluster(kSourceId, kAudioTrackNum, 1000, 10);
+  CheckExpectedRanges(kSourceId, "{ [1000,1230) }");
+
+  // GC should be able to evict frames in the currently buffered range, since
+  // seek target position has no data and so we should allow some frames to be
+  // evicted to make space for the upcoming append at seek target position.
+  base::TimeDelta seek_time = base::TimeDelta();
+  Seek(seek_time);
+  EXPECT_TRUE(demuxer_->EvictCodedFrames(kSourceId, seek_time, 5 * kBlockSize));
+
+  // Append data to complete seek operation
+  AppendSingleStreamCluster(kSourceId, kAudioTrackNum, 0, 5);
+  CheckExpectedRanges(kSourceId, "{ [0,115) [1115,1230) }");
+}
+
+TEST_F(ChunkDemuxerTest, GCDuringSeek_MultipleRanges_SeekForward) {
+  ASSERT_TRUE(InitDemuxer(HAS_AUDIO));
+  demuxer_->SetMemoryLimits(DemuxerStream::AUDIO, 10 * kBlockSize);
+  // Append some data at position 1000ms then at 2000ms
+  AppendSingleStreamCluster(kSourceId, kAudioTrackNum, 1000, 5);
+  AppendSingleStreamCluster(kSourceId, kAudioTrackNum, 2000, 5);
+  CheckExpectedRanges(kSourceId, "{ [1000,1115) [2000,2115) }");
+
+  // GC should be able to evict frames in the currently buffered ranges, since
+  // those frames are earlier than the seek target position.
+  base::TimeDelta seek_time = base::TimeDelta::FromMilliseconds(3000);
+  Seek(seek_time);
+  EXPECT_TRUE(demuxer_->EvictCodedFrames(kSourceId, seek_time, 8 * kBlockSize));
+
+  // Append data to complete seek operation
+  AppendSingleStreamCluster(kSourceId, kAudioTrackNum, 3000, 5);
+  CheckExpectedRanges(kSourceId, "{ [2069,2115) [3000,3115) }");
+}
+
+TEST_F(ChunkDemuxerTest, GCDuringSeek_MultipleRanges_SeekInbetween1) {
+  ASSERT_TRUE(InitDemuxer(HAS_AUDIO));
+  demuxer_->SetMemoryLimits(DemuxerStream::AUDIO, 10 * kBlockSize);
+  // Append some data at position 1000ms then at 2000ms
+  AppendSingleStreamCluster(kSourceId, kAudioTrackNum, 1000, 5);
+  AppendSingleStreamCluster(kSourceId, kAudioTrackNum, 2000, 5);
+  CheckExpectedRanges(kSourceId, "{ [1000,1115) [2000,2115) }");
+
+  // GC should be able to evict all frames from the first buffered range, since
+  // those frames are earlier than the seek target position. But there's only 5
+  // blocks worth of data in the first range and seek target position has no
+  // data, so GC proceeds with trying to delete some frames from the back of
+  // buffered ranges, that doesn't yield anything, since that's the most
+  // recently appended data, so then GC starts removing data from the front of
+  // the remaining buffered range (2000ms) to ensure we free up enough space for
+  // the upcoming append and allow seek to proceed.
+  base::TimeDelta seek_time = base::TimeDelta::FromMilliseconds(1500);
+  Seek(seek_time);
+  EXPECT_TRUE(demuxer_->EvictCodedFrames(kSourceId, seek_time, 8 * kBlockSize));
+
+  // Append data to complete seek operation
+  AppendSingleStreamCluster(kSourceId, kAudioTrackNum, 1500, 5);
+  CheckExpectedRanges(kSourceId, "{ [1500,1615) [2069,2115) }");
+}
+
+TEST_F(ChunkDemuxerTest, GCDuringSeek_MultipleRanges_SeekInbetween2) {
+  ASSERT_TRUE(InitDemuxer(HAS_AUDIO));
+  demuxer_->SetMemoryLimits(DemuxerStream::AUDIO, 10 * kBlockSize);
+
+  // Append some data at position 2000ms first, then at 1000ms, so that the last
+  // appended data position is in the first buffered range (that matters to the
+  // GC algorithm since it tries to preserve more recently appended data).
+  AppendSingleStreamCluster(kSourceId, kAudioTrackNum, 2000, 5);
+  AppendSingleStreamCluster(kSourceId, kAudioTrackNum, 1000, 5);
+  CheckExpectedRanges(kSourceId, "{ [1000,1115) [2000,2115) }");
+
+  // Now try performing garbage collection without announcing seek first, i.e.
+  // without calling Seek(), the GC algorithm should try to preserve data in the
+  // first range, since that is most recently appended data.
+  base::TimeDelta seek_time = base::TimeDelta::FromMilliseconds(2030);
+  EXPECT_TRUE(demuxer_->EvictCodedFrames(kSourceId, seek_time, 5 * kBlockSize));
+
+  AppendSingleStreamCluster(kSourceId, kAudioTrackNum, 1500, 5);
+  CheckExpectedRanges(kSourceId, "{ [1000,1115) [1500,1615) }");
+}
+
+TEST_F(ChunkDemuxerTest, GCDuringSeek_MultipleRanges_SeekBack) {
+  ASSERT_TRUE(InitDemuxer(HAS_AUDIO));
+  demuxer_->SetMemoryLimits(DemuxerStream::AUDIO, 10 * kBlockSize);
+  // Append some data at position 1000ms then at 2000ms
+  AppendSingleStreamCluster(kSourceId, kAudioTrackNum, 1000, 5);
+  AppendSingleStreamCluster(kSourceId, kAudioTrackNum, 2000, 5);
+  CheckExpectedRanges(kSourceId, "{ [1000,1115) [2000,2115) }");
+
+  // GC should be able to evict frames in the currently buffered ranges, since
+  // those frames are earlier than the seek target position.
+  base::TimeDelta seek_time = base::TimeDelta();
+  Seek(seek_time);
+  EXPECT_TRUE(demuxer_->EvictCodedFrames(kSourceId, seek_time, 8 * kBlockSize));
+
+  // Append data to complete seek operation
+  AppendSingleStreamCluster(kSourceId, kAudioTrackNum, 0, 5);
+  CheckExpectedRanges(kSourceId, "{ [0,115) [2069,2115) }");
+}
+
 TEST_F(ChunkDemuxerTest, GCDuringSeek) {
   ASSERT_TRUE(InitDemuxer(HAS_AUDIO));
 
