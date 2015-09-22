@@ -273,6 +273,36 @@ void ChildTraceMessageFilter::OnSetUMACallback(
       histogram_name,
       base::Bind(&ChildTraceMessageFilter::OnHistogramChanged, this,
                  histogram_name, histogram_lower_value, histogram_upper_value));
+
+  base::HistogramBase* existing_histogram =
+      base::StatisticsRecorder::FindHistogram(histogram_name);
+  if (!existing_histogram)
+    return;
+
+  scoped_ptr<base::HistogramSamples> samples =
+      existing_histogram->SnapshotSamples();
+  if (!samples)
+    return;
+
+  scoped_ptr<base::SampleCountIterator> sample_iterator = samples->Iterator();
+  if (!sample_iterator)
+    return;
+
+  while (!sample_iterator->Done()) {
+    base::HistogramBase::Sample min;
+    base::HistogramBase::Sample max;
+    base::HistogramBase::Count count;
+    sample_iterator->Get(&min, &max, &count);
+    if (min >= histogram_lower_value && max <= histogram_upper_value &&
+        count > 0) {
+      ipc_task_runner_->PostTask(
+          FROM_HERE, base::Bind(&ChildTraceMessageFilter::SendTriggerMessage,
+                                this, histogram_name));
+      break;
+    }
+
+    sample_iterator->Next();
+  }
 }
 
 void ChildTraceMessageFilter::OnClearUMACallback(
