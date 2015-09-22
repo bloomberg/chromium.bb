@@ -36,18 +36,38 @@ TextInputClientMac* TextInputClientMac::GetInstance() {
 void TextInputClientMac::GetStringAtPoint(
     RenderWidgetHost* rwh,
     gfx::Point point,
-    void (^replyHandler)(NSAttributedString*, NSPoint)) {
-  DCHECK(replyHandler_.get() == nil);
-  replyHandler_.reset(replyHandler, base::scoped_policy::RETAIN);
+    void (^reply_handler)(NSAttributedString*, NSPoint)) {
+  DCHECK(replyForPointHandler_.get() == nil);
+  replyForPointHandler_.reset(reply_handler, base::scoped_policy::RETAIN);
   RenderWidgetHostImpl* rwhi = RenderWidgetHostImpl::From(rwh);
   rwhi->Send(new TextInputClientMsg_StringAtPoint(rwhi->GetRoutingID(), point));
 }
 
 void TextInputClientMac::GetStringAtPointReply(NSAttributedString* string,
                                                NSPoint point) {
-  if (replyHandler_.get()) {
-    replyHandler_.get()(string, point);
-    replyHandler_.reset();
+  if (replyForPointHandler_.get()) {
+    replyForPointHandler_.get()(string, point);
+    replyForPointHandler_.reset();
+  }
+}
+
+void TextInputClientMac::GetStringFromRange(
+    RenderWidgetHost* rwh,
+    NSRange range,
+    void (^reply_handler)(NSAttributedString*, NSPoint)) {
+  DCHECK(replyForRangeHandler_.get() == nil);
+  replyForRangeHandler_.reset(reply_handler, base::scoped_policy::RETAIN);
+  RenderWidgetHostImpl* rwhi = RenderWidgetHostImpl::From(rwh);
+  rwhi->Send(new TextInputClientMsg_StringForRange(rwhi->GetRoutingID(),
+                                                   gfx::Range(range)));
+}
+
+void TextInputClientMac::GetStringFromRangeReply(NSAttributedString* string,
+                                                 NSPoint point) {
+  SetSubstringAndSignal(string);
+  if (replyForRangeHandler_.get()) {
+    replyForRangeHandler_.get()(string, point);
+    replyForRangeHandler_.reset();
   }
 }
 

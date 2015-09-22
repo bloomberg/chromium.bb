@@ -180,6 +180,8 @@ static BOOL SupportsBackingPropertiesChangedNotification() {
 - (void)updateScreenProperties;
 - (void)setResponderDelegate:
         (NSObject<RenderWidgetHostViewMacDelegate>*)delegate;
+- (void)showLookUpDictionaryOverlayInternal:(NSAttributedString*) string
+                              baselinePoint:(NSPoint) baselinePoint;
 @end
 
 // A window subclass that allows the fullscreen window to become main and gain
@@ -2430,22 +2432,56 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
   }
 }
 
-// This is invoked only on 10.8 or newer when the user taps a word using
-// three fingers.
-- (void)quickLookWithEvent:(NSEvent*)event {
-  NSPoint point = [self convertPoint:[event locationInWindow] fromView:nil];
+- (void)showLookUpDictionaryOverlayInternal:(NSAttributedString*) string
+                              baselinePoint:(NSPoint) baselinePoint {
+  if ([string length] == 0) {
+    // The PDF plugin does not support getting the attributed string at point.
+    // Until it does, use NSPerformService(), which opens Dictionary.app.
+    // TODO(shuchen): Support GetStringAtPoint() & GetStringFromRange() for PDF.
+    // See crbug.com/152438.
+    NSString* text = base::SysUTF8ToNSString(
+        renderWidgetHostView_->selected_text());
+    if ([text length] == 0)
+      return;
+    NSPasteboard* pasteboard = [NSPasteboard pasteboardWithUniqueName];
+    NSArray* types = [NSArray arrayWithObject:NSStringPboardType];
+    [pasteboard declareTypes:types owner:nil];
+    if ([pasteboard setString:text forType:NSStringPboardType])
+      NSPerformService(@"Look Up in Dictionary", pasteboard);
+    return;
+  }
+  dispatch_async(dispatch_get_main_queue(), ^{
+      [self showDefinitionForAttributedString:string
+                                      atPoint:baselinePoint];
+  });
+}
+
+- (void)showLookUpDictionaryOverlayFromRange:(NSRange)range {
+  TextInputClientMac::GetInstance()->GetStringFromRange(
+      renderWidgetHostView_->render_widget_host_, range,
+      ^(NSAttributedString* string, NSPoint baselinePoint) {
+        [self showLookUpDictionaryOverlayInternal:string
+                                    baselinePoint:baselinePoint];
+      }
+  );
+}
+
+- (void)showLookUpDictionaryOverlayAtPoint:(NSPoint)point {
   TextInputClientMac::GetInstance()->GetStringAtPoint(
       renderWidgetHostView_->render_widget_host_,
       gfx::Point(point.x, NSHeight([self frame]) - point.y),
       ^(NSAttributedString* string, NSPoint baselinePoint) {
-          if (string && [string length] > 0) {
-            dispatch_async(dispatch_get_main_queue(), ^{
-                [self showDefinitionForAttributedString:string
-                                                atPoint:baselinePoint];
-            });
-          }
+        [self showLookUpDictionaryOverlayInternal:string
+                                    baselinePoint:baselinePoint];
       }
   );
+}
+
+// This is invoked only on 10.8 or newer when the user taps a word using
+// three fingers.
+- (void)quickLookWithEvent:(NSEvent*)event {
+  NSPoint point = [self convertPoint:[event locationInWindow] fromView:nil];
+  [self showLookUpDictionaryOverlayAtPoint:point];
 }
 
 // This method handles 2 different types of hardware events.

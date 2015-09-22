@@ -65,13 +65,13 @@ void TextInputClientMessageFilter::OnGotFirstRectForRange(
 }
 
 void TextInputClientMessageFilter::OnGotStringFromRange(
-    const mac::AttributedStringCoder::EncodedString& encoded_string) {
+    const mac::AttributedStringCoder::EncodedString& encoded_string,
+    const gfx::Point& point) {
   TextInputClientMac* service = TextInputClientMac::GetInstance();
   NSAttributedString* string =
       mac::AttributedStringCoder::Decode(&encoded_string);
-  if (![string length])
-    string = nil;
-  service->SetSubstringAndSignal(string);
+  service->GetStringFromRangeReply(
+      string, NSPointFromCGPoint(point.ToCGPoint()));
 }
 
 }  // namespace content

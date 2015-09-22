@@ -208,6 +208,8 @@ class Layer;
 - (void)updateCursor:(NSCursor*)cursor;
 - (NSRect)firstViewRectForCharacterRange:(NSRange)theRange
                              actualRange:(NSRangePointer)actualRange;
+- (void)showLookUpDictionaryOverlayAtPoint:(NSPoint)point;
+- (void)showLookUpDictionaryOverlayFromRange:(NSRange)range;
 @end
 
 namespace content {

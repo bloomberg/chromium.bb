@@ -38,7 +38,8 @@ class CONTENT_EXPORT TextInputClientMessageFilter
   void OnGotCharacterIndexForPoint(size_t index);
   void OnGotFirstRectForRange(const gfx::Rect& rect);
   void OnGotStringFromRange(
-      const mac::AttributedStringCoder::EncodedString& string);
+      const mac::AttributedStringCoder::EncodedString& string,
+      const gfx::Point& point);
 
   // Child process id.
   int child_process_id_;

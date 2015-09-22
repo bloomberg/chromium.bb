@@ -88,16 +88,17 @@ void TextInputClientObserver::OnFirstRectForCharacterRange(gfx::Range range) {
 
 void TextInputClientObserver::OnStringForRange(gfx::Range range) {
 #if defined(OS_MACOSX)
+  blink::WebPoint baselinePoint;
   NSAttributedString* string = nil;
   blink::WebLocalFrame* frame = webview()->focusedFrame()->toWebLocalFrame();
   if (frame) {
     string = blink::WebSubstringUtil::attributedSubstringInRange(
-        frame, range.start(), range.length());
+        frame, range.start(), range.length(), &baselinePoint);
   }
   scoped_ptr<const mac::AttributedStringCoder::EncodedString> encoded(
       mac::AttributedStringCoder::Encode(string));
   Send(new TextInputClientReplyMsg_GotStringForRange(routing_id(),
-      *encoded.get()));
+      *encoded.get(), baselinePoint));
 #else
   NOTIMPLEMENTED();
 #endif

@@ -53,8 +53,9 @@ IPC_MESSAGE_ROUTED1(TextInputClientReplyMsg_GotFirstRectForRange,
 
 #if defined(OS_MACOSX)
 // Reply message for TextInputClientMsg_StringForRange.
-IPC_MESSAGE_ROUTED1(TextInputClientReplyMsg_GotStringForRange,
-                    mac::AttributedStringCoder::EncodedString)
+IPC_MESSAGE_ROUTED2(TextInputClientReplyMsg_GotStringForRange,
+                    mac::AttributedStringCoder::EncodedString,
+                    gfx::Point)
 
 // Reply message for TextInputClientMsg_StringAtPoint
 IPC_MESSAGE_ROUTED2(TextInputClientReplyMsg_GotStringAtPoint,
