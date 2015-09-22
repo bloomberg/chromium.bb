@@ -95,15 +95,17 @@ void SVGFEMorphologyElement::svgAttributeChanged(const QualifiedName& attrName)
 PassRefPtrWillBeRawPtr<FilterEffect> SVGFEMorphologyElement::build(SVGFilterBuilder* filterBuilder, Filter* filter)
 {
     FilterEffect* input1 = filterBuilder->getEffectById(AtomicString(m_in1->currentValue()->value()));
-    float xRadius = radiusX()->currentValue()->value();
-    float yRadius = radiusY()->currentValue()->value();
 
     if (!input1)
         return nullptr;
 
-    if (xRadius < 0 || yRadius < 0)
-        return nullptr;
-
+    // "A negative or zero value disables the effect of the given filter
+    // primitive (i.e., the result is the filter input image)."
+    // https://drafts.fxtf.org/filters/#element-attrdef-femorphology-radius
+    //
+    // (This is handled by FEMorphology)
+    float xRadius = radiusX()->currentValue()->value();
+    float yRadius = radiusY()->currentValue()->value();
     RefPtrWillBeRawPtr<FilterEffect> effect = FEMorphology::create(filter, m_svgOperator->currentValue()->enumValue(), xRadius, yRadius);
     effect->inputEffects().append(input1);
     return effect.release();

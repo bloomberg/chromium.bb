@@ -35,8 +35,8 @@ namespace blink {
 FEMorphology::FEMorphology(Filter* filter, MorphologyOperatorType type, float radiusX, float radiusY)
     : FilterEffect(filter)
     , m_type(type)
-    , m_radiusX(radiusX)
-    , m_radiusY(radiusY)
+    , m_radiusX(std::max(0.0f, radiusX))
+    , m_radiusY(std::max(0.0f, radiusY))
 {
 }
 
@@ -65,6 +65,7 @@ float FEMorphology::radiusX() const
 
 bool FEMorphology::setRadiusX(float radiusX)
 {
+    radiusX = std::max(0.0f, radiusX);
     if (m_radiusX == radiusX)
         return false;
     m_radiusX = radiusX;
@@ -76,20 +77,21 @@ float FEMorphology::radiusY() const
     return m_radiusY;
 }
 
+bool FEMorphology::setRadiusY(float radiusY)
+{
+    radiusY = std::max(0.0f, radiusY);
+    if (m_radiusY == radiusY)
+        return false;
+    m_radiusY = radiusY;
+    return true;
+}
+
 FloatRect FEMorphology::mapRect(const FloatRect& rect, bool)
 {
     FloatRect result = rect;
     result.inflateX(filter()->applyHorizontalScale(m_radiusX));
     result.inflateY(filter()->applyVerticalScale(m_radiusY));
     return result;
-}
-
-bool FEMorphology::setRadiusY(float radiusY)
-{
-    if (m_radiusY == radiusY)
-        return false;
-    m_radiusY = radiusY;
-    return true;
 }
 
 PassRefPtr<SkImageFilter> FEMorphology::createImageFilter(SkiaImageFilterBuilder* builder)
