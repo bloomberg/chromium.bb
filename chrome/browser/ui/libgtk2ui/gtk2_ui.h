@@ -53,12 +53,6 @@ class Gtk2UI : public views::LinuxUI {
       const std::vector<views::FrameButton>& trailing_buttons);
   void SetNonClientMiddleClickAction(NonClientMiddleClickAction action);
 
-  // Draws the GTK button border with the given properties onto a bitmap.
-  SkBitmap DrawGtkButtonBorder(const char* class_name,
-                               ui::NativeTheme::State state,
-                               int width,
-                               int height) const;
-
   // Called when gtk style changes
   void ResetStyle();
 
@@ -162,11 +156,6 @@ class Gtk2UI : public views::LinuxUI {
   // Tints an icon based on tint.
   SkBitmap GenerateTintedIcon(int base_id,
                               const color_utils::HSL& tint) const;
-
-  // Renders a GTK button border the size of the image |sizing_idr| in
-  // |state|.
-  SkBitmap GenerateToolbarBezel(ui::NativeTheme::State state,
-                                int sizing_idr) const;
 
   // Returns the tint for buttons that contrasts with the normal window
   // background color.

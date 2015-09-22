@@ -21,7 +21,6 @@
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/libgtk2ui/app_indicator_icon.h"
-#include "chrome/browser/ui/libgtk2ui/gtk2_border.h"
 #include "chrome/browser/ui/libgtk2ui/gtk2_event_loop.h"
 #include "chrome/browser/ui/libgtk2ui/gtk2_key_bindings_handler.h"
 #include "chrome/browser/ui/libgtk2ui/gtk2_signal_registrar.h"
@@ -162,6 +161,91 @@ class GtkThemeIconSource : public gfx::ImageSkiaSource {
 
     DISALLOW_COPY_AND_ASSIGN(GtkThemeIconSource);
 };
+
+
+class GtkButtonImageSource : public gfx::ImageSkiaSource {
+  public:
+    GtkButtonImageSource(bool is_blue, ui::NativeTheme::State state)
+        : is_blue_(is_blue),
+          state_(state) {
+    }
+
+    ~GtkButtonImageSource() override {}
+
+    gfx::ImageSkiaRep GetImageForScale(float scale) override {
+      int width = 32 * scale;
+      int height = 32 * scale;
+
+      SkBitmap border;
+      border.allocN32Pixels(width, height);
+      border.eraseColor(0);
+
+      // Create a temporary GTK button to snapshot
+      GtkWidget* window = gtk_offscreen_window_new();
+      GtkWidget* button = gtk_toggle_button_new();
+
+      if (state_ == ui::NativeTheme::kPressed)
+        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button), true);
+      else if (state_ == ui::NativeTheme::kDisabled)
+        gtk_widget_set_sensitive(button, false);
+
+      gtk_widget_set_size_request(button, width, height);
+      gtk_container_add(GTK_CONTAINER(window), button);
+
+      if (is_blue_)
+        TurnButtonBlue(button);
+
+      gtk_widget_show_all(window);
+
+
+      cairo_surface_t* surface = cairo_image_surface_create_for_data(
+        static_cast<unsigned char*>(border.getAddr(0, 0)),
+        CAIRO_FORMAT_ARGB32,
+        width, height,
+        width * 4);
+      cairo_t* cr = cairo_create(surface);
+
+#if GTK_MAJOR_VERSION == 2
+      int w, h;
+      GdkPixmap* pixmap;
+
+      {
+        // http://crbug.com/346740
+        ANNOTATE_SCOPED_MEMORY_LEAK;
+        pixmap = gtk_widget_get_snapshot(button, NULL);
+      }
+
+      gdk_drawable_get_size(GDK_DRAWABLE(pixmap), &w, &h);
+      GdkColormap* colormap = gdk_drawable_get_colormap(pixmap);
+      GdkPixbuf* pixbuf = gdk_pixbuf_get_from_drawable(NULL,
+                                                       GDK_DRAWABLE(pixmap),
+                                                       colormap,
+                                                       0, 0, 0, 0, w, h);
+
+      gdk_cairo_set_source_pixbuf(cr, pixbuf, 0, 0);
+      cairo_paint(cr);
+
+      g_object_unref(pixbuf);
+      g_object_unref(pixmap);
+#else
+      gtk_widget_draw(button, cr);
+#endif
+
+      cairo_destroy(cr);
+      cairo_surface_destroy(surface);
+
+      gtk_widget_destroy(window);
+
+      return gfx::ImageSkiaRep(border, scale);
+    }
+
+  private:
+    bool is_blue_;
+    ui::NativeTheme::State state_;
+
+    DISALLOW_COPY_AND_ASSIGN(GtkButtonImageSource);
+};
+
 
 
 struct GObjectDeleter {
@@ -635,7 +719,58 @@ scoped_ptr<views::Border> Gtk2UI::CreateNativeBorder(
   if (owning_button->GetNativeTheme() != NativeThemeGtk2::instance())
     return border.Pass();
 
-  return make_scoped_ptr(new Gtk2Border(this, owning_button, border.Pass()));
+  scoped_ptr<views::LabelButtonAssetBorder> gtk_border(
+      new views::LabelButtonAssetBorder(owning_button->style()));
+
+  // Arbitrarily chosen
+  const gfx::Insets insets(6, 6, 6, 6);
+  gtk_border->set_insets(border->GetInsets());
+
+  // Clear default LabelButtonAssetBorder values
+  gtk_border->SetPainter(false, views::Button::STATE_NORMAL, NULL);
+  gtk_border->SetPainter(false, views::Button::STATE_HOVERED, NULL);
+  gtk_border->SetPainter(false, views::Button::STATE_PRESSED, NULL);
+  gtk_border->SetPainter(false, views::Button::STATE_DISABLED, NULL);
+  gtk_border->SetPainter(true, views::Button::STATE_NORMAL, NULL);
+  gtk_border->SetPainter(true, views::Button::STATE_HOVERED, NULL);
+  gtk_border->SetPainter(true, views::Button::STATE_PRESSED, NULL);
+  gtk_border->SetPainter(true, views::Button::STATE_DISABLED, NULL);
+
+
+  bool is_blue =
+      owning_button->GetClassName() == views::BlueButton::kViewClassName;
+
+
+  int id = is_blue ? IDR_BLUE_BUTTON_NORMAL : IDR_BUTTON_NORMAL;
+  if (border->PaintsButtonState(false, views::Button::STATE_NORMAL))
+    gtk_border->SetPainter(false,
+                           views::Button::STATE_NORMAL,
+                           views::Painter::CreateImagePainter(
+                               *GetThemeImageNamed(id).ToImageSkia(), insets));
+
+  id = is_blue ? IDR_BLUE_BUTTON_HOVER : IDR_BUTTON_HOVER;
+  if (border->PaintsButtonState(false, views::Button::STATE_HOVERED))
+    gtk_border->SetPainter(false,
+                           views::Button::STATE_HOVERED,
+                           views::Painter::CreateImagePainter(
+                               *GetThemeImageNamed(id).ToImageSkia(), insets));
+
+  id = is_blue ? IDR_BLUE_BUTTON_PRESSED : IDR_BUTTON_PRESSED;
+  if (border->PaintsButtonState(false, views::Button::STATE_PRESSED))
+    gtk_border->SetPainter(false,
+                           views::Button::STATE_PRESSED,
+                           views::Painter::CreateImagePainter(
+                               *GetThemeImageNamed(id).ToImageSkia(), insets));
+
+  id = is_blue ? IDR_BLUE_BUTTON_DISABLED : IDR_BUTTON_DISABLED;
+  if (border->PaintsButtonState(false, views::Button::STATE_DISABLED))
+    gtk_border->SetPainter(false,
+                           views::Button::STATE_DISABLED,
+                           views::Painter::CreateImagePainter(
+                               *GetThemeImageNamed(id).ToImageSkia(), insets));
+
+
+  return gtk_border.Pass();;
 }
 
 void Gtk2UI::AddWindowButtonOrderObserver(
@@ -963,6 +1098,37 @@ gfx::Image Gtk2UI::GenerateGtkThemeImage(int id) const {
     case IDR_STOP_D:
       source = new GtkThemeIconSource(id, "process-stop", false);
       break;
+
+
+    // The toolbar bezels don't seem to be in use anymore, remove at your
+    // discretion
+    case IDR_BUTTON_NORMAL:
+      source = new GtkButtonImageSource(false, ui::NativeTheme::kNormal);
+      break;
+    case IDR_BUTTON_HOVER:
+    case IDR_TOOLBAR_BEZEL_HOVER:
+      source = new GtkButtonImageSource(false, ui::NativeTheme::kHovered);
+      break;
+    case IDR_BUTTON_PRESSED:
+    case IDR_TOOLBAR_BEZEL_PRESSED:
+      source = new GtkButtonImageSource(false, ui::NativeTheme::kPressed);
+      break;
+    case IDR_BUTTON_DISABLED:
+      source = new GtkButtonImageSource(false, ui::NativeTheme::kDisabled);
+      break;
+
+    case IDR_BLUE_BUTTON_NORMAL:
+      source = new GtkButtonImageSource(true, ui::NativeTheme::kNormal);
+      break;
+    case IDR_BLUE_BUTTON_HOVER:
+      source = new GtkButtonImageSource(true, ui::NativeTheme::kHovered);
+      break;
+    case IDR_BLUE_BUTTON_PRESSED:
+      source = new GtkButtonImageSource(true, ui::NativeTheme::kPressed);
+      break;
+    case IDR_BLUE_BUTTON_DISABLED:
+      source = new GtkButtonImageSource(true, ui::NativeTheme::kDisabled);
+      break;
   }
 
   if (source)
@@ -1032,13 +1198,6 @@ SkBitmap Gtk2UI::GenerateGtkThemeBitmap(int id) const {
     case IDR_OMNIBOX_TTS_DARK: {
       return GenerateTintedIcon(id, selected_entry_tint_);
     }
-
-    case IDR_TOOLBAR_BEZEL_HOVER:
-      return GenerateToolbarBezel(
-          ui::NativeTheme::kHovered, IDR_TOOLBAR_BEZEL_HOVER);
-    case IDR_TOOLBAR_BEZEL_PRESSED:
-      return GenerateToolbarBezel(
-          ui::NativeTheme::kPressed, IDR_TOOLBAR_BEZEL_PRESSED);
 
     // TODO(erg): The dropdown arrow should be tinted because we're injecting
     // various background GTK colors, but the code that accesses them needs to
@@ -1153,20 +1312,6 @@ SkBitmap Gtk2UI::GenerateTintedIcon(
       rb.GetImageNamed(base_id).AsBitmap(), tint);
 }
 
-SkBitmap Gtk2UI::GenerateToolbarBezel(
-    ui::NativeTheme::State state,
-    int sizing_idr) const {
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  SkBitmap default_bitmap =
-      rb.GetImageNamed(sizing_idr).AsBitmap();
-
-  return DrawGtkButtonBorder(
-      NULL,
-      state,
-      default_bitmap.width(),
-      default_bitmap.height());
-}
-
 void Gtk2UI::GetNormalButtonTintHSL(color_utils::HSL* tint) const {
   NativeThemeGtk2* theme = NativeThemeGtk2::instance();
 
@@ -1208,74 +1353,6 @@ void Gtk2UI::GetSelectedEntryForegroundHSL(color_utils::HSL* tint) const {
           ui::NativeTheme::kColorId_TextfieldSelectionColor);
 
   color_utils::SkColorToHSL(color, tint);
-}
-
-SkBitmap Gtk2UI::DrawGtkButtonBorder(const char* class_name,
-                                     ui::NativeTheme::State state,
-                                     int width,
-                                     int height) const {
-  SkBitmap border;
-  border.allocN32Pixels(width, height);
-  border.eraseColor(0);
-
-  // Create a temporary GTK button to snapshot
-  GtkWidget* window = gtk_offscreen_window_new();
-  GtkWidget* button = gtk_toggle_button_new();
-
-  if (state == ui::NativeTheme::kPressed)
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button), true);
-  else if (state == ui::NativeTheme::kDisabled)
-    gtk_widget_set_sensitive(button, false);
-
-  gtk_widget_set_size_request(button, width, height);
-  gtk_container_add(GTK_CONTAINER(window), button);
-
-  if (class_name == views::BlueButton::kViewClassName)
-    TurnButtonBlue(button);
-
-  gtk_widget_show_all(window);
-
-
-  cairo_surface_t* surface = cairo_image_surface_create_for_data(
-    static_cast<unsigned char*>(border.getAddr(0, 0)),
-    CAIRO_FORMAT_ARGB32,
-    width, height,
-    width * 4);
-  cairo_t* cr = cairo_create(surface);
-
-#if GTK_MAJOR_VERSION == 2
-  int w, h;
-  GdkPixmap* pixmap;
-
-  {
-    // http://crbug.com/346740
-    ANNOTATE_SCOPED_MEMORY_LEAK;
-    pixmap = gtk_widget_get_snapshot(button, NULL);
-  }
-
-  gdk_drawable_get_size(GDK_DRAWABLE(pixmap), &w, &h);
-  GdkColormap* colormap = gdk_drawable_get_colormap(pixmap);
-  GdkPixbuf* pixbuf = gdk_pixbuf_get_from_drawable(NULL,
-                                                   GDK_DRAWABLE(pixmap),
-                                                   colormap,
-                                                   0, 0, 0, 0, w, h);
-
-  gdk_cairo_set_source_pixbuf(cr, pixbuf, 0, 0);
-  cairo_paint(cr);
-
-  g_object_unref(pixbuf);
-  g_object_unref(pixmap);
-#else
-  gtk_widget_draw(button, cr);
-#endif
-
-  cairo_destroy(cr);
-  cairo_surface_destroy(surface);
-
-
-  gtk_widget_destroy(window);
-
-  return border;
 }
 
 void Gtk2UI::ClearAllThemeData() {
