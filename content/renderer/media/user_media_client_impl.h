@@ -234,11 +234,6 @@ class CONTENT_EXPORT UserMediaClientImpl
   void StopLocalSource(const blink::WebMediaStreamSource& source,
                        bool notify_dispatcher);
 
-  // Helper function to handle user media requests asynchronously.
-  void DelayedRequestUserMedia(int request_id,
-                               const StreamOptions options,
-                               const GURL security_origin);
-
   // Weak ref to a PeerConnectionDependencyFactory, owned by the RenderThread.
   // It's valid for the lifetime of RenderThread.
   // TODO(xians): Remove this dependency once audio do not need it for local
