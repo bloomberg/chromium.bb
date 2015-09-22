@@ -19,7 +19,7 @@ layer at (0,0) size 800x600
                 {alpha: type="UNKNOWN" slope="0.00" intercept="0.00" amplitude="0.00" exponent="0.00" offset="0.00"}]
               [SourceGraphic]
           LayoutSVGResourceFilter {filter} [id="blurY"] [filterUnits=objectBoundingBox] [primitiveUnits=userSpaceOnUse]
-            [feGaussianBlur stdDeviation="0.00, 5.00"]
+            [feGaussianBlur stdDeviation="0.00, 10.00"]
               [SourceGraphic]
           LayoutSVGResourceFilter {filter} [id="blend"] [filterUnits=objectBoundingBox] [primitiveUnits=userSpaceOnUse]
             [feBlend mode="screen"]
@@ -27,16 +27,14 @@ layer at (0,0) size 800x600
                 [SourceGraphic]
               [SourceGraphic]
           LayoutSVGResourceFilter {filter} [id="lighting"] [filterUnits=objectBoundingBox] [primitiveUnits=userSpaceOnUse]
-            [feBlend mode="multiply"]
-              [feColorMatrix type="MATRIX" values="0.00 0.00 0.00 1.00 0.00 0.00 0.00 0.00 1.00 0.00 0.00 0.00 0.00 1.00 0.00 0.00 0.00 0.00 0.00 1.00"]
-                [feSpecularLighting surfaceScale="1.00" specualConstant="1.00" specularExponent="1.00"]
-                  [SourceGraphic]
-              [SourceGraphic]
+            [feColorMatrix type="MATRIX" values="0.00 0.00 0.00 1.00 0.00 0.00 0.00 0.00 1.00 0.00 0.00 0.00 0.00 1.00 0.00 0.00 0.00 0.00 0.00 1.00"]
+              [feSpecularLighting surfaceScale="1.00" specualConstant="1.00" specularExponent="1.00"]
+                [SourceGraphic]
           LayoutSVGResourceFilter {filter} [id="offset"] [filterUnits=objectBoundingBox] [primitiveUnits=userSpaceOnUse]
             [feOffset dx="10.00" dy="10.00"]
               [SourceGraphic]
           LayoutSVGResourceFilter {filter} [id="convolvematrix"] [filterUnits=objectBoundingBox] [primitiveUnits=userSpaceOnUse]
-            [feConvolveMatrix order="width=3 height=3" kernelMatrix="[1.00, 1.00, 1.00, 1.00, -7.00, 1.00, 1.00, 1.00, 1.00]" divisor="1.00" bias="0.30" target="(1,1)" edgeMode="DUPLICATE" preserveAlpha="0"]
+            [feConvolveMatrix order="width=3 height=3" kernelMatrix="[1.00, 1.00, 1.00, 1.00, -7.00, 1.00, 1.00, 1.00, 1.00]" divisor="1.00" bias="0.30" target="(1,1)" edgeMode="DUPLICATE" kernelUnitLength="(1,1)" preserveAlpha="0"]
               [SourceGraphic]
           LayoutSVGResourceFilter {filter} [id="displacement"] [filterUnits=objectBoundingBox] [primitiveUnits=userSpaceOnUse]
             [feDisplacementMap scale="10.00" xChannelSelector="RED" yChannelSelector="GREEN"]
@@ -65,38 +63,37 @@ layer at (0,0) size 800x600
                 [SourceGraphic]
           LayoutSVGResourceFilter {filter} [id="drop-shadow"] [filterUnits=objectBoundingBox] [primitiveUnits=userSpaceOnUse]
             [feDropShadow stdDeviation="4.00, 4.00" dx="10.00" dy="5.00" flood-color="#000000" flood-opacity="1.00]
-              [SourceGraphic]
-      LayoutText {#text} at (0,96) size 4x17
-        text run at (0,96) width 4: " "
+              [feOffset dx="50.00" dy="-20.00"]
+                [SourceGraphic]
+      LayoutText {#text} at (0,95) size 4x19
+        text run at (0,95) width 4: " "
       LayoutText {#text} at (0,0) size 0x0
-      LayoutText {#text} at (184,96) size 4x17
-        text run at (184,96) width 4: " "
-      LayoutText {#text} at (368,96) size 4x17
-        text run at (368,96) width 4: " "
-      LayoutText {#text} at (552,96) size 4x17
-        text run at (552,96) width 4: " "
-      LayoutText {#text} at (736,96) size 4x17
-        text run at (736,96) width 4: " "
-      LayoutText {#text} at (180,210) size 4x17
+      LayoutText {#text} at (184,95) size 4x19
+        text run at (184,95) width 4: " "
+      LayoutText {#text} at (368,95) size 4x19
+        text run at (368,95) width 4: " "
+      LayoutText {#text} at (552,95) size 4x19
+        text run at (552,95) width 4: " "
+      LayoutText {#text} at (736,95) size 4x19
+        text run at (736,95) width 4: " "
+      LayoutText {#text} at (180,210) size 4x19
         text run at (180,210) width 4: " "
-      LayoutText {#text} at (364,210) size 4x17
+      LayoutText {#text} at (364,210) size 4x19
         text run at (364,210) width 4: " "
-      LayoutText {#text} at (548,210) size 4x17
+      LayoutText {#text} at (548,210) size 4x19
         text run at (548,210) width 4: " "
-      LayoutText {#text} at (732,210) size 4x17
+      LayoutText {#text} at (732,210) size 4x19
         text run at (732,210) width 4: " "
-      LayoutText {#text} at (180,324) size 4x17
-        text run at (180,324) width 4: " "
-      LayoutText {#text} at (364,324) size 4x17
-        text run at (364,324) width 4: " "
-      LayoutText {#text} at (548,324) size 4x17
-        text run at (548,324) width 4: " "
-      LayoutText {#text} at (732,324) size 4x17
-        text run at (732,324) width 4: " "
-      LayoutText {#text} at (180,438) size 4x17
-        text run at (180,438) width 4: " "
-      LayoutText {#text} at (364,438) size 4x17
-        text run at (364,438) width 4: " "
+      LayoutText {#text} at (180,325) size 4x19
+        text run at (180,325) width 4: " "
+      LayoutText {#text} at (364,325) size 4x19
+        text run at (364,325) width 4: " "
+      LayoutText {#text} at (548,325) size 4x19
+        text run at (548,325) width 4: " "
+      LayoutText {#text} at (732,325) size 4x19
+        text run at (732,325) width 4: " "
+      LayoutText {#text} at (180,440) size 4x19
+        text run at (180,440) width 4: " "
       LayoutText {#text} at (0,0) size 0x0
 layer at (22,18) size 160x90
   LayoutImage {IMG} at (14,10) size 160x90
@@ -106,25 +103,23 @@ layer at (390,18) size 160x90
   LayoutImage {IMG} at (382,10) size 160x90
 layer at (574,18) size 160x90
   LayoutImage {IMG} at (566,10) size 160x90
-layer at (18,132) size 160x90
-  LayoutImage {IMG} at (10,124) size 160x90
-layer at (202,132) size 160x90
-  LayoutImage {IMG} at (194,124) size 160x90
-layer at (386,132) size 160x90
-  LayoutImage {IMG} at (378,124) size 160x90
-layer at (570,132) size 160x90
-  LayoutImage {IMG} at (562,124) size 160x90
-layer at (18,246) size 160x90
-  LayoutImage {IMG} at (10,238) size 160x90
-layer at (202,246) size 160x90
-  LayoutImage {IMG} at (194,238) size 160x90
-layer at (386,246) size 160x90
-  LayoutImage {IMG} at (378,238) size 160x90
-layer at (570,246) size 160x90
-  LayoutImage {IMG} at (562,238) size 160x90
-layer at (18,360) size 160x90
-  LayoutImage {IMG} at (10,352) size 160x90
-layer at (202,360) size 160x90
-  LayoutImage {IMG} at (194,352) size 160x90
-layer at (386,360) size 160x90
-  LayoutImage {IMG} at (378,352) size 160x90
+layer at (18,133) size 160x90
+  LayoutImage {IMG} at (10,125) size 160x90
+layer at (202,133) size 160x90
+  LayoutImage {IMG} at (194,125) size 160x90
+layer at (386,133) size 160x90
+  LayoutImage {IMG} at (378,125) size 160x90
+layer at (570,133) size 160x90
+  LayoutImage {IMG} at (562,125) size 160x90
+layer at (18,248) size 160x90
+  LayoutImage {IMG} at (10,240) size 160x90
+layer at (202,248) size 160x90
+  LayoutImage {IMG} at (194,240) size 160x90
+layer at (386,248) size 160x90
+  LayoutImage {IMG} at (378,240) size 160x90
+layer at (570,248) size 160x90
+  LayoutImage {IMG} at (562,240) size 160x90
+layer at (18,363) size 160x90
+  LayoutImage {IMG} at (10,355) size 160x90
+layer at (202,363) size 160x90
+  LayoutImage {IMG} at (194,355) size 160x90

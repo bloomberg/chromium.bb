@@ -34,7 +34,7 @@ layer at (0,0) size 800x600
             [feOffset dx="10.00" dy="10.00"]
               [SourceGraphic]
           LayoutSVGResourceFilter {filter} [id="convolvematrix"] [filterUnits=objectBoundingBox] [primitiveUnits=userSpaceOnUse]
-            [feConvolveMatrix order="width=3 height=3" kernelMatrix="[1.00, 1.00, 1.00, 1.00, -7.00, 1.00, 1.00, 1.00, 1.00]" divisor="1.00" bias="0.30" target="(1,1)" edgeMode="DUPLICATE" kernelUnitLength="(1,1)" preserveAlpha="0"]
+            [feConvolveMatrix order="width=3 height=3" kernelMatrix="[1.00, 1.00, 1.00, 1.00, -7.00, 1.00, 1.00, 1.00, 1.00]" divisor="1.00" bias="0.30" target="(1,1)" edgeMode="DUPLICATE" preserveAlpha="0"]
               [SourceGraphic]
           LayoutSVGResourceFilter {filter} [id="displacement"] [filterUnits=objectBoundingBox] [primitiveUnits=userSpaceOnUse]
             [feDisplacementMap scale="10.00" xChannelSelector="RED" yChannelSelector="GREEN"]

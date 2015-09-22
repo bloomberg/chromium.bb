@@ -66,7 +66,7 @@ layer at (0,0) size 480x360
         LayoutSVGResourceMarker {marker} [id="marker"] [markerUnits=strokeWidth] [ref at (0,0)] [angle=60.00]
         LayoutSVGViewportContainer {svg} at (0,0) size 0x0
         LayoutSVGResourceFilter {filter} [id=""] [filterUnits=objectBoundingBox] [primitiveUnits=userSpaceOnUse]
-          [feConvolveMatrix order="width=3 height=3" kernelMatrix="[1.00, 1.00, 1.00, 1.00, 1.00, 1.00, 1.00, 1.00, 1.00]" divisor="9.00" bias="0.00" target="(1,1)" edgeMode="DUPLICATE" kernelUnitLength="(1,1)" preserveAlpha="1"]
+          [feConvolveMatrix order="width=3 height=3" kernelMatrix="[1.00, 1.00, 1.00, 1.00, 1.00, 1.00, 1.00, 1.00, 1.00]" divisor="9.00" bias="0.00" target="(1,1)" edgeMode="DUPLICATE" preserveAlpha="1"]
             [feTurbulence type="TURBULENCE" baseFrequency="4.00, 5.00" seed="0.00" numOctaves="1" stitchTiles="0"]
     LayoutSVGContainer {g} at (10,310) size 230x37
       LayoutSVGText {text} at (10,310) size 230x37 contains 1 chunk(s)
