@@ -23,6 +23,11 @@ namespace system {
 
 namespace {
 
+struct MOJO_ALIGNAS(8) SerializedHandle {
+  DWORD handle_pid;
+  HANDLE handle;
+};
+
 class VistaOrHigherFunctions {
  public:
   VistaOrHigherFunctions();
@@ -370,7 +375,7 @@ RawChannelWin::~RawChannelWin() {
 }
 
 size_t RawChannelWin::GetSerializedPlatformHandleSize() const {
-  return sizeof(DWORD) + sizeof(HANDLE);
+  return sizeof(SerializedHandle);
 }
 
 RawChannel::IOResult RawChannelWin::Read(size_t* bytes_read) {
@@ -458,13 +463,12 @@ embedder::ScopedPlatformHandleVectorPtr RawChannelWin::GetReadPlatformHandles(
   embedder::ScopedPlatformHandleVectorPtr rv(
       new embedder::PlatformHandleVector());
 
-  const char* serialization_data =
-      static_cast<const char*>(platform_handle_table);
+  const SerializedHandle* serialization_data =
+      static_cast<const SerializedHandle*>(platform_handle_table);
   for (size_t i = 0; i < num_platform_handles; i++) {
-    DWORD pid = *reinterpret_cast<const DWORD*>(serialization_data);
-    serialization_data += sizeof(DWORD);
-    HANDLE source_handle = *reinterpret_cast<const HANDLE*>(serialization_data);
-    serialization_data += sizeof(HANDLE);
+    DWORD pid = serialization_data->handle_pid;
+    HANDLE source_handle = serialization_data->handle;
+    serialization_data ++;
     base::Process sender =
         base::Process::OpenWithAccess(pid, PROCESS_DUP_HANDLE);
     DCHECK(sender.IsValid());
@@ -496,17 +500,16 @@ RawChannel::IOResult RawChannelWin::WriteNoLock(
     void* serialization_data_temp;
     write_buffer_no_lock()->GetPlatformHandlesToSend(
         &num_platform_handles, &platform_handles, &serialization_data_temp);
-    char* serialization_data = static_cast<char*>(serialization_data_temp);
+    SerializedHandle* serialization_data =
+        static_cast<SerializedHandle*>(serialization_data_temp);
     DCHECK_GT(num_platform_handles, 0u);
     DCHECK(platform_handles);
 
     DWORD current_process_id = base::GetCurrentProcId();
     for (size_t i = 0; i < num_platform_handles; i++) {
-      *reinterpret_cast<DWORD*>(serialization_data) = current_process_id;
-      serialization_data += sizeof(DWORD);
-      *reinterpret_cast<HANDLE*>(serialization_data) =
-          platform_handles[i].handle;
-      serialization_data += sizeof(HANDLE);
+      serialization_data->handle_pid = current_process_id;
+      serialization_data->handle = platform_handles[i].handle;
+      serialization_data++;
       platform_handles[i] = embedder::PlatformHandle();
     }
   }
