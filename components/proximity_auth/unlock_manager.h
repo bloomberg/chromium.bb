@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "components/proximity_auth/client_observer.h"
+#include "components/proximity_auth/messenger_observer.h"
 #include "components/proximity_auth/remote_device_life_cycle.h"
 #include "components/proximity_auth/remote_status_update.h"
 #include "components/proximity_auth/screenlock_bridge.h"
@@ -21,13 +21,13 @@
 
 namespace proximity_auth {
 
-class Client;
+class Messenger;
 class ProximityAuthClient;
 class ProximityMonitor;
 
 // The unlock manager is responsible for controlling the lock screen UI based on
 // the authentication status of the registered remote devices.
-class UnlockManager : public ClientObserver,
+class UnlockManager : public MessengerObserver,
                       public ScreenlockBridge::Observer,
 #if defined(OS_CHROMEOS)
                       chromeos::PowerManagerClient::Observer,
@@ -77,7 +77,7 @@ class UnlockManager : public ClientObserver,
     LOCKED,
   };
 
-  // ClientObserver:
+  // MessengerObserver:
   void OnUnlockEventSent(bool success) override;
   void OnRemoteStatusUpdate(const RemoteStatusUpdate& status_update) override;
   void OnDecryptResponse(scoped_ptr<std::string> decrypted_bytes) override;
@@ -146,10 +146,11 @@ class UnlockManager : public ClientObserver,
   // expcted to outlive |this| instance.
   RemoteDeviceLifeCycle* life_cycle_;
 
-  // The client used to communicate with the remote device once a secure channel
+  // The messenger used to communicate with the remote device once a secure
+  // channel
   // is established. Null if no secure channel has been established yet. Not
   // owned, and expected to outlive |this| instance.
-  Client* client_;
+  Messenger* messenger_;
 
   // Tracks whether the remote device is currently in close enough proximity to
   // the local device to allow unlocking.

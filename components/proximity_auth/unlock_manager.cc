@@ -9,8 +9,8 @@
 #include "base/logging.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
-#include "components/proximity_auth/client.h"
 #include "components/proximity_auth/logging/logging.h"
+#include "components/proximity_auth/messenger.h"
 #include "components/proximity_auth/metrics.h"
 #include "components/proximity_auth/proximity_auth_client.h"
 #include "components/proximity_auth/proximity_monitor.h"
@@ -80,7 +80,7 @@ UnlockManager::UnlockManager(ScreenlockType screenlock_type,
                              ProximityAuthClient* proximity_auth_client)
     : screenlock_type_(screenlock_type),
       life_cycle_(nullptr),
-      client_(nullptr),
+      messenger_(nullptr),
       proximity_monitor_(proximity_monitor.Pass()),
       proximity_auth_client_(proximity_auth_client),
       is_locked_(false),
@@ -113,8 +113,8 @@ UnlockManager::UnlockManager(ScreenlockType screenlock_type,
 }
 
 UnlockManager::~UnlockManager() {
-  if (client_)
-    client_->RemoveObserver(this);
+  if (messenger_)
+    messenger_->RemoveObserver(this);
 
   ScreenlockBridge::Get()->RemoveObserver(this);
 
@@ -134,14 +134,14 @@ bool UnlockManager::IsUnlockAllowed() {
               RemoteDeviceLifeCycle::State::SECURE_CHANNEL_ESTABLISHED &&
           proximity_monitor_->IsUnlockAllowed() &&
           (screenlock_type_ != ScreenlockType::SIGN_IN ||
-           (client_ && client_->SupportsSignIn())));
+           (messenger_ && messenger_->SupportsSignIn())));
 }
 
 void UnlockManager::SetRemoteDeviceLifeCycle(
     RemoteDeviceLifeCycle* life_cycle) {
-  if (client_) {
-    client_->RemoveObserver(this);
-    client_ = nullptr;
+  if (messenger_) {
+    messenger_->RemoveObserver(this);
+    messenger_ = nullptr;
   }
 
   life_cycle_ = life_cycle;
@@ -158,8 +158,8 @@ void UnlockManager::OnLifeCycleStateChanged() {
 
   remote_screenlock_state_.reset();
   if (state == RemoteDeviceLifeCycle::State::SECURE_CHANNEL_ESTABLISHED) {
-    client_ = life_cycle_->GetClient();
-    client_->AddObserver(this);
+    messenger_ = life_cycle_->GetMessenger();
+    messenger_->AddObserver(this);
   }
 
   if (state == RemoteDeviceLifeCycle::State::AUTHENTICATION_FAILED)
@@ -209,7 +209,7 @@ void UnlockManager::OnDecryptResponse(scoped_ptr<std::string> decrypted_bytes) {
     AcceptAuthAttempt(false);
   } else {
     sign_in_secret_ = decrypted_bytes.Pass();
-    client_->DispatchUnlockEvent();
+    messenger_->DispatchUnlockEvent();
   }
 }
 
@@ -223,14 +223,14 @@ void UnlockManager::OnUnlockResponse(bool success) {
   PA_LOG(INFO) << "[Unlock] Unlock response from remote device: "
                << (success ? "success" : "failure");
   if (success)
-    client_->DispatchUnlockEvent();
+    messenger_->DispatchUnlockEvent();
   else
     AcceptAuthAttempt(false);
 }
 
 void UnlockManager::OnDisconnected() {
-  client_->RemoveObserver(this);
-  client_ = nullptr;
+  messenger_->RemoveObserver(this);
+  messenger_ = nullptr;
 }
 
 void UnlockManager::OnScreenDidLock(
@@ -316,12 +316,12 @@ void UnlockManager::OnAuthAttempted(
   if (screenlock_type_ == ScreenlockType::SIGN_IN) {
     SendSignInChallenge();
   } else {
-    if (client_->SupportsSignIn()) {
-      client_->RequestUnlock();
+    if (messenger_->SupportsSignIn()) {
+      messenger_->RequestUnlock();
     } else {
       PA_LOG(INFO) << "[Unlock] Protocol v3.1 not supported, skipping "
                    << "request_unlock.";
-      client_->DispatchUnlockEvent();
+      messenger_->DispatchUnlockEvent();
     }
   }
 }
@@ -349,8 +349,8 @@ ScreenlockState UnlockManager::GetScreenlockState() {
   if (!bluetooth_adapter_ || !bluetooth_adapter_->IsPowered())
     return ScreenlockState::NO_BLUETOOTH;
 
-  if (screenlock_type_ == ScreenlockType::SIGN_IN && client_ &&
-      !client_->SupportsSignIn())
+  if (screenlock_type_ == ScreenlockType::SIGN_IN && messenger_ &&
+      !messenger_->SupportsSignIn())
     return ScreenlockState::PHONE_UNSUPPORTED;
 
   // If the RSSI is too low, then the remote device is nowhere near the local

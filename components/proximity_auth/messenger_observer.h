@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_PROXIMITY_AUTH_CLIENT_OBSERVER_H
-#define COMPONENTS_PROXIMITY_AUTH_CLIENT_OBSERVER_H
+#ifndef COMPONENTS_PROXIMITY_AUTH_MESSENGER_OBSERVER_H
+#define COMPONENTS_PROXIMITY_AUTH_MESSENGER_OBSERVER_H
 
 #include <string>
 
@@ -13,8 +13,8 @@ namespace proximity_auth {
 
 struct RemoteStatusUpdate;
 
-// An interface for observing events that happen on a Client.
-class ClientObserver {
+// An interface for observing events that happen on a Messenger.
+class MessengerObserver {
  public:
   // Called when sending an "Easy Unlock used"  local event message completes.
   // |success| is true iff the event was sent successfully.
@@ -38,4 +38,4 @@ class ClientObserver {
 
 }  // namespace proximity_auth
 
-#endif  // COMPONENTS_PROXIMITY_AUTH_CLIENT_OBSERVER_H
+#endif  // COMPONENTS_PROXIMITY_AUTH_MESSENGER_OBSERVER_H

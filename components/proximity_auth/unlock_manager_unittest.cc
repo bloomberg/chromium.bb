@@ -9,8 +9,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/thread_task_runner_handle.h"
-#include "components/proximity_auth/client.h"
 #include "components/proximity_auth/logging/logging.h"
+#include "components/proximity_auth/messenger.h"
 #include "components/proximity_auth/mock_proximity_auth_client.h"
 #include "components/proximity_auth/proximity_monitor.h"
 #include "components/proximity_auth/remote_device_life_cycle.h"
@@ -52,25 +52,25 @@ class MockRemoteDeviceLifeCycle : public RemoteDeviceLifeCycle {
 
   MOCK_METHOD0(Start, void());
   MOCK_CONST_METHOD0(GetState, State());
-  MOCK_METHOD0(GetClient, Client*());
+  MOCK_METHOD0(GetMessenger, Messenger*());
   MOCK_METHOD1(AddObserver, void(Observer*));
   MOCK_METHOD1(RemoveObserver, void(Observer*));
 };
 
-class MockClient : public Client {
+class MockMessenger : public Messenger {
  public:
-  MockClient() {}
-  ~MockClient() override {}
+  MockMessenger() {}
+  ~MockMessenger() override {}
 
-  MOCK_METHOD1(AddObserver, void(ClientObserver* observer));
-  MOCK_METHOD1(RemoveObserver, void(ClientObserver* observer));
+  MOCK_METHOD1(AddObserver, void(MessengerObserver* observer));
+  MOCK_METHOD1(RemoveObserver, void(MessengerObserver* observer));
   MOCK_CONST_METHOD0(SupportsSignIn, bool());
   MOCK_METHOD0(DispatchUnlockEvent, void());
   MOCK_METHOD1(RequestDecryption, void(const std::string& challenge));
   MOCK_METHOD0(RequestUnlock, void());
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(MockClient);
+  DISALLOW_COPY_AND_ASSIGN(MockMessenger);
 };
 
 class MockProximityMonitor : public ProximityMonitor {
@@ -133,11 +133,11 @@ class TestUnlockManager : public UnlockManager {
   ~TestUnlockManager() override {}
 
   using UnlockManager::OnAuthAttempted;
-  using ClientObserver::OnUnlockEventSent;
-  using ClientObserver::OnRemoteStatusUpdate;
-  using ClientObserver::OnDecryptResponse;
-  using ClientObserver::OnUnlockResponse;
-  using ClientObserver::OnDisconnected;
+  using MessengerObserver::OnUnlockEventSent;
+  using MessengerObserver::OnRemoteStatusUpdate;
+  using MessengerObserver::OnDecryptResponse;
+  using MessengerObserver::OnUnlockResponse;
+  using MessengerObserver::OnDisconnected;
   using ScreenlockBridge::Observer::OnScreenDidLock;
   using ScreenlockBridge::Observer::OnScreenDidUnlock;
   using ScreenlockBridge::Observer::OnFocusedUserChanged;
@@ -163,8 +163,8 @@ class ProximityAuthUnlockManagerTest : public testing::Test {
         task_runner_(new base::TestSimpleTaskRunner()),
         thread_task_runner_handle_(task_runner_) {
     ON_CALL(*bluetooth_adapter_, IsPowered()).WillByDefault(Return(true));
-    ON_CALL(life_cycle_, GetClient()).WillByDefault(Return(&client_));
-    ON_CALL(client_, SupportsSignIn()).WillByDefault(Return(true));
+    ON_CALL(life_cycle_, GetMessenger()).WillByDefault(Return(&messenger_));
+    ON_CALL(messenger_, SupportsSignIn()).WillByDefault(Return(true));
 
     ScreenlockBridge::Get()->SetLockHandler(&lock_handler_);
 
@@ -221,7 +221,7 @@ class ProximityAuthUnlockManagerTest : public testing::Test {
 
   NiceMock<MockProximityAuthClient> proximity_auth_client_;
   NiceMock<MockRemoteDeviceLifeCycle> life_cycle_;
-  NiceMock<MockClient> client_;
+  NiceMock<MockMessenger> messenger_;
   scoped_ptr<TestUnlockManager> unlock_manager_;
   // Owned by the |unlock_manager_|.
   MockProximityMonitor* proximity_monitor_;
@@ -262,14 +262,14 @@ TEST_F(ProximityAuthUnlockManagerTest, IsUnlockAllowed_SignIn_AllGood) {
           Return(RemoteDeviceLifeCycle::State::SECURE_CHANNEL_ESTABLISHED));
   unlock_manager_->OnLifeCycleStateChanged();
 
-  ON_CALL(client_, SupportsSignIn()).WillByDefault(Return(true));
+  ON_CALL(messenger_, SupportsSignIn()).WillByDefault(Return(true));
   unlock_manager_->OnRemoteStatusUpdate(kRemoteScreenUnlocked);
 
   EXPECT_TRUE(unlock_manager_->IsUnlockAllowed());
 }
 
 TEST_F(ProximityAuthUnlockManagerTest,
-       IsUnlockAllowed_SignIn_ClientDoesNotSupportSignIn) {
+       IsUnlockAllowed_SignIn_MessengerDoesNotSupportSignIn) {
   CreateUnlockManager(UnlockManager::ScreenlockType::SIGN_IN);
 
   ON_CALL(life_cycle_, GetState())
@@ -281,19 +281,19 @@ TEST_F(ProximityAuthUnlockManagerTest,
           Return(RemoteDeviceLifeCycle::State::SECURE_CHANNEL_ESTABLISHED));
   unlock_manager_->OnLifeCycleStateChanged();
 
-  ON_CALL(client_, SupportsSignIn()).WillByDefault(Return(false));
+  ON_CALL(messenger_, SupportsSignIn()).WillByDefault(Return(false));
   unlock_manager_->OnRemoteStatusUpdate(kRemoteScreenUnlocked);
 
   EXPECT_FALSE(unlock_manager_->IsUnlockAllowed());
 }
 
-TEST_F(ProximityAuthUnlockManagerTest, IsUnlockAllowed_SignIn_ClientIsNull) {
+TEST_F(ProximityAuthUnlockManagerTest, IsUnlockAllowed_SignIn_MessengerIsNull) {
   CreateUnlockManager(UnlockManager::ScreenlockType::SIGN_IN);
 
   ON_CALL(life_cycle_, GetState())
       .WillByDefault(
           Return(RemoteDeviceLifeCycle::State::SECURE_CHANNEL_ESTABLISHED));
-  ON_CALL(life_cycle_, GetClient()).WillByDefault(Return(nullptr));
+  ON_CALL(life_cycle_, GetMessenger()).WillByDefault(Return(nullptr));
   unlock_manager_->SetRemoteDeviceLifeCycle(&life_cycle_);
   unlock_manager_->OnRemoteStatusUpdate(kRemoteScreenUnlocked);
 
@@ -496,7 +496,7 @@ TEST_F(ProximityAuthUnlockManagerTest,
       .WillByDefault(
           Return(RemoteDeviceLifeCycle::State::SECURE_CHANNEL_ESTABLISHED));
 
-  EXPECT_CALL(client_, AddObserver(unlock_manager_.get()));
+  EXPECT_CALL(messenger_, AddObserver(unlock_manager_.get()));
   unlock_manager_->OnLifeCycleStateChanged();
 }
 
@@ -612,7 +612,7 @@ TEST_F(ProximityAuthUnlockManagerTest, OnDisconnected_UnregistersAsObserver) {
       .WillByDefault(
           Return(RemoteDeviceLifeCycle::State::AUTHENTICATION_FAILED));
 
-  EXPECT_CALL(client_, RemoveObserver(unlock_manager_.get()));
+  EXPECT_CALL(messenger_, RemoveObserver(unlock_manager_.get()));
   unlock_manager_.get()->OnDisconnected();
 }
 
@@ -721,10 +721,10 @@ TEST_F(ProximityAuthUnlockManagerTest, OnAuthAttempted_DuplicateCall) {
   CreateUnlockManager(UnlockManager::ScreenlockType::SESSION_LOCK);
   SimulateUserPresentState();
 
-  EXPECT_CALL(client_, RequestUnlock());
+  EXPECT_CALL(messenger_, RequestUnlock());
   unlock_manager_->OnAuthAttempted(ScreenlockBridge::LockHandler::USER_CLICK);
 
-  EXPECT_CALL(client_, RequestUnlock()).Times(0);
+  EXPECT_CALL(messenger_, RequestUnlock()).Times(0);
   unlock_manager_->OnAuthAttempted(ScreenlockBridge::LockHandler::USER_CLICK);
 }
 
@@ -756,11 +756,11 @@ TEST_F(ProximityAuthUnlockManagerTest,
 
 TEST_F(ProximityAuthUnlockManagerTest,
        OnAuthAttempted_Unlock_SupportsSignIn_UnlockRequestFails) {
-  ON_CALL(client_, SupportsSignIn()).WillByDefault(Return(true));
+  ON_CALL(messenger_, SupportsSignIn()).WillByDefault(Return(true));
   CreateUnlockManager(UnlockManager::ScreenlockType::SESSION_LOCK);
   SimulateUserPresentState();
 
-  EXPECT_CALL(client_, RequestUnlock());
+  EXPECT_CALL(messenger_, RequestUnlock());
   unlock_manager_->OnAuthAttempted(ScreenlockBridge::LockHandler::USER_CLICK);
 
   EXPECT_CALL(proximity_auth_client_, FinalizeUnlock(false));
@@ -769,14 +769,14 @@ TEST_F(ProximityAuthUnlockManagerTest,
 
 TEST_F(ProximityAuthUnlockManagerTest,
        OnAuthAttempted_Unlock_WithSignIn_RequestSucceeds_EventSendFails) {
-  ON_CALL(client_, SupportsSignIn()).WillByDefault(Return(true));
+  ON_CALL(messenger_, SupportsSignIn()).WillByDefault(Return(true));
   CreateUnlockManager(UnlockManager::ScreenlockType::SESSION_LOCK);
   SimulateUserPresentState();
 
-  EXPECT_CALL(client_, RequestUnlock());
+  EXPECT_CALL(messenger_, RequestUnlock());
   unlock_manager_->OnAuthAttempted(ScreenlockBridge::LockHandler::USER_CLICK);
 
-  EXPECT_CALL(client_, DispatchUnlockEvent());
+  EXPECT_CALL(messenger_, DispatchUnlockEvent());
   unlock_manager_->OnUnlockResponse(true);
 
   EXPECT_CALL(proximity_auth_client_, FinalizeUnlock(false));
@@ -785,14 +785,14 @@ TEST_F(ProximityAuthUnlockManagerTest,
 
 TEST_F(ProximityAuthUnlockManagerTest,
        OnAuthAttempted_Unlock_WithSignIn_RequestSucceeds_EventSendSucceeds) {
-  ON_CALL(client_, SupportsSignIn()).WillByDefault(Return(true));
+  ON_CALL(messenger_, SupportsSignIn()).WillByDefault(Return(true));
   CreateUnlockManager(UnlockManager::ScreenlockType::SESSION_LOCK);
   SimulateUserPresentState();
 
-  EXPECT_CALL(client_, RequestUnlock());
+  EXPECT_CALL(messenger_, RequestUnlock());
   unlock_manager_->OnAuthAttempted(ScreenlockBridge::LockHandler::USER_CLICK);
 
-  EXPECT_CALL(client_, DispatchUnlockEvent());
+  EXPECT_CALL(messenger_, DispatchUnlockEvent());
   unlock_manager_->OnUnlockResponse(true);
 
   EXPECT_CALL(proximity_auth_client_, FinalizeUnlock(true));
@@ -801,11 +801,11 @@ TEST_F(ProximityAuthUnlockManagerTest,
 
 TEST_F(ProximityAuthUnlockManagerTest,
        OnAuthAttempted_Unlock_DoesntSupportSignIn_UnlockEventSendFails) {
-  ON_CALL(client_, SupportsSignIn()).WillByDefault(Return(false));
+  ON_CALL(messenger_, SupportsSignIn()).WillByDefault(Return(false));
   CreateUnlockManager(UnlockManager::ScreenlockType::SESSION_LOCK);
   SimulateUserPresentState();
 
-  EXPECT_CALL(client_, DispatchUnlockEvent());
+  EXPECT_CALL(messenger_, DispatchUnlockEvent());
   unlock_manager_->OnAuthAttempted(ScreenlockBridge::LockHandler::USER_CLICK);
 
   EXPECT_CALL(proximity_auth_client_, FinalizeUnlock(false));
@@ -814,11 +814,11 @@ TEST_F(ProximityAuthUnlockManagerTest,
 
 TEST_F(ProximityAuthUnlockManagerTest,
        OnAuthAttempted_Unlock_SupportsSignIn_UnlockEventSendSucceeds) {
-  ON_CALL(client_, SupportsSignIn()).WillByDefault(Return(false));
+  ON_CALL(messenger_, SupportsSignIn()).WillByDefault(Return(false));
   CreateUnlockManager(UnlockManager::ScreenlockType::SESSION_LOCK);
   SimulateUserPresentState();
 
-  EXPECT_CALL(client_, DispatchUnlockEvent());
+  EXPECT_CALL(messenger_, DispatchUnlockEvent());
   unlock_manager_->OnAuthAttempted(ScreenlockBridge::LockHandler::USER_CLICK);
 
   EXPECT_CALL(proximity_auth_client_, FinalizeUnlock(true));

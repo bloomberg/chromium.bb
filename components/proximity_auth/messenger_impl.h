@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_PROXIMITY_AUTH_CLIENT_IMPL_H
-#define COMPONENTS_PROXIMITY_AUTH_CLIENT_IMPL_H
+#ifndef COMPONENTS_PROXIMITY_AUTH_MESSENGER_IMPL_H
+#define COMPONENTS_PROXIMITY_AUTH_MESSENGER_IMPL_H
 
 #include <deque>
 
@@ -11,8 +11,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
-#include "components/proximity_auth/client.h"
 #include "components/proximity_auth/connection_observer.h"
+#include "components/proximity_auth/messenger.h"
 
 namespace base {
 class DictionaryValue;
@@ -23,20 +23,20 @@ namespace proximity_auth {
 class Connection;
 class SecureContext;
 
-// Concrete implementation of the Client interface.
-class ClientImpl : public Client, public ConnectionObserver {
+// Concrete implementation of the Messenger interface.
+class MessengerImpl : public Messenger, public ConnectionObserver {
  public:
-  // Constructs a client that sends and receives messages over the given
+  // Constructs a messenger that sends and receives messages over the given
   // |connection|, using the |secure_context| to encrypt and decrypt the
-  // messages. The |connection| must be connected. The client begins observing
-  // messages as soon as it is constructed.
-  ClientImpl(scoped_ptr<Connection> connection,
-             scoped_ptr<SecureContext> secure_context);
-  ~ClientImpl() override;
+  // messages. The |connection| must be connected. The messenger begins
+  // observing messages as soon as it is constructed.
+  MessengerImpl(scoped_ptr<Connection> connection,
+                scoped_ptr<SecureContext> secure_context);
+  ~MessengerImpl() override;
 
-  // Client:
-  void AddObserver(ClientObserver* observer) override;
-  void RemoveObserver(ClientObserver* observer) override;
+  // Messenger:
+  void AddObserver(MessengerObserver* observer) override;
+  void RemoveObserver(MessengerObserver* observer) override;
   bool SupportsSignIn() const override;
   void DispatchUnlockEvent() override;
   void RequestDecryption(const std::string& challenge) override;
@@ -102,8 +102,8 @@ class ClientImpl : public Client, public ConnectionObserver {
   // |connection_|.
   scoped_ptr<SecureContext> secure_context_;
 
-  // The registered observers of |this_| client.
-  base::ObserverList<ClientObserver> observers_;
+  // The registered observers of |this_| messenger.
+  base::ObserverList<MessengerObserver> observers_;
 
   // Queue of messages to send to the remote device.
   std::deque<PendingMessage> queued_messages_;
@@ -112,11 +112,11 @@ class ClientImpl : public Client, public ConnectionObserver {
   // response. Null if there is no message currently in this state.
   scoped_ptr<PendingMessage> pending_message_;
 
-  base::WeakPtrFactory<ClientImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<MessengerImpl> weak_ptr_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(ClientImpl);
+  DISALLOW_COPY_AND_ASSIGN(MessengerImpl);
 };
 
 }  // namespace proximity_auth
 
-#endif  // COMPONENTS_PROXIMITY_AUTH_CLIENT_IMPL_H
+#endif  // COMPONENTS_PROXIMITY_AUTH_MESSENGER_IMPL_H

@@ -9,9 +9,9 @@
 #include "base/test/test_simple_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "components/proximity_auth/authenticator.h"
-#include "components/proximity_auth/client.h"
 #include "components/proximity_auth/connection.h"
 #include "components/proximity_auth/connection_finder.h"
+#include "components/proximity_auth/messenger.h"
 #include "components/proximity_auth/secure_context.h"
 #include "components/proximity_auth/wire_message.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -249,7 +249,7 @@ TEST_F(ProximityAuthRemoteDeviceLifeCycleImplTest, AuthenticateAndDisconnect) {
   for (size_t i = 0; i < 3; ++i) {
     Connection* connection = OnConnectionFound();
     Authenticate(Authenticator::Result::SUCCESS);
-    EXPECT_TRUE(life_cycle_.GetClient());
+    EXPECT_TRUE(life_cycle_.GetMessenger());
 
     EXPECT_CALL(*this,
                 OnLifeCycleStateChanged(
@@ -265,7 +265,7 @@ TEST_F(ProximityAuthRemoteDeviceLifeCycleImplTest, AuthenticationFails) {
   StartLifeCycle();
   OnConnectionFound();
   Authenticate(Authenticator::Result::FAILURE);
-  EXPECT_FALSE(life_cycle_.GetClient());
+  EXPECT_FALSE(life_cycle_.GetMessenger());
 
   // After a delay, the life cycle should return to FINDING_CONNECTION.
   EXPECT_CALL(*this, OnLifeCycleStateChanged(
@@ -278,7 +278,7 @@ TEST_F(ProximityAuthRemoteDeviceLifeCycleImplTest, AuthenticationFails) {
   // Try failing with the DISCONNECTED state instead.
   OnConnectionFound();
   Authenticate(Authenticator::Result::DISCONNECTED);
-  EXPECT_FALSE(life_cycle_.GetClient());
+  EXPECT_FALSE(life_cycle_.GetMessenger());
 
   // Check we're back in FINDING_CONNECTION state again.
   EXPECT_CALL(*this, OnLifeCycleStateChanged(
@@ -295,14 +295,14 @@ TEST_F(ProximityAuthRemoteDeviceLifeCycleImplTest,
   StartLifeCycle();
   OnConnectionFound();
   Authenticate(Authenticator::Result::FAILURE);
-  EXPECT_FALSE(life_cycle_.GetClient());
+  EXPECT_FALSE(life_cycle_.GetMessenger());
   EXPECT_CALL(*this, OnLifeCycleStateChanged(_, _));
   task_runner_->RunUntilIdle();
 
   // Authentication succeeds on second pass.
   Connection* connection = OnConnectionFound();
   Authenticate(Authenticator::Result::SUCCESS);
-  EXPECT_TRUE(life_cycle_.GetClient());
+  EXPECT_TRUE(life_cycle_.GetMessenger());
   EXPECT_CALL(*this, OnLifeCycleStateChanged(_, _));
   connection->Disconnect();
 }

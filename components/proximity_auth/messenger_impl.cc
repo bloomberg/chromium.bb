@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/proximity_auth/client_impl.h"
+#include "components/proximity_auth/messenger_impl.h"
 
 #include "base/bind.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/values.h"
-#include "components/proximity_auth/client_observer.h"
 #include "components/proximity_auth/connection.h"
 #include "components/proximity_auth/cryptauth/base64url.h"
 #include "components/proximity_auth/logging/logging.h"
+#include "components/proximity_auth/messenger_observer.h"
 #include "components/proximity_auth/remote_status_update.h"
 #include "components/proximity_auth/secure_context.h"
 #include "components/proximity_auth/wire_message.h"
@@ -54,8 +54,8 @@ std::string GetMessageType(const base::DictionaryValue& message) {
 
 }  // namespace
 
-ClientImpl::ClientImpl(scoped_ptr<Connection> connection,
-                       scoped_ptr<SecureContext> secure_context)
+MessengerImpl::MessengerImpl(scoped_ptr<Connection> connection,
+                             scoped_ptr<SecureContext> secure_context)
     : connection_(connection.Pass()),
       secure_context_(secure_context.Pass()),
       weak_ptr_factory_(this) {
@@ -63,25 +63,25 @@ ClientImpl::ClientImpl(scoped_ptr<Connection> connection,
   connection_->AddObserver(this);
 }
 
-ClientImpl::~ClientImpl() {
+MessengerImpl::~MessengerImpl() {
   if (connection_)
     connection_->RemoveObserver(this);
 }
 
-void ClientImpl::AddObserver(ClientObserver* observer) {
+void MessengerImpl::AddObserver(MessengerObserver* observer) {
   observers_.AddObserver(observer);
 }
 
-void ClientImpl::RemoveObserver(ClientObserver* observer) {
+void MessengerImpl::RemoveObserver(MessengerObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
-bool ClientImpl::SupportsSignIn() const {
+bool MessengerImpl::SupportsSignIn() const {
   return (secure_context_->GetProtocolVersion() ==
           SecureContext::PROTOCOL_VERSION_THREE_ONE);
 }
 
-void ClientImpl::DispatchUnlockEvent() {
+void MessengerImpl::DispatchUnlockEvent() {
   base::DictionaryValue message;
   message.SetString(kTypeKey, kMessageTypeLocalEvent);
   message.SetString(kNameKey, kUnlockEventName);
@@ -89,11 +89,11 @@ void ClientImpl::DispatchUnlockEvent() {
   ProcessMessageQueue();
 }
 
-void ClientImpl::RequestDecryption(const std::string& challenge) {
+void MessengerImpl::RequestDecryption(const std::string& challenge) {
   if (!SupportsSignIn()) {
     PA_LOG(WARNING) << "Dropping decryption request, as remote device "
                     << "does not support protocol v3.1.";
-    FOR_EACH_OBSERVER(ClientObserver, observers_,
+    FOR_EACH_OBSERVER(MessengerObserver, observers_,
                       OnDecryptResponse(scoped_ptr<std::string>()));
     return;
   }
@@ -110,11 +110,11 @@ void ClientImpl::RequestDecryption(const std::string& challenge) {
   ProcessMessageQueue();
 }
 
-void ClientImpl::RequestUnlock() {
+void MessengerImpl::RequestUnlock() {
   if (!SupportsSignIn()) {
     PA_LOG(WARNING) << "Dropping unlock request, as remote device does not "
                     << "support protocol v3.1.";
-    FOR_EACH_OBSERVER(ClientObserver, observers_, OnUnlockResponse(false));
+    FOR_EACH_OBSERVER(MessengerObserver, observers_, OnUnlockResponse(false));
     return;
   }
 
@@ -124,18 +124,16 @@ void ClientImpl::RequestUnlock() {
   ProcessMessageQueue();
 }
 
-ClientImpl::PendingMessage::PendingMessage() {
-}
+MessengerImpl::PendingMessage::PendingMessage() {}
 
-ClientImpl::PendingMessage::PendingMessage(const base::DictionaryValue& message)
+MessengerImpl::PendingMessage::PendingMessage(
+    const base::DictionaryValue& message)
     : json_message(SerializeValueToJson(message)),
-      type(GetMessageType(message)) {
-}
+      type(GetMessageType(message)) {}
 
-ClientImpl::PendingMessage::~PendingMessage() {
-}
+MessengerImpl::PendingMessage::~PendingMessage() {}
 
-void ClientImpl::ProcessMessageQueue() {
+void MessengerImpl::ProcessMessageQueue() {
   if (pending_message_ || queued_messages_.empty() ||
       connection_->is_sending_message())
     return;
@@ -144,15 +142,15 @@ void ClientImpl::ProcessMessageQueue() {
   queued_messages_.pop_front();
 
   secure_context_->Encode(pending_message_->json_message,
-                          base::Bind(&ClientImpl::OnMessageEncoded,
+                          base::Bind(&MessengerImpl::OnMessageEncoded,
                                      weak_ptr_factory_.GetWeakPtr()));
 }
 
-void ClientImpl::OnMessageEncoded(const std::string& encoded_message) {
+void MessengerImpl::OnMessageEncoded(const std::string& encoded_message) {
   connection_->SendMessage(make_scoped_ptr(new WireMessage(encoded_message)));
 }
 
-void ClientImpl::OnMessageDecoded(const std::string& decoded_message) {
+void MessengerImpl::OnMessageDecoded(const std::string& decoded_message) {
   // The decoded message should be a JSON string.
   scoped_ptr<base::Value> message_value =
       base::JSONReader::Read(decoded_message);
@@ -179,7 +177,7 @@ void ClientImpl::OnMessageDecoded(const std::string& decoded_message) {
   }
 
   // All other messages should only be received in response to a message that
-  // the client sent.
+  // the messenger sent.
   if (!pending_message_) {
     PA_LOG(WARNING) << "Unexpected message received:\n" << decoded_message;
     return;
@@ -211,7 +209,7 @@ void ClientImpl::OnMessageDecoded(const std::string& decoded_message) {
   ProcessMessageQueue();
 }
 
-void ClientImpl::HandleRemoteStatusUpdateMessage(
+void MessengerImpl::HandleRemoteStatusUpdateMessage(
     const base::DictionaryValue& message) {
   scoped_ptr<RemoteStatusUpdate> status_update =
       RemoteStatusUpdate::Deserialize(message);
@@ -220,11 +218,11 @@ void ClientImpl::HandleRemoteStatusUpdateMessage(
     return;
   }
 
-  FOR_EACH_OBSERVER(ClientObserver, observers_,
+  FOR_EACH_OBSERVER(MessengerObserver, observers_,
                     OnRemoteStatusUpdate(*status_update));
 }
 
-void ClientImpl::HandleDecryptResponseMessage(
+void MessengerImpl::HandleDecryptResponseMessage(
     const base::DictionaryValue& message) {
   std::string base64_data;
   std::string decrypted_data;
@@ -236,39 +234,39 @@ void ClientImpl::HandleDecryptResponseMessage(
   } else {
     response.reset(new std::string(decrypted_data));
   }
-  FOR_EACH_OBSERVER(ClientObserver, observers_,
+  FOR_EACH_OBSERVER(MessengerObserver, observers_,
                     OnDecryptResponse(response.Pass()));
 }
 
-void ClientImpl::HandleUnlockResponseMessage(
+void MessengerImpl::HandleUnlockResponseMessage(
     const base::DictionaryValue& message) {
-  FOR_EACH_OBSERVER(ClientObserver, observers_, OnUnlockResponse(true));
+  FOR_EACH_OBSERVER(MessengerObserver, observers_, OnUnlockResponse(true));
 }
 
-void ClientImpl::OnConnectionStatusChanged(Connection* connection,
-                                           Connection::Status old_status,
-                                           Connection::Status new_status) {
+void MessengerImpl::OnConnectionStatusChanged(Connection* connection,
+                                              Connection::Status old_status,
+                                              Connection::Status new_status) {
   DCHECK_EQ(connection, connection_.get());
   if (new_status == Connection::DISCONNECTED) {
     PA_LOG(INFO) << "Secure channel disconnected...";
     connection_->RemoveObserver(this);
     connection_.reset();
-    FOR_EACH_OBSERVER(ClientObserver, observers_, OnDisconnected());
+    FOR_EACH_OBSERVER(MessengerObserver, observers_, OnDisconnected());
     // TODO(isherman): Determine whether it's also necessary/appropriate to fire
     // this notification from the destructor.
   }
 }
 
-void ClientImpl::OnMessageReceived(const Connection& connection,
-                                   const WireMessage& wire_message) {
+void MessengerImpl::OnMessageReceived(const Connection& connection,
+                                      const WireMessage& wire_message) {
   secure_context_->Decode(wire_message.payload(),
-                          base::Bind(&ClientImpl::OnMessageDecoded,
+                          base::Bind(&MessengerImpl::OnMessageDecoded,
                                      weak_ptr_factory_.GetWeakPtr()));
 }
 
-void ClientImpl::OnSendCompleted(const Connection& connection,
-                                 const WireMessage& wire_message,
-                                 bool success) {
+void MessengerImpl::OnSendCompleted(const Connection& connection,
+                                    const WireMessage& wire_message,
+                                    bool success) {
   if (!pending_message_) {
     PA_LOG(ERROR) << "Unexpected message sent.";
     return;
@@ -285,12 +283,13 @@ void ClientImpl::OnSendCompleted(const Connection& connection,
   // For local events, we don't expect a response, so on success, we
   // notify observers right away.
   if (pending_message_->type == kMessageTypeDecryptRequest) {
-    FOR_EACH_OBSERVER(ClientObserver, observers_,
+    FOR_EACH_OBSERVER(MessengerObserver, observers_,
                       OnDecryptResponse(scoped_ptr<std::string>()));
   } else if (pending_message_->type == kMessageTypeUnlockRequest) {
-    FOR_EACH_OBSERVER(ClientObserver, observers_, OnUnlockResponse(false));
+    FOR_EACH_OBSERVER(MessengerObserver, observers_, OnUnlockResponse(false));
   } else if (pending_message_->type == kMessageTypeLocalEvent) {
-    FOR_EACH_OBSERVER(ClientObserver, observers_, OnUnlockEventSent(success));
+    FOR_EACH_OBSERVER(MessengerObserver, observers_,
+                      OnUnlockEventSent(success));
   } else {
     PA_LOG(ERROR) << "Message of unknown type '" << pending_message_->type
                   << "' sent.";

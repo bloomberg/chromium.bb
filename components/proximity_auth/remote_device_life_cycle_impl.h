@@ -10,7 +10,7 @@
 #include "base/observer_list.h"
 #include "base/timer/timer.h"
 #include "components/proximity_auth/authenticator.h"
-#include "components/proximity_auth/client_observer.h"
+#include "components/proximity_auth/messenger_observer.h"
 #include "components/proximity_auth/remote_device.h"
 #include "components/proximity_auth/remote_device_life_cycle.h"
 
@@ -18,7 +18,7 @@ namespace proximity_auth {
 
 class BluetoothThrottler;
 class BluetoothLowEnergyDeviceWhitelist;
-class Client;
+class Messenger;
 class Connection;
 class ConnectionFinder;
 class ProximityAuthClient;
@@ -26,7 +26,7 @@ class SecureContext;
 
 // Implementation of RemoteDeviceLifeCycle.
 class RemoteDeviceLifeCycleImpl : public RemoteDeviceLifeCycle,
-                                  public ClientObserver {
+                                  public MessengerObserver {
  public:
   // Creates the life cycle for controlling the given |remote_device|.
   // |proximity_auth_client| is not owned.
@@ -37,7 +37,7 @@ class RemoteDeviceLifeCycleImpl : public RemoteDeviceLifeCycle,
   // RemoteDeviceLifeCycle:
   void Start() override;
   RemoteDeviceLifeCycle::State GetState() const override;
-  Client* GetClient() override;
+  Messenger* GetMessenger() override;
   void AddObserver(Observer* observer) override;
   void RemoveObserver(Observer* observer) override;
 
@@ -65,10 +65,10 @@ class RemoteDeviceLifeCycleImpl : public RemoteDeviceLifeCycle,
   void OnAuthenticationResult(Authenticator::Result result,
                               scoped_ptr<SecureContext> secure_context);
 
-  // Creates the client which parses status updates.
-  void CreateClient();
+  // Creates the messenger which parses status updates.
+  void CreateMessenger();
 
-  // ClientObserver:
+  // MessengerObserver:
   void OnDisconnected() override;
 
   // The remote device being controlled.
@@ -99,12 +99,12 @@ class RemoteDeviceLifeCycleImpl : public RemoteDeviceLifeCycle,
   scoped_ptr<Authenticator> authenticator_;
 
   // Context for encrypting and decrypting messages. Created after
-  // authentication succeeds. Ownership is eventually passed to |client_|.
+  // authentication succeeds. Ownership is eventually passed to |messenger_|.
   scoped_ptr<SecureContext> secure_context_;
 
-  // The client for sending and receiving messages in the
+  // The messenger for sending and receiving messages in the
   // SECURE_CHANNEL_ESTABLISHED state.
-  scoped_ptr<Client> client_;
+  scoped_ptr<Messenger> messenger_;
 
   // After authentication fails, this timer waits for a period of time before
   // retrying the connection.

@@ -2,22 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_PROXIMITY_AUTH_CLIENT_H
-#define COMPONENTS_PROXIMITY_AUTH_CLIENT_H
+#ifndef COMPONENTS_PROXIMITY_AUTH_MESSENGER_H
+#define COMPONENTS_PROXIMITY_AUTH_MESSENGER_H
 
 namespace proximity_auth {
 
-class ClientObserver;
+class MessengerObserver;
 
-// A client handling the Easy Unlock protocol, capable of parsing events from
+// A messenger handling the Easy Unlock protocol, capable of parsing events from
 // the remote device and sending events for the local device.
-class Client {
+class Messenger {
  public:
-  virtual ~Client() {}
+  virtual ~Messenger() {}
 
-  // Adds or removes an observer for Client events.
-  virtual void AddObserver(ClientObserver* observer) = 0;
-  virtual void RemoveObserver(ClientObserver* observer) = 0;
+  // Adds or removes an observer for Messenger events.
+  virtual void AddObserver(MessengerObserver* observer) = 0;
+  virtual void RemoveObserver(MessengerObserver* observer) = 0;
 
   // Returns true iff the remote device supports the v3.1 sign-in protocol.
   virtual bool SupportsSignIn() const = 0;
@@ -38,4 +38,4 @@ class Client {
 
 }  // namespace proximity_auth
 
-#endif  // COMPONENTS_PROXIMITY_AUTH_CLIENT_H
+#endif  // COMPONENTS_PROXIMITY_AUTH_MESSENGER_H

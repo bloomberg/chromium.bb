@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/proximity_auth/client_impl.h"
+#include "components/proximity_auth/messenger_impl.h"
 
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
-#include "components/proximity_auth/client_observer.h"
 #include "components/proximity_auth/connection.h"
+#include "components/proximity_auth/messenger_observer.h"
 #include "components/proximity_auth/remote_device.h"
 #include "components/proximity_auth/remote_status_update.h"
 #include "components/proximity_auth/secure_context.h"
@@ -114,12 +114,12 @@ class FakeConnection : public Connection {
   DISALLOW_COPY_AND_ASSIGN(FakeConnection);
 };
 
-class MockClientObserver : public ClientObserver {
+class MockMessengerObserver : public MessengerObserver {
  public:
-  explicit MockClientObserver(Client* client) : client_(client) {
-    client_->AddObserver(this);
+  explicit MockMessengerObserver(Messenger* messenger) : messenger_(messenger) {
+    messenger_->AddObserver(this);
   }
-  virtual ~MockClientObserver() { client_->RemoveObserver(this); }
+  virtual ~MockMessengerObserver() { messenger_->RemoveObserver(this); }
 
   MOCK_METHOD1(OnUnlockEventSent, void(bool success));
   MOCK_METHOD1(OnRemoteStatusUpdate,
@@ -134,20 +134,20 @@ class MockClientObserver : public ClientObserver {
   }
 
  private:
-  // The client that |this| instance observes.
-  Client* const client_;
+  // The messenger that |this| instance observes.
+  Messenger* const messenger_;
 
-  DISALLOW_COPY_AND_ASSIGN(MockClientObserver);
+  DISALLOW_COPY_AND_ASSIGN(MockMessengerObserver);
 };
 
-class TestClient : public ClientImpl {
+class TestMessenger : public MessengerImpl {
  public:
-  TestClient()
-      : ClientImpl(make_scoped_ptr(new NiceMock<FakeConnection>()),
-                   make_scoped_ptr(new NiceMock<MockSecureContext>())) {}
-  ~TestClient() override {}
+  TestMessenger()
+      : MessengerImpl(make_scoped_ptr(new NiceMock<FakeConnection>()),
+                      make_scoped_ptr(new NiceMock<MockSecureContext>())) {}
+  ~TestMessenger() override {}
 
-  // Simple getters for the mock objects owned by |this| client.
+  // Simple getters for the mock objects owned by |this| messenger.
   FakeConnection* GetFakeConnection() {
     return static_cast<FakeConnection*>(connection());
   }
@@ -156,39 +156,39 @@ class TestClient : public ClientImpl {
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(TestClient);
+  DISALLOW_COPY_AND_ASSIGN(TestMessenger);
 };
 
 }  // namespace
 
-TEST(ProximityAuthClientImplTest, SupportsSignIn_ProtocolVersionThreeZero) {
-  TestClient client;
-  ON_CALL(*client.GetMockSecureContext(), GetProtocolVersion())
+TEST(ProximityAuthMessengerImplTest, SupportsSignIn_ProtocolVersionThreeZero) {
+  TestMessenger messenger;
+  ON_CALL(*messenger.GetMockSecureContext(), GetProtocolVersion())
       .WillByDefault(Return(SecureContext::PROTOCOL_VERSION_THREE_ZERO));
-  EXPECT_FALSE(client.SupportsSignIn());
+  EXPECT_FALSE(messenger.SupportsSignIn());
 }
 
-TEST(ProximityAuthClientImplTest, SupportsSignIn_ProtocolVersionThreeOne) {
-  TestClient client;
-  ON_CALL(*client.GetMockSecureContext(), GetProtocolVersion())
+TEST(ProximityAuthMessengerImplTest, SupportsSignIn_ProtocolVersionThreeOne) {
+  TestMessenger messenger;
+  ON_CALL(*messenger.GetMockSecureContext(), GetProtocolVersion())
       .WillByDefault(Return(SecureContext::PROTOCOL_VERSION_THREE_ONE));
-  EXPECT_TRUE(client.SupportsSignIn());
+  EXPECT_TRUE(messenger.SupportsSignIn());
 }
 
-TEST(ProximityAuthClientImplTest,
+TEST(ProximityAuthMessengerImplTest,
      OnConnectionStatusChanged_ConnectionDisconnects) {
-  TestClient client;
-  MockClientObserver observer(&client);
+  TestMessenger messenger;
+  MockMessengerObserver observer(&messenger);
 
   EXPECT_CALL(observer, OnDisconnected());
-  client.GetFakeConnection()->Disconnect();
+  messenger.GetFakeConnection()->Disconnect();
 }
 
-TEST(ProximityAuthClientImplTest, DispatchUnlockEvent_SendsExpectedMessage) {
-  TestClient client;
-  client.DispatchUnlockEvent();
+TEST(ProximityAuthMessengerImplTest, DispatchUnlockEvent_SendsExpectedMessage) {
+  TestMessenger messenger;
+  messenger.DispatchUnlockEvent();
 
-  WireMessage* message = client.GetFakeConnection()->current_message();
+  WireMessage* message = messenger.GetFakeConnection()->current_message();
   ASSERT_TRUE(message);
   EXPECT_EQ(std::string(), message->permit_id());
   EXPECT_EQ(
@@ -199,38 +199,38 @@ TEST(ProximityAuthClientImplTest, DispatchUnlockEvent_SendsExpectedMessage) {
       message->payload());
 }
 
-TEST(ProximityAuthClientImplTest, DispatchUnlockEvent_SendMessageFails) {
-  TestClient client;
-  MockClientObserver observer(&client);
-  client.DispatchUnlockEvent();
+TEST(ProximityAuthMessengerImplTest, DispatchUnlockEvent_SendMessageFails) {
+  TestMessenger messenger;
+  MockMessengerObserver observer(&messenger);
+  messenger.DispatchUnlockEvent();
 
   EXPECT_CALL(observer, OnUnlockEventSent(false));
-  client.GetFakeConnection()->FinishSendingMessageWithSuccess(false);
+  messenger.GetFakeConnection()->FinishSendingMessageWithSuccess(false);
 }
 
-TEST(ProximityAuthClientImplTest, DispatchUnlockEvent_SendMessageSucceeds) {
-  TestClient client;
-  MockClientObserver observer(&client);
-  client.DispatchUnlockEvent();
+TEST(ProximityAuthMessengerImplTest, DispatchUnlockEvent_SendMessageSucceeds) {
+  TestMessenger messenger;
+  MockMessengerObserver observer(&messenger);
+  messenger.DispatchUnlockEvent();
 
   EXPECT_CALL(observer, OnUnlockEventSent(true));
-  client.GetFakeConnection()->FinishSendingMessageWithSuccess(true);
+  messenger.GetFakeConnection()->FinishSendingMessageWithSuccess(true);
 }
 
-TEST(ProximityAuthClientImplTest,
+TEST(ProximityAuthMessengerImplTest,
      RequestDecryption_SignInUnsupported_DoesntSendMessage) {
-  TestClient client;
-  ON_CALL(*client.GetMockSecureContext(), GetProtocolVersion())
+  TestMessenger messenger;
+  ON_CALL(*messenger.GetMockSecureContext(), GetProtocolVersion())
       .WillByDefault(Return(SecureContext::PROTOCOL_VERSION_THREE_ZERO));
-  client.RequestDecryption(kChallenge);
-  EXPECT_FALSE(client.GetFakeConnection()->current_message());
+  messenger.RequestDecryption(kChallenge);
+  EXPECT_FALSE(messenger.GetFakeConnection()->current_message());
 }
 
-TEST(ProximityAuthClientImplTest, RequestDecryption_SendsExpectedMessage) {
-  TestClient client;
-  client.RequestDecryption(kChallenge);
+TEST(ProximityAuthMessengerImplTest, RequestDecryption_SendsExpectedMessage) {
+  TestMessenger messenger;
+  messenger.RequestDecryption(kChallenge);
 
-  WireMessage* message = client.GetFakeConnection()->current_message();
+  WireMessage* message = messenger.GetFakeConnection()->current_message();
   ASSERT_TRUE(message);
   EXPECT_EQ(std::string(), message->permit_id());
   EXPECT_EQ(
@@ -241,12 +241,12 @@ TEST(ProximityAuthClientImplTest, RequestDecryption_SendsExpectedMessage) {
       message->payload());
 }
 
-TEST(ProximityAuthClientImplTest,
+TEST(ProximityAuthMessengerImplTest,
      RequestDecryption_SendsExpectedMessage_UsingBase64UrlEncoding) {
-  TestClient client;
-  client.RequestDecryption("\xFF\xE6");
+  TestMessenger messenger;
+  messenger.RequestDecryption("\xFF\xE6");
 
-  WireMessage* message = client.GetFakeConnection()->current_message();
+  WireMessage* message = messenger.GetFakeConnection()->current_message();
   ASSERT_TRUE(message);
   EXPECT_EQ(std::string(), message->permit_id());
   EXPECT_EQ(
@@ -257,146 +257,147 @@ TEST(ProximityAuthClientImplTest,
       message->payload());
 }
 
-TEST(ProximityAuthClientImplTest, RequestDecryption_SendMessageFails) {
-  TestClient client;
-  MockClientObserver observer(&client);
-  client.RequestDecryption(kChallenge);
+TEST(ProximityAuthMessengerImplTest, RequestDecryption_SendMessageFails) {
+  TestMessenger messenger;
+  MockMessengerObserver observer(&messenger);
+  messenger.RequestDecryption(kChallenge);
 
   EXPECT_CALL(observer, OnDecryptResponseProxy(nullptr));
-  client.GetFakeConnection()->FinishSendingMessageWithSuccess(false);
+  messenger.GetFakeConnection()->FinishSendingMessageWithSuccess(false);
 }
 
-TEST(ProximityAuthClientImplTest,
+TEST(ProximityAuthMessengerImplTest,
      RequestDecryption_SendSucceeds_WaitsForReply) {
-  TestClient client;
-  MockClientObserver observer(&client);
-  client.RequestDecryption(kChallenge);
+  TestMessenger messenger;
+  MockMessengerObserver observer(&messenger);
+  messenger.RequestDecryption(kChallenge);
 
   EXPECT_CALL(observer, OnDecryptResponseProxy(_)).Times(0);
-  client.GetFakeConnection()->FinishSendingMessageWithSuccess(true);
+  messenger.GetFakeConnection()->FinishSendingMessageWithSuccess(true);
 }
 
-TEST(ProximityAuthClientImplTest,
+TEST(ProximityAuthMessengerImplTest,
      RequestDecryption_SendSucceeds_NotifiesObserversOnReply_NoData) {
-  TestClient client;
-  MockClientObserver observer(&client);
-  client.RequestDecryption(kChallenge);
-  client.GetFakeConnection()->FinishSendingMessageWithSuccess(true);
+  TestMessenger messenger;
+  MockMessengerObserver observer(&messenger);
+  messenger.RequestDecryption(kChallenge);
+  messenger.GetFakeConnection()->FinishSendingMessageWithSuccess(true);
 
   EXPECT_CALL(observer, OnDecryptResponseProxy(nullptr));
-  client.GetFakeConnection()->ReceiveMessageWithPayload(
+  messenger.GetFakeConnection()->ReceiveMessageWithPayload(
       "{\"type\":\"decrypt_response\"}, but encoded");
 }
 
-TEST(ProximityAuthClientImplTest,
+TEST(ProximityAuthMessengerImplTest,
      RequestDecryption_SendSucceeds_NotifiesObserversOnReply_InvalidData) {
-  TestClient client;
-  MockClientObserver observer(&client);
-  client.RequestDecryption(kChallenge);
-  client.GetFakeConnection()->FinishSendingMessageWithSuccess(true);
+  TestMessenger messenger;
+  MockMessengerObserver observer(&messenger);
+  messenger.RequestDecryption(kChallenge);
+  messenger.GetFakeConnection()->FinishSendingMessageWithSuccess(true);
 
   EXPECT_CALL(observer, OnDecryptResponseProxy(nullptr));
-  client.GetFakeConnection()->ReceiveMessageWithPayload(
+  messenger.GetFakeConnection()->ReceiveMessageWithPayload(
       "{"
       "\"type\":\"decrypt_response\","
       "\"data\":\"not a base64-encoded string\""
       "}, but encoded");
 }
 
-TEST(ProximityAuthClientImplTest,
+TEST(ProximityAuthMessengerImplTest,
      RequestDecryption_SendSucceeds_NotifiesObserversOnReply_ValidData) {
-  TestClient client;
-  MockClientObserver observer(&client);
-  client.RequestDecryption(kChallenge);
-  client.GetFakeConnection()->FinishSendingMessageWithSuccess(true);
+  TestMessenger messenger;
+  MockMessengerObserver observer(&messenger);
+  messenger.RequestDecryption(kChallenge);
+  messenger.GetFakeConnection()->FinishSendingMessageWithSuccess(true);
 
   EXPECT_CALL(observer, OnDecryptResponseProxy(Pointee(Eq("a winner is you"))));
-  client.GetFakeConnection()->ReceiveMessageWithPayload(
+  messenger.GetFakeConnection()->ReceiveMessageWithPayload(
       "{"
       "\"type\":\"decrypt_response\","
       "\"data\":\"YSB3aW5uZXIgaXMgeW91\""  // "a winner is you", base64-encoded
       "}, but encoded");
 }
 
-// Verify that the client correctly parses base64url encoded data.
-TEST(ProximityAuthClientImplTest,
+// Verify that the messenger correctly parses base64url encoded data.
+TEST(ProximityAuthMessengerImplTest,
      RequestDecryption_SendSucceeds_ParsesBase64UrlEncodingInReply) {
-  TestClient client;
-  MockClientObserver observer(&client);
-  client.RequestDecryption(kChallenge);
-  client.GetFakeConnection()->FinishSendingMessageWithSuccess(true);
+  TestMessenger messenger;
+  MockMessengerObserver observer(&messenger);
+  messenger.RequestDecryption(kChallenge);
+  messenger.GetFakeConnection()->FinishSendingMessageWithSuccess(true);
 
   EXPECT_CALL(observer, OnDecryptResponseProxy(Pointee(Eq("\xFF\xE6"))));
-  client.GetFakeConnection()->ReceiveMessageWithPayload(
+  messenger.GetFakeConnection()->ReceiveMessageWithPayload(
       "{"
       "\"type\":\"decrypt_response\","
       "\"data\":\"_-Y=\""  // "\0xFF\0xE6", base64url-encoded.
       "}, but encoded");
 }
 
-TEST(ProximityAuthClientImplTest,
+TEST(ProximityAuthMessengerImplTest,
      RequestUnlock_SignInUnsupported_DoesntSendMessage) {
-  TestClient client;
-  ON_CALL(*client.GetMockSecureContext(), GetProtocolVersion())
+  TestMessenger messenger;
+  ON_CALL(*messenger.GetMockSecureContext(), GetProtocolVersion())
       .WillByDefault(Return(SecureContext::PROTOCOL_VERSION_THREE_ZERO));
-  client.RequestUnlock();
-  EXPECT_FALSE(client.GetFakeConnection()->current_message());
+  messenger.RequestUnlock();
+  EXPECT_FALSE(messenger.GetFakeConnection()->current_message());
 }
 
-TEST(ProximityAuthClientImplTest, RequestUnlock_SendsExpectedMessage) {
-  TestClient client;
-  client.RequestUnlock();
+TEST(ProximityAuthMessengerImplTest, RequestUnlock_SendsExpectedMessage) {
+  TestMessenger messenger;
+  messenger.RequestUnlock();
 
-  WireMessage* message = client.GetFakeConnection()->current_message();
+  WireMessage* message = messenger.GetFakeConnection()->current_message();
   ASSERT_TRUE(message);
   EXPECT_EQ(std::string(), message->permit_id());
   EXPECT_EQ("{\"type\":\"unlock_request\"}, but encoded", message->payload());
 }
 
-TEST(ProximityAuthClientImplTest, RequestUnlock_SendMessageFails) {
-  TestClient client;
-  MockClientObserver observer(&client);
-  client.RequestUnlock();
+TEST(ProximityAuthMessengerImplTest, RequestUnlock_SendMessageFails) {
+  TestMessenger messenger;
+  MockMessengerObserver observer(&messenger);
+  messenger.RequestUnlock();
 
   EXPECT_CALL(observer, OnUnlockResponse(false));
-  client.GetFakeConnection()->FinishSendingMessageWithSuccess(false);
+  messenger.GetFakeConnection()->FinishSendingMessageWithSuccess(false);
 }
 
-TEST(ProximityAuthClientImplTest, RequestUnlock_SendSucceeds_WaitsForReply) {
-  TestClient client;
-  MockClientObserver observer(&client);
-  client.RequestUnlock();
+TEST(ProximityAuthMessengerImplTest, RequestUnlock_SendSucceeds_WaitsForReply) {
+  TestMessenger messenger;
+  MockMessengerObserver observer(&messenger);
+  messenger.RequestUnlock();
 
   EXPECT_CALL(observer, OnUnlockResponse(_)).Times(0);
-  client.GetFakeConnection()->FinishSendingMessageWithSuccess(true);
+  messenger.GetFakeConnection()->FinishSendingMessageWithSuccess(true);
 }
 
-TEST(ProximityAuthClientImplTest,
+TEST(ProximityAuthMessengerImplTest,
      RequestUnlock_SendSucceeds_NotifiesObserversOnReply) {
-  TestClient client;
-  MockClientObserver observer(&client);
-  client.RequestUnlock();
-  client.GetFakeConnection()->FinishSendingMessageWithSuccess(true);
+  TestMessenger messenger;
+  MockMessengerObserver observer(&messenger);
+  messenger.RequestUnlock();
+  messenger.GetFakeConnection()->FinishSendingMessageWithSuccess(true);
 
   EXPECT_CALL(observer, OnUnlockResponse(true));
-  client.GetFakeConnection()->ReceiveMessageWithPayload(
+  messenger.GetFakeConnection()->ReceiveMessageWithPayload(
       "{\"type\":\"unlock_response\"}, but encoded");
 }
 
-TEST(ProximityAuthClientImplTest,
+TEST(ProximityAuthMessengerImplTest,
      OnMessageReceived_RemoteStatusUpdate_Invalid) {
-  TestClient client;
-  MockClientObserver observer(&client);
+  TestMessenger messenger;
+  MockMessengerObserver observer(&messenger);
 
   // Receive a status update message that's missing all the data.
   EXPECT_CALL(observer, OnRemoteStatusUpdate(_)).Times(0);
-  client.GetFakeConnection()->ReceiveMessageWithPayload(
+  messenger.GetFakeConnection()->ReceiveMessageWithPayload(
       "{\"type\":\"status_update\"}, but encoded");
 }
 
-TEST(ProximityAuthClientImplTest, OnMessageReceived_RemoteStatusUpdate_Valid) {
-  TestClient client;
-  MockClientObserver observer(&client);
+TEST(ProximityAuthMessengerImplTest,
+     OnMessageReceived_RemoteStatusUpdate_Valid) {
+  TestMessenger messenger;
+  MockMessengerObserver observer(&messenger);
 
   EXPECT_CALL(observer,
               OnRemoteStatusUpdate(
@@ -405,7 +406,7 @@ TEST(ProximityAuthClientImplTest, OnMessageReceived_RemoteStatusUpdate_Valid) {
                               SECURE_SCREEN_LOCK_ENABLED),
                         Field(&RemoteStatusUpdate::trust_agent_state,
                               TRUST_AGENT_UNSUPPORTED))));
-  client.GetFakeConnection()->ReceiveMessageWithPayload(
+  messenger.GetFakeConnection()->ReceiveMessageWithPayload(
       "{"
       "\"type\":\"status_update\","
       "\"user_presence\":\"present\","
@@ -414,97 +415,97 @@ TEST(ProximityAuthClientImplTest, OnMessageReceived_RemoteStatusUpdate_Valid) {
       "}, but encoded");
 }
 
-TEST(ProximityAuthClientImplTest, OnMessageReceived_InvalidJSON) {
-  TestClient client;
-  StrictMock<MockClientObserver> observer(&client);
-  client.RequestUnlock();
-  client.GetFakeConnection()->FinishSendingMessageWithSuccess(true);
+TEST(ProximityAuthMessengerImplTest, OnMessageReceived_InvalidJSON) {
+  TestMessenger messenger;
+  StrictMock<MockMessengerObserver> observer(&messenger);
+  messenger.RequestUnlock();
+  messenger.GetFakeConnection()->FinishSendingMessageWithSuccess(true);
 
   // The StrictMock will verify that no observer methods are called.
-  client.GetFakeConnection()->ReceiveMessageWithPayload(
+  messenger.GetFakeConnection()->ReceiveMessageWithPayload(
       "Not JSON, but encoded");
 }
 
-TEST(ProximityAuthClientImplTest, OnMessageReceived_MissingTypeField) {
-  TestClient client;
-  StrictMock<MockClientObserver> observer(&client);
-  client.RequestUnlock();
-  client.GetFakeConnection()->FinishSendingMessageWithSuccess(true);
+TEST(ProximityAuthMessengerImplTest, OnMessageReceived_MissingTypeField) {
+  TestMessenger messenger;
+  StrictMock<MockMessengerObserver> observer(&messenger);
+  messenger.RequestUnlock();
+  messenger.GetFakeConnection()->FinishSendingMessageWithSuccess(true);
 
   // The StrictMock will verify that no observer methods are called.
-  client.GetFakeConnection()->ReceiveMessageWithPayload(
+  messenger.GetFakeConnection()->ReceiveMessageWithPayload(
       "{\"some key that's not 'type'\":\"some value\"}, but encoded");
 }
 
-TEST(ProximityAuthClientImplTest, OnMessageReceived_UnexpectedReply) {
-  TestClient client;
-  StrictMock<MockClientObserver> observer(&client);
+TEST(ProximityAuthMessengerImplTest, OnMessageReceived_UnexpectedReply) {
+  TestMessenger messenger;
+  StrictMock<MockMessengerObserver> observer(&messenger);
 
   // The StrictMock will verify that no observer methods are called.
-  client.GetFakeConnection()->ReceiveMessageWithPayload(
+  messenger.GetFakeConnection()->ReceiveMessageWithPayload(
       "{\"type\":\"unlock_response\"}, but encoded");
 }
 
-TEST(ProximityAuthClientImplTest,
+TEST(ProximityAuthMessengerImplTest,
      OnMessageReceived_MismatchedReply_UnlockInReplyToDecrypt) {
-  TestClient client;
-  StrictMock<MockClientObserver> observer(&client);
+  TestMessenger messenger;
+  StrictMock<MockMessengerObserver> observer(&messenger);
 
-  client.RequestDecryption(kChallenge);
-  client.GetFakeConnection()->FinishSendingMessageWithSuccess(true);
+  messenger.RequestDecryption(kChallenge);
+  messenger.GetFakeConnection()->FinishSendingMessageWithSuccess(true);
 
   // The StrictMock will verify that no observer methods are called.
-  client.GetFakeConnection()->ReceiveMessageWithPayload(
+  messenger.GetFakeConnection()->ReceiveMessageWithPayload(
       "{\"type\":\"unlock_response\"}, but encoded");
 }
 
-TEST(ProximityAuthClientImplTest,
+TEST(ProximityAuthMessengerImplTest,
      OnMessageReceived_MismatchedReply_DecryptInReplyToUnlock) {
-  TestClient client;
-  StrictMock<MockClientObserver> observer(&client);
+  TestMessenger messenger;
+  StrictMock<MockMessengerObserver> observer(&messenger);
 
-  client.RequestUnlock();
-  client.GetFakeConnection()->FinishSendingMessageWithSuccess(true);
+  messenger.RequestUnlock();
+  messenger.GetFakeConnection()->FinishSendingMessageWithSuccess(true);
 
   // The StrictMock will verify that no observer methods are called.
-  client.GetFakeConnection()->ReceiveMessageWithPayload(
+  messenger.GetFakeConnection()->ReceiveMessageWithPayload(
       "{"
       "\"type\":\"decrypt_response\","
       "\"data\":\"YSB3aW5uZXIgaXMgeW91\""
       "}, but encoded");
 }
 
-TEST(ProximityAuthClientImplTest, BuffersMessages_WhileSending) {
-  TestClient client;
-  MockClientObserver observer(&client);
+TEST(ProximityAuthMessengerImplTest, BuffersMessages_WhileSending) {
+  TestMessenger messenger;
+  MockMessengerObserver observer(&messenger);
 
   // Initiate a decryption request, and then initiate an unlock request before
   // the decryption request is even finished sending.
-  client.RequestDecryption(kChallenge);
-  client.RequestUnlock();
+  messenger.RequestDecryption(kChallenge);
+  messenger.RequestUnlock();
 
   EXPECT_CALL(observer, OnDecryptResponseProxy(nullptr));
-  client.GetFakeConnection()->FinishSendingMessageWithSuccess(false);
+  messenger.GetFakeConnection()->FinishSendingMessageWithSuccess(false);
 
   EXPECT_CALL(observer, OnUnlockResponse(false));
-  client.GetFakeConnection()->FinishSendingMessageWithSuccess(false);
+  messenger.GetFakeConnection()->FinishSendingMessageWithSuccess(false);
 }
 
-TEST(ProximityAuthClientImplTest, BuffersMessages_WhileAwaitingReply) {
-  TestClient client;
-  MockClientObserver observer(&client);
+TEST(ProximityAuthMessengerImplTest, BuffersMessages_WhileAwaitingReply) {
+  TestMessenger messenger;
+  MockMessengerObserver observer(&messenger);
 
   // Initiate a decryption request, and allow the message to be sent.
-  client.RequestDecryption(kChallenge);
-  client.GetFakeConnection()->FinishSendingMessageWithSuccess(true);
+  messenger.RequestDecryption(kChallenge);
+  messenger.GetFakeConnection()->FinishSendingMessageWithSuccess(true);
 
-  // At this point, the client is awaiting a reply to the decryption message.
+  // At this point, the messenger is awaiting a reply to the decryption message.
   // While it's waiting, initiate an unlock request.
-  client.RequestUnlock();
+  messenger.RequestUnlock();
 
   // Now simulate a response arriving for the original decryption request.
   EXPECT_CALL(observer, OnDecryptResponseProxy(Pointee(Eq("a winner is you"))));
-  client.GetFakeConnection()->ReceiveMessageWithPayload(
+  messenger.GetFakeConnection()->ReceiveMessageWithPayload(
       "{"
       "\"type\":\"decrypt_response\","
       "\"data\":\"YSB3aW5uZXIgaXMgeW91\""
@@ -513,7 +514,7 @@ TEST(ProximityAuthClientImplTest, BuffersMessages_WhileAwaitingReply) {
   // The unlock request should have remained buffered, and should only now be
   // sent.
   EXPECT_CALL(observer, OnUnlockResponse(false));
-  client.GetFakeConnection()->FinishSendingMessageWithSuccess(false);
+  messenger.GetFakeConnection()->FinishSendingMessageWithSuccess(false);
 }
 
 }  // namespace proximity_auth

@@ -10,7 +10,7 @@
 namespace proximity_auth {
 
 class Authenticator;
-class Client;
+class Messenger;
 class ConnectionFinder;
 
 // Controls the life cycle of connecting and authenticating to a remote device.
@@ -61,7 +61,7 @@ class RemoteDeviceLifeCycle {
   // Returns the client for sending and receiving messages. This function will
   // only return an instance if the state is SECURE_CHANNEL_ESTABLISHED;
   // otherwise, it will return nullptr.
-  virtual Client* GetClient() = 0;
+  virtual Messenger* GetMessenger() = 0;
 
   // Adds an observer.
   virtual void AddObserver(Observer* observer) = 0;

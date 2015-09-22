@@ -13,10 +13,10 @@
 #include "components/proximity_auth/bluetooth_connection.h"
 #include "components/proximity_auth/bluetooth_connection_finder.h"
 #include "components/proximity_auth/bluetooth_throttler_impl.h"
-#include "components/proximity_auth/client_impl.h"
 #include "components/proximity_auth/cryptauth/secure_message_delegate.h"
 #include "components/proximity_auth/device_to_device_authenticator.h"
 #include "components/proximity_auth/logging/logging.h"
+#include "components/proximity_auth/messenger_impl.h"
 #include "components/proximity_auth/proximity_auth_client.h"
 #include "components/proximity_auth/secure_context.h"
 
@@ -59,8 +59,8 @@ RemoteDeviceLifeCycle::State RemoteDeviceLifeCycleImpl::GetState() const {
   return state_;
 }
 
-Client* RemoteDeviceLifeCycleImpl::GetClient() {
-  return client_.get();
+Messenger* RemoteDeviceLifeCycleImpl::GetMessenger() {
+  return messenger_.get();
 }
 
 void RemoteDeviceLifeCycleImpl::AddObserver(Observer* observer) {
@@ -136,20 +136,22 @@ void RemoteDeviceLifeCycleImpl::OnAuthenticationResult(
     return;
   }
 
-  // Create the ClientImpl asynchronously. |client_| registers itself as an
+  // Create the MessengerImpl asynchronously. |messenger_| registers itself as
+  // an
   // observer of |connection_|, so creating it synchronously would
-  // trigger |OnSendComplete()| as an observer call for |client_|.
+  // trigger |OnSendComplete()| as an observer call for |messenger_|.
   secure_context_ = secure_context.Pass();
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&RemoteDeviceLifeCycleImpl::CreateClient,
+      FROM_HERE, base::Bind(&RemoteDeviceLifeCycleImpl::CreateMessenger,
                             weak_ptr_factory_.GetWeakPtr()));
 }
 
-void RemoteDeviceLifeCycleImpl::CreateClient() {
+void RemoteDeviceLifeCycleImpl::CreateMessenger() {
   DCHECK(state_ == RemoteDeviceLifeCycle::State::AUTHENTICATING);
   DCHECK(secure_context_);
-  client_.reset(new ClientImpl(connection_.Pass(), secure_context_.Pass()));
-  client_->AddObserver(this);
+  messenger_.reset(
+      new MessengerImpl(connection_.Pass(), secure_context_.Pass()));
+  messenger_->AddObserver(this);
 
   TransitionToState(RemoteDeviceLifeCycle::State::SECURE_CHANNEL_ESTABLISHED);
 }

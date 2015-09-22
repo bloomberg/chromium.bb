@@ -18,13 +18,13 @@
 #include "components/proximity_auth/ble/pref_names.h"
 #include "components/proximity_auth/bluetooth_connection_finder.h"
 #include "components/proximity_auth/bluetooth_throttler_impl.h"
-#include "components/proximity_auth/client_impl.h"
 #include "components/proximity_auth/cryptauth/base64url.h"
 #include "components/proximity_auth/cryptauth/cryptauth_enrollment_manager.h"
 #include "components/proximity_auth/cryptauth/proto/cryptauth_api.pb.h"
 #include "components/proximity_auth/cryptauth/secure_message_delegate.h"
 #include "components/proximity_auth/device_to_device_authenticator.h"
 #include "components/proximity_auth/logging/logging.h"
+#include "components/proximity_auth/messenger_impl.h"
 #include "components/proximity_auth/remote_status_update.h"
 #include "components/proximity_auth/secure_context.h"
 #include "components/proximity_auth/webui/reachable_phone_flow.h"
@@ -473,9 +473,9 @@ scoped_ptr<base::ListValue> ProximityAuthWebUIHandler::GetUnlockKeysList() {
 
 Connection* ProximityAuthWebUIHandler::GetConnection() {
   Connection* connection = connection_.get();
-  if (client_) {
+  if (messenger_) {
     DCHECK(!connection);
-    connection = client_->connection();
+    connection = messenger_->connection();
   }
   return connection;
 }
@@ -554,12 +554,12 @@ void ProximityAuthWebUIHandler::OnAuthenticationResult(
     scoped_ptr<SecureContext> secure_context) {
   secure_context_ = secure_context.Pass();
 
-  // Create the ClientImpl asynchronously. |client_| registers itself as an
-  // observer of |connection_|, so creating it synchronously would
-  // trigger |OnSendComplete()| as an observer call for |client_|.
+  // Create the MessengerImpl asynchronously. |messenger_| registers itself as
+  // an observer of |connection_|, so creating it synchronously would trigger
+  // |OnSendComplete()| as an observer call for |messenger_|.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::Bind(&ProximityAuthWebUIHandler::CreateStatusUpdateClient,
+      base::Bind(&ProximityAuthWebUIHandler::CreateStatusUpdateMessenger,
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
@@ -584,9 +584,10 @@ void ProximityAuthWebUIHandler::OnConnectionFound(
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
-void ProximityAuthWebUIHandler::CreateStatusUpdateClient() {
-  client_.reset(new ClientImpl(connection_.Pass(), secure_context_.Pass()));
-  client_->AddObserver(this);
+void ProximityAuthWebUIHandler::CreateStatusUpdateMessenger() {
+  messenger_.reset(
+      new MessengerImpl(connection_.Pass(), secure_context_.Pass()));
+  messenger_->AddObserver(this);
 }
 
 scoped_ptr<base::DictionaryValue>

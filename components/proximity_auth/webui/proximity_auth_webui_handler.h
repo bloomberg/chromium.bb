@@ -8,13 +8,13 @@
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
 #include "components/proximity_auth/authenticator.h"
-#include "components/proximity_auth/client_observer.h"
 #include "components/proximity_auth/connection_observer.h"
 #include "components/proximity_auth/cryptauth/cryptauth_client.h"
 #include "components/proximity_auth/cryptauth/cryptauth_device_manager.h"
 #include "components/proximity_auth/cryptauth/cryptauth_enrollment_manager.h"
 #include "components/proximity_auth/cryptauth/cryptauth_gcm_manager.h"
 #include "components/proximity_auth/logging/log_buffer.h"
+#include "components/proximity_auth/messenger_observer.h"
 #include "components/proximity_auth/proximity_auth_client.h"
 #include "content/public/browser/web_ui_message_handler.h"
 
@@ -34,7 +34,7 @@ class BluetoothThrottler;
 class BluetoothLowEnergyDeviceWhitelist;
 class Connection;
 class ConnectionFinder;
-class ClientImpl;
+class MessengerImpl;
 class ReachablePhoneFlow;
 struct RemoteStatusUpdate;
 class SecureContext;
@@ -45,7 +45,7 @@ class ProximityAuthWebUIHandler : public content::WebUIMessageHandler,
                                   public CryptAuthEnrollmentManager::Observer,
                                   public CryptAuthDeviceManager::Observer,
                                   public ConnectionObserver,
-                                  public ClientObserver {
+                                  public MessengerObserver {
  public:
   // |client_| is not owned and must outlive this instance.
   explicit ProximityAuthWebUIHandler(
@@ -119,7 +119,7 @@ class ProximityAuthWebUIHandler : public content::WebUIMessageHandler,
                               scoped_ptr<SecureContext> secure_context);
 
   // Creates the client which parses status updates.
-  void CreateStatusUpdateClient();
+  void CreateStatusUpdateMessenger();
 
   // Returns the active connection, whether it's owned the |this| instance or
   // |client_|.
@@ -141,7 +141,7 @@ class ProximityAuthWebUIHandler : public content::WebUIMessageHandler,
   void OnMessageReceived(const Connection& connection,
                          const WireMessage& message) override;
 
-  // ClientObserver:
+  // MessengerObserver:
   void OnRemoteStatusUpdate(const RemoteStatusUpdate& status_update) override;
 
   // Returns the current enrollment state that can be used as a JSON object.
@@ -179,7 +179,7 @@ class ProximityAuthWebUIHandler : public content::WebUIMessageHandler,
   scoped_ptr<Connection> connection_;
   scoped_ptr<Authenticator> authenticator_;
   scoped_ptr<SecureContext> secure_context_;
-  scoped_ptr<ClientImpl> client_;
+  scoped_ptr<MessengerImpl> messenger_;
   scoped_ptr<RemoteStatusUpdate> last_remote_status_update_;
 
   base::WeakPtrFactory<ProximityAuthWebUIHandler> weak_ptr_factory_;
