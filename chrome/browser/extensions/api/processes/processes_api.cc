@@ -637,31 +637,35 @@ void TerminateFunction::TerminateProcess() {
 #if defined(ENABLE_TASK_MANAGER)
   TaskManagerModel* model = TaskManager::GetInstance()->model();
 
-  int count = model->ResourceCount();
-  bool killed = false;
   bool found = false;
-
-  for (int i = 0; i < count; ++i) {
-    if (model->IsResourceFirstInGroup(i)) {
-      if (process_id_ == model->GetUniqueChildProcessId(i)) {
-        found = true;
-        base::Process process =
-            base::Process::DeprecatedGetProcessFromHandle(model->GetProcess(i));
-        killed = process.Terminate(content::RESULT_CODE_KILLED, true);
-        UMA_HISTOGRAM_COUNTS("ChildProcess.KilledByExtensionAPI", 1);
-        break;
-      }
+  for (int i = 0, count = model->ResourceCount(); i < count; ++i) {
+    if (!model->IsResourceFirstInGroup(i) ||
+        process_id_ != model->GetUniqueChildProcessId(i)) {
+      continue;
     }
+    base::ProcessHandle process_handle = model->GetProcess(i);
+    if (process_handle == base::GetCurrentProcessHandle()) {
+      // Cannot kill the browser process.
+      // TODO(kalman): Are there other sensitive processes?
+      error_ = ErrorUtils::FormatErrorMessage(errors::kNotAllowedToTerminate,
+                                              base::IntToString(process_id_));
+    } else {
+      base::Process process =
+          base::Process::DeprecatedGetProcessFromHandle(process_handle);
+      bool did_terminate = process.Terminate(content::RESULT_CODE_KILLED, true);
+      if (did_terminate)
+        UMA_HISTOGRAM_COUNTS("ChildProcess.KilledByExtensionAPI", 1);
+      SetResult(new base::FundamentalValue(did_terminate));
+    }
+    found = true;
+    break;
   }
-
   if (!found) {
     error_ = ErrorUtils::FormatErrorMessage(errors::kProcessNotFound,
-        base::IntToString(process_id_));
-    SendResponse(false);
-  } else {
-    SetResult(new base::FundamentalValue(killed));
-    SendResponse(true);
+                                            base::IntToString(process_id_));
   }
+
+  SendResponse(error_.empty());
 
   // Balance the AddRef in the RunAsync.
   Release();
@@ -757,7 +761,13 @@ void GetProcessInfoFunction::GatherProcessInfo() {
         }
       }
     }
-    DCHECK_EQ(process_ids_.size(), 0U);
+    // If not all processes were found, log them to the extension's console to
+    // help the developer, but don't fail the API call.
+    for (int pid : process_ids_) {
+      WriteToConsole(content::CONSOLE_MESSAGE_LEVEL_ERROR,
+                     ErrorUtils::FormatErrorMessage(errors::kProcessNotFound,
+                                                    base::IntToString(pid)));
+    }
   }
 
   SetResult(processes);

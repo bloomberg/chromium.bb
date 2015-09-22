@@ -54,6 +54,7 @@ extern const char kOnUpdatedWithMemory[];
 
 // Error strings.
 extern const char kExtensionNotSupported[];
+extern const char kNotAllowedToTerminate[];
 extern const char kProcessNotFound[];
 
 }  // namespace processes_api_constants

@@ -52,6 +52,7 @@ const char kOnUpdatedWithMemory[] = "processes.onUpdatedWithMemory";
 // Error strings.
 const char kExtensionNotSupported[] =
     "The Processes extension API is not supported on this platform.";
+const char kNotAllowedToTerminate[] = "Not allowed to terminate process: *.";
 const char kProcessNotFound[] = "Process not found: *.";
 
 }  // namespace processes_api_constants

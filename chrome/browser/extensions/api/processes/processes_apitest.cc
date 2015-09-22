@@ -47,3 +47,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ProcessesVsTaskManager) {
   UnloadExtension(last_loaded_extension_id());
   EXPECT_EQ(1, model->update_requests_);
 }
+
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, CannotTerminateBrowserProcess) {
+  ASSERT_TRUE(RunExtensionTest("processes/terminate-browser-process"))
+      << message_;
+}
