@@ -39,7 +39,6 @@
 #include "content/child/fileapi/file_system_dispatcher.h"
 #include "content/child/fileapi/webfilesystem_impl.h"
 #include "content/child/geofencing/geofencing_message_filter.h"
-#include "content/child/memory/child_memory_message_filter.h"
 #include "content/child/mojo/mojo_application.h"
 #include "content/child/notifications/notification_dispatcher.h"
 #include "content/child/power_monitor_broadcast_source.h"
@@ -435,11 +434,10 @@ void ChildThreadImpl::Init(const Options& options) {
   channel_->AddFilter(geofencing_message_filter_->GetFilter());
 
   if (!IsInBrowserProcess()) {
-    // In single process mode, browser-side tracing and memory will cover the
-    // whole process including renderers.
+    // In single process mode, browser-side tracing will cover the whole
+    // process including renderers.
     channel_->AddFilter(new tracing::ChildTraceMessageFilter(
         ChildProcess::current()->io_task_runner()));
-    channel_->AddFilter(new ChildMemoryMessageFilter());
   }
 
   // In single process mode we may already have a power monitor

@@ -114,8 +114,6 @@
       'child/indexed_db/webidbdatabase_impl.h',
       'child/indexed_db/webidbfactory_impl.cc',
       'child/indexed_db/webidbfactory_impl.h',
-      'child/memory/child_memory_message_filter.cc',
-      'child/memory/child_memory_message_filter.h',
       'child/mojo/mojo_application.cc',
       'child/mojo/mojo_application.h',
       'child/multipart_response_delegate.cc',
