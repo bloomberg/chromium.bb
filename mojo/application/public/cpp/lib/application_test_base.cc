@@ -101,7 +101,7 @@ MojoResult RunAllTests(MojoHandle application_request_handle) {
 
   // Shut down our message pipes before exiting.
   (void)g_application_request.PassMessagePipe();
-  (void)g_shell.PassInterface();
+  g_shell.reset();
 
   return (result == 0) ? MOJO_RESULT_OK : MOJO_RESULT_UNKNOWN;
 }
@@ -138,10 +138,11 @@ void ApplicationTestBase::TearDown() {
   MOJO_CHECK(!g_application_request.is_pending());
   MOJO_CHECK(!g_shell);
 
-  {
-    ApplicationImpl::TestApi test_api(application_impl_);
-    test_api.UnbindConnections(&g_application_request, &g_shell);
-  }
+  // TODO: commented out until http://crbug.com/533107 is solved.
+  // {
+  // ApplicationImpl::TestApi test_api(application_impl_);
+  // test_api.UnbindConnections(&g_application_request, &g_shell);
+  // }
   delete application_impl_;
   if (ShouldCreateDefaultRunLoop())
     Environment::DestroyDefaultRunLoop();
