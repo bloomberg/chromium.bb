@@ -398,6 +398,20 @@ config("compiler") {
         ]
       }
     } else if (current_cpu == "arm") {
+      if (is_clang && !is_android && !is_nacl) {
+        cflags += [
+          "-target",
+          "arm-linux-gnueabihf",
+        ]
+        ldflags += [
+          "-target",
+          "arm-linux-gnueabihf",
+        ]
+
+        # We need to disable clang's builtin assembler as it can't
+        # handle several asm files, crbug.com/124610
+        cflags += [ "-no-integrated-as" ]
+      }
       if (!is_nacl) {
         cflags += [
           "-march=$arm_arch",

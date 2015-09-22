@@ -46,6 +46,8 @@ if (current_toolchain == default_toolchain && target_sysroot != "") {
 } else if (is_linux && !is_chromeos) {
   if (current_cpu == "mipsel") {
     sysroot = rebase_path("//mipsel-sysroot/sysroot")
+  } else if (current_cpu == "arm") {
+    sysroot = rebase_path("//build/linux/debian_wheezy_arm-sysroot")
   } else {
     sysroot = ""
   }

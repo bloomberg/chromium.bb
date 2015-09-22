@@ -58,7 +58,11 @@ if (current_cpu == "arm") {
     }
 
     if (arm_float_abi == "") {
-      arm_float_abi = "softfp"
+      if (is_android) {
+        arm_float_abi = "softfp"
+      } else {
+        arm_float_abi = "hard"
+      }
     }
 
     arm_use_thumb = true

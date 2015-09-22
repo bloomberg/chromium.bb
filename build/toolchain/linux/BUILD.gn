@@ -16,14 +16,34 @@ if (use_goma) {
   compiler_prefix = ""
 }
 
-gcc_toolchain("arm") {
-  cc = "${compiler_prefix}arm-linux-gnueabi-gcc"
-  cxx = "${compiler_prefix}arm-linux-gnueabi-g++"
+gcc_toolchain("clang_arm") {
+  prefix = rebase_path("//third_party/llvm-build/Release+Asserts/bin",
+                       root_build_dir)
+  cc = "${compiler_prefix}$prefix/clang"
+  cxx = "${compiler_prefix}$prefix/clang++"
 
-  ar = "arm-linux-gnueabi-ar"
+  toolprefix = "arm-linux-gnueabihf-"
+  readelf = "${toolprefix}readelf"
+  ar = "${toolprefix}ar"
   ld = cxx
-  readelf = "arm-linux-gnueabi-readelf"
-  nm = "arm-linux-gnueabi-nm"
+  readelf = "${toolprefix}readelf"
+  nm = "${toolprefix}nm"
+
+  toolchain_cpu = "arm"
+  toolchain_os = "linux"
+  is_clang = true
+}
+
+gcc_toolchain("arm") {
+  toolprefix = "arm-linux-gnueabihf-"
+
+  cc = "${compiler_prefix}${toolprefix}gcc"
+  cxx = "${compiler_prefix}${toolprefix}g++"
+
+  ar = "${toolprefix}ar"
+  ld = cxx
+  readelf = "${toolprefix}readelf"
+  nm = "${toolprefix}nm"
 
   toolchain_cpu = "arm"
   toolchain_os = "linux"
