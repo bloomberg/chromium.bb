@@ -12,18 +12,13 @@ const char kContentLiveTabWebContentsUserDataKey[] = "content_live_tab";
 namespace sessions {
 
 // static
-void ContentLiveTab::CreateForWebContents(content::WebContents* contents) {
-  if (FromWebContents(contents))
-    return;
-
-  contents->SetUserData(
-      kContentLiveTabWebContentsUserDataKey,
-      new ContentLiveTab(contents));
-}
-
-// static
-ContentLiveTab* ContentLiveTab::FromWebContents(
+ContentLiveTab* ContentLiveTab::GetForWebContents(
     content::WebContents* contents) {
+  if (!contents->GetUserData(kContentLiveTabWebContentsUserDataKey)) {
+    contents->SetUserData(kContentLiveTabWebContentsUserDataKey,
+                          new ContentLiveTab(contents));
+  }
+
   return static_cast<ContentLiveTab*>(contents->GetUserData(
       kContentLiveTabWebContentsUserDataKey));
 }

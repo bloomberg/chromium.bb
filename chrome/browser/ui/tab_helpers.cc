@@ -47,7 +47,6 @@
 #include "components/history/core/browser/top_sites.h"
 #include "components/page_load_metrics/browser/metrics_web_contents_observer.h"
 #include "components/password_manager/core/browser/password_manager.h"
-#include "components/sessions/content/content_live_tab.h"
 #include "components/tracing/tracing_switches.h"
 #include "content/public/browser/web_contents.h"
 
@@ -165,7 +164,6 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
   ManagePasswordsUIController::CreateForWebContents(web_contents);
   NavigationCorrectionTabObserver::CreateForWebContents(web_contents);
   NavigationMetricsRecorder::CreateForWebContents(web_contents);
-  sessions::ContentLiveTab::CreateForWebContents(web_contents);
   page_load_metrics::MetricsWebContentsObserver::CreateForWebContents(
       web_contents);
   PopupBlockerTabHelper::CreateForWebContents(web_contents);

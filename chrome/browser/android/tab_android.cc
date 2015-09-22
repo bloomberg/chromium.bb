@@ -736,10 +736,9 @@ void TabAndroid::CreateHistoricalTabFromContents(WebContents* web_contents) {
     return;
   }
 
-  sessions::ContentLiveTab::CreateForWebContents(web_contents);
   // TODO(jcivelli): is the index important?
   service->CreateHistoricalTab(
-      sessions::ContentLiveTab::FromWebContents(web_contents), -1);
+      sessions::ContentLiveTab::GetForWebContents(web_contents), -1);
 }
 
 void TabAndroid::CreateHistoricalTab(JNIEnv* env, jobject obj) {

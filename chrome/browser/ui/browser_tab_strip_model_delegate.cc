@@ -119,7 +119,7 @@ void BrowserTabStripModelDelegate::CreateHistoricalTab(
   // We only create historical tab entries for tabbed browser windows.
   if (service && browser_->CanSupportWindowFeature(Browser::FEATURE_TABSTRIP)) {
     service->CreateHistoricalTab(
-        sessions::ContentLiveTab::FromWebContents(contents),
+        sessions::ContentLiveTab::GetForWebContents(contents),
         browser_->tab_strip_model()->GetIndexOfWebContents(contents));
   }
 }
