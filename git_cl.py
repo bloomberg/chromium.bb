@@ -3541,6 +3541,50 @@ def CMDformat(parser, args):
   return return_value
 
 
+@subcommand.usage('<codereview url or issue id>')
+def CMDcheckout(parser, args):
+  """Checks out a branch associated with a given Rietveld issue."""
+  _, args = parser.parse_args(args)
+
+  if len(args) != 1:
+    parser.print_help()
+    return 1
+
+  if re.match(r'\d+', args[0]):
+    target_issue = args[0]
+  elif args[0].startswith('http'):
+    target_issue = re.sub(r'.*/(\d+)/?', r'\1', args[0])
+  else:
+    parser.print_help()
+    return 1
+
+  key_and_issues = [x.split() for x in RunGit(
+      ['config', '--local', '--get-regexp', r'branch\..*\.rietveldissue'])
+      .splitlines()]
+  branches = []
+  for key, issue in key_and_issues:
+    if issue == target_issue:
+      branches.append(re.sub(r'branch\.(.*)\.rietveldissue', r'\1', key))
+
+  if len(branches) == 0:
+    print 'No branch found for issue %s.' % target_issue
+    return 1
+  if len(branches) == 1:
+    RunGit(['checkout', branches[0]])
+  else:
+    print 'Multiple branches match issue %s:' % target_issue
+    for i in range(len(branches)):
+      print '%d: %s' % (i, branches[i])
+    which = raw_input('Choose by index: ')
+    try:
+      RunGit(['checkout', branches[int(which)]])
+    except (IndexError, ValueError):
+      print 'Invalid selection, not checking out any branch.'
+      return 1
+
+  return 0
+
+
 def CMDlol(parser, args):
   # This command is intentionally undocumented.
   print zlib.decompress(base64.b64decode(
