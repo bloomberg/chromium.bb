@@ -8,6 +8,7 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
+import android.preference.PreferenceManager;
 import android.test.InstrumentationTestCase;
 import android.test.suitebuilder.annotation.SmallTest;
 
@@ -16,29 +17,25 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.components.precache.MockDeviceState;
 
 import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Tests the |PrecacheServiceLauncher|.
  */
 public class PrecacheServiceLauncherTest extends InstrumentationTestCase {
-    private Context getContext(boolean enabled, long lastTimeMs) {
-        AdvancedMockContext context = new AdvancedMockContext() {
-            @Override
-            public String getPackageName() {
-                return getInstrumentation().getTargetContext().getPackageName();
-            }
-            @Override
-            public ApplicationInfo getApplicationInfo() {
-                return getInstrumentation().getTargetContext().getApplicationInfo();
-            }
-        };
-        Map<String, Object> map = new HashMap<String, Object>();
-        map.put(PrecacheServiceLauncher.PREF_IS_PRECACHING_ENABLED, enabled);
-        map.put(PrecacheServiceLauncher.PREF_PRECACHE_LAST_TIME, lastTimeMs);
-        context.addSharedPreferences(context.getPackageName() + "_preferences", map);
-        return context;
+    private MockPrecacheServiceLauncher mLauncher;
+    private MockPrecacheLauncher mPrecacheLauncher;
+    private Context mContext;
+
+    class PrecacheMockContext extends AdvancedMockContext {
+        @Override
+        public String getPackageName() {
+            return getInstrumentation().getTargetContext().getPackageName();
+        }
+
+        @Override
+        public ApplicationInfo getApplicationInfo() {
+            return getInstrumentation().getTargetContext().getApplicationInfo();
+        }
     }
 
     static class MockPrecacheLauncher extends PrecacheLauncher {
@@ -63,9 +60,9 @@ public class PrecacheServiceLauncherTest extends InstrumentationTestCase {
      */
     static class MockPrecacheServiceLauncher extends PrecacheServiceLauncher {
         private long mElapsedRealtime;
-        private boolean mCancelAlarmCalled;
-        private boolean mSetAlarmCalled;
-        private boolean mStartPrecacheCalled;
+        protected boolean mCancelAlarmCalled;
+        protected boolean mSetAlarmCalled;
+        protected boolean mStartPrecacheCalled;
 
         @Override
         protected void setAlarmOnSystem(Context context, int type, long triggerAtMillis,
@@ -94,93 +91,143 @@ public class PrecacheServiceLauncherTest extends InstrumentationTestCase {
         protected void setElapsedRealtime(long elapsedRealtime) {
             mElapsedRealtime = elapsedRealtime;
         }
+    }
 
-        protected void checkExpectations(boolean expectedSetAlarm, boolean expectedCancelAlarm,
-                boolean expectedStartPrecache) {
-            assertEquals("Set alarm", expectedSetAlarm, mSetAlarmCalled);
-            assertEquals("Cancel alarm", expectedCancelAlarm, mCancelAlarmCalled);
-            assertEquals("Start precache", expectedStartPrecache, mStartPrecacheCalled);
-        }
+    @Override
+    public void setUp() {
+        mLauncher = new MockPrecacheServiceLauncher();
+        mPrecacheLauncher = new MockPrecacheLauncher();
+        mLauncher.setPrecacheLauncher(mPrecacheLauncher);
+        mContext = new PrecacheMockContext();
+        setPrecachingEnabled(true);
     }
 
     @SmallTest
     @Feature({"Precache"})
     public void testDoNothingIfNotEnabled() {
-        MockPrecacheServiceLauncher launcher = new MockPrecacheServiceLauncher();
-        MockPrecacheLauncher precacheLauncher = new MockPrecacheLauncher();
-        precacheLauncher.setFailureReasons(EnumSet.of(FailureReason.NATIVE_SHOULD_RUN_IS_FALSE));
-        launcher.setPrecacheLauncher(precacheLauncher);
-        MockDeviceState deviceState = new MockDeviceState(0 /* stickyBatteryStatus */,
-                true /* powerIsConnected */, false /* interactive */, true /* wifiIsAvailable */);
-        launcher.setDeviceState(deviceState);
-        Context context = getContext(false, 0L);
-        launcher.setElapsedRealtime(PrecacheServiceLauncher.WAIT_UNTIL_NEXT_PRECACHE_MS);
-        launcher.onReceive(context, new Intent(PrecacheServiceLauncher.ACTION_ALARM));
-        launcher.checkExpectations(false, false, false);
+        setPrecachingEnabled(false);
+        mPrecacheLauncher.setFailureReasons(EnumSet.of(FailureReason.NATIVE_SHOULD_RUN_IS_FALSE));
+        mLauncher.setDeviceState(new MockDeviceState(0 /* stickyBatteryStatus */,
+                true /* powerIsConnected */, false /* interactive */, true /* wifiIsAvailable */));
+        mLauncher.setElapsedRealtime(PrecacheServiceLauncher.WAIT_UNTIL_NEXT_PRECACHE_MS);
+
+        mLauncher.onReceive(mContext, new Intent(PrecacheServiceLauncher.ACTION_ALARM));
+
+        assertFalse(mLauncher.mSetAlarmCalled);
+        assertFalse(mLauncher.mCancelAlarmCalled);
+        assertFalse(mLauncher.mStartPrecacheCalled);
         assertEquals(EnumSet.of(FailureReason.NATIVE_SHOULD_RUN_IS_FALSE),
-                launcher.failureReasons(context));
+                mLauncher.failureReasons(mContext));
     }
 
     @SmallTest
     @Feature({"Precache"})
     public void testGoodConditions() {
-        MockPrecacheServiceLauncher launcher = new MockPrecacheServiceLauncher();
-        launcher.setPrecacheLauncher(new MockPrecacheLauncher());
-        MockDeviceState deviceState = new MockDeviceState(0, true, false, true);
-        launcher.setDeviceState(deviceState);
-        Context context = getContext(true, 0L);
-        launcher.setElapsedRealtime(PrecacheServiceLauncher.WAIT_UNTIL_NEXT_PRECACHE_MS);
-        launcher.onReceive(context, new Intent(PrecacheServiceLauncher.ACTION_ALARM));
-        launcher.checkExpectations(false, false, true);
-        assertEquals(EnumSet.noneOf(FailureReason.class), launcher.failureReasons(context));
+        mLauncher.setDeviceState(new MockDeviceState(0, true, false, true));
+
+        mLauncher.onReceive(mContext, new Intent(PrecacheServiceLauncher.ACTION_ALARM));
+
+        assertFalse(mLauncher.mSetAlarmCalled);
+        assertFalse(mLauncher.mCancelAlarmCalled);
+        assertTrue(mLauncher.mStartPrecacheCalled);
+        assertEquals(EnumSet.noneOf(FailureReason.class), mLauncher.failureReasons(mContext));
     }
 
     @SmallTest
     @Feature({"Precache"})
     public void testNotEnoughTimeButGoodConditionsOtherwise() {
-        MockPrecacheServiceLauncher launcher = new MockPrecacheServiceLauncher();
-        launcher.setPrecacheLauncher(new MockPrecacheLauncher());
-        MockDeviceState deviceState = new MockDeviceState(0, true, false, true);
-        launcher.setDeviceState(deviceState);
-        Context context = getContext(true, 0L);
-        launcher.setElapsedRealtime(PrecacheServiceLauncher.WAIT_UNTIL_NEXT_PRECACHE_MS - 1);
-        launcher.onReceive(context, new Intent(PrecacheServiceLauncher.ACTION_ALARM));
-        launcher.checkExpectations(true, false, false);
+        mLauncher.setDeviceState(new MockDeviceState(0, true, false, true));
+        setLastPrecacheMs(0L);
+
+        mLauncher.onReceive(mContext, new Intent(PrecacheServiceLauncher.ACTION_ALARM));
+
+        assertTrue(mLauncher.mSetAlarmCalled);
+        assertFalse(mLauncher.mCancelAlarmCalled);
+        assertFalse(mLauncher.mStartPrecacheCalled);
         assertEquals(EnumSet.of(FailureReason.NOT_ENOUGH_TIME_SINCE_LAST_PRECACHE),
-                launcher.failureReasons(context));
+                mLauncher.failureReasons(mContext));
     }
 
     @SmallTest
     @Feature({"Precache"})
     public void testEnoughTimeButNoPower() {
-        MockPrecacheServiceLauncher launcher = new MockPrecacheServiceLauncher();
-        launcher.setPrecacheLauncher(new MockPrecacheLauncher());
-        MockDeviceState deviceState = new MockDeviceState(0, false, false, true);
-        launcher.setDeviceState(deviceState);
-        Context context = getContext(true, 0L);
-        launcher.setElapsedRealtime(PrecacheServiceLauncher.WAIT_UNTIL_NEXT_PRECACHE_MS);
-        launcher.onReceive(context, new Intent(PrecacheServiceLauncher.ACTION_ALARM));
-        launcher.checkExpectations(false, true, false);
-        assertEquals(EnumSet.of(FailureReason.NO_POWER), launcher.failureReasons(context));
+        mLauncher.setDeviceState(new MockDeviceState(0, false, false, true));
+        mLauncher.setElapsedRealtime(PrecacheServiceLauncher.WAIT_UNTIL_NEXT_PRECACHE_MS);
+
+        mLauncher.onReceive(mContext, new Intent(PrecacheServiceLauncher.ACTION_ALARM));
+
+        assertFalse(mLauncher.mSetAlarmCalled);
+        assertTrue(mLauncher.mCancelAlarmCalled);
+        assertFalse(mLauncher.mStartPrecacheCalled);
+        assertEquals(EnumSet.of(FailureReason.NO_POWER), mLauncher.failureReasons(mContext));
     }
 
     @SmallTest
     @Feature({"Precache"})
     public void testAllFailureReasons() {
-        MockPrecacheServiceLauncher launcher = new MockPrecacheServiceLauncher();
-        MockPrecacheLauncher precacheLauncher = new MockPrecacheLauncher();
-        precacheLauncher.setFailureReasons(
+        mPrecacheLauncher.setFailureReasons(
                 EnumSet.of(FailureReason.UPDATE_PRECACHING_ENABLED_NEVER_CALLED,
                         FailureReason.SYNC_NOT_INITIALIZED,
                         FailureReason.PRERENDER_PRIVACY_PREFERENCE_NOT_ENABLED,
                         FailureReason.NATIVE_SHOULD_RUN_IS_FALSE));
-        launcher.setPrecacheLauncher(precacheLauncher);
-        MockDeviceState deviceState = new MockDeviceState(0, false, true, false);
-        launcher.setDeviceState(deviceState);
-        Context context = getContext(true, 0L);
-        launcher.setElapsedRealtime(PrecacheServiceLauncher.WAIT_UNTIL_NEXT_PRECACHE_MS - 1);
-        launcher.onReceive(context, new Intent(PrecacheServiceLauncher.ACTION_ALARM));
-        launcher.checkExpectations(false, true, false);
-        assertEquals(EnumSet.allOf(FailureReason.class), launcher.failureReasons(context));
+        mLauncher.setDeviceState(new MockDeviceState(0, false, true, false));
+        setLastPrecacheMs(0L);
+
+        mLauncher.onReceive(mContext, new Intent(PrecacheServiceLauncher.ACTION_ALARM));
+
+        assertFalse(mLauncher.mSetAlarmCalled);
+        assertTrue(mLauncher.mCancelAlarmCalled);
+        assertFalse(mLauncher.mStartPrecacheCalled);
+        assertEquals(EnumSet.allOf(FailureReason.class), mLauncher.failureReasons(mContext));
+    }
+
+    @SmallTest
+    @Feature({"Precache"})
+    public void testStateIsResetAfterReboot() {
+        // 1. Precache is successfully run at time X.
+        mLauncher.setDeviceState(new MockDeviceState(0, true, false, true));
+        mLauncher.setElapsedRealtime(PrecacheServiceLauncher.WAIT_UNTIL_NEXT_PRECACHE_MS);
+        mLauncher.onReceive(mContext, new Intent(PrecacheServiceLauncher.ACTION_ALARM));
+
+        // precachingFinishedInternal() is not called in the test. Fake the time being updated.
+        setLastPrecacheMs(PrecacheServiceLauncher.WAIT_UNTIL_NEXT_PRECACHE_MS);
+
+        assertTrue(mLauncher.mStartPrecacheCalled);
+        mLauncher.mStartPrecacheCalled = false;
+
+        // 2. The device loses power and reboots.
+        mLauncher.setDeviceState(new MockDeviceState(0, false /* power */, false, true));
+        mLauncher.setElapsedRealtime(0);
+
+        // 3. Some intent is triggered, which allows the reciever to notice the reboot and reset
+        // lastPrecacheTimeMs.
+        mLauncher.onReceive(mContext, new Intent(PrecacheServiceLauncher.ACTION_ALARM));
+
+        assertTrue(mLauncher.mCancelAlarmCalled);
+        assertEquals(EnumSet.of(FailureReason.NO_POWER), mLauncher.failureReasons(mContext));
+        mLauncher.mCancelAlarmCalled = false;
+
+        // 4. Precache is successfully run at time X+1.
+        mLauncher.setDeviceState(new MockDeviceState(0, true, false, true));
+        mLauncher.setElapsedRealtime(PrecacheServiceLauncher.WAIT_UNTIL_NEXT_PRECACHE_MS + 1);
+
+        mLauncher.onReceive(mContext, new Intent(PrecacheServiceLauncher.ACTION_ALARM));
+
+        assertEquals(EnumSet.noneOf(FailureReason.class), mLauncher.failureReasons(mContext));
+        assertTrue(mLauncher.mStartPrecacheCalled);
+    }
+
+    private void setPrecachingEnabled(boolean enabled) {
+        PreferenceManager.getDefaultSharedPreferences(mContext)
+                .edit()
+                .putBoolean(PrecacheServiceLauncher.PREF_IS_PRECACHING_ENABLED, enabled)
+                .commit();
+    }
+
+    private void setLastPrecacheMs(long ms) {
+        PreferenceManager.getDefaultSharedPreferences(mContext)
+                .edit()
+                .putLong(PrecacheServiceLauncher.PREF_PRECACHE_LAST_TIME, ms)
+                .apply();
     }
 }

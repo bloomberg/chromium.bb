@@ -40,6 +40,8 @@ public class PrecacheServiceLauncher extends BroadcastReceiver {
     @VisibleForTesting
     static final String PREF_IS_PRECACHING_ENABLED = "precache.is_precaching_enabled";
 
+    static final String PREF_LAST_ELAPSED_TIME = "precache.last_elapsed_time";
+
     @VisibleForTesting
     static final String PREF_PRECACHE_LAST_TIME = "precache.last_time";
 
@@ -178,6 +180,8 @@ public class PrecacheServiceLauncher extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
+        resetLastPrecacheMsIfDeviceRebooted(context);
+
         boolean isPowerConnected = mDeviceState.isPowerConnected(context);
         boolean isWifiAvailable = mDeviceState.isWifiAvailable(context);
         boolean isInteractive = mDeviceState.isInteractive(context);
@@ -310,13 +314,27 @@ public class PrecacheServiceLauncher extends BroadcastReceiver {
     /** Returns the number of milliseconds since the last precache run completed. */
     private long timeSinceLastPrecacheMs(Context context) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        long lastPrecacheTimeMs = prefs.getLong(PREF_PRECACHE_LAST_TIME, 0L);
-        if (lastPrecacheTimeMs > getElapsedRealtimeOnSystem()) {
-            // System.elapsedRealtime() counts milliseconds since boot, so if the device has been
-            // rebooted since the last time precaching was performed, reset lastPrecacheTimeMs to 0.
-            lastPrecacheTimeMs = 0L;
-        }
+        // If precache has never run, default to a negative number such that precache can run
+        // immediately (if conditions are good).
+        long lastPrecacheTimeMs =
+                prefs.getLong(PREF_PRECACHE_LAST_TIME, -WAIT_UNTIL_NEXT_PRECACHE_MS);
         return getElapsedRealtimeOnSystem() - lastPrecacheTimeMs;
+    }
+
+    /** Reset PREF_PRECACHE_LAST_TIME if it appears the device has rebooted. */
+    private void resetLastPrecacheMsIfDeviceRebooted(Context context) {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        long lastElapsedTime = prefs.getLong(PREF_LAST_ELAPSED_TIME, 0L);
+        long elapsedTime = getElapsedRealtimeOnSystem();
+
+        Editor editor = prefs.edit();
+        if (elapsedTime < lastElapsedTime) {
+            // If the elapsed-time clock has gone backwards, this means the system has rebooted.
+            // Reset the last precache time as it is no longer valid.
+            editor.remove(PREF_PRECACHE_LAST_TIME);
+        }
+        editor.putLong(PREF_LAST_ELAPSED_TIME, elapsedTime);
+        editor.apply();
     }
 }
 
