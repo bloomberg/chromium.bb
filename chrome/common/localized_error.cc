@@ -585,7 +585,6 @@ void LocalizedError::GetStrings(int error_code,
     error_strings->SetString("primaryParagraph",
         l10n_util::GetStringUTF16(options.summary_resource_id));
 
-#if defined(OS_CHROMEOS)
     base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
 
     // Check if easter egg should be disabled.
@@ -594,8 +593,6 @@ void LocalizedError::GetStrings(int error_code,
       error_strings->SetString("disabledEasterEgg",
           l10n_util::GetStringUTF16(IDS_ERRORPAGE_FUN_DISABLED));
     }
-#endif
-
   } else {
     // Set summary message in the details.
     summary->SetString("msg",
