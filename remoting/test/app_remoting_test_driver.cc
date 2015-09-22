@@ -23,7 +23,6 @@ const char kHelpSwitchName[] = "help";
 const char kLoggingLevelSwitchName[] = "verbosity";
 const char kRefreshTokenFileSwitchName[] = "refresh-token-file";
 const char kReleaseHostsAfterTestingSwitchName[] = "release-hosts-after-tests";
-const char kServiceEnvironmentSwitchName[] = "environment";
 const char kShowHostAvailabilitySwitchName[] = "show-host-availability";
 const char kSingleProcessTestsSwitchName[] = "single-process-tests";
 const char kUserNameSwitchName[] = "username";
@@ -75,8 +74,6 @@ void PrintUsage() {
          switches::kRefreshTokenFileSwitchName);
   printf("  %s: Displays additional usage information\n",
          switches::kHelpSwitchName);
-  printf("  %s: Specifies the service api to use (dev|test) [default: dev]\n",
-         switches::kServiceEnvironmentSwitchName);
   printf(
       "  %s: Retrieves and displays the connection status for all known "
       "hosts, no tests will be run\n",
@@ -226,26 +223,8 @@ int main(int argc, char** argv) {
   options.release_hosts_when_done =
       command_line->HasSwitch(switches::kReleaseHostsAfterTestingSwitchName);
 
-  // If the user passed in a service environment, use it, otherwise set a
-  // default value.
-  std::string service_environment_switch(command_line->GetSwitchValueASCII(
-      switches::kServiceEnvironmentSwitchName));
-  if (service_environment_switch.empty() ||
-      service_environment_switch == "dev") {
-    options.service_environment =
+  options.service_environment =
         remoting::test::ServiceEnvironment::kDeveloperEnvironment;
-  } else if (service_environment_switch == "test") {
-    options.service_environment =
-        remoting::test::ServiceEnvironment::kTestingEnvironment;
-  } else if (service_environment_switch == "staging") {
-    options.service_environment =
-        remoting::test::ServiceEnvironment::kStagingEnvironment;
-  } else {
-    LOG(ERROR) << "Invalid " << switches::kServiceEnvironmentSwitchName
-               << " argument passed in.";
-    PrintUsage();
-    return -1;
-  }
 
   // Update the logging verbosity level is user specified one.
   std::string verbosity_level(

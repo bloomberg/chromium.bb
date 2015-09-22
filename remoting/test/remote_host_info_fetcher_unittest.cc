@@ -12,6 +12,7 @@
 
 namespace {
 const char kTestApplicationId[] = "klasdfjlkasdfjklasjfdkljsadf";
+const char kTestApplicationId2[] = "klasdfjlkasdfjklasjfdkljsadf2";
 const char kAccessTokenValue[] = "test_access_token_value";
 const char kRemoteHostInfoReadyResponse[] =
     "{"
@@ -19,6 +20,18 @@ const char kRemoteHostInfoReadyResponse[] =
     "  \"host\": {"
     "    \"kind\": \"test_kind\","
     "    \"applicationId\": \"klasdfjlkasdfjklasjfdkljsadf\","
+    "    \"hostId\": \"test_host_id\""
+    "  },"
+    "  \"hostJid\": \"test_host_jid\","
+    "  \"authorizationCode\": \"test_authorization_code\","
+    "  \"sharedSecret\": \"test_shared_secret\""
+    "}";
+const char kRemoteHostInfoReadyResponse2[] =
+    "{"
+    "  \"status\": \"done\","
+    "  \"host\": {"
+    "    \"kind\": \"test_kind\","
+    "    \"applicationId\": \"klasdfjlkasdfjklasjfdkljsadf2\","
     "    \"hostId\": \"test_host_id\""
     "  },"
     "  \"hostJid\": \"test_host_jid\","
@@ -64,8 +77,7 @@ class RemoteHostInfoFetcherTest : public ::testing::Test {
   RemoteHostInfo remote_host_info_;
 
   std::string dev_service_environment_url_;
-  std::string test_service_environment_url_;
-  std::string staging_service_environment_url_;
+  std::string dev_service_environment_url_2_;
 
  private:
   net::FakeURLFetcherFactory url_fetcher_factory_;
@@ -92,15 +104,9 @@ void RemoteHostInfoFetcherTest::SetUp() {
                   kRemoteHostInfoEmptyResponse, net::HTTP_NOT_FOUND,
                   net::URLRequestStatus::FAILED);
 
-  test_service_environment_url_ =
-      GetRunApplicationUrl(kTestApplicationId, kTestingEnvironment);
-  SetFakeResponse(GURL(test_service_environment_url_),
-                  kRemoteHostInfoEmptyResponse, net::HTTP_NOT_FOUND,
-                  net::URLRequestStatus::FAILED);
-
-  staging_service_environment_url_ =
-      GetRunApplicationUrl(kTestApplicationId, kStagingEnvironment);
-  SetFakeResponse(GURL(staging_service_environment_url_),
+  dev_service_environment_url_2_ =
+      GetRunApplicationUrl(kTestApplicationId2, kDeveloperEnvironment);
+  SetFakeResponse(GURL(dev_service_environment_url_2_),
                   kRemoteHostInfoEmptyResponse, net::HTTP_NOT_FOUND,
                   net::URLRequestStatus::FAILED);
 }
@@ -126,58 +132,6 @@ TEST_F(RemoteHostInfoFetcherTest, RetrieveRemoteHostInfoFromDev) {
   RemoteHostInfoFetcher remote_host_info_fetcher;
   bool request_started = remote_host_info_fetcher.RetrieveRemoteHostInfo(
       kTestApplicationId, kAccessTokenValue, kDeveloperEnvironment,
-      remote_host_info_callback);
-
-  run_loop.Run();
-
-  EXPECT_TRUE(request_started);
-  EXPECT_TRUE(remote_host_info_.IsReadyForConnection());
-  EXPECT_EQ(remote_host_info_.application_id.compare(kTestApplicationId), 0);
-  EXPECT_TRUE(!remote_host_info_.host_id.empty());
-  EXPECT_TRUE(!remote_host_info_.host_jid.empty());
-  EXPECT_TRUE(!remote_host_info_.authorization_code.empty());
-  EXPECT_TRUE(!remote_host_info_.shared_secret.empty());
-}
-
-TEST_F(RemoteHostInfoFetcherTest, RetrieveRemoteHostInfoFromTest) {
-  SetFakeResponse(GURL(test_service_environment_url_),
-                  kRemoteHostInfoReadyResponse, net::HTTP_OK,
-                  net::URLRequestStatus::SUCCESS);
-
-  base::RunLoop run_loop;
-  RemoteHostInfoCallback remote_host_info_callback =
-      base::Bind(&RemoteHostInfoFetcherTest::OnRemoteHostInfoRetrieved,
-                 base::Unretained(this), run_loop.QuitClosure());
-
-  RemoteHostInfoFetcher remote_host_info_fetcher;
-  bool request_started = remote_host_info_fetcher.RetrieveRemoteHostInfo(
-      kTestApplicationId, kAccessTokenValue, kTestingEnvironment,
-      remote_host_info_callback);
-
-  run_loop.Run();
-
-  EXPECT_TRUE(request_started);
-  EXPECT_TRUE(remote_host_info_.IsReadyForConnection());
-  EXPECT_EQ(remote_host_info_.application_id.compare(kTestApplicationId), 0);
-  EXPECT_TRUE(!remote_host_info_.host_id.empty());
-  EXPECT_TRUE(!remote_host_info_.host_jid.empty());
-  EXPECT_TRUE(!remote_host_info_.authorization_code.empty());
-  EXPECT_TRUE(!remote_host_info_.shared_secret.empty());
-}
-
-TEST_F(RemoteHostInfoFetcherTest, RetrieveRemoteHostInfoFromStaging) {
-  SetFakeResponse(GURL(staging_service_environment_url_),
-                  kRemoteHostInfoReadyResponse, net::HTTP_OK,
-                  net::URLRequestStatus::SUCCESS);
-
-  base::RunLoop run_loop;
-  RemoteHostInfoCallback remote_host_info_callback =
-      base::Bind(&RemoteHostInfoFetcherTest::OnRemoteHostInfoRetrieved,
-                 base::Unretained(this), run_loop.QuitClosure());
-
-  RemoteHostInfoFetcher remote_host_info_fetcher;
-  bool request_started = remote_host_info_fetcher.RetrieveRemoteHostInfo(
-      kTestApplicationId, kAccessTokenValue, kStagingEnvironment,
       remote_host_info_callback);
 
   run_loop.Run();
@@ -314,9 +268,10 @@ TEST_F(RemoteHostInfoFetcherTest, MultipleRetrieveRemoteHostInfoRequests) {
   EXPECT_TRUE(!remote_host_info_.authorization_code.empty());
   EXPECT_TRUE(!remote_host_info_.shared_secret.empty());
 
-  // Next, we will fetch info from the test service environment.
-  SetFakeResponse(GURL(test_service_environment_url_),
-                  kRemoteHostInfoReadyResponse, net::HTTP_OK,
+  // Next, we will fetch a different application info block from the dev
+  // service environment.
+  SetFakeResponse(GURL(dev_service_environment_url_2_),
+                  kRemoteHostInfoReadyResponse2, net::HTTP_OK,
                   net::URLRequestStatus::SUCCESS);
 
   base::RunLoop test_run_loop;
@@ -329,14 +284,14 @@ TEST_F(RemoteHostInfoFetcherTest, MultipleRetrieveRemoteHostInfoRequests) {
   EXPECT_FALSE(remote_host_info_.IsReadyForConnection());
 
   bool test_request_started = remote_host_info_fetcher.RetrieveRemoteHostInfo(
-      kTestApplicationId, kAccessTokenValue, kTestingEnvironment,
+      kTestApplicationId2, kAccessTokenValue, kDeveloperEnvironment,
       test_remote_host_info_callback);
 
   test_run_loop.Run();
 
   EXPECT_TRUE(test_request_started);
   EXPECT_TRUE(remote_host_info_.IsReadyForConnection());
-  EXPECT_EQ(remote_host_info_.application_id.compare(kTestApplicationId), 0);
+  EXPECT_EQ(remote_host_info_.application_id.compare(kTestApplicationId2), 0);
   EXPECT_TRUE(!remote_host_info_.host_id.empty());
   EXPECT_TRUE(!remote_host_info_.host_jid.empty());
   EXPECT_TRUE(!remote_host_info_.authorization_code.empty());

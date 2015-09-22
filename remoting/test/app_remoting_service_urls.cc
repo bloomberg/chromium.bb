@@ -13,8 +13,6 @@ namespace {
 const char kAppRemotingTestEndpointBase[] =
     "https://www-googleapis-test.sandbox.google.com/appremoting/%s";
 const char kAppRemotingDevEndpointQualifier[] = "v1beta1_dev";
-const char kAppRemotingTestEndpointQualifier[] = "v1beta1";
-const char kAppRemotingStagingEndpointQualifier[] = "v1beta1_staging";
 
 // Placeholder value is for the Application ID.
 const char kRunApplicationApi[] = "applications/%s/run";
@@ -35,27 +33,9 @@ bool IsSupportedServiceEnvironment(ServiceEnvironment service_environment) {
 std::string GetBaseUrl(ServiceEnvironment service_environment) {
   std::string base_service_url;
 
-  const char* environment_qualifier = nullptr;
-  switch (service_environment) {
-    case kDeveloperEnvironment:
-      environment_qualifier = kAppRemotingDevEndpointQualifier;
-      break;
-
-    case kTestingEnvironment:
-      environment_qualifier = kAppRemotingTestEndpointQualifier;
-      break;
-
-    case kStagingEnvironment:
-      environment_qualifier = kAppRemotingStagingEndpointQualifier;
-      break;
-
-    default:
-      NOTREACHED();
-  }
-
-  if (environment_qualifier) {
-    base_service_url =
-        base::StringPrintf(kAppRemotingTestEndpointBase, environment_qualifier);
+  if (service_environment == kDeveloperEnvironment) {
+    base_service_url = base::StringPrintf(kAppRemotingTestEndpointBase,
+                                          kAppRemotingDevEndpointQualifier);
   }
 
   return base_service_url;

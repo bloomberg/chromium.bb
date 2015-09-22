@@ -43,8 +43,6 @@ class AppRemotingReportIssueRequestTest : public ::testing::Test {
 
   // Used for result verification.
   std::string dev_service_environment_url_;
-  std::string test_service_environment_url_;
-  std::string staging_service_environment_url_;
 
   scoped_ptr<base::RunLoop> run_loop_;
   scoped_ptr<base::Timer> timer_;
@@ -72,16 +70,6 @@ void AppRemotingReportIssueRequestTest::SetUp() {
   dev_service_environment_url_ =
       GetReportIssueUrl(kTestApplicationId, kTestHostId, kDeveloperEnvironment);
   SetFakeResponse(GURL(dev_service_environment_url_), kReportIssueResponse,
-                  net::HTTP_NOT_FOUND, net::URLRequestStatus::FAILED);
-
-  test_service_environment_url_ =
-      GetReportIssueUrl(kTestApplicationId, kTestHostId, kTestingEnvironment);
-  SetFakeResponse(GURL(test_service_environment_url_), kReportIssueResponse,
-                  net::HTTP_NOT_FOUND, net::URLRequestStatus::FAILED);
-
-  staging_service_environment_url_ =
-      GetReportIssueUrl(kTestApplicationId, kTestHostId, kStagingEnvironment);
-  SetFakeResponse(GURL(staging_service_environment_url_), kReportIssueResponse,
                   net::HTTP_NOT_FOUND, net::URLRequestStatus::FAILED);
 }
 
@@ -112,44 +100,6 @@ TEST_F(AppRemotingReportIssueRequestTest, ReportIssueFromDev) {
   timer_->Stop();
 }
 
-TEST_F(AppRemotingReportIssueRequestTest, ReportIssueFromTest) {
-  SetFakeResponse(GURL(test_service_environment_url_), kReportIssueResponse,
-                  net::HTTP_OK, net::URLRequestStatus::SUCCESS);
-
-  timer_->Start(FROM_HERE, base::TimeDelta::FromSeconds(1),
-                run_loop_->QuitClosure());
-
-  bool request_started = app_remoting_report_issue_request_.Start(
-      kTestApplicationId, kTestHostId, kAccessTokenValue, kTestingEnvironment,
-      true, run_loop_->QuitClosure());
-  EXPECT_TRUE(request_started);
-
-  run_loop_->Run();
-
-  // Verify we stopped because of the request completing and not the timer.
-  EXPECT_TRUE(timer_->IsRunning());
-  timer_->Stop();
-}
-
-TEST_F(AppRemotingReportIssueRequestTest, ReportIssueFromStaging) {
-  SetFakeResponse(GURL(staging_service_environment_url_), kReportIssueResponse,
-                  net::HTTP_OK, net::URLRequestStatus::SUCCESS);
-
-  timer_->Start(FROM_HERE, base::TimeDelta::FromSeconds(1),
-                run_loop_->QuitClosure());
-
-  bool request_started = app_remoting_report_issue_request_.Start(
-      kTestApplicationId, kTestHostId, kAccessTokenValue, kStagingEnvironment,
-      true, run_loop_->QuitClosure());
-  EXPECT_TRUE(request_started);
-
-  run_loop_->Run();
-
-  // Verify we stopped because of the request completing and not the timer.
-  EXPECT_TRUE(timer_->IsRunning());
-  timer_->Stop();
-}
-
 TEST_F(AppRemotingReportIssueRequestTest, ReportIssueFromInvalidEnvironment) {
   bool request_started = app_remoting_report_issue_request_.Start(
       kTestApplicationId, kTestHostId, kAccessTokenValue, kUnknownEnvironment,
@@ -163,7 +113,7 @@ TEST_F(AppRemotingReportIssueRequestTest, ReportIssueNetworkError) {
                 run_loop_->QuitClosure());
 
   bool request_started = app_remoting_report_issue_request_.Start(
-      kTestApplicationId, kTestHostId, kAccessTokenValue, kStagingEnvironment,
+      kTestApplicationId, kTestHostId, kAccessTokenValue, kDeveloperEnvironment,
       true, run_loop_->QuitClosure());
   EXPECT_TRUE(request_started);
 
@@ -175,14 +125,14 @@ TEST_F(AppRemotingReportIssueRequestTest, ReportIssueNetworkError) {
 }
 
 TEST_F(AppRemotingReportIssueRequestTest, MultipleRequestsCanBeIssued) {
-  SetFakeResponse(GURL(staging_service_environment_url_), kReportIssueResponse,
+  SetFakeResponse(GURL(dev_service_environment_url_), kReportIssueResponse,
                   net::HTTP_OK, net::URLRequestStatus::SUCCESS);
 
   timer_->Start(FROM_HERE, base::TimeDelta::FromSeconds(1),
                 run_loop_->QuitClosure());
 
   bool request_started = app_remoting_report_issue_request_.Start(
-      kTestApplicationId, kTestHostId, kAccessTokenValue, kStagingEnvironment,
+      kTestApplicationId, kTestHostId, kAccessTokenValue, kDeveloperEnvironment,
       true, run_loop_->QuitClosure());
   EXPECT_TRUE(request_started);
 
@@ -197,7 +147,7 @@ TEST_F(AppRemotingReportIssueRequestTest, MultipleRequestsCanBeIssued) {
                 run_loop_->QuitClosure());
 
   request_started = app_remoting_report_issue_request_.Start(
-      kTestApplicationId, kTestHostId, kAccessTokenValue, kStagingEnvironment,
+      kTestApplicationId, kTestHostId, kAccessTokenValue, kDeveloperEnvironment,
       true, run_loop_->QuitClosure());
   EXPECT_TRUE(request_started);
 
@@ -212,7 +162,7 @@ TEST_F(AppRemotingReportIssueRequestTest, MultipleRequestsCanBeIssued) {
                 run_loop_->QuitClosure());
 
   request_started = app_remoting_report_issue_request_.Start(
-      kTestApplicationId, kTestHostId, kAccessTokenValue, kStagingEnvironment,
+      kTestApplicationId, kTestHostId, kAccessTokenValue, kDeveloperEnvironment,
       true, run_loop_->QuitClosure());
   EXPECT_TRUE(request_started);
 

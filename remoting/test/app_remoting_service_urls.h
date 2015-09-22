@@ -15,8 +15,6 @@ namespace test {
 //       the last entry is used for bounds checking.
 enum ServiceEnvironment {
   kDeveloperEnvironment,
-  kTestingEnvironment,
-  kStagingEnvironment,
   kUnknownEnvironment
 };
 
