@@ -6,6 +6,9 @@
     {
       'target_name': 'checkbox',
       'variables': {
+        'depends': [
+          '../policy_controllable/policy_controllable.js',
+        ],
         'externs': [
           '../../../../../third_party/closure_compiler/externs/settings_private.js'
         ],

@@ -16,6 +16,8 @@
 Polymer({
   is: 'cr-settings-checkbox',
 
+  behaviors: [PolicyControllable],
+
   properties: {
     /**
      * The boolean preference object to control.
@@ -104,8 +106,6 @@ Polymer({
    * @private
    */
   checkboxDisabled_: function(disabled, pref) {
-    return disabled || (!!pref &&
-                        pref.policyEnforcement ==
-                            chrome.settingsPrivate.PolicyEnforcement.ENFORCED);
+    return disabled || this.isPolicyControlled(pref);
   },
 });
