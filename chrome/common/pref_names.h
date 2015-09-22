@@ -168,7 +168,6 @@ extern const char kHttpServerProperties[];
 extern const char kLastPolicyCheckTime[];
 #endif
 extern const char kInstantUIZeroSuggestUrlPrefix[];
-extern const char kNetworkPredictionEnabled[];
 extern const char kNetworkPredictionOptions[];
 extern const char kDefaultAppsInstallState[];
 extern const char kHideWebStoreIcon[];

@@ -415,15 +415,6 @@ const char kLastPolicyCheckTime[] = "policy.last_policy_check_time";
 const char kInstantUIZeroSuggestUrlPrefix[] =
     "instant_ui.zero_suggest_url_prefix";
 
-// A boolean pref set to true if prediction of network actions is allowed.
-// Actions include DNS prefetching, TCP and SSL preconnection, prerendering
-// of web pages, and resource prefetching.
-// NOTE: The "dns_prefetching.enabled" value is used so that historical user
-// preferences are not lost.
-// TODO(bnc): Remove kNetworkPredictionEnabled once kNetworkPredictionOptions
-// is functioning as per crbug.com/334602.
-const char kNetworkPredictionEnabled[] = "dns_prefetching.enabled";
-
 // A preference of enum chrome_browser_net::NetworkPredictionOptions shows
 // if prediction of network actions is allowed, depending on network type.
 // Actions include DNS prefetching, TCP and SSL preconnection, prerendering
