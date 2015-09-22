@@ -12,4 +12,9 @@ bool FakeDisplayListRecordingSource::IsSuitableForGpuRasterization() const {
   return DisplayListRecordingSource::IsSuitableForGpuRasterization();
 }
 
+void FakeDisplayListRecordingSource::
+    SetUnsuitableForGpuRasterizationForTesting() {
+  force_unsuitable_for_gpu_rasterization_ = true;
+}
+
 }  // namespace cc

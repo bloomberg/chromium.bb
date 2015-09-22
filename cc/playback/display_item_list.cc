@@ -55,7 +55,7 @@ DisplayItemList::DisplayItemList(gfx::Rect layer_rect,
       use_cached_picture_(settings.use_cached_picture),
       retain_individual_display_items_(retain_individual_display_items),
       layer_rect_(layer_rect),
-      is_suitable_for_gpu_rasterization_(true),
+      all_items_are_suitable_for_gpu_rasterization_(true),
       approximate_op_count_(0),
       picture_memory_usage_(0),
       external_memory_usage_(0) {
@@ -123,19 +123,13 @@ void DisplayItemList::ProcessAppendedItems() {
   needs_process_ = false;
 #endif
   for (const DisplayItem* item : items_) {
+    all_items_are_suitable_for_gpu_rasterization_ &=
+        item->is_suitable_for_gpu_rasterization();
+    approximate_op_count_ += item->approximate_op_count();
+
     if (use_cached_picture_) {
-      // When using a cached picture we will calculate gpu suitability on the
-      // entire cached picture instead of the items. This is more permissive
-      // since none of the items might individually trigger a veto even though
-      // they collectively have enough "bad" operations that a corresponding
-      // Picture would get vetoed. See crbug.com/513016.
       DCHECK(canvas_);
-      approximate_op_count_ += item->approximate_op_count();
-      item->Raster(canvas_.get(), gfx::Rect(), nullptr);
-    } else {
-      is_suitable_for_gpu_rasterization_ &=
-          item->is_suitable_for_gpu_rasterization();
-      approximate_op_count_ += item->approximate_op_count();
+      item->Raster(canvas_.get(), gfx::Rect(), NULL);
     }
 
     if (retain_individual_display_items_) {
@@ -152,9 +146,11 @@ void DisplayItemList::ProcessAppendedItems() {
 void DisplayItemList::RasterIntoCanvas(const DisplayItem& item) {
   DCHECK(canvas_);
   DCHECK(!retain_individual_display_items_);
+  all_items_are_suitable_for_gpu_rasterization_ &=
+      item.is_suitable_for_gpu_rasterization();
   approximate_op_count_ += item.approximate_op_count();
 
-  item.Raster(canvas_.get(), gfx::Rect(), nullptr);
+  item.Raster(canvas_.get(), gfx::Rect(), NULL);
 }
 
 bool DisplayItemList::RetainsIndividualDisplayItems() const {
@@ -183,14 +179,19 @@ void DisplayItemList::Finalize() {
         SkPictureUtils::ApproximateBytesUsed(picture_.get());
     recorder_.reset();
     canvas_.clear();
-    is_suitable_for_gpu_rasterization_ =
-        picture_->suitableForGpuRasterization(nullptr);
   }
 }
 
 bool DisplayItemList::IsSuitableForGpuRasterization() const {
   DCHECK(ProcessAppendedItemsCalled());
-  return is_suitable_for_gpu_rasterization_;
+  if (use_cached_picture_)
+    return picture_->suitableForGpuRasterization(NULL);
+
+  // This is more permissive than Picture's implementation, since none of the
+  // items might individually trigger a veto even though they collectively have
+  // enough "bad" operations that a corresponding Picture would get vetoed. See
+  // crbug.com/513016.
+  return all_items_are_suitable_for_gpu_rasterization_;
 }
 
 int DisplayItemList::ApproximateOpCount() const {

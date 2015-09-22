@@ -52,7 +52,8 @@ DisplayListRecordingSource::DisplayListRecordingSource(
       background_color_(SK_ColorTRANSPARENT),
       pixel_record_distance_(kPixelDistanceToRecord),
       grid_cell_size_(grid_cell_size),
-      painter_reported_memory_usage_(0) {}
+      painter_reported_memory_usage_(0),
+      is_suitable_for_gpu_rasterization_(true) {}
 
 DisplayListRecordingSource::~DisplayListRecordingSource() {
 }
@@ -182,6 +183,8 @@ bool DisplayListRecordingSource::UpdateAndExpandInvalidation(
       painter->PaintContentsToDisplayList(recorded_viewport_, painting_control);
   painter_reported_memory_usage_ = painter->GetApproximateUnsharedMemoryUsage();
 
+  is_suitable_for_gpu_rasterization_ =
+      display_list_->IsSuitableForGpuRasterization();
   DetermineIfSolidColor();
   display_list_->EmitTraceSnapshot();
   if (gather_images_)
@@ -216,11 +219,12 @@ void DisplayListRecordingSource::SetRequiresClear(bool requires_clear) {
   requires_clear_ = requires_clear;
 }
 
+void DisplayListRecordingSource::SetUnsuitableForGpuRasterizationForTesting() {
+  is_suitable_for_gpu_rasterization_ = false;
+}
+
 bool DisplayListRecordingSource::IsSuitableForGpuRasterization() const {
-  // The display list needs to be created (see: UpdateAndExpandInvalidation)
-  // before checking for suitability.
-  DCHECK(display_list_);
-  return display_list_->IsSuitableForGpuRasterization();
+  return is_suitable_for_gpu_rasterization_;
 }
 
 scoped_refptr<RasterSource> DisplayListRecordingSource::CreateRasterSource(
@@ -231,7 +235,7 @@ scoped_refptr<RasterSource> DisplayListRecordingSource::CreateRasterSource(
 }
 
 void DisplayListRecordingSource::DetermineIfSolidColor() {
-  DCHECK(display_list_);
+  DCHECK(display_list_.get());
   is_solid_color_ = false;
   solid_color_ = SK_ColorTRANSPARENT;
 
@@ -246,7 +250,7 @@ void DisplayListRecordingSource::DetermineIfSolidColor() {
 
 void DisplayListRecordingSource::Clear() {
   recorded_viewport_ = gfx::Rect();
-  display_list_ = nullptr;
+  display_list_ = NULL;
   painter_reported_memory_usage_ = 0;
   is_solid_color_ = false;
 }
