@@ -50,16 +50,16 @@
         curveDuration: 300 / sampleRate,
         curveLength: 2,
         fullGainTime: 0.75,
-        maxErrorThreshold: 0,
-        snrThreshold: 10000
+        maxErrorThreshold: 5.961e-8,
+        snrThreshold: 172.068
       }, {
         // Increase the curve length
         curveStartTime: 256 / sampleRate,
         curveDuration: 300 / sampleRate,
         curveLength: 3,
         fullGainTime: 0.75,
-        maxErrorThreshold: 0,
-        snrThreshold: 10000
+        maxErrorThreshold: 5.961e-8,
+        snrThreshold: 172.068
       }, {
         // Increase the curve length
         curveStartTime: 256 / sampleRate,
@@ -67,7 +67,7 @@
         curveLength: 16,
         fullGainTime: 0.75,
         maxErrorThreshold: 5.961e-8,
-        snrThreshold: 172.746
+        snrThreshold: 170.012
       }, {
         // Increase the curve length
         curveStartTime: 256 / sampleRate,
@@ -75,7 +75,7 @@
         curveLength: 100,
         fullGainTime: 0.75,
         maxErrorThreshold: 5.961e-8,
-        snrThreshold: 172.799
+        snrThreshold: 170.196
       }, {
         // Corner case with duration less than a frame!
         curveStartTime: 256 / sampleRate,
@@ -107,7 +107,7 @@
         curveLength: 1000,
         fullGainTime: 0.75,
         maxErrorThreshold: 5.961e-8,
-        snrThreshold: 155.310
+        snrThreshold: 152.800
       }];
 
       // Creates a function based on the test config that is suitable for use by defineTask().

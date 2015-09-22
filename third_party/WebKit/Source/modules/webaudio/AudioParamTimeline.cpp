@@ -539,7 +539,53 @@ float AudioParamTimeline::valuesForTimeRangeImpl(
 
                     // Render the stretched curve data using linear interpolation.  Oversampled
                     // curve data can be provided if sharp discontinuities are desired.
-                    for (unsigned k = 0; writeIndex < fillToFrame; ++writeIndex, ++k) {
+                    unsigned k = 0;
+#if CPU(X86) || CPU(X86_64)
+                    const __m128 vCurveVirtualIndex = _mm_set_ps1(curveVirtualIndex);
+                    const __m128 vCurvePointsPerFrame = _mm_set_ps1(curvePointsPerFrame);
+                    const __m128 vNumberOfCurvePointsM1 = _mm_set_ps1(numberOfCurvePoints - 1);
+                    const __m128 vN1 = _mm_set_ps1(1.0f);
+                    const __m128 vN4 = _mm_set_ps1(4.0f);
+
+                    __m128 vK = _mm_set_ps(3, 2, 1, 0);
+                    int aCurveIndex0[4];
+                    int aCurveIndex1[4];
+
+                    // Truncate loop steps to multiple of 4
+                    unsigned truncatedSteps = ((fillToFrame - writeIndex) / 4) * 4;
+                    unsigned fillToFrameTrunc = writeIndex + truncatedSteps;
+                    for (; writeIndex < fillToFrameTrunc; writeIndex += 4) {
+                        // Compute current index this way to minimize round-off that would have
+                        // occurred by incrementing the index by curvePointsPerFrame.
+                        __m128 vCurrentVirtualIndex = _mm_add_ps(vCurveVirtualIndex, _mm_mul_ps(vK, vCurvePointsPerFrame));
+                        vK = _mm_add_ps(vK, vN4);
+
+                        // Clamp index to the last element of the array.
+                        __m128i vCurveIndex0 = _mm_cvttps_epi32(_mm_min_ps(vCurrentVirtualIndex, vNumberOfCurvePointsM1));
+                        __m128i vCurveIndex1 = _mm_cvttps_epi32(_mm_min_ps(_mm_add_ps(vCurrentVirtualIndex, vN1), vNumberOfCurvePointsM1));
+
+                        // Linearly interpolate between the two nearest curve points.  |delta| is
+                        // clamped to 1 because currentVirtualIndex can exceed curveIndex0 by more
+                        // than one.  This can happen when we reached the end of the curve but still
+                        // need values to fill out the current rendering quantum.
+                        _mm_storeu_si128((__m128i*)aCurveIndex0, vCurveIndex0);
+                        _mm_storeu_si128((__m128i*)aCurveIndex1, vCurveIndex1);
+                        __m128 vC0 = _mm_set_ps(curveData[aCurveIndex0[3]], curveData[aCurveIndex0[2]], curveData[aCurveIndex0[1]], curveData[aCurveIndex0[0]]);
+                        __m128 vC1 = _mm_set_ps(curveData[aCurveIndex1[3]], curveData[aCurveIndex1[2]], curveData[aCurveIndex1[1]], curveData[aCurveIndex1[0]]);
+                        __m128 vDelta = _mm_min_ps(_mm_sub_ps(vCurrentVirtualIndex, _mm_cvtepi32_ps(vCurveIndex0)), vN1);
+
+                        __m128 vValue = _mm_add_ps(vC0, _mm_mul_ps(_mm_sub_ps(vC1, vC0), vDelta));
+
+                        _mm_storeu_ps(values + writeIndex, vValue);
+                    }
+                    // Pass along k to the serial loop.
+                    k = truncatedSteps;
+                    // If the above loop was run, pass along the last computed value.
+                    if (truncatedSteps > 0) {
+                        value = values[writeIndex - 1];
+                    }
+#endif
+                    for (; writeIndex < fillToFrame; ++writeIndex, ++k) {
                         // Compute current index this way to minimize round-off that would have
                         // occurred by incrementing the index by curvePointsPerFrame.
                         double currentVirtualIndex = curveVirtualIndex + k * curvePointsPerFrame;
