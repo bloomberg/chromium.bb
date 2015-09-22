@@ -96,14 +96,14 @@ ShellURLRequestContextGetter::CreateNetworkDelegate() {
 
 scoped_ptr<net::ProxyConfigService>
 ShellURLRequestContextGetter::GetProxyConfigService() {
-  return make_scoped_ptr(net::ProxyService::CreateSystemProxyConfigService(
-      io_loop_->task_runner(), file_loop_->task_runner()));
+  return net::ProxyService::CreateSystemProxyConfigService(
+      io_loop_->task_runner(), file_loop_->task_runner());
 }
 
 scoped_ptr<net::ProxyService> ShellURLRequestContextGetter::GetProxyService() {
   // TODO(jam): use v8 if possible, look at chrome code.
   return net::ProxyService::CreateUsingSystemProxyResolver(
-      proxy_config_service_.release(), 0, url_request_context_->net_log());
+      proxy_config_service_.Pass(), 0, url_request_context_->net_log());
 }
 
 net::URLRequestContext* ShellURLRequestContextGetter::GetURLRequestContext() {

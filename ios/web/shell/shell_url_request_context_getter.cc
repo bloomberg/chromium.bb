@@ -89,8 +89,7 @@ net::URLRequestContext* ShellURLRequestContextGetter::GetURLRequestContext() {
             .Pass());
     storage_->set_proxy_service(
         net::ProxyService::CreateUsingSystemProxyResolver(
-            proxy_config_service_.release(), 0,
-            url_request_context_->net_log()));
+            proxy_config_service_.Pass(), 0, url_request_context_->net_log()));
     storage_->set_ssl_config_service(new net::SSLConfigServiceDefaults);
     storage_->set_cert_verifier(net::CertVerifier::CreateDefault());
 

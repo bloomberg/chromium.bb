@@ -9955,7 +9955,7 @@ TEST_P(HttpNetworkTransactionTest,
 
   CapturingProxyResolver capturing_proxy_resolver;
   session_deps_.proxy_service.reset(new ProxyService(
-      new ProxyConfigServiceFixed(proxy_config),
+      make_scoped_ptr(new ProxyConfigServiceFixed(proxy_config)),
       make_scoped_ptr(
           new CapturingProxyResolverFactory(&capturing_proxy_resolver)),
       NULL));
@@ -12764,7 +12764,8 @@ TEST_P(HttpNetworkTransactionTest, DoNotUseSpdySessionIfCertDoesNotMatch) {
   ProxyConfig proxy_config;
   proxy_config.proxy_rules().ParseFromString("http=https://proxy:443");
   session_deps_.proxy_service.reset(new ProxyService(
-      new ProxyConfigServiceFixed(proxy_config), nullptr, NULL));
+      make_scoped_ptr(new ProxyConfigServiceFixed(proxy_config)), nullptr,
+      NULL));
 
   SSLSocketDataProvider ssl1(ASYNC, OK);  // to the proxy
   ssl1.SetNextProto(GetParam());

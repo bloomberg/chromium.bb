@@ -20,7 +20,7 @@ class ProxyScriptFetcher;
 class ProxyService;
 
 // Creates a proxy service that polls |proxy_config_service| to notice when
-// the proxy settings change. We take ownership of |proxy_config_service|.
+// the proxy settings change.
 //
 // |proxy_script_fetcher| specifies the dependency to use for downloading
 // any PAC scripts. The resulting ProxyService will take ownership of it.
@@ -38,7 +38,7 @@ class ProxyService;
 // # other V8's running in the process must use v8::Locker.
 // ##########################################################################
 NET_EXPORT scoped_ptr<ProxyService> CreateProxyServiceUsingV8ProxyResolver(
-    ProxyConfigService* proxy_config_service,
+    scoped_ptr<ProxyConfigService> proxy_config_service,
     ProxyScriptFetcher* proxy_script_fetcher,
     scoped_ptr<DhcpProxyScriptFetcher> dhcp_proxy_script_fetcher,
     HostResolver* host_resolver,

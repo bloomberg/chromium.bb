@@ -919,7 +919,7 @@ class ProxyService::PacRequest
 
 // ProxyService ---------------------------------------------------------------
 
-ProxyService::ProxyService(ProxyConfigService* config_service,
+ProxyService::ProxyService(scoped_ptr<ProxyConfigService> config_service,
                            scoped_ptr<ProxyResolverFactory> resolver_factory,
                            NetLog* net_log)
     : resolver_factory_(resolver_factory.Pass()),
@@ -931,36 +931,36 @@ ProxyService::ProxyService(ProxyConfigService* config_service,
       quick_check_enabled_(true) {
   NetworkChangeNotifier::AddIPAddressObserver(this);
   NetworkChangeNotifier::AddDNSObserver(this);
-  ResetConfigService(config_service);
+  ResetConfigService(config_service.Pass());
 }
 
 // static
 scoped_ptr<ProxyService> ProxyService::CreateUsingSystemProxyResolver(
-    ProxyConfigService* proxy_config_service,
+    scoped_ptr<ProxyConfigService> proxy_config_service,
     size_t num_pac_threads,
     NetLog* net_log) {
   DCHECK(proxy_config_service);
 
   if (!ProxyResolverFactoryForSystem::IsSupported()) {
     VLOG(1) << "PAC support disabled because there is no system implementation";
-    return CreateWithoutProxyResolver(proxy_config_service, net_log);
+    return CreateWithoutProxyResolver(proxy_config_service.Pass(), net_log);
   }
 
   if (num_pac_threads == 0)
     num_pac_threads = kDefaultNumPacThreads;
 
   return make_scoped_ptr(new ProxyService(
-      proxy_config_service,
+      proxy_config_service.Pass(),
       make_scoped_ptr(new ProxyResolverFactoryForSystem(num_pac_threads)),
       net_log));
 }
 
 // static
 scoped_ptr<ProxyService> ProxyService::CreateWithoutProxyResolver(
-    ProxyConfigService* proxy_config_service,
+    scoped_ptr<ProxyConfigService> proxy_config_service,
     NetLog* net_log) {
   return make_scoped_ptr(new ProxyService(
-      proxy_config_service,
+      proxy_config_service.Pass(),
       make_scoped_ptr(new ProxyResolverFactoryForNullResolver), net_log));
 }
 
@@ -968,8 +968,8 @@ scoped_ptr<ProxyService> ProxyService::CreateWithoutProxyResolver(
 scoped_ptr<ProxyService> ProxyService::CreateFixed(const ProxyConfig& pc) {
   // TODO(eroman): This isn't quite right, won't work if |pc| specifies
   //               a PAC script.
-  return CreateUsingSystemProxyResolver(new ProxyConfigServiceFixed(pc),
-                                        0, NULL);
+  return CreateUsingSystemProxyResolver(
+      make_scoped_ptr(new ProxyConfigServiceFixed(pc)), 0, NULL);
 }
 
 // static
@@ -987,7 +987,7 @@ scoped_ptr<ProxyService> ProxyService::CreateDirect() {
 scoped_ptr<ProxyService> ProxyService::CreateDirectWithNetLog(NetLog* net_log) {
   // Use direct connections.
   return make_scoped_ptr(new ProxyService(
-      new ProxyConfigServiceDirect,
+      make_scoped_ptr(new ProxyConfigServiceDirect),
       make_scoped_ptr(new ProxyResolverFactoryForNullResolver), net_log));
 }
 
@@ -1000,7 +1000,7 @@ scoped_ptr<ProxyService> ProxyService::CreateFixedFromPacResult(
       new ProxyConfigServiceFixed(ProxyConfig::CreateAutoDetect()));
 
   return make_scoped_ptr(new ProxyService(
-      proxy_config_service.release(),
+      proxy_config_service.Pass(),
       make_scoped_ptr(new ProxyResolverFactoryForPacResult(pac_string)), NULL));
 }
 
@@ -1470,7 +1470,7 @@ ProxyService::State ProxyService::ResetProxyConfig(bool reset_fetched_config) {
 }
 
 void ProxyService::ResetConfigService(
-    ProxyConfigService* new_proxy_config_service) {
+    scoped_ptr<ProxyConfigService> new_proxy_config_service) {
   DCHECK(CalledOnValidThread());
   State previous_state = ResetProxyConfig(true);
 
@@ -1479,7 +1479,7 @@ void ProxyService::ResetConfigService(
     config_service_->RemoveObserver(this);
 
   // Set the new configuration service.
-  config_service_.reset(new_proxy_config_service);
+  config_service_ = new_proxy_config_service.Pass();
   config_service_->AddObserver(this);
 
   if (previous_state != STATE_NONE)
@@ -1493,23 +1493,23 @@ void ProxyService::ForceReloadProxyConfig() {
 }
 
 // static
-ProxyConfigService* ProxyService::CreateSystemProxyConfigService(
+scoped_ptr<ProxyConfigService> ProxyService::CreateSystemProxyConfigService(
     const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner,
     const scoped_refptr<base::SingleThreadTaskRunner>& file_task_runner) {
 #if defined(OS_WIN)
-  return new ProxyConfigServiceWin();
+  return make_scoped_ptr(new ProxyConfigServiceWin());
 #elif defined(OS_IOS)
-  return new ProxyConfigServiceIOS();
+  return make_scoped_ptr(new ProxyConfigServiceIOS());
 #elif defined(OS_MACOSX)
-  return new ProxyConfigServiceMac(io_task_runner);
+  return make_scoped_ptr(new ProxyConfigServiceMac(io_task_runner));
 #elif defined(OS_CHROMEOS)
   LOG(ERROR) << "ProxyConfigService for ChromeOS should be created in "
              << "profile_io_data.cc::CreateProxyConfigService and this should "
              << "be used only for examples.";
-  return new UnsetProxyConfigService;
+  return make_scoped_ptr(new UnsetProxyConfigService);
 #elif defined(OS_LINUX)
-  ProxyConfigServiceLinux* linux_config_service =
-      new ProxyConfigServiceLinux();
+  scoped_ptr<ProxyConfigServiceLinux> linux_config_service(
+      new ProxyConfigServiceLinux());
 
   // Assume we got called on the thread that runs the default glib
   // main loop, so the current thread is where we should be running
@@ -1524,14 +1524,14 @@ ProxyConfigService* ProxyService::CreateSystemProxyConfigService(
   linux_config_service->SetupAndFetchInitialConfig(
       glib_thread_task_runner, io_task_runner, file_task_runner);
 
-  return linux_config_service;
+  return linux_config_service.Pass();
 #elif defined(OS_ANDROID)
-  return new ProxyConfigServiceAndroid(io_task_runner,
-                                       base::ThreadTaskRunnerHandle::Get());
+  return make_scoped_ptr(new ProxyConfigServiceAndroid(
+      io_task_runner, base::ThreadTaskRunnerHandle::Get()));
 #else
   LOG(WARNING) << "Failed to choose a system proxy settings fetcher "
                   "for this platform.";
-  return new ProxyConfigServiceDirect();
+  return make_scoped_ptr(new ProxyConfigServiceDirect());
 #endif
 }
 

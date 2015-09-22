@@ -43,7 +43,7 @@ class ProxyServiceFactory {
       net::NetLog* net_log,
       net::URLRequestContext* context,
       net::NetworkDelegate* network_delegate,
-      net::ProxyConfigService* proxy_config_service,
+      scoped_ptr<net::ProxyConfigService> proxy_config_service,
       bool quick_check_enabled);
 
  private:

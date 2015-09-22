@@ -57,8 +57,8 @@ bool EnableOutOfProcessV8Pac(const base::CommandLine& command_line) {
 }  // namespace
 
 // static
-net::ProxyConfigService* ProxyServiceFactory::CreateProxyConfigService(
-    PrefProxyConfigTracker* tracker) {
+scoped_ptr<net::ProxyConfigService>
+ProxyServiceFactory::CreateProxyConfigService(PrefProxyConfigTracker* tracker) {
   // The linux gconf-based proxy settings getter relies on being initialized
   // from the UI thread.
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -77,13 +77,12 @@ net::ProxyConfigService* ProxyServiceFactory::CreateProxyConfigService(
   // TODO(port): the IO and FILE message loops are only used by Linux.  Can
   // that code be moved to chrome/browser instead of being in net, so that it
   // can use BrowserThread instead of raw MessageLoop pointers? See bug 25354.
-  base_service.reset(net::ProxyService::CreateSystemProxyConfigService(
+  base_service = net::ProxyService::CreateSystemProxyConfigService(
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO),
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE)));
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE));
 #endif  // !defined(OS_CHROMEOS)
 
-  return tracker->CreateTrackingProxyConfigService(base_service.Pass())
-      .release();
+  return tracker->CreateTrackingProxyConfigService(base_service.Pass());
 }
 
 // static
@@ -118,7 +117,7 @@ scoped_ptr<net::ProxyService> ProxyServiceFactory::CreateProxyService(
     net::NetLog* net_log,
     net::URLRequestContext* context,
     net::NetworkDelegate* network_delegate,
-    net::ProxyConfigService* proxy_config_service,
+    scoped_ptr<net::ProxyConfigService> proxy_config_service,
     const base::CommandLine& command_line,
     bool quick_check_enabled) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -170,13 +169,13 @@ scoped_ptr<net::ProxyService> ProxyServiceFactory::CreateProxyService(
     // should override other options.
     if (command_line.HasSwitch(switches::kV8PacMojoInProcess)) {
       proxy_service = net::CreateProxyServiceUsingMojoInProcess(
-          proxy_config_service, new net::ProxyScriptFetcherImpl(context),
+          proxy_config_service.Pass(), new net::ProxyScriptFetcherImpl(context),
           dhcp_proxy_script_fetcher.Pass(), context->host_resolver(), net_log,
           network_delegate);
     } else if (EnableOutOfProcessV8Pac(command_line)) {
       proxy_service = net::CreateProxyServiceUsingMojoFactory(
           UtilityProcessMojoProxyResolverFactory::GetInstance(),
-          proxy_config_service, new net::ProxyScriptFetcherImpl(context),
+          proxy_config_service.Pass(), new net::ProxyScriptFetcherImpl(context),
           dhcp_proxy_script_fetcher.Pass(), context->host_resolver(), net_log,
           network_delegate);
     }
@@ -184,16 +183,14 @@ scoped_ptr<net::ProxyService> ProxyServiceFactory::CreateProxyService(
 
     if (!proxy_service) {
       proxy_service = net::CreateProxyServiceUsingV8ProxyResolver(
-          proxy_config_service, new net::ProxyScriptFetcherImpl(context),
+          proxy_config_service.Pass(), new net::ProxyScriptFetcherImpl(context),
           dhcp_proxy_script_fetcher.Pass(), context->host_resolver(), net_log,
           network_delegate);
     }
 #endif  // defined(OS_IOS)
   } else {
     proxy_service = net::ProxyService::CreateUsingSystemProxyResolver(
-        proxy_config_service,
-        num_pac_threads,
-        net_log);
+        proxy_config_service.Pass(), num_pac_threads, net_log);
   }
 
   proxy_service->set_quick_check_enabled(quick_check_enabled);

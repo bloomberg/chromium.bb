@@ -218,7 +218,7 @@ void AwURLRequestContextGetter::InitializeURLRequestContext() {
   // Create the proxy without a resolver since we rely on this local HTTP proxy.
   // TODO(sgurun) is this behavior guaranteed through SDK?
   builder.set_proxy_service(net::ProxyService::CreateWithoutProxyResolver(
-      proxy_config_service_.release(), net_log_.get()));
+      proxy_config_service_.Pass(), net_log_.get()));
   builder.set_net_log(net_log_.get());
   builder.SetCookieAndChannelIdStores(cookie_store_, NULL);
   ApplyCmdlineOverridesToURLRequestContextBuilder(&builder);

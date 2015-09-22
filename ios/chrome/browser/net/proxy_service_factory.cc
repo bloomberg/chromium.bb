@@ -45,12 +45,12 @@ scoped_ptr<net::ProxyService> ProxyServiceFactory::CreateProxyService(
     net::NetLog* net_log,
     net::URLRequestContext* context,
     net::NetworkDelegate* network_delegate,
-    net::ProxyConfigService* proxy_config_service,
+    scoped_ptr<net::ProxyConfigService> proxy_config_service,
     bool quick_check_enabled) {
   DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::IO);
   scoped_ptr<net::ProxyService> proxy_service(
-      net::ProxyService::CreateUsingSystemProxyResolver(proxy_config_service, 0,
-                                                        net_log));
+      net::ProxyService::CreateUsingSystemProxyResolver(
+          proxy_config_service.Pass(), 0, net_log));
   proxy_service->set_quick_check_enabled(quick_check_enabled);
   return proxy_service.Pass();
 }

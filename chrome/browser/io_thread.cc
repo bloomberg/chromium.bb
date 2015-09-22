@@ -1070,9 +1070,8 @@ void IOThread::InitSystemRequestContext() {
   // If we're in unit_tests, IOThread may not be run.
   if (!BrowserThread::IsMessageLoopValid(BrowserThread::IO))
     return;
-  system_proxy_config_service_.reset(
-      ProxyServiceFactory::CreateProxyConfigService(
-          pref_proxy_config_tracker_.get()));
+  system_proxy_config_service_ = ProxyServiceFactory::CreateProxyConfigService(
+      pref_proxy_config_tracker_.get());
   system_url_request_context_getter_ =
       new SystemURLRequestContextGetter(this);
   // Safe to post an unretained this pointer, since IOThread is
@@ -1094,7 +1093,7 @@ void IOThread::InitSystemRequestContextOnIOThread() {
   globals_->system_proxy_service = ProxyServiceFactory::CreateProxyService(
       net_log_, globals_->proxy_script_fetcher_context.get(),
       globals_->system_network_delegate.get(),
-      system_proxy_config_service_.release(), command_line,
+      system_proxy_config_service_.Pass(), command_line,
       quick_check_enabled_.GetValue());
 
   globals_->system_request_context.reset(

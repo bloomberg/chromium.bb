@@ -127,8 +127,8 @@ class ProxyServiceMojoTest : public testing::Test,
 
     fetcher_ = new MockProxyScriptFetcher;
     proxy_service_ = CreateProxyServiceUsingMojoFactory(
-        this, new ProxyConfigServiceFixed(
-                  ProxyConfig::CreateFromCustomPacURL(GURL(kPacUrl))),
+        this, make_scoped_ptr(new ProxyConfigServiceFixed(
+                  ProxyConfig::CreateFromCustomPacURL(GURL(kPacUrl)))),
         fetcher_, make_scoped_ptr(new DoNothingDhcpProxyScriptFetcher()),
         &mock_host_resolver_, &net_log_, &network_delegate_);
   }

@@ -59,9 +59,10 @@ class ResolveProxyMsgHelperTest : public testing::Test, public IPC::Listener {
 
   ResolveProxyMsgHelperTest()
       : resolver_factory_(new net::MockAsyncProxyResolverFactory(false)),
-        service_(new net::ProxyService(new MockProxyConfigService,
-                                       make_scoped_ptr(resolver_factory_),
-                                       NULL)),
+        service_(
+            new net::ProxyService(make_scoped_ptr(new MockProxyConfigService),
+                                  make_scoped_ptr(resolver_factory_),
+                                  NULL)),
         helper_(new TestResolveProxyMsgHelper(service_.get(), this)),
         io_thread_(BrowserThread::IO, &message_loop_) {
     test_sink_.AddFilter(this);

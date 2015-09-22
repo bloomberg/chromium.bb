@@ -22,7 +22,7 @@ namespace net {
 
 scoped_ptr<ProxyService> CreateProxyServiceUsingMojoFactory(
     MojoProxyResolverFactory* mojo_proxy_factory,
-    ProxyConfigService* proxy_config_service,
+    scoped_ptr<ProxyConfigService> proxy_config_service,
     ProxyScriptFetcher* proxy_script_fetcher,
     scoped_ptr<DhcpProxyScriptFetcher> dhcp_proxy_script_fetcher,
     HostResolver* host_resolver,
@@ -34,7 +34,7 @@ scoped_ptr<ProxyService> CreateProxyServiceUsingMojoFactory(
   DCHECK(host_resolver);
 
   scoped_ptr<ProxyService> proxy_service(new ProxyService(
-      proxy_config_service,
+      proxy_config_service.Pass(),
       make_scoped_ptr(new ProxyResolverFactoryMojo(
           mojo_proxy_factory, host_resolver,
           base::Bind(&NetworkDelegateErrorObserver::Create, network_delegate,
@@ -50,16 +50,17 @@ scoped_ptr<ProxyService> CreateProxyServiceUsingMojoFactory(
 }
 
 scoped_ptr<ProxyService> CreateProxyServiceUsingMojoInProcess(
-    ProxyConfigService* proxy_config_service,
+    scoped_ptr<ProxyConfigService> proxy_config_service,
     ProxyScriptFetcher* proxy_script_fetcher,
     scoped_ptr<DhcpProxyScriptFetcher> dhcp_proxy_script_fetcher,
     HostResolver* host_resolver,
     NetLog* net_log,
     NetworkDelegate* network_delegate) {
   return CreateProxyServiceUsingMojoFactory(
-      InProcessMojoProxyResolverFactory::GetInstance(), proxy_config_service,
-      proxy_script_fetcher, dhcp_proxy_script_fetcher.Pass(), host_resolver,
-      net_log, network_delegate);
+      InProcessMojoProxyResolverFactory::GetInstance(),
+      proxy_config_service.Pass(), proxy_script_fetcher,
+      dhcp_proxy_script_fetcher.Pass(), host_resolver, net_log,
+      network_delegate);
 }
 
 }  // namespace net

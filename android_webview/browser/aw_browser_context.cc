@@ -63,14 +63,18 @@ void DeleteDirRecursively(const base::FilePath& path) {
 
 AwBrowserContext* g_browser_context = NULL;
 
-net::ProxyConfigService* CreateProxyConfigService() {
-  net::ProxyConfigServiceAndroid* config_service =
-      static_cast<net::ProxyConfigServiceAndroid*>(
-          net::ProxyService::CreateSystemProxyConfigService(
-              BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO),
-              nullptr /* Ignored on Android */ ));
-  config_service->set_exclude_pac_url(true);
-  return config_service;
+scoped_ptr<net::ProxyConfigService> CreateProxyConfigService() {
+  scoped_ptr<net::ProxyConfigService> config_service =
+      net::ProxyService::CreateSystemProxyConfigService(
+          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO),
+          nullptr /* Ignored on Android */);
+
+  // TODO(csharrison) Architect the wrapper better so we don't need a cast for
+  // android ProxyConfigServices.
+  net::ProxyConfigServiceAndroid* android_config_service =
+      static_cast<net::ProxyConfigServiceAndroid*>(config_service.get());
+  android_config_service->set_exclude_pac_url(true);
+  return config_service.Pass();
 }
 
 bool OverrideBlacklistForURL(const GURL& url, bool* block, int* reason) {
@@ -177,10 +181,8 @@ void AwBrowserContext::PreMainMessageLoopRun() {
     LOG(WARNING) << "Failed to get cache directory for Android WebView. "
                  << "Using app data directory as a fallback.";
   }
-  url_request_context_getter_ =
-      new AwURLRequestContextGetter(
-          cache_path, cookie_store_.get(),
-          make_scoped_ptr(CreateProxyConfigService()).Pass());
+  url_request_context_getter_ = new AwURLRequestContextGetter(
+      cache_path, cookie_store_.get(), CreateProxyConfigService());
 
   data_reduction_proxy_io_data_.reset(
       new data_reduction_proxy::DataReductionProxyIOData(

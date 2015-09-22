@@ -27,7 +27,7 @@ class ProxyServiceFactory {
  public:
   // Creates a ProxyConfigService that delivers the system preferences
   // (or the respective ChromeOS equivalent).
-  static net::ProxyConfigService* CreateProxyConfigService(
+  static scoped_ptr<net::ProxyConfigService> CreateProxyConfigService(
       PrefProxyConfigTracker* tracker);
 
   // Creates a PrefProxyConfigTracker that tracks preferences of a
@@ -49,7 +49,7 @@ class ProxyServiceFactory {
       net::NetLog* net_log,
       net::URLRequestContext* context,
       net::NetworkDelegate* network_delegate,
-      net::ProxyConfigService* proxy_config_service,
+      scoped_ptr<net::ProxyConfigService> proxy_config_service,
       const base::CommandLine& command_line,
       bool quick_check_enabled);
 

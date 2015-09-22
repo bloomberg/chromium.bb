@@ -148,14 +148,15 @@ void CronetURLRequestContextAdapter::InitRequestContextOnMainThread(
     jobject jcaller) {
   base::android::ScopedJavaGlobalRef<jobject> jcaller_ref;
   jcaller_ref.Reset(env, jcaller);
+  proxy_config_service_ = net::ProxyService::CreateSystemProxyConfigService(
+      GetNetworkTaskRunner(), nullptr /* Ignored on Android */);
   net::ProxyConfigServiceAndroid* android_proxy_config_service =
-      static_cast<net::ProxyConfigServiceAndroid*>(
-          net::ProxyService::CreateSystemProxyConfigService(
-              GetNetworkTaskRunner(), nullptr /* Ignored on Android */));
+      static_cast<net::ProxyConfigServiceAndroid*>(proxy_config_service_.get());
   // If a PAC URL is present, ignore it and use the address and port of
   // Android system's local HTTP proxy server. See: crbug.com/432539.
+  // TODO(csharrison) Architect the wrapper better so we don't need to cast for
+  // android ProxyConfigServices.
   android_proxy_config_service->set_exclude_pac_url(true);
-  proxy_config_service_.reset(android_proxy_config_service);
   GetNetworkTaskRunner()->PostTask(
       FROM_HERE,
       base::Bind(&CronetURLRequestContextAdapter::InitializeOnNetworkThread,
@@ -200,7 +201,7 @@ void CronetURLRequestContextAdapter::InitializeOnNetworkThread(
   // local HTTP proxy. See: crbug.com/432539.
   context_builder.set_proxy_service(
       net::ProxyService::CreateWithoutProxyResolver(
-          proxy_config_service_.release(), net_log_.get()));
+          proxy_config_service_.Pass(), net_log_.get()));
   config->ConfigureURLRequestContextBuilder(&context_builder);
 
   // Set up pref file if storage path is specified.

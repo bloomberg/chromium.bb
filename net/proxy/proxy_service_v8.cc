@@ -18,7 +18,7 @@ namespace net {
 
 // static
 scoped_ptr<ProxyService> CreateProxyServiceUsingV8ProxyResolver(
-    ProxyConfigService* proxy_config_service,
+    scoped_ptr<ProxyConfigService> proxy_config_service,
     ProxyScriptFetcher* proxy_script_fetcher,
     scoped_ptr<DhcpProxyScriptFetcher> dhcp_proxy_script_fetcher,
     HostResolver* host_resolver,
@@ -30,7 +30,7 @@ scoped_ptr<ProxyService> CreateProxyServiceUsingV8ProxyResolver(
   DCHECK(host_resolver);
 
   scoped_ptr<ProxyService> proxy_service(new ProxyService(
-      proxy_config_service,
+      proxy_config_service.Pass(),
       make_scoped_ptr(new ProxyResolverFactoryV8TracingWrapper(
           host_resolver, net_log,
           base::Bind(&NetworkDelegateErrorObserver::Create, network_delegate,

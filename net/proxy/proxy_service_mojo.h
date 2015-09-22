@@ -24,8 +24,7 @@ class ProxyService;
 
 // Creates a proxy service that uses |mojo_proxy_factory| to create and connect
 // to a Mojo proxy resolver service. This proxy service polls
-// |proxy_config_service| to notice when the proxy settings change. We take
-// ownership of |proxy_config_service|.
+// |proxy_config_service| to notice when the proxy settings change.
 //
 // |proxy_script_fetcher| specifies the dependency to use for downloading
 // any PAC scripts. The resulting ProxyService will take ownership of it.
@@ -38,7 +37,7 @@ class ProxyService;
 // lifetime of the ProxyService.
 scoped_ptr<ProxyService> CreateProxyServiceUsingMojoFactory(
     MojoProxyResolverFactory* mojo_proxy_factory,
-    ProxyConfigService* proxy_config_service,
+    scoped_ptr<ProxyConfigService> proxy_config_service,
     ProxyScriptFetcher* proxy_script_fetcher,
     scoped_ptr<DhcpProxyScriptFetcher> dhcp_proxy_script_fetcher,
     HostResolver* host_resolver,
@@ -54,7 +53,7 @@ scoped_ptr<ProxyService> CreateProxyServiceUsingMojoFactory(
 // # other V8's running in the process must use v8::Locker.
 // ##########################################################################
 scoped_ptr<ProxyService> CreateProxyServiceUsingMojoInProcess(
-    ProxyConfigService* proxy_config_service,
+    scoped_ptr<ProxyConfigService> proxy_config_service,
     ProxyScriptFetcher* proxy_script_fetcher,
     scoped_ptr<DhcpProxyScriptFetcher> dhcp_proxy_script_fetcher,
     HostResolver* host_resolver,

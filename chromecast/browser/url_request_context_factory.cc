@@ -152,11 +152,11 @@ void URLRequestContextFactory::InitializeOnUIThread(net::NetLog* net_log) {
 
   // Proxy config service should be initialized in UI thread, since
   // ProxyConfigServiceDelegate on Android expects UI thread.
-  proxy_config_service_.reset(net::ProxyService::CreateSystemProxyConfigService(
+  proxy_config_service_ = net::ProxyService::CreateSystemProxyConfigService(
       content::BrowserThread::GetMessageLoopProxyForThread(
           content::BrowserThread::IO),
       content::BrowserThread::GetMessageLoopProxyForThread(
-          content::BrowserThread::FILE)));
+          content::BrowserThread::FILE));
 
   net_log_ = net_log;
 }
@@ -217,7 +217,7 @@ void URLRequestContextFactory::InitializeSystemContextDependencies() {
   http_server_properties_.reset(new net::HttpServerPropertiesImpl);
 
   proxy_service_ = net::ProxyService::CreateUsingSystemProxyResolver(
-      proxy_config_service_.release(), 0, NULL);
+      proxy_config_service_.Pass(), 0, NULL);
   system_dependencies_initialized_ = true;
 }
 

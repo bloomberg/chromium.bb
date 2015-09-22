@@ -419,9 +419,8 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
         new_tab_interceptor_service->CreateInterceptor();
   }
 
-  params->proxy_config_service
-      .reset(ProxyServiceFactory::CreateProxyConfigService(
-           profile->GetProxyConfigTracker()));
+  params->proxy_config_service = ProxyServiceFactory::CreateProxyConfigService(
+      profile->GetProxyConfigTracker());
 #if defined(ENABLE_SUPERVISED_USERS)
   SupervisedUserService* supervised_user_service =
       SupervisedUserServiceFactory::GetForProfile(profile);
@@ -1074,7 +1073,7 @@ void ProfileIOData::Init(
       io_thread->net_log(),
       io_thread_globals->proxy_script_fetcher_context.get(),
       io_thread_globals->system_network_delegate.get(),
-      profile_params_->proxy_config_service.release(), command_line,
+      profile_params_->proxy_config_service.Pass(), command_line,
       quick_check_enabled_.GetValue());
   transport_security_state_.reset(new net::TransportSecurityState());
   base::SequencedWorkerPool* pool = BrowserThread::GetBlockingPool();

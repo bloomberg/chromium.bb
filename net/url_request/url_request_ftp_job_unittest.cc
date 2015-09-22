@@ -138,7 +138,9 @@ class MockFtpTransactionFactory : public FtpTransactionFactory {
 class URLRequestFtpJobPriorityTest : public testing::Test {
  protected:
   URLRequestFtpJobPriorityTest()
-      : proxy_service_(new SimpleProxyConfigService, NULL, NULL),
+      : proxy_service_(make_scoped_ptr(new SimpleProxyConfigService),
+                       NULL,
+                       NULL),
         req_(context_.CreateRequest(GURL("ftp://ftp.example.com"),
                                     DEFAULT_PRIORITY,
                                     &delegate_)) {
@@ -227,12 +229,13 @@ TEST_F(URLRequestFtpJobPriorityTest, SetSubsequentTransactionPriority) {
 class URLRequestFtpJobTest : public testing::Test {
  public:
   URLRequestFtpJobTest()
-      : request_context_(
-            &socket_factory_,
-            make_scoped_ptr(
-                new ProxyService(new SimpleProxyConfigService, NULL, NULL)),
-            &network_delegate_,
-            &ftp_transaction_factory_) {}
+      : request_context_(&socket_factory_,
+                         make_scoped_ptr(new ProxyService(
+                             make_scoped_ptr(new SimpleProxyConfigService),
+                             NULL,
+                             NULL)),
+                         &network_delegate_,
+                         &ftp_transaction_factory_) {}
 
   ~URLRequestFtpJobTest() override {
     // Clean up any remaining tasks that mess up unrelated tests.
@@ -297,8 +300,8 @@ TEST_F(URLRequestFtpJobTest, FtpProxyRequest) {
 TEST_F(URLRequestFtpJobTest, FtpProxyRequestOrphanJob) {
   // Use a PAC URL so that URLRequestFtpJob's |pac_request_| field is non-NULL.
   request_context()->set_proxy_service(make_scoped_ptr(new ProxyService(
-      new ProxyConfigServiceFixed(
-          ProxyConfig::CreateFromCustomPacURL(GURL("http://foo"))),
+      make_scoped_ptr(new ProxyConfigServiceFixed(
+          ProxyConfig::CreateFromCustomPacURL(GURL("http://foo")))),
       make_scoped_ptr(new MockProxyResolverFactory), NULL)));
 
   TestDelegate request_delegate;

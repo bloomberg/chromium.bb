@@ -92,10 +92,9 @@ class NET_EXPORT ProxyService : public NetworkChangeNotifier::IPAddressObserver,
                               base::TimeDelta* next_delay) const = 0;
   };
 
-  // The instance takes ownership of |config_service| and |resolver_factory|.
   // |net_log| is a possibly NULL destination to send log events to. It must
   // remain alive for the lifetime of this ProxyService.
-  ProxyService(ProxyConfigService* config_service,
+  ProxyService(scoped_ptr<ProxyConfigService> config_service,
                scoped_ptr<ProxyResolverFactory> resolver_factory,
                NetLog* net_log);
 
@@ -203,9 +202,9 @@ class NET_EXPORT ProxyService : public NetworkChangeNotifier::IPAddressObserver,
   // Tells this ProxyService to start using a new ProxyConfigService to
   // retrieve its ProxyConfig from. The new ProxyConfigService will immediately
   // be queried for new config info which will be used for all subsequent
-  // ResolveProxy calls. ProxyService takes ownership of
-  // |new_proxy_config_service|.
-  void ResetConfigService(ProxyConfigService* new_proxy_config_service);
+  // ResolveProxy calls.
+  void ResetConfigService(
+      scoped_ptr<ProxyConfigService> new_proxy_config_service);
 
   // Returns the last configuration fetched from ProxyConfigService.
   const ProxyConfig& fetched_config() {
@@ -236,13 +235,13 @@ class NET_EXPORT ProxyService : public NetworkChangeNotifier::IPAddressObserver,
   // libraries for evaluating the PAC script if available, otherwise skips
   // proxy autoconfig.
   static scoped_ptr<ProxyService> CreateUsingSystemProxyResolver(
-      ProxyConfigService* proxy_config_service,
+      scoped_ptr<ProxyConfigService> proxy_config_service,
       size_t num_pac_threads,
       NetLog* net_log);
 
   // Creates a ProxyService without support for proxy autoconfig.
   static scoped_ptr<ProxyService> CreateWithoutProxyResolver(
-      ProxyConfigService* proxy_config_service,
+      scoped_ptr<ProxyConfigService> proxy_config_service,
       NetLog* net_log);
 
   // Convenience methods that creates a proxy service using the
@@ -265,7 +264,7 @@ class NET_EXPORT ProxyService : public NetworkChangeNotifier::IPAddressObserver,
 
   // Creates a config service appropriate for this platform that fetches the
   // system proxy settings.
-  static ProxyConfigService* CreateSystemProxyConfigService(
+  static scoped_ptr<ProxyConfigService> CreateSystemProxyConfigService(
       const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner,
       const scoped_refptr<base::SingleThreadTaskRunner>& file_task_runner);
 

@@ -280,8 +280,8 @@ void CrNetEnvironment::Install() {
   // The network change notifier must be initialized so that registered
   // delegates will receive callbacks.
   network_change_notifier_.reset(net::NetworkChangeNotifier::Create());
-  proxy_config_service_.reset(net::ProxyService::CreateSystemProxyConfigService(
-      network_io_thread_->task_runner(), nullptr));
+  proxy_config_service_ = net::ProxyService::CreateSystemProxyConfigService(
+      network_io_thread_->task_runner(), nullptr);
 
   PostToNetworkThread(FROM_HERE,
       base::Bind(&CrNetEnvironment::InitializeOnNetworkThread,
@@ -406,7 +406,7 @@ void CrNetEnvironment::InitializeOnNetworkThread() {
           .release());
   main_context_->set_proxy_service(
       net::ProxyService::CreateUsingSystemProxyResolver(
-          proxy_config_service_.get(), 0, nullptr)
+          proxy_config_service_.Pass(), 0, nullptr)
           .release());
 
   // Cache

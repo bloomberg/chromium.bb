@@ -295,20 +295,15 @@ scoped_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
   if (!proxy_service_) {
     // TODO(willchan): Switch to using this code when
     // ProxyService::CreateSystemProxyConfigService()'s signature doesn't suck.
-  #if defined(OS_LINUX) || defined(OS_ANDROID)
-    ProxyConfigService* proxy_config_service = proxy_config_service_.release();
-  #else
-    ProxyConfigService* proxy_config_service = NULL;
-    if (proxy_config_service_) {
-      proxy_config_service = proxy_config_service_.release();
-    } else {
-      proxy_config_service = ProxyService::CreateSystemProxyConfigService(
+#if !defined(OS_LINUX) && !defined(OS_ANDROID)
+    if (!proxy_config_service_) {
+      proxy_config_service_ = ProxyService::CreateSystemProxyConfigService(
           base::ThreadTaskRunnerHandle::Get().get(),
           context->GetFileTaskRunner());
     }
-  #endif  // defined(OS_LINUX) || defined(OS_ANDROID)
+#endif  // !defined(OS_LINUX) && !defined(OS_ANDROID)
     proxy_service_ = ProxyService::CreateUsingSystemProxyResolver(
-        proxy_config_service,
+        proxy_config_service_.Pass(),
         0,  // This results in using the default value.
         context->net_log());
   }

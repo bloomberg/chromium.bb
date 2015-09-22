@@ -311,8 +311,9 @@ RequestMap GetCancelledRequestsForURLs(const MockAsyncProxyResolver& resolver,
 TEST_F(ProxyServiceTest, Direct) {
   MockAsyncProxyResolverFactory* factory =
       new MockAsyncProxyResolverFactory(false);
-  ProxyService service(new MockProxyConfigService(ProxyConfig::CreateDirect()),
-                       make_scoped_ptr(factory), NULL);
+  ProxyService service(
+      make_scoped_ptr(new MockProxyConfigService(ProxyConfig::CreateDirect())),
+      make_scoped_ptr(factory), NULL);
 
   GURL url("http://www.google.com/");
 
@@ -348,7 +349,8 @@ TEST_F(ProxyServiceTest, OnResolveProxyCallbackAddProxy) {
   config.set_auto_detect(false);
   config.proxy_rules().bypass_rules.ParseFromString("*.org");
 
-  ProxyService service(new MockProxyConfigService(config), nullptr, NULL);
+  ProxyService service(make_scoped_ptr(new MockProxyConfigService(config)),
+                       nullptr, NULL);
 
   GURL url("http://www.google.com/");
   GURL bypass_url("http://internet.org");
@@ -402,7 +404,8 @@ TEST_F(ProxyServiceTest, OnResolveProxyCallbackRemoveProxy) {
   config.set_auto_detect(false);
   config.proxy_rules().bypass_rules.ParseFromString("*.org");
 
-  ProxyService service(new MockProxyConfigService(config), nullptr, NULL);
+  ProxyService service(make_scoped_ptr(new MockProxyConfigService(config)),
+                       nullptr, NULL);
 
   GURL url("http://www.google.com/");
   GURL bypass_url("http://internet.org");
@@ -445,7 +448,8 @@ TEST_F(ProxyServiceTest, PAC) {
   MockAsyncProxyResolverFactory* factory =
       new MockAsyncProxyResolverFactory(false);
 
-  ProxyService service(config_service, make_scoped_ptr(factory), NULL);
+  ProxyService service(make_scoped_ptr(config_service),
+                       make_scoped_ptr(factory), NULL);
 
   GURL url("http://www.google.com/");
 
@@ -506,7 +510,8 @@ TEST_F(ProxyServiceTest, PAC_NoIdentityOrHash) {
   MockAsyncProxyResolverFactory* factory =
       new MockAsyncProxyResolverFactory(false);
 
-  ProxyService service(config_service, make_scoped_ptr(factory), NULL);
+  ProxyService service(make_scoped_ptr(config_service),
+                       make_scoped_ptr(factory), NULL);
 
   GURL url("http://username:password@www.google.com/?ref#hash#hash");
 
@@ -536,7 +541,8 @@ TEST_F(ProxyServiceTest, PAC_FailoverWithoutDirect) {
   MockAsyncProxyResolverFactory* factory =
       new MockAsyncProxyResolverFactory(false);
 
-  ProxyService service(config_service, make_scoped_ptr(factory), NULL);
+  ProxyService service(make_scoped_ptr(config_service),
+                       make_scoped_ptr(factory), NULL);
 
   GURL url("http://www.google.com/");
 
@@ -589,7 +595,8 @@ TEST_F(ProxyServiceTest, PAC_RuntimeError) {
   MockAsyncProxyResolverFactory* factory =
       new MockAsyncProxyResolverFactory(false);
 
-  ProxyService service(config_service, make_scoped_ptr(factory), NULL);
+  ProxyService service(make_scoped_ptr(config_service),
+                       make_scoped_ptr(factory), NULL);
 
   GURL url("http://this-causes-js-error/");
 
@@ -646,7 +653,8 @@ TEST_F(ProxyServiceTest, PAC_FailoverAfterDirect) {
   MockAsyncProxyResolverFactory* factory =
       new MockAsyncProxyResolverFactory(false);
 
-  ProxyService service(config_service, make_scoped_ptr(factory), NULL);
+  ProxyService service(make_scoped_ptr(config_service),
+                       make_scoped_ptr(factory), NULL);
 
   GURL url("http://www.google.com/");
 
@@ -721,7 +729,8 @@ TEST_F(ProxyServiceTest, PAC_ConfigSourcePropagates) {
   MockAsyncProxyResolver resolver;
   MockAsyncProxyResolverFactory* factory =
       new MockAsyncProxyResolverFactory(false);
-  ProxyService service(config_service, make_scoped_ptr(factory), NULL);
+  ProxyService service(make_scoped_ptr(config_service),
+                       make_scoped_ptr(factory), NULL);
 
   // Resolve something.
   GURL url("http://www.google.com/");
@@ -758,7 +767,8 @@ TEST_F(ProxyServiceTest, ProxyResolverFails) {
   MockAsyncProxyResolverFactory* factory =
       new MockAsyncProxyResolverFactory(false);
 
-  ProxyService service(config_service, make_scoped_ptr(factory), NULL);
+  ProxyService service(make_scoped_ptr(config_service),
+                       make_scoped_ptr(factory), NULL);
 
   // Start first resolve request.
   GURL url("http://www.google.com/");
@@ -819,7 +829,8 @@ TEST_F(ProxyServiceTest, ProxyResolverTerminatedDuringRequest) {
   MockAsyncProxyResolverFactory* factory =
       new MockAsyncProxyResolverFactory(false);
 
-  ProxyService service(config_service, make_scoped_ptr(factory), nullptr);
+  ProxyService service(make_scoped_ptr(config_service),
+                       make_scoped_ptr(factory), nullptr);
 
   // Start first resolve request.
   GURL url("http://www.google.com/");
@@ -889,7 +900,8 @@ TEST_F(ProxyServiceTest,
   MockAsyncProxyResolverFactory* factory =
       new MockAsyncProxyResolverFactory(false);
 
-  ProxyService service(config_service, make_scoped_ptr(factory), nullptr);
+  ProxyService service(make_scoped_ptr(config_service),
+                       make_scoped_ptr(factory), nullptr);
 
   // Start two resolve requests.
   GURL url1("http://www.google.com/");
@@ -959,7 +971,8 @@ TEST_F(ProxyServiceTest, ProxyScriptFetcherFailsDownloadingMandatoryPac) {
   MockAsyncProxyResolverFactory* factory =
       new MockAsyncProxyResolverFactory(false);
 
-  ProxyService service(config_service, make_scoped_ptr(factory), NULL);
+  ProxyService service(make_scoped_ptr(config_service),
+                       make_scoped_ptr(factory), NULL);
 
   // Start first resolve request.
   GURL url("http://www.google.com/");
@@ -1003,7 +1016,8 @@ TEST_F(ProxyServiceTest, ProxyResolverFailsParsingJavaScriptMandatoryPac) {
   MockAsyncProxyResolverFactory* factory =
       new MockAsyncProxyResolverFactory(true);
 
-  ProxyService service(config_service, make_scoped_ptr(factory), NULL);
+  ProxyService service(make_scoped_ptr(config_service),
+                       make_scoped_ptr(factory), NULL);
 
   MockProxyScriptFetcher* fetcher = new MockProxyScriptFetcher;
   service.SetProxyScriptFetchers(
@@ -1052,7 +1066,8 @@ TEST_F(ProxyServiceTest, ProxyResolverFailsInJavaScriptMandatoryPac) {
   MockAsyncProxyResolverFactory* factory =
       new MockAsyncProxyResolverFactory(false);
 
-  ProxyService service(config_service, make_scoped_ptr(factory), NULL);
+  ProxyService service(make_scoped_ptr(config_service),
+                       make_scoped_ptr(factory), NULL);
 
   // Start first resolve request.
   GURL url("http://www.google.com/");
@@ -1109,7 +1124,8 @@ TEST_F(ProxyServiceTest, ProxyFallback) {
   MockAsyncProxyResolverFactory* factory =
       new MockAsyncProxyResolverFactory(false);
 
-  ProxyService service(config_service, make_scoped_ptr(factory), NULL);
+  ProxyService service(make_scoped_ptr(config_service),
+                       make_scoped_ptr(factory), NULL);
 
   GURL url("http://www.google.com/");
 
@@ -1258,7 +1274,8 @@ TEST_F(ProxyServiceTest, ProxyFallbackToDirect) {
   MockAsyncProxyResolverFactory* factory =
       new MockAsyncProxyResolverFactory(false);
 
-  ProxyService service(config_service, make_scoped_ptr(factory), NULL);
+  ProxyService service(make_scoped_ptr(config_service),
+                       make_scoped_ptr(factory), NULL);
 
   GURL url("http://www.google.com/");
 
@@ -1330,7 +1347,8 @@ TEST_F(ProxyServiceTest, ProxyFallback_NewSettings) {
   MockAsyncProxyResolverFactory* factory =
       new MockAsyncProxyResolverFactory(false);
 
-  ProxyService service(config_service, make_scoped_ptr(factory), NULL);
+  ProxyService service(make_scoped_ptr(config_service),
+                       make_scoped_ptr(factory), NULL);
 
   GURL url("http://www.google.com/");
 
@@ -1432,7 +1450,8 @@ TEST_F(ProxyServiceTest, ProxyFallback_BadConfig) {
   MockAsyncProxyResolverFactory* factory =
       new MockAsyncProxyResolverFactory(false);
 
-  ProxyService service(config_service, make_scoped_ptr(factory), NULL);
+  ProxyService service(make_scoped_ptr(config_service),
+                       make_scoped_ptr(factory), NULL);
 
   GURL url("http://www.google.com/");
 
@@ -1529,7 +1548,8 @@ TEST_F(ProxyServiceTest, ProxyFallback_BadConfigMandatory) {
   MockAsyncProxyResolverFactory* factory =
       new MockAsyncProxyResolverFactory(false);
 
-  ProxyService service(config_service, make_scoped_ptr(factory), NULL);
+  ProxyService service(make_scoped_ptr(config_service),
+                       make_scoped_ptr(factory), NULL);
 
   GURL url("http://www.google.com/");
 
@@ -1620,7 +1640,8 @@ TEST_F(ProxyServiceTest, ProxyBypassList) {
   config.set_auto_detect(false);
   config.proxy_rules().bypass_rules.ParseFromString("*.org");
 
-  ProxyService service(new MockProxyConfigService(config), nullptr, NULL);
+  ProxyService service(make_scoped_ptr(new MockProxyConfigService(config)),
+                       nullptr, NULL);
 
   int rv;
   GURL url1("http://www.webkit.org");
@@ -1658,7 +1679,8 @@ TEST_F(ProxyServiceTest, MarkProxiesAsBadTests) {
 
   EXPECT_EQ(3u, additional_bad_proxies.size());
 
-  ProxyService service(new MockProxyConfigService(config), nullptr, NULL);
+  ProxyService service(make_scoped_ptr(new MockProxyConfigService(config)),
+                       nullptr, NULL);
   ProxyInfo proxy_info;
   proxy_info.UseProxyList(proxy_list);
   const ProxyRetryInfoMap& retry_info = service.proxy_retry_info();
@@ -1678,7 +1700,8 @@ TEST_F(ProxyServiceTest, PerProtocolProxyTests) {
   config.proxy_rules().ParseFromString("http=foopy1:8080;https=foopy2:8080");
   config.set_auto_detect(false);
   {
-    ProxyService service(new MockProxyConfigService(config), nullptr, NULL);
+    ProxyService service(make_scoped_ptr(new MockProxyConfigService(config)),
+                         nullptr, NULL);
     GURL test_url("http://www.msn.com");
     ProxyInfo info;
     TestCompletionCallback callback;
@@ -1690,7 +1713,8 @@ TEST_F(ProxyServiceTest, PerProtocolProxyTests) {
     EXPECT_EQ("foopy1:8080", info.proxy_server().ToURI());
   }
   {
-    ProxyService service(new MockProxyConfigService(config), nullptr, NULL);
+    ProxyService service(make_scoped_ptr(new MockProxyConfigService(config)),
+                         nullptr, NULL);
     GURL test_url("ftp://ftp.google.com");
     ProxyInfo info;
     TestCompletionCallback callback;
@@ -1702,7 +1726,8 @@ TEST_F(ProxyServiceTest, PerProtocolProxyTests) {
     EXPECT_EQ("direct://", info.proxy_server().ToURI());
   }
   {
-    ProxyService service(new MockProxyConfigService(config), nullptr, NULL);
+    ProxyService service(make_scoped_ptr(new MockProxyConfigService(config)),
+                         nullptr, NULL);
     GURL test_url("https://webbranch.techcu.com");
     ProxyInfo info;
     TestCompletionCallback callback;
@@ -1715,7 +1740,8 @@ TEST_F(ProxyServiceTest, PerProtocolProxyTests) {
   }
   {
     config.proxy_rules().ParseFromString("foopy1:8080");
-    ProxyService service(new MockProxyConfigService(config), nullptr, NULL);
+    ProxyService service(make_scoped_ptr(new MockProxyConfigService(config)),
+                         nullptr, NULL);
     GURL test_url("http://www.microsoft.com");
     ProxyInfo info;
     TestCompletionCallback callback;
@@ -1736,7 +1762,8 @@ TEST_F(ProxyServiceTest, ProxyConfigSourcePropagates) {
     ProxyConfig config;
     config.set_source(PROXY_CONFIG_SOURCE_TEST);
     config.proxy_rules().ParseFromString("https=foopy2:8080");
-    ProxyService service(new MockProxyConfigService(config), nullptr, NULL);
+    ProxyService service(make_scoped_ptr(new MockProxyConfigService(config)),
+                         nullptr, NULL);
     GURL test_url("http://www.google.com");
     ProxyInfo info;
     TestCompletionCallback callback;
@@ -1751,7 +1778,8 @@ TEST_F(ProxyServiceTest, ProxyConfigSourcePropagates) {
     ProxyConfig config;
     config.set_source(PROXY_CONFIG_SOURCE_TEST);
     config.proxy_rules().ParseFromString("https=foopy2:8080");
-    ProxyService service(new MockProxyConfigService(config), nullptr, NULL);
+    ProxyService service(make_scoped_ptr(new MockProxyConfigService(config)),
+                         nullptr, NULL);
     GURL test_url("https://www.google.com");
     ProxyInfo info;
     TestCompletionCallback callback;
@@ -1765,7 +1793,8 @@ TEST_F(ProxyServiceTest, ProxyConfigSourcePropagates) {
   {
     ProxyConfig config;
     config.set_source(PROXY_CONFIG_SOURCE_TEST);
-    ProxyService service(new MockProxyConfigService(config), nullptr, NULL);
+    ProxyService service(make_scoped_ptr(new MockProxyConfigService(config)),
+                         nullptr, NULL);
     GURL test_url("http://www.google.com");
     ProxyInfo info;
     TestCompletionCallback callback;
@@ -1788,7 +1817,8 @@ TEST_F(ProxyServiceTest, DefaultProxyFallbackToSOCKS) {
             config.proxy_rules().type);
 
   {
-    ProxyService service(new MockProxyConfigService(config), nullptr, NULL);
+    ProxyService service(make_scoped_ptr(new MockProxyConfigService(config)),
+                         nullptr, NULL);
     GURL test_url("http://www.msn.com");
     ProxyInfo info;
     TestCompletionCallback callback;
@@ -1800,7 +1830,8 @@ TEST_F(ProxyServiceTest, DefaultProxyFallbackToSOCKS) {
     EXPECT_EQ("foopy1:8080", info.proxy_server().ToURI());
   }
   {
-    ProxyService service(new MockProxyConfigService(config), nullptr, NULL);
+    ProxyService service(make_scoped_ptr(new MockProxyConfigService(config)),
+                         nullptr, NULL);
     GURL test_url("ftp://ftp.google.com");
     ProxyInfo info;
     TestCompletionCallback callback;
@@ -1812,7 +1843,8 @@ TEST_F(ProxyServiceTest, DefaultProxyFallbackToSOCKS) {
     EXPECT_EQ("socks4://foopy2:1080", info.proxy_server().ToURI());
   }
   {
-    ProxyService service(new MockProxyConfigService(config), nullptr, NULL);
+    ProxyService service(make_scoped_ptr(new MockProxyConfigService(config)),
+                         nullptr, NULL);
     GURL test_url("https://webbranch.techcu.com");
     ProxyInfo info;
     TestCompletionCallback callback;
@@ -1824,7 +1856,8 @@ TEST_F(ProxyServiceTest, DefaultProxyFallbackToSOCKS) {
     EXPECT_EQ("socks4://foopy2:1080", info.proxy_server().ToURI());
   }
   {
-    ProxyService service(new MockProxyConfigService(config), nullptr, NULL);
+    ProxyService service(make_scoped_ptr(new MockProxyConfigService(config)),
+                         nullptr, NULL);
     GURL test_url("unknown://www.microsoft.com");
     ProxyInfo info;
     TestCompletionCallback callback;
@@ -1849,7 +1882,8 @@ TEST_F(ProxyServiceTest, CancelInProgressRequest) {
   MockAsyncProxyResolverFactory* factory =
       new MockAsyncProxyResolverFactory(false);
 
-  ProxyService service(config_service, make_scoped_ptr(factory), NULL);
+  ProxyService service(make_scoped_ptr(config_service),
+                       make_scoped_ptr(factory), NULL);
 
   // Start 3 requests.
 
@@ -1911,7 +1945,6 @@ TEST_F(ProxyServiceTest, InitialPACScriptDownload) {
   const GURL url1("http://request1");
   const GURL url2("http://request2");
   const GURL url3("http://request3");
-
   MockProxyConfigService* config_service =
       new MockProxyConfigService("http://foopy/proxy.pac");
 
@@ -1919,7 +1952,8 @@ TEST_F(ProxyServiceTest, InitialPACScriptDownload) {
   MockAsyncProxyResolverFactory* factory =
       new MockAsyncProxyResolverFactory(true);
 
-  ProxyService service(config_service, make_scoped_ptr(factory), NULL);
+  ProxyService service(make_scoped_ptr(config_service),
+                       make_scoped_ptr(factory), NULL);
 
   MockProxyScriptFetcher* fetcher = new MockProxyScriptFetcher;
   service.SetProxyScriptFetchers(
@@ -2021,7 +2055,8 @@ TEST_F(ProxyServiceTest, ChangeScriptFetcherWhilePACDownloadInProgress) {
   MockAsyncProxyResolverFactory* factory =
       new MockAsyncProxyResolverFactory(true);
 
-  ProxyService service(config_service, make_scoped_ptr(factory), NULL);
+  ProxyService service(make_scoped_ptr(config_service),
+                       make_scoped_ptr(factory), NULL);
 
   MockProxyScriptFetcher* fetcher = new MockProxyScriptFetcher;
   service.SetProxyScriptFetchers(
@@ -2079,7 +2114,8 @@ TEST_F(ProxyServiceTest, CancelWhilePACFetching) {
   MockAsyncProxyResolverFactory* factory =
       new MockAsyncProxyResolverFactory(true);
 
-  ProxyService service(config_service, make_scoped_ptr(factory), NULL);
+  ProxyService service(make_scoped_ptr(config_service),
+                       make_scoped_ptr(factory), NULL);
 
   MockProxyScriptFetcher* fetcher = new MockProxyScriptFetcher;
   service.SetProxyScriptFetchers(
@@ -2176,7 +2212,8 @@ TEST_F(ProxyServiceTest, FallbackFromAutodetectToCustomPac) {
   MockAsyncProxyResolver resolver;
   MockAsyncProxyResolverFactory* factory =
       new MockAsyncProxyResolverFactory(true);
-  ProxyService service(config_service, make_scoped_ptr(factory), NULL);
+  ProxyService service(make_scoped_ptr(config_service),
+                       make_scoped_ptr(factory), NULL);
 
   MockProxyScriptFetcher* fetcher = new MockProxyScriptFetcher;
   service.SetProxyScriptFetchers(
@@ -2254,7 +2291,8 @@ TEST_F(ProxyServiceTest, FallbackFromAutodetectToCustomPac2) {
   MockAsyncProxyResolver resolver;
   MockAsyncProxyResolverFactory* factory =
       new MockAsyncProxyResolverFactory(true);
-  ProxyService service(config_service, make_scoped_ptr(factory), NULL);
+  ProxyService service(make_scoped_ptr(config_service),
+                       make_scoped_ptr(factory), NULL);
 
   MockProxyScriptFetcher* fetcher = new MockProxyScriptFetcher;
   service.SetProxyScriptFetchers(
@@ -2325,7 +2363,8 @@ TEST_F(ProxyServiceTest, FallbackFromAutodetectToCustomToManual) {
   MockProxyConfigService* config_service = new MockProxyConfigService(config);
   MockAsyncProxyResolverFactory* factory =
       new MockAsyncProxyResolverFactory(true);
-  ProxyService service(config_service, make_scoped_ptr(factory), NULL);
+  ProxyService service(make_scoped_ptr(config_service),
+                       make_scoped_ptr(factory), NULL);
 
   MockProxyScriptFetcher* fetcher = new MockProxyScriptFetcher;
   service.SetProxyScriptFetchers(
@@ -2386,7 +2425,8 @@ TEST_F(ProxyServiceTest, BypassDoesntApplyToPac) {
   MockAsyncProxyResolver resolver;
   MockAsyncProxyResolverFactory* factory =
       new MockAsyncProxyResolverFactory(true);
-  ProxyService service(config_service, make_scoped_ptr(factory), NULL);
+  ProxyService service(make_scoped_ptr(config_service),
+                       make_scoped_ptr(factory), NULL);
 
   MockProxyScriptFetcher* fetcher = new MockProxyScriptFetcher;
   service.SetProxyScriptFetchers(
@@ -2455,7 +2495,8 @@ TEST_F(ProxyServiceTest, DeleteWhileInitProxyResolverHasOutstandingFetch) {
   MockProxyConfigService* config_service = new MockProxyConfigService(config);
   MockAsyncProxyResolverFactory* factory =
       new MockAsyncProxyResolverFactory(true);
-  ProxyService service(config_service, make_scoped_ptr(factory), NULL);
+  ProxyService service(make_scoped_ptr(config_service),
+                       make_scoped_ptr(factory), NULL);
 
   MockProxyScriptFetcher* fetcher = new MockProxyScriptFetcher;
   service.SetProxyScriptFetchers(
@@ -2490,7 +2531,8 @@ TEST_F(ProxyServiceTest, DeleteWhileInitProxyResolverHasOutstandingSet) {
   MockAsyncProxyResolverFactory* factory =
       new MockAsyncProxyResolverFactory(false);
 
-  ProxyService service(config_service, make_scoped_ptr(factory), NULL);
+  ProxyService service(make_scoped_ptr(config_service),
+                       make_scoped_ptr(factory), NULL);
 
   GURL url("http://www.google.com/");
 
@@ -2508,7 +2550,8 @@ TEST_F(ProxyServiceTest, ResetProxyConfigService) {
   ProxyConfig config1;
   config1.proxy_rules().ParseFromString("foopy1:8080");
   config1.set_auto_detect(false);
-  ProxyService service(new MockProxyConfigService(config1), nullptr, NULL);
+  ProxyService service(make_scoped_ptr(new MockProxyConfigService(config1)),
+                       nullptr, NULL);
 
   ProxyInfo info;
   TestCompletionCallback callback1;
@@ -2521,7 +2564,8 @@ TEST_F(ProxyServiceTest, ResetProxyConfigService) {
   ProxyConfig config2;
   config2.proxy_rules().ParseFromString("foopy2:8080");
   config2.set_auto_detect(false);
-  service.ResetConfigService(new MockProxyConfigService(config2));
+  service.ResetConfigService(
+      make_scoped_ptr(new MockProxyConfigService(config2)));
   TestCompletionCallback callback2;
   rv = service.ResolveProxy(GURL("http://request2"), LOAD_NORMAL, &info,
                             callback2.callback(), NULL, NULL, BoundNetLog());
@@ -2538,7 +2582,8 @@ TEST_F(ProxyServiceTest, UpdateConfigFromPACToDirect) {
   MockAsyncProxyResolver resolver;
   MockAsyncProxyResolverFactory* factory =
       new MockAsyncProxyResolverFactory(false);
-  ProxyService service(config_service, make_scoped_ptr(factory), NULL);
+  ProxyService service(make_scoped_ptr(config_service),
+                       make_scoped_ptr(factory), NULL);
 
   // Start 1 request.
 
@@ -2590,7 +2635,8 @@ TEST_F(ProxyServiceTest, NetworkChangeTriggersPacRefetch) {
 
   TestNetLog log;
 
-  ProxyService service(config_service, make_scoped_ptr(factory), &log);
+  ProxyService service(make_scoped_ptr(config_service),
+                       make_scoped_ptr(factory), &log);
 
   MockProxyScriptFetcher* fetcher = new MockProxyScriptFetcher;
   service.SetProxyScriptFetchers(
@@ -2710,7 +2756,8 @@ TEST_F(ProxyServiceTest, PACScriptRefetchAfterFailure) {
   MockAsyncProxyResolverFactory* factory =
       new MockAsyncProxyResolverFactory(true);
 
-  ProxyService service(config_service, make_scoped_ptr(factory), NULL);
+  ProxyService service(make_scoped_ptr(config_service),
+                       make_scoped_ptr(factory), NULL);
 
   MockProxyScriptFetcher* fetcher = new MockProxyScriptFetcher;
   service.SetProxyScriptFetchers(
@@ -2815,7 +2862,8 @@ TEST_F(ProxyServiceTest, PACScriptRefetchAfterContentChange) {
   MockAsyncProxyResolverFactory* factory =
       new MockAsyncProxyResolverFactory(true);
 
-  ProxyService service(config_service, make_scoped_ptr(factory), NULL);
+  ProxyService service(make_scoped_ptr(config_service),
+                       make_scoped_ptr(factory), NULL);
 
   MockProxyScriptFetcher* fetcher = new MockProxyScriptFetcher;
   service.SetProxyScriptFetchers(
@@ -2926,7 +2974,8 @@ TEST_F(ProxyServiceTest, PACScriptRefetchAfterContentUnchanged) {
   MockAsyncProxyResolverFactory* factory =
       new MockAsyncProxyResolverFactory(true);
 
-  ProxyService service(config_service, make_scoped_ptr(factory), NULL);
+  ProxyService service(make_scoped_ptr(config_service),
+                       make_scoped_ptr(factory), NULL);
 
   MockProxyScriptFetcher* fetcher = new MockProxyScriptFetcher;
   service.SetProxyScriptFetchers(
@@ -3034,7 +3083,8 @@ TEST_F(ProxyServiceTest, PACScriptRefetchAfterSuccess) {
   MockAsyncProxyResolverFactory* factory =
       new MockAsyncProxyResolverFactory(true);
 
-  ProxyService service(config_service, make_scoped_ptr(factory), NULL);
+  ProxyService service(make_scoped_ptr(config_service),
+                       make_scoped_ptr(factory), NULL);
 
   MockProxyScriptFetcher* fetcher = new MockProxyScriptFetcher;
   service.SetProxyScriptFetchers(
@@ -3187,7 +3237,8 @@ TEST_F(ProxyServiceTest, PACScriptRefetchAfterActivity) {
   MockAsyncProxyResolverFactory* factory =
       new MockAsyncProxyResolverFactory(true);
 
-  ProxyService service(config_service, make_scoped_ptr(factory), NULL);
+  ProxyService service(make_scoped_ptr(config_service),
+                       make_scoped_ptr(factory), NULL);
 
   MockProxyScriptFetcher* fetcher = new MockProxyScriptFetcher;
   service.SetProxyScriptFetchers(
@@ -3286,7 +3337,8 @@ TEST_F(ProxyServiceTest, SynchronousWithPAC) {
   MockAsyncProxyResolverFactory* factory =
       new MockAsyncProxyResolverFactory(false);
 
-  ProxyService service(config_service, make_scoped_ptr(factory), NULL);
+  ProxyService service(make_scoped_ptr(config_service),
+                       make_scoped_ptr(factory), NULL);
 
   GURL url("http://www.google.com/");
 
@@ -3312,7 +3364,7 @@ TEST_F(ProxyServiceTest, SynchronousWithFixedConfiguration) {
   MockAsyncProxyResolverFactory* factory =
       new MockAsyncProxyResolverFactory(false);
 
-  ProxyService service(new MockProxyConfigService(config),
+  ProxyService service(make_scoped_ptr(new MockProxyConfigService(config)),
                        make_scoped_ptr(factory), NULL);
 
   GURL url("http://www.google.com/");

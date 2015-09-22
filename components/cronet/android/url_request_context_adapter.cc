@@ -126,8 +126,8 @@ void URLRequestContextAdapter::Initialize(
 }
 
 void URLRequestContextAdapter::InitRequestContextOnMainThread() {
-  proxy_config_service_.reset(net::ProxyService::CreateSystemProxyConfigService(
-      GetNetworkTaskRunner(), NULL));
+  proxy_config_service_ = net::ProxyService::CreateSystemProxyConfigService(
+      GetNetworkTaskRunner(), NULL);
   GetNetworkTaskRunner()->PostTask(
       FROM_HERE,
       base::Bind(&URLRequestContextAdapter::InitRequestContextOnNetworkThread,
