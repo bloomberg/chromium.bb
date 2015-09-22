@@ -103,6 +103,8 @@ void WebLeakDetectorImpl::collectGarbageAndGetDOMCounts(WebLocalFrame* frame)
     V8GCController::collectAllGarbageForTesting(isolate);
     // Note: Oilpan precise GC is scheduled at the end of the event loop.
 
+    V8PerIsolateData::from(isolate)->clearScriptRegexpContext();
+
     // Task queue may contain delayed object destruction tasks.
     // This method is called from navigation hook inside FrameLoader,
     // so previous document is still held by the loader until the next event loop.

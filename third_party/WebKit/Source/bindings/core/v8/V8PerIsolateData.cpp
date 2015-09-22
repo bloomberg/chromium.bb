@@ -218,6 +218,13 @@ v8::Local<v8::Context> V8PerIsolateData::ensureScriptRegexpContext()
     return m_scriptRegexpScriptState->context();
 }
 
+void V8PerIsolateData::clearScriptRegexpContext()
+{
+    if (m_scriptRegexpScriptState)
+        m_scriptRegexpScriptState->disposePerContextData();
+    m_scriptRegexpScriptState.clear();
+}
+
 bool V8PerIsolateData::hasInstance(const WrapperTypeInfo* untrustedWrapperTypeInfo, v8::Local<v8::Value> value)
 {
     return hasInstance(untrustedWrapperTypeInfo, value, m_domTemplateMapForMainWorld)

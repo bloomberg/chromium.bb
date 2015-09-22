@@ -47,6 +47,10 @@ public:
 
     void addSource(const String&, HTMLToken&, SourceAnnotation);
 
+#if !ENABLE(OILPAN)
+    void dispose() override;
+#endif
+
     DECLARE_VIRTUAL_TRACE();
 
 private:
