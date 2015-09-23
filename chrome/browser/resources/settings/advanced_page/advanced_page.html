@@ -14,19 +14,23 @@
 <dom-module id="cr-settings-advanced-page">
   <template>
 <if expr="chromeos">
-    <cr-settings-section route="dateTime" icon="device:access-time"
-        i18n-values="page-title:dateTimePageTitle">
+    <cr-settings-section icon="device:access-time"
+        i18n-values="page-title:dateTimePageTitle"
+        expand-container="{{expandContainer}}"
+        current-route="[[currentRoute]]" section="dateTime">
       <cr-settings-date-time-page prefs="{{prefs}}">
       </cr-settings-date-time-page>
     </cr-settings-section>
 </if>
-    <cr-settings-section route="location"
-        i18n-values="page-title:siteSettingsLocation">
+    <cr-settings-section
+        i18n-values="page-title:siteSettingsLocation"
+        expand-container="{{expandContainer}}"
+        current-route="[[currentRoute]]" section="location">
       <cr-settings-location-page prefs="{{prefs}}">
       </cr-settings-location-page>
     </cr-settings-section>
 
-    <cr-settings-section route="privacy" icon="lock"
+    <cr-settings-section icon="lock"
         i18n-values="page-title:privacyPageTitle"
         expand-container="{{expandContainer}}"
         current-route="[[currentRoute]]" section="privacy">
@@ -35,25 +39,33 @@
       </cr-settings-privacy-page>
     </cr-settings-section>
 
-    <cr-settings-section route="languages" icon="language"
-        i18n-values="page-title:languagesPageTitle">
+    <cr-settings-section icon="language"
+        i18n-values="page-title:languagesPageTitle"
+        expand-container="{{expandContainer}}"
+        current-route="[[currentRoute]]" section="languages">
       <cr-settings-languages-page prefs="{{prefs}}">
       </cr-settings-languages-page>
     </cr-settings-section>
 
-    <cr-settings-section route="downloads" icon="file-download"
-        i18n-values="page-title:downloadsPageTitle">
+    <cr-settings-section icon="file-download"
+        i18n-values="page-title:downloadsPageTitle"
+        expand-container="{{expandContainer}}"
+        current-route="[[currentRoute]]" section="downloads">
       <cr-settings-downloads-page prefs="{{prefs}}">
       </cr-settings-downloads-page>
     </cr-settings-section>
 
-    <cr-settings-section route="a11y" icon="accessibility"
-        i18n-values="page-title:a11yPageTitle">
+    <cr-settings-section icon="accessibility"
+        i18n-values="page-title:a11yPageTitle"
+        expand-container="{{expandContainer}}"
+        current-route="[[currentRoute]]" section="a11y">
       <cr-settings-a11y-page prefs="{{prefs}}"></cr-settings-a11y-page>
     </cr-settings-section>
 
-    <cr-settings-section route="sync" icon="notification:sync"
-        i18n-values="page-title:syncPageTitle">
+    <cr-settings-section icon="notification:sync"
+        i18n-values="page-title:syncPageTitle"
+        expand-container="{{expandContainer}}"
+        current-route="[[currentRoute]]" section="sync">
       <cr-settings-sync-page></cr-settings-sync-page>
     </cr-settings-section>
   </template>

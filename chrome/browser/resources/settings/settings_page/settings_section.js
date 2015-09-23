@@ -61,14 +61,14 @@ Polymer({
     animationConfig: {
       value: function() {
         return {
+          collapse: {
+            name: 'collapse-card-animation',
+            node: this,
+          },
           expand: {
             name: 'expand-card-animation',
             node: this,
           },
-          collapse: {
-            name: 'collapse-card-animation',
-            node: this,
-          }
         };
       },
     },
@@ -81,11 +81,13 @@ Polymer({
   currentRouteChanged_: function() {
     var expanded = this.currentRoute.section == this.section;
 
-    if (expanded == this.expanded_)
-      return;
+    if (expanded != this.expanded_) {
+      this.expanded_ = expanded;
+      this.playAnimation(expanded ? 'expand' : 'collapse');
+    }
 
-    this.expanded_ = expanded;
-    this.playAnimation(expanded ? 'expand' : 'collapse');
+    var visible = expanded || this.currentRoute.section == '';
+    this.$.section.elevation = visible ? 1 : 0;
   },
 });
 

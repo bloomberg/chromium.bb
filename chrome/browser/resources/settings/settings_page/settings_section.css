@@ -7,7 +7,6 @@
  * Common styles for Settings pages.
  */
 #section {
-  @apply(--shadow-elevation-4dp);
   background-color: white;
   height: 100%;
   margin-bottom: 16px;
