@@ -627,6 +627,10 @@ template("create_apk") {
   if (defined(invoker.deps)) {
     _deps = invoker.deps
   }
+  _incremental_deps = []
+  if (defined(invoker.incremental_deps)) {
+    _incremental_deps = invoker.incremental_deps
+  }
 
   _native_libs_dir = "//build/android/empty/res"
   if (defined(invoker.native_libs_dir)) {
@@ -759,7 +763,7 @@ template("create_apk") {
       get_label_info(_generate_incremental_manifest_target_name,
                      "target_gen_dir") + "/AndroidManifest.xml"
   action(_generate_incremental_manifest_target_name) {
-    deps = _deps
+    deps = _incremental_deps
     script = "//build/android/incremental_install/generate_android_manifest.py"
     depfile = "${target_gen_dir}/${target_name}.d"
     inputs = [
@@ -789,7 +793,8 @@ template("create_apk") {
   # from the result of the main package_resources step.
   package_resources_helper(_incremental_package_resources_target_name) {
     forward_variables_from(invoker, [ "extensions_to_not_compress" ])
-    deps = _deps + [ ":$_generate_incremental_manifest_target_name" ]
+    deps =
+        _incremental_deps + [ ":$_generate_incremental_manifest_target_name" ]
     android_manifest = _incremental_android_manifest
     resource_packaged_apk_path = _incremental_resource_packaged_apk_path
   }
@@ -809,7 +814,7 @@ template("create_apk") {
   _incremental_package_target = "${target_name}_incremental__package"
   package_apk(_incremental_package_target) {
     _dex_target = "//build/android/incremental_install:bootstrap_java__dex"
-    deps = _deps + [
+    deps = _incremental_deps + [
              ":${_incremental_package_resources_target_name}",
              _dex_target,
            ]

@@ -1540,8 +1540,10 @@ template("android_apk") {
              ":$process_resources_target",
              ":$final_dex_target_name",
            ]
+    incremental_deps = _android_manifest_deps + [ ":$process_resources_target" ]
     if (defined(invoker.deps)) {
       deps += invoker.deps
+      incremental_deps += invoker.deps
     }
 
     if (defined(invoker.asset_location)) {
@@ -1596,6 +1598,7 @@ template("android_apk") {
         ":${_template_name}__prepare_native",
         ":${_manifest_rule}",
       ]
+      incremental_deps = deps
     }
   }
 
