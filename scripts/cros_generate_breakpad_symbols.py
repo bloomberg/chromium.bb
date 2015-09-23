@@ -63,22 +63,20 @@ def ReadSymsHeader(sym_file):
 
 
 def GenerateBreakpadSymbol(elf_file, debug_file=None, breakpad_dir=None,
-                           board=None, strip_cfi=False, num_errors=None):
+                           strip_cfi=False, num_errors=None):
   """Generate the symbols for |elf_file| using |debug_file|
 
   Args:
     elf_file: The file to dump symbols for
     debug_file: Split debug file to use for symbol information
     breakpad_dir: The dir to store the output symbol file in
-    board: If |breakpad_dir| is not specified, use |board| to find it
     strip_cfi: Do not generate CFI data
     num_errors: An object to update with the error count (needs a .value member)
 
   Returns:
     The number of errors that were encountered.
   """
-  if breakpad_dir is None:
-    breakpad_dir = FindBreakpadDir(board)
+  assert breakpad_dir
   if num_errors is None:
     num_errors = ctypes.c_int()
 
@@ -264,7 +262,7 @@ def GenerateBreakpadSymbols(board, breakpad_dir=None, strip_cfi=False,
 
   # Now start generating symbols for the discovered elfs.
   with parallel.BackgroundTaskRunner(GenerateBreakpadSymbol,
-                                     breakpad_dir=breakpad_dir, board=board,
+                                     breakpad_dir=breakpad_dir,
                                      strip_cfi=strip_cfi,
                                      num_errors=bg_errors,
                                      processes=num_processes) as queue:
