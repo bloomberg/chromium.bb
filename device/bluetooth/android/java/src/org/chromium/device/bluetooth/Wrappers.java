@@ -129,11 +129,11 @@ class Wrappers {
      */
     static class BluetoothLeScannerWrapper {
         private final BluetoothLeScanner mScanner;
-        private final HashMap<ScanCallbackWrapper, ScanCallbackImpl> mCallbacks;
+        private final HashMap<ScanCallbackWrapper, ForwardScanCallbackToWrapper> mCallbacks;
 
         public BluetoothLeScannerWrapper(BluetoothLeScanner scanner) {
             mScanner = scanner;
-            mCallbacks = new HashMap<ScanCallbackWrapper, ScanCallbackImpl>();
+            mCallbacks = new HashMap<ScanCallbackWrapper, ForwardScanCallbackToWrapper>();
         }
 
         public void startScan(
@@ -141,30 +141,31 @@ class Wrappers {
             ScanSettings settings =
                     new ScanSettings.Builder().setScanMode(scanSettingsScanMode).build();
 
-            ScanCallbackImpl callbackImpl = new ScanCallbackImpl(callback);
-            mCallbacks.put(callback, callbackImpl);
+            ForwardScanCallbackToWrapper callbackForwarder =
+                    new ForwardScanCallbackToWrapper(callback);
+            mCallbacks.put(callback, callbackForwarder);
 
-            mScanner.startScan(filters, settings, callbackImpl);
+            mScanner.startScan(filters, settings, callbackForwarder);
         }
 
         public void stopScan(ScanCallbackWrapper callback) {
-            ScanCallbackImpl callbackImpl = mCallbacks.remove(callback);
-            mScanner.stopScan(callbackImpl);
+            ForwardScanCallbackToWrapper callbackForwarder = mCallbacks.remove(callback);
+            mScanner.stopScan(callbackForwarder);
         }
     }
 
     /**
-     * Implements android.bluetooth.le.ScanCallback and passes calls through to a
+     * Implements android.bluetooth.le.ScanCallback and forwards calls through to a
      * provided ScanCallbackWrapper instance.
      *
      * This class is required so that Fakes can use ScanCallbackWrapper without
      * it extending from ScanCallback. Fakes must function even on Android
      * versions where ScanCallback class is not defined.
      */
-    static class ScanCallbackImpl extends ScanCallback {
+    static class ForwardScanCallbackToWrapper extends ScanCallback {
         final ScanCallbackWrapper mWrapperCallback;
 
-        ScanCallbackImpl(ScanCallbackWrapper wrapperCallback) {
+        ForwardScanCallbackToWrapper(ScanCallbackWrapper wrapperCallback) {
             mWrapperCallback = wrapperCallback;
         }
 
