@@ -2116,6 +2116,8 @@
       'browser/ui/views/download/download_in_progress_dialog_view.h',
       'browser/ui/views/download/download_item_view.cc',
       'browser/ui/views/download/download_item_view.h',
+      'browser/ui/views/download/download_item_view_md.cc',
+      'browser/ui/views/download/download_item_view_md.h',
       'browser/ui/views/download/download_shelf_context_menu_view.cc',
       'browser/ui/views/download/download_shelf_context_menu_view.h',
       'browser/ui/views/download/download_shelf_view.cc',

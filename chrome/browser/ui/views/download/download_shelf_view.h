@@ -18,7 +18,6 @@
 
 class Browser;
 class BrowserView;
-class DownloadItemView;
 
 namespace content {
 class DownloadItem;
@@ -50,7 +49,7 @@ class DownloadShelfView : public views::AccessiblePaneView,
   ~DownloadShelfView() override;
 
   // Sent from the DownloadItemView when the user opens an item.
-  void OpenedDownload(DownloadItemView* view);
+  void OpenedDownload();
 
   // Returns the relevant containing object that can load pages.
   // i.e. the |browser_|.
@@ -103,7 +102,7 @@ class DownloadShelfView : public views::AccessiblePaneView,
   // Adds a View representing a download to this DownloadShelfView.
   // DownloadShelfView takes ownership of the View, and will delete it as
   // necessary.
-  void AddDownloadView(DownloadItemView* view);
+  void AddDownloadView(views::View* view);
 
   // Paints the border.
   void OnPaintBorder(gfx::Canvas* canvas) override;
@@ -124,6 +123,10 @@ class DownloadShelfView : public views::AccessiblePaneView,
   // the shelf have been opened.
   bool CanAutoClose();
 
+  // Gets the |DownloadItem| for the i^th download view. TODO(estade): this
+  // shouldn't be necessary after we only have one type of DownloadItemView.
+  content::DownloadItem* GetDownloadItemForView(size_t i);
+
   // The browser for this shelf.
   Browser* browser_;
 
@@ -135,7 +138,7 @@ class DownloadShelfView : public views::AccessiblePaneView,
 
   // The download views. These are also child Views, and deleted when
   // the DownloadShelfView is deleted.
-  std::vector<DownloadItemView*> download_views_;
+  std::vector<views::View*> download_views_;
 
   // An image displayed on the right of the "Show all downloads..." link.
   views::ImageView* arrow_image_;

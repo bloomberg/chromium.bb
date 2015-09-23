@@ -16,6 +16,7 @@
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/download/download_item_view.h"
+#include "chrome/browser/ui/views/download/download_item_view_md.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/download_item.h"
@@ -23,6 +24,7 @@
 #include "content/public/browser/page_navigator.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/resource/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/animation/slide_animation.h"
@@ -109,7 +111,7 @@ DownloadShelfView::~DownloadShelfView() {
   parent_->RemoveChildView(this);
 }
 
-void DownloadShelfView::AddDownloadView(DownloadItemView* view) {
+void DownloadShelfView::AddDownloadView(views::View* view) {
   mouse_watcher_.Stop();
 
   DCHECK(view);
@@ -127,7 +129,10 @@ void DownloadShelfView::AddDownloadView(DownloadItemView* view) {
 }
 
 void DownloadShelfView::DoAddDownload(DownloadItem* download) {
-  AddDownloadView(new DownloadItemView(download, this));
+  if (ui::MaterialDesignController::IsModeMaterial())
+    AddDownloadView(new DownloadItemViewMd(download, this));
+  else
+    AddDownloadView(new DownloadItemView(download, this));
 }
 
 void DownloadShelfView::MouseMovedOutOfHost() {
@@ -136,8 +141,7 @@ void DownloadShelfView::MouseMovedOutOfHost() {
 
 void DownloadShelfView::RemoveDownloadView(View* view) {
   DCHECK(view);
-  std::vector<DownloadItemView*>::iterator i =
-      find(download_views_.begin(), download_views_.end(), view);
+  auto i = find(download_views_.begin(), download_views_.end(), view);
   DCHECK(i != download_views_.end());
   download_views_.erase(i);
   RemoveChildView(view);
@@ -159,7 +163,7 @@ void DownloadShelfView::OnPaintBorder(gfx::Canvas* canvas) {
   canvas->FillRect(gfx::Rect(0, 0, width(), 1), kBorderColor);
 }
 
-void DownloadShelfView::OpenedDownload(DownloadItemView* view) {
+void DownloadShelfView::OpenedDownload() {
   if (CanAutoClose())
     mouse_watcher_.Start();
 }
@@ -247,15 +251,13 @@ void DownloadShelfView::Layout() {
       is_maximized ? height() - y : close_button_size.height());
   if (show_link_only) {
     // Let's hide all the items.
-    std::vector<DownloadItemView*>::reverse_iterator ri;
-    for (ri = download_views_.rbegin(); ri != download_views_.rend(); ++ri)
+    for (auto ri = download_views_.rbegin(); ri != download_views_.rend(); ++ri)
       (*ri)->SetVisible(false);
     return;
   }
 
   next_x = kLeftPadding;
-  std::vector<DownloadItemView*>::reverse_iterator ri;
-  for (ri = download_views_.rbegin(); ri != download_views_.rend(); ++ri) {
+  for (auto ri = download_views_.rbegin(); ri != download_views_.rend(); ++ri) {
     gfx::Size view_size = (*ri)->GetPreferredSize();
 
     int x = next_x;
@@ -381,7 +383,7 @@ void DownloadShelfView::DoShow() {
 void DownloadShelfView::DoClose(CloseReason reason) {
   int num_in_progress = 0;
   for (size_t i = 0; i < download_views_.size(); ++i) {
-    if (download_views_[i]->download()->GetState() == DownloadItem::IN_PROGRESS)
+    if (GetDownloadItemForView(i)->GetState() == DownloadItem::IN_PROGRESS)
       ++num_in_progress;
   }
   RecordDownloadShelfClose(
@@ -402,7 +404,7 @@ void DownloadShelfView::Closed() {
   // When the close animation is complete, remove all completed downloads.
   size_t i = 0;
   while (i < download_views_.size()) {
-    DownloadItem* download = download_views_[i]->download();
+    DownloadItem* download = GetDownloadItemForView(i);
     DownloadItem::DownloadState state = download->GetState();
     bool is_transfer_done = state == DownloadItem::COMPLETE ||
                             state == DownloadItem::CANCELLED ||
@@ -421,8 +423,14 @@ void DownloadShelfView::Closed() {
 
 bool DownloadShelfView::CanAutoClose() {
   for (size_t i = 0; i < download_views_.size(); ++i) {
-    if (!download_views_[i]->download()->GetOpened())
+    if (!GetDownloadItemForView(i)->GetOpened())
       return false;
   }
   return true;
+}
+
+content::DownloadItem* DownloadShelfView::GetDownloadItemForView(size_t i) {
+  if (ui::MaterialDesignController::IsModeMaterial())
+    return static_cast<DownloadItemViewMd*>(download_views_[i])->download();
+  return static_cast<DownloadItemView*>(download_views_[i])->download();
 }

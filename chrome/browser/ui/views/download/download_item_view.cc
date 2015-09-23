@@ -344,7 +344,7 @@ void DownloadItemView::OnDownloadOpened(DownloadItem* download) {
       base::TimeDelta::FromMilliseconds(kDisabledOnOpenDuration));
 
   // Notify our parent.
-  shelf_->OpenedDownload(this);
+  shelf_->OpenedDownload();
 }
 
 // View overrides
