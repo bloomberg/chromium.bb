@@ -198,7 +198,7 @@ public class SyncCustomizationFragment extends PreferenceFragment
      * @return Whether Sync can be disabled.
      */
     private boolean canDisableSync() {
-        return !ChildAccountService.isChildAccount();
+        return !ChildAccountService.getInstance(getActivity()).hasChildAccount();
     }
 
     private boolean isSyncTypePreference(Preference preference) {

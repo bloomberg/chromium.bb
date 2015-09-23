@@ -204,11 +204,11 @@ public class AccountManagementFragment extends PreferenceFragment
     }
 
     private void configureSignOutSwitch() {
-        boolean isChildAccount = ChildAccountService.isChildAccount();
+        boolean hasChildAccount = ChildAccountService.getInstance(getActivity()).hasChildAccount();
 
         ChromeSwitchPreference signOutSwitch =
                 (ChromeSwitchPreference) findPreference(PREF_SIGN_OUT_SWITCH);
-        if (isChildAccount) {
+        if (hasChildAccount) {
             getPreferenceScreen().removePreference(signOutSwitch);
         } else {
             getPreferenceScreen().removePreference(findPreference(PREF_SIGN_IN_CHILD_MESSAGE));
@@ -242,7 +242,7 @@ public class AccountManagementFragment extends PreferenceFragment
     private void configureAddAccountPreference(String fullName) {
         ChromeBasePreference addAccount = (ChromeBasePreference) findPreference(PREF_ADD_ACCOUNT);
 
-        if (ChildAccountService.isChildAccount()) {
+        if (ChildAccountService.getInstance(getActivity()).hasChildAccount()) {
             getPreferenceScreen().removePreference(addAccount);
         } else {
             String addAccountString = getResources().getString(
@@ -272,11 +272,11 @@ public class AccountManagementFragment extends PreferenceFragment
     }
 
     private void configureGoIncognitoPreferences(String fullName) {
-        boolean isChildAccount = ChildAccountService.isChildAccount();
+        boolean hasChildAccount = ChildAccountService.getInstance(getActivity()).hasChildAccount();
         Preference notYouPref = findPreference(PREF_NOT_YOU);
         ChromeBasePreference goIncognito = (ChromeBasePreference) findPreference(PREF_GO_INCOGNITO);
 
-        if (isChildAccount) {
+        if (hasChildAccount) {
             getPreferenceScreen().removePreference(notYouPref);
             getPreferenceScreen().removePreference(goIncognito);
         } else {
@@ -328,7 +328,7 @@ public class AccountManagementFragment extends PreferenceFragment
         Preference parentAccounts = findPreference(PREF_PARENT_ACCOUNTS);
         Preference childContent = findPreference(PREF_CHILD_CONTENT);
         Preference childSafeSearch = findPreference(PREF_CHILD_SAFE_SEARCH);
-        if (ChildAccountService.isChildAccount()) {
+        if (ChildAccountService.getInstance(getActivity()).hasChildAccount()) {
             Resources res = getActivity().getResources();
             PrefServiceBridge prefService = PrefServiceBridge.getInstance();
 
@@ -391,7 +391,8 @@ public class AccountManagementFragment extends PreferenceFragment
             String signedInAccountName =
                     ChromeSigninController.get(getActivity()).getSignedInAccountName();
             boolean isPrimaryAccount = TextUtils.equals(account.name, signedInAccountName);
-            boolean isChildAccount = ChildAccountService.isChildAccount();
+            boolean isChildAccount =
+                    ChildAccountService.getInstance(getActivity()).hasChildAccount();
 
             pref.setIcon(new BitmapDrawable(getResources(), isChildAccount
                     ? getBadgedUserPicture(account.name) : getUserPicture(account.name)));
@@ -494,7 +495,7 @@ public class AccountManagementFragment extends PreferenceFragment
         ProfileSyncService profileSyncService = ProfileSyncService.get();
         Resources res = activity.getResources();
 
-        if (ChildAccountService.isChildAccount()) {
+        if (ChildAccountService.getInstance(activity).hasChildAccount()) {
             return res.getString(R.string.kids_account);
         }
 

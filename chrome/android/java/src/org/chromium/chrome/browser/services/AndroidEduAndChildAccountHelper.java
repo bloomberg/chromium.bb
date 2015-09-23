@@ -42,7 +42,7 @@ public abstract class AndroidEduAndChildAccountHelper
      */
     public void start(Context appContext) {
         Log.d(TAG, "before checking child and EDU");
-        ChildAccountService.checkHasChildAccount(appContext, this);
+        ChildAccountService.getInstance(appContext).checkHasChildAccount(this);
         ((ChromeApplication) appContext).checkIsAndroidEduDevice(this);
         // TODO(aruslan): Should we start a watchdog to kill if Child/Edu stuff takes too long?
         Log.d(TAG, "returning from start");

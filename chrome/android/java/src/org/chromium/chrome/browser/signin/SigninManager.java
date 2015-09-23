@@ -23,6 +23,7 @@ import org.chromium.base.ObserverList;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.childaccounts.ChildAccountService;
 import org.chromium.chrome.browser.notifications.GoogleServicesNotificationController;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.chrome.browser.sync.SyncController;
@@ -503,6 +504,10 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
 
                 if (signInType != SIGNIN_TYPE_INTERACTIVE) {
                     AccountManagementFragment.setSignOutAllowedPreferenceValue(mContext, false);
+                }
+
+                if (signInType == SIGNIN_TYPE_FORCED_CHILD_ACCOUNT) {
+                    ChildAccountService.getInstance(mContext).onChildAccountSigninComplete();
                 }
 
                 SigninManager.get(mContext).logInSignedInUser();
