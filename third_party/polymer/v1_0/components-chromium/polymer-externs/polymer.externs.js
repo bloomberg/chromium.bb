@@ -122,8 +122,12 @@ PolymerElement.prototype.domHost;
  * Notifies the event binding system of a change to a property.
  * @param  {string} path  The path to set.
  * @param  {*}      value The value to send in the update notification.
+ * @param {boolean=} fromAbove When true, specifies that the change came from
+ *     above this element and thus upward notification is not necessary.
+ * @return {boolean} True if notification actually took place, based on a dirty
+ *     check of whether the new value was already known.
  */
-PolymerElement.prototype.notifyPath = function(path, value) {};
+PolymerElement.prototype.notifyPath = function(path, value, fromAbove) {};
 
 /**
  * Convienence method for setting a value to a path and notifying any
@@ -354,7 +358,7 @@ Polymer.Gestures;
 
 /**
  * Gets the original target of the given event.
- * 
+ *
  * Cheaper than Polymer.dom(ev).path[0];
  * See https://github.com/Polymer/polymer/blob/master/src/standard/gestures.html#L191
  *
@@ -426,8 +430,10 @@ PolymerElement.prototype.importHref = function(href, onload, onerror) {};
 
 /**
  * Delete an element from an array.
- * @param {!Array} array
- * @param {*} item
+ * @param {!Array|string} array Path to array from which to remove the item (or
+ *     the array itself).
+ * @param {*} item Item to remove
+ * @return {!Array} The array with the item removed.
  */
 PolymerElement.prototype.arrayDelete = function(array, item) {};
 
@@ -447,8 +453,8 @@ PolymerElement.prototype.resolveUrl = function(url) {};
  * on this explicit signal from the user to indicate when changes have
  * been made that affect the values of custom properties.
  *
- * @param {Object=} properties Properties object which, if provided is mixed 
- *     into the element's `customStyle` property. This argument provides a 
+ * @param {Object=} properties Properties object which, if provided is mixed
+ *     into the element's `customStyle` property. This argument provides a
  *     shortcut for setting `customStyle` and then calling `updateStyles`.
  */
 PolymerElement.prototype.updateStyles = function(properties) {};
@@ -623,6 +629,73 @@ Polymer.CaseMap.camelToDashCase = function(camel) {};
 
 
 /**
+ * A Polymer data structure abstraction.
+ *
+ * @param {?Array} userArray
+ * @constructor
+ */
+Polymer.Collection = function(userArray) {};
+
+Polymer.Collection.prototype.initMap = function() {};
+
+/**
+ * @param {*} item
+ */
+Polymer.Collection.prototype.add = function(item) {};
+
+/**
+ * @param {number|string} key
+ */
+Polymer.Collection.prototype.removeKey = function(key) {};
+
+/**
+ * @param {*} item
+ * @return {number|string} The key of the item removed.
+ */
+Polymer.Collection.prototype.remove = function(item) {};
+
+/**
+ * @param {*} item
+ * @return {number|string} The key of the item.
+ */
+Polymer.Collection.prototype.getKey = function(item) {};
+
+/**
+ * @return {!Array<number|string>} The key of the item removed.
+ */
+Polymer.Collection.prototype.getKeys = function() {};
+
+/**
+ * @param {number|string} key
+ * @param {*} item
+ */
+Polymer.Collection.prototype.setItem = function(key, item) {};
+
+/**
+ * @param {number|string} key
+ * @return {*} The item for the given key if present.
+ */
+Polymer.Collection.prototype.getItem = function(key) {};
+
+/**
+ * @return {!Array} The items in the collection
+ */
+Polymer.Collection.prototype.getItems = function() {};
+
+/**
+ * @param {!Array} userArray
+ * @return {!Polymer.Collection} A new Collection wrapping the given array.
+ */
+Polymer.Collection.get = function(userArray) {};
+
+/**
+ * @param {!Array} userArray
+ * @param {!Array<!PolymerSplice>} splices
+ * @return {!Array<!PolymerKeySplice>} KeySplices with added and removed keys
+ */
+Polymer.Collection.applySplices = function(userArray, splices) {};
+
+/**
  * Settings pulled from
  * https://github.com/Polymer/polymer/blob/master/src/lib/settings.html
  */
@@ -655,6 +728,8 @@ Polymer.Settings.useNativeCustomElements;
  * @polymerBehavior
  */
 Polymer.Templatizer = {
+  ctor: function() {},
+
   /**
    * @param {?Object} model
    * @return {?Element}
@@ -664,8 +739,82 @@ Polymer.Templatizer = {
   /**
    * @param {?Element} template
    */
-  templatize: function(template) {}
+  templatize: function(template) {},
+
+  /**
+   * Returns the template "model" associated with a given element, which
+   * serves as the binding scope for the template instance the element is
+   * contained in. A template model is an instance of `Polymer.Base`, and
+   * should be used to manipulate data associated with this template instance.
+   *
+   * Example:
+   *
+   *   var model = modelForElement(el);
+   *   if (model.index < 10) {
+   *     model.set('item.checked', true);
+   *   }
+   *
+   * @param {!HTMLElement} el Element for which to return a template model.
+   * @return {(!PolymerElement)|undefined} Model representing the binding scope for
+   *   the element.
+   */
+  modelForElement: function(el) {}
 };
+
+
+
+/**
+ * A node produced by Templatizer which has a templateInstance property.
+ *
+ * @constructor
+ * @extends {HTMLElement}
+ */
+var TemplatizerNode = function() {};
+
+
+/** @type {?PolymerElement} */
+TemplatizerNode.prototype._templateInstance;
+
+
+
+/**
+ * @see https://github.com/Polymer/polymer/blob/master/src/lib/template/array-selector.html
+ * @extends {PolymerElement}
+ * @constructor
+ */
+var ArraySelectorElement = function() {};
+
+
+/**
+ * Returns whether the item is currently selected.
+ *
+ * @param {*} item Item from `items` array to test
+ * @return {boolean} Whether the item is selected
+ */
+ArraySelectorElement.prototype.isSelected = function(item) {};
+
+
+/**
+ * Clears the selection state.
+ */
+ArraySelectorElement.prototype.clearSelection = function() {};
+
+
+/**
+ * Deselects the given item if it is already selected.
+ *
+ * @param {*} item Item from `items` array to deselect
+ */
+ArraySelectorElement.prototype.deselect = function(item) {};
+
+
+/**
+ * Selects the given item.  When `toggle` is true, this will automatically
+ * deselect the item if already selected.
+ *
+ * @param {*} item Item from `items` array to select
+ */
+ArraySelectorElement.prototype.select = function(item) {};
 
 
 /**
@@ -710,3 +859,28 @@ var PolymerTrackEvent;
  * }}
  */
 var PolymerTouchEvent;
+
+/**
+ * @typedef {{
+ *   index: number,
+ *   removed: !Array,
+ *   addedCount: number
+ * }}
+ */
+var PolymerSplice;
+
+/**
+ * @typedef {{
+ *   added: !Array<string|number>,
+ *   removed: !Array<string|number>
+ * }}
+ */
+var PolymerKeySplice;
+
+/**
+ * @typedef {{
+ *   indexSplices: ?Array<!PolymerSplice>,
+ *   keySplices: ?Array<!PolymerKeySplice>
+ * }}
+ */
+var PolymerSpliceChange;

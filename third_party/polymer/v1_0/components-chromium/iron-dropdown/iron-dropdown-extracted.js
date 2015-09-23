@@ -98,6 +98,17 @@
           },
 
           /**
+           * By default, the dropdown will constrain scrolling on the page
+           * to itself when opened.
+           * Set to true in order to prevent scroll from being constrained
+           * to the dropdown when it opens.
+           */
+          allowOutsideScroll: {
+            type: Boolean,
+            value: false
+          },
+
+          /**
            * We memoize the positionTarget bounding rectangle so that we can
            * limit the number of times it is queried per resize / relayout.
            * @type {?Object}
@@ -217,7 +228,10 @@
          * Overridden from `IronOverlayBehavior`.
          */
         _renderOpened: function() {
-          Polymer.IronDropdownScrollManager.pushScrollLock(this);
+          if (!this.allowOutsideScroll) {
+            Polymer.IronDropdownScrollManager.pushScrollLock(this);
+          }
+
           if (!this.noAnimations && this.animationConfig && this.animationConfig.open) {
             this.$.contentWrapper.classList.add('animating');
             this.playAnimation('open');
