@@ -144,7 +144,7 @@ class PrintViewManagerBase : public content::NotificationObserver,
 #if !defined(OS_MACOSX)
   // Set to true when OnDidPrintPage() should be expecting the first page.
   bool expecting_first_page_;
-#endif  // OS_MACOSX
+#endif
 
   // Whether printing is enabled.
   BooleanPrefMember printing_enabled_;

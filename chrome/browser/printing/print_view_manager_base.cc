@@ -62,11 +62,11 @@ PrintViewManagerBase::PrintViewManagerBase(content::WebContents* web_contents)
     : PrintManager(web_contents),
       printing_succeeded_(false),
       inside_inner_message_loop_(false),
+#if !defined(OS_MACOSX)
+      expecting_first_page_(true),
+#endif
       queue_(g_browser_process->print_job_manager()->queue()) {
   DCHECK(queue_.get());
-#if !defined(OS_MACOSX)
-  expecting_first_page_ = true;
-#endif  // OS_MACOSX
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
   printing_enabled_.Init(
@@ -85,7 +85,7 @@ PrintViewManagerBase::~PrintViewManagerBase() {
 bool PrintViewManagerBase::PrintNow() {
   return PrintNowInternal(new PrintMsg_PrintPages(routing_id()));
 }
-#endif  // ENABLE_BASIC_PRINTING
+#endif
 
 void PrintViewManagerBase::UpdateScriptedPrintingBlocked() {
   Send(new PrintMsg_SetScriptedPrintingBlocked(
@@ -144,27 +144,51 @@ void PrintViewManagerBase::OnDidPrintPage(
 #else
   const bool metafile_must_be_valid = expecting_first_page_;
   expecting_first_page_ = false;
-#endif  // OS_MACOSX
+#endif
 
-  base::SharedMemory shared_buf(params.metafile_data_handle, true);
+  // Only used when |metafile_must_be_valid| is true.
+  scoped_ptr<base::SharedMemory> shared_buf;
   if (metafile_must_be_valid) {
-    if (!shared_buf.Map(params.data_size)) {
+    if (!base::SharedMemory::IsHandleValid(params.metafile_data_handle)) {
+      NOTREACHED() << "invalid memory handle";
+      web_contents()->Stop();
+      return;
+    }
+    shared_buf.reset(new base::SharedMemory(params.metafile_data_handle, true));
+    if (!shared_buf->Map(params.data_size)) {
       NOTREACHED() << "couldn't map";
       web_contents()->Stop();
+      return;
+    }
+  } else {
+    if (base::SharedMemory::IsHandleValid(params.metafile_data_handle)) {
+      NOTREACHED() << "unexpected valid memory handle";
+      web_contents()->Stop();
+      base::SharedMemory::CloseHandle(params.metafile_data_handle);
       return;
     }
   }
 
   scoped_ptr<PdfMetafileSkia> metafile(new PdfMetafileSkia);
   if (metafile_must_be_valid) {
-    if (!metafile->InitFromData(shared_buf.memory(), params.data_size)) {
+    if (!metafile->InitFromData(shared_buf->memory(), params.data_size)) {
       NOTREACHED() << "Invalid metafile header";
       web_contents()->Stop();
       return;
     }
   }
 
-#if !defined(OS_WIN)
+#if defined(OS_WIN)
+  if (metafile_must_be_valid) {
+    scoped_refptr<base::RefCountedBytes> bytes = new base::RefCountedBytes(
+        reinterpret_cast<const unsigned char*>(shared_buf->memory()),
+        params.data_size);
+
+    document->DebugDumpData(bytes.get(), FILE_PATH_LITERAL(".pdf"));
+    print_job_->StartPdfToEmfConversion(
+        bytes, params.page_size, params.content_area);
+  }
+#else
   // Update the rendered document. It will send notifications to the listener.
   document->SetPage(params.page_number,
                     metafile.Pass(),
@@ -172,17 +196,7 @@ void PrintViewManagerBase::OnDidPrintPage(
                     params.content_area);
 
   ShouldQuitFromInnerMessageLoop();
-#else
-  if (metafile_must_be_valid) {
-    scoped_refptr<base::RefCountedBytes> bytes = new base::RefCountedBytes(
-        reinterpret_cast<const unsigned char*>(shared_buf.memory()),
-        params.data_size);
-
-    document->DebugDumpData(bytes.get(), FILE_PATH_LITERAL(".pdf"));
-    print_job_->StartPdfToEmfConversion(
-        bytes, params.page_size, params.content_area);
-  }
-#endif  // !OS_WIN
+#endif
 }
 
 void PrintViewManagerBase::OnPrintingFailed(int cookie) {
@@ -381,7 +395,7 @@ void PrintViewManagerBase::DisconnectFromCurrentPrintJob() {
   }
 #if !defined(OS_MACOSX)
   expecting_first_page_ = true;
-#endif  // OS_MACOSX
+#endif
 }
 
 void PrintViewManagerBase::PrintingDone(bool success) {
