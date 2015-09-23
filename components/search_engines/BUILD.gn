@@ -96,7 +96,6 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "default_search_manager_unittest.cc",
-    "default_search_policy_handler_unittest.cc",
     "default_search_pref_migration_unittest.cc",
     "keyword_table_unittest.cc",
     "search_host_to_urls_map_unittest.cc",
@@ -104,7 +103,12 @@ source_set("unit_tests") {
     "template_url_service_util_unittest.cc",
     "template_url_unittest.cc",
   ]
+  if (enable_configuration_policy) {
+    sources += [ "default_search_policy_handler_unittest.cc" ]
+  }
+
   deps = [
+    "//components/pref_registry:test_support",
     ":test_support",
     "//testing/gmock",
     "//testing/gtest",

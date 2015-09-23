@@ -29,6 +29,7 @@ group("all_components") {
     "//components/device_event_log",
     "//components/google/core/browser",
     "//components/search",
+    "//components/search_engines",
   ]
 
   if (!is_ios) {
@@ -113,7 +114,6 @@ group("all_components") {
       "//components/rappor",
       "//components/renderer_context_menu",
       "//components/resources:components_resources",
-      "//components/search_engines",
       "//components/search_provider_logos",
       "//components/security_interstitials/core",
       "//components/sessions",
@@ -304,6 +304,7 @@ test("components_unittests") {
     "//ui/base",
     "//ui/resources:ui_test_pak",
     "//components/google/core/browser:unit_tests",
+    "//components/search_engines:unit_tests",
   ]
 
   if (!is_ios) {
@@ -375,6 +376,7 @@ test("components_unittests") {
       "//components/query_parser:unit_tests",
       "//components/rappor:unit_tests",
       "//components/search_engines:unit_tests",
+      "//components/search:unit_tests",
       "//components/search_provider_logos:unit_tests",
       "//components/signin/core/browser:unit_tests",
       "//components/suggestions:unit_tests",
