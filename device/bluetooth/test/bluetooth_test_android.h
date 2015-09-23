@@ -27,6 +27,16 @@ class BluetoothTestAndroid : public BluetoothTestBase {
   void InitWithoutDefaultAdapter() override;
   void InitWithFakeAdapter() override;
   void DiscoverLowEnergyDevice(int device_ordinal) override;
+  void CompleteGattConnection(BluetoothDevice* device) override;
+  void FailGattConnection(BluetoothDevice* device,
+                          BluetoothDevice::ConnectErrorCode) override;
+  void CompleteGattDisconnection(BluetoothDevice* device) override;
+
+  // Records that Java FakeBluetoothDevice connectGatt was called.
+  void OnBluetoothDeviceConnectGattCalled(JNIEnv* env, jobject caller);
+
+  // Records that Java FakeBluetoothGatt disconnect was called.
+  void OnFakeBluetoothGattDisconnect(JNIEnv* env, jobject caller);
 
   base::android::ScopedJavaGlobalRef<jobject> j_fake_bluetooth_adapter_;
 };

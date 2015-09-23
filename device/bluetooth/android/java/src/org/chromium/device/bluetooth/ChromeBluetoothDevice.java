@@ -6,6 +6,7 @@ package org.chromium.device.bluetooth;
 
 import android.annotation.TargetApi;
 import android.bluetooth.BluetoothDevice;
+import android.content.Context;
 import android.os.Build;
 import android.os.ParcelUuid;
 
@@ -26,11 +27,17 @@ import java.util.List;
 final class ChromeBluetoothDevice {
     private static final String TAG = "Bluetooth";
 
-    private final Wrappers.BluetoothDeviceWrapper mDevice;
+    private final long mNativeBluetoothDeviceAndroid;
+    final Wrappers.BluetoothDeviceWrapper mDevice;
     private List<ParcelUuid> mUuidsFromScan;
+    Wrappers.BluetoothGattWrapper mBluetoothGatt;
+    private final BluetoothGattCallbackImpl mBluetoothGattCallbackImpl;
 
-    private ChromeBluetoothDevice(Wrappers.BluetoothDeviceWrapper deviceWrapper) {
+    private ChromeBluetoothDevice(
+            long nativeBluetoothDeviceAndroid, Wrappers.BluetoothDeviceWrapper deviceWrapper) {
+        mNativeBluetoothDeviceAndroid = nativeBluetoothDeviceAndroid;
         mDevice = deviceWrapper;
+        mBluetoothGattCallbackImpl = new BluetoothGattCallbackImpl();
         Log.v(TAG, "ChromeBluetoothDevice created.");
     }
 
@@ -41,8 +48,10 @@ final class ChromeBluetoothDevice {
     // 'Object' type must be used because inner class Wrappers.BluetoothDeviceWrapper reference is
     // not handled by jni_generator.py JavaToJni. http://crbug.com/505554
     @CalledByNative
-    private static ChromeBluetoothDevice create(Object deviceWrapper) {
-        return new ChromeBluetoothDevice((Wrappers.BluetoothDeviceWrapper) deviceWrapper);
+    private static ChromeBluetoothDevice create(
+            long nativeBluetoothDeviceAndroid, Object deviceWrapper) {
+        return new ChromeBluetoothDevice(
+                nativeBluetoothDeviceAndroid, (Wrappers.BluetoothDeviceWrapper) deviceWrapper);
     }
 
     // Implements BluetoothDeviceAndroid::UpdateAdvertisedUUIDs.
@@ -89,9 +98,46 @@ final class ChromeBluetoothDevice {
         return string_array;
     }
 
+    // Implements BluetoothDeviceAndroid::CreateGattConnectionImpl.
+    @CalledByNative
+    private void createGattConnectionImpl(Context context) {
+        Log.i(TAG, "connectGatt");
+        // autoConnect set to false as under experimentation using autoConnect failed to complete
+        // connections.
+        mBluetoothGatt =
+                mDevice.connectGatt(context, false /* autoConnect */, mBluetoothGattCallbackImpl);
+    }
+
+    // Implements BluetoothDeviceAndroid::DisconnectGatt.
+    @CalledByNative
+    private void disconnectGatt() {
+        Log.i(TAG, "BluetoothGatt.disconnect");
+        mBluetoothGatt.disconnect();
+    }
+
     // Implements BluetoothDeviceAndroid::GetDeviceName.
     @CalledByNative
     private String getDeviceName() {
         return mDevice.getName();
     }
+
+    // Implements callbacks related to a GATT connection.
+    private class BluetoothGattCallbackImpl extends Wrappers.BluetoothGattCallbackWrapper {
+        @Override
+        public void onConnectionStateChange(int status, int newState) {
+            Log.i(TAG, "onConnectionStateChange status:%d newState:%s", status,
+                    (newState == android.bluetooth.BluetoothProfile.STATE_CONNECTED)
+                            ? "Connected"
+                            : "Disconnected");
+            nativeOnConnectionStateChange(mNativeBluetoothDeviceAndroid, status,
+                    newState == android.bluetooth.BluetoothProfile.STATE_CONNECTED);
+        }
+    }
+
+    // ---------------------------------------------------------------------------------------------
+    // BluetoothAdapterDevice C++ methods declared for access from java:
+
+    // Binds to BluetoothDeviceAndroid::OnConnectionStateChange.
+    private native void nativeOnConnectionStateChange(
+            long nativeBluetoothDeviceAndroid, int status, boolean connected);
 }

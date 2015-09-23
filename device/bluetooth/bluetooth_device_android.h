@@ -36,6 +36,9 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceAndroid final
   // Register C++ methods exposed to Java using JNI.
   static bool RegisterJNI(JNIEnv* env);
 
+  // Returns the associated ChromeBluetoothDevice Java object.
+  base::android::ScopedJavaLocalRef<jobject> GetJavaObject();
+
   // Updates cached copy of advertised UUIDs discovered during a scan.
   // Returns true if new UUIDs differed from cached values.
   bool UpdateAdvertisedUUIDs(
@@ -79,6 +82,13 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceAndroid final
       const device::BluetoothUUID& uuid,
       const ConnectToServiceCallback& callback,
       const ConnectToServiceErrorCallback& error_callback) override;
+
+  // Callback indicating when GATT client has connected/disconnected.
+  // See android.bluetooth.BluetoothGattCallback.onConnectionStateChange.
+  void OnConnectionStateChange(JNIEnv* env,
+                               jobject jcaller,
+                               int32_t status,
+                               bool connected);
 
  protected:
   BluetoothDeviceAndroid(BluetoothAdapterAndroid* adapter);

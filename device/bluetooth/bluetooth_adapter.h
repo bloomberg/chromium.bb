@@ -386,6 +386,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
  protected:
   friend class base::RefCounted<BluetoothAdapter>;
   friend class BluetoothDiscoverySession;
+  friend class BluetoothTestBase;
 
   typedef std::map<const std::string, BluetoothDevice*> DevicesMap;
   typedef std::pair<BluetoothDevice::PairingDelegate*, PairingDelegatePriority>
@@ -473,6 +474,8 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
   // inactive.
   void DiscoverySessionBecameInactive(
       BluetoothDiscoverySession* discovery_session);
+
+  void DeleteDeviceForTesting(const std::string& address);
 
   // Observers of BluetoothAdapter, notified from implementation subclasses.
   base::ObserverList<device::BluetoothAdapter::Observer> observers_;
