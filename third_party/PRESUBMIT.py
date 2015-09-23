@@ -42,7 +42,9 @@ def _CheckThirdPartyReadmesUpdated(input_api, output_api):
     local_path = f.LocalPath()
     if input_api.os_path.dirname(local_path) == 'third_party':
       continue
-    if local_path.startswith('third_party' + input_api.os_path.sep):
+    if (local_path.startswith('third_party' + input_api.os_path.sep) and
+        not local_path.startswith('third_party' + input_api.os_path.sep +
+                                  'WebKit' + input_api.os_path.sep)):
       files.append(f)
       if local_path.endswith("README.chromium"):
         readmes.append(f)
