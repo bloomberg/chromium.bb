@@ -2771,6 +2771,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Blink.DecodedImageType" enum="DecodedImageType">
+  <owner>urvang@chromium.org</owner>
   <summary>Image codec inferred during decode.</summary>
 </histogram>
 
