@@ -269,9 +269,6 @@ ETextAlign LayoutBlockFlow::textAlignmentForLine(bool endsWithSoftBreak) const
     if (endsWithSoftBreak)
         return alignment;
 
-    if (!RuntimeEnabledFeatures::css3TextEnabled())
-        return (alignment == JUSTIFY) ? TASTART : alignment;
-
     TextAlignLast alignmentLast = style()->textAlignLast();
     switch (alignmentLast) {
     case TextAlignLastStart:

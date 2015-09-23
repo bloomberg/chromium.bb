@@ -209,6 +209,7 @@ strokeWidth
 tabSize
 tableLayout
 textAlign
+textAlignLast
 textAnchor
 textDecoration
 textIndent

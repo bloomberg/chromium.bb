@@ -281,7 +281,7 @@ stroke-width interpolable, inherited, svg, converter=convertUnzoomedLength
 table-layout
 tab-size inherited, converter=convertLengthOrTabSpaces
 text-align inherited, custom_value
-text-align-last runtime_flag=CSS3Text, inherited, type_name=TextAlignLast
+text-align-last inherited, type_name=TextAlignLast
 text-anchor inherited, svg
 // FIXME: We shouldn't switch between shorthand/not shorthand based on a runtime flag
 text-decoration use_handlers_for=CSSPropertyTextDecorationLine, longhands=text-decoration-line;text-decoration-style;text-decoration-color

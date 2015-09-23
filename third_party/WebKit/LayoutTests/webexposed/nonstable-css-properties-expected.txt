@@ -59,10 +59,6 @@ el.style.setProperty('grid-template-areas', '"test"')
 el.style.getPropertyValue('grid-template-areas') is "test"
 getComputedStyle(el).getPropertyValue('grid-template-areas') is "test"
 
-el.style.setProperty('text-align-last', 'start')
-el.style.getPropertyValue('text-align-last') is start
-getComputedStyle(el).getPropertyValue('text-align-last') is start
-
 el.style.setProperty('text-justify', 'distribute')
 el.style.getPropertyValue('text-justify') is distribute
 getComputedStyle(el).getPropertyValue('text-justify') is distribute
