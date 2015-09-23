@@ -46,10 +46,6 @@ HeartbeatManager::HeartbeatManager()
       heartbeat_timer_(new base::Timer(true /* retain_user_task */,
                                        false /* is_repeating */)),
       weak_ptr_factory_(this) {
-  // Listen for system suspend and resume events.
-  base::PowerMonitor* monitor = base::PowerMonitor::Get();
-  if (monitor)
-    monitor->AddObserver(this);
 }
 
 HeartbeatManager::~HeartbeatManager() {
@@ -67,6 +63,11 @@ void HeartbeatManager::Start(
   send_heartbeat_callback_ = send_heartbeat_callback;
   trigger_reconnect_callback_ = trigger_reconnect_callback;
 
+  // Listen for system suspend and resume events.
+  base::PowerMonitor* monitor = base::PowerMonitor::Get();
+  if (monitor)
+    monitor->AddObserver(this);
+
   // Kicks off the timer.
   waiting_for_ack_ = false;
   RestartTimer();
@@ -77,6 +78,10 @@ void HeartbeatManager::Stop() {
   heartbeat_interval_ms_ = 0;
   heartbeat_timer_->Stop();
   waiting_for_ack_ = false;
+
+  base::PowerMonitor* monitor = base::PowerMonitor::Get();
+  if (monitor)
+    monitor->RemoveObserver(this);
 }
 
 void HeartbeatManager::OnHeartbeatAcked() {
@@ -135,7 +140,10 @@ void HeartbeatManager::OnResume() {
 
   // Make sure a minimum amount of time has passed before forcing a heartbeat to
   // avoid any tight loop scenarios.
-  if (elapsed > base::TimeDelta::FromMilliseconds(kMinSuspendTimeMs))
+  // If the |send_heartbeat_callback_| is null, it means the heartbeat manager
+  // hasn't been started, so do nothing.
+  if (elapsed > base::TimeDelta::FromMilliseconds(kMinSuspendTimeMs) &&
+      !send_heartbeat_callback_.is_null())
     OnHeartbeatTriggered();
 }
 
