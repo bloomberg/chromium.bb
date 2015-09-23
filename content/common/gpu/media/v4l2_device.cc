@@ -43,13 +43,10 @@ media::VideoPixelFormat V4L2Device::V4L2PixFmtToVideoPixelFormat(
   switch (pix_fmt) {
     case V4L2_PIX_FMT_NV12:
     case V4L2_PIX_FMT_NV12M:
-    // MT21 is similar to NV21. We only need the information like number of
-    // planes, plane size, and bytes per row. We do not set the format of
-    // media::VideoFrame to be MT21. Pretend it is NV12 so we don't need to
-    // add PIXEL_FORMAT_MT21.
-    // TODO(wuchengli): find a better way to handle this.
-    case V4L2_PIX_FMT_MT21:
       return media::PIXEL_FORMAT_NV12;
+
+    case V4L2_PIX_FMT_MT21:
+      return media::PIXEL_FORMAT_MT21;
 
     case V4L2_PIX_FMT_YUV420:
     case V4L2_PIX_FMT_YUV420M:
@@ -113,8 +110,7 @@ uint32_t V4L2Device::V4L2PixFmtToDrmFormat(uint32_t format) {
       return DRM_FORMAT_NV12;
 
     case V4L2_PIX_FMT_MT21:
-      // TODO(wuchengli): Change to DRM_FORMAT_MT21.
-      return DRM_FORMAT_MT12;
+      return DRM_FORMAT_MT21;
 
     case V4L2_PIX_FMT_YUV420:
     case V4L2_PIX_FMT_YUV420M:

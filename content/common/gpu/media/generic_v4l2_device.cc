@@ -177,7 +177,7 @@ bool GenericV4L2Device::CanCreateEGLImageFrom(uint32_t v4l2_pixfmt) {
     DRM_FORMAT_ARGB8888,
 #if defined(ARCH_CPU_ARMEL)
     DRM_FORMAT_NV12,
-    DRM_FORMAT_MT12,
+    DRM_FORMAT_MT21,
 #endif
   };
 
