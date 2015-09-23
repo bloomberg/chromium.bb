@@ -3205,13 +3205,11 @@ void WebContentsImpl::OnOpenDateTimeDialog(
 }
 #endif
 
-void WebContentsImpl::OnDomOperationResponse(const std::string& json_string,
-                                             int automation_id) {
-  DomOperationNotificationDetails details(json_string, automation_id);
-  NotificationService::current()->Notify(
-      NOTIFICATION_DOM_OPERATION_RESPONSE,
-      Source<WebContents>(this),
-      Details<DomOperationNotificationDetails>(&details));
+void WebContentsImpl::OnDomOperationResponse(const std::string& json_string) {
+  std::string json = json_string;
+  NotificationService::current()->Notify(NOTIFICATION_DOM_OPERATION_RESPONSE,
+                                         Source<WebContents>(this),
+                                         Details<std::string>(&json));
 }
 
 void WebContentsImpl::OnAppCacheAccessed(const GURL& manifest_url,

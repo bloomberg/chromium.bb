@@ -851,8 +851,7 @@ class CONTENT_EXPORT WebContentsImpl
   void OnOpenDateTimeDialog(
       const ViewHostMsg_DateTimeDialogValue_Params& value);
 #endif
-  void OnDomOperationResponse(const std::string& json_string,
-                              int automation_id);
+  void OnDomOperationResponse(const std::string& json_string);
   void OnAppCacheAccessed(const GURL& manifest_url, bool blocked_by_policy);
   void OnOpenColorChooser(int color_chooser_id,
                           SkColor color,

@@ -34,7 +34,6 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
-#include "content/public/browser/dom_operation_notification_details.h"
 #include "content/public/browser/interstitial_page_delegate.h"
 #include "content/public/browser/invalidate_type.h"
 #include "content/public/browser/notification_service.h"
@@ -860,18 +859,16 @@ void InterstitialPageImpl::TakeActionOnResourceDispatcher(
 }
 
 void InterstitialPageImpl::OnDomOperationResponse(
-    const std::string& json_string,
-    int automation_id) {
+    const std::string& json_string) {
+  std::string json = json_string;
   // Needed by test code.
-  DomOperationNotificationDetails details(json_string, automation_id);
-  NotificationService::current()->Notify(
-      NOTIFICATION_DOM_OPERATION_RESPONSE,
-      Source<WebContents>(web_contents()),
-      Details<DomOperationNotificationDetails>(&details));
+  NotificationService::current()->Notify(NOTIFICATION_DOM_OPERATION_RESPONSE,
+                                         Source<WebContents>(web_contents()),
+                                         Details<std::string>(&json));
 
   if (!enabled())
     return;
-  delegate_->CommandReceived(details.json);
+  delegate_->CommandReceived(json_string);
 }
 
 

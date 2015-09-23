@@ -4,7 +4,6 @@
 
 #include "content/public/test/javascript_test_observer.h"
 
-#include "content/public/browser/dom_operation_notification_details.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
@@ -65,11 +64,11 @@ void JavascriptTestObserver::Observe(
     const NotificationSource& source,
     const NotificationDetails& details) {
   CHECK(type == NOTIFICATION_DOM_OPERATION_RESPONSE);
-  Details<DomOperationNotificationDetails> dom_op_details(details);
+  Details<std::string> dom_op_result(details);
   // We might receive responses for other script execution, but we only
   // care about the test finished message.
   TestMessageHandler::MessageResponse response =
-      handler_->HandleMessage(dom_op_details->json);
+      handler_->HandleMessage(*dom_op_result.ptr());
 
   if (response == TestMessageHandler::DONE) {
     EndTest();

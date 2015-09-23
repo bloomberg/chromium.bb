@@ -23,7 +23,6 @@
 #include "components/content_settings/core/browser/content_settings_usages_state.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
-#include "content/public/browser/dom_operation_notification_details.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
@@ -118,9 +117,8 @@ void IFrameLoader::Observe(int type,
   if (type == content::NOTIFICATION_LOAD_STOP) {
     navigation_completed_ = true;
   } else if (type == content::NOTIFICATION_DOM_OPERATION_RESPONSE) {
-    content::Details<content::DomOperationNotificationDetails> dom_op_details(
-        details);
-    javascript_response_ = dom_op_details->json;
+    content::Details<std::string> dom_op_result(details);
+    javascript_response_ = *dom_op_result.ptr();
     javascript_completed_ = true;
   }
   if (javascript_completed_ && navigation_completed_)

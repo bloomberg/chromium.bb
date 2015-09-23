@@ -22,7 +22,6 @@
 #include "content/common/input/synthetic_web_input_event_builders.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/browser_context.h"
-#include "content/public/browser/dom_operation_notification_details.h"
 #include "content/public/browser/histogram_fetcher.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
@@ -74,9 +73,9 @@ class DOMOperationObserver : public NotificationObserver,
                const NotificationSource& source,
                const NotificationDetails& details) override {
     DCHECK(type == NOTIFICATION_DOM_OPERATION_RESPONSE);
-    Details<DomOperationNotificationDetails> dom_op_details(details);
+    Details<std::string> dom_op_result(details);
     if (!did_respond_) {
-      response_ = dom_op_details->json;
+      response_ = *dom_op_result.ptr();
       did_respond_ = true;
       message_loop_runner_->Quit();
     }
@@ -863,8 +862,8 @@ DOMMessageQueue::~DOMMessageQueue() {}
 void DOMMessageQueue::Observe(int type,
                               const NotificationSource& source,
                               const NotificationDetails& details) {
-  Details<DomOperationNotificationDetails> dom_op_details(details);
-  message_queue_.push(dom_op_details->json);
+  Details<std::string> dom_op_result(details);
+  message_queue_.push(*dom_op_result.ptr());
   if (message_loop_runner_.get())
     message_loop_runner_->Quit();
 }

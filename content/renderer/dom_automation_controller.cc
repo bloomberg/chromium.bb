@@ -89,7 +89,7 @@ bool DomAutomationController::SendMsg(const gin::Arguments& args) {
     return false;
 
   bool succeeded = Send(new FrameHostMsg_DomOperationResponse(
-      routing_id(), json, automation_id_));
+      routing_id(), json));
 
   automation_id_ = MSG_ROUTING_NONE;
   return succeeded;
@@ -102,7 +102,7 @@ bool DomAutomationController::SendJSON(const std::string& json) {
   if (automation_id_ == MSG_ROUTING_NONE)
     return false;
   bool result = Send(new FrameHostMsg_DomOperationResponse(
-      routing_id(), json, automation_id_));
+      routing_id(), json));
 
   automation_id_ = MSG_ROUTING_NONE;
   return result;
@@ -113,7 +113,7 @@ bool DomAutomationController::SendWithId(int automation_id,
   if (!render_frame())
     return false;
   return Send(
-      new FrameHostMsg_DomOperationResponse(routing_id(), str, automation_id));
+      new FrameHostMsg_DomOperationResponse(routing_id(), str));
 }
 
 bool DomAutomationController::SetAutomationId(int automation_id) {

@@ -805,9 +805,8 @@ IPC_MESSAGE_ROUTED1(FrameHostMsg_UpdateEncoding,
 // An instance of browser that has an automation host listening to it can
 // have a javascript send a native value (string, number, boolean) to the
 // listener in Cpp. (DomAutomationController)
-IPC_MESSAGE_ROUTED2(FrameHostMsg_DomOperationResponse,
-                    std::string  /* json_string */,
-                    int  /* automation_id */)
+IPC_MESSAGE_ROUTED1(FrameHostMsg_DomOperationResponse,
+                    std::string  /* json_string */)
 
 // Used to set a cookie. The cookie is set asynchronously, but will be
 // available to a subsequent FrameHostMsg_GetCookies request.

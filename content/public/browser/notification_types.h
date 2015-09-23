@@ -174,7 +174,7 @@ enum NotificationType {
 
   // Notification from WebContents that we have received a response from the
   // renderer in response to a dom automation controller action. The source is
-  // the RenderViewHost, and the details is a DomOperationNotificationDetails.
+  // the RenderViewHost, and the details is a string with the response.
   NOTIFICATION_DOM_OPERATION_RESPONSE,
 
   // Custom notifications used by the embedder should start from here.
