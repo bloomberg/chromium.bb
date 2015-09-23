@@ -132,7 +132,9 @@ const wchar_t* kTestFontFamilyInvalid = L"InvalidFont";
 class TestSkFontMgr : public SkFontMgr {
  public:
   TestSkFontMgr() { content::SetPreSandboxWarmupFontMgrForTesting(this); }
-  ~TestSkFontMgr() { content::SetPreSandboxWarmupFontMgrForTesting(nullptr); }
+  ~TestSkFontMgr() override {
+    content::SetPreSandboxWarmupFontMgrForTesting(nullptr);
+  }
 
  protected:
   int onCountFamilies() const override { return 1; }
