@@ -4,6 +4,7 @@ include_rules = [
     "-modules",
     "+platform",
     "+platform/weborigin",
+    "+public/platform",
     "-public/web",
     "+third_party/skia",
     "-web",
