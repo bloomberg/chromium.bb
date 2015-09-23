@@ -55,9 +55,8 @@
     ],
     'variables': {
       'conditions': [
-        ['OS=="win" and buildtype=="Official"', {
-          # Do not set to 'size', as it results in an error on win64.
-          'optimize' :'speed',
+        ['OS=="win"', {
+          'optimize' :'max',
         }],
       ],
       'clang_warning_flags': [

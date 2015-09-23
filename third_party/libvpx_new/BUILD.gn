@@ -4,7 +4,6 @@
 
 import("//build/config/arm.gni")
 import("//build/config/android/config.gni")
-import("//build/config/chrome_build.gni")
 import("//build/config/sanitizers/sanitizers.gni")
 import("//third_party/libvpx_new/libvpx_srcs.gni")
 import("//third_party/yasm/yasm_assemble.gni")
@@ -218,8 +217,8 @@ if (current_cpu == "arm") {
 }
 
 static_library("libvpx_new") {
-  if (!is_debug && is_win && is_official_build) {
-    configs -= [ "//build/config/compiler:optimize" ]
+  if (!is_debug && is_win) {
+    configs -= [ "//build/config/compiler:default_optimization" ]
     configs += [ "//build/config/compiler:optimize_max" ]
   }
 
