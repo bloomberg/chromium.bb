@@ -29,7 +29,7 @@ class WebGLProgramTest : public GLProgramTest {
  protected:
   void SetUp() override {
     GLManager::Options options;
-    options.webgl_version = 1;
+    options.context_type = gles2::CONTEXT_TYPE_WEBGL1;
     gl_.Initialize(options);
   }
 };

@@ -842,7 +842,8 @@ class GLES2DecoderImpl : public GLES2Decoder,
   }
 
   bool IsWebGLContext() const {
-    return webgl_version_ == 1 || webgl_version_ == 2;
+    return context_type_ == CONTEXT_TYPE_WEBGL1 ||
+           context_type_ == CONTEXT_TYPE_WEBGL2;
   }
 
   bool IsOffscreenBufferMultisampled() const {
@@ -2038,11 +2039,7 @@ class GLES2DecoderImpl : public GLES2Decoder,
   bool reset_by_robustness_extension_;
   bool supports_post_sub_buffer_;
 
-  // Indicates whether this is a context for WebGL1, WebGL2, or others.
-  //   0: other types
-  //   1: WebGL 1
-  //   2: WebGL 2
-  unsigned webgl_version_;
+  ContextType context_type_;
 
   // These flags are used to override the state of the shared feature_info_
   // member.  Because the same FeatureInfo instance may be shared among many
@@ -2582,7 +2579,7 @@ GLES2DecoderImpl::GLES2DecoderImpl(ContextGroup* group)
       context_was_lost_(false),
       reset_by_robustness_extension_(false),
       supports_post_sub_buffer_(false),
-      webgl_version_(0),
+      context_type_(CONTEXT_TYPE_OPENGLES2),
       derivatives_explicitly_enabled_(false),
       frag_depth_explicitly_enabled_(false),
       draw_buffers_explicitly_enabled_(false),
@@ -2625,7 +2622,8 @@ bool GLES2DecoderImpl::Initialize(
   ContextCreationAttribHelper attrib_parser;
   if (!attrib_parser.Parse(attribs))
     return false;
-  webgl_version_ = attrib_parser.webgl_version;
+
+  context_type_ = attrib_parser.context_type;
 
   surfaceless_ = surface->IsSurfaceless() && !offscreen;
 
@@ -2676,20 +2674,18 @@ bool GLES2DecoderImpl::Initialize(
   }
 
   disallowed_features_ = disallowed_features;
-  if (webgl_version_ == 1) {
+  if (context_type_ == CONTEXT_TYPE_WEBGL1) {
     disallowed_features_.npot_support = true;
   }
 
-  if (!group_->Initialize(this,
-                          ContextGroup::GetContextType(webgl_version_),
-                          disallowed_features_)) {
+  if (!group_->Initialize(this, context_type_, disallowed_features_)) {
     group_ = NULL;  // Must not destroy ContextGroup if it is not initialized.
     Destroy(true);
     return false;
   }
   CHECK_GL_ERROR();
-
-  if (webgl_version_ == 2) {
+  if (context_type_ == CONTEXT_TYPE_WEBGL2 ||
+      context_type_ == CONTEXT_TYPE_OPENGLES3) {
     if (!feature_info_->IsES3Capable()) {
       LOG(ERROR) << "Underlying driver does not support ES3.";
       Destroy(true);
@@ -3264,10 +3260,23 @@ bool GLES2DecoderImpl::InitializeShaderTranslator() {
   }
 
   ShShaderSpec shader_spec;
-  if (IsWebGLContext()) {
-    shader_spec = webgl_version_ == 2 ? SH_WEBGL2_SPEC : SH_WEBGL_SPEC;
-  } else {
-    shader_spec = unsafe_es3_apis_enabled() ? SH_GLES3_SPEC : SH_GLES2_SPEC;
+  switch (context_type_) {
+    case CONTEXT_TYPE_WEBGL1:
+      shader_spec = SH_WEBGL_SPEC;
+      break;
+    case CONTEXT_TYPE_WEBGL2:
+      shader_spec = SH_WEBGL2_SPEC;
+      break;
+    case CONTEXT_TYPE_OPENGLES2:
+      shader_spec = SH_GLES2_SPEC;
+      break;
+    case CONTEXT_TYPE_OPENGLES3:
+      shader_spec = SH_GLES3_SPEC;
+      break;
+    default:
+      NOTREACHED();
+      shader_spec = SH_GLES2_SPEC;
+      break;
   }
 
   if ((shader_spec == SH_WEBGL_SPEC || shader_spec == SH_WEBGL2_SPEC) &&

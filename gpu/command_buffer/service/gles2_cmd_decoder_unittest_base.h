@@ -200,7 +200,7 @@ class GLES2DecoderTestBase : public ::testing::TestWithParam<bool> {
     bool bind_generates_resource;
     bool lose_context_when_out_of_memory;
     bool use_native_vao;  // default is true.
-    unsigned webgl_version;  // default to 0, i.e., not WebGL context.
+    ContextType context_type;
   };
 
   void InitDecoder(const InitState& init);

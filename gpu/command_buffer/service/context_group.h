@@ -13,6 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "gpu/command_buffer/common/constants.h"
 #include "gpu/command_buffer/common/gles2_cmd_format.h"
+#include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/command_buffer/service/feature_info.h"
 #include "gpu/command_buffer/service/framebuffer_completeness_cache.h"
 #include "gpu/command_buffer/service/shader_translator_cache.h"
@@ -44,15 +45,6 @@ struct DisallowedFeatures;
 // resources.
 class GPU_EXPORT ContextGroup : public base::RefCounted<ContextGroup> {
  public:
-  enum ContextType {
-    CONTEXT_TYPE_WEBGL1,
-    CONTEXT_TYPE_WEBGL2,
-    CONTEXT_TYPE_OTHER,
-    CONTEXT_TYPE_UNDEFINED
-  };
-
-  static ContextType GetContextType(unsigned webgl_version);
-
   ContextGroup(
       const scoped_refptr<MailboxManager>& mailbox_manager,
       const scoped_refptr<MemoryTracker>& memory_tracker,

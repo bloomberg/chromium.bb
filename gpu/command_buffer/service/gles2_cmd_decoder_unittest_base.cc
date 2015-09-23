@@ -160,8 +160,7 @@ GLES2DecoderTestBase::InitState::InitState()
       bind_generates_resource(false),
       lose_context_when_out_of_memory(false),
       use_native_vao(true),
-      webgl_version(0) {
-}
+      context_type(CONTEXT_TYPE_OPENGLES2) {}
 
 void GLES2DecoderTestBase::InitDecoder(const InitState& init) {
   InitDecoderWithCommandLine(init, NULL);
@@ -225,13 +224,11 @@ void GLES2DecoderTestBase::InitDecoderWithCommandLine(
   EXPECT_CALL(*mock_decoder_, DoCommands(_, _, _, _)).WillRepeatedly(
       Invoke(mock_decoder_.get(), &MockGLES2Decoder::FakeDoCommands));
 
+  EXPECT_TRUE(group_->Initialize(mock_decoder_.get(), init.context_type,
+                                 DisallowedFeatures()));
 
-  EXPECT_TRUE(group_->Initialize(
-      mock_decoder_.get(),
-      ContextGroup::GetContextType(init.webgl_version),
-      DisallowedFeatures()));
-
-  if (init.webgl_version == 2) {
+  if (init.context_type == CONTEXT_TYPE_WEBGL2 ||
+      init.context_type == CONTEXT_TYPE_OPENGLES3) {
     EXPECT_CALL(*gl_, GetIntegerv(GL_MAX_COLOR_ATTACHMENTS, _))
         .WillOnce(SetArgumentPointee<1>(kMaxColorAttachments))
         .RetiresOnSaturation();
@@ -403,29 +400,25 @@ void GLES2DecoderTestBase::InitDecoderWithCommandLine(
   static const int32 kLoseContextWhenOutOfMemory = 0x10002;
   static const int32 kWebGLVersion = 0x10003;
 
-  int32 attributes[] = {
-      EGL_ALPHA_SIZE,
-      normalized_init.request_alpha ? 8 : 0,
-      EGL_DEPTH_SIZE,
-      normalized_init.request_depth ? 24 : 0,
-      EGL_STENCIL_SIZE,
-      normalized_init.request_stencil ? 8 : 0,
-      kLoseContextWhenOutOfMemory,
-      normalized_init.lose_context_when_out_of_memory ? 1 : 0,
-      kWebGLVersion,
-      init.webgl_version
-  };
+  int32 attributes[] = {EGL_ALPHA_SIZE,
+                        normalized_init.request_alpha ? 8 : 0,
+                        EGL_DEPTH_SIZE,
+                        normalized_init.request_depth ? 24 : 0,
+                        EGL_STENCIL_SIZE,
+                        normalized_init.request_stencil ? 8 : 0,
+                        kLoseContextWhenOutOfMemory,
+                        normalized_init.lose_context_when_out_of_memory ? 1 : 0,
+                        kWebGLVersion,
+                        init.context_type};
   std::vector<int32> attribs(attributes, attributes + arraysize(attributes));
 
   decoder_.reset(GLES2Decoder::Create(group_.get()));
   decoder_->SetIgnoreCachedStateForTest(ignore_cached_state_for_test_);
   decoder_->GetLogger()->set_log_synthesized_gl_errors(false);
-  decoder_->Initialize(surface_,
-                       context_,
-                       false,
-                       surface_->GetSize(),
-                       DisallowedFeatures(),
-                       attribs);
+  ASSERT_TRUE(decoder_->Initialize(surface_, context_, false,
+                                   surface_->GetSize(), DisallowedFeatures(),
+                                   attribs));
+
   EXPECT_CALL(*context_, MakeCurrent(surface_.get())).WillOnce(Return(true));
   if (context_->WasAllocatedUsingRobustnessExtension()) {
     EXPECT_CALL(*gl_, GetGraphicsResetStatusARB())

@@ -204,6 +204,13 @@ class GLES2_UTILS_EXPORT GLES2Util {
   int num_shader_binary_formats_;
 };
 
+enum ContextType {
+  CONTEXT_TYPE_WEBGL1,
+  CONTEXT_TYPE_WEBGL2,
+  CONTEXT_TYPE_OPENGLES2,
+  CONTEXT_TYPE_OPENGLES3
+};
+
 struct GLES2_UTILS_EXPORT ContextCreationAttribHelper {
   ContextCreationAttribHelper();
 
@@ -223,8 +230,7 @@ struct GLES2_UTILS_EXPORT ContextCreationAttribHelper {
   bool bind_generates_resource;
   bool fail_if_major_perf_caveat;
   bool lose_context_when_out_of_memory;
-  // 0 if not a WebGL context.
-  unsigned webgl_version;
+  ContextType context_type;
 };
 
 }  // namespace gles2

@@ -32,15 +32,7 @@ WebGraphicsContext3DCommandBufferImpl::WebGraphicsContext3DCommandBufferImpl(
   // TODO(penghuang): Support share context.
   // TODO(penghuang): Fill gl_info.
   gpu::gles2::ContextCreationAttribHelper attrib_helper;
-  attrib_helper.alpha_size = attributes.alpha ? 8 : 0;
-  attrib_helper.depth_size = attributes.depth ? 24 : 0;
-  attrib_helper.stencil_size = attributes.stencil ? 8 : 0;
-  attrib_helper.samples = attributes.antialias ? 4 : 0;
-  attrib_helper.sample_buffers = attributes.antialias ? 1 : 0;
-  attrib_helper.fail_if_major_perf_caveat =
-      attributes.failIfMajorPerformanceCaveat;
-  attrib_helper.bind_generates_resource = false;
-  attrib_helper.webgl_version = attributes.webGLVersion;
+  ConvertAttributes(attributes, &attrib_helper);
   std::vector<int32_t> attrib_vector;
   attrib_helper.Serialize(&attrib_vector);
   gles2_context_ = MojoGLES2CreateContext(

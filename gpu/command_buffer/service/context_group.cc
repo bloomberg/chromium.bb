@@ -36,7 +36,7 @@ ContextGroup::ContextGroup(
     const scoped_refptr<SubscriptionRefSet>& subscription_ref_set,
     const scoped_refptr<ValueStateMap>& pending_valuebuffer_state,
     bool bind_generates_resource)
-    : context_type_(CONTEXT_TYPE_UNDEFINED),
+    : context_type_(CONTEXT_TYPE_OPENGLES2),
       mailbox_manager_(mailbox_manager),
       memory_tracker_(memory_tracker),
       shader_translator_cache_(shader_translator_cache),
@@ -89,31 +89,10 @@ static void GetIntegerv(GLenum pname, uint32* var) {
   *var = value;
 }
 
-// static
-ContextGroup::ContextType ContextGroup::GetContextType(
-    unsigned webgl_version) {
-  switch (webgl_version) {
-    case 0:
-      return CONTEXT_TYPE_OTHER;
-    case 1:
-      return CONTEXT_TYPE_WEBGL1;
-    case 2:
-      return CONTEXT_TYPE_WEBGL2;
-    default:
-      return CONTEXT_TYPE_UNDEFINED;
-  }
-}
-
-bool ContextGroup::Initialize(
-    GLES2Decoder* decoder,
-    ContextGroup::ContextType context_type,
-    const DisallowedFeatures& disallowed_features) {
-  if (context_type == CONTEXT_TYPE_UNDEFINED) {
-    LOG(ERROR) << "ContextGroup::Initialize failed because of unknown "
-               << "context type.";
-    return false;
-  }
-  if (context_type_ == CONTEXT_TYPE_UNDEFINED) {
+bool ContextGroup::Initialize(GLES2Decoder* decoder,
+                              ContextType context_type,
+                              const DisallowedFeatures& disallowed_features) {
+  if (!HaveContexts()) {
     context_type_ = context_type;
   } else if (context_type_ != context_type) {
     LOG(ERROR) << "ContextGroup::Initialize failed because the type of "

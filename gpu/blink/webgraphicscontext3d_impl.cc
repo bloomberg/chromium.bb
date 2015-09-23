@@ -1254,7 +1254,21 @@ void WebGraphicsContext3DImpl::ConvertAttributes(
   output_attribs->fail_if_major_perf_caveat =
       attributes.failIfMajorPerformanceCaveat;
   output_attribs->bind_generates_resource = false;
-  output_attribs->webgl_version = attributes.webGLVersion;
+  switch (attributes.webGLVersion) {
+    case 0:
+      output_attribs->context_type = ::gpu::gles2::CONTEXT_TYPE_OPENGLES2;
+      break;
+    case 1:
+      output_attribs->context_type = ::gpu::gles2::CONTEXT_TYPE_WEBGL1;
+      break;
+    case 2:
+      output_attribs->context_type = ::gpu::gles2::CONTEXT_TYPE_WEBGL2;
+      break;
+    default:
+      NOTREACHED();
+      output_attribs->context_type = ::gpu::gles2::CONTEXT_TYPE_OPENGLES2;
+      break;
+  }
 }
 
 }  // namespace gpu_blink

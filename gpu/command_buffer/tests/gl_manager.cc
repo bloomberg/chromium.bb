@@ -109,8 +109,7 @@ GLManager::Options::Options()
       bind_generates_resource(false),
       lose_context_when_out_of_memory(false),
       context_lost_allowed(false),
-      webgl_version(0) {
-}
+      context_type(gles2::CONTEXT_TYPE_OPENGLES2) {}
 
 GLManager::GLManager() : context_lost_allowed_(false) {
   SetupBaseContext();
@@ -197,7 +196,8 @@ void GLManager::InitializeWithCommandLine(const GLManager::Options& options,
   attrib_helper.alpha_size = 8;
   attrib_helper.depth_size = 16;
   attrib_helper.stencil_size = 8;
-  attrib_helper.webgl_version = options.webgl_version;
+  attrib_helper.context_type = options.context_type;
+
   attrib_helper.Serialize(&attribs);
 
   DCHECK(!command_line || !context_group);
@@ -248,13 +248,10 @@ void GLManager::InitializeWithCommandLine(const GLManager::Options& options,
 
   ASSERT_TRUE(context_->MakeCurrent(surface_.get()));
 
-  ASSERT_TRUE(decoder_->Initialize(
-      surface_.get(),
-      context_.get(),
-      true,
-      options.size,
-      ::gpu::gles2::DisallowedFeatures(),
-      attribs)) << "could not initialize decoder";
+  if (!decoder_->Initialize(surface_.get(), context_.get(), true, options.size,
+                            ::gpu::gles2::DisallowedFeatures(), attribs)) {
+    return;
+  }
 
   command_buffer_->SetPutOffsetChangeCallback(
       base::Bind(&GLManager::PumpCommands, base::Unretained(this)));
@@ -326,7 +323,8 @@ void GLManager::Destroy() {
   gles2_helper_.reset();
   command_buffer_.reset();
   if (decoder_.get()) {
-    bool have_context = decoder_->GetGLContext()->MakeCurrent(surface_.get());
+    bool have_context = decoder_->GetGLContext() &&
+                        decoder_->GetGLContext()->MakeCurrent(surface_.get());
     decoder_->Destroy(have_context);
     decoder_.reset();
   }

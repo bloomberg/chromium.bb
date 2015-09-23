@@ -9,6 +9,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "gpu/command_buffer/client/gpu_control.h"
+#include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/command_buffer/service/feature_info.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/gpu_memory_buffer.h"
@@ -61,10 +62,7 @@ class GLManager : private GpuControl {
     bool lose_context_when_out_of_memory;
     // Whether or not it's ok to lose the context.
     bool context_lost_allowed;
-    // 0 indicates not WebGL context - default.
-    // 1 indicates WebGL 1 context.
-    // 2 indicates WebGL 2 context.
-    unsigned webgl_version;
+    gles2::ContextType context_type;
   };
   GLManager();
   ~GLManager() override;
@@ -77,6 +75,8 @@ class GLManager : private GpuControl {
   void InitializeWithCommandLine(const Options& options,
                                  base::CommandLine* command_line);
   void Destroy();
+
+  bool IsInitialized() const { return gles2_implementation() != nullptr; }
 
   void MakeCurrent();
 

@@ -255,7 +255,7 @@ class GPU_EXPORT FramebufferManager {
 
   FramebufferManager(uint32 max_draw_buffers,
                      uint32 max_color_attachments,
-                     ContextGroup::ContextType context_type,
+                     ContextType context_type,
                      const scoped_refptr<FramebufferCompletenessCache>&
                          framebuffer_combo_complete_cache);
   ~FramebufferManager();
@@ -302,9 +302,7 @@ class GPU_EXPORT FramebufferManager {
         texture_detach_observers_.end());
   }
 
-  ContextGroup::ContextType context_type() const {
-    return context_type_;
-  }
+  ContextType context_type() const { return context_type_; }
 
  private:
   friend class Framebuffer;
@@ -336,7 +334,7 @@ class GPU_EXPORT FramebufferManager {
   uint32 max_draw_buffers_;
   uint32 max_color_attachments_;
 
-  ContextGroup::ContextType context_type_;
+  ContextType context_type_;
 
   typedef std::vector<TextureDetachObserver*> TextureDetachObserverVector;
   TextureDetachObserverVector texture_detach_observers_;

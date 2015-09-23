@@ -93,7 +93,7 @@ void GLES3DecoderTest::SetUp() {
   InitState init;
   init.gl_version = "OpenGL ES 3.0";
   init.bind_generates_resource = true;
-  init.webgl_version = 2;
+  init.context_type = CONTEXT_TYPE_OPENGLES3;
   InitDecoderWithCommandLine(init, &command_line);
 }
 

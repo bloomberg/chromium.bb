@@ -34,7 +34,7 @@ const bool kUseDefaultTextures = false;
 class FramebufferManagerTest : public GpuServiceTest {
  public:
   FramebufferManagerTest()
-      : manager_(1, 1, ContextGroup::CONTEXT_TYPE_UNDEFINED, NULL),
+      : manager_(1, 1, CONTEXT_TYPE_OPENGLES2, NULL),
         feature_info_(new FeatureInfo()) {
     texture_manager_.reset(new TextureManager(NULL,
                                               feature_info_.get(),
@@ -110,7 +110,7 @@ class FramebufferInfoTestBase : public GpuServiceTest {
   static const GLuint kClient1Id = 1;
   static const GLuint kService1Id = 11;
 
-  explicit FramebufferInfoTestBase(ContextGroup::ContextType context_type)
+  explicit FramebufferInfoTestBase(ContextType context_type)
       : manager_(kMaxDrawBuffers,
                  kMaxColorAttachments,
                  context_type,
@@ -160,9 +160,7 @@ class FramebufferInfoTestBase : public GpuServiceTest {
 
 class FramebufferInfoTest : public FramebufferInfoTestBase {
  public:
-  FramebufferInfoTest()
-      : FramebufferInfoTestBase(ContextGroup::CONTEXT_TYPE_UNDEFINED) {
-  }
+  FramebufferInfoTest() : FramebufferInfoTestBase(CONTEXT_TYPE_OPENGLES2) {}
 };
 
 // GCC requires these declarations, but MSVC requires they not be present
@@ -905,9 +903,7 @@ TEST_F(FramebufferInfoTest, GetStatus) {
 
 class FramebufferInfoES3Test : public FramebufferInfoTestBase {
  public:
-  FramebufferInfoES3Test()
-      : FramebufferInfoTestBase(ContextGroup::CONTEXT_TYPE_WEBGL2) {
-  }
+  FramebufferInfoES3Test() : FramebufferInfoTestBase(CONTEXT_TYPE_WEBGL2) {}
 };
 
 TEST_F(FramebufferInfoES3Test, DifferentDimensions) {

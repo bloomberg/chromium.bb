@@ -58,7 +58,7 @@ BlimpContextProvider::BlimpContextProvider(gfx::AcceleratedWidget widget) {
   attribs_for_gles2.sample_buffers = 0;
   attribs_for_gles2.fail_if_major_perf_caveat = false;
   attribs_for_gles2.bind_generates_resource = false;
-  attribs_for_gles2.webgl_version = 0;
+  attribs_for_gles2.context_type = gpu::gles2::CONTEXT_TYPE_OPENGLES2;
   attribs_for_gles2.lose_context_when_out_of_memory = true;
 
   context_.reset(gpu::GLInProcessContext::Create(

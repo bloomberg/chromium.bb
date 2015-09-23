@@ -245,7 +245,7 @@ FramebufferManager::TextureDetachObserver::~TextureDetachObserver() {}
 FramebufferManager::FramebufferManager(
     uint32 max_draw_buffers,
     uint32 max_color_attachments,
-    ContextGroup::ContextType context_type,
+    ContextType context_type,
     const scoped_refptr<FramebufferCompletenessCache>&
         framebuffer_combo_complete_cache)
     : framebuffer_state_change_count_(1),
@@ -491,7 +491,7 @@ GLenum Framebuffer::IsPossiblyComplete() const {
       if (width == 0 || height == 0) {
         return GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT;
       }
-    } else if (manager_->context_type() != ContextGroup::CONTEXT_TYPE_WEBGL2) {
+    } else if (manager_->context_type() != CONTEXT_TYPE_WEBGL2) {
       // TODO(zmo): revisit this if we create ES3 contexts for clients other
       // than WebGL 2.
       if (attachment->width() != width || attachment->height() != height) {
