@@ -101,7 +101,7 @@ if (window.testRunner) {
 
     PerfTestRunner.gc = function () {
         if (window.GCController)
-            window.GCController.collect();
+            window.GCController.collectAll();
         else {
             function gcRec(n) {
                 if (n < 1)
