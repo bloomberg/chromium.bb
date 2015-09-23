@@ -428,11 +428,6 @@ class EventSenderBindings : public gin::Wrappable<EventSenderBindings> {
   void TrackpadScroll(gin::Arguments* args);
   void TrackpadScrollEnd();
   void MouseScrollBy(gin::Arguments* args);
-  // TODO(erikchen): Remove MouseMomentumBegin once CL 282743002 has landed.
-  void MouseMomentumBegin();
-  void MouseMomentumBegin2(gin::Arguments* args);
-  void MouseMomentumScrollBy(gin::Arguments* args);
-  void MouseMomentumEnd();
   void ScheduleAsynchronousClick(gin::Arguments* args);
   void ScheduleAsynchronousKeyDown(gin::Arguments* args);
   void MouseDown(gin::Arguments* args);
@@ -567,12 +562,6 @@ EventSenderBindings::GetObjectTemplateBuilder(v8::Isolate* isolate) {
       .SetMethod("trackpadScrollEnd", &EventSenderBindings::TrackpadScrollEnd)
       .SetMethod("mouseScrollBy", &EventSenderBindings::MouseScrollBy)
       .SetMethod("mouseUp", &EventSenderBindings::MouseUp)
-      .SetMethod("mouseMomentumBegin", &EventSenderBindings::MouseMomentumBegin)
-      .SetMethod("mouseMomentumBegin2",
-                 &EventSenderBindings::MouseMomentumBegin2)
-      .SetMethod("mouseMomentumScrollBy",
-                 &EventSenderBindings::MouseMomentumScrollBy)
-      .SetMethod("mouseMomentumEnd", &EventSenderBindings::MouseMomentumEnd)
       .SetMethod("scheduleAsynchronousClick",
                  &EventSenderBindings::ScheduleAsynchronousClick)
       .SetMethod("scheduleAsynchronousKeyDown",
@@ -861,26 +850,6 @@ void EventSenderBindings::TrackpadScrollEnd() {
 void EventSenderBindings::MouseScrollBy(gin::Arguments* args) {
   if (sender_)
     sender_->MouseScrollBy(args);
-}
-
-void EventSenderBindings::MouseMomentumBegin() {
-  if (sender_)
-    sender_->MouseMomentumBegin();
-}
-
-void EventSenderBindings::MouseMomentumBegin2(gin::Arguments* args) {
-  if (sender_)
-    sender_->MouseMomentumBegin2(args);
-}
-
-void EventSenderBindings::MouseMomentumScrollBy(gin::Arguments* args) {
-  if (sender_)
-    sender_->MouseMomentumScrollBy(args);
-}
-
-void EventSenderBindings::MouseMomentumEnd() {
-  if (sender_)
-    sender_->MouseMomentumEnd();
 }
 
 void EventSenderBindings::ScheduleAsynchronousClick(gin::Arguments* args) {
@@ -1962,50 +1931,6 @@ void EventSender::TrackpadScrollEnd() {
 void EventSender::MouseScrollBy(gin::Arguments* args) {
    WebMouseWheelEvent event;
   InitMouseWheelEvent(args, false, &event);
-  HandleInputEventOnViewOrPopup(event);
-}
-
-void EventSender::MouseMomentumBegin() {
-  WebMouseWheelEvent event;
-  InitMouseEvent(WebInputEvent::MouseWheel,
-                 WebMouseEvent::ButtonNone,
-                 last_mouse_pos_,
-                 GetCurrentEventTimeSec(),
-                 click_count_,
-                 0,
-                 &event);
-  event.momentumPhase = WebMouseWheelEvent::PhaseBegan;
-  event.hasPreciseScrollingDeltas = true;
-  HandleInputEventOnViewOrPopup(event);
-}
-
-void EventSender::MouseMomentumBegin2(gin::Arguments* args) {
-  WebMouseWheelEvent event;
-  InitMouseWheelEvent(args, true, &event);
-  event.momentumPhase = WebMouseWheelEvent::PhaseBegan;
-  event.hasPreciseScrollingDeltas = true;
-  HandleInputEventOnViewOrPopup(event);
-}
-
-void EventSender::MouseMomentumScrollBy(gin::Arguments* args) {
-  WebMouseWheelEvent event;
-  InitMouseWheelEvent(args, true, &event);
-  event.momentumPhase = WebMouseWheelEvent::PhaseChanged;
-  event.hasPreciseScrollingDeltas = true;
-  HandleInputEventOnViewOrPopup(event);
-}
-
-void EventSender::MouseMomentumEnd() {
-  WebMouseWheelEvent event;
-  InitMouseEvent(WebInputEvent::MouseWheel,
-                 WebMouseEvent::ButtonNone,
-                 last_mouse_pos_,
-                 GetCurrentEventTimeSec(),
-                 click_count_,
-                 0,
-                 &event);
-  event.momentumPhase = WebMouseWheelEvent::PhaseEnded;
-  event.hasPreciseScrollingDeltas = true;
   HandleInputEventOnViewOrPopup(event);
 }
 
