@@ -79,7 +79,8 @@ void MPEGAudioStreamParserBase::Flush() {
   DVLOG(1) << __FUNCTION__;
   DCHECK_NE(state_, UNINITIALIZED);
   queue_.Reset();
-  timestamp_helper_->SetBaseTimestamp(base::TimeDelta());
+  if (timestamp_helper_)
+    timestamp_helper_->SetBaseTimestamp(base::TimeDelta());
   in_media_segment_ = false;
 }
 
