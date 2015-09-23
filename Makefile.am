@@ -127,9 +127,11 @@ noinst_LTLIBRARIES +=				\
 	libsession-helper.la
 
 libsession_helper_la_SOURCES =			\
-	src/weston-launch.h			\
 	src/launcher-util.c			\
-	src/launcher-util.h
+	src/launcher-util.h			\
+	src/weston-launch.h			\
+	src/launcher-weston-launch.c		\
+	src/launcher-direct.c
 libsession_helper_la_CFLAGS = $(AM_CFLAGS) $(LIBDRM_CFLAGS) $(PIXMAN_CFLAGS) $(COMPOSITOR_CFLAGS)
 libsession_helper_la_LIBADD = $(LIBDRM_LIBS)
 
@@ -138,7 +140,6 @@ if HAVE_SYSTEMD_LOGIN
 libsession_helper_la_SOURCES +=			\
 	src/dbus.h				\
 	src/dbus.c				\
-	src/launcher-logind.h			\
 	src/launcher-logind.c
 libsession_helper_la_CFLAGS += $(SYSTEMD_LOGIN_CFLAGS) $(DBUS_CFLAGS)
 libsession_helper_la_LIBADD += $(SYSTEMD_LOGIN_LIBS) $(DBUS_LIBS)

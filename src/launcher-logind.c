@@ -44,7 +44,7 @@
 
 #include "compositor.h"
 #include "dbus.h"
-#include "launcher-logind.h"
+#include "launcher-impl.h"
 
 #define DRM_MAJOR 226
 
@@ -52,7 +52,8 @@
 #define KDSKBMUTE	0x4B51
 #endif
 
-struct weston_logind {
+struct launcher_logind {
+	struct weston_launcher base;
 	struct weston_compositor *compositor;
 	bool sync_drm;
 	char *seat;
@@ -70,7 +71,7 @@ struct weston_logind {
 };
 
 static int
-weston_logind_take_device(struct weston_logind *wl, uint32_t major,
+launcher_logind_take_device(struct launcher_logind *wl, uint32_t major,
 			  uint32_t minor, bool *paused_out)
 {
 	DBusMessage *m, *reply;
@@ -122,7 +123,7 @@ err_unref:
 }
 
 static void
-weston_logind_release_device(struct weston_logind *wl, uint32_t major,
+launcher_logind_release_device(struct launcher_logind *wl, uint32_t major,
 			     uint32_t minor)
 {
 	DBusMessage *m;
@@ -144,7 +145,7 @@ weston_logind_release_device(struct weston_logind *wl, uint32_t major,
 }
 
 static void
-weston_logind_pause_device_complete(struct weston_logind *wl, uint32_t major,
+launcher_logind_pause_device_complete(struct launcher_logind *wl, uint32_t major,
 				    uint32_t minor)
 {
 	DBusMessage *m;
@@ -165,10 +166,10 @@ weston_logind_pause_device_complete(struct weston_logind *wl, uint32_t major,
 	}
 }
 
-WL_EXPORT int
-weston_logind_open(struct weston_logind *wl, const char *path,
-		   int flags)
+static int
+launcher_logind_open(struct weston_launcher *launcher, const char *path, int flags)
 {
+	struct launcher_logind *wl = wl_container_of(launcher, wl, base);
 	struct stat st;
 	int fl, r, fd;
 
@@ -180,7 +181,7 @@ weston_logind_open(struct weston_logind *wl, const char *path,
 		return -1;
 	}
 
-	fd = weston_logind_take_device(wl, major(st.st_rdev),
+	fd = launcher_logind_take_device(wl, major(st.st_rdev),
 				       minor(st.st_rdev), NULL);
 	if (fd < 0)
 		return fd;
@@ -210,15 +211,16 @@ weston_logind_open(struct weston_logind *wl, const char *path,
 
 err_close:
 	close(fd);
-	weston_logind_release_device(wl, major(st.st_rdev),
+	launcher_logind_release_device(wl, major(st.st_rdev),
 				     minor(st.st_rdev));
 	errno = -r;
 	return -1;
 }
 
-WL_EXPORT void
-weston_logind_close(struct weston_logind *wl, int fd)
+static void
+launcher_logind_close(struct weston_launcher *launcher, int fd)
 {
+	struct launcher_logind *wl = wl_container_of(launcher, wl, base);
 	struct stat st;
 	int r;
 
@@ -233,13 +235,14 @@ weston_logind_close(struct weston_logind *wl, int fd)
 		return;
 	}
 
-	weston_logind_release_device(wl, major(st.st_rdev),
+	launcher_logind_release_device(wl, major(st.st_rdev),
 				     minor(st.st_rdev));
 }
 
-WL_EXPORT void
-weston_logind_restore(struct weston_logind *wl)
+static void
+launcher_logind_restore(struct weston_launcher *launcher)
 {
+	struct launcher_logind *wl = wl_container_of(launcher, wl, base);
 	struct vt_mode mode = { 0 };
 
 	ioctl(wl->vt, KDSETMODE, KD_TEXT);
@@ -249,9 +252,10 @@ weston_logind_restore(struct weston_logind *wl)
 	ioctl(wl->vt, VT_SETMODE, &mode);
 }
 
-WL_EXPORT int
-weston_logind_activate_vt(struct weston_logind *wl, int vt)
+static int
+launcher_logind_activate_vt(struct weston_launcher *launcher, int vt)
 {
+	struct launcher_logind *wl = wl_container_of(launcher, wl, base);
 	int r;
 
 	r = ioctl(wl->vt, VT_ACTIVATE, vt);
@@ -262,7 +266,7 @@ weston_logind_activate_vt(struct weston_logind *wl, int vt)
 }
 
 static void
-weston_logind_set_active(struct weston_logind *wl, bool active)
+launcher_logind_set_active(struct launcher_logind *wl, bool active)
 {
 	if (!wl->compositor->session_active == !active)
 		return;
@@ -274,7 +278,7 @@ weston_logind_set_active(struct weston_logind *wl, bool active)
 }
 
 static void
-parse_active(struct weston_logind *wl, DBusMessage *m, DBusMessageIter *iter)
+parse_active(struct launcher_logind *wl, DBusMessage *m, DBusMessageIter *iter)
 {
 	DBusMessageIter sub;
 	dbus_bool_t b;
@@ -293,13 +297,13 @@ parse_active(struct weston_logind *wl, DBusMessage *m, DBusMessageIter *iter)
 	 * wake-up the compositor once the master-device is up and running. For
 	 * other backends, we immediately forward the Active-change event. */
 	if (!wl->sync_drm || !b)
-		weston_logind_set_active(wl, b);
+		launcher_logind_set_active(wl, b);
 }
 
 static void
 get_active_cb(DBusPendingCall *pending, void *data)
 {
-	struct weston_logind *wl = data;
+	struct launcher_logind *wl = data;
 	DBusMessageIter iter;
 	DBusMessage *m;
 	int type;
@@ -320,7 +324,7 @@ get_active_cb(DBusPendingCall *pending, void *data)
 }
 
 static void
-weston_logind_get_active(struct weston_logind *wl)
+launcher_logind_get_active(struct launcher_logind *wl)
 {
 	DBusPendingCall *pending;
 	DBusMessage *m;
@@ -366,15 +370,15 @@ err_unref:
 }
 
 static void
-disconnected_dbus(struct weston_logind *wl)
+disconnected_dbus(struct launcher_logind *wl)
 {
 	weston_log("logind: dbus connection lost, exiting..\n");
-	weston_logind_restore(wl);
+	launcher_logind_restore(&wl->base);
 	exit(-1);
 }
 
 static void
-session_removed(struct weston_logind *wl, DBusMessage *m)
+session_removed(struct launcher_logind *wl, DBusMessage *m)
 {
 	const char *name, *obj;
 	bool r;
@@ -390,13 +394,13 @@ session_removed(struct weston_logind *wl, DBusMessage *m)
 
 	if (!strcmp(name, wl->sid)) {
 		weston_log("logind: our session got closed, exiting..\n");
-		weston_logind_restore(wl);
+		launcher_logind_restore(&wl->base);
 		exit(-1);
 	}
 }
 
 static void
-property_changed(struct weston_logind *wl, DBusMessage *m)
+property_changed(struct launcher_logind *wl, DBusMessage *m)
 {
 	DBusMessageIter iter, sub, entry;
 	const char *interface, *name;
@@ -441,7 +445,7 @@ property_changed(struct weston_logind *wl, DBusMessage *m)
 		dbus_message_iter_get_basic(&sub, &name);
 
 		if (!strcmp(name, "Active")) {
-			weston_logind_get_active(wl);
+			launcher_logind_get_active(wl);
 			return;
 		}
 
@@ -455,7 +459,7 @@ error:
 }
 
 static void
-device_paused(struct weston_logind *wl, DBusMessage *m)
+device_paused(struct launcher_logind *wl, DBusMessage *m)
 {
 	bool r;
 	const char *type;
@@ -480,14 +484,14 @@ device_paused(struct weston_logind *wl, DBusMessage *m)
 	 * If it's our main DRM device, tell the compositor to go asleep. */
 
 	if (!strcmp(type, "pause"))
-		weston_logind_pause_device_complete(wl, major, minor);
+		launcher_logind_pause_device_complete(wl, major, minor);
 
 	if (wl->sync_drm && major == DRM_MAJOR)
-		weston_logind_set_active(wl, false);
+		launcher_logind_set_active(wl, false);
 }
 
 static void
-device_resumed(struct weston_logind *wl, DBusMessage *m)
+device_resumed(struct launcher_logind *wl, DBusMessage *m)
 {
 	bool r;
 	uint32_t major;
@@ -509,13 +513,13 @@ device_resumed(struct weston_logind *wl, DBusMessage *m)
 	 * notify the compositor to wake up. */
 
 	if (wl->sync_drm && major == DRM_MAJOR)
-		weston_logind_set_active(wl, true);
+		launcher_logind_set_active(wl, true);
 }
 
 static DBusHandlerResult
 filter_dbus(DBusConnection *c, DBusMessage *m, void *data)
 {
-	struct weston_logind *wl = data;
+	struct launcher_logind *wl = data;
 
 	if (dbus_message_is_signal(m, DBUS_INTERFACE_LOCAL, "Disconnected")) {
 		disconnected_dbus(wl);
@@ -537,7 +541,7 @@ filter_dbus(DBusConnection *c, DBusMessage *m, void *data)
 }
 
 static int
-weston_logind_setup_dbus(struct weston_logind *wl)
+launcher_logind_setup_dbus(struct launcher_logind *wl)
 {
 	bool b;
 	int r;
@@ -603,14 +607,14 @@ err_spath:
 }
 
 static void
-weston_logind_destroy_dbus(struct weston_logind *wl)
+launcher_logind_destroy_dbus(struct launcher_logind *wl)
 {
 	/* don't remove any dbus-match as the connection is closed, anyway */
 	free(wl->spath);
 }
 
 static int
-weston_logind_take_control(struct weston_logind *wl)
+launcher_logind_take_control(struct launcher_logind *wl)
 {
 	DBusError err;
 	DBusMessage *m, *reply;
@@ -659,7 +663,7 @@ err_unref:
 }
 
 static void
-weston_logind_release_control(struct weston_logind *wl)
+launcher_logind_release_control(struct launcher_logind *wl)
 {
 	DBusMessage *m;
 
@@ -676,7 +680,7 @@ weston_logind_release_control(struct weston_logind *wl)
 static int
 signal_event(int fd, uint32_t mask, void *data)
 {
-	struct weston_logind *wl = data;
+	struct launcher_logind *wl = data;
 	struct signalfd_siginfo sig;
 
 	if (read(fd, &sig, sizeof sig) != sizeof sig) {
@@ -693,7 +697,7 @@ signal_event(int fd, uint32_t mask, void *data)
 }
 
 static int
-weston_logind_setup_vt(struct weston_logind *wl)
+launcher_logind_setup_vt(struct launcher_logind *wl)
 {
 	struct stat st;
 	char buf[64];
@@ -816,20 +820,42 @@ err_close:
 }
 
 static void
-weston_logind_destroy_vt(struct weston_logind *wl)
+launcher_logind_destroy_vt(struct launcher_logind *wl)
 {
-	weston_logind_restore(wl);
+	launcher_logind_restore(&wl->base);
 	wl_event_source_remove(wl->sfd_source);
 	close(wl->sfd);
 	close(wl->vt);
 }
 
-WL_EXPORT int
-weston_logind_connect(struct weston_logind **out,
-		      struct weston_compositor *compositor,
-		      const char *seat_id, int tty, bool sync_drm)
+static int
+weston_sd_session_get_vt(const char *sid, unsigned int *out)
 {
-	struct weston_logind *wl;
+#ifdef HAVE_SYSTEMD_LOGIN_209
+	return sd_session_get_vt(sid, out);
+#else
+	int r;
+	char *tty;
+
+	r = sd_session_get_tty(sid, &tty);
+	if (r < 0)
+		return r;
+
+	r = sscanf(tty, "tty%u", out);
+	free(tty);
+
+	if (r != 1)
+		return -EINVAL;
+
+	return 0;
+#endif
+}
+
+static int
+launcher_logind_connect(struct weston_launcher **out, struct weston_compositor *compositor,
+			int tty, const char *seat_id, bool sync_drm)
+{
+	struct launcher_logind *wl;
 	struct wl_event_loop *loop;
 	char *t;
 	int r;
@@ -840,6 +866,7 @@ weston_logind_connect(struct weston_logind **out,
 		goto err_out;
 	}
 
+	wl->base.iface = &launcher_logind_iface;
 	wl->compositor = compositor;
 	wl->sync_drm = sync_drm;
 
@@ -888,26 +915,26 @@ weston_logind_connect(struct weston_logind **out,
 		goto err_session;
 	}
 
-	r = weston_logind_setup_dbus(wl);
+	r = launcher_logind_setup_dbus(wl);
 	if (r < 0)
 		goto err_dbus;
 
-	r = weston_logind_take_control(wl);
+	r = launcher_logind_take_control(wl);
 	if (r < 0)
 		goto err_dbus_cleanup;
 
-	r = weston_logind_setup_vt(wl);
+	r = launcher_logind_setup_vt(wl);
 	if (r < 0)
 		goto err_control;
 
 	weston_log("logind: session control granted\n");
-	*out = wl;
+	* (struct launcher_logind **) out = wl;
 	return 0;
 
 err_control:
-	weston_logind_release_control(wl);
+	launcher_logind_release_control(wl);
 err_dbus_cleanup:
-	weston_logind_destroy_dbus(wl);
+	launcher_logind_destroy_dbus(wl);
 err_dbus:
 	weston_dbus_close(wl->dbus, wl->dbus_ctx);
 err_session:
@@ -922,19 +949,30 @@ err_out:
 	return -1;
 }
 
-WL_EXPORT void
-weston_logind_destroy(struct weston_logind *wl)
+static void
+launcher_logind_destroy(struct weston_launcher *launcher)
 {
+	struct launcher_logind *wl = wl_container_of(launcher, wl, base);
+
 	if (wl->pending_active) {
 		dbus_pending_call_cancel(wl->pending_active);
 		dbus_pending_call_unref(wl->pending_active);
 	}
 
-	weston_logind_destroy_vt(wl);
-	weston_logind_release_control(wl);
-	weston_logind_destroy_dbus(wl);
+	launcher_logind_destroy_vt(wl);
+	launcher_logind_release_control(wl);
+	launcher_logind_destroy_dbus(wl);
 	weston_dbus_close(wl->dbus, wl->dbus_ctx);
 	free(wl->sid);
 	free(wl->seat);
 	free(wl);
 }
+
+struct launcher_interface launcher_logind_iface = {
+	launcher_logind_connect,
+	launcher_logind_destroy,
+	launcher_logind_open,
+	launcher_logind_close,
+	launcher_logind_activate_vt,
+	launcher_logind_restore,
+};
