@@ -199,8 +199,7 @@ void PatchDWriteFactory(IDWriteFactory* factory) {
 class FakeGdiObject : public base::RefCountedThreadSafe<FakeGdiObject> {
  public:
   FakeGdiObject(uint32_t magic, void* handle)
-      : magic_(magic), handle_(handle) {}
-  ~FakeGdiObject() {}
+      : handle_(handle), magic_(magic) {}
 
   void set_typeface(const skia::RefPtr<SkTypeface>& typeface) {
     typeface_ = typeface;
@@ -212,6 +211,7 @@ class FakeGdiObject : public base::RefCountedThreadSafe<FakeGdiObject> {
 
  private:
   friend class base::RefCountedThreadSafe<FakeGdiObject>;
+  ~FakeGdiObject() {}
 
   void* handle_;
   uint32_t magic_;
@@ -353,11 +353,11 @@ int WINAPI EnumFontFamiliesExWPatch(HDC dc_handle,
   if (!typeface)
     return 1;
 
-  ENUMLOGFONTEXDVW enum_log_font = {0};
+  ENUMLOGFONTEXDVW enum_log_font = {};
   enum_log_font.elfEnumLogfontEx.elfLogFont = *log_font;
   // TODO: Fill in the rest of the text metric structure. Not yet needed for
   // Flash support but might be in the future.
-  NEWTEXTMETRICEXW text_metric = {0};
+  NEWTEXTMETRICEXW text_metric = {};
   text_metric.ntmTm.ntmFlags = NTM_PS_OPENTYPE;
 
   return enum_callback(&enum_log_font.elfEnumLogfontEx.elfLogFont,
