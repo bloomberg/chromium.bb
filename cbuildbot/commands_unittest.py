@@ -228,7 +228,7 @@ The suite job has another 2:39:39.789250 till timeout.
     self._pool = 'test-pool'
     self._num = 42
     self._file_bugs = True
-    self._wait_for_results = False
+    self._wait_for_results = True
     self._priority = 'test-priority'
     self._timeout_mins = 23
     self._retry = False
@@ -339,16 +339,15 @@ The suite job has another 2:39:39.789250 till timeout.
   def testRunHWTestSuiteMinimal(self):
     """Test RunHWTestSuite without optional arguments."""
     self.SetCmdResults()
-    self.PatchJson([(self.JOB_ID_OUTPUT, False), (self.WAIT_OUTPUT, False)])
+    # When run without optional arguments, wait_for_result default to None.
+    # the wait cmd will not run.
+    self.PatchJson([(self.JOB_ID_OUTPUT, False)])
 
     with self.OutputCapturer() as output:
       self.RunHWTestSuite()
     self.assertCommandCalled(self.create_cmd, capture_output=True,
                              combine_stdout_stderr=True)
-    self.assertCommandCalled(self.wait_cmd, capture_output=True,
-                             combine_stdout_stderr=True)
     self.assertIn(self.JOB_ID_OUTPUT, '\n'.join(output.GetStdoutLines()))
-    self.assertIn(self.WAIT_OUTPUT, '\n'.join(output.GetStdoutLines()))
 
   def testRunHWTestSuiteMaximal(self):
     """Test RunHWTestSuite with all arguments."""
@@ -357,7 +356,7 @@ The suite job has another 2:39:39.789250 till timeout.
     self.SetCmdResults(
         args=[
             '--pool', 'test-pool', '--num', '42',
-            '--file_bugs', 'True', '--no_wait', 'True',
+            '--file_bugs', 'True',
             '--priority', 'test-priority', '--timeout_mins', '23',
             '--retry', 'False', '--max_retries', '3', '--minimum_duts', '2',
             '--suite_min_duts', '2'

@@ -904,11 +904,13 @@ def RunHWTestSuite(build, suite, board, pool=None, num=None, file_bugs=None,
   try:
     cmd = [_RUN_SUITE_PATH]
     cmd += _GetRunSuiteArgs(build, suite, board, pool, num, file_bugs,
-                            wait_for_results, priority, timeout_mins, retry,
-                            max_retries, minimum_duts, suite_min_duts,
-                            offload_failures_only, subsystems)
+                            priority, timeout_mins, retry, max_retries,
+                            minimum_duts, suite_min_duts, offload_failures_only,
+                            subsystems)
     swarming_args = _CreateSwarmingArgs(build, suite, timeout_mins)
-    HWTestCreateAndWait(cmd, swarming_args, debug)
+    job_id = _HWTestCreate(cmd, swarming_args, debug)
+    if wait_for_results and job_id:
+      _HWTestWait(cmd, job_id, swarming_args)
   except cros_build_lib.RunCommandError as e:
     result = e.result
     if not result.task_summary_json:
@@ -960,8 +962,7 @@ def RunHWTestSuite(build, suite, board, pool=None, num=None, file_bugs=None,
 
 # pylint: disable=docstring-missing-args
 def _GetRunSuiteArgs(build, suite, board, pool=None, num=None,
-                     file_bugs=None, wait_for_results=None,
-                     priority=None, timeout_mins=None,
+                     file_bugs=None, priority=None, timeout_mins=None,
                      retry=None, max_retries=None, minimum_duts=0,
                      suite_min_duts=0, offload_failures_only=None,
                      subsystems=None):
@@ -989,9 +990,6 @@ def _GetRunSuiteArgs(build, suite, board, pool=None, num=None,
 
   if file_bugs is not None:
     args += ['--file_bugs', str(file_bugs)]
-
-  if wait_for_results is not None:
-    args += ['--no_wait', str(not wait_for_results)]
 
   if priority is not None:
     args += ['--priority', priority]
@@ -1064,21 +1062,23 @@ def _CreateSwarmingArgs(build, suite, timeout_mins=None):
   return swarming_args
 
 
-def HWTestCreateAndWait(cmd, swarming_args, debug=False):
-  """Start and wait on HWTest suite in the lab.
+def _HWTestCreate(cmd, swarming_args, debug=False):
+  """Start a suite in the HWTest lab, and return its id.
 
-  This method first run a command to create the suite.
-  And then run a second command to wait for the suite result.
-  Since we are using swarming client, which contiuously send
-  request to swarming server to poll task result, there is
-  no need to retry on any network related failures.
+  This method runs a command to create the suite. Since we are using
+  swarming client, which contiuously send request to swarming server
+  to poll task result, there is no need to retry on any network
+  related failures.
 
   Args:
     cmd: Proxied run_suite command.
     debug: If True, log command rather than running it.
     swarming_args: A dictionary of args to passed to RunSwarmingCommand.
+
+  Returns:
+    Job id of created suite. Returned id will be None if no job id was created.
   """
-  # Start the suite
+  # Start the suite.
   start_cmd = list(cmd) + ['-c']
 
   if debug:
@@ -1096,15 +1096,25 @@ def HWTestCreateAndWait(cmd, swarming_args, debug=False):
     m = re.search(r'Created suite job:.*object_id=(?P<job_id>\d*)',
                   result.output)
     if m:
-      job_id = m.group('job_id')
-      # Wait on the suite
-      wait_cmd = list(cmd) + ['-m', str(job_id)]
-      result = swarming_lib.RunSwarmingCommand(
-          wait_cmd, capture_output=True, combine_stdout_stderr=True,
-          **swarming_args)
-      for output in result.task_summary_json['shards'][0]['outputs']:
-        sys.stdout.write(output)
-      sys.stdout.flush()
+      return m.group('job_id')
+  return None
+
+def _HWTestWait(cmd, job_id, swarming_args):
+  """Wait for HWTest suite to complete.
+
+  Args:
+    cmd: Proxied run_suite command.
+    job_id: The job id of the suite that was created.
+    swarming_args: A dictionary of args to passed to RunSwarmingCommand.
+  """
+  # Wait on the suite
+  wait_cmd = list(cmd) + ['-m', str(job_id)]
+  result = swarming_lib.RunSwarmingCommand(
+      wait_cmd, capture_output=True, combine_stdout_stderr=True,
+      **swarming_args)
+  for output in result.task_summary_json['shards'][0]['outputs']:
+    sys.stdout.write(output)
+  sys.stdout.flush()
 
 
 def AbortHWTests(config_type_or_name, version, debug, suite=''):
