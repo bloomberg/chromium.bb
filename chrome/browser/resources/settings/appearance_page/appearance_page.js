@@ -38,6 +38,7 @@ Polymer({
         return {
           homePageNtp: loadTimeData.getString('homePageNtp'),
           openThisPage: loadTimeData.getString('openThisPage'),
+          onStartupEnterUrl: loadTimeData.getString('onStartupEnterUrl'),
         };
       },
     },

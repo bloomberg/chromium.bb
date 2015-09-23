@@ -2,7 +2,20 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
- #change-home-page-section {
+paper-radio-button {
+  display: block;
+}
+
+.radio-container {
+  display: flex;
+}
+
+.radio-extended {
+  align-self: flex-end;
+  display: flex;
+}
+
+#change-home-page-section {
   -webkit-margin-start: 40px;
   font-size: 90%;
 }
