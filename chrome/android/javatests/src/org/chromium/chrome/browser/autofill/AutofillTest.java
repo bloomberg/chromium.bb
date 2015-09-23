@@ -150,7 +150,7 @@ public class AutofillTest extends ChromeActivityTestCaseBase<ChromeActivity> {
         assertTrue(openAutofillPopupAndWaitUntilReady(suggestions));
         assertEquals(2, mAutofillPopup.getListView().getCount());
 
-        TouchCommon.singleClickViewRelative(mAutofillPopup.getListView(), 10, 10);
+        TouchCommon.singleClickView(mAutofillPopup.getListView().getChildAt(0));
         assertTrue(mMockAutofillCallback.waitForCallback());
 
         assertEquals(0, mMockAutofillCallback.mListIndex);

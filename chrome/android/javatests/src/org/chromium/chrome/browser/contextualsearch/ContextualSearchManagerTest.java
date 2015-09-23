@@ -21,6 +21,7 @@ import android.test.FlakyTest;
 import android.test.suitebuilder.annotation.SmallTest;
 import android.text.TextUtils;
 import android.view.KeyEvent;
+import android.view.View;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
@@ -50,6 +51,7 @@ import org.chromium.content.browser.test.util.CallbackHelper;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.DOMUtils;
+import org.chromium.content.browser.test.util.TouchCommon;
 import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.touch_selection.SelectionEventType;
 
@@ -513,11 +515,10 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
      * Taps the base page at the given x, y position.
      */
     private void tapBasePage(float x, float y) {
-        Point size = new Point();
-        getActivity().getWindowManager().getDefaultDisplay().getSize(size);
-        x *= size.x;
-        y *= size.y;
-        singleClick(x, y);
+        View root = getActivity().getWindow().getDecorView().getRootView();
+        x *= root.getWidth();
+        y *= root.getHeight();
+        TouchCommon.singleClickView(root, (int) x, (int) y);
     }
 
     /**
@@ -543,15 +544,14 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
      *            of the screen size.
      */
     private void clickPanelBar(float barPositionVertical) {
-        Point size = new Point();
-        getActivity().getWindowManager().getDefaultDisplay().getSize(size);
-        float w = size.x;
-        float h = size.y;
+        View root = getActivity().getWindow().getDecorView().getRootView();
+        float w = root.getWidth();
+        float h = root.getHeight();
         boolean landscape = w > h;
         float tapX = landscape ? w * barPositionVertical : w / 2f;
         float tapY = landscape ? h / 2f : h * barPositionVertical;
 
-        singleClick(tapX, tapY);
+        TouchCommon.singleClickView(root, (int) tapX, (int) tapY);
     }
 
     /**
@@ -1406,7 +1406,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
 
         // Expanding the panel should reset the limit.
         swipePanelUp();
-        singleClick(0.5f, 0.5f);
+        tapBasePageToClosePanel();
         waitForPanelToCloseAndSelectionDissolved();
 
         // Click should preload again.

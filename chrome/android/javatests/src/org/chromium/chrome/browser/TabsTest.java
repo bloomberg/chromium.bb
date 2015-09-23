@@ -222,14 +222,13 @@ public class TabsTest extends ChromeTabbedActivityTestBase {
                 getActivity().getLayoutManager(), true, false);
         View tabSwitcherButton = getActivity().findViewById(R.id.tab_switcher_button);
         assertNotNull("'tab_switcher_button' view is not found", tabSwitcherButton);
-        singleClickView(tabSwitcherButton, tabSwitcherButton.getWidth() / 2,
-                tabSwitcherButton.getHeight() / 2);
+        singleClickView(tabSwitcherButton);
         overviewModeWatcher.waitForBehavior();
         overviewModeWatcher = new OverviewModeBehaviorWatcher(
                 getActivity().getLayoutManager(), false, true);
         View newTabButton = getActivity().findViewById(R.id.new_tab_button);
         assertNotNull("'new_tab_button' view is not found", newTabButton);
-        singleClickView(newTabButton, newTabButton.getWidth() / 2, newTabButton.getHeight() / 2);
+        singleClickView(newTabButton);
         overviewModeWatcher.waitForBehavior();
 
         getInstrumentation().runOnMainSync(new Runnable() {
@@ -350,7 +349,7 @@ public class TabsTest extends ChromeTabbedActivityTestBase {
         View button = getActivity().findViewById(R.id.tab_switcher_button);
         OverviewModeBehaviorWatcher overviewModeWatcher = new OverviewModeBehaviorWatcher(
                 getActivity().getLayoutManager(), true, false);
-        singleClickView(button, button.getWidth() / 2, button.getHeight() / 2);
+        singleClickView(button);
         overviewModeWatcher.waitForBehavior();
         assertTrue("Expected: " + (initialTabCount + 1) + " tab Got: "
                 + getActivity().getCurrentTabModel().getCount(),
@@ -1171,9 +1170,9 @@ public class TabsTest extends ChromeTabbedActivityTestBase {
         assertNotNull("Could not find 'tab_switcher_button'", button);
 
         for (int i = 0; i < 15; i++) {
-            singleClickView(button, button.getWidth() / 2, button.getHeight() / 2);
+            singleClickView(button);
             // Switch back to the tab view from the tab-switcher mode.
-            singleClickView(button, button.getWidth() / 2, button.getHeight() / 2);
+            singleClickView(button);
 
             assertEquals("URL mismatch after switching back to the tab from tab-switch mode",
                     urls[lastUrlIndex], getActivity().getActivityTab().getUrl());

@@ -189,7 +189,7 @@ public class AutofillPopupTest extends ChromeActivityTestCaseBase<ChromeActivity
 
         waitForAutofillPopopShow(popup);
 
-        TouchCommon.singleClickViewRelative(popup.getListView(), 10, 10);
+        TouchCommon.singleClickView(popup.getListView(), 10, 10);
 
         waitForInputFieldFill(webContents);
     }
@@ -304,7 +304,7 @@ public class AutofillPopupTest extends ChromeActivityTestCaseBase<ChromeActivity
     private void waitForKeyboardShowRequest(final TestInputMethodManagerWrapper immw,
             final int count) throws InterruptedException {
         assertTrue("Keyboard was never requested to be shown.",
-                CriteriaHelper.pollForCriteria(new Criteria() {
+                CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
                     @Override
                     public boolean isSatisfied() {
                         return immw.getShowSoftInputCounter() == count;
@@ -314,7 +314,7 @@ public class AutofillPopupTest extends ChromeActivityTestCaseBase<ChromeActivity
 
     private void waitForAnchorViewAdd(final ViewGroup view) throws InterruptedException {
         assertTrue("Autofill Popup anchor view was never added.",
-                CriteriaHelper.pollForCriteria(new Criteria() {
+                CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
                     @Override
                     public boolean isSatisfied() {
                         return view.findViewById(R.id.dropdown_popup_window) != null;
@@ -324,10 +324,12 @@ public class AutofillPopupTest extends ChromeActivityTestCaseBase<ChromeActivity
 
     private void waitForAutofillPopopShow(final AutofillPopup popup) throws InterruptedException {
         assertTrue("Autofill Popup anchor view was never added.",
-                CriteriaHelper.pollForCriteria(new Criteria() {
+                CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
                     @Override
                     public boolean isSatisfied() {
-                        return popup.isShowing();
+                        // Wait until the popup is showing and onLayout() has happened.
+                        return popup.isShowing() && popup.getListView() != null
+                                && popup.getListView().getHeight() != 0;
                     }
                 }));
     }
@@ -345,7 +347,6 @@ public class AutofillPopupTest extends ChromeActivityTestCaseBase<ChromeActivity
                         } catch (TimeoutException e) {
                             return false;
                         }
-
                     }
                 }));
     }
